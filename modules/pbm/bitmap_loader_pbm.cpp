@@ -31,11 +31,11 @@
 #include "scene/resources/bit_mask.h"
 
 
-static bool _get_token(FileAccessRef& f,uint8_t &saved,DVector<uint8_t>& r_token,bool p_binary=false,bool p_single_chunk=false) {
+static bool _get_token(FileAccessRef& f,uint8_t &saved,PoolVector<uint8_t>& r_token,bool p_binary=false,bool p_single_chunk=false) {
 
 
 	int token_max = r_token.size();
-	DVector<uint8_t>::Write w;
+	PoolVector<uint8_t>::Write w;
 	if (token_max)
 		w=r_token.write();
 	int ofs=0;
@@ -53,7 +53,7 @@ static bool _get_token(FileAccessRef& f,uint8_t &saved,DVector<uint8_t>& r_token
 		}
 		if (f->eof_reached()) {
 			if (ofs) {
-				w=DVector<uint8_t>::Write();
+				w=PoolVector<uint8_t>::Write();
 				r_token.resize(ofs);
 				return true;
 			} else {
@@ -81,7 +81,7 @@ static bool _get_token(FileAccessRef& f,uint8_t &saved,DVector<uint8_t>& r_token
 
 
 			if (ofs && !p_single_chunk) {
-				w=DVector<uint8_t>::Write();
+				w=PoolVector<uint8_t>::Write();
 				r_token.resize(ofs);
 				saved=b;
 
@@ -98,7 +98,7 @@ static bool _get_token(FileAccessRef& f,uint8_t &saved,DVector<uint8_t>& r_token
 				resized=true;
 			}
 			if (resized) {
-				w=DVector<uint8_t>::Write();
+				w=PoolVector<uint8_t>::Write();
 				r_token.resize(token_max);
 				w=r_token.write();
 			}
@@ -109,10 +109,10 @@ static bool _get_token(FileAccessRef& f,uint8_t &saved,DVector<uint8_t>& r_token
 	return false;
 }
 
-static int _get_number_from_token(DVector<uint8_t>& r_token) {
+static int _get_number_from_token(PoolVector<uint8_t>& r_token) {
 
 	int len = r_token.size();
-	DVector<uint8_t>::Read r = r_token.read();
+	PoolVector<uint8_t>::Read r = r_token.read();
 	return String::to_int((const char*)r.ptr(),len);
 
 }
@@ -133,7 +133,7 @@ RES ResourceFormatPBM::load(const String &p_path,const String& p_original_path,E
 	if (!f)
 		_RETURN(ERR_CANT_OPEN);
 
-	DVector<uint8_t> token;
+	PoolVector<uint8_t> token;
 
 	if (!_get_token(f,saved,token)) {
 		_RETURN(ERR_PARSE_ERROR);
@@ -186,7 +186,7 @@ RES ResourceFormatPBM::load(const String &p_path,const String& p_original_path,E
 			_RETURN(ERR_FILE_CORRUPT);
 		}
 
-		DVector<uint8_t>::Read r=token.read();
+		PoolVector<uint8_t>::Read r=token.read();
 			
 		for(int i=0;i<height;i++) {
 			for(int j=0;j<width;j++) {
@@ -210,7 +210,7 @@ RES ResourceFormatPBM::load(const String &p_path,const String& p_original_path,E
 			_RETURN(ERR_FILE_CORRUPT);
 		}
 
-		DVector<uint8_t>::Read r=token.read();
+		PoolVector<uint8_t>::Read r=token.read();
 		int bitwidth = width;
 		if (bitwidth % 8)
 			bitwidth+=8-(bitwidth%8);

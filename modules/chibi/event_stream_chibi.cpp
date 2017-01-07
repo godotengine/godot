@@ -298,9 +298,9 @@ void CPSampleManagerImpl::unlock_data(CPSample_ID p_id){
 
 	sd->locks--;
 	if (sd->locks==0) {
-		sd->w=DVector<uint8_t>::Write();
+		sd->w=PoolVector<uint8_t>::Write();
 		AudioServer::get_singleton()->sample_set_data(sd->rid,sd->lock);
-		sd->lock=DVector<uint8_t>();
+		sd->lock=PoolVector<uint8_t>();
 	}
 }
 

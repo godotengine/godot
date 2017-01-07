@@ -623,9 +623,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				return OK;
 			};
 
-			DVector<uint8_t> pixels;
+			PoolVector<uint8_t> pixels;
 			pixels.resize(datasize);
-			DVector<uint8_t>::Write wb = pixels.write();
+			PoolVector<uint8_t>::Write wb = pixels.write();
 
 			int idx=0;
 			uint8_t byte;
@@ -652,7 +652,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 			}
 			ERR_FAIL_COND_V(f->eof_reached(),ERR_FILE_CORRUPT);
 
-			wb=DVector<uint8_t>::Write();
+			wb=PoolVector<uint8_t>::Write();
 
 			r_v=Image(w,h,mipmaps,imgformat,pixels);
 			String sdfsdfg;
@@ -672,9 +672,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 		int len=tag->args["len"].to_int();
 
-		DVector<uint8_t> bytes;
+		PoolVector<uint8_t> bytes;
 		bytes.resize(len);
-		DVector<uint8_t>::Write w=bytes.write();
+		PoolVector<uint8_t>::Write w=bytes.write();
 		uint8_t *bytesptr=w.ptr();
 		int idx=0;
 		uint8_t byte;
@@ -700,7 +700,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 		ERR_FAIL_COND_V(f->eof_reached(),ERR_FILE_CORRUPT);
 
-		w=DVector<uint8_t>::Write();
+		w=PoolVector<uint8_t>::Write();
 		r_v=bytes;
 		String sdfsdfg;
 		Error err=parse_property_data(sdfsdfg);
@@ -717,9 +717,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 		int len=tag->args["len"].to_int();
 
-		DVector<int> ints;
+		PoolVector<int> ints;
 		ints.resize(len);
-		DVector<int>::Write w=ints.write();
+		PoolVector<int>::Write w=ints.write();
 		int *intsptr=w.ptr();
 		int idx=0;
 		String str;
@@ -770,7 +770,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 
 #endif
-		w=DVector<int>::Write();
+		w=PoolVector<int>::Write();
 
 		r_v=ints;
 		Error err=goto_end_of_tag();
@@ -786,9 +786,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 		int len=tag->args["len"].to_int();;
 
-		DVector<real_t> reals;
+		PoolVector<real_t> reals;
 		reals.resize(len);
-		DVector<real_t>::Write w=reals.write();
+		PoolVector<real_t>::Write w=reals.write();
 		real_t *realsptr=w.ptr();
 		int idx=0;
 		String str;
@@ -845,7 +845,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 #endif
 
-		w=DVector<real_t>::Write();
+		w=PoolVector<real_t>::Write();
 		r_v=reals;
 
 		Error err=goto_end_of_tag();
@@ -861,9 +861,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 		int len=tag->args["len"].to_int();
 
-		DVector<String> strings;
+		PoolVector<String> strings;
 		strings.resize(len);
-		DVector<String>::Write w=strings.write();
+		PoolVector<String>::Write w=strings.write();
 		String *stringsptr=w.ptr();
 		int idx=0;
 		String str;
@@ -903,7 +903,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				cs.push_back(c);
 			}
 		}
-		w=DVector<String>::Write();
+		w=PoolVector<String>::Write();
 		r_v=strings;
 		String sdfsdfg;
 		Error err=parse_property_data(sdfsdfg);
@@ -923,7 +923,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 		StringArray array;
 		array.resize(len);
-		DVector<String>::Write w = array.write();
+		PoolVector<String>::Write w = array.write();
 
 		Error err;
 		Variant v;
@@ -964,9 +964,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 		int len=tag->args["len"].to_int();;
 
-		DVector<Vector3> vectors;
+		PoolVector<Vector3> vectors;
 		vectors.resize(len);
-		DVector<Vector3>::Write w=vectors.write();
+		PoolVector<Vector3>::Write w=vectors.write();
 		Vector3 *vectorsptr=w.ptr();
 		int idx=0;
 		int subidx=0;
@@ -1041,7 +1041,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 //		double time_taken = (OS::get_singleton()->get_ticks_usec() - tbegin)/1000000.0;
 
 
-		w=DVector<Vector3>::Write();
+		w=PoolVector<Vector3>::Write();
 		r_v=vectors;
 		String sdfsdfg;
 		Error err=goto_end_of_tag();
@@ -1058,9 +1058,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 		int len=tag->args["len"].to_int();;
 
-		DVector<Vector2> vectors;
+		PoolVector<Vector2> vectors;
 		vectors.resize(len);
-		DVector<Vector2>::Write w=vectors.write();
+		PoolVector<Vector2>::Write w=vectors.write();
 		Vector2 *vectorsptr=w.ptr();
 		int idx=0;
 		int subidx=0;
@@ -1135,7 +1135,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 //		double time_taken = (OS::get_singleton()->get_ticks_usec() - tbegin)/1000000.0;
 
 
-		w=DVector<Vector2>::Write();
+		w=PoolVector<Vector2>::Write();
 		r_v=vectors;
 		String sdfsdfg;
 		Error err=goto_end_of_tag();
@@ -1152,9 +1152,9 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		}
 		int len=tag->args["len"].to_int();;
 
-		DVector<Color> colors;
+		PoolVector<Color> colors;
 		colors.resize(len);
-		DVector<Color>::Write w=colors.write();
+		PoolVector<Color>::Write w=colors.write();
 		Color *colorsptr=w.ptr();
 		int idx=0;
 		int subidx=0;
@@ -1194,7 +1194,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				str+=c;
 			}
 		}
-		w=DVector<Color>::Write();
+		w=PoolVector<Color>::Write();
 		r_v=colors;
 		String sdfsdfg;
 		Error err=parse_property_data(sdfsdfg);
@@ -2248,13 +2248,13 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
         case Variant::DICTIONARY:	type="dictionary"; params="shared=\""+String(p_property.is_shared()?"true":"false")+"\""; oneliner=false; break;
         case Variant::ARRAY:		type="array"; params="len=\""+itos(p_property.operator Array().size())+"\" shared=\""+String(p_property.is_shared()?"true":"false")+"\""; oneliner=false; break;
 
-		case Variant::RAW_ARRAY:		type="raw_array"; params="len=\""+itos(p_property.operator DVector < uint8_t >().size())+"\""; break;
-		case Variant::INT_ARRAY:		type="int_array"; params="len=\""+itos(p_property.operator DVector < int >().size())+"\""; break;
-		case Variant::REAL_ARRAY:	type="real_array"; params="len=\""+itos(p_property.operator DVector < real_t >().size())+"\""; break;
-		case Variant::STRING_ARRAY:	oneliner=false; type="string_array"; params="len=\""+itos(p_property.operator DVector < String >().size())+"\""; break;
-		case Variant::VECTOR2_ARRAY:	type="vector2_array"; params="len=\""+itos(p_property.operator DVector < Vector2 >().size())+"\""; break;
-		case Variant::VECTOR3_ARRAY:	type="vector3_array"; params="len=\""+itos(p_property.operator DVector < Vector3 >().size())+"\""; break;
-		case Variant::COLOR_ARRAY:	type="color_array"; params="len=\""+itos(p_property.operator DVector < Color >().size())+"\""; break;
+		case Variant::RAW_ARRAY:		type="raw_array"; params="len=\""+itos(p_property.operator PoolVector < uint8_t >().size())+"\""; break;
+		case Variant::INT_ARRAY:		type="int_array"; params="len=\""+itos(p_property.operator PoolVector < int >().size())+"\""; break;
+		case Variant::REAL_ARRAY:	type="real_array"; params="len=\""+itos(p_property.operator PoolVector < real_t >().size())+"\""; break;
+		case Variant::STRING_ARRAY:	oneliner=false; type="string_array"; params="len=\""+itos(p_property.operator PoolVector < String >().size())+"\""; break;
+		case Variant::VECTOR2_ARRAY:	type="vector2_array"; params="len=\""+itos(p_property.operator PoolVector < Vector2 >().size())+"\""; break;
+		case Variant::VECTOR3_ARRAY:	type="vector3_array"; params="len=\""+itos(p_property.operator PoolVector < Vector3 >().size())+"\""; break;
+		case Variant::COLOR_ARRAY:	type="color_array"; params="len=\""+itos(p_property.operator PoolVector < Color >().size())+"\""; break;
 		default: {
 
 			ERR_PRINT("Unknown Variant type.");
@@ -2403,9 +2403,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 
 			String s;
 			Image img = p_property;
-			DVector<uint8_t> data = img.get_data();
+			PoolVector<uint8_t> data = img.get_data();
 			int len = data.size();
-			DVector<uint8_t>::Read r = data.read();
+			PoolVector<uint8_t>::Read r = data.read();
 			const uint8_t *ptr=r.ptr();;
 			for (int i=0;i<len;i++) {
 
@@ -2487,9 +2487,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 		case Variant::RAW_ARRAY: {
 
 			String s;
-			DVector<uint8_t> data = p_property;
+			PoolVector<uint8_t> data = p_property;
 			int len = data.size();
-			DVector<uint8_t>::Read r = data.read();
+			PoolVector<uint8_t>::Read r = data.read();
 			const uint8_t *ptr=r.ptr();;
 			for (int i=0;i<len;i++) {
 
@@ -2504,9 +2504,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 		} break;
 		case Variant::INT_ARRAY: {
 
-			DVector<int> data = p_property;
+			PoolVector<int> data = p_property;
 			int len = data.size();
-			DVector<int>::Read r = data.read();
+			PoolVector<int>::Read r = data.read();
 			const int *ptr=r.ptr();;
 			write_tabs();
 
@@ -2523,9 +2523,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 		} break;
 		case Variant::REAL_ARRAY: {
 
-			DVector<real_t> data = p_property;
+			PoolVector<real_t> data = p_property;
 			int len = data.size();
-			DVector<real_t>::Read r = data.read();
+			PoolVector<real_t>::Read r = data.read();
 			const real_t *ptr=r.ptr();;
 			write_tabs();
 			String cm=", " ;
@@ -2541,9 +2541,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 		} break;
 		case Variant::STRING_ARRAY: {
 
-			DVector<String> data = p_property;
+			PoolVector<String> data = p_property;
 			int len = data.size();
-			DVector<String>::Read r = data.read();
+			PoolVector<String>::Read r = data.read();
 			const String *ptr=r.ptr();;
 			String s;
 			//write_string("\n");
@@ -2560,9 +2560,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 		} break;
 		case Variant::VECTOR2_ARRAY: {
 
-			DVector<Vector2> data = p_property;
+			PoolVector<Vector2> data = p_property;
 			int len = data.size();
-			DVector<Vector2>::Read r = data.read();
+			PoolVector<Vector2>::Read r = data.read();
 			const Vector2 *ptr=r.ptr();;
 			write_tabs();
 
@@ -2579,9 +2579,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 		} break;
 		case Variant::VECTOR3_ARRAY: {
 
-			DVector<Vector3> data = p_property;
+			PoolVector<Vector3> data = p_property;
 			int len = data.size();
-			DVector<Vector3>::Read r = data.read();
+			PoolVector<Vector3>::Read r = data.read();
 			const Vector3 *ptr=r.ptr();;
 			write_tabs();
 
@@ -2599,9 +2599,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 		} break;
 		case Variant::COLOR_ARRAY: {
 
-			DVector<Color> data = p_property;
+			PoolVector<Color> data = p_property;
 			int len = data.size();
-			DVector<Color>::Read r = data.read();
+			PoolVector<Color>::Read r = data.read();
 			const Color *ptr=r.ptr();;
 			write_tabs();
 

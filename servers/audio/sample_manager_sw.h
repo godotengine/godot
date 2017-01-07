@@ -45,8 +45,8 @@ public:
 	virtual bool sample_is_stereo(RID p_sample) const=0;
 	virtual int sample_get_length(RID p_sample) const=0;
 
-	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer)=0;
-	virtual const DVector<uint8_t> sample_get_data(RID p_sample) const=0;
+	virtual void sample_set_data(RID p_sample, const PoolVector<uint8_t>& p_buffer)=0;
+	virtual const PoolVector<uint8_t> sample_get_data(RID p_sample) const=0;
 
 	virtual void *sample_get_data_ptr(RID p_sample) const=0;
 
@@ -102,8 +102,8 @@ public:
 	virtual bool sample_is_stereo(RID p_sample) const;
 	virtual int sample_get_length(RID p_sample) const;
 
-	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer);
-	virtual const DVector<uint8_t> sample_get_data(RID p_sample) const;
+	virtual void sample_set_data(RID p_sample, const PoolVector<uint8_t>& p_buffer);
+	virtual const PoolVector<uint8_t> sample_get_data(RID p_sample) const;
 
 	virtual void *sample_get_data_ptr(RID p_sample) const;
 

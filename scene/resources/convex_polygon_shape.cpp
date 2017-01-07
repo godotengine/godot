@@ -32,7 +32,7 @@
 
 Vector<Vector3> ConvexPolygonShape::_gen_debug_mesh_lines() {
 
-	DVector<Vector3> points = get_points();
+	PoolVector<Vector3> points = get_points();
 
 	if (points.size()>3) {
 
@@ -64,14 +64,14 @@ void ConvexPolygonShape::_update_shape() {
 	emit_changed();
 }
 
-void ConvexPolygonShape::set_points(const DVector<Vector3>& p_points) {
+void ConvexPolygonShape::set_points(const PoolVector<Vector3>& p_points) {
 
 	points=p_points;
 	_update_shape();
 	notify_change_to_owners();
 }
 
-DVector<Vector3> ConvexPolygonShape::get_points() const {
+PoolVector<Vector3> ConvexPolygonShape::get_points() const {
 
 	return points;
 }

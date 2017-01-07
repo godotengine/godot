@@ -535,7 +535,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 		{
 			//zero texture
-			DVector<uint8_t>::Write w = tex.imgdata.write();
+			PoolVector<uint8_t>::Write w = tex.imgdata.write();
 			ERR_FAIL_COND(texsize*texsize*2 > tex.imgdata.size());
 			for(int i=0;i<texsize*texsize*2;i++) {
 				w[i]=0;
@@ -556,7 +556,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	CharTexture &tex=textures[tex_index];
 
 	{
-		DVector<uint8_t>::Write wr = tex.imgdata.write();
+		PoolVector<uint8_t>::Write wr = tex.imgdata.write();
 
 
 		for(int i=0;i<h;i++) {

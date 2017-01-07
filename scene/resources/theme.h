@@ -72,13 +72,13 @@ protected:
 
 	Ref<Font> default_theme_font;
 
-	DVector<String> _get_icon_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_icon_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
-	DVector<String> _get_stylebox_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_stylebox_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
-	DVector<String> _get_stylebox_types(void) const { DVector<String> ilret; List<StringName> il; get_stylebox_types(&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
-	DVector<String> _get_font_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_font_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
-	DVector<String> _get_color_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_color_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
-	DVector<String> _get_constant_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_constant_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
-	DVector<String> _get_type_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_type_list(&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	PoolVector<String> _get_icon_list(const String& p_type) const { PoolVector<String> ilret; List<StringName> il; get_icon_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	PoolVector<String> _get_stylebox_list(const String& p_type) const { PoolVector<String> ilret; List<StringName> il; get_stylebox_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	PoolVector<String> _get_stylebox_types(void) const { PoolVector<String> ilret; List<StringName> il; get_stylebox_types(&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	PoolVector<String> _get_font_list(const String& p_type) const { PoolVector<String> ilret; List<StringName> il; get_font_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	PoolVector<String> _get_color_list(const String& p_type) const { PoolVector<String> ilret; List<StringName> il; get_color_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	PoolVector<String> _get_constant_list(const String& p_type) const { PoolVector<String> ilret; List<StringName> il; get_constant_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
+	PoolVector<String> _get_type_list(const String& p_type) const { PoolVector<String> ilret; List<StringName> il; get_type_list(&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 
 	static void _bind_methods();
 public:

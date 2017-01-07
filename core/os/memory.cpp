@@ -33,61 +33,6 @@
 #include <stdlib.h>
 
 
-MID::MID(MemoryPoolDynamic::ID p_id) {
-
-	data = (Data*)memalloc(sizeof(Data));
-	data->refcount.init();
-	data->id=p_id;
-}
-
-void MID::unref() {
-
-	if (!data)
-		return;
-	if (data->refcount.unref()) {
-
-		if (data->id!=MemoryPoolDynamic::INVALID_ID)
-			MemoryPoolDynamic::get_singleton()->free(data->id);
-		memfree(data);
-	}
-
-	data=NULL;
-}
-Error MID::_resize(size_t p_size) {
-
-	if (p_size==0 && (!data || data->id==MemoryPoolDynamic::INVALID_ID))
-			return OK;
-	if (p_size && !data) {
-		// create data because we'll need it
-		data = (Data*)memalloc(sizeof(Data));
-		ERR_FAIL_COND_V( !data,ERR_OUT_OF_MEMORY );
-		data->refcount.init();
-		data->id=MemoryPoolDynamic::INVALID_ID;
-	}
-
-	if (p_size==0 && data && data->id==MemoryPoolDynamic::INVALID_ID) {
-
-		MemoryPoolDynamic::get_singleton()->free(data->id);
-		data->id=MemoryPoolDynamic::INVALID_ID;
-	}
-
-	if (p_size>0) {
-
-		if (data->id==MemoryPoolDynamic::INVALID_ID) {
-
-			data->id=MemoryPoolDynamic::get_singleton()->alloc(p_size,"Unnamed MID");
-			ERR_FAIL_COND_V( data->id==MemoryPoolDynamic::INVALID_ID, ERR_OUT_OF_MEMORY );
-
-		} else {
-
-			MemoryPoolDynamic::get_singleton()->realloc(data->id,p_size);
-			ERR_FAIL_COND_V( data->id==MemoryPoolDynamic::INVALID_ID, ERR_OUT_OF_MEMORY );
-
-		}
-	}
-
-	return OK;
-}
 
 void * operator new(size_t p_size,const char *p_description) {
 
@@ -239,34 +184,6 @@ size_t Memory::get_mem_max_usage(){
 #else
 	return 0;
 #endif
-}
-
-
-MID Memory::alloc_dynamic(size_t p_bytes, const char *p_descr) {
-
-	MemoryPoolDynamic::ID id = MemoryPoolDynamic::get_singleton()->alloc(p_bytes,p_descr);
-
-	return MID(id);
-}
-Error Memory::realloc_dynamic(MID p_mid,size_t p_bytes) {
-
-	MemoryPoolDynamic::ID id = p_mid.data?p_mid.data->id:MemoryPoolDynamic::INVALID_ID;
-
-	if (id==MemoryPoolDynamic::INVALID_ID)
-		return ERR_INVALID_PARAMETER;
-
-	return MemoryPoolDynamic::get_singleton()->realloc(p_mid, p_bytes);
-
-}
-
-size_t Memory::get_dynamic_mem_available() {
-
-	return MemoryPoolDynamic::get_singleton()->get_available_mem();
-}
-
-size_t Memory::get_dynamic_mem_usage() {
-
-	return MemoryPoolDynamic::get_singleton()->get_total_usage();
 }
 
 

@@ -35,9 +35,9 @@ class Polygon2D : public Node2D {
 
 	GDCLASS(Polygon2D,Node2D);
 
-	DVector<Vector2> polygon;
-	DVector<Vector2> uv;
-	DVector<Color> vertex_colors;
+	PoolVector<Vector2> polygon;
+	PoolVector<Vector2> uv;
+	PoolVector<Color> vertex_colors;
 	Color color;
 	Ref<Texture> texture;
 	Size2 tex_scale;
@@ -60,17 +60,17 @@ protected:
 	static void _bind_methods();
 public:
 
-	void set_polygon(const DVector<Vector2>& p_polygon);
-	DVector<Vector2> get_polygon() const;
+	void set_polygon(const PoolVector<Vector2>& p_polygon);
+	PoolVector<Vector2> get_polygon() const;
 
-	void set_uv(const DVector<Vector2>& p_uv);
-	DVector<Vector2> get_uv() const;
+	void set_uv(const PoolVector<Vector2>& p_uv);
+	PoolVector<Vector2> get_uv() const;
 
 	void set_color(const Color& p_color);
 	Color get_color() const;
 
-	void set_vertex_colors(const DVector<Color>& p_colors);
-	DVector<Color> get_vertex_colors() const;
+	void set_vertex_colors(const PoolVector<Color>& p_colors);
+	PoolVector<Color> get_vertex_colors() const;
 
 	void set_texture(const Ref<Texture>& p_texture);
 	Ref<Texture> get_texture() const;

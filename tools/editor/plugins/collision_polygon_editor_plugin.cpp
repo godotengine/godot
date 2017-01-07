@@ -478,11 +478,11 @@ void CollisionPolygonEditor::_polygon_draw() {
 
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
-	DVector<Vector3> va;
+	PoolVector<Vector3> va;
 	{
 
 		va.resize(poly.size());
-		DVector<Vector3>::Write w=va.write();
+		PoolVector<Vector3>::Write w=va.write();
 		for(int i=0;i<poly.size();i++) {
 
 

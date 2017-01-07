@@ -102,8 +102,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			}
 
 
-			DVector<Vector2> points = node->get_polygon();
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> points = node->get_polygon();
+			PoolVector<Vector2> uvs = node->get_uv();
 			if (uvs.size()!=points.size()) {
 				undo_redo->create_action(TTR("Create UV Map"));
 				undo_redo->add_do_method(node,"set_uv",points);
@@ -119,10 +119,10 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_POLYGON_TO_UV: {
 
-			DVector<Vector2> points = node->get_polygon();
+			PoolVector<Vector2> points = node->get_polygon();
 			if (points.size()==0)
 				break;
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> uvs = node->get_uv();
 			undo_redo->create_action(TTR("Create UV Map"));
 			undo_redo->add_do_method(node,"set_uv",points);
 			undo_redo->add_undo_method(node,"set_uv",uvs);
@@ -134,8 +134,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_TO_POLYGON: {
 
-			DVector<Vector2> points = node->get_polygon();
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> points = node->get_polygon();
+			PoolVector<Vector2> uvs = node->get_uv();
 			if (uvs.size()==0)
 				break;
 
@@ -149,11 +149,11 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_CLEAR: {
 
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> uvs = node->get_uv();
 			if (uvs.size()==0)
 				break;
 			undo_redo->create_action(TTR("Create UV Map"));
-			undo_redo->add_do_method(node,"set_uv",DVector<Vector2>());
+			undo_redo->add_do_method(node,"set_uv",PoolVector<Vector2>());
 			undo_redo->add_undo_method(node,"set_uv",uvs);
 			undo_redo->add_do_method(uv_edit_draw,"update");
 			undo_redo->add_undo_method(uv_edit_draw,"update");
@@ -593,13 +593,13 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 				case UV_MODE_EDIT_POINT: {
 
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 					uv_new.set( uv_drag_index, uv_new[uv_drag_index]+drag );
 					node->set_uv(uv_new);
 				} break;
 				case UV_MODE_MOVE: {
 
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 					for(int i=0;i<uv_new.size();i++)
 						uv_new.set( i, uv_new[i]+drag );
 
@@ -610,7 +610,7 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 				case UV_MODE_ROTATE: {
 
 					Vector2 center;
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 
 					for(int i=0;i<uv_new.size();i++)
 						center+=uv_prev[i];
@@ -630,7 +630,7 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 				case UV_MODE_SCALE: {
 
 					Vector2 center;
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 
 					for(int i=0;i<uv_new.size();i++)
 						center+=uv_prev[i];
@@ -716,7 +716,7 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	DVector<Vector2> uvs = node->get_uv();
+	PoolVector<Vector2> uvs = node->get_uv();
 	Ref<Texture> handle = get_icon("EditorHandle","EditorIcons");
 
 	Rect2 rect(Point2(),mtx.basis_xform(base_tex->get_size()));

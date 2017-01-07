@@ -819,10 +819,10 @@ void TileMap::clear() {
 	tile_map.clear();
 }
 
-void TileMap::_set_tile_data(const DVector<int>& p_data) {
+void TileMap::_set_tile_data(const PoolVector<int>& p_data) {
 
 	int c=p_data.size();
-	DVector<int>::Read r = p_data.read();
+	PoolVector<int>::Read r = p_data.read();
 
 
 	for(int i=0;i<c;i+=2) {
@@ -857,11 +857,11 @@ void TileMap::_set_tile_data(const DVector<int>& p_data) {
 
 }
 
-DVector<int> TileMap::_get_tile_data() const {
+PoolVector<int> TileMap::_get_tile_data() const {
 
-	DVector<int> data;
+	PoolVector<int> data;
 	data.resize(tile_map.size()*2);
-	DVector<int>::Write w = data.write();
+	PoolVector<int>::Write w = data.write();
 
 	int idx=0;
 	for(const Map<PosKey,Cell>::Element *E=tile_map.front();E;E=E->next()) {
@@ -882,7 +882,7 @@ DVector<int> TileMap::_get_tile_data() const {
 	}
 
 
-	w = DVector<int>::Write();
+	w = PoolVector<int>::Write();
 
 	return data;
 

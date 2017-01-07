@@ -211,10 +211,10 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								for(int j=0;j<node->get_navigation_polygon()->get_outline_count();j++) {
 
 
-									DVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
+									PoolVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
 
 									int pc=points.size();
-									DVector<Vector2>::Read poly=points.read();
+									PoolVector<Vector2>::Read poly=points.read();
 
 									for(int i=0;i<pc;i++) {
 
@@ -240,7 +240,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								if (closest_idx>=0) {
 
 									pre_move_edit=node->get_navigation_polygon()->get_outline(closest_outline);
-									DVector<Point2> poly = pre_move_edit;
+									PoolVector<Point2> poly = pre_move_edit;
 									poly.insert(closest_idx+1,xform.affine_inverse().xform(closest_pos));
 									edited_point=closest_idx+1;
 									edited_outline=closest_outline;
@@ -260,10 +260,10 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								for(int j=0;j<node->get_navigation_polygon()->get_outline_count();j++) {
 
 
-									DVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
+									PoolVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
 
 									int pc=points.size();
-									DVector<Vector2>::Read poly=points.read();
+									PoolVector<Vector2>::Read poly=points.read();
 
 									for(int i=0;i<pc;i++) {
 
@@ -296,7 +296,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 								//apply
 
-								DVector<Vector2> poly = node->get_navigation_polygon()->get_outline(edited_outline);
+								PoolVector<Vector2> poly = node->get_navigation_polygon()->get_outline(edited_outline);
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly.set(edited_point,edited_point_pos);
 								undo_redo->create_action(TTR("Edit Poly"));
@@ -322,10 +322,10 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 						for(int j=0;j<node->get_navigation_polygon()->get_outline_count();j++) {
 
 
-							DVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
+							PoolVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
 
 							int pc=points.size();
-							DVector<Vector2>::Read poly=points.read();
+							PoolVector<Vector2>::Read poly=points.read();
 
 							for(int i=0;i<pc;i++) {
 
@@ -345,7 +345,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 						if (closest_idx>=0) {
 
 
-							DVector<Vector2> poly = node->get_navigation_polygon()->get_outline(closest_outline);
+							PoolVector<Vector2> poly = node->get_navigation_polygon()->get_outline(closest_outline);
 
 							if (poly.size()>3) {
 								undo_redo->create_action(TTR("Edit Poly (Remove Point)"));

@@ -46,7 +46,7 @@ AudioServer *AudioServer::get_singleton() {
 	return singleton;
 }
 
-void AudioServer::sample_set_signed_data(RID p_sample, const DVector<float>& p_buffer) {
+void AudioServer::sample_set_signed_data(RID p_sample, const PoolVector<float>& p_buffer) {
 
 	SampleFormat format = sample_get_format(p_sample);
 
@@ -56,9 +56,9 @@ void AudioServer::sample_set_signed_data(RID p_sample, const DVector<float>& p_b
 	int len = p_buffer.size();
 	ERR_FAIL_COND( len == 0 );
 
-	DVector<uint8_t> data;
-	DVector<uint8_t>::Write w;
-	DVector<float>::Read r = p_buffer.read();
+	PoolVector<uint8_t> data;
+	PoolVector<uint8_t>::Write w;
+	PoolVector<float>::Read r = p_buffer.read();
 
 	switch(format) {
 		case SAMPLE_FORMAT_PCM8: {
@@ -95,7 +95,7 @@ void AudioServer::sample_set_signed_data(RID p_sample, const DVector<float>& p_b
 		} break;
 	}
 
-	w = DVector<uint8_t>::Write();
+	w = PoolVector<uint8_t>::Write();
 
 	sample_set_data(p_sample,data);
 

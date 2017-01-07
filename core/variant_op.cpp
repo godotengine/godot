@@ -186,16 +186,16 @@ case m_name: {	\
 		r_valid=false;\
 		return;\
 	}\
-	const DVector<m_type> &array_a=*reinterpret_cast<const DVector<m_type> *>(p_a._data._mem);\
-	const DVector<m_type> &array_b=*reinterpret_cast<const DVector<m_type> *>(p_b._data._mem);\
+	const PoolVector<m_type> &array_a=*reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem);\
+	const PoolVector<m_type> &array_b=*reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem);\
 \
 	int a_len = array_a.size();\
 	if (a_len m_opa array_b.size()){\
 		_RETURN( m_ret_s);\
 	}else {\
 \
-		DVector<m_type>::Read ra = array_a.read();\
-		DVector<m_type>::Read rb = array_b.read();\
+		PoolVector<m_type>::Read ra = array_a.read();\
+		PoolVector<m_type>::Read rb = array_b.read();\
 \
 		for(int i=0;i<a_len;i++) {\
 			if (ra[i] m_opb rb[i])\
@@ -212,9 +212,9 @@ case m_name: {	\
 		r_valid=false;\
 		_RETURN( NIL);\
 	}\
-	const DVector<m_type> &array_a=*reinterpret_cast<const DVector<m_type> *>(p_a._data._mem);\
-	const DVector<m_type> &array_b=*reinterpret_cast<const DVector<m_type> *>(p_b._data._mem);\
-	DVector<m_type> sum = array_a;\
+	const PoolVector<m_type> &array_a=*reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem);\
+	const PoolVector<m_type> &array_b=*reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem);\
+	PoolVector<m_type> sum = array_a;\
 	sum.append_array(array_b);\
 	_RETURN( sum );\
 }
@@ -1049,10 +1049,10 @@ Variant Variant::get_named(const StringName& p_index, bool *r_valid) const {
 	} break;
 
 #define DEFAULT_OP_DVECTOR_SET(m_name, dv_type, skip_cond)\
-	DEFAULT_OP_ARRAY_CMD(m_name, DVector<dv_type>, if(skip_cond) return;, arr->set(index, p_value);return)
+	DEFAULT_OP_ARRAY_CMD(m_name, PoolVector<dv_type>, if(skip_cond) return;, arr->set(index, p_value);return)
 
 #define DEFAULT_OP_DVECTOR_GET(m_name, dv_type)\
-	DEFAULT_OP_ARRAY_CMD(m_name, const DVector<dv_type>, ;, return arr->get(index))
+	DEFAULT_OP_ARRAY_CMD(m_name, const PoolVector<dv_type>, ;, return arr->get(index))
 
 void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid) {
 
@@ -2561,10 +2561,10 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-				const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>* >(_data._mem);
+				const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>* >(_data._mem);
 				int l=arr->size();
 				if (l) {
-					DVector<uint8_t>::Read r = arr->read();
+					PoolVector<uint8_t>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2580,10 +2580,10 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-				const DVector<int> *arr=reinterpret_cast<const DVector<int>* >(_data._mem);
+				const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>* >(_data._mem);
 				int l=arr->size();
 				if (l) {
-					DVector<int>::Read r = arr->read();
+					PoolVector<int>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2599,10 +2599,10 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				real_t index = p_index;
-				const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>* >(_data._mem);
+				const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>* >(_data._mem);
 				int l=arr->size();
 				if (l) {
-					DVector<real_t>::Read r = arr->read();
+					PoolVector<real_t>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2618,11 +2618,11 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::STRING) {
 
 				String index = p_index;
-				const DVector<String> *arr=reinterpret_cast<const DVector<String>* >(_data._mem);
+				const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>* >(_data._mem);
 
 				int l=arr->size();
 				if (l) {
-					DVector<String>::Read r = arr->read();
+					PoolVector<String>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2638,11 +2638,11 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::VECTOR2) {
 
 				Vector2 index = p_index;
-				const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>* >(_data._mem);
+				const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>* >(_data._mem);
 
 				int l=arr->size();
 				if (l) {
-					DVector<Vector2>::Read r = arr->read();
+					PoolVector<Vector2>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2658,11 +2658,11 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::VECTOR3) {
 
 				Vector3 index = p_index;
-				const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>* >(_data._mem);
+				const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>* >(_data._mem);
 
 				int l=arr->size();
 				if (l) {
-					DVector<Vector3>::Read r = arr->read();
+					PoolVector<Vector3>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2679,12 +2679,12 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			if (p_index.get_type()==Variant::COLOR) {
 
 				Color index = p_index;
-				const DVector<Color> *arr=reinterpret_cast<const DVector<Color>* >(_data._mem);
+				const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>* >(_data._mem);
 
 
 				int l=arr->size();
 				if (l) {
-					DVector<Color>::Read r = arr->read();
+					PoolVector<Color>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2992,7 +2992,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 			return true;
 		} break;
 		case RAW_ARRAY: {
-			const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>*>(_data._mem);
+			const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3000,7 +3000,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 
 		} break;
 		case INT_ARRAY: {
-			const DVector<int> *arr=reinterpret_cast<const DVector<int>*>(_data._mem);
+			const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3008,7 +3008,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 
 		} break;
 		case REAL_ARRAY: {
-			const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>*>(_data._mem);
+			const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3016,7 +3016,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 
 		} break;
 		case STRING_ARRAY: {
-			const DVector<String> *arr=reinterpret_cast<const DVector<String>*>(_data._mem);
+			const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3024,7 +3024,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 		} break;
 		case VECTOR2_ARRAY: {
 
-			const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>*>(_data._mem);
+			const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3032,7 +3032,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 		} break;
 		case VECTOR3_ARRAY: {
 
-			const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>*>(_data._mem);
+			const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3040,7 +3040,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 		} break;
 		case COLOR_ARRAY: {
 
-			const DVector<Color> *arr=reinterpret_cast<const DVector<Color>*>(_data._mem);
+			const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3123,7 +3123,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			return true;
 		} break;
 		case RAW_ARRAY: {
-			const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>*>(_data._mem);
+			const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3133,7 +3133,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 
 		} break;
 		case INT_ARRAY: {
-			const DVector<int> *arr=reinterpret_cast<const DVector<int>*>(_data._mem);
+			const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3143,7 +3143,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 
 		} break;
 		case REAL_ARRAY: {
-			const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>*>(_data._mem);
+			const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3153,7 +3153,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 
 		} break;
 		case STRING_ARRAY: {
-			const DVector<String> *arr=reinterpret_cast<const DVector<String>*>(_data._mem);
+			const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3163,7 +3163,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 		} break;
 		case VECTOR2_ARRAY: {
 
-			const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>*>(_data._mem);
+			const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3173,7 +3173,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 		} break;
 		case VECTOR3_ARRAY: {
 
-			const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>*>(_data._mem);
+			const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3183,7 +3183,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 		} break;
 		case COLOR_ARRAY: {
 
-			const DVector<Color> *arr=reinterpret_cast<const DVector<Color>*>(_data._mem);
+			const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3255,7 +3255,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case RAW_ARRAY: {
-			const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>*>(_data._mem);
+			const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3266,7 +3266,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case INT_ARRAY: {
-			const DVector<int> *arr=reinterpret_cast<const DVector<int>*>(_data._mem);
+			const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3277,7 +3277,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case REAL_ARRAY: {
-			const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>*>(_data._mem);
+			const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3288,7 +3288,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 			return arr->get(idx);
 		} break;
 		case STRING_ARRAY: {
-			const DVector<String> *arr=reinterpret_cast<const DVector<String>*>(_data._mem);
+			const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3300,7 +3300,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 		} break;
 		case VECTOR2_ARRAY: {
 
-			const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>*>(_data._mem);
+			const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>*>(_data._mem);
 			int idx=r_iter;
 	#ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3312,7 +3312,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 		} break;
 		case VECTOR3_ARRAY: {
 
-			const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>*>(_data._mem);
+			const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3324,7 +3324,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 		} break;
 		case COLOR_ARRAY: {
 
-			const DVector<Color> *arr=reinterpret_cast<const DVector<Color>*>(_data._mem);
+			const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3495,20 +3495,20 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case REAL_ARRAY:{   r_dst=a;    } return;
 		case STRING_ARRAY:{   r_dst=a;    } return;
 		case VECTOR2_ARRAY:{
-			const DVector<Vector2> *arr_a=reinterpret_cast<const DVector<Vector2>* >(a._data._mem);
-			const DVector<Vector2> *arr_b=reinterpret_cast<const DVector<Vector2>* >(b._data._mem);
+			const PoolVector<Vector2> *arr_a=reinterpret_cast<const PoolVector<Vector2>* >(a._data._mem);
+			const PoolVector<Vector2> *arr_b=reinterpret_cast<const PoolVector<Vector2>* >(b._data._mem);
 			int sz = arr_a->size();
 			if (sz==0 || arr_b->size()!=sz) {
 
 				r_dst=a;
 			} else {
 
-				DVector<Vector2> v;
+				PoolVector<Vector2> v;
 				v.resize(sz);
 				{
-					DVector<Vector2>::Write vw=v.write();
-					DVector<Vector2>::Read ar=arr_a->read();
-					DVector<Vector2>::Read br=arr_b->read();
+					PoolVector<Vector2>::Write vw=v.write();
+					PoolVector<Vector2>::Read ar=arr_a->read();
+					PoolVector<Vector2>::Read br=arr_b->read();
 
 					for(int i=0;i<sz;i++) {
 						vw[i]=ar[i].linear_interpolate(br[i],c);
@@ -3523,20 +3523,20 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case VECTOR3_ARRAY:{
 
 
-			const DVector<Vector3> *arr_a=reinterpret_cast<const DVector<Vector3>* >(a._data._mem);
-			const DVector<Vector3> *arr_b=reinterpret_cast<const DVector<Vector3>* >(b._data._mem);
+			const PoolVector<Vector3> *arr_a=reinterpret_cast<const PoolVector<Vector3>* >(a._data._mem);
+			const PoolVector<Vector3> *arr_b=reinterpret_cast<const PoolVector<Vector3>* >(b._data._mem);
 			int sz = arr_a->size();
 			if (sz==0 || arr_b->size()!=sz) {
 
 				r_dst=a;
 			} else {
 
-				DVector<Vector3> v;
+				PoolVector<Vector3> v;
 				v.resize(sz);
 				{
-					DVector<Vector3>::Write vw=v.write();
-					DVector<Vector3>::Read ar=arr_a->read();
-					DVector<Vector3>::Read br=arr_b->read();
+					PoolVector<Vector3>::Write vw=v.write();
+					PoolVector<Vector3>::Read ar=arr_a->read();
+					PoolVector<Vector3>::Read br=arr_b->read();
 
 					for(int i=0;i<sz;i++) {
 						vw[i]=ar[i].linear_interpolate(br[i],c);

@@ -67,7 +67,7 @@ public:
 	void set_centered(bool p_enabled);
 	bool is_centered() const;
 
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 	virtual AABB get_aabb() const;
 
 	Quad();

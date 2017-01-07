@@ -45,7 +45,7 @@ public:
 	struct BakedLight {
 
 		Rasterizer::BakedLightData data;
-		DVector<int> sampler;
+		PoolVector<int> sampler;
 		AABB octree_aabb;
 		Size2i octree_tex_size;
 		Size2i light_tex_size;
@@ -433,16 +433,16 @@ public:
 
 			Map<RID,LightCache> light_cache;
 			Map<RID,LightCache> light_cache_changes;
-			DVector<int> light_data;
-			DVector<LocalData> local_data;
+			PoolVector<int> light_data;
+			PoolVector<LocalData> local_data;
 			Vector<Vector<uint32_t> > level_cell_lists;
 			RID probe_data;
 			bool enabled;
 			int bake_dynamic_range;
 			RasterizerStorage::GIProbeCompression compression;
 
-			Vector< DVector<uint8_t> > mipmaps_3d;
-			Vector< DVector<CompBlockS3TC> > mipmaps_s3tc; //for s3tc
+			Vector< PoolVector<uint8_t> > mipmaps_3d;
+			Vector< PoolVector<CompBlockS3TC> > mipmaps_s3tc; //for s3tc
 
 			int updating_stage;
 

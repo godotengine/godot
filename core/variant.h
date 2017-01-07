@@ -63,13 +63,13 @@ struct PropertyInfo;
 struct MethodInfo;
 
 
-typedef DVector<uint8_t> ByteArray;
-typedef DVector<int> IntArray;
-typedef DVector<real_t> RealArray;
-typedef DVector<String> StringArray;
-typedef DVector<Vector2> Vector2Array;
-typedef DVector<Vector3> Vector3Array;
-typedef DVector<Color> ColorArray;
+typedef PoolVector<uint8_t> ByteArray;
+typedef PoolVector<int> IntArray;
+typedef PoolVector<real_t> RealArray;
+typedef PoolVector<String> StringArray;
+typedef PoolVector<Vector2> Vector2Array;
+typedef PoolVector<Vector3> Vector3Array;
+typedef PoolVector<Color> ColorArray;
 
 class Variant {
 public:
@@ -227,14 +227,14 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator DVector<uint8_t>() const;
-	operator DVector<int>() const;
-	operator DVector<real_t>() const;
-	operator DVector<String>() const;
-	operator DVector<Vector3>() const;
-	operator DVector<Color>() const;
-	operator DVector<Plane>() const;
-	operator DVector<Face3>() const;
+	operator PoolVector<uint8_t>() const;
+	operator PoolVector<int>() const;
+	operator PoolVector<real_t>() const;
+	operator PoolVector<String>() const;
+	operator PoolVector<Vector3>() const;
+	operator PoolVector<Color>() const;
+	operator PoolVector<Plane>() const;
+	operator PoolVector<Face3>() const;
 
 
 	operator Vector<Variant>() const;
@@ -246,7 +246,7 @@ public:
 	operator Vector<Color>() const;
 	operator Vector<RID>() const;
 	operator Vector<Vector2>() const;
-	operator DVector<Vector2>() const;
+	operator PoolVector<Vector2>() const;
 	operator Vector<Plane>() const;
 
 	// some core type enums to convert to
@@ -295,14 +295,14 @@ public:
 	Variant(const Dictionary& p_dictionary);
 
 	Variant(const Array& p_array);
-	Variant(const DVector<Plane>& p_array); // helper
-	Variant(const DVector<uint8_t>& p_raw_array);
-	Variant(const DVector<int>& p_int_array);
-	Variant(const DVector<real_t>& p_real_array);
-	Variant(const DVector<String>& p_string_array);
-	Variant(const DVector<Vector3>& p_vector3_array);
-	Variant(const DVector<Color>& p_color_array);
-	Variant(const DVector<Face3>& p_face_array);
+	Variant(const PoolVector<Plane>& p_array); // helper
+	Variant(const PoolVector<uint8_t>& p_raw_array);
+	Variant(const PoolVector<int>& p_int_array);
+	Variant(const PoolVector<real_t>& p_real_array);
+	Variant(const PoolVector<String>& p_string_array);
+	Variant(const PoolVector<Vector3>& p_vector3_array);
+	Variant(const PoolVector<Color>& p_color_array);
+	Variant(const PoolVector<Face3>& p_face_array);
 
 
 	Variant(const Vector<Variant>& p_array);
@@ -315,7 +315,7 @@ public:
 	Variant(const Vector<Plane>& p_array); // helper
 	Variant(const Vector<RID>& p_array); // helper
 	Variant(const Vector<Vector2>& p_array); // helper
-	Variant(const DVector<Vector2>& p_array); // helper
+	Variant(const PoolVector<Vector2>& p_array); // helper
 
 	Variant(const IP_Address& p_address);
 

@@ -693,11 +693,11 @@ void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
 	point_count=0;
 
 	if (p_data.get_type()==Variant::VECTOR2_ARRAY) {
-		DVector<Vector2> arr=p_data;
+		PoolVector<Vector2> arr=p_data;
 		ERR_FAIL_COND(arr.size()==0);
 		point_count=arr.size();
 		points = memnew_arr(Point,point_count);
-		DVector<Vector2>::Read r = arr.read();
+		PoolVector<Vector2>::Read r = arr.read();
 
 		for(int i=0;i<point_count;i++) {
 			points[i].pos=r[i];
@@ -711,12 +711,12 @@ void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
 		}
 	} else {
 
-		DVector<real_t> dvr = p_data;
+		PoolVector<real_t> dvr = p_data;
 		point_count=dvr.size()/4;
 		ERR_FAIL_COND(point_count==0);
 
 		points = memnew_arr(Point,point_count);
-		DVector<real_t>::Read r = dvr.read();
+		PoolVector<real_t>::Read r = dvr.read();
 
 		for(int i=0;i<point_count;i++) {
 
@@ -741,7 +741,7 @@ void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
 
 Variant ConvexPolygonShape2DSW::get_data() const {
 
-	DVector<Vector2> dvr;
+	PoolVector<Vector2> dvr;
 
 	dvr.resize(point_count);
 
@@ -970,7 +970,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 
 	if (p_data.get_type()==Variant::VECTOR2_ARRAY) {
 
-		DVector<Vector2> p2arr = p_data;
+		PoolVector<Vector2> p2arr = p_data;
 		int len = p2arr.size();
 		ERR_FAIL_COND(len%2);
 
@@ -984,7 +984,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 			return;
 		}
 
-		DVector<Vector2>::Read arr = p2arr.read();
+		PoolVector<Vector2>::Read arr = p2arr.read();
 
 		Map<Point2,int> pointmap;
 		for(int i=0;i<len;i+=2) {
@@ -1046,17 +1046,17 @@ void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 Variant ConcavePolygonShape2DSW::get_data() const {
 
 
-	DVector<Vector2> rsegments;
+	PoolVector<Vector2> rsegments;
 	int len = segments.size();
 	rsegments.resize(len*2);
-	DVector<Vector2>::Write w = rsegments.write();
+	PoolVector<Vector2>::Write w = rsegments.write();
 	for(int i=0;i<len;i++) {
 
 		w[(i<<1)+0]=points[segments[i].points[0]];
 		w[(i<<1)+1]=points[segments[i].points[1]];
 	}
 
-	w=DVector<Vector2>::Write();
+	w=PoolVector<Vector2>::Write();
 
 	return rsegments;
 }

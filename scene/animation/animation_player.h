@@ -208,11 +208,11 @@ private:
 	void _node_removed(Node *p_node);
 
 // bind helpers
-	DVector<String> _get_animation_list() const {
+	PoolVector<String> _get_animation_list() const {
 
 		List<StringName> animations;
 		get_animation_list(&animations);
-		DVector<String> ret;
+		PoolVector<String> ret;
 		while(animations.size()) {
 
 			ret.push_back( animations.front()->get());

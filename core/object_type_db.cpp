@@ -31,11 +31,12 @@
 
 #ifdef NO_THREADS
 
-#define OBJTYPE_LOCK
+#define OBJTYPE_RLOCK
 
 #else
 
-#define OBJTYPE_LOCK MutexLock _mutex_lock_(lock);
+#define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
+#define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);
 
 #endif
 
@@ -215,7 +216,7 @@ ClassDB::ClassInfo::~ClassInfo() {
 
 bool ClassDB::is_parent_class(const StringName &p_class,const StringName& p_inherits) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	StringName inherits=p_class;
 
@@ -230,7 +231,7 @@ bool ClassDB::is_parent_class(const StringName &p_class,const StringName& p_inhe
 }
 void ClassDB::get_class_list( List<StringName> *p_classes) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	const StringName *k=NULL;
 
@@ -245,7 +246,7 @@ void ClassDB::get_class_list( List<StringName> *p_classes) {
 
 void ClassDB::get_inheriters_from_class( const StringName& p_class,List<StringName> *p_classes) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	const StringName *k=NULL;
 
@@ -259,7 +260,7 @@ void ClassDB::get_inheriters_from_class( const StringName& p_class,List<StringNa
 
 StringName ClassDB::get_parent_class(const StringName& p_class) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_COND_V(!ti,"");
@@ -268,7 +269,7 @@ StringName ClassDB::get_parent_class(const StringName& p_class) {
 
 ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_COND_V(!ti,API_NONE);
@@ -277,6 +278,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 
 uint64_t ClassDB::get_api_hash(APIType p_api) {
 
+	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
 
 	uint64_t hash = hash_djb2_one_64(HashMapHahserDefault::hash(VERSION_FULL_NAME));
@@ -433,12 +435,13 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 bool ClassDB::class_exists(const StringName &p_class) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 	return classes.has(p_class);
 }
 
 void ClassDB::add_compatibility_class(const StringName& p_class,const StringName& p_fallback) {
 
+	OBJTYPE_WLOCK;
 	compat_classes[p_class]=p_fallback;
 }
 
@@ -446,7 +449,7 @@ Object *ClassDB::instance(const StringName &p_class) {
 
 	ClassInfo *ti;
 	{
-		OBJTYPE_LOCK;
+		OBJTYPE_RLOCK;
 		ti=classes.getptr(p_class);
 		if (!ti || ti->disabled || !ti->creation_func) {
 			if (compat_classes.has(p_class)) {
@@ -462,7 +465,7 @@ Object *ClassDB::instance(const StringName &p_class) {
 }
 bool ClassDB::can_instance(const StringName &p_class) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
 	ERR_FAIL_COND_V(!ti,false);
@@ -472,7 +475,7 @@ bool ClassDB::can_instance(const StringName &p_class) {
 
 void ClassDB::_add_class2(const StringName& p_class, const StringName& p_inherits) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_WLOCK;
 
 	StringName name = p_class;
 
@@ -499,7 +502,7 @@ void ClassDB::_add_class2(const StringName& p_class, const StringName& p_inherit
 void ClassDB::get_method_list(StringName p_class,List<MethodInfo> *p_methods,bool p_no_inheritance) {
 
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	ClassInfo *type=classes.getptr(p_class);
 
@@ -572,7 +575,7 @@ void ClassDB::get_method_list(StringName p_class,List<MethodInfo> *p_methods,boo
 
 MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	ClassInfo *type=classes.getptr(p_class);
 
@@ -589,7 +592,7 @@ MethodBind *ClassDB::get_method(StringName p_class, StringName p_name) {
 
 void ClassDB::bind_integer_constant(const StringName& p_class, const StringName &p_name, int p_constant) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_WLOCK;
 
 	ClassInfo *type=classes.getptr(p_class);
 	if (!type) {
@@ -611,7 +614,7 @@ void ClassDB::bind_integer_constant(const StringName& p_class, const StringName 
 
 void ClassDB::get_integer_constant_list(const StringName& p_class, List<String> *p_constants, bool p_no_inheritance) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 	ClassInfo *type=classes.getptr(p_class);
 
@@ -639,7 +642,7 @@ void ClassDB::get_integer_constant_list(const StringName& p_class, List<String> 
 
 int ClassDB::get_integer_constant(const StringName& p_class, const StringName &p_name, bool *p_success) {
 
-	OBJTYPE_LOCK;
+	OBJTYPE_RLOCK;
 
 
 	ClassInfo *type=classes.getptr(p_class);
@@ -666,6 +669,8 @@ int ClassDB::get_integer_constant(const StringName& p_class, const StringName &p
 
 void ClassDB::add_signal(StringName p_class,const MethodInfo& p_signal) {
 
+	OBJTYPE_WLOCK;
+
 	ClassInfo *type=classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
 
@@ -687,6 +692,8 @@ void ClassDB::add_signal(StringName p_class,const MethodInfo& p_signal) {
 }
 
 void ClassDB::get_signal_list(StringName p_class,List<MethodInfo> *p_signals,bool p_no_inheritance) {
+
+	OBJTYPE_RLOCK;
 
 	ClassInfo *type=classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
@@ -712,6 +719,7 @@ void ClassDB::get_signal_list(StringName p_class,List<MethodInfo> *p_signals,boo
 
 bool ClassDB::has_signal(StringName p_class,StringName p_signal) {
 
+	OBJTYPE_RLOCK;
 	ClassInfo *type=classes.getptr(p_class);
 	ClassInfo *check=type;
 	while(check) {
@@ -725,6 +733,7 @@ bool ClassDB::has_signal(StringName p_class,StringName p_signal) {
 
 bool ClassDB::get_signal(StringName p_class,StringName p_signal,MethodInfo *r_signal) {
 
+	OBJTYPE_RLOCK;
 	ClassInfo *type=classes.getptr(p_class);
 	ClassInfo *check=type;
 	while(check) {
@@ -743,6 +752,7 @@ bool ClassDB::get_signal(StringName p_class,StringName p_signal,MethodInfo *r_si
 
 void ClassDB::add_property_group(StringName p_class,const String& p_name,const String& p_prefix) {
 
+	OBJTYPE_WLOCK;
 	ClassInfo *type=classes.getptr(p_class);
 	ERR_FAIL_COND(!type);
 
@@ -752,7 +762,13 @@ void ClassDB::add_property_group(StringName p_class,const String& p_name,const S
 void ClassDB::add_property(StringName p_class,const PropertyInfo& p_pinfo, const StringName& p_setter, const StringName& p_getter, int p_index) {
 
 
+
+	lock->read_lock();
+
 	ClassInfo *type=classes.getptr(p_class);
+
+	lock->read_unlock();
+
 	ERR_FAIL_COND(!type);
 
 	MethodBind *mb_set=NULL;
@@ -804,6 +820,9 @@ void ClassDB::add_property(StringName p_class,const PropertyInfo& p_pinfo, const
 		ERR_FAIL();
 	}
 #endif
+
+	OBJTYPE_WLOCK
+
 	type->property_list.push_back(p_pinfo);
 
 	PropertySetGet psg;
@@ -820,6 +839,8 @@ void ClassDB::add_property(StringName p_class,const PropertyInfo& p_pinfo, const
 
 
 void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance,const Object *p_validator) {
+
+	OBJTYPE_RLOCK;
 
 	ClassInfo *type=classes.getptr(p_class);
 	ClassInfo *check=type;
@@ -844,6 +865,7 @@ void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, 
 
 }
 bool ClassDB::set_property(Object* p_object,const StringName& p_property, const Variant& p_value,bool *r_valid) {
+
 
 
 	ClassInfo *type=classes.getptr(p_object->get_class_name());
@@ -1010,6 +1032,7 @@ bool ClassDB::has_property(const StringName& p_class, const StringName& p_proper
 
 void ClassDB::set_method_flags(StringName p_class,StringName p_method,int p_flags) {
 
+	OBJTYPE_WLOCK;
 	ClassInfo *type=classes.getptr(p_class);
 	ClassInfo *check=type;
 	ERR_FAIL_COND(!check);
@@ -1070,7 +1093,7 @@ MethodBind* ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const 
 	}
 
 
-	OBJTYPE_LOCK;
+	OBJTYPE_WLOCK;
 	ERR_FAIL_COND_V(!p_bind,NULL);
 	p_bind->set_name(mdname);
 
@@ -1114,6 +1137,8 @@ MethodBind* ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const 
 void ClassDB::add_virtual_method(const StringName& p_class, const MethodInfo& p_method , bool p_virtual) {
 	ERR_FAIL_COND(!classes.has(p_class));
 
+	OBJTYPE_WLOCK;
+
 #ifdef DEBUG_METHODS_ENABLED
 	MethodInfo mi=p_method;
 	if (p_virtual)
@@ -1149,11 +1174,15 @@ void ClassDB::get_virtual_methods(const StringName& p_class, List<MethodInfo> * 
 
 void ClassDB::set_class_enabled(StringName p_class,bool p_enable) {
 
+	OBJTYPE_WLOCK;
+
 	ERR_FAIL_COND(!classes.has(p_class));
 	classes[p_class].disabled=!p_enable;
 }
 
 bool ClassDB::is_class_enabled(StringName p_class) {
+
+	OBJTYPE_RLOCK;
 
 	ClassInfo *ti=classes.getptr(p_class);
 	if (!ti || !ti->creation_func) {
@@ -1206,23 +1235,19 @@ void ClassDB::get_extensions_for_type(const StringName& p_class,List<String> *p_
 }
 
 
-Mutex *ClassDB::lock=NULL;
+RWLock *ClassDB::lock=NULL;
 
 void ClassDB::init() {
 
 #ifndef NO_THREADS
 
-	lock = Mutex::create();
+	lock = RWLock::create();
 #endif
 }
 
 void ClassDB::cleanup() {
 
 
-#ifndef NO_THREADS
-
-	memdelete(lock);
-#endif
 
 	//OBJTYPE_LOCK; hah not here
 
@@ -1241,6 +1266,12 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
+
+#ifndef NO_THREADS
+
+	memdelete(lock);
+#endif
+
 }
 
 //

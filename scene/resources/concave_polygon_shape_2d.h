@@ -38,8 +38,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	void set_segments(const DVector<Vector2>& p_segments);
-	DVector<Vector2> get_segments() const;
+	void set_segments(const PoolVector<Vector2>& p_segments);
+	PoolVector<Vector2> get_segments() const;
 
 	virtual void draw(const RID& p_to_rid,const Color& p_color);
 	virtual Rect2 get_rect() const ;

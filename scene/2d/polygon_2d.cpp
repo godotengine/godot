@@ -33,7 +33,7 @@ Rect2 Polygon2D::get_item_rect() const {
 
 	if (rect_cache_dirty){
 		int l =polygon.size();
-		DVector<Vector2>::Read r = polygon.read();
+		PoolVector<Vector2>::Read r = polygon.read();
 		item_rect=Rect2();
 		for(int i=0;i<l;i++) {
 			Vector2 pos = r[i] + offset;
@@ -84,7 +84,7 @@ void Polygon2D::_notification(int p_what) {
 			int len = points.size();
 			{
 
-				DVector<Vector2>::Read polyr =polygon.read();
+				PoolVector<Vector2>::Read polyr =polygon.read();
 				for(int i=0;i<len;i++) {
 					points[i]=polyr[i]+offset;
 				}
@@ -157,7 +157,7 @@ void Polygon2D::_notification(int p_what) {
 
 				if (points.size()==uv.size()) {
 
-					DVector<Vector2>::Read uvr = uv.read();
+					PoolVector<Vector2>::Read uvr = uv.read();
 
 					for(int i=0;i<len;i++) {
 						uvs[i]=texmat.xform(uvr[i])/tex_size;
@@ -176,7 +176,7 @@ void Polygon2D::_notification(int p_what) {
 			int color_len=vertex_colors.size();
 			colors.resize(len);
 			{
-				DVector<Color>::Read color_r=vertex_colors.read();
+				PoolVector<Color>::Read color_r=vertex_colors.read();
 				for(int i=0;i<color_len && i<len;i++){
 					colors[i]=color_r[i];
 				}
@@ -194,25 +194,25 @@ void Polygon2D::_notification(int p_what) {
 }
 
 
-void Polygon2D::set_polygon(const DVector<Vector2>& p_polygon) {
+void Polygon2D::set_polygon(const PoolVector<Vector2>& p_polygon) {
 	polygon=p_polygon;
 	rect_cache_dirty=true;
 	update();
 }
 
-DVector<Vector2> Polygon2D::get_polygon() const{
+PoolVector<Vector2> Polygon2D::get_polygon() const{
 
 	return polygon;
 }
 
 
-void Polygon2D::set_uv(const DVector<Vector2>& p_uv) {
+void Polygon2D::set_uv(const PoolVector<Vector2>& p_uv) {
 
 	uv=p_uv;
 	update();
 }
 
-DVector<Vector2> Polygon2D::get_uv() const{
+PoolVector<Vector2> Polygon2D::get_uv() const{
 
 	return uv;
 }
@@ -227,12 +227,12 @@ Color Polygon2D::get_color() const{
 	return color;
 }
 
-void Polygon2D::set_vertex_colors(const DVector<Color>& p_colors){
+void Polygon2D::set_vertex_colors(const PoolVector<Color>& p_colors){
 
 	vertex_colors=p_colors;
 	update();
 }
-DVector<Color> Polygon2D::get_vertex_colors() const{
+PoolVector<Color> Polygon2D::get_vertex_colors() const{
 
 	return vertex_colors;
 }

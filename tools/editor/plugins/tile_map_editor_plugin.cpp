@@ -289,7 +289,7 @@ void TileMapEditor::_pick_tile(const Point2& p_pos) {
 	canvas_item_editor->update();
 }
 
-DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase, bool preview) {
+PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase, bool preview) {
 
 	int prev_id = node->get_cell(p_start.x, p_start.y);
 	int id = TileMap::INVALID_CELL;
@@ -297,7 +297,7 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase,
 		id = get_selected_tile();
 
 		if (id == TileMap::INVALID_CELL)
-			return DVector<Vector2>();
+			return PoolVector<Vector2>();
 	}
 
 	Rect2i r = node->get_item_rect();
@@ -324,7 +324,7 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase,
 		if(invalidate_cache) {
 			for(int i = 0; i < area; ++i)
 				bucket_cache_visited[i] = false;
-			bucket_cache = DVector<Vector2>();
+			bucket_cache = PoolVector<Vector2>();
 			bucket_cache_tile = prev_id;
 			bucket_cache_rect = r;
 		}
@@ -333,7 +333,7 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase,
 		}
 	}
 
-	DVector<Vector2> points;
+	PoolVector<Vector2> points;
 
 	List<Point2i> queue;
 	queue.push_back(p_start);
@@ -370,10 +370,10 @@ DVector<Vector2> TileMapEditor::_bucket_fill(const Point2i& p_start, bool erase,
 	return preview ? bucket_cache : points;
 }
 
-void TileMapEditor::_fill_points(const DVector<Vector2> p_points, const Dictionary& p_op) {
+void TileMapEditor::_fill_points(const PoolVector<Vector2> p_points, const Dictionary& p_op) {
 
 	int len = p_points.size();
-	DVector<Vector2>::Read pr = p_points.read();
+	PoolVector<Vector2>::Read pr = p_points.read();
 
 	int id = p_op["id"];
 	bool xf = p_op["flip_h"];
@@ -386,10 +386,10 @@ void TileMapEditor::_fill_points(const DVector<Vector2> p_points, const Dictiona
 	}
 }
 
-void TileMapEditor::_erase_points(const DVector<Vector2> p_points) {
+void TileMapEditor::_erase_points(const PoolVector<Vector2> p_points) {
 
 	int len = p_points.size();
-	DVector<Vector2>::Read pr = p_points.read();
+	PoolVector<Vector2>::Read pr = p_points.read();
 
 	for (int i=0;i<len;i++) {
 
@@ -507,8 +507,8 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h
 
 void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform) {
 
-	DVector<Vector2> points = _bucket_fill(p_point, false, true);
-	DVector<Vector2>::Read pr = points.read();
+	PoolVector<Vector2> points = _bucket_fill(p_point, false, true);
+	PoolVector<Vector2>::Read pr = points.read();
 	int len = points.size();
 	int time_after = OS::get_singleton()->get_ticks_msec();
 
@@ -748,7 +748,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 							pop["flip_v"] = node->is_cell_y_flipped(over_tile.x, over_tile.y);
 							pop["transpose"] = node->is_cell_transposed(over_tile.x, over_tile.y);
 
-							DVector<Vector2> points = _bucket_fill(over_tile);
+							PoolVector<Vector2> points = _bucket_fill(over_tile);
 
 							if (points.size() == 0)
 								return false;
@@ -854,7 +854,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 						pop["flip_v"] = node->is_cell_y_flipped(over_tile.x, over_tile.y);
 						pop["transpose"] = node->is_cell_transposed(over_tile.x, over_tile.y);
 
-						DVector<Vector2> points = _bucket_fill(over_tile, true);
+						PoolVector<Vector2> points = _bucket_fill(over_tile, true);
 
 						if (points.size() == 0)
 							return false;

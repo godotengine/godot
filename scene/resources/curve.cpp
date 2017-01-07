@@ -143,17 +143,17 @@ Vector2 Curve2D::interpolatef(real_t p_findex) const {
 
 }
 
-DVector<Point2> Curve2D::bake(int p_subdivs) const {
+PoolVector<Point2> Curve2D::bake(int p_subdivs) const {
 
 	int pc = points.size();
 
-	DVector<Point2> ret;
+	PoolVector<Point2> ret;
 	if (pc<2)
 		return ret;
 
 	ret.resize((pc-1)*p_subdivs+1);
 
-	DVector<Point2>::Write w = ret.write();
+	PoolVector<Point2>::Write w = ret.write();
 	const Point *r = points.ptr();
 
 	for(int i=0;i<pc;i++) {
@@ -175,7 +175,7 @@ DVector<Point2> Curve2D::bake(int p_subdivs) const {
 		}
 	}
 
-	w = DVector<Point2>::Write();
+	w = PoolVector<Point2>::Write();
 
 	return ret;
 }

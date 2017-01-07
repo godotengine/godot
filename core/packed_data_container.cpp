@@ -82,7 +82,7 @@ Variant PackedDataContainer::_iter_get_ofs(const Variant& p_iter,uint32_t p_offs
 	if (pos<0 || pos>=size)
 		return Variant();
 
-	DVector<uint8_t>::Read rd=data.read();
+	PoolVector<uint8_t>::Read rd=data.read();
 	const uint8_t *r=&rd[p_offset];
 	uint32_t type = decode_uint32(r);
 
@@ -131,7 +131,7 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs,const uint8_t *p_buf,boo
 
 uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 
-	DVector<uint8_t>::Read rd=data.read();
+	PoolVector<uint8_t>::Read rd=data.read();
 	const uint8_t *r=&rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -140,7 +140,7 @@ uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
 
 int PackedDataContainer::_size(uint32_t p_ofs) const {
 
-	DVector<uint8_t>::Read rd=data.read();
+	PoolVector<uint8_t>::Read rd=data.read();
 	const uint8_t *r=&rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -160,7 +160,7 @@ int PackedDataContainer::_size(uint32_t p_ofs) const {
 
 Variant PackedDataContainer::_key_at_ofs(uint32_t p_ofs,const Variant& p_key,bool &err) const {
 
-	DVector<uint8_t>::Read rd=data.read();
+	PoolVector<uint8_t>::Read rd=data.read();
 	const uint8_t *r=&rd[p_ofs];
 	uint32_t type = decode_uint32(r);
 
@@ -344,21 +344,21 @@ Error PackedDataContainer::pack(const Variant& p_data) {
 	_pack(p_data,tmpdata,string_cache);
 	datalen=tmpdata.size();
 	data.resize(tmpdata.size());
-	DVector<uint8_t>::Write w = data.write();
+	PoolVector<uint8_t>::Write w = data.write();
 	copymem(w.ptr(),tmpdata.ptr(),tmpdata.size());
 
 	return OK;
 }
 
 
-void PackedDataContainer::_set_data(const DVector<uint8_t>& p_data) {
+void PackedDataContainer::_set_data(const PoolVector<uint8_t>& p_data) {
 
 	data=p_data;
 	datalen=data.size();
 
 }
 
-DVector<uint8_t> PackedDataContainer::_get_data() const {
+PoolVector<uint8_t> PackedDataContainer::_get_data() const {
 	return data;
 }
 

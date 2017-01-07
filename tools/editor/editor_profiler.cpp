@@ -154,7 +154,7 @@ void EditorProfiler::_update_plot() {
 	}
 
 
-	DVector<uint8_t>::Write wr = graph_image.write();
+	PoolVector<uint8_t>::Write wr = graph_image.write();
 
 
 
@@ -336,7 +336,7 @@ void EditorProfiler::_update_plot() {
 	}
 
 
-	wr = DVector<uint8_t>::Write();
+	wr = PoolVector<uint8_t>::Write();
 
 	Image img(w,h,0,Image::FORMAT_RGBA8,graph_image);
 

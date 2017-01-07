@@ -113,8 +113,8 @@ public:
 	int get_closest_point(const Vector3& p_point) const;
 	Vector3 get_closest_pos_in_segment(const Vector3& p_point) const;
 
-	DVector<Vector3> get_point_path(int p_from_id, int p_to_id);
-	DVector<int> get_id_path(int p_from_id, int p_to_id);
+	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id);
+	PoolVector<int> get_id_path(int p_from_id, int p_to_id);
 
 	AStar();
 	~AStar();

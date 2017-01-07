@@ -1112,9 +1112,9 @@ Array Object::_get_method_list_bind() const {
 
 }
 
-DVector<String> Object::_get_meta_list_bind() const {
+PoolVector<String> Object::_get_meta_list_bind() const {
 
-	DVector<String> _metaret;
+	PoolVector<String> _metaret;
 
 	List<Variant> keys;
 	metadata.get_key_list(&keys);
@@ -1942,27 +1942,37 @@ uint32_t ObjectDB::instance_counter=1;
 HashMap<Object*,ObjectID,ObjectDB::ObjectPtrHash> ObjectDB::instance_checks;
 uint32_t ObjectDB::add_instance(Object *p_object) {
 
-	GLOBAL_LOCK_FUNCTION;
+
 	ERR_FAIL_COND_V( p_object->get_instance_ID()!=0, 0 );
+
+	rw_lock->write_lock();
 	instances[++instance_counter]=p_object;
 #ifdef DEBUG_ENABLED
 	instance_checks[p_object]=instance_counter;
 #endif
+	rw_lock->write_unlock();
+
 	return instance_counter;
 }
 
 void ObjectDB::remove_instance(Object *p_object) {
 
-	GLOBAL_LOCK_FUNCTION;
+
+	rw_lock->write_lock();
+
 	instances.erase( p_object->get_instance_ID() );
 #ifdef DEBUG_ENABLED
 	instance_checks.erase(p_object);
 #endif
+
+	rw_lock->write_unlock();
 }
 Object *ObjectDB::get_instance(uint32_t p_instance_ID) {
 
-	GLOBAL_LOCK_FUNCTION;
+	rw_lock->read_lock();
 	Object**obj=instances.getptr(p_instance_ID);
+	rw_lock->read_unlock();
+
 	if (!obj)
 		return NULL;
 	return *obj;
@@ -1970,13 +1980,16 @@ Object *ObjectDB::get_instance(uint32_t p_instance_ID) {
 
 void ObjectDB::debug_objects(DebugFunc p_func) {
 
-	GLOBAL_LOCK_FUNCTION;
+	rw_lock->read_lock();
 
 	const uint32_t *K=NULL;
 	while((K=instances.next(K))) {
 
 		p_func(instances[*K]);
 	}
+
+	rw_lock->read_unlock();
+
 }
 
 
@@ -1987,15 +2000,26 @@ void Object::get_argument_options(const StringName& p_function,int p_idx,List<St
 
 int ObjectDB::get_object_count() {
 
-	GLOBAL_LOCK_FUNCTION;
-	return instances.size();
+	rw_lock->read_lock();
+	int count =instances.size();
+	rw_lock->read_unlock();
 
+	return count;
+
+}
+
+RWLock *ObjectDB::rw_lock=NULL;
+
+
+void ObjectDB::setup() {
+
+	rw_lock = RWLock::create();
 }
 
 void ObjectDB::cleanup() {
 
 
-	GLOBAL_LOCK_FUNCTION;
+	rw_lock->write_lock();
 	if (instances.size()) {
 
 		WARN_PRINT("ObjectDB Instances still exist!");
@@ -2014,4 +2038,7 @@ void ObjectDB::cleanup() {
 	}
 	instances.clear();
 	instance_checks.clear();
+	rw_lock->write_unlock();
+
+	memdelete(rw_lock);
 }

@@ -44,9 +44,9 @@ void Quad::_update() {
 
 
 
-	DVector<Vector3> points;
+	PoolVector<Vector3> points;
 	points.resize(4);
-	DVector<Vector3>::Write pointsw = points.write();
+	PoolVector<Vector3>::Write pointsw = points.write();
 
 	Vector2 s2 = size*0.5;
 	Vector2 o = offset;
@@ -70,34 +70,34 @@ void Quad::_update() {
 	for(int i=1;i<4;i++)
 		aabb.expand_to(pointsw[i]);
 
-	pointsw = DVector<Vector3>::Write();
+	pointsw = PoolVector<Vector3>::Write();
 
-	DVector<Vector3> normals;
+	PoolVector<Vector3> normals;
 	normals.resize(4);
-	DVector<Vector3>::Write normalsw = normals.write();
+	PoolVector<Vector3>::Write normalsw = normals.write();
 
 	for(int i=0;i<4;i++)
 		normalsw[i]=normal;
 
-	normalsw=DVector<Vector3>::Write();
+	normalsw=PoolVector<Vector3>::Write();
 
 
 
-	DVector<Vector2> uvs;
+	PoolVector<Vector2> uvs;
 	uvs.resize(4);
-	DVector<Vector2>::Write uvsw = uvs.write();
+	PoolVector<Vector2>::Write uvsw = uvs.write();
 
 	uvsw[0]=Vector2(0,0);
 	uvsw[1]=Vector2(1,0);
 	uvsw[2]=Vector2(1,1);
 	uvsw[3]=Vector2(0,1);
 
-	uvsw = DVector<Vector2>::Write();
+	uvsw = PoolVector<Vector2>::Write();
 
-	DVector<int> indices;
+	PoolVector<int> indices;
 	indices.resize(6);
 
-	DVector<int>::Write indicesw = indices.write();
+	PoolVector<int>::Write indicesw = indices.write();
 	indicesw[0]=0;
 	indicesw[1]=1;
 	indicesw[2]=2;
@@ -105,7 +105,7 @@ void Quad::_update() {
 	indicesw[4]=3;
 	indicesw[5]=0;
 
-	indicesw=DVector<int>::Write();
+	indicesw=PoolVector<int>::Write();
 
 	Array arr;
 	arr.resize(VS::ARRAY_MAX);
@@ -187,9 +187,9 @@ void Quad::_notification(int p_what) {
 	}
 }
 
-DVector<Face3> Quad::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> Quad::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 AABB Quad::get_aabb() const {

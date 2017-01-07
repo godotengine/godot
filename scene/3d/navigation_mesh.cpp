@@ -33,7 +33,7 @@
 void NavigationMesh::create_from_mesh(const Ref<Mesh>& p_mesh) {
 
 
-	vertices=DVector<Vector3>();
+	vertices=PoolVector<Vector3>();
 	clear_polygons();
 
 	for(int i=0;i<p_mesh->get_surface_count();i++) {
@@ -41,15 +41,15 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh>& p_mesh) {
 		if (p_mesh->surface_get_primitive_type(i)!=Mesh::PRIMITIVE_TRIANGLES)
 			continue;
 		Array arr = p_mesh->surface_get_arrays(i);
-		DVector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
-		DVector<int> iarr = arr[Mesh::ARRAY_INDEX];
+		PoolVector<Vector3> varr = arr[Mesh::ARRAY_VERTEX];
+		PoolVector<int> iarr = arr[Mesh::ARRAY_INDEX];
 		if (varr.size()==0 || iarr.size()==0)
 			continue;
 
 		int from = vertices.size();
 		vertices.append_array(varr);
 		int rlen = iarr.size();
-		DVector<int>::Read r = iarr.read();
+		PoolVector<int>::Read r = iarr.read();
 
 		for(int j=0;j<rlen;j+=3) {
 			Vector<int> vi;
@@ -63,12 +63,12 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh>& p_mesh) {
 	}
 }
 
-void NavigationMesh::set_vertices(const DVector<Vector3>& p_vertices) {
+void NavigationMesh::set_vertices(const PoolVector<Vector3>& p_vertices) {
 
 	vertices=p_vertices;
 }
 
-DVector<Vector3> NavigationMesh::get_vertices() const{
+PoolVector<Vector3> NavigationMesh::get_vertices() const{
 
 	return vertices;
 }
@@ -122,8 +122,8 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 
 
 
-	DVector<Vector3> vertices = get_vertices();
-	DVector<Vector3>::Read vr=vertices.read();
+	PoolVector<Vector3> vertices = get_vertices();
+	PoolVector<Vector3>::Read vr=vertices.read();
 	List<Face3> faces;
 	for(int i=0;i<get_polygon_count();i++) {
 		Vector<int> p = get_polygon(i);
@@ -140,11 +140,11 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 
 
 	Map<_EdgeKey,bool> edge_map;
-	DVector<Vector3> tmeshfaces;
+	PoolVector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size()*3);
 
 	{
-		DVector<Vector3>::Write tw=tmeshfaces.write();
+		PoolVector<Vector3>::Write tw=tmeshfaces.write();
 		int tidx=0;
 
 
@@ -185,10 +185,10 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 		}
 	}
 
-	DVector<Vector3> varr;
+	PoolVector<Vector3> varr;
 	varr.resize(lines.size());
 	{
-		DVector<Vector3>::Write w = varr.write();
+		PoolVector<Vector3>::Write w = varr.write();
 		int idx=0;
 		for(List<Vector3>::Element *E=lines.front();E;E=E->next()) {
 			w[idx++]=E->get();

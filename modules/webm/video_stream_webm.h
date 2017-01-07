@@ -56,7 +56,7 @@ class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 	double delay_compensation;
 	double time, video_frame_delay, video_pos;
 
-	DVector<uint8_t> frame_data;
+	PoolVector<uint8_t> frame_data;
 	Ref<ImageTexture> texture;
 
 	int16_t *pcm;

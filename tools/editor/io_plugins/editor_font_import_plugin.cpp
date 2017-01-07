@@ -1380,10 +1380,10 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		int ow=font_data_list[i]->width;
 		int oh=font_data_list[i]->height;
 
-		DVector<uint8_t> pixels;
+		PoolVector<uint8_t> pixels;
 		pixels.resize(s.x*s.y*4);
 
-		DVector<uint8_t>::Write w = pixels.write();
+		PoolVector<uint8_t>::Write w = pixels.write();
 		//print_line("val: "+itos(font_data_list[i]->valign));
 		for(int y=0;y<s.height;y++) {
 
@@ -1512,7 +1512,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		}
 
 
-		w=DVector<uint8_t>::Write();
+		w=PoolVector<uint8_t>::Write();
 
 		Image img(s.width,s.height,0,Image::FORMAT_RGBA8,pixels);
 
@@ -1552,10 +1552,10 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	if (from->has_option("advanced/premultiply_alpha") && bool(from->get_option("advanced/premultiply_alpha"))) {
 
-		DVector<uint8_t> data = atlas.get_data();
+		PoolVector<uint8_t> data = atlas.get_data();
 		int dl = data.size();
 		{
-			DVector<uint8_t>::Write w = data.write();
+			PoolVector<uint8_t>::Write w = data.write();
 
 			for(int i=0;i<dl;i+=4) {
 

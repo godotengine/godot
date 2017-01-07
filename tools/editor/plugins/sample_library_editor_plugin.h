@@ -59,7 +59,7 @@ class SampleLibraryEditor : public Panel {
 
 
 	void _load_pressed();
-	void _file_load_request(const DVector<String>& p_path);
+	void _file_load_request(const PoolVector<String>& p_path);
 	void _delete_pressed();
 	void _update_library();
 	void _item_edited();

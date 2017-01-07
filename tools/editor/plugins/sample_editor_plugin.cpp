@@ -77,15 +77,15 @@ void SampleEditor::_stop_pressed() {
 void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<ImageTexture> &p_texture) {
 
 
-	DVector<uint8_t> data = p_sample->get_data();
+	PoolVector<uint8_t> data = p_sample->get_data();
 
-	DVector<uint8_t> img;
+	PoolVector<uint8_t> img;
 	int w = p_texture->get_width();
 	int h = p_texture->get_height();
 	img.resize(w*h*3);
-	DVector<uint8_t>::Write imgdata = img.write();
+	PoolVector<uint8_t>::Write imgdata = img.write();
 	uint8_t * imgw = imgdata.ptr();
-	DVector<uint8_t>::Read sampledata = data.read();
+	PoolVector<uint8_t>::Read sampledata = data.read();
 	const uint8_t *sdata=sampledata.ptr();
 
 	bool stereo = p_sample->is_stereo();
@@ -308,7 +308,7 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 		}
 	}
 
-	imgdata = DVector<uint8_t>::Write();
+	imgdata = PoolVector<uint8_t>::Write();
 
 
 	p_texture->set_data(Image(w,h,0,Image::FORMAT_RGB8,img));

@@ -29,14 +29,14 @@
 #include "light_occluder_2d.h"
 
 
-void OccluderPolygon2D::set_polygon(const DVector<Vector2>& p_polygon) {
+void OccluderPolygon2D::set_polygon(const PoolVector<Vector2>& p_polygon) {
 
 	polygon=p_polygon;
 	VS::get_singleton()->canvas_occluder_polygon_set_shape(occ_polygon,p_polygon,closed);
 	emit_changed();
 }
 
-DVector<Vector2> OccluderPolygon2D::get_polygon() const{
+PoolVector<Vector2> OccluderPolygon2D::get_polygon() const{
 
 	return polygon;
 }
@@ -141,7 +141,7 @@ void LightOccluder2D::_notification(int p_what) {
 
 			if (occluder_polygon.is_valid()) {
 
-				DVector<Vector2> poly = occluder_polygon->get_polygon();
+				PoolVector<Vector2> poly = occluder_polygon->get_polygon();
 
 				if (poly.size()) {
 					if (occluder_polygon->is_closed()) {
@@ -151,7 +151,7 @@ void LightOccluder2D::_notification(int p_what) {
 					} else {
 
 						int ps=poly.size();
-						DVector<Vector2>::Read r = poly.read();
+						PoolVector<Vector2>::Read r = poly.read();
 						for(int i=0;i<ps-1;i++) {
 
 							draw_line(r[i],r[i+1],Color(0,0,0,0.6),3);

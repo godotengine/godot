@@ -31,10 +31,10 @@
 #ifdef UNIX_ENABLED
 
 
-#include "os/memory_pool_dynamic_static.h"
 #include "thread_posix.h"
 #include "semaphore_posix.h"
 #include "mutex_posix.h"
+#include "rw_lock_posix.h"
 #include "core/os/thread_dummy.h"
 
 //#include "core/io/file_access_buffered_fa.h"
@@ -116,7 +116,6 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 	return 0;
 }
 	
-static MemoryPoolDynamicStatic *mempool_dynamic=NULL;
 	
 	
 void OS_Unix::initialize_core() {
@@ -129,6 +128,7 @@ void OS_Unix::initialize_core() {
 	ThreadPosix::make_default();	
 	SemaphorePosix::make_default();
 	MutexPosix::make_default();	
+	RWLockPosix::make_default();
 #endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
@@ -144,7 +144,6 @@ void OS_Unix::initialize_core() {
 	PacketPeerUDPPosix::make_default();
 	IP_Unix::make_default();
 #endif
-	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
 
 	ticks_start=0;
 	ticks_start=get_ticks_usec();
@@ -153,8 +152,6 @@ void OS_Unix::initialize_core() {
 void OS_Unix::finalize_core() {
 
 
-	if (mempool_dynamic)
-		memdelete( mempool_dynamic );
 
 }
 

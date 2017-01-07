@@ -554,8 +554,8 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 		case NODE_XFORM_TO_VEC: {} break; // 3 scalar input: {} break; 1 vec3 output
 		case NODE_SCALAR_INTERP: {} break; // scalar interpolation (with optional curve)
 		case NODE_VEC_INTERP: {} break; // vec3 interpolation  (with optional curve)
-		case NODE_COLOR_RAMP: { node.param1=DVector<Color>(); node.param2=DVector<real_t>();} break; // vec3 interpolation  (with optional curve)
-		case NODE_CURVE_MAP: { node.param1=DVector<Vector2>();} break; // vec3 interpolation  (with optional curve)
+		case NODE_COLOR_RAMP: { node.param1=PoolVector<Color>(); node.param2=PoolVector<real_t>();} break; // vec3 interpolation  (with optional curve)
+		case NODE_CURVE_MAP: { node.param1=PoolVector<Vector2>();} break; // vec3 interpolation  (with optional curve)
 		case NODE_SCALAR_INPUT: {node.param1=_find_unique_name("Scalar"); node.param2=0;} break; // scalar uniform (assignable in material)
 		case NODE_VEC_INPUT: {node.param1=_find_unique_name("Vec3");node.param2=Vector3();} break; // vec3 uniform (assignable in material)
 		case NODE_RGB_INPUT: {node.param1=_find_unique_name("Color");node.param2=Color();} break; // color uniform (assignable in material)
@@ -1082,7 +1082,7 @@ ShaderGraph::VecFunc ShaderGraph::vec_func_node_get_function(ShaderType p_type, 
 	return VecFunc(func);
 }
 
-void ShaderGraph::color_ramp_node_set_ramp(ShaderType p_type,int p_id,const DVector<Color>& p_colors, const DVector<real_t>& p_offsets){
+void ShaderGraph::color_ramp_node_set_ramp(ShaderType p_type,int p_id,const PoolVector<Color>& p_colors, const PoolVector<real_t>& p_offsets){
 
 	ERR_FAIL_INDEX(p_type,3);
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
@@ -1094,27 +1094,27 @@ void ShaderGraph::color_ramp_node_set_ramp(ShaderType p_type,int p_id,const DVec
 
 }
 
-DVector<Color> ShaderGraph::color_ramp_node_get_colors(ShaderType p_type,int p_id) const{
+PoolVector<Color> ShaderGraph::color_ramp_node_get_colors(ShaderType p_type,int p_id) const{
 
-	ERR_FAIL_INDEX_V(p_type,3,DVector<Color>());
-	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Color>());
+	ERR_FAIL_INDEX_V(p_type,3,PoolVector<Color>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),PoolVector<Color>());
 	const Node& n = shader[p_type].node_map[p_id];
 	return n.param1;
 
 
 }
 
-DVector<real_t> ShaderGraph::color_ramp_node_get_offsets(ShaderType p_type,int p_id) const{
+PoolVector<real_t> ShaderGraph::color_ramp_node_get_offsets(ShaderType p_type,int p_id) const{
 
-	ERR_FAIL_INDEX_V(p_type,3,DVector<real_t>());
-	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<real_t>());
+	ERR_FAIL_INDEX_V(p_type,3,PoolVector<real_t>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),PoolVector<real_t>());
 	const Node& n = shader[p_type].node_map[p_id];
 	return n.param2;
 
 }
 
 
-void ShaderGraph::curve_map_node_set_points(ShaderType p_type,int p_id,const DVector<Vector2>& p_points) {
+void ShaderGraph::curve_map_node_set_points(ShaderType p_type,int p_id,const PoolVector<Vector2>& p_points) {
 
 	ERR_FAIL_INDEX(p_type,3);
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
@@ -1124,10 +1124,10 @@ void ShaderGraph::curve_map_node_set_points(ShaderType p_type,int p_id,const DVe
 
 }
 
-DVector<Vector2> ShaderGraph::curve_map_node_get_points(ShaderType p_type,int p_id) const{
+PoolVector<Vector2> ShaderGraph::curve_map_node_get_points(ShaderType p_type,int p_id) const{
 
-	ERR_FAIL_INDEX_V(p_type,3,DVector<Vector2>());
-	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),DVector<Vector2>());
+	ERR_FAIL_INDEX_V(p_type,3,PoolVector<Vector2>());
+	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),PoolVector<Vector2>());
 	const Node& n = shader[p_type].node_map[p_id];
 	return n.param1;
 
@@ -2450,16 +2450,16 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			DEF_SCALAR(0);
 
 			static const int color_ramp_len=512;
-			DVector<uint8_t> cramp;
+			PoolVector<uint8_t> cramp;
 			cramp.resize(color_ramp_len*4);
 			{
 
-				DVector<Color> colors=p_node->param1;
-				DVector<real_t> offsets=p_node->param2;
+				PoolVector<Color> colors=p_node->param1;
+				PoolVector<real_t> offsets=p_node->param2;
 				int cc =colors.size();
-				DVector<uint8_t>::Write crw = cramp.write();
-				DVector<Color>::Read cr = colors.read();
-				DVector<real_t>::Read ofr = offsets.read();
+				PoolVector<uint8_t>::Write crw = cramp.write();
+				PoolVector<Color>::Read cr = colors.read();
+				PoolVector<real_t>::Read ofr = offsets.read();
 
 				int at=0;
 				Color color_at(0,0,0,1);
@@ -2508,14 +2508,14 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			static const int curve_map_len=256;
 			bool mapped[256];
 			zeromem(mapped,sizeof(mapped));
-			DVector<uint8_t> cmap;
+			PoolVector<uint8_t> cmap;
 			cmap.resize(curve_map_len);
 			{
 
-				DVector<Point2> points=p_node->param1;
+				PoolVector<Point2> points=p_node->param1;
 				int pc =points.size();
-				DVector<uint8_t>::Write cmw = cmap.write();
-				DVector<Point2>::Read pr = points.read();
+				PoolVector<uint8_t>::Write cmw = cmap.write();
+				PoolVector<Point2>::Read pr = points.read();
 
 				Vector2 prev=Vector2(0,0);
 				Vector2 prev2=Vector2(0,0);

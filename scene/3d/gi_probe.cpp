@@ -37,12 +37,12 @@ Transform GIProbeData::get_to_cell_xform() const {
 }
 
 
-void GIProbeData::set_dynamic_data(const DVector<int>& p_data){
+void GIProbeData::set_dynamic_data(const PoolVector<int>& p_data){
 
 	VS::get_singleton()->gi_probe_set_dynamic_data(probe,p_data);
 
 }
-DVector<int> GIProbeData::get_dynamic_data() const{
+PoolVector<int> GIProbeData::get_dynamic_data() const{
 
 	return VS::get_singleton()->gi_probe_get_dynamic_data(probe);
 }
@@ -832,7 +832,7 @@ Vector<Color> GIProbe::_get_bake_texture(Image &p_image,const Color& p_color) {
 	p_image.resize(bake_texture_size,bake_texture_size,Image::INTERPOLATE_CUBIC);
 
 
-	DVector<uint8_t>::Read r = p_image.get_data().read();
+	PoolVector<uint8_t>::Read r = p_image.get_data().read();
 	ret.resize(bake_texture_size*bake_texture_size);
 
 	for(int i=0;i<bake_texture_size*bake_texture_size;i++) {
@@ -919,11 +919,11 @@ void GIProbe::_plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_b
 		Array a = p_mesh->surface_get_arrays(i);
 
 
-		DVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
-		DVector<Vector3>::Read vr=vertices.read();
-		DVector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
-		DVector<Vector2>::Read uvr;
-		DVector<int> index = a[Mesh::ARRAY_INDEX];
+		PoolVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vr=vertices.read();
+		PoolVector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
+		PoolVector<Vector2>::Read uvr;
+		PoolVector<int> index = a[Mesh::ARRAY_INDEX];
 
 		bool read_uv=false;
 
@@ -936,7 +936,7 @@ void GIProbe::_plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_b
 		if (index.size()) {
 
 			int facecount = index.size()/3;
-			DVector<int>::Read ir=index.read();
+			PoolVector<int>::Read ir=index.read();
 
 			for(int j=0;j<facecount;j++) {
 
@@ -1090,12 +1090,12 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 
 	//create the data for visual server
 
-	DVector<int> data;
+	PoolVector<int> data;
 
 	data.resize( 16+(8+1+1+1+1)*baker.bake_cells.size() ); //4 for header, rest for rest.
 
 	{
-		DVector<int>::Write w = data.write();
+		PoolVector<int>::Write w = data.write();
 
 		uint32_t * w32 = (uint32_t*)w.ptr();
 
@@ -1247,8 +1247,8 @@ void GIProbe::_create_debug_mesh(Baker *p_baker) {
 		Array arr;
 		arr.resize(Mesh::ARRAY_MAX);
 
-		DVector<Vector3> vertices;
-		DVector<Color> colors;
+		PoolVector<Vector3> vertices;
+		PoolVector<Color> colors;
 
 		int vtx_idx=0;
 	#define ADD_VTX(m_idx);\
@@ -1333,9 +1333,9 @@ AABB GIProbe::get_aabb() const {
 	return AABB(-extents,extents*2);
 }
 
-DVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 void GIProbe::_bind_methods() {

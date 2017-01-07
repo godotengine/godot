@@ -135,7 +135,7 @@ public:
 	virtual Rect2 get_item_rect() const=0;
 
 	virtual AABB get_aabb() const;
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	SpriteBase3D();
 	~SpriteBase3D();

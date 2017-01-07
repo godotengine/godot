@@ -365,8 +365,8 @@ void Image::convert( Format p_new_format ){
 
 //	int len=data.size();
 
-	DVector<uint8_t>::Read r = data.read();
-	DVector<uint8_t>::Write w = new_img.data.write();
+	PoolVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Write w = new_img.data.write();
 
 	const uint8_t *rptr = r.ptr();
 	uint8_t *wptr = w.ptr();
@@ -409,8 +409,8 @@ void Image::convert( Format p_new_format ){
 	}
 
 
-	r = DVector<uint8_t>::Read();
-	w = DVector<uint8_t>::Write();
+	r = PoolVector<uint8_t>::Read();
+	w = PoolVector<uint8_t>::Write();
 
 	bool gen_mipmaps=mipmaps;
 
@@ -651,10 +651,10 @@ void Image::resize( int p_width, int p_height, Interpolation p_interpolation ) {
 
 	Image dst( p_width, p_height, 0, format );
 
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read r = data.read();
 	const unsigned char*r_ptr=r.ptr();
 
-	DVector<uint8_t>::Write w = dst.data.write();
+	PoolVector<uint8_t>::Write w = dst.data.write();
 	unsigned char*w_ptr=w.ptr();
 
 
@@ -693,8 +693,8 @@ void Image::resize( int p_width, int p_height, Interpolation p_interpolation ) {
 
 	}
 
-	r = DVector<uint8_t>::Read();
-	w = DVector<uint8_t>::Write();
+	r = PoolVector<uint8_t>::Read();
+	w = PoolVector<uint8_t>::Write();
 
 	if (mipmaps>0)
 		dst.generate_mipmaps();
@@ -725,8 +725,8 @@ void Image::crop( int p_width, int p_height ) {
 	Image dst( p_width, p_height,0, format );
 
 	{
-		DVector<uint8_t>::Read r = data.read();
-		DVector<uint8_t>::Write w = dst.data.write();
+		PoolVector<uint8_t>::Read r = data.read();
+		PoolVector<uint8_t>::Write w = dst.data.write();
 
 		for (int y=0;y<p_height;y++) {
 
@@ -767,7 +767,7 @@ void Image::flip_y() {
 
 
 	{
-		DVector<uint8_t>::Write w = data.write();
+		PoolVector<uint8_t>::Write w = data.write();
 		uint8_t up[16];
 		uint8_t down[16];
 		uint32_t pixel_size = get_format_pixel_size(format);
@@ -806,7 +806,7 @@ void Image::flip_x() {
 
 
 	{
-		DVector<uint8_t>::Write w = data.write();
+		PoolVector<uint8_t>::Write w = data.write();
 		uint8_t up[16];
 		uint8_t down[16];
 		uint32_t pixel_size = get_format_pixel_size(format);
@@ -925,12 +925,12 @@ void Image::expand_x2_hq2x() {
 	if (current!=FORMAT_RGBA8)
 		convert(FORMAT_RGBA8);
 
-	DVector<uint8_t> dest;
+	PoolVector<uint8_t> dest;
 	dest.resize(width*2*height*2*4);
 
 	{
-		DVector<uint8_t>::Read r = data.read();
-		DVector<uint8_t>::Write w = dest.write();
+		PoolVector<uint8_t>::Read r = data.read();
+		PoolVector<uint8_t>::Write w = dest.write();
 
 		hq2x_resize((const uint32_t*)r.ptr(),width,height,(uint32_t*)w.ptr());
 
@@ -959,7 +959,7 @@ void Image::shrink_x2() {
 	if (mipmaps) {
 
 		//just use the lower mipmap as base and copy all
-		DVector<uint8_t> new_img;
+		PoolVector<uint8_t> new_img;
 
 		int ofs = get_mipmap_offset(1);
 
@@ -968,8 +968,8 @@ void Image::shrink_x2() {
 
 
 		{
-			DVector<uint8_t>::Write w=new_img.write();
-			DVector<uint8_t>::Read r=data.read();
+			PoolVector<uint8_t>::Write w=new_img.write();
+			PoolVector<uint8_t>::Read r=data.read();
 
 			copymem(w.ptr(),&r[ofs],new_size);
 		}
@@ -980,15 +980,15 @@ void Image::shrink_x2() {
 
 	} else {
 
-		DVector<uint8_t> new_img;
+		PoolVector<uint8_t> new_img;
 
 		ERR_FAIL_COND( !_can_modify(format) );
 		int ps = get_format_pixel_size(format);
 		new_img.resize((width/2)*(height/2)*ps);
 
 		{
-			DVector<uint8_t>::Write w=new_img.write();
-			DVector<uint8_t>::Read r=data.read();
+			PoolVector<uint8_t>::Write w=new_img.write();
+			PoolVector<uint8_t>::Read r=data.read();
 
 			switch(format) {
 
@@ -1027,7 +1027,7 @@ Error Image::generate_mipmaps(bool p_keep_existing)  {
 
 	data.resize(size);
 
-	DVector<uint8_t>::Write wp=data.write();
+	PoolVector<uint8_t>::Write wp=data.write();
 
 	if (nearest_power_of_2(width)==uint32_t(width) && nearest_power_of_2(height)==uint32_t(height)) {
 		//use fast code for powers of 2
@@ -1122,7 +1122,7 @@ bool Image::empty() const {
 	return (data.size()==0);
 }
 
-DVector<uint8_t> Image::get_data() const {
+PoolVector<uint8_t> Image::get_data() const {
 
 	return data;
 }
@@ -1134,7 +1134,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps,Format p_format
 	int size = _get_dst_image_size(p_width,p_height,p_format,mm,p_use_mipmaps?-1:0);
 	data.resize( size );
 	{
-		DVector<uint8_t>::Write w= data.write();
+		PoolVector<uint8_t>::Write w= data.write();
 		zeromem(w.ptr(),size);
 	}
 
@@ -1146,7 +1146,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps,Format p_format
 
 }
 
-void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const DVector<uint8_t>& p_data) {
+void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const PoolVector<uint8_t>& p_data) {
 
 	ERR_FAIL_INDEX(p_width-1,MAX_WIDTH);
 	ERR_FAIL_INDEX(p_height-1,MAX_HEIGHT);
@@ -1188,7 +1188,7 @@ void Image::create( const char ** p_xpm ) {
 	HashMap<String,Color> colormap;
 	int colormap_size;
 	uint32_t pixel_size;
-	DVector<uint8_t>::Write w;
+	PoolVector<uint8_t>::Write w;
 
 	while (status!=DONE) {
 
@@ -1355,7 +1355,7 @@ bool Image::is_invisible() const {
 	int w,h;
 	_get_mipmap_offset_and_size(1,len,w,h);
 
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read r = data.read();
 	const unsigned char *data_ptr=r.ptr();
 
 	bool detected=false;
@@ -1401,7 +1401,7 @@ Image::AlphaMode Image::detect_alpha() const {
 	int w,h;
 	_get_mipmap_offset_and_size(1,len,w,h);
 
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read r = data.read();
 	const unsigned char *data_ptr=r.ptr();
 
 	bool bit=false;
@@ -1459,8 +1459,8 @@ bool Image::operator==(const Image& p_image) const {
 
 	if (data.size() == 0 && p_image.data.size() == 0)
 		return true;
-	DVector<uint8_t>::Read r = data.read();
-	DVector<uint8_t>::Read pr = p_image.data.read();
+	PoolVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read pr = p_image.data.read();
 
 	return r.ptr() == pr.ptr();
 }
@@ -1502,11 +1502,11 @@ Error Image::_decompress_bc() {
 	int mm;
 	int size = _get_dst_image_size(wd,ht,FORMAT_RGBA8,mm);
 
-	DVector<uint8_t> newdata;
+	PoolVector<uint8_t> newdata;
 	newdata.resize(size);
 
-	DVector<uint8_t>::Write w = newdata.write();
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Write w = newdata.write();
+	PoolVector<uint8_t>::Read r = data.read();
 
 	int rofs=0;
 	int wofs=0;
@@ -1814,8 +1814,8 @@ Error Image::_decompress_bc() {
 
 	}
 
-	w=DVector<uint8_t>::Write();
-	r=DVector<uint8_t>::Read();
+	w=PoolVector<uint8_t>::Write();
+	r=PoolVector<uint8_t>::Read();
 
 	data=newdata;
 	format=FORMAT_RGBA8;
@@ -1927,7 +1927,7 @@ Image::Image(int p_width, int p_height,bool p_use_mipmaps, Format p_format) {
 
 }
 
-Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const DVector<uint8_t>& p_data) {
+Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const PoolVector<uint8_t>& p_data) {
 
 	width=0;
 	height=0;
@@ -1950,7 +1950,7 @@ Rect2 Image::get_used_rect() const {
 		return Rect2();
 
 	//int data_size = len;
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read r = data.read();
 	const unsigned char *rptr=r.ptr();
 
 	int ps = format==FORMAT_LA8?2:4;
@@ -2005,10 +2005,10 @@ void Image::blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& 
 		return;
 	Rect2i src_rect( p_src_rect.pos + ( local_src_rect.pos - p_dest), local_src_rect.size );
 
-	DVector<uint8_t>::Write wp = data.write();
+	PoolVector<uint8_t>::Write wp = data.write();
 	uint8_t *dst_data_ptr=wp.ptr();
 
-	DVector<uint8_t>::Read rp = p_src.data.read();
+	PoolVector<uint8_t>::Read rp = p_src.data.read();
 	const uint8_t *src_data_ptr=rp.ptr();
 
 	int pixel_size=get_format_pixel_size(format);
@@ -2049,10 +2049,10 @@ void (*Image::_image_decompress_bc)(Image *)=NULL;
 void (*Image::_image_decompress_etc)(Image *)=NULL;
 void (*Image::_image_decompress_etc2)(Image *)=NULL;
 
-DVector<uint8_t> (*Image::lossy_packer)(const Image& ,float )=NULL;
-Image (*Image::lossy_unpacker)(const DVector<uint8_t>& )=NULL;
-DVector<uint8_t> (*Image::lossless_packer)(const Image& )=NULL;
-Image (*Image::lossless_unpacker)(const DVector<uint8_t>& )=NULL;
+PoolVector<uint8_t> (*Image::lossy_packer)(const Image& ,float )=NULL;
+Image (*Image::lossy_unpacker)(const PoolVector<uint8_t>& )=NULL;
+PoolVector<uint8_t> (*Image::lossless_packer)(const Image& )=NULL;
+Image (*Image::lossless_unpacker)(const PoolVector<uint8_t>& )=NULL;
 
 void Image::set_compress_bc_func(void (*p_compress_func)(Image *)) {
 
@@ -2067,7 +2067,7 @@ void Image::normalmap_to_xy() {
 
 	{
 		int len = data.size()/4;
-		DVector<uint8_t>::Write wp = data.write();
+		PoolVector<uint8_t>::Write wp = data.write();
 		unsigned char *data_ptr=wp.ptr();
 
 		for(int i=0;i<len;i++) {
@@ -2094,7 +2094,7 @@ void Image::srgb_to_linear() {
 	if (format==FORMAT_RGBA8) {
 
 		int len = data.size()/4;
-		DVector<uint8_t>::Write wp = data.write();
+		PoolVector<uint8_t>::Write wp = data.write();
 		unsigned char *data_ptr=wp.ptr();
 
 		for(int i=0;i<len;i++) {
@@ -2107,7 +2107,7 @@ void Image::srgb_to_linear() {
 	} else if (format==FORMAT_RGB8) {
 
 		int len = data.size()/3;
-		DVector<uint8_t>::Write wp = data.write();
+		PoolVector<uint8_t>::Write wp = data.write();
 		unsigned char *data_ptr=wp.ptr();
 
 		for(int i=0;i<len;i++) {
@@ -2128,7 +2128,7 @@ void Image::premultiply_alpha() {
 	if (format!=FORMAT_RGBA8)
 		return; //not needed
 
-	DVector<uint8_t>::Write wp = data.write();
+	PoolVector<uint8_t>::Write wp = data.write();
 	unsigned char *data_ptr=wp.ptr();
 
 
@@ -2152,11 +2152,11 @@ void Image::fix_alpha_edges() {
 	if (format!=FORMAT_RGBA8)
 		return; //not needed
 
-	DVector<uint8_t> dcopy = data;
-	DVector<uint8_t>::Read rp = data.read();
+	PoolVector<uint8_t> dcopy = data;
+	PoolVector<uint8_t>::Read rp = data.read();
 	const uint8_t *srcptr=rp.ptr();
 
-	DVector<uint8_t>::Write wp = data.write();
+	PoolVector<uint8_t>::Write wp = data.write();
 	unsigned char *data_ptr=wp.ptr();
 
 	const int max_radius=4;

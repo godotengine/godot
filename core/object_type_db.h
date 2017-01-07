@@ -156,7 +156,7 @@ public:
 		return memnew( T );
 	}
 
-	static Mutex *lock;
+	static RWLock *lock;
 	static HashMap<StringName,ClassInfo,StringNameHasher> classes;
 	static HashMap<StringName,StringName,StringNameHasher> resource_base_extensions;
 	static HashMap<StringName,StringName,StringNameHasher> compat_classes;

@@ -151,7 +151,7 @@ private:
 	Point2 emissor_offset;
 	Vector2 initial_velocity;
 	Vector2 extents;
-	DVector<Vector2> emission_points;
+	PoolVector<Vector2> emission_points;
 
 	float time;
 	int active_count;
@@ -245,8 +245,8 @@ public:
 	void set_initial_velocity(const Vector2& p_velocity);
 	Vector2 get_initial_velocity() const;
 
-	void set_emission_points(const DVector<Vector2>& p_points);
-	DVector<Vector2> get_emission_points() const;
+	void set_emission_points(const PoolVector<Vector2>& p_points);
+	PoolVector<Vector2> get_emission_points() const;
 
 	void pre_process(float p_delta);
 	void reset();

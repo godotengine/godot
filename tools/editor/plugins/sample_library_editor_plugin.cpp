@@ -66,7 +66,7 @@ void SampleLibraryEditor::_notification(int p_what) {
 	}
 }
 
-void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
+void SampleLibraryEditor::_file_load_request(const PoolVector<String>& p_path) {
 
 
 	for(int i=0;i<p_path.size();i++) {
@@ -400,7 +400,7 @@ void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_da
 
 	if (String(d["type"])=="files") {
 
-		DVector<String> files = d["files"];
+		PoolVector<String> files = d["files"];
 
 		_file_load_request(files);
 

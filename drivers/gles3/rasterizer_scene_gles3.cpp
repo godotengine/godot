@@ -4596,10 +4596,10 @@ void RasterizerSceneGLES3::_generate_brdf() {
 
 
 
-	DVector<uint8_t> brdf;
+	PoolVector<uint8_t> brdf;
 	brdf.resize(brdf_size*brdf_size*2);
 
-	DVector<uint8_t>::Write w = brdf.write();
+	PoolVector<uint8_t>::Write w = brdf.write();
 
 
 	for(int i=0;i<brdf_size;i++) {

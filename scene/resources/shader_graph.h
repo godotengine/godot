@@ -326,12 +326,12 @@ public:
 	void vec_func_node_set_function(ShaderType p_which,int p_id,VecFunc p_func);
 	VecFunc vec_func_node_get_function(ShaderType p_which,int p_id) const;
 
-	void color_ramp_node_set_ramp(ShaderType p_which,int p_id,const DVector<Color>& p_colors, const DVector<real_t>& p_offsets);
-	DVector<Color> color_ramp_node_get_colors(ShaderType p_which,int p_id) const;
-	DVector<real_t> color_ramp_node_get_offsets(ShaderType p_which,int p_id) const;
+	void color_ramp_node_set_ramp(ShaderType p_which,int p_id,const PoolVector<Color>& p_colors, const PoolVector<real_t>& p_offsets);
+	PoolVector<Color> color_ramp_node_get_colors(ShaderType p_which,int p_id) const;
+	PoolVector<real_t> color_ramp_node_get_offsets(ShaderType p_which,int p_id) const;
 
-	void curve_map_node_set_points(ShaderType p_which, int p_id, const DVector<Vector2>& p_points);
-	DVector<Vector2> curve_map_node_get_points(ShaderType p_which,int p_id) const;
+	void curve_map_node_set_points(ShaderType p_which, int p_id, const PoolVector<Vector2>& p_points);
+	PoolVector<Vector2> curve_map_node_get_points(ShaderType p_which,int p_id) const;
 
 	void input_node_set_name(ShaderType p_which,int p_id,const String& p_name);
 	String input_node_get_name(ShaderType p_which,int p_id);

@@ -53,7 +53,7 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 			cache.buffer.resize(p_size);
 
 			// on dvector
-			//DVector<uint8_t>::Write write = cache.buffer.write();
+			//PoolVector<uint8_t>::Write write = cache.buffer.write();
 			//f.get_buffer(write.ptr(), p_size);
 
 			// on vector

@@ -143,10 +143,10 @@ MaterialEditor::MaterialEditor() {
 		int lons=32;
 		float radius=1.0;
 
-		DVector<Vector3> vertices;
-		DVector<Vector3> normals;
-		DVector<Vector2> uvs;
-		DVector<float> tangents;
+		PoolVector<Vector3> vertices;
+		PoolVector<Vector3> normals;
+		PoolVector<Vector2> uvs;
+		PoolVector<float> tangents;
 		Matrix3 tt = Matrix3(Vector3(0,1,0),Math_PI*0.5);
 
 		for(int i = 1; i <= lats; i++) {
@@ -221,10 +221,10 @@ MaterialEditor::MaterialEditor() {
 
 		box_mesh.instance();
 
-		DVector<Vector3> vertices;
-		DVector<Vector3> normals;
-		DVector<float> tangents;
-		DVector<Vector3> uvs;
+		PoolVector<Vector3> vertices;
+		PoolVector<Vector3> normals;
+		PoolVector<float> tangents;
+		PoolVector<Vector3> uvs;
 
 		int vtx_idx=0;
 	#define ADD_VTX(m_idx);\
@@ -282,7 +282,7 @@ MaterialEditor::MaterialEditor() {
 		d[VisualServer::ARRAY_TEX_UV]= uvs ;
 		d[VisualServer::ARRAY_VERTEX]= vertices ;
 
-		DVector<int> indices;
+		PoolVector<int> indices;
 		indices.resize(vertices.size());
 		for(int i=0;i<vertices.size();i++)
 			indices.set(i,i);

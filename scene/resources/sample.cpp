@@ -119,18 +119,18 @@ int Sample::get_length() const {
 	return length;
 }
 
-void Sample::set_data(const DVector<uint8_t>& p_buffer) {
+void Sample::set_data(const PoolVector<uint8_t>& p_buffer) {
 
 	if (sample.is_valid())
 		AudioServer::get_singleton()->sample_set_data(sample,p_buffer);
 
 }
-DVector<uint8_t> Sample::get_data() const {
+PoolVector<uint8_t> Sample::get_data() const {
 
 	if (sample.is_valid())
 		return AudioServer::get_singleton()->sample_get_data(sample);
 
-	return DVector<uint8_t>();
+	return PoolVector<uint8_t>();
 
 }
 

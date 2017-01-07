@@ -123,14 +123,14 @@ public:
 
 	Error _decompress_bc();
 
-	static DVector<uint8_t> (*lossy_packer)(const Image& p_image,float p_quality);
-	static Image (*lossy_unpacker)(const DVector<uint8_t>& p_buffer);
-	static DVector<uint8_t> (*lossless_packer)(const Image& p_image);
-	static Image (*lossless_unpacker)(const DVector<uint8_t>& p_buffer);
+	static PoolVector<uint8_t> (*lossy_packer)(const Image& p_image,float p_quality);
+	static Image (*lossy_unpacker)(const PoolVector<uint8_t>& p_buffer);
+	static PoolVector<uint8_t> (*lossless_packer)(const Image& p_image);
+	static Image (*lossless_unpacker)(const PoolVector<uint8_t>& p_buffer);
 private:
 
 	Format format;
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	int width,height;
 	bool mipmaps;
 
@@ -206,7 +206,7 @@ public:
 	 * Create a new image of a given size and format. Current image will be lost
 	 */
 	void create(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
-	void create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const DVector<uint8_t>& p_data);
+	void create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const PoolVector<uint8_t>& p_data);
 
 	void create( const char ** p_xpm );
 	/**
@@ -214,7 +214,7 @@ public:
 	 */
 	bool empty() const;
 
-	DVector<uint8_t> get_data() const;
+	PoolVector<uint8_t> get_data() const;
 
 	Error load(const String& p_path);
 	Error save_png(const String& p_path);
@@ -230,7 +230,7 @@ public:
 	/**
 	 * import an image of a specific size and format from a pointer
 	 */
-	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const DVector<uint8_t>& p_data);
+	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const PoolVector<uint8_t>& p_data);
 
 	enum AlphaMode {
 		ALPHA_NONE,

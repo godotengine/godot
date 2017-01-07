@@ -321,8 +321,8 @@ protected:
 
 	static EditorImportExport* singleton;
 
-	DVector<String> _get_export_file_list();
-	DVector<String> _get_export_platforms();
+	PoolVector<String> _get_export_file_list();
+	PoolVector<String> _get_export_platforms();
 
 	static void _bind_methods();
 public:

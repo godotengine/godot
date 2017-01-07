@@ -118,12 +118,12 @@ Ref<Texture> EditorBitmapPreviewPlugin::generate(const RES& p_from) {
 		return Ref<Texture>();
 	}
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 
 	data.resize(bm->get_size().width*bm->get_size().height);
 
 	{
-		DVector<uint8_t>::Write w=data.write();
+		PoolVector<uint8_t>::Write w=data.write();
 
 		for(int i=0;i<bm->get_size().width;i++) {
 			for(int j=0;j<bm->get_size().height;j++) {
@@ -193,14 +193,14 @@ Ref<Texture> EditorPackedScenePreviewPlugin::_gen_from_imd(Ref<ResourceImportMet
 
 	Variant tn = p_imd->get_option("thumbnail");
 	//print_line(Variant::get_type_name(tn.get_type()));
-	DVector<uint8_t> thumbnail = tn;
+	PoolVector<uint8_t> thumbnail = tn;
 
 	int len = thumbnail.size();
 	if (len==0)
 		return Ref<Texture>();
 
 
-	DVector<uint8_t>::Read r = thumbnail.read();
+	PoolVector<uint8_t>::Read r = thumbnail.read();
 
 	Image img(r.ptr(),len);
 	if (img.empty())
@@ -311,10 +311,10 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	int lons=32;
 	float radius=1.0;
 
-	DVector<Vector3> vertices;
-	DVector<Vector3> normals;
-	DVector<Vector2> uvs;
-	DVector<float> tangents;
+	PoolVector<Vector3> vertices;
+	PoolVector<Vector3> normals;
+	PoolVector<Vector2> uvs;
+	PoolVector<float> tangents;
 	Matrix3 tt = Matrix3(Vector3(0,1,0),Math_PI*0.5);
 
 	for(int i = 1; i <= lats; i++) {
@@ -535,15 +535,15 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 
 	int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 	thumbnail_size*=EDSCALE;
-	DVector<uint8_t> img;
+	PoolVector<uint8_t> img;
 	int w = thumbnail_size;
 	int h = thumbnail_size;
 	img.resize(w*h*3);
 
-	DVector<uint8_t>::Write imgdata = img.write();
+	PoolVector<uint8_t>::Write imgdata = img.write();
 	uint8_t * imgw = imgdata.ptr();
-	DVector<uint8_t> data = smp->get_data();
-	DVector<uint8_t>::Read sampledata = data.read();
+	PoolVector<uint8_t> data = smp->get_data();
+	PoolVector<uint8_t>::Read sampledata = data.read();
 	const uint8_t *sdata=sampledata.ptr();
 
 	bool stereo = smp->is_stereo();
@@ -776,7 +776,7 @@ Ref<Texture> EditorSamplePreviewPlugin::generate(const RES& p_from) {
 		}
 	}
 
-	imgdata = DVector<uint8_t>::Write();
+	imgdata = PoolVector<uint8_t>::Write();
 
 	Ref<ImageTexture> ptex = Ref<ImageTexture>( memnew( ImageTexture));
 	ptex->create_from_image(Image(w,h,0,Image::FORMAT_RGB8,img),0);

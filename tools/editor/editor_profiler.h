@@ -73,7 +73,7 @@ private:
 	Button *activate;
 	TextureFrame *graph;
 	Ref<ImageTexture> graph_texture;
-	DVector<uint8_t> graph_image;
+	PoolVector<uint8_t> graph_image;
 	Tree *variables;
 	HSplitContainer *h_split;
 

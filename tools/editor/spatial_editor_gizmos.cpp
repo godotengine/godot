@@ -117,10 +117,10 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 
 	a[Mesh::ARRAY_VERTEX]=p_lines;
 
-	DVector<Color> color;
+	PoolVector<Color> color;
 	color.resize(p_lines.size());
 	{
-		DVector<Color>::Write w = color.write();
+		PoolVector<Color>::Write w = color.write();
 		for(int i=0;i<p_lines.size();i++) {
 			if (is_selected())
 				w[i]=Color(1,1,1,0.6);
@@ -246,10 +246,10 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 	a.resize(VS::ARRAY_MAX);
 	a[VS::ARRAY_VERTEX]=p_handles;
 	print_line("handles?: "+itos(p_handles.size()));
-	DVector<Color> colors;
+	PoolVector<Color> colors;
 	{
 		colors.resize(p_handles.size());
-		DVector<Color>::Write w=colors.write();
+		PoolVector<Color>::Write w=colors.write();
 		for(int i=0;i<p_handles.size();i++) {
 
 			Color col(1,1,1,1);
@@ -1425,11 +1425,11 @@ void RoomSpatialGizmo::redraw() {
 	Ref<RoomBounds> roomie = room->get_room();
 	if (roomie.is_null())
 		return;
-	DVector<Face3> faces = roomie->get_geometry_hint();
+	PoolVector<Face3> faces = roomie->get_geometry_hint();
 
 	Vector<Vector3> lines;
 	int fc=faces.size();
-	DVector<Face3>::Read r =faces.read();
+	PoolVector<Face3>::Read r =faces.read();
 
 	Map<_EdgeKey,Vector3> edge_map;
 
@@ -2056,7 +2056,7 @@ void CollisionShapeSpatialGizmo::redraw(){
 
 	if (s->cast_to<ConvexPolygonShape>()) {
 
-		DVector<Vector3> points = s->cast_to<ConvexPolygonShape>()->get_points();
+		PoolVector<Vector3> points = s->cast_to<ConvexPolygonShape>()->get_points();
 
 		if (points.size()>3) {
 
@@ -2562,8 +2562,8 @@ void NavigationMeshSpatialGizmo::redraw() {
 	if (navmeshie.is_null())
 		return;
 
-	DVector<Vector3> vertices = navmeshie->get_vertices();
-	DVector<Vector3>::Read vr=vertices.read();
+	PoolVector<Vector3> vertices = navmeshie->get_vertices();
+	PoolVector<Vector3>::Read vr=vertices.read();
 	List<Face3> faces;
 	for(int i=0;i<navmeshie->get_polygon_count();i++) {
 		Vector<int> p = navmeshie->get_polygon(i);
@@ -2582,11 +2582,11 @@ void NavigationMeshSpatialGizmo::redraw() {
 		return;
 
 	Map<_EdgeKey,bool> edge_map;
-	DVector<Vector3> tmeshfaces;
+	PoolVector<Vector3> tmeshfaces;
 	tmeshfaces.resize(faces.size()*3);
 
 	{
-		DVector<Vector3>::Write tw=tmeshfaces.write();
+		PoolVector<Vector3>::Write tw=tmeshfaces.write();
 		int tidx=0;
 
 
@@ -3391,8 +3391,8 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	pos3d_mesh = Ref<Mesh>( memnew( Mesh ) );
 	{
 
-		DVector<Vector3> cursor_points;
-		DVector<Color> cursor_colors;
+		PoolVector<Vector3> cursor_points;
+		PoolVector<Color> cursor_colors;
 		float cs = 0.25;
 		cursor_points.push_back(Vector3(+cs,0,0));
 		cursor_points.push_back(Vector3(-cs,0,0));
@@ -3424,8 +3424,8 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	listener_line_mesh = Ref<Mesh>(memnew(Mesh));
 	{
 
-		DVector<Vector3> cursor_points;
-		DVector<Color> cursor_colors;
+		PoolVector<Vector3> cursor_points;
+		PoolVector<Color> cursor_colors;
 		cursor_points.push_back(Vector3(0, 0, 0));
 		cursor_points.push_back(Vector3(0, 0, -1.0));
 		cursor_colors.push_back(Color(0.5, 0.5, 0.5, 0.7));
@@ -3491,7 +3491,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 
 	{
 
-		DVector<Vector3> vertices;
+		PoolVector<Vector3> vertices;
 
 #undef ADD_VTX
 #define ADD_VTX(m_idx);\

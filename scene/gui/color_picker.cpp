@@ -170,11 +170,11 @@ void ColorPicker::_update_presets()
 	Size2 size=bt_add_preset->get_size();
 	preset->set_custom_minimum_size(Size2(size.width*presets.size(),size.height));
 
-	DVector<uint8_t> img;
+	PoolVector<uint8_t> img;
 	img.resize(size.x*presets.size()*size.y*3);
 
 	{
-		DVector<uint8_t>::Write w=img.write();
+		PoolVector<uint8_t>::Write w=img.write();
 		for (int y=0;y<size.y;y++) {
 			for (int x=0;x<size.x*presets.size();x++) {
 				int ofs = (y*(size.x*presets.size())+x)*3;
@@ -421,7 +421,7 @@ void ColorPicker::_screen_input(const InputEvent &ev)
 			int pw = last_capture.get_format()==Image::FORMAT_RGBA8?4:3;
 			int ofs = (mev.global_y*last_capture.get_width()+mev.global_x)*pw;
 
-			DVector<uint8_t>::Read r = last_capture.get_data().read();
+			PoolVector<uint8_t>::Read r = last_capture.get_data().read();
 
 			Color c( r[ofs+0]/255.0, r[ofs+1]/255.0, r[ofs+2]/255.0 );
 

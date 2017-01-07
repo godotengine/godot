@@ -77,7 +77,7 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 	Transform geom_xform = node->get_global_transform().affine_inverse() * vi->get_global_transform();
 
 	int gc = geometry.size();
-	DVector<Face3>::Write w = geometry.write();
+	PoolVector<Face3>::Write w = geometry.write();
 
 
 	for(int i=0;i<gc;i++) {
@@ -87,7 +87,7 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 	}
 
 
-	w = DVector<Face3>::Write();
+	w = PoolVector<Face3>::Write();
 
 	emission_dialog->popup_centered(Size2(300,130));
 }
@@ -202,7 +202,7 @@ void ParticlesEditor::edit(Particles *p_particles) {
 void ParticlesEditor::_generate_emission_points() {
 
 	/// hacer codigo aca
-	DVector<Vector3> points;
+	PoolVector<Vector3> points;
 
 	if (emission_fill->get_selected()==0) {
 
@@ -256,7 +256,7 @@ void ParticlesEditor::_generate_emission_points() {
 			return;
 		}
 
-		DVector<Face3>::Read r = geometry.read();
+		PoolVector<Face3>::Read r = geometry.read();
 
 		AABB aabb;
 

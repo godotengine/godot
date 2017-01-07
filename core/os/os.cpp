@@ -371,7 +371,7 @@ int OS::get_static_memory_usage() const {
 }
 int OS::get_dynamic_memory_usage() const{
 
-	return Memory::get_dynamic_mem_usage();
+	return MemoryPool::total_memory;
 }
 
 int OS::get_static_memory_peak_usage() const {

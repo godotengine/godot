@@ -262,9 +262,9 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 			case Mesh::ARRAY_FORMAT_VERTEX:
 			case Mesh::ARRAY_FORMAT_NORMAL: {
 
-				DVector<Vector3> array;
+				PoolVector<Vector3> array;
 				array.resize(varr_len);
-				DVector<Vector3>::Write w = array.write();
+				PoolVector<Vector3>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx++) {
@@ -282,7 +282,7 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 				}
 
-				w=DVector<Vector3>::Write();
+				w=PoolVector<Vector3>::Write();
 				a[i]=array;
 
 			} break;
@@ -290,9 +290,9 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 			case Mesh::ARRAY_FORMAT_TEX_UV:
 			case Mesh::ARRAY_FORMAT_TEX_UV2: {
 
-				DVector<Vector2> array;
+				PoolVector<Vector2> array;
 				array.resize(varr_len);
-				DVector<Vector2>::Write w = array.write();
+				PoolVector<Vector2>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx++) {
@@ -311,15 +311,15 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 				}
 
-				w=DVector<Vector2>::Write();
+				w=PoolVector<Vector2>::Write();
 				a[i]=array;
 			} break;
 			case Mesh::ARRAY_FORMAT_TANGENT: {
 
 
-				DVector<float> array;
+				PoolVector<float> array;
 				array.resize(varr_len*4);
-				DVector<float>::Write w = array.write();
+				PoolVector<float>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx+=4) {
@@ -335,15 +335,15 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 					w[idx+3]=d<0 ? -1 : 1;
 				}
 
-				w=DVector<float>::Write();
+				w=PoolVector<float>::Write();
 				a[i]=array;
 
 			} break;
 			case Mesh::ARRAY_FORMAT_COLOR:  {
 
-				DVector<Color> array;
+				PoolVector<Color> array;
 				array.resize(varr_len);
-				DVector<Color>::Write w = array.write();
+				PoolVector<Color>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx++) {
@@ -352,15 +352,15 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 					w[idx]=v.color;
 				}
 
-				w=DVector<Color>::Write();
+				w=PoolVector<Color>::Write();
 				a[i]=array;
 			} break;
 			case Mesh::ARRAY_FORMAT_BONES: {
 
 
-				DVector<int> array;
+				PoolVector<int> array;
 				array.resize(varr_len*4);
-				DVector<int>::Write w = array.write();
+				PoolVector<int>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx+=4) {
@@ -375,16 +375,16 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 				}
 
-				w=DVector<int>::Write();
+				w=PoolVector<int>::Write();
 				a[i]=array;
 
 			} break;
 			case Mesh::ARRAY_FORMAT_WEIGHTS: {
 
 
-				DVector<float> array;
+				PoolVector<float> array;
 				array.resize(varr_len*4);
-				DVector<float>::Write w = array.write();
+				PoolVector<float>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx+=4) {
@@ -399,7 +399,7 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 				}
 
-				w=DVector<float>::Write();
+				w=PoolVector<float>::Write();
 				a[i]=array;
 
 			} break;
@@ -407,9 +407,9 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 				ERR_CONTINUE( index_array.size() ==0 );
 
-				DVector<int> array;
+				PoolVector<int> array;
 				array.resize(index_array.size());
-				DVector<int>::Write w = array.write();
+				PoolVector<int>::Write w = array.write();
 
 				int idx=0;
 				for(List< int>::Element *E=index_array.front();E;E=E->next(),idx++) {
@@ -417,7 +417,7 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 					w[idx]=E->get();
 				}
 
-				w=DVector<int>::Write();
+				w=PoolVector<int>::Write();
 				a[i]=array;
 			} break;
 
@@ -490,14 +490,14 @@ void SurfaceTool::_create_list(const Ref<Mesh>& p_existing, int p_surface, List<
 	Array arr = p_existing->surface_get_arrays(p_surface);
 	ERR_FAIL_COND( arr.size() !=VS::ARRAY_MAX );
 
-	DVector<Vector3> varr = arr[VS::ARRAY_VERTEX];
-	DVector<Vector3> narr = arr[VS::ARRAY_NORMAL];
-	DVector<float> tarr = arr[VS::ARRAY_TANGENT];
-	DVector<Color> carr = arr[VS::ARRAY_COLOR];
-	DVector<Vector2> uvarr = arr[VS::ARRAY_TEX_UV];
-	DVector<Vector2> uv2arr = arr[VS::ARRAY_TEX_UV2];
-	DVector<int> barr = arr[VS::ARRAY_BONES];
-	DVector<float> warr = arr[VS::ARRAY_WEIGHTS];
+	PoolVector<Vector3> varr = arr[VS::ARRAY_VERTEX];
+	PoolVector<Vector3> narr = arr[VS::ARRAY_NORMAL];
+	PoolVector<float> tarr = arr[VS::ARRAY_TANGENT];
+	PoolVector<Color> carr = arr[VS::ARRAY_COLOR];
+	PoolVector<Vector2> uvarr = arr[VS::ARRAY_TEX_UV];
+	PoolVector<Vector2> uv2arr = arr[VS::ARRAY_TEX_UV2];
+	PoolVector<int> barr = arr[VS::ARRAY_BONES];
+	PoolVector<float> warr = arr[VS::ARRAY_WEIGHTS];
 
 	int vc = varr.size();
 
@@ -505,46 +505,46 @@ void SurfaceTool::_create_list(const Ref<Mesh>& p_existing, int p_surface, List<
 		return;
 	lformat=0;
 
-	DVector<Vector3>::Read rv;
+	PoolVector<Vector3>::Read rv;
 	if (varr.size()) {
 		lformat|=VS::ARRAY_FORMAT_VERTEX;
 		rv=varr.read();
 	}
-	DVector<Vector3>::Read rn;
+	PoolVector<Vector3>::Read rn;
 	if (narr.size()) {
 		lformat|=VS::ARRAY_FORMAT_NORMAL;
 		rn=narr.read();
 	}
-	DVector<float>::Read rt;
+	PoolVector<float>::Read rt;
 	if (tarr.size()) {
 		lformat|=VS::ARRAY_FORMAT_TANGENT;
 		rt=tarr.read();
 	}
-	DVector<Color>::Read rc;
+	PoolVector<Color>::Read rc;
 	if (carr.size()) {
 		lformat|=VS::ARRAY_FORMAT_COLOR;
 		rc=carr.read();
 	}
 
-	DVector<Vector2>::Read ruv;
+	PoolVector<Vector2>::Read ruv;
 	if (uvarr.size()) {
 		lformat|=VS::ARRAY_FORMAT_TEX_UV;
 		ruv=uvarr.read();
 	}
 
-	DVector<Vector2>::Read ruv2;
+	PoolVector<Vector2>::Read ruv2;
 	if (uv2arr.size()) {
 		lformat|=VS::ARRAY_FORMAT_TEX_UV2;
 		ruv2=uv2arr.read();
 	}
 
-	DVector<int>::Read rb;
+	PoolVector<int>::Read rb;
 	if (barr.size()) {
 		lformat|=VS::ARRAY_FORMAT_BONES;
 		rb=barr.read();
 	}
 
-	DVector<float>::Read rw;
+	PoolVector<float>::Read rw;
 	if (warr.size()) {
 		lformat|=VS::ARRAY_FORMAT_WEIGHTS;
 		rw=warr.read();
@@ -592,12 +592,12 @@ void SurfaceTool::_create_list(const Ref<Mesh>& p_existing, int p_surface, List<
 
 	//indices
 
-	DVector<int> idx= arr[VS::ARRAY_INDEX];
+	PoolVector<int> idx= arr[VS::ARRAY_INDEX];
 	int is = idx.size();
 	if (is) {
 
 		lformat|=VS::ARRAY_FORMAT_INDEX;
-		DVector<int>::Read iarr=idx.read();
+		PoolVector<int>::Read iarr=idx.read();
 		for(int i=0;i<is;i++) {
 			r_index->push_back(iarr[i]);
 		}

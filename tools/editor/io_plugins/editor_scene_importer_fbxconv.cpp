@@ -336,7 +336,7 @@ void EditorSceneImporterFBXConv::_add_surface(State& state,Ref<Mesh>& m,const Di
 		int idx = m->get_surface_count();
 
 		Array array = state.surface_cache[id].array;
-		DVector<float> indices = array[Mesh::ARRAY_BONES];
+		PoolVector<float> indices = array[Mesh::ARRAY_BONES];
 		if (indices.size() && part.has("bones")) {
 
 
@@ -361,7 +361,7 @@ void EditorSceneImporterFBXConv::_add_surface(State& state,Ref<Mesh>& m,const Di
 
 			int ilen=indices.size();
 			{
-				DVector<float>::Write iw=indices.write();
+				PoolVector<float>::Write iw=indices.write();
 				for(int j=0;j<ilen;j++) {
 					int b = iw[j];
 					ERR_CONTINUE(!index_map.has(b));
@@ -680,11 +680,11 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					case Mesh::ARRAY_VERTEX:
 					case Mesh::ARRAY_NORMAL: {
 
-						DVector<Vector3> vtx;
+						PoolVector<Vector3> vtx;
 						vtx.resize(array.size());
 						{
 							int len=array.size();
-							DVector<Vector3>::Write w = vtx.write();
+							PoolVector<Vector3>::Write w = vtx.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -701,12 +701,12 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 						if (binormal_ofs<0)
 							break;
 
-						DVector<float> tangents;
+						PoolVector<float> tangents;
 						tangents.resize(array.size()*4);
 						{
 							int len=array.size();
 
-							DVector<float>::Write w = tangents.write();
+							PoolVector<float>::Write w = tangents.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -736,11 +736,11 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					} break;
 					case Mesh::ARRAY_COLOR: {
 
-						DVector<Color> cols;
+						PoolVector<Color> cols;
 						cols.resize(array.size());
 						{
 							int len=array.size();
-							DVector<Color>::Write w = cols.write();
+							PoolVector<Color>::Write w = cols.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -756,11 +756,11 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					case Mesh::ARRAY_TEX_UV:
 					case Mesh::ARRAY_TEX_UV2: {
 
-						DVector<Vector2> uvs;
+						PoolVector<Vector2> uvs;
 						uvs.resize(array.size());
 						{
 							int len=array.size();
-							DVector<Vector2>::Write w = uvs.write();
+							PoolVector<Vector2>::Write w = uvs.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -775,14 +775,14 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					case Mesh::ARRAY_BONES:
 					case Mesh::ARRAY_WEIGHTS: {
 
-						DVector<float> arr;
+						PoolVector<float> arr;
 						arr.resize(array.size()*4);
 						int po=k==Mesh::ARRAY_WEIGHTS?1:0;
 						lofs=ofs[Mesh::ARRAY_BONES];
 						{
 							int len=array.size();
 
-							DVector<float>::Write w = arr.write();
+							PoolVector<float>::Write w = arr.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -801,12 +801,12 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					} break;
 					case Mesh::ARRAY_INDEX: {
 
-						DVector<int> arr;
+						PoolVector<int> arr;
 						arr.resize(indices.size());
 						{
 							int len=indices.size();
 
-							DVector<int>::Write w = arr.write();
+							PoolVector<int>::Write w = arr.write();
 							for(int l=0;l<len;l++) {
 
 								w[l]=iarray[ indices[l] ];
@@ -838,10 +838,10 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 			}
 
 			if (pt==Mesh::PRIMITIVE_TRIANGLES) {
-				DVector<int> ia=arrays[Mesh::ARRAY_INDEX];
+				PoolVector<int> ia=arrays[Mesh::ARRAY_INDEX];
 				int len=ia.size();
 				{
-					DVector<int>::Write w=ia.write();
+					PoolVector<int>::Write w=ia.write();
 					for(int l=0;l<len;l+=3) {
 						SWAP(w[l+1],w[l+2]);
 					}

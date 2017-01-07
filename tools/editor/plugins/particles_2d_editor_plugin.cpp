@@ -74,8 +74,8 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 	Size2i s = Size2(img.get_width(),img.get_height());
 	ERR_FAIL_COND(s.width==0 || s.height==0);
 
-	DVector<uint8_t> data = img.get_data();
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t> data = img.get_data();
+	PoolVector<uint8_t>::Read r = data.read();
 
 	Vector<Point2i> valid_positions;
 	valid_positions.resize(s.width*s.height);
@@ -95,9 +95,9 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image.."));
 	ERR_FAIL_COND(valid_positions.size()==0);
 
-	DVector<Point2> epoints;
+	PoolVector<Point2> epoints;
 	epoints.resize(epc);
-	DVector<Point2>::Write w = epoints.write();
+	PoolVector<Point2>::Write w = epoints.write();
 
 	Size2 extents = Size2(img.get_width()*0.5,img.get_height()*0.5);
 
@@ -108,7 +108,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 		w[i]=p/extents;
 	}
 
-	w = DVector<Point2>::Write();
+	w = PoolVector<Point2>::Write();
 
 	undo_redo->create_action(TTR("Set Emission Mask"));
 	undo_redo->add_do_method(particles,"set_emission_points",epoints);
@@ -131,7 +131,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 		case MENU_CLEAR_EMISSION_MASK: {
 
 			undo_redo->create_action(TTR("Clear Emission Mask"));
-			undo_redo->add_do_method(particles,"set_emission_points",DVector<Vector2>());
+			undo_redo->add_do_method(particles,"set_emission_points",PoolVector<Vector2>());
 			undo_redo->add_undo_method(particles,"set_emission_points",particles->get_emission_points());
 			undo_redo->commit_action();
 		} break;

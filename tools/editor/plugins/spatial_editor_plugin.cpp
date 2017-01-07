@@ -898,10 +898,10 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								if (p.distance_to(aabb.get_support(-ray_dir))>min_d)
 									continue;
 
-								DVector<Face3> faces = vi->get_faces(VisualInstance::FACES_SOLID);
+								PoolVector<Face3> faces = vi->get_faces(VisualInstance::FACES_SOLID);
 								int c = faces.size();
 								if (c>0) {
-									DVector<Face3>::Read r = faces.read();
+									PoolVector<Face3>::Read r = faces.read();
 
 									for(int j=0;j<c;j++) {
 
@@ -3179,8 +3179,8 @@ void SpatialEditor::_init_indicators() {
 
 		indicator_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
 
-		DVector<Color> grid_colors[3];
-		DVector<Vector3> grid_points[3];
+		PoolVector<Color> grid_colors[3];
+		PoolVector<Vector3> grid_points[3];
 		Vector<Color> origin_colors;
 		Vector<Vector3> origin_points;
 
@@ -3262,7 +3262,7 @@ void SpatialEditor::_init_indicators() {
 
 	{
 		cursor_mesh = VisualServer::get_singleton()->mesh_create();
-		DVector<Vector3> cursor_points;
+		PoolVector<Vector3> cursor_points;
 		float cs = 0.25;
 		cursor_points.push_back(Vector3(+cs,0,0));
 		cursor_points.push_back(Vector3(-cs,0,0));

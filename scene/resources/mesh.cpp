@@ -79,9 +79,9 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (p_name=="morph_target/names") {
 
-		DVector<String> sk=p_value;
+		PoolVector<String> sk=p_value;
 		int sz = sk.size();
-		DVector<String>::Read r = sk.read();
+		PoolVector<String>::Read r = sk.read();
 		for(int i=0;i<sz;i++)
 			add_morph_target(r[i]);
 		return true;
@@ -133,8 +133,8 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 
 		} else if (d.has("array_data")) {
 
-			DVector<uint8_t> array_data = d["array_data"];
-			DVector<uint8_t> array_index_data;
+			PoolVector<uint8_t> array_data = d["array_data"];
+			PoolVector<uint8_t> array_index_data;
 			if (d.has("array_index_data"))
 				array_index_data=d["array_index_data"];
 
@@ -151,12 +151,12 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 			if (d.has("index_count"))
 				index_count=d["index_count"];
 
-			Vector< DVector<uint8_t> > morphs;
+			Vector< PoolVector<uint8_t> > morphs;
 
 			if (d.has("morph_data")) {
 				Array morph_data=d["morph_data"];
 				for(int i=0;i<morph_data.size();i++) {
-					DVector<uint8_t> morph = morph_data[i];
+					PoolVector<uint8_t> morph = morph_data[i];
 					morphs.push_back(morph_data[i]);
 				}
 			}
@@ -201,7 +201,7 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 
 	if (p_name=="morph_target/names") {
 
-		DVector<String> sk;
+		PoolVector<String> sk;
 		for(int i=0;i<morph_targets.size();i++)
 			sk.push_back(morph_targets[i]);
 		r_ret=sk;
@@ -251,7 +251,7 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 	}
 	d["skeleton_aabb"]=arr;
 
-	Vector< DVector<uint8_t> > morph_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh,idx);
+	Vector< PoolVector<uint8_t> > morph_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh,idx);
 
 	Array md;
 	for(int i=0;i<morph_data.size();i++) {
@@ -306,7 +306,7 @@ void Mesh::_recompute_aabb() {
 
 }
 
-void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs) {
+void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs) {
 
 	Surface s;
 	s.aabb=p_aabb;
@@ -330,10 +330,10 @@ void Mesh::add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arra
 
 	/* make aABB? */ {
 
-		DVector<Vector3> vertices=p_arrays[ARRAY_VERTEX];
+		PoolVector<Vector3> vertices=p_arrays[ARRAY_VERTEX];
 		int len=vertices.size();
 		ERR_FAIL_COND(len==0);
-		DVector<Vector3>::Read r=vertices.read();
+		PoolVector<Vector3>::Read r=vertices.read();
 		const Vector3 *vtx=r.ptr();
 
 		// check AABB
@@ -569,21 +569,21 @@ AABB Mesh::get_custom_aabb() const {
 }
 
 
-DVector<Face3> Mesh::get_faces() const {
+PoolVector<Face3> Mesh::get_faces() const {
 
 
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
 	if (tm.is_valid())
 		return tm->get_faces();
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 /*
 	for (int i=0;i<surfaces.size();i++) {
 
 		if (VisualServer::get_singleton()->mesh_surface_get_primitive_type( mesh, i ) != VisualServer::PRIMITIVE_TRIANGLES )
 			continue;
 
-		DVector<int> indices;
-		DVector<Vector3> vertices;
+		PoolVector<int> indices;
+		PoolVector<Vector3> vertices;
 
 		vertices=VisualServer::get_singleton()->mesh_surface_get_array(mesh, i,VisualServer::ARRAY_VERTEX);
 
@@ -604,10 +604,10 @@ DVector<Face3> Mesh::get_faces() const {
 		if (len<=0)
 			continue;
 
-		DVector<int>::Read indicesr = indices.read();
+		PoolVector<int>::Read indicesr = indices.read();
 		const int *indicesptr = indicesr.ptr();
 
-		DVector<Vector3>::Read verticesr = vertices.read();
+		PoolVector<Vector3>::Read verticesr = vertices.read();
 		const Vector3 *verticesptr = verticesr.ptr();
 
 		int old_faces=faces.size();
@@ -615,7 +615,7 @@ DVector<Face3> Mesh::get_faces() const {
 
 		faces.resize(new_faces);
 
-		DVector<Face3>::Write facesw = faces.write();
+		PoolVector<Face3>::Write facesw = faces.write();
 		Face3 *facesptr=facesw.ptr();
 
 
@@ -639,12 +639,12 @@ DVector<Face3> Mesh::get_faces() const {
 
 Ref<Shape> Mesh::create_convex_shape() const {
 
-	DVector<Vector3> vertices;
+	PoolVector<Vector3> vertices;
 
 	for(int i=0;i<get_surface_count();i++) {
 
 		Array a = surface_get_arrays(i);
-		DVector<Vector3> v=a[ARRAY_VERTEX];
+		PoolVector<Vector3> v=a[ARRAY_VERTEX];
 		vertices.append_array(v);
 
 	}
@@ -656,11 +656,11 @@ Ref<Shape> Mesh::create_convex_shape() const {
 
 Ref<Shape> Mesh::create_trimesh_shape() const {
 
-	DVector<Face3> faces = get_faces();
+	PoolVector<Face3> faces = get_faces();
 	if (faces.size()==0)
 		return Ref<Shape>();
 
-	DVector<Vector3> face_points;
+	PoolVector<Vector3> face_points;
 	face_points.resize( faces.size()*3 );
 
 	for (int i=0;i<face_points.size();i++) {
@@ -681,9 +681,9 @@ void Mesh::center_geometry() {
 
 	for(int i=0;i<get_surface_count();i++) {
 
-		DVector<Vector3> geom = surface_get_array(i,ARRAY_VERTEX);
+		PoolVector<Vector3> geom = surface_get_array(i,ARRAY_VERTEX);
 		int gc =geom.size();
-		DVector<Vector3>::Write w = geom.write();
+		PoolVector<Vector3>::Write w = geom.write();
 		surfaces[i].aabb.pos-=ofs;
 
 		for(int i=0;i<gc;i++) {
@@ -691,7 +691,7 @@ void Mesh::center_geometry() {
 			w[i]-=ofs;
 		}
 
-		w = DVector<Vector3>::Write();
+		w = PoolVector<Vector3>::Write();
 
 		surface_set_array(i,ARRAY_VERTEX,geom);
 
@@ -752,9 +752,9 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 	if (facecount==0 || (facecount%3)!=0)
 		return triangle_mesh;
 
-	DVector<Vector3> faces;
+	PoolVector<Vector3> faces;
 	faces.resize(facecount);
-	DVector<Vector3>::Write facesw=faces.write();
+	PoolVector<Vector3>::Write facesw=faces.write();
 
 	int widx=0;
 
@@ -766,14 +766,14 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		Array a = surface_get_arrays(i);
 
 		int vc = surface_get_array_len(i);
-		DVector<Vector3> vertices = a[ARRAY_VERTEX];
-		DVector<Vector3>::Read vr=vertices.read();
+		PoolVector<Vector3> vertices = a[ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vr=vertices.read();
 
 		if (surface_get_format(i)&ARRAY_FORMAT_INDEX) {
 
 			int ic=surface_get_array_index_len(i);
-			DVector<int> indices = a[ARRAY_INDEX];
-			DVector<int>::Read ir = indices.read();
+			PoolVector<int> indices = a[ARRAY_INDEX];
+			PoolVector<int>::Read ir = indices.read();
 
 			for(int i=0;i<ic;i++) {
 				int index = ir[i];
@@ -788,7 +788,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 	}
 
-	facesw=DVector<Vector3>::Write();
+	facesw=PoolVector<Vector3>::Write();
 
 
 	triangle_mesh = Ref<TriangleMesh>( memnew( TriangleMesh ));
@@ -814,7 +814,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 		if (i==0) {
 			arrays=a;
-			DVector<Vector3> v=a[ARRAY_VERTEX];
+			PoolVector<Vector3> v=a[ARRAY_VERTEX];
 			index_accum+=v.size();
 		} else {
 
@@ -831,8 +831,8 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					case ARRAY_VERTEX:
 					case ARRAY_NORMAL:  {
 
-						DVector<Vector3> dst = arrays[j];
-						DVector<Vector3> src = a[j];
+						PoolVector<Vector3> dst = arrays[j];
+						PoolVector<Vector3> src = a[j];
 						if (j==ARRAY_VERTEX)
 							vcount=src.size();
 						if (dst.size()==0 || src.size()==0) {
@@ -846,8 +846,8 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					case ARRAY_BONES:
 					case ARRAY_WEIGHTS: {
 
-						DVector<real_t> dst = arrays[j];
-						DVector<real_t> src = a[j];
+						PoolVector<real_t> dst = arrays[j];
+						PoolVector<real_t> src = a[j];
 						if (dst.size()==0 || src.size()==0) {
 							arrays[j]=Variant();
 							continue;
@@ -857,8 +857,8 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 					} break;
 					case ARRAY_COLOR: {
-						DVector<Color> dst = arrays[j];
-						DVector<Color> src = a[j];
+						PoolVector<Color> dst = arrays[j];
+						PoolVector<Color> src = a[j];
 						if (dst.size()==0 || src.size()==0) {
 							arrays[j]=Variant();
 							continue;
@@ -869,8 +869,8 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					} break;
 					case ARRAY_TEX_UV:
 					case ARRAY_TEX_UV2: {
-						DVector<Vector2> dst = arrays[j];
-						DVector<Vector2> src = a[j];
+						PoolVector<Vector2> dst = arrays[j];
+						PoolVector<Vector2> src = a[j];
 						if (dst.size()==0 || src.size()==0) {
 							arrays[j]=Variant();
 							continue;
@@ -880,15 +880,15 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 					} break;
 					case ARRAY_INDEX: {
-						DVector<int> dst = arrays[j];
-						DVector<int> src = a[j];
+						PoolVector<int> dst = arrays[j];
+						PoolVector<int> src = a[j];
 						if (dst.size()==0 || src.size()==0) {
 							arrays[j]=Variant();
 							continue;
 						}
 						{
 							int ss = src.size();
-							DVector<int>::Write w = src.write();
+							PoolVector<int>::Write w = src.write();
 							for(int k=0;k<ss;k++) {
 								w[k]+=index_accum;
 							}
@@ -906,13 +906,13 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	}
 
 	{
-		DVector<int>::Write ir;
-		DVector<int> indices =arrays[ARRAY_INDEX];
+		PoolVector<int>::Write ir;
+		PoolVector<int> indices =arrays[ARRAY_INDEX];
 		bool has_indices=false;
-		DVector<Vector3> vertices =arrays[ARRAY_VERTEX];
+		PoolVector<Vector3> vertices =arrays[ARRAY_VERTEX];
 		int vc = vertices.size();
 		ERR_FAIL_COND_V(!vc,Ref<Mesh>());
-		DVector<Vector3>::Write r=vertices.write();
+		PoolVector<Vector3>::Write r=vertices.write();
 
 
 		if (indices.size()) {
@@ -977,14 +977,14 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			r[i]=t;
 		}
 
-		r = DVector<Vector3>::Write();
+		r = PoolVector<Vector3>::Write();
 		arrays[ARRAY_VERTEX]=vertices;
 
 		if (!has_indices) {
 
-			DVector<int> new_indices;
+			PoolVector<int> new_indices;
 			new_indices.resize(vertices.size());
-			DVector<int>::Write iw = new_indices.write();
+			PoolVector<int>::Write iw = new_indices.write();
 
 			for(int j=0;j<vc2;j+=3) {
 
@@ -993,7 +993,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 				iw[j+2]=j+1;
 			}
 
-			iw=DVector<int>::Write();
+			iw=PoolVector<int>::Write();
 			arrays[ARRAY_INDEX]=new_indices;
 
 		} else {
@@ -1002,7 +1002,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 				SWAP(ir[j+1],ir[j+2]);
 			}
-			ir=DVector<int>::Write();
+			ir=PoolVector<int>::Write();
 			arrays[ARRAY_INDEX]=indices;
 
 		}

@@ -102,7 +102,7 @@ class SceneState : public Reference {
 
 	static bool disable_placeholders;
 
-	DVector<String> _get_node_groups(int p_idx) const;
+	PoolVector<String> _get_node_groups(int p_idx) const;
 
 protected:
 

@@ -43,7 +43,7 @@ protected:
 	static TCP_Server* (*_create)();
 
 	//bind helper
-	Error _listen(uint16_t p_port, DVector<String> p_accepted_hosts=DVector<String>());
+	Error _listen(uint16_t p_port, PoolVector<String> p_accepted_hosts=PoolVector<String>());
 	static void _bind_methods();
 public:
 

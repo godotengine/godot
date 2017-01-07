@@ -131,8 +131,8 @@ public:
 	virtual const void* sample_get_data_ptr(RID p_sample) const;
 
 
-	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer);
-	virtual DVector<uint8_t> sample_get_data(RID p_sample) const;
+	virtual void sample_set_data(RID p_sample, const PoolVector<uint8_t>& p_buffer);
+	virtual PoolVector<uint8_t> sample_get_data(RID p_sample) const;
 
 	virtual void sample_set_mix_rate(RID p_sample,int p_rate);
 	virtual int sample_get_mix_rate(RID p_sample) const;

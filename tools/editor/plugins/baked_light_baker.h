@@ -364,8 +364,8 @@ public:
 
 	Error transfer_to_lightmaps();
 
-	void update_octree_sampler(DVector<int> &p_sampler);
-	void update_octree_images(DVector<uint8_t> &p_octree,DVector<uint8_t> &p_light);
+	void update_octree_sampler(PoolVector<int> &p_sampler);
+	void update_octree_images(PoolVector<uint8_t> &p_octree,PoolVector<uint8_t> &p_light);
 
 	Ref<BakedLight> get_baked_light() { return baked_light; }
 

@@ -50,7 +50,7 @@ class PackedDataContainer : public Resource {
 	};
 
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	int datalen;
 
 
@@ -73,8 +73,8 @@ friend class PackedDataContainerRef;
 
 protected:
 
-	void _set_data(const DVector<uint8_t>& p_data);
-	DVector<uint8_t> _get_data() const;
+	void _set_data(const PoolVector<uint8_t>& p_data);
+	PoolVector<uint8_t> _get_data() const;
 	static void _bind_methods();
 public:
 

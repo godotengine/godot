@@ -91,7 +91,7 @@ public:
 
 	BSP_Tree();
 	BSP_Tree(const Variant& p_variant);
-	BSP_Tree(const DVector<Face3>& p_faces,float p_error_radius=0);
+	BSP_Tree(const PoolVector<Face3>& p_faces,float p_error_radius=0);
 	BSP_Tree(const Vector<Node> &p_nodes, const Vector<Plane> &p_planes, const AABB& p_aabb,float p_error_radius=0);
 	~BSP_Tree();
 

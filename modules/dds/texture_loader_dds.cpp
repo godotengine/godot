@@ -223,7 +223,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 
 //	print_line("found format: "+String(dds_format_info[dds_format].name));
 
-	DVector<uint8_t> src_data;
+	PoolVector<uint8_t> src_data;
 
 	const DDSFormatInfo &info=dds_format_info[dds_format];
 	uint32_t w = width;
@@ -247,9 +247,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 		}
 
 		src_data.resize(size);
-		DVector<uint8_t>::Write wb = src_data.write();
+		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(),size);
-		wb=DVector<uint8_t>::Write();
+		wb=PoolVector<uint8_t>::Write();
 
 	} else if (info.palette) {
 
@@ -281,7 +281,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 		}
 
 		src_data.resize(size + 256*colsize );
-		DVector<uint8_t>::Write wb = src_data.write();
+		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(),size);
 
 		for(int i=0;i<256;i++) {
@@ -296,7 +296,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 		}
 
 
-		wb=DVector<uint8_t>::Write();
+		wb=PoolVector<uint8_t>::Write();
 	} else {
 		//uncompressed generic...
 
@@ -316,7 +316,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 			size=size*2;
 
 		src_data.resize(size);
-		DVector<uint8_t>::Write wb = src_data.write();
+		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(),size);
 
 
@@ -449,7 +449,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 
 		}
 
-		wb=DVector<uint8_t>::Write();
+		wb=PoolVector<uint8_t>::Write();
 	}
 
 

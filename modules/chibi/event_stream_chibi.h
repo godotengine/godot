@@ -54,8 +54,8 @@ class CPSampleManagerImpl : public CPSampleManager {
 		int loop_begin;
 		int loop_end;
 		int locks;
-		DVector<uint8_t> lock;
-		DVector<uint8_t>::Write w;
+		PoolVector<uint8_t> lock;
+		PoolVector<uint8_t>::Write w;
 		CPSample_Loop_Type loop_type;
 	};
 

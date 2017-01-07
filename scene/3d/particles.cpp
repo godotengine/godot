@@ -88,9 +88,9 @@ AABB Particles::get_aabb() const {
 
 	return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
 }
-DVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 
@@ -130,16 +130,16 @@ AABB Particles::get_visibility_aabb() const {
 }
 
 
-void Particles::set_emission_points(const DVector<Vector3>& p_points) {
+void Particles::set_emission_points(const PoolVector<Vector3>& p_points) {
 
 	using_points = p_points.size();
 	VisualServer::get_singleton()->particles_set_emission_points(particles,p_points);
 }
 
-DVector<Vector3> Particles::get_emission_points() const {
+PoolVector<Vector3> Particles::get_emission_points() const {
 
 	if (!using_points)
-		return DVector<Vector3>();
+		return PoolVector<Vector3>();
 
 	return VisualServer::get_singleton()->particles_get_emission_points(particles);
 

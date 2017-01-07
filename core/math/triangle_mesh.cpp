@@ -94,7 +94,7 @@ int TriangleMesh::_create_bvh(BVH*p_bvh,BVH** p_bb,int p_from,int p_size,int p_d
 }
 
 
-void TriangleMesh::create(const DVector<Vector3>& p_faces) {
+void TriangleMesh::create(const PoolVector<Vector3>& p_faces) {
 
 	valid=false;
 
@@ -104,7 +104,7 @@ void TriangleMesh::create(const DVector<Vector3>& p_faces) {
 	triangles.resize(fc);
 
 	bvh.resize(fc*3); //will never be larger than this (todo make better)
-	DVector<BVH>::Write bw = bvh.write();
+	PoolVector<BVH>::Write bw = bvh.write();
 
 	{
 
@@ -112,8 +112,8 @@ void TriangleMesh::create(const DVector<Vector3>& p_faces) {
 		//except for the Set for repeated triangles, everything
 		//goes in-place.
 
-		DVector<Vector3>::Read r = p_faces.read();
-		DVector<Triangle>::Write w = triangles.write();
+		PoolVector<Vector3>::Read r = p_faces.read();
+		PoolVector<Triangle>::Write w = triangles.write();
 		Map<Vector3,int> db;
 
 		for(int i=0;i<fc;i++) {
@@ -149,16 +149,16 @@ void TriangleMesh::create(const DVector<Vector3>& p_faces) {
 		}
 
 		vertices.resize(db.size());
-		DVector<Vector3>::Write vw = vertices.write();
+		PoolVector<Vector3>::Write vw = vertices.write();
 		for (Map<Vector3,int>::Element *E=db.front();E;E=E->next()) {
 			vw[E->get()]=E->key();
 		}
 
 	}
 
-	DVector<BVH*> bwptrs;
+	PoolVector<BVH*> bwptrs;
 	bwptrs.resize(fc);
-	DVector<BVH*>::Write bwp = bwptrs.write();
+	PoolVector<BVH*>::Write bwp = bwptrs.write();
 	for(int i=0;i<fc;i++) {
 
 		bwp[i]=&bw[i];
@@ -168,7 +168,7 @@ void TriangleMesh::create(const DVector<Vector3>& p_faces) {
 	int max_alloc=fc;
 	int max=_create_bvh(bw.ptr(),bwp.ptr(),0,fc,1,max_depth,max_alloc);
 
-	bw=DVector<BVH>::Write(); //clearup
+	bw=PoolVector<BVH>::Write(); //clearup
 	bvh.resize(max_alloc); //resize back
 
 	valid=true;
@@ -197,9 +197,9 @@ Vector3 TriangleMesh::get_area_normal(const AABB& p_aabb) const {
 
 	int level=0;
 
-	DVector<Triangle>::Read trianglesr = triangles.read();
-	DVector<Vector3>::Read verticesr=vertices.read();
-	DVector<BVH>::Read bvhr=bvh.read();
+	PoolVector<Triangle>::Read trianglesr = triangles.read();
+	PoolVector<Vector3>::Read verticesr=vertices.read();
+	PoolVector<BVH>::Read bvhr=bvh.read();
 
 	const Triangle *triangleptr=trianglesr.ptr();
 	int pos=bvh.size()-1;
@@ -299,9 +299,9 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 
 	int level=0;
 
-	DVector<Triangle>::Read trianglesr = triangles.read();
-	DVector<Vector3>::Read verticesr=vertices.read();
-	DVector<BVH>::Read bvhr=bvh.read();
+	PoolVector<Triangle>::Read trianglesr = triangles.read();
+	PoolVector<Vector3>::Read verticesr=vertices.read();
+	PoolVector<BVH>::Read bvhr=bvh.read();
 
 	const Triangle *triangleptr=trianglesr.ptr();
 	const Vector3 *vertexptr=verticesr.ptr();
@@ -422,9 +422,9 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 
 	int level=0;
 
-	DVector<Triangle>::Read trianglesr = triangles.read();
-	DVector<Vector3>::Read verticesr=vertices.read();
-	DVector<BVH>::Read bvhr=bvh.read();
+	PoolVector<Triangle>::Read trianglesr = triangles.read();
+	PoolVector<Vector3>::Read verticesr=vertices.read();
+	PoolVector<BVH>::Read bvhr=bvh.read();
 
 	const Triangle *triangleptr=trianglesr.ptr();
 	const Vector3 *vertexptr=verticesr.ptr();
@@ -524,18 +524,18 @@ bool TriangleMesh::is_valid() const {
 	return valid;
 }
 
-DVector<Face3> TriangleMesh::get_faces() const {
+PoolVector<Face3> TriangleMesh::get_faces() const {
 
 	if (!valid)
-		return DVector<Face3>();
+		return PoolVector<Face3>();
 
-	DVector<Face3> faces;
+	PoolVector<Face3> faces;
 	int ts = triangles.size();
 	faces.resize(triangles.size());
 
-	DVector<Face3>::Write w=faces.write();
-	DVector<Triangle>::Read r = triangles.read();
-	DVector<Vector3>::Read rv = vertices.read();
+	PoolVector<Face3>::Write w=faces.write();
+	PoolVector<Triangle>::Read r = triangles.read();
+	PoolVector<Vector3>::Read rv = vertices.read();
 
 	for(int i=0;i<ts;i++) {
 		for(int j=0;j<3;j++) {
@@ -543,7 +543,7 @@ DVector<Face3> TriangleMesh::get_faces() const {
 		}
 	}
 
-	w = DVector<Face3>::Write();
+	w = PoolVector<Face3>::Write();
 	return faces;
 }
 

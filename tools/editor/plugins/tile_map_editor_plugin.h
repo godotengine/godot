@@ -109,7 +109,7 @@ class TileMapEditor : public VBoxContainer {
 	bool * bucket_cache_visited;
 	Rect2i bucket_cache_rect;
 	int bucket_cache_tile;
-	DVector<Vector2> bucket_cache;
+	PoolVector<Vector2> bucket_cache;
 
 	struct CellOp {
 		int idx;
@@ -134,10 +134,10 @@ class TileMapEditor : public VBoxContainer {
 
 	void _pick_tile(const Point2& p_pos);
 
-	DVector<Vector2> _bucket_fill(const Point2i& p_start, bool erase=false, bool preview=false);
+	PoolVector<Vector2> _bucket_fill(const Point2i& p_start, bool erase=false, bool preview=false);
 
-	void _fill_points(const DVector<Vector2> p_points, const Dictionary& p_op);
-	void _erase_points(const DVector<Vector2> p_points);
+	void _fill_points(const PoolVector<Vector2> p_points, const Dictionary& p_op);
+	void _erase_points(const PoolVector<Vector2> p_points);
 
 	void _select(const Point2i& p_from, const Point2i& p_to);
 

@@ -72,7 +72,7 @@ public:
 
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
-	DVector<Point2> bake(int p_subdivs=10) const;
+	PoolVector<Point2> bake(int p_subdivs=10) const;
 	void advance(real_t p_distance,int &r_index, real_t &r_pos) const;
 	void get_approx_position_from_offset(real_t p_offset,int &r_index, real_t &r_pos,int p_subdivs=16) const;
 

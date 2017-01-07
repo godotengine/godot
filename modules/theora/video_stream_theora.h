@@ -51,7 +51,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	//Image frames[MAX_FRAMES];
 	Image::Format format;
-	DVector<uint8_t> frame_data;
+	PoolVector<uint8_t> frame_data;
 	int frames_pending;
 	FileAccess* file;
 	String file_name;

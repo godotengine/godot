@@ -168,9 +168,9 @@ public:
 	virtual int sample_get_length(RID p_sample) const=0;
 	virtual const void* sample_get_data_ptr(RID p_sample) const=0;
 
-	virtual void sample_set_signed_data(RID p_sample, const DVector<float>& p_buffer);
-	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer)=0;
-	virtual DVector<uint8_t> sample_get_data(RID p_sample) const=0;
+	virtual void sample_set_signed_data(RID p_sample, const PoolVector<float>& p_buffer);
+	virtual void sample_set_data(RID p_sample, const PoolVector<uint8_t>& p_buffer)=0;
+	virtual PoolVector<uint8_t> sample_get_data(RID p_sample) const=0;
 
 	virtual void sample_set_mix_rate(RID p_sample,int p_rate)=0;
 	virtual int sample_get_mix_rate(RID p_sample) const=0;

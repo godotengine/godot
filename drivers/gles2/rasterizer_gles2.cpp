@@ -998,7 +998,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP)?_cube_side_enum[p_cube_side]:GL_TEXTURE_2D;
 
 	texture->data_size=img.get_data().size();
-	DVector<uint8_t>::Read read = img.get_data().read();
+	PoolVector<uint8_t>::Read read = img.get_data().read();
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
@@ -1133,7 +1133,7 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 	ERR_FAIL_COND_V(!texture->active,Image());
 	ERR_FAIL_COND_V(texture->data_size==0,Image());
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	GLenum format,type=GL_UNSIGNED_BYTE;
 	Image::Format fmt;
 	int pixelsize=0;
@@ -1235,7 +1235,7 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 	}
 
 	data.resize(texture->data_size);
-	DVector<uint8_t>::Write wb = data.write();
+	PoolVector<uint8_t>::Write wb = data.write();
 
 	glActiveTexture(GL_TEXTURE0);
 	int ofs=0;
@@ -1264,7 +1264,7 @@ Image RasterizerGLES2::texture_get_data(RID p_texture,VS::CubeMapSide p_cube_sid
 	}
 
 
-	wb=DVector<uint8_t>::Write();
+	wb=PoolVector<uint8_t>::Write();
 
 	Image img(texture->alloc_width,texture->alloc_height,texture->mipmaps,fmt,data);
 
@@ -2103,10 +2103,10 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 
 	uint8_t *array_ptr=NULL;
 	uint8_t *index_array_ptr=NULL;
-	DVector<uint8_t> array_pre_vbo;
-	DVector<uint8_t>::Write vaw;
-	DVector<uint8_t> index_array_pre_vbo;
-	DVector<uint8_t>::Write iaw;
+	PoolVector<uint8_t> array_pre_vbo;
+	PoolVector<uint8_t>::Write vaw;
+	PoolVector<uint8_t> index_array_pre_vbo;
+	PoolVector<uint8_t>::Write iaw;
 
 	/* create pointers */
 	if (use_VBO) {
@@ -2191,11 +2191,11 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::VECTOR3_ARRAY, ERR_INVALID_PARAMETER );
 
-				DVector<Vector3> array = p_arrays[ai];
+				PoolVector<Vector3> array = p_arrays[ai];
 				ERR_FAIL_COND_V( array.size() != p_surface->array_len, ERR_INVALID_PARAMETER );
 
 
-				DVector<Vector3>::Read read = array.read();
+				PoolVector<Vector3>::Read read = array.read();
 				const Vector3* src=read.ptr();
 
 				// setting vertices means regenerating the AABB
@@ -2252,11 +2252,11 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::VECTOR3_ARRAY, ERR_INVALID_PARAMETER );
 
-				DVector<Vector3> array = p_arrays[ai];
+				PoolVector<Vector3> array = p_arrays[ai];
 				ERR_FAIL_COND_V( array.size() != p_surface->array_len, ERR_INVALID_PARAMETER );
 
 
-				DVector<Vector3>::Read read = array.read();
+				PoolVector<Vector3>::Read read = array.read();
 				const Vector3* src=read.ptr();
 
 				// setting vertices means regenerating the AABB
@@ -2292,12 +2292,12 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::REAL_ARRAY, ERR_INVALID_PARAMETER );
 
-				DVector<real_t> array = p_arrays[ai];
+				PoolVector<real_t> array = p_arrays[ai];
 
 				ERR_FAIL_COND_V( array.size() != p_surface->array_len*4, ERR_INVALID_PARAMETER );
 
 
-				DVector<real_t>::Read read = array.read();
+				PoolVector<real_t>::Read read = array.read();
 				const real_t* src = read.ptr();
 
 				if (p_surface->array[VS::ARRAY_TANGENT].datatype==GL_BYTE) {
@@ -2337,12 +2337,12 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::COLOR_ARRAY, ERR_INVALID_PARAMETER );
 
 
-				DVector<Color> array = p_arrays[ai];
+				PoolVector<Color> array = p_arrays[ai];
 
 				ERR_FAIL_COND_V( array.size() != p_surface->array_len, ERR_INVALID_PARAMETER );
 
 
-				DVector<Color>::Read read = array.read();
+				PoolVector<Color>::Read read = array.read();
 				const Color* src = read.ptr();
 				bool alpha=false;
 
@@ -2371,11 +2371,11 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::VECTOR3_ARRAY && p_arrays[ai].get_type() != Variant::VECTOR2_ARRAY, ERR_INVALID_PARAMETER );
 
-				DVector<Vector2> array = p_arrays[ai];
+				PoolVector<Vector2> array = p_arrays[ai];
 
 				ERR_FAIL_COND_V( array.size() != p_surface->array_len , ERR_INVALID_PARAMETER);
 
-				DVector<Vector2>::Read read = array.read();
+				PoolVector<Vector2>::Read read = array.read();
 
 				const Vector2 * src=read.ptr();
 				float scale=1.0;
@@ -2417,12 +2417,12 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::REAL_ARRAY, ERR_INVALID_PARAMETER );
 
-				DVector<real_t> array = p_arrays[ai];
+				PoolVector<real_t> array = p_arrays[ai];
 
 				ERR_FAIL_COND_V( array.size() != p_surface->array_len*VS::ARRAY_WEIGHTS_SIZE, ERR_INVALID_PARAMETER );
 
 
-				DVector<real_t>::Read read = array.read();
+				PoolVector<real_t>::Read read = array.read();
 
 				const real_t * src = read.ptr();
 
@@ -2460,12 +2460,12 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::REAL_ARRAY, ERR_INVALID_PARAMETER );
 
-				DVector<int> array = p_arrays[ai];
+				PoolVector<int> array = p_arrays[ai];
 
 				ERR_FAIL_COND_V( array.size() != p_surface->array_len*VS::ARRAY_WEIGHTS_SIZE, ERR_INVALID_PARAMETER );
 
 
-				DVector<int>::Read read = array.read();
+				PoolVector<int>::Read read = array.read();
 
 				const int * src = read.ptr();
 
@@ -2511,13 +2511,13 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 				ERR_FAIL_COND_V( p_surface->index_array_len<=0, ERR_INVALID_DATA );
 				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::INT_ARRAY, ERR_INVALID_PARAMETER );
 
-				DVector<int> indices = p_arrays[ai];
+				PoolVector<int> indices = p_arrays[ai];
 				ERR_FAIL_COND_V( indices.size() == 0, ERR_INVALID_PARAMETER );
 				ERR_FAIL_COND_V( indices.size() != p_surface->index_array_len, ERR_INVALID_PARAMETER );
 
 				/* determine wether using 16 or 32 bits indices */
 
-				DVector<int>::Read read = indices.read();
+				PoolVector<int>::Read read = indices.read();
 				const int *src=read.ptr();
 
 				for (int i=0;i<p_surface->index_array_len;i++) {
@@ -2553,18 +2553,18 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 			for(int i=0;i<total_bones;i++)
 				p_surface->skeleton_bone_used[i]=false;
 		}
-		DVector<Vector3> vertices = p_arrays[VS::ARRAY_VERTEX];
-		DVector<int> bones = p_arrays[VS::ARRAY_BONES];
-		DVector<float> weights = p_arrays[VS::ARRAY_WEIGHTS];
+		PoolVector<Vector3> vertices = p_arrays[VS::ARRAY_VERTEX];
+		PoolVector<int> bones = p_arrays[VS::ARRAY_BONES];
+		PoolVector<float> weights = p_arrays[VS::ARRAY_WEIGHTS];
 
 		bool any_valid=false;
 
 		if (vertices.size() && bones.size()==vertices.size()*4 && weights.size()==bones.size()) {
 			//print_line("MAKING SKELETHONG");
 			int vs = vertices.size();
-			DVector<Vector3>::Read rv =vertices.read();
-			DVector<int>::Read rb=bones.read();
-			DVector<float>::Read rw=weights.read();
+			PoolVector<Vector3>::Read rv =vertices.read();
+			PoolVector<int>::Read rb=bones.read();
+			PoolVector<float>::Read rw=weights.read();
 
 			Vector<bool> first;
 			first.resize(total_bones);
@@ -3310,7 +3310,7 @@ Vector3 RasterizerGLES2::particles_get_emission_base_velocity(RID p_particles) c
 }
 
 
-void RasterizerGLES2::particles_set_emission_points(RID p_particles, const DVector<Vector3>& p_points) {
+void RasterizerGLES2::particles_set_emission_points(RID p_particles, const PoolVector<Vector3>& p_points) {
 
 	Particles* particles = particles_owner.get( p_particles );
 	ERR_FAIL_COND(!particles);
@@ -3318,10 +3318,10 @@ void RasterizerGLES2::particles_set_emission_points(RID p_particles, const DVect
 	particles->data.emission_points=p_points;
 }
 
-DVector<Vector3> RasterizerGLES2::particles_get_emission_points(RID p_particles) const {
+PoolVector<Vector3> RasterizerGLES2::particles_get_emission_points(RID p_particles) const {
 
 	Particles* particles = particles_owner.get( p_particles );
-	ERR_FAIL_COND_V(!particles,DVector<Vector3>());
+	ERR_FAIL_COND_V(!particles,PoolVector<Vector3>());
 
 	return particles->data.emission_points;
 
@@ -4304,9 +4304,9 @@ void RasterizerGLES2::begin_frame() {
 
 void RasterizerGLES2::capture_viewport(Image* r_capture) {
 #if 0
-	DVector<uint8_t> pixels;
+	PoolVector<uint8_t> pixels;
 	pixels.resize(viewport.width*viewport.height*3);
-	DVector<uint8_t>::Write w = pixels.write();
+	PoolVector<uint8_t>::Write w = pixels.write();
 #ifdef GLEW_ENABLED
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 #endif
@@ -4318,15 +4318,15 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
-	w=DVector<uint8_t>::Write();
+	w=PoolVector<uint8_t>::Write();
 
 	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGB8,pixels);
 #else
 
 
-	DVector<uint8_t> pixels;
+	PoolVector<uint8_t> pixels;
 	pixels.resize(viewport.width*viewport.height*4);
-	DVector<uint8_t>::Write w = pixels.write();
+	PoolVector<uint8_t>::Write w = pixels.write();
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
 
 //	uint64_t time = OS::get_singleton()->get_ticks_usec();
@@ -4359,7 +4359,7 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 		}
 	}
 
-	w=DVector<uint8_t>::Write();
+	w=PoolVector<uint8_t>::Write();
 	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGBA8,pixels);
 	//r_capture->flip_y();
 
@@ -8685,7 +8685,7 @@ RID RasterizerGLES2::canvas_light_occluder_create() {
 	return canvas_occluder_owner.make_rid(co);
 }
 
-void RasterizerGLES2::canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines) {
+void RasterizerGLES2::canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2>& p_lines) {
 
 	CanvasOccluder *co = canvas_occluder_owner.get(p_occluder);
 	ERR_FAIL_COND(!co);
@@ -8709,18 +8709,18 @@ void RasterizerGLES2::canvas_light_occluder_set_polylines(RID p_occluder, const 
 
 
 
-		DVector<float> geometry;
-		DVector<uint16_t> indices;
+		PoolVector<float> geometry;
+		PoolVector<uint16_t> indices;
 		int lc = p_lines.size();
 
 		geometry.resize(lc*6);
 		indices.resize(lc*3);
 
-		DVector<float>::Write vw=geometry.write();
-		DVector<uint16_t>::Write iw=indices.write();
+		PoolVector<float>::Write vw=geometry.write();
+		PoolVector<uint16_t>::Write iw=indices.write();
 
 
-		DVector<Vector2>::Read lr=p_lines.read();
+		PoolVector<Vector2>::Read lr=p_lines.read();
 
 		const int POLY_HEIGHT = 16384;
 

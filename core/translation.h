@@ -42,10 +42,10 @@ class Translation : public Resource {
 	String locale;
 	Map<StringName, StringName> translation_map;
 
-	DVector<String> _get_message_list() const;
+	PoolVector<String> _get_message_list() const;
 
-	DVector<String> _get_messages() const;
-	void _set_messages(const DVector<String>& p_messages);
+	PoolVector<String> _get_messages() const;
+	void _set_messages(const PoolVector<String>& p_messages);
 protected:
 	static void _bind_methods();
 

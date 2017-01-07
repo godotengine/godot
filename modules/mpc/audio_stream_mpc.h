@@ -43,7 +43,7 @@ class AudioStreamPlaybackMPC : public AudioStreamPlayback {
 	bool preload;
 	FileAccess *f;
 	String file;
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	int data_ofs;
 	int streamlen;
 

@@ -177,13 +177,13 @@ AABB MeshInstance::get_aabb() const {
 	return AABB();
 }
 
-DVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
 
 	if (!(p_usage_flags&(FACES_SOLID|FACES_ENCLOSING)))
-		return DVector<Face3>();
+		return PoolVector<Face3>();
 
 	if (mesh.is_null())
-		return DVector<Face3>();
+		return PoolVector<Face3>();
 
 	return mesh->get_faces();
 }

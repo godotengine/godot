@@ -169,9 +169,9 @@ AABB ReflectionProbe::get_aabb() const {
 	aabb.size=origin_offset+extents;
 	return aabb;
 }
-DVector<Face3> ReflectionProbe::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> ReflectionProbe::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 void ReflectionProbe::_validate_property(PropertyInfo& property) const {

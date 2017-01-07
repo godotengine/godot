@@ -31,12 +31,12 @@
 #include "triangulator.h"
 #include "core_string_names.h"
 
-void NavigationPolygon::set_vertices(const DVector<Vector2>& p_vertices) {
+void NavigationPolygon::set_vertices(const PoolVector<Vector2>& p_vertices) {
 
 	vertices=p_vertices;
 }
 
-DVector<Vector2> NavigationPolygon::get_vertices() const{
+PoolVector<Vector2> NavigationPolygon::get_vertices() const{
 
 	return vertices;
 }
@@ -89,7 +89,7 @@ void NavigationPolygon::add_polygon(const Vector<int>& p_polygon){
 
 }
 
-void NavigationPolygon::add_outline_at_index(const DVector<Vector2>& p_outline,int p_index) {
+void NavigationPolygon::add_outline_at_index(const PoolVector<Vector2>& p_outline,int p_index) {
 
 	outlines.insert(p_index,p_outline);
 }
@@ -108,7 +108,7 @@ void NavigationPolygon::clear_polygons(){
 	polygons.clear();
 }
 
-void NavigationPolygon::add_outline(const DVector<Vector2>& p_outline) {
+void NavigationPolygon::add_outline(const PoolVector<Vector2>& p_outline) {
 
 	outlines.push_back(p_outline);
 }
@@ -118,7 +118,7 @@ int NavigationPolygon::get_outline_count() const{
 	return outlines.size();
 }
 
-void NavigationPolygon::set_outline(int p_idx,const DVector<Vector2>& p_outline) {
+void NavigationPolygon::set_outline(int p_idx,const PoolVector<Vector2>& p_outline) {
 	ERR_FAIL_INDEX(p_idx,outlines.size());
 	outlines[p_idx]=p_outline;
 }
@@ -130,8 +130,8 @@ void NavigationPolygon::remove_outline(int p_idx) {
 
 }
 
-DVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx,outlines.size(),DVector<Vector2>());
+PoolVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx,outlines.size(),PoolVector<Vector2>());
 	return outlines[p_idx];
 }
 
@@ -147,11 +147,11 @@ void NavigationPolygon::make_polygons_from_outlines(){
 
 	for(int i=0;i<outlines.size();i++) {
 
-		DVector<Vector2> ol = outlines[i];
+		PoolVector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize<3)
 			continue;
-		DVector<Vector2>::Read r=ol.read();
+		PoolVector<Vector2>::Read r=ol.read();
 		for(int j=0;j<olsize;j++) {
 			outside_point.x = MAX( r[j].x, outside_point.x );
 			outside_point.y = MAX( r[j].y, outside_point.y );
@@ -165,11 +165,11 @@ void NavigationPolygon::make_polygons_from_outlines(){
 
 	for(int i=0;i<outlines.size();i++) {
 
-		DVector<Vector2> ol = outlines[i];
+		PoolVector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize<3)
 			continue;
-		DVector<Vector2>::Read r=ol.read();
+		PoolVector<Vector2>::Read r=ol.read();
 
 		int interscount=0;
 		//test if this is an outer outline
@@ -178,11 +178,11 @@ void NavigationPolygon::make_polygons_from_outlines(){
 			if (i==k)
 				continue; //no self intersect
 
-			DVector<Vector2> ol2 = outlines[k];
+			PoolVector<Vector2> ol2 = outlines[k];
 			int olsize2 = ol2.size();
 			if (olsize2<3)
 				continue;
-			DVector<Vector2>::Read r2=ol2.read();
+			PoolVector<Vector2>::Read r2=ol2.read();
 
 			for(int l=0;l<olsize2;l++) {
 
@@ -368,7 +368,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 			if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 
-				DVector<Vector2> verts=navpoly->get_vertices();
+				PoolVector<Vector2> verts=navpoly->get_vertices();
 				int vsize = verts.size();
 				if (vsize<3)
 					return;
@@ -385,7 +385,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 				vertices.resize(vsize);
 				colors.resize(vsize);
 				{
-					DVector<Vector2>::Read vr = verts.read();
+					PoolVector<Vector2>::Read vr = verts.read();
 					for(int i=0;i<vsize;i++) {
 						vertices[i]=vr[i];
 						colors[i]=color;

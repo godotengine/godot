@@ -165,9 +165,12 @@ typedef Ref<Resource> RES;
 
 class ResourceCache {
 friend class Resource;
+	static RWLock *lock;
 	static HashMap<String,Resource*> resources;
 friend void unregister_core_types();
 	static void clear();
+friend void register_core_types();
+	static void setup();
 public:
 
 	static void reload_externals();

@@ -34,7 +34,7 @@
 #include "scene/main/scene_main_loop.h"
 
 
-void Shape::add_vertices_to_array(DVector<Vector3> &array, const Transform& p_xform) {
+void Shape::add_vertices_to_array(PoolVector<Vector3> &array, const Transform& p_xform) {
 
 	Vector<Vector3> toadd = _gen_debug_mesh_lines();
 
@@ -42,7 +42,7 @@ void Shape::add_vertices_to_array(DVector<Vector3> &array, const Transform& p_xf
 
 		int base=array.size();
 		array.resize(base+toadd.size());
-		DVector<Vector3>::Write w = array.write();
+		PoolVector<Vector3>::Write w = array.write();
 		for(int i=0;i<toadd.size();i++) {
 			w[i+base]=p_xform.xform(toadd[i]);
 		}
@@ -61,11 +61,11 @@ Ref<Mesh> Shape::get_debug_mesh() {
 
 	if (!lines.empty()) {
 		//make mesh
-		DVector<Vector3> array;
+		PoolVector<Vector3> array;
 		array.resize(lines.size());
 		{
 
-			DVector<Vector3>::Write w=array.write();
+			PoolVector<Vector3>::Write w=array.write();
 			for(int i=0;i<lines.size();i++) {
 				w[i]=lines[i];
 			}

@@ -85,6 +85,9 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
+	ObjectDB::setup();
+	ResourceCache::setup();
+	MemoryPool::setup();
 
 	_global_mutex=Mutex::create();
 
@@ -241,4 +244,7 @@ void unregister_core_types() {
 		memdelete(_global_mutex);
 		_global_mutex=NULL; //still needed at a few places
 	};
+
+	MemoryPool::cleanup();
+
 }

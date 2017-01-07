@@ -181,7 +181,7 @@ RID SpatialSound2DServerSW::room_get_space(RID p_room) const {
 
 
 
-void SpatialSound2DServerSW::room_set_bounds(RID p_room, const DVector<Point2>& p_bounds) {
+void SpatialSound2DServerSW::room_set_bounds(RID p_room, const PoolVector<Point2>& p_bounds) {
 
 	Room *room = room_owner.get(p_room);
 	ERR_FAIL_COND(!room);
@@ -198,9 +198,9 @@ void SpatialSound2DServerSW::room_set_bounds(RID p_room, const DVector<Point2>& 
 //	space->octree.move(room->octree_id,room->transform.xform(aabb));
 
 }
-DVector<Point2> SpatialSound2DServerSW::room_get_bounds(RID p_room) const {
+PoolVector<Point2> SpatialSound2DServerSW::room_get_bounds(RID p_room) const {
 	Room *room = room_owner.get(p_room);
-	ERR_FAIL_COND_V(!room,DVector<Point2>());
+	ERR_FAIL_COND_V(!room,PoolVector<Point2>());
 
 	return room->bounds;
 }

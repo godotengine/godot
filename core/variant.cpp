@@ -842,37 +842,37 @@ bool Variant::is_zero() const {
 		// arrays
 		case RAW_ARRAY: {
 
-			return reinterpret_cast<const DVector<uint8_t>*>(_data._mem)->size()==0;
+			return reinterpret_cast<const PoolVector<uint8_t>*>(_data._mem)->size()==0;
 
 		} break;
 		case INT_ARRAY: {
 
-			return reinterpret_cast<const DVector<int>*>(_data._mem)->size()==0;
+			return reinterpret_cast<const PoolVector<int>*>(_data._mem)->size()==0;
 
 		} break;
 		case REAL_ARRAY: {
 
-			return reinterpret_cast<const DVector<real_t>*>(_data._mem)->size()==0;
+			return reinterpret_cast<const PoolVector<real_t>*>(_data._mem)->size()==0;
 
 		} break;
 		case STRING_ARRAY: {
 
-			return reinterpret_cast<const DVector<String>*>(_data._mem)->size()==0;
+			return reinterpret_cast<const PoolVector<String>*>(_data._mem)->size()==0;
 
 		} break;
 		case VECTOR2_ARRAY: {
 
-			return reinterpret_cast<const DVector<Vector2>*>(_data._mem)->size()==0;
+			return reinterpret_cast<const PoolVector<Vector2>*>(_data._mem)->size()==0;
 
 		} break;
 		case VECTOR3_ARRAY: {
 
-			return reinterpret_cast<const DVector<Vector3>*>(_data._mem)->size()==0;
+			return reinterpret_cast<const PoolVector<Vector3>*>(_data._mem)->size()==0;
 
 		} break;
 		case COLOR_ARRAY: {
 
-			return reinterpret_cast<const DVector<Color>*>(_data._mem)->size()==0;
+			return reinterpret_cast<const PoolVector<Color>*>(_data._mem)->size()==0;
 
 		} break;
 		default: {}
@@ -1070,37 +1070,37 @@ void Variant::reference(const Variant& p_variant) {
 		// arrays
 		case RAW_ARRAY: {
 
-			memnew_placement( _data._mem, DVector<uint8_t> ( *reinterpret_cast<const DVector<uint8_t>*>(p_variant._data._mem) ) );
+			memnew_placement( _data._mem, PoolVector<uint8_t> ( *reinterpret_cast<const PoolVector<uint8_t>*>(p_variant._data._mem) ) );
 
 		} break;
 		case INT_ARRAY: {
 
-			memnew_placement( _data._mem, DVector<int> ( *reinterpret_cast<const DVector<int>*>(p_variant._data._mem) ) );
+			memnew_placement( _data._mem, PoolVector<int> ( *reinterpret_cast<const PoolVector<int>*>(p_variant._data._mem) ) );
 
 		} break;
 		case REAL_ARRAY: {
 
-			memnew_placement( _data._mem, DVector<real_t> ( *reinterpret_cast<const DVector<real_t>*>(p_variant._data._mem) ) );
+			memnew_placement( _data._mem, PoolVector<real_t> ( *reinterpret_cast<const PoolVector<real_t>*>(p_variant._data._mem) ) );
 
 		} break;
 		case STRING_ARRAY: {
 
-			memnew_placement( _data._mem, DVector<String> ( *reinterpret_cast<const DVector<String>*>(p_variant._data._mem) ) );
+			memnew_placement( _data._mem, PoolVector<String> ( *reinterpret_cast<const PoolVector<String>*>(p_variant._data._mem) ) );
 
 		} break;
 		case VECTOR2_ARRAY: {
 
-			memnew_placement( _data._mem, DVector<Vector2> ( *reinterpret_cast<const DVector<Vector2>*>(p_variant._data._mem) ) );
+			memnew_placement( _data._mem, PoolVector<Vector2> ( *reinterpret_cast<const PoolVector<Vector2>*>(p_variant._data._mem) ) );
 
 		} break;
 		case VECTOR3_ARRAY: {
 
-			memnew_placement( _data._mem, DVector<Vector3> ( *reinterpret_cast<const DVector<Vector3>*>(p_variant._data._mem) ) );
+			memnew_placement( _data._mem, PoolVector<Vector3> ( *reinterpret_cast<const PoolVector<Vector3>*>(p_variant._data._mem) ) );
 
 		} break;
 		case COLOR_ARRAY: {
 
-			memnew_placement( _data._mem, DVector<Color> ( *reinterpret_cast<const DVector<Color>*>(p_variant._data._mem) ) );
+			memnew_placement( _data._mem, PoolVector<Color> ( *reinterpret_cast<const PoolVector<Color>*>(p_variant._data._mem) ) );
 
 		} break;
 		default: {}
@@ -1198,37 +1198,37 @@ void Variant::clear() {
 		// arrays
 		case RAW_ARRAY: {
 
-			reinterpret_cast< DVector<uint8_t>* >(_data._mem)->~DVector<uint8_t>();
+			reinterpret_cast< PoolVector<uint8_t>* >(_data._mem)->~PoolVector<uint8_t>();
 
 		} break;
 		case INT_ARRAY: {
 
-			reinterpret_cast< DVector<int>* >(_data._mem)->~DVector<int>();
+			reinterpret_cast< PoolVector<int>* >(_data._mem)->~PoolVector<int>();
 
 		} break;
 		case REAL_ARRAY: {
 
-			reinterpret_cast< DVector<real_t>* >(_data._mem)->~DVector<real_t>();
+			reinterpret_cast< PoolVector<real_t>* >(_data._mem)->~PoolVector<real_t>();
 
 		} break;
 		case STRING_ARRAY: {
 
-			reinterpret_cast< DVector<String>* >(_data._mem)->~DVector<String>();
+			reinterpret_cast< PoolVector<String>* >(_data._mem)->~PoolVector<String>();
 
 		} break;
 		case VECTOR2_ARRAY: {
 
-			reinterpret_cast< DVector<Vector2>* >(_data._mem)->~DVector<Vector2>();
+			reinterpret_cast< PoolVector<Vector2>* >(_data._mem)->~PoolVector<Vector2>();
 
 		} break;
 		case VECTOR3_ARRAY: {
 
-			reinterpret_cast< DVector<Vector3>* >(_data._mem)->~DVector<Vector3>();
+			reinterpret_cast< PoolVector<Vector3>* >(_data._mem)->~PoolVector<Vector3>();
 
 		} break;
 		case COLOR_ARRAY: {
 
-			reinterpret_cast< DVector<Color>* >(_data._mem)->~DVector<Color>();
+			reinterpret_cast< PoolVector<Color>* >(_data._mem)->~PoolVector<Color>();
 
 		} break;
 		default: {} /* not needed */
@@ -1578,7 +1578,7 @@ Variant::operator String() const {
 		} break;
 		case VECTOR2_ARRAY: {
 
-			DVector<Vector2> vec = operator DVector<Vector2>();
+			PoolVector<Vector2> vec = operator PoolVector<Vector2>();
 			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
@@ -1591,7 +1591,7 @@ Variant::operator String() const {
 		} break;
 		case VECTOR3_ARRAY: {
 
-			DVector<Vector3> vec = operator DVector<Vector3>();
+			PoolVector<Vector3> vec = operator PoolVector<Vector3>();
 			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
@@ -1604,7 +1604,7 @@ Variant::operator String() const {
 		} break;
 		case STRING_ARRAY: {
 
-			DVector<String> vec = operator DVector<String>();
+			PoolVector<String> vec = operator PoolVector<String>();
 			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
@@ -1617,7 +1617,7 @@ Variant::operator String() const {
 		} break;
 		case INT_ARRAY: {
 
-			DVector<int> vec = operator DVector<int>();
+			PoolVector<int> vec = operator PoolVector<int>();
 			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
@@ -1630,7 +1630,7 @@ Variant::operator String() const {
 		} break;
 		case REAL_ARRAY: {
 
-			DVector<real_t> vec = operator DVector<real_t>();
+			PoolVector<real_t> vec = operator PoolVector<real_t>();
 			String str("[");
 			for(int i=0;i<vec.size();i++) {
 
@@ -1893,13 +1893,13 @@ inline DA _convert_array_from_variant(const Variant& p_variant) {
 
 
 		case Variant::ARRAY: { return _convert_array<DA,Array >( p_variant.operator Array () ); }
-		case Variant::RAW_ARRAY: { return _convert_array<DA,DVector<uint8_t> >( p_variant.operator DVector<uint8_t> () ); }
-		case Variant::INT_ARRAY: { return _convert_array<DA,DVector<int> >( p_variant.operator DVector<int> () ); }
-		case Variant::REAL_ARRAY: { return _convert_array<DA,DVector<real_t> >( p_variant.operator DVector<real_t> () ); }
-		case Variant::STRING_ARRAY: { return _convert_array<DA,DVector<String> >( p_variant.operator DVector<String> () ); }
-		case Variant::VECTOR2_ARRAY: { return _convert_array<DA,DVector<Vector2> >( p_variant.operator DVector<Vector2> () ); }
-		case Variant::VECTOR3_ARRAY: { return _convert_array<DA,DVector<Vector3> >( p_variant.operator DVector<Vector3> () ); }
-		case Variant::COLOR_ARRAY: { return _convert_array<DA,DVector<Color> >( p_variant.operator DVector<Color>() ); }
+		case Variant::RAW_ARRAY: { return _convert_array<DA,PoolVector<uint8_t> >( p_variant.operator PoolVector<uint8_t> () ); }
+		case Variant::INT_ARRAY: { return _convert_array<DA,PoolVector<int> >( p_variant.operator PoolVector<int> () ); }
+		case Variant::REAL_ARRAY: { return _convert_array<DA,PoolVector<real_t> >( p_variant.operator PoolVector<real_t> () ); }
+		case Variant::STRING_ARRAY: { return _convert_array<DA,PoolVector<String> >( p_variant.operator PoolVector<String> () ); }
+		case Variant::VECTOR2_ARRAY: { return _convert_array<DA,PoolVector<Vector2> >( p_variant.operator PoolVector<Vector2> () ); }
+		case Variant::VECTOR3_ARRAY: { return _convert_array<DA,PoolVector<Vector3> >( p_variant.operator PoolVector<Vector3> () ); }
+		case Variant::COLOR_ARRAY: { return _convert_array<DA,PoolVector<Color> >( p_variant.operator PoolVector<Color>() ); }
 		default: { return DA(); }
 	}
 
@@ -1914,64 +1914,64 @@ Variant::operator Array() const {
 		return _convert_array_from_variant<Array >(*this);
 }
 
-Variant::operator DVector<uint8_t>() const {
+Variant::operator PoolVector<uint8_t>() const {
 
 	if (type==RAW_ARRAY)
-		return *reinterpret_cast<const DVector<uint8_t>* >(_data._mem);
+		return *reinterpret_cast<const PoolVector<uint8_t>* >(_data._mem);
 	else
-		return _convert_array_from_variant<DVector<uint8_t> >(*this);
+		return _convert_array_from_variant<PoolVector<uint8_t> >(*this);
 }
-Variant::operator DVector<int>() const {
+Variant::operator PoolVector<int>() const {
 
 	if (type==INT_ARRAY)
-		return *reinterpret_cast<const DVector<int>* >(_data._mem);
+		return *reinterpret_cast<const PoolVector<int>* >(_data._mem);
 	else
-		return _convert_array_from_variant<DVector<int> >(*this);
+		return _convert_array_from_variant<PoolVector<int> >(*this);
 
 }
-Variant::operator DVector<real_t>() const {
+Variant::operator PoolVector<real_t>() const {
 
 	if (type==REAL_ARRAY)
-		return *reinterpret_cast<const DVector<real_t>* >(_data._mem);
+		return *reinterpret_cast<const PoolVector<real_t>* >(_data._mem);
 	else
-		return _convert_array_from_variant<DVector<real_t> >(*this);
+		return _convert_array_from_variant<PoolVector<real_t> >(*this);
 
 }
 
-Variant::operator DVector<String>() const {
+Variant::operator PoolVector<String>() const {
 
 	if (type==STRING_ARRAY)
-		return *reinterpret_cast<const DVector<String>* >(_data._mem);
+		return *reinterpret_cast<const PoolVector<String>* >(_data._mem);
 	else
-		return _convert_array_from_variant<DVector<String> >(*this);
+		return _convert_array_from_variant<PoolVector<String> >(*this);
 
 
 }
-Variant::operator DVector<Vector3>() const {
+Variant::operator PoolVector<Vector3>() const {
 
 	if (type==VECTOR3_ARRAY)
-		return *reinterpret_cast<const DVector<Vector3>* >(_data._mem);
+		return *reinterpret_cast<const PoolVector<Vector3>* >(_data._mem);
 	else
-		return _convert_array_from_variant<DVector<Vector3> >(*this);
+		return _convert_array_from_variant<PoolVector<Vector3> >(*this);
 
 
 }
-Variant::operator DVector<Vector2>() const {
+Variant::operator PoolVector<Vector2>() const {
 
 	if (type==VECTOR2_ARRAY)
-		return *reinterpret_cast<const DVector<Vector2>* >(_data._mem);
+		return *reinterpret_cast<const PoolVector<Vector2>* >(_data._mem);
 	else
-		return _convert_array_from_variant<DVector<Vector2> >(*this);
+		return _convert_array_from_variant<PoolVector<Vector2> >(*this);
 
 
 }
 
-Variant::operator DVector<Color>() const {
+Variant::operator PoolVector<Color>() const {
 
 	if (type==COLOR_ARRAY)
-		return *reinterpret_cast<const  DVector<Color>* >(_data._mem);
+		return *reinterpret_cast<const  PoolVector<Color>* >(_data._mem);
 	else
-		return _convert_array_from_variant<DVector<Color> >(*this);
+		return _convert_array_from_variant<PoolVector<Color> >(*this);
 
 }
 
@@ -1990,13 +1990,13 @@ Variant::operator Vector<RID>() const {
 
 Variant::operator Vector<Vector2>() const {
 
-	DVector<Vector2> from=operator DVector<Vector2>();
+	PoolVector<Vector2> from=operator PoolVector<Vector2>();
 	Vector<Vector2> to;
 	int len=from.size();
 	if (len==0)
 		return Vector<Vector2>();
 	to.resize(len);
-	DVector<Vector2>::Read r = from.read();
+	PoolVector<Vector2>::Read r = from.read();
 	Vector2 *w = &to[0];
 	for (int i=0;i<len;i++) {
 
@@ -2005,16 +2005,16 @@ Variant::operator Vector<Vector2>() const {
 	return to;
 }
 
-Variant::operator DVector<Plane>() const {
+Variant::operator PoolVector<Plane>() const {
 
 	Array va= operator Array();
-	DVector<Plane> planes;
+	PoolVector<Plane> planes;
 	int va_size=va.size();
 	if (va_size==0)
 		return planes;
 
 	planes.resize(va_size);
-	DVector<Plane>::Write w = planes.write();
+	PoolVector<Plane>::Write w = planes.write();
 
 	for(int i=0;i<va_size;i++)
 		w[i]=va[i];
@@ -2022,17 +2022,17 @@ Variant::operator DVector<Plane>() const {
 	return planes;
 }
 
-Variant::operator DVector<Face3>() const {
+Variant::operator PoolVector<Face3>() const {
 
-	DVector<Vector3> va= operator DVector<Vector3>();
-	DVector<Face3> faces;
+	PoolVector<Vector3> va= operator PoolVector<Vector3>();
+	PoolVector<Face3> faces;
 	int va_size=va.size();
 	if (va_size==0)
 		return faces;
 
 	faces.resize(va_size/3);
-	DVector<Face3>::Write w = faces.write();
-	DVector<Vector3>::Read r = va.read();
+	PoolVector<Face3>::Write w = faces.write();
+	PoolVector<Vector3>::Read r = va.read();
 
 	for(int i=0;i<va_size;i++)
 		w[i/3].vertex[i%3]=r[i];
@@ -2072,7 +2072,7 @@ Variant::operator Vector<Variant>() const {
 
 Variant::operator Vector<uint8_t>() const {
 
-	DVector<uint8_t> from=operator DVector<uint8_t>();
+	PoolVector<uint8_t> from=operator PoolVector<uint8_t>();
 	Vector<uint8_t> to;
 	int len=from.size();
 	to.resize(len);
@@ -2084,7 +2084,7 @@ Variant::operator Vector<uint8_t>() const {
 }
 Variant::operator Vector<int>() const {
 
-	DVector<int> from=operator DVector<int>();
+	PoolVector<int> from=operator PoolVector<int>();
 	Vector<int> to;
 	int len=from.size();
 	to.resize(len);
@@ -2096,7 +2096,7 @@ Variant::operator Vector<int>() const {
 }
 Variant::operator Vector<real_t>() const {
 
-	DVector<real_t> from=operator DVector<real_t>();
+	PoolVector<real_t> from=operator PoolVector<real_t>();
 	Vector<real_t> to;
 	int len=from.size();
 	to.resize(len);
@@ -2109,7 +2109,7 @@ Variant::operator Vector<real_t>() const {
 
 Variant::operator Vector<String>() const {
 
-	DVector<String> from=operator DVector<String>();
+	PoolVector<String> from=operator PoolVector<String>();
 	Vector<String> to;
 	int len=from.size();
 	to.resize(len);
@@ -2122,13 +2122,13 @@ Variant::operator Vector<String>() const {
 }
 Variant::operator Vector<Vector3>() const {
 
-	DVector<Vector3> from=operator DVector<Vector3>();
+	PoolVector<Vector3> from=operator PoolVector<Vector3>();
 	Vector<Vector3> to;
 	int len=from.size();
 	if (len==0)
 		return Vector<Vector3>();
 	to.resize(len);
-	DVector<Vector3>::Read r = from.read();
+	PoolVector<Vector3>::Read r = from.read();
 	Vector3 *w = &to[0];
 	for (int i=0;i<len;i++) {
 
@@ -2139,13 +2139,13 @@ Variant::operator Vector<Vector3>() const {
 }
 Variant::operator Vector<Color>() const {
 
-	DVector<Color> from=operator DVector<Color>();
+	PoolVector<Color> from=operator PoolVector<Color>();
 	Vector<Color> to;
 	int len=from.size();
 	if (len==0)
 		return Vector<Color>();
 	to.resize(len);
-	DVector<Color>::Read r = from.read();
+	PoolVector<Color>::Read r = from.read();
 	Color *w = &to[0];
 	for (int i=0;i<len;i++) {
 
@@ -2167,7 +2167,7 @@ Variant::operator IP_Address() const {
 
 	if (type==REAL_ARRAY || type==INT_ARRAY || type==RAW_ARRAY) {
 
-		DVector<int> addr=operator DVector<int>();
+		PoolVector<int> addr=operator PoolVector<int>();
 		if (addr.size()==4) {
 			return IP_Address(addr.get(0),addr.get(1),addr.get(2),addr.get(3));
 		}
@@ -2418,7 +2418,7 @@ Variant::Variant(const Array& p_array) {
 
 }
 
-Variant::Variant(const DVector<Plane>& p_array) {
+Variant::Variant(const PoolVector<Plane>& p_array) {
 
 
 	type=ARRAY;
@@ -2467,11 +2467,11 @@ Variant::Variant(const Vector<Vector2>& p_array) {
 
 
 	type=NIL;
-	DVector<Vector2> v;
+	PoolVector<Vector2> v;
 	int len=p_array.size();
 	if (len>0) {
 		v.resize(len);
-		DVector<Vector2>::Write w = v.write();
+		PoolVector<Vector2>::Write w = v.write();
 		const Vector2 *r = p_array.ptr();
 
 		for (int i=0;i<len;i++)
@@ -2481,59 +2481,59 @@ Variant::Variant(const Vector<Vector2>& p_array) {
 }
 
 
-Variant::Variant(const DVector<uint8_t>& p_raw_array) {
+Variant::Variant(const PoolVector<uint8_t>& p_raw_array) {
 
 	type=RAW_ARRAY;
-	memnew_placement( _data._mem, DVector<uint8_t>(p_raw_array) );
+	memnew_placement( _data._mem, PoolVector<uint8_t>(p_raw_array) );
 
 }
-Variant::Variant(const DVector<int>& p_int_array) {
+Variant::Variant(const PoolVector<int>& p_int_array) {
 
 	type=INT_ARRAY;
-	memnew_placement( _data._mem, DVector<int>(p_int_array) );
+	memnew_placement( _data._mem, PoolVector<int>(p_int_array) );
 
 }
-Variant::Variant(const DVector<real_t>& p_real_array) {
+Variant::Variant(const PoolVector<real_t>& p_real_array) {
 
 	type=REAL_ARRAY;
-	memnew_placement( _data._mem, DVector<real_t>(p_real_array) );
+	memnew_placement( _data._mem, PoolVector<real_t>(p_real_array) );
 
 }
-Variant::Variant(const DVector<String>& p_string_array) {
+Variant::Variant(const PoolVector<String>& p_string_array) {
 
 	type=STRING_ARRAY;
-	memnew_placement( _data._mem, DVector<String>(p_string_array) );
+	memnew_placement( _data._mem, PoolVector<String>(p_string_array) );
 
 }
-Variant::Variant(const DVector<Vector3>& p_vector3_array) {
+Variant::Variant(const PoolVector<Vector3>& p_vector3_array) {
 
 	type=VECTOR3_ARRAY;
-	memnew_placement( _data._mem, DVector<Vector3>(p_vector3_array) );
+	memnew_placement( _data._mem, PoolVector<Vector3>(p_vector3_array) );
 
 }
 
-Variant::Variant(const DVector<Vector2>& p_vector2_array) {
+Variant::Variant(const PoolVector<Vector2>& p_vector2_array) {
 
 	type=VECTOR2_ARRAY;
-	memnew_placement( _data._mem, DVector<Vector2>(p_vector2_array) );
+	memnew_placement( _data._mem, PoolVector<Vector2>(p_vector2_array) );
 
 }
-Variant::Variant(const DVector<Color>& p_color_array) {
+Variant::Variant(const PoolVector<Color>& p_color_array) {
 
 	type=COLOR_ARRAY;
-	memnew_placement( _data._mem, DVector<Color>(p_color_array) );
+	memnew_placement( _data._mem, PoolVector<Color>(p_color_array) );
 }
 
-Variant::Variant(const DVector<Face3>& p_face_array) {
+Variant::Variant(const PoolVector<Face3>& p_face_array) {
 
 
-	DVector<Vector3> vertices;
+	PoolVector<Vector3> vertices;
 	int face_count=p_face_array.size();
 	vertices.resize(face_count*3);
 
 	if (face_count) {
-		DVector<Face3>::Read r = p_face_array.read();
-		DVector<Vector3>::Write w = vertices.write();
+		PoolVector<Face3>::Read r = p_face_array.read();
+		PoolVector<Vector3>::Write w = vertices.write();
 
 		for(int i=0;i<face_count;i++) {
 
@@ -2541,8 +2541,8 @@ Variant::Variant(const DVector<Face3>& p_face_array) {
 				w[i*3+j]=r[i].vertex[j];
 		}
 
-		r=DVector<Face3>::Read();
-		w=DVector<Vector3>::Write();
+		r=PoolVector<Face3>::Read();
+		w=PoolVector<Vector3>::Write();
 
 	}
 
@@ -2567,7 +2567,7 @@ Variant::Variant(const Vector<Variant>& p_array) {
 Variant::Variant(const Vector<uint8_t>& p_array) {
 
 	type=NIL;
-	DVector<uint8_t> v;
+	PoolVector<uint8_t> v;
 	int len=p_array.size();
 	v.resize(len);
 	for (int i=0;i<len;i++)
@@ -2578,7 +2578,7 @@ Variant::Variant(const Vector<uint8_t>& p_array) {
 Variant::Variant(const Vector<int>& p_array) {
 
 	type=NIL;
-	DVector<int> v;
+	PoolVector<int> v;
 	int len=p_array.size();
 	v.resize(len);
 	for (int i=0;i<len;i++)
@@ -2589,7 +2589,7 @@ Variant::Variant(const Vector<int>& p_array) {
 Variant::Variant(const Vector<real_t>& p_array) {
 
 	type=NIL;
-	DVector<real_t> v;
+	PoolVector<real_t> v;
 	int len=p_array.size();
 	v.resize(len);
 	for (int i=0;i<len;i++)
@@ -2600,7 +2600,7 @@ Variant::Variant(const Vector<real_t>& p_array) {
 Variant::Variant(const Vector<String>& p_array) {
 
 	type=NIL;
-	DVector<String> v;
+	PoolVector<String> v;
 	int len=p_array.size();
 	v.resize(len);
 	for (int i=0;i<len;i++)
@@ -2611,11 +2611,11 @@ Variant::Variant(const Vector<String>& p_array) {
 Variant::Variant(const Vector<Vector3>& p_array) {
 
 	type=NIL;
-	DVector<Vector3> v;
+	PoolVector<Vector3> v;
 	int len=p_array.size();
 	if (len>0) {
 		v.resize(len);
-		DVector<Vector3>::Write w = v.write();
+		PoolVector<Vector3>::Write w = v.write();
 		const Vector3 *r = p_array.ptr();
 
 		for (int i=0;i<len;i++)
@@ -2627,7 +2627,7 @@ Variant::Variant(const Vector<Vector3>& p_array) {
 Variant::Variant(const Vector<Color>& p_array) {
 
 	type=NIL;
-	DVector<Color> v;
+	PoolVector<Color> v;
 	int len=p_array.size();
 	v.resize(len);
 	for (int i=0;i<len;i++)
@@ -2826,27 +2826,27 @@ uint32_t Variant::hash() const {
 		} break;
 		case RAW_ARRAY: {
 
-			const DVector<uint8_t>& arr = *reinterpret_cast<const DVector<uint8_t>* >(_data._mem);
+			const PoolVector<uint8_t>& arr = *reinterpret_cast<const PoolVector<uint8_t>* >(_data._mem);
 			int len = arr.size();
-			DVector<uint8_t>::Read r = arr.read();
+			PoolVector<uint8_t>::Read r = arr.read();
 
 			return hash_djb2_buffer((uint8_t*)&r[0],len);
 
 		} break;
 		case INT_ARRAY: {
 
-			const DVector<int>& arr = *reinterpret_cast<const DVector<int>* >(_data._mem);
+			const PoolVector<int>& arr = *reinterpret_cast<const PoolVector<int>* >(_data._mem);
 			int len = arr.size();
-			DVector<int>::Read r = arr.read();
+			PoolVector<int>::Read r = arr.read();
 
 			return hash_djb2_buffer((uint8_t*)&r[0],len*sizeof(int));
 
 		} break;
 		case REAL_ARRAY: {
 
-			const DVector<real_t>& arr = *reinterpret_cast<const DVector<real_t>* >(_data._mem);
+			const PoolVector<real_t>& arr = *reinterpret_cast<const PoolVector<real_t>* >(_data._mem);
 			int len = arr.size();
-			DVector<real_t>::Read r = arr.read();
+			PoolVector<real_t>::Read r = arr.read();
 
 			return hash_djb2_buffer((uint8_t*)&r[0],len*sizeof(real_t));
 
@@ -2854,9 +2854,9 @@ uint32_t Variant::hash() const {
 		case STRING_ARRAY: {
 
 			uint32_t hash=5831;
-			const DVector<String>& arr = *reinterpret_cast<const DVector<String>* >(_data._mem);
+			const PoolVector<String>& arr = *reinterpret_cast<const PoolVector<String>* >(_data._mem);
 			int len = arr.size();
-			DVector<String>::Read r = arr.read();
+			PoolVector<String>::Read r = arr.read();
 
 			for(int i=0;i<len;i++) {
 				hash = hash_djb2_one_32(r[i].hash(),hash);
@@ -2867,9 +2867,9 @@ uint32_t Variant::hash() const {
 		case VECTOR2_ARRAY: {
 
 			uint32_t hash=5831;
-			const DVector<Vector2>& arr = *reinterpret_cast<const DVector<Vector2>* >(_data._mem);
+			const PoolVector<Vector2>& arr = *reinterpret_cast<const PoolVector<Vector2>* >(_data._mem);
 			int len = arr.size();
-			DVector<Vector2>::Read r = arr.read();
+			PoolVector<Vector2>::Read r = arr.read();
 
 			for(int i=0;i<len;i++) {
 				hash = hash_djb2_one_float(r[i].x,hash);
@@ -2882,9 +2882,9 @@ uint32_t Variant::hash() const {
 		case VECTOR3_ARRAY: {
 
 			uint32_t hash=5831;
-			const DVector<Vector3>& arr = *reinterpret_cast<const DVector<Vector3>* >(_data._mem);
+			const PoolVector<Vector3>& arr = *reinterpret_cast<const PoolVector<Vector3>* >(_data._mem);
 			int len = arr.size();
-			DVector<Vector3>::Read r = arr.read();
+			PoolVector<Vector3>::Read r = arr.read();
 
 			for(int i=0;i<len;i++) {
 				hash = hash_djb2_one_float(r[i].x,hash);
@@ -2898,9 +2898,9 @@ uint32_t Variant::hash() const {
 		case COLOR_ARRAY: {
 
 			uint32_t hash=5831;
-			const DVector<Color>& arr = *reinterpret_cast<const DVector<Color>* >(_data._mem);
+			const PoolVector<Color>& arr = *reinterpret_cast<const PoolVector<Color>* >(_data._mem);
 			int len = arr.size();
-			DVector<Color>::Read r = arr.read();
+			PoolVector<Color>::Read r = arr.read();
 
 			for(int i=0;i<len;i++) {
 				hash = hash_djb2_one_float(r[i].r,hash);

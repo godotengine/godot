@@ -1058,20 +1058,20 @@ RID VisualServerCanvas::canvas_occluder_polygon_create() {
 	return canvas_light_occluder_polygon_owner.make_rid(occluder_poly);
 
 }
-void VisualServerCanvas::canvas_occluder_polygon_set_shape(RID p_occluder_polygon,const DVector<Vector2>& p_shape,bool p_closed) {
+void VisualServerCanvas::canvas_occluder_polygon_set_shape(RID p_occluder_polygon,const PoolVector<Vector2>& p_shape,bool p_closed) {
 
 	if (p_shape.size()<3) {
 		canvas_occluder_polygon_set_shape_as_lines(p_occluder_polygon,p_shape);
 		return;
 	}
 
-	DVector<Vector2> lines;
+	PoolVector<Vector2> lines;
 	int lc = p_shape.size()*2;
 
 	lines.resize(lc-(p_closed?0:2));
 	{
-		DVector<Vector2>::Write w = lines.write();
-		DVector<Vector2>::Read r = p_shape.read();
+		PoolVector<Vector2>::Write w = lines.write();
+		PoolVector<Vector2>::Read r = p_shape.read();
 
 		int max=lc/2;
 		if (!p_closed) {
@@ -1089,7 +1089,7 @@ void VisualServerCanvas::canvas_occluder_polygon_set_shape(RID p_occluder_polygo
 
 	canvas_occluder_polygon_set_shape_as_lines(p_occluder_polygon,lines);
 }
-void VisualServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const DVector<Vector2>& p_shape) {
+void VisualServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const PoolVector<Vector2>& p_shape) {
 
 	LightOccluderPolygon * occluder_poly = canvas_light_occluder_polygon_owner.get(p_occluder_polygon);
 	ERR_FAIL_COND(!occluder_poly);
@@ -1098,7 +1098,7 @@ void VisualServerCanvas::canvas_occluder_polygon_set_shape_as_lines(RID p_occlud
 	int lc = p_shape.size();
 	occluder_poly->aabb=Rect2();
 	{
-		DVector<Vector2>::Read r = p_shape.read();
+		PoolVector<Vector2>::Read r = p_shape.read();
 		for(int i=0;i<lc;i++) {
 			if (i==0)
 				occluder_poly->aabb.pos=r[i];

@@ -37,10 +37,10 @@ static void _decompress_etc(Image *p_img) {
 
 	int imgw = p_img->get_width();
 	int imgh = p_img->get_height();
-	DVector<uint8_t> src=p_img->get_data();
-	DVector<uint8_t> dst;
+	PoolVector<uint8_t> src=p_img->get_data();
+	PoolVector<uint8_t> dst;
 
-	DVector<uint8_t>::Read r = src.read();
+	PoolVector<uint8_t>::Read r = src.read();
 
 	int mmc=p_img->get_mipmap_count();
 
@@ -49,7 +49,7 @@ static void _decompress_etc(Image *p_img) {
 
 		dst.resize(dst.size()+imgw*imgh*3);
 		const uint8_t *srcbr=&r[p_img->get_mipmap_offset(i)];
-		DVector<uint8_t>::Write w = dst.write();
+		PoolVector<uint8_t>::Write w = dst.write();
 
 		uint8_t *wptr = &w[dst.size()-imgw*imgh*3];
 
@@ -91,7 +91,7 @@ static void _decompress_etc(Image *p_img) {
 	}
 
 
-	r=DVector<uint8_t>::Read();
+	r=PoolVector<uint8_t>::Read();
 	//print_line("Re Creating ETC into regular image: w "+itos(p_img->get_width())+" h "+itos(p_img->get_height())+" mm "+itos(p_img->get_mipmaps()));
 	*p_img=Image(p_img->get_width(),p_img->get_height(),p_img->has_mipmaps(),Image::FORMAT_RGB8,dst);
 	if (p_img->has_mipmaps())
@@ -117,9 +117,9 @@ static void _compress_etc(Image *p_img) {
 		img.generate_mipmaps(); // force mipmaps, so it works on most hardware
 
 
-	DVector<uint8_t> res_data;
-	DVector<uint8_t> dst_data;
-	DVector<uint8_t>::Read r = img.get_data().read();
+	PoolVector<uint8_t> res_data;
+	PoolVector<uint8_t> dst_data;
+	PoolVector<uint8_t>::Read r = img.get_data().read();
 
 	int mc=0;
 
@@ -134,7 +134,7 @@ static void _compress_etc(Image *p_img) {
 		const uint8_t *src = &r[img.get_mipmap_offset(i)];
 		int mmsize = MAX(bw,1)*MAX(bh,1)*8;
 		dst_data.resize(dst_data.size()+mmsize);
-		DVector<uint8_t>::Write w=dst_data.write();
+		PoolVector<uint8_t>::Write w=dst_data.write();
 		uint8_t *dst = &w[dst_data.size()-mmsize];
 
 

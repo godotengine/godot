@@ -61,9 +61,9 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 	} else if (name=="theme/bake") {
 		set_bake(p_value);
 /*	} else if (name=="cells") {
-		DVector<int> cells = p_value;
+		PoolVector<int> cells = p_value;
 		int amount=cells.size();
-		DVector<int>::Read r = cells.read();
+		PoolVector<int>::Read r = cells.read();
 		ERR_FAIL_COND_V(amount&1,false); // not even
 		cell_map.clear();;
 		for(int i=0;i<amount/3;i++) {
@@ -86,9 +86,9 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 			baked=d["baked"];
 		if (d.has("cells")) {
 
-			DVector<int> cells = d["cells"];
+			PoolVector<int> cells = d["cells"];
 			int amount=cells.size();
-			DVector<int>::Read r = cells.read();
+			PoolVector<int>::Read r = cells.read();
 			ERR_FAIL_COND_V(amount%3,false); // not even
 			cell_map.clear();;
 			for(int i=0;i<amount/3;i++) {
@@ -183,10 +183,10 @@ bool GridMap::_get(const StringName& p_name,Variant &r_ret) const {
 
 		Dictionary d;
 
-		DVector<int> cells;
+		PoolVector<int> cells;
 		cells.resize(cell_map.size()*3);
 		{
-			DVector<int>::Write w = cells.write();
+			PoolVector<int>::Write w = cells.write();
 			int i=0;
 			for (Map<IndexKey,Cell>::Element *E=cell_map.front();E;E=E->next(),i++) {
 
@@ -665,7 +665,7 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 		VS::get_singleton()->mesh_clear(g.collision_debug);
 	}
 
-	DVector<Vector3> col_debug;
+	PoolVector<Vector3> col_debug;
 
 	/*
 	 * foreach item in this octant,
@@ -863,15 +863,15 @@ void GridMap::_octant_bake(const OctantKey &p_key, const Ref<TriangleMesh>& p_tm
 					if (ii.mesh->surface_get_primitive_type(i)!=Mesh::PRIMITIVE_TRIANGLES)
 						continue;
 					Array a = ii.mesh->surface_get_arrays(i);
-					DVector<Vector3> av=a[VS::ARRAY_VERTEX];
+					PoolVector<Vector3> av=a[VS::ARRAY_VERTEX];
 					int avs = av.size();
-					DVector<Vector3>::Read vr = av.read();
+					PoolVector<Vector3>::Read vr = av.read();
 
-					DVector<int> ai=a[VS::ARRAY_INDEX];
+					PoolVector<int> ai=a[VS::ARRAY_INDEX];
 					int ais=ai.size();
 					if (ais) {
 
-						DVector<int>::Read ir=ai.read();
+						PoolVector<int>::Read ir=ai.read();
 						for(int j=0;j<ais;j++) {
 
 							p_prebake->push_back(xform.xform(vr[ir[j]]));
@@ -1667,7 +1667,7 @@ void GridMap::bake_geometry() {
 
 		}
 
-		DVector<Vector3> vv;
+		PoolVector<Vector3> vv;
 		vv.fill_with(vertices);
 		//print_line("TOTAL VERTICES: "+itos(vv.size()));
 		tmesh = Ref<TriangleMesh>( memnew( TriangleMesh ));

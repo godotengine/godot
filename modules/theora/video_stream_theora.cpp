@@ -88,7 +88,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 	{
 		int pixels = size.x * size.y;
 		frame_data.resize(pixels * 4);
-		DVector<uint8_t>::Write w = frame_data.write();
+		PoolVector<uint8_t>::Write w = frame_data.write();
 		char* dst = (char*)w.ptr();
 		int p = 0;
 		for (int i=0; i<size.y; i++) {
@@ -112,7 +112,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 	int pitch = 4;
 	frame_data.resize(size.x * size.y * pitch);
 	{
-		DVector<uint8_t>::Write w = frame_data.write();
+		PoolVector<uint8_t>::Write w = frame_data.write();
 		char* dst = (char*)w.ptr();
 
 		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
@@ -143,7 +143,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 
 		int pitch = 3;
 		frame_data.resize(size.x * size.y * pitch);
-		DVector<uint8_t>::Write w = frame_data.write();
+		PoolVector<uint8_t>::Write w = frame_data.write();
 		char* dst = (char*)w.ptr();
 
 		for(int i=0;i<size.y;i++) {
@@ -174,7 +174,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 
 			int pitch = 4;
 			frame_data.resize(size.x * size.y * pitch);
-			DVector<uint8_t>::Write w = frame_data.write();
+			PoolVector<uint8_t>::Write w = frame_data.write();
 			char* dst = (char*)w.ptr();
 
 			uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y / div);
@@ -208,7 +208,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 
 			int pitch = 2;
 			frame_data.resize(size.x * size.y * pitch);
-			DVector<uint8_t>::Write w = frame_data.write();
+			PoolVector<uint8_t>::Write w = frame_data.write();
 			char* dst = (char*)w.ptr();
 
 			uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y / div);

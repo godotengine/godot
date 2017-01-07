@@ -204,7 +204,7 @@ Vector<Color> BakedLight::_get_bake_texture(Image &p_image,const Color& p_color)
 	p_image.resize(bake_texture_size,bake_texture_size,Image::INTERPOLATE_CUBIC);
 
 
-	DVector<uint8_t>::Read r = p_image.get_data().read();
+	PoolVector<uint8_t>::Read r = p_image.get_data().read();
 	ret.resize(bake_texture_size*bake_texture_size);
 
 	for(int i=0;i<bake_texture_size*bake_texture_size;i++) {
@@ -506,7 +506,7 @@ void BakedLight::_plot_face(int p_idx, int p_level, const Vector3 *p_vtx, const 
 				if (bake_cells_used==(1<<bake_cells_alloc)) {
 					//exhausted cells, creating more space
 					bake_cells_alloc++;
-					bake_cells_write=DVector<BakeCell>::Write();
+					bake_cells_write=PoolVector<BakeCell>::Write();
 					bake_cells.resize(1<<bake_cells_alloc);
 					bake_cells_write=bake_cells.write();
 				}
@@ -670,11 +670,11 @@ void BakedLight::_bake_add_mesh(const Transform& p_xform,Ref<Mesh>& p_mesh) {
 		Array a = p_mesh->surface_get_arrays(i);
 
 
-		DVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
-		DVector<Vector3>::Read vr=vertices.read();
-		DVector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
-		DVector<Vector2>::Read uvr;
-		DVector<int> index = a[Mesh::ARRAY_INDEX];
+		PoolVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vr=vertices.read();
+		PoolVector<Vector2> uv = a[Mesh::ARRAY_TEX_UV];
+		PoolVector<Vector2>::Read uvr;
+		PoolVector<int> index = a[Mesh::ARRAY_INDEX];
 
 		bool read_uv=false;
 
@@ -687,7 +687,7 @@ void BakedLight::_bake_add_mesh(const Transform& p_xform,Ref<Mesh>& p_mesh) {
 		if (index.size()) {
 
 			int facecount = index.size()/3;
-			DVector<int>::Read ir=index.read();
+			PoolVector<int>::Read ir=index.read();
 
 			for(int j=0;j<facecount;j++) {
 
@@ -747,9 +747,9 @@ void BakedLight::_bake_add_to_aabb(const Transform& p_xform,Ref<Mesh>& p_mesh,bo
 			continue; //only triangles
 
 		Array a = p_mesh->surface_get_arrays(i);
-		DVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		PoolVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
 		int vc = vertices.size();
-		DVector<Vector3>::Read vr=vertices.read();
+		PoolVector<Vector3>::Read vr=vertices.read();
 
 		if (first) {
 			bounds.pos=p_xform.xform(vr[0]);
@@ -827,7 +827,7 @@ void BakedLight::bake() {
 	_fixup_plot(0, 0,0,0,0);
 
 
-	bake_cells_write=DVector<BakeCell>::Write();
+	bake_cells_write=PoolVector<BakeCell>::Write();
 
 	bake_cells.resize(bake_cells_used);
 
@@ -1005,7 +1005,7 @@ void BakedLight::bake_lights() {
 
 	_upscale_light(0,0);
 
-	bake_cells_write=DVector<BakeCell>::Write();
+	bake_cells_write=PoolVector<BakeCell>::Write();
 
 }
 
@@ -1371,7 +1371,7 @@ void BakedLight::bake_radiance() {
 
 	_bake_radiance(0,0,0,0,0);
 
-	bake_cells_write=DVector<BakeCell>::Write();
+	bake_cells_write=PoolVector<BakeCell>::Write();
 
 }
 int BakedLight::_find_cell(int x,int y, int z) {
@@ -1538,9 +1538,9 @@ AABB BakedLight::get_aabb() const {
 
 	return AABB(Vector3(0,0,0),Vector3(1,1,1));
 }
-DVector<Face3> BakedLight::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> BakedLight::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 
@@ -1621,8 +1621,8 @@ void BakedLight::create_debug_mesh(DebugMode p_mode) {
 		Array arr;
 		arr.resize(Mesh::ARRAY_MAX);
 
-		DVector<Vector3> vertices;
-		DVector<Color> colors;
+		PoolVector<Vector3> vertices;
+		PoolVector<Color> colors;
 
 		int vtx_idx=0;
 	#define ADD_VTX(m_idx);\

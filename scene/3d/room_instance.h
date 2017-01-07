@@ -63,7 +63,7 @@ private:
 	bool sound_enabled;
 
 	int level;
-	void _parse_node_faces(DVector<Face3> &all_faces,const Node *p_node) const;
+	void _parse_node_faces(PoolVector<Face3> &all_faces,const Node *p_node) const;
 
 
 	void _bounds_changed();
@@ -83,7 +83,7 @@ public:
 	};
 
 	virtual AABB get_aabb() const;
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_room( const Ref<RoomBounds>& p_room );
 	Ref<RoomBounds> get_room() const;

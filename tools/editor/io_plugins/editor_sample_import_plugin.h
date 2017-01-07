@@ -40,7 +40,7 @@ class EditorSampleImportPlugin : public EditorImportPlugin {
 	GDCLASS(EditorSampleImportPlugin,EditorImportPlugin);
 
 	EditorSampleImportDialog *dialog;
-	void _compress_ima_adpcm(const Vector<float>& p_data,DVector<uint8_t>& dst_data);
+	void _compress_ima_adpcm(const Vector<float>& p_data,PoolVector<uint8_t>& dst_data);
 public:
 
 	static EditorSampleImportPlugin *singleton;

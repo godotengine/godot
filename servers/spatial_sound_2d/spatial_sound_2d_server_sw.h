@@ -82,7 +82,7 @@ class SpatialSound2DServerSW : public SpatialSound2DServer {
 		RID space;
 		Matrix32 transform;
 		Matrix32 inverse_transform;
-		DVector<Point2> bounds;
+		PoolVector<Point2> bounds;
 		RoomReverb reverb;
 		float params[ROOM_PARAM_MAX];
 		bool override_other_sources;
@@ -198,8 +198,8 @@ public:
 	virtual void room_set_space(RID p_room,RID p_space);
 	virtual RID room_get_space(RID p_room) const;
 
-	virtual void room_set_bounds(RID p_room, const DVector<Point2>& p_bounds);
-	virtual DVector<Point2> room_get_bounds(RID p_room) const;
+	virtual void room_set_bounds(RID p_room, const PoolVector<Point2>& p_bounds);
+	virtual PoolVector<Point2> room_get_bounds(RID p_room) const;
 	virtual void room_set_transform(RID p_room, const Matrix32& p_transform);
 	virtual Matrix32 room_get_transform(RID p_room) const;
 

@@ -2174,9 +2174,9 @@ bool EditorImportExport::sample_get_trim() const{
 	return sample_action_trim;
 }
 
-DVector<String> EditorImportExport::_get_export_file_list() {
+PoolVector<String> EditorImportExport::_get_export_file_list() {
 
-	DVector<String> fl;
+	PoolVector<String> fl;
 	for (Map<StringName,FileAction>::Element *E=files.front();E;E=E->next()) {
 
 		fl.push_back(E->key());
@@ -2185,9 +2185,9 @@ DVector<String> EditorImportExport::_get_export_file_list() {
 	return fl;
 }
 
-DVector<String> EditorImportExport::_get_export_platforms() {
+PoolVector<String> EditorImportExport::_get_export_platforms() {
 
-	DVector<String> ep;
+	PoolVector<String> ep;
 	for (Map<StringName,Ref<EditorExportPlatform> >::Element *E=exporters.front();E;E=E->next()) {
 
 		ep.push_back(E->key());

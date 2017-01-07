@@ -1894,7 +1894,7 @@ void OS_X11::set_icon(const Image& p_icon) {
 		pd[0]=w;
 		pd[1]=h;
 
-		DVector<uint8_t>::Read r = img.get_data().read();
+		PoolVector<uint8_t>::Read r = img.get_data().read();
 
 		long * wr = &pd[2];
 		uint8_t const * pr = r.ptr();

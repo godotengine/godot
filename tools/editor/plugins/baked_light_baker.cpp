@@ -108,8 +108,8 @@ BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& 
 			image=copy;
 		}
 
-		DVector<uint8_t> dvt=image.get_data();
-		DVector<uint8_t>::Read r=dvt.read();
+		PoolVector<uint8_t> dvt=image.get_data();
+		PoolVector<uint8_t>::Read r=dvt.read();
 		MeshTexture mt;
 		mt.tex_w=image.get_width();
 		mt.tex_h=image.get_height();
@@ -194,14 +194,14 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 
 		Array a = p_mesh->surface_get_arrays(i);
 
-		DVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
-		DVector<Vector3>::Read vr=vertices.read();
-		DVector<Vector2> uv;
-		DVector<Vector2>::Read uvr;
-		DVector<Vector2> uv2;
-		DVector<Vector2>::Read uv2r;
-		DVector<Vector3> normal;
-		DVector<Vector3>::Read normalr;
+		PoolVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vr=vertices.read();
+		PoolVector<Vector2> uv;
+		PoolVector<Vector2>::Read uvr;
+		PoolVector<Vector2> uv2;
+		PoolVector<Vector2>::Read uv2r;
+		PoolVector<Vector3> normal;
+		PoolVector<Vector3>::Read normalr;
 		bool read_uv=false;
 		bool read_normal=false;
 
@@ -236,8 +236,8 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 
 		if (p_mesh->surface_get_format(i)&Mesh::ARRAY_FORMAT_INDEX) {
 
-			DVector<int> indices = a[Mesh::ARRAY_INDEX];
-			DVector<int>::Read ir = indices.read();
+			PoolVector<int> indices = a[Mesh::ARRAY_INDEX];
+			PoolVector<int>::Read ir = indices.read();
 
 			for(int i=0;i<facecount;i++) {
 				Triangle &t=triangles[tbase+i];
@@ -1788,7 +1788,7 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 }
 
 
-void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
+void BakedLightBaker::update_octree_sampler(PoolVector<int> &p_sampler) {
 
 	BakedLightBaker::Octant *octants=octant_pool.ptr();
 	double norm = 1.0/double(total_rays);
@@ -1845,7 +1845,7 @@ void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
 		}
 
 		p_sampler.resize(tmp_smp.size());
-		DVector<int>::Write w = p_sampler.write();
+		PoolVector<int>::Write w = p_sampler.write();
 		int ss = tmp_smp.size();
 		for(int i=0;i<ss;i++) {
 			w[i]=tmp_smp[i];
@@ -1859,7 +1859,7 @@ void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
 	double mult = baked_light->get_energy_multiplier();
 	float saturation = baked_light->get_saturation();
 
-	DVector<int>::Write w = p_sampler.write();
+	PoolVector<int>::Write w = p_sampler.write();
 
 	encode_uint32(octree_depth,(uint8_t*)&w[2]);
 	encode_uint32(linear_color,(uint8_t*)&w[3]);
@@ -1900,7 +1900,7 @@ void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
 
 }
 
-void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<uint8_t> &p_light) {
+void BakedLightBaker::update_octree_images(PoolVector<uint8_t> &p_octree,PoolVector<uint8_t> &p_light) {
 
 
 	int len = baked_octree_texture_w*baked_octree_texture_h*4;
@@ -1910,10 +1910,10 @@ void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<ui
 	p_light.resize(ilen);
 
 
-	DVector<uint8_t>::Write w = p_octree.write();
+	PoolVector<uint8_t>::Write w = p_octree.write();
 	zeromem(w.ptr(),len);
 
-	DVector<uint8_t>::Write iw = p_light.write();
+	PoolVector<uint8_t>::Write iw = p_light.write();
 	zeromem(iw.ptr(),ilen);
 
 	float gamma = baked_light->get_gamma_adjust();
@@ -2612,10 +2612,10 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 			}
 		}
 
-		DVector<uint8_t> dv;
+		PoolVector<uint8_t> dv;
 		dv.resize(baked_textures[i].data.size());
 		{
-			DVector<uint8_t>::Write w = dv.write();
+			PoolVector<uint8_t>::Write w = dv.write();
 			copymem(w.ptr(),baked_textures[i].data.ptr(),baked_textures[i].data.size());
 		}
 

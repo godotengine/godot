@@ -88,7 +88,7 @@ void BakedLightEditor::_notification(int p_option) {
 				float max_lum=0;
 
 				{
-					DVector<Color>::Write cw=colors.write();
+					PoolVector<Color>::Write cw=colors.write();
 					BakedLightBaker::Octant *octants=baker->octant_pool.ptr();
 					BakedLightBaker::Octant *oct = &octants[baker->leaf_list];
 					int vert_idx=0;

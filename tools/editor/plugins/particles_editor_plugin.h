@@ -69,7 +69,7 @@ class ParticlesEditor : public Control {
 
 	};
 
-	DVector<Face3> geometry;
+	PoolVector<Face3> geometry;
 
 	void _generate_emission_points();
 	void _resource_seleted(const String& p_res);

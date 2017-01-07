@@ -31,8 +31,6 @@
 
 #include <stddef.h>
 #include "safe_refcount.h"
-#include "os/memory_pool_dynamic.h"
-
 
 
 /**
@@ -43,88 +41,6 @@
 #define PAD_ALIGN 16 //must always be greater than this at much
 #endif
 
-
-class MID {
-
-	struct Data {
-
-		SafeRefCount refcount;
-		MemoryPoolDynamic::ID id;
-	};
-
-	mutable Data *data;
-
-
-
-	void ref(Data *p_data) {
-
-		if (data==p_data)
-			return;
-		unref();
-
-		if (p_data && p_data->refcount.ref())
-			data=p_data;
-	}
-
-friend class MID_Lock;
-
-	inline void lock() {
-
-		if (data && data->id!=MemoryPoolDynamic::INVALID_ID)
-			MemoryPoolDynamic::get_singleton()->lock(data->id);
-	}
-	inline void unlock() {
-
-		if (data && data->id!=MemoryPoolDynamic::INVALID_ID)
-			MemoryPoolDynamic::get_singleton()->unlock(data->id);
-
-	}
-
-	inline void * get() {
-
-		if (data && data->id!=MemoryPoolDynamic::INVALID_ID)
-			return MemoryPoolDynamic::get_singleton()->get(data->id);
-
-		return NULL;
-	}
-
-
-	void unref();
-	Error _resize(size_t p_size);
-
-friend class Memory;
-
-	MID(MemoryPoolDynamic::ID p_id);
-public:
-
-	bool is_valid() const { return data; }
-	operator bool() const { return data; }
-
-
-	size_t get_size() const { return (data && data->id!=MemoryPoolDynamic::INVALID_ID) ? MemoryPoolDynamic::get_singleton()->get_size(data->id) : 0; }
-	Error resize(size_t p_size) { return _resize(p_size); }
-	inline void operator=(const MID& p_mid) { ref( p_mid.data ); }
-	inline bool is_locked() const { return (data && data->id!=MemoryPoolDynamic::INVALID_ID) ? MemoryPoolDynamic::get_singleton()->is_locked(data->id) : false; }
-	inline MID(const MID& p_mid) { data=NULL; ref( p_mid.data ); }
-	inline MID() { data = NULL; }
-	~MID() { unref(); }
-};
-
-
-class MID_Lock {
-
-	MID mid;
-
-public:
-
-	void *data() { return mid.get(); }
-
-	void operator=(const MID_Lock& p_lock ) { mid.unlock(); mid = p_lock.mid; mid.lock(); }
-	inline MID_Lock(const MID& p_mid) { mid=p_mid; mid.lock(); }
-	inline MID_Lock(const MID_Lock& p_lock) { mid=p_lock.mid; mid.lock(); }
-	MID_Lock() {}
-	~MID_Lock() { mid.unlock(); }
-};
 
 
 class Memory{
@@ -148,12 +64,6 @@ public:
 	static size_t get_mem_max_usage();
 
 
-	static MID alloc_dynamic(size_t p_bytes, const char *p_descr="");
-	static Error realloc_dynamic(MID p_mid,size_t p_bytes);
-
-	static size_t get_dynamic_mem_available();
-	static size_t get_dynamic_mem_usage();
-
 };
 
 class DefaultAllocator {
@@ -172,18 +82,6 @@ void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_de
 #define memalloc(m_size) Memory::alloc_static(m_size)
 #define memrealloc(m_mem,m_size) Memory::realloc_static(m_mem,m_size)
 #define memfree(m_size) Memory::free_static(m_size)
-
-
-#ifdef DEBUG_MEMORY_ENABLED
-#define dynalloc(m_size) Memory::alloc_dynamic(m_size, __FILE__ ":" __STR(__LINE__) ", type: DYNAMIC")
-#define dynrealloc(m_mem,m_size) m_mem.resize(m_size)
-
-#else
-
-#define dynalloc(m_size) Memory::alloc_dynamic(m_size)
-#define dynrealloc(m_mem,m_size) m_mem.resize(m_size)
-
-#endif
 
 
 _ALWAYS_INLINE_ void postinitialize_handler(void *) {}
@@ -241,7 +139,7 @@ T* memnew_arr_template(size_t p_elements,const char *p_descr="") {
 	if (p_elements==0)
 		return 0;
 	/** overloading operator new[] cannot be done , because it may not return the real allocated address (it may pad the 'element count' before the actual array). Because of that, it must be done by hand. This is the
-	same strategy used by std::vector, and the DVector class, so it should be safe.*/
+	same strategy used by std::vector, and the PoolVector class, so it should be safe.*/
 
 	size_t len = sizeof(T) * p_elements;
 	uint64_t *mem = (uint64_t*)Memory::alloc_static( len , true );

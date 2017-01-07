@@ -293,7 +293,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 						if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
 
-							DVector<uint8_t>::Write w = frame_data.write();
+							PoolVector<uint8_t>::Write w = frame_data.write();
 							bool converted = false;
 
 							if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {

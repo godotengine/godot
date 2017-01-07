@@ -477,17 +477,34 @@ uint32_t ihash3( uint32_t a)
 
 MainLoop* test() {
 
-	Matrix3 m;
-	m.rotate(Vector3(0,1,0),Math_PI*0.5);
 
-	print_line(m.scaled(Vector3(0.5,1,1)));
-	Matrix3 s;
-	s.scale(Vector3(0.5,1.0,1.0));
+	print_line("Dvectors: "+itos(MemoryPool::allocs_used));
+	print_line("Mem used: "+itos(MemoryPool::total_memory));
+	print_line("MAx mem used: "+itos(MemoryPool::max_memory));
 
-	print_line(m * s);
+	PoolVector<int> ints;
+	ints.resize(20);
 
+	{
+		PoolVector<int>::Write w;
+		w = ints.write();
+		for(int i=0;i<ints.size();i++) {
+			w[i]=i;
+		}
+	}
 
+	PoolVector<int> posho = ints;
 
+	{
+		PoolVector<int>::Read r = posho.read();
+		for(int i=0;i<posho.size();i++) {
+			print_line(itos(i)+" : " +itos(r[i]));
+		}
+	}
+
+	print_line("later Dvectors: "+itos(MemoryPool::allocs_used));
+	print_line("later Mem used: "+itos(MemoryPool::total_memory));
+	print_line("Mlater Ax mem used: "+itos(MemoryPool::max_memory));
 
 
 	return NULL;
@@ -718,8 +735,8 @@ MainLoop* test() {
 	print_line(String("res://..").simplify_path());
 
 
-	DVector<uint8_t> a;
-	DVector<uint8_t> b;
+	PoolVector<uint8_t> a;
+	PoolVector<uint8_t> b;
 
 	a.resize(20);
 	b=a;

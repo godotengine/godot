@@ -39,7 +39,7 @@ PacketPeer::PacketPeer() {
 	last_get_error=OK;
 }
 
-Error PacketPeer::get_packet_buffer(DVector<uint8_t> &r_buffer) const {
+Error PacketPeer::get_packet_buffer(PoolVector<uint8_t> &r_buffer) const {
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -51,7 +51,7 @@ Error PacketPeer::get_packet_buffer(DVector<uint8_t> &r_buffer) const {
 	if (buffer_size==0)
 		return OK;
 
-	DVector<uint8_t>::Write w = r_buffer.write();
+	PoolVector<uint8_t>::Write w = r_buffer.write();
 	for(int i=0;i<buffer_size;i++)
 		w[i]=buffer[i];
 
@@ -59,13 +59,13 @@ Error PacketPeer::get_packet_buffer(DVector<uint8_t> &r_buffer) const {
 
 }
 
-Error PacketPeer::put_packet_buffer(const DVector<uint8_t> &p_buffer) {
+Error PacketPeer::put_packet_buffer(const PoolVector<uint8_t> &p_buffer) {
 
 	int len = p_buffer.size();
 	if (len==0)
 		return OK;
 
-	DVector<uint8_t>::Read r = p_buffer.read();
+	PoolVector<uint8_t>::Read r = p_buffer.read();
 	return put_packet(&r[0],len);
 
 }
@@ -108,12 +108,12 @@ Variant PacketPeer::_bnd_get_var() const {
 	return var;
 };
 
-Error PacketPeer::_put_packet(const DVector<uint8_t> &p_buffer)  {
+Error PacketPeer::_put_packet(const PoolVector<uint8_t> &p_buffer)  {
 	return put_packet_buffer(p_buffer);
 }
-DVector<uint8_t> PacketPeer::_get_packet() const {
+PoolVector<uint8_t> PacketPeer::_get_packet() const {
 
-	DVector<uint8_t> raw;
+	PoolVector<uint8_t> raw;
 	last_get_error=get_packet_buffer(raw);
 	return raw;
 }

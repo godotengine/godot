@@ -82,8 +82,8 @@ public:
 	bool is_stereo() const;
 	int get_length() const;
 
-	void set_data(const DVector<uint8_t>& p_buffer);
-	DVector<uint8_t> get_data() const;
+	void set_data(const PoolVector<uint8_t>& p_buffer);
+	PoolVector<uint8_t> get_data() const;
 
 	void set_mix_rate(int p_rate);
 	int get_mix_rate() const;

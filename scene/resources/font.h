@@ -109,10 +109,10 @@ private:
 	float ascent;
 	bool distance_field_hint;
 
-	void _set_chars(const DVector<int>& p_chars);
-	DVector<int> _get_chars() const;
-	void _set_kernings(const DVector<int>& p_kernings);
-	DVector<int> _get_kernings() const;
+	void _set_chars(const PoolVector<int>& p_chars);
+	PoolVector<int> _get_chars() const;
+	void _set_kernings(const PoolVector<int>& p_kernings);
+	PoolVector<int> _get_kernings() const;
 	void _set_textures(const Vector<Variant> & p_textures);
 	Vector<Variant> _get_textures() const;
 

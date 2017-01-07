@@ -164,7 +164,7 @@ void FileDialog::_action_pressed() {
 		TreeItem *ti=tree->get_next_selected(NULL);
 		String fbase=dir_access->get_current_dir();
 
-		DVector<String> files;
+		PoolVector<String> files;
 		while(ti) {
 
 			files.push_back( fbase.plus_file(ti->get_text(0)) );

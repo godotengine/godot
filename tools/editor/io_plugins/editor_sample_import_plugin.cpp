@@ -443,8 +443,8 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	data.resize(len*chans);
 
 	{
-		DVector<uint8_t> src_data = smp->get_data();
-		DVector<uint8_t>::Read sr = src_data.read();
+		PoolVector<uint8_t> src_data = smp->get_data();
+		PoolVector<uint8_t>::Read sr = src_data.read();
 
 
 		for(int i=0;i<len*chans;i++) {
@@ -602,7 +602,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	}
 
 
-	DVector<uint8_t> dst_data;
+	PoolVector<uint8_t> dst_data;
 	Sample::Format dst_format;
 
 	if ( compression == _EditorSampleImportOptions::COMPRESS_MODE_RAM) {
@@ -629,8 +629,8 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 				right[i]=data[i*2+1];
 			}
 
-			DVector<uint8_t> bleft;
-			DVector<uint8_t> bright;
+			PoolVector<uint8_t> bleft;
+			PoolVector<uint8_t> bright;
 
 			_compress_ima_adpcm(left,bleft);
 			_compress_ima_adpcm(right,bright);
@@ -638,9 +638,9 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 			int dl = bleft.size();
 			dst_data.resize( dl *2 );
 
-			DVector<uint8_t>::Write w=dst_data.write();
-			DVector<uint8_t>::Read rl=bleft.read();
-			DVector<uint8_t>::Read rr=bright.read();
+			PoolVector<uint8_t>::Write w=dst_data.write();
+			PoolVector<uint8_t>::Read rl=bleft.read();
+			PoolVector<uint8_t>::Read rr=bright.read();
 
 			for(int i=0;i<dl;i++) {
 				w[i*2+0]=rl[i];
@@ -655,7 +655,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 		dst_format=is16?Sample::FORMAT_PCM16:Sample::FORMAT_PCM8;
 		dst_data.resize( data.size() * (is16?2:1));
 		{
-			DVector<uint8_t>::Write w = dst_data.write();
+			PoolVector<uint8_t>::Write w = dst_data.write();
 
 			int ds=data.size();
 			for(int i=0;i<ds;i++) {
@@ -700,7 +700,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 
 }
 
-void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,DVector<uint8_t>& dst_data) {
+void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,PoolVector<uint8_t>& dst_data) {
 
 
 	/*p_sample_data->data = (void*)malloc(len);
@@ -730,7 +730,7 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 		datalen++;
 
 	dst_data.resize(datalen/2+4);
-	DVector<uint8_t>::Write w = dst_data.write();
+	PoolVector<uint8_t>::Write w = dst_data.write();
 
 
 	int i,step_idx=0,prev=0;

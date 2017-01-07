@@ -45,7 +45,7 @@ private:
 
 
 	RID occ_polygon;
-	DVector<Vector2> polygon;
+	PoolVector<Vector2> polygon;
 	bool closed;
 	CullMode cull;
 
@@ -54,8 +54,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	void set_polygon(const DVector<Vector2>& p_polygon);
-	DVector<Vector2> get_polygon() const;
+	void set_polygon(const PoolVector<Vector2>& p_polygon);
+	PoolVector<Vector2> get_polygon() const;
 
 	void set_closed(bool p_closed);
 	bool is_closed() const;

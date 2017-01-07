@@ -171,9 +171,9 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original
 			if (format_bits>8)
 				len*=2;
 
-			DVector<uint8_t> data;
+			PoolVector<uint8_t> data;
 			data.resize(len);
-			DVector<uint8_t>::Write dataw = data.write();
+			PoolVector<uint8_t>::Write dataw = data.write();
 			void * data_ptr = dataw.ptr();
 
 			for (int i=0;i<frames;i++) {
@@ -215,7 +215,7 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original
 
 			}
 
-			dataw=DVector<uint8_t>::Write();
+			dataw=PoolVector<uint8_t>::Write();
 
 			sample->set_data(data);
 

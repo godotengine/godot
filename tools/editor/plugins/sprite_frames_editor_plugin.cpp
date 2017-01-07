@@ -64,7 +64,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 	}
 }
 
-void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path,int p_at_pos) {
+void SpriteFramesEditor::_file_load_request(const PoolVector<String>& p_path,int p_at_pos) {
 
 	ERR_FAIL_COND(!frames->has_animation(edited_anim));
 
@@ -744,7 +744,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 
 	if (String(d["type"])=="files") {
 
-		DVector<String> files = d["files"];
+		PoolVector<String> files = d["files"];
 
 		_file_load_request(files,at_pos);
 	}

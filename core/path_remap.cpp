@@ -124,13 +124,13 @@ void PathRemap::clear_remaps() {
 void PathRemap::load_remaps() {
 
 	// default remaps first
-	DVector<String> remaps = GlobalConfig::get_singleton()->get("remap/all");
+	PoolVector<String> remaps = GlobalConfig::get_singleton()->get("remap/all");
 
 	{
 		int rlen = remaps.size();
 
 		ERR_FAIL_COND( rlen%2 );
-		DVector<String>::Read r = remaps.read();
+		PoolVector<String>::Read r = remaps.read();
 		for(int i=0;i<rlen/2;i++) {
 
 			String from = r[i*2+0];
@@ -147,7 +147,7 @@ void PathRemap::load_remaps() {
 		int rlen = remaps.size();
 
 		ERR_FAIL_COND( rlen%2 );
-		DVector<String>::Read r = remaps.read();
+		PoolVector<String>::Read r = remaps.read();
 		for(int i=0;i<rlen/2;i++) {
 
 			String from = r[i*2+0];

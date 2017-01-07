@@ -691,9 +691,9 @@ static Variant _decode_variant(const String& p_string) {
 
 		String data=params[4];
 		int datasize=data.length()/2;
-		DVector<uint8_t> pixels;
+		PoolVector<uint8_t> pixels;
 		pixels.resize(datasize);
-		DVector<uint8_t>::Write wb = pixels.write();
+		PoolVector<uint8_t>::Write wb = pixels.write();
 		const CharType *cptr=data.c_str();
 
 		int idx=0;
@@ -720,7 +720,7 @@ static Variant _decode_variant(const String& p_string) {
 
 		}
 
-		wb = DVector<uint8_t>::Write();
+		wb = PoolVector<uint8_t>::Write();
 
 		return Image(w,h,mipmaps,imgformat,pixels);
 	}
@@ -992,9 +992,9 @@ static String _encode_variant(const Variant& p_variant) {
 				str+=itos(img.has_mipmaps())+", ";
 				str+=itos(img.get_width())+", ";
 				str+=itos(img.get_height())+", ";
-				DVector<uint8_t> data = img.get_data();
+				PoolVector<uint8_t> data = img.get_data();
 				int ds=data.size();
-				DVector<uint8_t>::Read r = data.read();
+				PoolVector<uint8_t>::Read r = data.read();
 				for(int i=0;i<ds;i++) {
 					uint8_t byte = r[i];
 					const char  hex[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};

@@ -83,8 +83,8 @@ void CollisionShape::_update_indicator() {
 	if (shape.is_null())
 		return;
 
-	DVector<Vector3> points;
-	DVector<Vector3> normals;
+	PoolVector<Vector3> points;
+	PoolVector<Vector3> normals;
 
 	VS::PrimitiveType pt = VS::PRIMITIVE_TRIANGLES;
 
@@ -235,7 +235,7 @@ void CollisionShape::_update_indicator() {
 
 		CapsuleShape *shapeptr=shape->cast_to<CapsuleShape>();
 
-		DVector<Plane> planes = Geometry::build_capsule_planes(shapeptr->get_radius(), shapeptr->get_height()/2.0, 12, Vector3::AXIS_Z);
+		PoolVector<Plane> planes = Geometry::build_capsule_planes(shapeptr->get_radius(), shapeptr->get_height()/2.0, 12, Vector3::AXIS_Z);
 		Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 		for(int i=0;i<md.faces.size();i++) {
@@ -840,7 +840,7 @@ void CollisionShapeCylinder::update_indicator(RID p_indicator) {
 	vs->poly_clear(p_indicator);
 	Color col(0.4,1.0,1.0,0.5);
 
-	DVector<Plane> planes = Geometry::build_cylinder_planes(radius, height, 12, Vector3::AXIS_Z);
+	PoolVector<Plane> planes = Geometry::build_cylinder_planes(radius, height, 12, Vector3::AXIS_Z);
 	Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 	for(int i=0;i<md.faces.size();i++) {
@@ -906,7 +906,7 @@ void CollisionShapeCapsule::update_indicator(RID p_indicator) {
 	vs->poly_clear(p_indicator);
 	Color col(0.4,1.0,1.0,0.5);
 
-	DVector<Plane> planes = Geometry::build_capsule_planes(radius, height, 12, 3, Vector3::AXIS_Z);
+	PoolVector<Plane> planes = Geometry::build_capsule_planes(radius, height, 12, 3, Vector3::AXIS_Z);
 	Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 	for(int i=0;i<md.faces.size();i++) {

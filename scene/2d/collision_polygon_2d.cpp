@@ -68,16 +68,16 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 		Ref<ConcavePolygonShape2D> concave = memnew( ConcavePolygonShape2D );
 
-		DVector<Vector2> segments;
+		PoolVector<Vector2> segments;
 		segments.resize(polygon.size()*2);
-		DVector<Vector2>::Write w=segments.write();
+		PoolVector<Vector2>::Write w=segments.write();
 
 		for(int i=0;i<polygon.size();i++) {
 			w[(i<<1)+0]=polygon[i];
 			w[(i<<1)+1]=polygon[(i+1)%polygon.size()];
 		}
 
-		w=DVector<Vector2>::Write();
+		w=PoolVector<Vector2>::Write();
 		concave->set_segments(segments);
 
 		co->add_shape(concave,get_transform());

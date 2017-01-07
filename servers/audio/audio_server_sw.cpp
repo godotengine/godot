@@ -384,11 +384,11 @@ const void* AudioServerSW::sample_get_data_ptr(RID p_sample) const  {
 	return sample_manager->sample_get_data_ptr(p_sample);
 }
 
-void AudioServerSW::sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer) {
+void AudioServerSW::sample_set_data(RID p_sample, const PoolVector<uint8_t>& p_buffer) {
 	AUDIO_LOCK
 	sample_manager->sample_set_data(p_sample,p_buffer);
 }
-DVector<uint8_t> AudioServerSW::sample_get_data(RID p_sample) const {
+PoolVector<uint8_t> AudioServerSW::sample_get_data(RID p_sample) const {
 	AUDIO_LOCK
 	return sample_manager->sample_get_data(p_sample);
 }

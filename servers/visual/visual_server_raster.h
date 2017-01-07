@@ -103,7 +103,7 @@ class VisualServerRaster : public VisualServer {
 	struct BakedLight {
 
 		Rasterizer::BakedLightData data;
-		DVector<int> sampler;
+		PoolVector<int> sampler;
 		AABB octree_aabb;
 		Size2i octree_tex_size;
 		Size2i light_tex_size;
@@ -671,7 +671,7 @@ public:
 
 	BIND0R(RID,mesh_create)
 
-	BIND10(mesh_add_surface,RID,uint32_t,PrimitiveType,const DVector<uint8_t>&,int ,const DVector<uint8_t>& ,int ,const AABB&,const Vector<DVector<uint8_t> >&,const Vector<AABB>& )
+	BIND10(mesh_add_surface,RID,uint32_t,PrimitiveType,const PoolVector<uint8_t>&,int ,const PoolVector<uint8_t>& ,int ,const AABB&,const Vector<PoolVector<uint8_t> >&,const Vector<AABB>& )
 
 	BIND2(mesh_set_morph_target_count,RID,int)
 	BIND1RC(int,mesh_get_morph_target_count,RID)
@@ -686,14 +686,14 @@ public:
 	BIND2RC(int,mesh_surface_get_array_len,RID,int)
 	BIND2RC(int,mesh_surface_get_array_index_len,RID,int)
 
-	BIND2RC(DVector<uint8_t>,mesh_surface_get_array,RID,int)
-	BIND2RC(DVector<uint8_t>,mesh_surface_get_index_array,RID, int)
+	BIND2RC(PoolVector<uint8_t>,mesh_surface_get_array,RID,int)
+	BIND2RC(PoolVector<uint8_t>,mesh_surface_get_index_array,RID, int)
 
 	BIND2RC(uint32_t,mesh_surface_get_format,RID,int)
 	BIND2RC(PrimitiveType,mesh_surface_get_primitive_type,RID,int)
 
 	BIND2RC(AABB,mesh_surface_get_aabb,RID,int)
-	BIND2RC(Vector<DVector<uint8_t> >,mesh_surface_get_blend_shapes,RID,int)
+	BIND2RC(Vector<PoolVector<uint8_t> >,mesh_surface_get_blend_shapes,RID,int)
 	BIND2RC(Vector<AABB>,mesh_surface_get_skeleton_aabb,RID,int)
 
 	BIND2(mesh_remove_surface,RID,int)
@@ -791,7 +791,7 @@ public:
 	/* ROOM API */
 
 	BIND0R(RID,room_create)
-	BIND4(room_add_bounds,RID, const DVector<Vector2>& ,float ,const Transform& )
+	BIND4(room_add_bounds,RID, const PoolVector<Vector2>& ,float ,const Transform& )
 	BIND1(room_clear_bounds,RID)
 
 	/* PORTAL API */
@@ -830,8 +830,8 @@ public:
 	BIND2(gi_probe_set_compress,RID,bool)
 	BIND1RC(bool,gi_probe_is_compressed,RID)
 
-	BIND2(gi_probe_set_dynamic_data,RID,const DVector<int>& )
-	BIND1RC( DVector<int>,gi_probe_get_dynamic_data,RID)
+	BIND2(gi_probe_set_dynamic_data,RID,const PoolVector<int>& )
+	BIND1RC( PoolVector<int>,gi_probe_get_dynamic_data,RID)
 
 	/* PARTICLES */
 
@@ -851,7 +851,7 @@ public:
 	BIND2(particles_set_emission_shape,RID,VS::ParticlesEmissionShape )
 	BIND2(particles_set_emission_sphere_radius,RID,float )
 	BIND2(particles_set_emission_box_extents,RID,const Vector3& )
-	BIND2(particles_set_emission_points,RID,const DVector<Vector3>& )
+	BIND2(particles_set_emission_points,RID,const PoolVector<Vector3>& )
 
 
 	BIND2(particles_set_draw_order,RID,VS::ParticlesDrawOrder )
@@ -1088,8 +1088,8 @@ public:
 
 
 	BIND0R(RID,canvas_occluder_polygon_create)
-	BIND3(canvas_occluder_polygon_set_shape,RID,const DVector<Vector2>& ,bool)
-	BIND2(canvas_occluder_polygon_set_shape_as_lines,RID ,const DVector<Vector2>&)
+	BIND3(canvas_occluder_polygon_set_shape,RID,const PoolVector<Vector2>& ,bool)
+	BIND2(canvas_occluder_polygon_set_shape_as_lines,RID ,const PoolVector<Vector2>&)
 
 
 	BIND2(canvas_occluder_polygon_set_cull_mode,RID,CanvasOccluderPolygonCullMode)

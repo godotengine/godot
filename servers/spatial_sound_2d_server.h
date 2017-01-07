@@ -57,8 +57,8 @@ public:
 	virtual RID room_get_space(RID p_room) const=0;
 
 
-	virtual void room_set_bounds(RID p_room, const DVector<Point2>& p_bounds)=0;
-	virtual DVector<Point2> room_get_bounds(RID p_room) const=0;
+	virtual void room_set_bounds(RID p_room, const PoolVector<Point2>& p_bounds)=0;
+	virtual PoolVector<Point2> room_get_bounds(RID p_room) const=0;
 	virtual void room_set_transform(RID p_room, const Matrix32& p_transform)=0;
 	virtual Matrix32 room_get_transform(RID p_room) const=0;
 

@@ -51,7 +51,7 @@ void BitMap::create_from_image_alpha(const Image& p_image){
 	create(Size2(img.get_width(),img.get_height()));
 
 
-	DVector<uint8_t>::Read r = img.get_data().read();
+	PoolVector<uint8_t>::Read r = img.get_data().read();
 	uint8_t *w = bitmask.ptr();
 
 	for(int i=0;i<width*height;i++) {

@@ -107,8 +107,8 @@ private:
 	int bake_cells_used;
 	int zero_alphas;
 	Vector<int> bake_cells_level_used;
-	DVector<BakeCell> bake_cells;
-	DVector<BakeCell>::Write bake_cells_write;
+	PoolVector<BakeCell> bake_cells;
+	PoolVector<BakeCell>::Write bake_cells_write;
 
 
 
@@ -157,7 +157,7 @@ public:
 	void create_debug_mesh(DebugMode p_mode);
 
 	virtual AABB get_aabb() const;
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	String get_configuration_warning() const;
 
@@ -192,7 +192,7 @@ protected:
 public:
 
 	virtual AABB get_aabb() const;
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_param(Param p_param,float p_value);
 	float get_param(Param p_param) const;

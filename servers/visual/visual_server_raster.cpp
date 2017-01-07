@@ -819,13 +819,13 @@ Vector3 VisualServerRaster::particles_get_emission_base_velocity(RID p_particles
 	return rasterizer->particles_get_emission_base_velocity(p_particles);
 }
 
-void VisualServerRaster::particles_set_emission_points(RID p_particles, const DVector<Vector3>& p_points) {
+void VisualServerRaster::particles_set_emission_points(RID p_particles, const PoolVector<Vector3>& p_points) {
 
 	VS_CHANGED;
 	rasterizer->particles_set_emission_points(p_particles,p_points);
 }
 
-DVector<Vector3> VisualServerRaster::particles_get_emission_points(RID p_particles) const {
+PoolVector<Vector3> VisualServerRaster::particles_get_emission_points(RID p_particles) const {
 
 	return rasterizer->particles_get_emission_points(p_particles);
 }
@@ -1279,7 +1279,7 @@ float VisualServerRaster::baked_light_get_lightmap_multiplier(RID p_baked_light)
 }
 
 
-void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree){
+void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const PoolVector<uint8_t> p_octree){
 
 	VS_CHANGED;
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
@@ -1301,7 +1301,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 		bool has_light_tex=false;
 		{
 
-			DVector<uint8_t>::Read r=p_octree.read();
+			PoolVector<uint8_t>::Read r=p_octree.read();
 			tex_w = decode_uint32(&r[0]);
 			tex_h = decode_uint32(&r[4]);
 			print_line("TEX W: "+itos(tex_w)+" TEX H:"+itos(tex_h)+" LEN: "+itos(p_octree.size()));
@@ -1386,22 +1386,22 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 }
 
 
-DVector<uint8_t> VisualServerRaster::baked_light_get_octree(RID p_baked_light) const{
+PoolVector<uint8_t> VisualServerRaster::baked_light_get_octree(RID p_baked_light) const{
 
 
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
-	ERR_FAIL_COND_V(!baked_light,DVector<uint8_t>());
+	ERR_FAIL_COND_V(!baked_light,PoolVector<uint8_t>());
 
 	if (rasterizer->is_texture(baked_light->data.octree_texture)) {
 
 		Image img = rasterizer->texture_get_data(baked_light->data.octree_texture);
 		return img.get_data();
 	} else {
-		return DVector<uint8_t>();
+		return PoolVector<uint8_t>();
 	}
 }
 
-void VisualServerRaster::baked_light_set_light(RID p_baked_light,const DVector<uint8_t> p_light) {
+void VisualServerRaster::baked_light_set_light(RID p_baked_light,const PoolVector<uint8_t> p_light) {
 
 	VS_CHANGED;
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
@@ -1425,23 +1425,23 @@ void VisualServerRaster::baked_light_set_light(RID p_baked_light,const DVector<u
 
 }
 
-DVector<uint8_t> VisualServerRaster::baked_light_get_light(RID p_baked_light) const{
+PoolVector<uint8_t> VisualServerRaster::baked_light_get_light(RID p_baked_light) const{
 
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
-	ERR_FAIL_COND_V(!baked_light,DVector<uint8_t>());
+	ERR_FAIL_COND_V(!baked_light,PoolVector<uint8_t>());
 
 	if (rasterizer->is_texture(baked_light->data.light_texture)) {
 
 		Image img = rasterizer->texture_get_data(baked_light->data.light_texture);
 		return img.get_data();
 	} else {
-		return DVector<uint8_t>();
+		return PoolVector<uint8_t>();
 	}
 }
 
 
 
-void VisualServerRaster::baked_light_set_sampler_octree(RID p_baked_light, const DVector<int> &p_sampler) {
+void VisualServerRaster::baked_light_set_sampler_octree(RID p_baked_light, const PoolVector<int> &p_sampler) {
 
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
 	ERR_FAIL_COND(!baked_light);
@@ -1452,10 +1452,10 @@ void VisualServerRaster::baked_light_set_sampler_octree(RID p_baked_light, const
 
 }
 
-DVector<int> VisualServerRaster::baked_light_get_sampler_octree(RID p_baked_light) const {
+PoolVector<int> VisualServerRaster::baked_light_get_sampler_octree(RID p_baked_light) const {
 
 	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
-	ERR_FAIL_COND_V(!baked_light,DVector<int>());
+	ERR_FAIL_COND_V(!baked_light,PoolVector<int>());
 
 	return baked_light->sampler;
 
@@ -4466,20 +4466,20 @@ RID VisualServerRaster::canvas_occluder_polygon_create() {
 
 }
 
-void VisualServerRaster::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const DVector<Vector2>& p_shape, bool p_close){
+void VisualServerRaster::canvas_occluder_polygon_set_shape(RID p_occluder_polygon, const PoolVector<Vector2>& p_shape, bool p_close){
 
 	if (p_shape.size()<3) {
 		canvas_occluder_polygon_set_shape_as_lines(p_occluder_polygon,p_shape);
 		return;
 	}
 
-	DVector<Vector2> lines;
+	PoolVector<Vector2> lines;
 	int lc = p_shape.size()*2;
 
 	lines.resize(lc-(p_close?0:2));
 	{
-		DVector<Vector2>::Write w = lines.write();
-		DVector<Vector2>::Read r = p_shape.read();
+		PoolVector<Vector2>::Write w = lines.write();
+		PoolVector<Vector2>::Read r = p_shape.read();
 
 		int max=lc/2;
 		if (!p_close) {
@@ -4498,7 +4498,7 @@ void VisualServerRaster::canvas_occluder_polygon_set_shape(RID p_occluder_polygo
 	canvas_occluder_polygon_set_shape_as_lines(p_occluder_polygon,lines);
 }
 
-void VisualServerRaster::canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const DVector<Vector2>& p_shape) {
+void VisualServerRaster::canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const PoolVector<Vector2>& p_shape) {
 
 	CanvasLightOccluderPolygon * occluder_poly = canvas_light_occluder_polygon_owner.get(p_occluder_polygon);
 	ERR_FAIL_COND(!occluder_poly);
@@ -4507,7 +4507,7 @@ void VisualServerRaster::canvas_occluder_polygon_set_shape_as_lines(RID p_occlud
 	int lc = p_shape.size();
 	occluder_poly->aabb=Rect2();
 	{
-		DVector<Vector2>::Read r = p_shape.read();
+		PoolVector<Vector2>::Read r = p_shape.read();
 		for(int i=0;i<lc;i++) {
 			if (i==0)
 				occluder_poly->aabb.pos=r[i];
@@ -6338,7 +6338,7 @@ void VisualServerRaster::_process_sampled_light(const Transform& p_camera,Instan
 		AABB sample_aabb= bl->data.transform.affine_inverse().xform(AABB(Vector3(-r,-r,-r)+p_sampled_light->data.transform.origin,Vector3(r*2,r*2,r*2)));
 		//ok got octree local AABB
 
-		DVector<int>::Read rp = bl->baked_light_info->baked_light->sampler.read();
+		PoolVector<int>::Read rp = bl->baked_light_info->baked_light->sampler.read();
 		const int *rptr = rp.ptr();
 
 		int first = rptr[1];

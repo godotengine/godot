@@ -799,9 +799,9 @@ static bool is_valid_locale(const String& p_locale) {
 	return false;
 }
 
-DVector<String> Translation::_get_messages() const {
+PoolVector<String> Translation::_get_messages() const {
 
-	DVector<String> msgs;
+	PoolVector<String> msgs;
 	msgs.resize(translation_map.size()*2);
 	int idx=0;
 	for (const Map<StringName, StringName>::Element *E=translation_map.front();E;E=E->next()) {
@@ -814,9 +814,9 @@ DVector<String> Translation::_get_messages() const {
 	return msgs;
 }
 
-DVector<String> Translation::_get_message_list() const {
+PoolVector<String> Translation::_get_message_list() const {
 
-	DVector<String> msgs;
+	PoolVector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx=0;
 	for (const Map<StringName, StringName>::Element *E=translation_map.front();E;E=E->next()) {
@@ -829,12 +829,12 @@ DVector<String> Translation::_get_message_list() const {
 
 }
 
-void Translation::_set_messages(const DVector<String>& p_messages){
+void Translation::_set_messages(const PoolVector<String>& p_messages){
 
 	int msg_count=p_messages.size();
 	ERR_FAIL_COND(msg_count%2);
 
-	DVector<String>::Read r = p_messages.read();
+	PoolVector<String>::Read r = p_messages.read();
 
 	for(int i=0;i<msg_count;i+=2) {
 
@@ -1048,12 +1048,12 @@ TranslationServer *TranslationServer::singleton=NULL;
 bool TranslationServer::_load_translations(const String& p_from) {
 
 	if (GlobalConfig::get_singleton()->has(p_from)) {
-		DVector<String> translations=GlobalConfig::get_singleton()->get(p_from);
+		PoolVector<String> translations=GlobalConfig::get_singleton()->get(p_from);
 
 		int tcount=translations.size();
 
 		if (tcount) {
-			DVector<String>::Read r = translations.read();
+			PoolVector<String>::Read r = translations.read();
 
 			for(int i=0;i<tcount;i++) {
 

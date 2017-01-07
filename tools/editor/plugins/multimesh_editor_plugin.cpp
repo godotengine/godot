@@ -125,7 +125,7 @@ void MultiMeshEditor::_populate() {
 
 	Transform geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
-	DVector<Face3> geometry = ss_instance->get_faces(VisualInstance::FACES_SOLID);
+	PoolVector<Face3> geometry = ss_instance->get_faces(VisualInstance::FACES_SOLID);
 
 	if (geometry.size()==0) {
 
@@ -137,7 +137,7 @@ void MultiMeshEditor::_populate() {
 	//make all faces local
 
 	int gc = geometry.size();
-	DVector<Face3>::Write w = geometry.write();
+	PoolVector<Face3>::Write w = geometry.write();
 
 	for(int i=0;i<gc;i++) {
 		for(int j=0;j<3;j++) {
@@ -147,7 +147,7 @@ void MultiMeshEditor::_populate() {
 
 
 
-	w = DVector<Face3>::Write();
+	w = PoolVector<Face3>::Write();
 #if 0
 	node->get_multimesh()->set_instance_count(populate_amount->get_val());
 	node->populate_parent(populate_rotate_random->get_val(),populate_tilt_random->get_val(),populate_scale_random->get_val(),populate_scale->get_val());
@@ -164,12 +164,12 @@ void MultiMeshEditor::_populate() {
 	ERR_FAIL_COND(!vi);
 
 #endif
-	DVector<Face3> faces = geometry;
+	PoolVector<Face3> faces = geometry;
 	ERR_EXPLAIN(TTR("Parent has no solid faces to populate."));
 	int facecount=faces.size();
 	ERR_FAIL_COND(!facecount);
 
-	DVector<Face3>::Read r = faces.read();
+	PoolVector<Face3>::Read r = faces.read();
 
 
 

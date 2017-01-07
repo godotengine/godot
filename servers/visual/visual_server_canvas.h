@@ -201,8 +201,8 @@ public:
 	void canvas_light_occluder_set_light_mask(RID p_occluder,int p_mask);
 
 	RID canvas_occluder_polygon_create();
-	void canvas_occluder_polygon_set_shape(RID p_occluder_polygon,const DVector<Vector2>& p_shape,bool p_closed);
-	void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const DVector<Vector2>& p_shape);
+	void canvas_occluder_polygon_set_shape(RID p_occluder_polygon,const PoolVector<Vector2>& p_shape,bool p_closed);
+	void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const PoolVector<Vector2>& p_shape);
 
 
 	void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon,VS::CanvasOccluderPolygonCullMode p_mode);

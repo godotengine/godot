@@ -242,7 +242,7 @@ public:
 
 	virtual RID mesh_create()=0;
 
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>())=0;
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>())=0;
 
 	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount)=0;
 	virtual int mesh_get_morph_target_count(RID p_mesh) const=0;
@@ -257,15 +257,15 @@ public:
 	virtual int mesh_surface_get_array_len(RID p_mesh, int p_surface) const=0;
 	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const=0;
 
-	virtual DVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const=0;
-	virtual DVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const=0;
+	virtual PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const=0;
+	virtual PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const=0;
 
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const=0;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const=0;
 
 	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const=0;
-	virtual Vector<DVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const=0;
+	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const=0;
 	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const=0;
 
 	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
@@ -388,7 +388,7 @@ public:
 	/* ROOM API */
 
 	virtual RID room_create()=0;
-	virtual void room_add_bounds(RID p_room, const DVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform)=0;
+	virtual void room_add_bounds(RID p_room, const PoolVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform)=0;
 	virtual void room_clear_bounds(RID p_room)=0;
 
 	/* PORTAL API */
@@ -421,8 +421,8 @@ public:
 	virtual void gi_probe_set_to_cell_xform(RID p_probe,const Transform& p_xform)=0;
 	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const=0;
 
-	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data)=0;
-	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const=0;
+	virtual void gi_probe_set_dynamic_data(RID p_probe,const PoolVector<int>& p_data)=0;
+	virtual PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const=0;
 
 	virtual void gi_probe_set_dynamic_range(RID p_probe,int p_range)=0;
 	virtual int gi_probe_get_dynamic_range(RID p_probe) const=0;
@@ -467,7 +467,7 @@ public:
 	virtual void particles_set_emission_shape(RID p_particles,VS::ParticlesEmissionShape p_shape)=0;
 	virtual void particles_set_emission_sphere_radius(RID p_particles,float p_radius)=0;
 	virtual void particles_set_emission_box_extents(RID p_particles,const Vector3& p_extents)=0;
-	virtual void particles_set_emission_points(RID p_particles,const DVector<Vector3>& p_points)=0;
+	virtual void particles_set_emission_points(RID p_particles,const PoolVector<Vector3>& p_points)=0;
 
 
 	virtual void particles_set_draw_order(RID p_particles,VS::ParticlesDrawOrder p_order)=0;
@@ -506,7 +506,7 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	virtual RID canvas_light_occluder_create()=0;
-	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines)=0;
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2>& p_lines)=0;
 
 
 	virtual VS::InstanceType get_base_type(RID p_rid) const=0;
@@ -1275,8 +1275,8 @@ public:
 	virtual void particles_set_emission_base_velocity(RID p_particles, const Vector3& p_base_velocity)=0;
 	virtual Vector3 particles_get_emission_base_velocity(RID p_particles) const=0;
 
-	virtual void particles_set_emission_points(RID p_particles, const DVector<Vector3>& p_points)=0;
-	virtual DVector<Vector3> particles_get_emission_points(RID p_particles) const=0;
+	virtual void particles_set_emission_points(RID p_particles, const PoolVector<Vector3>& p_points)=0;
+	virtual PoolVector<Vector3> particles_get_emission_points(RID p_particles) const=0;
 
 	virtual void particles_set_gravity_normal(RID p_particles, const Vector3& p_normal)=0;
 	virtual Vector3 particles_get_gravity_normal(RID p_particles) const=0;
@@ -1876,7 +1876,7 @@ public:
 	/* LIGHT SHADOW MAPPING */
 
 	virtual RID canvas_light_occluder_create()=0;
-	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines)=0;
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2>& p_lines)=0;
 
 
 	virtual RID canvas_light_shadow_buffer_create(int p_width)=0;

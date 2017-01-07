@@ -670,7 +670,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture,const Image& p_image
 	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP)?_cube_side_enum[p_cube_side]:GL_TEXTURE_2D;
 
 	texture->data_size=img.get_data().size();
-	DVector<uint8_t>::Read read = img.get_data().read();
+	PoolVector<uint8_t>::Read read = img.get_data().read();
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
@@ -831,12 +831,12 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture,VS::CubeMapSide p_c
 
 #ifdef GLES_OVER_GL
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 
 	int data_size = Image::get_image_data_size(texture->alloc_width,texture->alloc_height,texture->format,texture->mipmaps>1?-1:0);
 
 	data.resize(data_size*2); //add some memory at the end, just in case for buggy drivers
-	DVector<uint8_t>::Write wb = data.write();
+	PoolVector<uint8_t>::Write wb = data.write();
 
 	glActiveTexture(GL_TEXTURE0);
 
@@ -868,7 +868,7 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture,VS::CubeMapSide p_c
 	}
 
 
-	wb=DVector<uint8_t>::Write();
+	wb=PoolVector<uint8_t>::Write();
 
 	data.resize(data_size);
 
@@ -1848,11 +1848,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_IVEC2: {
 
-			DVector<int> iv = value;
+			PoolVector<int> iv = value;
 			int s = iv.size();
 			GLint *gui = (GLint*)data;
 
-			DVector<int>::Read r = iv.read();
+			PoolVector<int>::Read r = iv.read();
 
 			for(int i=0;i<2;i++) {
 				if (i<s)
@@ -1865,11 +1865,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_IVEC3: {
 
-			DVector<int> iv = value;
+			PoolVector<int> iv = value;
 			int s = iv.size();
 			GLint *gui = (GLint*)data;
 
-			DVector<int>::Read r = iv.read();
+			PoolVector<int>::Read r = iv.read();
 
 			for(int i=0;i<3;i++) {
 				if (i<s)
@@ -1882,11 +1882,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		case ShaderLanguage::TYPE_IVEC4: {
 
 
-			DVector<int> iv = value;
+			PoolVector<int> iv = value;
 			int s = iv.size();
 			GLint *gui = (GLint*)data;
 
-			DVector<int>::Read r = iv.read();
+			PoolVector<int>::Read r = iv.read();
 
 			for(int i=0;i<4;i++) {
 				if (i<s)
@@ -1905,11 +1905,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		} break;
 		case ShaderLanguage::TYPE_UVEC2: {
 
-			DVector<int> iv = value;
+			PoolVector<int> iv = value;
 			int s = iv.size();
 			GLuint *gui = (GLuint*)data;
 
-			DVector<int>::Read r = iv.read();
+			PoolVector<int>::Read r = iv.read();
 
 			for(int i=0;i<2;i++) {
 				if (i<s)
@@ -1920,11 +1920,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_UVEC3: {
-			DVector<int> iv = value;
+			PoolVector<int> iv = value;
 			int s = iv.size();
 			GLuint *gui = (GLuint*)data;
 
-			DVector<int>::Read r = iv.read();
+			PoolVector<int>::Read r = iv.read();
 
 			for(int i=0;i<3;i++) {
 				if (i<s)
@@ -1935,11 +1935,11 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 
 		} break;
 		case ShaderLanguage::TYPE_UVEC4: {
-			DVector<int> iv = value;
+			PoolVector<int> iv = value;
 			int s = iv.size();
 			GLuint *gui = (GLuint*)data;
 
-			DVector<int>::Read r = iv.read();
+			PoolVector<int>::Read r = iv.read();
 
 			for(int i=0;i<4;i++) {
 				if (i<s)
@@ -2463,9 +2463,9 @@ RID RasterizerStorageGLES3::mesh_create(){
 }
 
 
-void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs){
+void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs){
 
-	DVector<uint8_t> array = p_array;
+	PoolVector<uint8_t> array = p_array;
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
@@ -2667,12 +2667,12 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 	print_line("desired size: "+itos(array_size)+" vcount "+itos(p_vertex_count)+" should be: "+itos(array.size()+p_vertex_count*2)+" but is "+itos(array.size()));
 	if (array.size()!=array_size && array.size()+p_vertex_count*2 == array_size) {
 		//old format, convert
-		array = DVector<uint8_t>();
+		array = PoolVector<uint8_t>();
 
 		array.resize( p_array.size()+p_vertex_count*2 );
 
-		DVector<uint8_t>::Write w = array.write();
-		DVector<uint8_t>::Read r = p_array.read();
+		PoolVector<uint8_t>::Write w = array.write();
+		PoolVector<uint8_t>::Read r = p_array.read();
 
 		uint16_t *w16 = (uint16_t*)w.ptr();
 		const uint16_t *r16 = (uint16_t*)r.ptr();
@@ -2739,7 +2739,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 	{
 
-		DVector<uint8_t>::Read vr = array.read();
+		PoolVector<uint8_t>::Read vr = array.read();
 
 		glGenBuffers(1,&surface->vertex_id);
 		glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
@@ -2749,7 +2749,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 		if (p_format&VS::ARRAY_FORMAT_INDEX) {
 
-			DVector<uint8_t>::Read ir = p_index_array.read();
+			PoolVector<uint8_t>::Read ir = p_index_array.read();
 
 			glGenBuffers(1,&surface->index_id);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
@@ -2809,7 +2809,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 			Surface::MorphTarget mt;
 
-			DVector<uint8_t>::Read vr = p_blend_shapes[i].read();
+			PoolVector<uint8_t>::Read vr = p_blend_shapes[i].read();
 
 			glGenBuffers(1,&mt.vertex_id);
 			glBindBuffer(GL_ARRAY_BUFFER,mt.vertex_id);
@@ -2933,25 +2933,25 @@ int RasterizerStorageGLES3::mesh_surface_get_array_index_len(RID p_mesh, int p_s
 	return mesh->surfaces[p_surface]->index_array_len;
 }
 
-DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_array(RID p_mesh, int p_surface) const{
+PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_array(RID p_mesh, int p_surface) const{
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh,DVector<uint8_t>());
-	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),DVector<uint8_t>());
+	ERR_FAIL_COND_V(!mesh,PoolVector<uint8_t>());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),PoolVector<uint8_t>());
 
 	Surface *surface = mesh->surfaces[p_surface];
 
 	glBindBuffer(GL_ARRAY_BUFFER,surface->vertex_id);
 	void * data = glMapBufferRange(GL_ARRAY_BUFFER,0,surface->array_byte_size,GL_MAP_READ_BIT);
 
-	ERR_FAIL_COND_V(!data,DVector<uint8_t>());
+	ERR_FAIL_COND_V(!data,PoolVector<uint8_t>());
 
-	DVector<uint8_t> ret;
+	PoolVector<uint8_t> ret;
 	ret.resize(surface->array_byte_size);
 
 	{
 
-		DVector<uint8_t>::Write w = ret.write();
+		PoolVector<uint8_t>::Write w = ret.write();
 		copymem(w.ptr(),data,surface->array_byte_size);
 	}
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -2960,26 +2960,26 @@ DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_array(RID p_mesh, int 
 	return ret;
 }
 
-DVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
+PoolVector<uint8_t> RasterizerStorageGLES3::mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh,DVector<uint8_t>());
-	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),DVector<uint8_t>());
+	ERR_FAIL_COND_V(!mesh,PoolVector<uint8_t>());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),PoolVector<uint8_t>());
 
 	Surface *surface = mesh->surfaces[p_surface];
 
-	ERR_FAIL_COND_V(surface->index_array_len==0,DVector<uint8_t>());
+	ERR_FAIL_COND_V(surface->index_array_len==0,PoolVector<uint8_t>());
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,surface->index_id);
 	void * data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,0,surface->index_array_byte_size,GL_MAP_READ_BIT);
 
-	ERR_FAIL_COND_V(!data,DVector<uint8_t>());
+	ERR_FAIL_COND_V(!data,PoolVector<uint8_t>());
 
-	DVector<uint8_t> ret;
+	PoolVector<uint8_t> ret;
 	ret.resize(surface->index_array_byte_size);
 
 	{
 
-		DVector<uint8_t>::Write w = ret.write();
+		PoolVector<uint8_t>::Write w = ret.write();
 		copymem(w.ptr(),data,surface->index_array_byte_size);
 	}
 
@@ -3019,27 +3019,27 @@ AABB RasterizerStorageGLES3::mesh_surface_get_aabb(RID p_mesh, int p_surface) co
 
 
 }
-Vector<DVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const{
+Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const{
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh,Vector<DVector<uint8_t> >());
-	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),Vector<DVector<uint8_t> >());
+	ERR_FAIL_COND_V(!mesh,Vector<PoolVector<uint8_t> >());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),Vector<PoolVector<uint8_t> >());
 
-	Vector<DVector<uint8_t> > bsarr;
+	Vector<PoolVector<uint8_t> > bsarr;
 
 	for(int i=0;i<mesh->surfaces[p_surface]->morph_targets.size();i++) {
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,mesh->surfaces[p_surface]->morph_targets[i].vertex_id);
 		void * data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,0,mesh->surfaces[p_surface]->array_byte_size,GL_MAP_READ_BIT);
 
-		ERR_FAIL_COND_V(!data,Vector<DVector<uint8_t> >());
+		ERR_FAIL_COND_V(!data,Vector<PoolVector<uint8_t> >());
 
-		DVector<uint8_t> ret;
+		PoolVector<uint8_t> ret;
 		ret.resize(mesh->surfaces[p_surface]->array_byte_size);
 
 		{
 
-			DVector<uint8_t>::Write w = ret.write();
+			PoolVector<uint8_t>::Write w = ret.write();
 			copymem(w.ptr(),data,mesh->surfaces[p_surface]->array_byte_size);
 		}
 
@@ -4705,7 +4705,7 @@ RID RasterizerStorageGLES3::room_create(){
 
 	return RID();
 }
-void RasterizerStorageGLES3::room_add_bounds(RID p_room, const DVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform){
+void RasterizerStorageGLES3::room_add_bounds(RID p_room, const PoolVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform){
 
 
 }
@@ -4810,7 +4810,7 @@ Transform RasterizerStorageGLES3::gi_probe_get_to_cell_xform(RID p_probe) const 
 
 
 
-void RasterizerStorageGLES3::gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data){
+void RasterizerStorageGLES3::gi_probe_set_dynamic_data(RID p_probe,const PoolVector<int>& p_data){
 	GIProbe *gip = gi_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gip);
 
@@ -4819,10 +4819,10 @@ void RasterizerStorageGLES3::gi_probe_set_dynamic_data(RID p_probe,const DVector
 	gip->instance_change_notify();
 
 }
-DVector<int> RasterizerStorageGLES3::gi_probe_get_dynamic_data(RID p_probe) const{
+PoolVector<int> RasterizerStorageGLES3::gi_probe_get_dynamic_data(RID p_probe) const{
 
 	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gip,DVector<int>());
+	ERR_FAIL_COND_V(!gip,PoolVector<int>());
 
 	return gip->dynamic_data;
 }
@@ -5125,7 +5125,7 @@ void RasterizerStorageGLES3::particles_set_emission_box_extents(RID p_particles,
 
 	particles->emission_box_extents=p_extents;
 }
-void RasterizerStorageGLES3::particles_set_emission_points(RID p_particles,const DVector<Vector3>& p_points) {
+void RasterizerStorageGLES3::particles_set_emission_points(RID p_particles,const PoolVector<Vector3>& p_points) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
@@ -5961,7 +5961,7 @@ RID RasterizerStorageGLES3::canvas_light_occluder_create() {
 	return canvas_occluder_owner.make_rid(co);
 }
 
-void RasterizerStorageGLES3::canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines) {
+void RasterizerStorageGLES3::canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2>& p_lines) {
 
 	CanvasOccluder *co = canvas_occluder_owner.get(p_occluder);
 	ERR_FAIL_COND(!co);
@@ -5985,18 +5985,18 @@ void RasterizerStorageGLES3::canvas_light_occluder_set_polylines(RID p_occluder,
 
 
 
-		DVector<float> geometry;
-		DVector<uint16_t> indices;
+		PoolVector<float> geometry;
+		PoolVector<uint16_t> indices;
 		int lc = p_lines.size();
 
 		geometry.resize(lc*6);
 		indices.resize(lc*3);
 
-		DVector<float>::Write vw=geometry.write();
-		DVector<uint16_t>::Write iw=indices.write();
+		PoolVector<float>::Write vw=geometry.write();
+		PoolVector<uint16_t>::Write iw=indices.write();
 
 
-		DVector<Vector2>::Read lr=p_lines.read();
+		PoolVector<Vector2>::Read lr=p_lines.read();
 
 		const int POLY_HEIGHT = 16384;
 

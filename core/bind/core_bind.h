@@ -50,7 +50,7 @@ public:
 	static _ResourceLoader *get_singleton() { return singleton; }
 	Ref<ResourceInteractiveLoader> load_interactive(const String& p_path,const String& p_type_hint="");
 	RES load(const String &p_path,const String& p_type_hint="", bool p_no_cache = false);
-	DVector<String> get_recognized_extensions_for_type(const String& p_type);
+	PoolVector<String> get_recognized_extensions_for_type(const String& p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	StringArray get_dependencies(const String& p_path);
 	bool has(const String& p_path);
@@ -81,7 +81,7 @@ public:
 	static _ResourceSaver *get_singleton() { return singleton; }
 
 	Error save(const String &p_path,const RES& p_resource, uint32_t p_flags);
-	DVector<String> get_recognized_extensions(const RES& p_resource);
+	PoolVector<String> get_recognized_extensions(const RES& p_resource);
 
 
 	_ResourceSaver();
@@ -342,20 +342,20 @@ protected:
 public:
 
 	static _Geometry *get_singleton();
-	DVector<Plane> build_box_planes(const Vector3& p_extents);
-	DVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis=Vector3::AXIS_Z);
-	DVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	PoolVector<Plane> build_box_planes(const Vector3& p_extents);
+	PoolVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	PoolVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis=Vector3::AXIS_Z);
 	Variant segment_intersects_segment_2d(const Vector2& p_from_a,const Vector2& p_to_a,const Vector2& p_from_b,const Vector2& p_to_b);
-	DVector<Vector2> get_closest_points_between_segments_2d( const Vector2& p1,const Vector2& q1, const Vector2& p2,const Vector2& q2);
-	DVector<Vector3> get_closest_points_between_segments(const Vector3& p1,const Vector3& p2,const Vector3& q1,const Vector3& q2);
+	PoolVector<Vector2> get_closest_points_between_segments_2d( const Vector2& p1,const Vector2& q1, const Vector2& p2,const Vector2& q2);
+	PoolVector<Vector3> get_closest_points_between_segments(const Vector3& p1,const Vector3& p2,const Vector3& q1,const Vector3& q2);
 	Vector3 get_closest_point_to_segment(const Vector3& p_point, const Vector3& p_a,const Vector3& p_b);
 	Variant ray_intersects_triangle( const Vector3& p_from, const Vector3& p_dir, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2);
 	Variant segment_intersects_triangle( const Vector3& p_from, const Vector3& p_to, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2);
 	bool point_is_inside_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c) const;
 
-	DVector<Vector3> segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius);
-	DVector<Vector3> segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius);
-	DVector<Vector3> segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes);
+	PoolVector<Vector3> segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius);
+	PoolVector<Vector3> segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius);
+	PoolVector<Vector3> segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes);
 	real_t segment_intersects_circle(const Vector2& p_from, const Vector2& p_to, const Vector2& p_circle_pos, real_t p_circle_radius);
 	int get_uv84_normal_bit(const Vector3& p_vector);
 
@@ -413,7 +413,7 @@ public:
 
 	Variant get_var() const;
 
-	DVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
+	PoolVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
 	String get_as_text() const;
 	String get_md5(const String& p_path) const;
@@ -447,7 +447,7 @@ public:
 	Vector<String> get_csv_line(String delim=",") const;
 
 
-	void store_buffer(const DVector<uint8_t>& p_buffer); ///< store an array of bytes
+	void store_buffer(const PoolVector<uint8_t>& p_buffer); ///< store an array of bytes
 
 	void store_var(const Variant& p_var);
 
@@ -517,8 +517,8 @@ public:
 	String variant_to_base64(const Variant& p_var);
 	Variant base64_to_variant(const String& p_str);
 
-	String raw_to_base64(const DVector<uint8_t>& p_arr);
-	DVector<uint8_t> base64_to_raw(const String& p_str);
+	String raw_to_base64(const PoolVector<uint8_t>& p_arr);
+	PoolVector<uint8_t> base64_to_raw(const String& p_str);
 
 	String utf8_to_base64(const String& p_str);
 	String base64_to_utf8(const String& p_str);

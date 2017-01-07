@@ -181,11 +181,11 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 	//int rowsize = png_get_rowbytes(png, info);
 	int rowsize = components * width;
 
-	DVector<uint8_t> dstbuff;
+	PoolVector<uint8_t> dstbuff;
 
 	dstbuff.resize( rowsize * height  );
 
-	DVector<uint8_t>::Write dstbuff_write = dstbuff.write();
+	PoolVector<uint8_t>::Write dstbuff_write = dstbuff.write();
 
 	uint8_t* data = dstbuff_write.ptr();
 
@@ -265,10 +265,10 @@ static Image _load_mem_png(const uint8_t* p_png,int p_size) {
 }
 
 
-static Image _lossless_unpack_png(const DVector<uint8_t>& p_data) {
+static Image _lossless_unpack_png(const PoolVector<uint8_t>& p_data) {
 
 	int len = p_data.size();
-	DVector<uint8_t>::Read r = p_data.read();
+	PoolVector<uint8_t>::Read r = p_data.read();
 	ERR_FAIL_COND_V(r[0]!='P' || r[1]!='N' || r[2]!='G' || r[3]!=' ',Image());
 	return _load_mem_png(&r[4],len-4);
 
@@ -276,17 +276,17 @@ static Image _lossless_unpack_png(const DVector<uint8_t>& p_data) {
 
 static void _write_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length) {
 
-	DVector<uint8_t> &v = *(DVector<uint8_t>*)png_get_io_ptr(png_ptr);
+	PoolVector<uint8_t> &v = *(PoolVector<uint8_t>*)png_get_io_ptr(png_ptr);
 	int vs = v.size();
 
 	v.resize(vs+p_length);
-	DVector<uint8_t>::Write w = v.write();
+	PoolVector<uint8_t>::Write w = v.write();
 	copymem(&w[vs],data,p_length);
 	//print_line("png write: "+itos(p_length));
 }
 
 
-static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
+static PoolVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 
 
 	Image img = p_image;
@@ -294,7 +294,7 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 		img.decompress();
 
 
-	ERR_FAIL_COND_V(img.is_compressed(), DVector<uint8_t>());
+	ERR_FAIL_COND_V(img.is_compressed(), PoolVector<uint8_t>());
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -304,16 +304,16 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 	/* initialize stuff */
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
-	ERR_FAIL_COND_V(!png_ptr,DVector<uint8_t>());
+	ERR_FAIL_COND_V(!png_ptr,PoolVector<uint8_t>());
 
 	info_ptr = png_create_info_struct(png_ptr);
 
-	ERR_FAIL_COND_V(!info_ptr,DVector<uint8_t>());
+	ERR_FAIL_COND_V(!info_ptr,PoolVector<uint8_t>());
 
 	if (setjmp(png_jmpbuf(png_ptr))) {
-		ERR_FAIL_V(DVector<uint8_t>());
+		ERR_FAIL_V(PoolVector<uint8_t>());
 	}
-	DVector<uint8_t> ret;
+	PoolVector<uint8_t> ret;
 	ret.push_back('P');
 	ret.push_back('N');
 	ret.push_back('G');
@@ -323,7 +323,7 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 
 	/* write header */
 	if (setjmp(png_jmpbuf(png_ptr))) {
-		ERR_FAIL_V(DVector<uint8_t>());
+		ERR_FAIL_V(PoolVector<uint8_t>());
 	}
 
 	int pngf=0;
@@ -379,11 +379,11 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 
 	/* write bytes */
 	if (setjmp(png_jmpbuf(png_ptr))) {
-		ERR_FAIL_V(DVector<uint8_t>());
+		ERR_FAIL_V(PoolVector<uint8_t>());
 	}
 
 
-	DVector<uint8_t>::Read r = img.get_data().read();
+	PoolVector<uint8_t>::Read r = img.get_data().read();
 
 	row_pointers = (png_bytep*)memalloc(sizeof(png_bytep)*h);
 	for(int i=0;i<h;i++) {
@@ -397,7 +397,7 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 	/* end write */
 	if (setjmp(png_jmpbuf(png_ptr))) {
 
-		ERR_FAIL_V(DVector<uint8_t>());
+		ERR_FAIL_V(PoolVector<uint8_t>());
 	}
 
 	png_write_end(png_ptr, NULL);

@@ -1897,7 +1897,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			return p_node;
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-		DVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
+		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 
 		BSP_Tree bsptree(faces);
@@ -1940,7 +1940,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			return p_node;
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-		DVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
+		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 		ERR_FAIL_COND_V(faces.size()==0,NULL);
 		//step 1 compute the plane

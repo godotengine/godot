@@ -295,10 +295,10 @@ bool AStar::_solve(Point* begin_point, Point* end_point) {
 
 }
 
-DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
+PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 
-	ERR_FAIL_COND_V(!points.has(p_from_id),DVector<Vector3>());
-	ERR_FAIL_COND_V(!points.has(p_to_id),DVector<Vector3>());
+	ERR_FAIL_COND_V(!points.has(p_from_id),PoolVector<Vector3>());
+	ERR_FAIL_COND_V(!points.has(p_to_id),PoolVector<Vector3>());
 
 
 	pass++;
@@ -307,7 +307,7 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	Point* b = points[p_to_id];
 
 	if (a==b) {
-		DVector<Vector3> ret;
+		PoolVector<Vector3> ret;
 		ret.push_back(a->pos);
 		return ret;
 	}
@@ -319,7 +319,7 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	bool found_route=_solve(begin_point,end_point);
 
 	if (!found_route)
-		return DVector<Vector3>();
+		return PoolVector<Vector3>();
 
 	//midpoints
 	Point *p=end_point;
@@ -329,11 +329,11 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 		p=p->prev_point;
 	}
 
-	DVector<Vector3> path;
+	PoolVector<Vector3> path;
 	path.resize(pc);
 
 	{
-		DVector<Vector3>::Write w = path.write();
+		PoolVector<Vector3>::Write w = path.write();
 
 		Point *p=end_point;
 		int idx=pc-1;
@@ -351,10 +351,10 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 }
 
 
-DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
+PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 
-	ERR_FAIL_COND_V(!points.has(p_from_id),DVector<int>());
-	ERR_FAIL_COND_V(!points.has(p_to_id),DVector<int>());
+	ERR_FAIL_COND_V(!points.has(p_from_id),PoolVector<int>());
+	ERR_FAIL_COND_V(!points.has(p_to_id),PoolVector<int>());
 
 
 	pass++;
@@ -363,7 +363,7 @@ DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 	Point* b = points[p_to_id];
 
 	if (a==b) {
-		DVector<int> ret;
+		PoolVector<int> ret;
 		ret.push_back(a->id);
 		return ret;
 	}
@@ -375,7 +375,7 @@ DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 	bool found_route=_solve(begin_point,end_point);
 
 	if (!found_route)
-		return DVector<int>();
+		return PoolVector<int>();
 
 	//midpoints
 	Point *p=end_point;
@@ -385,11 +385,11 @@ DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 		p=p->prev_point;
 	}
 
-	DVector<int> path;
+	PoolVector<int> path;
 	path.resize(pc);
 
 	{
-		DVector<int>::Write w = path.write();
+		PoolVector<int>::Write w = path.write();
 
 		p=end_point;
 		int idx=pc-1;

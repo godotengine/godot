@@ -42,9 +42,9 @@ class PHashTranslation : public Translation {
 	//of catching untranslated strings
 
 	//load/store friendly types
-	DVector<int> hash_table;
-	DVector<int> bucket_table;
-	DVector<uint8_t> strings;
+	PoolVector<int> hash_table;
+	PoolVector<int> bucket_table;
+	PoolVector<uint8_t> strings;
 
 
 	struct Bucket {

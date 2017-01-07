@@ -75,7 +75,7 @@ void ColorRampEditorPlugin::_ramp_changed() {
 
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 
-		//Not sure if I should convert this data to DVector
+		//Not sure if I should convert this data to PoolVector
 		Vector<float> new_offsets=ramp_editor->get_offsets();
 		Vector<Color> new_colors=ramp_editor->get_colors();
 		Vector<float> old_offsets=color_ramp_ref->get_offsets();

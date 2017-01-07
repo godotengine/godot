@@ -66,12 +66,12 @@ void image_compress_squish(Image *p_image) {
 
 	int mm_count = p_image->get_mipmap_count();
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	int target_size = Image::get_image_data_size(w,h,target_format,mm_count);
 	data.resize(target_size);
 
-	DVector<uint8_t>::Read rb = p_image->get_data().read();
-	DVector<uint8_t>::Write wb = data.write();
+	PoolVector<uint8_t>::Read rb = p_image->get_data().read();
+	PoolVector<uint8_t>::Write wb = data.write();
 
 	int dst_ofs=0;
 
@@ -84,8 +84,8 @@ void image_compress_squish(Image *p_image) {
 		h>>=1;
 	}
 
-	rb = DVector<uint8_t>::Read();
-	wb = DVector<uint8_t>::Write();
+	rb = PoolVector<uint8_t>::Read();
+	wb = PoolVector<uint8_t>::Write();
 
 	p_image->create(p_image->get_width(),p_image->get_height(),p_image->has_mipmaps(),target_format,data);
 

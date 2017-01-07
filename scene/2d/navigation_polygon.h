@@ -36,12 +36,12 @@ class NavigationPolygon : public Resource  {
 
 	GDCLASS( NavigationPolygon, Resource );
 
-	DVector<Vector2> vertices;
+	PoolVector<Vector2> vertices;
 	struct Polygon {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Vector< DVector<Vector2> > outlines;
+	Vector< PoolVector<Vector2> > outlines;
 
 protected:
 
@@ -57,16 +57,16 @@ public:
 
 
 
-	void set_vertices(const DVector<Vector2>& p_vertices);
-	DVector<Vector2> get_vertices() const;
+	void set_vertices(const PoolVector<Vector2>& p_vertices);
+	PoolVector<Vector2> get_vertices() const;
 
 	void add_polygon(const Vector<int>& p_polygon);
 	int get_polygon_count() const;
 
-	void add_outline(const DVector<Vector2>& p_outline);
-	void add_outline_at_index(const DVector<Vector2>& p_outline,int p_index);
-	void set_outline(int p_idx,const DVector<Vector2>& p_outline);
-	DVector<Vector2> get_outline(int p_idx) const;
+	void add_outline(const PoolVector<Vector2>& p_outline);
+	void add_outline_at_index(const PoolVector<Vector2>& p_outline,int p_index);
+	void set_outline(int p_idx,const PoolVector<Vector2>& p_outline);
+	PoolVector<Vector2> get_outline(int p_idx) const;
 	void remove_outline(int p_idx);
 	int get_outline_count() const;
 

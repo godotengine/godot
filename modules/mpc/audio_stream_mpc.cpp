@@ -59,7 +59,7 @@ Error AudioStreamPlaybackMPC::_open_file() {
 	if (preload) {
 
 		data.resize(streamlen);
-		DVector<uint8_t>::Write w = data.write();
+		PoolVector<uint8_t>::Write w = data.write();
 		f->get_buffer(&w[0],streamlen);
 		memdelete(f);
 		f=NULL;
@@ -85,7 +85,7 @@ int AudioStreamPlaybackMPC::_read_file(void *p_dst,int p_bytes) {
 	if (f)
 		return f->get_buffer((uint8_t*)p_dst,p_bytes);
 
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read r = data.read();
 	if (p_bytes+data_ofs > streamlen) {
 		p_bytes=streamlen-data_ofs;
 	}

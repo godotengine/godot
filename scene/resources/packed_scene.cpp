@@ -1139,12 +1139,12 @@ void SceneState::set_bundled_scene(const Dictionary& d) {
 		ERR_FAIL();
 	}
 
-	DVector<String> snames = d["names"];
+	PoolVector<String> snames = d["names"];
 	if (snames.size()) {
 
 		int namecount = snames.size();
 		names.resize(namecount);
-		DVector<String>::Read r =snames.read();
+		PoolVector<String>::Read r =snames.read();
 		for(int i=0;i<names.size();i++)
 			names[i]=r[i];
 	}
@@ -1166,8 +1166,8 @@ void SceneState::set_bundled_scene(const Dictionary& d) {
 	nodes.resize(d["node_count"]);
 	int nc=nodes.size();
 	if (nc) {
-		DVector<int> snodes = d["nodes"];
-		DVector<int>::Read r = snodes.read();
+		PoolVector<int> snodes = d["nodes"];
+		PoolVector<int>::Read r = snodes.read();
 		int idx=0;
 		for(int i=0;i<nc;i++) {
 			NodeData &nd = nodes[i];
@@ -1196,8 +1196,8 @@ void SceneState::set_bundled_scene(const Dictionary& d) {
 
 	if (cc) {
 
-		DVector<int> sconns = d["conns"];
-		DVector<int>::Read r = sconns.read();
+		PoolVector<int> sconns = d["conns"];
+		PoolVector<int>::Read r = sconns.read();
 		int idx=0;
 		for(int i=0;i<cc;i++) {
 			ConnectionData &cd = connections[i];
@@ -1245,12 +1245,12 @@ void SceneState::set_bundled_scene(const Dictionary& d) {
 
 Dictionary SceneState::get_bundled_scene() const {
 
-	DVector<String> rnames;
+	PoolVector<String> rnames;
 	rnames.resize(names.size());
 
 	if (names.size()) {
 
-		DVector<String>::Write r=rnames.write();
+		PoolVector<String>::Write r=rnames.write();
 
 		for(int i=0;i<names.size();i++)
 			r[i]=names[i];
@@ -1659,10 +1659,10 @@ void SceneState::add_editable_instance(const NodePath& p_path){
 	editable_instances.push_back(p_path);
 }
 
-DVector<String> SceneState::_get_node_groups(int p_idx) const {
+PoolVector<String> SceneState::_get_node_groups(int p_idx) const {
 
 	Vector<StringName> groups = get_node_groups(p_idx);
-	DVector<String> ret;
+	PoolVector<String> ret;
 
 	for(int i=0;i<groups.size();i++)
 		ret.push_back(groups[i]);

@@ -50,9 +50,9 @@ class BakedLightEditor : public Control {
 
 
 	float update_timeout;
-	DVector<uint8_t> octree_texture;
-	DVector<uint8_t> light_texture;
-	DVector<int> octree_sampler;
+	PoolVector<uint8_t> octree_texture;
+	PoolVector<uint8_t> light_texture;
+	PoolVector<int> octree_sampler;
 
 	BakedLightBaker *baker;
 	AcceptDialog *err_dialog;

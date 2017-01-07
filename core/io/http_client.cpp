@@ -87,7 +87,7 @@ Ref<StreamPeer> HTTPClient::get_connection() const {
 	return connection;
 }
 
-Error HTTPClient::request_raw( Method p_method, const String& p_url, const Vector<String>& p_headers,const DVector<uint8_t>& p_body) {
+Error HTTPClient::request_raw( Method p_method, const String& p_url, const Vector<String>& p_headers,const PoolVector<uint8_t>& p_body) {
 
 	ERR_FAIL_INDEX_V(p_method,METHOD_MAX,ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(status!=STATUS_CONNECTED,ERR_INVALID_PARAMETER);
@@ -120,7 +120,7 @@ Error HTTPClient::request_raw( Method p_method, const String& p_url, const Vecto
 	request+="\r\n";
 	CharString cs=request.utf8();
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 
 	//Maybe this goes faster somehow?
 	for(int i=0;i<cs.length();i++) {
@@ -128,7 +128,7 @@ Error HTTPClient::request_raw( Method p_method, const String& p_url, const Vecto
 	}
 	data.append_array( p_body );
 
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read r = data.read();
 	Error err = connection->put_data(&r[0], data.size());
 
 	if (err) {

@@ -32,7 +32,7 @@
 /**
  * @class Vector
  * @author Juan Linietsky
- * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use DVector for large arrays.
+ * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use PoolVector for large arrays.
 */
 #include "os/memory.h"
 #include "error_macros.h"

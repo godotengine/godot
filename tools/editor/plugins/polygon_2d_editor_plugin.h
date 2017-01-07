@@ -81,7 +81,7 @@ class Polygon2DEditor : public HBoxContainer {
 
 	Vector2 uv_draw_ofs;
 	float uv_draw_zoom;
-	DVector<Vector2> uv_prev;
+	PoolVector<Vector2> uv_prev;
 	int uv_drag_index;
 	bool uv_drag;
 	UVMode uv_move_current;

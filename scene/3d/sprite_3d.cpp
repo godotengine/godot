@@ -211,9 +211,9 @@ AABB SpriteBase3D::get_aabb() const {
 
 	return aabb;
 }
-DVector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 
 }
 

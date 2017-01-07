@@ -99,13 +99,13 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path,E
 	print_line("surfcount: "+itos(surfcount));
 */
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	data.resize(surfsize);
 
 	ERR_FAIL_COND_V(data.size()==0,RES());
 
 
-	DVector<uint8_t>::Write w = data.write();
+	PoolVector<uint8_t>::Write w = data.write();
 	f->get_buffer(&w[0],surfsize);
 	err = f->get_error();
 	ERR_FAIL_COND_V(err!=OK,RES());
@@ -151,7 +151,7 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path,E
 
 	}
 
-	w = DVector<uint8_t>::Write();
+	w = PoolVector<uint8_t>::Write();
 
 	int tex_flags=Texture::FLAG_FILTER|Texture::FLAG_REPEAT;
 
@@ -209,10 +209,10 @@ static void _compress_pvrtc4(Image * p_img) {
 
 	Image new_img;
 	new_img.create(img.get_width(),img.get_height(),true,use_alpha?Image::FORMAT_PVRTC4A:Image::FORMAT_PVRTC4);
-	DVector<uint8_t> data=new_img.get_data();
+	PoolVector<uint8_t> data=new_img.get_data();
 	{
-		DVector<uint8_t>::Write wr=data.write();
-		DVector<uint8_t>::Read r=img.get_data().read();
+		PoolVector<uint8_t>::Write wr=data.write();
+		PoolVector<uint8_t>::Read r=img.get_data().read();
 
 
 		for(int i=0;i<=new_img.get_mipmap_count();i++) {
@@ -677,13 +677,13 @@ static void _pvrtc_decompress(Image* p_img) {
 
 	bool _2bit = (p_img->get_format()==Image::FORMAT_PVRTC2 || p_img->get_format()==Image::FORMAT_PVRTC2A );
 
-	DVector<uint8_t> data = p_img->get_data();
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t> data = p_img->get_data();
+	PoolVector<uint8_t>::Read r = data.read();
 
 
-	DVector<uint8_t> newdata;
+	PoolVector<uint8_t> newdata;
 	newdata.resize( p_img->get_width() * p_img->get_height() * 4);
-	DVector<uint8_t>::Write w=newdata.write();
+	PoolVector<uint8_t>::Write w=newdata.write();
 
 	decompress_pvrtc((PVRTCBlock*)r.ptr(),_2bit,p_img->get_width(),p_img->get_height(),0,(unsigned char*)w.ptr());
 
@@ -691,8 +691,8 @@ static void _pvrtc_decompress(Image* p_img) {
 	//	print_line(itos(w[i]));
 	//}
 
-	w=DVector<uint8_t>::Write();
-	r=DVector<uint8_t>::Read();
+	w=PoolVector<uint8_t>::Write();
+	r=PoolVector<uint8_t>::Read();
 
 	bool make_mipmaps=p_img->has_mipmaps();
 	Image newimg(p_img->get_width(),p_img->get_height(),false,Image::FORMAT_RGBA8,newdata);

@@ -96,9 +96,9 @@ AABB ImmediateGeometry::get_aabb() const {
 
 	return aabb;
 }
-DVector<Face3> ImmediateGeometry::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> ImmediateGeometry::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 

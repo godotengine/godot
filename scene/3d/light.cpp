@@ -135,9 +135,9 @@ AABB Light::get_aabb() const {
 	return AABB();
 }
 
-DVector<Face3> Light::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> Light::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 

@@ -36,12 +36,12 @@ void Navigation::_navmesh_link(int p_id) {
 
 	print_line("LINK");
 
-	DVector<Vector3> vertices=nm.navmesh->get_vertices();
+	PoolVector<Vector3> vertices=nm.navmesh->get_vertices();
 	int len = vertices.size();
 	if (len==0)
 		return;
 
-	DVector<Vector3>::Read r=vertices.read();
+	PoolVector<Vector3>::Read r=vertices.read();
 
 	for(int i=0;i<nm.navmesh->get_polygon_count();i++) {
 

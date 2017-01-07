@@ -485,15 +485,15 @@ Error ColladaImport::_create_material(const String& p_target) {
 }
 
 
-static void _generate_normals(const DVector<int>& p_indices,const DVector<Vector3>& p_vertices,DVector<Vector3>&r_normals) {
+static void _generate_normals(const PoolVector<int>& p_indices,const PoolVector<Vector3>& p_vertices,PoolVector<Vector3>&r_normals) {
 
 
 	r_normals.resize(p_vertices.size());
-	DVector<Vector3>::Write narrayw = r_normals.write();
+	PoolVector<Vector3>::Write narrayw = r_normals.write();
 
 	int iacount=p_indices.size()/3;
-	DVector<int>::Read index_arrayr = p_indices.read();
-	DVector<Vector3>::Read vertex_arrayr = p_vertices.read();
+	PoolVector<int>::Read index_arrayr = p_indices.read();
+	PoolVector<Vector3>::Read vertex_arrayr = p_vertices.read();
 
 	for(int idx=0;idx<iacount;idx++) {
 
@@ -519,7 +519,7 @@ static void _generate_normals(const DVector<int>& p_indices,const DVector<Vector
 }
 
 
-static void _generate_tangents_and_binormals(const DVector<int>& p_indices,const DVector<Vector3>& p_vertices,const DVector<Vector3>& p_uvs,const DVector<Vector3>& p_normals,DVector<real_t>&r_tangents) {
+static void _generate_tangents_and_binormals(const PoolVector<int>& p_indices,const PoolVector<Vector3>& p_vertices,const PoolVector<Vector3>& p_uvs,const PoolVector<Vector3>& p_normals,PoolVector<real_t>&r_tangents) {
 
 	int vlen=p_vertices.size();
 
@@ -531,10 +531,10 @@ static void _generate_tangents_and_binormals(const DVector<int>& p_indices,const
 
 	int iacount=p_indices.size()/3;
 
-	DVector<int>::Read index_arrayr = p_indices.read();
-	DVector<Vector3>::Read vertex_arrayr = p_vertices.read();
-	DVector<Vector3>::Read narrayr = p_normals.read();
-	DVector<Vector3>::Read uvarrayr = p_uvs.read();
+	PoolVector<int>::Read index_arrayr = p_indices.read();
+	PoolVector<Vector3>::Read vertex_arrayr = p_vertices.read();
+	PoolVector<Vector3>::Read narrayr = p_normals.read();
+	PoolVector<Vector3>::Read uvarrayr = p_uvs.read();
 
 
 	for(int idx=0;idx<iacount;idx++) {
@@ -588,7 +588,7 @@ static void _generate_tangents_and_binormals(const DVector<int>& p_indices,const
 	}
 
 	r_tangents.resize(vlen*4);
-	DVector<real_t>::Write tarrayw = r_tangents.write();
+	PoolVector<real_t>::Write tarrayw = r_tangents.write();
 
 	for(int idx=0;idx<vlen;idx++) {
 		Vector3 tangent = tangents[idx];
@@ -1031,9 +1031,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 		}
 
 
-		DVector<int> index_array;
+		PoolVector<int> index_array;
 		index_array.resize(indices_list.size());
-		DVector<int>::Write index_arrayw = index_array.write();
+		PoolVector<int>::Write index_arrayw = index_array.write();
 
 		int iidx=0;
 		for(List<int>::Element *F=indices_list.front();F;F=F->next()) {
@@ -1041,7 +1041,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 			index_arrayw[iidx++]=F->get();
 		}
 
-		index_arrayw=DVector<int>::Write();
+		index_arrayw=PoolVector<int>::Write();
 
 
 		/*****************/
@@ -1075,14 +1075,14 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 
 
-			DVector<Vector3> final_vertex_array;
-			DVector<Vector3> final_normal_array;
-			DVector<float> final_tangent_array;
-			DVector<Color> final_color_array;
-			DVector<Vector3> final_uv_array;
-			DVector<Vector3> final_uv2_array;
-			DVector<int> final_bone_array;
-			DVector<float> final_weight_array;
+			PoolVector<Vector3> final_vertex_array;
+			PoolVector<Vector3> final_normal_array;
+			PoolVector<float> final_tangent_array;
+			PoolVector<Color> final_color_array;
+			PoolVector<Vector3> final_uv_array;
+			PoolVector<Vector3> final_uv2_array;
+			PoolVector<int> final_bone_array;
+			PoolVector<float> final_weight_array;
 
 			uint32_t final_format=0;
 
@@ -1117,61 +1117,61 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 			int vlen = vertex_array.size();
 			{ //vertices
 
-				DVector<Vector3> varray;
+				PoolVector<Vector3> varray;
 				varray.resize(vertex_array.size());
 
-				DVector<Vector3>::Write varrayw = varray.write();
+				PoolVector<Vector3>::Write varrayw = varray.write();
 
 				for(int k=0;k<vlen;k++)
 					varrayw[k]=vertex_array[k].vertex;
 
-				varrayw = DVector<Vector3>::Write();
+				varrayw = PoolVector<Vector3>::Write();
 				final_vertex_array=varray;
 
 			}
 
 
 			if (uv_src) { //compute uv first, may be needed for computing tangent/bionrmal
-				DVector<Vector3> uvarray;
+				PoolVector<Vector3> uvarray;
 				uvarray.resize(vertex_array.size());
-				DVector<Vector3>::Write uvarrayw = uvarray.write();
+				PoolVector<Vector3>::Write uvarrayw = uvarray.write();
 
 				for(int k=0;k<vlen;k++) {
 					uvarrayw[k]=vertex_array[k].uv;
 				}
 
-				uvarrayw = DVector<Vector3>::Write();
+				uvarrayw = PoolVector<Vector3>::Write();
 				final_uv_array=uvarray;
 
 			}
 
 			if (uv2_src) { //compute uv first, may be needed for computing tangent/bionrmal
-				DVector<Vector3> uv2array;
+				PoolVector<Vector3> uv2array;
 				uv2array.resize(vertex_array.size());
-				DVector<Vector3>::Write uv2arrayw = uv2array.write();
+				PoolVector<Vector3>::Write uv2arrayw = uv2array.write();
 
 				for(int k=0;k<vlen;k++) {
 					uv2arrayw[k]=vertex_array[k].uv2;
 				}
 
-				uv2arrayw = DVector<Vector3>::Write();
+				uv2arrayw = PoolVector<Vector3>::Write();
 				final_uv2_array=uv2array;
 
 			}
 
 			if (normal_src) {
-				DVector<Vector3> narray;
+				PoolVector<Vector3> narray;
 				narray.resize(vertex_array.size());
-				DVector<Vector3>::Write narrayw = narray.write();
+				PoolVector<Vector3>::Write narrayw = narray.write();
 
 				for(int k=0;k<vlen;k++) {
 					narrayw[k]=vertex_array[k].normal;
 				}
 
-				narrayw = DVector<Vector3>::Write();
+				narrayw = PoolVector<Vector3>::Write();
 				final_normal_array=narray;
 
-				//DVector<Vector3> altnaray;
+				//PoolVector<Vector3> altnaray;
 				//_generate_normals(index_array,final_vertex_array,altnaray);
 
 				//for(int i=0;i<altnaray.size();i++)
@@ -1189,9 +1189,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 			if (final_normal_array.size() && uv_src && binormal_src && tangent_src && !force_make_tangents) {
 
-				DVector<real_t> tarray;
+				PoolVector<real_t> tarray;
 				tarray.resize(vertex_array.size()*4);
-				DVector<real_t>::Write tarrayw = tarray.write();
+				PoolVector<real_t>::Write tarrayw = tarray.write();
 
 
 				for(int k=0;k<vlen;k++) {
@@ -1202,7 +1202,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 				}
 
-				tarrayw = DVector<real_t>::Write();
+				tarrayw = PoolVector<real_t>::Write();
 
 				final_tangent_array=tarray;
 			} else if (final_normal_array.size() && primitive==Mesh::PRIMITIVE_TRIANGLES && final_uv_array.size() && (force_make_tangents || (material.is_valid()))){
@@ -1217,27 +1217,27 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 
 			if (color_src) {
-				DVector<Color> colorarray;
+				PoolVector<Color> colorarray;
 				colorarray.resize(vertex_array.size());
-				DVector<Color>::Write colorarrayw = colorarray.write();
+				PoolVector<Color>::Write colorarrayw = colorarray.write();
 
 				for(int k=0;k<vlen;k++) {
 					colorarrayw[k]=vertex_array[k].color;
 				}
 
-				colorarrayw = DVector<Color>::Write();
+				colorarrayw = PoolVector<Color>::Write();
 
 				final_color_array=colorarray;
 			}
 
 			if (has_weights) {
-				DVector<float> weightarray;
-				DVector<int> bonearray;
+				PoolVector<float> weightarray;
+				PoolVector<int> bonearray;
 
 				weightarray.resize(vertex_array.size()*4);
-				DVector<float>::Write weightarrayw = weightarray.write();
+				PoolVector<float>::Write weightarrayw = weightarray.write();
 				bonearray.resize(vertex_array.size()*4);
-				DVector<int>::Write bonearrayw = bonearray.write();
+				PoolVector<int>::Write bonearrayw = bonearray.write();
 
 				for(int k=0;k<vlen;k++) {
 					float sum=0;
@@ -1262,8 +1262,8 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 				}
 
-				weightarrayw = DVector<float>::Write();
-				bonearrayw = DVector<int>::Write();
+				weightarrayw = PoolVector<float>::Write();
+				bonearrayw = PoolVector<int>::Write();
 
 				final_weight_array = weightarray;
 				final_bone_array = bonearray;
@@ -1326,7 +1326,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 					// morph anything but "POSITIONS" seem to exit. Because of this, normals and binormals/tangents have to be regenerated here,
 					// which may result in inaccurate (but most of the time good enough) results.
 
-					DVector<Vector3> vertices;
+					PoolVector<Vector3> vertices;
 					vertices.resize(vlen);
 
 					ERR_FAIL_COND_V( md.vertices.size() != 1, ERR_INVALID_DATA);
@@ -1345,7 +1345,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 
 					//read vertices from morph target
-					DVector<Vector3>::Write vertw = vertices.write();
+					PoolVector<Vector3>::Write vertw = vertices.write();
 
 					for(int m_i=0;m_i<m->array.size()/stride;m_i++) {
 
@@ -1381,9 +1381,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 
 					//vertices are in place, now generate everything else
-					vertw = DVector<Vector3>::Write();
-					DVector<Vector3> normals;
-					DVector<float> tangents;
+					vertw = PoolVector<Vector3>::Write();
+					PoolVector<Vector3> normals;
+					PoolVector<float> tangents;
 					print_line("vertex source id: "+vertex_src_id);
 					if(md.vertices[vertex_src_id].sources.has("NORMAL")){
 						//has normals
@@ -1402,7 +1402,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 
 						//read normals from morph target
-						DVector<Vector3>::Write vertw = normals.write();
+						PoolVector<Vector3>::Write vertw = normals.write();
 
 						for(int m_i=0;m_i<m->array.size()/stride;m_i++) {
 

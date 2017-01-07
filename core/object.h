@@ -34,6 +34,7 @@
 #include "set.h"
 #include "map.h"
 #include "vmap.h"
+#include "os/rw_lock.h"
 
 #define VARIANT_ARG_LIST const Variant& p_arg1=Variant(),const Variant& p_arg2=Variant(),const Variant& p_arg3=Variant(),const Variant& p_arg4=Variant(),const Variant& p_arg5=Variant()
 #define VARIANT_ARG_PASS p_arg1,p_arg2,p_arg3,p_arg4,p_arg5
@@ -481,7 +482,7 @@ protected:
 		return &_class_name;
 	}
 
-	DVector<String> _get_meta_list_bind() const;
+	PoolVector<String> _get_meta_list_bind() const;
 	Array _get_property_list_bind() const;
 	Array _get_method_list_bind() const;
 
@@ -686,9 +687,14 @@ class ObjectDB {
 friend class Object;
 friend void unregister_core_types();
 
+
+	static RWLock *rw_lock;
 	static void cleanup();
 	static uint32_t add_instance(Object *p_object);
 	static void remove_instance(Object *p_object);
+friend void register_core_types();
+	static void setup();
+
 public:
 
 	typedef void (*DebugFunc)(Object *p_obj);

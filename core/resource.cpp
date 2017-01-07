@@ -164,17 +164,31 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	if (path_cache!="") {
 
+		ResourceCache::lock->write_lock();
 		ResourceCache::resources.erase(path_cache);
+		ResourceCache::lock->write_unlock();
 	}
 
 	path_cache="";
-	if (ResourceCache::resources.has( p_path )) {
+
+	ResourceCache::lock->read_lock();
+	bool has_path = ResourceCache::resources.has( p_path );
+	ResourceCache::lock->read_unlock();
+
+	if (has_path) {
 		if (p_take_over) {
 
+			ResourceCache::lock->write_lock();
 			ResourceCache::resources.get(p_path)->set_name("");
+			ResourceCache::lock->write_unlock();
 		} else {
 			ERR_EXPLAIN("Another resource is loaded from path: "+p_path);
-			ERR_FAIL_COND( ResourceCache::resources.has( p_path ) );
+
+			ResourceCache::lock->read_lock();
+			bool exists = ResourceCache::resources.has( p_path );
+			ResourceCache::lock->read_unlock();
+
+			ERR_FAIL_COND( exists );
 		}
 
 	}
@@ -182,7 +196,9 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	if (path_cache!="") {
 
+		ResourceCache::lock->write_lock();
 		ResourceCache::resources[path_cache]=this;;
+		ResourceCache::lock->write_unlock();
 	}
 
 	_change_notify("resource/path");
@@ -393,8 +409,11 @@ Resource::Resource() {
 
 Resource::~Resource() {
 
-	if (path_cache!="")
+	if (path_cache!="") {
+		ResourceCache::lock->write_lock();
 		ResourceCache::resources.erase(path_cache);
+		ResourceCache::lock->write_unlock();
+	}
 	if (owners.size()) {
 		WARN_PRINT("Resource is still owned");
 	}
@@ -402,17 +421,23 @@ Resource::~Resource() {
 
 HashMap<String,Resource*> ResourceCache::resources;
 
+RWLock *ResourceCache::lock=NULL;
+
+void ResourceCache::setup() {
+
+	lock = RWLock::create();
+}
+
 void ResourceCache::clear() {
 	if (resources.size())
 		ERR_PRINT("Resources Still in use at Exit!");
 
 	resources.clear();
+	memdelete(lock);
 }
 
 
 void ResourceCache::reload_externals() {
-
-	GLOBAL_LOCK_FUNCTION
 
 	//const String *K=NULL;
 	//while ((K=resources.next(K))) {
@@ -423,15 +448,21 @@ void ResourceCache::reload_externals() {
 
 bool ResourceCache::has(const String& p_path) {
 
-	GLOBAL_LOCK_FUNCTION
+	lock->read_lock();;
+	bool b = resources.has(p_path);
+	lock->read_unlock();;
 
-	return resources.has(p_path);
+
+	return b;
 }
 Resource *ResourceCache::get(const String& p_path) {
 
-	GLOBAL_LOCK_FUNCTION
+	lock->read_lock();
 
 	Resource **res = resources.getptr(p_path);
+
+	lock->read_unlock();
+
 	if (!res) {
 		return NULL;
 	}
@@ -443,6 +474,7 @@ Resource *ResourceCache::get(const String& p_path) {
 void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
 
 
+	lock->read_lock();
 	const String* K=NULL;
 	while((K=resources.next(K))) {
 
@@ -450,17 +482,22 @@ void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
 		p_resources->push_back( Ref<Resource>( r ));
 
 	}
+	lock->read_unlock();
 
 }
 
 int ResourceCache::get_cached_resource_count() {
 
-	return resources.size();
+	lock->read_lock();
+	int rc = resources.size();
+	lock->read_unlock();
+
+	return rc;
 }
 
 void ResourceCache::dump(const char* p_file,bool p_short) {
 #ifdef DEBUG_ENABLED
-	GLOBAL_LOCK_FUNCTION
+	lock->read_lock();
 
 	Map<String,int> type_count;
 
@@ -499,6 +536,8 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 		f->close();
 		memdelete(f);
 	}
+
+	lock->read_unlock();
 
 #endif
 }

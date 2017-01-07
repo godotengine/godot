@@ -70,7 +70,7 @@ class NavigationPolygonEditor : public HBoxContainer {
 	int edited_outline;
 	int edited_point;
 	Vector2 edited_point_pos;
-	DVector<Vector2> pre_move_edit;
+	PoolVector<Vector2> pre_move_edit;
 	Vector<Vector2> wip;
 	bool wip_active;
 

@@ -76,7 +76,7 @@ private:
 
 	bool got_response;
 	int response_code;
-	DVector<String> response_headers;
+	PoolVector<String> response_headers;
 
 	String download_to_file;
 

@@ -599,7 +599,7 @@ public:
 
 	virtual RID mesh_create();
 
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const DVector<uint8_t>& p_array,int p_vertex_count,const DVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<DVector<uint8_t> >& p_blend_shapes=Vector<DVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>());
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>());
 
 	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount);
 	virtual int mesh_get_morph_target_count(RID p_mesh) const;
@@ -614,15 +614,15 @@ public:
 	virtual int mesh_surface_get_array_len(RID p_mesh, int p_surface) const;
 	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const;
 
-	virtual DVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const;
-	virtual DVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
+	virtual PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const;
+	virtual PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const;
 
 
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
 	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
-	virtual Vector<DVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
+	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
 	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_remove_surface(RID p_mesh, int p_surface);
@@ -877,7 +877,7 @@ public:
 	/* ROOM API */
 
 	virtual RID room_create();
-	virtual void room_add_bounds(RID p_room, const DVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform);
+	virtual void room_add_bounds(RID p_room, const PoolVector<Vector2>& p_convex_polygon,float p_height,const Transform& p_transform);
 	virtual void room_clear_bounds(RID p_room);
 
 	/* PORTAL API */
@@ -913,7 +913,7 @@ public:
 
 		uint32_t version;
 
-		DVector<int> dynamic_data;
+		PoolVector<int> dynamic_data;
 
 
 	};
@@ -931,8 +931,8 @@ public:
 	virtual void gi_probe_set_to_cell_xform(RID p_probe,const Transform& p_xform);
 	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const;
 
-	virtual void gi_probe_set_dynamic_data(RID p_probe,const DVector<int>& p_data);
-	virtual DVector<int> gi_probe_get_dynamic_data(RID p_probe) const;
+	virtual void gi_probe_set_dynamic_data(RID p_probe,const PoolVector<int>& p_data);
+	virtual PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const;
 
 	virtual void gi_probe_set_dynamic_range(RID p_probe,int p_range);
 	virtual int gi_probe_get_dynamic_range(RID p_probe) const;
@@ -985,7 +985,7 @@ public:
 		VS::ParticlesEmissionShape emission_shape;
 		float emission_sphere_radius;
 		Vector3 emission_box_extents;
-		DVector<Vector3> emission_points;
+		PoolVector<Vector3> emission_points;
 		GLuint emission_point_texture;
 
 		VS::ParticlesDrawOrder draw_order;
@@ -1061,7 +1061,7 @@ public:
 	virtual void particles_set_emission_shape(RID p_particles,VS::ParticlesEmissionShape p_shape);
 	virtual void particles_set_emission_sphere_radius(RID p_particles,float p_radius);
 	virtual void particles_set_emission_box_extents(RID p_particles,const Vector3& p_extents);
-	virtual void particles_set_emission_points(RID p_particles,const DVector<Vector3>& p_points);
+	virtual void particles_set_emission_points(RID p_particles,const PoolVector<Vector3>& p_points);
 
 
 	virtual void particles_set_draw_order(RID p_particles,VS::ParticlesDrawOrder p_order);
@@ -1208,14 +1208,14 @@ public:
 
 		GLuint vertex_id; // 0 means, unconfigured
 		GLuint index_id; // 0 means, unconfigured
-		DVector<Vector2> lines;
+		PoolVector<Vector2> lines;
 		int len;
 	};
 
 	RID_Owner<CanvasOccluder> canvas_occluder_owner;
 
 	virtual RID canvas_light_occluder_create();
-	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines);
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const PoolVector<Vector2>& p_lines);
 
 	virtual VS::InstanceType get_base_type(RID p_rid) const;
 

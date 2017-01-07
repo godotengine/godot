@@ -56,11 +56,11 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 		shape_from=co->get_shape_count();
 		for(int i=0;i<decomp.size();i++) {
 			Ref<ConvexPolygonShape> convex = memnew( ConvexPolygonShape );
-			DVector<Vector3> cp;
+			PoolVector<Vector3> cp;
 			int cs = decomp[i].size();
 			cp.resize(cs*2);
 			{
-				DVector<Vector3>::Write w = cp.write();
+				PoolVector<Vector3>::Write w = cp.write();
 				int idx=0;
 				for(int j=0;j<cs;j++) {
 
@@ -84,16 +84,16 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 #if 0
 		Ref<ConcavePolygonShape> concave = memnew( ConcavePolygonShape );
 
-		DVector<Vector2> segments;
+		PoolVector<Vector2> segments;
 		segments.resize(polygon.size()*2);
-		DVector<Vector2>::Write w=segments.write();
+		PoolVector<Vector2>::Write w=segments.write();
 
 		for(int i=0;i<polygon.size();i++) {
 			w[(i<<1)+0]=polygon[i];
 			w[(i<<1)+1]=polygon[(i+1)%polygon.size()];
 		}
 
-		w=DVector<Vector2>::Write();
+		w=PoolVector<Vector2>::Write();
 		concave->set_segments(segments);
 
 		co->add_shape(concave,get_transform());

@@ -125,7 +125,7 @@ int SampleManagerMallocSW::sample_get_length(RID p_sample) const {
 	return s->length;
 }
 
-void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer) {
+void SampleManagerMallocSW::sample_set_data(RID p_sample, const PoolVector<uint8_t>& p_buffer) {
 
 	Sample *s = sample_owner.get(p_sample);
 	ERR_FAIL_COND(!s);
@@ -137,7 +137,7 @@ void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>
 	ERR_EXPLAIN("Sample buffer size does not match sample size.");
 	//print_line("len bytes: "+itos(s->length_bytes)+" bufsize: "+itos(buff_size));
 	ERR_FAIL_COND(s->length_bytes!=buff_size);
-	DVector<uint8_t>::Read buffer_r=p_buffer.read();
+	PoolVector<uint8_t>::Read buffer_r=p_buffer.read();
 	const uint8_t *src = buffer_r.ptr();
 	uint8_t *dst = (uint8_t*)s->data;
 	//print_line("set data: "+itos(s->length_bytes));
@@ -181,14 +181,14 @@ void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>
 
 }
 
-const DVector<uint8_t> SampleManagerMallocSW::sample_get_data(RID p_sample) const {
+const PoolVector<uint8_t> SampleManagerMallocSW::sample_get_data(RID p_sample) const {
 
 	Sample *s = sample_owner.get(p_sample);
-	ERR_FAIL_COND_V(!s,DVector<uint8_t>());
+	ERR_FAIL_COND_V(!s,PoolVector<uint8_t>());
 
-	DVector<uint8_t> ret_buffer;
+	PoolVector<uint8_t> ret_buffer;
 	ret_buffer.resize(s->length_bytes);
-	DVector<uint8_t>::Write buffer_w=ret_buffer.write();
+	PoolVector<uint8_t>::Write buffer_w=ret_buffer.write();
 	uint8_t *dst = buffer_w.ptr();
 	const uint8_t *src = (const uint8_t*)s->data;
 
@@ -197,7 +197,7 @@ const DVector<uint8_t> SampleManagerMallocSW::sample_get_data(RID p_sample) cons
 		dst[i]=src[i];
 	}
 
-	buffer_w = DVector<uint8_t>::Write(); //unlock
+	buffer_w = PoolVector<uint8_t>::Write(); //unlock
 
 	return ret_buffer;
 }

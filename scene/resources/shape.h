@@ -53,7 +53,7 @@ public:
 
 	Ref<Mesh> get_debug_mesh();
 
-	void add_vertices_to_array(DVector<Vector3> &array, const Transform& p_xform);
+	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform& p_xform);
 
 	Shape();
 	~Shape();

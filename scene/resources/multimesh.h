@@ -59,11 +59,11 @@ protected:
 
 	static void _bind_methods();
 
-	void _set_transform_array(const DVector<Vector3>& p_array);
-	DVector<Vector3> _get_transform_array() const;
+	void _set_transform_array(const PoolVector<Vector3>& p_array);
+	PoolVector<Vector3> _get_transform_array() const;
 
-	void _set_color_array(const DVector<Color>& p_array);
-	DVector<Color> _get_color_array() const;
+	void _set_color_array(const PoolVector<Color>& p_array);
+	PoolVector<Color> _get_color_array() const;
 
 public:
 

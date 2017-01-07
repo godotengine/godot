@@ -193,7 +193,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 	}
 
 
-	DVector<uint8_t>::Read r = p_img.get_data().read();
+	PoolVector<uint8_t>::Read r = p_img.get_data().read();
 
 	row_pointers = (png_bytep*)memalloc(sizeof(png_bytep)*h);
 	for(int i=0;i<h;i++) {

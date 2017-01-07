@@ -305,7 +305,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		retval.resize(len);
 		ByteArray::Write w = retval.write();
 		copymem(w.ptr(), charstr.ptr(), len);
-		w = DVector<uint8_t>::Write();
+		w = PoolVector<uint8_t>::Write();
 
 		r_ret = retval;
 	}
@@ -320,7 +320,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		retval.resize(len);
 		ByteArray::Write w = retval.write();
 		copymem(w.ptr(), charstr.ptr(), len);
-		w = DVector<uint8_t>::Write();
+		w = PoolVector<uint8_t>::Write();
 
 		r_ret = retval;
 	}

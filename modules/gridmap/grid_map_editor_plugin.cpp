@@ -1126,7 +1126,7 @@ void GridMapEditor::_update_areas_display() {
 
 		RID mesh = VisualServer::get_singleton()->mesh_create();
 
-		DVector<Plane> planes;
+		PoolVector<Plane> planes;
 		for(int i=0;i<3;i++) {
 
 			Vector3 axis;
@@ -1343,8 +1343,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		//selection mesh create
 
 
-		DVector<Vector3> lines;
-		DVector<Vector3> triangles;
+		PoolVector<Vector3> lines;
+		PoolVector<Vector3> triangles;
 
 		for (int i=0;i<6;i++) {
 

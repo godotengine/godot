@@ -37,12 +37,12 @@ RID RoomBounds::get_rid() const {
 }
 
 
-void RoomBounds::set_geometry_hint(const DVector<Face3>& p_geometry_hint) {
+void RoomBounds::set_geometry_hint(const PoolVector<Face3>& p_geometry_hint) {
 
 	geometry_hint=p_geometry_hint;
 }
 
-DVector<Face3> RoomBounds::get_geometry_hint() const {
+PoolVector<Face3> RoomBounds::get_geometry_hint() const {
 
 	return geometry_hint;
 }

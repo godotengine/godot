@@ -34,11 +34,11 @@ Vector<Vector3> ConcavePolygonShape::_gen_debug_mesh_lines() {
 
 	Set<DrawEdge> edges;
 
-	DVector<Vector3> data=get_faces();
+	PoolVector<Vector3> data=get_faces();
 	int datalen=data.size();
 	ERR_FAIL_COND_V( (datalen%3)!=0,Vector<Vector3>() );
 
-	DVector<Vector3>::Read r=data.read();
+	PoolVector<Vector3>::Read r=data.read();
 
 	for(int i=0;i<datalen;i+=3) {
 
@@ -94,13 +94,13 @@ void ConcavePolygonShape::_update_shape() {
 
 }
 
-void ConcavePolygonShape::set_faces(const DVector<Vector3>& p_faces) {
+void ConcavePolygonShape::set_faces(const PoolVector<Vector3>& p_faces) {
 
 	PhysicsServer::get_singleton()->shape_set_data(get_shape(),p_faces);
 	notify_change_to_owners();
 }
 
-DVector<Vector3> ConcavePolygonShape::get_faces() const {
+PoolVector<Vector3> ConcavePolygonShape::get_faces() const {
 
 	return PhysicsServer::get_singleton()->shape_get_data(get_shape());
 

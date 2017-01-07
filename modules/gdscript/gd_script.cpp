@@ -830,7 +830,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 Error GDScript::load_source_code(const String& p_path) {
 
 
-	DVector<uint8_t> sourcef;
+	PoolVector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f=FileAccess::open(p_path,FileAccess::READ,&err);
 	if (err) {
@@ -840,7 +840,7 @@ Error GDScript::load_source_code(const String& p_path) {
 
 	int len = f->get_len();
 	sourcef.resize(len+1);
-	DVector<uint8_t>::Write w = sourcef.write();
+	PoolVector<uint8_t>::Write w = sourcef.write();
 	int r = f->get_buffer(w.ptr(),len);
 	f->close();
 	memdelete(f);

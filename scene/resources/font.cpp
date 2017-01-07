@@ -97,7 +97,7 @@ Font::Font() {
 
 /////////////////////////////////////////////////////////////////
 
-void BitmapFont::_set_chars(const DVector<int>& p_chars) {
+void BitmapFont::_set_chars(const PoolVector<int>& p_chars) {
 
 	int len = p_chars.size();
 	//char 1 charsize 1 texture, 4 rect, 2 align, advance 1
@@ -107,7 +107,7 @@ void BitmapFont::_set_chars(const DVector<int>& p_chars) {
 	int chars = len/9;
 
 
-	DVector<int>::Read r=p_chars.read();
+	PoolVector<int>::Read r=p_chars.read();
 	for(int i=0;i<chars;i++) {
 
 		const int* data = &r[i*9];
@@ -116,9 +116,9 @@ void BitmapFont::_set_chars(const DVector<int>& p_chars) {
 
 }
 
-DVector<int> BitmapFont::_get_chars() const {
+PoolVector<int> BitmapFont::_get_chars() const {
 
-	DVector<int> chars;
+	PoolVector<int> chars;
 
 	const CharType* key=NULL;
 
@@ -140,13 +140,13 @@ DVector<int> BitmapFont::_get_chars() const {
 	return chars;
 }
 
-void BitmapFont::_set_kernings(const DVector<int>& p_kernings) {
+void BitmapFont::_set_kernings(const PoolVector<int>& p_kernings) {
 
 	int len=p_kernings.size();
 	ERR_FAIL_COND(len%3);
 	if (!len)
 		return;
-	DVector<int>::Read r=p_kernings.read();
+	PoolVector<int>::Read r=p_kernings.read();
 
 	for(int i=0;i<len/3;i++) {
 
@@ -155,9 +155,9 @@ void BitmapFont::_set_kernings(const DVector<int>& p_kernings) {
 	}
 }
 
-DVector<int> BitmapFont::_get_kernings() const {
+PoolVector<int> BitmapFont::_get_kernings() const {
 
-	DVector<int> kernings;
+	PoolVector<int> kernings;
 
 	for(Map<KerningPairKey,int>::Element *E=kerning_map.front();E;E=E->next()) {
 

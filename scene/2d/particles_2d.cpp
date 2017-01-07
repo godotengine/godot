@@ -276,7 +276,7 @@ void Particles2D::_process_particles(float p_delta) {
 
 	active_count=0;
 
-	DVector<Point2>::Read r;
+	PoolVector<Point2>::Read r;
 	int emission_point_count=0;
 	if (emission_points.size()) {
 
@@ -992,12 +992,12 @@ int Particles2D::get_v_frames() const{
 
 
 
-void Particles2D::set_emission_points(const DVector<Vector2>& p_points) {
+void Particles2D::set_emission_points(const PoolVector<Vector2>& p_points) {
 
 	emission_points=p_points;
 }
 
-DVector<Vector2> Particles2D::get_emission_points() const{
+PoolVector<Vector2> Particles2D::get_emission_points() const{
 
 	return emission_points;
 }

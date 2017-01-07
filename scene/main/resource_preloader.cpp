@@ -33,7 +33,7 @@ void ResourcePreloader::_set_resources(const Array& p_data) {
 	resources.clear();
 
 	ERR_FAIL_COND(p_data.size()!=2);
-	DVector<String> names=p_data[0];
+	PoolVector<String> names=p_data[0];
 	Array resdata=p_data[1];
 
 	ERR_FAIL_COND(names.size()!=resdata.size());
@@ -52,7 +52,7 @@ void ResourcePreloader::_set_resources(const Array& p_data) {
 
 Array ResourcePreloader::_get_resources() const {
 
-	DVector<String> names;
+	PoolVector<String> names;
 	Array arr;
 	arr.resize(resources.size());
 	names.resize(resources.size());
@@ -139,9 +139,9 @@ RES ResourcePreloader::get_resource(const StringName& p_name) const {
 	return resources[p_name];
 }
 
-DVector<String> ResourcePreloader::_get_resource_list() const {
+PoolVector<String> ResourcePreloader::_get_resource_list() const {
 
-	DVector<String> res;
+	PoolVector<String> res;
 	res.resize(resources.size());
 	int i=0;
 	for(Map<StringName,RES >::Element *E=resources.front();E;E=E->next(),i++) {

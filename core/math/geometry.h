@@ -808,9 +808,9 @@ public:
 	}
 
 
-	static DVector< DVector< Face3 > > separate_objects( DVector< Face3 > p_array );
+	static PoolVector< PoolVector< Face3 > > separate_objects( PoolVector< Face3 > p_array );
 
-	static DVector< Face3 > wrap_geometry( DVector< Face3 > p_array, float *p_error=NULL ); ///< create a "wrap" that encloses the given geometry
+	static PoolVector< Face3 > wrap_geometry( PoolVector< Face3 > p_array, float *p_error=NULL ); ///< create a "wrap" that encloses the given geometry
 
 
 	struct MeshData {
@@ -919,11 +919,11 @@ public:
 		return H;
 	}
 
-	static MeshData build_convex_mesh(const DVector<Plane> &p_planes);
-	static DVector<Plane> build_sphere_planes(float p_radius, int p_lats, int p_lons, Vector3::Axis p_axis=Vector3::AXIS_Z);
-	static DVector<Plane> build_box_planes(const Vector3& p_extents);
-	static DVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis=Vector3::AXIS_Z);
-	static DVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	static MeshData build_convex_mesh(const PoolVector<Plane> &p_planes);
+	static PoolVector<Plane> build_sphere_planes(float p_radius, int p_lats, int p_lons, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	static PoolVector<Plane> build_box_planes(const Vector3& p_extents);
+	static PoolVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	static PoolVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis=Vector3::AXIS_Z);
 
 	static void make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, Size2i& r_size);
 

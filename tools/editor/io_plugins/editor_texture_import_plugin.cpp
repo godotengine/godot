@@ -1199,9 +1199,9 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				src.convert(Image::FORMAT_RGB8);
 			}
 
-			DVector<uint8_t> data = src.get_data();
+			PoolVector<uint8_t> data = src.get_data();
 			MD5_CTX md5;
-			DVector<uint8_t>::Read r=data.read();
+			PoolVector<uint8_t>::Read r=data.read();
 			MD5Init(&md5);
 			int len=data.size();
 			for(int j=0;j<len;j++) {

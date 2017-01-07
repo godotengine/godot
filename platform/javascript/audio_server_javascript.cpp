@@ -87,7 +87,7 @@ const void* AudioServerJavascript::sample_get_data_ptr(RID p_sample) const{
 	return NULL;
 }
 
-void AudioServerJavascript::sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer){
+void AudioServerJavascript::sample_set_data(RID p_sample, const PoolVector<uint8_t>& p_buffer){
 
 	Sample *sample = sample_owner.get(p_sample);
 	ERR_FAIL_COND(!sample);
@@ -95,7 +95,7 @@ void AudioServerJavascript::sample_set_data(RID p_sample, const DVector<uint8_t>
 
 	Vector<float> buffer;
 	buffer.resize(sample->length*chans);
-	DVector<uint8_t>::Read r=p_buffer.read();
+	PoolVector<uint8_t>::Read r=p_buffer.read();
 	if (sample->format==SAMPLE_FORMAT_PCM8) {
 		const int8_t*ptr = (const int8_t*)r.ptr();
 		for(int i=0;i<sample->length*chans;i++) {
@@ -116,10 +116,10 @@ void AudioServerJavascript::sample_set_data(RID p_sample, const DVector<uint8_t>
 
 
 }
-DVector<uint8_t> AudioServerJavascript::sample_get_data(RID p_sample) const{
+PoolVector<uint8_t> AudioServerJavascript::sample_get_data(RID p_sample) const{
 
 
-	return DVector<uint8_t>();
+	return PoolVector<uint8_t>();
 }
 
 void AudioServerJavascript::sample_set_mix_rate(RID p_sample,int p_rate){

@@ -58,9 +58,9 @@ Ref<MultiMesh> MultiMeshInstance::get_multimesh() const {
 
 
 
-DVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 AABB MultiMeshInstance::get_aabb() const {

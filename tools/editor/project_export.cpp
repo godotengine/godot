@@ -1732,7 +1732,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 	String selected=p_preset;
 
-	DVector<String> preset_settings = GlobalConfig::get_singleton()->get("export_presets/"+selected);
+	PoolVector<String> preset_settings = GlobalConfig::get_singleton()->get("export_presets/"+selected);
 	String preset_path=GlobalConfig::get_singleton()->get("export_presets_path/"+selected);
 	if (preset_path=="") {
 
@@ -2084,7 +2084,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 	for (Map<String,Map<String,String> >::Element *E=remapped_paths.front();E;E=E->next()) {
 
 		String platform=E->key();
-		DVector<String> remaps;
+		PoolVector<String> remaps;
 		for(Map<String,String>::Element *F=E->get().front();F;F=F->next() ) {
 
 			remaps.push_back(F->key());

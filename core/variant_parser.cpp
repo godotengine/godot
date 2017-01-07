@@ -802,7 +802,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			int len = Image::get_image_data_size(width,height,format,mipmaps);
 
-			DVector<uint8_t> buffer;
+			PoolVector<uint8_t> buffer;
 			buffer.resize(len);
 
 			if (buffer.size()!=len) {
@@ -810,7 +810,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			}
 
 			{
-				DVector<uint8_t>::Write w=buffer.write();
+				PoolVector<uint8_t>::Write w=buffer.write();
 
 				for(int i=0;i<len;i++) {
 					get_token(p_stream,token,line,r_err_str);
@@ -1156,11 +1156,11 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			if (err)
 				return err;
 
-			DVector<uint8_t> arr;
+			PoolVector<uint8_t> arr;
 			{
 				int len=args.size();
 				arr.resize(len);
-				DVector<uint8_t>::Write w = arr.write();
+				PoolVector<uint8_t>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=args[i];
 				}
@@ -1177,11 +1177,11 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			if (err)
 				return err;
 
-			DVector<int> arr;
+			PoolVector<int> arr;
 			{
 				int len=args.size();
 				arr.resize(len);
-				DVector<int>::Write w = arr.write();
+				PoolVector<int>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=int(args[i]);
 				}
@@ -1198,11 +1198,11 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			if (err)
 				return err;
 
-			DVector<float> arr;
+			PoolVector<float> arr;
 			{
 				int len=args.size();
 				arr.resize(len);
-				DVector<float>::Write w = arr.write();
+				PoolVector<float>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=args[i];
 				}
@@ -1251,11 +1251,11 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			}
 
 
-			DVector<String> arr;
+			PoolVector<String> arr;
 			{
 				int len=cs.size();
 				arr.resize(len);
-				DVector<String>::Write w = arr.write();
+				PoolVector<String>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=cs[i];
 				}
@@ -1273,11 +1273,11 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			if (err)
 				return err;
 
-			DVector<Vector2> arr;
+			PoolVector<Vector2> arr;
 			{
 				int len=args.size()/2;
 				arr.resize(len);
-				DVector<Vector2>::Write w = arr.write();
+				PoolVector<Vector2>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=Vector2(args[i*2+0],args[i*2+1]);
 				}
@@ -1294,11 +1294,11 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			if (err)
 				return err;
 
-			DVector<Vector3> arr;
+			PoolVector<Vector3> arr;
 			{
 				int len=args.size()/3;
 				arr.resize(len);
-				DVector<Vector3>::Write w = arr.write();
+				PoolVector<Vector3>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=Vector3(args[i*3+0],args[i*3+1],args[i*3+2]);
 				}
@@ -1315,11 +1315,11 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			if (err)
 				return err;
 
-			DVector<Color> arr;
+			PoolVector<Color> arr;
 			{
 				int len=args.size()/4;
 				arr.resize(len);
-				DVector<Color>::Write w = arr.write();
+				PoolVector<Color>::Write w = arr.write();
 				for(int i=0;i<len;i++) {
 					w[i]=Color(args[i*4+0],args[i*4+1],args[i*4+2],args[i*4+3]);
 				}
@@ -1986,9 +1986,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 			String s;
 
-			DVector<uint8_t> data = img.get_data();
+			PoolVector<uint8_t> data = img.get_data();
 			int len = data.size();
-			DVector<uint8_t>::Read r = data.read();
+			PoolVector<uint8_t>::Read r = data.read();
 			const uint8_t *ptr=r.ptr();;
 			for (int i=0;i<len;i++) {
 
@@ -2128,9 +2128,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 			p_store_string_func(p_store_string_ud,"ByteArray( ");
 			String s;
-			DVector<uint8_t> data = p_variant;
+			PoolVector<uint8_t> data = p_variant;
 			int len = data.size();
-			DVector<uint8_t>::Read r = data.read();
+			PoolVector<uint8_t>::Read r = data.read();
 			const uint8_t *ptr=r.ptr();;
 			for (int i=0;i<len;i++) {
 
@@ -2147,9 +2147,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		case Variant::INT_ARRAY: {
 
 			p_store_string_func(p_store_string_ud,"IntArray( ");
-			DVector<int> data = p_variant;
+			PoolVector<int> data = p_variant;
 			int len = data.size();
-			DVector<int>::Read r = data.read();
+			PoolVector<int>::Read r = data.read();
 			const int *ptr=r.ptr();;
 
 			for (int i=0;i<len;i++) {
@@ -2167,9 +2167,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		case Variant::REAL_ARRAY: {
 
 			p_store_string_func(p_store_string_ud,"FloatArray( ");
-			DVector<real_t> data = p_variant;
+			PoolVector<real_t> data = p_variant;
 			int len = data.size();
-			DVector<real_t>::Read r = data.read();
+			PoolVector<real_t>::Read r = data.read();
 			const real_t *ptr=r.ptr();;
 
 			for (int i=0;i<len;i++) {
@@ -2185,9 +2185,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		case Variant::STRING_ARRAY: {
 
 			p_store_string_func(p_store_string_ud,"StringArray( ");
-			DVector<String> data = p_variant;
+			PoolVector<String> data = p_variant;
 			int len = data.size();
-			DVector<String>::Read r = data.read();
+			PoolVector<String>::Read r = data.read();
 			const String *ptr=r.ptr();;
 			String s;
 			//write_string("\n");
@@ -2208,9 +2208,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		case Variant::VECTOR2_ARRAY: {
 
 			p_store_string_func(p_store_string_ud,"Vector2Array( ");
-			DVector<Vector2> data = p_variant;
+			PoolVector<Vector2> data = p_variant;
 			int len = data.size();
-			DVector<Vector2>::Read r = data.read();
+			PoolVector<Vector2>::Read r = data.read();
 			const Vector2 *ptr=r.ptr();;
 
 			for (int i=0;i<len;i++) {
@@ -2226,9 +2226,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 		case Variant::VECTOR3_ARRAY: {
 
 			p_store_string_func(p_store_string_ud,"Vector3Array( ");
-			DVector<Vector3> data = p_variant;
+			PoolVector<Vector3> data = p_variant;
 			int len = data.size();
-			DVector<Vector3>::Read r = data.read();
+			PoolVector<Vector3>::Read r = data.read();
 			const Vector3 *ptr=r.ptr();;
 
 			for (int i=0;i<len;i++) {
@@ -2245,9 +2245,9 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 			p_store_string_func(p_store_string_ud,"ColorArray( ");
 
-			DVector<Color> data = p_variant;
+			PoolVector<Color> data = p_variant;
 			int len = data.size();
-			DVector<Color>::Read r = data.read();
+			PoolVector<Color>::Read r = data.read();
 			const Color *ptr=r.ptr();;
 
 			for (int i=0;i<len;i++) {

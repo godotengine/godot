@@ -1327,8 +1327,8 @@ void OS_OSX::set_icon(const Image& p_icon) {
 	uint8_t *pixels = [imgrep bitmapData];
 
 	int len = img.get_width()*img.get_height();
-	DVector<uint8_t> data = img.get_data();
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t> data = img.get_data();
+	PoolVector<uint8_t>::Read r = data.read();
 
 	/* Premultiply the alpha channel */
 	for (int i = 0; i<len ; i++) {

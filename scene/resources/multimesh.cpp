@@ -31,17 +31,17 @@
 
 
 
-void MultiMesh::_set_transform_array(const DVector<Vector3>& p_array) {
+void MultiMesh::_set_transform_array(const PoolVector<Vector3>& p_array) {
 
 	int instance_count = get_instance_count();
 
-	DVector<Vector3> xforms = p_array;
+	PoolVector<Vector3> xforms = p_array;
 	int len=xforms.size();
 	ERR_FAIL_COND((len/4) != instance_count);
 	if (len==0)
 		return;
 
-	DVector<Vector3>::Read r = xforms.read();
+	PoolVector<Vector3>::Read r = xforms.read();
 
 	for(int i=0;i<len/4;i++) {
 
@@ -56,17 +56,17 @@ void MultiMesh::_set_transform_array(const DVector<Vector3>& p_array) {
 
 }
 
-DVector<Vector3> MultiMesh::_get_transform_array() const {
+PoolVector<Vector3> MultiMesh::_get_transform_array() const {
 
 	int instance_count = get_instance_count();
 
 	if (instance_count==0)
-		return DVector<Vector3>();
+		return PoolVector<Vector3>();
 
-	DVector<Vector3> xforms;
+	PoolVector<Vector3> xforms;
 	xforms.resize(instance_count*4);
 
-	DVector<Vector3>::Write w = xforms.write();
+	PoolVector<Vector3>::Write w = xforms.write();
 
 	for(int i=0;i<instance_count;i++) {
 
@@ -82,17 +82,17 @@ DVector<Vector3> MultiMesh::_get_transform_array() const {
 }
 
 
-void MultiMesh::_set_color_array(const DVector<Color>& p_array) {
+void MultiMesh::_set_color_array(const PoolVector<Color>& p_array) {
 
 	int instance_count = get_instance_count();
 
-	DVector<Color> colors = p_array;
+	PoolVector<Color> colors = p_array;
 	int len=colors.size();
 	ERR_FAIL_COND(len != instance_count);
 	if (len==0)
 		return;
 
-	DVector<Color>::Read r = colors.read();
+	PoolVector<Color>::Read r = colors.read();
 
 	for(int i=0;i<len;i++) {
 
@@ -101,14 +101,14 @@ void MultiMesh::_set_color_array(const DVector<Color>& p_array) {
 
 }
 
-DVector<Color> MultiMesh::_get_color_array() const {
+PoolVector<Color> MultiMesh::_get_color_array() const {
 
 	int instance_count = get_instance_count();
 
 	if (instance_count==0)
-		return DVector<Color>();
+		return PoolVector<Color>();
 
-	DVector<Color> colors;
+	PoolVector<Color> colors;
 	colors.resize(instance_count);
 
 	for(int i=0;i<instance_count;i++) {
