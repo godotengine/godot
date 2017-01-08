@@ -308,6 +308,7 @@ static const char* locale_list[]={
 "sa_IN", //  Sanskrit (India)
 "sat_IN", //  Santali (India)
 "sc_IT", //  Sardinian (Italy)
+"sco", //  Scots
 "sd_IN", //  Sindhi (India)
 "se_NO", //  Northern Sami (Norway)
 "sgs_LT", //  Samogitian (Lithuania)
