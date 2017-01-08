@@ -596,6 +596,20 @@ public:
 		hash_table_power=0;
 	}
 
+	void get_key_value_ptr_array(const Pair **p_pairs) const {
+		if (!hash_table)
+			return;
+		for(int i=0;i<(1<<hash_table_power);i++) {
+
+			Entry *e=hash_table[i];
+			while(e) {
+				*p_pairs=&e->pair;
+				p_pairs++;
+				e=e->next;
+			}
+		}
+	}
+
 	void get_key_list(List<TKey> *p_keys) const {
 		if (!hash_table)
 			return;
