@@ -139,6 +139,13 @@ def configure(env):
     if (env['builtin_libwebp'] == 'no'):
         env.ParseConfig('pkg-config libwebp --cflags --libs')
 
+    # freetype depends on libpng and zlib, so bundling one of them while keeping others
+    # as shared libraries leads to weird issues
+    if (env['builtin_freetype'] == 'yes' or env['builtin_libpng'] == 'yes' or env['builtin_zlib'] == 'yes'):
+        env['builtin_freetype'] = 'yes'
+        env['builtin_libpng'] = 'yes'
+        env['builtin_zlib'] = 'yes'
+
     if (env['builtin_freetype'] == 'no'):
         env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
@@ -203,10 +210,14 @@ def configure(env):
         else:
             print("PulseAudio development libraries not found, disabling driver")
 
+    if (env['builtin_zlib'] == 'no'):
+        env.ParseConfig('pkg-config zlib --cflags --libs')
+
     env.Append(CPPFLAGS=['-DX11_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES_OVER_GL'])
-    env.Append(LIBS=['GL', 'pthread', 'z'])
+    env.Append(LIBS=['GL', 'pthread'])
+
     if (platform.system() == "Linux"):
-        env.Append(LIBS='dl')
+        env.Append(LIBS=['dl'])
     # env.Append(CPPFLAGS=['-DMPC_FIXED_POINT'])
 
 # host compiler is default..
