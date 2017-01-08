@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#define WINVER 0x0500
 #include "key_mapping_win.h"
+
 #include <stdio.h>
 
 struct _WinTranslatePair {
