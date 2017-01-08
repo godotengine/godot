@@ -38,11 +38,11 @@
 
 struct input_absinfo;
 
-class joypad_linux
+class JoypadLinux
 {
 public:
-	joypad_linux(InputDefault *in);
-	~joypad_linux();
+	JoypadLinux(InputDefault *in);
+	~JoypadLinux();
 	uint32_t process_joypads(uint32_t p_event_id);
 private:
 
