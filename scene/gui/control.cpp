@@ -2589,8 +2589,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_bottom" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_BOTTOM );
 
 	ADD_GROUP("Size Flags","size_flags_");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags_horizontal", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags_vertical", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), _SCS("set_stretch_ratio"),_SCS("get_stretch_ratio") );
 	ADD_GROUP("Theme","");
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), _SCS("set_theme"),_SCS("get_theme") );

@@ -66,8 +66,8 @@ public:
 
 	enum SizeFlags {
 
-		SIZE_EXPAND=1,
-		SIZE_FILL=2,
+		SIZE_FILL=1,
+		SIZE_EXPAND=2,
 		SIZE_EXPAND_FILL=SIZE_EXPAND|SIZE_FILL
 
 	};
