@@ -12293,17 +12293,19 @@
 			</argument>
 			<description>
 				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
-			Example:[codeblock]
-			editor_settings.set("category/property_name", 0)
+				Example:
+				[codeblock]
+				editor_settings.set("category/property_name", 0)
 
-			var property_info = {
-			    "name": "category/property_name",
-			    "type": TYPE_INT,
-			    "hint": PROPERTY_HINT_ENUM,
-			    "hint_string": "one,two,three"
-			}
+				var property_info = {
+				    "name": "category/property_name",
+				    "type": TYPE_INT,
+				    "hint": PROPERTY_HINT_ENUM,
+				    "hint_string": "one,two,three"
+				}
 
-			editor_settings.add_property_info(property_info)[/codeblock]
+				editor_settings.add_property_info(property_info)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="erase">
