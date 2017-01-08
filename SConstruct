@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 EnsureSConsVersion(0, 14)
@@ -360,7 +361,6 @@ if selected_platform in platform_list:
     SConscript("scene/SCsub")
     SConscript("tools/SCsub")
     SConscript("drivers/SCsub")
-    SConscript("bin/SCsub")
 
     SConscript("modules/SCsub")
     SConscript("main/SCsub")

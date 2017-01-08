@@ -7,6 +7,8 @@ env.add_source_files(env.main_sources, "*.cpp")
 
 Export('env')
 
+SConscript('tests/SCsub')
+
 lib = env.Library("main", env.main_sources)
 
 env.Prepend(LIBS=[lib])

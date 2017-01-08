@@ -47,7 +47,7 @@
 #include "script_language.h"
 #include "io/resource_loader.h"
 
-#include "bin/tests/test_main.h"
+#include "main/tests/test_main.h"
 #include "os/dir_access.h"
 #include "core/io/ip.h"
 #include "scene/resources/packed_scene.h"
