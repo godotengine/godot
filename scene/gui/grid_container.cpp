@@ -230,6 +230,6 @@ Size2 GridContainer::get_minimum_size() const {
 
 GridContainer::GridContainer() {
 
-	set_stop_mouse(false);
+	set_mouse_filter(MOUSE_FILTER_PASS);
 	columns=1;
 }

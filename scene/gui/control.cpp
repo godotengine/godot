@@ -2161,25 +2161,17 @@ int Control::get_v_size_flags() const{
 	return data.v_size_flags;
 }
 
-void Control::set_ignore_mouse(bool p_ignore) {
+void Control::set_mouse_filter(MouseFilter p_filter) {
 
-	data.ignore_mouse=p_ignore;
+	ERR_FAIL_INDEX(p_filter,3);
+	data.mouse_filter=p_filter;
 }
 
-bool Control::is_ignoring_mouse() const {
+Control::MouseFilter Control::get_mouse_filter() const{
 
-	return data.ignore_mouse;
+	return data.mouse_filter;
 }
 
-void Control::set_stop_mouse(bool p_stop) {
-
-	data.stop_mouse=p_stop;
-}
-
-bool Control::is_stopping_mouse() const {
-
-	return data.stop_mouse;
-}
 
 Control *Control::get_focus_owner() const {
 
@@ -2450,13 +2442,10 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(_MD("set_focus_neighbour","margin","neighbour"),&Control::set_focus_neighbour);
 	ClassDB::bind_method(_MD("get_focus_neighbour","margin"),&Control::get_focus_neighbour);
 
-	ClassDB::bind_method(_MD("set_ignore_mouse","ignore"),&Control::set_ignore_mouse);
-	ClassDB::bind_method(_MD("is_ignoring_mouse"),&Control::is_ignoring_mouse);
-
 	ClassDB::bind_method(_MD("force_drag","data","preview"),&Control::force_drag);
 
-	ClassDB::bind_method(_MD("set_stop_mouse","stop"),&Control::set_stop_mouse);
-	ClassDB::bind_method(_MD("is_stopping_mouse"),&Control::is_stopping_mouse);
+	ClassDB::bind_method(_MD("set_mouse_filter","stop"),&Control::set_mouse_filter);
+	ClassDB::bind_method(_MD("get_mouse_filter"),&Control::get_mouse_filter);
 
 	ClassDB::bind_method(_MD("grab_click_focus"),&Control::grab_click_focus);
 
@@ -2503,12 +2492,13 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
 
 	ADD_GROUP("Focus","focus_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus_ignore_mouse"), _SCS("set_ignore_mouse"),_SCS("is_ignoring_mouse") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus_stop_mouse"), _SCS("set_stop_mouse"),_SCS("is_stopping_mouse") );
 	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
 	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_top" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_TOP );
 	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_right" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_RIGHT );
 	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_bottom" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_BOTTOM );
+
+	ADD_GROUP("Mouse","mouse_");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mouse_filter",PROPERTY_HINT_ENUM,"Stop,Pass,Ignore"), _SCS("set_mouse_filter"),_SCS("get_mouse_filter") );
 
 	ADD_GROUP("Size Flags","size_flags_");
 	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
@@ -2556,6 +2546,10 @@ void Control::_bind_methods() {
 	BIND_CONSTANT( SIZE_FILL );
 	BIND_CONSTANT( SIZE_EXPAND_FILL );
 
+	BIND_CONSTANT( MOUSE_FILTER_STOP );
+	BIND_CONSTANT( MOUSE_FILTER_PASS  );
+	BIND_CONSTANT( MOUSE_FILTER_IGNORE );
+
 	ADD_SIGNAL( MethodInfo("resized") );
 	ADD_SIGNAL( MethodInfo("gui_input",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
 	ADD_SIGNAL( MethodInfo("mouse_enter") );
@@ -2572,9 +2566,7 @@ Control::Control() {
 
 	data.parent=NULL;
 
-	data.ignore_mouse=false;
-	data.stop_mouse=true;
-
+	data.mouse_filter=MOUSE_FILTER_STOP;
 
 	data.SI=NULL;
 	data.MI=NULL;

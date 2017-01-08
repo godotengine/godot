@@ -280,7 +280,8 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew( Control );
-	c->set_stop_mouse(false);
+	c->set_mouse_filter(MOUSE_FILTER_PASS);
+
 	if (vertical)
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
 	else
@@ -296,7 +297,7 @@ BoxContainer::BoxContainer(bool p_vertical) {
 	vertical=p_vertical;
 	align = ALIGN_BEGIN;
 //	set_ignore_mouse(true);
-	set_stop_mouse(false);
+	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
 void BoxContainer::_bind_methods() {

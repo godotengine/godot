@@ -1341,7 +1341,7 @@ LineEdit::LineEdit() {
 	set_focus_mode( FOCUS_ALL );
 	editable=true;
 	set_default_cursor_shape(CURSOR_IBEAM);
-	set_stop_mouse(true);
+	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	draw_caret=true;
 	caret_blink_enabled=false;

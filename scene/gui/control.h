@@ -71,6 +71,12 @@ public:
 
 	};
 
+	enum MouseFilter {
+		MOUSE_FILTER_STOP,
+		MOUSE_FILTER_PASS,
+		MOUSE_FILTER_IGNORE
+	};
+
 	enum CursorShape {
 		CURSOR_ARROW,
 		CURSOR_IBEAM,
@@ -124,8 +130,7 @@ private:
 		bool pending_min_size_update;
 		Point2 custom_minimum_size;
 
-		bool ignore_mouse;
-		bool stop_mouse;
+		MouseFilter mouse_filter;
 
 		bool block_minimum_size_adjust;
 		bool disable_visibility_clip;
@@ -337,11 +342,8 @@ public:
 
 	Control *get_focus_owner() const;
 
-	void set_ignore_mouse(bool p_ignore);
-	bool is_ignoring_mouse() const;
-
-	void set_stop_mouse(bool p_stop);
-	bool is_stopping_mouse() const;
+	void set_mouse_filter(MouseFilter p_filter);
+	MouseFilter get_mouse_filter() const;
 
 	/* SKINNING */
 
@@ -417,5 +419,6 @@ VARIANT_ENUM_CAST(Control::AnchorType);
 VARIANT_ENUM_CAST(Control::FocusMode);
 VARIANT_ENUM_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
+VARIANT_ENUM_CAST(Control::MouseFilter);
 
 #endif

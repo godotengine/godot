@@ -2320,7 +2320,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		tex->set_custom_minimum_size(Size2(80,80));
 		tex->set_drag_forwarding(this);
 		gn->add_child(tex);
-		tex->set_ignore_mouse(false);
+		tex->set_mouse_filter(MOUSE_FILTER_PASS);
 		tex->set_texture(graph->texture_input_node_get_value(type,p_id));
 		ToolButton *edit = memnew( ToolButton );
 		edit->set_text("edit..");

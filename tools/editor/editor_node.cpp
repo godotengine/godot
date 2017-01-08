@@ -5873,7 +5873,7 @@ EditorNode::EditorNode() {
 
 
 	play_cc = memnew( CenterContainer );
-	play_cc->set_ignore_mouse(true);
+	play_cc->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	gui_base->add_child( play_cc );
 	play_cc->set_area_as_parent_rect();
 	play_cc->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,10);

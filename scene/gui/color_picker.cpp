@@ -501,9 +501,9 @@ ColorPicker::ColorPicker() :
 
 
 
-	uv_edit->set_ignore_mouse(false);
+
 	uv_edit->connect("gui_input", this, "_uv_input");
-	uv_edit->set_stop_mouse(false);
+	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
 	uv_edit->set_custom_minimum_size(Size2 (256,256));
 	Vector<Variant> args=Vector<Variant>();
 	args.push_back(0);
@@ -513,7 +513,7 @@ ColorPicker::ColorPicker() :
 	add_child(hb_edit);
 
 	w_edit= memnew( Control );
-	w_edit->set_ignore_mouse(false);
+	//w_edit->set_ignore_mouse(false);
 	w_edit->set_custom_minimum_size(Size2(30,256));
 	w_edit->connect("gui_input", this, "_w_input");
 	args.clear();
@@ -592,7 +592,7 @@ ColorPicker::ColorPicker() :
 
 	preset = memnew( TextureFrame );
 	bbc->add_child(preset);
-	preset->set_ignore_mouse(false);
+	//preset->set_ignore_mouse(false);
 	preset->connect("gui_input", this, "_preset_input");
 
 	bt_add_preset = memnew ( Button );

@@ -242,7 +242,7 @@ Button::Button(const String &p_text) {
 
 	flat=false;
 	clip_text=false;
-	set_stop_mouse(true);
+	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_text(p_text);
 	align=ALIGN_CENTER;
 }

@@ -158,7 +158,7 @@ TextureFrame::TextureFrame() {
 
 
 	expand=false;
-	set_ignore_mouse(true);
+	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	stretch_mode=STRETCH_SCALE_ON_EXPAND;
 }
 

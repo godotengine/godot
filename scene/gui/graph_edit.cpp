@@ -256,7 +256,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		gn->connect("raise_request",this,"_graph_node_raised",varray(gn));
 		gn->connect("item_rect_changed",connections_layer,"update");
 		_graph_node_moved(gn);
-		gn->set_stop_mouse(false);
+		gn->set_mouse_filter(MOUSE_FILTER_PASS);
 	}
 
 
@@ -1262,10 +1262,10 @@ GraphEdit::GraphEdit() {
 	top_layer=NULL;
 	top_layer=memnew(GraphEditFilter(this));
 	add_child(top_layer);
-	top_layer->set_stop_mouse(false);
+	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->set_area_as_parent_rect();
 	top_layer->connect("draw",this,"_top_layer_draw");
-	top_layer->set_stop_mouse(false);
+	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->connect("input_event",this,"_top_layer_input");
 
 	connections_layer = memnew( Control );

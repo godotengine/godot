@@ -1615,7 +1615,7 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 				break;
 			if (gui.key_event_accepted)
 				break;
-			if (!cant_stop_me_now && control->data.stop_mouse && (ev.type==InputEvent::MOUSE_BUTTON || ev.type==InputEvent::MOUSE_MOTION))
+			if (!cant_stop_me_now && control->data.mouse_filter==Control::MOUSE_FILTER_STOP && (ev.type==InputEvent::MOUSE_BUTTON || ev.type==InputEvent::MOUSE_MOTION))
 				break;
 		}
 
@@ -1724,7 +1724,7 @@ Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_g
 	matrix.affine_invert();
 
 	//conditions for considering this as a valid control for return
-	if (!c->data.ignore_mouse && c->has_point(matrix.xform(p_global)) && (!gui.drag_preview || (c!=gui.drag_preview && !gui.drag_preview->is_a_parent_of(c)))) {
+	if (c->data.mouse_filter!=Control::MOUSE_FILTER_IGNORE && c->has_point(matrix.xform(p_global)) && (!gui.drag_preview || (c!=gui.drag_preview && !gui.drag_preview->is_a_parent_of(c)))) {
 		r_inv_xform=matrix;
 		return c;
 	} else

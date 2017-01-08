@@ -787,7 +787,7 @@ GraphNode::GraphNode() {
 	overlay=OVERLAY_DISABLED;
 	show_close=false;
 	connpos_dirty=true;
-	set_stop_mouse(false);
+	set_mouse_filter(MOUSE_FILTER_PASS);
 	modulate=Color(1,1,1,1);
 	comment=false;
 	resizeable=false;

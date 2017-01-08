@@ -4090,7 +4090,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 
 	track_pos = memnew( Control );
 	track_pos->set_area_as_parent_rect();
-	track_pos->set_ignore_mouse(true);
+	track_pos->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	track_editor->add_child(track_pos);
 	track_pos->connect("draw",this,"_track_pos_draw");
 

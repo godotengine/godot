@@ -699,7 +699,7 @@ Label::Label(const String &p_text) {
 	line_count=0;
 	set_v_size_flags(0);
 	clip=false;
-	set_ignore_mouse(true);
+	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	total_char_cache=0;
 	visible_chars=-1;
 	percent_visible=1;

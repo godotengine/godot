@@ -710,8 +710,8 @@ EditorProfiler::EditorProfiler()
 
 	graph = memnew( TextureFrame );
 	graph->set_expand(true);
-	graph->set_stop_mouse(true);
-	graph->set_ignore_mouse(false);
+	graph->set_mouse_filter(MOUSE_FILTER_STOP);
+	//graph->set_ignore_mouse(false);
 	graph->connect("draw",this,"_graph_tex_draw");
 	graph->connect("gui_input",this,"_graph_tex_input");
 	graph->connect("mouse_exit",this,"_graph_tex_mouse_exit");

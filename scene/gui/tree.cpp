@@ -3711,7 +3711,7 @@ Tree::Tree() {
 	blocked=0;
 
 	cursor_can_exit_tree=true;
-	set_stop_mouse(true);
+	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	drag_speed=0;
 	drag_touching=false;
