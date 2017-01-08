@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 EnsureSConsVersion(0, 14)
@@ -347,7 +348,7 @@ if selected_platform in platform_list:
 
     if (env['verbose'] == 'no'):
         methods.no_verbose(sys, env)
-        
+
     if (True): # FIXME: detect GLES3
         env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 
@@ -360,7 +361,6 @@ if selected_platform in platform_list:
     SConscript("scene/SCsub")
     SConscript("tools/SCsub")
     SConscript("drivers/SCsub")
-    SConscript("bin/SCsub")
 
     SConscript("modules/SCsub")
     SConscript("main/SCsub")
