@@ -33,7 +33,7 @@
 #include "scene/scene_string_names.h"
 #include "scene/main/viewport.h"
 
-void BaseButton::_input_event(InputEvent p_event) {
+void BaseButton::_gui_input(InputEvent p_event) {
 
 
 	if (status.disabled) // no interaction with disabled button
@@ -464,7 +464,7 @@ String BaseButton::get_tooltip(const Point2& p_pos) const {
 
 void BaseButton::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&BaseButton::_gui_input);
 	ClassDB::bind_method(_MD("_unhandled_input"),&BaseButton::_unhandled_input);
 	ClassDB::bind_method(_MD("set_pressed","pressed"),&BaseButton::set_pressed);
 	ClassDB::bind_method(_MD("is_pressed"),&BaseButton::is_pressed);

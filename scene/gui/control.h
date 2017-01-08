@@ -208,7 +208,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 
-	//virtual void _window_input_event(InputEvent p_event);
+	//virtual void _window_gui_input(InputEvent p_event);
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;

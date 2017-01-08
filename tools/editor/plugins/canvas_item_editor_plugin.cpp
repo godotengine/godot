@@ -1064,7 +1064,7 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton& b) {
 
 }
 
-void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
+void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 
 	 {
 
@@ -1072,7 +1072,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
 		if (!over_plugin_list->empty()) {
-			bool discard = over_plugin_list->forward_input_event(transform,p_event);
+			bool discard = over_plugin_list->forward_gui_input(transform,p_event);
 			if (discard) {
 				accept_event();
 				return;
@@ -3209,7 +3209,7 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_keying_changed",&CanvasItemEditor::_keying_changed);
 	ClassDB::bind_method("_unhandled_key_input",&CanvasItemEditor::_unhandled_key_input);
 	ClassDB::bind_method("_viewport_draw",&CanvasItemEditor::_viewport_draw);
-	ClassDB::bind_method("_viewport_input_event",&CanvasItemEditor::_viewport_input_event);
+	ClassDB::bind_method("_viewport_gui_input",&CanvasItemEditor::_viewport_gui_input);
 	ClassDB::bind_method("_snap_changed",&CanvasItemEditor::_snap_changed);
 	ClassDB::bind_method(_MD("_selection_result_pressed"),&CanvasItemEditor::_selection_result_pressed);
 	ClassDB::bind_method(_MD("_selection_menu_hide"),&CanvasItemEditor::_selection_menu_hide);
@@ -3351,7 +3351,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->add_child(h_scroll);
 	viewport->add_child(v_scroll);
 	viewport->connect("draw",this,"_viewport_draw");
-	viewport->connect("input_event",this,"_viewport_input_event");
+	viewport->connect("gui_input",this,"_viewport_gui_input");
 
 
 	h_scroll->connect("value_changed", this,"_update_scroll",Vector<Variant>(),true);

@@ -31,7 +31,7 @@
 
 
 
-void Popup::_input_event(InputEvent p_event) {
+void Popup::_gui_input(InputEvent p_event) {
 
 
 }

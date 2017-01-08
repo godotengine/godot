@@ -90,7 +90,7 @@ void SpinBox::_range_click_timeout() {
 }
 
 
-void SpinBox::_input_event(const InputEvent& p_event) {
+void SpinBox::_gui_input(const InputEvent& p_event) {
 
 	if (!is_editable()) {
 		return;
@@ -252,7 +252,7 @@ bool SpinBox::is_editable() const {
 void SpinBox::_bind_methods() {
 
 	//ClassDB::bind_method(_MD("_value_changed"),&SpinBox::_value_changed);
-	ClassDB::bind_method(_MD("_input_event"),&SpinBox::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&SpinBox::_gui_input);
 	ClassDB::bind_method(_MD("_text_entered"),&SpinBox::_text_entered);
 	ClassDB::bind_method(_MD("set_suffix","suffix"),&SpinBox::set_suffix);
 	ClassDB::bind_method(_MD("get_suffix"),&SpinBox::get_suffix);
@@ -283,7 +283,7 @@ SpinBox::SpinBox() {
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered",this,"_text_entered",Vector<Variant>(),CONNECT_DEFERRED);
 	line_edit->connect("focus_exit",this,"_line_edit_focus_exit",Vector<Variant>(),CONNECT_DEFERRED);
-	line_edit->connect("input_event",this,"_line_edit_input");
+	line_edit->connect("gui_input",this,"_line_edit_input");
 	drag.enabled=false;
 
 	range_click_timer = memnew( Timer );

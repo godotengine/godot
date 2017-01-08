@@ -62,7 +62,7 @@ void Path2DEditor::_node_removed(Node *p_node) {
 }
 
 
-bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
+bool Path2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (!node)
 		return false;

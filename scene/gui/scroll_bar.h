@@ -87,7 +87,7 @@ class ScrollBar : public Range {
 	void _drag_slave_exit();
 	void _drag_slave_input(const InputEvent& p_input);
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 protected:
 	void _notification(int p_what);
 

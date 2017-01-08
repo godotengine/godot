@@ -442,7 +442,7 @@ void ColorPicker::_screen_pick_pressed()
 		r->add_child(screen);
 		screen->set_as_toplevel(true);
 		screen->set_area_as_parent_rect();
-		screen->connect("input_event",this,"_screen_input");
+		screen->connect("gui_input",this,"_screen_input");
 	}
 	screen->raise();
 	screen->show_modal();
@@ -502,7 +502,7 @@ ColorPicker::ColorPicker() :
 
 
 	uv_edit->set_ignore_mouse(false);
-	uv_edit->connect("input_event", this, "_uv_input");
+	uv_edit->connect("gui_input", this, "_uv_input");
 	uv_edit->set_stop_mouse(false);
 	uv_edit->set_custom_minimum_size(Size2 (256,256));
 	Vector<Variant> args=Vector<Variant>();
@@ -515,7 +515,7 @@ ColorPicker::ColorPicker() :
 	w_edit= memnew( Control );
 	w_edit->set_ignore_mouse(false);
 	w_edit->set_custom_minimum_size(Size2(30,256));
-	w_edit->connect("input_event", this, "_w_input");
+	w_edit->connect("gui_input", this, "_w_input");
 	args.clear();
 	args.push_back(1);
 	args.push_back(w_edit);
@@ -593,7 +593,7 @@ ColorPicker::ColorPicker() :
 	preset = memnew( TextureFrame );
 	bbc->add_child(preset);
 	preset->set_ignore_mouse(false);
-	preset->connect("input_event", this, "_preset_input");
+	preset->connect("gui_input", this, "_preset_input");
 
 	bt_add_preset = memnew ( Button );
 	bt_add_preset->set_icon(get_icon("add_preset"));

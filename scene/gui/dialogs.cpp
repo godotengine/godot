@@ -47,7 +47,7 @@ bool WindowDialog::has_point(const Point2& p_point) const {
 
 }
 
-void WindowDialog::_input_event(const InputEvent& p_event) {
+void WindowDialog::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT) {
 
@@ -141,7 +141,7 @@ TextureButton *WindowDialog::get_close_button() {
 
 void WindowDialog::_bind_methods() {
 
-	ClassDB::bind_method( _MD("_input_event"),&WindowDialog::_input_event);
+	ClassDB::bind_method( _MD("_gui_input"),&WindowDialog::_gui_input);
 	ClassDB::bind_method( _MD("set_title","title"),&WindowDialog::set_title);
 	ClassDB::bind_method( _MD("get_title"),&WindowDialog::get_title);
 	ClassDB::bind_method( _MD("_closed"),&WindowDialog::_closed);

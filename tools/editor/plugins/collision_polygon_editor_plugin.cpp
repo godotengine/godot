@@ -109,7 +109,7 @@ void CollisionPolygonEditor::_wip_close() {
 
 }
 
-bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
+bool CollisionPolygonEditor::forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) {
 
 	if (!node)
 		return false;

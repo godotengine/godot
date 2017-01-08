@@ -1413,7 +1413,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	l->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_BEGIN,30);
 	press_a_key_label=l;
 	press_a_key->add_child(l);
-	press_a_key->connect("input_event",this,"_wait_for_key");
+	press_a_key->connect("gui_input",this,"_wait_for_key");
 	press_a_key->connect("confirmed",this,"_press_a_key_confirm");
 
 

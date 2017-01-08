@@ -50,7 +50,7 @@ void AnimationPlayerEditor::_node_removed(Node *p_node) {
 	}
 }
 
-void AnimationPlayerEditor::_input_event(InputEvent p_event) {
+void AnimationPlayerEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -1245,7 +1245,7 @@ void AnimationPlayerEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 void AnimationPlayerEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&AnimationPlayerEditor::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&AnimationPlayerEditor::_gui_input);
 	ClassDB::bind_method(_MD("_node_removed"),&AnimationPlayerEditor::_node_removed);
 	ClassDB::bind_method(_MD("_play_pressed"),&AnimationPlayerEditor::_play_pressed);
 	ClassDB::bind_method(_MD("_play_from_pressed"),&AnimationPlayerEditor::_play_from_pressed);

@@ -102,7 +102,7 @@ private:
 	real_t icon_scale;
 
 	void _scroll_changed(double);
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const InputEvent& p_event);
 
 
 protected:

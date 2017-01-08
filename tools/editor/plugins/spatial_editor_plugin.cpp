@@ -824,7 +824,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
 		if (!over_plugin_list->empty()) {
-			bool discard = over_plugin_list->forward_spatial_input_event(camera,p_event);
+			bool discard = over_plugin_list->forward_spatial_gui_input(camera,p_event);
 			if (discard)
 				return;
 		}
@@ -1852,7 +1852,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		surface->connect("draw",this,"_draw");
-		surface->connect("input_event",this,"_sinput");
+		surface->connect("gui_input",this,"_sinput");
 		surface->connect("mouse_enter",this,"_smouseenter");
 		preview_camera->set_icon(get_icon("Camera","EditorIcons"));
 		_init_gizmo_instance(index);
@@ -3505,7 +3505,7 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 		EditorNode *en = editor;
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
-		if (!over_plugin_list->empty() && over_plugin_list->forward_input_event(p_event)) {
+		if (!over_plugin_list->empty() && over_plugin_list->forward_gui_input(p_event)) {
 
 			return; //ate the over input event
 		}
@@ -3702,7 +3702,7 @@ void SpatialEditor::_node_removed(Node* p_node) {
 
 void SpatialEditor::_bind_methods() {
 
-//	ClassDB::bind_method("_input_event",&SpatialEditor::_input_event);
+//	ClassDB::bind_method("_gui_input",&SpatialEditor::_gui_input);
 	ClassDB::bind_method("_unhandled_key_input",&SpatialEditor::_unhandled_key_input);
 	ClassDB::bind_method("_node_removed",&SpatialEditor::_node_removed);
 	ClassDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
@@ -4007,7 +4007,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	settings_light_base = memnew( ViewportContainer );
 	settings_light_base->set_custom_minimum_size(Size2(128,128));
-	settings_light_base->connect("input_event",this,"_default_light_angle_input");
+	settings_light_base->connect("gui_input",this,"_default_light_angle_input");
 	settings_vbc->add_margin_child(TTR("Default Light Normal:"),settings_light_base);
 	settings_light_vp = memnew( Viewport );
 	settings_light_vp->set_disable_input(true);

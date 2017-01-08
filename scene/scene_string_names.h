@@ -54,6 +54,8 @@ public:
 	StringName visibility_changed;
 	StringName input_event;
 	StringName _input_event;
+	StringName gui_input;
+	StringName _gui_input;
 	StringName item_rect_changed;
 	StringName shader_shader;
 	StringName shader_unshaded;

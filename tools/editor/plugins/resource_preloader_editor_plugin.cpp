@@ -34,7 +34,7 @@
 
 
 
-void ResourcePreloaderEditor::_input_event(InputEvent p_event) {
+void ResourcePreloaderEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -381,7 +381,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& 
 
 void ResourcePreloaderEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&ResourcePreloaderEditor::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&ResourcePreloaderEditor::_gui_input);
 	ClassDB::bind_method(_MD("_load_pressed"),&ResourcePreloaderEditor::_load_pressed);
 	ClassDB::bind_method(_MD("_item_edited"),&ResourcePreloaderEditor::_item_edited);
 	ClassDB::bind_method(_MD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);

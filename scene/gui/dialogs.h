@@ -48,7 +48,7 @@ class WindowDialog : public Popup {
 	String title;
 	bool dragging;
 
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const InputEvent& p_event);
 	void _closed();
 protected:
 	virtual void _post_popup();

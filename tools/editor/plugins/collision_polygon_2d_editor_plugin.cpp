@@ -99,7 +99,7 @@ void CollisionPolygon2DEditor::_wip_close() {
 	edited_point=-1;
 }
 
-bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
+bool CollisionPolygon2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 
 	if (!node)

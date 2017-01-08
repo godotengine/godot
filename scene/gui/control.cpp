@@ -2558,7 +2558,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_font_changed"), &Control::_font_changed);
 
-	BIND_VMETHOD(MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
+	BIND_VMETHOD(MethodInfo("_gui_input",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2,"get_minimum_size"));
 	BIND_VMETHOD(MethodInfo(Variant::OBJECT,"get_drag_data",PropertyInfo(Variant::VECTOR2,"pos")));
 	BIND_VMETHOD(MethodInfo(Variant::BOOL,"can_drop_data",PropertyInfo(Variant::VECTOR2,"pos"),PropertyInfo(Variant::NIL,"data")));
@@ -2636,7 +2636,7 @@ void Control::_bind_methods() {
 	BIND_CONSTANT( SIZE_EXPAND_FILL );
 
 	ADD_SIGNAL( MethodInfo("resized") );
-	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
+	ADD_SIGNAL( MethodInfo("gui_input",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
 	ADD_SIGNAL( MethodInfo("mouse_enter") );
 	ADD_SIGNAL( MethodInfo("mouse_exit") );
 	ADD_SIGNAL( MethodInfo("focus_enter") );

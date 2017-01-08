@@ -116,7 +116,7 @@ void NavigationPolygonEditor::_wip_close() {
 	edited_point=-1;
 }
 
-bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
+bool NavigationPolygonEditor::forward_gui_input(const InputEvent& p_event) {
 
 
 	if (!node)

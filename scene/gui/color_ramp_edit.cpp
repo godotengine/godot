@@ -70,7 +70,7 @@ ColorRampEdit::~ColorRampEdit() {
 
 }
 
-void ColorRampEdit::_input_event(const InputEvent& p_event) {
+void ColorRampEdit::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
 
@@ -446,7 +446,7 @@ Vector<ColorRamp::Point>& ColorRampEdit::get_points() {
 }
 
 void ColorRampEdit::_bind_methods() {
-	ClassDB::bind_method(_MD("_input_event"),&ColorRampEdit::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&ColorRampEdit::_gui_input);
 	ClassDB::bind_method(_MD("_color_changed"),&ColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

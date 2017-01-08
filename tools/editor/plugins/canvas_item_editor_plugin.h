@@ -353,7 +353,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _unhandled_key_input(const InputEvent& p_ev);
 
-	void _viewport_input_event(const InputEvent& p_event);
+	void _viewport_gui_input(const InputEvent& p_event);
 	void _viewport_draw();
 
 	void _focus_selection(int p_op);

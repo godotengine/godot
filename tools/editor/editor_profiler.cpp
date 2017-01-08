@@ -713,7 +713,7 @@ EditorProfiler::EditorProfiler()
 	graph->set_stop_mouse(true);
 	graph->set_ignore_mouse(false);
 	graph->connect("draw",this,"_graph_tex_draw");
-	graph->connect("input_event",this,"_graph_tex_input");
+	graph->connect("gui_input",this,"_graph_tex_input");
 	graph->connect("mouse_exit",this,"_graph_tex_mouse_exit");
 
 	h_split->add_child(graph);

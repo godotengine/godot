@@ -85,7 +85,7 @@ protected:
 public:
 
 	Vector2 snap_point(const Vector2& p_point) const;
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	LightOccluder2DEditor(EditorNode *p_editor);
 };
@@ -99,7 +99,7 @@ class LightOccluder2DEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "LightOccluder2D"; }
 	bool has_main_screen() const { return false; }

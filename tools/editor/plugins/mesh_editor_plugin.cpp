@@ -29,7 +29,7 @@
 #include "mesh_editor_plugin.h"
 
 #if 0
-void MeshEditor::_input_event(InputEvent p_event) {
+void MeshEditor::_gui_input(InputEvent p_event) {
 
 
 	if (p_event.type==InputEvent::MOUSE_MOTION && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
@@ -136,7 +136,7 @@ void MeshEditor::_button_pressed(Node* p_button) {
 
 void MeshEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&MeshEditor::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&MeshEditor::_gui_input);
 	ClassDB::bind_method(_MD("_button_pressed"),&MeshEditor::_button_pressed);
 
 }

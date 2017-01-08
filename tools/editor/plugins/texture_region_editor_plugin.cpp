@@ -921,7 +921,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	hscroll->connect("value_changed",this,"_scroll_changed");
 
 	edit_draw->connect("draw",this,"_region_draw");
-	edit_draw->connect("input_event",this,"_region_input");
+	edit_draw->connect("gui_input",this,"_region_input");
 	draw_zoom=1.0;
 	updating_scroll=false;
 

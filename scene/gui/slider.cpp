@@ -37,7 +37,7 @@ Size2 Slider::get_minimum_size() const {
 	return ms;
 }
 
-void Slider::_input_event(InputEvent p_event) {
+void Slider::_gui_input(InputEvent p_event) {
 
 
 
@@ -231,7 +231,7 @@ void Slider::set_ticks_on_borders(bool _tob){
 
 void Slider::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&Slider::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&Slider::_gui_input);
 	ClassDB::bind_method(_MD("set_ticks","count"),&Slider::set_ticks);
 	ClassDB::bind_method(_MD("get_ticks"),&Slider::get_ticks);
 

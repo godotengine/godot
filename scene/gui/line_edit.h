@@ -119,7 +119,7 @@ private:
 	void _editor_settings_changed();
 #endif
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	void _notification(int p_what);
 
 

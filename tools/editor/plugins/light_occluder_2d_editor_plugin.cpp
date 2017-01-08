@@ -102,7 +102,7 @@ void LightOccluder2DEditor::_wip_close(bool p_closed) {
 	edited_point=-1;
 }
 
-bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
+bool LightOccluder2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 
 	if (!node)

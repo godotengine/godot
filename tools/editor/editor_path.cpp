@@ -67,7 +67,7 @@ void EditorPath::_add_children_to_popup(Object* p_obj,int p_depth) {
 	}
 }
 
-void EditorPath::_input_event(const InputEvent& p_event) {
+void EditorPath::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && p_event.mouse_button.pressed) {
 
@@ -198,7 +198,7 @@ void EditorPath::_popup_select(int p_idx) {
 
 void EditorPath::_bind_methods() {
 
-	ClassDB::bind_method("_input_event",&EditorPath::_input_event);
+	ClassDB::bind_method("_gui_input",&EditorPath::_gui_input);
 	ClassDB::bind_method("_popup_select",&EditorPath::_popup_select);
 }
 

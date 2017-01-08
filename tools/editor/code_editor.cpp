@@ -995,7 +995,7 @@ FindReplaceDialog::FindReplaceDialog() {
 
 /*** CODE EDITOR ****/
 
-void CodeTextEditor::_text_editor_input_event(const InputEvent& p_event) {
+void CodeTextEditor::_text_editor_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON) {
 
@@ -1195,7 +1195,7 @@ void CodeTextEditor::_notification(int p_what) {
 
 void CodeTextEditor::_bind_methods() {
 
-	ClassDB::bind_method("_text_editor_input_event",&CodeTextEditor::_text_editor_input_event);
+	ClassDB::bind_method("_text_editor_gui_input",&CodeTextEditor::_text_editor_gui_input);
 	ClassDB::bind_method("_line_col_changed",&CodeTextEditor::_line_col_changed);
 	ClassDB::bind_method("_text_changed",&CodeTextEditor::_text_changed);
 	ClassDB::bind_method("_on_settings_change",&CodeTextEditor::_on_settings_change);
@@ -1297,7 +1297,7 @@ CodeTextEditor::CodeTextEditor() {
 	col_nb->set_autowrap(true); // workaround to prevent resizing the label on each change
 	col_nb->set_custom_minimum_size(Size2(40,1)*EDSCALE);
 
-	text_editor->connect("input_event", this,"_text_editor_input_event");
+	text_editor->connect("gui_input", this,"_text_editor_gui_input");
 	text_editor->connect("cursor_changed", this,"_line_col_changed");
 	text_editor->connect("text_changed", this,"_text_changed");
 	text_editor->connect("request_completion", this,"_complete_request");

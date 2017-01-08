@@ -2033,7 +2033,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	add_child(easing_draw);
 	easing_draw->hide();
 	easing_draw->connect("draw",this,"_draw_easing");
-	easing_draw->connect("input_event",this,"_drag_easing");
+	easing_draw->connect("gui_input",this,"_drag_easing");
 	//easing_draw->emit_signal(SceneStringNames::get_singleton()->input_event,InputEvent());
 	easing_draw->set_default_cursor_shape(Control::CURSOR_MOVE);
 

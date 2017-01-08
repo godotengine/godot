@@ -94,7 +94,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent& p_event);
 	void edit(Node *p_path2d);
 	Path2DEditor(EditorNode *p_editor);
 };
@@ -108,7 +108,7 @@ class Path2DEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return path2d_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return path2d_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "Path2D"; }
 	bool has_main_screen() const { return false; }

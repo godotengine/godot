@@ -300,7 +300,7 @@ void ButtonArray::_notification(int p_what) {
 }
 
 
-void ButtonArray::_input_event(const InputEvent& p_event) {
+void ButtonArray::_gui_input(const InputEvent& p_event) {
 
 	if (
 			( (orientation==HORIZONTAL && p_event.is_action("ui_left") ) ||
@@ -544,7 +544,7 @@ void ButtonArray::_bind_methods() {
 	ClassDB::bind_method(_MD("erase_button","button_idx"),&ButtonArray::erase_button);
 	ClassDB::bind_method(_MD("clear"),&ButtonArray::clear);
 
-	ClassDB::bind_method(_MD("_input_event"),&ButtonArray::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&ButtonArray::_gui_input);
 
 	BIND_CONSTANT( ALIGN_BEGIN );
 	BIND_CONSTANT( ALIGN_CENTER );

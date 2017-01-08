@@ -86,7 +86,7 @@ void EditorQuickOpen::_sbox_input(const InputEvent& p_ie) {
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
 
-				search_options->call("_input_event", p_ie);
+				search_options->call("_gui_input", p_ie);
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
@@ -270,7 +270,7 @@ EditorQuickOpen::EditorQuickOpen() {
 	search_box = memnew( LineEdit );
 	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
-	search_box->connect("input_event",this,"_sbox_input");
+	search_box->connect("gui_input",this,"_sbox_input");
 	search_options = memnew( Tree );
 	vbc->add_margin_child(TTR("Matches:"),search_options,true);
 	get_ok()->set_text(TTR("Open"));

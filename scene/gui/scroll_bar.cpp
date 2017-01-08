@@ -39,7 +39,7 @@ void ScrollBar::set_can_focus_by_default(bool p_can_focus) {
 	focus_by_default=p_can_focus;
 }
 
-void ScrollBar::_input_event(InputEvent p_event) {
+void ScrollBar::_gui_input(InputEvent p_event) {
 
 
 	switch(p_event.type) {
@@ -302,7 +302,7 @@ void ScrollBar::_notification(int p_what) {
 		}
 
 		if (drag_slave) {
-			drag_slave->connect("input_event",this,"_drag_slave_input");
+			drag_slave->connect("gui_input",this,"_drag_slave_input");
 			drag_slave->connect("exit_tree",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
 		}
 
@@ -311,7 +311,7 @@ void ScrollBar::_notification(int p_what) {
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		if (drag_slave) {
-			drag_slave->disconnect("input_event",this,"_drag_slave_input");
+			drag_slave->disconnect("gui_input",this,"_drag_slave_input");
 			drag_slave->disconnect("exit_tree",this,"_drag_slave_exit");
 		}
 
@@ -546,7 +546,7 @@ float ScrollBar::get_custom_step() const {
 void ScrollBar::_drag_slave_exit() {
 
 	if (drag_slave) {
-		drag_slave->disconnect("input_event",this,"_drag_slave_input");
+		drag_slave->disconnect("gui_input",this,"_drag_slave_input");
 	}
 	drag_slave=NULL;
 }
@@ -638,7 +638,7 @@ void ScrollBar::set_drag_slave(const NodePath& p_path) {
 	if (is_inside_tree()) {
 
 		if (drag_slave) {
-			drag_slave->disconnect("input_event",this,"_drag_slave_input");
+			drag_slave->disconnect("gui_input",this,"_drag_slave_input");
 			drag_slave->disconnect("exit_tree",this,"_drag_slave_exit");
 		}
 	}
@@ -654,7 +654,7 @@ void ScrollBar::set_drag_slave(const NodePath& p_path) {
 		}
 
 		if (drag_slave) {
-			drag_slave->connect("input_event",this,"_drag_slave_input");
+			drag_slave->connect("gui_input",this,"_drag_slave_input");
 			drag_slave->connect("exit_tree",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
 		}
 	}
@@ -804,7 +804,7 @@ bool ScrollBar::key(unsigned long p_unicode, unsigned long p_scan_code,bool b.pr
 
 void ScrollBar::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&ScrollBar::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&ScrollBar::_gui_input);
 	ClassDB::bind_method(_MD("set_custom_step","step"),&ScrollBar::set_custom_step);
 	ClassDB::bind_method(_MD("get_custom_step"),&ScrollBar::get_custom_step);
 	ClassDB::bind_method(_MD("_drag_slave_input"),&ScrollBar::_drag_slave_input);

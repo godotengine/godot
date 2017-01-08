@@ -41,7 +41,7 @@ static bool _is_text_char(CharType c) {
 	return (c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_';
 }
 
-void LineEdit::_input_event(InputEvent p_event) {
+void LineEdit::_gui_input(InputEvent p_event) {
 
 
 	switch(p_event.type) {
@@ -1267,7 +1267,7 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(_MD("set_align", "align"), &LineEdit::set_align);
 	ClassDB::bind_method(_MD("get_align"), &LineEdit::get_align);
 
-	ClassDB::bind_method(_MD("_input_event"),&LineEdit::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&LineEdit::_gui_input);
 	ClassDB::bind_method(_MD("clear"),&LineEdit::clear);
 	ClassDB::bind_method(_MD("select_all"),&LineEdit::select_all);
 	ClassDB::bind_method(_MD("set_text","text"),&LineEdit::set_text);

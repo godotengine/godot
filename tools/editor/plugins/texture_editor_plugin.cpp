@@ -4,7 +4,7 @@
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
 
-void TextureEditor::_input_event(InputEvent p_event) {
+void TextureEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -84,7 +84,7 @@ void TextureEditor::edit(Ref<Texture> p_texture) {
 
 void TextureEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&TextureEditor::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&TextureEditor::_gui_input);
 
 }
 

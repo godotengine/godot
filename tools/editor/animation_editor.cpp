@@ -157,7 +157,7 @@ private:
 		}
 	}
 
-	void _input_event(const InputEvent& p_ev) {
+	void _gui_input(const InputEvent& p_ev) {
 		if (p_ev.type==InputEvent::MOUSE_MOTION && p_ev.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
 
 			if (mode==MODE_DISABLED)
@@ -199,7 +199,7 @@ public:
 	static void _bind_methods() {
 
 	//	ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
-		ClassDB::bind_method("_input_event",&AnimationCurveEdit::_input_event);
+		ClassDB::bind_method("_gui_input",&AnimationCurveEdit::_gui_input);
 		ADD_SIGNAL(MethodInfo("transition_changed"));
 	}
 
@@ -1811,7 +1811,7 @@ void AnimationKeyEditor::_anim_delete_keys() {
 	}
 }
 
-void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
+void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 
 	Control *te=track_editor;
 	Ref<StyleBox> style = get_stylebox("normal","TextEdit");
@@ -3859,7 +3859,7 @@ void AnimationKeyEditor::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_animation_changed"),&AnimationKeyEditor::_animation_changed);
 	ClassDB::bind_method(_MD("_scroll_changed"),&AnimationKeyEditor::_scroll_changed);
-	ClassDB::bind_method(_MD("_track_editor_input_event"),&AnimationKeyEditor::_track_editor_input_event);
+	ClassDB::bind_method(_MD("_track_editor_gui_input"),&AnimationKeyEditor::_track_editor_gui_input);
 	ClassDB::bind_method(_MD("_track_name_changed"),&AnimationKeyEditor::_track_name_changed);
 	ClassDB::bind_method(_MD("_track_menu_selected"),&AnimationKeyEditor::_track_menu_selected);
 	ClassDB::bind_method(_MD("_menu_add_track"),&AnimationKeyEditor::_menu_add_track);
@@ -4082,7 +4082,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	track_editor = memnew( Control );
 	track_editor->connect("draw",this,"_track_editor_draw");
 	hb->add_child(track_editor);
-	track_editor->connect("input_event",this,"_track_editor_input_event");
+	track_editor->connect("gui_input",this,"_track_editor_gui_input");
 	track_editor->set_focus_mode(Control::FOCUS_ALL);
 	track_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 

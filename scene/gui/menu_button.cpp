@@ -62,7 +62,7 @@ void MenuButton::pressed() {
 
 }
 
-void MenuButton::_input_event(InputEvent p_event) {
+void MenuButton::_gui_input(InputEvent p_event) {
 
 	/*if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT) {
 		clicked=p_event.mouse_button.pressed;
@@ -79,7 +79,7 @@ void MenuButton::_input_event(InputEvent p_event) {
 
 	}*/
 
-	BaseButton::_input_event(p_event);
+	BaseButton::_gui_input(p_event);
 }
 
 PopupMenu *MenuButton::get_popup() {

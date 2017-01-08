@@ -39,7 +39,7 @@ class EditorNameDialog : public ConfirmationDialog {
 
 	LineEdit *name;
 
-	void _line_input_event(const InputEvent& p_event);
+	void _line_gui_input(const InputEvent& p_event);
 
 protected:
 

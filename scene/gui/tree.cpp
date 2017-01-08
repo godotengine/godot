@@ -1955,7 +1955,7 @@ void Tree::popup_select(int p_option) {
 
 
 
-void Tree::_input_event(InputEvent p_event) {
+void Tree::_gui_input(InputEvent p_event) {
 
 	switch (p_event.type) {
 
@@ -3567,7 +3567,7 @@ bool Tree::get_allow_rmb_select() const{
 void Tree::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_range_click_timeout"),&Tree::_range_click_timeout);
-	ClassDB::bind_method(_MD("_input_event"),&Tree::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&Tree::_gui_input);
 	ClassDB::bind_method(_MD("_popup_select"),&Tree::popup_select);
 	ClassDB::bind_method(_MD("_text_editor_enter"),&Tree::text_editor_enter);
 	ClassDB::bind_method(_MD("_text_editor_modal_close"),&Tree::_text_editor_modal_close);

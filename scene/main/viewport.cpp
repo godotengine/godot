@@ -1605,12 +1605,12 @@ void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 
 		Control *control = ci->cast_to<Control>();
 		if (control) {
-			control->call_multilevel(SceneStringNames::get_singleton()->_input_event,ev);
+			control->call_multilevel(SceneStringNames::get_singleton()->_gui_input,ev);
 			if (gui.key_event_accepted)
 				break;
 			if (!control->is_inside_tree())
 				break;
-			control->emit_signal(SceneStringNames::get_singleton()->input_event,ev);
+			control->emit_signal(SceneStringNames::get_singleton()->gui_input,ev);
 			if (!control->is_inside_tree() || control->is_set_as_toplevel())
 				break;
 			if (gui.key_event_accepted)
@@ -2099,9 +2099,9 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 				gui.key_event_accepted=false;
 				if (gui.key_focus->can_process()) {
-					gui.key_focus->call_multilevel("_input_event",p_event);
+					gui.key_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input,p_event);
 					if (gui.key_focus) //maybe lost it
-						gui.key_focus->emit_signal(SceneStringNames::get_singleton()->input_event,p_event);
+						gui.key_focus->emit_signal(SceneStringNames::get_singleton()->gui_input,p_event);
 				}
 
 
@@ -2409,7 +2409,7 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 		mb.y=click.y;
 		mb.button_index=gui.mouse_focus_button;
 		mb.pressed=false;
-		gui.mouse_focus->call_deferred("_input_event",ie);
+		gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input,ie);
 
 
 		gui.mouse_focus=p_control;
@@ -2419,7 +2419,7 @@ void Viewport::_gui_grab_click_focus(Control *p_control) {
 		mb.y=click.y;
 		mb.button_index=gui.mouse_focus_button;
 		mb.pressed=true;
-		gui.mouse_focus->call_deferred("_input_event",ie);
+		gui.mouse_focus->call_deferred(SceneStringNames::get_singleton()->_gui_input,ie);
 
 	}
 }

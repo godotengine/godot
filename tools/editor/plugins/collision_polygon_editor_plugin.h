@@ -92,7 +92,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
+	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygonEditor(EditorNode *p_editor);
 	~CollisionPolygonEditor();
@@ -107,7 +107,7 @@ class CollisionPolygonEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) { return collision_polygon_editor->forward_spatial_input_event(p_camera,p_event); }
+	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) { return collision_polygon_editor->forward_spatial_gui_input(p_camera,p_event); }
 
 	virtual String get_name() const { return "CollisionPolygon"; }
 	bool has_main_screen() const { return false; }

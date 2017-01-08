@@ -189,7 +189,7 @@ void TileMapEditor::_sbox_input(const InputEvent& p_ie) {
 		p_ie.key.scancode == KEY_PAGEUP ||
 		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
 
-		palette->call("_input_event", p_ie);
+		palette->call("_gui_input", p_ie);
 		search_box->accept_event();
 	}
 }
@@ -595,7 +595,7 @@ static inline Vector<Point2i> line(int x0, int x1, int y0, int y1) {
 	return points;
 }
 
-bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
+bool TileMapEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (!node || !node->get_tileset().is_valid() || !node->is_visible())
 		return false;
@@ -1441,7 +1441,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->connect("text_entered", this, "_text_entered");
 	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("input_event", this, "_sbox_input");
+	search_box->connect("gui_input", this, "_sbox_input");
 	add_child(search_box);
 
 	size_slider = memnew( HSlider );

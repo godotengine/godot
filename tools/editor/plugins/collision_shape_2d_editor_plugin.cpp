@@ -303,7 +303,7 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant& p_org) {
 	undo_redo->commit_action();
 }
 
-bool CollisionShape2DEditor::forward_input_event(const InputEvent& p_event) {
+bool CollisionShape2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (!node) {
 		return false;

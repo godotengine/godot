@@ -267,7 +267,7 @@ private:
 	void _update_scroll();
 	void _scroll_changed(double);
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	Item *_get_next_item(Item* p_item, bool p_free=false);
 
 	bool use_bbcode;

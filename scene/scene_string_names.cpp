@@ -116,6 +116,9 @@ SceneStringNames::SceneStringNames() {
 
 	_input_event=StaticCString::create("_input_event");
 
+	gui_input=StaticCString::create("gui_input");
+	_gui_input=StaticCString::create("_gui_input");
+
 	changed=StaticCString::create("changed");
 	_shader_changed=StaticCString::create("_shader_changed");
 

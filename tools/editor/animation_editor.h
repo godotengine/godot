@@ -274,7 +274,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	float _get_zoom_scale() const;
 
 	void _track_editor_draw();
-	void _track_editor_input_event(const InputEvent& p_input);
+	void _track_editor_gui_input(const InputEvent& p_input);
 	void _track_pos_draw();
 
 

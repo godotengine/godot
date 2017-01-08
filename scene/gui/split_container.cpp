@@ -299,7 +299,7 @@ void SplitContainer::_notification(int p_what) {
 	}
 }
 
-void SplitContainer::_input_event(const InputEvent& p_event) {
+void SplitContainer::_gui_input(const InputEvent& p_event) {
 
 	if (collapsed || !_getch(0) || !_getch(1) || dragger_visibility!=DRAGGER_VISIBLE)
 		return;
@@ -422,7 +422,7 @@ bool SplitContainer::is_collapsed() const {
 
 void SplitContainer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&SplitContainer::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&SplitContainer::_gui_input);
 	ClassDB::bind_method(_MD("set_split_offset","offset"),&SplitContainer::set_split_offset);
 	ClassDB::bind_method(_MD("get_split_offset"),&SplitContainer::get_split_offset);
 

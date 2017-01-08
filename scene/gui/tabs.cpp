@@ -76,7 +76,7 @@ Size2 Tabs::get_minimum_size() const {
 }
 
 
-void Tabs::_input_event(const InputEvent& p_event) {
+void Tabs::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_MOTION) {
 
@@ -649,7 +649,7 @@ void Tabs::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
 
 void Tabs::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&Tabs::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&Tabs::_gui_input);
 	ClassDB::bind_method(_MD("get_tab_count"),&Tabs::get_tab_count);
 	ClassDB::bind_method(_MD("set_current_tab","tab_idx"),&Tabs::set_current_tab);
 	ClassDB::bind_method(_MD("get_current_tab"),&Tabs::get_current_tab);

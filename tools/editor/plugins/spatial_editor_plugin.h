@@ -481,7 +481,7 @@ protected:
 
 
 	void _notification(int p_what);
-	//void _input_event(InputEvent p_event);
+	//void _gui_input(InputEvent p_event);
 	void _unhandled_key_input(InputEvent p_event);
 
 	static void _bind_methods();

@@ -3,7 +3,7 @@
 
 #if 0
 
-void MaterialEditor::_input_event(InputEvent p_event) {
+void MaterialEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -93,7 +93,7 @@ void MaterialEditor::_button_pressed(Node* p_button) {
 
 void MaterialEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&MaterialEditor::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&MaterialEditor::_gui_input);
 	ClassDB::bind_method(_MD("_button_pressed"),&MaterialEditor::_button_pressed);
 
 }

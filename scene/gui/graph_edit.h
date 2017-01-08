@@ -123,7 +123,7 @@ private:
 
 	void _update_scroll();
 	void _scroll_moved(double);
-	void _input_event(const InputEvent& p_ev);
+	void _gui_input(const InputEvent& p_ev);
 
 	Control *connections_layer;
 	GraphEditFilter *top_layer;

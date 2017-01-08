@@ -70,7 +70,7 @@ protected:
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
-	virtual void _input_event(InputEvent p_event);
+	virtual void _gui_input(InputEvent p_event);
 	virtual void _unhandled_input(InputEvent p_event);
 	void _notification(int p_what);
 

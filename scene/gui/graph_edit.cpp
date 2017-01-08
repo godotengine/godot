@@ -793,7 +793,7 @@ void GraphEdit::set_selected(Node* p_child) {
 	}
 }
 
-void GraphEdit::_input_event(const InputEvent& p_ev) {
+void GraphEdit::_gui_input(const InputEvent& p_ev) {
 
 	if (p_ev.type==InputEvent::MOUSE_MOTION && (p_ev.mouse_motion.button_mask&BUTTON_MASK_MIDDLE || (p_ev.mouse_motion.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
 		h_scroll->set_value( h_scroll->get_value() - p_ev.mouse_motion.relative_x );
@@ -1233,7 +1233,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(_MD("_snap_toggled"),&GraphEdit::_snap_toggled);
 	ClassDB::bind_method(_MD("_snap_value_changed"),&GraphEdit::_snap_value_changed);
 
-	ClassDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&GraphEdit::_gui_input);
 	ClassDB::bind_method(_MD("_update_scroll_offset"),&GraphEdit::_update_scroll_offset);
 	ClassDB::bind_method(_MD("_connections_layer_draw"),&GraphEdit::_connections_layer_draw);
 

@@ -46,7 +46,7 @@ class MenuButton : public Button {
 	Array _get_items() const;
 	void _set_items(const Array& p_items);
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 protected:
 
 

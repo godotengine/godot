@@ -759,7 +759,7 @@ void AnimationTreeEditor::_node_edit_property(const StringName& p_node) {
 }
 #endif
 
-void AnimationTreeEditor::_input_event(InputEvent p_event) {
+void AnimationTreeEditor::_gui_input(InputEvent p_event) {
 
 	switch(p_event.type) {
 
@@ -1325,7 +1325,7 @@ void AnimationTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method( "_add_menu_item", &AnimationTreeEditor::_add_menu_item );
 	ClassDB::bind_method( "_node_menu_item", &AnimationTreeEditor::_node_menu_item );
-	ClassDB::bind_method( "_input_event", &AnimationTreeEditor::_input_event );
+	ClassDB::bind_method( "_gui_input", &AnimationTreeEditor::_gui_input );
 //	ClassDB::bind_method( "_node_param_changed", &AnimationTreeEditor::_node_param_changed );
 	ClassDB::bind_method( "_scroll_moved", &AnimationTreeEditor::_scroll_moved );
 	ClassDB::bind_method( "_edit_dialog_changeds", &AnimationTreeEditor::_edit_dialog_changeds );

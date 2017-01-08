@@ -216,7 +216,7 @@ void Polygon2DEditor::_wip_close() {
 	edited_point=-1;
 }
 
-bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
+bool Polygon2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (node==NULL)
 		return false;
@@ -975,7 +975,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_hscroll->connect("value_changed",this,"_uv_scroll_changed");
 
 	uv_edit_draw->connect("draw",this,"_uv_draw");
-	uv_edit_draw->connect("input_event",this,"_uv_input");
+	uv_edit_draw->connect("gui_input",this,"_uv_input");
 	uv_draw_zoom=1.0;
 	uv_drag_index=-1;
 	uv_drag=false;

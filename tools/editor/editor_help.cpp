@@ -71,7 +71,7 @@ void EditorHelpSearch::_sbox_input(const InputEvent& p_ie) {
 		p_ie.key.scancode == KEY_PAGEUP ||
 		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
 
-		search_options->call("_input_event",p_ie);
+		search_options->call("_gui_input",p_ie);
 		search_box->accept_event();
 	}
 
@@ -324,7 +324,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	sb_hb->add_child(sb);
 	vbc->add_margin_child(TTR("Search:"),sb_hb);
 	search_box->connect("text_changed",this,"_text_changed");
-	search_box->connect("input_event",this,"_sbox_input");
+	search_box->connect("gui_input",this,"_sbox_input");
 	search_options = memnew( Tree );
 	vbc->add_margin_child(TTR("Matches:"),search_options,true);
 	get_ok()->set_text(TTR("Open"));
@@ -488,7 +488,7 @@ void EditorHelpIndex::_sbox_input(const InputEvent& p_ie) {
 		p_ie.key.scancode == KEY_PAGEUP ||
 		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
 
-		class_list->call("_input_event",p_ie);
+		class_list->call("_gui_input",p_ie);
 		search_box->accept_event();
 	}
 }
@@ -517,7 +517,7 @@ EditorHelpIndex::EditorHelpIndex() {
 	register_text_enter(search_box);
 
 	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("input_event", this, "_sbox_input");
+	search_box->connect("gui_input", this, "_sbox_input");
 
 	class_list = memnew( Tree );
 	vbc->add_margin_child(TTR("Class List:")+" ", class_list, true);
@@ -1824,7 +1824,7 @@ EditorHelp::EditorHelp() {
 		pc->add_child(class_desc);
 		class_desc->set_area_as_parent_rect(8);
 		class_desc->connect("meta_clicked",this,"_class_desc_select");
-		class_desc->connect("input_event",this,"_class_desc_input");
+		class_desc->connect("gui_input",this,"_class_desc_input");
 	}
 
 	class_desc->get_v_scroll()->connect("value_changed",this,"_scroll_changed");

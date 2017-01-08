@@ -856,7 +856,7 @@ void ProjectManager::_load_recent_projects() {
 		hb->set_meta("main_scene",main_scene);
 		hb->set_meta("favorite",is_favorite);
 		hb->connect("draw",this,"_panel_draw",varray(hb));
-		hb->connect("input_event",this,"_panel_input",varray(hb));
+		hb->connect("gui_input",this,"_panel_input",varray(hb));
 		hb->add_constant_override("separation",10*EDSCALE);
 
 		VBoxContainer *favorite_box = memnew( VBoxContainer );

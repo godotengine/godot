@@ -49,7 +49,7 @@ class Slider : public Range {
 
 protected:
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool ticks_on_borders;

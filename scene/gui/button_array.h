@@ -74,7 +74,7 @@ protected:
 
 public:
 
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const InputEvent& p_event);
 
 
 	void set_align(Align p_align);

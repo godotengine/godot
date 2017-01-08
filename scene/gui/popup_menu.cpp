@@ -215,7 +215,7 @@ void PopupMenu::_submenu_timeout() {
 }
 
 
-void PopupMenu::_input_event(const InputEvent &p_event) {
+void PopupMenu::_gui_input(const InputEvent &p_event) {
 
 	switch( p_event.type) {
 
@@ -308,7 +308,7 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 						ie.type=InputEvent::MOUSE_MOTION;
 						ie.mouse_motion.x=b.x;
 						ie.mouse_motion.y=b.y+s;
-						_input_event(ie);
+						_gui_input(ie);
 					}
 				} break;
 				case BUTTON_WHEEL_UP: {
@@ -328,7 +328,7 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 						ie.type=InputEvent::MOUSE_MOTION;
 						ie.mouse_motion.x=b.x;
 						ie.mouse_motion.y=b.y-s;
-						_input_event(ie);
+						_gui_input(ie);
 
 
 					}
@@ -1098,7 +1098,7 @@ void PopupMenu::clear_autohide_areas(){
 
 void PopupMenu::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&PopupMenu::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&PopupMenu::_gui_input);
 	ClassDB::bind_method(_MD("add_icon_item","texture","label","id","accel"),&PopupMenu::add_icon_item,DEFVAL(-1),DEFVAL(0));
 	ClassDB::bind_method(_MD("add_item","label","id","accel"),&PopupMenu::add_item,DEFVAL(-1),DEFVAL(0));
 	ClassDB::bind_method(_MD("add_icon_check_item","texture","label","id","accel"),&PopupMenu::add_icon_check_item,DEFVAL(-1),DEFVAL(0));

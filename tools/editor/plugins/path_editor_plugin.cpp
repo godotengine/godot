@@ -285,7 +285,7 @@ Ref<SpatialEditorGizmo> PathEditorPlugin::create_spatial_gizmo(Spatial* p_spatia
 	return Ref<SpatialEditorGizmo>();
 }
 
-bool PathEditorPlugin::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
+bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) {
 
 	if (!path)
 		return false;

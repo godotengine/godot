@@ -141,10 +141,10 @@ Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
 	return Ref<SpatialEditorGizmo>();
 }
 
-bool EditorPlugin::forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) {
+bool EditorPlugin::forward_canvas_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_input_event")) {
-		return get_script_instance()->call("forward_canvas_input_event",p_canvas_xform,p_event);
+	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_gui_input")) {
+		return get_script_instance()->call("forward_canvas_gui_input",p_canvas_xform,p_event);
 	}
 	return false;
 }
@@ -160,10 +160,10 @@ void EditorPlugin::update_canvas() {
 	CanvasItemEditor::get_singleton()->get_viewport_control()->update();
 }
 
-bool EditorPlugin::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
+bool EditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) {
 
-	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_input_event")) {
-		return get_script_instance()->call("forward_spatial_input_event",p_camera,p_event);
+	if (get_script_instance() && get_script_instance()->has_method("forward_spatial_gui_input")) {
+		return get_script_instance()->call("forward_spatial_gui_input",p_camera,p_event);
 	}
 
 	return false;
@@ -377,9 +377,9 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(_MD("queue_save_layout"),&EditorPlugin::queue_save_layout);
 	ClassDB::bind_method(_MD("edit_resource"),&EditorPlugin::edit_resource);
 
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"forward_canvas_input_event",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::INPUT_EVENT,"event")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"forward_canvas_gui_input",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::INPUT_EVENT,"event")));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("forward_draw_over_canvas",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::OBJECT,"canvas:Control")));
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"forward_spatial_input_event",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"forward_spatial_gui_input",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));
 	MethodInfo gizmo = MethodInfo(Variant::OBJECT,"create_spatial_gizmo",PropertyInfo(Variant::OBJECT,"for_spatial:Spatial"));
 	gizmo.return_val.hint=PROPERTY_HINT_RESOURCE_TYPE;
 	gizmo.return_val.hint_string="EditorSpatialGizmo";

@@ -65,7 +65,7 @@ int TabContainer::_get_top_margin() const {
 
 
 
-void TabContainer::_input_event(const InputEvent& p_event) {
+void TabContainer::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON &&
 	    p_event.mouse_button.pressed &&
@@ -714,7 +714,7 @@ Popup* TabContainer::get_popup() const {
 
 void TabContainer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_input_event"),&TabContainer::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&TabContainer::_gui_input);
 	ClassDB::bind_method(_MD("get_tab_count"),&TabContainer::get_tab_count);
 	ClassDB::bind_method(_MD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
 	ClassDB::bind_method(_MD("get_current_tab"),&TabContainer::get_current_tab);

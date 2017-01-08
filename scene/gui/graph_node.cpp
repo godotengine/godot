@@ -621,7 +621,7 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 	return conn_output_cache[p_idx].color;
 }
 
-void GraphNode::_input_event(const InputEvent& p_ev) {
+void GraphNode::_gui_input(const InputEvent& p_ev) {
 
 	if (p_ev.type==InputEvent::MOUSE_BUTTON) {
 
@@ -724,7 +724,7 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(_MD("set_title","title"),&GraphNode::set_title);
 	ClassDB::bind_method(_MD("get_title"),&GraphNode::get_title);
-	ClassDB::bind_method(_MD("_input_event"),&GraphNode::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&GraphNode::_gui_input);
 
 	ClassDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
 	ClassDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);

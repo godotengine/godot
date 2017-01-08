@@ -45,7 +45,7 @@ protected:
 
 	virtual void _post_popup() {}
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	void _notification(int p_what);
 	void _fix_size();
 	static void _bind_methods();

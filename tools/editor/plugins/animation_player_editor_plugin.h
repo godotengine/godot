@@ -171,7 +171,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 protected:
 
 	void _notification(int p_what);
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 public:

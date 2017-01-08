@@ -79,14 +79,14 @@ void ScrollContainer::_cancel_drag() {
 	drag_from=Vector2();
 }
 
-void ScrollContainer::_input_event(const InputEvent& p_input_event) {
+void ScrollContainer::_gui_input(const InputEvent& p_gui_input) {
 
 
-	switch(p_input_event.type) {
+	switch(p_gui_input.type) {
 
 		case InputEvent::MOUSE_BUTTON: {
 
-			const InputEventMouseButton &mb=p_input_event.mouse_button;
+			const InputEventMouseButton &mb=p_gui_input.mouse_button;
 
 			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed) {
 				if (h_scroll->is_visible() && !v_scroll->is_visible()){
@@ -158,7 +158,7 @@ void ScrollContainer::_input_event(const InputEvent& p_input_event) {
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
-			const InputEventMouseMotion &mm=p_input_event.mouse_motion;
+			const InputEventMouseMotion &mm=p_gui_input.mouse_motion;
 
 			if (drag_touching && ! drag_touching_deaccel) {
 
@@ -438,7 +438,7 @@ void ScrollContainer::set_h_scroll(int p_pos) {
 void ScrollContainer::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_scroll_moved"),&ScrollContainer::_scroll_moved);
-	ClassDB::bind_method(_MD("_input_event"),&ScrollContainer::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&ScrollContainer::_gui_input);
 	ClassDB::bind_method(_MD("set_enable_h_scroll","enable"),&ScrollContainer::set_enable_h_scroll);
 	ClassDB::bind_method(_MD("is_h_scroll_enabled"),&ScrollContainer::is_h_scroll_enabled);
 	ClassDB::bind_method(_MD("set_enable_v_scroll","enable"),&ScrollContainer::set_enable_v_scroll);

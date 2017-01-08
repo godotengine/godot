@@ -5618,7 +5618,7 @@ EditorNode::EditorNode() {
 
 	dock_select = memnew( Control );
 	dock_select->set_custom_minimum_size(Size2(128,64)*EDSCALE);
-	dock_select->connect("input_event",this,"_dock_select_input");
+	dock_select->connect("gui_input",this,"_dock_select_input");
 	dock_select->connect("draw",this,"_dock_select_draw");
 	dock_select->connect("mouse_exit",this,"_dock_popup_exit");
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -6785,12 +6785,12 @@ void EditorPluginList::edit(Object* p_object) {
 
 }
 
-bool EditorPluginList::forward_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) {
+bool EditorPluginList::forward_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) {
 
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		if (plugins_list[i]->forward_canvas_input_event(p_canvas_xform,p_event)) {
+		if (plugins_list[i]->forward_canvas_gui_input(p_canvas_xform,p_event)) {
 			discard = true;
 		}
 	}
@@ -6798,11 +6798,11 @@ bool EditorPluginList::forward_input_event(const Matrix32& p_canvas_xform,const 
 	return discard;
 }
 
-bool EditorPluginList::forward_spatial_input_event(Camera* p_camera, const InputEvent& p_event) {
+bool EditorPluginList::forward_spatial_gui_input(Camera* p_camera, const InputEvent& p_event) {
 	bool discard = false;
 
 	for (int i = 0; i < plugins_list.size(); i++) {
-		if (plugins_list[i]->forward_spatial_input_event(p_camera, p_event)) {
+		if (plugins_list[i]->forward_spatial_gui_input(p_camera, p_event)) {
 			discard = true;
 		}
 	}

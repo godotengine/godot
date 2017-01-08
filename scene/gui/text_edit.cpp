@@ -1468,13 +1468,13 @@ void TextEdit::_get_mouse_pos(const Point2i& p_mouse, int &r_row, int &r_col) co
 	r_col=col;
 }
 
-void TextEdit::_input_event(const InputEvent& p_input_event) {
+void TextEdit::_gui_input(const InputEvent& p_gui_input) {
 
-	switch(p_input_event.type) {
+	switch(p_gui_input.type) {
 
 		case InputEvent::MOUSE_BUTTON: {
 
-			const InputEventMouseButton &mb=p_input_event.mouse_button;
+			const InputEventMouseButton &mb=p_gui_input.mouse_button;
 
 			if (completion_active && completion_rect.has_point(Point2(mb.x,mb.y))) {
 
@@ -1685,7 +1685,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
-			const InputEventMouseMotion &mm=p_input_event.mouse_motion;
+			const InputEventMouseMotion &mm=p_gui_input.mouse_motion;
 
 			if (select_identifiers_enabled) {
 				if (mm.mod.command && mm.button_mask==0) {
@@ -1728,7 +1728,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 		case InputEvent::KEY: {
 
-			InputEventKey k=p_input_event.key;
+			InputEventKey k=p_gui_input.key;
 
 
 #ifdef OSX_ENABLED
@@ -4608,7 +4608,7 @@ PopupMenu *TextEdit::get_menu() const {
 void TextEdit::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("_input_event"),&TextEdit::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&TextEdit::_gui_input);
 	ClassDB::bind_method(_MD("_scroll_moved"),&TextEdit::_scroll_moved);
 	ClassDB::bind_method(_MD("_cursor_changed_emit"),&TextEdit::_cursor_changed_emit);
 	ClassDB::bind_method(_MD("_text_changed_emit"),&TextEdit::_text_changed_emit);

@@ -104,9 +104,9 @@ public:
 	void edit_resource(const Ref<Resource>& p_resource);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform, const InputEvent& p_event);
+	virtual bool forward_canvas_gui_input(const Matrix32& p_canvas_xform, const InputEvent& p_event);
 	virtual void forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control *p_canvas);
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
+	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
