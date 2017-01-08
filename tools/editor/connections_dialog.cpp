@@ -421,7 +421,7 @@ ConnectDialog::ConnectDialog() {
 
 
 
-//	dst_method_list->get_popup()->connect("item_pressed", this,"_dst_method_list_selected");
+//	dst_method_list->get_popup()->connect("id_pressed", this,"_dst_method_list_selected");
 	tree->connect("node_selected", this,"_tree_node_selected");
 
 	set_as_toplevel(true);

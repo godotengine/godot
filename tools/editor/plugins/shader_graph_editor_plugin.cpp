@@ -2807,7 +2807,7 @@ void ShaderGraphEditor::_notification(int p_what) {
 			if (addsep)
 				popup->add_separator();
 		}
-		popup->connect("item_pressed",this,"_add_node");
+		popup->connect("id_pressed",this,"_add_node");
 
 
 	}

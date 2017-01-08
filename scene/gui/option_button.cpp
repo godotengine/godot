@@ -326,7 +326,7 @@ OptionButton::OptionButton() {
 	popup->hide();
 	popup->set_as_toplevel(true);
 	add_child(popup);
-	popup->connect("item_pressed", this,"_selected");
+	popup->connect("id_pressed", this,"_selected");
 
 	current=-1;
 	set_text_align(ALIGN_LEFT);

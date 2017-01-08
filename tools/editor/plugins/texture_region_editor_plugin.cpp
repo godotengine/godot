@@ -818,7 +818,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	for (int i = 0; i < 4; i++)
 		p->set_item_as_checkable(i,true);
 	p->set_item_checked(0,true);
-	p->connect("item_pressed", this, "_set_snap_mode");
+	p->connect("id_pressed", this, "_set_snap_mode");
 	hb_grid = memnew( HBoxContainer );
 	hb_tools->add_child(hb_grid);
 	hb_grid->add_child( memnew( VSeparator ));

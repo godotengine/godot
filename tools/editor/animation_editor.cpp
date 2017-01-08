@@ -3012,7 +3012,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 				tpp->add_item(TTR("In-Out"),TRACK_MENU_SET_ALL_TRANS_INOUT);
 				tpp->add_item(TTR("Out-In"),TRACK_MENU_SET_ALL_TRANS_OUTIN);
 				tpp->set_name(TTR("Transitions"));
-				tpp->connect("item_pressed",this,"_menu_track");
+				tpp->connect("id_pressed",this,"_menu_track");
 				optimize_dialog->connect("confirmed",this,"_animation_optimize");
 
 				menu_track->get_popup()->add_child(tpp);
@@ -3986,7 +3986,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 
 	menu_add_track = memnew( MenuButton );
 	hb->add_child(menu_add_track);
-	menu_add_track->get_popup()->connect("item_pressed",this,"_menu_add_track");
+	menu_add_track->get_popup()->connect("id_pressed",this,"_menu_add_track");
 	menu_add_track->set_tooltip(TTR("Add new tracks."));
 
 	move_up_button = memnew( ToolButton );
@@ -4014,7 +4014,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 
 	menu_track = memnew( MenuButton );
 	hb->add_child(menu_track);
-	menu_track->get_popup()->connect("item_pressed",this,"_menu_track");
+	menu_track->get_popup()->connect("id_pressed",this,"_menu_track");
 	menu_track->set_tooltip(TTR("Track tools"));
 
 	edit_button = memnew( ToolButton );
@@ -4071,7 +4071,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	l->set_pos(Point2(0,3));
 //	dr_panel->add_child(l);*/
 
-//	menu->get_popup()->connect("item_pressed",this,"_menu_callback");
+//	menu->get_popup()->connect("id_pressed",this,"_menu_callback");
 
 
 	hb = memnew( HBoxContainer);
@@ -4127,7 +4127,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	add_child(type_menu);
 	for(int i=0;i<Variant::VARIANT_MAX;i++)
 		type_menu->add_item(Variant::get_type_name(Variant::Type(i)),i);
-	type_menu->connect("item_pressed",this,"_create_value_item");
+	type_menu->connect("id_pressed",this,"_create_value_item");
 
 	VBoxContainer *curve_vb = memnew( VBoxContainer );
 	curve_vb->set_name(TTR("Transition"));
@@ -4166,7 +4166,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	track_name->connect("text_entered",this,"_track_name_changed");
 	track_menu = memnew( PopupMenu );
 	add_child(track_menu);
-	track_menu->connect("item_pressed",this,"_track_menu_selected");
+	track_menu->connect("id_pressed",this,"_track_menu_selected");
 
 	key_editor_tab->hide();
 

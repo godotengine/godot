@@ -207,7 +207,7 @@ EditorPath::EditorPath(EditorHistory *p_history) {
 	history=p_history;
 	mouse_over=false;
 	popup = memnew( PopupMenu );
-	popup->connect("item_pressed",this,"_popup_select");
+	popup->connect("id_pressed",this,"_popup_select");
 	add_child(popup);
 
 

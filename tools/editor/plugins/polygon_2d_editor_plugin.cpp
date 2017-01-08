@@ -840,7 +840,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
 	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 #endif
 
 	mode = MODE_EDIT;
@@ -885,7 +885,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_menu->get_popup()->add_item(TTR("UV->Polygon"),UVEDIT_UV_TO_POLYGON);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Clear UV"),UVEDIT_UV_CLEAR);
-	uv_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+	uv_menu->get_popup()->connect("id_pressed",this,"_menu_option");
 
 	uv_mode_hb->add_child( memnew( VSeparator ));
 

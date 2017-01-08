@@ -1273,7 +1273,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
-	context_menu->connect("item_pressed", this, "_edit_option");
+	context_menu->connect("id_pressed", this, "_edit_option");
 
 	color_panel = memnew(PopupPanel);
 	add_child(color_panel);
@@ -1309,7 +1309,7 @@ ScriptTextEditor::ScriptTextEditor() {
 #endif
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
-	edit_menu->get_popup()->connect("item_pressed", this,"_edit_option");
+	edit_menu->get_popup()->connect("id_pressed", this,"_edit_option");
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_breakpoint"), DEBUG_TOGGLE_BREAKPOINT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
@@ -1329,7 +1329,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	search_menu->get_popup()->add_separator();
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/contextual_help"), HELP_CONTEXTUAL);
 
-	search_menu->get_popup()->connect("item_pressed", this,"_edit_option");
+	search_menu->get_popup()->connect("id_pressed", this,"_edit_option");
 
 	edit_hb->add_child(edit_menu);
 

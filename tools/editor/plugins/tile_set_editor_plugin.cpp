@@ -240,7 +240,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create from Scene"),MENU_OPTION_CREATE_FROM_SCENE);
 	options->get_popup()->add_item(TTR("Merge from Scene"),MENU_OPTION_MERGE_FROM_SCENE);
-	options->get_popup()->connect("item_pressed", this,"_menu_cbk");
+	options->get_popup()->connect("id_pressed", this,"_menu_cbk");
 	editor=p_editor;
 	cd = memnew(ConfirmationDialog);
 	add_child(cd);

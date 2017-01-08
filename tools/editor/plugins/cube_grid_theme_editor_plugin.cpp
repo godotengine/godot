@@ -310,7 +310,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Import from Scene"),MENU_OPTION_IMPORT_FROM_SCENE);
 	options->get_popup()->add_item(TTR("Update from Scene"),MENU_OPTION_UPDATE_FROM_SCENE);
 	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE),true);
-	options->get_popup()->connect("item_pressed", this,"_menu_cbk");
+	options->get_popup()->connect("id_pressed", this,"_menu_cbk");
 	menu=options;
 	editor=p_editor;
 	cd = memnew(ConfirmationDialog);

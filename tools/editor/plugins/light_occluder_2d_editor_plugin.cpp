@@ -468,7 +468,7 @@ LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
 	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 #endif
 
 	mode = MODE_EDIT;

@@ -3436,7 +3436,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	edit_menu = memnew( MenuButton );
 	edit_menu->set_text(TTR("Edit"));
 	hb->add_child(edit_menu);
-	edit_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
+	edit_menu->get_popup()->connect("id_pressed", this,"_popup_callback");
 
 	PopupMenu *p;
 	p = edit_menu->get_popup();
@@ -3461,7 +3461,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	skeleton_menu->add_separator();
 	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
 	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
-	skeleton_menu->connect("item_pressed", this,"_popup_callback");
+	skeleton_menu->connect("id_pressed", this,"_popup_callback");
 
 
 	/*
@@ -3473,7 +3473,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	view_menu = memnew( MenuButton );
 	view_menu->set_text(TTR("View"));
 	hb->add_child(view_menu);
-	view_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
+	view_menu->get_popup()->connect("id_pressed", this,"_popup_callback");
 
 	p = view_menu->get_popup();
 
@@ -3488,7 +3488,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	anchor_menu = memnew( MenuButton );
 	anchor_menu->set_text(TTR("Anchor"));
 	hb->add_child(anchor_menu);
-	anchor_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
+	anchor_menu->get_popup()->connect("id_pressed", this,"_popup_callback");
 	anchor_menu->hide();
 
 	//p = anchor_menu->get_popup();
@@ -3534,7 +3534,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_menu = memnew( MenuButton );
 	animation_menu->set_text(TTR("Animation"));
 	animation_hb->add_child(animation_menu);
-	animation_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
+	animation_menu->get_popup()->connect("id_pressed", this,"_popup_callback");
 
 	p = animation_menu->get_popup();
 
@@ -3571,7 +3571,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	selection_menu = memnew( PopupMenu );
 	add_child(selection_menu);
 	selection_menu->set_custom_minimum_size(Vector2(100, 0));
-	selection_menu->connect("item_pressed", this, "_selection_result_pressed");
+	selection_menu->connect("id_pressed", this, "_selection_result_pressed");
 	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
 
 	key_pos=true;

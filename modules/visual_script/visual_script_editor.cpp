@@ -3306,7 +3306,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/cut_nodes"), EDIT_CUT_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/paste_nodes"), EDIT_PASTE_NODES);
 
-	edit_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+	edit_menu->get_popup()->connect("id_pressed",this,"_menu_option");
 
 	main_hsplit = memnew( HSplitContainer );
 	add_child(main_hsplit);
@@ -3446,7 +3446,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	new_function_menu = memnew( PopupMenu );
-	new_function_menu->connect("item_pressed",this,"_override_pressed");
+	new_function_menu->connect("id_pressed",this,"_override_pressed");
 	add_child(new_function_menu);
 	updating_members=false;
 
@@ -3468,7 +3468,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	port_action_popup = memnew( PopupMenu );
 	add_child(port_action_popup);
-	port_action_popup->connect("item_pressed",this,"_port_action_menu");
+	port_action_popup->connect("id_pressed",this,"_port_action_menu");
 
 
 }

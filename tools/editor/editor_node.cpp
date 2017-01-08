@@ -5771,7 +5771,7 @@ EditorNode::EditorNode() {
 	pm_export->add_separator();
 	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_MeshLibrary", TTR("MeshLibrary..")), FILE_EXPORT_MESH_LIBRARY);
 	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_TileSet", TTR("TileSet..")), FILE_EXPORT_TILESET);
-	pm_export->connect("item_pressed",this,"_menu_option");
+	pm_export->connect("id_pressed",this,"_menu_option");
 
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/undo", TTR("Undo"),KEY_MASK_CMD+KEY_Z),EDIT_UNDO,true);
@@ -5793,7 +5793,7 @@ EditorNode::EditorNode() {
 	recent_scenes = memnew( PopupMenu );
 	recent_scenes->set_name("RecentScenes");
 	p->add_child(recent_scenes);
-	recent_scenes->connect("item_pressed",this,"_open_recent_scene");
+	recent_scenes->connect("id_pressed",this,"_open_recent_scene");
 
 	{
 		Control *sp = memnew( Control );
@@ -5850,7 +5850,7 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child( import_menu );
 
 	p=import_menu->get_popup();
-	p->connect("item_pressed",this,"_menu_option");
+	p->connect("id_pressed",this,"_menu_option");
 
 	tool_menu = memnew( MenuButton );
 	tool_menu->set_tooltip(TTR("Miscellaneous project or scene-wide tools."));
@@ -5860,7 +5860,7 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child( tool_menu );
 
 	p=tool_menu->get_popup();
-	p->connect("item_pressed",this,"_menu_option");
+	p->connect("id_pressed",this,"_menu_option");
 	p->add_item(TTR("Orphan Resource Explorer"),TOOLS_ORPHAN_RESOURCES);
 
 	export_button = memnew( ToolButton );
@@ -5930,7 +5930,7 @@ EditorNode::EditorNode() {
 	native_play_button->set_text("NTV");
 	menu_hb->add_child(native_play_button);
 	native_play_button->hide();
-	native_play_button->get_popup()->connect("item_pressed",this,"_run_in_device");
+	native_play_button->get_popup()->connect("id_pressed",this,"_run_in_device");
 	run_native->connect("native_run",this,"_menu_option",varray(RUN_PLAY_NATIVE));
 
 //	VSeparator *s1 = memnew( VSeparator );
@@ -5979,7 +5979,7 @@ EditorNode::EditorNode() {
 	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is turned on, any changes made to the scene in the editor will be replicated in the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
 	p->add_check_item(TTR("Sync Script Changes"),RUN_RELOAD_SCRIPTS);
 	p->set_item_tooltip(p->get_item_count()-1,TTR("When this option is turned on, any script that is saved will be reloaded on the running game.\nWhen used remotely on a device, this is more efficient with network filesystem."));
-	p->connect("item_pressed",this,"_menu_option");
+	p->connect("id_pressed",this,"_menu_option");
 
 	/*
 	run_settings_button = memnew( ToolButton );
@@ -6053,7 +6053,7 @@ EditorNode::EditorNode() {
 	editor_layouts = memnew( PopupMenu );
 	editor_layouts->set_name("Layouts");
 	p->add_child(editor_layouts);
-	editor_layouts->connect("item_pressed",this,"_layout_menu_option");
+	editor_layouts->connect("id_pressed",this,"_layout_menu_option");
 	p->add_submenu_item(TTR("Editor Layout"), "Layouts");
 
 	p->add_shortcut(ED_SHORTCUT("editor/fullscreen_mode",TTR("Toggle Fullscreen"),KEY_MASK_SHIFT|KEY_F11),SETTINGS_TOGGLE_FULLSCREN);
@@ -6165,7 +6165,7 @@ EditorNode::EditorNode() {
 	prop_editor_hb->add_child(resource_save_button);
 	resource_save_button->get_popup()->add_item(TTR("Save"),RESOURCE_SAVE);
 	resource_save_button->get_popup()->add_item(TTR("Save As.."),RESOURCE_SAVE_AS);
-	resource_save_button->get_popup()->connect("item_pressed",this,"_menu_option");
+	resource_save_button->get_popup()->connect("id_pressed",this,"_menu_option");
 	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
 	resource_save_button->set_disabled(true);
 
@@ -6193,7 +6193,7 @@ EditorNode::EditorNode() {
 	editor_history_menu->set_icon( gui_base->get_icon("History","EditorIcons"));
 	prop_editor_hb->add_child(editor_history_menu);
 	editor_history_menu->connect("about_to_show",this,"_prepare_history");
-	editor_history_menu->get_popup()->connect("item_pressed",this,"_select_history");
+	editor_history_menu->get_popup()->connect("id_pressed",this,"_select_history");
 
 
 	prop_editor_hb = memnew( HBoxContainer ); //again...
@@ -6504,11 +6504,11 @@ EditorNode::EditorNode() {
 
 
 
-	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
-	object_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	file_menu->get_popup()->connect("id_pressed", this,"_menu_option");
+	object_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
-	update_menu->get_popup()->connect("item_pressed", this,"_menu_option");
-	settings_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	update_menu->get_popup()->connect("id_pressed", this,"_menu_option");
+	settings_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
 
 	file->connect("file_selected", this,"_dialog_action");

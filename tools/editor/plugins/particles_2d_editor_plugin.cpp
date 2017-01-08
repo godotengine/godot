@@ -144,7 +144,7 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		menu->get_popup()->connect("item_pressed",this,"_menu_callback");
+		menu->get_popup()->connect("id_pressed",this,"_menu_callback");
 		menu->set_icon(menu->get_popup()->get_icon("Particles2D","EditorIcons"));
 		file->connect("file_selected",this,"_file_selected");
 	}

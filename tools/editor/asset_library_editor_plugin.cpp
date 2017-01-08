@@ -1418,7 +1418,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support->get_popup()->add_check_item(TTR("Testing"),SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL,true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY,true);
-	support->get_popup()->connect("item_pressed",this,"_support_toggled");
+	support->get_popup()->connect("id_pressed",this,"_support_toggled");
 
 	/////////
 

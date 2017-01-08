@@ -2128,7 +2128,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_docs", TTR("Close Docs")), CLOSE_DOCS);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_file", TTR("Close"), KEY_MASK_CMD | KEY_W), FILE_CLOSE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/close_all", TTR("Close All")), CLOSE_ALL);
-	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	file_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
 
 
@@ -2137,7 +2137,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	script_search_menu->set_text(TTR("Search"));
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find.."), KEY_MASK_CMD|KEY_F), HELP_SEARCH_FIND);
 	script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
-	script_search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	script_search_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 	script_search_menu->hide();
 
 
@@ -2153,7 +2153,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->add_separator();
 	//debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
 	debug_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("debugger/keep_debugger_open", TTR("Keep Debugger Open")), DEBUG_SHOW_KEEP_OPEN);
-	debug_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	debug_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_STEP), true );
@@ -2170,7 +2170,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	window_menu->get_popup()->add_item(TTR("Move Left"),WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_LEFT);
 	window_menu->get_popup()->add_item(TTR("Move Right"),WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
 	window_menu->get_popup()->add_separator();
-	window_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	window_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
 #endif
 

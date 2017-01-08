@@ -2423,7 +2423,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
-	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+	view_menu->get_popup()->connect("id_pressed",this,"_menu_option");
 
 	preview_camera = memnew( Button );
 	preview_camera->set_toggle_mode(true);
@@ -2440,7 +2440,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	selection_menu = memnew( PopupMenu );
 	add_child(selection_menu);
 	selection_menu->set_custom_minimum_size(Vector2(100, 0));
-	selection_menu->connect("item_pressed", this, "_selection_result_pressed");
+	selection_menu->connect("id_pressed", this, "_selection_result_pressed");
 	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
 
 	if (p_index==0) {
@@ -3907,7 +3907,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTR("Transform Dialog..")), MENU_TRANSFORM_DIALOG);
 
-	p->connect("item_pressed", this,"_menu_item_pressed");
+	p->connect("id_pressed", this,"_menu_item_pressed");
 
 	view_menu = memnew( MenuButton );
 	view_menu->set_text(TTR("View"));
@@ -3945,7 +3945,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->set_item_checked( p->get_item_index(MENU_VIEW_GRID), true );
 
 
-	p->connect("item_pressed", this,"_menu_item_pressed");
+	p->connect("id_pressed", this,"_menu_item_pressed");
 
 
 	/* REST OF MENU */

@@ -241,7 +241,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Outline Mesh.."),MENU_OPTION_CREATE_OUTLINE_MESH);
 
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 
 	outline_dialog = memnew( ConfirmationDialog );
 	outline_dialog->set_title(TTR("Create Outline Mesh"));

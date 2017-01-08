@@ -333,7 +333,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance","EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 
 	populate_dialog = memnew( ConfirmationDialog );
 	populate_dialog->set_title(TTR("Populate MultiMesh"));

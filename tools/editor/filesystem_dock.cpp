@@ -160,7 +160,7 @@ void FileSystemDock::_notification(int p_what) {
 
 			button_hist_next->set_icon( get_icon("Forward","EditorIcons"));
 			button_hist_prev->set_icon( get_icon("Back","EditorIcons"));
-			file_options->connect("item_pressed",this,"_file_option");
+			file_options->connect("id_pressed",this,"_file_option");
 
 
 			button_back->connect("pressed",this,"_go_to_tree",varray(),CONNECT_DEFERRED);

@@ -1489,7 +1489,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	p->add_shortcut(ED_SHORTCUT("tile_map_editor/duplicate_selection", TTR("Duplicate Selection"), KEY_MASK_CMD+KEY_D), OPTION_DUPLICATE);
 	p->add_shortcut(ED_GET_SHORTCUT("tile_map_editor/erase_selection"), OPTION_ERASE_SELECTION);
 
-	p->connect("item_pressed", this, "_menu_option");
+	p->connect("id_pressed", this, "_menu_option");
 
 	toolbar->add_child(options);
 

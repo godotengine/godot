@@ -912,7 +912,8 @@ void PopupMenu::activate_item(int p_item) {
 	ERR_FAIL_INDEX(p_item,items.size());
 	ERR_FAIL_COND(items[p_item].separator);
 	int id = items[p_item].ID>=0?items[p_item].ID:p_item;
-	emit_signal("item_pressed",id);
+	emit_signal("id_pressed",id);
+	emit_signal("index_pressed",p_item);
 
 	//hide all parent PopupMenue's
 	Node *next = get_parent();
@@ -1157,7 +1158,8 @@ void PopupMenu::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL, "hide_on_item_selection" ), _SCS("set_hide_on_item_selection"), _SCS("is_hide_on_item_selection") );
 
-	ADD_SIGNAL( MethodInfo("item_pressed", PropertyInfo( Variant::INT,"ID") ) );
+	ADD_SIGNAL( MethodInfo("id_pressed", PropertyInfo( Variant::INT,"ID") ) );
+	ADD_SIGNAL( MethodInfo("index_pressed", PropertyInfo( Variant::INT,"index") ) );
 
 }
 

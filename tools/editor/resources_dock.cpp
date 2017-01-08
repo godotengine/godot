@@ -366,7 +366,7 @@ ResourcesDock::ResourcesDock(EditorNode *p_editor) {
 	mb->set_tooltip(TTR("Save Resource"));
 	mb->get_popup()->add_item(TTR("Save Resource"),TOOL_SAVE);
 	mb->get_popup()->add_item(TTR("Save Resource As.."),TOOL_SAVE_AS);
-	mb->get_popup()->connect("item_pressed",this,"_tool_selected" );
+	mb->get_popup()->connect("id_pressed",this,"_tool_selected" );
 	hbc->add_child( mb );
 	button_save=mb;
 
@@ -377,7 +377,7 @@ ResourcesDock::ResourcesDock(EditorNode *p_editor) {
 	mb->get_popup()->add_item(TTR("Make Local"),TOOL_MAKE_LOCAL);
 	mb->get_popup()->add_item(TTR("Copy"),TOOL_COPY);
 	mb->get_popup()->add_item(TTR("Paste"),TOOL_PASTE);
-	mb->get_popup()->connect("item_pressed",this,"_tool_selected" );
+	mb->get_popup()->connect("id_pressed",this,"_tool_selected" );
 	hbc->add_child( mb );
 	button_tools=mb;
 

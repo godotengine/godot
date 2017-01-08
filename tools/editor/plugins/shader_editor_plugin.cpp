@@ -469,7 +469,7 @@ ShaderEditor::ShaderEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/paste", TTR("Paste"), KEY_MASK_CMD|KEY_V), EDIT_PASTE);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/select_all", TTR("Select All"), KEY_MASK_CMD|KEY_A), EDIT_SELECT_ALL);
-	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	edit_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
 
 	search_menu = memnew( MenuButton );
@@ -483,7 +483,7 @@ ShaderEditor::ShaderEditor() {
 	search_menu->get_popup()->add_separator();
 //	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
 	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD|KEY_L), SEARCH_GOTO_LINE);
-	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+	search_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
 
 	goto_line_dialog = memnew(GotoLineDialog);

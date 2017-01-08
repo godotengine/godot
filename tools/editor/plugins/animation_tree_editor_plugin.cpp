@@ -1371,7 +1371,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	p->add_separator();
 	p->add_item(TTR("Clear"),MENU_GRAPH_CLEAR);
 
-	p->connect("item_pressed", this,"_add_menu_item");
+	p->connect("id_pressed", this,"_add_menu_item");
 
 	play_button = memnew(Button);
 	play_button->set_pos(Point2(25,0));
@@ -1407,10 +1407,10 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	master_anim_popup = memnew( PopupMenu );
 	add_child(master_anim_popup);
-	master_anim_popup->connect("item_pressed",this,"_master_anim_menu_item");
+	master_anim_popup->connect("id_pressed",this,"_master_anim_menu_item");
 
 
-	node_popup->connect("item_pressed", this,"_node_menu_item");
+	node_popup->connect("id_pressed", this,"_node_menu_item");
 
 	updating_edit=false;
 

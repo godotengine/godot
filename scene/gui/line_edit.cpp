@@ -1361,7 +1361,7 @@ LineEdit::LineEdit() {
 	menu->add_item(TTR("Clear"),MENU_CLEAR);
 	menu->add_separator();
 	menu->add_item(TTR("Undo"),MENU_UNDO,KEY_MASK_CMD|KEY_Z);
-	menu->connect("item_pressed",this,"menu_option");
+	menu->connect("id_pressed",this,"menu_option");
 	expand_to_text_length=false;
 
 

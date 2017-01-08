@@ -54,7 +54,7 @@ void EditorRunNative::_notification(int p_what) {
 					Ref<ImageTexture> small_icon = memnew( ImageTexture);
 					small_icon->create_from_image(im);
 					MenuButton *mb = memnew( MenuButton );
-					mb->get_popup()->connect("item_pressed",this,"_run_native",varray(E->get()));
+					mb->get_popup()->connect("id_pressed",this,"_run_native",varray(E->get()));
 					mb->connect("pressed",this,"_run_native",varray(-1, E->get()));
 					mb->set_icon(small_icon);
 					add_child(mb);

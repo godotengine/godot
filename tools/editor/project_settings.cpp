@@ -1351,7 +1351,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	}
 
-	popup_platform->get_popup()->connect("item_pressed",this,"_copy_to_platform");
+	popup_platform->get_popup()->connect("id_pressed",this,"_copy_to_platform");
 	get_ok()->set_text(TTR("Close"));
 	set_hide_on_ok(true);
 
@@ -1399,7 +1399,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	input_editor->connect("button_pressed",this,"_action_button_pressed");
 	popup_add = memnew( PopupMenu );
 	add_child(popup_add);
-	popup_add->connect("item_pressed",this,"_add_item");
+	popup_add->connect("id_pressed",this,"_add_item");
 
 	press_a_key = memnew( ConfirmationDialog );
 	press_a_key->set_focus_mode(FOCUS_ALL);

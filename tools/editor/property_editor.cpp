@@ -2017,7 +2017,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	type_button = memnew( MenuButton );
 	add_child(type_button);
 	type_button->hide();
-	type_button->get_popup()->connect("item_pressed", this,"_type_create_selected");
+	type_button->get_popup()->connect("id_pressed", this,"_type_create_selected");
 
 
 	scene_tree = memnew( SceneTreeDialog );
@@ -2039,7 +2039,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("item_pressed",this,"_menu_option");
+	menu->connect("id_pressed",this,"_menu_option");
 
 	evaluator = NULL;
 

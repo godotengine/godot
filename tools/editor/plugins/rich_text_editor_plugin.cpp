@@ -110,7 +110,7 @@ RichTextEditor::RichTextEditor() {
 	options->get_popup()->add_item(TTR("Parse BBCode"),PARSE_BBCODE);
 	options->get_popup()->add_item(TTR("Clear"),CLEAR);
 
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 	file_dialog = memnew( EditorFileDialog );
 	add_child(file_dialog);
 	file_dialog->add_filter("*.txt");

@@ -2013,7 +2013,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	menu = memnew( PopupMenu );
 	add_child(menu);
-	menu->connect("item_pressed",this,"_tool_selected");
+	menu->connect("id_pressed",this,"_tool_selected");
 	first_enter=true;
 	restore_script_editor_on_drag=false;
 

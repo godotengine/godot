@@ -1267,7 +1267,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_vbc->add_margin_child("Pick Distance:", settings_pick_distance);
 
 	clip_mode=CLIP_DISABLED;
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	add_child(hb);

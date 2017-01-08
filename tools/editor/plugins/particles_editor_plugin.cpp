@@ -356,7 +356,7 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emitter From Node"),MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Clear Emitter"),MENU_OPTION_CLEAR_EMISSION_VOLUME);
 
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 
 	emission_dialog = memnew( ConfirmationDialog );
 	emission_dialog->set_title(TTR("Create Emitter"));

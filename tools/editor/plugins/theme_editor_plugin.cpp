@@ -679,7 +679,7 @@ ThemeEditor::ThemeEditor() {
 
 	add_child(theme_menu);
 	theme_menu->set_pos(Vector2(3,3)*EDSCALE);
-	theme_menu->get_popup()->connect("item_pressed", this,"_theme_menu_cbk");
+	theme_menu->get_popup()->connect("id_pressed", this,"_theme_menu_cbk");
 
 
 	HBoxContainer *main_hb = memnew( HBoxContainer );
@@ -898,7 +898,7 @@ ThemeEditor::ThemeEditor() {
 	type_menu->set_text("..");
 	add_del_dialog->add_child(type_menu);
 
-	type_menu->get_popup()->connect("item_pressed", this,"_type_menu_cbk");
+	type_menu->get_popup()->connect("id_pressed", this,"_type_menu_cbk");
 
 	l = memnew( Label );
 	l->set_pos( Point2(200,5)*EDSCALE );
@@ -918,7 +918,7 @@ ThemeEditor::ThemeEditor() {
 	add_del_dialog->add_child(name_menu);
 
 	name_menu->get_popup()->connect("about_to_show", this,"_name_menu_about_to_show");
-	name_menu->get_popup()->connect("item_pressed", this,"_name_menu_cbk");
+	name_menu->get_popup()->connect("id_pressed", this,"_name_menu_cbk");
 
 	type_select_label= memnew( Label );
 	type_select_label->set_pos( Point2(400,5)*EDSCALE );
