@@ -51,6 +51,7 @@ SceneStringNames::SceneStringNames() {
 	sleeping_state_changed=StaticCString::create("sleeping_state_changed");
 
 	finished=StaticCString::create("finished");
+	animation_finished=StaticCString::create("animation_finished");
 	animation_changed=StaticCString::create("animation_changed");
 	animation_started=StaticCString::create("animation_started");
 
