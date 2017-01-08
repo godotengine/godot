@@ -2155,6 +2155,27 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 		case GDParser::COMPLETION_PARENT_FUNCTION: {
 
 		} break;
+		case GDParser::COMPLETION_GET_NODE: {
+
+			if (p_owner) {
+				List<String> opts;
+				p_owner->get_argument_options("get_node",0,&opts);
+
+				for (List<String>::Element *E=opts.front();E;E=E->next()) {
+
+					String opt = E->get().strip_edges();
+					if (opt.begins_with("\"") && opt.ends_with("\"")) {
+						String idopt=opt.substr(1,opt.length()-2);
+						if (idopt.replace("/","_").is_valid_identifier()) {
+							options.insert(idopt);
+						} else {
+							options.insert(opt);
+						}
+					}
+				}
+
+			}
+		} break;
 		case GDParser::COMPLETION_METHOD:
 			isfunction=true;
 		case GDParser::COMPLETION_INDEX: {

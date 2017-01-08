@@ -4230,7 +4230,6 @@ void TextEdit::_update_completion_candidates() {
 	String l = text[cursor.line];
 	int cofs = CLAMP(cursor.column,0,l.length());
 
-
 	String s;
 
 	//look for keywords first
@@ -4279,14 +4278,14 @@ void TextEdit::_update_completion_candidates() {
 
 		while(cofs>0 && l[cofs-1]>32 && _is_completable(l[cofs-1])) {
 			s=String::chr(l[cofs-1])+s;
-			if (l[cofs-1]=='\'' || l[cofs-1]=='"')
+			if (l[cofs-1]=='\'' || l[cofs-1]=='"' || l[cofs-1]=='$')
 				break;
 
 			cofs--;
 		}
 	}
 
-	if (cursor.column > 0 && l[cursor.column - 1] == '(' && !pre_keyword && !completion_strings[0].begins_with("\"")) {
+	if (cursor.column > 0 && l[cursor.column - 1] == '(' && !pre_keyword &&  !completion_strings[0].begins_with("\"")) {
 		cancel = true;
 	}
 
@@ -4308,8 +4307,9 @@ void TextEdit::_update_completion_candidates() {
 			_cancel_completion();
 			return;
 		}
+
 		if (s.is_subsequence_ofi(completion_strings[i])) {
-			// don't remove duplicates if no input is provided
+				// don't remove duplicates if no input is provided
 			if (s != "" && completion_options.find(completion_strings[i]) != -1) {
 				continue;
 			}
@@ -4345,6 +4345,7 @@ void TextEdit::_update_completion_candidates() {
 	if (completion_options.size()==0) {
 		//no options to complete, cancel
 		_cancel_completion();
+
 		return;
 
 	}

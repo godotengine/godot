@@ -290,8 +290,10 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 					} break;
 					case GDTokenizer::TK_CONSTANT: {
 
-						if (!need_identifier)
+						if (!need_identifier) {
+							done=true;
 							break;
+						}
 
 						if (tokenizer->get_token_constant().get_type()!=Variant::STRING) {
 							_set_error("Expected string constant or identifier after '$' or '/'.");
@@ -300,12 +302,14 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 						path+=String(tokenizer->get_token_constant());
 						tokenizer->advance();
+						need_identifier=false;
 
 					} break;
 					case GDTokenizer::TK_IDENTIFIER: {
-
-						if (!need_identifier)
+						if (!need_identifier) {
+							done=true;
 							break;
+						}
 
 						path+=String(tokenizer->get_token_identifier());
 						tokenizer->advance();
@@ -314,8 +318,10 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 					} break;
 					case GDTokenizer::TK_OP_DIV: {
 
-						if (need_identifier)
+						if (need_identifier) {
+							done=true;
 							break;
+						}
 
 						path+="/";
 						tokenizer->advance();

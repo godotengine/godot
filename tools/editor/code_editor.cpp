@@ -1305,6 +1305,7 @@ CodeTextEditor::CodeTextEditor() {
 	cs.push_back(".");
 	cs.push_back(",");
 	cs.push_back("(");
+	cs.push_back("$");
 	text_editor->set_completion(true,cs);
 	idle->connect("timeout", this,"_text_changed_idle_timeout");
 
