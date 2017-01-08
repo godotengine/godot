@@ -61,7 +61,6 @@ SConscript('os/SCsub')
 SConscript('math/SCsub')
 SConscript('io/SCsub')
 SConscript('bind/SCsub')
-SConscript('tests/SCsub')
 
 lib = env.Library("core", env.core_sources)
 
