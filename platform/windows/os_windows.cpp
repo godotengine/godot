@@ -1120,7 +1120,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();
 
 	input = memnew( InputDefault );
-	joypad = memnew (joypad_windows(input, &hWnd));
+	joypad = memnew (JoypadWindows(input, &hWnd));
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 

@@ -26,7 +26,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-//author: Andreas Haas <hondres,  liugam3@gmail.com>
 #ifndef JOYPAD_H
 #define JOYPAD_H
 
@@ -48,12 +47,12 @@ if(x != NULL)           \
 #define XUSER_MAX_COUNT 4
 #endif
 
-class joypad_windows
+class JoypadWindows
 {
 public:
-	joypad_windows();
-	joypad_windows(InputDefault* _input, HWND* hwnd);
-	~joypad_windows();
+	JoypadWindows();
+	JoypadWindows(InputDefault* _input, HWND* hwnd);
+	~JoypadWindows();
 
 	void probe_joypads();
 	unsigned int process_joypads(unsigned int p_last_id);
