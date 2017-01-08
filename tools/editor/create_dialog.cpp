@@ -400,8 +400,11 @@ Object *CreateDialog::instance_selected() {
 
 	if (selected) {
 
-		String custom = selected->get_metadata(0);
+		Variant md = selected->get_metadata(0);
 
+		String custom;
+		if (md.get_type()!=Variant::NIL)
+			custom=md;
 
 		if (custom!=String()) {
 			if (EditorNode::get_editor_data().get_custom_types().has(custom)) {
