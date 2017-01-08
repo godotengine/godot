@@ -116,30 +116,7 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 
 	String name= p_name;
 	if (!name.begins_with("custom")) {
-		if (name.begins_with("margin/")) {
-			String dname = name.get_slicec('/', 1);
-			if (dname == "left") {
-				set_margin(MARGIN_LEFT, p_value);
-				return true;
-			}
-			else if (dname == "top") {
-				set_margin(MARGIN_TOP, p_value);
-				return true;
-			}
-			else if (dname == "right") {
-				set_margin(MARGIN_RIGHT, p_value);
-				return true;
-			}
-			else if (dname == "bottom") {
-				set_margin(MARGIN_BOTTOM, p_value);
-				return true;
-			}
-			else {
-				return false;
-			}
-		} else {
-			return false;
-		}
+		return false;
 	}
 
 	if (p_value.get_type()==Variant::NIL) {
@@ -235,30 +212,8 @@ bool Control::_get(const StringName& p_name,Variant &r_ret) const {
 	String sname=p_name;
 
 	if (!sname.begins_with("custom")) {
-		if (sname.begins_with("margin/")) {
-			String dname = sname.get_slicec('/', 1);
-			if (dname == "left") {
-				r_ret = get_margin(MARGIN_LEFT);
-				return true;
-			}
-			else if (dname == "top") {
-				r_ret = get_margin(MARGIN_TOP);
-				return true;
-			}
-			else if (dname == "right") {
-				r_ret = get_margin(MARGIN_RIGHT);
-				return true;
-			}
-			else if (dname == "bottom") {
-				r_ret = get_margin(MARGIN_BOTTOM);
-				return true;
-			}
-			else {
-				return false;
-			}
-		} else {
-			return false;
-		}
+		return false;
+
 	}
 
 	if (sname.begins_with("custom_icons/")) {
@@ -294,36 +249,6 @@ bool Control::_get(const StringName& p_name,Variant &r_ret) const {
 
 }
 void Control::_get_property_list( List<PropertyInfo> *p_list) const {
-
-	{
-		if (get_anchor(MARGIN_LEFT) == ANCHOR_RATIO) {
-			p_list->push_back(PropertyInfo(Variant::REAL, "margin/left", PROPERTY_HINT_RANGE, "-4096,4096,0.001"));
-		}
-		else {
-			p_list->push_back(PropertyInfo(Variant::INT, "margin/left", PROPERTY_HINT_RANGE, "-4096,4096"));
-		}
-
-		if (get_anchor(MARGIN_TOP) == ANCHOR_RATIO) {
-			p_list->push_back(PropertyInfo(Variant::REAL, "margin/top", PROPERTY_HINT_RANGE, "-4096,4096,0.001"));
-		}
-		else {
-			p_list->push_back(PropertyInfo(Variant::INT, "margin/top", PROPERTY_HINT_RANGE, "-4096,4096"));
-		}
-
-		if (get_anchor(MARGIN_RIGHT) == ANCHOR_RATIO) {
-			p_list->push_back(PropertyInfo(Variant::REAL, "margin/right", PROPERTY_HINT_RANGE, "-4096,4096,0.001"));
-		}
-		else {
-			p_list->push_back(PropertyInfo(Variant::INT, "margin/right", PROPERTY_HINT_RANGE, "-4096,4096"));
-		}
-
-		if (get_anchor(MARGIN_BOTTOM) == ANCHOR_RATIO) {
-			p_list->push_back(PropertyInfo(Variant::REAL, "margin/bottom", PROPERTY_HINT_RANGE, "-4096,4096,0.001"));
-		}
-		else {
-			p_list->push_back(PropertyInfo(Variant::INT, "margin/bottom", PROPERTY_HINT_RANGE, "-4096,4096"));
-		}
-	}
 
 	Ref<Theme> theme;
 	if (data.theme.is_valid()) {
@@ -1258,14 +1183,10 @@ void Control::_size_changed() {
 
 				margin_pos[i]=area-data.margin[i];
 			} break;
-			case ANCHOR_RATIO: {
+			case ANCHOR_CENTER: {
 
-				margin_pos[i]=area*data.margin[i];
+				margin_pos[i]=(area/2)-data.margin[i];
 			} break;
-            case ANCHOR_CENTER: {
-
-                margin_pos[i]=(area/2)-data.margin[i];
-            } break;
 		}
 	}
 
@@ -1334,12 +1255,9 @@ float Control::_s2a(float p_val, AnchorType p_anchor,float p_range) const {
 		case ANCHOR_END: {
 			return p_range-p_val;
 		} break;
-		case ANCHOR_RATIO: {
-			return p_val/p_range;
+		case ANCHOR_CENTER: {
+			return (p_range/2)-p_val;
 		} break;
-        case ANCHOR_CENTER: {
-            return (p_range/2)-p_val;
-        } break;
 	}
 
 	return 0;
@@ -1356,11 +1274,8 @@ float Control::_a2s(float p_val, AnchorType p_anchor,float p_range) const {
 		case ANCHOR_END: {
 			return Math::floor(p_range-p_val);
 		} break;
-		case ANCHOR_RATIO: {
-			return Math::floor(p_range*p_val);
-		} break;
 		case ANCHOR_CENTER: {
-		    return Math::floor((p_range/2)-p_val);
+			return Math::floor((p_range/2)-p_val);
 		} break;
 	}
 	return 0;
@@ -2565,10 +2480,16 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("drop_data",PropertyInfo(Variant::VECTOR2,"pos"),PropertyInfo(Variant::NIL,"data")));
 
 	ADD_GROUP("Anchor","anchor_");
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_left", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_top", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_right", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_bottom", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_BOTTOM );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_left", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_top", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_right", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_bottom", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_BOTTOM );
+
+	ADD_GROUP("Margin","margin_");
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_left", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_top", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_right", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_BOTTOM );
 
 	ADD_GROUP("Rect","rect_");
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_pos"),_SCS("get_pos") );
@@ -2576,6 +2497,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect_rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("set_rotation_deg"),_SCS("get_rotation_deg") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect_scale"), _SCS("set_scale"),_SCS("get_scale") );
+
 
 	ADD_GROUP("Hint","hint_");
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
@@ -2598,7 +2520,6 @@ void Control::_bind_methods() {
 
 	BIND_CONSTANT( ANCHOR_BEGIN );
 	BIND_CONSTANT( ANCHOR_END );
-	BIND_CONSTANT( ANCHOR_RATIO );
 	BIND_CONSTANT( ANCHOR_CENTER );
 	BIND_CONSTANT( FOCUS_NONE );
 	BIND_CONSTANT( FOCUS_CLICK );

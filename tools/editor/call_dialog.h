@@ -39,6 +39,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
+#if 0
 
 class CallDialogParams;
 
@@ -80,4 +81,5 @@ public:
 
 };
 
+#endif
 #endif

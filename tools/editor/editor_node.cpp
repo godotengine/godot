@@ -2638,12 +2638,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			_set_editing_top_editors(current);
 
 		} break;
-		case OBJECT_CALL_METHOD: {
-
-			editor_data.apply_changes_in_editors();;
-			call_dialog->set_object(current);
-			call_dialog->popup_centered_ratio();
-		} break;
 		case RUN_PLAY: {
 			_menu_option_confirm(RUN_STOP,true);
 			_call_build();
@@ -6346,9 +6340,7 @@ EditorNode::EditorNode() {
 
 
 
-	call_dialog = memnew( CallDialog );
-	call_dialog->hide();
-	gui_base->add_child( call_dialog );
+
 
 
 

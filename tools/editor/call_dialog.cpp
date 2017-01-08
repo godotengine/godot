@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "call_dialog.h"
 
+#if 0
 #include "scene/gui/label.h"
 #include "object_type_db.h"
 #include "print_string.h"
@@ -268,7 +269,6 @@ CallDialog::CallDialog() {
 
 	tree = memnew( Tree );
 
-	tree->set_anchor( MARGIN_RIGHT, ANCHOR_RATIO );
 	tree->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 	tree->set_begin( Point2( 20,50 ) );
 	tree->set_margin(MARGIN_BOTTOM, 44 );
@@ -283,7 +283,7 @@ CallDialog::CallDialog() {
 
 	property_editor->set_anchor_and_margin( MARGIN_RIGHT, ANCHOR_END, 15 );
 	property_editor->set_anchor_and_margin( MARGIN_TOP, ANCHOR_BEGIN, 50 );
-	property_editor->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.55 );
+//	property_editor->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.55 );
 	property_editor->set_anchor_and_margin( MARGIN_BOTTOM, ANCHOR_END, 90 );
 	property_editor->get_scene_tree()->set_hide_root( true );
 	property_editor->hide_top_label();
@@ -296,21 +296,21 @@ CallDialog::CallDialog() {
 	add_child(method_label);
 
 	Label *label = memnew( Label );
-	label->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.53 );
+	//label->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.53 );
 	label->set_anchor_and_margin( MARGIN_TOP, ANCHOR_BEGIN, 25 );
 	label->set_text(TTR("Arguments:"));
 
 	add_child(label);
 
 	return_label = memnew( Label );
-	return_label->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.53 );
+	//return_label->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.53 );
 	return_label->set_anchor_and_margin( MARGIN_TOP, ANCHOR_END, 85 );
 	return_label->set_text(TTR("Return:"));
 
 	add_child(return_label);
 
 	return_value = memnew( LineEdit );
-	return_value->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.55 );
+	//return_value->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.55 );
 	return_value->set_anchor_and_margin( MARGIN_RIGHT, ANCHOR_END, 15 );
 	return_value->set_anchor_and_margin( MARGIN_TOP, ANCHOR_END, 65 );
 
@@ -338,3 +338,4 @@ CallDialog::~CallDialog()
 {
 	memdelete(call_params);
 }
+#endif

@@ -159,7 +159,6 @@ private:
 		OBJECT_COPY_PARAMS,
 		OBJECT_PASTE_PARAMS,
 		OBJECT_UNIQUE_RESOURCES,
-		OBJECT_CALL_METHOD,
 		OBJECT_REQUEST_HELP,
 		RUN_PLAY,
 
@@ -287,7 +286,7 @@ private:
 
 	CreateDialog *create_dialog;
 
-	CallDialog *call_dialog;
+//	CallDialog *call_dialog;
 	ConfirmationDialog *confirmation;
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *open_recent_confirmation;
