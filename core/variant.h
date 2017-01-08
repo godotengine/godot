@@ -141,7 +141,7 @@ private:
 	union {
 
 		bool _bool;
-		int _int;
+		int64_t _int;
 		double _real;
 		Matrix32 *_matrix32;
 		AABB* _aabb;

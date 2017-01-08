@@ -147,6 +147,7 @@ public:
 	int hex_to_int(bool p_with_prefix = true) const;
 	int to_int() const;
 
+	int64_t hex_to_int64(bool p_with_prefix = true) const;
 	int64_t to_int64() const;
 	static int to_int(const char* p_str, int p_len=-1);
 	static double to_double(const char* p_str);

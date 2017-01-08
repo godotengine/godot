@@ -731,14 +731,14 @@ void GDTokenizerText::_advance() {
 
 					INCPOS(str.length());
 					if (hexa_found) {
-						int val = str.hex_to_int();
+						int64_t val = str.hex_to_int64();
 						_make_constant(val);
 					} else if (period_found || exponent_found) {
-						real_t val = str.to_double();
+						double val = str.to_double();
 						//print_line("*%*%*%*% to convert: "+str+" result: "+rtos(val));
 						_make_constant(val);
 					} else {
-						int val = str.to_int();
+						int64_t val = str.to_int64();
 						_make_constant(val);
 
 					}

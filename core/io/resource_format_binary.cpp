@@ -68,6 +68,8 @@ enum {
 	VARIANT_VECTOR3_ARRAY=35,
 	VARIANT_COLOR_ARRAY=36,
 	VARIANT_VECTOR2_ARRAY=37,
+	VARIANT_INT64=40,
+	VARIANT_DOUBLE=41,
 
 	IMAGE_ENCODING_EMPTY=0,
 	IMAGE_ENCODING_RAW=1,
@@ -116,9 +118,17 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 			r_v=int(f->get_32());
 		} break;
+		case VARIANT_INT64: {
+
+			r_v=int64_t(f->get_64());
+		} break;
 		case VARIANT_REAL: {
 
 			r_v=f->get_real();
+		} break;
+		case VARIANT_DOUBLE: {
+
+			r_v=f->get_double();
 		} break;
 		case VARIANT_STRING: {
 
@@ -1416,15 +1426,33 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 		} break;
 		case Variant::INT: {
 
-			f->store_32(VARIANT_INT);
-			int val=p_property;
-			f->store_32(val);
+			int64_t val = p_property;
+			if (val>0x7FFFFFFF || val < -0x80000000) {
+				f->store_32(VARIANT_INT64);
+				f->store_64(val);
+
+			} else {
+				f->store_32(VARIANT_INT);
+				int val=p_property;
+				f->store_32(int32_t(val));
+
+			}
+
 		} break;
 		case Variant::REAL: {
 
-			f->store_32(VARIANT_REAL);
-			real_t val=p_property;
-			f->store_real(val);
+
+			double d = p_property;
+			float fl = d;
+			if (double(fl)!=d) {
+				f->store_32(VARIANT_DOUBLE);
+				f->store_double(d);
+			} else {
+
+				f->store_32(VARIANT_REAL);
+				f->store_real(fl);
+
+			}
 
 		} break;
 		case Variant::STRING: {

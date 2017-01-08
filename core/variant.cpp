@@ -1467,7 +1467,7 @@ Variant::operator double() const {
 
 		case NIL: return 0;
 		case BOOL: return _data._bool ? 1.0 : 0.0;
-		case INT: return (float)_data._int;
+		case INT: return (double)_data._int;
 		case REAL: return _data._real;
 		case STRING: return operator String().to_double();
 		default: {
@@ -1504,8 +1504,8 @@ Variant::operator String() const {
 
 		case NIL: return "Null";
 		case BOOL: return _data._bool ? "True" : "False";
-		case INT: return String::num(_data._int);
-		case REAL: return String::num(_data._real);
+		case INT: return itos(_data._int);
+		case REAL: return rtos(_data._real);
 		case STRING: return *reinterpret_cast<const String*>(_data._mem);
 		case VECTOR2: return "("+operator Vector2()+")";
 		case RECT2: return "("+operator Rect2()+")";

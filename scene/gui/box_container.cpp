@@ -280,7 +280,7 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew( Control );
-	c->set_mouse_filter(MOUSE_FILTER_PASS);
+	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
 
 	if (vertical)
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
