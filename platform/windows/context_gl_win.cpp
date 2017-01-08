@@ -40,7 +40,6 @@
 //
 //
 
-#define WINVER 0x0500
 #include "context_gl_win.h"
 
 //#include "drivers/opengl/glwrapper.h"

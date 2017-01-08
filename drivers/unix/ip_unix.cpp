@@ -37,19 +37,13 @@
   #ifndef AI_ADDRCONFIG
     #define AI_ADDRCONFIG 0x00000400
   #endif
- #ifdef UWP_ENABLED
   #include <ws2tcpip.h>
   #include <winsock2.h>
   #include <windows.h>
   #include <stdio.h>
- #else
-  #define WINVER 0x0600
-  #include <ws2tcpip.h>
-  #include <winsock2.h>
-  #include <windows.h>
-  #include <stdio.h>
-  #include <iphlpapi.h>
- #endif
+  #ifndef UWP_ENABLED
+    #include <iphlpapi.h>
+  #endif
 #else
  #include <netdb.h>
  #ifdef ANDROID_ENABLED

@@ -207,6 +207,10 @@ def build_res_file(target, source, env):
 def configure(env):
 
     env.Append(CPPPATH=['#platform/windows'])
+
+    # Targeted Windows version: Vista (and later)
+    env.Append(CPPFLAGS=['-D_WIN32_WINNT=0x0600'])
+
     env['is_mingw'] = False
     if (os.name == "nt" and os.getenv("VCINSTALLDIR")):
         # build using visual studio

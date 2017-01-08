@@ -677,7 +677,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			print_line("input lang change");
 		} break;
 
-		#if WINVER >= 0x0700 // for windows 7
+		#if WINVER >= 0x0601 // for windows 7
 		case WM_TOUCH: {
 
 			BOOL bHandled = FALSE;
