@@ -150,7 +150,7 @@ TODO.
 ## opus
 
 - Upstream: https://opus-codec.org
-- Version: 1.1.3 (opus) and 0.7 (opusfile)
+- Version: 1.1.3 (opus) and 0.8 (opusfile)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

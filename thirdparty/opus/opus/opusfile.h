@@ -1713,11 +1713,11 @@ int op_pcm_seek(OggOpusFile *_of,ogg_int64_t _pcm_offset) OP_ARG_NONNULL(1);
    These downmix multichannel files to two channels, so they can always return
     samples in the same format for every link in a chained file.
 
-   If the rest of your audio processing chain can handle floating point, those
-    routines should be preferred, as floating point output avoids introducing
-    clipping and other issues which might be avoided entirely if, e.g., you
-    scale down the volume at some other stage.
-   However, if you intend to direct consume 16-bit samples, the conversion in
+   If the rest of your audio processing chain can handle floating point, the
+    floating-point routines should be preferred, as they prevent clipping and
+    other issues which might be avoided entirely if, e.g., you scale down the
+    volume at some other stage.
+   However, if you intend to consume 16-bit samples directly, the conversion in
     <tt>libopusfile</tt> provides noise-shaping dithering and, if compiled
     against <tt>libopus</tt>&nbsp;1.1 or later, soft-clipping prevention.
 
@@ -1770,26 +1770,35 @@ int op_pcm_seek(OggOpusFile *_of,ogg_int64_t _pcm_offset) OP_ARG_NONNULL(1);
                       #OP_DEC_FORMAT_FLOAT.
    \param _li        The index of the link from which this packet was decoded.
    \return A non-negative value on success, or a negative value on error.
-           The error codes should be the same as those returned by
+           Any error codes should be the same as those returned by
             opus_multistream_decode() or opus_multistream_decode_float().
+           Success codes are as follows:
    \retval 0                   Decoding was successful.
                                The application has filled the buffer with
                                 exactly <code>\a _nsamples*\a
                                 _nchannels</code> samples in the requested
                                 format.
    \retval #OP_DEC_USE_DEFAULT No decoding was done.
-                               <tt>libopusfile</tt> should decode normally
-                                instead.*/
+                               <tt>libopusfile</tt> should do the decoding
+                                by itself instead.*/
 typedef int (*op_decode_cb_func)(void *_ctx,OpusMSDecoder *_decoder,void *_pcm,
  const ogg_packet *_op,int _nsamples,int _nchannels,int _format,int _li);
 
 /**Sets the packet decode callback function.
-   This is called once for each packet that needs to be decoded.
+   If set, this is called once for each packet that needs to be decoded.
+   This can be used by advanced applications to do additional processing on the
+    compressed or uncompressed data.
+   For example, an application might save the final entropy coder state for
+    debugging and testing purposes, or it might apply additional filters
+    before the downmixing, dithering, or soft-clipping performed by
+    <tt>libopusfile</tt>, so long as these filters do not introduce any
+    latency.
+
    A call to this function is no guarantee that the audio will eventually be
     delivered to the application.
-   Some or all of the data from the packet may be discarded (i.e., at the
-    beginning or end of a link, or after a seek), however the callback is
-    required to provide all of it.
+   <tt>libopusfile</tt> may discard some or all of the decoded audio data
+    (i.e., at the beginning or end of a link, or after a seek), however the
+    callback is still required to provide all of it.
    \param _of        The \c OggOpusFile on which to set the decode callback.
    \param _decode_cb The callback function to call.
                      This may be <code>NULL</code> to disable calling the
