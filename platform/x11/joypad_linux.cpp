@@ -27,7 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-//author: Andreas Haas <hondres,  liugam3@gmail.com>
 #ifdef JOYDEV_ENABLED
 
 #include "joypad_linux.h"
@@ -49,7 +48,7 @@
 static const char* ignore_str = "/dev/input/js";
 #endif
 
-joypad_linux::Joypad::Joypad() {
+JoypadLinux::Joypad::Joypad() {
 	fd = -1;
 	dpad = 0;
 	devpath = "";
@@ -58,7 +57,7 @@ joypad_linux::Joypad::Joypad() {
 	}
 }
 
-joypad_linux::Joypad::~Joypad() {
+JoypadLinux::Joypad::~Joypad() {
 
 	for (int i = 0; i < MAX_ABS; i++) {
 		if (abs_info[i]) {
@@ -67,7 +66,7 @@ joypad_linux::Joypad::~Joypad() {
 	}
 }
 
-void joypad_linux::Joypad::reset() {
+void JoypadLinux::Joypad::reset() {
 	dpad        = 0;
 	fd          = -1;
 
@@ -80,7 +79,7 @@ void joypad_linux::Joypad::reset() {
 	}
 }
 
-joypad_linux::joypad_linux(InputDefault *in)
+JoypadLinux::JoypadLinux(InputDefault *in)
 {
 	exit_udev = false;
 	input = in;
@@ -88,7 +87,7 @@ joypad_linux::joypad_linux(InputDefault *in)
 	joy_thread = Thread::create(joy_thread_func, this);
 }
 
-joypad_linux::~joypad_linux() {
+JoypadLinux::~JoypadLinux() {
 	exit_udev = true;
 	Thread::wait_to_finish(joy_thread);
 	memdelete(joy_thread);
@@ -96,16 +95,16 @@ joypad_linux::~joypad_linux() {
 	close_joypad();
 }
 
-void joypad_linux::joy_thread_func(void *p_user) {
+void JoypadLinux::joy_thread_func(void *p_user) {
 
 	if (p_user) {
-		joypad_linux* joy = (joypad_linux*) p_user;
+		JoypadLinux* joy = (JoypadLinux*) p_user;
 		joy->run_joypad_thread();
 	}
 	return;
 }
 
-void joypad_linux::run_joypad_thread() {
+void JoypadLinux::run_joypad_thread() {
 #ifdef UDEV_ENABLED
 	udev *_udev = udev_new();
 	ERR_FAIL_COND(!_udev);
@@ -118,7 +117,7 @@ void joypad_linux::run_joypad_thread() {
 }
 
 #ifdef UDEV_ENABLED
-void joypad_linux::enumerate_joypads(udev *p_udev) {
+void JoypadLinux::enumerate_joypads(udev *p_udev) {
 
 	udev_enumerate *enumerate;
 	udev_list_entry *devices, *dev_list_entry;
@@ -150,7 +149,7 @@ void joypad_linux::enumerate_joypads(udev *p_udev) {
 	udev_enumerate_unref(enumerate);
 }
 
-void joypad_linux::monitor_joypads(udev *p_udev) {
+void JoypadLinux::monitor_joypads(udev *p_udev) {
 
 	udev_device *dev = NULL;
 	udev_monitor *mon = udev_monitor_new_from_netlink(p_udev, "udev");
@@ -204,7 +203,7 @@ void joypad_linux::monitor_joypads(udev *p_udev) {
 }
 #endif
 
-void joypad_linux::monitor_joypads() {
+void JoypadLinux::monitor_joypads() {
 
 	while (!exit_udev) {
 		joy_mutex->lock();
@@ -220,7 +219,7 @@ void joypad_linux::monitor_joypads() {
 	}
 }
 
-int joypad_linux::get_free_joy_slot() const {
+int JoypadLinux::get_free_joy_slot() const {
 
 	for (int i = 0; i < JOYPADS_MAX; i++) {
 
@@ -229,7 +228,7 @@ int joypad_linux::get_free_joy_slot() const {
 	return -1;
 }
 
-int joypad_linux::get_joy_from_path(String p_path) const {
+int JoypadLinux::get_joy_from_path(String p_path) const {
 
 	for (int i = 0; i < JOYPADS_MAX; i++) {
 
@@ -240,7 +239,7 @@ int joypad_linux::get_joy_from_path(String p_path) const {
 	return -2;
 }
 
-void joypad_linux::close_joypad(int p_id) {
+void JoypadLinux::close_joypad(int p_id) {
 	if (p_id == -1) {
 		for (int i=0; i<JOYPADS_MAX; i++) {
 
@@ -273,7 +272,7 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void joypad_linux::setup_joypad_properties(int p_id) {
+void JoypadLinux::setup_joypad_properties(int p_id) {
 
 	Joypad* joy = &joypads[p_id];
 
@@ -328,7 +327,7 @@ void joypad_linux::setup_joypad_properties(int p_id) {
 	}
 }
 
-void joypad_linux::open_joypad(const char *p_path) {
+void JoypadLinux::open_joypad(const char *p_path) {
 
 	int joy_num = get_free_joy_slot();
 	int fd = open(p_path, O_RDWR | O_NONBLOCK);
@@ -401,7 +400,7 @@ void joypad_linux::open_joypad(const char *p_path) {
 	}
 }
 
-void joypad_linux::joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp)
+void JoypadLinux::joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp)
 {
 	Joypad& joy = joypads[p_id];
 	if (!joy.force_feedback || joy.fd == -1 || p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
@@ -433,7 +432,7 @@ void joypad_linux::joypad_vibration_start(int p_id, float p_weak_magnitude, floa
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-void joypad_linux::joypad_vibration_stop(int p_id, uint64_t p_timestamp)
+void JoypadLinux::joypad_vibration_stop(int p_id, uint64_t p_timestamp)
 {
 	Joypad& joy = joypads[p_id];
 	if (!joy.force_feedback || joy.fd == -1 || joy.ff_effect_id == -1) {
@@ -448,7 +447,7 @@ void joypad_linux::joypad_vibration_stop(int p_id, uint64_t p_timestamp)
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-InputDefault::JoyAxis joypad_linux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+InputDefault::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
@@ -468,7 +467,7 @@ InputDefault::JoyAxis joypad_linux::axis_correct(const input_absinfo *p_abs, int
 	return jx;
 }
 
-uint32_t joypad_linux::process_joypads(uint32_t p_event_id) {
+uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 
 	if (joy_mutex->try_lock() != OK) {
 		return p_event_id;

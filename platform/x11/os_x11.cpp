@@ -458,7 +458,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	input = memnew( InputDefault );
 #ifdef JOYDEV_ENABLED
-	joypad = memnew( joypad_linux(input));
+	joypad = memnew( JoypadLinux(input));
 #endif
 	_ensure_data_dir();
 }
