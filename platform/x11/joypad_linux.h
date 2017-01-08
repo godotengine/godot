@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad_linux.h                                                     */
+/*  joypad_linux.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -30,6 +30,7 @@
 //author: Andreas Haas <hondres,  liugam3@gmail.com>
 #ifndef JOYPAD_LINUX_H
 #define JOYPAD_LINUX_H
+
 #ifdef JOYDEV_ENABLED
 #include "main/input_default.h"
 #include "os/thread.h"

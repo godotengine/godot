@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joypad_osx.cpp                                                    */
+/*  joypad_osx.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "joypad_osx.h"
+
 #include <machine/endian.h>
 
 #define GODOT_JOY_LOOP_RUN_MODE CFSTR("GodotJoypad")
