@@ -90,10 +90,11 @@ void BaseButton::_gui_input(InputEvent p_event) {
 
 					emit_signal("button_up");
 
-					if (status.press_attempt && status.pressing_inside) {
+/* this is pointless		if (status.press_attempt && status.pressing_inside) {
 //						released();
 						emit_signal("released");
 					}
+*/
 					status.press_attempt=false;
 				}
 				update();
@@ -485,7 +486,6 @@ void BaseButton::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_toggled",PropertyInfo(Variant::BOOL,"pressed")));
 
 	ADD_SIGNAL( MethodInfo("pressed" ) );
-	ADD_SIGNAL( MethodInfo("released" ) );
 	ADD_SIGNAL( MethodInfo("button_up") );
 	ADD_SIGNAL( MethodInfo("button_down") );
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
