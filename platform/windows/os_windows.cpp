@@ -30,7 +30,7 @@
 #include "os_windows.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
-#include "os/memory_pool_dynamic_static.h"
+
 #include "drivers/windows/thread_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/mutex_windows.h"
@@ -47,7 +47,7 @@
 #include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
 #include "lang_table.h"
-#include "os/memory_pool_dynamic_prealloc.h"
+
 #include "globals.h"
 #include "io/marshalls.h"
 #include "joystick.h"
@@ -166,7 +166,6 @@ const char * OS_Windows::get_audio_driver_name(int p_driver) const {
 	return AudioDriverManagerSW::get_driver(p_driver)->get_name();
 }
 
-static MemoryPoolDynamic *mempool_dynamic=NULL;
 
 void OS_Windows::initialize_core() {
 
@@ -194,14 +193,6 @@ void OS_Windows::initialize_core() {
 	StreamPeerWinsock::make_default();
 	PacketPeerUDPWinsock::make_default();
 
-#if 1
-	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
-#else
-#define DYNPOOL_SIZE 4*1024*1024
-	void * buffer = malloc( DYNPOOL_SIZE );
-	mempool_dynamic = memnew( MemoryPoolDynamicPrealloc(buffer,DYNPOOL_SIZE) );
-
-#endif
 
 	   // We need to know how often the clock is updated
 	if( !QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second) )
@@ -1302,9 +1293,6 @@ void OS_Windows::finalize() {
 void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
-
-	if (mempool_dynamic)
-		memdelete( mempool_dynamic );
 
 
 	TCPServerWinsock::cleanup();
