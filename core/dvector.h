@@ -127,15 +127,30 @@ class PoolVector {
 
 		MemoryPool::alloc_mutex->unlock();
 
+
 		if (MemoryPool::memory_pool) {
 
 
 		} else {
 			alloc->mem = memalloc( alloc->size );
-			copymem( alloc->mem, old_alloc->mem, alloc->size );
 		}
 
-		if (old_alloc->refcount.unref()) {
+		{
+			Write w;
+			w._ref(alloc);
+			Read r;
+			r._ref(old_alloc);
+
+			int cur_elements = alloc->size/sizeof(T);
+			T*dst = (T*)w.ptr();
+			const T*src = (const T*)r.ptr();
+			for(int i=0;i<cur_elements;i++) {
+				memnew_placement(&dst[i],T(src[i]));
+			}
+		}
+
+
+		if (old_alloc->refcount.unref()==true) {
 			//this should never happen but..
 
 #ifdef DEBUG_ENABLED
@@ -144,12 +159,24 @@ class PoolVector {
 			MemoryPool::alloc_mutex->unlock();
 #endif
 
+			{
+				Write w;
+				w._ref(old_alloc);
+
+				int cur_elements = old_alloc->size/sizeof(T);
+				T*elems = (T*)w.ptr();
+				for(int i=0;i<cur_elements;i++) {
+					elems[i].~T();
+				}
+
+			}
 
 			if (MemoryPool::memory_pool) {
 				//resize memory pool
 				//if none, create
 				//if some resize
 			} else {
+
 
 				memfree( old_alloc->mem );
 				old_alloc->mem=NULL;
@@ -190,7 +217,7 @@ class PoolVector {
 		if (!alloc)
 			return;
 
-		if (!alloc->refcount.unref()) {
+		if (alloc->refcount.unref()==false) {
 			alloc=NULL;
 			return;
 		}
@@ -199,7 +226,8 @@ class PoolVector {
 
 		{
 			int cur_elements = alloc->size/sizeof(T);
-			Write w;
+			Write w = write();
+
 			for (int i=0;i<cur_elements;i++) {
 
 				w[i].~T();
@@ -585,7 +613,7 @@ Error PoolVector<T>::resize(int p_size) {
 	} else {
 
 		{
-			Write w;
+			Write w = write();
 			for (int i=p_size;i<cur_elements;i++) {
 
 				w[i].~T();

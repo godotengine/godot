@@ -265,6 +265,92 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 			tokenizer->advance();
 			expr=subexpr;
+		} else if (tokenizer->get_token()==GDTokenizer::TK_DOLLAR) {
+			tokenizer->advance();
+
+			String path;
+
+			bool need_identifier=true;
+			bool done=false;
+
+			while(!done) {
+
+				switch(tokenizer->get_token()) {
+					case GDTokenizer::TK_CURSOR: {
+						completion_cursor=StringName();
+						completion_type=COMPLETION_GET_NODE;
+						completion_class=current_class;
+						completion_function=current_function;
+						completion_line=tokenizer->get_token_line();
+						completion_cursor=path;
+						completion_argument=0;
+						completion_block=current_block;
+						completion_found=true;
+						tokenizer->advance();
+					} break;
+					case GDTokenizer::TK_CONSTANT: {
+
+						if (!need_identifier)
+							break;
+
+						if (tokenizer->get_token_constant().get_type()!=Variant::STRING) {
+							_set_error("Expected string constant or identifier after '$' or '/'.");
+							return NULL;
+						}
+
+						path+=String(tokenizer->get_token_constant());
+						tokenizer->advance();
+
+					} break;
+					case GDTokenizer::TK_IDENTIFIER: {
+
+						if (!need_identifier)
+							break;
+
+						path+=String(tokenizer->get_token_identifier());
+						tokenizer->advance();
+						need_identifier=false;
+
+					} break;
+					case GDTokenizer::TK_OP_DIV: {
+
+						if (need_identifier)
+							break;
+
+						path+="/";
+						tokenizer->advance();
+						need_identifier=true;
+
+					} break;
+					default: {
+						done=true;
+						break;
+					}
+				}
+			}
+
+			if (path=="") {
+				_set_error("Path expected after $.");
+				return NULL;
+
+			}
+
+			OperatorNode *op = alloc_node<OperatorNode>();
+			op->op=OperatorNode::OP_CALL;
+
+			op->arguments.push_back(alloc_node<SelfNode>());
+
+			IdentifierNode *funcname = alloc_node<IdentifierNode>();
+			funcname->name="get_node";
+
+			op->arguments.push_back(funcname);
+
+			ConstantNode *nodepath = alloc_node<ConstantNode>();
+			nodepath->value = NodePath(StringName(path));
+			op->arguments.push_back(nodepath);
+
+			expr=op;
+
 		} else if (tokenizer->get_token()==GDTokenizer::TK_CURSOR) {
 			tokenizer->advance();
 			continue; //no point in cursor in the middle of expression

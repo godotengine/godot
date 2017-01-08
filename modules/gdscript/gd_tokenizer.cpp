@@ -460,6 +460,9 @@ void GDTokenizerText::_advance() {
 			case ':':
 				_make_token(TK_COLON); //for methods maybe but now useless.
 				break;
+			case '$':
+				_make_token(TK_DOLLAR); //for the get_node() shortener
+				break;
 			case '^': {
 				if (GETCHAR(1)=='=') {
 					_make_token(TK_OP_ASSIGN_BIT_XOR);
