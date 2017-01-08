@@ -2,6 +2,7 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# 8-bit Pixel <dawdejw@gmail.com>, 2016.
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
 # Daniel Lewan <vision360.daniel@gmail.com>, 2016.
 # Kajetan Kuszczyński <kajetanek99@gmail.com>, 2016.
@@ -14,8 +15,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-10-29 09:04+0000\n"
-"Last-Translator: Kajetan Kuszczyński <kajetanek99@gmail.com>\n"
+"PO-Revision-Date: 2016-12-29 16:37+0000\n"
+"Last-Translator: 8-bit Pixel <dawdejw@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -23,25 +24,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Niepoprawny typ argumentu funkcji convert(), użyj stałej TYPE_*."
+msgstr "Niepoprawny typ argumentu funkcji convert(), użyj stałych TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Brak miejsca dla bajtów dekodujących, lub zły format."
+msgstr ""
+"Niewystarczająca ilość bajtów dla bajtów dekodujących, albo zły format."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr "argument kroku jest zerowy!"
+msgstr "argument kroku wynosi zero!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
-msgstr "Nie jest to skrypt z instancją"
+msgstr "To nie jest skrypt z instancją"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
@@ -6372,7 +6374,7 @@ msgstr ""
 
 #: tools/editor/reparent_dialog.cpp tools/editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr ""
+msgstr "Zmień nadrzędny"
 
 #: tools/editor/resources_dock.cpp
 msgid "Create New Resource"
@@ -6438,15 +6440,16 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
-msgstr ""
+msgstr "Nie można wykonać tej operacji na głównym węźle drzewa."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Move Nodes In Parent"
-msgstr ""
+msgstr "Przenieść węzły do węzła nadrzędnego."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
@@ -6462,7 +6465,7 @@ msgstr "Ta operacja nie może zostać wykonana bez sceny."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
-msgstr ""
+msgstr "Tej operacji nie można wykonać na dziedziczącej scenie."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save New Scene As.."
@@ -6489,14 +6492,17 @@ msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
 msgstr ""
+"Nie udało się zapisać sceny. Najprawdopodobniej pewne zależności nie są "
+"spełnione."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error saving scene."
 msgstr "Błąd podczas zapisywania sceny."
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Error duplicating scene to save it."
-msgstr ""
+msgstr "Błąd duplikowania sceny przy zapisywaniu."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Edit Groups"
@@ -6574,11 +6580,11 @@ msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
-msgstr ""
+msgstr "Przełącz widoczność Spatial"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle CanvasItem Visible"
-msgstr ""
+msgstr "Przełącz widoczność CanvasItem"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Instance:"
@@ -6598,15 +6604,16 @@ msgstr "Drzewo sceny (węzły):"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Editable Children"
-msgstr ""
+msgstr "Edytowalne dzieci"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Load As Placeholder"
-msgstr ""
+msgstr "Załaduj jako zastępczy"
 
 #: tools/editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "Discard Instancing"
-msgstr ""
+msgstr "Odrzuć instancjonowanie"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Open in Editor"

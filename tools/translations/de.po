@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-09-30 03:13+0000\n"
+"PO-Revision-Date: 2016-12-10 04:27+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -182,9 +182,8 @@ msgid "Editing Signal:"
 msgstr "bearbeite Signal:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Expression"
-msgstr "Typ ändern"
+msgstr "Ausdruck ändern"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
@@ -235,40 +234,36 @@ msgid "Add Setter Property"
 msgstr "Setter-Eigenschaft hinzufügen"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "Animation kopieren"
+msgstr "Bedingung"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Sequenz"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Switch"
-msgstr "Tonhöhe"
+msgstr "Schalter"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterator"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "Während"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Return"
-msgstr "Rückgabe:"
+msgstr "Rückgabe"
 
 #: modules/visual_script/visual_script_editor.cpp tools/editor/call_dialog.cpp
 msgid "Call"
 msgstr "Aufruf"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Get"
-msgstr "Setzen"
+msgstr "Abfragen"
 
 #: modules/visual_script/visual_script_editor.cpp
 #: tools/editor/property_editor.cpp
@@ -411,87 +406,87 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
-msgstr ""
+msgstr "gerade gedrückt"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
-msgstr ""
+msgstr "gerade losgelassen"
 
 #: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
 msgstr ""
+"Zertifikat-Datei konnte nicht gelesen werden. Sind Pfad und Passwort beide "
+"korrekt?"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Error creating the signature object."
-msgstr "Fehler beim Schreiben des Projekt-PCK!"
+msgstr "Fehler beim erstellen des Signaturobjekts."
 
 #: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "Fehler beim erstellen der Paketsignatur."
 
 #: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"Keine Exportvorlagen gefunden.\n"
+"Laden Sie Exportvorlagen ggf. von der offiziellen Webseite herunter und "
+"installieren Sie diese."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "Selbst konfiguriertes Debug-Paket nicht gefunden."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
-msgstr ""
+msgstr "Selbst konfiguriertes Release-Paket nicht gefunden."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid unique name."
-msgstr "Ungültiger Name."
+msgstr "Ungültiger einzigartiger Name."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Ungültige Schriftgröße."
+msgstr "Ungültige Produkt-GUID."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid publisher GUID."
-msgstr "Ungültiger Pfad"
+msgstr "Ungültige Verleger-GUID."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid background color."
-msgstr "Eigene Schriftart-Quelle ist ungültig."
+msgstr "Ungültige Hintergrundfarbe."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Ungültige Abmessungen des Store-Logos (sollte 50x50 sein)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Ungültige Abmessungen für 44x44-Quadratlogo (sollte 44x44 sein)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Ungültige Abmessungen für 71x71-Quadratlogo (sollte 71x71 sein)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Ungültige Abmessungen für 150x150-Quadratlogo (sollte 150x150 sein)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Ungültige Abmessungen für 310x310-Quadratlogo (sollte 310x310 sein)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Ungültige Abmessungen für 310x150-Breitlogo (sollte 310x150 sein)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Ungültige Abmessungen für Startbildschirm (sollte 620x300 sein)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -688,9 +683,8 @@ msgstr ""
 "eines Navigation-Nodes sein. Es liefert nur Navigationsdaten."
 
 #: scene/3d/remote_transform.cpp
-#, fuzzy
 msgid "Path property must point to a valid Spatial node to work."
-msgstr "Die Pfad-Eigenschaft muss auf ein gültiges Particles2D-Node verweisen."
+msgstr "Die Pfad-Eigenschaft muss auf ein gültiges Spatial-Node verweisen."
 
 #: scene/3d/scenario_fx.cpp
 msgid ""
@@ -1468,6 +1462,8 @@ msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"Zielmethode nicht gefunden! Bitte gültige Methode angeben oder Skript an "
+"Zielnode anhängen."
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -2520,9 +2516,8 @@ msgid "Editor Layout"
 msgstr "Editorlayout"
 
 #: tools/editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle Fullscreen"
-msgstr "Vollbildmodus"
+msgstr "Vollbildmodus umschalten"
 
 #: tools/editor/editor_node.cpp
 msgid "Install Export Templates"
@@ -2550,7 +2545,7 @@ msgstr "Änderungen aktualisieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "Update-Anzeigerad deaktivieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Inspector"
@@ -3135,9 +3130,8 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "Node-Name:"
+msgstr "Name des Root-Node:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -3984,9 +3978,8 @@ msgid "Clear Bones"
 msgstr "Knochen entfernen"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show Bones"
-msgstr "Knochen erstellen"
+msgstr "Knochen anzeigen"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -4050,13 +4043,12 @@ msgid "Snap (Pixels):"
 msgstr "Einrasten (Pixel):"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add %s"
-msgstr "Alle hinzufügen"
+msgstr "%s hinzufügen"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "%s hinzufügen…"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -4084,15 +4076,17 @@ msgid "This operation requires a single selected node."
 msgstr "Diese Aktion benötigt ein einzelnes ausgewähltes Node."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change default type"
-msgstr "Ändere Standardwert"
+msgstr "Standardtyp ändern"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Ziehen + Umschalt: Node in gleicher Hierarchie einfügen\n"
+"Ziehen + Alt: Nodetyp ändern"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -4773,9 +4767,8 @@ msgid "Close Docs"
 msgstr "Dokumentation schließen"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Close All"
-msgstr "Schließen"
+msgstr "Alle schließen"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 #: tools/editor/plugins/script_text_editor.cpp
@@ -4890,9 +4883,8 @@ msgstr ""
 "Szene geladen ist"
 
 #: tools/editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Pick Color"
-msgstr "Farbe"
+msgstr "Farbe auswählen"
 
 #: tools/editor/plugins/script_text_editor.cpp tools/editor/scene_tree_dock.cpp
 msgid "Move Up"
@@ -5270,9 +5262,8 @@ msgid "Insert Animation Key"
 msgstr "Animations-Schlüsselbild einfügen"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Focus Origin"
-msgstr "Zeige Ursprung"
+msgstr "Auf Ursprung zentrieren"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
@@ -5540,9 +5531,8 @@ msgid "Remove Item"
 msgstr "Entferne Element"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Theme"
-msgstr "Motiv speichern"
+msgstr "Motiv"
 
 #: tools/editor/plugins/theme_editor_plugin.cpp
 msgid "Add Class Items"
@@ -6363,9 +6353,8 @@ msgid "Assign"
 msgstr "Zuweisen"
 
 #: tools/editor/property_editor.cpp
-#, fuzzy
 msgid "New Script"
-msgstr "Nächstes Skript"
+msgstr "Neues Skript"
 
 #: tools/editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -6583,14 +6572,12 @@ msgid "Change Type"
 msgstr "Typ ändern"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach Script"
 msgstr "Skript hinzufügen"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear Script"
-msgstr "Erstelle Skript"
+msgstr "Skript leeren"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6617,14 +6604,12 @@ msgstr ""
 "keine Root-Node existiert."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script for the selected node."
-msgstr "Erzeuge ein neues Skript für das ausgewählte Node."
+msgstr "Ein neues oder existierendes Skript zum ausgewählten Node hinzufügen."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear a script for the selected node."
-msgstr "Erzeuge ein neues Skript für das ausgewählte Node."
+msgstr "Leere ein Skript für das ausgewählte Node."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid ""
@@ -6728,9 +6713,8 @@ msgid "Could not create script in filesystem."
 msgstr "Skript konnte nicht im Dateisystem erstellt werden."
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading script from %s"
-msgstr "Fehler beim Laden der Szene von %s"
+msgstr "Fehler beim Laden des Skripts von %s"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
@@ -6749,14 +6733,12 @@ msgid "Invalid extension"
 msgstr "Ungültige Erweiterung"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script"
-msgstr "Erstelle Skript"
+msgstr "Neues Skript erstellen"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Load existing script"
-msgstr "Nächstes Skript"
+msgstr "Lade bestehendes Skript"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6767,9 +6749,8 @@ msgid "Built-In Script"
 msgstr "Built-In-Skript"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Attach Node Script"
-msgstr "Erstelle Node-Skript"
+msgstr "Node-Skript hinzufügen"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"

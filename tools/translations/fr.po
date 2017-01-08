@@ -8,6 +8,7 @@
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016.
 # Marc <marc.gilleron@gmail.com>, 2016.
+# Nicolas Lehuen <nicolas@lehuen.com>, 2016.
 # Omicron <tritonic.dev@gmail.com>, 2016.
 # Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
 # rafeu <duchainer@gmail.com>, 2016.
@@ -19,8 +20,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-18 10:46+0000\n"
-"Last-Translator: Omicron <tritonic.dev@gmail.com>\n"
+"PO-Revision-Date: 2016-12-15 22:36+0000\n"
+"Last-Translator: Nicolas Lehuen <nicolas@lehuen.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -4743,7 +4744,7 @@ msgstr "Erreur d'importation"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr "Improter un thème"
+msgstr "Importer un thème"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."

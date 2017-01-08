@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-09-01 19:29+0000\n"
+"PO-Revision-Date: 2016-11-22 16:41+0000\n"
 "Last-Translator: Swyter <swyterzone@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.8\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -235,8 +235,9 @@ msgid "Condition"
 msgstr "Copiar animación"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Sequence"
-msgstr ""
+msgstr "Secuencia"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -245,11 +246,11 @@ msgstr "Altura"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterador"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "Mientras"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -409,16 +410,19 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
-msgstr ""
+msgstr "se presione"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
-msgstr ""
+msgstr "se levante"
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
 msgstr ""
+"No se ha podido leer el archivo de certificación. ¿Seguro que la ruta y "
+"contraseña son correctas?"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -426,22 +430,27 @@ msgid "Error creating the signature object."
 msgstr "¡Error al escribir el PCK de proyecto!"
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "Se produjo un error al firmar el paquete."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"No se han encontrado plantillas de exportación.\n"
+"Tienes que descargar e instalarlas para continuar."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "No se ha encontrado ningún paquete de depuración personalizado."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
-msgstr ""
+msgstr "No se ha encontrado ningún paquete final personalizado."
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -464,32 +473,45 @@ msgid "Invalid background color."
 msgstr "El origen personalizado de tipografía no es correcto."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "El logo de la tienda no es del tamaño adecuado (debe ser de 50x50)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
 msgstr ""
+"El logo cuadrado de 44x44 no es del tamaño adecuado (debe ser de 44x44)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
 msgstr ""
+"El logo cuadrado de 71x71 no es del tamaño adecuado (debe ser de 71x71)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
 msgstr ""
+"El logo cuadrado de 150x150 no es del tamaño adecuado (debe ser de 150x150)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
 msgstr ""
+"El logo cuadrado de 310x310 no es del tamaño adecuado (debe ser de 310x310)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
 msgstr ""
+"El logo ancho de 310x150 no es del tamaño adecuado (debe ser de 310x150)."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
+"El tamaño de la imagen de arranque no es correcto (debe ser de 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -1455,10 +1477,13 @@ msgid "Method in target Node must be specified!"
 msgstr "¡Debes establecer un método en el nodo seleccionado!"
 
 #: tools/editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"No se ha encontrado el método objetivo. Especifica un método válido o ancla "
+"un script en el nodo objetivo."
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -2542,8 +2567,9 @@ msgid "Update Changes"
 msgstr "Actualizar cambios"
 
 #: tools/editor/editor_node.cpp
+#, fuzzy
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "Desactivar la animación al actualizar"
 
 #: tools/editor/editor_node.cpp
 msgid "Inspector"
@@ -4055,8 +4081,9 @@ msgid "Add %s"
 msgstr "Añadir todos"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Adding %s..."
-msgstr ""
+msgstr "Añadiendo %s..."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -4089,10 +4116,13 @@ msgid "Change default type"
 msgstr "Cambiar Valor por Defecto"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Arrastrar y soltar + Mayús: Añadir nodo como hermano\n"
+"Arrastrar y soltar + Alt: Cambiar tipo de nodo"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp

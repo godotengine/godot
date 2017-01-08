@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-29 12:53+0000\n"
+"PO-Revision-Date: 2016-11-22 20:27+0000\n"
 "Last-Translator: Dario Bonfanti <bonfi.96@hotmail.it>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -3127,9 +3127,8 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "Nome Nodo:"
+msgstr "Nome Nodo di Root:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -4040,13 +4039,12 @@ msgid "Snap (Pixels):"
 msgstr "Snap (Pixels):"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add %s"
-msgstr "Aggiungi Tutti"
+msgstr "Aggiungi %s"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Aggiungendo %s..."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -4074,15 +4072,16 @@ msgid "This operation requires a single selected node."
 msgstr "Questa operazione richiede un solo nodo selezionato."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change default type"
-msgstr "Cambia Valore di Default"
+msgstr "Cambia tipo di default"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Premi & Trascina + Shift : Aggiungi nodo come fratello\n"
+"Premi & Trascina + Alt : Cambia tipo del nodo"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -6565,14 +6564,12 @@ msgid "Change Type"
 msgstr "Cambia Tipo"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach Script"
-msgstr "Aggiungi Script"
+msgstr "Allega Script"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear Script"
-msgstr "Crea Script"
+msgstr "Svuota Script"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6599,14 +6596,12 @@ msgstr ""
 "root esiste."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script for the selected node."
-msgstr "Crea un nuovo script per il nodo selezionato."
+msgstr "Allega un nuovo script o uno esistente al nodo selezionato."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear a script for the selected node."
-msgstr "Crea un nuovo script per il nodo selezionato."
+msgstr "Svuota uno script per il nodo selezionato."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid ""
@@ -6709,9 +6704,8 @@ msgid "Could not create script in filesystem."
 msgstr "Impossibile creare script in filesystem."
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading script from %s"
-msgstr "Errore caricamento scena da %s"
+msgstr "Errore caricamento script da %s"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
@@ -6730,14 +6724,12 @@ msgid "Invalid extension"
 msgstr "Estensione Invalida"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script"
-msgstr "Crea Script"
+msgstr "Crea nuovo script"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Load existing script"
-msgstr "Script successivo"
+msgstr "Carica script esistente"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6748,9 +6740,8 @@ msgid "Built-In Script"
 msgstr "Built-In Script"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Attach Node Script"
-msgstr "Crea Script Nodo"
+msgstr "Allega Script Nodo"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"

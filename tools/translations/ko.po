@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-29 00:43+0000\n"
+"PO-Revision-Date: 2016-11-23 14:38+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -383,7 +383,7 @@ msgstr ""
 #: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certficate file. Are the path and password both correct?"
-msgstr ""
+msgstr "인증서 파일을 읽을 수 없습니다. 경로와 비밀번호가 정확합니까?"
 
 #: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
@@ -391,21 +391,23 @@ msgstr "서명 오브젝트 생성중 에러."
 
 #: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "패키지 서명을 생성하는 중 에러가 발생했습니다."
 
 #: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"내보내기 템플릿을 찾을 수 없습니다.\n"
+"내보내기 템플릿을 다운로드하여 설치하십시요."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "커스텀 디버그 패키지를 찾을 수 없습니다."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
-msgstr ""
+msgstr "커스텀 릴리즈 패키지를 찾을 수 없습니다."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid unique name."
@@ -425,31 +427,32 @@ msgstr "유요하지 않은 배경 색상."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "유효하지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "유효하지 않은 로고 이미지 크기입니다 (44x44 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "유효하지 않은 로고 이미지 크기입니다 (71x71 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "유효하지 않은 로고 이미지 크기입니다 (150x150 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "유효하지 않은 로고 이미지 크기입니다 (310x310 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "유효하지 않은 로고 이미지 크기입니다 (310x150 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
+"유효하지 않은 스플래쉬 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
@@ -1179,7 +1182,7 @@ msgstr "최적화"
 
 #: tools/editor/animation_editor.cpp
 msgid "Select an AnimationPlayer from the Scene Tree to edit animations."
-msgstr ""
+msgstr "애니메이션 편집을 위해서는 씬에서 AnimationPlayer를 선택해야 합니다."
 
 #: tools/editor/animation_editor.cpp
 msgid "Key"
@@ -1386,7 +1389,7 @@ msgstr "축소"
 
 #: tools/editor/code_editor.cpp
 msgid "Reset Zoom"
-msgstr ""
+msgstr "줌 리셋"
 
 #: tools/editor/code_editor.cpp tools/editor/script_editor_debugger.cpp
 msgid "Line:"
@@ -1405,6 +1408,8 @@ msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"타겟 메소드를 찾을 수 없습니다! 유효한 메소드를 지정하거나, 타겟 노드에 스크"
+"립트를 추가하세요."
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -2473,7 +2478,7 @@ msgstr "변경사항만 갱신"
 
 #: tools/editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "업데이트 스피너 비활성화"
 
 #: tools/editor/editor_node.cpp
 msgid "Inspector"
@@ -3056,9 +3061,8 @@ msgid "Auto"
 msgstr "자동"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "노드 이름:"
+msgstr "루트 노드 이름:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -3966,13 +3970,12 @@ msgid "Snap (Pixels):"
 msgstr "스냅 (픽셀):"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add %s"
-msgstr "모두 추가"
+msgstr "%s 추가"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "%s 추가중..."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -4000,15 +4003,16 @@ msgid "This operation requires a single selected node."
 msgstr "이 작업은 하나의 선택된 노드를 필요로 합니다."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change default type"
-msgstr "기본값 변경"
+msgstr "기본 타입 변경"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"드래그 & 드랍 + 쉬프트 : 형제 노드로 추가\n"
+"드래그 & 드랍 + 알트 : 노드 타입 변경"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -5983,7 +5987,7 @@ msgstr ""
 msgid ""
 "You are about the scan %s folders for existing Godot projects. Do you "
 "confirm?"
-msgstr ""
+msgstr "%s 에서 기존 Godot 프로젝트들을 스캔하려고 합니다. 진행하시겠습니까?"
 
 #: tools/editor/project_manager.cpp
 msgid "Project Manager"
@@ -6479,14 +6483,12 @@ msgid "Change Type"
 msgstr "타입 변경"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach Script"
-msgstr "스크립트 추가"
+msgstr "스크립트 붙이기"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear Script"
-msgstr "스크립트 만들기"
+msgstr "스크립트 제거"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6512,14 +6514,12 @@ msgstr ""
 "씬 파일을 노드로 추가합니다. 루트 노드가 없을 경우, 상속씬으로 만들어집니다."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script for the selected node."
-msgstr "선택된 노드에 새로운 스크립트를 생성합니다."
+msgstr "선택된 노드에 새로운 스크립트를 생성하거나 기존 스크립트를 로드합니다."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear a script for the selected node."
-msgstr "선택된 노드에 새로운 스크립트를 생성합니다."
+msgstr "선택된 노드의 스크립트를 제거합니다."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid ""
@@ -6622,9 +6622,8 @@ msgid "Could not create script in filesystem."
 msgstr "파일 시스템에 스크립트를 생성할 수 없습니다."
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading script from %s"
-msgstr "'%s' 로부터 씬 로딩 중 에러"
+msgstr "'%s' 스크립트 로딩 중 에러"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
@@ -6643,14 +6642,12 @@ msgid "Invalid extension"
 msgstr "확장자가 유요하지 않음"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script"
-msgstr "스크립트 만들기"
+msgstr "새 스크립트 만들기"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Load existing script"
-msgstr "다음 스크립트"
+msgstr "기존 스크립트 로드하기"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6661,9 +6658,8 @@ msgid "Built-In Script"
 msgstr "내장 스크립트"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Attach Node Script"
-msgstr "노드 스크립트 생성"
+msgstr "노드 스크립트 붙이기"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"
