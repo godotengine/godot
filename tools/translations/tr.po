@@ -606,10 +606,6 @@ msgstr ""
 "VisibilityEnable2D düğümü düzenlenmiş sahne kökü doğrudan ata olarak "
 "kullanıldığında çalışır."
 
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance, bir BakedLight kaynağı içermez."
-
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -1850,6 +1846,11 @@ msgid "Constants:"
 msgstr "Sabitler:"
 
 #: tools/editor/editor_help.cpp
+#, fuzzy
+msgid "Property Description:"
+msgstr "Kısa Açıklama:"
+
+#: tools/editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "Yöntem Açıklaması:"
 
@@ -2861,6 +2862,7 @@ msgstr "Kaynak Doku(lar):"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr "Amaçlanan Dizeç Yolu :"
 
@@ -4916,18 +4918,6 @@ msgstr "Dizeye Git.."
 msgid "Contextual Help"
 msgstr "Bağlamsal Yardım"
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr "Başucu"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr "Bölümlenme"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr "Aydınlatma"
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr "Basamaklı Sabiti Değiştir"
@@ -5690,6 +5680,71 @@ msgid "No exporter for platform '%s' yet."
 msgstr "Şu anda '%s' ortamı için dışa aktarıcı yok."
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "Yeni Kaynak Oluştur"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "Uygun ad"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "Geçiş"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "Durum:"
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "Gizyazı:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "Geçerli damgalar:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "Yeni ad:"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "Katıştır"
 
@@ -6156,10 +6211,6 @@ msgid "Erase Input Action Event"
 msgstr "Giriş Eylemi Olayını Sil"
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr "Sürdürmeyi Aç/Kapat"
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr "Ayarları kaydetme sorunu."
 
@@ -6334,10 +6385,6 @@ msgstr "Açık"
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr "Özellikleri:"
-
-#: tools/editor/property_editor.cpp
-msgid "Global"
-msgstr "Bütünsel"
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
@@ -6565,13 +6612,6 @@ msgstr "Seçili düğüm için yeni veya mevcut bir betik iliştir."
 #: tools/editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
 msgstr "Seçilen düğüm için betik temizle."
-
-#: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"Ata gizli olduğu için bu öğe görünür hale getirilemiyor. Önce atayı göster."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6868,6 +6908,36 @@ msgstr "Işın Şeklinin Uzunluğunu Değiştir"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Bildirim Kapsamını Değiştir"
+
+#: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Change Probe Extents"
+msgstr "Bildirim Kapsamını Değiştir"
+
+#~ msgid "BakedLightInstance does not contain a BakedLight resource."
+#~ msgstr "BakedLightInstance, bir BakedLight kaynağı içermez."
+
+#~ msgid "Vertex"
+#~ msgstr "Başucu"
+
+#~ msgid "Fragment"
+#~ msgstr "Bölümlenme"
+
+#~ msgid "Lighting"
+#~ msgstr "Aydınlatma"
+
+#~ msgid "Toggle Persisting"
+#~ msgstr "Sürdürmeyi Aç/Kapat"
+
+#~ msgid "Global"
+#~ msgstr "Bütünsel"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Ata gizli olduğu için bu öğe görünür hale getirilemiyor. Önce atayı "
+#~ "göster."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "

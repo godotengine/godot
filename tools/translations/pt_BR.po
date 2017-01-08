@@ -610,10 +610,6 @@ msgstr ""
 "VisibilityEnable2D funciona melhor quando usado como filho direto da raiz da "
 "cena atualmente editada."
 
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance não contém um recurso BakedLight ."
-
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -1853,6 +1849,11 @@ msgid "Constants:"
 msgstr "Constantes:"
 
 #: tools/editor/editor_help.cpp
+#, fuzzy
+msgid "Property Description:"
+msgstr "Descrição breve:"
+
+#: tools/editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "Descrição do Método:"
 
@@ -2866,6 +2867,7 @@ msgstr "Textura(s) de Origem:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr "Caminho Destino:"
 
@@ -4932,18 +4934,6 @@ msgstr "Ir para linha..."
 msgid "Contextual Help"
 msgstr "Ajuda Contextual"
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr "Vértice"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr "Fragmento"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr "Iluminação"
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr "Alterar Constante Escalar"
@@ -5708,6 +5698,71 @@ msgid "No exporter for platform '%s' yet."
 msgstr "Ainda não há exportador para a plataforma \"%s\"."
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "Criar Novo Recurso"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "Nome Válido"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "Transição"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "Status:"
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "Senha:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "Caracteres válidos:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "Novo nome:"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "Incluir"
 
@@ -6174,10 +6229,6 @@ msgid "Erase Input Action Event"
 msgstr "Apagar Evento Ação de Entrada"
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr "Alternar Persistência"
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr "Erro ao salvar as configurações."
 
@@ -6353,10 +6404,6 @@ msgstr "Ativo"
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr "Propriedades:"
-
-#: tools/editor/property_editor.cpp
-msgid "Global"
-msgstr "Global"
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
@@ -6592,14 +6639,6 @@ msgstr "Criar um script novo para o nó selecionado."
 #, fuzzy
 msgid "Clear a script for the selected node."
 msgstr "Criar um script novo para o nó selecionado."
-
-#: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"Este item não pode se tornar visível porque o pai está escondido. Reexiba o "
-"pai primeiro."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6900,6 +6939,36 @@ msgstr "Mudar o tamanho do Shape Ray"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Alterar a Extensão do Notificador"
+
+#: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Change Probe Extents"
+msgstr "Alterar a Extensão do Notificador"
+
+#~ msgid "BakedLightInstance does not contain a BakedLight resource."
+#~ msgstr "BakedLightInstance não contém um recurso BakedLight ."
+
+#~ msgid "Vertex"
+#~ msgstr "Vértice"
+
+#~ msgid "Fragment"
+#~ msgstr "Fragmento"
+
+#~ msgid "Lighting"
+#~ msgstr "Iluminação"
+
+#~ msgid "Toggle Persisting"
+#~ msgstr "Alternar Persistência"
+
+#~ msgid "Global"
+#~ msgstr "Global"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Este item não pode se tornar visível porque o pai está escondido. Reexiba "
+#~ "o pai primeiro."
 
 #~ msgid "File exists"
 #~ msgstr "O arquivo existe"

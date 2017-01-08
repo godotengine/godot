@@ -609,10 +609,6 @@ msgstr ""
 "VisibilityEnable2D работает наилучшим образом при использовании корня "
 "редактируемой сцены, как прямого родителя."
 
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance не содержит BakedLight ресурс."
-
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -1855,6 +1851,11 @@ msgid "Constants:"
 msgstr "Константы:"
 
 #: tools/editor/editor_help.cpp
+#, fuzzy
+msgid "Property Description:"
+msgstr "Краткое описание:"
+
+#: tools/editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "Описание методов:"
 
@@ -2868,6 +2869,7 @@ msgstr "Исходные текстура(ы):"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr "Целевой путь:"
 
@@ -4928,18 +4930,6 @@ msgstr "Перейти к строке.."
 msgid "Contextual Help"
 msgstr "Контекстная справка"
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr "Вертекс"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr "Фрагмент"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr "Освещение"
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr "Изменена числовая константа"
@@ -5702,6 +5692,71 @@ msgid "No exporter for platform '%s' yet."
 msgstr "Платформа '%s' пока не поддерживается."
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "Создать новый ресурс"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "Допустимое имя"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "Переход"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "Статус:"
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "Пароль:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "Допустимые символы:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "Новое имя:"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "Включить"
 
@@ -6165,10 +6220,6 @@ msgid "Erase Input Action Event"
 msgstr "Удалить действие"
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr "Параметр изменён"
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr "Ошибка сохранения настроек."
 
@@ -6343,10 +6394,6 @@ msgstr "Вкл"
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr "Свойства:"
-
-#: tools/editor/property_editor.cpp
-msgid "Global"
-msgstr "Глобальные"
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
@@ -6577,14 +6624,6 @@ msgstr "Прикрепить новый или существующий скри
 #: tools/editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
 msgstr "Убрать скрипт у выбранного узла."
-
-#: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"Этот объект не может быть отображён, потому что его родитель скрыт. "
-"Отобразите сначала родительский узел."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6881,6 +6920,36 @@ msgstr "Изменена длинна луча"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
+
+#: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Change Probe Extents"
+msgstr "Изменены границы уведомителя"
+
+#~ msgid "BakedLightInstance does not contain a BakedLight resource."
+#~ msgstr "BakedLightInstance не содержит BakedLight ресурс."
+
+#~ msgid "Vertex"
+#~ msgstr "Вертекс"
+
+#~ msgid "Fragment"
+#~ msgstr "Фрагмент"
+
+#~ msgid "Lighting"
+#~ msgstr "Освещение"
+
+#~ msgid "Toggle Persisting"
+#~ msgstr "Параметр изменён"
+
+#~ msgid "Global"
+#~ msgstr "Глобальные"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Этот объект не может быть отображён, потому что его родитель скрыт. "
+#~ "Отобразите сначала родительский узел."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "

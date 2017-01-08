@@ -584,10 +584,6 @@ msgstr ""
 "VisibilityEnable2D는 편집 씬의 루트의 하위 노드로 추가할 때 가장 잘 동작합니"
 "다."
 
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance가 BakedLight 리소스를 가지고 있지 않습니다."
-
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -1823,6 +1819,11 @@ msgid "Constants:"
 msgstr "상수:"
 
 #: tools/editor/editor_help.cpp
+#, fuzzy
+msgid "Property Description:"
+msgstr "간단한 설명:"
+
+#: tools/editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "함수 설명:"
 
@@ -2830,6 +2831,7 @@ msgstr "소스 텍스쳐:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr "대상 경로:"
 
@@ -4880,18 +4882,6 @@ msgstr "라인으로 이동.."
 msgid "Contextual Help"
 msgstr "도움말 보기"
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr "버텍스"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr "프래그먼트"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr "라이팅"
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr "Scalar 상수 변경"
@@ -5654,6 +5644,71 @@ msgid "No exporter for platform '%s' yet."
 msgstr "'%s' 플랫폼으로 내보내기 위한 템플릿 파일이 없습니다."
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "새 리소스 만들기"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "유요한 이름"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "전환"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "상태:"
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "암호:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "유효한 문자:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "새 이름:"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "포함"
 
@@ -6114,10 +6169,6 @@ msgid "Erase Input Action Event"
 msgstr "입력 액션 이벤트 삭제"
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr "지속 전환"
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr "설정 저장 중 에러."
 
@@ -6292,10 +6343,6 @@ msgstr "사용"
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr "속성:"
-
-#: tools/editor/property_editor.cpp
-msgid "Global"
-msgstr "Global"
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
@@ -6520,14 +6567,6 @@ msgstr "선택된 노드에 새로운 스크립트를 생성하거나 기존 스
 #: tools/editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
 msgstr "선택된 노드의 스크립트를 제거합니다."
-
-#: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"부모 노드가 숨겨져 있기 때문에 이 항목을 보이도록 만들 수 없습니다. 부모 노드"
-"를 먼저 보이도록 하세요."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6824,6 +6863,36 @@ msgstr "Ray Shape 길이 변경"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Notifier 범위 변경"
+
+#: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Change Probe Extents"
+msgstr "Notifier 범위 변경"
+
+#~ msgid "BakedLightInstance does not contain a BakedLight resource."
+#~ msgstr "BakedLightInstance가 BakedLight 리소스를 가지고 있지 않습니다."
+
+#~ msgid "Vertex"
+#~ msgstr "버텍스"
+
+#~ msgid "Fragment"
+#~ msgstr "프래그먼트"
+
+#~ msgid "Lighting"
+#~ msgstr "라이팅"
+
+#~ msgid "Toggle Persisting"
+#~ msgstr "지속 전환"
+
+#~ msgid "Global"
+#~ msgstr "Global"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "부모 노드가 숨겨져 있기 때문에 이 항목을 보이도록 만들 수 없습니다. 부모 "
+#~ "노드를 먼저 보이도록 하세요."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "

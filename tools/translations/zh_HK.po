@@ -562,10 +562,6 @@ msgid ""
 "as parent."
 msgstr ""
 
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
-
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -1780,6 +1776,10 @@ msgid "Constants:"
 msgstr ""
 
 #: tools/editor/editor_help.cpp
+msgid "Property Description:"
+msgstr ""
+
+#: tools/editor/editor_help.cpp
 msgid "Method Description:"
 msgstr ""
 
@@ -2760,6 +2760,7 @@ msgstr ""
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr ""
 
@@ -4799,18 +4800,6 @@ msgstr ""
 msgid "Contextual Help"
 msgstr ""
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr ""
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr ""
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr ""
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr ""
@@ -5574,6 +5563,70 @@ msgid "No exporter for platform '%s' yet."
 msgstr ""
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "新增資料夾"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "有效名稱"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "本地化"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "State"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "密碼:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "有效字符:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "有效名稱"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "包括"
 
@@ -6033,10 +6086,6 @@ msgid "Erase Input Action Event"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr ""
 
@@ -6211,10 +6260,6 @@ msgstr ""
 
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
-msgstr ""
-
-#: tools/editor/property_editor.cpp
-msgid "Global"
 msgstr ""
 
 #: tools/editor/property_editor.cpp
@@ -6441,12 +6486,6 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
-msgstr ""
-
-#: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
 msgstr ""
 
 #: tools/editor/scene_tree_editor.cpp
@@ -6748,6 +6787,10 @@ msgstr ""
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
+msgstr ""
+
+#: tools/editor/spatial_editor_gizmos.cpp
+msgid "Change Probe Extents"
 msgstr ""
 
 #~ msgid "File exists"

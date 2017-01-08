@@ -579,10 +579,6 @@ msgid ""
 "as parent."
 msgstr "VisibilityEnable2D类型的节点用于场景的根节点才能获得最好的效果。"
 
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance未包含BakedLight资源。"
-
 #: scene/3d/body_shape.cpp
 msgid ""
 "CollisionShape only serves to provide a collision shape to a CollisionObject "
@@ -1802,6 +1798,11 @@ msgid "Constants:"
 msgstr "常量:"
 
 #: tools/editor/editor_help.cpp
+#, fuzzy
+msgid "Property Description:"
+msgstr "简介:"
+
+#: tools/editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "方法描述:"
 
@@ -2794,6 +2795,7 @@ msgstr "源贴图:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr "目标路径:"
 
@@ -4838,18 +4840,6 @@ msgstr "前往行.."
 msgid "Contextual Help"
 msgstr "搜索光标位置"
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr "顶点"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr "片段"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr "光照"
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr "修改Scalar常量系数"
@@ -5612,6 +5602,71 @@ msgid "No exporter for platform '%s' yet."
 msgstr "没有针对'%s'平台的导出模板。"
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "创建资源"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "名称可用"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "过渡"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "状态"
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "密码"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "字符合法:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "新名称:"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "包含"
 
@@ -6071,10 +6126,6 @@ msgid "Erase Input Action Event"
 msgstr "移除输入事件"
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr "保存设置出错。"
 
@@ -6249,10 +6300,6 @@ msgstr "启用"
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr "属性:"
-
-#: tools/editor/property_editor.cpp
-msgid "Global"
-msgstr "全局"
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
@@ -6475,12 +6522,6 @@ msgstr "为选中节点创建或设置脚本"
 #: tools/editor/scene_tree_dock.cpp
 msgid "Clear a script for the selected node."
 msgstr "清除选中节点的脚本"
-
-#: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr "无法显示此节点，请先取消隐藏其父节点。"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6777,6 +6818,31 @@ msgstr "更改射线形状长度"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "更改通知器级别"
+
+#: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Change Probe Extents"
+msgstr "更改通知器级别"
+
+#~ msgid "BakedLightInstance does not contain a BakedLight resource."
+#~ msgstr "BakedLightInstance未包含BakedLight资源。"
+
+#~ msgid "Vertex"
+#~ msgstr "顶点"
+
+#~ msgid "Fragment"
+#~ msgstr "片段"
+
+#~ msgid "Lighting"
+#~ msgstr "光照"
+
+#~ msgid "Global"
+#~ msgstr "全局"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr "无法显示此节点，请先取消隐藏其父节点。"
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "
