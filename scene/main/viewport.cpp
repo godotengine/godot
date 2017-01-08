@@ -2086,8 +2086,8 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 		} break;
 		case InputEvent::ACTION:
-		case InputEvent::JOYSTICK_BUTTON:
-		case InputEvent::JOYSTICK_MOTION:
+		case InputEvent::JOYPAD_BUTTON:
+		case InputEvent::JOYPAD_MOTION:
 		case InputEvent::KEY: {
 
 

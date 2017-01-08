@@ -301,7 +301,7 @@ public:
 
 		}
 
-		if (p_event.type == InputEvent::JOYSTICK_MOTION) {
+		if (p_event.type == InputEvent::JOYPAD_MOTION) {
 
 			if (p_event.joy_motion.axis == 0) {
 

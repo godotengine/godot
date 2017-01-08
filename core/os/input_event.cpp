@@ -61,10 +61,10 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 				&& mouse_button.button_index == p_event.mouse_button.button_index
 				&& mouse_button.button_mask == p_event.mouse_button.button_mask
 				&& key.mod == p_event.key.mod;
-		case JOYSTICK_MOTION:
+		case JOYPAD_MOTION:
 			return joy_motion.axis == p_event.joy_motion.axis
 				&& joy_motion.axis_value == p_event.joy_motion.axis_value;
-		case JOYSTICK_BUTTON:
+		case JOYPAD_BUTTON:
 			return joy_button.pressed == p_event.joy_button.pressed
 				&& joy_button.button_index == p_event.joy_button.button_index
 				&& joy_button.pressure == p_event.joy_button.pressure;
@@ -155,14 +155,14 @@ InputEvent::operator String() const {
 			return str;
 
 		} break;
-		case JOYSTICK_MOTION: {
-			str+= "Event: JoystickMotion ";
+		case JOYPAD_MOTION: {
+			str+= "Event: JoypadMotion ";
 			str=str+"Axis: "+itos(joy_motion.axis)+" Value: " +rtos(joy_motion.axis_value);
 			return str;
 
 		} break;
-		case JOYSTICK_BUTTON: {
-			str+= "Event: JoystickButton ";
+		case JOYPAD_BUTTON: {
+			str+= "Event: JoypadButton ";
 			str=str+"Pressed: "+itos(joy_button.pressed)+" Index: " +itos(joy_button.button_index)+" pressure "+rtos(joy_button.pressure);
 			return str;
 
@@ -203,9 +203,9 @@ bool InputEvent::is_pressed() const {
 
 		case KEY: return key.pressed;
 		case MOUSE_BUTTON: return mouse_button.pressed;
-		case JOYSTICK_BUTTON: return joy_button.pressed;
+		case JOYPAD_BUTTON: return joy_button.pressed;
 		case SCREEN_TOUCH: return screen_touch.pressed;
-		case JOYSTICK_MOTION: return ABS(joy_motion.axis_value) > 0.5;
+		case JOYPAD_MOTION: return ABS(joy_motion.axis_value) > 0.5;
 		case ACTION: return action.pressed;
 		default: {}
 	}

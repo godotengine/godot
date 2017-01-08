@@ -642,7 +642,7 @@ struct JAndroidPointerEvent {
 
 static List<JAndroidPointerEvent> pointer_events;
 static List<InputEvent> key_events;
-static List<OS_Android::JoystickEvent> joy_events;
+static List<OS_Android::JoypadEvent> joy_events;
 static bool initialized=false;
 static Mutex *input_mutex=NULL;
 static Mutex *suspend_mutex=NULL;
@@ -1090,7 +1090,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv * env, jo
 
 	while (joy_events.size()) {
 
-		OS_Android::JoystickEvent event = joy_events.front()->get();
+		OS_Android::JoypadEvent event = joy_events.front()->get();
 		os_android->process_joy_event(event);
 
 		joy_events.pop_front();
@@ -1415,7 +1415,7 @@ static unsigned int android_get_keysym(unsigned int p_code) {
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv * env, jobject obj, jint p_device, jint p_button, jboolean p_pressed) {
 
-	OS_Android::JoystickEvent jevent;
+	OS_Android::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = OS_Android::JOY_EVENT_BUTTON;
 	jevent.index = p_button;
@@ -1428,7 +1428,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joybutton(JNIEnv * en
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv * env, jobject obj, jint p_device, jint p_axis, jfloat p_value) {
 
-	OS_Android::JoystickEvent jevent;
+	OS_Android::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = OS_Android::JOY_EVENT_AXIS;
 	jevent.index = p_axis;
@@ -1440,7 +1440,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyaxis(JNIEnv * env,
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv * env, jobject obj, jint p_device, jint p_hat_x, jint p_hat_y) {
-	OS_Android::JoystickEvent jevent;
+	OS_Android::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = OS_Android::JOY_EVENT_HAT;
 	int hat = 0;

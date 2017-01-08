@@ -3848,7 +3848,7 @@ void VisualScriptDeconstruct::_bind_methods() {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
 
-	String iet="None,Key,MouseMotion,MouseButton,JoystickMotion,JoystickButton,ScreenTouch,ScreenDrag,Action";
+	String iet="None,Key,MouseMotion,MouseButton,JoypadMotion,JoypadButton,ScreenTouch,ScreenDrag,Action";
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_ENUM,argt),_SCS("set_deconstruct_type"),_SCS("get_deconstruct_type"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"input_type",PROPERTY_HINT_ENUM,iet),_SCS("set_deconstruct_input_type"),_SCS("get_deconstruct_input_type"));

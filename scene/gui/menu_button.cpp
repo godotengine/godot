@@ -34,7 +34,7 @@
 void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
 
-	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYSTICK_BUTTON)) {
+	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYPAD_BUTTON)) {
 
 		if (!get_parent() || !is_visible() || is_disabled())
 			return;

@@ -871,9 +871,9 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 
 
 		} break;
-		case InputEvent::JOYSTICK_MOTION: {
+		case InputEvent::JOYPAD_MOTION: {
 
-			InputEventJoystickMotion jm = filters[p_port].joy_motion;
+			InputEventJoypadMotion jm = filters[p_port].joy_motion;
 
 			text="JoyMotion Axis "+itos(jm.axis>>1);
 			if (jm.axis&1)
@@ -882,8 +882,8 @@ String VisualScriptInputFilter::get_output_sequence_port_text(int p_port) const 
 				text+=" < "+rtos(-jm.axis_value);
 
 		} break;
-		case InputEvent::JOYSTICK_BUTTON: {
-			InputEventJoystickButton jb = filters[p_port].joy_button;
+		case InputEvent::JOYPAD_BUTTON: {
+			InputEventJoypadButton jb = filters[p_port].joy_button;
 
 			text="JoyButton "+itos(jb.button_index);
 			if (jb.pressed)
@@ -985,13 +985,13 @@ bool VisualScriptInputFilter::_set(const StringName& p_name, const Variant& p_va
 		if (what=="type") {
 			filters[idx]=InputEvent();
 			filters[idx].type=InputEvent::Type(int(p_value));
-			if (filters[idx].type==InputEvent::JOYSTICK_MOTION) {
+			if (filters[idx].type==InputEvent::JOYPAD_MOTION) {
 				filters[idx].joy_motion.axis_value=0.5; //for treshold
 			} else if (filters[idx].type==InputEvent::KEY) {
 				filters[idx].key.pressed=true; //put these as true to make it more user friendly
 			} else if (filters[idx].type==InputEvent::MOUSE_BUTTON) {
 				filters[idx].mouse_button.pressed=true;
-			} else if (filters[idx].type==InputEvent::JOYSTICK_BUTTON) {
+			} else if (filters[idx].type==InputEvent::JOYPAD_BUTTON) {
 				filters[idx].joy_button.pressed=true;
 			} else if (filters[idx].type==InputEvent::SCREEN_TOUCH) {
 				filters[idx].screen_touch.pressed=true;
@@ -1108,7 +1108,7 @@ bool VisualScriptInputFilter::_set(const StringName& p_name, const Variant& p_va
 				return true;
 
 			} break;
-			case InputEvent::JOYSTICK_MOTION: {
+			case InputEvent::JOYPAD_MOTION: {
 
 				if (what=="axis") {
 					filters[idx].joy_motion.axis=int(p_value)<<1|filters[idx].joy_motion.axis;
@@ -1124,7 +1124,7 @@ bool VisualScriptInputFilter::_set(const StringName& p_name, const Variant& p_va
 
 
 			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
+			case InputEvent::JOYPAD_BUTTON: {
 
 				if (what=="button_index") {
 					filters[idx].joy_button.button_index=p_value;
@@ -1326,7 +1326,7 @@ bool VisualScriptInputFilter::_get(const StringName& p_name,Variant &r_ret) cons
 				return true;
 
 			} break;
-			case InputEvent::JOYSTICK_MOTION: {
+			case InputEvent::JOYPAD_MOTION: {
 
 				if (what=="axis_index") {
 					r_ret=filters[idx].joy_motion.axis>>1;
@@ -1341,7 +1341,7 @@ bool VisualScriptInputFilter::_get(const StringName& p_name,Variant &r_ret) cons
 
 
 			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
+			case InputEvent::JOYPAD_BUTTON: {
 
 				if (what=="button_index") {
 					r_ret=filters[idx].joy_button.button_index;
@@ -1417,8 +1417,8 @@ static const char* event_type_names[InputEvent::TYPE_MAX]={
 	"Key",
 	"MouseMotion",
 	"MouseButton",
-	"JoystickMotion",
-	"JoystickButton",
+	"JoypadMotion",
+	"JoypadButton",
 	"ScreenTouch",
 	"ScreenDrag",
 	"Action"
@@ -1489,13 +1489,13 @@ void VisualScriptInputFilter::_get_property_list( List<PropertyInfo> *p_list) co
 				p_list->push_back(PropertyInfo(Variant::BOOL,base+"mod_meta"));
 
 			} break;
-			case InputEvent::JOYSTICK_MOTION: {
+			case InputEvent::JOYPAD_MOTION: {
 
 				p_list->push_back(PropertyInfo(Variant::INT,base+"axis_index"));
 				p_list->push_back(PropertyInfo(Variant::INT,base+"mode",PROPERTY_HINT_ENUM,"Min,Max"));
 				p_list->push_back(PropertyInfo(Variant::REAL,base+"treshold",PROPERTY_HINT_RANGE,"0,1,0.01"));
 			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
+			case InputEvent::JOYPAD_BUTTON: {
 				p_list->push_back(PropertyInfo(Variant::INT,base+"button_index"));
 				p_list->push_back(PropertyInfo(Variant::BOOL,base+"pressed"));
 
@@ -1632,10 +1632,10 @@ public:
 
 
 				} break;
-				case InputEvent::JOYSTICK_MOTION: {
+				case InputEvent::JOYPAD_MOTION: {
 
-					InputEventJoystickMotion jm = ie.joy_motion;
-					InputEventJoystickMotion jm2 = event.joy_motion;
+					InputEventJoypadMotion jm = ie.joy_motion;
+					InputEventJoypadMotion jm2 = event.joy_motion;
 
 					int axis = jm.axis>>1;
 
@@ -1656,9 +1656,9 @@ public:
 
 
 				} break;
-				case InputEvent::JOYSTICK_BUTTON: {
-					InputEventJoystickButton jb = ie.joy_button;
-					InputEventJoystickButton jb2 = event.joy_button;
+				case InputEvent::JOYPAD_BUTTON: {
+					InputEventJoypadButton jb = ie.joy_button;
+					InputEventJoypadButton jb2 = event.joy_button;
 
 					if (	jb.button_index==jb2.button_index &&
 						jb.pressed == jb2.pressed

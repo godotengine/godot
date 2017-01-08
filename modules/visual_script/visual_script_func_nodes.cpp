@@ -971,8 +971,8 @@ static const char* event_type_names[InputEvent::TYPE_MAX]={
 	"Key",
 	"MouseMotion",
 	"MouseButton",
-	"JoystickMotion",
-	"JoystickButton",
+	"JoypadMotion",
+	"JoypadButton",
 	"ScreenTouch",
 	"ScreenDrag",
 	"Action"

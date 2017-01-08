@@ -519,7 +519,7 @@ bool OS_JavaScript::main_loop_iterate() {
 
 
 	}
-	process_joysticks();
+	process_joypads();
 	return Main::iteration();
 }
 
@@ -824,7 +824,7 @@ void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) 
 	}
 }
 
-void OS_JavaScript::process_joysticks() {
+void OS_JavaScript::process_joypads() {
 
 	int joy_count = emscripten_get_num_gamepads();
 	for (int i = 0; i < joy_count; i++) {

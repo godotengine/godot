@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_linux.cpp                                                   */
+/*  joypad_linux.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -49,7 +49,7 @@
 static const char* ignore_str = "/dev/input/js";
 #endif
 
-joystick_linux::Joystick::Joystick() {
+joypad_linux::Joypad::Joypad() {
 	fd = -1;
 	dpad = 0;
 	devpath = "";
@@ -58,7 +58,7 @@ joystick_linux::Joystick::Joystick() {
 	}
 }
 
-joystick_linux::Joystick::~Joystick() {
+joypad_linux::Joypad::~Joypad() {
 
 	for (int i = 0; i < MAX_ABS; i++) {
 		if (abs_info[i]) {
@@ -67,7 +67,7 @@ joystick_linux::Joystick::~Joystick() {
 	}
 }
 
-void joystick_linux::Joystick::reset() {
+void joypad_linux::Joypad::reset() {
 	dpad        = 0;
 	fd          = -1;
 
@@ -80,7 +80,7 @@ void joystick_linux::Joystick::reset() {
 	}
 }
 
-joystick_linux::joystick_linux(InputDefault *in)
+joypad_linux::joypad_linux(InputDefault *in)
 {
 	exit_udev = false;
 	input = in;
@@ -88,37 +88,37 @@ joystick_linux::joystick_linux(InputDefault *in)
 	joy_thread = Thread::create(joy_thread_func, this);
 }
 
-joystick_linux::~joystick_linux() {
+joypad_linux::~joypad_linux() {
 	exit_udev = true;
 	Thread::wait_to_finish(joy_thread);
 	memdelete(joy_thread);
 	memdelete(joy_mutex);
-	close_joystick();
+	close_joypad();
 }
 
-void joystick_linux::joy_thread_func(void *p_user) {
+void joypad_linux::joy_thread_func(void *p_user) {
 
 	if (p_user) {
-		joystick_linux* joy = (joystick_linux*) p_user;
-		joy->run_joystick_thread();
+		joypad_linux* joy = (joypad_linux*) p_user;
+		joy->run_joypad_thread();
 	}
 	return;
 }
 
-void joystick_linux::run_joystick_thread() {
+void joypad_linux::run_joypad_thread() {
 #ifdef UDEV_ENABLED
 	udev *_udev = udev_new();
 	ERR_FAIL_COND(!_udev);
-	enumerate_joysticks(_udev);
-	monitor_joysticks(_udev);
+	enumerate_joypads(_udev);
+	monitor_joypads(_udev);
 	udev_unref(_udev);
 #else
-	monitor_joysticks();
+	monitor_joypads();
 #endif
 }
 
 #ifdef UDEV_ENABLED
-void joystick_linux::enumerate_joysticks(udev *p_udev) {
+void joypad_linux::enumerate_joypads(udev *p_udev) {
 
 	udev_enumerate *enumerate;
 	udev_list_entry *devices, *dev_list_entry;
@@ -126,7 +126,7 @@ void joystick_linux::enumerate_joysticks(udev *p_udev) {
 
 	enumerate = udev_enumerate_new(p_udev);
 	udev_enumerate_add_match_subsystem(enumerate,"input");
-	udev_enumerate_add_match_property(enumerate, "ID_INPUT_JOYSTICK", "1");
+	udev_enumerate_add_match_property(enumerate, "ID_INPUT_JOYPAD", "1");
 
 	udev_enumerate_scan_devices(enumerate);
 	devices = udev_enumerate_get_list_entry(enumerate);
@@ -141,7 +141,7 @@ void joystick_linux::enumerate_joysticks(udev *p_udev) {
 			String devnode_str = devnode;
 			if (devnode_str.find(ignore_str) == -1) {
 				joy_mutex->lock();
-				open_joystick(devnode);
+				open_joypad(devnode);
 				joy_mutex->unlock();
 			}
 		}
@@ -150,7 +150,7 @@ void joystick_linux::enumerate_joysticks(udev *p_udev) {
 	udev_enumerate_unref(enumerate);
 }
 
-void joystick_linux::monitor_joysticks(udev *p_udev) {
+void joypad_linux::monitor_joypads(udev *p_udev) {
 
 	udev_device *dev = NULL;
 	udev_monitor *mon = udev_monitor_new_from_netlink(p_udev, "udev");
@@ -188,9 +188,9 @@ void joystick_linux::monitor_joysticks(udev *p_udev) {
 					if (devnode_str.find(ignore_str) == -1) {
 
 						if (action == "add")
-							open_joystick(devnode);
+							open_joypad(devnode);
 						else if (String(action) == "remove")
-							close_joystick(get_joy_from_path(devnode));
+							close_joypad(get_joy_from_path(devnode));
 					}
 				}
 
@@ -204,7 +204,7 @@ void joystick_linux::monitor_joysticks(udev *p_udev) {
 }
 #endif
 
-void joystick_linux::monitor_joysticks() {
+void joypad_linux::monitor_joypads() {
 
 	while (!exit_udev) {
 		joy_mutex->lock();
@@ -212,7 +212,7 @@ void joystick_linux::monitor_joysticks() {
 			char fname[64];
 			sprintf(fname, "/dev/input/event%d", i);
 			if (attached_devices.find(fname) == -1) {
-				open_joystick(fname);
+				open_joypad(fname);
 			}
 		}
 		joy_mutex->unlock();
@@ -220,37 +220,37 @@ void joystick_linux::monitor_joysticks() {
 	}
 }
 
-int joystick_linux::get_free_joy_slot() const {
+int joypad_linux::get_free_joy_slot() const {
 
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
+	for (int i = 0; i < JOYPADS_MAX; i++) {
 
-		if (joysticks[i].fd == -1) return i;
+		if (joypads[i].fd == -1) return i;
 	}
 	return -1;
 }
 
-int joystick_linux::get_joy_from_path(String p_path) const {
+int joypad_linux::get_joy_from_path(String p_path) const {
 
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
+	for (int i = 0; i < JOYPADS_MAX; i++) {
 
-		if (joysticks[i].devpath == p_path) {
+		if (joypads[i].devpath == p_path) {
 			return i;
 		}
 	}
 	return -2;
 }
 
-void joystick_linux::close_joystick(int p_id) {
+void joypad_linux::close_joypad(int p_id) {
 	if (p_id == -1) {
-		for (int i=0; i<JOYSTICKS_MAX; i++) {
+		for (int i=0; i<JOYPADS_MAX; i++) {
 
-			close_joystick(i);
+			close_joypad(i);
 		};
 		return;
 	}
 	else if (p_id < 0) return;
 
-	Joystick &joy = joysticks[p_id];
+	Joypad &joy = joypads[p_id];
 
 	if (joy.fd != -1) {
 
@@ -273,9 +273,9 @@ static String _hex_str(uint8_t p_byte) {
 	return ret;
 }
 
-void joystick_linux::setup_joystick_properties(int p_id) {
+void joypad_linux::setup_joypad_properties(int p_id) {
 
-	Joystick* joy = &joysticks[p_id];
+	Joypad* joy = &joypads[p_id];
 
 	unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
 	unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
@@ -328,7 +328,7 @@ void joystick_linux::setup_joystick_properties(int p_id) {
 	}
 }
 
-void joystick_linux::open_joystick(const char *p_path) {
+void joypad_linux::open_joypad(const char *p_path) {
 
 	int joy_num = get_free_joy_slot();
 	int fd = open(p_path, O_RDWR | O_NONBLOCK);
@@ -349,7 +349,7 @@ void joystick_linux::open_joystick(const char *p_path) {
 		}
 
 		//check if the device supports basic gamepad events, prevents certain keyboards from
-		//being detected as joysticks
+		//being detected as joypads
 		if (!(test_bit(EV_KEY, evbit) && test_bit(EV_ABS, evbit) &&
 		     (test_bit(ABS_X, absbit) || test_bit(ABS_Y, absbit) || test_bit(ABS_HAT0X, absbit) ||
 		      test_bit(ABS_GAS, absbit) || test_bit(ABS_RUDDER, absbit)) &&
@@ -372,12 +372,12 @@ void joystick_linux::open_joystick(const char *p_path) {
 			return;
 		}
 
-		joysticks[joy_num].reset();
+		joypads[joy_num].reset();
 
-		Joystick &joy = joysticks[joy_num];
+		Joypad &joy = joypads[joy_num];
 		joy.fd = fd;
 		joy.devpath = String(p_path);
-		setup_joystick_properties(joy_num);
+		setup_joypad_properties(joy_num);
 		sprintf(uid, "%04x%04x", __bswap_16(inpid.bustype), 0);
 		if (inpid.vendor && inpid.product && inpid.version) {
 
@@ -401,14 +401,14 @@ void joystick_linux::open_joystick(const char *p_path) {
 	}
 }
 
-void joystick_linux::joystick_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp)
+void joypad_linux::joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp)
 {
-	Joystick& joy = joysticks[p_id];
+	Joypad& joy = joypads[p_id];
 	if (!joy.force_feedback || joy.fd == -1 || p_weak_magnitude < 0.f || p_weak_magnitude > 1.f || p_strong_magnitude < 0.f || p_strong_magnitude > 1.f) {
 		return;
 	}
 	if (joy.ff_effect_id != -1) {
-		joystick_vibration_stop(p_id, p_timestamp);
+		joypad_vibration_stop(p_id, p_timestamp);
 	}
 
 	struct ff_effect effect;
@@ -433,9 +433,9 @@ void joystick_linux::joystick_vibration_start(int p_id, float p_weak_magnitude, 
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-void joystick_linux::joystick_vibration_stop(int p_id, uint64_t p_timestamp)
+void joypad_linux::joypad_vibration_stop(int p_id, uint64_t p_timestamp)
 {
-	Joystick& joy = joysticks[p_id];
+	Joypad& joy = joypads[p_id];
 	if (!joy.force_feedback || joy.fd == -1 || joy.ff_effect_id == -1) {
 		return;
 	}
@@ -448,7 +448,7 @@ void joystick_linux::joystick_vibration_stop(int p_id, uint64_t p_timestamp)
 	joy.ff_effect_timestamp = p_timestamp;
 }
 
-InputDefault::JoyAxis joystick_linux::axis_correct(const input_absinfo *p_abs, int p_value) const {
+InputDefault::JoyAxis joypad_linux::axis_correct(const input_absinfo *p_abs, int p_value) const {
 
 	int min = p_abs->minimum;
 	int max = p_abs->maximum;
@@ -468,17 +468,17 @@ InputDefault::JoyAxis joystick_linux::axis_correct(const input_absinfo *p_abs, i
 	return jx;
 }
 
-uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
+uint32_t joypad_linux::process_joypads(uint32_t p_event_id) {
 
 	if (joy_mutex->try_lock() != OK) {
 		return p_event_id;
 	}
-	for (int i=0; i<JOYSTICKS_MAX; i++) {
+	for (int i=0; i<JOYPADS_MAX; i++) {
 
-		if (joysticks[i].fd == -1) continue;
+		if (joypads[i].fd == -1) continue;
 
 		input_event events[32];
-		Joystick* joy = &joysticks[i];
+		Joypad* joy = &joypads[i];
 
 		int len;
 
@@ -539,7 +539,7 @@ uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
 			}
 		}
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {
-			close_joystick(i);
+			close_joypad(i);
 		};
 
 		if (joy->force_feedback) {
@@ -548,9 +548,9 @@ uint32_t joystick_linux::process_joysticks(uint32_t p_event_id) {
 				Vector2 strength = input->get_joy_vibration_strength(i);
 				float duration = input->get_joy_vibration_duration(i);
 				if (strength.x == 0 && strength.y == 0) {
-					joystick_vibration_stop(i, timestamp);
+					joypad_vibration_stop(i, timestamp);
 				} else {
-					joystick_vibration_start(i, strength.x, strength.y, duration, timestamp);
+					joypad_vibration_start(i, strength.x, strength.y, duration, timestamp);
 				}
 			}
 		}

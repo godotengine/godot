@@ -2391,8 +2391,8 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 								"# Key",
 								"# MouseMotion",
 								"# MouseButton",
-								"# JoystickMotion",
-								"# JoystickButton",
+								"# JoypadMotion",
+								"# JoypadButton",
 								"# ScreenTouch",
 								"# ScreenDrag",
 								"# Action"

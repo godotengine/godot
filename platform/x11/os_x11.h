@@ -155,7 +155,7 @@ class OS_X11 : public OS_Unix {
 	InputDefault *input;
 
 #ifdef JOYDEV_ENABLED
-	joystick_linux *joystick;
+	joypad_linux *joypad;
 #endif
 
 #ifdef RTAUDIO_ENABLED

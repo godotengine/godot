@@ -51,7 +51,7 @@
 
 #include "globals.h"
 #include "io/marshalls.h"
-#include "joystick.h"
+#include "joypad.h"
 
 #include "shlobj.h"
 #include <regstr.h>
@@ -714,7 +714,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		#endif
 		case WM_DEVICECHANGE: {
 
-			joystick->probe_joysticks();
+			joypad->probe_joypads();
 		} break;
 		case WM_SETCURSOR: {
 
@@ -1120,7 +1120,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();
 
 	input = memnew( InputDefault );
-	joystick = memnew (joystick_windows(input, &hWnd));
+	joypad = memnew (joypad_windows(input, &hWnd));
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -1253,7 +1253,7 @@ void OS_Windows::finalize() {
 
 	main_loop=NULL;
 
-	memdelete(joystick);
+	memdelete(joypad);
 	memdelete(input);
 
 	visual_server->finish();
@@ -1928,7 +1928,7 @@ void OS_Windows::process_events() {
 
 	MSG msg;
 
-	last_id = joystick->process_joysticks(last_id);
+	last_id = joypad->process_joypads(last_id);
 
 	while(PeekMessageW(&msg,NULL,0,0,PM_REMOVE)) {
 

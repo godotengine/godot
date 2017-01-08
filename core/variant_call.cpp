@@ -1777,8 +1777,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"KEY",InputEvent::KEY);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"MOUSE_MOTION",InputEvent::MOUSE_MOTION);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"MOUSE_BUTTON",InputEvent::MOUSE_BUTTON);
-	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYSTICK_MOTION",InputEvent::JOYSTICK_MOTION);
-	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYSTICK_BUTTON",InputEvent::JOYSTICK_BUTTON);
+	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYPAD_MOTION",InputEvent::JOYPAD_MOTION);
+	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYPAD_BUTTON",InputEvent::JOYPAD_BUTTON);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"SCREEN_TOUCH",InputEvent::SCREEN_TOUCH);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"SCREEN_DRAG",InputEvent::SCREEN_DRAG);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"ACTION",InputEvent::ACTION);

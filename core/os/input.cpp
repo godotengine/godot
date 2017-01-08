@@ -61,7 +61,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
 	ClassDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
 	ClassDB::bind_method(_MD("get_joy_guid","device"),&Input::get_joy_guid);
-	ClassDB::bind_method(_MD("get_connected_joysticks"),&Input::get_connected_joysticks);
+	ClassDB::bind_method(_MD("get_connected_joypads"),&Input::get_connected_joypads);
 	ClassDB::bind_method(_MD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ClassDB::bind_method(_MD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ClassDB::bind_method(_MD("get_joy_button_string", "button_index"), &Input::get_joy_button_string);

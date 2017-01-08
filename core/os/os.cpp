@@ -533,7 +533,7 @@ bool OS::is_joy_known(int p_device) {
 }
 
 String OS::get_joy_guid(int p_device) const {
-	return "Default Joystick";
+	return "Default Joypad";
 }
 
 void OS::set_context(int p_context) {

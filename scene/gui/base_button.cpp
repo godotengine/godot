@@ -156,7 +156,7 @@ void BaseButton::_gui_input(InputEvent p_event) {
 			}
 		} break;
 		case InputEvent::ACTION:
-		case InputEvent::JOYSTICK_BUTTON:
+		case InputEvent::JOYPAD_BUTTON:
 		case InputEvent::KEY: {
 
 

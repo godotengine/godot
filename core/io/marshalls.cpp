@@ -423,7 +423,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 						(*r_len)+=4;
 
 				} break;
-				case InputEvent::JOYSTICK_BUTTON: {
+				case InputEvent::JOYPAD_BUTTON: {
 
 					ie.joy_button.button_index=decode_uint32(&buf[12]);
 					if (r_len)
@@ -435,7 +435,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 					if (r_len)
 						(*r_len)+=4;
 				} break;
-				case InputEvent::JOYSTICK_MOTION: {
+				case InputEvent::JOYPAD_MOTION: {
 
 					ie.joy_motion.axis=decode_uint32(&buf[12]);
 					ie.joy_motion.axis_value=decode_float(&buf[16]);
@@ -1130,7 +1130,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 					}
 					llen+=4;
 				} break;
-				case InputEvent::JOYSTICK_BUTTON: {
+				case InputEvent::JOYPAD_BUTTON: {
 
 					if (buf) {
 
@@ -1146,7 +1146,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 					}
 					llen+=4;
 				} break;
-				case InputEvent::JOYSTICK_MOTION: {
+				case InputEvent::JOYPAD_MOTION: {
 
 					if (buf) {
 

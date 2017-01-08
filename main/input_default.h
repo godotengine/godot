@@ -84,7 +84,7 @@ class InputDefault : public Input {
 		SpeedTrack();
 	};
 
-	struct Joystick {
+	struct Joypad {
 		StringName name;
 		StringName uid;
 		bool connected;
@@ -95,7 +95,7 @@ class InputDefault : public Input {
 		int mapping;
 		int hat_current;
 
-		Joystick() {
+		Joypad() {
 
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
 
@@ -114,7 +114,7 @@ class InputDefault : public Input {
 	};
 
 	SpeedTrack mouse_speed_track;
-	Map<int, Joystick> joy_names;
+	Map<int, Joypad> joy_names;
 	int fallback_mapping;
 	RES custom_cursor;
 public:
@@ -184,12 +184,12 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis) const;
 	String get_joy_name(int p_idx);
-	virtual Array get_connected_joysticks();
+	virtual Array get_connected_joypads();
 	virtual Vector2 get_joy_vibration_strength(int p_device);
 	virtual float get_joy_vibration_duration(int p_device);
 	virtual uint64_t get_joy_vibration_timestamp(int p_device);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
-	void parse_joystick_mapping(String p_mapping, bool p_update_existing);
+	void parse_joypad_mapping(String p_mapping, bool p_update_existing);
 
 	virtual Vector3 get_accelerometer() const;
 	virtual Vector3 get_magnetometer() const;

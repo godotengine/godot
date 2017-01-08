@@ -82,8 +82,8 @@ void ProjectSettings::_notification(int p_what) {
 		translation_list->connect("button_pressed",this,"_translation_delete");
 		_update_actions();
 		popup_add->add_icon_item(get_icon("Keyboard","EditorIcons"),TTR("Key "),InputEvent::KEY);//"Key " - because the word 'key' has already been used as a key animation
-		popup_add->add_icon_item(get_icon("JoyButton","EditorIcons"),TTR("Joy Button"),InputEvent::JOYSTICK_BUTTON);
-		popup_add->add_icon_item(get_icon("JoyAxis","EditorIcons"),TTR("Joy Axis"),InputEvent::JOYSTICK_MOTION);
+		popup_add->add_icon_item(get_icon("JoyButton","EditorIcons"),TTR("Joy Button"),InputEvent::JOYPAD_BUTTON);
+		popup_add->add_icon_item(get_icon("JoyAxis","EditorIcons"),TTR("Joy Axis"),InputEvent::JOYPAD_MOTION);
 		popup_add->add_icon_item(get_icon("Mouse","EditorIcons"),TTR("Mouse Button"),InputEvent::MOUSE_BUTTON);
 
 		List<String> tfn;
@@ -198,7 +198,7 @@ void ProjectSettings::_device_input_add() {
 				}
 
 		} break;
-		case InputEvent::JOYSTICK_MOTION: {
+		case InputEvent::JOYPAD_MOTION: {
 
 				ie.joy_motion.axis = device_index->get_selected()>>1;
 				ie.joy_motion.axis_value = device_index->get_selected()&1?1:-1;
@@ -207,20 +207,20 @@ void ProjectSettings::_device_input_add() {
 				for(int i=0;i<arr.size();i++) {
 
 					InputEvent aie=arr[i];
-					if (aie.device == ie.device && aie.type==InputEvent::JOYSTICK_MOTION && aie.joy_motion.axis==ie.joy_motion.axis && aie.joy_motion.axis_value==ie.joy_motion.axis_value) {
+					if (aie.device == ie.device && aie.type==InputEvent::JOYPAD_MOTION && aie.joy_motion.axis==ie.joy_motion.axis && aie.joy_motion.axis_value==ie.joy_motion.axis_value) {
 						return;
 					}
 				}
 
 		} break;
-		case InputEvent::JOYSTICK_BUTTON: {
+		case InputEvent::JOYPAD_BUTTON: {
 
 				ie.joy_button.button_index=device_index->get_selected();
 
 				for(int i=0;i<arr.size();i++) {
 
 					InputEvent aie=arr[i];
-					if (aie.device == ie.device && aie.type==InputEvent::JOYSTICK_BUTTON && aie.joy_button.button_index==ie.joy_button.button_index) {
+					if (aie.device == ie.device && aie.type==InputEvent::JOYPAD_BUTTON && aie.joy_button.button_index==ie.joy_button.button_index) {
 						return;
 					}
 				}
@@ -361,10 +361,10 @@ void ProjectSettings::_add_item(int p_item){
 			device_index->add_item(TTR("Button 9"));
 			device_input->popup_centered_minsize(Size2(350,95));
 		} break;
-		case InputEvent::JOYSTICK_MOTION: {
+		case InputEvent::JOYPAD_MOTION: {
 
 			device_id->set_value(0);
-			device_index_label->set_text(TTR("Joystick Axis Index:"));
+			device_index_label->set_text(TTR("Joypad Axis Index:"));
 			device_index->clear();
 			for(int i=0;i<JOY_AXIS_MAX*2;i++) {
 
@@ -374,10 +374,10 @@ void ProjectSettings::_add_item(int p_item){
 			device_input->popup_centered_minsize(Size2(350,95));
 
 		} break;
-		case InputEvent::JOYSTICK_BUTTON: {
+		case InputEvent::JOYPAD_BUTTON: {
 
 			device_id->set_value(3);
-			device_index_label->set_text(TTR("Joystick Button Index:"));
+			device_index_label->set_text(TTR("Joypad Button Index:"));
 			device_index->clear();
 
 			for(int i=0;i<JOY_BUTTON_MAX;i++) {
@@ -526,7 +526,7 @@ void ProjectSettings::_update_actions() {
 					action->set_icon(0,get_icon("Keyboard","EditorIcons"));
 
 				} break;
-				case InputEvent::JOYSTICK_BUTTON: {
+				case InputEvent::JOYPAD_BUTTON: {
 
 					String str = TTR("Device")+" "+itos(ie.device)+", "+TTR("Button")+" "+itos(ie.joy_button.button_index);
 					if (ie.joy_button.button_index>=0 && ie.joy_button.button_index<JOY_BUTTON_MAX)
@@ -552,7 +552,7 @@ void ProjectSettings::_update_actions() {
 					action->set_text(0,str);
 					action->set_icon(0,get_icon("Mouse","EditorIcons"));
 				} break;
-				case InputEvent::JOYSTICK_MOTION: {
+				case InputEvent::JOYPAD_MOTION: {
 
 					int ax = ie.joy_motion.axis;
 					int n = 2*ax + (ie.joy_motion.axis_value<0 ? 0:1);

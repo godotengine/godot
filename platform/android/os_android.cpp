@@ -370,7 +370,7 @@ void OS_Android::main_loop_focusin(){
 
 }
 
-void OS_Android::process_joy_event(OS_Android::JoystickEvent p_event) {
+void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
 
 	switch (p_event.type) {
 	case JOY_EVENT_BUTTON:

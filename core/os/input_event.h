@@ -225,13 +225,13 @@ struct InputEventMouseMotion : public InputEventMouse {
 	float speed_x,speed_y;
 };
 
-struct InputEventJoystickMotion  {
+struct InputEventJoypadMotion  {
 
-	int axis; ///< Joystick axis
+	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
 };
 
-struct InputEventJoystickButton  {
+struct InputEventJoypadButton  {
 
 	int button_index;
 	bool pressed;
@@ -267,8 +267,8 @@ struct InputEvent {
 		KEY,
 		MOUSE_MOTION,
 		MOUSE_BUTTON,
-		JOYSTICK_MOTION,
-		JOYSTICK_BUTTON,
+		JOYPAD_MOTION,
+		JOYPAD_BUTTON,
 		SCREEN_TOUCH,
 		SCREEN_DRAG,
 		ACTION,
@@ -282,8 +282,8 @@ struct InputEvent {
 	union {
 		InputEventMouseMotion mouse_motion;
 		InputEventMouseButton mouse_button;
-		InputEventJoystickMotion joy_motion;
-		InputEventJoystickButton joy_button;
+		InputEventJoypadMotion joy_motion;
+		InputEventJoypadButton joy_button;
 		InputEventKey key;
 		InputEventScreenTouch screen_touch;
 		InputEventScreenDrag screen_drag;

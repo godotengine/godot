@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick.h                                                           */
+/*  joypad.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 //author: Andreas Haas <hondres,  liugam3@gmail.com>
-#ifndef JOYSTICK_H
-#define JOYSTICK_H
+#ifndef JOYPAD_H
+#define JOYPAD_H
 
 #include "os_windows.h"
 #define DIRECTINPUT_VERSION 0x0800
@@ -48,19 +48,19 @@ if(x != NULL)           \
 #define XUSER_MAX_COUNT 4
 #endif
 
-class joystick_windows
+class joypad_windows
 {
 public:
-	joystick_windows();
-	joystick_windows(InputDefault* _input, HWND* hwnd);
-	~joystick_windows();
+	joypad_windows();
+	joypad_windows(InputDefault* _input, HWND* hwnd);
+	~joypad_windows();
 
-	void probe_joysticks();
-	unsigned int process_joysticks(unsigned int p_last_id);
+	void probe_joypads();
+	unsigned int process_joypads(unsigned int p_last_id);
 private:
 
 	enum {
-		JOYSTICKS_MAX = 16,
+		JOYPADS_MAX = 16,
 		JOY_AXIS_COUNT = 6,
 		MIN_JOY_AXIS = 10,
 		MAX_JOY_AXIS = 32768,
@@ -120,16 +120,16 @@ private:
 	InputDefault* input;
 
 	int id_to_change;
-	int joystick_count;
-	bool attached_joysticks[JOYSTICKS_MAX];
-	dinput_gamepad d_joysticks[JOYSTICKS_MAX];
-	xinput_gamepad x_joysticks[XUSER_MAX_COUNT];
+	int joypad_count;
+	bool attached_joypads[JOYPADS_MAX];
+	dinput_gamepad d_joypads[JOYPADS_MAX];
+	xinput_gamepad x_joypads[XUSER_MAX_COUNT];
 
 	static BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE* p_instance, void* p_context);
 	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE* instance, void* context);
 
-	void setup_joystick_object(const DIDEVICEOBJECTINSTANCE* ob, int p_joy_id);
-	void close_joystick(int id = -1);
+	void setup_joypad_object(const DIDEVICEOBJECTINSTANCE* ob, int p_joy_id);
+	void close_joypad(int id = -1);
 	void load_xinput();
 	void unload_xinput();
 
@@ -138,9 +138,9 @@ private:
 
 	bool have_device(const GUID &p_guid);
 	bool is_xinput_device(const GUID* p_guid);
-	bool setup_dinput_joystick(const DIDEVICEINSTANCE* instance);
-	void joystick_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
-	void joystick_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
+	bool setup_dinput_joypad(const DIDEVICEINSTANCE* instance);
+	void joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
 
 	InputDefault::JoyAxis axis_correct(int p_val, bool p_xinput = false, bool p_trigger = false, bool p_negate = false) const;
 	XInputGetState_t xinput_get_state;

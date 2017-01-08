@@ -61,7 +61,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class joystick_windows;
+class joypad_windows;
 class OS_Windows : public OS {
 
         enum {
@@ -133,7 +133,7 @@ class OS_Windows : public OS {
 	CursorShape cursor_shape;
 
 	InputDefault *input;
-	joystick_windows *joystick;
+	joypad_windows *joypad;
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;

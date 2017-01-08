@@ -1744,7 +1744,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_BUTTON) {
+			if (ie.type==InputEvent::JOYPAD_BUTTON) {
 
 				if (str=="button_index") {
 					if (p_value.type!=Variant::REAL && p_value.type!=Variant::INT)
@@ -1769,7 +1769,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_MOTION) {
+			if (ie.type==InputEvent::JOYPAD_MOTION) {
 
 				if (str=="axis") {
 					if (p_value.type!=Variant::REAL && p_value.type!=Variant::INT)
@@ -2367,7 +2367,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_BUTTON) {
+			if (ie.type==InputEvent::JOYPAD_BUTTON) {
 
 				if (str=="button_index") {
 					valid=true;
@@ -2382,7 +2382,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_MOTION) {
+			if (ie.type==InputEvent::JOYPAD_MOTION) {
 
 				if (str=="axis") {
 					valid=true;
@@ -2863,7 +2863,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_BUTTON) {
+			if (ie.type==InputEvent::JOYPAD_BUTTON) {
 
 				p_list->push_back( PropertyInfo(Variant::INT,"button_index") );
 				p_list->push_back( PropertyInfo(Variant::BOOL,"pressed") );
@@ -2871,7 +2871,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_MOTION) {
+			if (ie.type==InputEvent::JOYPAD_MOTION) {
 
 				p_list->push_back( PropertyInfo(Variant::INT,"axis") );
 				p_list->push_back( PropertyInfo(Variant::REAL,"value") );

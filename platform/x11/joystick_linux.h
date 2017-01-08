@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_linux.h                                                     */
+/*  joypad_linux.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /*************************************************************************/
 
 //author: Andreas Haas <hondres,  liugam3@gmail.com>
-#ifndef JOYSTICK_LINUX_H
-#define JOYSTICK_LINUX_H
+#ifndef JOYPAD_LINUX_H
+#define JOYPAD_LINUX_H
 #ifdef JOYDEV_ENABLED
 #include "main/input_default.h"
 #include "os/thread.h"
@@ -37,21 +37,21 @@
 
 struct input_absinfo;
 
-class joystick_linux
+class joypad_linux
 {
 public:
-	joystick_linux(InputDefault *in);
-	~joystick_linux();
-	uint32_t process_joysticks(uint32_t p_event_id);
+	joypad_linux(InputDefault *in);
+	~joypad_linux();
+	uint32_t process_joypads(uint32_t p_event_id);
 private:
 
 	enum {
-		JOYSTICKS_MAX = 16,
+		JOYPADS_MAX = 16,
 		MAX_ABS = 63,
 		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
 	};
 
-	struct Joystick {
+	struct Joypad {
 		InputDefault::JoyAxis curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
@@ -65,8 +65,8 @@ private:
 		int ff_effect_id;
 		uint64_t ff_effect_timestamp;
 
-		Joystick();
-		~Joystick();
+		Joypad();
+		~Joypad();
 		void reset();
 	};
 
@@ -74,7 +74,7 @@ private:
 	Mutex *joy_mutex;
 	Thread *joy_thread;
 	InputDefault *input;
-	Joystick joysticks[JOYSTICKS_MAX];
+	Joypad joypads[JOYPADS_MAX];
 	Vector<String> attached_devices;
 
 	static void joy_thread_func(void *p_user);
@@ -82,21 +82,21 @@ private:
 	int get_joy_from_path(String path) const;
 	int get_free_joy_slot() const;
 
-	void setup_joystick_properties(int p_id);
-	void close_joystick(int p_id = -1);
+	void setup_joypad_properties(int p_id);
+	void close_joypad(int p_id = -1);
 #ifdef UDEV_ENABLED
-	void enumerate_joysticks(struct udev *_udev);
-	void monitor_joysticks(struct udev *_udev);
+	void enumerate_joypads(struct udev *_udev);
+	void monitor_joypads(struct udev *_udev);
 #endif
-	void monitor_joysticks();
-	void run_joystick_thread();
-	void open_joystick(const char* path);
+	void monitor_joypads();
+	void run_joypad_thread();
+	void open_joypad(const char* path);
 
-	void joystick_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
-	void joystick_vibration_stop(int p_id, uint64_t p_timestamp);
+	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
 	InputDefault::JoyAxis axis_correct(const input_absinfo *abs, int value) const;
 };
 
 #endif
-#endif // JOYSTICK_LINUX_H
+#endif // JOYPAD_LINUX_H

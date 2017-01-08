@@ -55,7 +55,7 @@
 #include <stdio.h>
 #include "main/input_default.h"
 
-#include "joystick_uwp.h"
+#include "joypad_uwp.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -85,7 +85,7 @@ public:
 private:
 
 	enum {
-		JOYSTICKS_MAX = 8,
+		JOYPADS_MAX = 8,
 		JOY_AXIS_COUNT = 6,
 		MAX_JOY_AXIS = 32768, // I've no idea
 		KEY_EVENT_BUFFER_SIZE=512
@@ -137,7 +137,7 @@ private:
 
 	InputDefault *input;
 
-	JoystickUWP^ joystick;
+	JoypadUWP^ joypad;
 
 	Windows::System::Display::DisplayRequest^ display_request;
 

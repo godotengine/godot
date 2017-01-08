@@ -93,7 +93,7 @@ private:
 
 	static void _close_notification_funcs(const String& p_file,int p_flags);
 
-	void process_joysticks();
+	void process_joypads();
 
 public:
 

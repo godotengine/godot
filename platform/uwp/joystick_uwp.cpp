@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_uwp.cpp                                                     */
+/*  joypad_uwp.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,20 +27,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "joystick_uwp.h"
+#include "joypad_uwp.h"
 
 using namespace Windows::Gaming::Input;
 using namespace Windows::Foundation;
 
-void JoystickUWP::register_events() {
+void JoypadUWP::register_events() {
 
 	Gamepad::GamepadAdded +=
-		ref new EventHandler<Gamepad^>(this, &JoystickUWP::OnGamepadAdded);
+		ref new EventHandler<Gamepad^>(this, &JoypadUWP::OnGamepadAdded);
 	Gamepad::GamepadRemoved +=
-		ref new EventHandler<Gamepad^>(this, &JoystickUWP::OnGamepadRemoved);
+		ref new EventHandler<Gamepad^>(this, &JoypadUWP::OnGamepadRemoved);
 }
 
-uint32_t JoystickUWP::process_controllers(uint32_t p_last_id) {
+uint32_t JoypadUWP::process_controllers(uint32_t p_last_id) {
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 
@@ -74,20 +74,20 @@ uint32_t JoystickUWP::process_controllers(uint32_t p_last_id) {
 	return p_last_id;
 }
 
-JoystickUWP::JoystickUWP() {
+JoypadUWP::JoypadUWP() {
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++)
 		controllers[i].id = i;
 }
 
-JoystickUWP::JoystickUWP(InputDefault * p_input) {
+JoypadUWP::JoypadUWP(InputDefault * p_input) {
 
 	input = p_input;
 
-	JoystickUWP();
+	JoypadUWP();
 }
 
-void JoystickUWP::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
+void JoypadUWP::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
 
 	short idx = -1;
 
@@ -109,7 +109,7 @@ void JoystickUWP::OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Inp
 	input->joy_connection_changed(controllers[idx].id, true, "Xbox Controller", "__UWP_GAMEPAD__");
 }
 
-void JoystickUWP::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
+void JoypadUWP::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value) {
 
 	short idx = -1;
 
@@ -136,7 +136,7 @@ void JoystickUWP::OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::I
 	input->joy_connection_changed(idx, false, "Xbox Controller");
 }
 
-InputDefault::JoyAxis JoystickUWP::axis_correct(double p_val, bool p_negate, bool p_trigger) const {
+InputDefault::JoyAxis JoypadUWP::axis_correct(double p_val, bool p_negate, bool p_trigger) const {
 
 	InputDefault::JoyAxis jx;
 

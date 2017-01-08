@@ -64,7 +64,7 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis) const=0;
 	virtual String get_joy_name(int p_idx)=0;
-	virtual Array get_connected_joysticks()=0;
+	virtual Array get_connected_joypads()=0;
 	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid)=0;
 	virtual void add_joy_mapping(String p_mapping, bool p_update_existing=false)=0;
 	virtual void remove_joy_mapping(String p_guid)=0;

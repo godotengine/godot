@@ -285,8 +285,8 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 
 	input = memnew( InputDefault );
 
-	joystick = ref new JoystickUWP(input);
-	joystick->register_events();
+	joypad = ref new JoypadUWP(input);
+	joypad->register_events();
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -429,7 +429,7 @@ void OSUWP::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
-	joystick = nullptr;
+	joypad = nullptr;
 
 }
 void OSUWP::finalize_core() {
@@ -725,7 +725,7 @@ uint64_t OSUWP::get_ticks_usec() const {
 
 void OSUWP::process_events() {
 
-	last_id = joystick->process_controllers(last_id);
+	last_id = joypad->process_controllers(last_id);
 	process_key_events();
 }
 

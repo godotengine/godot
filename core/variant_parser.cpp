@@ -1083,7 +1083,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 					return ERR_PARSE_ERROR;
 				}
 
-				ie.type=InputEvent::JOYSTICK_BUTTON;
+				ie.type=InputEvent::JOYPAD_BUTTON;
 
 				get_token(p_stream,token,line,r_err_str);
 				if (token.type!=TK_NUMBER) {
@@ -1107,7 +1107,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 					return ERR_PARSE_ERROR;
 				}
 
-				ie.type=InputEvent::JOYSTICK_MOTION;
+				ie.type=InputEvent::JOYPAD_MOTION;
 
 				get_token(p_stream,token,line,r_err_str);
 				if (token.type!=TK_NUMBER) {
@@ -1387,7 +1387,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 				return err;
 			ERR_FAIL_COND_V(params.size()!=2,ERR_PARSE_ERROR);
 			InputEvent ie;
-			ie.type=InputEvent::JOYSTICK_BUTTON;
+			ie.type=InputEvent::JOYPAD_BUTTON;
 			ie.device=params[0].to_int();
 			ie.joy_button.button_index=params[1].to_int();
 
@@ -1403,7 +1403,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			ERR_FAIL_COND_V(params.size()!=2,ERR_PARSE_ERROR);
 
 			InputEvent ie;
-			ie.type=InputEvent::JOYSTICK_MOTION;
+			ie.type=InputEvent::JOYPAD_MOTION;
 			ie.device=params[0].to_int();
 			int axis=params[1].to_int();
 			ie.joy_motion.axis=axis>>1;
@@ -2065,11 +2065,11 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 					str+="MBUTTON,"+itos(ev.mouse_button.button_index);
 				} break;
-				case InputEvent::JOYSTICK_BUTTON: {
+				case InputEvent::JOYPAD_BUTTON: {
 					str+="JBUTTON,"+itos(ev.joy_button.button_index);
 
 				} break;
-				case InputEvent::JOYSTICK_MOTION: {
+				case InputEvent::JOYPAD_MOTION: {
 					str+="JAXIS,"+itos(ev.joy_motion.axis)+","+itos(ev.joy_motion.axis_value);
 				} break;
 				case InputEvent::NONE: {

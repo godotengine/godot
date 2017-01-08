@@ -321,8 +321,8 @@ void PropertySelector::_item_selected() {
 			case InputEvent::KEY:  class_type="InputEventKey"; break;
 			case InputEvent::MOUSE_MOTION:  class_type="InputEventMouseMotion"; break;
 			case InputEvent::MOUSE_BUTTON:  class_type="InputEventMouseButton"; break;
-			case InputEvent::JOYSTICK_MOTION:  class_type="InputEventJoystickMotion"; break;
-			case InputEvent::JOYSTICK_BUTTON:  class_type="InputEventJoystickButton"; break;
+			case InputEvent::JOYPAD_MOTION:  class_type="InputEventJoypadMotion"; break;
+			case InputEvent::JOYPAD_BUTTON:  class_type="InputEventJoypadButton"; break;
 			case InputEvent::SCREEN_TOUCH:  class_type="InputEventScreenTouch"; break;
 			case InputEvent::SCREEN_DRAG:  class_type="InputEventScreenDrag"; break;
 			case InputEvent::ACTION:  class_type="InputEventAction"; break;

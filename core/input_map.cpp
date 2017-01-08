@@ -125,7 +125,7 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 				same=(e.key.scancode==p_event.key.scancode && (p_mod_ignore || e.key.mod == p_event.key.mod));
 
 			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
+			case InputEvent::JOYPAD_BUTTON: {
 
 				same=(e.joy_button.button_index==p_event.joy_button.button_index);
 
@@ -135,7 +135,7 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 				same=(e.mouse_button.button_index==p_event.mouse_button.button_index);
 
 			} break;
-			case InputEvent::JOYSTICK_MOTION: {
+			case InputEvent::JOYPAD_MOTION: {
 
 				same=(e.joy_motion.axis==p_event.joy_motion.axis && (e.joy_motion.axis_value < 0) == (p_event.joy_motion.axis_value < 0));
 

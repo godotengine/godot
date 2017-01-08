@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  joystick_osx.h                                                     */
+/*  joypad_osx.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef JOYSTICKOSX_H
-#define JOYSTICKOSX_H
+#ifndef JOYPADOSX_H
+#define JOYPADOSX_H
 
 #ifdef MACOS_10_0_4
 #include <IOKit/hidsystem/IOHIDUsageTables.h>
@@ -54,7 +54,7 @@ struct rec_element {
 	};
 };
 
-struct joystick {
+struct joypad {
 	IOHIDDeviceRef device_ref;
 
 	Vector<rec_element> axis_elements;
@@ -82,44 +82,44 @@ struct joystick {
 	int get_hid_element_state(rec_element *p_element) const;
 
 	void free();
-	joystick();
+	joypad();
 };
 
-class JoystickOSX {
+class JoypadOSX {
 
 	enum {
-		JOYSTICKS_MAX = 16,
+		JOYPADS_MAX = 16,
 	};
 
 private:
 	InputDefault *input;
 	IOHIDManagerRef hid_manager;
 
-	bool attached_devices[JOYSTICKS_MAX];
-	Vector<joystick> device_list;
+	bool attached_devices[JOYPADS_MAX];
+	Vector<joypad> device_list;
 
 	bool have_device(IOHIDDeviceRef p_device) const;
-	bool configure_joystick(IOHIDDeviceRef p_device_ref, joystick *p_joy);
+	bool configure_joypad(IOHIDDeviceRef p_device_ref, joypad *p_joy);
 
 
 	int get_free_joy_id();
 	int get_joy_index(int p_id) const;
 
-	void poll_joysticks() const;
-	void setup_joystick_objects();
+	void poll_joypads() const;
+	void setup_joypad_objects();
 	void config_hid_manager(CFArrayRef p_matching_array) const;
 
-	void joystick_vibration_start(int p_id, float p_magnitude, float p_duration, uint64_t p_timestamp);
-	void joystick_vibration_stop(int p_id, uint64_t p_timestamp);
+	void joypad_vibration_start(int p_id, float p_magnitude, float p_duration, uint64_t p_timestamp);
+	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
 public:
-	uint32_t process_joysticks(uint32_t p_last_id);
+	uint32_t process_joypads(uint32_t p_last_id);
 
 	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
 	void _device_removed(int p_id);
 
-	JoystickOSX();
-	~JoystickOSX();
+	JoypadOSX();
+	~JoypadOSX();
 };
 
-#endif // JOYSTICKOSX_H
+#endif // JOYPADOSX_H

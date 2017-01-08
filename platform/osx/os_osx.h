@@ -31,7 +31,7 @@
 
 
 #include "os/input.h"
-#include "joystick_osx.h"
+#include "joypad_osx.h"
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/visual_server.h"
@@ -78,7 +78,7 @@ public:
 	SpatialSound2DServerSW *spatial_sound_2d_server;
 
 	InputDefault *input;
-	JoystickOSX *joystick_osx;
+	JoypadOSX *joypad_osx;
 
 	/* objc */
 
