@@ -49,7 +49,6 @@ public:
 	};
 private:
 	bool expand;
-	Color modulate;
 	Ref<Texture> texture;
 	StretchMode stretch_mode;
 protected:
@@ -63,8 +62,6 @@ public:
 	void set_texture(const Ref<Texture>& p_tex);
 	Ref<Texture> get_texture() const;
 
-	void set_modulate(const Color& p_tex);
-	Color get_modulate() const;
 
 	void set_expand(bool p_expand);
 	bool has_expand() const;

@@ -40,7 +40,6 @@ class Patch9Frame : public Control {
 	bool draw_center;
 	int margin[4];
 	Rect2 region_rect;
-	Color modulate;
 	Ref<Texture> texture;
 protected:
 
@@ -52,9 +51,6 @@ public:
 
 	void set_texture(const Ref<Texture>& p_tex);
 	Ref<Texture> get_texture() const;
-
-	void set_modulate(const Color& p_tex);
-	Color get_modulate() const;
 
 	void set_patch_margin(Margin p_margin,int p_size);
 	int get_patch_margin(Margin p_margin) const;

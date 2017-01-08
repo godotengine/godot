@@ -428,7 +428,7 @@ void AnimatedSprite::_notification(int p_what) {
 				dst_rect.size.y=-dst_rect.size.y;
 
 			//texture->draw_rect(ci,dst_rect,false,modulate);
-			texture->draw_rect_region(ci,dst_rect,Rect2(Vector2(),texture->get_size()),modulate);
+			texture->draw_rect_region(ci,dst_rect,Rect2(Vector2(),texture->get_size()));
 //			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
 
 		} break;
@@ -543,17 +543,6 @@ bool AnimatedSprite::is_flipped_v() const {
 	return vflip;
 }
 
-
-void AnimatedSprite::set_modulate(const Color& p_color) {
-
-	modulate=p_color;
-	update();
-}
-
-Color AnimatedSprite::get_modulate() const{
-
-	return modulate;
-}
 
 
 Rect2 AnimatedSprite::get_item_rect() const {
@@ -692,9 +681,6 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite::set_frame);
 	ClassDB::bind_method(_MD("get_frame"),&AnimatedSprite::get_frame);
 
-	ClassDB::bind_method(_MD("set_modulate","modulate"),&AnimatedSprite::set_modulate);
-	ClassDB::bind_method(_MD("get_modulate"),&AnimatedSprite::get_modulate);
-
 
 	ClassDB::bind_method(_MD("_res_changed"),&AnimatedSprite::_res_changed);
 
@@ -709,7 +695,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
+
 
 }
 
@@ -722,7 +708,6 @@ AnimatedSprite::AnimatedSprite() {
 	frame=0;
 	playing=false;
 	animation="default";
-	modulate=Color(1,1,1,1);
 	timeout=0;
 
 

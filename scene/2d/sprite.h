@@ -52,7 +52,6 @@ class Sprite : public Node2D {
 	int vframes;
 	int hframes;
 
-	Color modulate;
 
 
 protected:
@@ -98,9 +97,6 @@ public:
 
 	void set_hframes(int p_amount);
 	int get_hframes() const;
-
-	void set_modulate(const Color& p_color);
-	Color get_modulate() const;
 
 	virtual Rect2 get_item_rect() const;
 

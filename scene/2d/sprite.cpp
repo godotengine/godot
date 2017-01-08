@@ -97,7 +97,7 @@ void Sprite::_notification(int p_what) {
 			if (vflip)
 				dst_rect.size.y=-dst_rect.size.y;
 
-			texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
+			texture->draw_rect_region(ci,dst_rect,src_rect);
 
 		} break;
 	}
@@ -249,16 +249,6 @@ int Sprite::get_hframes() const {
 	return hframes;
 }
 
-void Sprite::set_modulate(const Color& p_color) {
-
-	modulate=p_color;
-	update();
-}
-
-Color Sprite::get_modulate() const{
-
-	return modulate;
-}
 
 
 Rect2 Sprite::get_item_rect() const {
@@ -332,9 +322,6 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(_MD("set_hframes","hframes"),&Sprite::set_hframes);
 	ClassDB::bind_method(_MD("get_hframes"),&Sprite::get_hframes);
 
-	ClassDB::bind_method(_MD("set_modulate","modulate"),&Sprite::set_modulate);
-	ClassDB::bind_method(_MD("get_modulate"),&Sprite::get_modulate);
-
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
@@ -346,7 +333,6 @@ void Sprite::_bind_methods() {
 	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_vframes"),_SCS("get_vframes"));
 	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_hframes"),_SCS("get_hframes"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
 
@@ -363,9 +349,6 @@ Sprite::Sprite() {
 
 	vframes=1;
 	hframes=1;
-
-	modulate=Color(1,1,1,1);
-
 
 }
 

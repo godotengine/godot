@@ -124,7 +124,6 @@ class AnimatedSprite : public Node2D {
 	bool hflip;
 	bool vflip;
 
-	Color modulate;
 
 	void _res_changed();
 

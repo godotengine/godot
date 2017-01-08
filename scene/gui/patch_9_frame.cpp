@@ -39,7 +39,7 @@ void Patch9Frame::_notification(int p_what) {
 
 		Size2 s=get_size();
 		RID ci = get_canvas_item();
-		VS::get_singleton()->canvas_item_add_nine_patch(ci,Rect2(Point2(),s),region_rect,texture->get_rid(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),VS::NINE_PATCH_STRETCH,VS::NINE_PATCH_STRETCH,draw_center,modulate);
+		VS::get_singleton()->canvas_item_add_nine_patch(ci,Rect2(Point2(),s),region_rect,texture->get_rid(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),VS::NINE_PATCH_STRETCH,VS::NINE_PATCH_STRETCH,draw_center);
 //		draw_texture_rect(texture,Rect2(Point2(),s),false,modulate);
 
 /*
@@ -70,8 +70,6 @@ void Patch9Frame::_bind_methods() {
 
 	ClassDB::bind_method(_MD("set_texture","texture"), & Patch9Frame::set_texture );
 	ClassDB::bind_method(_MD("get_texture"), & Patch9Frame::get_texture );
-	ClassDB::bind_method(_MD("set_modulate","modulate"), & Patch9Frame::set_modulate );
-	ClassDB::bind_method(_MD("get_modulate"), & Patch9Frame::get_modulate );
 	ClassDB::bind_method(_MD("set_patch_margin","margin","value"), & Patch9Frame::set_patch_margin );
 	ClassDB::bind_method(_MD("get_patch_margin","margin"), & Patch9Frame::get_patch_margin );
 	ClassDB::bind_method(_MD("set_region_rect","rect"),&Patch9Frame::set_region_rect);
@@ -82,7 +80,6 @@ void Patch9Frame::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
-	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "draw_center"), _SCS("set_draw_center"),_SCS("get_draw_center") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
 
@@ -112,16 +109,6 @@ Ref<Texture> Patch9Frame::get_texture() const {
 	return texture;
 }
 
-void Patch9Frame::set_modulate(const Color& p_tex) {
-
-	modulate=p_tex;
-	update();
-}
-
-Color Patch9Frame::get_modulate() const{
-
-	return modulate;
-}
 
 
 void Patch9Frame::set_patch_margin(Margin p_margin,int p_size) {
@@ -186,7 +173,7 @@ Patch9Frame::Patch9Frame() {
 	margin[MARGIN_RIGHT]=0;
 	margin[MARGIN_BOTTOM]=0;
 	margin[MARGIN_TOP]=0;
-	modulate=Color(1,1,1,1);
+
 	set_ignore_mouse(true);
 	draw_center=true;
 }

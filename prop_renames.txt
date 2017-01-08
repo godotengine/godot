@@ -497,6 +497,22 @@ expand_margin/right = expand_margin_right
 modulate/color = modulate_color
 
 
+[AnimatedSprite]
+
+modulate = self_modulate
+
+[Sprite]
+
+modulate = self_modulate
+
+[Patch9Frame]
+
+modulate = self_modulate
+
+[TextureFrame]
+
+modulate = self_modulate
+
 
 
 
