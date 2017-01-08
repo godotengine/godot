@@ -1,5 +1,5 @@
 # Spanish (Argentina) translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-10 04:20+0000\n"
+"PO-Revision-Date: 2016-12-04 06:03+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -1409,7 +1409,7 @@ msgstr "EscanearFuentes"
 
 #: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr "Ayuda de Búsqueda"
+msgstr "Buscar en la Ayuda"
 
 #: tools/editor/editor_help.cpp
 msgid "Class List:"
@@ -2708,9 +2708,8 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "Nombre de Nodo:"
+msgstr "Nombre del Nodo Raíz:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -3628,13 +3627,12 @@ msgid "Snap (Pixels):"
 msgstr "Snap (Pixeles):"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add %s"
-msgstr "Agregar Todos"
+msgstr "Agregar %s"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Agregando %s..."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -3662,15 +3660,16 @@ msgid "This operation requires a single selected node."
 msgstr "Esta operación requiere un solo nodo seleccionado."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change default type"
-msgstr "Cambiar Valor por Defecto"
+msgstr "Cambiar typo por defecto"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Drag & drop + Shift : Agregar nodo como hermano\n"
+"Drag & drop + Alt : Cambiar tipo de nodo"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -6474,13 +6473,6 @@ msgid "Change Notifier Extents"
 msgstr "Cambiar Alcances de Notificadores"
 
 #~ msgid ""
-#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
-#~ "'user://', or 'local://'"
-#~ msgstr ""
-#~ "Las rutas no pueden comenzar con '/', las rutas absolutas deben comenzar "
-#~ "con 'res://', 'user://'. o 'local://'"
-
-#~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
 #~ msgstr ""
@@ -6797,37 +6789,36 @@ msgstr "Cambiar Alcances de Notificadores"
 #~ msgid "Select Method"
 #~ msgstr "Seleccionar Método"
 
-#, fuzzy
 #~ msgid "Attach Script"
-#~ msgstr "Agregar Script"
+#~ msgstr "Adjuntar Script"
 
-#, fuzzy
 #~ msgid "Clear Script"
-#~ msgstr "Crear Script"
+#~ msgstr "Reestablecer Script"
 
-#, fuzzy
 #~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Crear un nuevo script para el nodo seleccionado."
+#~ msgstr "Adjuntar un script nuevo o existente para el nodo seleccionado."
 
-#, fuzzy
 #~ msgid "Clear a script for the selected node."
-#~ msgstr "Crear un nuevo script para el nodo seleccionado."
+#~ msgstr "Reestablecer un script para el nodo seleccionado."
 
-#, fuzzy
 #~ msgid "Error loading script from %s"
-#~ msgstr "Error al cargar escena desde %s"
+#~ msgstr "Error al cargar el script desde %s"
 
-#, fuzzy
 #~ msgid "Create new script"
-#~ msgstr "Crear Script"
+#~ msgstr "Crear script nuevo"
 
-#, fuzzy
 #~ msgid "Load existing script"
-#~ msgstr "Script siguiente"
+#~ msgstr "Cargar script existente"
 
-#, fuzzy
 #~ msgid "Attach Node Script"
-#~ msgstr "Crear Script de Nodo"
+#~ msgstr "Adjuntar Script de Nodo"
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Las rutas no pueden comenzar con '/', las rutas absolutas deben comenzar "
+#~ "con 'res://', 'user://'. o 'local://'"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

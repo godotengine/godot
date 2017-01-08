@@ -1,5 +1,5 @@
 # Catalan translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Roger BR <drai_kin@hotmail.com>, 2016.
@@ -6446,13 +6446,6 @@ msgid "Change Notifier Extents"
 msgstr ""
 
 #~ msgid ""
-#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
-#~ "'user://', or 'local://'"
-#~ msgstr ""
-#~ "No es pot començar un camí per '/'. Els camins absoluts han de començar "
-#~ "per 'res://', 'user://' o 'local://'"
-
-#~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
 #~ msgstr ""
@@ -6786,6 +6779,13 @@ msgstr ""
 #, fuzzy
 #~ msgid "Attach Node Script"
 #~ msgstr "Executa Script"
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "No es pot començar un camí per '/'. Els camins absoluts han de començar "
+#~ "per 'res://', 'user://' o 'local://'"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

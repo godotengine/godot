@@ -1,5 +1,5 @@
 # French translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Brice <bbric@free.fr>, 2016.
@@ -8,6 +8,7 @@
 # finkiki <specialpopol@gmx.fr>, 2016.
 # Hugo Locurcio <hugo.l@openmailbox.org>, 2016.
 # Marc <marc.gilleron@gmail.com>, 2016.
+# Nicolas Lehuen <nicolas@lehuen.com>, 2016.
 # Omicron <tritonic.dev@gmail.com>, 2016.
 # Onyx Steinheim <thevoxelmanonyx@gmail.com>, 2016.
 # rafeu <duchainer@gmail.com>, 2016.
@@ -19,8 +20,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-18 10:46+0000\n"
-"Last-Translator: Omicron <tritonic.dev@gmail.com>\n"
+"PO-Revision-Date: 2016-12-15 22:36+0000\n"
+"Last-Translator: Nicolas Lehuen <nicolas@lehuen.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -28,7 +29,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -4348,7 +4349,7 @@ msgstr "Erreur d'importation"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Import Theme"
-msgstr "Improter un thème"
+msgstr "Importer un thème"
 
 #: tools/editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As.."
@@ -6536,13 +6537,6 @@ msgid "Change Notifier Extents"
 msgstr "Changer les extents d'un notificateur"
 
 #~ msgid ""
-#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
-#~ "'user://', or 'local://'"
-#~ msgstr ""
-#~ "Les chemins ne peuvent pas commencer par '/', les chemins absolus doivent "
-#~ "commencer par 'res://', 'user://' ou 'local://'"
-
-#~ msgid ""
 #~ "Node yielded, but did not return a function state in the first working "
 #~ "memory."
 #~ msgstr ""
@@ -6883,6 +6877,13 @@ msgstr "Changer les extents d'un notificateur"
 #, fuzzy
 #~ msgid "Attach Node Script"
 #~ msgstr "Créer le script de nœud"
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Les chemins ne peuvent pas commencer par '/', les chemins absolus doivent "
+#~ "commencer par 'res://', 'user://' ou 'local://'"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Impossible d'aller dans le sous-répertoire :"

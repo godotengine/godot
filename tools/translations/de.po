@@ -1,5 +1,5 @@
 # German translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Alexander Mahr <alex.mahr@gmail.com>, 2016.
@@ -22,7 +22,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-09-30 03:13+0000\n"
+"PO-Revision-Date: 2016-12-10 04:27+0000\n"
 "Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
@@ -31,7 +31,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -1060,6 +1060,8 @@ msgid ""
 "Target method not found! Specify a valid method or attach a script to target "
 "Node."
 msgstr ""
+"Zielmethode nicht gefunden! Bitte gültige Methode angeben oder Skript an "
+"Zielnode anhängen."
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect To Node:"
@@ -1852,7 +1854,7 @@ msgstr "Gehe zu vorher geöffneter Szene."
 #: tools/editor/editor_node.cpp
 #, fuzzy
 msgid "Fullscreen Mode"
-msgstr "Vollbildmodus"
+msgstr "Vollbildmodus umschalten"
 
 #: tools/editor/editor_node.cpp
 msgid "Distraction Free Mode"
@@ -2147,7 +2149,7 @@ msgstr "Änderungen aktualisieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Disable Update Spinner"
-msgstr ""
+msgstr "Update-Anzeigerad deaktivieren"
 
 #: tools/editor/editor_node.cpp
 msgid "Inspector"
@@ -2732,9 +2734,8 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "Node-Name:"
+msgstr "Name des Root-Node:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -3650,13 +3651,12 @@ msgid "Snap (Pixels):"
 msgstr "Einrasten (Pixel):"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add %s"
-msgstr "Alle hinzufügen"
+msgstr "%s hinzufügen"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "%s hinzufügen…"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -3684,15 +3684,17 @@ msgid "This operation requires a single selected node."
 msgstr "Diese Aktion benötigt ein einzelnes ausgewähltes Node."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change default type"
-msgstr "Ändere Standardwert"
+msgstr "Standardtyp ändern"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Ziehen + Umschalt: Node in gleicher Hierarchie einfügen\n"
+"Ziehen + Alt: Nodetyp ändern"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -4868,9 +4870,8 @@ msgid "Insert Animation Key"
 msgstr "Animations-Schlüsselbild einfügen"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Focus Origin"
-msgstr "Zeige Ursprung"
+msgstr "Auf Ursprung zentrieren"
 
 #: tools/editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
@@ -6575,9 +6576,8 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #~ msgid "Editing Signal:"
 #~ msgstr "bearbeite Signal:"
 
-#, fuzzy
 #~ msgid "Change Expression"
-#~ msgstr "Typ ändern"
+#~ msgstr "Ausdruck ändern"
 
 #~ msgid "Add Node"
 #~ msgstr "Node hinzufügen"
@@ -6616,21 +6616,26 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #~ msgid "Add Setter Property"
 #~ msgstr "Setter-Eigenschaft hinzufügen"
 
-#, fuzzy
 #~ msgid "Condition"
-#~ msgstr "Animation kopieren"
+#~ msgstr "Bedingung"
 
-#, fuzzy
+#~ msgid "Sequence"
+#~ msgstr "Sequenz"
+
 #~ msgid "Switch"
-#~ msgstr "Tonhöhe"
+#~ msgstr "Schalter"
 
-#, fuzzy
+#~ msgid "Iterator"
+#~ msgstr "Iterator"
+
+#~ msgid "While"
+#~ msgstr "Während"
+
 #~ msgid "Return"
-#~ msgstr "Rückgabe:"
+#~ msgstr "Rückgabe"
 
-#, fuzzy
 #~ msgid "Get"
-#~ msgstr "Setzen"
+#~ msgstr "Abfragen"
 
 #~ msgid "Base Type:"
 #~ msgstr "Basistyp:"
@@ -6712,50 +6717,90 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #~ "Ungültiger Rückgabewert von _step(), muss Integer (für Sequenzausgabe) "
 #~ "oder String (für Fehler) sein."
 
-#, fuzzy
-#~ msgid "Error creating the signature object."
-#~ msgstr "Fehler beim Schreiben des Projekt-PCK!"
+#~ msgid "just pressed"
+#~ msgstr "gerade gedrückt"
 
-#, fuzzy
-#~ msgid "Invalid unique name."
-#~ msgstr "Ungültiger Name."
+#~ msgid "just released"
+#~ msgstr "gerade losgelassen"
 
-#, fuzzy
-#~ msgid "Invalid product GUID."
-#~ msgstr "Ungültige Schriftgröße."
-
-#, fuzzy
-#~ msgid "Invalid publisher GUID."
-#~ msgstr "Ungültiger Pfad"
-
-#, fuzzy
-#~ msgid "Invalid background color."
-#~ msgstr "Eigene Schriftart-Quelle ist ungültig."
-
-#, fuzzy
-#~ msgid "Path property must point to a valid Spatial node to work."
+#~ msgid ""
+#~ "Couldn't read the certficate file. Are the path and password both correct?"
 #~ msgstr ""
-#~ "Die Pfad-Eigenschaft muss auf ein gültiges Particles2D-Node verweisen."
+#~ "Zertifikat-Datei konnte nicht gelesen werden. Sind Pfad und Passwort "
+#~ "beide korrekt?"
 
-#, fuzzy
+#~ msgid "Error creating the signature object."
+#~ msgstr "Fehler beim erstellen des Signaturobjekts."
+
+#~ msgid "Error creating the package signature."
+#~ msgstr "Fehler beim erstellen der Paketsignatur."
+
+#~ msgid ""
+#~ "No export templates found.\n"
+#~ "Download and install export templates."
+#~ msgstr ""
+#~ "Keine Exportvorlagen gefunden.\n"
+#~ "Laden Sie Exportvorlagen ggf. von der offiziellen Webseite herunter und "
+#~ "installieren Sie diese."
+
+#~ msgid "Custom debug package not found."
+#~ msgstr "Selbst konfiguriertes Debug-Paket nicht gefunden."
+
+#~ msgid "Custom release package not found."
+#~ msgstr "Selbst konfiguriertes Release-Paket nicht gefunden."
+
+#~ msgid "Invalid unique name."
+#~ msgstr "Ungültiger einzigartiger Name."
+
+#~ msgid "Invalid product GUID."
+#~ msgstr "Ungültige Produkt-GUID."
+
+#~ msgid "Invalid publisher GUID."
+#~ msgstr "Ungültige Verleger-GUID."
+
+#~ msgid "Invalid background color."
+#~ msgstr "Ungültige Hintergrundfarbe."
+
+#~ msgid "Invalid Store Logo image dimensions (should be 50x50)."
+#~ msgstr "Ungültige Abmessungen des Store-Logos (sollte 50x50 sein)."
+
+#~ msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
+#~ msgstr "Ungültige Abmessungen für 44x44-Quadratlogo (sollte 44x44 sein)."
+
+#~ msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
+#~ msgstr "Ungültige Abmessungen für 71x71-Quadratlogo (sollte 71x71 sein)."
+
+#~ msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
+#~ msgstr ""
+#~ "Ungültige Abmessungen für 150x150-Quadratlogo (sollte 150x150 sein)."
+
+#~ msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
+#~ msgstr ""
+#~ "Ungültige Abmessungen für 310x310-Quadratlogo (sollte 310x310 sein)."
+
+#~ msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
+#~ msgstr "Ungültige Abmessungen für 310x150-Breitlogo (sollte 310x150 sein)."
+
+#~ msgid "Invalid splash screen image dimensions (should be 620x300)."
+#~ msgstr "Ungültige Abmessungen für Startbildschirm (sollte 620x300 sein)."
+
+#~ msgid "Path property must point to a valid Spatial node to work."
+#~ msgstr "Die Pfad-Eigenschaft muss auf ein gültiges Spatial-Node verweisen."
+
 #~ msgid "Show Bones"
-#~ msgstr "Knochen erstellen"
+#~ msgstr "Knochen anzeigen"
 
-#, fuzzy
 #~ msgid "Close All"
-#~ msgstr "Schließen"
+#~ msgstr "Alle schließen"
 
-#, fuzzy
 #~ msgid "Pick Color"
-#~ msgstr "Farbe"
+#~ msgstr "Farbe auswählen"
 
-#, fuzzy
 #~ msgid "Theme"
-#~ msgstr "Motiv speichern"
+#~ msgstr "Motiv"
 
-#, fuzzy
 #~ msgid "New Script"
-#~ msgstr "Nächstes Skript"
+#~ msgstr "Neues Skript"
 
 #~ msgid "Select Property"
 #~ msgstr "Eigenschaft auswählen"
@@ -6763,37 +6808,30 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #~ msgid "Select Method"
 #~ msgstr "Methode auswählen"
 
-#, fuzzy
 #~ msgid "Attach Script"
 #~ msgstr "Skript hinzufügen"
 
-#, fuzzy
 #~ msgid "Clear Script"
-#~ msgstr "Erstelle Skript"
+#~ msgstr "Skript leeren"
 
-#, fuzzy
 #~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Erzeuge ein neues Skript für das ausgewählte Node."
+#~ msgstr ""
+#~ "Ein neues oder existierendes Skript zum ausgewählten Node hinzufügen."
 
-#, fuzzy
 #~ msgid "Clear a script for the selected node."
-#~ msgstr "Erzeuge ein neues Skript für das ausgewählte Node."
+#~ msgstr "Leere ein Skript für das ausgewählte Node."
 
-#, fuzzy
 #~ msgid "Error loading script from %s"
-#~ msgstr "Fehler beim Laden der Szene von %s"
+#~ msgstr "Fehler beim Laden des Skripts von %s"
 
-#, fuzzy
 #~ msgid "Create new script"
-#~ msgstr "Erstelle Skript"
+#~ msgstr "Neues Skript erstellen"
 
-#, fuzzy
 #~ msgid "Load existing script"
-#~ msgstr "Nächstes Skript"
+#~ msgstr "Lade bestehendes Skript"
 
-#, fuzzy
 #~ msgid "Attach Node Script"
-#~ msgstr "Erstelle Node-Skript"
+#~ msgstr "Node-Skript hinzufügen"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

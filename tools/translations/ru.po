@@ -1,5 +1,5 @@
 # Russian translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # DimOkGamer <dimokgamer@gmail.com>, 2016.
@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-17 19:47+0000\n"
+"PO-Revision-Date: 2016-12-14 17:04+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
@@ -603,7 +603,7 @@ msgstr "Дублировать перемещённый"
 
 #: tools/editor/animation_editor.cpp
 msgid "Remove Selection"
-msgstr "Убрать выделение"
+msgstr "Удалить выделенное"
 
 #: tools/editor/animation_editor.cpp
 msgid "Continuous"
@@ -2712,9 +2712,8 @@ msgid "Auto"
 msgstr "Авто"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "Имя Узла:"
+msgstr "Имя корневого узла:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -3065,7 +3064,7 @@ msgstr "Добавить анимацию"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Blend Next Changed"
-msgstr "изменена последующая анимация"
+msgstr "Изменена последующая анимация"
 
 #: tools/editor/plugins/animation_player_editor_plugin.cpp
 msgid "Change Blend Time"
@@ -3632,13 +3631,12 @@ msgid "Snap (Pixels):"
 msgstr "Привязка (пиксели):"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add %s"
-msgstr "Добавить все"
+msgstr "Добавить %s"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Добавление %s..."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -3658,7 +3656,7 @@ msgstr "Ок :("
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
-msgstr "Нет родителя для добавления потомка."
+msgstr "Не выбран родитель для добавления потомка."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -3666,15 +3664,16 @@ msgid "This operation requires a single selected node."
 msgstr "Эта операция требует одного выбранного узла."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change default type"
-msgstr "Изменено стандартное значение"
+msgstr "Изменить тип по умолчанию"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Drag & drop + Shift : Добавить узел к выделению\n"
+"Drag & drop + Alt : Изменить тип узла"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -5778,7 +5777,7 @@ msgstr "Удалить действие"
 
 #: tools/editor/project_settings.cpp
 msgid "Toggle Persisting"
-msgstr "Переключено настаивание"
+msgstr "Параметр изменён"
 
 #: tools/editor/project_settings.cpp
 msgid "Error saving settings."
@@ -6273,7 +6272,7 @@ msgstr "Не удалось создать скрипт в файловой си
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
-msgstr "Путь не назначен"
+msgstr "Не указан путь"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is not local"
@@ -6471,13 +6470,6 @@ msgstr "Изменена длинна луча"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Изменены границы уведомителя"
-
-#~ msgid ""
-#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
-#~ "'user://', or 'local://'"
-#~ msgstr ""
-#~ "Путь не может начинаться с '/', абсолютные пути должны начинаться с "
-#~ "'res://', 'user://' или 'local://'"
 
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
@@ -6782,37 +6774,36 @@ msgstr "Изменены границы уведомителя"
 #~ msgid "Select Method"
 #~ msgstr "Выбрать метод"
 
-#, fuzzy
 #~ msgid "Attach Script"
-#~ msgstr "Добавить скрипт"
+#~ msgstr "Прикрепить скрипт"
 
-#, fuzzy
 #~ msgid "Clear Script"
-#~ msgstr "Создать скрипт"
+#~ msgstr "Убрать скрипт"
 
-#, fuzzy
 #~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Создать новый скрипт для выбранного узла."
+#~ msgstr "Прикрепить новый или существующий скрипт к выбранному узлу."
 
-#, fuzzy
 #~ msgid "Clear a script for the selected node."
-#~ msgstr "Создать новый скрипт для выбранного узла."
+#~ msgstr "Убрать скрипт у выбранного узла."
 
-#, fuzzy
 #~ msgid "Error loading script from %s"
-#~ msgstr "Ошибка при загрузке сцены из %s"
+#~ msgstr "Ошибка при загрузке скрипта из %s"
 
-#, fuzzy
 #~ msgid "Create new script"
-#~ msgstr "Создать скрипт"
+#~ msgstr "Создать новый скрипт"
 
-#, fuzzy
 #~ msgid "Load existing script"
-#~ msgstr "Следующий скрипт"
+#~ msgstr "Загрузить существующий скрипт"
 
-#, fuzzy
 #~ msgid "Attach Node Script"
-#~ msgstr "Создать скрипт для узла"
+#~ msgstr "Добавление скрипта"
+
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Путь не может начинаться с '/', абсолютные пути должны начинаться с "
+#~ "'res://', 'user://' или 'local://'"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

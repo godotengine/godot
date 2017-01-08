@@ -1,5 +1,5 @@
 # Indonesian translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Abdul Aziz Muslim Alqudsy <abdul.aziz.muslim.alqudsy@gmail.com>, 2016.
@@ -6460,14 +6460,6 @@ msgstr ""
 msgid "Change Notifier Extents"
 msgstr ""
 
-#, fuzzy
-#~ msgid ""
-#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
-#~ "'user://', or 'local://'"
-#~ msgstr ""
-#~ "Path tidak bisa diawali dengan '/', tetapi absolut path harus diawali "
-#~ "dengan 'res://', 'user://', atau 'local://'"
-
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6692,6 +6684,14 @@ msgstr ""
 #, fuzzy
 #~ msgid "Attach Node Script"
 #~ msgstr "Scene Baru"
+
+#, fuzzy
+#~ msgid ""
+#~ "Paths cannot start with '/', absolute paths must start with 'res://', "
+#~ "'user://', or 'local://'"
+#~ msgstr ""
+#~ "Path tidak bisa diawali dengan '/', tetapi absolut path harus diawali "
+#~ "dengan 'res://', 'user://', atau 'local://'"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
