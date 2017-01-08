@@ -15177,6 +15177,12 @@
 				Set connection to use, for this client.
 			</description>
 		</method>
+		<method name="set_ip_type">
+			<argument index="0" name="ip_type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_read_chunk_size">
 			<argument index="0" name="bytes" type="int">
 			</argument>
@@ -15420,6 +15426,12 @@
 				Set the file to download into. Outputs the response body into the file.
 			</description>
 		</method>
+		<method name="set_ip_type">
+			<argument index="0" name="ip_type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_max_redirects">
 			<argument index="0" name="amount" type="int">
 			</argument>
@@ -15562,6 +15574,12 @@
 		IP contains some support functions for the IPv4 protocol. TCP/IP support is in different classes (see [StreamPeerTCP] and [TCP_Server]). IP provides hostname resolution support, both blocking and threaded.
 	</description>
 	<methods>
+		<method name="clear_cache">
+			<argument index="0" name="arg0" type="String" default="&quot;&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="erase_resolve_item">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -15598,7 +15616,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
+			<argument index="1" name="ip_type" type="int" default="3">
 			</argument>
 			<description>
 				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
@@ -15609,7 +15627,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
+			<argument index="1" name="ip_type" type="int" default="3">
 			</argument>
 			<description>
 				Create a queue item for resolving a given hostname to an IPv4 or IPv6 depending on "ip_type". The queue ID is returned, or RESOLVER_INVALID_ID on error.
@@ -15628,6 +15646,14 @@
 		<constant name="RESOLVER_MAX_QUERIES" value="32">
 		</constant>
 		<constant name="RESOLVER_INVALID_ID" value="-1">
+		</constant>
+		<constant name="TYPE_NONE" value="0">
+		</constant>
+		<constant name="TYPE_IPV4" value="1">
+		</constant>
+		<constant name="TYPE_IPV6" value="2">
+		</constant>
+		<constant name="TYPE_ANY" value="3">
 		</constant>
 	</constants>
 </class>
@@ -24513,13 +24539,6 @@
 				Close the UDP socket the [PacketPeerUDP] is currently listening on.
 			</description>
 		</method>
-		<method name="get_packet_address" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-				Return the address of the remote peer(as a 32bit integer) that sent the last packet(that was received with [method get_packet] or [method get_var]).
-			</description>
-		</method>
 		<method name="get_packet_ip" qualifiers="const">
 			<return type="String">
 			</return>
@@ -24550,6 +24569,12 @@
 			</argument>
 			<description>
 				Make this [PacketPeerUDP] listen on the "port" with a buffer size "recv_buf_size". Listens on all available addresses.
+			</description>
+		</method>
+		<method name="set_ip_type">
+			<argument index="0" name="ip_type" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -38162,6 +38187,12 @@
 				Return whether this peer is connected. Returns true while connecting and connected.
 			</description>
 		</method>
+		<method name="set_ip_type">
+			<argument index="0" name="ip_type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0">
@@ -39641,6 +39672,12 @@
 			</argument>
 			<description>
 				Listen on a port using protocol, alternatively give a white-list of accepted hosts.
+			</description>
+		</method>
+		<method name="set_ip_type">
+			<argument index="0" name="ip_type" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="stop">
