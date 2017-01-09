@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   sodipodi:docname="icon_image_sky_box.svg"
+   inkscape:export-ydpi="90"
+   inkscape:export-xdpi="90"
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_box_shape.png"
+   inkscape:version="0.91 r13725"
+   version="1.1"
+   id="svg2"
+   viewBox="0 0 16 16"
+   height="16"
+   width="16">
+  <sodipodi:namedview
+     inkscape:snap-smooth-nodes="true"
+     inkscape:object-nodes="true"
+     inkscape:snap-intersection-paths="false"
+     inkscape:object-paths="false"
+     inkscape:window-maximized="1"
+     inkscape:window-y="27"
+     inkscape:window-x="0"
+     inkscape:window-height="1016"
+     inkscape:window-width="1920"
+     inkscape:snap-center="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:bbox-nodes="true"
+     inkscape:bbox-paths="true"
+     inkscape:snap-bbox="true"
+     units="px"
+     showgrid="true"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="px"
+     inkscape:cy="9.413879"
+     inkscape:cx="10.701686"
+     inkscape:zoom="32"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:snap-midpoints="true">
+    <inkscape:grid
+       id="grid3336"
+       type="xygrid"
+       empspacing="4" />
+  </sodipodi:namedview>
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4142">
+      <stop
+         style="stop-color:#84c2ff;stop-opacity:1"
+         offset="0"
+         id="stop4144" />
+      <stop
+         style="stop-color:#46a3ff;stop-opacity:1"
+         offset="1"
+         id="stop4146" />
+    </linearGradient>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4142"
+       id="radialGradient4148"
+       cx="9.9399967"
+       cy="1051.0801"
+       fx="9.9399967"
+       fy="1051.0801"
+       r="7"
+       gradientTransform="matrix(1.3337828e-5,-1.9999995,1.5714282,2.7945105e-6,-1643.697,1071.2392)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="translate(0,-1036.3622)"
+     id="layer1"
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <rect
+       style="opacity:1;fill:url(#radialGradient4148);fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4140"
+       width="14"
+       height="13.999983"
+       x="1"
+       y="1037.3622"
+       ry="2.0000174" />
+    <path
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 6 4 A 1 1 0 0 0 5 5 A 1 1 0 0 0 6 6 A 1 1 0 0 0 7 5 A 1 1 0 0 0 6 4 z M 11 5 A 2 2 0 0 0 9 7 A 1 1 0 0 0 8 8 A 1 1 0 0 0 9 9 L 13 9 A 1 1 0 0 0 14 8 A 1 1 0 0 0 13 7 A 2 2 0 0 0 11 5 z M 3 9 A 1 1 0 0 0 2 10 A 1 1 0 0 0 3 11 L 5 11 A 1 1 0 0 0 4 12 A 1 1 0 0 0 5 13 L 8 13 A 1 1 0 0 0 9 12 A 1 1 0 0 0 8 11 L 6 11 A 1 1 0 0 0 7 10 A 1 1 0 0 0 6 9 L 3 9 z "
+       transform="translate(0,1036.3622)"
+       id="path4150" />
+  </g>
+</svg>

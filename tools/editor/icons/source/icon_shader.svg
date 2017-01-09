@@ -7,7 +7,6 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="16"
@@ -22,30 +21,6 @@
    sodipodi:docname="icon_shader.svg">
   <defs
      id="defs4">
-    <linearGradient
-       inkscape:collect="always"
-       id="linearGradient4174">
-      <stop
-         style="stop-color:#ff5353;stop-opacity:1"
-         offset="0"
-         id="stop4176" />
-      <stop
-         id="stop4186"
-         offset="0.29999271"
-         style="stop-color:#f1e17a;stop-opacity:1" />
-      <stop
-         id="stop4184"
-         offset="0.55557561"
-         style="stop-color:#6bfcef;stop-opacity:1" />
-      <stop
-         style="stop-color:#9765fd;stop-opacity:1"
-         offset="0.8889094"
-         id="stop4188" />
-      <stop
-         style="stop-color:#ff6092;stop-opacity:1"
-         offset="1"
-         id="stop4178" />
-    </linearGradient>
     <clipPath
        clipPathUnits="userSpaceOnUse"
        id="clipPath4253">
@@ -55,17 +30,6 @@
          id="path4255"
          inkscape:connector-curvature="0" />
     </clipPath>
-    <radialGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient4174"
-       id="radialGradient4161"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.2857125,1.428583,-1.4285914,1.2857189,1540.5411,-308.80327)"
-       cx="7.5384259"
-       cy="1041.7489"
-       fx="7.5384259"
-       fy="1041.7489"
-       r="7" />
     <clipPath
        clipPathUnits="userSpaceOnUse"
        id="clipPath4199">
@@ -83,9 +47,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254832"
-     inkscape:cx="1.7751371"
-     inkscape:cy="8.8192435"
+     inkscape:zoom="31.999999"
+     inkscape:cx="6.7591143"
+     inkscape:cy="9.6862321"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -183,93 +147,5 @@
          x="3"
          y="1040.8622" />
     </g>
-    <path
-       inkscape:connector-curvature="0"
-       style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 29.5,1037.3622 -7,3 0,8 7,3 7,-3 0,-8 -7,-3 z"
-       id="path4151" />
-    <path
-       style="fill:#ffff91;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 22.5,1046.3622 7,3 7,-3 -7,-3 z"
-       id="path4223"
-       inkscape:connector-curvature="0" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path4221"
-       d="m 22.5,1043.3622 7,3 7,-3 -7,-3 z"
-       style="fill:#ff91ff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-    <path
-       style="fill:#00ffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 29.5,1045.3622 -7,-3 0,-2 7,3 z"
-       id="path4143"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccc" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path4145"
-       d="m 29.5,1045.3622 7,-3 0,-2 -7,3 z"
-       style="fill:#00d8d8;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       sodipodi:nodetypes="ccccc" />
-    <path
-       style="fill:#91ffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 22.5,1040.3622 7,3 7,-3 -7,-3 z"
-       id="path4149"
-       inkscape:connector-curvature="0" />
-    <path
-       sodipodi:nodetypes="ccccc"
-       style="fill:#d800d8;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 29.5,1048.3622 7,-3 0,-2 -7,3 z"
-       id="path4208"
-       inkscape:connector-curvature="0" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path4215"
-       d="m 29.5,1048.3622 -7,-3 0,-2 7,3 z"
-       style="fill:#ff00ff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       sodipodi:nodetypes="ccccc" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path4217"
-       d="m 29.5,1051.3622 7,-3 0,-2 -7,3 z"
-       style="fill:#d8d800;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       sodipodi:nodetypes="ccccc" />
-    <path
-       sodipodi:nodetypes="ccccc"
-       style="fill:#ffff00;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 29.5,1051.3622 -7,-3 0,-2 7,3 z"
-       id="path4219"
-       inkscape:connector-curvature="0" />
-    <g
-       inkscape:label="Layer 1"
-       id="layer1-5"
-       transform="translate(18,1)">
-      <path
-         id="path4151-1"
-         d="m 29.5,1037.3622 -7,3 0,8 7,3 7,-3 0,-8 -7,-3 z"
-         style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         inkscape:connector-curvature="0" />
-      <path
-         inkscape:connector-curvature="0"
-         id="path4149-2"
-         d="m 22.5,1040.3622 7,3 7,-3 -7,-3 z"
-         style="fill:#00ffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-      <path
-         sodipodi:nodetypes="ccccc"
-         inkscape:connector-curvature="0"
-         id="path4143-0"
-         d="m 29.5,1051.3622 -7,-3 0,-8 7,3 z"
-         style="fill:#ff00ff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
-      <path
-         sodipodi:nodetypes="ccccc"
-         style="fill:#ffff00;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 29.5,1051.3622 7,-3 0,-8 -7,3 z"
-         id="path4145-0"
-         inkscape:connector-curvature="0" />
-    </g>
-    <path
-       style="opacity:1;fill:url(#radialGradient4161);fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 64,1037.3622 a 7,7.0000001 0 0 0 -7,7 7,7.0000001 0 0 0 7,7 7,7.0000001 0 0 0 7,-7 7,7.0000001 0 0 0 -7,-7 z m -2,2 a 2,2 0 0 1 2,2 2,2 0 0 1 -2,2 2,2 0 0 1 -2,-2 2,2 0 0 1 2,-2 z"
-       id="path4159"
-       inkscape:connector-curvature="0" />
   </g>
 </svg>
