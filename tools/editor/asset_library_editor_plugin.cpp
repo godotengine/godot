@@ -29,7 +29,7 @@
 #include "asset_library_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
-
+#include "io/json.h"
 
 
 
@@ -1076,8 +1076,16 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 	}
 
 	print_line("response: "+itos(p_status)+" code: "+itos(p_code));
+
 	Dictionary d;
-	d.parse_json(str);
+	{
+		Variant js;
+		String errs;
+		int errl;
+		JSON::parse(str,js,errs,errl);
+		d=js;
+	}
+
 
 	print_line(Variant(d).get_construct_string());
 

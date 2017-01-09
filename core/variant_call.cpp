@@ -32,6 +32,7 @@
 #include "core_string_names.h"
 #include "script_language.h"
 
+
 typedef void (*VariantFunc)(Variant& r_ret,Variant& p_self,const Variant** p_args);
 typedef void (*VariantConstructFunc)(Variant& r_ret,const Variant** p_args);
 
@@ -146,6 +147,15 @@ struct _VariantCall {
 	};
 
 //	void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
+
+	static void make_func_return_variant(Variant::Type p_type,const StringName& p_name) {
+
+#ifdef DEBUG_ENABLED
+		type_funcs[p_type].functions[p_name].returns=true;
+#endif
+	}
+
+
 	static void addfunc(Variant::Type p_type, Variant::Type p_return,const StringName& p_name,VariantFunc p_func, const Vector<Variant>& p_defaultarg,const Arg& p_argtype1=Arg(),const Arg& p_argtype2=Arg(),const Arg& p_argtype3=Arg(),const Arg& p_argtype4=Arg(),const Arg& p_argtype5=Arg()) {
 
 		FuncData funcdata;
@@ -455,8 +465,6 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Dictionary,hash);
 	VCALL_LOCALMEM0R(Dictionary,keys);
 	VCALL_LOCALMEM0R(Dictionary,values);
-	VCALL_LOCALMEM1R(Dictionary,parse_json);
-	VCALL_LOCALMEM0R(Dictionary,to_json);
 
 	VCALL_LOCALMEM2(Array,set);
 	VCALL_LOCALMEM1R(Array,get);
@@ -1436,6 +1444,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,RAW_ARRAY,String,to_utf8,varray());
 
 
+
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,normalized,varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,length,varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,angle,varray());
@@ -1555,9 +1564,6 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(DICTIONARY,INT,Dictionary,hash,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,values,varray());
-
-	ADDFUNC1(DICTIONARY,INT,Dictionary,parse_json,STRING,"json",varray());
-	ADDFUNC0(DICTIONARY,STRING,Dictionary,to_json,varray());
 
 	ADDFUNC0(ARRAY,INT,Array,size,varray());
 	ADDFUNC0(ARRAY,BOOL,Array,empty,varray());

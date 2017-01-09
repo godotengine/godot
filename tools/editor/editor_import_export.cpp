@@ -783,7 +783,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 		if (atlas_valid) {
 			//compare options
-			Dictionary options;
+			/*Dictionary options;
 			options.parse_json(f->get_line());
 			if (!options.has("lossy_quality") || float(options["lossy_quality"])!=group_lossy_quality)
 				atlas_valid=false;
@@ -794,7 +794,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 			if (!atlas_valid)
 				print_line("JSON INVALID");
-
+*/
 		}
 
 
@@ -921,7 +921,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			options["lossy_quality"]=group_lossy_quality;
 			options["shrink"]=EditorImportExport::get_singleton()->image_export_group_get_shrink(E->get());
 			options["image_format"]=group_format;
-			f->store_line(options.to_json());
+//			f->store_line(options.to_json());
 			f->store_line(image_list_md5);
 		}
 

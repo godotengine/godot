@@ -63,9 +63,6 @@ public:
 	void clear();
 
 
-	Error parse_json(const String& p_json);
-	String to_json() const;
-
 	bool is_shared() const;
 
 	bool has(const Variant& p_key) const;

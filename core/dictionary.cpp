@@ -29,7 +29,6 @@
 #include "dictionary.h"
 #include "safe_refcount.h"
 #include "variant.h"
-#include "io/json.h"
 
 struct _DictionaryVariantHash {
 
@@ -277,22 +276,6 @@ const Variant* Dictionary::next(const Variant* p_key) const {
 	return _p->variant_map.next(p_key);
 }
 
-
-Error Dictionary::parse_json(const String& p_json) {
-
-	String errstr;
-	int errline=0;
-	if (p_json != ""){
-	Error err = JSON::parse(p_json,*this,errstr,errline);
-	if (err!=OK) {
-		ERR_EXPLAIN("Error parsing JSON: "+errstr+" at line: "+itos(errline));
-		ERR_FAIL_COND_V(err!=OK,err);
-		}
-	}
-
-	return OK;
-}
-
 Dictionary Dictionary::copy() const {
 
 	Dictionary n(is_shared());
@@ -305,11 +288,6 @@ Dictionary Dictionary::copy() const {
 	}
 
 	return n;
-}
-
-String Dictionary::to_json() const {
-
-	return JSON::print(*this);
 }
 
 

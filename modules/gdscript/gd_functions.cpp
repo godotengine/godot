@@ -35,6 +35,7 @@
 #include "os/os.h"
 #include "variant_parser.h"
 #include "io/marshalls.h"
+#include "io/json.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
 
@@ -103,6 +104,9 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"load",
 		"inst2dict",
 		"dict2inst",
+		"validate_json",
+		"parse_json",
+		"to_json",
 		"hash",
 		"Color8",
 		"print_stack",
@@ -846,6 +850,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			if (p_args[0]->get_type()!=Variant::STRING) {
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
+				r_error.expected=Variant::STRING;
 				r_ret=Variant();
 			} else {
 				r_ret=ResourceLoader::load(*p_args[0]);
@@ -1023,6 +1028,57 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				}
 			}
 
+		} break;
+		case VALIDATE_JSON: {
+
+			VALIDATE_ARG_COUNT(1);
+
+			if (p_args[0]->get_type()!=Variant::STRING) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::STRING;
+				r_ret=Variant();
+				return;
+			}
+
+			String errs;
+			int errl;
+
+			Error err = JSON::parse(*p_args[0],r_ret,errs,errl);
+
+			if (err!=OK) {
+				r_ret=itos(errl)+":"+errs;
+			} else {
+				r_ret="";
+			}
+
+		} break;
+		case PARSE_JSON: {
+
+			VALIDATE_ARG_COUNT(1);
+
+			if (p_args[0]->get_type()!=Variant::STRING) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::STRING;
+				r_ret=Variant();
+				return;
+			}
+
+			String errs;
+			int errl;
+
+			Error err = JSON::parse(*p_args[0],r_ret,errs,errl);
+
+			if (err!=OK) {
+				r_ret=Variant();
+			}
+
+		} break;
+		case TO_JSON: {
+			VALIDATE_ARG_COUNT(1);
+
+			r_ret = JSON::print(*p_args[0]);
 		} break;
 		case HASH: {
 
@@ -1508,6 +1564,24 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("dict2inst",PropertyInfo(Variant::DICTIONARY,"dict"));
 			mi.return_val.type=Variant::OBJECT;
+			return mi;
+		} break;
+		case VALIDATE_JSON: {
+
+			MethodInfo mi("validate_json:Variant",PropertyInfo(Variant::STRING,"json"));
+			mi.return_val.type=Variant::STRING;
+			return mi;
+		} break;
+		case PARSE_JSON: {
+
+			MethodInfo mi("parse_json:Variant",PropertyInfo(Variant::STRING,"json"));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
+		case TO_JSON: {
+
+			MethodInfo mi("to_json",PropertyInfo(Variant::NIL,"var:Variant"));
+			mi.return_val.type=Variant::STRING;
 			return mi;
 		} break;
 		case HASH: {

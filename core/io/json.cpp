@@ -92,9 +92,9 @@ String JSON::_print_var(const Variant& p_var) {
 
 }
 
-String JSON::print(const Dictionary& p_dict) {
+String JSON::print(const Variant& p_var) {
 
-	return _print_var(p_dict);
+	return _print_var(p_var);
 }
 
 
@@ -450,27 +450,24 @@ Error JSON::_parse_object(Dictionary &object,const CharType *p_str,int &index, i
 }
 
 
-Error JSON::parse(const String& p_json,Dictionary& r_ret,String &r_err_str,int &r_err_line) {
+Error JSON::parse(const String& p_json, Variant &r_ret, String &r_err_str, int &r_err_line) {
 
 
 	const CharType *str = p_json.ptr();
 	int idx = 0;
 	int len = p_json.length();
 	Token token;
-	int line=0;
+	r_err_line=0;
 	String aux_key;
 
-	Error err = _get_token(str,idx,len,token,line,r_err_str);
+	Error err = _get_token(str,idx,len,token,r_err_line,r_err_str);
 	if (err)
 		return err;
 
-	if (token.type!=TK_CURLY_BRACKET_OPEN) {
+	err = _parse_value(r_ret,token,str,idx,len,r_err_line,r_err_str);
 
-		r_err_str="Expected '{'";
-		return ERR_PARSE_ERROR;
-	}
-
-	return _parse_object(r_ret,str,idx,len,r_err_line,r_err_str);
+	return err;
+	
 
 }
 
