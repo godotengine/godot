@@ -49,6 +49,7 @@ private:
 
 	bool flat;
 	String text;
+	String xl_text;
 	Ref<Texture> icon;
 	bool clip_text;
 	TextAlign align;

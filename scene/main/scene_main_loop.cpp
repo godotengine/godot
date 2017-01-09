@@ -650,6 +650,9 @@ void SceneTree::_notification(int p_notification) {
 
 			get_root()->propagate_notification(p_notification);
 		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			get_root()->propagate_notification(Node::NOTIFICATION_TRANSLATION_CHANGED);
+		} break;
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
 
 			notify_group(GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input",NOTIFICATION_WM_UNFOCUS_REQUEST);

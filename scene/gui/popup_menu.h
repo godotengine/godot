@@ -44,6 +44,7 @@ class PopupMenu : public Popup {
 	struct Item {
 		Ref<Texture> icon;
 		String text;
+		String xl_text;
 		bool checked;
 		bool checkable;
 		bool separator;

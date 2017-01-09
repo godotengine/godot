@@ -58,6 +58,7 @@ private:
 	Align align;
 	VAlign valign;
 	String text;
+	String xl_text;
 	bool autowrap;
 	bool clip;
 	Size2 minsize;

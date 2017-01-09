@@ -939,6 +939,10 @@ void TranslationServer::set_locale(const String& p_locale) {
 	else {
 		locale=univ_locale;
 	}
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
+	}
 }
 
 String TranslationServer::get_locale() const {

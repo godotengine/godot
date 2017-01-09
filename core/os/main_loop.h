@@ -54,6 +54,7 @@ public:
 		NOTIFICATION_WM_QUIT_REQUEST = 7,
 		NOTIFICATION_WM_UNFOCUS_REQUEST = 8,
 		NOTIFICATION_OS_MEMORY_WARNING = 9,
+		NOTIFICATION_TRANSLATION_CHANGED = 10,
 	};
 
 	virtual void input_event( const InputEvent& p_event );
