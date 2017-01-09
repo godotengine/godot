@@ -72,6 +72,8 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 			track_set_path(track,p_value);
 		else if (what=="interp")
 			track_set_interpolation_type(track,InterpolationType(p_value.operator int()));
+		else if (what=="loop_wrap")
+			track_set_interpolation_loop_wrap(track,p_value);
 		else if (what=="imported")
 			track_set_imported(track,p_value);
 		else if (what == "keys" || what=="key_values") {
@@ -291,6 +293,8 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 			r_ret=track_get_path(track);
 		else if (what=="interp")
 			r_ret = track_get_interpolation_type(track);
+		else if (what=="loop_wrap")
+			r_ret = track_get_interpolation_loop_wrap(track);
 		else if (what=="imported")
 			r_ret = track_is_imported(track);
 		else if (what=="keys") {
@@ -440,6 +444,7 @@ void Animation::_get_property_list( List<PropertyInfo> *p_list) const {
 		p_list->push_back( PropertyInfo( Variant::STRING, "tracks/"+itos(i)+"/type", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::NODE_PATH, "tracks/"+itos(i)+"/path", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::INT, "tracks/"+itos(i)+"/interp", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
+		p_list->push_back( PropertyInfo( Variant::BOOL, "tracks/"+itos(i)+"/loop_wrap", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::BOOL, "tracks/"+itos(i)+"/imported", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 		p_list->push_back( PropertyInfo( Variant::ARRAY, "tracks/"+itos(i)+"/keys", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
 	}
@@ -559,6 +564,19 @@ Animation::InterpolationType Animation::track_get_interpolation_type(int p_track
 	return tracks[p_track]->interpolation;
 }
 
+void Animation::track_set_interpolation_loop_wrap(int p_track,bool p_enable) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	tracks[p_track]->loop_wrap=p_enable;
+	emit_changed();
+
+}
+
+bool Animation::track_get_interpolation_loop_wrap(int p_track) const{
+
+	ERR_FAIL_INDEX_V(p_track, tracks.size(),INTERPOLATION_NEAREST);
+	return tracks[p_track]->loop_wrap;
+
+}
 
 // transform
 /*
@@ -1211,7 +1229,7 @@ float Animation::_cubic_interpolate( const float& p_pre_a,const float& p_a, cons
 }
 
 template<class T>
-T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  InterpolationType p_interp, bool *p_ok) const {
+T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  InterpolationType p_interp, bool p_loop_wrap,bool *p_ok) const {
 
 	int len=_find( p_keys, length )+1; // try to find last key (there may be more past the end)
 
@@ -1239,7 +1257,7 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 	float c=0;
 	// prepare for all cases of interpolation
 
-	if (loop) {
+	if (loop && p_loop_wrap) {
 	// loop
 		if (idx>=0) {
 
@@ -1363,7 +1381,7 @@ Error Animation::transform_track_interpolate(int p_track, float p_time, Vector3 
 
 	bool ok;
 
-	TransformKey tk = _interpolate( tt->transforms, p_time, tt->interpolation, &ok );
+	TransformKey tk = _interpolate( tt->transforms, p_time, tt->interpolation, tt->loop_wrap, &ok );
 
 	if (!ok) // ??
 		return ERR_UNAVAILABLE;
@@ -1391,7 +1409,7 @@ Variant Animation::value_track_interpolate(int p_track, float p_time) const {
 	bool ok;
 
 
-	Variant res = _interpolate( vt->values, p_time, vt->update_mode==UPDATE_CONTINUOUS?vt->interpolation:INTERPOLATION_NEAREST, &ok );
+	Variant res = _interpolate( vt->values, p_time, vt->update_mode==UPDATE_CONTINUOUS?vt->interpolation:INTERPOLATION_NEAREST,vt->loop_wrap, &ok );
 
 
 	if (ok) {
@@ -1711,6 +1729,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(_MD("track_set_interpolation_type","idx","interpolation"),&Animation::track_set_interpolation_type);
 	ClassDB::bind_method(_MD("track_get_interpolation_type","idx"),&Animation::track_get_interpolation_type);
 
+	ClassDB::bind_method(_MD("track_set_interpolation_loop_wrap","idx","interpolation"),&Animation::track_set_interpolation_loop_wrap);
+	ClassDB::bind_method(_MD("track_get_interpolation_loop_wrap","idx"),&Animation::track_get_interpolation_loop_wrap);
 
 
 	ClassDB::bind_method(_MD("transform_track_interpolate","idx","time_sec"),&Animation::_transform_track_interpolate);

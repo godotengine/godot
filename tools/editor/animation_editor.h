@@ -113,6 +113,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 			OVER_KEY,
 			OVER_VALUE,
 			OVER_INTERP,
+			OVER_WRAP,
 			OVER_UP,
 			OVER_DOWN,
 			OVER_REMOVE,
@@ -166,7 +167,9 @@ class AnimationKeyEditor : public VBoxContainer  {
 	int track_name_editing;
 	int interp_editing;
 	int cont_editing;
+	int wrap_editing;
 	int selected_track;
+	int track_ofs[5];
 
 	int last_menu_track_opt;
 	LineEdit *track_name;
