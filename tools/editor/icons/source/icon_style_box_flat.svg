@@ -15,29 +15,29 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_canvas_item_material.png"
-   inkscape:export-xdpi="45"
-   inkscape:export-ydpi="45"
-   sodipodi:docname="icon_shader.svg">
+   inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_center_container.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="icon_style_box_flat.svg">
   <defs
      id="defs4">
     <clipPath
        clipPathUnits="userSpaceOnUse"
-       id="clipPath4253">
+       id="clipPath4313">
       <path
-         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         d="m 16.458984,1024.37 a 12.000027,12.000027 0 0 0 -3.564453,0.4004 12.000027,12.000027 0 0 0 -8.4863279,14.6973 12.000027,12.000027 0 0 0 14.6972659,8.4863 12.000027,12.000027 0 0 0 8.486328,-14.6973 12.000027,12.000027 0 0 0 -11.132813,-8.8867 z M 16.25,1029.8212 a 6.5451717,6.5451717 0 0 1 6.072266,4.8476 6.5451717,6.5451717 0 0 1 -4.628907,8.0157 6.5451717,6.5451717 0 0 1 -8.0156246,-4.6289 6.5451717,6.5451717 0 0 1 4.6289066,-8.0157 6.5451717,6.5451717 0 0 1 1.943359,-0.2187 z"
-         id="path4255"
+         style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;white-space:normal;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         d="m 6.3750001,1025.8622 c -0.931942,2e-4 -1.6874069,0.6716 -1.6875,1.5 l 0,1.5 3.375,0 0,-3 -1.6875,0 z m 5.0624999,0 0,3 3.375,0 0,-3 -3.375,0 z m 6.75,0 0,3 3.375,0 0,-3 -3.375,0 z m 6.75,0 0,3 3.375,0 0,-1.5 c -9.3e-5,-0.8284 -0.755558,-1.4998 -1.6875,-1.5 l -1.6875,0 z m -20.2499999,6 0,3 3.375,0 0,-3 -3.375,0 z m 20.2499999,0 0,0.3486 c 0.532973,0.2675 0.975667,0.657 1.282105,1.128 0.537834,0.828 1.294284,1.6769 2.092895,2.5722 l 0,-4.0488 -3.375,0 z m -1.6875,3 c -1.948558,3 -5.0625,5.0147 -5.0625,7.5 0,2.4854 2.266559,4.5 5.0625,4.5 2.795941,0 5.0625,-2.0146 5.0625,-4.5 0,-2.4853 -3.113942,-4.5 -5.0625,-7.5 z m -18.5624999,3 0,3 3.375,0 0,-3 -3.375,0 z m 0,6 0,1.5 c 9.31e-5,0.8284 0.755558,1.4998 1.6875,1.5 l 1.6875,0 0,-3 -3.375,0 z m 6.7499999,0 0,3 3.375,0 0,-3 -3.375,0 z"
+         id="path4315"
          inkscape:connector-curvature="0" />
     </clipPath>
     <clipPath
        clipPathUnits="userSpaceOnUse"
-       id="clipPath4199">
+       id="clipPath4391">
       <path
-         inkscape:connector-curvature="0"
-         id="path4201"
-         d="m 16.5,1025.8622 a 11.8125,10.499999 0 0 0 -11.8125001,10.5 11.8125,10.499999 0 0 0 11.8125001,10.5 11.8125,10.499999 0 0 0 11.8125,-10.5 11.8125,10.499999 0 0 0 -11.8125,-10.5 z m -3.375,3 a 3.375,2.9999997 0 0 1 3.375,3 3.375,2.9999997 0 0 1 -3.375,3 3.375,2.9999997 0 0 1 -3.3750001,-3 3.375,2.9999997 0 0 1 3.3750001,-3 z"
-         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;white-space:normal;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         d="m 6.3750001,1025.8622 c -0.931942,2e-4 -1.6874069,0.6716 -1.6875,1.5 l 0,18 c 9.31e-5,0.8284 0.755558,1.4998 1.6875,1.5 l 10.1876219,0 c -1.081633,-1.2612 -1.750122,-2.8111 -1.750122,-4.5 0,-2.3563 1.351562,-4.0453 2.494995,-5.376 1.143433,-1.3305 2.270438,-2.4714 3.019043,-3.624 0.571813,-0.8788 1.604865,-1.4416 2.745483,-1.4941 1.267652,-0.06 2.465974,0.5173 3.101441,1.4941 0.549842,0.8466 1.32435,1.7113 2.139038,2.625 l 0,-8.625 c -9.3e-5,-0.8284 -0.755558,-1.4998 -1.6875,-1.5 l -20.2499999,0 z m 16.8749999,9 c -1.948558,3 -5.0625,5.0147 -5.0625,7.5 0,2.4854 2.266559,4.5 5.0625,4.5 2.795941,0 5.0625,-2.0146 5.0625,-4.5 0,-2.4853 -3.113942,-4.5 -5.0625,-7.5 z"
+         id="path4393"
+         inkscape:connector-curvature="0" />
     </clipPath>
   </defs>
   <sodipodi:namedview
@@ -47,9 +47,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="31.999999"
-     inkscape:cx="6.7591143"
-     inkscape:cy="9.6862321"
+     inkscape:zoom="32"
+     inkscape:cx="11.34212"
+     inkscape:cy="7.7545325"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -66,14 +66,12 @@
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
-     showguides="true"
      inkscape:snap-smooth-nodes="true"
      inkscape:object-nodes="true"
-     inkscape:snap-intersection-paths="false">
+     inkscape:snap-midpoints="true">
     <inkscape:grid
        type="xygrid"
-       id="grid3336"
-       empspacing="4" />
+       id="grid3336" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -83,7 +81,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -95,8 +93,8 @@
     <g
        id="g4181"
        mask="none"
-       clip-path="url(#clipPath4199)"
-       transform="matrix(0.59259259,0,0,0.66666674,-1.7777777,353.454)">
+       clip-path="url(#clipPath4391)"
+       transform="matrix(0.59259259,0,0,0.66666674,-1.7777778,353.45399)">
       <rect
          y="1025.8622"
          x="3"

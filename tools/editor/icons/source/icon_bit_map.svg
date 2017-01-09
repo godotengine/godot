@@ -18,7 +18,7 @@
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_collision_shape.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_test_cube.svg">
+   sodipodi:docname="icon_bit_map.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="7.5411615"
-     inkscape:cy="7.1105382"
+     inkscape:zoom="32"
+     inkscape:cx="-0.178935"
+     inkscape:cy="8.367044"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -49,8 +49,8 @@
      inkscape:window-maximized="1"
      inkscape:object-paths="false"
      inkscape:snap-intersection-paths="false"
-     inkscape:object-nodes="false"
-     inkscape:snap-smooth-nodes="false"
+     inkscape:object-nodes="true"
+     inkscape:snap-smooth-nodes="true"
      inkscape:snap-midpoints="true">
     <inkscape:grid
        type="xygrid"
@@ -73,16 +73,10 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <g
-       id="layer1-7"
-       inkscape:label="Layer 1"
-       transform="translate(0,1.1802001e-5)"
-       style="stroke:#fc9c9c;stroke-opacity:0.99607843">
-      <path
-         style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;white-space:normal;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#fc9c9c;fill-opacity:0.99607843;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
-         d="M 7.9628906 1.0019531 A 1.0001 1.0001 0 0 0 7.5527344 1.1054688 L 1.5527344 4.1054688 A 1.0001 1.0001 0 0 0 1 5 L 1 11 A 1.0001 1.0001 0 0 0 1.5527344 11.894531 L 7.5527344 14.894531 A 1.0001 1.0001 0 0 0 8.4472656 14.894531 L 14.447266 11.894531 A 1.0001 1.0001 0 0 0 15 11 L 15 5 A 1.0001 1.0001 0 0 0 14.447266 4.1054688 L 8.4472656 1.1054688 A 1.0001 1.0001 0 0 0 7.9628906 1.0019531 z M 8 3.1191406 L 11.763672 5 L 8 6.8828125 L 4.2363281 5 L 8 3.1191406 z M 3 6.6191406 L 7 8.6191406 L 7 12.382812 L 3 10.382812 L 3 6.6191406 z M 13 6.6191406 L 13 10.382812 L 9 12.382812 L 9 8.6191406 L 13 6.6191406 z "
-         transform="translate(0,1036.3622)"
-         id="path4139" />
-    </g>
+    <path
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 1 1 L 1 3 L 3 3 L 3 1 L 1 1 z M 3 3 L 3 5 L 5 5 L 5 3 L 3 3 z M 5 3 L 7 3 L 7 1 L 5 1 L 5 3 z M 7 3 L 7 5 L 9 5 L 9 3 L 7 3 z M 9 3 L 11 3 L 11 1 L 9 1 L 9 3 z M 11 3 L 11 5 L 13 5 L 13 3 L 11 3 z M 13 3 L 15 3 L 15 1 L 13 1 L 13 3 z M 13 5 L 13 7 L 15 7 L 15 5 L 13 5 z M 13 7 L 11 7 L 11 9 L 13 9 L 13 7 z M 13 9 L 13 11 L 15 11 L 15 9 L 13 9 z M 13 11 L 11 11 L 11 13 L 13 13 L 13 11 z M 13 13 L 13 15 L 15 15 L 15 13 L 13 13 z M 11 13 L 9 13 L 9 15 L 11 15 L 11 13 z M 9 13 L 9 11 L 7 11 L 7 13 L 9 13 z M 7 13 L 5 13 L 5 15 L 7 15 L 7 13 z M 5 13 L 5 11 L 3 11 L 3 13 L 5 13 z M 3 13 L 1 13 L 1 15 L 3 15 L 3 13 z M 3 11 L 3 9 L 1 9 L 1 11 L 3 11 z M 3 9 L 5 9 L 5 7 L 3 7 L 3 9 z M 3 7 L 3 5 L 1 5 L 1 7 L 3 7 z M 5 7 L 7 7 L 7 5 L 5 5 L 5 7 z M 7 7 L 7 9 L 9 9 L 9 7 L 7 7 z M 9 7 L 11 7 L 11 5 L 9 5 L 9 7 z M 9 9 L 9 11 L 11 11 L 11 9 L 9 9 z M 7 9 L 5 9 L 5 11 L 7 11 L 7 9 z "
+       id="rect4170"
+       transform="translate(0,1036.3622)" />
   </g>
 </svg>
