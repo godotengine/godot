@@ -1962,7 +1962,6 @@ void CanvasItemEditor::_viewport_draw() {
 	Ref<Texture> lock = get_icon("Lock","EditorIcons");
 	Ref<Texture> group = get_icon("Group","EditorIcons");
 
-	VisualServer::get_singleton()->canvas_item_set_clip(ci,true);
 
 	bool single = get_single_item()!=NULL;
 
@@ -3344,6 +3343,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport = memnew( CanvasItemEditorViewport(p_editor, this) );
 	vp_base->add_child(viewport);
 	viewport->set_area_as_parent_rect();
+	viewport->set_clip_contents(true);
 
 	h_scroll = memnew( HScrollBar );
 	v_scroll = memnew( VScrollBar );

@@ -532,7 +532,7 @@ void Control::_notification(int p_notification) {
 
 			_update_canvas_item_transform();
 			VisualServer::get_singleton()->canvas_item_set_custom_rect( get_canvas_item(),!data.disable_visibility_clip, Rect2(Point2(),get_size()));
-
+			VisualServer::get_singleton()->canvas_item_set_clip( get_canvas_item(), data.clip_contents );
 			//emit_signal(SceneStringNames::get_singleton()->draw);
 
 		} break;
@@ -2340,6 +2340,16 @@ void Control::get_argument_options(const StringName& p_function,int p_idx,List<S
 
 
 }
+void Control::set_clip_contents(bool p_clip) {
+
+	data.clip_contents=p_clip;
+	update();
+}
+
+bool Control::is_clipping_contents() {
+
+	return data.clip_contents;
+}
 
 
 void Control::_bind_methods() {
@@ -2444,8 +2454,11 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(_MD("force_drag","data","preview"),&Control::force_drag);
 
-	ClassDB::bind_method(_MD("set_mouse_filter","stop"),&Control::set_mouse_filter);
+	ClassDB::bind_method(_MD("set_mouse_filter","filter"),&Control::set_mouse_filter);
 	ClassDB::bind_method(_MD("get_mouse_filter"),&Control::get_mouse_filter);
+
+	ClassDB::bind_method(_MD("set_clip_contents","enable"),&Control::set_clip_contents);
+	ClassDB::bind_method(_MD("is_clipping_contents"),&Control::is_clipping_contents);
 
 	ClassDB::bind_method(_MD("grab_click_focus"),&Control::grab_click_focus);
 
@@ -2486,6 +2499,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect_rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("set_rotation_deg"),_SCS("get_rotation_deg") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect_scale"), _SCS("set_scale"),_SCS("get_scale") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"rect_clip_content"), _SCS("set_clip_contents"),_SCS("is_clipping_contents") );
 
 
 	ADD_GROUP("Hint","hint_");
@@ -2587,7 +2601,7 @@ Control::Control() {
 	data.block_minimum_size_adjust=false;
 	data.disable_visibility_clip=false;
 
-
+	data.clip_contents=false;
 	for (int i=0;i<4;i++) {
 		data.anchor[i]=ANCHOR_BEGIN;
 		data.margin[i]=0;

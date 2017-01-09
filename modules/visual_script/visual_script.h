@@ -24,8 +24,6 @@ friend class VisualScript;
 	void validate_input_default_values();
 protected:
 
-	virtual bool _use_builtin_script() const { return false; }
-
 	void _notification(int p_what);
 	void ports_changed_notify();
 	static void _bind_methods();

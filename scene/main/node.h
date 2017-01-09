@@ -146,7 +146,6 @@ private:
 
 	void _print_tree(const Node *p_node);
 
-	virtual bool _use_builtin_script() const { return true; }
 	Node *_get_node(const NodePath& p_path) const;
 	Node *_get_child_by_name(const StringName& p_name) const;
 

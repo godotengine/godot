@@ -302,7 +302,6 @@ void GraphEdit::_notification(int p_what) {
 
 
 		draw_style_box( get_stylebox("bg"),Rect2(Point2(),get_size()) );
-		VS::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 
 		if (is_using_snap()) {
 			//draw grid
@@ -1337,7 +1336,7 @@ GraphEdit::GraphEdit() {
 
 	setting_scroll_ofs=false;
 	just_disconected=false;
-
+	set_clip_contents(true);
 
 
 }

@@ -684,7 +684,6 @@ void Polygon2DEditor::_uv_draw() {
 	mtx.elements[2]=-uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom,uv_draw_zoom));
 
-	VS::get_singleton()->canvas_item_set_clip(uv_edit_draw->get_canvas_item(),true);
 	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),mtx);
 	uv_edit_draw->draw_texture(base_tex,Point2());
 	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Matrix32());
@@ -983,6 +982,8 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 
 	error = memnew( AcceptDialog);
 	add_child(error);
+
+	uv_edit_draw->set_clip_contents(true);
 
 }
 

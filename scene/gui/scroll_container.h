@@ -86,6 +86,9 @@ public:
 	bool is_v_scroll_enabled() const;
 
 	virtual bool clips_input() const;
+
+	virtual String get_configuration_warning() const;
+
 	ScrollContainer();
 };
 

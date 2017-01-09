@@ -62,7 +62,7 @@ class ResourceImportMetadata : public Reference {
 
 	StringArray _get_options() const;
 protected:
-	virtual bool _use_builtin_script() const { return false; }
+
 	static void _bind_methods();
 public:
 

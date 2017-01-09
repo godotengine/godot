@@ -132,6 +132,8 @@ private:
 
 		MouseFilter mouse_filter;
 
+		bool clip_contents;
+
 		bool block_minimum_size_adjust;
 		bool disable_visibility_clip;
 
@@ -401,6 +403,8 @@ public:
 
 	Control *get_root_parent_control() const;
 
+	void set_clip_contents(bool p_clip);
+	bool is_clipping_contents();
 
 	void set_block_minimum_size_adjust(bool p_block);
 	bool is_minimum_size_adjust_blocked() const;

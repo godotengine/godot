@@ -947,7 +947,6 @@ void AnimationTreeEditor::_notification(int p_what) {
 			_update_scrollbars();
 			//VisualServer::get_singleton()->canvas_item_add_rect(get_canvas_item(),Rect2(Point2(),get_size()),Color(0,0,0,1));
 			get_stylebox("bg","Tree")->draw(get_canvas_item(),Rect2(Point2(),get_size()));
-			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 
 			for(List<StringName>::Element *E=order.front();E;E=E->next()) {
 
@@ -1485,6 +1484,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	filter_button->set_text(TTR("Filters.."));
 	filter_button->connect("pressed", this,"_edit_filters");
 
+	set_clip_contents(true);
 }
 
 

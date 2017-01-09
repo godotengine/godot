@@ -532,8 +532,6 @@ void Object::get_property_list(List<PropertyInfo> *p_list,bool p_reversed) const
 
 	_get_property_listv(p_list,p_reversed);
 
-	if (!_use_builtin_script())
-		return;
 
 	if (!is_class("Script")) // can still be set, but this is for userfriendlyness
 		p_list->push_back( PropertyInfo( Variant::OBJECT, "script/script", PROPERTY_HINT_RESOURCE_TYPE, "Script",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_STORE_IF_NONZERO));

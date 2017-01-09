@@ -432,7 +432,7 @@ friend void postinitialize_handler(Object*);
 
 protected:
 
-	virtual bool _use_builtin_script() const { return false; }
+
 	virtual void _initialize_classv() { initialize_class(); }
 	virtual bool _setv(const StringName& p_name,const Variant &p_property) { return false; };
 	virtual bool _getv(const StringName& p_name,Variant &r_property) const { return false; };

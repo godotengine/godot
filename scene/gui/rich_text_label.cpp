@@ -687,8 +687,6 @@ void RichTextLabel::_notification(int p_what) {
 			RID ci=get_canvas_item();
 			Size2 size = get_size();
 
-			VisualServer::get_singleton()->canvas_item_set_clip(ci,true);
-
 			if (has_focus()) {
 				VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci,true);
 				draw_style_box(get_stylebox("focus"),Rect2(Point2(),size));
@@ -2046,6 +2044,7 @@ RichTextLabel::RichTextLabel() {
 
 	visible_characters=-1;
 
+	set_clip_contents(true);
 }
 
 RichTextLabel::~RichTextLabel() {

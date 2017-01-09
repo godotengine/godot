@@ -2760,8 +2760,6 @@ void Tree::_notification(int p_what) {
 		update_scrollbars();
 		RID ci = get_canvas_item();
 
-		VisualServer::get_singleton()->canvas_item_set_clip(ci,true);
-
 		Ref<StyleBox> bg = cache.bg;
 		Ref<StyleBox> bg_focus = get_stylebox("bg_focus");
 
@@ -3730,6 +3728,8 @@ Tree::Tree() {
 	force_select_on_already_selected=false;
 
 	allow_rmb_select=false;
+
+	set_clip_contents(true);
 }
 
 

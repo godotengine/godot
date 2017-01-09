@@ -1090,7 +1090,6 @@ void AnimationKeyEditor::_track_pos_draw() {
 
 void AnimationKeyEditor::_track_editor_draw() {
 
-	VisualServer::get_singleton()->canvas_item_set_clip(track_editor->get_canvas_item(),true);
 
 	if (animation.is_valid() && animation->get_track_count()) {
 		if (selected_track < 0)
@@ -4312,6 +4311,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 
 	add_constant_override("separation",get_constant("separation","VBoxContainer"));
 
+	track_editor->set_clip_contents(true);
 
 }
 

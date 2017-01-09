@@ -706,8 +706,6 @@ class VisualScriptCustomNode: public VisualScriptNode {
 
 protected:
 
-	virtual bool _use_builtin_script() const { return true; }
-
 	static void _bind_methods();
 public:
 

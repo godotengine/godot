@@ -788,7 +788,6 @@ void ItemList::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		VS::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 		Ref<StyleBox> bg = get_stylebox("bg");
 
 		int mw = scroll_bar->get_minimum_size().x;
@@ -1402,6 +1401,7 @@ ItemList::ItemList() {
 	allow_rmb_select=false;
 
 	icon_scale = 1.0f;
+	set_clip_contents(true);
 }
 
 ItemList::~ItemList() {

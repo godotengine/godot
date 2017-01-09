@@ -261,7 +261,6 @@ void ScrollContainer::_notification(int p_what) {
 
 		update_scrollbars();
 
-		VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 	}
 
 	if (p_what==NOTIFICATION_FIXED_PROCESS) {
@@ -434,6 +433,29 @@ void ScrollContainer::set_h_scroll(int p_pos) {
 
 }
 
+String ScrollContainer::get_configuration_warning() const {
+
+	int found=0;
+
+	for(int i=0;i<get_child_count();i++) {
+
+		Control *c = get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+		if (c->is_set_as_toplevel())
+			continue;
+		if (c == h_scroll || c == v_scroll)
+			continue;
+
+		found++;
+	}
+
+	if (found!=1)
+		return TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox,HBox,etc), or a Control and set the custom minimum size manually.");
+	else
+		return "";
+}
+
 
 void ScrollContainer::_bind_methods() {
 
@@ -474,6 +496,6 @@ ScrollContainer::ScrollContainer() {
 	scroll_h=true;
 	scroll_v=true;
 
-
+	set_clip_contents(true);
 };
 
