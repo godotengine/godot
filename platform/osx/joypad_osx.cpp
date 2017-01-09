@@ -234,7 +234,7 @@ static bool is_joypad(IOHIDDeviceRef p_device_ref) {
 	if (refCF) {
 		CFNumberGetValue((CFNumberRef) refCF, kCFNumberSInt32Type, &usage);
 	}
-	if ((usage != kHIDUsage_GD_Joypad &&
+	if ((usage != kHIDUsage_GD_Joystick &&
 		 usage != kHIDUsage_GD_GamePad &&
 		 usage != kHIDUsage_GD_MultiAxisController)) {
 		return false;
@@ -588,7 +588,7 @@ JoypadOSX::JoypadOSX()
 
 	int okay = 1;
 	const void *vals[] = {
-		(void *) create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_Joypad, &okay),
+		(void *) create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, &okay),
 		(void *) create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad, &okay),
 		(void *) create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController, &okay),
 	};
