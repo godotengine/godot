@@ -1314,12 +1314,16 @@ void GIProbe::_create_debug_mesh(Baker *p_baker) {
 	MultiMeshInstance *mmi = memnew( MultiMeshInstance );
 	mmi->set_multimesh(mm);
 	add_child(mmi);
+#ifdef TOOLS_ENABLED
 	if (get_tree()->get_edited_scene_root()==this){
 		mmi->set_owner(this);
 	} else {
 		mmi->set_owner(get_owner());
 
 	}
+#else
+	mmi->set_owner(get_owner());
+#endif
 
 }
 
