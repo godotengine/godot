@@ -2241,7 +2241,7 @@ msgstr "%d fichier(s) supplémentaire(s)"
 
 #: tools/editor/editor_node.cpp
 msgid "%d more file(s) or folder(s)"
-msgstr "%s fichier(s) ou dossier(s) supplémentaire(s)"
+msgstr "%d fichier(s) ou dossier(s) supplémentaire(s)"
 
 #: tools/editor/editor_node.cpp
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
