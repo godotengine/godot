@@ -319,7 +319,7 @@ def configure(env):
         mingw_prefix = ""
 
         if (env["bits"] == "default"):
-            env["bits"] = "32"
+            env["bits"] = "64" if "PROGRAMFILES(X86)" in os.environ else "32"
 
         if (env["bits"] == "32"):
             env.Append(LINKFLAGS=['-static'])
