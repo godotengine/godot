@@ -553,6 +553,16 @@ void _OS::set_icon(const Image& p_icon) {
 	OS::get_singleton()->set_icon(p_icon);
 }
 
+int _OS::get_exit_code() const {
+
+	return OS::get_singleton()->get_exit_code();
+}
+
+void _OS::set_exit_code(int p_code) {
+
+	OS::get_singleton()->set_exit_code(p_code);
+}
+
 /**
  *  Get current datetime with consideration for utc and
  *     dst
@@ -1111,6 +1121,9 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
 
 	ClassDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
+
+	ClassDB::bind_method(_MD("get_exit_code"),&_OS::get_exit_code);
+	ClassDB::bind_method(_MD("set_exit_code","code"),&_OS::set_exit_code);
 
 	ClassDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
 	ClassDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
