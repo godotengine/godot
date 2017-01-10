@@ -73,6 +73,11 @@ private:
 		FILE_COPY_PATH
 	};
 
+	enum FolderMenu {
+		FOLDER_EXPAND_ALL,
+		FOLDER_COLLAPSE_ALL
+	};
+
 
 	VBoxContainer *scanning_vb;
 	ProgressBar *scanning_progress;
@@ -97,6 +102,7 @@ private:
 	DisplayMode display_mode;
 
 	PopupMenu *file_options;
+	PopupMenu *folder_options;
 
 	DependencyEditor *deps_editor;
 	DependencyEditorOwners *owners_editor;
@@ -134,6 +140,7 @@ private:
 
 
 	void _file_option(int p_option);
+	void _folder_option(int p_option);
 	void _update_files(bool p_keep_selection);
 	void _change_file_display();
 
@@ -151,6 +158,7 @@ private:
 
 	void _favorites_pressed();
 	void _open_pressed();
+	void _dir_rmb_pressed(const Vector2& local_mouse_pos);
 	void _search_changed(const String& p_text);
 
 

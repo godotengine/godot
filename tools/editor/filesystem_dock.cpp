@@ -38,14 +38,16 @@
 #include "editor_settings.h"
 #include "scene/main/viewport.h"
 
-
 bool FileSystemDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir) {
-
 
 	TreeItem *item = tree->create_item(p_parent);
 	String dname=p_dir->get_name();
 	if (dname=="")
 		dname="res://";
+	else {
+		// collapse every tree item but the root folder
+		item->set_collapsed(true);
+	}
 
 	item->set_text(0,dname);
 	item->set_icon(0,get_icon("Folder","EditorIcons"));
@@ -161,6 +163,7 @@ void FileSystemDock::_notification(int p_what) {
 			button_hist_next->set_icon( get_icon("Forward","EditorIcons"));
 			button_hist_prev->set_icon( get_icon("Back","EditorIcons"));
 			file_options->connect("id_pressed",this,"_file_option");
+			folder_options->connect("id_pressed",this,"_folder_option");
 
 
 			button_back->connect("pressed",this,"_go_to_tree",varray(),CONNECT_DEFERRED);
@@ -1096,6 +1099,30 @@ void FileSystemDock::_file_option(int p_option) {
 	}
 }
 
+void FileSystemDock::_folder_option(int p_option) {
+
+	TreeItem *item = tree->get_selected();
+	TreeItem *child = item->get_children();
+
+	switch(p_option) {
+		
+		case FOLDER_EXPAND_ALL:
+			item->set_collapsed(false);
+			while(child) {
+				child->set_collapsed(false);
+				child = child->get_next();
+			}
+			break;
+
+		case FOLDER_COLLAPSE_ALL:
+			while(child) {
+				child->set_collapsed(true);
+				child = child->get_next();
+			}
+			break;
+	}
+}
+
 void FileSystemDock::_open_pressed(){
 
 
@@ -1124,6 +1151,17 @@ void FileSystemDock::_open_pressed(){
 
 //	emit_signal("open",path);
 
+}
+
+void FileSystemDock::_dir_rmb_pressed(const Vector2& p_pos) {
+	folder_options->clear();
+	folder_options->set_size(Size2(1,1));
+
+	folder_options->add_item(TTR("Expand all"),FOLDER_EXPAND_ALL);
+	folder_options->add_item(TTR("Collapse all"),FOLDER_COLLAPSE_ALL);
+
+	folder_options->set_pos(files->get_global_pos() + p_pos);
+	folder_options->popup();
 }
 
 
@@ -1586,6 +1624,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(_MD("_favorites_pressed"),&FileSystemDock::_favorites_pressed);
 //	ClassDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ClassDB::bind_method(_MD("_open_pressed"),&FileSystemDock::_open_pressed);
+	ClassDB::bind_method(_MD("_dir_rmb_pressed"),&FileSystemDock::_dir_rmb_pressed);
 
 	ClassDB::bind_method(_MD("_thumbnail_done"),&FileSystemDock::_thumbnail_done);
 	ClassDB::bind_method(_MD("_select_file"), &FileSystemDock::_select_file);
@@ -1597,6 +1636,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(_MD("_fs_changed"), &FileSystemDock::_fs_changed);
 	ClassDB::bind_method(_MD("_dir_selected"), &FileSystemDock::_dir_selected);
 	ClassDB::bind_method(_MD("_file_option"), &FileSystemDock::_file_option);
+	ClassDB::bind_method(_MD("_folder_option"), &FileSystemDock::_folder_option);
 	ClassDB::bind_method(_MD("_move_operation"), &FileSystemDock::_move_operation);
 	ClassDB::bind_method(_MD("_rename_operation"), &FileSystemDock::_rename_operation);
 
@@ -1686,6 +1726,9 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_options = memnew( PopupMenu );
 	add_child(file_options);
 
+	folder_options = memnew ( PopupMenu );
+	add_child(folder_options);
+
 	split_box = memnew( VSplitContainer );
 	add_child(split_box);
 	split_box->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1695,12 +1738,14 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	tree->set_hide_root(true);
 	split_box->add_child(tree);
 	tree->set_drag_forwarding(this);
+	tree->set_allow_rmb_select(true);
 
 
 	//tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->connect("item_edited",this,"_favorite_toggled");
 	tree->connect("item_activated",this,"_open_pressed");
 	tree->connect("cell_selected",this,"_dir_selected");
+	tree->connect("item_rmb_selected",this,"_dir_rmb_pressed");
 
 	files = memnew( ItemList );
 	files->set_v_size_flags(SIZE_EXPAND_FILL);
