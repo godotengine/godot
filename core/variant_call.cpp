@@ -304,7 +304,9 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(String,hex_to_int);
 	VCALL_LOCALMEM1R(String,pad_decimals);
 	VCALL_LOCALMEM1R(String,pad_zeros);
-
+	VCALL_LOCALMEM1R(String, encrypt);
+	VCALL_LOCALMEM2R(String, decrypt);	
+	
 	static void _call_String_to_ascii(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
 		String *s = reinterpret_cast<String*>(p_self._data._mem);
@@ -1412,7 +1414,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,STRING,String,md5_text,varray());
 	ADDFUNC0(STRING,STRING,String,sha256_text,varray());
 	ADDFUNC0(STRING,RAW_ARRAY,String,md5_buffer,varray());
-	ADDFUNC0(STRING,RAW_ARRAY,String,sha256_buffer,varray());
+	ADDFUNC0(STRING,RAW_ARRAY,String,sha256_buffer,varray());	
+	ADDFUNC1(STRING,RAW_ARRAY,String,encrypt,STRING,"key",varray());
+	ADDFUNC2(STRING,RAW_ARRAY,String,decrypt,RAW_ARRAY,"input",STRING,"key",varray());	
 	ADDFUNC0(STRING,BOOL,String,empty,varray());
 	ADDFUNC0(STRING,BOOL,String,is_abs_path,varray());
 	ADDFUNC0(STRING,BOOL,String,is_rel_path,varray());

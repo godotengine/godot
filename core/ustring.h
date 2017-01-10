@@ -197,7 +197,9 @@ public:
 	String md5_text() const;
 	String sha256_text() const;
 	Vector<uint8_t> md5_buffer() const;
-	Vector<uint8_t> sha256_buffer() const;
+	Vector<uint8_t> sha256_buffer() const;	
+	Vector<uint8_t> encrypt(String p_key) ;
+	Vector<uint8_t>  decrypt(Vector<uint8_t>  input, String p_key) ;
 
 	inline bool empty() const { return length() == 0; }
 
@@ -211,6 +213,7 @@ public:
 	String get_file() const;
 	static String humanize_size(size_t p_size);
 	String simplify_path() const;
+
 
 	String xml_escape(bool p_escape_quotes=false) const;
 	String xml_unescape() const;

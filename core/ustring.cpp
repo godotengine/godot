@@ -33,9 +33,11 @@
 #include "math_funcs.h"
 #include "io/md5.h"
 #include "io/sha256.h"
+#include "io/aes256.h"
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
+
 #define MAX_DIGITS 6
 #define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
 #define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
@@ -49,6 +51,7 @@
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define snprintf _snprintf
 #endif
+
 
 /** STRING **/
 
@@ -3934,6 +3937,133 @@ String String::lpad(int min_length, const String& character) const {
 	}
 
 	return s;
+}
+
+
+Vector<uint8_t> String::encrypt(String p_key) {
+		
+	Vector<uint8_t> data;
+		
+	if(p_key.length() < 32){
+		return data;		
+	}
+				
+	CharString ks = p_key.ascii(); 
+	
+	Vector<uint8_t> key; key.resize(32);
+	for(size_t i =0;i<32;i++){	
+		key[i] = ks[i];
+	}
+		
+	Vector<uint8_t> iv;
+	iv.resize(16);
+	
+	aes256_context ctx;
+	aes256_init(&ctx,key.ptr());
+	
+	for (size_t i=0;i<16;i++){
+		iv[i] = rand()%256; //Generate a random byte array
+	}
+	
+	
+	aes256_encrypt_ecb(&ctx,&iv[0]); //Now we encrypt it to get our iv.
+	
+  
+			
+	CharString cs = utf8();
+	
+	int len = cs.length();	
+	
+	int paddedLen = len + 1; //We need at least one byte to say how much padding their is.
+	if (paddedLen % 16) {
+		paddedLen+=16-(paddedLen % 16);
+	}
+			
+	data.resize(16+paddedLen);
+		
+	for(size_t j=0;j<16;j++){	
+		data[j] = iv[j]; //IV is at the start
+	}
+	
+	for(size_t j=0;j<len;j++){	
+		data[j+16] = cs[j]; //Followed by the data
+	}
+	
+	char padding = (char)paddedLen-len; //Which char is the padding chracter
+	
+	for(size_t j=len;j<paddedLen;j++){	
+		data[j+16] = padding; //padding at the end 
+	}
+			
+
+	for(size_t i=16;i<data.size();i+=16) {		
+	
+		for(size_t j=0;j<16;j++) {		
+			data[i+j] = data[i+j] ^ data[i+j-16];
+		}
+			
+		aes256_encrypt_ecb(&ctx,&data[i]);
+		
+		
+	}
+
+	aes256_done(&ctx);	
+	
+	
+		
+	return data;
+	
+}
+
+Vector<uint8_t>  String::decrypt(Vector<uint8_t> input, String p_key) {
+	
+	Vector<uint8_t> data;	
+	
+	if(p_key.length() < 32){
+		return data;		
+	}			
+		
+	Vector<uint8_t> key; key.resize(32);
+	for(size_t i =0;i<32;i++){
+		key[i] = p_key[i];
+	}				
+		
+	aes256_context ctx;
+	aes256_init(&ctx,key.ptr());	
+	
+	Vector<uint8_t> unEncryptedData;			
+				
+	data.resize(input.size()-16);
+		
+	for(size_t i=0;i<input.size()-16;i+=16) {		
+				
+		for(size_t j=0;j<16;j++) {		
+			data[i+j] = input[i+j+16];
+		}	
+			
+		aes256_decrypt_ecb(&ctx,&data[i]);
+		
+		
+		for(size_t j=0;j<16;j++) {		
+			data[i+j] = data[i+j] ^ input[i+j];
+		}
+
+		
+	}
+	
+	aes256_done(&ctx);
+	
+	
+	uint8_t paddingNumber = (uint8_t) data[data.size()-1];
+	
+	if (paddingNumber < 16){
+		
+		data.resize(data.size() - paddingNumber ); //Remove the padding
+	}
+	
+	return data;
+	
+	
 }
 
 // sprintf is implemented in GDScript via:
