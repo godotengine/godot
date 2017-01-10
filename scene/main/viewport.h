@@ -52,12 +52,19 @@ class ViewportTexture : public Texture {
 
 	GDCLASS( ViewportTexture, Texture );
 
-	int flags;
+	NodePath path;
+
 friend class Viewport;
-	Viewport *vp;
+	Viewport* vp;
+protected:
 
-
+	static void _bind_methods();
 public:
+
+	void set_viewport_path_in_scene(const NodePath& p_path);
+	NodePath get_viewport_path_in_scene() const;
+
+	virtual void setup_local_to_scene();
 
 
 	virtual int get_width() const;
@@ -70,7 +77,8 @@ public:
 	virtual void set_flags(uint32_t p_flags);
 	virtual uint32_t get_flags() const;
 
-	ViewportTexture(Viewport *p_vp=NULL);
+	ViewportTexture();
+	~ViewportTexture();
 
 };
 
@@ -191,13 +199,15 @@ friend class ViewportTexture;
 	bool disable_3d;
 	UpdateMode update_mode;
 	RID texture_rid;
-	Ref<ViewportTexture> texture;
+	uint32_t texture_flags;
 
 	int shadow_atlas_size;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
 	bool hdr;
+
+	Set<ViewportTexture*> viewport_textures;
 
 
 	struct GUI {

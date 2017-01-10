@@ -3745,7 +3745,7 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 		sdata->set_path(lpath,true); //take over path
 	}
 
-	Node*new_scene=sdata->instance(true);
+	Node*new_scene=sdata->instance(PackedScene::GEN_EDIT_STATE_MAIN);
 
 	if (!new_scene) {
 
@@ -5365,7 +5365,14 @@ void EditorNode::_bind_methods() {
 
 }
 
+static Node* _resource_get_edited_scene() {
+
+	return EditorNode::get_singleton()->get_edited_scene();
+}
+
 EditorNode::EditorNode() {
+
+	Resource::_get_local_scene_func=_resource_get_edited_scene;
 
 	VisualServer::get_singleton()->textures_keep_original(true);
 

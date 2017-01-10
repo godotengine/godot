@@ -29,9 +29,22 @@
 #include "base_button.h"
 #include "os/keyboard.h"
 #include "print_string.h"
-#include "button_group.h"
 #include "scene/scene_string_names.h"
 #include "scene/main/viewport.h"
+
+
+void BaseButton::_unpress_group() {
+
+	if (!button_group.is_valid())
+		return;
+
+	for (Set<BaseButton*>::Element *E=button_group->buttons.front();E;E=E->next()) {
+		if (E->get()==this)
+			continue;
+
+		E->get()->set_pressed(false);
+	}
+}
 
 void BaseButton::_gui_input(InputEvent p_event) {
 
@@ -69,6 +82,8 @@ void BaseButton::_gui_input(InputEvent p_event) {
 						}
 
 						emit_signal("pressed");
+						_unpress_group();
+
 
 					} else {
 
@@ -79,6 +94,8 @@ void BaseButton::_gui_input(InputEvent p_event) {
 							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed,NULL,0,ce);
 						}
 						emit_signal("pressed");
+						_unpress_group();
+
 
 						toggled(status.pressed);
 						emit_signal("toggled",status.pressed);
@@ -138,6 +155,9 @@ void BaseButton::_gui_input(InputEvent p_event) {
 
 
 					}
+
+					_unpress_group();
+
 
 				}
 
@@ -212,6 +232,9 @@ void BaseButton::_gui_input(InputEvent p_event) {
 						}
 						emit_signal("toggled",status.pressed);
 					}
+
+					_unpress_group();
+
 				}
 
 				accept_event();
@@ -266,24 +289,12 @@ void BaseButton::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		CanvasItem *ci=this;
-		while(ci) {
 
-			ButtonGroup *bg = ci->cast_to<ButtonGroup>();
-			if (bg) {
-
-				group=bg;
-				group->_add_button(this);
-			}
-
-			ci=ci->get_parent_item();
-		}
 	}
 
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
-		if (group)
-			group->_remove_button(this);
+
 	}
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && !is_visible()) {
@@ -306,8 +317,9 @@ void BaseButton::pressed() {
 
 void BaseButton::toggled(bool p_pressed) {
 
-	if (get_script_instance())
+	if (get_script_instance()) {
 		get_script_instance()->call("toggled",p_pressed);
+	}
 
 }
 
@@ -336,6 +348,11 @@ void BaseButton::set_pressed(bool p_pressed) {
 		return;
 	_change_notify("pressed");
 	status.pressed=p_pressed;
+
+	if (p_pressed) {
+		_unpress_group();
+
+	}
 	update();
 }
 
@@ -463,6 +480,29 @@ String BaseButton::get_tooltip(const Point2& p_pos) const {
 	return tooltip;
 }
 
+
+void BaseButton::set_button_group(const Ref<ButtonGroup>& p_group) {
+
+	if (button_group.is_valid()) {
+		button_group->buttons.erase(this);
+	}
+
+	button_group=p_group;
+
+	if (button_group.is_valid()) {
+		button_group->buttons.insert(this);
+	}
+
+	update(); //checkbox changes to radio if set a buttongroup
+
+}
+
+Ref<ButtonGroup> BaseButton::get_button_group() const {
+
+	return button_group;
+}
+
+
 void BaseButton::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_gui_input"),&BaseButton::_gui_input);
@@ -479,8 +519,12 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
 	ClassDB::bind_method(_MD("set_enabled_focus_mode","mode"),&BaseButton::set_enabled_focus_mode);
 	ClassDB::bind_method(_MD("get_enabled_focus_mode"),&BaseButton::get_enabled_focus_mode);
+
 	ClassDB::bind_method(_MD("set_shortcut","shortcut"),&BaseButton::set_shortcut);
 	ClassDB::bind_method(_MD("get_shortcut"),&BaseButton::get_shortcut);
+
+	ClassDB::bind_method(_MD("set_button_group","button_group"),&BaseButton::set_button_group);
+	ClassDB::bind_method(_MD("get_button_group"),&BaseButton::get_button_group);
 
 	BIND_VMETHOD(MethodInfo("_pressed"));
 	BIND_VMETHOD(MethodInfo("_toggled",PropertyInfo(Variant::BOOL,"pressed")));
@@ -495,6 +539,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT,"enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_enabled_focus_mode"), _SCS("get_enabled_focus_mode") );
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shortcut",PROPERTY_HINT_RESOURCE_TYPE,"ShortCut"), _SCS("set_shortcut"), _SCS("get_shortcut"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "group",PROPERTY_HINT_RESOURCE_TYPE,"ButtonGroup"), _SCS("set_button_group"), _SCS("get_button_group"));
 
 
 	BIND_CONSTANT( DRAW_NORMAL );
@@ -516,7 +561,11 @@ BaseButton::BaseButton() {
 	status.pressing_button=0;
 	set_focus_mode( FOCUS_ALL );
 	enabled_focus_mode = FOCUS_ALL;
-	group=NULL;
+
+
+	if (button_group.is_valid()) {
+		button_group->buttons.erase(this);
+	}
 
 
 }
@@ -525,4 +574,30 @@ BaseButton::~BaseButton()
 {
 }
 
+void ButtonGroup::get_buttons(List<BaseButton*> *r_buttons) {
 
+	for (Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+		r_buttons->push_back(E->get());
+	}
+}
+
+BaseButton* ButtonGroup::get_pressed_button() {
+
+	for (Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+		if (E->get()->is_pressed())
+			return E->get();
+	}
+
+	return NULL;
+
+}
+
+void ButtonGroup::_bind_methods() {
+
+	ClassDB::bind_method(_MD("get_pressed_button:BaseButton"),&ButtonGroup::get_pressed_button);
+}
+
+ButtonGroup::ButtonGroup() {
+
+	set_local_to_scene(true);
+}

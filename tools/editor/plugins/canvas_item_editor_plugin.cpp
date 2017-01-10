@@ -3671,7 +3671,10 @@ void CanvasItemEditorViewport::_on_select_type(Object* selected) {
 }
 
 void CanvasItemEditorViewport::_on_change_type() {
-	CheckBox* check=btn_group->get_pressed_button()->cast_to<CheckBox>();
+	if (!button_group->get_pressed_button())
+		return;
+
+	CheckBox* check=button_group->get_pressed_button()->cast_to<CheckBox>();
 	default_type=check->get_text();
 	_perform_drop_data();
 	selector->hide();
@@ -3798,7 +3801,7 @@ bool CanvasItemEditorViewport::_create_instance(Node* parent, String& path, cons
 		return false;
 	}
 
-	Node* instanced_scene=sdata->instance(true);
+	Node* instanced_scene=sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!instanced_scene) { // error on instancing
 		return false;
 	}
@@ -3899,7 +3902,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2& p_point,const Variant
 				String type=res->get_class();
 				if (type=="PackedScene") {
 					Ref<PackedScene> sdata=ResourceLoader::load(files[i]);
-					Node* instanced_scene=sdata->instance(true);
+					Node* instanced_scene=sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 					if (!instanced_scene) {
 						continue;
 					}
@@ -3957,7 +3960,8 @@ void CanvasItemEditorViewport::drop_data(const Point2& p_point,const Variant& p_
 
 	if (is_alt) {
 		List<BaseButton*> btn_list;
-		btn_group->get_button_list(&btn_list);
+		button_group->get_buttons(&btn_list);
+
 		for (int i=0;i<btn_list.size();i++) {
 			CheckBox* check=btn_list[i]->cast_to<CheckBox>();
 			check->set_pressed(check->get_text()==default_type);
@@ -4016,7 +4020,9 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	selector_label->set_custom_minimum_size(Size2(0,30)*EDSCALE);
 	vbc->add_child(selector_label);
 
-	btn_group=memnew( ButtonGroup );
+	button_group.instance();
+
+	btn_group=memnew( VBoxContainer );
 	btn_group->set_h_size_flags(0);
 	btn_group->connect("button_selected", this, "_on_select_type");
 
@@ -4024,6 +4030,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 		CheckBox* check=memnew(CheckBox);
 		check->set_text(types[i]);
 		btn_group->add_child(check);
+		check->set_button_group(button_group);
 	}
 	vbc->add_child(btn_group);
 

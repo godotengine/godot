@@ -42,7 +42,7 @@ bool SceneState::can_instance() const {
 }
 
 
-Node *SceneState::instance(bool p_gen_edit_state) const {
+Node *SceneState::instance(GenEditState p_edit_state) const {
 
 	// nodes where instancing failed (because something is missing)
 	List<Node*> stray_instances;
@@ -76,7 +76,9 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 
 	Node **ret_nodes=(Node**)alloca( sizeof(Node*)*nc );
 
-	bool gen_node_path_cache=p_gen_edit_state && node_path_cache.empty();
+	bool gen_node_path_cache=p_edit_state!=GEN_EDIT_STATE_DISABLED && node_path_cache.empty();
+
+	Map<Ref<Resource>,Ref<Resource> > resources_local_to_scene;
 
 	for(int i=0;i<nc;i++) {
 
@@ -105,9 +107,9 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
             //print_line("scene inherit");
 			Ref<PackedScene> sdata = props[ base_scene_idx ];
 			ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
-			node = sdata->instance(p_gen_edit_state);
+			node = sdata->instance(p_edit_state==GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE); //only main gets main edit state
 			ERR_FAIL_COND_V(!node,NULL);
-			if (p_gen_edit_state) {
+			if (p_edit_state!=GEN_EDIT_STATE_DISABLED) {
 				node->set_scene_inherited_state(sdata->get_state());
 			}
 
@@ -121,7 +123,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 
 					Ref<PackedScene> sdata = ResourceLoader::load(path,"PackedScene");
 					ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
-					node = sdata->instance(p_gen_edit_state);
+					node = sdata->instance(p_edit_state==GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 					ERR_FAIL_COND_V(!node,NULL);
 				} else {
 					InstancePlaceholder *ip = memnew( InstancePlaceholder );
@@ -132,7 +134,7 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 			} else {
 				Ref<PackedScene> sdata = props[ n.instance&FLAG_MASK ];
 				ERR_FAIL_COND_V( !sdata.is_valid(), NULL);
-				node = sdata->instance(p_gen_edit_state);
+				node = sdata->instance(p_edit_state==GEN_EDIT_STATE_DISABLED ? PackedScene::GEN_EDIT_STATE_DISABLED : PackedScene::GEN_EDIT_STATE_INSTANCE);
 				ERR_FAIL_COND_V(!node,NULL);
 
 			}
@@ -166,8 +168,8 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 					} else if (ret_nodes[n.parent]->cast_to<Node2D>()) {
 						obj = memnew( Node2D );
 					}
-
 				}
+
 				if (!obj) {
 					obj = memnew( Node );
 				}
@@ -212,7 +214,43 @@ Node *SceneState::instance(bool p_gen_edit_state) const {
 						}
 					} else {
 
-						node->set(snames[ nprops[j].name ],props[ nprops[j].value ],&valid);
+						Variant value = props[ nprops[j].value ];
+
+						if (value.get_type()==Variant::OBJECT) {
+							//handle resources that are local to scene by duplicating them if needed
+							Ref<Resource> res = value;
+							if (res.is_valid()) {
+								if (res->is_local_to_scene()) {
+
+									Map<Ref<Resource>,Ref<Resource> >::Element *E=resources_local_to_scene.find(res);
+
+									if (E) {
+										value=E->get();
+									} else {
+
+										Node *base = i==0?node:ret_nodes[0];
+
+										if (p_edit_state==GEN_EDIT_STATE_MAIN) {
+
+											res->local_scene=base;
+											resources_local_to_scene[res]=res;
+
+										} else {
+											Node *base = i==0?node:ret_nodes[0];
+											Ref<Resource> local_dupe = res->duplicate_for_local_scene(base,resources_local_to_scene);
+											resources_local_to_scene[res]=local_dupe;
+											res=local_dupe;
+											value=local_dupe;
+										}
+
+										res->setup_local_to_scene();
+
+									}
+									//must make a copy, because this res is local to scene
+								}
+							}
+						}
+						node->set(snames[ nprops[j].name ],value,&valid);
 					}
 				}
 			}
@@ -1693,6 +1731,10 @@ void SceneState::_bind_methods() {
 	ClassDB::bind_method(_MD("get_connection_method","idx"),&SceneState::get_connection_method);
 	ClassDB::bind_method(_MD("get_connection_flags","idx"),&SceneState::get_connection_flags);
 	ClassDB::bind_method(_MD("get_connection_binds","idx"),&SceneState::get_connection_binds);
+
+	BIND_CONSTANT( GEN_EDIT_STATE_DISABLED );
+	BIND_CONSTANT( GEN_EDIT_STATE_INSTANCE );
+	BIND_CONSTANT( GEN_EDIT_STATE_MAIN );
 }
 
 SceneState::SceneState() {
@@ -1732,7 +1774,7 @@ bool PackedScene::can_instance() const {
 	return state->can_instance();
 }
 
-Node *PackedScene::instance(bool p_gen_edit_state) const {
+Node *PackedScene::instance(GenEditState p_edit_state) const {
 
 #ifndef TOOLS_ENABLED
 	if (p_gen_edit_state) {
@@ -1741,11 +1783,11 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 	}
 #endif
 
-	Node *s = state->instance(p_gen_edit_state);
+	Node *s = state->instance((SceneState::GenEditState)p_edit_state);
 	if (!s)
 		return NULL;
 
-	if (p_gen_edit_state) {
+	if (p_edit_state!=GEN_EDIT_STATE_DISABLED) {
 		s->set_scene_instance_state(state);
 	}
 
@@ -1792,13 +1834,17 @@ void PackedScene::set_path(const String& p_path,bool p_take_over) {
 void PackedScene::_bind_methods() {
 
 	ClassDB::bind_method(_MD("pack","path:Node"),&PackedScene::pack);
-	ClassDB::bind_method(_MD("instance:Node","gen_edit_state"),&PackedScene::instance,DEFVAL(false));
+	ClassDB::bind_method(_MD("instance:Node","edit_state"),&PackedScene::instance,DEFVAL(false));
 	ClassDB::bind_method(_MD("can_instance"),&PackedScene::can_instance);
 	ClassDB::bind_method(_MD("_set_bundled_scene"),&PackedScene::_set_bundled_scene);
 	ClassDB::bind_method(_MD("_get_bundled_scene"),&PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(_MD("get_state:SceneState"),&PackedScene::get_state);
 
 	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_bundled"),_SCS("_set_bundled_scene"),_SCS("_get_bundled_scene"));
+
+	BIND_CONSTANT( GEN_EDIT_STATE_DISABLED );
+	BIND_CONSTANT( GEN_EDIT_STATE_INSTANCE );
+	BIND_CONSTANT( GEN_EDIT_STATE_MAIN );
 
 }
 

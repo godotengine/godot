@@ -226,7 +226,18 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					ERR_FAIL_COND( inheritors_array.empty() );
 
 
+
+
 					String intype=inheritors_array[p_which-TYPE_BASE_ID];
+
+					if (intype=="ViewportTexture") {
+
+						scene_tree->set_title(TTR("Pick a Viewport"));
+						scene_tree->popup_centered_ratio();
+						picking_viewport=true;
+						return;
+
+					}
 
 					Object *obj = ClassDB::instance(intype);
 					ERR_BREAK( !obj );
@@ -1126,6 +1137,22 @@ void CustomPropertyEditor::_color_changed(const Color& p_color) {
 
 void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
+	if (picking_viewport) {
+
+		Node* to_node=get_node(p_path);
+		if (!to_node->cast_to<Viewport>()) {
+			EditorNode::get_singleton()->show_warning("Selected node is not a Viewport!");
+			return;
+		}
+
+		Ref<ViewportTexture> vt;
+		vt.instance();
+		vt->set_viewport_path_in_scene(get_tree()->get_edited_scene_root()->get_path_to(to_node));
+		vt->setup_local_to_scene();
+		v=vt;
+		emit_signal("variant_changed");
+		return;
+	}
 
 	if (hint==PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE && hint_text!=String()) {
 
@@ -1262,7 +1289,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 			if (p_which==0) {
 
-
+				picking_viewport=false;
+				scene_tree->set_title(TTR("Pick a Node"));
 				scene_tree->popup_centered_ratio();
 
 			} else if (p_which==1) {
@@ -3807,6 +3835,8 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		undo_redo->create_action(TTR("Set")+" "+p_name,UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(obj,p_name,p_value);
 		undo_redo->add_undo_property(obj,p_name,obj->get(p_name));
+
+
 		undo_redo->add_do_method(this,"_changed_callback",obj,p_name);
 		undo_redo->add_undo_method(this,"_changed_callback",obj,p_name);
 
@@ -3815,6 +3845,17 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 			if (!r->is_edited() && String(p_name)!="resource/edited") {
 				undo_redo->add_do_method(r,"set_edited",true);
 				undo_redo->add_undo_method(r,"set_edited",false);
+			}
+
+			if (String(p_name)=="resource_local_to_scene") {
+				bool prev = obj->get(p_name);
+				bool next = p_value;
+				if (next) {
+					undo_redo->add_do_method(this,"setup_local_to_scene");
+				}
+				if (prev) {
+					undo_redo->add_undo_method(this,"setup_local_to_scene");
+				}
 			}
 		}
 		undo_redo->add_do_method(this,"emit_signal",_prop_edited,p_name);

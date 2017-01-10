@@ -51,6 +51,49 @@
 
 #include "globals.h"
 
+void ViewportTexture::setup_local_to_scene() {
+
+	if (vp) {
+		vp->viewport_textures.erase(this);
+	}
+
+	vp=NULL;
+
+	Node *local_scene = get_local_scene();
+	if (!local_scene) {
+		return;
+	}
+
+	Node *vpn = local_scene->get_node(path);
+	ERR_EXPLAIN("ViewportTexture: Path to node is invalid");
+	ERR_FAIL_COND(!vpn);
+
+	vp = vpn->cast_to<Viewport>();
+
+	ERR_EXPLAIN("ViewportTexture: Path to node does not point to a viewport");
+	ERR_FAIL_COND(!vp);
+
+	vp->viewport_textures.insert(this);
+}
+
+void ViewportTexture::set_viewport_path_in_scene(const NodePath& p_path) {
+
+	if (path==p_path)
+		return;
+
+	path=p_path;
+
+	if (get_local_scene()) {
+		setup_local_to_scene();
+	}
+
+}
+
+NodePath ViewportTexture::get_viewport_path_in_scene() const {
+
+	return path;
+}
+
 int ViewportTexture::get_width() const {
 
 	ERR_FAIL_COND_V(!vp,0);
@@ -82,24 +125,40 @@ void ViewportTexture::set_flags(uint32_t p_flags){
 	if (!vp)
 		return;
 
-	if (p_flags&FLAG_FILTER)
-		flags=FLAG_FILTER;
-	else
-		flags=0;
-
-	VS::get_singleton()->texture_set_flags(vp->texture_rid,flags);
+	vp->texture_flags=p_flags;
+	VS::get_singleton()->texture_set_flags(vp->texture_rid,p_flags);
 
 }
 
 uint32_t ViewportTexture::get_flags() const{
 
-	return flags;
+	if (!vp)
+		return 0;
+
+	return vp->texture_flags;
 }
 
-ViewportTexture::ViewportTexture(Viewport *p_vp){
+void ViewportTexture::_bind_methods() {
 
-	vp=p_vp;
-	flags=0;
+	ClassDB::bind_method(_MD("set_viewport_path_in_scene","path"),&ViewportTexture::set_viewport_path_in_scene);
+	ClassDB::bind_method(_MD("get_viewport_path_in_scene"),&ViewportTexture::get_viewport_path_in_scene);
+
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"viewport_path"),_SCS("set_viewport_path_in_scene"),_SCS("get_viewport_path_in_scene"));
+
+}
+
+ViewportTexture::ViewportTexture(){
+
+	vp=NULL;
+	set_local_to_scene(true);
+
+}
+
+ViewportTexture::~ViewportTexture(){
+
+	if (vp) {
+		vp->viewport_textures.erase(this);
+	}
 }
 
 /////////////////////////////////////
@@ -1256,7 +1315,11 @@ Image Viewport::get_screen_capture() const {
 
 Ref<ViewportTexture> Viewport::get_texture() const {
 
-	return texture;
+	Ref<ViewportTexture> vt;
+	vt.instance();
+	vt->vp=const_cast<Viewport*>(this);
+
+	return vt;
 }
 
 void Viewport::set_vflip(bool p_enable) {
@@ -2788,6 +2851,7 @@ Viewport::Viewport() {
 
 	viewport = VisualServer::get_singleton()->viewport_create();
 	texture_rid=VisualServer::get_singleton()->viewport_get_texture(viewport);
+	texture_flags=0;
 	internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener=false;
 	internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
@@ -2805,7 +2869,6 @@ Viewport::Viewport() {
 	clear_on_new_frame=true;
 	//clear=true;
 	update_mode=UPDATE_WHEN_VISIBLE;
-	texture = Ref<ViewportTexture>( memnew( ViewportTexture(this) ) );
 
 	physics_object_picking=false;
 	physics_object_capture=0;
@@ -2853,11 +2916,14 @@ Viewport::Viewport() {
 
 Viewport::~Viewport() {
 
+	//erase itself from viewport textures
+	for(Set<ViewportTexture*>::Element *E=viewport_textures.front();E;E=E->next()) {
+		E->get()->vp=NULL;
+	}
 	VisualServer::get_singleton()->free( viewport );
 	SpatialSoundServer::get_singleton()->free(internal_listener);
 	SpatialSound2DServer::get_singleton()->free(internal_listener_2d);
-	if (texture.is_valid())
-		texture->vp=NULL; //so if used, will crash
+
 }
 
 

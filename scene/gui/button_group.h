@@ -31,7 +31,7 @@
 
 #include "scene/gui/box_container.h"
 
-
+#if 0
 class BaseButton;
 
 class ButtonGroup : public BoxContainer {
@@ -63,4 +63,5 @@ public:
 	ButtonGroup();
 };
 
+#endif
 #endif // BUTTON_GROUP_H

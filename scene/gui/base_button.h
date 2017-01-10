@@ -59,8 +59,10 @@ class BaseButton : public Control {
 	} status;
 
 
-	ButtonGroup *group;
+	Ref<ButtonGroup> button_group;
 
+
+	void _unpress_group();
 
 protected:
 
@@ -109,11 +111,29 @@ public:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
 
+	void set_button_group(const Ref<ButtonGroup>& p_group);
+	Ref<ButtonGroup> get_button_group() const;
+
 	BaseButton();
 	~BaseButton();
 
 };
 
-VARIANT_ENUM_CAST( BaseButton::DrawMode );
+VARIANT_ENUM_CAST( BaseButton::DrawMode )
+
+
+class ButtonGroup : public Resource {
+
+	GDCLASS(ButtonGroup,Resource)
+friend class BaseButton;
+	Set<BaseButton*> buttons;
+protected:
+	static void _bind_methods();
+public:
+
+	BaseButton* get_pressed_button();
+	void get_buttons(List<BaseButton*> *r_buttons);
+	ButtonGroup();
+};
 
 #endif

@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include "os/file_access.h"
 #include "io/resource_loader.h"
+#include "script_language.h"
 
 void ResourceImportMetadata::set_editor(const String& p_editor) {
 
@@ -201,7 +202,7 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 		ResourceCache::lock->write_unlock();
 	}
 
-	_change_notify("resource/path");
+	_change_notify("resource_path");
 	_resource_path_changed();
 
 }
@@ -225,7 +226,7 @@ int Resource::get_subindex() const{
 void Resource::set_name(const String& p_name) {
 
 	name=p_name;
-	_change_notify("resource/name");
+	_change_notify("resource_name");
 
 }
 String Resource::get_name() const {
@@ -257,7 +258,7 @@ void Resource::reload_from_file() {
 
 		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
 			continue;
-		if (E->get().name=="resource/path")
+		if (E->get().name=="resource_path")
 			continue; //do not change path
 
 		set(E->get().name,s->get(E->get().name));
@@ -266,7 +267,50 @@ void Resource::reload_from_file() {
 }
 
 
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+
+
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+
+
+	Resource *r = (Resource*)ClassDB::instance(get_class());
+	ERR_FAIL_COND_V(!r,Ref<Resource>());
+
+	r->local_scene=p_for_scene;
+
+	for(List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
+
+		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+			continue;
+		Variant p = get(E->get().name);
+		if (p.get_type()==Variant::OBJECT) {
+
+			RES sr = p;
+			if (sr.is_valid()) {
+
+				if (sr->is_local_to_scene()) {
+					if (remap_cache.has(sr)) {
+						p=remap_cache[sr];
+					} else {
+
+
+						RES dupe = sr->duplicate_for_local_scene(p_for_scene,remap_cache);
+						p=dupe;
+						remap_cache[sr]=dupe;
+					}
+				}
+			}
+		}
+
+		r->set(E->get().name,p);
+	}
+
+	return Ref<Resource>(r);
+}
+
 Ref<Resource> Resource::duplicate(bool p_subresources) {
+
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
@@ -304,24 +348,6 @@ void Resource::_take_over_path(const String& p_path) {
 	set_path(p_path,true);
 }
 
-
-void Resource::_bind_methods() {
-
-	ClassDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
-	ClassDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
-	ClassDB::bind_method(_MD("get_path"),&Resource::get_path);
-	ClassDB::bind_method(_MD("set_name","name"),&Resource::set_name);
-	ClassDB::bind_method(_MD("get_name"),&Resource::get_name);
-	ClassDB::bind_method(_MD("get_rid"),&Resource::get_rid);
-	ClassDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
-	ClassDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
-
-	ClassDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
-	ADD_SIGNAL( MethodInfo("changed") );
-	ADD_GROUP("Resource","resource_");
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource_name"), _SCS("set_name"),_SCS("get_name"));
-}
 
 RID Resource::get_rid() const {
 
@@ -394,6 +420,62 @@ uint32_t Resource::hash_edited_version() const {
 
 #endif
 
+void Resource::set_local_to_scene(bool p_enable) {
+
+	local_to_scene=p_enable;
+}
+
+bool Resource::is_local_to_scene() const {
+
+	return local_to_scene;
+}
+
+Node* Resource::get_local_scene() const {
+
+	if (local_scene)
+		return local_scene;
+
+	if (_get_local_scene_func) {
+		return _get_local_scene_func();
+	}
+
+	return NULL;
+}
+
+void Resource::setup_local_to_scene() {
+
+	if (get_script_instance())
+		get_script_instance()->call("_setup_local_to_scene");
+}
+
+Node* (*Resource::_get_local_scene_func)()=NULL;
+
+
+void Resource::_bind_methods() {
+
+	ClassDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
+	ClassDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
+	ClassDB::bind_method(_MD("get_path"),&Resource::get_path);
+	ClassDB::bind_method(_MD("set_name","name"),&Resource::set_name);
+	ClassDB::bind_method(_MD("get_name"),&Resource::get_name);
+	ClassDB::bind_method(_MD("get_rid"),&Resource::get_rid);
+	ClassDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
+	ClassDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
+	ClassDB::bind_method(_MD("set_local_to_scene","enable"),&Resource::set_local_to_scene);
+	ClassDB::bind_method(_MD("is_local_to_scene"),&Resource::is_local_to_scene);
+	ClassDB::bind_method(_MD("get_local_scene:Node"),&Resource::get_local_scene);
+	ClassDB::bind_method(_MD("setup_local_to_scene"),&Resource::setup_local_to_scene);
+
+	ClassDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
+	ADD_SIGNAL( MethodInfo("changed") );
+	ADD_GROUP("Resource","resource_");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"resource_local_to_scene" ), _SCS("set_local_to_scene"),_SCS("is_local_to_scene"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource_name"), _SCS("set_name"),_SCS("get_name"));
+
+	BIND_VMETHOD( MethodInfo("_setup_local_to_scene") );
+
+}
 
 Resource::Resource() {
 
@@ -402,6 +484,7 @@ Resource::Resource() {
 #endif
 
 	subindex=0;
+	local_scene=NULL;
 }
 
 

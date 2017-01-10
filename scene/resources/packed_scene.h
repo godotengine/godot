@@ -117,6 +117,12 @@ public:
 		FLAG_MASK=(1<<24)-1,
 	};
 
+	enum GenEditState {
+		GEN_EDIT_STATE_DISABLED,
+		GEN_EDIT_STATE_INSTANCE,
+		GEN_EDIT_STATE_MAIN,
+	};
+
 	static void set_disable_placeholders(bool p_disable);
 
 	int find_node_by_path(const NodePath& p_node) const;
@@ -136,7 +142,7 @@ public:
 	void clear();
 
 	bool can_instance() const;
-	Node *instance(bool p_gen_edit_state=false) const;
+	Node *instance(GenEditState p_edit_state) const;
 
 
 	//unbuild API
@@ -187,6 +193,8 @@ public:
 	SceneState();
 };
 
+VARIANT_ENUM_CAST(SceneState::GenEditState)
+
 class PackedScene : public Resource {
 
 	GDCLASS(PackedScene, Resource );
@@ -203,13 +211,18 @@ protected:
 	static void _bind_methods();
 public:
 
+	enum GenEditState {
+		GEN_EDIT_STATE_DISABLED,
+		GEN_EDIT_STATE_INSTANCE,
+		GEN_EDIT_STATE_MAIN,
+	};
 
 	Error pack(Node *p_scene);
 
 	void clear();
 
 	bool can_instance() const;
-	Node *instance(bool p_gen_edit_state=false) const;
+	Node *instance(GenEditState p_edit_state=GEN_EDIT_STATE_DISABLED) const;
 
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
@@ -224,5 +237,7 @@ public:
 	PackedScene();
 
 };
+
+VARIANT_ENUM_CAST(PackedScene::GenEditState)
 
 #endif // SCENE_PRELOADER_H

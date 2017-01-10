@@ -27,6 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "button_group.h"
+
+#if 0
 #include "base_button.h"
 
 void ButtonGroup::_add_button(BaseButton *p_button) {
@@ -162,3 +164,4 @@ void ButtonGroup::_bind_methods() {
 ButtonGroup::ButtonGroup() : BoxContainer(true)
 {
 }
+#endif

@@ -174,7 +174,7 @@ void SceneTreeDock::_perform_instance_scenes(const Vector<String>& p_files,Node*
 
 		}
 
-		Node*instanced_scene=sdata->instance(true);
+		Node*instanced_scene=sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 		if (!instanced_scene) {
 			current_option=-1;
 			//accept->get_cancel()->hide();
@@ -250,7 +250,7 @@ void SceneTreeDock::_replace_with_branch_scene(const String& p_file,Node* base) 
 		return;
 	}
 
-	Node *instanced_scene=sdata->instance(true);
+	Node *instanced_scene=sdata->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 	if (!instanced_scene) {
 		accept->get_ok()->set_text(TTR("Ugh"));
 		accept->set_text(vformat(TTR("Error instancing scene from %s"),p_file));
@@ -744,7 +744,7 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 
 		Ref<PackedScene> sd = ResourceLoader::load( p_node->get_filename() );
 		ERR_FAIL_COND_V(!sd.is_valid(),NULL);
-		node = sd->instance(true);
+		node = sd->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 		ERR_FAIL_COND_V(!node,NULL);
 		//node->generate_instance_state();
 	} else {

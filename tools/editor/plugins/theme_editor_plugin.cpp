@@ -711,7 +711,7 @@ ThemeEditor::ThemeEditor() {
 	first_vb->add_child(cbx );
 
 
-	ButtonGroup *bg = memnew( ButtonGroup );
+	VBoxContainer *bg = memnew( VBoxContainer );
 	bg->set_v_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *gbvb = memnew( VBoxContainer );
 	gbvb->set_v_size_flags(SIZE_EXPAND_FILL);

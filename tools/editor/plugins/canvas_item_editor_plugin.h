@@ -473,7 +473,8 @@ class CanvasItemEditorViewport : public VBoxContainer {
 	Label* selector_label;
 	Label* label;
 	Label* label_desc;
-	ButtonGroup* btn_group;
+	VBoxContainer* btn_group;
+	Ref<ButtonGroup> button_group;
 
 	void _on_mouse_exit();
 	void _on_select_type(Object* selected);

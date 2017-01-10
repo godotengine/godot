@@ -61,6 +61,7 @@ class ResourceImportMetadata : public Reference {
 	Map<String,Variant> options;
 
 	StringArray _get_options() const;
+
 protected:
 
 	static void _bind_methods();
@@ -81,6 +82,7 @@ public:
 	bool has_option(const String& p_key) const;
 
 	void get_options(List<String> *r_options) const;
+
 
 	ResourceImportMetadata();
 };
@@ -108,6 +110,10 @@ friend class ResourceCache;
 	uint64_t last_modified_time;
 #endif
 
+	bool local_to_scene;
+friend class SceneState;
+	Node* local_scene;
+
 protected:
 
 	void emit_changed();
@@ -120,6 +126,8 @@ protected:
 	void _set_path(const String& p_path);
 	void _take_over_path(const String& p_path);
 public:
+
+	static Node* (*_get_local_scene_func)(); //used by editor
 
 	virtual bool editor_can_reload_from_file();
 	virtual void reload_from_file();
@@ -137,12 +145,17 @@ public:
 	int get_subindex() const;
 
 	Ref<Resource> duplicate(bool p_subresources=false);
+	Ref<Resource> duplicate_for_local_scene(Node *p_scene,Map<Ref<Resource>,Ref<Resource> >& remap_cache);
+
 
 	void set_import_metadata(const Ref<ResourceImportMetadata>& p_metadata);
 	Ref<ResourceImportMetadata> get_import_metadata() const;
 
+	void set_local_to_scene(bool p_enable);
+	bool is_local_to_scene() const;
+	virtual void setup_local_to_scene();
 
-
+	Node* get_local_scene() const;
 
 #ifdef TOOLS_ENABLED
 

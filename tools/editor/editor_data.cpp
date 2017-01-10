@@ -584,7 +584,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err!=OK,false);
 		ep.step(TTR("Updating scene.."),1);
-		Node *new_scene = pscene->instance(true);
+		Node *new_scene = pscene->instance(PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_COND_V(!new_scene,false);
 
 		//transfer selection

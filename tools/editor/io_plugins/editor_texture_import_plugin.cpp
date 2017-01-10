@@ -664,7 +664,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	mode_hb->add_child(vbcg);
 	mode_hb->add_constant_override("separation",15);
-	ButtonGroup *bg = memnew( ButtonGroup );
+	VBoxContainer *bg = memnew( VBoxContainer );
 	vbcg->add_margin_child("Import Mode",bg);
 
 	for(int i=0;i<EditorTextureImportPlugin::MODE_MAX;i++) {

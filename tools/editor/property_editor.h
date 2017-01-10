@@ -99,6 +99,7 @@ class CustomPropertyEditor : public Popup {
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
 	bool read_only;
+	bool picking_viewport;
 	CheckBox *checks20[20];
 	SpinBox *spinbox;
 	HSlider *slider;
