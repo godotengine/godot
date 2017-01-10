@@ -1552,7 +1552,7 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will take effect when reloaded."
 msgstr ""
-"Ресурсу '% s' используется.\n"
+"Ресурсу '%s' используется.\n"
 "Изменения вступят в силу после перезагрузки."
 
 #: tools/editor/dependency_editor.cpp
