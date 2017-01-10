@@ -44978,13 +44978,6 @@ do_property].
 				Remove the fractional part of x and y.
 			</description>
 		</method>
-		<method name="floorf">
-			<return type="Vector2">
-			</return>
-			<description>
-				Remove the fractional part of x and y.
-			</description>
-		</method>
 		<method name="get_aspect">
 			<return type="float">
 			</return>
