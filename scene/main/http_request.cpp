@@ -154,7 +154,7 @@ Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_h
 			return ERR_CANT_CONNECT;
 		}
 
-		set_process(true);
+		set_process_internal(true);
 
 	}
 
@@ -190,7 +190,7 @@ void HTTPRequest::cancel_request() {
 		return;
 
 	if (!use_threads) {
-		set_process(false);
+		set_process_internal(false);
 	} else {
 		thread_request_quit=true;
 		Thread::wait_to_finish(thread);
@@ -459,14 +459,14 @@ void HTTPRequest::_request_done(int p_status, int p_code, const StringArray& hea
 
 void HTTPRequest::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_PROCESS) {
+	if (p_what==NOTIFICATION_INTERNAL_PROCESS) {
 
 		if (use_threads)
 			return;
 		bool done = _update_connection();
 		if (done) {
 
-			set_process(false);
+			set_process_internal(false);
 			//cancel_request(); called from _request done now
 		}
 	}

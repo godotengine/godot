@@ -1036,7 +1036,7 @@ void AnimatedSprite3D::_validate_property(PropertyInfo& property) const {
 void AnimatedSprite3D::_notification(int p_what) {
 
 	switch(p_what) {
-		case NOTIFICATION_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 
 			if (frames.is_null())
 				return;
@@ -1239,7 +1239,7 @@ void AnimatedSprite3D::_set_playing(bool p_playing) {
 		return;
 	playing=p_playing;
 	_reset_timeout();
-	set_process(playing);
+	set_process_internal(playing);
 }
 
 bool AnimatedSprite3D::_is_playing() const {

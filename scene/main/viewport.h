@@ -207,6 +207,7 @@ friend class ViewportTexture;
 	MSAA msaa;
 	bool hdr;
 
+	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture*> viewport_textures;
 
 

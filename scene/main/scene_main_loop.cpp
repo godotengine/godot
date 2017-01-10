@@ -523,6 +523,7 @@ bool SceneTree::iteration(float p_time) {
 
 	emit_signal("fixed_frame");
 
+	_notify_group_pause("fixed_process_internal",Node::NOTIFICATION_INTERNAL_FIXED_PROCESS);
 	_notify_group_pause("fixed_process",Node::NOTIFICATION_FIXED_PROCESS);
 	_flush_ugc();
 	_flush_transform_notifications();
@@ -554,6 +555,7 @@ bool SceneTree::idle(float p_time){
 
 	_flush_transform_notifications();
 
+	_notify_group_pause("idle_process_internal",Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process",Node::NOTIFICATION_PROCESS);
 
 	Size2 win_size=Size2( OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height );

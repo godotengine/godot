@@ -1315,11 +1315,7 @@ Image Viewport::get_screen_capture() const {
 
 Ref<ViewportTexture> Viewport::get_texture() const {
 
-	Ref<ViewportTexture> vt;
-	vt.instance();
-	vt->vp=const_cast<Viewport*>(this);
-
-	return vt;
+	return default_texture;
 }
 
 void Viewport::set_vflip(bool p_enable) {
@@ -2852,6 +2848,11 @@ Viewport::Viewport() {
 	viewport = VisualServer::get_singleton()->viewport_create();
 	texture_rid=VisualServer::get_singleton()->viewport_get_texture(viewport);
 	texture_flags=0;
+
+	default_texture.instance();
+	default_texture->vp=const_cast<Viewport*>(this);
+	viewport_textures.insert(default_texture.ptr());
+
 	internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener=false;
 	internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();

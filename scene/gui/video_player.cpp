@@ -121,7 +121,7 @@ void VideoPlayer::_notification(int p_notification) {
 			}
 		} break;
 
-		case NOTIFICATION_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 
 			if (stream.is_null())
 				return;
@@ -233,7 +233,7 @@ void VideoPlayer::play() {
 		return;
 	playback->stop();
 	playback->play();
-	set_process(true);
+	set_process_internal(true);
 	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
 	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
 	last_audio_time=0;
@@ -249,7 +249,7 @@ void VideoPlayer::stop() {
 	playback->stop();
 	AudioServer::get_singleton()->stream_set_active(stream_rid,false);
 	resampler.flush();
-	set_process(false);
+	set_process_internal(false);
 	last_audio_time=0;
 };
 
@@ -266,7 +266,7 @@ void VideoPlayer::set_paused(bool p_paused) {
 	paused=p_paused;
 	if (playback.is_valid()) {
 		playback->set_paused(p_paused);
-		set_process(!p_paused);
+		set_process_internal(!p_paused);
 	};
 	last_audio_time = 0;
 };

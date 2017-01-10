@@ -103,7 +103,8 @@ private:
 		StringName name;
 		SceneTree *tree;
 		bool inside_tree;
-		bool ready_notified;
+		bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it corretly gets the _ready() notification
+		bool ready_first;
 #ifdef TOOLS_ENABLED
 		NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif
@@ -128,6 +129,9 @@ private:
 		//should move all the stuff below to bits
 		bool fixed_process;
 		bool idle_process;
+
+		bool fixed_process_internal;
+		bool idle_process_internal;
 
 		bool input;
 		bool unhandled_input;
@@ -223,6 +227,9 @@ public:
 		NOTIFICATION_DRAG_END=22,
 		NOTIFICATION_PATH_CHANGED=23,
 		NOTIFICATION_TRANSLATION_CHANGED=24,
+		NOTIFICATION_INTERNAL_PROCESS = 25,
+		NOTIFICATION_INTERNAL_FIXED_PROCESS = 26,
+
 	};
 
 	/* NODE/TREE */
@@ -302,6 +309,11 @@ public:
 	float get_process_delta_time() const;
 	bool is_processing() const;
 
+	void set_fixed_process_internal(bool p_process);
+	bool is_fixed_processing_internal() const;
+
+	void set_process_internal(bool p_process);
+	bool is_processing_internal() const;
 
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
@@ -336,6 +348,8 @@ public:
 	void set_pause_mode(PauseMode p_mode);
 	PauseMode get_pause_mode() const;
 	bool can_process() const;
+
+	void request_ready();
 
 	static void print_stray_nodes();
 

@@ -332,7 +332,7 @@ void AnimatedSprite::_validate_property(PropertyInfo& property) const {
 void AnimatedSprite::_notification(int p_what) {
 
 	switch(p_what) {
-		case NOTIFICATION_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 
 			if (frames.is_null())
 				return;
@@ -582,7 +582,7 @@ void AnimatedSprite::_set_playing(bool p_playing) {
 		return;
 	playing=p_playing;
 	_reset_timeout();
-	set_process(playing);
+	set_process_internal(playing);
 }
 
 bool AnimatedSprite::_is_playing() const {
