@@ -1096,7 +1096,7 @@ msgstr "Stworzyć NOWĄ ścieżkę dla %s i wstawić klatkę kluczową?"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "Utworzyć NOWĄ ścieżkę i dodać klatkę kluczową?"
+msgstr "Utworzyć %d NOWĄ ścieżkę i dodać klatkę kluczową?"
 
 #: tools/editor/animation_editor.cpp tools/editor/create_dialog.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
