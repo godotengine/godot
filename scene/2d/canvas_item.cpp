@@ -1005,8 +1005,8 @@ void CanvasItem::_bind_methods() {
 
 	ADD_GROUP("Visibility","");
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_modulate"),_SCS("get_modulate") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"self_modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_modulate"),_SCS("get_self_modulate") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::COLOR,"modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::COLOR,"self_modulate"), _SCS("set_self_modulate"),_SCS("get_self_modulate") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"show_behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
