@@ -294,8 +294,10 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	void _add_global(const StringName& p_name,const Variant& p_value);
 
+friend class GDInstance;
 
 	Mutex *lock;
+
 
 
 

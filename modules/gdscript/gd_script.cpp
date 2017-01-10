@@ -111,14 +111,29 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 
 	/* STEP 2, INITIALIZE AND CONSRTUCT */
 
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+
 	instances.insert(instance->owner);
+
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
 
 	initializer->call(instance,p_args,p_argcount,r_error);
 
 	if (r_error.error!=Variant::CallError::CALL_OK) {
 		instance->script=Ref<GDScript>();
 		instance->owner->set_script_instance(NULL);
+#ifndef NO_THREADS
+		GDScriptLanguage::singleton->lock->lock();
+#endif
 		instances.erase(p_owner);
+#ifndef NO_THREADS
+		GDScriptLanguage::singleton->lock->unlock();
+#endif
+
 		ERR_FAIL_COND_V(r_error.error!=Variant::CallError::CALL_OK, NULL); //error constructing
 	}
 
@@ -405,7 +420,16 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 }
 bool GDScript::instance_has(const Object *p_this) const {
 
-	return instances.has((Object*)p_this);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+	bool hasit = instances.has((Object*)p_this);
+
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+
+	return hasit;
 }
 
 bool GDScript::has_source_code() const {
@@ -596,8 +620,16 @@ void GDScript::_set_subclass_path(Ref<GDScript>& p_sc,const String& p_path) {
 
 Error GDScript::reload(bool p_keep_state) {
 
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+	bool has_instances = instances.size();
 
-	ERR_FAIL_COND_V(!p_keep_state && instances.size(),ERR_ALREADY_IN_USE);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+
+	ERR_FAIL_COND_V(!p_keep_state && has_instances,ERR_ALREADY_IN_USE);
 
 	String basedir=path;
 
@@ -1423,7 +1455,15 @@ GDInstance::GDInstance() {
 
 GDInstance::~GDInstance() {
 	if (script.is_valid() && owner) {
-		script->instances.erase(owner);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+
+	script->instances.erase(owner);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+
 	}
 }
 
