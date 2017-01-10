@@ -364,7 +364,7 @@ msgstr "مسیربه یک گره نمی رسد!‌"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "نام دارایی ایندکس نامعتبر 's%' در گره s%."
+msgstr "نام دارایی ایندکس نامعتبر '%s' در گره %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
@@ -1091,11 +1091,11 @@ msgstr "انیمیشن را پاکسازی کن"
 #: tools/editor/animation_editor.cpp
 #, fuzzy
 msgid "Create NEW track for %s and insert key?"
-msgstr "یک ترک جدید برای s% ایجاد کن و کلید را درج کن؟"
+msgstr "یک ترک جدید برای %s ایجاد کن و کلید را درج کن؟"
 
 #: tools/editor/animation_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
-msgstr "تعداد d% ترک جدید ایجاد، و کلیدها را درج کن؟"
+msgstr "تعداد %d ترک جدید ایجاد، و کلیدها را درج کن؟"
 
 #: tools/editor/animation_editor.cpp tools/editor/create_dialog.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -1314,7 +1314,7 @@ msgstr "فایل های ZIP‌ منابع بازی"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List For '%s':"
-msgstr "لیست متد برای 's%' :"
+msgstr "لیست متد برای '%s' :"
 
 #: tools/editor/call_dialog.cpp
 msgid "Method List:"
@@ -1342,7 +1342,7 @@ msgstr "تطبیقی ندارد"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d Ocurrence(s)."
-msgstr "تعداد d% رخداد جایگزین شد."
+msgstr "تعداد %d رخداد جایگزین شد."
 
 #: tools/editor/code_editor.cpp
 msgid "Replace"
@@ -1382,7 +1382,7 @@ msgstr "بعدی"
 
 #: tools/editor/code_editor.cpp
 msgid "Replaced %d ocurrence(s)."
-msgstr "تعداد d% رخداد جایگزین شد."
+msgstr "تعداد %d رخداد جایگزین شد."
 
 #: tools/editor/code_editor.cpp
 msgid "Not found!"
@@ -1490,7 +1490,7 @@ msgstr "اتصال"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "'s%' را به 's%' متصل کن"
+msgstr "'%s' را به '%s' متصل کن"
 
 #: tools/editor/connections_dialog.cpp
 msgid "Connecting Signal:"
@@ -1551,7 +1551,7 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will not take effect unless reloaded."
 msgstr ""
-"صحنه‌ی 's%' در حال حاضر ویرایش شده است.\n"
+"صحنه‌ی '%s' در حال حاضر ویرایش شده است.\n"
 "تغییرات مؤثر نخواهد بود مگر با بارگذاری مجدد."
 
 #: tools/editor/dependency_editor.cpp
@@ -1559,7 +1559,7 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will take effect when reloaded."
 msgstr ""
-"منابع 's%' در حال استفاده است.\n"
+"منابع '%s' در حال استفاده است.\n"
 "تغییرات با بارگذاری مجدد مؤثر خواهد بود."
 
 #: tools/editor/dependency_editor.cpp
@@ -1635,7 +1635,7 @@ msgstr "خطا در بارگذاری!"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "به طور دائمی تعداد 'd%' آیتم را حذف کند؟ (بدون undo !)"
+msgstr "به طور دائمی تعداد '%d' آیتم را حذف کند؟ (بدون undo !)"
 
 #: tools/editor/dependency_editor.cpp
 #, fuzzy
@@ -1699,7 +1699,7 @@ msgstr "بارگذاری خودکار (AutoLoad) را اضافه کن"
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
-msgstr "بارگذاری خودکار 's%' هم اکنون موجود است!"
+msgstr "بارگذاری خودکار '%s' هم اکنون موجود است!"
 
 #: tools/editor/editor_autoload_settings.cpp
 msgid "Rename Autoload"
