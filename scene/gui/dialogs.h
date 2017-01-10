@@ -91,7 +91,6 @@ class AcceptDialog : public WindowDialog {
 
 	GDCLASS(AcceptDialog,WindowDialog);
 
-	Control *child;
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
@@ -103,12 +102,10 @@ class AcceptDialog : public WindowDialog {
 	void _ok_pressed();
 	void _close_pressed();
 	void _builtin_text_entered(const String& p_text);
-	void _update_child_rect();
+	void _update_child_rects();
 
 	static bool swap_ok_cancel;
 
-
-	virtual void remove_child_notify(Node *p_child);
 
 
 protected:
@@ -139,8 +136,6 @@ public:
 
 	void set_text(String p_text);
 	String get_text() const;
-
-	void set_child_rect(Control *p_child);
 
 	AcceptDialog();
 	~AcceptDialog();

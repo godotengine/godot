@@ -853,7 +853,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 
 	VBoxContainer *uv_main_vb = memnew( VBoxContainer );
 	uv_edit->add_child(uv_main_vb);
-	uv_edit->set_child_rect(uv_main_vb);
+	//uv_edit->set_child_rect(uv_main_vb);
 	HBoxContainer *uv_mode_hb = memnew( HBoxContainer );
 	uv_main_vb->add_child(uv_mode_hb);
 	for(int i=0;i<UV_MODE_MAX;i++) {

@@ -243,7 +243,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	tree = memnew( Tree );
 	add_child(tree);
-	set_child_rect(tree);
+
 	tree->connect("item_activated",this,"_ok");
 
 	makedir = add_button(TTR("Create Folder"),OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
@@ -255,7 +255,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
-	makedialog->set_child_rect(makevb);
+//	makedialog->set_child_rect(makevb);
 
 	makedirname = memnew( LineEdit );
 	makevb->add_margin_child(TTR("Name:"),makedirname);

@@ -3979,7 +3979,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	VBoxContainer *snap_dialog_vbc = memnew( VBoxContainer );
 	snap_dialog->add_child(snap_dialog_vbc);
-	snap_dialog->set_child_rect(snap_dialog_vbc);
+	//snap_dialog->set_child_rect(snap_dialog_vbc);
 
 	snap_translate = memnew( LineEdit );
 	snap_translate->set_text("1");
@@ -4001,7 +4001,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_vbc = memnew( VBoxContainer );
 	settings_vbc->set_custom_minimum_size(Size2(200,0));
 	settings_dialog->add_child(settings_vbc);
-	settings_dialog->set_child_rect(settings_vbc);
+	//settings_dialog->set_child_rect(settings_vbc);
 
 
 

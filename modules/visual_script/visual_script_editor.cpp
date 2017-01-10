@@ -3422,7 +3422,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_signal_edit = memnew( PropertyEditor );
 	edit_signal_edit->hide_top_label();
 	edit_signal_dialog->add_child(edit_signal_edit);
-	edit_signal_dialog->set_child_rect(edit_signal_edit);
+
 	edit_signal_edit->edit(signal_editor);
 
 	edit_variable_dialog = memnew( AcceptDialog );
@@ -3434,7 +3434,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_variable_edit = memnew( PropertyEditor );
 	edit_variable_edit->hide_top_label();
 	edit_variable_dialog->add_child(edit_variable_edit);
-	edit_variable_dialog->set_child_rect(edit_variable_edit);
+
 	edit_variable_edit->edit(variable_editor);
 
 	select_base_type=memnew(CreateDialog);

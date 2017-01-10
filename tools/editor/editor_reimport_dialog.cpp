@@ -135,7 +135,7 @@ EditorReImportDialog::EditorReImportDialog() {
 	tree = memnew( Tree );
 	add_child(tree);
 	tree->set_hide_root(true);
-	set_child_rect(tree);
+	//set_child_rect(tree);
 	set_title(TTR("Re-Import Changed Resources"));
 	error = memnew( AcceptDialog);
 	add_child(error);

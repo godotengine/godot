@@ -88,7 +88,7 @@ ReparentDialog::ReparentDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+//	set_child_rect(vbc);
 
 	tree = memnew( SceneTreeEditor(false) );
 	tree->set_show_enabled_subscene(true);

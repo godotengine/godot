@@ -683,7 +683,7 @@ ColorPickerButton::ColorPickerButton() {
 	popup = memnew( PopupPanel );
 	picker = memnew( ColorPicker );
 	popup->add_child(picker);
-	popup->set_child_rect(picker);
+
 	picker->connect("color_changed",this,"_color_changed");
 	add_child(popup);
 }

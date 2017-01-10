@@ -674,7 +674,7 @@ void ProjectExportDialog::_create_android_keystore_window() {
 	vb->add_child(hb);
 
 	keystore_create_dialog->add_child(vb);
-	keystore_create_dialog->set_child_rect(vb);
+	//keystore_create_dialog->set_child_rect(vb);
 	add_child(keystore_create_dialog);
 
 	keystore_create_dialog->connect("confirmed", this, "_create_android_keystore");
@@ -1345,7 +1345,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	sections = memnew( TabContainer );
 	add_child(sections);
-	set_child_rect(sections);
+	//set_child_rect(sections);
 
 	VBoxContainer *pvbox = memnew( VBoxContainer );
 	sections->add_child(pvbox);
@@ -1577,7 +1577,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	atlas_preview_dialog = memnew( AcceptDialog );
 	ScrollContainer *scroll = memnew( ScrollContainer );
 	atlas_preview_dialog->add_child(scroll);
-	atlas_preview_dialog->set_child_rect(scroll);
+	//atlas_preview_dialog->set_child_rect(scroll);
 	atlas_preview_frame = memnew( TextureFrame );
 	scroll->add_child(atlas_preview_frame);
 	add_child(atlas_preview_dialog);
@@ -2111,7 +2111,7 @@ ProjectExport::ProjectExport(EditorData* p_data) {
 	editor_data=p_data;
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 	set_title(TTR("Project Export"));
 	label = memnew( Label );
 	label->set_text(TTR("Export Preset:"));

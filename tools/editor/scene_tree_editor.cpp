@@ -1302,7 +1302,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	tree = memnew( SceneTreeEditor(false,false) );
 	add_child(tree);
-	set_child_rect(tree);
+	//set_child_rect(tree);
 
 	tree->get_scene_tree()->connect("item_activated",this,"_select");
 

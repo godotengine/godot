@@ -1257,7 +1257,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	settings_vbc = memnew(VBoxContainer);
 	settings_vbc->set_custom_minimum_size(Size2(200, 0));
 	settings_dialog->add_child(settings_vbc);
-	settings_dialog->set_child_rect(settings_vbc);
 
 	settings_pick_distance = memnew(SpinBox);
 	settings_pick_distance->set_max(10000.0f);

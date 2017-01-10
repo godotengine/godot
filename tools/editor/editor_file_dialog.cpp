@@ -1289,7 +1289,6 @@ EditorFileDialog::EditorFileDialog() {
 	disable_overwrite_warning=false;
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
 
 	mode=MODE_SAVE_FILE;
 	set_title(TTR("Save a File"));
@@ -1446,7 +1445,7 @@ EditorFileDialog::EditorFileDialog() {
 	makedialog->set_title(TTR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
-	makedialog->set_child_rect(makevb);
+
 	makedirname = memnew( LineEdit );
 	makevb->add_margin_child(TTR("Name:"),makedirname);
 	add_child(makedialog);

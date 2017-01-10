@@ -4104,7 +4104,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	optimize_dialog->set_title(TTR("Anim. Optimizer"));
 	VBoxContainer *optimize_vb = memnew( VBoxContainer );
 	optimize_dialog->add_child(optimize_vb);
-	optimize_dialog->set_child_rect(optimize_vb);
+
 	optimize_linear_error = memnew( SpinBox );
 	optimize_linear_error->set_max(1.0);
 	optimize_linear_error->set_min(0.001);
@@ -4272,7 +4272,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	scale_dialog = memnew( ConfirmationDialog );
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	scale_dialog->add_child(vbc);
-	scale_dialog->set_child_rect(vbc);
+
 	scale = memnew( SpinBox );
 	scale->set_min(-99999);
 	scale->set_max(99999);
@@ -4289,7 +4289,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	add_child(cleanup_dialog);
 	VBoxContainer *cleanup_vb = memnew( VBoxContainer );
 	cleanup_dialog->add_child(cleanup_vb);
-	cleanup_dialog->set_child_rect(cleanup_vb);
+
 	cleanup_keys = memnew( CheckButton );
 	cleanup_keys->set_text(TTR("Remove invalid keys"));
 	cleanup_keys->set_pressed(true);

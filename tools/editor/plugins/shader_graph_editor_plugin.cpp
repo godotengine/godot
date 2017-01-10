@@ -310,7 +310,7 @@ GraphColorRampEdit::GraphColorRampEdit(){
 	popup = memnew( PopupPanel );
 	picker = memnew( ColorPicker );
 	popup->add_child(picker);
-	popup->set_child_rect(picker);
+	/popup->set_child_rect(picker);
 	add_child(popup);
 
 }

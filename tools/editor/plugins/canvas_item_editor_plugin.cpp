@@ -79,7 +79,7 @@ public:
 
 		container = memnew( VBoxContainer );
 		add_child(container);
-		set_child_rect(container);
+	//	set_child_rect(container);
 
 		child_container = memnew( GridContainer );
 		child_container->set_columns(3);

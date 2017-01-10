@@ -353,7 +353,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+	//set_child_rect(vb);
 
 
 	class_name = memnew( LineEdit );

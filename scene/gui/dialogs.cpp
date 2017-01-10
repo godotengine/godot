@@ -203,7 +203,7 @@ void AcceptDialog::_notification(int p_what) {
 		cancel_pressed();
 	} if (p_what==NOTIFICATION_RESIZED) {
 
-		_update_child_rect();
+		_update_child_rects();
 	}
 }
 
@@ -233,7 +233,7 @@ void AcceptDialog::set_text(String p_text) {
 
 	label->set_text(p_text);
 	minimum_size_changed();
-	_update_child_rect();
+	_update_child_rects();
 }
 
 void AcceptDialog::set_hide_on_ok(bool p_hide) {
@@ -253,7 +253,9 @@ void AcceptDialog::register_text_enter(Node *p_line_edit) {
 	p_line_edit->connect("text_entered", this,"_builtin_text_entered");
 }
 
-void AcceptDialog::_update_child_rect() {
+void AcceptDialog::_update_child_rects() {
+
+
 	Size2 label_size=label->get_minimum_size();
 	if (label->get_text().empty()) {
 		label_size.height = 0;
@@ -265,10 +267,17 @@ void AcceptDialog::_update_child_rect() {
 	Vector2 cpos(margin,margin+label_size.height);
 	Vector2 csize(size.x-margin*2,size.y-margin*3-hminsize.y-label_size.height);
 
-	if (child) {
+	for(int i=0;i<get_child_count();i++) {
+		Control *c = get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
 
-		child->set_pos(cpos);
-		child->set_size(csize);
+		if (c==hbc || c==label || c==get_close_button())
+			continue;
+
+		c->set_pos(cpos);
+		c->set_size(csize);
+
 	}
 
 	cpos.y+=csize.y+margin;
@@ -283,12 +292,22 @@ Size2 AcceptDialog::get_minimum_size() const {
 
 	int margin = get_constant("margin","Dialogs");
 	Size2 minsize = label->get_combined_minimum_size();
-	if (child) {
 
-		Size2 cminsize = child->get_combined_minimum_size();
+
+	for(int i=0;i<get_child_count();i++) {
+		Control *c = get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+
+		if (c==hbc || c==label || c==const_cast<AcceptDialog*>(this)->get_close_button())
+			continue;
+
+		Size2 cminsize = c->get_combined_minimum_size();
 		minsize.x=MAX(cminsize.x,minsize.x);
 		minsize.y=MAX(cminsize.y,minsize.y);
+
 	}
+
 
 	Size2 hminsize = hbc->get_combined_minimum_size();
 	minsize.x = MAX(hminsize.x,minsize.x);
@@ -301,23 +320,6 @@ Size2 AcceptDialog::get_minimum_size() const {
 	return minsize;
 }
 
-
-void AcceptDialog::set_child_rect(Control *p_child) {
-
-	ERR_FAIL_COND(p_child->get_parent()!=this);
-
-	//p_child->set_area_as_parent_rect(get_constant("margin","Dialogs"));
-	child=p_child;
-	minimum_size_changed();
-	_update_child_rect();
-}
-
-void AcceptDialog::remove_child_notify(Node *p_child) {
-
-	if (p_child==child) {
-		child=NULL;
-	}
-}
 
 void AcceptDialog::_custom_action(const String& p_action) {
 
@@ -371,7 +373,6 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(_MD("_custom_action"),&AcceptDialog::_custom_action);
 	ClassDB::bind_method(_MD("set_text","text"),&AcceptDialog::set_text);
 	ClassDB::bind_method(_MD("get_text"),&AcceptDialog::get_text);
-	ClassDB::bind_method(_MD("set_child_rect","child:Control"),&AcceptDialog::set_child_rect);
 
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
@@ -418,8 +419,6 @@ AcceptDialog::AcceptDialog() {
 
 	hide_on_ok=true;
 	set_title(RTR("Alert!"));
-
-	child=NULL;
 }
 
 

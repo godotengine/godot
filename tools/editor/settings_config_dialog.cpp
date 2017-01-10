@@ -307,7 +307,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	tabs = memnew( TabContainer );
 	add_child(tabs);
-	set_child_rect(tabs);
+	//set_child_rect(tabs);
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);

@@ -649,7 +649,7 @@ CreateDialog::CreateDialog() {
 	HSplitContainer *hbc = memnew( HSplitContainer );
 
 	add_child(hbc);
-	set_child_rect(hbc);
+
 
 	VBoxContainer *lvbc = memnew( VBoxContainer);
 	hbc->add_child(lvbc);
@@ -932,7 +932,7 @@ CreateDialog::CreateDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 
 	get_ok()->set_text("Create");
 

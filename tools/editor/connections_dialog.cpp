@@ -305,7 +305,7 @@ ConnectDialog::ConnectDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 
 	HBoxContainer *main_hb = memnew( HBoxContainer );
 	vbc->add_child(main_hb);

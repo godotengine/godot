@@ -899,7 +899,7 @@ FindReplaceDialog::FindReplaceDialog() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+
 
 
 	search_text = memnew( LineEdit );

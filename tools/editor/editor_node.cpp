@@ -5626,7 +5626,7 @@ EditorNode::EditorNode() {
 	dock_vb->add_child(dock_select);
 
 
-	dock_select_popoup->set_child_rect(dock_vb);
+
 	dock_select_popoup->set_as_minsize();
 	dock_select_rect_over=-1;
 	dock_popup_selected=-1;
@@ -6690,7 +6690,7 @@ EditorNode::EditorNode() {
 	load_error_dialog = memnew( AcceptDialog );
 	load_error_dialog->add_child(load_errors);
 	load_error_dialog->set_title(TTR("Load Errors"));
-	load_error_dialog->set_child_rect(load_errors);
+	//load_error_dialog->set_child_rect(load_errors);
 	gui_base->add_child(load_error_dialog);
 
 

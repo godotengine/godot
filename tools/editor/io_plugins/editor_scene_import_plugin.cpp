@@ -1115,7 +1115,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	set_title(TTR("Import 3D Scene"));
 	HBoxContainer *import_hb = memnew( HBoxContainer );
 	add_child(import_hb);
-	set_child_rect(import_hb);
+	//set_child_rect(import_hb);
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	import_hb->add_child(vbc);
@@ -1302,7 +1302,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	add_child(confirm_import);
 	VBoxContainer *cvb = memnew( VBoxContainer );
 	confirm_import->add_child(cvb);
-	confirm_import->set_child_rect(cvb);
+//	confirm_import->set_child_rect(cvb);
 
 	PanelContainer *pc = memnew( PanelContainer );
 	pc->add_style_override("panel",get_stylebox("normal","TextEdit"));

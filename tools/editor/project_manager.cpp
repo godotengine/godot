@@ -404,7 +404,7 @@ public:
 
 		VBoxContainer *vb = memnew( VBoxContainer );
 		add_child(vb);
-		set_child_rect(vb);
+	//	set_child_rect(vb);
 
 		Label* l = memnew(Label);
 		l->set_text(TTR("Project Path:"));

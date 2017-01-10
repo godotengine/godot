@@ -261,7 +261,7 @@ DependencyEditor::DependencyEditor() {
 	VBoxContainer *vb = memnew( VBoxContainer );
 	vb->set_name(TTR("Dependencies"));
 	add_child(vb);
-	set_child_rect(vb);
+
 
 	tree = memnew( Tree );
 	tree->set_columns(2);
@@ -354,7 +354,7 @@ DependencyEditorOwners::DependencyEditorOwners() {
 
 	owners = memnew( ItemList );
 	add_child(owners);
-	set_child_rect(owners);
+
 
 
 }
@@ -459,7 +459,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+
 
 	text = memnew( Label );
 	vb->add_child(text);
@@ -522,7 +522,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+
 
 
 	files = memnew( Tree );
@@ -699,7 +699,7 @@ OrphanResourcesDialog::OrphanResourcesDialog(){
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 	files = memnew( Tree );
 	files->set_columns(2);
 	files->set_column_titles_visible(true);

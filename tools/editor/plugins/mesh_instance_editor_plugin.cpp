@@ -249,7 +249,7 @@ MeshInstanceEditor::MeshInstanceEditor() {
 
 	VBoxContainer *outline_dialog_vbc = memnew( VBoxContainer );
 	outline_dialog->add_child(outline_dialog_vbc);
-	outline_dialog->set_child_rect(outline_dialog_vbc);
+	//outline_dialog->set_child_rect(outline_dialog_vbc);
 
 	outline_size = memnew( SpinBox );
 	outline_size->set_min(0.001);

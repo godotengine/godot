@@ -294,7 +294,7 @@ public:
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
-		set_child_rect(vbc);
+		//set_child_rect(vbc);
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		vbc->add_margin_child(TTR("Source Mesh(es):"),hbc);

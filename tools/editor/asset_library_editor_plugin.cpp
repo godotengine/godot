@@ -270,7 +270,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	VBoxContainer *vbox = memnew( VBoxContainer );
 	add_child(vbox);
-	set_child_rect(vbox);
+
 
 
 	HBoxContainer *hbox = memnew( HBoxContainer);

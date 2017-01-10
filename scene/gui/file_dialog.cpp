@@ -764,7 +764,7 @@ FileDialog::FileDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 
 	mode=MODE_SAVE_FILE;
 	set_title(RTR("Save a File"));
@@ -828,7 +828,7 @@ FileDialog::FileDialog() {
 	makedialog->set_title(RTR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
-	makedialog->set_child_rect(makevb);
+
 	makedirname = memnew( LineEdit );
 	makevb->add_margin_child(RTR("Name:"),makedirname);
 	add_child(makedialog);

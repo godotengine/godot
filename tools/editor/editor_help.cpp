@@ -314,7 +314,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	editor=EditorNode::get_singleton();
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 	HBoxContainer *sb_hb = memnew( HBoxContainer);
 	search_box = memnew( LineEdit );
 	sb_hb->add_child(search_box);
@@ -508,7 +508,6 @@ EditorHelpIndex::EditorHelpIndex() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
 
 	search_box = memnew( LineEdit );
 	vbc->add_margin_child(TTR("Search:"), search_box);
@@ -1839,7 +1838,7 @@ EditorHelp::EditorHelp() {
 	add_child(search_dialog);
 	VBoxContainer *search_vb = memnew( VBoxContainer );
 	search_dialog->add_child(search_vb);
-	search_dialog->set_child_rect(search_vb);
+
 	search = memnew( LineEdit );
 	search_dialog->register_text_enter(search);
 	search_vb->add_margin_child(TTR("Search Text"),search);

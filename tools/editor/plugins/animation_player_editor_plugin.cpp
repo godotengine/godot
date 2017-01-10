@@ -1477,7 +1477,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	blend_editor.dialog->set_hide_on_ok(true);
 	VBoxContainer *blend_vb = memnew( VBoxContainer);
 	blend_editor.dialog->add_child(blend_vb);
-	blend_editor.dialog->set_child_rect(blend_vb);
+	//blend_editor.dialog->set_child_rect(blend_vb);
 	blend_editor.tree = memnew( Tree );
 	blend_editor.tree->set_columns(2);
 	blend_vb->add_margin_child(TTR("Blend Times:"),blend_editor.tree,true);

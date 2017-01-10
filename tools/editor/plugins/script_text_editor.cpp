@@ -1280,7 +1280,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	add_child(color_panel);
 	color_picker = memnew(ColorPicker);
 	color_panel->add_child(color_picker);
-	color_panel->set_child_rect(color_picker);
+	color_panel->set_child_rect(color_picker); //NOT
 	color_picker->connect("color_changed", this, "_color_changed");
 
 	edit_hb = memnew (HBoxContainer);

@@ -657,7 +657,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	mode_hb = memnew( HBoxContainer );
 	add_child(mode_hb);
-	set_child_rect(mode_hb);
+	//set_child_rect(mode_hb);
 
 	VBoxContainer *vbcg = memnew( VBoxContainer);
 

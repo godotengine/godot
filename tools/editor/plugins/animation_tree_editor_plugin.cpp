@@ -1473,7 +1473,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	filter = memnew( Tree );
 	filter_dialog->add_child(filter);
-	filter_dialog->set_child_rect(filter);
+	//filter_dialog->set_child_rect(filter);
 	filter->connect("item_edited",this,"_filter_edited");
 
 	filter_button = memnew( Button );

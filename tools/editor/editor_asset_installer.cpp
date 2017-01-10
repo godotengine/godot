@@ -339,7 +339,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+
 
 	tree = memnew( Tree );
 	vb->add_margin_child("Package Contents:",tree,true);

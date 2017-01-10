@@ -341,7 +341,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	populate_dialog->add_child(vbc);
-	populate_dialog->set_child_rect(vbc);
+	//populate_dialog->set_child_rect(vbc);
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 

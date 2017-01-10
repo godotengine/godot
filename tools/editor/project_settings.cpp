@@ -1223,7 +1223,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	tab_container = memnew( TabContainer );
 	add_child(tab_container);
-	set_child_rect(tab_container);
+	//set_child_rect(tab_container);
 
 	//tab_container->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 15 );
 	//tab_container->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 15 );
@@ -1424,7 +1424,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	hbc = memnew( HBoxContainer );
 	device_input->add_child(hbc);
-	device_input->set_child_rect(hbc);
+//	device_input->set_child_rect(hbc);
 
 	VBoxContainer *vbc_left = memnew( VBoxContainer );
 	hbc->add_child(vbc_left);

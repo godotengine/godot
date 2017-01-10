@@ -76,7 +76,7 @@ RunSettingsDialog::RunSettingsDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 
 	run_mode = memnew( OptionButton );
 	vbc->add_margin_child(TTR("Run Mode:"),run_mode);
