@@ -655,6 +655,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	set("filesystem/import/automatic_reimport_on_sources_changed",true);
 
+	set("inspector/show_texture_preview",true);
+	set("inspector/show_material_preview",true);
+
 	if (p_extra_config.is_valid()) {
 
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {

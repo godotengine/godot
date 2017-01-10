@@ -354,8 +354,10 @@ bool MaterialEditorPlugin::handles(Object *p_object) const {
 void MaterialEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		material_editor->show();
-//		material_editor->set_process(true);
+		if( (bool)EditorSettings::get_singleton()->get("inspector/show_material_preview") ) {
+			material_editor->show();
+//			material_editor->set_process(true);
+		}
 	} else {
 
 		material_editor->hide();

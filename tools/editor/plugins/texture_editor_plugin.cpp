@@ -112,8 +112,10 @@ bool TextureEditorPlugin::handles(Object *p_object) const {
 void TextureEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		texture_editor->show();
-//		texture_editor->set_process(true);
+		if( (bool)EditorSettings::get_singleton()->get("inspector/show_texture_preview") ) {
+			texture_editor->show();
+//			texture_editor->set_process(true);
+		}
 	} else {
 
 		texture_editor->hide();
