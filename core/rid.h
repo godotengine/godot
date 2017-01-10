@@ -113,15 +113,15 @@ protected:
 
 #ifndef DEBUG_ENABLED
 
-	_FORCE_INLINE_ bool _is_owner(RID& p_rid) const {
+	_FORCE_INLINE_ bool _is_owner(const RID& p_rid) const {
 
-		return this==p_rid._owner;
+		return this==p_rid._data->_owner;
 
 	}
 
 	_FORCE_INLINE_ void _remove_owner(RID& p_rid) {
 
-		return p_rid._owner=NULL;
+		p_rid._data->_owner=NULL;
 
 	}
 #
