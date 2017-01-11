@@ -3350,7 +3350,7 @@ void PropertyEditor::update_tree() {
 						max=p.hint_string.get_slice(",",1).to_double();
 					}
 
-					if (p.type!=PROPERTY_HINT_SPRITE_FRAME && c>=3) {
+					if (p.hint!=PROPERTY_HINT_SPRITE_FRAME && c>=3) {
 
 						step= p.hint_string.get_slice(",",2).to_double();
 					}
@@ -3495,10 +3495,30 @@ void PropertyEditor::update_tree() {
 
 
 				Variant v = obj->get(p.name);
+				String type_name = "Array";
+				String type_name_suffix = "";
+				
+				String hint = p.hint_string;
+				while(hint.begins_with(itos(Variant::ARRAY)+":")) {
+					type_name += "<Array";
+					type_name_suffix += ">";
+					hint = hint.substr(2, hint.size()-2);
+				}
+				if(hint.find(":") >= 0) {
+					hint = hint.substr(0,hint.find(":"));
+					if(hint.find("/") >= 0) {
+						hint = hint.substr(0,hint.find("/"));
+					}
+					type_name += "<" + Variant::get_type_name(Variant::Type(hint.to_int()));
+					type_name_suffix += ">";
+				}
+				type_name += type_name_suffix;
+				
 				if (v.is_array())
-					item->set_text(1,"Array["+itos(v.call("size"))+"]");
+					item->set_text(1,type_name+"["+itos(v.call("size"))+"]");
 				else
-					item->set_text(1,"Array[]");
+					item->set_text(1,type_name+"[]");
+				
 				if (show_type_icons)
 					item->set_icon( 0, get_icon("ArrayData","EditorIcons") );
 
@@ -4233,7 +4253,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			}
 
 			Ref<ArrayPropertyEdit> ape = memnew( ArrayPropertyEdit );
-			ape->edit(obj,n,Variant::Type(t));
+			ape->edit(obj,n,ht,Variant::Type(t));
 
 			EditorNode::get_singleton()->push_item(ape.ptr());
 		}

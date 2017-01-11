@@ -39,6 +39,9 @@ class ArrayPropertyEdit : public Reference {
 	ObjectID obj;
 	StringName property;
 	String vtypes;
+	String subtype_hint_string;
+	PropertyHint subtype_hint;
+	Variant::Type subtype;
 	Variant get_array() const;
 	Variant::Type default_type;
 
@@ -56,7 +59,7 @@ protected:
 
 public:
 
-	void edit(Object* p_obj, const StringName& p_prop, Variant::Type p_deftype);
+	void edit(Object* p_obj, const StringName& p_prop, const String& p_hint_string, Variant::Type p_deftype);
 
 	Node *get_node();
 

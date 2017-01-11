@@ -100,13 +100,19 @@ bool ArrayPropertyEdit::_set(const StringName& p_name, const Variant& p_value){
 					ur->add_undo_method(this,"_set_value",i,arr.get(i));
 
 				}
-			} else if (newsize>size && size) {
+			} else if (newsize>size) {
 
 				Variant init;
 				Variant::CallError ce;
-				init = Variant::construct(arr.get(size-1).get_type(),NULL,0,ce);
-				for(int i=size;i<newsize;i++) {
-					ur->add_do_method(this,"_set_value",i,init);
+				Variant::Type new_type = subtype;
+				if(new_type==Variant::NIL && size) {
+					new_type = arr.get(size-1).get_type();
+				}
+				if(new_type!=Variant::NIL) {
+					init = Variant::construct(new_type,NULL,0,ce);
+					for(int i=size;i<newsize;i++) {
+						ur->add_do_method(this,"_set_value",i,init);
+					}
 				}
 
 			}
@@ -223,27 +229,51 @@ void ArrayPropertyEdit::_get_property_list( List<PropertyInfo> *p_list) const{
 	for(int i=0;i<items;i++) {
 
 		Variant v=arr.get(i+offset);
-		if (arr.get_type()==Variant::ARRAY) {
+		bool is_typed = arr.get_type()!=Variant::ARRAY || subtype!=Variant::NIL;
+		
+		if (!is_typed) {
 			p_list->push_back(PropertyInfo(Variant::INT,"indices/"+itos(i+offset)+"_type",PROPERTY_HINT_ENUM,vtypes));
 		}
-		if (arr.get_type()!=Variant::ARRAY || v.get_type()!=Variant::NIL) {
+		
+		if (is_typed || v.get_type()!=Variant::NIL ) {
 			PropertyInfo pi(v.get_type(),"indices/"+itos(i+offset));
-			if (v.get_type()==Variant::OBJECT) {
+			if(subtype!=Variant::NIL) {
+				pi.type = Variant::Type(subtype);
+				pi.hint = PropertyHint(subtype_hint);
+				pi.hint_string = subtype_hint_string;
+			} else if (v.get_type()==Variant::OBJECT) {
 				pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
 				pi.hint_string="Resource";
 			}
+			
 			p_list->push_back(pi);
 		}
 	}
 
 }
 
-void ArrayPropertyEdit::edit(Object* p_obj,const StringName& p_prop,Variant::Type p_deftype) {
+void ArrayPropertyEdit::edit(Object* p_obj,const StringName& p_prop,const String& p_hint_string,Variant::Type p_deftype) {
 
 	page=0;
 	property=p_prop;
 	obj=p_obj->get_instance_ID();
 	default_type=p_deftype;
+
+	if(!p_hint_string.empty()) {
+		int hint_subtype_seperator = p_hint_string.find(":");
+		if(hint_subtype_seperator >= 0) {
+			String subtype_string = p_hint_string.substr(0,hint_subtype_seperator);
+			
+			int slash_pos = subtype_string.find("/");
+			if(slash_pos >= 0) {
+				subtype_hint = PropertyHint(subtype_string.substr(slash_pos+1, subtype_string.size()-slash_pos-1).to_int());
+				subtype_string = subtype_string.substr(0,slash_pos);
+			}
+			
+			subtype_hint_string = p_hint_string.substr(hint_subtype_seperator+1, p_hint_string.size() - hint_subtype_seperator-1);
+			subtype=Variant::Type(subtype_string.to_int());
+		}
+	}
 
 }
 
@@ -274,5 +304,7 @@ ArrayPropertyEdit::ArrayPropertyEdit()
 		vtypes+=Variant::get_type_name( Variant::Type(i) );
 	}
 	default_type=Variant::NIL;
-
+	subtype=Variant::NIL;
+	subtype_hint=PROPERTY_HINT_NONE;
+	subtype_hint_string="";
 }
