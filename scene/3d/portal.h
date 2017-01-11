@@ -54,7 +54,7 @@ class Portal : public VisualInstance {
 	Color disabled_color;
 	float connect_range;
 
-	AABB aabb;
+	Rect3 aabb;
 
 
 protected:
@@ -67,7 +67,7 @@ protected:
 
 public:
 
-	virtual AABB get_aabb() const;
+	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_enabled(bool p_enabled);

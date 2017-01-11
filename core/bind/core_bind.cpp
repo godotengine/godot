@@ -87,12 +87,12 @@ void _ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 	ResourceLoader::set_abort_on_missing_resources(p_abort);
 }
 
-StringArray _ResourceLoader::get_dependencies(const String& p_path) {
+PoolStringArray _ResourceLoader::get_dependencies(const String& p_path) {
 
 	List<String> deps;
 	ResourceLoader::get_dependencies(p_path, &deps);
 
-	StringArray ret;
+	PoolStringArray ret;
 	for(List<String>::Element *E=deps.front();E;E=E->next()) {
 		ret.push_back(E->get());
 	}
@@ -2398,12 +2398,12 @@ _Thread::~_Thread() {
 /////////////////////////////////////
 
 
-StringArray _ClassDB::get_class_list() const {
+PoolStringArray _ClassDB::get_class_list() const {
 
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
 
-	StringArray ret;
+	PoolStringArray ret;
 	ret.resize(classes.size());
 	int idx=0;
 	for (List<StringName>::Element *E=classes.front();E;E=E->next()) {
@@ -2413,12 +2413,12 @@ StringArray _ClassDB::get_class_list() const {
 	return ret;
 
 }
-StringArray _ClassDB::get_inheriters_from_class( const StringName& p_class) const {
+PoolStringArray _ClassDB::get_inheriters_from_class( const StringName& p_class) const {
 
 	List<StringName> classes;
 	ClassDB::get_inheriters_from_class(p_class,&classes);
 
-	StringArray ret;
+	PoolStringArray ret;
 	ret.resize(classes.size());
 	int idx=0;
 	for (List<StringName>::Element *E=classes.front();E;E=E->next()) {
@@ -2517,12 +2517,12 @@ Array _ClassDB::get_method_list(StringName p_class,bool p_no_inheritance) const 
 	return ret;
 }
 
-StringArray _ClassDB::get_integer_constant_list(const StringName& p_class, bool p_no_inheritance) const {
+PoolStringArray _ClassDB::get_integer_constant_list(const StringName& p_class, bool p_no_inheritance) const {
 
 	List<String> constants;
 	ClassDB::get_integer_constant_list(p_class,&constants,p_no_inheritance);
 
-	StringArray ret;
+	PoolStringArray ret;
 	ret.resize(constants.size());
 	int idx=0;
 	for (List<String>::Element *E=constants.front();E;E=E->next()) {

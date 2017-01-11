@@ -270,7 +270,7 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_outlines","outlines"),&NavigationPolygon::_set_outlines);
 	ClassDB::bind_method(_MD("_get_outlines"),&NavigationPolygon::_get_outlines);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"polygons",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_polygons"),_SCS("_get_polygons"));
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"outlines",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_outlines"),_SCS("_get_outlines"));
 }

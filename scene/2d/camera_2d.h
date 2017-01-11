@@ -80,7 +80,7 @@ protected:
 	void _set_old_smoothing(float p_enable);
 protected:
 
-	virtual Matrix32 get_camera_transform();
+	virtual Transform2D get_camera_transform();
 	void _notification(int p_what);
 	static void _bind_methods();
 public:

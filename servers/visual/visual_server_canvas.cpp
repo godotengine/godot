@@ -2,7 +2,7 @@
 #include "visual_server_global.h"
 #include "visual_server_viewport.h"
 
-void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color& p_modulate, RasterizerCanvas::Light *p_lights) {
+void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, const Color& p_modulate, RasterizerCanvas::Light *p_lights) {
 
 
 	static const int z_range = VS::CANVAS_ITEM_Z_MAX-VS::CANVAS_ITEM_Z_MIN+1;
@@ -25,7 +25,7 @@ void VisualServerCanvas::_render_canvas_item_tree(Item *p_canvas_item, const Mat
 
 }
 
-void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, const Color &p_modulate,int p_z,RasterizerCanvas::Item **z_list,RasterizerCanvas::Item **z_last_list,Item *p_canvas_clip,Item *p_material_owner) {
+void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item,const Transform2D& p_transform,const Rect2& p_clip_rect, const Color &p_modulate,int p_z,RasterizerCanvas::Item **z_list,RasterizerCanvas::Item **z_last_list,Item *p_canvas_clip,Item *p_material_owner) {
 
 	Item *ci = p_canvas_item;
 
@@ -33,7 +33,7 @@ void VisualServerCanvas::_render_canvas_item(Item *p_canvas_item,const Matrix32&
 		return;
 
 	Rect2 rect = ci->get_rect();
-	Matrix32 xform = p_transform * ci->xform;
+	Transform2D xform = p_transform * ci->xform;
 	Rect2 global_rect = xform.xform(rect);
 	global_rect.pos+=p_clip_rect.pos;
 
@@ -150,7 +150,7 @@ void VisualServerCanvas::_light_mask_canvas_items(int p_z,RasterizerCanvas::Item
 
 }
 
-void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Matrix32 &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
+void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
 
 	VSG::canvas_render->canvas_begin();
 
@@ -200,17 +200,17 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Matrix32 &p_trans
 			//mirroring (useful for scrolling backgrounds)
 			if (ci.mirror.x!=0) {
 
-				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(ci.mirror.x,0));
+				Transform2D xform2 = p_transform * Transform2D(0,Vector2(ci.mirror.x,0));
 				_render_canvas_item_tree(ci.item,xform2,p_clip_rect,p_canvas->modulate,p_lights);
 			}
 			if (ci.mirror.y!=0) {
 
-				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(0,ci.mirror.y));
+				Transform2D xform2 = p_transform * Transform2D(0,Vector2(0,ci.mirror.y));
 				_render_canvas_item_tree(ci.item,xform2,p_clip_rect,p_canvas->modulate,p_lights);
 			}
 			if (ci.mirror.y!=0 && ci.mirror.x!=0) {
 
-				Matrix32 xform2 = p_transform * Matrix32(0,ci.mirror);
+				Transform2D xform2 = p_transform * Transform2D(0,ci.mirror);
 				_render_canvas_item_tree(ci.item,xform2,p_clip_rect,p_canvas->modulate,p_lights);
 			}
 
@@ -323,7 +323,7 @@ void VisualServerCanvas::canvas_item_set_light_mask(RID p_item,int p_mask){
 
 }
 
-void VisualServerCanvas::canvas_item_set_transform(RID p_item, const Matrix32& p_transform){
+void VisualServerCanvas::canvas_item_set_transform(RID p_item, const Transform2D& p_transform){
 
 	Item *canvas_item = canvas_item_owner.getornull( p_item );
 	ERR_FAIL_COND(!canvas_item);
@@ -618,7 +618,7 @@ void VisualServerCanvas::canvas_item_add_triangle_array(RID p_item, const Vector
 }
 
 
-void VisualServerCanvas::canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform) {
+void VisualServerCanvas::canvas_item_add_set_transform(RID p_item,const Transform2D& p_transform) {
 
 
 	Item *canvas_item = canvas_item_owner.getornull( p_item );
@@ -809,7 +809,7 @@ void VisualServerCanvas::canvas_light_set_scale(RID p_light, float p_scale){
 	clight->scale=p_scale;
 
 }
-void VisualServerCanvas::canvas_light_set_transform(RID p_light, const Matrix32& p_transform){
+void VisualServerCanvas::canvas_light_set_transform(RID p_light, const Transform2D& p_transform){
 
 
 	RasterizerCanvas::Light *clight = canvas_light_owner.get(p_light);
@@ -1036,7 +1036,7 @@ void VisualServerCanvas::canvas_light_occluder_set_polygon(RID p_occluder,RID p_
 	}
 
 }
-void VisualServerCanvas::canvas_light_occluder_set_transform(RID p_occluder,const Matrix32& p_xform) {
+void VisualServerCanvas::canvas_light_occluder_set_transform(RID p_occluder,const Transform2D& p_xform) {
 
 	RasterizerCanvas::LightOccluderInstance *occluder = canvas_light_occluder_owner.get(p_occluder);
 	ERR_FAIL_COND(!occluder);

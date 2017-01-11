@@ -200,7 +200,7 @@ void CollisionPolygon::set_polygon(const Vector<Point2>& p_polygon) {
 			Vector3 p1(polygon[i].x,polygon[i].y,depth*0.5);
 
 			if (i==0)
-				aabb=AABB(p1,Vector3());
+				aabb=Rect3(p1,Vector3());
 			else
 				aabb.expand_to(p1);
 
@@ -209,9 +209,9 @@ void CollisionPolygon::set_polygon(const Vector<Point2>& p_polygon) {
 
 
 		}
-		if (aabb==AABB()) {
+		if (aabb==Rect3()) {
 
-			aabb=AABB(Vector3(-1,-1,-1),Vector3(2,2,2));
+			aabb=Rect3(Vector3(-1,-1,-1),Vector3(2,2,2));
 		} else {
 			aabb.pos-=aabb.size*0.3;
 			aabb.size+=aabb.size*0.6;
@@ -240,7 +240,7 @@ CollisionPolygon::BuildMode CollisionPolygon::get_build_mode() const{
 	return build_mode;
 }
 
-AABB CollisionPolygon::get_item_rect() const {
+Rect3 CollisionPolygon::get_item_rect() const {
 
 	return aabb;
 }
@@ -294,7 +294,7 @@ void CollisionPolygon::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Triangles"),_SCS("set_build_mode"),_SCS("get_build_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"depth"),_SCS("set_depth"),_SCS("get_depth"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_shape_range"),_SCS("_get_shape_range"));
 }
 
@@ -304,7 +304,7 @@ CollisionPolygon::CollisionPolygon() {
 	shape_to=-1;
 	can_update_body=false;
 
-	aabb=AABB(Vector3(-1,-1,-1),Vector3(2,2,2));
+	aabb=Rect3(Vector3(-1,-1,-1),Vector3(2,2,2));
 	build_mode=BUILD_SOLIDS;
 	depth=1.0;
 

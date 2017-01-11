@@ -52,7 +52,7 @@ public:
 	RES load(const String &p_path,const String& p_type_hint="", bool p_no_cache = false);
 	PoolVector<String> get_recognized_extensions_for_type(const String& p_type);
 	void set_abort_on_missing_resources(bool p_abort);
-	StringArray get_dependencies(const String& p_path);
+	PoolStringArray get_dependencies(const String& p_path);
 	bool has(const String& p_path);
 	Ref<ResourceImportMetadata> load_import_metadata(const String& p_path);
 
@@ -602,8 +602,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	StringArray get_class_list() const;
-	StringArray get_inheriters_from_class( const StringName& p_class) const;
+	PoolStringArray get_class_list() const;
+	PoolStringArray get_inheriters_from_class( const StringName& p_class) const;
 	StringName get_parent_class(const StringName& p_class) const;
 	bool class_exists(const StringName &p_class) const;
 	bool is_parent_class(const StringName &p_class,const StringName& p_inherits) const;
@@ -621,7 +621,7 @@ public:
 
 	Array get_method_list(StringName p_class,bool p_no_inheritance=false) const;
 
-	StringArray get_integer_constant_list(const StringName& p_class, bool p_no_inheritance=false) const;
+	PoolStringArray get_integer_constant_list(const StringName& p_class, bool p_no_inheritance=false) const;
 	bool has_integer_constant(const StringName& p_class, const StringName &p_name) const;
 	int get_integer_constant(const StringName& p_class, const StringName &p_name) const;
 	StringName get_category(const StringName& p_node) const;

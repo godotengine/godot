@@ -79,7 +79,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
 			Vector2 cpoint = !mb.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
@@ -421,7 +421,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 			if ( action!=ACTION_NONE) {
 
-				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+				Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				Vector2 cpoint = !mm.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
 											: node->get_global_transform().affine_inverse().xform( canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
@@ -481,7 +481,7 @@ void Path2DEditor::_canvas_draw() {
 	if (!node->get_curve().is_valid())
 		return ;
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 	Size2 handle_size = handle->get_size();
 

@@ -325,10 +325,10 @@ void CanvasItem::_update_callback() {
 	pending_update=false; // don't change to false until finished drawing (avoid recursive update)
 }
 
-Matrix32 CanvasItem::get_global_transform_with_canvas() const {
+Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
 	const CanvasItem *ci = this;
-	Matrix32 xform;
+	Transform2D xform;
 	const CanvasItem *last_valid=NULL;
 
 	while(ci) {
@@ -346,7 +346,7 @@ Matrix32 CanvasItem::get_global_transform_with_canvas() const {
 	return xform;
 }
 
-Matrix32 CanvasItem::get_global_transform() const {
+Transform2D CanvasItem::get_global_transform() const {
 
 
 	if (global_invalid) {
@@ -691,12 +691,12 @@ void CanvasItem::draw_set_transform(const Point2& p_offset, float p_rot, const S
 		ERR_FAIL();
 	}
 
-	Matrix32 xform(p_rot,p_offset);
+	Transform2D xform(p_rot,p_offset);
 	xform.scale_basis(p_scale);
 	VisualServer::get_singleton()->canvas_item_add_set_transform(canvas_item,xform);
 }
 
-void CanvasItem::draw_set_transform_matrix(const Matrix32& p_matrix) {
+void CanvasItem::draw_set_transform_matrix(const Transform2D& p_matrix) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -892,7 +892,7 @@ Vector2 CanvasItem::make_canvas_pos_local(const Vector2& screen_point) const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),screen_point);
 
-	Matrix32 local_matrix = (get_canvas_transform() * 
+	Transform2D local_matrix = (get_canvas_transform() * 
 			get_global_transform()).affine_inverse();
 
 	return local_matrix.xform(screen_point);
@@ -972,8 +972,8 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 	ClassDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
 	ClassDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Variant()),DEFVAL(1.0));
-	ClassDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
-	ClassDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(PoolVector2Array()),DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(PoolVector2Array()),DEFVAL(Variant()));
 	ClassDB::bind_method(_MD("draw_string","font:Font","pos","text","modulate","clip_w"),&CanvasItem::draw_string,DEFVAL(Color(1,1,1)),DEFVAL(-1));
 	ClassDB::bind_method(_MD("draw_char","font:Font","pos","char","next","modulate"),&CanvasItem::draw_char,DEFVAL(Color(1,1,1)));
 
@@ -1041,9 +1041,9 @@ void CanvasItem::_bind_methods() {
 
 }
 
-Matrix32 CanvasItem::get_canvas_transform() const {
+Transform2D CanvasItem::get_canvas_transform() const {
 
-	ERR_FAIL_COND_V(!is_inside_tree(),Matrix32());
+	ERR_FAIL_COND_V(!is_inside_tree(),Transform2D());
 
 	if (canvas_layer)
 		return canvas_layer->get_transform();
@@ -1054,9 +1054,9 @@ Matrix32 CanvasItem::get_canvas_transform() const {
 
 }
 
-Matrix32 CanvasItem::get_viewport_transform() const {
+Transform2D CanvasItem::get_viewport_transform() const {
 
-	ERR_FAIL_COND_V(!is_inside_tree(),Matrix32());
+	ERR_FAIL_COND_V(!is_inside_tree(),Transform2D());
 
 	if (canvas_layer) {
 

@@ -33,7 +33,7 @@
 #include "scene/scene_string_names.h"
 #include "skeleton.h"
 
-AABB VisualInstance::get_transformed_aabb() const {
+Rect3 VisualInstance::get_transformed_aabb() const {
 
 	return get_global_transform().xform( get_aabb() );
 }

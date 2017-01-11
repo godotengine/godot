@@ -137,9 +137,9 @@ friend class ViewportTexture;
 	bool audio_listener_2d;
 	RID internal_listener_2d;
 
-	Matrix32 canvas_transform;
-	Matrix32 global_canvas_transform;
-	Matrix32 stretch_transform;
+	Transform2D canvas_transform;
+	Transform2D global_canvas_transform;
+	Transform2D stretch_transform;
 
 	Size2 size;
 	Rect2 to_screen_rect;
@@ -232,7 +232,7 @@ friend class ViewportTexture;
 		float tooltip_delay;
 		List<Control*> modal_stack;
 		unsigned int cancelled_input_ID;
-		Matrix32 focus_inv_xform;
+		Transform2D focus_inv_xform;
 		bool subwindow_order_dirty;
 		List<Control*> subwindows;
 		bool roots_order_dirty;
@@ -250,14 +250,14 @@ friend class ViewportTexture;
 	void _gui_sort_roots();
 	void _gui_sort_modal_stack();
 	Control* _gui_find_control(const Point2& p_global);
-	Control* _gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_global,const Matrix32& p_xform,Matrix32& r_inv_xform);
+	Control* _gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_global,const Transform2D& p_xform,Transform2D& r_inv_xform);
 
 	void _gui_input_event(InputEvent p_event);
 
 
 	void update_worlds();
 
-	_FORCE_INLINE_ Matrix32 _get_input_pre_xform() const;
+	_FORCE_INLINE_ Transform2D _get_input_pre_xform() const;
 
 	void _vp_enter_tree();
 	void _vp_exit_tree();
@@ -351,13 +351,13 @@ public:
 	Ref<World2D> find_world_2d() const;
 
 
-	void set_canvas_transform(const Matrix32& p_transform);
-	Matrix32 get_canvas_transform() const;
+	void set_canvas_transform(const Transform2D& p_transform);
+	Transform2D get_canvas_transform() const;
 
-	void set_global_canvas_transform(const Matrix32& p_transform);
-	Matrix32 get_global_canvas_transform() const;
+	void set_global_canvas_transform(const Transform2D& p_transform);
+	Transform2D get_global_canvas_transform() const;
 
-	Matrix32 get_final_transform() const;
+	Transform2D get_final_transform() const;
 
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;

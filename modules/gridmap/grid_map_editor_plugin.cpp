@@ -99,7 +99,7 @@ void  GridMapEditor::_menu_option(int p_option) {
 
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Y: {
-			Matrix3 r;
+			Basis r;
 			if (input_action==INPUT_DUPLICATE) {
 
 				r.set_orthogonal_index(selection.duplicate_rot);
@@ -114,7 +114,7 @@ void  GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_X: {
-			Matrix3 r;
+			Basis r;
 			if (input_action==INPUT_DUPLICATE) {
 
 				r.set_orthogonal_index(selection.duplicate_rot);
@@ -130,7 +130,7 @@ void  GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_ROTATE_Z: {
-			Matrix3 r;
+			Basis r;
 			if (input_action==INPUT_DUPLICATE) {
 
 				r.set_orthogonal_index(selection.duplicate_rot);
@@ -146,21 +146,21 @@ void  GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
-			Matrix3 r;
+			Basis r;
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0,1,0),Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
-			Matrix3 r;
+			Basis r;
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(1,0,0),Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
 			_update_cursor_transform();
 		} break;
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
-			Matrix3 r;
+			Basis r;
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0,0,1),Math_PI/2.0);
 			cursor_rot=r.get_orthogonal_index();
@@ -191,7 +191,7 @@ void  GridMapEditor::_menu_option(int p_option) {
 			if (!selection.active)
 				break;
 			int area = node->get_unused_area_id();
-			Error err = node->create_area(area,AABB(selection.begin,selection.end-selection.begin+Vector3(1,1,1)));
+			Error err = node->create_area(area,Rect3(selection.begin,selection.end-selection.begin+Vector3(1,1,1)));
 			if (err!=OK) {
 
 
@@ -358,7 +358,7 @@ bool GridMapEditor::do_input_action(Camera* p_camera,const Point2& p_point,bool 
 	}
 
 	last_mouseover=Vector3(cell[0],cell[1],cell[2]);
-	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis],Transform(Matrix3(),grid_ofs));
+	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis],Transform(Basis(),grid_ofs));
 
 
 	if (cursor_instance.is_valid()) {
@@ -459,7 +459,7 @@ void GridMapEditor::_update_duplicate_indicator() {
 	Transform xf;
 	xf.scale(Vector3(1,1,1)*(Vector3(1,1,1)+(selection.end-selection.begin))*node->get_cell_size());
 	xf.origin=(selection.begin+(selection.current-selection.click))*node->get_cell_size();
-	Matrix3 rot;
+	Basis rot;
 	rot.set_orthogonal_index(selection.duplicate_rot);
 	xf.basis = rot * xf.basis;
 
@@ -481,7 +481,7 @@ void GridMapEditor::_duplicate_paste() {
 
 	List< __Item > items;
 
-	Matrix3 rot;
+	Basis rot;
 	rot.set_orthogonal_index(selection.duplicate_rot);
 
 	for(int i=selection.begin.x;i<=selection.end.x;i++) {
@@ -498,7 +498,7 @@ void GridMapEditor::_duplicate_paste() {
 				Vector3 rel=Vector3(i,j,k)-selection.begin;
 				rel = rot.xform(rel);
 
-				Matrix3 orm;
+				Basis orm;
 				orm.set_orthogonal_index(orientation);
 				orm = rot * orm;
 
@@ -664,7 +664,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera* p_camera,const InputEven
 					for(List<int>::Element *E=areas.front();E;E=E->next()) {
 
 						int area = E->get();
-						AABB aabb = node->area_get_bounds(area);
+						Rect3 aabb = node->area_get_bounds(area);
 						aabb.pos*=node->get_cell_size();
 						aabb.size*=node->get_cell_size();
 
@@ -972,7 +972,7 @@ void GridMapEditor::update_grid() {
 	grid_ofs[edit_axis]=edit_floor[edit_axis]*node->get_cell_size();
 
 	edit_grid_xform.origin=grid_ofs;
-	edit_grid_xform.basis=Matrix3();
+	edit_grid_xform.basis=Basis();
 
 
 	for(int i=0;i<3;i++) {
@@ -1142,7 +1142,7 @@ void GridMapEditor::_update_areas_display() {
 		ad.mesh=mesh;
 		ad.instance = VisualServer::get_singleton()->instance_create2(mesh,node->get_world()->get_scenario());
 		Transform xform;
-		AABB aabb = node->area_get_bounds(area);
+		Rect3 aabb = node->area_get_bounds(area);
 		xform.origin=aabb.pos * node->get_cell_size();
 		xform.basis.scale(aabb.size * node->get_cell_size());
 		VisualServer::get_singleton()->instance_set_transform(ad.instance,global_xf * xform);
@@ -1377,7 +1377,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		for(int i=0;i<12;i++) {
 
-			AABB base(Vector3(0,0,0),Vector3(1,1,1));
+			Rect3 base(Vector3(0,0,0),Vector3(1,1,1));
 			Vector3 a,b;
 			base.get_edge(i,a,b);
 			lines.push_back(a);

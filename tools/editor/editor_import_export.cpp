@@ -84,9 +84,9 @@ void EditorImportPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::STRING,"get_visible_name"));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("import_dialog",PropertyInfo(Variant::STRING,"from")));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::INT,"import",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"ResourceImportMetadata")));
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::RAW_ARRAY,"custom_export",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform")));
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo("import_from_drop",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::STRING,"dest_path")));
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo("reimport_multiple_files",PropertyInfo(Variant::STRING_ARRAY,"files")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::POOL_BYTE_ARRAY,"custom_export",PropertyInfo(Variant::STRING,"path"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo("import_from_drop",PropertyInfo(Variant::POOL_STRING_ARRAY,"files"),PropertyInfo(Variant::STRING,"dest_path")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo("reimport_multiple_files",PropertyInfo(Variant::POOL_STRING_ARRAY,"files")));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"can_reimport_multiple_files"));
 
 //	BIND_VMETHOD( mi );
@@ -175,7 +175,7 @@ EditorImportPlugin::EditorImportPlugin() {
 void EditorExportPlugin::_bind_methods() {
 
 	MethodInfo mi = MethodInfo("custom_export:Variant",PropertyInfo(Variant::STRING,"name"),PropertyInfo(Variant::OBJECT,"platform",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatform"));
-	mi.return_val.type=Variant::RAW_ARRAY;
+	mi.return_val.type=Variant::POOL_BYTE_ARRAY;
 
 	BIND_VMETHOD( mi );
 }
@@ -188,7 +188,7 @@ Vector<uint8_t> EditorExportPlugin::custom_export(String& p_path,const Ref<Edito
 		Variant d = get_script_instance()->call("custom_export",p_path,p_platform);
 		if (d.get_type()==Variant::NIL)
 			return Vector<uint8_t>();
-		if (d.get_type()==Variant::RAW_ARRAY)
+		if (d.get_type()==Variant::POOL_BYTE_ARRAY)
 			return d;
 
 		ERR_FAIL_COND_V(d.get_type()!=Variant::DICTIONARY,Vector<uint8_t>());

@@ -1133,7 +1133,7 @@ void ProjectManager::_install_project(const String& p_zip_path,const String& p_t
 	npdialog->show_dialog();
 }
 
-void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
+void ProjectManager::_files_dropped(PoolStringArray p_files, int p_screen) {
 	Set<String> folders_set;
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (int i = 0; i < p_files.size(); i++) {
@@ -1142,7 +1142,7 @@ void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
 	}
 	memdelete(da);
 	if (folders_set.size()>0) {
-		StringArray folders;
+		PoolStringArray folders;
 		for (Set<String>::Element *E=folders_set.front();E;E=E->next()) {
 			folders.append(E->get());
 		}
@@ -1174,7 +1174,7 @@ void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
 	}
 }
 
-void ProjectManager::_scan_multiple_folders(StringArray p_files)
+void ProjectManager::_scan_multiple_folders(PoolStringArray p_files)
 {
 	for (int i = 0; i < p_files.size(); i++) {
 		_scan_begin(p_files.get(i));

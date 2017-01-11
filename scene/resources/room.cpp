@@ -56,7 +56,7 @@ void RoomBounds::_bind_methods() {
 	ClassDB::bind_method(_MD("get_geometry_hint"),&RoomBounds::get_geometry_hint);
 
 	//ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "bounds"), _SCS("set_bounds"),_SCS("get_bounds") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "geometry_hint"),_SCS("set_geometry_hint"),_SCS("get_geometry_hint") );
+	ADD_PROPERTY( PropertyInfo( Variant::POOL_VECTOR3_ARRAY, "geometry_hint"),_SCS("set_geometry_hint"),_SCS("get_geometry_hint") );
 
 }
 

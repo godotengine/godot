@@ -564,9 +564,9 @@ StreamPeerSSL* StreamPeerOpenSSL::_create_func() {
 Vector<X509*> StreamPeerOpenSSL::certs;
 
 
-void StreamPeerOpenSSL::_load_certs(const ByteArray& p_array) {
+void StreamPeerOpenSSL::_load_certs(const PoolByteArray& p_array) {
 
-	ByteArray::Read r = p_array.read();
+	PoolByteArray::Read r = p_array.read();
 	BIO* mem = BIO_new(BIO_s_mem());
 	BIO_puts(mem,(const char*)r.ptr());
 	while(true) {
@@ -598,11 +598,11 @@ void StreamPeerOpenSSL::initialize_ssl() {
 
 		FileAccess *f=FileAccess::open(certs_path,FileAccess::READ);
 		if (f) {
-			ByteArray arr;
+			PoolByteArray arr;
 			int flen = f->get_len();
 			arr.resize(flen+1);
 			{
-				ByteArray::Write w = arr.write();
+				PoolByteArray::Write w = arr.write();
 				f->get_buffer(w.ptr(),flen);
 				w[flen]=0; //end f string
 			}

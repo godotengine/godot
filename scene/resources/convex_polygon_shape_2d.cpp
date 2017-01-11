@@ -67,7 +67,7 @@ void ConvexPolygonShape2D::_bind_methods() {
 
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"points"),_SCS("set_points"),_SCS("get_points") );
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"points"),_SCS("set_points"),_SCS("get_points") );
 
 }
 

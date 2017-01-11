@@ -148,7 +148,7 @@ void Polygon2D::_notification(int p_what) {
 
 			if (texture.is_valid()) {
 
-				Matrix32 texmat(tex_rot,tex_ofs);
+				Transform2D texmat(tex_rot,tex_ofs);
 				texmat.scale(tex_scale);
 				Size2 tex_size=Vector2(1,1);
 
@@ -372,10 +372,10 @@ void Polygon2D::_bind_methods() {
 
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"uv"),_SCS("set_uv"),_SCS("get_uv"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"uv"),_SCS("set_uv"),_SCS("get_uv"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
 	ADD_GROUP("Texture","");
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));

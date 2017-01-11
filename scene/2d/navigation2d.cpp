@@ -212,7 +212,7 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 }
 
 
-int Navigation2D::navpoly_create(const Ref<NavigationPolygon>& p_mesh, const Matrix32& p_xform, Object *p_owner) {
+int Navigation2D::navpoly_create(const Ref<NavigationPolygon>& p_mesh, const Transform2D& p_xform, Object *p_owner) {
 
 	int id = last_id++;
 	NavMesh nm;
@@ -227,7 +227,7 @@ int Navigation2D::navpoly_create(const Ref<NavigationPolygon>& p_mesh, const Mat
 	return id;
 }
 
-void Navigation2D::navpoly_set_transform(int p_id, const Matrix32& p_xform){
+void Navigation2D::navpoly_set_transform(int p_id, const Transform2D& p_xform){
 
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	NavMesh &nm=navpoly_map[p_id];

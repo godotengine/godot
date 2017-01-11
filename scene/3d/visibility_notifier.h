@@ -38,7 +38,7 @@ class VisibilityNotifier : public Spatial {
 
 	Set<Camera*> cameras;
 
-	AABB aabb;
+	Rect3 aabb;
 
 protected:
 
@@ -54,8 +54,8 @@ friend class SpatialIndexer;
 
 public:
 
-	void set_aabb(const AABB& p_aabb);
-	AABB get_aabb() const;
+	void set_aabb(const Rect3& p_aabb);
+	Rect3 get_aabb() const;
 	bool is_on_screen() const;
 
 	VisibilityNotifier();

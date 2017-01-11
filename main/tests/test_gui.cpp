@@ -93,7 +93,7 @@ public:
 
 		TestCube *testcube = memnew( TestCube );
 		vp->add_child(testcube);
-		testcube->set_transform(Transform( Matrix3().rotated(Vector3(0,1,0),Math_PI*0.25), Vector3(0,0,-8)));
+		testcube->set_transform(Transform( Basis().rotated(Vector3(0,1,0),Math_PI*0.25), Vector3(0,0,-8)));
 
 		Sprite *sp = memnew( Sprite );
 		sp->set_texture( vp->get_render_target_texture() );

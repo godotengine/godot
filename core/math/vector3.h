@@ -34,7 +34,7 @@
 #include "math_funcs.h"
 #include "ustring.h"
 
-class Matrix3;
+class Basis;
 
 struct Vector3 {
 
@@ -93,8 +93,8 @@ struct Vector3 {
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3& p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3& p_b) const;
-	_FORCE_INLINE_ Matrix3 outer(const Vector3& p_b) const;
-	_FORCE_INLINE_ Matrix3 to_diagonal_matrix() const;
+	_FORCE_INLINE_ Basis outer(const Vector3& p_b) const;
+	_FORCE_INLINE_ Basis to_diagonal_matrix() const;
 
 	_FORCE_INLINE_ Vector3 abs() const;
 	_FORCE_INLINE_ Vector3 floor() const;
@@ -165,17 +165,17 @@ real_t Vector3::dot(const Vector3& p_b) const {
 	return x*p_b.x + y*p_b.y + z*p_b.z;
 }
 
-Matrix3 Vector3::outer(const Vector3& p_b) const {
+Basis Vector3::outer(const Vector3& p_b) const {
 	
 	Vector3 row0(x*p_b.x, x*p_b.y, x*p_b.z);
 	Vector3 row1(y*p_b.x, y*p_b.y, y*p_b.z);
 	Vector3 row2(z*p_b.x, z*p_b.y, z*p_b.z);
 
-	return Matrix3(row0, row1, row2);
+	return Basis(row0, row1, row2);
 }
 
-Matrix3 Vector3::to_diagonal_matrix() const {
-	return Matrix3(x, 0, 0,
+Basis Vector3::to_diagonal_matrix() const {
+	return Basis(x, 0, 0,
 				   0, y, 0,
 				   0, 0, z);
 }

@@ -38,8 +38,8 @@ See corresponding header file for licensing info.
 
 #define GENERIC_D6_DISABLE_WARMSTARTING 1
 
-real_t btGetMatrixElem(const Matrix3& mat, int index);
-real_t btGetMatrixElem(const Matrix3& mat, int index)
+real_t btGetMatrixElem(const Basis& mat, int index);
+real_t btGetMatrixElem(const Basis& mat, int index)
 {
 	int i = index%3;
 	int j = index/3;
@@ -47,8 +47,8 @@ real_t btGetMatrixElem(const Matrix3& mat, int index)
 }
 
 ///MatrixToEulerXYZ from http://www.geometrictools.com/LibFoundation/Mathematics/Wm4Matrix3.inl.html
-bool	matrixToEulerXYZ(const Matrix3& mat,Vector3& xyz);
-bool	matrixToEulerXYZ(const Matrix3& mat,Vector3& xyz)
+bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz);
+bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz)
 {
 //	// rot =  cy*cz          -cy*sz           sy
 //	//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
@@ -296,7 +296,7 @@ Generic6DOFJointSW::Generic6DOFJointSW(BodySW* rbA, BodySW* rbB, const Transform
 
 void Generic6DOFJointSW::calculateAngleInfo()
 {
-	Matrix3 relative_frame = m_calculatedTransformA.basis.inverse()*m_calculatedTransformB.basis;
+	Basis relative_frame = m_calculatedTransformA.basis.inverse()*m_calculatedTransformB.basis;
 
 	matrixToEulerXYZ(relative_frame,m_calculatedAxisAngleDiff);
 

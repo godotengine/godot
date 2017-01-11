@@ -106,7 +106,7 @@ class PinJoint2DSW : public Joint2DSW {
 		Body2DSW *_arr[2];
 	};
 
-	Matrix32 M;
+	Transform2D M;
 	Vector2 rA,rB;
 	Vector2 anchor_A;
 	Vector2 anchor_B;

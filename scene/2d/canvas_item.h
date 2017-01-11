@@ -120,7 +120,7 @@ private:
 
 	Ref<CanvasItemMaterial> material;
 
-	mutable Matrix32 global_transform;
+	mutable Transform2D global_transform;
 	mutable bool global_invalid;
 
 
@@ -207,7 +207,7 @@ public:
 	float draw_char(const Ref<Font>& p_font,const Point2& p_pos, const String& p_char,const String& p_next="",const Color& p_modulate=Color(1,1,1));
 
 	void draw_set_transform(const Point2& p_offset, float p_rot, const Size2& p_scale);
-	void draw_set_transform_matrix(const Matrix32& p_matrix);
+	void draw_set_transform_matrix(const Transform2D& p_matrix);
 
 	/* RECT / TRANSFORM */
 
@@ -220,10 +220,10 @@ public:
 	CanvasItem *get_parent_item() const;
 
 	virtual Rect2 get_item_rect() const=0;
-	virtual Matrix32 get_transform() const=0;
+	virtual Transform2D get_transform() const=0;
 
-	virtual Matrix32 get_global_transform() const;
-	virtual Matrix32 get_global_transform_with_canvas() const;
+	virtual Transform2D get_global_transform() const;
+	virtual Transform2D get_global_transform_with_canvas() const;
 
 	Rect2 get_item_and_children_rect() const;
 
@@ -234,8 +234,8 @@ public:
 	bool is_block_transform_notify_enabled() const;
 
 
-	Matrix32 get_canvas_transform() const;
-	Matrix32 get_viewport_transform() const;
+	Transform2D get_canvas_transform() const;
+	Transform2D get_viewport_transform() const;
 	Rect2 get_viewport_rect() const;
 	RID get_viewport_rid() const;
 	RID get_canvas() const;

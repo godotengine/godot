@@ -30,24 +30,24 @@
 
 #include "print_string.h"
 
-float AABB::get_area() const {
+float Rect3::get_area() const {
 
 	return size.x*size.y*size.z;
 
 }
 
-bool AABB::operator==(const AABB& p_rval) const {
+bool Rect3::operator==(const Rect3& p_rval) const {
 
 	return ((pos==p_rval.pos) && (size==p_rval.size));
 
 }
-bool AABB::operator!=(const AABB& p_rval) const {
+bool Rect3::operator!=(const Rect3& p_rval) const {
 
 	return ((pos!=p_rval.pos) || (size!=p_rval.size));
 
 }
 
-void AABB::merge_with(const AABB& p_aabb) {
+void Rect3::merge_with(const Rect3& p_aabb) {
 
 	Vector3 beg_1,beg_2;
 	Vector3 end_1,end_2;
@@ -70,7 +70,7 @@ void AABB::merge_with(const AABB& p_aabb) {
 	size=max-min;
 }
 
-AABB AABB::intersection(const AABB& p_aabb) const {
+Rect3 Rect3::intersection(const Rect3& p_aabb) const {
 
 	Vector3 src_min=pos;
 	Vector3 src_max=pos+size;
@@ -80,7 +80,7 @@ AABB AABB::intersection(const AABB& p_aabb) const {
 	Vector3 min,max;
 
 	if (src_min.x > dst_max.x || src_max.x < dst_min.x )
-		return AABB();
+		return Rect3();
 	else {
 
 		min.x= ( src_min.x > dst_min.x ) ? src_min.x :dst_min.x;
@@ -89,7 +89,7 @@ AABB AABB::intersection(const AABB& p_aabb) const {
 	}
 
 	if (src_min.y > dst_max.y || src_max.y < dst_min.y )
-		return AABB();
+		return Rect3();
 	else {
 
 		min.y= ( src_min.y > dst_min.y ) ? src_min.y :dst_min.y;
@@ -98,7 +98,7 @@ AABB AABB::intersection(const AABB& p_aabb) const {
 	}
 
 	if (src_min.z > dst_max.z || src_max.z < dst_min.z )
-		return AABB();
+		return Rect3();
 	else {
 
 		min.z= ( src_min.z > dst_min.z ) ? src_min.z :dst_min.z;
@@ -107,10 +107,10 @@ AABB AABB::intersection(const AABB& p_aabb) const {
 	}
 
 
-	return AABB( min, max-min );
+	return Rect3( min, max-min );
 }
 
-bool AABB::intersects_ray(const Vector3& p_from, const Vector3& p_dir,Vector3* r_clip,Vector3* r_normal) const {
+bool Rect3::intersects_ray(const Vector3& p_from, const Vector3& p_dir,Vector3* r_clip,Vector3* r_normal) const {
 
 	Vector3 c1, c2;
 	Vector3 end = pos+size;
@@ -155,7 +155,7 @@ bool AABB::intersects_ray(const Vector3& p_from, const Vector3& p_dir,Vector3* r
 }
 
 
-bool AABB::intersects_segment(const Vector3& p_from, const Vector3& p_to,Vector3* r_clip,Vector3* r_normal) const {
+bool Rect3::intersects_segment(const Vector3& p_from, const Vector3& p_to,Vector3* r_clip,Vector3* r_normal) const {
 
 	real_t min=0,max=1;
 	int axis=0;
@@ -216,7 +216,7 @@ bool AABB::intersects_segment(const Vector3& p_from, const Vector3& p_to,Vector3
 }
 
 
-bool AABB::intersects_plane(const Plane &p_plane) const {
+bool Rect3::intersects_plane(const Plane &p_plane) const {
 
 	Vector3 points[8] = {
 		Vector3( pos.x	, pos.y		, pos.z		),
@@ -246,7 +246,7 @@ bool AABB::intersects_plane(const Plane &p_plane) const {
 
 
 
-Vector3 AABB::get_longest_axis() const {
+Vector3 Rect3::get_longest_axis() const {
 
 	Vector3 axis(1,0,0);
 	real_t max_size=size.x;
@@ -263,7 +263,7 @@ Vector3 AABB::get_longest_axis() const {
 
 	return axis;
 }
-int AABB::get_longest_axis_index() const {
+int Rect3::get_longest_axis_index() const {
 
 	int axis=0;
 	real_t max_size=size.x;
@@ -282,7 +282,7 @@ int AABB::get_longest_axis_index() const {
 }
 
 
-Vector3 AABB::get_shortest_axis() const {
+Vector3 Rect3::get_shortest_axis() const {
 
 	Vector3 axis(1,0,0);
 	real_t max_size=size.x;
@@ -299,7 +299,7 @@ Vector3 AABB::get_shortest_axis() const {
 
 	return axis;
 }
-int AABB::get_shortest_axis_index() const {
+int Rect3::get_shortest_axis_index() const {
 
 	int axis=0;
 	real_t max_size=size.x;
@@ -317,26 +317,26 @@ int AABB::get_shortest_axis_index() const {
 	return axis;
 }
 
-AABB AABB::merge(const AABB& p_with) const {
+Rect3 Rect3::merge(const Rect3& p_with) const {
 
-	AABB aabb=*this;
+	Rect3 aabb=*this;
 	aabb.merge_with(p_with);
 	return aabb;
 }
-AABB AABB::expand(const Vector3& p_vector) const {
-	AABB aabb=*this;
+Rect3 Rect3::expand(const Vector3& p_vector) const {
+	Rect3 aabb=*this;
 	aabb.expand_to(p_vector);
 	return aabb;
 
 }
-AABB AABB::grow(real_t p_by) const {
+Rect3 Rect3::grow(real_t p_by) const {
 
-	AABB aabb=*this;
+	Rect3 aabb=*this;
 	aabb.grow_by(p_by);
 	return aabb;
 }
 
-void AABB::get_edge(int p_edge,Vector3& r_from,Vector3& r_to) const {
+void Rect3::get_edge(int p_edge,Vector3& r_from,Vector3& r_to) const {
 
 	ERR_FAIL_INDEX(p_edge,12);
 	switch(p_edge) {
@@ -412,7 +412,7 @@ void AABB::get_edge(int p_edge,Vector3& r_from,Vector3& r_to) const {
 
 }
 
-AABB::operator String() const {
+Rect3::operator String() const {
 
 	return String()+pos +" - "+ size;
 }

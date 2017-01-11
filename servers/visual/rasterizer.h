@@ -242,7 +242,7 @@ public:
 
 	virtual RID mesh_create()=0;
 
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>())=0;
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<Rect3>& p_bone_aabbs=Vector<Rect3>())=0;
 
 	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount)=0;
 	virtual int mesh_get_morph_target_count(RID p_mesh) const=0;
@@ -264,17 +264,17 @@ public:
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const=0;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const=0;
 
-	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const=0;
+	virtual Rect3 mesh_surface_get_aabb(RID p_mesh, int p_surface) const=0;
 	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const=0;
-	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const=0;
+	virtual Vector<Rect3> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const=0;
 
 	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
 	virtual int mesh_get_surface_count(RID p_mesh) const=0;
 
-	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
-	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
+	virtual void mesh_set_custom_aabb(RID p_mesh,const Rect3& p_aabb)=0;
+	virtual Rect3 mesh_get_custom_aabb(RID p_mesh) const=0;
 
-	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const=0;
+	virtual Rect3 mesh_get_aabb(RID p_mesh, RID p_skeleton) const=0;
 	virtual void mesh_clear(RID p_mesh)=0;
 
 	/* MULTIMESH API */
@@ -287,19 +287,19 @@ public:
 
 	virtual void multimesh_set_mesh(RID p_multimesh,RID p_mesh)=0;
 	virtual void multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform)=0;
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform)=0;
+	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Transform2D& p_transform)=0;
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color)=0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const=0;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const=0;
-	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const=0;
+	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const=0;
 	virtual Color multimesh_instance_get_color(RID p_multimesh,int p_index) const=0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible)=0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const=0;
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const=0;
+	virtual Rect3 multimesh_get_aabb(RID p_multimesh) const=0;
 
 	/* IMMEDIATE API */
 
@@ -315,7 +315,7 @@ public:
 	virtual void immediate_clear(RID p_immediate)=0;
 	virtual void immediate_set_material(RID p_immediate,RID p_material)=0;
 	virtual RID immediate_get_material(RID p_immediate) const=0;
-	virtual AABB immediate_get_aabb(RID p_immediate) const=0;
+	virtual Rect3 immediate_get_aabb(RID p_immediate) const=0;
 
 
 	/* SKELETON API */
@@ -325,8 +325,8 @@ public:
 	virtual int skeleton_get_bone_count(RID p_skeleton) const=0;
 	virtual void skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform)=0;
 	virtual Transform skeleton_bone_get_transform(RID p_skeleton,int p_bone) const =0;
-	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform)=0;
-	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const=0;
+	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Transform2D& p_transform)=0;
+	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const=0;
 
 	/* Light API */
 
@@ -353,7 +353,7 @@ public:
 	virtual bool light_has_shadow(RID p_light) const=0;
 
 	virtual VS::LightType light_get_type(RID p_light) const=0;
-	virtual AABB light_get_aabb(RID p_light) const=0;
+	virtual Rect3 light_get_aabb(RID p_light) const=0;
 	virtual float light_get_param(RID p_light,VS::LightParam p_param)=0;
 	virtual Color light_get_color(RID p_light)=0;
 	virtual uint64_t light_get_version(RID p_light) const=0;
@@ -376,7 +376,7 @@ public:
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable)=0;
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers)=0;
 
-	virtual AABB reflection_probe_get_aabb(RID p_probe) const=0;
+	virtual Rect3 reflection_probe_get_aabb(RID p_probe) const=0;
 	virtual VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const=0;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const=0;
 	virtual Vector3 reflection_probe_get_extents(RID p_probe) const=0;
@@ -412,8 +412,8 @@ public:
 
 	virtual RID gi_probe_create()=0;
 
-	virtual void gi_probe_set_bounds(RID p_probe,const AABB& p_bounds)=0;
-	virtual AABB gi_probe_get_bounds(RID p_probe) const=0;
+	virtual void gi_probe_set_bounds(RID p_probe,const Rect3& p_bounds)=0;
+	virtual Rect3 gi_probe_get_bounds(RID p_probe) const=0;
 
 	virtual void gi_probe_set_cell_size(RID p_probe,float p_range)=0;
 	virtual float gi_probe_get_cell_size(RID p_probe) const=0;
@@ -459,7 +459,7 @@ public:
 	virtual void particles_set_pre_process_time(RID p_particles,float p_time)=0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles,float p_ratio)=0;
 	virtual void particles_set_randomness_ratio(RID p_particles,float p_ratio)=0;
-	virtual void particles_set_custom_aabb(RID p_particles,const AABB& p_aabb)=0;
+	virtual void particles_set_custom_aabb(RID p_particles,const Rect3& p_aabb)=0;
 	virtual void particles_set_gravity(RID p_particles,const Vector3& p_gravity)=0;
 	virtual void particles_set_use_local_coordinates(RID p_particles,bool p_enable)=0;
 	virtual void particles_set_process_material(RID p_particles,RID p_material)=0;
@@ -476,7 +476,7 @@ public:
 	virtual void particles_set_draw_pass_material(RID p_particles,int p_pass, RID p_material)=0;
 	virtual void particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh)=0;
 
-	virtual AABB particles_get_current_aabb(RID p_particles)=0;
+	virtual Rect3 particles_get_current_aabb(RID p_particles)=0;
 
 
 
@@ -541,7 +541,7 @@ public:
 
 		bool enabled;
 		Color color;
-		Matrix32 xform;
+		Transform2D xform;
 		float height;
 		float energy;
 		float scale;
@@ -564,11 +564,11 @@ public:
 
 		void *texture_cache; // implementation dependent
 		Rect2 rect_cache;
-		Matrix32 xform_cache;
+		Transform2D xform_cache;
 		float radius_cache; //used for shadow far plane
 		CameraMatrix shadow_matrix_cache;
 
-		Matrix32 light_shader_xform;
+		Transform2D light_shader_xform;
 		Vector2 light_shader_pos;
 
 		Light *shadows_next_ptr;
@@ -710,7 +710,7 @@ public:
 
 		struct CommandTransform : public Command {
 
-			Matrix32 xform;
+			Transform2D xform;
 			CommandTransform() { type = TYPE_TRANSFORM; }
 		};
 
@@ -728,7 +728,7 @@ public:
 			Rect2 rect;
 		};
 
-		Matrix32 xform;
+		Transform2D xform;
 		bool clip;
 		bool visible;
 		bool behind;
@@ -750,7 +750,7 @@ public:
 
 
 		Color final_modulate;
-		Matrix32 final_transform;
+		Transform2D final_transform;
 		Rect2 final_clip_rect;
 		Item* final_clip_owner;
 		Item* material_owner;
@@ -773,7 +773,7 @@ public:
 				return rect;
 			}
 
-			Matrix32 xf;
+			Transform2D xf;
 			bool found_xform=false;
 			bool first=true;
 
@@ -828,7 +828,7 @@ public:
 					case Item::Command::TYPE_MESH: {
 
 						const Item::CommandMesh* mesh = static_cast< const Item::CommandMesh*>(c);
-						AABB aabb = RasterizerStorage::base_signleton->mesh_get_aabb(mesh->mesh,mesh->skeleton);
+						Rect3 aabb = RasterizerStorage::base_signleton->mesh_get_aabb(mesh->mesh,mesh->skeleton);
 
 						r=Rect2(aabb.pos.x,aabb.pos.y,aabb.size.x,aabb.size.y);
 
@@ -836,7 +836,7 @@ public:
 					case Item::Command::TYPE_MULTIMESH: {
 
 						const Item::CommandMultiMesh* multimesh = static_cast< const Item::CommandMultiMesh*>(c);
-						AABB aabb = RasterizerStorage::base_signleton->multimesh_get_aabb(multimesh->multimesh);
+						Rect3 aabb = RasterizerStorage::base_signleton->multimesh_get_aabb(multimesh->multimesh);
 
 						r=Rect2(aabb.pos.x,aabb.pos.y,aabb.size.x,aabb.size.y);
 
@@ -898,8 +898,8 @@ public:
 		RID polygon;
 		RID polygon_buffer;
 		Rect2 aabb_cache;
-		Matrix32 xform;
-		Matrix32 xform_cache;
+		Transform2D xform;
+		Transform2D xform_cache;
 		int light_mask;
 		VS::CanvasOccluderPolygonCullMode cull_cache;
 
@@ -910,7 +910,7 @@ public:
 
 
 
-	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache)=0;
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache)=0;
 
 
 	virtual void reset_canvas()=0;

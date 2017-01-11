@@ -5358,7 +5358,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
 	ADD_SIGNAL( MethodInfo("stop_pressed") );
 	ADD_SIGNAL( MethodInfo("request_help") );
-	ADD_SIGNAL( MethodInfo("script_add_function_request",PropertyInfo(Variant::OBJECT,"obj"),PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::STRING_ARRAY,"args")) );
+	ADD_SIGNAL( MethodInfo("script_add_function_request",PropertyInfo(Variant::OBJECT,"obj"),PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::POOL_STRING_ARRAY,"args")) );
 	ADD_SIGNAL( MethodInfo("resource_saved",PropertyInfo(Variant::OBJECT,"obj")) );
 
 
@@ -6784,7 +6784,7 @@ void EditorPluginList::edit(Object* p_object) {
 
 }
 
-bool EditorPluginList::forward_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) {
+bool EditorPluginList::forward_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) {
 
 	bool discard = false;
 
@@ -6809,7 +6809,7 @@ bool EditorPluginList::forward_spatial_gui_input(Camera* p_camera, const InputEv
 	return discard;
 }
 
-void EditorPluginList::forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control* p_canvas) {
+void EditorPluginList::forward_draw_over_canvas(const Transform2D& p_canvas_xform,Control* p_canvas) {
 
 	for (int i = 0; i < plugins_list.size(); i++) {
 		plugins_list[i]->forward_draw_over_canvas(p_canvas_xform,p_canvas);

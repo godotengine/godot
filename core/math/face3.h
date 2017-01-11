@@ -78,16 +78,16 @@ public:
         void get_support(const Vector3& p_normal,const Transform& p_transform,Vector3 *p_vertices,int* p_count,int p_max) const;
         void project_range(const Vector3& p_normal,const Transform& p_transform,float& r_min, float& r_max) const;
 
-        AABB get_aabb() const {
+        Rect3 get_aabb() const {
 
-                AABB aabb( vertex[0], Vector3() );
+                Rect3 aabb( vertex[0], Vector3() );
                 aabb.expand_to( vertex[1] );
                 aabb.expand_to( vertex[2] );
                 return aabb;
         }
 
-        bool intersects_aabb(const AABB& p_aabb) const;
-	_FORCE_INLINE_ bool intersects_aabb2(const AABB& p_aabb) const;
+        bool intersects_aabb(const Rect3& p_aabb) const;
+	_FORCE_INLINE_ bool intersects_aabb2(const Rect3& p_aabb) const;
 	operator String() const;
 
         inline Face3() {}
@@ -96,7 +96,7 @@ public:
 };
 
 
-bool Face3::intersects_aabb2(const AABB& p_aabb) const {
+bool Face3::intersects_aabb2(const Rect3& p_aabb) const {
 
 	Vector3 perp = (vertex[0]-vertex[2]).cross(vertex[0]-vertex[1]);
 

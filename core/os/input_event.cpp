@@ -249,7 +249,7 @@ uint32_t InputEventKey::get_scancode_with_modifiers() const {
 
 }
 
-InputEvent InputEvent::xform_by(const Matrix32& p_xform) const {
+InputEvent InputEvent::xform_by(const Transform2D& p_xform) const {
 
 
 	InputEvent ev=*this;

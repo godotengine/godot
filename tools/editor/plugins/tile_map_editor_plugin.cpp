@@ -417,7 +417,7 @@ void TileMapEditor::_select(const Point2i& p_from, const Point2i& p_to) {
 	canvas_item_editor->update();
 }
 
-void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform) {
+void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform) {
 
 	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
 
@@ -505,7 +505,7 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h
 		canvas_item_editor->draw_texture_rect_region(t, rect, r, Color(1,1,1,0.5), p_transpose);
 }
 
-void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform) {
+void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform) {
 
 	PoolVector<Vector2> points = _bucket_fill(p_point, false, true);
 	PoolVector<Vector2>::Read pr = points.read();
@@ -600,8 +600,8 @@ bool TileMapEditor::forward_gui_input(const InputEvent& p_event) {
 	if (!node || !node->get_tileset().is_valid() || !node->is_visible())
 		return false;
 
-	Matrix32 xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
-	Matrix32 xform_inv = xform.affine_inverse();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform_inv = xform.affine_inverse();
 
 	switch(p_event.type) {
 
@@ -1071,10 +1071,10 @@ void TileMapEditor::_canvas_draw() {
 	if (!node)
 		return;
 
-	Matrix32 cell_xf = node->get_cell_transform();
+	Transform2D cell_xf = node->get_cell_transform();
 
-	Matrix32 xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
-	Matrix32 xform_inv = xform.affine_inverse();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform_inv = xform.affine_inverse();
 
 
 	Size2 screen_size=canvas_item_editor->get_size();

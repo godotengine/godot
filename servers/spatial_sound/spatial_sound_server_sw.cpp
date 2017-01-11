@@ -164,9 +164,9 @@ void SpatialSoundServerSW::room_set_space(RID p_room,RID p_space) {
 		Space *space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 		space->rooms.insert(p_room);
-		room->octree_id=space->octree.create(room,AABB());
+		room->octree_id=space->octree.create(room,Rect3());
 		//set bounds
-		AABB aabb = room->bounds.is_empty()?AABB():room->bounds.get_aabb();
+		Rect3 aabb = room->bounds.is_empty()?Rect3():room->bounds.get_aabb();
 		space->octree.move(room->octree_id,room->transform.xform(aabb));
 		room->space=p_space;
 	}
@@ -195,7 +195,7 @@ void SpatialSoundServerSW::room_set_bounds(RID p_room, const BSP_Tree& p_bounds)
 	if (!room->space.is_valid())
 		return;
 
-	AABB aabb = room->bounds.is_empty()?AABB():room->bounds.get_aabb();
+	Rect3 aabb = room->bounds.is_empty()?Rect3():room->bounds.get_aabb();
 	Space* space = space_owner.get(room->space);
 	ERR_FAIL_COND(!space);
 

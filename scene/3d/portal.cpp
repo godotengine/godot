@@ -88,7 +88,7 @@ bool Portal::_get(const StringName& p_name,Variant &r_ret) const {
 
 void Portal::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo( Variant::REAL_ARRAY, "shape" ) );
+	p_list->push_back( PropertyInfo( Variant::POOL_REAL_ARRAY, "shape" ) );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "enabled" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "disable_distance",PROPERTY_HINT_RANGE,"0,4096,0.01" ) );
 	p_list->push_back( PropertyInfo( Variant::COLOR, "disabled_color") );
@@ -98,7 +98,7 @@ void Portal::_get_property_list( List<PropertyInfo> *p_list) const {
 
 
 
-AABB Portal::get_aabb() const {
+Rect3 Portal::get_aabb() const {
 
 	return aabb;
 }

@@ -271,7 +271,7 @@ class SpatialEditorSelectedItem : public Object {
 
 public:
 
-	AABB aabb;
+	Rect3 aabb;
 	Transform original; // original location when moving
 	Transform last_xform; // last transform
 	Spatial *sp;

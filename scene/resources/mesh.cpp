@@ -162,9 +162,9 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 			}
 
 			ERR_FAIL_COND_V(!d.has("aabb"),false);
-			AABB aabb = d["aabb"];
+			Rect3 aabb = d["aabb"];
 
-			Vector<AABB> bone_aabb;
+			Vector<Rect3> bone_aabb;
 			if (d.has("bone_aabb")) {
 				Array baabb = d["bone_aabb"];
 				bone_aabb.resize(baabb.size());
@@ -244,7 +244,7 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 	d["format"]=VS::get_singleton()->mesh_surface_get_format(mesh,idx);
 	d["aabb"]=VS::get_singleton()->mesh_surface_get_aabb(mesh,idx);
 
-	Vector<AABB> skel_aabb = VS::get_singleton()->mesh_surface_get_skeleton_aabb(mesh,idx);
+	Vector<Rect3> skel_aabb = VS::get_singleton()->mesh_surface_get_skeleton_aabb(mesh,idx);
 	Array arr;
 	for(int i=0;i<skel_aabb.size();i++) {
 		arr[i]=skel_aabb[i];
@@ -275,7 +275,7 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	if (morph_targets.size()) {
-		p_list->push_back(PropertyInfo(Variant::STRING_ARRAY,"morph_target/names",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::POOL_STRING_ARRAY,"morph_target/names",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR));
 		p_list->push_back(PropertyInfo(Variant::INT,"morph_target/mode",PROPERTY_HINT_ENUM,"Normalized,Relative"));
 	}
 
@@ -286,7 +286,7 @@ void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 		p_list->push_back( PropertyInfo( Variant::OBJECT,"surface_"+itos(i+1)+"/material", PROPERTY_HINT_RESOURCE_TYPE,"Material",PROPERTY_USAGE_EDITOR ) );
 	}
 
-	p_list->push_back( PropertyInfo( Variant::_AABB,"custom_aabb/custom_aabb" ) );
+	p_list->push_back( PropertyInfo( Variant::RECT3,"custom_aabb/custom_aabb" ) );
 
 }
 
@@ -294,7 +294,7 @@ void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 void Mesh::_recompute_aabb() {
 
 	// regenerate AABB
-	aabb=AABB();
+	aabb=Rect3();
 
 	for (int i=0;i<surfaces.size();i++) {
 
@@ -306,7 +306,7 @@ void Mesh::_recompute_aabb() {
 
 }
 
-void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs) {
+void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<Rect3>& p_bone_aabbs) {
 
 	Surface s;
 	s.aabb=p_aabb;
@@ -337,7 +337,7 @@ void Mesh::add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arra
 		const Vector3 *vtx=r.ptr();
 
 		// check AABB
-		AABB aabb;
+		Rect3 aabb;
 		for (int i=0;i<len;i++) {
 
 			if (i==0)
@@ -505,7 +505,7 @@ String Mesh::surface_get_name(int p_idx) const{
 
 }
 
-void Mesh::surface_set_custom_aabb(int p_idx,const AABB& p_aabb) {
+void Mesh::surface_set_custom_aabb(int p_idx,const Rect3& p_aabb) {
 
 	ERR_FAIL_INDEX( p_idx, surfaces.size() );
 	surfaces[p_idx].aabb=p_aabb;
@@ -522,7 +522,7 @@ Ref<Material> Mesh::surface_get_material(int p_idx)  const {
 void Mesh::add_surface_from_mesh_data(const Geometry::MeshData& p_mesh_data) {
 
 	VisualServer::get_singleton()->mesh_add_surface_from_mesh_data( mesh, p_mesh_data );
-	AABB aabb;
+	Rect3 aabb;
 	for (int i=0;i<p_mesh_data.vertices.size();i++) {
 
 		if (i==0)
@@ -551,19 +551,19 @@ RID Mesh::get_rid() const {
 
 	return mesh;
 }
-AABB Mesh::get_aabb() const {
+Rect3 Mesh::get_aabb() const {
 
 	return aabb;
 }
 
 
-void Mesh::set_custom_aabb(const AABB& p_custom) {
+void Mesh::set_custom_aabb(const Rect3& p_custom) {
 
 	custom_aabb=p_custom;
 	VS::get_singleton()->mesh_set_custom_aabb(mesh,custom_aabb);
 }
 
-AABB Mesh::get_custom_aabb() const {
+Rect3 Mesh::get_custom_aabb() const {
 
 	return custom_aabb;
 }

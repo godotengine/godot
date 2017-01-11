@@ -215,21 +215,21 @@ bool PinJoint2DSW::setup(float p_step) {
 	real_t B_inv_mass = B?B->get_inv_mass():0.0;
 
 
-	Matrix32 K1;
+	Transform2D K1;
 	K1[0].x = A->get_inv_mass() + B_inv_mass;	K1[1].x = 0.0f;
 	K1[0].y = 0.0f;					K1[1].y = A->get_inv_mass() + B_inv_mass;
 
-	Matrix32 K2;
+	Transform2D K2;
 	K2[0].x =  A->get_inv_inertia() * rA.y * rA.y;		K2[1].x = -A->get_inv_inertia() * rA.x * rA.y;
 	K2[0].y = -A->get_inv_inertia() * rA.x * rA.y;		K2[1].y =  A->get_inv_inertia() * rA.x * rA.x;
 
-	Matrix32 K;
+	Transform2D K;
 	K[0]= K1[0] + K2[0];
 	K[1]= K1[1] + K2[1];
 
 	if (B) {
 
-		Matrix32 K3;
+		Transform2D K3;
 		K3[0].x =  B->get_inv_inertia() * rB.y * rB.y;		K3[1].x = -B->get_inv_inertia() * rB.x * rB.y;
 		K3[0].y = -B->get_inv_inertia() * rB.x * rB.y;		K3[1].y =  B->get_inv_inertia() * rB.x * rB.x;
 

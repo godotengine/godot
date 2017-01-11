@@ -33,7 +33,7 @@
 #define cofac(row1,col1, row2, col2)\
 	(elements[row1][col1] * elements[row2][col2] - elements[row1][col2] * elements[row2][col1])
 
-void Matrix3::from_z(const Vector3& p_z) {
+void Basis::from_z(const Vector3& p_z) {
 
 	if (Math::abs(p_z.z) > Math_SQRT12 ) {
 
@@ -53,7 +53,7 @@ void Matrix3::from_z(const Vector3& p_z) {
 	elements[2]=p_z;
 }
 
-void Matrix3::invert() {
+void Basis::invert() {
 
 
 	real_t co[3]={
@@ -72,7 +72,7 @@ void Matrix3::invert() {
 
 }
 
-void Matrix3::orthonormalize() {
+void Basis::orthonormalize() {
 	ERR_FAIL_COND(determinant() == 0);
 
 	// Gram-Schmidt Process
@@ -93,26 +93,26 @@ void Matrix3::orthonormalize() {
 
 }
 
-Matrix3 Matrix3::orthonormalized() const {
+Basis Basis::orthonormalized() const {
 
-	Matrix3 c = *this;
+	Basis c = *this;
 	c.orthonormalize();
 	return c;
 }
 
-bool Matrix3::is_orthogonal() const {
-	Matrix3 id;
-	Matrix3 m = (*this)*transposed();
+bool Basis::is_orthogonal() const {
+	Basis id;
+	Basis m = (*this)*transposed();
 
 	return isequal_approx(id,m);
 }
 
-bool Matrix3::is_rotation() const {
+bool Basis::is_rotation() const {
 	return Math::isequal_approx(determinant(), 1) && is_orthogonal();
 }
 
 
-bool Matrix3::is_symmetric() const {
+bool Basis::is_symmetric() const {
 
 	if (Math::abs(elements[0][1] - elements[1][0]) > CMP_EPSILON)
 		return false;
@@ -125,19 +125,19 @@ bool Matrix3::is_symmetric() const {
 }
 
 
-Matrix3 Matrix3::diagonalize() {
+Basis Basis::diagonalize() {
 
 	//NOTE: only implemented for symmetric matrices
 	//with the Jacobi iterative method method
 	
-	ERR_FAIL_COND_V(!is_symmetric(), Matrix3());
+	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 
 	const int ite_max = 1024;
 
 	real_t off_matrix_norm_2 = elements[0][1] * elements[0][1] + elements[0][2] * elements[0][2] + elements[1][2] * elements[1][2]; 
 
 	int ite = 0;
-	Matrix3 acc_rot;
+	Basis acc_rot;
 	while (off_matrix_norm_2 > CMP_EPSILON2 && ite++ < ite_max ) {
 		real_t el01_2 = elements[0][1] * elements[0][1];
 		real_t el02_2 = elements[0][2] * elements[0][2];
@@ -171,7 +171,7 @@ Matrix3 Matrix3::diagonalize() {
 		}
 
 		// Compute the rotation matrix
-		Matrix3 rot;
+		Basis rot;
 		rot.elements[i][i] = rot.elements[j][j] = Math::cos(angle);
 		rot.elements[i][j] = - (rot.elements[j][i] = Math::sin(angle));
 
@@ -186,30 +186,30 @@ Matrix3 Matrix3::diagonalize() {
 	return acc_rot;
 }
 
-Matrix3 Matrix3::inverse() const {
+Basis Basis::inverse() const {
 
-	Matrix3 inv=*this;
+	Basis inv=*this;
 	inv.invert();
 	return inv;
 }
 
-void Matrix3::transpose() {
+void Basis::transpose() {
 
 	SWAP(elements[0][1],elements[1][0]);
 	SWAP(elements[0][2],elements[2][0]);
 	SWAP(elements[1][2],elements[2][1]);
 }
 
-Matrix3 Matrix3::transposed() const {
+Basis Basis::transposed() const {
 
-	Matrix3 tr=*this;
+	Basis tr=*this;
 	tr.transpose();
 	return tr;
 }
 
 // Multiplies the matrix from left by the scaling matrix: M -> S.M
-// See the comment for Matrix3::rotated for further explanation.
-void Matrix3::scale(const Vector3& p_scale) {
+// See the comment for Basis::rotated for further explanation.
+void Basis::scale(const Vector3& p_scale) {
 
 	elements[0][0]*=p_scale.x;
 	elements[0][1]*=p_scale.x;
@@ -222,14 +222,14 @@ void Matrix3::scale(const Vector3& p_scale) {
 	elements[2][2]*=p_scale.z;
 }
 
-Matrix3 Matrix3::scaled( const Vector3& p_scale ) const {
+Basis Basis::scaled( const Vector3& p_scale ) const {
 
-	Matrix3 m = *this;
+	Basis m = *this;
 	m.scale(p_scale);
 	return m;
 }
 
-Vector3 Matrix3::get_scale() const {
+Vector3 Basis::get_scale() const {
 	// We are assuming M = R.S, and performing a polar decomposition to extract R and S.
 	// FIXME: We eventually need a proper polar decomposition.
 	// As a cheap workaround until then, to ensure that R is a proper rotation matrix with determinant +1
@@ -247,30 +247,30 @@ Vector3 Matrix3::get_scale() const {
 // Multiplies the matrix from left by the rotation matrix: M -> R.M
 // Note that this does *not* rotate the matrix itself.
 //
-// The main use of Matrix3 is as Transform.basis, which is used a the transformation matrix
+// The main use of Basis is as Transform.basis, which is used a the transformation matrix
 // of 3D object. Rotate here refers to rotation of the object (which is R * (*this)),
 // not the matrix itself (which is R * (*this) * R.transposed()).
-Matrix3 Matrix3::rotated(const Vector3& p_axis, real_t p_phi) const {
-	return Matrix3(p_axis, p_phi) * (*this);
+Basis Basis::rotated(const Vector3& p_axis, real_t p_phi) const {
+	return Basis(p_axis, p_phi) * (*this);
 }
 
-void Matrix3::rotate(const Vector3& p_axis, real_t p_phi) {
+void Basis::rotate(const Vector3& p_axis, real_t p_phi) {
 	*this = rotated(p_axis, p_phi);
 }
 
-Matrix3 Matrix3::rotated(const Vector3& p_euler) const {
-	return Matrix3(p_euler) * (*this);
+Basis Basis::rotated(const Vector3& p_euler) const {
+	return Basis(p_euler) * (*this);
 }
 
-void Matrix3::rotate(const Vector3& p_euler) {
+void Basis::rotate(const Vector3& p_euler) {
 	*this = rotated(p_euler);
 }
 
-Vector3 Matrix3::get_rotation() const {
+Vector3 Basis::get_rotation() const {
 	// Assumes that the matrix can be decomposed into a proper rotation and scaling matrix as M = R.S,
 	// and returns the Euler angles corresponding to the rotation part, complementing get_scale().
 	// See the comment in get_scale() for further information.
-	Matrix3 m = orthonormalized();
+	Basis m = orthonormalized();
 	real_t det = m.determinant();
 	if (det < 0) {
 		// Ensure that the determinant is 1, such that result is a proper rotation matrix which can be represented by Euler angles.
@@ -290,7 +290,7 @@ Vector3 Matrix3::get_rotation() const {
 // And thus, assuming the matrix is a rotation matrix, this function returns
 // the angles in the decomposition R = X(a1).Y(a2).Z(a3) where Z(a) rotates
 // around the z-axis by a and so on.
-Vector3 Matrix3::get_euler() const {
+Vector3 Basis::get_euler() const {
 
 	// Euler angles in XYZ convention.
 	// See https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
@@ -329,27 +329,27 @@ Vector3 Matrix3::get_euler() const {
 // set_euler expects a vector containing the Euler angles in the format
 // (c,b,a), where a is the angle of the first rotation, and c is the last.
 // The current implementation uses XYZ convention (Z is the first rotation).
-void Matrix3::set_euler(const Vector3& p_euler) {
+void Basis::set_euler(const Vector3& p_euler) {
 
 	real_t c, s;
 
 	c = Math::cos(p_euler.x);
 	s = Math::sin(p_euler.x);
-	Matrix3 xmat(1.0,0.0,0.0,0.0,c,-s,0.0,s,c);
+	Basis xmat(1.0,0.0,0.0,0.0,c,-s,0.0,s,c);
 
 	c = Math::cos(p_euler.y);
 	s = Math::sin(p_euler.y);
-	Matrix3 ymat(c,0.0,s,0.0,1.0,0.0,-s,0.0,c);
+	Basis ymat(c,0.0,s,0.0,1.0,0.0,-s,0.0,c);
 
 	c = Math::cos(p_euler.z);
 	s = Math::sin(p_euler.z);
-	Matrix3 zmat(c,-s,0.0,s,c,0.0,0.0,0.0,1.0);
+	Basis zmat(c,-s,0.0,s,c,0.0,0.0,0.0,1.0);
 
 	//optimizer will optimize away all this anyway
 	*this = xmat*(ymat*zmat);
 }
 
-bool Matrix3::isequal_approx(const Matrix3& a, const Matrix3& b) const {
+bool Basis::isequal_approx(const Basis& a, const Basis& b) const {
 
         for (int i=0;i<3;i++) {
                 for (int j=0;j<3;j++) {
@@ -361,7 +361,7 @@ bool Matrix3::isequal_approx(const Matrix3& a, const Matrix3& b) const {
         return true;
 }
 
-bool Matrix3::operator==(const Matrix3& p_matrix) const {
+bool Basis::operator==(const Basis& p_matrix) const {
 
 	for (int i=0;i<3;i++) {
 		for (int j=0;j<3;j++) {
@@ -373,12 +373,12 @@ bool Matrix3::operator==(const Matrix3& p_matrix) const {
 	return true;
 }
 
-bool Matrix3::operator!=(const Matrix3& p_matrix) const {
+bool Basis::operator!=(const Basis& p_matrix) const {
 
 	return (!(*this==p_matrix));
 }
 
-Matrix3::operator String() const {
+Basis::operator String() const {
 
 	String mtx;
 	for (int i=0;i<3;i++) {
@@ -395,7 +395,7 @@ Matrix3::operator String() const {
 	return mtx;
 }
 
-Matrix3::operator Quat() const {
+Basis::operator Quat() const {
 	ERR_FAIL_COND_V(is_rotation() == false, Quat());
 
 	real_t trace = elements[0][0] + elements[1][1] + elements[2][2];
@@ -432,37 +432,37 @@ Matrix3::operator Quat() const {
 
 }
 
-static const Matrix3 _ortho_bases[24]={
-	Matrix3(1, 0, 0, 0, 1, 0, 0, 0, 1),
-	Matrix3(0, -1, 0, 1, 0, 0, 0, 0, 1),
-	Matrix3(-1, 0, 0, 0, -1, 0, 0, 0, 1),
-	Matrix3(0, 1, 0, -1, 0, 0, 0, 0, 1),
-	Matrix3(1, 0, 0, 0, 0, -1, 0, 1, 0),
-	Matrix3(0, 0, 1, 1, 0, 0, 0, 1, 0),
-	Matrix3(-1, 0, 0, 0, 0, 1, 0, 1, 0),
-	Matrix3(0, 0, -1, -1, 0, 0, 0, 1, 0),
-	Matrix3(1, 0, 0, 0, -1, 0, 0, 0, -1),
-	Matrix3(0, 1, 0, 1, 0, 0, 0, 0, -1),
-	Matrix3(-1, 0, 0, 0, 1, 0, 0, 0, -1),
-	Matrix3(0, -1, 0, -1, 0, 0, 0, 0, -1),
-	Matrix3(1, 0, 0, 0, 0, 1, 0, -1, 0),
-	Matrix3(0, 0, -1, 1, 0, 0, 0, -1, 0),
-	Matrix3(-1, 0, 0, 0, 0, -1, 0, -1, 0),
-	Matrix3(0, 0, 1, -1, 0, 0, 0, -1, 0),
-	Matrix3(0, 0, 1, 0, 1, 0, -1, 0, 0),
-	Matrix3(0, -1, 0, 0, 0, 1, -1, 0, 0),
-	Matrix3(0, 0, -1, 0, -1, 0, -1, 0, 0),
-	Matrix3(0, 1, 0, 0, 0, -1, -1, 0, 0),
-	Matrix3(0, 0, 1, 0, -1, 0, 1, 0, 0),
-	Matrix3(0, 1, 0, 0, 0, 1, 1, 0, 0),
-	Matrix3(0, 0, -1, 0, 1, 0, 1, 0, 0),
-	Matrix3(0, -1, 0, 0, 0, -1, 1, 0, 0)
+static const Basis _ortho_bases[24]={
+	Basis(1, 0, 0, 0, 1, 0, 0, 0, 1),
+	Basis(0, -1, 0, 1, 0, 0, 0, 0, 1),
+	Basis(-1, 0, 0, 0, -1, 0, 0, 0, 1),
+	Basis(0, 1, 0, -1, 0, 0, 0, 0, 1),
+	Basis(1, 0, 0, 0, 0, -1, 0, 1, 0),
+	Basis(0, 0, 1, 1, 0, 0, 0, 1, 0),
+	Basis(-1, 0, 0, 0, 0, 1, 0, 1, 0),
+	Basis(0, 0, -1, -1, 0, 0, 0, 1, 0),
+	Basis(1, 0, 0, 0, -1, 0, 0, 0, -1),
+	Basis(0, 1, 0, 1, 0, 0, 0, 0, -1),
+	Basis(-1, 0, 0, 0, 1, 0, 0, 0, -1),
+	Basis(0, -1, 0, -1, 0, 0, 0, 0, -1),
+	Basis(1, 0, 0, 0, 0, 1, 0, -1, 0),
+	Basis(0, 0, -1, 1, 0, 0, 0, -1, 0),
+	Basis(-1, 0, 0, 0, 0, -1, 0, -1, 0),
+	Basis(0, 0, 1, -1, 0, 0, 0, -1, 0),
+	Basis(0, 0, 1, 0, 1, 0, -1, 0, 0),
+	Basis(0, -1, 0, 0, 0, 1, -1, 0, 0),
+	Basis(0, 0, -1, 0, -1, 0, -1, 0, 0),
+	Basis(0, 1, 0, 0, 0, -1, -1, 0, 0),
+	Basis(0, 0, 1, 0, -1, 0, 1, 0, 0),
+	Basis(0, 1, 0, 0, 0, 1, 1, 0, 0),
+	Basis(0, 0, -1, 0, 1, 0, 1, 0, 0),
+	Basis(0, -1, 0, 0, 0, -1, 1, 0, 0)
 };
 
-int Matrix3::get_orthogonal_index() const {
+int Basis::get_orthogonal_index() const {
 
 	//could be sped up if i come up with a way
-	Matrix3 orth=*this;
+	Basis orth=*this;
 	for(int i=0;i<3;i++) {
 		for(int j=0;j<3;j++) {
 
@@ -489,7 +489,7 @@ int Matrix3::get_orthogonal_index() const {
 	return 0;
 }
 
-void Matrix3::set_orthogonal_index(int p_index){
+void Basis::set_orthogonal_index(int p_index){
 
 	//there only exist 24 orthogonal bases in r3
 	ERR_FAIL_INDEX(p_index,24);
@@ -500,7 +500,7 @@ void Matrix3::set_orthogonal_index(int p_index){
 }
 
 
-void Matrix3::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
+void Basis::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
 	ERR_FAIL_COND(is_rotation() == false);
 
 
@@ -581,13 +581,13 @@ void Matrix3::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
 	r_angle=angle;
 }
 
-Matrix3::Matrix3(const Vector3& p_euler) {
+Basis::Basis(const Vector3& p_euler) {
 
 	set_euler( p_euler );
 
 }
 
-Matrix3::Matrix3(const Quat& p_quat) {
+Basis::Basis(const Quat& p_quat) {
 
 	real_t d = p_quat.length_squared();
 	real_t s = 2.0 / d;
@@ -601,7 +601,7 @@ Matrix3::Matrix3(const Quat& p_quat) {
 
 }
 
-Matrix3::Matrix3(const Vector3& p_axis, real_t p_phi) {
+Basis::Basis(const Vector3& p_axis, real_t p_phi) {
 	// Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
 
 	Vector3 axis_sq(p_axis.x*p_axis.x,p_axis.y*p_axis.y,p_axis.z*p_axis.z);

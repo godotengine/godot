@@ -68,7 +68,7 @@ void Body2DSW::update_inertias() {
 
 				float mass = area * this->mass / total_area;
 
-				Matrix32 mtx = get_shape_transform(i);
+				Transform2D mtx = get_shape_transform(i);
 				Vector2 scale = mtx.get_scale();
 				_inertia += shape->get_moment_of_inertia(mass,scale) + mass * mtx.get_origin().length_squared();
 				//Rect2 ab = get_shape_aabb(i);
@@ -287,7 +287,7 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
 			} else {
-				Matrix32 t = p_variant;
+				Transform2D t = p_variant;
 				t.orthonormalize();
 				new_transform=get_transform(); //used as old to compute motion
 				if (t==new_transform)
@@ -560,7 +560,7 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	real_t angle = get_transform().get_rotation() + total_angular_velocity * p_step;
 	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
 
-	_set_transform(Matrix32(angle,pos),continuous_cd_mode==Physics2DServer::CCD_MODE_DISABLED);
+	_set_transform(Transform2D(angle,pos),continuous_cd_mode==Physics2DServer::CCD_MODE_DISABLED);
 	_set_inv_transform(get_transform().inverse());
 
 	if (continuous_cd_mode!=Physics2DServer::CCD_MODE_DISABLED)

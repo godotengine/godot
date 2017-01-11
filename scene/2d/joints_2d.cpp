@@ -283,7 +283,7 @@ RID GrooveJoint2D::_configure_joint(){
 	else
 		Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 
-	Matrix32 gt = get_global_transform();
+	Transform2D gt = get_global_transform();
 	Vector2 groove_A1 = gt.get_origin();
 	Vector2 groove_A2 = gt.xform( Vector2(0,length) );
 	Vector2 anchor_B = gt.xform( Vector2(0,initial_offset) );
@@ -384,7 +384,7 @@ RID DampedSpringJoint2D::_configure_joint(){
 	else
 		Physics2DServer::get_singleton()->body_remove_collision_exception(body_a->get_rid(),body_b->get_rid());
 
-	Matrix32 gt = get_global_transform();
+	Transform2D gt = get_global_transform();
 	Vector2 anchor_A = gt.get_origin();
 	Vector2 anchor_B = gt.xform( Vector2(0,length) );
 

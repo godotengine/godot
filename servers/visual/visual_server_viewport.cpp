@@ -82,7 +82,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
 		for (Map<RID,Viewport::CanvasData>::Element *E=p_viewport->canvas_map.front();E;E=E->next()) {
 
-			Matrix32 xf = p_viewport->global_transform * E->get().transform;
+			Transform2D xf = p_viewport->global_transform * E->get().transform;
 
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas*>(E->get().canvas);
 
@@ -108,7 +108,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 						cl->filter_next_ptr=lights;
 						lights=cl;
 						cl->texture_cache=NULL;
-						Matrix32 scale;
+						Transform2D scale;
 						scale.scale(cl->rect_cache.size);
 						scale.elements[2]=cl->rect_cache.pos;
 						cl->light_shader_xform = (cl->xform_cache * scale).affine_inverse();
@@ -152,7 +152,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 			for (Map<RID,Viewport::CanvasData>::Element *E=p_viewport->canvas_map.front();E;E=E->next()) {
 
 				VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas*>(E->get().canvas);
-				Matrix32 xf = p_viewport->global_transform * E->get().transform;
+				Transform2D xf = p_viewport->global_transform * E->get().transform;
 
 
 				for(Set<RasterizerCanvas::LightOccluderInstance*>::Element *F=canvas->occluders.front();F;F=F->next()) {
@@ -198,7 +198,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
 	//		print_line("canvas "+itos(i)+" size: "+itos(I->get()->canvas->child_items.size()));
 			//print_line("GT "+p_viewport->global_transform+". CT: "+E->get()->transform);
-			Matrix32 xform = p_viewport->global_transform * E->get()->transform;
+			Transform2D xform = p_viewport->global_transform * E->get()->transform;
 
 			RasterizerCanvas::Light *canvas_lights=NULL;
 
@@ -461,7 +461,7 @@ void VisualServerViewport::viewport_remove_canvas(RID p_viewport,RID p_canvas){
 	canvas->viewports.erase(p_viewport);
 
 }
-void VisualServerViewport::viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Matrix32& p_offset){
+void VisualServerViewport::viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Transform2D& p_offset){
 
 	Viewport * viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
@@ -479,7 +479,7 @@ void VisualServerViewport::viewport_set_transparent_background(RID p_viewport,bo
 
 }
 
-void VisualServerViewport::viewport_set_global_canvas_transform(RID p_viewport,const Matrix32& p_transform){
+void VisualServerViewport::viewport_set_global_canvas_transform(RID p_viewport,const Transform2D& p_transform){
 
 	Viewport * viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);

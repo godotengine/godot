@@ -69,7 +69,7 @@ void Transform::rotate(const Vector3& p_axis,real_t p_phi) {
 
 Transform Transform::rotated(const Vector3& p_axis,real_t p_phi) const{
 
-	return Transform(Matrix3( p_axis, p_phi ), Vector3()) * (*this);
+	return Transform(Basis( p_axis, p_phi ), Vector3()) * (*this);
 }
 
 void Transform::rotate_basis(const Vector3& p_axis,real_t p_phi) {
@@ -210,7 +210,7 @@ Transform::operator String() const {
 }
 
 
-Transform::Transform(const Matrix3& p_basis, const Vector3& p_origin) {
+Transform::Transform(const Basis& p_basis, const Vector3& p_origin) {
 
 	basis=p_basis;
 	origin=p_origin;

@@ -35,7 +35,7 @@
 #define _FACE_IS_VALID_SUPPORT_TRESHOLD 0.9998
 
 
-void ShapeSW::configure(const AABB& p_aabb) {
+void ShapeSW::configure(const Rect3& p_aabb) {
 	aabb=p_aabb;
 	configured=true;
 	for (Map<ShapeOwnerSW*,int>::Element *E=owners.front();E;E=E->next()) {
@@ -133,7 +133,7 @@ Vector3 PlaneShapeSW::get_moment_of_inertia(float p_mass) const {
 void PlaneShapeSW::_setup(const Plane& p_plane)  {
 
 	plane=p_plane;
-	configure(AABB(Vector3(-1e4,-1e4,-1e4),Vector3(1e4*2,1e4*2,1e4*2)));
+	configure(Rect3(Vector3(-1e4,-1e4,-1e4),Vector3(1e4*2,1e4*2,1e4*2)));
 }
 
 void PlaneShapeSW::set_data(const Variant& p_data) {
@@ -204,7 +204,7 @@ Vector3 RayShapeSW::get_moment_of_inertia(float p_mass) const {
 void RayShapeSW::_setup(float p_length)  {
 
 	length=p_length;
-	configure(AABB(Vector3(0,0,0),Vector3(0.1,0.1,length)));
+	configure(Rect3(Vector3(0,0,0),Vector3(0.1,0.1,length)));
 }
 
 void RayShapeSW::set_data(const Variant& p_data) {
@@ -271,7 +271,7 @@ void SphereShapeSW::_setup(real_t p_radius) {
 
 
 	radius=p_radius;
-	configure(AABB( Vector3(-radius,-radius,-radius), Vector3(radius*2.0,radius*2.0,radius*2.0)));
+	configure(Rect3( Vector3(-radius,-radius,-radius), Vector3(radius*2.0,radius*2.0,radius*2.0)));
 
 }
 
@@ -412,7 +412,7 @@ void BoxShapeSW::get_supports(const Vector3& p_normal,int p_max,Vector3 *r_suppo
 
 bool BoxShapeSW::intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const {
 
-	AABB aabb(-half_extents,half_extents*2.0);
+	Rect3 aabb(-half_extents,half_extents*2.0);
 
 	return aabb.intersects_segment(p_begin,p_end,&r_result,&r_normal);
 
@@ -432,7 +432,7 @@ void BoxShapeSW::_setup(const Vector3& p_half_extents)  {
 
 	half_extents=p_half_extents.abs();
 
-	configure(AABB(-half_extents,half_extents*2));
+	configure(Rect3(-half_extents,half_extents*2));
 
 
 }
@@ -604,7 +604,7 @@ void CapsuleShapeSW::_setup(real_t p_height,real_t p_radius)  {
 
 	height=p_height;
 	radius=p_radius;
-	configure(AABB(Vector3(-radius,-radius,-height*0.5-radius),Vector3(radius*2,radius*2,height+radius*2.0)));
+	configure(Rect3(Vector3(-radius,-radius,-height*0.5-radius),Vector3(radius*2,radius*2,height+radius*2.0)));
 
 }
 
@@ -818,7 +818,7 @@ Vector3 ConvexPolygonShapeSW::get_moment_of_inertia(float p_mass) const {
 void ConvexPolygonShapeSW::_setup(const Vector<Vector3>& p_vertices)  {
 
 	Error err = QuickHull::build(p_vertices,mesh);
-	AABB _aabb;
+	Rect3 _aabb;
 
 	for(int i=0;i<mesh.vertices.size();i++) {
 
@@ -965,7 +965,7 @@ Vector3 FaceShapeSW::get_moment_of_inertia(float p_mass) const {
 
 FaceShapeSW::FaceShapeSW()  {
 
-	configure(AABB());
+	configure(Rect3());
 
 }
 
@@ -1175,13 +1175,13 @@ void ConcavePolygonShapeSW::_cull(int p_idx,_CullParams *p_params) const {
 	}
 }
 
-void ConcavePolygonShapeSW::cull(const AABB& p_local_aabb,Callback p_callback,void* p_userdata) const {
+void ConcavePolygonShapeSW::cull(const Rect3& p_local_aabb,Callback p_callback,void* p_userdata) const {
 
 	// make matrix local to concave
 	if (faces.size()==0)
 		return;
 
-	AABB local_aabb=p_local_aabb;
+	Rect3 local_aabb=p_local_aabb;
 
 	// unlock data
 	PoolVector<Face>::Read fr=faces.read();
@@ -1219,7 +1219,7 @@ Vector3 ConcavePolygonShapeSW::get_moment_of_inertia(float p_mass) const {
 
 struct _VolumeSW_BVH_Element {
 
-	AABB aabb;
+	Rect3 aabb;
 	Vector3 center;
 	int face_index;
 };
@@ -1251,7 +1251,7 @@ struct _VolumeSW_BVH_CompareZ {
 
 struct _VolumeSW_BVH {
 
-	AABB aabb;
+	Rect3 aabb;
 	_VolumeSW_BVH *left;
 	_VolumeSW_BVH *right;
 
@@ -1276,7 +1276,7 @@ _VolumeSW_BVH* _volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements,int p_size
 		bvh->face_index=-1;
 	}
 
-	AABB aabb;
+	Rect3 aabb;
 	for(int i=0;i<p_size;i++) {
 
 		if (i==0)
@@ -1351,7 +1351,7 @@ void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 
 	int src_face_count=p_faces.size();
 	if (src_face_count==0) {
-		configure(AABB());
+		configure(Rect3());
 		return;
 	}
 	ERR_FAIL_COND(src_face_count%3);
@@ -1488,7 +1488,7 @@ void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 	PoolVector<Vector3>::Write vw = vertices.write();
 	Vector3 *verticesw=vw.ptr();
 
-	AABB _aabb;
+	Rect3 _aabb;
 
 
 	for(int i=0;i<src_face_count;i++) {
@@ -1593,7 +1593,7 @@ bool HeightMapShapeSW::intersect_segment(const Vector3& p_begin,const Vector3& p
 }
 
 
-void HeightMapShapeSW::cull(const AABB& p_local_aabb,Callback p_callback,void* p_userdata) const {
+void HeightMapShapeSW::cull(const Rect3& p_local_aabb,Callback p_callback,void* p_userdata) const {
 
 
 
@@ -1623,7 +1623,7 @@ void HeightMapShapeSW::_setup(PoolVector<real_t> p_heights,int p_width,int p_dep
 
 	PoolVector<real_t>::Read r = heights. read();
 
-	AABB aabb;
+	Rect3 aabb;
 
 	for(int i=0;i<depth;i++) {
 

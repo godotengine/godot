@@ -156,7 +156,7 @@ private:
 	Vector<String> response_headers;
 
 	static void _bind_methods();
-	StringArray _get_response_headers();
+	PoolStringArray _get_response_headers();
 	Dictionary _get_response_headers_as_dictionary();
 	int read_chunk_size;
 
@@ -175,7 +175,7 @@ public:
 	Error request_raw( Method p_method, const String& p_url, const Vector<String>& p_headers,const PoolVector<uint8_t>& p_body);
 	Error request( Method p_method, const String& p_url, const Vector<String>& p_headers,const String& p_body=String());
 	Error send_body_text(const String& p_body);
-	Error send_body_data(const ByteArray& p_body);
+	Error send_body_data(const PoolByteArray& p_body);
 
 	void close();
 
@@ -187,7 +187,7 @@ public:
 	Error get_response_headers(List<String> *r_response);
 	int get_response_body_length() const;
 
-	ByteArray read_response_body_chunk(); // can't get body as partial text because of most encodings UTF8, gzip, etc.
+	PoolByteArray read_response_body_chunk(); // can't get body as partial text because of most encodings UTF8, gzip, etc.
 
 	void set_blocking_mode(bool p_enable); //useful mostly if running in a thread
 	bool is_blocking_mode_enabled() const;

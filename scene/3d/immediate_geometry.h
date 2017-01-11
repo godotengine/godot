@@ -42,7 +42,7 @@ class ImmediateGeometry : public GeometryInstance {
 	// in VisualServer from becoming invalid if the texture is no longer used
 	List<Ref<Texture> > cached_textures;
 	bool empty;
-	AABB aabb;
+	Rect3 aabb;
 protected:
 
 	static void _bind_methods();
@@ -66,7 +66,7 @@ public:
 
 
 
-	virtual AABB get_aabb() const;
+	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	ImmediateGeometry();

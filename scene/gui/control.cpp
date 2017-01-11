@@ -96,7 +96,7 @@ Size2 Control::edit_get_minimum_size() const {
 void Control::edit_set_rect(const Rect2& p_edit_rect) {
 
 
-	Matrix32 postxf;
+	Transform2D postxf;
 	postxf.set_rotation_and_scale(data.rotation,data.scale);
 	Vector2 new_pos = postxf.xform(p_edit_rect.pos);
 
@@ -374,7 +374,7 @@ void Control::remove_child_notify(Node *p_child) {
 
 void Control::_update_canvas_item_transform() {
 
-	Matrix32 xform=Matrix32(data.rotation,get_pos());
+	Transform2D xform=Transform2D(data.rotation,get_pos());
 	xform.scale_basis(data.scale);
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(),xform);
 
@@ -1382,7 +1382,7 @@ Point2 Control::get_global_pos() const {
 
 void Control::set_global_pos(const Point2& p_point) {
 
-	Matrix32 inv;
+	Transform2D inv;
 
 	if (data.parent_canvas_item) {
 
@@ -1918,9 +1918,9 @@ Control::CursorShape Control::get_cursor_shape(const Point2& p_pos) const {
 	return data.default_cursor;
 }
 
-Matrix32 Control::get_transform() const {
+Transform2D Control::get_transform() const {
 
-	Matrix32 xform=Matrix32(data.rotation,get_pos());
+	Transform2D xform=Transform2D(data.rotation,get_pos());
 	xform.scale_basis(data.scale);
 	return xform;
 }
@@ -1981,7 +1981,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin,int p_count) {
 
 	Point2 points[4];
 
-	Matrix32 xform = get_global_transform();
+	Transform2D xform = get_global_transform();
 	Rect2 rect = get_item_rect();
 
 	points[0]=xform.xform(rect.pos);
@@ -2041,7 +2041,7 @@ void Control::_window_find_focus_neighbour(const Vector2& p_dir, Node *p_at,cons
 
 		Point2 points[4];
 
-		Matrix32 xform = c->get_global_transform();
+		Transform2D xform = c->get_global_transform();
 		Rect2 rect = c->get_item_rect();
 
 		points[0]=xform.xform(rect.pos);

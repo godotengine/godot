@@ -325,7 +325,7 @@ void GDScriptLanguage::get_public_constants(List<Pair<String,Variant> > *p_const
 	p_constants->push_back(pi);
 }
 
-String GDScriptLanguage::make_function(const String& p_class,const String& p_name,const StringArray& p_args) const {
+String GDScriptLanguage::make_function(const String& p_class,const String& p_name,const PoolStringArray& p_args) const {
 
 	String s="func "+p_name+"(";
 	if (p_args.size()) {
@@ -1393,7 +1393,7 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 	}
 
 	static const char*_type_names[Variant::VARIANT_MAX]={
-		"null","bool","int","float","String","Vector2","Rect2","Vector3","Matrix32","Plane","Quat","AABB","Matrix3","Transform",
+		"null","bool","int","float","String","Vector2","Rect2","Vector3","Transform2D","Plane","Quat","AABB","Basis","Transform",
 		"Color","Image","NodePath","RID","Object","InputEvent","Dictionary","Array","RawArray","IntArray","FloatArray","StringArray",
 		"Vector2Array","Vector3Array","ColorArray"};
 

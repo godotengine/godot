@@ -47,7 +47,7 @@ BroadPhaseSW::ID BroadPhaseBasic::create(CollisionObjectSW *p_object_, int p_sub
 	return current;
 }
 
-void BroadPhaseBasic::move(ID p_id, const AABB& p_aabb) {
+void BroadPhaseBasic::move(ID p_id, const Rect3& p_aabb) {
 
 	Map<ID,Element>::Element *E=element_map.find(p_id);
 	ERR_FAIL_COND(!E);
@@ -115,7 +115,7 @@ int BroadPhaseBasic::cull_segment(const Vector3& p_from, const Vector3& p_to,Col
 
 	for (Map<ID,Element>::Element *E=element_map.front();E;E=E->next()) {
 
-		const AABB aabb=E->get().aabb;
+		const Rect3 aabb=E->get().aabb;
 		if (aabb.intersects_segment(p_from,p_to)) {
 
 			p_results[rc]=E->get().owner;
@@ -129,13 +129,13 @@ int BroadPhaseBasic::cull_segment(const Vector3& p_from, const Vector3& p_to,Col
 	return rc;
 
 }
-int BroadPhaseBasic::cull_aabb(const AABB& p_aabb,CollisionObjectSW** p_results,int p_max_results,int *p_result_indices) {
+int BroadPhaseBasic::cull_aabb(const Rect3& p_aabb,CollisionObjectSW** p_results,int p_max_results,int *p_result_indices) {
 
 	int rc=0;
 
 	for (Map<ID,Element>::Element *E=element_map.front();E;E=E->next()) {
 
-		const AABB aabb=E->get().aabb;
+		const Rect3 aabb=E->get().aabb;
 		if (aabb.intersects(p_aabb)) {
 
 			p_results[rc]=E->get().owner;

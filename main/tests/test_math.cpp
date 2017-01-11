@@ -609,19 +609,19 @@ MainLoop* test() {
 		float a=0.3;
 
 		//Quat q(v,a);
-		Matrix3 m(v,a);
+		Basis m(v,a);
 
 		Vector3 v2(7,3,1);
 		v2.normalize();
 		float a2=0.8;
 
 		//Quat q(v,a);
-		Matrix3 m2(v2,a2);
+		Basis m2(v2,a2);
 
 		Quat q=m;
 		Quat q2=m2;
 
-		Matrix3 m3 = m.inverse() * m2;
+		Basis m3 = m.inverse() * m2;
 		Quat q3 = (q.inverse() * q2);//.normalized();
 
 		print_line(Quat(m3));
@@ -642,11 +642,11 @@ MainLoop* test() {
 	print_line(ret);
 
 	return NULL;
-	Matrix3 m3;
+	Basis m3;
 	m3.rotate(Vector3(1,0,0),0.2);
 	m3.rotate(Vector3(0,1,0),1.77);
 	m3.rotate(Vector3(0,0,1),212);
-	Matrix3 m32;
+	Basis m32;
 	m32.set_euler(m3.get_euler());
 	print_line("ELEULEEEEEEEEEEEEEEEEEER: "+m3.get_euler()+" vs "+m32.get_euler());
 
@@ -784,11 +784,11 @@ MainLoop* test() {
 	print_line(Variant(a));
 
 
-	Matrix32 mat2_1;
+	Transform2D mat2_1;
 	mat2_1.rotate(0.5);
-	Matrix32 mat2_2;
+	Transform2D mat2_2;
 	mat2_2.translate(Vector2(1,2));
-	Matrix32 mat2_3 = mat2_1 * mat2_2;
+	Transform2D mat2_3 = mat2_1 * mat2_2;
 	mat2_3.affine_invert();
 
 	print_line(mat2_3.elements[0]);

@@ -137,7 +137,7 @@ bool NavigationPolygonEditor::forward_gui_input(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -411,7 +411,7 @@ void NavigationPolygonEditor::_canvas_draw() {
 	if (node->get_navigation_polygon().is_null())
 			return;
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 

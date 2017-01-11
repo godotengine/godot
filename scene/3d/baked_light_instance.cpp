@@ -308,7 +308,7 @@ static _FORCE_INLINE_ Vector2 get_uv(const Vector3& p_pos, const Vector3 *p_vtx,
 	return p_uv[0]*u + p_uv[1]*v  + p_uv[2]*w;
 }
 
-void BakedLight::_plot_face(int p_idx, int p_level, const Vector3 *p_vtx, const Vector2* p_uv, const MaterialCache& p_material, const AABB &p_aabb) {
+void BakedLight::_plot_face(int p_idx, int p_level, const Vector3 *p_vtx, const Vector2* p_uv, const MaterialCache& p_material, const Rect3 &p_aabb) {
 
 
 
@@ -477,7 +477,7 @@ void BakedLight::_plot_face(int p_idx, int p_level, const Vector3 *p_vtx, const 
 		//go down
 		for(int i=0;i<8;i++) {
 
-			AABB aabb=p_aabb;
+			Rect3 aabb=p_aabb;
 			aabb.size*=0.5;
 
 			if (i&1)
@@ -488,7 +488,7 @@ void BakedLight::_plot_face(int p_idx, int p_level, const Vector3 *p_vtx, const 
 				aabb.pos.z+=aabb.size.z;
 
 			{
-				AABB test_aabb=aabb;
+				Rect3 test_aabb=aabb;
 				//test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); //grow a bit to avoid numerical error in real-time
 				Vector3 qsize = test_aabb.size*0.5; //quarter size, for fast aabb test
 
@@ -1534,9 +1534,9 @@ int BakedLight::get_cell_subdiv() const {
 
 
 
-AABB BakedLight::get_aabb() const {
+Rect3 BakedLight::get_aabb() const {
 
-	return AABB(Vector3(0,0,0),Vector3(1,1,1));
+	return Rect3(Vector3(0,0,0),Vector3(1,1,1));
 }
 PoolVector<Face3> BakedLight::get_faces(uint32_t p_usage_flags) const {
 
@@ -1549,7 +1549,7 @@ String BakedLight::get_configuration_warning() const {
 }
 
 
-void BakedLight::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb,DebugMode p_mode,Ref<MultiMesh> &p_multimesh,int &idx) {
+void BakedLight::_debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb,DebugMode p_mode,Ref<MultiMesh> &p_multimesh,int &idx) {
 
 
 	if (p_level==cell_subdiv-1) {
@@ -1585,7 +1585,7 @@ void BakedLight::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb,DebugMod
 			if (bake_cells_write[p_idx].childs[i]==CHILD_EMPTY)
 				continue;
 
-			AABB aabb=p_aabb;
+			Rect3 aabb=p_aabb;
 			aabb.size*=0.5;
 
 			if (i&1)

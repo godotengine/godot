@@ -60,7 +60,7 @@ void VisibilityNotifier::_exit_camera(Camera* p_camera){
 }
 
 
-void VisibilityNotifier::set_aabb(const AABB& p_aabb){
+void VisibilityNotifier::set_aabb(const Rect3& p_aabb){
 
 	if (aabb==p_aabb)
 		return;
@@ -74,7 +74,7 @@ void VisibilityNotifier::set_aabb(const AABB& p_aabb){
 	update_gizmo();
 }
 
-AABB VisibilityNotifier::get_aabb() const{
+Rect3 VisibilityNotifier::get_aabb() const{
 
 	return aabb;
 }
@@ -113,7 +113,7 @@ void VisibilityNotifier::_bind_methods(){
 	ClassDB::bind_method(_MD("get_aabb"),&VisibilityNotifier::get_aabb);
 	ClassDB::bind_method(_MD("is_on_screen"),&VisibilityNotifier::is_on_screen);
 
-	ADD_PROPERTY( PropertyInfo(Variant::_AABB,"aabb"),_SCS("set_aabb"),_SCS("get_aabb"));
+	ADD_PROPERTY( PropertyInfo(Variant::RECT3,"aabb"),_SCS("set_aabb"),_SCS("get_aabb"));
 
 	ADD_SIGNAL( MethodInfo("enter_camera",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
 	ADD_SIGNAL( MethodInfo("exit_camera",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
@@ -124,7 +124,7 @@ void VisibilityNotifier::_bind_methods(){
 
 VisibilityNotifier::VisibilityNotifier() {
 
-	aabb=AABB(Vector3(-1,-1,-1),Vector3(2,2,2));
+	aabb=Rect3(Vector3(-1,-1,-1),Vector3(2,2,2));
 
 }
 

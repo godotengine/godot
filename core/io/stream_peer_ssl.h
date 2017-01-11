@@ -35,7 +35,7 @@ class StreamPeerSSL : public StreamPeer {
 	GDCLASS(StreamPeerSSL,StreamPeer);
 public:
 
-	typedef void (*LoadCertsFromMemory)(const ByteArray& p_certs);
+	typedef void (*LoadCertsFromMemory)(const PoolByteArray& p_certs);
 protected:
 	static StreamPeerSSL* (*_create)();
 	static void _bind_methods();
@@ -65,7 +65,7 @@ public:
 
 	static StreamPeerSSL* create();
 
-	static void load_certs_from_memory(const ByteArray& p_memory);
+	static void load_certs_from_memory(const PoolByteArray& p_memory);
 	static bool is_available();
 
 	StreamPeerSSL();

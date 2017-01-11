@@ -51,7 +51,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 	RID canvas;
 	RID ray;
 	RID ray_query;
-	Matrix32 view_xform;
+	Transform2D view_xform;
 
 	Vector2 ray_from,ray_to;
 
@@ -262,7 +262,7 @@ protected:
 		}
 	}
 
-	RID _add_body(Physics2DServer::ShapeType p_shape, const Matrix32& p_xform) {
+	RID _add_body(Physics2DServer::ShapeType p_shape, const Transform2D& p_xform) {
 
 		VisualServer *vs = VisualServer::get_singleton();
 		Physics2DServer *ps = Physics2DServer::get_singleton();
@@ -304,7 +304,7 @@ protected:
 
 	}
 
-	void _add_concave(const Vector<Vector2>& p_points,const Matrix32& p_xform=Matrix32()) {
+	void _add_concave(const Vector<Vector2>& p_points,const Transform2D& p_xform=Transform2D()) {
 
 		Physics2DServer *ps = Physics2DServer::get_singleton();
 		VisualServer *vs = VisualServer::get_singleton();
@@ -382,7 +382,7 @@ public:
 			canvas = vs->canvas_create();
 			vs->viewport_attach_canvas(vp,canvas);
 			vs->viewport_attach_to_screen(vp,Rect2(Vector2(),OS::get_singleton()->get_window_size()));
-			Matrix32 smaller;
+			Transform2D smaller;
 			//smaller.scale(Vector2(0.6,0.6));
 			//smaller.elements[2]=Vector2(100,0);
 
@@ -410,12 +410,12 @@ public:
 
 			Physics2DServer::ShapeType type = types[i%4];
 //			type=Physics2DServer::SHAPE_SEGMENT;
-			_add_body(type,Matrix32(i*0.8,Point2(152+i*40,100-40*i)));
+			_add_body(type,Transform2D(i*0.8,Point2(152+i*40,100-40*i)));
 			//if (i==0)
 			//	ps->body_set_mode(b,Physics2DServer::BODY_MODE_STATIC);
 		}
 
-		//RID b= _add_body(Physics2DServer::SHAPE_CIRCLE,Matrix32(0,Point2(101,140)));
+		//RID b= _add_body(Physics2DServer::SHAPE_CIRCLE,Transform2D(0,Point2(101,140)));
 		//ps->body_set_mode(b,Physics2DServer::BODY_MODE_STATIC);
 
 		Point2 prev;

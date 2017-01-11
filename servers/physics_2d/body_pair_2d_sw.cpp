@@ -175,7 +175,7 @@ void BodyPair2DSW::_validate_contacts() {
 }
 
 
-bool BodyPair2DSW::_test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Matrix32& p_xform_A,Body2DSW *p_B, int p_shape_B,const Matrix32& p_xform_B,bool p_swap_result) {
+bool BodyPair2DSW::_test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Transform2D& p_xform_A,Body2DSW *p_B, int p_shape_B,const Transform2D& p_xform_B,bool p_swap_result) {
 
 
 
@@ -202,7 +202,7 @@ bool BodyPair2DSW::_test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Mat
 	Vector2 from = p_xform_A.xform(s[0]);
 	Vector2 to = from + motion;
 
-	Matrix32 from_inv = p_xform_B.affine_inverse();
+	Transform2D from_inv = p_xform_B.affine_inverse();
 
 	Vector2 local_from = from_inv.xform(from-mnormal*mlen*0.1); //start from a little inside the bounding box
 	Vector2 local_to = from_inv.xform(to);
@@ -245,12 +245,12 @@ bool BodyPair2DSW::setup(float p_step) {
 	_validate_contacts();
 
 	Vector2 offset_A = A->get_transform().get_origin();
-	Matrix32 xform_Au = A->get_transform().untranslated();
-	Matrix32 xform_A = xform_Au * A->get_shape_transform(shape_A);
+	Transform2D xform_Au = A->get_transform().untranslated();
+	Transform2D xform_A = xform_Au * A->get_shape_transform(shape_A);
 
-	Matrix32 xform_Bu = B->get_transform();
+	Transform2D xform_Bu = B->get_transform();
 	xform_Bu.translate(-A->get_transform().get_origin());
-	Matrix32 xform_B = xform_Bu * B->get_shape_transform(shape_B);
+	Transform2D xform_B = xform_Bu * B->get_shape_transform(shape_B);
 
 	Shape2DSW *shape_A_ptr=A->get_shape(shape_A);
 	Shape2DSW *shape_B_ptr=B->get_shape(shape_B);

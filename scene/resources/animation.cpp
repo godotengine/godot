@@ -1203,14 +1203,14 @@ Variant Animation::_cubic_interpolate( const Variant& p_pre_a,const Variant& p_a
 			return a.cubic_slerp(b,pa,pb,p_c);
 
 		} break;
-		case Variant::_AABB: {
+		case Variant::RECT3: {
 
-			AABB a=p_a;
-			AABB b=p_b;
-			AABB pa=p_pre_a;
-			AABB pb=p_post_b;
+			Rect3 a=p_a;
+			Rect3 b=p_b;
+			Rect3 pa=p_pre_a;
+			Rect3 pb=p_post_b;
 
-			return AABB(
+			return Rect3(
 				a.pos.cubic_interpolate(b.pos,pa.pos,pb.pos,p_c),
 				a.size.cubic_interpolate(b.size,pa.size,pb.size,p_c)
 			);

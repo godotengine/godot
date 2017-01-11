@@ -1654,7 +1654,7 @@ void ScriptEditor::_editor_stop() {
 }
 
 
-void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const StringArray& p_args) {
+void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const PoolStringArray& p_args) {
 
 	//print_line("add callback! hohoho"); kinda sad to remove this
 	ERR_FAIL_COND(!p_obj);

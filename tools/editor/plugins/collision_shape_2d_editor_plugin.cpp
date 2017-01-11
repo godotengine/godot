@@ -321,7 +321,7 @@ bool CollisionShape2DEditor::forward_gui_input(const InputEvent& p_event) {
 		case InputEvent::MOUSE_BUTTON: {
 			const InputEventMouseButton& mb = p_event.mouse_button;
 
-			Matrix32 gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 			Point2 gpoint(mb.x,mb.y);
 
@@ -436,7 +436,7 @@ void CollisionShape2DEditor::_canvas_draw() {
 	}
 
 	Control *c = canvas_item_editor->get_viewport_control();
-	Matrix32 gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 	Ref<Texture> h = get_icon("EditorHandle","EditorIcons");
 	Vector2 size = h->get_size()*0.5;

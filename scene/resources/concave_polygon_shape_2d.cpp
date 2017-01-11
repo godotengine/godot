@@ -85,7 +85,7 @@ void ConcavePolygonShape2D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_segments","segments"),&ConcavePolygonShape2D::set_segments);
 	ClassDB::bind_method(_MD("get_segments"),&ConcavePolygonShape2D::get_segments);
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"segments"),_SCS("set_segments"),_SCS("get_segments") );
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"segments"),_SCS("set_segments"),_SCS("get_segments") );
 
 }
 

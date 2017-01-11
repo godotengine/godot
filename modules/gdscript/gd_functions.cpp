@@ -672,7 +672,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		case VAR_TO_BYTES: {
 			VALIDATE_ARG_COUNT(1);
 
-			ByteArray barr;
+			PoolByteArray barr;
 			int len;
 			Error err = encode_variant(*p_args[0],NULL,len);
 			if (err) {
@@ -685,7 +685,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 			barr.resize(len);
 			{
-				ByteArray::Write w = barr.write();
+				PoolByteArray::Write w = barr.write();
 				encode_variant(*p_args[0],w.ptr(),len);
 
 			}
@@ -693,24 +693,24 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		} break;
 		case BYTES_TO_VAR: {
 			VALIDATE_ARG_COUNT(1);
-			if (p_args[0]->get_type()!=Variant::RAW_ARRAY) {
+			if (p_args[0]->get_type()!=Variant::POOL_BYTE_ARRAY) {
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
-				r_error.expected=Variant::RAW_ARRAY;
+				r_error.expected=Variant::POOL_BYTE_ARRAY;
 				r_ret=Variant();
 				return;
 			}
 
-			ByteArray varr=*p_args[0];
+			PoolByteArray varr=*p_args[0];
 			Variant ret;
 			{
-				ByteArray::Read r=varr.read();
+				PoolByteArray::Read r=varr.read();
 				Error err = decode_variant(ret,r.ptr(),varr.size(),NULL);
 				if (err!=OK) {
 					r_ret=RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument=0;
-					r_error.expected=Variant::RAW_ARRAY;
+					r_error.expected=Variant::POOL_BYTE_ARRAY;
 					return;
 				}
 
@@ -1531,13 +1531,13 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		} break;
 		case VAR_TO_BYTES: {
 			MethodInfo mi("var2bytes",PropertyInfo(Variant::NIL,"var"));
-			mi.return_val.type=Variant::RAW_ARRAY;
+			mi.return_val.type=Variant::POOL_BYTE_ARRAY;
 			return mi;
 
 		} break;
 		case BYTES_TO_VAR: {
 
-			MethodInfo mi("bytes2var:Variant",PropertyInfo(Variant::RAW_ARRAY,"bytes"));
+			MethodInfo mi("bytes2var:Variant",PropertyInfo(Variant::POOL_BYTE_ARRAY,"bytes"));
 			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;

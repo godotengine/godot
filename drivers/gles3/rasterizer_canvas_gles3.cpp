@@ -1,7 +1,7 @@
 #include "rasterizer_canvas_gles3.h"
 #include "os/os.h"
 
-static _FORCE_INLINE_ void store_matrix32(const Matrix32& p_mtx, float* p_array) {
+static _FORCE_INLINE_ void store_transform2d(const Transform2D& p_mtx, float* p_array) {
 
 	p_array[ 0]=p_mtx.elements[0][0];
 	p_array[ 1]=p_mtx.elements[0][1];
@@ -69,8 +69,8 @@ void RasterizerCanvasGLES3::light_internal_update(RID p_rid, Light* p_light) {
 	LightInternal * li = light_internal_owner.getornull(p_rid);
 	ERR_FAIL_COND(!li);
 
-	store_matrix32(p_light->light_shader_xform,li->ubo_data.light_matrix);
-	store_matrix32(p_light->xform_cache.affine_inverse(),li->ubo_data.local_matrix);
+	store_transform2d(p_light->light_shader_xform,li->ubo_data.light_matrix);
+	store_transform2d(p_light->xform_cache.affine_inverse(),li->ubo_data.local_matrix);
 	store_camera(p_light->shadow_matrix_cache,li->ubo_data.shadow_matrix);
 
 	for(int i=0;i<4;i++) {
@@ -141,8 +141,8 @@ void RasterizerCanvasGLES3::canvas_begin(){
 	state.canvas_shader.set_custom_shader(0);
 	state.canvas_shader.bind();
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,Color(1,1,1,1));
-	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Matrix32());
-	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Transform2D());
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform2D());
 
 
 
@@ -999,7 +999,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 					ci->final_modulate.a * p_modulate.a );
 
 		state.final_transform = ci->final_transform;
-		state.extra_matrix=Matrix32();
+		state.extra_matrix=Transform2D();
 
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,state.final_transform);
@@ -1081,7 +1081,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,state.final_transform);
-						state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform2D());
 
 					}
 
@@ -1212,7 +1212,7 @@ void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light* p_lights_with_s
 }
 
 
-void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
+void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
 
 	RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(p_buffer);
 	ERR_FAIL_COND(!cls);
@@ -1269,7 +1269,7 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 			projection.set_frustum( xmin, xmax, ymin, ymax, nearp, farp );
 		}
 
-		Vector3 cam_target=Matrix3(Vector3(0,0,Math_PI*2*(i/4.0))).xform(Vector3(0,1,0));
+		Vector3 cam_target=Basis(Vector3(0,0,Math_PI*2*(i/4.0))).xform(Vector3(0,1,0));
 		projection = projection * CameraMatrix(Transform().looking_at(cam_target,Vector3(0,0,-1)).affine_inverse());
 
 		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES3::PROJECTION_MATRIX,projection);

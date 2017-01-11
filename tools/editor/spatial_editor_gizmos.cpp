@@ -144,7 +144,7 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+			mesh->set_custom_aabb(Rect3(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
 		}
 	}
 
@@ -193,7 +193,7 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material>& p_material,
 
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+			mesh->set_custom_aabb(Rect3(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
 		}
 	}
 
@@ -271,7 +271,7 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+			mesh->set_custom_aabb(Rect3(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
 		}
 	}
 
@@ -800,8 +800,8 @@ void LightSpatialGizmo::redraw() {
 		for(int i = 0; i < arrow_sides ; i++) {
 
 
-			Matrix3 ma(Vector3(0,0,1),Math_PI*2*float(i)/arrow_sides);
-			Matrix3 mb(Vector3(0,0,1),Math_PI*2*float(i+1)/arrow_sides);
+			Basis ma(Vector3(0,0,1),Math_PI*2*float(i)/arrow_sides);
+			Basis mb(Vector3(0,0,1),Math_PI*2*float(i+1)/arrow_sides);
 
 
 			for(int j=1;j<arrow_points-1;j++) {
@@ -1219,7 +1219,7 @@ void SkeletonSpatialGizmo::redraw() {
 	weights[0]=1;
 
 
-	AABB aabb;
+	Rect3 aabb;
 
 	Color bonecolor = Color(1.0,0.4,0.4,0.3);
 	Color rootcolor = Color(0.4,1.0,0.4,0.1);
@@ -1915,7 +1915,7 @@ void CollisionShapeSpatialGizmo::redraw(){
 
 		Ref<BoxShape> bs=s;
 		Vector<Vector3> lines;
-		AABB aabb;
+		Rect3 aabb;
 		aabb.pos=-bs->get_extents();
 		aabb.size=aabb.pos*-2;
 
@@ -2163,7 +2163,7 @@ void VisibilityNotifierGizmo::set_handle(int p_idx,Camera *p_camera, const Point
 	//gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
-	AABB aabb = notifier->get_aabb();
+	Rect3 aabb = notifier->get_aabb();
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
@@ -2205,7 +2205,7 @@ void VisibilityNotifierGizmo::redraw(){
 	clear();
 
 	Vector<Vector3> lines;
-	AABB aabb = notifier->get_aabb();
+	Rect3 aabb = notifier->get_aabb();
 
 	for(int i=0;i<12;i++) {
 		Vector3 a,b;
@@ -2257,7 +2257,7 @@ String ReflectionProbeGizmo::get_handle_name(int p_idx) const {
 }
 Variant ReflectionProbeGizmo::get_handle_value(int p_idx) const{
 
-	return AABB(probe->get_extents(),probe->get_origin_offset());
+	return Rect3(probe->get_extents(),probe->get_origin_offset());
 }
 void ReflectionProbeGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_point){
 
@@ -2313,7 +2313,7 @@ void ReflectionProbeGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& 
 
 void ReflectionProbeGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_cancel){
 
-	AABB restore = p_restore;
+	Rect3 restore = p_restore;
 
 	if (p_cancel) {
 		probe->set_extents(restore.pos);
@@ -2339,7 +2339,7 @@ void ReflectionProbeGizmo::redraw(){
 	Vector<Vector3> internal_lines;
 	Vector3 extents = probe->get_extents();
 
-	AABB aabb;
+	Rect3 aabb;
 	aabb.pos=-extents;
 	aabb.size=extents*2;
 
@@ -2468,7 +2468,7 @@ void GIProbeGizmo::redraw(){
 
 	static const int subdivs[GIProbe::SUBDIV_MAX]={64,128,256,512};
 
-	AABB aabb = AABB(-extents,extents*2);
+	Rect3 aabb = Rect3(-extents,extents*2);
 	int subdiv = subdivs[probe->get_subdiv()];
 	float cell_size = aabb.get_longest_axis_size()/subdiv;
 

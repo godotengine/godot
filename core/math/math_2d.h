@@ -198,7 +198,7 @@ Vector2 Vector2::linear_interpolate(const Vector2& p_a, const Vector2& p_b,real_
 typedef Vector2 Size2;
 typedef Vector2 Point2;
 
-struct Matrix32;
+struct Transform2D;
 
 
 struct Rect2 {
@@ -249,7 +249,7 @@ struct Rect2 {
 			return dist;
 	}
 
-	_FORCE_INLINE_ bool intersects_transformed(const Matrix32& p_xform, const Rect2& p_rect) const;
+	_FORCE_INLINE_ bool intersects_transformed(const Transform2D& p_xform, const Rect2& p_rect) const;
 
 	bool intersects_segment(const Point2& p_from, const Point2& p_to, Point2* r_pos=NULL, Point2* r_normal=NULL) const;
 
@@ -551,8 +551,8 @@ struct Rect2i {
 
 
 
-struct Matrix32 {
-	// Warning #1: basis of Matrix32 is stored differently from Matrix3. In terms of elements array, the basis matrix looks like "on paper":
+struct Transform2D {
+	// Warning #1: basis of Transform2D is stored differently from Basis. In terms of elements array, the basis matrix looks like "on paper":
 	// M = (elements[0][0] elements[1][0])
 	//     (elements[0][1] elements[1][1])
 	// This is such that the columns, which can be interpreted as basis vectors of the coordinate system "painted" on the object, can be accessed as elements[i].
@@ -575,10 +575,10 @@ struct Matrix32 {
 	_FORCE_INLINE_ void set_axis(int p_axis,const Vector2& p_vec) { ERR_FAIL_INDEX(p_axis,3); elements[p_axis]=p_vec; }
 
 	void invert();
-	Matrix32 inverse() const;
+	Transform2D inverse() const;
 
 	void affine_invert();
-	Matrix32 affine_inverse() const;
+	Transform2D affine_inverse() const;
 
 	void set_rotation(real_t p_phi);
 	real_t get_rotation() const;
@@ -597,23 +597,23 @@ struct Matrix32 {
 	_FORCE_INLINE_ const Vector2& get_origin() const { return elements[2]; }
 	_FORCE_INLINE_ void set_origin(const Vector2& p_origin) { elements[2]=p_origin; }
 
-	Matrix32 scaled(const Size2& p_scale) const;
-	Matrix32 basis_scaled(const Size2& p_scale) const;
-	Matrix32 translated(const Vector2& p_offset) const;
-	Matrix32 rotated(real_t p_phi) const;
+	Transform2D scaled(const Size2& p_scale) const;
+	Transform2D basis_scaled(const Size2& p_scale) const;
+	Transform2D translated(const Vector2& p_offset) const;
+	Transform2D rotated(real_t p_phi) const;
 
-	Matrix32 untranslated() const;
+	Transform2D untranslated() const;
 
 	void orthonormalize();
-	Matrix32 orthonormalized() const;
+	Transform2D orthonormalized() const;
 
-	bool operator==(const Matrix32& p_transform) const;
-	bool operator!=(const Matrix32& p_transform) const;
+	bool operator==(const Transform2D& p_transform) const;
+	bool operator!=(const Transform2D& p_transform) const;
 
-	void operator*=(const Matrix32& p_transform);
-	Matrix32 operator*(const Matrix32& p_transform) const;
+	void operator*=(const Transform2D& p_transform);
+	Transform2D operator*(const Transform2D& p_transform) const;
 
-	Matrix32 interpolate_with(const Matrix32& p_transform, real_t p_c) const;
+	Transform2D interpolate_with(const Transform2D& p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Vector2 basis_xform(const Vector2& p_vec) const;
 	_FORCE_INLINE_ Vector2 basis_xform_inv(const Vector2& p_vec) const;
@@ -624,7 +624,7 @@ struct Matrix32 {
 
 	operator String() const;
 
-	Matrix32(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy) {
+	Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy) {
 
 		elements[0][0] = xx;
 		elements[0][1] = xy;
@@ -634,11 +634,11 @@ struct Matrix32 {
 		elements[2][1] = oy;
 	}
 
-	Matrix32(real_t p_rot, const Vector2& p_pos);
-	Matrix32() { elements[0][0]=1.0; elements[1][1]=1.0; }
+	Transform2D(real_t p_rot, const Vector2& p_pos);
+	Transform2D() { elements[0][0]=1.0; elements[1][1]=1.0; }
 };
 
-bool Rect2::intersects_transformed(const Matrix32& p_xform, const Rect2& p_rect) const {
+bool Rect2::intersects_transformed(const Transform2D& p_xform, const Rect2& p_rect) const {
 
 	//SAT intersection between local and transformed rect2
 
@@ -793,7 +793,7 @@ bool Rect2::intersects_transformed(const Matrix32& p_xform, const Rect2& p_rect)
 
 }
 
-Vector2 Matrix32::basis_xform(const Vector2& v) const {
+Vector2 Transform2D::basis_xform(const Vector2& v) const {
 
 	return Vector2(
 		tdotx(v),
@@ -801,7 +801,7 @@ Vector2 Matrix32::basis_xform(const Vector2& v) const {
 	);
 }
 
-Vector2 Matrix32::basis_xform_inv(const Vector2& v) const{
+Vector2 Transform2D::basis_xform_inv(const Vector2& v) const{
 
 	return Vector2(
 		elements[0].dot(v),
@@ -809,14 +809,14 @@ Vector2 Matrix32::basis_xform_inv(const Vector2& v) const{
 	);
 }
 
-Vector2 Matrix32::xform(const Vector2& v) const {
+Vector2 Transform2D::xform(const Vector2& v) const {
 
 	return Vector2(
 		tdotx(v),
 		tdoty(v)
 	) + elements[2];
 }
-Vector2 Matrix32::xform_inv(const Vector2& p_vec) const {
+Vector2 Transform2D::xform_inv(const Vector2& p_vec) const {
 
 	Vector2 v = p_vec - elements[2];
 
@@ -826,7 +826,7 @@ Vector2 Matrix32::xform_inv(const Vector2& p_vec) const {
 	);
 
 }
-Rect2 Matrix32::xform(const Rect2& p_rect) const {
+Rect2 Transform2D::xform(const Rect2& p_rect) const {
 
 	Vector2 x=elements[0]*p_rect.size.x;
 	Vector2 y=elements[1]*p_rect.size.y;
@@ -840,7 +840,7 @@ Rect2 Matrix32::xform(const Rect2& p_rect) const {
 	return new_rect;
 }
 
-void Matrix32::set_rotation_and_scale(real_t p_rot,const Size2& p_scale) {
+void Transform2D::set_rotation_and_scale(real_t p_rot,const Size2& p_scale) {
 
 	elements[0][0]=Math::cos(p_rot)*p_scale.x;
 	elements[1][1]=Math::cos(p_rot)*p_scale.y;
@@ -849,7 +849,7 @@ void Matrix32::set_rotation_and_scale(real_t p_rot,const Size2& p_scale) {
 
 }
 
-Rect2 Matrix32::xform_inv(const Rect2& p_rect) const {
+Rect2 Transform2D::xform_inv(const Rect2& p_rect) const {
 
 	Vector2 ends[4]={
 		xform_inv( p_rect.pos ),

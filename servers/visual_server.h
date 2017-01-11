@@ -62,7 +62,7 @@ protected:
 	RID material_2d[16];
 
 
-	Error _surface_set_data(Array p_arrays,uint32_t p_format,uint32_t *p_offsets,uint32_t p_stride,PoolVector<uint8_t> &r_vertex_array,int p_vertex_array_len,PoolVector<uint8_t> &r_index_array,int p_index_array_len,AABB &r_aabb,Vector<AABB> r_bone_aabb);
+	Error _surface_set_data(Array p_arrays,uint32_t p_format,uint32_t *p_offsets,uint32_t p_stride,PoolVector<uint8_t> &r_vertex_array,int p_vertex_array_len,PoolVector<uint8_t> &r_index_array,int p_index_array_len,Rect3 &r_aabb,Vector<Rect3> r_bone_aabb);
 
 	static VisualServer* (*create_func)();
 	static void _bind_methods();
@@ -244,7 +244,7 @@ public:
 
 
 	virtual void mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array(),uint32_t p_compress_format=ARRAY_COMPRESS_DEFAULT);
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>())=0;
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<Rect3>& p_bone_aabbs=Vector<Rect3>())=0;
 
 	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount)=0;
 	virtual int mesh_get_morph_target_count(RID p_mesh) const=0;
@@ -271,15 +271,15 @@ public:
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const=0;
 	virtual PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const=0;
 
-	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const=0;
+	virtual Rect3 mesh_surface_get_aabb(RID p_mesh, int p_surface) const=0;
 	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const=0;
-	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const=0;
+	virtual Vector<Rect3> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const=0;
 
 	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
 	virtual int mesh_get_surface_count(RID p_mesh) const=0;
 
-	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
-	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
+	virtual void mesh_set_custom_aabb(RID p_mesh,const Rect3& p_aabb)=0;
+	virtual Rect3 mesh_get_custom_aabb(RID p_mesh) const=0;
 
 	virtual void mesh_clear(RID p_mesh)=0;
 
@@ -304,14 +304,14 @@ public:
 
 	virtual void multimesh_set_mesh(RID p_multimesh,RID p_mesh)=0;
 	virtual void multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform)=0;
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform)=0;
+	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Transform2D& p_transform)=0;
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color)=0;
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const=0;
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const=0;
+	virtual Rect3 multimesh_get_aabb(RID p_multimesh) const=0;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const=0;
-	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const=0;
+	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const=0;
 	virtual Color multimesh_instance_get_color(RID p_multimesh,int p_index) const=0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible)=0;
@@ -341,8 +341,8 @@ public:
 	virtual int skeleton_get_bone_count(RID p_skeleton) const=0;
 	virtual void skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform)=0;
 	virtual Transform skeleton_bone_get_transform(RID p_skeleton,int p_bone) const=0;
-	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform)=0;
-	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone)const =0;
+	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Transform2D& p_transform)=0;
+	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone)const =0;
 
 	/* Light API */
 
@@ -451,8 +451,8 @@ public:
 
 	virtual RID gi_probe_create()=0;
 
-	virtual void gi_probe_set_bounds(RID p_probe,const AABB& p_bounds)=0;
-	virtual AABB gi_probe_get_bounds(RID p_probe) const=0;
+	virtual void gi_probe_set_bounds(RID p_probe,const Rect3& p_bounds)=0;
+	virtual Rect3 gi_probe_get_bounds(RID p_probe) const=0;
 
 	virtual void gi_probe_set_cell_size(RID p_probe,float p_range)=0;
 	virtual float gi_probe_get_cell_size(RID p_probe) const=0;
@@ -485,7 +485,7 @@ public:
 	virtual void particles_set_pre_process_time(RID p_particles,float p_time)=0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles,float p_ratio)=0;
 	virtual void particles_set_randomness_ratio(RID p_particles,float p_ratio)=0;
-	virtual void particles_set_custom_aabb(RID p_particles,const AABB& p_aabb)=0;
+	virtual void particles_set_custom_aabb(RID p_particles,const Rect3& p_aabb)=0;
 	virtual void particles_set_gravity(RID p_particles,const Vector3& p_gravity)=0;
 	virtual void particles_set_use_local_coordinates(RID p_particles,bool p_enable)=0;
 	virtual void particles_set_process_material(RID p_particles,RID p_material)=0;
@@ -521,7 +521,7 @@ public:
 	virtual void particles_set_draw_pass_material(RID p_particles,int p_pass, RID p_material)=0;
 	virtual void particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh)=0;
 
-	virtual AABB particles_get_current_aabb(RID p_particles)=0;
+	virtual Rect3 particles_get_current_aabb(RID p_particles)=0;
 
 	/* CAMERA API */
 
@@ -584,10 +584,10 @@ public:
 	virtual void viewport_set_scenario(RID p_viewport,RID p_scenario)=0;
 	virtual void viewport_attach_canvas(RID p_viewport,RID p_canvas)=0;
 	virtual void viewport_remove_canvas(RID p_viewport,RID p_canvas)=0;
-	virtual void viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Matrix32& p_offset)=0;
+	virtual void viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Transform2D& p_offset)=0;
 	virtual void viewport_set_transparent_background(RID p_viewport,bool p_enabled)=0;
 
-	virtual void viewport_set_global_canvas_transform(RID p_viewport,const Matrix32& p_transform)=0;
+	virtual void viewport_set_global_canvas_transform(RID p_viewport,const Transform2D& p_transform)=0;
 	virtual void viewport_set_canvas_layer(RID p_viewport,RID p_canvas,int p_layer)=0;
 
 	virtual void viewport_set_shadow_atlas_size(RID p_viewport,int p_size)=0;
@@ -725,7 +725,7 @@ public:
 	virtual void instance_set_extra_visibility_margin( RID p_instance, real_t p_margin )=0;
 
 	// don't use these in a game!
-	virtual Vector<ObjectID> instances_cull_aabb(const AABB& p_aabb, RID p_scenario=RID()) const=0;
+	virtual Vector<ObjectID> instances_cull_aabb(const Rect3& p_aabb, RID p_scenario=RID()) const=0;
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3& p_from, const Vector3& p_to, RID p_scenario=RID()) const=0;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario=RID()) const=0;
 
@@ -767,7 +767,7 @@ public:
 	virtual void canvas_item_set_visible(RID p_item,bool p_visible)=0;
 	virtual void canvas_item_set_light_mask(RID p_item,int p_mask)=0;
 
-	virtual void canvas_item_set_transform(RID p_item, const Matrix32& p_transform)=0;
+	virtual void canvas_item_set_transform(RID p_item, const Transform2D& p_transform)=0;
 	virtual void canvas_item_set_clip(RID p_item, bool p_clip)=0;
 	virtual void canvas_item_set_distance_field_mode(RID p_item, bool p_enable)=0;
 	virtual void canvas_item_set_custom_rect(RID p_item, bool p_custom_rect,const Rect2& p_rect=Rect2())=0;
@@ -793,7 +793,7 @@ public:
 	virtual void canvas_item_add_triangle_array(RID p_item, const Vector<int>& p_indices, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID(), int p_count=-1)=0;
 	virtual void canvas_item_add_mesh(RID p_item, const RID& p_mesh,RID p_skeleton=RID())=0;
 	virtual void canvas_item_add_multimesh(RID p_item, RID p_mesh,RID p_skeleton=RID())=0;
-	virtual void canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform)=0;
+	virtual void canvas_item_add_set_transform(RID p_item,const Transform2D& p_transform)=0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore)=0;
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable)=0;
 	virtual void canvas_item_set_z(RID p_item, int p_z)=0;
@@ -811,7 +811,7 @@ public:
 	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas)=0;
 	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_scale(RID p_light, float p_scale)=0;
-	virtual void canvas_light_set_transform(RID p_light, const Matrix32& p_transform)=0;
+	virtual void canvas_light_set_transform(RID p_light, const Transform2D& p_transform)=0;
 	virtual void canvas_light_set_texture(RID p_light, RID p_texture)=0;
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset)=0;
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color)=0;
@@ -852,7 +852,7 @@ public:
 	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas)=0;
 	virtual void canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled)=0;
 	virtual void canvas_light_occluder_set_polygon(RID p_occluder,RID p_polygon)=0;
-	virtual void canvas_light_occluder_set_transform(RID p_occluder,const Matrix32& p_xform)=0;
+	virtual void canvas_light_occluder_set_transform(RID p_occluder,const Transform2D& p_xform)=0;
 	virtual void canvas_light_occluder_set_light_mask(RID p_occluder,int p_mask)=0;
 
 	virtual RID canvas_occluder_polygon_create()=0;

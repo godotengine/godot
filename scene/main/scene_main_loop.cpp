@@ -2245,7 +2245,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("idle_frame"));
 	ADD_SIGNAL( MethodInfo("fixed_frame"));
 
-	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::POOL_STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
 	ADD_SIGNAL( MethodInfo("network_peer_connected",PropertyInfo(Variant::INT,"id")));
 	ADD_SIGNAL( MethodInfo("network_peer_disconnected",PropertyInfo(Variant::INT,"id")));
 	ADD_SIGNAL( MethodInfo("connected_to_server"));

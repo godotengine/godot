@@ -894,7 +894,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 									continue;
 
 								//optimize by checking AABB (although should pre sort by distance)
-								AABB aabb =  vi->get_global_transform().xform(vi->get_aabb());
+								Rect3 aabb =  vi->get_global_transform().xform(vi->get_aabb());
 								if (p.distance_to(aabb.get_support(-ray_dir))>min_d)
 									continue;
 
@@ -1352,7 +1352,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 								Transform original=se->original;
 
-								Transform base=Transform( Matrix3(), _edit.center);
+								Transform base=Transform( Basis(), _edit.center);
 								Transform t=base * (r * (base.inverse() * original));
 
 								sp->set_global_transform(t);
@@ -1501,7 +1501,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 								Transform original=se->original;
 
-								Transform base=Transform( Matrix3(), _edit.center);
+								Transform base=Transform( Basis(), _edit.center);
 								Transform t=base * r * base.inverse() * original;
 
 								sp->set_global_transform(t);
@@ -1791,7 +1791,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			if (se->aabb.has_no_surface()) {
 
-				se->aabb=vi?vi->get_aabb():AABB( Vector3(-0.2,-0.2,-0.2),Vector3(0.4,0.4,0.4));
+				se->aabb=vi?vi->get_aabb():Rect3( Vector3(-0.2,-0.2,-0.2),Vector3(0.4,0.4,0.4));
 			}
 
 			Transform t=sp->get_global_transform();
@@ -2486,10 +2486,10 @@ void SpatialEditor::select_gizmo_hilight_axis(int p_axis) {
 void SpatialEditor::update_transform_gizmo() {
 
 	List<Node*> &selection = editor_selection->get_selected_node_list();
-	AABB center;
+	Rect3 center;
 	bool first=true;
 
-	Matrix3 gizmo_basis;
+	Basis gizmo_basis;
 	bool local_gizmo_coords = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS) );
 
 
@@ -2513,7 +2513,7 @@ void SpatialEditor::update_transform_gizmo() {
 			}
 		} else {
 			center.expand_to(xf.origin);
-			gizmo_basis=Matrix3();
+			gizmo_basis=Basis();
 		}
 //		count++;
 	}
@@ -2551,7 +2551,7 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 
 void SpatialEditor::_generate_selection_box() {
 
-	AABB aabb( Vector3(), Vector3(1,1,1) );
+	Rect3 aabb( Vector3(), Vector3(1,1,1) );
 	aabb.grow_by( aabb.get_longest_axis_size()/20.0 );
 
 	Ref<SurfaceTool> st = memnew( SurfaceTool );
@@ -3343,8 +3343,8 @@ void SpatialEditor::_init_indicators() {
 				for(int k = 0; k < 7 ; k++) {
 
 
-					Matrix3 ma(ivec,Math_PI*2*float(k)/arrow_sides);
-					Matrix3 mb(ivec,Math_PI*2*float(k+1)/arrow_sides);
+					Basis ma(ivec,Math_PI*2*float(k)/arrow_sides);
+					Basis mb(ivec,Math_PI*2*float(k+1)/arrow_sides);
 
 
 					for(int j=0;j<arrow_points-1;j++) {
@@ -3388,8 +3388,8 @@ void SpatialEditor::_init_indicators() {
 				for(int k = 0; k < 33 ; k++) {
 
 
-					Matrix3 ma(ivec,Math_PI*2*float(k)/32);
-					Matrix3 mb(ivec,Math_PI*2*float(k+1)/32);
+					Basis ma(ivec,Math_PI*2*float(k)/32);
+					Basis mb(ivec,Math_PI*2*float(k+1)/32);
 
 
 					for(int j=0;j<4;j++) {

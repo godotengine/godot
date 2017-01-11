@@ -226,7 +226,7 @@ void StaticBody2D::_update_xform() {
 	setting=true;
 
 
-	Matrix32 new_xform = get_global_transform(); //obtain the new one
+	Transform2D new_xform = get_global_transform(); //obtain the new one
 
 	set_block_transform_notify(true);
 	Physics2DServer::get_singleton()->body_set_state(get_rid(),Physics2DServer::BODY_STATE_TRANSFORM,*pre_xform); //then simulate motion!
@@ -1046,7 +1046,7 @@ Variant KinematicBody2D::_get_collider() const {
 
 void KinematicBody2D::revert_motion() {
 
-	Matrix32 gt = get_global_transform();
+	Transform2D gt = get_global_transform();
 	gt.elements[2]-=travel;
 	travel=Vector2();
 	set_global_transform(gt);
@@ -1062,7 +1062,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 #if 1
 
-	Matrix32 gt = get_global_transform();
+	Transform2D gt = get_global_transform();
 	Physics2DServer::MotionResult result;
 	colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(),gt,p_motion,margin,&result);
 
@@ -1152,7 +1152,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 
 
-		Matrix32 gt = get_global_transform();
+		Transform2D gt = get_global_transform();
 		gt.elements[2]+=recover_motion;
 		set_global_transform(gt);
 
@@ -1203,7 +1203,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	} else {
 
 		//it collided, let's get the rest info in unsafe advance
-		Matrix32 ugt = get_global_transform();
+		Transform2D ugt = get_global_transform();
 		ugt.elements[2]+=p_motion*unsafe;
 		Physics2DDirectSpaceState::ShapeRestInfo rest_info;
 		bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), Vector2(), margin,&rest_info,exclude,get_layer_mask(),mask);
@@ -1227,7 +1227,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	}
 
 	Vector2 motion=p_motion*safe;
-	Matrix32 gt = get_global_transform();
+	Transform2D gt = get_global_transform();
 	gt.elements[2]+=motion;
 	set_global_transform(gt);
 
@@ -1318,7 +1318,7 @@ Vector2 KinematicBody2D::move_to(const Vector2& p_position) {
 	return move(p_position-get_global_position());
 }
 
-bool KinematicBody2D::test_move(const Matrix32& p_from,const Vector2& p_motion) {
+bool KinematicBody2D::test_move(const Transform2D& p_from,const Vector2& p_motion) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),false);
 

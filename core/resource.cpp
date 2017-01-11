@@ -113,9 +113,9 @@ void ResourceImportMetadata::get_options(List<String> *r_options) const {
 
 }
 
-StringArray ResourceImportMetadata::_get_options() const {
+PoolStringArray ResourceImportMetadata::_get_options() const {
 
-	StringArray option_names;
+	PoolStringArray option_names;
 	option_names.resize(options.size());
 	int i=0;
 	for(Map<String,Variant>::Element *E=options.front();E;E=E->next()) {

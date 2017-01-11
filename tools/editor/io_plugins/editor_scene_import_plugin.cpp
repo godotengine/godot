@@ -1773,7 +1773,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 		// get mesh instance and bounding box
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-		AABB aabb = mi->get_aabb();
+		Rect3 aabb = mi->get_aabb();
 
 		// create a new rigid body collision node
 		RigidBody * rigid_body = memnew( RigidBody );
@@ -1788,7 +1788,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		Node * mesh = p_node->duplicate();
 		mesh->set_name(_fixstr(name,"rigid"));
 		// reset the xform matrix of the duplicated node so it can inherit parent node xform
-		mesh->cast_to<Spatial>()->set_transform(Transform(Matrix3()));
+		mesh->cast_to<Spatial>()->set_transform(Transform(Basis()));
 		// reparent the new mesh node to the rigid body collision node
 		p_node->add_child(mesh);
 		mesh->set_owner(p_node->get_owner());

@@ -304,7 +304,7 @@ enum _CellFlags {
 
 static inline void _plot_face(uint8_t*** p_cell_status,int x,int y,int z,int len_x,int len_y,int len_z,const Vector3& voxelsize,const Face3& p_face) {
 
-	AABB aabb( Vector3(x,y,z),Vector3(len_x,len_y,len_z));
+	Rect3 aabb( Vector3(x,y,z),Vector3(len_x,len_y,len_z));
 	aabb.pos=aabb.pos*voxelsize;
 	aabb.size=aabb.size*voxelsize;
 
@@ -589,7 +589,7 @@ PoolVector< Face3 > Geometry::wrap_geometry( PoolVector< Face3 > p_array,float *
 	PoolVector<Face3>::Read facesr=p_array.read();
 	const Face3 *faces = facesr.ptr();
 
-	AABB global_aabb;
+	Rect3 global_aabb;
 
 	for(int i=0;i<face_count;i++) {
 

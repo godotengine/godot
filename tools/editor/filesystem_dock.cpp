@@ -1650,7 +1650,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(_MD("_preview_invalidated"),&FileSystemDock::_preview_invalidated);
 
 
-	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::STRING_ARRAY, "files")));
+	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
 	ADD_SIGNAL(MethodInfo("open"));
 
 }

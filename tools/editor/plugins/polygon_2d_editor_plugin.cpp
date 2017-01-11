@@ -227,7 +227,7 @@ bool Polygon2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -463,7 +463,7 @@ void Polygon2DEditor::_canvas_draw() {
 		poly=Variant(node->get_polygon());
 
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 	for(int i=0;i<poly.size();i++) {
@@ -499,7 +499,7 @@ void Polygon2DEditor::_uv_mode(int p_mode) {
 void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom,uv_draw_zoom));
 
@@ -680,13 +680,13 @@ void Polygon2DEditor::_uv_draw() {
 	if (base_tex.is_null())
 		return;
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom,uv_draw_zoom));
 
 	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),mtx);
 	uv_edit_draw->draw_texture(base_tex,Point2());
-	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Matrix32());
+	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Transform2D());
 
 	if (snap_show_grid) {
 		Size2 s = uv_edit_draw->get_size();

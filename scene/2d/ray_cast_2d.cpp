@@ -161,7 +161,7 @@ void RayCast2D::_notification(int p_what) {
 
 			if (!get_tree()->is_editor_hint()  && !get_tree()->is_debugging_collisions_hint())
 				break;
-			Matrix32 xf;
+			Transform2D xf;
 			xf.rotate(cast_to.angle());
 			xf.translate(Vector2(0,cast_to.length()));
 
@@ -201,7 +201,7 @@ void RayCast2D::_update_raycast_state() {
 	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(w2d->get_space());
 	ERR_FAIL_COND( !dss );
 
-	Matrix32 gt = get_global_transform();
+	Transform2D gt = get_global_transform();
 
 	Vector2 to = cast_to;
 	if (to==Vector2())

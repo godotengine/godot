@@ -80,8 +80,8 @@ class SpatialSound2DServerSW : public SpatialSound2DServer {
 
 	struct Room : public RID_Data {
 		RID space;
-		Matrix32 transform;
-		Matrix32 inverse_transform;
+		Transform2D transform;
+		Transform2D inverse_transform;
 		PoolVector<Point2> bounds;
 		RoomReverb reverb;
 		float params[ROOM_PARAM_MAX];
@@ -149,7 +149,7 @@ class SpatialSound2DServerSW : public SpatialSound2DServer {
 		} stream_data;
 
 		RID space;
-		Matrix32 transform;
+		Transform2D transform;
 		float params[SOURCE_PARAM_MAX];
 		AudioServer::AudioStream *stream;
 		Vector<Voice> voices;
@@ -163,7 +163,7 @@ class SpatialSound2DServerSW : public SpatialSound2DServer {
 	struct Listener : public RID_Data {
 
 		RID space;
-		Matrix32 transform;
+		Transform2D transform;
 		float params[LISTENER_PARAM_MAX];
 
 		Listener();
@@ -200,8 +200,8 @@ public:
 
 	virtual void room_set_bounds(RID p_room, const PoolVector<Point2>& p_bounds);
 	virtual PoolVector<Point2> room_get_bounds(RID p_room) const;
-	virtual void room_set_transform(RID p_room, const Matrix32& p_transform);
-	virtual Matrix32 room_get_transform(RID p_room) const;
+	virtual void room_set_transform(RID p_room, const Transform2D& p_transform);
+	virtual Transform2D room_get_transform(RID p_room) const;
 
 
 	virtual void room_set_param(RID p_room, RoomParam p_param, float p_value);
@@ -224,8 +224,8 @@ public:
 	virtual void source_set_polyphony(RID p_source,int p_voice_count);
 	virtual int source_get_polyphony(RID p_source) const;
 
-	virtual void source_set_transform(RID p_source, const Matrix32& p_transform);
-	virtual Matrix32 source_get_transform(RID p_source) const;
+	virtual void source_set_transform(RID p_source, const Transform2D& p_transform);
+	virtual Transform2D source_get_transform(RID p_source) const;
 
 	virtual void source_set_param(RID p_source, SourceParam p_param, float p_value);
 	virtual float source_get_param(RID p_source, SourceParam p_param) const;
@@ -244,8 +244,8 @@ public:
 	virtual RID listener_create();
 	virtual void listener_set_space(RID p_listener, RID p_space);
 
-	virtual void listener_set_transform(RID p_listener, const Matrix32& p_transform);
-	virtual Matrix32 listener_get_transform(RID p_listener) const;
+	virtual void listener_set_transform(RID p_listener, const Transform2D& p_transform);
+	virtual Transform2D listener_get_transform(RID p_listener) const;
 
 	virtual void listener_set_param(RID p_listener, ListenerParam p_param, float p_value);
 	virtual float listener_get_param(RID p_listener, ListenerParam p_param) const;

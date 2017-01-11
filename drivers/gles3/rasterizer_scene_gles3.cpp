@@ -15,7 +15,7 @@ static const GLenum _cube_side_enum[6]={
 };
 
 
-static _FORCE_INLINE_ void store_matrix32(const Matrix32& p_mtx, float* p_array) {
+static _FORCE_INLINE_ void store_transform2d(const Transform2D& p_mtx, float* p_array) {
 
 	p_array[ 0]=p_mtx.elements[0][0];
 	p_array[ 1]=p_mtx.elements[0][1];

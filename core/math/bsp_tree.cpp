@@ -31,7 +31,7 @@
 #include "print_string.h"
 
 
-void BSP_Tree::from_aabb(const AABB& p_aabb) {
+void BSP_Tree::from_aabb(const Rect3& p_aabb) {
 
 	planes.clear();
 
@@ -67,7 +67,7 @@ Vector<Plane> BSP_Tree::get_planes() const {
 	return planes;
 }
 
-AABB BSP_Tree::get_aabb() const {
+Rect3 BSP_Tree::get_aabb() const {
 
 	return aabb;
 }
@@ -518,7 +518,7 @@ BSP_Tree::BSP_Tree(const Variant& p_variant) {
 	ERR_FAIL_COND(src_nodes.size()%3);
 
 
-	if (d["planes"].get_type()==Variant::REAL_ARRAY) {
+	if (d["planes"].get_type()==Variant::POOL_REAL_ARRAY) {
 
 		PoolVector<float> src_planes=d["planes"];
 		int plane_count=src_planes.size();
@@ -613,7 +613,7 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3>& p_faces,float p_error_radius) {
 	error_radius=p_error_radius;
 }
 
-BSP_Tree::BSP_Tree(const Vector<Node> &p_nodes, const Vector<Plane> &p_planes, const AABB& p_aabb,float p_error_radius) {
+BSP_Tree::BSP_Tree(const Vector<Node> &p_nodes, const Vector<Plane> &p_planes, const Rect3& p_aabb,float p_error_radius) {
 
 	nodes=p_nodes;
 	planes=p_planes;

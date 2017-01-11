@@ -66,7 +66,7 @@ void Quad::_update() {
 	pointsw[3][a2]=-s2.y+offset.y;
 
 
-	aabb=AABB(pointsw[0],Vector3());
+	aabb=Rect3(pointsw[0],Vector3());
 	for(int i=1;i<4;i++)
 		aabb.expand_to(pointsw[i]);
 
@@ -192,7 +192,7 @@ PoolVector<Face3> Quad::get_faces(uint32_t p_usage_flags) const {
 	return PoolVector<Face3>();
 }
 
-AABB Quad::get_aabb() const {
+Rect3 Quad::get_aabb() const {
 
 	return aabb;
 }

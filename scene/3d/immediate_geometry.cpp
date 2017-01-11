@@ -92,7 +92,7 @@ void ImmediateGeometry::clear(){
 
 }
 
-AABB ImmediateGeometry::get_aabb() const {
+Rect3 ImmediateGeometry::get_aabb() const {
 
 	return aabb;
 }

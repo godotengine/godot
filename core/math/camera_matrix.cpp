@@ -564,7 +564,7 @@ void CameraMatrix::make_scale(const Vector3 &p_scale) {
 
 }
 
-void CameraMatrix::scale_translate_to_fit(const AABB& p_aabb) {
+void CameraMatrix::scale_translate_to_fit(const Rect3& p_aabb) {
 
 	Vector3 min = p_aabb.pos;
 	Vector3 max = p_aabb.pos+p_aabb.size;

@@ -193,7 +193,7 @@ Error HTTPClient::send_body_text(const String& p_body){
 	return OK;
 }
 
-Error HTTPClient::send_body_data(const ByteArray& p_body){
+Error HTTPClient::send_body_data(const PoolByteArray& p_body){
 
 	return OK;
 }
@@ -444,11 +444,11 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	return ret;
 }
 
-StringArray HTTPClient::_get_response_headers() {
+PoolStringArray HTTPClient::_get_response_headers() {
 
 	List<String> rh;
 	get_response_headers(&rh);
-	StringArray ret;
+	PoolStringArray ret;
 	ret.resize(rh.size());
 	int idx=0;
 	for(const List<String>::Element *E=rh.front();E;E=E->next()) {
@@ -463,9 +463,9 @@ int HTTPClient::get_response_body_length() const {
 	return body_size;
 }
 
-ByteArray HTTPClient::read_response_body_chunk() {
+PoolByteArray HTTPClient::read_response_body_chunk() {
 
-	ERR_FAIL_COND_V( status !=STATUS_BODY, ByteArray() );
+	ERR_FAIL_COND_V( status !=STATUS_BODY, PoolByteArray() );
 
 	Error err=OK;
 
@@ -487,7 +487,7 @@ ByteArray HTTPClient::read_response_body_chunk() {
 				if (chunk.size()>32) {
 					ERR_PRINT("HTTP Invalid chunk hex len");
 					status=STATUS_CONNECTION_ERROR;
-					return ByteArray();
+					return PoolByteArray();
 				}
 
 				if (chunk.size()>2 && chunk[chunk.size()-2]=='\r' && chunk[chunk.size()-1]=='\n') {
@@ -505,14 +505,14 @@ ByteArray HTTPClient::read_response_body_chunk() {
 						else {
 							ERR_PRINT("HTTP Chunk len not in hex!!");
 							status=STATUS_CONNECTION_ERROR;
-							return ByteArray();
+							return PoolByteArray();
 						}
 						len<<=4;
 						len|=v;
 						if (len>(1<<24)) {
 							ERR_PRINT("HTTP Chunk too big!! >16mb");
 							status=STATUS_CONNECTION_ERROR;
-							return ByteArray();
+							return PoolByteArray();
 						}
 
 					}
@@ -521,7 +521,7 @@ ByteArray HTTPClient::read_response_body_chunk() {
 						//end!
 						status=STATUS_CONNECTED;
 						chunk.clear();
-						return ByteArray();
+						return PoolByteArray();
 					}
 
 					chunk_left=len+2;
@@ -542,13 +542,13 @@ ByteArray HTTPClient::read_response_body_chunk() {
 					if (chunk[chunk.size()-2]!='\r' || chunk[chunk.size()-1]!='\n') {
 						ERR_PRINT("HTTP Invalid chunk terminator (not \\r\\n)");
 						status=STATUS_CONNECTION_ERROR;
-						return ByteArray();
+						return PoolByteArray();
 					}
 
-					ByteArray ret;
+					PoolByteArray ret;
 					ret.resize(chunk.size()-2);
 					{
-						ByteArray::Write w = ret.write();
+						PoolByteArray::Write w = ret.write();
 						copymem(w.ptr(),chunk.ptr(),chunk.size()-2);
 					}
 					chunk.clear();
@@ -564,9 +564,9 @@ ByteArray HTTPClient::read_response_body_chunk() {
 	} else {
 
 		int to_read = MIN(body_left,read_chunk_size);
-		ByteArray ret;
+		PoolByteArray ret;
 		ret.resize(to_read);
-		ByteArray::Write w = ret.write();
+		PoolByteArray::Write w = ret.write();
 		int _offset = 0;
 		while (to_read > 0) {
 			int rec=0;
@@ -603,7 +603,7 @@ ByteArray HTTPClient::read_response_body_chunk() {
 		status=STATUS_CONNECTED;
 	}
 
-	return ByteArray();
+	return PoolByteArray();
 }
 
 HTTPClient::Status HTTPClient::get_status() const {

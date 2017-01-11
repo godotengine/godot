@@ -59,7 +59,7 @@ void Quat::set_euler(const Vector3& p_euler) {
 // (a1,a2,a3), where a3 is the angle of the first rotation, and a1 is the last.
 // The current implementation uses XYZ convention (Z is the first rotation).
 Vector3 Quat::get_euler() const {
-	Matrix3 m(*this);
+	Basis m(*this);
 	return m.get_euler();
 }
 

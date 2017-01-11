@@ -66,7 +66,7 @@ private:
 	int quadrant_size;
 	bool center_x,center_y;
 	Mode mode;
-	Matrix32 custom_transform;
+	Transform2D custom_transform;
 	HalfOffset half_offset;
 	bool use_kinematic;
 	Navigation2D *navigation;
@@ -114,12 +114,12 @@ private:
 
 		struct NavPoly {
 			int id;
-			Matrix32 xform;
+			Transform2D xform;
 		};
 
 		struct Occluder {
 			RID id;
-			Matrix32 xform;
+			Transform2D xform;
 		};
 
 
@@ -153,7 +153,7 @@ private:
 
 	int occluder_light_mask;
 
-	void _fix_cell_transform(Matrix32& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
+	void _fix_cell_transform(Transform2D& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
 
 	Map<PosKey,Quadrant>::Element *_create_quadrant(const PosKey& p_qk);
 	void _erase_quadrant(Map<PosKey,Quadrant>::Element *Q);
@@ -240,10 +240,10 @@ public:
 	void set_tile_origin(TileOrigin p_tile_origin);
 	TileOrigin get_tile_origin() const;
 
-	void set_custom_transform(const Matrix32& p_xform);
-	Matrix32 get_custom_transform() const;
+	void set_custom_transform(const Transform2D& p_xform);
+	Transform2D get_custom_transform() const;
 
-	Matrix32 get_cell_transform() const;
+	Transform2D get_cell_transform() const;
 	Vector2 get_cell_draw_offset() const;
 
 	Vector2 map_to_world(const Vector2& p_pos, bool p_ignore_ofs=false) const;

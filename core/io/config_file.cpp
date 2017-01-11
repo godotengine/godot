@@ -31,11 +31,11 @@
 #include "os/file_access.h"
 #include "variant_parser.h"
 
-StringArray ConfigFile::_get_sections() const {
+PoolStringArray ConfigFile::_get_sections() const {
 
 	List<String> s;
 	get_sections(&s);
-	StringArray arr;
+	PoolStringArray arr;
 	arr.resize(s.size());
 	int idx=0;
 	for(const List<String>::Element *E=s.front();E;E=E->next()) {
@@ -46,11 +46,11 @@ StringArray ConfigFile::_get_sections() const {
 	return arr;
 }
 
-StringArray ConfigFile::_get_section_keys(const String& p_section) const{
+PoolStringArray ConfigFile::_get_section_keys(const String& p_section) const{
 
 	List<String> s;
 	get_section_keys(p_section,&s);
-	StringArray arr;
+	PoolStringArray arr;
 	arr.resize(s.size());
 	int idx=0;
 	for(const List<String>::Element *E=s.front();E;E=E->next()) {

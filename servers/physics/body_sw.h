@@ -60,12 +60,12 @@ class BodySW : public CollisionObjectSW {
 	Vector3 _inv_inertia; // Relative to the principal axes of inertia
 
 	// Relative to the local frame of reference
-	Matrix3 principal_inertia_axes_local;
+	Basis principal_inertia_axes_local;
 	Vector3 center_of_mass_local;
 
 	// In world orientation with local origin
-	Matrix3 _inv_inertia_tensor;
-	Matrix3 principal_inertia_axes;
+	Basis _inv_inertia_tensor;
+	Basis principal_inertia_axes;
 	Vector3 center_of_mass;
 
 	Vector3 gravity;
@@ -198,7 +198,7 @@ public:
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration=p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }
 
-	_FORCE_INLINE_ Matrix3 get_principal_inertia_axes() const { return principal_inertia_axes; }
+	_FORCE_INLINE_ Basis get_principal_inertia_axes() const { return principal_inertia_axes; }
 	_FORCE_INLINE_ Vector3 get_center_of_mass() const { return center_of_mass; }
 	_FORCE_INLINE_ Vector3 xform_local_to_principal(const Vector3& p_pos) const { return principal_inertia_axes_local.xform(p_pos - center_of_mass_local); } 
 
@@ -272,7 +272,7 @@ public:
 
 	_FORCE_INLINE_ real_t get_inv_mass() const { return _inv_mass; }
 	_FORCE_INLINE_ Vector3 get_inv_inertia() const { return _inv_inertia; }
-	_FORCE_INLINE_ Matrix3 get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
+	_FORCE_INLINE_ Basis get_inv_inertia_tensor() const { return _inv_inertia_tensor; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
@@ -381,11 +381,11 @@ public:
 	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
 	virtual Vector3 get_center_of_mass() const { return body->get_center_of_mass(); }
-	virtual Matrix3 get_principal_inertia_axes() const { return body->get_principal_inertia_axes(); }
+	virtual Basis get_principal_inertia_axes() const { return body->get_principal_inertia_axes(); }
 
 	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual Vector3 get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space
-	virtual Matrix3 get_inverse_inertia_tensor() const { return body->get_inv_inertia_tensor();   } // get density of this body space
+	virtual Basis get_inverse_inertia_tensor() const { return body->get_inv_inertia_tensor();   } // get density of this body space
 
 	virtual void set_linear_velocity(const Vector3& p_velocity) {  body->set_linear_velocity(p_velocity);  }
 	virtual Vector3 get_linear_velocity() const {  return body->get_linear_velocity();  }

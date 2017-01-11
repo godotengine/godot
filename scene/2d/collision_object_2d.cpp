@@ -221,7 +221,7 @@ void CollisionObject2D::_update_pickable() {
 
 void CollisionObject2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_shape","shape:Shape2D","transform"),&CollisionObject2D::add_shape,DEFVAL(Matrix32()));
+	ClassDB::bind_method(_MD("add_shape","shape:Shape2D","transform"),&CollisionObject2D::add_shape,DEFVAL(Transform2D()));
 	ClassDB::bind_method(_MD("get_shape_count"),&CollisionObject2D::get_shape_count);
 	ClassDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject2D::set_shape);
 	ClassDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject2D::set_shape_transform);
@@ -249,7 +249,7 @@ void CollisionObject2D::_bind_methods() {
 }
 
 
-void CollisionObject2D::add_shape(const Ref<Shape2D>& p_shape, const Matrix32& p_transform) {
+void CollisionObject2D::add_shape(const Ref<Shape2D>& p_shape, const Transform2D& p_transform) {
 
 	ERR_FAIL_COND(p_shape.is_null());
 
@@ -285,7 +285,7 @@ void CollisionObject2D::set_shape(int p_shape_idx, const Ref<Shape2D>& p_shape) 
 //	_update_shapes();
 }
 
-void CollisionObject2D::set_shape_transform(int p_shape_idx, const Matrix32& p_transform) {
+void CollisionObject2D::set_shape_transform(int p_shape_idx, const Transform2D& p_transform) {
 
 	ERR_FAIL_INDEX(p_shape_idx,shapes.size());
 	shapes[p_shape_idx].xform=p_transform;
@@ -304,9 +304,9 @@ Ref<Shape2D> CollisionObject2D::get_shape(int p_shape_idx) const {
 	return shapes[p_shape_idx].shape;
 
 }
-Matrix32 CollisionObject2D::get_shape_transform(int p_shape_idx) const {
+Transform2D CollisionObject2D::get_shape_transform(int p_shape_idx) const {
 
-	ERR_FAIL_INDEX_V(p_shape_idx,shapes.size(),Matrix32());
+	ERR_FAIL_INDEX_V(p_shape_idx,shapes.size(),Transform2D());
 	return shapes[p_shape_idx].xform;
 
 }

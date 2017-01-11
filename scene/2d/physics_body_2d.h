@@ -319,7 +319,7 @@ public:
 	Vector2 move(const Vector2& p_motion);
 	Vector2 move_to(const Vector2& p_position);
 
-	bool test_move(const Matrix32 &p_from, const Vector2& p_motion);
+	bool test_move(const Transform2D &p_from, const Vector2& p_motion);
 	bool is_colliding() const;
 
 	Vector2 get_travel() const;

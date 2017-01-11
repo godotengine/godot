@@ -404,7 +404,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		} break;
 		case BYTES_TO_VAR: {
 
-			return PropertyInfo(Variant::RAW_ARRAY,"bytes");
+			return PropertyInfo(Variant::POOL_BYTE_ARRAY,"bytes");
 		} break;
 		case FUNC_MAX:{}
 	}
@@ -548,7 +548,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 
 		} break;
 		case VAR_TO_BYTES: {
-			t=Variant::RAW_ARRAY;
+			t=Variant::POOL_BYTE_ARRAY;
 
 		} break;
 		case BYTES_TO_VAR: {
@@ -1058,7 +1058,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 		case VisualScriptBuiltinFunc::VAR_TO_BYTES: {
 
 
-			ByteArray barr;
+			PoolByteArray barr;
 			int len;
 			Error err = encode_variant(*p_inputs[0],NULL,len);
 			if (err) {
@@ -1071,7 +1071,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 
 			barr.resize(len);
 			{
-				ByteArray::Write w = barr.write();
+				PoolByteArray::Write w = barr.write();
 				encode_variant(*p_inputs[0],w.ptr(),len);
 
 			}
@@ -1079,24 +1079,24 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 		} break;
 		case VisualScriptBuiltinFunc::BYTES_TO_VAR: {
 
-			if (p_inputs[0]->get_type()!=Variant::RAW_ARRAY) {
+			if (p_inputs[0]->get_type()!=Variant::POOL_BYTE_ARRAY) {
 				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument=0;
-				r_error.expected=Variant::RAW_ARRAY;
+				r_error.expected=Variant::POOL_BYTE_ARRAY;
 
 				return;
 			}
 
-			ByteArray varr=*p_inputs[0];
+			PoolByteArray varr=*p_inputs[0];
 			Variant ret;
 			{
-				ByteArray::Read r=varr.read();
+				PoolByteArray::Read r=varr.read();
 				Error err = decode_variant(ret,r.ptr(),varr.size(),NULL);
 				if (err!=OK) {
 					r_error_str=RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 					r_error.argument=0;
-					r_error.expected=Variant::RAW_ARRAY;
+					r_error.expected=Variant::POOL_BYTE_ARRAY;
 					return;
 				}
 

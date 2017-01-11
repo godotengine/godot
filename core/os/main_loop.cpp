@@ -43,7 +43,7 @@ void MainLoop::_bind_methods() {
 	BIND_VMETHOD( MethodInfo("_initialize") );
 	BIND_VMETHOD( MethodInfo("_iteration",PropertyInfo(Variant::REAL,"delta")) );
 	BIND_VMETHOD( MethodInfo("_idle",PropertyInfo(Variant::REAL,"delta")) );
-	BIND_VMETHOD( MethodInfo("_drop_files",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
+	BIND_VMETHOD( MethodInfo("_drop_files",PropertyInfo(Variant::POOL_STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
 	BIND_VMETHOD( MethodInfo("_finalize") );
 
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);

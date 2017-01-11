@@ -299,8 +299,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				case SL::TYPE_VEC2: { Vector2 v = cnode->value; code="vec2("+_mknum(v.x)+", "+_mknum(v.y)+")"; } break;
 				case SL::TYPE_VEC3: { Vector3 v = cnode->value; code="vec3("+_mknum(v.x)+", "+_mknum(v.y)+", "+_mknum(v.z)+")"; } break;
 				case SL::TYPE_VEC4: { Plane v = cnode->value; code="vec4("+_mknum(v.normal.x)+", "+_mknum(v.normal.y)+", "+_mknum(v.normal.z)+", "+_mknum(v.d)+")"; } break;
-				case SL::TYPE_MAT2: { Matrix32 x = cnode->value; code="mat2( vec2("+_mknum(x[0][0])+", "+_mknum(x[0][1])+"), vec2("+_mknum(x[1][0])+", "+_mknum(x[1][1])+"))"; } break;
-				case SL::TYPE_MAT3: { Matrix3 x = cnode->value; code="mat3( vec3("+_mknum(x.get_axis(0).x)+", "+_mknum(x.get_axis(0).y)+", "+_mknum(x.get_axis(0).z)+"), vec3("+_mknum(x.get_axis(1).x)+", "+_mknum(x.get_axis(1).y)+", "+_mknum(x.get_axis(1).z)+"), vec3("+_mknum(x.get_axis(2).x)+", "+_mknum(x.get_axis(2).y)+", "+_mknum(x.get_axis(2).z)+"))"; } break;
+				case SL::TYPE_MAT2: { Transform2D x = cnode->value; code="mat2( vec2("+_mknum(x[0][0])+", "+_mknum(x[0][1])+"), vec2("+_mknum(x[1][0])+", "+_mknum(x[1][1])+"))"; } break;
+				case SL::TYPE_MAT3: { Basis x = cnode->value; code="mat3( vec3("+_mknum(x.get_axis(0).x)+", "+_mknum(x.get_axis(0).y)+", "+_mknum(x.get_axis(0).z)+"), vec3("+_mknum(x.get_axis(1).x)+", "+_mknum(x.get_axis(1).y)+", "+_mknum(x.get_axis(1).z)+"), vec3("+_mknum(x.get_axis(2).x)+", "+_mknum(x.get_axis(2).y)+", "+_mknum(x.get_axis(2).z)+"))"; } break;
 				case SL::TYPE_MAT4: { Transform x = cnode->value; code="mat4( vec4("+_mknum(x.basis.get_axis(0).x)+", "+_mknum(x.basis.get_axis(0).y)+", "+_mknum(x.basis.get_axis(0).z)+",0.0), vec4("+_mknum(x.basis.get_axis(1).x)+", "+_mknum(x.basis.get_axis(1).y)+", "+_mknum(x.basis.get_axis(1).z)+",0.0), vec4("+_mknum(x.basis.get_axis(2).x)+", "+_mknum(x.basis.get_axis(2).y)+", "+_mknum(x.basis.get_axis(2).z)+",0.0), vec4("+_mknum(x.origin.x)+", "+_mknum(x.origin.y)+", "+_mknum(x.origin.z)+",1.0))"; } break;
 				default: code="<error: "+Variant::get_type_name(cnode->value.get_type())+" ("+itos(cnode->datatype)+">";
 			}

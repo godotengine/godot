@@ -83,7 +83,7 @@ void Spatial::_notify_dirty() {
 
 
 void Spatial::_update_local_transform() const {
-	data.local_transform.basis = Matrix3();
+	data.local_transform.basis = Basis();
 	data.local_transform.basis.scale(data.scale);
 	data.local_transform.basis.rotate(data.rotation);
 
@@ -682,7 +682,7 @@ void Spatial::scale(const Vector3& p_ratio){
 }
 void Spatial::global_rotate(const Vector3& p_normal,float p_radians){
 
-	Matrix3 rotation(p_normal,p_radians);
+	Basis rotation(p_normal,p_radians);
 	Transform t = get_global_transform();
 	t.basis= rotation * t.basis;
 	set_global_transform(t);

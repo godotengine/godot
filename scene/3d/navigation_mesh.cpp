@@ -219,7 +219,7 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_polygons","polygons"),&NavigationMesh::_set_polygons);
 	ClassDB::bind_method(_MD("_get_polygons"),&NavigationMesh::_get_polygons);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"polygons",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_polygons"),_SCS("_get_polygons"));
 }
 

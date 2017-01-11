@@ -46,10 +46,10 @@ public:
 	virtual float get_total_linear_damp() const=0;
 
 	virtual Vector3 get_center_of_mass() const=0;
-	virtual Matrix3 get_principal_inertia_axes() const=0;
+	virtual Basis get_principal_inertia_axes() const=0;
 	virtual float get_inverse_mass() const=0; // get the mass
 	virtual Vector3 get_inverse_inertia() const=0; // get density of this body space
-	virtual Matrix3 get_inverse_inertia_tensor() const=0; // get density of this body space
+	virtual Basis get_inverse_inertia_tensor() const=0; // get density of this body space
 
 	virtual void set_linear_velocity(const Vector3& p_velocity)=0;
 	virtual Vector3 get_linear_velocity() const=0;

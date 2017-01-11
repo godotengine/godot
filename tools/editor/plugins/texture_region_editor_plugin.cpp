@@ -57,13 +57,13 @@ void TextureRegionEditor::_region_draw()
 	if (base_tex.is_null())
 		return;
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-draw_ofs;
 	mtx.scale_basis(Vector2(draw_zoom,draw_zoom));
 
 	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(),mtx);
 	edit_draw->draw_texture(base_tex,Point2());
-	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(),Matrix32());
+	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(),Transform2D());
 
 	if (snap_mode == SNAP_GRID) {
 		Size2 s = edit_draw->get_size();
@@ -203,7 +203,7 @@ void TextureRegionEditor::_region_draw()
 
 void TextureRegionEditor::_region_input(const InputEvent& p_input)
 {
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-draw_ofs;
 	mtx.scale_basis(Vector2(draw_zoom,draw_zoom));
 

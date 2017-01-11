@@ -34,10 +34,10 @@
 void editor_initialize_certificates() {
 
 
-	ByteArray data;
+	PoolByteArray data;
 	data.resize(_certs_uncompressed_size+1);
 	{
-		ByteArray::Write w = data.write();
+		PoolByteArray::Write w = data.write();
 		Compression::decompress(w.ptr(),_certs_uncompressed_size,_certs_compressed,_certs_compressed_size,Compression::MODE_DEFLATE);
 		w[_certs_uncompressed_size]=0; //make sure it ends at zero
 	}

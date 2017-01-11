@@ -207,7 +207,7 @@ void SpriteBase3D::_queue_update(){
 }
 
 
-AABB SpriteBase3D::get_aabb() const {
+Rect3 SpriteBase3D::get_aabb() const {
 
 	return aabb;
 }
@@ -445,7 +445,7 @@ void Sprite3D::_draw() {
 		}
 	}
 
-	AABB aabb;
+	Rect3 aabb;
 
 	for(int i=0;i<4;i++) {
 		VS::get_singleton()->immediate_normal(immediate,normal);
@@ -961,7 +961,7 @@ void AnimatedSprite3D::_draw() {
 		}
 	}
 
-	AABB aabb;
+	Rect3 aabb;
 
 	for(int i=0;i<4;i++) {
 		VS::get_singleton()->immediate_normal(immediate,normal);

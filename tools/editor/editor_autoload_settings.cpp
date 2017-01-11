@@ -377,7 +377,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2& p_point, Control 
 	if (autoload_cache.size() <= 1)
 		return false;
 
-	StringArray autoloads;
+	PoolStringArray autoloads;
 
 	TreeItem *next = tree->get_next_selected(NULL);
 
@@ -471,7 +471,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2& p_point, const Variant& 
 	}
 
 	Dictionary drop_data = p_data;
-	StringArray autoloads = drop_data["autoloads"];
+	PoolStringArray autoloads = drop_data["autoloads"];
 
 	Vector<int> orders;
 	orders.resize(autoload_cache.size());

@@ -38,7 +38,7 @@
 class Transform {
 public:
 
-	Matrix3 basis;
+	Basis basis;
 	Vector3 origin;
 
 	void invert();
@@ -62,8 +62,8 @@ public:
 	void translate( const Vector3& p_translation );
 	Transform translated( const Vector3& p_translation ) const;
 
-	const Matrix3& get_basis() const { return basis; }
-	void set_basis(const Matrix3& p_basis) { basis=p_basis; }
+	const Basis& get_basis() const { return basis; }
+	void set_basis(const Basis& p_basis) { basis=p_basis; }
 
 	const Vector3& get_origin() const { return origin; }
 	void set_origin(const Vector3& p_origin) { origin=p_origin; }
@@ -80,8 +80,8 @@ public:
 	_FORCE_INLINE_ Plane xform(const Plane& p_plane) const;
 	_FORCE_INLINE_ Plane xform_inv(const Plane& p_plane) const;
 
-	_FORCE_INLINE_ AABB xform(const AABB& p_aabb) const;
-	_FORCE_INLINE_ AABB xform_inv(const AABB& p_aabb) const;
+	_FORCE_INLINE_ Rect3 xform(const Rect3& p_aabb) const;
+	_FORCE_INLINE_ Rect3 xform_inv(const Rect3& p_aabb) const;
 
 	void operator*=(const Transform& p_transform);
 	Transform operator*(const Transform& p_transform) const;
@@ -113,7 +113,7 @@ public:
 
 	operator String() const;
 
-	Transform(const Matrix3& p_basis, const Vector3& p_origin=Vector3());
+	Transform(const Basis& p_basis, const Vector3& p_origin=Vector3());
 	Transform() {}
 
 };
@@ -168,7 +168,7 @@ _FORCE_INLINE_ Plane Transform::xform_inv(const Plane& p_plane) const {
 
 }
 
-_FORCE_INLINE_ AABB Transform::xform(const AABB& p_aabb) const {
+_FORCE_INLINE_ Rect3 Transform::xform(const Rect3& p_aabb) const {
 	/* define vertices */
 #if 1
 	Vector3 x=basis.get_axis(0)*p_aabb.size.x;
@@ -176,7 +176,7 @@ _FORCE_INLINE_ AABB Transform::xform(const AABB& p_aabb) const {
 	Vector3 z=basis.get_axis(2)*p_aabb.size.z;
 	Vector3 pos = xform( p_aabb.pos );
 //could be even further optimized
-	AABB new_aabb;
+	Rect3 new_aabb;
 	new_aabb.pos=pos;
 	new_aabb.expand_to( pos+x );
 	new_aabb.expand_to( pos+y );
@@ -214,7 +214,7 @@ _FORCE_INLINE_ AABB Transform::xform(const AABB& p_aabb) const {
 #endif
 
 }
-_FORCE_INLINE_ AABB Transform::xform_inv(const AABB& p_aabb) const {
+_FORCE_INLINE_ Rect3 Transform::xform_inv(const Rect3& p_aabb) const {
 
 	/* define vertices */
 	Vector3 vertices[8]={
@@ -229,7 +229,7 @@ _FORCE_INLINE_ AABB Transform::xform_inv(const AABB& p_aabb) const {
 	};
 
 
-	AABB ret;
+	Rect3 ret;
 
 	ret.pos=xform_inv(vertices[0]);
 

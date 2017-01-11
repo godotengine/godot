@@ -32,7 +32,7 @@
 
 void Vector3::rotate(const Vector3& p_axis,float p_phi) {
 
-	*this=Matrix3(p_axis,p_phi).xform(*this);
+	*this=Basis(p_axis,p_phi).xform(*this);
 }
 
 Vector3 Vector3::rotated(const Vector3& p_axis,float p_phi) const {

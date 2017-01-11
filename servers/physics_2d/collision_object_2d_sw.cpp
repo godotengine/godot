@@ -29,7 +29,7 @@
 #include "collision_object_2d_sw.h"
 #include "space_2d_sw.h"
 
-void CollisionObject2DSW::add_shape(Shape2DSW *p_shape,const Matrix32& p_transform) {
+void CollisionObject2DSW::add_shape(Shape2DSW *p_shape,const Transform2D& p_transform) {
 
 	Shape s;
 	s.shape=p_shape;
@@ -63,7 +63,7 @@ void CollisionObject2DSW::set_shape_metadata(int p_index,const Variant& p_metada
 
 }
 
-void CollisionObject2DSW::set_shape_transform(int p_index,const Matrix32& p_transform){
+void CollisionObject2DSW::set_shape_transform(int p_index,const Transform2D& p_transform){
 
 	ERR_FAIL_INDEX(p_index,shapes.size());
 
@@ -149,7 +149,7 @@ void CollisionObject2DSW::_update_shapes() {
 
 		//not quite correct, should compute the next matrix..
 		Rect2 shape_aabb=s.shape->get_aabb();
-		Matrix32 xform = transform * s.xform;
+		Transform2D xform = transform * s.xform;
 		shape_aabb=xform.xform(shape_aabb);
 		s.aabb_cache=shape_aabb;
 		s.aabb_cache=s.aabb_cache.grow( (s.aabb_cache.size.x + s.aabb_cache.size.y)*0.5*0.05 );
@@ -176,7 +176,7 @@ void CollisionObject2DSW::_update_shapes_with_motion(const Vector2& p_motion) {
 
 		//not quite correct, should compute the next matrix..
 		Rect2 shape_aabb=s.shape->get_aabb();
-		Matrix32 xform = transform * s.xform;
+		Transform2D xform = transform * s.xform;
 		shape_aabb=xform.xform(shape_aabb);
 		shape_aabb=shape_aabb.merge(Rect2( shape_aabb.pos+p_motion,shape_aabb.size)); //use motion
 		s.aabb_cache=shape_aabb;

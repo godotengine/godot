@@ -210,8 +210,8 @@ public:
 		SelfList<Instance> update_item;
 
 
-		AABB aabb;
-		AABB transformed_aabb;
+		Rect3 aabb;
+		Rect3 transformed_aabb;
 		float extra_margin;
 		uint32_t object_ID;
 
@@ -504,7 +504,7 @@ public:
 
 
 	// don't use these in a game!
-	virtual Vector<ObjectID> instances_cull_aabb(const AABB& p_aabb, RID p_scenario=RID()) const;
+	virtual Vector<ObjectID> instances_cull_aabb(const Rect3& p_aabb, RID p_scenario=RID()) const;
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3& p_from, const Vector3& p_to, RID p_scenario=RID()) const;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario=RID()) const;
 

@@ -927,9 +927,9 @@ static String _encode_variant(const Variant& p_variant) {
 			Color val = p_variant;
 			return "#"+val.to_html();
 		} break;
-		case Variant::STRING_ARRAY:
-		case Variant::INT_ARRAY:
-		case Variant::REAL_ARRAY:
+		case Variant::POOL_STRING_ARRAY:
+		case Variant::POOL_INT_ARRAY:
+		case Variant::POOL_REAL_ARRAY:
 		case Variant::ARRAY: {
 			Array arr = p_variant;
 			String str="[";

@@ -205,7 +205,7 @@ PoolVector<Point2> SpatialSound2DServerSW::room_get_bounds(RID p_room) const {
 	return room->bounds;
 }
 
-void SpatialSound2DServerSW::room_set_transform(RID p_room, const Matrix32& p_transform) {
+void SpatialSound2DServerSW::room_set_transform(RID p_room, const Transform2D& p_transform) {
 
 	if (space_owner.owns(p_room))
 		p_room=space_owner.get(p_room)->default_room;
@@ -228,13 +228,13 @@ void SpatialSound2DServerSW::room_set_transform(RID p_room, const Matrix32& p_tr
 	}*/
 }
 
-Matrix32 SpatialSound2DServerSW::room_get_transform(RID p_room) const {
+Transform2D SpatialSound2DServerSW::room_get_transform(RID p_room) const {
 
 	if (space_owner.owns(p_room))
 		p_room=space_owner.get(p_room)->default_room;
 
 	Room *room = room_owner.get(p_room);
-	ERR_FAIL_COND_V(!room,Matrix32());
+	ERR_FAIL_COND_V(!room,Transform2D());
 	return room->transform;
 }
 
@@ -365,17 +365,17 @@ int SpatialSound2DServerSW::source_get_polyphony(RID p_source) const {
 
 }
 
-void SpatialSound2DServerSW::source_set_transform(RID p_source, const Matrix32& p_transform) {
+void SpatialSound2DServerSW::source_set_transform(RID p_source, const Transform2D& p_transform) {
 
 	Source *source = source_owner.get(p_source);
 	ERR_FAIL_COND(!source);
 	source->transform=p_transform;
 	source->transform.orthonormalize();
 }
-Matrix32 SpatialSound2DServerSW::source_get_transform(RID p_source) const {
+Transform2D SpatialSound2DServerSW::source_get_transform(RID p_source) const {
 
 	Source *source = source_owner.get(p_source);
-	ERR_FAIL_COND_V(!source,Matrix32());
+	ERR_FAIL_COND_V(!source,Transform2D());
 	return source->transform;
 }
 
@@ -518,17 +518,17 @@ void SpatialSound2DServerSW::listener_set_space(RID p_listener,RID p_space) {
 
 }
 
-void SpatialSound2DServerSW::listener_set_transform(RID p_listener, const Matrix32& p_transform) {
+void SpatialSound2DServerSW::listener_set_transform(RID p_listener, const Transform2D& p_transform) {
 
 	Listener *listener = listener_owner.get(p_listener);
 	ERR_FAIL_COND(!listener);
 	listener->transform=p_transform;
 	listener->transform.orthonormalize(); //must be done..
 }
-Matrix32 SpatialSound2DServerSW::listener_get_transform(RID p_listener) const {
+Transform2D SpatialSound2DServerSW::listener_get_transform(RID p_listener) const {
 
 	Listener *listener = listener_owner.get(p_listener);
-	ERR_FAIL_COND_V(!listener,Matrix32());
+	ERR_FAIL_COND_V(!listener,Transform2D());
 	return listener->transform;
 }
 

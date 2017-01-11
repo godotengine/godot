@@ -17,8 +17,8 @@ public:
 
 
 
-	void set_bounds(const AABB& p_bounds);
-	AABB get_bounds() const;
+	void set_bounds(const Rect3& p_bounds);
+	Rect3 get_bounds() const;
 
 	void set_cell_size(float p_size);
 	float get_cell_size() const;
@@ -110,7 +110,7 @@ private:
 		int leaf_voxel_count;
 
 
-		AABB po2_bounds;
+		Rect3 po2_bounds;
 		int axis_cell_size[3];
 
 		struct PlotMesh {
@@ -140,12 +140,12 @@ private:
 
 	Vector<Color> _get_bake_texture(Image &p_image,const Color& p_color);
 	Baker::MaterialCache _get_material_cache(Ref<Material> p_material,Baker *p_baker);
-	void _plot_face(int p_idx, int p_level, int p_x,int p_y,int p_z,const Vector3 *p_vtx, const Vector2* p_uv, const Baker::MaterialCache& p_material, const AABB &p_aabb,Baker *p_baker);
+	void _plot_face(int p_idx, int p_level, int p_x,int p_y,int p_z,const Vector3 *p_vtx, const Vector2* p_uv, const Baker::MaterialCache& p_material, const Rect3 &p_aabb,Baker *p_baker);
 	void _plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_baker);
 	void _find_meshes(Node *p_at_node,Baker *p_baker);
 	void _fixup_plot(int p_idx, int p_level,int p_x,int p_y, int p_z,Baker *p_baker);
 
-	void _debug_mesh(int p_idx, int p_level, const AABB &p_aabb,Ref<MultiMesh> &p_multimesh,int &idx,Baker *p_baker);
+	void _debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb,Ref<MultiMesh> &p_multimesh,int &idx,Baker *p_baker);
 	void _create_debug_mesh(Baker *p_baker);
 
 	void _debug_bake();
@@ -178,7 +178,7 @@ public:
 
 	void bake(Node *p_from_node=NULL,bool p_create_visual_debug=false);
 
-	virtual AABB get_aabb() const;
+	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	GIProbe();

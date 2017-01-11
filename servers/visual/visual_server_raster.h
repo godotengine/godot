@@ -104,7 +104,7 @@ class VisualServerRaster : public VisualServer {
 
 		Rasterizer::BakedLightData data;
 		PoolVector<int> sampler;
-		AABB octree_aabb;
+		Rect3 octree_aabb;
 		Size2i octree_tex_size;
 		Size2i light_tex_size;
 
@@ -177,8 +177,8 @@ class VisualServerRaster : public VisualServer {
 
 		RID base_rid;
 
-		AABB aabb;
-		AABB transformed_aabb;
+		Rect3 aabb;
+		Rect3 transformed_aabb;
 		uint32_t object_ID;
 		bool visible;
 		bool visible_in_all_rooms;
@@ -428,11 +428,11 @@ class VisualServerRaster : public VisualServer {
 		struct CanvasData {
 
 			Canvas *canvas;
-			Matrix32 transform;
+			Transform2D transform;
 			int layer;
 		};
 
-		Matrix32 global_transform;
+		Transform2D global_transform;
 
 		Map<RID,CanvasData> canvas_map;
 
@@ -451,7 +451,7 @@ class VisualServerRaster : public VisualServer {
 		float min,max;
 		float z_near,z_far;
 
-		void add_aabb(const AABB& p_aabb) {
+		void add_aabb(const Rect3& p_aabb) {
 
 
 		}
@@ -554,9 +554,9 @@ class VisualServerRaster : public VisualServer {
 	void _render_no_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	void _render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	static void _render_canvas_item_viewport(VisualServer* p_self,void *p_vp,const Rect2& p_rect);
-	void _render_canvas_item_tree(CanvasItem *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, Rasterizer::CanvasLight *p_lights);
-	void _render_canvas_item(CanvasItem *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, float p_opacity, int p_z, Rasterizer::CanvasItem **z_list, Rasterizer::CanvasItem **z_last_list, CanvasItem *p_canvas_clip, CanvasItem *p_material_owner);
-	void _render_canvas(Canvas *p_canvas, const Matrix32 &p_transform, Rasterizer::CanvasLight *p_lights, Rasterizer::CanvasLight *p_masked_lights);
+	void _render_canvas_item_tree(CanvasItem *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, Rasterizer::CanvasLight *p_lights);
+	void _render_canvas_item(CanvasItem *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, float p_opacity, int p_z, Rasterizer::CanvasItem **z_list, Rasterizer::CanvasItem **z_last_list, CanvasItem *p_canvas_clip, CanvasItem *p_material_owner);
+	void _render_canvas(Canvas *p_canvas, const Transform2D &p_transform, Rasterizer::CanvasLight *p_lights, Rasterizer::CanvasLight *p_masked_lights);
 	void _light_mask_canvas_items(int p_z,Rasterizer::CanvasItem *p_canvas_item,Rasterizer::CanvasLight *p_masked_lights);
 
 	Vector<Vector3> _camera_generate_endpoints(Instance *p_light,Camera *p_camera,float p_range_min, float p_range_max);
@@ -671,7 +671,7 @@ public:
 
 	BIND0R(RID,mesh_create)
 
-	BIND10(mesh_add_surface,RID,uint32_t,PrimitiveType,const PoolVector<uint8_t>&,int ,const PoolVector<uint8_t>& ,int ,const AABB&,const Vector<PoolVector<uint8_t> >&,const Vector<AABB>& )
+	BIND10(mesh_add_surface,RID,uint32_t,PrimitiveType,const PoolVector<uint8_t>&,int ,const PoolVector<uint8_t>& ,int ,const Rect3&,const Vector<PoolVector<uint8_t> >&,const Vector<Rect3>& )
 
 	BIND2(mesh_set_morph_target_count,RID,int)
 	BIND1RC(int,mesh_get_morph_target_count,RID)
@@ -692,15 +692,15 @@ public:
 	BIND2RC(uint32_t,mesh_surface_get_format,RID,int)
 	BIND2RC(PrimitiveType,mesh_surface_get_primitive_type,RID,int)
 
-	BIND2RC(AABB,mesh_surface_get_aabb,RID,int)
+	BIND2RC(Rect3,mesh_surface_get_aabb,RID,int)
 	BIND2RC(Vector<PoolVector<uint8_t> >,mesh_surface_get_blend_shapes,RID,int)
-	BIND2RC(Vector<AABB>,mesh_surface_get_skeleton_aabb,RID,int)
+	BIND2RC(Vector<Rect3>,mesh_surface_get_skeleton_aabb,RID,int)
 
 	BIND2(mesh_remove_surface,RID,int)
 	BIND1RC(int,mesh_get_surface_count,RID)
 
-	BIND2(mesh_set_custom_aabb,RID,const AABB&)
-	BIND1RC(AABB,mesh_get_custom_aabb,RID)
+	BIND2(mesh_set_custom_aabb,RID,const Rect3&)
+	BIND1RC(Rect3,mesh_get_custom_aabb,RID)
 
 	BIND1(mesh_clear,RID)
 
@@ -714,14 +714,14 @@ public:
 
 	BIND2(multimesh_set_mesh,RID,RID)
 	BIND3(multimesh_instance_set_transform,RID,int,const Transform&)
-	BIND3(multimesh_instance_set_transform_2d,RID,int,const Matrix32& )
+	BIND3(multimesh_instance_set_transform_2d,RID,int,const Transform2D& )
 	BIND3(multimesh_instance_set_color,RID,int,const Color&)
 
 	BIND1RC(RID,multimesh_get_mesh,RID)
-	BIND1RC(AABB,multimesh_get_aabb,RID)
+	BIND1RC(Rect3,multimesh_get_aabb,RID)
 
 	BIND2RC(Transform,multimesh_instance_get_transform,RID,int )
-	BIND2RC(Matrix32,multimesh_instance_get_transform_2d,RID,int)
+	BIND2RC(Transform2D,multimesh_instance_get_transform_2d,RID,int)
 	BIND2RC(Color,multimesh_instance_get_color,RID,int)
 
 	BIND2(multimesh_set_visible_instances,RID,int)
@@ -750,8 +750,8 @@ public:
 	BIND1RC(int,skeleton_get_bone_count,RID)
 	BIND3(skeleton_bone_set_transform,RID,int,const Transform&)
 	BIND2RC(Transform,skeleton_bone_get_transform,RID,int)
-	BIND3(skeleton_bone_set_transform_2d,RID,int, const Matrix32& )
-	BIND2RC(Matrix32,skeleton_bone_get_transform_2d,RID,int)
+	BIND3(skeleton_bone_set_transform_2d,RID,int, const Transform2D& )
+	BIND2RC(Transform2D,skeleton_bone_get_transform_2d,RID,int)
 
 	/* Light API */
 
@@ -809,8 +809,8 @@ public:
 
 	BIND0R(RID, gi_probe_create)
 
-	BIND2(gi_probe_set_bounds,RID,const AABB&)
-	BIND1RC(AABB,gi_probe_get_bounds,RID)
+	BIND2(gi_probe_set_bounds,RID,const Rect3&)
+	BIND1RC(Rect3,gi_probe_get_bounds,RID)
 
 	BIND2(gi_probe_set_cell_size,RID,float)
 	BIND1RC(float,gi_probe_get_cell_size,RID)
@@ -843,7 +843,7 @@ public:
 	BIND2(particles_set_pre_process_time,RID,float )
 	BIND2(particles_set_explosiveness_ratio,RID,float )
 	BIND2(particles_set_randomness_ratio,RID,float )
-	BIND2(particles_set_custom_aabb,RID,const AABB& )
+	BIND2(particles_set_custom_aabb,RID,const Rect3& )
 	BIND2(particles_set_gravity,RID,const Vector3& )
 	BIND2(particles_set_use_local_coordinates,RID,bool )
 	BIND2(particles_set_process_material,RID,RID )
@@ -860,7 +860,7 @@ public:
 	BIND3(particles_set_draw_pass_material,RID,int , RID )
 	BIND3(particles_set_draw_pass_mesh,RID,int , RID )
 
-	BIND1R(AABB,particles_get_current_aabb,RID);
+	BIND1R(Rect3,particles_get_current_aabb,RID);
 
 
 #undef BINDBASE
@@ -912,10 +912,10 @@ public:
 	BIND2(viewport_attach_canvas,RID,RID )
 
 	BIND2(viewport_remove_canvas,RID,RID )
-	BIND3(viewport_set_canvas_transform,RID ,RID ,const Matrix32& )
+	BIND3(viewport_set_canvas_transform,RID ,RID ,const Transform2D& )
 	BIND2(viewport_set_transparent_background,RID ,bool )
 
-	BIND2(viewport_set_global_canvas_transform,RID,const Matrix32& )
+	BIND2(viewport_set_global_canvas_transform,RID,const Transform2D& )
 	BIND3(viewport_set_canvas_layer,RID ,RID ,int )
 	BIND2(viewport_set_shadow_atlas_size,RID ,int )
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision,RID ,int, int )
@@ -988,7 +988,7 @@ public:
 	BIND2(instance_set_extra_visibility_margin, RID, real_t  )
 
 	// don't use these in a game!
-	BIND2RC(Vector<ObjectID>,instances_cull_aabb,const AABB& , RID)
+	BIND2RC(Vector<ObjectID>,instances_cull_aabb,const Rect3& , RID)
 	BIND3RC(Vector<ObjectID>,instances_cull_ray,const Vector3& , const Vector3& , RID )
 	BIND2RC(Vector<ObjectID>,instances_cull_convex,const Vector<Plane>& , RID)
 
@@ -1018,7 +1018,7 @@ public:
 	BIND2(canvas_item_set_visible,RID,bool )
 	BIND2(canvas_item_set_light_mask,RID,int )
 
-	BIND2(canvas_item_set_transform,RID, const Matrix32& )
+	BIND2(canvas_item_set_transform,RID, const Transform2D& )
 	BIND2(canvas_item_set_clip,RID, bool )
 	BIND2(canvas_item_set_distance_field_mode,RID, bool )
 	BIND3(canvas_item_set_custom_rect,RID, bool ,const Rect2& )
@@ -1039,7 +1039,7 @@ public:
 	BIND7(canvas_item_add_triangle_array,RID, const Vector<int>& , const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID , int)
 	BIND3(canvas_item_add_mesh,RID, const RID& ,RID )
 	BIND3(canvas_item_add_multimesh,RID, RID ,RID )
-	BIND2(canvas_item_add_set_transform,RID,const Matrix32& )
+	BIND2(canvas_item_add_set_transform,RID,const Transform2D& )
 	BIND2(canvas_item_add_clip_ignore,RID, bool )
 	BIND2(canvas_item_set_sort_children_by_y,RID, bool )
 	BIND2(canvas_item_set_z,RID, int )
@@ -1058,7 +1058,7 @@ public:
 	BIND2(canvas_light_attach_to_canvas,RID,RID )
 	BIND2(canvas_light_set_enabled,RID, bool )
 	BIND2(canvas_light_set_scale,RID, float )
-	BIND2(canvas_light_set_transform,RID, const Matrix32& )
+	BIND2(canvas_light_set_transform,RID, const Transform2D& )
 	BIND2(canvas_light_set_texture,RID, RID )
 	BIND2(canvas_light_set_texture_offset,RID, const Vector2& )
 	BIND2(canvas_light_set_color,RID, const Color& )
@@ -1083,7 +1083,7 @@ public:
 	BIND2(canvas_light_occluder_attach_to_canvas,RID,RID )
 	BIND2(canvas_light_occluder_set_enabled,RID,bool )
 	BIND2(canvas_light_occluder_set_polygon,RID,RID )
-	BIND2(canvas_light_occluder_set_transform,RID,const Matrix32& )
+	BIND2(canvas_light_occluder_set_transform,RID,const Transform2D& )
 	BIND2(canvas_light_occluder_set_light_mask,RID,int )
 
 

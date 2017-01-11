@@ -1211,7 +1211,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(_MD("invalidate"),&EditorFileDialog::invalidate);
 
 	ADD_SIGNAL(MethodInfo("file_selected",PropertyInfo( Variant::STRING,"path")));
-	ADD_SIGNAL(MethodInfo("files_selected",PropertyInfo( Variant::STRING_ARRAY,"paths")));
+	ADD_SIGNAL(MethodInfo("files_selected",PropertyInfo( Variant::POOL_STRING_ARRAY,"paths")));
 	ADD_SIGNAL(MethodInfo("dir_selected",PropertyInfo( Variant::STRING,"dir")));
 
 	BIND_CONSTANT( MODE_OPEN_FILE );

@@ -141,7 +141,7 @@ Ref<SpatialEditorGizmo> EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
 	return Ref<SpatialEditorGizmo>();
 }
 
-bool EditorPlugin::forward_canvas_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) {
+bool EditorPlugin::forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) {
 
 	if (get_script_instance() && get_script_instance()->has_method("forward_canvas_gui_input")) {
 		return get_script_instance()->call("forward_canvas_gui_input",p_canvas_xform,p_event);
@@ -149,7 +149,7 @@ bool EditorPlugin::forward_canvas_gui_input(const Matrix32& p_canvas_xform,const
 	return false;
 }
 
-void EditorPlugin::forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control *p_canvas) {
+void EditorPlugin::forward_draw_over_canvas(const Transform2D& p_canvas_xform,Control *p_canvas) {
 
 	if (get_script_instance() && get_script_instance()->has_method("forward_draw_over_canvas")) {
 		get_script_instance()->call("forward_draw_over_canvas",p_canvas_xform,p_canvas);
@@ -253,7 +253,7 @@ void EditorPlugin::apply_changes() {
 void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 
 	if (get_script_instance() && get_script_instance()->has_method("get_breakpoints")) {
-		StringArray arr = get_script_instance()->call("get_breakpoints");
+		PoolStringArray arr = get_script_instance()->call("get_breakpoints");
 		for(int i=0;i<arr.size();i++)
 			p_breakpoints->push_back(arr[i]);
 	}
@@ -377,8 +377,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(_MD("queue_save_layout"),&EditorPlugin::queue_save_layout);
 	ClassDB::bind_method(_MD("edit_resource"),&EditorPlugin::edit_resource);
 
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"forward_canvas_gui_input",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::INPUT_EVENT,"event")));
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo("forward_draw_over_canvas",PropertyInfo(Variant::MATRIX32,"canvas_xform"),PropertyInfo(Variant::OBJECT,"canvas:Control")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"forward_canvas_gui_input",PropertyInfo(Variant::TRANSFORM2D,"canvas_xform"),PropertyInfo(Variant::INPUT_EVENT,"event")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo("forward_draw_over_canvas",PropertyInfo(Variant::TRANSFORM2D,"canvas_xform"),PropertyInfo(Variant::OBJECT,"canvas:Control")));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"forward_spatial_gui_input",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));
 	MethodInfo gizmo = MethodInfo(Variant::OBJECT,"create_spatial_gizmo",PropertyInfo(Variant::OBJECT,"for_spatial:Spatial"));
 	gizmo.return_val.hint=PROPERTY_HINT_RESOURCE_TYPE;
@@ -394,7 +394,7 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("clear"));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("save_external_data"));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("apply_changes"));
-	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::STRING_ARRAY,"get_breakpoints"));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::POOL_STRING_ARRAY,"get_breakpoints"));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("set_window_layout",PropertyInfo(Variant::OBJECT,"layout",PROPERTY_HINT_RESOURCE_TYPE,"ConfigFile")));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("get_window_layout",PropertyInfo(Variant::OBJECT,"layout",PROPERTY_HINT_RESOURCE_TYPE,"ConfigFile")));
 

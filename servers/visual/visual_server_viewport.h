@@ -56,11 +56,11 @@ public:
 		struct CanvasData {
 
 			CanvasBase *canvas;
-			Matrix32 transform;
+			Transform2D transform;
 			int layer;
 		};
 
-		Matrix32 global_transform;
+		Transform2D global_transform;
 
 		Map<RID,CanvasData> canvas_map;
 
@@ -128,10 +128,10 @@ public:
 	void viewport_set_scenario(RID p_viewport,RID p_scenario);
 	void viewport_attach_canvas(RID p_viewport,RID p_canvas);
 	void viewport_remove_canvas(RID p_viewport,RID p_canvas);
-	void viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Matrix32& p_offset);
+	void viewport_set_canvas_transform(RID p_viewport,RID p_canvas,const Transform2D& p_offset);
 	void viewport_set_transparent_background(RID p_viewport,bool p_enabled);
 
-	void viewport_set_global_canvas_transform(RID p_viewport,const Matrix32& p_transform);
+	void viewport_set_global_canvas_transform(RID p_viewport,const Transform2D& p_transform);
 	void viewport_set_canvas_layer(RID p_viewport,RID p_canvas,int p_layer);
 
 	void viewport_set_shadow_atlas_size(RID p_viewport,int p_size);

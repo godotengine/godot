@@ -308,23 +308,23 @@ void DocData::generate(bool p_basic_types) {
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+"("+default_arg_text+")";
 								break;
 
-							case Variant::_AABB: //sorry naming convention fail :( not like it's used often // 10
+							case Variant::RECT3: //sorry naming convention fail :( not like it's used often // 10
 							case Variant::COLOR:
 							case Variant::PLANE:
-							case Variant::RAW_ARRAY:
-							case Variant::INT_ARRAY:
-							case Variant::REAL_ARRAY:
-							case Variant::STRING_ARRAY:	//25
-							case Variant::VECTOR2_ARRAY:
-							case Variant::VECTOR3_ARRAY:
-							case Variant::COLOR_ARRAY:
+							case Variant::POOL_BYTE_ARRAY:
+							case Variant::POOL_INT_ARRAY:
+							case Variant::POOL_REAL_ARRAY:
+							case Variant::POOL_STRING_ARRAY:	//25
+							case Variant::POOL_VECTOR2_ARRAY:
+							case Variant::POOL_VECTOR3_ARRAY:
+							case Variant::POOL_COLOR_ARRAY:
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+"("+default_arg_text+")";
 								break;
 							case Variant::VECTOR2:		// 5
 							case Variant::RECT2:
 							case Variant::VECTOR3:
 							case Variant::QUAT:
-							case Variant::MATRIX3:
+							case Variant::BASIS:
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+default_arg_text;
 								break;
 							case Variant::OBJECT:

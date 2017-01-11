@@ -114,25 +114,25 @@ Color Light::get_shadow_color() const{
 }
 
 
-AABB Light::get_aabb() const {
+Rect3 Light::get_aabb() const {
 
 
 	if (type==VisualServer::LIGHT_DIRECTIONAL) {
 
-		return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
+		return Rect3( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
 
 	} else if (type==VisualServer::LIGHT_OMNI) {
 
-		return AABB( Vector3(-1,-1,-1) * param[PARAM_RANGE], Vector3(2, 2, 2 ) * param[PARAM_RANGE]);
+		return Rect3( Vector3(-1,-1,-1) * param[PARAM_RANGE], Vector3(2, 2, 2 ) * param[PARAM_RANGE]);
 
 	} else if (type==VisualServer::LIGHT_SPOT) {
 
 		float len=param[PARAM_RANGE];
 		float size=Math::tan(Math::deg2rad(param[PARAM_SPOT_ANGLE]))*len;
-		return AABB( Vector3( -size,-size,-len ), Vector3( size*2, size*2, len ) );
+		return Rect3( Vector3( -size,-size,-len ), Vector3( size*2, size*2, len ) );
 	}
 
-	return AABB();
+	return Rect3();
 }
 
 PoolVector<Face3> Light::get_faces(uint32_t p_usage_flags) const {

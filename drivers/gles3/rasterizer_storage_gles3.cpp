@@ -1601,7 +1601,7 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 			case ShaderLanguage::TYPE_UVEC3:
 			case ShaderLanguage::TYPE_UVEC4: {
 
-				pi.type=Variant::INT_ARRAY;
+				pi.type=Variant::POOL_INT_ARRAY;
 			} break;
 			case ShaderLanguage::TYPE_FLOAT: {
 				pi.type=Variant::REAL;
@@ -1620,8 +1620,8 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 					pi.type=Variant::PLANE;
 				}
 			} break;
-			case ShaderLanguage::TYPE_MAT2: pi.type=Variant::MATRIX32; break;
-			case ShaderLanguage::TYPE_MAT3: pi.type=Variant::MATRIX3; break;
+			case ShaderLanguage::TYPE_MAT2: pi.type=Variant::TRANSFORM2D; break;
+			case ShaderLanguage::TYPE_MAT3: pi.type=Variant::BASIS; break;
 			case ShaderLanguage::TYPE_MAT4: pi.type=Variant::TRANSFORM; break;
 			case ShaderLanguage::TYPE_SAMPLER2D:
 			case ShaderLanguage::TYPE_ISAMPLER2D:
@@ -2009,7 +2009,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
-			Matrix32 v = value;
+			Transform2D v = value;
 			GLfloat *gui = (GLfloat*)data;
 
 			gui[ 0]=v.elements[0][0];
@@ -2020,7 +2020,7 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 		case ShaderLanguage::TYPE_MAT3: {
 
 
-			Matrix3 v = value;
+			Basis v = value;
 			GLfloat *gui = (GLfloat*)data;
 
 			gui[ 0]=v.elements[0][0];
@@ -2463,7 +2463,7 @@ RID RasterizerStorageGLES3::mesh_create(){
 }
 
 
-void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs){
+void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<Rect3>& p_bone_aabbs){
 
 	PoolVector<uint8_t> array = p_array;
 
@@ -3009,11 +3009,11 @@ VS::PrimitiveType RasterizerStorageGLES3::mesh_surface_get_primitive_type(RID p_
 	return mesh->surfaces[p_surface]->primitive;
 }
 
-AABB RasterizerStorageGLES3::mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
+Rect3 RasterizerStorageGLES3::mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh,AABB());
-	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),AABB());
+	ERR_FAIL_COND_V(!mesh,Rect3());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),Rect3());
 
 	return mesh->surfaces[p_surface]->aabb;
 
@@ -3051,11 +3051,11 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shap
 	return bsarr;
 
 }
-Vector<AABB> RasterizerStorageGLES3::mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const{
+Vector<Rect3> RasterizerStorageGLES3::mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const{
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh,Vector<AABB >());
-	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),Vector<AABB >());
+	ERR_FAIL_COND_V(!mesh,Vector<Rect3 >());
+	ERR_FAIL_INDEX_V(p_surface,mesh->surfaces.size(),Vector<Rect3 >());
 
 	return mesh->surfaces[p_surface]->skeleton_bone_aabb;
 
@@ -3103,47 +3103,47 @@ int RasterizerStorageGLES3::mesh_get_surface_count(RID p_mesh) const{
 
 }
 
-void RasterizerStorageGLES3::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb){
+void RasterizerStorageGLES3::mesh_set_custom_aabb(RID p_mesh,const Rect3& p_aabb){
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
 	mesh->custom_aabb=p_aabb;
 }
-AABB RasterizerStorageGLES3::mesh_get_custom_aabb(RID p_mesh) const{
+Rect3 RasterizerStorageGLES3::mesh_get_custom_aabb(RID p_mesh) const{
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh,AABB());
+	ERR_FAIL_COND_V(!mesh,Rect3());
 
 	return mesh->custom_aabb;
 
 }
 
-AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
+Rect3 RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 
 	Mesh *mesh = mesh_owner.get( p_mesh );
-	ERR_FAIL_COND_V(!mesh,AABB());
+	ERR_FAIL_COND_V(!mesh,Rect3());
 
-	if (mesh->custom_aabb!=AABB())
+	if (mesh->custom_aabb!=Rect3())
 		return mesh->custom_aabb;
 
 	Skeleton *sk=NULL;
 	if (p_skeleton.is_valid())
 		sk=skeleton_owner.get(p_skeleton);
 
-	AABB aabb;
+	Rect3 aabb;
 
 	if (sk && sk->size!=0) {
 
 
 		for (int i=0;i<mesh->surfaces.size();i++) {
 
-			AABB laabb;
+			Rect3 laabb;
 			if (mesh->surfaces[i]->format&VS::ARRAY_FORMAT_BONES && mesh->surfaces[i]->skeleton_bone_aabb.size()) {
 
 
 				int bs = mesh->surfaces[i]->skeleton_bone_aabb.size();
-				const AABB *skbones = mesh->surfaces[i]->skeleton_bone_aabb.ptr();
+				const Rect3 *skbones = mesh->surfaces[i]->skeleton_bone_aabb.ptr();
 				const bool *skused = mesh->surfaces[i]->skeleton_bone_used.ptr();
 
 				int sbs = sk->size;
@@ -3170,7 +3170,7 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 						mtx.basis.elements[1][1]=dataptr[ 5];
 						mtx.origin[1]=dataptr[ 7];
 
-						AABB baabb = mtx.xform( skbones[j] );
+						Rect3 baabb = mtx.xform( skbones[j] );
 						if (first) {
 							laabb=baabb;
 							first=false;
@@ -3200,7 +3200,7 @@ AABB RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh,RID p_skeleton) const{
 						mtx.basis.elements[2][2]=dataptr[10];
 						mtx.origin.z=dataptr[11];
 
-						AABB baabb = mtx.xform ( skbones[j] );
+						Rect3 baabb = mtx.xform ( skbones[j] );
 						if (first) {
 							laabb=baabb;
 							first=false;
@@ -3630,7 +3630,7 @@ void RasterizerStorageGLES3::multimesh_instance_set_transform(RID p_multimesh,in
 	}
 }
 
-void RasterizerStorageGLES3::multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform){
+void RasterizerStorageGLES3::multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Transform2D& p_transform){
 
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
@@ -3726,17 +3726,17 @@ Transform RasterizerStorageGLES3::multimesh_instance_get_transform(RID p_multime
 
 	return xform;
 }
-Matrix32 RasterizerStorageGLES3::multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const{
+Transform2D RasterizerStorageGLES3::multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const{
 
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
-	ERR_FAIL_COND_V(!multimesh,Matrix32());
-	ERR_FAIL_INDEX_V(p_index,multimesh->size,Matrix32());
-	ERR_FAIL_COND_V(multimesh->transform_format==VS::MULTIMESH_TRANSFORM_3D,Matrix32());
+	ERR_FAIL_COND_V(!multimesh,Transform2D());
+	ERR_FAIL_INDEX_V(p_index,multimesh->size,Transform2D());
+	ERR_FAIL_COND_V(multimesh->transform_format==VS::MULTIMESH_TRANSFORM_3D,Transform2D());
 
 	int stride = multimesh->color_floats+multimesh->xform_floats;
 	float *dataptr=&multimesh->data[stride*p_index];
 
-	Matrix32 xform;
+	Transform2D xform;
 
 	xform.elements[0][0]=dataptr[ 0];
 	xform.elements[1][0]=dataptr[ 1];
@@ -3795,10 +3795,10 @@ int RasterizerStorageGLES3::multimesh_get_visible_instances(RID p_multimesh) con
 	return multimesh->visible_instances;
 }
 
-AABB RasterizerStorageGLES3::multimesh_get_aabb(RID p_multimesh) const{
+Rect3 RasterizerStorageGLES3::multimesh_get_aabb(RID p_multimesh) const{
 
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
-	ERR_FAIL_COND_V(!multimesh,AABB());
+	ERR_FAIL_COND_V(!multimesh,Rect3());
 
 	const_cast<RasterizerStorageGLES3*>(this)->update_dirty_multimeshes(); //update pending AABBs
 
@@ -3825,7 +3825,7 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 
 		if (multimesh->size && multimesh->dirty_aabb) {
 
-			AABB mesh_aabb;
+			Rect3 mesh_aabb;
 
 			if (multimesh->mesh.is_valid()) {
 				mesh_aabb=mesh_get_aabb(multimesh->mesh,RID());
@@ -3837,7 +3837,7 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 			int count = multimesh->data.size();
 			float *data=multimesh->data.ptr();
 
-			AABB aabb;
+			Rect3 aabb;
 
 			if (multimesh->transform_format==VS::MULTIMESH_TRANSFORM_2D) {
 
@@ -3852,7 +3852,7 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 					xform.basis[1][1]=dataptr[ 5];
 					xform.origin[1]=dataptr[ 7];
 
-					AABB laabb = xform.xform(mesh_aabb);
+					Rect3 laabb = xform.xform(mesh_aabb);
 					if (i==0)
 						aabb=laabb;
 					else
@@ -3878,7 +3878,7 @@ void RasterizerStorageGLES3::update_dirty_multimeshes() {
 					xform.basis.elements[2][2]=dataptr[10];
 					xform.origin.z=dataptr[11];
 
-					AABB laabb = xform.xform(mesh_aabb);
+					Rect3 laabb = xform.xform(mesh_aabb);
 					if (i==0)
 						aabb=laabb;
 					else
@@ -4028,10 +4028,10 @@ void RasterizerStorageGLES3::immediate_clear(RID p_immediate) {
 
 }
 
-AABB RasterizerStorageGLES3::immediate_get_aabb(RID p_immediate) const {
+Rect3 RasterizerStorageGLES3::immediate_get_aabb(RID p_immediate) const {
 
 	Immediate *im = immediate_owner.get(p_immediate);
-	ERR_FAIL_COND_V(!im,AABB());
+	ERR_FAIL_COND_V(!im,Rect3());
 	return im->aabb;
 }
 
@@ -4185,7 +4185,7 @@ Transform RasterizerStorageGLES3::skeleton_bone_get_transform(RID p_skeleton,int
 
 	return mtx;
 }
-void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform){
+void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Transform2D& p_transform){
 
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
@@ -4208,16 +4208,16 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton,int p
 	}
 
 }
-Matrix32 RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const{
+Transform2D RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const{
 
 	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
 
 
-	ERR_FAIL_COND_V(!skeleton,Matrix32());
-	ERR_FAIL_INDEX_V(p_bone,skeleton->size,Matrix32());
-	ERR_FAIL_COND_V(!skeleton->use_2d,Matrix32());
+	ERR_FAIL_COND_V(!skeleton,Transform2D());
+	ERR_FAIL_INDEX_V(p_bone,skeleton->size,Transform2D());
+	ERR_FAIL_COND_V(!skeleton->use_2d,Transform2D());
 
-	Matrix32 mtx;
+	Transform2D mtx;
 
 	float * bones = skeleton->bones.ptr();
 	mtx.elements[0][0]=bones[p_bone*12+ 0];
@@ -4474,10 +4474,10 @@ uint64_t RasterizerStorageGLES3::light_get_version(RID p_light) const {
 }
 
 
-AABB RasterizerStorageGLES3::light_get_aabb(RID p_light) const {
+Rect3 RasterizerStorageGLES3::light_get_aabb(RID p_light) const {
 
 	const Light * light = light_owner.getornull(p_light);
-	ERR_FAIL_COND_V(!light,AABB());
+	ERR_FAIL_COND_V(!light,Rect3());
 
 	switch( light->type ) {
 
@@ -4485,22 +4485,22 @@ AABB RasterizerStorageGLES3::light_get_aabb(RID p_light) const {
 
 			float len=light->param[VS::LIGHT_PARAM_RANGE];
 			float size=Math::tan(Math::deg2rad(light->param[VS::LIGHT_PARAM_SPOT_ANGLE]))*len;
-			return AABB( Vector3( -size,-size,-len ), Vector3( size*2, size*2, len ) );
+			return Rect3( Vector3( -size,-size,-len ), Vector3( size*2, size*2, len ) );
 		} break;
 		case VS::LIGHT_OMNI: {
 
 			float r = light->param[VS::LIGHT_PARAM_RANGE];
-			return AABB( -Vector3(r,r,r), Vector3(r,r,r)*2 );
+			return Rect3( -Vector3(r,r,r), Vector3(r,r,r)*2 );
 		} break;
 		case VS::LIGHT_DIRECTIONAL: {
 
-			return AABB();
+			return Rect3();
 		} break;
 		default: {}
 	}
 
-	ERR_FAIL_V( AABB() );
-	return AABB();
+	ERR_FAIL_V( Rect3() );
+	return Rect3();
 }
 
 /* PROBE API */
@@ -4635,11 +4635,11 @@ void RasterizerStorageGLES3::reflection_probe_set_cull_mask(RID p_probe, uint32_
 
 }
 
-AABB RasterizerStorageGLES3::reflection_probe_get_aabb(RID p_probe) const {
+Rect3 RasterizerStorageGLES3::reflection_probe_get_aabb(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!reflection_probe,AABB());
+	ERR_FAIL_COND_V(!reflection_probe,Rect3());
 
-	AABB aabb;
+	Rect3 aabb;
 	aabb.pos=-reflection_probe->extents;
 	aabb.size=reflection_probe->extents*2.0;
 
@@ -4744,7 +4744,7 @@ RID RasterizerStorageGLES3::gi_probe_create() {
 
 	GIProbe *gip = memnew( GIProbe );
 
-	gip->bounds=AABB(Vector3(),Vector3(1,1,1));
+	gip->bounds=Rect3(Vector3(),Vector3(1,1,1));
 	gip->dynamic_range=1.0;
 	gip->energy=1.0;
 	gip->interior=false;
@@ -4755,7 +4755,7 @@ RID RasterizerStorageGLES3::gi_probe_create() {
 	return gi_probe_owner.make_rid(gip);
 }
 
-void RasterizerStorageGLES3::gi_probe_set_bounds(RID p_probe,const AABB& p_bounds){
+void RasterizerStorageGLES3::gi_probe_set_bounds(RID p_probe,const Rect3& p_bounds){
 
 	GIProbe *gip = gi_probe_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gip);
@@ -4764,10 +4764,10 @@ void RasterizerStorageGLES3::gi_probe_set_bounds(RID p_probe,const AABB& p_bound
 	gip->version++;
 	gip->instance_change_notify();
 }
-AABB RasterizerStorageGLES3::gi_probe_get_bounds(RID p_probe) const{
+Rect3 RasterizerStorageGLES3::gi_probe_get_bounds(RID p_probe) const{
 
 	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
-	ERR_FAIL_COND_V(!gip,AABB());
+	ERR_FAIL_COND_V(!gip,Rect3());
 
 	return gip->bounds;
 }
@@ -5074,7 +5074,7 @@ void RasterizerStorageGLES3::particles_set_randomness_ratio(RID p_particles,floa
 	particles->randomness=p_ratio;
 
 }
-void RasterizerStorageGLES3::particles_set_custom_aabb(RID p_particles,const AABB& p_aabb) {
+void RasterizerStorageGLES3::particles_set_custom_aabb(RID p_particles,const Rect3& p_aabb) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
@@ -5166,10 +5166,10 @@ void RasterizerStorageGLES3::particles_set_draw_pass_mesh(RID p_particles,int p_
 
 }
 
-AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
+Rect3 RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 
 	const Particles *particles = particles_owner.getornull(p_particles);
-	ERR_FAIL_COND_V(!particles,AABB());
+	ERR_FAIL_COND_V(!particles,Rect3());
 
 	return particles->computed_aabb;
 }

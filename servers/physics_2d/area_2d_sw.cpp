@@ -38,7 +38,7 @@ void Area2DSW::_shapes_changed() {
 
 }
 
-void Area2DSW::set_transform(const Matrix32& p_transform) {
+void Area2DSW::set_transform(const Transform2D& p_transform) {
 
 	if (!moved_list.in_list() && get_space())
 		get_space()->area_add_to_moved_list(&moved_list);

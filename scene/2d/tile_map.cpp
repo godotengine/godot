@@ -114,16 +114,16 @@ void TileMap::_update_quadrant_transform() {
 	if (!is_inside_tree())
 		return;
 
-	Matrix32 global_transform = get_global_transform();
+	Transform2D global_transform = get_global_transform();
 
-	Matrix32 nav_rel;
+	Transform2D nav_rel;
 	if (navigation)
 		nav_rel = get_relative_transform_to_parent(navigation);
 
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 		Quadrant &q=E->get();
-		Matrix32 xform;
+		Transform2D xform;
 		xform.set_origin( q.pos );
 		xform = global_transform * xform;
 		Physics2DServer::get_singleton()->body_set_state(q.body,Physics2DServer::BODY_STATE_TRANSFORM,xform);
@@ -218,7 +218,7 @@ bool TileMap::get_center_y() const {
 	return center_y;
 }
 
-void TileMap::_fix_cell_transform(Matrix32& xform,const Cell& p_cell, const Vector2& p_offset, const Size2 &p_sc) {
+void TileMap::_fix_cell_transform(Transform2D& xform,const Cell& p_cell, const Vector2& p_offset, const Size2 &p_sc) {
 
 	Size2 s=p_sc;
 	Vector2 offset = p_offset;
@@ -277,7 +277,7 @@ void TileMap::_update_dirty_quadrants() {
 	Physics2DServer *ps = Physics2DServer::get_singleton();
 	Vector2 tofs = get_cell_draw_offset();
 	Vector2 tcenter = cell_size/2;
-	Matrix32 nav_rel;
+	Transform2D nav_rel;
 	if (navigation)
 		nav_rel = get_relative_transform_to_parent(navigation);
 
@@ -348,7 +348,7 @@ void TileMap::_update_dirty_quadrants() {
 				if (mat.is_valid())
 					vs->canvas_item_set_material(canvas_item,mat->get_rid());
 				vs->canvas_item_set_parent( canvas_item, get_canvas_item() );
-				Matrix32 xform;
+				Transform2D xform;
 				xform.set_origin( q.pos );
 				vs->canvas_item_set_transform( canvas_item, xform );
 				vs->canvas_item_set_light_mask(canvas_item,get_light_mask());
@@ -472,7 +472,7 @@ void TileMap::_update_dirty_quadrants() {
 				if (shape.is_valid()) {
 
 					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id);
-					Matrix32 xform;
+					Transform2D xform;
 					xform.set_origin(offset.floor());
 
 					_fix_cell_transform(xform,c,shape_ofs+center_ofs,s);
@@ -489,14 +489,14 @@ void TileMap::_update_dirty_quadrants() {
 			}
 
 			if (debug_canvas_item.is_valid()) {
-				vs->canvas_item_add_set_transform(debug_canvas_item,Matrix32());
+				vs->canvas_item_add_set_transform(debug_canvas_item,Transform2D());
 			}
 
 			if (navigation) {
 				Ref<NavigationPolygon> navpoly = tile_set->tile_get_navigation_polygon(c.id);
 				if (navpoly.is_valid()) {
 					Vector2 npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.id);
-					Matrix32 xform;
+					Transform2D xform;
 					xform.set_origin(offset.floor()+q.pos);
 					_fix_cell_transform(xform,c,npoly_ofs+center_ofs,s);
 
@@ -515,7 +515,7 @@ void TileMap::_update_dirty_quadrants() {
 			if (occluder.is_valid()) {
 
 				Vector2 occluder_ofs = tile_set->tile_get_occluder_offset(c.id);
-				Matrix32 xform;
+				Transform2D xform;
 				xform.set_origin(offset.floor()+q.pos);
 				_fix_cell_transform(xform,c,occluder_ofs+center_ofs,s);
 
@@ -598,7 +598,7 @@ void TileMap::_recompute_rect_cache() {
 
 Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const PosKey& p_qk) {
 
-	Matrix32 xform;
+	Transform2D xform;
 	//xform.set_origin(Point2(p_qk.x,p_qk.y)*cell_size*quadrant_size);
 	Quadrant q;
 	q.pos = _map_to_world(p_qk.x*_get_quadrant_size(),p_qk.y*_get_quadrant_size());
@@ -1034,13 +1034,13 @@ TileMap::HalfOffset TileMap::get_half_offset() const {
 	return half_offset;
 }
 
-Matrix32 TileMap::get_cell_transform() const {
+Transform2D TileMap::get_cell_transform() const {
 
 	switch(mode) {
 
 		case MODE_SQUARE: {
 
-			Matrix32 m;
+			Transform2D m;
 			m[0]*=cell_size.x;
 			m[1]*=cell_size.y;
 			return m;
@@ -1049,7 +1049,7 @@ Matrix32 TileMap::get_cell_transform() const {
 
 			//isometric only makes sense when y is positive in both x and y vectors, otherwise
 			//the drawing of tiles will overlap
-			Matrix32 m;
+			Transform2D m;
 			m[0]=Vector2(cell_size.x*0.5,cell_size.y*0.5);
 			m[1]=Vector2(-cell_size.x*0.5,cell_size.y*0.5);
 			return m;
@@ -1061,10 +1061,10 @@ Matrix32 TileMap::get_cell_transform() const {
 		} break;
 	}
 
-	return Matrix32();
+	return Transform2D();
 }
 
-void TileMap::set_custom_transform(const Matrix32& p_xform) {
+void TileMap::set_custom_transform(const Transform2D& p_xform) {
 
 	_clear_quadrants();
 	custom_transform=p_xform;
@@ -1073,7 +1073,7 @@ void TileMap::set_custom_transform(const Matrix32& p_xform) {
 
 }
 
-Matrix32 TileMap::get_custom_transform() const{
+Transform2D TileMap::get_custom_transform() const{
 
 	return custom_transform;
 }
@@ -1265,7 +1265,7 @@ void TileMap::_bind_methods() {
 	ADD_GROUP("Cell","cell_");
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1"),_SCS("set_cell_size"),_SCS("get_cell_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"cell_custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
+	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM2D,"cell_custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_tile_origin",PROPERTY_HINT_ENUM,"Top Left,Center,Bottom Left"),_SCS("set_tile_origin"),_SCS("get_tile_origin"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"cell_y_sort"),_SCS("set_y_sort_mode"),_SCS("is_y_sort_mode_enabled"));

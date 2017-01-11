@@ -93,7 +93,7 @@ public:
 	virtual Variant shape_get_data(RID p_shape) const;
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const;
 
-	virtual bool shape_collide(RID p_shape_A, const Matrix32& p_xform_A,const Vector2& p_motion_A,RID p_shape_B, const Matrix32& p_xform_B, const Vector2& p_motion_B,Vector2 *r_results,int p_result_max,int &r_result_count);
+	virtual bool shape_collide(RID p_shape_A, const Transform2D& p_xform_A,const Vector2& p_motion_A,RID p_shape_B, const Transform2D& p_xform_B, const Vector2& p_motion_B,Vector2 *r_results,int p_result_max,int &r_result_count);
 
 	/* SPACE API */
 
@@ -123,13 +123,13 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space);
 	virtual RID area_get_space(RID p_area) const;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Matrix32& p_transform=Matrix32());
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform2D& p_transform=Transform2D());
 	virtual void area_set_shape(RID p_area, int p_shape_idx,RID p_shape);
-	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Matrix32& p_transform);
+	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform2D& p_transform);
 
 	virtual int area_get_shape_count(RID p_area) const;
 	virtual RID area_get_shape(RID p_area, int p_shape_idx) const;
-	virtual Matrix32 area_get_shape_transform(RID p_area, int p_shape_idx) const;
+	virtual Transform2D area_get_shape_transform(RID p_area, int p_shape_idx) const;
 
 	virtual void area_remove_shape(RID p_area, int p_shape_idx);
 	virtual void area_clear_shapes(RID p_area);
@@ -138,10 +138,10 @@ public:
 	virtual ObjectID area_get_object_instance_ID(RID p_area) const;
 
 	virtual void area_set_param(RID p_area,AreaParameter p_param,const Variant& p_value);
-	virtual void area_set_transform(RID p_area, const Matrix32& p_transform);
+	virtual void area_set_transform(RID p_area, const Transform2D& p_transform);
 
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const;
-	virtual Matrix32 area_get_transform(RID p_area) const;
+	virtual Transform2D area_get_transform(RID p_area) const;
 	virtual void area_set_monitorable(RID p_area,bool p_monitorable);
 	virtual void area_set_collision_mask(RID p_area,uint32_t p_mask);
 	virtual void area_set_layer_mask(RID p_area,uint32_t p_mask);
@@ -163,15 +163,15 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
 	virtual BodyMode body_get_mode(RID p_body) const;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Matrix32& p_transform=Matrix32());
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform2D& p_transform=Transform2D());
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape);
-	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Matrix32& p_transform);
+	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform2D& p_transform);
 	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant& p_metadata);
 
 
 	virtual int body_get_shape_count(RID p_body) const;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const;
-	virtual Matrix32 body_get_shape_transform(RID p_body, int p_shape_idx) const;
+	virtual Transform2D body_get_shape_transform(RID p_body, int p_shape_idx) const;
 	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const;
 
 
@@ -232,11 +232,11 @@ public:
 
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
-	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count);
+	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Transform2D& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count);
 
 	virtual void body_set_pickable(RID p_body,bool p_pickable);
 
-	virtual bool body_test_motion(RID p_body,const Matrix32& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL);
+	virtual bool body_test_motion(RID p_body,const Transform2D& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL);
 
 
 	/* JOINT API */

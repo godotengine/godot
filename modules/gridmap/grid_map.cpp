@@ -252,7 +252,7 @@ void GridMap::_get_property_list( List<PropertyInfo> *p_list) const {
 	for(const Map<int,Area*>::Element *E=area_map.front();E;E=E->next()) {
 
 		String base="areas/"+itos(E->key())+"/";
-		p_list->push_back( PropertyInfo( Variant::_AABB, base+"bounds", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE) );
+		p_list->push_back( PropertyInfo( Variant::RECT3, base+"bounds", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE) );
 		p_list->push_back( PropertyInfo( Variant::STRING, base+"name", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE) );
 		p_list->push_back( PropertyInfo( Variant::REAL, base+"disable_distance", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE) );
 		p_list->push_back( PropertyInfo( Variant::COLOR, base+"disable_color", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE) );
@@ -678,8 +678,8 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 
 		ii.multimesh->set_instance_count(ii.cells.size());
 
-		AABB aabb;
-		AABB mesh_aabb = ii.mesh.is_null()?AABB():ii.mesh->get_aabb();
+		Rect3 aabb;
+		Rect3 mesh_aabb = ii.mesh.is_null()?Rect3():ii.mesh->get_aabb();
 
 		Vector3 ofs(cell_size*0.5*int(center_x),cell_size*0.5*int(center_y),cell_size*0.5*int(center_z));
 
@@ -920,7 +920,7 @@ void GridMap::_octant_bake(const OctantKey &p_key, const Ref<TriangleMesh>& p_tm
 
 							Vector3 vertex = v.vertex + octant_ofs;
 							//print_line("V GET: "+vertex);
-							Vector3 normal = tm->get_area_normal( AABB( Vector3(-ofs,-ofs,-ofs)+vertex,Vector3(ofs,ofs,ofs)*2.0));
+							Vector3 normal = tm->get_area_normal( Rect3( Vector3(-ofs,-ofs,-ofs)+vertex,Vector3(ofs,ofs,ofs)*2.0));
 							if (normal==Vector3()) {
 								print_line("couldn't find for vertex: "+vertex);
 							}
@@ -1435,7 +1435,7 @@ void GridMap::_update_area_instances() {
 
 }
 
-Error GridMap::create_area(int p_id,const AABB& p_bounds) {
+Error GridMap::create_area(int p_id,const Rect3& p_bounds) {
 
 	ERR_FAIL_COND_V(area_map.has(p_id),ERR_ALREADY_EXISTS);
 	ERR_EXPLAIN("ID 0 is taken as global area, start from 1");
@@ -1484,12 +1484,12 @@ Error GridMap::create_area(int p_id,const AABB& p_bounds) {
 	return OK;
 }
 
-AABB GridMap::area_get_bounds(int p_area) const {
+Rect3 GridMap::area_get_bounds(int p_area) const {
 
-	ERR_FAIL_COND_V(!area_map.has(p_area),AABB());
+	ERR_FAIL_COND_V(!area_map.has(p_area),Rect3());
 
 	const Area *a = area_map[p_area];
-	AABB aabb;
+	Rect3 aabb;
 	aabb.pos=Vector3(a->from.x,a->from.y,a->from.z);
 	aabb.size=Vector3(a->to.x,a->to.y,a->to.z)-aabb.pos;
 

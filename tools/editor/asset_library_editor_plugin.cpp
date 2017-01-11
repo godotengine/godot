@@ -321,7 +321,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
-void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data) {
 
 
 	String error_text;
@@ -691,12 +691,12 @@ void EditorAssetLibrary::_select_asset(int p_id){
 	description->popup_centered_minsize();*/
 }
 
-void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArray& p_data, int p_queue_id) {
+void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByteArray& p_data, int p_queue_id) {
 	Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 
 	if (obj) {
 		bool image_set = false;
-		ByteArray image_data = p_data;
+		PoolByteArray image_data = p_data;
 		
 		if(use_cache) {
 			String cache_filename_base = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("assetimage_"+image_queue[p_queue_id].image_url.md5_text());
@@ -704,11 +704,11 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 			FileAccess* file = FileAccess::open(cache_filename_base+".data", FileAccess::READ);
 			
 			if(file) {
-				ByteArray cached_data;
+				PoolByteArray cached_data;
 				int len=file->get_32();
 				cached_data.resize(len);
 				
-				ByteArray::Write w=cached_data.write();
+				PoolByteArray::Write w=cached_data.write();
 				file->get_buffer(w.ptr(), len);
 				
 				image_data = cached_data;
@@ -717,7 +717,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 		}
 		
 		int len=image_data.size();
-		ByteArray::Read r=image_data.read();
+		PoolByteArray::Read r=image_data.read();
 		Image image(r.ptr(),len);
 		if (!image.empty()) {
 			float max_height = 10000;
@@ -745,7 +745,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 	}
 }
 
-void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data,int p_queue_id) {
+void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data,int p_queue_id) {
 
 	ERR_FAIL_COND( !image_queue.has(p_queue_id) );
 
@@ -767,7 +767,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					}
 					
 					int len=p_data.size();
-					ByteArray::Read r=p_data.read();
+					PoolByteArray::Read r=p_data.read();
 					file = FileAccess::open(cache_filename_base+".data", FileAccess::WRITE);
 					if(file) {
 						file->store_32(len);
@@ -855,7 +855,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for,String p_image_url,ImageT
 
 	add_child(iq.request);
 
-	_image_update(true, false, ByteArray(), iq.queue_id);
+	_image_update(true, false, PoolByteArray(), iq.queue_id);
 	_update_image_queue();
 
 
@@ -1021,14 +1021,14 @@ void EditorAssetLibrary::_api_request(const String& p_request, RequestType p_req
 
 
 
-void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data) {
 
 
 	String str;
 
 	{
 		int datalen=p_data.size();
-		ByteArray::Read r = p_data.read();
+		PoolByteArray::Read r = p_data.read();
 		str.parse_utf8((const char*)r.ptr(),datalen);
 	}
 

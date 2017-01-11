@@ -51,7 +51,7 @@ public:
 	Variant undo_state;
 	Vector2 undo_pivot;
 
-	Matrix32 prev_xform;
+	Transform2D prev_xform;
 	float prev_rot;
 	Rect2 prev_rect;
 
@@ -166,7 +166,7 @@ class CanvasItemEditor : public VBoxContainer {
 	VScrollBar *v_scroll;
 	HBoxContainer *hb;
 
-	Matrix32 transform;
+	Transform2D transform;
 	float zoom;
 	Vector2 snap_offset;
 	Vector2 snap_step;
@@ -212,7 +212,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	struct BoneList {
 
-		Matrix32 xform;
+		Transform2D xform;
 		Vector2 from;
 		Vector2 to;
 		ObjectID bone;
@@ -222,7 +222,7 @@ class CanvasItemEditor : public VBoxContainer {
 	uint64_t bone_last_frame;
 	Map<ObjectID,BoneList> bone_list;
 
-	Matrix32 bone_orig_xform;
+	Transform2D bone_orig_xform;
 
 	struct BoneIK {
 
@@ -300,9 +300,9 @@ class CanvasItemEditor : public VBoxContainer {
 
 	int handle_len;
 	bool _is_part_of_subscene(CanvasItem *p_item);
-	CanvasItem* _select_canvas_item_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform);
-	void _find_canvas_items_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform, Vector<_SelectResult> &r_items);
-	void _find_canvas_items_at_rect(const Rect2& p_rect,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform,List<CanvasItem*> *r_items);
+	CanvasItem* _select_canvas_item_at_pos(const Point2 &p_pos,Node* p_node,const Transform2D& p_parent_xform,const Transform2D& p_canvas_xform);
+	void _find_canvas_items_at_pos(const Point2 &p_pos,Node* p_node,const Transform2D& p_parent_xform,const Transform2D& p_canvas_xform, Vector<_SelectResult> &r_items);
+	void _find_canvas_items_at_rect(const Rect2& p_rect,Node* p_node,const Transform2D& p_parent_xform,const Transform2D& p_canvas_xform,List<CanvasItem*> *r_items);
 
 	bool _select(CanvasItem *item, Point2 p_click_pos, bool p_append, bool p_drag=true);
 
@@ -322,7 +322,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE p_move_mode);
 	void _list_select(const InputEventMouseButton& b);
 
-	DragType _find_drag_type(const Matrix32& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point);
+	DragType _find_drag_type(const Transform2D& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point);
 
 	void _popup_callback(int p_op);
 	bool updating_scroll;
@@ -342,7 +342,7 @@ class CanvasItemEditor : public VBoxContainer {
 	Point2 _find_topleftmost_point();
 
 
-	void _find_canvas_items_span(Node *p_node, Rect2& r_rect, const Matrix32& p_xform);
+	void _find_canvas_items_span(Node *p_node, Rect2& r_rect, const Transform2D& p_xform);
 
 
 	Object *_get_editor_data(Object *p_what);
@@ -407,7 +407,7 @@ public:
 	Vector2 snap_point(Vector2 p_target, Vector2 p_start = Vector2(0, 0)) const;
 	float snap_angle(float p_target, float p_start = 0) const;
 
-	Matrix32 get_canvas_transform() const { return transform; }
+	Transform2D get_canvas_transform() const { return transform; }
 
 	static CanvasItemEditor *get_singleton() { return singleton; }
 	Dictionary get_state() const;

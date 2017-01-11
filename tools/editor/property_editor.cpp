@@ -721,7 +721,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			value_editor[3]->set_text( String::num( q.w ) );
 
 		} break;
-		case Variant::_AABB: {
+		case Variant::RECT3: {
 
 			List<String> names;
 			names.push_back("px");
@@ -732,7 +732,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			names.push_back("sz");
 			config_value_editors(6,3,16,names);
 
-			AABB aabb=v;
+			Rect3 aabb=v;
 			value_editor[0]->set_text( String::num( aabb.pos.x ) );
 			value_editor[1]->set_text( String::num( aabb.pos.y ) );
 			value_editor[2]->set_text( String::num( aabb.pos.z ) );
@@ -741,7 +741,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			value_editor[5]->set_text( String::num( aabb.size.z ) );
 
 		} break;
-		case Variant::MATRIX32: {
+		case Variant::TRANSFORM2D: {
 
 			List<String> names;
 			names.push_back("xx");
@@ -752,14 +752,14 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			names.push_back("oy");
 			config_value_editors(6,2,16,names);
 
-			Matrix32 basis=v;
+			Transform2D basis=v;
 			for(int i=0;i<6;i++) {
 
 				value_editor[i]->set_text( String::num( basis.elements[i/2][i%2] ) );
 			}
 
 		} break;
-		case Variant::MATRIX3: {
+		case Variant::BASIS: {
 
 			List<String> names;
 			names.push_back("xx");
@@ -773,7 +773,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			names.push_back("zz");
 			config_value_editors(9,3,16,names);
 
-			Matrix3 basis=v;
+			Basis basis=v;
 			for(int i=0;i<9;i++) {
 
 				value_editor[i]->set_text( String::num( basis.elements[i/3][i%3] ) );
@@ -1005,27 +1005,27 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 
 		} break;
-		case Variant::RAW_ARRAY: {
+		case Variant::POOL_BYTE_ARRAY: {
 
 
 		} break;
-		case Variant::INT_ARRAY: {
+		case Variant::POOL_INT_ARRAY: {
 
 
 		} break;
-		case Variant::REAL_ARRAY: {
+		case Variant::POOL_REAL_ARRAY: {
 
 
 		} break;
-		case Variant::STRING_ARRAY: {
+		case Variant::POOL_STRING_ARRAY: {
 
 
 		} break;
-		case Variant::VECTOR3_ARRAY: {
+		case Variant::POOL_VECTOR3_ARRAY: {
 
 
 		} break;
-		case Variant::COLOR_ARRAY: {
+		case Variant::POOL_COLOR_ARRAY: {
 
 
 		} break;
@@ -1703,7 +1703,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			emit_signal("variant_changed");
 
 		} break;
-		case Variant::_AABB: {
+		case Variant::RECT3: {
 
 			Vector3 pos;
 			Vector3 size;
@@ -1723,13 +1723,13 @@ void CustomPropertyEditor::_modified(String p_string) {
 				size.y=value_editor[4]->get_text().to_double();
 				size.z=value_editor[5]->get_text().to_double();
 			}
-			v=AABB(pos,size);
+			v=Rect3(pos,size);
 			emit_signal("variant_changed");
 
 		} break;
-		case Variant::MATRIX32: {
+		case Variant::TRANSFORM2D: {
 
-			Matrix32 m;
+			Transform2D m;
 			for(int i=0;i<6;i++) {
 				if (evaluator) {
 					m.elements[i/2][i%2]=evaluator->eval(value_editor[i]->get_text());
@@ -1742,9 +1742,9 @@ void CustomPropertyEditor::_modified(String p_string) {
 			emit_signal("variant_changed");
 
 		} break;
-		case Variant::MATRIX3: {
+		case Variant::BASIS: {
 
-			Matrix3 m;
+			Basis m;
 			for(int i=0;i<9;i++) {
 
 				if (evaluator) {
@@ -1760,7 +1760,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 		} break;
 		case Variant::TRANSFORM: {
 
-			Matrix3 basis;
+			Basis basis;
 			for(int i=0;i<9;i++) {
 
 				if (evaluator) {
@@ -1820,27 +1820,27 @@ void CustomPropertyEditor::_modified(String p_string) {
 
 
 		} break;
-		case Variant::RAW_ARRAY: {
+		case Variant::POOL_BYTE_ARRAY: {
 
 
 		} break;
-		case Variant::INT_ARRAY: {
+		case Variant::POOL_INT_ARRAY: {
 
 
 		} break;
-		case Variant::REAL_ARRAY: {
+		case Variant::POOL_REAL_ARRAY: {
 
 
 		} break;
-		case Variant::STRING_ARRAY: {
+		case Variant::POOL_STRING_ARRAY: {
 
 
 		} break;
-		case Variant::VECTOR3_ARRAY: {
+		case Variant::POOL_VECTOR3_ARRAY: {
 
 
 		} break;
-		case Variant::COLOR_ARRAY: {
+		case Variant::POOL_COLOR_ARRAY: {
 
 
 		} break;
@@ -1865,9 +1865,9 @@ void CustomPropertyEditor::_focus_enter() {
 		case Variant::VECTOR3:
 		case Variant::PLANE:
 		case Variant::QUAT:
-		case Variant::_AABB:
-		case Variant::MATRIX32:
-		case Variant::MATRIX3:
+		case Variant::RECT3:
+		case Variant::TRANSFORM2D:
+		case Variant::BASIS:
 		case Variant::TRANSFORM: {
 			for (int i=0;i<MAX_VALUE_EDITORS;++i) {
 				if (value_editor[i]->has_focus()) {
@@ -1890,9 +1890,9 @@ void CustomPropertyEditor::_focus_exit() {
 		case Variant::VECTOR3:
 		case Variant::PLANE:
 		case Variant::QUAT:
-		case Variant::_AABB:
-		case Variant::MATRIX32:
-		case Variant::MATRIX3:
+		case Variant::RECT3:
+		case Variant::TRANSFORM2D:
+		case Variant::BASIS:
 		case Variant::TRANSFORM: {
 			for (int i=0;i<MAX_VALUE_EDITORS;++i) {
 				value_editor[i]->select(0, 0);
@@ -2419,10 +2419,10 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 		case Variant::VECTOR3:
 		case Variant::QUAT:
 		case Variant::VECTOR2:
-		case Variant::_AABB:
+		case Variant::RECT3:
 		case Variant::RECT2:
-		case Variant::MATRIX32:
-		case Variant::MATRIX3:
+		case Variant::TRANSFORM2D:
+		case Variant::BASIS:
 		case Variant::TRANSFORM: {
 
 			p_item->set_text(1,obj->get(p_name));
@@ -3505,7 +3505,7 @@ void PropertyEditor::update_tree() {
 
 			} break;
 
-			case Variant::INT_ARRAY: {
+			case Variant::POOL_INT_ARRAY: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
@@ -3520,7 +3520,7 @@ void PropertyEditor::update_tree() {
 
 
 			} break;
-			case Variant::REAL_ARRAY: {
+			case Variant::POOL_REAL_ARRAY: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
@@ -3535,7 +3535,7 @@ void PropertyEditor::update_tree() {
 
 
 			} break;
-			case Variant::STRING_ARRAY: {
+			case Variant::POOL_STRING_ARRAY: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
@@ -3550,7 +3550,7 @@ void PropertyEditor::update_tree() {
 
 
 			} break;
-			case Variant::RAW_ARRAY: {
+			case Variant::POOL_BYTE_ARRAY: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
@@ -3565,7 +3565,7 @@ void PropertyEditor::update_tree() {
 
 
 			} break;
-			case Variant::VECTOR2_ARRAY: {
+			case Variant::POOL_VECTOR2_ARRAY: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
@@ -3580,7 +3580,7 @@ void PropertyEditor::update_tree() {
 
 
 			} break;
-			case Variant::VECTOR3_ARRAY: {
+			case Variant::POOL_VECTOR3_ARRAY: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
@@ -3595,7 +3595,7 @@ void PropertyEditor::update_tree() {
 
 
 			} break;
-			case Variant::COLOR_ARRAY: {
+			case Variant::POOL_COLOR_ARRAY: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
@@ -3637,8 +3637,8 @@ void PropertyEditor::update_tree() {
 					item->set_icon( 0,get_icon("Vector","EditorIcons") );
 
 			} break;
-			case Variant::MATRIX32:
-			case Variant::MATRIX3: {
+			case Variant::TRANSFORM2D:
+			case Variant::BASIS: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->set_editable( 1, true );
@@ -3662,11 +3662,11 @@ void PropertyEditor::update_tree() {
 					item->set_icon( 0,get_icon("Plane","EditorIcons") );
 
 			} break;
-			case Variant::_AABB: {
+			case Variant::RECT3: {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->set_editable( 1, true );
-				item->set_text(1,"AABB");
+				item->set_text(1,"Rect3");
 				if (show_type_icons)
 					item->set_icon( 0,get_icon("Rect3","EditorIcons") );
 			} break;
@@ -3986,10 +3986,10 @@ void PropertyEditor::_item_edited() {
 		case Variant::QUAT: {
 
 		} break;
-		case Variant::_AABB: {
+		case Variant::RECT3: {
 
 		} break;
-		case Variant::MATRIX3: {
+		case Variant::BASIS: {
 
 		} break;
 		case Variant::TRANSFORM: {
@@ -4015,22 +4015,22 @@ void PropertyEditor::_item_edited() {
 		} break;
 
 			// arrays
-		case Variant::RAW_ARRAY: {
+		case Variant::POOL_BYTE_ARRAY: {
 
 		} break;
-		case Variant::INT_ARRAY: {
+		case Variant::POOL_INT_ARRAY: {
 
 		} break;
-		case Variant::REAL_ARRAY: {
+		case Variant::POOL_REAL_ARRAY: {
 
 		} break;
-		case Variant::STRING_ARRAY: {
+		case Variant::POOL_STRING_ARRAY: {
 
 		} break;
-		case Variant::VECTOR3_ARRAY: {
+		case Variant::POOL_VECTOR3_ARRAY: {
 
 		} break;
-		case Variant::COLOR_ARRAY: {
+		case Variant::POOL_COLOR_ARRAY: {
 
 		} break;
 
@@ -4223,7 +4223,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			emit_signal("object_id_selected",obj->get(n));
 			print_line("OBJ ID SELECTED");
 
-		} else if (t==Variant::ARRAY || t==Variant::INT_ARRAY || t==Variant::REAL_ARRAY || t==Variant::STRING_ARRAY || t==Variant::VECTOR2_ARRAY || t==Variant::VECTOR3_ARRAY || t==Variant::COLOR_ARRAY || t==Variant::RAW_ARRAY) {
+		} else if (t==Variant::ARRAY || t==Variant::POOL_INT_ARRAY || t==Variant::POOL_REAL_ARRAY || t==Variant::POOL_STRING_ARRAY || t==Variant::POOL_VECTOR2_ARRAY || t==Variant::POOL_VECTOR3_ARRAY || t==Variant::POOL_COLOR_ARRAY || t==Variant::POOL_BYTE_ARRAY) {
 
 			Variant v = obj->get(n);
 

@@ -933,7 +933,7 @@ void VisualServerScene::instance_set_extra_visibility_margin( RID p_instance, re
 
 }
 
-Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB& p_aabb, RID p_scenario) const {
+Vector<ObjectID> VisualServerScene::instances_cull_aabb(const Rect3& p_aabb, RID p_scenario) const {
 
 
 	Vector<ObjectID> instances;
@@ -1143,7 +1143,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 	p_instance->mirror = p_instance->transform.basis.determinant() < 0.0;
 
-	AABB new_aabb;
+	Rect3 new_aabb;
 #if 0
 	if (p_instance->base_type==INSTANCE_PORTAL) {
 
@@ -1266,7 +1266,7 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 void VisualServerScene::_update_instance_aabb(Instance *p_instance) {
 
-	AABB new_aabb;
+	Rect3 new_aabb;
 
 	ERR_FAIL_COND(p_instance->base_type!=VS::INSTANCE_NONE && !p_instance->base.is_valid());
 
@@ -2485,7 +2485,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	probe->dynamic.enabled=true;
 
 	Transform cell_to_xform = VSG::storage->gi_probe_get_to_cell_xform(p_instance->base);
-	AABB bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
+	Rect3 bounds = VSG::storage->gi_probe_get_bounds(p_instance->base);
 	float cell_size = VSG::storage->gi_probe_get_cell_size(p_instance->base);
 
 	probe->dynamic.light_to_cell_xform=cell_to_xform * p_instance->transform.affine_inverse();

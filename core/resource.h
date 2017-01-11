@@ -60,7 +60,7 @@ class ResourceImportMetadata : public Reference {
 
 	Map<String,Variant> options;
 
-	StringArray _get_options() const;
+	PoolStringArray _get_options() const;
 
 protected:
 

@@ -180,7 +180,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		} break;
 		case VARIANT_AABB: {
 
-			AABB v;
+			Rect3 v;
 			v.pos.x=f->get_real();
 			v.pos.y=f->get_real();
 			v.pos.z=f->get_real();
@@ -192,7 +192,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		} break;
 		case VARIANT_MATRIX32: {
 
-			Matrix32 v;
+			Transform2D v;
 			v.elements[0].x=f->get_real();
 			v.elements[0].y=f->get_real();
 			v.elements[1].x=f->get_real();
@@ -204,7 +204,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		} break;
 		case VARIANT_MATRIX3: {
 
-			Matrix3 v;
+			Basis v;
 			v.elements[0].x=f->get_real();
 			v.elements[0].y=f->get_real();
 			v.elements[0].z=f->get_real();
@@ -1509,10 +1509,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			f->store_real(val.w);
 
 		} break;
-		case Variant::_AABB: {
+		case Variant::RECT3: {
 
 			f->store_32(VARIANT_AABB);
-			AABB val=p_property;
+			Rect3 val=p_property;
 			f->store_real(val.pos.x);
 			f->store_real(val.pos.y);
 			f->store_real(val.pos.z);
@@ -1521,10 +1521,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			f->store_real(val.size.z);
 
 		} break;
-		case Variant::MATRIX32: {
+		case Variant::TRANSFORM2D: {
 
 			f->store_32(VARIANT_MATRIX32);
-			Matrix32 val=p_property;
+			Transform2D val=p_property;
 			f->store_real(val.elements[0].x);
 			f->store_real(val.elements[0].y);
 			f->store_real(val.elements[1].x);
@@ -1533,10 +1533,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			f->store_real(val.elements[2].y);
 
 		} break;
-		case Variant::MATRIX3: {
+		case Variant::BASIS: {
 
 			f->store_32(VARIANT_MATRIX3);
-			Matrix3 val=p_property;
+			Basis val=p_property;
 			f->store_real(val.elements[0].x);
 			f->store_real(val.elements[0].y);
 			f->store_real(val.elements[0].z);
@@ -1728,7 +1728,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			}
 
 		} break;
-		case Variant::RAW_ARRAY: {
+		case Variant::POOL_BYTE_ARRAY: {
 
 			f->store_32(VARIANT_RAW_ARRAY);
 			PoolVector<uint8_t> arr = p_property;
@@ -1739,7 +1739,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			_pad_buffer(len);
 
 		} break;
-		case Variant::INT_ARRAY: {
+		case Variant::POOL_INT_ARRAY: {
 
 			f->store_32(VARIANT_INT_ARRAY);
 			PoolVector<int> arr = p_property;
@@ -1750,7 +1750,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 				f->store_32(r[i]);
 
 		} break;
-		case Variant::REAL_ARRAY: {
+		case Variant::POOL_REAL_ARRAY: {
 
 			f->store_32(VARIANT_REAL_ARRAY);
 			PoolVector<real_t> arr = p_property;
@@ -1762,7 +1762,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			}
 
 		} break;
-		case Variant::STRING_ARRAY: {
+		case Variant::POOL_STRING_ARRAY: {
 
 			f->store_32(VARIANT_STRING_ARRAY);
 			PoolVector<String> arr = p_property;
@@ -1774,7 +1774,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			}
 
 		} break;
-		case Variant::VECTOR3_ARRAY: {
+		case Variant::POOL_VECTOR3_ARRAY: {
 
 			f->store_32(VARIANT_VECTOR3_ARRAY);
 			PoolVector<Vector3> arr = p_property;
@@ -1788,7 +1788,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			}
 
 		} break;
-		case Variant::VECTOR2_ARRAY: {
+		case Variant::POOL_VECTOR2_ARRAY: {
 
 			f->store_32(VARIANT_VECTOR2_ARRAY);
 			PoolVector<Vector2> arr = p_property;
@@ -1801,7 +1801,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 			}
 
 		} break;
-		case Variant::COLOR_ARRAY: {
+		case Variant::POOL_COLOR_ARRAY: {
 
 			f->store_32(VARIANT_COLOR_ARRAY);
 			PoolVector<Color> arr = p_property;

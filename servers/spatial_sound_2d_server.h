@@ -59,8 +59,8 @@ public:
 
 	virtual void room_set_bounds(RID p_room, const PoolVector<Point2>& p_bounds)=0;
 	virtual PoolVector<Point2> room_get_bounds(RID p_room) const=0;
-	virtual void room_set_transform(RID p_room, const Matrix32& p_transform)=0;
-	virtual Matrix32 room_get_transform(RID p_room) const=0;
+	virtual void room_set_transform(RID p_room, const Transform2D& p_transform)=0;
+	virtual Transform2D room_get_transform(RID p_room) const=0;
 
 	enum RoomParam {
 		ROOM_PARAM_PITCH_SCALE,
@@ -99,8 +99,8 @@ public:
 
 	virtual RID source_create(RID p_space)=0;
 
-	virtual void source_set_transform(RID p_source, const Matrix32& p_transform)=0;
-	virtual Matrix32 source_get_transform(RID p_source) const=0;
+	virtual void source_set_transform(RID p_source, const Transform2D& p_transform)=0;
+	virtual Transform2D source_get_transform(RID p_source) const=0;
 
 	virtual void source_set_polyphony(RID p_source,int p_voice_count)=0;
 	virtual int source_get_polyphony(RID p_source) const=0;
@@ -141,8 +141,8 @@ public:
 	virtual RID listener_create()=0;
 	virtual void listener_set_space(RID p_listener, RID p_space)=0;
 
-	virtual void listener_set_transform(RID p_listener, const Matrix32& p_transform)=0;
-	virtual Matrix32 listener_get_transform(RID p_listener) const=0;
+	virtual void listener_set_transform(RID p_listener, const Transform2D& p_transform)=0;
+	virtual Transform2D listener_get_transform(RID p_listener) const=0;
 
 	virtual void listener_set_param(RID p_listener, ListenerParam p_param, float p_value)=0;
 	virtual float listener_get_param(RID p_listener, ListenerParam p_param) const=0;

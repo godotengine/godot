@@ -383,11 +383,11 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 		}
 		break;
 
-	case Variant::MATRIX3:
+	case Variant::BASIS:
 		{
-			Matrix3 i = initial_val;
-			Matrix3 d = delta_val;
-			Matrix3 r;
+			Basis i = initial_val;
+			Basis d = delta_val;
+			Basis r;
 
 			APPLY_EQUATION(elements[0][0]);
 			APPLY_EQUATION(elements[0][1]);
@@ -403,11 +403,11 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 		}
 	break;
 
-	case Variant::MATRIX32:
+	case Variant::TRANSFORM2D:
 		{
-			Matrix3 i = initial_val;
-			Matrix3 d = delta_val;
-			Matrix3 r;
+			Basis i = initial_val;
+			Basis d = delta_val;
+			Basis r;
 
 			APPLY_EQUATION(elements[0][0]);
 			APPLY_EQUATION(elements[0][1]);
@@ -433,11 +433,11 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 			result = r;
 		}
 		break;
-	case Variant::_AABB:
+	case Variant::RECT3:
 		{
-			AABB i = initial_val;
-			AABB d = delta_val;
-			AABB r;
+			Rect3 i = initial_val;
+			Rect3 d = delta_val;
+			Rect3 r;
 
 			APPLY_EQUATION(pos.x);
 			APPLY_EQUATION(pos.y);
@@ -953,11 +953,11 @@ bool Tween::_calc_delta_val(const Variant& p_initial_val, const Variant& p_final
 			delta_val = final_val.operator Vector3() - initial_val.operator Vector3();
 			break;
 
-		case Variant::MATRIX3:
+		case Variant::BASIS:
 			{
-				Matrix3 i = initial_val;
-				Matrix3 f = final_val;
-				delta_val = Matrix3(f.elements[0][0] - i.elements[0][0],
+				Basis i = initial_val;
+				Basis f = final_val;
+				delta_val = Basis(f.elements[0][0] - i.elements[0][0],
 					f.elements[0][1] - i.elements[0][1],
 					f.elements[0][2] - i.elements[0][2],
 					f.elements[1][0] - i.elements[1][0],
@@ -970,11 +970,11 @@ bool Tween::_calc_delta_val(const Variant& p_initial_val, const Variant& p_final
 			}
 			break;
 
-		case Variant::MATRIX32:
+		case Variant::TRANSFORM2D:
 			{
-				Matrix32 i = initial_val;
-				Matrix32 f = final_val;
-				Matrix32 d = Matrix32();
+				Transform2D i = initial_val;
+				Transform2D f = final_val;
+				Transform2D d = Transform2D();
 				d[0][0] = f.elements[0][0] - i.elements[0][0];
 				d[0][1] = f.elements[0][1] - i.elements[0][1];
 				d[1][0] = f.elements[1][0] - i.elements[1][0];
@@ -987,11 +987,11 @@ bool Tween::_calc_delta_val(const Variant& p_initial_val, const Variant& p_final
 		case Variant::QUAT:
 			delta_val = final_val.operator Quat() - initial_val.operator Quat();
 			break;
-		case Variant::_AABB:
+		case Variant::RECT3:
 			{
-				AABB i = initial_val;
-				AABB f = final_val;
-				delta_val = AABB(f.pos - i.pos, f.size - i.size);
+				Rect3 i = initial_val;
+				Rect3 f = final_val;
+				delta_val = Rect3(f.pos - i.pos, f.size - i.size);
 			}
 			break;
 		case Variant::TRANSFORM:

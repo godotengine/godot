@@ -38,8 +38,8 @@ class ConfigFile : public Reference {
 
 	Map< String, Map<String, Variant> > values;
 
-	StringArray _get_sections() const;
-	StringArray _get_section_keys(const String& p_section) const;
+	PoolStringArray _get_sections() const;
+	PoolStringArray _get_section_keys(const String& p_section) const;
 protected:
 
 	static void _bind_methods();

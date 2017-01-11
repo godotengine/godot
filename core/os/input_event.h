@@ -298,7 +298,7 @@ struct InputEvent {
 	void set_as_action(const String& p_action, bool p_pressed);
 
 
-	InputEvent xform_by(const Matrix32& p_xform) const;
+	InputEvent xform_by(const Transform2D& p_xform) const;
 	bool operator==(const InputEvent &p_event) const;
 	operator String() const;
 	InputEvent() { zeromem(this,sizeof(InputEvent)); }

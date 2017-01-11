@@ -86,7 +86,7 @@ class Body2DSW : public CollisionObject2DSW {
 	bool using_one_way_cache;
 	void _update_inertia();
 	virtual void _shapes_changed();
-	Matrix32 new_transform;
+	Transform2D new_transform;
 
 
 	Map<Constraint2DSW*,int> constraint_map;
@@ -373,8 +373,8 @@ public:
 	virtual void set_angular_velocity(real_t p_velocity) {  body->set_angular_velocity(p_velocity);  }
 	virtual real_t get_angular_velocity() const {  return body->get_angular_velocity();  }
 
-	virtual void set_transform(const Matrix32& p_transform) {  body->set_state(Physics2DServer::BODY_STATE_TRANSFORM,p_transform);  }
-	virtual Matrix32 get_transform() const {  return body->get_transform();  }
+	virtual void set_transform(const Transform2D& p_transform) {  body->set_state(Physics2DServer::BODY_STATE_TRANSFORM,p_transform);  }
+	virtual Transform2D get_transform() const {  return body->get_transform();  }
 
 	virtual void set_sleep_state(bool p_enable) {  body->set_active(!p_enable);  }
 	virtual bool is_sleeping() const {  return !body->is_active();  }

@@ -2,12 +2,12 @@
 #include "mesh_instance.h"
 
 
-void GIProbeData::set_bounds(const AABB& p_bounds) {
+void GIProbeData::set_bounds(const Rect3& p_bounds) {
 
 	VS::get_singleton()->gi_probe_set_bounds(probe,p_bounds);
 }
 
-AABB GIProbeData::get_bounds() const{
+Rect3 GIProbeData::get_bounds() const{
 
 	return VS::get_singleton()->gi_probe_get_bounds(probe);
 }
@@ -127,11 +127,11 @@ void GIProbeData::_bind_methods() {
 	ClassDB::bind_method(_MD("set_compress","compress"),&GIProbeData::set_compress);
 	ClassDB::bind_method(_MD("is_compressed"),&GIProbeData::is_compressed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::_AABB,"bounds",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_bounds"),_SCS("get_bounds"));
+	ADD_PROPERTY(PropertyInfo(Variant::RECT3,"bounds",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_bounds"),_SCS("get_bounds"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"cell_size",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_cell_size"),_SCS("get_cell_size"));
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM,"to_cell_xform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_to_cell_xform"),_SCS("get_to_cell_xform"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT_ARRAY,"dynamic_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_data"),_SCS("get_dynamic_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY,"dynamic_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_data"),_SCS("get_dynamic_data"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_energy"),_SCS("get_energy"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"interior",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_interior"),_SCS("is_interior"));
@@ -427,7 +427,7 @@ static _FORCE_INLINE_ Vector2 get_uv(const Vector3& p_pos, const Vector3 *p_vtx,
 	return p_uv[0]*u + p_uv[1]*v  + p_uv[2]*w;
 }
 
-void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const Vector3 *p_vtx, const Vector2* p_uv, const Baker::MaterialCache& p_material, const AABB &p_aabb,Baker *p_baker) {
+void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const Vector3 *p_vtx, const Vector2* p_uv, const Baker::MaterialCache& p_material, const Rect3 &p_aabb,Baker *p_baker) {
 
 
 
@@ -611,7 +611,7 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 		int half = (1<<(p_baker->cell_subdiv-1)) >> (p_level+1);
 		for(int i=0;i<8;i++) {
 
-			AABB aabb=p_aabb;
+			Rect3 aabb=p_aabb;
 			aabb.size*=0.5;
 
 			int nx=p_x;
@@ -635,7 +635,7 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 				continue;
 
 			{
-				AABB test_aabb=aabb;
+				Rect3 test_aabb=aabb;
 				//test_aabb.grow_by(test_aabb.get_longest_axis_size()*0.05); //grow a bit to avoid numerical error in real-time
 				Vector3 qsize = test_aabb.size*0.5; //quarter size, for fast aabb test
 
@@ -1001,11 +1001,11 @@ void GIProbe::_find_meshes(Node *p_at_node,Baker *p_baker){
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid()) {
 
-			AABB aabb = mesh->get_aabb();
+			Rect3 aabb = mesh->get_aabb();
 
 			Transform xf = get_global_transform().affine_inverse() * mi->get_global_transform();
 
-			if (AABB(-extents,extents*2).intersects(xf.xform(aabb))) {
+			if (Rect3(-extents,extents*2).intersects(xf.xform(aabb))) {
 				Baker::PlotMesh pm;
 				pm.local_xform=xf;
 				pm.mesh=mesh;
@@ -1039,7 +1039,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 	baker.bake_cells.resize(1);
 
 	//find out the actual real bounds, power of 2, which gets the highest subdivision
-	baker.po2_bounds=AABB(-extents,extents*2.0);
+	baker.po2_bounds=Rect3(-extents,extents*2.0);
 	int longest_axis = baker.po2_bounds.get_longest_axis_index();
 	baker.axis_cell_size[longest_axis]=(1<<(baker.cell_subdiv-1));
 	baker.leaf_voxel_count=0;
@@ -1169,7 +1169,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 
 	Ref<GIProbeData> probe_data;
 	probe_data.instance();
-	probe_data->set_bounds(AABB(-extents,extents*2.0));
+	probe_data->set_bounds(Rect3(-extents,extents*2.0));
 	probe_data->set_cell_size(baker.po2_bounds.size[longest_axis]/baker.axis_cell_size[longest_axis]);
 	probe_data->set_dynamic_data(data);
 	probe_data->set_dynamic_range(dynamic_range);
@@ -1190,7 +1190,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 }
 
 
-void GIProbe::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb,Ref<MultiMesh> &p_multimesh,int &idx,Baker *p_baker) {
+void GIProbe::_debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb,Ref<MultiMesh> &p_multimesh,int &idx,Baker *p_baker) {
 
 
 	if (p_level==p_baker->cell_subdiv-1) {
@@ -1212,7 +1212,7 @@ void GIProbe::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb,Ref<MultiMe
 			if (p_baker->bake_cells[p_idx].childs[i]==Baker::CHILD_EMPTY)
 				continue;
 
-			AABB aabb=p_aabb;
+			Rect3 aabb=p_aabb;
 			aabb.size*=0.5;
 
 			if (i&1)
@@ -1332,9 +1332,9 @@ void GIProbe::_debug_bake() {
 	bake(NULL,true);
 }
 
-AABB GIProbe::get_aabb() const {
+Rect3 GIProbe::get_aabb() const {
 
-	return AABB(-extents,extents*2);
+	return Rect3(-extents,extents*2);
 }
 
 PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {

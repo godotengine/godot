@@ -43,8 +43,8 @@ void BodySW::_update_transform_dependant() {
 	principal_inertia_axes = get_transform().basis * principal_inertia_axes_local;
 
 	// update inertia tensor
-	Matrix3 tb = principal_inertia_axes;
-	Matrix3 tbt = tb.transposed();
+	Basis tb = principal_inertia_axes;
+	Basis tbt = tb.transposed();
 	tb.scale(_inv_inertia);
 	_inv_inertia_tensor = tb * tbt;
 
@@ -81,7 +81,7 @@ void BodySW::update_inertias() {
 			center_of_mass_local /= mass;
 
 			// Recompute the inertia tensor
-			Matrix3 inertia_tensor;
+			Basis inertia_tensor;
 			inertia_tensor.set_zero();
 
 			for (int i=0;i<get_shape_count();i++) {
@@ -92,15 +92,15 @@ void BodySW::update_inertias() {
 
 				float mass = area * this->mass / total_area;
 
-				Matrix3 shape_inertia_tensor=shape->get_moment_of_inertia(mass).to_diagonal_matrix();
+				Basis shape_inertia_tensor=shape->get_moment_of_inertia(mass).to_diagonal_matrix();
 				Transform shape_transform=get_shape_transform(i);
-				Matrix3 shape_basis = shape_transform.basis.orthonormalized();
+				Basis shape_basis = shape_transform.basis.orthonormalized();
 
 				// NOTE: we don't take the scale of collision shapes into account when computing the inertia tensor!
 				shape_inertia_tensor = shape_basis * shape_inertia_tensor * shape_basis.transposed();
 
 				Vector3 shape_origin = shape_transform.origin - center_of_mass_local;
-				inertia_tensor += shape_inertia_tensor + (Matrix3()*shape_origin.dot(shape_origin)-shape_origin.outer(shape_origin))*mass;
+				inertia_tensor += shape_inertia_tensor + (Basis()*shape_origin.dot(shape_origin)-shape_origin.outer(shape_origin))*mass;
 
 
 			}
@@ -497,7 +497,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		linear_velocity = (new_transform.origin - get_transform().origin)/p_step;
 
 		//compute a FAKE angular velocity, not so easy
-		Matrix3 rot=new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
+		Basis rot=new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
 		Vector3 axis;
 		float angle;
 
@@ -609,8 +609,8 @@ void BodySW::integrate_velocities(real_t p_step) {
 
 	if (ang_vel!=0.0) {
 		Vector3 ang_vel_axis = total_angular_velocity / ang_vel;
-		Matrix3 rot( ang_vel_axis, -ang_vel*p_step );
-		Matrix3 identity3(1, 0, 0, 0, 1, 0, 0, 0, 1);
+		Basis rot( ang_vel_axis, -ang_vel*p_step );
+		Basis identity3(1, 0, 0, 0, 1, 0, 0, 0, 1);
 		transform.origin += ((identity3 - rot) * transform.basis).xform(center_of_mass_local);
 		transform.basis = rot * transform.basis;
 		transform.orthonormalize();

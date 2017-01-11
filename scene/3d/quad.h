@@ -42,7 +42,7 @@ class Quad : public GeometryInstance {
 	Vector2 offset;
 	Vector2 size;
 
-	AABB aabb;
+	Rect3 aabb;
 	bool configured;
 	bool pending_update;
 	RID mesh;
@@ -68,7 +68,7 @@ public:
 	bool is_centered() const;
 
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
-	virtual AABB get_aabb() const;
+	virtual Rect3 get_aabb() const;
 
 	Quad();
 	~Quad();

@@ -71,7 +71,7 @@ private:
 
 	bool request_sent;
 	Ref<HTTPClient> client;
-	ByteArray body;
+	PoolByteArray body;
 	volatile bool use_threads;
 
 	bool got_response;
@@ -107,7 +107,7 @@ private:
 
 	Thread *thread;
 
-	void _request_done(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
+	void _request_done(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data);
 	static void _thread_func(void *p_userdata);
 
 protected:

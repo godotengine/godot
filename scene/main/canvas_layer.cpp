@@ -43,7 +43,7 @@ int CanvasLayer::get_layer() const{
 	return layer;
 }
 
-void CanvasLayer::set_transform(const Matrix32& p_xform) {
+void CanvasLayer::set_transform(const Transform2D& p_xform) {
 
 	transform=p_xform;
 	locrotscale_dirty=true;
@@ -52,7 +52,7 @@ void CanvasLayer::set_transform(const Matrix32& p_xform) {
 
 }
 
-Matrix32 CanvasLayer::get_transform() const {
+Transform2D CanvasLayer::get_transform() const {
 
 	return transform;
 }

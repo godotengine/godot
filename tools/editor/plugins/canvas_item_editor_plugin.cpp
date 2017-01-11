@@ -440,7 +440,7 @@ bool CanvasItemEditor::_is_part_of_subscene(CanvasItem *p_item) {
 }
 
 // slow but modern computers should have no problem
-CanvasItem* CanvasItemEditor::_select_canvas_item_at_pos(const Point2& p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform) {
+CanvasItem* CanvasItemEditor::_select_canvas_item_at_pos(const Point2& p_pos,Node* p_node,const Transform2D& p_parent_xform,const Transform2D& p_canvas_xform) {
 
 	if (!p_node)
 		return NULL;
@@ -479,7 +479,7 @@ CanvasItem* CanvasItemEditor::_select_canvas_item_at_pos(const Point2& p_pos,Nod
 	return NULL;
 }
 
-void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform, Vector<_SelectResult> &r_items) {
+void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos,Node* p_node,const Transform2D& p_parent_xform,const Transform2D& p_canvas_xform, Vector<_SelectResult> &r_items) {
 	if (!p_node)
 		return;
 	if (p_node->cast_to<Viewport>())
@@ -519,7 +519,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos,Node* p_nod
 	return;
 }
 
-void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2& p_rect,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform,List<CanvasItem*> *r_items) {
+void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2& p_rect,Node* p_node,const Transform2D& p_parent_xform,const Transform2D& p_canvas_xform,List<CanvasItem*> *r_items) {
 
 	if (!p_node)
 		return;
@@ -550,7 +550,7 @@ void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2& p_rect,Node* p_no
 	if (c && c->is_visible() && !c->has_meta("_edit_lock_") && !c->cast_to<CanvasLayer>()) {
 
 		Rect2 rect = c->get_item_rect();
-		Matrix32 xform = p_parent_xform * p_canvas_xform * c->get_transform();
+		Transform2D xform = p_parent_xform * p_canvas_xform * c->get_transform();
 
 		if ( p_rect.has_point( xform.xform( rect.pos ) ) &&
 		     p_rect.has_point( xform.xform( rect.pos+Vector2(rect.size.x,0) ) ) &&
@@ -708,7 +708,7 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE 
 			if (Node2D *node_2d = canvas_item->cast_to<Node2D>()) {
 
 				if (p_move_mode == MOVE_LOCAL_WITH_ROT) {
-					Matrix32 m;
+					Transform2D m;
 					m.rotate( node_2d->get_rotation() );
 					drag = m.xform(drag);
 				}
@@ -747,7 +747,7 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 
 
 		Rect2 rect=canvas_item->get_item_rect();
-		Matrix32 xform=canvas_item->get_global_transform_with_canvas();
+		Transform2D xform=canvas_item->get_global_transform_with_canvas();
 
 		r2.expand_to(xform.xform(rect.pos));
 		r2.expand_to(xform.xform(rect.pos+Vector2(rect.size.x,0)));
@@ -805,15 +805,15 @@ CanvasItem *CanvasItemEditor::get_single_item() {
 	return single_item;
 }
 
-CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Matrix32& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point) {
+CanvasItemEditor::DragType CanvasItemEditor::_find_drag_type(const Transform2D& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point) {
 
 	CanvasItem *canvas_item = get_single_item();
 
 	ERR_FAIL_COND_V(!canvas_item,DRAG_NONE);
 
 	Rect2 rect=canvas_item->get_item_rect();
-	Matrix32 xforml=canvas_item->get_global_transform_with_canvas();
-	Matrix32 xform=transform * xforml;
+	Transform2D xforml=canvas_item->get_global_transform_with_canvas();
+	Transform2D xform=transform * xforml;
 
 	Vector2 endpoints[4]={
 
@@ -1003,7 +1003,7 @@ void CanvasItemEditor::_list_select(const InputEventMouseButton& b) {
 	if (!scene)
 		return;
 
-	_find_canvas_items_at_pos(click, scene,transform,Matrix32(), selection_results);
+	_find_canvas_items_at_pos(click, scene,transform,Transform2D(), selection_results);
 
 	for(int i=0;i<selection_results.size();i++) {
 		CanvasItem *item=selection_results[i].item;
@@ -1295,7 +1295,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 					if (bsfrom.y>bsto.y)
 						SWAP(bsfrom.y,bsto.y);
 
-					_find_canvas_items_at_rect(Rect2(bsfrom,bsto-bsfrom),scene,transform,Matrix32(),&selitems);
+					_find_canvas_items_at_rect(Rect2(bsfrom,bsto-bsfrom),scene,transform,Transform2D(),&selitems);
 
 					for(List<CanvasItem*>::Element *E=selitems.front();E;E=E->next()) {
 
@@ -1415,7 +1415,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 				return;
 			}
 
-			Matrix32 xform = transform * canvas_item->get_global_transform_with_canvas();
+			Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
 			Rect2 rect=canvas_item->get_item_rect();
 		//	float handle_radius = handle_len * 1.4144; //magic number, guess what it means!
 
@@ -1504,7 +1504,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 
 		}
 		if (!c) {
-			c =_select_canvas_item_at_pos(click, scene,transform,Matrix32());
+			c =_select_canvas_item_at_pos(click, scene,transform,Transform2D());
 
 
 			CanvasItem* cn = c;
@@ -1748,7 +1748,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 
 
 				Node2D *n2d = canvas_item->cast_to<Node2D>();
-				Matrix32 final_xform = bone_orig_xform;
+				Transform2D final_xform = bone_orig_xform;
 
 
 
@@ -1920,7 +1920,7 @@ void CanvasItemEditor::_viewport_draw() {
 	if (snap_show_grid) {
 		Size2 s = viewport->get_size();
 		int last_cell;
-		Matrix32 xform = transform.affine_inverse();
+		Transform2D xform = transform.affine_inverse();
 
 		if (snap_step.x!=0) {
 			for(int i=0;i<s.width;i++) {
@@ -1980,7 +1980,7 @@ void CanvasItemEditor::_viewport_draw() {
 
 		Rect2 rect=canvas_item->get_item_rect();
 
-		Matrix32 xform=transform * canvas_item->get_global_transform_with_canvas();
+		Transform2D xform=transform * canvas_item->get_global_transform_with_canvas();
 		VisualServer::get_singleton()->canvas_item_add_set_transform(ci,xform);
 
 		Vector2 endpoints[4]={
@@ -1993,7 +1993,7 @@ void CanvasItemEditor::_viewport_draw() {
 
 		Color c = Color(1,0.6,0.4,0.7);
 
-		VisualServer::get_singleton()->canvas_item_add_set_transform(ci,Matrix32());
+		VisualServer::get_singleton()->canvas_item_add_set_transform(ci,Transform2D());
 
 		for(int i=0;i<4;i++) {
 			viewport->draw_line(endpoints[i],endpoints[(i+1)%4],c,2);
@@ -2043,7 +2043,7 @@ void CanvasItemEditor::_viewport_draw() {
 	}
 
 	pivot_button->set_disabled(!pivot_found);
-	VisualServer::get_singleton()->canvas_item_add_set_transform(ci,Matrix32());
+	VisualServer::get_singleton()->canvas_item_add_set_transform(ci,Transform2D());
 
 
 
@@ -2215,7 +2215,7 @@ void CanvasItemEditor::_notification(int p_what) {
 
 			Rect2 r=canvas_item->get_item_rect();
 
-			Matrix32 xform = canvas_item->get_transform();
+			Transform2D xform = canvas_item->get_transform();
 
 			if (r != se->prev_rect || xform!=se->prev_xform) {
 				viewport->update();
@@ -2330,7 +2330,7 @@ void CanvasItemEditor::edit(CanvasItem *p_canvas_item) {
 }
 
 
-void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, const Matrix32& p_xform) {
+void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, const Transform2D& p_xform) {
 
 
 
@@ -2347,7 +2347,7 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 		if (c && !c->is_set_as_toplevel())
 			_find_canvas_items_span(p_node->get_child(i),r_rect,p_xform * c->get_transform());
 		else
-			_find_canvas_items_span(p_node->get_child(i),r_rect,Matrix32());
+			_find_canvas_items_span(p_node->get_child(i),r_rect,Transform2D());
 	}
 
 
@@ -2355,7 +2355,7 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 	if (c) {
 
 		Rect2 rect = c->get_item_rect();
-		Matrix32 xform = p_xform * c->get_transform();
+		Transform2D xform = p_xform * c->get_transform();
 
 
 		LockList lock;
@@ -2416,7 +2416,7 @@ void CanvasItemEditor::_update_scrollbars() {
 
 
 	if (editor->get_edited_scene())
-		_find_canvas_items_span(editor->get_edited_scene(),canvas_item_rect,Matrix32());
+		_find_canvas_items_span(editor->get_edited_scene(),canvas_item_rect,Transform2D());
 
 	List<Map<ObjectID,BoneList>::Element*> bone_to_erase;
 
@@ -2497,7 +2497,7 @@ void CanvasItemEditor::_update_scroll(float) {
 
 //	current_window->set_scroll(-ofs);
 
-	transform=Matrix32();
+	transform=Transform2D();
 
 	transform.scale_basis(Size2(zoom,zoom));
 	transform.elements[2]=-ofs;
@@ -3160,7 +3160,7 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		Vector2 scale = canvas_item->get_global_transform().get_scale();
 		real_t angle = canvas_item->get_global_transform().get_rotation();
 
-		Matrix32 t(angle, Vector2(0.f,0.f));
+		Transform2D t(angle, Vector2(0.f,0.f));
 		item_rect = t.xform(item_rect);
 		Rect2 canvas_item_rect(pos + scale*item_rect.pos, scale*item_rect.size);
 		if (count == 1) {
@@ -3783,7 +3783,7 @@ void CanvasItemEditorViewport::_create_nodes(Node* parent, Node* child, String& 
 	if (parent->has_method("get_global_pos")) {
 		pos=parent->call("get_global_pos");
 	}
-	Matrix32 trans=canvas->get_canvas_transform();
+	Transform2D trans=canvas->get_canvas_transform();
 	Point2 target_pos = (p_point-trans.get_origin())/trans.get_scale().x-pos;
 	if (default_type=="Polygon2D" || default_type=="TouchScreenButton" || default_type=="TextureFrame" || default_type=="Patch9Frame") {
 		target_pos -= texture_size/2;
@@ -3831,7 +3831,7 @@ bool CanvasItemEditorViewport::_create_instance(Node* parent, String& path, cons
 			pos=parent_control->get_global_pos();
 		}
 	}
-	Matrix32 trans=canvas->get_canvas_transform();
+	Transform2D trans=canvas->get_canvas_transform();
 	editor_data->get_undo_redo().add_do_method(instanced_scene,"set_pos",(p_point-trans.get_origin())/trans.get_scale().x-pos);
 
 	return true;
@@ -3911,7 +3911,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2& p_point,const Variant
 				if (!preview->get_parent()){ // create preview only once
 					_create_preview(files);
 				}
-				Matrix32 trans=canvas->get_canvas_transform();
+				Transform2D trans=canvas->get_canvas_transform();
 				preview->set_position((p_point-trans.get_origin())/trans.get_scale().x);
 				label->set_text(vformat(TTR("Adding %s..."),default_type));
 			}

@@ -47,8 +47,8 @@ public:
 	btVehicleJacobianEntry() {};
 		//constraint between two different rigidbodies
 		btVehicleJacobianEntry(
-			const Matrix3& world2A,
-			const Matrix3& world2B,
+			const Basis& world2A,
+			const Basis& world2B,
 			const Vector3& rel_pos1,
 			const Vector3& rel_pos2,
 			const Vector3& jointAxis,
@@ -367,14 +367,14 @@ void VehicleBody::_update_wheel(int p_idx,PhysicsDirectBodyState *s) {
 	real_t steering = wheel.steers?m_steeringValue:0.0;
 	//print_line(itos(p_idx)+": "+rtos(steering));
 
-	Matrix3 steeringMat(up,steering);
+	Basis steeringMat(up,steering);
 
-	Matrix3 rotatingMat(right,-wheel.m_rotation);
+	Basis rotatingMat(right,-wheel.m_rotation);
 
 //	if (p_idx==1)
 //		print_line("steeringMat " +steeringMat);
 
-	Matrix3 basis2(
+	Basis basis2(
 		right[0],up[0],fwd[0],
 		right[1],up[1],fwd[1],
 		right[2],up[2],fwd[2]
@@ -574,7 +574,7 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 
 	Vector3 vel = vel1 - vel2;
 
-	Matrix3 b2trans;
+	Basis b2trans;
 	float b2invmass=0;
 	Vector3 b2lv;
 	Vector3 b2av;
@@ -728,7 +728,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 
 				//const btTransform& wheelTrans = getWheelTransformWS( i );
 
-				Matrix3 wheelBasis0 = wheelInfo.m_worldTransform.basis;//get_global_transform().basis;
+				Basis wheelBasis0 = wheelInfo.m_worldTransform.basis;//get_global_transform().basis;
 
 				m_axle[i] = wheelBasis0.get_axis(Vector3::AXIS_X);
 				//m_axle[i] = wheelInfo.m_raycastInfo.m_wheelAxleWS;

@@ -50,7 +50,7 @@ void ParallaxBackground::_notification(int p_what) {
 
 }
 
-void ParallaxBackground::_camera_moved(const Matrix32& p_transform) {
+void ParallaxBackground::_camera_moved(const Transform2D& p_transform) {
 
 
 	set_scroll_offset(p_transform.get_origin());

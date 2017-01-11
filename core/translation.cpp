@@ -909,7 +909,7 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_messages"),&Translation::_set_messages);
 	ClassDB::bind_method(_MD("_get_messages"),&Translation::_get_messages);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING_ARRAY,"messages",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_messages"), _SCS("_get_messages") );
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_STRING_ARRAY,"messages",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_messages"), _SCS("_get_messages") );
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"locale"), _SCS("set_locale"), _SCS("get_locale") );
 }
 

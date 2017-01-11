@@ -792,9 +792,9 @@ public:
 
 	void make_visible(bool p_visible);
 	void edit(Object *p_object);
-	bool forward_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event);
+	bool forward_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event);
 	bool forward_spatial_gui_input(Camera* p_camera, const InputEvent& p_event);
-	void forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control* p_canvas);
+	void forward_draw_over_canvas(const Transform2D& p_canvas_xform,Control* p_canvas);
 	void clear();
 	bool empty();
 

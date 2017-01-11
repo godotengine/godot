@@ -326,11 +326,11 @@ static Color _color_from_type(Variant::Type p_type) {
 		case Variant::VECTOR2: color = Color::html("bd91f1"); break;
 		case Variant::RECT2: color = Color::html("f191a5"); break;
 		case Variant::VECTOR3: color = Color::html("d67dee"); break;
-		case Variant::MATRIX32: color = Color::html("c4ec69"); break;
+		case Variant::TRANSFORM2D: color = Color::html("c4ec69"); break;
 		case Variant::PLANE: color = Color::html("f77070"); break;
 		case Variant::QUAT: color = Color::html("ec69a3"); break;
-		case Variant::_AABB: color = Color::html("ee7991"); break;
-		case Variant::MATRIX3: color = Color::html("e3ec69"); break;
+		case Variant::RECT3: color = Color::html("ee7991"); break;
+		case Variant::BASIS: color = Color::html("e3ec69"); break;
 		case Variant::TRANSFORM: color = Color::html("f6a86e"); break;
 
 		case Variant::COLOR: color = Color::html("9dff70"); break;
@@ -342,13 +342,13 @@ static Color _color_from_type(Variant::Type p_type) {
 		case Variant::DICTIONARY: color = Color::html("77edb1"); break;
 
 		case Variant::ARRAY: color = Color::html("e0e0e0"); break;
-		case Variant::RAW_ARRAY: color = Color::html("aaf4c8"); break;
-		case Variant::INT_ARRAY: color = Color::html("afdcf5"); break;
-		case Variant::REAL_ARRAY: color = Color::html("97e7f8"); break;
-		case Variant::STRING_ARRAY: color = Color::html("9dc4f2"); break;
-		case Variant::VECTOR2_ARRAY: color = Color::html("d1b3f5"); break;
-		case Variant::VECTOR3_ARRAY: color = Color::html("df9bf2"); break;
-		case Variant::COLOR_ARRAY: color = Color::html("e9ff97"); break;
+		case Variant::POOL_BYTE_ARRAY: color = Color::html("aaf4c8"); break;
+		case Variant::POOL_INT_ARRAY: color = Color::html("afdcf5"); break;
+		case Variant::POOL_REAL_ARRAY: color = Color::html("97e7f8"); break;
+		case Variant::POOL_STRING_ARRAY: color = Color::html("9dc4f2"); break;
+		case Variant::POOL_VECTOR2_ARRAY: color = Color::html("d1b3f5"); break;
+		case Variant::POOL_VECTOR3_ARRAY: color = Color::html("df9bf2"); break;
+		case Variant::POOL_COLOR_ARRAY: color = Color::html("e9ff97"); break;
 
 		default:
 			color.set_hsv(p_type/float(Variant::VARIANT_MAX),0.7,0.7);
@@ -438,11 +438,11 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_icon("MiniVector2","EditorIcons"),
 		Control::get_icon("MiniRect2","EditorIcons"),
 		Control::get_icon("MiniVector3","EditorIcons"),
-		Control::get_icon("MiniMatrix32","EditorIcons"),
+		Control::get_icon("MiniTransform2D","EditorIcons"),
 		Control::get_icon("MiniPlane","EditorIcons"),
 		Control::get_icon("MiniQuat","EditorIcons"),
 		Control::get_icon("MiniAabb","EditorIcons"),
-		Control::get_icon("MiniMatrix3","EditorIcons"),
+		Control::get_icon("MiniBasis","EditorIcons"),
 		Control::get_icon("MiniTransform","EditorIcons"),
 		Control::get_icon("MiniColor","EditorIcons"),
 		Control::get_icon("MiniImage","EditorIcons"),
@@ -2321,7 +2321,7 @@ bool VisualScriptEditor::goto_method(const String& p_method){
 	return true;
 }
 
-void VisualScriptEditor::add_callback(const String& p_function,StringArray p_args){
+void VisualScriptEditor::add_callback(const String& p_function,PoolStringArray p_args){
 
 	if (script->has_function(p_function)) {
 		edited_func=p_function;

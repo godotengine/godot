@@ -63,10 +63,10 @@ PoolVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
 	return PoolVector<Face3>();
 }
 
-AABB MultiMeshInstance::get_aabb() const {
+Rect3 MultiMeshInstance::get_aabb() const {
 
 	if (multimesh.is_null())
-		return AABB();
+		return Rect3();
 	else
 		return multimesh->get_aabb();
 }
