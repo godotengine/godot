@@ -176,7 +176,7 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::REAL, "far" , PROPERTY_HINT_EXP_RANGE, "0.01,4096.0,0.01") );
 	p_list->push_back( PropertyInfo( Variant::INT, "keep_aspect",PROPERTY_HINT_ENUM,"Keep Width,Keep Height") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "current" ) );
-	p_list->push_back( PropertyInfo( Variant::INT, "cull_mask",PROPERTY_HINT_ALL_FLAGS ) );
+	p_list->push_back( PropertyInfo( Variant::INT, "cull_mask",PROPERTY_HINT_LAYERS_3D_RENDER ) );
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "h_offset" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "v_offset" ) );

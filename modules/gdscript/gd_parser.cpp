@@ -2668,7 +2668,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 									if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier()=="FLAGS") {
 
-										current_export.hint=PROPERTY_HINT_ALL_FLAGS;
+										//current_export.hint=PROPERTY_HINT_ALL_FLAGS;
 										tokenizer->advance();
 
 										if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {

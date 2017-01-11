@@ -144,7 +144,7 @@ void VisualInstance::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "layers",PROPERTY_HINT_ALL_FLAGS), _SCS("set_layer_mask"), _SCS("get_layer_mask"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "layers",PROPERTY_HINT_LAYERS_3D_RENDER), _SCS("set_layer_mask"), _SCS("get_layer_mask"));
 
 
 }

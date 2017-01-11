@@ -248,7 +248,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light_energy",PROPERTY_HINT_RANGE,"0,16,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_ENERGY);
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "light_negative"), _SCS("set_negative"), _SCS("is_negative"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "light_specular",PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_SPECULAR);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "light_cull_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_cull_mask"), _SCS("get_cull_mask"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "light_cull_mask",PROPERTY_HINT_LAYERS_3D_RENDER), _SCS("set_cull_mask"), _SCS("get_cull_mask"));
 	ADD_GROUP("Shadow","shadow_");
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "shadow_enabled"), _SCS("set_shadow"), _SCS("has_shadow"));
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "shadow_color",PROPERTY_HINT_COLOR_NO_ALPHA), _SCS("set_shadow_color"), _SCS("get_shadow_color"));

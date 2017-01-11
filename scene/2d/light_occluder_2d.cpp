@@ -235,7 +235,7 @@ void LightOccluder2D::_bind_methods() {
 #endif
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"occluder",PROPERTY_HINT_RESOURCE_TYPE,"OccluderPolygon2D"),_SCS("set_occluder_polygon"),_SCS("get_occluder_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_LAYERS_2D_RENDER),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
 }
 
 LightOccluder2D::LightOccluder2D() {

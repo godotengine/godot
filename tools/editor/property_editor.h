@@ -41,6 +41,7 @@
 #include "scene/gui/text_edit.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/grid_container.h"
 #include "scene_tree_editor.h"
 
 /**
@@ -100,6 +101,7 @@ class CustomPropertyEditor : public Popup {
 	TextEdit *text_edit;
 	bool read_only;
 	bool picking_viewport;
+	GridContainer *checks20gc;
 	CheckBox *checks20[20];
 	SpinBox *spinbox;
 	HSlider *slider;

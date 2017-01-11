@@ -656,8 +656,8 @@ void Area::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
 	ADD_GROUP("Collision","collision_");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 
 }
 

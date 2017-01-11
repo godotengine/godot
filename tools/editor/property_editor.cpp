@@ -47,6 +47,7 @@
 #include "editor_file_system.h"
 #include "create_dialog.h"
 #include "property_selector.h"
+#include "globals.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 
@@ -306,6 +307,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		action_buttons[i]->hide();
 	}
 
+	checks20gc->hide();
 	for(int i=0;i<20;i++)
 		checks20[i]->hide();
 
@@ -316,12 +318,16 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 		case Variant::BOOL: {
 
+			checks20gc->show();
+
 			CheckBox *c=checks20[0];
 			c->set_text("True");
-			c->set_pos(Vector2(4,4));
+			checks20gc->set_pos(Vector2(4,4));
 			c->set_pressed(v);
 			c->show();
-			set_size(checks20[0]->get_pos()+checks20[0]->get_size()+Vector2(4,4)*EDSCALE);
+
+			checks20gc->set_size(checks20gc->get_minimum_size());
+			set_size(checks20gc->get_pos()+checks20gc->get_size()+Vector2(4,4)*EDSCALE);
 
 		} break;
 		case Variant::INT:
@@ -378,10 +384,19 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				return false;
 
 
-			} else if (hint==PROPERTY_HINT_ALL_FLAGS) {
+			} else if (hint==PROPERTY_HINT_LAYERS_2D_PHYSICS || hint==PROPERTY_HINT_LAYERS_2D_RENDER || hint==PROPERTY_HINT_LAYERS_3D_PHYSICS || hint==PROPERTY_HINT_LAYERS_3D_RENDER) {
 
-				checks20[0]->set_text("");
 
+				String title;
+				String basename;
+				switch (hint) {
+					case PROPERTY_HINT_LAYERS_2D_RENDER: basename="layer_names/2d_render"; title="2D Render Layers"; break;
+					case PROPERTY_HINT_LAYERS_2D_PHYSICS: basename="layer_names/2d_physics"; title="2D Physics Layers"; break;
+					case PROPERTY_HINT_LAYERS_3D_RENDER: basename="layer_names/3d_render"; title="3D Render Layers"; break;
+					case PROPERTY_HINT_LAYERS_3D_PHYSICS: basename="layer_names/3d_physics";title="3D Physics Layers";  break;
+				}
+
+				checks20gc->show();
 				uint32_t flgs = v;
 				for(int i=0;i<2;i++) {
 
@@ -389,12 +404,9 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					ofs.y+=22*i;
 					for(int j=0;j<10;j++) {
 
-						CheckBox *c=checks20[i*10+j];
-						Point2 o=ofs;
-						o.x+=j*22;
-						if (j>=5)
-							o.x+=4;
-						c->set_pos(o);
+						int idx = i*10+j;
+						CheckBox *c=checks20[idx];
+						c->set_text(GlobalConfig::get_singleton()->get(basename+"/layer_"+itos(idx+1)));
 						c->set_pressed( flgs & (1<<(i*10+j)) );
 						c->show();
 					}
@@ -402,7 +414,16 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				}
 
-				set_size(checks20[19]->get_pos()+Size2(20,25)*EDSCALE);
+				show();
+
+				value_label[0]->set_text(title);
+				value_label[0]->show();
+				value_label[0]->set_pos(Vector2(4,4)*EDSCALE);
+
+				checks20gc->set_pos(Vector2(4,4)*EDSCALE+Vector2(0,value_label[0]->get_size().height+4*EDSCALE));
+				checks20gc->set_size(checks20gc->get_minimum_size());
+
+				set_size(Vector2(4,4)*EDSCALE+checks20gc->get_pos()+checks20gc->get_size());
 
 
 			} else if (hint==PROPERTY_HINT_EXP_EASING) {
@@ -1206,7 +1227,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		} break;
 		case Variant::INT: {
 
-			if (hint==PROPERTY_HINT_ALL_FLAGS) {
+			if (hint==PROPERTY_HINT_LAYERS_2D_PHYSICS || hint==PROPERTY_HINT_LAYERS_2D_RENDER || hint==PROPERTY_HINT_LAYERS_3D_PHYSICS || hint==PROPERTY_HINT_LAYERS_3D_RENDER) {
 
 				uint32_t f = v;
 				if (checks20[p_which]->is_pressed())
@@ -1995,11 +2016,21 @@ CustomPropertyEditor::CustomPropertyEditor() {
 
 	}
 
+	checks20gc = memnew( GridContainer );
+	add_child(checks20gc);
+	checks20gc->set_columns(11);
+
 	for(int i=0;i<20;i++) {
+		if (i==5 || i==15) {
+			Control *space = memnew( Control );
+			space->set_custom_minimum_size(Size2(20,0)*EDSCALE);
+			checks20gc->add_child(space);
+		}
+
 		checks20[i]=memnew( CheckBox );
 		checks20[i]->set_toggle_mode(true);
-		checks20[i]->set_focus_mode(FOCUS_NONE);
-		add_child(checks20[i]);
+		checks20[i]->set_focus_mode(FOCUS_NONE);		
+		checks20gc->add_child(checks20[i]);
 		checks20[i]->hide();
 		checks20[i]->connect("pressed",this,"_action_pressed",make_binds(i));
 		checks20[i]->set_tooltip(vformat(TTR("Bit %d, val %d."), i, 1<<i));
@@ -2302,7 +2333,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 		case Variant::REAL:
 		case Variant::INT: {
 
-			if (p_hint==PROPERTY_HINT_ALL_FLAGS) {
+			if (p_hint==PROPERTY_HINT_LAYERS_2D_PHYSICS || p_hint==PROPERTY_HINT_LAYERS_2D_RENDER || p_hint==PROPERTY_HINT_LAYERS_3D_PHYSICS || p_hint==PROPERTY_HINT_LAYERS_3D_RENDER) {
 				tree->update();
 				break;
 			}
@@ -3265,7 +3296,7 @@ void PropertyEditor::update_tree() {
 
 				}
 
-				if (p.hint==PROPERTY_HINT_ALL_FLAGS) {
+				if (p.hint==PROPERTY_HINT_LAYERS_2D_PHYSICS || p.hint==PROPERTY_HINT_LAYERS_2D_RENDER || p.hint==PROPERTY_HINT_LAYERS_3D_PHYSICS || p.hint==PROPERTY_HINT_LAYERS_3D_RENDER) {
 
 					item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 					item->set_editable(1,!read_only);
@@ -3914,7 +3945,7 @@ void PropertyEditor::_item_edited() {
 		case Variant::INT:
 		case Variant::REAL: {
 
-			if (hint==PROPERTY_HINT_ALL_FLAGS)
+			if (hint==PROPERTY_HINT_LAYERS_2D_PHYSICS || hint==PROPERTY_HINT_LAYERS_2D_RENDER || hint==PROPERTY_HINT_LAYERS_3D_PHYSICS || hint==PROPERTY_HINT_LAYERS_3D_RENDER)
 				break;
 			if (hint==PROPERTY_HINT_EXP_EASING)
 				break;
@@ -4533,7 +4564,7 @@ class SectionedPropertyEditorFilter : public Object {
 			PropertyInfo pi=E->get();
 			int sp = pi.name.find("/");
 
-			if (pi.name=="resource_path" || pi.name=="resource_name") //skip resource stuff
+			if (pi.name=="resource_path" || pi.name=="resource_name" || pi.name.begins_with("script/")) //skip resource stuff
 				continue;
 
 			if (sp==-1) {

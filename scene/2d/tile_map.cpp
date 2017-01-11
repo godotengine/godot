@@ -1274,11 +1274,11 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision_use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 
 	ADD_GROUP("Occluder","occluder_");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"occluder_light_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"occluder_light_mask",PROPERTY_HINT_LAYERS_2D_RENDER),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
 	ADD_GROUP("","");
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
 

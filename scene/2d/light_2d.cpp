@@ -442,7 +442,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_cull_mask"),_SCS("get_item_cull_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_item_cull_mask",PROPERTY_HINT_LAYERS_2D_RENDER),_SCS("set_item_cull_mask"),_SCS("get_item_cull_mask"));
 
 	ADD_GROUP("Shadow","shadow_");
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow_enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
@@ -450,7 +450,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_gradient_length",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_gradient_length"),_SCS("get_shadow_gradient_length"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_filter",PROPERTY_HINT_ENUM,"None,PCF3,PCF5,PCF9,PCF13"),_SCS("set_shadow_filter"),_SCS("get_shadow_filter"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_item_cull_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_cull_mask"),_SCS("get_item_shadow_cull_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_item_cull_mask",PROPERTY_HINT_LAYERS_2D_RENDER),_SCS("set_item_shadow_cull_mask"),_SCS("get_item_shadow_cull_mask"));
 
 	BIND_CONSTANT( MODE_ADD );
 	BIND_CONSTANT( MODE_SUB );

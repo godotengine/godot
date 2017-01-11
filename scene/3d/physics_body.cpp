@@ -162,9 +162,8 @@ void PhysicsBody::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody::_set_layers);
 	ClassDB::bind_method(_MD("_get_layers"),&PhysicsBody::_get_layers);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS,"",0),_SCS("_set_layers"),_SCS("_get_layers")); //for backwards compat
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 }
 
 

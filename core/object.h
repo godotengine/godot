@@ -58,7 +58,10 @@ enum PropertyHint {
 	PROPERTY_HINT_SPRITE_FRAME,
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
-	PROPERTY_HINT_ALL_FLAGS,
+	PROPERTY_HINT_LAYERS_2D_RENDER,
+	PROPERTY_HINT_LAYERS_2D_PHYSICS,
+	PROPERTY_HINT_LAYERS_3D_RENDER,
+	PROPERTY_HINT_LAYERS_3D_PHYSICS,
 	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_DIR, ///< a directort path must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"

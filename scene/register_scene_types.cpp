@@ -644,6 +644,12 @@ void register_scene_types() {
 	resource_loader_text = memnew( ResourceFormatLoaderText );
 	ResourceLoader::add_resource_format_loader(resource_loader_text,true);
 
+	for(int i=0;i<20;i++) {
+		GLOBAL_DEF("layer_names/2d_render/layer_"+itos(i+1),"");
+		GLOBAL_DEF("layer_names/2d_physics/layer_"+itos(i+1),"");
+		GLOBAL_DEF("layer_names/3d_render/layer_"+itos(i+1),"");
+		GLOBAL_DEF("layer_names/3d_physics/layer_"+itos(i+1),"");
+	}
 }
 
 void unregister_scene_types() {
