@@ -41,6 +41,7 @@
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
 #include "animation_editor.h"
 #include "scene/main/viewport.h"
+#include <wctype.h>
 
 
 void SceneTreeDock::_nodes_drag_begin() {
@@ -1366,6 +1367,25 @@ void SceneTreeDock::_create() {
 
 		editor_data->get_undo_redo().create_action(TTR("Create Node"));
 
+		// Give the node a name with respect to the user's node name casing setting.
+		String new_name;
+		if (edited_scene) {
+			new_name = parent->validate_child_name(child);
+		} else {
+			new_name = child->get_type();
+		}
+		int name_casing = _get_node_name_casing("scenetree_editor/new_node_name_casing");
+		switch (name_casing) {
+
+			case NODE_NAME_CASING_CAMEL_CASE:
+				new_name[0] = towlower(new_name[0]); // First character should always be a letter here as it's a type name
+				break;
+			case NODE_NAME_CASING_SNAKE_CASE:
+				new_name = new_name.camelcase_to_underscore(true);
+				break;
+		}
+		child->set_name(new_name);
+
 		if (edited_scene) {
 
 			editor_data->get_undo_redo().add_do_method(parent,"add_child",child);
@@ -1375,8 +1395,6 @@ void SceneTreeDock::_create() {
 			editor_data->get_undo_redo().add_do_reference(child);
 			editor_data->get_undo_redo().add_undo_method(parent,"remove_child",child);
 
-
-			String new_name = parent->validate_child_name(child);
 			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
 			editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",edited_scene->get_path_to(parent),child->get_type(),new_name);
 			editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
@@ -1877,6 +1895,13 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
 }
 
+SceneTreeDock::NodeNameCasing SceneTreeDock::_get_node_name_casing(const String& p_property) {
+	switch (EditorSettings::get_singleton()->get(p_property).operator int()) {
+		case 1: return NODE_NAME_CASING_CAMEL_CASE;
+		case 2: return NODE_NAME_CASING_SNAKE_CASE;
+	}
+	return NODE_NAME_CASING_PASCAL_CASE;
+}
 
 
 SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data)  {
