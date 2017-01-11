@@ -26,10 +26,12 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include "vector3.h"
+
 #ifndef MATRIX3_H
 #define MATRIX3_H
 
-#include "vector3.h"
 #include "quat.h"
 
 /**
@@ -104,6 +106,12 @@ public:
 	_FORCE_INLINE_ Vector3 xform_inv(const Vector3& p_vector) const;
 	_FORCE_INLINE_ void operator*=(const Matrix3& p_matrix);
 	_FORCE_INLINE_ Matrix3 operator*(const Matrix3& p_matrix) const;
+	_FORCE_INLINE_ void operator+=(const Matrix3& p_matrix);
+	_FORCE_INLINE_ Matrix3 operator+(const Matrix3& p_matrix) const;
+	_FORCE_INLINE_ void operator-=(const Matrix3& p_matrix);
+	_FORCE_INLINE_ Matrix3 operator-(const Matrix3& p_matrix) const;
+	_FORCE_INLINE_ void operator*=(real_t p_val);
+	_FORCE_INLINE_ Matrix3 operator*(real_t p_val) const;
 
 	int get_orthogonal_index() const;
 	void set_orthogonal_index(int p_index);
@@ -139,6 +147,10 @@ public:
 
 		return Vector3(elements[i][0],elements[i][1],elements[i][2]);
 	}
+	_FORCE_INLINE_ Vector3 get_main_diagonal() const {
+		return Vector3(elements[0][0],elements[1][1],elements[2][2]);
+	}
+
 	_FORCE_INLINE_ void set_row(int i, const Vector3& p_row) {
 		elements[i][0]=p_row.x;
 		elements[i][1]=p_row.y;
@@ -172,11 +184,21 @@ public:
 	void orthonormalize();
 	Matrix3 orthonormalized() const;
 
+	bool is_symmetric() const;
+	Matrix3 diagonalize();
+
 	operator Quat() const;
 
 	Matrix3(const Quat& p_quat); // euler
 	Matrix3(const Vector3& p_euler); // euler
 	Matrix3(const Vector3& p_axis, real_t p_phi);
+
+	_FORCE_INLINE_ Matrix3(const Vector3& row0, const Vector3& row1, const Vector3& row2)
+	{
+		elements[0]=row0;
+		elements[1]=row1;
+		elements[2]=row2;
+	}
 
 	_FORCE_INLINE_ Matrix3() {
 
@@ -210,6 +232,49 @@ _FORCE_INLINE_ Matrix3 Matrix3::operator*(const Matrix3& p_matrix) const {
 		p_matrix.tdotx(elements[1]), p_matrix.tdoty(elements[1]), p_matrix.tdotz(elements[1]),
 		p_matrix.tdotx(elements[2]), p_matrix.tdoty(elements[2]), p_matrix.tdotz(elements[2]) );
 
+}
+
+
+_FORCE_INLINE_ void Matrix3::operator+=(const Matrix3& p_matrix) {
+
+	elements[0] += p_matrix.elements[0];
+	elements[1] += p_matrix.elements[1];
+	elements[2] += p_matrix.elements[2];
+}
+
+_FORCE_INLINE_ Matrix3 Matrix3::operator+(const Matrix3& p_matrix) const {
+	
+	Matrix3 ret(*this);
+	ret += p_matrix;
+	return ret;
+}
+
+_FORCE_INLINE_ void Matrix3::operator-=(const Matrix3& p_matrix) {
+
+	elements[0] -= p_matrix.elements[0];
+	elements[1] -= p_matrix.elements[1];
+	elements[2] -= p_matrix.elements[2];
+}
+
+_FORCE_INLINE_ Matrix3 Matrix3::operator-(const Matrix3& p_matrix) const {
+	
+	Matrix3 ret(*this);
+	ret -= p_matrix;
+	return ret;
+}
+
+_FORCE_INLINE_ void Matrix3::operator*=(real_t p_val) {
+
+	elements[0]*=p_val;
+	elements[1]*=p_val;
+	elements[2]*=p_val;
+}
+
+_FORCE_INLINE_ Matrix3 Matrix3::operator*(real_t p_val) const {
+
+		Matrix3 ret(*this);
+		ret *= p_val;
+		return ret;
 }
 
 Vector3 Matrix3::xform(const Vector3& p_vector) const {

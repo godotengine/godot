@@ -128,10 +128,10 @@ bool	ConeTwistJointSW::setup(float p_step) {
 		for (int i=0;i<3;i++)
 		{
 			memnew_placement(&m_jac[i], JacobianEntrySW(
-				A->get_transform().basis.transposed(),
-				B->get_transform().basis.transposed(),
-				pivotAInW - A->get_transform().origin,
-				pivotBInW - B->get_transform().origin,
+				A->get_principal_inertia_axes().transposed(),
+				B->get_principal_inertia_axes().transposed(),
+				pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+				pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
 				normal[i],
 				A->get_inv_inertia(),
 				A->get_inv_mass(),

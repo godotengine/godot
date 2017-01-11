@@ -352,10 +352,10 @@ void Generic6DOFJointSW::buildLinearJacobian(
     const Vector3 & pivotAInW,const Vector3 & pivotBInW)
 {
    memnew_placement(&jacLinear, JacobianEntrySW(
-	A->get_transform().basis.transposed(),
-	B->get_transform().basis.transposed(),
-	pivotAInW - A->get_transform().origin,
-	pivotBInW - B->get_transform().origin,
+	A->get_principal_inertia_axes().transposed(),
+	B->get_principal_inertia_axes().transposed(),
+	pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+	pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
 	normalWorld,
 	A->get_inv_inertia(),
 	A->get_inv_mass(),
@@ -368,8 +368,8 @@ void Generic6DOFJointSW::buildAngularJacobian(
     JacobianEntrySW & jacAngular,const Vector3 & jointAxisW)
 {
     memnew_placement(&jacAngular, JacobianEntrySW(jointAxisW,
-				      A->get_transform().basis.transposed(),
-				      B->get_transform().basis.transposed(),
+				      A->get_principal_inertia_axes().transposed(),
+				      B->get_principal_inertia_axes().transposed(),
 				      A->get_inv_inertia(),
 				      B->get_inv_inertia()));
 
@@ -440,7 +440,7 @@ bool Generic6DOFJointSW::setup(float p_step) {
 }
 
 
-void Generic6DOFJointSW::solve(real_t	timeStep)
+void Generic6DOFJointSW::solve(real_t timeStep)
 {
     m_timeStep = timeStep;
 

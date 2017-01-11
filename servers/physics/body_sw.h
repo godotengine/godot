@@ -57,8 +57,16 @@ class BodySW : public CollisionObjectSW {
 	PhysicsServer::BodyAxisLock axis_lock;
 
 	real_t _inv_mass;
-	Vector3 _inv_inertia;
+	Vector3 _inv_inertia; // Relative to the principal axes of inertia
+
+	// Relative to the local frame of reference
+	Matrix3 principal_inertia_axes_local;
+	Vector3 center_of_mass_local;
+
+	// In world orientation with local origin
 	Matrix3 _inv_inertia_tensor;
+	Matrix3 principal_inertia_axes;
+	Vector3 center_of_mass;
 
 	Vector3 gravity;
 
@@ -135,7 +143,7 @@ class BodySW : public CollisionObjectSW {
 
 	_FORCE_INLINE_ void _compute_area_gravity_and_dampenings(const AreaSW *p_area);
 
-	_FORCE_INLINE_ void _update_inertia_tensor();
+	_FORCE_INLINE_ void _update_transform_dependant();
 
 friend class PhysicsDirectBodyStateSW; // i give up, too many functions to expose
 
@@ -190,6 +198,10 @@ public:
 	_FORCE_INLINE_ void set_omit_force_integration(bool p_omit_force_integration) { omit_force_integration=p_omit_force_integration; }
 	_FORCE_INLINE_ bool get_omit_force_integration() const { return omit_force_integration; }
 
+	_FORCE_INLINE_ Matrix3 get_principal_inertia_axes() const { return principal_inertia_axes; }
+	_FORCE_INLINE_ Vector3 get_center_of_mass() const { return center_of_mass; }
+	_FORCE_INLINE_ Vector3 xform_local_to_principal(const Vector3& p_pos) const { return principal_inertia_axes_local.xform(p_pos - center_of_mass_local); } 
+
 	_FORCE_INLINE_ void set_linear_velocity(const Vector3& p_velocity) {linear_velocity=p_velocity; }
 	_FORCE_INLINE_ Vector3 get_linear_velocity() const { return linear_velocity; }
 
@@ -202,18 +214,23 @@ public:
 	_FORCE_INLINE_ void apply_impulse(const Vector3& p_pos, const Vector3& p_j) {
 
 		linear_velocity += p_j * _inv_mass;
-		angular_velocity += _inv_inertia_tensor.xform( p_pos.cross(p_j) );
-	}
-
-	_FORCE_INLINE_ void apply_bias_impulse(const Vector3& p_pos, const Vector3& p_j) {
-
-		biased_linear_velocity += p_j * _inv_mass;
-		biased_angular_velocity += _inv_inertia_tensor.xform( p_pos.cross(p_j) );
+		angular_velocity += _inv_inertia_tensor.xform( (p_pos-center_of_mass).cross(p_j) );
 	}
 
 	_FORCE_INLINE_ void apply_torque_impulse(const Vector3& p_j) {
 
 		angular_velocity += _inv_inertia_tensor.xform(p_j);
+	}
+
+	_FORCE_INLINE_ void apply_bias_impulse(const Vector3& p_pos, const Vector3& p_j) {
+
+		biased_linear_velocity += p_j * _inv_mass;
+		biased_angular_velocity += _inv_inertia_tensor.xform( (p_pos-center_of_mass).cross(p_j) );
+	}
+
+	_FORCE_INLINE_ void apply_bias_torque_impulse(const Vector3& p_j) {
+
+		biased_angular_velocity += _inv_inertia_tensor.xform(p_j);
 	}
 
 	_FORCE_INLINE_ void add_force(const Vector3& p_force, const Vector3& p_pos) {
@@ -268,12 +285,12 @@ public:
 
 	_FORCE_INLINE_ Vector3 get_velocity_in_local_point(const Vector3& rel_pos) const {
 
-		return linear_velocity + angular_velocity.cross(rel_pos);
+		return linear_velocity + angular_velocity.cross(rel_pos-center_of_mass);
 	}
 
 	_FORCE_INLINE_ real_t compute_impulse_denominator(const Vector3& p_pos, const Vector3& p_normal) const {
 
-		 Vector3 r0 = p_pos - get_transform().origin;
+		 Vector3 r0 = p_pos - get_transform().origin - center_of_mass;
 
 		 Vector3 c0 = (r0).cross(p_normal);
 
@@ -363,6 +380,9 @@ public:
 	virtual float get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
 	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
+	virtual Vector3 get_center_of_mass() const { return body->get_center_of_mass(); }
+	virtual Matrix3 get_principal_inertia_axes() const { return body->get_principal_inertia_axes(); }
+
 	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual Vector3 get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space
 	virtual Matrix3 get_inverse_inertia_tensor() const { return body->get_inv_inertia_tensor();   } // get density of this body space
@@ -378,6 +398,7 @@ public:
 
 	virtual void add_force(const Vector3& p_force, const Vector3& p_pos) {  body->add_force(p_force,p_pos); }
 	virtual void apply_impulse(const Vector3& p_pos, const Vector3& p_j) { body->apply_impulse(p_pos,p_j); }
+	virtual void apply_torque_impulse(const Vector3& p_j) { body->apply_torque_impulse(p_j); }
 
 	virtual void set_sleep_state(bool p_enable) {  body->set_active(!p_enable);  }
 	virtual bool is_sleeping() const {  return !body->is_active();  }

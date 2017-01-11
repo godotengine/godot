@@ -193,6 +193,7 @@ public:
 	virtual Vector3 body_get_applied_torque(RID p_body) const;
 
 	virtual void body_apply_impulse(RID p_body, const Vector3& p_pos, const Vector3& p_impulse);
+	virtual void body_apply_torque_impulse(RID p_body, const Vector3& p_impulse);
 	virtual void body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity);
 
 	virtual void body_set_axis_lock(RID p_body,BodyAxisLock p_lock);

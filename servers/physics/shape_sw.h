@@ -73,6 +73,8 @@ public:
 		MAX_SUPPORTS=8
 	};
 
+	virtual real_t get_area() const { return aabb.get_area();}
+
 	_FORCE_INLINE_ void set_self(const RID& p_self) { self=p_self; }
 	_FORCE_INLINE_ RID get_self() const {return  self; }
 
@@ -128,6 +130,7 @@ public:
 
 	Plane get_plane() const;
 
+	virtual real_t get_area() const { return INFINITY; }
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_PLANE; }
 	virtual void project_range(const Vector3& p_normal, const Transform& p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3& p_normal) const;
@@ -152,6 +155,7 @@ public:
 
 	float get_length() const;
 
+	virtual real_t get_area() const { return 0.0; }
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_RAY; }
 	virtual void project_range(const Vector3& p_normal, const Transform& p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3& p_normal) const;
@@ -176,6 +180,8 @@ public:
 
 	real_t get_radius() const;
 
+	virtual real_t get_area() const { return 4.0/3.0 * Math_PI * radius * radius * radius; }
+
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_SPHERE; }
 
 	virtual void project_range(const Vector3& p_normal, const Transform& p_transform, real_t &r_min, real_t &r_max) const;
@@ -198,6 +204,7 @@ class BoxShapeSW : public ShapeSW {
 public:
 
 	_FORCE_INLINE_ Vector3 get_half_extents() const { return half_extents; }
+	virtual real_t get_area() const { return 8 * half_extents.x * half_extents.y * half_extents.z; } 
 
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_BOX; }
 
@@ -225,6 +232,8 @@ public:
 
 	_FORCE_INLINE_ real_t get_height() const { return height; }
 	_FORCE_INLINE_ real_t get_radius() const { return radius; }
+
+	virtual real_t get_area() { return 4.0/3.0 * Math_PI * radius * radius * radius + height * Math_PI * radius * radius; }
 
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_CAPSULE; }
 

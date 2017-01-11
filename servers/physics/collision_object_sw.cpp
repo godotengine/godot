@@ -144,6 +144,8 @@ void CollisionObjectSW::_update_shapes() {
 		s.aabb_cache=shape_aabb;
 		s.aabb_cache=s.aabb_cache.grow( (s.aabb_cache.size.x + s.aabb_cache.size.y)*0.5*0.05 );
 
+		Vector3 scale = xform.get_basis().get_scale();
+		s.area_cache=s.shape->get_area()*scale.x*scale.y*scale.z;
 
 		space->get_broadphase()->move(s.bpid,s.aabb_cache);
 	}

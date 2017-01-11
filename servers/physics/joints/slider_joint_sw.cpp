@@ -132,10 +132,10 @@ bool SliderJointSW::setup(float p_step)
     {
 		normalWorld = m_calculatedTransformA.basis.get_axis(i);
 		memnew_placement(&m_jacLin[i], JacobianEntrySW(
-			A->get_transform().basis.transposed(),
-			B->get_transform().basis.transposed(),
-			m_relPosA,
-			m_relPosB,
+			A->get_principal_inertia_axes().transposed(),
+			B->get_principal_inertia_axes().transposed(),
+			m_relPosA - A->get_center_of_mass(),
+			m_relPosB - B->get_center_of_mass(),
 			normalWorld,
 			A->get_inv_inertia(),
 			A->get_inv_mass(),
@@ -152,8 +152,8 @@ bool SliderJointSW::setup(float p_step)
 		normalWorld = m_calculatedTransformA.basis.get_axis(i);
 		memnew_placement(&m_jacAng[i],	JacobianEntrySW(
 			normalWorld,
-	    A->get_transform().basis.transposed(),
-	    B->get_transform().basis.transposed(),
+	    A->get_principal_inertia_axes().transposed(),
+	    B->get_principal_inertia_axes().transposed(),
 	    A->get_inv_inertia(),
 	    B->get_inv_inertia()
 			));

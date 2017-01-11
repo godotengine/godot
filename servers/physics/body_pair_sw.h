@@ -65,7 +65,7 @@ class BodyPairSW : public ConstraintSW {
 
 		real_t depth;
 		bool active;
-		Vector3 rA,rB;
+		Vector3 rA,rB; // Offset in world orientation with respect to center of mass
 	};
 
 	Vector3 offset_B; //use local A coordinates to avoid numerical issues on collision detection

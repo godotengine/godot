@@ -26,13 +26,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include "vector3.h"
+
 #ifndef QUAT_H
 #define QUAT_H
 
 #include "math_defs.h"
 #include "math_funcs.h"
 #include "ustring.h"
-#include "vector3.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

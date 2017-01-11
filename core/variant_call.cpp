@@ -380,6 +380,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM4R(Vector3, cubic_interpolate);
 	VCALL_LOCALMEM1R(Vector3, dot);
 	VCALL_LOCALMEM1R(Vector3, cross);
+	VCALL_LOCALMEM1R(Vector3, outer);
+	VCALL_LOCALMEM0R(Vector3, to_diagonal_matrix);
 	VCALL_LOCALMEM0R(Vector3, abs);
 	VCALL_LOCALMEM0R(Vector3, floor);
 	VCALL_LOCALMEM0R(Vector3, ceil);
@@ -1485,6 +1487,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC4(VECTOR3,VECTOR3,Vector3,cubic_interpolate,VECTOR3,"b",VECTOR3,"pre_a",VECTOR3,"post_b",REAL,"t",varray());
 	ADDFUNC1(VECTOR3,REAL,Vector3,dot,VECTOR3,"b",varray());
 	ADDFUNC1(VECTOR3,VECTOR3,Vector3,cross,VECTOR3,"b",varray());
+	ADDFUNC1(VECTOR3,MATRIX3,Vector3,outer,VECTOR3,"b",varray());
+	ADDFUNC0(VECTOR3,MATRIX3,Vector3,to_diagonal_matrix,varray());
+	ADDFUNC0(VECTOR3,VECTOR3,Vector3,abs,varray());
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,abs,varray());
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,floor,varray());
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,ceil,varray());

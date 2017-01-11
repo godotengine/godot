@@ -28730,8 +28730,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="apply_torque_impulse">
+			<argument index="0" name="j" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_angular_velocity" qualifiers="const">
 			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_center_of_mass" qualifiers="const">
+			<return type="Vector3"/>
 			</return>
 			<description>
 			</description>
@@ -28814,7 +28826,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_inverse_inertia" qualifiers="const">
+		<method name="get_inverse_inertia_tensor" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -28828,6 +28840,12 @@
 		</method>
 		<method name="get_linear_velocity" qualifiers="const">
 			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_principal_inertia_axes">
+			<return type="Matrix3">
 			</return>
 			<description>
 			</description>
@@ -45320,6 +45338,15 @@ do_property].
 				Return a copy of the normalized vector to unit length. This is the same as v / v.length().
 			</description>
 		</method>
+		<method name="outer">
+			<return type="Matrix3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Return the outer product with b.
+			</description>
+		</method>
 		<method name="reflect">
 			<return type="Vector3">
 			</return>
@@ -45356,6 +45383,13 @@ do_property].
 			</argument>
 			<description>
 				Return a copy of the vector, snapped to the lowest neared multiple.
+			</description>
+		</method>
+		<method name="to_diagonal_matrix">
+			<return type="Matrix3">
+			</return>
+			<description>
+				Return a diagonal matrix with the vector as main diagonal.
 			</description>
 		</method>
 	</methods>
