@@ -1014,7 +1014,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 			if (is_shape_set_as_trigger(i))
 				continue;
 
-			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),m,sr,max_shapes,res_shapes,exclude,get_layer_mask(),mask)) {
+			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),m,sr,max_shapes,res_shapes,exclude,get_layer_mask(),get_collision_mask(),mask)) {
 				collided=true;
 			}
 
@@ -1096,7 +1096,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 
 		float lsafe,lunsafe;
 		PhysicsDirectSpaceState::ShapeRestInfo lrest;
-		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion,0, lsafe,lunsafe,exclude,get_layer_mask(),mask,&lrest);
+		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion,0, lsafe,lunsafe,exclude,get_layer_mask(),get_collision_mask(),mask,&lrest);
 		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
 		if (!valid) {
 			safe=0;
@@ -1137,7 +1137,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 			ugt.origin+=p_motion*unsafe;
 
 			PhysicsDirectSpaceState::ShapeRestInfo rest_info;
-			bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), m,&rest,exclude,get_layer_mask(),mask);
+			bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), m,&rest,exclude,get_layer_mask(),get_collision_mask(),mask);
 			if (!c2) {
 				//should not happen, but floating point precision is so weird..
 				colliding=false;

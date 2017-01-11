@@ -307,7 +307,9 @@ Array PhysicsDirectSpaceState::_intersect_shape(const Ref<PhysicsShapeQueryParam
 Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameters> &psq,const Vector3& p_motion){
 
 	float closest_safe,closest_unsafe;
-	bool res = cast_motion(psq->shape,psq->transform,p_motion,psq->margin,closest_safe,closest_unsafe,psq->exclude,psq->layer_mask,psq->object_type_mask);
+
+    //We want to check against the other objects layers, so we pass the layer(s) we want to test against as the collision mask
+    bool res = cast_motion(psq->shape,psq->transform,p_motion,psq->margin,closest_safe,closest_unsafe,psq->exclude,0x0,psq->layer_mask,psq->object_type_mask);
 	if (!res)
 		return Array();
 	Array ret(true);
@@ -322,7 +324,9 @@ Array PhysicsDirectSpaceState::_collide_shape(const Ref<PhysicsShapeQueryParamet
 	Vector<Vector3> ret;
 	ret.resize(p_max_results*2);
 	int rc=0;
-	bool res = collide_shape(psq->shape,psq->transform,psq->margin,ret.ptr(),p_max_results,rc,psq->exclude,psq->layer_mask,psq->object_type_mask);
+
+    //We want to check against the other objects layers, so we pass the layer(s) we want to test against as the collision mask
+    bool res = collide_shape(psq->shape,psq->transform,psq->margin,ret.ptr(),p_max_results,rc,psq->exclude,0x0,psq->layer_mask,psq->object_type_mask);
 	if (!res)
 		return Array();
 	Array r;
@@ -336,7 +340,8 @@ Dictionary PhysicsDirectSpaceState::_get_rest_info(const Ref<PhysicsShapeQueryPa
 
 	ShapeRestInfo sri;
 
-	bool res = rest_info(psq->shape,psq->transform,psq->margin,&sri,psq->exclude,psq->layer_mask,psq->object_type_mask);
+    //We want to check against the other objects layers, so we pass the layer(s) we want to test against as the collision mask
+    bool res = rest_info(psq->shape,psq->transform,psq->margin,&sri,psq->exclude,0x0,psq->layer_mask, psq->object_type_mask);
 	Dictionary r(true);
 	if (!res)
 		return r;
