@@ -53,19 +53,6 @@ Files extracted from upstream source:
 - `jpgd.{c,h}`
 
 
-## libmpcdec
-
-- Upstream: https://www.musepack.net
-- Version: SVN somewhere between SV7 and SV8 (r475)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- all .c and .h files in libmpcdec/
-- include/mpc as mpc/
-- COPYING from libmpcdec/
-
-
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
