@@ -49,7 +49,6 @@ struct DictionaryPrivate {
 	SafeRefCount refcount;
 	HashMap<Variant,Data,_DictionaryVariantHash> variant_map;
 	int counter;
-	bool shared;
 
 };
 
@@ -79,23 +78,8 @@ void Dictionary::get_key_list( List<Variant> *p_keys) const {
 
 }
 
-void Dictionary::_copy_on_write() const {
-
-	//make a copy of what we have
-	if (_p->shared)
-		return;
-
-	DictionaryPrivate *p = memnew(DictionaryPrivate);
-	p->shared=_p->shared;
-	p->variant_map=_p->variant_map;
-	p->refcount.init();
-	_unref();
-	_p=p;
-}
-
 Variant& Dictionary::operator[](const Variant& p_key) {
 
-	_copy_on_write();
 
 	DictionaryPrivate::Data *v =_p->variant_map.getptr(p_key);
 
@@ -126,7 +110,6 @@ const Variant* Dictionary::getptr(const Variant& p_key) const {
 
 Variant* Dictionary::getptr(const Variant& p_key) {
 
-	_copy_on_write();	
 	DictionaryPrivate::Data *v =_p->variant_map.getptr(p_key);
 	if (!v)
 		return NULL;
@@ -171,7 +154,8 @@ bool Dictionary::has_all(const Array& p_keys) const {
 }
 
 void Dictionary::erase(const Variant& p_key) {
-	_copy_on_write();
+
+
 	_p->variant_map.erase(p_key);
 }
 
@@ -199,14 +183,8 @@ void Dictionary::_ref(const Dictionary& p_from) const {
 
 void Dictionary::clear() {
 
-	_copy_on_write();
 	_p->variant_map.clear();
 	_p->counter=0;
-}
-
-bool Dictionary::is_shared() const {
-
-    return _p->shared;
 }
 
 
@@ -278,7 +256,7 @@ const Variant* Dictionary::next(const Variant* p_key) const {
 
 Dictionary Dictionary::copy() const {
 
-	Dictionary n(is_shared());
+	Dictionary n;
 
 	List<Variant> keys;
 	get_key_list(&keys);
@@ -304,12 +282,12 @@ Dictionary::Dictionary(const Dictionary& p_from) {
 }
 
 
-Dictionary::Dictionary(bool p_shared) {
+Dictionary::Dictionary() {
 
 	_p=memnew( DictionaryPrivate );
 	_p->refcount.init();
 	_p->counter=0;
-	_p->shared=p_shared;
+
 
 }
 Dictionary::~Dictionary() {

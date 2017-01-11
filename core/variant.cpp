@@ -2985,8 +2985,8 @@ bool Variant::is_shared() const {
     switch(type) {
 
         case OBJECT: return true;
-	case ARRAY:	return reinterpret_cast<const Array*>(_data._mem)->is_shared();
-        case DICTIONARY: return reinterpret_cast<const Dictionary*>(_data._mem)->is_shared();
+	case ARRAY:	return true;
+	case DICTIONARY: return true;
         default: {}
 
     }

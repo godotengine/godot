@@ -507,7 +507,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						}
 						const Array &array_a=*reinterpret_cast<const Array *>(p_a._data._mem);
 						const Array &array_b=*reinterpret_cast<const Array *>(p_b._data._mem);
-						Array sum(array_a.is_shared() || array_b.is_shared());
+						Array sum;
 						int asize=array_a.size();
 						int bsize=array_b.size();
 						sum.resize(asize+bsize);
@@ -2949,7 +2949,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 #endif
 			Variant::CallError ce;
 			ce.error=Variant::CallError::CALL_OK;
-			Array ref(true);
+			Array ref;
 			ref.push_back(r_iter);
 			Variant vref=ref;
 			const Variant *refp[]={&vref};
@@ -3075,7 +3075,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 #endif
 			Variant::CallError ce;
 			ce.error=Variant::CallError::CALL_OK;
-			Array ref(true);
+			Array ref;
 			ref.push_back(r_iter);
 			Variant vref=ref;
 			const Variant *refp[]={&vref};

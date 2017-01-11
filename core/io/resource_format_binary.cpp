@@ -426,7 +426,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		case VARIANT_DICTIONARY: {
 
 			uint32_t len=f->get_32();
-			Dictionary d(len&0x80000000); //last bit means shared
+			Dictionary d; //last bit means shared
 			len&=0x7FFFFFFF;
 			for(uint32_t i=0;i<len;i++) {
 				Variant key;
@@ -442,7 +442,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 		case VARIANT_ARRAY: {
 
 			uint32_t len=f->get_32();
-			Array a(len&0x80000000); //last bit means shared
+			Array a; //last bit means shared
 			len&=0x7FFFFFFF;
 			a.resize(len);
 			for(uint32_t i=0;i<len;i++) {
@@ -1701,7 +1701,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 
 			f->store_32(VARIANT_DICTIONARY);
 			Dictionary d = p_property;
-			f->store_32(uint32_t(d.size())|(d.is_shared()?0x80000000:0));
+			f->store_32(uint32_t(d.size()));
 
 			List<Variant> keys;
 			d.get_key_list(&keys);
@@ -1721,7 +1721,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 
 			f->store_32(VARIANT_ARRAY);
 			Array a=p_property;
-			f->store_32(uint32_t(a.size())|(a.is_shared()?0x80000000:0));
+			f->store_32(uint32_t(a.size()));
 			for(int i=0;i<a.size();i++) {
 
 				write_variant(a[i]);

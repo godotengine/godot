@@ -735,7 +735,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 					VALIDATE_ARG_NUM(0);
 					int count=*p_args[0];
-					Array arr(true);
+					Array arr;
 					if (count<=0) {
 						r_ret=arr;
 						return;
@@ -761,7 +761,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 					int from=*p_args[0];
 					int to=*p_args[1];
 
-					Array arr(true);
+					Array arr;
 					if (from>=to) {
 						r_ret=arr;
 						return;
@@ -792,7 +792,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 						return;
 					}
 
-					Array arr(true);
+					Array arr;
 					if (from>=to && incr>0) {
 						r_ret=arr;
 						return;
@@ -921,7 +921,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 					NodePath cp(sname,Vector<StringName>(),false);
 
-					Dictionary d(true);
+					Dictionary d;
 					d["@subpath"]=cp;
 					d["@path"]=p->path;
 

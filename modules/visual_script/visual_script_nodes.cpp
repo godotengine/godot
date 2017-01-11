@@ -2631,9 +2631,9 @@ public:
 				return 0;
 			}
 #endif
-			Array in_values(true);
-			Array out_values(true);
-			Array work_mem(true);
+			Array in_values;
+			Array out_values;
+			Array work_mem;
 
 			in_values.resize(in_count);
 

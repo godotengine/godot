@@ -471,7 +471,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
             uint32_t count = decode_uint32(buf);
-            bool shared = count&0x80000000;
+	  //  bool shared = count&0x80000000;
             count&=0x7FFFFFFF;
 
 			buf+=4;
@@ -481,7 +481,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4;
 			}
 
-            Dictionary d(shared);
+	    Dictionary d;
 
             for(uint32_t i=0;i<count;i++) {
 
@@ -516,7 +516,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
-            bool shared = count&0x80000000;
+	  //  bool shared = count&0x80000000;
             count&=0x7FFFFFFF;
 
 			buf+=4;
@@ -526,7 +526,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4;
 			}
 
-            Array varr(shared);
+	    Array varr;
 
             for(uint32_t i=0;i<count;i++) {
 
@@ -1232,7 +1232,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			Dictionary d = p_variant;
 
 			if (buf) {
-                encode_uint32(uint32_t(d.size())|(d.is_shared()?0x80000000:0),buf);
+				encode_uint32(uint32_t(d.size()),buf);
 				buf+=4;
 			}
 			r_len+=4;
@@ -1275,7 +1275,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			Array v = p_variant;
 
 			if (buf) {
-                encode_uint32(uint32_t(v.size())|(v.is_shared()?0x80000000:0),buf);
+		encode_uint32(uint32_t(v.size()),buf);
 				buf+=4;
 			}
 

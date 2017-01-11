@@ -1372,7 +1372,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		if (p_external) {
 			//used by exporter
-			Array rects(true);
+			Array rects;
 			for(int i=0;i<atlases.size();i++) {
 				rects.push_back(atlases[i]->get_region());
 				rects.push_back(atlases[i]->get_margin());

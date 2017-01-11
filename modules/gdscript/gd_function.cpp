@@ -617,7 +617,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(1);
 				int argc=_code_ptr[ip+1];
-				Array array(true); //arrays are always shared
+				Array array; //arrays are always shared
 				array.resize(argc);
 				CHECK_SPACE(argc+2);
 
@@ -638,7 +638,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				CHECK_SPACE(1);
 				int argc=_code_ptr[ip+1];
-				Dictionary dict(true); //arrays are always shared
+				Dictionary dict; //arrays are always shared
 
 				CHECK_SPACE(argc*2+2);
 

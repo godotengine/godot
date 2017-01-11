@@ -241,9 +241,9 @@ Dictionary Physics2DDirectSpaceState::_intersect_ray(const Vector2& p_from, cons
 	bool res = intersect_ray(p_from,p_to,inters,exclude,p_layers,p_object_type_mask);
 
 	if (!res)
-		return Dictionary(true);
+		return Dictionary();
 
-	Dictionary d(true);
+	Dictionary d;
 	d["position"]=inters.position;
 	d["normal"]=inters.normal;
 	d["collider_id"]=inters.collider_id;
@@ -282,7 +282,7 @@ Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParam
 	bool res = cast_motion(psq->shape,psq->transform,psq->motion,psq->margin,closest_safe,closest_unsafe,psq->exclude,psq->layer_mask,psq->object_type_mask);
 	if (!res)
 		return Array();
-	Array ret(true);
+	Array ret;
 	ret.resize(2);
 	ret[0]=closest_safe;
 	ret[1]=closest_unsafe;
@@ -339,7 +339,7 @@ Dictionary Physics2DDirectSpaceState::_get_rest_info(const Ref<Physics2DShapeQue
 	ShapeRestInfo sri;
 
 	bool res = rest_info(psq->shape,psq->transform,psq->motion,psq->margin,&sri,psq->exclude,psq->layer_mask,psq->object_type_mask);
-	Dictionary r(true);
+	Dictionary r;
 	if (!res)
 		return r;
 

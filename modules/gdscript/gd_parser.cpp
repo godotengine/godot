@@ -1317,7 +1317,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 				//reduce constant array expression
 
 				ConstantNode *cn = alloc_node<ConstantNode>();
-				Array arr(!p_to_const);
+				Array arr;
 				//print_line("mk array "+itos(!p_to_const));
 				arr.resize(an->elements.size());
 				for(int i=0;i<an->elements.size();i++) {
@@ -1352,7 +1352,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 				//reduce constant array expression
 
 				ConstantNode *cn = alloc_node<ConstantNode>();
-				Dictionary dict(!p_to_const);
+				Dictionary dict;
 				for(int i=0;i<dn->elements.size();i++) {
 					ConstantNode *key_c = static_cast<ConstantNode*>(dn->elements[i].key);
 					ConstantNode *value_c = static_cast<ConstantNode*>(dn->elements[i].value);
