@@ -754,8 +754,16 @@ Ref<Texture> Control::get_icon(const StringName& p_name,const StringName& p_type
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_icon(p_name, type ) )
-			return theme_owner->data.theme->get_icon(p_name, type );
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_icon(p_name, class_name ) ) {
+				return theme_owner->data.theme->get_icon(p_name, class_name );
+			}
+
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -784,8 +792,16 @@ Ref<Shader> Control::get_shader(const StringName& p_name,const StringName& p_typ
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_shader(p_name, type))
-			return theme_owner->data.theme->get_shader(p_name, type );
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_shader(p_name, class_name ) ) {
+				return theme_owner->data.theme->get_shader(p_name, class_name );
+			}
+
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -813,9 +829,16 @@ Ref<StyleBox> Control::get_stylebox(const StringName& p_name,const StringName& p
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_stylebox(p_name, type ) ) {
-			return theme_owner->data.theme->get_stylebox(p_name, type );
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_stylebox(p_name, class_name ) ) {
+				return theme_owner->data.theme->get_stylebox(p_name, class_name );
+			}
+
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
 		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -842,8 +865,16 @@ Ref<Font> Control::get_font(const StringName& p_name,const StringName& p_type) c
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_font(p_name, type ) )
-			return theme_owner->data.theme->get_font(p_name, type );
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_font(p_name, class_name ) ) {
+				return theme_owner->data.theme->get_font(p_name, class_name );
+			}
+
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		if (theme_owner->data.theme->get_default_theme_font().is_valid())
 			return theme_owner->data.theme->get_default_theme_font();
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
@@ -872,8 +903,16 @@ Color Control::get_color(const StringName& p_name,const StringName& p_type) cons
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_color(p_name, type ) )
-			return theme_owner->data.theme->get_color(p_name, type );
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_color(p_name, class_name ) ) {
+				return theme_owner->data.theme->get_color(p_name, class_name );
+			}
+
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -901,8 +940,16 @@ int Control::get_constant(const StringName& p_name,const StringName& p_type) con
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_constant(p_name, type ) )
-			return theme_owner->data.theme->get_constant(p_name, type );
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_constant(p_name, class_name ) ) {
+				return theme_owner->data.theme->get_constant(p_name, class_name );
+			}
+
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -985,8 +1032,15 @@ bool Control::has_icon(const StringName& p_name,const StringName& p_type) const 
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_icon(p_name, type ) )
-			return true;
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_icon(p_name, class_name ) ) {
+				return true;
+			}
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -1014,8 +1068,15 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_type) con
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_shader(p_name, type))
-			return true;
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_shader(p_name, class_name ) ) {
+				return true;
+			}
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -1042,8 +1103,15 @@ bool Control::has_stylebox(const StringName& p_name,const StringName& p_type) co
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_stylebox(p_name, type ) )
-			return true;
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_stylebox(p_name, class_name ) ) {
+				return true;
+			}
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -1071,8 +1139,15 @@ bool Control::has_font(const StringName& p_name,const StringName& p_type) const 
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_font(p_name, type ) )
-			return true;
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_font(p_name, class_name ) ) {
+				return true;
+			}
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -1100,8 +1175,15 @@ bool Control::has_color(const StringName& p_name, const StringName& p_type) cons
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_color(p_name, type ) )
-			return true;
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_color(p_name, class_name ) ) {
+				return true;
+			}
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)
@@ -1130,8 +1212,15 @@ bool Control::has_constant(const StringName& p_name,const StringName& p_type) co
 
 	while(theme_owner) {
 
-		if (theme_owner->data.theme->has_constant(p_name, type ) )
-			return true;
+		StringName class_name = type;
+
+		while(class_name!=StringName()) {
+			if (theme_owner->data.theme->has_constant(p_name, class_name ) ) {
+				return true;
+			}
+			class_name = ClassDB::get_parent_class_nocheck(class_name);
+		}
+
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)

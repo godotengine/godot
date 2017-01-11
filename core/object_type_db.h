@@ -239,6 +239,7 @@ public:
 
 	static void get_class_list( List<StringName> *p_classes);
 	static void get_inheriters_from_class( const StringName& p_class,List<StringName> *p_classes);
+	static StringName get_parent_class_nocheck(const StringName& p_class);
 	static StringName get_parent_class(const StringName& p_class);
 	static bool class_exists(const StringName &p_class);
 	static bool is_parent_class(const StringName &p_class,const StringName& p_inherits);

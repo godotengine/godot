@@ -258,12 +258,23 @@ void ClassDB::get_inheriters_from_class( const StringName& p_class,List<StringNa
 
 }
 
+StringName ClassDB::get_parent_class_nocheck(const StringName& p_class) {
+
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	if (!ti)
+		return StringName();
+	return ti->inherits;
+
+}
+
 StringName ClassDB::get_parent_class(const StringName& p_class) {
 
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V(!ti,"");
+	ERR_FAIL_COND_V(!ti,StringName());
 	return ti->inherits;
 }
 
@@ -272,6 +283,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
+
 	ERR_FAIL_COND_V(!ti,API_NONE);
 	return ti->api;
 }
