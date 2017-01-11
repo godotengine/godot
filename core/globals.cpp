@@ -36,7 +36,7 @@
 #include "os/os.h"
 #include "io/file_access_pack.h"
 #include "io/file_access_network.h"
-
+#include "variant_parser.h"
 GlobalConfig *GlobalConfig::singleton=NULL;
 
 GlobalConfig *GlobalConfig::get_singleton() {
@@ -393,352 +393,6 @@ bool GlobalConfig::has(String p_var) const {
 	return props.has(p_var);
 }
 
-static Vector<String> _decode_params(const String& p_string) {
-
-	int begin=p_string.find("(");
-	ERR_FAIL_COND_V(begin==-1,Vector<String>());
-	begin++;
-	int end=p_string.find(")");
-	ERR_FAIL_COND_V(end<begin,Vector<String>());
-	return p_string.substr(begin,end-begin).split(",");
-}
-
-static String _get_chunk(const String& str,int &pos, int close_pos) {
-
-
-	enum {
-		MIN_COMMA,
-		MIN_COLON,
-		MIN_CLOSE,
-		MIN_QUOTE,
-		MIN_PARENTHESIS,
-		MIN_CURLY_OPEN,
-		MIN_OPEN
-	};
-
-	int min_pos=close_pos;
-	int min_what=MIN_CLOSE;
-
-#define TEST_MIN(m_how,m_what) \
-{\
-int res = str.find(m_how,pos);\
-if (res!=-1 && res < min_pos) {\
-	min_pos=res;\
-	min_what=m_what;\
-}\
-}\
-
-
-	TEST_MIN(",",MIN_COMMA);
-	TEST_MIN("[",MIN_OPEN);
-	TEST_MIN("{",MIN_CURLY_OPEN);
-	TEST_MIN("(",MIN_PARENTHESIS);
-	TEST_MIN("\"",MIN_QUOTE);
-
-	int end=min_pos;
-
-
-	switch(min_what) {
-
-		case MIN_COMMA: {
-		} break;
-		case MIN_CLOSE: {
-			//end because it's done
-		} break;
-		case MIN_QUOTE: {
-			end=str.find("\"",min_pos+1)+1;
-			ERR_FAIL_COND_V(end==-1,Variant());
-
-		} break;
-		case MIN_PARENTHESIS: {
-
-			end=str.find(")",min_pos+1)+1;
-			ERR_FAIL_COND_V(end==-1,Variant());
-
-		} break;
-		case MIN_OPEN: {
-			int level=1;
-			end++;
-			while(end<close_pos) {
-
-				if (str[end]=='[')
-					level++;
-				if (str[end]==']') {
-					level--;
-					if (level==0)
-						break;
-				}
-				end++;
-			}
-			ERR_FAIL_COND_V(level!=0,Variant());
-			end++;
-		} break;
-		case MIN_CURLY_OPEN: {
-			int level=1;
-			end++;
-			while(end<close_pos) {
-
-				if (str[end]=='{')
-					level++;
-				if (str[end]=='}') {
-					level--;
-					if (level==0)
-						break;
-				}
-				end++;
-			}
-			ERR_FAIL_COND_V(level!=0,Variant());
-			end++;
-		} break;
-
-	}
-
-	String ret = str.substr(pos,end-pos);
-
-	pos=end;
-	while(pos<close_pos) {
-		if (str[pos]!=',' && str[pos]!=' ' && str[pos]!=':')
-			break;
-		pos++;
-	}
-
-	return ret;
-
-}
-
-static Variant _decode_variant(const String& p_string) {
-
-
-	String str = p_string.strip_edges();
-
-	if (str.nocasecmp_to("true")==0)
-		return Variant(true);
-	if (str.nocasecmp_to("false")==0)
-		return Variant(false);
-	if (str.nocasecmp_to("nil")==0)
-		return Variant();
-	if (str.is_valid_float()) {
-		if (str.find(".")==-1)
-			return str.to_int();
-		else
-			return str.to_double();
-
-	}
-	if (str.begins_with("#")) { //string
-		return Color::html(str);
-	}
-	if (str.begins_with("\"")) { //string
-		int end = str.find_last("\"");
-		ERR_FAIL_COND_V(end==0,Variant());
-		return str.substr(1,end-1).xml_unescape();
-
-	}
-
-	if (str.begins_with("[")) { //array
-
-		int close_pos = str.find_last("]");
-		ERR_FAIL_COND_V(close_pos==-1,Variant());
-		Array array;
-
-		int pos=1;
-
-		while(pos<close_pos) {
-
-			String s = _get_chunk(str,pos,close_pos);
-			array.push_back(_decode_variant(s));
-		}
-		return array;
-
-	}
-
-	if (str.begins_with("{")) { //array
-
-		int close_pos = str.find_last("}");
-		ERR_FAIL_COND_V(close_pos==-1,Variant());
-		Dictionary d;
-
-		int pos=1;
-
-		while(pos<close_pos) {
-
-			String key = _get_chunk(str,pos,close_pos);
-			String data = _get_chunk(str,pos,close_pos);
-			d[_decode_variant(key)]=_decode_variant(data);
-		}
-		return d;
-
-	}
-	if (str.begins_with("key")) {
-		Vector<String> params = _decode_params(p_string);
-		ERR_FAIL_COND_V(params.size()!=1 && params.size()!=2,Variant());
-		int scode=0;
-
-		if (params[0].is_numeric()) {
-			scode=params[0].to_int();
-			if (scode<10)
-				scode+=KEY_0;
-		} else
-			scode=find_keycode(params[0]);
-
-		InputEvent ie;
-		ie.type=InputEvent::KEY;
-		ie.key.scancode=scode;
-
-		if (params.size()==2) {
-			String mods=params[1];
-			if (mods.findn("C")!=-1)
-				ie.key.mod.control=true;
-			if (mods.findn("A")!=-1)
-				ie.key.mod.alt=true;
-			if (mods.findn("S")!=-1)
-				ie.key.mod.shift=true;
-			if (mods.findn("M")!=-1)
-				ie.key.mod.meta=true;
-		}
-		return ie;
-
-	}
-
-	if (str.begins_with("mbutton")) {
-		Vector<String> params = _decode_params(p_string);
-		ERR_FAIL_COND_V(params.size()!=2,Variant());
-
-		InputEvent ie;
-		ie.type=InputEvent::MOUSE_BUTTON;
-		ie.device=params[0].to_int();
-		ie.mouse_button.button_index=params[1].to_int();
-
-		return ie;
-	}
-
-	if (str.begins_with("jbutton")) {
-		Vector<String> params = _decode_params(p_string);
-		ERR_FAIL_COND_V(params.size()!=2,Variant());
-
-		InputEvent ie;
-		ie.type=InputEvent::JOYPAD_BUTTON;
-		ie.device=params[0].to_int();
-		ie.joy_button.button_index=params[1].to_int();
-
-		return ie;
-	}
-
-	if (str.begins_with("jaxis")) {
-		Vector<String> params = _decode_params(p_string);
-		ERR_FAIL_COND_V(params.size()!=2,Variant());
-
-		InputEvent ie;
-		ie.type=InputEvent::JOYPAD_MOTION;
-		ie.device=params[0].to_int();
-		int axis = params[1].to_int();;
-		ie.joy_motion.axis=axis>>1;
-		ie.joy_motion.axis_value=axis&1?1:-1;
-
-		return ie;
-	}
-	if (str.begins_with("img")) {
-		Vector<String> params = _decode_params(p_string);
-		if (params.size()==0) {
-			return Image();
-		}
-
-		ERR_FAIL_COND_V(params.size()!=5,Image());
-
-		String format=params[0].strip_edges();
-
-		Image::Format imgformat;
-/*
-		if (format=="grayscale") {
-			imgformat=Image::FORMAT_L8;
-		} else if (format=="intensity") {
-			imgformat=Image::FORMAT_INTENSITY;
-		} else if (format=="grayscale_alpha") {
-			imgformat=Image::FORMAT_LA8;
-		} else if (format=="rgb") {
-			imgformat=Image::FORMAT_RGB8;
-		} else if (format=="rgba") {
-			imgformat=Image::FORMAT_RGBA8;
-		} else if (format=="indexed") {
-			imgformat=Image::FORMAT_INDEXED;
-		} else if (format=="indexed_alpha") {
-			imgformat=Image::FORMAT_INDEXED_ALPHA;
-		} else if (format=="bc1") {
-			imgformat=Image::FORMAT_DXT1;
-		} else if (format=="bc2") {
-			imgformat=Image::FORMAT_DXT3;
-		} else if (format=="bc3") {
-			imgformat=Image::FORMAT_DXT5;
-		} else if (format=="bc4") {
-			imgformat=Image::FORMAT_ATI1;
-		} else if (format=="bc5") {
-			imgformat=Image::FORMAT_ATI2;
-		} else if (format=="custom") {
-			imgformat=Image::FORMAT_CUSTOM;
-		} else {
-
-			ERR_FAIL_V( Image() );
-		}*/
-
-		int mipmaps=params[1].to_int();
-		int w=params[2].to_int();
-		int h=params[3].to_int();
-
-		if (w == 0 && h == 0) {
-			//r_v = Image(w, h, imgformat);
-			return Image();
-		};
-
-
-		String data=params[4];
-		int datasize=data.length()/2;
-		PoolVector<uint8_t> pixels;
-		pixels.resize(datasize);
-		PoolVector<uint8_t>::Write wb = pixels.write();
-		const CharType *cptr=data.c_str();
-
-		int idx=0;
-		uint8_t byte;
-		while( idx<datasize*2) {
-
-			CharType c=*(cptr++);
-
-			ERR_FAIL_COND_V(c=='<',ERR_FILE_CORRUPT);
-
-			if ( (c>='0' && c<='9') || (c>='A' && c<='F') || (c>='a' && c<='f') ) {
-
-				if (idx&1) {
-
-					byte|=HEX2CHR(c);
-					wb[idx>>1]=byte;
-				} else {
-
-					byte=HEX2CHR(c)<<4;
-				}
-
-				idx++;
-			}
-
-		}
-
-		wb = PoolVector<uint8_t>::Write();
-
-		return Image(w,h,mipmaps,imgformat,pixels);
-	}
-
-	if (str.find(",")!=-1) { //vector2 or vector3
-		Vector<float> farr = str.split_floats(",",true);
-		if (farr.size()==2) {
-			return Point2(farr[0],farr[1]);
-		}
-		if (farr.size()==3) {
-			return Vector3(farr[0],farr[1],farr[2]);
-		}
-		ERR_FAIL_V(Variant());
-	}
-
-
-	return Variant();
-}
 
 void GlobalConfig::set_registering_order(bool p_enable) {
 
@@ -767,7 +421,7 @@ Error GlobalConfig::_load_settings_binary(const String p_path) {
 
 	uint32_t count=f->get_32();
 
-	for(int i=0;i<count;i++) {
+	for(uint32_t i=0;i<count;i++) {
 
 		uint32_t slen=f->get_32();
 		CharString cs;
@@ -797,260 +451,55 @@ Error GlobalConfig::_load_settings_binary(const String p_path) {
 Error GlobalConfig::_load_settings(const String p_path) {
 
 
+
 	Error err;
 	FileAccess *f= FileAccess::open(p_path,FileAccess::READ,&err);
 
-	if (err!=OK) {
+	if (!f)
+		return ERR_CANT_OPEN;
 
-		return err;
-	}
+	VariantParser::StreamFile stream;
+	stream.f=f;
 
+	String assign;
+	Variant value;
+	VariantParser::Tag next_tag;
 
-	String line;
+	int lines=0;
+	String error_text;
+
 	String section;
-	String subpath;
 
-	set_registering_order(false);
+	while(true) {
 
-	int line_count = 0;
+		assign=Variant();
+		next_tag.fields.clear();
+		next_tag.name=String();
 
-	while(!f->eof_reached()) {
-
-		String line = f->get_line().strip_edges();
-		line_count++;
-
-		if (line=="")
-			continue;
-
-		// find comments
-
-		 {
-
-			int pos=0;
-			while (true) {
-				int ret = line.find(";",pos);
-				if (ret==-1)
-					break;
-
-				int qc=0;
-				for(int i=0;i<ret;i++) {
-
-					if (line[i]=='"')
-						qc++;
-				}
-
-				if ( !(qc&1) ) {
-					//not inside string, real comment
-					line=line.substr(0,ret);
-					break;
-
-				}
-
-				pos=ret+1;
-
-
-			}
+		err = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,NULL,true);
+		if (err==ERR_FILE_EOF) {
+			memdelete(f);
+			return OK;
+		}
+		else if (err!=OK) {
+			ERR_PRINTS("GlobalConfig::load - "+p_path+":"+itos(lines)+" error: "+error_text);
+			memdelete(f);
+			return err;
 		}
 
-		if (line.begins_with("[")) {
-
-			int end = line.find_last("]");
-			ERR_CONTINUE(end!=line.length()-1);
-
-			String section=line.substr(1,line.length()-2);
-
-			if (section=="global" || section == "")
-				subpath="";
-			else
-				subpath=section+"/";
-
-		} else if (line.find("=")!=-1) {
-
-
-			int eqpos = line.find("=");
-			String var=line.substr(0,eqpos).strip_edges();
-			String value=line.substr(eqpos+1,line.length()).strip_edges();
-
-			Variant val = _decode_variant(value);
-
-			StringName path = subpath+var;
-
-			set(path,val);
-
-			//props[subpath+var]=VariantContainer(val,last_order++,true);
-
-		} else {
-
-			if (line.length() > 0) {
-				ERR_PRINT(String("Syntax error on line "+itos(line_count)+" of file "+p_path).ascii().get_data());
-			};
-		};
+		if (assign!=String()) {
+			set(section+"/"+assign,value);
+		} else if (next_tag.name!=String()) {
+			section=next_tag.name;
+		}
 	}
 
 	memdelete(f);
 
-	set_registering_order(true);
-
 	return OK;
+
 }
 
-static String _encode_variant(const Variant& p_variant) {
-
-	switch(p_variant.get_type()) {
-
-		case Variant::BOOL: {
-			bool val = p_variant;
-			return (val?"true":"false");
-		} break;
-		case Variant::INT: {
-			int val = p_variant;
-			return itos(val);
-		} break;
-		case Variant::REAL: {
-			float val = p_variant;
-			return rtos(val)+(val==int(val)?".0":"");
-		} break;
-		case Variant::VECTOR2: {
-			Vector2 val = p_variant;
-			return String("Vector2(")+rtos(val.x)+String(", ")+rtos(val.y)+String(")");
-		} break;
-		case Variant::VECTOR3: {
-			Vector3 val = p_variant;
-			return String("Vector3(")+rtos(val.x)+ String(", ") +rtos(val.y)+ String(", ") +rtos(val.z)+String(")");
-		} break;
-		case Variant::STRING: {
-			String val = p_variant;
-			return "\""+val.xml_escape()+"\"";
-		} break;
-		case Variant::COLOR: {
-
-			Color val = p_variant;
-			return "#"+val.to_html();
-		} break;
-		case Variant::POOL_STRING_ARRAY:
-		case Variant::POOL_INT_ARRAY:
-		case Variant::POOL_REAL_ARRAY:
-		case Variant::ARRAY: {
-			Array arr = p_variant;
-			String str="[";
-			for(int i=0;i<arr.size();i++) {
-
-				if (i>0)
-					str+=", ";
-				str+=_encode_variant(arr[i]);
-			}
-			str+="]";
-			return str;
-		} break;
-		case Variant::DICTIONARY: {
-			Dictionary d = p_variant;
-			String str="{";
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
-
-				if (E!=keys.front())
-					str+=", ";
-				str+=_encode_variant(E->get());
-				str+=":";
-				str+=_encode_variant(d[E->get()]);
-
-			}
-			str+="}";
-			return str;
-		} break;
-		case Variant::IMAGE: {
-			String str="img(";
-
-			Image img=p_variant;
-			if (!img.empty()) {
-
-				String format;
-
-				/*
-				switch(img.get_format()) {
-
-					case Image::FORMAT_L8: format="grayscale"; break;
-					case Image::FORMAT_INTENSITY: format="intensity"; break;
-					case Image::FORMAT_LA8: format="grayscale_alpha"; break;
-					case Image::FORMAT_RGB8: format="rgb"; break;
-					case Image::FORMAT_RGBA8: format="rgba"; break;
-					case Image::FORMAT_INDEXED : format="indexed"; break;
-					case Image::FORMAT_INDEXED_ALPHA: format="indexed_alpha"; break;
-					case Image::FORMAT_DXT1: format="bc1"; break;
-					case Image::FORMAT_DXT3: format="bc2"; break;
-					case Image::FORMAT_DXT5: format="bc3"; break;
-					case Image::FORMAT_ATI1: format="bc4"; break;
-					case Image::FORMAT_ATI2: format="bc5"; break;
-					case Image::FORMAT_CUSTOM: format="custom custom_size="+itos(img.get_data().size())+""; break;
-					default: {}
-				}
-
-				*/
-
-				str+=format+", ";
-				str+=itos(img.has_mipmaps())+", ";
-				str+=itos(img.get_width())+", ";
-				str+=itos(img.get_height())+", ";
-				PoolVector<uint8_t> data = img.get_data();
-				int ds=data.size();
-				PoolVector<uint8_t>::Read r = data.read();
-				for(int i=0;i<ds;i++) {
-					uint8_t byte = r[i];
-					const char  hex[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
-					char bstr[3]={ hex[byte>>4], hex[byte&0xF], 0};
-					str+=bstr;
-				}
-			}
-			str+=")";
-			return str;
-		} break;
-		case Variant::INPUT_EVENT: {
-
-			InputEvent ev = p_variant;
-
-			switch(ev.type) {
-
-				case InputEvent::KEY: {
-
-					String mods;
-					if (ev.key.mod.control)
-						mods+="C";
-					if (ev.key.mod.shift)
-						mods+="S";
-					if (ev.key.mod.alt)
-						mods+="A";
-					if (ev.key.mod.meta)
-						mods+="M";
-					if (mods!="")
-						mods=", "+mods;
-
-					return "key("+keycode_get_string(ev.key.scancode)+mods+")";
-				} break;
-				case InputEvent::MOUSE_BUTTON: {
-
-					return "mbutton("+itos(ev.device)+", "+itos(ev.mouse_button.button_index)+")";
-				} break;
-				case InputEvent::JOYPAD_BUTTON: {
-
-					return "jbutton("+itos(ev.device)+", "+itos(ev.joy_button.button_index)+")";
-				} break;
-				case InputEvent::JOYPAD_MOTION: {
-
-					return "jaxis("+itos(ev.device)+", "+itos(ev.joy_motion.axis * 2 + (ev.joy_motion.axis_value<0?0:1))+")";
-				} break;
-				default: {
-
-					return "nil";
-				} break;
-
-			}
-		} break;
-		default: {}
-	}
-
-	return "nil"; //don't know wha to do with this
-}
 
 
 int GlobalConfig::get_order(const String& p_name) const {
@@ -1174,7 +623,10 @@ Error GlobalConfig::_save_settings_text(const String& p_file,const Map<String,Li
 			else
 				value = get(key);
 
-			file->store_string(F->get()+"="+_encode_variant(value)+"\n");
+
+			String vstr;
+			VariantWriter::write_to_string(value,vstr);
+			file->store_string(F->get()+"="+vstr+"\n");
 
 		}
 	}
