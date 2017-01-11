@@ -109,6 +109,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"to_json",
 		"hash",
 		"Color8",
+		"ColorN",
 		"print_stack",
 		"instance_from_id",
 	};
@@ -1117,6 +1118,36 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret=color;
 
 		} break;
+		case COLORN: {
+
+			if (p_arg_count<1) {
+				r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_error.argument=1;
+				r_ret=Variant();
+				return;
+			}
+
+			if (p_arg_count>2) {
+				r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+				r_error.argument=2;
+				r_ret=Variant();
+				return;
+			}
+			
+			if (p_args[0]->get_type()!=Variant::STRING) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_ret=Variant();
+			} else {
+				Color color = Color::named(*p_args[0]);
+				if (p_arg_count==2) {
+					VALIDATE_ARG_NUM(1);
+					color.a=*p_args[1];
+				}
+				r_ret=color;
+			}
+
+		} break;
 
 		case PRINT_STACK: {
 
@@ -1593,6 +1624,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case COLOR8: {
 
 			MethodInfo mi("Color8",PropertyInfo(Variant::INT,"r8"),PropertyInfo(Variant::INT,"g8"),PropertyInfo(Variant::INT,"b8"),PropertyInfo(Variant::INT,"a8"));
+			mi.return_val.type=Variant::COLOR;
+			return mi;
+		} break;
+		case COLORN: {
+
+			MethodInfo mi("ColorN",PropertyInfo(Variant::STRING,"name"),PropertyInfo(Variant::REAL,"alpha"));
 			mi.return_val.type=Variant::COLOR;
 			return mi;
 		} break;
