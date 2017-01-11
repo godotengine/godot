@@ -2004,6 +2004,64 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				}
 
+				if (container->type==Node::TYPE_OPERATOR) {
+
+					OperatorNode* op = static_cast<OperatorNode*>(container);
+					if (op->op==OperatorNode::OP_CALL && op->arguments[0]->type==Node::TYPE_BUILT_IN_FUNCTION && static_cast<BuiltInFunctionNode*>(op->arguments[0])->function==GDFunctions::GEN_RANGE) {
+						//iterating a range, so see if range() can be optimized without allocating memory, by replacing it by vectors (which can work as iterable too!)
+
+						Vector<Node*> args;
+						Vector<double> constants;
+
+						bool constant=true;
+
+						for(int i=1;i<op->arguments.size();i++) {
+							args.push_back(op->arguments[i]);
+							if (constant && op->arguments[i]->type==Node::TYPE_CONSTANT) {
+								ConstantNode *c = static_cast<ConstantNode*>(op->arguments[i]);
+								if (c->value.get_type()==Variant::REAL || c->value.get_type()==Variant::INT) {
+									constants.push_back(c->value);
+								} else {
+									constant=false;
+								}
+							}
+						}
+
+						if (args.size()>0 || args.size()<4) {
+
+							if (constant) {
+
+								ConstantNode *cn = alloc_node<ConstantNode>();
+								switch(args.size()) {
+									case 1: cn->value=constants[0]; break;
+									case 2: cn->value=Vector2(constants[0],constants[1]); break;
+									case 3: cn->value=Vector3(constants[0],constants[1],constants[2]); break;
+								}
+								container=cn;
+							} else {
+								OperatorNode *on = alloc_node<OperatorNode>();
+								on->op=OperatorNode::OP_CALL;
+
+								TypeNode *tn = alloc_node<TypeNode>();
+								on->arguments.push_back(tn);
+
+								switch(args.size()) {
+									case 1: tn->vtype=Variant::REAL; break;
+									case 2: tn->vtype=Variant::VECTOR2; break;
+									case 3: tn->vtype=Variant::VECTOR3; break;
+								}
+
+								for(int i=0;i<args.size();i++) {
+									on->arguments.push_back(args[i]);
+								}
+
+								container=on;
+							}
+						}
+					}
+
+				}
+
 				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
 
 				cf_for->cf_type=ControlFlowNode::CF_FOR;
