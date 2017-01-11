@@ -328,12 +328,12 @@ void EditorSettings::create() {
 
 		// path at least is validated, so validate config file
 
-
-		config_file_path = config_path+"/"+config_dir+"/editor_settings-3.tres";
+		String config_file_name = "editor_settings-" + String(_MKSTR(VERSION_MAJOR)) + ".tres";
+		config_file_path = config_path + "/" + config_dir + "/" + config_file_name;
 
 		String open_path = config_file_path;
 
-		if (!dir->file_exists("editor_settings-3.tres")) {
+		if (!dir->file_exists(config_file_name)) {
 
 			goto fail;
 		}
