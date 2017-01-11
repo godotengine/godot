@@ -238,9 +238,10 @@ void MultiMeshEditor::_populate() {
 
 		Matrix3 post_xform;
 
-		post_xform.rotate(xform.basis.get_axis(0),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
-		post_xform.rotate(xform.basis.get_axis(2),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
 		post_xform.rotate(xform.basis.get_axis(1),-Math::random(-_rotate_random,_rotate_random)*Math_PI);
+		post_xform.rotate(xform.basis.get_axis(2),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
+		post_xform.rotate(xform.basis.get_axis(0),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
+
 		xform.basis = post_xform * xform.basis;
 		//xform.basis.orthonormalize();
 

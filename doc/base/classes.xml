@@ -20696,7 +20696,8 @@
 		3x3 matrix datatype.
 	</brief_description>
 	<description>
-		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z. Can also be accessed as array of 3D vectors. Almost always used as orthogonal basis for a [Transform].
+		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. Almost always used as orthogonal basis for a [Transform].
+		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 	</description>
 	<methods>
 		<method name="Matrix3">
@@ -20705,7 +20706,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Create a matrix from a quaternion.
+				Create a rotation matrix from the given quaternion.
 			</description>
 		</method>
 		<method name="Matrix3">
@@ -20716,7 +20717,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Create a matrix which rotates around the given axis by the specified angle.
+				Create a rotation matrix which rotates around the given axis by the specified angle.
 			</description>
 		</method>
 		<method name="Matrix3">
@@ -20743,26 +20744,29 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Return euler angles (in the XYZ convention: first Z, then Y, and X last) from the matrix. Returned vector contains the rotation angles in the format (third,second,first).
+				Return Euler angles (in the XYZ convention: first Z, then Y, and X last) from the matrix. Returned vector contains the rotation angles in the format (third,second,first).
+				This function only works if the matrix represents a proper rotation.
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
 			<return type="int">
 			</return>
 			<description>
+				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1,0 or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to Godot source code.
 			</description>
 		</method>
 		<method name="get_scale">
 			<return type="Vector3">
 			</return>
 			<description>
+				Assuming that the matrix is the combination of a rotation and scaling, return the absolute value of scaling factors along each axis.
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Matrix3">
 			</return>
 			<description>
-				Return the affine inverse of the matrix.
+				Return the inverse of the matrix.
 			</description>
 		</method>
 		<method name="orthonormalized">
@@ -20779,6 +20783,9 @@
 			</argument>
 			<argument index="1" name="phi" type="float">
 			</argument>
+			<description>
+				Introduce an additional rotation around the given axis by phi. Only relevant when the matrix is being used as a part of [Transform].
+			</description>
                 </method>
 		<method name="scaled">
 			<return type="Matrix3">
@@ -20786,7 +20793,7 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Return the scaled version of the matrix, by a 3D scale.
+				Introduce an additional scaling specified by the given 3D scaling factor. Only relevant when the matrix is being used as a part of [Transform].
 			</description>
 		</method>
 		<method name="tdotx">
@@ -20829,7 +20836,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed by the matrix and return it.
+				Return a vector transformed (multiplied) by the matrix and return it.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -20838,7 +20845,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed by the transposed matrix and return it.
+				Return a vector transformed (multiplied) by the transposed matrix and return it. Note that this is a multiplication by inverse only when the matrix represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>
@@ -20895,6 +20902,7 @@
 			<return type="Matrix32">
 			</return>
 			<description>
+				Return the inverse of the matrix.
 			</description>
 		</method>
 		<method name="basis_xform">
@@ -31484,7 +31492,7 @@
 		Quaternion.
 	</brief_description>
 	<description>
-		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between to rotations obtained by a Matrix3 cheaply. Multiplying quaternions also cheaply reproduces rotation sequences, however quaternions need to be often normalized, or else they suffer from precision issues.
+		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between two rotations. Multiplying quaternions also cheaply reproduces rotation sequences. However quaternions need to be often renormalized, or else they suffer from precision issues.
 	</description>
 	<methods>
 		<method name="Quat">
@@ -43040,7 +43048,7 @@
 		3D Transformation.
 	</brief_description>
 	<description>
-		Transform is used to store transformations, including translations. It consists of a Matrix3 "basis" and Vector3 "origin". Transform is used to represent transformations of any object in space. It is similar to a 4x3 matrix.
+		Transform is used to store translation, rotation and scaling transformations. It consists of a Matrix3 "basis" and Vector3 "origin". Transform is used to represent transformations of objects in space, and as such, determine their position, orientation and scale. It is similar to a 3x4 matrix.
 	</description>
 	<methods>
 		<method name="Transform">
@@ -43055,7 +43063,7 @@
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Construct the Transform from four Vector3. Each axis creates the basis.
+				Construct the Transform from four Vector3. Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="Transform">
@@ -43084,7 +43092,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Construct the Transform from a Quat. The origin will be Vector3(0, 0, 0)
+				Construct the Transform from a Quat. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="Transform">
@@ -43093,21 +43101,21 @@
 			<argument index="0" name="from" type="Matrix3">
 			</argument>
 			<description>
-				Construct the Transform from a Matrix3. The origin will be Vector3(0, 0, 0)
+				Construct the Transform from a Matrix3. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="affine_inverse">
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transfrom, even if the transform has scale or the axis vectors are not orthogonal.
+				Returns the inverse of the transfrom, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transform.
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling).
 			</description>
 		</method>
 		<method name="looking_at">
@@ -43136,7 +43144,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotate the transform locally. This introduces an additional pre-rotation to the transform, changing the basis to basis * Matrix3(axis, phi).
+				Rotate the transform around given axis by phi.
 			</description>
 		</method>
 		<method name="scaled">
@@ -43145,7 +43153,7 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Scale the transform locally.
+				Scale the transform by the specified 3D scaling factors.
 			</description>
 		</method>
 		<method name="translated">
@@ -43154,7 +43162,7 @@
 			<argument index="0" name="ofs" type="Vector3">
 			</argument>
 			<description>
-				Translate the transform locally.
+				Translate the transform by the specified displacement.
 			</description>
 		</method>
 		<method name="xform">
@@ -43163,7 +43171,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Transforms vector "v" by this transform.
+				Transforms the given vector "v" by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -43178,7 +43186,7 @@
 	</methods>
 	<members>
 		<member name="basis" type="Matrix3">
-			The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
+			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system travelling with the object.
 		</member>
 		<member name="origin" type="Vector3">
 			The origin of the transform. Which is the translation offset.

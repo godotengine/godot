@@ -61,8 +61,8 @@ void SpatialEditorViewport::_update_camera() {
 
 	Transform camera_transform;
 	camera_transform.translate(cursor.pos);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 
 	if (orthogonal)
 		camera_transform.translate(0, 0, 4096);
@@ -474,8 +474,8 @@ Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3& p_pos) {
 
 	Transform camera_transform;
 	camera_transform.translate( cursor.pos );
-	camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
 	camera_transform.basis.rotate(Vector3(1,0,0),-cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
 	camera_transform.translate(0,0,cursor.distance);
 
 	return camera_transform.xform(Vector3( ((p_pos.x/get_size().width)*2.0-1.0)*screen_w, ((1.0-(p_pos.y/get_size().height))*2.0-1.0)*screen_h,-get_znear()));
@@ -1502,7 +1502,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								Transform original=se->original;
 
 								Transform base=Transform( Matrix3(), _edit.center);
-								Transform t=base * (r * (base.inverse() * original));
+								Transform t=base * r * base.inverse() * original;
 
 								sp->set_global_transform(t);
 							}
@@ -1591,8 +1591,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					Transform camera_transform;
 
 					camera_transform.translate(cursor.pos);
-					camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
 					camera_transform.basis.rotate(Vector3(1,0,0),-cursor.x_rot);
+					camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
 					Vector3 translation(-m.relative_x*pan_speed,m.relative_y*pan_speed,0);
 					translation*=cursor.distance/DISTANCE_DEFAULT;
 					camera_transform.translate(translation);
@@ -2803,21 +2803,10 @@ void SpatialEditor::_xform_dialog_action() {
 		rotate[i]=Math::deg2rad(xform_rotate[i]->get_text().to_double());
 		scale[i]=xform_scale[i]->get_text().to_double();
 	}
-
+	
+	t.basis.scale(scale);
+	t.basis.rotate(rotate);
 	t.origin=translate;
-	for(int i=0;i<3;i++) {
-		if (!rotate[i])
-			continue;
-		Vector3 axis;
-		axis[i]=1.0;
-		t.basis.rotate(axis,rotate[i]); // BUG(?): Angle not flipped; please check during the review of PR #6865.
-	}
-
-	for(int i=0;i<3;i++) {
-		if (scale[i]==1)
-			continue;
-		t.basis.set_axis(i,t.basis.get_axis(i)*scale[i]);
-	}
 
 
 	undo_redo->create_action(TTR("XForm Dialog"));
