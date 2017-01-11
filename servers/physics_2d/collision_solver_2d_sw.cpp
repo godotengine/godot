@@ -203,14 +203,14 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Matrix3
 	cinfo.aabb_tests=0;
 
 	Matrix32 rel_transform = p_transform_A;
-	rel_transform.elements[2]-=p_transform_B.elements[2];
+	rel_transform.translate(-p_transform_B.get_origin());
 
 	//quickly compute a local Rect2
 
 	Rect2 local_aabb;
 	for(int i=0;i<2;i++) {
 
-	     Vector2 axis( p_transform_B.elements[i] );
+	     Vector2 axis( p_transform_B.get_axis(i) );
 	     float axis_scale = 1.0/axis.length();
 	     axis*=axis_scale;
 

@@ -711,7 +711,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const
 				break;
 			}
 
-			body_transform.elements[2]+=recover_motion;
+			body_transform.translate(recover_motion);
 			body_aabb.pos+=recover_motion;
 
 			recover_attempts--;
@@ -852,15 +852,15 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const
 		if (r_result) {
 
 			r_result->motion=p_motion;
-			r_result->remainder=Vector2();			
-			r_result->motion+=(body_transform.elements[2]-p_from.elements[2]);
+			r_result->remainder=Vector2();
+			r_result->motion+=(body_transform.get_origin()-p_from.get_origin());
 		}
 
 	} else {
 
 		//it collided, let's get the rest info in unsafe advance
 		Matrix32 ugt = body_transform;
-		ugt.elements[2]+=p_motion*unsafe;
+		ugt.translate(p_motion*unsafe);
 
 		_RestCallbackData2D rcd;
 		rcd.best_len=0;
@@ -916,7 +916,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const
 
 				r_result->motion=safe*p_motion;
 				r_result->remainder=p_motion - safe * p_motion;
-				r_result->motion+=(body_transform.elements[2]-p_from.elements[2]);
+				r_result->motion+=(body_transform.get_origin()-p_from.get_origin());
 
 			}
 
@@ -926,7 +926,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const
 
 				r_result->motion=p_motion;
 				r_result->remainder=Vector2();
-				r_result->motion+=(body_transform.elements[2]-p_from.elements[2]);
+				r_result->motion+=(body_transform.get_origin()-p_from.get_origin());
 			}
 
 			collided=false;

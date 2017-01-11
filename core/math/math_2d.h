@@ -65,35 +65,35 @@ enum VAlign {
 struct Vector2 {
 
 	union {
-		float x;
-		float width;
+		real_t x;
+		real_t width;
 	};
 	union {
-		float y;
-		float height;
+		real_t y;
+		real_t height;
 	};
 
 
-	_FORCE_INLINE_ float& operator[](int p_idx) {
+	_FORCE_INLINE_ real_t& operator[](int p_idx) {
 		return p_idx?y:x;
 	}
-	_FORCE_INLINE_ const float& operator[](int p_idx) const {
+	_FORCE_INLINE_ const real_t& operator[](int p_idx) const {
 		return p_idx?y:x;
 	}
 
 	void normalize();
 	Vector2 normalized() const;
 
-	float length() const;
-	float length_squared() const;
+	real_t length() const;
+	real_t length_squared() const;
 
-	float distance_to(const Vector2& p_vector2) const;
-	float distance_squared_to(const Vector2& p_vector2) const;
-	float angle_to(const Vector2& p_vector2) const;
-	float angle_to_point(const Vector2& p_vector2) const;
+	real_t distance_to(const Vector2& p_vector2) const;
+	real_t distance_squared_to(const Vector2& p_vector2) const;
+	real_t angle_to(const Vector2& p_vector2) const;
+	real_t angle_to_point(const Vector2& p_vector2) const;
 
-	float dot(const Vector2& p_other) const;
-	float cross(const Vector2& p_other) const;
+	real_t dot(const Vector2& p_other) const;
+	real_t cross(const Vector2& p_other) const;
 	Vector2 cross(real_t p_other) const;
 	Vector2 project(const Vector2& p_vec) const;
 
@@ -101,10 +101,10 @@ struct Vector2 {
 
 	Vector2 clamped(real_t p_len) const;
 
-	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2& p_a, const Vector2& p_b,float p_t);
-	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2& p_b,float p_t) const;
-	Vector2 cubic_interpolate(const Vector2& p_b,const Vector2& p_pre_a, const Vector2& p_post_b,float p_t) const;
-	Vector2 cubic_interpolate_soft(const Vector2& p_b,const Vector2& p_pre_a, const Vector2& p_post_b,float p_t) const;
+	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2& p_a, const Vector2& p_b,real_t p_t);
+	_FORCE_INLINE_ Vector2 linear_interpolate(const Vector2& p_b,real_t p_t) const;
+	Vector2 cubic_interpolate(const Vector2& p_b,const Vector2& p_pre_a, const Vector2& p_post_b,real_t p_t) const;
+	Vector2 cubic_interpolate_soft(const Vector2& p_b,const Vector2& p_pre_a, const Vector2& p_post_b,real_t p_t) const;
 
 	Vector2 slide(const Vector2& p_vec) const;
 	Vector2 reflect(const Vector2& p_vec) const;
@@ -115,15 +115,15 @@ struct Vector2 {
 	void operator-=(const Vector2& p_v);
 	Vector2 operator*(const Vector2 &p_v1) const;
 
-	Vector2 operator*(const float &rvalue) const;
-	void operator*=(const float &rvalue);
+	Vector2 operator*(const real_t &rvalue) const;
+	void operator*=(const real_t &rvalue);
 	void operator*=(const Vector2 &rvalue) { *this = *this * rvalue; }
 
 	Vector2 operator/(const Vector2 &p_v1) const;
 
-	Vector2 operator/(const float &rvalue) const;
+	Vector2 operator/(const real_t &rvalue) const;
 
-	void operator/=(const float &rvalue);
+	void operator/=(const real_t &rvalue);
 
 	Vector2 operator-() const;
 
@@ -135,10 +135,10 @@ struct Vector2 {
 
 	real_t angle() const;
 
-	void set_rotation(float p_radians) {
+	void set_rotation(real_t p_radians) {
 
-		x=Math::sin(p_radians);
-		y=Math::cos(p_radians);
+		x=Math::cos(p_radians);
+		y=Math::sin(p_radians);
 	}
 
 	_FORCE_INLINE_ Vector2 abs() const {
@@ -146,7 +146,7 @@ struct Vector2 {
 		return Vector2( Math::abs(x), Math::abs(y) );
 	}
 
-	Vector2 rotated(float p_by) const;
+	Vector2 rotated(real_t p_by) const;
 	Vector2 tangent() const {
 
 		return Vector2(y,-x);
@@ -154,12 +154,12 @@ struct Vector2 {
 
 	Vector2 floor() const;
 	Vector2 snapped(const Vector2& p_by) const;
-	float get_aspect() const { return width/height; }
+	real_t get_aspect() const { return width/height; }
 
 
 	operator String() const { return String::num(x)+", "+String::num(y); }
 
-	_FORCE_INLINE_ Vector2(float p_x,float p_y) { x=p_x; y=p_y; }
+	_FORCE_INLINE_ Vector2(real_t p_x,real_t p_y) { x=p_x; y=p_y; }
 	_FORCE_INLINE_ Vector2() { x=0; y=0; }
 };
 
@@ -169,12 +169,12 @@ _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2& p_vec) 
 }
 
 
-_FORCE_INLINE_ Vector2 operator*(float p_scalar, const Vector2& p_vec)  {
+_FORCE_INLINE_ Vector2 operator*(real_t p_scalar, const Vector2& p_vec)  {
 
 	return p_vec*p_scalar;
 }
 
-Vector2 Vector2::linear_interpolate(const Vector2& p_b,float p_t) const {
+Vector2 Vector2::linear_interpolate(const Vector2& p_b,real_t p_t) const {
 
 	Vector2 res=*this;
 
@@ -185,7 +185,7 @@ Vector2 Vector2::linear_interpolate(const Vector2& p_b,float p_t) const {
 
 }
 
-Vector2 Vector2::linear_interpolate(const Vector2& p_a, const Vector2& p_b,float p_t)  {
+Vector2 Vector2::linear_interpolate(const Vector2& p_a, const Vector2& p_b,real_t p_t)  {
 
 	Vector2 res=p_a;
 
@@ -211,7 +211,7 @@ struct Rect2 {
 	const Vector2& get_size() const { return size; }
 	void set_size(const Vector2& p_size) { size=p_size; }
 
-	float get_area() const { return size.width*size.height; }
+	real_t get_area() const { return size.width*size.height; }
 
 	inline bool intersects(const Rect2& p_rect) const {
 		if ( pos.x >= (p_rect.pos.x + p_rect.size.width) )
@@ -226,9 +226,9 @@ struct Rect2 {
 		return true;
 	}
 
-	inline float distance_to(const Vector2& p_point) const {
+	inline real_t distance_to(const Vector2& p_point) const {
 
-		float dist = 1e20;
+		real_t dist = 1e20;
 
 		if (p_point.x < pos.x) {
 			dist=MIN(dist,pos.x-p_point.x);
@@ -359,7 +359,7 @@ struct Rect2 {
 	operator String() const { return String(pos)+", "+String(size); }
 
 	Rect2() {}
-	Rect2( float p_x, float p_y, float p_width, float p_height) { pos=Point2(p_x,p_y); size=Size2( p_width, p_height ); }
+	Rect2( real_t p_x, real_t p_y, real_t p_width, real_t p_height) { pos=Point2(p_x,p_y); size=Size2( p_width, p_height ); }
 	Rect2( const Point2& p_pos, const Size2& p_size ) { pos=p_pos; size=p_size; }
 };
 
@@ -407,7 +407,7 @@ struct Point2i {
 	bool operator==(const Point2i& p_vec2) const;
 	bool operator!=(const Point2i& p_vec2) const;
 
-	float get_aspect() const { return width/(float)height; }
+	real_t get_aspect() const { return width/(real_t)height; }
 
 	operator String() const { return String::num(x)+", "+String::num(y); }
 
@@ -552,11 +552,21 @@ struct Rect2i {
 
 
 struct Matrix32 {
+	// Warning #1: basis of Matrix32 is stored differently from Matrix3. In terms of elements array, the basis matrix looks like "on paper":
+	// M = (elements[0][0] elements[1][0])
+	//     (elements[0][1] elements[1][1])
+	// This is such that the columns, which can be interpreted as basis vectors of the coordinate system "painted" on the object, can be accessed as elements[i].
+	// Note that this is the opposite of the indices in mathematical texts, meaning: $M_{12}$ in a math book corresponds to elements[1][0] here.
+	// This requires additional care when working with explicit indices.
+ 	// See https://en.wikipedia.org/wiki/Row-_and_column-major_order for further reading.
+
+	// Warning #2: 2D be aware that unlike 3D code, 2D code uses a left-handed coordinate system: Y-axis points down,
+	// and angle is measure from +X to +Y in a clockwise-fashion.
 
 	Vector2 elements[3];
 
-	_FORCE_INLINE_ float tdotx(const Vector2& v) const { return elements[0][0] * v.x + elements[1][0] * v.y; }
-	_FORCE_INLINE_ float tdoty(const Vector2& v) const { return elements[0][1] * v.x + elements[1][1] * v.y; }
+	_FORCE_INLINE_ real_t tdotx(const Vector2& v) const { return elements[0][0] * v.x + elements[1][0] * v.y; }
+	_FORCE_INLINE_ real_t tdoty(const Vector2& v) const { return elements[0][1] * v.x + elements[1][1] * v.y; }
 
 	const Vector2& operator[](int p_idx) const { return elements[p_idx]; }
 	Vector2& operator[](int p_idx) { return elements[p_idx]; }
@@ -580,7 +590,7 @@ struct Matrix32 {
 	void translate( real_t p_tx, real_t p_ty);
 	void translate( const Vector2& p_translation );
 
-	float basis_determinant() const;
+	real_t basis_determinant() const;
 
 	Size2 get_scale() const;
 
@@ -590,7 +600,7 @@ struct Matrix32 {
 	Matrix32 scaled(const Size2& p_scale) const;
 	Matrix32 basis_scaled(const Size2& p_scale) const;
 	Matrix32 translated(const Vector2& p_offset) const;
-	Matrix32 rotated(float p_phi) const;
+	Matrix32 rotated(real_t p_phi) const;
 
 	Matrix32 untranslated() const;
 
@@ -603,7 +613,7 @@ struct Matrix32 {
 	void operator*=(const Matrix32& p_transform);
 	Matrix32 operator*(const Matrix32& p_transform) const;
 
-	Matrix32 interpolate_with(const Matrix32& p_transform, float p_c) const;
+	Matrix32 interpolate_with(const Matrix32& p_transform, real_t p_c) const;
 
 	_FORCE_INLINE_ Vector2 basis_xform(const Vector2& p_vec) const;
 	_FORCE_INLINE_ Vector2 basis_xform_inv(const Vector2& p_vec) const;
@@ -834,8 +844,8 @@ void Matrix32::set_rotation_and_scale(real_t p_rot,const Size2& p_scale) {
 
 	elements[0][0]=Math::cos(p_rot)*p_scale.x;
 	elements[1][1]=Math::cos(p_rot)*p_scale.y;
-	elements[0][1]=-Math::sin(p_rot)*p_scale.x;
-	elements[1][0]=Math::sin(p_rot)*p_scale.y;
+	elements[1][0]=-Math::sin(p_rot)*p_scale.y;
+	elements[0][1]=Math::sin(p_rot)*p_scale.x;
 
 }
 
