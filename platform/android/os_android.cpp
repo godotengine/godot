@@ -659,10 +659,10 @@ void OS_Android::init_video_mode(int p_video_width,int p_video_height) {
 	default_videomode.resizable=false;
 }
 
-void OS_Android::main_loop_request_quit() {
+void OS_Android::main_loop_request_go_back() {
 
 	if (main_loop)
-		main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+		main_loop->notification(MainLoop::NOTIFICATION_WM_GO_BACK_REQUEST);
 }
 
 void OS_Android::set_display_size(Size2 p_size) {

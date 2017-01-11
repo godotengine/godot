@@ -1301,6 +1301,7 @@ bool Main::start() {
 			sml->set_screen_stretch(sml_sm,sml_aspect,stretch_size);
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
+			sml->set_quit_on_go_back(GLOBAL_DEF("application/quit_on_go_back",true));
 			String appname = GlobalConfig::get_singleton()->get("application/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
 			OS::get_singleton()->set_window_title(appname);
@@ -1323,6 +1324,7 @@ bool Main::start() {
 			GLOBAL_DEF("display/stretch/aspect","ignore");
 			GlobalConfig::get_singleton()->set_custom_property_info("display/stretch/aspect",PropertyInfo(Variant::STRING,"display/stretch/aspect",PROPERTY_HINT_ENUM,"ignore,keep,keep_width,keep_height"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
+			sml->set_quit_on_go_back(GLOBAL_DEF("application/quit_on_go_back",true));
 
 			GLOBAL_DEF("rendering/shadow_atlas/size",2048);
 			GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size",PropertyInfo(Variant::INT,"rendering/shadow_atlas/size",PROPERTY_HINT_RANGE,"256,16384"));

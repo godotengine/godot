@@ -649,7 +649,7 @@ static Mutex *suspend_mutex=NULL;
 static int step=0;
 static bool resized=false;
 static bool resized_reload=false;
-static bool quit_request=false;
+static bool go_back_request=false;
 static Size2 new_size;
 static Vector3 accelerometer;
 static Vector3 magnetometer;
@@ -965,11 +965,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv * e
 }
 
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_quit(JNIEnv * env, jobject obj) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv * env, jobject obj) {
 
 	input_mutex->lock();
-	quit_request=true;
-	print_line("BACK PRESSED");
+	go_back_request=true;
 	input_mutex->unlock();
 
 }
@@ -1096,10 +1095,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv * env, jo
 		joy_events.pop_front();
 	}
 
-	if (quit_request) {
+	if (go_back_request) {
 
-		os_android->main_loop_request_quit();
-		quit_request=false;
+		os_android->main_loop_request_go_back();
+		go_back_request=false;
 	}
 
 
@@ -1494,7 +1493,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_key(JNIEnv * env, job
 		ievent.key.unicode = KEY_ENTER;
 	} else if (p_scancode==4) {
 
-	    quit_request=true;
+	    go_back_request=true;
     }
 
 	input_mutex->lock();

@@ -107,6 +107,7 @@ private:
 	float fixed_process_time;
 	float idle_process_time;
 	bool accept_quit;
+	bool quit_on_go_back;
 	uint32_t last_id;
 
 	bool editor_hint;
@@ -353,6 +354,7 @@ public:
 	virtual void finish();
 
 	void set_auto_accept_quit(bool p_enable);
+	void set_quit_on_go_back(bool p_enable);
 
 	void quit();
 

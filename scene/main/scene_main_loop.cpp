@@ -498,6 +498,7 @@ void SceneTree::init() {
 
 	//_quit=false;
 	accept_quit=true;
+	quit_on_go_back=true;
 	initialized=true;
 	input_handled=false;
 
@@ -646,6 +647,15 @@ void SceneTree::_notification(int p_notification) {
 				break;
 			}
 		} break;
+		case NOTIFICATION_WM_GO_BACK_REQUEST: {
+
+			get_root()->propagate_notification(p_notification);
+
+			if (quit_on_go_back) {
+				_quit=true;
+				break;
+			}
+		} break;
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_WM_FOCUS_IN:
 		case NOTIFICATION_WM_FOCUS_OUT: {
@@ -670,6 +680,11 @@ void SceneTree::_notification(int p_notification) {
 void SceneTree::set_auto_accept_quit(bool p_enable) {
 
 	accept_quit=p_enable;
+}
+
+void SceneTree::set_quit_on_go_back(bool p_enable) {
+
+	quit_on_go_back=p_enable;
 }
 
 void SceneTree::set_editor_hint(bool p_enabled) {
