@@ -33,10 +33,6 @@
 #include <string.h>
 
 #ifdef WINDOWS_ENABLED
-  // Workaround mingw missing flags!
-  #ifndef AI_ADDRCONFIG
-    #define AI_ADDRCONFIG 0x00000400
-  #endif
   #include <ws2tcpip.h>
   #include <winsock2.h>
   #include <windows.h>
