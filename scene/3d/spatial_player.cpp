@@ -125,6 +125,7 @@ SpatialPlayer::SpatialPlayer() {
 	params[PARAM_ATTENUATION_DISTANCE_EXP]=1.0; //linear (and not really good)
 	params[PARAM_EMISSION_CONE_DEGREES]=180.0; //cone disabled
 	params[PARAM_EMISSION_CONE_ATTENUATION_DB]=-6.0; //minus 6 db attenuation
+	set_notify_transform(true);
 
 }
 

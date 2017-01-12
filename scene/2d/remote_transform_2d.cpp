@@ -127,7 +127,7 @@ void RemoteTransform2D::_bind_methods() {
 RemoteTransform2D::RemoteTransform2D() {
 
 	cache=0;
-
+	set_notify_transform(true);
 }
 
 

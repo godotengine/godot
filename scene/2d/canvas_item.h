@@ -117,6 +117,7 @@ private:
 	bool behind;
 	bool use_parent_material;
 	bool notify_local_transform;
+	bool notify_transform;
 
 	Ref<CanvasItemMaterial> material;
 
@@ -255,6 +256,9 @@ public:
 
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;
+
+	void set_notify_transform(bool p_enable);
+	bool is_transform_notification_enabled() const;
 
 	int get_canvas_layer() const;
 

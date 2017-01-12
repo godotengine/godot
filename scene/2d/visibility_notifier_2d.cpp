@@ -145,6 +145,7 @@ void VisibilityNotifier2D::_bind_methods(){
 VisibilityNotifier2D::VisibilityNotifier2D() {
 
 	rect=Rect2(-10,-10,20,20);
+	set_notify_transform(true);
 }
 
 

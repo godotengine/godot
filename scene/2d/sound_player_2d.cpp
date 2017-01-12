@@ -116,7 +116,7 @@ SoundPlayer2D::SoundPlayer2D() {
 	params[PARAM_ATTENUATION_MAX_DISTANCE]=2048;
 	params[PARAM_ATTENUATION_DISTANCE_EXP]=1.0; //linear (and not really good)
 
-
+	set_notify_transform(true);
 }
 
 SoundPlayer2D::~SoundPlayer2D() {

@@ -1384,6 +1384,8 @@ String Node::_generate_serial_child_name(Node *p_child) {
 	if (name=="") {
 
 		name = p_child->get_class();
+		/* this is probably too slow to use here, should check alternatives
+		 *
 		// Adjust casing according to project setting. The current type name is expected to be in PascalCase.
 		switch (Globals::get_singleton()->get("node/name_casing").operator int()) {
 			case NAME_CASING_PASCAL_CASE:
@@ -1395,6 +1397,7 @@ String Node::_generate_serial_child_name(Node *p_child) {
 				name = name.camelcase_to_underscore(true);
 				break;
 		}
+		*/
 	}
 
 	// Extract trailing number

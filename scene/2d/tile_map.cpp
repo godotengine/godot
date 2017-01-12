@@ -1321,6 +1321,7 @@ TileMap::TileMap() {
 
 	fp_adjust=0.00001;
 	tile_origin=TILE_ORIGIN_TOP_LEFT;
+	set_notify_transform(true);
 }
 
 TileMap::~TileMap() {

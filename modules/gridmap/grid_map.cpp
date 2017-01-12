@@ -1831,6 +1831,7 @@ GridMap::GridMap() {
 	use_baked_light=false;
 
 	navigation = NULL;
+	set_notify_transform(true);
 }
 
 

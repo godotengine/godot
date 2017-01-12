@@ -162,6 +162,7 @@ VisualInstance::VisualInstance()
 	instance = VisualServer::get_singleton()->instance_create();
 	VisualServer::get_singleton()->instance_attach_object_instance_ID( instance, get_instance_ID() );
 	layers=1;
+	set_notify_transform(true);
 }
 
 

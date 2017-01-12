@@ -363,6 +363,7 @@ CollisionObject2D::CollisionObject2D() {
 
 
 	//owner=
+	set_notify_transform(true);
 
 
 }

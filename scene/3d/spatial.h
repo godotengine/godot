@@ -92,6 +92,7 @@ class Spatial : public Node {
 
 		bool ignore_notification;
 		bool notify_local_transform;
+		bool notify_transform;
 
 		bool visible;
 
@@ -183,6 +184,9 @@ public:
 
 	void look_at(const Vector3& p_target, const Vector3& p_up_normal);
 	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
+
+	void set_notify_transform(bool p_enable);
+	bool is_transform_notification_enabled() const;
 
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;

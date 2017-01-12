@@ -678,6 +678,7 @@ Camera::Camera() {
 	h_offset=0;
 	VisualServer::get_singleton()->camera_set_cull_mask(camera,layers);
 	//active=false;
+	set_notify_transform(true);
 }
 
 

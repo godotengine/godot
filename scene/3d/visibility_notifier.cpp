@@ -125,6 +125,7 @@ void VisibilityNotifier::_bind_methods(){
 VisibilityNotifier::VisibilityNotifier() {
 
 	aabb=Rect3(Vector3(-1,-1,-1),Vector3(2,2,2));
+	set_notify_transform(true);
 
 }
 

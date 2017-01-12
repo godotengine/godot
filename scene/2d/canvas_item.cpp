@@ -769,7 +769,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 	p_node->global_invalid=true;
 
-	if (!p_node->xform_change.in_list()) {
+	if (notify_transform && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
 			if (p_node->is_inside_tree())
 				get_tree()->xform_change_list.add(&p_node->xform_change);
@@ -997,6 +997,12 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(_MD("set_use_parent_material","enable"),&CanvasItem::set_use_parent_material);
 	ClassDB::bind_method(_MD("get_use_parent_material"),&CanvasItem::get_use_parent_material);
 
+	ClassDB::bind_method(_MD("set_notify_local_transform","enable"),&CanvasItem::set_notify_local_transform);
+	ClassDB::bind_method(_MD("is_local_transform_notification_enabled"),&CanvasItem::is_local_transform_notification_enabled);
+
+	ClassDB::bind_method(_MD("set_notify_transform","enable"),&CanvasItem::set_notify_transform);
+	ClassDB::bind_method(_MD("is_transform_notification_enabled"),&CanvasItem::is_transform_notification_enabled);
+
 	ClassDB::bind_method(_MD("make_canvas_pos_local","screen_point"),
 			&CanvasItem::make_canvas_pos_local);
 	ClassDB::bind_method(_MD("make_input_local","event"),&CanvasItem::make_input_local);
@@ -1081,6 +1087,15 @@ bool CanvasItem::is_local_transform_notification_enabled() const {
 	return notify_local_transform;
 }
 
+
+void CanvasItem::set_notify_transform(bool p_enable) {
+	notify_transform=p_enable;
+}
+
+bool CanvasItem::is_transform_notification_enabled() const {
+	return notify_transform;
+}
+
 int CanvasItem::get_canvas_layer() const {
 
 	if (canvas_layer)
@@ -1118,12 +1133,13 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	first_draw=false;
 	drawing=false;
 	behind=false;
-	block_transform_notify=false;
+	block_transform_notify=false;	
 //	viewport=NULL;
 	canvas_layer=NULL;
 	use_parent_material=false;
 	global_invalid=true;
 	notify_local_transform=false;
+	notify_transform=false;
 	light_mask=1;
 
 	C=NULL;

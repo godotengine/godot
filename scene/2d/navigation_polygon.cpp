@@ -497,5 +497,6 @@ NavigationPolygonInstance::NavigationPolygonInstance() {
 	navigation=NULL;
 	nav_id=-1;
 	enabled=true;
+	set_notify_transform(true);
 
 }

@@ -156,6 +156,7 @@ Listener::Listener() {
 
 	current=false;
 	force_change=false;
+	set_notify_transform(true);
 	//active=false;
 }
 

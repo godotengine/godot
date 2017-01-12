@@ -360,7 +360,7 @@ CollisionObject::CollisionObject() {
 
 	capture_input_on_drag=false;
 	ray_pickable=true;
-
+	set_notify_transform(true);
 	//owner=
 
 	//set_transform_notify(true);

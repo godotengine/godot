@@ -482,6 +482,7 @@ Light2D::Light2D() {
 	shadow_color=Color(0,0,0,0);
 	shadow_filter=SHADOW_FILTER_NONE;
 
+	set_notify_transform(true);
 }
 
 Light2D::~Light2D() {

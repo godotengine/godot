@@ -127,6 +127,7 @@ void RemoteTransform::_bind_methods() {
 RemoteTransform::RemoteTransform() {
 
 	cache=0;
+	set_notify_transform(true);
 
 }
 

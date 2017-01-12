@@ -713,5 +713,6 @@ Camera2D::Camera2D() {
 	v_drag_enabled=true;
 	h_ofs=0;
 	v_ofs=0;
+	set_notify_transform(true);
 
 }

@@ -74,7 +74,7 @@ SpatialGizmo::SpatialGizmo() {
 
 void Spatial::_notify_dirty() {
 
-	if (!data.ignore_notification && !xform_change.in_list()) {
+	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 
 		get_tree()->xform_change_list.add(&xform_change);
 	}
@@ -108,7 +108,7 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 	}
 
 
-	if (!data.ignore_notification && !xform_change.in_list()) {
+	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 
 		get_tree()->xform_change_list.add(&xform_change);
 
@@ -736,6 +736,14 @@ void Spatial::look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, con
 
 }
 
+void Spatial::set_notify_transform(bool p_enable) {
+	data.notify_transform=p_enable;
+}
+
+bool Spatial::is_transform_notification_enabled() const {
+	return data.notify_transform;
+}
+
 void Spatial::set_notify_local_transform(bool p_enable) {
 	data.notify_local_transform=p_enable;
 }
@@ -790,6 +798,9 @@ void Spatial::_bind_methods() {
 
 	ClassDB::bind_method(_MD("set_notify_local_transform","enable"), &Spatial::set_notify_local_transform);
 	ClassDB::bind_method(_MD("is_local_transform_notification_enabled"), &Spatial::is_local_transform_notification_enabled);
+
+	ClassDB::bind_method(_MD("set_notify_transform","enable"), &Spatial::set_notify_transform);
+	ClassDB::bind_method(_MD("is_transform_notification_enabled"), &Spatial::is_transform_notification_enabled);
 
 	void rotate(const Vector3& p_normal,float p_radians);
 	void rotate_x(float p_radians);
@@ -848,11 +859,13 @@ Spatial::Spatial() : xform_change(this)
 	data.viewport=NULL;
 	data.inside_world=false;
 	data.visible=true;
+
 #ifdef TOOLS_ENABLED
 	data.gizmo_disabled=false;
 	data.gizmo_dirty=false;
 #endif
 	data.notify_local_transform=false;
+	data.notify_transform=false;
 	data.parent=NULL;
 	data.C=NULL;
 

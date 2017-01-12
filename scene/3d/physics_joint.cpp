@@ -195,6 +195,7 @@ Joint::Joint() {
 
 	exclude_from_collision=true;
 	solver_priority=1;
+	set_notify_transform(true);
 }
 
 

@@ -190,6 +190,7 @@ ProximityGroup::ProximityGroup() {
 	dispatch_mode = MODE_PROXY;
 
 	grid_radius = Vector3(1, 1, 1);
+	set_notify_transform(true);
 
 };
 
