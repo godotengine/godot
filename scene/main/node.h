@@ -147,6 +147,12 @@ private:
 
 	} data;
 
+	enum NameCasing {
+		NAME_CASING_PASCAL_CASE,
+		NAME_CASING_CAMEL_CASE,
+		NAME_CASING_SNAKE_CASE
+	};
+
 
 	void _print_tree(const Node *p_node);
 
