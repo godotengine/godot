@@ -1361,7 +1361,7 @@ void ScriptEditor::_update_script_colors() {
 
 		bool current = tab_container->get_current_tab() == c;
 		if (current && highlight_current) {
-			script_list->set_item_custom_bg_color(i, EditorSettings::get_singleton()->get("text_editor/current_script_background_color"));
+			script_list->set_item_custom_bg_color(i, EditorSettings::get_singleton()->get("text_editor/open_scripts/current_script_background_color"));
 
 		} else if (script_temperature_enabled) {
 
