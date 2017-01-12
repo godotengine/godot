@@ -81,7 +81,6 @@ def configure(env):
     env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL', '-DMPC_FIXED_POINT', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
     env.Append(CPPFLAGS=['-DGLES2_ENABLED'])
     env.Append(CPPFLAGS=['-DGLES_NO_CLIENT_ARRAYS'])
-    env.Append(CPPFLAGS=['-s', 'FULL_ES2=1'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
 
     if env['wasm'] == 'yes':
