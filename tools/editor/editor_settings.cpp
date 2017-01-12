@@ -880,11 +880,11 @@ void EditorSettings::load_text_editor_theme() {
 		String val = cf->get_value("color_theme", key);
 
 		// don't load if it's not already there!
-		if (has("text_editor/" + key)) {
+		if (has("text_editor/highlighting/" + key)) {
 
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.find("color") >= 0) {
-				props["text_editor/"+key].variant = Color::html(val);	// change manually to prevent "Settings changed" console spam
+				props["text_editor/highlighting/"+key].variant = Color::html(val);	// change manually to prevent "Settings changed" console spam
 			}
 		}
 	}
@@ -948,34 +948,34 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 bool EditorSettings::_save_text_editor_theme(String p_file) {
 	String theme_section = "color_theme";
 	Ref<ConfigFile> cf = memnew( ConfigFile );	// hex is better?
-	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/background_color")).to_html());
-	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/completion_background_color")).to_html());
-	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/completion_selected_color")).to_html());
-	cf->set_value(theme_section, "completion_existing_color", ((Color)get("text_editor/completion_existing_color")).to_html());
-	cf->set_value(theme_section, "completion_scroll_color", ((Color)get("text_editor/completion_scroll_color")).to_html());
-	cf->set_value(theme_section, "completion_font_color", ((Color)get("text_editor/completion_font_color")).to_html());
-	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/caret_color")).to_html());
-	cf->set_value(theme_section, "caret_background_color", ((Color)get("text_editor/caret_background_color")).to_html());
-	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/line_number_color")).to_html());
-	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/text_color")).to_html());
-	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/text_selected_color")).to_html());
-	cf->set_value(theme_section, "keyword_color", ((Color)get("text_editor/keyword_color")).to_html());
-	cf->set_value(theme_section, "base_type_color", ((Color)get("text_editor/base_type_color")).to_html());
-	cf->set_value(theme_section, "engine_type_color", ((Color)get("text_editor/engine_type_color")).to_html());
-	cf->set_value(theme_section, "function_color", ((Color)get("text_editor/function_color")).to_html());
-	cf->set_value(theme_section, "member_variable_color", ((Color)get("text_editor/member_variable_color")).to_html());
-	cf->set_value(theme_section, "comment_color", ((Color)get("text_editor/comment_color")).to_html());
-	cf->set_value(theme_section, "string_color", ((Color)get("text_editor/string_color")).to_html());
-	cf->set_value(theme_section, "number_color", ((Color)get("text_editor/number_color")).to_html());
-	cf->set_value(theme_section, "symbol_color", ((Color)get("text_editor/symbol_color")).to_html());
-	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/selection_color")).to_html());
-	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/brace_mismatch_color")).to_html());
-	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/current_line_color")).to_html());
-	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/mark_color")).to_html());
-	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/breakpoint_color")).to_html());
-	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/word_highlighted_color")).to_html());
-	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/search_result_color")).to_html());
-	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/search_result_border_color")).to_html());
+	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/highlighting/background_color")).to_html());
+	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/highlighting/completion_background_color")).to_html());
+	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/highlighting/completion_selected_color")).to_html());
+	cf->set_value(theme_section, "completion_existing_color", ((Color)get("text_editor/highlighting/completion_existing_color")).to_html());
+	cf->set_value(theme_section, "completion_scroll_color", ((Color)get("text_editor/highlighting/completion_scroll_color")).to_html());
+	cf->set_value(theme_section, "completion_font_color", ((Color)get("text_editor/highlighting/completion_font_color")).to_html());
+	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/highlighting/caret_color")).to_html());
+	cf->set_value(theme_section, "caret_background_color", ((Color)get("text_editor/highlighting/caret_background_color")).to_html());
+	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/highlighting/line_number_color")).to_html());
+	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/highlighting/text_color")).to_html());
+	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/highlighting/text_selected_color")).to_html());
+	cf->set_value(theme_section, "keyword_color", ((Color)get("text_editor/highlighting/keyword_color")).to_html());
+	cf->set_value(theme_section, "base_type_color", ((Color)get("text_editor/highlighting/base_type_color")).to_html());
+	cf->set_value(theme_section, "engine_type_color", ((Color)get("text_editor/highlighting/engine_type_color")).to_html());
+	cf->set_value(theme_section, "function_color", ((Color)get("text_editor/highlighting/function_color")).to_html());
+	cf->set_value(theme_section, "member_variable_color", ((Color)get("text_editor/highlighting/member_variable_color")).to_html());
+	cf->set_value(theme_section, "comment_color", ((Color)get("text_editor/highlighting/comment_color")).to_html());
+	cf->set_value(theme_section, "string_color", ((Color)get("text_editor/highlighting/string_color")).to_html());
+	cf->set_value(theme_section, "number_color", ((Color)get("text_editor/highlighting/number_color")).to_html());
+	cf->set_value(theme_section, "symbol_color", ((Color)get("text_editor/highlighting/symbol_color")).to_html());
+	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/highlighting/selection_color")).to_html());
+	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/highlighting/brace_mismatch_color")).to_html());
+	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/highlighting/current_line_color")).to_html());
+	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/highlighting/mark_color")).to_html());
+	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/highlighting/breakpoint_color")).to_html());
+	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/highlighting/word_highlighted_color")).to_html());
+	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/highlighting/search_result_color")).to_html());
+	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/highlighting/search_result_border_color")).to_html());
 
 
 	Error err = cf->save(p_file);
