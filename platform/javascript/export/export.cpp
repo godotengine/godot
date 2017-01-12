@@ -377,7 +377,7 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	logo->create_from_image(img);
 	max_memory=3;
 	html_title="";
-	html_font_family="arial,sans-serif";
+	html_font_family="'Droid Sans',arial,sans-serif";
 	html_controls_enabled=true;
 	pack_mode=PACK_SINGLE_FILE;
 }

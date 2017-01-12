@@ -140,10 +140,9 @@ static void _godot_draw(void) {
 
 extern "C" {
 
-void main_after_fs_sync(int value) {
+void main_after_fs_sync() {
 
 	start_step=1;
-	printf("FS SYNCHED!\n");
 }
 
 }
@@ -178,26 +177,25 @@ int main(int argc, char *argv[]) {
 	glutDisplayFunc(_godot_draw);
    //glutSpecialFunc(gears_special);
 
+	//mount persistent file system
+	EM_ASM(
+		FS.mkdir('/userfs');
+		FS.mount(IDBFS, {}, '/userfs');
 
+		// sync from persistent state into memory and then
+		// run the 'main_after_fs_sync' function
+		FS.syncfs(true, function(err) {
 
-	 //mount persistent filesystem
-	 EM_ASM(
-		 FS.mkdir('/userfs');
-		 FS.mount(IDBFS, {}, '/userfs');
-
-
-
-		 // sync from persisted state into memory and then
-		 // run the 'test' function
-		 FS.syncfs(true, function (err) {
-			 assert(!err);
-			 console.log("done syncinc!");
-			 _after_sync_cb = Module.cwrap('main_after_fs_sync', 'void',['number']);
-			 _after_sync_cb(0);
-
-		 });
-
-	  );
+			if (err) {
+				Module.setStatus('Failed to load persistent data\nPlease allow (third-party) cookies');
+				Module.printErr('Failed to populate IDB file system: ' + err.message);
+				Module.exit();
+			} else {
+				Module.print('Successfully populated IDB file system');
+				ccall('main_after_fs_sync', 'void', []);
+			}
+		});
+	);
 
 	glutMainLoop();
 
