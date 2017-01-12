@@ -33,38 +33,125 @@
 #include "math_defs.h"
 
 #ifndef NO_MATH_H
-#include "math.h"
+#include <math.h>
 #endif
+
+#define Math_PI 3.14159265358979323846
+#define Math_SQRT12 0.7071067811865475244008443621048490
 
 class Math {
 
 
 	static uint32_t default_seed;
 public:
-	Math() {}; // useless to instance
+	Math() {} // useless to instance
 
 	enum {
 		RANDOM_MAX=2147483647L
 	};
 
-	static double sin(double p_x);
-	static double cos(double p_x);
-	static double tan(double p_x);
-	static double sinh(double p_x);
-	static double cosh(double p_x);
-	static double tanh(double p_x);
-	static double asin(double p_x);
-	static double acos(double p_x);
-	static double atan(double p_x);
-	static double atan2(double p_y, double p_x);
-	static double deg2rad(double p_y);
-	static double rad2deg(double p_y);
-	static double sqrt(double p_x);
-	static double fmod(double p_x,double p_y);
-	static double fposmod(double p_x,double p_y);
+
+	static _ALWAYS_INLINE_ double sin(double p_x) {
+
+		return ::sin(p_x);
+
+	}
+
+	static _ALWAYS_INLINE_ double cos(double p_x) {
+
+		return ::cos(p_x);
+
+	}
+
+	static _ALWAYS_INLINE_ double tan(double p_x) {
+
+		return ::tan(p_x);
+
+	}
+	static _ALWAYS_INLINE_ double sinh(double p_x) {
+
+		return ::sinh(p_x);
+	}
+
+	static _ALWAYS_INLINE_ double cosh(double p_x) {
+
+		return ::cosh(p_x);
+	}
+
+	static _ALWAYS_INLINE_ double tanh(double p_x) {
+
+		return ::tanh(p_x);
+	}
+
+
+	static _ALWAYS_INLINE_ double asin(double p_x) {
+
+		return ::asin(p_x);
+
+	}
+
+	static _ALWAYS_INLINE_ double acos(double p_x) {
+
+		return ::acos(p_x);
+	}
+
+	static _ALWAYS_INLINE_ double atan(double p_x) {
+
+		return ::atan(p_x);
+	}
+
+	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) {
+
+		return ::atan2(p_y,p_x);
+
+	}
+
+	static _ALWAYS_INLINE_ double deg2rad(double p_y) {
+
+		return p_y*Math_PI/180.0;
+	}
+
+	static _ALWAYS_INLINE_ double rad2deg(double p_y) {
+
+		return p_y*180.0/Math_PI;
+	}
+
+
+	static _ALWAYS_INLINE_ double sqrt(double p_x) {
+
+		return ::sqrt(p_x);
+	}
+
+	static _ALWAYS_INLINE_ double fmod(double p_x,double p_y) {
+
+		return ::fmod(p_x,p_y);
+	}
+
+	static _ALWAYS_INLINE_ double fposmod(double p_x,double p_y) {
+
+		if (p_x>=0) {
+
+			return fmod(p_x,p_y);
+
+		} else {
+
+			return p_y-fmod(-p_x,p_y);
+		}
+
+	}
+	static _ALWAYS_INLINE_ double floor(double p_x) {
+
+		return ::floor(p_x);
+	}
+
+	static _ALWAYS_INLINE_ double ceil(double p_x) {
+
+		return ::ceil(p_x);
+	}
+
+
 	static uint32_t rand_from_seed(uint32_t *seed);
-	static double floor(double p_x);
-	static double ceil(double p_x);
+
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
 	static double stepify(double p_value,double p_step);
@@ -84,10 +171,20 @@ public:
 		return Math::exp( p_db * 0.11512925464970228420089957273422 );
 	}
 
-	static bool is_nan(double p_val);
-	static bool is_inf(double p_val);
+	static _ALWAYS_INLINE_ bool is_nan(double p_val) {
 
+		return (p_val!=p_val);
+	}
 
+	static _ALWAYS_INLINE_ bool is_inf(double p_val) {
+
+	#ifdef _MSC_VER
+		return !_finite(p_val);
+	#else
+		return isinf(p_val);
+	#endif
+
+	}
 
 	static uint32_t rand();
 	static double randf();
@@ -289,7 +386,5 @@ public:
 };
 
 
-#define Math_PI 3.14159265358979323846
-#define Math_SQRT12 0.7071067811865475244008443621048490
 
 #endif // MATH_FUNCS_H

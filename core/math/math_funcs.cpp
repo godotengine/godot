@@ -29,7 +29,7 @@
 #include "math_funcs.h"
 
 #include "core/os/os.h"
-#include <math.h>
+
 #include "float.h"
 uint32_t Math::default_seed=1;
 
@@ -69,48 +69,6 @@ double Math::randf() {
 	return (double)rand() / (double)Math::RANDOM_MAX;
 }
 
-double Math::sin(double p_x) {
-
-	return ::sin(p_x);
-
-}
-
-double Math::cos(double p_x) {
-
-	return ::cos(p_x);
-
-}
-
-double Math::tan(double p_x) {
-
-	return ::tan(p_x);
-
-}
-double Math::sinh(double p_x) {
-
-	return ::sinh(p_x);
-}
-
-double Math::cosh(double p_x) {
-
-	return ::cosh(p_x);
-}
-
-double Math::tanh(double p_x) {
-
-	return ::tanh(p_x);
-}
-
-
-double Math::deg2rad(double p_y) {
-
-	return p_y*Math_PI/180.0;
-}
-
-double Math::rad2deg(double p_y) {
-
-	return p_y*180.0/Math_PI;
-}
 
 double Math::round(double p_val) {
 
@@ -120,22 +78,6 @@ double Math::round(double p_val) {
 		p_val=-p_val;
 		return -::floor(p_val+0.5);
 	}
-}
-
-double Math::asin(double p_x) {
-
-	return ::asin(p_x);
-
-}
-
-double Math::acos(double p_x) {
-
-	return ::acos(p_x);
-}
-
-double Math::atan(double p_x) {
-
-	return ::atan(p_x);
 }
 
 double Math::dectime(double p_value,double p_amount, double p_step) {
@@ -148,42 +90,6 @@ double Math::dectime(double p_value,double p_amount, double p_step) {
 	return val*sgn;
 }
 
-double Math::atan2(double p_y, double p_x) {
-
-	return ::atan2(p_y,p_x);
-
-}
-double Math::sqrt(double p_x) {
-
-	return ::sqrt(p_x);
-}
-
-double Math::fmod(double p_x,double p_y) {
-
-	return ::fmod(p_x,p_y);
-}
-
-double Math::fposmod(double p_x,double p_y) {
-
-	if (p_x>=0) {
-
-		return Math::fmod(p_x,p_y);
-
-	} else {
-
-		return p_y-Math::fmod(-p_x,p_y);
-	}
-
-}
-double Math::floor(double p_x) {
-
-	return ::floor(p_x);
-}
-
-double Math::ceil(double p_x) {
-
-	return ::ceil(p_x);
-}
 
 int Math::step_decimals(double p_step) {
 
@@ -244,20 +150,7 @@ double Math::stepify(double p_value,double p_step) {
 	return p_value;
 }
 
-bool Math::is_nan(double p_val) {
 
-	return (p_val!=p_val);
-}
-
-bool Math::is_inf(double p_val) {
-
-#ifdef _MSC_VER
-	return !_finite(p_val);
-#else
-	return isinf(p_val);
-#endif
-
-}
 
 uint32_t Math::larger_prime(uint32_t p_val) {
 
