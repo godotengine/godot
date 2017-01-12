@@ -531,12 +531,12 @@ public:
 
 		//bool packed;
 
-		struct MorphTarget {
+		struct BlendShape {
 			GLuint vertex_id;
 			GLuint array_id;
 		};
 
-		Vector<MorphTarget> morph_targets;
+		Vector<BlendShape> blend_shapes;
 
 		Rect3 aabb;
 
@@ -583,13 +583,13 @@ public:
 
 		bool active;
 		Vector<Surface*> surfaces;
-		int morph_target_count;
-		VS::MorphTargetMode morph_target_mode;
+		int blend_shape_count;
+		VS::BlendShapeMode blend_shape_mode;
 		Rect3 custom_aabb;
 		mutable uint64_t last_pass;
 		Mesh() {
-			morph_target_mode=VS::MORPH_MODE_NORMALIZED;
-			morph_target_count=0;
+			blend_shape_mode=VS::BLEND_SHAPE_MODE_NORMALIZED;
+			blend_shape_count=0;
 			last_pass=0;
 			active=false;
 		}
@@ -601,12 +601,12 @@ public:
 
 	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<Rect3>& p_bone_aabbs=Vector<Rect3>());
 
-	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount);
-	virtual int mesh_get_morph_target_count(RID p_mesh) const;
+	virtual void mesh_set_blend_shape_count(RID p_mesh,int p_amount);
+	virtual int mesh_get_blend_shape_count(RID p_mesh) const;
 
 
-	virtual void mesh_set_morph_target_mode(RID p_mesh,VS::MorphTargetMode p_mode);
-	virtual VS::MorphTargetMode mesh_get_morph_target_mode(RID p_mesh) const;
+	virtual void mesh_set_blend_shape_mode(RID p_mesh,VS::BlendShapeMode p_mode);
+	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;

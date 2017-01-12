@@ -2480,7 +2480,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 	}
 
 
-	bool has_morph = p_blend_shapes.size();
+	//bool has_morph = p_blend_shapes.size();
 
 	Surface::Attrib attribs[VS::ARRAY_MAX];
 
@@ -2702,7 +2702,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 	ERR_FAIL_COND(p_index_array.size()!=index_array_size);
 
-	ERR_FAIL_COND(p_blend_shapes.size()!=mesh->morph_target_count);
+	ERR_FAIL_COND(p_blend_shapes.size()!=mesh->blend_shape_count);
 
 	for(int i=0;i<p_blend_shapes.size();i++) {
 		ERR_FAIL_COND(p_blend_shapes[i].size()!=array_size);
@@ -2807,7 +2807,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 		for(int i=0;i<p_blend_shapes.size();i++) {
 
-			Surface::MorphTarget mt;
+			Surface::BlendShape mt;
 
 			PoolVector<uint8_t>::Read vr = p_blend_shapes[i].read();
 
@@ -2837,7 +2837,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 			glBindVertexArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
 
-			surface->morph_targets.push_back(mt);
+			surface->blend_shapes.push_back(mt);
 
 		}
 	}
@@ -2846,7 +2846,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 	mesh->instance_change_notify();
 }
 
-void RasterizerStorageGLES3::mesh_set_morph_target_count(RID p_mesh,int p_amount){
+void RasterizerStorageGLES3::mesh_set_blend_shape_count(RID p_mesh,int p_amount){
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
@@ -2855,32 +2855,32 @@ void RasterizerStorageGLES3::mesh_set_morph_target_count(RID p_mesh,int p_amount
 	ERR_FAIL_COND(mesh->surfaces.size()!=0);
 	ERR_FAIL_COND(p_amount<0);
 
-	mesh->morph_target_count=p_amount;
+	mesh->blend_shape_count=p_amount;
 
 }
-int RasterizerStorageGLES3::mesh_get_morph_target_count(RID p_mesh) const{
+int RasterizerStorageGLES3::mesh_get_blend_shape_count(RID p_mesh) const{
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND_V(!mesh,0);
 
-	return mesh->morph_target_count;
+	return mesh->blend_shape_count;
 }
 
 
-void RasterizerStorageGLES3::mesh_set_morph_target_mode(RID p_mesh,VS::MorphTargetMode p_mode){
+void RasterizerStorageGLES3::mesh_set_blend_shape_mode(RID p_mesh,VS::BlendShapeMode p_mode){
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
 	ERR_FAIL_COND(!mesh);
 
-	mesh->morph_target_mode=p_mode;
+	mesh->blend_shape_mode=p_mode;
 
 }
-VS::MorphTargetMode RasterizerStorageGLES3::mesh_get_morph_target_mode(RID p_mesh) const{
+VS::BlendShapeMode RasterizerStorageGLES3::mesh_get_blend_shape_mode(RID p_mesh) const{
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
-	ERR_FAIL_COND_V(!mesh,VS::MORPH_MODE_NORMALIZED);
+	ERR_FAIL_COND_V(!mesh,VS::BLEND_SHAPE_MODE_NORMALIZED);
 
-	return mesh->morph_target_mode;
+	return mesh->blend_shape_mode;
 }
 
 void RasterizerStorageGLES3::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material){
@@ -3027,9 +3027,9 @@ Vector<PoolVector<uint8_t> > RasterizerStorageGLES3::mesh_surface_get_blend_shap
 
 	Vector<PoolVector<uint8_t> > bsarr;
 
-	for(int i=0;i<mesh->surfaces[p_surface]->morph_targets.size();i++) {
+	for(int i=0;i<mesh->surfaces[p_surface]->blend_shapes.size();i++) {
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,mesh->surfaces[p_surface]->morph_targets[i].vertex_id);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,mesh->surfaces[p_surface]->blend_shapes[i].vertex_id);
 		void * data = glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER,0,mesh->surfaces[p_surface]->array_byte_size,GL_MAP_READ_BIT);
 
 		ERR_FAIL_COND_V(!data,Vector<PoolVector<uint8_t> >());
@@ -3081,10 +3081,10 @@ void RasterizerStorageGLES3::mesh_remove_surface(RID p_mesh, int p_surface){
 
 	glDeleteVertexArrays(1,&surface->array_id);
 
-	for(int i=0;i<surface->morph_targets.size();i++) {
+	for(int i=0;i<surface->blend_shapes.size();i++) {
 
-		glDeleteBuffers(1,&surface->morph_targets[i].vertex_id);
-		glDeleteVertexArrays(1,&surface->morph_targets[i].array_id);
+		glDeleteBuffers(1,&surface->blend_shapes[i].vertex_id);
+		glDeleteVertexArrays(1,&surface->blend_shapes[i].array_id);
 	}
 
 	mesh->instance_material_change_notify();
@@ -3290,9 +3290,9 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, float *p_weigh
 	//copy all first
 	float base_weight=1.0;
 
-	int mtc = s->morph_targets.size();
+	int mtc = s->blend_shapes.size();
 
-	if (s->mesh->morph_target_mode==VS::MORPH_MODE_NORMALIZED) {
+	if (s->mesh->blend_shape_mode==VS::BLEND_SHAPE_MODE_NORMALIZED) {
 
 		for(int i=0;i<mtc;i++) {
 			base_weight-=p_weights[i];
@@ -3324,7 +3324,7 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, float *p_weigh
 		if (weight<0.001) //not bother with this one
 			continue;
 
-		glBindVertexArray(s->morph_targets[ti].array_id);
+		glBindVertexArray(s->blend_shapes[ti].array_id);
 		glBindBuffer(GL_ARRAY_BUFFER, resources.transform_feedback_buffers[0]);
 		glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, resources.transform_feedback_buffers[1]);
 

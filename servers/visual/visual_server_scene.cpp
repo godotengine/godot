@@ -470,7 +470,7 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base){
 			instance->base_data=NULL;
 		}
 
-		instance->morph_values.clear();
+		instance->blend_values.clear();
 
 		for(int i=0;i<instance->materials.size();i++) {
 			if (instance->materials[i].is_valid()) {
@@ -829,7 +829,7 @@ void VisualServerScene::instance_attach_object_instance_ID(RID p_instance,Object
 	instance->object_ID=p_ID;
 
 }
-void VisualServerScene::instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight){
+void VisualServerScene::instance_set_blend_shape_weight(RID p_instance,int p_shape, float p_weight){
 
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
@@ -838,8 +838,8 @@ void VisualServerScene::instance_set_morph_target_weight(RID p_instance,int p_sh
 		_update_dirty_instance(instance);
 	}
 
-	ERR_FAIL_INDEX(p_shape,instance->morph_values.size());
-	instance->morph_values[p_shape]=p_weight;
+	ERR_FAIL_INDEX(p_shape,instance->blend_values.size());
+	instance->blend_values[p_shape]=p_weight;
 }
 
 void VisualServerScene::instance_set_surface_material(RID p_instance,int p_surface, RID p_material){
@@ -3409,11 +3409,11 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 			}
 			p_instance->materials.resize(new_mat_count);
 
-			int new_morph_count = VSG::storage->mesh_get_morph_target_count(p_instance->base);
-			if (new_morph_count!=p_instance->morph_values.size()) {
-				p_instance->morph_values.resize(new_morph_count);
-				for(int i=0;i<new_morph_count;i++) {
-					p_instance->morph_values[i]=0;
+			int new_blend_shape_count = VSG::storage->mesh_get_blend_shape_count(p_instance->base);
+			if (new_blend_shape_count!=p_instance->blend_values.size()) {
+				p_instance->blend_values.resize(new_blend_shape_count);
+				for(int i=0;i<new_blend_shape_count;i++) {
+					p_instance->blend_values[i]=0;
 				}
 			}
 		}

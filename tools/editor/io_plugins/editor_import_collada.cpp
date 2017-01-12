@@ -624,12 +624,12 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 			ERR_FAIL_COND_V( !collada.state.mesh_data_map.has(target), ERR_INVALID_DATA );
 			String name = collada.state.mesh_data_map[target].name;
 
-			p_mesh->add_morph_target(name);
+			p_mesh->add_blend_shape(name);
 		}
 		if (p_morph_data->mode=="RELATIVE")
-			p_mesh->set_morph_target_mode(Mesh::MORPH_MODE_RELATIVE);
+			p_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_RELATIVE);
 		else if (p_morph_data->mode=="NORMALIZED")
-			p_mesh->set_morph_target_mode(Mesh::MORPH_MODE_NORMALIZED);
+			p_mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
 	}
 
 

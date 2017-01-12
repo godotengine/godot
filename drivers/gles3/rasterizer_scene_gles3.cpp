@@ -1251,9 +1251,9 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
 
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface*>(e->geometry);
 
-			if (s->morph_targets.size() && e->instance->morph_values.size()) {
+			if (s->blend_shapes.size() && e->instance->blend_values.size()) {
 				//blend shapes, use transform feedback
-				storage->mesh_render_blend_shapes(s,e->instance->morph_values.ptr());
+				storage->mesh_render_blend_shapes(s,e->instance->blend_values.ptr());
 				//rebind shader
 				state.scene_shader.bind();
 			} else {

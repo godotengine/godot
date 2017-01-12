@@ -105,10 +105,10 @@ public:
 		PRIMITIVE_TRIANGLE_FAN=VisualServer::PRIMITIVE_TRIANGLE_FAN,
 	};
 
-	enum MorphTargetMode {
+	enum BlendShapeMode {
 
-		MORPH_MODE_NORMALIZED=VS::MORPH_MODE_NORMALIZED,
-		MORPH_MODE_RELATIVE=VS::MORPH_MODE_RELATIVE,
+		BLEND_SHAPE_MODE_NORMALIZED=VS::BLEND_SHAPE_MODE_NORMALIZED,
+		BLEND_SHAPE_MODE_RELATIVE=VS::BLEND_SHAPE_MODE_RELATIVE,
 	};
 
 private:
@@ -120,8 +120,8 @@ private:
 	Vector<Surface> surfaces;
 	RID mesh;
 	Rect3 aabb;
-	MorphTargetMode morph_target_mode;
-	Vector<StringName> morph_targets;
+	BlendShapeMode blend_shape_mode;
+	Vector<StringName> blend_shapes;
 	Rect3 custom_aabb;
 
 	mutable Ref<TriangleMesh> triangle_mesh;
@@ -142,15 +142,15 @@ public:
 	void add_surface(uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<Rect3>& p_bone_aabbs=Vector<Rect3>());
 
 	Array surface_get_arrays(int p_surface) const;
-	virtual Array surface_get_morph_arrays(int p_surface) const;
+	virtual Array surface_get_blend_shape_arrays(int p_surface) const;
 
-	void add_morph_target(const StringName& p_name);
-	int get_morph_target_count() const;
-	StringName get_morph_target_name(int p_index) const;
-	void clear_morph_targets();
+	void add_blend_shape(const StringName& p_name);
+	int get_blend_shape_count() const;
+	StringName get_blend_shape_name(int p_index) const;
+	void clear_blend_shapes();
 
-	void set_morph_target_mode(MorphTargetMode p_mode);
-	MorphTargetMode get_morph_target_mode() const;
+	void set_blend_shape_mode(BlendShapeMode p_mode);
+	BlendShapeMode get_blend_shape_mode() const;
 
 	int get_surface_count() const;
 	void surface_remove(int p_idx);
@@ -196,6 +196,6 @@ public:
 
 VARIANT_ENUM_CAST( Mesh::ArrayType );
 VARIANT_ENUM_CAST( Mesh::PrimitiveType );
-VARIANT_ENUM_CAST( Mesh::MorphTargetMode );
+VARIANT_ENUM_CAST( Mesh::BlendShapeMode );
 
 #endif

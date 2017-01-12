@@ -42,14 +42,14 @@ class MeshInstance : public GeometryInstance {
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;
 
-	struct MorphTrack {
+	struct BlendShapeTrack {
 
 		int idx;
 		float value;
-		MorphTrack() { idx=0; value=0; }
+		BlendShapeTrack() { idx=0; value=0; }
 	};
 
-	Map<StringName,MorphTrack> morph_tracks;
+	Map<StringName,BlendShapeTrack> blend_shape_tracks;
 	Vector<Ref<Material> > materials;
 
 	void _mesh_changed();

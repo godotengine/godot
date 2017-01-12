@@ -42,10 +42,10 @@ bool MeshInstance::_set(const StringName& p_name, const Variant& p_value) {
 		return false;
 
 
-	Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
+	Map<StringName,BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
 		E->get().value=p_value;
-		VisualServer::get_singleton()->instance_set_morph_target_weight(get_instance(),E->get().idx,E->get().value);
+		VisualServer::get_singleton()->instance_set_blend_shape_weight(get_instance(),E->get().idx,E->get().value);
 		return true;
 	}
 
@@ -67,7 +67,7 @@ bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
 	if (!get_instance().is_valid())
 		return false;
 
-	const Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
+	const Map<StringName,BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
 		r_ret = E->get().value;
 		return true;
@@ -86,7 +86,7 @@ bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
 void MeshInstance::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	List<String> ls;
-	for(const Map<StringName,MorphTrack>::Element *E=morph_tracks.front();E;E=E->next()) {
+	for(const Map<StringName,BlendShapeTrack>::Element *E=blend_shape_tracks.front();E;E=E->next()) {
 
 		ls.push_back(E->key());
 	}
@@ -119,16 +119,16 @@ void MeshInstance::set_mesh(const Ref<Mesh>& p_mesh) {
 
 	mesh=p_mesh;
 
-	morph_tracks.clear();
+	blend_shape_tracks.clear();
 	if (mesh.is_valid()) {
 
 
-		for(int i=0;i<mesh->get_morph_target_count();i++) {
+		for(int i=0;i<mesh->get_blend_shape_count();i++) {
 
-			MorphTrack mt;
+			BlendShapeTrack mt;
 			mt.idx=i;
 			mt.value=0;
-			morph_tracks["morph/"+String(mesh->get_morph_target_name(i))]=mt;
+			blend_shape_tracks["blend_shapes/"+String(mesh->get_blend_shape_name(i))]=mt;
 		}
 
 		mesh->connect(CoreStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_mesh_changed);

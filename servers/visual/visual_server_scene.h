@@ -491,7 +491,7 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform& p_transform);
 	virtual void instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID);
-	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight);
+	virtual void instance_set_blend_shape_weight(RID p_instance,int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance,bool p_visible);
 

@@ -246,16 +246,16 @@ public:
 	virtual void mesh_add_surface_from_arrays(RID p_mesh,PrimitiveType p_primitive,const Array& p_arrays,const Array& p_blend_shapes=Array(),uint32_t p_compress_format=ARRAY_COMPRESS_DEFAULT);
 	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<Rect3>& p_bone_aabbs=Vector<Rect3>())=0;
 
-	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount)=0;
-	virtual int mesh_get_morph_target_count(RID p_mesh) const=0;
+	virtual void mesh_set_blend_shape_count(RID p_mesh,int p_amount)=0;
+	virtual int mesh_get_blend_shape_count(RID p_mesh) const=0;
 
-	enum MorphTargetMode {
-		MORPH_MODE_NORMALIZED,
-		MORPH_MODE_RELATIVE,
+	enum BlendShapeMode {
+		BLEND_SHAPE_MODE_NORMALIZED,
+		BLEND_SHAPE_MODE_RELATIVE,
 	};
 
-	virtual void mesh_set_morph_target_mode(RID p_mesh,MorphTargetMode p_mode)=0;
-	virtual MorphTargetMode mesh_get_morph_target_mode(RID p_mesh) const=0;
+	virtual void mesh_set_blend_shape_mode(RID p_mesh,BlendShapeMode p_mode)=0;
+	virtual BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const=0;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material)=0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const=0;
@@ -714,7 +714,7 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask)=0;
 	virtual void instance_set_transform(RID p_instance, const Transform& p_transform)=0;
 	virtual void instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID)=0;
-	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight)=0;
+	virtual void instance_set_blend_shape_weight(RID p_instance,int p_shape, float p_weight)=0;
 	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material)=0;
 	virtual void instance_set_visible(RID p_instance,bool p_visible)=0;
 

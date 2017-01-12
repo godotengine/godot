@@ -673,12 +673,12 @@ public:
 
 	BIND10(mesh_add_surface,RID,uint32_t,PrimitiveType,const PoolVector<uint8_t>&,int ,const PoolVector<uint8_t>& ,int ,const Rect3&,const Vector<PoolVector<uint8_t> >&,const Vector<Rect3>& )
 
-	BIND2(mesh_set_morph_target_count,RID,int)
-	BIND1RC(int,mesh_get_morph_target_count,RID)
+	BIND2(mesh_set_blend_shape_count,RID,int)
+	BIND1RC(int,mesh_get_blend_shape_count,RID)
 
 
-	BIND2(mesh_set_morph_target_mode,RID,MorphTargetMode)
-	BIND1RC(MorphTargetMode, mesh_get_morph_target_mode,RID )
+	BIND2(mesh_set_blend_shape_mode,RID,BlendShapeMode)
+	BIND1RC(BlendShapeMode, mesh_get_blend_shape_mode,RID )
 
 	BIND3(mesh_surface_set_material,RID, int , RID )
 	BIND2RC(RID,mesh_surface_get_material,RID, int )
@@ -976,7 +976,7 @@ public:
 	BIND2(instance_set_layer_mask,RID, uint32_t )
 	BIND2(instance_set_transform,RID, const Transform& )
 	BIND2(instance_attach_object_instance_ID,RID,ObjectID )
-	BIND3(instance_set_morph_target_weight,RID,int , float )
+	BIND3(instance_set_blend_shape_weight,RID,int , float )
 	BIND3(instance_set_surface_material,RID,int , RID )
 	BIND2(instance_set_visible,RID ,bool)
 
