@@ -1265,7 +1265,7 @@ GraphEdit::GraphEdit() {
 	top_layer->set_area_as_parent_rect();
 	top_layer->connect("draw",this,"_top_layer_draw");
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
-	top_layer->connect("input_event",this,"_top_layer_input");
+	top_layer->connect("gui_input",this,"_top_layer_input");
 
 	connections_layer = memnew( Control );
 	add_child(connections_layer);
