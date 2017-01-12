@@ -2836,18 +2836,18 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			if (ie.type==InputEvent::MOUSE_MOTION || ie.type==InputEvent::MOUSE_BUTTON) {
 
 				p_list->push_back( PropertyInfo(Variant::INT,"button_mask") );
-				p_list->push_back( PropertyInfo(Variant::INT,"x") );
-				p_list->push_back( PropertyInfo(Variant::INT,"y") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"x") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"y") );
 				p_list->push_back( PropertyInfo(Variant::VECTOR2,"pos") );
-				p_list->push_back( PropertyInfo(Variant::INT,"global_x") );
-				p_list->push_back( PropertyInfo(Variant::INT,"global_y") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"global_x") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"global_y") );
 				p_list->push_back( PropertyInfo(Variant::VECTOR2,"global_pos") );
 
 
 				if (ie.type==InputEvent::MOUSE_MOTION) {
 
-					p_list->push_back( PropertyInfo(Variant::INT,"relative_x") );
-					p_list->push_back( PropertyInfo(Variant::INT,"relative_y") );
+					p_list->push_back( PropertyInfo(Variant::REAL,"relative_x") );
+					p_list->push_back( PropertyInfo(Variant::REAL,"relative_y") );
 					p_list->push_back( PropertyInfo(Variant::VECTOR2,"relative_pos") );
 					p_list->push_back( PropertyInfo(Variant::REAL,"speed_x") );
 					p_list->push_back( PropertyInfo(Variant::REAL,"speed_y") );
