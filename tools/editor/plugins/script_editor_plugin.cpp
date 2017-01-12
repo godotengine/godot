@@ -2178,7 +2178,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_spacer();
 
 
-	script_icon = memnew( TextureFrame );
+	script_icon = memnew( TextureRect );
 	menu_hb->add_child(script_icon);
 	script_name_label = memnew( Label );
 	menu_hb->add_child(script_name_label);

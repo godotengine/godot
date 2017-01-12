@@ -288,7 +288,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 
 			CenterContainer *cc = memnew( CenterContainer );
-			TextureFrame *tf = memnew( TextureFrame);
+			TextureRect *tf = memnew( TextureRect);
 			tf->set_texture(get_icon("ErrorSign","EditorIcons"));
 			cc->add_child(tf);
 			plat_errors->add_child(cc);
@@ -1578,7 +1578,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	ScrollContainer *scroll = memnew( ScrollContainer );
 	atlas_preview_dialog->add_child(scroll);
 	//atlas_preview_dialog->set_child_rect(scroll);
-	atlas_preview_frame = memnew( TextureFrame );
+	atlas_preview_frame = memnew( TextureRect );
 	scroll->add_child(atlas_preview_frame);
 	add_child(atlas_preview_dialog);
 

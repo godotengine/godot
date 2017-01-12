@@ -30,7 +30,7 @@
 
 #include "servers/visual_server.h"
 
-void Patch9Frame::_notification(int p_what) {
+void NinePatchRect::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
@@ -61,21 +61,21 @@ void Patch9Frame::_notification(int p_what) {
 	}
 }
 
-Size2 Patch9Frame::get_minimum_size() const {
+Size2 NinePatchRect::get_minimum_size() const {
 
 	return Size2(margin[MARGIN_LEFT]+margin[MARGIN_RIGHT],margin[MARGIN_TOP]+margin[MARGIN_BOTTOM]);
 }
-void Patch9Frame::_bind_methods() {
+void NinePatchRect::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_texture","texture"), & Patch9Frame::set_texture );
-	ClassDB::bind_method(_MD("get_texture"), & Patch9Frame::get_texture );
-	ClassDB::bind_method(_MD("set_patch_margin","margin","value"), & Patch9Frame::set_patch_margin );
-	ClassDB::bind_method(_MD("get_patch_margin","margin"), & Patch9Frame::get_patch_margin );
-	ClassDB::bind_method(_MD("set_region_rect","rect"),&Patch9Frame::set_region_rect);
-	ClassDB::bind_method(_MD("get_region_rect"),&Patch9Frame::get_region_rect);
-	ClassDB::bind_method(_MD("set_draw_center","draw_center"), & Patch9Frame::set_draw_center );
-	ClassDB::bind_method(_MD("get_draw_center"), & Patch9Frame::get_draw_center );
+	ClassDB::bind_method(_MD("set_texture","texture"), & NinePatchRect::set_texture );
+	ClassDB::bind_method(_MD("get_texture"), & NinePatchRect::get_texture );
+	ClassDB::bind_method(_MD("set_patch_margin","margin","value"), & NinePatchRect::set_patch_margin );
+	ClassDB::bind_method(_MD("get_patch_margin","margin"), & NinePatchRect::get_patch_margin );
+	ClassDB::bind_method(_MD("set_region_rect","rect"),&NinePatchRect::set_region_rect);
+	ClassDB::bind_method(_MD("get_region_rect"),&NinePatchRect::get_region_rect);
+	ClassDB::bind_method(_MD("set_draw_center","draw_center"), & NinePatchRect::set_draw_center );
+	ClassDB::bind_method(_MD("get_draw_center"), & NinePatchRect::get_draw_center );
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
@@ -92,7 +92,7 @@ void Patch9Frame::_bind_methods() {
 }
 
 
-void Patch9Frame::set_texture(const Ref<Texture>& p_tex) {
+void NinePatchRect::set_texture(const Ref<Texture>& p_tex) {
 
 	if (texture==p_tex)
 		return;
@@ -104,14 +104,14 @@ void Patch9Frame::set_texture(const Ref<Texture>& p_tex) {
 	emit_signal("texture_changed");
 }
 
-Ref<Texture> Patch9Frame::get_texture() const {
+Ref<Texture> NinePatchRect::get_texture() const {
 
 	return texture;
 }
 
 
 
-void Patch9Frame::set_patch_margin(Margin p_margin,int p_size) {
+void NinePatchRect::set_patch_margin(Margin p_margin,int p_size) {
 
 	ERR_FAIL_INDEX(p_margin,4);
 	margin[p_margin]=p_size;
@@ -133,13 +133,13 @@ void Patch9Frame::set_patch_margin(Margin p_margin,int p_size) {
 	}
 }
 
-int Patch9Frame::get_patch_margin(Margin p_margin) const{
+int NinePatchRect::get_patch_margin(Margin p_margin) const{
 
 	ERR_FAIL_INDEX_V(p_margin,4,0);
 	return margin[p_margin];
 }
 
-void Patch9Frame::set_region_rect(const Rect2& p_region_rect) {
+void NinePatchRect::set_region_rect(const Rect2& p_region_rect) {
 
 	if (region_rect==p_region_rect)
 		return;
@@ -150,23 +150,23 @@ void Patch9Frame::set_region_rect(const Rect2& p_region_rect) {
 	_change_notify("region_rect");
 }
 
-Rect2 Patch9Frame::get_region_rect() const {
+Rect2 NinePatchRect::get_region_rect() const {
 
 	return region_rect;
 }
 
-void Patch9Frame::set_draw_center(bool p_draw) {
+void NinePatchRect::set_draw_center(bool p_draw) {
 
 	draw_center=p_draw;
 	update();
 }
 
-bool Patch9Frame::get_draw_center() const{
+bool NinePatchRect::get_draw_center() const{
 
 	return draw_center;
 }
 
-Patch9Frame::Patch9Frame() {
+NinePatchRect::NinePatchRect() {
 
 
 	margin[MARGIN_LEFT]=0;
@@ -179,6 +179,6 @@ Patch9Frame::Patch9Frame() {
 }
 
 
-Patch9Frame::~Patch9Frame()
+NinePatchRect::~NinePatchRect()
 {
 }

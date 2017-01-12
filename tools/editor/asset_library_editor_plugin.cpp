@@ -147,7 +147,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	vb->add_child(rating_hb);
 
 	for(int i=0;i<5;i++) {
-		stars[i]=memnew(TextureFrame);
+		stars[i]=memnew(TextureRect);
 		rating_hb->add_child(stars[i]);
 	}
 	price = memnew( Label );
@@ -296,7 +296,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_bg->add_child(description);
 	desc_bg->add_style_override("panel",get_stylebox("normal","TextEdit"));
 
-	preview = memnew( TextureFrame );
+	preview = memnew( TextureRect );
 	preview->set_custom_minimum_size(Size2(640,345));
 	hbox->add_child(preview);
 
@@ -485,7 +485,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	HBoxContainer *hb = memnew( HBoxContainer);
 	add_child(hb);
-	icon = memnew( TextureFrame );
+	icon = memnew( TextureRect );
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew( VBoxContainer );
@@ -555,7 +555,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
-		TextureFrame *tf = memnew(TextureFrame);
+		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(get_icon("Error","EditorIcons"));
 		reverse->set_icon(get_icon("Updown","EditorIcons"));
 

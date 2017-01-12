@@ -3,8 +3,8 @@
 
 #include "scene/gui/control.h"
 
-class ColorFrame : public Control  {
-	GDCLASS(ColorFrame,Control)
+class ColorRect : public Control  {
+	GDCLASS(ColorRect,Control)
 
 	Color color;
 protected:
@@ -16,7 +16,7 @@ public:
 	void set_frame_color(const Color& p_color);
 	Color get_frame_color() const;
 
-	ColorFrame();
+	ColorRect();
 };
 
 #endif // COLORRECT_H

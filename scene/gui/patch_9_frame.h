@@ -33,9 +33,9 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class Patch9Frame : public Control {
+class NinePatchRect : public Control {
 
-	GDCLASS(Patch9Frame,Control);
+	GDCLASS(NinePatchRect,Control);
 
 	bool draw_center;
 	int margin[4];
@@ -61,8 +61,8 @@ public:
 	void set_draw_center(bool p_enable);
 	bool get_draw_center() const;
 
-	Patch9Frame();
-	~Patch9Frame();
+	NinePatchRect();
+	~NinePatchRect();
 
 };
 #endif // PATCH_9_FRAME_H

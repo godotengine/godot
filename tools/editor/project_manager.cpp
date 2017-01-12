@@ -869,7 +869,7 @@ void ProjectManager::_load_recent_projects() {
 		favorite_box->add_child(favorite);
 		hb->add_child(favorite_box);
 
-		TextureFrame *tf = memnew( TextureFrame );
+		TextureRect *tf = memnew( TextureRect );
 		tf->set_texture(icon);
 		hb->add_child(tf);
 

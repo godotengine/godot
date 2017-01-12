@@ -1405,7 +1405,7 @@ EditorFileDialog::EditorFileDialog() {
 	filter_hb->add_child(preview_vb);
 	CenterContainer *prev_cc = memnew( CenterContainer );
 	preview_vb->add_margin_child(TTR("Preview:"),prev_cc);
-	preview = memnew( TextureFrame );
+	preview = memnew( TextureRect );
 	prev_cc->add_child(preview);
 	preview_vb->hide();
 

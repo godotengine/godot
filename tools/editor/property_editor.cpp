@@ -2084,7 +2084,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	scene_tree->connect("selected", this,"_node_path_selected");
 	scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 
-	texture_preview = memnew( TextureFrame );
+	texture_preview = memnew( TextureRect );
 	add_child( texture_preview);
 	texture_preview->hide();
 

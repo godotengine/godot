@@ -1579,7 +1579,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		Ref<ImageTexture> atlast = memnew( ImageTexture );
 		atlast->create_from_image(atlas);
 //		atlast->create_from_image(font_data_list[5]->blit);
-		TextureFrame *tf = memnew( TextureFrame );
+		TextureRect *tf = memnew( TextureRect );
 		tf->set_texture(atlast);
 		dialog->add_child(tf);
 	}

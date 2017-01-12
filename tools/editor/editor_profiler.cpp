@@ -708,7 +708,7 @@ EditorProfiler::EditorProfiler()
 	variables->connect("item_edited",this,"_item_edited");
 
 
-	graph = memnew( TextureFrame );
+	graph = memnew( TextureRect );
 	graph->set_expand(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	//graph->set_ignore_mouse(false);

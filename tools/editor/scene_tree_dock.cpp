@@ -1926,9 +1926,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	filter = memnew( LineEdit );
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter_hbc->add_child(filter);
-	filter_icon = memnew( TextureFrame );
+	filter_icon = memnew( TextureRect );
 	filter_hbc->add_child(filter_icon);
-	filter_icon->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
+	filter_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	filter->connect("text_changed",this,"_filter_changed");
 
 

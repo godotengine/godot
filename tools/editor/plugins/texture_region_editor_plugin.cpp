@@ -643,7 +643,7 @@ void TextureRegionEditor::edit(Object *p_obj)
 		atlas_tex->disconnect("atlas_changed",this,"_edit_region");
 	if (p_obj) {
 		node_sprite = p_obj->cast_to<Sprite>();
-		node_patch9 = p_obj->cast_to<Patch9Frame>();
+		node_patch9 = p_obj->cast_to<NinePatchRect>();
 		if (p_obj->cast_to<StyleBoxTexture>())
 			obj_styleBox = Ref<StyleBoxTexture>(p_obj->cast_to<StyleBoxTexture>());
 		if (p_obj->cast_to<AtlasTexture>()) {
@@ -897,7 +897,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	separator->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb_tools->add_child(separator);
 
-	icon_zoom = memnew( TextureFrame );
+	icon_zoom = memnew( TextureRect );
 	hb_tools->add_child(icon_zoom);
 
 	zoom_out = memnew( ToolButton );

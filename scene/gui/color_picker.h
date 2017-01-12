@@ -50,8 +50,8 @@ private:
 	Image last_capture;
 	Control *uv_edit;
 	Control *w_edit;
-	TextureFrame *sample;
-	TextureFrame *preset;
+	TextureRect *sample;
+	TextureRect *preset;
 	Button *bt_add_preset;
 	List<Color> presets;
 	ToolButton *btn_pick;

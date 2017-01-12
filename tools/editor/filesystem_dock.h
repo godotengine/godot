@@ -95,7 +95,7 @@ private:
 	Button *button_hist_prev;
 	LineEdit *current_path;
 	LineEdit *search_box;
-	TextureFrame *search_icon;
+	TextureRect *search_icon;
 	HBoxContainer *path_hb;
 
 	bool split_mode;

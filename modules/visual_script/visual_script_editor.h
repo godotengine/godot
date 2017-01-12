@@ -58,7 +58,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	GraphEdit *graph;
 
 	LineEdit *node_filter;
-	TextureFrame *node_filter_icon;
+	TextureRect *node_filter_icon;
 
 	VisualScriptEditorSignalEdit *signal_editor;
 

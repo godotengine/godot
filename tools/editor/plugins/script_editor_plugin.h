@@ -179,7 +179,7 @@ class ScriptEditor : public VBoxContainer {
 
 	String current_theme;
 
-	TextureFrame *script_icon;
+	TextureRect *script_icon;
 	Label *script_name_label;
 
 	ToolButton *script_back;

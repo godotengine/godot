@@ -33,9 +33,9 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class TextureFrame : public Control {
+class TextureRect : public Control {
 
-	GDCLASS(TextureFrame,Control);
+	GDCLASS(TextureRect,Control);
 public:
 	enum StretchMode {
 		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility
@@ -69,10 +69,10 @@ public:
 	void set_stretch_mode(StretchMode p_mode);
 	StretchMode get_stretch_mode() const;
 
-	TextureFrame();
-	~TextureFrame();
+	TextureRect();
+	~TextureRect();
 
 };
 
-VARIANT_ENUM_CAST( TextureFrame::StretchMode );
+VARIANT_ENUM_CAST( TextureRect::StretchMode );
 #endif // TEXTURE_FRAME_H

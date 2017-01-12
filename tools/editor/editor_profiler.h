@@ -71,7 +71,7 @@ public:
 
 private:
 	Button *activate;
-	TextureFrame *graph;
+	TextureRect *graph;
 	Ref<ImageTexture> graph_texture;
 	PoolVector<uint8_t> graph_image;
 	Tree *variables;

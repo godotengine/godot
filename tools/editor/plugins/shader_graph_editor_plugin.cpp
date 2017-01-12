@@ -2315,7 +2315,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
 		le->connect("text_entered",this,"_input_name_changed",varray(p_id,le));
-		TextureFrame *tex = memnew( TextureFrame );
+		TextureRect *tex = memnew( TextureRect );
 		tex->set_expand(true);
 		tex->set_custom_minimum_size(Size2(80,80));
 		tex->set_drag_forwarding(this);
@@ -2530,7 +2530,7 @@ void ShaderGraphView::_sg_updated() {
 
 Variant ShaderGraphView::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 {
-	TextureFrame* frame = p_from->cast_to<TextureFrame>();
+	TextureRect* frame = p_from->cast_to<TextureRect>();
 	if (!frame)
 		return Variant();
 
@@ -2576,7 +2576,7 @@ void ShaderGraphView::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (!can_drop_data_fw(p_point, p_data, p_from))
 		return;
 
-	TextureFrame *frame = p_from->cast_to<TextureFrame>();
+	TextureRect *frame = p_from->cast_to<TextureRect>();
 	if (!frame)
 		return;
 

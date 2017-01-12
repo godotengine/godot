@@ -339,9 +339,9 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<TextureFrame>();
-	ClassDB::register_class<ColorFrame>();
-	ClassDB::register_class<Patch9Frame>();
+	ClassDB::register_class<TextureRect>();
+	ClassDB::register_class<ColorRect>();
+	ClassDB::register_class<NinePatchRect>();
 	ClassDB::register_class<TabContainer>();
 	ClassDB::register_class<Tabs>();
 	ClassDB::register_virtual_class<Separator>();

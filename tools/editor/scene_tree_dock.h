@@ -102,7 +102,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorFileDialog *new_scene_from_dialog;
 
 	LineEdit *filter;
-	TextureFrame *filter_icon;
+	TextureRect *filter_icon;
 
 	PopupMenu * menu;
 

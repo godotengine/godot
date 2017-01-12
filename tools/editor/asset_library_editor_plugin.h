@@ -58,7 +58,7 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton* title;
 	LinkButton* category;
 	LinkButton* author;
-	TextureFrame *stars[5];
+	TextureRect *stars[5];
 	Label* price;
 
 	int asset_id;
@@ -104,7 +104,7 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	};
 
 	Vector<Preview> preview_images;
-	TextureFrame *preview;
+	TextureRect *preview;
 
 	void set_image(int p_type,int p_index,const Ref<Texture>& p_image);
 
@@ -138,7 +138,7 @@ class EditorAssetLibraryItemDownload : public PanelContainer {
 	GDCLASS(EditorAssetLibraryItemDownload, PanelContainer);
 
 
-	TextureFrame *icon;
+	TextureRect *icon;
 	Label* title;
 	ProgressBar *progress;
 	Button *install;

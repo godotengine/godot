@@ -177,7 +177,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	PopupMenu *type_menu;
 
 	Control *ec;
-	TextureFrame *zoomicon;
+	TextureRect *zoomicon;
 	HSlider *zoom;
 	//MenuButton *menu;
 	SpinBox *length;

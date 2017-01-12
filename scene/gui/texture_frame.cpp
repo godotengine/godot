@@ -29,7 +29,7 @@
 #include "texture_frame.h"
 #include "servers/visual_server.h"
 
-void TextureFrame::_notification(int p_what) {
+void TextureRect::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
@@ -85,22 +85,22 @@ void TextureFrame::_notification(int p_what) {
 	}
 }
 
-Size2 TextureFrame::get_minimum_size() const {
+Size2 TextureRect::get_minimum_size() const {
 
 	if (!expand && !texture.is_null())
 		return texture->get_size();
 	else
 		return Size2();
 }
-void TextureFrame::_bind_methods() {
+void TextureRect::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_texture","texture"), & TextureFrame::set_texture );
-	ClassDB::bind_method(_MD("get_texture"), & TextureFrame::get_texture );
-	ClassDB::bind_method(_MD("set_expand","enable"), & TextureFrame::set_expand );
-	ClassDB::bind_method(_MD("has_expand"), & TextureFrame::has_expand );
-	ClassDB::bind_method(_MD("set_stretch_mode","stretch_mode"), & TextureFrame::set_stretch_mode );
-	ClassDB::bind_method(_MD("get_stretch_mode"), & TextureFrame::get_stretch_mode );
+	ClassDB::bind_method(_MD("set_texture","texture"), & TextureRect::set_texture );
+	ClassDB::bind_method(_MD("get_texture"), & TextureRect::get_texture );
+	ClassDB::bind_method(_MD("set_expand","enable"), & TextureRect::set_expand );
+	ClassDB::bind_method(_MD("has_expand"), & TextureRect::has_expand );
+	ClassDB::bind_method(_MD("set_stretch_mode","stretch_mode"), & TextureRect::set_stretch_mode );
+	ClassDB::bind_method(_MD("get_stretch_mode"), & TextureRect::get_stretch_mode );
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
@@ -117,7 +117,7 @@ void TextureFrame::_bind_methods() {
 }
 
 
-void TextureFrame::set_texture(const Ref<Texture>& p_tex) {
+void TextureRect::set_texture(const Ref<Texture>& p_tex) {
 
 	texture=p_tex;
 	update();
@@ -126,35 +126,35 @@ void TextureFrame::set_texture(const Ref<Texture>& p_tex) {
 	minimum_size_changed();
 }
 
-Ref<Texture> TextureFrame::get_texture() const {
+Ref<Texture> TextureRect::get_texture() const {
 
 	return texture;
 }
 
 
-void TextureFrame::set_expand(bool p_expand) {
+void TextureRect::set_expand(bool p_expand) {
 
 	expand=p_expand;
 	update();
 	minimum_size_changed();
 }
-bool TextureFrame::has_expand() const {
+bool TextureRect::has_expand() const {
 
 	return expand;
 }
 
-void TextureFrame::set_stretch_mode(StretchMode p_mode) {
+void TextureRect::set_stretch_mode(StretchMode p_mode) {
 
 	stretch_mode=p_mode;
 	update();
 }
 
-TextureFrame::StretchMode TextureFrame::get_stretch_mode() const {
+TextureRect::StretchMode TextureRect::get_stretch_mode() const {
 
 	return stretch_mode;
 }
 
-TextureFrame::TextureFrame() {
+TextureRect::TextureRect() {
 
 
 	expand=false;
@@ -163,7 +163,7 @@ TextureFrame::TextureFrame() {
 }
 
 
-TextureFrame::~TextureFrame()
+TextureRect::~TextureRect()
 {
 }
 

@@ -5057,7 +5057,7 @@ Variant EditorNode::drag_resource(const Ref<Resource>& p_res,Control* p_from) {
 
 
 	Control *drag_control = memnew( Control );
-	TextureFrame *drag_preview = memnew( TextureFrame );
+	TextureRect *drag_preview = memnew( TextureRect );
 	Label* label=memnew( Label );
 
 	waiting_for_sources_changed=true; //
@@ -6432,7 +6432,7 @@ EditorNode::EditorNode() {
 	about_text->set_pos(Point2(gui_base->get_icon("Logo","EditorIcons")->get_size().width+30,20));
 	gui_base->add_child(about);
 	about->add_child(about_text);
-	TextureFrame *logo = memnew( TextureFrame );
+	TextureRect *logo = memnew( TextureRect );
 	about->add_child(logo);
 	logo->set_pos(Point2(20,20));
 	logo->set_texture(gui_base->get_icon("Logo","EditorIcons") );

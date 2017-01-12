@@ -41638,7 +41638,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="TextureFrame" inherits="Control" category="Core">
+<class name="TextureRect" inherits="Control" category="Core">
 	<brief_description>
 		Control Frame that draws a texture.
 	</brief_description>

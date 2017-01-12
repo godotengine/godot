@@ -77,7 +77,7 @@ class Polygon2DEditor : public HBoxContainer {
 	HScrollBar *uv_hscroll;
 	VScrollBar *uv_vscroll;
 	MenuButton *uv_menu;
-	TextureFrame *uv_icon_zoom;
+	TextureRect *uv_icon_zoom;
 
 	Vector2 uv_draw_ofs;
 	float uv_draw_zoom;

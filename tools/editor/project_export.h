@@ -134,7 +134,7 @@ private:
 
 
 	AcceptDialog *atlas_preview_dialog;
-	TextureFrame *atlas_preview_frame;
+	TextureRect *atlas_preview_frame;
 
 
 	VBoxContainer *script_vbox;

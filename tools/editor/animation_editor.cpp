@@ -4001,7 +4001,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	//menu->set_pos(Point2());
 	//add_child(menu);
 
-	zoomicon = memnew( TextureFrame );
+	zoomicon = memnew( TextureRect );
 	hb->add_child(zoomicon);
 	zoomicon->set_tooltip(TTR("Animation zoom."));
 

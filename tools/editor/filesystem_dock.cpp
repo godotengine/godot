@@ -1770,8 +1770,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	path_hb->add_child(search_box);
 	search_box->connect("text_changed",this,"_search_changed");
 
-	search_icon = memnew( TextureFrame );
-	search_icon->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
+	search_icon = memnew( TextureRect );
+	search_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	path_hb->add_child(search_icon);
 
 	button_display_mode = memnew( ToolButton );

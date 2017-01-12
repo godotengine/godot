@@ -96,7 +96,7 @@ class CustomPropertyEditor : public Popup {
 	Button *action_buttons[MAX_ACTION_BUTTONS];
 	MenuButton *type_button;
 	Vector<String> inheritors_array;
-	TextureFrame *texture_preview;
+	TextureRect *texture_preview;
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
 	bool read_only;

@@ -93,7 +93,7 @@ private:
 
 	OptionButton *drives;
 	ItemList *item_list;
-	TextureFrame *preview;
+	TextureRect *preview;
 	VBoxContainer *preview_vb;
 	HBoxContainer *list_hb;
 	LineEdit *file;

@@ -47,7 +47,7 @@ class SampleEditor : public Panel {
 	Ref<ImageTexture> peakdisplay;
 	Ref<Sample> sample;
 	Ref<SampleLibrary> library;
-	TextureFrame *sample_texframe;
+	TextureRect *sample_texframe;
 	Button *stop;
 	Button *play;
 

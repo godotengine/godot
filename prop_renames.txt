@@ -509,7 +509,7 @@ modulate = self_modulate
 
 modulate = self_modulate
 
-[TextureFrame]
+[TextureRect]
 
 modulate = self_modulate
 

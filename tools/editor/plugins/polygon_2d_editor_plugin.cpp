@@ -949,7 +949,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_mode_hb->add_child(sb_step_y);
 
 	uv_mode_hb->add_child( memnew( VSeparator ));
-	uv_icon_zoom = memnew( TextureFrame );
+	uv_icon_zoom = memnew( TextureRect );
 	uv_mode_hb->add_child( uv_icon_zoom );
 	uv_zoom = memnew( HSlider );
 	uv_zoom->set_min(0.01);

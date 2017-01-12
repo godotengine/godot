@@ -361,7 +361,7 @@ SampleEditor::SampleEditor() {
 	add_style_override("panel", get_stylebox("panel","Panel"));
 	library = Ref<SampleLibrary>(memnew(SampleLibrary));
 	player->set_sample_library(library);
-	sample_texframe = memnew( TextureFrame );
+	sample_texframe = memnew( TextureRect );
 	add_child(sample_texframe);
 	sample_texframe->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
 	sample_texframe->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);

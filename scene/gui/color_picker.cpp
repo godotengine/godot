@@ -487,7 +487,7 @@ ColorPicker::ColorPicker() :
 	btn_pick = memnew( ToolButton );
 	btn_pick->connect("pressed",this,"_screen_pick_pressed");
 
-	sample = memnew( TextureFrame );
+	sample = memnew( TextureRect );
 	sample->set_h_size_flags(SIZE_EXPAND_FILL);
 	sample->connect("draw",this,"_sample_draw");
 
@@ -590,7 +590,7 @@ ColorPicker::ColorPicker() :
 	HBoxContainer *bbc = memnew( HBoxContainer );
 	add_child(bbc);
 
-	preset = memnew( TextureFrame );
+	preset = memnew( TextureRect );
 	bbc->add_child(preset);
 	//preset->set_ignore_mouse(false);
 	preset->connect("gui_input", this, "_preset_input");

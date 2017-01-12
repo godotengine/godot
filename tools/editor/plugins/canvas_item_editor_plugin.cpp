@@ -3785,7 +3785,7 @@ void CanvasItemEditorViewport::_create_nodes(Node* parent, Node* child, String& 
 	}
 	Transform2D trans=canvas->get_canvas_transform();
 	Point2 target_pos = (p_point-trans.get_origin())/trans.get_scale().x-pos;
-	if (default_type=="Polygon2D" || default_type=="TouchScreenButton" || default_type=="TextureFrame" || default_type=="Patch9Frame") {
+	if (default_type=="Polygon2D" || default_type=="TouchScreenButton" || default_type=="TextureRect" || default_type=="Patch9Frame") {
 		target_pos -= texture_size/2;
 	}
 	editor_data->get_undo_redo().add_do_method(child,"set_pos",target_pos);
@@ -3857,8 +3857,8 @@ void CanvasItemEditorViewport::_perform_drop_data(){
 			else if (default_type=="Particles2D")       child=memnew(Particles2D);
 			else if (default_type=="Polygon2D")         child=memnew(Polygon2D);
 			else if (default_type=="TouchScreenButton") child=memnew(TouchScreenButton);
-			else if (default_type=="TextureFrame")      child=memnew(TextureFrame);
-			else if (default_type=="Patch9Frame")       child=memnew(Patch9Frame);
+			else if (default_type=="TextureRect")      child=memnew(TextureRect);
+			else if (default_type=="Patch9Frame")       child=memnew(NinePatchRect);
 			else child=memnew(Sprite); // default
 
 			_create_nodes(target_node, child, path, drop_pos);
@@ -3992,7 +3992,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	types.push_back("Polygon2D");
 	types.push_back("TouchScreenButton");
 	// Control
-	types.push_back("TextureFrame");
+	types.push_back("TextureRect");
 	types.push_back("Patch9Frame");
 
 	target_node=NULL;
