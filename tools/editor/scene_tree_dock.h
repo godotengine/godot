@@ -159,6 +159,14 @@ class SceneTreeDock : public VBoxContainer {
 	void _replace_with_branch_scene(const String& p_file,Node* base);
 
 	void _file_selected(String p_file);
+
+	enum NodeNameCasing {
+		NODE_NAME_CASING_PASCAL_CASE,
+		NODE_NAME_CASING_CAMEL_CASE,
+		NODE_NAME_CASING_SNAKE_CASE
+	};
+	NodeNameCasing _get_node_name_casing(const String& p_property);
+
 protected:
 
 	void _notification(int p_what);
