@@ -200,7 +200,7 @@ EditorLog::EditorLog() {
 	pc = memnew( PanelContainer );
 	ec->add_child(pc);
 	pc->set_area_as_parent_rect();
-	pc->connect("enter_tree", this, "_override_logger_styles");
+	pc->connect("tree_entered", this, "_override_logger_styles");
 
 	log = memnew( RichTextLabel );
 	log->set_scroll_follow(true);

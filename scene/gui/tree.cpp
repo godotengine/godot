@@ -3685,7 +3685,7 @@ Tree::Tree() {
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");
 	text_editor->connect("text_entered", this,"_text_editor_enter");
-	text_editor->connect("modal_close", this,"_text_editor_modal_close");
+	text_editor->connect("modal_closed", this,"_text_editor_modal_close");
 	popup_menu->connect("id_pressed", this,"_popup_select");
 	value_editor->connect("value_changed", this,"_value_editor_changed");
 

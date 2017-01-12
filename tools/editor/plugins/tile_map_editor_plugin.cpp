@@ -1302,10 +1302,10 @@ void TileMapEditor::edit(Node *p_tile_map) {
 		node=p_tile_map->cast_to<TileMap>();
 		if (!canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->connect("draw",this,"_canvas_draw");
-		if (!canvas_item_editor->is_connected("mouse_enter",this,"_canvas_mouse_enter"))
-			canvas_item_editor->connect("mouse_enter",this,"_canvas_mouse_enter");
-		if (!canvas_item_editor->is_connected("mouse_exit",this,"_canvas_mouse_exit"))
-			canvas_item_editor->connect("mouse_exit",this,"_canvas_mouse_exit");
+		if (!canvas_item_editor->is_connected("mouse_entered",this,"_canvas_mouse_enter"))
+			canvas_item_editor->connect("mouse_entered",this,"_canvas_mouse_enter");
+		if (!canvas_item_editor->is_connected("mouse_exited",this,"_canvas_mouse_exit"))
+			canvas_item_editor->connect("mouse_exited",this,"_canvas_mouse_exit");
 
 		_update_palette();
 
@@ -1314,10 +1314,10 @@ void TileMapEditor::edit(Node *p_tile_map) {
 
 		if (canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->disconnect("draw",this,"_canvas_draw");
-		if (canvas_item_editor->is_connected("mouse_enter",this,"_canvas_mouse_enter"))
-			canvas_item_editor->disconnect("mouse_enter",this,"_canvas_mouse_enter");
-		if (canvas_item_editor->is_connected("mouse_exit",this,"_canvas_mouse_exit"))
-			canvas_item_editor->disconnect("mouse_exit",this,"_canvas_mouse_exit");
+		if (canvas_item_editor->is_connected("mouse_entered",this,"_canvas_mouse_enter"))
+			canvas_item_editor->disconnect("mouse_entered",this,"_canvas_mouse_enter");
+		if (canvas_item_editor->is_connected("mouse_exited",this,"_canvas_mouse_exit"))
+			canvas_item_editor->disconnect("mouse_exited",this,"_canvas_mouse_exit");
 
 		_update_palette();
 	}

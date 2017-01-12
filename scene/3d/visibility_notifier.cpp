@@ -38,10 +38,10 @@ void VisibilityNotifier::_enter_camera(Camera* p_camera) {
 	ERR_FAIL_COND(cameras.has(p_camera));
 	cameras.insert(p_camera);
 	if (cameras.size()==1) {
-		emit_signal(SceneStringNames::get_singleton()->enter_screen);
+		emit_signal(SceneStringNames::get_singleton()->screen_entered);
 		_screen_enter();
 	}
-	emit_signal(SceneStringNames::get_singleton()->enter_camera,p_camera);
+	emit_signal(SceneStringNames::get_singleton()->camera_entered,p_camera);
 
 }
 
@@ -50,9 +50,9 @@ void VisibilityNotifier::_exit_camera(Camera* p_camera){
 	ERR_FAIL_COND(!cameras.has(p_camera));
 	cameras.erase(p_camera);
 
-	emit_signal(SceneStringNames::get_singleton()->exit_camera,p_camera);
+	emit_signal(SceneStringNames::get_singleton()->camera_exited,p_camera);
 	if (cameras.size()==0) {
-		emit_signal(SceneStringNames::get_singleton()->exit_screen);
+		emit_signal(SceneStringNames::get_singleton()->screen_exited);
 
 		_screen_exit();
 
@@ -115,10 +115,10 @@ void VisibilityNotifier::_bind_methods(){
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT3,"aabb"),_SCS("set_aabb"),_SCS("get_aabb"));
 
-	ADD_SIGNAL( MethodInfo("enter_camera",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
-	ADD_SIGNAL( MethodInfo("exit_camera",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
-	ADD_SIGNAL( MethodInfo("enter_screen"));
-	ADD_SIGNAL( MethodInfo("exit_screen"));
+	ADD_SIGNAL( MethodInfo("camera_entered",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
+	ADD_SIGNAL( MethodInfo("camera_exited",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
+	ADD_SIGNAL( MethodInfo("screen_entered"));
+	ADD_SIGNAL( MethodInfo("screen_exited"));
 }
 
 
@@ -183,7 +183,7 @@ void VisibilityEnabler::_find_nodes(Node* p_node) {
 
 	if (add) {
 
-		p_node->connect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
+		p_node->connect(SceneStringNames::get_singleton()->tree_exited,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
 		nodes[p_node]=meta;
 		_change_node_state(p_node,false);
 	}
@@ -225,7 +225,7 @@ void VisibilityEnabler::_notification(int p_what){
 
 			if (!visible)
 				_change_node_state(E->key(),true);
-			E->key()->disconnect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed");
+			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exited,this,"_node_removed");
 		}
 
 		nodes.clear();
@@ -260,7 +260,7 @@ void VisibilityEnabler::_node_removed(Node* p_node) {
 
 	if (!visible)
 		_change_node_state(p_node,true);
-	p_node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed");
+	p_node->disconnect(SceneStringNames::get_singleton()->tree_exited,this,"_node_removed");
 	nodes.erase(p_node);
 
 }

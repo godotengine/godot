@@ -851,7 +851,7 @@ void EditorSelection::add_node(Node *p_node) {
 	}
 	selection[p_node]=meta;
 
-	p_node->connect("exit_tree",this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
+	p_node->connect("tree_exited",this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
 
 	//emit_signal("selection_changed");
 }
@@ -869,7 +869,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	if (meta)
 		memdelete(meta);
 	selection.erase(p_node);
-	p_node->disconnect("exit_tree",this,"_node_removed");
+	p_node->disconnect("tree_exited",this,"_node_removed");
 	//emit_signal("selection_changed");
 }
 bool EditorSelection::is_selected(Node * p_node) const {

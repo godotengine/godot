@@ -714,7 +714,7 @@ EditorProfiler::EditorProfiler()
 	//graph->set_ignore_mouse(false);
 	graph->connect("draw",this,"_graph_tex_draw");
 	graph->connect("gui_input",this,"_graph_tex_input");
-	graph->connect("mouse_exit",this,"_graph_tex_mouse_exit");
+	graph->connect("mouse_exited",this,"_graph_tex_mouse_exit");
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);

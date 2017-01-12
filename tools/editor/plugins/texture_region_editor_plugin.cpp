@@ -653,17 +653,17 @@ void TextureRegionEditor::edit(Object *p_obj)
 			p_obj->connect("texture_changed",this,"_edit_region");
 		}
 		p_obj->add_change_receptor(this);
-		p_obj->connect("exit_tree",this,"_node_removed",varray(p_obj),CONNECT_ONESHOT);
+		p_obj->connect("tree_exited",this,"_node_removed",varray(p_obj),CONNECT_ONESHOT);
 		_edit_region();
 	} else {
 		if(node_sprite)
-			node_sprite->disconnect("exit_tree",this,"_node_removed");
+			node_sprite->disconnect("tree_exited",this,"_node_removed");
 		else if(node_patch9)
-			node_patch9->disconnect("exit_tree",this,"_node_removed");
+			node_patch9->disconnect("tree_exited",this,"_node_removed");
 		else if(obj_styleBox.is_valid())
-			obj_styleBox->disconnect("exit_tree",this,"_node_removed");
+			obj_styleBox->disconnect("tree_exited",this,"_node_removed");
 		else if(atlas_tex.is_valid())
-			atlas_tex->disconnect("exit_tree",this,"_node_removed");
+			atlas_tex->disconnect("tree_exited",this,"_node_removed");
 
 		node_sprite = NULL;
 		node_patch9 = NULL;

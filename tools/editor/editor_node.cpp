@@ -5621,7 +5621,7 @@ EditorNode::EditorNode() {
 	dock_select->set_custom_minimum_size(Size2(128,64)*EDSCALE);
 	dock_select->connect("gui_input",this,"_dock_select_input");
 	dock_select->connect("draw",this,"_dock_select_draw");
-	dock_select->connect("mouse_exit",this,"_dock_popup_exit");
+	dock_select->connect("mouse_exited",this,"_dock_popup_exit");
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 

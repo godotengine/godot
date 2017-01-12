@@ -221,9 +221,9 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(_MD("targeting_property","object","property","initial","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_property, DEFVAL(0) );
 	ClassDB::bind_method(_MD("targeting_method","object","method","initial","initial_method","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_method, DEFVAL(0) );
 
-	ADD_SIGNAL( MethodInfo("tween_start", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
+	ADD_SIGNAL( MethodInfo("tween_started", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
 	ADD_SIGNAL( MethodInfo("tween_step", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key"), PropertyInfo( Variant::REAL,"elapsed"), PropertyInfo( Variant::OBJECT,"value")) );
-	ADD_SIGNAL( MethodInfo("tween_complete", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
+	ADD_SIGNAL( MethodInfo("tween_completed", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_tween_process_mode"), _SCS("get_tween_process_mode"));
 
@@ -573,7 +573,7 @@ void Tween::_tween_process(float p_delta) {
 			continue;
 		else if(prev_delaying) {
 
-			emit_signal("tween_start",object,data.key);
+			emit_signal("tween_started",object,data.key);
 			_apply_tween_value(data, data.initial_val);
 		}
 
@@ -632,7 +632,7 @@ void Tween::_tween_process(float p_delta) {
 		_apply_tween_value(data, result);
 
 		if (data.finish) {
-			emit_signal("tween_complete",object,data.key);
+			emit_signal("tween_completed",object,data.key);
 			// not repeat mode, remove completed action
 			if (!repeat)
 				call_deferred("_remove", object, data.key, true);

@@ -232,7 +232,7 @@ void Node::_propagate_enter_tree() {
 		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree,NULL,0);
 	}
 
-	emit_signal(SceneStringNames::get_singleton()->enter_tree);
+	emit_signal(SceneStringNames::get_singleton()->tree_entered);
 
 
 	data.blocked++;
@@ -298,7 +298,7 @@ void Node::_propagate_exit_tree() {
 		Variant::CallError err;
 		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree,NULL,0);
 	}
-	emit_signal(SceneStringNames::get_singleton()->exit_tree);
+	emit_signal(SceneStringNames::get_singleton()->tree_exited);
 
 	notification(NOTIFICATION_EXIT_TREE,true);
 	if (data.tree)
@@ -3047,8 +3047,8 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( PAUSE_MODE_PROCESS );
 
 	ADD_SIGNAL( MethodInfo("renamed") );
-	ADD_SIGNAL( MethodInfo("enter_tree") );
-	ADD_SIGNAL( MethodInfo("exit_tree") );
+	ADD_SIGNAL( MethodInfo("tree_entered") );
+	ADD_SIGNAL( MethodInfo("tree_exited") );
 
 //	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/process" ),_SCS("set_process"),_SCS("is_processing") );
 //	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/fixed_process" ), _SCS("set_fixed_process"),_SCS("is_fixed_processing") );

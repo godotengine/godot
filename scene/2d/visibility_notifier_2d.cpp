@@ -44,11 +44,11 @@ void VisibilityNotifier2D::_enter_viewport(Viewport* p_viewport) {
 		return;
 
 	if (viewports.size()==1) {
-		emit_signal(SceneStringNames::get_singleton()->enter_screen);
+		emit_signal(SceneStringNames::get_singleton()->screen_entered);
 
 		_screen_enter();
 	}
-	emit_signal(SceneStringNames::get_singleton()->enter_viewport,p_viewport);
+	emit_signal(SceneStringNames::get_singleton()->viewport_entered,p_viewport);
 
 }
 
@@ -60,9 +60,9 @@ void VisibilityNotifier2D::_exit_viewport(Viewport* p_viewport){
 	if (is_inside_tree() && get_tree()->is_editor_hint())
 		return;
 
-	emit_signal(SceneStringNames::get_singleton()->exit_viewport,p_viewport);
+	emit_signal(SceneStringNames::get_singleton()->viewport_exited,p_viewport);
 	if (viewports.size()==0) {
-		emit_signal(SceneStringNames::get_singleton()->exit_screen);
+		emit_signal(SceneStringNames::get_singleton()->screen_exited);
 
 		_screen_exit();
 	}
@@ -135,10 +135,10 @@ void VisibilityNotifier2D::_bind_methods(){
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),_SCS("set_rect"),_SCS("get_rect"));
 
-	ADD_SIGNAL( MethodInfo("enter_viewport",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
-	ADD_SIGNAL( MethodInfo("exit_viewport",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
-	ADD_SIGNAL( MethodInfo("enter_screen"));
-	ADD_SIGNAL( MethodInfo("exit_screen"));
+	ADD_SIGNAL( MethodInfo("viewport_entered",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
+	ADD_SIGNAL( MethodInfo("viewport_exited",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
+	ADD_SIGNAL( MethodInfo("screen_entered"));
+	ADD_SIGNAL( MethodInfo("screen_exited"));
 }
 
 
@@ -232,7 +232,7 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	if (add) {
 
-		p_node->connect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
+		p_node->connect(SceneStringNames::get_singleton()->tree_exited,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
 		nodes[p_node]=meta;
 		_change_node_state(p_node,false);
 	}
@@ -280,7 +280,7 @@ void VisibilityEnabler2D::_notification(int p_what){
 
 			if (!visible)
 				_change_node_state(E->key(),true);
-			E->key()->disconnect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed");
+			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exited,this,"_node_removed");
 		}
 
 		nodes.clear();

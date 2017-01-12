@@ -538,20 +538,20 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
 
-			emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+			emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 
-			emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+			emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
-			emit_signal(SceneStringNames::get_singleton()->focus_enter);
+			emit_signal(SceneStringNames::get_singleton()->focus_entered);
 			update();
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
 
-			emit_signal(SceneStringNames::get_singleton()->focus_exit);
+			emit_signal(SceneStringNames::get_singleton()->focus_exited);
 			update();
 
 		} break;
@@ -561,7 +561,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_MODAL_CLOSE: {
 
-			emit_signal("modal_close");
+			emit_signal("modal_closed");
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
@@ -2655,13 +2655,13 @@ void Control::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("resized") );
 	ADD_SIGNAL( MethodInfo("gui_input",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
-	ADD_SIGNAL( MethodInfo("mouse_enter") );
-	ADD_SIGNAL( MethodInfo("mouse_exit") );
-	ADD_SIGNAL( MethodInfo("focus_enter") );
-	ADD_SIGNAL( MethodInfo("focus_exit") );
+	ADD_SIGNAL( MethodInfo("mouse_entered") );
+	ADD_SIGNAL( MethodInfo("mouse_exited") );
+	ADD_SIGNAL( MethodInfo("focus_entered") );
+	ADD_SIGNAL( MethodInfo("focus_exited") );
 	ADD_SIGNAL( MethodInfo("size_flags_changed") );
 	ADD_SIGNAL( MethodInfo("minimum_size_changed") );
-	ADD_SIGNAL( MethodInfo("modal_close") );
+	ADD_SIGNAL( MethodInfo("modal_closed") );
 
 
 }

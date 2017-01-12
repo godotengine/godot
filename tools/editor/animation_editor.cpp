@@ -3248,12 +3248,12 @@ void AnimationKeyEditor::set_animation(const Ref<Animation>& p_anim) {
 void AnimationKeyEditor::set_root(Node *p_root) {
 
 	if (root)
-		root->disconnect("exit_tree",this,"_root_removed");
+		root->disconnect("tree_exited",this,"_root_removed");
 
 	root=p_root;
 
 	if (root)
-		root->connect("exit_tree",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
+		root->connect("tree_exited",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
 
 
 }

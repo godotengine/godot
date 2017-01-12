@@ -98,7 +98,7 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 		return;
 
 	if (owner) {
-		owner->disconnect("exit_tree",this,"_owner_exited");
+		owner->disconnect("tree_exited",this,"_owner_exited");
 		owner->attractors.erase(this);
 		owner=NULL;
 	}
@@ -106,7 +106,7 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 
 	if (owner) {
 
-		owner->connect("exit_tree",this,"_owner_exited",varray(),CONNECT_ONESHOT);
+		owner->connect("tree_exited",this,"_owner_exited",varray(),CONNECT_ONESHOT);
 		owner->attractors.insert(this);
 	}
 }

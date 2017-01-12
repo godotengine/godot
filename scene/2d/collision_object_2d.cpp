@@ -196,7 +196,7 @@ void CollisionObject2D::_mouse_enter() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 }
 
 
@@ -205,7 +205,7 @@ void CollisionObject2D::_mouse_exit() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 
 }
 
@@ -239,8 +239,8 @@ void CollisionObject2D::_bind_methods() {
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"viewport"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::INT,"shape_idx")));
 
 	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::OBJECT,"viewport"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::INT,"shape_idx")));
-	ADD_SIGNAL( MethodInfo("mouse_enter"));
-	ADD_SIGNAL( MethodInfo("mouse_exit"));
+	ADD_SIGNAL( MethodInfo("mouse_entered"));
+	ADD_SIGNAL( MethodInfo("mouse_exited"));
 
 	ADD_GROUP("Pickable","input_");
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_pickable"),_SCS("set_pickable"),_SCS("is_pickable"));

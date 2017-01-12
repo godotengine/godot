@@ -190,7 +190,7 @@ void CollisionObject::_mouse_enter() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 }
 
 
@@ -199,7 +199,7 @@ void CollisionObject::_mouse_exit() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 
 }
 
@@ -247,8 +247,8 @@ void CollisionObject::_bind_methods() {
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
 
 	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
-	ADD_SIGNAL( MethodInfo("mouse_enter"));
-	ADD_SIGNAL( MethodInfo("mouse_exit"));
+	ADD_SIGNAL( MethodInfo("mouse_entered"));
+	ADD_SIGNAL( MethodInfo("mouse_exited"));
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_ray_pickable"),_SCS("set_ray_pickable"),_SCS("is_ray_pickable"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"input_capture_on_drag"),_SCS("set_capture_input_on_drag"),_SCS("get_capture_input_on_drag"));

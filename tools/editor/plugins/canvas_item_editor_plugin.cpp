@@ -3971,9 +3971,9 @@ void CanvasItemEditorViewport::drop_data(const Point2& p_point,const Variant& p_
 
 void CanvasItemEditorViewport::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
-		connect("mouse_exit",this,"_on_mouse_exit");
+		connect("mouse_exited",this,"_on_mouse_exit");
 	} else if (p_what==NOTIFICATION_EXIT_TREE) {
-		disconnect("mouse_exit",this,"_on_mouse_exit");
+		disconnect("mouse_exited",this,"_on_mouse_exit");
 	}
 }
 

@@ -2000,8 +2000,8 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		value_editor[i]->hide();
 		value_label[i]->hide();
 		value_editor[i]->connect("text_entered", this,"_modified");
-		value_editor[i]->connect("focus_enter", this, "_focus_enter");
-		value_editor[i]->connect("focus_exit", this, "_focus_exit");
+		value_editor[i]->connect("focus_entered", this, "_focus_enter");
+		value_editor[i]->connect("focus_exited", this, "_focus_exit");
 	}
 
 	for(int i=0;i<4;i++) {
