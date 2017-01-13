@@ -986,11 +986,6 @@ void _OS::alert(const String& p_alert,const String& p_title) {
 	OS::get_singleton()->alert(p_alert,p_title);
 }
 
-Dictionary _OS::get_engine_version() const {
-
-	return OS::get_singleton()->get_engine_version();
-}
-
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -1133,8 +1128,6 @@ void _OS::_bind_methods() {
 
 	ClassDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
 	ClassDB::bind_method(_MD("is_vsync_enabled"),&_OS::is_vsync_enabled);
-
-	ClassDB::bind_method(_MD("get_engine_version"),&_OS::get_engine_version);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -2596,42 +2589,9 @@ MainLoop *_Engine::get_main_loop() const {
 	return OS::get_singleton()->get_main_loop();
 }
 
-String _Engine::get_version() const {
+Dictionary _Engine::get_version_info() const {
 
-	return Engine::get_singleton()->get_version();
-}
-String _Engine::get_version_name() const{
-
-	return Engine::get_singleton()->get_version_name();
-}
-String _Engine::get_version_short_name() const{
-
-	return Engine::get_singleton()->get_version_short_name();
-}
-int _Engine::get_version_major() const{
-
-	return Engine::get_singleton()->get_version_major();
-
-}
-int _Engine::get_version_minor() const{
-
-	return Engine::get_singleton()->get_version_minor();
-
-}
-String _Engine::get_version_revision() const{
-
-	return Engine::get_singleton()->get_version_revision();
-
-}
-String _Engine::get_version_status() const{
-
-	return Engine::get_singleton()->get_version_status();
-
-}
-int _Engine::get_version_year() const{
-
-	return Engine::get_singleton()->get_version_year();
-
+	return Engine::get_singleton()->get_version_info();
 }
 
 
@@ -2652,14 +2612,7 @@ void _Engine::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_main_loop:MainLoop"),&_Engine::get_main_loop);
 
-	ClassDB::bind_method(_MD("get_version"),&_Engine::get_version);
-	ClassDB::bind_method(_MD("get_version_name"),&_Engine::get_version_name);
-	ClassDB::bind_method(_MD("get_version_short_name"),&_Engine::get_version_short_name);
-	ClassDB::bind_method(_MD("get_version_major"),&_Engine::get_version_major);
-	ClassDB::bind_method(_MD("get_version_minor"),&_Engine::get_version_minor);
-	ClassDB::bind_method(_MD("get_version_revision"),&_Engine::get_version_revision);
-	ClassDB::bind_method(_MD("get_version_status"),&_Engine::get_version_status);
-	ClassDB::bind_method(_MD("get_version_year"),&_Engine::get_version_year);
+	ClassDB::bind_method(_MD("get_version_info"),&_Engine::get_version_info);
 
 }
 

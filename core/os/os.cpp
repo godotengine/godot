@@ -27,13 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os.h"
-#include "os/file_access.h"
-#include <stdarg.h>
+
 #include "dir_access.h"
 #include "globals.h"
 #include "input.h"
-// For get_engine_version, could be removed if it's moved to a new Engine singleton
-#include "version.h"
+#include "os/file_access.h"
+
+#include <stdarg.h>
 
 OS* OS::singleton=NULL;
 
@@ -512,27 +512,6 @@ bool OS::is_vsync_enabled() const{
 	return true;
 }
 
-Dictionary OS::get_engine_version() const {
-
-	Dictionary dict;
-	dict["major"] = _MKSTR(VERSION_MAJOR);
-	dict["minor"] = _MKSTR(VERSION_MINOR);
-#ifdef VERSION_PATCH
-	dict["patch"] = _MKSTR(VERSION_PATCH);
-#else
-	dict["patch"] = "";
-#endif
-	dict["status"] = _MKSTR(VERSION_STATUS);
-	dict["revision"] = _MKSTR(VERSION_REVISION);
-
-	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
-	if (dict["patch"] != "")
-		stringver += "." + String(dict["patch"]);
-	stringver += "-" + String(dict["status"]) + " (" + String(dict["revision"]) + ")";
-	dict["string"] = stringver;
-
-	return dict;
-}
 
 OS::OS() {
 	last_error=NULL;

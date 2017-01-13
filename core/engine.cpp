@@ -1,3 +1,31 @@
+/*************************************************************************/
+/*  engine.cpp                                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "engine.h"
 #include "version.h"
 
@@ -43,39 +71,27 @@ float Engine::get_time_scale() const {
 	return _time_scale;
 }
 
+Dictionary Engine::get_version_info() const {
 
-String Engine::get_version() const {
+	Dictionary dict;
+	dict["major"] = VERSION_MAJOR;
+	dict["minor"] = VERSION_MINOR;
+	#ifdef VERSION_PATCH
+	dict["patch"] = VERSION_PATCH;
+	#else
+	dict["patch"] = 0;
+	#endif
+	dict["status"] = _MKSTR(VERSION_STATUS);
+	dict["revision"] = _MKSTR(VERSION_REVISION);
+	dict["year"] = VERSION_YEAR;
 
-	return VERSION_FULL_NAME;
-}
-String Engine::get_version_name() const{
+	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
+	if ((int)dict["patch"] != 0)
+		stringver += "." + String(dict["patch"]);
+	stringver += "-" + String(dict["status"]) + " (" + String(dict["revision"]) + ")";
+	dict["string"] = stringver;
 
-	return _MKSTR(VERSION_NAME);
-}
-String Engine::get_version_short_name() const{
-
-	return _MKSTR(VERSION_SHORT_NAME);
-
-}
-int Engine::get_version_major() const{
-
-	return VERSION_MAJOR;
-}
-int Engine::get_version_minor() const{
-
-	return VERSION_MINOR;
-}
-String Engine::get_version_revision() const{
-
-	return _MKSTR(VERSION_REVISION);
-}
-String Engine::get_version_status() const{
-
-	return _MKSTR(VERSION_STATUS);
-}
-int Engine::get_version_year() const{
-
-	return VERSION_YEAR;
+	return dict;
 }
 
 

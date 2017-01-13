@@ -309,8 +309,6 @@ public:
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
 
-	Dictionary get_engine_version() const;
-
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
@@ -647,15 +645,7 @@ public:
 
 	MainLoop *get_main_loop() const;
 
-	String get_version() const;
-	String get_version_name() const;
-	String get_version_short_name() const;
-	int get_version_major() const;
-	int get_version_minor() const;
-	String get_version_revision() const;
-	String get_version_status() const;
-	int get_version_year() const;
-
+	Dictionary get_version_info() const;
 
 	_Engine();
 };
