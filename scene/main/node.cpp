@@ -2901,7 +2901,7 @@ void Node::_bind_methods() {
 
 	GLOBAL_DEF("editor/node_name_num_separator",0);
 	GlobalConfig::get_singleton()->set_custom_property_info("editor/node_name_num_separator",PropertyInfo(Variant::INT,"editor/node_name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
-	GLOBAL_DEF("node/name_casing",NAME_CASING_PASCAL_CASE);
+	GLOBAL_DEF("editor/node_name_casing",NAME_CASING_PASCAL_CASE);
 	GlobalConfig::get_singleton()->set_custom_property_info("editor/node_name_casing",PropertyInfo(Variant::INT,"editor/node_name_casing",PROPERTY_HINT_ENUM,"PascalCase,camelCase,snake_case"));
 
 	ClassDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
