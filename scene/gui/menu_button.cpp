@@ -117,7 +117,7 @@ MenuButton::MenuButton() {
 	add_child(popup);
 	popup->set_as_toplevel(true);
 	set_process_unhandled_key_input(true);
-	set_click_on_press(true);
+	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 }
 
 

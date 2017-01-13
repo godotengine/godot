@@ -64,7 +64,7 @@ void BaseButton::_gui_input(InputEvent p_event) {
 			if (status.pressing_button)
 				break;
 
-			if (status.click_on_press) {
+			if (action_mode==ACTION_MODE_BUTTON_PRESS) {
 
 				if (b.pressed) {
 
@@ -415,14 +415,14 @@ bool BaseButton::is_toggle_mode() const {
 	return toggle_mode;
 }
 
-void BaseButton::set_click_on_press(bool p_click_on_press) {
+void BaseButton::set_action_mode(ActionMode p_mode) {
 
-	status.click_on_press=p_click_on_press;
+	action_mode=p_mode;
 }
 
-bool BaseButton::get_click_on_press() const {
+BaseButton::ActionMode BaseButton::get_action_mode() const {
 
-	return status.click_on_press;
+	return action_mode;
 }
 
 void BaseButton::set_enabled_focus_mode(FocusMode p_mode) {
@@ -514,8 +514,8 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(_MD("is_toggle_mode"),&BaseButton::is_toggle_mode);
 	ClassDB::bind_method(_MD("set_disabled","disabled"),&BaseButton::set_disabled);
 	ClassDB::bind_method(_MD("is_disabled"),&BaseButton::is_disabled);
-	ClassDB::bind_method(_MD("set_click_on_press","enable"),&BaseButton::set_click_on_press);
-	ClassDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
+	ClassDB::bind_method(_MD("set_action_mode","mode"),&BaseButton::set_action_mode);
+	ClassDB::bind_method(_MD("get_action_mode"),&BaseButton::get_action_mode);
 	ClassDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
 	ClassDB::bind_method(_MD("set_enabled_focus_mode","mode"),&BaseButton::set_enabled_focus_mode);
 	ClassDB::bind_method(_MD("get_enabled_focus_mode"),&BaseButton::get_enabled_focus_mode);
@@ -536,7 +536,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "action_mode",PROPERTY_HINT_ENUM,"Button Press,Button Release"), _SCS("set_action_mode"), _SCS("get_action_mode"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT,"enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_enabled_focus_mode"), _SCS("get_enabled_focus_mode") );
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shortcut",PROPERTY_HINT_RESOURCE_TYPE,"ShortCut"), _SCS("set_shortcut"), _SCS("get_shortcut"));
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "group",PROPERTY_HINT_RESOURCE_TYPE,"ButtonGroup"), _SCS("set_button_group"), _SCS("get_button_group"));
@@ -546,6 +546,10 @@ void BaseButton::_bind_methods() {
 	BIND_CONSTANT( DRAW_PRESSED );
 	BIND_CONSTANT( DRAW_HOVER );
 	BIND_CONSTANT( DRAW_DISABLED );
+
+	BIND_CONSTANT( ACTION_MODE_BUTTON_PRESS );
+	BIND_CONSTANT( ACTION_MODE_BUTTON_RELEASE );
+
 
 }
 
@@ -557,10 +561,10 @@ BaseButton::BaseButton() {
 	status.hovering=false;
 	status.pressing_inside=false;
 	status.disabled = false;
-	status.click_on_press=false;
 	status.pressing_button=0;
 	set_focus_mode( FOCUS_ALL );
 	enabled_focus_mode = FOCUS_ALL;
+	action_mode=ACTION_MODE_BUTTON_RELEASE;
 
 
 	if (button_group.is_valid()) {

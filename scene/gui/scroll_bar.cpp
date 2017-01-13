@@ -112,7 +112,7 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 					drag.active=true;
 					drag.pos_at_click=grabber_ofs+ofs;
-					drag.value_at_click=get_unit_value();
+					drag.value_at_click=get_as_ratio();
 					update();
 				} else {
 
@@ -145,7 +145,7 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 				double diff = (ofs-drag.pos_at_click) / get_area_size();
 
-				set_unit_value( drag.value_at_click + diff );
+				set_as_ratio( drag.value_at_click + diff );
 			} else {
 
 
@@ -497,7 +497,7 @@ double ScrollBar::get_click_pos(const Point2& p_pos) const {
 double ScrollBar::get_grabber_offset() const {
 
 
-	return (get_area_size()) * get_unit_value();
+	return (get_area_size()) * get_as_ratio();
 
 }
 

@@ -2567,7 +2567,7 @@ bool Tree::edit_selected() {
 			value_editor->set_max( c.max );
 			value_editor->set_step( c.step );
 			value_editor->set_value( c.val );
-			value_editor->set_exp_unit_value( c.expr );
+			value_editor->set_exp_ratio( c.expr );
 			updating_value_editor=false;
 		}
 
