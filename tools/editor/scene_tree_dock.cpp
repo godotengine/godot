@@ -722,7 +722,7 @@ void SceneTreeDock::_node_selected() {
 		return;
 	}
 
-	if (ScriptEditor::get_singleton()->is_visible()) {
+	if (ScriptEditor::get_singleton()->is_visible_in_tree()) {
 		restore_script_editor_on_drag=true;
 	}
 

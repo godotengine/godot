@@ -287,7 +287,7 @@ void EditorHelpSearch::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();
@@ -538,7 +538,7 @@ DocData *EditorHelp::doc=NULL;
 
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
-	if (!is_visible())
+	if (!is_visible_in_tree())
 		return;
 	if ( p_ev.key.mod.control && p_ev.key.scancode==KEY_F) {
 
@@ -674,7 +674,7 @@ void EditorHelp::_scroll_changed(double p_scroll) {
 	if (scroll_locked)
 		return;
 
-	if (class_desc->get_v_scroll()->is_hidden())
+	if (!class_desc->get_v_scroll()->is_visible())
 		p_scroll=0;
 
 	//history[p].scroll=p_scroll;

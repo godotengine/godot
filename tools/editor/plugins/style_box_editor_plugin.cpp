@@ -95,7 +95,7 @@ void StyleBoxEditorPlugin::make_visible(bool p_visible){
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(stylebox_editor);
 
 	} else {
-		if (stylebox_editor->is_visible())
+		if (stylebox_editor->is_visible_in_tree())
 			EditorNode::get_singleton()->hide_bottom_panel();
 		button->hide();
 	}

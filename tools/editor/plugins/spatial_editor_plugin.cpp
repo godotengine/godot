@@ -1740,7 +1740,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		bool visible=is_visible();
+		bool visible=is_visible_in_tree();
 
 		set_process(visible);
 
@@ -2205,7 +2205,7 @@ void SpatialEditorViewport::set_can_preview(Camera* p_preview) {
 
 void SpatialEditorViewport::update_transform_gizmo_view() {
 
-	if (!is_visible())
+	if (!is_visible_in_tree())
 		return;
 
 	Transform xform = spatial_editor->get_gizmo_transform();
@@ -3484,7 +3484,7 @@ void SpatialEditor::_instance_scene() {
 
 void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 
-	if (!is_visible() || get_viewport()->gui_has_modal_stack())
+	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
 		return;
 
 #if 0

@@ -91,7 +91,7 @@ void FindReplaceBar::_notification(int p_what) {
 
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
 
-		set_process_unhandled_input(is_visible());
+		set_process_unhandled_input(is_visible_in_tree());
 	}
 }
 
@@ -377,7 +377,7 @@ void FindReplaceBar::popup_search() {
 void FindReplaceBar::popup_replace() {
 
 
-	if (!replace_hbc->is_visible() || !replace_options_hbc->is_visible()) {
+	if (!replace_hbc->is_visible_in_tree() || !replace_options_hbc->is_visible_in_tree()) {
 		replace_text->clear();
 		replace_hbc->show();
 		replace_options_hbc->show();
@@ -396,7 +396,7 @@ void FindReplaceBar::_search_options_changed(bool p_pressed) {
 
 void FindReplaceBar::_editor_text_changed() {
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		preserve_cursor=true;
 		search_current();
 		preserve_cursor=false;
@@ -801,7 +801,7 @@ void FindReplaceDialog::_skip_pressed() {
 
 bool FindReplaceDialog::is_replace_mode() const {
 
-	return replace_text->is_visible();
+	return replace_text->is_visible_in_tree();
 }
 
 bool FindReplaceDialog::is_replace_all_mode() const {
@@ -826,7 +826,7 @@ void FindReplaceDialog::ok_pressed() {
 
 void FindReplaceDialog::_search_text_entered(const String& p_text) {
 
-	if (replace_text->is_visible())
+	if (replace_text->is_visible_in_tree())
 		return;
 	emit_signal("search");
 	_search();
@@ -835,7 +835,7 @@ void FindReplaceDialog::_search_text_entered(const String& p_text) {
 
 void FindReplaceDialog::_replace_text_entered(const String& p_text) {
 
-	if (!replace_text->is_visible())
+	if (!replace_text->is_visible_in_tree())
 		return;
 
 	emit_signal("search");
@@ -1061,7 +1061,7 @@ void CodeTextEditor::_text_changed() {
 }
 
 void CodeTextEditor::_code_complete_timer_timeout() {
-	if (!is_visible())
+	if (!is_visible_in_tree())
 		return;
 	if (enable_complete_timer)
 		text_editor->query_code_comple();

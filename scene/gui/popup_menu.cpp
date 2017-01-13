@@ -174,7 +174,7 @@ void PopupMenu::_activate_submenu(int over) {
 	Popup *pm = n->cast_to<Popup>();
 	ERR_EXPLAIN("item subnode is not a Popup: "+items[over].submenu);
 	ERR_FAIL_COND(!pm);
-	if (pm->is_visible())
+	if (pm->is_visible_in_tree())
 		return; //already visible!
 
 

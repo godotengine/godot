@@ -44,7 +44,7 @@ void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_fil
 		err_str=String(p_file)+":"+itos(p_line)+" - "+String(p_error);
 	}
 
-//	if (!self->is_visible())
+//	if (!self->is_visible_in_tree())
 //		self->emit_signal("show_request");
 
 	err_str=" "+err_str;

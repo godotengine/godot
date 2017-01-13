@@ -680,7 +680,7 @@ Size2 TabContainer::get_minimum_size() const {
 		if (c->is_set_as_toplevel())
 			continue;
 
-		if (!c->is_visible())
+		if (!c->is_visible_in_tree())
 			continue;
 
 		Size2 cms = c->get_combined_minimum_size();

@@ -78,7 +78,7 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
 void EditorDirDialog::reload() {
 
-	if (!is_visible()) {
+	if (!is_visible_in_tree()) {
 		must_reload=true;
 		return;
 	}
@@ -111,7 +111,7 @@ void EditorDirDialog::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-		if (must_reload && is_visible()) {
+		if (must_reload && is_visible_in_tree()) {
 			reload();
 		}
 	}

@@ -565,7 +565,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-			if (!is_visible()) {
+			if (!is_visible_in_tree()) {
 
 				if(get_viewport() != NULL)
 					get_viewport()->_gui_hid_control(this);
@@ -1660,7 +1660,7 @@ static Control *_next_control(Control *p_from) {
 	for(int i=(next+1);i<parent->get_child_count();i++) {
 
 		Control *c = parent->get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible() || c->is_set_as_toplevel())
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel())
 			continue;
 
 		return c;
@@ -1685,7 +1685,7 @@ Control *Control::find_next_valid_focus() const {
 		for(int i=0;i<from->get_child_count();i++) {
 
 			Control *c = from->get_child(i)->cast_to<Control>();
-			if (!c || !c->is_visible() || c->is_set_as_toplevel()) {
+			if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
 				continue;
 			}
 
@@ -1751,7 +1751,7 @@ static Control *_prev_control(Control *p_from) {
 	for(int i=p_from->get_child_count()-1;i>=0;i--) {
 
 		Control *c = p_from->get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible() || c->is_set_as_toplevel())
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel())
 			continue;
 
 		child=c;
@@ -1791,7 +1791,7 @@ Control *Control::find_prev_valid_focus() const {
 
 					Control *c = from->get_parent()->get_child(i)->cast_to<Control>();
 
-					if (!c || !c->is_visible() || c->is_set_as_toplevel()) {
+					if (!c || !c->is_visible_in_tree() || c->is_set_as_toplevel()) {
 						continue;
 					}
 
@@ -1875,7 +1875,7 @@ void Control::show_modal(bool p_exclusive) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!data.SI);
 
-	if (is_visible())
+	if (is_visible_in_tree())
 		hide();
 
 	ERR_FAIL_COND( data.MI!=NULL );
@@ -2053,7 +2053,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin,int p_count) {
 			return NULL;
 		}
 		bool valid=true;
-		if (c->is_hidden())
+		if (!c->is_visible())
 			valid=false;
 		if (c->get_focus_mode()==FOCUS_NONE)
 			valid=false;
@@ -2126,7 +2126,7 @@ void Control::_window_find_focus_neighbour(const Vector2& p_dir, Node *p_at,cons
 
 	Control *c = p_at->cast_to<Control>();
 
-	if (c && c !=this && c->get_focus_mode()==FOCUS_ALL && c->is_visible()) {
+	if (c && c !=this && c->get_focus_mode()==FOCUS_ALL && c->is_visible_in_tree()) {
 
 		Point2 points[4];
 

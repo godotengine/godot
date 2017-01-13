@@ -176,7 +176,7 @@ void ProjectExportDialog::_scan_finished() {
 	print_line("**********SCAN DONEEE********");
 	print_line("**********SCAN DONEEE********");*/
 
-	if (!is_visible()) {
+	if (!is_visible_in_tree()) {
 		pending_update_tree=true;
 		return;
 	}
@@ -368,7 +368,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (is_visible())
+			if (is_visible_in_tree())
 				_validate_platform();
 
 		} break;

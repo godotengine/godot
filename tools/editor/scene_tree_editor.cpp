@@ -1264,7 +1264,7 @@ void SceneTreeDialog::_notification(int p_what) {
 		get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	}
 
-	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && is_visible()) {
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && is_visible_in_tree()) {
 
 		tree->update_tree();
 	}

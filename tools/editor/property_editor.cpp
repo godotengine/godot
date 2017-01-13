@@ -2802,13 +2802,13 @@ void PropertyEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAG_BEGIN) {
 
-		if (is_visible() && tree->get_root()) {
+		if (is_visible_in_tree() && tree->get_root()) {
 			_mark_drop_fields(tree->get_root());
 		}
 	}
 
 	if (p_what==NOTIFICATION_DRAG_END) {
-		if (is_visible() && tree->get_root()) {
+		if (is_visible_in_tree() && tree->get_root()) {
 			_clear_drop_fields(tree->get_root());
 		}
 

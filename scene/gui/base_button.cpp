@@ -297,7 +297,7 @@ void BaseButton::_notification(int p_what) {
 
 	}
 
-	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && !is_visible()) {
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && !is_visible_in_tree()) {
 
 		if (!toggle_mode) {
 			status.pressed = false;
@@ -453,7 +453,7 @@ Ref<ShortCut> BaseButton:: get_shortcut() const {
 
 void BaseButton::_unhandled_input(InputEvent p_event) {
 
-	if (!is_disabled() && is_visible() && p_event.is_pressed() && !p_event.is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
+	if (!is_disabled() && is_visible_in_tree() && p_event.is_pressed() && !p_event.is_echo() && shortcut.is_valid() && shortcut->is_shortcut(p_event)) {
 
 		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
 			return; //ignore because of modal window

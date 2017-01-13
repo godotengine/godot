@@ -941,7 +941,7 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		button->hide();
-		if (frames_editor->is_visible())
+		if (frames_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 
 //		frames_editor->set_process(false);

@@ -648,8 +648,8 @@ Dictionary AnimationPlayerEditor::get_state() const {
 
 	Dictionary d;
 
-	d["visible"]=is_visible();
-	if (EditorNode::get_singleton()->get_edited_scene() && is_visible() && player) {
+	d["visible"]=is_visible_in_tree();
+	if (EditorNode::get_singleton()->get_edited_scene() && is_visible_in_tree() && player) {
 		d["player"]=EditorNode::get_singleton()->get_edited_scene()->get_path_to(player);
 		d["animation"]=player->get_current_animation();
 
@@ -999,10 +999,10 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value,bool p_set) {
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 
-	if (player==p_pl && is_visible()) {
+	if (player==p_pl && is_visible_in_tree()) {
 
 		_update_player();
-		if (blend_editor.dialog->is_visible())
+		if (blend_editor.dialog->is_visible_in_tree())
 			_animation_blend(); //update
 	}
 }
@@ -1011,7 +1011,7 @@ void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 
 void AnimationPlayerEditor::_list_changed() {
 
-	if(is_visible())
+	if(is_visible_in_tree())
 		_update_player();
 }
 #if 0
@@ -1099,7 +1099,7 @@ void AnimationPlayerEditor::_animation_key_editor_anim_step_changed(float p_len)
 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos,bool p_drag) {
 
-	if (!is_visible())
+	if (!is_visible_in_tree())
 		return;
 	if (!player)
 		return;
@@ -1220,7 +1220,7 @@ void AnimationPlayerEditor::_animation_save_menu(int p_option) {
 
 void AnimationPlayerEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
-	if (is_visible() && p_ev.type==InputEvent::KEY && p_ev.key.pressed && !p_ev.key.echo && !p_ev.key.mod.alt && !p_ev.key.mod.control && !p_ev.key.mod.meta) {
+	if (is_visible_in_tree() && p_ev.type==InputEvent::KEY && p_ev.key.pressed && !p_ev.key.echo && !p_ev.key.mod.alt && !p_ev.key.mod.control && !p_ev.key.mod.meta) {
 
 		switch(p_ev.key.scancode) {
 

@@ -241,7 +241,7 @@ void EditorNode::_notification(int p_what) {
 		}
 
 #endif
-		if (opening_prev && confirmation->is_hidden())
+		if (opening_prev && !confirmation->is_visible())
 			opening_prev=false;
 
 		if (unsaved_cache != (saved_version!=editor_data.get_undo_redo().get_version())) {
@@ -1671,7 +1671,7 @@ void EditorNode::_edit_current() {
 			main_plugin->edit(current_obj);
 		}
 
-		else if (main_plugin!=editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+		else if (main_plugin!=editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
 			// update screen main_plugin
 
 			if (!changing_scene) {
@@ -4510,7 +4510,7 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String& p
 
 	for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
 
-		if (splits[i]->is_visible()) {
+		if (splits[i]->is_visible_in_tree()) {
 			p_layout->set_value(p_section,"dock_split_"+itos(i+1),splits[i]->get_split_offset());
 		}
 	}
@@ -4609,7 +4609,7 @@ void EditorNode::_update_dock_slots_visibility() {
 
 		for(int i=0;i<DOCK_SLOT_MAX;i++) {
 
-			if (!dock_slot[i]->is_hidden() && dock_slot[i]->get_tab_count()) {
+			if (dock_slot[i]->is_visible() && dock_slot[i]->get_tab_count()) {
 				dock_slot[i]->set_current_tab(0);
 			}
 		}
@@ -4717,7 +4717,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String&
 
 	for(int i=0;i<DOCK_SLOT_MAX;i++) {
 
-		if (!dock_slot[i]->is_hidden() && dock_slot[i]->get_tab_count()) {
+		if (dock_slot[i]->is_visible() && dock_slot[i]->get_tab_count()) {
 			dock_slot[i]->set_current_tab(0);
 		}
 	}
@@ -4955,7 +4955,7 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 	for(int i=0;i<bottom_panel_items.size();i++) {
 
 		if (bottom_panel_items[i].control==p_item) {
-			if (p_item->is_visible()) {
+			if (p_item->is_visible_in_tree()) {
 				_bottom_panel_switch(false,0);
 			}
 			bottom_panel_vb->remove_child(bottom_panel_items[i].control);
@@ -4982,7 +4982,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable,int p_idx) {
 		for(int i=0;i<bottom_panel_items.size();i++) {
 
 			bottom_panel_items[i].button->set_pressed(i==p_idx);
-			bottom_panel_items[i].control->set_hidden(i!=p_idx);
+			bottom_panel_items[i].control->set_visible(i==p_idx);
 		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_VISIBLE);
 		center_split->set_collapsed(false);
@@ -4990,7 +4990,7 @@ void EditorNode::_bottom_panel_switch(bool p_enable,int p_idx) {
 		for(int i=0;i<bottom_panel_items.size();i++) {
 
 			bottom_panel_items[i].button->set_pressed(false);
-			bottom_panel_items[i].control->set_hidden(true);
+			bottom_panel_items[i].control->set_visible(false);
 		}
 		center_split->set_dragger_visibility(SplitContainer::DRAGGER_HIDDEN);
 		center_split->set_collapsed(true);

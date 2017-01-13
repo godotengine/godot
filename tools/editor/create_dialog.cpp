@@ -369,7 +369,7 @@ void CreateDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();

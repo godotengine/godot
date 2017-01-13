@@ -801,7 +801,7 @@ void ItemList::_notification(int p_what) {
 
 		float page = size.height-bg->get_minimum_size().height;
 		int width = size.width-bg->get_minimum_size().width;
-		if (!scroll_bar->is_hidden()){
+		if (scroll_bar->is_visible()){
 			width-=mw+bg->get_margin(MARGIN_RIGHT);
 		}
 		scroll_bar->set_page(page);

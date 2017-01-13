@@ -975,7 +975,7 @@ void ThemeEditorPlugin::make_visible(bool p_visible){
 
 	} else {
 		theme_editor->set_process(false);
-		if (theme_editor->is_visible())
+		if (theme_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 	}

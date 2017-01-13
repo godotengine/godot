@@ -236,7 +236,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 
 			if (p_event.screen_touch.pressed) {
 
-				if (!is_visible())
+				if (!is_visible_in_tree())
 					return;
 
 				if (finger_pressed!=-1)

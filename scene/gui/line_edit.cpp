@@ -853,7 +853,7 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible() && has_focus() && window_has_focus) {
+	if (is_visible_in_tree() && has_focus() && window_has_focus) {
 		update();
 	}
 }

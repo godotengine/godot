@@ -527,7 +527,7 @@ void ShaderEditorPlugin::make_visible(bool p_visible) {
 	} else {
 
 		button->hide();
-		if (shader_editor->is_visible())
+		if (shader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		shader_editor->apply_shaders();
 

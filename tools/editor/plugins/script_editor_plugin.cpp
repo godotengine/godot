@@ -426,14 +426,14 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 
 		script_name_label->set_text(c->cast_to<ScriptEditorBase>()->get_name());
 		script_icon->set_texture(c->cast_to<ScriptEditorBase>()->get_icon());
-		if (is_visible())
+		if (is_visible_in_tree())
 			c->cast_to<ScriptEditorBase>()->ensure_focus();
 	}
 	if (c->cast_to<EditorHelp>()) {
 
 		script_name_label->set_text(c->cast_to<EditorHelp>()->get_class());
 		script_icon->set_texture(get_icon("Help","EditorIcons"));
-		if (is_visible())
+		if (is_visible_in_tree())
 			c->cast_to<EditorHelp>()->set_focused();
 	}
 
@@ -1281,7 +1281,7 @@ void ScriptEditor::ensure_select_current() {
 
 			Ref<Script> script = se->get_edited_script();
 
-			if (!grab_focus_block && is_visible())
+			if (!grab_focus_block && is_visible_in_tree())
 				se->ensure_focus();
 
 
@@ -1516,7 +1516,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script, bool p_grab_focus) {
 					_go_to_tab(i);
 					script_list->select( script_list->find_metadata(i) );
 				}
-				if (is_visible())
+				if (is_visible_in_tree())
 					se->ensure_focus();
 			}
 			return;
@@ -1744,7 +1744,7 @@ void ScriptEditor::_script_split_dragged(float) {
 }
 
 void ScriptEditor::_unhandled_input(const InputEvent& p_event) {
-	if (p_event.key.pressed || !is_visible()) return;
+	if (p_event.key.pressed || !is_visible_in_tree()) return;
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
 		int next_tab = script_list->get_current() + 1;
 		next_tab %= script_list->get_item_count();

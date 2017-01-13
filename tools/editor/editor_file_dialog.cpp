@@ -218,10 +218,10 @@ void EditorFileDialog::_post_popup() {
 	else
 		item_list->grab_focus();
 
-	if (is_visible() && get_current_file()!="")
+	if (is_visible_in_tree() && get_current_file()!="")
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		Ref<Texture> folder = get_icon("folder","FileDialog");
 		recent->clear();
 
@@ -806,7 +806,7 @@ void EditorFileDialog::set_current_file(const String& p_file) {
 		file->grab_focus();
 	}
 
-	if (is_visible())
+	if (is_visible_in_tree())
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 
 
@@ -882,7 +882,7 @@ void EditorFileDialog::set_access(Access p_access) {
 
 void EditorFileDialog::invalidate() {
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		update_file_list();
 		invalidated=false;
 	} else {

@@ -212,7 +212,7 @@ void CollisionObject2D::_mouse_exit() {
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = this->pickable && is_inside_tree() && is_visible();
+	bool pickable = this->pickable && is_inside_tree() && is_visible_in_tree();
 	if (area)
 		Physics2DServer::get_singleton()->area_set_pickable(rid,pickable);
 	else

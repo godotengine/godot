@@ -53,7 +53,7 @@ void GridContainer::_notification(int p_what) {
 			for(int i=0;i<get_child_count();i++) {
 
 				Control *c = get_child(i)->cast_to<Control>();
-				if (!c || !c->is_visible())
+				if (!c || !c->is_visible_in_tree())
 					continue;
 
 				int row = idx / columns;
@@ -112,7 +112,7 @@ void GridContainer::_notification(int p_what) {
 			for(int i=0;i<get_child_count();i++) {
 
 				Control *c = get_child(i)->cast_to<Control>();
-				if (!c || !c->is_visible())
+				if (!c || !c->is_visible_in_tree())
 					continue;
 				int row = idx / columns;
 				int col = idx % columns;
@@ -191,7 +191,7 @@ Size2 GridContainer::get_minimum_size() const {
 	for(int i=0;i<get_child_count();i++) {
 
 		Control *c = get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		int row = idx / columns;
 		int col = idx % columns;

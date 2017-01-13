@@ -580,7 +580,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 			String t = p_data[i];
 			//LOG
 
-			if (EditorNode::get_log()->is_hidden()) {
+			if (!EditorNode::get_log()->is_visible()) {
 				if (EditorNode::get_singleton()->are_bottom_panels_hidden()) {
 					EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
 				}
@@ -905,7 +905,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				inspect_scene_tree_timeout-=get_process_delta_time();
 				if (inspect_scene_tree_timeout<0) {
 					inspect_scene_tree_timeout=EditorSettings::get_singleton()->get("debugger/scene_tree_refresh_interval");
-					if (inspect_scene_tree->is_visible()) {
+					if (inspect_scene_tree->is_visible_in_tree()) {
 						_scene_tree_request();
 
 						if (inspected_object_id!=0) {
@@ -921,7 +921,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				inspect_edited_object_timeout-=get_process_delta_time();
 				if (inspect_edited_object_timeout<0) {
 					inspect_edited_object_timeout=EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
-					if (inspect_scene_tree->is_visible() && inspected_object_id) {
+					if (inspect_scene_tree->is_visible_in_tree() && inspected_object_id) {
 						//take the chance and re-inspect selected object
 						Array msg;
 						msg.push_back("inspect_object");
@@ -1087,7 +1087,7 @@ void ScriptEditorDebugger::start() {
 
 	stop();
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(this);
 	}
 
@@ -1146,7 +1146,7 @@ void ScriptEditorDebugger::stop(){
 
 
 	if (hide_on_stop) {
-		if (is_visible())
+		if (is_visible_in_tree())
 			EditorNode::get_singleton()->hide_bottom_panel();
 		emit_signal("show_debugger",false);
 	}

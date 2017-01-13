@@ -474,7 +474,7 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 //		preloader_editor->set_process(true);
 	} else {
 
-		if (preloader_editor->is_visible())
+		if (preloader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 		//preloader_editor->hide();

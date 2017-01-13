@@ -182,7 +182,7 @@ CanvasItemMaterial::~CanvasItemMaterial(){
 
 
 
-bool CanvasItem::is_visible() const {
+bool CanvasItem::is_visible_in_tree() const {
 
 	if (!is_inside_tree())
 		return false;
@@ -190,7 +190,7 @@ bool CanvasItem::is_visible() const {
 	const CanvasItem *p=this;
 
 	while(p) {
-		if (p->hidden)
+		if (!p->visible)
 			return false;
 		p=p->get_parent_item();
 	}
@@ -199,13 +199,6 @@ bool CanvasItem::is_visible() const {
 	return true;
 }
 
-bool CanvasItem::is_hidden() const {
-
-	/*if (!is_inside_scene())
-		return false;*/
-
-	return hidden;
-}
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
@@ -221,7 +214,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
 		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
 
-		if (c && !c->hidden) //should the toplevels stop propagation? i think so but..
+		if (c && c->visible) //should the toplevels stop propagation? i think so but..
 			c->_propagate_visibility_changed(p_visible);
 	}
 
@@ -231,10 +224,10 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
 void CanvasItem::show() {
 
-	if (!hidden)
+	if (visible)
 		return;
 
-	hidden=false;
+	visible=true;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,true);
 
 	if (!is_inside_tree())
@@ -247,10 +240,10 @@ void CanvasItem::show() {
 
 void CanvasItem::hide() {
 
-	if (hidden)
+	if (!visible)
 		return;
 
-	hidden=true;
+	visible=false;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,false);
 
 	if (!is_inside_tree())
@@ -259,16 +252,6 @@ void CanvasItem::hide() {
 	_propagate_visibility_changed(false);
 	_change_notify("visibility/visible");
 }
-
-void CanvasItem::set_hidden(bool p_hidden) {
-
-	if (hidden == p_hidden) {
-		return;
-	}
-
-	_set_visible_(!p_hidden);
-}
-
 
 Variant CanvasItem::edit_get_state() const {
 
@@ -306,7 +289,7 @@ void CanvasItem::_update_callback() {
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible()) { //todo optimize this!!
+	if (is_visible_in_tree()) { //todo optimize this!!
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw=false;
@@ -495,16 +478,16 @@ void CanvasItem::_notification(int p_what) {
 	}
 }
 
-void CanvasItem::_set_visible_(bool p_visible) {
+void CanvasItem::set_visible(bool p_visible) {
 
 	if (p_visible)
 		show();
 	else
 		hide();
 }
-bool CanvasItem::_is_visible_() const {
+bool CanvasItem::is_visible() const {
 
-	return !is_hidden();
+	return visible;
 }
 
 
@@ -924,8 +907,6 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_toplevel_raise_self"),&CanvasItem::_toplevel_raise_self);
 	ClassDB::bind_method(_MD("_update_callback"),&CanvasItem::_update_callback);
-	ClassDB::bind_method(_MD("_set_visible_"),&CanvasItem::_set_visible_);
-	ClassDB::bind_method(_MD("_is_visible_"),&CanvasItem::_is_visible_);
 
 	ClassDB::bind_method(_MD("edit_set_state","state"),&CanvasItem::edit_set_state);
 	ClassDB::bind_method(_MD("edit_get_state:Variant"),&CanvasItem::edit_get_state);
@@ -938,11 +919,11 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_canvas_item"),&CanvasItem::get_canvas_item);
 
+	ClassDB::bind_method(_MD("set_visible"),&CanvasItem::set_visible);
 	ClassDB::bind_method(_MD("is_visible"),&CanvasItem::is_visible);
-	ClassDB::bind_method(_MD("is_hidden"),&CanvasItem::is_hidden);
+	ClassDB::bind_method(_MD("is_visible_in_tree"),&CanvasItem::is_visible_in_tree);
 	ClassDB::bind_method(_MD("show"),&CanvasItem::show);
 	ClassDB::bind_method(_MD("hide"),&CanvasItem::hide);
-	ClassDB::bind_method(_MD("set_hidden","hidden"),&CanvasItem::set_hidden);
 
 	ClassDB::bind_method(_MD("update"),&CanvasItem::update);
 
@@ -1010,7 +991,7 @@ void CanvasItem::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_GROUP("Visibility","");
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("set_visible"),_SCS("is_visible") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::COLOR,"modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
 	ADD_PROPERTYNO( PropertyInfo(Variant::COLOR,"self_modulate"), _SCS("set_self_modulate"),_SCS("get_self_modulate") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"show_behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
@@ -1125,7 +1106,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 
 
 	canvas_item=VisualServer::get_singleton()->canvas_item_create();
-	hidden=false;
+	visible=true;
 	pending_update=false;
 	modulate=Color(1,1,1,1);
 	self_modulate=Color(1,1,1,1);

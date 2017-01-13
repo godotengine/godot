@@ -1925,14 +1925,14 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 
 					if (p_input.is_action("ui_up"))
 						selected_track--;
-					if (v_scroll->is_visible() && p_input.is_action("ui_page_up"))
+					if (v_scroll->is_visible_in_tree() && p_input.is_action("ui_page_up"))
 						selected_track--;
 
 					if (selected_track<0)
 						selected_track=0;
 
 
-					if (v_scroll->is_visible()) {
+					if (v_scroll->is_visible_in_tree()) {
 						if (v_scroll->get_value() > selected_track)
 							v_scroll->set_value(selected_track);
 
@@ -1947,13 +1947,13 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 
 					if (p_input.is_action("ui_down"))
 						selected_track++;
-					else if (v_scroll->is_visible() && p_input.is_action("ui_page_down"))
+					else if (v_scroll->is_visible_in_tree() && p_input.is_action("ui_page_down"))
 						selected_track+=v_scroll->get_page();
 
 					if (selected_track >= animation->get_track_count())
 						selected_track=animation->get_track_count()-1;
 
-					if (v_scroll->is_visible() && v_scroll->get_page()+v_scroll->get_value() < selected_track+1) {
+					if (v_scroll->is_visible_in_tree() && v_scroll->get_page()+v_scroll->get_value() < selected_track+1) {
 						v_scroll->set_value(selected_track-v_scroll->get_page()+1);
 					}
 
@@ -3270,7 +3270,7 @@ Node *AnimationKeyEditor::get_root() const {
 
 void AnimationKeyEditor::update_keying() {
 
-	bool keying_enabled=is_visible() && animation.is_valid();
+	bool keying_enabled=is_visible_in_tree() && animation.is_valid();
 
 	if (keying_enabled==keying)
 		return;
@@ -3291,7 +3291,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 
 	if (insert_frame!=OS::get_singleton()->get_frames_drawn()) {
 		//clear insert list for the frame if frame changed
-		if (insert_confirm->is_visible())
+		if (insert_confirm->is_visible_in_tree())
 			return; //do nothing
 		insert_data.clear();
 		insert_query=false;

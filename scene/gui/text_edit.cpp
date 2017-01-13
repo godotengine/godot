@@ -3036,7 +3036,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		cursor.line_ofs=cursor.line;
 
 	int visible_width=cache.size.width-cache.style_normal->get_minimum_size().width-cache.line_number_w-cache.breakpoint_gutter_width;
-	if (v_scroll->is_visible())
+	if (v_scroll->is_visible_in_tree())
 		visible_width-=v_scroll->get_combined_minimum_size().width;
 	visible_width-=20; // give it a little more space
 
@@ -3044,7 +3044,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 	//printf("rowofs %i, visrows %i, cursor.line %i\n",cursor.line_ofs,get_visible_rows(),cursor.line);
 
 	int visible_rows = get_visible_rows();
-	if (h_scroll->is_visible())
+	if (h_scroll->is_visible_in_tree())
 		visible_rows-=((h_scroll->get_combined_minimum_size().height-1)/get_row_height());
 
 	if (cursor.line>=(cursor.line_ofs+visible_rows))
@@ -3078,12 +3078,12 @@ void TextEdit::center_viewport_to_cursor() {
 		cursor.line_ofs=cursor.line;
 
 	int visible_width=cache.size.width-cache.style_normal->get_minimum_size().width-cache.line_number_w-cache.breakpoint_gutter_width;
-	if (v_scroll->is_visible())
+	if (v_scroll->is_visible_in_tree())
 		visible_width-=v_scroll->get_combined_minimum_size().width;
 	visible_width-=20; // give it a little more space
 
 	int visible_rows = get_visible_rows();
-	if (h_scroll->is_visible())
+	if (h_scroll->is_visible_in_tree())
 		visible_rows-=((h_scroll->get_combined_minimum_size().height-1)/get_row_height());
 
 	int max_ofs = text.size()-(scroll_past_end_of_file_enabled?1:visible_rows);
@@ -3205,9 +3205,9 @@ void TextEdit::_scroll_moved(double p_to_val) {
 	if (updating_scrolls)
 		return;
 
-	if (h_scroll->is_visible())
+	if (h_scroll->is_visible_in_tree())
 		cursor.x_ofs=h_scroll->get_value();
-	if (v_scroll->is_visible())
+	if (v_scroll->is_visible_in_tree())
 		cursor.line_ofs=v_scroll->get_value();
 	update();
 }
@@ -3458,7 +3458,7 @@ void TextEdit::_reset_caret_blink_timer() {
 
 void TextEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible() && has_focus() && window_has_focus) {
+	if (is_visible_in_tree() && has_focus() && window_has_focus) {
 		update();
 	}
 }

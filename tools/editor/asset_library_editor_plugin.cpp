@@ -564,7 +564,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-		if(!is_hidden()) {
+		if(is_visible()) {
 			_repository_changed(0); // Update when shown for the first time
 		}
 	}
@@ -574,8 +574,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		HTTPClient::Status s = request->get_http_client_status();
 		bool visible = s!=HTTPClient::STATUS_DISCONNECTED;
 
-		if (visible != !load_status->is_hidden()) {
-			load_status->set_hidden(!visible);
+		if (visible != load_status->is_visible()) {
+			load_status->set_visible(visible);
 		}
 
 		if (visible) {
@@ -599,8 +599,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		}
 
 		bool no_downloads = downloads_hb->get_child_count()==0;
-		if (no_downloads != downloads_scroll->is_hidden()) {
-			downloads_scroll->set_hidden(no_downloads);
+		if (no_downloads == downloads_scroll->is_visible()) {
+			downloads_scroll->set_visible(!no_downloads);
 		}
 	}
 

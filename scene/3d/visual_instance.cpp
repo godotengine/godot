@@ -45,7 +45,7 @@ void VisualInstance::_update_visibility() {
 		return;
 
 	_change_notify("visible");
-	VS::get_singleton()->instance_set_visible(get_instance(),is_visible());
+	VS::get_singleton()->instance_set_visible(get_instance(),is_visible_in_tree());
 }
 
 

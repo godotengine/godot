@@ -1115,7 +1115,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 				} else {
 					cache.selected->draw(ci,r );
 				}
-				if (text_editor->is_visible()){
+				if (text_editor->is_visible_in_tree()){
 					text_editor->set_pos(get_global_pos() + r.pos);
 				}
 			}
@@ -2277,9 +2277,9 @@ void Tree::_gui_input(InputEvent p_event) {
 				mpos.y-=_get_title_button_height();
 				if (mpos.y>=0) {
 
-					if (h_scroll->is_visible())
+					if (h_scroll->is_visible_in_tree())
 						mpos.x+=h_scroll->get_value();
-					if (v_scroll->is_visible())
+					if (v_scroll->is_visible_in_tree())
 						mpos.y+=v_scroll->get_value();
 
 					int col,h,section;
@@ -3069,7 +3069,7 @@ int Tree::get_column_width(int p_column) const {
 
 	int expand_area=get_size().width-(bg->get_margin(MARGIN_LEFT)+bg->get_margin(MARGIN_RIGHT));
 
-	if (v_scroll->is_visible())
+	if (v_scroll->is_visible_in_tree())
 		expand_area-=v_scroll->get_combined_minimum_size().width;
 
 	int expanding_columns=0;
@@ -3254,9 +3254,9 @@ String Tree::get_column_title(int p_column) const {
 Point2 Tree::get_scroll() const {
 
 	Point2 ofs;
-	if (h_scroll->is_visible())
+	if (h_scroll->is_visible_in_tree())
 		ofs.x=h_scroll->get_value();
-	if (v_scroll->is_visible())
+	if (v_scroll->is_visible_in_tree())
 		ofs.y=v_scroll->get_value();
 	return ofs;
 
@@ -3395,9 +3395,9 @@ int Tree::get_column_at_pos(const Point2& p_pos) const {
 		if (pos.y<0)
 			return -1;
 
-		if (h_scroll->is_visible())
+		if (h_scroll->is_visible_in_tree())
 			pos.x+=h_scroll->get_value();
-		if (v_scroll->is_visible())
+		if (v_scroll->is_visible_in_tree())
 			pos.y+=v_scroll->get_value();
 
 		int col,h,section;
@@ -3422,9 +3422,9 @@ int Tree::get_drop_section_at_pos(const Point2& p_pos) const {
 		if (pos.y<0)
 			return -100;
 
-		if (h_scroll->is_visible())
+		if (h_scroll->is_visible_in_tree())
 			pos.x+=h_scroll->get_value();
-		if (v_scroll->is_visible())
+		if (v_scroll->is_visible_in_tree())
 			pos.y+=v_scroll->get_value();
 
 		int col,h,section;
@@ -3449,9 +3449,9 @@ TreeItem* Tree::get_item_at_pos(const Point2& p_pos) const {
 		if (pos.y<0)
 			return NULL;
 
-		if (h_scroll->is_visible())
+		if (h_scroll->is_visible_in_tree())
 			pos.x+=h_scroll->get_value();
-		if (v_scroll->is_visible())
+		if (v_scroll->is_visible_in_tree())
 			pos.y+=v_scroll->get_value();
 
 		int col,h,section;
@@ -3477,9 +3477,9 @@ String Tree::get_tooltip(const Point2& p_pos) const {
 		if (pos.y<0)
 			return Control::get_tooltip(p_pos);
 
-		if (h_scroll->is_visible())
+		if (h_scroll->is_visible_in_tree())
 			pos.x+=h_scroll->get_value();
-		if (v_scroll->is_visible())
+		if (v_scroll->is_visible_in_tree())
 			pos.y+=v_scroll->get_value();
 
 		int col,h,section;

@@ -272,7 +272,7 @@ void Viewport::_parent_visibility_changed() {
 	if (parent_control) {
 
 		Control *c = parent_control;
-		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,c->is_visible());
+		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,c->is_visible_in_tree());
 
 		_update_listener();
 		_update_listener_2d();
@@ -782,7 +782,7 @@ Size2 Viewport::get_size() const {
 
 void Viewport::_update_listener() {
 
-	if (is_inside_tree() && audio_listener && (camera || listener) && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))  {
+	if (is_inside_tree() && audio_listener && (camera || listener) && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible_in_tree())))  {
 		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, find_world()->get_sound_space());
 	} else {
 		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
@@ -793,7 +793,7 @@ void Viewport::_update_listener() {
 
 void Viewport::_update_listener_2d() {
 
-	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
+	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible_in_tree())))
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
 	else
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
@@ -1521,7 +1521,7 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 	}
 #endif
 
-//	if (parent_control && !parent_control->is_visible())
+//	if (parent_control && !parent_control->is_visible_in_tree())
 //		return;
 
 	if (to_screen_rect==Rect2())
@@ -1696,7 +1696,7 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 	for (List<Control*>::Element *E=gui.subwindows.back();E;E=E->prev()) {
 
 		Control *sw = E->get();
-		if (!sw->is_visible())
+		if (!sw->is_visible_in_tree())
 			continue;
 
 		Transform2D xform;
@@ -1716,7 +1716,7 @@ Control* Viewport::_gui_find_control(const Point2& p_global)  {
 	for (List<Control*>::Element *E=gui.roots.back();E;E=E->prev()) {
 
 		Control *sw = E->get();
-		if (!sw->is_visible())
+		if (!sw->is_visible_in_tree())
 			continue;
 
 		Transform2D xform;
@@ -1750,7 +1750,7 @@ Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_g
 
 	//subwindows first!!
 
-	if (p_node->is_hidden()) {
+	if (!p_node->is_visible()) {
 		//return _find_next_visible_control_at_pos(p_node,p_global,r_inv_xform);
 		return NULL; //canvas item hidden, discard
 	}
@@ -2150,7 +2150,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 		case InputEvent::KEY: {
 
 
-			if (gui.key_focus && !gui.key_focus->is_visible()) {
+			if (gui.key_focus && !gui.key_focus->is_visible_in_tree()) {
 				gui.key_focus->release_focus();
 			}
 
@@ -2282,7 +2282,7 @@ void Viewport::_gui_remove_from_modal_stack(List<Control*>::Element *MI,ObjectID
 			if (!pfoc)
 				return;
 
-			if (!pfoc->is_inside_tree() || !pfoc->is_visible())
+			if (!pfoc->is_inside_tree() || !pfoc->is_visible_in_tree())
 				return;
 			pfoc->grab_focus();
 		} else {

@@ -1509,7 +1509,7 @@ void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 		anim_tree_editor->set_fixed_process(true);
 	} else {
 
-		if (anim_tree_editor->is_visible())
+		if (anim_tree_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 		anim_tree_editor->set_fixed_process(false);

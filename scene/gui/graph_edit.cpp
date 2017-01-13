@@ -1054,7 +1054,7 @@ void GraphEdit::set_zoom(float p_zoom) {
 	_update_scroll();
 	connections_layer->update();
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 
 		Vector2 ofs  = sbofs*zoom - get_size()/2;
 		h_scroll->set_value( ofs.x );

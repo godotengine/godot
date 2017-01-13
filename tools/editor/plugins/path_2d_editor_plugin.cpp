@@ -67,7 +67,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent& p_event) {
 	if (!node)
 		return false;
 
-	if (!node->is_visible())
+	if (!node->is_visible_in_tree())
 		return false;
 
 	if (!node->get_curve().is_valid())
@@ -475,7 +475,7 @@ void Path2DEditor::_canvas_draw() {
 	if (!node)
 		return ;
 
-	if (!node->is_visible())
+	if (!node->is_visible_in_tree())
 		return;
 
 	if (!node->get_curve().is_valid())

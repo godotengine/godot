@@ -347,7 +347,7 @@ public:
 	void insert_value_key(const String& p_property, const Variant& p_value, bool p_advance);
 	void insert_transform_key(Spatial *p_node,const String& p_sub,const Transform& p_xform);
 
-	void show_select_node_warning(bool p_show) { select_anim_warning->set_hidden(!p_show); }
+	void show_select_node_warning(bool p_show) { select_anim_warning->set_visible(p_show); }
 	AnimationKeyEditor();
 	~AnimationKeyEditor();
 };

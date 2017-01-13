@@ -83,7 +83,7 @@ void Light2D::_update_light_visibility() {
 	}
 #endif
 
-	VS::get_singleton()->canvas_light_set_enabled(canvas_light,enabled && is_visible() && editor_ok);
+	VS::get_singleton()->canvas_light_set_enabled(canvas_light,enabled && is_visible_in_tree() && editor_ok);
 }
 
 void Light2D::set_enabled( bool p_enabled) {

@@ -509,7 +509,7 @@ void SampleLibraryEditorPlugin::make_visible(bool p_visible) {
 //		sample_library_editor->set_process(true);
 	} else {
 
-		if (sample_library_editor->is_visible())
+		if (sample_library_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 

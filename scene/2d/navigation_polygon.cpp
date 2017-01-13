@@ -459,7 +459,7 @@ void NavigationPolygonInstance::_navpoly_changed() {
 
 String NavigationPolygonInstance::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
 	if (!navpoly.is_valid()) {
