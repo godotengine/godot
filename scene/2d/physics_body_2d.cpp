@@ -70,19 +70,19 @@ float PhysicsBody2D::get_one_way_collision_max_depth() const{
 
 void PhysicsBody2D::_set_layers(uint32_t p_mask) {
 
-	set_layer_mask(p_mask);
+	set_collision_layer(p_mask);
 	set_collision_mask(p_mask);
 }
 
 uint32_t PhysicsBody2D::_get_layers() const{
 
-	return get_layer_mask();
+	return get_collision_layer();
 }
 
 void PhysicsBody2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody2D::set_layer_mask);
-	ClassDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
+	ClassDB::bind_method(_MD("set_collision_layer","mask"),&PhysicsBody2D::set_collision_layer);
+	ClassDB::bind_method(_MD("get_collision_layer"),&PhysicsBody2D::get_collision_layer);
 	ClassDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody2D::set_collision_mask);
 	ClassDB::bind_method(_MD("get_collision_mask"),&PhysicsBody2D::get_collision_mask);
 
@@ -90,8 +90,8 @@ void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&PhysicsBody2D::set_collision_mask_bit);
 	ClassDB::bind_method(_MD("get_collision_mask_bit","bit"),&PhysicsBody2D::get_collision_mask_bit);
 
-	ClassDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&PhysicsBody2D::set_layer_mask_bit);
-	ClassDB::bind_method(_MD("get_layer_mask_bit","bit"),&PhysicsBody2D::get_layer_mask_bit);
+	ClassDB::bind_method(_MD("set_collision_layer_bit","bit","value"),&PhysicsBody2D::set_collision_layer_bit);
+	ClassDB::bind_method(_MD("get_collision_layer_bit","bit"),&PhysicsBody2D::get_collision_layer_bit);
 
 	ClassDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody2D::_set_layers);
 	ClassDB::bind_method(_MD("_get_layers"),&PhysicsBody2D::_get_layers);
@@ -102,21 +102,22 @@ void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::add_collision_exception_with);
 	ClassDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::remove_collision_exception_with);
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_LAYERS_2D_PHYSICS,"",0),_SCS("_set_layers"),_SCS("_get_layers")); //for backwards compat
+
 	ADD_GROUP("Collision","collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layer",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 	ADD_GROUP("","");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"one_way_collision/max_depth"),_SCS("set_one_way_collision_max_depth"),_SCS("get_one_way_collision_max_depth"));
 }
 
-void PhysicsBody2D::set_layer_mask(uint32_t p_mask) {
+void PhysicsBody2D::set_collision_layer(uint32_t p_mask) {
 
 	mask=p_mask;
 	Physics2DServer::get_singleton()->body_set_layer_mask(get_rid(),p_mask);
 }
 
-uint32_t PhysicsBody2D::get_layer_mask() const {
+uint32_t PhysicsBody2D::get_collision_layer() const {
 
 	return mask;
 }
@@ -148,20 +149,20 @@ bool PhysicsBody2D::get_collision_mask_bit(int p_bit) const{
 }
 
 
-void PhysicsBody2D::set_layer_mask_bit(int p_bit, bool p_value) {
+void PhysicsBody2D::set_collision_layer_bit(int p_bit, bool p_value) {
 
-	uint32_t mask = get_layer_mask();
+	uint32_t mask = get_collision_layer();
 	if (p_value)
 		mask|=1<<p_bit;
 	else
 		mask&=~(1<<p_bit);
-	set_layer_mask(mask);
+	set_collision_layer(mask);
 
 }
 
-bool PhysicsBody2D::get_layer_mask_bit(int p_bit) const{
+bool PhysicsBody2D::get_collision_layer_bit(int p_bit) const{
 
-	return get_layer_mask()&(1<<p_bit);
+	return get_collision_layer()&(1<<p_bit);
 }
 
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject2D( Physics2DServer::get_singleton()->body_create(p_mode), false) {
