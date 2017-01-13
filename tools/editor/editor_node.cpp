@@ -258,7 +258,7 @@ void EditorNode::_notification(int p_what) {
 		//get_root_node()->set_rect(viewport->get_global_rect());
 
 		//update the circle
-		uint64_t frame = OS::get_singleton()->get_frames_drawn();
+		uint64_t frame = Engine::get_singleton()->get_frames_drawn();
 		uint32_t tick = OS::get_singleton()->get_ticks_msec();
 
 		if (frame!=circle_step_frame && (tick-circle_step_msec)>(1000/8)) {
@@ -6614,7 +6614,7 @@ EditorNode::EditorNode() {
 
 
 	circle_step_msec=OS::get_singleton()->get_ticks_msec();
-	circle_step_frame=OS::get_singleton()->get_frames_drawn();
+	circle_step_frame=Engine::get_singleton()->get_frames_drawn();
 	circle_step=0;
 
 	_rebuild_import_menu();

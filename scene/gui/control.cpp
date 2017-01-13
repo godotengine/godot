@@ -1883,7 +1883,7 @@ void Control::show_modal(bool p_exclusive) {
 	raise();
 	data.modal_exclusive=p_exclusive;
 	data.MI=get_viewport()->_gui_show_modal(this);
-	data.modal_frame=OS::get_singleton()->get_frames_drawn();
+	data.modal_frame=Engine::get_singleton()->get_frames_drawn();
 
 }
 

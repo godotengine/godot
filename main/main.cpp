@@ -79,6 +79,7 @@
 #include "performance.h"
 
 static GlobalConfig *globals=NULL;
+static Engine *engine=NULL;
 static InputMap *input_map=NULL;
 static bool _start_success=false;
 static ScriptDebugger *script_debugger=NULL;
@@ -195,6 +196,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	RID_OwnerBase::init_rid();
 
 	OS::get_singleton()->initialize_core();
+
+	engine = memnew( Engine );
+
 	ClassDB::init();
 
 	MAIN_PRINT("Main: Initialize CORE");
@@ -499,7 +503,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 			if (I->next()) {
 
-				OS::get_singleton()->set_time_scale(I->next()->get().to_double());
+				Engine::get_singleton()->set_time_scale(I->next()->get().to_double());
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -742,7 +746,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	use_vsync = GLOBAL_DEF("display/window/use_vsync", use_vsync);
 	GLOBAL_DEF("display/window/test_width",0);
 	GLOBAL_DEF("display/window/test_height",0);
-	OS::get_singleton()->_pixel_snap=GLOBAL_DEF("rendering/2d/use_pixel_snap",false);
+	Engine::get_singleton()->_pixel_snap=GLOBAL_DEF("rendering/2d/use_pixel_snap",false);
 	OS::get_singleton()->_keep_screen_on=GLOBAL_DEF("display/energy_saving/keep_screen_on",true);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("rendering/threads/thread_model",OS::RENDER_THREAD_SAFE);
@@ -819,8 +823,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	}
 
 
-	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps",60));
-	OS::get_singleton()->set_target_fps(GLOBAL_DEF("debug/fps/force_fps",0));
+	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps",60));
+	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/fps/force_fps",0));
 
 	GLOBAL_DEF("debug/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
 
@@ -831,7 +835,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		frame_delay=GLOBAL_DEF("application/frame_delay_msec",0);
 	}
 
-	OS::get_singleton()->set_frame_delay(frame_delay);
+	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew( MessageQueue );
 
@@ -862,6 +866,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		memdelete( translation_server );
 	if (globals)
 		memdelete(globals);
+	if (engine)
+		memdelete(engine);
 	if (script_debugger)
 		memdelete(script_debugger);
 	if (packed_data)
@@ -1096,7 +1102,7 @@ bool Main::start() {
 			} else if (args[i]=="-script" || args[i]=="-s") {
 				script=args[i+1];
 			} else if (args[i]=="-level" || args[i]=="-l") {
-				OS::get_singleton()->_custom_level=args[i+1];
+				Engine::get_singleton()->_custom_level=args[i+1];
 			} else if (args[i]=="-test") {
 				test=args[i+1];
 			} else if (args[i]=="-optimize") {
@@ -1579,7 +1585,7 @@ bool Main::iteration() {
 	uint64_t ticks_elapsed=ticks-last_ticks;
 
 	double step=(double)ticks_elapsed / 1000000.0;
-	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
+	float frame_slice=1.0/Engine::get_singleton()->get_iterations_per_second();
 
 //	if (time_accum+step < frame_slice)
 //		return false;
@@ -1597,13 +1603,13 @@ bool Main::iteration() {
 
 	time_accum+=step;
 
-	float time_scale = OS::get_singleton()->get_time_scale();
+	float time_scale = Engine::get_singleton()->get_time_scale();
 
 	bool exit=false;
 
 	int iters = 0;
 
-	OS::get_singleton()->_in_fixed=true;
+	Engine::get_singleton()->_in_fixed=true;
 
 	while(time_accum>frame_slice) {
 
@@ -1635,10 +1641,10 @@ bool Main::iteration() {
 		fixed_process_ticks=MAX(fixed_process_ticks,OS::get_singleton()->get_ticks_usec()-fixed_begin); // keep the largest one for reference
 		fixed_process_max=MAX(OS::get_singleton()->get_ticks_usec()-fixed_begin,fixed_process_max);
 		iters++;
-		OS::get_singleton()->_fixed_frames++;
+		Engine::get_singleton()->_fixed_frames++;
 	}
 
-	OS::get_singleton()->_in_fixed=false;
+	Engine::get_singleton()->_in_fixed=false;
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
@@ -1658,11 +1664,11 @@ bool Main::iteration() {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (VisualServer::get_singleton()->has_changed()) {
 				VisualServer::get_singleton()->draw(); // flush visual commands
-				OS::get_singleton()->frames_drawn++;
+				Engine::get_singleton()->frames_drawn++;
 			}
 		} else {
 			VisualServer::get_singleton()->draw(); // flush visual commands
-			OS::get_singleton()->frames_drawn++;
+			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
 	}
@@ -1688,7 +1694,7 @@ bool Main::iteration() {
 
 	//	x11_delay_usec(10000);
 	frames++;
-	OS::get_singleton()->_idle_frames++;
+	Engine::get_singleton()->_idle_frames++;
 
 	if (frame>1000000) {
 
@@ -1696,7 +1702,7 @@ bool Main::iteration() {
 			print_line("FPS: "+itos(frames));
 		};
 
-		OS::get_singleton()->_fps=frames;
+		Engine::get_singleton()->_fps=frames;
 		performance->set_process_time(USEC_TO_SEC(idle_process_max));
 		performance->set_fixed_process_time(USEC_TO_SEC(fixed_process_max));
 		idle_process_max=0;
@@ -1710,12 +1716,12 @@ bool Main::iteration() {
 	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
 		OS::get_singleton()->delay_usec(16600); //apply some delay to force idle time (results in about 60 FPS max)
 	else {
-		uint32_t frame_delay = OS::get_singleton()->get_frame_delay();
+		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 		if (frame_delay)
-			OS::get_singleton()->delay_usec( OS::get_singleton()->get_frame_delay()*1000 );
+			OS::get_singleton()->delay_usec( Engine::get_singleton()->get_frame_delay()*1000 );
 	}
 
-	int target_fps = OS::get_singleton()->get_target_fps();
+	int target_fps = Engine::get_singleton()->get_target_fps();
 	if (target_fps>0) {
 		uint64_t time_step = 1000000L/target_fps;
 		target_ticks += time_step;
@@ -1777,6 +1783,8 @@ void Main::cleanup() {
 		memdelete(path_remap);
 	if (globals)
 		memdelete(globals);
+	if (engine)
+		memdelete(engine);
 
 
 

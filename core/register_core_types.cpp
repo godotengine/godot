@@ -62,6 +62,7 @@ static ResourceFormatLoaderBinary *resource_loader_binary=NULL;
 static _ResourceLoader *_resource_loader=NULL;
 static _ResourceSaver *_resource_saver=NULL;
 static _OS *_os=NULL;
+static _Engine *_engine=NULL;
 static _ClassDB *_classdb=NULL;
 static _Marshalls *_marshalls = NULL;
 static TranslationLoaderPO *resource_format_po=NULL;
@@ -156,6 +157,7 @@ void register_core_types() {
 	_resource_loader=memnew(_ResourceLoader);
 	_resource_saver=memnew(_ResourceSaver);
 	_os=memnew(_OS);
+	_engine=memnew(_Engine);
 	_classdb=memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
 
@@ -179,6 +181,7 @@ void register_core_singletons() {
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PathRemap",PathRemap::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("OS",_OS::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Engine",_Engine::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ClassDB",_classdb ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Marshalls",_Marshalls::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
@@ -196,6 +199,7 @@ void unregister_core_types() {
 	memdelete( _resource_loader );
 	memdelete( _resource_saver );
 	memdelete( _os);
+	memdelete( _engine );
 	memdelete( _classdb );
 	memdelete( _marshalls );
 

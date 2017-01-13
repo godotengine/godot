@@ -778,7 +778,7 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 	}
 
 
-	packet_peer_stream->put_var(OS::get_singleton()->get_frames_drawn()); //total frame time
+	packet_peer_stream->put_var(Engine::get_singleton()->get_frames_drawn()); //total frame time
 	packet_peer_stream->put_var(frame_time); //total frame time
 	packet_peer_stream->put_var(idle_time); //idle frame time
 	packet_peer_stream->put_var(fixed_time); //fixed frame time

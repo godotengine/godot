@@ -417,7 +417,7 @@ void AnimatedSprite::_notification(int p_what) {
 			if (centered)
 				ofs-=s/2;
 
-			if (OS::get_singleton()->get_use_pixel_snap()) {
+			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs=ofs.floor();
 			}
 			Rect2 dst_rect(ofs,s);

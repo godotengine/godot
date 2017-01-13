@@ -118,7 +118,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 float Performance::get_monitor(Monitor p_monitor) const {
 
 	switch(p_monitor) {
-		case TIME_FPS: return OS::get_singleton()->get_frames_per_second();
+		case TIME_FPS: return Engine::get_singleton()->get_frames_per_second();
 		case TIME_PROCESS: return _process_time;
 		case TIME_FIXED_PROCESS: return _fixed_process_time;
 		case MEMORY_STATIC: return Memory::get_mem_usage();

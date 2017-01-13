@@ -86,7 +86,7 @@ void Sprite::_notification(int p_what) {
 			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
-			if (OS::get_singleton()->get_use_pixel_snap()) {
+			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs=ofs.floor();
 			}
 
