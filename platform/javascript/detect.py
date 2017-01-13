@@ -88,7 +88,7 @@ def configure(env):
         # what is set during compilation, check TOTAL_MEMORY in Emscripten's
         # src/settings.js for the default.
         env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
-        env["PROGSUFFIX"] += ".webassembly"
+        env.extra_suffix = '.webassembly' + env.extra_suffix
     else:
         env.Append(CPPFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
