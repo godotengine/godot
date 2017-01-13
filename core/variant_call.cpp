@@ -349,7 +349,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Vector2,tangent);
 	VCALL_LOCALMEM0R(Vector2,floor);
 	VCALL_LOCALMEM1R(Vector2,snapped);
-	VCALL_LOCALMEM0R(Vector2,get_aspect);
+	VCALL_LOCALMEM0R(Vector2,aspect);
 	VCALL_LOCALMEM1R(Vector2,dot);
 	VCALL_LOCALMEM1R(Vector2,slide);
 	VCALL_LOCALMEM1R(Vector2,reflect);
@@ -1457,7 +1457,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,tangent,varray());
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,floor,varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,snapped,VECTOR2,"by",varray());
-	ADDFUNC0(VECTOR2,REAL,Vector2,get_aspect,varray());
+	ADDFUNC0(VECTOR2,REAL,Vector2,aspect,varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,dot,VECTOR2,"with",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,slide,VECTOR2,"vec",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,reflect,VECTOR2,"vec",varray());

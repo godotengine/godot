@@ -1138,8 +1138,8 @@ void SceneTree::_update_root_rect() {
 	Size2 viewport_size;
 	Size2 screen_size;
 
-	float viewport_aspect = desired_res.get_aspect();
-	float video_mode_aspect = video_mode.get_aspect();
+	float viewport_aspect = desired_res.aspect();
+	float video_mode_aspect = video_mode.aspect();
 
 	if (stretch_aspect==STRETCH_ASPECT_IGNORE || ABS(viewport_aspect - video_mode_aspect)<CMP_EPSILON) {
 		//same aspect or ignore aspect

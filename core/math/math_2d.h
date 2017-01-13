@@ -154,7 +154,7 @@ struct Vector2 {
 
 	Vector2 floor() const;
 	Vector2 snapped(const Vector2& p_by) const;
-	real_t get_aspect() const { return width/height; }
+	real_t aspect() const { return width/height; }
 
 
 	operator String() const { return String::num(x)+", "+String::num(y); }

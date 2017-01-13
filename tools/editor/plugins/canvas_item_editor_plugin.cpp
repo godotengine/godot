@@ -1652,7 +1652,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 			Vector2 minsize = canvas_item->edit_get_minimum_size();
 
 			if (uniform) {
-				float aspect = local_rect.size.get_aspect();
+				float aspect = local_rect.size.aspect();
 				switch(drag) {
 					case DRAG_BOTTOM_LEFT:
 					case DRAG_TOP_RIGHT: {

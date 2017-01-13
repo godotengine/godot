@@ -468,7 +468,7 @@ Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3& p_pos) {
 
 
 	CameraMatrix cm;
-	cm.set_perspective(get_fov(),get_size().get_aspect(),get_znear(),get_zfar());
+	cm.set_perspective(get_fov(),get_size().aspect(),get_znear(),get_zfar());
 	float screen_w,screen_h;
 	cm.get_viewport_size(screen_w,screen_h);
 
@@ -1898,7 +1898,7 @@ void SpatialEditorViewport::_draw() {
 
 
 		Size2 ss = Size2( GlobalConfig::get_singleton()->get("display/width"), GlobalConfig::get_singleton()->get("display/height") );
-		float aspect = ss.get_aspect();
+		float aspect = ss.aspect();
 		Size2 s = get_size();
 
 		Rect2 draw_rect;
