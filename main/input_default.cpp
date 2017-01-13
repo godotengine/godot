@@ -465,7 +465,7 @@ Point2 InputDefault::get_mouse_pos() const {
 
 	return mouse_pos;
 }
-Point2 InputDefault::get_mouse_speed() const {
+Point2 InputDefault::get_last_mouse_speed() const {
 
 	return mouse_speed_track.speed;
 }

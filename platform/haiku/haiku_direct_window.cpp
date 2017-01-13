@@ -219,8 +219,8 @@ void HaikuDirectWindow::HandleMouseMoved(BMessage* message) {
 	input->set_mouse_pos(pos);
 	motion_event.mouse_motion.global_x = pos.x;
 	motion_event.mouse_motion.global_y = pos.y;
-	motion_event.mouse_motion.speed_x = input->get_mouse_speed().x;
-	motion_event.mouse_motion.speed_y = input->get_mouse_speed().y;
+	motion_event.mouse_motion.speed_x = input->get_last_mouse_speed().x;
+	motion_event.mouse_motion.speed_y = input->get_last_mouse_speed().y;
 
 	motion_event.mouse_motion.relative_x = rel.x;
 	motion_event.mouse_motion.relative_y = rel.y;

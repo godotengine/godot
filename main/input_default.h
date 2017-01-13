@@ -196,7 +196,7 @@ public:
 	virtual Vector3 get_gyroscope() const;
 
 	virtual Point2 get_mouse_pos() const;
-	virtual Point2 get_mouse_speed() const;
+	virtual Point2 get_last_mouse_speed() const;
 	virtual int get_mouse_button_mask() const;
 
 	virtual void warp_mouse_pos(const Vector2& p_to);

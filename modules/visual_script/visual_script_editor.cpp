@@ -1776,7 +1776,7 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 			if (node) {
 				graph->set_selected(node);
 				_node_selected(node);
-			}			
+			}
 		}
 
 		if (d.has("type") && String(d["type"])=="resource") {
@@ -3082,7 +3082,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			//popup disappearing grabs focus to owner, so use call deferred
 			node_filter->call_deferred("grab_focus");
 			node_filter->call_deferred("select_all");
-		} break;			
+		} break;
 		case EDIT_COPY_NODES:
 		case EDIT_CUT_NODES: {
 
