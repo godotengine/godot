@@ -34,11 +34,14 @@
 class YSort : public Node2D {
 	GDCLASS(YSort,Node2D);
 	bool sort_enabled;
+	int sort_recursion_depth;
 	static void _bind_methods();
 public:
 
 	void set_sort_enabled(bool p_enabled);
 	bool is_sort_enabled() const;
+	void set_sort_recursion_depth(int depth);
+	int get_sort_recursion_depth() const;
 	YSort();
 };
 
