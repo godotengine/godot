@@ -189,6 +189,9 @@ public:
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 
+	virtual void show_window() {};
+	virtual void set_window_centered();
+
 	virtual void set_target_fps(int p_fps);
 	virtual float get_target_fps() const;
 

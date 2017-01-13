@@ -1097,12 +1097,13 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
+	/*
 	if (!is_no_window_mode_enabled()) {
 		ShowWindow(hWnd,SW_SHOW);						// Show The Window
 		SetForegroundWindow(hWnd);						// Slightly Higher Priority
 		SetFocus(hWnd);									// Sets Keyboard Focus To
 	}
-
+	*/
 /*
 		DEVMODE dmScreenSettings;					// Device Mode
 		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));		// Makes Sure Memory's Cleared
@@ -1489,10 +1490,19 @@ void OS_Windows::set_window_position(const Point2& p_position){
 	MoveWindow(hWnd,p_position.x,p_position.y,r.right-r.left,r.bottom-r.top,TRUE);
 
 }
+
+void OS_Windows::show_window() {
+	if (!is_no_window_mode_enabled()) {
+		ShowWindow(hWnd,SW_SHOW);						// Show The Window
+		SetForegroundWindow(hWnd);						// Slightly Higher Priority
+		SetFocus(hWnd);									// Sets Keyboard Focus To
+	}
+}
+
 Size2 OS_Windows::get_window_size() const{
 
 	RECT r;
-	GetClientRect(hWnd,&r);
+	GetWindowRect(hWnd,&r);
 	return Vector2(r.right-r.left,r.bottom-r.top);
 
 }

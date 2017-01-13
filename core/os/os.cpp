@@ -107,6 +107,11 @@ int OS::get_iterations_per_second() const {
 	return ips;
 }
 
+void OS::set_window_centered() {
+	if(is_window_maximized() || is_window_fullscreen()) return;
+	set_window_position((get_screen_size()-get_window_size())/2);
+}
+
 void OS::set_target_fps(int p_fps) {
 	_target_fps=p_fps>0? p_fps : 0;
 }

@@ -102,6 +102,7 @@ static bool debug_collisions=false;
 static bool debug_navigation=false;
 static int frame_delay=0;
 static Vector2 init_custom_pos;
+static bool init_window_center;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
@@ -758,7 +759,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		OS::get_singleton()->_render_thread_mode=OS::RenderThreadMode(rtm);
 	}
 
-
+	init_window_center = GLOBAL_DEF("display/center", false);
 
 	/* Determine Video Driver */
 
@@ -895,11 +896,17 @@ Error Main::setup2() {
 
 
 	OS::get_singleton()->initialize(video_mode,video_driver_idx,audio_driver_idx);
+
+	if(init_window_center) {
+		OS::get_singleton()->set_window_centered();
+	}
 	if (init_use_custom_pos) {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
 
 	OS::get_singleton()->set_use_vsync(use_vsync);
+
+	OS::get_singleton()->show_window();
 
 	register_core_singletons();
 
