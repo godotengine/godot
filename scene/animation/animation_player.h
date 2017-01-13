@@ -271,8 +271,8 @@ public:
 	bool is_active() const;
 	bool is_valid() const;
 
-	void set_speed(float p_speed);
-	float get_speed() const;
+	void set_speed_scale(float p_speed);
+	float get_speed_scale() const;
 
 	void set_autoplay(const String& pname);
 	String get_autoplay() const;

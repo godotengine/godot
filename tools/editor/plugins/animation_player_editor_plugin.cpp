@@ -768,7 +768,7 @@ void AnimationPlayerEditor::_dialog_action(String p_file) {
 
 void AnimationPlayerEditor::_scale_changed(const String& p_scale) {
 
-	player->set_speed(p_scale.to_double());
+	player->set_speed_scale(p_scale.to_double());
 }
 
 void AnimationPlayerEditor::_update_animation() {
@@ -790,7 +790,7 @@ void AnimationPlayerEditor::_update_animation() {
 		stop->set_pressed(true);
 	}
 
-	scale->set_text( String::num(player->get_speed(),2) );
+	scale->set_text( String::num(player->get_speed_scale(),2) );
 	String current=player->get_current_animation();
 
 	for (int i=0;i<animation->get_item_count();i++) {

@@ -36,7 +36,7 @@ bool AnimationPlayer::_set(const StringName& p_name, const Variant& p_value) {
 	String name=p_name;
 
 	if (p_name==SceneStringNames::get_singleton()->playback_speed || p_name==SceneStringNames::get_singleton()->speed) { //bw compatibility
-		set_speed(p_value);
+		set_speed_scale(p_value);
 
 	} else if (p_name==SceneStringNames::get_singleton()->playback_active) {
 		set_active(p_value);
@@ -1082,13 +1082,13 @@ void AnimationPlayer::stop_all() {
 
 }
 
-void AnimationPlayer::set_speed(float p_speed) {
+void AnimationPlayer::set_speed_scale(float p_speed) {
 
 	speed_scale=p_speed;
 
 
 }
-float AnimationPlayer::get_speed() const {
+float AnimationPlayer::get_speed_scale() const {
 
 	return speed_scale;
 }
@@ -1323,8 +1323,8 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(_MD("set_active","active"),&AnimationPlayer::set_active);
 	ClassDB::bind_method(_MD("is_active"),&AnimationPlayer::is_active);
 
-	ClassDB::bind_method(_MD("set_speed","speed"),&AnimationPlayer::set_speed);
-	ClassDB::bind_method(_MD("get_speed"),&AnimationPlayer::get_speed);
+	ClassDB::bind_method(_MD("set_speed_scale","speed"),&AnimationPlayer::set_speed_scale);
+	ClassDB::bind_method(_MD("get_speed_scale"),&AnimationPlayer::get_speed_scale);
 
 	ClassDB::bind_method(_MD("set_autoplay","name"),&AnimationPlayer::set_autoplay);
 	ClassDB::bind_method(_MD("get_autoplay"),&AnimationPlayer::get_autoplay);

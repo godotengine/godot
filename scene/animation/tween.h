@@ -165,8 +165,8 @@ public:
 	void set_tween_process_mode(TweenProcessMode p_mode);
 	TweenProcessMode get_tween_process_mode() const;
 
-	void set_speed(float p_speed);
-	float get_speed() const;
+	void set_speed_scale(float p_speed);
+	float get_speed_scale() const;
 
 	bool start();
 	bool reset(Object *p_node, String p_key);

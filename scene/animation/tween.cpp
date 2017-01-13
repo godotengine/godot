@@ -109,7 +109,7 @@ bool Tween::_set(const StringName& p_name, const Variant& p_value) {
 	String name=p_name;
 
 	if (name=="playback/speed" || name=="speed") { //bw compatibility
-		set_speed(p_value);
+		set_speed_scale(p_value);
 
 	} else if (name=="playback/active") {
 		set_active(p_value);
@@ -192,8 +192,8 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(_MD("is_repeat"),&Tween::is_repeat );
 	ClassDB::bind_method(_MD("set_repeat","repeat"),&Tween::set_repeat );
 
-	ClassDB::bind_method(_MD("set_speed","speed"),&Tween::set_speed);
-	ClassDB::bind_method(_MD("get_speed"),&Tween::get_speed);
+	ClassDB::bind_method(_MD("set_speed_scale","speed"),&Tween::set_speed_scale);
+	ClassDB::bind_method(_MD("get_speed_scale"),&Tween::get_speed_scale);
 
 	ClassDB::bind_method(_MD("set_tween_process_mode","mode"),&Tween::set_tween_process_mode);
 	ClassDB::bind_method(_MD("get_tween_process_mode"),&Tween::get_tween_process_mode);
@@ -697,12 +697,12 @@ void Tween::set_repeat(bool p_repeat) {
 	repeat = p_repeat;
 }
 
-void Tween::set_speed(float p_speed) {
+void Tween::set_speed_scale(float p_speed) {
 
 	speed_scale=p_speed;
 }
 
-float Tween::get_speed() const {
+float Tween::get_speed_scale() const {
 
 	return speed_scale;
 }
