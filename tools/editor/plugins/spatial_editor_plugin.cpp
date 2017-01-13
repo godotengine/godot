@@ -618,23 +618,6 @@ static int _get_key_modifier(const String& p_property) {
 	return 0;
 }
 
-SpatialEditorViewport::NavigationScheme SpatialEditorViewport::_get_navigation_schema(const String& p_property) {
-	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
-		case 0: return NAVIGATION_GODOT;
-		case 1: return NAVIGATION_MAYA;
-		case 2: return NAVIGATION_MODO;
-	}
-	return NAVIGATION_GODOT;
-}
-
-SpatialEditorViewport::NavigationZoomStyle SpatialEditorViewport::_get_navigation_zoom_style(const String& p_property) {
-	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
-		case 0: return NAVIGATION_ZOOM_VERTICAL;
-		case 1: return NAVIGATION_ZOOM_HORIZONTAL;
-	}
-	return NAVIGATION_ZOOM_VERTICAL;
-}
-
 bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hilite_only) {
 
 	if (!spatial_editor->is_gizmo_visible())
@@ -854,7 +837,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 				case BUTTON_RIGHT: {
 
-					NavigationScheme nav_scheme = _get_navigation_schema("editors/3d/navigation_scheme");
+					NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
 
 					if (b.pressed && _edit.gizmo.is_valid()) {
 						//restore
@@ -1014,7 +997,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 					if (b.pressed) {
 
-						NavigationScheme nav_scheme = _get_navigation_schema("editors/3d/navigation_scheme");
+						NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
 						if ( (nav_scheme==NAVIGATION_MAYA || nav_scheme==NAVIGATION_MODO) && b.mod.alt) {
 							break;
 						}
@@ -1251,7 +1234,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			}
 
-			NavigationScheme nav_scheme = _get_navigation_schema("editors/3d/navigation_scheme");
+			NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
 			NavigationMode nav_mode = NAVIGATION_NONE;
 
 			if (_edit.gizmo.is_valid()) {
@@ -1558,7 +1541,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						nav_mode = NAVIGATION_PAN;
 				}
 
-			} else if (EditorSettings::get_singleton()->get("editors/3d/emulate_3_button_mouse")) {
+            } else if (EditorSettings::get_singleton()->get("editors/3d/emulate_3_button_mouse")) {
 				// Handle trackpad (no external mouse) use case
 				int mod = 0;
 				if (m.mod.shift)
@@ -1606,7 +1589,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
 						zoom_speed *= zoom_speed_modifier;
 
-					NavigationZoomStyle zoom_style = _get_navigation_zoom_style("3d_editor/zoom_style");
+					NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("3d_editor/zoom_style").operator int();
 					if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
 						if ( m.relative_x > 0)
 							cursor.distance*=1-m.relative_x*zoom_speed;

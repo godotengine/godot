@@ -711,7 +711,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		input_map->load_from_globals(); //keys for game
 
 	if (video_driver=="") // specified in engine.cfg
-		video_driver=_GLOBAL_DEF("display/driver/name",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
+		video_driver=GLOBAL_DEF("display/driver/name",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
 
 	if (!force_res && use_custom_res && globals->has("display/window/width"))
 		video_mode.width=globals->get("display/window/width");
