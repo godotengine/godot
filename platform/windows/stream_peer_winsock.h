@@ -73,9 +73,9 @@ public:
 	virtual IP_Address get_connected_host() const;
 	virtual uint16_t get_connected_port() const;
 
-	virtual bool is_connected() const;
+	virtual bool is_connected_to_host() const;
 	virtual Status get_status() const;
-	virtual void disconnect();
+	virtual void disconnect_from_host();
 
 	static void make_default();
 	static void cleanup();

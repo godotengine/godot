@@ -218,7 +218,7 @@ Error StreamPeerTCPPosix::write(const uint8_t* p_data,int p_bytes, int &r_sent, 
 
 				perror("shit?");
 				disconnect_from_host();
-				ERR_PRINT("Server disconnect_from_hosted!\n");
+				ERR_PRINT("Server disconnected!\n");
 				return FAILED;
 			};
 
@@ -275,7 +275,7 @@ Error StreamPeerTCPPosix::read(uint8_t* p_buffer, int p_bytes,int &r_received, b
 
 				perror("shit?");
 				disconnect_from_host();
-				ERR_PRINT("Server disconnect_from_hosted!\n");
+				ERR_PRINT("Server disconnected!\n");
 				return FAILED;
 			};
 

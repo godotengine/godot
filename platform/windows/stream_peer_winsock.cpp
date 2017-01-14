@@ -150,7 +150,7 @@ Error StreamPeerWinsock::write(const uint8_t* p_data,int p_bytes, int &r_sent, b
 
 				perror("shit?");
 				disconnect_from_host();
-				ERR_PRINT("Server disconnect_from_hosted!\n");
+				ERR_PRINT("Server disconnected!\n");
 				return FAILED;
 			};
 
@@ -207,7 +207,7 @@ Error StreamPeerWinsock::read(uint8_t* p_buffer, int p_bytes,int &r_received, bo
 
 				perror("shit?");
 				disconnect_from_host();
-				ERR_PRINT("Server disconnect_from_hosted!\n");
+				ERR_PRINT("Server disconnected!\n");
 				return FAILED;
 			};
 
