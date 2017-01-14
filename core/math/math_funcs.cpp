@@ -63,35 +63,8 @@ uint32_t Math::rand() {
 	return pcg32_random_r(&default_pcg);
 }
 
-double Math::randf() {
-
-	return (double)rand() / (double)Math::RANDOM_MAX;
-}
-
-
-double Math::round(double p_val) {
-
-	if (p_val>=0) {
-		return ::floor(p_val+0.5);
-	} else {
-		p_val=-p_val;
-		return -::floor(p_val+0.5);
-	}
-}
-
-double Math::dectime(double p_value,double p_amount, double p_step) {
-
-	float sgn = p_value < 0 ? -1.0 : 1.0;
-	float val = absf(p_value);
-	val-=p_amount*p_step;
-	if (val<0.0)
-		val=0.0;
-	return val*sgn;
-}
-
 
 int Math::step_decimals(double p_step) {
-
 	static const int maxn=9;
 	static const double sd[maxn]={
 		0.9999, // somehow compensate for floating point error
@@ -105,7 +78,7 @@ int Math::step_decimals(double p_step) {
 		0.000000009999
 	};
 
-	double as=absf(p_step);
+	double as=Math::abs(p_step);
 	for(int i=0;i<maxn;i++) {
 		if (as>=sd[i]) {
 			return i;
@@ -115,8 +88,16 @@ int Math::step_decimals(double p_step) {
 	return maxn;
 }
 
-double Math::ease(double p_x, double p_c) {
+double Math::dectime(double p_value,double p_amount, double p_step) {
+	double sgn = p_value < 0 ? -1.0 : 1.0;
+	double val = Math::abs(p_value);
+	val-=p_amount*p_step;
+	if (val<0.0)
+		val=0.0;
+	return val*sgn;
+}
 
+double Math::ease(double p_x, double p_c) {
 	if (p_x<0)
 		p_x=0;
 	else if (p_x>1.0)
@@ -137,18 +118,14 @@ double Math::ease(double p_x, double p_c) {
 		}
 	} else
 		return 0; // no ease (raw)
-
 }
 
 double Math::stepify(double p_value,double p_step) {
-
 	if (p_step!=0) {
-
-		p_value=floor( p_value / p_step + 0.5 ) * p_step;
+		p_value=Math::floor( p_value / p_step + 0.5 ) * p_step;
 	}
 	return p_value;
 }
-
 
 
 uint32_t Math::larger_prime(uint32_t p_val) {
@@ -199,22 +176,15 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 }
 
 double Math::random(double from, double to) {
-
 	unsigned int r = Math::rand();
 	double ret = (double)r/(double)RANDOM_MAX;
 	return (ret)*(to-from) + from;
 }
 
-double Math::pow(double x, double y) {
-
-	return ::pow(x,y);
+float Math::random(float from, float to) {
+	unsigned int r = Math::rand();
+	float ret = (float)r/(float)RANDOM_MAX;
+	return (ret)*(to-from) + from;
 }
 
-double Math::log(double x) {
 
-	return ::log(x);
-}
-double Math::exp(double x) {
-
-	return ::exp(x);
-}

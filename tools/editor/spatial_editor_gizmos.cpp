@@ -839,8 +839,8 @@ void LightSpatialGizmo::redraw() {
 
 		for(int i=0;i<=360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
 
@@ -881,8 +881,8 @@ void LightSpatialGizmo::redraw() {
 
 		for(int i=0;i<360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*w;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*w;
 
@@ -1519,8 +1519,8 @@ void VehicleWheelSpatialGizmo::redraw() {
 	const int skip=10;
 	for(int i=0;i<=360;i+=skip) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+skip);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+skip);
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
 		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
 
@@ -1826,8 +1826,8 @@ void CollisionShapeSpatialGizmo::redraw(){
 
 		for(int i=0;i<=360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
 
@@ -1907,8 +1907,8 @@ void CollisionShapeSpatialGizmo::redraw(){
 		Vector3 d(0,0,height*0.5);
 		for(int i=0;i<360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*radius;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*radius;
 
@@ -2844,8 +2844,8 @@ void ConeTwistJointSpatialGizmo::redraw() {
 	//swing
 	for(int i=0;i<360;i+=10) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+10);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+10);
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*w;
 		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*w;
 
@@ -2876,8 +2876,8 @@ void ConeTwistJointSpatialGizmo::redraw() {
 
 	for(int i=0;i<int(ts);i+=5) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+5);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+5);
 		float c = i/720.0;
 		float cn = (i+5)/720.0;
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*w*c;

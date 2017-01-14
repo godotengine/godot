@@ -42,8 +42,8 @@ Vector<Vector3> CapsuleShape::_gen_debug_mesh_lines() {
 	Vector3 d(0,0,height*0.5);
 	for(int i=0;i<360;i++) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+1);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+1);
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*radius;
 		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*radius;
 

@@ -45,14 +45,14 @@ public:
 	static bool triangulate(const Vector< Vector2 > &contour, Vector<int> &result);
 
 	// compute area of a contour/polygon
-	static float get_area(const Vector< Vector2 > &contour);
+	static real_t get_area(const Vector< Vector2 > &contour);
 
 	// decide if point Px/Py is inside triangle defined by
 	// (Ax,Ay) (Bx,By) (Cx,Cy)
-	static bool is_inside_triangle(float Ax, float Ay,
-		      float Bx, float By,
-		      float Cx, float Cy,
-		      float Px, float Py);
+	static bool is_inside_triangle(real_t Ax, real_t Ay,
+		      real_t Bx, real_t By,
+		      real_t Cx, real_t Cy,
+		      real_t Px, real_t Py);
 
 
 private:

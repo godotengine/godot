@@ -539,14 +539,14 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 	Vector2 max;
 
 	if (dir.x<0)
-		max.x= (Math::floor(pos.x)*cell_size - p_from.x) / dir.x;
+		max.x= (Math::floor((double)pos.x)*cell_size - p_from.x) / dir.x;
 	else
-		max.x= (Math::floor(pos.x + 1)*cell_size - p_from.x) / dir.x;
+		max.x= (Math::floor((double)pos.x + 1)*cell_size - p_from.x) / dir.x;
 
 	if (dir.y<0)
-		max.y= (Math::floor(pos.y)*cell_size - p_from.y) / dir.y;
+		max.y= (Math::floor((double)pos.y)*cell_size - p_from.y) / dir.y;
 	else
-		max.y= (Math::floor(pos.y + 1)*cell_size - p_from.y) / dir.y;
+		max.y= (Math::floor((double)pos.y + 1)*cell_size - p_from.y) / dir.y;
 
 	int cullcount=0;
 	_cull<false,true>(pos,Rect2(),p_from,p_to,p_results,p_max_results,p_result_indices,cullcount);

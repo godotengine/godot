@@ -1473,7 +1473,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 								sum+=w2[ofs_l];
 							}
 
-							wa[ofs]=Math::pow(float(sum/(r*2+1))/255.0,tr)*255.0;
+							wa[ofs]=Math::pow(float(sum/(r*2+1))/255.0f,tr)*255.0f;
 
 						}
 					}

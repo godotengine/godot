@@ -826,7 +826,7 @@ void ScriptEditorDebugger::_performance_draw() {
 	Ref<StyleBox> graph_sb = get_stylebox("normal","TextEdit");
 	Ref<Font> graph_font = get_font("font","TextEdit");
 
-	int cols = Math::ceil(Math::sqrt(which.size()));
+	int cols = Math::ceil(Math::sqrt((float)which.size()));
 	int rows = (which.size()+1)/cols;
 	if (which.size()==1)
 		rows=1;

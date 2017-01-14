@@ -159,85 +159,85 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		case MATH_SIN: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::sin(*p_args[0]);
+			r_ret=Math::sin((double)*p_args[0]);
 		} break;
 		case MATH_COS: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::cos(*p_args[0]);
+			r_ret=Math::cos((double)*p_args[0]);
 		} break;
 		case MATH_TAN: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::tan(*p_args[0]);
+			r_ret=Math::tan((double)*p_args[0]);
 		} break;
 		case MATH_SINH: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::sinh(*p_args[0]);
+			r_ret=Math::sinh((double)*p_args[0]);
 		} break;
 		case MATH_COSH: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::cosh(*p_args[0]);
+			r_ret=Math::cosh((double)*p_args[0]);
 		} break;
 		case MATH_TANH: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::tanh(*p_args[0]);
+			r_ret=Math::tanh((double)*p_args[0]);
 		} break;
 		case MATH_ASIN: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::asin(*p_args[0]);
+			r_ret=Math::asin((double)*p_args[0]);
 		} break;
 		case MATH_ACOS: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::acos(*p_args[0]);
+			r_ret=Math::acos((double)*p_args[0]);
 		} break;
 		case MATH_ATAN: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::atan(*p_args[0]);
+			r_ret=Math::atan((double)*p_args[0]);
 		} break;
 		case MATH_ATAN2: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::atan2(*p_args[0],*p_args[1]);
+			r_ret=Math::atan2((double)*p_args[0],(double)*p_args[1]);
 		} break;
 		case MATH_SQRT: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::sqrt(*p_args[0]);
+			r_ret=Math::sqrt((double)*p_args[0]);
 		} break;
 		case MATH_FMOD: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::fmod(*p_args[0],*p_args[1]);
+			r_ret=Math::fmod((double)*p_args[0],(double)*p_args[1]);
 		} break;
 		case MATH_FPOSMOD: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::fposmod(*p_args[0],*p_args[1]);
+			r_ret=Math::fposmod((double)*p_args[0],(double)*p_args[1]);
 		} break;
 		case MATH_FLOOR: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::floor(*p_args[0]);
+			r_ret=Math::floor((double)*p_args[0]);
 		  } break;
 		case MATH_CEIL: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::ceil(*p_args[0]);
+			r_ret=Math::ceil((double)*p_args[0]);
 		} break;
 		case MATH_ROUND: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::round(*p_args[0]);
+			r_ret=Math::round((double)*p_args[0]);
 		} break;
 		case MATH_ABS: {
 			VALIDATE_ARG_COUNT(1);
@@ -247,7 +247,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				r_ret=ABS(i);
 			} else if (p_args[0]->get_type()==Variant::REAL) {
 
-				real_t r = *p_args[0];
+				double r = *p_args[0];
 				r_ret=Math::abs(r);
 			} else {
 
@@ -279,58 +279,58 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::pow(*p_args[0],*p_args[1]);
+			r_ret=Math::pow((double)*p_args[0],(double)*p_args[1]);
 		} break;
 		case MATH_LOG: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::log(*p_args[0]);
+			r_ret=Math::log((double)*p_args[0]);
 		} break;
 		case MATH_EXP: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::exp(*p_args[0]);
+			r_ret=Math::exp((double)*p_args[0]);
 		} break;
 		case MATH_ISNAN: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::is_nan(*p_args[0]);
+			r_ret=Math::is_nan((double)*p_args[0]);
 		} break;
 		case MATH_ISINF: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::is_inf(*p_args[0]);
+			r_ret=Math::is_inf((double)*p_args[0]);
 		} break;
 		case MATH_EASE: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::ease(*p_args[0],*p_args[1]);
+			r_ret=Math::ease((double)*p_args[0],(double)*p_args[1]);
 		} break;
 		case MATH_DECIMALS: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::step_decimals(*p_args[0]);
+			r_ret=Math::step_decimals((double)*p_args[0]);
 		} break;
 		case MATH_STEPIFY: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::stepify(*p_args[0],*p_args[1]);
+			r_ret=Math::stepify((double)*p_args[0],(double)*p_args[1]);
 		} break;
 		case MATH_LERP: {
 			VALIDATE_ARG_COUNT(3);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
-			r_ret=Math::lerp(*p_args[0],*p_args[1],*p_args[2]);
+			r_ret=Math::lerp((double)*p_args[0],(double)*p_args[1],(double)*p_args[2]);
 		} break;
 		case MATH_DECTIME: {
 			VALIDATE_ARG_COUNT(3);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
-			r_ret=Math::dectime(*p_args[0],*p_args[1],*p_args[2]);
+			r_ret=Math::dectime((double)*p_args[0],(double)*p_args[1],(double)*p_args[2]);
 		} break;
 		case MATH_RANDOMIZE: {
 			Math::randomize();
@@ -346,7 +346,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::random(*p_args[0],*p_args[1]);
+			r_ret=Math::random((double)*p_args[0],(double)*p_args[1]);
 		} break;
 		case MATH_SEED: {
 			VALIDATE_ARG_COUNT(1);
@@ -369,22 +369,22 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		case MATH_DEG2RAD: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::deg2rad(*p_args[0]);
+			r_ret=Math::deg2rad((double)*p_args[0]);
 		} break;
 		case MATH_RAD2DEG: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::rad2deg(*p_args[0]);
+			r_ret=Math::rad2deg((double)*p_args[0]);
 		} break;
 		case MATH_LINEAR2DB: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::linear2db(*p_args[0]);
+			r_ret=Math::linear2db((double)*p_args[0]);
 		} break;
 		case MATH_DB2LINEAR: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			r_ret=Math::db2linear(*p_args[0]);
+			r_ret=Math::db2linear((double)*p_args[0]);
 		} break;
 		case LOGIC_MAX: {
 			VALIDATE_ARG_COUNT(2);

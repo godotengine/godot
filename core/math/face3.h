@@ -76,7 +76,7 @@ public:
         ClockDirection get_clock_dir() const; ///< todo, test if this is returning the proper clockwisity
 
         void get_support(const Vector3& p_normal,const Transform& p_transform,Vector3 *p_vertices,int* p_count,int p_max) const;
-        void project_range(const Vector3& p_normal,const Transform& p_transform,float& r_min, float& r_max) const;
+        void project_range(const Vector3& p_normal,const Transform& p_transform,real_t& r_min, real_t& r_max) const;
 
         Rect3 get_aabb() const {
 
@@ -109,9 +109,9 @@ bool Face3::intersects_aabb2(const Rect3& p_aabb) const {
 			(perp.z>0) ? -half_extents.z : half_extents.z
 		);
 
-	float d = perp.dot(vertex[0]);
-	float dist_a = perp.dot(ofs+sup)-d;
-	float dist_b = perp.dot(ofs-sup)-d;
+	real_t d = perp.dot(vertex[0]);
+	real_t dist_a = perp.dot(ofs+sup)-d;
+	real_t dist_b = perp.dot(ofs-sup)-d;
 
 	if (dist_a*dist_b > 0)
 		return false; //does not intersect the plane
@@ -119,9 +119,9 @@ bool Face3::intersects_aabb2(const Rect3& p_aabb) const {
 
 #define TEST_AXIS(m_ax)\
 	{\
-		float aabb_min=p_aabb.pos.m_ax;\
-		float aabb_max=p_aabb.pos.m_ax+p_aabb.size.m_ax;\
-		float tri_min,tri_max;\
+		real_t aabb_min=p_aabb.pos.m_ax;\
+		real_t aabb_max=p_aabb.pos.m_ax+p_aabb.size.m_ax;\
+		real_t tri_min,tri_max;\
 		for (int i=0;i<3;i++) {\
 			if (i==0 || vertex[i].m_ax > tri_max)\
 				tri_max=vertex[i].m_ax;\
@@ -236,16 +236,16 @@ bool Face3::intersects_aabb2(const Rect3& p_aabb) const {
 					(axis.z>0) ? -half_extents.z : half_extents.z
 				);
 
-			float maxB = axis.dot(ofs+sup2);
-			float minB = axis.dot(ofs-sup2);
+			real_t maxB = axis.dot(ofs+sup2);
+			real_t minB = axis.dot(ofs-sup2);
 			if (minB>maxB) {
 				SWAP(maxB,minB);
 			}
 
-			float minT=1e20,maxT=-1e20;
+			real_t minT=1e20,maxT=-1e20;
 			for (int k=0;k<3;k++) {
 
-				float d=axis.dot(vertex[k]);
+				real_t d=axis.dot(vertex[k]);
 
 				if (d > maxT)
 					maxT=d;

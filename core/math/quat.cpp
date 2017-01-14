@@ -124,8 +124,8 @@ Quat Quat::slerp(const Quat& q, const real_t& t) const {
 		// Standard case (slerp)
 		real_t sine = Math::sqrt(1 - cosine*cosine);
 		real_t angle = Math::atan2(sine, cosine);
-		real_t inv_sine = 1.0f / sine;
-		real_t coeff_0 = Math::sin((1.0f - t) * angle) * inv_sine;
+		real_t inv_sine = 1.0 / sine;
+		real_t coeff_0 = Math::sin((1.0 - t) * angle) * inv_sine;
 		real_t coeff_1 = Math::sin(t * angle) * inv_sine;
 		Quat ret=  src * coeff_0 + dst * coeff_1;
 
@@ -137,7 +137,7 @@ Quat Quat::slerp(const Quat& q, const real_t& t) const {
 		// 2. "rkP" and "q" are almost invedste of each other (cosine ~= -1), there
 		//    are an infinite number of possibilities interpolation. but we haven't
 		//    have method to fix this case, so just use linear interpolation here.
-		Quat ret =  src * (1.0f - t) + dst *t;
+		Quat ret =  src * (1.0 - t) + dst *t;
 		// taking the complement requires renormalisation
 		ret.normalize();
 		return ret;
@@ -194,14 +194,14 @@ Quat Quat::slerpni(const Quat& q, const real_t& t) const {
 
 	const Quat &from = *this;
 
-	float dot = from.dot(q);
+	real_t dot = from.dot(q);
 
-	if (Math::absf(dot) > 0.9999f) return from;
+	if (Math::absf(dot) > 0.9999) return from;
 
-	float	theta		= Math::acos(dot),
-		sinT		= 1.0f / Math::sin(theta),
+	real_t	theta		= Math::acos(dot),
+		sinT		= 1.0 / Math::sin(theta),
 		newFactor	= Math::sin(t * theta) * sinT,
-		invFactor	= Math::sin((1.0f - t) * theta) * sinT;
+		invFactor	= Math::sin((1.0 - t) * theta) * sinT;
 
 	return Quat(invFactor * from.x + newFactor * q.x,
 				invFactor * from.y + newFactor * q.y,
@@ -259,7 +259,7 @@ Quat Quat::slerpni(const Quat& q, const real_t& t) const {
 Quat Quat::cubic_slerp(const Quat& q, const Quat& prep, const Quat& postq,const real_t& t) const {
 
 	//the only way to do slerp :|
-	float t2 = (1.0-t)*t*2;
+	real_t t2 = (1.0-t)*t*2;
 	Quat sp = this->slerp(q,t);
 	Quat sq = prep.slerpni(postq,t);
 	return sp.slerpni(sq,t2);

@@ -179,12 +179,12 @@ private:
 			bool sg = val < 0;
 			val = Math::absf(val);
 
-			val = Math::log(val)/Math::log(2);
+			val = Math::log(val)/Math::log((float)2.0);
 			//logspace
 			val+=rel*0.05;
 			//
 
-			val = Math::pow(2,val);
+			val = Math::pow((float)2.0,val);
 			if (sg)
 				val=-val;
 
@@ -1055,9 +1055,9 @@ float AnimationKeyEditor::_get_zoom_scale() const {
 	float zv = zoom->get_value();
 	if (zv<1) {
 		zv = 1.0-zv;
-		return Math::pow(1.0+zv,8.0)*100;
+		return Math::pow(1.0f+zv,8.0f)*100;
 	} else {
-		return 1.0/Math::pow(zv,8.0)*100;
+		return 1.0/Math::pow(zv,8.0f)*100;
 	}
 }
 
@@ -1487,8 +1487,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		//draw the keys;
 		int tt = animation->track_get_type(idx);
-		float key_vofs = Math::floor((h - type_icon[tt]->get_height())/2);
-		float key_hofs = -Math::floor(type_icon[tt]->get_height()/2);
+		float key_vofs = Math::floor((float)(h - type_icon[tt]->get_height())/2);
+		float key_hofs = -Math::floor((float)type_icon[tt]->get_height()/2);
 
 		int kc=animation->track_get_key_count(idx);
 		bool first=true;
@@ -1592,8 +1592,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 					continue;
 				int y = h+i*h+sep;
 
-				float key_vofs = Math::floor((h - type_selected->get_height())/2);
-				float key_hofs = -Math::floor(type_selected->get_height()/2);
+				float key_vofs = Math::floor((float)(h - type_selected->get_height())/2);
+				float key_hofs = -Math::floor((float)type_selected->get_height()/2);
 
 				float time = animation->track_get_key_time(idx,E->key().key);
 				float diff = time-from_t;

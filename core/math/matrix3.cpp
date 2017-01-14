@@ -504,9 +504,9 @@ void Basis::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
 	ERR_FAIL_COND(is_rotation() == false);
 
 
-	double angle,x,y,z; // variables for result
-		double epsilon = 0.01; // margin to allow for rounding errors
-		double epsilon2 = 0.1; // margin to distinguish between 0 and 180 degrees
+	real_t angle,x,y,z; // variables for result
+		real_t epsilon = 0.01; // margin to allow for rounding errors
+		real_t epsilon2 = 0.1; // margin to distinguish between 0 and 180 degrees
 
 	if (	(Math::abs(elements[1][0]-elements[0][1])< epsilon)
 		&& (Math::abs(elements[2][0]-elements[0][2])< epsilon)
@@ -525,12 +525,12 @@ void Basis::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
 		}
 		// otherwise this singularity is angle = 180
 		angle = Math_PI;
-		double xx = (elements[0][0]+1)/2;
-		double yy = (elements[1][1]+1)/2;
-		double zz = (elements[2][2]+1)/2;
-		double xy = (elements[1][0]+elements[0][1])/4;
-		double xz = (elements[2][0]+elements[0][2])/4;
-		double yz = (elements[2][1]+elements[1][2])/4;
+		real_t xx = (elements[0][0]+1)/2;
+		real_t yy = (elements[1][1]+1)/2;
+		real_t zz = (elements[2][2]+1)/2;
+		real_t xy = (elements[1][0]+elements[0][1])/4;
+		real_t xz = (elements[2][0]+elements[0][2])/4;
+		real_t yz = (elements[2][1]+elements[1][2])/4;
 		if ((xx > yy) && (xx > zz)) { // elements[0][0] is the largest diagonal term
 			if (xx< epsilon) {
 				x = 0;
@@ -567,7 +567,7 @@ void Basis::get_axis_and_angle(Vector3 &r_axis,real_t& r_angle) const {
 		return;
 	}
 	// as we have reached here there are no singularities so we can handle normally
-	double s = Math::sqrt((elements[1][2] - elements[2][1])*(elements[1][2] - elements[2][1])
+	real_t s = Math::sqrt((elements[1][2] - elements[2][1])*(elements[1][2] - elements[2][1])
 		+(elements[2][0] - elements[0][2])*(elements[2][0] - elements[0][2])
 		+(elements[0][1] - elements[1][0])*(elements[0][1] - elements[1][0])); // s=|axis||sin(angle)|, used to normalise
 
