@@ -272,8 +272,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,left);
 	VCALL_LOCALMEM1R(String,right);
 	VCALL_LOCALMEM2R(String,strip_edges);
-	VCALL_LOCALMEM0R(String,extension);
-	VCALL_LOCALMEM0R(String,basename);
+	VCALL_LOCALMEM0R(String,get_extension);
+	VCALL_LOCALMEM0R(String,get_basename);
 	VCALL_LOCALMEM1R(String,plus_file);
 	VCALL_LOCALMEM1R(String,ord_at);
 	VCALL_LOCALMEM2(String,erase);
@@ -1405,8 +1405,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,STRING,String,left,INT,"pos",varray());
 	ADDFUNC1(STRING,STRING,String,right,INT,"pos",varray());
 	ADDFUNC2(STRING,STRING,String,strip_edges,BOOL,"left",BOOL,"right",varray(true,true));
-	ADDFUNC0(STRING,STRING,String,extension,varray());
-	ADDFUNC0(STRING,STRING,String,basename,varray());
+	ADDFUNC0(STRING,STRING,String,get_extension,varray());
+	ADDFUNC0(STRING,STRING,String,get_basename,varray());
 	ADDFUNC1(STRING,STRING,String,plus_file,STRING,"file",varray());
 	ADDFUNC1(STRING,INT,String,ord_at,INT,"at",varray());
 	ADDFUNC2(STRING,NIL,String,erase,INT,"pos",INT,"chars", varray());

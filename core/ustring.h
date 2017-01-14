@@ -176,8 +176,8 @@ public:
 	String right(int p_pos) const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
-	String extension() const;
-	String basename() const;
+	String get_extension() const;
+	String get_basename() const;
 	String plus_file(const String& p_file) const;
 	CharType ord_at(int p_idx) const;
 

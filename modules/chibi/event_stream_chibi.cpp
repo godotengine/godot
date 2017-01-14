@@ -785,7 +785,7 @@ RES ResourceFormatLoaderChibi::load(const String &p_path, const String& p_origin
 
 	if (r_error)
 		*r_error=ERR_FILE_CANT_OPEN;
-	String el = p_path.extension().to_lower();
+	String el = p_path.get_extension().to_lower();
 
 	CPFileAccessWrapperImpl f;
 
@@ -849,7 +849,7 @@ bool ResourceFormatLoaderChibi::handles_type(const String& p_type) const {
 }
 
 String ResourceFormatLoaderChibi::get_resource_type(const String &p_path) const {
-	String el = p_path.extension().to_lower();
+	String el = p_path.get_extension().to_lower();
 	if (el=="it" || el=="s3m" || el=="xm" || el=="mod")
 		return "EventStreamChibi";
 	return "";

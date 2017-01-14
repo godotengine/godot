@@ -42,7 +42,7 @@ Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<
 	}
 
 
-	String extension = p_path.extension();
+	String extension = p_path.get_extension();
 
 	//step 1 check if scene
 

@@ -1147,7 +1147,7 @@ bool ResourceFormatLoaderTheme::handles_type(const String& p_type) const {
 
 String ResourceFormatLoaderTheme::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="theme")
+	if (p_path.get_extension().to_lower()=="theme")
 		return "Theme";
 	return "";
 }

@@ -671,7 +671,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 												if (!script.ends_with(".gd")) {
 													//not a script, try find the script anyway,
 													//may have some success
-													script=script.basename()+".gd";
+													script=script.get_basename()+".gd";
 												}
 
 												if (FileAccess::exists(script)) {
@@ -1168,7 +1168,7 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 				if (!script.ends_with(".gd")) {
 					//not a script, try find the script anyway,
 					//may have some success
-					script=script.basename()+".gd";
+					script=script.get_basename()+".gd";
 				}
 
 				if (FileAccess::exists(script)) {
@@ -2832,7 +2832,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 							if (!script.ends_with(".gd")) {
 								//not a script, try find the script anyway,
 								//may have some success
-								script=script.basename()+".gd";
+								script=script.get_basename()+".gd";
 							}
 
 							if (FileAccess::exists(script)) {

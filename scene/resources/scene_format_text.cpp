@@ -984,7 +984,7 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const{
 
 
 
-	String ext=p_path.extension().to_lower();
+	String ext=p_path.get_extension().to_lower();
 	if (ext=="tscn")
 		return "PackedScene";
 	else if (ext!="tres")

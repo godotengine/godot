@@ -40,7 +40,7 @@ ResourceSavedCallback ResourceSaver::save_callback=0;
 
 Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_flags) {
 
-	String extension=p_path.extension();
+	String extension=p_path.get_extension();
 	Error err=ERR_FILE_UNRECOGNIZED;
 
 	for (int i=0;i<saver_count;i++) {
@@ -54,7 +54,7 @@ Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_
 
 		for (List<String>::Element *E=extensions.front();E;E=E->next()) {
 
-			if (E->get().nocasecmp_to(extension.extension())==0)
+			if (E->get().nocasecmp_to(extension.get_extension())==0)
 				recognized=true;
 		}
 

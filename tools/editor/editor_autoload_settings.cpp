@@ -307,7 +307,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 
 void EditorAutoloadSettings::_autoload_file_callback(const String& p_path) {
 
-	autoload_add_name->set_text(p_path.get_file().basename());
+	autoload_add_name->set_text(p_path.get_file().get_basename());
 }
 
 void EditorAutoloadSettings::update_autoload() {

@@ -468,7 +468,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		Ref<ImageTexture> tex = font->get_texture(0);
 		if (tex.is_null())
 			return;
-		FileAccessRef f=FileAccess::open(p_font.basename()+".inc",FileAccess::WRITE);
+		FileAccessRef f=FileAccess::open(p_font.get_basename()+".inc",FileAccess::WRITE);
 		Vector<CharType> ck = font->get_char_keys();
 
 		f->store_line("static const int _builtin_font_height="+itos(font->get_height())+";");
@@ -499,7 +499,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		f->store_line("static const int _builtin_font_img_width="+itos(img.get_width())+";");
 		f->store_line("static const int _builtin_font_img_height="+itos(img.get_height())+";");		
 
-		String fname = p_font.basename()+".sv.png";
+		String fname = p_font.get_basename()+".sv.png";
 		ResourceSaver::save(fname,tex);
 		Vector<uint8_t> data=FileAccess::get_file_as_array(fname);
 
@@ -533,14 +533,14 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		}
 
 		if (dest->get_line_edit()->get_text().get_file()==".fnt") {
-			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text().get_base_dir() + "/" + source->get_line_edit()->get_text().get_file().basename() + ".fnt" );
+			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text().get_base_dir() + "/" + source->get_line_edit()->get_text().get_file().get_basename() + ".fnt" );
 		}
 
-		if (dest->get_line_edit()->get_text().extension() == dest->get_line_edit()->get_text()) {
+		if (dest->get_line_edit()->get_text().get_extension() == dest->get_line_edit()->get_text()) {
 			dest->get_line_edit()->set_text(dest->get_line_edit()->get_text() + ".fnt");
 		}
 
-		if (dest->get_line_edit()->get_text().extension().to_lower() != "fnt") {
+		if (dest->get_line_edit()->get_text().get_extension().to_lower() != "fnt") {
 			error_dialog->set_text(TTR("Invalid file extension.\nPlease use .fnt."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
@@ -913,7 +913,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	String src_path = EditorImportPlugin::expand_source_path(from->get_source_path(0));
 
-	if (src_path.extension().to_lower()=="fnt") {
+	if (src_path.get_extension().to_lower()=="fnt") {
 
 		if (ResourceLoader::load(src_path).is_valid()) {
 			EditorNode::get_singleton()->show_warning(TTR("Path:")+" "+src_path+"\n"+TTR("This file is already a Godot font file, please supply a BMFont type file instead."));
@@ -1682,12 +1682,12 @@ Error EditorFontImportPlugin::import(const String& p_path, const Ref<ResourceImp
 void EditorFontImportPlugin::import_from_drop(const Vector<String>& p_drop, const String &p_dest_path) {
 
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 		String file = p_drop[i].get_file();
 		if (ext=="ttf" || ext=="otf" || ext=="fnt") {
 
 			import_dialog();
-			dialog->set_source_and_dest(p_drop[i],p_dest_path.plus_file(file.basename()+".fnt"));
+			dialog->set_source_and_dest(p_drop[i],p_dest_path.plus_file(file.get_basename()+".fnt"));
 			break;
 		}
 	}

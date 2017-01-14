@@ -670,7 +670,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 
 	for (List<String>::Element*E=files.front();E;E=E->next(),idx++) {
 
-		String ext = E->get().extension().to_lower();
+		String ext = E->get().get_extension().to_lower();
 		if (!valid_extensions.has(ext))
 			continue; //invalid
 
@@ -789,7 +789,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 
 
 			} else {
-				String ext = f.extension().to_lower();
+				String ext = f.get_extension().to_lower();
 				if (!valid_extensions.has(ext))
 					continue; //invalid
 

@@ -3734,7 +3734,7 @@ bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String& p_targe
 }
 
 void CanvasItemEditorViewport::_create_nodes(Node* parent, Node* child, String& path, const Point2& p_point) {
-	child->set_name(path.get_file().basename());
+	child->set_name(path.get_file().get_basename());
 	Ref<ImageTexture> texture=Ref<ImageTexture> ( ResourceCache::get(path)->cast_to<ImageTexture>() );
 	Size2 texture_size = texture->get_size();
 
@@ -3875,7 +3875,7 @@ void CanvasItemEditorViewport::_perform_drop_data(){
 	if (error_files.size()>0) {
 		String files_str;
 		for (int i=0;i<error_files.size();i++) {
-			files_str += error_files[i].get_file().basename() + ",";
+			files_str += error_files[i].get_file().get_basename() + ",";
 		}
 		files_str=files_str.substr(0,files_str.length()-1);
 		accept->get_ok()->set_text(TTR("Ugh"));

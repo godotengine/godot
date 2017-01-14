@@ -267,7 +267,7 @@ bool ResourceFormatLoaderWAV::handles_type(const String& p_type) const {
 
 String ResourceFormatLoaderWAV::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="wav")
+	if (p_path.get_extension().to_lower()=="wav")
 		return "Sample";
 	return "";
 }

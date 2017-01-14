@@ -921,7 +921,7 @@ bool ProjectExportDialog::_update_group_treef(TreeItem *p_parent,EditorFileSyste
 	for(int i=0;i<p_dir->get_file_count();i++) {
 
 		String fname = p_dir->get_file(i);
-		if (p_extensions.has(fname.to_lower().extension())) {
+		if (p_extensions.has(fname.to_lower().get_extension())) {
 			String path = p_dir->get_file_path(i);
 
 			if (filter!=String() && path.find(filter)==-1)

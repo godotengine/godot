@@ -185,7 +185,7 @@ bool ResourceFormatPVR::handles_type(const String& p_type) const {
 String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 
 
-	if (p_path.extension().to_lower()=="pvr")
+	if (p_path.get_extension().to_lower()=="pvr")
 		return "Texture";
 	return "";
 }

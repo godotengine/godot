@@ -79,7 +79,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_paths)
 		}
 
 
-		String basename = path.get_file().basename();
+		String basename = path.get_file().get_basename();
 		String name=basename;
 		int counter=1;
 		while(preloader->has_resource(name)) {
@@ -347,7 +347,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& 
 			if (r->get_name()!="") {
 				basename=r->get_name();
 			} else if (r->get_path().is_resource_file()) {
-				basename = r->get_path().basename();
+				basename = r->get_path().get_basename();
 			} else {
 				basename="Resource";
 			}

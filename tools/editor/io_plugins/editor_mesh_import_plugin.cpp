@@ -259,7 +259,7 @@ public:
 
 			imd->add_source(EditorImportPlugin::validate_source_path(meshes[i]));
 
-			String file_path = dst.plus_file(meshes[i].get_file().basename()+".msh");
+			String file_path = dst.plus_file(meshes[i].get_file().get_basename()+".msh");
 
 			plugin->import(file_path,imd);
 		}
@@ -568,7 +568,7 @@ void EditorMeshImportPlugin::import_from_drop(const Vector<String>& p_drop, cons
 
 	Vector<String> files;
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 		String file = p_drop[i].get_file();
 		if (ext=="obj") {
 

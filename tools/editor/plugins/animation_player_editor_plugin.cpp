@@ -421,7 +421,7 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) 
 	if (p_resource->get_path() != "") {
 		file->set_current_path(p_resource->get_path());
 		if (extensions.size()) {
-			String ext = p_resource->get_path().extension().to_lower();
+			String ext = p_resource->get_path().get_extension().to_lower();
 			if (extensions.find(ext) == NULL) {
 				file->set_current_path(p_resource->get_path().replacen("." + ext, "." + extensions.front()->get()));
 			}

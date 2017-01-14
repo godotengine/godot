@@ -846,8 +846,8 @@ void EditorSettings::list_text_editor_themes() {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while(file != String()) {
-			if (file.extension() == "tet" && file.basename().to_lower() != "default") {
-				themes += "," + file.basename();
+			if (file.get_extension() == "tet" && file.get_basename().to_lower() != "default") {
+				themes += "," + file.get_basename();
 			}
 			file = d->get_next();
 		}

@@ -419,7 +419,7 @@ void ResourceFormatLoaderAudioStreamOGGVorbis::get_recognized_extensions(List<St
 }
 String ResourceFormatLoaderAudioStreamOGGVorbis::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="ogg")
+	if (p_path.get_extension().to_lower()=="ogg")
 		return "AudioStreamOGGVorbis";
 	return "";
 }

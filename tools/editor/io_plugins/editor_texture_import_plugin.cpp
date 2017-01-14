@@ -448,7 +448,7 @@ void EditorTextureImportDialog::_import() {
 		for(int i=0;i<files.size();i++) {
 
 			String dst_file = dst_path.plus_file(files[i].get_file());
-			dst_file=dst_file.basename()+".tex";
+			dst_file=dst_file.get_basename()+".tex";
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			//imd->set_editor();
 			imd->add_source(EditorImportPlugin::validate_source_path(files[i]));
@@ -1307,9 +1307,9 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				String spath = from->get_source_path(E->get()).get_file();
 
 				if (p_external) {
-					apath = p_path.get_base_dir().plus_file(spath.basename()+"."+from->get_source_path(E->get()).md5_text()+".atex");
+					apath = p_path.get_base_dir().plus_file(spath.get_basename()+"."+from->get_source_path(E->get()).md5_text()+".atex");
 				} else {
-					apath = p_path.get_base_dir().plus_file(spath.basename()+".atex");
+					apath = p_path.get_base_dir().plus_file(spath.get_basename()+".atex");
 				}
 
 				Ref<AtlasTexture> at;
@@ -1597,7 +1597,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 			rimd->set_option("shrink",group_shrink);
 			rimd->add_source(validated_path,FileAccess::get_md5(p_path));
 
-		} else if (EditorImportExport::get_singleton()->get_image_formats().has(p_path.extension().to_lower()) && EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE) {
+		} else if (EditorImportExport::get_singleton()->get_image_formats().has(p_path.get_extension().to_lower()) && EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE) {
 			//handled by general image export settings
 
 			rimd = Ref<ResourceImportMetadata>( memnew( ResourceImportMetadata ) );
@@ -1743,7 +1743,7 @@ void EditorTextureImportPlugin::import_from_drop(const Vector<String>& p_drop,co
 	ImageLoader::get_recognized_extensions(&valid_extensions);
 	for(int i=0;i<p_drop.size();i++) {
 
-		String extension=p_drop[i].extension().to_lower();
+		String extension=p_drop[i].get_extension().to_lower();
 
 		for (List<String>::Element *E=valid_extensions.front();E;E=E->next()) {
 
@@ -1851,21 +1851,21 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor) {
 		if (pl.is_valid()) {
 			Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 			if (ce.size()) {
-				p_path=p_path.basename()+".converted.tex";
+				p_path=p_path.get_basename()+".converted.tex";
 				return ce;
 			}
 		}
 
 	} else if (EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE){
 
-		String xt = p_path.extension().to_lower();
+		String xt = p_path.get_extension().to_lower();
 		if (EditorImportExport::get_singleton()->get_image_formats().has(xt)) { //should check for more I guess?
 
 			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 			if (pl.is_valid()) {
 				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 				if (ce.size()) {
-					p_path=p_path.basename()+".converted.tex";
+					p_path=p_path.get_basename()+".converted.tex";
 					return ce;
 				}
 			}

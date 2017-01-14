@@ -196,7 +196,7 @@ void EditorAssetInstaller::open(const String& p_path,int p_depth) {
 			ti->set_icon(0,get_icon("folder","FileDialog"));
 		} else {
 			String file = path.get_file();
-			String extension = file.extension().to_lower();
+			String extension = file.get_extension().to_lower();
 			if (extension_guess.has(extension)) {
 				ti->set_icon(0,extension_guess[extension]);
 			} else {

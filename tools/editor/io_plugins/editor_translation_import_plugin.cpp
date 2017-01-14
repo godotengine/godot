@@ -255,7 +255,7 @@ public:
 			imd->set_option("skip_first",ignore_first->is_pressed());
 			imd->set_option("compress",compress->is_pressed());
 
-			String savefile = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+"."+locale+".xl");
+			String savefile = save_path->get_text().plus_file(import_path->get_text().get_file().get_basename()+"."+locale+".xl");
 			Error err = plugin->import(savefile,imd);
 			if (err!=OK) {
 				error_dialog->set_text(TTR("Couldn't import!"));
@@ -400,7 +400,7 @@ void EditorTranslationImportPlugin::import_from_drop(const Vector<String>& p_dro
 
 
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 
 		if (ext=="csv") {
 

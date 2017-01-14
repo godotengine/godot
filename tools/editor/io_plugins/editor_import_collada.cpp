@@ -2438,7 +2438,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String& p_path
 	Ref<Animation> anim=state.animations[0];
 	anim=state.animations[0];
 	print_line("Anim Load OK");
-	String base = p_path.basename().to_lower();
+	String base = p_path.get_basename().to_lower();
 	if (p_flags&IMPORT_ANIMATION_DETECT_LOOP) {
 
 		if (base.begins_with("loop") || base.ends_with("loop") || base.begins_with("cycle") || base.ends_with("cycle")) {

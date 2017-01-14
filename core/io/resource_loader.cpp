@@ -55,7 +55,7 @@ bool ResourceFormatLoader::recognize(const String& p_extension) const {
 	get_recognized_extensions(&extensions);
 	for (List<String>::Element *E=extensions.front();E;E=E->next()) {
 
-		if (E->get().nocasecmp_to(p_extension.extension())==0)
+		if (E->get().nocasecmp_to(p_extension.get_extension())==0)
 			return true;
 	}
 
@@ -182,7 +182,7 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 	if (OS::get_singleton()->is_stdout_verbose())
 		print_line("load resource: "+remapped_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 	bool found=false;
 
 	for (int i=0;i<loader_count;i++) {
@@ -230,7 +230,7 @@ Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p
 	else
 		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
-	String extension=p_path.extension();
+	String extension=p_path.get_extension();
 	Ref<ResourceImportMetadata> ret;
 
 	for (int i=0;i<loader_count;i++) {
@@ -331,7 +331,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 	bool found=false;
 
 	for (int i=0;i<loader_count;i++) {
@@ -385,7 +385,7 @@ void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_depe
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 
@@ -410,7 +410,7 @@ Error ResourceLoader::rename_dependencies(const String &p_path,const Map<String,
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 
@@ -449,7 +449,7 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 

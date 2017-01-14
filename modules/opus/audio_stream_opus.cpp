@@ -366,7 +366,7 @@ void ResourceFormatLoaderAudioStreamOpus::get_recognized_extensions(List<String>
 }
 String ResourceFormatLoaderAudioStreamOpus::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="opus")
+	if (p_path.get_extension().to_lower()=="opus")
 		return "AudioStreamOpus";
 	return "";
 }

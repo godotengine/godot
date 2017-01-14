@@ -933,7 +933,7 @@ bool ResourceFormatLoaderVideoStreamTheora::handles_type(const String& p_type) c
 
 String ResourceFormatLoaderVideoStreamTheora::get_resource_type(const String &p_path) const {
 
-	String exl=p_path.extension().to_lower();
+	String exl=p_path.get_extension().to_lower();
 	if (exl=="ogm" || exl=="ogv")
 		return "VideoStreamTheora";
 	return "";

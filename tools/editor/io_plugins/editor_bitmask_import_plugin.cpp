@@ -145,7 +145,7 @@ public:
 				error_dialog->popup_centered(Size2(200, 100)*EDSCALE);
 			}
 
-			dst = dst.plus_file(bitmasks[i].get_file().basename() + ".pbm");
+			dst = dst.plus_file(bitmasks[i].get_file().get_basename() + ".pbm");
 
 			plugin->import(dst, imd);
 		}
@@ -294,7 +294,7 @@ void EditorBitMaskImportPlugin::import_from_drop(const Vector<String>& p_drop, c
 	ImageLoader::get_recognized_extensions(&valid_extensions);
 	for(int i=0;i<p_drop.size();i++) {
 
-		String extension=p_drop[i].extension().to_lower();
+		String extension=p_drop[i].get_extension().to_lower();
 
 		for (List<String>::Element *E=valid_extensions.front();E;E=E->next()) {
 

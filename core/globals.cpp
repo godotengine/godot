@@ -329,7 +329,7 @@ Error GlobalConfig::setup(const String& p_path,const String & p_main_pack) {
 
 		String candidate = d->get_current_dir();
 		String current_dir = d->get_current_dir();
-		String exec_name = OS::get_singleton()->get_executable_path().get_file().basename();
+		String exec_name = OS::get_singleton()->get_executable_path().get_file().get_basename();
 		bool found = false;
 		bool first_time=true;
 

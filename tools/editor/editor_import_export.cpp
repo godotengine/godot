@@ -949,7 +949,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 					return ERR_CANT_CREATE;
 				}
 				Vector<uint8_t> data = FileAccess::get_file_as_array(path);
-				String dst_path = F->get().operator String().basename()+".atex";
+				String dst_path = F->get().operator String().get_basename()+".atex";
 				err = p_func(p_udata,dst_path,data,counter++,files.size());
 				saved.insert(dst_path);
 				if (err)

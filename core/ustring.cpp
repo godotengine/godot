@@ -3812,7 +3812,7 @@ String String::get_file() const {
 	return substr(sep+1,length());
 }
 
-String String::extension() const {
+String String::get_extension() const {
 
 	int pos = find_last(".");
 	if (pos<0)
@@ -3891,7 +3891,7 @@ String String::percent_decode() const {
 	return String::utf8(pe.ptr());
 }
 
-String String::basename() const {
+String String::get_basename() const {
 
 	int pos = find_last(".");
 	if (pos<0)

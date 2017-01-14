@@ -659,7 +659,7 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 
 	import_path->set_text(p_path);
 	if (root_node_name->get_text().size()==0){
-		root_node_name->set_text(import_path->get_text().get_file().basename());
+		root_node_name->set_text(import_path->get_text().get_file().get_basename());
 	}
 
 }
@@ -763,7 +763,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 	// Scenes should always be imported as binary format since vertex data is large and would take
 	// up a lot of space and time to load if imported as text format (GH-5778)
-	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".scn");
+	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().get_basename()+".scn");
 	print_line("Saving to: "+save_file);
 
 
@@ -794,7 +794,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		rim->set_option("root_type",root_type->get_text());
 	}
 	if (root_node_name->get_text().size()==0) {
-		root_node_name->set_text(import_path->get_text().get_file().basename());
+		root_node_name->set_text(import_path->get_text().get_file().get_basename());
 	}
 	rim->set_option("root_name",root_node_name->get_text());
 
@@ -2124,7 +2124,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	String src_path=EditorImportPlugin::expand_source_path(from->get_source_path(0));
 
 	Ref<EditorSceneImporter> importer;
-	String ext=src_path.extension().to_lower();
+	String ext=src_path.get_extension().to_lower();
 
 
 	EditorProgress progress("import",TTR("Import Scene"),104);
@@ -2821,7 +2821,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		{
 
 
-			target_path=target_path.basename()+".tex";
+			target_path=target_path.get_basename()+".tex";
 
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 
@@ -2936,7 +2936,7 @@ void EditorSceneImportPlugin::import_from_drop(const Vector<String>& p_drop,cons
 	//bool warn_compatible=false;
 	for(int i=0;i<p_drop.size();i++) {
 
-		String extension = p_drop[i].extension().to_lower();
+		String extension = p_drop[i].get_extension().to_lower();
 
 		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 

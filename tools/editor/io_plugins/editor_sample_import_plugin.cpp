@@ -296,7 +296,7 @@ public:
 				error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			}
 
-			dst = dst.plus_file(samples[i].get_file().basename()+".smp");
+			dst = dst.plus_file(samples[i].get_file().get_basename()+".smp");
 
 			plugin->import(dst,imd);
 		}
@@ -828,7 +828,7 @@ void EditorSampleImportPlugin::import_from_drop(const Vector<String>& p_drop, co
 
 	Vector<String> files;
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 
 		if (ext=="wav") {
 
@@ -887,7 +887,7 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 
 
 
-	if (EditorImportExport::get_singleton()->sample_get_action()==EditorImportExport::SAMPLE_ACTION_NONE || p_path.extension().to_lower()!="wav") {
+	if (EditorImportExport::get_singleton()->sample_get_action()==EditorImportExport::SAMPLE_ACTION_NONE || p_path.get_extension().to_lower()!="wav") {
 
 		return Vector<uint8_t>();
 	}
@@ -911,7 +911,7 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 
 	ERR_FAIL_COND_V(err!=OK,Vector<uint8_t>());
 
-	p_path=p_path.basename()+".converted.smp";
+	p_path=p_path.get_basename()+".converted.smp";
 	return FileAccess::get_file_as_array(savepath);
 
 }

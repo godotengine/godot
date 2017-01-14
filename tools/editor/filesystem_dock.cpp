@@ -1015,7 +1015,7 @@ void FileSystemDock::_file_option(int p_option) {
 			if (move_dirs.empty() && move_files.size()==1) {
 
 				rename_dialog->clear_filters();
-				rename_dialog->add_filter("*."+move_files[0].extension());
+				rename_dialog->add_filter("*."+move_files[0].get_extension());
 				rename_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 				rename_dialog->set_current_path(move_files[0]);
 				rename_dialog->popup_centered_ratio();

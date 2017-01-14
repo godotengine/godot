@@ -623,7 +623,7 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource,const String& 
 
 		file->set_current_path(p_resource->get_path());
 		if (extensions.size()) {
-			String ext=p_resource->get_path().extension().to_lower();
+			String ext=p_resource->get_path().get_extension().to_lower();
 			if (extensions.find(ext)==NULL) {
 				file->set_current_path(p_resource->get_path().replacen("."+ext,"."+extensions.front()->get()));
 			}
@@ -666,11 +666,11 @@ void EditorNode::_dialog_display_file_error(String p_file,Error p_error) {
 
 			case ERR_FILE_CANT_WRITE: {
 
-				accept->set_text(TTR("Can't open file for writing:")+" "+p_file.extension());
+				accept->set_text(TTR("Can't open file for writing:")+" "+p_file.get_extension());
 			} break;
 			case ERR_FILE_UNRECOGNIZED: {
 
-				accept->set_text(TTR("Requested file format unknown:")+" "+p_file.extension());
+				accept->set_text(TTR("Requested file format unknown:")+" "+p_file.get_extension());
 			} break;
 			default: {
 
@@ -2154,7 +2154,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (scene->get_filename()!="") {
 				file->set_current_path(scene->get_filename());
 				if (extensions.size()) {
-					String ext=scene->get_filename().extension().to_lower();
+					String ext=scene->get_filename().get_extension().to_lower();
 					if (extensions.find(ext)==NULL) {
 						file->set_current_path(scene->get_filename().replacen("."+ext,"."+extensions.front()->get()));
 					}
@@ -2217,8 +2217,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (scene->get_filename()!="") {
 				cpath = scene->get_filename();
 
-				String fn = cpath.substr(0,cpath.length() - cpath.extension().size());
-				String ext=cpath.extension();
+				String fn = cpath.substr(0,cpath.length() - cpath.get_extension().size());
+				String ext=cpath.get_extension();
 				cpath=fn+".pot";
 
 

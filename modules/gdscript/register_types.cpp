@@ -100,7 +100,7 @@ public:
 						if (err==OK) {
 
 							fae->store_buffer(file.ptr(),file.size());
-							p_path=p_path.basename()+".gde";
+							p_path=p_path.get_basename()+".gde";
 						}
 
 						memdelete(fae);
@@ -111,7 +111,7 @@ public:
 
 					} else {
 
-						p_path=p_path.basename()+".gdc";
+						p_path=p_path.get_basename()+".gdc";
 						return file;
 					}
 				}

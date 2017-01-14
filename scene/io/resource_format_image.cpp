@@ -36,7 +36,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 	if (r_error)
 		*r_error=ERR_CANT_OPEN;
 
-	if (p_path.extension()=="cube") {
+	if (p_path.get_extension()=="cube") {
 		// open as cubemap txture
 
 		CubeMap* ptr = memnew(CubeMap);
@@ -235,7 +235,7 @@ void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extens
 
 String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const {
 
-	String ext=p_path.extension().to_lower();
+	String ext=p_path.get_extension().to_lower();
 	if (ext=="cube")
 		return "CubeMap";
 
