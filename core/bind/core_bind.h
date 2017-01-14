@@ -464,6 +464,7 @@ public:
 
 	int get_drive_count();
 	String get_drive(int p_drive);
+	int get_current_drive();
 
 	Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
 	String get_current_dir(); ///< return current dir location

@@ -431,7 +431,7 @@ String _OS::get_latin_keyboard_variant() const {
 
 String _OS::get_model_name() const {
 
-    return OS::get_singleton()->get_model_name();
+	return OS::get_singleton()->get_model_name();
 }
 
 
@@ -1863,6 +1863,10 @@ String _Directory::get_drive(int p_drive){
 	ERR_FAIL_COND_V(!d,"");
 	return d->get_drive(p_drive);
 }
+int _Directory::get_current_drive() {
+	ERR_FAIL_COND_V(!d,"");
+	return d->get_current_drive();
+}
 
 Error _Directory::change_dir(String p_dir){
 
@@ -1971,6 +1975,7 @@ void _Directory::_bind_methods() {
 	ClassDB::bind_method(_MD("list_dir_end"),&_Directory::list_dir_end);
 	ClassDB::bind_method(_MD("get_drive_count"),&_Directory::get_drive_count);
 	ClassDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
+	ClassDB::bind_method(_MD("get_current_drive"),&_Directory::get_current_drive);
 	ClassDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
 	ClassDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
 	ClassDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
