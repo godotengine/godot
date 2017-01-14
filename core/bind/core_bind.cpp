@@ -592,24 +592,17 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	static const unsigned int SECONDS_PER_MINUTE = 60;
 	static const unsigned int MINUTES_PER_HOUR = 60;
 	static const unsigned int HOURS_PER_DAY = 24;
-	static const unsigned int SECONDS_PER_HOUR = MINUTES_PER_HOUR *
-		SECONDS_PER_MINUTE;
+	static const unsigned int SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 	static const unsigned int SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
 
 	// Get all time values from the dictionary, set to zero if it doesn't exist.
 	//   Risk incorrect calculation over throwing errors
-	unsigned int second = ((datetime.has(SECOND_KEY))?
-			static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
-	unsigned int minute = ((datetime.has(MINUTE_KEY))?
-			static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
-	unsigned int hour = ((datetime.has(HOUR_KEY))?
-			static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
-	unsigned int day = ((datetime.has(DAY_KEY))?
-			static_cast<unsigned int>(datetime[DAY_KEY]): 0);
-	unsigned int month = ((datetime.has(MONTH_KEY))?
-			static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
-	unsigned int year = ((datetime.has(YEAR_KEY))?
-			static_cast<unsigned int>(datetime[YEAR_KEY]):0);
+	unsigned int second = ((datetime.has(SECOND_KEY)) ? static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
+	unsigned int minute = ((datetime.has(MINUTE_KEY)) ? static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
+	unsigned int hour = ((datetime.has(HOUR_KEY)) ? static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
+	unsigned int day = ((datetime.has(DAY_KEY)) ? static_cast<unsigned int>(datetime[DAY_KEY]): 0);
+	unsigned int month = ((datetime.has(MONTH_KEY)) ? static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
+	unsigned int year = ((datetime.has(YEAR_KEY)) ? static_cast<unsigned int>(datetime[YEAR_KEY]):0);
 
 	/// How many days come before each month (0-12)
 	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] = {
@@ -632,19 +625,16 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	ERR_FAIL_COND_V( month+1 > 12, 0);
 
 	// Do this check after month is tested as valid
-	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger "
-			"than "+ itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month]));
+	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger than "+ itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month]));
 	ERR_FAIL_COND_V( day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month], 0);
 
 	// Calculate all the seconds from months past in this year
-	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR =
-		DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
+	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR = DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
 
 	uint64_t SECONDS_FROM_YEARS_PAST = 0;
 	for(unsigned int iyear = EPOCH_YR; iyear < year; iyear++) {
 
-		SECONDS_FROM_YEARS_PAST += YEARSIZE(iyear) *
-			SECONDS_PER_DAY;
+		SECONDS_FROM_YEARS_PAST += YEARSIZE(iyear) * SECONDS_PER_DAY;
 	}
 
 	uint64_t epoch =
@@ -675,8 +665,7 @@ Dictionary _OS::get_datetime_from_unix_time( uint64_t unix_time_val) const {
 
 	// Just fail if unix time is negative (when interpreted as an int).
 	//  This means the user passed in a negative value by accident
-	ERR_EXPLAIN("unix_time_val was really huge!"+ itos(unix_time_val) +
-			" You probably passed in a negative value!");
+	ERR_EXPLAIN("unix_time_val was really huge!"+ itos(unix_time_val) + " You probably passed in a negative value!");
 	ERR_FAIL_COND_V( (int64_t)unix_time_val < 0, Dictionary());
 
 	OS::Date date;
