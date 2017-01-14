@@ -3822,8 +3822,9 @@ String String::extension() const {
 }
 
 String String::plus_file(const String& p_file) const {
-
-	if (length()>0 && operator [](length()-1)=='/')
+	if (empty())
+		return p_file;
+	if (operator [](length()-1)=='/' || p_file.operator [](0)=='/')
 		return *this+p_file;
 	else
 		return *this+"/"+p_file;
