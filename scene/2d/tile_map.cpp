@@ -457,10 +457,11 @@ void TileMap::_update_dirty_quadrants() {
 			}
 
 
+			Color modulate = tile_set->tile_get_modulate(c.id);
 			if (r==Rect2()) {
-				tex->draw_rect(canvas_item,rect,false,Color(1,1,1),c.transpose);
+				tex->draw_rect(canvas_item,rect,false,modulate,c.transpose);
 			} else {
-				tex->draw_rect_region(canvas_item,rect,r,Color(1,1,1),c.transpose);
+				tex->draw_rect_region(canvas_item,rect,r,modulate,c.transpose);
 			}
 
 			Vector< Ref<Shape2D> > shapes = tile_set->tile_get_shapes(c.id);
