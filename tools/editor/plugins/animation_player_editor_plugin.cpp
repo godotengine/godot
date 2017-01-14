@@ -433,7 +433,12 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) 
 
 		String existing;
 		if (extensions.size()) {
-			existing = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
+			if( p_resource->get_name() != "" ) {
+				existing = p_resource->get_name() + "." + extensions.front()->get().to_lower();
+			}
+			else {
+				existing = "new_" + p_resource->get_class().to_lower() + "." + extensions.front()->get().to_lower();
+			}
 		}
 		file->set_current_path(existing);
 
