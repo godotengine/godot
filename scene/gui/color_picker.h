@@ -36,7 +36,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/check_button.h"
 

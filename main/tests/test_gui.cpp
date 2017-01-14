@@ -46,7 +46,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "io/image_loader.h"
 #include "print_string.h"
 #include "scene/2d/sprite.h"

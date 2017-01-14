@@ -30,7 +30,7 @@
 #define STYLE_BOX_EDITOR_PLUGIN_H
 
 #include "scene/resources/style_box.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/option_button.h"
 #include "tools/editor/editor_node.h"
 

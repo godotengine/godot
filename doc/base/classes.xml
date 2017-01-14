@@ -8816,7 +8816,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="ColorFrame" inherits="Control" category="Core">
+<class name="ColorRect" inherits="Control" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -26354,7 +26354,7 @@
 		</constant>
 	</constants>
 </class>
-<class name="Patch9Frame" inherits="Control" category="Core">
+<class name="Patch9Rect" inherits="Control" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -32557,7 +32557,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="ReferenceFrame" inherits="Control" category="Core">
+<class name="ReferenceRect" inherits="Control" category="Core">
 	<brief_description>
 		Reference frame for GUI.
 	</brief_description>

@@ -41,7 +41,7 @@
 #include "os/input.h"
 #include "tools/editor/editor_settings.h"
 #include "scene/gui/grid_container.h"
-#include "scene/gui/patch_9_frame.h"
+#include "scene/gui/patch_9_rect.h"
 #include "tools/editor/animation_editor.h"
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
 #include "tools/editor/script_editor_debugger.h"
@@ -3767,7 +3767,7 @@ void CanvasItemEditorViewport::_create_nodes(Node* parent, Node* child, String& 
 	editor_data->get_undo_redo().add_do_property(child,property,texture);
 
 	// make visible for certain node type
-	if (default_type=="Patch9Frame") {
+	if (default_type=="Patch9Rect") {
 		editor_data->get_undo_redo().add_do_property(child,"rect/size",texture_size);
 	} else if (default_type=="Polygon2D") {
 		PoolVector<Vector2> list;
@@ -3785,7 +3785,7 @@ void CanvasItemEditorViewport::_create_nodes(Node* parent, Node* child, String& 
 	}
 	Transform2D trans=canvas->get_canvas_transform();
 	Point2 target_pos = (p_point-trans.get_origin())/trans.get_scale().x-pos;
-	if (default_type=="Polygon2D" || default_type=="TouchScreenButton" || default_type=="TextureRect" || default_type=="Patch9Frame") {
+	if (default_type=="Polygon2D" || default_type=="TouchScreenButton" || default_type=="TextureRect" || default_type=="Patch9Rect") {
 		target_pos -= texture_size/2;
 	}
 	editor_data->get_undo_redo().add_do_method(child,"set_pos",target_pos);
@@ -3857,8 +3857,8 @@ void CanvasItemEditorViewport::_perform_drop_data(){
 			else if (default_type=="Particles2D")       child=memnew(Particles2D);
 			else if (default_type=="Polygon2D")         child=memnew(Polygon2D);
 			else if (default_type=="TouchScreenButton") child=memnew(TouchScreenButton);
-			else if (default_type=="TextureRect")      child=memnew(TextureRect);
-			else if (default_type=="Patch9Frame")       child=memnew(NinePatchRect);
+			else if (default_type=="TextureRect")       child=memnew(TextureRect);
+			else if (default_type=="Patch9Rect")        child=memnew(NinePatchRect);
 			else child=memnew(Sprite); // default
 
 			_create_nodes(target_node, child, path, drop_pos);
@@ -3993,7 +3993,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	types.push_back("TouchScreenButton");
 	// Control
 	types.push_back("TextureRect");
-	types.push_back("Patch9Frame");
+	types.push_back("Patch9Rect");
 
 	target_node=NULL;
 	editor=p_node;

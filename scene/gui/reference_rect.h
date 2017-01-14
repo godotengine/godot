@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  reference_frame.h                                                    */
+/*  reference_rect.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,20 +26,20 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef REFERENCE_FRAME_H
-#define REFERENCE_FRAME_H
+#ifndef REFERENCE_RECT_H
+#define REFERENCE_RECT_H
 
 #include "scene/gui/control.h"
 
-class ReferenceFrame : public Control {
+class ReferenceRect : public Control {
 
-	GDCLASS( ReferenceFrame, Control);
+	GDCLASS( ReferenceRect, Control);
 
 protected:
 
 	void _notification(int p_what);
 public:
-	ReferenceFrame();
+	ReferenceRect();
 };
 
-#endif // REFERENCE_FRAME_H
+#endif // REFERENCE_RECT_H

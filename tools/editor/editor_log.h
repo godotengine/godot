@@ -36,7 +36,7 @@
 //#include "scene/gui/empty_control.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 #include "pane_drag.h"
 #include "os/thread.h"

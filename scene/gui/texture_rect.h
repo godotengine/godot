@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  patch_9_frame.h                                                      */
+/*  texture_rect.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,21 +26,31 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PATCH_9_FRAME_H
-#define PATCH_9_FRAME_H
+#ifndef TEXTURE_FRAME_H
+#define TEXTURE_FRAME_H
 
 #include "scene/gui/control.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class NinePatchRect : public Control {
+class TextureRect : public Control {
 
-	GDCLASS(NinePatchRect,Control);
+	GDCLASS(TextureRect,Control);
+public:
+	enum StretchMode {
+		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility
+		STRETCH_SCALE,
+		STRETCH_TILE,
+		STRETCH_KEEP,
+		STRETCH_KEEP_CENTERED,
+		STRETCH_KEEP_ASPECT,
+		STRETCH_KEEP_ASPECT_CENTERED,
 
-	bool draw_center;
-	int margin[4];
-	Rect2 region_rect;
+	};
+private:
+	bool expand;
 	Ref<Texture> texture;
+	StretchMode stretch_mode;
 protected:
 
 	void _notification(int p_what);
@@ -52,17 +62,17 @@ public:
 	void set_texture(const Ref<Texture>& p_tex);
 	Ref<Texture> get_texture() const;
 
-	void set_patch_margin(Margin p_margin,int p_size);
-	int get_patch_margin(Margin p_margin) const;
 
-	void set_region_rect(const Rect2& p_region_rect);
-	Rect2 get_region_rect() const;
+	void set_expand(bool p_expand);
+	bool has_expand() const;
 
-	void set_draw_center(bool p_enable);
-	bool get_draw_center() const;
+	void set_stretch_mode(StretchMode p_mode);
+	StretchMode get_stretch_mode() const;
 
-	NinePatchRect();
-	~NinePatchRect();
+	TextureRect();
+	~TextureRect();
 
 };
-#endif // PATCH_9_FRAME_H
+
+VARIANT_ENUM_CAST( TextureRect::StretchMode );
+#endif // TEXTURE_FRAME_H

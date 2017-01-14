@@ -36,7 +36,7 @@
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/2d/sprite.h"
-#include "scene/gui/patch_9_frame.h"
+#include "scene/gui/patch_9_rect.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 

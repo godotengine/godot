@@ -42,7 +42,7 @@
 #include "scene/gui/center_container.h"
 #include "io/stream_peer_ssl.h"
 
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
 

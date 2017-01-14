@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_frame.h                                                      */
+/*  reference_rect.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,53 +26,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TEXTURE_FRAME_H
-#define TEXTURE_FRAME_H
+#include "reference_rect.h"
 
-#include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-class TextureRect : public Control {
+void ReferenceRect::_notification(int p_what) {
 
-	GDCLASS(TextureRect,Control);
-public:
-	enum StretchMode {
-		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility
-		STRETCH_SCALE,
-		STRETCH_TILE,
-		STRETCH_KEEP,
-		STRETCH_KEEP_CENTERED,
-		STRETCH_KEEP_ASPECT,
-		STRETCH_KEEP_ASPECT_CENTERED,
+	if (p_what==NOTIFICATION_DRAW) {
 
-	};
-private:
-	bool expand;
-	Ref<Texture> texture;
-	StretchMode stretch_mode;
-protected:
+		if (!is_inside_tree())
+			return;
+		if (get_tree()->is_editor_hint())
+			draw_style_box(get_stylebox("border"),Rect2(Point2(),get_size())) ;
+	}
+}
 
-	void _notification(int p_what);
-	virtual Size2 get_minimum_size() const;
-	static void _bind_methods();
-
-public:
-
-	void set_texture(const Ref<Texture>& p_tex);
-	Ref<Texture> get_texture() const;
-
-
-	void set_expand(bool p_expand);
-	bool has_expand() const;
-
-	void set_stretch_mode(StretchMode p_mode);
-	StretchMode get_stretch_mode() const;
-
-	TextureRect();
-	~TextureRect();
-
-};
-
-VARIANT_ENUM_CAST( TextureRect::StretchMode );
-#endif // TEXTURE_FRAME_H
+ReferenceRect::ReferenceRect()
+{
+}

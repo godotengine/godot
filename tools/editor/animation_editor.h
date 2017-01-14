@@ -33,7 +33,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/file_dialog.h"

@@ -35,7 +35,7 @@
 #include "scene/gui/option_button.h"
 #include "os/dir_access.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

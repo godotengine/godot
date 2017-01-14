@@ -54,9 +54,9 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/color_picker.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/patch_9_frame.h"
+#include "scene/gui/patch_9_rect.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -81,7 +81,7 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/video_player.h"
-#include "scene/gui/reference_frame.h"
+#include "scene/gui/reference_rect.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/tool_button.h"
@@ -383,7 +383,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<TreeItem>();
 	ClassDB::register_class<OptionButton>();
 	ClassDB::register_class<SpinBox>();
-	ClassDB::register_class<ReferenceFrame>();
+	ClassDB::register_class<ReferenceRect>();
 	ClassDB::register_class<ColorPicker>();
 	ClassDB::register_class<ColorPickerButton>();
 	ClassDB::register_class<RichTextLabel>();

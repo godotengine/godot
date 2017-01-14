@@ -934,12 +934,12 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 	t->set_stylebox("focus","VButtonArray", focus );
 
 
-	// ReferenceFrame
+	// ReferenceRect
 
 	Ref<StyleBoxTexture> ttnc = make_stylebox( full_panel_bg_png,8,8,8,8);
 	ttnc->set_draw_center(false);
 
-	t->set_stylebox("border","ReferenceFrame", make_stylebox( reference_border_png,4,4,4,4) );
+	t->set_stylebox("border","ReferenceRect", make_stylebox( reference_border_png,4,4,4,4) );
 	t->set_stylebox("panelnc","Panel", ttnc );
 	t->set_stylebox("panelf","Panel", tc_sb );
 

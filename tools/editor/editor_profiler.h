@@ -3,7 +3,7 @@
 
 
 #include "scene/gui/box_container.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/tree.h"
