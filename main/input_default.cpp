@@ -277,6 +277,12 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	emit_signal("joy_connection_changed", p_idx, p_connected);
 };
 
+Vector3 InputDefault::get_gravity() const{
+
+	_THREAD_SAFE_METHOD_
+	return gravity;
+}
+
 Vector3 InputDefault::get_accelerometer() const{
 
 	_THREAD_SAFE_METHOD_
@@ -421,6 +427,14 @@ void InputDefault::stop_joy_vibration(int p_device) {
 	vibration.duration = 0;
 	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
 	joy_vibration[p_device] = vibration;
+}
+
+void InputDefault::set_gravity(const Vector3& p_gravity) {
+
+	_THREAD_SAFE_METHOD_
+
+	gravity=p_gravity;
+
 }
 
 void InputDefault::set_accelerometer(const Vector3& p_accel) {

@@ -70,6 +70,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(_MD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
 	ClassDB::bind_method(_MD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ClassDB::bind_method(_MD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
+	ClassDB::bind_method(_MD("get_gravity"),&Input::get_gravity);
 	ClassDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
 	ClassDB::bind_method(_MD("get_magnetometer"),&Input::get_magnetometer);
 	ClassDB::bind_method(_MD("get_gyroscope"),&Input::get_gyroscope);

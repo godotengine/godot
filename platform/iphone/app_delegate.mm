@@ -84,6 +84,9 @@ extern char** gargv;
 extern int iphone_main(int, int, int, char**);
 extern void iphone_finish();
 
+CMMotionManager *motionManager;
+bool motionInitialised; 
+
 static ViewController* mainViewController = nil;
 + (ViewController*) getViewController
 {
@@ -193,9 +196,58 @@ static int frame_count = 0;
 	}; break; // no fallthrough
 
 	default: {
-
 		if (OSIPhone::get_singleton()) {
-			OSIPhone::get_singleton()->update_accelerometer(accel[0], accel[1], accel[2]);
+//			OSIPhone::get_singleton()->update_accelerometer(accel[0], accel[1], accel[2]);
+			if (motionInitialised) {
+				// Just using polling approach for now, we can set this up so it sends data to us in intervals, might be better.
+				// See Apple reference pages for more details:
+				// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
+
+				// Apple splits our accelerometer date into a gravity and user movement component. We add them back together
+				CMAcceleration gravity = motionManager.deviceMotion.gravity;
+				CMAcceleration acceleration = motionManager.deviceMotion.userAcceleration;
+
+				///@TODO We don't seem to be getting data here, is my device broken or is this code incorrect?
+				CMMagneticField magnetic = motionManager.deviceMotion.magneticField.field;
+
+				///@TODO we can access rotationRate as a CMRotationRate variable (processed date) or CMGyroData (raw data), have to see what works best
+				CMRotationRate rotation = motionManager.deviceMotion.rotationRate;
+
+				// Adjust for screen orientation.
+				// [[UIDevice currentDevice] orientation] changes even if we've fixed our orientation which is not
+				// a good thing when you're trying to get your user to move the screen in all directions and want consistent output
+
+				///@TODO Using [[UIApplication sharedApplication] statusBarOrientation] is a bit of a hack. Godot obviously knows the orientation so maybe we 
+				// can use that instead? (note that left and right seem swapped)
+
+				switch ([[UIApplication sharedApplication] statusBarOrientation]) {
+				case UIDeviceOrientationLandscapeLeft: {
+					OSIPhone::get_singleton()->update_gravity(-gravity.y, gravity.x, gravity.z);
+					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.y + gravity.y), (acceleration.x + gravity.x), acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(-magnetic.y, magnetic.x, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(-rotation.y, rotation.x, rotation.z);
+				}; break;
+				case UIDeviceOrientationLandscapeRight: {
+					OSIPhone::get_singleton()->update_gravity(gravity.y, -gravity.x, gravity.z);
+					OSIPhone::get_singleton()->update_accelerometer((acceleration.y + gravity.y), -(acceleration.x + gravity.x), acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(magnetic.y, -magnetic.x, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(rotation.y, -rotation.x, rotation.z);
+				}; break;
+				case UIDeviceOrientationPortraitUpsideDown: {
+					OSIPhone::get_singleton()->update_gravity(-gravity.x, gravity.y, gravity.z);
+					OSIPhone::get_singleton()->update_accelerometer(-(acceleration.x + gravity.x), (acceleration.y + gravity.y), acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(-magnetic.x, magnetic.y, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(-rotation.x, rotation.y, rotation.z);
+				}; break;
+				default: { // assume portrait
+					OSIPhone::get_singleton()->update_gravity(gravity.x, gravity.y, gravity.z);
+					OSIPhone::get_singleton()->update_accelerometer(acceleration.x + gravity.x, acceleration.y + gravity.y, acceleration.z + gravity.z);
+					OSIPhone::get_singleton()->update_magnetometer(magnetic.x, magnetic.y, magnetic.z);
+					OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y, rotation.z);
+				}; break;
+				};
+			}
+
 			bool quit_request = OSIPhone::get_singleton()->iterate();
 		};
 
@@ -253,11 +305,24 @@ static int frame_count = 0;
 	[window makeKeyAndVisible];
 
 	//Configure and start accelerometer
+/*
+  Old accelerometer approach deprecated since IOS 7.0
+
 	last_accel[0] = 0;
 	last_accel[1] = 0;
 	last_accel[2] = 0;
 	[[UIAccelerometer sharedAccelerometer] setUpdateInterval:(1.0 / kAccelerometerFrequency)];
 	[[UIAccelerometer sharedAccelerometer] setDelegate:self];
+*/
+
+	if (!motionInitialised) {
+		motionManager = [[CMMotionManager alloc] init];
+		if (motionManager.deviceMotionAvailable) {
+      motionManager.deviceMotionUpdateInterval = 1.0/70.0;
+      [motionManager startDeviceMotionUpdates];			
+			motionInitialised = YES;
+		};
+	};
 
 	//OSIPhone::screen_width = rect.size.width - rect.origin.x;
 	//OSIPhone::screen_height = rect.size.height - rect.origin.y;
@@ -297,12 +362,23 @@ static int frame_count = 0;
 - (void)applicationWillTerminate:(UIApplication*)application {
 
 	printf("********************* will terminate\n");
+
+	if (motionInitialised) {
+		///@TODO is this the right place to clean this up?
+    [motionManager stopDeviceMotionUpdates];
+    [motionManager release];
+    motionManager = nil;
+    motionInitialised = NO;	
+	};
+
 	iphone_finish();
 };
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
 	printf("********************* did enter background\n");
+	///@TODO maybe add pause motionManager? and where would we unpause it?
+
 	if (OS::get_singleton()->get_main_loop())
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	[view_controller.view stopAnimation];
@@ -340,12 +416,15 @@ static int frame_count = 0;
 	};
 }
 
+/*
+  Depricated since IOS 7.0
 - (void)accelerometer:(UIAccelerometer*)accelerometer didAccelerate:(UIAcceleration*)acceleration {
 	//Use a basic low-pass filter to only keep the gravity in the accelerometer values
 	accel[0] = acceleration.x; // * kFilteringFactor + accel[0] * (1.0 - kFilteringFactor);
 	accel[1] = acceleration.y; // * kFilteringFactor + accel[1] * (1.0 - kFilteringFactor);
 	accel[2] = acceleration.z; // * kFilteringFactor + accel[2] * (1.0 - kFilteringFactor);
 }
+*/
 
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
