@@ -58,7 +58,7 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 
 	bool ignore_resource_parsing;
 
-//	Map<String,String> remaps;
+	//Map<String,String> remaps;
 
 	Map<int,ExtResource> ext_resources;
 

@@ -97,7 +97,7 @@ public:
 
 		Sprite *sp = memnew( Sprite );
 		sp->set_texture( vp->get_render_target_texture() );
-//		sp->set_texture( ResourceLoader::load("res://ball.png") );
+		//sp->set_texture( ResourceLoader::load("res://ball.png") );
 		sp->set_pos(Point2(300,300));
 		get_root()->add_child(sp);
 

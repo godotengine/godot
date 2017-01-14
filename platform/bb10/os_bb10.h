@@ -58,7 +58,7 @@ class OSBB10 : public OS_Unix {
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-//	AudioDriverPSP audio_driver_psp;
+	//AudioDriverPSP audio_driver_psp;
 	AudioServerSW *audio_server;
 	SampleManagerMallocSW *sample_manager;
 	SpatialSoundServerSW *spatial_sound_server;

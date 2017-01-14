@@ -95,8 +95,10 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 		return;
 	}
 
-//	if (data.dirty&DIRTY_GLOBAL)
-//		return; //already dirty
+	/*
+	if (data.dirty&DIRTY_GLOBAL)
+		return; //already dirty
+	*/
 
 	data.children_lock++;
 
@@ -179,7 +181,7 @@ void Spatial::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 			if (get_tree()->is_editor_hint()) {
 
-//				get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
+				//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
 				get_tree()->call_group_flags(0,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
 				if (!data.gizmo_disabled) {
 

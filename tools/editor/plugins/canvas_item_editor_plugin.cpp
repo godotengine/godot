@@ -79,7 +79,7 @@ public:
 
 		container = memnew( VBoxContainer );
 		add_child(container);
-	//	set_child_rect(container);
+		//set_child_rect(container);
 
 		child_container = memnew( GridContainer );
 		child_container->set_columns(3);
@@ -287,7 +287,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	Dictionary state;
 	state["zoom"]=zoom;
 	state["ofs"]=Point2(h_scroll->get_value(),v_scroll->get_value());
-//	state["ofs"]=-transform.get_origin();
+	//state["ofs"]=-transform.get_origin();
 	state["snap_offset"]=snap_offset;
 	state["snap_step"]=snap_step;
 	state["snap_rotation_offset"]=snap_rotation_offset;
@@ -1187,8 +1187,10 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 			}
 			return;
 		}
-		//if (!canvas_items.size())
-		//	return;
+		/*
+		if (!canvas_items.size())
+			return;
+		*/
 
 		if (b.button_index==BUTTON_LEFT && tool==TOOL_LIST_SELECT) {
 			if (b.pressed)
@@ -1417,7 +1419,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 
 			Transform2D xform = transform * canvas_item->get_global_transform_with_canvas();
 			Rect2 rect=canvas_item->get_item_rect();
-		//	float handle_radius = handle_len * 1.4144; //magic number, guess what it means!
+			//float handle_radius = handle_len * 1.4144; //magic number, guess what it means!
 
 			if (tool==TOOL_SELECT) {
 				drag = _find_drag_type(xform,rect,click,drag_point_from);
@@ -2342,7 +2344,7 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 
 	for (int i=p_node->get_child_count()-1;i>=0;i--) {
 
-//		CanvasItem *r=NULL;
+		//CanvasItem *r=NULL;
 
 		if (c && !c->is_set_as_toplevel())
 			_find_canvas_items_span(p_node->get_child(i),r_rect,p_xform * c->get_transform());
@@ -2473,14 +2475,14 @@ void CanvasItemEditor::_update_scrollbars() {
 		ofs.x=h_scroll->get_value();
 	}
 
-//	transform=Matrix32();
+	//transform=Matrix32();
 	transform.elements[2]=-ofs*zoom;
 	editor->get_scene_root()->set_global_canvas_transform(transform);
 
 
 	updating_scroll=false;
 
-//	transform.scale_basis(Vector2(zoom,zoom));
+	//transform.scale_basis(Vector2(zoom,zoom));
 
 
 }
@@ -2495,7 +2497,7 @@ void CanvasItemEditor::_update_scroll(float) {
 	ofs.x=h_scroll->get_value();
 	ofs.y=v_scroll->get_value();
 
-//	current_window->set_scroll(-ofs);
+	//current_window->set_scroll(-ofs);
 
 	transform=Transform2D();
 
@@ -3004,8 +3006,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 					if (key_pos)
 						ctrl->set_pos(Point2());
-					//if (key_scale)
-					//	AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
+					/*
+					if (key_scale)
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
+					*/
 				}
 
 			}

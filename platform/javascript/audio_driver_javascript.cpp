@@ -68,14 +68,18 @@ AudioDriverSW::OutputFormat AudioDriverJavaScript::get_output_format() const{
 }
 void AudioDriverJavaScript::lock(){
 
-	//if (active && mutex)
-	//	mutex->lock();
+	/*
+	if (active && mutex)
+		mutex->lock();
+	*/
 
 }
 void AudioDriverJavaScript::unlock() {
 
-	//if (active && mutex)
-	//	mutex->unlock();
+	/*
+	if (active && mutex)
+		mutex->unlock();
+	*/
 
 }
 void AudioDriverJavaScript::finish(){

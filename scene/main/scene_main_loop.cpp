@@ -455,16 +455,17 @@ void SceneTree::input_event( const InputEvent& p_event ) {
 
 	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input","_input",ev);
 
-	/*if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F12) {
+	/*
+	if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F12) {
 
 		print_line("RAM: "+itos(Memory::get_static_mem_usage()));
 		print_line("DRAM: "+itos(Memory::get_dynamic_mem_usage()));
 	}
-*/
-	//if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F11) {
+	if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F11) {
 
-	//	Memory::dump_static_mem_to_file("memdump.txt");
-	//}
+		Memory::dump_static_mem_to_file("memdump.txt");
+	}
+	*/
 
 	//transform for the rest
 #else
@@ -557,9 +558,9 @@ bool SceneTree::iteration(float p_time) {
 bool SceneTree::idle(float p_time){
 
 
-//	print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
-//	print_line("node count: "+itos(get_node_count()));
-//	print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
+	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
+	//print_line("node count: "+itos(get_node_count()));
+	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
 
 	root_lock++;
 
@@ -1237,8 +1238,8 @@ void SceneTree::_update_root_rect() {
 		VisualServer::get_singleton()->black_bars_set_margins(0,0,0,0);
 	}
 
-//	print_line("VP SIZE: "+viewport_size+" OFFSET: "+offset+" = "+(offset*2+viewport_size));
-//	print_line("SS: "+video_mode);
+	//print_line("VP SIZE: "+viewport_size+" OFFSET: "+offset+" = "+(offset*2+viewport_size));
+	//print_line("SS: "+video_mode);
 	switch (stretch_mode) {
 		case STRETCH_MODE_2D: {
 

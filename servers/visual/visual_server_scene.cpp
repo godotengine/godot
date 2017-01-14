@@ -78,7 +78,7 @@ void VisualServerScene::camera_set_use_vertical_aspect(RID p_camera,bool p_enabl
 
 void* VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance *p_A,int, OctreeElementID, Instance *p_B,int) {
 
-//	VisualServerScene *self = (VisualServerScene*)p_self;
+	//VisualServerScene *self = (VisualServerScene*)p_self;
 	Instance *A = p_A;
 	Instance *B = p_B;
 
@@ -204,7 +204,7 @@ void* VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 }
 void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance *p_A,int, OctreeElementID, Instance *p_B,int,void* udata) {
 
-//	VisualServerScene *self = (VisualServerScene*)p_self;
+	//VisualServerScene *self = (VisualServerScene*)p_self;
 	Instance *A = p_A;
 	Instance *B = p_B;
 
@@ -1239,8 +1239,10 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 
 	} else {
 
-	//	if (new_aabb==p_instance->data.transformed_aabb)
-	//		return;
+		/*
+		if (new_aabb==p_instance->data.transformed_aabb)
+			return;
+		*/
 
 		p_instance->scenario->octree.move(p_instance->octree_id,new_aabb);
 	}
@@ -1773,7 +1775,7 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform,const Came
 	VSG::scene_render->set_scene_pass(render_pass);
 
 
-//	rasterizer->set_camera(camera->transform, camera_matrix,ortho);
+	//rasterizer->set_camera(camera->transform, camera_matrix,ortho);
 
 	Vector<Plane> planes = p_cam_projection.get_projection_planes(p_cam_transform);
 
@@ -1786,11 +1788,11 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform,const Came
 
 	reflection_probe_cull_count=0;
 
-//	light_samplers_culled=0;
+	//light_samplers_culled=0;
 
 /*	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
 	print_line("OTO: "+itos(p_scenario->octree.get_octant_count()));
-//	print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
+	//print_line("OTE: "+itos(p_scenario->octree.get_elem_count()));
 	print_line("OTP: "+itos(p_scenario->octree.get_pair_count()));
 */
 
@@ -3375,7 +3377,7 @@ void VisualServerScene::render_probes() {
 
 					probe->dynamic.updating_stage=GI_UPDATE_STAGE_CHECK;
 
-//					print_line("UPLOAD TIME: "+rtos((OS::get_singleton()->get_ticks_usec()-us)/1000000.0));
+					//print_line("UPLOAD TIME: "+rtos((OS::get_singleton()->get_ticks_usec()-us)/1000000.0));
 				} break;
 
 			}

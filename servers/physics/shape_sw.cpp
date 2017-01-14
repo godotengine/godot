@@ -1048,8 +1048,10 @@ void ConcavePolygonShapeSW::_cull_segment(int p_idx,_SegmentCullParams *p_params
 	const BVH *bvh=&p_params->bvh[p_idx];
 
 
-	//if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
-	//	return; //test against whole AABB, which isn't very costly
+	/*
+	if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
+		return; //test against whole AABB, which isn't very costly
+	*/
 
 
 	//printf("addr: %p\n",bvh);
@@ -1309,7 +1311,7 @@ _VolumeSW_BVH* _volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements,int p_size
 	bvh->left=_volume_sw_build_bvh(p_elements,split,count);
 	bvh->right=_volume_sw_build_bvh(&p_elements[split],p_size-split,count);
 
-//	printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
+	//printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
 	count++;
 	return bvh;
 }
@@ -1322,7 +1324,7 @@ void ConcavePolygonShapeSW::_fill_bvh(_VolumeSW_BVH* p_bvh_tree,BVH* p_bvh_array
 
 	p_bvh_array[idx].aabb=p_bvh_tree->aabb;
 	p_bvh_array[idx].face_index=p_bvh_tree->face_index;
-//	printf("%p - %i: %i(%p)  -- %p:%p\n",%p_bvh_array[idx],p_idx,p_bvh_array[i]->face_index,&p_bvh_tree->face_index,p_bvh_tree->left,p_bvh_tree->right);
+	//printf("%p - %i: %i(%p)  -- %p:%p\n",%p_bvh_array[idx],p_idx,p_bvh_array[i]->face_index,&p_bvh_tree->face_index,p_bvh_tree->left,p_bvh_tree->right);
 
 
 	if (p_bvh_tree->left) {

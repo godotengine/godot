@@ -2734,7 +2734,7 @@ void Node::_set_tree(SceneTree *p_tree) {
 	SceneTree *tree_changed_a=NULL;
 	SceneTree *tree_changed_b=NULL;
 
-//	ERR_FAIL_COND(p_scene && data.parent && !data.parent->data.scene); //nobug if both are null
+	//ERR_FAIL_COND(p_scene && data.parent && !data.parent->data.scene); //nobug if both are null
 
 	if (data.tree) {
 		_propagate_exit_tree();
@@ -3062,8 +3062,8 @@ void Node::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("tree_entered") );
 	ADD_SIGNAL( MethodInfo("tree_exited") );
 
-//	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/process" ),_SCS("set_process"),_SCS("is_processing") );
-//	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/fixed_process" ), _SCS("set_fixed_process"),_SCS("is_fixed_processing") );
+	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/process" ),_SCS("set_process"),_SCS("is_processing") );
+	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/fixed_process" ), _SCS("set_fixed_process"),_SCS("is_fixed_processing") );
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/input" ), _SCS("set_process_input"),_SCS("is_processing_input" ) );
 	//ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), _SCS("set_process_unhandled_input"),_SCS("is_processing_unhandled_input" ) );
 	ADD_GROUP("Pause","pause_");

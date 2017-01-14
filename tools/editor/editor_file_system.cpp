@@ -378,7 +378,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 
 	//save back the findings
-//	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
+	//String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
 
 	f=FileAccess::open(fscache,FileAccess::WRITE);
 	_save_filesystem_cache(new_filesystem,f);
@@ -502,7 +502,7 @@ void EditorFileSystem::scan() {
 		_scan_filesystem();
 		if (filesystem)
 			memdelete(filesystem);
-//		file_type_cache.clear();
+		//file_type_cache.clear();
 		filesystem=new_filesystem;
 		new_filesystem=NULL;
 		_update_scan_actions();

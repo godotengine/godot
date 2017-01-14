@@ -51,7 +51,7 @@
 
 class OS_Server : public OS_Unix {
 
-//	Rasterizer *rasterizer;
+	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;

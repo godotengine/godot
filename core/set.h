@@ -141,7 +141,7 @@ private:
 #ifdef GLOBALNIL_DISABLED
 			memdelete_allocator<Element,A>(_nil);
 #endif
-//			memdelete_allocator<Element,A>(_root);
+			//memdelete_allocator<Element,A>(_root);
 		}
 	};
 
@@ -307,7 +307,7 @@ private:
 		new_node->right=_data._nil;
 		new_node->left=_data._nil;
 		new_node->value=p_value;
-//		new_node->data=_data;
+		//new_node->data=_data;
 		if (new_parent==_data._root || less(p_value,new_parent->value)) {
 
 			new_parent->left=new_node;

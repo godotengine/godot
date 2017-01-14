@@ -520,7 +520,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 			d["frame"]=i;
 			s->set_metadata(0,d);
 
-//			String line = itos(i)+" - "+String(d["file"])+":"+itos(d["line"])+" - at func: "+d["function"];
+			//String line = itos(i)+" - "+String(d["file"])+":"+itos(d["line"])+" - at func: "+d["function"];
 			String line = itos(i)+" - "+String(d["file"])+":"+itos(d["line"]);
 			s->set_text(0,line);
 
@@ -1986,7 +1986,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 ScriptEditorDebugger::~ScriptEditorDebugger() {
 
-//	inspector->edit(NULL);
+	//inspector->edit(NULL);
 	memdelete(variables);
 
 	ppeer->set_stream_peer(Ref<StreamPeer>());

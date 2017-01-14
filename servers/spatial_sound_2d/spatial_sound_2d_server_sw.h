@@ -179,7 +179,7 @@ class SpatialSound2DServerSW : public SpatialSound2DServer {
 		ActiveVoice(Source *p_source=NULL,int p_voice=0) { source=p_source; voice=p_voice; }
 	};
 
-//	Room *cull_rooms[MAX_CULL_ROOMS];
+	//Room *cull_rooms[MAX_CULL_ROOMS];
 
 	Set<Source*> streaming_sources;
 	Set<ActiveVoice> active_voices;

@@ -396,7 +396,7 @@ void VisualScriptFunctionCall::_update_method_cache() {
 	}
 
 
-//		print_line("BASE: "+String(type)+" FUNC: "+String(function));
+	//print_line("BASE: "+String(type)+" FUNC: "+String(function));
 	MethodBind *mb = ClassDB::get_method(type,function);
 	if (mb) {
 		use_default_args=mb->get_default_argument_count();
@@ -2508,7 +2508,7 @@ void register_visual_script_func_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("functions/get",create_node_generic<VisualScriptPropertyGet>);
 
 	//VisualScriptLanguage::singleton->add_register_func("functions/call_script/call_self",create_script_call_node<VisualScriptScriptCall::CALL_MODE_SELF>);
-//	VisualScriptLanguage::singleton->add_register_func("functions/call_script/call_node",create_script_call_node<VisualScriptScriptCall::CALL_MODE_NODE_PATH>);
+	//VisualScriptLanguage::singleton->add_register_func("functions/call_script/call_node",create_script_call_node<VisualScriptScriptCall::CALL_MODE_NODE_PATH>);
 	VisualScriptLanguage::singleton->add_register_func("functions/emit_signal",create_node_generic<VisualScriptEmitSignal>);
 
 

@@ -145,7 +145,7 @@ Transform2D Camera2D::get_camera_transform()  {
 			float c = smoothing*get_fixed_process_delta_time();
 			smoothed_camera_pos = ((camera_pos-smoothed_camera_pos)*c)+smoothed_camera_pos;
 			ret_camera_pos=smoothed_camera_pos;
-			//			camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
+			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
 		} else {
 
 			ret_camera_pos=smoothed_camera_pos=camera_pos;

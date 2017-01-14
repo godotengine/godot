@@ -1978,7 +1978,7 @@ void _Directory::_bind_methods() {
 	ClassDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
 	ClassDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
 	ClassDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
-//	ClassDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
+	//ClassDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ClassDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ClassDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
 	ClassDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);

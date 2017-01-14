@@ -114,10 +114,8 @@ bool CameraEditorPlugin::handles(Object *p_object) const {
 void CameraEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-//	SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
-
+		//SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
 	} else {
-
 		SpatialEditor::get_singleton()->set_can_preview(NULL);
 	}
 

@@ -89,7 +89,7 @@ void EditorImportPlugin::_bind_methods() {
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo("reimport_multiple_files",PropertyInfo(Variant::POOL_STRING_ARRAY,"files")));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"can_reimport_multiple_files"));
 
-//	BIND_VMETHOD( mi );
+	//BIND_VMETHOD( mi );
 }
 
 String EditorImportPlugin::get_name() const {
@@ -420,11 +420,12 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 		{
 
 			List<String> l;
-	//		SceneLoader::get_recognized_extensions(&l);
-	//		for(List<String>::Element *E=l.front();E;E=E->next()) {
-	//
-	//			scene_extensions.insert(E->get());
-	//		}
+			/*
+			SceneLoader::get_recognized_extensions(&l);
+			for(List<String>::Element *E=l.front();E;E=E->next()) {
+				scene_extensions.insert(E->get());
+			}
+			*/
 			ResourceLoader::get_recognized_extensions_for_type("",&l);
 			for(List<String>::Element *E=l.front();E;E=E->next()) {
 
@@ -921,7 +922,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			options["lossy_quality"]=group_lossy_quality;
 			options["shrink"]=EditorImportExport::get_singleton()->image_export_group_get_shrink(E->get());
 			options["image_format"]=group_format;
-//			f->store_line(options.to_json());
+			//f->store_line(options.to_json());
 			f->store_line(image_list_md5);
 		}
 
@@ -958,7 +959,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				if (f) {
 					//recreating deps..
 					String depline;
-//					depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::get_md5(F->get()); name unneccesary by top md5
+					//depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::get_md5(F->get()); name unneccesary by top md5
 					depline=itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::get_md5(F->get());
 					depline+="::"+itos(region.pos.x)+"::"+itos(region.pos.y)+"::"+itos(region.size.x)+"::"+itos(region.size.y);
 					depline+="::"+itos(margin.pos.x)+"::"+itos(margin.pos.y)+"::"+itos(margin.size.x)+"::"+itos(margin.size.y);

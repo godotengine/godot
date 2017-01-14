@@ -1395,11 +1395,13 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		BodySW *body = body_owner.get(p_rid);
 
-//		if (body->get_state_query())
-//			_clear_query(body->get_state_query());
+		/*
+		if (body->get_state_query())
+			_clear_query(body->get_state_query());
 
-//		if (body->get_direct_state_query())
-//			_clear_query(body->get_direct_state_query());
+		if (body->get_direct_state_query())
+			_clear_query(body->get_direct_state_query());
+		*/
 
 		body->set_space(NULL);
 
@@ -1422,8 +1424,10 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		AreaSW *area = area_owner.get(p_rid);
 
-//		if (area->get_monitor_query())
-//			_clear_query(area->get_monitor_query());
+		/*
+		if (area->get_monitor_query())
+			_clear_query(area->get_monitor_query());
+		*/
 
 		area->set_space(NULL);
 

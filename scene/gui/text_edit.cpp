@@ -4357,7 +4357,7 @@ void TextEdit::_update_completion_candidates() {
 	if (completion_options.size()==1) {
 		//one option to complete, just complete it automagically
 		_confirm_completion();
-		//		insert_text_at_cursor(completion_options[0].substr(s.length(),completion_options[0].length()-s.length()));
+		//insert_text_at_cursor(completion_options[0].substr(s.length(),completion_options[0].length()-s.length()));
 		_cancel_completion();
 		return;
 
@@ -4732,8 +4732,8 @@ TextEdit::TextEdit()  {
 	tab_size=4;
 	text.set_tab_size(tab_size);
 	text.clear();
-	//	text.insert(1,"Mongolia..");
-	//	text.insert(2,"PAIS GENEROSO!!");
+	//text.insert(1,"Mongolia..");
+	//text.insert(2,"PAIS GENEROSO!!");
 	text.set_color_regions(&color_regions);
 
 	h_scroll = memnew( HScrollBar );

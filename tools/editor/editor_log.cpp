@@ -44,8 +44,10 @@ void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_fil
 		err_str=String(p_file)+":"+itos(p_line)+" - "+String(p_error);
 	}
 
-//	if (!self->is_visible_in_tree())
-//		self->emit_signal("show_request");
+	/*
+	if (!self->is_visible_in_tree())
+		self->emit_signal("show_request");
+	*/
 
 	err_str=" "+err_str;
 	self->log->add_newline();
@@ -129,7 +131,7 @@ void EditorLog::add_message(const String& p_msg,bool p_error) {
 
 	log->add_newline();
 	log->add_text(p_msg);
-//	button->set_text(p_msg);
+	//button->set_text(p_msg);
 
 	if (p_error)
 		log->pop();

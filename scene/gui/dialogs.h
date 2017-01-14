@@ -94,7 +94,7 @@ class AcceptDialog : public WindowDialog {
 	HBoxContainer *hbc;
 	Label *label;
 	Button *ok;
-//	Button *cancel; no more cancel (there is X on tht titlebar)
+	//Button *cancel; no more cancel (there is X on tht titlebar)
 	bool hide_on_ok;
 
 

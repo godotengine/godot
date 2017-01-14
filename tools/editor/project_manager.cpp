@@ -404,7 +404,7 @@ public:
 
 		VBoxContainer *vb = memnew( VBoxContainer );
 		add_child(vb);
-	//	set_child_rect(vb);
+		//set_child_rect(vb);
 
 		Label* l = memnew(Label);
 		l->set_text(TTR("Project Path:"));
@@ -1003,7 +1003,7 @@ void ProjectManager::_run_project_confirm() {
 		Error err = OS::get_singleton()->execute(exec,args,false,&pid);
 		ERR_FAIL_COND(err);
 	}
-	//	get_scene()->quit(); do not quit
+	//get_scene()->quit(); do not quit
 }
 
 void ProjectManager::_run_project() {

@@ -270,8 +270,10 @@ void BodySW::set_mode(PhysicsServer::BodyMode p_mode) {
 	}
 
 	_update_inertia();
-	//if (get_space())
-//		_update_queries();
+	/*
+	if (get_space())
+		_update_queries();
+	*/
 
 }
 PhysicsServer::BodyMode BodySW::get_mode() const {
@@ -319,14 +321,18 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 		} break;
 		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY: {
 
-			//if (mode==PhysicsServer::BODY_MODE_STATIC)
-			//	break;
+			/*
+			if (mode==PhysicsServer::BODY_MODE_STATIC)
+				break;
+			*/
 			linear_velocity=p_variant;
 			wakeup();
 		} break;
 		case PhysicsServer::BODY_STATE_ANGULAR_VELOCITY: {
-			//if (mode!=PhysicsServer::BODY_MODE_RIGID)
-			//	break;
+			/*
+			if (mode!=PhysicsServer::BODY_MODE_RIGID)
+				break;
+			*/
 			angular_velocity=p_variant;
 			wakeup();
 
@@ -400,11 +406,13 @@ void BodySW::set_space(SpaceSW *p_space){
 		_update_inertia();
 		if (active)
 			get_space()->body_add_to_active_list(&active_list);
-//		_update_queries();
-		//if (is_active()) {
-		//	active=false;
-		//	set_active(true);
-		//}
+		/*
+		_update_queries();
+		if (is_active()) {
+			active=false;
+			set_active(true);
+		}
+		*/
 
 	}
 
@@ -479,13 +487,17 @@ void BodySW::integrate_forces(real_t p_step) {
 	// If less than 0, override dampenings with that of the Body
 	if (angular_damp>=0)
 		area_angular_damp=angular_damp;
-	//else
-	//	area_angular_damp=damp_area->get_angular_damp();
+	/*
+	else
+		area_angular_damp=damp_area->get_angular_damp();
+	*/
 
 	if (linear_damp>=0)
 		area_linear_damp=linear_damp;
-	//else
-	//	area_linear_damp=damp_area->get_linear_damp();
+	/*
+	else
+		area_linear_damp=damp_area->get_linear_damp();
+	*/
 
 
 	Vector3 motion;
@@ -630,10 +642,10 @@ void BodySW::integrate_velocities(real_t p_step) {
 
 	_update_transform_dependant();
 
-	//if (fi_callback) {
-
-	//	get_space()->body_add_to_state_query_list(&direct_state_query_list);
-	//
+	/*
+	if (fi_callback) {
+		get_space()->body_add_to_state_query_list(&direct_state_query_list);
+	*/
 }
 
 /*
@@ -772,12 +784,12 @@ BodySW::BodySW() : CollisionObjectSW(TYPE_BODY), active_list(this), inertia_upda
 	active=true;
 
 	mass=1;
-//	_inv_inertia=Transform();
+	//_inv_inertia=Transform();
 	_inv_mass=1;
 	bounce=0;
 	friction=1;
 	omit_force_integration=false;
-//	applied_torque=0;
+	//applied_torque=0;
 	island_step=0;
 	island_next=NULL;
 	island_list_next=NULL;

@@ -399,7 +399,7 @@ CPLoader::Error CPLoader_XM::load_song(const char *p_file,CPSong *p_song,bool p_
 
 
 		instrument.set_name( instrname );
-//		printf("Header Len: %i, CPInstrument %i, %i samples , name:  s,\n",hsize,i,sampnum,instrname);
+		//printf("Header Len: %i, CPInstrument %i, %i samples , name:  s,\n",hsize,i,sampnum,instrname);
 		
 		if (sampnum==0) {
 			//aux=file->get_dword(); //Why is this for? -- for nothing, skipped

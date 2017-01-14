@@ -1240,7 +1240,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String& p_class) {
 
 
 		//args[i] = _jobject_to_variant(env, obj);
-//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
+		//print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 
 	};
 

@@ -1011,7 +1011,7 @@ GlobalConfig::GlobalConfig() {
 	GLOBAL_DEF("input/ui_page_down",va);
 	input_presets.push_back("input/ui_page_down");
 
-//	GLOBAL_DEF("display/handheld/orientation", "landscape");
+	//GLOBAL_DEF("display/handheld/orientation", "landscape");
 
 
 	custom_prop_info["display/handheld/orientation"]=PropertyInfo(Variant::STRING,"display/handheld/orientation",PROPERTY_HINT_ENUM,"landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");

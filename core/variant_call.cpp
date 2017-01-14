@@ -146,7 +146,7 @@ struct _VariantCall {
 		Arg(Variant::Type p_type,const StringName &p_name) { name=p_name; type=p_type; }
 	};
 
-//	void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
+	//void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
 
 	static void make_func_return_variant(Variant::Type p_type,const StringName& p_name) {
 
@@ -354,7 +354,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2,slide);
 	VCALL_LOCALMEM1R(Vector2,reflect);
 	VCALL_LOCALMEM0R(Vector2,angle);
-//	VCALL_LOCALMEM1R(Vector2,cross);
+	//VCALL_LOCALMEM1R(Vector2,cross);
 	VCALL_LOCALMEM0R(Vector2,abs);
 	VCALL_LOCALMEM1R(Vector2,clamped);
 

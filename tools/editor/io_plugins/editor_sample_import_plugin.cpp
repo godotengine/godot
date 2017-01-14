@@ -323,7 +323,7 @@ public:
 		ClassDB::bind_method("_import",&EditorSampleImportDialog::_import);
 		ClassDB::bind_method("_browse",&EditorSampleImportDialog::_browse);
 		ClassDB::bind_method("_browse_target",&EditorSampleImportDialog::_browse_target);
-	//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
+		//ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 
 	EditorSampleImportDialog(EditorSampleImportPlugin *p_plugin) {
@@ -373,7 +373,7 @@ public:
 		save_select = memnew(	EditorDirDialog );
 		add_child(save_select);
 
-	//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+		//save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
@@ -383,7 +383,7 @@ public:
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
 		error_dialog->get_ok()->set_text(TTR("Accept"));
-	//	error_dialog->get_cancel()->hide();
+		//error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
 		options = memnew( _EditorSampleImportOptions );
@@ -648,7 +648,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 			}
 		}
 
-//		print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
+		//print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
 
 	} else {
 
@@ -758,12 +758,14 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,P
 
 
 			xm_sample=CLAMP(in[i]*32767.0,-32768,32767);
-			//if (xm_sample==32767 || xm_sample==-32768)
-			//	printf("clippy!\n",xm_sample);
+			/*
+			if (xm_sample==32767 || xm_sample==-32768)
+				printf("clippy!\n",xm_sample);
+			*/
 		}
 
-	//	xm_sample=xm_sample+xm_prev;
-	//	xm_prev=xm_sample;
+		//xm_sample=xm_sample+xm_prev;
+		//xm_prev=xm_sample;
 
 		diff = (int)xm_sample - prev ;
 

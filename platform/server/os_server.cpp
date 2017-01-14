@@ -103,9 +103,11 @@ void OS_Server::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 	memdelete(sample_manager);
 

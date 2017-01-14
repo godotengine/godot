@@ -506,8 +506,10 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 					(uint32_t)OS::get_singleton()->get_unix_time(), hash );
 		hash = hash_djb2_one_32(
 					(uint32_t)OS::get_singleton()->get_data_dir().hash64(), hash );
-		//hash = hash_djb2_one_32(
-		//			(uint32_t)OS::get_singleton()->get_unique_ID().hash64(), hash );
+		/*
+		hash = hash_djb2_one_32(
+					(uint32_t)OS::get_singleton()->get_unique_ID().hash64(), hash );
+		*/
 		hash = hash_djb2_one_32(
 					(uint32_t)((uint64_t)this), hash ); //rely on aslr heap
 		hash = hash_djb2_one_32(

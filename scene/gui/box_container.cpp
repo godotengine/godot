@@ -296,7 +296,7 @@ BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical=p_vertical;
 	align = ALIGN_BEGIN;
-//	set_ignore_mouse(true);
+	//set_ignore_mouse(true);
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 

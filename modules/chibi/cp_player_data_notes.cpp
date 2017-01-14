@@ -67,7 +67,7 @@ void CPPlayer::process_new_note(int p_track,uint8_t p_note) { // if there's real
 
 bool CPPlayer::process_new_instrument(int p_track,uint8_t p_instrument) {
 
-//	bool different_instrument=false;
+	//bool different_instrument=false;
 	ERR_FAIL_INDEX_V(p_instrument,CPSong::MAX_INSTRUMENTS,false);
 	
 	if ( song->has_instruments() ) {

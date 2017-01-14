@@ -130,8 +130,10 @@ private:
 
 		~Octant() {
 
-			//for (int i=0;i<8;i++)
-			//	memdelete_notnull(children[i]);
+			/*
+			for (int i=0;i<8;i++)
+				memdelete_notnull(children[i]);
+			*/
 		}
 	};
 
@@ -250,8 +252,10 @@ private:
 			E->get().eA=p_A->pair_list.push_back(&E->get());
 			E->get().eB=p_B->pair_list.push_back(&E->get());
 
-//			if (pair_callback)
-//				pair_callback(pair_callback_userdata,p_A->userdata,p_B->userdata);
+			/*
+			if (pair_callback)
+				pair_callback(pair_callback_userdata,p_A->userdata,p_B->userdata);
+			*/
 		} else {
 
 			E->get().refcount++;
@@ -970,8 +974,10 @@ void Octree<T,use_pairs,AL>::move(OctreeElementID p_id, const Rect3& p_aabb) {
 		Octant *o=E->get().octant;
 		typename List<typename Element::OctantOwner,AL>::Element *N=E->next();
 
-//		if (!use_pairs)
-//			o->elements.erase( E->get().E );
+		/*
+		if (!use_pairs)
+			o->elements.erase( E->get().E );
+		*/
 
 		if (use_pairs && e.pairable)
 			o->pairable_elements.erase( E->get().E );

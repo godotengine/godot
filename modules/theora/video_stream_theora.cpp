@@ -81,6 +81,9 @@ void VideoStreamPlaybackTheora::video_write(void){
 	th_ycbcr_buffer yuv;
 	th_decode_ycbcr_out(td,yuv);
 
+	// FIXME: The way stuff is commented out with `//*/` closing comments
+	// sounds very fishy...
+
 	/*
 	int y_offset, uv_offset;
 	y_offset=(ti.pic_x&~1)+yuv[0].stride*(ti.pic_y&~1);
@@ -105,7 +108,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 		}
 		format = Image::FORMAT_RGBA8;
 	}
-	//	*/
+		//*/
 
 	//*
 
@@ -228,7 +231,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 			format = Image::FORMAT_YUV_422;
 		};
 	};
-	//	*/
+		//*/
 
 	frames_pending = 1;
 }
@@ -598,7 +601,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 
 				if (vd.granulepos>=0) {
-				//	print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
+					//print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
 				}
 
 				//print_line("mix audio!");

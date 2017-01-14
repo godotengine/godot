@@ -225,8 +225,8 @@ bool GDParser::_get_completable_identifier(CompletionType p_type,StringName& ide
 
 GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_allow_assign,bool p_parsing_constant) {
 
-//	Vector<Node*> expressions;
-//	Vector<OperatorNode::Operator> operators;
+	//Vector<Node*> expressions;
+	//Vector<OperatorNode::Operator> operators;
 
 	Vector<Expression> expression;
 

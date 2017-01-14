@@ -294,7 +294,7 @@ class TextEdit : public Control  {
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-//	void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
+	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
 
 	int get_row_height() const;

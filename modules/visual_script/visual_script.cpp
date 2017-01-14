@@ -2631,7 +2631,7 @@ void VisualScriptLanguage::debug_get_stack_level_locals(int p_level,List<String>
 	const StringName *f = _call_stack[l].function;
 
 	ERR_FAIL_COND(!_call_stack[l].instance->functions.has(*f));
-//	VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
+	//VisualScriptInstance::Function *func = &_call_stack[l].instance->functions[*f];
 
 	VisualScriptNodeInstance *node =_call_stack[l].instance->instances[*_call_stack[l].current_id];
 	ERR_FAIL_COND(!node);

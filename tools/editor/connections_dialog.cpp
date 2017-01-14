@@ -421,7 +421,7 @@ ConnectDialog::ConnectDialog() {
 
 
 
-//	dst_method_list->get_popup()->connect("id_pressed", this,"_dst_method_list_selected");
+	//dst_method_list->get_popup()->connect("id_pressed", this,"_dst_method_list_selected");
 	tree->connect("node_selected", this,"_tree_node_selected");
 
 	set_as_toplevel(true);
@@ -432,7 +432,7 @@ ConnectDialog::ConnectDialog() {
 	add_child(error);
 	error->get_ok()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Connect"));
-//	error->get_cancel()->set_text("Close");
+	//error->get_cancel()->set_text("Close");
 
 
 
@@ -857,7 +857,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	hb->add_spacer();
 	hb->add_child(connect_button);
 	connect_button->connect("pressed",this,"_connect_pressed");
-//	add_child(tree);
+	//add_child(tree);
 
 	connect_dialog = memnew( ConnectDialog );
 	connect_dialog->set_as_toplevel(true);

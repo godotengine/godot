@@ -236,20 +236,22 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 						return OK;
 					//well, it's an ambient light..
 					Light *l = memnew( DirectionalLight );
-//					l->set_color(Light::COLOR_AMBIENT,ld.color);
-//					l->set_color(Light::COLOR_DIFFUSE,Color(0,0,0));
-//					l->set_color(Light::COLOR_SPECULAR,Color(0,0,0));
+					//l->set_color(Light::COLOR_AMBIENT,ld.color);
+					//l->set_color(Light::COLOR_DIFFUSE,Color(0,0,0));
+					//l->set_color(Light::COLOR_SPECULAR,Color(0,0,0));
 					node = l;
 
 				} else if (ld.mode==Collada::LightData::MODE_DIRECTIONAL) {
 
 					//well, it's an ambient light..
 					Light *l = memnew( DirectionalLight );
-					//if (found_ambient) //use it here
-					//	l->set_color(Light::COLOR_AMBIENT,ambient);
+					/*
+					if (found_ambient) //use it here
+						l->set_color(Light::COLOR_AMBIENT,ambient);
 
-//					l->set_color(Light::COLOR_DIFFUSE,ld.color);
-//					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
+					l->set_color(Light::COLOR_DIFFUSE,ld.color);
+					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
+					*/
 					node = l;
 				} else {
 
@@ -259,14 +261,14 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 						l=memnew( OmniLight );
 					else {
 						l=memnew( SpotLight );
-//						l->set_parameter(Light::PARAM_SPOT_ANGLE,ld.spot_angle);
-//						l->set_parameter(Light::PARAM_SPOT_ATTENUATION,ld.spot_exp);
+						//l->set_parameter(Light::PARAM_SPOT_ANGLE,ld.spot_angle);
+						//l->set_parameter(Light::PARAM_SPOT_ATTENUATION,ld.spot_exp);
 					}
 
 					//
-//					l->set_color(Light::COLOR_DIFFUSE,ld.color);
-//					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
-//					l->approximate_opengl_attenuation(ld.constant_att,ld.linear_att,ld.quad_att);
+					//l->set_color(Light::COLOR_DIFFUSE,ld.color);
+					//l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
+					//l->approximate_opengl_attenuation(ld.constant_att,ld.linear_att,ld.quad_att);
 					node=l;
 				}
 
@@ -396,13 +398,13 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 				material->set_texture(FixedSpatialMaterial::TEXTURE_ALBEDO,texture);
 				material->set_albedo(Color(1,1,1,1));
-//				material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
+				//material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 		}
 	} else {
-//		material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,effect.diffuse.color);
+		//material->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,effect.diffuse.color);
 	}
 
 	// SPECULAR
@@ -417,15 +419,15 @@ Error ColladaImport::_create_material(const String& p_target) {
 				material->set_texture(FixedSpatialMaterial::TEXTURE_SPECULAR,texture);
 				material->set_specular(Color(1,1,1,1));
 
-//				material->set_texture(FixedSpatialMaterial::PARAM_SPECULAR,texture);
-//				material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
+				//material->set_texture(FixedSpatialMaterial::PARAM_SPECULAR,texture);
+				//material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,Color(1,1,1,1));
 			} else {
 				missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	} else {
-//		material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,effect.specular.color);
+		//material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,effect.specular.color);
 	}
 
 	// EMISSION
@@ -441,14 +443,14 @@ Error ColladaImport::_create_material(const String& p_target) {
 				material->set_texture(FixedSpatialMaterial::TEXTURE_EMISSION,texture);
 				material->set_emission(Color(1,1,1,1));
 
-//				material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
+				//material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
 			}else {
-//				missing_textures.push_back(texfile.get_file());
+				//missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	} else {
-//		material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,effect.emission.color);
+		//material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,effect.emission.color);
 	}
 
 	// NORMAL
@@ -461,18 +463,18 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 				material->set_texture(FixedSpatialMaterial::TEXTURE_NORMAL,texture);
-//				material->set_emission(Color(1,1,1,1));
+				//material->set_emission(Color(1,1,1,1));
 
-	//			material->set_texture(FixedSpatialMaterial::PARAM_NORMAL,texture);
+				//material->set_texture(FixedSpatialMaterial::PARAM_NORMAL,texture);
 			}else {
-//				missing_textures.push_back(texfile.get_file());
+				//missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	}
 
 
-//	material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR_EXP,effect.shininess);
+	//material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR_EXP,effect.shininess);
 	if (effect.double_sided) {
 		material->set_cull_mode(FixedSpatialMaterial::CULL_DISABLED);
 	}
@@ -1171,11 +1173,13 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 				narrayw = PoolVector<Vector3>::Write();
 				final_normal_array=narray;
 
-				//PoolVector<Vector3> altnaray;
-				//_generate_normals(index_array,final_vertex_array,altnaray);
+				/*
+				PoolVector<Vector3> altnaray;
+				_generate_normals(index_array,final_vertex_array,altnaray);
 
-				//for(int i=0;i<altnaray.size();i++)
-				//	print_line(rtos(altnaray[i].dot(final_normal_array[i])));
+				for(int i=0;i<altnaray.size();i++)
+					print_line(rtos(altnaray[i].dot(final_normal_array[i])));
+				*/
 
 			} else if (primitive==Mesh::PRIMITIVE_TRIANGLES)  {
 				//generate normals (even if unused later)
@@ -1257,8 +1261,10 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 
 
 					}
-//					if (sum<0.8)
-//						COLLADA_PRINT("ERROR SUMMING INDEX "+itos(k)+" had weights: "+itos(vertex_array[k].weights.size()));
+					/*
+					if (sum<0.8)
+						COLLADA_PRINT("ERROR SUMMING INDEX "+itos(k)+" had weights: "+itos(vertex_array[k].weights.size()));
+					*/
 
 				}
 
@@ -1468,7 +1474,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 #endif
 			for(int mi=0;mi<p_morph_meshes.size();mi++) {
 
-			//	print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));
+				//print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));
 				Array a = p_morph_meshes[mi]->surface_get_arrays(surface);
 				//add valid weight and bone arrays if they exist, TODO check if they are unique to shape (generally not)
 
@@ -2375,9 +2381,11 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 
 	if (state.missing_textures.size()) {
 
-		//for(int i=0;i<state.missing_textures.size();i++) {
-//			EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
-//		}
+		/*
+		for(int i=0;i<state.missing_textures.size();i++) {
+			EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
+		}
+		*/
 
 
 		if (r_missing_deps) {

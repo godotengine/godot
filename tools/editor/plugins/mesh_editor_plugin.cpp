@@ -218,11 +218,11 @@ void MeshEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		mesh_editor->show();
-//		mesh_editor->set_process(true);
+		//mesh_editor->set_process(true);
 	} else {
 
 		mesh_editor->hide();
-//		mesh_editor->set_process(false);
+		//mesh_editor->set_process(false);
 	}
 
 }

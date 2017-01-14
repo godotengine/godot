@@ -252,8 +252,10 @@ Error BitmapFont::create_from_fnt(const String& p_string) {
 
 			if (keys.has("face"))
 				set_name(keys["face"]);
-			//if (keys.has("size"))
-			//	font->set_height(keys["size"].to_int());
+			/*
+			if (keys.has("size"))
+				font->set_height(keys["size"].to_int());
+			*/
 
 		} else if (type=="common") {
 

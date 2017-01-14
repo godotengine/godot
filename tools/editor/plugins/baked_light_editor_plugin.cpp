@@ -105,8 +105,10 @@ void BakedLightEditor::_notification(int p_option) {
 							colors[i].b=oct->light_accum[i][2]/norm;
 
 							float lum = colors[i].get_v();
-							//if (lum<0.05)
-							//	color.a=0;
+							/*
+							if (lum<0.05)
+								color.a=0;
+							*/
 							if (lum>max_lum)
 								max_lum=lum;
 
@@ -141,7 +143,7 @@ void BakedLightEditor::_notification(int p_option) {
 
 				baker->update_octree_images(octree_texture,light_texture);
 				baker->update_octree_sampler(octree_sampler);
-			//	print_line("sampler size: "+itos(octree_sampler.size()*4));
+				//print_line("sampler size: "+itos(octree_sampler.size()*4));
 
 #if 1
 //debug

@@ -271,7 +271,7 @@ void AudioMixerSW::mix_channel(Channel& c) {
 	bool is_stereo=sample_manager->sample_is_stereo(c.sample);
 
 	int32_t todo=mix_chunk_size;
-//	int mixed=0;
+	//int mixed=0;
 	bool use_filter=false;
 
 	ResamplerState rstate;

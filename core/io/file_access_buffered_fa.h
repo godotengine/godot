@@ -127,10 +127,11 @@ public:
 		set_error(OK);
 	};
 
-//	static void make_default() {
-
-		//FileAccess::create_func = FileAccessBufferedFA<T>::create;
-//	};
+	/*
+	static void make_default() {
+		FileAccess::create_func = FileAccessBufferedFA<T>::create;
+	};
+	*/
 
 	virtual uint64_t _get_modified_time(const String& p_file) {
 

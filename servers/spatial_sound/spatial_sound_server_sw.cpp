@@ -66,7 +66,7 @@ void SpatialSoundServerSW::_update_sources() {
 
 SpatialSoundServerSW::Room::Room() {
 
-//	params[ROOM_PARAM_SPEED_OF_SOUND]=343.0;
+	//params[ROOM_PARAM_SPEED_OF_SOUND]=343.0;
 	params[ROOM_PARAM_SPEED_OF_SOUND_SCALE]=1;
 	params[ROOM_PARAM_DOPPLER_FACTOR]=1.0;
 	params[ROOM_PARAM_PITCH_SCALE]=1.0;

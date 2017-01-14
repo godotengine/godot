@@ -127,7 +127,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	}
 
 	//colorize core types
-//	Color basetype_color= EDITOR_DEF("text_editor/base_type_color",Color(0.3,0.3,0.0));
+	//Color basetype_color= EDITOR_DEF("text_editor/base_type_color",Color(0.3,0.3,0.0));
 
 
 	//colorize comments
@@ -253,9 +253,9 @@ void ShaderEditor::_menu_option(int p_option) {
 
 			current->get_find_replace_bar()->popup_replace();
 		} break;
-//		case SEARCH_LOCATE_SYMBOL: {
+		//case SEARCH_LOCATE_SYMBOL: {
 
-//		} break;
+		//} break;
 		case SEARCH_GOTO_LINE: {
 
 			goto_line_dialog->popup_find_line(current->get_text_edit());
@@ -396,7 +396,7 @@ void ShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_menu_option",&ShaderEditor::_menu_option);
 	ClassDB::bind_method("_params_changed",&ShaderEditor::_params_changed);
 	ClassDB::bind_method("apply_shaders",&ShaderEditor::apply_shaders);
-//	ClassDB::bind_method("_close_current_tab",&ShaderEditor::_close_current_tab);
+	//ClassDB::bind_method("_close_current_tab",&ShaderEditor::_close_current_tab);
 }
 
 void ShaderEditor::ensure_select_current() {
@@ -481,7 +481,7 @@ ShaderEditor::ShaderEditor() {
 	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT|KEY_F3), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/replace", TTR("Replace.."), KEY_MASK_CMD|KEY_R), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
-//	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
+	//search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
 	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/goto_line", TTR("Goto Line.."), KEY_MASK_CMD|KEY_L), SEARCH_GOTO_LINE);
 	search_menu->get_popup()->connect("id_pressed", this,"_menu_option");
 
@@ -512,8 +512,10 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 	bool handles = true;
 	Shader *shader=p_object->cast_to<Shader>();
-	//if (!shader || shader->cast_to<ShaderGraph>()) // Dont handle ShaderGraph's
-	//	handles = false;
+	/*
+	if (!shader || shader->cast_to<ShaderGraph>()) // Dont handle ShaderGraph's
+		handles = false;
+	*/
 
 	return shader!=NULL;
 }

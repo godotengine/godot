@@ -310,7 +310,7 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 	if (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
 
-//	update_gizmo();
+	//update_gizmo();
 }
 
 bool NavigationPolygonInstance::is_enabled() const {

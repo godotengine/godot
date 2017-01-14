@@ -635,8 +635,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 					gr_mem=alt_mem;
 			}
 
-			//if (wParam==VK_WIN) TODO wtf is this?
-			//	meta_mem=uMsg==WM_KEYDOWN;
+			/*
+			if (wParam==VK_WIN) TODO wtf is this?
+				meta_mem=uMsg==WM_KEYDOWN;
+			*/
 
 
 		} //fallthrough
@@ -1085,12 +1087,12 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	visual_server = memnew( VisualServerRaster );
  	// FIXME: Reimplement threaded rendering? Or remove?
-//	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
-//
-//		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
-//	}
+	/*
+	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
+		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+	}
+	*/
 
-	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
 
@@ -1274,9 +1276,11 @@ void OS_Windows::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 	memdelete(sample_manager);
 
@@ -1608,7 +1612,7 @@ void OS_Windows::set_window_fullscreen(bool p_enabled){
 */
 	}
 
-//	MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
+	//MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
 
 
 }
@@ -1986,7 +1990,7 @@ Error OS_Windows::execute(const String& p_path, const List<String>& p_arguments,
 			argss+=String(" \"")+p_arguments[i]+"\"";
 		}
 
-//		print_line("ARGS: "+argss);
+		//print_line("ARGS: "+argss);
 		//argss+"\"";
 		//argss+=" 2>nul";
 

@@ -408,8 +408,8 @@ void CPMixerImpl::set_voice_chorus_send(int p_voice_index,int p_chorus){
 
 void CPMixerImpl::set_reverb_mode(ReverbMode p_mode){
 
-//	Voice &v=voices[p_voice_index];
-//	ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
+	//Voice &v=voices[p_voice_index];
+	//ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
 	switch(p_mode) {
 		case CPMixer::REVERB_MODE_STUDIO_SMALL: reverb_type=AudioMixer::REVERB_SMALL; break;
 		case CPMixer::REVERB_MODE_STUDIO_MEDIUM: reverb_type=AudioMixer::REVERB_MEDIUM; break;
@@ -422,8 +422,8 @@ void CPMixerImpl::set_reverb_mode(ReverbMode p_mode){
 
 void CPMixerImpl::set_chorus_params(unsigned int p_delay_ms,unsigned int p_separation_ms,unsigned int p_depth_ms10,unsigned int p_speed_hz10){
 
-//	Voice &v=voices[p_voice_index];
-//	ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
+	//Voice &v=voices[p_voice_index];
+	//ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
 
 }
 

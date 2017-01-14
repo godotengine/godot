@@ -714,7 +714,7 @@ void FindReplaceDialog::_replace() {
 		}
 
 		text_edit->set_v_scroll(vsval);
-//		text_edit->set_h_scroll(hsval);
+		//text_edit->set_h_scroll(hsval);
 		error_label->set_text(vformat(TTR("Replaced %d ocurrence(s)."),rc));
 
 
@@ -951,7 +951,7 @@ FindReplaceDialog::FindReplaceDialog() {
 	VBoxContainer *rvb = memnew( VBoxContainer);
 	opt_mg->add_child(rvb);
 	replace_vb=rvb;
-//	rvb ->add_child(memnew(HSeparator));
+	//rvb ->add_child(memnew(HSeparator));
 	rvb ->add_child(memnew(Label));
 
 	prompt = memnew( CheckButton );

@@ -524,8 +524,10 @@ void EditorData::remove_scene(int p_idx){
 
 bool EditorData::_find_updated_instances(Node* p_root,Node *p_node,Set<String> &checked_paths) {
 
-//	if (p_root!=p_node && p_node->get_owner()!=p_root && !p_root->is_editable_instance(p_node->get_owner()))
-//		return false;
+	/*
+	if (p_root!=p_node && p_node->get_owner()!=p_root && !p_root->is_editable_instance(p_node->get_owner()))
+		return false;
+	*/
 
 	Ref<SceneState> ss;
 
@@ -814,7 +816,7 @@ EditorData::EditorData() {
 
 	current_edited_scene=-1;
 
-//	load_imported_scenes_from_globals();
+	//load_imported_scenes_from_globals();
 }
 
 ///////////

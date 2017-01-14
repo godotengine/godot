@@ -147,7 +147,7 @@ CPLoader::Error CPLoader_IT::load_sample(CPSample *p_sample) {
 	p_sample->set_sample_data(samp_id);
 	if (!samp_id.is_null()) {
 		
-	//	printf("Loaded ID: stereo: %i len %i 16bit %i\n",CPSampleManager::get_singleton()->is_stereo(samp_id), CPSampleManager::get_singleton()->get_size( samp_id), CPSampleManager::get_singleton()->is_16bits( samp_id) );
+		//printf("Loaded ID: stereo: %i len %i 16bit %i\n",CPSampleManager::get_singleton()->is_stereo(samp_id), CPSampleManager::get_singleton()->get_size( samp_id), CPSampleManager::get_singleton()->is_16bits( samp_id) );
 	}
 	
 	CP_ERR_COND_V( file->eof_reached(),FILE_CORRUPTED );

@@ -185,7 +185,7 @@ public:
 	virtual Rect2 get_item_rect() const;
 
 	Sprite3D();
-//	~Sprite3D();
+	//~Sprite3D();
 };
 
 #if 0
@@ -215,7 +215,7 @@ public:
 	virtual Rect2 get_item_rect() const;
 
 	AnimatedSprite3D();
-//	~AnimatedSprite3D();
+	//~AnimatedSprite3D();
 };
 #endif
 

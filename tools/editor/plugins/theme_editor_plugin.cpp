@@ -693,9 +693,9 @@ ThemeEditor::ThemeEditor() {
 
 
 
-//	main_panel->add_child(panel);
-//	panel->set_area_as_parent_rect();
-//	panel->set_margin( MARGIN_TOP,20 );
+	//main_panel->add_child(panel);
+	//panel->set_area_as_parent_rect();
+	//panel->set_margin( MARGIN_TOP,20 );
 
 	first_vb->add_child(memnew( Label("Label") ));
 
@@ -987,7 +987,7 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	theme_editor = memnew( ThemeEditor );
 	theme_editor->set_custom_minimum_size(Size2(0,200));
 
-//	p_node->get_viewport()->add_child(theme_editor);
+	//p_node->get_viewport()->add_child(theme_editor);
 	button=editor->add_bottom_panel_item("Theme",theme_editor);
 	button->hide();
 

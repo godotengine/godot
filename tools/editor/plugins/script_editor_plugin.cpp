@@ -278,7 +278,7 @@ ScriptEditor *ScriptEditor::script_editor=NULL;
 
 String ScriptEditor::_get_debug_tooltip(const String&p_text,Node *_se) {
 
-//	ScriptEditorBase *se=_se->cast_to<ScriptEditorBase>();
+	//ScriptEditorBase *se=_se->cast_to<ScriptEditorBase>();
 
 	String val = debugger->get_var_value(p_text);
 	if (val!=String()) {
@@ -311,7 +311,7 @@ void ScriptEditor::_breaked(bool p_breaked,bool p_can_debug) {
 
 void ScriptEditor::_show_debugger(bool p_show) {
 
-//	debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
+	//debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
 }
 
 void ScriptEditor::_script_created(Ref<Script> p_script) {
@@ -1104,7 +1104,7 @@ static const Node * _find_node_with_script(const Node* p_node, const RefPtr & p_
 Dictionary ScriptEditor::get_state() const {
 
 
-//	apply_scripts();
+	//apply_scripts();
 
 	Dictionary state;
 #if 0
@@ -2247,7 +2247,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	{
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		disk_changed->add_child(vbc);
-	//	disk_changed->set_child_rect(vbc);
+		//disk_changed->set_child_rect(vbc);
 
 		Label *dl = memnew( Label );
 		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?:"));
@@ -2293,7 +2293,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	help_index->connect("open_class",this,"_help_class_open");
 
 	history_pos=-1;
-//	debugger_gui->hide();
+	//debugger_gui->hide();
 
 	edit_pass=0;
 	trim_trailing_whitespace_on_save = false;

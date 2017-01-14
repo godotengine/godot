@@ -1182,7 +1182,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 
 
 	if (p_create_visual_debug) {
-	//	_create_debug_mesh(&baker);
+		//_create_debug_mesh(&baker);
 	}
 
 

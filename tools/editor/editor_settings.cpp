@@ -1105,7 +1105,7 @@ EditorSettings::EditorSettings() {
 
 EditorSettings::~EditorSettings() {
 
-//	singleton=NULL;
+	//singleton=NULL;
 }
 
 Ref<ShortCut> ED_GET_SHORTCUT(const String& p_path) {

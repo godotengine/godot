@@ -67,14 +67,14 @@ bool ProjectExportDialog::_create_tree(TreeItem *p_parent,EditorFileSystemDirect
 			has_items=true;
 	}
 
-//	int cc = p_options.get_slice_count(",");
+	//int cc = p_options.get_slice_count(",");
 
 	for (int i=0;i<p_dir->get_file_count();i++) {
 
 		TreeItem *fitem = tree->create_item(item);
 		//fitem->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		//fitem->set_editable(0,true);
-	//	fitem->set_checked(0,isfave);
+		//fitem->set_checked(0,isfave);
 		fitem->set_text(0,p_dir->get_file(i));
 		String path = p_dir->get_file_path(i);
 		fitem->set_tooltip(0,path);
@@ -164,8 +164,8 @@ void ProjectExportDialog::_platform_selected() {
 
 	String p =platforms->get_selected()->get_metadata(0);
 	_update_platform();
-//	editor->save_import_export();
-//	EditorFileSystem::get_singleton()->scan();
+	//editor->save_import_export();
+	//EditorFileSystem::get_singleton()->scan();
 
 }
 
@@ -313,7 +313,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			}
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"_scan_finished");
-//			_rescan();
+			//_rescan();
 			_update_platform();
 			export_mode->select( EditorImportExport::get_singleton()->get_export_filter() );
 			convert_text_scenes->set_pressed( EditorImportExport::get_singleton()->get_convert_text_scenes() );
@@ -343,7 +343,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			}
 			image_formats->connect("item_edited",this,"_format_toggled");
 			group_add->set_icon(get_icon("Add","EditorIcons"));
-//			group_del->set_icon(get_icon("Del","EditorIcons"));
+			//group_del->set_icon(get_icon("Del","EditorIcons"));
 
 			_update_group_list();
 			_update_group();
@@ -1332,8 +1332,8 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method(_MD("_keystore_created"),&ProjectExportDialog::_keystore_created);
 
 
-//	ADD_SIGNAL(MethodInfo("instance"));
-//	ADD_SIGNAL(MethodInfo("open"));
+	//ADD_SIGNAL(MethodInfo("instance"));
+	//ADD_SIGNAL(MethodInfo("open"));
 
 }
 
@@ -1775,11 +1775,13 @@ Error ProjectExport::export_project(const String& p_preset) {
 	{
 
 		List<String> l;
-//		SceneLoader::get_recognized_extensions(&l);
-//		for(List<String>::Element *E=l.front();E;E=E->next()) {
-//
-//			scene_extensions.insert(E->get());
-//		}
+		/*
+		SceneLoader::get_recognized_extensions(&l);
+		for(List<String>::Element *E=l.front();E;E=E->next()) {
+
+			scene_extensions.insert(E->get());
+		}
+		*/
 		ResourceLoader::get_recognized_extensions_for_type("",&l);
 		for(List<String>::Element *E=l.front();E;E=E->next()) {
 
@@ -1994,8 +1996,10 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 				uint32_t flags=0;
 
-//				if (saver->is_bundle_scenes_enabled())
-//					flags|=Reso::FLAG_BUNDLE_INSTANCED_SCENES;
+				/*
+				if (saver->is_bundle_scenes_enabled())
+					flags|=Reso::FLAG_BUNDLE_INSTANCED_SCENES;
+				*/
 				saver->set_bundle_exceptions(NULL);
 				if (E->get().depaction>=ProjectExportSettings::DA_BUNDLE) {
 					flags|=ResourceSaver::FLAG_BUNDLE_RESOURCES;
@@ -2041,7 +2045,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 					ERR_FAIL_COND_V(err,ERR_CANT_OPEN);
 				}
 				source_file=write_file;
-	//			project_settings->add_remapped_path(src_scene,path,platform);
+				//project_settings->add_remapped_path(src_scene,path,platform);
 
 			}
 
@@ -2093,7 +2097,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 
 
-//		added_settings["remap/"+platform]=remaps;`
+		//added_settings["remap/"+platform]=remaps;`
 		added_settings["remap/"+platform]=Variant(remaps).operator Array();
 	}
 

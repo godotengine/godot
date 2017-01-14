@@ -103,7 +103,7 @@ Transform Collada::fix_transform(const Transform& p_transform) {
 	}
 #endif
 
-//	tr.scale(Vector3(state.unit_scale.unit_scale.unit_scale));
+	//tr.scale(Vector3(state.unit_scale.unit_scale.unit_scale));
 	return tr;
 	//return state.matrix_fix * p_transform;
 }
@@ -444,9 +444,11 @@ Vector<String> Collada::_read_string_array(XMLParser& parser) {
 			// parse String data
 			String str = parser.get_node_data();
 			array=str.split_spaces();
-			//for(int i=0;i<array.size();i++) {
-			//	print_line(itos(i)+": "+array[i]);
-			//}
+			/*
+			for(int i=0;i<array.size();i++) {
+				print_line(itos(i)+": "+array[i]);
+			}
+			*/
 		}
 		else
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
@@ -1367,8 +1369,11 @@ void Collada::_parse_skin_controller(XMLParser& parser,String p_id) {
 
 				skindata.weights=weights;
 
-			}// else if (!parser.is_empty())
-			//	parser.skip_section();
+			}
+			/*
+			else if (!parser.is_empty())
+				parser.skip_section();
+			*/
 
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name()=="skin")
 				break;
@@ -1396,7 +1401,7 @@ void Collada::_parse_skin_controller(XMLParser& parser,String p_id) {
 	for(int i=0;i<joint_source.sarray.size();i++) {
 
 		String name = joint_source.sarray[i];
-		Transform xform = _read_transform_from_array(ibm_source.array,i*16);//	<- this is a mistake, it must be applied to vertices
+		Transform xform = _read_transform_from_array(ibm_source.array,i*16); //<- this is a mistake, it must be applied to vertices
 		xform.affine_invert(); // inverse for rest, because it's an inverse
 #ifdef COLLADA_IMPORT_SCALE_SCENE
 		xform.origin*=state.unit_scale;
@@ -1442,8 +1447,10 @@ void Collada::_parse_morph_controller(XMLParser& parser, String p_id) {
 			} else if (section=="Name_array" || section=="IDREF_array") {
 				// create a new array and read it.
 
-				//if (section=="IDREF_array")
-				//	morphdata.use_idrefs=true;
+				/*
+				if (section=="IDREF_array")
+					morphdata.use_idrefs=true;
+				*/
 				if (morphdata.sources.has(current_source)) {
 
 					morphdata.sources[current_source].sarray = _read_string_array(parser);
@@ -1491,8 +1498,10 @@ void Collada::_parse_morph_controller(XMLParser& parser, String p_id) {
 
 
 			}
-			// else if (!parser.is_empty())
-			//	parser.skip_section();
+			/*
+			else if (!parser.is_empty())
+				parser.skip_section();
+			*/
 
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name()=="morph")
 				break;
@@ -1705,7 +1714,7 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 		if ( parser.has_attribute("sid") ) { //bones may not have sid
 			joint->sid=parser.get_attribute_value("sid");
-//			state.bone_map[joint->sid]=joint;
+			//state.bone_map[joint->sid]=joint;
 		} else if (state.idref_joints.has(name)) {
 			joint->sid=name; //kind of a cheat but..
 		} else if (parser.has_attribute("name")) {

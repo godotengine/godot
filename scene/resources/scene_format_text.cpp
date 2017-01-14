@@ -397,7 +397,7 @@ Error ResourceInteractiveLoaderText::poll() {
 		int type=-1;
 		int name=-1;
 		int instance=-1;
-//		int base_scene=-1;
+		//int base_scene=-1;
 
 		if (next_tag.fields.has("name")) {
 			name=packed_scene->get_state()->add_name(next_tag.fields["name"]);
@@ -950,7 +950,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderText::load_interactive(const 
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	ria->open(f);
 
 	return ria;
@@ -1001,7 +1001,7 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const{
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	String r = ria->recognize(f);
 	return r;
 }
@@ -1018,7 +1018,7 @@ void ResourceFormatLoaderText::get_dependencies(const String& p_path,List<String
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	ria->get_dependencies(f,p_dependencies,p_add_types);
 
 
@@ -1035,7 +1035,7 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path,const M
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	return ria->rename_dependencies(f,p_path,p_map);
 }
 
@@ -1208,10 +1208,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 		if (packed_scene.is_null())
 			title+="type=\""+p_resource->get_class()+"\" ";
 		int load_steps=saved_resources.size()+external_resources.size();
-		//if (packed_scene.is_valid()) {
-		//	load_steps+=packed_scene->get_node_count();
-		//}
+		/*
+		if (packed_scene.is_valid()) {
+			load_steps+=packed_scene->get_node_count();
+		}
 		//no, better to not use load steps from nodes, no point to that
+		*/
 
 		if (load_steps>1) {
 			title+="load_steps="+itos(load_steps)+" ";
@@ -1299,7 +1301,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
-//		property_list.sort();
+		//property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 

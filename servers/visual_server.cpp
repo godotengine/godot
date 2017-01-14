@@ -1675,7 +1675,7 @@ RID VisualServer::instance_create2(RID p_base, RID p_scenario) {
 
 VisualServer::VisualServer() {
 
-//	ERR_FAIL_COND(singleton);
+	//ERR_FAIL_COND(singleton);
 	singleton=this;
 
 }

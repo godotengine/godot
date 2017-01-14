@@ -121,8 +121,10 @@ void TextureRect::set_texture(const Ref<Texture>& p_tex) {
 
 	texture=p_tex;
 	update();
-	//if (texture.is_valid())
-	//	texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+	/*
+	if (texture.is_valid())
+		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+	*/
 	minimum_size_changed();
 }
 

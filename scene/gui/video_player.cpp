@@ -394,7 +394,7 @@ void VideoPlayer::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "audio_track",PROPERTY_HINT_RANGE,"0,128,1"), _SCS("set_audio_track"), _SCS("get_audio_track") );
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE,"VideoStream"), _SCS("set_stream"), _SCS("get_stream") );
-//	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), _SCS("set_loop"), _SCS("has_loop") );
+	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), _SCS("set_loop"), _SCS("has_loop") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE,"-80,24,0.01"), _SCS("set_volume_db"), _SCS("get_volume_db") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "autoplay"), _SCS("set_autoplay"), _SCS("has_autoplay") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "paused"), _SCS("set_paused"), _SCS("is_paused") );

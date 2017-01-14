@@ -216,7 +216,7 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 		p_space->area_remove_from_moved_list((SelfList<Area2DSW>*)aml.first()); //faster to remove here
 	}
 
-//	print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
+	//print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
 
 	{ //profile
 		profile_endtime=OS::get_singleton()->get_ticks_usec();

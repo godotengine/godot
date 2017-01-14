@@ -167,7 +167,7 @@ public:
 		ClassDB::bind_method("_import", &EditorBitMaskImportDialog::_import);
 		ClassDB::bind_method("_browse", &EditorBitMaskImportDialog::_browse);
 		ClassDB::bind_method("_browse_target", &EditorBitMaskImportDialog::_browse_target);
-		//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
+		//ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 
 	EditorBitMaskImportDialog(EditorBitMaskImportPlugin *p_plugin) {
@@ -225,7 +225,7 @@ public:
 		save_select = memnew(EditorDirDialog);
 		add_child(save_select);
 
-		//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+		//save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 		save_select->connect("dir_selected", this, "_choose_save_dir");
 
 		get_ok()->connect("pressed", this, "_import");
@@ -235,7 +235,7 @@ public:
 		error_dialog = memnew(ConfirmationDialog);
 		add_child(error_dialog);
 		error_dialog->get_ok()->set_text(TTR("Accept"));
-		//	error_dialog->get_cancel()->hide();
+		//error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
 	}

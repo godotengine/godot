@@ -1524,7 +1524,7 @@ void BakedLight::set_cell_subdiv(int p_subdiv) {
 
 	cell_subdiv=p_subdiv;
 
-//	VS::get_singleton()->baked_light_set_subdivision(baked_light,p_subdiv);
+	//VS::get_singleton()->baked_light_set_subdivision(baked_light,p_subdiv);
 }
 
 int BakedLight::get_cell_subdiv() const {
@@ -1745,7 +1745,7 @@ void BakedLight::_bind_methods() {
 
 BakedLight::BakedLight() {
 
-//	baked_light=VisualServer::get_singleton()->baked_light_create();
+	//baked_light=VisualServer::get_singleton()->baked_light_create();
 	VS::get_singleton()->instance_set_base(get_instance(),baked_light);
 
 	cell_subdiv=8;
@@ -1815,7 +1815,7 @@ void BakedLightSampler::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/strength",PROPERTY_HINT_RANGE,"0.01,16,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_STRENGTH);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/attenuation",PROPERTY_HINT_EXP_EASING),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/detail_ratio",PROPERTY_HINT_RANGE,"0.01,1.0,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_DETAIL_RATIO);
-//	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/detail_ratio",PROPERTY_HINT_RANGE,"0,20,1"),_SCS("set_param"),_SCS("get_param"),PARAM_DETAIL_RATIO);
+	//ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/detail_ratio",PROPERTY_HINT_RANGE,"0,20,1"),_SCS("set_param"),_SCS("get_param"),PARAM_DETAIL_RATIO);
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"params/resolution",PROPERTY_HINT_RANGE,"4,32,1"),_SCS("set_resolution"),_SCS("get_resolution"));
 
 }

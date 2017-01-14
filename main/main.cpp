@@ -239,7 +239,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	while (I) {
 
 		I->get()=unescape_cmdline(I->get().strip_escapes());
-//		print_line("CMD: "+I->get());
+		//print_line("CMD: "+I->get());
 		I=I->next();
 	}
 
@@ -879,10 +879,12 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 // Note 1: *zip_packed_data live into *packed_data
 // Note 2: PackedData::~PackedData destroy this.
-//#ifdef MINIZIP_ENABLED
-//	if (zip_packed_data)
-//		memdelete( zip_packed_data );
-//#endif
+/*
+#ifdef MINIZIP_ENABLED
+	if (zip_packed_data)
+		memdelete( zip_packed_data );
+#endif
+*/
 
 	unregister_core_driver_types();
 	unregister_core_types();
@@ -955,7 +957,7 @@ Error Main::setup2() {
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg,boot_logo_scale);
 #ifndef TOOLS_ENABLED
 			//no tools, so free the boot logo (no longer needed)
-		//	GlobalConfig::get_singleton()->set("application/boot_logo",Image());
+			//GlobalConfig::get_singleton()->set("application/boot_logo",Image());
 #endif
 
 		} else {
@@ -1009,7 +1011,7 @@ Error Main::setup2() {
 		//print_line("use custom cursor");
 		Ref<Texture> cursor=ResourceLoader::load(GlobalConfig::get_singleton()->get("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
-		//	print_line("loaded ok");
+			//print_line("loaded ok");
 			Vector2 hotspot = GlobalConfig::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
 			Input::get_singleton()->set_custom_mouse_cursor(cursor,hotspot);
 		}
@@ -1587,9 +1589,10 @@ bool Main::iteration() {
 	double step=(double)ticks_elapsed / 1000000.0;
 	float frame_slice=1.0/Engine::get_singleton()->get_iterations_per_second();
 
-//	if (time_accum+step < frame_slice)
-//		return false;
-
+	/*
+	if (time_accum+step < frame_slice)
+		return false;
+	*/
 
 	uint64_t fixed_process_ticks=0;
 	uint64_t idle_process_ticks=0;
@@ -1635,8 +1638,10 @@ bool Main::iteration() {
 
 		time_accum-=frame_slice;
 		message_queue->flush();
-		//if (AudioServer::get_singleton())
-		//	AudioServer::get_singleton()->update();
+		/*
+		if (AudioServer::get_singleton())
+			AudioServer::get_singleton()->update();
+		*/
 
 		fixed_process_ticks=MAX(fixed_process_ticks,OS::get_singleton()->get_ticks_usec()-fixed_begin); // keep the largest one for reference
 		fixed_process_max=MAX(OS::get_singleton()->get_ticks_usec()-fixed_begin,fixed_process_max);
@@ -1692,7 +1697,7 @@ bool Main::iteration() {
 	}
 
 
-	//	x11_delay_usec(10000);
+	//x11_delay_usec(10000);
 	frames++;
 	Engine::get_singleton()->_idle_frames++;
 

@@ -52,7 +52,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
-//		NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
+		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -471,14 +471,14 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 		//preloader_editor->show();
 		button->show();
 		editor->make_bottom_panel_item_visible(preloader_editor);
-//		preloader_editor->set_process(true);
+		//preloader_editor->set_process(true);
 	} else {
 
 		if (preloader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 		//preloader_editor->hide();
-//		preloader_editor->set_process(false);
+		//preloader_editor->set_process(false);
 	}
 
 }
@@ -492,8 +492,8 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node)
 	button=editor->add_bottom_panel_item("ResourcePreloader",preloader_editor);
 	button->hide();
 
-//	preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-//	preloader_editor->set_margin( MARGIN_TOP, 120 );
+	//preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
+	//preloader_editor->set_margin( MARGIN_TOP, 120 );
 
 
 

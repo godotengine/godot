@@ -482,7 +482,7 @@ Transform Skeleton::get_bone_pose(int p_bone) const {
 void Skeleton::set_bone_custom_pose(int p_bone, const Transform& p_custom_pose) {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-//	ERR_FAIL_COND( !is_inside_scene() );
+	//ERR_FAIL_COND( !is_inside_scene() );
 
 
 	bones[p_bone].custom_pose_enable=(p_custom_pose!=Transform());

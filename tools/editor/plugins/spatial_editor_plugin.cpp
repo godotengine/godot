@@ -278,7 +278,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	//uint32_t closest=0;
-//	float closest_dist=0;
+	//float closest_dist=0;
 
 	r_includes_current=false;
 
@@ -580,8 +580,8 @@ void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 
 	List<Node*> &selection = editor_selection->get_selected_node_list();
 
-//	Vector3 center;
-//	int nc=0;
+	//Vector3 center;
+	//int nc=0;
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 		Spatial *sp = E->get()->cast_to<Spatial>();
@@ -593,16 +593,14 @@ void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 			continue;
 
 		se->original=se->sp->get_global_transform();
-//		center+=se->original.origin;
-//		nc++;
+		//center+=se->original.origin;
+		//nc++;
 	}
 
-
-//	if (nc)
-//		_edit.center=center/float(nc);
-
-
-
+	/*
+	if (nc)
+		_edit.center=center/float(nc);
+	*/
 }
 
 static int _get_key_modifier(const String& p_property) {
@@ -2498,7 +2496,7 @@ void SpatialEditor::update_transform_gizmo() {
 			center.expand_to(xf.origin);
 			gizmo_basis=Basis();
 		}
-//		count++;
+		//count++;
 	}
 
 	Vector3 pcenter = center.pos+center.size*0.5;
@@ -2761,16 +2759,16 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 		}
 	}
 
+	/*
 	if (p_spatial) {
-		//_validate_selection();
-		//if (selected.has(p_spatial->get_instance_ID()) && selected.size()==1)
-		//	return;
-		//_select(p_spatial->get_instance_ID(),false,true);
+		_validate_selection();
+		if (selected.has(p_spatial->get_instance_ID()) && selected.size()==1)
+			return;
+		_select(p_spatial->get_instance_ID(),false,true);
 
 		// should become the selection
 	}
-
-
+	*/
 }
 
 void SpatialEditor::_xform_dialog_action() {
@@ -2837,8 +2835,8 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				tool_button[i]->set_pressed(i==p_option);
 			tool_mode=(ToolMode)p_option;
 
-	//		static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode.","List Selection Mode."};
-//			set_message(_mode[p_option],3);
+			//static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode.","List Selection Mode."};
+			//set_message(_mode[p_option],3);
 			update_transform_gizmo();
 
 		} break;
@@ -3214,9 +3212,9 @@ void SpatialEditor::_init_indicators() {
 		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat->get_rid());
 
 
-//		origin = VisualServer::get_singleton()->poly_create();
-//		VisualServer::get_singleton()->poly_add_primitive(origin,origin_points,Vector<Vector3>(),origin_colors,Vector<Vector3>());
-//		VisualServer::get_singleton()->poly_set_material(origin,indicator_mat,true);
+		//origin = VisualServer::get_singleton()->poly_create();
+		//VisualServer::get_singleton()->poly_add_primitive(origin,origin_points,Vector<Vector3>(),origin_colors,Vector<Vector3>());
+		//VisualServer::get_singleton()->poly_set_material(origin,indicator_mat,true);
 		origin_instance = VisualServer::get_singleton()->instance_create2(origin,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(origin_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
 
@@ -3674,7 +3672,7 @@ void SpatialEditor::_node_removed(Node* p_node) {
 
 void SpatialEditor::_bind_methods() {
 
-//	ClassDB::bind_method("_gui_input",&SpatialEditor::_gui_input);
+	//ClassDB::bind_method("_gui_input",&SpatialEditor::_gui_input);
 	ClassDB::bind_method("_unhandled_key_input",&SpatialEditor::_unhandled_key_input);
 	ClassDB::bind_method("_node_removed",&SpatialEditor::_node_removed);
 	ClassDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
@@ -3738,7 +3736,7 @@ void SpatialEditor::clear() {
 
 void SpatialEditor::_update_ambient_light_color(const Color& p_color) {
 
-//	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,settings_ambient_color->get_color());
+	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,settings_ambient_color->get_color());
 
 }
 
@@ -4008,8 +4006,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_vbc->add_margin_child(TTR("Ambient Light Color:"),settings_ambient_color);
 	settings_ambient_color->connect("color_changed",this,"_update_ambient_light_color");
 
-//	viewport_environment->set_enable_fx(Environment::FX_AMBIENT_LIGHT,true);
-//	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
+	//viewport_environment->set_enable_fx(Environment::FX_AMBIENT_LIGHT,true);
+	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
 	settings_ambient_color->set_color(Color(0.15,0.15,0.15));
 
 
@@ -4154,7 +4152,7 @@ void SpatialEditorPlugin::set_state(const Dictionary& p_state) {
 
 void SpatialEditor::snap_cursor_to_plane(const Plane& p_plane) {
 
-//	cursor.pos=p_plane.project(cursor.pos);
+	//cursor.pos=p_plane.project(cursor.pos);
 }
 
 void SpatialEditorPlugin::_bind_methods() {

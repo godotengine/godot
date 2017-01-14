@@ -339,7 +339,7 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 	} else {
 		PhysicsServer::get_singleton()->body_attach_object_instance_ID(rid,get_instance_ID());
 	}
-//	set_transform_notify(true);
+	//set_transform_notify(true);
 
 }
 

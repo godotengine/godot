@@ -724,7 +724,7 @@ EditorProfiler::EditorProfiler()
 	int metric_size=CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size",600)),60,1024);
 	frame_metrics.resize(metric_size);
 	last_metric=-1;
-//	cursor_metric=-1;
+	//cursor_metric=-1;
 	hover_metric=-1;
 
 
@@ -750,6 +750,6 @@ EditorProfiler::EditorProfiler()
 	seeking=false;
 	graph_height=1;
 
-//	activate->set_disabled(true);
+	//activate->set_disabled(true);
 
 }

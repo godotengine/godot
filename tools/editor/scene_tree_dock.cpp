@@ -295,10 +295,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 	switch(p_tool) {
 
 		case TOOL_NEW: {
-
-
-			//if (!_validate_no_foreign())
-			//	break;
+			/*
+			if (!_validate_no_foreign())
+				break;
+			*/
 			create_dialog->popup(true);
 		} break;
 		case TOOL_INSTANCE: {
@@ -319,8 +319,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
-			//if (!_validate_no_foreign())
-			//	break;
+			/*
+			if (!_validate_no_foreign())
+				break;
+			*/
 
 			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 			List<String> extensions;
@@ -345,10 +347,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!current)
 				break;
 
-			//if (!_validate_no_foreign())
-			//	break;
-			//connect_dialog->popup_centered_ratio();
-			//connect_dialog->set_node(current);
+			/*
+			if (!_validate_no_foreign())
+				break;
+			connect_dialog->popup_centered_ratio();
+			connect_dialog->set_node(current);
+			*/
 
 		} break;
 		case TOOL_GROUP: {
@@ -356,10 +360,12 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *current = scene_tree->get_selected();
 			if (!current)
 				break;
-			//if (!_validate_no_foreign())
-			//	break;
-			//groups_editor->set_current(current);
-			//groups_editor->popup_centered_ratio();
+			/*
+			if (!_validate_no_foreign())
+				break;
+			groups_editor->set_current(current);
+			groups_editor->popup_centered_ratio();
+			*/
 		} break;
 		case TOOL_ATTACH_SCRIPT: {
 
@@ -367,8 +373,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!selected)
 				break;
 
-			//if (!_validate_no_foreign())
-			//	break;
+			/*
+			if (!_validate_no_foreign())
+				break;
+			*/
 
 			Ref<Script> existing = selected->get_script();
 			if (existing.is_valid())
@@ -1556,8 +1564,10 @@ void SceneTreeDock::_new_scene_from(String p_file) {
 		int flg=0;
 		if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 			flg|=ResourceSaver::FLAG_COMPRESS;
-		//if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
-		//	flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+		/*
+		if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
+			flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+		*/
 
 
 		err = ResourceSaver::save(p_file,sdata,flg);

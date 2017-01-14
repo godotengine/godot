@@ -3117,8 +3117,8 @@ void Generic6DOFJointSpatialGizmo::redraw() {
 				float s = ll+i*(Math_PI*2.0)/points;
 				float n = ll+(i+1)*(Math_PI*2.0)/points;
 
-//				Vector3 from=Vector3(0,Math::cos(s),-Math::sin(s) )*cs;
-//				Vector3 to=Vector3( 0,Math::cos(n),-Math::sin(n) )*cs;
+				//Vector3 from=Vector3(0,Math::cos(s),-Math::sin(s) )*cs;
+				//Vector3 to=Vector3( 0,Math::cos(n),-Math::sin(n) )*cs;
 
 				Vector3 from;
 				SET_VTX(from,0, Math::cos(s), -Math::sin(s) );

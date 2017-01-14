@@ -363,7 +363,7 @@ void Image::convert( Format p_new_format ){
 
 	Image new_img(width,height,0,p_new_format);
 
-//	int len=data.size();
+	//int len=data.size();
 
 	PoolVector<uint8_t>::Read r = data.read();
 	PoolVector<uint8_t>::Write w = new_img.data.write();
@@ -414,7 +414,7 @@ void Image::convert( Format p_new_format ){
 
 	bool gen_mipmaps=mipmaps;
 
-//	mipmaps=false;
+	//mipmaps=false;
 
 	*this=new_img;
 
@@ -1240,7 +1240,7 @@ void Image::create( const char ** p_xpm ) {
 					uint8_t col_r;
 					uint8_t col_g;
 					uint8_t col_b;
-//					uint8_t col_a=255;
+					//uint8_t col_a=255;
 
 					for (int i=0;i<6;i++) {
 

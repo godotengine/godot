@@ -252,7 +252,7 @@ bool test_13() {
 	/* how can i embed UTF in here? */
 
 	static const CharType ustr[] = { 0x304A , 0x360F, 0x3088, 0x3046, 0 };
-//	static const wchar_t ustr[] = { 'P', 0xCE, 'p',0xD3, 0 };
+	//static const wchar_t ustr[] = { 'P', 0xCE, 'p',0xD3, 0 };
 	String s=ustr;
 
 	OS::get_singleton()->print("\tUnicode: %ls\n",ustr);

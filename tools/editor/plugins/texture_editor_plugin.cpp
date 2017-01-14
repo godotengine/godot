@@ -113,11 +113,11 @@ void TextureEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		texture_editor->show();
-//		texture_editor->set_process(true);
+		//texture_editor->set_process(true);
 	} else {
 
 		texture_editor->hide();
-//		texture_editor->set_process(false);
+		//texture_editor->set_process(false);
 	}
 
 }

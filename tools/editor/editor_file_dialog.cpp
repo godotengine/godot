@@ -713,8 +713,10 @@ void EditorFileDialog::update_file_list() {
 
 	}
 	// ??
-	//if (tree->get_root() && tree->get_root()->get_children())
-	//	tree->get_root()->get_children()->select(0);
+	/*
+	if (tree->get_root() && tree->get_root()->get_children())
+		tree->get_root()->get_children()->select(0);
+	*/
 
 	files.clear();
 

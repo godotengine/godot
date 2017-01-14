@@ -355,11 +355,11 @@ void MaterialEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		material_editor->show();
-//		material_editor->set_process(true);
+		//material_editor->set_process(true);
 	} else {
 
 		material_editor->hide();
-//		material_editor->set_process(false);
+		//material_editor->set_process(false);
 	}
 
 }

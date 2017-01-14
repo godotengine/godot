@@ -949,8 +949,10 @@ void Tree::draw_item_rect(const TreeItem::Cell& p_cell,const Rect2i& p_rect,cons
 
 	}
 
-//	if (p_tool)
-//		rect.size.x-=Math::floor(rect.size.y/2);
+	/*
+	if (p_tool)
+		rect.size.x-=Math::floor(rect.size.y/2);
+	*/
 
 	Ref<Font> font = cache.font;
 
@@ -1029,7 +1031,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 		}
 
 		//draw separation.
-//		if (p_item->get_parent()!=root || !hide_root)
+		//if (p_item->get_parent()!=root || !hide_root)
 
 		Ref<Font> font = cache.font;
 
@@ -1262,7 +1264,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 				} break;
 				case TreeItem::CELL_MODE_CUSTOM: {
 
-	//				int option = (int)p_item->cells[i].val;
+					//int option = (int)p_item->cells[i].val;
 
 
 
@@ -1414,8 +1416,10 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 						emit_signal("item_selected");
 						emitted_row=true;
 					}
-					//if (p_col==i)
-					 //	p_current->selected_signal.call(p_col);
+					/*
+					if (p_col==i)
+						p_current->selected_signal.call(p_col);
+					*/
 
 			} else if (c.selected) {
 
@@ -1672,9 +1676,11 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 						}
 					}
 
-					//if (!c.selected && select_mode==SELECT_MULTI) {
-					//	emit_signal("multi_selected",p_item,col,true);
-					//}
+					/*
+					if (!c.selected && select_mode==SELECT_MULTI) {
+						emit_signal("multi_selected",p_item,col,true);
+					}
+					*/
 					update();
 				}
 
@@ -1997,7 +2003,7 @@ void Tree::_gui_input(InputEvent p_event) {
 				} break;
 				case KEY_LEFT: {
 
-//					TreeItem *next = NULL;
+					//TreeItem *next = NULL;
 					if (!selected_item)
 						break;
 					if (select_mode==SELECT_ROW)
@@ -2027,7 +2033,7 @@ void Tree::_gui_input(InputEvent p_event) {
 
 						next=selected_item->get_next_visible();
 
-//						if (diff < uint64_t(GLOBAL_DEF("gui/incr_search_max_interval_msec",2000))) {
+						//if (diff < uint64_t(GLOBAL_DEF("gui/incr_search_max_interval_msec",2000))) {
 						if (last_keypress!=0) {
 							//incr search next
 							int col;
@@ -2470,7 +2476,7 @@ void Tree::_gui_input(InputEvent p_event) {
 					if (!click_handled) {
 						drag_speed=0;
 						drag_accum=0;
-//						last_drag_accum=0;
+						//last_drag_accum=0;
 						drag_from=v_scroll->get_value();
 						drag_touching=OS::get_singleton()->has_touchscreen_ui_hint();
 						drag_touching_deaccel=false;
@@ -2787,13 +2793,10 @@ void Tree::_notification(int p_what) {
 		}
 
 		int ofs=0;
-//		int from_y=exposed.pos.y+bg->get_margin(MARGIN_TOP);
-//		int size_y=exposed.size.height-bg->get_minimum_size().height;
 
 		for (int i=0;i<(columns.size()-1-1);i++) {
 
 			ofs+=get_column_width(i);
-			//get_painter()->draw_fill_rect( Point2(ofs+cache.hseparation/2, from_y), Size2( 1, size_y ),color( COLOR_TREE_GRID) );
 		}
 
 		if (show_column_titles) {
@@ -3016,8 +3019,10 @@ int Tree::get_edited_column() const {
 
 TreeItem* Tree::get_next_selected( TreeItem* p_item) {
 
-	//if (!p_item)
-	//	return NULL;
+	/*
+	if (!p_item)
+		return NULL;
+	*/
 	if (!root)
 		return NULL;
 

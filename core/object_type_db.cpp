@@ -897,7 +897,7 @@ bool ClassDB::set_property(Object* p_object,const StringName& p_property, const 
 			if (psg->index>=0) {
 				Variant index=psg->index;
 				const Variant* arg[2]={&index,&p_value};
-//				p_object->call(psg->setter,arg,2,ce);
+				//p_object->call(psg->setter,arg,2,ce);
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object,arg,2,ce);
 				} else {

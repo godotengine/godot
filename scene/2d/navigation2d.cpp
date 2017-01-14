@@ -432,7 +432,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 	while(!found_route) {
 
 		if (open_list.size()==0) {
-		//	print_line("NOU OPEN LIST");
+			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list

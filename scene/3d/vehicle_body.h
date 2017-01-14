@@ -63,7 +63,7 @@ friend class VehicleBody;
 
 	VehicleBody *body;
 
-//	btVector3	m_wheelAxleCS; // const or modified by steering ?
+	//btVector3	m_wheelAxleCS; // const or modified by steering ?
 
 	real_t	m_steering;
 	real_t	m_rotation;

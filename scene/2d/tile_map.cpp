@@ -610,7 +610,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	
 
 	xform.set_origin( q.pos );
-//	q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
+	//q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	q.body=Physics2DServer::get_singleton()->body_create(use_kinematic?Physics2DServer::BODY_MODE_KINEMATIC:Physics2DServer::BODY_MODE_STATIC);
 	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.body,get_instance_ID());
 	Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
@@ -849,8 +849,10 @@ void TileMap::_set_tile_data(const PoolVector<int>& p_data) {
 		bool transpose = v&(1<<31);
 		v&=(1<<29)-1;
 
-//		if (x<-20 || y <-20 || x>4000 || y>4000)
-//			continue;
+		/*
+		if (x<-20 || y <-20 || x>4000 || y>4000)
+			continue;
+		*/
 		set_cell(x,y,v,flip_h,flip_v,transpose);
 
 	}

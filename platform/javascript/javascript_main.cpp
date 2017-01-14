@@ -159,8 +159,8 @@ int main(int argc, char *argv[]) {
 	char *args[]={"-test","gui","-v",NULL};
 	Error err  = Main::setup("apk",3,args);
 #else
-//	char *args[]={"-v",NULL};//
-//	Error err  = Main::setup("",1,args);
+	//char *args[]={"-v",NULL};//
+	//Error err  = Main::setup("",1,args);
 	Error err  = Main::setup("",0,NULL);
 
 #endif

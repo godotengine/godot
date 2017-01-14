@@ -822,7 +822,7 @@ void VisualScriptEditor::_member_selected() {
 
 
 	selected=ti->get_metadata(0);
-//	print_line("selected: "+String(selected));
+	//print_line("selected: "+String(selected));
 
 
 	if (ti->get_parent()==members->get_root()->get_children()) {
@@ -1136,9 +1136,11 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 					undo_redo->add_undo_method(script.ptr(),"data_connect",name,E->get().from_node,E->get().from_port,E->get().to_node,E->get().to_port);
 				}
 
-				//for(int i=0;i<script->function_get_argument_count(name);i++) {
-				////	undo_redo->add_undo_method(script.ptr(),"function_add_argument",name,script->function_get_argument_name(name,i),script->function_get_argument_type(name,i));
-				//}
+				/*
+				for(int i=0;i<script->function_get_argument_count(name);i++) {
+					undo_redo->add_undo_method(script.ptr(),"function_add_argument",name,script->function_get_argument_name(name,i),script->function_get_argument_type(name,i));
+				}
+				*/
 				undo_redo->add_do_method(this,"_update_members");
 				undo_redo->add_undo_method(this,"_update_members");
 				undo_redo->add_do_method(this,"_update_graph");

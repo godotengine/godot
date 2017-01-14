@@ -111,8 +111,10 @@ int CPPlayer::find_empty_voice() {
 
  	for (i=0;i<control.max_voices;i++) {
 		/* allow us to take over a nonexisting sample */
-//		if ((voice[i].s==NULL)
-//			return k;
+		/*
+		if ((voice[i].s==NULL)
+			return k;
+		*/
 
 		if ((voice[i].kick==KICK_NOTHING)||(voice[i].kick==KICK_ENVELOPE)) {
 

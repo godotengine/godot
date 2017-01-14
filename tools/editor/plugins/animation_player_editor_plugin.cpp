@@ -94,7 +94,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-//		editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
+		//editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
 		add_anim->set_icon( get_icon("New","EditorIcons") );
 		rename_anim->set_icon( get_icon("Rename","EditorIcons") );
 		duplicate_anim->set_icon( get_icon("Duplicate","EditorIcons") );
@@ -377,8 +377,10 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource>& p_resou
 	int flg = 0;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 		flg |= ResourceSaver::FLAG_COMPRESS;
-	//if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
-	//	flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
+	/*
+	if (EditorSettings::get_singleton()->get("filesystem/on_save/save_paths_as_relative"))
+		flg |= ResourceSaver::FLAG_RELATIVE_PATHS;
+	*/
 
 	String path = GlobalConfig::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path, p_resource, flg | ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
@@ -388,7 +390,7 @@ void AnimationPlayerEditor::_animation_save_in_path(const Ref<Resource>& p_resou
 		accept->popup_centered_minsize();
 		return;
 	}
-	//	EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());
+	//EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());
 
 	((Resource*)p_resource.ptr())->set_path(path);
 	editor->emit_signal("resource_saved", p_resource);
@@ -672,7 +674,7 @@ void AnimationPlayerEditor::set_state(const Dictionary& p_state) {
 			show();
 			set_process(true);
 			ensure_visibility();
-//			EditorNode::get_singleton()->animation_panel_make_visible(true);
+			//EditorNode::get_singleton()->animation_panel_make_visible(true);
 
 			if (p_state.has("animation")) {
 				String anim = p_state["animation"];
@@ -897,7 +899,7 @@ void AnimationPlayerEditor::edit(AnimationPlayer *p_player) {
 	} else {
 		key_editor->show_select_node_warning(true);
 
-//		hide();
+		//hide();
 
 	}
 
@@ -1128,7 +1130,7 @@ void AnimationPlayerEditor::_hide_anim_editors() {
 	key_editor->set_animation(Ref<Animation>());
 	key_editor->set_root(NULL);
 	key_editor->show_select_node_warning(true);
-//		editor->animation_editor_make_visible(false);
+		//editor->animation_editor_make_visible(false);
 
 }
 
@@ -1267,7 +1269,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(_MD("_seek_value_changed"),&AnimationPlayerEditor::_seek_value_changed,DEFVAL(true));
 	ClassDB::bind_method(_MD("_animation_player_changed"),&AnimationPlayerEditor::_animation_player_changed);
 	ClassDB::bind_method(_MD("_blend_edited"),&AnimationPlayerEditor::_blend_edited);
-//	ClassDB::bind_method(_MD("_seek_frame_changed"),&AnimationPlayerEditor::_seek_frame_changed);
+	//ClassDB::bind_method(_MD("_seek_frame_changed"),&AnimationPlayerEditor::_seek_frame_changed);
 	ClassDB::bind_method(_MD("_scale_changed"),&AnimationPlayerEditor::_scale_changed);
 	//ClassDB::bind_method(_MD("_editor_store_all"),&AnimationPlayerEditor::_editor_store_all);
 	///jectTypeDB::bind_method(_MD("_editor_load_all"),&AnimationPlayerEditor::_editor_load_all);
@@ -1552,11 +1554,11 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 		editor->make_bottom_panel_item_visible(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
-//		editor->animation_panel_make_visible(true);
+		//editor->animation_panel_make_visible(true);
 	} else {
 
-//		anim_editor->hide();
-//		anim_editor->set_idle_process(false);
+		//anim_editor->hide();
+		//anim_editor->set_idle_process(false);
 	}
 
 }

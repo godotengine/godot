@@ -248,7 +248,7 @@ Ref<Texture> EditorMaterialPreviewPlugin::generate(const RES& p_from) {
 
 	VS::get_singleton()->viewport_queue_screen_capture(viewport);
 	VS::get_singleton()->viewport_set_render_target_update_mode(viewport,VS::RENDER_TARGET_UPDATE_ONCE); //once used for capture
-//	print_line("queue capture!");
+	//print_line("queue capture!");
 	Image img;
 
 	int timeout=1000;
@@ -825,7 +825,7 @@ Ref<Texture> EditorMeshPreviewPlugin::generate(const RES& p_from) {
 
 	VS::get_singleton()->viewport_queue_screen_capture(viewport);
 	VS::get_singleton()->viewport_set_render_target_update_mode(viewport,VS::RENDER_TARGET_UPDATE_ONCE); //once used for capture
-//	print_line("queue capture!");
+	//print_line("queue capture!");
 	Image img;
 
 	int timeout=1000;
@@ -867,7 +867,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	camera = VS::get_singleton()->camera_create();
 	VS::get_singleton()->viewport_attach_camera(viewport,camera);
 	VS::get_singleton()->camera_set_transform(camera,Transform(Matrix3(),Vector3(0,0,3)));
-//	VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
+	//VS::get_singleton()->camera_set_perspective(camera,45,0.1,10);
 	VS::get_singleton()->camera_set_orthogonal(camera,1.0,0.01,1000.0);
 
 	light = VS::get_singleton()->light_create(VS::LIGHT_DIRECTIONAL);
@@ -881,7 +881,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	VS::get_singleton()->instance_set_transform(light_instance2,Transform().looking_at(Vector3(0,1,0),Vector3(0,0,1)));
 
-//	sphere = VS::get_singleton()->mesh_create();
+	//sphere = VS::get_singleton()->mesh_create();
 	mesh_instance = VS::get_singleton()->instance_create();
 	VS::get_singleton()->instance_set_scenario(mesh_instance,scenario);
 

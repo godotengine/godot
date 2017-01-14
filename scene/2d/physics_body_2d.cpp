@@ -375,7 +375,7 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 		if (!E) {
 
 			E = contact_monitor->body_map.insert(objid,BodyState());
-//			E->get().rc=0;
+			//E->get().rc=0;
 			E->get().in_scene=node && node->is_inside_tree();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->tree_entered,this,SceneStringNames::get_singleton()->_body_enter_tree,make_binds(objid));
@@ -494,7 +494,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
 
-//			bool found=false;
+			//bool found=false;
 
 			Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(obj);
 			if (!E) {
@@ -1141,8 +1141,10 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 			float d = a.distance_to(b);
 
-			//if (d<margin)
-			///	continue;
+			/*
+			if (d<margin)
+				continue;
+			*/
 			recover_motion+=(b-a)*0.4;
 		}
 

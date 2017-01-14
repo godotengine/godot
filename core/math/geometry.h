@@ -750,9 +750,7 @@ public:
 			return Vector<Vector3>(); //empty
 		}
 
-//		long count = 0;
 		long previous = polygon.size() - 1;
-
 		Vector<Vector3> clipped;
 
 		for (int index = 0; index < polygon.size(); index++) {

@@ -96,8 +96,6 @@ void LineEdit::_gui_input(InputEvent p_event) {
 					}
 				}
 
-				//			if (!editable)
-				//	non_editable_clicked_signal.call();
 				update();
 
 			} else {
@@ -873,7 +871,7 @@ void LineEdit::delete_char() {
 
 	if (cursor_pos==window_pos) {
 
-	//	set_window_pos(cursor_pos-get_window_length());
+		//set_window_pos(cursor_pos-get_window_length());
 	}
 
 	_text_changed();

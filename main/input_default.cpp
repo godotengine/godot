@@ -307,7 +307,7 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 			if (p_event.key.scancode==0)
 				break;
 
-		//	print_line(p_event);
+			//print_line(p_event);
 
 			if (p_event.key.pressed)
 				keys_pressed.insert(p_event.key.scancode);

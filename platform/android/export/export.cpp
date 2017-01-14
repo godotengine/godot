@@ -729,17 +729,17 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 					}
 
 
-//					print_line("String "+itos(i)+": "+string_table[i]);
+					//print_line("String "+itos(i)+": "+string_table[i]);
 				}
 
 				for(uint32_t i=string_end;i<(ofs+size);i++) {
 					stable_extra.push_back(p_manifest[i]);
 				}
 
-//				printf("stable extra: %i\n",int(stable_extra.size()));
+				//printf("stable extra: %i\n",int(stable_extra.size()));
 				string_table_ends=ofs+size;
 
-//				print_line("STABLE SIZE: "+itos(size)+" ACTUAL: "+itos(string_table_ends));
+				//print_line("STABLE SIZE: "+itos(size)+" ACTUAL: "+itos(string_table_ends));
 
 			} break;
 			case CHUNK_XML_START_TAG: {
@@ -752,7 +752,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 				String tname=string_table[name];
 
-//				printf("NSPACE: %i\n",nspace);
+				//printf("NSPACE: %i\n",nspace);
 				//printf("NAME: %i (%s)\n",name,tname.utf8().get_data());
 				//printf("CHECK: %x\n",check);
 				uint32_t attrcount=decode_uint32(&p_manifest[iofs+20]);
@@ -1523,7 +1523,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 				if (dpos==-1)
 					continue;
 				d=d.substr(0,dpos).strip_edges();
-	//			print_line("found devuce: "+d);
+				//print_line("found devuce: "+d);
 				ldevices.push_back(d);
 			}
 
@@ -1602,8 +1602,8 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 						}
 
 						d.name=vendor+" "+device;
-	//					print_line("name: "+d.name);
-	//					print_line("description: "+d.description);
+						//print_line("name: "+d.name);
+						//print_line("description: "+d.description);
 
 					}
 
@@ -1864,10 +1864,12 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 
 	if (apk_expansion) {
 
-		//if (apk_expansion_salt=="") {
-		//	valid=false;
-		//	err+="Invalid SALT for apk expansion.\n";
-		//}
+		/*
+		if (apk_expansion_salt=="") {
+			valid=false;
+			err+="Invalid SALT for apk expansion.\n";
+		}
+		*/
 		if (apk_expansion_pkey=="") {
 			valid=false;
 			err+="Invalid public key for apk expansion.\n";

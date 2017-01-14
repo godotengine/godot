@@ -86,8 +86,8 @@ public:
 	void set_dst_method(const StringName& p_method);
 	void set_dst_node(Node* p_node);
 
-//	Button *get_ok() { return ok; }
-//	Button *get_cancel() { return cancel; }
+	//Button *get_ok() { return ok; }
+	//Button *get_cancel() { return cancel; }
 	void edit(Node *p_node);
 
 	ConnectDialog();

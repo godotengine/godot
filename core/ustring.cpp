@@ -560,7 +560,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 	int pos=0;
 	int prev_pos=0;
-//	int slices=1;
+	//int slices=1;
 	if (p_slice<0)
 		return "";
 	if (find(p_splitter)==-1)
@@ -574,7 +574,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 			pos=length(); //reached end
 
 		int from=prev_pos;
-	//	int to=pos;
+		//int to=pos;
 
 		if (p_slice==i) {
 
@@ -1420,7 +1420,7 @@ bool String::parse_utf8(const char* p_utf8,int p_len) {
 			}
 		}
 
-//		printf("char %i, len %i\n",unichar,len);
+		//printf("char %i, len %i\n",unichar,len);
 		if (sizeof(wchar_t)==2 && unichar>0xFFFF) {
 			unichar=' '; //too long for windows
 

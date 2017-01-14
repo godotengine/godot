@@ -2094,8 +2094,10 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud,"{ ");
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
-				//if (!_check_type(dict[E->get()]))
-				//	continue;
+				/*
+				if (!_check_type(dict[E->get()]))
+					continue;
+				*/
 				write(E->get(),p_store_string_func,p_store_string_ud,p_encode_res_func,p_encode_res_ud);
 				p_store_string_func(p_store_string_ud,":");
 				write(dict[E->get()],p_store_string_func,p_store_string_ud,p_encode_res_func,p_encode_res_ud);

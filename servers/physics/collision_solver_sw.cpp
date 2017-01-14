@@ -383,7 +383,7 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform&
 
 		concave_B->cull(local_aabb,concave_distance_callback,&cinfo);
 		if (!cinfo.collided) {
-//			print_line(itos(cinfo.tested));
+			//print_line(itos(cinfo.tested));
 			r_point_A=cinfo.close_A;
 			r_point_B=cinfo.close_B;
 

@@ -226,7 +226,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Transfo
 	concave_B->cull(local_aabb,concave_callback,&cinfo);
 
 
-//	print_line("Rect2 TESTS: "+itos(cinfo.aabb_tests));
+	//print_line("Rect2 TESTS: "+itos(cinfo.aabb_tests));
 	return cinfo.collided;
 }
 
@@ -255,9 +255,11 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Transform2D& p_
 
 		if (type_B==Physics2DServer::SHAPE_LINE || type_B==Physics2DServer::SHAPE_RAY) {
 			return false;
-		//if (type_B==Physics2DServer::SHAPE_RAY) {
-		//	return false;
 		}
+		/*
+		if (type_B==Physics2DServer::SHAPE_RAY) {
+			return false;
+		*/
 
 		if (swap) {
 			return solve_static_line(p_shape_B,p_transform_B,p_shape_A,p_transform_A,p_result_callback,p_userdata,true);

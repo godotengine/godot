@@ -325,7 +325,7 @@ Error FileAccessNetwork::_open(const String& p_path, int p_mode_flags) {
 	last_page=-1;
 	last_page_buff=NULL;
 
-//	buffers.clear();
+	//buffers.clear();
 	nc->unlock_mutex();
 	DEBUG_PRINT("OPEN POST");
 	DEBUG_TIME("open_post");
@@ -437,7 +437,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const{
 		p_length=total_size-pos;
 	}
 
-//	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
+	//FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 
 	uint8_t *buff=last_page_buff;
 

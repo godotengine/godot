@@ -1115,7 +1115,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	drawing=false;
 	behind=false;
 	block_transform_notify=false;	
-//	viewport=NULL;
+	//viewport=NULL;
 	canvas_layer=NULL;
 	use_parent_material=false;
 	global_invalid=true;

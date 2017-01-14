@@ -70,7 +70,7 @@ void GridContainer::_notification(int p_what) {
 				else
 					row_minh[row]=ms.height;
 
-			//	print_line("store row "+itos(row)+" mw "+itos(ms.height));
+				//print_line("store row "+itos(row)+" mw "+itos(ms.height));
 
 				if (c->get_h_size_flags()&SIZE_EXPAND)
 					col_expanded.insert(col);
@@ -136,7 +136,7 @@ void GridContainer::_notification(int p_what) {
 
 				Point2 p(col_ofs,row_ofs);
 
-//				print_line("col: "+itos(col)+" row: "+itos(row)+" col_ofs: "+itos(col_ofs)+" row_ofs: "+itos(row_ofs));
+				//print_line("col: "+itos(col)+" row: "+itos(row)+" col_ofs: "+itos(col_ofs)+" row_ofs: "+itos(row_ofs));
 				fit_child_in_rect(c,Rect2(p,s));
 				//print_line("col: "+itos(col)+" row: "+itos(row)+" rect: "+Rect2(p,s));
 

@@ -203,7 +203,7 @@ EditorSubScene::EditorSubScene() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-//	set_child_rect(vb);
+	//set_child_rect(vb);
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	path = memnew( LineEdit );

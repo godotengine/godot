@@ -192,7 +192,7 @@ void ShaderGraph::_bind_methods() {
 	ClassDB::bind_method(_MD("xform_const_node_get_value","shader_type","id"),&ShaderGraph::xform_const_node_get_value);
 
 
-//	void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
+	//void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
 
 	ClassDB::bind_method(_MD("texture_node_set_filter_size","shader_type","id","filter_size"),&ShaderGraph::texture_node_set_filter_size);
 	ClassDB::bind_method(_MD("texture_node_get_filter_size","shader_type","id"),&ShaderGraph::texture_node_get_filter_size);

@@ -49,7 +49,7 @@ Error DirAccessUnix::list_dir_begin() {
 	list_dir_end(); //close any previous dir opening!
 	
 
-//	char real_current_dir_name[2048]; //is this enough?!
+	//char real_current_dir_name[2048]; //is this enough?!
 	//getcwd(real_current_dir_name,2048);
 	//chdir(curent_path.utf8().get_data());
 	dir_stream = opendir(current_dir.utf8().get_data());

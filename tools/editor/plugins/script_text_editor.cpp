@@ -60,7 +60,7 @@ void ScriptTextEditor::apply_code() {
 
 	if (script.is_null())
 		return;
-//	print_line("applying code");
+	//print_line("applying code");
 	script->set_source_code(code_editor->get_text_edit()->get_text());
 	script->update_exports();
 }
