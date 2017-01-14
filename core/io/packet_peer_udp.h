@@ -45,7 +45,7 @@ protected:
 
 	String _get_packet_ip() const;
 
-	virtual Error _set_send_address(const String& p_address,int p_port);
+	virtual Error _set_dest_address(const String& p_address,int p_port);
 
 public:
 
@@ -56,7 +56,7 @@ public:
 	virtual bool is_listening() const=0;
 	virtual IP_Address get_packet_address() const=0;
 	virtual int get_packet_port() const=0;
-	virtual void set_send_address(const IP_Address& p_address,int p_port)=0;
+	virtual void set_dest_address(const IP_Address& p_address,int p_port)=0;
 
 
 	static Ref<PacketPeerUDP> create_ref();
