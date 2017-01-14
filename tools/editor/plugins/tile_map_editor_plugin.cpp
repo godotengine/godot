@@ -53,7 +53,7 @@ void TileMapEditor::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			if (is_visible()) {
+			if (is_visible_in_tree()) {
 				_update_palette();
 			}
 		} break;
@@ -597,7 +597,7 @@ static inline Vector<Point2i> line(int x0, int x1, int y0, int y1) {
 
 bool TileMapEditor::forward_gui_input(const InputEvent& p_event) {
 
-	if (!node || !node->get_tileset().is_valid() || !node->is_visible())
+	if (!node || !node->get_tileset().is_valid() || !node->is_visible_in_tree())
 		return false;
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();

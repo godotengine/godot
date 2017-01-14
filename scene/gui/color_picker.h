@@ -36,7 +36,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/check_button.h"
 
@@ -98,8 +98,8 @@ public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	void set_color(const Color& p_color);
-	Color get_color() const;
+	void set_pick_color(const Color& p_color);
+	Color get_pick_color() const;
 
 	void add_preset(const Color& p_color);
 	void set_raw_mode(bool p_enabled);
@@ -126,8 +126,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	void set_color(const Color& p_color);
-	Color get_color() const;
+	void set_pick_color(const Color& p_color);
+	Color get_pick_color() const;
 
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;

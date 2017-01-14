@@ -243,7 +243,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 			rasterizer_gles22->set_extensions(gl_extensions);
 		rasterizer = rasterizer_gles22;
 	} else {
-//		rasterizer = memnew( RasterizerGLES1(true, false) );
+		//rasterizer = memnew( RasterizerGLES1(true, false) );
 	}
 
 	print_line("Init VS");
@@ -561,7 +561,7 @@ void OS_JavaScript::push_input(const InputEvent& p_ev) {
 
 void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points) {
 
-//	print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
+	//print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
 
 	switch(p_what) {
 		case 0: { //gesture begin
@@ -644,8 +644,8 @@ void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPo
 				ev.mouse_motion.x=p_points[0].pos.x;
 				ev.mouse_motion.y=p_points[0].pos.y;
 				input->set_mouse_pos(Point2(ev.mouse_motion.x,ev.mouse_motion.y));
-				ev.mouse_motion.speed_x=input->get_mouse_speed().x;
-				ev.mouse_motion.speed_y=input->get_mouse_speed().y;
+				ev.mouse_motion.speed_x=input->get_last_mouse_speed().x;
+				ev.mouse_motion.speed_y=input->get_last_mouse_speed().y;
 				ev.mouse_motion.relative_x=p_points[0].pos.x-last_mouse.x;
 				ev.mouse_motion.relative_y=p_points[0].pos.y-last_mouse.y;
 				last_mouse=p_points[0].pos;
@@ -804,8 +804,10 @@ String OS_JavaScript::get_resource_dir() const {
 
 String OS_JavaScript::get_data_dir() const {
 
-	//if (get_data_dir_func)
-	//	return get_data_dir_func();
+	/*
+	if (get_data_dir_func)
+		return get_data_dir_func();
+	*/
 	return "/userfs";
 	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };

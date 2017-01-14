@@ -1102,10 +1102,10 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 		glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 	else
 		glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-	*/
 
-	//if (p_material->line_width)
-	//	glLineWidth(p_material->line_width);
+	if (p_material->line_width)
+		glLineWidth(p_material->line_width);
+	*/
 
 #if 0
 	//blend mode
@@ -2067,8 +2067,10 @@ void RasterizerSceneGLES3::_add_geometry(  RasterizerStorageGLES3::Geometry* p_g
 		}
 	}
 
-	//if (e->geometry->type==RasterizerStorageGLES3::Geometry::GEOMETRY_MULTISURFACE)
-	//	e->sort_flags|=RenderList::SORT_FLAG_INSTANCING;
+	/*
+	if (e->geometry->type==RasterizerStorageGLES3::Geometry::GEOMETRY_MULTISURFACE)
+		e->sort_flags|=RenderList::SORT_FLAG_INSTANCING;
+	*/
 
 
 	if (mirror) {
@@ -3949,9 +3951,10 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 
 	if (env && env->bg_mode==VS::ENV_BG_SKYBOX) {
 
-		//if (use_mrt) {
-		//	glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for skybox, only diffuse/ambient matters
-		//
+		/*
+		if (use_mrt) {
+			glBindFramebuffer(GL_FRAMEBUFFER,storage->frame.current_rt->buffers.fbo); //switch to alpha fbo for skybox, only diffuse/ambient matters
+		*/
 
 		_draw_skybox(skybox,p_cam_projection,p_cam_transform,storage->frame.current_rt && storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP],env->skybox_scale);
 	}
@@ -3963,7 +3966,7 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 	//_render_list_forward(&alpha_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting,true);
 	//glColorMask(1,1,1,1);
 
-//	state.scene_shader.set_conditional( SceneShaderGLES3::USE_FOG,false);
+	//state.scene_shader.set_conditional( SceneShaderGLES3::USE_FOG,false);
 
 
 	if (use_mrt) {
@@ -4016,7 +4019,7 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 		storage->canvas->canvas_begin();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D,exposure_shrink[4].color);
-//		glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->exposure.color);
+		//glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->exposure.color);
 		storage->canvas->draw_generic_textured_rect(Rect2(0,0,storage->frame.current_rt->width/16,storage->frame.current_rt->height/16),Rect2(0,0,1,1));
 
 	}
@@ -4189,8 +4192,8 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 	if (GLOBAL_DEF("rasterizer/debug_shadow_maps",false)) {
 		_debug_shadows();
 	}
-//	_debug_luminances();
-//	_debug_samplers();
+	//_debug_luminances();
+	//_debug_samplers();
 
 	if (using_canvas_bg) {
 		using_canvas_bg=false;

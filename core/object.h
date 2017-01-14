@@ -579,8 +579,8 @@ public:
 	}
 
 	/* IAPI */
-//	void set(const String& p_name, const Variant& p_value);
-//	Variant get(const String& p_name) const;
+	//void set(const String& p_name, const Variant& p_value);
+	//Variant get(const String& p_name) const;
 
 	void set(const StringName& p_name, const Variant& p_value, bool *r_valid=NULL);
 	Variant get(const StringName& p_name, bool *r_valid=NULL) const;

@@ -138,13 +138,13 @@ static void _compress_etc(Image *p_img) {
 		uint8_t *dst = &w[dst_data.size()-mmsize];
 
 
-//		print_line("bh: "+itos(bh)+" bw: "+itos(bw));
+		//print_line("bh: "+itos(bh)+" bw: "+itos(bw));
 
 		for(int y=0;y<bh;y++) {
 
 			for(int x=0;x<bw;x++) {
 
-//				print_line("x: "+itos(x)+" y: "+itos(y));
+				//print_line("x: "+itos(x)+" y: "+itos(y));
 
 				uint8_t block[4*4*4];
 				zeromem(block,4*4*4);

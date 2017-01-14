@@ -295,7 +295,7 @@ void GraphEdit::_notification(int p_what) {
 		zoom_reset->set_icon(get_icon("reset"));
 		zoom_plus->set_icon(get_icon("more"));
 		snap_button->set_icon(get_icon("snap"));
-//		zoom_icon->set_texture( get_icon("Zoom", "EditorIcons"));
+		//zoom_icon->set_texture( get_icon("Zoom", "EditorIcons"));
 
 	}
 	if (p_what==NOTIFICATION_DRAW) {
@@ -1054,7 +1054,7 @@ void GraphEdit::set_zoom(float p_zoom) {
 	_update_scroll();
 	connections_layer->update();
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 
 		Vector2 ofs  = sbofs*zoom - get_size()/2;
 		h_scroll->set_value( ofs.x );

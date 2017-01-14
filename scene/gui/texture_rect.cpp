@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_frame.cpp                                                    */
+/*  texture_rect.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "texture_frame.h"
+#include "texture_rect.h"
 #include "servers/visual_server.h"
 
 void TextureRect::_notification(int p_what) {
@@ -121,8 +121,10 @@ void TextureRect::set_texture(const Ref<Texture>& p_tex) {
 
 	texture=p_tex;
 	update();
-	//if (texture.is_valid())
-	//	texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+	/*
+	if (texture.is_valid())
+		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+	*/
 	minimum_size_changed();
 }
 

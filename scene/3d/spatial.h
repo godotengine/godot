@@ -127,8 +127,6 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _set_visible_(bool p_visible);
-	bool _is_visible_() const;
 public:
 
 	enum {
@@ -194,11 +192,11 @@ public:
 	void orthonormalize();
 	void set_identity();
 
+	void set_visible(bool p_visible);
+	bool is_visible() const;
 	void show();
 	void hide();
-	bool is_visible() const;
-	bool is_hidden() const;
-	void set_hidden(bool p_hidden);
+	bool is_visible_in_tree() const;
 
 #ifdef TOOLS_ENABLED
 	void set_import_transform(const Transform& p_transform)	;

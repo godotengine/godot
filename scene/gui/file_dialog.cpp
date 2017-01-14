@@ -615,7 +615,7 @@ void FileDialog::set_access(Access p_access) {
 
 void FileDialog::invalidate() {
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		update_file_list();
 		invalidated=false;
 	} else {

@@ -61,7 +61,7 @@ public:
 	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int)  { return p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int)  { return (uint32_t)p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar)  { return (uint32_t)p_wchar; }
-//	static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
+	//static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
 };
 
 /**

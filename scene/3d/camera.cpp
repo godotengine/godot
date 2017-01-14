@@ -190,9 +190,11 @@ void Camera::_update_camera() {
 	tr.origin+=tr.basis.get_axis(0)*h_offset;
 	VisualServer::get_singleton()->camera_set_transform( camera, tr );
 
-// here goes listener stuff
-//	if (viewport_ptr && is_inside_scene() && is_current())
-//		get_viewport()->_camera_transform_changed_notify();
+	// here goes listener stuff
+	/*
+	if (viewport_ptr && is_inside_scene() && is_current())
+		get_viewport()->_camera_transform_changed_notify();
+	*/
 
 	if (is_inside_tree() && is_current()) {
 		get_viewport()->_camera_transform_changed_notify();
@@ -373,7 +375,7 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 		ray=Vector3(0,0,-1);
 	} else {
 		CameraMatrix cm;
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 		float screen_w,screen_h;
 		cm.get_viewport_size(screen_w,screen_h);
 		ray=Vector3( ((cpos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(cpos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
@@ -400,7 +402,7 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 #endif
 
 	ERR_FAIL_COND_V( viewport_size.y == 0, Vector3() );
-//	float aspect = viewport_size.x / viewport_size.y;
+	//float aspect = viewport_size.x / viewport_size.y;
 
 	if (mode == PROJECTION_PERSPECTIVE) {
 
@@ -410,10 +412,10 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 		Vector2 pos = cpos / viewport_size;
 		float vsize,hsize;
 		if (keep_aspect==KEEP_WIDTH) {
-			vsize = size/viewport_size.get_aspect();
+			vsize = size/viewport_size.aspect();
 			hsize = size;
 		} else {
-			hsize = size*viewport_size.get_aspect();
+			hsize = size*viewport_size.aspect();
 			vsize = size;
 
 		}
@@ -449,9 +451,9 @@ Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 
 	if (mode==PROJECTION_ORTHOGONAL)
-		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_orthogonal(size,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 	else
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
 	Plane p(get_camera_transform().xform_inv(p_pos),1.0);
 
@@ -479,9 +481,9 @@ Vector3 Camera::project_position(const Point2& p_point) const {
 	CameraMatrix cm;
 
 	if (mode==PROJECTION_ORTHOGONAL)
-		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_orthogonal(size,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 	else
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
 	Size2 vp_size;
 	cm.get_viewport_size(vp_size.x,vp_size.y);
@@ -628,9 +630,9 @@ Vector<Plane> Camera::get_frustum() const {
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm;
 	if (mode==PROJECTION_PERSPECTIVE)
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 	else
-		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_orthogonal(size,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
 	return cm.get_projection_planes(get_camera_transform());
 

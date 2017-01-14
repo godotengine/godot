@@ -363,8 +363,8 @@ PhysicsDirectSpaceState::PhysicsDirectSpaceState() {
 void PhysicsDirectSpaceState::_bind_methods() {
 
 
-//	ClassDB::bind_method(_MD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
-//	ClassDB::bind_method(_MD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
+	//ClassDB::bind_method(_MD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
+	//ClassDB::bind_method(_MD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
 
 	ClassDB::bind_method(_MD("intersect_ray:Dictionary","from","to","exclude","layer_mask","type_mask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
 	ClassDB::bind_method(_MD("intersect_shape","shape:PhysicsShapeQueryParameters","max_results"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(32));
@@ -529,7 +529,7 @@ void PhysicsServer::_bind_methods() {
 
 	ClassDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&PhysicsServer::body_add_collision_exception);
 	ClassDB::bind_method(_MD("body_remove_collision_exception","body","excepted_body"),&PhysicsServer::body_remove_collision_exception);
-//	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions)=0;
+	//virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions)=0;
 
 	ClassDB::bind_method(_MD("body_set_max_contacts_reported","body","amount"),&PhysicsServer::body_set_max_contacts_reported);
 	ClassDB::bind_method(_MD("body_get_max_contacts_reported","body"),&PhysicsServer::body_get_max_contacts_reported);
@@ -678,9 +678,9 @@ void PhysicsServer::_bind_methods() {
 
 	ClassDB::bind_method(_MD("set_active","active"),&PhysicsServer::set_active);
 
-//	ClassDB::bind_method(_MD("init"),&PhysicsServer::init);
-//	ClassDB::bind_method(_MD("step"),&PhysicsServer::step);
-//	ClassDB::bind_method(_MD("sync"),&PhysicsServer::sync);
+	//ClassDB::bind_method(_MD("init"),&PhysicsServer::init);
+	//ClassDB::bind_method(_MD("step"),&PhysicsServer::step);
+	//ClassDB::bind_method(_MD("sync"),&PhysicsServer::sync);
 	//ClassDB::bind_method(_MD("flush_queries"),&PhysicsServer::flush_queries);
 
 
@@ -739,8 +739,8 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( DAMPED_STRING_STIFFNESS );
 	BIND_CONSTANT( DAMPED_STRING_DAMPING );
 */
-//	BIND_CONSTANT( TYPE_BODY );
-//	BIND_CONSTANT( TYPE_AREA );
+	//BIND_CONSTANT( TYPE_BODY );
+	//BIND_CONSTANT( TYPE_AREA );
 
 	BIND_CONSTANT( AREA_BODY_ADDED );
 	BIND_CONSTANT( AREA_BODY_REMOVED );

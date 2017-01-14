@@ -217,8 +217,8 @@ void GraphNode::_notification(int p_what) {
 			sb = get_stylebox( selected ? "selectedframe" : "frame");
 		}
 
-		sb=sb->duplicate();
-		sb->call("set_modulate",modulate);
+		//sb=sb->duplicate();
+		//sb->call("set_modulate",modulate);
 		Ref<Texture> port =get_icon("port");
 		Ref<Texture> close =get_icon("close");
 		Ref<Texture> resizer =get_icon("resizer");
@@ -675,16 +675,6 @@ void GraphNode::_gui_input(const InputEvent& p_ev) {
 
 }
 
-void GraphNode::set_modulate(const Color &p_color) {
-
-	modulate=p_color;
-	update();
-}
-
-Color GraphNode::get_modulate() const{
-
-	return modulate;
-}
 void GraphNode::set_overlay(Overlay p_overlay) {
 
 	overlay=p_overlay;
@@ -758,9 +748,6 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(_MD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
 	ClassDB::bind_method(_MD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
 
-	ClassDB::bind_method(_MD("set_modulate","color"),&GraphNode::set_modulate);
-	ClassDB::bind_method(_MD("get_modulate"),&GraphNode::get_modulate);
-
 	ClassDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
 	ClassDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);
 
@@ -788,7 +775,6 @@ GraphNode::GraphNode() {
 	show_close=false;
 	connpos_dirty=true;
 	set_mouse_filter(MOUSE_FILTER_PASS);
-	modulate=Color(1,1,1,1);
 	comment=false;
 	resizeable=false;
 	resizing=false;

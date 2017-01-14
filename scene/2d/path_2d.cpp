@@ -239,7 +239,7 @@ void PathFollow2D::_get_property_list( List<PropertyInfo> *p_list) const{
 
 String PathFollow2D::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
 	if (!get_parent() || !get_parent()->cast_to<Path2D>()) {

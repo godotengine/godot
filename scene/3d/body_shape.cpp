@@ -96,7 +96,7 @@ void CollisionShape::_update_indicator() {
 		pt = VS::PRIMITIVE_LINES;
 	} else if (shape->cast_to<SphereShape>()) {
 
-//		VisualServer *vs=VisualServer::get_singleton();
+		//VisualServer *vs=VisualServer::get_singleton();
 		SphereShape *shapeptr=shape->cast_to<SphereShape>();
 
 
@@ -337,7 +337,7 @@ void CollisionShape::_notification(int p_what) {
 			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-		//	VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
+			//VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
 			if (can_update_body && updating_body) {
 				_update_body();
 			}

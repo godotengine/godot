@@ -340,10 +340,11 @@ void VehicleBody::_update_wheel_transform(VehicleWheel& wheel ,PhysicsDirectBody
 	wheel.m_raycastInfo.m_isInContact = false;
 
 	Transform chassisTrans = s->get_transform();
-	//if (interpolatedTransform && (getRigidBody()->getMotionState()))
-	//{
-	//	getRigidBody()->getMotionState()->getWorldTransform(chassisTrans);
-	//}
+	/*
+	if (interpolatedTransform && (getRigidBody()->getMotionState())) {
+		getRigidBody()->getMotionState()->getWorldTransform(chassisTrans);
+	}
+	*/
 
 	wheel.m_raycastInfo.m_hardPointWS = chassisTrans.xform( wheel.m_chassisConnectionPointCS );
 	//wheel.m_raycastInfo.m_hardPointWS+=s->get_linear_velocity()*s->get_step();
@@ -360,8 +361,8 @@ void VehicleBody::_update_wheel(int p_idx,PhysicsDirectBodyState *s) {
 	const Vector3& right = wheel.m_raycastInfo.m_wheelAxleWS;
 	Vector3 fwd = up.cross(right);
 	fwd = fwd.normalized();
-//	up = right.cross(fwd);
-//	up.normalize();
+	//up = right.cross(fwd);
+	//up.normalize();
 
 	//rotate around steering over de wheelAxleWS
 	real_t steering = wheel.steers?m_steeringValue:0.0;
@@ -371,8 +372,10 @@ void VehicleBody::_update_wheel(int p_idx,PhysicsDirectBodyState *s) {
 
 	Basis rotatingMat(right,-wheel.m_rotation);
 
-//	if (p_idx==1)
-//		print_line("steeringMat " +steeringMat);
+	/*
+	if (p_idx==1)
+		print_line("steeringMat " +steeringMat);
+	*/
 
 	Basis basis2(
 		right[0],up[0],fwd[0],
@@ -502,7 +505,7 @@ void	VehicleBody::_update_suspension(PhysicsDirectBodyState *s)
 		if ( wheel_info.m_raycastInfo.m_isInContact )
 		{
 			real_t force;
-			//	Spring
+			//Spring
 			{
 				real_t	susp_length			= wheel_info.m_suspensionRestLength;
 				real_t	current_length = wheel_info.m_raycastInfo.m_suspensionLength;

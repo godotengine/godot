@@ -82,7 +82,7 @@ void OutputStrings::_notification(int p_what) {
 			Ref<Texture> icon_error = get_icon("Error","EditorIcons");
 			Ref<Texture> icon_warning = get_icon("Warning","EditorIcons");
 
-		//	int lines = (size_height-(int)margin.y) / font_height;
+			//int lines = (size_height-(int)margin.y) / font_height;
 			Point2 ofs=tree_st->get_offset();
 
 			LineMap::Element *E = line_map.find(v_scroll->get_value());

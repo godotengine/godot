@@ -369,7 +369,7 @@ void CreateDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();
@@ -694,7 +694,7 @@ CreateDialog::CreateDialog() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
 	search_options->connect("cell_selected",this,"_item_selected");
-//	search_options->set_hide_root(true);
+	//search_options->set_hide_root(true);
 	base_type="Object";
 
 	help_bit = memnew( EditorHelpBit );

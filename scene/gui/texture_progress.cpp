@@ -135,24 +135,24 @@ void TextureProgress::_notification(int p_what){
 				Size2 s = progress->get_size();
 				switch (mode) {
 				case FILL_LEFT_TO_RIGHT: {
-					Rect2 region=Rect2(Point2(),Size2(s.x*get_unit_value(),s.y));
+					Rect2 region=Rect2(Point2(),Size2(s.x*get_as_ratio(),s.y));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_RIGHT_TO_LEFT: {
-					Rect2 region=Rect2(Point2(s.x-s.x*get_unit_value(),0),Size2(s.x*get_unit_value(),s.y));
+					Rect2 region=Rect2(Point2(s.x-s.x*get_as_ratio(),0),Size2(s.x*get_as_ratio(),s.y));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_TOP_TO_BOTTOM: {
-					Rect2 region=Rect2(Point2(),Size2(s.x,s.y*get_unit_value()));
+					Rect2 region=Rect2(Point2(),Size2(s.x,s.y*get_as_ratio()));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_BOTTOM_TO_TOP: {
-					Rect2 region=Rect2(Point2(0,s.y-s.y*get_unit_value()),Size2(s.x,s.y*get_unit_value()));
+					Rect2 region=Rect2(Point2(0,s.y-s.y*get_as_ratio()),Size2(s.x,s.y*get_as_ratio()));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_CLOCKWISE:
 				case FILL_COUNTER_CLOCKWISE: {
-					float val=get_unit_value()*rad_max_degrees/360;
+					float val=get_as_ratio()*rad_max_degrees/360;
 					if (val==1) {
 						Rect2 region=Rect2(Point2(),s);
 						draw_texture_rect_region(progress,region,region);
@@ -192,7 +192,7 @@ void TextureProgress::_notification(int p_what){
 					}
 				} break;
 				default:
-					draw_texture_rect_region(progress,Rect2(Point2(),Size2(s.x*get_unit_value(),s.y)),Rect2(Point2(),Size2(s.x*get_unit_value(),s.y)));
+					draw_texture_rect_region(progress,Rect2(Point2(),Size2(s.x*get_as_ratio(),s.y)),Rect2(Point2(),Size2(s.x*get_as_ratio(),s.y)));
 				}
 
 

@@ -97,8 +97,8 @@ _ALWAYS_INLINE_ T *_post_initialize(T *p_obj) {
 #define memnew(m_class) _post_initialize(new("") m_class)
 
 _ALWAYS_INLINE_ void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_description) {
-//	void *failptr=0;
-//	ERR_FAIL_COND_V( check < p_size , failptr); /** bug, or strange compiler, most likely */
+	//void *failptr=0;
+	//ERR_FAIL_COND_V( check < p_size , failptr); /** bug, or strange compiler, most likely */
 
 	return p_pointer;
 }

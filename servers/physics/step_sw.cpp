@@ -233,7 +233,7 @@ void StepSW::step(SpaceSW* p_space,float p_delta,int p_iterations) {
 	}
 
 
-//	print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
+	//print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
 	/* SETUP CONSTRAINT ISLANDS */
 
 	{

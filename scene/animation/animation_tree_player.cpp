@@ -214,7 +214,7 @@ bool AnimationTreePlayer::_set(const StringName& p_name, const Variant& p_value)
 		StringName src = connections[i*3+0];
 		StringName dst = connections[i*3+1];
 		int dst_in = connections[i*3+2];
-		connect(src,dst,dst_in);
+		connect_nodes(src,dst,dst_in);
 	}
 
 	set_active(data.get_valid("active"));
@@ -506,10 +506,10 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			float rem = 0;
 			if (!an->animation.is_null()) {
 
-		//		float pos = an->time;
-//				float delta = p_time;
+				//float pos = an->time;
+				//float delta = p_time;
 
-	//			const Animation *a = an->animation.operator->();
+				//const Animation *a = an->animation.operator->();
 
 				if (p_seek) {
 					an->time=p_time;
@@ -1496,17 +1496,17 @@ AnimationTreePlayer::ConnectError AnimationTreePlayer::_cycle_test(const StringN
 }
 
 
-Error AnimationTreePlayer::connect(const StringName& p_src_node,const StringName& p_dst_node, int p_dst_input) {
+Error AnimationTreePlayer::connect_nodes(const StringName& p_src_node,const StringName& p_dst_node, int p_dst_input) {
 
 	ERR_FAIL_COND_V( !node_map.has(p_src_node) , ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V( !node_map.has(p_dst_node) , ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V( p_src_node==p_dst_node , ERR_INVALID_PARAMETER);
 
-//	NodeBase *src = node_map[p_src_node];
+	//NodeBase *src = node_map[p_src_node];
 	NodeBase *dst = node_map[p_dst_node];
 	ERR_FAIL_INDEX_V( p_dst_input, dst->inputs.size(), ERR_INVALID_PARAMETER);
 
-//	int oldval = dst->inputs[p_dst_input].node;
+	//int oldval = dst->inputs[p_dst_input].node;
 
 	for(Map<StringName,NodeBase*>::Element *E=node_map.front();E;E=E->next()) {
 
@@ -1538,7 +1538,7 @@ Error AnimationTreePlayer::connect(const StringName& p_src_node,const StringName
 	return OK;
 }
 
-bool AnimationTreePlayer::is_connected(const StringName& p_src_node,const StringName& p_dst_node, int p_dst_input) const {
+bool AnimationTreePlayer::are_nodes_connected(const StringName& p_src_node,const StringName& p_dst_node, int p_dst_input) const {
 
 	ERR_FAIL_COND_V( !node_map.has(p_src_node) , false);
 	ERR_FAIL_COND_V( !node_map.has(p_dst_node) , false);
@@ -1550,7 +1550,7 @@ bool AnimationTreePlayer::is_connected(const StringName& p_src_node,const String
 
 }
 
-void AnimationTreePlayer::disconnect(const StringName& p_node, int p_input) {
+void AnimationTreePlayer::disconnect_nodes(const StringName& p_node, int p_input) {
 
 	ERR_FAIL_COND( !node_map.has(p_node));
 
@@ -1901,9 +1901,9 @@ void AnimationTreePlayer::_bind_methods() {
 	ClassDB::bind_method(_MD("node_get_pos","id"),&AnimationTreePlayer::node_get_pos);
 
 	ClassDB::bind_method(_MD("remove_node","id"),&AnimationTreePlayer::remove_node);
-	ClassDB::bind_method(_MD("connect","id","dst_id","dst_input_idx"),&AnimationTreePlayer::connect);
-	ClassDB::bind_method(_MD("is_connected","id","dst_id","dst_input_idx"),&AnimationTreePlayer::is_connected);
-	ClassDB::bind_method(_MD("disconnect","id","dst_input_idx"),&AnimationTreePlayer::disconnect);
+	ClassDB::bind_method(_MD("connect_nodes","id","dst_id","dst_input_idx"),&AnimationTreePlayer::connect_nodes);
+	ClassDB::bind_method(_MD("are_nodes_connected","id","dst_id","dst_input_idx"),&AnimationTreePlayer::are_nodes_connected);
+	ClassDB::bind_method(_MD("disconnect_nodes","id","dst_input_idx"),&AnimationTreePlayer::disconnect_nodes);
 
 	ClassDB::bind_method(_MD("set_active","enabled"),&AnimationTreePlayer::set_active);
 	ClassDB::bind_method(_MD("is_active"),&AnimationTreePlayer::is_active);

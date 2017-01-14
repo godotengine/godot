@@ -198,7 +198,7 @@ public:
 
 	static void _bind_methods() {
 
-	//	ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
+		//ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
 		ClassDB::bind_method("_gui_input",&AnimationCurveEdit::_gui_input);
 		ADD_SIGNAL(MethodInfo("transition_changed"));
 	}
@@ -647,8 +647,10 @@ public:
 			} break;
 		}
 
-		//if (animation->track_get_type(track)!=Animation::TYPE_METHOD)
-		//	p_list->push_back( PropertyInfo( Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
+		/*
+		if (animation->track_get_type(track)!=Animation::TYPE_METHOD)
+			p_list->push_back( PropertyInfo( Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
+		*/
 	}
 
 	UndoRedo *undo_redo;
@@ -1925,14 +1927,14 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 
 					if (p_input.is_action("ui_up"))
 						selected_track--;
-					if (v_scroll->is_visible() && p_input.is_action("ui_page_up"))
+					if (v_scroll->is_visible_in_tree() && p_input.is_action("ui_page_up"))
 						selected_track--;
 
 					if (selected_track<0)
 						selected_track=0;
 
 
-					if (v_scroll->is_visible()) {
+					if (v_scroll->is_visible_in_tree()) {
 						if (v_scroll->get_value() > selected_track)
 							v_scroll->set_value(selected_track);
 
@@ -1947,13 +1949,13 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 
 					if (p_input.is_action("ui_down"))
 						selected_track++;
-					else if (v_scroll->is_visible() && p_input.is_action("ui_page_down"))
+					else if (v_scroll->is_visible_in_tree() && p_input.is_action("ui_page_down"))
 						selected_track+=v_scroll->get_page();
 
 					if (selected_track >= animation->get_track_count())
 						selected_track=animation->get_track_count()-1;
 
-					if (v_scroll->is_visible() && v_scroll->get_page()+v_scroll->get_value() < selected_track+1) {
+					if (v_scroll->is_visible_in_tree() && v_scroll->get_page()+v_scroll->get_value() < selected_track+1) {
 						v_scroll->set_value(selected_track-v_scroll->get_page()+1);
 					}
 
@@ -2641,8 +2643,10 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							for(Map<SelectedKey,KeyInfo>::Element *E=selection.back();E;E=E->prev()) {
 
 								float newpos=E->get().pos-from_t+motion;
-								//if (newpos<0)
-								//	continue; //no add at the begining
+								/*
+								if (newpos<0)
+									continue; //no add at the begining
+								*/
 								undo_redo->add_do_method(animation.ptr(),"track_insert_key",E->key().track,newpos,animation->track_get_key_value(E->key().track,E->key().key),animation->track_get_key_transition(E->key().track,E->key().key));
 
 							}
@@ -2651,8 +2655,10 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							for(Map<SelectedKey,KeyInfo>::Element *E=selection.back();E;E=E->prev()) {
 
 								float newpos=E->get().pos+-from_t+motion;
-								//if (newpos<0)
-								//	continue; //no remove what no inserted
+								/*
+								if (newpos<0)
+									continue; //no remove what no inserted
+								*/
 								undo_redo->add_undo_method(animation.ptr(),"track_remove_key_at_pos",E->key().track,newpos);
 
 							}
@@ -2690,7 +2696,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 								float oldpos=E->get().pos;
 								float newpos=oldpos-from_t+motion;
 								//if (newpos>=0)
-									undo_redo->add_do_method(this,"_select_at_anim",animation,E->key().track,newpos);
+								undo_redo->add_do_method(this,"_select_at_anim",animation,E->key().track,newpos);
 								undo_redo->add_undo_method(this,"_select_at_anim",animation,E->key().track,oldpos);
 
 							}
@@ -3148,7 +3154,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 				}
 				call_select->connect("selected",this,"_add_call_track");
-//				rename_anim->set_icon( get_icon("Rename","EditorIcons") );
+				//rename_anim->set_icon( get_icon("Rename","EditorIcons") );
 /*
 				edit_anim->set_icon( get_icon("Edit","EditorIcons") );
 				blend_anim->set_icon( get_icon("Blend","EditorIcons") );
@@ -3156,8 +3162,8 @@ void AnimationKeyEditor::_notification(int p_what) {
 				stop->set_icon( get_icon("Stop","EditorIcons") );
 				pause->set_icon( get_icon("Pause","EditorIcons") );
 */
-//			menu->set_icon(get_icon("Animation","EditorIcons"));
-//			play->set_icon(get_icon("AnimationPlay","EditorIcons"));
+			//menu->set_icon(get_icon("Animation","EditorIcons"));
+			//play->set_icon(get_icon("AnimationPlay","EditorIcons"));
 			//menu->set_icon(get_icon("Animation","EditorIcons"));
 			_update_menu();
 
@@ -3270,7 +3276,7 @@ Node *AnimationKeyEditor::get_root() const {
 
 void AnimationKeyEditor::update_keying() {
 
-	bool keying_enabled=is_visible() && animation.is_valid();
+	bool keying_enabled=is_visible_in_tree() && animation.is_valid();
 
 	if (keying_enabled==keying)
 		return;
@@ -3289,14 +3295,14 @@ bool AnimationKeyEditor::has_keying() const {
 void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 
 
-	if (insert_frame!=OS::get_singleton()->get_frames_drawn()) {
+	if (insert_frame!=Engine::get_singleton()->get_frames_drawn()) {
 		//clear insert list for the frame if frame changed
-		if (insert_confirm->is_visible())
+		if (insert_confirm->is_visible_in_tree())
 			return; //do nothing
 		insert_data.clear();
 		insert_query=false;
 	}
-	insert_frame=OS::get_singleton()->get_frames_drawn();
+	insert_frame=Engine::get_singleton()->get_frames_drawn();
 
 	for (List<InsertData>::Element *E=insert_data.front();E;E=E->next()) {
 		//prevent insertion of multiple tracks
@@ -3920,7 +3926,7 @@ void AnimationKeyEditor::_bind_methods() {
 	ClassDB::bind_method(_MD("set_root"),&AnimationKeyEditor::set_root);
 
 
-//	ClassDB::bind_method(_MD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
+	//ClassDB::bind_method(_MD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
 	ClassDB::bind_method(_MD("_confirm_insert_list"),&AnimationKeyEditor::_confirm_insert_list);
 
 
@@ -4143,9 +4149,9 @@ AnimationKeyEditor::AnimationKeyEditor() {
 /*	l = memnew( Label );
 	l->set_text("Base: ");
 	l->set_pos(Point2(0,3));
-//	dr_panel->add_child(l);*/
+	//dr_panel->add_child(l);*/
 
-//	menu->get_popup()->connect("id_pressed",this,"_menu_callback");
+	//menu->get_popup()->connect("id_pressed",this,"_menu_callback");
 
 
 	hb = memnew( HBoxContainer);

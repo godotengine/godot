@@ -1420,9 +1420,10 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	GDFunction *gdfunc=NULL;
 
-	//if (String(p_func->name)=="") { //initializer func
-	//	gdfunc = &p_script->initializer;
-
+	/*
+	if (String(p_func->name)=="") { //initializer func
+		gdfunc = &p_script->initializer;
+	*/
 	//} else { //regular func
 		p_script->member_functions[func_name]=memnew(GDFunction);
 		gdfunc = p_script->member_functions[func_name];

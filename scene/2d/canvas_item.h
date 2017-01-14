@@ -109,7 +109,7 @@ private:
 	int light_mask;
 
 	bool first_draw;
-	bool hidden;
+	bool visible;
 	bool pending_update;
 	bool toplevel;
 	bool drawing;
@@ -129,8 +129,6 @@ private:
 
 	void _propagate_visibility_changed(bool p_visible);
 
-	void _set_visible_(bool p_visible);
-	bool _is_visible_() const;
 
 	void _update_callback();
 
@@ -174,11 +172,11 @@ public:
 
 	/* VISIBILITY */
 
+	void set_visible(bool p_visible);
 	bool is_visible() const;
-	bool is_hidden() const;
+	bool is_visible_in_tree() const;
 	void show();
 	void hide();
-	void set_hidden(bool p_hidden);
 
 	void update();
 

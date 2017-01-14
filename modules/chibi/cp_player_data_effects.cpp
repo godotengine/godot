@@ -615,7 +615,7 @@ void CPPlayer::do_effect_S(int p_track) {
                         break;
                 case 8: {/* S8x set panning position */
 
-//			if (pf->panflag) {
+			//if (pf->panflag) {
                                 if (inf<=8) inf<<=4;
                                 else inf*=17;
                                 control.channel[p_track].panning=control.channel[p_track].channel_panning=inf;

@@ -935,7 +935,7 @@ void TextureRegionEditorPlugin::edit(Object *p_node)
 
 bool TextureRegionEditorPlugin::handles(Object *p_obj) const
 {
-	return p_obj->is_class("Sprite") || p_obj->is_class("Patch9Frame") || p_obj->is_class("StyleBoxTexture") || p_obj->is_class("AtlasTexture");
+	return p_obj->is_class("Sprite") || p_obj->is_class("Patch9Rect") || p_obj->is_class("StyleBoxTexture") || p_obj->is_class("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::make_visible(bool p_visible)

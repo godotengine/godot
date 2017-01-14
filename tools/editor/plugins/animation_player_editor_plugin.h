@@ -73,7 +73,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *play_bw;
 	Button *play_bw_from;
 
-//	Button *pause;
+	//Button *pause;
 	Button *add_anim;
 	Button *autoplay;
 	Button *rename_anim;

@@ -38,7 +38,7 @@ void ScriptCreateDialog::config(const String& p_base_name,const String&p_base_pa
 	class_name->set_text("");
 	parent_name->set_text(p_base_name);
 	if (p_base_path!="")  {
-		initial_bp=p_base_path.basename();
+		initial_bp=p_base_path.get_basename();
 		file_path->set_text(initial_bp+"."+ScriptServer::get_language( language_menu->get_selected() )->get_extension());
 	} else {
 		initial_bp="";
@@ -182,7 +182,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	String path=file_path->get_text();
 	String extension="";
 	if (path.find(".")>=0) {
-		extension=path.extension();
+		extension=path.get_extension();
 	}
 
 	if (extension.length()==0) {
@@ -199,7 +199,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 
 		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 			if (E->get().nocasecmp_to(extension)==0) {
-				path=path.basename()+selected_ext;
+				path=path.get_basename()+selected_ext;
 				_path_changed(path);
 				break;
 			}
@@ -288,7 +288,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 	create_new=!f->file_exists(p);
 	memdelete(f);
 
-	String extension=p.extension();
+	String extension=p.get_extension();
 	List<String> extensions;
 
 	// get all possible extensions for script

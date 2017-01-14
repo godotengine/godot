@@ -368,7 +368,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 	while(!found_route) {
 
 		if (open_list.size()==0) {
-		//	print_line("NOU OPEN LIST");
+			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list

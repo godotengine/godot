@@ -408,8 +408,8 @@ void CPMixerImpl::set_voice_chorus_send(int p_voice_index,int p_chorus){
 
 void CPMixerImpl::set_reverb_mode(ReverbMode p_mode){
 
-//	Voice &v=voices[p_voice_index];
-//	ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
+	//Voice &v=voices[p_voice_index];
+	//ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
 	switch(p_mode) {
 		case CPMixer::REVERB_MODE_STUDIO_SMALL: reverb_type=AudioMixer::REVERB_SMALL; break;
 		case CPMixer::REVERB_MODE_STUDIO_MEDIUM: reverb_type=AudioMixer::REVERB_MEDIUM; break;
@@ -422,8 +422,8 @@ void CPMixerImpl::set_reverb_mode(ReverbMode p_mode){
 
 void CPMixerImpl::set_chorus_params(unsigned int p_delay_ms,unsigned int p_separation_ms,unsigned int p_depth_ms10,unsigned int p_speed_hz10){
 
-//	Voice &v=voices[p_voice_index];
-//	ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
+	//Voice &v=voices[p_voice_index];
+	//ERR_FAIL_COND(v.channel==AudioMixer::INVALID_CHANNEL);
 
 }
 
@@ -785,7 +785,7 @@ RES ResourceFormatLoaderChibi::load(const String &p_path, const String& p_origin
 
 	if (r_error)
 		*r_error=ERR_FILE_CANT_OPEN;
-	String el = p_path.extension().to_lower();
+	String el = p_path.get_extension().to_lower();
 
 	CPFileAccessWrapperImpl f;
 
@@ -849,7 +849,7 @@ bool ResourceFormatLoaderChibi::handles_type(const String& p_type) const {
 }
 
 String ResourceFormatLoaderChibi::get_resource_type(const String &p_path) const {
-	String el = p_path.extension().to_lower();
+	String el = p_path.get_extension().to_lower();
 	if (el=="it" || el=="s3m" || el=="xm" || el=="mod")
 		return "EventStreamChibi";
 	return "";

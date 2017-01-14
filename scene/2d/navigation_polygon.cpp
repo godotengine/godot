@@ -310,7 +310,7 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 	if (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
 
-//	update_gizmo();
+	//update_gizmo();
 }
 
 bool NavigationPolygonInstance::is_enabled() const {
@@ -459,7 +459,7 @@ void NavigationPolygonInstance::_navpoly_changed() {
 
 String NavigationPolygonInstance::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
 	if (!navpoly.is_valid()) {

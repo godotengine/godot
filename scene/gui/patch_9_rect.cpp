@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  patch_9_frame.cpp                                                    */
+/*  patch_9_rect.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "patch_9_frame.h"
+#include "patch_9_rect.h"
 
 #include "servers/visual_server.h"
 
@@ -40,7 +40,7 @@ void NinePatchRect::_notification(int p_what) {
 		Size2 s=get_size();
 		RID ci = get_canvas_item();
 		VS::get_singleton()->canvas_item_add_nine_patch(ci,Rect2(Point2(),s),region_rect,texture->get_rid(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),VS::NINE_PATCH_STRETCH,VS::NINE_PATCH_STRETCH,draw_center);
-//		draw_texture_rect(texture,Rect2(Point2(),s),false,modulate);
+		//draw_texture_rect(texture,Rect2(Point2(),s),false,modulate);
 
 /*
 		Vector<Point2> points;
@@ -98,8 +98,10 @@ void NinePatchRect::set_texture(const Ref<Texture>& p_tex) {
 		return;
 	texture=p_tex;
 	update();
-	//if (texture.is_valid())
-	//	texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+	/*
+	if (texture.is_valid())
+		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+	*/
 	minimum_size_changed();
 	emit_signal("texture_changed");
 }

@@ -77,7 +77,7 @@ public:
 	virtual void stop_joy_vibration(int p_device)=0;
 
 	virtual Point2 get_mouse_pos() const=0;
-	virtual Point2 get_mouse_speed() const=0;
+	virtual Point2 get_last_mouse_speed() const=0;
 	virtual int get_mouse_button_mask() const=0;
 
 	virtual void warp_mouse_pos(const Vector2& p_to)=0;

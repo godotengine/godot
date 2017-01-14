@@ -474,9 +474,11 @@ void OS_X11::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
@@ -1467,8 +1469,8 @@ void OS_X11::process_xevents() {
 			input->set_mouse_pos(pos);
 			motion_event.mouse_motion.global_x=pos.x;
 			motion_event.mouse_motion.global_y=pos.y;
-			motion_event.mouse_motion.speed_x=input->get_mouse_speed().x;
-			motion_event.mouse_motion.speed_y=input->get_mouse_speed().y;
+			motion_event.mouse_motion.speed_x=input->get_last_mouse_speed().x;
+			motion_event.mouse_motion.speed_y=input->get_last_mouse_speed().y;
 
 			motion_event.mouse_motion.relative_x=rel.x;
 			motion_event.mouse_motion.relative_y=rel.y;
@@ -1923,10 +1925,10 @@ void OS_X11::run() {
 
 	main_loop->init();
 
-//	uint64_t last_ticks=get_ticks_usec();
+	//uint64_t last_ticks=get_ticks_usec();
 
-//	int frames=0;
-//	uint64_t frame=0;
+	//int frames=0;
+	//uint64_t frame=0;
 
 	while (!force_quit) {
 

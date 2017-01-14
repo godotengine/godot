@@ -251,8 +251,10 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 	}
 
 	_update_inertia();
-	//if (get_space())
-//		_update_queries();
+	/*
+	if (get_space())
+		_update_queries();
+	*/
 
 }
 Physics2DServer::BodyMode Body2DSW::get_mode() const {
@@ -301,15 +303,19 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 		} break;
 		case Physics2DServer::BODY_STATE_LINEAR_VELOCITY: {
 
-			//if (mode==Physics2DServer::BODY_MODE_STATIC)
-			//	break;
+			/*
+			if (mode==Physics2DServer::BODY_MODE_STATIC)
+				break;
+			*/
 			linear_velocity=p_variant;
 			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_ANGULAR_VELOCITY: {
-			//if (mode!=Physics2DServer::BODY_MODE_RIGID)
-			//	break;
+			/*
+			if (mode!=Physics2DServer::BODY_MODE_RIGID)
+				break;
+			*/
 			angular_velocity=p_variant;
 			wakeup();
 
@@ -385,11 +391,13 @@ void Body2DSW::set_space(Space2DSW *p_space){
 		_update_inertia();
 		if (active)
 			get_space()->body_add_to_active_list(&active_list);
-//		_update_queries();
-		//if (is_active()) {
-		//	active=false;
-		//	set_active(true);
-		//}
+		/*
+		_update_queries();
+		if (is_active()) {
+			active=false;
+			set_active(true);
+		}
+		*/
 
 	}
 
@@ -459,13 +467,17 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	// If less than 0, override dampenings with that of the Body2D
 	if (angular_damp>=0)
 		area_angular_damp = angular_damp;
-	//else
-	//	area_angular_damp=damp_area->get_angular_damp();
+	/*
+	else
+		area_angular_damp=damp_area->get_angular_damp();
+	*/
 
 	if (linear_damp>=0)
 		area_linear_damp = linear_damp;
-	//else
-	//	area_linear_damp=damp_area->get_linear_damp();
+	/*
+	else
+		area_linear_damp=damp_area->get_linear_damp();
+	*/
 
 	Vector2 motion;
 	bool do_motion=false;
@@ -482,10 +494,12 @@ void Body2DSW::integrate_forces(real_t p_step) {
 
 		do_motion=true;
 
-		//for(int i=0;i<get_shape_count();i++) {
-		//	set_shape_kinematic_advance(i,Vector2());
-		//	set_shape_kinematic_retreat(i,0);
-		//}
+		/*
+		for(int i=0;i<get_shape_count();i++) {
+			set_shape_kinematic_advance(i,Vector2());
+			set_shape_kinematic_retreat(i,0);
+		}
+		*/
 
 	} else {
 		if (!omit_force_integration && !first_integration) {

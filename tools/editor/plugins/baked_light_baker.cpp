@@ -1006,8 +1006,10 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 	Triangle *triangle=NULL;
 
-	//for(int i=0;i<max_depth;i++)
-	//	stack[i]=0;
+	/*
+	for(int i=0;i<max_depth;i++)
+		stack[i]=0;
+	*/
 
 	int level=0;
 	//AABB ray_aabb;
@@ -1059,7 +1061,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 					bool valid = b.aabb.smits_intersect_ray(p_begin,n,0,len);
 					//bool valid = b.aabb.intersects_segment(p_begin,p_end);
-	//				bool valid = b.aabb.intersects(ray_aabb);
+					//bool valid = b.aabb.intersects(ray_aabb);
 
 					if (!valid) {
 
@@ -1234,7 +1236,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 		}
 
 		//specular later
-//		_plot_light_point(r_point,octree,octree_aabb,p_light);
+		//_plot_light_point(r_point,octree,octree_aabb,p_light);
 
 
 		Color plot_light=res_light.linear_interpolate(diffuse_at_point,tint);
@@ -1678,7 +1680,7 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 					dl.rays_thrown++;
 					baked_light_baker_add_64i(&total_rays,1);
 					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
-//					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
+					//_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
 			} break;
@@ -1710,7 +1712,7 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 					dl.rays_thrown++;
 					baked_light_baker_add_64i(&total_rays,1);
 					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
-	//					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
+					//_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
 			} break;
@@ -2010,8 +2012,10 @@ void BakedLightBaker::update_octree_images(PoolVector<uint8_t> &p_octree,PoolVec
 			//write colors
 			for(int j=0;j<8;j++) {
 
-				//if (!oct.children[j])
-				//	continue;
+				/*
+				if (!oct.children[j])
+					continue;
+				*/
 				uint8_t *iptr=&lptr[ofs+lchild_offsets[j]];
 
 				float r=oct.light_accum[j][0]*norm;
@@ -2291,7 +2295,7 @@ void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int heigh
 
 								bool valid = b.aabb.smits_intersect_ray(from,n,0,len);
 								//bool valid = b.aabb.intersects_segment(p_begin,p_end);
-				//				bool valid = b.aabb.intersects(ray_aabb);
+								//bool valid = b.aabb.intersects(ray_aabb);
 
 								if (!valid) {
 
@@ -2649,10 +2653,13 @@ void BakedLightBaker::clear() {
 /*
  * ???
 	for(int i=0;i<octant_pool.size();i++) {
-		//if (octant_pool[i].leaf) {
-		//	memdelete_arr( octant_pool[i].light );
-		//}	Vector<double> norm_arr;
-		//norm_arr.resize(lights.size());
+		/*
+		if (octant_pool[i].leaf) {
+			memdelete_arr( octant_pool[i].light );
+		}
+		Vector<double> norm_arr;
+		norm_arr.resize(lights.size());
+		*/
 
 		for(int i=0;i<lights.size();i++) {
 			norm_arr[i] =  1.0/get_normalization(i);

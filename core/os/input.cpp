@@ -74,7 +74,7 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(_MD("get_magnetometer"),&Input::get_magnetometer);
 	ClassDB::bind_method(_MD("get_gyroscope"),&Input::get_gyroscope);
 	//ClassDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
-	ClassDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
+	ClassDB::bind_method(_MD("get_last_mouse_speed"),&Input::get_last_mouse_speed);
 	ClassDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
 	ClassDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
 	ClassDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);

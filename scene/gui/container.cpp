@@ -147,7 +147,7 @@ void Container::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-			if (is_visible()) {
+			if (is_visible_in_tree()) {
 				queue_sort();
 			}
 		} break;

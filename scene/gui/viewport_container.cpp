@@ -63,7 +63,7 @@ void ViewportContainer::_notification(int p_what) {
 				continue;
 
 
-			if (is_visible())
+			if (is_visible_in_tree())
 				c->set_update_mode(Viewport::UPDATE_ALWAYS);
 			else
 				c->set_update_mode(Viewport::UPDATE_DISABLED);

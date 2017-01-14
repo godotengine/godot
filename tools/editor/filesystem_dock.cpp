@@ -186,7 +186,7 @@ void FileSystemDock::_notification(int p_what) {
 		case NOTIFICATION_DRAG_BEGIN: {
 
 			Dictionary dd = get_viewport()->gui_get_drag_data();
-			if (tree->is_visible() && dd.has("type") ) {
+			if (tree->is_visible_in_tree() && dd.has("type") ) {
 				if  ( (String(dd["type"])=="files") || (String(dd["type"])=="files_and_dirs") || (String(dd["type"])=="resource")) {
 					tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
 				}
@@ -292,7 +292,7 @@ void FileSystemDock::_thumbnail_done(const String& p_path,const Ref<Texture>& p_
 
 	bool valid=false;
 
-	if (!search_box->is_hidden()) {
+	if (search_box->is_visible()) {
 		valid=true;
 	} else {
 		valid=(path==p_path.get_base_dir());
@@ -396,7 +396,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	current_path->set_text(path);
 
 
-	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_path(path);
+	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(path);
 	if (!efd)
 		return;
 
@@ -624,7 +624,7 @@ void FileSystemDock::_go_to_dir(const String& p_dir){
 
 void FileSystemDock::_preview_invalidated(const String& p_path) {
 
-	if (p_path.get_base_dir()==path && search_box->get_text()==String() && file_list_vb->is_visible()) {
+	if (p_path.get_base_dir()==path && search_box->get_text()==String() && file_list_vb->is_visible_in_tree()) {
 
 
 		for(int i=0;i<files->get_item_count();i++) {
@@ -649,13 +649,13 @@ void FileSystemDock::_fs_changed() {
 	scanning_vb->hide();
 	split_box->show();
 
-	if (!tree->is_hidden()) {
+	if (tree->is_visible()) {
 		button_favorite->show();
 		_update_tree();
 
 	}
 
-	if (!file_list_vb->is_hidden()) {
+	if (file_list_vb->is_visible()) {
 
 		_update_files(true);
 	}
@@ -685,14 +685,14 @@ void FileSystemDock::_fw_history() {
 
 	path=history[history_pos];
 
-	if (!tree->is_hidden()) {
+	if (tree->is_visible()) {
 		_update_tree();
 		tree->grab_focus();
 		tree->ensure_cursor_is_visible();
 
 	}
 
-	if (!file_list_vb->is_hidden()) {
+	if (file_list_vb->is_visible()) {
 		_update_files(false);
 		current_path->set_text(path);
 	}
@@ -710,13 +710,13 @@ void FileSystemDock::_bw_history() {
 	path=history[history_pos];
 
 
-	if (!tree->is_hidden()) {
+	if (tree->is_visible()) {
 		_update_tree();
 		tree->grab_focus();
 		tree->ensure_cursor_is_visible();
 	}
 
-	if (!file_list_vb->is_hidden()) {
+	if (file_list_vb->is_visible()) {
 		_update_files(false);
 		current_path->set_text(path);
 	}
@@ -832,7 +832,7 @@ void FileSystemDock::_move_operation(const String& p_to_path) {
 			return;
 		}
 
-		EditorFileSystemDirectory *efsd=EditorFileSystem::get_singleton()->get_path(move_dirs[i]);
+		EditorFileSystemDirectory *efsd=EditorFileSystem::get_singleton()->get_filesystem_path(move_dirs[i]);
 		if (!efsd)
 			continue;
 		_find_inside_move_files(efsd,inside_files);
@@ -1015,7 +1015,7 @@ void FileSystemDock::_file_option(int p_option) {
 			if (move_dirs.empty() && move_files.size()==1) {
 
 				rename_dialog->clear_filters();
-				rename_dialog->add_filter("*."+move_files[0].extension());
+				rename_dialog->add_filter("*."+move_files[0].get_extension());
 				rename_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 				rename_dialog->set_current_path(move_files[0]);
 				rename_dialog->popup_centered_ratio();
@@ -1149,7 +1149,7 @@ void FileSystemDock::_open_pressed(){
 	current_path->set_text(path);
 	_push_to_history();
 
-//	emit_signal("open",path);
+	//emit_signal("open",path);
 
 }
 
@@ -1167,7 +1167,7 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2& p_pos) {
 
 void FileSystemDock::_search_changed(const String& p_text) {
 
-	if (!search_box->is_visible())
+	if (!search_box->is_visible_in_tree())
 		return; //wtf
 
 	_update_files(false);
@@ -1242,8 +1242,10 @@ Variant FileSystemDock::get_drag_data_fw(const Point2& p_point,Control* p_from) 
 
 		if (seldirs.empty() && selfiles.empty())
 			return Variant();
-		//if (seldirs.size() && selfiles.size())
-		//	return Variant(); //can't really mix files and dirs (i think?) - yes you can, commenting
+		/*
+		if (seldirs.size() && selfiles.size())
+			return Variant(); //can't really mix files and dirs (i think?) - yes you can, commenting
+		*/
 
 		/*if (selfiles.size()==1) {
 			Ref<Resource> resource = ResourceLoader::load(files->get_item_metadata(selfiles.front()->get()));
@@ -1622,7 +1624,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(_MD("_update_tree"),&FileSystemDock::_update_tree);
 	ClassDB::bind_method(_MD("_rescan"),&FileSystemDock::_rescan);
 	ClassDB::bind_method(_MD("_favorites_pressed"),&FileSystemDock::_favorites_pressed);
-//	ClassDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
+	//ClassDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ClassDB::bind_method(_MD("_open_pressed"),&FileSystemDock::_open_pressed);
 	ClassDB::bind_method(_MD("_dir_rmb_pressed"),&FileSystemDock::_dir_rmb_pressed);
 
@@ -1700,7 +1702,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	button_favorite->set_focus_mode(FOCUS_NONE);
 
-//	Control *spacer = memnew( Control);
+	//Control *spacer = memnew( Control);
 
 
 

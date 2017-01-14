@@ -36,7 +36,7 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
 	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYPAD_BUTTON)) {
 
-		if (!get_parent() || !is_visible() || is_disabled())
+		if (!get_parent() || !is_visible_in_tree() || is_disabled())
 			return;
 
 		bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
@@ -67,7 +67,7 @@ void MenuButton::_gui_input(InputEvent p_event) {
 	/*if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT) {
 		clicked=p_event.mouse_button.pressed;
 	}
-	if (clicked && p_event.type==InputEvent::MOUSE_MOTION && popup->is_visible()) {
+	if (clicked && p_event.type==InputEvent::MOUSE_MOTION && popup->is_visible_in_tree()) {
 
 		Point2 gt = Point2(p_event.mouse_motion.x,p_event.mouse_motion.y);
 		gt = get_global_transform().xform(gt);
@@ -117,7 +117,7 @@ MenuButton::MenuButton() {
 	add_child(popup);
 	popup->set_as_toplevel(true);
 	set_process_unhandled_key_input(true);
-	set_click_on_press(true);
+	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 }
 
 

@@ -265,7 +265,7 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 
 	FileAccess *f=FileAccess::open(p_path.get_base_dir()+"/data.pck",FileAccess::WRITE);
 	if (!f) {
-		EditorNode::add_io_error("Could not create file for writing:\n"+p_path.basename()+"_files.js");
+		EditorNode::add_io_error("Could not create file for writing:\n"+p_path.get_basename()+"_files.js");
 		return ERR_FILE_CANT_WRITE;
 	}
 	Error err = save_pack(f);
@@ -307,32 +307,32 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 
 		if (file=="godot.html") {
 
-			_fix_html(data,p_path.get_file().basename(), p_debug);
+			_fix_html(data,p_path.get_file().get_basename(), p_debug);
 			file=p_path.get_file();
 		}
 		if (file=="godotfs.js") {
 
 			_fix_files(data,len);
-			file=p_path.get_file().basename()+"fs.js";
+			file=p_path.get_file().get_basename()+"fs.js";
 		}
 		if (file=="godot.js") {
 
-			file=p_path.get_file().basename()+".js";
+			file=p_path.get_file().get_basename()+".js";
 		}
 
 		if (file=="godot.asm.js") {
 
-			file=p_path.get_file().basename()+".asm.js";
+			file=p_path.get_file().get_basename()+".asm.js";
 		}
 
 		if (file=="godot.mem") {
 
-			file=p_path.get_file().basename()+".mem";
+			file=p_path.get_file().get_basename()+".mem";
 		}
 
 		if (file=="godot.wasm") {
 
-			file=p_path.get_file().basename()+".wasm";
+			file=p_path.get_file().get_basename()+".wasm";
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);

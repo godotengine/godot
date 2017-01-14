@@ -897,7 +897,7 @@ bool ClassDB::set_property(Object* p_object,const StringName& p_property, const 
 			if (psg->index>=0) {
 				Variant index=psg->index;
 				const Variant* arg[2]={&index,&p_value};
-//				p_object->call(psg->setter,arg,2,ce);
+				//p_object->call(psg->setter,arg,2,ce);
 				if (psg->_setptr) {
 					psg->_setptr->call(p_object,arg,2,ce);
 				} else {
@@ -1110,6 +1110,15 @@ MethodBind* ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const 
 	p_bind->set_name(mdname);
 
 	String instance_type=p_bind->get_instance_class();
+
+#ifdef DEBUG_ENABLED
+
+	if (has_method(instance_type,mdname)) {
+		ERR_EXPLAIN("Class "+String(instance_type)+" already has a method "+String(mdname));
+		ERR_FAIL_V(NULL);
+	}
+#endif
+
 
 	ClassInfo *type=classes.getptr(instance_type);
 	if (!type) {

@@ -390,8 +390,10 @@ static int _bsp_create_node(const Face3 *p_faces,const Vector<int>& p_indices,Ve
 
 		const Face3& f=p_faces[ indices[i] ];
 
-		//if (f.get_plane().is_almost_like(divisor_plane))
-		//	continue;
+		/*
+		if (f.get_plane().is_almost_like(divisor_plane))
+			continue;
+		*/
 
 		int over_count=0;
 		int under_count=0;
@@ -546,7 +548,7 @@ BSP_Tree::BSP_Tree(const Variant& p_variant) {
 	error_radius = d["error"];
 	aabb = d["aabb"];
 
-//	int node_count = src_nodes.size();
+	//int node_count = src_nodes.size();
 	nodes.resize(src_nodes.size()/3);
 
 	PoolVector<int>::Read r = src_nodes.read();

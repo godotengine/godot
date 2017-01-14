@@ -204,7 +204,7 @@ bool TranslationLoaderPO::handles_type(const String& p_type) const{
 
 String TranslationLoaderPO::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="po")
+	if (p_path.get_extension().to_lower()=="po")
 		return "Translation";
 	return "";
 }

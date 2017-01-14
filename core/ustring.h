@@ -125,6 +125,7 @@ public:
 	bool is_subsequence_ofi(const String& p_string) const;
 	Vector<String> bigrams() const;
 	float similarity(const String& p_string) const;
+	String format(const Variant& values,String placeholder="{_}") const;
 	String replace_first(String p_key,String p_with) const;
 	String replace(String p_key,String p_with) const;
 	String replacen(String p_key,String p_with) const;
@@ -176,8 +177,8 @@ public:
 	String right(int p_pos) const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
-	String extension() const;
-	String basename() const;
+	String get_extension() const;
+	String get_basename() const;
 	String plus_file(const String& p_file) const;
 	CharType ord_at(int p_idx) const;
 

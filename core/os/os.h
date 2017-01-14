@@ -32,6 +32,7 @@
 #include "ustring.h"
 #include "list.h"
 #include "vector.h"
+#include "engine.h"
 #include "os/main_loop.h"
 #include <stdarg.h>
 
@@ -43,28 +44,17 @@ class OS {
 
 	static OS* singleton;
 	String _execpath;
-	String _custom_level;
 	List<String> _cmdline;
-	int ips;
 	bool _keep_screen_on;
 	bool low_processor_usage_mode;
 	bool _verbose_stdout;
 	String _local_clipboard;
-	uint64_t frames_drawn;
-	uint32_t _frame_delay;
 	uint64_t _msec_splash;
 	bool _no_window;
 	int _exit_code;
 	int _orientation;
-	float _fps;
-	int _target_fps;
-	float _time_scale;
-	bool _pixel_snap;
 	bool _allow_hidpi;
 
-	uint64_t _fixed_frames;
-	uint64_t _idle_frames;
-	bool _in_fixed;
 
 	char *last_error;
 
@@ -185,15 +175,6 @@ public:
 	virtual bool get_borderless_window() { return 0; }
 
 
-
-	virtual void set_iterations_per_second(int p_ips);
-	virtual int get_iterations_per_second() const;
-
-	virtual void set_target_fps(int p_fps);
-	virtual float get_target_fps() const;
-
-	virtual float get_frames_per_second() const { return _fps; }
-
 	virtual void set_keep_screen_on(bool p_enabled);
 	virtual bool is_keep_screen_on() const;
 	virtual void set_low_processor_usage_mode(bool p_enabled);
@@ -217,7 +198,6 @@ public:
 
 	virtual MainLoop *get_main_loop() const=0;
 
-	String get_custom_level() const { return _custom_level; }
 
 	virtual void yield();
 
@@ -280,16 +260,8 @@ public:
 	uint32_t get_ticks_msec() const;
 	uint64_t get_splash_tick_msec() const;
 
-	void set_frame_delay(uint32_t p_msec);
-	uint32_t get_frame_delay() const;
 
 	virtual bool can_draw() const = 0;
-
-	uint64_t get_frames_drawn();
-
-	uint64_t get_fixed_frames() const { return _fixed_frames; }
-	uint64_t get_idle_frames() const { return _idle_frames; }
-	bool is_in_fixed_frame() const { return _in_fixed; }
 
 	bool is_stdout_verbose() const;
 
@@ -416,10 +388,6 @@ public:
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
-	void set_time_scale(float p_scale);
-	float get_time_scale() const;
-
-	_FORCE_INLINE_ bool get_use_pixel_snap() const { return _pixel_snap; }
 
 	virtual bool is_joy_known(int p_device);
 	virtual String get_joy_guid(int p_device)const;
@@ -433,8 +401,6 @@ public:
 
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
-
-	Dictionary get_engine_version() const;
 
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();

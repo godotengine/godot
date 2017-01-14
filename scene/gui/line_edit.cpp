@@ -96,8 +96,6 @@ void LineEdit::_gui_input(InputEvent p_event) {
 					}
 				}
 
-				//			if (!editable)
-				//	non_editable_clicked_signal.call();
 				update();
 
 			} else {
@@ -853,7 +851,7 @@ void LineEdit::_reset_caret_blink_timer() {
 
 void LineEdit::_toggle_draw_caret() {
 	draw_caret = !draw_caret;
-	if (is_visible() && has_focus() && window_has_focus) {
+	if (is_visible_in_tree() && has_focus() && window_has_focus) {
 		update();
 	}
 }
@@ -873,7 +871,7 @@ void LineEdit::delete_char() {
 
 	if (cursor_pos==window_pos) {
 
-	//	set_window_pos(cursor_pos-get_window_length());
+		//set_window_pos(cursor_pos-get_window_length());
 	}
 
 	_text_changed();

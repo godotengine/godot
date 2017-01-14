@@ -802,7 +802,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * e
 	env->GetJavaVM(&jvm);
 
 	_godot_instance=env->NewGlobalRef(activity);
-//	_godot_instance=activity;
+	//_godot_instance=activity;
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","***************** HELLO FROM JNI!!!!!!!!");
 
@@ -879,7 +879,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv * e
 				if (!rawString) {
 					__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is null\n",i);
 				} else {
-		//			__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
+					//__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
 
 					if (strcmp(rawString,"-main_pack")==0)
 						use_apk_expansion=true;
@@ -1151,8 +1151,10 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_touch(JNIEnv * env, j
 	pointer_events.push_back(jpe);
 
 	input_mutex->unlock();
-	//if (os_android)
-//		os_android->process_touch(ev,pointer,points);
+	/*
+	if (os_android)
+		os_android->process_touch(ev,pointer,points);
+	*/
 
 }
 
@@ -1753,7 +1755,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *
 			args[i] = _jobject_to_variant(env, obj);
 		env->DeleteLocalRef(obj);
 
-//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
+		//print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 
 	};
 

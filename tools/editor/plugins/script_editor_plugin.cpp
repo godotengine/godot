@@ -278,7 +278,7 @@ ScriptEditor *ScriptEditor::script_editor=NULL;
 
 String ScriptEditor::_get_debug_tooltip(const String&p_text,Node *_se) {
 
-//	ScriptEditorBase *se=_se->cast_to<ScriptEditorBase>();
+	//ScriptEditorBase *se=_se->cast_to<ScriptEditorBase>();
 
 	String val = debugger->get_var_value(p_text);
 	if (val!=String()) {
@@ -311,7 +311,7 @@ void ScriptEditor::_breaked(bool p_breaked,bool p_can_debug) {
 
 void ScriptEditor::_show_debugger(bool p_show) {
 
-//	debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
+	//debug_menu->get_popup()->set_item_checked( debug_menu->get_popup()->get_item_index(DEBUG_SHOW), p_show);
 }
 
 void ScriptEditor::_script_created(Ref<Script> p_script) {
@@ -426,14 +426,14 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 
 		script_name_label->set_text(c->cast_to<ScriptEditorBase>()->get_name());
 		script_icon->set_texture(c->cast_to<ScriptEditorBase>()->get_icon());
-		if (is_visible())
+		if (is_visible_in_tree())
 			c->cast_to<ScriptEditorBase>()->ensure_focus();
 	}
 	if (c->cast_to<EditorHelp>()) {
 
 		script_name_label->set_text(c->cast_to<EditorHelp>()->get_class());
 		script_icon->set_texture(get_icon("Help","EditorIcons"));
-		if (is_visible())
+		if (is_visible_in_tree())
 			c->cast_to<EditorHelp>()->set_focused();
 	}
 
@@ -1104,7 +1104,7 @@ static const Node * _find_node_with_script(const Node* p_node, const RefPtr & p_
 Dictionary ScriptEditor::get_state() const {
 
 
-//	apply_scripts();
+	//apply_scripts();
 
 	Dictionary state;
 #if 0
@@ -1281,7 +1281,7 @@ void ScriptEditor::ensure_select_current() {
 
 			Ref<Script> script = se->get_edited_script();
 
-			if (!grab_focus_block && is_visible())
+			if (!grab_focus_block && is_visible_in_tree())
 				se->ensure_focus();
 
 
@@ -1516,7 +1516,7 @@ void ScriptEditor::edit(const Ref<Script>& p_script, bool p_grab_focus) {
 					_go_to_tab(i);
 					script_list->select( script_list->find_metadata(i) );
 				}
-				if (is_visible())
+				if (is_visible_in_tree())
 					se->ensure_focus();
 			}
 			return;
@@ -1744,7 +1744,7 @@ void ScriptEditor::_script_split_dragged(float) {
 }
 
 void ScriptEditor::_unhandled_input(const InputEvent& p_event) {
-	if (p_event.key.pressed || !is_visible()) return;
+	if (p_event.key.pressed || !is_visible_in_tree()) return;
 	if (ED_IS_SHORTCUT("script_editor/next_script", p_event)) {
 		int next_tab = script_list->get_current() + 1;
 		next_tab %= script_list->get_item_count();
@@ -2247,7 +2247,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	{
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		disk_changed->add_child(vbc);
-	//	disk_changed->set_child_rect(vbc);
+		//disk_changed->set_child_rect(vbc);
 
 		Label *dl = memnew( Label );
 		dl->set_text(TTR("The following files are newer on disk.\nWhat action should be taken?:"));
@@ -2293,7 +2293,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	help_index->connect("open_class",this,"_help_class_open");
 
 	history_pos=-1;
-//	debugger_gui->hide();
+	//debugger_gui->hide();
 
 	edit_pass=0;
 	trim_trailing_whitespace_on_save = false;

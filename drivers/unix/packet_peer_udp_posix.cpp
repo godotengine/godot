@@ -230,7 +230,7 @@ int PacketPeerUDPPosix::_get_socket() {
 }
 
 
-void PacketPeerUDPPosix::set_send_address(const IP_Address& p_address,int p_port) {
+void PacketPeerUDPPosix::set_dest_address(const IP_Address& p_address,int p_port) {
 
 	peer_addr=p_address;
 	peer_port=p_port;

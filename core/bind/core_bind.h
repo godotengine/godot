@@ -169,12 +169,6 @@ public:
 	void native_video_unpause();
 	void native_video_stop();
 
-	void set_iterations_per_second(int p_ips);
-	int get_iterations_per_second() const;
-
-	void set_target_fps(int p_fps);
-	float get_target_fps() const;
-
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
 
@@ -196,11 +190,7 @@ public:
 	String get_latin_keyboard_variant() const;
 
 	String get_model_name() const;
-	MainLoop *get_main_loop() const;
 
-	String get_custom_level() const;
-
-	float get_frames_per_second() const;
 
 	void dump_memory_to_file(const String& p_file);
 	void dump_resources_to_file(const String& p_file);
@@ -271,8 +261,6 @@ public:
 
 	bool can_draw() const;
 
-	int  get_frames_drawn();
-
 	bool is_stdout_verbose() const;
 
 	int get_processor_count() const;
@@ -313,8 +301,6 @@ public:
 	void set_keep_screen_on(bool p_enabled);
 	bool is_keep_screen_on() const;
 
-	void set_time_scale(float p_scale);
-	float get_time_scale();
 
 	bool is_ok_left_and_cancel_right() const;
 
@@ -322,8 +308,6 @@ public:
 
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
-
-	Dictionary get_engine_version() const;
 
 	static _OS *get_singleton() { return singleton; }
 
@@ -472,7 +456,7 @@ public:
 
 	Error open(const String& p_path);
 
-	bool list_dir_begin(); ///< This starts dir listing
+	Error list_dir_begin(); ///< This starts dir listing
 	String get_next();
 	bool current_is_dir() const;
 
@@ -480,6 +464,7 @@ public:
 
 	int get_drive_count();
 	String get_drive(int p_drive);
+	int get_current_drive();
 
 	Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
 	String get_current_dir(); ///< return current dir location
@@ -631,5 +616,40 @@ public:
 	_ClassDB();
 	~_ClassDB();
 };
+
+
+class _Engine : public Object  {
+	GDCLASS(_Engine,Object);
+
+protected:
+
+	static void _bind_methods();
+	static _Engine *singleton;
+
+public:
+
+	static _Engine* get_singleton() { return singleton; }
+	void set_iterations_per_second(int p_ips);
+	int get_iterations_per_second() const;
+
+	void set_target_fps(int p_fps);
+	float get_target_fps() const;
+
+	float get_frames_per_second() const;
+
+	int  get_frames_drawn();
+
+	void set_time_scale(float p_scale);
+	float get_time_scale();
+
+	String get_custom_level() const;
+
+	MainLoop *get_main_loop() const;
+
+	Dictionary get_version_info() const;
+
+	_Engine();
+};
+
 
 #endif // CORE_BIND_H

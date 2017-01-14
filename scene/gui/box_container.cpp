@@ -55,7 +55,7 @@ void BoxContainer::_resort() {
 
 	for(int i=0;i<get_child_count();i++) {
 		Control *c=get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
@@ -108,7 +108,7 @@ void BoxContainer::_resort() {
 		for(int i=0;i<get_child_count();i++) {
 
 			Control *c=get_child(i)->cast_to<Control>();
-			if (!c || !c->is_visible())
+			if (!c || !c->is_visible_in_tree())
 				continue;
 			if (c->is_set_as_toplevel())
 				continue;
@@ -164,7 +164,7 @@ void BoxContainer::_resort() {
 	for(int i=0;i<get_child_count();i++) {
 
 		Control *c=get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
@@ -227,7 +227,7 @@ Size2 BoxContainer::get_minimum_size() const {
 		if (c->is_set_as_toplevel())
 			continue;
 
-		if (c->is_hidden()) {
+		if (!c->is_visible()) {
 			continue;
 		}
 
@@ -296,7 +296,7 @@ BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical=p_vertical;
 	align = ALIGN_BEGIN;
-//	set_ignore_mouse(true);
+	//set_ignore_mouse(true);
 	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 

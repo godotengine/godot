@@ -2933,9 +2933,9 @@ ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node, bool p_2d) 
 		SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
 
 
-	//	editor->get_viewport()->add_child(shader_editor);
-	//	shader_editor->set_area_as_parent_rect();
-	//	shader_editor->hide();
+		//editor->get_viewport()->add_child(shader_editor);
+		//shader_editor->set_area_as_parent_rect();
+		//shader_editor->hide();
 
 }
 

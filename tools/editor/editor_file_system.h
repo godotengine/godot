@@ -233,7 +233,7 @@ public:
 	void get_changed_sources(List<String> *r_changed);
 	void update_file(const String& p_file);
 	String find_resource_from_source(const String& p_path) const;
-	EditorFileSystemDirectory *get_path(const String& p_path);
+	EditorFileSystemDirectory *get_filesystem_path(const String& p_path);
 	String get_file_type(const String& p_file) const;
 	EditorFileSystemDirectory* find_file(const String& p_file,int* r_index) const;
 

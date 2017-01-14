@@ -58,7 +58,7 @@ void SampleLibraryEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
-//		NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
+		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -81,7 +81,7 @@ void SampleLibraryEditor::_file_load_request(const PoolVector<String>& p_path) {
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
-		String basename = path.get_file().basename();
+		String basename = path.get_file().get_basename();
 		String name=basename;
 		int counter=0;
 		while(sample_library->has_sample(name)) {
@@ -376,7 +376,7 @@ void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_da
 			if (sample->get_name()!="") {
 				basename=sample->get_name();
 			} else if (sample->get_path().is_resource_file()) {
-				basename = sample->get_path().basename();
+				basename = sample->get_path().get_basename();
 			} else {
 				basename="Sample";
 			}
@@ -506,14 +506,14 @@ void SampleLibraryEditorPlugin::make_visible(bool p_visible) {
 		//sample_library_editor->show();
 		button->show();
 		editor->make_bottom_panel_item_visible(sample_library_editor);
-//		sample_library_editor->set_process(true);
+		//sample_library_editor->set_process(true);
 	} else {
 
-		if (sample_library_editor->is_visible())
+		if (sample_library_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 
-//		sample_library_editor->set_process(false);
+		//sample_library_editor->set_process(false);
 	}
 
 }
@@ -529,8 +529,8 @@ SampleLibraryEditorPlugin::SampleLibraryEditorPlugin(EditorNode *p_node) {
 	button->hide();
 
 	//sample_library_editor->set_area_as_parent_rect();
-//	sample_library_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-//	sample_library_editor->set_margin( MARGIN_TOP, 120 );
+	//sample_library_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
+	//sample_library_editor->set_margin( MARGIN_TOP, 120 );
 	//sample_library_editor->hide();
 
 

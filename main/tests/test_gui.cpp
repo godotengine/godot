@@ -46,7 +46,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "io/image_loader.h"
 #include "print_string.h"
 #include "scene/2d/sprite.h"
@@ -97,7 +97,7 @@ public:
 
 		Sprite *sp = memnew( Sprite );
 		sp->set_texture( vp->get_render_target_texture() );
-//		sp->set_texture( ResourceLoader::load("res://ball.png") );
+		//sp->set_texture( ResourceLoader::load("res://ball.png") );
 		sp->set_pos(Point2(300,300));
 		get_root()->add_child(sp);
 

@@ -39,7 +39,7 @@ void Popup::_gui_input(InputEvent p_event) {
 void Popup::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-		if (popped_up && !is_visible()) {
+		if (popped_up && !is_visible_in_tree()) {
 			popped_up=false;
 			notification(NOTIFICATION_POPUP_HIDE);
 			emit_signal("popup_hide");
@@ -103,7 +103,7 @@ void Popup::set_as_minsize() {
 		Control *c=get_child(i)->cast_to<Control>();
 		if (!c)
 			continue;
-		if (c->is_hidden())
+		if (!c->is_visible())
 			continue;
 
 		Size2 minsize = c->get_combined_minimum_size();
@@ -144,7 +144,7 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 		Control *c=get_child(i)->cast_to<Control>();
 		if (!c)
 			continue;
-		if (c->is_hidden())
+		if (!c->is_visible())
 			continue;
 
 		Size2 minsize = c->get_combined_minimum_size();
@@ -283,7 +283,7 @@ Popup::Popup() {
 
 String Popup::get_configuration_warning() const {
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine though, but they will hide upon running.");
 	}
 

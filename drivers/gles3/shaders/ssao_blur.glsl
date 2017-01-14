@@ -69,9 +69,11 @@ void main() {
 
 	depth*=depth_divide;
 
-	//if (depth > camera_z_far*0.999) {
-	//	discard;//skybox
-	//}
+	/*
+	if (depth > camera_z_far*0.999) {
+		discard;//skybox
+	}
+	*/
 
 	float sum = texelFetch(source_ssao, ssC, 0).r;
 

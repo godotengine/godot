@@ -731,7 +731,7 @@ void GridMap::_octant_update(const OctantKey &p_key) {
 					ii.shape->add_vertices_to_array(col_debug,xform);
 				}
 
-			//	print_line("PHIS x: "+xform);
+				//print_line("PHIS x: "+xform);
 			}
 
 			// add the item's navmesh at given xform to GridMap's Navigation ancestor
@@ -796,7 +796,7 @@ void GridMap::_octant_exit_world(const OctantKey &p_key) {
 	for(Map<int,Octant::ItemInstances>::Element *E=g.items.front();E;E=E->next()) {
 
 		VS::get_singleton()->instance_set_scenario(E->get().multimesh_instance,RID());
-	//	VS::get_singleton()->instance_set_transform(E->get().multimesh_instance,get_global_transform());
+		//VS::get_singleton()->instance_set_transform(E->get().multimesh_instance,get_global_transform());
 		VS::get_singleton()->instance_set_room(E->get().multimesh_instance,RID());
 	}
 
@@ -1001,8 +1001,8 @@ void GridMap::_notification(int p_what) {
 			_update_area_instances();
 
 			for(Map<OctantKey,Octant*>::Element *E=octant_map.front();E;E=E->next()) {
-//				IndexKey ik;
-//				ik.key = E->key().indexkey;
+				//IndexKey ik;
+				//ik.key = E->key().indexkey;
 				_octant_enter_world(E->key());
 				_octant_update(E->key());
 			}
@@ -1201,7 +1201,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(_MD("get_cell_item","x","y","z"),&GridMap::get_cell_item);
 	ClassDB::bind_method(_MD("get_cell_item_orientation","x","y","z"),&GridMap::get_cell_item_orientation);
 
-//	ClassDB::bind_method(_MD("_recreate_octants"),&GridMap::_recreate_octants);
+	//ClassDB::bind_method(_MD("_recreate_octants"),&GridMap::_recreate_octants);
 	ClassDB::bind_method(_MD("_update_dirty_map_callback"),&GridMap::_update_dirty_map_callback);
 	ClassDB::bind_method(_MD("resource_changed","resource"),&GridMap::resource_changed);
 
@@ -1706,10 +1706,12 @@ void GridMap::bake_geometry() {
 
 void GridMap::_baked_light_changed() {
 
-//	if (!baked_light_instance)
-//		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),RID());
-//	else
-//		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),baked_light_instance->get_baked_light_instance());
+	/*
+	if (!baked_light_instance)
+		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),RID());
+	else
+		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),baked_light_instance->get_baked_light_instance());
+	*/
 	for(Map<OctantKey,Octant*>::Element *E=octant_map.front();E;E=E->next()) {
 
 		for(Map<int,Octant::ItemInstances>::Element *F=E->get()->items.front();F;F=F->next()) {

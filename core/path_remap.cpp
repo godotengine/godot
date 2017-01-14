@@ -142,7 +142,7 @@ void PathRemap::load_remaps() {
 
 	// platform remaps second, so override
 	remaps = GlobalConfig::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
-//	remaps = Globals::get_singleton()->get("remap/PSP");
+	//remaps = Globals::get_singleton()->get("remap/PSP");
 	{
 		int rlen = remaps.size();
 
@@ -152,7 +152,7 @@ void PathRemap::load_remaps() {
 
 			String from = r[i*2+0];
 			String to = r[i*2+1];
-//			print_line("add remap: "+from+" -> "+to);
+			//print_line("add remap: "+from+" -> "+to);
 			add_remap(from,to);
 		}
 	}

@@ -59,10 +59,10 @@ Size2 ScrollContainer::get_minimum_size() const {
 		}
 	}
 
-	if (h_scroll->is_visible()) {
+	if (h_scroll->is_visible_in_tree()) {
 		min_size.y+=h_scroll->get_minimum_size().y;
 	}
-	if (v_scroll->is_visible()) {
+	if (v_scroll->is_visible_in_tree()) {
 		min_size.x+=v_scroll->get_minimum_size().x;
 	}
 	return min_size;
@@ -89,19 +89,19 @@ void ScrollContainer::_gui_input(const InputEvent& p_gui_input) {
 			const InputEventMouseButton &mb=p_gui_input.mouse_button;
 
 			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed) {
-				if (h_scroll->is_visible() && !v_scroll->is_visible()){
+				if (h_scroll->is_visible_in_tree() && !v_scroll->is_visible_in_tree()){
 					// only horizontal is enabled, scroll horizontally
 					h_scroll->set_value( h_scroll->get_value()-h_scroll->get_page()/8 );
-				} else if (v_scroll->is_visible()) {
+				} else if (v_scroll->is_visible_in_tree()) {
 					v_scroll->set_value( v_scroll->get_value()-v_scroll->get_page()/8 );
 				}
 			}
 
 			if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed) {
-				if (h_scroll->is_visible() && !v_scroll->is_visible()){
+				if (h_scroll->is_visible_in_tree() && !v_scroll->is_visible_in_tree()){
 					// only horizontal is enabled, scroll horizontally
 					h_scroll->set_value( h_scroll->get_value()+h_scroll->get_page()/8 );
-				} else if (v_scroll->is_visible()) {
+				} else if (v_scroll->is_visible_in_tree()) {
 					v_scroll->set_value( v_scroll->get_value()+v_scroll->get_page()/8 );
 				}
 			}
@@ -216,10 +216,10 @@ void ScrollContainer::_notification(int p_what) {
 
 		child_max_size = Size2(0, 0);
 		Size2 size = get_size();
-		if (h_scroll->is_visible())
+		if (h_scroll->is_visible_in_tree())
 			size.y-=h_scroll->get_minimum_size().y;
 
-		if (v_scroll->is_visible())
+		if (v_scroll->is_visible_in_tree())
 			size.x-=h_scroll->get_minimum_size().x;
 
 		for(int i=0;i<get_child_count();i++) {
@@ -236,14 +236,14 @@ void ScrollContainer::_notification(int p_what) {
 			child_max_size.y = MAX(child_max_size.y, minsize.y);
 
 			Rect2 r = Rect2(-scroll,minsize);
-			if (!(scroll_h || h_scroll->is_visible())) {
+			if (!(scroll_h || h_scroll->is_visible_in_tree())) {
 				r.pos.x=0;
 				if (c->get_h_size_flags()&SIZE_EXPAND)
 					r.size.width=MAX(size.width,minsize.width);
 				else
 					r.size.width=minsize.width;
 			}
-			if (!(scroll_v || v_scroll->is_visible())) {
+			if (!(scroll_v || v_scroll->is_visible_in_tree())) {
 				r.pos.y=0;
 				r.size.height=size.height;
 				if (c->get_v_size_flags()&SIZE_EXPAND)

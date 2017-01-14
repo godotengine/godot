@@ -852,32 +852,32 @@ void RichTextLabel::_gui_input(InputEvent p_event) {
 				switch(k.scancode) {
 					case KEY_PAGEUP: {
 
-						if (vscroll->is_visible())
+						if (vscroll->is_visible_in_tree())
 							vscroll->set_value( vscroll->get_value() - vscroll->get_page() );
 					} break;
 					case KEY_PAGEDOWN: {
 
-						if (vscroll->is_visible())
+						if (vscroll->is_visible_in_tree())
 							vscroll->set_value( vscroll->get_value() + vscroll->get_page() );
 					} break;
 					case KEY_UP: {
 
-						if (vscroll->is_visible())
+						if (vscroll->is_visible_in_tree())
 							vscroll->set_value( vscroll->get_value() - get_font("normal_font")->get_height() );
 					} break;
 					case KEY_DOWN: {
 
-						if (vscroll->is_visible())
+						if (vscroll->is_visible_in_tree())
 							vscroll->set_value( vscroll->get_value() + get_font("normal_font")->get_height() );
 					} break;
 					case KEY_HOME: {
 
-						if (vscroll->is_visible())
+						if (vscroll->is_visible_in_tree())
 							vscroll->set_value( 0 );
 					} break;
 					case KEY_END: {
 
-						if (vscroll->is_visible())
+						if (vscroll->is_visible_in_tree())
 							vscroll->set_value( vscroll->get_max() );
 					} break;
 					case KEY_INSERT:
@@ -1429,7 +1429,7 @@ bool RichTextLabel::is_scroll_active() const {
 void RichTextLabel::set_scroll_follow(bool p_follow) {
 
 	scroll_follow=p_follow;
-	if (!vscroll->is_visible() || vscroll->get_value()>=(vscroll->get_max()-vscroll->get_page()))
+	if (!vscroll->is_visible_in_tree() || vscroll->get_value()>=(vscroll->get_max()-vscroll->get_page()))
 		scroll_following=true;
 }
 

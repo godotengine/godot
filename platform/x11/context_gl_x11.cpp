@@ -88,7 +88,7 @@ Error ContextGL_X11::initialize() {
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = NULL;
 
-//	const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
+	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
 	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 

@@ -329,7 +329,7 @@ Error GlobalConfig::setup(const String& p_path,const String & p_main_pack) {
 
 		String candidate = d->get_current_dir();
 		String current_dir = d->get_current_dir();
-		String exec_name = OS::get_singleton()->get_executable_path().get_file().basename();
+		String exec_name = OS::get_singleton()->get_executable_path().get_file().get_basename();
 		bool found = false;
 		bool first_time=true;
 
@@ -1011,7 +1011,7 @@ GlobalConfig::GlobalConfig() {
 	GLOBAL_DEF("input/ui_page_down",va);
 	input_presets.push_back("input/ui_page_down");
 
-//	GLOBAL_DEF("display/handheld/orientation", "landscape");
+	//GLOBAL_DEF("display/handheld/orientation", "landscape");
 
 
 	custom_prop_info["display/handheld/orientation"]=PropertyInfo(Variant::STRING,"display/handheld/orientation",PROPERTY_HINT_ENUM,"landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");

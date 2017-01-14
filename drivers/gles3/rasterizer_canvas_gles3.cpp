@@ -147,7 +147,7 @@ void RasterizerCanvasGLES3::canvas_begin(){
 
 
 
-//	state.canvas_shader.set_uniform(CanvasShaderGLES3::PROJECTION_MATRIX,state.vp);
+	//state.canvas_shader.set_uniform(CanvasShaderGLES3::PROJECTION_MATRIX,state.vp);
 	//state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Transform());
 	//state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform());
 
@@ -743,9 +743,6 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 			} else {
 				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
 			}
-//			if (current_clip) {
-//			//	print_line(" a clip ");
-//			}
 
 			canvas_texscreen_used=true;
 		}
@@ -1193,10 +1190,10 @@ void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light* p_lights_with_s
 	while(light) {
 
 
-	//	print_line("debug light");
+		//print_line("debug light");
 		if (light->shadow_buffer.is_valid()) {
 
-	//		print_line("sb is valid");
+			//print_line("sb is valid");
 			RasterizerStorageGLES3::CanvasLightShadow * sb = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
 			if (sb) {
 				glBindTexture(GL_TEXTURE_2D,sb->distance);
@@ -1253,7 +1250,7 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 
 		//light.basis.scale(Vector3(to_light.elements[0].length(),to_light.elements[1].length(),1));
 
-	///	p_near=1;
+		//p_near=1;
 		CameraMatrix projection;
 		{
 			real_t fov =  90;

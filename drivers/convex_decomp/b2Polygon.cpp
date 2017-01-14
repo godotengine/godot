@@ -189,7 +189,7 @@ void b2Polygon::MergeParallelEdges(float32 tolerance) {
 	x = newx;
 	y = newy;
 	nVertices = newNVertices;
-//	printf("%d \n", newNVertices);
+	//printf("%d \n", newNVertices);
 }
 	
     /* 
@@ -436,7 +436,6 @@ bool b2Polygon::IsSimple() {
 	 * For internal use.
      */
 b2Polygon* b2Polygon::Add(b2Triangle& t) {
-//		float32 equalTol = .001f;
         // First, find vertices that connect
         int32 firstP = -1;
         int32 firstT = -1;
@@ -963,7 +962,7 @@ int32 DecomposeConvex(b2Polygon* p, b2Polygon* results, int32 maxPolys) {
 			tempP.Set(*p);
 			ReversePolygon(tempP.x, tempP.y, tempP.nVertices);
 			nTri = TriangulatePolygon(tempP.x, tempP.y, tempP.nVertices, triangulated);
-//			ReversePolygon(p->x, p->y, p->nVertices); //reset orientation
+			//ReversePolygon(p->x, p->y, p->nVertices); //reset orientation
 		} else {
 			//printf("It is not ccw \n");
 			nTri = TriangulatePolygon(p->x, p->y, p->nVertices, triangulated);
@@ -997,7 +996,7 @@ void DecomposeConvexAndAddTo(b2Polygon* p, b2Body* bd, b2FixtureDef* prototype) 
         if (p->nVertices < 3) return;
         b2Polygon* decomposed = new b2Polygon[p->nVertices - 2]; //maximum number of polys
         int32 nPolys = DecomposeConvex(p, decomposed, p->nVertices - 2);
-//		printf("npolys: %d",nPolys);
+		//printf("npolys: %d",nPolys);
 		b2FixtureDef* pdarray = new b2FixtureDef[2*p->nVertices];//extra space in case of splits
 		int32 extra = 0;
         for (int32 i = 0; i < nPolys; ++i) {
@@ -1362,14 +1361,15 @@ b2Polygon TraceEdge(b2Polygon* p){
 						//printf("knode %d on node %d now has %d connections\n",k,j,knode->nConnected);
 						//printf("Found duplicate point.\n");
 					}
-					//printf("Orphaning node at address %d\n",(int)jnode);
-					//for (int32 k=0; k<njConn; ++k) {
-					//	if (jnode->connected[k]->IsConnectedTo(*jnode)) printf("Problem!!!\n");
-					//}
 					/*
+					printf("Orphaning node at address %d\n",(int)jnode);
+					for (int32 k=0; k<njConn; ++k) {
+						if (jnode->connected[k]->IsConnectedTo(*jnode)) printf("Problem!!!\n");
+					}
 					for (int32 k=0; k < njConn; ++k){
 						jnode->RemoveConnectionByIndex(k);
-					}*/
+					}
+					*/
 					jnode->nConnected = 0;
 				}
 			}

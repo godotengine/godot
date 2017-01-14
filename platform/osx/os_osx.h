@@ -59,7 +59,7 @@ class OS_OSX : public OS_Unix {
 public:
 	bool force_quit;
 //  rasterizer seems to no longer be given to visual server, its using GLES3 directly?
-//	Rasterizer *rasterizer;
+	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 
 	List<String> args;

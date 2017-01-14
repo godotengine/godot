@@ -60,9 +60,9 @@ abstract public class GenericConsumeTask extends AsyncTask<String, String, Strin
 	@Override
 	protected String doInBackground(String... params) {
 		try {
-//			Log.d("godot", "Requesting to consume an item with token ." + token);
+			//Log.d("godot", "Requesting to consume an item with token ." + token);
 			int response = mService.consumePurchase(3, context.getPackageName(), token);
-//			Log.d("godot", "consumePurchase response: " + response);
+			//Log.d("godot", "consumePurchase response: " + response);
 			if(response == 0 || response == 8){
 				return null;
 			}

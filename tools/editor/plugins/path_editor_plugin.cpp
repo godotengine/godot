@@ -449,7 +449,7 @@ void PathEditorPlugin::edit(Object *p_object) {
 			pre->get_curve()->emit_signal("changed");
 		}
 	}
-//	collision_polygon_editor->edit(p_object->cast_to<Node>());
+	//collision_polygon_editor->edit(p_object->cast_to<Node>());
 }
 
 bool PathEditorPlugin::handles(Object *p_object) const {
@@ -543,7 +543,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	path_thin_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_thin_material->set_flag(Material::FLAG_UNSHADED,true);
 
-//	SpatialEditor::get_singleton()->add_gizmo_plugin(this);
+	//SpatialEditor::get_singleton()->add_gizmo_plugin(this);
 
 	sep = memnew( VSeparator);
 	sep->hide();

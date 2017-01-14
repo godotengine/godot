@@ -573,7 +573,7 @@ ShaderGLES3::Version* ShaderGLES3::get_current_version() {
 		
 		
 		v.uniform_location[j]=glGetUniformLocation(v.id,uniform_names[j]);
-	//	print_line("uniform "+String(uniform_names[j])+" location "+itos(v.uniform_location[j]));
+		//print_line("uniform "+String(uniform_names[j])+" location "+itos(v.uniform_location[j]));
 	}
 	
 	// set texture uniforms
@@ -720,7 +720,7 @@ void ShaderGLES3::setup(const char** p_conditional_defines, int p_conditional_co
 					} else {
 
 						fragment_code3=code3.substr(0,cpos).ascii();
-					//	print_line("CODE3:\n"+String(fragment_code3.get_data()));
+						//print_line("CODE3:\n"+String(fragment_code3.get_data()));
 						fragment_code4 = code3.substr(cpos+light_code_tag.length(),code3.length()).ascii();
 						//print_line("CODE4:\n"+String(fragment_code4.get_data()));
 					}

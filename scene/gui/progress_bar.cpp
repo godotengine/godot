@@ -53,7 +53,7 @@ void ProgressBar::_notification(int p_what) {
 		Color font_color=get_color("font_color");
 
 		draw_style_box(bg,Rect2(Point2(),get_size()));
-		float r = get_unit_value();
+		float r = get_as_ratio();
 		int mp = fg->get_minimum_size().width;
 		int p = r*get_size().width-mp;
 		if (p>0) {
@@ -62,7 +62,7 @@ void ProgressBar::_notification(int p_what) {
 		}
 
 		if (percent_visible) {
-			String txt=itos(int(get_unit_value()*100))+"%";
+			String txt=itos(int(get_as_ratio()*100))+"%";
 			font->draw_halign(get_canvas_item(),Point2(0,font->get_ascent()+(get_size().height-font->get_height())/2),HALIGN_CENTER,get_size().width,txt,font_color);
 		}
 	}

@@ -250,7 +250,7 @@ void DocData::generate(bool p_basic_types) {
 					} else if (arginfo.type!=Variant::NIL) // {
 #endif
 						method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
-//					}
+					//}
 
 				} else {
 
@@ -804,7 +804,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 		class_list[name]=ClassDoc();
 		ClassDoc& c = class_list[name];
 
-//		print_line("class: "+name);
+		//print_line("class: "+name);
 		c.name=name;
 		if (parser->has_attribute("inherits"))
 			c.inherits = parser->get_attribute_value("inherits");

@@ -298,7 +298,7 @@ void MeshInstance::_bind_methods() {
 	ClassDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
 	ClassDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);
 	ClassDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
-	ClassDB::bind_method(_MD("get_aabb"),&MeshInstance::get_aabb);
+
 	ClassDB::bind_method(_MD("create_trimesh_collision"),&MeshInstance::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);

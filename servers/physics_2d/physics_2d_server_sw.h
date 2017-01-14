@@ -70,7 +70,7 @@ friend class Physics2DDirectBodyStateSW;
 	static Physics2DServerSW *singletonsw;
 
 
-//	void _clear_query(Query2DSW *p_query);
+	//void _clear_query(Query2DSW *p_query);
 public:
 
 	struct CollCbkData {

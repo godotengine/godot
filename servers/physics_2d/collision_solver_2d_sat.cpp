@@ -40,8 +40,10 @@ struct _CollectorCallback2D {
 
 	_FORCE_INLINE_ void call(const Vector2& p_point_A, const Vector2& p_point_B) {
 
-		//if (normal.dot(p_point_A) >= normal.dot(p_point_B))
-		// return;
+		/*
+		if (normal.dot(p_point_A) >= normal.dot(p_point_B))
+			return;
+		*/
 		if (swap)
 			callback(p_point_B,p_point_A,userdata);
 		else
@@ -462,7 +464,7 @@ public:
 			}
 		}
 
-	//	print_line("test axis: "+p_axis+" depth: "+rtos(best_depth));
+		//print_line("test axis: "+p_axis+" depth: "+rtos(best_depth));
 #ifdef DEBUG_ENABLED
 		best_axis_count++;
 #endif
@@ -610,8 +612,10 @@ static void _collision_segment_segment(const Shape2DSW* p_a,const Transform2D& p
 	//this collision is kind of pointless
 
 
-	//if (!separator.test_previous_axis())
-	//	return;
+	/*
+	if (!separator.test_previous_axis())
+		return;
+	*/
 
 	if (!separator.test_cast())
 		return;
@@ -850,7 +854,7 @@ static void _collision_circle_rectangle(const Shape2DSW* p_a,const Transform2D& 
 
 	const Vector2 &sphere=p_transform_a.elements[2];
 	const Vector2 *axis=&p_transform_b.elements[0];
-//	const Vector2& half_extents = rectangle_B->get_half_extents();
+	//const Vector2& half_extents = rectangle_B->get_half_extents();
 
 	if (!separator.test_axis(axis[0].normalized()))
 		return;

@@ -1128,7 +1128,7 @@ int TriangulatorPartition::MonotonePartition(List<TriangulatorPoly> *inpolys, Li
 	//this makes deleting existing edges much faster
 	Set<ScanLineEdge>::Element **edgeTreeIterators,*edgeIter;
 	edgeTreeIterators = new Set<ScanLineEdge>::Element*[maxnumvertices];
-//	Pair<Set<ScanLineEdge>::Element*,bool> edgeTreeRet;
+	//Pair<Set<ScanLineEdge>::Element*,bool> edgeTreeRet;
 	for(i = 0; i<numvertices; i++) edgeTreeIterators[i] = NULL;
 
 	//for each vertex

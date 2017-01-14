@@ -38,7 +38,7 @@ void Path2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-//			button_create->set_icon( get_icon("Edit","EditorIcons"));
+			//button_create->set_icon( get_icon("Edit","EditorIcons"));
 			//button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
 			//set_pressed_button(button_edit);
 			//button_edit->set_pressed(true);
@@ -67,7 +67,7 @@ bool Path2DEditor::forward_gui_input(const InputEvent& p_event) {
 	if (!node)
 		return false;
 
-	if (!node->is_visible())
+	if (!node->is_visible_in_tree())
 		return false;
 
 	if (!node->get_curve().is_valid())
@@ -475,7 +475,7 @@ void Path2DEditor::_canvas_draw() {
 	if (!node)
 		return ;
 
-	if (!node->is_visible())
+	if (!node->is_visible_in_tree())
 		return;
 
 	if (!node->get_curve().is_valid())

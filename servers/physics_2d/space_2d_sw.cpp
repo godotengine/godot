@@ -248,8 +248,10 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transfor
 	aabb=aabb.merge(Rect2(aabb.pos+p_motion,aabb.size)); //motion
 	aabb=aabb.grow(p_margin);
 
-	//if (p_motion!=Vector2())
-	//	print_line(p_motion);
+	/*
+	if (p_motion!=Vector2())
+		print_line(p_motion);
+	*/
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,Space2DSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
@@ -661,8 +663,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 						const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
 
 						Vector2 cdir = body->get_one_way_collision_direction();
-						//if (cdir!=Vector2() && p_motion.dot(cdir)<0)
-						//	continue;
+						/*
+						if (cdir!=Vector2() && p_motion.dot(cdir)<0)
+							continue;
+						*/
 
 						cbk.valid_dir=cdir;
 						cbk.valid_depth=body->get_one_way_collision_max_depth();
@@ -698,11 +702,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				float traveled = n.dot(recover_motion);
 				a+=n*traveled;
 
+				float d = a.distance_to(b);
+				if (d<margin)
+					continue;
 #endif
-			//	float d = a.distance_to(b);
-
-				//if (d<margin)
-				///	continue;
 				recover_motion+=(b-a)*0.4;
 			}
 
@@ -972,7 +975,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 	if (collide_character)
 		mask|=Physics2DDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
 
-//	print_line("motion: "+p_motion+" margin: "+rtos(margin));
+	//print_line("motion: "+p_motion+" margin: "+rtos(margin));
 
 	//print_line("margin: "+rtos(margin));
 	do {
@@ -999,8 +1002,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			float d = a.distance_to(b);
 
-			//if (d<margin)
-			///	continue;
+			/*
+			if (d<margin)
+				continue;
+			*/
 			recover_motion+=(b-a)*0.4;
 		}
 

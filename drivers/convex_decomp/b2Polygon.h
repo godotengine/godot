@@ -74,9 +74,11 @@ public:
 
 	void print(){
 		printFormatted();
-//		for (int32 i=0; i<nVertices; ++i){
-//			printf("i: %d, x:%f, y:%f\n",i,x[i],y[i]);
-//		}
+		/*
+		for (int32 i=0; i<nVertices; ++i){
+			printf("i: %d, x:%f, y:%f\n",i,x[i],y[i]);
+		}
+		*/
 	}
 
 	void printFormatted(){

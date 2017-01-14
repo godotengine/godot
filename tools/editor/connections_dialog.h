@@ -77,7 +77,7 @@ protected:
 public:
 
 
-	bool get_make_callback() { return !make_callback->is_hidden() && make_callback->is_pressed(); }
+	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
 	NodePath get_dst_path() const;
 	StringName get_dst_method() const;
 	bool get_deferred() const;
@@ -86,8 +86,8 @@ public:
 	void set_dst_method(const StringName& p_method);
 	void set_dst_node(Node* p_node);
 
-//	Button *get_ok() { return ok; }
-//	Button *get_cancel() { return cancel; }
+	//Button *get_ok() { return ok; }
+	//Button *get_cancel() { return cancel; }
 	void edit(Node *p_node);
 
 	ConnectDialog();

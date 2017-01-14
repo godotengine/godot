@@ -60,7 +60,7 @@ void ScriptTextEditor::apply_code() {
 
 	if (script.is_null())
 		return;
-//	print_line("applying code");
+	//print_line("applying code");
 	script->set_source_code(code_editor->get_text_edit()->get_text());
 	script->update_exports();
 }
@@ -484,7 +484,7 @@ void ScriptTextEditor::_code_complete_scripts(void* p_ud,const String& p_code, L
 
 void ScriptTextEditor::_code_complete_script(const String& p_code, List<String>* r_options) {
 
-	if (color_panel->is_visible()) return;
+	if (color_panel->is_visible_in_tree()) return;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base,base,script);
@@ -1194,7 +1194,7 @@ void ScriptTextEditor::_text_edit_gui_input(const InputEvent& ev) {
 					Vector<float> color = stripped.split_floats(",");
 					if (color.size() > 2) {
 						float alpha = color.size() > 3 ? color[3] : 1.0f;
-						color_picker->set_color(Color(color[0], color[1], color[2], alpha));
+						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 					}
 					color_panel->set_pos(get_global_transform().xform(get_local_mouse_pos()));
 					Size2 ms = Size2(300, color_picker->get_combined_minimum_size().height+10);

@@ -602,7 +602,7 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&Physics2DServer::body_add_collision_exception);
 	ClassDB::bind_method(_MD("body_remove_collision_exception","body","excepted_body"),&Physics2DServer::body_remove_collision_exception);
-//	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions)=0;
+	//virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions)=0;
 
 	ClassDB::bind_method(_MD("body_set_max_contacts_reported","body","amount"),&Physics2DServer::body_set_max_contacts_reported);
 	ClassDB::bind_method(_MD("body_get_max_contacts_reported","body"),&Physics2DServer::body_get_max_contacts_reported);
@@ -641,9 +641,9 @@ void Physics2DServer::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_process_info","process_info"),&Physics2DServer::get_process_info);
 
-//	ClassDB::bind_method(_MD("init"),&Physics2DServer::init);
-//	ClassDB::bind_method(_MD("step"),&Physics2DServer::step);
-//	ClassDB::bind_method(_MD("sync"),&Physics2DServer::sync);
+	//ClassDB::bind_method(_MD("init"),&Physics2DServer::init);
+	//ClassDB::bind_method(_MD("step"),&Physics2DServer::step);
+	//ClassDB::bind_method(_MD("sync"),&Physics2DServer::sync);
 	//ClassDB::bind_method(_MD("flush_queries"),&Physics2DServer::flush_queries);
 
 	BIND_CONSTANT( SPACE_PARAM_CONTACT_RECYCLE_RADIUS );
@@ -710,8 +710,8 @@ void Physics2DServer::_bind_methods() {
 	BIND_CONSTANT( CCD_MODE_CAST_RAY );
 	BIND_CONSTANT( CCD_MODE_CAST_SHAPE );
 
-//	BIND_CONSTANT( TYPE_BODY );
-//	BIND_CONSTANT( TYPE_AREA );
+	//BIND_CONSTANT( TYPE_BODY );
+	//BIND_CONSTANT( TYPE_AREA );
 
 	BIND_CONSTANT( AREA_BODY_ADDED );
 	BIND_CONSTANT( AREA_BODY_REMOVED );

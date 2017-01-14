@@ -55,7 +55,6 @@ MainLoop * test() {
 
 	{
 
-//		static const int size = 16;
 		Image img;
 		img.create(default_mouse_cursor_xpm);
 
@@ -78,7 +77,7 @@ MainLoop * test() {
 	for (int i=0;i<1100;i++) {
 
 		int num=i;//(int)Math::random(0,1024);
-	//	print_line("inserting "+itos(num));
+		//print_line("inserting "+itos(num));
 		set.insert( num );
 	}
 

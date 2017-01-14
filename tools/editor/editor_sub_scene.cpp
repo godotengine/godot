@@ -75,7 +75,7 @@ void EditorSubScene::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (!is_visible()) {
+		if (!is_visible_in_tree()) {
 
 
 		}
@@ -203,7 +203,7 @@ EditorSubScene::EditorSubScene() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-//	set_child_rect(vb);
+	//set_child_rect(vb);
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	path = memnew( LineEdit );

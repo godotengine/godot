@@ -145,10 +145,12 @@ void HaikuDirectWindow::HandleMouseButton(BMessage* message) {
 	last_buttons_state = buttons;
 
 	// TODO: implement the mouse_mode checks
-	//if (mouse_mode == MOUSE_MODE_CAPTURED) {
-	//	event.xbutton.x=last_mouse_pos.x;
-	//	event.xbutton.y=last_mouse_pos.y;
-	//}
+	/*
+	if (mouse_mode == MOUSE_MODE_CAPTURED) {
+		event.xbutton.x=last_mouse_pos.x;
+		event.xbutton.y=last_mouse_pos.y;
+	}
+	*/
 
 	InputEvent mouse_event;
 	mouse_event.ID = ++event_id;
@@ -219,8 +221,8 @@ void HaikuDirectWindow::HandleMouseMoved(BMessage* message) {
 	input->set_mouse_pos(pos);
 	motion_event.mouse_motion.global_x = pos.x;
 	motion_event.mouse_motion.global_y = pos.y;
-	motion_event.mouse_motion.speed_x = input->get_mouse_speed().x;
-	motion_event.mouse_motion.speed_y = input->get_mouse_speed().y;
+	motion_event.mouse_motion.speed_x = input->get_last_mouse_speed().x;
+	motion_event.mouse_motion.speed_y = input->get_last_mouse_speed().y;
 
 	motion_event.mouse_motion.relative_x = rel.x;
 	motion_event.mouse_motion.relative_y = rel.y;

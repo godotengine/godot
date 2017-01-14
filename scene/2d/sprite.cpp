@@ -86,7 +86,7 @@ void Sprite::_notification(int p_what) {
 			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
-			if (OS::get_singleton()->get_use_pixel_snap()) {
+			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs=ofs.floor();
 			}
 
@@ -255,8 +255,10 @@ Rect2 Sprite::get_item_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0,0,1,1);
-	//if (texture.is_null())
-	//	return CanvasItem::get_item_rect();
+	/*
+	if (texture.is_null())
+		return CanvasItem::get_item_rect();
+	*/
 
 	Size2i s;
 
@@ -510,8 +512,10 @@ Rect2 ViewportSprite::get_item_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0,0,1,1);
-	//if (texture.is_null())
-	//	return CanvasItem::get_item_rect();
+	/*
+	if (texture.is_null())
+		return CanvasItem::get_item_rect();
+	*/
 
 	Size2i s;
 

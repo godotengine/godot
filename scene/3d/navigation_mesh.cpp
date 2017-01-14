@@ -373,7 +373,7 @@ Ref<NavigationMesh> NavigationMeshInstance::get_navigation_mesh() const{
 
 String NavigationMeshInstance::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
 	if (!navmesh.is_valid()) {

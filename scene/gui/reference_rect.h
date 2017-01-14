@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  patch_9_frame.h                                                      */
+/*  reference_rect.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,43 +26,20 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PATCH_9_FRAME_H
-#define PATCH_9_FRAME_H
+#ifndef REFERENCE_RECT_H
+#define REFERENCE_RECT_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-class NinePatchRect : public Control {
 
-	GDCLASS(NinePatchRect,Control);
+class ReferenceRect : public Control {
 
-	bool draw_center;
-	int margin[4];
-	Rect2 region_rect;
-	Ref<Texture> texture;
+	GDCLASS( ReferenceRect, Control);
+
 protected:
 
 	void _notification(int p_what);
-	virtual Size2 get_minimum_size() const;
-	static void _bind_methods();
-
 public:
-
-	void set_texture(const Ref<Texture>& p_tex);
-	Ref<Texture> get_texture() const;
-
-	void set_patch_margin(Margin p_margin,int p_size);
-	int get_patch_margin(Margin p_margin) const;
-
-	void set_region_rect(const Rect2& p_region_rect);
-	Rect2 get_region_rect() const;
-
-	void set_draw_center(bool p_enable);
-	bool get_draw_center() const;
-
-	NinePatchRect();
-	~NinePatchRect();
-
+	ReferenceRect();
 };
-#endif // PATCH_9_FRAME_H
+
+#endif // REFERENCE_RECT_H

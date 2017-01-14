@@ -295,7 +295,7 @@ void Area::_notification(int p_what) {
 	}
 }
 
-void Area::set_enable_monitoring(bool p_enable) {
+void Area::set_monitoring(bool p_enable) {
 
 	if (locked) {
 		ERR_EXPLAIN("This function can't be used during the in/out signal.");
@@ -433,7 +433,7 @@ void Area::_area_inout(int p_status,const RID& p_area, int p_instance, int p_are
 
 }
 
-bool Area::is_monitoring_enabled() const {
+bool Area::is_monitoring() const {
 
 	return monitoring;
 }
@@ -622,8 +622,8 @@ void Area::_bind_methods() {
 	ClassDB::bind_method(_MD("is_monitorable"),&Area::is_monitorable);
 
 
-	ClassDB::bind_method(_MD("set_enable_monitoring","enable"),&Area::set_enable_monitoring);
-	ClassDB::bind_method(_MD("is_monitoring_enabled"),&Area::is_monitoring_enabled);
+	ClassDB::bind_method(_MD("set_monitoring","enable"),&Area::set_monitoring);
+	ClassDB::bind_method(_MD("is_monitoring"),&Area::is_monitoring);
 
 	ClassDB::bind_method(_MD("get_overlapping_bodies"),&Area::get_overlapping_bodies);
 	ClassDB::bind_method(_MD("get_overlapping_areas"),&Area::get_overlapping_areas);
@@ -653,7 +653,7 @@ void Area::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_monitoring"),_SCS("is_monitoring"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
 	ADD_GROUP("Collision","collision_");
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
@@ -676,7 +676,7 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	collision_mask=1;
 	layer_mask=1;
 	set_ray_pickable(false);
-	set_enable_monitoring(true);
+	set_monitoring(true);
 	set_monitorable(true);
 
 }

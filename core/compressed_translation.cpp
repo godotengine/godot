@@ -467,7 +467,7 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 	//print_line("Hash: "+itos(p));
 
 	if (p==0xFFFFFFFF) {
-//		print_line("GETMSG: Nothing!");
+		//print_line("GETMSG: Nothing!");
 		return StringName(); //nothing
 	}
 
@@ -489,7 +489,7 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 
 	//print_line("bucket pos: "+itos(idx));
 	if (idx==-1) {
-//		print_line("GETMSG: Not in Bucket!");
+		//print_line("GETMSG: Not in Bucket!");
 		return StringName();
 	}
 
@@ -497,8 +497,8 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 
 		String rstr;
 		rstr.parse_utf8(&sptr[ bucket.elem[idx].str_offset ], bucket.elem[idx].uncomp_size );
-//		print_line("Uncompressed, size: "+itos(bucket.elem[idx].comp_size));
-//		print_line("Return: "+rstr);
+		//print_line("Uncompressed, size: "+itos(bucket.elem[idx].comp_size));
+		//print_line("Return: "+rstr);
 
 		return rstr;
 	} else {
@@ -508,8 +508,8 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 		smaz_decompress(&sptr[ bucket.elem[idx].str_offset ], bucket.elem[idx].comp_size,uncomp.ptr(),bucket.elem[idx].uncomp_size );
 		String rstr;
 		rstr.parse_utf8(uncomp.get_data());
-//		print_line("Compressed, size: "+itos(bucket.elem[idx].comp_size));
-//		print_line("Return: "+rstr);
+		//print_line("Compressed, size: "+itos(bucket.elem[idx].comp_size));
+		//print_line("Return: "+rstr);
 		return rstr;
 	}
 

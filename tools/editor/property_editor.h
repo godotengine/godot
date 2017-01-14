@@ -37,7 +37,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/split_container.h"

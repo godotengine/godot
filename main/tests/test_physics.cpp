@@ -358,9 +358,9 @@ public:
 		gxf.basis.scale(Vector3(1.4,0.4,1.4));
 		gxf.origin=Vector3(-2,1,-2);
 		make_grid(5,5,2.5,1,gxf);
-	//	create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,gxf);
+		//create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,gxf);
 		//create_static_plane( Plane( Vector3(0,1,0), -2) );
-//		test_joint();
+		//test_joint();
 		test_fall();
 		//test_joint();
 

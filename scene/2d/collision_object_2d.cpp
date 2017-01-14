@@ -212,7 +212,7 @@ void CollisionObject2D::_mouse_exit() {
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = this->pickable && is_inside_tree() && is_visible();
+	bool pickable = this->pickable && is_inside_tree() && is_visible_in_tree();
 	if (area)
 		Physics2DServer::get_singleton()->area_set_pickable(rid,pickable);
 	else
@@ -282,7 +282,7 @@ void CollisionObject2D::set_shape(int p_shape_idx, const Ref<Shape2D>& p_shape) 
 	else
 		Physics2DServer::get_singleton()->body_set_shape(get_rid(),p_shape_idx,p_shape->get_rid());
 
-//	_update_shapes();
+	//_update_shapes();
 }
 
 void CollisionObject2D::set_shape_transform(int p_shape_idx, const Transform2D& p_transform) {
@@ -295,7 +295,7 @@ void CollisionObject2D::set_shape_transform(int p_shape_idx, const Transform2D& 
 	else
 		Physics2DServer::get_singleton()->body_set_shape_transform(get_rid(),p_shape_idx,p_transform);
 
-//	_update_shapes();
+	//_update_shapes();
 }
 
 Ref<Shape2D> CollisionObject2D::get_shape(int p_shape_idx) const {

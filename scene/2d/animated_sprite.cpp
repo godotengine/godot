@@ -417,7 +417,7 @@ void AnimatedSprite::_notification(int p_what) {
 			if (centered)
 				ofs-=s/2;
 
-			if (OS::get_singleton()->get_use_pixel_snap()) {
+			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs=ofs.floor();
 			}
 			Rect2 dst_rect(ofs,s);
@@ -429,7 +429,7 @@ void AnimatedSprite::_notification(int p_what) {
 
 			//texture->draw_rect(ci,dst_rect,false,modulate);
 			texture->draw_rect_region(ci,dst_rect,Rect2(Vector2(),texture->get_size()));
-//			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
+			//VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
 
 		} break;
 	}

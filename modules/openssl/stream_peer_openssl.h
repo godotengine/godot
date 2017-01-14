@@ -85,11 +85,11 @@ protected:
 public:
 
 
-	virtual Error accept(Ref<StreamPeer> p_base);
-	virtual Error connect(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String());
+	virtual Error accept_stream(Ref<StreamPeer> p_base);
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String());
 	virtual Status get_status() const;
 
-	virtual void disconnect();
+	virtual void disconnect_from_stream();
 
 	virtual Error put_data(const uint8_t* p_data,int p_bytes);
 	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent);

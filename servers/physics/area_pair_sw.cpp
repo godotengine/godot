@@ -110,7 +110,7 @@ bool Area2PairSW::setup(float p_step) {
 		return false;
 	}
 
-//	bool result = area_a->test_collision_mask(area_b) && CollisionSolverSW::solve(area_a->get_shape(shape_a),area_a->get_transform() * area_a->get_shape_transform(shape_a),Vector2(),area_b->get_shape(shape_b),area_b->get_transform() * area_b->get_shape_transform(shape_b),Vector2(),NULL,this);
+	//bool result = area_a->test_collision_mask(area_b) && CollisionSolverSW::solve(area_a->get_shape(shape_a),area_a->get_transform() * area_a->get_shape_transform(shape_a),Vector2(),area_b->get_shape(shape_b),area_b->get_transform() * area_b->get_shape_transform(shape_b),Vector2(),NULL,this);
 	bool result = CollisionSolverSW::solve_static(area_a->get_shape(shape_a),area_a->get_transform() * area_a->get_shape_transform(shape_a),area_b->get_shape(shape_b),area_b->get_transform() * area_b->get_shape_transform(shape_b),NULL,this);
 
 	if (result!=colliding) {

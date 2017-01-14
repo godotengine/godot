@@ -164,7 +164,7 @@ void Light::_update_visibility() {
 	}
 #endif
 
-	//VS::get_singleton()->instance_light_set_enabled(get_instance(),is_visible() && editor_ok);
+	//VS::get_singleton()->instance_light_set_enabled(get_instance(),is_visible_in_tree() && editor_ok);
 	_change_notify("geometry/visible");
 
 }

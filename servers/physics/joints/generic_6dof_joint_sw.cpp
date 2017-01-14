@@ -50,10 +50,9 @@ real_t btGetMatrixElem(const Basis& mat, int index)
 bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz);
 bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz)
 {
-//	// rot =  cy*cz          -cy*sz           sy
-//	//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
-//	//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
-//
+		// rot =  cy*cz          -cy*sz           sy
+		//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
+		//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
 
 		if (btGetMatrixElem(mat,2) < real_t(1.0))
 		{
@@ -325,16 +324,18 @@ void Generic6DOFJointSW::calculateAngleInfo()
 	m_calculatedAxis[2] = axis0.cross(m_calculatedAxis[1]);
 
 
-//    if(m_debugDrawer)
-//    {
-//
-//    	char buff[300];
-//		sprintf(buff,"\n X: %.2f ; Y: %.2f ; Z: %.2f ",
-//		m_calculatedAxisAngleDiff[0],
-//		m_calculatedAxisAngleDiff[1],
-//		m_calculatedAxisAngleDiff[2]);
-//    	m_debugDrawer->reportErrorWarning(buff);
-//    }
+	/*
+	if(m_debugDrawer)
+	{
+
+		char buff[300];
+		sprintf(buff,"\n X: %.2f ; Y: %.2f ; Z: %.2f ",
+		m_calculatedAxisAngleDiff[0],
+		m_calculatedAxisAngleDiff[1],
+		m_calculatedAxisAngleDiff[2]);
+		m_debugDrawer->reportErrorWarning(buff);
+	}
+	*/
 
 }
 

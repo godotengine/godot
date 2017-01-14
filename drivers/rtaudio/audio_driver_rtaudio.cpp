@@ -104,11 +104,11 @@ Error AudioDriverRtAudio::init() {
 	unsigned int target_number_of_buffers = 4;
 	options.numberOfBuffers = target_number_of_buffers;
 
-//	options.
-//	RtAudioStreamFlags flags;      /*!< A bit-mask of stream flags (RTAUDIO_NONINTERLEAVED, RTAUDIO_MINIMIZE_LATENCY, RTAUDIO_HOG_DEVICE). *///
-//	unsigned int numberOfBuffers;  /*!< Number of stream buffers. */
-//	std::string streamName;        /*!< A stream name (currently used only in Jack). */
-//	int priority;                  /*!< Scheduling priority of callback thread (only used with flag RTAUDIO_SCHEDULE_REALTIME). */
+	//options.
+	//RtAudioStreamFlags flags;      /*!< A bit-mask of stream flags (RTAUDIO_NONINTERLEAVED, RTAUDIO_MINIMIZE_LATENCY, RTAUDIO_HOG_DEVICE). *///
+	//unsigned int numberOfBuffers;  /*!< Number of stream buffers. */
+	//std::string streamName;        /*!< A stream name (currently used only in Jack). */
+	//int priority;                  /*!< Scheduling priority of callback thread (only used with flag RTAUDIO_SCHEDULE_REALTIME). */
 
 	parameters.firstChannel = 0;
 	mix_rate = GLOBAL_DEF("audio/mix_rate",44100);

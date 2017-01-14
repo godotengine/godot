@@ -51,9 +51,11 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 			if (b.button_index==5 && b.pressed) {
 
-				//if (orientation==VERTICAL)
-				//	set_val( get_val() + get_page() / 4.0 );
-				//else
+				/*
+				if (orientation==VERTICAL)
+					set_val( get_val() + get_page() / 4.0 );
+				else
+				*/
 				set_value( get_value() + get_page() / 4.0 );
 				accept_event();
 
@@ -61,9 +63,11 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 			if (b.button_index==4 && b.pressed) {
 
-				//if (orientation==HORIZONTAL)
-				//	set_val( get_val() - get_page() / 4.0 );
-				//else
+				/*
+				if (orientation==HORIZONTAL)
+					set_val( get_val() - get_page() / 4.0 );
+				else
+				*/
 				set_value( get_value() - get_page() / 4.0  );
 				accept_event();
 			}
@@ -112,7 +116,7 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 					drag.active=true;
 					drag.pos_at_click=grabber_ofs+ofs;
-					drag.value_at_click=get_unit_value();
+					drag.value_at_click=get_as_ratio();
 					update();
 				} else {
 
@@ -145,7 +149,7 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 				double diff = (ofs-drag.pos_at_click) / get_area_size();
 
-				set_unit_value( drag.value_at_click + diff );
+				set_as_ratio( drag.value_at_click + diff );
 			} else {
 
 
@@ -425,8 +429,10 @@ double ScrollBar::get_grabber_size() const {
 		return 0;
 
 	float page = (get_page()>0)? get_page() : 0;
-//	if (grabber_range < get_step())
-//		grabber_range=get_step();
+	/*
+	if (grabber_range < get_step())
+		grabber_range=get_step();
+	*/
 
 	double area_size=get_area_size();
 	double grabber_size = page / range * area_size;
@@ -497,7 +503,7 @@ double ScrollBar::get_click_pos(const Point2& p_pos) const {
 double ScrollBar::get_grabber_offset() const {
 
 
-	return (get_area_size()) * get_unit_value();
+	return (get_area_size()) * get_as_ratio();
 
 }
 
@@ -620,12 +626,16 @@ void ScrollBar::_drag_slave_input(const InputEvent& p_input) {
 
 				if (orientation==HORIZONTAL)
 					set_value(diff.x);
-				//else
-				//	drag_slave_accum.x=0;
+				/*
+				else
+					drag_slave_accum.x=0;
+				*/
 				if (orientation==VERTICAL)
 					set_value(diff.y);
-				//else
-				//	drag_slave_accum.y=0;
+				/*
+				else
+					drag_slave_accum.y=0;
+				*/
 				time_since_motion=0;
 			}
 

@@ -75,7 +75,7 @@ public:
 	virtual IP_Address get_packet_address() const;
 	virtual int get_packet_port() const;
 
-	virtual void set_send_address(const IP_Address& p_address,int p_port);
+	virtual void set_dest_address(const IP_Address& p_address,int p_port);
 
 	static void make_default();
 	PacketPeerUDPWinsock();

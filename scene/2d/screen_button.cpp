@@ -236,7 +236,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 
 			if (p_event.screen_touch.pressed) {
 
-				if (!is_visible())
+				if (!is_visible_in_tree())
 					return;
 
 				if (finger_pressed!=-1)
@@ -307,8 +307,10 @@ Rect2 TouchScreenButton::get_item_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0,0,1,1);
-	//if (texture.is_null())
-	//	return CanvasItem::get_item_rect();
+	/*
+	if (texture.is_null())
+		return CanvasItem::get_item_rect();
+	*/
 
 	return Rect2(Size2(),texture->get_size());
 }

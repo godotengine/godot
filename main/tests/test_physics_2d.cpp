@@ -218,8 +218,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 	void _do_ray_query() {
 
-//		Physics2DServer *ps = Physics2DServer::get_singleton();
-	//	ps->query_intersection_segment(ray_query,ray_from,ray_to);
+		/*
+		Physics2DServer *ps = Physics2DServer::get_singleton();
+		ps->query_intersection_segment(ray_query,ray_from,ray_to);
+		*/
 
 	}
 
@@ -273,7 +275,7 @@ protected:
 		ps->body_set_continuous_collision_detection_mode(body,Physics2DServer::CCD_MODE_CAST_SHAPE);
 		ps->body_set_state(body,Physics2DServer::BODY_STATE_TRANSFORM,p_xform);
 
-//		print_line("add body with xform: "+p_xform);
+		//print_line("add body with xform: "+p_xform);
 		RID sprite = vs->canvas_item_create();
 		vs->canvas_item_set_parent(sprite,canvas);
 		vs->canvas_item_set_transform(sprite,p_xform);
@@ -281,8 +283,8 @@ protected:
 		vs->canvas_item_add_texture_rect(sprite,Rect2(-imgsize/2.0,imgsize),body_shape_data[p_shape].image);
 
 		ps->body_set_force_integration_callback(body,this,"_body_moved",sprite);
-//		RID q = ps->query_create(this,"_body_moved",sprite);
-//		ps->query_body_state(q,body);
+		//RID q = ps->query_create(this,"_body_moved",sprite);
+		//ps->query_body_state(q,body);
 
 		return body;
 	}
@@ -409,10 +411,12 @@ public:
 			};
 
 			Physics2DServer::ShapeType type = types[i%4];
-//			type=Physics2DServer::SHAPE_SEGMENT;
+			//type=Physics2DServer::SHAPE_SEGMENT;
 			_add_body(type,Transform2D(i*0.8,Point2(152+i*40,100-40*i)));
-			//if (i==0)
-			//	ps->body_set_mode(b,Physics2DServer::BODY_MODE_STATIC);
+			/*
+			if (i==0)
+				ps->body_set_mode(b,Physics2DServer::BODY_MODE_STATIC);
+			*/
 		}
 
 		//RID b= _add_body(Physics2DServer::SHAPE_CIRCLE,Transform2D(0,Point2(101,140)));

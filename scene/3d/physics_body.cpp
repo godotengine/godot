@@ -58,13 +58,13 @@ float PhysicsBody::get_inverse_mass() const {
 }
 
 
-void PhysicsBody::set_layer_mask(uint32_t p_mask) {
+void PhysicsBody::set_collision_layer(uint32_t p_mask) {
 
 	layer_mask=p_mask;
 	PhysicsServer::get_singleton()->body_set_layer_mask(get_rid(),p_mask);
 }
 
-uint32_t PhysicsBody::get_layer_mask() const {
+uint32_t PhysicsBody::get_collision_layer() const {
 
 	return layer_mask;
 }
@@ -97,20 +97,20 @@ bool PhysicsBody::get_collision_mask_bit(int p_bit) const{
 }
 
 
-void PhysicsBody::set_layer_mask_bit(int p_bit, bool p_value) {
+void PhysicsBody::set_collision_layer_bit(int p_bit, bool p_value) {
 
-	uint32_t mask = get_layer_mask();
+	uint32_t mask = get_collision_layer();
 	if (p_value)
 		mask|=1<<p_bit;
 	else
 		mask&=~(1<<p_bit);
-	set_layer_mask(mask);
+	set_collision_layer(mask);
 
 }
 
-bool PhysicsBody::get_layer_mask_bit(int p_bit) const{
+bool PhysicsBody::get_collision_layer_bit(int p_bit) const{
 
-	return get_layer_mask()&(1<<p_bit);
+	return get_collision_layer()&(1<<p_bit);
 }
 
 void PhysicsBody::add_collision_exception_with(Node* p_node) {
@@ -137,18 +137,18 @@ void PhysicsBody::remove_collision_exception_with(Node* p_node) {
 }
 
 void PhysicsBody::_set_layers(uint32_t p_mask) {
-	set_layer_mask(p_mask);
+	set_collision_layer(p_mask);
 	set_collision_mask(p_mask);
 }
 
 uint32_t PhysicsBody::_get_layers() const{
 
-	return get_layer_mask();
+	return get_collision_layer();
 }
 
 void PhysicsBody::_bind_methods() {
-	ClassDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
-	ClassDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
+	ClassDB::bind_method(_MD("set_collision_layer","layer"),&PhysicsBody::set_collision_layer);
+	ClassDB::bind_method(_MD("get_collision_layer"),&PhysicsBody::get_collision_layer);
 
 	ClassDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody::set_collision_mask);
 	ClassDB::bind_method(_MD("get_collision_mask"),&PhysicsBody::get_collision_mask);
@@ -156,13 +156,14 @@ void PhysicsBody::_bind_methods() {
 	ClassDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&PhysicsBody::set_collision_mask_bit);
 	ClassDB::bind_method(_MD("get_collision_mask_bit","bit"),&PhysicsBody::get_collision_mask_bit);
 
-	ClassDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&PhysicsBody::set_layer_mask_bit);
-	ClassDB::bind_method(_MD("get_layer_mask_bit","bit"),&PhysicsBody::get_layer_mask_bit);
+	ClassDB::bind_method(_MD("set_collision_layer_bit","bit","value"),&PhysicsBody::set_collision_layer_bit);
+	ClassDB::bind_method(_MD("get_collision_layer_bit","bit"),&PhysicsBody::get_collision_layer_bit);
 
 	ClassDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody::_set_layers);
 	ClassDB::bind_method(_MD("_get_layers"),&PhysicsBody::_get_layers);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_GROUP("Collision","collision_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layer",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 }
 
@@ -436,7 +437,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
 
-//			bool found=false;
+			//bool found=false;
 
 			Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(obj);
 			if (!E) {
@@ -999,7 +1000,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 	if (collide_character)
 		mask|=PhysicsDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
 
-//	print_line("motion: "+p_motion+" margin: "+rtos(margin));
+	//print_line("motion: "+p_motion+" margin: "+rtos(margin));
 
 	//print_line("margin: "+rtos(margin));
 
@@ -1014,7 +1015,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 			if (is_shape_set_as_trigger(i))
 				continue;
 
-			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),m,sr,max_shapes,res_shapes,exclude,get_layer_mask(),mask)) {
+			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),m,sr,max_shapes,res_shapes,exclude,get_collision_layer(),mask)) {
 				collided=true;
 			}
 
@@ -1037,10 +1038,10 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 #if 0
 				float d = a.distance_to(b);
 
-				//if (d<margin)
-				///	continue;
-	   ///
-	   ///
+				/*
+				if (d<margin)
+					continue;
+				*/
 				recover_motion+=(b-a)*0.2;
 #else
 				float dist = a.distance_to(b);
@@ -1096,7 +1097,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 
 		float lsafe,lunsafe;
 		PhysicsDirectSpaceState::ShapeRestInfo lrest;
-		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion,0, lsafe,lunsafe,exclude,get_layer_mask(),mask,&lrest);
+		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion,0, lsafe,lunsafe,exclude,get_collision_layer(),mask,&lrest);
 		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
 		if (!valid) {
 			safe=0;
@@ -1137,13 +1138,13 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 			ugt.origin+=p_motion*unsafe;
 
 			PhysicsDirectSpaceState::ShapeRestInfo rest_info;
-			bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), m,&rest,exclude,get_layer_mask(),mask);
+			bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), m,&rest,exclude,get_collision_layer(),mask);
 			if (!c2) {
 				//should not happen, but floating point precision is so weird..
 				colliding=false;
 			}
 
-		//	print_line("Rest Travel: "+rest.normal);
+			//print_line("Rest Travel: "+rest.normal);
 
 		}
 
@@ -1158,8 +1159,10 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 	}
 
 	Vector3 motion=p_motion*safe;
-	//if (colliding)
-	//	motion+=normal*0.001;
+	/*
+	if (colliding)
+		motion+=normal*0.001;
+	*/
 	Transform gt = get_global_transform();
 	gt.origin+=motion;
 	set_global_transform(gt);
@@ -1200,7 +1203,7 @@ bool KinematicBody::can_teleport_to(const Vector3& p_position) {
 		if (is_shape_set_as_trigger(i))
 			continue;
 
-		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,1,exclude,get_layer_mask(),mask);
+		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,1,exclude,get_collision_layer(),mask);
 		if (col)
 			return false;
 	}

@@ -158,10 +158,10 @@ bool InputDefault::is_action_just_pressed(const StringName& p_action) const {
 	if (!E)
 		return false;
 
-	if (OS::get_singleton()->is_in_fixed_frame()) {
-		return E->get().pressed && E->get().fixed_frame==OS::get_singleton()->get_fixed_frames();
+	if (Engine::get_singleton()->is_in_fixed_frame()) {
+		return E->get().pressed && E->get().fixed_frame==Engine::get_singleton()->get_fixed_frames();
 	} else {
-		return E->get().pressed && E->get().idle_frame==OS::get_singleton()->get_idle_frames();
+		return E->get().pressed && E->get().idle_frame==Engine::get_singleton()->get_idle_frames();
 	}
 }
 
@@ -171,10 +171,10 @@ bool InputDefault::is_action_just_released(const StringName& p_action) const{
 	if (!E)
 		return false;
 
-	if (OS::get_singleton()->is_in_fixed_frame()) {
-		return !E->get().pressed && E->get().fixed_frame==OS::get_singleton()->get_fixed_frames();
+	if (Engine::get_singleton()->is_in_fixed_frame()) {
+		return !E->get().pressed && E->get().fixed_frame==Engine::get_singleton()->get_fixed_frames();
 	} else {
-		return !E->get().pressed && E->get().idle_frame==OS::get_singleton()->get_idle_frames();
+		return !E->get().pressed && E->get().idle_frame==Engine::get_singleton()->get_idle_frames();
 	}
 }
 
@@ -307,7 +307,7 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 			if (p_event.key.scancode==0)
 				break;
 
-		//	print_line(p_event);
+			//print_line(p_event);
 
 			if (p_event.key.pressed)
 				keys_pressed.insert(p_event.key.scancode);
@@ -379,8 +379,8 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 
 				if(is_action_pressed(E->key()) != p_event.is_pressed()) {
 					Action action;
-					action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-					action.idle_frame=OS::get_singleton()->get_idle_frames();
+					action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+					action.idle_frame=Engine::get_singleton()->get_idle_frames();
 					action.pressed=p_event.is_pressed();
 					action_state[E->key()]=action;
 				}
@@ -465,7 +465,7 @@ Point2 InputDefault::get_mouse_pos() const {
 
 	return mouse_pos;
 }
-Point2 InputDefault::get_mouse_speed() const {
+Point2 InputDefault::get_last_mouse_speed() const {
 
 	return mouse_speed_track.speed;
 }
@@ -490,8 +490,8 @@ void InputDefault::action_press(const StringName& p_action) {
 
 	Action action;
 
-	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-	action.idle_frame=OS::get_singleton()->get_idle_frames();
+	action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+	action.idle_frame=Engine::get_singleton()->get_idle_frames();
 	action.pressed=true;
 
 	action_state[p_action]=action;
@@ -502,8 +502,8 @@ void InputDefault::action_release(const StringName& p_action){
 
 	Action action;
 
-	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-	action.idle_frame=OS::get_singleton()->get_idle_frames();
+	action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+	action.idle_frame=Engine::get_singleton()->get_idle_frames();
 	action.pressed=false;
 
 	action_state[p_action]=action;

@@ -176,7 +176,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 				light=light->shadows_next_ptr;
 			}
 
-		//	VSG::canvas_render->reset_canvas();
+			//VSG::canvas_render->reset_canvas();
 		}
 
 		VSG::rasterizer->restore_render_target();
@@ -196,7 +196,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport) {
 
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas*>(E->get()->canvas);
 
-	//		print_line("canvas "+itos(i)+" size: "+itos(I->get()->canvas->child_items.size()));
+			//print_line("canvas "+itos(i)+" size: "+itos(I->get()->canvas->child_items.size()));
 			//print_line("GT "+p_viewport->global_transform+". CT: "+E->get()->transform);
 			Transform2D xform = p_viewport->global_transform * E->get()->transform;
 

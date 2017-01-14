@@ -30,7 +30,7 @@
 #define THEME_EDITOR_PLUGIN_H
 
 #include "scene/resources/theme.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/check_box.h"

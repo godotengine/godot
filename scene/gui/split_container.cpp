@@ -47,7 +47,7 @@ Control *SplitContainer::_getch(int p_idx) const {
 
 	for(int i=0;i<get_child_count();i++) {
 		Control *c=get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;

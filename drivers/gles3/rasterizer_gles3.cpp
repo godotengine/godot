@@ -300,9 +300,9 @@ void RasterizerGLES3::end_frame(){
 	glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, 0, vtx );
 
 
-//	glBindBuffer(GL_ARRAY_BUFFER,canvas->data.canvas_quad_vertices);
-//	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
-//	glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, 0, 0 );
+	//glBindBuffer(GL_ARRAY_BUFFER,canvas->data.canvas_quad_vertices);
+	//glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+	//glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, 0, 0 );
 
 	glBindVertexArray(canvas->data.canvas_quad_array);
 

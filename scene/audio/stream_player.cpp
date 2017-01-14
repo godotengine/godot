@@ -167,8 +167,10 @@ void StreamPlayer::play(float p_from_offset) {
 	sp_update();
 	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
 	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
-//	if (stream->get_update_mode()!=AudioStream::UPDATE_NONE)
-//		set_idle_process(true);
+	/*
+	if (stream->get_update_mode()!=AudioStream::UPDATE_NONE)
+		set_idle_process(true);
+	*/
 
 }
 
@@ -305,8 +307,10 @@ bool StreamPlayer::has_autoplay() const {
 void StreamPlayer::set_paused(bool p_paused) {
 
 	paused=p_paused;
-	//if (stream.is_valid())
-	//	stream->set_paused(p_paused);
+	/*
+	if (stream.is_valid())
+		stream->set_paused(p_paused);
+	*/
 }
 
 bool StreamPlayer::is_paused() const {

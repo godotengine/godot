@@ -82,7 +82,7 @@ void register_visual_script_types() {
 	ClassDB::register_class<VisualScriptFunctionCall>();
 	ClassDB::register_class<VisualScriptPropertySet>();
 	ClassDB::register_class<VisualScriptPropertyGet>();
-//	ClassDB::register_type<VisualScriptScriptCall>();
+	//ClassDB::register_type<VisualScriptScriptCall>();
 	ClassDB::register_class<VisualScriptEmitSignal>();
 
 	ClassDB::register_class<VisualScriptReturn>();

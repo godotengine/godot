@@ -206,7 +206,7 @@ Error FileAccessNetworkClient::connect(const String& p_host,int p_port,const Str
 	}
 
 	DEBUG_PRINT("IP: "+String(ip)+" port "+itos(p_port));
-	Error err = client->connect(ip,p_port);
+	Error err = client->connect_to_host(ip,p_port);
 	ERR_FAIL_COND_V(err,err);
 	while(client->get_status()==StreamPeerTCP::STATUS_CONNECTING) {
 //DEBUG_PRINT("trying to connect....");
@@ -325,7 +325,7 @@ Error FileAccessNetwork::_open(const String& p_path, int p_mode_flags) {
 	last_page=-1;
 	last_page_buff=NULL;
 
-//	buffers.clear();
+	//buffers.clear();
 	nc->unlock_mutex();
 	DEBUG_PRINT("OPEN POST");
 	DEBUG_TIME("open_post");
@@ -437,7 +437,7 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const{
 		p_length=total_size-pos;
 	}
 
-//	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
+	//FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 
 	uint8_t *buff=last_page_buff;
 

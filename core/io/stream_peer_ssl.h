@@ -57,11 +57,11 @@ public:
 		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
 
-	virtual Error accept(Ref<StreamPeer> p_base)=0;
-	virtual Error connect(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String())=0;
+	virtual Error accept_stream(Ref<StreamPeer> p_base)=0;
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String())=0;
 	virtual Status get_status() const=0;
 
-	virtual void disconnect()=0;
+	virtual void disconnect_from_stream()=0;
 
 	static StreamPeerSSL* create();
 

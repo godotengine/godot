@@ -286,7 +286,7 @@ private:
 
 	CreateDialog *create_dialog;
 
-//	CallDialog *call_dialog;
+	//CallDialog *call_dialog;
 	ConfirmationDialog *confirmation;
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *open_recent_confirmation;

@@ -41,7 +41,7 @@ class Range : public Control {
 	struct Shared {
 		double val,min,max;
 		double step,page;
-		bool exp_unit_value;
+		bool exp_ratio;
 		Set<Range*> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what="");
@@ -71,20 +71,20 @@ public:
 	void set_max(double p_max);
 	void set_step(double p_step);
 	void set_page(double p_page);
-	void set_unit_value(double p_value);
+	void set_as_ratio(double p_value);
 
 	double get_value() const;
 	double get_min() const;
 	double get_max() const;
 	double get_step() const;
 	double get_page() const;
-	double get_unit_value() const;
+	double get_as_ratio() const;
 
-	void set_rounded_values(bool p_enable);
-	bool is_rounded_values() const;
+	void set_use_rounded_values(bool p_enable);
+	bool is_using_rounded_values() const;
 
-	void set_exp_unit_value(bool p_enable);
-	bool is_unit_value_exp() const;
+	void set_exp_ratio(bool p_enable);
+	bool is_ratio_exp() const;
 
 	void share(Range *p_range);
 	void unshare();

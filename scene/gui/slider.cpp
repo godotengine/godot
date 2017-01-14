@@ -53,11 +53,11 @@ void Slider::_gui_input(InputEvent p_event) {
 				double grab_height = (double)grabber->get_size().height;
 				double max = orientation==VERTICAL ? get_size().height - grab_height : get_size().width - grab_width;
 				if (orientation==VERTICAL)
-					set_unit_value( 1 - (((double)grab.pos - (grab_height / 2.0)) / max) );
+					set_as_ratio( 1 - (((double)grab.pos - (grab_height / 2.0)) / max) );
 				else
-					set_unit_value(((double)grab.pos - (grab_width/2.0)) / max);
+					set_as_ratio(((double)grab.pos - (grab_width/2.0)) / max);
 				grab.active=true;
-				grab.uvalue=get_unit_value();
+				grab.uvalue=get_as_ratio();
 			} else {
 				grab.active=false;
 			}
@@ -81,7 +81,7 @@ void Slider::_gui_input(InputEvent p_event) {
 			if (areasize<=0)
 				return;
 			float umotion = motion / float(areasize);
-			set_unit_value( grab.uvalue + umotion );
+			set_as_ratio( grab.uvalue + umotion );
 		}
 	} else {
 
@@ -164,8 +164,10 @@ void Slider::_notification(int p_what) {
 			if (orientation==VERTICAL) {
 
 				style->draw(ci,Rect2i(Point2i(),Size2i(style->get_minimum_size().width+style->get_center_size().width,size.height)));
-				//if (mouse_inside||has_focus())
-				//	focus->draw(ci,Rect2i(Point2i(),Size2i(style->get_minimum_size().width+style->get_center_size().width,size.height)));
+				/*
+				if (mouse_inside||has_focus())
+					focus->draw(ci,Rect2i(Point2i(),Size2i(style->get_minimum_size().width+style->get_center_size().width,size.height)));
+				*/
 				float areasize = size.height - grabber->get_size().height;
 				if (ticks>1) {
 					int tickarea = size.height - tick->get_height();
@@ -176,11 +178,13 @@ void Slider::_notification(int p_what) {
 					}
 
 				}
-				grabber->draw(ci,Point2i(size.width/2-grabber->get_size().width/2,size.height - get_unit_value()*areasize - grabber->get_size().height));
+				grabber->draw(ci,Point2i(size.width/2-grabber->get_size().width/2,size.height - get_as_ratio()*areasize - grabber->get_size().height));
 			} else {
 				style->draw(ci,Rect2i(Point2i(),Size2i(size.width,style->get_minimum_size().height+style->get_center_size().height)));
-				//if (mouse_inside||has_focus())
-				//	focus->draw(ci,Rect2i(Point2i(),Size2i(size.width,style->get_minimum_size().height+style->get_center_size().height)));
+				/*
+				if (mouse_inside||has_focus())
+					focus->draw(ci,Rect2i(Point2i(),Size2i(size.width,style->get_minimum_size().height+style->get_center_size().height)));
+				*/
 
 				float areasize = size.width - grabber->get_size().width;
 				if (ticks>1) {
@@ -192,7 +196,7 @@ void Slider::_notification(int p_what) {
 					}
 
 				}
-				grabber->draw(ci,Point2i(get_unit_value()*areasize,size.height/2-grabber->get_size().height/2));
+				grabber->draw(ci,Point2i(get_as_ratio()*areasize,size.height/2-grabber->get_size().height/2));
 			}
 
 		} break;

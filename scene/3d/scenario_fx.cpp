@@ -83,7 +83,7 @@ Ref<Environment> WorldEnvironment::get_environment() const {
 
 String WorldEnvironment::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree() || !environment.is_valid())
+	if (!is_visible_in_tree() || !is_inside_tree() || !environment.is_valid())
 		return String();
 
 	List<Node*> nodes;

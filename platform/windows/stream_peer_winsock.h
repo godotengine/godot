@@ -58,7 +58,7 @@ protected:
 
 public:
 
-	virtual Error connect(const IP_Address& p_host, uint16_t p_port);
+	virtual Error connect_to_host(const IP_Address& p_host, uint16_t p_port);
 
 	virtual Error put_data(const uint8_t* p_data,int p_bytes);
 	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent);
@@ -73,9 +73,9 @@ public:
 	virtual IP_Address get_connected_host() const;
 	virtual uint16_t get_connected_port() const;
 
-	virtual bool is_connected() const;
+	virtual bool is_connected_to_host() const;
 	virtual Status get_status() const;
-	virtual void disconnect();
+	virtual void disconnect_from_host();
 
 	static void make_default();
 	static void cleanup();

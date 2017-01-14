@@ -513,9 +513,11 @@ void GDTokenizerText::_advance() {
 				if (GETCHAR(1)=='=') {
 					_make_token(TK_OP_ASSIGN_ADD);
 					INCPOS(1);
-				//}  else if (GETCHAR(1)=='+') {
-				//	_make_token(TK_OP_PLUS_PLUS);
-				//	INCPOS(1);
+				/*
+				}  else if (GETCHAR(1)=='+') {
+					_make_token(TK_OP_PLUS_PLUS);
+					INCPOS(1);
+				*/
 				} else {
 					_make_token(TK_OP_ADD);
 				}
@@ -526,9 +528,11 @@ void GDTokenizerText::_advance() {
 				if (GETCHAR(1)=='=') {
 					_make_token(TK_OP_ASSIGN_SUB);
 					INCPOS(1);
-				//}  else if (GETCHAR(1)=='-') {
-				//	_make_token(TK_OP_MINUS_MINUS);
-				//	INCPOS(1);
+				/*
+				}  else if (GETCHAR(1)=='-') {
+					_make_token(TK_OP_MINUS_MINUS);
+					INCPOS(1);
+				*/
 				} else {
 					_make_token(TK_OP_SUB);
 				}

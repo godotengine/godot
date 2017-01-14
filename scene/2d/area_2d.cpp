@@ -418,7 +418,7 @@ void Area2D::_notification(int p_what) {
 }
 
 
-void Area2D::set_enable_monitoring(bool p_enable) {
+void Area2D::set_monitoring(bool p_enable) {
 
 
 	if (p_enable==monitoring)
@@ -443,7 +443,7 @@ void Area2D::set_enable_monitoring(bool p_enable) {
 	}
 }
 
-bool Area2D::is_monitoring_enabled() const {
+bool Area2D::is_monitoring() const {
 
 	return monitoring;
 }
@@ -629,8 +629,8 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&Area2D::set_layer_mask_bit);
 	ClassDB::bind_method(_MD("get_layer_mask_bit","bit"),&Area2D::get_layer_mask_bit);
 
-	ClassDB::bind_method(_MD("set_enable_monitoring","enable"),&Area2D::set_enable_monitoring);
-	ClassDB::bind_method(_MD("is_monitoring_enabled"),&Area2D::is_monitoring_enabled);
+	ClassDB::bind_method(_MD("set_monitoring","enable"),&Area2D::set_monitoring);
+	ClassDB::bind_method(_MD("is_monitoring"),&Area2D::is_monitoring);
 
 	ClassDB::bind_method(_MD("set_monitorable","enable"),&Area2D::set_monitorable);
 	ClassDB::bind_method(_MD("is_monitorable"),&Area2D::is_monitorable);
@@ -664,7 +664,7 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,100,0.01"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"0,100,0.01"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_monitoring"),_SCS("is_monitoring"));
 	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
 	ADD_GROUP("Collision","collision_");
 	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
@@ -687,7 +687,7 @@ Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_crea
 	monitorable=false;
 	collision_mask=1;
 	layer_mask=1;
-	set_enable_monitoring(true);
+	set_monitoring(true);
 	set_monitorable(true);
 }
 

@@ -149,7 +149,7 @@ private:
 #ifdef GLOBALNIL_DISABLED
 			memdelete_allocator<Element,A>(_nil);
 #endif
-//			memdelete_allocator<Element,A>(_root);
+			//memdelete_allocator<Element,A>(_root);
 		}
 	};
 

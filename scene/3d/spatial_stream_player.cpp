@@ -153,10 +153,12 @@ void SpatialStreamPlayer::play(float p_from_offset) {
 
 	SpatialSoundServer::get_singleton()->source_set_audio_stream(get_source_rid(),&internal_stream);
 
-//	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
-//	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
-//	if (stream->get_update_mode()!=AudioStream::UPDATE_NONE)
-//		set_idle_process(true);
+	/*
+	AudioServer::get_singleton()->stream_set_active(stream_rid,true);
+	AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,volume);
+	if (stream->get_update_mode()!=AudioStream::UPDATE_NONE)
+		set_idle_process(true);
+	*/
 
 }
 
@@ -289,8 +291,10 @@ bool SpatialStreamPlayer::has_autoplay() const {
 void SpatialStreamPlayer::set_paused(bool p_paused) {
 
 	paused=p_paused;
-	//if (stream.is_valid())
-	//	stream->set_paused(p_paused);
+	/*
+	if (stream.is_valid())
+		stream->set_paused(p_paused);
+	*/
 }
 
 bool SpatialStreamPlayer::is_paused() const {

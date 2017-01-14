@@ -124,7 +124,7 @@ class CPPlayer {
 		CPInstrument* instrument_ptr;
 		CPSample*     sample_ptr;
 
-//		Sample_Data *sample_data;
+		//Sample_Data *sample_data;
 
 		int32_t period;		
 

@@ -35,8 +35,8 @@
 bool StreamPeerOpenSSL::_match_host_name(const char *name, const char *hostname) {
 
 	return Tool_Curl_cert_hostcheck(name,hostname)==CURL_HOST_MATCH;
-//	print_line("MATCH: "+String(name)+" vs "+String(hostname));
-//	return true;
+	//print_line("MATCH: "+String(name)+" vs "+String(hostname));
+	//return true;
 }
 
 Error StreamPeerOpenSSL::_match_common_name(const char *hostname, const X509 *server_cert) {
@@ -293,10 +293,10 @@ BIO_METHOD StreamPeerOpenSSL::_bio_method = {
 	_bio_destroy
 };
 
-Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, const String& p_for_hostname) {
+Error StreamPeerOpenSSL::connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs, const String& p_for_hostname) {
 
 	if (connected)
-		disconnect();
+		disconnect_from_stream();
 
 
 	hostname=p_for_hostname;
@@ -415,7 +415,7 @@ Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, 
 	return OK;
 }
 
-Error StreamPeerOpenSSL::accept(Ref<StreamPeer> p_base) {
+Error StreamPeerOpenSSL::accept_stream(Ref<StreamPeer> p_base) {
 
 
 	return ERR_UNAVAILABLE;
@@ -451,7 +451,7 @@ Error StreamPeerOpenSSL::put_data(const uint8_t* p_data,int p_bytes) {
 		int ret = SSL_write(ssl,p_data,p_bytes);
 		if (ret<=0) {
 			_print_error(ret);
-			disconnect();
+			disconnect_from_stream();
 			return ERR_CONNECTION_ERROR;
 		}
 		p_data+=ret;
@@ -486,7 +486,7 @@ Error StreamPeerOpenSSL::get_data(uint8_t* p_buffer, int p_bytes){
 		int ret = SSL_read(ssl,p_buffer,p_bytes);
 		if (ret<=0) {
 			_print_error(ret);
-			disconnect();
+			disconnect_from_stream();
 			return ERR_CONNECTION_ERROR;
 		}
 		p_buffer+=ret;
@@ -529,7 +529,7 @@ StreamPeerOpenSSL::StreamPeerOpenSSL() {
 	flags=0;
 }
 
-void StreamPeerOpenSSL::disconnect() {
+void StreamPeerOpenSSL::disconnect_from_stream() {
 
 	if (!connected)
 		return;
@@ -552,7 +552,7 @@ StreamPeerOpenSSL::Status StreamPeerOpenSSL::get_status() const {
 
 
 StreamPeerOpenSSL::~StreamPeerOpenSSL() {
-	disconnect();
+	disconnect_from_stream();
 }
 
 StreamPeerSSL* StreamPeerOpenSSL::_create_func() {

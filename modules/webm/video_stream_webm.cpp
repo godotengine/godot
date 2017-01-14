@@ -415,7 +415,7 @@ bool ResourceFormatLoaderVideoStreamWebm::handles_type(const String &p_type) con
 
 String ResourceFormatLoaderVideoStreamWebm::get_resource_type(const String &p_path) const {
 
-	const String exl = p_path.extension().to_lower();
+	const String exl = p_path.get_extension().to_lower();
 	if (exl == "webm")
 		return "VideoStreamWebm";
 	return "";
