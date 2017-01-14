@@ -1938,6 +1938,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"for",
 		"pass",
 		"return",
+		"match",
 		"while",
 		"remote",
 		"sync",

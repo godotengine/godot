@@ -1099,7 +1099,72 @@ Error GDCompiler::_parse_block(CodeGen& codegen,const GDParser::BlockNode *p_blo
 
 				switch(cf->cf_type) {
 
+					case GDParser::ControlFlowNode::CF_MATCH: {
+						GDParser::MatchNode *match = cf->match;
+						
+						GDParser::IdentifierNode *id = memnew(GDParser::IdentifierNode);
+						id->name = "#match_value";
+						
+						// var #match_value
+						// copied because there is no _parse_statement :(
+						codegen.add_stack_identifier(id->name, p_stack_level++);
+						codegen.alloc_stack(p_stack_level);
+						new_identifiers++;
 
+						GDParser::OperatorNode *op = memnew(GDParser::OperatorNode);
+						op->op=GDParser::OperatorNode::OP_ASSIGN;
+						op->arguments.push_back(id);
+						op->arguments.push_back(match->val_to_match);
+						
+						int ret = _parse_expression(codegen, op, p_stack_level);
+						if (ret < 0) {
+							return ERR_PARSE_ERROR;
+						}
+						
+						// break address
+						codegen.opcodes.push_back(GDFunction::OPCODE_JUMP);
+						codegen.opcodes.push_back(codegen.opcodes.size() + 3);
+						int break_addr = codegen.opcodes.size();
+						codegen.opcodes.push_back(GDFunction::OPCODE_JUMP);
+						codegen.opcodes.push_back(0); // break addr
+						
+						for (int j = 0; j < match->compiled_pattern_branches.size(); j++) {
+							GDParser::MatchNode::CompiledPatternBranch branch = match->compiled_pattern_branches[j];
+							
+							// jump over continue
+							// jump unconditionally
+							// continue address
+							// compile the condition
+							int ret = _parse_expression(codegen, branch.compiled_pattern, p_stack_level);
+							if (ret < 0) {
+								return ERR_PARSE_ERROR;
+							}
+							
+							codegen.opcodes.push_back(GDFunction::OPCODE_JUMP_IF);
+							codegen.opcodes.push_back(ret);
+							codegen.opcodes.push_back(codegen.opcodes.size() + 3);
+							int continue_addr = codegen.opcodes.size();
+							codegen.opcodes.push_back(GDFunction::OPCODE_JUMP);
+							codegen.opcodes.push_back(0);
+							
+							
+							
+							Error err = _parse_block(codegen, branch.body, p_stack_level, p_break_addr, continue_addr);
+							if (err) {
+								return ERR_PARSE_ERROR;
+							}
+							
+							codegen.opcodes.push_back(GDFunction::OPCODE_JUMP);
+							codegen.opcodes.push_back(break_addr);
+							
+							codegen.opcodes[continue_addr + 1] = codegen.opcodes.size();
+						}
+						
+						codegen.opcodes[break_addr + 1] = codegen.opcodes.size();
+						
+						
+					} break;
+					
 					case GDParser::ControlFlowNode::CF_IF: {
 
 #ifdef DEBUG_ENABLED
