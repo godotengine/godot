@@ -261,6 +261,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,is_subsequence_ofi);
 	VCALL_LOCALMEM0R(String,bigrams);
 	VCALL_LOCALMEM1R(String,similarity);
+	VCALL_LOCALMEM2R(String,format);
 	VCALL_LOCALMEM2R(String,replace);
 	VCALL_LOCALMEM2R(String,replacen);
 	VCALL_LOCALMEM2R(String,insert);
@@ -1392,6 +1393,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,POOL_STRING_ARRAY,String,bigrams,varray());
 	ADDFUNC1(STRING,REAL,String,similarity,STRING,"text",varray());
 
+	ADDFUNC2(STRING,STRING,String,format,NIL,"values",STRING,"placeholder",varray("{_}"));
 	ADDFUNC2(STRING,STRING,String,replace,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,replacen,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,insert,INT,"pos",STRING,"what",varray());
