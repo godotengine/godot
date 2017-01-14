@@ -639,7 +639,7 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform 
 		Vector3 n1=v2-v1;
 		Vector3 n2=v2-v3;
 
-		Vector3 axis = n1.cross(n2).cross(n1).normalized();;
+		Vector3 axis = n1.cross(n2).cross(n1).normalized();
 
 		if (!separator.test_axis( axis ))
 			return;

@@ -780,7 +780,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	set_hide_on_ok(false);
 
-	texture_options = memnew( EditorImportTextureOptions );;
+	texture_options = memnew( EditorImportTextureOptions );
 	vbc->add_child(texture_options);
 	texture_options->set_v_size_flags(SIZE_EXPAND_FILL);
 

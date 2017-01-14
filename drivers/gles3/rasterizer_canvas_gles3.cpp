@@ -87,7 +87,7 @@ void RasterizerCanvasGLES3::light_internal_update(RID p_rid, Light* p_light) {
 	if (p_light->radius_cache==0)
 		li->ubo_data.shadow_gradient=0;
 	else
-		li->ubo_data.shadow_gradient=p_light->shadow_gradient_length/(p_light->radius_cache*1.1);;
+		li->ubo_data.shadow_gradient=p_light->shadow_gradient_length/(p_light->radius_cache*1.1);
 
 	li->ubo_data.shadow_distance_mult=(p_light->radius_cache*1.1);
 

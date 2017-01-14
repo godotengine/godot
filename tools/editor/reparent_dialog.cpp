@@ -105,7 +105,7 @@ ReparentDialog::ReparentDialog() {
 	vbc->add_child(keep_transform);
 
 
-	//vbc->add_margin_child("Options:",node_only);;
+	//vbc->add_margin_child("Options:",node_only);
 
 	//cancel->connect("pressed", this,"_cancel");
 

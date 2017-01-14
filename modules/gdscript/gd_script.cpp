@@ -541,7 +541,7 @@ bool GDScript::_update_exports() {
 				}
 			}
 
-			members_cache.clear();;
+			members_cache.clear();
 			member_default_values_cache.clear();
 
 			for(int i=0;i<c->variables.size();i++) {

@@ -2350,7 +2350,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	index=p_index;
 	editor=p_editor;
-	editor_selection=editor->get_editor_selection();;
+	editor_selection=editor->get_editor_selection();
 	undo_redo=editor->get_undo_redo();
 	clicked=0;
 	clicked_includes_current=false;
@@ -2606,12 +2606,12 @@ Dictionary SpatialEditor::get_state() const {
 
 	d["viewports"]=vpdata;
 
-	d["default_light"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT) );;
+	d["default_light"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT) );
 	d["ambient_light_color"]=settings_ambient_color->get_pick_color();
 
-	d["default_srgb"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB) );;
-	d["show_grid"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID) );;
-	d["show_origin"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN) );;
+	d["default_srgb"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB) );
+	d["show_grid"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID) );
+	d["show_origin"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN) );
 	d["fov"]=get_fov();
 	d["znear"]=get_znear();
 	d["zfar"]=get_zfar();
@@ -3141,7 +3141,7 @@ void SpatialEditor::_init_indicators() {
 
 	{
 
-		indicator_mat.instance();;
+		indicator_mat.instance();
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);

@@ -237,7 +237,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	AudioDriverManager::add_driver(&audio_driver_javascript);
 
 	if (true) {
-		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,false,false,false) );;
+		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,false,false,false) );
 		rasterizer_gles22->set_use_framebuffers(false); //not supported by emscripten
 		if (gl_extensions)
 			rasterizer_gles22->set_extensions(gl_extensions);

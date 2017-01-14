@@ -2160,7 +2160,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				case SCALAR_OP_ATAN2: optxt = "atan2("+p_inputs[0]+","+p_inputs[1]+");"; break;
 
 			}
-			code+=OUTNAME(p_node->id,0)+"="+optxt+"\n";;
+			code+=OUTNAME(p_node->id,0)+"="+optxt+"\n";
 
 		}break;
 		case NODE_VEC_OP: {
@@ -2363,7 +2363,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				code+="\t"+OUTVAR(p_node->id,0)+"=vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\n";
 				code+="}\n";
 			} else if (func==VEC_FUNC_HSV2RGB) {
-				code += OUTNAME(p_node->id,0)+";\n";;
+				code += OUTNAME(p_node->id,0)+";\n";
 				code+="{\n";
 				code+="\tvec3 c = "+p_inputs[0]+";\n";
 				code+="\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n";

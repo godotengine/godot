@@ -65,7 +65,7 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 		int amount=cells.size();
 		PoolVector<int>::Read r = cells.read();
 		ERR_FAIL_COND_V(amount&1,false); // not even
-		cell_map.clear();;
+		cell_map.clear();
 		for(int i=0;i<amount/3;i++) {
 
 
@@ -90,7 +90,7 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 			int amount=cells.size();
 			PoolVector<int>::Read r = cells.read();
 			ERR_FAIL_COND_V(amount%3,false); // not even
-			cell_map.clear();;
+			cell_map.clear();
 			for(int i=0;i<amount/3;i++) {
 
 				IndexKey ik;
@@ -123,7 +123,7 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 				Octant &g = *octant_map[ok];
 
 				g.baked=b;
-				g.bake_instance=VS::get_singleton()->instance_create();;
+				g.bake_instance=VS::get_singleton()->instance_create();
 				VS::get_singleton()->instance_set_base(g.bake_instance,g.baked->get_rid());
 				VS::get_singleton()->instance_geometry_set_baked_light(g.bake_instance,baked_light_instance?baked_light_instance->get_baked_light_instance():RID());
 			}
@@ -908,7 +908,7 @@ void GridMap::_octant_bake(const OctantKey &p_key, const Ref<TriangleMesh>& p_tm
 						if (V)
 							V=V->next();
 						else
-							V=st->get_vertex_array().front();;
+							V=st->get_vertex_array().front();
 						int lc = p_lights.size();
 						const BakeLight* bl = p_lights.ptr();
 						float ofs = cell_size*0.02;

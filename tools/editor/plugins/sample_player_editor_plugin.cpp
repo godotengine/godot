@@ -93,7 +93,7 @@ void SamplePlayerEditor::_update_sample_library() {
 	Ref<SampleLibrary> sl = node->call("get_sample_library");
 	if (sl.is_null()) {
 		samples->add_item("<NO SAMPLE LIBRARY>");
-		return; //no sample library;;
+		return; //no sample library;
 	}
 
 	List<StringName> samplenames;

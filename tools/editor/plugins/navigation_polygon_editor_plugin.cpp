@@ -127,7 +127,7 @@ bool NavigationPolygonEditor::forward_gui_input(const InputEvent& p_event) {
 			create_nav->set_text("No NavigationPolygon resource on this node.\nCreate and assign one?");
 			create_nav->popup_centered_minsize();
 		}
-		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);;
+		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);
 	}
 
 

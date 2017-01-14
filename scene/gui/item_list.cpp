@@ -300,7 +300,7 @@ void ItemList::move_item(int p_item,int p_to_pos) {
 	ERR_FAIL_INDEX(p_to_pos,items.size()+1);
 
 	Item it=items[p_item];
-	items.remove(p_item);;
+	items.remove(p_item);
 
 	if (p_to_pos>p_item) {
 		p_to_pos--;
@@ -905,7 +905,7 @@ void ItemList::_notification(int p_what) {
 				Vector2 ofs;
 				int col=0;
 				int max_h=0;
-				separators.clear();;
+				separators.clear();
 				for(int i=0;i<items.size();i++) {
 
 					if (current_columns>1 && items[i].rect_cache.size.width+ofs.x > fit_size) {

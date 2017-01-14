@@ -1378,7 +1378,7 @@ bool Main::start() {
 
 							DirAccess *da = DirAccess::open(local_game_path.substr(0,sep));
 							if (da) {
-								local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());;
+								local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());
 								memdelete(da);
 							}
 						}

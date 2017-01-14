@@ -392,7 +392,7 @@ void CanvasItemEditor::_remove_canvas_item(CanvasItem *p_canvas_item) {
 }
 void CanvasItemEditor::_clear_canvas_items() {
 
-	editor_selection->clear();;
+	editor_selection->clear();
 #if 0
 	while(canvas_items.size())
 		_remove_canvas_item(canvas_items.front()->key());
@@ -602,7 +602,7 @@ bool CanvasItemEditor::_select(CanvasItem *item, Point2 p_click_pos, bool p_appe
 
 		if (!item) {
 			//clear because nothing clicked
-			editor_selection->clear();;
+			editor_selection->clear();
 
 			if (p_drag) {
 				drag_from=transform.affine_inverse().xform(p_click_pos);
@@ -2413,7 +2413,7 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	Rect2 canvas_item_rect=Rect2(Point2(),screen_rect);
 
-	lock_list.clear();;
+	lock_list.clear();
 	bone_last_frame++;
 
 
@@ -2927,7 +2927,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;*/
 		case ANIM_COPY_POSE: {
 
-			pose_clipboard.clear();;
+			pose_clipboard.clear();
 
 
 			Map<Node*,Object*> &selection = editor_selection->get_selection();

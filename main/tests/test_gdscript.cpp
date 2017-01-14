@@ -219,7 +219,7 @@ static String _parser_expr(const GDParser::Node *p_expr) {
 				case GDParser::OperatorNode::OP_ASSIGN_BIT_AND: { txt=_parser_expr(c_node->arguments[0])+"&="+_parser_expr(c_node->arguments[1]); } break;
 				case GDParser::OperatorNode::OP_ASSIGN_BIT_OR: { txt=_parser_expr(c_node->arguments[0])+"|="+_parser_expr(c_node->arguments[1]); } break;
 				case GDParser::OperatorNode::OP_ASSIGN_BIT_XOR: { txt=_parser_expr(c_node->arguments[0])+"^="+_parser_expr(c_node->arguments[1]); } break;
-				case GDParser::OperatorNode::OP_BIT_AND: { txt=_parser_expr(c_node->arguments[0])+"&"+_parser_expr(c_node->arguments[1]); } break;;
+				case GDParser::OperatorNode::OP_BIT_AND: { txt=_parser_expr(c_node->arguments[0])+"&"+_parser_expr(c_node->arguments[1]); } break;
 				case GDParser::OperatorNode::OP_BIT_OR: { txt=_parser_expr(c_node->arguments[0])+"|"+_parser_expr(c_node->arguments[1]); } break;
 				case GDParser::OperatorNode::OP_BIT_XOR: { txt=_parser_expr(c_node->arguments[0])+"^"+_parser_expr(c_node->arguments[1]); } break;
 				default: {}
@@ -947,7 +947,7 @@ MainLoop* test(TestType p_test) {
 
 			if (tk.get_token_line()!=line) {
 				int from=line+1;
-				line = tk.get_token_line();;
+				line = tk.get_token_line();
 
 				for(int i=from;i<=line;i++) {
 					int l=i-1;

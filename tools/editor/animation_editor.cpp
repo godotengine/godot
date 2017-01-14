@@ -519,7 +519,7 @@ public:
 			case Animation::TYPE_VALUE: {
 
 				if (name=="value") {
-					r_ret = animation->track_get_key_value(track,key);;
+					r_ret = animation->track_get_key_value(track,key);
 					return true;
 				}
 
@@ -1917,7 +1917,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 				else
 					_menu_track(TRACK_MENU_DUPLICATE);
 
-				accept_event();;
+				accept_event();
 
 			} else if (p_input.key.scancode==KEY_DELETE && p_input.key.pressed && click.click==ClickOver::CLICK_NONE) {
 
@@ -2918,7 +2918,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							} break;
 							case Animation::TYPE_VALUE: {
 
-								Variant v = animation->track_get_key_value(idx,mouse_over.over_key);;
+								Variant v = animation->track_get_key_value(idx,mouse_over.over_key);
 								//text+="value: "+String(v)+"\n";
 
 								bool prop_exists=false;
@@ -3707,7 +3707,7 @@ void AnimationKeyEditor::_pane_drag(const Point2& p_delta) {
 	ecs.y-=p_delta.y;
 	if (ecs.y<100)
 		ecs.y=100;
-	ec->set_custom_minimum_size(ecs);;
+	ec->set_custom_minimum_size(ecs);
 
 }
 

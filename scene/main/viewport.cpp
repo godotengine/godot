@@ -1777,7 +1777,7 @@ Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_g
 			if (!ci || ci->is_set_as_toplevel())
 				continue;
 
-			Control *ret=_gui_find_control_at_pos(ci,p_global,matrix,r_inv_xform);;
+			Control *ret=_gui_find_control_at_pos(ci,p_global,matrix,r_inv_xform);
 			if (ret)
 				return ret;
 		}
@@ -2006,7 +2006,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			// D&D
 			if (!gui.drag_attempted && gui.mouse_focus && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
 
-				gui.drag_accum+=Point2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y);;
+				gui.drag_accum+=Point2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y);
 				float len = gui.drag_accum.length();
 				if (len>10) {
 					gui.drag_data=gui.mouse_focus->get_drag_data(gui.focus_inv_xform.xform(mpos)-gui.drag_accum);

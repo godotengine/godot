@@ -1429,7 +1429,7 @@ public:
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color);
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const;
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const;;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const;
 	virtual Color multimesh_instance_get_color(RID p_multimesh,int p_index) const;

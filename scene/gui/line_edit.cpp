@@ -1320,7 +1320,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "placeholder_text" ), _SCS("set_placeholder"),_SCS("get_placeholder") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::REAL, "placeholder_alpha",PROPERTY_HINT_RANGE,"0,1,0.001" ), _SCS("set_placeholder_alpha"),_SCS("get_placeholder_alpha") );
 	ADD_GROUP("Caret","caret_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));;
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
 }
 

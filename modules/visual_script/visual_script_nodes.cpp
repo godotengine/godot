@@ -3615,7 +3615,7 @@ void VisualScriptInputAction::_validate_property(PropertyInfo& property) const {
 			al.push_back(name);
 		}
 
-		al.sort();;
+		al.sort();
 
 		for(int i=0;i<al.size();i++) {
 			if (actions!=String())
@@ -3705,7 +3705,7 @@ String VisualScriptDeconstruct::get_category() const {
 
 void VisualScriptDeconstruct::_update_elements() {
 
-	elements.clear();;
+	elements.clear();
 	Variant v;
 	if (type==Variant::INPUT_EVENT) {
 		InputEvent ie;

@@ -1175,7 +1175,7 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 	pd->f->store_32(cs.length());
 	pd->f->store_buffer((uint8_t*)cs.get_data(),cs.length());
 	TempData td;
-	td.pos=pd->f->get_pos();;
+	td.pos=pd->f->get_pos();
 	td.ofs=pd->ftmp->get_pos();
 	td.size=p_data.size();
 	pd->file_ofs.push_back(td);

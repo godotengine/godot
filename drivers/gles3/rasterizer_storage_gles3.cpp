@@ -6463,7 +6463,7 @@ void RasterizerStorageGLES3::initialize() {
 			glBufferData(GL_ARRAY_BUFFER,xf_feedback_size*1024,NULL,GL_STREAM_DRAW);
 		}
 
-		shaders.blend_shapes.init();;
+		shaders.blend_shapes.init();
 
 		glGenVertexArrays(1,&resources.transform_feedback_array);
 

@@ -204,7 +204,7 @@ void Label::_notification(int p_what) {
 				} break;
 				case ALIGN_CENTER: {
 
-					x_ofs=int(size.width-(taken+spaces*space_w))/2;;
+					x_ofs=int(size.width-(taken+spaces*space_w))/2;
 
 				} break;
 				case ALIGN_RIGHT: {

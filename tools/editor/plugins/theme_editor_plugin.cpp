@@ -585,7 +585,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	List<StringName> types;
 	base_theme->get_type_list(&types);
 
-	type_menu->get_popup()->clear();;
+	type_menu->get_popup()->clear();
 
 	if (p_option==0 || p_option==1) {//add
 

@@ -54,12 +54,12 @@ void image_compress_squish(Image *p_image) {
 
 	if (p_image->get_format()==Image::FORMAT_LA8) {
 		//compressed normalmap
-		target_format = Image::FORMAT_DXT5; squish_comp|=squish::kDxt5;;
+		target_format = Image::FORMAT_DXT5; squish_comp|=squish::kDxt5;
 	} else if (p_image->detect_alpha()!=Image::ALPHA_NONE) {
 
-		target_format = Image::FORMAT_DXT3; squish_comp|=squish::kDxt3;;
+		target_format = Image::FORMAT_DXT3; squish_comp|=squish::kDxt3;
 	} else {
-		target_format = Image::FORMAT_DXT1; shift=1; squish_comp|=squish::kDxt1;;
+		target_format = Image::FORMAT_DXT1; shift=1; squish_comp|=squish::kDxt1;
 	}
 
 	p_image->convert(Image::FORMAT_RGBA8); //always expects rgba

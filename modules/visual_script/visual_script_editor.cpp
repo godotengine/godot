@@ -1918,7 +1918,7 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 					Ref<VisualScriptFunctionCall> call;
 					call.instance();
 					call->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
-					call->set_base_path(sn->get_path_to(node));;
+					call->set_base_path(sn->get_path_to(node));
 					call->set_base_type(node->get_class());
 					n=call;
 

@@ -371,7 +371,7 @@ void HingeJointSW::solve(float p_step) {
 			real_t desiredMotorVel = m_motorTargetVelocity;
 			real_t motor_relvel = desiredMotorVel - projRelVel;
 
-			real_t unclippedMotorImpulse = m_kHinge * motor_relvel;;
+			real_t unclippedMotorImpulse = m_kHinge * motor_relvel;
 			//todo: should clip against accumulated impulse
 			real_t clippedMotorImpulse = unclippedMotorImpulse > m_maxMotorImpulse ? m_maxMotorImpulse : unclippedMotorImpulse;
 			clippedMotorImpulse = clippedMotorImpulse < -m_maxMotorImpulse ? -m_maxMotorImpulse : clippedMotorImpulse;

@@ -1257,7 +1257,7 @@ _FORCE_INLINE static int parse_utf8_char(const char *p_utf8,unsigned int *p_ucs4
 		unichar=*p_utf8;
 	else {
 
-		unichar=(0xFF >> (len +1)) & *p_utf8;;
+		unichar=(0xFF >> (len +1)) & *p_utf8;
 
 		for (int i=1;i<len;i++) {
 
@@ -1406,7 +1406,7 @@ bool String::parse_utf8(const char* p_utf8,int p_len) {
 			unichar=*p_utf8;
 		else {
 
-			unichar=(0xFF >> (len +1)) & *p_utf8;;
+			unichar=(0xFF >> (len +1)) & *p_utf8;
 
 			for (int i=1;i<len;i++) {
 

@@ -943,7 +943,7 @@ void BakedLight::_bake_light(Light* p_light) {
 		Vector3 light_dir = -rel_xf.basis.get_axis(2);
 
 		Color color = dl->get_color();
-		float nrg = dl->get_param(Light::PARAM_ENERGY);;
+		float nrg = dl->get_param(Light::PARAM_ENERGY);
 		color.r*=nrg;
 		color.g*=nrg;
 		color.b*=nrg;

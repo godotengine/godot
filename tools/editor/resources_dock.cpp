@@ -123,7 +123,7 @@ void ResourcesDock::_notification(int p_what) {
 
 void ResourcesDock::save_resource(const String& p_path,const Ref<Resource>& p_resource) {
 
-	editor->get_editor_data().apply_changes_in_editors();;
+	editor->get_editor_data().apply_changes_in_editors();
 	int flg=0;
 	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
 		flg|=ResourceSaver::FLAG_COMPRESS;

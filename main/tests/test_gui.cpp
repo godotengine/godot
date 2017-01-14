@@ -353,14 +353,14 @@ public:
 		label = memnew( Label );
 		label->set_text("Some Label");
 		label->set_pos( Point2(20,20) );
-		ctl->add_child(label);;
+		ctl->add_child(label);
 
 		ctl= memnew( Control );
 		ctl->set_name("tab 3");
 		button = memnew( Button );
 		button->set_text("Some Button");
 		button->set_pos( Point2(30,50) );
-		ctl->add_child(button);;
+		ctl->add_child(button);
 
 		tabc->add_child(ctl);
 

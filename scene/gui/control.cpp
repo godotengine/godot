@@ -1715,7 +1715,7 @@ Control *Control::find_next_valid_focus() const {
 
 				if (!next_child) {
 
-					next_child=const_cast<Control*>(this);;
+					next_child=const_cast<Control*>(this);
 					while(next_child) {
 
 						if (next_child->data.SI || next_child->data.RI)

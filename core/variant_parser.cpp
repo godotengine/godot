@@ -1989,7 +1989,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<uint8_t> data = img.get_data();
 			int len = data.size();
 			PoolVector<uint8_t>::Read r = data.read();
-			const uint8_t *ptr=r.ptr();;
+			const uint8_t *ptr=r.ptr();
 			for (int i=0;i<len;i++) {
 
 				if (i>0)
@@ -2133,7 +2133,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<uint8_t> data = p_variant;
 			int len = data.size();
 			PoolVector<uint8_t>::Read r = data.read();
-			const uint8_t *ptr=r.ptr();;
+			const uint8_t *ptr=r.ptr();
 			for (int i=0;i<len;i++) {
 
 				if (i>0)
@@ -2152,7 +2152,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<int> data = p_variant;
 			int len = data.size();
 			PoolVector<int>::Read r = data.read();
-			const int *ptr=r.ptr();;
+			const int *ptr=r.ptr();
 
 			for (int i=0;i<len;i++) {
 
@@ -2172,7 +2172,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<real_t> data = p_variant;
 			int len = data.size();
 			PoolVector<real_t>::Read r = data.read();
-			const real_t *ptr=r.ptr();;
+			const real_t *ptr=r.ptr();
 
 			for (int i=0;i<len;i++) {
 
@@ -2190,7 +2190,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<String> data = p_variant;
 			int len = data.size();
 			PoolVector<String>::Read r = data.read();
-			const String *ptr=r.ptr();;
+			const String *ptr=r.ptr();
 			String s;
 			//write_string("\n");
 
@@ -2213,7 +2213,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<Vector2> data = p_variant;
 			int len = data.size();
 			PoolVector<Vector2>::Read r = data.read();
-			const Vector2 *ptr=r.ptr();;
+			const Vector2 *ptr=r.ptr();
 
 			for (int i=0;i<len;i++) {
 
@@ -2231,7 +2231,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<Vector3> data = p_variant;
 			int len = data.size();
 			PoolVector<Vector3>::Read r = data.read();
-			const Vector3 *ptr=r.ptr();;
+			const Vector3 *ptr=r.ptr();
 
 			for (int i=0;i<len;i++) {
 
@@ -2250,7 +2250,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			PoolVector<Color> data = p_variant;
 			int len = data.size();
 			PoolVector<Color>::Read r = data.read();
-			const Color *ptr=r.ptr();;
+			const Color *ptr=r.ptr();
 
 			for (int i=0;i<len;i++) {
 

@@ -1011,7 +1011,7 @@ public:
 		Particles() : particle_element(this) {
 			emitting=false;
 			amount=0;
-			lifetime=1.0;;
+			lifetime=1.0;
 			pre_process_time=0.0;
 			explosiveness=0.0;
 			randomness=0.0;

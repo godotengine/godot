@@ -297,7 +297,7 @@ public:
 		if (inters_d<0 || inters_d>rel_l)
 			return false;
 
-		Vector3 result=p_from+normal*inters_d;;
+		Vector3 result=p_from+normal*inters_d;
 
 		if (r_res)
 			*r_res=result;

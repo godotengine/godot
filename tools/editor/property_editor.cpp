@@ -4661,7 +4661,7 @@ void SectionedPropertyEditor::_section_selected() {
 void SectionedPropertyEditor::set_current_section(const String& p_section) {
 
 	if (section_map.has(p_section)) {
-		section_map[p_section]->select(0);;
+		section_map[p_section]->select(0);
 	}
 }
 

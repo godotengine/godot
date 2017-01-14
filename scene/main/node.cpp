@@ -1631,7 +1631,7 @@ Node *Node::_get_node(const NodePath& p_path) const {
 		current=const_cast<Node*>(this); //start from this
 	} else {
 
-		root=const_cast<Node*>(this);;
+		root=const_cast<Node*>(this);
 		while (root->data.parent)
 			root=root->data.parent; //start from root
 	}

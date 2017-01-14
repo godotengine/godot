@@ -71,7 +71,7 @@ int AudioDriverRtAudio::callback( void *outputBuffer, void *inputBuffer, unsigne
 
 	self->audio_server_process(nBufferFrames,buffer);
 
-	self->mutex->unlock();;
+	self->mutex->unlock();
 
 	return 0;
 }

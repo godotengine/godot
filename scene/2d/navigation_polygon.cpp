@@ -137,7 +137,7 @@ PoolVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
 
 void NavigationPolygon::clear_outlines(){
 
-	outlines.clear();;
+	outlines.clear();
 }
 void NavigationPolygon::make_polygons_from_outlines(){
 

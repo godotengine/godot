@@ -79,7 +79,7 @@ void BoneAttachment::_check_bind() {
 		Skeleton *sk = get_parent()->cast_to<Skeleton>();
 		int idx = sk->find_bone(bone_name);
 		if (idx!=-1) {
-			sk->bind_child_node_to_bone(idx,this);;
+			sk->bind_child_node_to_bone(idx,this);
 			set_transform(sk->get_bone_global_pose(idx));
 			bound=true;
 		}
@@ -94,7 +94,7 @@ void BoneAttachment::_check_unbind() {
 			Skeleton *sk = get_parent()->cast_to<Skeleton>();
 			int idx = sk->find_bone(bone_name);
 			if (idx!=-1) {
-				sk->unbind_child_node_from_bone(idx,this);;
+				sk->unbind_child_node_from_bone(idx,this);
 			}
 		}
 		bound=false;

@@ -1643,7 +1643,7 @@ void AnimationTreePlayer::_recompute_caches(const StringName& p_node) {
 	if (nb->type==NODE_ANIMATION) {
 
 		AnimationNode *an = static_cast<AnimationNode*>(nb);
-		an->tref.clear();;
+		an->tref.clear();
 
 		if (!an->animation.is_null()) {
 

@@ -261,9 +261,9 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 	}
 
 	edit_option->hide();
-	edit_button->hide();;
+	edit_button->hide();
 	filter_button->hide();
-	edit_check->hide();;
+	edit_check->hide();
 
 	Point2 pos = anim_tree->node_get_pos(edited_node)-Point2(h_scroll->get_value(),v_scroll->get_value());
 	Ref<StyleBox> style = get_stylebox("panel","PopupMenu");
@@ -450,7 +450,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				 edit_label[1]->show();
 				 edit_option->set_begin(Point2(15,75));
 
-				 edit_option->clear();;
+				 edit_option->clear();
 
 				 for(int i=0;i<anim_tree->transition_node_get_input_count(edited_node);i++) {
 					 edit_option->add_item(itos(i),i);
@@ -1451,14 +1451,14 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	edit_button->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	edit_button->set_margin(MARGIN_RIGHT, 10);
 	edit_dialog->add_child(edit_button);
-	edit_button->hide();;
+	edit_button->hide();
 	edit_button->connect("pressed", this,"_edit_oneshot_start");
 
 	edit_check = memnew( CheckButton );
 	edit_check->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	edit_check->set_margin(MARGIN_RIGHT, 10);
 	edit_dialog->add_child(edit_check);
-	edit_check->hide();;
+	edit_check->hide();
 	edit_check->connect("pressed", this,"_edit_dialog_changed");
 
 	file_dialog = memnew( EditorFileDialog );
@@ -1480,7 +1480,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	filter_button->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	filter_button->set_margin(MARGIN_RIGHT, 10);
 	edit_dialog->add_child(filter_button);
-	filter_button->hide();;
+	filter_button->hide();
 	filter_button->set_text(TTR("Filters.."));
 	filter_button->connect("pressed", this,"_edit_filters");
 

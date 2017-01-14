@@ -903,7 +903,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 			Vector3 axis;
 			axis[i]=1;
 			Vector3 axis_n1;
-			axis_n1[(i+1)%3]=cell_size[(i+1)%3];;
+			axis_n1[(i+1)%3]=cell_size[(i+1)%3];
 			Vector3 axis_n2;
 			axis_n2[(i+2)%3]=cell_size[(i+2)%3];
 
@@ -1274,8 +1274,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	edit_mode = memnew(OptionButton);
 	edit_mode->set_area_as_parent_rect();
-	edit_mode->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_BEGIN,24);;
-	edit_mode->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,14);;
+	edit_mode->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_BEGIN,24);
+	edit_mode->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,14);
 	edit_mode->add_item("Tiles");
 	edit_mode->add_item("Areas");
 	hb->add_child(edit_mode);

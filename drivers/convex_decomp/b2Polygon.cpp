@@ -353,7 +353,7 @@ bool b2Polygon::IsUsable(bool printErrors){
 		b2Vec2 centroid = PolyCentroid(vertices,nVertices);
 		b2Vec2 n1 = normals[iminus];
 		b2Vec2 n2 = normals[i];
-		b2Vec2 v = vertices[i] - centroid;;
+		b2Vec2 v = vertices[i] - centroid;
 
 		b2Vec2 d;
 		d.x = b2Dot(n1, v) - toiSlop;

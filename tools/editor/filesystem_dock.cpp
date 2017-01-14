@@ -989,7 +989,7 @@ void FileSystemDock::_file_option(int p_option) {
 		} break;
 		case FILE_MOVE: {
 
-			move_dirs.clear();;
+			move_dirs.clear();
 			move_files.clear();
 
 			for(int i=0;i<files->get_item_count();i++) {

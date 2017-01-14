@@ -2121,7 +2121,7 @@ void VisibilityNotifierGizmo::set_handle(int p_idx,Camera *p_camera, const Point
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
 	Vector3 sg[2]={gi.xform(ray_from),gi.xform(ray_from+ray_dir*4096)};
-	Vector3 ofs = aabb.pos+aabb.size*0.5;;
+	Vector3 ofs = aabb.pos+aabb.size*0.5;
 
 	Vector3 axis;
 	axis[p_idx]=1.0;

@@ -938,7 +938,7 @@ RES ResourceFormatLoaderDynamicFont::load(const String &p_path, const String& p_
 		*r_error=ERR_FILE_CANT_OPEN;
 
 	Ref<DynamicFontData> dfont;
-	dfont.instance();;
+	dfont.instance();
 	dfont->set_font_path(p_path);
 
 

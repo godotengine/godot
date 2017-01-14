@@ -199,7 +199,7 @@ Array InputMap::_get_action_list(const StringName& p_action) {
 	if (al) {
 		for(const List<InputEvent>::Element *E=al->front();E;E=E->next()) {
 
-			ret.push_back(E->get());;
+			ret.push_back(E->get());
 		}
 	}
 
@@ -239,7 +239,7 @@ const Map<StringName, InputMap::Action>& InputMap::get_action_map() const {
 
 void InputMap::load_from_globals() {
 
-	input_map.clear();;
+	input_map.clear();
 
 	List<PropertyInfo> pinfo;
 	GlobalConfig::get_singleton()->get_property_list(&pinfo);
@@ -254,7 +254,7 @@ void InputMap::load_from_globals() {
 
 		add_action(name);
 
-		Array va = GlobalConfig::get_singleton()->get(pi.name);;
+		Array va = GlobalConfig::get_singleton()->get(pi.name);
 
 		for(int i=0;i<va.size();i++) {
 

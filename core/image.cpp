@@ -764,7 +764,7 @@ void Image::flip_y() {
 	bool gm=mipmaps;
 
 	if (gm)
-		clear_mipmaps();;
+		clear_mipmaps();
 
 
 
@@ -791,7 +791,7 @@ void Image::flip_y() {
 
 
 	if (gm)
-		generate_mipmaps();;
+		generate_mipmaps();
 
 }
 
@@ -804,7 +804,7 @@ void Image::flip_x() {
 
 	bool gm=mipmaps;
 	if (gm)
-		clear_mipmaps();;
+		clear_mipmaps();
 
 
 	{
@@ -829,7 +829,7 @@ void Image::flip_x() {
 	}
 
 	if (gm)
-		generate_mipmaps();;
+		generate_mipmaps();
 
 }
 

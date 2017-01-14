@@ -611,7 +611,7 @@ void TreeItem::clear_custom_color(int p_column) {
 
 	ERR_FAIL_INDEX( p_column, cells.size() );
 	cells[p_column].custom_color=false;
-	cells[p_column].color=Color();;
+	cells[p_column].color=Color();
 	_changed_notify(p_column);
 }
 
@@ -642,7 +642,7 @@ void TreeItem::clear_custom_bg_color(int p_column) {
 
 	ERR_FAIL_INDEX( p_column, cells.size() );
 	cells[p_column].custom_bg_color=false;
-	cells[p_column].bg_color=Color();;
+	cells[p_column].bg_color=Color();
 	_changed_notify(p_column);
 }
 
@@ -1258,7 +1258,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 					icon_ofs+=item_rect.pos;
 
 
-					draw_texture_rect(p_item->cells[i].icon,Rect2(icon_ofs,icon_size));;
+					draw_texture_rect(p_item->cells[i].icon,Rect2(icon_ofs,icon_size));
 					//p_item->cells[i].icon->draw(ci, icon_ofs);
 
 				} break;
@@ -2675,7 +2675,7 @@ void Tree::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		update_cache();;
+		update_cache();
 	}
 	if (p_what==NOTIFICATION_DRAG_END) {
 
@@ -3330,7 +3330,7 @@ TreeItem* Tree::_find_item_at_pos(TreeItem*p_item, const Point2& p_pos,int& r_co
 
 	if (root!=p_item || ! hide_root) {
 
-		h = compute_item_height(p_item)+cache.vseparation;;
+		h = compute_item_height(p_item)+cache.vseparation;
 		if (pos.y<h) {
 
 			if (drop_mode_flags==DROP_MODE_ON_ITEM) {

@@ -1152,7 +1152,7 @@ void EditorFileDialog::set_display_mode(DisplayMode p_mode) {
 		mode_list->set_pressed(true);
 	}
 	display_mode=p_mode;
-	invalidate();;
+	invalidate();
 }
 
 EditorFileDialog::DisplayMode EditorFileDialog::get_display_mode() const{

@@ -377,7 +377,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEve
 				ur->create_action(TTR("Split Path"));
 				ur->add_do_method(c.ptr(),"add_point",closest_seg_point,Vector3(),Vector3(),closest_seg+1);
 				ur->add_undo_method(c.ptr(),"remove_point",closest_seg+1);
-				ur->commit_action();;
+				ur->commit_action();
 				return true;
 
 			} else {
@@ -397,7 +397,7 @@ bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEve
 					ur->create_action(TTR("Add Point to Curve"));
 					ur->add_do_method(c.ptr(),"add_point",it.xform(inters),Vector3(),Vector3(),-1);
 					ur->add_undo_method(c.ptr(),"remove_point",c->get_point_count());
-					ur->commit_action();;
+					ur->commit_action();
 					return true;
 				}
 

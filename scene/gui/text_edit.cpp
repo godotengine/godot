@@ -247,7 +247,7 @@ void TextEdit::Text::clear_caches() {
 void TextEdit::Text::clear() {
 
 
-	text.clear();;
+	text.clear();
 	insert(0,"");
 }
 

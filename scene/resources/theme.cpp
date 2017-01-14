@@ -233,7 +233,7 @@ void Theme::set_default_theme_font( const Ref<Font>& p_default_font ) {
 	}
 
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -275,7 +275,7 @@ void Theme::set_icon(const StringName& p_name,const StringName& p_type,const Ref
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 Ref<Texture> Theme::get_icon(const StringName& p_name,const StringName& p_type) const {
@@ -301,7 +301,7 @@ void Theme::clear_icon(const StringName& p_name,const StringName& p_type) {
 
 	icon_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -326,7 +326,7 @@ void Theme::set_shader(const StringName &p_name,const StringName &p_type,const R
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 
@@ -348,7 +348,7 @@ void Theme::clear_shader(const StringName &p_name, const StringName &p_type) {
 
 	shader_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 }
 
 void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) const {
@@ -375,7 +375,7 @@ void Theme::set_stylebox(const StringName& p_name,const StringName& p_type,const
 
 	if (new_value)
 		_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -403,7 +403,7 @@ void Theme::clear_stylebox(const StringName& p_name,const StringName& p_type) {
 
 	style_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -447,7 +447,7 @@ void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 Ref<Font> Theme::get_font(const StringName& p_name,const StringName& p_type) const {
@@ -477,7 +477,7 @@ void Theme::clear_font(const StringName& p_name,const StringName& p_type) {
 
 	font_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -503,7 +503,7 @@ void Theme::set_color(const StringName& p_name,const StringName& p_type,const Co
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 
 	}
 }
@@ -531,7 +531,7 @@ void Theme::clear_color(const StringName& p_name,const StringName& p_type) {
 
 	color_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -556,7 +556,7 @@ void Theme::set_constant(const StringName& p_name,const StringName& p_type,int p
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 
@@ -582,7 +582,7 @@ void Theme::clear_constant(const StringName& p_name,const StringName& p_type) {
 
 	constant_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -611,7 +611,7 @@ void Theme::copy_default_theme() {
 	color_map=default_theme->color_map;
 	constant_map=default_theme->constant_map;
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 

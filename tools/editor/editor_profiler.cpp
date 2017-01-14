@@ -378,7 +378,7 @@ void EditorProfiler::_update_plot() {
 
 	}
 
-	graph_texture->set_data(img);;
+	graph_texture->set_data(img);
 
 
 	graph->set_texture(graph_texture);

@@ -675,7 +675,7 @@ void Area2D::_bind_methods() {
 Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_create(),true) {
 
 	space_override=SPACE_OVERRIDE_DISABLED;
-	set_gravity(98);;
+	set_gravity(98);
 	set_gravity_vector(Vector2(0,1));
 	gravity_is_point=false;
 	gravity_distance_scale=0;

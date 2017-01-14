@@ -2914,7 +2914,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 					Ref<GDNativeClass> gdn = t.value;
 					if (gdn.is_valid()) {
 						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
-						r_result.class_name=gdn->get_name();;
+						r_result.class_name=gdn->get_name();
 						r_result.class_member=p_symbol;
 						return OK;
 

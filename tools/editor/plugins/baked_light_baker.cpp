@@ -1574,7 +1574,7 @@ double BakedLightBaker::get_normalization(int p_light_idx) const {
 	double nrg=0;
 
 	const LightData &dl=lights[p_light_idx];
-	double cell_area = cell_size*cell_size;;
+	double cell_area = cell_size*cell_size;
 	//nrg+= /*dl.energy */ (dl.rays_thrown * cell_area / dl.area);
 	nrg=dl.rays_thrown * cell_area;
 	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
@@ -1592,7 +1592,7 @@ double BakedLightBaker::get_modifier(int p_light_idx) const {
 	double nrg=0;
 
 	const LightData &dl=lights[p_light_idx];
-	double cell_area = cell_size*cell_size;;
+	double cell_area = cell_size*cell_size;
 	//nrg+= /*dl.energy */ (dl.rays_thrown * cell_area / dl.area);
 	nrg=cell_area;
 	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
@@ -2682,7 +2682,7 @@ void BakedLightBaker::clear() {
 	materials.clear();
 	textures.clear();
 	lights.clear();
-	triangles.clear();;
+	triangles.clear();
 	endpoint_normal.clear();
 	endpoint_normal_bits.clear();
 	baked_octree_texture_w=0;

@@ -47,7 +47,7 @@ void Light::set_param(Param p_param, float p_value) {
 	VS::get_singleton()->light_set_param(light,VS::LightParam(p_param),p_value);
 
 	if (p_param==PARAM_SPOT_ANGLE || p_param==PARAM_RANGE) {
-		update_gizmo();;
+		update_gizmo();
 	}
 
 

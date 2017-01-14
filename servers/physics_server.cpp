@@ -178,7 +178,7 @@ int PhysicsShapeQueryParameters::get_object_type_mask() const{
 }
 void PhysicsShapeQueryParameters::set_exclude(const Vector<RID>& p_exclude) {
 
-	exclude.clear();;
+	exclude.clear();
 	for(int i=0;i<p_exclude.size();i++)
 		exclude.insert(p_exclude[i]);
 

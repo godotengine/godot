@@ -1296,7 +1296,7 @@ void Collada::_parse_skin_controller(XMLParser& parser,String p_id) {
 
 					int stride=1;
 					if (parser.has_attribute("stride"))
-						stride=parser.get_attribute_value("stride").to_int();;
+						stride=parser.get_attribute_value("stride").to_int();
 
 					skindata.sources[current_source].stride=stride;
 					COLLADA_PRINT("section: "+current_source+" stride "+itos(skindata.sources[current_source].stride));
@@ -1471,7 +1471,7 @@ void Collada::_parse_morph_controller(XMLParser& parser, String p_id) {
 
 					int stride=1;
 					if (parser.has_attribute("stride"))
-						stride=parser.get_attribute_value("stride").to_int();;
+						stride=parser.get_attribute_value("stride").to_int();
 
 					morphdata.sources[current_source].stride=stride;
 					COLLADA_PRINT("section: "+current_source+" stride "+itos(morphdata.sources[current_source].stride));

@@ -178,7 +178,7 @@ void MultiMeshEditor::_populate() {
 	Map<float,int> triangle_area_map;
 	for(int i=0;i<facecount;i++) {
 
-		float area = r[i].get_area();;
+		float area = r[i].get_area();
 		if (area<CMP_EPSILON)
 			continue;
 		triangle_area_map[area_accum]=i;

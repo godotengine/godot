@@ -62,7 +62,7 @@ void AnimationCache::_clear_cache() {
 		connected_nodes.front()->get()->disconnect("tree_exited",this,"_node_exit_tree");
 		connected_nodes.erase(connected_nodes.front());
 	}
-	path_cache.clear();;
+	path_cache.clear();
 	cache_valid=false;
 	cache_dirty=true;
 }

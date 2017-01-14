@@ -506,7 +506,7 @@ void CollisionShape::_create_debug_shape() {
 
 
 	if (debug_shape) {
-		debug_shape->queue_delete();;
+		debug_shape->queue_delete();
 		debug_shape=NULL;
 	}
 

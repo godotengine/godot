@@ -1576,7 +1576,7 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 		//funciton and class
 
 		if (p_class->name) {
-			signature+="::"+String(p_class->name)+"."+String(func_name);;
+			signature+="::"+String(p_class->name)+"."+String(func_name);
 		} else {
 			signature+="::"+String(func_name);
 		}

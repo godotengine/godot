@@ -644,7 +644,7 @@ Vector<Plane> Camera::get_frustum() const {
 void Camera::set_v_offset(float p_offset) {
 
 	v_offset=p_offset;
-	_update_camera();;
+	_update_camera();
 }
 
 float Camera::get_v_offset() const {

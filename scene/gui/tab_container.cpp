@@ -40,7 +40,7 @@ int TabContainer::_get_top_margin() const {
 
 	int h = MAX( tab_bg->get_minimum_size().height,tab_fg->get_minimum_size().height);
 
-	int ch = font->get_height();;
+	int ch = font->get_height();
 	for(int i=0;i<get_child_count();i++) {
 
 		Control *c = get_child(i)->cast_to<Control>();
@@ -99,7 +99,7 @@ void TabContainer::_gui_input(const InputEvent& p_event) {
 			pp_pos.y+=menu->get_height();
 
 			popup->set_global_pos( pp_pos );
-			popup->popup();;
+			popup->popup();
 			return;
 		}
 		pos.x-=tabs_ofs_cache;
