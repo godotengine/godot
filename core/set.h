@@ -416,7 +416,7 @@ private:
 				Element *aux=node->parent->left;
 				if (aux->color==RED) {
 					_set_color(aux,BLACK);
-					_set_color(node->parent,RED);;
+					_set_color(node->parent,RED);
 					_rotate_right(node->parent);
 					aux=node->parent->left;
 				}

@@ -168,7 +168,7 @@ void CharacterCamera::_compute_camera() {
 
 	Vector3 vec1 = accepted.origin;
 	Vector3 vec2 = proposed.origin;
-	final.origin = vec2.linear_interpolate(vec1, pos_ratio * time);;
+	final.origin = vec2.linear_interpolate(vec1, pos_ratio * time);
 
 	Quat q1 = accepted.basis;
 	Quat q2 = proposed.basis;

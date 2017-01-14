@@ -334,7 +334,7 @@ NodePath::NodePath(const String& p_path) {
 	StringName property;
 	Vector<StringName> subpath;
 
-	int absolute=(path[0]=='/')?1:0;;
+	int absolute=(path[0]=='/')?1:0;
 	bool last_is_slash=true;
 	int slices=0;
 	int subpath_pos=path.find(":");

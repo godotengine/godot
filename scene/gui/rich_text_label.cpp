@@ -103,7 +103,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 
 	int line_ofs=0;
 	int margin=_find_margin(it,p_base_font);
-	Align align=_find_align(it);;
+	Align align=_find_align(it);
 	int line=0;
 	int spaces=0;
 

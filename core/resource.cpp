@@ -182,7 +182,7 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	if (path_cache!="") {
 
-		ResourceCache::resources[path_cache]=this;;
+		ResourceCache::resources[path_cache]=this;
 	}
 
 	_change_notify("resource/path");

@@ -1618,7 +1618,7 @@ void HeightMapShapeSW::_setup(DVector<real_t> p_heights,int p_width,int p_depth,
 
 	heights=p_heights;
 	width=p_width;
-	depth=p_depth;;
+	depth=p_depth;
 	cell_size=p_cell_size;
 
 	DVector<real_t>::Read r = heights. read();

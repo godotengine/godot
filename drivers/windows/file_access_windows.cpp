@@ -50,7 +50,7 @@ void FileAccessWindows::check_errors() const {
 
 	if (feof(f)) {
 
-		last_error=ERR_FILE_EOF;;
+		last_error=ERR_FILE_EOF;
 	}
 
 }

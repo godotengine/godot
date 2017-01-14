@@ -192,6 +192,6 @@ DirAccessAndroid::DirAccessAndroid() {
 
 DirAccessAndroid::~DirAccessAndroid() {
 
-	list_dir_end();;
+	list_dir_end();
 }
 #endif

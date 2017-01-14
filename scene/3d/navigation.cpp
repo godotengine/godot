@@ -129,7 +129,7 @@ void Navigation::_navmesh_link(int p_id) {
 				C->get().B=&p;
 				C->get().B_edge=j;
 				C->get().A->edges[C->get().A_edge].C=&p;
-				C->get().A->edges[C->get().A_edge].C_edge=j;;
+				C->get().A->edges[C->get().A_edge].C_edge=j;
 				p.edges[j].C=C->get().A;
 				p.edges[j].C_edge=C->get().A_edge;
 				//connection successful.
@@ -550,7 +550,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 			path.push_back(begin_point);
 
 
-			path.invert();;
+			path.invert();
 		}
 
 		return path;

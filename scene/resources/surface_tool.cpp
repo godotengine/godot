@@ -834,7 +834,7 @@ void SurfaceTool::clear() {
 	begun=false;
 	primitive=Mesh::PRIMITIVE_LINES;
 	format=0;
-	last_bones.clear();;
+	last_bones.clear();
 	last_weights.clear();
 	index_array.clear();
 	vertex_array.clear();

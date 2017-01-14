@@ -127,7 +127,7 @@ void Navigation2D::_navpoly_link(int p_id) {
 				C->get().B=&p;
 				C->get().B_edge=j;
 				C->get().A->edges[C->get().A_edge].C=&p;
-				C->get().A->edges[C->get().A_edge].C_edge=j;;
+				C->get().A->edges[C->get().A_edge].C_edge=j;
 				p.edges[j].C=C->get().A;
 				p.edges[j].C_edge=C->get().A_edge;
 				//connection successful.
@@ -679,7 +679,7 @@ debug path
 			path.push_back(begin_point);
 
 
-			path.invert();;
+			path.invert();
 		}
 
 		return path;

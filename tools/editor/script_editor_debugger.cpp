@@ -1187,7 +1187,7 @@ void ScriptEditorDebugger::_profiler_seeked() {
 
 	if (breaked)
 		return;
-	debug_break();;
+	debug_break();
 }
 
 

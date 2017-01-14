@@ -59,7 +59,7 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size,M
 			    return -1;
 
 			strm.avail_in=p_src_size;
-			int aout = deflateBound(&strm,p_src_size);;
+			int aout = deflateBound(&strm,p_src_size);
 			strm.avail_out=aout;
 			strm.next_in=(Bytef*)p_src;
 			strm.next_out=p_dst;

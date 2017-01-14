@@ -91,7 +91,7 @@ void MeshInstance::_get_property_list( List<PropertyInfo> *p_list) const {
 		ls.push_back(E->key());
 	}
 
-	ls.sort();;
+	ls.sort();
 
 	for(List<String>::Element *E=ls.front();E;E=E->next()) {
 		p_list->push_back( PropertyInfo(Variant::REAL,E->get(),PROPERTY_HINT_RANGE,"0,1,0.01"));

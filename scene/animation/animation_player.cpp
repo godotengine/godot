@@ -856,7 +856,7 @@ void AnimationPlayer::rename_animation(const StringName& p_name,const StringName
 	while(to_erase.size()) {
 
 		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();;
+		to_erase.pop_front();
 	}
 
 	while(to_insert.size()) {

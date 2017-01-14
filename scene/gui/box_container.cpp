@@ -42,7 +42,7 @@ void BoxContainer::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 
-	Size2i new_size=get_size();;
+	Size2i new_size=get_size();
 
 	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 

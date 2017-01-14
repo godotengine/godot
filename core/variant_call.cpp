@@ -1060,20 +1060,20 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 
 			// misc types
 			case COLOR: return Color();
-			case IMAGE: return Image();;
+			case IMAGE: return Image();
 			case NODE_PATH: return NodePath();;		// 15
-			case _RID: return RID();;
+			case _RID: return RID();
 			case OBJECT: return (Object*)NULL;
-			case INPUT_EVENT: return InputEvent();;
-			case DICTIONARY: return Dictionary();;
+			case INPUT_EVENT: return InputEvent();
+			case DICTIONARY: return Dictionary();
 			case ARRAY: return Array();;			// 20
-			case RAW_ARRAY: return ByteArray();;
-			case INT_ARRAY: return IntArray();;
-			case REAL_ARRAY: return RealArray();;
-			case STRING_ARRAY: return StringArray();;
-			case VECTOR2_ARRAY: return Vector2Array();; 	// 25
-			case VECTOR3_ARRAY: return Vector3Array();; 	// 25
-			case COLOR_ARRAY: return ColorArray();;
+			case RAW_ARRAY: return ByteArray();
+			case INT_ARRAY: return IntArray();
+			case REAL_ARRAY: return RealArray();
+			case STRING_ARRAY: return StringArray();
+			case VECTOR2_ARRAY: return Vector2Array(); 	// 25
+			case VECTOR3_ARRAY: return Vector3Array(); 	// 25
+			case COLOR_ARRAY: return ColorArray();
 			default: return Variant();
 		}
 

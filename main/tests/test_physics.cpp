@@ -111,7 +111,7 @@ protected:
 
 		PhysicsServer * ps = PhysicsServer::get_singleton();
 
-		RID plane_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);;
+		RID plane_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);
 		ps->shape_set_data( plane_shape, p_plane );
 
 		RID b = ps->body_create( PhysicsServer::BODY_MODE_STATIC );

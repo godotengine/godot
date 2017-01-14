@@ -1187,7 +1187,7 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 
 	frame=p_frame;
 	_reset_timeout();
-	_queue_update();;
+	_queue_update();
 	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 
@@ -1290,7 +1290,7 @@ void AnimatedSprite3D::set_animation(const StringName& p_animation){
 	_reset_timeout();
 	set_frame(0);
 	_change_notify();
-	_queue_update();;
+	_queue_update();
 }
 StringName AnimatedSprite3D::get_animation() const{
 

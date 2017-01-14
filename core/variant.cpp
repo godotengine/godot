@@ -1764,7 +1764,7 @@ Variant::operator Transform() const {
 	 if (type==MATRIX32) {
 		 return *_data._matrix32;
 	 } else if (type==TRANSFORM) {
-		 const Transform& t = *_data._transform;;
+		 const Transform& t = *_data._transform;
 		 Matrix32 m;
 		 m.elements[0][0]=t.basis.elements[0][0];
 		 m.elements[0][1]=t.basis.elements[1][0];

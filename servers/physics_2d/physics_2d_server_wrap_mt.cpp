@@ -95,7 +95,7 @@ void Physics2DServerWrapMT::sync() {
 		else
 			step_sem->wait(); //must not wait if a step was not issued
 	}
-	physics_2d_server->sync();;
+	physics_2d_server->sync();
 }
 
 void Physics2DServerWrapMT::flush_queries(){
@@ -105,7 +105,7 @@ void Physics2DServerWrapMT::flush_queries(){
 
 void Physics2DServerWrapMT::end_sync() {
 
-	physics_2d_server->end_sync();;
+	physics_2d_server->end_sync();
 }
 
 void Physics2DServerWrapMT::init() {

@@ -3259,7 +3259,7 @@ void RasterizerGLES2::particles_set_emitting(RID p_particles, bool p_emitting) {
 
 	Particles* particles = particles_owner.get( p_particles );
 	ERR_FAIL_COND(!particles);
-	particles->data.emitting=p_emitting;;
+	particles->data.emitting=p_emitting;
 
 }
 bool RasterizerGLES2::particles_is_emitting(RID p_particles) const {
@@ -3468,7 +3468,7 @@ void RasterizerGLES2::particles_set_attractor_pos(RID p_particles, int p_attract
 	Particles* particles = particles_owner.get( p_particles );
 	ERR_FAIL_COND(!particles);
 	ERR_FAIL_INDEX(p_attractor,particles->data.attractor_count);
-	particles->data.attractors[p_attractor].pos=p_pos;;
+	particles->data.attractors[p_attractor].pos=p_pos;
 }
 Vector3 RasterizerGLES2::particles_get_attractor_pos(RID p_particles,int p_attractor) const {
 

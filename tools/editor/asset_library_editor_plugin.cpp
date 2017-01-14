@@ -789,7 +789,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		}
 	}
 
-	image_queue[p_queue_id].request->queue_delete();;
+	image_queue[p_queue_id].request->queue_delete();
 	image_queue.erase(p_queue_id);
 
 	_update_image_queue();
