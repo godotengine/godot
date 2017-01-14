@@ -287,6 +287,39 @@ String FileSystemDock::get_current_path() const {
 	return path;
 }
 
+void FileSystemDock::navigate_to_path(const String& p_path) {
+	// If the path is a file, do not only go to the directory in the tree, also select the file in the file list.
+	String dir_path="";
+	String file_name="";
+	DirAccess* dirAccess=DirAccess::open("res://");
+	if (dirAccess->file_exists(p_path)) {
+		dir_path=p_path.get_base_dir();
+		file_name=p_path.get_file();
+	} else if (dirAccess->dir_exists(p_path)) {
+		dir_path=p_path;
+	} else {
+		ERR_EXPLAIN(TTR("Cannot navigate to '" + p_path + "' as it has not been found in the file system!"));
+		ERR_FAIL();
+	}
+
+	path=dir_path;
+	_update_tree();
+	tree->ensure_cursor_is_visible();
+
+	if (!file_name.empty()) {
+		_open_pressed(); // Seems to be the only way to get into the file view. This also pushes to history.
+
+		// Focus the given file.
+		for (int i=0; i<files->get_item_count(); i++) {
+			if (files->get_item_text(i) == file_name) {
+				files->select(i,true);
+				files->ensure_current_is_visible();
+				break;
+			}
+		}
+	}
+}
+
 void FileSystemDock::_thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata) {
 
 	bool valid=false;

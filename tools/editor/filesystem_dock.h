@@ -198,6 +198,7 @@ public:
 	String get_selected_path() const;
 
 	String get_current_path() const;
+	void navigate_to_path(const String& p_path);
 	void focus_on_filter();
 
 	void fix_dependencies(const String& p_for_file);

@@ -67,8 +67,8 @@ class CustomPropertyEditor : public Popup {
 		OBJ_MENU_PASTE=5,
 		OBJ_MENU_REIMPORT=6,
 		OBJ_MENU_NEW_SCRIPT=7,
+		OBJ_MENU_SHOW_IN_FILE_SYSTEM=8,
 		TYPE_BASE_ID=100
-
 	};
 
 	enum {
