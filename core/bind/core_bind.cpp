@@ -1830,9 +1830,9 @@ Error _Directory::open(const String& p_path) {
 	return OK;
 }
 
-bool _Directory::list_dir_begin() {
+Error _Directory::list_dir_begin() {
 
-	ERR_FAIL_COND_V(!d,false);
+	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
 	return d->list_dir_begin();
 }
 

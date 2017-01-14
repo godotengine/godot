@@ -72,7 +72,7 @@ protected:
 
 public:
 
-	virtual bool list_dir_begin()=0; ///< This starts dir listing
+	virtual Error list_dir_begin()=0; ///< This starts dir listing
 	virtual String get_next(bool* p_is_dir); // compatibility
 	virtual String get_next()=0;
 	virtual bool current_is_dir() const=0;

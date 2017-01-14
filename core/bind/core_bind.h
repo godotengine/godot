@@ -456,7 +456,7 @@ public:
 
 	Error open(const String& p_path);
 
-	bool list_dir_begin(); ///< This starts dir listing
+	Error list_dir_begin(); ///< This starts dir listing
 	String get_next();
 	bool current_is_dir() const;
 
