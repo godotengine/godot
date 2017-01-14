@@ -996,11 +996,12 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(_MD("set_clipboard","clipboard"),&_OS::set_clipboard);
 	ClassDB::bind_method(_MD("get_clipboard"),&_OS::get_clipboard);
 
-	ClassDB::bind_method(_MD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_video_mode_size","screen"),&_OS::get_video_mode,DEFVAL(0));
-	ClassDB::bind_method(_MD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
-	ClassDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+	//will not delete for now, just unexpose
+	//ClassDB::bind_method(_MD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
+	//ClassDB::bind_method(_MD("get_video_mode_size","screen"),&_OS::get_video_mode,DEFVAL(0));
+	//ClassDB::bind_method(_MD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
+	//ClassDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
+	//ClassDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
 
 
 	ClassDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
