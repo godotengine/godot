@@ -7855,7 +7855,7 @@ void RasterizerGLES2::_debug_draw_shadow(GLuint tex, const Rect2& p_rect) {
 
 
 
-	Matrix32 modelview;
+	Transform2D modelview;
 	modelview.translate(p_rect.pos.x, p_rect.pos.y);
 	canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX, modelview);
 	glBindTexture(GL_TEXTURE_2D,tex);
@@ -8073,8 +8073,8 @@ void RasterizerGLES2::canvas_begin() {
 
 	canvas_transform.scale( Vector3( 2.0f / viewport.width, csy * -2.0f / viewport.height, 1.0f ) );
 	canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
-	canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,Matrix32());
-	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+	canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,Transform2D());
+	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Transform2D());
 
 	canvas_opacity=1.0;
 	canvas_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
@@ -8138,11 +8138,11 @@ void RasterizerGLES2::canvas_set_blend_mode(VS::MaterialBlendMode p_mode) {
 }
 
 
-void RasterizerGLES2::canvas_begin_rect(const Matrix32& p_transform) {
+void RasterizerGLES2::canvas_begin_rect(const Transform2D& p_transform) {
 
 
 	canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,p_transform);
-	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Transform2D());
 
 }
 
@@ -8670,7 +8670,7 @@ void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 };
 
 
-void RasterizerGLES2::canvas_set_transform(const Matrix32& p_transform) {
+void RasterizerGLES2::canvas_set_transform(const Transform2D& p_transform) {
 
 	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,p_transform);
 
@@ -8880,7 +8880,7 @@ RID RasterizerGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	return canvas_light_shadow_owner.make_rid(cls);
 }
 
-void RasterizerGLES2::canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
+void RasterizerGLES2::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
 
 	CanvasLightShadow *cls = canvas_light_shadow_owner.get(p_buffer);
 	ERR_FAIL_COND(!cls);
@@ -9602,7 +9602,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 
 		canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);
-		canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+		canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Transform2D());
 
 
 		bool reclip=false;
@@ -9715,7 +9715,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 						}
 
 						canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);
-						canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+						canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Transform2D());
 						canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
 						if (canvas_use_modulate)
 							canvas_shader.set_uniform(CanvasShaderGLES2::MODULATE,canvas_modulate);
@@ -9782,7 +9782,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 				}
 
 				canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);
-				canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+				canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Transform2D());
 				if (canvas_use_modulate)
 					canvas_shader.set_uniform(CanvasShaderGLES2::MODULATE,canvas_modulate);
 

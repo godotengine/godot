@@ -1138,7 +1138,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 
 
 				state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,state.final_transform);
-				state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
+				state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform2D());
 				state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 
 				glBlendEquation(GL_FUNC_ADD);
