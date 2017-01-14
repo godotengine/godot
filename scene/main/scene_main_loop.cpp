@@ -141,7 +141,7 @@ void SceneTree::_flush_ugc() {
 		for(int i=0;i<E->get().size();i++)
 			v[i]=E->get()[i];
 
-		call_group(GROUP_CALL_REALTIME,E->key().group,E->key().call,v[0],v[1],v[2],v[3],v[4]);
+		call_group_flags(GROUP_CALL_REALTIME,E->key().group,E->key().call,v[0],v[1],v[2],v[3],v[4]);
 
 		unique_group_calls.erase(E);
 	}
@@ -166,7 +166,7 @@ void SceneTree::_update_group_order(Group& g) {
 }
 
 
-void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
+void SceneTree::call_group_flags(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -216,7 +216,7 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 				continue;
 
 			if (p_call_flags&GROUP_CALL_REALTIME) {
-				if (p_call_flags&GROUP_CALL_MULIILEVEL)
+				if (p_call_flags&GROUP_CALL_MULTILEVEL)
 					nodes[i]->call_multilevel(p_function,VARIANT_ARG_PASS);
 				else
 					nodes[i]->call(p_function,VARIANT_ARG_PASS);
@@ -233,7 +233,7 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 				continue;
 
 			if (p_call_flags&GROUP_CALL_REALTIME) {
-				if (p_call_flags&GROUP_CALL_MULIILEVEL)
+				if (p_call_flags&GROUP_CALL_MULTILEVEL)
 					nodes[i]->call_multilevel(p_function,VARIANT_ARG_PASS);
 				else
 					nodes[i]->call(p_function,VARIANT_ARG_PASS);
@@ -248,7 +248,7 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 		call_skip.clear();
 }
 
-void SceneTree::notify_group(uint32_t p_call_flags,const StringName& p_group,int p_notification) {
+void SceneTree::notify_group_flags(uint32_t p_call_flags,const StringName& p_group,int p_notification) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -298,7 +298,7 @@ void SceneTree::notify_group(uint32_t p_call_flags,const StringName& p_group,int
 		call_skip.clear();
 }
 
-void SceneTree::set_group(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value) {
+void SceneTree::set_group_flags(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -347,6 +347,23 @@ void SceneTree::set_group(uint32_t p_call_flags,const StringName& p_group,const 
 	if (call_lock==0)
 		call_skip.clear();
 }
+
+
+void SceneTree::call_group(const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
+
+	call_group_flags(0,p_group,VARIANT_ARG_PASS);
+}
+
+void SceneTree::notify_group(const StringName& p_group,int p_notification) {
+
+	notify_group_flags(0,p_group,p_notification);
+}
+
+void SceneTree::set_group(const StringName& p_group,const String& p_name,const Variant& p_value) {
+
+	set_group_flags(0,p_group,p_name,p_value);
+}
+
 
 void SceneTree::set_input_as_handled() {
 
@@ -357,7 +374,7 @@ void SceneTree::input_text( const String& p_text ) {
 
 	root_lock++;
 
-	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input_text",p_text); //special one for GUI, as controls use their own process check
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","_vp_input_text",p_text); //special one for GUI, as controls use their own process check
 
 	root_lock--;
 
@@ -452,7 +469,7 @@ void SceneTree::input_event( const InputEvent& p_event ) {
 	//transform for the rest
 #else
 
-	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input",ev); //special one for GUI, as controls use their own process check
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","_vp_input",ev); //special one for GUI, as controls use their own process check
 
 #endif
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote() && ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F8) {
@@ -477,7 +494,7 @@ void SceneTree::input_event( const InputEvent& p_event ) {
 		}
 #else
 
-		call_group(GROUP_CALL_REALTIME,"_viewports","_vp_unhandled_input",ev); //special one for GUI, as controls use their own process check
+		call_group_flags(GROUP_CALL_REALTIME,"_viewports","_vp_unhandled_input",ev); //special one for GUI, as controls use their own process check
 
 #endif
 		input_handled=true;
@@ -528,7 +545,7 @@ bool SceneTree::iteration(float p_time) {
 	_notify_group_pause("fixed_process",Node::NOTIFICATION_FIXED_PROCESS);
 	_flush_ugc();
 	_flush_transform_notifications();
-	call_group(GROUP_CALL_REALTIME,"_viewports","update_worlds");
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","update_worlds");
 	root_lock--;
 
 	_flush_delete_queue();
@@ -573,7 +590,7 @@ bool SceneTree::idle(float p_time){
 
 	_flush_ugc();
 	_flush_transform_notifications(); //transforms after world update, to avoid unnecesary enter/exit notifications
-	call_group(GROUP_CALL_REALTIME,"_viewports","update_worlds");
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","update_worlds");
 
 	root_lock--;
 
@@ -667,7 +684,7 @@ void SceneTree::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
 
-			notify_group(GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input",NOTIFICATION_WM_UNFOCUS_REQUEST);
+			notify_group_flags(GROUP_CALL_REALTIME|GROUP_CALL_MULTILEVEL,"input",NOTIFICATION_WM_UNFOCUS_REQUEST);
 
 		} break;
 
@@ -991,7 +1008,7 @@ uint32_t SceneTree::get_last_event_id() const {
 }
 
 
-Variant SceneTree::_call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+Variant SceneTree::_call_group_flags(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
 
 
 	r_error.error=Variant::CallError::CALL_OK;
@@ -1011,10 +1028,32 @@ Variant SceneTree::_call_group(const Variant** p_args, int p_argcount, Variant::
 		v[i]=*p_args[i+3];
 	}
 
-	call_group(flags,group,method,v[0],v[1],v[2],v[3],v[4]);
+	call_group_flags(flags,group,method,v[0],v[1],v[2],v[3],v[4]);
 	return Variant();
 }
 
+
+Variant SceneTree::_call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	ERR_FAIL_COND_V(p_argcount<2,Variant());
+	ERR_FAIL_COND_V(p_args[0]->get_type()!=Variant::STRING,Variant());
+	ERR_FAIL_COND_V(p_args[1]->get_type()!=Variant::STRING,Variant());
+
+	StringName group = *p_args[0];
+	StringName method = *p_args[1];
+	Variant v[VARIANT_ARG_MAX];
+
+	for(int i=0;i<MIN(p_argcount-2,5);i++) {
+
+		v[i]=*p_args[i+2];
+	}
+
+	call_group_flags(0,group,method,v[0],v[1],v[2],v[3],v[4]);
+	return Variant();
+}
 
 int64_t SceneTree::get_frame() const {
 
@@ -2181,10 +2220,6 @@ void SceneTree::_bind_methods() {
 
 
 	//ClassDB::bind_method(_MD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
-	ClassDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
-	ClassDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
-
-	ClassDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
 
 	ClassDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
 	ClassDB::bind_method(_MD("has_group","name"),&SceneTree::has_group);
@@ -2222,13 +2257,30 @@ void SceneTree::_bind_methods() {
 
 
 	MethodInfo mi;
-	mi.name="call_group";
+	mi.name="call_group_flags";
 	mi.arguments.push_back( PropertyInfo( Variant::INT, "flags"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "group"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
 
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group_flags",&SceneTree::_call_group_flags,mi);
+
+	ClassDB::bind_method(_MD("notify_group_flags","call_flags","group","notification"),&SceneTree::notify_group_flags);
+	ClassDB::bind_method(_MD("set_group_flags","call_flags","group","property","value"),&SceneTree::set_group_flags);
+
+	MethodInfo mi2;
+	mi2.name="call_group";
+	mi2.arguments.push_back( PropertyInfo( Variant::STRING, "group"));
+	mi2.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
+
+
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi2);
+
+	ClassDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
+	ClassDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
+
+	ClassDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
+
 
 	ClassDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
 	ClassDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);

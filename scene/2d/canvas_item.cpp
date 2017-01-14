@@ -394,7 +394,7 @@ void CanvasItem::_enter_canvas() {
 		else
 			get_viewport()->gui_reset_canvas_sort_index();
 
-		get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 
 	} else {
 
@@ -444,7 +444,7 @@ void CanvasItem::_notification(int p_what) {
 				break;
 
 			if (group!="") {
-				get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);

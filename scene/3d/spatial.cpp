@@ -180,7 +180,7 @@ void Spatial::_notification(int p_what) {
 			if (get_tree()->is_editor_hint()) {
 
 //				get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
-				get_tree()->call_group(0,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
+				get_tree()->call_group_flags(0,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
 				if (!data.gizmo_disabled) {
 
 					if (data.gizmo.is_valid())

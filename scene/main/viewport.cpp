@@ -1903,7 +1903,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					_gui_call_input(gui.mouse_focus,p_event);
 				}
 
-				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
 
@@ -1980,7 +1980,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				}*/
 
 
-				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
 			}
@@ -2419,7 +2419,7 @@ void Viewport::_gui_control_grab_focus(Control* p_control) {
 	if (gui.key_focus && gui.key_focus==p_control)
 		return;
 
-	get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"_viewports","_gui_remove_focus");
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,"_viewports","_gui_remove_focus");
 	gui.key_focus=p_control;
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();

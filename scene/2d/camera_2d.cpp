@@ -52,7 +52,7 @@ void Camera2D::_update_scroll() {
 		if (viewport) {
 		       viewport->set_canvas_transform( xform );
 		}
-		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_camera_moved",xform);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,group_name,"_camera_moved",xform);
 	};
 
 }
@@ -375,7 +375,7 @@ void Camera2D::make_current() {
 	if (!is_inside_tree()) {
 		current=true;
 	} else {
-		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",this);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",this);
 	}
 }
 
@@ -383,7 +383,7 @@ void Camera2D::clear_current() {
 
 	current=false;
 	if (is_inside_tree()) {
-		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",(Object*)(NULL));
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",(Object*)(NULL));
 	}
 
 }

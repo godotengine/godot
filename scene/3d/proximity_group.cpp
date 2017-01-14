@@ -135,7 +135,7 @@ void ProximityGroup::broadcast(String p_name, Variant p_params) {
 	E = groups.front();
 	while (E) {
 
-		get_tree()->call_group(SceneTree::GROUP_CALL_DEFAULT, E->key(), "_proximity_group_broadcast", p_name, p_params);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFAULT, E->key(), "_proximity_group_broadcast", p_name, p_params);
 		E = E->next();
 	};
 
