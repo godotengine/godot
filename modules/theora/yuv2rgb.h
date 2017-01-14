@@ -3,8 +3,7 @@
 
 #include "typedefs.h"
 
-static const uint32_t tables[256*3] =
-{
+static const uint32_t tables[256*3] = {
 	/* y_table */
 	0x7FFFFFEDU,
 	0x7FFFFFEFU,
