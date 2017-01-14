@@ -1865,7 +1865,7 @@ String _Directory::get_drive(int p_drive){
 	return d->get_drive(p_drive);
 }
 int _Directory::get_current_drive() {
-	ERR_FAIL_COND_V(!d,"");
+	ERR_FAIL_COND_V(!d,0);
 	return d->get_current_drive();
 }
 
