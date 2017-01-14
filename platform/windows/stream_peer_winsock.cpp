@@ -88,7 +88,7 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, ip_type);
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, sock_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
@@ -282,6 +282,7 @@ void StreamPeerWinsock::disconnect_from_host() {
 	if (sockfd != INVALID_SOCKET)
 		closesocket(sockfd);
 	sockfd=INVALID_SOCKET;
+	sock_type = IP::TYPE_NONE;
 
 	status = STATUS_NONE;
 
@@ -293,6 +294,7 @@ void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port, 
 
 	ip_type = p_ip_type;
 	sockfd = p_sockfd;
+	sock_type = p_ip_type;
 	status = STATUS_CONNECTING;
 	peer_host = p_host;
 	peer_port = p_port;
@@ -302,7 +304,8 @@ Error StreamPeerWinsock::connect_to_host(const IP_Address& p_host, uint16_t p_po
 
 	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
 
-	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+	sock_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd  == INVALID_SOCKET) {
 		ERR_PRINT("Socket creation failed!");
 		disconnect_from_host();
@@ -318,7 +321,7 @@ Error StreamPeerWinsock::connect_to_host(const IP_Address& p_host, uint16_t p_po
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, ip_type);
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, sock_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
@@ -365,6 +368,7 @@ uint16_t StreamPeerWinsock::get_connected_port() const {
 
 StreamPeerWinsock::StreamPeerWinsock() {
 
+	sock_type = IP::TYPE_NONE;
 	sockfd = INVALID_SOCKET;
 	status = STATUS_NONE;
 	peer_port = 0;
