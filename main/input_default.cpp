@@ -568,8 +568,7 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 }
 
 // from github.com/gabomdq/SDL_GameControllerDB
-static const char *s_ControllerMappings [] =
-{
+static const char *s_ControllerMappings [] = {
 	#ifdef WINDOWS_ENABLED
 	"00f00300000000000000504944564944,RetroUSB.com RetroPad,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
 	"00f0f100000000000000504944564944,RetroUSB.com Super RetroPort,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",

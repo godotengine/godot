@@ -464,8 +464,7 @@ void GraphCurveMapEdit::_plot_curve(const Vector2& p_a,const Vector2& p_b,const 
 
 	/* compose the basis and geometry matrices */
 
-	static const float CR_basis[4][4] =
-	{
+	static const float CR_basis[4][4] = {
 		{ -0.5,  1.5, -1.5,  0.5 },
 		{  1.0, -2.5,  2.0, -0.5 },
 		{ -0.5,  0.0,  0.5,  0.0 },
