@@ -322,8 +322,8 @@ void EditorNode::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_READY) {
 
-		VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport(),true);
-		VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport(),true);
+		VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(),true);
+		VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(),true);
 		VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(),true);
 
 		_editor_select(EDITOR_3D);
@@ -892,10 +892,10 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 	RID viewport;
 	bool is2d;
 	if (c3d<c2d) {
-		viewport=scene_root->get_viewport();
+		viewport=scene_root->get_viewport_rid();
 		is2d=true;
 	} else {
-		viewport=SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_viewport();
+		viewport=SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_viewport_rid();
 		is2d=false;
 
 	}
@@ -4229,7 +4229,7 @@ void EditorNode::progress_end_task_bg(const String& p_task) {
 Ref<Texture> EditorNode::_file_dialog_get_icon(const String& p_path) {
 
 
-	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_path(p_path.get_base_dir());
+	EditorFileSystemDirectory *efsd = EditorFileSystem::get_singleton()->get_filesystem_path(p_path.get_base_dir());
 	if (efsd) {
 
 		String file = p_path.get_file();
@@ -5708,7 +5708,7 @@ EditorNode::EditorNode() {
 
 	//scene_root_base->add_child(scene_root);
 	//scene_root->set_meta("_editor_disable_input",true);
-	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport(),true);
+	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(),true);
 	scene_root->set_disable_input(true);
 	scene_root->set_as_audio_listener_2d(true);
 	//scene_root->set_size_override(true,Size2(GlobalConfig::get_singleton()->get("display/width"),GlobalConfig::get_singleton()->get("display/height")));

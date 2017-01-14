@@ -856,12 +856,12 @@ void AnimationTreeEditor::_gui_input(InputEvent p_event) {
 
 							if (dst_click_type==CLICK_INPUT_SLOT && click_type==CLICK_OUTPUT_SLOT) {
 
-								anim_tree->connect(click_node,id,slot);
+								anim_tree->connect_nodes(click_node,id,slot);
 
 							}
 							if (click_type==CLICK_INPUT_SLOT && dst_click_type==CLICK_OUTPUT_SLOT) {
 
-								anim_tree->connect(id,click_node,click_slot);
+								anim_tree->connect_nodes(id,click_node,click_slot);
 							}
 
 						} break;
@@ -1057,7 +1057,7 @@ void AnimationTreeEditor::_node_menu_item(int p_item) {
 
 			if (rclick_type==CLICK_INPUT_SLOT) {
 
-				anim_tree->disconnect(rclick_node,rclick_slot);
+				anim_tree->disconnect_nodes(rclick_node,rclick_slot);
 				update();
 			}
 
@@ -1072,7 +1072,7 @@ void AnimationTreeEditor::_node_menu_item(int p_item) {
 					const AnimationTreePlayer::Connection &c=E->get();
 					if( c.dst_node==rclick_node) {
 
-						anim_tree->disconnect(c.dst_node,c.dst_input);
+						anim_tree->disconnect_nodes(c.dst_node,c.dst_input);
 					}
 				}
 				update();

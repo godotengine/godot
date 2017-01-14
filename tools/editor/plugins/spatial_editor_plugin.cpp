@@ -2133,7 +2133,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 		previewing->disconnect("tree_exited",this,"_preview_exited_scene");
 		previewing=NULL;
-		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), camera->get_camera() ); //restore
+		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport_rid(), camera->get_camera() ); //restore
 		if (!preview)
 			preview_camera->hide();
 		view_menu->show();
@@ -2143,7 +2143,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 		previewing=preview;
 		previewing->connect("tree_exited",this,"_preview_exited_scene");
-		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), preview->get_camera() ); //replace
+		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport_rid(), preview->get_camera() ); //replace
 		view_menu->hide();
 		surface->update();
 
@@ -2248,7 +2248,7 @@ void SpatialEditorViewport::set_state(const Dictionary& p_state) {
 		if (pv && pv->cast_to<Camera>()) {
 			previewing=pv->cast_to<Camera>();
 			previewing->connect("tree_exited",this,"_preview_exited_scene");
-			VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), previewing->get_camera() ); //replace
+			VS::get_singleton()->viewport_attach_camera( viewport->get_viewport_rid(), previewing->get_camera() ); //replace
 			view_menu->hide();
 			surface->update();
 			preview_camera->set_pressed(true);
@@ -2607,7 +2607,7 @@ Dictionary SpatialEditor::get_state() const {
 	d["viewports"]=vpdata;
 
 	d["default_light"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT) );;
-	d["ambient_light_color"]=settings_ambient_color->get_color();
+	d["ambient_light_color"]=settings_ambient_color->get_pick_color();
 
 	d["default_srgb"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB) );;
 	d["show_grid"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID) );;
@@ -2696,7 +2696,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 
 	}
 	if (d.has("ambient_light_color")) {
-		settings_ambient_color->set_color(d["ambient_light_color"]);
+		settings_ambient_color->set_pick_color(d["ambient_light_color"]);
 		//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,d["ambient_light_color"]);
 	}
 
@@ -3724,7 +3724,7 @@ void SpatialEditor::clear() {
 	settings_default_light_rot_y=Math_PI*0.2;
 
 	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
-	settings_ambient_color->set_color(Color(0.15,0.15,0.15));
+	settings_ambient_color->set_pick_color(Color(0.15,0.15,0.15));
 	if (!light_instance.is_valid())
 		_menu_item_pressed(MENU_VIEW_USE_DEFAULT_LIGHT);
 
@@ -4005,10 +4005,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_ambient_color = memnew( ColorPickerButton );
 	settings_vbc->add_margin_child(TTR("Ambient Light Color:"),settings_ambient_color);
 	settings_ambient_color->connect("color_changed",this,"_update_ambient_light_color");
-
-	//viewport_environment->set_enable_fx(Environment::FX_AMBIENT_LIGHT,true);
-	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
-	settings_ambient_color->set_color(Color(0.15,0.15,0.15));
+	settings_ambient_color->set_pick_color(Color(0.15,0.15,0.15));
 
 
 	settings_fov = memnew( SpinBox );

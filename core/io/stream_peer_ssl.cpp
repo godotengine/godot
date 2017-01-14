@@ -57,10 +57,10 @@ bool StreamPeerSSL::is_available() {
 void StreamPeerSSL::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("accept:Error","stream:StreamPeer"),&StreamPeerSSL::accept);
-	ClassDB::bind_method(_MD("connect:Error","stream:StreamPeer","validate_certs","for_hostname"),&StreamPeerSSL::connect,DEFVAL(false),DEFVAL(String()));
+	ClassDB::bind_method(_MD("accept_stream:Error","stream:StreamPeer"),&StreamPeerSSL::accept_stream);
+	ClassDB::bind_method(_MD("connect_to_stream:Error","stream:StreamPeer","validate_certs","for_hostname"),&StreamPeerSSL::connect_to_stream,DEFVAL(false),DEFVAL(String()));
 	ClassDB::bind_method(_MD("get_status"),&StreamPeerSSL::get_status);
-	ClassDB::bind_method(_MD("disconnect"),&StreamPeerSSL::disconnect);
+	ClassDB::bind_method(_MD("disconnect_from_stream"),&StreamPeerSSL::disconnect_from_stream);
 	BIND_CONSTANT( STATUS_DISCONNECTED );
 	BIND_CONSTANT( STATUS_CONNECTED );
 	BIND_CONSTANT( STATUS_ERROR_NO_CERTIFICATE );

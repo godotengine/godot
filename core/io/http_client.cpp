@@ -33,7 +33,7 @@ void HTTPClient::set_ip_type(IP::Type p_type) {
 	ip_type = p_type;
 }
 
-Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host){
+Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl,bool p_verify_host){
 
 	close();
 	tcp_connection->set_ip_type(ip_type);
@@ -57,7 +57,7 @@ Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_ve
 
 	if (conn_host.is_valid_ip_address()) {
 		//is ip
-		Error err = tcp_connection->connect(IP_Address(conn_host),p_port);
+		Error err = tcp_connection->connect_to_host(IP_Address(conn_host),p_port);
 		if (err) {
 			status=STATUS_CANT_CONNECT;
 			return err;
@@ -232,7 +232,7 @@ Error HTTPClient::get_response_headers(List<String> *r_response) {
 void HTTPClient::close(){
 
 	if (tcp_connection->get_status()!=StreamPeerTCP::STATUS_NONE)
-		tcp_connection->disconnect();
+		tcp_connection->disconnect_from_host();
 
 	connection.unref();
 	status=STATUS_DISCONNECTED;
@@ -267,7 +267,7 @@ Error HTTPClient::poll(){
 				case IP::RESOLVER_STATUS_DONE: {
 
 					IP_Address host = IP::get_singleton()->get_resolve_item_address(resolving);
-					Error err = tcp_connection->connect(host,conn_port);
+					Error err = tcp_connection->connect_to_host(host,conn_port);
 					IP::get_singleton()->erase_resolve_item(resolving);
 					resolving=IP::RESOLVER_INVALID_ID;
 					if (err) {
@@ -300,7 +300,7 @@ Error HTTPClient::poll(){
 				case StreamPeerTCP::STATUS_CONNECTED: {
 					if (ssl) {
 						Ref<StreamPeerSSL> ssl = StreamPeerSSL::create();
-						Error err = ssl->connect(tcp_connection,true,ssl_verify_host?conn_host:String());
+						Error err = ssl->connect_to_stream(tcp_connection,true,ssl_verify_host?conn_host:String());
 						if (err!=OK) {
 							close();
 							status=STATUS_SSL_HANDSHAKE_ERROR;
@@ -640,7 +640,7 @@ Error HTTPClient::_get_http_data(uint8_t* p_buffer, int p_bytes,int &r_received)
 void HTTPClient::_bind_methods() {
 
 	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPClient::set_ip_type);
-	ClassDB::bind_method(_MD("connect:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
+	ClassDB::bind_method(_MD("connect_to_host:Error","host","port","use_ssl","verify_host"),&HTTPClient::connect_to_host,DEFVAL(false),DEFVAL(true));
 	ClassDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
 	ClassDB::bind_method(_MD("get_connection:StreamPeer"),&HTTPClient::get_connection);
 	ClassDB::bind_method(_MD("request_raw","method","url","headers","body"),&HTTPClient::request_raw);

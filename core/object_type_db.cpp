@@ -1111,6 +1111,15 @@ MethodBind* ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const 
 
 	String instance_type=p_bind->get_instance_class();
 
+#ifdef DEBUG_ENABLED
+
+	if (has_method(instance_type,mdname)) {
+		ERR_EXPLAIN("Class "+String(instance_type)+" already has a method "+String(mdname));
+		ERR_FAIL_V(NULL);
+	}
+#endif
+
+
 	ClassInfo *type=classes.getptr(instance_type);
 	if (!type) {
 		ERR_PRINTS("Couldn't bind method '"+mdname+"' for instance: "+instance_type);

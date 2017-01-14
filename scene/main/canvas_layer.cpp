@@ -176,7 +176,7 @@ void CanvasLayer::_notification(int p_what) {
 
 			}
 			ERR_FAIL_COND(!vp);
-			viewport=vp->get_viewport();
+			viewport=vp->get_viewport_rid();
 
 			VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
 			VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);
@@ -232,7 +232,7 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 		else
 			vp=Node::get_viewport();
 
-		viewport = vp->get_viewport();
+		viewport = vp->get_viewport_rid();
 
 		VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
 		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);

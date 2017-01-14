@@ -206,7 +206,7 @@ Error FileAccessNetworkClient::connect(const String& p_host,int p_port,const Str
 	}
 
 	DEBUG_PRINT("IP: "+String(ip)+" port "+itos(p_port));
-	Error err = client->connect(ip,p_port);
+	Error err = client->connect_to_host(ip,p_port);
 	ERR_FAIL_COND_V(err,err);
 	while(client->get_status()==StreamPeerTCP::STATUS_CONNECTING) {
 //DEBUG_PRINT("trying to connect....");

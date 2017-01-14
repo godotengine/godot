@@ -66,7 +66,6 @@ void Texture::_bind_methods() {
 	ClassDB::bind_method(_MD("get_width"),&Texture::get_width);
 	ClassDB::bind_method(_MD("get_height"),&Texture::get_height);
 	ClassDB::bind_method(_MD("get_size"),&Texture::get_size);
-	ClassDB::bind_method(_MD("get_rid"),&Texture::get_rid);
 	ClassDB::bind_method(_MD("has_alpha"),&Texture::has_alpha);
 	ClassDB::bind_method(_MD("set_flags","flags"),&Texture::set_flags);
 	ClassDB::bind_method(_MD("get_flags"),&Texture::get_flags);
@@ -1050,7 +1049,7 @@ void CubeMap::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_width"),&CubeMap::get_width);
 	ClassDB::bind_method(_MD("get_height"),&CubeMap::get_height);
-	ClassDB::bind_method(_MD("get_rid"),&CubeMap::get_rid);
+	//ClassDB::bind_method(_MD("get_rid"),&CubeMap::get_rid);
 	ClassDB::bind_method(_MD("set_flags","flags"),&CubeMap::set_flags);
 	ClassDB::bind_method(_MD("get_flags"),&CubeMap::get_flags);
 

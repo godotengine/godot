@@ -396,7 +396,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	current_path->set_text(path);
 
 
-	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_path(path);
+	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(path);
 	if (!efd)
 		return;
 
@@ -832,7 +832,7 @@ void FileSystemDock::_move_operation(const String& p_to_path) {
 			return;
 		}
 
-		EditorFileSystemDirectory *efsd=EditorFileSystem::get_singleton()->get_path(move_dirs[i]);
+		EditorFileSystemDirectory *efsd=EditorFileSystem::get_singleton()->get_filesystem_path(move_dirs[i]);
 		if (!efsd)
 			continue;
 		_find_inside_move_files(efsd,inside_files);

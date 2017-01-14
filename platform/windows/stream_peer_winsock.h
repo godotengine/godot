@@ -58,7 +58,7 @@ protected:
 
 public:
 
-	virtual Error connect(const IP_Address& p_host, uint16_t p_port);
+	virtual Error connect_to_host(const IP_Address& p_host, uint16_t p_port);
 
 	virtual Error put_data(const uint8_t* p_data,int p_bytes);
 	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent);

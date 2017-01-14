@@ -2508,22 +2508,22 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(_MD("can_instance","class"),&_ClassDB::can_instance);
 	ClassDB::bind_method(_MD("instance","class"),&_ClassDB::instance);
 
-	ClassDB::bind_method(_MD("has_signal","class","signal"),&_ClassDB::has_signal);
-	ClassDB::bind_method(_MD("get_signal","class","signal"),&_ClassDB::get_signal);
-	ClassDB::bind_method(_MD("get_signal_list","class","no_inheritance"),&_ClassDB::get_signal_list,DEFVAL(false));
+	ClassDB::bind_method(_MD("class_has_signal","class","signal"),&_ClassDB::has_signal);
+	ClassDB::bind_method(_MD("class_get_signal","class","signal"),&_ClassDB::get_signal);
+	ClassDB::bind_method(_MD("class_get_signal_list","class","no_inheritance"),&_ClassDB::get_signal_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("get_property_list","class","no_inheritance"),&_ClassDB::get_property_list,DEFVAL(false));
+	ClassDB::bind_method(_MD("class_get_property_list","class","no_inheritance"),&_ClassDB::get_property_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("has_method","class","method","no_inheritance"),&_ClassDB::has_method,DEFVAL(false));
+	ClassDB::bind_method(_MD("class_has_method","class","method","no_inheritance"),&_ClassDB::has_method,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("get_method_list","class","no_inheritance"),&_ClassDB::get_method_list,DEFVAL(false));
+	ClassDB::bind_method(_MD("class_get_method_list","class","no_inheritance"),&_ClassDB::get_method_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("get_integer_constant_list","class","no_inheritance"),&_ClassDB::get_integer_constant_list,DEFVAL(false));
+	ClassDB::bind_method(_MD("class_get_integer_constant_list","class","no_inheritance"),&_ClassDB::get_integer_constant_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("has_integer_constant","class","name"),&_ClassDB::has_integer_constant);
-	ClassDB::bind_method(_MD("get_integer_constant","class","name"),&_ClassDB::get_integer_constant);
+	ClassDB::bind_method(_MD("class_has_integer_constant","class","name"),&_ClassDB::has_integer_constant);
+	ClassDB::bind_method(_MD("class_get_integer_constant","class","name"),&_ClassDB::get_integer_constant);
 
-	ClassDB::bind_method(_MD("get_category","class"),&_ClassDB::get_category);
+	ClassDB::bind_method(_MD("class_get_category","class"),&_ClassDB::get_category);
 	ClassDB::bind_method(_MD("is_class_enabled","class"),&_ClassDB::is_class_enabled);
 
 

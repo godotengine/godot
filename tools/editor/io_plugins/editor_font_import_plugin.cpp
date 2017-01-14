@@ -439,7 +439,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 		test_label->set_text("");
 		test_label->set_text(test_string->get_text());
-		test_label->add_color_override("font_color",test_color->get_color());
+		test_label->add_color_override("font_color",test_color->get_pick_color());
 	}
 
 	void _update() {
@@ -681,7 +681,7 @@ public:
 
 		testhb->add_child(test_string);
 		test_color = memnew( ColorPickerButton );
-		test_color->set_color(get_color("font_color","Label"));
+		test_color->set_pick_color(get_color("font_color","Label"));
 		test_color->set_h_size_flags(SIZE_EXPAND_FILL);
 		test_color->set_stretch_ratio(1);
 		test_color->connect("color_changed",this,"_update_text3");

@@ -1198,7 +1198,7 @@ EditorFileSystemDirectory* EditorFileSystem::find_file(const String& p_file,int*
 }
 
 
-EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
+EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String& p_path) {
 
     if (!filesystem || scanning)
     	return NULL;
@@ -1352,7 +1352,7 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(_MD("scan"),&EditorFileSystem::scan);
 	ClassDB::bind_method(_MD("scan_sources"),&EditorFileSystem::scan_sources);
 	ClassDB::bind_method(_MD("update_file","path"),&EditorFileSystem::update_file);
-	ClassDB::bind_method(_MD("get_path:EditorFileSystemDirectory","path"),&EditorFileSystem::get_path);
+	ClassDB::bind_method(_MD("get_filesystem_path:EditorFileSystemDirectory","path"),&EditorFileSystem::get_filesystem_path);
 	ClassDB::bind_method(_MD("get_file_type","path"),&EditorFileSystem::get_file_type);
 
 	ADD_SIGNAL( MethodInfo("filesystem_changed") );

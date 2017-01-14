@@ -66,7 +66,7 @@ Error ScriptDebuggerRemote::connect_to_host(const String& p_host,uint16_t p_port
     int port = p_port;
 
     int tries = 3;
-    tcp_client->connect(ip, port);
+    tcp_client->connect_to_host(ip, port);
 
     while (tries--) {
 
@@ -129,7 +129,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 	//or when execution is paused from editor
 
 
-	if (!tcp_client->is_connected()) {
+	if (!tcp_client->is_connected_to_host()) {
 		ERR_EXPLAIN("Script Debugger failed to connect, but being used anyway.");
 		ERR_FAIL();
 	}
@@ -446,7 +446,7 @@ void ScriptDebuggerRemote::_err_handler(void* ud,const char* p_func,const char*p
 
 	sdr->mutex->lock();
 
-	if (!sdr->locking && sdr->tcp_client->is_connected()) {
+	if (!sdr->locking && sdr->tcp_client->is_connected_to_host()) {
 
 		sdr->errors.push_back(oe);
 	}
@@ -887,7 +887,7 @@ void ScriptDebuggerRemote::idle_poll() {
 void ScriptDebuggerRemote::send_message(const String& p_message, const Array &p_args) {
 
 	mutex->lock();
-	if (!locking && tcp_client->is_connected()) {
+	if (!locking && tcp_client->is_connected_to_host()) {
 
 		Message msg;
 		msg.message=p_message;
@@ -928,7 +928,7 @@ void ScriptDebuggerRemote::_print_handler(void *p_this,const String& p_string) {
 	}
 
 	sdr->mutex->lock();
-	if (!sdr->locking && sdr->tcp_client->is_connected()) {
+	if (!sdr->locking && sdr->tcp_client->is_connected_to_host()) {
 
 		sdr->output_strings.push_back(s);
 	}

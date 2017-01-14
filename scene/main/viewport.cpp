@@ -389,7 +389,7 @@ void Viewport::_notification(int p_what) {
 
 			if (get_parent()) {
 				parent = get_parent()->get_viewport();
-				VisualServer::get_singleton()->viewport_set_parent_viewport(viewport,parent->get_viewport());
+				VisualServer::get_singleton()->viewport_set_parent_viewport(viewport,parent->get_viewport_rid());
 			} else {
 				parent=NULL;
 			}
@@ -736,7 +736,7 @@ void Viewport::_notification(int p_what) {
 	}
 }
 
-RID Viewport::get_viewport() const {
+RID Viewport::get_viewport_rid() const {
 
 	return viewport;
 }
@@ -2754,7 +2754,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(_MD("set_physics_object_picking","enable"), &Viewport::set_physics_object_picking);
 	ClassDB::bind_method(_MD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 
-	ClassDB::bind_method(_MD("get_viewport"), &Viewport::get_viewport);
+	ClassDB::bind_method(_MD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(_MD("input","local_event"), &Viewport::input);
 	ClassDB::bind_method(_MD("unhandled_input","local_event"), &Viewport::unhandled_input);
 

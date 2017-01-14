@@ -818,7 +818,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 RID CanvasItem::get_viewport_rid() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),RID());
-	return get_viewport()->get_viewport();
+	return get_viewport()->get_viewport_rid();
 }
 
 void CanvasItem::set_block_transform_notify(bool p_enable) {
