@@ -40,6 +40,69 @@
 #include "physics_body.h"
 #include "quick_hull.h"
 
+bool CollisionShape::_set(const StringName& p_name, const Variant& p_value) {
+
+	String n = p_name.operator String();
+
+	if (n.begins_with("shape/")) {
+
+		String what = n.get_slice("/",1);
+
+		bool valid;
+
+		shape->unregister_owner(this);
+		shape->set(what, p_value, &valid);
+		shape->register_owner(this);
+
+		if (valid) {
+			_change_notify(n.utf8().get_data());
+
+			update_gizmo();
+		}
+
+		return valid;
+	}
+
+	return false;
+}
+
+bool CollisionShape::_get(const StringName& p_name,Variant &r_ret) const {
+
+	String n = p_name.operator String();
+
+	if (n.begins_with("shape/")) {
+
+		String what = n.get_slice("/",1);
+
+		bool valid;
+		r_ret = shape->get(what, &valid);
+
+		return valid;
+	}
+
+	return false;
+}
+
+void CollisionShape::_get_property_list( List<PropertyInfo> *p_list) const {
+
+	if (shape.is_null())
+		return;
+
+	List<PropertyInfo> pinfo;
+
+	ObjectTypeDB::get_property_list(shape->get_type_name(), &pinfo, true);
+
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		PropertyInfo prop = E->get();
+		prop.name = "shape/"+prop.name;
+		prop.usage = PROPERTY_USAGE_EDITOR;
+
+		p_list->push_back(prop);
+	}
+}
+
+
 void CollisionShape::_update_body() {
 
 	if (!is_inside_tree() || !can_update_body)
@@ -381,9 +444,9 @@ void CollisionShape::_notification(int p_what) {
 
 void CollisionShape::resource_changed(RES res) {
 
+	_change_notify();
+
 	update_gizmo();
-
-
 }
 
 void CollisionShape::_set_update_shape_index(int p_index) {
@@ -448,8 +511,9 @@ void CollisionShape::set_shape(const Ref<Shape> &p_shape) {
 		if (co) {
 			co->set_shape(update_shape_index,p_shape);
 		}
-
 	}
+
+	_change_notify();
 }
 
 Ref<Shape> CollisionShape::get_shape() const {

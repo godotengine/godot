@@ -36,6 +36,69 @@
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 
+bool CollisionShape2D::_set(const StringName& p_name, const Variant& p_value) {
+
+	String n = p_name.operator String();
+
+	if (n.begins_with("shape/")) {
+
+		String what = n.get_slice("/",1);
+
+		bool valid;
+
+		shape->set_block_signals(true);
+		shape->set(what, p_value, &valid);
+		shape->set_block_signals(false);
+
+		if (valid) {
+			_change_notify(n.utf8().get_data());
+
+			update();
+			_update_parent();
+		}
+
+		return valid;
+	}
+
+	return false;
+}
+
+bool CollisionShape2D::_get(const StringName& p_name,Variant &r_ret) const {
+
+	String n = p_name.operator String();
+
+	if (n.begins_with("shape/")) {
+
+		String what = n.get_slice("/",1);
+
+		bool valid;
+		r_ret = shape->get(what, &valid);
+
+		return valid;
+	}
+
+	return false;
+}
+
+void CollisionShape2D::_get_property_list( List<PropertyInfo> *p_list) const {
+
+	if (shape.is_null())
+		return;
+
+	List<PropertyInfo> pinfo;
+
+	ObjectTypeDB::get_property_list(shape->get_type_name(), &pinfo, true);
+
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		PropertyInfo prop = E->get();
+		prop.name = "shape/"+prop.name;
+		prop.usage = PROPERTY_USAGE_EDITOR;
+
+		p_list->push_back(prop);
+	}
+}
+
 
 void CollisionShape2D::_add_to_collision_object(Object *p_obj) {
 
@@ -53,6 +116,8 @@ void CollisionShape2D::_add_to_collision_object(Object *p_obj) {
 }
 
 void CollisionShape2D::_shape_changed() {
+
+	_change_notify();
 
 	update();
 	_update_parent();
@@ -159,6 +224,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D>& p_shape) {
 	if (shape.is_valid())
 		shape->connect("changed",this,"_shape_changed");
 
+	_change_notify();
 }
 
 Ref<Shape2D> CollisionShape2D::get_shape() const {
