@@ -953,28 +953,6 @@ LightSpatialGizmo::LightSpatialGizmo(Light* p_light){
 	set_spatial_node(p_light);
 
 }
-//////
-
-void ListenerSpatialGizmo::redraw() {
-
-	clear();
-
-	add_unscaled_billboard(SpatialEditorGizmos::singleton->listener_icon, 0.05);
-
-	add_mesh(SpatialEditorGizmos::singleton->listener_line_mesh);
-	Vector<Vector3> cursor_points;
-	cursor_points.push_back(Vector3(0, 0, 0));
-	cursor_points.push_back(Vector3(0, 0, -1.0));
-	add_collision_segments(cursor_points);
-
-}
-
-ListenerSpatialGizmo::ListenerSpatialGizmo(Listener* p_listener){
-
-	set_spatial_node(p_listener);
-	listener = p_listener;
-}
-
 
 //////
 
@@ -1391,32 +1369,6 @@ SkeletonSpatialGizmo::SkeletonSpatialGizmo(Skeleton* p_skel) {
 	set_spatial_node(p_skel);
 }
 
-/////
-
-
-void SpatialPlayerSpatialGizmo::redraw() {
-
-	clear();
-	if (splayer->cast_to<SpatialStreamPlayer>()) {
-
-		add_unscaled_billboard(SpatialEditorGizmos::singleton->stream_player_icon,0.05);
-
-	} else if (splayer->cast_to<SpatialSamplePlayer>()) {
-
-		add_unscaled_billboard(SpatialEditorGizmos::singleton->sample_player_icon,0.05);
-
-	}
-
-}
-
-SpatialPlayerSpatialGizmo::SpatialPlayerSpatialGizmo(SpatialPlayer* p_splayer){
-
-	set_spatial_node(p_splayer);
-	splayer=p_splayer;
-}
-
-
-/////
 
 
 void RoomSpatialGizmo::redraw() {
@@ -3165,11 +3117,7 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		return lsg;
 	}
 
-	if (p_spatial->cast_to<Listener>()) {
 
-		Ref<ListenerSpatialGizmo> misg = memnew(ListenerSpatialGizmo(p_spatial->cast_to<Listener>()));
-		return misg;
-	}
 
 	if (p_spatial->cast_to<Camera>()) {
 
@@ -3224,12 +3172,6 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 	if (p_spatial->cast_to<TestCube>()) {
 
 		Ref<TestCubeSpatialGizmo> misg = memnew( TestCubeSpatialGizmo(p_spatial->cast_to<TestCube>()) );
-		return misg;
-	}
-
-	if (p_spatial->cast_to<SpatialPlayer>()) {
-
-		Ref<SpatialPlayerSpatialGizmo> misg = memnew( SpatialPlayerSpatialGizmo(p_spatial->cast_to<SpatialPlayer>()) );
 		return misg;
 	}
 

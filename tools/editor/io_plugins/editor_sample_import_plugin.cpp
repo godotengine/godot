@@ -31,11 +31,13 @@
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/property_editor.h"
-#include "scene/resources/sample.h"
+
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "io/marshalls.h"
 #include "tools/editor/editor_settings.h"
+
+#if 0
 
 class _EditorSampleImportOptions : public Object {
 
@@ -923,3 +925,5 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 EditorSampleExportPlugin::EditorSampleExportPlugin() {
 
 }
+
+#endif

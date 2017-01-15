@@ -33,7 +33,7 @@
 #include "servers/audio/audio_server_sw.h"
 #include "os/mutex.h"
 
-class AudioDriverJavaScript : public AudioDriverSW {
+class AudioDriverJavaScript : public AudioDriver {
 public:
 
 	void set_singleton();

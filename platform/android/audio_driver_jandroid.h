@@ -34,7 +34,7 @@
 
 #include "java_glue.h"
 
-class AudioDriverAndroid : public AudioDriverSW {
+class AudioDriverAndroid : public AudioDriver {
 
 
 	static Mutex *mutex;

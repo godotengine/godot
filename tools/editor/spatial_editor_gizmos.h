@@ -35,8 +35,6 @@
 #include "scene/3d/listener.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/position_3d.h"
-#include "scene/3d/spatial_sample_player.h"
-#include "scene/3d/spatial_stream_player.h"
 #include "scene/3d/test_cube.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/body_shape.h"
@@ -146,19 +144,6 @@ public:
 
 };
 
-class ListenerSpatialGizmo : public EditorSpatialGizmo {
-
-	GDCLASS(ListenerSpatialGizmo, EditorSpatialGizmo);
-
-	Listener* listener;
-
-public:
-
-	void redraw();
-	ListenerSpatialGizmo(Listener* p_listener = NULL);
-
-};
-
 class CameraSpatialGizmo  : public EditorSpatialGizmo {
 
 	GDCLASS(CameraSpatialGizmo,EditorSpatialGizmo);
@@ -218,23 +203,6 @@ public:
 	SkeletonSpatialGizmo(Skeleton* p_skel=NULL);
 
 };
-
-
-
-
-class SpatialPlayerSpatialGizmo  : public EditorSpatialGizmo {
-
-	GDCLASS(SpatialPlayerSpatialGizmo,EditorSpatialGizmo);
-
-	SpatialPlayer* splayer;
-
-public:
-
-	void redraw();
-	SpatialPlayerSpatialGizmo(SpatialPlayer* p_splayer=NULL);
-
-};
-
 
 
 class TestCubeSpatialGizmo  : public EditorSpatialGizmo {

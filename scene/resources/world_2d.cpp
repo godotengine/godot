@@ -29,7 +29,7 @@
 #include "world_2d.h"
 #include "servers/visual_server.h"
 #include "servers/physics_2d_server.h"
-#include "servers/spatial_sound_2d_server.h"
+//#include "servers/spatial_sound_2d_server.h"
 #include "globals.h"
 #include "scene/2d/visibility_notifier_2d.h"
 #include "scene/main/viewport.h"
@@ -400,7 +400,6 @@ World2D::World2D() {
 
 	canvas = VisualServer::get_singleton()->canvas_create();
 	space = Physics2DServer::get_singleton()->space_create();
-	sound_space = SpatialSound2DServer::get_singleton()->space_create();
 
 	//set space2D to be more friendly with pixels than meters, by adjusting some constants
 	Physics2DServer::get_singleton()->space_set_active(space,true);
@@ -417,6 +416,5 @@ World2D::~World2D() {
 
 	VisualServer::get_singleton()->free(canvas);
 	Physics2DServer::get_singleton()->free(space);
-	SpatialSound2DServer::get_singleton()->free(sound_space);
 	memdelete(indexer);
 }

@@ -29,7 +29,7 @@
 #ifndef SAMPLE_EDITOR_PLUGIN_H
 #define SAMPLE_EDITOR_PLUGIN_H
 
-
+#if 0
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/audio/sample_player.h"
@@ -86,5 +86,7 @@ public:
 	~SampleEditorPlugin();
 
 };
+
+#endif
 
 #endif // SAMPLE_EDITOR_PLUGIN_H

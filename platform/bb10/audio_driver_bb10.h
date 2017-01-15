@@ -33,7 +33,7 @@
 
 #include <sys/asoundlib.h>
 
-class AudioDriverBB10 : public AudioDriverSW {
+class AudioDriverBB10 : public AudioDriver {
 
 	Thread* thread;
 	Mutex* mutex;

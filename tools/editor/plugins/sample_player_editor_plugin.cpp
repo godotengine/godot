@@ -26,7 +26,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#if 0
 #include "sample_player_editor_plugin.h"
+
+
 #include "scene/resources/sample_library.h"
 
 
@@ -196,3 +200,4 @@ SamplePlayerEditorPlugin::~SamplePlayerEditorPlugin()
 }
 
 
+#endif

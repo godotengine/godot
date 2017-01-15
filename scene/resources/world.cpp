@@ -287,10 +287,6 @@ RID World::get_scenario() const{
 
 	return scenario;
 }
-RID World::get_sound_space() const{
-
-	return sound_space;
-}
 
 void World::set_environment(const Ref<Environment>& p_environment) {
 
@@ -316,7 +312,6 @@ void World::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_space"),&World::get_space);
 	ClassDB::bind_method(_MD("get_scenario"),&World::get_scenario);
-	ClassDB::bind_method(_MD("get_sound_space"),&World::get_sound_space);
 	ClassDB::bind_method(_MD("set_environment","env:Environment"),&World::set_environment);
 	ClassDB::bind_method(_MD("get_environment:Environment"),&World::get_environment);
 	ClassDB::bind_method(_MD("get_direct_space_state:PhysicsDirectSpaceState"),&World::get_direct_space_state);
@@ -329,7 +324,6 @@ World::World() {
 
 	space = PhysicsServer::get_singleton()->space_create();
 	scenario = VisualServer::get_singleton()->scenario_create();
-	sound_space = SpatialSoundServer::get_singleton()->space_create();
 
 	PhysicsServer::get_singleton()->space_set_active(space,true);
 	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics/3d/default_gravity",9.8));
@@ -348,7 +342,6 @@ World::~World() {
 
 	PhysicsServer::get_singleton()->free(space);
 	VisualServer::get_singleton()->free(scenario);
-	SpatialSoundServer::get_singleton()->free(sound_space);
 
 #ifndef _3D_DISABLED
 	memdelete( indexer );

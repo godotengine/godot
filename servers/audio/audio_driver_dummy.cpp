@@ -43,7 +43,7 @@ Error AudioDriverDummy::init() {
 
 
 	mix_rate = 44100;
-	output_format = OUTPUT_STEREO;
+	output_format = SPEAKER_MODE_STEREO;
 	channels = 2;
 
 	int latency = GLOBAL_DEF("audio/output_latency",25);
@@ -97,7 +97,7 @@ int AudioDriverDummy::get_mix_rate() const {
 	return mix_rate;
 };
 
-AudioDriverSW::OutputFormat AudioDriverDummy::get_output_format() const {
+AudioDriver::SpeakerMode AudioDriverDummy::get_speaker_mode() const {
 
 	return output_format;
 };

@@ -94,7 +94,7 @@ public:
 	EditorScriptPreviewPlugin();
 };
 
-
+#if 0
 class EditorSamplePreviewPlugin : public EditorResourcePreviewGenerator {
 public:
 
@@ -104,7 +104,7 @@ public:
 	EditorSamplePreviewPlugin();
 };
 
-
+#endif
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 
 	RID scenario;

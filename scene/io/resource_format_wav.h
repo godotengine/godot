@@ -29,6 +29,7 @@
 #ifndef RESOURCE_FORMAT_WAV_H
 #define RESOURCE_FORMAT_WAV_H
 
+#if 0
 #include "io/resource_loader.h"
 
 class ResourceFormatLoaderWAV : public ResourceFormatLoader {
@@ -40,4 +41,5 @@ public:
 
 };
 
+#endif
 #endif // RESOURCE_FORMAT_WAV_H

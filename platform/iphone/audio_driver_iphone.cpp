@@ -155,7 +155,7 @@ int AudioDriverIphone::get_mix_rate() const {
 	return 44100;
 };
 
-AudioDriverSW::OutputFormat AudioDriverIphone::get_output_format() const {
+AudioDriver::OutputFormat AudioDriverIphone::get_output_format() const {
 	return OUTPUT_STEREO;
 };
 

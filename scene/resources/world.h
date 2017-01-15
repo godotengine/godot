@@ -32,7 +32,6 @@
 #include "resource.h"
 #include "servers/physics_server.h"
 #include "servers/visual_server.h"
-#include "servers/spatial_sound_server.h"
 #include "scene/resources/environment.h"
 
 class SpatialIndexer;
@@ -45,7 +44,6 @@ class World : public Resource {
 private:
 	RID space;
 	RID scenario;
-	RID sound_space;
 	SpatialIndexer* indexer;
 	Ref<Environment> environment;
 
@@ -71,7 +69,6 @@ public:
 
 	RID get_space() const;
 	RID get_scenario() const;
-	RID get_sound_space() const;
 	void set_environment(const Ref<Environment>& p_environment);
 	Ref<Environment> get_environment() const;
 

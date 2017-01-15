@@ -42,7 +42,7 @@
 #include "input_map.h"
 #include "io/resource_loader.h"
 #include "scene/main/scene_main_loop.h"
-
+#include "servers/audio_server.h"
 
 #include "script_language.h"
 #include "io/resource_loader.h"
@@ -63,8 +63,6 @@
 #include "tools/doc/doc_data.h"
 
 
-#include "servers/spatial_sound_server.h"
-#include "servers/spatial_sound_2d_server.h"
 #include "servers/physics_2d_server.h"
 
 
@@ -83,6 +81,7 @@ static Engine *engine=NULL;
 static InputMap *input_map=NULL;
 static bool _start_success=false;
 static ScriptDebugger *script_debugger=NULL;
+AudioServer *audio_server=NULL;
 
 static MessageQueue *message_queue=NULL;
 static Performance *performance = NULL;
@@ -908,6 +907,11 @@ Error Main::setup2() {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
 
+	//right moment to create and initialize the audio server
+
+	audio_server = memnew( AudioServer );
+	audio_server->init();
+
 	OS::get_singleton()->set_use_vsync(use_vsync);
 
 	register_core_singletons();
@@ -1657,11 +1661,6 @@ bool Main::iteration() {
 	OS::get_singleton()->get_main_loop()->idle( step*time_scale );
 	message_queue->flush();
 
-	if (SpatialSoundServer::get_singleton())
-		SpatialSoundServer::get_singleton()->update( step*time_scale );
-	if (SpatialSound2DServer::get_singleton())
-		SpatialSound2DServer::get_singleton()->update( step*time_scale );
-
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
@@ -1764,6 +1763,11 @@ void Main::cleanup() {
 	OS::get_singleton()->_execpath="";
 	OS::get_singleton()->_local_clipboard="";
 
+	if (audio_server) {
+		memdelete(audio_server);
+	}
+
+
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
@@ -1774,6 +1778,7 @@ void Main::cleanup() {
 	unregister_server_types();
 
 	OS::get_singleton()->finalize();
+
 
 	if (packed_data)
 		memdelete(packed_data);

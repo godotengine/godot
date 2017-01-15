@@ -33,10 +33,9 @@
 #include "audio_server.h"
 #include "physics_server.h"
 #include "physics_2d_server.h"
-#include "spatial_sound_server.h"
-#include "spatial_sound_2d_server.h"
 #include "script_debugger_remote.h"
 #include "visual/shader_types.h"
+
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
 
 	List<VS::TextureInfo> tinfo;
@@ -65,8 +64,6 @@ void register_server_types() {
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("AudioServer",AudioServer::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PhysicsServer",PhysicsServer::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Physics2DServer",Physics2DServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SpatialSoundServer",SpatialSoundServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SpatialSound2DServer",SpatialSound2DServer::get_singleton()) );
 
 	shader_types = memnew( ShaderTypes );
 

@@ -46,7 +46,7 @@ Error AudioDriverALSA::init() {
 	samples_out = NULL;
 
 	mix_rate = GLOBAL_DEF("audio/mix_rate",44100);
-	output_format = OUTPUT_STEREO;
+	output_format = SPEAKER_MODE_STEREO;
 	channels = 2;
 
 
@@ -205,7 +205,7 @@ int AudioDriverALSA::get_mix_rate() const {
 	return mix_rate;
 };
 
-AudioDriverSW::OutputFormat AudioDriverALSA::get_output_format() const {
+AudioDriver::SpeakerMode AudioDriverALSA::get_speaker_mode() const {
 
 	return output_format;
 };

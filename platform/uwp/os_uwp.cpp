@@ -145,13 +145,13 @@ void OSUWP::set_keep_screen_on(bool p_enabled) {
 
 int OSUWP::get_audio_driver_count() const {
 
-	return AudioDriverManagerSW::get_driver_count();
+	return AudioDriverManager::get_driver_count();
 }
 const char * OSUWP::get_audio_driver_name(int p_driver) const {
 
-	AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+	AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
 	ERR_FAIL_COND_V( !driver, "" );
-	return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
 static MemoryPoolStatic *mempool_static=NULL;
@@ -288,9 +288,9 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 	joypad = ref new JoypadUWP(input);
 	joypad->register_events();
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
@@ -971,7 +971,7 @@ OSUWP::OSUWP() {
 
 	mouse_mode_changed = CreateEvent(NULL, TRUE, FALSE, L"os_mouse_mode_changed");
 
-	AudioDriverManagerSW::add_driver(&audio_driver);
+	AudioDriverManager::add_driver(&audio_driver);
 }
 
 

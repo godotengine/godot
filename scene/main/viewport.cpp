@@ -33,8 +33,7 @@
 #include "servers/physics_2d_server.h"
 //#include "scene/3d/camera.h"
 
-#include "servers/spatial_sound_server.h"
-#include "servers/spatial_sound_2d_server.h"
+
 #include "scene/gui/control.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/listener.h"
@@ -468,7 +467,7 @@ void Viewport::_notification(int p_what) {
 			*/
 
 			VisualServer::get_singleton()->viewport_set_scenario(viewport,RID());
-			SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
+//			SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport,current_canvas);
 			if (contact_2d_debug.is_valid()) {
 				VisualServer::get_singleton()->free(contact_2d_debug);
@@ -783,23 +782,24 @@ Size2 Viewport::get_size() const {
 
 
 void Viewport::_update_listener() {
-
+/*
 	if (is_inside_tree() && audio_listener && (camera || listener) && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible_in_tree())))  {
 		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, find_world()->get_sound_space());
 	} else {
 		SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
 	}
-
+*/
 
 }
 
 void Viewport::_update_listener_2d() {
 
+	/*
 	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible_in_tree())))
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, find_world_2d()->get_sound_space());
 	else
 		SpatialSound2DServer::get_singleton()->listener_set_space(internal_listener_2d, RID());
-
+*/
 }
 
 
@@ -842,12 +842,12 @@ void Viewport::set_canvas_transform(const Transform2D& p_transform) {
 
 	Transform2D xform = (global_canvas_transform * canvas_transform).affine_inverse();
 	Size2 ss = get_visible_rect().size;
-	SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
+	/*SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
 	Vector2 ss2 = ss*xform.get_scale();
 	float panrange = MAX(ss2.x,ss2.y);
 
 	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-
+*/
 
 }
 
@@ -867,12 +867,12 @@ void Viewport::_update_global_transform() {
 
 	Transform2D xform = (sxform * canvas_transform).affine_inverse();
 	Size2 ss = get_visible_rect().size;
-	SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
+	/*SpatialSound2DServer::get_singleton()->listener_set_transform(internal_listener_2d, Transform2D(0, xform.xform(ss*0.5)));
 	Vector2 ss2 = ss*xform.get_scale();
 	float panrange = MAX(ss2.x,ss2.y);
 
 	SpatialSound2DServer::get_singleton()->listener_set_param(internal_listener_2d, SpatialSound2DServer::LISTENER_PARAM_PAN_RANGE, panrange);
-
+*/
 }
 
 
@@ -893,8 +893,8 @@ Transform2D Viewport::get_global_canvas_transform() const{
 void Viewport::_listener_transform_changed_notify() {
 
 #ifndef _3D_DISABLED
-	if (listener)
-		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, listener->get_listener_transform());
+	//if (listener)
+//		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, listener->get_listener_transform());
 #endif
 }
 
@@ -957,8 +957,8 @@ void Viewport::_camera_transform_changed_notify() {
 
 #ifndef _3D_DISABLED
 	// If there is an active listener in the scene, it takes priority over the camera
-	if (camera && !listener)
-		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, camera->get_camera_transform());
+//	if (camera && !listener)
+//		SpatialSoundServer::get_singleton()->listener_set_transform(internal_listener, camera->get_camera_transform());
 #endif
 }
 
@@ -2861,9 +2861,9 @@ Viewport::Viewport() {
 	default_texture->vp=const_cast<Viewport*>(this);
 	viewport_textures.insert(default_texture.ptr());
 
-	internal_listener = SpatialSoundServer::get_singleton()->listener_create();
+	//internal_listener = SpatialSoundServer::get_singleton()->listener_create();
 	audio_listener=false;
-	internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
+	//internal_listener_2d = SpatialSound2DServer::get_singleton()->listener_create();
 	audio_listener_2d=false;
 	transparent_bg=false;
 	parent=NULL;
@@ -2930,8 +2930,8 @@ Viewport::~Viewport() {
 		E->get()->vp=NULL;
 	}
 	VisualServer::get_singleton()->free( viewport );
-	SpatialSoundServer::get_singleton()->free(internal_listener);
-	SpatialSound2DServer::get_singleton()->free(internal_listener_2d);
+	//SpatialSoundServer::get_singleton()->free(internal_listener);
+	//SpatialSound2DServer::get_singleton()->free(internal_listener_2d);
 
 }
 
