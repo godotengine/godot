@@ -100,7 +100,7 @@ String JSON::print(const Variant& p_var) {
 
 Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_token,int &line,String &r_err_str) {
 
-	while (true) {
+	while (p_len > 0) {
 		switch(p_str[idx]) {
 
 			case '\n': {
