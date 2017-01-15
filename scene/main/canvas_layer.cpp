@@ -176,7 +176,7 @@ void CanvasLayer::_notification(int p_what) {
 
 			}
 			ERR_FAIL_COND(!vp);
-			viewport=vp->get_viewport();
+			viewport=vp->get_viewport_rid();
 
 			VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
 			VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);
@@ -232,7 +232,7 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 		else
 			vp=Node::get_viewport();
 
-		viewport = vp->get_viewport();
+		viewport = vp->get_viewport_rid();
 
 		VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
 		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);
@@ -285,7 +285,7 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(_MD("get_custom_viewport:Viewport"),&CanvasLayer::get_custom_viewport);
 
 	ClassDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
-//	ClassDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
+	//ClassDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),_SCS("set_layer"),_SCS("get_layer") );
 	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),_SCS("set_transform"),_SCS("get_transform") );

@@ -377,7 +377,7 @@ void EditorImportAnimationOptions::_bind_methods() {
 	ClassDB::bind_method("_changed",&EditorImportAnimationOptions::_changed);
 	ClassDB::bind_method("_item_edited",&EditorImportAnimationOptions::_item_edited);
 	ClassDB::bind_method("_button_action",&EditorImportAnimationOptions::_button_action);
-//	ClassDB::bind_method("_changedp",&EditorImportAnimationOptions::_changedp);
+	//ClassDB::bind_method("_changedp",&EditorImportAnimationOptions::_changedp);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 }
@@ -390,7 +390,7 @@ void EditorImportAnimationOptions::_notification(int p_what) {
 		flags->connect("item_edited",this,"_changed");
 		clips_tree->connect("item_edited",this,"_item_edited");
 		clips_tree->connect("button_pressed",this,"_button_action",varray(),CONNECT_DEFERRED);
-//		format->connect("item_selected",this,"_changedp");
+		//format->connect("item_selected",this,"_changedp");
 	}
 }
 
@@ -1237,7 +1237,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	error_dialog = memnew ( ConfirmationDialog );
 	add_child(error_dialog);
 	error_dialog->get_ok()->set_text(TTR("Accept"));
-//	error_dialog->get_cancel()->hide();
+	//error_dialog->get_cancel()->hide();
 
 
 	HBoxContainer *custom_root_hb = memnew( HBoxContainer );
@@ -1302,7 +1302,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	add_child(confirm_import);
 	VBoxContainer *cvb = memnew( VBoxContainer );
 	confirm_import->add_child(cvb);
-//	confirm_import->set_child_rect(cvb);
+	//confirm_import->set_child_rect(cvb);
 
 	PanelContainer *pc = memnew( PanelContainer );
 	pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
@@ -1421,9 +1421,11 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 								if (tex.is_valid()) {
 
 									image_map.insert(tex,TEXTURE_ROLE_NORMALMAP);
-									//if (p_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
-									//	res->cast_to<FixedSpatialMaterial>()->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_XY_NORMALMAP,true);
-								}//
+									/*
+									if (p_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
+										res->cast_to<FixedSpatialMaterial>()->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_XY_NORMALMAP,true);
+									*/
+								}
 
 
 							} else {
@@ -1531,10 +1533,10 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 					Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
 					if (fm.is_valid()) {
-					//	fm->set_flag(Material::FLAG_UNSHADED,true);
-					//	fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-					//	fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-					//	fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+						//fm->set_flag(Material::FLAG_UNSHADED,true);
+						//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+						//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+						//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
 					}
 				}
 			}
@@ -1558,8 +1560,8 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 				if (p_flags&SCENE_FLAG_DETECT_ALPHA && _teststr(mat->get_name(),"alpha")) {
 
-				//	mat->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
-				//	mat->set_name(_fixstr(mat->get_name(),"alpha"));
+					//mat->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+					//mat->set_name(_fixstr(mat->get_name(),"alpha"));
 				}
 				if (p_flags&SCENE_FLAG_DETECT_VCOLOR && _teststr(mat->get_name(),"vcol")) {
 
@@ -1640,10 +1642,10 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 							Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
 							if (fm.is_valid()) {
-							//	fm->set_flag(Material::FLAG_UNSHADED,true);
-							//	fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-							//	fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-							//	fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+								//fm->set_flag(Material::FLAG_UNSHADED,true);
+								//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+								//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+								//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
 							}
 						}
 					}
@@ -2172,8 +2174,10 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS;
 	if (scene_flags&SCENE_FLAG_IMPORT_ANIMATIONS)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION;
-	//if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
-	//	import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
+	/*
+	if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
+		import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
+	*/
 	if (scene_flags&SCENE_FLAG_GENERATE_TANGENT_ARRAYS)
 		import_flags|=EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 

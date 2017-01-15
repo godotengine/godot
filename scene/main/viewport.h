@@ -340,7 +340,7 @@ public:
 
 	Size2 get_size() const;
 	Rect2 get_visible_rect() const;
-	RID get_viewport() const;
+	RID get_viewport_rid() const;
 
 	void set_world(const Ref<World>& p_world);
 	void set_world_2d(const Ref<World2D>& p_world_2d);

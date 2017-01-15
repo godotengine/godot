@@ -323,9 +323,14 @@ void OSIPhone::touches_cancelled() {
 
 static const float ACCEL_RANGE = 1;
 
+void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
+	input->set_gravity(Vector3(p_x, p_y, p_z));
+};
+
 void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 
-	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, -p_z / (float)ACCEL_RANGE));
+	// Found out the Z should not be negated! Pass as is!
+	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
 
 	/*
 	if (p_x != last_accel.x) {
@@ -364,7 +369,13 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 	*/
 };
 
+void OSIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
+	input->set_magnetometer(Vector3(p_x, p_y, p_z));
+};
 
+void OSIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
+	input->set_gyroscope(Vector3(p_x, p_y, p_z));
+};
 
 void OSIPhone::delete_main_loop() {
 

@@ -100,145 +100,145 @@ struct ReverbParamsSW {
 
 static ReverbParamsSW reverb_params_Room = {
 	0x26C0/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x6D80,		0x54B8,		-0x4130,	0x0000,		0x0000,		-0x4580,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x5800,		0x5300,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x01B4 - 0x007D,	0x0136 - 0x007D,	0x00B8 - 0x005B,	0x005C - 0x005B,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x04D6,		0x0333,		0x03F0,		0x0227,		0x0374,		0x01EF,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x0334,		0x01B5,		0x0000,		0x0000,		0x0000,		0x0000,		0x0000,		0x0000,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x0000,		0x0000,		0x01B4,		0x0136,		0x00B8,		0x005C
 };
 
 static ReverbParamsSW reverb_params_StudioSmall = {
 	0x1F40/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x70F0,		0x4FA8,		-0x4320,	0x4410,		-0x3F10,	-0x6400,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x5280,		0x4EC0,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x00B4 - 0x0033,	0x0080 - 0x0033,	0x004C - 0x0025,	0x0026 - 0x0025,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x03E4,		0x031B,		0x03A4,		0x02AF,		0x0372,		0x0266,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x031C,		0x025D,		0x025C,		0x018E,		0x022F,		0x0135,		0x01D2,		0x00B7,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x018F,		0x00B5,		0x00B4,		0x0080,		0x004C,		0x0026
 };
 
 static ReverbParamsSW reverb_params_StudioMedium = {
 	0x4840/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x70F0,		0x4FA8,		-0x4320,	0x4510,		-0x4110,	-0x4B40,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x5280,		0x4EC0,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x0264 - 0x00B1,	0x01B2 - 0x00B1,	0x0100 - 0x007F,	0x0080 - 0x007F,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x0904,		0x076B,		0x0824,		0x065F,		0x07A2,		0x0616,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x076C,		0x05ED,		0x05EC,		0x042E,		0x050F,		0x0305,		0x0462,		0x02B7,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x042F,		0x0265,		0x0264,		0x01B2,		0x0100,		0x0080
 };
 
 static ReverbParamsSW reverb_params_StudioLarge = {
 	0x6FE0/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x6F60,		0x4FA8,		-0x4320,	0x4510,		-0x4110,	-0x5980,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x5680,		0x52C0,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x031C - 0x00E3,	0x0238 - 0x00E3,	0x0154 -  0x00A9,	0x00AA - 0x00A9,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x0DFB,		0x0B58,		0x0D09,		0x0A3C,		0x0BD9,		0x0973,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x0B59,		0x08DA,		0x08D9,		0x05E9,		0x07EC,		0x04B0,		0x06EF,		0x03D2,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x05EA,		0x031D,		0x031C,		0x0238,		0x0154,		0x00AA
 };
 
 static ReverbParamsSW reverb_params_Hall = {
 	0xADE0/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x6000,		0x5000,		0x4C00,		-0x4800,	-0x4400,	-0x4000,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x6000,		0x5C00,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x05C0 - 0x01A5,	0x041A - 0x01A5,	0x0274 - 0x0139,	0x013A -  0x0139,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x15BA,		0x11BB,		0x14C2,		0x10BD,		0x11BC,		0x0DC1,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x11C0,		0x0DC3,		0x0DC0,		0x09C1,		0x0BC4,		0x07C1,		0x0A00,		0x06CD,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x09C2,		0x05C1,		0x05C0,		0x041A,		0x0274,		0x013A
 };
 
 static ReverbParamsSW reverb_params_SpaceEcho = {
 	0xF6C0/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x7E00,		0x5000,		-0x4C00,	-0x5000,	0x4C00,		-0x5000,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x6000,		0x5400,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x0AE0 - 0x033D,	0x07A2 - 0x033D,	0x0464 - 0x0231,	0x0232 - 0x0231,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x1ED6,		0x1A31,		0x1D14,		0x183B,		0x1BC2,		0x16B2,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x1A32,		0x15EF,		0x15EE,		0x1055,		0x1334,		0x0F2D,		0x11F6,		0x0C5D,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x1056,		0x0AE1,		0x0AE0,		0x07A2,		0x0464,		0x0232
 };
 
 static ReverbParamsSW reverb_params_Echo = {
 	0x18040/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x7FFF,		0x7FFF,		0x0000,		0x0000,		0x0000,		-0x7F00,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x0000,		0x0000,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x1004 - 0x0001,	0x1002 - 0x0001,	0x0004 - 0x0001,	0x0002 - 0x0001,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x1FFF,		0x0FFF,		0x1005,		0x0005,		0x0000,		0x0000,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x1005,		0x0005,		0x0000,		0x0000,		0x0000,		0x0000,		0x0000,		0x0000,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x0000,		0x0000,		0x1004,		0x1002,		0x0004,		0x0002
 };
 
 static ReverbParamsSW reverb_params_Delay = {
 	0x18040/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x7FFF,		0x7FFF,		0x0000,		0x0000,		0x0000,		0x0000,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x0000,		0x0000,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x1004 - 0x0001,	0x1002 - 0x0001,	0x0004 - 0x0001,	0x0002 - 0x0001,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x1FFF,		0x0FFF,		0x1005,		0x0005,		0x0000,		0x0000,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x1005,		0x0005,		0x0000,		0x0000,		0x0000,		0x0000,		0x0000,		0x0000,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x0000,		0x0000,		0x1004,		0x1002,		0x0004,		0x0002
 };
 
 static ReverbParamsSW reverb_params_HalfEcho = {
 	0x3C00/2,
-//	gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
+	//gLPF		gEcho0		gEcho1		gEcho2		gEcho3		gWall
 	0x70F0,		0x4FA8,		-0x4320,	0x4510,		-0x4110,	-0x7B00,
-//	gReva		gRevb		gInputL		gInputR
+	//gReva		gRevb		gInputL		gInputR
 	0x5F80,		0x54C0,		-0x8000,	-0x8000,
-//	nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
+	//nRevaOldL			nRevaOldR			nRevbOldL			nRevbOldR
 	0x0058 - 0x0017,	0x0040 - 0x0017,	0x0028 - 0x0013,	0x0014 - 0x0013,
-//	nLwlNew		nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
+	//nLwlNew	nRwrNew		nEcho0L		nEcho0R		nEcho1L		nEcho1R
 	0x0371,		0x02AF,		0x02E5,		0x01DF,		0x02B0,		0x01D7,
-//	nLwlOld		nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
+	//nLwlOld	nRwrOld		nLwrNew		nRwlNew		nEcho2L		nEcho2R		nEcho3L		nEcho3R
 	0x0358,		0x026A,		0x01D6,		0x011E,		0x012D,		0x00B1,		0x011F,		0x0059,
-//	nLwrOld		nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
+	//nLwrOld	nRwlOld		nRevaNewL	nRevaNewR	nRevbNewL	nRevbNewR
 	0x01A0,		0x00E3,		0x0058,		0x0040,		0x0028,		0x0014
 };
 
@@ -265,7 +265,7 @@ bool ReverbSW::process(int *p_input,int *p_output,int p_frames,int p_stereo_stri
 	// p_input must point to a non-looping buffer.
 	// BOTH p_input and p_output must be touched (use ClearModuleBuffer).
 
-	// �������LOCAL MACROS ������۲
+	// LOCAL MACROS
 
 #undef LM_SETSRCOFFSET
 #define LM_SETSRCOFFSET(x)								\
@@ -296,14 +296,14 @@ MULSHIFT_S32 ( x, current_params->y, 15 )
 #undef LM_REVERB
 #define LM_REVERB(x) reverb_buffer[ (x) + cSample ]
 
-	// �������LOCAL VARIABLES ������۲
+	// LOCAL VARIABLES
 
 	unsigned int Offset;
 
 	int lwl, lwr, rwl, rwr;
-//	unsigned char HZShift;
+	//unsigned char HZShift;
 
-	// �������CODE ������۲
+	// CODE
 
 
 	lwl = state.lwl;

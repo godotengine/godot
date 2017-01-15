@@ -40,7 +40,7 @@ void HTTPRequest::_redirect_request(const String& p_new_url) {
 Error HTTPRequest::_request() {
 
 	//print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
-	return client->connect(url,port,use_ssl,validate_ssl);
+	return client->connect_to_host(url,port,use_ssl,validate_ssl);
 }
 
 Error HTTPRequest::_parse_url(const String& p_url) {

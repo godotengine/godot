@@ -439,7 +439,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 		test_label->set_text("");
 		test_label->set_text(test_string->get_text());
-		test_label->add_color_override("font_color",test_color->get_color());
+		test_label->add_color_override("font_color",test_color->get_pick_color());
 	}
 
 	void _update() {
@@ -665,10 +665,12 @@ public:
 		List<String> fl;
 		Ref<BitmapFont> font= memnew(BitmapFont);
 		dest->get_file_dialog()->add_filter("*.fnt ; Font" );
-		//ResourceSaver::get_recognized_extensions(font,&fl);
-		//for(List<String>::Element *E=fl.front();E;E=E->next()) {
-		//	dest->get_file_dialog()->add_filter("*."+E->get());
-		//}
+		/*
+		ResourceSaver::get_recognized_extensions(font,&fl);
+		for(List<String>::Element *E=fl.front();E;E=E->next()) {
+			dest->get_file_dialog()->add_filter("*."+E->get());
+		}
+		*/
 
 		vbl->add_margin_child(TTR("Dest Resource:"),dest);
 		HBoxContainer *testhb = memnew( HBoxContainer );
@@ -679,7 +681,7 @@ public:
 
 		testhb->add_child(test_string);
 		test_color = memnew( ColorPickerButton );
-		test_color->set_color(get_color("font_color","Label"));
+		test_color->set_pick_color(get_color("font_color","Label"));
 		test_color->set_h_size_flags(SIZE_EXPAND_FILL);
 		test_color->set_stretch_ratio(1);
 		test_color->connect("color_changed",this,"_update_text3");
@@ -689,7 +691,7 @@ public:
 		vbl->add_margin_child(TTR("Test:")+" ",testhb);
 		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
-//		vbl->add_child(upd_hb);
+		//vbl->add_child(upd_hb);
 		upd_hb->add_spacer();
 		Button *update = memnew( Button);
 		upd_hb->add_child(update);
@@ -754,7 +756,7 @@ struct _EditorFontData {
 	int texture;
 	Image blit;
 	Point2i blit_ofs;
-//	bool printable;
+	//bool printable;
 
 };
 
@@ -780,13 +782,13 @@ static unsigned char get_SDF_radial(
 		int x, int y,
 		int max_radius )
 {
-	//	hideous brute force method
+	//hideous brute force method
 	float d2 = max_radius*max_radius+1.0;
 	unsigned char v = fontmap[x+y*w];
 	for( int radius = 1; (radius <= max_radius) && (radius*radius < d2); ++radius )
 	{
 		int line, lo, hi;
-		//	north
+		//north
 		line = y - radius;
 		if( (line >= 0) && (line < h) )
 		{
@@ -797,7 +799,7 @@ static unsigned char get_SDF_radial(
 			int idx = line * w + lo;
 			for( int i = lo; i <= hi; ++i )
 			{
-				//	check this pixel
+				//check this pixel
 				if( fontmap[idx] != v )
 				{
 					float nx = i - x;
@@ -808,11 +810,11 @@ static unsigned char get_SDF_radial(
 						d2 = nd2;
 					}
 				}
-				//	move on
+				//move on
 				++idx;
 			}
 		}
-		//	south
+		//south
 		line = y + radius;
 		if( (line >= 0) && (line < h) )
 		{
@@ -823,7 +825,7 @@ static unsigned char get_SDF_radial(
 			int idx = line * w + lo;
 			for( int i = lo; i <= hi; ++i )
 			{
-				//	check this pixel
+				//check this pixel
 				if( fontmap[idx] != v )
 				{
 					float nx = i - x;
@@ -834,11 +836,11 @@ static unsigned char get_SDF_radial(
 						d2 = nd2;
 					}
 				}
-				//	move on
+				//move on
 				++idx;
 			}
 		}
-		//	west
+		//west
 		line = x - radius;
 		if( (line >= 0) && (line < w) )
 		{
@@ -849,7 +851,7 @@ static unsigned char get_SDF_radial(
 			int idx = lo * w + line;
 			for( int i = lo; i <= hi; ++i )
 			{
-				//	check this pixel
+				//check this pixel
 				if( fontmap[idx] != v )
 				{
 					float nx = line - x;
@@ -860,11 +862,11 @@ static unsigned char get_SDF_radial(
 						d2 = nd2;
 					}
 				}
-				//	move on
+				//move on
 				idx += w;
 			}
 		}
-		//	east
+		//east
 		line = x + radius;
 		if( (line >= 0) && (line < w) )
 		{
@@ -875,7 +877,7 @@ static unsigned char get_SDF_radial(
 			int idx = lo * w + line;
 			for( int i = lo; i <= hi; ++i )
 			{
-				//	check this pixel
+				//check this pixel
 				if( fontmap[idx] != v )
 				{
 					float nx = line - x;
@@ -886,7 +888,7 @@ static unsigned char get_SDF_radial(
 						d2 = nd2;
 					}
 				}
-				//	move on
+				//move on
 				idx += w;
 			}
 		}
@@ -981,14 +983,14 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 	FT_GlyphSlot slot = face->glyph;
 
-//	error = FT_Set_Charmap(face,ft_encoding_unicode );   /* encoding..         */
+	//error = FT_Set_Charmap(face,ft_encoding_unicode );   /* encoding..         */
 
 
 	/* PRINT CHARACTERS TO INDIVIDUAL BITMAPS */
 
 
-//	int space_size=5; //size for space, if none found.. 5!
-//	int min_valign=500; //some ridiculous number
+	//int space_size=5; //size for space, if none found.. 5!
+	//int min_valign=500; //some ridiculous number
 
 	FT_ULong  charcode;
 	FT_UInt   gindex;
@@ -1080,10 +1082,10 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
 
-			//	oversize the holding buffer so I can smooth it!
+			//oversize the holding buffer so I can smooth it!
 			int sw = w + scaler * 4;
 			int sh = h + scaler * 4;
-			//	do the SDF
+			//do the SDF
 			int sdfw = sw / scaler;
 			int sdfh = sh / scaler;
 
@@ -1139,7 +1141,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
 
 
-			//	oversize the holding buffer so I can smooth it!
+			//oversize the holding buffer so I can smooth it!
 			int sw = w + scaler * 4;
 			int sh = h + scaler * 4;
 
@@ -1578,7 +1580,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 		//debug the texture
 		Ref<ImageTexture> atlast = memnew( ImageTexture );
 		atlast->create_from_image(atlas);
-//		atlast->create_from_image(font_data_list[5]->blit);
+		//atlast->create_from_image(font_data_list[5]->blit);
 		TextureRect *tf = memnew( TextureRect );
 		tf->set_texture(atlast);
 		dialog->add_child(tf);

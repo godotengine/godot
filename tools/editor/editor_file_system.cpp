@@ -378,7 +378,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 
 	//save back the findings
-//	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
+	//String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
 
 	f=FileAccess::open(fscache,FileAccess::WRITE);
 	_save_filesystem_cache(new_filesystem,f);
@@ -502,7 +502,7 @@ void EditorFileSystem::scan() {
 		_scan_filesystem();
 		if (filesystem)
 			memdelete(filesystem);
-//		file_type_cache.clear();
+		//file_type_cache.clear();
 		filesystem=new_filesystem;
 		new_filesystem=NULL;
 		_update_scan_actions();
@@ -1198,7 +1198,7 @@ EditorFileSystemDirectory* EditorFileSystem::find_file(const String& p_file,int*
 }
 
 
-EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
+EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String& p_path) {
 
     if (!filesystem || scanning)
     	return NULL;
@@ -1352,7 +1352,7 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(_MD("scan"),&EditorFileSystem::scan);
 	ClassDB::bind_method(_MD("scan_sources"),&EditorFileSystem::scan_sources);
 	ClassDB::bind_method(_MD("update_file","path"),&EditorFileSystem::update_file);
-	ClassDB::bind_method(_MD("get_path:EditorFileSystemDirectory","path"),&EditorFileSystem::get_path);
+	ClassDB::bind_method(_MD("get_filesystem_path:EditorFileSystemDirectory","path"),&EditorFileSystem::get_filesystem_path);
 	ClassDB::bind_method(_MD("get_file_type","path"),&EditorFileSystem::get_file_type);
 
 	ADD_SIGNAL( MethodInfo("filesystem_changed") );

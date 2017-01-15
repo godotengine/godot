@@ -422,11 +422,11 @@ void SampleEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		sample_editor->show();
-//		sample_editor->set_process(true);
+		//sample_editor->set_process(true);
 	} else {
 
 		sample_editor->hide();
-//		sample_editor->set_process(false);
+		//sample_editor->set_process(false);
 	}
 
 }

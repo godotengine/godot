@@ -120,13 +120,13 @@ void TextureButton::_notification(int p_what) {
 
 			if (texdraw.is_valid()) {
 				Rect2 drect(Point2(),texdraw->get_size()*scale);
-				draw_texture_rect(texdraw,drect,false,modulate);
+				draw_texture_rect(texdraw,drect,false);
 
 			}
 			if (has_focus() && focused.is_valid()) {
 
 				Rect2 drect(Point2(),focused->get_size()*scale);
-				draw_texture_rect(focused,drect,false,modulate);
+				draw_texture_rect(focused,drect,false);
 
 			};
 
@@ -143,7 +143,6 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(_MD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
 	ClassDB::bind_method(_MD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
 	ClassDB::bind_method(_MD("set_texture_scale","scale"),&TextureButton::set_texture_scale);
-	ClassDB::bind_method(_MD("set_modulate","color"),&TextureButton::set_modulate);
 
 	ClassDB::bind_method(_MD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
 	ClassDB::bind_method(_MD("get_pressed_texture:Texture"),&TextureButton::get_pressed_texture);
@@ -152,7 +151,6 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
 	ClassDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
 	ClassDB::bind_method(_MD("get_texture_scale"),&TextureButton::get_texture_scale);
-	ClassDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
 
 	ADD_GROUP("Textures","texture_");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
@@ -241,17 +239,7 @@ Size2 TextureButton::get_texture_scale() const{
 	return scale;
 }
 
-void TextureButton::set_modulate(const Color& p_modulate) {
-	modulate=p_modulate;
-	update();
-}
-
-Color TextureButton::get_modulate() const {
-	return modulate;
-}
-
-
 TextureButton::TextureButton() {
 	scale=Size2(1.0, 1.0);
-	modulate=Color(1,1,1);
+
 }

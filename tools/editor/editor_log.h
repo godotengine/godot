@@ -48,7 +48,7 @@ class EditorLog : public VBoxContainer {
 	Label *title;
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
-//	PaneDrag *pd;
+	//PaneDrag *pd;
 	Control *ec;
 	PanelContainer *pc;
 
@@ -58,7 +58,7 @@ class EditorLog : public VBoxContainer {
 
 	Thread::ID current;
 
-//	void _dragged(const Point2& p_ofs);
+	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
 	static void _undo_redo_cbk(void *p_self,const String& p_name);
 protected:

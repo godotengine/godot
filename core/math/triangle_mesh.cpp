@@ -320,7 +320,7 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 
 
 				bool valid = b.aabb.intersects_segment(p_begin,p_end);
-//				bool valid = b.aabb.intersects(ray_aabb);
+				//bool valid = b.aabb.intersects(ray_aabb);
 
 				if (!valid) {
 

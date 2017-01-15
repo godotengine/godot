@@ -62,7 +62,7 @@ friend class PhysicsDirectSpaceStateSW;
 	mutable RID_Owner<BodySW> body_owner;
 	mutable RID_Owner<JointSW> joint_owner;
 
-//	void _clear_query(QuerySW *p_query);
+	//void _clear_query(QuerySW *p_query);
 public:
 
 	struct CollCbkData {

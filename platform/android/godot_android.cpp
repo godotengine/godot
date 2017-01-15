@@ -535,29 +535,33 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 				case AMOTION_EVENT_ACTION_DOWN: {
 					engine->os->process_touch(0,0,touchvec);
 
-				    //System.out.printf("action down at: %f,%f\n", event.getX(),event.getY());
+					//System.out.printf("action down at: %f,%f\n", event.getX(),event.getY());
 				} break;
 				case AMOTION_EVENT_ACTION_MOVE: {
 					engine->os->process_touch(1,0,touchvec);
-				    //for(int i=0;i<event.getPointerCount();i++) {
-				    //	System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
-				    //}
+					/*
+					for(int i=0;i<event.getPointerCount();i++) {
+						System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
+					}
+					*/
 				} break;
 				case AMOTION_EVENT_ACTION_POINTER_UP: {
 
 					engine->os->process_touch(4,pidx,touchvec);
-				    //System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+					//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 				} break;
 				case AMOTION_EVENT_ACTION_POINTER_DOWN: {
 					engine->os->process_touch(3,pidx,touchvec);
-				    //System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+					//System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 				} break;
 				case AMOTION_EVENT_ACTION_CANCEL:
 				case AMOTION_EVENT_ACTION_UP: {
 					engine->os->process_touch(2,0,touchvec);
-				    //for(int i=0;i<event.getPointerCount();i++) {
-				    //	System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
-				    //}
+					/*
+					for(int i=0;i<event.getPointerCount();i++) {
+						System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
+					}
+					*/
 				} break;
 			}
 
@@ -638,8 +642,8 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 	} break;
 	case APP_CMD_INIT_WINDOW:
-	     //The window is being shown, get it ready.
-	//	LOGI("INIT WINDOW");
+		//The window is being shown, get it ready.
+		//LOGI("INIT WINDOW");
 		if (engine->app->window != NULL) {
 
 			if (engine->os==NULL) {
@@ -647,7 +651,7 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				//do initialization here, when there's OpenGL! hackish but the only way
 				engine->os = new OS_Android(_gfx_init,engine);
 
-			//	char *args[]={"-test","gui",NULL};
+				//char *args[]={"-test","gui",NULL};
 				__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
 #if 0
 				Error err  = Main::setup("apk",2,args);
@@ -722,15 +726,15 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 			engine->animating=1;
 			engine_draw_frame(engine);
 		}
-	    break;
+		break;
 	case APP_CMD_TERM_WINDOW:
-	    // The window is being hidden or closed, clean it up.
-	//    LOGI("TERM WINDOW");
-	    engine_term_display(engine);
-	    break;
+		// The window is being hidden or closed, clean it up.
+		//LOGI("TERM WINDOW");
+		engine_term_display(engine);
+		break;
 	case APP_CMD_GAINED_FOCUS:
-	    // When our app gains focus, we start monitoring the accelerometer.
-	    if (engine->accelerometerSensor != NULL) {
+		// When our app gains focus, we start monitoring the accelerometer.
+		if (engine->accelerometerSensor != NULL) {
 		ASensorEventQueue_enableSensor(engine->sensorEventQueue,
 			engine->accelerometerSensor);
 		// We'd like to get 60 events per second (in us).
@@ -833,7 +837,7 @@ void android_main(struct android_app* state) {
 	     // Process this event.
 
 	     if (source != NULL) {
-	//	 LOGI("process\n");
+		// LOGI("process\n");
 		 source->process(state, source);
 	     } else {
 		     nullmax--;
@@ -883,12 +887,12 @@ void android_main(struct android_app* state) {
 		return;
 	     }
 
-//	     LOGI("end\n");
+	//     LOGI("end\n");
 
 
 	 }
 
-//	 LOGI("engine animating? %i\n",engine.animating);
+	// LOGI("engine animating? %i\n",engine.animating);
 
 	 if (engine.animating) {
 	     //do os render

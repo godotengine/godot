@@ -331,8 +331,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #endif
 
 				ip+=5;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_EXTENDS_TEST: {
 
 				CHECK_SPACE(4);
@@ -404,8 +404,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				*dst=extends_ok;
 				ip+=4;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_SET: {
 
 				CHECK_SPACE(3);
@@ -429,7 +429,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 				ip+=4;
-			} continue;
+				continue;
+			}
 			case OPCODE_GET: {
 
 				CHECK_SPACE(3);
@@ -460,7 +461,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst=ret;
 #endif
 				ip+=4;
-			} continue;
+				continue;
+			}
 			case OPCODE_SET_NAMED: {
 
 				CHECK_SPACE(3);
@@ -483,7 +485,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 				ip+=4;
-			} continue;
+				continue;
+			}
 			case OPCODE_GET_NAMED: {
 
 
@@ -518,7 +521,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst=ret;
 #endif
 				ip+=4;
-			} continue;
+				continue;
+			}
 			case OPCODE_SET_MEMBER: {
 
 				CHECK_SPACE(3);
@@ -540,7 +544,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip+=3;
-			} continue;
+				continue;
+			}
 			case OPCODE_GET_MEMBER: {
 
 				CHECK_SPACE(3);
@@ -557,8 +562,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip+=3;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_ASSIGN: {
 
 				CHECK_SPACE(3);
@@ -568,8 +573,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = *src;
 
 				ip+=3;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_ASSIGN_TRUE: {
 
 				CHECK_SPACE(2);
@@ -578,7 +583,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = true;
 
 				ip+=2;
-			} continue;
+				continue;
+			}
 			case OPCODE_ASSIGN_FALSE: {
 
 				CHECK_SPACE(2);
@@ -587,7 +593,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = false;
 
 				ip+=2;
-			} continue;
+				continue;
+			}
 			case OPCODE_CONSTRUCT: {
 
 				CHECK_SPACE(2);
@@ -612,7 +619,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				ip+=4+argc;
 				//construct a basic type
-			} continue;
+				continue;
+			}
 			case OPCODE_CONSTRUCT_ARRAY: {
 
 				CHECK_SPACE(1);
@@ -632,8 +640,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst=array;
 
 				ip+=3+argc;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_CONSTRUCT_DICTIONARY: {
 
 				CHECK_SPACE(1);
@@ -655,8 +663,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst=dict;
 
 				ip+=3+argc*2;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_CALL_RETURN:
 			case OPCODE_CALL: {
 
@@ -737,8 +745,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				//_call_func(NULL,base,*methodname,ip,argc,p_instance,stack);
 				ip+=argc+1;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_CALL_BUILT_IN: {
 
 				CHECK_SPACE(4);
@@ -775,12 +783,12 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					break;
 				}
 				ip+=argc+1;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_CALL_SELF: {
 
-
-			} break;
+				break;
+			}
 			case OPCODE_CALL_SELF_BASE: {
 
 				CHECK_SPACE(2);
@@ -857,8 +865,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 				ip+=4+argc;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_YIELD:
 			case OPCODE_YIELD_SIGNAL: {
 
@@ -938,8 +946,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 				exit_ok=true;
-
-			} break;
+				break;
+			}
 			case OPCODE_YIELD_RESUME: {
 
 				CHECK_SPACE(2);
@@ -950,8 +958,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(result,1);
 				*result=p_state->result;
 				ip+=2;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_JUMP: {
 
 				CHECK_SPACE(2);
@@ -959,8 +967,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				ERR_BREAK(to<0 || to>_code_size);
 				ip=to;
-
-			} continue;
+				continue;
+			}
 			case OPCODE_JUMP_IF: {
 
 				CHECK_SPACE(3);
@@ -983,7 +991,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					continue;
 				}
 				ip+=3;
-			} continue;
+				continue;
+			}
 			case OPCODE_JUMP_IF_NOT: {
 
 				CHECK_SPACE(3);
@@ -1006,21 +1015,22 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					continue;
 				}
 				ip+=3;
-			} continue;
+				continue;
+			}
 			case OPCODE_JUMP_TO_DEF_ARGUMENT: {
 
 				CHECK_SPACE(2);
 				ip=_default_arg_ptr[defarg];
-
-			} continue;
+				continue;
+			}
 			case OPCODE_RETURN: {
 
 				CHECK_SPACE(2);
 				GET_VARIANT_PTR(r,1);
 				retvalue=*r;
 				exit_ok=true;
-
-			} break;
+				break;
+			}
 			case OPCODE_ITERATE_BEGIN: {
 
 				CHECK_SPACE(8); //space for this an regular iterate
@@ -1050,8 +1060,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 
 				ip+=5; //skip regular iterate which is always next
-
-			} continue;
+				continue;
+			}
 			case OPCODE_ITERATE: {
 
 				CHECK_SPACE(4);
@@ -1079,7 +1089,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 
 				ip+=5; //loop again
-			} continue;
+				continue;
+			}
 			case OPCODE_ASSERT: {
 				CHECK_SPACE(2);
 				GET_VARIANT_PTR(test,1);
@@ -1105,7 +1116,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #endif
 
 				ip+=2;
-			} continue;
+				continue;
+			}
 			case OPCODE_BREAKPOINT: {
 #ifdef DEBUG_ENABLED
 				if (ScriptDebugger::get_singleton()) {
@@ -1113,7 +1125,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				}
 #endif
 				ip+=1;
-			} continue;
+				continue;
+			}
 			case OPCODE_LINE: {
 				CHECK_SPACE(2);
 
@@ -1142,17 +1155,19 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					ScriptDebugger::get_singleton()->line_poll();
 
 				}
-			} continue;
+				continue;
+			}
 			case OPCODE_END: {
 
 				exit_ok=true;
 				break;
 
-			} break;
+			}
 			default: {
 
 				err_text="Illegal opcode "+itos(_code_ptr[ip])+" at address "+itos(ip);
-			} break;
+				break;
+			}
 
 		}
 

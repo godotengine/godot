@@ -437,7 +437,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
 
-//			bool found=false;
+			//bool found=false;
 
 			Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(obj);
 			if (!E) {
@@ -1000,7 +1000,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 	if (collide_character)
 		mask|=PhysicsDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
 
-//	print_line("motion: "+p_motion+" margin: "+rtos(margin));
+	//print_line("motion: "+p_motion+" margin: "+rtos(margin));
 
 	//print_line("margin: "+rtos(margin));
 
@@ -1038,10 +1038,10 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 #if 0
 				float d = a.distance_to(b);
 
-				//if (d<margin)
-				///	continue;
-	   ///
-	   ///
+				/*
+				if (d<margin)
+					continue;
+				*/
 				recover_motion+=(b-a)*0.2;
 #else
 				float dist = a.distance_to(b);
@@ -1144,7 +1144,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 				colliding=false;
 			}
 
-		//	print_line("Rest Travel: "+rest.normal);
+			//print_line("Rest Travel: "+rest.normal);
 
 		}
 
@@ -1159,8 +1159,10 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 	}
 
 	Vector3 motion=p_motion*safe;
-	//if (colliding)
-	//	motion+=normal*0.001;
+	/*
+	if (colliding)
+		motion+=normal*0.001;
+	*/
 	Transform gt = get_global_transform();
 	gt.origin+=motion;
 	set_global_transform(gt);

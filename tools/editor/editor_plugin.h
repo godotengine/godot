@@ -103,6 +103,10 @@ public:
 	Control* get_editor_viewport();
 	void edit_resource(const Ref<Resource>& p_resource);
 
+	void add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud = Variant());
+	void add_tool_submenu_item(const String& p_name, Object *p_submenu);
+	void remove_tool_menu_item(const String& p_name);
+
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
 	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform, const InputEvent& p_event);
 	virtual void forward_draw_over_canvas(const Transform2D& p_canvas_xform,Control *p_canvas);

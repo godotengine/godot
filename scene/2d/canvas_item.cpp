@@ -394,7 +394,7 @@ void CanvasItem::_enter_canvas() {
 		else
 			get_viewport()->gui_reset_canvas_sort_index();
 
-		get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 
 	} else {
 
@@ -444,7 +444,7 @@ void CanvasItem::_notification(int p_what) {
 				break;
 
 			if (group!="") {
-				get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
@@ -818,7 +818,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 RID CanvasItem::get_viewport_rid() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),RID());
-	return get_viewport()->get_viewport();
+	return get_viewport()->get_viewport_rid();
 }
 
 void CanvasItem::set_block_transform_notify(bool p_enable) {
@@ -1115,7 +1115,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	drawing=false;
 	behind=false;
 	block_transform_notify=false;	
-//	viewport=NULL;
+	//viewport=NULL;
 	canvas_layer=NULL;
 	use_parent_material=false;
 	global_invalid=true;

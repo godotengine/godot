@@ -407,8 +407,8 @@ bool GrooveJoint2DSW::setup(float p_step) {
 	jn_max = get_max_force() * p_step;
 
 	// calculate bias velocity
-//	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
-//	joint->bias = cpvclamp(cpvmult(delta, -joint->constraint.biasCoef*dt_inv), joint->constraint.maxBias);
+	//cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
+	//joint->bias = cpvclamp(cpvmult(delta, -joint->constraint.biasCoef*dt_inv), joint->constraint.maxBias);
 
 
 	Vector2 delta = (B->get_transform().get_origin() +rB) - (A->get_transform().get_origin() + rA);

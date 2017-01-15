@@ -396,7 +396,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	current_path->set_text(path);
 
 
-	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_path(path);
+	EditorFileSystemDirectory *efd = EditorFileSystem::get_singleton()->get_filesystem_path(path);
 	if (!efd)
 		return;
 
@@ -832,7 +832,7 @@ void FileSystemDock::_move_operation(const String& p_to_path) {
 			return;
 		}
 
-		EditorFileSystemDirectory *efsd=EditorFileSystem::get_singleton()->get_path(move_dirs[i]);
+		EditorFileSystemDirectory *efsd=EditorFileSystem::get_singleton()->get_filesystem_path(move_dirs[i]);
 		if (!efsd)
 			continue;
 		_find_inside_move_files(efsd,inside_files);
@@ -1149,7 +1149,7 @@ void FileSystemDock::_open_pressed(){
 	current_path->set_text(path);
 	_push_to_history();
 
-//	emit_signal("open",path);
+	//emit_signal("open",path);
 
 }
 
@@ -1242,8 +1242,10 @@ Variant FileSystemDock::get_drag_data_fw(const Point2& p_point,Control* p_from) 
 
 		if (seldirs.empty() && selfiles.empty())
 			return Variant();
-		//if (seldirs.size() && selfiles.size())
-		//	return Variant(); //can't really mix files and dirs (i think?) - yes you can, commenting
+		/*
+		if (seldirs.size() && selfiles.size())
+			return Variant(); //can't really mix files and dirs (i think?) - yes you can, commenting
+		*/
 
 		/*if (selfiles.size()==1) {
 			Ref<Resource> resource = ResourceLoader::load(files->get_item_metadata(selfiles.front()->get()));
@@ -1622,7 +1624,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(_MD("_update_tree"),&FileSystemDock::_update_tree);
 	ClassDB::bind_method(_MD("_rescan"),&FileSystemDock::_rescan);
 	ClassDB::bind_method(_MD("_favorites_pressed"),&FileSystemDock::_favorites_pressed);
-//	ClassDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
+	//ClassDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ClassDB::bind_method(_MD("_open_pressed"),&FileSystemDock::_open_pressed);
 	ClassDB::bind_method(_MD("_dir_rmb_pressed"),&FileSystemDock::_dir_rmb_pressed);
 
@@ -1700,7 +1702,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 
 	button_favorite->set_focus_mode(FOCUS_NONE);
 
-//	Control *spacer = memnew( Control);
+	//Control *spacer = memnew( Control);
 
 
 

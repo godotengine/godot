@@ -68,8 +68,8 @@ void PinJointSW::solve(float p_step){
 	Vector3 normal(0,0,0);
 
 
-//	Vector3 angvelA = A->get_transform().origin.getBasis().transpose() * A->getAngularVelocity();
-//	Vector3 angvelB = B->get_transform().origin.getBasis().transpose() * B->getAngularVelocity();
+	//Vector3 angvelA = A->get_transform().origin.getBasis().transpose() * A->getAngularVelocity();
+	//Vector3 angvelB = B->get_transform().origin.getBasis().transpose() * B->getAngularVelocity();
 
 	for (int i=0;i<3;i++)
 	{

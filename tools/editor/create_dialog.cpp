@@ -694,7 +694,7 @@ CreateDialog::CreateDialog() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
 	search_options->connect("cell_selected",this,"_item_selected");
-//	search_options->set_hide_root(true);
+	//search_options->set_hide_root(true);
 	base_type="Object";
 
 	help_bit = memnew( EditorHelpBit );

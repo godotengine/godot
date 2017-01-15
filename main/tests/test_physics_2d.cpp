@@ -63,7 +63,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 	};
 
 
-	BodyShapeData body_shape_data[6];
+	BodyShapeData body_shape_data[8];
 
 
 	void _create_body_shape_data() {
@@ -191,7 +191,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Image image(convex_png);
 
-			body_shape_data[Physics2DServer::SHAPE_CUSTOM+1].image=vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image=vs->texture_create_from_image(image);
 
 			RID convex_polygon_shape = ps->shape_create(Physics2DServer::SHAPE_CONVEX_POLYGON);
 
@@ -206,7 +206,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 			arr.push_back(Point2(11,7)-sb);
 			ps->shape_set_data(convex_polygon_shape,arr);
 
-			body_shape_data[Physics2DServer::SHAPE_CUSTOM+1].shape = convex_polygon_shape;
+			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].shape = convex_polygon_shape;
 
 		}
 
@@ -218,8 +218,10 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 	void _do_ray_query() {
 
-//		Physics2DServer *ps = Physics2DServer::get_singleton();
-	//	ps->query_intersection_segment(ray_query,ray_from,ray_to);
+		/*
+		Physics2DServer *ps = Physics2DServer::get_singleton();
+		ps->query_intersection_segment(ray_query,ray_from,ray_to);
+		*/
 
 	}
 
@@ -273,7 +275,7 @@ protected:
 		ps->body_set_continuous_collision_detection_mode(body,Physics2DServer::CCD_MODE_CAST_SHAPE);
 		ps->body_set_state(body,Physics2DServer::BODY_STATE_TRANSFORM,p_xform);
 
-//		print_line("add body with xform: "+p_xform);
+		//print_line("add body with xform: "+p_xform);
 		RID sprite = vs->canvas_item_create();
 		vs->canvas_item_set_parent(sprite,canvas);
 		vs->canvas_item_set_transform(sprite,p_xform);
@@ -281,8 +283,8 @@ protected:
 		vs->canvas_item_add_texture_rect(sprite,Rect2(-imgsize/2.0,imgsize),body_shape_data[p_shape].image);
 
 		ps->body_set_force_integration_callback(body,this,"_body_moved",sprite);
-//		RID q = ps->query_create(this,"_body_moved",sprite);
-//		ps->query_body_state(q,body);
+		//RID q = ps->query_create(this,"_body_moved",sprite);
+		//ps->query_body_state(q,body);
 
 		return body;
 	}
@@ -380,8 +382,13 @@ public:
 
 			RID vp = vs->viewport_create();
 			canvas = vs->canvas_create();
+
+			Size2i screen_size = OS::get_singleton()->get_window_size();
 			vs->viewport_attach_canvas(vp,canvas);
-			vs->viewport_attach_to_screen(vp,Rect2(Vector2(),OS::get_singleton()->get_window_size()));
+			vs->viewport_set_size(vp,screen_size.x,screen_size.y);
+			vs->viewport_attach_to_screen(vp,Rect2(Vector2(),screen_size));
+			vs->viewport_set_active(vp,true);
+
 			Transform2D smaller;
 			//smaller.scale(Vector2(0.6,0.6));
 			//smaller.elements[2]=Vector2(100,0);
@@ -409,10 +416,12 @@ public:
 			};
 
 			Physics2DServer::ShapeType type = types[i%4];
-//			type=Physics2DServer::SHAPE_SEGMENT;
+			//type=Physics2DServer::SHAPE_SEGMENT;
 			_add_body(type,Transform2D(i*0.8,Point2(152+i*40,100-40*i)));
-			//if (i==0)
-			//	ps->body_set_mode(b,Physics2DServer::BODY_MODE_STATIC);
+			/*
+			if (i==0)
+				ps->body_set_mode(b,Physics2DServer::BODY_MODE_STATIC);
+			*/
 		}
 
 		//RID b= _add_body(Physics2DServer::SHAPE_CIRCLE,Transform2D(0,Point2(101,140)));

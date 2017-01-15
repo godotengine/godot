@@ -369,8 +369,10 @@ void Object::set(const String& p_name, const Variant& p_value) {
 
 	_setv(p_name,p_value);
 
-	//if (!_use_builtin_script())
-//		return;
+	/*
+	if (!_use_builtin_script())
+		return;
+	*/
 
 	bool success;
 	ClassDB::set_property(this,p_name,p_value,success);
@@ -410,8 +412,10 @@ void Object::set(const StringName& p_name, const Variant& p_value, bool *r_valid
 	//try built-in setgetter
 	{
 		if (ClassDB::set_property(this,p_name,p_value,r_valid)) {
-			//if (r_valid)
-			//	*r_valid=true;
+			/*
+			if (r_valid)
+				*r_valid=true;
+			*/
 			return;
 		}
 	}
@@ -1689,12 +1693,12 @@ void Object::_bind_methods() {
 
 	//todo reimplement this per language so all 5 arguments can be called
 
-//	ClassDB::bind_method(_MD("call","method","arg1","arg2","arg3","arg4"),&Object::_call_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
-//	ClassDB::bind_method(_MD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
+	//ClassDB::bind_method(_MD("call","method","arg1","arg2","arg3","arg4"),&Object::_call_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
+	//ClassDB::bind_method(_MD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
 
 	ClassDB::bind_method(_MD("add_user_signal","signal","arguments"),&Object::_add_user_signal,DEFVAL(Array()));
 	ClassDB::bind_method(_MD("has_user_signal","signal"),&Object::_has_user_signal);
-//	ClassDB::bind_method(_MD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
+	//ClassDB::bind_method(_MD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
 
 
 	{

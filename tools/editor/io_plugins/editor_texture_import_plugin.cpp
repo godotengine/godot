@@ -344,7 +344,7 @@ void EditorTextureImportDialog::_choose_save_dir(const String& p_path) {
 void EditorTextureImportDialog::_import() {
 
 
-//	ImportMonitorBlock imb;
+	//ImportMonitorBlock imb;
 
 	Vector<String> files=import_path->get_text().split(",");
 
@@ -539,7 +539,7 @@ void EditorTextureImportDialog::_notification(int p_what) {
 
 		List<String> extensions;
 		ImageLoader::get_recognized_extensions(&extensions);
-	//	ResourceLoader::get_recognized_extensions_for_type("PackedTexture",&extensions);
+		//ResourceLoader::get_recognized_extensions_for_type("PackedTexture",&extensions);
 		file_select->clear_filters();
 		for(int i=0;i<extensions.size();i++) {
 
@@ -643,7 +643,7 @@ void EditorTextureImportDialog::_bind_methods() {
 	ClassDB::bind_method("_browse",&EditorTextureImportDialog::_browse);
 	ClassDB::bind_method("_browse_target",&EditorTextureImportDialog::_browse_target);
 	ClassDB::bind_method("_mode_changed",&EditorTextureImportDialog::_mode_changed);
-//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
+	//ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 }
 
 EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* p_plugin) {
@@ -760,20 +760,22 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	save_select = memnew(	EditorDirDialog );
 	add_child(save_select);
 
-//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+	//save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 	save_select->connect("dir_selected", this,"_choose_save_dir");
 
 	get_ok()->connect("pressed", this,"_import");
 	get_ok()->set_text(TTR("Import"));
 
 	//move stuff up
-	//for(int i=0;i<4;i++)
-	//	vbc->move_child( vbc->get_child( vbc->get_child_count() -1), 0);
+	/*
+	for(int i=0;i<4;i++)
+		vbc->move_child( vbc->get_child( vbc->get_child_count() -1), 0);
+	*/
 
 	error_dialog = memnew ( ConfirmationDialog );
 	add_child(error_dialog);
 	error_dialog->get_ok()->set_text(TTR("Accept"));
-//	error_dialog->get_cancel()->hide();
+	//error_dialog->get_cancel()->hide();
 
 	set_hide_on_ok(false);
 
@@ -784,8 +786,8 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	_mode_changed(EditorTextureImportPlugin::MODE_TEXTURE_3D);
 
 
-//	GLOBAL_DEF("import/shared_textures","res://");
-//	Globals::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
+	//GLOBAL_DEF("import/shared_textures","res://");
+	//Globals::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
 
 
 }
@@ -944,10 +946,12 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 
-		//	image.srgb_to_linear();
-		//}
+			image.srgb_to_linear();
+		}
+		*/
 
 		if (shrink>1) {
 
@@ -1003,11 +1007,13 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
-//
-		//	print_line("CONVERT BECAUSE: "+itos(flags));
-		//	image.srgb_to_linear();
-		//}
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			print_line("CONVERT BECAUSE: "+itos(flags));
+			image.srgb_to_linear();
+		}
+		*/
 
 		int orig_w=image.get_width();
 		int orig_h=image.get_height();
@@ -1425,10 +1431,12 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 
-		//	image.srgb_to_linear();
-		//}
+			image.srgb_to_linear();
+		}
+		*/
 
 		if (shrink>1) {
 
@@ -1484,11 +1492,13 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
-//
-		//	print_line("CONVERT BECAUSE: "+itos(flags));
-		//	image.srgb_to_linear();
-		//}
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			print_line("CONVERT BECAUSE: "+itos(flags));
+			image.srgb_to_linear();
+		}
+		*/
 
 		int orig_w=image.get_width();
 		int orig_h=image.get_height();

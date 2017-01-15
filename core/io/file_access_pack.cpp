@@ -340,7 +340,7 @@ FileAccessPack::~FileAccessPack() {
 //////////////////////////////////////////////////////////////////////////////////
 
 
-bool DirAccessPack::list_dir_begin() {
+Error DirAccessPack::list_dir_begin() {
 
 
 	list_dirs.clear();
@@ -356,7 +356,7 @@ bool DirAccessPack::list_dir_begin() {
 		list_files.push_back(E->get());
 	}
 
-	return true;
+	return OK;
 }
 
 String DirAccessPack::get_next(){

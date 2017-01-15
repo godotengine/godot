@@ -22,6 +22,7 @@ env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_fu
 env.Append(LINKFLAGS=["--shell-file", '"platform/javascript/godot_shell.html"'])
 
 build = env.Program('#bin/godot', javascript_objects, PROGSUFFIX=env["PROGSUFFIX"] + ".html")
+Depends(build, "godot_shell.html")
 
 def make_html_shell(target, source, env):
     html_path = target[0].rstr()

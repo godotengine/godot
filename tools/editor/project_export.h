@@ -99,7 +99,7 @@ private:
 
 	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir);
 	void _rescan();
-//	void _confirmed();
+	//void _confirmed();
 	void _scan_finished();
 
 	void _validate_platform();

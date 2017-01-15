@@ -824,7 +824,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 			color_picker->show();
 			color_picker->set_edit_alpha(hint!=PROPERTY_HINT_COLOR_NO_ALPHA);
-			color_picker->set_color(v);
+			color_picker->set_pick_color(v);
 			set_size( Size2(300*EDSCALE, color_picker->get_combined_minimum_size().height+10*EDSCALE));
 			color_picker->set_focus_on_line_edit();
 			/*
@@ -2161,7 +2161,7 @@ bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_p
 
 	bool found=false;
 
-//	print_line("for prop - "+String(p_prop));
+	//print_line("for prop - "+String(p_prop));
 
 
 	while(node) {
@@ -2174,13 +2174,13 @@ bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_p
 		} else {
 			ss=node->get_scene_instance_state();
 		}
-		//		print_line("at - "+String(edited_scene->get_path_to(node)));
+		//print_line("at - "+String(edited_scene->get_path_to(node)));
 
 		if (ss.is_valid()) {
 
 			NodePath np = node->get_path_to(orig);
 			int node_idx = ss->find_node_by_path(np);
-			//			print_line("\t valid, nodeidx "+itos(node_idx));
+			//print_line("\t valid, nodeidx "+itos(node_idx));
 			if (node_idx>=0) {
 				bool lfound=false;
 				Variant lvar;
@@ -2189,7 +2189,7 @@ bool PropertyEditor::_get_instanced_node_original_property(const StringName& p_p
 
 					found=true;
 					value=lvar;
-					//					print_line("\t found value "+String(value));
+					//print_line("\t found value "+String(value));
 				}
 			}
 		}
@@ -2215,7 +2215,7 @@ bool PropertyEditor::_is_property_different(const Variant& p_current, const Vari
 		Node* edited_scene =EditorNode::get_singleton()->get_edited_scene();
 		bool found_state=false;
 
-		//	print_line("for prop - "+String(p_prop));
+		//print_line("for prop - "+String(p_prop));
 
 
 		while(node) {
@@ -2867,7 +2867,7 @@ TreeItem *PropertyEditor::get_parent_node(String p_path,HashMap<String,TreeItem*
 		item = item_paths.get(p_path);
 	} else {
 
-//		printf("path %s parent path %s - item name %s\n",p_path.ascii().get_data(),p_path.left( p_path.find_last("/") ).ascii().get_data(),p_path.right( p_path.find_last("/") ).ascii().get_data() );
+		//printf("path %s parent path %s - item name %s\n",p_path.ascii().get_data(),p_path.left( p_path.find_last("/") ).ascii().get_data(),p_path.right( p_path.find_last("/") ).ascii().get_data() );
 		TreeItem *parent = get_parent_node( p_path.left( p_path.find_last("/") ),item_paths,root );
 		item = tree->create_item( parent );
 
@@ -3174,8 +3174,10 @@ void PropertyEditor::update_tree() {
 
 		//printf("property %s\n",basename.ascii().get_data());
 		TreeItem * parent = get_parent_node(path,item_path,current_category?current_category:root );
-		//if (parent->get_parent()==root)
-		//	parent=root;
+		/*
+		if (parent->get_parent()==root)
+			parent=root;
+		*/
 		int level = 0;
 		if (parent!=root) {
 			level++;
@@ -3359,7 +3361,7 @@ void PropertyEditor::update_tree() {
 					item->set_range_config(1,min,max,step,p.hint==PROPERTY_HINT_EXP_RANGE);
 				} else if (p.hint==PROPERTY_HINT_ENUM) {
 
-//					int c = p.hint_string.get_slice_count(",");
+					//int c = p.hint_string.get_slice_count(",");
 					item->set_text(1,p.hint_string);
 					if (show_type_icons)
 						item->set_icon( 0,get_icon("Enum","EditorIcons") );
@@ -3368,7 +3370,7 @@ void PropertyEditor::update_tree() {
 					break;
 				} else if (p.hint==PROPERTY_HINT_OBJECT_ID) {
 
-//					int c = p.hint_string.get_slice_count(",");
+					//int c = p.hint_string.get_slice_count(",");
 					item->set_cell_mode(1,TreeItem::CELL_MODE_CUSTOM);
 
 					String type=p.hint_string;
@@ -3704,7 +3706,7 @@ void PropertyEditor::update_tree() {
 
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->set_editable( 1, !read_only );
-//				item->set_text(1,obj->get(p.name));
+				//item->set_text(1,obj->get(p.name));
 				item->set_custom_bg_color(1,obj->get(p.name));
 				if (show_type_icons)
 					item->set_icon( 0,get_icon("Color","EditorIcons") );
@@ -3790,7 +3792,7 @@ void PropertyEditor::update_tree() {
 						item->set_icon( 0, get_icon("Object","EditorIcons") );
 				}
 
-//				item->double_click_signal.connect( Method1<int>( Method2<int,String>( this, &Editoritem_obj_edited ), p.name ) );
+				//item->double_click_signal.connect( Method1<int>( Method2<int,String>( this, &Editoritem_obj_edited ), p.name ) );
 
 			} break;
 			default: {};

@@ -706,7 +706,7 @@ public:
 
 	virtual RID instance_create2(RID p_base, RID p_scenario);
 
-//	virtual RID instance_create(RID p_base,RID p_scenario)=0; // from can be mesh, light,  area and portal so far.
+	//virtual RID instance_create(RID p_base,RID p_scenario)=0; // from can be mesh, light,  area and portal so far.
 	virtual RID instance_create()=0; // from can be mesh, light, poly, area and portal so far.
 
 	virtual void instance_set_base(RID p_instance, RID p_base)=0; // from can be mesh, light, poly, area and portal so far.

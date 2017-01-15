@@ -204,8 +204,10 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 	aabb=aabb.merge(Rect3(aabb.pos+p_motion,aabb.size)); //motion
 	aabb=aabb.grow(p_margin);
 
-	//if (p_motion!=Vector3())
-	//	print_line(p_motion);
+	/*
+	if (p_motion!=Vector3())
+		print_line(p_motion);
+	*/
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 

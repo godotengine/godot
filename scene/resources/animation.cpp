@@ -2005,11 +2005,6 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 			prev_erased=false;
 			norm=Vector3();
 		}
-
-
-
-		//	print_line(itos(i)+" could be eliminated: "+rtos(tr));
-		//}
 	}
 
 

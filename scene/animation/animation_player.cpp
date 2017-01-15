@@ -426,8 +426,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 
 					Variant value=a->value_track_interpolate(i,p_time);
 					//thanks to trigger mode, this should be solved now..
-					//if (p_delta==0 && value.get_type()==Variant::STRING)
-					//	continue; // doing this with strings is messy, should find another way
+					/*
+					if (p_delta==0 && value.get_type()==Variant::STRING)
+						continue; // doing this with strings is messy, should find another way
+					*/
 					if (pa->accum_pass!=accum_pass) {
 						ERR_CONTINUE( cache_update_prop_size >= NODE_CACHE_UPDATE_MAX );
 						cache_update_prop[cache_update_prop_size++]=pa;
@@ -713,7 +715,7 @@ void AnimationPlayer::_animation_process(float p_delta) {
 
 
 
-//	bool any_active=false;
+	//bool any_active=false;
 
 	if (playback.current.from) {
 

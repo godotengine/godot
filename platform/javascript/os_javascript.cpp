@@ -243,7 +243,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 			rasterizer_gles22->set_extensions(gl_extensions);
 		rasterizer = rasterizer_gles22;
 	} else {
-//		rasterizer = memnew( RasterizerGLES1(true, false) );
+		//rasterizer = memnew( RasterizerGLES1(true, false) );
 	}
 
 	print_line("Init VS");
@@ -502,18 +502,12 @@ bool OS_JavaScript::main_loop_iterate() {
 
 		time_to_save_sync-=elapsed;
 
-		print_line("elapsed "+itos(elapsed)+" tts "+itos(time_to_save_sync));
-
 		if (time_to_save_sync<0) {
 			//time to sync, for real
-			// run 'success'
-			print_line("DOING SYNCH!");
 			EM_ASM(
-			  FS.syncfs(function (err) {
-			    assert(!err);
-				console.log("Synched!");
-			    //ccall('success', 'v');
-			  });
+				FS.syncfs(function(err) {
+					if (err) { Module.printErr('Failed to save IDB file system: ' + err.message); }
+				});
 			);
 		}
 
@@ -561,7 +555,7 @@ void OS_JavaScript::push_input(const InputEvent& p_ev) {
 
 void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points) {
 
-//	print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
+	//print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
 
 	switch(p_what) {
 		case 0: { //gesture begin
@@ -804,8 +798,10 @@ String OS_JavaScript::get_resource_dir() const {
 
 String OS_JavaScript::get_data_dir() const {
 
-	//if (get_data_dir_func)
-	//	return get_data_dir_func();
+	/*
+	if (get_data_dir_func)
+		return get_data_dir_func();
+	*/
 	return "/userfs";
 	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };

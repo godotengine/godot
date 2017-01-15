@@ -257,8 +257,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	public void onVideoInit(boolean use_gl2) {
 
-//		mView = new GodotView(getApplication(),io,use_gl2);
-//		setContentView(mView);
+		//mView = new GodotView(getApplication(),io,use_gl2);
+		//setContentView(mView);
 
 		layout = new FrameLayout(this);
 		layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
@@ -582,7 +582,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		initializeGodot();
 
 		
-	//	instanceSingleton( new GodotFacebook(this) );
+		//instanceSingleton( new GodotFacebook(this) );
 
 
 	}
@@ -804,9 +804,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			} break;
 			case MotionEvent.ACTION_MOVE: {
 				GodotLib.touch(1,0,evcount,arr);
-				//for(int i=0;i<event.getPointerCount();i++) {
-				//	System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
-				//}
+				/*
+				for(int i=0;i<event.getPointerCount();i++) {
+					System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
+				}
+				*/
 			} break;
 			case MotionEvent.ACTION_POINTER_UP: {
 				final int indexPointUp = event.getActionIndex();
@@ -822,9 +824,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			case MotionEvent.ACTION_CANCEL:
 			case MotionEvent.ACTION_UP: {
 				GodotLib.touch(2,0,evcount,arr);
-				//for(int i=0;i<event.getPointerCount();i++) {
-				//	System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
-				//}
+				/*
+				for(int i=0;i<event.getPointerCount();i++) {
+					System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
+				}
+				*/
 			} break;
 
 		}
@@ -866,9 +870,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		return mPaymentsManager;
 	}
 
-//	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
-//		this.mPaymentsManager = mPaymentsManager;
-//	};
+	/*
+	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
+		this.mPaymentsManager = mPaymentsManager;
+	}
+	*/
 
 
 	// Audio

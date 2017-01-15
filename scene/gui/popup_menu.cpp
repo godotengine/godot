@@ -136,7 +136,7 @@ int PopupMenu::_get_mouse_over(const Point2& p_over) const {
 
 	Ref<Font> font = get_font("font");
 	int vseparation = get_constant("vseparation");
-//	int hseparation = get_constant("hseparation");
+	//int hseparation = get_constant("hseparation");
 	float font_h=font->get_height();
 
 

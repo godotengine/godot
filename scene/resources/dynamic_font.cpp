@@ -511,7 +511,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		break;
 	}
 
-//	print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
+	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
 
 	if (tex_index==-1) {
 		//could not find texture to fit, create one

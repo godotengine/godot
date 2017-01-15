@@ -617,9 +617,11 @@ void AudioServerJavascript::mix_to_js(int p_frames) {
 
 void AudioServerJavascript::init(){
 
-	//EM_ASM(
-//		console.log('server is '+audio_server);
-//	);
+	/*
+	EM_ASM(
+		console.log('server is '+audio_server);
+	);
+	*/
 
 
 	//int latency = GLOBAL_DEF("javascript/audio_latency",16384);

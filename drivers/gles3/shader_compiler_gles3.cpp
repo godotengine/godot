@@ -676,7 +676,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["AO"]="ao";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"]="emission";
 	actions[VS::SHADER_SPATIAL].renames["DISCARD"]="_discard";
-//	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
+	//actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"]="gl_PointCoord";
 
 

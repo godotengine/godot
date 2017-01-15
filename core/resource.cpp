@@ -522,11 +522,12 @@ void ResourceCache::clear() {
 
 void ResourceCache::reload_externals() {
 
-	//const String *K=NULL;
-	//while ((K=resources.next(K))) {
-//		resources[*K]->reload_external_data();
-//	}
-
+	/*
+	const String *K=NULL;
+	while ((K=resources.next(K))) {
+		resources[*K]->reload_external_data();
+	}
+	*/
 }
 
 bool ResourceCache::has(const String& p_path) {

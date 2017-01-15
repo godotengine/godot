@@ -334,7 +334,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_options->connect("item_activated",this,"_confirmed");
 	set_title(TTR("Search Help"));
 
-//	search_options->set_hide_root(true);
+	//search_options->set_hide_root(true);
 
 }
 
@@ -349,8 +349,10 @@ void EditorHelpIndex::add_type(const String& p_type,HashMap<String,TreeItem*>& p
 
 	if (p_types.has(p_type))
 		return;
-//	if (!ClassDB::is_type(p_type,base) || p_type==base)
-//		return;
+	/*
+	if (!ClassDB::is_type(p_type,base) || p_type==base)
+		return;
+	*/
 
 	String inherits=EditorHelp::get_doc_data()->class_list[p_type].inherits;
 
@@ -571,15 +573,15 @@ void EditorHelp::_button_pressed(int p_idx) {
 
 	if (p_idx==PAGE_CLASS_LIST) {
 
-	//	edited_class->set_pressed(false);
-	//	class_list_button->set_pressed(true);
-	//	tabs->set_current_tab(PAGE_CLASS_LIST);
+		//edited_class->set_pressed(false);
+		//class_list_button->set_pressed(true);
+		//tabs->set_current_tab(PAGE_CLASS_LIST);
 
 	} else if (p_idx==PAGE_CLASS_DESC) {
 
-	//	edited_class->set_pressed(true);
-	//	class_list_button->set_pressed(false);
-	//	tabs->set_current_tab(PAGE_CLASS_DESC);
+		//edited_class->set_pressed(true);
+		//class_list_button->set_pressed(false);
+		//tabs->set_current_tab(PAGE_CLASS_DESC);
 
 	} else if (p_idx==PAGE_CLASS_PREV) {
 
@@ -619,7 +621,7 @@ void EditorHelp::_class_desc_select(const String& p_select) {
 
 
 
-//	print_line("LINK: "+p_select);
+	//print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		emit_signal("go_to_help","class_name:"+p_select.substr(1,p_select.length()));
@@ -824,7 +826,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_text(TTR("Members:"));
 		class_desc->pop();
 		class_desc->pop();
-//		class_desc->add_newline();
+		//class_desc->add_newline();
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
@@ -924,7 +926,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->pop();
 
 		//class_desc->add_newline();
-//		class_desc->add_newline();
+		//class_desc->add_newline();
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
@@ -997,7 +999,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 			}
 			class_desc->pop();//monofont
-//			class_desc->add_newline();
+			//class_desc->add_newline();
 			class_desc->pop(); //cell
 
 		}
@@ -1734,8 +1736,8 @@ void EditorHelp::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 
-//			forward->set_icon(get_icon("Forward","EditorIcons"));
-//			back->set_icon(get_icon("Back","EditorIcons"));
+			//forward->set_icon(get_icon("Forward","EditorIcons"));
+			//back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
 
 		} break;
@@ -1789,7 +1791,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
 	ClassDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
 	ClassDB::bind_method("_class_desc_input",&EditorHelp::_class_desc_input);
-//	ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
+	//ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
 	ClassDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
 	ClassDB::bind_method("_request_help",&EditorHelp::_request_help);
 	ClassDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
@@ -1852,7 +1854,7 @@ EditorHelp::EditorHelp() {
 	editor->get_gui_base()->add_child(class_search);
 	class_search->connect("go_to_help",this,"_help_callback");*/
 
-//	prev_search_page=-1;
+	//prev_search_page=-1;
 }
 
 EditorHelp::~EditorHelp() {
@@ -1872,8 +1874,7 @@ void EditorHelpBit::_go_to_help(String p_what) {
 
 void EditorHelpBit::_meta_clicked(String p_select) {
 
-
-	//	print_line("LINK: "+p_select);
+	//print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		_go_to_help("class_name:"+p_select.substr(1,p_select.length()));
@@ -1887,10 +1888,11 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 			_go_to_help("class_method:"+m.get_slice(".",0)+":"+m.get_slice(".",0));
 		} else {
-//
-	//		if (!method_line.has(m))
-			//	return;
-			//class_desc->scroll_to_line(method_line[m]);
+			/*
+			if (!method_line.has(m))
+				return;
+			class_desc->scroll_to_line(method_line[m]);
+			*/
 		}
 
 	}

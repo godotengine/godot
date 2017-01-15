@@ -179,7 +179,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class R>
@@ -204,7 +204,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(p1,p2); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1,p2); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class R>
@@ -218,7 +218,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(p1,p2,p3); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1,p2,p3); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class R>
@@ -233,7 +233,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5,class R>
@@ -249,7 +249,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5,class P6,class R>
@@ -266,7 +266,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5,p6); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5,p6); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5,class P6,class P7,class R>
@@ -284,7 +284,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5,p6,p7); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5,p6,p7); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5,class P6,class P7,class P8,class R>
@@ -303,7 +303,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 
-		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5,p6,p7,p8); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1,p2,p3,p4,p5,p6,p7,p8); sync->sem->post(); sync->in_use=false; }
 	};
 
 	/** commands that don't return but sync */
@@ -318,7 +318,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1>
@@ -330,7 +330,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2>
@@ -343,7 +343,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1,p2); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1,p2); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3>
@@ -357,7 +357,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1,p2,p3); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1,p2,p3); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4>
@@ -372,7 +372,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1,p2,p3,p4); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1,p2,p3,p4); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5>
@@ -388,7 +388,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5,class P6>
@@ -405,7 +405,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5,p6); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5,p6); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5,class P6,class P7>
@@ -423,7 +423,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5,p6,p7); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5,p6,p7); sync->sem->post(); sync->in_use=false; }
 	};
 
 	template<class T,class M,class P1,class P2,class P3,class P4,class P5,class P6,class P7,class P8>
@@ -442,7 +442,7 @@ class CommandQueueMT {
 
 		SyncSemaphore *sync;
 
-		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5,p6,p7,p8); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() {  (instance->*method)(p1,p2,p3,p4,p5,p6,p7,p8); sync->sem->post(); sync->in_use=false; }
 	};
 
 	/***** BASE *******/

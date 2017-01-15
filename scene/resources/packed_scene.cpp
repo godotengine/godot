@@ -529,9 +529,11 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 
 		bool isdefault = ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one());
 
-//		if (nd.instance<0 && ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one())) {
-//			continue;
-//		}
+		/*
+		if (nd.instance<0 && ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one())) {
+			continue;
+		}
+		*/
 
 
 
@@ -614,8 +616,10 @@ Error SceneState::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<S
 
 		if (!gi.persistent)
 			continue;
-//		if (instance_state_node>=0 && instance_state->is_node_in_group(instance_state_node,gi.name))
-//			continue; //group was instanced, don't add here
+		/*
+		if (instance_state_node>=0 && instance_state->is_node_in_group(instance_state_node,gi.name))
+			continue; //group was instanced, don't add here
+		*/
 
 		bool skip=false;
 		for (List<PackState>::Element *F=pack_state_stack.front();F;F=F->next()) {
@@ -1166,7 +1170,7 @@ void SceneState::set_bundled_scene(const Dictionary& d) {
 	ERR_FAIL_COND( !d.has("nodes"));
 	ERR_FAIL_COND( !d.has("conn_count"));
 	ERR_FAIL_COND( !d.has("conns"));
-//	ERR_FAIL_COND( !d.has("path"));
+	//ERR_FAIL_COND( !d.has("path"));
 
 	int version=1;
 	if (d.has("version"))
@@ -1277,7 +1281,7 @@ void SceneState::set_bundled_scene(const Dictionary& d) {
 		editable_instances[i]=ei[i];
 	}
 
-//	path=d["path"];
+	//path=d["path"];
 
 }
 
@@ -1362,7 +1366,7 @@ Dictionary SceneState::get_bundled_scene() const {
 
 	d["version"]=PACK_VERSION;
 
-//	d["path"]=path;
+	//d["path"]=path;
 
 	return d;
 

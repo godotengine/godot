@@ -2920,7 +2920,7 @@ ShaderLanguage::Node* ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 		ERR_FAIL_COND_V(op->arguments[0]->type!=Node::TYPE_VARIABLE,p_node);
 		VariableNode *vn = static_cast<VariableNode*>(op->arguments[0]);
-	//	StringName name=vn->name;
+		//StringName name=vn->name;
 
 		DataType base=get_scalar_type(op->get_datatype());
 

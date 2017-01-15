@@ -85,6 +85,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "continue",
 "pass",
 "return",
+"match",
 "func",
 "class",
 "extends",
@@ -513,9 +514,11 @@ void GDTokenizerText::_advance() {
 				if (GETCHAR(1)=='=') {
 					_make_token(TK_OP_ASSIGN_ADD);
 					INCPOS(1);
-				//}  else if (GETCHAR(1)=='+') {
-				//	_make_token(TK_OP_PLUS_PLUS);
-				//	INCPOS(1);
+				/*
+				}  else if (GETCHAR(1)=='+') {
+					_make_token(TK_OP_PLUS_PLUS);
+					INCPOS(1);
+				*/
 				} else {
 					_make_token(TK_OP_ADD);
 				}
@@ -526,9 +529,11 @@ void GDTokenizerText::_advance() {
 				if (GETCHAR(1)=='=') {
 					_make_token(TK_OP_ASSIGN_SUB);
 					INCPOS(1);
-				//}  else if (GETCHAR(1)=='-') {
-				//	_make_token(TK_OP_MINUS_MINUS);
-				//	INCPOS(1);
+				/*
+				}  else if (GETCHAR(1)=='-') {
+					_make_token(TK_OP_MINUS_MINUS);
+					INCPOS(1);
+				*/
 				} else {
 					_make_token(TK_OP_SUB);
 				}
@@ -890,6 +895,7 @@ void GDTokenizerText::_advance() {
 								{TK_CF_BREAK,"break"},
 								{TK_CF_CONTINUE,"continue"},
 								{TK_CF_RETURN,"return"},
+								{TK_CF_MATCH, "match"},
 								{TK_CF_PASS,"pass"},
 								{TK_SELF,"self"},
 								{TK_CONST_PI,"PI"},

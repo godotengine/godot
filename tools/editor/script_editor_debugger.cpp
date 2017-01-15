@@ -177,7 +177,7 @@ void ScriptEditorDebugger::debug_next() {
 
 	ERR_FAIL_COND(!breaked);
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 	Array msg;
 	msg.push_back("next");
 	ppeer->put_var(msg);
@@ -189,7 +189,7 @@ void ScriptEditorDebugger::debug_step() {
 
 	ERR_FAIL_COND(!breaked);
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 
 	Array msg;
 	msg.push_back("step");
@@ -202,7 +202,7 @@ void ScriptEditorDebugger::debug_break() {
 
 	ERR_FAIL_COND(breaked);
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 
 	Array msg;
 	msg.push_back("break");
@@ -214,7 +214,7 @@ void ScriptEditorDebugger::debug_continue() {
 
 	ERR_FAIL_COND(!breaked);
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 
 	OS::get_singleton()->enable_for_stealing_focus(EditorNode::get_singleton()->get_child_process_id());
 
@@ -294,7 +294,7 @@ void ScriptEditorDebugger::_scene_tree_property_select_object(ObjectID p_object)
 void ScriptEditorDebugger::_scene_tree_request() {
 
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 
 	Array msg;
 	msg.push_back("request_scene_tree");
@@ -305,7 +305,7 @@ void ScriptEditorDebugger::_scene_tree_request() {
 void ScriptEditorDebugger::_video_mem_request() {
 
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 
 	Array msg;
 	msg.push_back("request_video_mem");
@@ -520,7 +520,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 			d["frame"]=i;
 			s->set_metadata(0,d);
 
-//			String line = itos(i)+" - "+String(d["file"])+":"+itos(d["line"])+" - at func: "+d["function"];
+			//String line = itos(i)+" - "+String(d["file"])+":"+itos(d["line"])+" - at func: "+d["function"];
 			String line = itos(i)+" - "+String(d["file"])+":"+itos(d["line"]);
 			s->set_text(0,line);
 
@@ -993,7 +993,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				}
 			};
 
-			if (!connection->is_connected()) {
+			if (!connection->is_connected_to_host()) {
 				stop();
 				editor->notify_child_process_exited(); //somehow, exited
 				break;
@@ -1183,7 +1183,7 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable) {
 
 void ScriptEditorDebugger::_profiler_seeked() {
 
-	if (!connection.is_valid() || !connection->is_connected())
+	if (!connection.is_valid() || !connection->is_connected_to_host())
 		return;
 
 	if (breaked)
@@ -1205,7 +1205,7 @@ void ScriptEditorDebugger::_stack_dump_frame_selected() {
 	emit_signal("goto_script_line",s,int(d["line"])-1);
 
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 	///
 
 	Array msg;
@@ -1620,7 +1620,7 @@ void ScriptEditorDebugger::set_hide_on_stop(bool p_hide) {
 void ScriptEditorDebugger::_paused() {
 
 	ERR_FAIL_COND(connection.is_null());
-	ERR_FAIL_COND(!connection->is_connected());
+	ERR_FAIL_COND(!connection->is_connected_to_host());
 
 	if (!breaked && EditorNode::get_singleton()->get_pause_button()->is_pressed()) {
 		debug_break();
@@ -1986,7 +1986,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 ScriptEditorDebugger::~ScriptEditorDebugger() {
 
-//	inspector->edit(NULL);
+	//inspector->edit(NULL);
 	memdelete(variables);
 
 	ppeer->set_stream_peer(Ref<StreamPeer>());

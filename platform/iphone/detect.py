@@ -83,6 +83,7 @@ def configure(env):
                               '-framework', 'CoreAudio',
                               '-framework', 'CoreGraphics',
                               '-framework', 'CoreMedia',
+                              '-framework', 'CoreMotion',
                               '-framework', 'Foundation',
                               '-framework', 'Security',
                               '-framework', 'UIKit',
@@ -109,6 +110,7 @@ def configure(env):
                                                 '-framework', 'MediaPlayer',
                                                 '-framework', 'AVFoundation',
                                                 '-framework', 'CoreMedia',
+                                                '-framework', 'CoreMotion',
                               ])
     else:
         env.Append(LINKFLAGS=['-arch', 'armv7', '-Wl,-dead_strip', '-miphoneos-version-min=5.1.1',
@@ -126,6 +128,7 @@ def configure(env):
                                                 '-framework', 'MediaPlayer',
                                                 '-framework', 'AVFoundation',
                                                 '-framework', 'CoreMedia',
+                                                '-framework', 'CoreMotion',
                               ])
 
     if env['game_center'] == 'yes':

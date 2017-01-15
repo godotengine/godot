@@ -198,7 +198,7 @@ public:
 
 	static void _bind_methods() {
 
-	//	ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
+		//ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
 		ClassDB::bind_method("_gui_input",&AnimationCurveEdit::_gui_input);
 		ADD_SIGNAL(MethodInfo("transition_changed"));
 	}
@@ -647,8 +647,10 @@ public:
 			} break;
 		}
 
-		//if (animation->track_get_type(track)!=Animation::TYPE_METHOD)
-		//	p_list->push_back( PropertyInfo( Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
+		/*
+		if (animation->track_get_type(track)!=Animation::TYPE_METHOD)
+			p_list->push_back( PropertyInfo( Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
+		*/
 	}
 
 	UndoRedo *undo_redo;
@@ -2641,8 +2643,10 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							for(Map<SelectedKey,KeyInfo>::Element *E=selection.back();E;E=E->prev()) {
 
 								float newpos=E->get().pos-from_t+motion;
-								//if (newpos<0)
-								//	continue; //no add at the begining
+								/*
+								if (newpos<0)
+									continue; //no add at the begining
+								*/
 								undo_redo->add_do_method(animation.ptr(),"track_insert_key",E->key().track,newpos,animation->track_get_key_value(E->key().track,E->key().key),animation->track_get_key_transition(E->key().track,E->key().key));
 
 							}
@@ -2651,8 +2655,10 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							for(Map<SelectedKey,KeyInfo>::Element *E=selection.back();E;E=E->prev()) {
 
 								float newpos=E->get().pos+-from_t+motion;
-								//if (newpos<0)
-								//	continue; //no remove what no inserted
+								/*
+								if (newpos<0)
+									continue; //no remove what no inserted
+								*/
 								undo_redo->add_undo_method(animation.ptr(),"track_remove_key_at_pos",E->key().track,newpos);
 
 							}
@@ -2690,7 +2696,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 								float oldpos=E->get().pos;
 								float newpos=oldpos-from_t+motion;
 								//if (newpos>=0)
-									undo_redo->add_do_method(this,"_select_at_anim",animation,E->key().track,newpos);
+								undo_redo->add_do_method(this,"_select_at_anim",animation,E->key().track,newpos);
 								undo_redo->add_undo_method(this,"_select_at_anim",animation,E->key().track,oldpos);
 
 							}
@@ -3148,7 +3154,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 				}
 				call_select->connect("selected",this,"_add_call_track");
-//				rename_anim->set_icon( get_icon("Rename","EditorIcons") );
+				//rename_anim->set_icon( get_icon("Rename","EditorIcons") );
 /*
 				edit_anim->set_icon( get_icon("Edit","EditorIcons") );
 				blend_anim->set_icon( get_icon("Blend","EditorIcons") );
@@ -3156,8 +3162,8 @@ void AnimationKeyEditor::_notification(int p_what) {
 				stop->set_icon( get_icon("Stop","EditorIcons") );
 				pause->set_icon( get_icon("Pause","EditorIcons") );
 */
-//			menu->set_icon(get_icon("Animation","EditorIcons"));
-//			play->set_icon(get_icon("AnimationPlay","EditorIcons"));
+			//menu->set_icon(get_icon("Animation","EditorIcons"));
+			//play->set_icon(get_icon("AnimationPlay","EditorIcons"));
 			//menu->set_icon(get_icon("Animation","EditorIcons"));
 			_update_menu();
 
@@ -3920,7 +3926,7 @@ void AnimationKeyEditor::_bind_methods() {
 	ClassDB::bind_method(_MD("set_root"),&AnimationKeyEditor::set_root);
 
 
-//	ClassDB::bind_method(_MD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
+	//ClassDB::bind_method(_MD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
 	ClassDB::bind_method(_MD("_confirm_insert_list"),&AnimationKeyEditor::_confirm_insert_list);
 
 
@@ -4143,9 +4149,9 @@ AnimationKeyEditor::AnimationKeyEditor() {
 /*	l = memnew( Label );
 	l->set_text("Base: ");
 	l->set_pos(Point2(0,3));
-//	dr_panel->add_child(l);*/
+	//dr_panel->add_child(l);*/
 
-//	menu->get_popup()->connect("id_pressed",this,"_menu_callback");
+	//menu->get_popup()->connect("id_pressed",this,"_menu_callback");
 
 
 	hb = memnew( HBoxContainer);

@@ -669,9 +669,11 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 static void _pvrtc_decompress(Image* p_img) {
 
-//	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
-//		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
-//	}
+	/*
+	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
+		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
+	}
+	*/
 
 	ERR_FAIL_COND( p_img->get_format()!=Image::FORMAT_PVRTC2 && p_img->get_format()!=Image::FORMAT_PVRTC2A && p_img->get_format()!=Image::FORMAT_PVRTC4 && p_img->get_format()!=Image::FORMAT_PVRTC4A);
 
@@ -687,9 +689,11 @@ static void _pvrtc_decompress(Image* p_img) {
 
 	decompress_pvrtc((PVRTCBlock*)r.ptr(),_2bit,p_img->get_width(),p_img->get_height(),0,(unsigned char*)w.ptr());
 
-	//for(int i=0;i<newdata.size();i++) {
-	//	print_line(itos(w[i]));
-	//}
+	/*
+	for(int i=0;i<newdata.size();i++) {
+		print_line(itos(w[i]));
+	}
+	*/
 
 	w=PoolVector<uint8_t>::Write();
 	r=PoolVector<uint8_t>::Read();

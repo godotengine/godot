@@ -1357,7 +1357,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	message = memnew( ConfirmationDialog );
 	add_child(message);
-//	message->get_cancel()->hide();
+	//message->get_cancel()->hide();
 	message->set_hide_on_ok(true);
 
 	Control *input_base = memnew( Control );
@@ -1424,7 +1424,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	hbc = memnew( HBoxContainer );
 	device_input->add_child(hbc);
-//	device_input->set_child_rect(hbc);
+	//device_input->set_child_rect(hbc);
 
 	VBoxContainer *vbc_left = memnew( VBoxContainer );
 	hbc->add_child(vbc_left);

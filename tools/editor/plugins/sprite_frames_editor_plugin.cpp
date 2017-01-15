@@ -56,7 +56,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
-//		NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
+		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -937,14 +937,14 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		button->show();
 		editor->make_bottom_panel_item_visible(frames_editor);
-//		frames_editor->set_process(true);
+		//frames_editor->set_process(true);
 	} else {
 
 		button->hide();
 		if (frames_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 
-//		frames_editor->set_process(false);
+		//frames_editor->set_process(false);
 	}
 
 }

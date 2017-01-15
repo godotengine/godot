@@ -146,7 +146,7 @@ struct _VariantCall {
 		Arg(Variant::Type p_type,const StringName &p_name) { name=p_name; type=p_type; }
 	};
 
-//	void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
+	//void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
 
 	static void make_func_return_variant(Variant::Type p_type,const StringName& p_name) {
 
@@ -261,6 +261,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,is_subsequence_ofi);
 	VCALL_LOCALMEM0R(String,bigrams);
 	VCALL_LOCALMEM1R(String,similarity);
+	VCALL_LOCALMEM2R(String,format);
 	VCALL_LOCALMEM2R(String,replace);
 	VCALL_LOCALMEM2R(String,replacen);
 	VCALL_LOCALMEM2R(String,insert);
@@ -354,7 +355,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2,slide);
 	VCALL_LOCALMEM1R(Vector2,reflect);
 	VCALL_LOCALMEM0R(Vector2,angle);
-//	VCALL_LOCALMEM1R(Vector2,cross);
+	//VCALL_LOCALMEM1R(Vector2,cross);
 	VCALL_LOCALMEM0R(Vector2,abs);
 	VCALL_LOCALMEM1R(Vector2,clamped);
 
@@ -1392,6 +1393,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,POOL_STRING_ARRAY,String,bigrams,varray());
 	ADDFUNC1(STRING,REAL,String,similarity,STRING,"text",varray());
 
+	ADDFUNC2(STRING,STRING,String,format,NIL,"values",STRING,"placeholder",varray("{_}"));
 	ADDFUNC2(STRING,STRING,String,replace,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,replacen,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,insert,INT,"pos",STRING,"what",varray());

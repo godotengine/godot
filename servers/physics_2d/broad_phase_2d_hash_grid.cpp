@@ -599,8 +599,10 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 
 		E->key()->pass=pass;
 
-//		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
-//			continue;
+		/*
+		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
+			continue;
+		*/
 
 		if (!E->key()->aabb.intersects_segment(p_from,p_to))
 			continue;
@@ -645,8 +647,10 @@ int BroadPhase2DHashGrid::cull_aabb(const Rect2& p_aabb,CollisionObject2DSW** p_
 		if (!p_aabb.intersects(E->key()->aabb))
 			continue;
 
-//		if (!E->key()->aabb.intersects_segment(p_from,p_to))
-//			continue;
+		/*
+		if (!E->key()->aabb.intersects_segment(p_from,p_to))
+			continue;
+		*/
 
 		p_results[cullcount]=E->key()->owner;
 		p_result_indices[cullcount]=E->key()->subindex;

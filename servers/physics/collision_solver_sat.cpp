@@ -42,9 +42,11 @@ struct _CollectorCallback {
 
 	_FORCE_INLINE_ void call(const Vector3& p_point_A, const Vector3& p_point_B) {
 
-		//if (normal.dot(p_point_A) >= normal.dot(p_point_B))
-		//	return;
-//		print_line("** A: "+p_point_A+" B: "+p_point_B+" D: "+rtos(p_point_A.distance_to(p_point_B)));
+		/*
+		if (normal.dot(p_point_A) >= normal.dot(p_point_B))
+			return;
+		print_line("** A: "+p_point_A+" B: "+p_point_B+" D: "+rtos(p_point_A.distance_to(p_point_B)));
+		*/
 
 		if (swap)
 			callback(p_point_B,p_point_A,userdata);
@@ -108,7 +110,7 @@ static void _generate_contacts_edge_edge(const Vector3 * p_points_A,int p_point_
 
 	Vector3 c=rel_A.cross(rel_B).cross(rel_B);
 
-//	if ( Math::abs(rel_A.dot(c) )<_EDGE_IS_VALID_SUPPORT_TRESHOLD ) {
+	//if ( Math::abs(rel_A.dot(c) )<_EDGE_IS_VALID_SUPPORT_TRESHOLD ) {
 	if ( Math::abs(rel_A.dot(c) )<CMP_EPSILON ) {
 
 		// should handle somehow..
@@ -205,7 +207,7 @@ static void _generate_contacts_face_face(const Vector3 * p_points_A,int p_point_
 
 
 			// check for different sides and non coplanar
-//			if ( (dist0*dist1) < -CMP_EPSILON && !(edge && j)) {
+			//if ( (dist0*dist1) < -CMP_EPSILON && !(edge && j)) {
 			if ( (dist0*dist1) < 0 && !(edge && j)) {
 
 				// calculate intersection
@@ -233,8 +235,10 @@ static void _generate_contacts_face_face(const Vector3 * p_points_A,int p_point_
 	for (int i=0;i<clipbuf_len;i++) {
 
 		float d = plane_B.distance_to(clipbuf_src[i]);
-		//if (d>CMP_EPSILON)
-		//	continue;
+		/*
+		if (d>CMP_EPSILON)
+			continue;
+		*/
 
 		Vector3 closest_B=clipbuf_src[i] - plane_B.normal*d;
 
@@ -1379,7 +1383,7 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Tr
 	for (int i=0;i<face_count_A;i++) {
 
 		Vector3 axis = p_transform_a.xform( faces_A[i].plane ).normal;
-//		Vector3 axis = p_transform_a.basis.xform( faces_A[i].plane.normal ).normalized();
+		//Vector3 axis = p_transform_a.basis.xform( faces_A[i].plane.normal ).normalized();
 
 		if (!separator.test_axis( axis ))
 			return;
@@ -1389,7 +1393,7 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Tr
 	for (int i=0;i<face_count_B;i++) {
 
 		Vector3 axis = p_transform_b.xform( faces_B[i].plane ).normal;
-//		Vector3 axis = p_transform_b.basis.xform( faces_B[i].plane.normal ).normalized();
+		//Vector3 axis = p_transform_b.basis.xform( faces_B[i].plane.normal ).normalized();
 
 
 		if (!separator.test_axis( axis ))
@@ -1502,7 +1506,7 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p
 	// faces of A
 	for (int i=0;i<face_count;i++) {
 
-//		Vector3 axis = p_transform_a.xform( faces[i].plane ).normal;
+		//Vector3 axis = p_transform_a.xform( faces[i].plane ).normal;
 		Vector3 axis = p_transform_a.basis.xform( faces[i].plane.normal ).normalized();
 
 		if (!separator.test_axis( axis ))

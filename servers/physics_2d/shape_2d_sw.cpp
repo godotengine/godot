@@ -639,8 +639,10 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vect
 	for(int i=0;i<point_count;i++) {
 
 		//hmm crap.. no can do..
-		//if (d.dot(points[i].normal)>=0)
-		//	continue;
+		/*
+		if (d.dot(points[i].normal)>=0)
+			continue;
+		*/
 
 
 		Vector2 res;
@@ -816,8 +818,10 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vec
 	real_t d=1e10;
 	bool inters=false;
 
-	//for(int i=0;i<bvh_depth;i++)
-	//	stack[i]=0;
+	/*
+	for(int i=0;i<bvh_depth;i++)
+		stack[i]=0;
+	*/
 
 	int level=0;
 
@@ -1077,8 +1081,10 @@ void ConcavePolygonShape2DSW::cull(const Rect2& p_local_aabb,Callback p_callback
 
 	};
 
-	//for(int i=0;i<bvh_depth;i++)
-	//	stack[i]=0;
+	/*
+	for(int i=0;i<bvh_depth;i++)
+		stack[i]=0;
+	*/
 
 
 	int level=0;

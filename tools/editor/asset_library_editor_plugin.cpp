@@ -1462,7 +1462,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	library_vb_border->add_child(library_vb);
-//	margin_panel->set_stop_mouse(false);
+	//margin_panel->set_stop_mouse(false);
 
 	asset_top_page = memnew( HBoxContainer );
 	library_vb->add_child(asset_top_page);

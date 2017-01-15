@@ -67,7 +67,7 @@ void SpatialSound2DServerSW::_update_sources() {
 
 SpatialSound2DServerSW::Room::Room() {
 
-//	params[ROOM_PARAM_SPEED_OF_SOUND]=343.0;
+	//params[ROOM_PARAM_SPEED_OF_SOUND]=343.0;
 	params[ROOM_PARAM_PITCH_SCALE]=1.0;
 	params[ROOM_PARAM_VOLUME_SCALE_DB]=0;
 	params[ROOM_PARAM_REVERB_SEND]=0;
@@ -79,7 +79,7 @@ SpatialSound2DServerSW::Room::Room() {
 	params[ROOM_PARAM_ATTENUATION_REVERB_SCALE]=0.0;
 	override_other_sources=false;
 	reverb=ROOM_REVERB_HALL;
-//	octree_id=0;
+	//octree_id=0;
 	level=-1;
 
 
@@ -149,7 +149,7 @@ void SpatialSound2DServerSW::room_set_space(RID p_room,RID p_space) {
 
 		Space *space = space_owner.get(room->space);
 		space->rooms.erase(p_room);
-//		space->octree.erase(room->octree_id);
+		//space->octree.erase(room->octree_id);
 		//room->octree_id=0;
 	}
 
@@ -160,10 +160,10 @@ void SpatialSound2DServerSW::room_set_space(RID p_room,RID p_space) {
 		Space *space = space_owner.get(p_space);
 		ERR_FAIL_COND(!space);
 		space->rooms.insert(p_room);
-//		room->octree_id=space->octree.create(room,AABB());
+		//room->octree_id=space->octree.create(room,AABB());
 		//set bounds
-//		AABB aabb = room->bounds.is_empty()?AABB():room->bounds.get_aabb();
-	//	space->octree.move(room->octree_id,room->transform.xform(aabb));
+		//AABB aabb = room->bounds.is_empty()?AABB():room->bounds.get_aabb();
+		//space->octree.move(room->octree_id,room->transform.xform(aabb));
 		room->space=p_space;
 	}
 
@@ -191,11 +191,11 @@ void SpatialSound2DServerSW::room_set_bounds(RID p_room, const PoolVector<Point2
 	if (!room->space.is_valid())
 		return;
 
-//	AABB aabb = room->bounds.is_empty()?AABB():room->bounds.get_aabb();
-//	Space* space = space_owner.get(room->space);
-//	ERR_FAIL_COND(!space);
+	//AABB aabb = room->bounds.is_empty()?AABB():room->bounds.get_aabb();
+	//Space* space = space_owner.get(room->space);
+	//ERR_FAIL_COND(!space);
 
-//	space->octree.move(room->octree_id,room->transform.xform(aabb));
+	//space->octree.move(room->octree_id,room->transform.xform(aabb));
 
 }
 PoolVector<Point2> SpatialSound2DServerSW::room_get_bounds(RID p_room) const {
@@ -603,7 +603,7 @@ void SpatialSound2DServerSW::free(RID p_id) {
 		if (room->space.is_valid()) {
 			Space *space = space_owner.get(room->space);
 			ERR_FAIL_COND(!space);
-//			space->octree.erase(room->octree_id);
+			//space->octree.erase(room->octree_id);
 			space->rooms.erase(p_id);
 		}
 		room_owner.free(p_id);

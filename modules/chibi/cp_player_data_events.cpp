@@ -194,7 +194,7 @@ void CPPlayer::Voice_Control::update_info_from_master_channel() {
 	reverb_send=master_channel->reverb_send;
 	chorus_send=master_channel->chorus_send;
 
-//	last_note_type=master_channel->last_note_type;
+	//last_note_type=master_channel->last_note_type;
 
 	sample_start_index=master_channel->sample_start_index;
 	filter=master_channel->filter;
@@ -262,7 +262,7 @@ void CPPlayer::update_mixer() {
 		/* Start Envelopes */	
                	if ( song->has_instruments() && ((v.kick==KICK_NOTE)||(v.kick==KICK_ENVELOPE))) {
 	
-//			Voice_Control *carry=0;
+			//Voice_Control *carry=0;
 			
 			
 			if (v.has_master_channel && v.master_channel->carry.maybe) {
@@ -462,7 +462,7 @@ void CPPlayer::update_mixer() {
 			} else {
 
 				filter_env=pe_value+32; //max 64
-//			        printf("pitch envelope at %i",filter_env);
+				//printf("pitch envelope at %i",filter_env);
 			
 			}
 		}
@@ -602,17 +602,19 @@ void CPPlayer::handle_tick() {
 		/* process pattern-delay. pf->patdly2 is the counter and pf->patdly is
 		   the command memory. */
 
-//		if (control.pattern_delay_1) {
+		/*
+		if (control.pattern_delay_1) {
 
-//			control.pattern_delay_2=control.pattern_delay_1;
-//			control.pattern_delay_1=0;
-//		}
-//		if (control.pattern_delay_2) {
-//			 patterndelay active
-//			if (--control.pattern_delay_2)
-//				 so turn back pf->patpos by 1
-//				if (pf->patpos) pf->patpos--;
-//		}
+			control.pattern_delay_2=control.pattern_delay_1;
+			control.pattern_delay_1=0;
+		}
+		if (control.pattern_delay_2) {
+			patterndelay active
+			if (--control.pattern_delay_2)
+				// so turn back pf->patpos by 1
+				if (pf->patpos) pf->patpos--;
+		}
+		*/
 
 		if (control.play_mode!=PLAY_NOTHING) {
 

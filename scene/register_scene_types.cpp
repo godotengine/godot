@@ -319,7 +319,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<ShortCut>();
 	ClassDB::register_class<Control>();
-//	ClassDB::register_type<EmptyControl>();
+	//ClassDB::register_type<EmptyControl>();
 	ClassDB::register_class<Button>();
 	ClassDB::register_class<Label>();
 	ClassDB::register_class<HScrollBar>();
@@ -494,7 +494,7 @@ void register_scene_types() {
 	ClassDB::register_class<Particles2D>();
 	ClassDB::register_class<ParticleAttractor2D>();
 	ClassDB::register_class<Sprite>();
-//	ClassDB::register_type<ViewportSprite>();
+	//ClassDB::register_type<ViewportSprite>();
 	ClassDB::register_class<SpriteFrames>();
 	ClassDB::register_class<AnimatedSprite>();
 	ClassDB::register_class<Position2D>();
@@ -537,9 +537,9 @@ void register_scene_types() {
 	/* REGISTER RESOURCES */
 
 	ClassDB::register_virtual_class<Shader>();
-//	ClassDB::register_virtual_type<ShaderGraph>();
+	//ClassDB::register_virtual_type<ShaderGraph>();
 	ClassDB::register_class<CanvasItemShader>();
-//	ClassDB::register_type<CanvasItemShaderGraph>();
+	//ClassDB::register_type<CanvasItemShaderGraph>();
 
 #ifndef _3D_DISABLED
 	ClassDB::register_class<Mesh>();
@@ -547,9 +547,9 @@ void register_scene_types() {
 	ClassDB::register_class<FixedSpatialMaterial>();
 	SceneTree::add_idle_callback(FixedSpatialMaterial::flush_changes);
 	FixedSpatialMaterial::init_shaders();
-//	ClassDB::register_type<ShaderMaterial>();
+	//ClassDB::register_type<ShaderMaterial>();
 	ClassDB::register_class<RoomBounds>();
-//	ClassDB::register_type<MaterialShaderGraph>();
+	//ClassDB::register_type<MaterialShaderGraph>();
 	ClassDB::register_class<SpatialShader>();
 	ClassDB::register_class<ParticlesShader>();
 	ClassDB::register_class<MultiMesh>();
@@ -605,7 +605,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<AudioStream>();
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
 //TODO: Adapt to the new AudioStream API or drop (GH-3307)
-//	ClassDB::register_type<AudioStreamGibberish>();
+	//ClassDB::register_type<AudioStreamGibberish>();
 	ClassDB::register_virtual_class<VideoStream>();
 
 	OS::get_singleton()->yield(); //may take time to init

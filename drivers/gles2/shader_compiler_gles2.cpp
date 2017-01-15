@@ -435,7 +435,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 						//create the call to sample the screen, and clamp it
 						uses_texpos=true;
 						code="get_texpos("+dump_node_code(onode->arguments[1],p_level)+"";
-//						code="get_texpos(gl_ProjectionMatrixInverse * texture2D( depth_texture, clamp(("+dump_node_code(onode->arguments[1],p_level)+").xy,vec2(0.0),vec2(1.0))*gl_LightSource[5].specular.zw+gl_LightSource[5].specular.xy)";
+						//code="get_texpos(gl_ProjectionMatrixInverse * texture2D( depth_texture, clamp(("+dump_node_code(onode->arguments[1],p_level)+").xy,vec2(0.0),vec2(1.0))*gl_LightSource[5].specular.zw+gl_LightSource[5].specular.xy)";
 						//code="(texture2D( screen_texture, ("+dump_node_code(onode->arguments[1],p_level)+").xy).rgb";
 						break;
 					} else if (custom_h && callfunc=="cosh_custom") {
@@ -571,12 +571,13 @@ Error ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 
 		global_code+=uline;
 		if (uniforms) {
-			//if (uniforms->has(E->key())) {
-			//	//repeated uniform, error
-		//		ERR_EXPLAIN("Uniform already exists from other shader: "+String(E->key()));
-		//		ERR_FAIL_COND_V(uniforms->has(E->key()),ERR_ALREADY_EXISTS);
-//
-//			}
+			/*
+			if (uniforms->has(E->key())) {
+				//repeated uniform, error
+				ERR_EXPLAIN("Uniform already exists from other shader: "+String(E->key()));
+				ERR_FAIL_COND_V(uniforms->has(E->key()),ERR_ALREADY_EXISTS);
+			}
+			*/
 			SL::Uniform u = E->get();
 			u.order+=ubase;
 			uniforms->insert(E->key(),u);
@@ -812,8 +813,8 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VAR1"]="var1_interp";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VAR2"]="var2_interp";
 
-//	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_POS"]="SCREEN_POS";
-//	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_SIZE"]="SCREEN_SIZE";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_POS"]="SCREEN_POS";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_SIZE"]="SCREEN_SIZE";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["INSTANCE_ID"]="instance_id";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["TIME"]="time";
 

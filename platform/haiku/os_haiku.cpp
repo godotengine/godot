@@ -119,9 +119,11 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	ERR_FAIL_COND(!visual_server);
 
 	// TODO: enable multithreaded VS
-	//if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-	//	visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	//}
+	/*
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+	}
+	*/
 
 	input = memnew(InputDefault);
 	window->SetInput(input);

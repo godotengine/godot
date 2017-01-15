@@ -1188,9 +1188,11 @@ bool VisualServerCanvas::free(RID p_rid) {
 			canvas_item->child_items[i]->parent=RID();
 		}
 
-//		if (canvas_item->material) {
-//			canvas_item->material->owners.erase(canvas_item);
-//		}
+		/*
+		if (canvas_item->material) {
+			canvas_item->material->owners.erase(canvas_item);
+		}
+		*/
 
 		canvas_item_owner.free( p_rid );
 

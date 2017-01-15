@@ -325,7 +325,7 @@ RES Particles::_get_gizmo_geometry() const {
 	mat->set_parameter( FixedSpatialMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
 	mat->set_blend_mode( Material::BLEND_MODE_ADD );
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+	//mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
 
 
 	surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -334,7 +334,7 @@ RES Particles::_get_gizmo_geometry() const {
 	int sides=16;
 	int sections=24;
 
-//	float len=1;
+	//float len=1;
 	float deg=Math::deg2rad(var[VAR_SPREAD]*180);
 	if (deg==180)
 		deg=179.5;

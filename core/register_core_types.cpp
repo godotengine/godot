@@ -123,7 +123,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<PacketPeer>();
 	ClassDB::register_class<PacketPeerStream>();
 	ClassDB::register_class<MainLoop>();
-//	ClassDB::register_type<OptimizedSaver>();
+	//ClassDB::register_type<OptimizedSaver>();
 	ClassDB::register_class<Translation>();
 	ClassDB::register_class<PHashTranslation>();
 	ClassDB::register_class<UndoRedo>();

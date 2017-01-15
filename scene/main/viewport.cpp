@@ -293,12 +293,12 @@ void Viewport::_vp_enter_tree() {
 
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent_ci);
 		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,false);
-//		VisualServer::get_singleton()->canvas_item_attach_viewport(canvas_item,viewport);
+		//VisualServer::get_singleton()->canvas_item_attach_viewport(canvas_item,viewport);
 		parent_control->connect("resized",this,"_parent_resized");
 		parent_control->connect("visibility_changed",this,"_parent_visibility_changed");
 	} else if (!parent){
 
-//		VisualServer::get_singleton()->viewport_attach_to_screen(viewport,0);
+		//VisualServer::get_singleton()->viewport_attach_to_screen(viewport,0);
 
 	}
 */
@@ -389,7 +389,7 @@ void Viewport::_notification(int p_what) {
 
 			if (get_parent()) {
 				parent = get_parent()->get_viewport();
-				VisualServer::get_singleton()->viewport_set_parent_viewport(viewport,parent->get_viewport());
+				VisualServer::get_singleton()->viewport_set_parent_viewport(viewport,parent->get_viewport_rid());
 			} else {
 				parent=NULL;
 			}
@@ -462,8 +462,10 @@ void Viewport::_notification(int p_what) {
 			if (world_2d.is_valid())
 				world_2d->_remove_viewport(this);
 
-			//if (!render_target)
-			//	_vp_exit_tree();
+			/*
+			if (!render_target)
+				_vp_exit_tree();
+			*/
 
 			VisualServer::get_singleton()->viewport_set_scenario(viewport,RID());
 			SpatialSoundServer::get_singleton()->listener_set_space(internal_listener, RID());
@@ -734,7 +736,7 @@ void Viewport::_notification(int p_what) {
 	}
 }
 
-RID Viewport::get_viewport() const {
+RID Viewport::get_viewport_rid() const {
 
 	return viewport;
 }
@@ -1309,7 +1311,7 @@ void Viewport::queue_screen_capture(){
 }
 Image Viewport::get_screen_capture() const {
 
-//	return VS::get_singleton()->viewport_get_screen_capture(viewport);
+	//return VS::get_singleton()->viewport_get_screen_capture(viewport);
 	return Image();
 }
 
@@ -1379,7 +1381,7 @@ Viewport::ShadowAtlasQuadrantSubdiv Viewport::get_shadow_atlas_quadrant_subdiv(i
 void Viewport::clear() {
 
 	//clear=true;
-//	VisualServer::get_singleton()->viewport_clear(viewport);
+	//VisualServer::get_singleton()->viewport_clear(viewport);
 }
 
 
@@ -1399,9 +1401,11 @@ Transform2D Viewport::_get_input_pre_xform() const {
 
 Vector2 Viewport::_get_window_offset() const {
 
-//	if (parent_control) {
-//		return (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
-//	}
+	/*
+	if (parent_control) {
+		return (parent_control->get_viewport()->get_final_transform() * parent_control->get_global_transform_with_canvas()).get_origin();
+	}
+	*/
 
 	return Vector2();
 }
@@ -1521,8 +1525,10 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 	}
 #endif
 
-//	if (parent_control && !parent_control->is_visible_in_tree())
-//		return;
+	/*
+	if (parent_control && !parent_control->is_visible_in_tree())
+		return;
+	*/
 
 	if (to_screen_rect==Rect2())
 		return; //if render target, can't get input events
@@ -1647,7 +1653,7 @@ void Viewport::_gui_show_tooltip() {
 
 void Viewport::_gui_call_input(Control *p_control,const InputEvent& p_input) {
 
-//	_block();
+	//_block();
 
 
 	InputEvent ev = p_input;
@@ -1745,7 +1751,7 @@ Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_g
 	Control *c=p_node->cast_to<Control>();
 
 	if (c) {
-	//	print_line("at "+String(c->get_path())+" POS "+c->get_pos()+" bt "+p_xform);
+		//print_line("at "+String(c->get_path())+" POS "+c->get_pos()+" bt "+p_xform);
 	}
 
 	//subwindows first!!
@@ -1798,9 +1804,11 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 		return;
 	}
 	//?
-//	if (!is_visible()) {
-//		return; //simple and plain
-//	}
+	/*
+	if (!is_visible()) {
+		return; //simple and plain
+	}
+	*/
 
 
 	switch(p_event.type) {
@@ -1849,10 +1857,10 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 
 					//Matrix32 parent_xform;
 
-					//if (data.parent_canvas_item)
-					//	parent_xform=data.parent_canvas_item->get_global_transform();
-
-
+					/*
+					if (data.parent_canvas_item)
+						parent_xform=data.parent_canvas_item->get_global_transform();
+					*/
 
 					gui.mouse_focus = _gui_find_control(pos);
 					//print_line("has mf "+itos(gui.mouse_focus!=NULL));
@@ -1903,7 +1911,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					_gui_call_input(gui.mouse_focus,p_event);
 				}
 
-				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
 
@@ -1980,7 +1988,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				}*/
 
 
-				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
 			}
@@ -2419,7 +2427,7 @@ void Viewport::_gui_control_grab_focus(Control* p_control) {
 	if (gui.key_focus && gui.key_focus==p_control)
 		return;
 
-	get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"_viewports","_gui_remove_focus");
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,"_viewports","_gui_remove_focus");
 	gui.key_focus=p_control;
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
@@ -2746,7 +2754,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(_MD("set_physics_object_picking","enable"), &Viewport::set_physics_object_picking);
 	ClassDB::bind_method(_MD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 
-	ClassDB::bind_method(_MD("get_viewport"), &Viewport::get_viewport);
+	ClassDB::bind_method(_MD("get_viewport_rid"), &Viewport::get_viewport_rid);
 	ClassDB::bind_method(_MD("input","local_event"), &Viewport::input);
 	ClassDB::bind_method(_MD("unhandled_input","local_event"), &Viewport::unhandled_input);
 
@@ -2788,7 +2796,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"size"), _SCS("set_size"), _SCS("get_size") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), _SCS("set_world"), _SCS("get_world") );
-//	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
+	//ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
 	ADD_GROUP("Rendering","");
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"), _SCS("set_msaa"), _SCS("get_msaa") );

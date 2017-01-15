@@ -681,11 +681,13 @@ void light_process_omni(int idx, vec3 vertex, vec3 eye_vec,vec3 normal,vec3 bino
 
 			splane.z=1.0 - splane.z;
 
-			//if (clamp_rect.z<clamp_rect.w) {
-			//	clamp_rect.x+=clamp_rect.z;
-			//} else {
-			//	clamp_rect.y+=clamp_rect.w;
-			//}
+			/*
+			if (clamp_rect.z<clamp_rect.w) {
+				clamp_rect.x+=clamp_rect.z;
+			} else {
+				clamp_rect.y+=clamp_rect.w;
+			}
+			*/
 
 		}
 

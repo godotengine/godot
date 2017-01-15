@@ -391,8 +391,10 @@ void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_depe
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		//if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
-		//	continue;
+		/*
+		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+			continue;
+		*/
 
 		loader[i]->get_dependencies(remapped_path,p_dependencies,p_add_types);
 
@@ -416,8 +418,10 @@ Error ResourceLoader::rename_dependencies(const String &p_path,const Map<String,
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		//if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
-		//	continue;
+		/*
+		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+			continue;
+		*/
 
 		return loader[i]->rename_dependencies(p_path,p_map);
 

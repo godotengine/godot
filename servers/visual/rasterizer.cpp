@@ -256,7 +256,7 @@ RID Rasterizer::_create_shader(const FixedSpatialMaterialShaderKey& p_key) {
 
 		vcode+="uniform float "+_fixed_material_point_size_name+";\n";
 		vcode+="POINT_SIZE="+_fixed_material_point_size_name+";\n";
-//		vcode+="POINT_SIZE=10.0;\n";
+		//vcode+="POINT_SIZE=10.0;\n";
 	}
 
 	String lcode;

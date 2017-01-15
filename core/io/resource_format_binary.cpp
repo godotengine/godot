@@ -1059,7 +1059,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew( ResourceInteractiveLoaderBinary );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->open(f);
 
 
@@ -1114,7 +1114,7 @@ Error ResourceFormatLoaderBinary::load_import_metadata(const String &p_path, Ref
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew( ResourceInteractiveLoaderBinary );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->recognize(f);
 	if(ria->error!=OK)
 		return ERR_FILE_UNRECOGNIZED;
@@ -1159,14 +1159,14 @@ void ResourceFormatLoaderBinary::get_dependencies(const String& p_path,List<Stri
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew( ResourceInteractiveLoaderBinary );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	ria->get_dependencies(f,p_dependencies,p_add_types);
 }
 
 Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path,const Map<String,String>& p_map) {
 
 
-//	Error error=OK;
+	//Error error=OK;
 
 
 	FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
@@ -1250,7 +1250,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path,const
 		ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 		ria->res_path=ria->local_path;
 		ria->remaps=p_map;
-	//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+		//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 		ria->open(f);
 
 		err = ria->poll();
@@ -1384,7 +1384,7 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew( ResourceInteractiveLoaderBinary );
 	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = ria->recognize(f);
 	return r;
 
@@ -1708,8 +1708,10 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
-				//if (!_check_type(dict[E->get()]))
-				//	continue;
+				/*
+				if (!_check_type(dict[E->get()]))
+					continue;
+				*/
 
 				write_variant(E->get());
 				write_variant(d[E->get()]);
@@ -2150,7 +2152,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	}
 
 	Vector<uint64_t> ofs_table;
-//	int saved_idx=0;
+	//int saved_idx=0;
 	//now actually save the resources
 
 	for(List<ResourceData>::Element *E=resources.front();E;E=E->next()) {

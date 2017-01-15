@@ -92,8 +92,6 @@ private:
 
 	Overlay overlay;
 
-	Color modulate;
-
 	bool has_point(const Point2& p_point) const;
 
 protected:
@@ -146,9 +144,6 @@ public:
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
 
-
-	void set_modulate(const Color& p_color);
-	Color get_modulate() const;
 
 	void set_overlay(Overlay p_overlay);
 	Overlay get_overlay() const;

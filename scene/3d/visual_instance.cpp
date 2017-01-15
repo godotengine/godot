@@ -102,7 +102,7 @@ void VisualInstance::_notification(int p_what) {
 			VisualServer::get_singleton()->instance_set_scenario( instance, RID() );
 			VisualServer::get_singleton()->instance_set_room(instance,RID());
 			VisualServer::get_singleton()->instance_attach_skeleton( instance, RID() );
-		//	VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
+			//VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -368,7 +368,7 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_distance"), _SCS("get_lod_max_distance"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_hysteresis"), _SCS("get_lod_max_hysteresis"));
 
-//	ADD_SIGNAL( MethodInfo("visibility_changed"));
+	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 
 	BIND_CONSTANT(FLAG_CAST_SHADOW );
 	BIND_CONSTANT(FLAG_BILLBOARD );
@@ -399,7 +399,7 @@ GeometryInstance::GeometryInstance() {
 
 	shadow_casting_setting=SHADOW_CASTING_SETTING_ON;
 	extra_cull_margin=0;
-//	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
+	//VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 
 
 }

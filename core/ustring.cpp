@@ -560,7 +560,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 	int pos=0;
 	int prev_pos=0;
-//	int slices=1;
+	//int slices=1;
 	if (p_slice<0)
 		return "";
 	if (find(p_splitter)==-1)
@@ -574,7 +574,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 			pos=length(); //reached end
 
 		int from=prev_pos;
-	//	int to=pos;
+		//int to=pos;
 
 		if (p_slice==i) {
 
@@ -1420,7 +1420,7 @@ bool String::parse_utf8(const char* p_utf8,int p_len) {
 			}
 		}
 
-//		printf("char %i, len %i\n",unichar,len);
+		//printf("char %i, len %i\n",unichar,len);
 		if (sizeof(wchar_t)==2 && unichar>0xFFFF) {
 			unichar=' '; //too long for windows
 
@@ -2951,6 +2951,78 @@ bool String::matchn(const String& p_wildcard) const {
 
 }
 
+String String::format(const Variant& values,String placeholder) const {
+
+	String new_string = String( this->ptr() );
+
+	if( values.get_type() == Variant::ARRAY ) {
+		Array values_arr = values;
+
+		for(int i=0;i<values_arr.size();i++) {
+			String i_as_str = String::num_int64( i );
+
+			if( values_arr[i].get_type() == Variant::ARRAY ) {//Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
+				Array value_arr = values_arr[i];
+
+				if( value_arr.size()==2 ) {
+					Variant v_key = value_arr[0];
+					String key;
+
+					key = v_key.get_construct_string();
+					if( key.left(1)=="\"" && key.right(key.length()-1)=="\"" ) {
+						key = key.substr(1,key.length()-2);
+					}
+
+					Variant v_val = value_arr[1];
+					String val;
+					val = v_val.get_construct_string();
+
+					if( val.left(1)=="\"" && val.right(val.length()-1)=="\"" ) {
+						val = val.substr(1,val.length()-2);
+					}
+
+					new_string = new_string.replacen( placeholder.replace("_", key ), val );
+				}else {
+					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
+				}
+			} else {//Array structure ["RobotGuy","Logis","rookie"]
+				Variant v_val = values_arr[i];
+				String val;
+				val = v_val.get_construct_string();
+
+				if( val.left(1)=="\"" && val.right(val.length()-1)=="\"" ) {
+					val = val.substr(1,val.length()-2);
+				}
+
+				new_string = new_string.replacen( placeholder.replace("_", i_as_str ), val );
+			}
+		}
+	}else if( values.get_type() == Variant::DICTIONARY ) {
+		Dictionary d = values;
+		List<Variant> keys;
+		d.get_key_list(&keys);
+
+		for (List<Variant>::Element *E=keys.front();E;E=E->next()) {
+			String key = E->get().get_construct_string();
+			String val = d[E->get()].get_construct_string();
+
+			if( key.left(1)=="\"" && key.right(key.length()-1)=="\"" ) {
+				key = key.substr(1,key.length()-2);
+			}
+
+			if( val.left(1)=="\"" && val.right(val.length()-1)=="\"" ) {
+				val = val.substr(1,val.length()-2);
+			}
+
+			new_string = new_string.replacen( placeholder.replace("_", key ), val );
+		}
+	}else{
+		ERR_PRINT(String("Invalid type: use Array or Dictionary.").ascii().get_data());
+	}
+
+	return new_string;
+}
+
 String String::replace(String p_key,String p_with) const {
 
 	String new_string;
@@ -3822,8 +3894,9 @@ String String::get_extension() const {
 }
 
 String String::plus_file(const String& p_file) const {
-
-	if (length()>0 && operator [](length()-1)=='/')
+	if (empty())
+		return p_file;
+	if (operator [](length()-1)=='/' || p_file.operator [](0)=='/')
 		return *this+p_file;
 	else
 		return *this+"/"+p_file;
@@ -4211,4 +4284,3 @@ String RTR(const String& p_text) {
 
 	return p_text;
 }
-

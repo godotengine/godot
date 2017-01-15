@@ -60,7 +60,7 @@ void ColorRampEdit::_show_color_picker() {
 	if (grabbed==-1)
 		return;
 	Size2 ms = Size2(350, picker->get_combined_minimum_size().height+10);
-	picker->set_color(points[grabbed].color);
+	picker->set_pick_color(points[grabbed].color);
 	popup->set_pos(get_global_pos()-Vector2(ms.width-get_size().width,ms.height));
 	popup->set_size(ms);
 	popup->popup();

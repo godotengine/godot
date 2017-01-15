@@ -52,7 +52,7 @@ void Camera2D::_update_scroll() {
 		if (viewport) {
 		       viewport->set_canvas_transform( xform );
 		}
-		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_camera_moved",xform);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,group_name,"_camera_moved",xform);
 	};
 
 }
@@ -145,7 +145,7 @@ Transform2D Camera2D::get_camera_transform()  {
 			float c = smoothing*get_fixed_process_delta_time();
 			smoothed_camera_pos = ((camera_pos-smoothed_camera_pos)*c)+smoothed_camera_pos;
 			ret_camera_pos=smoothed_camera_pos;
-			//			camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
+			//camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
 		} else {
 
 			ret_camera_pos=smoothed_camera_pos=camera_pos;
@@ -252,7 +252,7 @@ void Camera2D::_notification(int p_what) {
 
 			canvas = get_canvas();
 
-			RID vp = viewport->get_viewport();
+			RID vp = viewport->get_viewport_rid();
 
 			group_name = "__cameras_"+itos(vp.get_id());
 			canvas_group_name ="__cameras_c"+itos(canvas.get_id());
@@ -375,7 +375,7 @@ void Camera2D::make_current() {
 	if (!is_inside_tree()) {
 		current=true;
 	} else {
-		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",this);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",this);
 	}
 }
 
@@ -383,7 +383,7 @@ void Camera2D::clear_current() {
 
 	current=false;
 	if (is_inside_tree()) {
-		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",(Object*)(NULL));
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",(Object*)(NULL));
 	}
 
 }
@@ -573,7 +573,7 @@ void Camera2D::set_custom_viewport(Node *p_viewport) {
 		else
 			viewport=get_viewport();
 
-		RID vp = viewport->get_viewport();
+		RID vp = viewport->get_viewport_rid();
 		group_name = "__cameras_"+itos(vp.get_id());
 		canvas_group_name ="__cameras_c"+itos(canvas.get_id());
 		add_to_group(group_name);

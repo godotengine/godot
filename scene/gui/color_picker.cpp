@@ -75,7 +75,7 @@ void ColorPicker::_update_controls() {
 
 }
 
-void ColorPicker::set_color(const Color& p_color) {
+void ColorPicker::set_pick_color(const Color& p_color) {
 
 	color=p_color;
 	if (color != last_hsv) {
@@ -121,7 +121,7 @@ void ColorPicker::_value_changed(double) {
 		color.components[i] = scroll[i]->get_value()/(raw_mode_enabled?1.0:255.0);
 	}
 
-	set_color(color);
+	set_pick_color(color);
 
 	_update_text_value();
 
@@ -139,7 +139,7 @@ void ColorPicker::_html_entered(const String& p_html) {
 	if (!is_inside_tree())
 		return;
 
-	set_color(color);
+	set_pick_color(color);
 	emit_signal("color_changed",color);
 }
 
@@ -208,7 +208,7 @@ void ColorPicker::_text_type_toggled()
 	_update_color();
 }
 
-Color ColorPicker::get_color() const {
+Color ColorPicker::get_pick_color() const {
 
 	return color;
 }
@@ -320,7 +320,7 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 			v=1.0-y/256.0;
 			color.set_hsv(h,s,v,color.a);
 			last_hsv = color;
-			set_color(color);
+			set_pick_color(color);
 			_update_color();
 			emit_signal("color_changed", color);
 		} else {
@@ -336,7 +336,7 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 		v=1.0-y/256.0;
 		color.set_hsv(h,s,v,color.a);
 		last_hsv = color;
-		set_color(color);
+		set_pick_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
 	}
@@ -354,7 +354,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		}
 		color.set_hsv(h,s,v,color.a);
 		last_hsv = color;
-		set_color(color);
+		set_pick_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
 	} else if (ev.type == InputEvent::MOUSE_MOTION) {
@@ -365,7 +365,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		h=1.0-y/256.0;
 		color.set_hsv(h,s,v,color.a);
 		last_hsv = color;
-		set_color(color);
+		set_pick_color(color);
 		_update_color();
 		emit_signal("color_changed", color);
 	}
@@ -376,7 +376,7 @@ void ColorPicker::_preset_input(const InputEvent &ev) {
 		const InputEventMouseButton &bev = ev.mouse_button;
 		if (bev.pressed && bev.button_index==BUTTON_LEFT) {
 			int index = bev.x/(preset->get_size().x/presets.size());
-			set_color(presets[index]);
+			set_pick_color(presets[index]);
 		} else if (bev.pressed && bev.button_index==BUTTON_RIGHT) {
 			int index = bev.x/(preset->get_size().x/presets.size());
 			presets.erase(presets[index]);
@@ -425,7 +425,7 @@ void ColorPicker::_screen_input(const InputEvent &ev)
 
 			Color c( r[ofs+0]/255.0, r[ofs+1]/255.0, r[ofs+2]/255.0 );
 
-			set_color(c);
+			set_pick_color(c);
 		}
 	}
 }
@@ -451,8 +451,8 @@ void ColorPicker::_screen_pick_pressed()
 
 void ColorPicker::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_color","color"),&ColorPicker::set_color);
-	ClassDB::bind_method(_MD("get_color"),&ColorPicker::get_color);
+	ClassDB::bind_method(_MD("set_pick_color","color"),&ColorPicker::set_pick_color);
+	ClassDB::bind_method(_MD("get_pick_color"),&ColorPicker::get_pick_color);
 	ClassDB::bind_method(_MD("set_raw_mode","mode"),&ColorPicker::set_raw_mode);
 	ClassDB::bind_method(_MD("is_raw_mode"),&ColorPicker::is_raw_mode);
 	ClassDB::bind_method(_MD("set_edit_alpha","show"),&ColorPicker::set_edit_alpha);
@@ -584,7 +584,7 @@ ColorPicker::ColorPicker() :
 	//_update_color();
 	updating=false;
 
-	set_color(Color(1,1,1));
+	set_pick_color(Color(1,1,1));
 
 
 	HBoxContainer *bbc = memnew( HBoxContainer );
@@ -632,20 +632,20 @@ void ColorPickerButton::_notification(int p_what) {
 	if (p_what==NOTIFICATION_DRAW) {
 
 		Ref<StyleBox> normal = get_stylebox("normal" );
-		draw_rect(Rect2(normal->get_offset(),get_size()-normal->get_minimum_size()),picker->get_color());
+		draw_rect(Rect2(normal->get_offset(),get_size()-normal->get_minimum_size()),picker->get_pick_color());
 	}
 }
 
-void ColorPickerButton::set_color(const Color& p_color){
+void ColorPickerButton::set_pick_color(const Color& p_color){
 
 
-	picker->set_color(p_color);
+	picker->set_pick_color(p_color);
 	update();
 	emit_signal("color_changed",p_color);
 }
-Color ColorPickerButton::get_color() const{
+Color ColorPickerButton::get_pick_color() const{
 
-	return picker->get_color();
+	return picker->get_pick_color();
 }
 
 void ColorPickerButton::set_edit_alpha(bool p_show) {
@@ -665,15 +665,15 @@ ColorPicker *ColorPickerButton::get_picker() {
 
 void ColorPickerButton::_bind_methods(){
 
-	ClassDB::bind_method(_MD("set_color","color"),&ColorPickerButton::set_color);
-	ClassDB::bind_method(_MD("get_color"),&ColorPickerButton::get_color);
+	ClassDB::bind_method(_MD("set_pick_color","color"),&ColorPickerButton::set_pick_color);
+	ClassDB::bind_method(_MD("get_pick_color"),&ColorPickerButton::get_pick_color);
 	ClassDB::bind_method(_MD("get_picker:ColorPicker"),&ColorPickerButton::get_picker);
 	ClassDB::bind_method(_MD("set_edit_alpha","show"),&ColorPickerButton::set_edit_alpha);
 	ClassDB::bind_method(_MD("is_editing_alpha"),&ColorPickerButton::is_editing_alpha);
 	ClassDB::bind_method(_MD("_color_changed"),&ColorPickerButton::_color_changed);
 
 	ADD_SIGNAL( MethodInfo("color_changed",PropertyInfo(Variant::COLOR,"color")));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color") );
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_pick_color"),_SCS("get_pick_color") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"edit_alpha"),_SCS("set_edit_alpha"),_SCS("is_editing_alpha") );
 
 }

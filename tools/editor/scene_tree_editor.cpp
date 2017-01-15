@@ -671,8 +671,8 @@ void SceneTreeEditor::_notification(int p_what) {
 		EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
 
 
-//		get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
-//		get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
+		//get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
+		//get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
 		_update_tree();
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
@@ -1081,7 +1081,7 @@ void SceneTreeEditor::_warning_changed(Node* p_for_node) {
 
 	//should use a timer
 	update_timer->start();
-//	print_line("WARNING CHANGED "+String(p_for_node->get_name()));
+	//print_line("WARNING CHANGED "+String(p_for_node->get_name()));
 
 }
 
@@ -1186,7 +1186,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);
 	tree->connect("multi_selected",this,"_cell_multi_selected");
 	tree->connect("button_pressed",this,"_cell_button_pressed");
-//	tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
+	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew( AcceptDialog );
 	add_child(error);

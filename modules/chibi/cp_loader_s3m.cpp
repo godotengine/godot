@@ -102,7 +102,7 @@ void CPLoader_S3M::set_header() {
 
 
 	song->set_name( header.songname );
-//	song->variables.filename=
+	//song->variables.filename=
 	
 	song->set_row_highlight_minor( 4 );
 	song->set_row_highlight_major( 16 );
@@ -135,7 +135,7 @@ CPLoader::Error  CPLoader_S3M::load_sample(CPSample *p_sample) {
 		uint32_t samplepos=(uint32_t)file->get_byte() << 16;
                 samplepos|=file->get_word();
 		samplepos*=16;	
-//		printf("sample at %i\n",samplepos);
+		//printf("sample at %i\n",samplepos);
 		/**/
                 int sample_size=file->get_dword();
 		
@@ -178,7 +178,7 @@ CPLoader::Error  CPLoader_S3M::load_sample(CPSample *p_sample) {
 			
 
 		if ((type!=1) || scrs[0]!='S' || scrs[1]!='C' || scrs[2]!='R' || scrs[3]!='S' ) {
-//			printf("type: %i, %c%c%c%c\n",type,scrs[0],scrs[1],scrs[2],scrs[3]);
+			//printf("type: %i, %c%c%c%c\n",type,scrs[0],scrs[1],scrs[2],scrs[3]);
 			CP_PRINTERR("Not an S3M CPSample!");
 			return FILE_CORRUPTED;
 		}

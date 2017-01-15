@@ -79,14 +79,14 @@ abstract public class ValidateTask {
 				param.put("ticket", pc.getConsumableValue("ticket", sku));
 				param.put("purchaseToken", pc.getConsumableValue("token", sku));
 				param.put("sku", sku);
-//				Log.d("XXX", "Haciendo request a " + url);
-//				Log.d("XXX", "ticket: " + pc.getConsumableValue("ticket", sku));
-//				Log.d("XXX", "purchaseToken: " + pc.getConsumableValue("token", sku));
-//				Log.d("XXX", "sku: " + sku);
+				//Log.d("XXX", "Haciendo request a " + url);
+				//Log.d("XXX", "ticket: " + pc.getConsumableValue("ticket", sku));
+				//Log.d("XXX", "purchaseToken: " + pc.getConsumableValue("token", sku));
+				//Log.d("XXX", "sku: " + sku);
 				param.put("package", context.getApplicationContext().getPackageName());
 				HttpRequester requester = new HttpRequester();
 				String jsonResponse = requester.post(param);
-//				Log.d("XXX", "Validation response:\n"+jsonResponse);
+				//Log.d("XXX", "Validation response:\n"+jsonResponse);
 				return jsonResponse;
 			}
 			

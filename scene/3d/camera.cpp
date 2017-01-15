@@ -190,9 +190,11 @@ void Camera::_update_camera() {
 	tr.origin+=tr.basis.get_axis(0)*h_offset;
 	VisualServer::get_singleton()->camera_set_transform( camera, tr );
 
-// here goes listener stuff
-//	if (viewport_ptr && is_inside_scene() && is_current())
-//		get_viewport()->_camera_transform_changed_notify();
+	// here goes listener stuff
+	/*
+	if (viewport_ptr && is_inside_scene() && is_current())
+		get_viewport()->_camera_transform_changed_notify();
+	*/
 
 	if (is_inside_tree() && is_current()) {
 		get_viewport()->_camera_transform_changed_notify();
@@ -400,7 +402,7 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 #endif
 
 	ERR_FAIL_COND_V( viewport_size.y == 0, Vector3() );
-//	float aspect = viewport_size.x / viewport_size.y;
+	//float aspect = viewport_size.x / viewport_size.y;
 
 	if (mode == PROJECTION_PERSPECTIVE) {
 

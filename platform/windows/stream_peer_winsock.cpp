@@ -88,7 +88,7 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, ip_type);
+	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, sock_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
@@ -149,7 +149,7 @@ Error StreamPeerWinsock::write(const uint8_t* p_data,int p_bytes, int &r_sent, b
 			if (WSAGetLastError() != WSAEWOULDBLOCK) {
 
 				perror("shit?");
-				disconnect();
+				disconnect_from_host();
 				ERR_PRINT("Server disconnected!\n");
 				return FAILED;
 			};
@@ -175,7 +175,7 @@ Error StreamPeerWinsock::write(const uint8_t* p_data,int p_bytes, int &r_sent, b
 
 Error StreamPeerWinsock::read(uint8_t* p_buffer, int p_bytes,int &r_received, bool p_block) {
 
-	if (!is_connected()) {
+	if (!is_connected_to_host()) {
 
 		return FAILED;
 	};
@@ -206,7 +206,7 @@ Error StreamPeerWinsock::read(uint8_t* p_buffer, int p_bytes,int &r_received, bo
 			if (WSAGetLastError() != WSAEWOULDBLOCK) {
 
 				perror("shit?");
-				disconnect();
+				disconnect_from_host();
 				ERR_PRINT("Server disconnected!\n");
 				return FAILED;
 			};
@@ -218,7 +218,7 @@ Error StreamPeerWinsock::read(uint8_t* p_buffer, int p_bytes,int &r_received, bo
 			};
 			_block(sockfd, true, false);
 		} else if (read == 0) {
-			disconnect();
+			disconnect_from_host();
 			return ERR_FILE_EOF;
 		} else {
 
@@ -264,7 +264,7 @@ StreamPeerTCP::Status StreamPeerWinsock::get_status() const {
 };
 
 
-bool StreamPeerWinsock::is_connected() const {
+bool StreamPeerWinsock::is_connected_to_host() const {
 
 	if (status == STATUS_NONE || status == STATUS_ERROR) {
 
@@ -277,11 +277,12 @@ bool StreamPeerWinsock::is_connected() const {
 	return (sockfd!=INVALID_SOCKET);
 };
 
-void StreamPeerWinsock::disconnect() {
+void StreamPeerWinsock::disconnect_from_host() {
 
 	if (sockfd != INVALID_SOCKET)
 		closesocket(sockfd);
 	sockfd=INVALID_SOCKET;
+	sock_type = IP::TYPE_NONE;
 
 	status = STATUS_NONE;
 
@@ -293,19 +294,21 @@ void StreamPeerWinsock::set_socket(int p_sockfd, IP_Address p_host, int p_port, 
 
 	ip_type = p_ip_type;
 	sockfd = p_sockfd;
+	sock_type = p_ip_type;
 	status = STATUS_CONNECTING;
 	peer_host = p_host;
 	peer_port = p_port;
 };
 
-Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
+Error StreamPeerWinsock::connect_to_host(const IP_Address& p_host, uint16_t p_port) {
 
 	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
 
-	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+	sock_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd  == INVALID_SOCKET) {
 		ERR_PRINT("Socket creation failed!");
-		disconnect();
+		disconnect_from_host();
 		//perror("socket");
 		return FAILED;
 	};
@@ -313,18 +316,18 @@ Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 	unsigned long par = 1;
 	if (ioctlsocket(sockfd, FIONBIO, &par)) {
 		perror("setting non-block mode");
-		disconnect();
+		disconnect_from_host();
 		return FAILED;
 	};
 
 	struct sockaddr_storage their_addr;
-	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, ip_type);
+	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, sock_type);
 
 	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == SOCKET_ERROR) {
 
 		if (WSAGetLastError() != WSAEWOULDBLOCK) {
 			ERR_PRINT("Connection to remote host failed!");
-			disconnect();
+			disconnect_from_host();
 			return FAILED;
 		};
 		status = STATUS_CONNECTING;
@@ -339,7 +342,7 @@ Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 };
 
 void StreamPeerWinsock::set_nodelay(bool p_enabled) {
-    ERR_FAIL_COND(!is_connected());
+    ERR_FAIL_COND(!is_connected_to_host());
     int flag=p_enabled?1:0;
     setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
 }
@@ -365,6 +368,7 @@ uint16_t StreamPeerWinsock::get_connected_port() const {
 
 StreamPeerWinsock::StreamPeerWinsock() {
 
+	sock_type = IP::TYPE_NONE;
 	sockfd = INVALID_SOCKET;
 	status = STATUS_NONE;
 	peer_port = 0;
@@ -373,7 +377,7 @@ StreamPeerWinsock::StreamPeerWinsock() {
 
 StreamPeerWinsock::~StreamPeerWinsock() {
 
-	disconnect();
+	disconnect_from_host();
 };
 
 

@@ -468,10 +468,12 @@ void Control::_notification(int p_notification) {
 			}
 
 
-			//if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
-			//	data.theme_owner=data.parent->data.theme_owner;
-			//	notification(NOTIFICATION_THEME_CHANGED);
-			//}
+			/*
+			if (data.theme.is_null() && data.parent && data.parent->data.theme_owner) {
+				data.theme_owner=data.parent->data.theme_owner;
+				notification(NOTIFICATION_THEME_CHANGED);
+			}
+			*/
 
 		} break;
 		case NOTIFICATION_EXIT_CANVAS: {
@@ -503,10 +505,12 @@ void Control::_notification(int p_notification) {
 
 			data.parent=NULL;
 			data.parent_canvas_item=NULL;
-			//if (data.theme_owner && data.theme.is_null()) {
-			//	data.theme_owner=NULL;
-				//notification(NOTIFICATION_THEME_CHANGED);
-			//}
+			/*
+			if (data.theme_owner && data.theme.is_null()) {
+				data.theme_owner=NULL;
+				notification(NOTIFICATION_THEME_CHANGED);
+			}
+			*/
 
 		} break;
 		 case NOTIFICATION_MOVED_IN_PARENT: {
@@ -2444,7 +2448,7 @@ bool Control::is_clipping_contents() {
 void Control::_bind_methods() {
 
 
-//	ClassDB::bind_method(_MD("_window_resize_event"),&Control::_window_resize_event);
+	//ClassDB::bind_method(_MD("_window_resize_event"),&Control::_window_resize_event);
 	ClassDB::bind_method(_MD("_size_changed"),&Control::_size_changed);
 	ClassDB::bind_method(_MD("_update_minimum_size"),&Control::_update_minimum_size);
 

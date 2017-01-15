@@ -1176,11 +1176,13 @@ void Physics2DServerSW::free(RID p_rid) {
 
 		Body2DSW *body = body_owner.get(p_rid);
 
-//		if (body->get_state_query())
-//			_clear_query(body->get_state_query());
+		/*
+		if (body->get_state_query())
+			_clear_query(body->get_state_query());
 
-//		if (body->get_direct_state_query())
-//			_clear_query(body->get_direct_state_query());
+		if (body->get_direct_state_query())
+			_clear_query(body->get_direct_state_query());
+		*/
 
 		body->set_space(NULL);
 
@@ -1203,8 +1205,10 @@ void Physics2DServerSW::free(RID p_rid) {
 
 		Area2DSW *area = area_owner.get(p_rid);
 
-//		if (area->get_monitor_query())
-//			_clear_query(area->get_monitor_query());
+		/*
+		if (area->get_monitor_query())
+			_clear_query(area->get_monitor_query());
+		*/
 
 		area->set_space(NULL);
 
@@ -1380,7 +1384,7 @@ Physics2DServerSW::Physics2DServerSW() {
 
 	singletonsw=this;
 	BroadPhase2DSW::create_func=BroadPhase2DHashGrid::_create;
-//	BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
+	//BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
 
 	active=true;
 	island_count=0;

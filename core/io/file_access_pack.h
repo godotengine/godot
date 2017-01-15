@@ -209,7 +209,7 @@ class DirAccessPack : public DirAccess {
 
 public:
 
-	virtual bool list_dir_begin();
+	virtual Error list_dir_begin();
 	virtual String get_next();
 	virtual bool current_is_dir() const;
 	virtual bool current_is_hidden() const;

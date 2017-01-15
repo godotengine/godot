@@ -364,10 +364,12 @@ static GDCompletionIdentifier _get_type_from_variant(const Variant& p_variant) {
 	if (p_variant.get_type()==Variant::OBJECT) {
 		Object *obj = p_variant;
 		if (obj) {
-			//if (obj->cast_to<GDNativeClass>()) {
-			//	t.obj_type=obj->cast_to<GDNativeClass>()->get_name();
-			//	t.value=Variant();
-			//} else {
+			/*
+			if (obj->cast_to<GDNativeClass>()) {
+				t.obj_type=obj->cast_to<GDNativeClass>()->get_name();
+				t.value=Variant();
+			} else {
+			*/
 				t.obj_type=obj->get_class();
 			//}
 		}
@@ -1771,7 +1773,7 @@ static void _find_type_arguments(GDCompletionContext& context,const GDParser::No
 						String s = E->get().name;
 						if (!s.begins_with("autoload/"))
 							continue;
-					//	print_line("found "+s);
+						//print_line("found "+s);
 						String name = s.get_slice("/",1);
 						result.insert("\"/root/"+name+"\"");
 					}
@@ -1998,10 +2000,10 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 						List<MethodInfo> methods;
 						ClassDB::get_method_list(type,&methods);
 						for(List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
-							//if (E->get().arguments.size())
-							//	result.insert(E->get().name+"(");
-							//else
-							//	result.insert(E->get().name+"()");
+							if (E->get().arguments.size())
+								result.insert(E->get().name+"(");
+							else
+								result.insert(E->get().name+"()");
 						}*/
 					}
 					break;

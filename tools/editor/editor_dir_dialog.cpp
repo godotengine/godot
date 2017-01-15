@@ -255,7 +255,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
-//	makedialog->set_child_rect(makevb);
+	//makedialog->set_child_rect(makevb);
 
 	makedirname = memnew( LineEdit );
 	makevb->add_margin_child(TTR("Name:"),makedirname);

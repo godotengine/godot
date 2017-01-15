@@ -203,14 +203,14 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Transfo
 	cinfo.aabb_tests=0;
 
 	Transform2D rel_transform = p_transform_A;
-	rel_transform.translate(-p_transform_B.get_origin());
+	rel_transform.elements[2]-=p_transform_B.get_origin();
 
 	//quickly compute a local Rect2
 
 	Rect2 local_aabb;
 	for(int i=0;i<2;i++) {
 
-	     Vector2 axis( p_transform_B.get_axis(i) );
+	     Vector2 axis( p_transform_B.elements[i] );
 	     float axis_scale = 1.0/axis.length();
 	     axis*=axis_scale;
 
@@ -226,7 +226,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Transfo
 	concave_B->cull(local_aabb,concave_callback,&cinfo);
 
 
-//	print_line("Rect2 TESTS: "+itos(cinfo.aabb_tests));
+	//print_line("Rect2 TESTS: "+itos(cinfo.aabb_tests));
 	return cinfo.collided;
 }
 
@@ -255,9 +255,11 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Transform2D& p_
 
 		if (type_B==Physics2DServer::SHAPE_LINE || type_B==Physics2DServer::SHAPE_RAY) {
 			return false;
-		//if (type_B==Physics2DServer::SHAPE_RAY) {
-		//	return false;
 		}
+		/*
+		if (type_B==Physics2DServer::SHAPE_RAY) {
+			return false;
+		*/
 
 		if (swap) {
 			return solve_static_line(p_shape_B,p_transform_B,p_shape_A,p_transform_A,p_result_callback,p_userdata,true);

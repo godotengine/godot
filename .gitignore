@@ -144,7 +144,9 @@ ipch/
 *.sdf
 *.cachefile
 *.VC.db
+*.VC.opendb
 *.VC.VC.opendb
+enc_temp_folder/
 
 # Visual Studio profiler
 *.psess

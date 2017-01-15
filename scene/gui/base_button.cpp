@@ -108,7 +108,7 @@ void BaseButton::_gui_input(InputEvent p_event) {
 					emit_signal("button_up");
 
 /* this is pointless		if (status.press_attempt && status.pressing_inside) {
-//						released();
+						//released();
 						emit_signal("released");
 					}
 */

@@ -397,9 +397,9 @@ public:
 	void get_node_list(List<StringName> *p_node_list) const;
 	void remove_node(const StringName& p_node);
 
-	Error connect(const StringName& p_src_node,const StringName& p_dst_node, int p_dst_input);
-	bool is_connected(const StringName& p_src_node,const StringName& p_dst_node, int p_input) const;
-	void disconnect(const StringName& p_src_node, int p_input);
+	Error connect_nodes(const StringName& p_src_node,const StringName& p_dst_node, int p_dst_input);
+	bool are_nodes_connected(const StringName& p_src_node,const StringName& p_dst_node, int p_input) const;
+	void disconnect_nodes(const StringName& p_src_node, int p_input);
 
 	void set_base_path(const NodePath& p_path);
 	NodePath get_base_path() const;

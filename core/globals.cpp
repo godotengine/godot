@@ -166,8 +166,10 @@ bool GlobalConfig::_get(const StringName& p_name,Variant &r_ret) const {
 
 	_THREAD_SAFE_METHOD_
 
-	if (!props.has(p_name))
+	if (!props.has(p_name)) {
+		print_line("WARNING: not found: "+String(p_name));
 		return false;
+	}
 	r_ret=props[p_name].variant;
 	return true;
 
@@ -922,6 +924,7 @@ GlobalConfig::GlobalConfig() {
 	GLOBAL_DEF("application/main_scene","");
 	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"tscn,scn,xscn,xml,res");
 	GLOBAL_DEF("application/disable_stdout",false);
+	GLOBAL_DEF("application/disable_stderr",false);
 	GLOBAL_DEF("application/use_shared_user_dir",true);
 
 
@@ -1011,7 +1014,7 @@ GlobalConfig::GlobalConfig() {
 	GLOBAL_DEF("input/ui_page_down",va);
 	input_presets.push_back("input/ui_page_down");
 
-//	GLOBAL_DEF("display/handheld/orientation", "landscape");
+	//GLOBAL_DEF("display/handheld/orientation", "landscape");
 
 
 	custom_prop_info["display/handheld/orientation"]=PropertyInfo(Variant::STRING,"display/handheld/orientation",PROPERTY_HINT_ENUM,"landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");

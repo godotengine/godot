@@ -124,7 +124,10 @@ void PathRemap::clear_remaps() {
 void PathRemap::load_remaps() {
 
 	// default remaps first
-	PoolVector<String> remaps = GlobalConfig::get_singleton()->get("remap/all");
+	PoolVector<String> remaps;
+	if (GlobalConfig::get_singleton()->has("remap/all")) {
+		remaps = GlobalConfig::get_singleton()->get("remap/all");
+	}
 
 	{
 		int rlen = remaps.size();
@@ -141,8 +144,12 @@ void PathRemap::load_remaps() {
 
 
 	// platform remaps second, so override
-	remaps = GlobalConfig::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
-//	remaps = Globals::get_singleton()->get("remap/PSP");
+	if (GlobalConfig::get_singleton()->has("remap/"+OS::get_singleton()->get_name())) {
+		remaps = GlobalConfig::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
+	} else {
+		remaps.resize(0);
+	}
+	//remaps = Globals::get_singleton()->get("remap/PSP");
 	{
 		int rlen = remaps.size();
 
@@ -152,7 +159,7 @@ void PathRemap::load_remaps() {
 
 			String from = r[i*2+0];
 			String to = r[i*2+1];
-//			print_line("add remap: "+from+" -> "+to);
+			//print_line("add remap: "+from+" -> "+to);
 			add_remap(from,to);
 		}
 	}

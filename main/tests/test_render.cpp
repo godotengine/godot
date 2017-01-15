@@ -192,7 +192,6 @@ public:
 		*/
 		RID lightaux;
 
-		//*
 		lightaux = vs->light_create( VisualServer::LIGHT_DIRECTIONAL );
 		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		vs->light_set_color( lightaux,  Color(1.0,1.0,1.0) );
@@ -203,17 +202,14 @@ public:
 		lla.set_look_at(Vector3(),Vector3(-0.000000,-0.836026,-0.548690),Vector3(0,1,0));
 
 		vs->instance_set_transform( light, lla );
-		//	*/
 
-		//*
 		lightaux = vs->light_create( VisualServer::LIGHT_OMNI );
-//		vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
+		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
 		vs->light_set_color( lightaux,  Color(1.0,1.0,0.0) );
 		vs->light_set_param( lightaux, VisualServer::LIGHT_PARAM_RANGE, 4 );
 		vs->light_set_param( lightaux, VisualServer::LIGHT_PARAM_ENERGY, 8 );
 		//vs->light_set_shadow( lightaux, true );
 		//light = vs->instance_create( lightaux );
-		//	*/
 
 		ofs=0;
 		quit=false;
