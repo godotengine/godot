@@ -714,7 +714,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 				break;
 			}
 
-			body_transform.translate(recover_motion);
+			body_transform.elements[2]+=recover_motion;
 			body_aabb.pos+=recover_motion;
 
 			recover_attempts--;
@@ -863,7 +863,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 		//it collided, let's get the rest info in unsafe advance
 		Transform2D ugt = body_transform;
-		ugt.translate(p_motion*unsafe);
+		ugt.elements[2]+=p_motion*unsafe;
 
 		_RestCallbackData2D rcd;
 		rcd.best_len=0;

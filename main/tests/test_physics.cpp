@@ -345,10 +345,15 @@ public:
 		/* CAMERA */
 
 		camera = vs->camera_create();
+
 		RID viewport = vs->viewport_create();
+		Size2i screen_size = OS::get_singleton()->get_window_size();
+		vs->viewport_set_size(viewport,screen_size.x,screen_size.y);
+		vs->viewport_attach_to_screen(viewport,Rect2(Vector2(),screen_size));
+		vs->viewport_set_active(viewport,true);
 		vs->viewport_attach_camera( viewport, camera );
-		vs->viewport_attach_to_screen(viewport);
 		vs->viewport_set_scenario( viewport, scenario );
+
 
 		vs->camera_set_perspective(camera,60,0.1,40.0);
 		vs->camera_set_transform(camera,Transform( Basis(), Vector3(0,9,12)));

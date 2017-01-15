@@ -63,7 +63,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 	};
 
 
-	BodyShapeData body_shape_data[6];
+	BodyShapeData body_shape_data[8];
 
 
 	void _create_body_shape_data() {
@@ -191,7 +191,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Image image(convex_png);
 
-			body_shape_data[Physics2DServer::SHAPE_CUSTOM+1].image=vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image=vs->texture_create_from_image(image);
 
 			RID convex_polygon_shape = ps->shape_create(Physics2DServer::SHAPE_CONVEX_POLYGON);
 
@@ -206,7 +206,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 			arr.push_back(Point2(11,7)-sb);
 			ps->shape_set_data(convex_polygon_shape,arr);
 
-			body_shape_data[Physics2DServer::SHAPE_CUSTOM+1].shape = convex_polygon_shape;
+			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].shape = convex_polygon_shape;
 
 		}
 
@@ -382,8 +382,13 @@ public:
 
 			RID vp = vs->viewport_create();
 			canvas = vs->canvas_create();
+
+			Size2i screen_size = OS::get_singleton()->get_window_size();
 			vs->viewport_attach_canvas(vp,canvas);
-			vs->viewport_attach_to_screen(vp,Rect2(Vector2(),OS::get_singleton()->get_window_size()));
+			vs->viewport_set_size(vp,screen_size.x,screen_size.y);
+			vs->viewport_attach_to_screen(vp,Rect2(Vector2(),screen_size));
+			vs->viewport_set_active(vp,true);
+
 			Transform2D smaller;
 			//smaller.scale(Vector2(0.6,0.6));
 			//smaller.elements[2]=Vector2(100,0);
