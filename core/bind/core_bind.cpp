@@ -1831,9 +1831,9 @@ Error _Directory::open(const String& p_path) {
 	return OK;
 }
 
-bool _Directory::list_dir_begin(bool p_skip_navigational,bool p_skip_hidden) {
+Error _Directory::list_dir_begin(bool p_skip_navigational,bool p_skip_hidden) {
 
-	ERR_FAIL_COND_V(!d,false);
+	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
 
 	_list_skip_navigational=p_skip_navigational;
 	_list_skip_hidden=p_skip_hidden;
