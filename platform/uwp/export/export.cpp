@@ -618,9 +618,7 @@ void AppxPackager::make_content_types() {
 
 		types[ext] = content_type(ext);
 
-		tmp_file->store_string("<Default Extension=\"" + ext +
-			"\" ContentType=\""
-			+ types[ext] + "\" />");
+		tmp_file->store_string("<Default Extension=\"" + ext + "\" ContentType=\"" + types[ext] + "\" />");
 	}
 
 	// Appx signature file
@@ -1174,9 +1172,9 @@ Error AppxPackager::MakeIndirectDataContent(asn1::SPCIndirectDataContent &idc) {
 	MakeSPCInfoValue(*infoValue);
 
 	ASN1_TYPE* value =
-		EncodedASN1::FromItem<asn1::SPCInfoValue,
-		asn1::i2d_SPCInfoValue>(infoValue)
-		.ToSequenceType();
+			EncodedASN1::FromItem<asn1::SPCInfoValue,
+			asn1::i2d_SPCInfoValue>(infoValue)
+			.ToSequenceType();
 
 	{
 		Vector<uint8_t> digest;
@@ -1202,8 +1200,10 @@ Error AppxPackager::add_attributes(PKCS7_SIGNER_INFO * p_signer_info) {
 	asn1::SPCSpOpusInfo* opus = asn1::SPCSpOpusInfo_new();
 	if (!opus) return openssl_error(ERR_peek_last_error());
 
-	ASN1_STRING* opus_value = EncodedASN1::FromItem<asn1::SPCSpOpusInfo, asn1::i2d_SPCSpOpusInfo>(opus)
-		.ToSequenceString();
+	ASN1_STRING* opus_value =
+			EncodedASN1::FromItem<asn1::SPCSpOpusInfo,
+			asn1::i2d_SPCSpOpusInfo>(opus)
+			.ToSequenceString();
 
 	if (!PKCS7_add_signed_attribute(
 		p_signer_info,
@@ -1237,8 +1237,9 @@ Error AppxPackager::add_attributes(PKCS7_SIGNER_INFO * p_signer_info) {
 
 	statement_type->type = OBJ_nid2obj(NID_ms_code_ind);
 	ASN1_STRING* statement_type_value =
-		EncodedASN1::FromItem<asn1::SPCStatementType, asn1::i2d_SPCStatementType>(statement_type)
-		.ToSequenceString();
+			EncodedASN1::FromItem<asn1::SPCStatementType,
+			asn1::i2d_SPCStatementType>(statement_type)
+			.ToSequenceString();
 
 	if (!PKCS7_add_signed_attribute(
 		p_signer_info,

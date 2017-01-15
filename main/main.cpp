@@ -1526,7 +1526,7 @@ bool Main::start() {
 				//sml->get_root()->add_child(scene);
 				sml->add_current_scene(scene);
 
-				String iconpath = GLOBAL_DEF("application/icon","Variant()""");
+				String iconpath = GLOBAL_DEF("application/icon","Variant()");
 				if (iconpath!="") {
 					Image icon;
 					if (icon.load(iconpath)==OK)

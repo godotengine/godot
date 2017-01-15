@@ -236,21 +236,22 @@ Vector3 TriangleMesh::get_area_normal(const Rect3& p_aabb) const {
 						stack[level]=(VISIT_LEFT_BIT<<VISITED_BIT_SHIFT)|node;
 					}
 				}
-
-			} continue;
+				continue;
+			}
 			case VISIT_LEFT_BIT: {
 
 				stack[level]=(VISIT_RIGHT_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.left|TEST_AABB_BIT;
 				level++;
-
-			} continue;
+				continue;
+			}
 			case VISIT_RIGHT_BIT: {
 
 				stack[level]=(VISIT_DONE_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.right|TEST_AABB_BIT;
 				level++;
-			} continue;
+				continue;
+			}
 			case VISIT_DONE_BIT: {
 
 				if (level==0) {
@@ -258,8 +259,8 @@ Vector3 TriangleMesh::get_area_normal(const Rect3& p_aabb) const {
 					break;
 				} else
 					level--;
-
-			} continue;
+				continue;
+			}
 		}
 
 
@@ -357,21 +358,22 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 						stack[level]=(VISIT_LEFT_BIT<<VISITED_BIT_SHIFT)|node;
 					}
 				}
-
-			} continue;
+				continue;
+			}
 			case VISIT_LEFT_BIT: {
 
 				stack[level]=(VISIT_RIGHT_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.left|TEST_AABB_BIT;
 				level++;
-
-			} continue;
+				continue;
+			}
 			case VISIT_RIGHT_BIT: {
 
 				stack[level]=(VISIT_DONE_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.right|TEST_AABB_BIT;
 				level++;
-			} continue;
+				continue;
+			}
 			case VISIT_DONE_BIT: {
 
 				if (level==0) {
@@ -379,8 +381,8 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 					break;
 				} else
 					level--;
-
-			} continue;
+				continue;
+			}
 		}
 
 
@@ -478,21 +480,22 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 						stack[level]=(VISIT_LEFT_BIT<<VISITED_BIT_SHIFT)|node;
 					}
 				}
-
-			} continue;
+				continue;
+			}
 			case VISIT_LEFT_BIT: {
 
 				stack[level]=(VISIT_RIGHT_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.left|TEST_AABB_BIT;
 				level++;
-
-			} continue;
+				continue;
+			}
 			case VISIT_RIGHT_BIT: {
 
 				stack[level]=(VISIT_DONE_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.right|TEST_AABB_BIT;
 				level++;
-			} continue;
+				continue;
+			}
 			case VISIT_DONE_BIT: {
 
 				if (level==0) {
@@ -500,8 +503,8 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 					break;
 				} else
 					level--;
-
-			} continue;
+				continue;
+			}
 		}
 
 

@@ -156,7 +156,7 @@ RID VisualServer::_make_test_cube() {
 	PoolVector<Vector3> uvs;
 
 	int vtx_idx=0;
-#define ADD_VTX(m_idx);\
+#define ADD_VTX(m_idx) \
 	vertices.push_back( face_points[m_idx] );\
 	normals.push_back( normal_points[m_idx] );\
 	tangents.push_back( normal_points[m_idx][1] );\

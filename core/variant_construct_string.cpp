@@ -169,7 +169,7 @@ Error VariantConstruct::_get_token(const CharType *p_str, int &idx, int p_len, T
 							case 'r': res=13; break;
 							case '\"': res='\"'; break;
 							case '\\': res='\\'; break;
-							case '/': res='/'; break; //wtf
+							case '/': res='/'; break;
 							case 'u': {
 								//hexnumbarh - oct is deprecated
 

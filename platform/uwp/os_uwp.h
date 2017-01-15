@@ -157,9 +157,12 @@ private:
 		void on_magnetometer_reading_changed(Windows::Devices::Sensors::Magnetometer^ sender, Windows::Devices::Sensors::MagnetometerReadingChangedEventArgs^ args);
 		void on_gyroscope_reading_changed(Windows::Devices::Sensors::Gyrometer^ sender, Windows::Devices::Sensors::GyrometerReadingChangedEventArgs^ args);
 
+	/** clang-format breaks this, it does not understand this token. */
+	/* clang-format off */
 	internal:
 		ManagedType() { alert_close_handle = false; }
 		property OSUWP* os;
+	/* clang-format on */
 	};
 	ManagedType^ managed_object;
 	Windows::Devices::Sensors::Accelerometer^ accelerometer;

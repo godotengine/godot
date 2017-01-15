@@ -643,7 +643,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				case GDTokenizer::TK_OP_ADD: e.op=OperatorNode::OP_POS; break;
 				case GDTokenizer::TK_OP_SUB: e.op=OperatorNode::OP_NEG; break;
 				case GDTokenizer::TK_OP_NOT: e.op=OperatorNode::OP_NOT; break;
-				case GDTokenizer::TK_OP_BIT_INVERT: e.op=OperatorNode::OP_BIT_INVERT;; break;
+				case GDTokenizer::TK_OP_BIT_INVERT: e.op=OperatorNode::OP_BIT_INVERT; break;
 				default: {}
 			}
 

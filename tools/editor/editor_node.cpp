@@ -5520,7 +5520,7 @@ EditorNode::EditorNode() {
 
 	FileAccess::set_backup_save(true);
 
-	PathRemap::get_singleton()->clear_remaps();; //editor uses no remaps
+	PathRemap::get_singleton()->clear_remaps(); //editor uses no remaps
 	TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
 	if (!EditorSettings::get_singleton())

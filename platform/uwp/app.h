@@ -32,38 +32,41 @@
 
 #include <wrl.h>
 
-#include "os_uwp.h"
 #include "GLES2/gl2.h"
+#include "os_uwp.h"
+
+/** clang-format does not play nice with this C++/CX hybrid, needs investigation. */
+/* clang-format off */
 
 namespace GodotUWP
 {
-    ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
-    {
-    public:
-        App();
+	ref class App sealed : public Windows::ApplicationModel::Core::IFrameworkView
+	{
+	public:
+		App();
 
-        // IFrameworkView Methods.
-        virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
-        virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
-        virtual void Load(Platform::String^ entryPoint);
-        virtual void Run();
-        virtual void Uninitialize();
+		// IFrameworkView Methods.
+		virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView);
+		virtual void SetWindow(Windows::UI::Core::CoreWindow^ window);
+		virtual void Load(Platform::String^ entryPoint);
+		virtual void Run();
+		virtual void Uninitialize();
 
 		property Windows::Foundation::EventRegistrationToken MouseMovedToken {
-			Windows::Foundation::EventRegistrationToken get() { return this->mouseMovedToken; }
-			void set(Windows::Foundation::EventRegistrationToken p_token) { this->mouseMovedToken = p_token; }
-		};
+				Windows::Foundation::EventRegistrationToken get() { return this->mouseMovedToken; }
+				void set(Windows::Foundation::EventRegistrationToken p_token) { this->mouseMovedToken = p_token; }
+		}
 
-    private:
+	private:
 		void RecreateRenderer();
 
-        // Application lifecycle event handlers.
-        void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
+		// Application lifecycle event handlers.
+		void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
 
-        // Window event handlers.
-        void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args);
-        void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
-        void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args);
+		// Window event handlers.
+		void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args);
+		void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
+		void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args);
 
 		void pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args, bool p_pressed, bool p_is_wheel = false);
 		void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
@@ -81,20 +84,20 @@ namespace GodotUWP
 		void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
 		void OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args);
 
-        void UpdateWindowSize(Windows::Foundation::Size size);
-        void InitializeEGL(Windows::UI::Core::CoreWindow^ window);
-        void CleanupEGL();
+		void UpdateWindowSize(Windows::Foundation::Size size);
+		void InitializeEGL(Windows::UI::Core::CoreWindow^ window);
+		void CleanupEGL();
 
 		char** get_command_line(unsigned int* out_argc);
 
-        bool mWindowClosed;
-        bool mWindowVisible;
-        GLsizei mWindowWidth;
-        GLsizei mWindowHeight;
+		bool mWindowClosed;
+		bool mWindowVisible;
+		GLsizei mWindowWidth;
+		GLsizei mWindowHeight;
 
-        EGLDisplay mEglDisplay;
-        EGLContext mEglContext;
-        EGLSurface mEglSurface;
+		EGLDisplay mEglDisplay;
+		EGLContext mEglContext;
+		EGLSurface mEglSurface;
 
 		CoreWindow^ window;
 		OSUWP* os;
@@ -103,6 +106,7 @@ namespace GodotUWP
 		int last_touch_y[32];
 		int number_of_contacts;
 		Windows::Foundation::Point last_mouse_pos;
-	};
-
+	}
 }
+
+/* clang-format on */

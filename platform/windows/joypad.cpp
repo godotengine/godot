@@ -249,7 +249,7 @@ BOOL CALLBACK JoypadWindows::enumCallback(const DIDEVICEINSTANCE* instance, void
 
 
 	JoypadWindows* self = (JoypadWindows*)pContext;
-	if (self->is_xinput_device(&instance->guidProduct)) {;
+	if (self->is_xinput_device(&instance->guidProduct)) {
 		return DIENUM_CONTINUE;
 	}
 	self->setup_dinput_joypad(instance);

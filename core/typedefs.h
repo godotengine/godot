@@ -40,41 +40,39 @@
 #define _STR(m_x) #m_x
 #define _MKSTR(m_x) _STR(m_x)
 #endif
-// have to include version.h for this to work, include it in the .cpp not the .h
+
+/**
+ * Version macros - it is necessary to include "version.h" for those to work.
+ * Include it in the .cpp file, not the header.
+ */
 #ifdef VERSION_PATCH
-#define VERSION_MKSTRING _MKSTR(VERSION_MAJOR)"." _MKSTR(VERSION_MINOR)"." _MKSTR(VERSION_PATCH)"." _MKSTR(VERSION_STATUS)"." _MKSTR(VERSION_REVISION)
+#define VERSION_MKSTRING "" _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR) "." _MKSTR(VERSION_PATCH) "." _MKSTR(VERSION_STATUS) "." _MKSTR(VERSION_REVISION)
 #else
-#define VERSION_MKSTRING _MKSTR(VERSION_MAJOR)"." _MKSTR(VERSION_MINOR)"." _MKSTR(VERSION_STATUS)"." _MKSTR(VERSION_REVISION)
+#define VERSION_MKSTRING "" _MKSTR(VERSION_MAJOR) "." _MKSTR(VERSION_MINOR) "." _MKSTR(VERSION_STATUS) "." _MKSTR(VERSION_REVISION)
 #endif // VERSION_PATCH
-#define VERSION_FULL_NAME _MKSTR(VERSION_NAME)" v" VERSION_MKSTRING
+#define VERSION_FULL_NAME "" _MKSTR(VERSION_NAME) " v" VERSION_MKSTRING
 
 
 #ifndef _ALWAYS_INLINE_
 
 #if defined(__GNUC__) && (__GNUC__ >= 4 )
-#    define _ALWAYS_INLINE_ __attribute__((always_inline)) inline
+#define _ALWAYS_INLINE_ __attribute__((always_inline)) inline
 #elif defined(__llvm__)
-#    define _ALWAYS_INLINE_ __attribute__((always_inline)) inline
+#define _ALWAYS_INLINE_ __attribute__((always_inline)) inline
 #elif defined(_MSC_VER)
-#       define _ALWAYS_INLINE_ __forceinline
+#define _ALWAYS_INLINE_ __forceinline
 #else
-#    define _ALWAYS_INLINE_ inline
+#define _ALWAYS_INLINE_ inline
 #endif
 
 #endif
 
 #ifndef _FORCE_INLINE_
-
 #ifdef DEBUG_ENABLED
-
 #define _FORCE_INLINE_ inline
-
 #else
-
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
-
 #endif
-
 #endif
 
 
@@ -97,16 +95,16 @@ T *_nullptr() { T*t=NULL; return t; }
  */
 
 #ifdef _WIN32
-#	undef min // override standard definition
-#	undef max // override standard definition
-#	undef ERROR // override (really stupid) wingdi.h standard definition
-#	undef DELETE // override (another really stupid) winnt.h standard definition
-#	undef MessageBox // override winuser.h standard definition
-#	undef MIN // override standard definition
-#	undef MAX // override standard definition
-#	undef CLAMP // override standard definition
-#	undef Error
-#	undef OK
+#undef min // override standard definition
+#undef max // override standard definition
+#undef ERROR // override (really stupid) wingdi.h standard definition
+#undef DELETE // override (another really stupid) winnt.h standard definition
+#undef MessageBox // override winuser.h standard definition
+#undef MIN // override standard definition
+#undef MAX // override standard definition
+#undef CLAMP // override standard definition
+#undef Error
+#undef OK
 #endif
 
 #include "error_macros.h"
@@ -150,28 +148,28 @@ inline void __swap_tmpl(T &x, T &y ) {
 
 #endif //swap
 
-#define HEX2CHR( m_hex ) ( (m_hex>='0' && m_hex<='9')?(m_hex-'0'):\
-	((m_hex>='A' && m_hex<='F')?(10+m_hex-'A'):\
-	((m_hex>='a' && m_hex<='f')?(10+m_hex-'a'):0)))
+/* clang-format off */
+#define HEX2CHR(m_hex) \
+	((m_hex >= '0' && m_hex <= '9') ? (m_hex - '0') : \
+	((m_hex >= 'A' && m_hex <= 'F') ? (10 + m_hex - 'A') : \
+	((m_hex >= 'a' && m_hex <= 'f') ? (10 + m_hex - 'a') : 0)))
+/* clang-format on */
 
 // Macro to check whether we are compiled by clang
 // and we have a specific builtin
 #if defined(__llvm__) && defined(__has_builtin)
-	#define _llvm_has_builtin(x) __has_builtin(x)
+#define _llvm_has_builtin(x) __has_builtin(x)
 #else
-	#define _llvm_has_builtin(x) 0
+#define _llvm_has_builtin(x) 0
 #endif
 
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) || _llvm_has_builtin(__builtin_mul_overflow)
-#    define _mul_overflow __builtin_mul_overflow
+#define _mul_overflow __builtin_mul_overflow
 #endif
 
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) || _llvm_has_builtin(__builtin_add_overflow)
-#    define _add_overflow __builtin_add_overflow
+#define _add_overflow __builtin_add_overflow
 #endif
-
-
-
 
 
 /** Function to find the nearest (bigger) power of 2 to an integer */
@@ -276,14 +274,11 @@ struct _GlobalLock {
 };
 
 #define GLOBAL_LOCK_FUNCTION _GlobalLock _global_lock_;
+
 #ifdef NO_SAFE_CAST
-
 #define SAFE_CAST static_cast
-
 #else
-
 #define SAFE_CAST dynamic_cast
-
 #endif
 
 #define MT_SAFE
@@ -291,7 +286,4 @@ struct _GlobalLock {
 #define __STRX(m_index) #m_index
 #define __STR(m_index) __STRX(m_index)
 
-
-
 #endif  /* typedefs.h */
-

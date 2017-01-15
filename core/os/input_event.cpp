@@ -39,6 +39,8 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 	}
 
 	switch(type) {
+		/** Current clang-format style doesn't play well with the aligned return values of that switch. */
+		/* clang-format off */
 		case NONE:
 			return true;
 		case KEY:
@@ -80,6 +82,7 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 		case ACTION:
 			return action.action == p_event.action.action
 				&& action.pressed == p_event.action.pressed;
+		/* clang-format on */
 		default:
 			ERR_PRINT("No logic to compare InputEvents of this type, this shouldn't happen.");
 	}

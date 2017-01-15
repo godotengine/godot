@@ -33,10 +33,12 @@
 
 ref class JoypadUWP sealed {
 
+	/** clang-format breaks this, it does not understand this token. */
+	/* clang-format off */
 internal:
-
 	void register_events();
 	uint32_t process_controllers(uint32_t p_last_id);
+	/* clang-format on */
 
 	JoypadUWP();
 	JoypadUWP(InputDefault* p_input);

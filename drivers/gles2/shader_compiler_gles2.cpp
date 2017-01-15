@@ -441,7 +441,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					} else if (custom_h && callfunc=="cosh_custom") {
 
 						if (!cosh_used) {
-							global_code=	"float cosh_custom(float val)\n"\
+							global_code=
+									"float cosh_custom(float val)\n"\
 									"{\n"\
 									"    float tmp = exp(val);\n"\
 									"    float cosH = (tmp + 1.0 / tmp) / 2.0;\n"\
@@ -453,7 +454,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					} else if (custom_h && callfunc=="sinh_custom") {
 
 						if (!sinh_used) {
-							global_code=	"float sinh_custom(float val)\n"\
+							global_code=
+									"float sinh_custom(float val)\n"\
 									"{\n"\
 									"    float tmp = exp(val);\n"\
 									"    float sinH = (tmp - 1.0 / tmp) / 2.0;\n"\
@@ -465,7 +467,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					} else if (custom_h && callfunc=="tanh_custom") {
 
 						if (!tanh_used) {
-							global_code=	"float tanh_custom(float val)\n"\
+							global_code=
+									"float tanh_custom(float val)\n"\
 									"{\n"\
 									"    float tmp = exp(val);\n"\
 									"    float tanH = (tmp - 1.0 / tmp) / (tmp + 1.0 / tmp);\n"\

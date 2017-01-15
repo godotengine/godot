@@ -1053,31 +1053,31 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 
 			// math types
 
-			case VECTOR2: return Vector2();		// 5
+			case VECTOR2: return Vector2();	// 5
 			case RECT2: return Rect2();
 			case VECTOR3: return Vector3();
 			case TRANSFORM2D: return Transform2D();
 			case PLANE: return Plane();
 			case QUAT: return Quat();
-			case RECT3: return Rect3(); //sorry naming convention fail :( not like it's used often // 10
+			case RECT3: return Rect3(); // 10
 			case BASIS: return Basis();
 			case TRANSFORM: return Transform();
 
 			// misc types
 			case COLOR: return Color();
 			case IMAGE: return Image();
-			case NODE_PATH: return NodePath();;		// 15
+			case NODE_PATH: return NodePath(); // 15
 			case _RID: return RID();
 			case OBJECT: return (Object*)NULL;
 			case INPUT_EVENT: return InputEvent();
 			case DICTIONARY: return Dictionary();
-			case ARRAY: return Array();;			// 20
+			case ARRAY: return Array(); // 20
 			case POOL_BYTE_ARRAY: return PoolByteArray();
 			case POOL_INT_ARRAY: return PoolIntArray();
 			case POOL_REAL_ARRAY: return PoolRealArray();
 			case POOL_STRING_ARRAY: return PoolStringArray();
-			case POOL_VECTOR2_ARRAY: return PoolVector2Array();; 	// 25
-			case POOL_VECTOR3_ARRAY: return PoolVector3Array();; 	// 25
+			case POOL_VECTOR2_ARRAY: return PoolVector2Array(); // 25
+			case POOL_VECTOR3_ARRAY: return PoolVector3Array();
 			case POOL_COLOR_ARRAY: return PoolColorArray();
 			default: return Variant();
 		}
@@ -1127,27 +1127,27 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 			case VECTOR3: return (Vector3(*p_args[0]));
 			case PLANE: return (Plane(*p_args[0]));
 			case QUAT: return (Quat(*p_args[0]));
-			case RECT3: return (Rect3(*p_args[0])); //sorry naming convention fail :( not like it's used often // 10
+			case RECT3: return (Rect3(*p_args[0])); // 10
 			case BASIS: return (Basis(p_args[0]->operator Basis()));
 			case TRANSFORM: return (Transform(p_args[0]->operator Transform()));
 
 			// misc types
 			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
 			case IMAGE: return (Image(*p_args[0]));
-			case NODE_PATH: return (NodePath(p_args[0]->operator NodePath()));		// 15
+			case NODE_PATH: return (NodePath(p_args[0]->operator NodePath())); // 15
 			case _RID: return (RID(*p_args[0]));
 			case OBJECT: return ((Object*)(p_args[0]->operator Object *()));
 			case INPUT_EVENT: return (InputEvent(*p_args[0]));
 			case DICTIONARY: return p_args[0]->operator Dictionary();
-			case ARRAY: return p_args[0]->operator Array();
+			case ARRAY: return p_args[0]->operator Array(); // 20
 
 			// arrays
 			case POOL_BYTE_ARRAY: return (PoolByteArray(*p_args[0]));
 			case POOL_INT_ARRAY: return (PoolIntArray(*p_args[0]));
 			case POOL_REAL_ARRAY: return (PoolRealArray(*p_args[0]));
 			case POOL_STRING_ARRAY: return (PoolStringArray(*p_args[0]));
-			case POOL_VECTOR2_ARRAY: return (PoolVector2Array(*p_args[0])); 	// 25
-			case POOL_VECTOR3_ARRAY: return (PoolVector3Array(*p_args[0])); 	// 25
+			case POOL_VECTOR2_ARRAY: return (PoolVector2Array(*p_args[0])); // 25
+			case POOL_VECTOR3_ARRAY: return (PoolVector3Array(*p_args[0]));
 			case POOL_COLOR_ARRAY: return (PoolColorArray(*p_args[0]));
 			default: return Variant();
 		}

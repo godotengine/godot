@@ -464,16 +464,19 @@ static void get_modulation_value(int x, int y, const int p_2bit, const int p_mod
 		if(((x^y)&1)==0)
 			mod_val = rep_vals0[p_modulation[y][x]];
 		else if(p_modulation_modes[y][x] == 1) {
-			mod_val = (rep_vals0[p_modulation[y-1][x]] +
-					  rep_vals0[p_modulation[y+1][x]] +
-					  rep_vals0[p_modulation[y][x-1]] +
-					  rep_vals0[p_modulation[y][x+1]] + 2) / 4;
+			mod_val = (
+					rep_vals0[p_modulation[y-1][x]] +
+					rep_vals0[p_modulation[y+1][x]] +
+					rep_vals0[p_modulation[y][x-1]] +
+					rep_vals0[p_modulation[y][x+1]] + 2) / 4;
 		} else if(p_modulation_modes[y][x] == 2) {
-			mod_val = (rep_vals0[p_modulation[y][x-1]] +
-					  rep_vals0[p_modulation[y][x+1]] + 1) / 2;
+			mod_val = (
+					rep_vals0[p_modulation[y][x-1]] +
+					rep_vals0[p_modulation[y][x+1]] + 1) / 2;
 		} else {
-			mod_val = (rep_vals0[p_modulation[y-1][x]] +
-					  rep_vals0[p_modulation[y+1][x]] + 1) / 2;
+			mod_val = (
+					rep_vals0[p_modulation[y-1][x]] +
+					rep_vals0[p_modulation[y+1][x]] + 1) / 2;
 		}
 	} else  {
 		mod_val = rep_vals1[p_modulation[y][x]];
@@ -615,11 +618,12 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 					for(j = 0; j < 2; j++) {
 						unpack_5554(p_blocks[i][j], colors5554[i][j].Reps);
 
-						unpack_modulations(p_blocks[i][j],
-										  p_2bit,
-										  p_modulation,
-										  p_modulation_modes,
-										  p_x, p_y);
+						unpack_modulations(
+								p_blocks[i][j],
+								p_2bit,
+								p_modulation,
+								p_modulation_modes,
+								p_x, p_y);
 
 						p_x += x_block_size;
 					}
@@ -632,19 +636,21 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 			}
 
 
-			interpolate_colors(colors5554[0][0].Reps[0],
-							   colors5554[0][1].Reps[0],
-							   colors5554[1][0].Reps[0],
-							   colors5554[1][1].Reps[0],
-							   p_2bit, x, y,
-							   ASig);
+			interpolate_colors(
+					colors5554[0][0].Reps[0],
+					colors5554[0][1].Reps[0],
+					colors5554[1][0].Reps[0],
+					colors5554[1][1].Reps[0],
+					p_2bit, x, y,
+					ASig);
 
-			interpolate_colors(colors5554[0][0].Reps[1],
-							   colors5554[0][1].Reps[1],
-							   colors5554[1][0].Reps[1],
-							   colors5554[1][1].Reps[1],
-							   p_2bit, x, y,
-							   BSig);
+			interpolate_colors(
+					colors5554[0][0].Reps[1],
+					colors5554[0][1].Reps[1],
+					colors5554[1][0].Reps[1],
+					colors5554[1][1].Reps[1],
+					p_2bit, x, y,
+					BSig);
 
 			get_modulation_value(x,y, p_2bit, (const int (*)[16])p_modulation, (const int (*)[16])p_modulation_modes,
 							   &Mod, &DoPT);
