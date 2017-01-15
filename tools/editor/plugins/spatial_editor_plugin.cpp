@@ -1527,11 +1527,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (m.mod.meta)
 						mod=KEY_META;
 
-					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
+					if (mod == _get_key_modifier("editors/3d/pan_modifier"))
 						nav_mode = NAVIGATION_PAN;
-					else if (mod == _get_key_modifier("3d_editor/zoom_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/zoom_modifier"))
 						nav_mode = NAVIGATION_ZOOM;
-					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/orbit_modifier"))
 						nav_mode = NAVIGATION_ORBIT;
 
 				} else if (nav_scheme == NAVIGATION_MAYA) {
@@ -1552,11 +1552,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					mod=KEY_META;
 
 				if(mod){
-					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
+					if (mod == _get_key_modifier("editors/3d/pan_modifier"))
 						nav_mode = NAVIGATION_PAN;
-					else if (mod == _get_key_modifier("3d_editor/zoom_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/zoom_modifier"))
 						nav_mode = NAVIGATION_ZOOM;
-					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/orbit_modifier"))
 						nav_mode = NAVIGATION_ORBIT;
 				}
 			}
@@ -1587,7 +1587,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
 						zoom_speed *= zoom_speed_modifier;
 
-					NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("3d_editor/zoom_style").operator int();
+					NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("editors/3d/zoom_style").operator int();
 					if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
 						if ( m.relative_x > 0)
 							cursor.distance*=1-m.relative_x*zoom_speed;
@@ -4095,7 +4095,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	add_to_group("_spatial_editor_group");
 
 	EDITOR_DEF("editors/3d/manipulator_gizmo_size",80);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"3d_editor/manipulator_gizmo_size",PROPERTY_HINT_RANGE,"16,1024,1"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"editors/3d/manipulator_gizmo_size",PROPERTY_HINT_RANGE,"16,1024,1"));
 	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity",0.2);
 
 	over_gizmo_handle=-1;

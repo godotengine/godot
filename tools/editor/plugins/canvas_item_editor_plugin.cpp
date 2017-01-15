@@ -1319,7 +1319,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 		{
 			bone_ik_list.clear();
 			float closest_dist=1e20;
-			int bone_width = EditorSettings::get_singleton()->get("editors/2dbone_width");
+			int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
 			for(Map<ObjectID,BoneList>::Element *E=bone_list.front();E;E=E->next()) {
 
 				if (E->get().from == E->get().to)
@@ -2113,11 +2113,11 @@ void CanvasItemEditor::_viewport_draw() {
        }
 
 	if (skeleton_show_bones) {
-		int bone_width = EditorSettings::get_singleton()->get("editors/2dbone_width");
-		Color bone_color1 = EditorSettings::get_singleton()->get("editors/2dbone_color1");
-		Color bone_color2 = EditorSettings::get_singleton()->get("editors/2dbone_color2");
-		Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2dbone_ik_color");
-		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2dbone_selected_color");
+		int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
+		Color bone_color1 = EditorSettings::get_singleton()->get("editors/2d/bone_color1");
+		Color bone_color2 = EditorSettings::get_singleton()->get("editors/2d/bone_color2");
+		Color bone_ik_color = EditorSettings::get_singleton()->get("editors/2d/bone_ik_color");
+		Color bone_selected_color = EditorSettings::get_singleton()->get("editors/2d/bone_selected_color");
 
 		for(Map<ObjectID,BoneList>::Element*E=bone_list.front();E;E=E->next()) {
 
