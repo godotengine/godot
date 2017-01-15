@@ -456,7 +456,7 @@ public:
 
 	Error open(const String& p_path);
 
-	bool list_dir_begin(); ///< This starts dir listing
+	bool list_dir_begin(bool p_skip_internal=false,bool p_skip_hidden=false); ///< This starts dir listing
 	String get_next();
 	bool current_is_dir() const;
 
@@ -484,6 +484,9 @@ public:
 	_Directory();
 	virtual ~_Directory();
 
+private:
+	bool _list_skip_navigational;
+	bool _list_skip_hidden;
 };
 
 class _Marshalls : public Reference {
