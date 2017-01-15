@@ -67,6 +67,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
+		TOOL_COPY_NODE_PATH,
 		TOOL_BUTTON_MAX
 	};
 
