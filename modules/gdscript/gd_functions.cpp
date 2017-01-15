@@ -351,14 +351,14 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 		case MATH_SEED: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			uint32_t seed=*p_args[0];
+			uint64_t seed=*p_args[0];
 			Math::seed(seed);
 			r_ret=Variant();
 		} break;
 		case MATH_RANDSEED: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
-			uint32_t seed=*p_args[0];
+			uint64_t seed=*p_args[0];
 			int ret = Math::rand_from_seed(&seed);
 			Array reta;
 			reta.push_back(ret);

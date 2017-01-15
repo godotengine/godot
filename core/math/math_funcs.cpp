@@ -31,8 +31,9 @@
 #include "core/os/os.h"
 
 #include "float.h"
-uint32_t Math::default_seed=1;
+#include "pcg.h"
 
+pcg32_random_t Math::default_pcg = {1, PCG_DEFAULT_INC_64};
 
 #define PHI 0x9e3779b9
 
@@ -40,28 +41,26 @@ uint32_t Math::default_seed=1;
 static uint32_t Q[4096];
 #endif
 
-uint32_t Math::rand_from_seed(uint32_t *seed) {
-	// Xorshift31 PRNG
-	if ( *seed == 0 ) *seed = Math::RANDOM_MAX;
-	(*seed) ^= (*seed) << 13;
-	(*seed) ^= (*seed) >> 17;
-	(*seed) ^= (*seed) << 5;
-	return (*seed) & Math::RANDOM_MAX;
+// TODO: we should eventually expose pcg.inc too
+uint32_t Math::rand_from_seed(uint64_t *seed) {
+	pcg32_random_t pcg = {*seed, PCG_DEFAULT_INC_64};
+	uint32_t r = pcg32_random_r(&pcg);
+	*seed = pcg.state;
+	return r;
 }
 
-void Math::seed(uint32_t x) {
-	default_seed=x;
+void Math::seed(uint64_t x) {
+	default_pcg.state=x;
 }
 
 void Math::randomize() {
 
 	OS::Time time = OS::get_singleton()->get_time();
-	seed(OS::get_singleton()->get_ticks_usec()*(time.hour+1)*(time.min+1)*(time.sec+1)*rand()); /* *OS::get_singleton()->get_time().sec); // windows doesn't have get_time(), returns always 0 */
+	seed(OS::get_singleton()->get_ticks_usec()*(time.hour+1)*(time.min+1)*(time.sec+1)*rand()); // TODO: can be simplified.
 }
 
 uint32_t Math::rand() {
-
-	return rand_from_seed(&default_seed);
+	return pcg32_random_r(&default_pcg);
 }
 
 double Math::randf() {

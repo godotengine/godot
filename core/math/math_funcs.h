@@ -31,6 +31,7 @@
 
 #include "typedefs.h"
 #include "math_defs.h"
+#include "pcg.h"
 
 #ifndef NO_MATH_H
 #include <math.h>
@@ -41,8 +42,8 @@
 
 class Math {
 
+	static pcg32_random_t default_pcg;
 
-	static uint32_t default_seed;
 public:
 	Math() {} // useless to instance
 
@@ -150,12 +151,12 @@ public:
 	}
 
 
-	static uint32_t rand_from_seed(uint32_t *seed);
+	static uint32_t rand_from_seed(uint64_t *seed);
 
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
 	static double stepify(double p_value,double p_step);
-	static void seed(uint32_t x=0);
+	static void seed(uint64_t x=0);
 	static void randomize();
 	static uint32_t larger_prime(uint32_t p_val);
 	static double dectime(double p_value,double p_amount, double p_step);
