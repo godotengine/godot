@@ -198,14 +198,15 @@ RID AudioServerJavascript::voice_create(){
 	voice->positional=false;
 	voice->active=false;
 
+	/* clang-format off */
 	EM_ASM_( {
-			_as_voices[$0]=null;
-			_as_voice_gain[$0]=_as_audioctx.createGain();
-			_as_voice_pan[$0]=_as_audioctx.createStereoPanner();
-			 _as_voice_gain[$0].connect(_as_voice_pan[$0]);
-			 _as_voice_pan[$0].connect(_as_audioctx.destination);
-
-		},voice_base);
+		_as_voices[$0] = null;
+		_as_voice_gain[$0] = _as_audioctx.createGain();
+		_as_voice_pan[$0] = _as_audioctx.createStereoPanner();
+		_as_voice_gain[$0].connect(_as_voice_pan[$0]);
+		_as_voice_pan[$0].connect(_as_audioctx.destination);
+	}, voice_base);
+	/* clang-format on */
 
 	voice_base++;
 
@@ -227,27 +228,29 @@ void AudioServerJavascript::voice_play(RID p_voice, RID p_sample){
 		//create sample if not created
 		ERR_FAIL_COND(sample->tmp_data.size()==0);
 		sample->index=sample_base;
-		EM_ASM_( {
-			_as_samples[$0]=_as_audioctx.createBuffer($1,$2,$3);
-			},sample_base,sample->stereo?2:1,sample->length,sample->mix_rate);
+		/* clang-format off */
+		EM_ASM_({
+			_as_samples[$0] = _as_audioctx.createBuffer($1, $2, $3);
+		}, sample_base, sample->stereo ? 2 : 1, sample->length, sample->mix_rate);
+		/* clang-format on */
 
 		sample_base++;
 		int chans = sample->stereo?2:1;
 
 
 		for(int i=0;i<chans;i++) {
-
-
+			/* clang-format off */
 			EM_ASM_({
-				       _as_edited_buffer=_as_samples[$0].getChannelData($1);
-			       },sample->index,i);
-
+				_as_edited_buffer = _as_samples[$0].getChannelData($1);
+			}, sample->index, i);
+			/* clang-format on */
 
 			for(int j=0;j<sample->length;j++) {
-
+				/* clang-format off */
 				EM_ASM_({
-					       _as_edited_buffer[$0]=$1;
-				       },j,sample->tmp_data[j*chans+i]);
+					_as_edited_buffer[$0] = $1;
+				}, j, sample->tmp_data[j * chans + i]);
+				/* clang-format on */
 			}
 		}
 
@@ -263,26 +266,27 @@ void AudioServerJavascript::voice_play(RID p_voice, RID p_sample){
 	float freq_diff = Math::log(float(voice->mix_rate)/float(voice->sample_mix_rate))/Math::log(2.0);
 	int detune = int(freq_diff*1200.0);
 
-	EM_ASM_( {
-			if (_as_voices[$0]!==null) {
-				 _as_voices[$0].stop(); //stop and byebye
-			 }
-			 _as_voices[$0]=_as_audioctx.createBufferSource();
-			_as_voices[$0].connect(_as_voice_gain[$0]);
-			_as_voices[$0].buffer=_as_samples[$1];
-			_as_voices[$0].loopStart.value=$1;
-			_as_voices[$0].loopEnd.value=$2;
-			_as_voices[$0].loop.value=$3;
-			_as_voices[$0].detune.value=$6;
-			_as_voice_pan[$0].pan.value=$4;
-			 _as_voice_gain[$0].gain.value=$5;
-			_as_voices[$0].start();
-			_as_voices[$0].onended=function() {
-				 _as_voices[$0].disconnect(_as_voice_gain[$0]);
-				 _as_voices[$0]=null;
-			 }
-
-		},voice->index,sample->index,sample->mix_rate*sample->loop_begin,sample->mix_rate*sample->loop_end,sample->loop_format!=SAMPLE_LOOP_NONE,voice->pan,voice->volume*fx_volume_scale,detune);
+	/* clang-format off */
+	EM_ASM_({
+		if (_as_voices[$0] !== null) {
+			_as_voices[$0].stop(); //stop and byebye
+		}
+		_as_voices[$0] = _as_audioctx.createBufferSource();
+		_as_voices[$0].connect(_as_voice_gain[$0]);
+		_as_voices[$0].buffer = _as_samples[$1];
+		_as_voices[$0].loopStart.value = $1;
+		_as_voices[$0].loopEnd.value = $2;
+		_as_voices[$0].loop.value = $3;
+		_as_voices[$0].detune.value = $6;
+		_as_voice_pan[$0].pan.value = $4;
+		_as_voice_gain[$0].gain.value = $5;
+		_as_voices[$0].start();
+		_as_voices[$0].onended = function() {
+			_as_voices[$0].disconnect(_as_voice_gain[$0]);
+			_as_voices[$0] = null;
+		}
+	}, voice->index, sample->index, sample->mix_rate * sample->loop_begin, sample->mix_rate * sample->loop_end, sample->loop_format != SAMPLE_LOOP_NONE, voice->pan, voice->volume * fx_volume_scale, detune);
+	/* clang-format on */
 
 	voice->active=true;
 }
@@ -295,11 +299,11 @@ void AudioServerJavascript::voice_set_volume(RID p_voice, float p_volume){
 	voice->volume=p_volume;
 
 	if (voice->active) {
-		EM_ASM_( {
-
-			_as_voice_gain[$0].gain.value=$1;
-
-			},voice->index,voice->volume*fx_volume_scale);
+		/* clang-format off */
+		EM_ASM_({
+			_as_voice_gain[$0].gain.value = $1;
+		}, voice->index, voice->volume * fx_volume_scale);
+		/* clang-format on */
 	}
 
 }
@@ -313,11 +317,11 @@ void AudioServerJavascript::voice_set_pan(RID p_voice, float p_pan, float p_dept
 	voice->pan_height=height;
 
 	if (voice->active) {
-		EM_ASM_( {
-
-			_as_voice_pan[$0].pan.value=$1;
-
-			},voice->index,voice->pan);
+		/* clang-format off */
+		EM_ASM_({
+			_as_voice_pan[$0].pan.value = $1;
+		}, voice->index, voice->pan);
+		/* clang-format on */
 	}
 }
 void AudioServerJavascript::voice_set_filter(RID p_voice, FilterType p_type, float p_cutoff, float p_resonance, float p_gain){
@@ -340,11 +344,11 @@ void AudioServerJavascript::voice_set_mix_rate(RID p_voice, int p_mix_rate){
 
 		float freq_diff = Math::log(float(voice->mix_rate)/float(voice->sample_mix_rate))/Math::log(2.0);
 		int detune = int(freq_diff*1200.0);
-		EM_ASM_( {
-
-			_as_voices[$0].detune.value=$1;
-
-			},voice->index,detune);
+		/* clang-format off */
+		EM_ASM_({
+			_as_voices[$0].detune.value = $1;
+		}, voice->index, detune);
+		/* clang-format on */
 	}
 }
 void AudioServerJavascript::voice_set_positional(RID p_voice, bool p_positional){
@@ -419,14 +423,15 @@ void AudioServerJavascript::voice_stop(RID p_voice){
 	ERR_FAIL_COND(!voice);
 
 	if (voice->active) {
-
-		EM_ASM_( {
-				 if (_as_voices[$0]!==null) {
-					_as_voices[$0].stop();
-					 _as_voices[$0].disconnect(_as_voice_gain[$0]);
-					 _as_voices[$0]=null;
-				 }
-			},voice->index);
+		/* clang-format off */
+		EM_ASM_({
+			if (_as_voices[$0] !== null) {
+				_as_voices[$0].stop();
+				_as_voices[$0].disconnect(_as_voice_gain[$0]);
+				_as_voices[$0] = null;
+			}
+		}, voice->index);
+		/* clang-format on */
 
 		voice->active=false;
 	}
@@ -524,22 +529,25 @@ void AudioServerJavascript::free(RID p_id){
 		ERR_FAIL_COND(!voice);
 
 		if (voice->active) {
-			EM_ASM_( {
-				 if (_as_voices[$0]!==null) {
+			/* clang-format off */
+			EM_ASM_({
+				 if (_as_voices[$0] !== null) {
 					_as_voices[$0].stop();
-					 _as_voices[$0].disconnect(_as_voice_gain[$0]);
+					_as_voices[$0].disconnect(_as_voice_gain[$0]);
 				 }
-			},voice->index);
+			}, voice->index);
+			/* clang-format on */
 		}
 
-		EM_ASM_( {
+		/* clang-format off */
+		EM_ASM_({
 			delete _as_voices[$0];
 			_as_voice_gain[$0].disconnect(_as_voice_pan[$0]);
 			delete _as_voice_gain[$0];
 			_as_voice_pan[$0].disconnect(_as_audioctx.destination);
 			delete _as_voice_pan[$0];
-
-		 },voice->index);
+		}, voice->index);
+		/* clang-format on */
 
 		voice_owner.free(p_id);
 		memdelete(voice);
@@ -549,10 +557,11 @@ void AudioServerJavascript::free(RID p_id){
 		Sample *sample = sample_owner.get(p_id);
 		ERR_FAIL_COND(!sample);
 
-		EM_ASM_( {
+		/* clang-format off */
+		EM_ASM_({
 			delete _as_samples[$0];
-
-		 },sample->index);
+		}, sample->index);
+		/* clang-format on */
 
 		sample_owner.free(p_id);
 		memdelete(sample);
@@ -594,21 +603,20 @@ void AudioServerJavascript::mix_to_js(int p_frames) {
 		int tomix=MIN(todo,INTERNAL_BUFFER_SIZE);
 		driver_process_chunk(tomix);
 
-
+		/* clang-format off */
 		EM_ASM_({
-
-			var data = HEAPF32.subarray($0/4, $0/4 + $2*2);
+			var data = HEAPF32.subarray($0 / 4, $0 / 4 + $2 * 2);
 
 			for (var channel = 0; channel < _as_output_buffer.numberOfChannels; channel++) {
 				var outputData = _as_output_buffer.getChannelData(channel);
 				// Loop through samples
 				for (var sample = 0; sample < $2; sample++) {
 					// make output equal to the same as the input
-					outputData[sample+$1] = data[sample*2+channel];
+					outputData[sample + $1] = data[sample * 2 + channel];
 				}
 			}
-
-			},internal_buffer,offset,tomix);
+		}, internal_buffer, offset, tomix);
+		/* clang-format on */
 
 		todo-=tomix;
 		offset+=tomix;
@@ -618,9 +626,11 @@ void AudioServerJavascript::mix_to_js(int p_frames) {
 void AudioServerJavascript::init(){
 
 	/*
+	// clang-format off
 	EM_ASM(
-		console.log('server is '+audio_server);
+		console.log('server is ' + audio_server);
 	);
+	// clang-format on
 	*/
 
 
@@ -634,19 +644,19 @@ void AudioServerJavascript::init(){
 
 	int buffer_latency=16384;
 
+	/* clang-format off */
 	EM_ASM_( {
-
 		_as_script_node = _as_audioctx.createScriptProcessor($0, 0, 2);
 		_as_script_node.connect(_as_audioctx.destination);
 		console.log(_as_script_node.bufferSize);
-
 
 		_as_script_node.onaudioprocess = function(audioProcessingEvent) {
 		// The output buffer contains the samples that will be modified and played
 			_as_output_buffer = audioProcessingEvent.outputBuffer;
 			audio_server_mix_function(_as_output_buffer.getChannelData(0).length);
 		}
-	},buffer_latency);
+	}, buffer_latency);
+	/* clang-format on */
 
 
 }
@@ -813,20 +823,24 @@ AudioServerJavascript::AudioServerJavascript() {
 	singleton=this;
 	sample_base=1;
 	voice_base=1;
+	/* clang-format off */
 	EM_ASM(
-		_as_samples={};
-		_as_voices={};
-		_as_voice_pan={};
-		_as_voice_gain={};
+		_as_samples = {};
+		_as_voices = {};
+		_as_voice_pan = {};
+		_as_voice_gain = {};
 
 		_as_audioctx = new (window.AudioContext || window.webkitAudioContext)();
 
 		audio_server_mix_function = Module.cwrap('audio_server_mix_function', 'void', ['number']);
 	);
+	/* clang-format on */
 
+	/* clang-format off */
 	webaudio_mix_rate = EM_ASM_INT_V(
-				return _as_audioctx.sampleRate;
-					);
+		return _as_audioctx.sampleRate;
+	);
+	/* clang-format on */
 	print_line("WEBAUDIO MIX RATE: "+itos(webaudio_mix_rate));
 	event_voice_scale=1.0;
 	fx_volume_scale=1.0;

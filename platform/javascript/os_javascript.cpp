@@ -215,6 +215,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	// find locale, emscripten only sets "C"
 	char locale_ptr[16];
+	/* clang-format off */
 	EM_ASM_({
 		var locale = "";
 		if (Module.locale) {
@@ -230,6 +231,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 		locale = locale.split('.')[0];
 		stringToUTF8(locale, $0, 16);
 	}, locale_ptr);
+	/* clang-format on */
 	setenv("LANG", locale_ptr, true);
 
 	print_line("Init Audio");
@@ -332,9 +334,11 @@ void OS_JavaScript::finalize() {
 
 void OS_JavaScript::alert(const String& p_alert,const String& p_title) {
 
+	/* clang-format off */
 	EM_ASM_({
 		window.alert(UTF8ToString($0));
 	}, p_alert.utf8().get_data());
+	/* clang-format on */
 }
 
 
@@ -366,9 +370,11 @@ int OS_JavaScript::get_mouse_button_state() const {
 
 void OS_JavaScript::set_window_title(const String& p_title) {
 
+	/* clang-format off */
 	EM_ASM_({
 		document.title = UTF8ToString($0);
 	}, p_title.utf8().get_data());
+	/* clang-format on */
 }
 
 //interesting byt not yet
@@ -424,8 +430,10 @@ void OS_JavaScript::set_window_maximized(bool p_enabled) {
 			set_window_fullscreen(false);
 		}
 		else {
+			/* clang-format off */
 			video_mode.width = EM_ASM_INT_V(return window.innerWidth);
 			video_mode.height = EM_ASM_INT_V(return window.innerHeight);
+			/* clang-format on */
 			emscripten_set_canvas_size(video_mode.width, video_mode.height);
 		}
 	}
@@ -444,7 +452,9 @@ void OS_JavaScript::set_window_fullscreen(bool p_enable) {
 	// _browser_resize_callback or _fullscreen_change_callback
 	EMSCRIPTEN_RESULT result;
 	if (p_enable) {
+		/* clang-format off */
 		EM_ASM(Module.requestFullscreen(false, false););
+		/* clang-format on */
 	}
 	else {
 		result = emscripten_exit_fullscreen();
@@ -504,11 +514,13 @@ bool OS_JavaScript::main_loop_iterate() {
 
 		if (time_to_save_sync<0) {
 			//time to sync, for real
+			/* clang-format off */
 			EM_ASM(
 				FS.syncfs(function(err) {
 					if (err) { Module.printErr('Failed to save IDB file system: ' + err.message); }
 				});
 			);
+			/* clang-format on */
 		}
 
 
@@ -785,9 +797,11 @@ void OS_JavaScript::reload_gfx() {
 }
 
 Error OS_JavaScript::shell_open(String p_uri) {
+	/* clang-format off */
 	EM_ASM_({
 		window.open(UTF8ToString($0), '_blank');
 	}, p_uri.utf8().get_data());
+	/* clang-format on */
 	return OK;
 }
 

@@ -178,6 +178,7 @@ int main(int argc, char *argv[]) {
    //glutSpecialFunc(gears_special);
 
 	//mount persistent file system
+	/* clang-format off */
 	EM_ASM(
 		FS.mkdir('/userfs');
 		FS.mount(IDBFS, {}, '/userfs');
@@ -196,6 +197,7 @@ int main(int argc, char *argv[]) {
 			}
 		});
 	);
+	/* clang-format on */
 
 	glutMainLoop();
 

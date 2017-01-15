@@ -41,6 +41,7 @@ JavaScript *JavaScript::get_singleton() {
 Variant JavaScript::eval(const String& p_code, bool p_use_global_exec_context) {
 
 	union { int i; double d; char* s; } js_data[4];
+	/* clang-format off */
 	Variant::Type return_type = static_cast<Variant::Type>(EM_ASM_INT({
 
 		var eval_ret;
@@ -49,8 +50,7 @@ Variant JavaScript::eval(const String& p_code, bool p_use_global_exec_context) {
 				// indirect eval call grants global execution context
 				var global_eval = eval;
 				eval_ret = global_eval(UTF8ToString($2));
-			}
-			else {
+			} else {
 				eval_ret = eval(UTF8ToString($2));
 			}
 		} catch (e) {
@@ -125,6 +125,7 @@ Variant JavaScript::eval(const String& p_code, bool p_use_global_exec_context) {
 		return 0; // NIL
 
 	}, js_data, sizeof *js_data, p_code.utf8().get_data(), p_use_global_exec_context));
+	/* clang-format on */
 
 	switch(return_type) {
 		case Variant::BOOL:
@@ -136,7 +137,9 @@ Variant JavaScript::eval(const String& p_code, bool p_use_global_exec_context) {
 		case Variant::STRING:
 			{
 				String str = String::utf8(js_data->s);
+				/* clang-format off */
 				EM_ASM_({ _free($0); }, js_data->s);
+				/* clang-format on */
 				return str;
 			}
 		case Variant::VECTOR2:
