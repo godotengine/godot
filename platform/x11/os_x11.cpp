@@ -82,14 +82,14 @@ OS::VideoMode OS_X11::get_default_video_mode() const {
 }
 
 int OS_X11::get_audio_driver_count() const {
-    return AudioDriverManagerSW::get_driver_count();
+    return AudioDriverManager::get_driver_count();
 }
 
 const char *OS_X11::get_audio_driver_name(int p_driver) const {
 
-    AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+    AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
     ERR_FAIL_COND_V( !driver, "" );
-    return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+    return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
 void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
@@ -269,21 +269,21 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XFree(xsh);
 	}
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
 	audio_driver_index=p_audio_driver;
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		bool success=false;
 		audio_driver_index=-1;
-		for(int i=0;i<AudioDriverManagerSW::get_driver_count();i++) {
+		for(int i=0;i<AudioDriverManager::get_driver_count();i++) {
 			if (i==p_audio_driver)
 				continue;
-			AudioDriverManagerSW::get_driver(i)->set_singleton();
-			if (AudioDriverManagerSW::get_driver(i)->init()==OK) {
+			AudioDriverManager::get_driver(i)->set_singleton();
+			if (AudioDriverManager::get_driver(i)->init()==OK) {
 				success=true;
-				print_line("Audio Driver Failed: "+String(AudioDriverManagerSW::get_driver(p_audio_driver)->get_name()));
-				print_line("Using alternate audio driver: "+String(AudioDriverManagerSW::get_driver(i)->get_name()));
+				print_line("Audio Driver Failed: "+String(AudioDriverManager::get_driver(p_audio_driver)->get_name()));
+				print_line("Using alternate audio driver: "+String(AudioDriverManager::get_driver(i)->get_name()));
 				audio_driver_index=i;
 				break;
 			}
@@ -293,14 +293,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		}
 
 	}
-
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-	audio_server->init();
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
 
 
 	ERR_FAIL_COND(!visual_server);
@@ -469,10 +461,6 @@ void OS_X11::finalize() {
 		memdelete(main_loop);
 	main_loop=NULL;
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
 
 	/*
 	if (debugger_connection_console) {
@@ -485,10 +473,6 @@ void OS_X11::finalize() {
 #endif
 	memdelete(input);
 
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);
@@ -1984,20 +1968,20 @@ void OS_X11::set_context(int p_context) {
 OS_X11::OS_X11() {
 
 #ifdef RTAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+	AudioDriverManager::add_driver(&driver_rtaudio);
 #endif
 
 #ifdef PULSEAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_pulseaudio);
+	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif
 
 #ifdef ALSA_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_alsa);
+	AudioDriverManager::add_driver(&driver_alsa);
 #endif
 
-	if(AudioDriverManagerSW::get_driver_count() == 0){
+	if(AudioDriverManager::get_driver_count() == 0){
 		WARN_PRINT("No sound driver found... Defaulting to dummy driver");
-		AudioDriverManagerSW::add_driver(&driver_dummy);
+		AudioDriverManager::add_driver(&driver_dummy);
 	}
 
 	minimized = false;

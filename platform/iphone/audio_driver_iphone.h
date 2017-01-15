@@ -30,7 +30,7 @@
 
 #include <AudioUnit/AudioUnit.h>
 
-class AudioDriverIphone : public AudioDriverSW {
+class AudioDriverIphone : public AudioDriver {
 
 	AudioComponentInstance audio_unit;
 	bool active;

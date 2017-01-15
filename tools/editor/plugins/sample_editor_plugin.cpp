@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "sample_editor_plugin.h"
-
+#if 0
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
@@ -447,4 +447,4 @@ SampleEditorPlugin::~SampleEditorPlugin()
 {
 }
 
-
+#endif

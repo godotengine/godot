@@ -62,7 +62,7 @@ int AudioDriverJavaScript::get_mix_rate() const {
 
 	return 44100;
 }
-AudioDriverSW::OutputFormat AudioDriverJavaScript::get_output_format() const{
+AudioDriver::OutputFormat AudioDriverJavaScript::get_output_format() const{
 
 	return OUTPUT_STEREO;
 }

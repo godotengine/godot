@@ -129,7 +129,7 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud,use_gl2);
 
-	AudioDriverManagerSW::add_driver(&audio_driver_android);
+	AudioDriverManager::add_driver(&audio_driver_android);
 
 
 	RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
@@ -147,9 +147,9 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}

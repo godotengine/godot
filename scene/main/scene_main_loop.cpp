@@ -35,7 +35,7 @@
 #include "globals.h"
 #include <stdio.h>
 #include "os/keyboard.h"
-#include "servers/spatial_sound_2d_server.h"
+//#include "servers/spatial_sound_2d_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "scene/scene_string_names.h"

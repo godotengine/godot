@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "stream_editor_plugin.h"
 
-
+#if 0
 
 void StreamEditor::_notification(int p_what) {
 
@@ -146,3 +146,4 @@ StreamEditorPlugin::~StreamEditorPlugin()
 {
 }
 
+#endif

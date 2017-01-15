@@ -40,7 +40,7 @@
 #include <xaudio2.h>
 #include <wrl/client.h>
 
-class AudioDriverXAudio2 : public AudioDriverSW {
+class AudioDriverXAudio2 : public AudioDriver {
 
 	enum {
 		AUDIO_BUFFERS = 2

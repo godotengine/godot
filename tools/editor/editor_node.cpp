@@ -279,7 +279,7 @@ void EditorNode::_notification(int p_what) {
 		editor_selection->update();
 
 		{
-			uint32_t p32 = AudioServer::get_singleton()->read_output_peak()>>8;
+			uint32_t p32 = 0;//AudioServer::get_singleton()->read_output_peak()>>8;
 
 			float peak = p32==0? -80 : Math::linear2db(p32 / 65535.0);
 
@@ -6647,13 +6647,13 @@ EditorNode::EditorNode() {
 	// editor_import_export->add_import_plugin( Ref<EditorSceneAnimationImportPlugin>( memnew(EditorSceneAnimationImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorMeshImportPlugin>( memnew(EditorMeshImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorFontImportPlugin>( memnew(EditorFontImportPlugin(this))));
-	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
+//	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorBitMaskImportPlugin>( memnew(EditorBitMaskImportPlugin(this))));
 
 
 	editor_import_export->add_export_plugin( Ref<EditorTextureExportPlugin>( memnew(EditorTextureExportPlugin)));
-	editor_import_export->add_export_plugin( Ref<EditorSampleExportPlugin>( memnew(EditorSampleExportPlugin)));
+//	editor_import_export->add_export_plugin( Ref<EditorSampleExportPlugin>( memnew(EditorSampleExportPlugin)));
 	editor_import_export->add_export_plugin( Ref<EditorSceneExportPlugin>( memnew(EditorSceneExportPlugin)));
 
 
@@ -6678,8 +6678,8 @@ EditorNode::EditorNode() {
 
 	add_editor_plugin( memnew( ShaderEditorPlugin(this,false) ) );*/
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
-	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
-	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
+//	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
+//	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ThemeEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MultiMeshEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MeshInstanceEditorPlugin(this) ) );

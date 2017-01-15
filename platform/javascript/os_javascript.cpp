@@ -234,7 +234,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	print_line("Init Audio");
 
-	AudioDriverManagerSW::add_driver(&audio_driver_javascript);
+	AudioDriverManager::add_driver(&audio_driver_javascript);
 
 	if (true) {
 		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,false,false,false) );;

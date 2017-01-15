@@ -1083,7 +1083,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 
 
-	AudioDriverManagerSW::add_driver(&audio_driver_osx);
+	AudioDriverManager::add_driver(&audio_driver_osx);
 
 	// only opengl support here... 
 	RasterizerGLES3::register_config();
@@ -1102,9 +1102,9 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}

@@ -199,7 +199,7 @@ int AudioDriverAndroid::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriverSW::OutputFormat AudioDriverAndroid::get_output_format() const{
+AudioDriver::OutputFormat AudioDriverAndroid::get_output_format() const{
 
 	return OUTPUT_STEREO;
 }

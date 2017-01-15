@@ -109,8 +109,8 @@
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
-#include "scene/2d/sound_player_2d.h"
-#include "scene/2d/sample_player_2d.h"
+//#include "scene/2d/sound_player_2d.h"
+//#include "scene/2d/sample_player_2d.h"
 #include "scene/2d/screen_button.h"
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/y_sort.h"
@@ -139,9 +139,9 @@
 
 #include "scene/main/timer.h"
 
-#include "scene/audio/stream_player.h"
-#include "scene/audio/event_player.h"
-#include "scene/audio/sound_room_params.h"
+//#include "scene/audio/stream_player.h"
+//#include "scene/audio/event_player.h"
+//#include "scene/audio/sound_room_params.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/box_shape.h"
@@ -163,8 +163,8 @@
 
 #include "scene/resources/polygon_path_finder.h"
 
-#include "scene/resources/sample.h"
-#include "scene/audio/sample_player.h"
+//#include "scene/resources/sample.h"
+//#include "scene/audio/sample_player.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/sky_box.h"
 #include "scene/resources/material.h"
@@ -176,7 +176,7 @@
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 
-#include "scene/resources/sample_library.h"
+//#include "scene/resources/sample_library.h"
 #include "scene/resources/audio_stream.h"
 #include "scene/resources/gibberish_stream.h"
 #include "scene/resources/bit_mask.h"
@@ -220,8 +220,8 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/sprite_3d.h"
-#include "scene/3d/spatial_sample_player.h"
-#include "scene/3d/spatial_stream_player.h"
+//#include "scene/3d/spatial_sample_player.h"
+//#include "scene/3d/spatial_stream_player.h"
 #include "scene/3d/proximity_group.h"
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/navigation.h"
@@ -231,7 +231,7 @@
 #include "scene/resources/scene_format_text.h"
 
 static ResourceFormatLoaderImage *resource_loader_image=NULL;
-static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
+//static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
 
 
 #ifdef TOOLS_ENABLED
@@ -258,8 +258,8 @@ void register_scene_types() {
 	resource_loader_image = memnew( ResourceFormatLoaderImage );
 	ResourceLoader::add_resource_format_loader( resource_loader_image );
 
-	resource_loader_wav = memnew( ResourceFormatLoaderWAV );
-	ResourceLoader::add_resource_format_loader( resource_loader_wav );
+	//resource_loader_wav = memnew( ResourceFormatLoaderWAV );
+	//ResourceLoader::add_resource_format_loader( resource_loader_wav );
 	resource_loader_dynamic_font = memnew( ResourceFormatLoaderDynamicFont );
 	ResourceLoader::add_resource_format_loader( resource_loader_dynamic_font );
 
@@ -474,18 +474,12 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<SpatialSamplePlayer>();
-	ClassDB::register_class<SpatialStreamPlayer>();
-	ClassDB::register_class<SoundRoomParams>();
 
 
 #endif
 	ClassDB::register_class<MeshLibrary>();
 	AcceptDialog::set_swap_ok_cancel( GLOBAL_DEF("gui/common/swap_ok_cancel",bool(OS::get_singleton()->get_swap_ok_cancel())) );
 
-	ClassDB::register_class<SamplePlayer>();
-	ClassDB::register_class<StreamPlayer>();
-	ClassDB::register_class<EventPlayer>();
 
 
 	ClassDB::register_class<CanvasItemMaterial>();
@@ -527,8 +521,6 @@ void register_scene_types() {
 	ClassDB::register_class<TileMap>();
 	ClassDB::register_class<ParallaxBackground>();
 	ClassDB::register_class<ParallaxLayer>();
-	ClassDB::register_virtual_class<SoundPlayer2D>();
-	ClassDB::register_class<SamplePlayer2D>();
 	ClassDB::register_class<TouchScreenButton>();
 	ClassDB::register_class<RemoteTransform2D>();
 
@@ -600,8 +592,6 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<Sample>();
-	ClassDB::register_class<SampleLibrary>();
 	ClassDB::register_virtual_class<AudioStream>();
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
 //TODO: Adapt to the new AudioStream API or drop (GH-3307)
@@ -657,7 +647,7 @@ void unregister_scene_types() {
 	clear_default_theme();
 
 	memdelete( resource_loader_image );
-	memdelete( resource_loader_wav );
+//	memdelete( resource_loader_wav );
 	memdelete( resource_loader_dynamic_font );
 
 

@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 
 #ifdef ALSA_ENABLED
 
@@ -35,7 +35,7 @@
 
 #include <alsa/asoundlib.h>
 
-class AudioDriverALSA : public AudioDriverSW {
+class AudioDriverALSA : public AudioDriver {
 
 	Thread* thread;
 	Mutex* mutex;
@@ -48,7 +48,7 @@ class AudioDriverALSA : public AudioDriverSW {
 	static void thread_func(void* p_udata);
 
 	unsigned int mix_rate;
-	OutputFormat output_format;
+	SpeakerMode output_format;
 
 	snd_pcm_uframes_t buffer_size;
 	snd_pcm_uframes_t period_size;
@@ -68,7 +68,7 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
-	virtual OutputFormat get_output_format() const;
+	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();

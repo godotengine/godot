@@ -28,170 +28,264 @@
 /*************************************************************************/
 #include "audio_server.h"
 #include "globals.h"
+#include "os/os.h"
+AudioDriver *AudioDriver::singleton=NULL;
+AudioDriver *AudioDriver::get_singleton() {
 
-void AudioMixer::audio_mixer_chunk_call(int p_frames) {
-
-	AudioServer::get_singleton()->audio_mixer_chunk_callback(p_frames);
+	return singleton;
 }
 
-AudioMixer *AudioServer::EventStream::get_mixer() const {
+void AudioDriver::set_singleton() {
 
-	return AudioServer::get_singleton()->get_mixer();
+	singleton=this;
 }
 
-AudioServer *AudioServer::singleton=NULL;
+void AudioDriver::audio_server_process(int p_frames,int32_t *p_buffer,bool p_update_mix_time) {
+
+	AudioServer * audio_server = static_cast<AudioServer*>(AudioServer::get_singleton());
+	if (p_update_mix_time)
+		update_mix_time(p_frames);
+//	audio_server->driver_process(p_frames,p_buffer);
+}
+
+void AudioDriver::update_mix_time(int p_frames) {
+
+	_mix_amount+=p_frames;
+	_last_mix_time=OS::get_singleton()->get_ticks_usec();
+}
+
+double AudioDriver::get_mix_time() const {
+
+	double total = (OS::get_singleton()->get_ticks_usec() - _last_mix_time) / 1000000.0;
+	total+=_mix_amount/(double)get_mix_rate();
+	return total;
+
+}
+
+
+AudioDriver::AudioDriver() {
+
+	_last_mix_time=0;
+	_mix_amount=0;
+}
+
+
+AudioDriver *AudioDriverManager::drivers[MAX_DRIVERS];
+int AudioDriverManager::driver_count=0;
+
+
+
+void AudioDriverManager::add_driver(AudioDriver *p_driver) {
+
+	ERR_FAIL_COND(driver_count>=MAX_DRIVERS);
+	drivers[driver_count++]=p_driver;
+}
+
+int AudioDriverManager::get_driver_count() {
+
+	return driver_count;
+}
+AudioDriver *AudioDriverManager::get_driver(int p_driver) {
+
+	ERR_FAIL_INDEX_V(p_driver,driver_count,NULL);
+	return drivers[p_driver];
+}
+
+
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+
+void AudioServer::set_bus_count(int p_count) {
+
+	ERR_FAIL_COND(p_count<1);
+	ERR_FAIL_INDEX(p_count,256);
+	lock();
+	buses.resize(p_count);
+	unlock();
+}
+
+int AudioServer::get_bus_count() const {
+
+	return buses.size();
+}
+
+void AudioServer::set_bus_mode(int p_bus,BusMode p_mode) {
+
+	ERR_FAIL_INDEX(p_bus,buses.size());
+
+}
+AudioServer::BusMode AudioServer::get_bus_mode(int p_bus) const {
+
+	ERR_FAIL_INDEX_V(p_bus,buses.size(),BUS_MODE_STEREO);
+
+	return buses[p_bus].mode;
+}
+
+void AudioServer::set_bus_name(int p_bus,const String& p_name) {
+
+	ERR_FAIL_INDEX(p_bus,buses.size());
+	buses[p_bus].name=p_name;
+
+}
+String AudioServer::get_bus_name(int p_bus) const {
+
+	ERR_FAIL_INDEX_V(p_bus,buses.size(),String());
+	return buses[p_bus].name;
+}
+
+void AudioServer::set_bus_volume_db(int p_bus,float p_volume_db) {
+
+	ERR_FAIL_INDEX(p_bus,buses.size());
+	buses[p_bus].volume_db=p_volume_db;
+
+}
+float AudioServer::get_bus_volume_db(int p_bus) const {
+
+	ERR_FAIL_INDEX_V(p_bus,buses.size(),0);
+	return buses[p_bus].volume_db;
+
+}
+
+void AudioServer::add_bus_effect(int p_bus,const Ref<AudioEffect>& p_effect,int p_at_pos) {
+
+	ERR_FAIL_COND(p_effect.is_null());
+	ERR_FAIL_INDEX(p_bus,buses.size());
+
+	lock();
+
+	Bus::Effect fx;
+	fx.effect=p_effect;
+	//fx.instance=p_effect->instance();
+	fx.enabled=true;
+
+	if (p_at_pos>=buses[p_bus].effects.size() || p_at_pos<0) {
+		buses[p_bus].effects.push_back(fx);
+	} else {
+		buses[p_bus].effects.insert(p_at_pos,fx);
+	}
+
+	unlock();
+}
+
+
+void AudioServer::remove_bus_effect(int p_bus,int p_effect) {
+
+	ERR_FAIL_INDEX(p_bus,buses.size());
+
+	lock();
+
+	buses[p_bus].effects.remove(p_effect);
+
+	unlock();
+}
+
+int AudioServer::get_bus_effect_count(int p_bus) {
+
+	ERR_FAIL_INDEX_V(p_bus,buses.size(),0);
+
+	return buses[p_bus].effects.size();
+
+}
+
+Ref<AudioEffect> AudioServer::get_bus_effect(int p_bus,int p_effect) {
+
+	ERR_FAIL_INDEX_V(p_bus,buses.size(),Ref<AudioEffect>());
+	ERR_FAIL_INDEX_V(p_effect,buses[p_bus].effects.size(),Ref<AudioEffect>());
+
+	return buses[p_bus].effects[p_effect].effect;
+
+}
+
+void AudioServer::swap_bus_effects(int p_bus,int p_effect,int p_by_effect) {
+
+	ERR_FAIL_INDEX(p_bus,buses.size());
+	ERR_FAIL_INDEX(p_effect,buses[p_bus].effects.size());
+	ERR_FAIL_INDEX(p_by_effect,buses[p_bus].effects.size());
+
+	lock();
+	SWAP( buses[p_bus].effects[p_effect], buses[p_bus].effects[p_by_effect] );
+	unlock();
+}
+
+void AudioServer::set_bus_effect_enabled(int p_bus,int p_effect,bool p_enabled) {
+
+	ERR_FAIL_INDEX(p_bus,buses.size());
+	ERR_FAIL_INDEX(p_effect,buses[p_bus].effects.size());
+	buses[p_bus].effects[p_effect].enabled=p_enabled;
+
+}
+bool AudioServer::is_bus_effect_enabled(int p_bus,int p_effect) const {
+
+	ERR_FAIL_INDEX_V(p_bus,buses.size(),false);
+	ERR_FAIL_INDEX_V(p_effect,buses[p_bus].effects.size(),false);
+	return buses[p_bus].effects[p_effect].enabled;
+
+}
+
+void AudioServer::init() {
+
+	set_bus_count(1);;
+	set_bus_name(0,"Master");
+}
+void AudioServer::finish() {
+
+	buses.clear();
+}
+void AudioServer::update() {
+
+
+}
+
+/* MISC config */
+
+void AudioServer::lock() {
+
+	AudioDriver::get_singleton()->lock();
+}
+void AudioServer::unlock() {
+
+	AudioDriver::get_singleton()->unlock();
+
+}
+
+
+AudioServer::SpeakerMode AudioServer::get_speaker_mode() const  {
+
+	return (AudioServer::SpeakerMode)AudioDriver::get_singleton()->get_speaker_mode();
+}
+float AudioServer::get_mix_rate() const {
+
+	return AudioDriver::get_singleton()->get_mix_rate();
+}
+
+float AudioServer::read_output_peak_db() const {
+
+	return 0;
+}
 
 AudioServer *AudioServer::get_singleton() {
 
 	return singleton;
 }
 
-void AudioServer::sample_set_signed_data(RID p_sample, const PoolVector<float>& p_buffer) {
+double AudioServer::get_mix_time() const {
 
-	SampleFormat format = sample_get_format(p_sample);
-
-	ERR_EXPLAIN("IMA ADPCM is not supported.");
-	ERR_FAIL_COND(format==SAMPLE_FORMAT_IMA_ADPCM);
-
-	int len = p_buffer.size();
-	ERR_FAIL_COND( len == 0 );
-
-	PoolVector<uint8_t> data;
-	PoolVector<uint8_t>::Write w;
-	PoolVector<float>::Read r = p_buffer.read();
-
-	switch(format) {
-		case SAMPLE_FORMAT_PCM8: {
-			data.resize(len);
-			w=data.write();
-
-			int8_t *samples8 = (int8_t*)w.ptr();
-
-			for(int i=0;i<len;i++) {
-
-				float sample = Math::floor( r[i] * (1<<8) );
-				if (sample<-128)
-					sample=-128;
-				else if (sample>127)
-					sample=127;
-				samples8[i]=sample;
-			}
-		} break;
-		case SAMPLE_FORMAT_PCM16: {
-			data.resize(len*2);
-			w=data.write();
-
-			int16_t *samples16 = (int16_t*)w.ptr();
-
-			for(int i=0;i<len;i++) {
-
-				float sample = Math::floor( r[i] * (1<<16) );
-				if (sample<-32768)
-					sample=-32768;
-				else if (sample>32767)
-					sample=32767;
-				samples16[i]=sample;
-			}
-		} break;
-	}
-
-	w = PoolVector<uint8_t>::Write();
-
-	sample_set_data(p_sample,data);
-
-
+	return 0;
 }
+double AudioServer::get_output_delay() const {
+
+	return 0;
+}
+
+AudioServer* AudioServer::singleton=NULL;
+
 
 void AudioServer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("sample_create","format","stereo","length"), &AudioServer::sample_create );
-	ClassDB::bind_method(_MD("sample_set_description","sample","description"), &AudioServer::sample_set_description );
-	ClassDB::bind_method(_MD("sample_get_description","sample"), &AudioServer::sample_get_description );
-
-	ClassDB::bind_method(_MD("sample_get_format","sample"), &AudioServer::sample_get_format );
-	ClassDB::bind_method(_MD("sample_is_stereo","sample"), &AudioServer::sample_is_stereo );
-	ClassDB::bind_method(_MD("sample_get_length","sample"), &AudioServer::sample_get_length );
-
-	ClassDB::bind_method(_MD("sample_set_signed_data","sample","data"), &AudioServer::sample_set_signed_data );
-	ClassDB::bind_method(_MD("sample_set_data","sample","data"), &AudioServer::sample_set_data );
-	ClassDB::bind_method(_MD("sample_get_data","sample"), &AudioServer::sample_get_data );
-
-	ClassDB::bind_method(_MD("sample_set_mix_rate","sample","mix_rate"), &AudioServer::sample_set_mix_rate );
-	ClassDB::bind_method(_MD("sample_get_mix_rate","sample"), &AudioServer::sample_get_mix_rate );
-
-	ClassDB::bind_method(_MD("sample_set_loop_format","sample","loop_format"), &AudioServer::sample_set_loop_format );
-	ClassDB::bind_method(_MD("sample_get_loop_format","sample"), &AudioServer::sample_get_loop_format );
-
-
-	ClassDB::bind_method(_MD("sample_set_loop_begin","sample","pos"), &AudioServer::sample_set_loop_begin );
-	ClassDB::bind_method(_MD("sample_get_loop_begin","sample"), &AudioServer::sample_get_loop_begin );
-
-	ClassDB::bind_method(_MD("sample_set_loop_end","sample","pos"), &AudioServer::sample_set_loop_end );
-	ClassDB::bind_method(_MD("sample_get_loop_end","sample"), &AudioServer::sample_get_loop_end );
-
-
-
-	ClassDB::bind_method(_MD("voice_create"), &AudioServer::voice_create );
-	ClassDB::bind_method(_MD("voice_play","voice","sample"), &AudioServer::voice_play );
-	ClassDB::bind_method(_MD("voice_set_volume","voice","volume"), &AudioServer::voice_set_volume );
-	ClassDB::bind_method(_MD("voice_set_pan","voice","pan","depth","height"), &AudioServer::voice_set_pan,DEFVAL(0),DEFVAL(0) );
-	ClassDB::bind_method(_MD("voice_set_filter","voice","type","cutoff","resonance","gain"), &AudioServer::voice_set_filter,DEFVAL(0) );
-	ClassDB::bind_method(_MD("voice_set_chorus","voice","chorus"), &AudioServer::voice_set_chorus );
-	ClassDB::bind_method(_MD("voice_set_reverb","voice","room","reverb"), &AudioServer::voice_set_reverb );
-	ClassDB::bind_method(_MD("voice_set_mix_rate","voice","rate"), &AudioServer::voice_set_mix_rate );
-	ClassDB::bind_method(_MD("voice_set_positional","voice","enabled"), &AudioServer::voice_set_positional );
-
-
-	ClassDB::bind_method(_MD("voice_get_volume","voice"), &AudioServer::voice_get_volume );
-	ClassDB::bind_method(_MD("voice_get_pan","voice"), &AudioServer::voice_get_pan );
-	ClassDB::bind_method(_MD("voice_get_pan_height","voice"), &AudioServer::voice_get_pan_height );
-	ClassDB::bind_method(_MD("voice_get_pan_depth","voice"), &AudioServer::voice_get_pan_depth );
-	ClassDB::bind_method(_MD("voice_get_filter_type","voice"), &AudioServer::voice_get_filter_type );
-	ClassDB::bind_method(_MD("voice_get_filter_cutoff","voice"), &AudioServer::voice_get_filter_cutoff );
-	ClassDB::bind_method(_MD("voice_get_filter_resonance","voice"), &AudioServer::voice_get_filter_resonance );
-	ClassDB::bind_method(_MD("voice_get_chorus","voice"), &AudioServer::voice_get_chorus );
-	ClassDB::bind_method(_MD("voice_get_reverb_type","voice"), &AudioServer::voice_get_reverb_type );
-	ClassDB::bind_method(_MD("voice_get_reverb","voice"), &AudioServer::voice_get_reverb );
-	ClassDB::bind_method(_MD("voice_get_mix_rate","voice"), &AudioServer::voice_get_mix_rate );
-	ClassDB::bind_method(_MD("voice_is_positional","voice"), &AudioServer::voice_is_positional );
-
-	ClassDB::bind_method(_MD("voice_stop","voice"), &AudioServer::voice_stop );
-
-	ClassDB::bind_method(_MD("free_rid","rid"), &AudioServer::free );
-
-	ClassDB::bind_method(_MD("set_stream_global_volume_scale","scale"), &AudioServer::set_stream_global_volume_scale );
-	ClassDB::bind_method(_MD("get_stream_global_volume_scale"), &AudioServer::get_stream_global_volume_scale );
-
-	ClassDB::bind_method(_MD("set_fx_global_volume_scale","scale"), &AudioServer::set_fx_global_volume_scale );
-	ClassDB::bind_method(_MD("get_fx_global_volume_scale"), &AudioServer::get_fx_global_volume_scale );
-
-	ClassDB::bind_method(_MD("set_event_voice_global_volume_scale","scale"), &AudioServer::set_event_voice_global_volume_scale );
-	ClassDB::bind_method(_MD("get_event_voice_global_volume_scale"), &AudioServer::get_event_voice_global_volume_scale );
-
-	BIND_CONSTANT( SAMPLE_FORMAT_PCM8 );
-	BIND_CONSTANT( SAMPLE_FORMAT_PCM16 );
-	BIND_CONSTANT( SAMPLE_FORMAT_IMA_ADPCM );
-
-	BIND_CONSTANT( SAMPLE_LOOP_NONE );
-	BIND_CONSTANT( SAMPLE_LOOP_FORWARD );
-	BIND_CONSTANT( SAMPLE_LOOP_PING_PONG );
-
-	BIND_CONSTANT( FILTER_NONE );
-	BIND_CONSTANT( FILTER_LOWPASS );
-	BIND_CONSTANT( FILTER_BANDPASS );
-	BIND_CONSTANT( FILTER_HIPASS );
-	BIND_CONSTANT( FILTER_NOTCH );
-	BIND_CONSTANT( FILTER_BANDLIMIT ); ///< cutoff is LP resonace is HP
-
-	BIND_CONSTANT( REVERB_SMALL );
-	BIND_CONSTANT( REVERB_MEDIUM );
-	BIND_CONSTANT( REVERB_LARGE );
-	BIND_CONSTANT( REVERB_HALL );
-
-	GLOBAL_DEF("audio/stream_buffering_ms",500);
-	GLOBAL_DEF("audio/video_delay_compensation_ms",300);
-
 }
+
 
 AudioServer::AudioServer() {
 
@@ -202,3 +296,4 @@ AudioServer::~AudioServer() {
 
 
 }
+

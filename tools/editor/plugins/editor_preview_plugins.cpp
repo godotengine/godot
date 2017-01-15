@@ -32,7 +32,7 @@
 #include "io/file_access_memory.h"
 #include "os/os.h"
 #include "scene/resources/material.h"
-#include "scene/resources/sample.h"
+//#include "scene/resources/sample.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/bit_mask.h"
 #include "tools/editor/editor_scale.h"
@@ -521,7 +521,7 @@ EditorScriptPreviewPlugin::EditorScriptPreviewPlugin() {
 
 }
 ///////////////////////////////////////////////////////////////////
-
+#if 0
 bool EditorSamplePreviewPlugin::handles(const String& p_type) const {
 
 	return ClassDB::is_type(p_type,"Sample");
@@ -788,7 +788,7 @@ EditorSamplePreviewPlugin::EditorSamplePreviewPlugin() {
 
 
 }
-
+#endif
 ///////////////////////////////////////////////////////////////////////////
 
 bool EditorMeshPreviewPlugin::handles(const String& p_type) const {

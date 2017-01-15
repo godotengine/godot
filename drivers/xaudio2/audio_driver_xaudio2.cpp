@@ -156,7 +156,7 @@ int AudioDriverXAudio2::get_mix_rate() const {
 	return mix_rate;
 };
 
-AudioDriverSW::OutputFormat AudioDriverXAudio2::get_output_format() const {
+AudioDriver::OutputFormat AudioDriverXAudio2::get_output_format() const {
 
 	return output_format;
 };

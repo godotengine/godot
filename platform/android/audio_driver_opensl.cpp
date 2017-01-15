@@ -373,7 +373,7 @@ int AudioDriverOpenSL::get_mix_rate() const {
 	return 44100;
 }
 
-AudioDriverSW::OutputFormat AudioDriverOpenSL::get_output_format() const{
+AudioDriver::OutputFormat AudioDriverOpenSL::get_output_format() const{
 
 	return OUTPUT_STEREO;
 }

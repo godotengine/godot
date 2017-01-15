@@ -37,7 +37,7 @@
 #include "SLES/OpenSLES_Android.h"
 
 
-class AudioDriverOpenSL : public AudioDriverSW {
+class AudioDriverOpenSL : public AudioDriver {
 
 	bool active;
 	Mutex *mutex;

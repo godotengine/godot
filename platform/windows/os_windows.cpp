@@ -158,13 +158,13 @@ OS::VideoMode OS_Windows::get_default_video_mode() const {
 
 int OS_Windows::get_audio_driver_count() const {
 
-	return AudioDriverManagerSW::get_driver_count();
+	return AudioDriverManager::get_driver_count();
 }
 const char * OS_Windows::get_audio_driver_name(int p_driver) const {
 
-	AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+	AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
 	ERR_FAIL_COND_V( !driver, "" );
-	return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
 
@@ -1124,9 +1124,9 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	input = memnew( InputDefault );
 	joypad = memnew (JoypadWindows(input, &hWnd));
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
