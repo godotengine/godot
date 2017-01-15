@@ -92,7 +92,12 @@ void EditorSettingsDialog::popup_edit_settings() {
 	search_box->grab_focus();
 
 	_update_shortcuts();
-	popup_centered_ratio(0.7);
+
+	// Popup the settings window with a maximum width - otherwise property names are hard to track back to their values.
+	Size2 size = get_viewport_rect().size;
+	size = (size * 0.75).floor();
+	size.x = MIN(size.x, 800 * EDSCALE);
+	popup_centered(size);
 }
 
 
