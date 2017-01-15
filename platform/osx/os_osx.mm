@@ -112,7 +112,9 @@ static int mouse_y=0;
 static int prev_mouse_x=0;
 static int prev_mouse_y=0;
 static int button_mask=0;
-
+static double scrollAccumulatorX = 0;
+static double scrollAccumulatorY = 0;
+static const double MOMENTUM_SCROLL_THRESHOLD = 0.1;
 
 @interface GodotApplication : NSApplication
 @end
@@ -830,11 +832,40 @@ static int translateKey(unsigned int key)
     _glfwInputKey(window, key, [event keyCode], GLFW_RELEASE, mods);*/
 }
 
+void scrollEvent (int buttonIndex) {
+    InputEvent ev;
+    ev.type=InputEvent::MOUSE_BUTTON;
+    ev.mouse_button.button_index = buttonIndex;
+    ev.mouse_button.pressed=true;
+    ev.mouse_button.x=mouse_x;
+    ev.mouse_button.y=mouse_y;
+    ev.mouse_button.global_x=mouse_x;
+    ev.mouse_button.global_y=mouse_y;
+    ev.mouse_button.button_mask=button_mask;
+    OS_OSX::singleton->push_input(ev);
+    ev.mouse_button.pressed=false;
+    OS_OSX::singleton->push_input(ev);
+}
+
+void scrollWithMomentum (int x, int y, bool finish) {
+    if (x && fabs(scrollAccumulatorX) >= MOMENTUM_SCROLL_THRESHOLD) {
+        scrollEvent(scrollAccumulatorX > 0 ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_RIGHT);
+        scrollAccumulatorX -= x * MOMENTUM_SCROLL_THRESHOLD;
+        if ((scrollAccumulatorX < 0 && x > 0) || (scrollAccumulatorX > 0 && x < 0)) scrollAccumulatorX = 0;
+    }
+    if (y && fabs(scrollAccumulatorY) >= MOMENTUM_SCROLL_THRESHOLD) {
+        scrollEvent(scrollAccumulatorY > 0 ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN);
+        scrollAccumulatorY -= y * MOMENTUM_SCROLL_THRESHOLD;
+        if ((scrollAccumulatorY < 0 && y > 0) || (scrollAccumulatorY > 0 && y < 0)) scrollAccumulatorY = 0;
+    }
+}
+
 - (void)scrollWheel:(NSEvent *)event
 {
 
 	 double deltaX, deltaY;
 
+    // TODO: FIX THIS
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
     {
@@ -853,39 +884,36 @@ static int translateKey(unsigned int key)
 	deltaX = [event deltaX];
 	deltaY = [event deltaY];
     }
+    
+    bool hasMomentum = event.phase != NSEventPhaseNone;
+    bool endScroll = false;
 
-
-	if (fabs(deltaY)) {
-
-		InputEvent ev;
-		ev.type=InputEvent::MOUSE_BUTTON;
-		ev.mouse_button.button_index=deltaY >0 ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN;
-		ev.mouse_button.pressed=true;
-		ev.mouse_button.x=mouse_x;
-		ev.mouse_button.y=mouse_y;
-		ev.mouse_button.global_x=mouse_x;
-		ev.mouse_button.global_y=mouse_y;
-		ev.mouse_button.button_mask=button_mask;
-		OS_OSX::singleton->push_input(ev);
-		ev.mouse_button.pressed=false;
-		OS_OSX::singleton->push_input(ev);
-	}
-
-	if (fabs(deltaX)) {
-
-		InputEvent ev;
-		ev.type=InputEvent::MOUSE_BUTTON;
-		ev.mouse_button.button_index=deltaX < 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT;
-		ev.mouse_button.pressed=true;
-		ev.mouse_button.x=mouse_x;
-		ev.mouse_button.y=mouse_y;
-		ev.mouse_button.global_x=mouse_x;
-		ev.mouse_button.global_y=mouse_y;
-		ev.mouse_button.button_mask=button_mask;
-		OS_OSX::singleton->push_input(ev);
-		ev.mouse_button.pressed=false;
-		OS_OSX::singleton->push_input(ev);
-	}
+    if (hasMomentum) {
+        // trackpad
+        deltaX = [event deltaX] * 0.1;
+        deltaY = [event deltaY] * 0.1;
+        switch (event.phase) {
+            case NSEventPhaseBegan:
+                scrollAccumulatorX = deltaX;
+                scrollAccumulatorY = deltaY;
+                break;
+            case NSEventPhaseEnded:
+            case NSEventPhaseCancelled:
+                scrollAccumulatorX = scrollAccumulatorY = 0;
+                endScroll = true;
+                break;
+            default:
+                scrollAccumulatorX += deltaX;
+                scrollAccumulatorY += deltaY;
+            
+        }
+        scrollWithMomentum(deltaX / fabs(deltaX), deltaY / fabs(deltaY), endScroll);
+    }
+    else {
+        // regular scroll
+        if (fabs(deltaY)) scrollEvent(deltaY >0 ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN);
+        if (fabs(deltaX)) scrollEvent(deltaX < 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT);
+    }
 }
 
 @end
