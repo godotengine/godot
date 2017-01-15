@@ -283,7 +283,8 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 		Vector<Vector3> normals;
 
 		int vtx_idx=0;
-#define ADD_VTX(m_idx);\
+
+#define ADD_VTX(m_idx) \
 	vertices.push_back( (face_points[m_idx]*HANDLE_HALF_SIZE+p_handles[ih]) );\
 	normals.push_back( normal_points[m_idx] );\
 	vtx_idx++;\
@@ -3158,7 +3159,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		DVector<Vector3> vertices;
 
 #undef ADD_VTX
-#define ADD_VTX(m_idx);\
+#define ADD_VTX(m_idx) \
 	vertices.push_back( face_points[m_idx] );
 
 		for (int i=0;i<6;i++) {

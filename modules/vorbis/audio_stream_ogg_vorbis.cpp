@@ -141,7 +141,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t* p_bufer,int p_frames) {
 			int errv = ov_open_callbacks(f,&vf,NULL,0,_ov_callbacks);
 			if (errv!=0) {
 				playing=false;
-				break;; // :(
+				break; // :(
 			}
 
 			if (loop_restart_time) {

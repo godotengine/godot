@@ -1048,7 +1048,7 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 
 			// math types
 
-			case VECTOR2: return Vector2();		// 5
+			case VECTOR2: return Vector2();	// 5
 			case RECT2: return Rect2();
 			case VECTOR3: return Vector3();
 			case MATRIX32: return Matrix32();
@@ -1061,12 +1061,12 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 			// misc types
 			case COLOR: return Color();
 			case IMAGE: return Image();
-			case NODE_PATH: return NodePath();;		// 15
+			case NODE_PATH: return NodePath(); // 15
 			case _RID: return RID();
 			case OBJECT: return (Object*)NULL;
 			case INPUT_EVENT: return InputEvent();
 			case DICTIONARY: return Dictionary();
-			case ARRAY: return Array();;			// 20
+			case ARRAY: return Array();			// 20
 			case RAW_ARRAY: return ByteArray();
 			case INT_ARRAY: return IntArray();
 			case REAL_ARRAY: return RealArray();
@@ -1129,12 +1129,12 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 			// misc types
 			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
 			case IMAGE: return (Image(*p_args[0]));
-			case NODE_PATH: return (NodePath(p_args[0]->operator NodePath()));		// 15
+			case NODE_PATH: return (NodePath(p_args[0]->operator NodePath())); // 15
 			case _RID: return (RID(*p_args[0]));
 			case OBJECT: return ((Object*)(p_args[0]->operator Object *()));
 			case INPUT_EVENT: return (InputEvent(*p_args[0]));
 			case DICTIONARY: return p_args[0]->operator Dictionary();
-			case ARRAY: return p_args[0]->operator Array();
+			case ARRAY: return p_args[0]->operator Array(); // 20
 
 			// arrays
 			case RAW_ARRAY: return (ByteArray(*p_args[0]));

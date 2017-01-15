@@ -250,7 +250,7 @@ BOOL CALLBACK joystick_windows::enumCallback(const DIDEVICEINSTANCE* instance, v
 
 
 	joystick_windows* self = (joystick_windows*)pContext;
-	if (self->is_xinput_device(&instance->guidProduct)) {;
+	if (self->is_xinput_device(&instance->guidProduct)) {
 		return DIENUM_CONTINUE;
 	}
 	self->setup_dinput_joystick(instance);

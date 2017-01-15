@@ -556,11 +556,10 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 			}
 		}
 
-		if (XGrabPointer(x11_display, x11_window, True,
-				    ButtonPressMask | ButtonReleaseMask |
-				    PointerMotionMask, GrabModeAsync, GrabModeAsync,
-				    x11_window, None, CurrentTime) !=
-				GrabSuccess)  {
+		if (XGrabPointer(
+				x11_display, x11_window, True,
+				ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+				GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime) != GrabSuccess)  {
 			ERR_PRINT("NO GRAB");
 		}
 
@@ -1319,10 +1318,10 @@ void OS_X11::process_xevents() {
 			minimized = false;
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
-				XGrabPointer(x11_display, x11_window, True,
-						    ButtonPressMask | ButtonReleaseMask |
-						    PointerMotionMask, GrabModeAsync, GrabModeAsync,
-						    x11_window, None, CurrentTime);
+				XGrabPointer(
+						x11_display, x11_window, True,
+						ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+						GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 			}
 			break;
 

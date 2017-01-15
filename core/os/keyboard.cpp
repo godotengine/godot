@@ -36,6 +36,7 @@ struct _KeyCodeText {
 
 static const _KeyCodeText _keycodes[]={
 
+		/* clang-format off */
 		{KEY_ESCAPE                        ,"Escape"},
 		{KEY_TAB                           ,"Tab"},
 		{KEY_BACKTAB                       ,"BackTab"},
@@ -281,7 +282,8 @@ static const _KeyCodeText _keycodes[]={
 
 		{KEY_DIVISION                      ,"Division"},
 		{KEY_YDIAERESIS                    ,"Ydiaeresis"},
-		{0                    ,0}
+		{0                                 ,0}
+		/* clang-format on */
 };
 
 bool keycode_has_unicode(uint32_t p_keycode) {
@@ -299,7 +301,8 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 		case KEY_MEDIAPREVIOUS:  case KEY_MEDIANEXT: case KEY_MEDIARECORD: case KEY_HOMEPAGE: case KEY_FAVORITES: case KEY_SEARCH: case KEY_STANDBY:
 		case KEY_OPENURL: case KEY_LAUNCHMAIL:  case KEY_LAUNCHMEDIA:  case KEY_LAUNCH0:  case KEY_LAUNCH1:  case KEY_LAUNCH2:  case KEY_LAUNCH3:  case KEY_LAUNCH4:
 		case KEY_LAUNCH5:  case KEY_LAUNCH6:  case KEY_LAUNCH7: case KEY_LAUNCH8: case KEY_LAUNCH9: case KEY_LAUNCHA: case KEY_LAUNCHB: case KEY_LAUNCHC: case KEY_LAUNCHD:
-		case KEY_LAUNCHE: case KEY_LAUNCHF: return false;
+		case KEY_LAUNCHE: case KEY_LAUNCHF:
+			return false;
 	}
 
 	return true;
