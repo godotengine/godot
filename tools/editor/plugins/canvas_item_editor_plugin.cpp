@@ -1537,7 +1537,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_MOTION) {
 
-        if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
+		if (!viewport->has_focus() && (!get_focus_owner() || !get_focus_owner()->is_text_field()))
 			viewport->call_deferred("grab_focus");
 
 		const InputEventMouseMotion &m=p_event.mouse_motion;
@@ -1555,7 +1555,6 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent& p_event) {
 
 
 			if ( (m.button_mask&BUTTON_MASK_LEFT && tool == TOOL_PAN) || m.button_mask&BUTTON_MASK_MIDDLE || (m.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
-
 				h_scroll->set_value( h_scroll->get_value() - m.relative_x/zoom);
 				v_scroll->set_value( v_scroll->get_value() - m.relative_y/zoom);
 			}
@@ -2071,7 +2070,7 @@ void CanvasItemEditor::_viewport_draw() {
 		VisualServer::get_singleton()->canvas_item_add_line(ci,transform.xform(display_rotate_from), transform.xform(display_rotate_to),rotate_color);
 	}
 
-	Size2 screen_size = Size2( GlobalConfig::get_singleton()->get("display/width"), GlobalConfig::get_singleton()->get("display/height") );
+	Size2 screen_size = Size2( GlobalConfig::get_singleton()->get("display/window/width"), GlobalConfig::get_singleton()->get("display/window/height") );
 
 	Vector2 screen_endpoints[4]= {
 		transform.xform(Vector2(0,0)),
@@ -2406,7 +2405,8 @@ void CanvasItemEditor::_update_scrollbars() {
 	h_scroll->set_end( Point2(size.width-vmin.width, size.height) );
 
 
-	Size2 screen_rect = Size2( GlobalConfig::get_singleton()->get("display/width"), GlobalConfig::get_singleton()->get("display/height") );
+	Size2 screen_rect = Size2( GlobalConfig::get_singleton()->get("display/window/width"), GlobalConfig::get_singleton()->get("display/window/height") );
+
 
 	Rect2 local_rect = Rect2(Point2(),viewport->get_size()-Size2(vmin.width,hmin.height));
 
@@ -2477,6 +2477,7 @@ void CanvasItemEditor::_update_scrollbars() {
 
 	//transform=Matrix32();
 	transform.elements[2]=-ofs*zoom;
+
 	editor->get_scene_root()->set_global_canvas_transform(transform);
 
 
@@ -3354,8 +3355,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	viewport->connect("gui_input",this,"_viewport_gui_input");
 
 
-	h_scroll->connect("value_changed", this,"_update_scroll",Vector<Variant>(),true);
-	v_scroll->connect("value_changed", this,"_update_scroll",Vector<Variant>(),true);
+	h_scroll->connect("value_changed", this,"_update_scroll",Vector<Variant>(),Object::CONNECT_DEFERRED);
+	v_scroll->connect("value_changed", this,"_update_scroll",Vector<Variant>(),Object::CONNECT_DEFERRED);
 
 	h_scroll->hide();
 	v_scroll->hide();

@@ -4991,12 +4991,12 @@ void RasterizerSceneGLES3::initialize() {
 void RasterizerSceneGLES3::iteration() {
 
 	shadow_filter_mode=ShadowFilterMode(int(GlobalConfig::get_singleton()->get("rendering/gles3/shadow_filter_mode")));
-	subsurface_scatter_follow_surface=GlobalConfig::get_singleton()->get("rendering/gles3/subsurface_scattering/follow_surface");
-	subsurface_scatter_quality=SubSurfaceScatterQuality(int(GlobalConfig::get_singleton()->get("rendering/gles3/subsurface_scattering/quality")));
-	subsurface_scatter_size=GlobalConfig::get_singleton()->get("rendering/gles3/subsurface_scattering/max_size");
+	subsurface_scatter_follow_surface=GlobalConfig::get_singleton()->get("rendering/ssurf_scattering/follow_surface");
+	subsurface_scatter_quality=SubSurfaceScatterQuality(int(GlobalConfig::get_singleton()->get("rendering/ssurf_scattering/quality")));
+	subsurface_scatter_size=GlobalConfig::get_singleton()->get("rendering/ssurf_scattering/max_size");
 
 
-	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH,GlobalConfig::get_singleton()->get("rendering/gles3/high_quality_vct_gi"));
+	state.scene_shader.set_conditional(SceneShaderGLES3::VCT_QUALITY_HIGH,GlobalConfig::get_singleton()->get("rendering/reflections/high_quality_vct_gi"));
 }
 
 void RasterizerSceneGLES3::finalize(){

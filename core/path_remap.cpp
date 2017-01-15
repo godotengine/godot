@@ -124,7 +124,10 @@ void PathRemap::clear_remaps() {
 void PathRemap::load_remaps() {
 
 	// default remaps first
-	PoolVector<String> remaps = GlobalConfig::get_singleton()->get("remap/all");
+	PoolVector<String> remaps;
+	if (GlobalConfig::get_singleton()->has("remap/all")) {
+		remaps = GlobalConfig::get_singleton()->get("remap/all");
+	}
 
 	{
 		int rlen = remaps.size();
@@ -141,7 +144,11 @@ void PathRemap::load_remaps() {
 
 
 	// platform remaps second, so override
-	remaps = GlobalConfig::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
+	if (GlobalConfig::get_singleton()->has("remap/"+OS::get_singleton()->get_name())) {
+		remaps = GlobalConfig::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
+	} else {
+		remaps.resize(0);
+	}
 	//remaps = Globals::get_singleton()->get("remap/PSP");
 	{
 		int rlen = remaps.size();

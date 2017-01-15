@@ -596,6 +596,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		I=N;
 	}
 
+	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc",60);
 
 	GLOBAL_DEF("network/debug/max_remote_stdout_chars_per_second",2048);
 	GLOBAL_DEF("network/debug/remote_port",6007);

@@ -1821,10 +1821,10 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 		//update msaa if changed
 
-		int msaa_mode = GlobalConfig::get_singleton()->get("rendering/antialias/msaa");
+		int msaa_mode = GlobalConfig::get_singleton()->get("rendering/quality/msaa");
 		viewport->set_msaa(Viewport::MSAA(msaa_mode));
 
-		bool hdr = GlobalConfig::get_singleton()->get("rendering/dynamic_range/hdr");
+		bool hdr = GlobalConfig::get_singleton()->get("rendering/quality/hdr");
 		viewport->set_hdr(hdr);
 
 

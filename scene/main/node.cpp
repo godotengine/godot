@@ -1385,7 +1385,7 @@ String Node::_generate_serial_child_name(Node *p_child) {
 
 		name = p_child->get_class();
 		// Adjust casing according to project setting. The current type name is expected to be in PascalCase.
-		switch (GlobalConfig::get_singleton()->get("editor/node_name_casing").operator int()) {
+		switch (GlobalConfig::get_singleton()->get("node/name_casing").operator int()) {
 			case NAME_CASING_PASCAL_CASE:
 				break;
 			case NAME_CASING_CAMEL_CASE:
@@ -2899,10 +2899,10 @@ void Node::request_ready() {
 
 void Node::_bind_methods() {
 
-	GLOBAL_DEF("editor/node_name_num_separator",0);
-	GlobalConfig::get_singleton()->set_custom_property_info("editor/node_name_num_separator",PropertyInfo(Variant::INT,"editor/node_name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
-	GLOBAL_DEF("editor/node_name_casing",NAME_CASING_PASCAL_CASE);
-	GlobalConfig::get_singleton()->set_custom_property_info("editor/node_name_casing",PropertyInfo(Variant::INT,"editor/node_name_casing",PROPERTY_HINT_ENUM,"PascalCase,camelCase,snake_case"));
+	GLOBAL_DEF("node/name_num_separator",0);
+	GlobalConfig::get_singleton()->set_custom_property_info("node/name_num_separator",PropertyInfo(Variant::INT,"node/name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
+	GLOBAL_DEF("node/name_casing",NAME_CASING_PASCAL_CASE);
+	GlobalConfig::get_singleton()->set_custom_property_info("node/name_casing",PropertyInfo(Variant::INT,"node/name_casing",PROPERTY_HINT_ENUM,"PascalCase,camelCase,snake_case"));
 
 	ClassDB::bind_method(_MD("_add_child_below_node","node:Node","child_node:Node","legible_unique_name"),&Node::add_child_below_node,DEFVAL(false));
 
