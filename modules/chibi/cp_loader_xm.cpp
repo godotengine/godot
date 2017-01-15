@@ -380,22 +380,23 @@ CPLoader::Error CPLoader_XM::load_song(const char *p_file,CPSong *p_song,bool p_
                 uint32_t cpos=file->get_pos();
 		//printf("pos is %i\n",cpos);
 
-
-
-/* +4 */	uint32_t hsize=file->get_dword(); //header length
+		/* +4 */
+		uint32_t hsize=file->get_dword(); //header length
 
 		char instrname[23];
 		instrname[22]=0;
 		
-  		file->get_byte_array((uint8_t*)instrname,22);
-//XM_LOAD_DEBUG printf("name is %s\n",instrname);
+		file->get_byte_array((uint8_t*)instrname,22);
+		//XM_LOAD_DEBUG printf("name is %s\n",instrname);
 
-/* +27 */	aux=file->get_byte(); //byte that must be ignored
-//XM_LOAD_DEBUG printf("header size is %i\n",hsize);
+		/* +27 */
+		aux=file->get_byte(); //byte that must be ignored
+		//XM_LOAD_DEBUG printf("header size is %i\n",hsize);
 
-/* +29 */	sampnum=file->get_word(); 
+		/* +29 */
+		sampnum=file->get_word(); 
 
-//XM_LOAD_DEBUG printf("samples %i\n",sampnum);
+		//XM_LOAD_DEBUG printf("samples %i\n",sampnum);
 
 
 		instrument.set_name( instrname );
@@ -410,7 +411,8 @@ CPLoader::Error CPLoader_XM::load_song(const char *p_file,CPSong *p_song,bool p_
 			continue;
 		}
 
-/* +33 */      	file->get_dword(); 
+		/* +33 */
+		file->get_dword(); 
 
 		if (Error result=load_instrument_internal(&instrument,false,cpos,hsize,sampnum)) {
 
@@ -418,9 +420,8 @@ CPLoader::Error CPLoader_XM::load_song(const char *p_file,CPSong *p_song,bool p_
 			file->close();
 			return result;
 		}
-
 	}
-// 
+
 	file->close();
 	return FILE_OK;
 }
@@ -440,7 +441,8 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 		instrname[22]=0;
 
 
-/* +129 */	file->get_byte_array((uint8_t*)notenumb,96);
+		/* +129 */
+		file->get_byte_array((uint8_t*)notenumb,96);
 		for (int j=0;j<24;j++) {
 			volenv[j]=file->get_word();
 		}
@@ -448,35 +450,47 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 			panenv[j]=file->get_word();
 		}
 
-/* +177 */
-/* +225 */
-/* +226 */	volpoints=file->get_byte();
-/* +227 */	panpoints=file->get_byte();
-/* +230 */	vol_sustain_loop=file->get_byte();
-/* +228 */	vol_loop_begin=file->get_byte();
-/* +229 */	vol_loop_end=file->get_byte();
+		/* +177 */
+		/* +225 */
+		/* +226 */
+		volpoints=file->get_byte();
+		/* +227 */
+		panpoints=file->get_byte();
+		/* +230 */
+		vol_sustain_loop=file->get_byte();
+		/* +228 */
+		vol_loop_begin=file->get_byte();
+		/* +229 */
+		vol_loop_end=file->get_byte();
 
-//XM_LOAD_DEBUG 	printf("1- volpoints: %i, panpoints: %i, susloop: %i, loop begin: %i, loop end %i\n",volpoints,panpoints,vol_sustain_loop,vol_loop_begin,vol_loop_end);
+		//XM_LOAD_DEBUG 	printf("1- volpoints: %i, panpoints: %i, susloop: %i, loop begin: %i, loop end %i\n",volpoints,panpoints,vol_sustain_loop,vol_loop_begin,vol_loop_end);
 		pan_sustain_loop=file->get_byte();
-/* +231 */	pan_loop_begin=file->get_byte();
-/* +232 */	pan_loop_end=file->get_byte();
+		/* +231 */
+		pan_loop_begin=file->get_byte();
+		/* +232 */
+		pan_loop_end=file->get_byte();
 
 
 
-/* +234 */	aux=file->get_byte();
+		/* +234 */
+		aux=file->get_byte();
 		p_instr->get_volume_envelope()->reset();
 		p_instr->get_volume_envelope()->set_enabled(aux&1);
 		p_instr->get_volume_envelope()->set_sustain_loop_enabled((aux&2)?true:false);
 		p_instr->get_volume_envelope()->set_loop_enabled((aux&4)?true:false);
-/* +235 */	aux=file->get_byte();
+		/* +235 */
+		aux=file->get_byte();
 		p_instr->get_pan_envelope()->reset();
 		p_instr->get_pan_envelope()->set_enabled(aux&1);
 		p_instr->get_pan_envelope()->set_sustain_loop_enabled((aux&2)?true:false);
 		p_instr->get_pan_envelope()->set_loop_enabled((aux&4)?true:false);
 
-/* +239 */	aux=file->get_dword(); // sadly, cant use those
-/* +241 */     	p_instr->set_volume_fadeout( file->get_word() >> 4 );
-/* +243 */	aux=file->get_word(); // reserved!
+		/* +239 */
+		aux=file->get_dword(); // sadly, cant use those
+		/* +241 */
+		p_instr->set_volume_fadeout( file->get_word() >> 4 );
+		/* +243 */
+		aux=file->get_word(); // reserved!
 
 
 

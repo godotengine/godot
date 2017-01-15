@@ -97,7 +97,7 @@ void CharacterCamera::_get_property_list( List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::INT, "type", PROPERTY_HINT_ENUM, "Fixed,Follow") );
 	p_list->push_back( PropertyInfo( Variant::VECTOR2, "orbit" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,0.01" ) );
-	p_list->push_back( PropertyInfo( Variant::REAL, "inclination", PROPERTY_HINT_RANGE,"-90,90,0.01" )  ); ;
+	p_list->push_back( PropertyInfo( Variant::REAL, "inclination", PROPERTY_HINT_RANGE,"-90,90,0.01" )  );
 	p_list->push_back( PropertyInfo( Variant::REAL, "max_orbit_x", PROPERTY_HINT_RANGE,"-90,90,0.01" )  );
 	p_list->push_back( PropertyInfo( Variant::REAL, "min_orbit_x", PROPERTY_HINT_RANGE,"-90,90,0.01" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "min_distance", PROPERTY_HINT_RANGE,"0,100,0.01" ) );

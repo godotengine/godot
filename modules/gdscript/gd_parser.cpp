@@ -1043,8 +1043,8 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			case GDTokenizer::TK_OP_ASSIGN_MUL: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_MUL ; break;
 			case GDTokenizer::TK_OP_ASSIGN_DIV: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_DIV ; break;
 			case GDTokenizer::TK_OP_ASSIGN_MOD: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_MOD ; break;
-			case GDTokenizer::TK_OP_ASSIGN_SHIFT_LEFT: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_SHIFT_LEFT; ; break;
-			case GDTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_SHIFT_RIGHT; ; break;
+			case GDTokenizer::TK_OP_ASSIGN_SHIFT_LEFT: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_SHIFT_LEFT; break;
+			case GDTokenizer::TK_OP_ASSIGN_SHIFT_RIGHT: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_SHIFT_RIGHT; break;
 			case GDTokenizer::TK_OP_ASSIGN_BIT_AND: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_BIT_AND ; break;
 			case GDTokenizer::TK_OP_ASSIGN_BIT_OR: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_BIT_OR ; break;
 			case GDTokenizer::TK_OP_ASSIGN_BIT_XOR: _VALIDATE_ASSIGN op=OperatorNode::OP_ASSIGN_BIT_XOR ; break;
