@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "undo_redo.h"
+
 #include "os/os.h"
 
 void UndoRedo::_discard_redo() {

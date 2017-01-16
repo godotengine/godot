@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  object_type_db.cpp                                                   */
+/*  class_db.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,7 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "object_type_db.h"
+#include "class_db.h"
+
 #include "os/mutex.h"
 
 #ifdef NO_THREADS

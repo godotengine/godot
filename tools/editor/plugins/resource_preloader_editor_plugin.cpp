@@ -27,11 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_preloader_editor_plugin.h"
+
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
-
-
 
 
 void ResourcePreloaderEditor::_gui_input(InputEvent p_event) {

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "spatial_editor_gizmos.h"
+
 #include "geometry.h"
 #include "scene/3d/camera.h"
 #include "scene/resources/surface_tool.h"

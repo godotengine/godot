@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "array.h"
+
 #include "vector.h"
 #include "hashfuncs.h"
 #include "variant.h"

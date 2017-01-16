@@ -27,12 +27,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "pool_allocator.h"
+
 #include "error_macros.h"
 #include "core/os/os.h"
 #include "os/memory.h"
 #include "os/copymem.h"
 #include "print_string.h"
+
 #include <assert.h>
+
 #define COMPACT_CHUNK( m_entry , m_to_pos ) 			\
 do {								\
 	void *_dst=&((unsigned char*)pool)[m_to_pos];	\

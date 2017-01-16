@@ -27,10 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "property_editor.h"
+
 #include "scene/gui/label.h"
 #include "io/resource_loader.h"
 #include "io/image_loader.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "print_string.h"
 #include "globals.h"
 #include "scene/resources/font.h"

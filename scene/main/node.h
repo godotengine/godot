@@ -33,7 +33,7 @@
 #include "object.h"
 #include "path_db.h"
 #include "map.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "script_language.h"
 #include "scene/main/scene_main_loop.h"
 

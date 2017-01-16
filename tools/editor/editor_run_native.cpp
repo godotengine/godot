@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_run_native.h"
-#include "editor_import_export.h"
 
+#include "editor_import_export.h"
 
 void EditorRunNative::_notification(int p_what) {
 

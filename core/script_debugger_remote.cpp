@@ -27,10 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_debugger_remote.h"
+
 #include "os/os.h"
 #include "io/ip.h"
 #include "globals.h"
 #include "os/input.h"
+
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;

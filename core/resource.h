@@ -33,7 +33,7 @@
 #include "safe_refcount.h"
 #include "ref_ptr.h"
 #include "reference.h"
-#include "object_type_db.h"
+#include "class_db.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

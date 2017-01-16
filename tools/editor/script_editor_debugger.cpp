@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_editor_debugger.h"
+
 #include "scene/gui/separator.h"
 #include "scene/gui/label.h"
 #include "scene/gui/split_container.h"

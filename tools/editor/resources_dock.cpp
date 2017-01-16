@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resources_dock.h"
+
 #include "editor_node.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"

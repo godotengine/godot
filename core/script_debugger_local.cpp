@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_debugger_local.h"
+
 #include "os/os.h"
 
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {

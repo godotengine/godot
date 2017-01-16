@@ -27,9 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "globals.h"
+
 #include "os/dir_access.h"
 #include "os/file_access.h"
-
 #include "os/keyboard.h"
 #include "io/marshalls.h"
 #include "bind/core_bind.h"
@@ -37,6 +37,7 @@
 #include "io/file_access_pack.h"
 #include "io/file_access_network.h"
 #include "variant_parser.h"
+
 GlobalConfig *GlobalConfig::singleton=NULL;
 
 GlobalConfig *GlobalConfig::get_singleton() {

@@ -27,9 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "file_type_cache.h"
+
 #include "globals.h"
 #include "os/file_access.h"
-
 
 FileTypeCache* FileTypeCache::singleton=NULL;
 

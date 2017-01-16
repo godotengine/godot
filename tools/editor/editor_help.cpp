@@ -27,14 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_help.h"
+
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "doc_data_compressed.h"
 #include "tools/editor/plugins/script_editor_plugin.h"
-
-
-#include "os/keyboard.h"
 
 void EditorHelpSearch::popup() {
 	popup_centered_ratio(0.6);

@@ -30,8 +30,6 @@
 
 #include "scene/gui/label.h"
 #include "scene/gui/box_container.h"
-
-
 #include "print_string.h"
 
 void ReparentDialog::_notification(int p_what) {

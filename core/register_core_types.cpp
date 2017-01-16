@@ -36,7 +36,7 @@
 #include "math/a_star.h"
 #include "math/triangle_mesh.h"
 #include "globals.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "geometry.h"
 #include "bind/core_bind.h"
 #include "core_string_names.h"

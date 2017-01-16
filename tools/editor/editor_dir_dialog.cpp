@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_dir_dialog.h"
+
 #include "os/os.h"
 #include "os/keyboard.h"
 #include "tools/editor/editor_settings.h"

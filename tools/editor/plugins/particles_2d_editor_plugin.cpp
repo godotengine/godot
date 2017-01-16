@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "particles_2d_editor_plugin.h"
+
 #include "canvas_item_editor_plugin.h"
 #include "io/image_loader.h"
 #include "scene/gui/separator.h"

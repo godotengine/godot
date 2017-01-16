@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input_map.h"
+
 #include "globals.h"
 #include "os/keyboard.h"
 

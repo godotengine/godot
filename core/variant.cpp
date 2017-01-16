@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "variant.h"
+
 #include "resource.h"
 #include "print_string.h"
 #include "scene/main/node.h"

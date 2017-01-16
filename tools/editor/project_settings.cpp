@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "project_settings.h"
+
 #include "scene/gui/tab_container.h"
 #include "globals.h"
 #include "os/keyboard.h"

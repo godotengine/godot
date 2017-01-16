@@ -28,7 +28,7 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "regex.h"
 
 void register_regex_types() {

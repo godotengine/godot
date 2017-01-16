@@ -27,8 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "object.h"
+
 #include "print_string.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "script_language.h"
 #include "message_queue.h"
 #include "core_string_names.h"

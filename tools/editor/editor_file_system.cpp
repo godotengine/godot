@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_file_system.h"
+
 #include "globals.h"
 #include "io/resource_loader.h"
 #include "os/os.h"

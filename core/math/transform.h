@@ -31,7 +31,7 @@
 
 #include "matrix3.h"
 #include "plane.h"
-#include "aabb.h"
+#include "rect3.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

@@ -27,11 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_run_script.h"
+
 #include "editor_node.h"
-
-
-
-
 
 
 void EditorScript::add_root_node(Node *p_node) {

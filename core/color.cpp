@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "color.h"
+
 #include "math_funcs.h"
 #include "print_string.h"
 #include "map.h"

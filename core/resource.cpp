@@ -27,11 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource.h"
+
 #include "core_string_names.h"
-#include <stdio.h>
 #include "os/file_access.h"
 #include "io/resource_loader.h"
 #include "script_language.h"
+
+#include <stdio.h>
 
 void ResourceImportMetadata::set_editor(const String& p_editor) {
 

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_initialize_ssl.h"
+
 #include "certs_compressed.h"
 #include "io/stream_peer_ssl.h"
 #include "io/compression.h"

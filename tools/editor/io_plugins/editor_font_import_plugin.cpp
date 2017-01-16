@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_font_import_plugin.h"
+
 #include "scene/gui/dialogs.h"
 #include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_node.h"
@@ -34,11 +35,10 @@
 #include "editor_atlas.h"
 #include "io/image_loader.h"
 #include "io/resource_saver.h"
-#ifdef FREETYPE_ENABLED
 
+#ifdef FREETYPE_ENABLED
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
 #endif
 
 

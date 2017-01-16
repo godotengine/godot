@@ -27,9 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "path_remap.h"
+
 #include "globals.h"
 #include "os/os.h"
 #include "translation.h"
+
 PathRemap* PathRemap::singleton=NULL;
 
 PathRemap* PathRemap::get_singleton() {

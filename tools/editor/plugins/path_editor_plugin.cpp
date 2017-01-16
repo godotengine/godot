@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "path_editor_plugin.h"
+
 #include "spatial_editor_plugin.h"
 #include "scene/resources/curve.h"
 #include "os/keyboard.h"

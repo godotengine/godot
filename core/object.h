@@ -721,6 +721,6 @@ public:
 };
 
 //needed by macros
-#include "object_type_db.h"
+#include "class_db.h"
 
 #endif

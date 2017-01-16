@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_plugin.h"
+
 #include "scene/gui/popup_menu.h"
 #include "scene/3d/camera.h"
 #include "plugins/canvas_item_editor_plugin.h"

@@ -27,13 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "scene_tree_editor.h"
+
 #include "scene/gui/label.h"
 #include "editor_node.h"
 #include "print_string.h"
 #include "message_queue.h"
 #include "scene/main/viewport.h"
 #include "tools/editor/plugins/canvas_item_editor_plugin.h"
-
 #include "scene/resources/packed_scene.h"
 
 Node *SceneTreeEditor::get_scene_node() {

@@ -30,7 +30,7 @@
 #define BSP_TREE_H
 
 #include "plane.h"
-#include "aabb.h"
+#include "rect3.h"
 #include "face3.h"
 #include "vector.h"
 #include "dvector.h"

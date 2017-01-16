@@ -1,6 +1,6 @@
 #include "visual_script_builtin_funcs.h"
 #include "math_funcs.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "reference.h"
 #include "func_ref.h"
 #include "os/os.h"

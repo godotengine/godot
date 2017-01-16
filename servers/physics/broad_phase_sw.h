@@ -30,7 +30,7 @@
 #define BROAD_PHASE_SW_H
 
 #include "math_funcs.h"
-#include "aabb.h"
+#include "rect3.h"
 
 class CollisionObjectSW;
 

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_atlas.h"
+
 #include "print_string.h"
 
 struct _EditorAtlasWorkRect {

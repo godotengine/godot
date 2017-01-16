@@ -26,22 +26,20 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "editor_node.h"
+
+#include "version.h"
 #include "print_string.h"
 #include "editor_themes.h"
-
 #include "editor_help.h"
 #include "core/io/resource_saver.h"
 #include "core/io/resource_loader.h"
 #include "servers/physics_2d_server.h"
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
-#include "io_plugins/editor_import_collada.h"
-#include "io_plugins/editor_scene_importer_fbxconv.h"
 #include "globals.h"
 #include <stdio.h>
-#include "object_type_db.h"
+#include "class_db.h"
 #include "os/keyboard.h"
 #include "os/os.h"
 #include "os/file_access.h"
@@ -56,6 +54,8 @@
 #include "io/config_file.h"
 #include "animation_editor.h"
 #include "io/stream_peer_ssl.h"
+#include "main/input_default.h"
+
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
 #include "plugins/texture_region_editor_plugin.h"
@@ -76,7 +76,6 @@
 #include "plugins/mesh_instance_editor_plugin.h"
 #include "plugins/mesh_editor_plugin.h"
 #include "plugins/theme_editor_plugin.h"
-
 #include "plugins/tile_map_editor_plugin.h"
 #include "plugins/cube_grid_theme_editor_plugin.h"
 #include "plugins/shader_editor_plugin.h"
@@ -100,17 +99,19 @@
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
 #include "plugins/gi_probe_editor_plugin.h"
-#include "main/input_default.h"
+
 // end
-#include "tools/editor/editor_settings.h"
-#include "tools/editor/io_plugins/editor_texture_import_plugin.h"
-#include "tools/editor/io_plugins/editor_scene_import_plugin.h"
-#include "tools/editor/io_plugins/editor_font_import_plugin.h"
-#include "tools/editor/io_plugins/editor_sample_import_plugin.h"
-#include "tools/editor/io_plugins/editor_translation_import_plugin.h"
-#include "tools/editor/io_plugins/editor_bitmask_import_plugin.h"
-#include "tools/editor/io_plugins/editor_mesh_import_plugin.h"
-#include "tools/editor/io_plugins/editor_export_scene.h"
+#include "editor_settings.h"
+#include "io_plugins/editor_texture_import_plugin.h"
+#include "io_plugins/editor_scene_import_plugin.h"
+#include "io_plugins/editor_font_import_plugin.h"
+#include "io_plugins/editor_sample_import_plugin.h"
+#include "io_plugins/editor_translation_import_plugin.h"
+#include "io_plugins/editor_bitmask_import_plugin.h"
+#include "io_plugins/editor_mesh_import_plugin.h"
+#include "io_plugins/editor_export_scene.h"
+#include "io_plugins/editor_import_collada.h"
+#include "io_plugins/editor_scene_importer_fbxconv.h"
 
 #include "plugins/editor_preview_plugins.h"
 #include "editor_initialize_ssl.h"

@@ -31,7 +31,7 @@
 
 #include "vector3.h"
 #include "plane.h"
-#include "aabb.h"
+#include "rect3.h"
 #include "transform.h"
 
 class Face3 {

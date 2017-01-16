@@ -30,7 +30,7 @@
 
 #if 0
 #include "scene/gui/label.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "print_string.h"
 
 

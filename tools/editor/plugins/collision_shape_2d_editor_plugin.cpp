@@ -29,7 +29,6 @@
 #include "collision_shape_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/shape_line_2d.h"
 #include "scene/resources/circle_shape_2d.h"

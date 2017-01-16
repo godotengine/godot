@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_path.h"
+
 #include "editor_scale.h"
 #include "editor_node.h"
 

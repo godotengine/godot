@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include <wchar.h>
 #include "ustring.h"
+
 #include "os/memory.h"
 #include "print_string.h"
 #include "math_funcs.h"
@@ -36,10 +36,8 @@
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
-#define MAX_DIGITS 6
-#define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
-#define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
 
+#include <wchar.h>
 
 #ifndef NO_USE_STDLIB
 #include <stdlib.h>
@@ -49,6 +47,10 @@
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define snprintf _snprintf
 #endif
+
+#define MAX_DIGITS 6
+#define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
+#define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
 
 /** STRING **/
 

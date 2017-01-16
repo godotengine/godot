@@ -27,8 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "string_db.h"
+
 #include "print_string.h"
 #include "os/os.h"
+
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs; scs.ptr=p_ptr; return scs;
 }

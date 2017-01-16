@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_region_editor_plugin.cpp                                      */
+/*  texture_region_editor_plugin.cpp                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "texture_region_editor_plugin.h"
 
 #include "core/core_string_names.h"
-#include "texture_region_editor_plugin.h"
 #include "scene/gui/check_box.h"
 #include "os/input.h"
 #include "os/keyboard.h"

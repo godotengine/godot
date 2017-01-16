@@ -26,9 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "editor_name_dialog.h"
-#include "object_type_db.h"
+
+#include "class_db.h"
 #include "os/keyboard.h"
 
 void EditorNameDialog::_line_gui_input(const InputEvent& p_event) {

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "baked_light_baker.h"
+
 #include <stdlib.h>
 #include <cmath>
 #include "io/marshalls.h"

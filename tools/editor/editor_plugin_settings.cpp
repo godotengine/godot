@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_plugin_settings.h"
+
 #include "scene/gui/margin_container.h"
 #include "io/config_file.h"
 #include "os/file_access.h"

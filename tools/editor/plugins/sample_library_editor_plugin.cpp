@@ -29,6 +29,7 @@
 
 #if 0
 #include "sample_library_editor_plugin.h"
+
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"

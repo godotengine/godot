@@ -3,7 +3,7 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http:/www.godotengine.org                         */
+/*                    http:/www.godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
@@ -27,13 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_settings.h"
+
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
-
 #include "version.h"
 #include "scene/main/scene_main_loop.h"
-#include "os/os.h"
 #include "scene/main/node.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"

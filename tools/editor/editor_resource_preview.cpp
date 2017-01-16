@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_resource_preview.h"
+
 #include "editor_settings.h"
 #include "os/file_access.h"
 #include "io/resource_loader.h"

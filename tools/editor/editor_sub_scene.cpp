@@ -27,10 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_sub_scene.h"
+
 #include "scene/gui/margin_container.h"
 #include "scene/resources/packed_scene.h"
-void EditorSubScene::_path_selected(const String& p_path) {
 
+void EditorSubScene::_path_selected(const String& p_path) {
 
 	path->set_text(p_path);
 	_path_changed(p_path);

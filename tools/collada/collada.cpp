@@ -29,6 +29,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "collada.h"
+
 #include "stdio.h"
 
 //#define DEBUG_DEFAULT_ANIMATION

@@ -26,9 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "doc_data.h"
 
+#include "version.h"
 #include "global_constants.h"
 #include "globals.h"
 #include "script_language.h"

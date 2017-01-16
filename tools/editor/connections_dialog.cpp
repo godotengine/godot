@@ -28,10 +28,7 @@
 /*************************************************************************/
 #include "connections_dialog.h"
 
-
 #include "scene/gui/label.h"
-
-
 #include "print_string.h"
 #include "editor_settings.h"
 #include "editor_node.h"

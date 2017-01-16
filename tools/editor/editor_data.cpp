@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_data.h"
+
 #include "globals.h"
 #include "editor_settings.h"
 #include "os/dir_access.h"

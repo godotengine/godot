@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "gd_functions.h"
 #include "math_funcs.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "reference.h"
 #include "gd_script.h"
 #include "func_ref.h"

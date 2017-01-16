@@ -27,10 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "asset_library_editor_plugin.h"
+
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "io/json.h"
-
 
 
 void EditorAssetLibraryItem::configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost) {

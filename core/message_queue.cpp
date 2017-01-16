@@ -27,8 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "message_queue.h"
+
 #include "globals.h"
 #include "script_language.h"
+
 MessageQueue *MessageQueue::singleton=NULL;
 
 MessageQueue *MessageQueue::get_singleton() {

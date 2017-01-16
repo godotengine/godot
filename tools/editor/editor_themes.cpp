@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  editor_themes.cpp                                                       */
+/*  editor_themes.cpp                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "editor_themes.h"
+
 #include "editor_icons.h"
 #include "editor_fonts.h"
 #include "editor_settings.h"

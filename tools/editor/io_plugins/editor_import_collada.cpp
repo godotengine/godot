@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_import_collada.h"
+
 #include "collada/collada.h"
 #include "scene/3d/spatial.h"
 #include "scene/3d/skeleton.h"

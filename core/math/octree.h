@@ -30,7 +30,7 @@
 #define OCTREE_H
 
 #include "vector3.h"
-#include "aabb.h"
+#include "rect3.h"
 #include "list.h"
 #include "variant.h"
 #include "map.h"

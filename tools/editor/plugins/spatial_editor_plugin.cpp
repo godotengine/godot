@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "spatial_editor_plugin.h"
-#include "print_string.h"
 
+#include "print_string.h"
 #include "os/keyboard.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/3d/camera.h"

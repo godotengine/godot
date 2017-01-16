@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "animation_editor.h"
+
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "os/os.h"

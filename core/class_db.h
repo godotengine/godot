@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  object_type_db.h                                                     */
+/*  class_db.h                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,12 +26,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef OBJECT_TYPE_DB_H
-#define OBJECT_TYPE_DB_H
+#ifndef CLASS_DB_H
+#define CLASS_DB_H
 
 #include "object.h"
 #include "method_bind.h"
 #include "print_string.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -537,4 +538,4 @@ public:
 
 
 
-#endif
+#endif // CLASS_DB_H

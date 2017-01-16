@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "create_dialog.h"
 
-#include "object_type_db.h"
+#include "class_db.h"
 #include "print_string.h"
 #include "scene/gui/box_container.h"
 #include "editor_node.h"

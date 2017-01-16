@@ -34,7 +34,7 @@
 
 //#include "scene/io/scene_format_script.h"
 #include "resources/default_theme/default_theme.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/viewport.h"

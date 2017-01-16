@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "path_db.h"
-#include "print_string.h"
 
+#include "print_string.h"
 
 uint32_t NodePath::hash() const {
 

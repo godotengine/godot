@@ -26,12 +26,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "tile_map_editor_plugin.h"
 
 #include "os/keyboard.h"
 #include "os/input.h"
-
 #include "canvas_item_editor_plugin.h"
 #include "tools/editor/editor_settings.h"
 #include "tools/editor/editor_scale.h"

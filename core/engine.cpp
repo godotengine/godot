@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "engine.h"
+
 #include "version.h"
 
 void Engine::set_iterations_per_second(int p_ips) {

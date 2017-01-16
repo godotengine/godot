@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_text_editor.h"
+
 #include "tools/editor/editor_settings.h"
 #include "os/keyboard.h"
 #include "tools/editor/script_editor_debugger.h"

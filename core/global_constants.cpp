@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "global_constants.h"
+
 #include "variant.h"
 #include "os/keyboard.h"
 #include "object.h"

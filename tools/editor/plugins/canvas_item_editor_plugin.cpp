@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "canvas_item_editor_plugin.h"
+
 #include "print_string.h"
 #include "tools/editor/editor_node.h"
 #include "os/keyboard.h"

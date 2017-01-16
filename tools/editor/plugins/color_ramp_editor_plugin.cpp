@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "color_ramp_editor_plugin.h"
+
 #include "spatial_editor_plugin.h"
 #include "canvas_item_editor_plugin.h"
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scenes_dock.cpp                                                      */
+/*  filesystem_dock.cpp                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,14 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "filesystem_dock.h"
+
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "globals.h"
-
 #include "io/resource_loader.h"
 #include "os/os.h"
 #include "editor_node.h"
-
 #include "editor_settings.h"
 #include "scene/main/viewport.h"
 

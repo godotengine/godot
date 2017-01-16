@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_create_dialog.h"
+
 #include "script_language.h"
 #include "globals.h"
 #include "io/resource_saver.h"

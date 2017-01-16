@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "scene_tree_dock.h"
+
 #include "editor_node.h"
 #include "globals.h"
 #include "os/keyboard.h"

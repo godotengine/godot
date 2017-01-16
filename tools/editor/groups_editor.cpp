@@ -32,6 +32,7 @@
 #include "scene/gui/label.h"
 #include "editor_node.h"
 #include "scene/resources/packed_scene.h"
+
 void GroupsEditor::_add_group(const String& p_group) {
 
 	if (!node)

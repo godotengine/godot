@@ -33,7 +33,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#include "aabb.h"
+#include "rect3.h"
 #include "ustring.h"
 #include "vector3.h"
 #include "plane.h"

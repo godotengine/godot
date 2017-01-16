@@ -26,8 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "project_manager.h"
+
+#include "version.h"
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
@@ -36,20 +37,16 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tool_button.h"
 #include "io/config_file.h"
-
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/center_container.h"
 #include "io/stream_peer_ssl.h"
-
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
-
 #include "editor_themes.h"
 #include "editor_initialize_ssl.h"
 #include "editor_scale.h"
-
 #include "io/zip_io.h"
 
 class NewProjectDialog : public ConfirmationDialog {

@@ -27,7 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "print_string.h"
+
 #include "os/os.h"
+
 #include <stdio.h>
 
 static PrintHandlerList *print_handler_list=NULL;

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "dependency_editor.h"
+
 #include "os/file_access.h"
 #include "scene/gui/margin_container.h"
 #include "io/resource_loader.h"

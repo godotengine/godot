@@ -27,9 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "variant_parser.h"
+
 #include "io/resource_loader.h"
 #include "os/keyboard.h"
-
 
 
 CharType VariantParser::StreamFile::get_char() {

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rich_text_editor_plugin.h"
+
 #include "os/file_access.h"
 #include "canvas_item_editor_plugin.h"
 

@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_editor_plugin.h"
-#include "tools/editor/editor_settings.h"
 
+#include "tools/editor/editor_settings.h"
 #include "spatial_editor_plugin.h"
 #include "scene/resources/shader_graph.h"
 #include "io/resource_loader.h"

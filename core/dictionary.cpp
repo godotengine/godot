@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "dictionary.h"
+
 #include "safe_refcount.h"
 #include "variant.h"
 
