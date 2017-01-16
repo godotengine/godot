@@ -1324,7 +1324,6 @@ void GIProbe::_create_debug_mesh(Baker *p_baker) {
 #else
 	mmi->set_owner(get_owner());
 #endif
-
 }
 
 void GIProbe::_debug_bake() {

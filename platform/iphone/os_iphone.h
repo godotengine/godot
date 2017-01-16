@@ -39,10 +39,7 @@
 #include "servers/physics/physics_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "servers/audio_server.h"
 #include "main/input_default.h"
 #include "game_center.h"
 #include "in_app_store.h"
@@ -50,7 +47,7 @@
 
 
 class AudioDriverIphone;
-class RasterizerGLES2;
+// class RasterizerGLES2;
 
 class OSIPhone : public OS_Unix {
 
@@ -71,18 +68,13 @@ private:
 
 	uint8_t supported_orientations;
 
-	Rasterizer *rasterizer;
-
-	RasterizerGLES2* rasterizer_gles22;
+//	Rasterizer *rasterizer;
+//	RasterizerGLES2* rasterizer_gles22;
 
 	VisualServer *visual_server;
 	PhysicsServer* physics_server;
 	Physics2DServer *physics_2d_server;
 
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 	AudioDriverIphone* audio_driver;
 
 #ifdef GAME_CENTER_ENABLED

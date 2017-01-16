@@ -237,7 +237,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target){
 		storage->frame.current_rt=NULL;
 		storage->frame.clear_request=false;
 		glViewport(0,0,OS::get_singleton()->get_window_size().width,OS::get_singleton()->get_window_size().height);
-		glBindFramebuffer(GL_FRAMEBUFFER,storage->config.system_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER,RasterizerStorageGLES3::system_fbo);
 	}
 }
 
@@ -268,7 +268,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target,const Rec
 
 	canvas->canvas_begin();
 	glDisable(GL_BLEND);
-	glBindFramebuffer(GL_FRAMEBUFFER,storage->config.system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER,RasterizerStorageGLES3::system_fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D,rt->color);
 	canvas->draw_generic_textured_rect(p_screen_rect,Rect2(0,0,1,-1));

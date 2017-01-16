@@ -1,6 +1,11 @@
 #include "rasterizer_canvas_gles3.h"
 #include "os/os.h"
 
+#ifdef IPHONE_ENABLED
+// for some reason glClearDepth seems to have been removed in iOS ES3.h
+#define glClearDepth glClearDepthf
+#endif
+
 static _FORCE_INLINE_ void store_transform2d(const Transform2D& p_mtx, float* p_array) {
 
 	p_array[ 0]=p_mtx.elements[0][0];
