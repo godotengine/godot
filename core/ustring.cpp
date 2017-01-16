@@ -3898,10 +3898,9 @@ String String::get_extension() const {
 String String::plus_file(const String& p_file) const {
 	if (empty())
 		return p_file;
-	if (operator [](length()-1)=='/' || p_file.operator [](0)=='/')
+	if (operator [](length()-1)=='/' || (p_file.size()>0 && p_file.operator [](0)=='/'))
 		return *this+p_file;
-	else
-		return *this+"/"+p_file;
+	return *this+"/"+p_file;
 }
 
 String String::percent_encode() const {
