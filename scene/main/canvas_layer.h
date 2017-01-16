@@ -45,6 +45,10 @@ class CanvasLayer : public Node {
 	int layer;
 	Matrix32 transform;
 	Ref<World2D> canvas;
+
+	ObjectID custom_viewport_id; // to check validity
+	Viewport *custom_viewport;
+
 	RID viewport;
 	Viewport *vp;
 
@@ -54,6 +58,7 @@ class CanvasLayer : public Node {
 
 	void _update_xform();
 	void _update_locrotscale();
+
 
 protected:
 
@@ -84,6 +89,9 @@ public:
 	Size2 get_viewport_size() const;
 
 	RID get_viewport() const;
+
+	void set_custom_viewport(Node *p_viewport);
+	Node* get_custom_viewport() const;
 
 	CanvasLayer();
 };
