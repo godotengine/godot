@@ -858,6 +858,10 @@ void scrollWithMomentum (int x, int y, bool finish) {
         scrollAccumulatorY -= y * MOMENTUM_SCROLL_THRESHOLD;
         if ((scrollAccumulatorY < 0 && y > 0) || (scrollAccumulatorY > 0 && y < 0)) scrollAccumulatorY = 0;
     }
+    if (finish) {
+        if (x && scrollAccumulatorX || y && scrollAccumulatorY) scrollWithMomentum(x, y, finish);
+        else scrollAccumulatorX = scrollAccumulatorY = 0;
+    }
 }
 
 - (void)scrollWheel:(NSEvent *)event
@@ -876,9 +880,7 @@ void scrollWithMomentum (int x, int y, bool finish) {
                 break;
             case NSEventPhaseEnded:
             case NSEventPhaseCancelled:
-                scrollAccumulatorX = scrollAccumulatorY = 0;
                 endScroll = true;
-                break;
             default:
                 scrollAccumulatorX += deltaX;
                 scrollAccumulatorY += deltaY;
