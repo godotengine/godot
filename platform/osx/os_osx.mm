@@ -832,7 +832,7 @@ static int translateKey(unsigned int key)
     _glfwInputKey(window, key, [event keyCode], GLFW_RELEASE, mods);*/
 }
 
-void scrollEvent (int buttonIndex) {
+inline void sendScrollEvent (int buttonIndex) {
     InputEvent ev;
     ev.type=InputEvent::MOUSE_BUTTON;
     ev.mouse_button.button_index = buttonIndex;
@@ -849,12 +849,12 @@ void scrollEvent (int buttonIndex) {
 
 void scrollWithMomentum (int x, int y, bool finish) {
     if (x && fabs(scrollAccumulatorX) >= MOMENTUM_SCROLL_THRESHOLD) {
-        scrollEvent(scrollAccumulatorX > 0 ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_RIGHT);
+        sendScrollEvent(scrollAccumulatorX > 0 ? BUTTON_WHEEL_LEFT : BUTTON_WHEEL_RIGHT);
         scrollAccumulatorX -= x * MOMENTUM_SCROLL_THRESHOLD;
         if ((scrollAccumulatorX < 0 && x > 0) || (scrollAccumulatorX > 0 && x < 0)) scrollAccumulatorX = 0;
     }
     if (y && fabs(scrollAccumulatorY) >= MOMENTUM_SCROLL_THRESHOLD) {
-        scrollEvent(scrollAccumulatorY > 0 ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN);
+        sendScrollEvent(scrollAccumulatorY > 0 ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN);
         scrollAccumulatorY -= y * MOMENTUM_SCROLL_THRESHOLD;
         if ((scrollAccumulatorY < 0 && y > 0) || (scrollAccumulatorY > 0 && y < 0)) scrollAccumulatorY = 0;
     }
@@ -862,36 +862,13 @@ void scrollWithMomentum (int x, int y, bool finish) {
 
 - (void)scrollWheel:(NSEvent *)event
 {
-
-	 double deltaX, deltaY;
-
-    // TODO: FIX THIS
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
-    {
-	deltaX = [event scrollingDeltaX];
-	deltaY = [event scrollingDeltaY];
-
-	if ([event hasPreciseScrollingDeltas])
-	{
-	    deltaX *= 0.1;
-	    deltaY *= 0.1;
-	}
-    }
-    else
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
-    {
-	deltaX = [event deltaX];
-	deltaY = [event deltaY];
-    }
-    
+	double factor = [event hasPreciseScrollingDeltas] ? 1.0 : 0.1,
+	       deltaX = [event deltaX] * factor,
+	       deltaY = [event deltaY] * factor;
     bool hasMomentum = event.phase != NSEventPhaseNone;
     bool endScroll = false;
 
     if (hasMomentum) {
-        // trackpad
-        deltaX = [event deltaX] * 0.1;
-        deltaY = [event deltaY] * 0.1;
         switch (event.phase) {
             case NSEventPhaseBegan:
                 scrollAccumulatorX = deltaX;
@@ -905,14 +882,12 @@ void scrollWithMomentum (int x, int y, bool finish) {
             default:
                 scrollAccumulatorX += deltaX;
                 scrollAccumulatorY += deltaY;
-            
         }
         scrollWithMomentum(deltaX / fabs(deltaX), deltaY / fabs(deltaY), endScroll);
     }
     else {
-        // regular scroll
-        if (fabs(deltaY)) scrollEvent(deltaY >0 ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN);
-        if (fabs(deltaX)) scrollEvent(deltaX < 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT);
+        if (fabs(deltaY)) sendScrollEvent(deltaY > 0 ? BUTTON_WHEEL_UP : BUTTON_WHEEL_DOWN);
+        if (fabs(deltaX)) sendScrollEvent(deltaX < 0 ? BUTTON_WHEEL_RIGHT : BUTTON_WHEEL_LEFT);
     }
 }
 
