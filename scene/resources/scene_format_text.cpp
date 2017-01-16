@@ -1158,7 +1158,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant& p_variant,b
 static String _valprop(const String& p_name) {
 
 	if (p_name.find("\"")!=-1 || p_name.find("=")!=-1 || p_name.find(" ")!=-1)
-		return "\""+p_name.c_escape()+"\"";
+		return "\""+p_name.c_escape_multiline()+"\"";
 	return p_name;
 }
 
@@ -1358,13 +1358,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			}
 
 			if (groups.size()) {
-				String sgroups=" groups=[ ";
+				String sgroups=" groups=[\n";
 				for(int j=0;j<groups.size();j++) {
-					if (j>0)
-						sgroups+=", ";
-					sgroups+="\""+groups[j].operator String().c_escape()+"\"";
+					sgroups+="\""+String(groups[j]).c_escape()+"\",\n";
 				}
-				sgroups+=" ]";
+				sgroups+="]";
 				header+=sgroups;
 			}
 
