@@ -105,6 +105,9 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
 		_tool_selected(TOOL_ERASE, true);
 	}
+	else if(ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
+		_tool_selected(TOOL_COPY_NODE_PATH);
+	}
 	else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
 		_tool_selected(TOOL_ERASE);
 	}
@@ -674,7 +677,17 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			new_scene_from_dialog->set_title(TTR("Save New Scene As.."));
 
 		} break;
+	case TOOL_COPY_NODE_PATH: {
+			List<Node*> selection = editor_selection->get_selected_node_list();
 
+			if(List<Node*>::Element *e = selection.front()) {
+				if(Node *node = e->get()) {
+					Node *root = EditorNode::get_singleton()->get_edited_scene();
+					NodePath path = root->get_path().rel_path_to(node->get_path());
+					OS::get_singleton()->set_clipboard(path);
+				}
+			}
+		} break;
 	}
 
 }
@@ -1808,11 +1821,11 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("Blend","EditorIcons"),ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
 		menu->add_icon_shortcut(get_icon("Save","EditorIcons"),ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
+		menu->add_separator();
+		menu->add_icon_shortcut(get_icon("Duplicate","EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
 	}
 	menu->add_separator();
-
 	menu->add_icon_shortcut(get_icon("Remove","EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
-
 	menu->set_size(Size2(1,1));
 	menu->set_pos(p_menu_pos);
 	menu->popup();
@@ -1914,6 +1927,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	ED_SHORTCUT("scene_tree/reparent", TTR("Reparent"));
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
+	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD|KEY_C);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT|KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 
