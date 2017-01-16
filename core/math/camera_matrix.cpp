@@ -198,20 +198,20 @@ void CameraMatrix::get_viewport_size(float& r_width, float& r_height) const {
 	Plane near_plane=Plane(matrix[ 3] + matrix[ 2],
 	                matrix[ 7] + matrix[ 6],
 	                matrix[11] + matrix[10],
-			-matrix[15] - matrix[14])
+			-matrix[15] - matrix[14]);
 	near_plane.normalize();
 
 	///////--- Right Plane ---///////
 	Plane right_plane=Plane(matrix[ 3] - matrix[ 0],
 	                matrix[ 7] - matrix[ 4],
 	                matrix[11] - matrix[ 8],
-			- matrix[15] + matrix[12])
+			- matrix[15] + matrix[12]);
 	right_plane.normalize();
 
 	Plane top_plane=Plane(matrix[ 3] - matrix[ 1],
 	                matrix[ 7] - matrix[ 5],
 	                matrix[11] - matrix[ 9],
-			-matrix[15] + matrix[13])
+			-matrix[15] + matrix[13]);
 	top_plane.normalize();
 
 	Vector3 res;
@@ -229,28 +229,28 @@ bool CameraMatrix::get_endpoints(const Transform& p_transform, Vector3 *p_8point
 	Plane near_plane=Plane(matrix[ 3] + matrix[ 2],
 	                matrix[ 7] + matrix[ 6],
 	                matrix[11] + matrix[10],
-			-matrix[15] - matrix[14])
+			-matrix[15] - matrix[14]);
 	near_plane.normalize();
 
 	///////--- Far Plane ---///////
 	Plane far_plane=Plane(matrix[ 2] - matrix[ 3],
 		      matrix[ 6] - matrix[ 7],
 		      matrix[10] - matrix[11],
-		      matrix[15] - matrix[14])
+		      matrix[15] - matrix[14]);
 	far_plane.normalize();
 
 	///////--- Right Plane ---///////
 	Plane right_plane=Plane(matrix[ 0] - matrix[ 3],
 	                matrix[ 4] - matrix[ 7],
 	                matrix[8] - matrix[ 11],
-			- matrix[15] + matrix[12])
+			- matrix[15] + matrix[12]);
 	right_plane.normalize();
 
 	///////--- Top Plane ---///////
 	Plane top_plane=Plane(matrix[ 1] - matrix[ 3],
 	                matrix[ 5] - matrix[ 7],
 	                matrix[9] - matrix[ 11],
-			-matrix[15] + matrix[13])
+			-matrix[15] + matrix[13]);
 	top_plane.normalize();
 
 	Vector3 near_endpoint;
@@ -567,7 +567,7 @@ float CameraMatrix::get_fov() const {
 	Plane right_plane=Plane(matrix[ 3] - matrix[ 0],
 			matrix[ 7] - matrix[ 4],
 			matrix[11] - matrix[ 8],
-			- matrix[15] + matrix[12])
+			- matrix[15] + matrix[12]);
 	right_plane.normalize();
 
 	return Math::rad2deg(Math::acos(Math::abs(right_plane.normal.x)))*2.0;
