@@ -2092,13 +2092,21 @@ void EditorImportExport::save_config() {
 
 	if (image_groups.size() && image_group_files.size()){
 
-		Vector<String> igfsave;
-		igfsave.resize(image_group_files.size()*2);
+		Vector<String> igfkeys;
+		igfkeys.resize(image_group_files.size());
 		int idx=0;
 		for (Map<StringName,StringName>::Element *E=image_group_files.front();E;E=E->next()) {
+			igfkeys[idx++]=E->key();
+		}
+		igfkeys.sort();
 
-			igfsave[idx++]=E->key();
-			igfsave[idx++]=E->get();
+		Vector<String> igfsave;
+		igfsave.resize(image_group_files.size()*2);
+		idx=0;
+		for (int i=0;i<igfkeys.size();++i) {
+
+			igfsave[idx++]=igfkeys[i];
+			igfsave[idx++]=image_group_files[igfkeys[i]];
 		}
 		cf->set_value("image_group_files","files",igfsave);
 	}
