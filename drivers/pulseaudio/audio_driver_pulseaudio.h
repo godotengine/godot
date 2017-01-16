@@ -48,7 +48,7 @@ class AudioDriverPulseAudio : public AudioDriver{
 	static void thread_func(void* p_udata);
 
 	unsigned int mix_rate;
-	SpeakerMode output_format;
+	SpeakerMode speaker_mode;
 
     unsigned int buffer_size;
 	int channels;

@@ -35,14 +35,15 @@
 #include "servers/physics/physics_server_sw.h"
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/visual/rasterizer.h"
 #include "audio_server_javascript.h"
 #include "audio_driver_javascript.h"
 #include "main/input_default.h"
-#include "emscripten/html5.h"
 #include "javascript_eval.h"
+
+#include <emscripten/html5.h>
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
 typedef String (*GetDataDirFunc)();
@@ -71,10 +72,6 @@ private:
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	AudioServerJavascript *audio_server;
-	//SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 	AudioDriverJavaScript audio_driver_javascript;

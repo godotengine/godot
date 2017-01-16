@@ -27,18 +27,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_android.h"
-#include "drivers/gles2/rasterizer_gles2.h"
 
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "core/io/file_access_buffered_fa.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/dir_access_unix.h"
-
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
-
 #include "file_access_android.h"
-
 #include "core/globals.h"
 
 #ifdef ANDROID_NATIVE_ACTIVITY
@@ -154,19 +151,6 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,true);
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
-	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
 	//physics_2d_server = memnew( Physics2DServerSW );

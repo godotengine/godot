@@ -48,7 +48,7 @@ class AudioDriverALSA : public AudioDriver {
 	static void thread_func(void* p_udata);
 
 	unsigned int mix_rate;
-	SpeakerMode output_format;
+	SpeakerMode speaker_mode;
 
 	snd_pcm_uframes_t buffer_size;
 	snd_pcm_uframes_t period_size;

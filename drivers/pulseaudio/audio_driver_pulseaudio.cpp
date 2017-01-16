@@ -44,7 +44,7 @@ Error AudioDriverPulseAudio::init() {
 	samples_out = NULL;
 
 	mix_rate = GLOBAL_DEF("audio/mix_rate",44100);
-	output_format = SPEAKER_MODE_STEREO;
+	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
 	pa_sample_spec spec;
@@ -151,7 +151,7 @@ int AudioDriverPulseAudio::get_mix_rate() const {
 
 AudioDriver::SpeakerMode AudioDriverPulseAudio::get_speaker_mode() const {
 
-	return output_format;
+	return speaker_mode;
 }
 
 void AudioDriverPulseAudio::lock() {

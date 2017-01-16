@@ -27,11 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_driver_opensl.h"
+
 #include <string.h>
-
-
-
-
 
 #define MAX_NUMBER_INTERFACES 3
 #define MAX_NUMBER_OUTPUT_DEVICES 6
@@ -373,9 +370,9 @@ int AudioDriverOpenSL::get_mix_rate() const {
 	return 44100;
 }
 
-AudioDriver::OutputFormat AudioDriverOpenSL::get_output_format() const{
+AudioDriver::SpeakerMode AudioDriverOpenSL::get_speaker_mode() const{
 
-	return OUTPUT_STEREO;
+	return SPEAKER_MODE_STEREO;
 }
 
 void AudioDriverOpenSL::lock(){

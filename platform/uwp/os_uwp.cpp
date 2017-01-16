@@ -36,16 +36,12 @@
 #include "main/main.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/dir_access_windows.h"
-
-
 #include "servers/visual/visual_server_raster.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/visual/visual_server_wrap_mt.h"
-
+#include "servers/audio_server.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
-
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
@@ -147,6 +143,7 @@ int OSUWP::get_audio_driver_count() const {
 
 	return AudioDriverManager::get_driver_count();
 }
+
 const char * OSUWP::get_audio_driver_name(int p_driver) const {
 
 	AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
@@ -295,16 +292,6 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
 	managed_object->update_clipboard();
 
 	Clipboard::ContentChanged += ref new EventHandler<Platform::Object^>(managed_object, &ManagedType::on_clipboard_changed);
@@ -407,21 +394,11 @@ void OSUWP::finalize() {
 	if (rasterizer)
 		memdelete(rasterizer);
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
 	/*
 	if (debugger_connection_console) {
 		memdelete(debugger_connection_console);
 	}
 	*/
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	memdelete(input);
 

@@ -35,29 +35,24 @@
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics/physics_server_sw.h"
-
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
+#include "servers/audio_server.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/unix/ip_unix.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
-
 #include "main/input_default.h"
+#include "key_mapping_win.h"
+
 
 #include <windows.h>
-
-#include "key_mapping_win.h"
 #include <windowsx.h>
 #include <io.h>
-
 #include <fcntl.h>
 #include <stdio.h>
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -115,11 +110,6 @@ class OS_Windows : public OS {
 	MainLoop *main_loop;
 
 	WNDPROC user_proc;
-
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 
 	MouseMode mouse_mode;
 	bool alt_mem;

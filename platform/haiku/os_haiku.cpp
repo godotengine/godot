@@ -40,7 +40,7 @@
 
 OS_Haiku::OS_Haiku() {
 #ifdef MEDIA_KIT_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_media_kit);
+	AudioDriverManager::add_driver(&driver_media_kit);
 #endif
 };
 
@@ -143,15 +143,6 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
 		ERR_PRINT("Initializing audio failed.");
 	}
-
-	sample_manager = memnew(SampleManagerMallocSW);
-	audio_server = memnew(AudioServerSW(sample_manager));
-	audio_server->init();
-
-	spatial_sound_server = memnew(SpatialSoundServerSW);
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
-	spatial_sound_2d_server->init();
 }
 
 void OS_Haiku::finalize() {
@@ -160,17 +151,6 @@ void OS_Haiku::finalize() {
 	}
 
 	main_loop = NULL;
-
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);

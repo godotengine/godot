@@ -29,7 +29,8 @@
 #ifndef AUDIO_DRIVER_ANDROID_H
 #define AUDIO_DRIVER_ANDROID_H
 
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
+
 #ifndef ANDROID_NATIVE_ACTIVITY
 
 #include "java_glue.h"
@@ -65,7 +66,7 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const ;
-	virtual OutputFormat get_output_format() const;
+	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();

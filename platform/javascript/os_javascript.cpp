@@ -27,24 +27,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_javascript.h"
+
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "core/io/file_access_buffered_fa.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/dir_access_unix.h"
-
 #include "servers/visual/visual_server_raster.h"
-
 #include "main/main.h"
-
 #include "core/globals.h"
-#include "stdlib.h"
-#include "emscripten.h"
 #include "dom_keys.h"
+
+#include <stdlib.h>
+#include <emscripten.h>
 
 int OS_JavaScript::get_video_driver_count() const {
 
 	return 1;
 }
+
 const char * OS_JavaScript::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
@@ -261,27 +261,6 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 		ERR_PRINT("Initializing audio failed.");
 	}*/
 
-	print_line("Init SM");
-
-	//sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerJavascript );
-
-	print_line("Init Mixer");
-
-	//audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
-	audio_server->init();
-
-	print_line("Init SoundServer");
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-
-	print_line("Init SpatialSoundServer");
-
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
-	//
 	print_line("Init Physicsserver");
 
 	physics_server = memnew( PhysicsServerSW );

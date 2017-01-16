@@ -30,30 +30,25 @@
 #include "os_windows.h"
 
 #include "drivers/gles3/rasterizer_gles3.h"
-
 #include "drivers/windows/thread_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/mutex_windows.h"
 #include "drivers/windows/rw_lock_windows.h"
-#include "main/main.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/dir_access_windows.h"
-
-
 #include "servers/visual/visual_server_raster.h"
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
-
+#include "main/main.h"
 #include "tcp_server_winsock.h"
 #include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
 #include "lang_table.h"
-
 #include "globals.h"
 #include "io/marshalls.h"
 #include "joypad.h"
 
-#include "shlobj.h"
+#include <shlobj.h>
 #include <regstr.h>
 #include <process.h>
 
@@ -1131,16 +1126,6 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
 	TRACKMOUSEEVENT tme;
 	tme.cbSize=sizeof(TRACKMOUSEEVENT);
 	tme.dwFlags=TME_LEAVE;
@@ -1271,21 +1256,11 @@ void OS_Windows::finalize() {
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
 	/*
 	if (debugger_connection_console) {
 		memdelete(debugger_connection_console);
 	}
 	*/
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	physics_server->finish();
 	memdelete(physics_server);
@@ -2432,10 +2407,10 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	user_proc = NULL;
 
 #ifdef RTAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+	AudioDriverManager::add_driver(&driver_rtaudio);
 #endif
 #ifdef XAUDIO2_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_xaudio2);
+	AudioDriverManager::add_driver(&driver_xaudio2);
 #endif
 
 }

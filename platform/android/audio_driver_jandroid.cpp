@@ -27,9 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_driver_jandroid.h"
+
 #include "globals.h"
 #include "os/os.h"
 #include "thread_jandroid.h"
+
 #ifndef ANDROID_NATIVE_ACTIVITY
 
 AudioDriverAndroid* AudioDriverAndroid::s_ad=NULL;
@@ -199,9 +201,9 @@ int AudioDriverAndroid::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriver::OutputFormat AudioDriverAndroid::get_output_format() const{
+AudioDriver::SpeakerMode AudioDriverAndroid::get_speaker_mode() const{
 
-	return OUTPUT_STEREO;
+	return SPEAKER_MODE_STEREO;
 }
 
 void AudioDriverAndroid::lock(){

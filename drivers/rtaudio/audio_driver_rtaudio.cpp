@@ -85,6 +85,8 @@ Error AudioDriverRtAudio::init() {
 	ERR_EXPLAIN("Cannot initialize RtAudio audio driver: No devices present.")
 	ERR_FAIL_COND_V( dac->getDeviceCount() < 1, ERR_UNAVAILABLE );
 
+	// FIXME: Adapt to the OutputFormat -> SpeakerMode change
+	/*
 	String channels = GLOBAL_DEF("audio/output","stereo");
 
 	if (channels=="5.1")
@@ -95,6 +97,7 @@ Error AudioDriverRtAudio::init() {
 		output_format=OUTPUT_MONO;
 	else
 		output_format=OUTPUT_STEREO;
+	*/
 
 	RtAudio::StreamParameters parameters;
 	parameters.deviceId = dac->getDefaultOutputDevice();
@@ -125,11 +128,10 @@ Error AudioDriverRtAudio::init() {
 
 	while(true) {
 		while( true) {
-			switch(output_format) {
-				case OUTPUT_MONO: parameters.nChannels = 1; break;
-				case OUTPUT_STEREO: parameters.nChannels = 2; break;
-				case OUTPUT_QUAD: parameters.nChannels = 4; break;
-				case OUTPUT_5_1: parameters.nChannels = 6; break;
+			switch(speaker_mode) {
+				case SPEAKER_MODE_STEREO: parameters.nChannels = 2; break;
+				case SPEAKER_SURROUND_51: parameters.nChannels = 6; break;
+				case SPEAKER_SURROUND_71: parameters.nChannels = 8; break;
 			};
 
 			try {
@@ -142,11 +144,10 @@ Error AudioDriverRtAudio::init() {
 				// try with less channels
 				ERR_PRINT("Unable to open audio, retrying with fewer channels..");
 
-				switch(output_format) {
-					case OUTPUT_MONO: ERR_EXPLAIN("Unable to open audio."); ERR_FAIL_V( ERR_UNAVAILABLE ); break;
-					case OUTPUT_STEREO: output_format=OUTPUT_MONO; break;
-					case OUTPUT_QUAD: output_format=OUTPUT_STEREO; break;
-					case OUTPUT_5_1: output_format=OUTPUT_QUAD; break;
+				switch(speaker_mode) {
+					case SPEAKER_MODE_STEREO: speaker_mode=SPEAKER_MODE_STEREO; break;
+					case SPEAKER_SURROUND_51: speaker_mode=SPEAKER_SURROUND_51; break;
+					case SPEAKER_SURROUND_71: speaker_mode=SPEAKER_SURROUND_71; break;
 				};
 			}
 		}
@@ -189,9 +190,9 @@ int AudioDriverRtAudio::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriverSW::OutputFormat AudioDriverRtAudio::get_output_format() const {
+AudioDriver::SpeakerMode AudioDriverRtAudio::get_speaker_mode() const {
 
-	return output_format;
+	return speaker_mode;
 }
 
 void AudioDriverRtAudio::start() {
@@ -229,7 +230,7 @@ AudioDriverRtAudio::AudioDriverRtAudio()
 
 	mutex=NULL;
 	mix_rate=44100;
-	output_format=OUTPUT_STEREO;
+	speaker_mode=SPEAKER_MODE_STEREO;
 }
 
 

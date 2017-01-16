@@ -44,7 +44,7 @@ Error AudioDriverBB10::init(const char* p_name) {
 	samples_out = NULL;
 
 	mix_rate = 44100;
-	output_format = OUTPUT_STEREO;
+	speaker_mode = SPEAKER_MODE_STEREO;
 
 	char* dev_name;
 	if (p_name == NULL) {
@@ -70,7 +70,7 @@ Error AudioDriverBB10::init(const char* p_name) {
 	ERR_FAIL_COND_V(!(cinfo.formats & SND_PCM_FMT_S16_LE), FAILED);
 
 	printf("voices %i\n", cinfo.max_voices);
-	output_format = cinfo.max_voices >= 2 ? OUTPUT_STEREO : OUTPUT_MONO;
+	speaker_mode = SPEAKER_MODE_STEREO;
 
 	snd_pcm_channel_params_t cp;
 	zeromem(&cp, sizeof(cp));
@@ -84,7 +84,7 @@ Error AudioDriverBB10::init(const char* p_name) {
 	cp.buf.block.frags_min = 1;
 	cp.format.interleave = 1;
 	cp.format.rate = mix_rate;
-	cp.format.voices = output_format == OUTPUT_MONO ? 1 : 2;
+	cp.format.voices = speaker_mode;
 	cp.format.format = SND_PCM_SFMT_S16_LE;
 
 	ret = snd_pcm_plugin_params(pcm_handle, &cp);
@@ -121,7 +121,7 @@ void AudioDriverBB10::thread_func(void* p_udata) {
 
 	AudioDriverBB10* ad = (AudioDriverBB10*)p_udata;
 
-	int channels = (ad->output_format == OUTPUT_MONO ? 1 : 2);
+	int channels = speaker_mode;
 	int frame_count = ad->sample_buf_count / channels;
 	int bytes_out = frame_count * channels * 2;
 
@@ -204,16 +204,18 @@ int AudioDriverBB10::get_mix_rate() const {
 	return mix_rate;
 };
 
-AudioDriver::OutputFormat AudioDriverBB10::get_output_format() const {
+AudioDriver::SpeakerMode AudioDriverBB10::get_speaker_mode() const {
 
-	return output_format;
+	return speaker_mode;
 };
+
 void AudioDriverBB10::lock() {
 
 	if (!thread)
 		return;
 	mutex->lock();
 };
+
 void AudioDriverBB10::unlock() {
 
 	if (!thread)

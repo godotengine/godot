@@ -31,22 +31,21 @@
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "servers/visual/visual_server_raster.h"
 #include "core/os/dir_access.h"
-
 #include "core/globals.h"
 #include "main/main.h"
 #include "bbutil.h"
+#include "core/os/keyboard.h"
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "core/os/keyboard.h"
-
-#include "bps/bps.h"
-#include "bps/screen.h"
-#include "bps/navigator.h"
-#include "bps/accelerometer.h"
-#include "bps/orientation.h"
-#include "bps/virtualkeyboard.h"
-#include "bps/audiodevice.h"
+#include <bps/bps.h>
+#include <bps/screen.h>
+#include <bps/navigator.h>
+#include <bps/accelerometer.h>
+#include <bps/orientation.h>
+#include <bps/virtualkeyboard.h>
+#include <bps/audiodevice.h>
 
 #ifdef BB10_SCORELOOP_ENABLED
 #include "modules/scoreloop/scoreloop_bb10.h"
@@ -141,18 +140,6 @@ void OSBB10::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	audio_driver->set_singleton();
 	audio_driver->init(NULL);
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
-	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
 	physics_2d_server = memnew( Physics2DServerSW );
@@ -185,21 +172,11 @@ void OSBB10::finalize() {
 		memdelete(main_loop);
 	main_loop=NULL;
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
 	/*
 	if (debugger_connection_console) {
 		memdelete(debugger_connection_console);
 	}
 	*/
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);

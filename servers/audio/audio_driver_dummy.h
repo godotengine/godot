@@ -46,7 +46,7 @@ class AudioDriverDummy : public AudioDriver {
 	int buffer_size;
 
 	unsigned int mix_rate;
-	SpeakerMode output_format;
+	SpeakerMode speaker_mode;
 
 	int channels;
 

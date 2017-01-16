@@ -34,9 +34,7 @@
 #include "os/main_loop.h"
 #include "main/input_default.h"
 #include "servers/physics/physics_server_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/visual/rasterizer.h"
 #include "audio_driver_bb10.h"
@@ -44,8 +42,7 @@
 
 #include <screen/screen.h>
 #include <sys/platform.h>
-#include "bps/event.h"
-
+#include <bps/event.h>
 #include <stdint.h>
 
 class OSBB10 : public OS_Unix {
@@ -58,11 +55,6 @@ class OSBB10 : public OS_Unix {
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	//AudioDriverPSP audio_driver_psp;
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 	AudioDriverBB10* audio_driver;
