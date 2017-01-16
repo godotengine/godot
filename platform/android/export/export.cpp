@@ -1748,6 +1748,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 	args.push_back("shell");
 	args.push_back("am");
 	args.push_back("start");
+	args.push_back("--user 0");
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
 	args.push_back("-n");
@@ -1914,4 +1915,3 @@ void register_android_exporter() {
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
 
 }
-
