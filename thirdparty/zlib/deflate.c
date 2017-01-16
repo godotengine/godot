@@ -52,7 +52,7 @@
 #include "deflate.h"
 
 const char deflate_copyright[] =
-   " deflate 1.2.10 Copyright 1995-2017 Jean-loup Gailly and Mark Adler ";
+   " deflate 1.2.11 Copyright 1995-2017 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -586,7 +586,8 @@ int ZEXPORT deflateParams(strm, level, strategy)
     }
     func = configuration_table[s->level].func;
 
-    if ((strategy != s->strategy || func != configuration_table[level].func)) {
+    if ((strategy != s->strategy || func != configuration_table[level].func) &&
+        s->high_water) {
         /* Flush the last buffer: */
         int err = deflate(strm, Z_BLOCK);
         if (err == Z_STREAM_ERROR)
@@ -1671,8 +1672,6 @@ local block_state deflate_stored(s, flush)
             len = left + s->strm->avail_in;     /* limit len to the input */
         if (len > have)
             len = have;                         /* limit len to the output */
-        if (left > len)
-            left = len;                         /* limit window pull to len */
 
         /* If the stored block would be less than min_block in length, or if
          * unable to copy all of the available input when flushing, then try
@@ -1681,13 +1680,13 @@ local block_state deflate_stored(s, flush)
          */
         if (len < min_block && ((len == 0 && flush != Z_FINISH) ||
                                 flush == Z_NO_FLUSH ||
-                                len - left != s->strm->avail_in))
+                                len != left + s->strm->avail_in))
             break;
 
         /* Make a dummy stored block in pending to get the header bytes,
          * including any pending bits. This also updates the debugging counts.
          */
-        last = flush == Z_FINISH && len - left == s->strm->avail_in ? 1 : 0;
+        last = flush == Z_FINISH && len == left + s->strm->avail_in ? 1 : 0;
         _tr_stored_block(s, (char *)0, 0L, last);
 
         /* Replace the lengths in the dummy stored block with len. */
@@ -1699,14 +1698,16 @@ local block_state deflate_stored(s, flush)
         /* Write the stored block header bytes. */
         flush_pending(s->strm);
 
-        /* Update debugging counts for the data about to be copied. */
 #ifdef ZLIB_DEBUG
+        /* Update debugging counts for the data about to be copied. */
         s->compressed_len += len << 3;
         s->bits_sent += len << 3;
 #endif
 
         /* Copy uncompressed bytes from the window to next_out. */
         if (left) {
+            if (left > len)
+                left = len;
             zmemcpy(s->strm->next_out, s->window + s->block_start, left);
             s->strm->next_out += left;
             s->strm->avail_out -= left;
@@ -1756,6 +1757,8 @@ local block_state deflate_stored(s, flush)
         s->block_start = s->strstart;
         s->insert += MIN(used, s->w_size - s->insert);
     }
+    if (s->high_water < s->strstart)
+        s->high_water = s->strstart;
 
     /* If the last block was written to next_out, then done. */
     if (last)
@@ -1783,6 +1786,8 @@ local block_state deflate_stored(s, flush)
         read_buf(s->strm, s->window + s->strstart, have);
         s->strstart += have;
     }
+    if (s->high_water < s->strstart)
+        s->high_water = s->strstart;
 
     /* There was not enough avail_out to write a complete worthy or flushed
      * stored block to next_out. Write a stored block to pending instead, if we

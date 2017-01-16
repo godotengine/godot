@@ -1,5 +1,5 @@
 /* zlib.h -- interface of the 'zlib' general purpose compression library
-  version 1.2.10, January 2nd, 2017
+  version 1.2.11, January 15th, 2017
 
   Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler
 
@@ -37,11 +37,11 @@
 extern "C" {
 #endif
 
-#define ZLIB_VERSION "1.2.10"
-#define ZLIB_VERNUM 0x12a0
+#define ZLIB_VERSION "1.2.11"
+#define ZLIB_VERNUM 0x12b0
 #define ZLIB_VER_MAJOR 1
 #define ZLIB_VER_MINOR 2
-#define ZLIB_VER_REVISION 10
+#define ZLIB_VER_REVISION 11
 #define ZLIB_VER_SUBREVISION 0
 
 /*
@@ -712,10 +712,11 @@ ZEXTERN int ZEXPORT deflateParams OF((z_streamp strm,
    used to switch between compression and straight copy of the input data, or
    to switch to a different kind of input data requiring a different strategy.
    If the compression approach (which is a function of the level) or the
-   strategy is changed, then the input available so far is compressed with the
-   old level and strategy using deflate(strm, Z_BLOCK).  There are three
-   approaches for the compression levels 0, 1..3, and 4..9 respectively.  The
-   new level and strategy will take effect at the next call of deflate().
+   strategy is changed, and if any input has been consumed in a previous
+   deflate() call, then the input available so far is compressed with the old
+   level and strategy using deflate(strm, Z_BLOCK).  There are three approaches
+   for the compression levels 0, 1..3, and 4..9 respectively.  The new level
+   and strategy will take effect at the next call of deflate().
 
      If a deflate(strm, Z_BLOCK) is performed by deflateParams(), and it does
    not have enough output space to complete, then the parameter change will not

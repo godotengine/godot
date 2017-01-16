@@ -209,7 +209,7 @@ Files extracted from upstream source:
 ## zlib
 
 - Upstream: http://www.zlib.net/
-- Version: 1.2.10
+- Version: 1.2.11
 - License: zlib
 
 Files extracted from upstream source:
