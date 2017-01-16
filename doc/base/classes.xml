@@ -463,7 +463,7 @@
 			<argument index="1" name="to" type="float">
 			</argument>
 			<description>
-				Random range, any floating point value between 'from' and 'to'
+				Random range, any floating point value between 'from' and 'to'.
 			</description>
 		</method>
 		<method name="rand_seed">
@@ -472,28 +472,28 @@
 			<argument index="0" name="seed" type="int">
 			</argument>
 			<description>
-				Random from seed, pass a seed and an array with both number and new seed is returned.
+				Random from seed: pass a seed, and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
 			</description>
 		</method>
 		<method name="randf">
 			<return type="float">
 			</return>
 			<description>
-				Random value (0 to 1 float).
+				Return a random floating point value between 0 and 1.
 			</description>
 		</method>
 		<method name="randi">
 			<return type="int">
 			</return>
 			<description>
-				Random 32 bits value (integer). To obtain a value	from 0 to N, you can use remainder, like (for random from 0 to 19): randi() % 20.
+				Return a random 32 bits integer value. To obtain a random value between 0 to N (where N is smaller than 2^32 - 1), you can use remainder. For example, to get a random integer between 0 and 19 inclusive, you can use randi() % 20.
 			</description>
 		</method>
 		<method name="randomize">
 			<return type="Nil">
 			</return>
 			<description>
-				Reset the seed of the random number generator with a new, different one.
+				Randomize the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
 			</description>
 		</method>
 		<method name="range">
