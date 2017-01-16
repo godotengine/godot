@@ -2297,10 +2297,10 @@ void SpatialEditorViewport::reset() {
 	message_time=0;
 	message="";
 	last_message="";
-	name=TTR("Top");
+	name="";
 
-	cursor.x_rot=0;
-	cursor.y_rot=0;
+	cursor.x_rot=0.5;
+	cursor.y_rot=0.5;
 	cursor.distance=4;
 	cursor.region_select=false;
 	_update_name();
