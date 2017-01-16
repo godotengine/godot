@@ -1819,16 +1819,28 @@ Error _Directory::open(const String& p_path) {
 	return OK;
 }
 
-Error _Directory::list_dir_begin() {
+Error _Directory::list_dir_begin(bool p_skip_navigational, bool p_skip_hidden) {
 
 	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+
+	_list_skip_navigational = p_skip_navigational;
+	_list_skip_hidden = p_skip_hidden;
+
 	return d->list_dir_begin();
 }
 
 String _Directory::get_next(){
 
 	ERR_FAIL_COND_V(!d,"");
-	return d->get_next();
+
+	String next = d->get_next();
+	while (next != ""
+		&& ((_list_skip_navigational && (next == "." || next == ".."))
+		|| (_list_skip_hidden && d->current_is_hidden()))) {
+
+		next = d->get_next();
+	}
+	return next;
 }
 bool _Directory::current_is_dir() const{
 
@@ -1958,7 +1970,7 @@ void _Directory::_bind_methods() {
 
 
 	ClassDB::bind_method(_MD("open:Error","path"),&_Directory::open);
-	ClassDB::bind_method(_MD("list_dir_begin"),&_Directory::list_dir_begin);
+	ClassDB::bind_method(_MD("list_dir_begin", "skip_navigational", "skip_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(_MD("get_next"),&_Directory::get_next);
 	ClassDB::bind_method(_MD("current_is_dir"),&_Directory::current_is_dir);
 	ClassDB::bind_method(_MD("list_dir_end"),&_Directory::list_dir_end);
