@@ -81,6 +81,7 @@
 			 * calculate cursor coordinates correctly */
 			border: 0 none;
 			padding: 0;
+			color: white;
 		}
 
 
@@ -101,6 +102,7 @@
 		}
 
 		#status {
+			cursor: pointer;
 			visibility: visible;
 			padding: 4px 6px;
 		}
@@ -206,6 +208,7 @@
 			var presentation = {
 				statusElement: statusElement,
 				outputElement: outputElement,
+				postRun: [],
 				setOutputVisible: function setOutputVisible(visible) {
 					outputElement.style.display = (visible?"block":"none");
 				},
@@ -213,18 +216,25 @@
 					statusElement.style.visibility = (visible?"visible":"hidden");
 				},
 				setStatus: function setStatus(text) {
-					if (!text || text.length === 0) {
-						Presentation.setStatusVisible(false);
-						onLoaded();
+					if (!text) {
+						// emscripten sets empty string as status after "Running..."
+						// per timeout, but another status may have been set by then
+						if (Presentation.setStatus.lastText === "Running...") {
+							Presentation.setStatusVisible(false);
+							onLoaded();
+						}
 					} else {
-						Presentation.setStatusVisible(true);
+						Presentation.setStatus.lastText = text;
 						statusElement.innerHTML = text;
+						Presentation.setStatusVisible(true);
 					}
 				},
 				goFullscreen: function goFullscreen() {
 					if (doneLoading) Module.requestFullScreen(false, false);
 				}
 			};
+
+			window.onerror = function(event) { presentation.setStatus("Failure during start-up, see JavaScript console") };
 
 			if ($GODOT_CONTROLS_ENABLED) { // controls enabled
 				(function() {
@@ -250,6 +260,13 @@
 						outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
 					};
 				})();
+
+				presentation.postRun.push(function() {
+					window.onerror = function(event) { presentation.print("**EXCEPTION**:", event) };
+				});
+
+			} else {
+				presentation.postRun.push(function() { window.onerror = null; });
 			}
 
 			return presentation;
@@ -273,6 +290,11 @@
 					};
 				}
 			})();
+
+			var postRun = [];
+			if (typeof Presentation !== "undefined" && Presentation.postRun instanceof Array) {
+				postRun = Presentation.postRun;
+			}
 
 			var canvas = (function() {
 				var canvasElement = document.getElementById("canvas");
@@ -318,9 +340,9 @@
 			})();
 
 			return {
-				TOTAL_MEMORY: 268435456,
+				TOTAL_MEMORY: $GODOT_TMEM,
 				preRun: [],
-				postRun: [],
+				postRun: postRun,
 				print: print,
 				printErr: function printErr(text) {
 					if (arguments.length > 1)
@@ -343,13 +365,6 @@
 
 		Presentation.setStatus("Downloading...");
 
-		window.onerror = function(event) {
-			// TODO: do not warn on ok events like simulating an infinite loop or exitStatus
-			Module.setStatus("Exception thrown, see JavaScript console");
-			Module.setStatus = function(text) {
-				if (text) Module.printErr("[post-exception status] " + text);
-			};
-		};
 	//]]></script>
 	<script type="text/javascript" src="$GODOT_FS"></script>
 	<script>
