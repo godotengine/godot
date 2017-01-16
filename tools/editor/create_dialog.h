@@ -32,6 +32,7 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/button.h"
 #include "scene/gui/tree.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/label.h"
 #include "editor_help.h"
@@ -46,6 +47,12 @@ class CreateDialog : public ConfirmationDialog {
 
 	OBJ_TYPE(CreateDialog,ConfirmationDialog )
 
+
+	Vector<String> favorite_list;
+	Tree *favorites;
+	Tree *recent;
+
+	Button *favorite;
 	LineEdit *search_box;
 	Tree *search_options;
 	String base_type;
@@ -55,6 +62,15 @@ class CreateDialog : public ConfirmationDialog {
 	void _item_selected();
 
 	void _update_search();
+	void _update_favorite_list();
+	void _save_favorite_list();
+	void _favorite_toggled();
+
+	void _history_selected();
+	void _favorite_selected();
+
+	void _history_activated();
+	void _favorite_activated();
 
 	void _sbox_input(const InputEvent& p_ie);
 
@@ -63,6 +79,9 @@ class CreateDialog : public ConfirmationDialog {
 
 	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root,TreeItem **to_select);
 
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 protected:
 
