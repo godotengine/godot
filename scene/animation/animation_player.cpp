@@ -118,17 +118,20 @@ bool AnimationPlayer::_get(const StringName& p_name,Variant &r_ret) const {
 
 	} else if (name=="blend_times") {
 
-		Array array;
-
-		array.resize(blend_times.size()*3);
-		int idx=0;
+		Vector<BlendKey> keys;
 		for(Map<BlendKey, float >::Element *E=blend_times.front();E;E=E->next()) {
 
-			array.set(idx*3+0,E->key().from);
-			array.set(idx*3+1,E->key().to);
-			array.set(idx*3+2,E->get());
-			idx++;
+			keys.ordered_insert(E->key());
 		}
+
+		Array array;
+		for(int i=0;i<keys.size();i++) {
+
+			array.push_back(keys[i].from);
+			array.push_back(keys[i].to);
+			array.push_back(blend_times[keys[i]]);
+		}
+
 		r_ret=array;
 	} else if (name=="autoplay") {
 		r_ret=autoplay;

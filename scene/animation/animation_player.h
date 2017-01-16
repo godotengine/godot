@@ -142,7 +142,7 @@ private:
 
 		StringName from;
 		StringName to;
-		bool operator<(const BlendKey& bk) const { return from==bk.from?to<bk.to:from<bk.from; }
+		bool operator<(const BlendKey& bk) const { return from==bk.from?String(to)<String(bk.to):String(from)<String(bk.from); }
 	};
 
 
