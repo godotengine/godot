@@ -98,7 +98,7 @@ Error StreamPeerWinsock::_poll_connection(bool p_block) const {
 			return OK;
 		};
 
-		if (errno == WSAEINPROGRESS || errno == WSAEALREADY) {
+		if (err == WSAEINPROGRESS || err == WSAEALREADY) {
 			return OK;
 		}
 
@@ -136,13 +136,11 @@ Error StreamPeerWinsock::write(const uint8_t* p_data,int p_bytes, int &r_sent, b
 	int data_to_send = p_bytes;
 	const uint8_t *offset = p_data;
 	if (sockfd == -1) return FAILED;
-	errno = 0;
 	int total_sent = 0;
 
 	while (data_to_send) {
 
 		int sent_amount = send(sockfd, (const char*)offset, data_to_send, 0);
-		//printf("Sent TCP data of %d bytes, errno %d\n", sent_amount, errno);
 
 		if (sent_amount == -1) {
 
@@ -195,7 +193,6 @@ Error StreamPeerWinsock::read(uint8_t* p_buffer, int p_bytes,int &r_received, bo
 
 	int to_read = p_bytes;
 	int total_read = 0;
-	errno = 0;
 
 	while (to_read) {
 
