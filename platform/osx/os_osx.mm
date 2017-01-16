@@ -1109,18 +1109,6 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
 	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
@@ -1167,18 +1155,8 @@ void OS_OSX::finalize() {
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
 	delete_main_loop();
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
 	memdelete(joypad_osx);
 	memdelete(input);
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);
