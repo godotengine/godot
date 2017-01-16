@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627418"
-     inkscape:cx="4.8878469"
-     inkscape:cy="12.667351"
+     inkscape:cx="-3.3764632"
+     inkscape:cy="12.578963"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -68,97 +68,10 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <rect
-       y="1048.3622"
-       x="2"
-       height="0.99993038"
-       width="6"
-       id="rect4155"
-       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    <rect
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4157"
-       width="2"
-       height="6.9999485"
-       x="10"
-       y="1045.3622" />
-    <rect
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4159"
-       width="2"
-       height="0.9999826"
-       x="12"
-       y="1046.3622" />
-    <rect
-       y="1050.3622"
-       x="12"
-       height="0.9999826"
-       width="2"
-       id="rect4161"
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <ellipse
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="path4163"
-       cx="10"
-       cy="1047.3622"
-       rx="2"
-       ry="1.9999913" />
-    <circle
-       r="2"
-       cy="1050.3622"
-       cx="10"
-       id="circle4167"
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <rect
-       y="1047.3623"
-       x="8"
-       height="2.9998953"
-       width="2"
-       id="rect4201"
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <rect
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4203"
-       width="12"
-       height="1"
-       x="2"
-       y="1036.3622" />
-    <rect
-       y="1042.3622"
-       x="2"
-       height="1"
-       width="12"
-       id="rect4205"
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <rect
-       y="-3"
-       x="1036.3622"
-       height="1"
-       width="6.0000348"
-       id="rect4207"
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       transform="matrix(0,1,-1,0,0,0)" />
-    <rect
-       transform="matrix(0,1,-1,0,0,0)"
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4209"
-       width="6.0000348"
-       height="1"
-       x="1036.3622"
-       y="-14" />
-    <ellipse
-       ry="1.5000032"
-       rx="1.5"
-       cy="1039.8622"
-       cx="5.5"
-       id="ellipse4214"
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    <ellipse
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="ellipse4216"
-       cx="10.5"
-       cy="1039.8622"
-       rx="1.5"
-       ry="1.5000032" />
+    <path
+       style="fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 2 0 L 2 1 L 2 6 L 2 7 L 14 7 L 14 6 L 14 0 L 3 0 L 2 0 z M 3 1 L 13 1 L 13 6 L 3 6 L 3 1 z M 5.5 2 A 1.5 1.5000032 0 0 0 4 3.5 A 1.5 1.5000032 0 0 0 5.5 5 A 1.5 1.5000032 0 0 0 7 3.5 A 1.5 1.5000032 0 0 0 5.5 2 z M 10.5 2 A 1.5 1.5000032 0 0 0 9 3.5 A 1.5 1.5000032 0 0 0 10.5 5 A 1.5 1.5000032 0 0 0 12 3.5 A 1.5 1.5000032 0 0 0 10.5 2 z M 10 9 A 2 1.9999913 0 0 0 8 11 L 8 12 L 2 12 L 2 13 L 8 13 L 8 14 A 2 2 0 0 0 10 16 L 12 16 L 12 15 L 14 15 L 14 14 L 12 14 L 12 11 L 14 11 L 14 10 L 12 10 L 12 9 L 10 9 z "
+       transform="translate(0,1036.3622)"
+       id="rect4155" />
   </g>
 </svg>

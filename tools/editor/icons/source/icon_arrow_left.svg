@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="5.5903114"
-     inkscape:cy="9.1977698"
+     inkscape:cx="-0.2534386"
+     inkscape:cy="9.1352698"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -68,30 +68,10 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <rect
-       style="fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4352"
-       width="9"
-       height="2.0000174"
-       x="6"
-       y="1043.3622" />
     <path
-       transform="matrix(0,1.2810265,0.92450034,0,964.29952,1037.9571)"
-       inkscape:transform-center-y="-9.6789057e-05"
-       d="m 8.122499,-1036.5594 -3.122499,0 -3.122499,0 1.5612495,-2.7042 L 5,-1041.9677 l 1.5612495,2.7041 z"
-       inkscape:randomized="0"
-       inkscape:rounded="0"
-       inkscape:flatsided="false"
-       sodipodi:arg2="1.5707963"
-       sodipodi:arg1="0.52359878"
-       sodipodi:r2="1.8027756"
-       sodipodi:r1="3.6055512"
-       sodipodi:cy="-1038.3622"
-       sodipodi:cx="5"
-       sodipodi:sides="3"
-       id="path4435"
-       style="fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-linecap:round;stroke-opacity:1"
-       sodipodi:type="star"
-       inkscape:transform-center-x="1.1667546" />
+       style="fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 6 4 L 3.5 6 L 1 8 L 3.5 10 L 6 12 L 6 9 L 15 9 L 15 7 L 6 7 L 6 4 z "
+       transform="translate(0,1036.3622)"
+       id="rect4352" />
   </g>
 </svg>
