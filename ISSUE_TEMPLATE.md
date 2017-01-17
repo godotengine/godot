@@ -14,4 +14,4 @@
 --------------
 
 *NOTE: Incompatibilities are broken features in the current master branch / 3.0-alpha
-are *expected*, so need to report them for now.
+are expected, so no need to report them for now. Thanks!*
