@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   inkscape:export-filename="/home/godotengine/godot/tools/editor/icons/con_script_create.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="icon_copy_node_path.svg">
+  <defs
+     id="defs4">
+    <clipPath
+       id="clipPath4253"
+       clipPathUnits="userSpaceOnUse">
+      <path
+         inkscape:connector-curvature="0"
+         id="path4255"
+         d="m 16.458984,1024.37 a 12.000027,12.000027 0 0 0 -3.564453,0.4004 12.000027,12.000027 0 0 0 -8.4863279,14.6973 12.000027,12.000027 0 0 0 14.6972659,8.4863 12.000027,12.000027 0 0 0 8.486328,-14.6973 12.000027,12.000027 0 0 0 -11.132813,-8.8867 z M 16.25,1029.8212 a 6.5451717,6.5451717 0 0 1 6.072266,4.8476 6.5451717,6.5451717 0 0 1 -4.628907,8.0157 6.5451717,6.5451717 0 0 1 -8.0156246,-4.6289 6.5451717,6.5451717 0 0 1 4.6289066,-8.0157 6.5451717,6.5451717 0 0 1 1.943359,-0.2187 z"
+         style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </clipPath>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="21.189633"
+     inkscape:cx="12.640765"
+     inkscape:cy="9.6848443"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     units="px"
+     inkscape:snap-bbox="true"
+     inkscape:bbox-paths="true"
+     inkscape:bbox-nodes="true"
+     inkscape:snap-bbox-edge-midpoints="true"
+     inkscape:snap-bbox-midpoints="true"
+     inkscape:snap-object-midpoints="true"
+     inkscape:snap-center="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     showguides="false"
+     inkscape:snap-smooth-nodes="true"
+     inkscape:object-nodes="true">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3336"
+       empspacing="4" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-1036.3622)">
+    <circle
+       cy="1048.3622"
+       cx="3"
+       id="ellipse4234"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.99607843"
+       ry="1.0000174"
+       rx="1" />
+    <path
+       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 2 1 C 1.4477381 1.0001 1.0000552 1.4477 1 2 L 1 14 C 1.0000552 14.5523 1.4477381 14.9999 2 15 L 14 15 C 14.552262 14.9999 14.999945 14.5523 15 14 L 15 6 L 10 1 L 2 1 z M 3 3 L 9 3 L 9 6 C 9 6.554 9.4459905 7 10 7 L 13 7 L 13 13 L 3 13 L 3 3 z M 6 8 L 4 12 L 6 12 L 8 8 L 6 8 z M 10 8 L 8 12 L 10 12 L 12 8 L 10 8 z "
+       transform="translate(0,1036.3622)"
+       id="rect4178" />
+  </g>
+</svg>

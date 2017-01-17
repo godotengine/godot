@@ -3731,7 +3731,7 @@ void PropertyEditor::update_tree() {
 				item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
 				item->set_editable( 1, !read_only );
 				item->set_text(1,obj->get(p.name));
-				item->add_button(1, get_icon("Collapse", "EditorIcons"));
+				item->add_button(1, get_icon("CopyNodePath", "EditorIcons"));
 
 			} break;
 			case Variant::OBJECT: {
