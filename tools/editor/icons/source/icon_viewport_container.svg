@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="11.29493"
-     inkscape:cy="16.378302"
+     inkscape:cx="13.216634"
+     inkscape:cy="7.7987238"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -62,7 +62,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -73,8 +73,10 @@
      transform="translate(0,-1036.3622)">
     <path
        style="opacity:1;fill:#a5efac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 3 1 C 1.8954305 1 1 1.8954305 1 3 L 3 3 L 3 1 z M 5 1 L 5 3 L 7 3 L 7 1 L 5 1 z M 9 1 L 9 3 L 11 3 L 11 1 L 9 1 z M 13 1 L 13 3 L 15 3 C 15 1.8954305 14.104569 1 13 1 z M 6 4 C 5.469598 4.0001 4.9609495 4.2108375 4.5859375 4.5859375 C 4.2108465 4.9609375 4.00008 5.4696 4 6 L 4 10 C 4.00008 10.5304 4.2108475 11.039062 4.5859375 11.414062 C 4.9609485 11.789162 5.469598 11.9999 6 12 L 10 12 C 11.104569 12 12 11.1046 12 10 L 12 6 C 12 4.8954 11.104569 4 10 4 L 6 4 z M 1 5 L 1 7 L 3 7 L 3 5 L 1 5 z M 6 5 L 10 5 C 10.552281 5 10.99999 5.4477 11 6 L 11 10 C 10.99999 10.5523 10.552281 11 10 11 L 6 11 C 5.447719 11 5.00001 10.5523 5 10 L 5 6 C 5.00001 5.4477 5.447719 5 6 5 z M 13 5 L 13 7 L 15 7 L 15 5 L 13 5 z M 1 9 L 1 11 L 3 11 L 3 9 L 1 9 z M 13 9 L 13 11 L 15 11 L 15 9 L 13 9 z M 1 13 C 1 14.104569 1.8954305 15 3 15 L 3 13 L 1 13 z M 5 13 L 5 15 L 7 15 L 7 13 L 5 13 z M 9 13 L 9 15 L 11 15 L 11 13 L 9 13 z M 13 13 L 13 15 C 14.104569 15 15 14.104569 15 13 L 13 13 z "
+       d="M 3,1 C 1.8954305,1 1,1.8954305 1,3 l 0,10 c 0,1.104569 0.8954305,2 2,2 l 10,0 c 1.104569,0 2,-0.895431 2,-2 L 15,3 C 15,1.8954305 14.104569,1 13,1 Z M 3,3 13,3 13,13 3,13 Z M 6,4 C 5.469598,4.0001 4.9609495,4.2108375 4.5859375,4.5859375 4.2108465,4.9609375 4.00008,5.4696 4,6 l 0,4 c 8e-5,0.5304 0.2108475,1.039063 0.5859375,1.414062 C 4.9609485,11.789162 5.469598,11.9999 6,12 l 4,0 c 1.104569,0 2,-0.8954 2,-2 L 12,6 C 12,4.8954 11.104569,4 10,4 Z m 0,1 4,0 c 0.552281,0 0.99999,0.4477 1,1 l 0,4 c -10e-6,0.5523 -0.447719,1 -1,1 L 6,11 C 5.447719,11 5.00001,10.5523 5,10 L 5,6 C 5.00001,5.4477 5.447719,5 6,5 Z"
        transform="translate(0,1036.3622)"
-       id="rect4140" />
+       id="rect4140"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccccccccccccccccccsssscssccssccs" />
   </g>
 </svg>

@@ -711,7 +711,7 @@ void SceneTreeDock::_notification(int p_what) {
 			button_add->set_icon(get_icon("Add","EditorIcons"));
 			button_instance->set_icon(get_icon("Instance","EditorIcons"));
 			button_create_script->set_icon(get_icon("ScriptCreate","EditorIcons"));
-			button_clear_script->set_icon(get_icon("Remove", "EditorIcons"));
+			button_clear_script->set_icon(get_icon("ScriptRemove", "EditorIcons"));
 
 
 			filter_icon->set_texture(get_icon("Zoom","EditorIcons"));
@@ -1808,7 +1808,7 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 		//menu->add_icon_item(get_icon("Connect","EditorIcons"),TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
-		menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
+		menu->add_icon_shortcut(get_icon("ScriptRemove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 		menu->add_separator();
 	}
 
@@ -1820,9 +1820,9 @@ void SceneTreeDock::_tree_rmb(const Vector2& p_menu_pos) {
 	if (selection.size()==1) {
 		menu->add_separator();
 		menu->add_icon_shortcut(get_icon("Blend","EditorIcons"),ED_GET_SHORTCUT("scene_tree/merge_from_scene"), TOOL_MERGE_FROM_SCENE);
-		menu->add_icon_shortcut(get_icon("Save","EditorIcons"),ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
+		menu->add_icon_shortcut(get_icon("CreateNewSceneFrom","EditorIcons"),ED_GET_SHORTCUT("scene_tree/save_branch_as_scene"), TOOL_NEW_SCENE_FROM);
 		menu->add_separator();
-		menu->add_icon_shortcut(get_icon("Duplicate","EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
+		menu->add_icon_shortcut(get_icon("CopyNodePath","EditorIcons"), ED_GET_SHORTCUT("scene_tree/copy_node_path"), TOOL_COPY_NODE_PATH);
 	}
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove","EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);

@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="45.254834"
-     inkscape:cx="6.0361164"
-     inkscape:cy="4.9218153"
+     inkscape:cx="10.389243"
+     inkscape:cy="3.816961"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -69,7 +69,7 @@
      id="layer1"
      transform="translate(0,-1044.3622)">
     <path
-       style="fill:#a9e100;fill-opacity:0.99607843;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#84ffb1;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 3 0 L 3 3 L 0 3 L 0 5 L 3 5 L 3 8 L 5 8 L 5 5 L 8 5 L 8 3 L 5 3 L 5 0 L 3 0 z "
        transform="translate(0,1044.3622)"
        id="rect4137" />
