@@ -41,6 +41,8 @@ private:
 		uint32_t field32[4];
 	};
 
+	bool valid;
+
 protected:
 	void _parse_ipv6(const String& p_string);
 	void _parse_ipv4(const String& p_string, int p_start, uint8_t* p_ret);
@@ -48,12 +50,16 @@ protected:
 public:
 	//operator Variant() const;
 	bool operator==(const IP_Address& p_ip) const {
+		if (p_ip.valid != valid) return false;
+		if (!valid) return false;
 		for (int i=0; i<4; i++)
 			if (field32[i] != p_ip.field32[i])
 				return false;
 		return true;
 	}
 	bool operator!=(const IP_Address& p_ip) const {
+		if (p_ip.valid != valid) return true;
+		if (!valid) return true;
 		for (int i=0; i<4; i++)
 			if (field32[i] != p_ip.field32[i])
 				return true;
@@ -61,6 +67,7 @@ public:
 	}
 
 	void clear();
+	bool is_valid() const {return valid;}
 	bool is_ipv4() const;
 	const uint8_t *get_ipv4() const;
 	void set_ipv4(const uint8_t *p_ip);

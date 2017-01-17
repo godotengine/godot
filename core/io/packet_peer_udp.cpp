@@ -43,7 +43,7 @@ Error PacketPeerUDP::_set_dest_address(const String& p_address, int p_port) {
 		ip=p_address;
 	} else {
 		ip=IP::get_singleton()->resolve_hostname(p_address, ip_type);
-		if (ip==IP_Address())
+		if (!ip.is_valid())
 			return ERR_CANT_RESOLVE;
 	}
 

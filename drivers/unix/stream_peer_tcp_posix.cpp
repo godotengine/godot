@@ -142,7 +142,7 @@ void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port,
 
 Error StreamPeerTCPPosix::connect_to_host(const IP_Address& p_host, uint16_t p_port) {
 
-	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V( !p_host.is_valid(), ERR_INVALID_PARAMETER);
 
 	sock_type = p_host.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);

@@ -96,7 +96,7 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 }
 Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
-	ERR_FAIL_COND_V(peer_addr == IP_Address(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!peer_addr.is_valid(), ERR_UNCONFIGURED);
 
 	int sock = _get_socket();
 	ERR_FAIL_COND_V( sock == -1, FAILED );

@@ -82,7 +82,7 @@ struct _IP_ResolverPrivate {
 				continue;
 			queue[i].response=IP::get_singleton()->resolve_hostname(queue[i].hostname, queue[i].type);
 
-			if (queue[i].response==IP_Address())
+			if (!queue[i].response.is_valid())
 				queue[i].status=IP::RESOLVER_STATUS_ERROR;
 			else
 				queue[i].status=IP::RESOLVER_STATUS_DONE;

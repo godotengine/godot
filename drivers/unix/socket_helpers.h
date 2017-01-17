@@ -16,7 +16,7 @@ static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
 
-	ERR_FAIL_COND_V(p_ip==IP_Address(),0);
+	ERR_FAIL_COND_V(!p_ip.is_valid(),0);
 
 	// IPv6 socket
 	if (p_sock_type == IP::TYPE_IPV6 || p_sock_type == IP::TYPE_ANY) {
