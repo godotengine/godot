@@ -78,14 +78,9 @@ Error StreamPeerWinsock::_block(int p_sockfd, bool p_read, bool p_write) const {
 	return ret < 0 ? FAILED : OK;
 };
 
-Error StreamPeerWinsock::_poll_connection(bool p_block) const {
+Error StreamPeerWinsock::_poll_connection() const {
 
 	ERR_FAIL_COND_V(status != STATUS_CONNECTING || sockfd == INVALID_SOCKET, FAILED);
-
-	if (p_block) {
-
-		_block(sockfd, false, true);
-	};
 
 	struct sockaddr_storage their_addr;
 	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, sock_type);
@@ -122,7 +117,7 @@ Error StreamPeerWinsock::write(const uint8_t* p_data,int p_bytes, int &r_sent, b
 
 	if (status != STATUS_CONNECTED) {
 
-		if (_poll_connection(p_block) != OK) {
+		if (_poll_connection() != OK) {
 
 			return FAILED;
 		};
@@ -180,7 +175,7 @@ Error StreamPeerWinsock::read(uint8_t* p_buffer, int p_bytes,int &r_received, bo
 
 	if (status != STATUS_CONNECTED) {
 
-		if (_poll_connection(p_block) != OK) {
+		if (_poll_connection() != OK) {
 
 			return FAILED;
 		};
@@ -254,7 +249,7 @@ Error StreamPeerWinsock::get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_
 StreamPeerTCP::Status StreamPeerWinsock::get_status() const {
 
 	if (status == STATUS_CONNECTING) {
-		_poll_connection(false);
+		_poll_connection();
 	};
 
 	return status;
