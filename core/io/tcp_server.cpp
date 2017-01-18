@@ -44,15 +44,6 @@ TCP_Server *TCP_Server::create() {
 	return _create();
 }
 
-Error TCP_Server::_listen(uint16_t p_port, DVector<String> p_accepted_hosts) {
-
-	List<String> hosts;
-	for (int i = 0; i < p_accepted_hosts.size(); i++)
-		hosts.push_back(p_accepted_hosts.get(i));
-
-	return listen(p_port, hosts.size() ? &hosts : NULL);
-}
-
 void TCP_Server::set_ip_type(IP::Type p_type) {
 	stop();
 	ip_type = p_type;
@@ -61,7 +52,7 @@ void TCP_Server::set_ip_type(IP::Type p_type) {
 void TCP_Server::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_ip_type", "ip_type"), &TCP_Server::set_ip_type);
-	ObjectTypeDB::bind_method(_MD("listen", "port", "accepted_hosts"), &TCP_Server::_listen, DEFVAL(DVector<String>()));
+	ObjectTypeDB::bind_method(_MD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));
 	ObjectTypeDB::bind_method(_MD("is_connection_available"), &TCP_Server::is_connection_available);
 	ObjectTypeDB::bind_method(_MD("take_connection"), &TCP_Server::take_connection);
 	ObjectTypeDB::bind_method(_MD("stop"), &TCP_Server::stop);
