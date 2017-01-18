@@ -46,7 +46,7 @@ protected:
 
 	Error _block(int p_sockfd, bool p_read, bool p_write) const;
 
-	Error _poll_connection(bool p_block) const;
+	Error _poll_connection() const;
 
 	IP_Address peer_host;
 	int peer_port;
