@@ -44,14 +44,8 @@ TCP_Server* TCP_Server::create() {
 	return _create();
 }
 
-void TCP_Server::set_ip_type(IP::Type p_type) {
-	stop();
-	ip_type = p_type;
-}
-
 void TCP_Server::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&TCP_Server::set_ip_type);
 	ClassDB::bind_method(_MD("listen","port","bind_address"),&TCP_Server::listen,DEFVAL("*"));
 	ClassDB::bind_method(_MD("is_connection_available"),&TCP_Server::is_connection_available);
 	ClassDB::bind_method(_MD("take_connection"),&TCP_Server::take_connection);
@@ -62,5 +56,5 @@ void TCP_Server::_bind_methods() {
 
 TCP_Server::TCP_Server()
 {
-	ip_type = IP::TYPE_ANY;
+
 }

@@ -69,7 +69,7 @@ Error TCPServerWinsock::listen(uint16_t p_port,const IP_Address p_bind_address) 
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	int sockfd;
-	sock_type = ip_type;
+	sock_type = IP::TYPE_ANY;
 
 	// If the bind address is valid use its type as the socket type
 	if (p_bind_address.is_valid())
@@ -179,7 +179,6 @@ void TCPServerWinsock::stop() {
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
-	ip_type = IP::TYPE_ANY;
 	sock_type = IP::TYPE_NONE;
 };
 

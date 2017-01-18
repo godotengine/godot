@@ -42,7 +42,7 @@ Error PacketPeerUDP::_set_dest_address(const String& p_address, int p_port) {
 	if (p_address.is_valid_ip_address()) {
 		ip=p_address;
 	} else {
-		ip=IP::get_singleton()->resolve_hostname(p_address, ip_type);
+		ip=IP::get_singleton()->resolve_hostname(p_address);
 		if (!ip.is_valid())
 			return ERR_CANT_RESOLVE;
 	}
@@ -51,14 +51,8 @@ Error PacketPeerUDP::_set_dest_address(const String& p_address, int p_port) {
 	return OK;
 }
 
-void PacketPeerUDP::set_ip_type(IP::Type p_type) {
-	close();
-	ip_type = p_type;
-}
-
 void PacketPeerUDP::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&PacketPeerUDP::set_ip_type);
 	ClassDB::bind_method(_MD("listen:Error","port", "bind_address", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL("*"),DEFVAL(65536));
 	ClassDB::bind_method(_MD("close"),&PacketPeerUDP::close);
 	ClassDB::bind_method(_MD("wait:Error"),&PacketPeerUDP::wait);
@@ -87,5 +81,5 @@ PacketPeerUDP* PacketPeerUDP::create() {
 
 PacketPeerUDP::PacketPeerUDP()
 {
-	ip_type = IP::TYPE_ANY;
+
 }
