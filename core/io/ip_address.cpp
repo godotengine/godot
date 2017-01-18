@@ -174,6 +174,7 @@ void IP_Address::clear() {
 
 	memset(&field8[0], 0, sizeof(field8));
 	valid = false;
+	wildcard = false;
 };
 
 bool IP_Address::is_ipv4() const {
@@ -206,10 +207,16 @@ void IP_Address::set_ipv6(const uint8_t *p_buf) {
 IP_Address::IP_Address(const String &p_string) {
 
 	clear();
-	if (p_string.find(":") >= 0) {
+
+	if (p_string == "*") {
+		// Wildcard (not a vaild IP)
+		wildcard = true;
+
+	} else if (p_string.find(":") >= 0) {
 		// IPv6
 		_parse_ipv6(p_string);
 		valid = true;
+
 	} else if (p_string.get_slice_count(".") == 4) {
 		// IPv4 (mapped to IPv6 internally)
 		field16[5] = 0xffff;
