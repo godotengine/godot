@@ -127,7 +127,7 @@ Error PacketPeerUDPPosix::listen(int p_port, IP_Address p_bind_address, int p_re
 	ERR_FAIL_COND_V(sockfd != -1, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
-	sock_type = ip_type;
+	sock_type = IP::TYPE_ANY;
 
 	if (p_bind_address.is_valid())
 		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
@@ -265,7 +265,6 @@ PacketPeerUDPPosix::PacketPeerUDPPosix() {
 	queue_count = 0;
 	peer_port = 0;
 	sock_type = IP::TYPE_NONE;
-	ip_type = IP::TYPE_ANY;
 }
 
 PacketPeerUDPPosix::~PacketPeerUDPPosix() {
