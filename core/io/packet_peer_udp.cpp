@@ -59,7 +59,7 @@ void PacketPeerUDP::set_ip_type(IP::Type p_type) {
 void PacketPeerUDP::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_ip_type", "ip_type"), &PacketPeerUDP::set_ip_type);
-	ObjectTypeDB::bind_method(_MD("listen:Error", "port", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL(65536));
+	ObjectTypeDB::bind_method(_MD("listen:Error", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
 	ObjectTypeDB::bind_method(_MD("close"), &PacketPeerUDP::close);
 	ObjectTypeDB::bind_method(_MD("wait:Error"), &PacketPeerUDP::wait);
 	ObjectTypeDB::bind_method(_MD("is_listening"), &PacketPeerUDP::is_listening);
