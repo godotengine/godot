@@ -175,6 +175,7 @@ void IP_Address::clear() {
 
 	memset(&field8[0], 0, sizeof(field8));
 	valid = false;
+	wildcard = false;
 };
 
 bool IP_Address::is_ipv4() const{
@@ -208,7 +209,11 @@ IP_Address::IP_Address(const String& p_string) {
 
 	clear();
 
-	if (p_string.find(":") >= 0) {
+	if (p_string == "*") {
+		// Wildcard (not a vaild IP)
+		wildcard = true;
+
+	} else if (p_string.find(":") >= 0) {
 		// IPv6
 		_parse_ipv6(p_string);
 		valid = true;

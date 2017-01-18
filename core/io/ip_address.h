@@ -42,6 +42,7 @@ private:
 	};
 
 	bool valid;
+	bool wildcard;
 
 protected:
 	void _parse_ipv6(const String& p_string);
@@ -67,6 +68,7 @@ public:
 	}
 
 	void clear();
+	bool is_wildcard() const {return wildcard;}
 	bool is_valid() const {return valid;}
 	bool is_ipv4() const;
 	const uint8_t *get_ipv4() const;
