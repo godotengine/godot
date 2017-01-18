@@ -122,7 +122,7 @@ Error PacketPeerUDPWinsock::listen(int p_port, int p_recv_buffer_size) {
 		return ERR_CANT_CREATE;
 
 	struct sockaddr_storage addr = {0};
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, NULL);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, IP_Address());
 
 	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();

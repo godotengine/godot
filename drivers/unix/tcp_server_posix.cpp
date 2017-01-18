@@ -68,10 +68,19 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+Error TCPServerPosix::listen(uint16_t p_port,const IP_Address p_bind_address) {
+
+	ERR_FAIL_COND_V(listen_sockfd!=-1,ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	int sockfd;
-	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+	sock_type = ip_type;
+
+	// If the bind address is valid use its type as the socket type
+	if (p_bind_address.is_valid())
+		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
+	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 
 	ERR_FAIL_COND_V(sockfd == -1, FAILED);
 
@@ -88,9 +97,7 @@ Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_host
 	}
 
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, p_accepted_hosts);
-
-	// automatically fill with my IP TODO: use p_accepted_hosts
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, sock_type, p_bind_address);
 
 	if (bind(sockfd, (struct sockaddr *)&addr, addr_size) != -1) {
 
@@ -157,7 +164,7 @@ Ref<StreamPeerTCP> TCPServerPosix::take_connection() {
 	int port;
 	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, port, ip_type);
+	conn->set_socket(fd, ip, port, sock_type);
 
 	return conn;
 };
@@ -170,6 +177,7 @@ void TCPServerPosix::stop() {
 	};
 
 	listen_sockfd = -1;
+	sock_type = IP::TYPE_NONE;
 };
 
 
@@ -177,6 +185,7 @@ TCPServerPosix::TCPServerPosix() {
 
 	listen_sockfd = -1;
 	ip_type = IP::TYPE_ANY;
+	sock_type = IP::TYPE_NONE;
 };
 
 TCPServerPosix::~TCPServerPosix() {
