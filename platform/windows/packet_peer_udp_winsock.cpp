@@ -152,6 +152,9 @@ Error PacketPeerUDPWinsock::wait() {
 }
 Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 
+	if (sockfd==-1) {
+		return FAILED;
+	}
 
 	_set_blocking(p_wait);
 

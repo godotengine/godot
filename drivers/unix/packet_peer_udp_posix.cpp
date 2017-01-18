@@ -157,6 +157,10 @@ Error PacketPeerUDPPosix::wait() {
 
 Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
+	if (sockfd==-1) {
+		return FAILED;
+	}
+
 	struct sockaddr_storage from = {0};
 	socklen_t len = sizeof(struct sockaddr_storage);
 	int ret;
