@@ -129,7 +129,11 @@ Error PacketPeerUDPPosix::listen(int p_port, IP_Address p_bind_address, int p_re
 	ERR_FAIL_COND_V(sockfd!=-1,ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(),ERR_INVALID_PARAMETER);
 
+#ifdef __OpenBSD__
+	sock_type = IP::TYPE_IPV4; // OpenBSD does not support dual stacking, fallback to IPv4 only.
+#else
 	sock_type = IP::TYPE_ANY;
+#endif
 
 	if(p_bind_address.is_valid())
 		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
