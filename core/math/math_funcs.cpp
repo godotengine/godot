@@ -27,11 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "math_funcs.h"
-
 #include "core/os/os.h"
-
-#include "float.h"
-#include "pcg.h"
 
 pcg32_random_t Math::default_pcg = {1, PCG_DEFAULT_INC_64};
 
