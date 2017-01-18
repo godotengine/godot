@@ -33,10 +33,9 @@
 #include "math_defs.h"
 #include "pcg.h"
 
-#ifndef NO_MATH_H
 #include <math.h>
-#endif
-
+#include <float.h>
+	
 #define Math_PI 3.14159265358979323846
 #define Math_SQRT12 0.7071067811865475244008443621048490
 
