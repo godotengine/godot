@@ -275,6 +275,7 @@ PacketPeerUDPPosix::PacketPeerUDPPosix() {
 	queue_count=0;
 	peer_port=0;
 	sock_type = IP::TYPE_NONE;
+	rb.resize(8);
 }
 
 PacketPeerUDPPosix::~PacketPeerUDPPosix() {
