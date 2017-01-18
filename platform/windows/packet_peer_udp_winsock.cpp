@@ -73,10 +73,15 @@ Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer,int &r_buffer_si
 }
 Error PacketPeerUDPWinsock::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
+	ERR_FAIL_COND_V(!peer_addr.is_valid(), ERR_UNCONFIGURED);
+
+	if(sock_type==IP::TYPE_NONE)
+		sock_type = peer_addr.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
 	int sock = _get_socket();
 	ERR_FAIL_COND_V( sock == -1, FAILED );
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port, ip_type);
+	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port, sock_type);
 
 	_set_blocking(true);
 
@@ -114,15 +119,22 @@ void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
 	};
 }
 
-Error PacketPeerUDPWinsock::listen(int p_port, int p_recv_buffer_size) {
+Error PacketPeerUDPWinsock::listen(int p_port, IP_Address p_bind_address, int p_recv_buffer_size) {
 
-	close();
+	ERR_FAIL_COND_V(sockfd!=-1,ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(),ERR_INVALID_PARAMETER);
+
+	sock_type = ip_type;
+
+	if(p_bind_address.is_valid())
+		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
 	int sock = _get_socket();
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
 
 	struct sockaddr_storage addr = {0};
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, ip_type, IP_Address());
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, sock_type, IP_Address());
 
 	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();
@@ -141,6 +153,7 @@ void PacketPeerUDPWinsock::close(){
 	if (sockfd != -1)
 		::closesocket(sockfd);
 	sockfd=-1;
+	sock_type = IP::TYPE_NONE;
 	rb.resize(8);
 	queue_count=0;
 }
@@ -241,10 +254,12 @@ int PacketPeerUDPWinsock::get_packet_port() const{
 
 int PacketPeerUDPWinsock::_get_socket() {
 
+	ERR_FAIL_COND_V(sock_type==IP::TYPE_NONE,-1);
+
 	if (sockfd != -1)
 		return sockfd;
 
-	sockfd = _socket_create(ip_type, SOCK_DGRAM, IPPROTO_UDP);
+	sockfd = _socket_create(sock_type, SOCK_DGRAM, IPPROTO_UDP);
 
 	return sockfd;
 }
@@ -275,6 +290,7 @@ PacketPeerUDPWinsock::PacketPeerUDPWinsock() {
 	queue_count=0;
 	peer_port=0;
 	ip_type = IP::TYPE_ANY;
+	sock_type = IP::TYPE_NONE;
 }
 
 PacketPeerUDPWinsock::~PacketPeerUDPWinsock() {
