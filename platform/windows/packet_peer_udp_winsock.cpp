@@ -175,7 +175,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 	struct sockaddr_storage from = {0};
 	int len = sizeof(struct sockaddr_storage);
 	int ret;
-	while ( (ret = recvfrom(sockfd, (char*)recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-12, 0)), 0, (struct sockaddr*)&from, &len)) > 0) {
+	while ( (ret = recvfrom(sockfd, (char*)recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-24, 0)), 0, (struct sockaddr*)&from, &len)) > 0) {
 
 		uint32_t port = 0;
 
