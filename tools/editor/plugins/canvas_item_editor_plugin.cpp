@@ -2354,7 +2354,7 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 
 
 
-	if (c) {
+	if (c && c->is_visible_in_tree()) {
 
 		Rect2 rect = c->get_item_rect();
 		Transform2D xform = p_xform * c->get_transform();
