@@ -620,7 +620,7 @@ void Spatial::set_visible(bool p_visible) {
 
 bool Spatial::is_visible() const {
 
-	return !data.visible;
+	return data.visible;
 }
 
 void Spatial::rotate(const Vector3& p_normal,float p_radians) {

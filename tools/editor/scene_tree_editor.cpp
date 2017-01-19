@@ -208,14 +208,15 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 		if (n->is_class("Spatial")) {
 
-			bool v = !bool(n->call("is_hidden"));
+			bool v = bool(n->call("is_visible"));
 			undo_redo->create_action(TTR("Toggle Spatial Visible"));
-			undo_redo->add_do_method(n,"_set_visible_",!v);
-			undo_redo->add_undo_method(n,"_set_visible_",v);
+			undo_redo->add_do_method(n,"set_visible",!v);
+			undo_redo->add_undo_method(n,"set_visible",v);
 			undo_redo->commit_action();
+
 		} else if (n->is_class("CanvasItem")) {
 
-			bool v = !bool(n->call("is_hidden"));
+			bool v = bool(n->call("is_visible"));
 			undo_redo->create_action(TTR("Toggle CanvasItem Visible"));
 			undo_redo->add_do_method(n,v?"hide":"show");
 			undo_redo->add_undo_method(n,v?"show":"hide");
@@ -393,11 +394,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			if (is_grouped)
 				item->add_button(0,get_icon("Group", "EditorIcons"), BUTTON_GROUP);
 
-			bool h = p_node->call("is_hidden");
-			if (h)
-				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
-			else
+			bool v = p_node->call("is_visible");
+			if (v)
 				item->add_button(0,get_icon("Visible","EditorIcons"),BUTTON_VISIBILITY);
+			else
+				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
 
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
@@ -405,11 +406,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			_update_visibility_color(p_node, item);
 		} else if (p_node->is_class("Spatial")) {
 
-			bool h = p_node->call("is_hidden");
-			if (h)
-				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
-			else
+			bool v = p_node->call("is_visible");
+			if (v)
 				item->add_button(0,get_icon("Visible","EditorIcons"),BUTTON_VISIBILITY);
+			else
+				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
 
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
@@ -469,16 +470,14 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	bool visible=false;
 
-	if (p_node->is_class("CanvasItem")) {
-		visible = !p_node->call("is_hidden");
-	} else if (p_node->is_class("Spatial")) {
-		visible = !p_node->call("is_hidden");
+	if (p_node->is_class("CanvasItem") || p_node->is_class("Spatial")) {
+		visible = p_node->call("is_visible");
 	}
 
-	if (!visible)
-		item->set_button(0,idx,get_icon("Hidden","EditorIcons"));
-	else
+	if (visible)
 		item->set_button(0,idx,get_icon("Visible","EditorIcons"));
+	else
+		item->set_button(0,idx,get_icon("Hidden","EditorIcons"));
 
 	_update_visibility_color(p_node, item);
 }
