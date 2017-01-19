@@ -160,7 +160,7 @@ void PacketPeerUDPPosix::close(){
 		::close(sockfd);
 	sockfd=-1;
 	sock_type = IP::TYPE_NONE;
-	rb.resize(8);
+	rb.resize(16);
 	queue_count=0;
 }
 
@@ -275,7 +275,7 @@ PacketPeerUDPPosix::PacketPeerUDPPosix() {
 	queue_count=0;
 	peer_port=0;
 	sock_type = IP::TYPE_NONE;
-	rb.resize(8);
+	rb.resize(16);
 }
 
 PacketPeerUDPPosix::~PacketPeerUDPPosix() {
