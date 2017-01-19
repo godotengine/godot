@@ -2336,7 +2336,7 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 
 
 
-	if (c) {
+	if (c && c->is_visible()) {
 
 		Rect2 rect = c->get_item_rect();
 		Matrix32 xform = p_xform * c->get_transform();
