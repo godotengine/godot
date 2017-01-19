@@ -732,7 +732,7 @@ Ref<Texture> FixedSpatialMaterial::get_texture(TextureParam p_param) const {
 
 
 void FixedSpatialMaterial::_validate_feature(const String& text, Feature feature,PropertyInfo& property) const {
-	if (property.name.begins_with(text) && property.name!=text+"/enabled" && !features[feature]) {
+	if (property.name.begins_with(text) && property.name!=text+"_enabled" && !features[feature]) {
 		property.usage=0;
 	}
 
