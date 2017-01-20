@@ -168,8 +168,8 @@ Face3::Side Face3::get_side_of(const Face3& p_face,ClockDirection p_clock_dir) c
 
 Vector3 Face3::get_random_point_inside() const {
 
-	float a=Math::random(0,1);
-	float b=Math::random(0,1);
+	real_t a=Math::random(0,1);
+	real_t b=Math::random(0,1);
 	if (a>b) {
 		SWAP(a,b);
 	}
@@ -215,9 +215,9 @@ bool Face3::intersects_aabb(const Rect3& p_aabb) const {
 
 #define TEST_AXIS(m_ax)\
 	{\
-		float aabb_min=p_aabb.pos.m_ax;\
-		float aabb_max=p_aabb.pos.m_ax+p_aabb.size.m_ax;\
-		float tri_min,tri_max;\
+		real_t aabb_min=p_aabb.pos.m_ax;\
+		real_t aabb_max=p_aabb.pos.m_ax+p_aabb.size.m_ax;\
+		real_t tri_min,tri_max;\
 		for (int i=0;i<3;i++) {\
 			if (i==0 || vertex[i].m_ax > tri_max)\
 				tri_max=vertex[i].m_ax;\
@@ -255,7 +255,7 @@ bool Face3::intersects_aabb(const Rect3& p_aabb) const {
 				continue; // coplanar
 			axis.normalize();
 
-			float minA,maxA,minB,maxB;
+			real_t minA,maxA,minB,maxB;
 			p_aabb.project_range_in_plane(Plane(axis,0),minA,maxA);
 			project_range(axis,Transform(),minB,maxB);
 
@@ -272,12 +272,12 @@ Face3::operator String() const {
 	return String()+vertex[0]+", "+vertex[1]+", "+vertex[2];
 }
 
-void Face3::project_range(const Vector3& p_normal,const Transform& p_transform,float& r_min, float& r_max) const {
+void Face3::project_range(const Vector3& p_normal,const Transform& p_transform,real_t& r_min, real_t& r_max) const {
 
 	for (int i=0;i<3;i++) {
 
 		Vector3 v=p_transform.xform(vertex[i]);
-		float d=p_normal.dot(v);
+		real_t d=p_normal.dot(v);
 
 		if (i==0 || d > r_max)
 			r_max=d;
@@ -316,11 +316,11 @@ void Face3::get_support(const Vector3& p_normal,const Transform& p_transform,Vec
 	/** FIND SUPPORT VERTEX **/
 
 	int vert_support_idx=-1;
-	float support_max;
+	real_t support_max;
 
 	for (int i=0;i<3;i++) {
 
-		float d=n.dot(vertex[i]);
+		real_t d=n.dot(vertex[i]);
 
 		if (i==0 || d > support_max) {
 			support_max=d;
@@ -336,7 +336,7 @@ void Face3::get_support(const Vector3& p_normal,const Transform& p_transform,Vec
 			continue;
 
 	// check if edge is valid as a support
-		float dot=(vertex[i]-vertex[(i+1)%3]).normalized().dot(n);
+		real_t dot=(vertex[i]-vertex[(i+1)%3]).normalized().dot(n);
 		dot=ABS(dot);
 		if (dot < _EDGE_IS_VALID_SUPPORT_TRESHOLD) {
 
@@ -362,15 +362,15 @@ Vector3 Face3::get_closest_point_to(const Vector3& p_point) const {
 	    Vector3 edge1 = vertex[2] - vertex[0];
 	    Vector3 v0 = vertex[0] - p_point;
 
-	    float a = edge0.dot( edge0 );
-	    float b = edge0.dot( edge1 );
-	    float c = edge1.dot( edge1 );
-	    float d = edge0.dot( v0 );
-	    float e = edge1.dot( v0 );
+	    real_t a = edge0.dot( edge0 );
+	    real_t b = edge0.dot( edge1 );
+	    real_t c = edge1.dot( edge1 );
+	    real_t d = edge0.dot( v0 );
+	    real_t e = edge1.dot( v0 );
 
-	    float det = a*c - b*b;
-	    float s = b*e - c*d;
-	    float t = b*d - a*e;
+	    real_t det = a*c - b*b;
+	    real_t s = b*e - c*d;
+	    real_t t = b*d - a*e;
 
 	    if ( s + t < det )
 	    {
@@ -402,7 +402,7 @@ Vector3 Face3::get_closest_point_to(const Vector3& p_point) const {
 		}
 		else
 		{
-		    float invDet = 1.f / det;
+		    real_t invDet = 1.f / det;
 		    s *= invDet;
 		    t *= invDet;
 		}
@@ -411,12 +411,12 @@ Vector3 Face3::get_closest_point_to(const Vector3& p_point) const {
 	    {
 		if ( s < 0.f )
 		{
-		    float tmp0 = b+d;
-		    float tmp1 = c+e;
+		    real_t tmp0 = b+d;
+		    real_t tmp1 = c+e;
 		    if ( tmp1 > tmp0 )
 		    {
-			float numer = tmp1 - tmp0;
-			float denom = a-2*b+c;
+			real_t numer = tmp1 - tmp0;
+			real_t denom = a-2*b+c;
 			s = CLAMP( numer/denom, 0.f, 1.f );
 			t = 1-s;
 		    }
@@ -430,8 +430,8 @@ Vector3 Face3::get_closest_point_to(const Vector3& p_point) const {
 		{
 		    if ( a+d > b+e )
 		    {
-			float numer = c+e-b-d;
-			float denom = a-2*b+c;
+			real_t numer = c+e-b-d;
+			real_t denom = a-2*b+c;
 			s = CLAMP( numer/denom, 0.f, 1.f );
 			t = 1-s;
 		    }
@@ -443,8 +443,8 @@ Vector3 Face3::get_closest_point_to(const Vector3& p_point) const {
 		}
 		else
 		{
-		    float numer = c+e-b-d;
-		    float denom = a-2*b+c;
+		    real_t numer = c+e-b-d;
+		    real_t denom = a-2*b+c;
 		    s = CLAMP( numer/denom, 0.f, 1.f );
 		    t = 1.f - s;
 		}

@@ -30,7 +30,7 @@
 
 #include "print_string.h"
 
-float Rect3::get_area() const {
+real_t Rect3::get_area() const {
 
 	return size.x*size.y*size.z;
 
@@ -114,8 +114,8 @@ bool Rect3::intersects_ray(const Vector3& p_from, const Vector3& p_dir,Vector3* 
 
 	Vector3 c1, c2;
 	Vector3 end = pos+size;
-	float near=-1e20;
-	float far=1e20;
+	real_t near=-1e20;
+	real_t far=1e20;
 	int axis=0;
 
 	for (int i=0;i<3;i++){
@@ -159,7 +159,7 @@ bool Rect3::intersects_segment(const Vector3& p_from, const Vector3& p_to,Vector
 
 	real_t min=0,max=1;
 	int axis=0;
-	float sign=0;
+	real_t sign=0;
 
 	for(int i=0;i<3;i++) {
 		real_t seg_from=p_from[i];
@@ -167,7 +167,7 @@ bool Rect3::intersects_segment(const Vector3& p_from, const Vector3& p_to,Vector
 		real_t box_begin=pos[i];
 		real_t box_end=box_begin+size[i];
 		real_t cmin,cmax;
-		float csign;
+		real_t csign;
 
 		if (seg_from < seg_to) {
 

@@ -33,6 +33,8 @@
 
 #include "vector3.h"
 #include "plane.h"
+#include "math_defs.h"
+
 /**
  * AABB / AABB (Axis Aligned Bounding Box)
  * This is implemented by a point (pos) and the box size
@@ -45,7 +47,7 @@ public:
 	Vector3 pos;
 	Vector3 size;
 
-	float get_area() const; /// get area
+	real_t get_area() const; /// get area
 	_FORCE_INLINE_ bool has_no_area() const {
 
 		return (size.x<=CMP_EPSILON || size.y<=CMP_EPSILON  || size.z<=CMP_EPSILON);
@@ -74,7 +76,7 @@ public:
 	Rect3 intersection(const Rect3& p_aabb) const; ///get box where two intersect, empty if no intersection occurs
 	bool intersects_segment(const Vector3& p_from, const Vector3& p_to,Vector3* r_clip=NULL,Vector3* r_normal=NULL) const;
 	bool intersects_ray(const Vector3& p_from, const Vector3& p_dir,Vector3* r_clip=NULL,Vector3* r_normal=NULL) const;
-	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &from,const Vector3& p_dir, float t0, float t1) const;
+	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &from,const Vector3& p_dir, real_t t0, real_t t1) const;
 
 	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_plane, int p_plane_count) const;
 	bool intersects_plane(const Plane &p_plane) const;
@@ -98,7 +100,7 @@ public:
 	_FORCE_INLINE_ Vector3 get_endpoint(int p_point) const;
 
 	Rect3 expand(const Vector3& p_vector) const;
-	_FORCE_INLINE_ void project_range_in_plane(const Plane& p_plane,float &r_min,float& r_max) const;
+	_FORCE_INLINE_ void project_range_in_plane(const Plane& p_plane,real_t &r_min,real_t& r_max) const;
 	_FORCE_INLINE_ void expand_to(const Vector3& p_vector); /** expand to contain a point if necesary */
 
 	operator String() const;
@@ -293,13 +295,13 @@ inline void Rect3::expand_to(const Vector3& p_vector) {
 	size=end-begin;
 }
 
-void Rect3::project_range_in_plane(const Plane& p_plane,float &r_min,float& r_max) const {
+void Rect3::project_range_in_plane(const Plane& p_plane,real_t &r_min,real_t& r_max) const {
 
 	Vector3 half_extents( size.x * 0.5, size.y * 0.5, size.z * 0.5 );
 	Vector3 center( pos.x + half_extents.x, pos.y + half_extents.y, pos.z + half_extents.z );
 
-	float length = p_plane.normal.abs().dot(half_extents);
-	float distance = p_plane.distance_to( center );
+	real_t length = p_plane.normal.abs().dot(half_extents);
+	real_t distance = p_plane.distance_to( center );
 	r_min = distance - length;
 	r_max = distance + length;
 }
@@ -334,14 +336,14 @@ inline real_t Rect3::get_shortest_axis_size() const {
 	return max_size;
 }
 
-bool Rect3::smits_intersect_ray(const Vector3 &from,const Vector3& dir, float t0, float t1) const {
+bool Rect3::smits_intersect_ray(const Vector3 &from,const Vector3& dir, real_t t0, real_t t1) const {
 
-	float divx=1.0/dir.x;
-	float divy=1.0/dir.y;
-	float divz=1.0/dir.z;
+	real_t divx=1.0/dir.x;
+	real_t divy=1.0/dir.y;
+	real_t divz=1.0/dir.z;
 
 	Vector3 upbound=pos+size;
-	float tmin, tmax, tymin, tymax, tzmin, tzmax;
+	real_t tmin, tmax, tymin, tymax, tzmin, tzmax;
 	if (dir.x >= 0) {
 		tmin = (pos.x - from.x) * divx;
 		tmax = (upbound.x - from.x) * divx;

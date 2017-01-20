@@ -39,7 +39,7 @@ int AStar::get_available_point_id() const {
 	return points.back()->key()+1;
 }
 
-void AStar::add_point(int p_id, const Vector3 &p_pos, float p_weight_scale) {
+void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND(p_id<0);
 	if (!points.has(p_id)) {
 		Point *pt = memnew( Point );
@@ -62,7 +62,7 @@ Vector3 AStar::get_point_pos(int p_id) const{
 	return points[p_id]->pos;
 
 }
-float AStar::get_point_weight_scale(int p_id) const{
+real_t AStar::get_point_weight_scale(int p_id) const{
 
 	ERR_FAIL_COND_V(!points.has(p_id),0);
 
@@ -145,11 +145,11 @@ void AStar::clear(){
 int AStar::get_closest_point(const Vector3& p_point) const{
 
 	int closest_id=-1;
-	float closest_dist=1e20;
+	real_t closest_dist=1e20;
 
 	for (const Map<int,Point*>::Element *E=points.front();E;E=E->next()) {
 
-		float d = p_point.distance_squared_to(E->get()->pos);
+		real_t d = p_point.distance_squared_to(E->get()->pos);
 		if (closest_id<0 || d<closest_dist) {
 			closest_dist=d;
 			closest_id=E->key();
@@ -162,7 +162,7 @@ int AStar::get_closest_point(const Vector3& p_point) const{
 }
 Vector3 AStar::get_closest_pos_in_segment(const Vector3& p_point) const {
 
-	float closest_dist = 1e20;
+	real_t closest_dist = 1e20;
 	bool found=false;
 	Vector3 closest_point;
 
@@ -175,7 +175,7 @@ Vector3 AStar::get_closest_pos_in_segment(const Vector3& p_point) const {
 		};
 
 		Vector3 p = Geometry::get_closest_point_to_segment(p_point,segment);
-		float d = p_point.distance_squared_to(p);
+		real_t d = p_point.distance_squared_to(p);
 		if (!found || d<closest_dist) {
 
 			closest_point=p;
@@ -220,14 +220,14 @@ bool AStar::_solve(Point* begin_point, Point* end_point) {
 		//check open list
 
 		SelfList<Point> *least_cost_point=NULL;
-		float least_cost=1e30;
+		real_t least_cost=1e30;
 
 		//this could be faster (cache previous results)
 		for (SelfList<Point> *E=open_list.first();E;E=E->next()) {
 
 			Point *p=E->self();
 
-			float cost=p->distance;
+			real_t cost=p->distance;
 			cost+=p->pos.distance_to(end_point->pos);
 			cost*=p->weight_scale;
 
@@ -249,7 +249,7 @@ bool AStar::_solve(Point* begin_point, Point* end_point) {
 			Point* e=p->neighbours[i];
 
 
-			float distance = p->pos.distance_to(e->pos) + p->distance;
+			real_t distance = p->pos.distance_to(e->pos) + p->distance;
 			distance*=e->weight_scale;
 
 

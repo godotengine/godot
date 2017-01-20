@@ -1262,7 +1262,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2& p_linear_velocity,const V
 				//all is a wall
 				move_and_slide_on_wall=true;
 			} else {
-				if ( get_collision_normal().dot(p_floor_direction) > Math::cos(Math::deg2rad(45))) { //floor
+				if ( get_collision_normal().dot(p_floor_direction) > Math::cos(Math::deg2rad((float)45))) { //floor
 
 
 					move_and_slide_on_floor=true;
@@ -1272,7 +1272,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2& p_linear_velocity,const V
 						revert_motion();
 						return Vector2();
 					}
-				} else if ( get_collision_normal().dot(p_floor_direction) < Math::cos(Math::deg2rad(45))) { //ceiling
+				} else if ( get_collision_normal().dot(p_floor_direction) < Math::cos(Math::deg2rad((float)45))) { //ceiling
 					move_and_slide_on_ceiling=true;
 				} else {
 					move_and_slide_on_wall=true;

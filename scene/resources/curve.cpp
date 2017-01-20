@@ -498,7 +498,7 @@ Vector2 Curve2D::interpolatef(real_t p_findex) const {
 	else if (p_findex>=points.size())
 		p_findex=points.size();
 
-	return interpolate((int)p_findex,Math::fmod(p_findex,1.0));
+	return interpolate((int)p_findex,Math::fmod(p_findex,(real_t)1.0));
 
 }
 
@@ -653,7 +653,7 @@ Vector2 Curve2D::interpolate_baked(float p_offset,bool p_cubic) const{
 		return r[bpc-1];
 
 	int idx = Math::floor((double)p_offset/(double)bake_interval);
-	float frac = Math::fmod(p_offset,bake_interval);
+	float frac = Math::fmod(p_offset,(float)bake_interval);
 
 	if (idx>=bpc-1) {
 		return r[bpc-1];
@@ -974,7 +974,7 @@ Vector3 Curve3D::interpolatef(real_t p_findex) const {
 	else if (p_findex>=points.size())
 		p_findex=points.size();
 
-	return interpolate((int)p_findex,Math::fmod(p_findex,1.0));
+	return interpolate((int)p_findex,Math::fmod(p_findex,(real_t)1.0));
 
 }
 

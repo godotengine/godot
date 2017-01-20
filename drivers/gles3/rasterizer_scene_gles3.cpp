@@ -166,7 +166,7 @@ void RasterizerSceneGLES3::shadow_atlas_set_quadrant_subdivision(RID p_atlas,int
 		subdiv<<=1;
 	}
 
-	subdiv=int(Math::sqrt(subdiv));
+	subdiv=int(Math::sqrt((float)subdiv));
 
 	//obtain the number that will be x*x
 
@@ -568,7 +568,7 @@ void RasterizerSceneGLES3::reflection_atlas_set_subdivision(RID p_ref_atlas,int 
 		subdiv<<=1;
 	}
 
-	subdiv=int(Math::sqrt(subdiv));
+	subdiv=int(Math::sqrt((float)subdiv));
 
 	if (reflection_atlas->subdiv==subdiv)
 		return;
@@ -4567,7 +4567,7 @@ static _FORCE_INLINE_ Vector3 ImportanceSampleGGX(Vector2 Xi, float Roughness, V
 
       // Compute distribution direction
       float Phi = 2.0f * Math_PI * Xi.x;
-      float CosTheta = Math::sqrt((1.0f - Xi.y) / (1.0f + (a*a - 1.0f) * Xi.y));
+      float CosTheta = Math::sqrt((float)(1.0f - Xi.y) / (1.0f + (a*a - 1.0f) * Xi.y));
       float SinTheta = Math::sqrt((float)Math::abs(1.0f - CosTheta * CosTheta));
 
       // Convert to spherical direction
@@ -4615,7 +4615,7 @@ void RasterizerSceneGLES3::_generate_brdf() {
 			float NoV       = float(i+1)/(brdf_size); //avoid storing nov0
 
 			Vector3 V;
-			V.x = Math::sqrt( 1.0 - NoV * NoV );
+			V.x = Math::sqrt( 1.0f - NoV * NoV );
 			V.y = 0.0;
 			V.z = NoV;
 

@@ -65,15 +65,15 @@ Plane CameraMatrix::xform4(const Plane& p_vec4) const {
 	return ret;
 }
 
-void CameraMatrix::set_perspective(float p_fovy_degrees, float p_aspect, float p_z_near, float p_z_far,bool p_flip_fov) {
+void CameraMatrix::set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far,bool p_flip_fov) {
 
 	if (p_flip_fov) {
 		p_fovy_degrees=get_fovy(p_fovy_degrees,1.0/p_aspect);
 
 	}
 
-	float sine, cotangent, deltaZ;
-	float radians = p_fovy_degrees / 2.0 * Math_PI / 180.0;
+	real_t sine, cotangent, deltaZ;
+	real_t radians = p_fovy_degrees / 2.0 * Math_PI / 180.0;
 
 	deltaZ = p_z_far - p_z_near;
 	sine = Math::sin(radians);
@@ -94,7 +94,7 @@ void CameraMatrix::set_perspective(float p_fovy_degrees, float p_aspect, float p
 
 }
 
-void CameraMatrix::set_orthogonal(float p_left, float p_right, float p_bottom, float p_top,  float p_znear, float p_zfar) {
+void CameraMatrix::set_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top,  real_t p_znear, real_t p_zfar) {
 
 
 	set_identity();
@@ -109,7 +109,7 @@ void CameraMatrix::set_orthogonal(float p_left, float p_right, float p_bottom, f
 
 }
 
-void CameraMatrix::set_orthogonal(float p_size, float p_aspect, float p_znear, float p_zfar,bool p_flip_fov) {
+void CameraMatrix::set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear, real_t p_zfar,bool p_flip_fov) {
 
 	if (!p_flip_fov) {
 		p_size*=p_aspect;
@@ -120,7 +120,7 @@ void CameraMatrix::set_orthogonal(float p_size, float p_aspect, float p_znear, f
 
 
 
-void CameraMatrix::set_frustum(float p_left, float p_right, float p_bottom, float p_top, float p_near, float p_far) {
+void CameraMatrix::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far) {
 #if 0
 	///@TODO, give a check to this. I'm not sure if it's working.
 	set_identity();
@@ -134,14 +134,14 @@ void CameraMatrix::set_frustum(float p_left, float p_right, float p_bottom, floa
 	matrix[3][2]=-1;
 	matrix[3][3]=0;
 #else
-	float *te = &matrix[0][0];
-	float x = 2 * p_near / ( p_right - p_left );
-	float y = 2 * p_near / ( p_top - p_bottom );
+	real_t *te = &matrix[0][0];
+	real_t x = 2 * p_near / ( p_right - p_left );
+	real_t y = 2 * p_near / ( p_top - p_bottom );
 
-	float a = ( p_right + p_left ) / ( p_right - p_left );
-	float b = ( p_top + p_bottom ) / ( p_top - p_bottom );
-	float c = - ( p_far + p_near ) / ( p_far - p_near );
-	float d = - 2 * p_far * p_near / ( p_far - p_near );
+	real_t a = ( p_right + p_left ) / ( p_right - p_left );
+	real_t b = ( p_top + p_bottom ) / ( p_top - p_bottom );
+	real_t c = - ( p_far + p_near ) / ( p_far - p_near );
+	real_t d = - 2 * p_far * p_near / ( p_far - p_near );
 
 	te[0] = x;
 	te[1] = 0;
@@ -166,9 +166,9 @@ void CameraMatrix::set_frustum(float p_left, float p_right, float p_bottom, floa
 
 
 
-float CameraMatrix::get_z_far() const {
+real_t CameraMatrix::get_z_far() const {
 
-	const float * matrix = (const float*)this->matrix;
+	const real_t * matrix = (const real_t*)this->matrix;
 	Plane new_plane=Plane(matrix[ 3] - matrix[ 2],
 	                matrix[ 7] - matrix[ 6],
 	                matrix[11] - matrix[10],
@@ -179,9 +179,9 @@ float CameraMatrix::get_z_far() const {
 
 	return new_plane.d;
 }
-float CameraMatrix::get_z_near() const {
+real_t CameraMatrix::get_z_near() const {
 
-	const float * matrix = (const float*)this->matrix;
+	const real_t * matrix = (const real_t*)this->matrix;
 	Plane new_plane=Plane(matrix[ 3] + matrix[ 2],
 	                matrix[ 7] + matrix[ 6],
 	                matrix[11] + matrix[10],
@@ -191,9 +191,9 @@ float CameraMatrix::get_z_near() const {
 	return new_plane.d;
 }
 
-void CameraMatrix::get_viewport_size(float& r_width, float& r_height) const {
+void CameraMatrix::get_viewport_size(real_t& r_width, real_t& r_height) const {
 
-	const float * matrix = (const float*)this->matrix;
+	const real_t * matrix = (const real_t*)this->matrix;
 	///////--- Near Plane ---///////
 	Plane near_plane=Plane(matrix[ 3] + matrix[ 2],
 	                matrix[ 7] + matrix[ 6],
@@ -223,7 +223,7 @@ void CameraMatrix::get_viewport_size(float& r_width, float& r_height) const {
 
 bool CameraMatrix::get_endpoints(const Transform& p_transform, Vector3 *p_8points) const {
 
-	const float * matrix = (const float*)this->matrix;
+	const real_t * matrix = (const real_t*)this->matrix;
 
 	///////--- Near Plane ---///////
 	Plane near_plane=Plane(matrix[ 3] + matrix[ 2],
@@ -284,7 +284,7 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform& p_transform) 
 
 	Vector<Plane> planes;
 
-	const float * matrix = (const float*)this->matrix;
+	const real_t * matrix = (const real_t*)this->matrix;
 
 	Plane new_plane;
 
@@ -377,9 +377,9 @@ void CameraMatrix::invert() {
 
 	int i,j,k;
 	int pvt_i[4], pvt_j[4];            /* Locations of pivot matrix */
-	float pvt_val;                     /* Value of current pivot element */
-	float hold;                        /* Temporary storage */
-	float determinat;                  /* Determinant */
+	real_t pvt_val;                     /* Value of current pivot element */
+	real_t hold;                        /* Temporary storage */
+	real_t determinat;                  /* Determinant */
 
 	determinat = 1.0;
 	for (k=0; k<4; k++)  {
@@ -492,7 +492,7 @@ CameraMatrix CameraMatrix::operator*(const CameraMatrix& p_matrix) const {
 
 void CameraMatrix::set_light_bias() {
 
-	float *m=&matrix[0][0];
+	real_t *m=&matrix[0][0];
 
 	m[0]=0.5,
 	m[1]=0.0,
@@ -515,7 +515,7 @@ void CameraMatrix::set_light_bias() {
 
 void CameraMatrix::set_light_atlas_rect(const Rect2& p_rect) {
 
-	float *m=&matrix[0][0];
+	real_t *m=&matrix[0][0];
 
 	m[0]=p_rect.size.width,
 	m[1]=0.0,
@@ -545,9 +545,9 @@ CameraMatrix::operator String() const {
 	return str;
 }
 
-float CameraMatrix::get_aspect() const {
+real_t CameraMatrix::get_aspect() const {
 
-	float w,h;
+	real_t w,h;
 	get_viewport_size(w,h);
 	return w/h;
 }
@@ -561,8 +561,8 @@ int CameraMatrix::get_pixels_per_meter(int p_for_pixel_width) const {
 
 }
 
-float CameraMatrix::get_fov() const {
-	const float * matrix = (const float*)this->matrix;
+real_t CameraMatrix::get_fov() const {
+	const real_t * matrix = (const real_t*)this->matrix;
 
 	Plane right_plane=Plane(matrix[ 3] - matrix[ 0],
 			matrix[ 7] - matrix[ 4],
@@ -613,7 +613,7 @@ void CameraMatrix::scale_translate_to_fit(const Rect3& p_aabb) {
 CameraMatrix::operator Transform() const {
 
 	Transform tr;
-	const float *m=&matrix[0][0];
+	const real_t *m=&matrix[0][0];
 
 	tr.basis.elements[0][0]=m[0];
 	tr.basis.elements[1][0]=m[1];
@@ -637,7 +637,7 @@ CameraMatrix::operator Transform() const {
 CameraMatrix::CameraMatrix(const Transform& p_transform) {
 
 	const Transform &tr = p_transform;
-	float *m=&matrix[0][0];
+	real_t *m=&matrix[0][0];
 
 	m[0]=tr.basis.elements[0][0];
 	m[1]=tr.basis.elements[1][0];

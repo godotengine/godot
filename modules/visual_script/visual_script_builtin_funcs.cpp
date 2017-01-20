@@ -610,85 +610,85 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 		case VisualScriptBuiltinFunc::MATH_SIN: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::sin(*p_inputs[0]);
+			*r_return=Math::sin((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_COS: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::cos(*p_inputs[0]);
+			*r_return=Math::cos((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_TAN: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::tan(*p_inputs[0]);
+			*r_return=Math::tan((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SINH: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::sinh(*p_inputs[0]);
+			*r_return=Math::sinh((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_COSH: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::cosh(*p_inputs[0]);
+			*r_return=Math::cosh((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_TANH: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::tanh(*p_inputs[0]);
+			*r_return=Math::tanh((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ASIN: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::asin(*p_inputs[0]);
+			*r_return=Math::asin((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ACOS: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::acos(*p_inputs[0]);
+			*r_return=Math::acos((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ATAN: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::atan(*p_inputs[0]);
+			*r_return=Math::atan((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ATAN2: {
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return=Math::atan2(*p_inputs[0],*p_inputs[1]);
+			*r_return=Math::atan2((double)*p_inputs[0],(double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SQRT: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::sqrt(*p_inputs[0]);
+			*r_return=Math::sqrt((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FMOD: {
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return=Math::fmod(*p_inputs[0],*p_inputs[1]);
+			*r_return=Math::fmod((double)*p_inputs[0],(double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FPOSMOD: {
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return=Math::fposmod(*p_inputs[0],*p_inputs[1]);
+			*r_return=Math::fposmod((double)*p_inputs[0],(double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_FLOOR: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::floor(*p_inputs[0]);
+			*r_return=Math::floor((double)*p_inputs[0]);
 		  } break;
 		case VisualScriptBuiltinFunc::MATH_CEIL: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::ceil(*p_inputs[0]);
+			*r_return=Math::ceil((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ROUND: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::round(*p_inputs[0]);
+			*r_return=Math::round((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ABS: {
 
@@ -730,58 +730,58 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return=Math::pow(*p_inputs[0],*p_inputs[1]);
+			*r_return=Math::pow((double)*p_inputs[0],(double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LOG: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::log(*p_inputs[0]);
+			*r_return=Math::log((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_EXP: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::exp(*p_inputs[0]);
+			*r_return=Math::exp((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ISNAN: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::is_nan(*p_inputs[0]);
+			*r_return=Math::is_nan((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_ISINF: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::is_inf(*p_inputs[0]);
+			*r_return=Math::is_inf((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_EASE: {
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return=Math::ease(*p_inputs[0],*p_inputs[1]);
+			*r_return=Math::ease((double)*p_inputs[0],(double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DECIMALS: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::step_decimals(*p_inputs[0]);
+			*r_return=Math::step_decimals((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_STEPIFY: {
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return=Math::stepify(*p_inputs[0],*p_inputs[1]);
+			*r_return=Math::stepify((double)*p_inputs[0],(double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LERP: {
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
-			*r_return=Math::lerp(*p_inputs[0],*p_inputs[1],*p_inputs[2]);
+			*r_return=Math::lerp((double)*p_inputs[0],(double)*p_inputs[1],(double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DECTIME: {
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
-			*r_return=Math::dectime(*p_inputs[0],*p_inputs[1],*p_inputs[2]);
+			*r_return=Math::dectime((double)*p_inputs[0],(double)*p_inputs[1],(double)*p_inputs[2]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RANDOMIZE: {
 			Math::randomize();
@@ -797,7 +797,7 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			*r_return=Math::random(*p_inputs[0],*p_inputs[1]);
+			*r_return=Math::random((double)*p_inputs[0],(double)*p_inputs[1]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_SEED: {
 
@@ -820,22 +820,22 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func,const Variant** p_inp
 		case VisualScriptBuiltinFunc::MATH_DEG2RAD: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::deg2rad(*p_inputs[0]);
+			*r_return=Math::deg2rad((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_RAD2DEG: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::rad2deg(*p_inputs[0]);
+			*r_return=Math::rad2deg((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_LINEAR2DB: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::linear2db(*p_inputs[0]);
+			*r_return=Math::linear2db((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::MATH_DB2LINEAR: {
 
 			VALIDATE_ARG_NUM(0);
-			*r_return=Math::db2linear(*p_inputs[0]);
+			*r_return=Math::db2linear((double)*p_inputs[0]);
 		} break;
 		case VisualScriptBuiltinFunc::LOGIC_MAX: {
 

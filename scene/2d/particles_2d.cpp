@@ -364,7 +364,7 @@ void Particles2D::_process_particles(float p_delta) {
 				p.rot=Math::deg2rad(param[PARAM_INITIAL_ANGLE]+param[PARAM_INITIAL_ANGLE]*randomness[PARAM_INITIAL_ANGLE]*_rand_from_seed(&rand_seed));
 				active_count++;
 
-				p.frame=Math::fmod(param[PARAM_ANIM_INITIAL_POS]+randomness[PARAM_ANIM_INITIAL_POS]*_rand_from_seed(&rand_seed),1.0);
+				p.frame=Math::fmod(param[PARAM_ANIM_INITIAL_POS]+randomness[PARAM_ANIM_INITIAL_POS]*_rand_from_seed(&rand_seed),1.0f);
 
 
 			} else {
@@ -438,7 +438,7 @@ void Particles2D::_process_particles(float p_delta) {
 			p.pos+=p.velocity*frame_time;
 			p.rot+=Math::lerp(param[PARAM_SPIN_VELOCITY],param[PARAM_SPIN_VELOCITY]*randomness[PARAM_SPIN_VELOCITY]*_rand_from_seed(&rand_seed),randomness[PARAM_SPIN_VELOCITY])*frame_time;
 			float anim_spd=param[PARAM_ANIM_SPEED_SCALE]+param[PARAM_ANIM_SPEED_SCALE]*randomness[PARAM_ANIM_SPEED_SCALE]*_rand_from_seed(&rand_seed);
-			p.frame=Math::fposmod(p.frame+(frame_time/lifetime)*anim_spd,1.0);
+			p.frame=Math::fposmod(p.frame+(frame_time/lifetime)*anim_spd,1.0f);
 
 			active_count++;
 
@@ -555,7 +555,7 @@ void Particles2D::_notification(int p_what) {
 						float a=color.a;
 						//float preh=h;
 						h+=huerot;
-						h=Math::abs(Math::fposmod(h,1.0));
+						h=Math::abs(Math::fposmod(h,1.0f));
 						//print_line("rand: "+rtos(randomness[PARAM_HUE_VARIATION])+" rand: "+rtos(huerand));
 						//print_line(itos(i)+":hue: "+rtos(preh)+" + "+rtos(huerot)+" = "+rtos(h));
 						color.set_hsv(h,s,v);

@@ -79,17 +79,17 @@ struct Vector3 {
 
 	_FORCE_INLINE_ void zero();
 
-	void snap(float p_val);
-	Vector3 snapped(float p_val) const;
+	void snap(real_t p_val);
+	Vector3 snapped(real_t p_val) const;
 
-	void rotate(const Vector3& p_axis,float p_phi);
-	Vector3 rotated(const Vector3& p_axis,float p_phi) const;
+	void rotate(const Vector3& p_axis,real_t p_phi);
+	Vector3 rotated(const Vector3& p_axis,real_t p_phi) const;
 
 	/* Static Methods between 2 vector3s */
 
-	_FORCE_INLINE_ Vector3 linear_interpolate(const Vector3& p_b,float p_t) const;
-	Vector3 cubic_interpolate(const Vector3& p_b,const Vector3& p_pre_a, const Vector3& p_post_b,float p_t) const;
-	Vector3 cubic_interpolaten(const Vector3& p_b,const Vector3& p_pre_a, const Vector3& p_post_b,float p_t) const;
+	_FORCE_INLINE_ Vector3 linear_interpolate(const Vector3& p_b,real_t p_t) const;
+	Vector3 cubic_interpolate(const Vector3& p_b,const Vector3& p_pre_a, const Vector3& p_post_b,real_t p_t) const;
+	Vector3 cubic_interpolaten(const Vector3& p_b,const Vector3& p_pre_a, const Vector3& p_post_b,real_t p_t) const;
 
 	_FORCE_INLINE_ Vector3 cross(const Vector3& p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3& p_b) const;
@@ -195,7 +195,7 @@ Vector3 Vector3::ceil() const {
 	return Vector3( Math::ceil(x), Math::ceil(y), Math::ceil(z) );
 }
 
-Vector3 Vector3::linear_interpolate(const Vector3& p_b,float p_t) const {
+Vector3 Vector3::linear_interpolate(const Vector3& p_b,real_t p_t) const {
 
 	return Vector3(
 		x+(p_t * (p_b.x-x)),

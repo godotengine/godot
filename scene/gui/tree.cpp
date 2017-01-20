@@ -943,7 +943,7 @@ void Tree::draw_item_rect(const TreeItem::Cell& p_cell,const Rect2i& p_rect,cons
 			bmsize.width=p_cell.icon_max_w;
 		}
 
-		p_cell.draw_icon(ci,rect.pos + Size2i(0,Math::floor((rect.size.y-bmsize.y)/2)),bmsize);
+		p_cell.draw_icon(ci,rect.pos + Size2i(0,Math::floor((real_t)(rect.size.y-bmsize.y)/2)),bmsize);
 		rect.pos.x+=bmsize.x+cache.hseparation;
 		rect.size.x-=bmsize.x+cache.hseparation;
 
@@ -1173,7 +1173,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 					Ref<Texture> checked = cache.checked;
 					Ref<Texture> unchecked = cache.unchecked;
 					Point2i check_ofs=item_rect.pos;
-					check_ofs.y+=Math::floor((item_rect.size.y-checked->get_height())/2);
+					check_ofs.y+=Math::floor((real_t)(item_rect.size.y-checked->get_height())/2);
 
 					if (p_item->cells[i].checked) {
 
@@ -2321,7 +2321,7 @@ void Tree::_gui_input(InputEvent p_event) {
 
 					TreeItem::Cell &c=popup_edited_item->cells[popup_edited_item_col];
 					float diff_y = -b.relative_y;
-					diff_y=Math::pow(ABS(diff_y),1.8)*SGN(diff_y);
+					diff_y=Math::pow(ABS(diff_y),1.8f)*SGN(diff_y);
 					diff_y*=0.1;
 					range_drag_base=CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
 					popup_edited_item->set_range(popup_edited_item_col,range_drag_base);

@@ -541,7 +541,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 		int first=0;
 		int last=(len*chans)-1;
 		bool found=false;
-		float limit = Math::db2linear(-30);
+		float limit = Math::db2linear((float)-30);
 		for(int i=0;i<data.size();i++) {
 			float amp = Math::abs(data[i]);
 

@@ -5256,7 +5256,7 @@ void RasterizerStorageGLES3::update_particles() {
 
 		shaders.particles.set_uniform(ParticlesShaderGLES3::ORIGIN,particles->origin);
 
-		float new_phase = Math::fmod(particles->phase+(frame.delta/particles->lifetime),1.0);
+		float new_phase = Math::fmod((float)particles->phase+(frame.delta/particles->lifetime),(float)1.0);
 
 		shaders.particles.set_uniform(ParticlesShaderGLES3::SYSTEM_PHASE,new_phase);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::PREV_SYSTEM_PHASE,particles->phase);

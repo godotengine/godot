@@ -340,7 +340,7 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 						if (f3.intersects_segment(p_begin,p_end,&res)) {
 
 
-							float nd = n.dot(res);
+							real_t nd = n.dot(res);
 							if (nd<d) {
 
 								d=nd;
@@ -462,7 +462,7 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 						if (f3.intersects_ray(p_begin,p_dir,&res)) {
 
 
-							float nd = n.dot(res);
+							real_t nd = n.dot(res);
 							if (nd<d) {
 
 								d=nd;

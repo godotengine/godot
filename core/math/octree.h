@@ -435,7 +435,7 @@ int Octree<T,use_pairs,AL>::get_subindex(OctreeElementID p_id) const {
 template<class T,bool use_pairs,class AL>
 void Octree<T,use_pairs,AL>::_insert_element(Element *p_element,Octant *p_octant) {
 
-	float element_size = p_element->aabb.get_longest_axis_size() * 1.01; // avoid precision issues
+	real_t element_size = p_element->aabb.get_longest_axis_size() * 1.01; // avoid precision issues
 
 	if (p_octant->aabb.size.x/OCTREE_DIVISOR < element_size) {
 	//if (p_octant->aabb.size.x*0.5 < element_size) {

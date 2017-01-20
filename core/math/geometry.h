@@ -48,15 +48,15 @@ public:
 
 
 
-	static float get_closest_points_between_segments( const Vector2& p1,const Vector2& q1, const Vector2& p2,const Vector2& q2, Vector2& c1, Vector2& c2) {
+	static real_t get_closest_points_between_segments( const Vector2& p1,const Vector2& q1, const Vector2& p2,const Vector2& q2, Vector2& c1, Vector2& c2) {
 
 		Vector2 d1 = q1 - p1; // Direction vector of segment S1
 		Vector2 d2 = q2 - p2; // Direction vector of segment S2
 		Vector2 r = p1 - p2;
-		float a = d1.dot(d1); // Squared length of segment S1, always nonnegative
-		float e = d2.dot(d2); // Squared length of segment S2, always nonnegative
-		float f = d2.dot(r);
-		float s,t;
+		real_t a = d1.dot(d1); // Squared length of segment S1, always nonnegative
+		real_t e = d2.dot(d2); // Squared length of segment S2, always nonnegative
+		real_t f = d2.dot(r);
+		real_t s,t;
 		// Check if either or both segments degenerate into points
 		if (a <= CMP_EPSILON && e <= CMP_EPSILON) {
 			// Both segments degenerate into points
@@ -66,25 +66,25 @@ public:
 		}
 		if (a <= CMP_EPSILON) {
 			// First segment degenerates into a point
-			s = 0.0f;
+			s = 0.0;
 			t = f / e; // s = 0 => t = (b*s + f) / e = f / e
-			t = CLAMP(t, 0.0f, 1.0f);
+			t = CLAMP(t, 0.0, 1.0);
 		} else {
-			float c = d1.dot(r);
+			real_t c = d1.dot(r);
 			if (e <= CMP_EPSILON) {
 				// Second segment degenerates into a point
-				t = 0.0f;
-				s = CLAMP(-c / a, 0.0f, 1.0f); // t = 0 => s = (b*t - c) / a = -c / a
+				t = 0.0;
+				s = CLAMP(-c / a, 0.0, 1.0); // t = 0 => s = (b*t - c) / a = -c / a
 			} else {
 				// The general nondegenerate case starts here
-				float b = d1.dot(d2);
-				float denom = a*e-b*b; // Always nonnegative
+				real_t b = d1.dot(d2);
+				real_t denom = a*e-b*b; // Always nonnegative
 				// If segments not parallel, compute closest point on L1 to L2 and
 				// clamp to segment S1. Else pick arbitrary s (here 0)
-				if (denom != 0.0f) {
-					s = CLAMP((b*f - c*e) / denom, 0.0f, 1.0f);
+				if (denom != 0.0) {
+					s = CLAMP((b*f - c*e) / denom, 0.0, 1.0);
 				} else
-					s = 0.0f;
+					s = 0.0;
 				// Compute point on L2 closest to S1(s) using
 				// t = Dot((P1 + D1*s) - P2,D2) / Dot(D2,D2) = (b*s + f) / e
 				t = (b*s + f) / e;
@@ -92,12 +92,12 @@ public:
 				//If t in [0,1] done. Else clamp t, recompute s for the new value
 				// of t using s = Dot((P2 + D2*t) - P1,D1) / Dot(D1,D1)= (t*b - c) / a
 				// and clamp s to [0, 1]
-				if (t < 0.0f) {
-					t = 0.0f;
-					s = CLAMP(-c / a, 0.0f, 1.0f);
-				} else if (t > 1.0f) {
-					t = 1.0f;
-					s = CLAMP((b - c) / a, 0.0f, 1.0f);
+				if (t < 0.0) {
+					t = 0.0;
+					s = CLAMP(-c / a, 0.0, 1.0);
+				} else if (t > 1.0) {
+					t = 1.0;
+					s = CLAMP((b - c) / a, 0.0, 1.0);
 				}
 			}
 		}
@@ -113,8 +113,8 @@ public:
 #define d_of(m,n,o,p) ( (m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z) )
 
 		//caluclate the parpametric position on the 2 curves, mua and mub
-		float mua = ( d_of(p1,q1,q2,q1) * d_of(q2,q1,p2,p1)  - d_of(p1,q1,p2,p1) * d_of(q2,q1,q2,q1) ) / ( d_of(p2,p1,p2,p1) * d_of(q2,q1,q2,q1)  - d_of(q2,q1,p2,p1) * d_of(q2,q1,p2,p1) );
-		float mub = ( d_of(p1,q1,q2,q1) + mua * d_of(q2,q1,p2,p1)  ) / d_of(q2,q1,q2,q1);
+		real_t mua = ( d_of(p1,q1,q2,q1) * d_of(q2,q1,p2,p1)  - d_of(p1,q1,p2,p1) * d_of(q2,q1,q2,q1) ) / ( d_of(p2,p1,p2,p1) * d_of(q2,q1,q2,q1)  - d_of(q2,q1,p2,p1) * d_of(q2,q1,p2,p1) );
+		real_t mub = ( d_of(p1,q1,q2,q1) + mua * d_of(q2,q1,p2,p1)  ) / d_of(q2,q1,q2,q1);
 
 		//clip the value between [0..1] constraining the solution to lie on the original curves
 		if (mua < 0) mua = 0;
@@ -125,7 +125,7 @@ public:
 		c2 = q1.linear_interpolate(q2,mub);
 	}
 
-	static float get_closest_distance_between_segments( const Vector3& p_from_a,const Vector3& p_to_a, const Vector3& p_from_b,const Vector3& p_to_b) {
+	static real_t get_closest_distance_between_segments( const Vector3& p_from_a,const Vector3& p_to_a, const Vector3& p_from_b,const Vector3& p_to_b) {
 	    Vector3   u = p_to_a - p_from_a;
 	    Vector3   v = p_to_b - p_from_b;
 	    Vector3   w = p_from_a - p_to_a;
@@ -273,22 +273,22 @@ public:
 
 		Vector3 sphere_pos=p_sphere_pos-p_from;
 		Vector3 rel=(p_to-p_from);
-		float  rel_l=rel.length();
+		real_t  rel_l=rel.length();
 		if (rel_l<CMP_EPSILON)
 			return false; // both points are the same
 		Vector3 normal=rel/rel_l;
 
-		float sphere_d=normal.dot(sphere_pos);
+		real_t sphere_d=normal.dot(sphere_pos);
 
 		//Vector3 ray_closest=normal*sphere_d;
 
-		float ray_distance=sphere_pos.distance_to(normal*sphere_d);
+		real_t ray_distance=sphere_pos.distance_to(normal*sphere_d);
 
 		if (ray_distance>=p_sphere_radius)
 			return false;
 
-		float inters_d2=p_sphere_radius*p_sphere_radius - ray_distance*ray_distance;
-		float inters_d=sphere_d;
+		real_t inters_d2=p_sphere_radius*p_sphere_radius - ray_distance*ray_distance;
+		real_t inters_d=sphere_d;
 
 		if (inters_d2>=CMP_EPSILON)
 			inters_d-=Math::sqrt(inters_d2);
@@ -307,17 +307,17 @@ public:
 		return true;
 	}
 
-	static inline bool segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius,Vector3* r_res=0,Vector3 *r_norm=0) {
+	static inline bool segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, real_t p_height,real_t p_radius,Vector3* r_res=0,Vector3 *r_norm=0) {
 
 		Vector3 rel=(p_to-p_from);
-		float  rel_l=rel.length();
+		real_t  rel_l=rel.length();
 		if (rel_l<CMP_EPSILON)
 			return false; // both points are the same
 
 		// first check if they are parallel
 		Vector3 normal=(rel/rel_l);
 		Vector3 crs = normal.cross(Vector3(0,0,1));
-		float crs_l=crs.length();
+		real_t crs_l=crs.length();
 
 		Vector3 z_dir;
 
@@ -328,13 +328,13 @@ public:
 			z_dir=crs/crs_l;
 		}
 
-		float dist=z_dir.dot(p_from);
+		real_t dist=z_dir.dot(p_from);
 
 		if (dist>=p_radius)
 			return false; // too far away
 
 		// convert to 2D
-		float w2=p_radius*p_radius-dist*dist;
+		real_t w2=p_radius*p_radius-dist*dist;
 		if (w2<CMP_EPSILON)
 			return false; //avoid numerical error
 		Size2 size(Math::sqrt(w2),p_height*0.5);
@@ -344,7 +344,7 @@ public:
 		Vector2 from2D(x_dir.dot(p_from),p_from.z);
 		Vector2 to2D(x_dir.dot(p_to),p_to.z);
 
-		float min=0,max=1;
+		real_t min=0,max=1;
 
 		int axis=-1;
 
@@ -464,12 +464,12 @@ public:
 
 		Vector3 p=p_point-p_segment[0];
 		Vector3 n=p_segment[1]-p_segment[0];
-		float l =n.length();
+		real_t l =n.length();
 		if (l<1e-10)
 			return p_segment[0]; // both points are the same, just give any
 		n/=l;
 
-		float d=n.dot(p);
+		real_t d=n.dot(p);
 
 		if (d<=0.0)
 			return p_segment[0]; // before first point
@@ -483,12 +483,12 @@ public:
 
 		Vector3 p=p_point-p_segment[0];
 		Vector3 n=p_segment[1]-p_segment[0];
-		float l =n.length();
+		real_t l =n.length();
 		if (l<1e-10)
 			return p_segment[0]; // both points are the same, just give any
 		n/=l;
 
-		float d=n.dot(p);
+		real_t d=n.dot(p);
 
 		return p_segment[0]+n*d; // inside
 	}
@@ -497,12 +497,12 @@ public:
 
 		Vector2 p=p_point-p_segment[0];
 		Vector2 n=p_segment[1]-p_segment[0];
-		float l =n.length();
+		real_t l =n.length();
 		if (l<1e-10)
 			return p_segment[0]; // both points are the same, just give any
 		n/=l;
 
-		float d=n.dot(p);
+		real_t d=n.dot(p);
 
 		if (d<=0.0)
 			return p_segment[0]; // before first point
@@ -529,12 +529,12 @@ public:
 
 		Vector2 p=p_point-p_segment[0];
 		Vector2 n=p_segment[1]-p_segment[0];
-		float l =n.length();
+		real_t l =n.length();
 		if (l<1e-10)
 			return p_segment[0]; // both points are the same, just give any
 		n/=l;
 
-		float d=n.dot(p);
+		real_t d=n.dot(p);
 
 		return p_segment[0]+n*d; // inside
 	}
@@ -555,7 +555,7 @@ public:
 		if ((C.y<0 && D.y<0) || (C.y>=0 && D.y>=0))
 			return false;
 
-		float ABpos=D.x+(C.x-D.x)*D.y/(D.y-C.y);
+		real_t ABpos=D.x+(C.x-D.x)*D.y/(D.y-C.y);
 
 		//  Fail if segment C-D crosses line A-B outside of segment A-B.
 		if (ABpos<0 || ABpos>1.0)
@@ -595,7 +595,7 @@ public:
 
 	static inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle,const Vector3& p_normal,const Vector3& p_sphere_pos, real_t p_sphere_radius,Vector3& r_triangle_contact,Vector3& r_sphere_contact) {
 
-		float d=p_normal.dot(p_sphere_pos)-p_normal.dot(p_triangle[0]);
+		real_t d=p_normal.dot(p_sphere_pos)-p_normal.dot(p_triangle[0]);
 
 		if (d > p_sphere_radius || d < -p_sphere_radius) // not touching the plane of the face, return
 			return false;
@@ -629,7 +629,7 @@ public:
 			Vector3 axis =n1.cross(n2).cross(n1);
 			axis.normalize(); // ugh
 
-			float ad=axis.dot(n2);
+			real_t ad=axis.dot(n2);
 
 			if (ABS(ad)>p_sphere_radius) {
 				// no chance with this edge, too far away
@@ -639,7 +639,7 @@ public:
 			// check point within edge capsule cylinder
 			/** 4th TEST INSIDE EDGE POINTS **/
 
-			float sphere_at = n1.dot(n2);
+			real_t sphere_at = n1.dot(n2);
 
 			if (sphere_at>=0 && sphere_at<n1.dot(n1)) {
 
@@ -650,7 +650,7 @@ public:
 				return true;
 			}
 
-			float r2=p_sphere_radius*p_sphere_radius;
+			real_t r2=p_sphere_radius*p_sphere_radius;
 
 			if (n2.length_squared()<r2) {
 
@@ -726,8 +726,8 @@ public:
 		int outside_count = 0;
 
 		for (int a = 0; a < polygon.size(); a++) {
-			//float p_plane.d = (*this) * polygon[a];
-			float dist = p_plane.distance_to(polygon[a]);
+			//real_t p_plane.d = (*this) * polygon[a];
+			real_t dist = p_plane.distance_to(polygon[a]);
 			if (dist <-CMP_POINT_IN_PLANE_EPSILON) {
 				location_cache[a] = LOC_INSIDE;
 				inside_count++;
@@ -761,8 +761,8 @@ public:
 					const Vector3& v2 = polygon[index];
 
 					Vector3 segment= v1 - v2;
-					double den=p_plane.normal.dot( segment );
-					double dist=p_plane.distance_to( v1 ) / den;
+					real_t den=p_plane.normal.dot( segment );
+					real_t dist=p_plane.distance_to( v1 ) / den;
 					dist=-dist;
 					clipped.push_back( v1 + segment * dist );
 				}
@@ -771,8 +771,8 @@ public:
 				if ((loc == LOC_INSIDE) && (location_cache[previous] == LOC_OUTSIDE)) {
 					const Vector3& v2 = polygon[previous];
 					Vector3 segment= v1 - v2;
-					double den=p_plane.normal.dot( segment );
-					double dist=p_plane.distance_to( v1 ) / den;
+					real_t den=p_plane.normal.dot( segment );
+					real_t dist=p_plane.distance_to( v1 ) / den;
 					dist=-dist;
 					clipped.push_back( v1 + segment * dist );
 				}
@@ -808,7 +808,7 @@ public:
 
 	static PoolVector< PoolVector< Face3 > > separate_objects( PoolVector< Face3 > p_array );
 
-	static PoolVector< Face3 > wrap_geometry( PoolVector< Face3 > p_array, float *p_error=NULL ); ///< create a "wrap" that encloses the given geometry
+	static PoolVector< Face3 > wrap_geometry( PoolVector< Face3 > p_array, real_t *p_error=NULL ); ///< create a "wrap" that encloses the given geometry
 
 
 	struct MeshData {
@@ -884,9 +884,9 @@ public:
 	}
 
 
-	static double vec2_cross(const Point2 &O, const Point2 &A, const Point2 &B)
+	static real_t vec2_cross(const Point2 &O, const Point2 &A, const Point2 &B)
 	{
-		return (double)(A.x - O.x) * (B.y - O.y) - (double)(A.y - O.y) * (B.x - O.x);
+		return (real_t)(A.x - O.x) * (B.y - O.y) - (real_t)(A.y - O.y) * (B.x - O.x);
 	}
 
 	// Returns a list of points on the convex hull in counter-clockwise order.
@@ -918,10 +918,10 @@ public:
 	}
 
 	static MeshData build_convex_mesh(const PoolVector<Plane> &p_planes);
-	static PoolVector<Plane> build_sphere_planes(float p_radius, int p_lats, int p_lons, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	static PoolVector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis=Vector3::AXIS_Z);
 	static PoolVector<Plane> build_box_planes(const Vector3& p_extents);
-	static PoolVector<Plane> build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis=Vector3::AXIS_Z);
-	static PoolVector<Plane> build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	static PoolVector<Plane> build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis=Vector3::AXIS_Z);
+	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis=Vector3::AXIS_Z);
 
 	static void make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, Size2i& r_size);
 

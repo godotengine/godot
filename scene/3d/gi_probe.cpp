@@ -510,8 +510,8 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 				Vector2 uv = get_uv(intersection,p_vtx,p_uv);
 
 
-				int uv_x = CLAMP(Math::fposmod(uv.x,1.0)*bake_texture_size,0,bake_texture_size-1);
-				int uv_y = CLAMP(Math::fposmod(uv.y,1.0)*bake_texture_size,0,bake_texture_size-1);
+				int uv_x = CLAMP(Math::fposmod(uv.x,1.0f)*bake_texture_size,0,bake_texture_size-1);
+				int uv_y = CLAMP(Math::fposmod(uv.y,1.0f)*bake_texture_size,0,bake_texture_size-1);
 
 				int ofs = uv_y*bake_texture_size+uv_x;
 				albedo_accum.r+=p_material.albedo[ofs].r;
@@ -539,8 +539,8 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 
 			Vector2 uv = get_uv(inters,p_vtx,p_uv);
 
-			int uv_x = CLAMP(Math::fposmod(uv.x,1.0)*bake_texture_size,0,bake_texture_size-1);
-			int uv_y = CLAMP(Math::fposmod(uv.y,1.0)*bake_texture_size,0,bake_texture_size-1);
+			int uv_x = CLAMP(Math::fposmod(uv.x,1.0f)*bake_texture_size,0,bake_texture_size-1);
+			int uv_y = CLAMP(Math::fposmod(uv.y,1.0f)*bake_texture_size,0,bake_texture_size-1);
 
 			int ofs = uv_y*bake_texture_size+uv_x;
 

@@ -580,7 +580,7 @@ static inline void _build_faces(uint8_t*** p_cell_status,int x,int y,int z,int l
 
 }
 
-PoolVector< Face3 > Geometry::wrap_geometry( PoolVector< Face3 > p_array,float *p_error ) {
+PoolVector< Face3 > Geometry::wrap_geometry( PoolVector< Face3 > p_array,real_t *p_error ) {
 
 #define _MIN_SIZE 1.0
 #define _MAX_LENGTH 20
@@ -755,7 +755,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 
 #define SUBPLANE_SIZE 1024.0
 
-	float subplane_size = 1024.0; // should compute this from the actual plane
+	real_t subplane_size = 1024.0; // should compute this from the actual plane
 	for (int i=0;i<p_planes.size();i++) {
 
 		Plane p =p_planes[i];
@@ -910,7 +910,7 @@ PoolVector<Plane> Geometry::build_box_planes(const Vector3& p_extents) {
 	return planes;
 }
 
-PoolVector<Plane> Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
+PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
 
 	PoolVector<Plane> planes;
 
@@ -933,7 +933,7 @@ PoolVector<Plane> Geometry::build_cylinder_planes(float p_radius, float p_height
 
 }
 
-PoolVector<Plane> Geometry::build_sphere_planes(float p_radius, int p_lats,int p_lons, Vector3::Axis p_axis) {
+PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats,int p_lons, Vector3::Axis p_axis) {
 
 
 	PoolVector<Plane> planes;
@@ -957,7 +957,7 @@ PoolVector<Plane> Geometry::build_sphere_planes(float p_radius, int p_lats,int p
 		for (int j=1;j<=p_lats;j++) {
 
 			//todo this is stupid, fix
-			Vector3 angle = normal.linear_interpolate(axis,j/(float)p_lats).normalized();
+			Vector3 angle = normal.linear_interpolate(axis,j/(real_t)p_lats).normalized();
 			Vector3 pos = angle*p_radius;
 			planes.push_back( Plane( pos, angle ) );
 			planes.push_back( Plane( pos * axis_neg, angle * axis_neg) );
@@ -969,7 +969,7 @@ PoolVector<Plane> Geometry::build_sphere_planes(float p_radius, int p_lats,int p
 
 }
 
-PoolVector<Plane> Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
 
 	PoolVector<Plane> planes;
 
@@ -991,7 +991,7 @@ PoolVector<Plane> Geometry::build_capsule_planes(float p_radius, float p_height,
 
 		for (int j=1;j<=p_lats;j++) {
 
-			Vector3 angle = normal.linear_interpolate(axis,j/(float)p_lats).normalized();
+			Vector3 angle = normal.linear_interpolate(axis,j/(real_t)p_lats).normalized();
 			Vector3 pos = axis*p_height*0.5 + angle*p_radius;
 			planes.push_back( Plane( pos, angle ) );
 			planes.push_back( Plane( pos * axis_neg, angle * axis_neg) );
@@ -1108,13 +1108,13 @@ void Geometry::make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_resul
 	//find the result with the best aspect ratio
 
 	int best=-1;
-	float best_aspect=1e20;
+	real_t best_aspect=1e20;
 
 	for(int i=0;i<results.size();i++) {
 
-		float h = nearest_power_of_2(results[i].max_h);
-		float w = nearest_power_of_2(results[i].max_w);
-		float aspect = h>w ? h/w : w/h;
+		real_t h = nearest_power_of_2(results[i].max_h);
+		real_t w = nearest_power_of_2(results[i].max_w);
+		real_t aspect = h>w ? h/w : w/h;
 		if (aspect < best_aspect) {
 			best=i;
 			best_aspect=aspect;

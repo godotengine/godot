@@ -119,8 +119,8 @@ public:
 			w=0;
 		} else {
 
-			real_t  s = Math::sqrt((1.0f + d) * 2.0f);
-			real_t rs = 1.0f / s;
+			real_t  s = Math::sqrt((1.0 + d) * 2.0);
+			real_t rs = 1.0 / s;
 
 			x=c.x*rs;
 			y=c.y*rs;

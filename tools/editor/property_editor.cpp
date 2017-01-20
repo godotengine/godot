@@ -1503,12 +1503,12 @@ void CustomPropertyEditor::_drag_easing(const InputEvent& p_ev) {
 		bool sg = val < 0;
 		val = Math::absf(val);
 
-		val = Math::log(val)/Math::log(2);
+		val = Math::log(val)/Math::log((float)2.0);
 		//logspace
 		val+=rel*0.05;
 		//
 
-		val = Math::pow(2,val);
+		val = Math::pow(2.0f,val);
 		if (sg)
 			val=-val;
 
