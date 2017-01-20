@@ -1704,7 +1704,7 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 	}
 	
 	switch (token) {
-		// dictionary
+		// array
 		case GDTokenizer::TK_BRACKET_OPEN: {
 			tokenizer->advance();
 			pattern->pt_type = GDParser::PatternNode::PT_ARRAY;
@@ -1759,7 +1759,7 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 			pattern->bind = tokenizer->get_token_identifier();
 			tokenizer->advance();
 		} break;
-		// array
+		// dictionary
 		case GDTokenizer::TK_CURLY_BRACKET_OPEN: {
 			tokenizer->advance();
 			pattern->pt_type = GDParser::PatternNode::PT_DICTIONARY;
@@ -1826,16 +1826,15 @@ GDParser::PatternNode *GDParser::_parse_pattern(bool p_static)
 				}
 			}
 		} break;
+		case GDTokenizer::TK_WILDCARD: {
+			tokenizer->advance();
+			pattern->pt_type = PatternNode::PT_WILDCARD;
+		} break;
 		// all the constants like strings and numbers
 		default: {
 			Node *value = _parse_and_reduce_expression(pattern, p_static);
 			if (error_set) {
 				return NULL;
-			}
-			if (value->type == Node::TYPE_IDENTIFIER && static_cast<IdentifierNode*>(value)->name == "_") {
-				// wildcard pattern
-				pattern->pt_type = PatternNode::PT_WILDCARD;
-				break;
 			}
 			
 			if (value->type != Node::TYPE_IDENTIFIER && value->type != Node::TYPE_CONSTANT) {

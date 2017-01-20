@@ -127,6 +127,7 @@ public:
 		TK_DOLLAR,
 		TK_NEWLINE,
 		TK_CONST_PI,
+		TK_WILDCARD,
 		TK_ERROR,
 		TK_EOF,
 		TK_CURSOR, //used for code completion
