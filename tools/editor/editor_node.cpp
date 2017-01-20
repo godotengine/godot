@@ -2076,8 +2076,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		case FILE_QUICK_OPEN_FILE: {
 
 
-			//quick_open->popup("Resource", false, true);
-			//quick_open->set_title("Quick Search File..");
+			quick_open->popup("Resource", false, true);
+			quick_open->set_title("Quick Open File..");
 			scenes_dock->focus_on_filter();
 
 		} break;
