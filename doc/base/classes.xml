@@ -23,6 +23,16 @@
 				Make a color from red, green, blue and alpha. Arguments can range from 0 to 255.
 			</description>
 		</method>
+		<method name="ColorN">
+			<return type="Color">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="alpha" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="abs">
 			<return type="float">
 			</return>
@@ -2498,14 +2508,14 @@
 		</method>
 	</methods>
 	<signals>
-		<signal name="frame_changed">
-			<description>
-				Emitted when frame is changed.
-			</description>
-		</signal>
 		<signal name="finished">
 			<description>
 				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted everytime the last frame is drawn, before looping.
+			</description>
+		</signal>
+		<signal name="frame_changed">
+			<description>
+				Emitted when frame is changed.
 			</description>
 		</signal>
 	</signals>
@@ -4617,6 +4627,11 @@
 				Append an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
+		<method name="back">
+			<description>
+				Returns the last element of the array if the array is not empty (size&gt;0).
+			</description>
+		</method>
 		<method name="clear">
 			<description>
 				Clear the array (resize to 0).
@@ -4645,20 +4660,6 @@
 				Remove the first occurrence of a value from the array.
 			</description>
 		</method>
-		<method name="front">
-			<return type="Variant">
-			</return>
-			<description>
-				Returns the first element of the array if the array is not empty (size>0).
-			</description>
-		</method>
-		<method name="back">
-			<return type="Variant">
-			</return>
-			<description>
-				Returns the last element of the array if the array is not empty (size>0).
-			</description>
-		</method>
 		<method name="find">
 			<return type="int">
 			</return>
@@ -4677,6 +4678,11 @@
 			</argument>
 			<description>
 				Searches the array in reverse order for a value and returns its index or -1 if not found.
+			</description>
+		</method>
+		<method name="front">
+			<description>
+				Returns the first element of the array if the array is not empty (size&gt;0).
 			</description>
 		</method>
 		<method name="has">
@@ -6278,6 +6284,18 @@
 		This node must be the child of a [Skeleton] node. You can then select a bone for this node to attach to. The BoneAttachment node will copy the transform of the selected bone.
 	</description>
 	<methods>
+		<method name="get_bone_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_name">
+			<argument index="0" name="bone_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -6554,6 +6572,12 @@
 				Return the index of the currently selected button in the array.
 			</description>
 		</method>
+		<method name="is_flat" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_button_icon">
 			<argument index="0" name="button_idx" type="int">
 			</argument>
@@ -6576,6 +6600,12 @@
 			<argument index="0" name="button_idx" type="int">
 			</argument>
 			<argument index="1" name="text" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flat">
+			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -6924,6 +6954,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_custom_viewport" qualifiers="const">
+			<return type="Viewport">
+			</return>
+			<description>
+				Return the viewport RID for this layer.
+			</description>
+		</method>
 		<method name="get_drag_margin" qualifiers="const">
 			<return type="float">
 			</return>
@@ -7017,6 +7054,12 @@
 		</method>
 		<method name="set_anchor_mode">
 			<argument index="0" name="anchor_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_viewport">
+			<argument index="0" name="viewport" type="Viewport">
 			</argument>
 			<description>
 			</description>
@@ -7713,6 +7756,13 @@
 		Canvas Item layer. [CanvasItem] nodes that are direct or indirect children of a [CanvasLayer] will be drawn in that layer. The layer is a numeric index that defines the draw order. The default 2D scene renders with index 0, so a [CanvasLayer] with index -1 will be drawn below, and one with index 1 will be drawn above. This is very useful for HUDs (in layer 1+ or above), or backgrounds (in layer -1 or below).
 	</description>
 	<methods>
+		<method name="get_custom_viewport" qualifiers="const">
+			<return type="Viewport">
+			</return>
+			<description>
+				Return the viewport RID for this layer.
+			</description>
+		</method>
 		<method name="get_layer" qualifiers="const">
 			<return type="int">
 			</return>
@@ -7755,18 +7805,17 @@
 				Return the base transform for this layer.
 			</description>
 		</method>
-		<method name="get_viewport" qualifiers="const">
-			<return type="RID">
-			</return>
-			<description>
-				Return the viewport RID for this layer.
-			</description>
-		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="World2D">
 			</return>
 			<description>
 				Return the [World2D] used by this layer.
+			</description>
+		</method>
+		<method name="set_custom_viewport">
+			<argument index="0" name="viewport" type="Viewport">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_layer">
@@ -10357,6 +10406,10 @@
 				If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
 			</description>
 		</method>
+		<method name="clear_points">
+			<description>
+			</description>
+		</method>
 		<method name="get_bake_interval" qualifiers="const">
 			<return type="float">
 			</return>
@@ -10526,6 +10579,10 @@
 			<description>
 				Adds a point to a curve, at position "pos", with control points "in" and "out".
 				If "atpos" is given, the point is inserted before the point number "atpos", moving that point (and every point after) after the inserted point. If "atpos" is not given, or is an illegal value (atpos &lt;0 or atpos &gt;= [method get_point_count]), the point will be appended at the end of the point list.
+			</description>
+		</method>
+		<method name="clear_points">
+			<description>
 			</description>
 		</method>
 		<method name="get_bake_interval" qualifiers="const">
@@ -11618,6 +11675,13 @@
 				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
 			</description>
 		</method>
+		<method name="edit_resource">
+			<argument index="0" name="arg0" type="Object">
+			</argument>
+			<description>
+				Tells the editor to handle the edit of the given resource. For example, if you pass a script as argument, the editor will open the script editor.
+			</description>
+		</method>
 		<method name="forward_input_event" qualifiers="virtual">
 			<return type="bool">
 			</return>
@@ -11667,13 +11731,6 @@
 			</return>
 			<description>
 				Get the main editor control. Use this as a parent for main screens.
-			</description>
-		</method>
-		<method name="edit_resource">
-			<argument index="0" name="p_resource" type="Resource">
-			</argument>
-			<description>
-				Tells the editor to handle the edit of the given resource. Ex: If you pass a Script as a argument, the editor will open the scriptEditor.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="virtual">
@@ -18522,7 +18579,7 @@
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
-			<return type="Object">
+			<return type="Variant">
 			</return>
 			<description>
 				Return the body that collided with this one.
@@ -18638,7 +18695,7 @@
 	</description>
 	<methods>
 		<method name="get_collider" qualifiers="const">
-			<return type="Object">
+			<return type="Variant">
 			</return>
 			<description>
 				Return the body that collided with this one.
@@ -22573,25 +22630,25 @@
 			</description>
 		</method>
 		<method name="get_global_rot" qualifiers="const">
-				<return type="float">
-				</return>
-				<description>
-					Return the global rotation in radians of the 2D node.
-				</description>
+			<return type="float">
+			</return>
+			<description>
+				Return the global rotation in radians of the 2D node.
+			</description>
 		</method>
 		<method name="get_global_rotd" qualifiers="const">
-				<return type="float">
-				</return>
-				<description>
-					Return the global rotation in degrees of the 2D node.
-				</description>
+			<return type="float">
+			</return>
+			<description>
+				Return the global rotation in degrees of the 2D node.
+			</description>
 		</method>
 		<method name="get_global_scale" qualifiers="const">
-				<return type="Vector2">
-				</return>
-				<description>
-					Return the global scale of the 2D node.
-				</description>
+			<return type="Vector2">
+			</return>
+			<description>
+				Return the global scale of the 2D node.
+			</description>
 		</method>
 		<method name="get_pos" qualifiers="const">
 			<return type="Vector2">
@@ -22697,25 +22754,25 @@
 			</description>
 		</method>
 		<method name="set_global_rot">
-				<argument index="0" name="radians" type="float">
-				</argument>
-				<description>
-					Set the global rotation in radians of the 2D node.
-				</description>
+			<argument index="0" name="radians" type="float">
+			</argument>
+			<description>
+				Set the global rotation in radians of the 2D node.
+			</description>
 		</method>
 		<method name="set_global_rotd">
-				<argument index="0" name="degrees" type="float">
-				</argument>
-				<description>
-					Set the global rotation in degrees of the 2D node.
-				</description>
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+				Set the global rotation in degrees of the 2D node.
+			</description>
 		</method>
 		<method name="set_global_scale">
-				<argument index="0" name="scale" type="Vector2">
-				</argument>
-				<description>
-					Set the global scale of the 2D node.
-				</description>
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+				Set the global scale of the 2D node.
+			</description>
 		</method>
 		<method name="set_global_transform">
 			<argument index="0" name="xform" type="Matrix32">
@@ -23051,6 +23108,12 @@
 			</return>
 			<description>
 				Return the path to the current engine executable.
+			</description>
+		</method>
+		<method name="get_exit_code" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_frames_drawn">
@@ -23507,6 +23570,12 @@
 		</method>
 		<method name="set_current_screen">
 			<argument index="0" name="screen" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_exit_code">
+			<argument index="0" name="code" type="int">
 			</argument>
 			<description>
 			</description>
@@ -30186,13 +30255,6 @@
 				Clear the popup menu, in effect removing all items.
 			</description>
 		</method>
-		<method name="is_hide_on_item_selection">
-			<return type="bool">
-			</return>
-			<description>
-				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
-			</description>
-		</method>
 		<method name="get_item_ID" qualifiers="const">
 			<return type="int">
 			</return>
@@ -30275,6 +30337,13 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="is_hide_on_item_selection">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
 		<method name="is_item_checkable" qualifiers="const">
@@ -45229,6 +45298,12 @@
 				Return the 3D world of the viewport.
 			</description>
 		</method>
+		<method name="get_world_2d" qualifiers="const">
+			<return type="World2D">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="gui_get_drag_data" qualifiers="const">
 			<return type="Variant">
 			</return>
@@ -45450,6 +45525,12 @@
 			</argument>
 			<description>
 				Change the 3D world of the viewport.
+			</description>
+		</method>
+		<method name="set_world_2d">
+			<argument index="0" name="world_2d" type="World2D">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="unhandled_input">
