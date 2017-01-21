@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_filter_sw.h                                                    */
+/*  audio_stream.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,94 +26,76 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef AUDIO_FILTER_SW_H
-#define AUDIO_FILTER_SW_H
+#ifndef AUDIO_STREAM_H
+#define AUDIO_STREAM_H
 
+#include "resource.h"
+#include "servers/audio_server.h"
 
-#include "math_funcs.h"
+class AudioStreamPlayback : public Reference {
 
-class AudioFilterSW {
-public:
-
-	struct Coeffs {
-
-		float a1,a2;
-		float b0,b1,b2;
-
-		//bool operator==(const Coeffs &p_rv) { return (FLOATS_EQ(a1,p_rv.a1) && FLOATS_EQ(a2,p_rv.a2) && FLOATS_EQ(b1,p_rv.b1) && FLOATS_EQ(b2,p_rv.b2) && FLOATS_EQ(b0,p_rv.b0) ); }
-		Coeffs() { a1=a2=b0=b1=b2=0.0; }
-	};
-
-	enum Mode {
-		BANDPASS,
-		HIGHPASS,
-		LOWPASS,
-		NOTCH,
-		PEAK,
-		BANDLIMIT,
-		LOWSHELF,
-		HIGHSHELF
-
-	};
-
-	class Processor { // simple filter processor
-
-		AudioFilterSW * filter;
-		Coeffs coeffs;
-		float ha1,ha2,hb1,hb2; //history
-	public:
-		void set_filter(AudioFilterSW * p_filter);
-		void process(float *p_samples,int p_amount, int p_stride=1);
-		void update_coeffs();
-		_ALWAYS_INLINE_ void process_one(float& p_sample);
-
-		Processor();
-	};
-
-private:
-
-
-	float cutoff;
-	float resonance;
-	float gain;
-	float sampling_rate;
-	int stages;
-	Mode mode;
-
-
+	GDCLASS( AudioStreamPlayback, Reference )
 
 public:
 
-	float get_response(float p_freq,Coeffs *p_coeffs);
+	virtual void start(float p_from_pos=0.0)=0;
+	virtual void stop()=0;
+	virtual bool is_playing() const=0;
 
-	void set_mode(Mode p_mode);
-	void set_cutoff(float p_cutoff);
-	void set_resonance(float p_resonance);
-	void set_gain(float p_gain);
-	void set_sampling_rate(float p_srate);
-	void set_stages(int p_stages); //adjust for multiple stages
+	virtual int get_loop_count() const=0; //times it looped
 
-	void prepare_coefficients(Coeffs *p_coeffs);
+	virtual float get_pos() const=0;
+	virtual void seek_pos(float p_time)=0;
 
-	AudioFilterSW();
+	virtual void mix(AudioFrame* p_bufer,float p_rate_scale,int p_frames)=0;
+
+	virtual float get_length() const=0; //if supported, otherwise return 0
+
+
+};
+
+class AudioStreamPlaybackResampled : public AudioStreamPlayback {
+
+	GDCLASS( AudioStreamPlaybackResampled, AudioStreamPlayback )
+
+
+
+	enum {
+		FP_BITS=16, //fixed point used for resampling
+		FP_LEN=(1<<FP_BITS),
+		FP_MASK=FP_LEN-1,
+		INTERNAL_BUFFER_LEN=256,
+		CUBIC_INTERP_HISTORY=4
+	};
+
+	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN+CUBIC_INTERP_HISTORY];
+	uint64_t mix_offset;
+
+protected:
+	void _begin_resample();
+	virtual void _mix_internal(AudioFrame* p_bufer,int p_frames)=0;
+	virtual float get_stream_sampling_rate()=0;
+
+public:
+
+	virtual void mix(AudioFrame* p_bufer,float p_rate_scale,int p_frames);
+
+	AudioStreamPlaybackResampled() { mix_offset=0;  }
+};
+
+class AudioStream : public Resource {
+
+	GDCLASS( AudioStream, Resource )
+	OBJ_SAVE_TYPE( AudioStream ) //children are all saved as AudioStream, so they can be exchanged
+
+
+public:
+
+	virtual Ref<AudioStreamPlayback> instance_playback()=0;
+	virtual String get_stream_name() const=0;
+
 
 };
 
 
-
-
-/* inline methods */
-
-
-void AudioFilterSW::Processor::process_one(float &p_val) {
-
-	float pre=p_val;
-	p_val = (p_val * coeffs.b0 + hb1 * coeffs.b1  + hb2 * coeffs.b2 + ha1 * coeffs.a1 + ha2 * coeffs.a2);
-	ha2=ha1;
-	hb2=hb1;
-	hb1=pre;
-	ha1=p_val;
-}
-
-
-#endif // AUDIO_FILTER_SW_H
+#endif // AUDIO_STREAM_H

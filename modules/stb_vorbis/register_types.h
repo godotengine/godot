@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream.h                                                       */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,58 +26,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef AUDIO_STREAM_H
-#define AUDIO_STREAM_H
-
-#include "resource.h"
-#include "servers/audio_server.h"
-
-class AudioStreamPlayback : public Reference {
-
-	GDCLASS( AudioStreamPlayback, Reference );
-protected:
-	static void _bind_methods();
-public:
-
-
-	virtual void play(float p_from_pos=0)=0;
-	virtual void stop()=0;
-	virtual bool is_playing() const=0;
-
-	virtual void set_loop(bool p_enable)=0;
-	virtual bool has_loop() const=0;
-
-	virtual void set_loop_restart_time(float p_time)=0;
-
-	virtual int get_loop_count() const=0;
-
-	virtual float get_pos() const=0;
-	virtual void seek_pos(float p_time)=0;
-
-	virtual int mix(int16_t* p_bufer,int p_frames)=0;
-
-	virtual float get_length() const=0;
-	virtual String get_stream_name() const=0;
-
-	virtual int get_channels() const=0;
-	virtual int get_mix_rate() const=0;
-	virtual int get_minimum_buffer_size() const=0;
-
-};
-
-class AudioStream : public Resource {
-
-	GDCLASS( AudioStream, Resource );
-	OBJ_SAVE_TYPE( AudioStream ); //children are all saved as AudioStream, so they can be exchanged
-
-protected:
-	static void _bind_methods();
-public:
-
-	virtual Ref<AudioStreamPlayback> instance_playback()=0;
-
-
-};
-
-
-#endif // AUDIO_STREAM_H
+void register_stb_vorbis_types();
+void unregister_stb_vorbis_types();

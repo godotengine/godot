@@ -100,62 +100,147 @@ public:
 };
 
 
+
+
 class AudioServer : public Object {
 
 	GDCLASS( AudioServer, Object )
 public:
-	enum BusMode {
-		BUS_MODE_STEREO,
-		BUS_MODE_SURROUND
-	};
-
 	//re-expose this her, as AudioDriver is not exposed to script
 	enum SpeakerMode {
 		SPEAKER_MODE_STEREO,
 		SPEAKER_SURROUND_51,
 		SPEAKER_SURROUND_71,
 	};
+
+	enum {
+		AUDIO_DATA_INVALID_ID=-1
+	};
+
+	typedef void (*AudioCallback)(void* p_userdata);
+
 private:
 	uint32_t buffer_size;
+	uint64_t mix_count;
+	uint64_t mix_frames;
+
+	float channel_disable_treshold_db;
+	uint32_t channel_disable_frames;
+
+	int to_mix;
 
 	struct Bus {
 
-		String name;
-		BusMode mode;
-		Vector<AudioFrame> buffer;
+		StringName name;
+		bool solo;
+		bool mute;
+		bool bypass;
+
+		//Each channel is a stereo pair.
+		struct Channel {
+			bool used;
+			bool active;
+			AudioFrame peak_volume;
+			Vector<AudioFrame> buffer;
+			Vector<Ref<AudioEffectInstance> > effect_instances;
+			uint64_t last_mix_with_audio;
+			Channel() { last_mix_with_audio=0; used=false; active=false; peak_volume=AudioFrame(0,0); }
+		};
+
+		Vector<Channel> channels;
+
 
 		struct Effect {
 			Ref<AudioEffect> effect;
-			Ref<AudioEffectInstance> instance;
 			bool enabled;
 		};
 
 		Vector<Effect> effects;
-
 		float volume_db;
+		StringName send;
+		int index_cache;
 	};
 
 
-	Vector<Bus> buses;
+	Vector< Vector<AudioFrame> >temp_buffer; //temp_buffer for each level
+	Vector<Bus*> buses;
+	Map<StringName,Bus*> bus_map;
+
+	_FORCE_INLINE_ int _get_channel_count() const {
+		switch (AudioDriver::get_singleton()->get_speaker_mode()) {
+			case AudioDriver::SPEAKER_MODE_STEREO: return 1;
+			case AudioDriver::SPEAKER_SURROUND_51: return 3;
+			case AudioDriver::SPEAKER_SURROUND_71: return 4;
+
+		}
+		ERR_FAIL_V(1);
+	}
 
 
-	static void _bind_methods();
+	void _update_bus_effects(int p_bus);
+
 
 	static AudioServer* singleton;
+
+	// TODO create an audiodata pool to optimize memory
+
+
+	Map<void*,uint32_t> audio_data;
+	size_t audio_data_total_mem;
+	size_t audio_data_max_mem;
+
+	Mutex *audio_data_lock;
+
+	void _mix_step();
+
+	struct CallbackItem {
+
+		AudioCallback callback;
+		void *userdata;
+
+		bool operator<(const CallbackItem& p_item) const {
+			return (callback==p_item.callback ? userdata < p_item.userdata : callback < p_item.callback);
+		}
+	};
+
+	Set<CallbackItem> callbacks;
+
+
+
+friend class AudioDriver;
+	void _driver_process(int p_frames, int32_t *p_buffer);
+protected:
+
+	static void _bind_methods();
 public:
+
+	//do not use from outside audio thread
+	AudioFrame *thread_get_channel_mix_buffer(int p_bus,int p_buffer);
+	int thread_get_mix_buffer_size() const;
+	int thread_find_bus_index(const StringName& p_name);
 
 
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
-
-	void set_bus_mode(int p_bus,BusMode p_mode);
-	BusMode get_bus_mode(int p_bus) const;
 
 	void set_bus_name(int p_bus,const String& p_name);
 	String get_bus_name(int p_bus) const;
 
 	void set_bus_volume_db(int p_bus,float p_volume_db);
 	float get_bus_volume_db(int p_bus) const;
+
+
+	void set_bus_send(int p_bus,const StringName& p_send);
+	StringName get_bus_send(int p_bus) const;
+
+	void set_bus_solo(int p_bus,bool p_enable);
+	bool is_bus_solo(int p_bus) const;
+
+	void set_bus_mute(int p_bus,bool p_enable);
+	bool is_bus_mute(int p_bus) const;
+
+	void set_bus_bypass_effects(int p_bus,bool p_enable);
+	bool is_bus_bypassing_effects(int p_bus) const;
 
 	void add_bus_effect(int p_bus,const Ref<AudioEffect>& p_effect,int p_at_pos=-1);
 	void remove_bus_effect(int p_bus,int p_effect);
@@ -167,6 +252,13 @@ public:
 
 	void set_bus_effect_enabled(int p_bus,int p_effect,bool p_enabled);
 	bool is_bus_effect_enabled(int p_bus,int p_effect) const;
+
+	void move_bus(int p_bus,int p_to_bus);
+
+	float get_bus_peak_volume_left_db(int p_bus,int p_channel) const;
+	float get_bus_peak_volume_right_db(int p_bus,int p_channel) const;
+
+	bool is_bus_channel_active(int p_bus,int p_channel) const;
 
 	virtual void init();
 	virtual void finish();
@@ -188,11 +280,21 @@ public:
 	virtual double get_mix_time() const; //useful for video -> audio sync
 	virtual double get_output_delay() const;
 
+	void* audio_data_alloc(uint32_t p_data_len, const uint8_t *p_from_data=NULL);
+	void audio_data_free(void* p_data);
+
+	size_t audio_data_get_total_memory_usage() const;
+	size_t audio_data_get_max_memory_usage() const;
+
+
+	void add_callback(AudioCallback p_callback,void *p_userdata);
+	void remove_callback(AudioCallback p_callback,void *p_userdata);
+
 	AudioServer();
 	virtual ~AudioServer();
 };
 
-VARIANT_ENUM_CAST( AudioServer::BusMode )
+
 VARIANT_ENUM_CAST( AudioServer::SpeakerMode )
 
 typedef AudioServer AS;

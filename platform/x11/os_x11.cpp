@@ -295,6 +295,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	}
 
 
+
 	ERR_FAIL_COND(!visual_server);
 	ERR_FAIL_COND(x11_window==0);
 

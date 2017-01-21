@@ -486,6 +486,7 @@ Resource::Resource() {
 #endif
 
 	subindex=0;
+	local_to_scene=false;
 	local_scene=NULL;
 }
 

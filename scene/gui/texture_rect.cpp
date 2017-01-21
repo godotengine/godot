@@ -160,7 +160,7 @@ TextureRect::TextureRect() {
 
 
 	expand=false;
-	set_mouse_filter(MOUSE_FILTER_IGNORE);
+	set_mouse_filter(MOUSE_FILTER_PASS);
 	stretch_mode=STRETCH_SCALE_ON_EXPAND;
 }
 

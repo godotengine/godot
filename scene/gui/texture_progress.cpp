@@ -46,7 +46,9 @@ void TextureProgress::set_over_texture(const Ref<Texture>& p_texture) {
 
 	over=p_texture;
 	update();
-	minimum_size_changed();
+	if (under.is_null()) {
+		minimum_size_changed();
+	}
 }
 
 Ref<Texture> TextureProgress::get_over_texture() const{
@@ -302,4 +304,5 @@ TextureProgress::TextureProgress()
 	rad_init_angle=0;
 	rad_center_off=Point2();
 	rad_max_degrees=360;
+	set_mouse_filter(MOUSE_FILTER_PASS);
 }

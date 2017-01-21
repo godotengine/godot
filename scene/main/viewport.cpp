@@ -1901,9 +1901,28 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					}*/
 #endif
 
-				if (gui.mouse_focus->get_focus_mode()!=Control::FOCUS_NONE && gui.mouse_focus!=gui.key_focus && p_event.mouse_button.button_index==BUTTON_LEFT) {
-					// also get keyboard focus
-					gui.mouse_focus->grab_focus();
+				if (p_event.mouse_button.button_index==BUTTON_LEFT) { //assign focus
+					CanvasItem *ci=gui.mouse_focus;
+					while(ci) {
+
+						Control *control = ci->cast_to<Control>();
+						if (control) {
+							if (control->get_focus_mode()!=Control::FOCUS_NONE) {
+								if (control!=gui.key_focus) {
+									control->grab_focus();
+								}
+								break;
+							}
+
+							if (control->data.mouse_filter==Control::MOUSE_FILTER_STOP)
+								break;
+						}
+
+						if (ci->is_set_as_toplevel())
+							break;
+
+						ci=ci->get_parent_item();
+					}
 				}
 
 

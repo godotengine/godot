@@ -29,7 +29,7 @@
 #ifndef AUDIO_STREAM_RESAMPLED_H
 #define AUDIO_STREAM_RESAMPLED_H
 
-#include "scene/resources/audio_stream.h"
+//#include "scene/resources/audio_stream.h"
 
 #if 0
 

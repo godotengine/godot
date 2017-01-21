@@ -115,6 +115,7 @@
 
 #include "plugins/editor_preview_plugins.h"
 #include "editor_initialize_ssl.h"
+#include "editor_audio_buses.h"
 #include "script_editor_debugger.h"
 
 EditorNode *EditorNode::singleton=NULL;
@@ -1937,7 +1938,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 	List<String> breakpoints;
 	editor_data.get_editor_breakpoints(&breakpoints);
-    
+
 	args = GlobalConfig::get_singleton()->get("editor/main_run_args");
 
 	Error error = editor_run.run(run_filename,args,breakpoints,current_filename);
@@ -2802,10 +2803,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			update_menu->get_popup()->set_item_checked(1,true);
 			OS::get_singleton()->set_low_processor_usage_mode(true);
 		} break;
-        case SETTINGS_UPDATE_SPINNER_HIDE: {
+	case SETTINGS_UPDATE_SPINNER_HIDE: {
 			update_menu->set_icon(gui_base->get_icon("Collapse","EditorIcons"));
-            update_menu->get_popup()->toggle_item_checked(3);
-        } break;
+	    update_menu->get_popup()->toggle_item_checked(3);
+	} break;
 		case SETTINGS_PREFERENCES: {
 
 			settings_config_dialog->popup_edit_settings();
@@ -2930,16 +2931,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		default: {
 
-			if (p_option>=TOOL_MENU_BASE) {
-				int idx = p_option - TOOL_MENU_BASE;
-
-				if (tool_menu_items[idx].submenu != "")
-					break;
-
-				Object *handler = ObjectDB::get_instance(tool_menu_items[idx].handler);
-				ERR_FAIL_COND(!handler);
-				handler->call(tool_menu_items[idx].callback, tool_menu_items[idx].ud);
-			} else if (p_option>=OBJECT_METHOD_BASE) {
+			if (p_option>=OBJECT_METHOD_BASE) {
 
 				ERR_FAIL_COND(!current);
 
@@ -5274,100 +5266,6 @@ void EditorNode::add_plugin_init_callback(EditorPluginInitializeCallback p_callb
 
 EditorPluginInitializeCallback EditorNode::plugin_init_callbacks[EditorNode::MAX_INIT_CALLBACKS];
 
-void EditorNode::_tool_menu_insert_item(const ToolMenuItem& p_item) {
-
-	int idx = tool_menu_items.size();
-
-	String cat;
-	if (p_item.name.find("/") >= 0) {
-		cat = p_item.name.get_slice("/", 0);
-	} else {
-		idx = 0;
-		cat = "";
-	}
-
-	for (int i = tool_menu_items.size() - 1; i >= 0; i--) {
-		String name = tool_menu_items[i].name;
-
-		if (name.begins_with(cat) && (cat != "" || name.find("/") < 0)) {
-			idx = i + 1;
-			break;
-		}
-	}
-
-	tool_menu_items.insert(idx, p_item);
-}
-
-void EditorNode::_rebuild_tool_menu() const {
-
-	if (_initializing_tool_menu)
-		return;
-
-	PopupMenu *menu = tool_menu->get_popup();
-	menu->clear();
-
-	for (int i = 0; i < tool_menu_items.size(); i++) {
-		menu->add_item(tool_menu_items[i].name.get_slice("/", 1), TOOL_MENU_BASE + i);
-
-		if (tool_menu_items[i].submenu != "")
-			menu->set_item_submenu(i, tool_menu_items[i].submenu);
-	}
-}
-
-void EditorNode::add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud) {
-
-	ERR_FAIL_COND(!p_handler);
-
-	ToolMenuItem tmi;
-	tmi.name = p_name;
-	tmi.submenu = "";
-	tmi.ud = p_ud;
-	tmi.handler = p_handler->get_instance_ID();
-	tmi.callback = p_callback;
-	_tool_menu_insert_item(tmi);
-
-	_rebuild_tool_menu();
-}
-
-void EditorNode::add_tool_submenu_item(const String& p_name, PopupMenu *p_submenu) {
-
-	ERR_FAIL_COND(!p_submenu);
-	ERR_FAIL_COND(p_submenu->get_parent() != NULL);
-
-	ToolMenuItem tmi;
-	tmi.name = p_name;
-	tmi.submenu = p_submenu->get_name();
-	tmi.ud = Variant();
-	tmi.handler = -1;
-	tmi.callback = "";
-	_tool_menu_insert_item(tmi);
-
-	tool_menu->get_popup()->add_child(p_submenu);
-
-	_rebuild_tool_menu();
-}
-
-void EditorNode::remove_tool_menu_item(const String& p_name) {
-
-	for (int i = 0; i < tool_menu_items.size(); i++) {
-		if (tool_menu_items[i].name == p_name) {
-			String submenu = tool_menu_items[i].submenu;
-
-			if (submenu != "") {
-				Node *n = tool_menu->get_popup()->get_node(submenu);
-
-				if (n) {
-					tool_menu->get_popup()->remove_child(n);
-					memdelete(n);
-				}
-			}
-
-			tool_menu_items.remove(i);
-		}
-	}
-
-	_rebuild_tool_menu();
-}
 
 int EditorNode::build_callback_count=0;
 
@@ -5510,8 +5408,6 @@ EditorNode::EditorNode() {
 	_initializing_addons=false;
 	docks_visible = true;
 
-
-	_initializing_tool_menu = true;
 
 	FileAccess::set_backup_save(true);
 
@@ -5972,9 +5868,10 @@ EditorNode::EditorNode() {
 
 	//tool_menu->set_icon(gui_base->get_icon("Save","EditorIcons"));
 	left_menu_hb->add_child( tool_menu );
-	tool_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
-	add_tool_menu_item(TTR("Orphan Resource Explorer"), this, "_menu_option", TOOLS_ORPHAN_RESOURCES);
+	p=tool_menu->get_popup();
+	p->connect("id_pressed",this,"_menu_option");
+	p->add_item(TTR("Orphan Resource Explorer"),TOOLS_ORPHAN_RESOURCES);
 
 	export_button = memnew( ToolButton );
 	export_button->set_tooltip(TTR("Export the project to many platforms."));
@@ -6658,6 +6555,9 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( SpatialEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
 
+
+	EditorAudioBuses::register_editor();
+
 	ScriptTextEditor::register_editor(); //register one for text scripts
 
 	if (StreamPeerSSL::is_available()) {
@@ -6855,8 +6755,7 @@ EditorNode::EditorNode() {
 		_initializing_addons=false;
 	}
 
-	_initializing_tool_menu = false;
-	_rebuild_tool_menu();
+
 
 	_load_docks();
 

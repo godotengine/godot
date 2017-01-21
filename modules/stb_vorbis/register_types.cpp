@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_stream.cpp                                                     */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,36 +26,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "audio_stream.h"
+#include "register_types.h"
+#include "audio_stream_ogg_vorbis.h"
 
-//////////////////////////////
+static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader = NULL;
 
+void register_stb_vorbis_types() {
 
-void AudioStreamPlayback::_bind_methods() {
-
-	ClassDB::bind_method(_MD("play","from_pos_sec"),&AudioStreamPlayback::play,DEFVAL(0));
-	ClassDB::bind_method(_MD("stop"),&AudioStreamPlayback::stop);
-	ClassDB::bind_method(_MD("is_playing"),&AudioStreamPlayback::is_playing);
-
-	ClassDB::bind_method(_MD("set_loop","enabled"),&AudioStreamPlayback::set_loop);
-	ClassDB::bind_method(_MD("has_loop"),&AudioStreamPlayback::has_loop);
-
-	ClassDB::bind_method(_MD("get_loop_count"),&AudioStreamPlayback::get_loop_count);
-
-	ClassDB::bind_method(_MD("seek_pos","pos"),&AudioStreamPlayback::seek_pos);
-	ClassDB::bind_method(_MD("get_pos"),&AudioStreamPlayback::get_pos);
-
-	ClassDB::bind_method(_MD("get_length"),&AudioStreamPlayback::get_length);
-	ClassDB::bind_method(_MD("get_channels"),&AudioStreamPlayback::get_channels);
-	ClassDB::bind_method(_MD("get_mix_rate"),&AudioStreamPlayback::get_mix_rate);
-	ClassDB::bind_method(_MD("get_minimum_buffer_size"),&AudioStreamPlayback::get_minimum_buffer_size);
-
-
+	vorbis_stream_loader = memnew( ResourceFormatLoaderAudioStreamOGGVorbis );
+	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
+	ClassDB::register_class<AudioStreamOGGVorbis>();
 }
 
+void unregister_stb_vorbis_types() {
 
-void AudioStream::_bind_methods() {
-
-
+	memdelete( vorbis_stream_loader );
 }
-

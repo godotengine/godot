@@ -10,7 +10,7 @@ class AudioEffectInstance : public Reference {
 
 public:
 
-	virtual void process(AudioFrame *p_frames,int p_frame_count)=0;
+	virtual void process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count)=0;
 
 };
 

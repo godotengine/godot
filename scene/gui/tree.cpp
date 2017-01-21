@@ -1008,7 +1008,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 	/* Draw label, if height fits */
 
 
-		bool skip=(p_item==root && hide_root);
+	bool skip=(p_item==root && hide_root);
 
 
 	if (!skip && (p_pos.y+label_h-cache.offset.y)>0) {
@@ -1711,8 +1711,15 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			case TreeItem::CELL_MODE_CHECK: {
 
 				bring_up_editor=false; //checkboxes are not edited with editor
-				p_item->set_checked(col, !c.checked);
-				item_edited(col, p_item);
+				if (force_edit_checkbox_only_on_checkbox) {
+					if (x < cache.checked->get_width()) {
+						p_item->set_checked(col, !c.checked);
+						item_edited(col, p_item);
+					}
+				} else {
+					p_item->set_checked(col, !c.checked);
+					item_edited(col, p_item);
+				}
 				click_handled = true;
 				//p_item->edited_signal.call(col);
 
@@ -3555,6 +3562,16 @@ bool Tree::get_single_select_cell_editing_only_when_already_selected() const {
 	return force_select_on_already_selected;
 }
 
+void Tree::set_edit_checkbox_cell_only_when_checkbox_is_pressed(bool p_enable) {
+
+	force_edit_checkbox_only_on_checkbox=p_enable;
+}
+
+bool Tree::get_edit_checkbox_cell_only_when_checkbox_is_pressed() const {
+
+	return force_edit_checkbox_only_on_checkbox;
+}
+
 
 void Tree::set_allow_rmb_select(bool p_allow) {
 
@@ -3733,6 +3750,7 @@ Tree::Tree() {
 	force_select_on_already_selected=false;
 
 	allow_rmb_select=false;
+	force_edit_checkbox_only_on_checkbox=false;
 
 	set_clip_contents(true);
 }

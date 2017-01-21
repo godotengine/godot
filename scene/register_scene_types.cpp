@@ -139,7 +139,7 @@
 
 #include "scene/main/timer.h"
 
-//#include "scene/audio/stream_player.h"
+#include "scene/audio/audio_player.h"
 //#include "scene/audio/event_player.h"
 //#include "scene/audio/sound_room_params.h"
 #include "scene/resources/sphere_shape.h"
@@ -177,7 +177,7 @@
 #include "scene/resources/world_2d.h"
 
 //#include "scene/resources/sample_library.h"
-#include "scene/resources/audio_stream.h"
+//#include "scene/resources/audio_stream.h"
 #include "scene/resources/gibberish_stream.h"
 #include "scene/resources/bit_mask.h"
 #include "scene/resources/color_ramp.h"
@@ -592,10 +592,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_virtual_class<AudioStream>();
-	ClassDB::register_virtual_class<AudioStreamPlayback>();
-//TODO: Adapt to the new AudioStream API or drop (GH-3307)
-	//ClassDB::register_type<AudioStreamGibberish>();
+	ClassDB::register_class<AudioPlayer>();
 	ClassDB::register_virtual_class<VideoStream>();
 
 	OS::get_singleton()->yield(); //may take time to init

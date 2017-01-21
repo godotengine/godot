@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "video_player.h"
 #include "os/os.h"
+#include "servers/audio_server.h"
 /*
 
 int VideoPlayer::InternalStream::get_channel_count() const {

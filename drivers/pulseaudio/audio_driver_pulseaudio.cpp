@@ -65,15 +65,15 @@ Error AudioDriverPulseAudio::init() {
 
 	int error_code;
 	pulse = pa_simple_new(	NULL,         // default server
-                          	"Godot",      // application name
-                          	PA_STREAM_PLAYBACK,
-                          	NULL,         // default device
-                          	"Sound",      // stream description
-                          	&spec,
-                          	NULL,         // use default channel map
-                          	&attr,         // use buffering attributes from above
-                          	&error_code
-                          	);
+				"Godot",      // application name
+				PA_STREAM_PLAYBACK,
+				NULL,         // default device
+				"Sound",      // stream description
+				&spec,
+				NULL,         // use default channel map
+				&attr,         // use buffering attributes from above
+				&error_code
+				);
 
 	if (pulse == NULL) {
 		fprintf(stderr, "PulseAudio ERR: %s\n", pa_strerror(error_code));\
@@ -103,6 +103,7 @@ float AudioDriverPulseAudio::get_latency() {
 
 void AudioDriverPulseAudio::thread_func(void* p_udata) {
 
+	print_line("thread");
 	AudioDriverPulseAudio* ad = (AudioDriverPulseAudio*)p_udata;
 
 	while (!ad->exit_thread) {
@@ -121,9 +122,9 @@ void AudioDriverPulseAudio::thread_func(void* p_udata) {
 			for (unsigned int i=0; i < ad->buffer_size * ad->channels;i ++) {
 				ad->samples_out[i] = ad->samples_in[i] >> 16;
 			}
-        	}
+		}
 
-        	// pa_simple_write always consumes the entire buffer
+		// pa_simple_write always consumes the entire buffer
 
 		int error_code;
 		int byte_size = ad->buffer_size * sizeof(int16_t) * ad->channels;
@@ -134,7 +135,7 @@ void AudioDriverPulseAudio::thread_func(void* p_udata) {
 			ad->exit_thread = true;
 			break;
 		}
-    	}
+	}
 
 	ad->thread_exited = true;
 }

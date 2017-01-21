@@ -452,6 +452,7 @@ friend class TreeItem;
 	bool scrolling;
 
 	bool force_select_on_already_selected;
+	bool force_edit_checkbox_only_on_checkbox;
 
 	bool hide_folding;
 
@@ -530,6 +531,10 @@ public:
 
 	void set_single_select_cell_editing_only_when_already_selected(bool p_enable);
 	bool get_single_select_cell_editing_only_when_already_selected() const;
+
+	void set_edit_checkbox_cell_only_when_checkbox_is_pressed(bool p_enable);
+	bool get_edit_checkbox_cell_only_when_checkbox_is_pressed() const;
+
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;
