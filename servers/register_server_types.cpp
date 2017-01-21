@@ -41,6 +41,7 @@
 #include "audio/effects/audio_effect_reverb.h"
 #include "audio/effects/audio_effect_filter.h"
 #include "audio/effects/audio_effect_eq.h"
+#include "audio/effects/audio_effect_distortion.h"
 
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
 
@@ -93,6 +94,7 @@ void register_server_types() {
 	ClassDB::register_class<AudioEffectEQ10>();
 	ClassDB::register_class<AudioEffectEQ21>();
 
+	ClassDB::register_class<AudioEffectDistortion>();
 
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
 	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
