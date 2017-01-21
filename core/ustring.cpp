@@ -3392,7 +3392,6 @@ String String::c_unescape() const {
 	escaped=escaped.replace("\\v","\v");
 	escaped=escaped.replace("\\'","\'");
 	escaped=escaped.replace("\\\"","\"");
-	escaped=escaped.replace("\\?","\?");
 	escaped=escaped.replace("\\\\","\\");
 
 	return escaped;
@@ -3411,7 +3410,6 @@ String String::c_escape() const {
 	escaped=escaped.replace("\v","\\v");
 	escaped=escaped.replace("\'","\\'");
 	escaped=escaped.replace("\"","\\\"");
-	escaped=escaped.replace("\?","\\?");
 
 	return escaped;
 }
