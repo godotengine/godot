@@ -401,7 +401,7 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
 	label->set_begin( Point2( margin, margin) );
 	label->set_end( Point2( margin, button_margin+10) );
-	//label->set_autowrap(true);
+	label->set_autowrap(true);
 	add_child(label);
 
 	hbc = memnew( HBoxContainer );
