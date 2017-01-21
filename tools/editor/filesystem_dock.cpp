@@ -170,7 +170,7 @@ void FileSystemDock::_notification(int p_what) {
 			_update_tree(); //maybe it finished already
 
 			if (EditorFileSystem::get_singleton()->is_scanning()) {
-				_set_scannig_mode();
+				_set_scanning_mode();
 			}
 
 		} break;
@@ -662,7 +662,7 @@ void FileSystemDock::_fs_changed() {
 	set_process(false);
 }
 
-void FileSystemDock::_set_scannig_mode() {
+void FileSystemDock::_set_scanning_mode() {
 
 	split_box->hide();
 	button_hist_prev->set_disabled(true);
@@ -1174,7 +1174,7 @@ void FileSystemDock::_search_changed(const String& p_text) {
 
 void FileSystemDock::_rescan() {
 
-	_set_scannig_mode();
+	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
 
 }
@@ -1186,6 +1186,14 @@ void FileSystemDock::fix_dependencies(const String& p_for_file) {
 
 void FileSystemDock::focus_on_filter() {
 
+	if (!search_box->is_visible_in_tree()) {
+		// Tree mode, switch to files list with search box
+		tree->hide();
+		file_list_vb->show();
+		button_favorite->hide();
+	}
+
+	search_box->grab_focus();
 }
 
 void FileSystemDock::set_display_mode(int p_mode) {

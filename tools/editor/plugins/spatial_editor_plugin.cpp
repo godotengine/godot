@@ -3437,7 +3437,7 @@ void SpatialEditor::_instance_scene() {
 #if 0
 	EditorNode *en = get_scene()->get_root_node()->cast_to<EditorNode>();
 	ERR_FAIL_COND(!en);
-	String path = en->get_scenes_dock()->get_selected_path();
+	String path = en->get_filesystem_dock()->get_selected_path();
 	if (path=="") {
 		set_message(TTR("No scene selected to instance!"));
 		return;

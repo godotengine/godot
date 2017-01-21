@@ -139,7 +139,6 @@ private:
 		FILE_OPEN_OLD_SCENE,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
-		FILE_QUICK_OPEN_FILE,
 		FILE_RUN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
@@ -280,7 +279,7 @@ private:
 	PropertyEditor *property_editor;
 	NodeDock *node_dock;
 	VBoxContainer *prop_editor_vb;
-	FileSystemDock *scenes_dock;
+	FileSystemDock *filesystem_dock;
 	EditorRunNative *run_native;
 
 	HBoxContainer *search_bar;
@@ -706,7 +705,7 @@ public:
 
 	void request_instance_scene(const String &p_path);
 	void request_instance_scenes(const Vector<String>& p_files);
-	FileSystemDock *get_scenes_dock();
+	FileSystemDock *get_filesystem_dock();
 	SceneTreeDock *get_scene_tree_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 

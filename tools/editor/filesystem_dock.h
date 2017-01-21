@@ -153,7 +153,7 @@ private:
 	void _dir_selected();
 	void _update_tree();
 	void _rescan();
-	void _set_scannig_mode();
+	void _set_scanning_mode();
 
 
 	void _favorites_pressed();

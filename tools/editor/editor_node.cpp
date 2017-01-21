@@ -189,6 +189,9 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 			next_tab = next_tab >= 0 ? next_tab : editor_data.get_edited_scene_count() - 1;
 			_scene_tab_changed(next_tab);
 		}
+		if (ED_IS_SHORTCUT("editor/filter_files", p_event)) {
+			filesystem_dock->focus_on_filter();
+		}
 
 		switch(p_event.key.scancode) {
 
@@ -2075,14 +2078,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			quick_open->set_title(TTR("Quick Open Script.."));
 
 		} break;
-		case FILE_QUICK_OPEN_FILE: {
-
-
-			//quick_open->popup("Resource", false, true);
-			//quick_open->set_title("Quick Search File..");
-			scenes_dock->focus_on_filter();
-
-		} break;
 		case FILE_RUN_SCRIPT: {
 
 			file_script->popup_centered_ratio();
@@ -3861,9 +3856,9 @@ void EditorNode::request_instance_scenes(const Vector<String>& p_files) {
 	scene_tree_dock->instance_scenes(p_files);
 }
 
-FileSystemDock *EditorNode::get_scenes_dock() {
+FileSystemDock *EditorNode::get_filesystem_dock() {
 
-	return scenes_dock;
+	return filesystem_dock;
 }
 SceneTreeDock *EditorNode::get_scene_tree_dock() {
 
@@ -5187,7 +5182,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String>& p_files, Control *
 
 void EditorNode::_dropped_files(const Vector<String>& p_files,int p_screen) {
 
-	String cur_path = scenes_dock->get_current_path();
+	String cur_path = filesystem_dock->get_current_path();
 	for(int i=0;i<EditorImportExport::get_singleton()->get_import_plugin_count();i++) {
 		EditorImportExport::get_singleton()->get_import_plugin(i)->import_from_drop(p_files,cur_path);
 	}
@@ -5860,6 +5855,7 @@ EditorNode::EditorNode() {
 
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD+KEY_TAB);
 	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_TAB);
+	ED_SHORTCUT("editor/filter_files", TTR("Filter Files.."), KEY_MASK_ALT+KEY_MASK_CMD+KEY_P);
 
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
@@ -5879,7 +5875,6 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open_scene",TTR("Quick Open Scene.."),KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_O),FILE_QUICK_OPEN_SCENE);
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open_script",TTR("Quick Open Script.."),KEY_MASK_ALT+KEY_MASK_CMD+KEY_O),FILE_QUICK_OPEN_SCRIPT);
-	p->add_shortcut(ED_SHORTCUT("editor/quick_filter_files",TTR("Quick Filter Files.."),KEY_MASK_ALT+KEY_MASK_CMD+KEY_P),FILE_QUICK_OPEN_FILE);
 	p->add_separator();
 
 	PopupMenu *pm_export = memnew(PopupMenu );
@@ -6376,21 +6371,21 @@ EditorNode::EditorNode() {
 		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
 	}
 
-	scenes_dock = memnew( FileSystemDock(this) );
-	scenes_dock->set_name(TTR("FileSystem"));
-	scenes_dock->set_display_mode(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
+	filesystem_dock = memnew( FileSystemDock(this) );
+	filesystem_dock->set_name(TTR("FileSystem"));
+	filesystem_dock->set_display_mode(int(EditorSettings::get_singleton()->get("docks/filesystem/display_mode")));
 
 	if (use_single_dock_column) {
-		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(scenes_dock);
+		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(filesystem_dock);
 		left_r_vsplit->hide();
 		dock_slot[DOCK_SLOT_LEFT_UR]->hide();
 		dock_slot[DOCK_SLOT_LEFT_BR]->hide();
 	} else {
-		dock_slot[DOCK_SLOT_LEFT_UR]->add_child(scenes_dock);
+		dock_slot[DOCK_SLOT_LEFT_UR]->add_child(filesystem_dock);
 	}
-	//prop_pallete->add_child(scenes_dock);
-	scenes_dock->connect("open",this,"open_request");
-	scenes_dock->connect("instance",this,"_instance_request");
+	//prop_pallete->add_child(filesystem_dock);
+	filesystem_dock->connect("open",this,"open_request");
+	filesystem_dock->connect("instance",this,"_instance_request");
 
 	const String docks_section = "docks";
 
