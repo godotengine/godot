@@ -69,55 +69,55 @@ public:
 
 VARIANT_ENUM_CAST(AudioEffectFilter::FilterDB)
 
-class AudioEffectLowPass : public AudioEffectFilter {
-	GDCLASS(AudioEffectLowPass,AudioEffectFilter)
+class AudioEffectLowPassFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectLowPassFilter,AudioEffectFilter)
 public:
 
-	AudioEffectLowPass() : AudioEffectFilter(AudioFilterSW::LOWPASS) {}
+	AudioEffectLowPassFilter() : AudioEffectFilter(AudioFilterSW::LOWPASS) {}
 };
 
-class AudioEffectHighPass : public AudioEffectFilter {
-	GDCLASS(AudioEffectHighPass,AudioEffectFilter)
+class AudioEffectHighPassFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectHighPassFilter,AudioEffectFilter)
 public:
 
-	AudioEffectHighPass() : AudioEffectFilter(AudioFilterSW::HIGHPASS) {}
+	AudioEffectHighPassFilter() : AudioEffectFilter(AudioFilterSW::HIGHPASS) {}
 };
 
-class AudioEffectBandPass : public AudioEffectFilter {
-	GDCLASS(AudioEffectBandPass,AudioEffectFilter)
+class AudioEffectBandPassFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectBandPassFilter,AudioEffectFilter)
 public:
 
-	AudioEffectBandPass() : AudioEffectFilter(AudioFilterSW::BANDPASS) {}
+	AudioEffectBandPassFilter() : AudioEffectFilter(AudioFilterSW::BANDPASS) {}
 };
 
-class AudioEffectNotchPass : public AudioEffectFilter {
-	GDCLASS(AudioEffectNotchPass,AudioEffectFilter)
+class AudioEffectNotchFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectNotchFilter,AudioEffectFilter)
 public:
 
-	AudioEffectNotchPass() : AudioEffectFilter(AudioFilterSW::NOTCH) {}
+	AudioEffectNotchFilter() : AudioEffectFilter(AudioFilterSW::NOTCH) {}
 };
 
-class AudioEffectBandLimit : public AudioEffectFilter {
-	GDCLASS(AudioEffectBandLimit,AudioEffectFilter)
+class AudioEffectBandLimitFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectBandLimitFilter,AudioEffectFilter)
 public:
 
-	AudioEffectBandLimit() : AudioEffectFilter(AudioFilterSW::BANDLIMIT) {}
-};
-
-
-class AudioEffectLowShelf : public AudioEffectFilter {
-	GDCLASS(AudioEffectLowShelf,AudioEffectFilter)
-public:
-
-	AudioEffectLowShelf() : AudioEffectFilter(AudioFilterSW::LOWSHELF) {}
+	AudioEffectBandLimitFilter() : AudioEffectFilter(AudioFilterSW::BANDLIMIT) {}
 };
 
 
-class AudioEffectHighShelf : public AudioEffectFilter {
-	GDCLASS(AudioEffectHighShelf,AudioEffectFilter)
+class AudioEffectLowShelfFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectLowShelfFilter,AudioEffectFilter)
 public:
 
-	AudioEffectHighShelf() : AudioEffectFilter(AudioFilterSW::HIGHSHELF) {}
+	AudioEffectLowShelfFilter() : AudioEffectFilter(AudioFilterSW::LOWSHELF) {}
+};
+
+
+class AudioEffectHighShelfFilter : public AudioEffectFilter {
+	GDCLASS(AudioEffectHighShelfFilter,AudioEffectFilter)
+public:
+
+	AudioEffectHighShelfFilter() : AudioEffectFilter(AudioFilterSW::HIGHSHELF) {}
 };
 
 

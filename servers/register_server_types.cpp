@@ -45,6 +45,7 @@
 #include "audio/effects/audio_effect_stereo_enhance.h"
 #include "audio/effects/audio_effect_panner.h"
 #include "audio/effects/audio_effect_chorus.h"
+#include "audio/effects/audio_effect_delay.h"
 
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
 
@@ -87,13 +88,13 @@ void register_server_types() {
 
 		ClassDB::register_class<AudioEffectReverb>();
 
-		ClassDB::register_class<AudioEffectLowPass>();
-		ClassDB::register_class<AudioEffectHighPass>();
-		ClassDB::register_class<AudioEffectBandPass>();
-		ClassDB::register_class<AudioEffectNotchPass>();
-		ClassDB::register_class<AudioEffectBandLimit>();
-		ClassDB::register_class<AudioEffectLowShelf>();
-		ClassDB::register_class<AudioEffectHighShelf>();
+		ClassDB::register_class<AudioEffectLowPassFilter>();
+		ClassDB::register_class<AudioEffectHighPassFilter>();
+		ClassDB::register_class<AudioEffectBandPassFilter>();
+		ClassDB::register_class<AudioEffectNotchFilter>();
+		ClassDB::register_class<AudioEffectBandLimitFilter>();
+		ClassDB::register_class<AudioEffectLowShelfFilter>();
+		ClassDB::register_class<AudioEffectHighShelfFilter>();
 
 		ClassDB::register_class<AudioEffectEQ6>();
 		ClassDB::register_class<AudioEffectEQ10>();
@@ -105,6 +106,7 @@ void register_server_types() {
 
 		ClassDB::register_class<AudioEffectPanner>();
 		ClassDB::register_class<AudioEffectChorus>();
+		ClassDB::register_class<AudioEffectDelay>();
 	}
 
 
