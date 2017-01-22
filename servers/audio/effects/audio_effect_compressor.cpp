@@ -19,10 +19,19 @@ void AudioEffectCompressorInstance::process(const AudioFrame *p_src_frames,Audio
 	float mix = base->mix;
 	float gr_meter_decay = exp(1 / (1 * sample_rate));
 
+	const AudioFrame *src = p_src_frames;
+
+	if (base->sidechain!=StringName() && current_channel!=-1) {
+
+		int bus = AudioServer::get_singleton()->thread_find_bus_index(base->sidechain);
+		if (bus>=0) {
+			src = AudioServer::get_singleton()->thread_get_channel_mix_buffer(bus,current_channel);
+		}
+	}
 
 	for(int i=0;i<p_frame_count;i++) {
 
-		AudioFrame s = p_src_frames[i];
+		AudioFrame s = src[i];
 		//convert to positive
 		s.l = Math::abs(s.l);
 		s.r = Math::abs(s.r);
@@ -88,6 +97,7 @@ Ref<AudioEffectInstance> AudioEffectCompressor::instance() {
 	ins->runmax=0;
 	ins->maxover=0;
 	ins->gr_meter=1.0;
+	ins->current_channel=-1;
 	return ins;
 }
 
@@ -147,6 +157,31 @@ float AudioEffectCompressor::get_mix() const {
 	return mix;
 }
 
+void AudioEffectCompressor::set_sidechain(const StringName& p_sidechain) {
+
+	AudioServer::get_singleton()->lock();
+	sidechain=p_sidechain;
+	AudioServer::get_singleton()->unlock();
+}
+
+StringName AudioEffectCompressor::get_sidechain() const {
+
+	return sidechain;
+}
+
+void AudioEffectCompressor::_validate_property(PropertyInfo& property) const {
+
+	if (property.name=="sidechain") {
+
+		String buses="";
+		for(int i=0;i<AudioServer::get_singleton()->get_bus_count();i++) {
+			buses+=",";
+			buses+=AudioServer::get_singleton()->get_bus_name(i);
+		}
+
+		property.hint_string=buses;
+	}
+}
 
 void AudioEffectCompressor::_bind_methods() {
 
@@ -168,12 +203,16 @@ void AudioEffectCompressor::_bind_methods() {
 	ClassDB::bind_method(_MD("set_mix","mix"),&AudioEffectCompressor::set_mix);
 	ClassDB::bind_method(_MD("get_mix"),&AudioEffectCompressor::get_mix);
 
+	ClassDB::bind_method(_MD("set_sidechain","sidechain"),&AudioEffectCompressor::set_sidechain);
+	ClassDB::bind_method(_MD("get_sidechain"),&AudioEffectCompressor::get_sidechain);
+
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"treshold",PROPERTY_HINT_RANGE,"-60,0,0.1"),_SCS("set_treshold"),_SCS("get_treshold"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ratio",PROPERTY_HINT_RANGE,"1,48,0.1"),_SCS("set_ratio"),_SCS("get_ratio"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"gain",PROPERTY_HINT_RANGE,"-20,20,0.1"),_SCS("set_gain"),_SCS("get_gain"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"attack_us",PROPERTY_HINT_RANGE,"20,2000,1"),_SCS("set_attack_us"),_SCS("get_attack_us"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"release_ms",PROPERTY_HINT_RANGE,"20,2000,1"),_SCS("set_release_ms"),_SCS("get_release_ms"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"mix",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_mix"),_SCS("get_mix"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"sidechain",PROPERTY_HINT_ENUM),_SCS("set_sidechain"),_SCS("get_sidechain"));
 
 }
 

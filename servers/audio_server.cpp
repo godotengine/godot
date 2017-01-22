@@ -29,6 +29,8 @@
 #include "audio_server.h"
 #include "globals.h"
 #include "os/os.h"
+#include "servers/audio/effects/audio_effect_compressor.h"
+
 AudioDriver *AudioDriver::singleton=NULL;
 AudioDriver *AudioDriver::get_singleton() {
 
@@ -514,7 +516,12 @@ void AudioServer::_update_bus_effects(int p_bus) {
 	for(int i=0;i<buses[p_bus]->channels.size();i++) {
 		buses[p_bus]->channels[i].effect_instances.resize(buses[p_bus]->effects.size());
 		for(int j=0;j<buses[p_bus]->effects.size();j++) {
-			buses[p_bus]->channels[i].effect_instances[j]=buses[p_bus]->effects[j].effect->instance();
+			Ref<AudioEffectInstance> fx = buses[p_bus]->effects[j].effect->instance();
+			if (fx->cast_to<AudioEffectCompressorInstance>()) {
+				fx->cast_to<AudioEffectCompressorInstance>()->set_current_channel(i);
+			}
+			buses[p_bus]->channels[i].effect_instances[j]=fx;
+
 		}
 	}
 }

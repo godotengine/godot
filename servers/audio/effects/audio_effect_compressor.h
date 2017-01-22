@@ -12,8 +12,10 @@ friend class AudioEffectCompressor;
 	Ref<AudioEffectCompressor> base;
 
 	float rundb,averatio,runratio,runmax,maxover,gr_meter;
+	int current_channel;
 public:
 
+	void set_current_channel(int p_channel) { current_channel=p_channel; }
 	virtual void process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count);
 
 };
@@ -29,10 +31,11 @@ friend class AudioEffectCompressorInstance;
 	float attack_us;
 	float release_ms;
 	float mix;
+	StringName sidechain;
 
 
 protected:
-
+	void _validate_property(PropertyInfo& property) const;
 	static void _bind_methods();
 public:
 
@@ -57,6 +60,9 @@ public:
 
 	void set_mix(float p_mix);
 	float get_mix() const;
+
+	void set_sidechain(const StringName& p_sidechain);
+	StringName get_sidechain() const;
 
 	AudioEffectCompressor();
 };

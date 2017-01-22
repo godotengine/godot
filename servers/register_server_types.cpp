@@ -47,6 +47,7 @@
 #include "audio/effects/audio_effect_chorus.h"
 #include "audio/effects/audio_effect_delay.h"
 #include "audio/effects/audio_effect_compressor.h"
+#include "audio/effects/audio_effect_limiter.h"
 
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
 
@@ -109,6 +110,7 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectChorus>();
 		ClassDB::register_class<AudioEffectDelay>();
 		ClassDB::register_class<AudioEffectCompressor>();
+		ClassDB::register_class<AudioEffectLimiter>();
 	}
 
 
