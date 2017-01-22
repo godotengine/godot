@@ -43,6 +43,8 @@
 #include "audio/effects/audio_effect_eq.h"
 #include "audio/effects/audio_effect_distortion.h"
 #include "audio/effects/audio_effect_stereo_enhance.h"
+#include "audio/effects/audio_effect_panner.h"
+#include "audio/effects/audio_effect_chorus.h"
 
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
 
@@ -79,25 +81,32 @@ void register_server_types() {
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
 	ClassDB::register_virtual_class<AudioEffect>();
 
-	ClassDB::register_class<AudioEffectAmplify>();
+	{
+		//audio effects
+		ClassDB::register_class<AudioEffectAmplify>();
 
-	ClassDB::register_class<AudioEffectReverb>();
+		ClassDB::register_class<AudioEffectReverb>();
 
-	ClassDB::register_class<AudioEffectLowPass>();
-	ClassDB::register_class<AudioEffectHighPass>();
-	ClassDB::register_class<AudioEffectBandPass>();
-	ClassDB::register_class<AudioEffectNotchPass>();
-	ClassDB::register_class<AudioEffectBandLimit>();
-	ClassDB::register_class<AudioEffectLowShelf>();
-	ClassDB::register_class<AudioEffectHighShelf>();
+		ClassDB::register_class<AudioEffectLowPass>();
+		ClassDB::register_class<AudioEffectHighPass>();
+		ClassDB::register_class<AudioEffectBandPass>();
+		ClassDB::register_class<AudioEffectNotchPass>();
+		ClassDB::register_class<AudioEffectBandLimit>();
+		ClassDB::register_class<AudioEffectLowShelf>();
+		ClassDB::register_class<AudioEffectHighShelf>();
 
-	ClassDB::register_class<AudioEffectEQ6>();
-	ClassDB::register_class<AudioEffectEQ10>();
-	ClassDB::register_class<AudioEffectEQ21>();
+		ClassDB::register_class<AudioEffectEQ6>();
+		ClassDB::register_class<AudioEffectEQ10>();
+		ClassDB::register_class<AudioEffectEQ21>();
 
-	ClassDB::register_class<AudioEffectDistortion>();
+		ClassDB::register_class<AudioEffectDistortion>();
 
-	ClassDB::register_class<AudioEffectStereoEnhance>();
+		ClassDB::register_class<AudioEffectStereoEnhance>();
+
+		ClassDB::register_class<AudioEffectPanner>();
+		ClassDB::register_class<AudioEffectChorus>();
+	}
+
 
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
 	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
