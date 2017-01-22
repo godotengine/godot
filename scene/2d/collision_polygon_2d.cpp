@@ -243,6 +243,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2>& p_polygon) {
 		_update_parent();
 	}
 	update();
+	update_configuration_warning();
 }
 
 Vector<Point2> CollisionPolygon2D::get_polygon() const {
