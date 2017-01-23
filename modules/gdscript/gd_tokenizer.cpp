@@ -119,6 +119,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "':'",
 "'\\n'",
 "PI",
+"_",
 "Error",
 "EOF",
 "Cursor"};
@@ -899,6 +900,7 @@ void GDTokenizerText::_advance() {
 								{TK_CF_PASS,"pass"},
 								{TK_SELF,"self"},
 								{TK_CONST_PI,"PI"},
+								{TK_WILDCARD,"_"},
 								{TK_ERROR,NULL}
 							};
 
