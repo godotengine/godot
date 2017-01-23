@@ -56,7 +56,24 @@ void OptionButton::_notification(int p_what) {
 			Size2 size = get_size();
 
 			Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
-			arrow->draw(ci, ofs);
+
+			Color arrow_color = get_color("font_color");
+			switch (get_draw_mode()) {
+				case DRAW_NORMAL: {
+					arrow_color = get_color("font_color");
+				} break;
+				case DRAW_PRESSED: {
+					arrow_color = get_color("font_color_pressed");
+				} break;
+				case DRAW_HOVER: {
+					arrow_color = get_color("font_color_hover");
+				} break;
+				case DRAW_DISABLED: {
+					arrow_color = get_color("font_color_disabled");
+				} break;
+			}
+
+			arrow->draw(ci, ofs, arrow_color);
 
 		} break;
 	}

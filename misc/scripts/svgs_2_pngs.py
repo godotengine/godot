@@ -16,7 +16,7 @@ last_svg_data = None
 SCRIPT_FOLDER = dirname(realpath(__file__)) + '/'
 theme_dir_base = SCRIPT_FOLDER + '../../scene/resources/default_theme/'
 theme_dir_source = theme_dir_base + 'source/'
-icons_dir_base = SCRIPT_FOLDER + '../editor/icons/'
+icons_dir_base = SCRIPT_FOLDER + '../../editor/icons/'
 icons_dir_2x = icons_dir_base + '2x/'
 icons_dir_source = icons_dir_base + 'source/'
 
@@ -54,14 +54,14 @@ def export_icons():
         out_icon_names = [name_only]  # export to a png with the same file name
         theme_out_icon_names = []
         # special cases
-        if special_icons.has_key(name_only):
+        if special_icons.get(name_only):
             special_icon = special_icons[name_only]
             if type(special_icon) is dict:
                 if special_icon.get('avoid_self'):
                     out_icon_names = []
-                if special_icon.has_key('output_names'):
+                if special_icon.get('output_names'):
                     out_icon_names += special_icon['output_names']
-                if special_icon.has_key('theme_output_names'):
+                if special_icon.get('theme_output_names'):
                     theme_out_icon_names += special_icon['theme_output_names']
 
         source_path = '%s%s.svg' % (svgs_path, name_only)
@@ -83,10 +83,10 @@ def export_theme():
 
         out_icon_names = [name_only]  # export to a png with the same file name
         # special cases
-        if theme_icons.has_key(name_only):
+        if theme_icons.get(name_only):
             special_icon = theme_icons[name_only]
             if type(special_icon) is dict:
-                if special_icon.has_key('output_names'):
+                if special_icon.get('output_names'):
                     out_icon_names += special_icon['output_names']
 
         source_path = '%s%s.svg' % (svgs_path, name_only)

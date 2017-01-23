@@ -1575,11 +1575,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		hbc->add_child(memnew(VSeparator));
 
 		step = memnew(Button);
+		step->set_flat(true);
 		hbc->add_child(step);
 		step->set_tooltip(TTR("Step Into"));
 		step->connect("pressed", this, "debug_step");
 
 		next = memnew(Button);
+		next->set_flat(true);
 		hbc->add_child(next);
 		next->set_tooltip(TTR("Step Over"));
 		next->connect("pressed", this, "debug_next");
@@ -1587,11 +1589,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		hbc->add_child(memnew(VSeparator));
 
 		dobreak = memnew(Button);
+		dobreak->set_flat(true);
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip(TTR("Break"));
 		dobreak->connect("pressed", this, "debug_break");
 
 		docontinue = memnew(Button);
+		docontinue->set_flat(true);
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip(TTR("Continue"));
 		docontinue->connect("pressed", this, "debug_continue");
@@ -1599,11 +1603,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		//hbc->add_child( memnew( VSeparator) );
 
 		back = memnew(Button);
+		back->set_flat(true);
 		hbc->add_child(back);
 		back->set_tooltip(TTR("Inspect Previous Instance"));
 		back->hide();
 
 		forward = memnew(Button);
+		forward->set_flat(true);
 		hbc->add_child(forward);
 		forward->set_tooltip(TTR("Inspect Next Instance"));
 		forward->hide();
@@ -1765,6 +1771,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_total->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(Button);
+		vmem_refresh->set_flat(true);
 		vmem_hb->add_child(vmem_refresh);
 		vmem_vb->add_child(vmem_hb);
 		vmem_refresh->connect("pressed", this, "_video_mem_request");
@@ -1797,30 +1804,35 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 	}
 
 	{ // misc
-		VBoxContainer *info_left = memnew(VBoxContainer);
-		info_left->set_h_size_flags(SIZE_EXPAND_FILL);
-		info_left->set_name(TTR("Misc"));
-		tabs->add_child(info_left);
+
+		GridContainer *grid_cont = memnew(GridContainer);
+		grid_cont->set_h_size_flags(SIZE_EXPAND_FILL);
+		grid_cont->set_name(TTR("Misc"));
+		grid_cont->set_columns(2);
+		tabs->add_child(grid_cont);
+
+		grid_cont->add_child(memnew(Label(TTR("Clicked Control:"))));
 		clicked_ctrl = memnew(LineEdit);
-		info_left->add_margin_child(TTR("Clicked Control:"), clicked_ctrl);
+		grid_cont->add_child(clicked_ctrl);
+
+		grid_cont->add_child(memnew(Label(TTR("Clicked Control Type:"))));
 		clicked_ctrl_type = memnew(LineEdit);
-		info_left->add_margin_child(TTR("Clicked Control Type:"), clicked_ctrl_type);
+		grid_cont->add_child(clicked_ctrl_type);
 
 		live_edit_root = memnew(LineEdit);
+		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
 
 		{
+			grid_cont->add_child(memnew(Label(TTR("Live Edit Root:"))));
+
 			HBoxContainer *lehb = memnew(HBoxContainer);
-			Label *l = memnew(Label(TTR("Live Edit Root:")));
-			lehb->add_child(l);
-			l->set_h_size_flags(SIZE_EXPAND_FILL);
+			lehb->set_h_size_flags(SIZE_EXPAND_FILL);
+			lehb->add_child(live_edit_root);
 			le_set = memnew(Button(TTR("Set From Tree")));
 			lehb->add_child(le_set);
 			le_clear = memnew(Button(TTR("Clear")));
 			lehb->add_child(le_clear);
-			info_left->add_child(lehb);
-			MarginContainer *mc = memnew(MarginContainer);
-			mc->add_child(live_edit_root);
-			info_left->add_child(mc);
+			grid_cont->add_child(lehb);
 			le_set->set_disabled(true);
 			le_clear->set_disabled(true);
 		}

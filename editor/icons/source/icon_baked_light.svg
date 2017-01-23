@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_bone.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -29,7 +29,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="6.1801151"
+     inkscape:cx="-2.7913022"
      inkscape:cy="10.551189"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -70,7 +70,7 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#fc9c9c;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 2 1 L 2 3 L 14 3 L 14 1 L 2 1 z M 1 4 L 1 13 A 2 2.0000174 0 0 0 3 15 L 13 15 A 2 2.0000174 0 0 0 15 13 L 15 4 L 1 4 z M 3 5 L 4 5 L 4 6 L 3 6 L 3 5 z M 6 5 L 7 5 L 7 6 L 6 6 L 6 5 z M 9 5 L 10 5 L 10 6 L 9 6 L 9 5 z M 12 5 L 13 5 L 13 6 L 12 6 L 12 5 z M 3 7 L 13 7 L 13 13 L 3 13 L 3 7 z M 6 8 L 6 9 L 10 9 L 10 8 L 6 8 z "
        transform="translate(0,1036.3622)"
        id="rect4155" />

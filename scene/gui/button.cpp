@@ -69,49 +69,48 @@ void Button::_notification(int p_what) {
 		RID ci = get_canvas_item();
 		Size2 size = get_size();
 		Color color;
+		Color icon_color = Color(1, 1, 1);
 
 		//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(get_draw_mode()));
 
-		Ref<StyleBox> style = get_stylebox("normal");
-
+		String style_name = "";
 		switch (get_draw_mode()) {
 
 			case DRAW_NORMAL: {
 
-				style = get_stylebox("normal");
-				if (!flat)
-					style->draw(ci, Rect2(Point2(0, 0), size));
+				style_name = "normal";
 				color = get_color("font_color");
+
 			} break;
 			case DRAW_PRESSED: {
 
-				style = get_stylebox("pressed");
-				style->draw(ci, Rect2(Point2(0, 0), size));
-				if (has_color("font_color_pressed"))
+				style_name = "pressed";
+				if (has_color("font_color_pressed")) {
 					color = get_color("font_color_pressed");
-				else
+					icon_color = color;
+				} else
 					color = get_color("font_color");
 
 			} break;
 			case DRAW_HOVER: {
 
-				style = get_stylebox("hover");
-				style->draw(ci, Rect2(Point2(0, 0), size));
+				style_name = "hover";
 				color = get_color("font_color_hover");
 
 			} break;
 			case DRAW_DISABLED: {
 
-				style = get_stylebox("disabled");
-				style->draw(ci, Rect2(Point2(0, 0), size));
+				style_name = "disabled";
 				color = get_color("font_color_disabled");
 
 			} break;
 		}
 
+		if (style_name != "" && !flat) get_stylebox(style_name)->draw(ci, Rect2(Point2(0, 0), size));
+
+		Ref<StyleBox> style = get_stylebox(style_name);
 		if (has_focus()) {
 
-			Ref<StyleBox> style = get_stylebox("focus");
 			style->draw(ci, Rect2(Point2(), size));
 		}
 
@@ -149,7 +148,7 @@ void Button::_notification(int p_what) {
 
 			int valign = size.height - style->get_minimum_size().y;
 
-			_icon->draw(ci, style->get_offset() + Point2(0, Math::floor((valign - _icon->get_height()) / 2.0)), is_disabled() ? Color(1, 1, 1, 0.4) : Color(1, 1, 1));
+			_icon->draw(ci, style->get_offset() + Point2(0, Math::floor((valign - _icon->get_height()) / 2.0)), is_disabled() ? Color(1, 1, 1, 0.4) : icon_color);
 		}
 	}
 }

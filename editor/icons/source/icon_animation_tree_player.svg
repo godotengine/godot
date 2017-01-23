@@ -14,11 +14,11 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_animation_tree_player.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_animation_tree_player (copy).svg">
+   sodipodi:docname="icon_animation_tree_player.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254831"
-     inkscape:cx="9.7184474"
-     inkscape:cy="8.2407739"
+     inkscape:zoom="22.627416"
+     inkscape:cx="-0.31764706"
+     inkscape:cy="5.3536612"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -69,8 +69,8 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="opacity:1;fill:#e1cb50;fill-opacity:0.98431373;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 1 1 L 1 15 L 2.1660156 15 L 2.1660156 13 L 4 13 L 4 15 L 12 15 L 12 13 L 14 13 L 14 15 L 15 15 L 15 1 L 14 1 L 14 3 L 12 3 L 12 1 L 4 1 L 4 3 L 2.1660156 3 L 2.1660156 1 L 1 1 z M 2.1660156 5 L 4 5 L 4 7 L 2.1660156 7 L 2.1660156 5 z M 8 5 A 1 1 0 0 1 9 6 A 1 1 0 0 1 8.8339844 6.5507812 L 10.060547 9.0039062 A 1 1 0 0 1 11 10 A 1 1 0 0 1 10 11 A 1 1 0 0 1 9 10 A 1 1 0 0 1 9.1660156 9.4492188 L 8 7.1171875 L 6.8339844 9.4492188 A 1 1 0 0 1 7 10 A 1 1 0 0 1 6 11 A 1 1 0 0 1 5 10 A 1 1 0 0 1 5.9414062 9.0019531 L 7.1660156 6.5507812 A 1 1 0 0 1 7 6 A 1 1 0 0 1 8 5 z M 12 5 L 14 5 L 14 7 L 12 7 L 12 5 z M 2.1660156 9 L 4 9 L 4 11 L 2.1660156 11 L 2.1660156 9 z M 12 9 L 14 9 L 14 11 L 12 11 L 12 9 z "
+       style="opacity:1;fill:#fbe87a;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 1 1 L 1 15 L 2.1660156 15 L 2.1660156 13 L 4 13 L 4 15 L 12 15 L 12 13 L 14 13 L 14 15 L 15 15 L 15 1 L 14 1 L 14 3 L 12 3 L 12 1 L 4 1 L 4 3 L 2.1660156 3 L 2.1660156 1 L 1 1 z M 5.984375 2.9863281 A 1.0001 1.0001 0 0 1 7 4 L 7 6.3828125 L 9.5527344 5.1054688 A 1.0001 1.0001 0 0 1 10.003906 4.9941406 A 1.0001 1.0001 0 0 1 10.447266 6.8945312 L 7 8.6171875 L 7 12 A 1.0001 1.0001 0 1 1 5 12 L 5 7.9921875 L 5 4 A 1.0001 1.0001 0 0 1 5.984375 2.9863281 z M 2.1660156 5 L 4 5 L 4 7 L 2.1660156 7 L 2.1660156 5 z M 12 5 L 14 5 L 14 7 L 12 7 L 12 5 z M 2.1660156 9 L 4 9 L 4 11 L 2.1660156 11 L 2.1660156 9 z M 12 9 L 14 9 L 14 11 L 12 11 L 12 9 z "
        transform="translate(0,1036.3622)"
        id="rect4136" />
   </g>

@@ -579,7 +579,7 @@ void GraphEdit::_bake_segment2d(CanvasItem *p_where, float p_begin, float p_end,
 
 	if (p_depth >= p_min_depth && (dp < p_tol || p_depth >= p_max_depth)) {
 
-		p_where->draw_line(beg, end, p_color.linear_interpolate(p_to_color, mp), 2, true);
+		p_where->draw_line(beg, end, p_color.linear_interpolate(p_to_color, mp), 4, true);
 		lines++;
 	} else {
 		_bake_segment2d(p_where, p_begin, mp, p_a, p_out, p_b, p_in, p_depth + 1, p_min_depth, p_max_depth, p_tol, p_color, p_to_color, lines);
@@ -598,7 +598,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 	int cp_neg_len = get_constant("bezier_len_neg");
 
 	if (diff > 0) {
-		cp_offset = MAX(cp_len, diff * 0.5);
+		cp_offset = MIN(cp_len, diff * 0.5);
 	} else {
 		cp_offset = MAX(MIN(cp_len - diff, cp_neg_len), -diff * 0.5);
 	}

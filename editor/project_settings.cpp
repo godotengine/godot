@@ -78,7 +78,7 @@ void ProjectSettings::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			globals_editor->edit(GlobalConfig::get_singleton());
 
-			search_button->set_icon(get_icon("Zoom", "EditorIcons"));
+			search_button->set_icon(get_icon("Search", "EditorIcons"));
 			clear_button->set_icon(get_icon("Close", "EditorIcons"));
 
 			translation_list->connect("button_pressed", this, "_translation_delete");

@@ -29,6 +29,10 @@
 /*************************************************************************/
 #include "tool_button.h"
 
+void ToolButton::_notification(int p_what) {
+	// set_self_modulate(get_color("pressed"));
+}
+
 ToolButton::ToolButton() {
 	set_flat(true);
 }

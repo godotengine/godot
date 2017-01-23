@@ -683,6 +683,8 @@ void SceneTreeDock::_notification(int p_what) {
 
 			filter_icon->set_texture(get_icon("Zoom", "EditorIcons"));
 
+			filter_icon->set_texture(get_icon("Search", "EditorIcons"));
+
 			EditorNode::get_singleton()->get_editor_selection()->connect("selection_changed", this, "_selection_changed");
 
 		} break;

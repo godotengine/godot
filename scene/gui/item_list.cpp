@@ -42,6 +42,7 @@ void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, boo
 	item.disabled = false;
 	item.tooltip_enabled = true;
 	item.custom_bg = Color(0, 0, 0, 0);
+	item.custom_font_color = get_color("font_color");
 	items.push_back(item);
 
 	update();
@@ -149,6 +150,20 @@ Color ItemList::get_item_custom_bg_color(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Color());
 
 	return items[p_idx].custom_bg;
+}
+
+void ItemList::set_item_custom_font_color(int p_idx, const Color &p_custom_font_color) {
+
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	items[p_idx].custom_font_color = p_custom_font_color;
+}
+
+Color ItemList::get_item_custom_font_color(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, items.size(), Color());
+
+	return items[p_idx].custom_font_color;
 }
 
 void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon) {
@@ -1013,7 +1028,8 @@ void ItemList::_notification(int p_what) {
 				else
 					max_len = size.x;
 
-				Color modulate = items[i].selected ? font_color_selected : font_color;
+				Color font_color_2 = items[i].custom_font_color;
+				Color modulate = items[i].selected ? font_color_selected : font_color_2;
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 

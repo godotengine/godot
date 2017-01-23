@@ -14,11 +14,11 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_animation_player.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_animation_player (copy).svg">
+   sodipodi:docname="icon_animation_player.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="31.999998"
-     inkscape:cx="8.7610995"
-     inkscape:cy="9.3751685"
+     inkscape:cx="3.1985991"
+     inkscape:cy="7.9689184"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -69,7 +69,7 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="opacity:1;fill:#e1cb50;fill-opacity:0.98431373;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#fbe87a;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 1,1037.3622 0,14 1.1666666,0 0,-2 1.8333334,0 0,2 8,0 0,-2 2,0 0,2 1,0 0,-14 -1,0 0,2 -2,0 0,-2 -8,0 0,2 -1.8333334,0 0,-2 z m 1.1666666,4 1.8333334,0 0,2 -1.8333334,0 z m 9.8333334,0 2,0 0,2 -2,0 z m -9.8333334,4 1.8333334,0 0,2 -1.8333334,0 z m 9.8333334,0 2,0 0,2 -2,0 z"
        id="rect4136"
        inkscape:connector-curvature="0"

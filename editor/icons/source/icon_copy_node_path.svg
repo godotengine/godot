@@ -14,7 +14,7 @@
    viewBox="0 0 16 16"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/godotengine/godot/tools/editor/icons/con_script_create.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
@@ -39,8 +39,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="21.189633"
-     inkscape:cx="12.640765"
-     inkscape:cy="9.6848443"
+     inkscape:cx="-1.3283302"
+     inkscape:cy="8.1746718"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -52,8 +52,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -73,7 +73,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -90,7 +90,7 @@
        ry="1.0000174"
        rx="1" />
     <path
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="opacity:1;fill:#e0e0e0;fill-opacity:0.78431374;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 2 1 C 1.4477381 1.0001 1.0000552 1.4477 1 2 L 1 14 C 1.0000552 14.5523 1.4477381 14.9999 2 15 L 14 15 C 14.552262 14.9999 14.999945 14.5523 15 14 L 15 6 L 10 1 L 2 1 z M 3 3 L 9 3 L 9 6 C 9 6.554 9.4459905 7 10 7 L 13 7 L 13 13 L 3 13 L 3 3 z M 6 8 L 4 12 L 6 12 L 8 8 L 6 8 z M 10 8 L 8 12 L 10 12 L 12 8 L 10 8 z "
        transform="translate(0,1036.3622)"
        id="rect4178" />

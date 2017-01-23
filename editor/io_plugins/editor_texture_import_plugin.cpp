@@ -678,7 +678,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 		};
 
 
-		mode_check[i]=memnew(CheckBox);
+		mode_check[i]=memnew( CheckBox );
 		bg->add_child(mode_check[i]);
 		mode_check[i]->set_text(mode_name[i]);
 		mode_check[i]->connect("pressed",this,"_mode_changed",varray(i));

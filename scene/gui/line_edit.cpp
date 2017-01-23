@@ -576,7 +576,7 @@ void LineEdit::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 
-			Ref<StyleBox> style = get_stylebox("normal");
+			Ref<StyleBox> style = has_focus() ? get_stylebox("active") : get_stylebox("normal");
 			if (!is_editable())
 				style = get_stylebox("read_only");
 
@@ -617,7 +617,7 @@ void LineEdit::_notification(int p_what) {
 			int font_ascent = font->get_ascent();
 
 			Color selection_color = get_color("selection_color");
-			Color font_color = get_color("font_color");
+			Color font_color = is_editable() ? has_focus() ? get_color("font_color_active") : get_color("font_color") : get_color("font_color_read_only");
 			Color font_color_selected = get_color("font_color_selected");
 			Color cursor_color = get_color("cursor_color");
 
