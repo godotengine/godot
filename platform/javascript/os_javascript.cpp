@@ -78,37 +78,6 @@ void OS_JavaScript::set_opengl_extensions(const char* p_gl_extensions) {
 	gl_extensions=p_gl_extensions;
 }
 
-static Size2 _windowed_size;
-
-static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
-
-	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_FULLSCREENCHANGE, false);
-
-	OS_JavaScript* os = static_cast<OS_JavaScript*>(user_data);
-	String id = String::utf8(event->id);
-
-	// empty id is canvas
-	if (id.empty() || id=="canvas") {
-
-		OS::VideoMode vm = os->get_video_mode();
-		// this event property is the only reliable information on
-		// browser fullscreen state
-		vm.fullscreen = event->isFullscreen;
-
-		if (event->isFullscreen) {
-			vm.width = event->screenWidth;
-			vm.height = event->screenHeight;
-		}
-		else {
-			vm.width = _windowed_size.width;
-			vm.height = _windowed_size.height;
-		}
-		os->set_video_mode(vm);
-		emscripten_set_canvas_size(vm.width, vm.height);
-	}
-	return false;
-}
-
 static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
 
 	InputEvent ev;
@@ -185,11 +154,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud,use_gl2,p_desired.width,p_desired.height,p_desired.fullscreen);
 
-	// nothing to do here, can't fulfil fullscreen request due to
-	// browser security, window size is already set from HTML
-	video_mode=p_desired;
-	video_mode.fullscreen=false;
-	_windowed_size=get_window_size();
+	default_videomode=p_desired;
 
 	// find locale, emscripten only sets "C"
 	char locale_ptr[16];
@@ -267,22 +232,26 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	input = memnew( InputDefault );
 
-#define EM_CHECK(ev) if (result!=EMSCRIPTEN_RESULT_SUCCESS)\
-	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
-#define SET_EM_CALLBACK(ev, cb) result = emscripten_set_##ev##_callback(NULL, this, true, &cb); EM_CHECK(ev)
-#define SET_EM_CALLBACK_NODATA(ev, cb) result = emscripten_set_##ev##_callback(NULL, true, &cb); EM_CHECK(ev)
-
-	EMSCRIPTEN_RESULT result;
-	SET_EM_CALLBACK(keydown, _keydown_callback)
-	SET_EM_CALLBACK(keypress, _keypress_callback)
-	SET_EM_CALLBACK(keyup, _keyup_callback)
-	SET_EM_CALLBACK(fullscreenchange, _fullscreen_change_callback)
-	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
-	SET_EM_CALLBACK_NODATA(gamepaddisconnected, joy_callback_func)
-
-#undef SET_EM_CALLBACK_NODATA
-#undef SET_EM_CALLBACK
-#undef EM_CHECK
+	EMSCRIPTEN_RESULT result = emscripten_set_keydown_callback(NULL, this , true, &_keydown_callback);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten keydown callback: Code " + itos(result) );
+	}
+	result = emscripten_set_keypress_callback(NULL, this, true, &_keypress_callback);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten keypress callback: Code " + itos(result) );
+	}
+	result = emscripten_set_keyup_callback(NULL, this, true, &_keyup_callback);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten keyup callback: Code " + itos(result) );
+	}
+	result = emscripten_set_gamepadconnected_callback(NULL, true, &joy_callback_func);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten gamepadconnected callback: Code " + itos(result) );
+	}
+	result = emscripten_set_gamepaddisconnected_callback(NULL, true, &joy_callback_func);
+	if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		ERR_PRINTS( "Error while setting Emscripten gamepaddisconnected callback: Code " + itos(result) );
+	}
 }
 
 void OS_JavaScript::set_main_loop( MainLoop * p_main_loop ) {
@@ -349,60 +318,22 @@ void OS_JavaScript::set_window_title(const String& p_title) {
 
 void OS_JavaScript::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 
-	video_mode = p_video_mode;
+
 }
 
 OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 
-	return video_mode;
-}
-
-Size2 OS_JavaScript::get_screen_size(int p_screen) const {
-
-	ERR_FAIL_COND_V(p_screen!=0, Size2());
-
-	EmscriptenFullscreenChangeEvent ev;
-	EMSCRIPTEN_RESULT result = emscripten_get_fullscreen_status(&ev);
-	ERR_FAIL_COND_V(result!=EMSCRIPTEN_RESULT_SUCCESS, Size2());
-	return Size2(ev.screenWidth, ev.screenHeight);
+	return default_videomode;
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
-	int canvas[3];
-	emscripten_get_canvas_size(canvas, canvas+1, canvas+2);
-	return Size2(canvas[0], canvas[1]);
-}
-
-void OS_JavaScript::set_window_fullscreen(bool p_enable) {
-
-	if (p_enable==is_window_fullscreen()) {
-		return;
-	}
-
-	// only requesting changes here, if successful, canvas is resized in
-	// _browser_resize_callback or _fullscreen_change_callback
-	EMSCRIPTEN_RESULT result;
-	if (p_enable) {
-		EM_ASM(Module.requestFullscreen(false, false););
-	}
-	else {
-		result = emscripten_exit_fullscreen();
-		if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
-			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
-		}
-	}
-}
-
-bool OS_JavaScript::is_window_fullscreen() const {
-
-	return video_mode.fullscreen;
+	return Vector2(default_videomode.width,default_videomode.height);
 }
 
 void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
-	Size2 screen = get_screen_size();
-	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
+	p_list->push_back(default_videomode);
 }
 
 String OS_JavaScript::get_name() {
@@ -722,10 +653,16 @@ void OS_JavaScript::main_loop_request_quit() {
 		main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 }
 
+void OS_JavaScript::set_display_size(Size2 p_size) {
+
+	default_videomode.width=p_size.x;
+	default_videomode.height=p_size.y;
+}
+
 void OS_JavaScript::reload_gfx() {
 
 	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2,video_mode.width,video_mode.height,video_mode.fullscreen);
+		gfx_init_func(gfx_init_ud,use_gl2,default_videomode.width,default_videomode.height,default_videomode.fullscreen);
 	if (rasterizer)
 		rasterizer->reload_vram();
 }
@@ -821,6 +758,10 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 }
 
 OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
+	default_videomode.width=800;
+	default_videomode.height=600;
+	default_videomode.fullscreen=true;
+	default_videomode.resizable=false;
 
 	gfx_init_func=p_gfx_init_func;
 	gfx_init_ud=p_gfx_init_ud;
