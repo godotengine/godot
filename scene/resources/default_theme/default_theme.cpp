@@ -420,9 +420,16 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// LineEdit
 
-	t->set_stylebox("normal", "LineEdit", make_stylebox(line_edit_png, 5, 5, 5, 5));
-	t->set_stylebox("focus", "LineEdit", focus);
-	t->set_stylebox("read_only", "LineEdit", make_stylebox(line_edit_disabled_png, 6, 6, 6, 6));
+	t->set_stylebox("normal","LineEdit", make_stylebox( line_edit_png,10,5,10,5) );
+	t->set_stylebox("focus","LineEdit", focus );
+	t->set_stylebox("read_only","LineEdit", make_stylebox( line_edit_disabled_png,6,6,6,6) );
+
+	t->set_font("font","LineEdit", default_font );
+
+	t->set_color("font_color","LineEdit", control_font_color );
+	t->set_color("font_color_selected","LineEdit", Color(0,0,0) );
+	t->set_color("cursor_color","LineEdit", control_font_color_hover );
+	t->set_color("selection_color","LineEdit", font_color_selection );
 
 	t->set_font("font", "LineEdit", default_font);
 
@@ -535,9 +542,19 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_stylebox("panel", "WindowDialog", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
 	t->set_constant("scaleborder_size", "WindowDialog", 4 * scale);
 
-	t->set_font("title_font", "WindowDialog", large_font);
-	t->set_color("title_color", "WindowDialog", Color(0, 0, 0));
-	t->set_constant("title_height", "WindowDialog", 20 * scale);
+	t->set_stylebox("panel","WindowDialog", style_pp_win );
+
+	t->set_icon("close","WindowDialog", make_icon( close_png ) );
+	t->set_icon("close_hilite","WindowDialog", make_icon( close_hl_png ) );
+
+	t->set_font("title_font","WindowDialog", large_font );
+
+	t->set_color("title_color","WindowDialog", Color(255,255,255) );
+
+	t->set_constant("close_h_ofs","WindowDialog", 22 *scale);
+	t->set_constant("close_v_ofs","WindowDialog", 20 *scale);
+	t->set_constant("titlebar_height","WindowDialog", 18 *scale);
+	t->set_constant("title_height","WindowDialog", 20 *scale);
 
 	t->set_icon("close", "WindowDialog", make_icon(close_png));
 	t->set_icon("close_hilite", "WindowDialog", make_icon(close_hl_png));
@@ -613,66 +630,68 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// Tree
 
-	Ref<StyleBoxTexture> tree_selected = make_stylebox(selection_png, 4, 4, 4, 4, 8, 0, 8, 0);
-	Ref<StyleBoxTexture> tree_selected_oof = make_stylebox(selection_oof_png, 4, 4, 4, 4, 8, 0, 8, 0);
+	Ref<StyleBoxTexture> tree_selected = make_stylebox( selection_png,4,4,4,4,8,0,8,0);
+	Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
 
-	t->set_stylebox("bg", "Tree", make_stylebox(tree_bg_png, 4, 4, 4, 5));
-	t->set_stylebox("bg_focus", "Tree", focus);
-	t->set_stylebox("selected", "Tree", tree_selected_oof);
-	t->set_stylebox("selected_focus", "Tree", tree_selected);
-	t->set_stylebox("cursor", "Tree", focus);
-	t->set_stylebox("cursor_unfocused", "Tree", focus);
-	t->set_stylebox("button_pressed", "Tree", make_stylebox(button_pressed_png, 4, 4, 4, 4));
-	t->set_stylebox("title_button_normal", "Tree", make_stylebox(tree_title_png, 4, 4, 4, 4));
-	t->set_stylebox("title_button_pressed", "Tree", make_stylebox(tree_title_pressed_png, 4, 4, 4, 4));
-	t->set_stylebox("title_button_hover", "Tree", make_stylebox(tree_title_png, 4, 4, 4, 4));
+	t->set_stylebox("bg","Tree", make_stylebox( tree_bg_png,4,4,4,5) );
+	t->set_stylebox("bg_focus","Tree", focus );
+	t->set_stylebox("selected","Tree", tree_selected_oof );
+	t->set_stylebox("selected_focus","Tree", tree_selected );
+	t->set_stylebox("cursor","Tree", focus );
+	t->set_stylebox("cursor_unfocused","Tree", focus );
+	t->set_stylebox("button_pressed","Tree",make_stylebox( button_pressed_png,4,4,4,4));
+	t->set_stylebox("title_button_normal","Tree", make_stylebox( tree_title_png,4,4,4,4) );
+	t->set_stylebox("title_button_pressed","Tree", make_stylebox( tree_title_pressed_png,4,4,4,4) );
+	t->set_stylebox("title_button_hover","Tree", make_stylebox( tree_title_png,4,4,4,4) );
 
-	t->set_icon("checked", "Tree", make_icon(checked_png));
-	t->set_icon("unchecked", "Tree", make_icon(unchecked_png));
-	t->set_icon("updown", "Tree", make_icon(updown_png));
-	t->set_icon("select_arrow", "Tree", make_icon(dropdown_png));
-	t->set_icon("arrow", "Tree", make_icon(arrow_down_png));
-	t->set_icon("arrow_collapsed", "Tree", make_icon(arrow_right_png));
+	t->set_icon("checked","Tree",make_icon(checked_png));
+	t->set_icon("unchecked","Tree",make_icon(unchecked_png));
+	t->set_icon("updown","Tree",make_icon(updown_png));
+	t->set_icon("select_arrow","Tree",make_icon(dropdown_png));
+	t->set_icon("arrow","Tree",make_icon(arrow_down_png));
+	t->set_icon("arrow_collapsed","Tree",make_icon(arrow_right_png));
 
-	t->set_font("title_button_font", "Tree", default_font);
-	t->set_font("font", "Tree", default_font);
+	t->set_font("title_button_font","Tree", default_font );
+	t->set_font("font","Tree", default_font );
 
-	t->set_color("title_button_color", "Tree", control_font_color);
-	t->set_color("font_color", "Tree", control_font_color_low);
-	t->set_color("font_color_selected", "Tree", control_font_color_pressed);
-	t->set_color("selection_color", "Tree", Color(0.1, 0.1, 1, 0.8));
-	t->set_color("cursor_color", "Tree", Color(0, 0, 0));
-	t->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
-	t->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
-	t->set_color("relationship_line_color", "Tree", Color::html("464646"));
+	t->set_color("title_button_color","Tree", control_font_color );
+	t->set_color("font_color","Tree", control_font_color_low );
+	t->set_color("font_color_selected","Tree", control_font_color_pressed );
+	t->set_color("selection_color","Tree", Color(0,0,0,0.8) );
+	t->set_color("cursor_color","Tree", Color(0,0,0) );
+	t->set_color("guide_color","Tree", Color(0,0,0,0.1) );
+	t->set_color("drop_position_color","Tree", Color(0,0,0,0.2) );
+	t->set_color("relationship_line_color", "Tree", Color(0,0,0,0.1));
 
-	t->set_constant("hseparation", "Tree", 4 * scale);
-	t->set_constant("vseparation", "Tree", 4 * scale);
-	t->set_constant("guide_width", "Tree", 2 * scale);
-	t->set_constant("item_margin", "Tree", 12 * scale);
-	t->set_constant("button_margin", "Tree", 4 * scale);
+	t->set_constant("hseparation","Tree",4 *scale);
+	t->set_constant("vseparation","Tree",4 *scale);
+	t->set_constant("guide_width","Tree",2 *scale);
+	t->set_constant("item_margin","Tree",12 *scale);
+	t->set_constant("button_margin","Tree",4 *scale);
 	t->set_constant("draw_relationship_lines", "Tree", 0);
 	t->set_constant("scroll_border", "Tree", 4);
 	t->set_constant("scroll_speed", "Tree", 12);
 
 	// ItemList
-	Ref<StyleBoxTexture> item_selected = make_stylebox(selection_png, 4, 4, 4, 4, 8, 2, 8, 2);
-	Ref<StyleBoxTexture> item_selected_oof = make_stylebox(selection_oof_png, 4, 4, 4, 4, 8, 2, 8, 2);
 
-	t->set_stylebox("bg", "ItemList", make_stylebox(tree_bg_png, 4, 4, 4, 5));
-	t->set_stylebox("bg_focus", "ItemList", focus);
-	t->set_constant("hseparation", "ItemList", 4);
-	t->set_constant("vseparation", "ItemList", 2);
-	t->set_constant("icon_margin", "ItemList", 4);
-	t->set_constant("line_separation", "ItemList", 2 * scale);
-	t->set_font("font", "ItemList", default_font);
-	t->set_color("font_color", "ItemList", control_font_color_lower);
-	t->set_color("font_color_selected", "ItemList", control_font_color_pressed);
-	t->set_color("guide_color", "ItemList", Color(0, 0, 0, 0.1));
-	t->set_stylebox("selected", "ItemList", item_selected_oof);
-	t->set_stylebox("selected_focus", "ItemList", item_selected);
-	t->set_stylebox("cursor", "ItemList", focus);
-	t->set_stylebox("cursor_unfocused", "ItemList", focus);
+	Ref<StyleBoxTexture> item_selected = make_stylebox( selection_png,4,4,4,4,8,2,4,2);
+	Ref<StyleBoxTexture> item_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,2,4,2);
+
+	t->set_stylebox("bg","ItemList", make_stylebox( tree_bg_png,10,4,1,5) );
+	t->set_stylebox("bg_focus","ItemList", focus );
+	t->set_constant("hseparation","ItemList",4);
+	t->set_constant("vseparation","ItemList",2);
+	t->set_constant("icon_margin","ItemList",4);
+	t->set_constant("line_separation","ItemList",2 *scale);
+	t->set_font("font","ItemList", default_font );
+	t->set_color("font_color","ItemList", control_font_color_lower );
+	t->set_color("font_color_selected","ItemList", control_font_color_pressed );
+	t->set_color("guide_color","ItemList", Color(0,0,0,0.1) );
+	t->set_stylebox("selected","ItemList", item_selected_oof );
+	t->set_stylebox("selected_focus","ItemList", item_selected );
+	t->set_stylebox("cursor","ItemList", focus );
+	t->set_stylebox("cursor_unfocused","ItemList", focus );
+
 
 	// TabContainer
 

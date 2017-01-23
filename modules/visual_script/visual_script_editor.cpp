@@ -489,8 +489,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_overlay(GraphNode::OVERLAY_BREAKPOINT);
 		}
 
-		if (EditorSettings::get_singleton()->has("editors/visual_script/color_" + node->get_category())) {
-			gnode->set_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_" + node->get_category()));
+		if (EditorSettings::get_singleton()->has("editors/visual_script/color_"+node->get_category())) {
+			gnode->set_self_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_"+node->get_category()));
 		}
 
 		gnode->set_meta("__vnode", node);
