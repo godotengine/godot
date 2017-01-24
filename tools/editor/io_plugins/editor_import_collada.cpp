@@ -463,6 +463,7 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
+				material->set_feature(FixedSpatialMaterial::FEATURE_NORMAL_MAPPING, true);
 				material->set_texture(FixedSpatialMaterial::TEXTURE_NORMAL,texture);
 				//material->set_emission(Color(1,1,1,1));
 
