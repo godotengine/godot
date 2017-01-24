@@ -538,6 +538,41 @@ void EditorAudioBus::drop_data_fw(const Point2& p_point,const Variant& p_data,Co
 
 }
 
+void EditorAudioBus::_delete_effect_pressed(int p_option) {
+
+	TreeItem * item = effects->get_selected();
+	if (!item)
+		return;
+
+	if (item->get_metadata(0).get_type()!=Variant::INT)
+		return;
+
+	int index = item->get_metadata(0);
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action("Delete Bus Effect");
+	ur->add_do_method(AudioServer::get_singleton(),"remove_bus_effect",get_index(),index);
+	ur->add_undo_method(AudioServer::get_singleton(),"add_bus_effect",get_index(),AudioServer::get_singleton()->get_bus_effect(get_index(),index),index);
+	ur->add_undo_method(AudioServer::get_singleton(),"set_bus_effect_enabled",get_index(),index,AudioServer::get_singleton()->is_bus_effect_enabled(get_index(),index));
+	ur->add_do_method(buses,"_update_bus",get_index());
+	ur->add_undo_method(buses,"_update_bus",get_index());
+	ur->commit_action();
+
+
+}
+
+void EditorAudioBus::_effect_rmb(const Vector2& p_pos) {
+
+	TreeItem * item = effects->get_selected();
+	if (!item)
+		return;
+
+	if (item->get_metadata(0).get_type()!=Variant::INT)
+		return;
+
+	delete_effect_popup->set_pos(get_global_mouse_pos());
+	delete_effect_popup->popup();
+}
 
 void EditorAudioBus::_bind_methods() {
 
@@ -558,6 +593,8 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("get_drag_data_fw",&EditorAudioBus::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw",&EditorAudioBus::can_drop_data_fw);
 	ClassDB::bind_method("drop_data_fw",&EditorAudioBus::drop_data_fw);
+	ClassDB::bind_method("_delete_effect_pressed",&EditorAudioBus::_delete_effect_pressed);
+	ClassDB::bind_method("_effect_rmb",&EditorAudioBus::_effect_rmb);
 
 
 
@@ -645,7 +682,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	effects->connect("cell_selected",this,"_effect_selected");
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
 	effects->set_drag_forwarding(this);
-
+	effects->connect("item_rmb_selected",this,"_effect_rmb");
+	effects->set_allow_rmb_select(true);
 
 	send = memnew( OptionButton );
 	send->set_clip_text(true);
@@ -680,6 +718,10 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	add_child(delete_popup);
 	delete_popup->connect("index_pressed",this,"_delete_pressed");
 
+	delete_effect_popup = memnew( PopupMenu );
+	delete_effect_popup->add_item("Delete Effect");
+	add_child(delete_effect_popup);
+	delete_effect_popup->connect("index_pressed",this,"_delete_effect_pressed");
 
 }
 

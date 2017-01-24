@@ -35,6 +35,7 @@ class EditorAudioBus : public PanelContainer {
 
 	PopupMenu *effect_options;
 	PopupMenu *delete_popup;
+	PopupMenu *delete_effect_popup;
 
 	Button *solo;
 	Button *mute;
@@ -57,6 +58,9 @@ class EditorAudioBus : public PanelContainer {
 	void _effect_edited();
 	void _effect_add(int p_which);
 	void _effect_selected();
+	void _delete_effect_pressed(int p_option);
+	void _effect_rmb(const Vector2& p_pos);
+
 
 	virtual Variant get_drag_data(const Point2& p_point);
 	virtual bool can_drop_data(const Point2& p_point,const Variant& p_data) const;
