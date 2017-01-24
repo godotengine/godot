@@ -63,6 +63,10 @@ class EditorAudioBus : public PanelContainer {
 	virtual void drop_data(const Point2& p_point,const Variant& p_data);
 
 
+	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
+	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
+	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+
 friend class EditorAudioBuses;
 
 	EditorAudioBuses *buses;

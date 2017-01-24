@@ -221,7 +221,7 @@ void EditorAudioBus::_volume_db_changed(float p_db){
 
 	updating_bus=true;
 
-	print_line("new volume: "+rtos(p_db));
+
 	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action("Change Audio Bus Volume",UndoRedo::MERGE_ENDS);
 	ur->add_do_method(AudioServer::get_singleton(),"set_bus_volume_db",get_index(),p_db);
@@ -433,6 +433,111 @@ void EditorAudioBus::drop_data(const Point2& p_point,const Variant& p_data) {
 
 }
 
+Variant EditorAudioBus::get_drag_data_fw(const Point2& p_point,Control* p_from) {
+
+	print_line("drag fw");
+	TreeItem *item = effects->get_item_at_pos(p_point);
+	if (!item) {
+		print_line("no item");
+		return Variant();
+	}
+
+	Variant md = item->get_metadata(0);
+
+	if (md.get_type()==Variant::INT) {
+		Dictionary fxd;
+		fxd["type"]="audio_bus_effect";
+		fxd["bus"]=get_index();
+		fxd["effect"]=md;
+
+		Label *l = memnew( Label );
+		l->set_text(item->get_text(0));
+		effects->set_drag_preview(l);
+
+		return fxd;
+	}
+
+	return Variant();
+
+}
+
+bool EditorAudioBus::can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const{
+
+	Dictionary d = p_data;
+	if (!d.has("type") || String(d["type"])!="audio_bus_effect")
+		return false;
+
+	TreeItem *item = effects->get_item_at_pos(p_point);
+	if (!item)
+		return false;
+
+	effects->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+
+	return true;
+}
+
+void EditorAudioBus::drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from){
+
+	Dictionary d = p_data;
+
+	TreeItem *item = effects->get_item_at_pos(p_point);
+	if (!item)
+		return;
+	int pos=effects->get_drop_section_at_pos(p_point);
+	Variant md = item->get_metadata(0);
+
+	int paste_at;
+	int bus = d["bus"];
+	int effect = d["effect"];
+
+	if (md.get_type()==Variant::INT) {
+		paste_at=md;
+		if (pos>0)
+			paste_at++;
+
+		if (bus==get_index() && paste_at >effect) {
+			paste_at--;
+		}
+	} else {
+		paste_at=-1;
+	}
+
+
+	bool enabled = AudioServer::get_singleton()->is_bus_effect_enabled(bus,effect);
+
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action("Move Bus Effect");
+	ur->add_do_method(AudioServer::get_singleton(),"remove_bus_effect",bus,effect);
+	ur->add_do_method(AudioServer::get_singleton(),"add_bus_effect",get_index(),AudioServer::get_singleton()->get_bus_effect(bus,effect),paste_at);
+
+	if (paste_at==-1) {
+		paste_at = AudioServer::get_singleton()->get_bus_effect_count(get_index());
+		if (bus==get_index()) {
+			paste_at--;
+		}
+	}
+	if (!enabled) {
+		ur->add_do_method(AudioServer::get_singleton(),"set_bus_effect_enabled",get_index(),paste_at,false);
+	}
+
+	ur->add_undo_method(AudioServer::get_singleton(),"remove_bus_effect",get_index(),paste_at);
+	ur->add_undo_method(AudioServer::get_singleton(),"add_bus_effect",bus,AudioServer::get_singleton()->get_bus_effect(bus,effect),effect);
+	if (!enabled) {
+		ur->add_undo_method(AudioServer::get_singleton(),"set_bus_effect_enabled",bus,effect,false);
+	}
+
+	ur->add_do_method(buses,"_update_bus",get_index());
+	ur->add_undo_method(buses,"_update_bus",get_index());
+	if (get_index()!=bus) {
+		ur->add_do_method(buses,"_update_bus",bus);
+		ur->add_undo_method(buses,"_update_bus",bus);
+	}
+	ur->commit_action();
+
+
+
+}
+
 
 void EditorAudioBus::_bind_methods() {
 
@@ -450,6 +555,11 @@ void EditorAudioBus::_bind_methods() {
 	ClassDB::bind_method("_effect_add",&EditorAudioBus::_effect_add);
 	ClassDB::bind_method("_gui_input",&EditorAudioBus::_gui_input);
 	ClassDB::bind_method("_delete_pressed",&EditorAudioBus::_delete_pressed);
+	ClassDB::bind_method("get_drag_data_fw",&EditorAudioBus::get_drag_data_fw);
+	ClassDB::bind_method("can_drop_data_fw",&EditorAudioBus::can_drop_data_fw);
+	ClassDB::bind_method("drop_data_fw",&EditorAudioBus::drop_data_fw);
+
+
 
 	ADD_SIGNAL(MethodInfo("delete_request"));
 	ADD_SIGNAL(MethodInfo("drop_end_request"));
@@ -534,6 +644,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses) {
 	effects->connect("item_edited",this,"_effect_edited");
 	effects->connect("cell_selected",this,"_effect_selected");
 	effects->set_edit_checkbox_cell_only_when_checkbox_is_pressed(true);
+	effects->set_drag_forwarding(this);
 
 
 	send = memnew( OptionButton );

@@ -323,10 +323,8 @@ void UndoRedo::redo() {
 void UndoRedo::undo() {
 
 	ERR_FAIL_COND(action_level>0);
-	print_line("undo");
 	if (current_action<0)
 		return; //nothing to redo
-	print_line("CACTION IS: "+actions[current_action].name);
 	_process_operation_list(actions[current_action].undo_ops.front());
 	current_action--;
 	version--;
