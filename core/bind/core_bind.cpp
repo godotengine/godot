@@ -1732,6 +1732,11 @@ Variant _File::get_var() const {
 	return v;
 }
 
+uint64_t _File::get_modified_time(const String &p_file) const {
+
+	return FileAccess::get_modified_time(p_file);
+}
+
 void _File::_bind_methods() {
 
 
@@ -1780,6 +1785,7 @@ void _File::_bind_methods() {
 	ClassDB::bind_method(_MD("get_pascal_string"),&_File::get_pascal_string);
 
 	ClassDB::bind_method(_MD("file_exists","path"),&_File::file_exists);
+	ClassDB::bind_method(_MD("get_modified_time", "file"),&_File::get_modified_time);
 
 	BIND_CONSTANT( READ );
 	BIND_CONSTANT( WRITE );
