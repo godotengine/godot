@@ -12,6 +12,7 @@
 #include "eq.h"
 #include <math.h>
 #include "error_macros.h"
+#include "math_funcs.h"
 
 #define POW2(v) ((v)*(v))
 
@@ -19,23 +20,23 @@
  static int solve_quadratic(double a,double b,double c,double *r1, double *r2) {
 //solves quadractic and returns number of roots
 
-    double base=2*a;
-    if (base == 0.0f)
-	    return 0;
+	double base=2*a;
+	if (base == 0.0f)
+		return 0;
 
-    double squared=b*b-4*a*c;
-    if (squared<0.0)
-	    return 0;
+	double squared=b*b-4*a*c;
+	if (squared<0.0)
+		return 0;
 
-    squared=sqrt(squared);
+	squared=sqrt(squared);
 
-    *r1=(-b+squared)/base;
-    *r2=(-b-squared)/base;
+	*r1=(-b+squared)/base;
+	*r2=(-b-squared)/base;
 
-    if (*r1==*r2)
-	    return 1;
-    else
-	    return 2;
+	if (*r1==*r2)
+		return 1;
+	else
+		return 2;
  }
 
 EQ::BandProcess::BandProcess() {
@@ -73,9 +74,9 @@ void EQ::recalculate_band_coefficients() {
 
 
 
-		double side_gain2=POW2(1.0/M_SQRT2);
-		double th=2.0*M_PI*frq/mix_rate;
-		double th_l=2.0*M_PI*frq_l/mix_rate;
+		double side_gain2=POW2(Math_SQRT12);
+		double th=2.0*Math_PI*frq/mix_rate;
+		double th_l=2.0*Math_PI*frq_l/mix_rate;
 
 		double c2a=side_gain2 * POW2(cos(th))
 					- 2.0 * side_gain2 * cos(th_l) * cos(th)
