@@ -1,5 +1,6 @@
 #include "audio_effect_pitch_shift.h"
 #include "servers/audio_server.h"
+#include "math_funcs.h"
 /****************************************************************************
 *
 * NAME: smbPitchShift.cpp
@@ -57,7 +58,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 	fftFrameSize2 = fftFrameSize/2;
 	stepSize = fftFrameSize/osamp;
 	freqPerBin = sampleRate/(double)fftFrameSize;
-	expct = 2.*M_PI*(double)stepSize/(double)fftFrameSize;
+	expct = 2.*Math_PI*(double)stepSize/(double)fftFrameSize;
 	inFifoLatency = fftFrameSize-stepSize;
 	if (gRover == 0) gRover = inFifoLatency;
 
@@ -77,7 +78,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* do windowing and re,im interleave */
 			for (k = 0; k < fftFrameSize;k++) {
-				window = -.5*cos(2.*M_PI*(double)k/(double)fftFrameSize)+.5;
+				window = -.5*cos(2.*Math_PI*(double)k/(double)fftFrameSize)+.5;
 				gFFTworksp[2*k] = gInFIFO[k] * window;
 				gFFTworksp[2*k+1] = 0.;
 			}
@@ -106,13 +107,13 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				tmp -= (double)k*expct;
 
 				/* map delta phase into +/- Pi interval */
-				qpd = tmp/M_PI;
+				qpd = tmp/Math_PI;
 				if (qpd >= 0) qpd += qpd&1;
 				else qpd -= qpd&1;
-				tmp -= M_PI*(double)qpd;
+				tmp -= Math_PI*(double)qpd;
 
 				/* get deviation from bin frequency from the +/- Pi interval */
-				tmp = osamp*tmp/(2.*M_PI);
+				tmp = osamp*tmp/(2.*Math_PI);
 
 				/* compute the k-th partials' true frequency */
 				tmp = (double)k*freqPerBin + tmp*freqPerBin;
@@ -150,7 +151,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 				tmp /= freqPerBin;
 
 				/* take osamp into account */
-				tmp = 2.*M_PI*tmp/osamp;
+				tmp = 2.*Math_PI*tmp/osamp;
 
 				/* add the overlap phase advance back in */
 				tmp += (double)k*expct;
@@ -172,7 +173,7 @@ void SMBPitchShift::PitchShift(float pitchShift, long numSampsToProcess, long ff
 
 			/* do windowing and add to output accumulator */
 			for(k=0; k < fftFrameSize; k++) {
-				window = -.5*cos(2.*M_PI*(double)k/(double)fftFrameSize)+.5;
+				window = -.5*cos(2.*Math_PI*(double)k/(double)fftFrameSize)+.5;
 				gOutputAccum[k] += 2.*window*gFFTworksp[2*k]/(fftFrameSize2*osamp);
 			}
 			for (k = 0; k < stepSize; k++) gOutFIFO[k] = gOutputAccum[k];
@@ -224,7 +225,7 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 		le2 = le>>1;
 		ur = 1.0;
 		ui = 0.0;
-		arg = M_PI / (le2>>1);
+		arg = Math_PI / (le2>>1);
 		wr = cos(arg);
 		wi = sign*sin(arg);
 		for (j = 0; j < le2; j += 2) {
