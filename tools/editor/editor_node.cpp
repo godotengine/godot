@@ -55,7 +55,7 @@
 #include "animation_editor.h"
 #include "io/stream_peer_ssl.h"
 #include "main/input_default.h"
-
+#include "os/input.h"
 // plugins
 #include "plugins/sprite_frames_editor_plugin.h"
 #include "plugins/texture_region_editor_plugin.h"
@@ -2405,8 +2405,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case EDIT_UNDO: {
 
-			if (OS::get_singleton()->get_mouse_button_state())
+
+
+			if (Input::get_singleton()->get_mouse_button_mask()&0x7) {
+				print_line("no because state");
 				break; // can't undo while mouse buttons are pressed
+			}
 
 			String action  = editor_data.get_undo_redo().get_current_action_name();
 			if (action!="")
@@ -2416,7 +2420,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case EDIT_REDO: {
 
-			if (OS::get_singleton()->get_mouse_button_state())
+			if (Input::get_singleton()->get_mouse_button_mask()&0x7)
 				break; // can't redo while mouse buttons are pressed
 
 			editor_data.get_undo_redo().redo();

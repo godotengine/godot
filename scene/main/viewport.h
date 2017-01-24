@@ -306,6 +306,8 @@ friend class Control;
 
 	Vector2 _get_window_offset() const;
 
+	bool _gui_drop(Control *p_at_control,Point2 p_at_pos,bool p_just_check);
+
 friend class Listener;
 	void _listener_transform_changed_notify();
 	void _listener_set(Listener* p_listener);

@@ -223,6 +223,11 @@ public:
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
 
+	void remove_bus(int p_index);
+	void add_bus(int p_at_pos=-1);
+
+	void move_bus(int p_bus,int p_to_pos);
+
 	void set_bus_name(int p_bus,const String& p_name);
 	String get_bus_name(int p_bus) const;
 
@@ -252,8 +257,6 @@ public:
 
 	void set_bus_effect_enabled(int p_bus,int p_effect,bool p_enabled);
 	bool is_bus_effect_enabled(int p_bus,int p_effect) const;
-
-	void move_bus(int p_bus,int p_to_bus);
 
 	float get_bus_peak_volume_left_db(int p_bus,int p_channel) const;
 	float get_bus_peak_volume_right_db(int p_bus,int p_channel) const;

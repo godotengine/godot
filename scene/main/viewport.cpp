@@ -1796,6 +1796,42 @@ Control* Viewport::_gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_g
 		return NULL;
 }
 
+bool Viewport::_gui_drop(Control *p_at_control,Point2 p_at_pos,bool p_just_check) {
+
+
+	{ //attempt grab, try parent controls too
+		CanvasItem *ci=p_at_control;
+		while(ci) {
+
+			Control *control = ci->cast_to<Control>();
+			if (control) {
+
+
+				if (control->can_drop_data(p_at_pos,gui.drag_data)) {
+					if (!p_just_check) {
+						control->drop_data(p_at_pos,gui.drag_data);
+					}
+
+					return true;
+				}
+
+				if (control->data.mouse_filter==Control::MOUSE_FILTER_STOP)
+					break;
+			}
+
+			p_at_pos = ci->get_transform().xform(p_at_pos);
+
+			if (ci->is_set_as_toplevel())
+				break;
+
+			ci=ci->get_parent_item();
+		}
+	}
+
+	return false;
+}
+
+
 void Viewport::_gui_input_event(InputEvent p_event) {
 
 
@@ -1937,8 +1973,8 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
 
 					//alternate drop use (when using force_drag(), as proposed by #5342
-					if (gui.mouse_focus && gui.mouse_focus->can_drop_data(pos,gui.drag_data)) {
-						gui.mouse_focus->drop_data(pos,gui.drag_data);
+					if (gui.mouse_focus) {
+						_gui_drop(gui.mouse_focus,pos,false);
 					}
 
 					gui.drag_data=Variant();
@@ -1965,9 +2001,9 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 					if (gui.mouse_over) {
 						Size2 pos = mpos;
 						pos = gui.focus_inv_xform.xform(pos);
-						if (gui.mouse_over->can_drop_data(pos,gui.drag_data)) {
-							gui.mouse_over->drop_data(pos,gui.drag_data);
-						}
+
+						_gui_drop(gui.mouse_over,pos,false);
+
 					}
 
 					if (gui.drag_preview && p_event.mouse_button.button_index==BUTTON_LEFT) {
@@ -2028,11 +2064,33 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 				gui.drag_accum+=Point2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y);
 				float len = gui.drag_accum.length();
 				if (len>10) {
-					gui.drag_data=gui.mouse_focus->get_drag_data(gui.focus_inv_xform.xform(mpos)-gui.drag_accum);
-					if (gui.drag_data.get_type()!=Variant::NIL) {
 
-						gui.mouse_focus=NULL;
+					{ //attempt grab, try parent controls too
+						CanvasItem *ci=gui.mouse_focus;
+						while(ci) {
+
+							Control *control = ci->cast_to<Control>();
+							if (control) {
+
+								gui.drag_data=control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos)-gui.drag_accum);
+								if (gui.drag_data.get_type()!=Variant::NIL) {
+
+									gui.mouse_focus=NULL;
+								}
+
+								if (control->data.mouse_filter==Control::MOUSE_FILTER_STOP)
+									break;
+							}
+
+							if (ci->is_set_as_toplevel())
+								break;
+
+							ci=ci->get_parent_item();
+						}
 					}
+
+
+
 					gui.drag_attempted=true;
 					if (gui.drag_data.get_type()!=Variant::NIL) {
 
@@ -2159,7 +2217,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			if (gui.drag_data.get_type()!=Variant::NIL && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
 
 
-				bool can_drop = over->can_drop_data(pos,gui.drag_data);
+				bool can_drop = _gui_drop(over,pos,true);
 
 				if (!can_drop) {
 					OS::get_singleton()->set_cursor_shape( OS::CURSOR_FORBIDDEN );

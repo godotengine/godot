@@ -384,6 +384,92 @@ void AudioServer::set_bus_count(int p_count) {
 	emit_signal("bus_layout_changed");
 }
 
+
+void AudioServer::remove_bus(int p_index) {
+
+	ERR_FAIL_INDEX(p_index,buses.size());
+	ERR_FAIL_COND(p_index==0);
+
+	lock();
+	bus_map.erase(buses[p_index]->name);
+	memdelete(buses[p_index]);
+	buses.remove(p_index);
+	unlock();
+}
+
+void AudioServer::add_bus(int p_at_pos) {
+
+	if (p_at_pos>=buses.size()) {
+		p_at_pos=-1;
+	} else if (p_at_pos==0) {
+		if (buses.size()>1)
+			p_at_pos=1;
+		else
+			p_at_pos=-1;
+	}
+
+	String attempt="New Bus";
+	int attempts=1;
+	while(true) {
+
+		bool name_free=true;
+		for(int j=0;j<buses.size();j++) {
+
+			if (buses[j]->name==attempt) {
+				name_free=false;
+				break;
+			}
+		}
+
+		if (!name_free) {
+			attempts++;
+			attempt="New Bus " +itos(attempts);
+		} else {
+			break;
+		}
+
+	}
+
+	Bus* bus =memnew(Bus);
+	bus->channels.resize(_get_channel_count());
+	for(int j=0;j<_get_channel_count();j++) {
+		bus->channels[j].buffer.resize(buffer_size);
+	}
+	bus->name=attempt;
+	bus->solo=false;
+	bus->mute=false;
+	bus->bypass=false;
+	bus->volume_db=0;
+
+	bus_map[attempt]=bus;
+
+	if (p_at_pos==-1)
+		buses.push_back(bus);
+	else
+		buses.insert(p_at_pos,bus);
+
+}
+
+void AudioServer::move_bus(int p_bus,int p_to_pos) {
+
+	ERR_FAIL_COND(p_bus<1 || p_bus>=buses.size());
+	ERR_FAIL_COND(p_to_pos!=-1 && (p_to_pos<1 || p_to_pos>buses.size()));
+
+	if (p_bus==p_to_pos)
+		return;
+
+	Bus *bus = buses[p_bus];
+	buses.remove(p_bus);
+
+	if (p_to_pos==-1) {
+		buses.push_back(bus);
+	} else if (p_to_pos<p_bus) {
+		buses.insert(p_to_pos,bus);
+	} else {
+		buses.insert(p_to_pos-1,bus);
+	}
+}
+
 int AudioServer::get_bus_count() const {
 
 	return buses.size();
@@ -607,14 +693,6 @@ bool AudioServer::is_bus_effect_enabled(int p_bus,int p_effect) const {
 
 }
 
-void AudioServer::move_bus(int p_bus,int p_to_bus) {
-
-	ERR_FAIL_COND(p_bus<1 || p_bus>=buses.size());
-	ERR_FAIL_COND(p_bus<1 || p_to_bus>=buses.size());
-
-
-
-}
 
 float AudioServer::get_bus_peak_volume_left_db(int p_bus,int p_channel) const {
 
@@ -800,6 +878,10 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(_MD("set_bus_count","amount"),&AudioServer::set_bus_count);
 	ClassDB::bind_method(_MD("get_bus_count"),&AudioServer::get_bus_count);
 
+	ClassDB::bind_method(_MD("remove_bus","index"),&AudioServer::remove_bus);
+	ClassDB::bind_method(_MD("add_bus","at_pos"),&AudioServer::add_bus,DEFVAL(-1));
+	ClassDB::bind_method(_MD("move_bus","index","to_index"),&AudioServer::move_bus);
+
 	ClassDB::bind_method(_MD("set_bus_name","bus_idx","name"),&AudioServer::set_bus_name);
 	ClassDB::bind_method(_MD("get_bus_name","bus_idx"),&AudioServer::get_bus_name);
 
@@ -818,7 +900,7 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(_MD("set_bus_bypass_effects","bus_idx","enable"),&AudioServer::set_bus_bypass_effects);
 	ClassDB::bind_method(_MD("is_bus_bypassing_effects","bus_idx"),&AudioServer::is_bus_bypassing_effects);
 
-	ClassDB::bind_method(_MD("add_bus_effect","bus_idx","effect:AudioEffect"),&AudioServer::add_bus_effect);
+	ClassDB::bind_method(_MD("add_bus_effect","bus_idx","effect:AudioEffect"),&AudioServer::add_bus_effect,DEFVAL(-1));
 	ClassDB::bind_method(_MD("remove_bus_effect","bus_idx","effect_idx"),&AudioServer::remove_bus_effect);
 
 	ClassDB::bind_method(_MD("get_bus_effect_count","bus_idx"),&AudioServer::add_bus_effect);

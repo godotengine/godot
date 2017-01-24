@@ -486,7 +486,7 @@ Point2 InputDefault::get_last_mouse_speed() const {
 
 int InputDefault::get_mouse_button_mask() const {
 
-	return OS::get_singleton()->get_mouse_button_state();
+	return mouse_button_mask;// do not trust OS implementaiton, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
 void InputDefault::warp_mouse_pos(const Vector2& p_to) {
