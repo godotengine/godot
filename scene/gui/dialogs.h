@@ -44,12 +44,26 @@ class WindowDialog : public Popup {
 
 	GDCLASS(WindowDialog,Popup);
 
+	enum DRAG_TYPE {
+		DRAG_NONE = 0,
+		DRAG_MOVE = 1,
+		DRAG_RESIZE_TOP = 1 << 1,
+		DRAG_RESIZE_RIGHT = 1 << 2,
+		DRAG_RESIZE_BOTTOM = 1 << 3,
+		DRAG_RESIZE_LEFT = 1 << 4
+	};
+
 	TextureButton *close_button;
 	String title;
-	bool dragging;
+	int drag_type;
+	Point2 drag_offset;
+	Point2 drag_offset_far;
+	bool resizable;
 
 	void _gui_input(const InputEvent& p_event);
 	void _closed();
+	int _drag_hit_test(const Point2& pos) const;
+
 protected:
 	virtual void _post_popup();
 
@@ -63,6 +77,8 @@ public:
 
 	void set_title(const String& p_title);
 	String get_title() const;
+	void set_resizable(bool p_resizable);
+	bool get_resizable() const;
 
 	Size2 get_minimum_size() const;
 

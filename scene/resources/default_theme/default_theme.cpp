@@ -583,24 +583,19 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	// WindowDialog
 
-	Ref<StyleBoxTexture> style_pp_win = sb_expand(make_stylebox( popup_window_png,10,30,10,8),8,26,8,4);
-	/*for(int i=0;i<4;i++)
-		style_pp_win->set_expand_margin_size((Margin)i,3);
-	style_pp_win->set_expand_margin_size(MARGIN_TOP,26);*/
+	Ref<StyleBoxTexture> style_pp_win = sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6);
+	t->set_stylebox("panel", "WindowDialog", style_pp_win);
+	t->set_constant("titlebar_height", "WindowDialog", 20 * scale);
+	t->set_constant("scaleborder_size", "WindowDialog", 4);
 
-	t->set_stylebox("panel","WindowDialog", style_pp_win );
+	t->set_font("title_font", "WindowDialog", large_font);
+	t->set_color("title_color", "WindowDialog", Color(0, 0, 0));
+	t->set_constant("title_height", "WindowDialog", 18 * scale);
 
-	t->set_icon("close","WindowDialog", make_icon( close_png ) );
-	t->set_icon("close_hilite","WindowDialog", make_icon( close_hl_png ) );
-
-	t->set_font("title_font","WindowDialog", large_font );
-
-	t->set_color("title_color","WindowDialog", Color(0,0,0) );
-
-	t->set_constant("close_h_ofs","WindowDialog", 22 *scale);
-	t->set_constant("close_v_ofs","WindowDialog", 20 *scale);
-	t->set_constant("titlebar_height","WindowDialog", 18 *scale);
-	t->set_constant("title_height","WindowDialog", 20 *scale);
+	t->set_icon("close", "WindowDialog", make_icon(close_png));
+	t->set_icon("close_hilite", "WindowDialog", make_icon(close_hl_png));
+	t->set_constant("close_h_ofs", "WindowDialog", 18 * scale);
+	t->set_constant("close_v_ofs", "WindowDialog", 18 * scale);
 
 
 	// File Dialog
