@@ -437,7 +437,7 @@ void EditorData::remove_editor_plugin(EditorPlugin *p_plugin) {
 void EditorData::add_editor_plugin(EditorPlugin *p_plugin) {
 
 	p_plugin->undo_redo=&undo_redo;
-	editor_plugins.push_back(p_plugin);
+	editor_plugins.insert(0, p_plugin);
 }
 
 int EditorData::get_editor_plugin_count() const {
