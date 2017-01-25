@@ -1626,6 +1626,19 @@ void FileSystemDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 
 }
 
+void FileSystemDock::select_file(const String& p_file) {
+
+	_go_to_dir(p_file.get_base_dir());
+	for(int i=0;i<files->get_item_count();i++) {
+		if (files->get_item_metadata(i)==p_file) {
+			files->select(i);
+			files->ensure_current_is_visible();
+			break;
+		}
+	}
+
+}
+
 void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_update_tree"),&FileSystemDock::_update_tree);

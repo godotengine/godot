@@ -100,7 +100,7 @@ public:
 };
 
 
-
+class AudioBusLayout;
 
 class AudioServer : public Object {
 
@@ -205,8 +205,6 @@ private:
 
 	Set<CallbackItem> callbacks;
 
-
-
 friend class AudioDriver;
 	void _driver_process(int p_frames, int32_t *p_buffer);
 protected:
@@ -266,6 +264,7 @@ public:
 	virtual void init();
 	virtual void finish();
 	virtual void update();
+	virtual void load_default_bus_layout();
 
 	/* MISC config */
 
@@ -293,12 +292,63 @@ public:
 	void add_callback(AudioCallback p_callback,void *p_userdata);
 	void remove_callback(AudioCallback p_callback,void *p_userdata);
 
+	void set_bus_layout(const Ref<AudioBusLayout>& p_state);
+	Ref<AudioBusLayout> generate_bus_layout() const;
+
 	AudioServer();
 	virtual ~AudioServer();
 };
 
-
 VARIANT_ENUM_CAST( AudioServer::SpeakerMode )
+
+class AudioBusLayout : public Resource {
+
+	GDCLASS(AudioBusLayout,Resource)
+
+friend class AudioServer;
+
+	struct Bus {
+
+		StringName name;
+		bool solo;
+		bool mute;
+		bool bypass;
+
+		struct Effect {
+			Ref<AudioEffect> effect;
+			bool enabled;
+		};
+
+		Vector<Effect> effects;
+
+		float volume_db;
+		StringName send;
+
+		Bus() {
+			solo=false;
+			mute=false;
+			bypass=false;
+			volume_db=0;
+		}
+	};
+
+	Vector<Bus> buses;
+
+protected:
+
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;
+
+public:
+
+	AudioBusLayout();
+};
+
+
+
+
+
 
 typedef AudioServer AS;
 

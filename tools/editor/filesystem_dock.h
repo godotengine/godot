@@ -201,6 +201,7 @@ public:
 
 	int get_split_offset() { return split_box->get_split_offset(); }
 	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
+	void select_file(const String& p_file);
 
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();

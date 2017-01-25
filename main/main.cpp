@@ -1046,6 +1046,7 @@ Error Main::setup2() {
 	translation_server->load_translations();
 
 
+	audio_server->load_default_bus_layout();
 
 	if (use_debug_profiler && script_debugger) {
 		script_debugger->profiling_start();

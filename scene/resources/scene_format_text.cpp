@@ -32,7 +32,8 @@
 #include "version.h"
 #include "os/dir_access.h"
 
-#define FORMAT_VERSION 1
+//version 2: changed names for basis, rect3, poolvectors, etc.
+#define FORMAT_VERSION 2
 
 #include "version.h"
 #include "os/dir_access.h"

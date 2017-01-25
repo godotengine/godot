@@ -6568,7 +6568,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
 
 
-	EditorAudioBuses::register_editor();
+	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
 
 	ScriptTextEditor::register_editor(); //register one for text scripts
 
@@ -6617,6 +6617,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ColorRampEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CollisionShape2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TextureEditorPlugin(this) ) );
+	add_editor_plugin( memnew( AudioBusesEditorPlugin(audio_bus_editor) ) );
 	//add_editor_plugin( memnew( MaterialEditorPlugin(this) ) );
 	//add_editor_plugin( memnew( MeshEditorPlugin(this) ) );
 

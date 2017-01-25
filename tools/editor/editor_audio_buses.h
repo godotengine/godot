@@ -14,6 +14,8 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
+#include "tools/editor/editor_file_dialog.h"
+#include "editor_plugin.h"
 
 class EditorAudioBuses;
 
@@ -109,14 +111,19 @@ class EditorAudioBuses : public VBoxContainer  {
 	HBoxContainer *top_hb;
 
 	Button *add;
-	ToolButton *buses;
-	ToolButton *groups;
 	ScrollContainer *bus_scroll;
 	HBoxContainer *bus_hb;
-	ScrollContainer *group_scroll;
-	HBoxContainer *group_hb;
 
 	EditorAudioBusDrop *drop_end;
+
+	Button *file;
+	Button *load;
+	Button *save_as;
+	Button *_default;
+	Button *_new;
+
+	Timer *save_timer;
+	String edited_path;
 
 	void _add_bus();
 	void _update_buses();
@@ -124,9 +131,24 @@ class EditorAudioBuses : public VBoxContainer  {
 	void _update_sends();
 
 	void _delete_bus(Object* p_which);
+	void _duplicate_bus(int p_which);
+
 
 	void _request_drop_end();
 	void _drop_at_index(int p_bus,int p_index);
+
+	void _server_save();
+
+	void _select_layout();
+	void _load_layout();
+	void _save_as_layout();
+	void _load_default_layout();
+	void _new_layout();
+
+	EditorFileDialog *file_dialog;
+	bool new_layout;
+
+	void _file_dialog_callback(const String& p_string);
 
 protected:
 
@@ -134,11 +156,31 @@ protected:
 	void _notification(int p_what);
 public:
 
+	void open_layout(const String& p_path);
 
-
-	static void register_editor();
+	static EditorAudioBuses* register_editor();
 
 	EditorAudioBuses();
+};
+
+
+
+class AudioBusesEditorPlugin : public EditorPlugin {
+
+	GDCLASS( AudioBusesEditorPlugin, EditorPlugin );
+
+	EditorAudioBuses *audio_bus_editor;
+public:
+
+	virtual String get_name() const { return "SampleLibrary"; }
+	bool has_main_screen() const { return false; }
+	virtual void edit(Object *p_node);
+	virtual bool handles(Object *p_node) const;
+	virtual void make_visible(bool p_visible);
+
+	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
+	~AudioBusesEditorPlugin();
+
 };
 
 #endif // EDITORAUDIOBUSES_H
