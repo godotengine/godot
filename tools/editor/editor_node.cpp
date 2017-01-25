@@ -4514,6 +4514,8 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String& p
 		}
 	}
 
+	p_layout->set_value(p_section,"dock_filesystem_split",filesystem_dock->get_split_offset());
+
 	VSplitContainer*splits[DOCK_SLOT_MAX/2]={
 		left_l_vsplit,
 		left_r_vsplit,
@@ -4689,6 +4691,12 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String&
 			dock_slot[i]->show();
 		}
 	}
+
+	int fs_split_ofs = 0;
+	if (p_layout->has_section_key(p_section,"dock_filesystem_split")) {
+		fs_split_ofs = p_layout->get_value(p_section,"dock_filesystem_split");
+	}
+	filesystem_dock->set_split_offset(fs_split_ofs);
 
 	VSplitContainer*splits[DOCK_SLOT_MAX/2]={
 		left_l_vsplit,
