@@ -653,6 +653,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 
 	set("run/auto_save/save_before_running",true);
+	set("run/output/always_clear_output_on_play",true);
+	set("run/output/always_open_output_on_play",true);
 	set("filesystem/resources/save_compressed_resources",true);
 	set("filesystem/resources/auto_reload_modified_images",true);
 
