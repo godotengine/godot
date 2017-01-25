@@ -61,6 +61,7 @@ def get_opts():
         ('use_static_cpp', 'link stdc++ statically', 'no'),
         ('use_sanitizer', 'Use llvm compiler sanitize address', 'no'),
         ('use_leak_sanitizer', 'Use llvm compiler sanitize memory leaks', 'no'),
+        ('use_lto', 'Use link time optimization', 'no'),
         ('pulseaudio', 'Detect & Use pulseaudio', 'yes'),
         ('udev', 'Use udev for gamepad connection callbacks', 'no'),
         ('debug_release', 'Add debug symbols to release version', 'no'),
@@ -97,12 +98,12 @@ def configure(env):
         env.extra_suffix = ".llvm"
 
     if (env["use_sanitizer"] == "yes"):
-        env.Append(CXXFLAGS=['-fsanitize=address', '-fno-omit-frame-pointer'])
+        env.Append(CCFLAGS=['-fsanitize=address', '-fno-omit-frame-pointer'])
         env.Append(LINKFLAGS=['-fsanitize=address'])
         env.extra_suffix += "s"
 
     if (env["use_leak_sanitizer"] == "yes"):
-        env.Append(CXXFLAGS=['-fsanitize=address', '-fno-omit-frame-pointer'])
+        env.Append(CCFLAGS=['-fsanitize=address', '-fno-omit-frame-pointer'])
         env.Append(LINKFLAGS=['-fsanitize=address'])
         env.extra_suffix += "s"
 
@@ -111,22 +112,28 @@ def configure(env):
     #	env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
     #	env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
 
-    if (env["target"] == "release"):
+    if (env["use_lto"] == "yes"):
+        env.Append(CCFLAGS=['-flto'])
+        env.Append(LINKFLAGS=['-flto'])
 
+
+    env.Append(CCFLAGS=['-pipe'])
+    env.Append(LINKFLAGS=['-pipe'])
+
+    if (env["target"] == "release"):
+        env.Prepend(CCFLAGS=['-Ofast'])
         if (env["debug_release"] == "yes"):
-            env.Append(CCFLAGS=['-g2'])
-        else:
-            env.Append(CCFLAGS=['-O3', '-ffast-math'])
+            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "release_debug"):
 
-        env.Append(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
+        env.Prepend(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
         if (env["debug_release"] == "yes"):
-            env.Append(CCFLAGS=['-g2'])
+            env.Prepend(CCFLAGS=['-g2'])
 
     elif (env["target"] == "debug"):
 
-        env.Append(CCFLAGS=['-g2', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g2', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     env.ParseConfig('pkg-config x11 --cflags --libs')
     env.ParseConfig('pkg-config xinerama --cflags --libs')
