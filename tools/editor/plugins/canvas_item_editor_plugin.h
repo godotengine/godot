@@ -447,8 +447,8 @@ public:
 
 };
 
-class CanvasItemEditorViewport : public VBoxContainer {
-	OBJ_TYPE( CanvasItemEditorViewport, VBoxContainer );
+class CanvasItemEditorViewport : public Control {
+	OBJ_TYPE( CanvasItemEditorViewport, Control );
 
 	String default_type;
 	Vector<String> types;
