@@ -440,22 +440,27 @@ void AnimationPlayerEditor::_animation_save_as(const Ref<Resource>& p_resource) 
 	file->set_title(TTR("Save Resource As.."));
 	current_option = RESOURCE_SAVE;
 }
+
 void AnimationPlayerEditor::_animation_remove() {
 
-	if (animation->get_item_count()==0)
+	if (animation->get_item_count() == 0)
 		return;
 
-	String current = animation->get_item_text(animation->get_selected());
-	Ref<Animation> anim =  player->get_animation(current);
+	delete_dialog->set_text(TTR("Delete Animation?"));
+	delete_dialog->popup_centered_minsize();
+}
 
+void AnimationPlayerEditor::_animation_remove_confirmed() {
+
+	String current = animation->get_item_text(animation->get_selected());
+	Ref<Animation> anim = player->get_animation(current);
 
 	undo_redo->create_action(TTR("Remove Animation"));
-	undo_redo->add_do_method(player,"remove_animation",current);
-	undo_redo->add_undo_method(player,"add_animation",current,anim);
-	undo_redo->add_do_method(this,"_animation_player_changed",player);
-	undo_redo->add_undo_method(this,"_animation_player_changed",player);
+	undo_redo->add_do_method(player, "remove_animation", current);
+	undo_redo->add_undo_method(player, "add_animation", current, anim);
+	undo_redo->add_do_method(this, "_animation_player_changed", player);
+	undo_redo->add_undo_method(this, "_animation_player_changed", player);
 	undo_redo->commit_action();
-
 }
 
 void AnimationPlayerEditor::_select_anim_by_name(const String& p_anim) {
@@ -1260,6 +1265,7 @@ void AnimationPlayerEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_animation_rename"),&AnimationPlayerEditor::_animation_rename);
 	ObjectTypeDB::bind_method(_MD("_animation_load"),&AnimationPlayerEditor::_animation_load);
 	ObjectTypeDB::bind_method(_MD("_animation_remove"),&AnimationPlayerEditor::_animation_remove);
+	ObjectTypeDB::bind_method(_MD("_animation_remove_confirmed"),&AnimationPlayerEditor::_animation_remove_confirmed);
 	ObjectTypeDB::bind_method(_MD("_animation_blend"),&AnimationPlayerEditor::_animation_blend);
 	ObjectTypeDB::bind_method(_MD("_animation_edit"),&AnimationPlayerEditor::_animation_edit);
 	ObjectTypeDB::bind_method(_MD("_animation_resource_edit"),&AnimationPlayerEditor::_animation_resource_edit);
@@ -1384,6 +1390,10 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	add_child(accept);
 	accept->connect("confirmed", this, "_menu_confirm_current");
 
+	delete_dialog = memnew(ConfirmationDialog);
+	add_child(delete_dialog);
+	delete_dialog->connect("confirmed", this, "_animation_remove_confirmed");
+
 	duplicate_anim = memnew( ToolButton );
 	hb->add_child(duplicate_anim);
 	ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate Animation"));
@@ -1397,7 +1407,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	rename_anim->set_tooltip(TTR("Rename Animation"));
 
 	remove_anim = memnew( ToolButton );
-
 	hb->add_child(remove_anim);
 	ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove Animation"));
 	remove_anim->set_shortcut(ED_GET_SHORTCUT("animation_player_editor/remove_animation"));

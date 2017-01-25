@@ -97,6 +97,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	EditorFileDialog *file;
 	AcceptDialog *accept;
+	ConfirmationDialog* delete_dialog;
 	int current_option;
 
 	struct BlendEditor {
@@ -138,6 +139,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_save_as(const Ref<Resource>& p_resource);
 
 	void _animation_remove();
+	void _animation_remove_confirmed();
 	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
