@@ -2431,7 +2431,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 		} break;
 		case Variant::COLOR: {
 
-			p_item->set_custom_bg_color(1,obj->get(p_name));
+			tree->update();
 			//p_item->set_text(1,obj->get(p_name));
 
 		} break;
@@ -3708,7 +3708,7 @@ void PropertyEditor::update_tree() {
 				item->set_cell_mode( 1, TreeItem::CELL_MODE_CUSTOM );
 				item->set_editable( 1, !read_only );
 				//item->set_text(1,obj->get(p.name));
-				item->set_custom_bg_color(1,obj->get(p.name));
+				item->set_custom_draw(1,this,"_draw_transparency");
 				if (show_type_icons)
 					item->set_icon( 0,get_icon("Color","EditorIcons") );
 
@@ -3854,6 +3854,25 @@ void PropertyEditor::update_tree() {
 
 
 	}
+}
+
+void PropertyEditor::_draw_transparency(Object *t, const Rect2& p_rect) {
+
+	TreeItem *ti=t->cast_to<TreeItem>();
+	if (!ti)
+		   return;
+
+	Color color=obj->get(ti->get_metadata(1));
+	Ref<Texture> arrow=tree->get_icon("select_arrow");
+
+	// make a little space between consecutive color fields
+	Rect2 area=p_rect;
+	area.pos.y+=1;
+	area.size.height-=2;
+	area.size.width-=arrow->get_size().width+5;
+	tree->draw_texture_rect(get_icon("Transparent", "EditorIcons"), area, true);
+	tree->draw_rect(area, color);
+
 }
 
 
@@ -4366,6 +4385,7 @@ void PropertyEditor::_bind_methods() {
 	ClassDB::bind_method( "update_tree",&PropertyEditor::update_tree);
 	ClassDB::bind_method( "_resource_preview_done",&PropertyEditor::_resource_preview_done);
 	ClassDB::bind_method( "refresh",&PropertyEditor::refresh);
+	ClassDB::bind_method( "_draw_transparency",&PropertyEditor::_draw_transparency);
 
 	ClassDB::bind_method(_MD("get_drag_data_fw"), &PropertyEditor::get_drag_data_fw);
 	ClassDB::bind_method(_MD("can_drop_data_fw"), &PropertyEditor::can_drop_data_fw);

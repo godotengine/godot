@@ -245,6 +245,7 @@ friend class ProjectExportDialog;
 	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 	void _resource_preview_done(const String& p_path,const Ref<Texture>& p_preview,Variant p_ud);
+	void _draw_transparency(Object *t, const Rect2& p_rect);
 
 	UndoRedo *undo_redo;
 protected:
