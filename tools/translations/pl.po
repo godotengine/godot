@@ -1,7 +1,8 @@
 # Polish translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# 8-bit Pixel <dawdejw@gmail.com>, 2016.
 # Adrian Węcławski <weclawskiadrian@gmail.com>, 2016.
 # Daniel Lewan <vision360.daniel@gmail.com>, 2016.
 # Kajetan Kuszczyński <kajetanek99@gmail.com>, 2016.
@@ -14,8 +15,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-10-29 09:04+0000\n"
-"Last-Translator: Kajetan Kuszczyński <kajetanek99@gmail.com>\n"
+"PO-Revision-Date: 2016-12-29 16:37+0000\n"
+"Last-Translator: 8-bit Pixel <dawdejw@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -23,25 +24,26 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Niepoprawny typ argumentu funkcji convert(), użyj stałej TYPE_*."
+msgstr "Niepoprawny typ argumentu funkcji convert(), użyj stałych TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Brak miejsca dla bajtów dekodujących, lub zły format."
+msgstr ""
+"Niewystarczająca ilość bajtów dla bajtów dekodujących, albo zły format."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr "argument kroku jest zerowy!"
+msgstr "argument kroku wynosi zero!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
-msgstr "Nie jest to skrypt z instancją"
+msgstr "To nie jest skrypt z instancją"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
@@ -609,10 +611,6 @@ msgid ""
 msgstr ""
 "VisibilityEnable2D działa najlepiej, gdy jest bezpośrednio pod korzeniem "
 "aktualnie edytowanej sceny."
-
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr ""
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -1850,6 +1848,11 @@ msgid "Constants:"
 msgstr "Stałe:"
 
 #: tools/editor/editor_help.cpp
+#, fuzzy
+msgid "Property Description:"
+msgstr "Krótki opis:"
+
+#: tools/editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "Opis Metody:"
 
@@ -2865,6 +2868,7 @@ msgstr "Źródło tekstury:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr "Ścieżka docelowa:"
 
@@ -4918,18 +4922,6 @@ msgstr "Przejdź do linii.."
 msgid "Contextual Help"
 msgstr "Pomoc kontekstowa"
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr "Wierzchołek"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr ""
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr ""
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr ""
@@ -5693,6 +5685,71 @@ msgid "No exporter for platform '%s' yet."
 msgstr "Brak jeszcze eksportu dla platformy '%s'."
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "Utwórz nowy zasób"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "Poprawna nazwa"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "Przejście"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "Status:"
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "Hasło:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "Dopuszczalne znaki:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "Nowa nazwa:"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "Zawiera"
 
@@ -6152,10 +6209,6 @@ msgid "Erase Input Action Event"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr ""
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr "Błąd zapisu ustawień."
 
@@ -6333,10 +6386,6 @@ msgid "Properties:"
 msgstr "Właściwości:"
 
 #: tools/editor/property_editor.cpp
-msgid "Global"
-msgstr "Globalne"
-
-#: tools/editor/property_editor.cpp
 msgid "Sections:"
 msgstr ""
 
@@ -6372,7 +6421,7 @@ msgstr ""
 
 #: tools/editor/reparent_dialog.cpp tools/editor/scene_tree_dock.cpp
 msgid "Reparent"
-msgstr ""
+msgstr "Zmień nadrzędny"
 
 #: tools/editor/resources_dock.cpp
 msgid "Create New Resource"
@@ -6438,15 +6487,16 @@ msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on the tree root."
-msgstr ""
+msgstr "Nie można wykonać tej operacji na głównym węźle drzewa."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Move Node In Parent"
 msgstr ""
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Move Nodes In Parent"
-msgstr ""
+msgstr "Przenieść węzły do węzła nadrzędnego."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Duplicate Node(s)"
@@ -6462,7 +6512,7 @@ msgstr "Ta operacja nie może zostać wykonana bez sceny."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
-msgstr ""
+msgstr "Tej operacji nie można wykonać na dziedziczącej scenie."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Save New Scene As.."
@@ -6489,14 +6539,17 @@ msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
 msgstr ""
+"Nie udało się zapisać sceny. Najprawdopodobniej pewne zależności nie są "
+"spełnione."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Error saving scene."
 msgstr "Błąd podczas zapisywania sceny."
 
 #: tools/editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Error duplicating scene to save it."
-msgstr ""
+msgstr "Błąd duplikowania sceny przy zapisywaniu."
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Edit Groups"
@@ -6565,20 +6618,12 @@ msgid "Clear a script for the selected node."
 msgstr "Utwórz nowy skrypt dla zaznaczonego węzła."
 
 #: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"Ten obiekt nie może być widoczny ponieważ jego rodzic jest ukryty. Odkryj "
-"najpierw rodzica."
-
-#: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
-msgstr ""
+msgstr "Przełącz widoczność Spatial"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle CanvasItem Visible"
-msgstr ""
+msgstr "Przełącz widoczność CanvasItem"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Instance:"
@@ -6598,15 +6643,16 @@ msgstr "Drzewo sceny (węzły):"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Editable Children"
-msgstr ""
+msgstr "Edytowalne dzieci"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Load As Placeholder"
-msgstr ""
+msgstr "Załaduj jako zastępczy"
 
 #: tools/editor/scene_tree_editor.cpp
+#, fuzzy
 msgid "Discard Instancing"
-msgstr ""
+msgstr "Odrzuć instancjonowanie"
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Open in Editor"
@@ -6871,6 +6917,24 @@ msgstr "Zmień długość Ray Shape"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Change Probe Extents"
+msgstr "Zmień rozmiar Box Shape"
+
+#~ msgid "Vertex"
+#~ msgstr "Wierzchołek"
+
+#~ msgid "Global"
+#~ msgstr "Globalne"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Ten obiekt nie może być widoczny ponieważ jego rodzic jest ukryty. Odkryj "
+#~ "najpierw rodzica."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "

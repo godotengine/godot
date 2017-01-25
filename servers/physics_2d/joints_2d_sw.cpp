@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -215,21 +215,21 @@ bool PinJoint2DSW::setup(float p_step) {
 	real_t B_inv_mass = B?B->get_inv_mass():0.0;
 
 
-	Matrix32 K1;
+	Transform2D K1;
 	K1[0].x = A->get_inv_mass() + B_inv_mass;	K1[1].x = 0.0f;
 	K1[0].y = 0.0f;					K1[1].y = A->get_inv_mass() + B_inv_mass;
 
-	Matrix32 K2;
+	Transform2D K2;
 	K2[0].x =  A->get_inv_inertia() * rA.y * rA.y;		K2[1].x = -A->get_inv_inertia() * rA.x * rA.y;
 	K2[0].y = -A->get_inv_inertia() * rA.x * rA.y;		K2[1].y =  A->get_inv_inertia() * rA.x * rA.x;
 
-	Matrix32 K;
+	Transform2D K;
 	K[0]= K1[0] + K2[0];
 	K[1]= K1[1] + K2[1];
 
 	if (B) {
 
-		Matrix32 K3;
+		Transform2D K3;
 		K3[0].x =  B->get_inv_inertia() * rB.y * rB.y;		K3[1].x = -B->get_inv_inertia() * rB.x * rB.y;
 		K3[0].y = -B->get_inv_inertia() * rB.x * rB.y;		K3[1].y =  B->get_inv_inertia() * rB.x * rB.x;
 
@@ -407,8 +407,8 @@ bool GrooveJoint2DSW::setup(float p_step) {
 	jn_max = get_max_force() * p_step;
 
 	// calculate bias velocity
-//	cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
-//	joint->bias = cpvclamp(cpvmult(delta, -joint->constraint.biasCoef*dt_inv), joint->constraint.maxBias);
+	//cpVect delta = cpvsub(cpvadd(b->p, joint->r2), cpvadd(a->p, joint->r1));
+	//joint->bias = cpvclamp(cpvmult(delta, -joint->constraint.biasCoef*dt_inv), joint->constraint.maxBias);
 
 
 	Vector2 delta = (B->get_transform().get_origin() +rB) - (A->get_transform().get_origin() + rA);

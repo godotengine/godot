@@ -307,6 +307,7 @@ static int MBAnalyzeBestIntra4Mode(VP8EncIterator* const it,
 
 static int MBAnalyzeBestUVMode(VP8EncIterator* const it) {
   int best_alpha = DEFAULT_ALPHA;
+  int smallest_alpha = 0;
   int best_mode = 0;
   const int max_mode = MAX_UV_MODE;
   int mode;
@@ -322,6 +323,10 @@ static int MBAnalyzeBestUVMode(VP8EncIterator* const it) {
     alpha = GetAlpha(&histo);
     if (IS_BETTER_ALPHA(alpha, best_alpha)) {
       best_alpha = alpha;
+    }
+    // The best prediction mode tends to be the one with the smallest alpha.
+    if (mode == 0 || alpha < smallest_alpha) {
+      smallest_alpha = alpha;
       best_mode = mode;
     }
   }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -139,10 +139,10 @@ String FileAccess::fix_path(const String& p_path) const {
 
 		case ACCESS_RESOURCES: {
 
-			if (Globals::get_singleton()) {
+			if (GlobalConfig::get_singleton()) {
 				if (r_path.begins_with("res://")) {
 
-					String resource_path = Globals::get_singleton()->get_resource_path();
+					String resource_path = GlobalConfig::get_singleton()->get_resource_path();
 					if (resource_path != "") {
 
 						return r_path.replace("res:/",resource_path);

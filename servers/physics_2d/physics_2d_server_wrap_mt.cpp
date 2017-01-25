@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,7 +95,7 @@ void Physics2DServerWrapMT::sync() {
 		else
 			step_sem->wait(); //must not wait if a step was not issued
 	}
-	physics_2d_server->sync();;
+	physics_2d_server->sync();
 }
 
 void Physics2DServerWrapMT::flush_queries(){
@@ -105,7 +105,7 @@ void Physics2DServerWrapMT::flush_queries(){
 
 void Physics2DServerWrapMT::end_sync() {
 
-	physics_2d_server->end_sync();;
+	physics_2d_server->end_sync();
 }
 
 void Physics2DServerWrapMT::init() {
@@ -168,12 +168,12 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer* p_contained,bool p
 	step_thread_up=false;
 	alloc_mutex=Mutex::create();
 
-	shape_pool_max_size=GLOBAL_DEF("core/thread_rid_pool_prealloc",20);
-	area_pool_max_size=GLOBAL_DEF("core/thread_rid_pool_prealloc",20);
-	body_pool_max_size=GLOBAL_DEF("core/thread_rid_pool_prealloc",20);
-	pin_joint_pool_max_size=GLOBAL_DEF("core/thread_rid_pool_prealloc",20);
-	groove_joint_pool_max_size=GLOBAL_DEF("core/thread_rid_pool_prealloc",20);
-	damped_spring_joint_pool_max_size=GLOBAL_DEF("core/thread_rid_pool_prealloc",20);
+	shape_pool_max_size=GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
+	area_pool_max_size=GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
+	body_pool_max_size=GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
+	pin_joint_pool_max_size=GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
+	groove_joint_pool_max_size=GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
+	damped_spring_joint_pool_max_size=GLOBAL_GET("memory/multithread/thread_rid_pool_prealloc");
 
 	if (!p_create_thread) {
 		server_thread=Thread::get_caller_ID();

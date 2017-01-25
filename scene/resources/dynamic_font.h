@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ class DynamicFont;
 
 class DynamicFontData : public Resource {
 
-	OBJ_TYPE(DynamicFontData,Resource);
+	GDCLASS(DynamicFontData,Resource);
 
 public:
 
@@ -88,7 +88,7 @@ public:
 
 class DynamicFontAtSize : public Reference {
 
-	OBJ_TYPE(DynamicFontAtSize,Reference)
+	GDCLASS(DynamicFontAtSize,Reference)
 
 	_THREAD_SAFE_CLASS_
 
@@ -107,7 +107,7 @@ class DynamicFontAtSize : public Reference {
 
 	struct CharTexture {
 
-		DVector<uint8_t> imgdata;
+		PoolVector<uint8_t> imgdata;
 		int texture_size;
 		Vector<int> offsets;
 		Ref<ImageTexture> texture;
@@ -168,7 +168,7 @@ public:
 
 class DynamicFont : public Font {
 
-	OBJ_TYPE( DynamicFont, Font );
+	GDCLASS( DynamicFont, Font );
 
 public:
 

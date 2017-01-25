@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_plugin_settings.h"
+
 #include "scene/gui/margin_container.h"
 #include "io/config_file.h"
 #include "os/file_access.h"
@@ -81,7 +82,7 @@ void EditorPluginSettings::update_plugins() {
 
 	plugins.sort();
 
-	Vector<String> active_plugins = Globals::get_singleton()->get("plugins/active");
+	Vector<String> active_plugins = GlobalConfig::get_singleton()->get("plugins/active");
 
 	for(int i=0;i<plugins.size();i++) {
 
@@ -171,8 +172,8 @@ void EditorPluginSettings::_plugin_activity_changed() {
 
 void EditorPluginSettings::_bind_methods() {
 
-	ObjectTypeDB::bind_method("update_plugins",&EditorPluginSettings::update_plugins);
-	ObjectTypeDB::bind_method("_plugin_activity_changed",&EditorPluginSettings::_plugin_activity_changed);
+	ClassDB::bind_method("update_plugins",&EditorPluginSettings::update_plugins);
+	ClassDB::bind_method("_plugin_activity_changed",&EditorPluginSettings::_plugin_activity_changed);
 }
 
 EditorPluginSettings::EditorPluginSettings() {

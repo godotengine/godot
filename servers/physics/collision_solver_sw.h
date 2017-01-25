@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ public:
 
 
 	static bool solve_static(const ShapeSW *p_shape_A,const Transform& p_transform_A,const ShapeSW *p_shape_B,const Transform& p_transform_B,CallbackResult p_result_callback,void *p_userdata,Vector3 *r_sep_axis=NULL,float p_margin_A=0,float p_margin_B=0);
-	static bool solve_distance(const ShapeSW *p_shape_A,const Transform& p_transform_A,const ShapeSW *p_shape_B,const Transform& p_transform_B,Vector3& r_point_A,Vector3& r_point_B,const AABB& p_concave_hint,Vector3 *r_sep_axis=NULL);
+	static bool solve_distance(const ShapeSW *p_shape_A,const Transform& p_transform_A,const ShapeSW *p_shape_B,const Transform& p_transform_B,Vector3& r_point_A,Vector3& r_point_B,const Rect3& p_concave_hint,Vector3 *r_sep_axis=NULL);
 
 };
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "particles_2d_editor_plugin.h"
+
 #include "canvas_item_editor_plugin.h"
 #include "io/image_loader.h"
 #include "scene/gui/separator.h"
@@ -43,7 +43,7 @@ void Particles2DEditorPlugin::edit(Object *p_object) {
 
 bool Particles2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Particles2D");
+	return p_object->is_class("Particles2D");
 }
 
 void Particles2DEditorPlugin::make_visible(bool p_visible) {
@@ -62,20 +62,20 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 
 	print_line("file: "+p_file);
 
-	int epc=epoints->get_val();
+	int epc=epoints->get_value();
 
 	Image img;
 	Error err = ImageLoader::load_image(p_file,&img);
 	ERR_EXPLAIN(TTR("Error loading image:")+" "+p_file);
 	ERR_FAIL_COND(err!=OK);
 
-	img.convert(Image::FORMAT_GRAYSCALE_ALPHA);
-	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_GRAYSCALE_ALPHA);
+	img.convert(Image::FORMAT_LA8);
+	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_LA8);
 	Size2i s = Size2(img.get_width(),img.get_height());
 	ERR_FAIL_COND(s.width==0 || s.height==0);
 
-	DVector<uint8_t> data = img.get_data();
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t> data = img.get_data();
+	PoolVector<uint8_t>::Read r = data.read();
 
 	Vector<Point2i> valid_positions;
 	valid_positions.resize(s.width*s.height);
@@ -95,9 +95,9 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image.."));
 	ERR_FAIL_COND(valid_positions.size()==0);
 
-	DVector<Point2> epoints;
+	PoolVector<Point2> epoints;
 	epoints.resize(epc);
-	DVector<Point2>::Write w = epoints.write();
+	PoolVector<Point2>::Write w = epoints.write();
 
 	Size2 extents = Size2(img.get_width()*0.5,img.get_height()*0.5);
 
@@ -108,7 +108,7 @@ void Particles2DEditorPlugin::_file_selected(const String& p_file) {
 		w[i]=p/extents;
 	}
 
-	w = DVector<Point2>::Write();
+	w = PoolVector<Point2>::Write();
 
 	undo_redo->create_action(TTR("Set Emission Mask"));
 	undo_redo->add_do_method(particles,"set_emission_points",epoints);
@@ -131,7 +131,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 		case MENU_CLEAR_EMISSION_MASK: {
 
 			undo_redo->create_action(TTR("Clear Emission Mask"));
-			undo_redo->add_do_method(particles,"set_emission_points",DVector<Vector2>());
+			undo_redo->add_do_method(particles,"set_emission_points",PoolVector<Vector2>());
 			undo_redo->add_undo_method(particles,"set_emission_points",particles->get_emission_points());
 			undo_redo->commit_action();
 		} break;
@@ -144,7 +144,7 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		menu->get_popup()->connect("item_pressed",this,"_menu_callback");
+		menu->get_popup()->connect("id_pressed",this,"_menu_callback");
 		menu->set_icon(menu->get_popup()->get_icon("Particles2D","EditorIcons"));
 		file->connect("file_selected",this,"_file_selected");
 	}
@@ -152,8 +152,8 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 void Particles2DEditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
-	ObjectTypeDB::bind_method(_MD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
+	ClassDB::bind_method(_MD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
+	ClassDB::bind_method(_MD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
 }
 
 
@@ -189,7 +189,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	epoints->set_min(1);
 	epoints->set_max(8192);
 	epoints->set_step(1);
-	epoints->set_val(512);
+	epoints->set_value(512);
 	file->get_vbox()->add_margin_child(TTR("Generated Point Count:"),epoints);
 }
 

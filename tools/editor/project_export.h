@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@
 class EditorNode;
 
 class ProjectExportDialog : public ConfirmationDialog {
-	OBJ_TYPE( ProjectExportDialog, ConfirmationDialog );
+	GDCLASS( ProjectExportDialog, ConfirmationDialog );
 
 public:
 	enum ExportAction {
@@ -73,6 +73,7 @@ private:
 	bool pending_update_tree;
 	AcceptDialog *error;
 	ConfirmationDialog *confirm;
+	ConfirmationDialog *confirm_keystore;
 
 	Button *button_reload;
 	LineEdit *filters, *filters_exclude;
@@ -98,7 +99,7 @@ private:
 
 	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir);
 	void _rescan();
-//	void _confirmed();
+	//void _confirmed();
 	void _scan_finished();
 
 	void _validate_platform();
@@ -133,7 +134,7 @@ private:
 
 
 	AcceptDialog *atlas_preview_dialog;
-	TextureFrame *atlas_preview_frame;
+	TextureRect *atlas_preview_frame;
 
 
 	VBoxContainer *script_vbox;
@@ -144,6 +145,9 @@ private:
 	OptionButton *sample_mode;
 	SpinBox *sample_max_hz;
 	CheckButton *sample_trim;
+
+	ConfirmationDialog* keystore_create_dialog;
+	EditorFileDialog* keystore_file_dialog;
 
 
 	void _export_mode_changed(int p_idx);
@@ -190,6 +194,13 @@ private:
 	void _export_action_pck(const String& p_file);
 	void ok_pressed();
 	void custom_action(const String&);
+	LineEdit* _create_keystore_input(Control* container, const String& p_label, const String& name);
+	void _create_android_keystore_window();
+	void _create_android_keystore();
+	bool _check_android_setting(const Ref<EditorExportPlatform>& exporter);
+	void _check_keystore_path(const String& path);
+	void _keystore_dir_selected(const String& path);
+	void _keystore_created();
 
 	void _save_export_cfg();
 	void _format_toggled();
@@ -212,7 +223,7 @@ public:
 class EditorData;
 
 class ProjectExport : public ConfirmationDialog {
-	OBJ_TYPE( ProjectExport, ConfirmationDialog );
+	GDCLASS( ProjectExport, ConfirmationDialog );
 
 	EditorData *editor_data;
 

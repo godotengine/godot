@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,14 +79,14 @@ abstract public class ValidateTask {
 				param.put("ticket", pc.getConsumableValue("ticket", sku));
 				param.put("purchaseToken", pc.getConsumableValue("token", sku));
 				param.put("sku", sku);
-//				Log.d("XXX", "Haciendo request a " + url);
-//				Log.d("XXX", "ticket: " + pc.getConsumableValue("ticket", sku));
-//				Log.d("XXX", "purchaseToken: " + pc.getConsumableValue("token", sku));
-//				Log.d("XXX", "sku: " + sku);
+				//Log.d("XXX", "Haciendo request a " + url);
+				//Log.d("XXX", "ticket: " + pc.getConsumableValue("ticket", sku));
+				//Log.d("XXX", "purchaseToken: " + pc.getConsumableValue("token", sku));
+				//Log.d("XXX", "sku: " + sku);
 				param.put("package", context.getApplicationContext().getPackageName());
 				HttpRequester requester = new HttpRequester();
 				String jsonResponse = requester.post(param);
-//				Log.d("XXX", "Validation response:\n"+jsonResponse);
+				//Log.d("XXX", "Validation response:\n"+jsonResponse);
 				return jsonResponse;
 			}
 			

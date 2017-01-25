@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -639,8 +639,10 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vect
 	for(int i=0;i<point_count;i++) {
 
 		//hmm crap.. no can do..
-		//if (d.dot(points[i].normal)>=0)
-		//	continue;
+		/*
+		if (d.dot(points[i].normal)>=0)
+			continue;
+		*/
 
 
 		Vector2 res;
@@ -684,7 +686,7 @@ real_t ConvexPolygonShape2DSW::get_moment_of_inertia(float p_mass,const Size2& p
 
 void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
 
-	ERR_FAIL_COND(p_data.get_type()!=Variant::VECTOR2_ARRAY && p_data.get_type()!=Variant::REAL_ARRAY);
+	ERR_FAIL_COND(p_data.get_type()!=Variant::POOL_VECTOR2_ARRAY && p_data.get_type()!=Variant::POOL_REAL_ARRAY);
 
 
 	if (points)
@@ -692,12 +694,12 @@ void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
 	points=NULL;
 	point_count=0;
 
-	if (p_data.get_type()==Variant::VECTOR2_ARRAY) {
-		DVector<Vector2> arr=p_data;
+	if (p_data.get_type()==Variant::POOL_VECTOR2_ARRAY) {
+		PoolVector<Vector2> arr=p_data;
 		ERR_FAIL_COND(arr.size()==0);
 		point_count=arr.size();
 		points = memnew_arr(Point,point_count);
-		DVector<Vector2>::Read r = arr.read();
+		PoolVector<Vector2>::Read r = arr.read();
 
 		for(int i=0;i<point_count;i++) {
 			points[i].pos=r[i];
@@ -711,12 +713,12 @@ void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
 		}
 	} else {
 
-		DVector<real_t> dvr = p_data;
+		PoolVector<real_t> dvr = p_data;
 		point_count=dvr.size()/4;
 		ERR_FAIL_COND(point_count==0);
 
 		points = memnew_arr(Point,point_count);
-		DVector<real_t>::Read r = dvr.read();
+		PoolVector<real_t>::Read r = dvr.read();
 
 		for(int i=0;i<point_count;i++) {
 
@@ -741,7 +743,7 @@ void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
 
 Variant ConvexPolygonShape2DSW::get_data() const {
 
-	DVector<Vector2> dvr;
+	PoolVector<Vector2> dvr;
 
 	dvr.resize(point_count);
 
@@ -816,8 +818,10 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vec
 	real_t d=1e10;
 	bool inters=false;
 
-	//for(int i=0;i<bvh_depth;i++)
-	//	stack[i]=0;
+	/*
+	for(int i=0;i<bvh_depth;i++)
+		stack[i]=0;
+	*/
 
 	int level=0;
 
@@ -964,13 +968,13 @@ int ConcavePolygonShape2DSW::_generate_bvh(BVH *p_bvh,int p_len,int p_depth) {
 
 void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 
-	ERR_FAIL_COND(p_data.get_type()!=Variant::VECTOR2_ARRAY && p_data.get_type()!=Variant::REAL_ARRAY);
+	ERR_FAIL_COND(p_data.get_type()!=Variant::POOL_VECTOR2_ARRAY && p_data.get_type()!=Variant::POOL_REAL_ARRAY);
 
 	Rect2 aabb;
 
-	if (p_data.get_type()==Variant::VECTOR2_ARRAY) {
+	if (p_data.get_type()==Variant::POOL_VECTOR2_ARRAY) {
 
-		DVector<Vector2> p2arr = p_data;
+		PoolVector<Vector2> p2arr = p_data;
 		int len = p2arr.size();
 		ERR_FAIL_COND(len%2);
 
@@ -984,7 +988,7 @@ void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 			return;
 		}
 
-		DVector<Vector2>::Read arr = p2arr.read();
+		PoolVector<Vector2>::Read arr = p2arr.read();
 
 		Map<Point2,int> pointmap;
 		for(int i=0;i<len;i+=2) {
@@ -1046,17 +1050,17 @@ void ConcavePolygonShape2DSW::set_data(const Variant& p_data) {
 Variant ConcavePolygonShape2DSW::get_data() const {
 
 
-	DVector<Vector2> rsegments;
+	PoolVector<Vector2> rsegments;
 	int len = segments.size();
 	rsegments.resize(len*2);
-	DVector<Vector2>::Write w = rsegments.write();
+	PoolVector<Vector2>::Write w = rsegments.write();
 	for(int i=0;i<len;i++) {
 
 		w[(i<<1)+0]=points[segments[i].points[0]];
 		w[(i<<1)+1]=points[segments[i].points[1]];
 	}
 
-	w=DVector<Vector2>::Write();
+	w=PoolVector<Vector2>::Write();
 
 	return rsegments;
 }
@@ -1077,8 +1081,10 @@ void ConcavePolygonShape2DSW::cull(const Rect2& p_local_aabb,Callback p_callback
 
 	};
 
-	//for(int i=0;i<bvh_depth;i++)
-	//	stack[i]=0;
+	/*
+	for(int i=0;i<bvh_depth;i++)
+		stack[i]=0;
+	*/
 
 
 	int level=0;

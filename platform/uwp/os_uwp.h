@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,28 +34,19 @@
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics/physics_server_sw.h"
-
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
-
 #include "gl_context_egl.h"
-
 #include "core/math/math_2d.h"
 #include "core/ustring.h"
+#include "main/input_default.h"
+#include "joypad_uwp.h"
 
 #include <windows.h>
-
 #include <io.h>
-
 #include <fcntl.h>
 #include <stdio.h>
-#include "main/input_default.h"
-
-#include "joystick_uwp.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -85,7 +76,7 @@ public:
 private:
 
 	enum {
-		JOYSTICKS_MAX = 8,
+		JOYPADS_MAX = 8,
 		JOY_AXIS_COUNT = 6,
 		MAX_JOY_AXIS = 32768, // I've no idea
 		KEY_EVENT_BUFFER_SIZE=512
@@ -119,10 +110,6 @@ private:
 	MainLoop *main_loop;
 
 	AudioDriverXAudio2 audio_driver;
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -137,7 +124,7 @@ private:
 
 	InputDefault *input;
 
-	JoystickUWP^ joystick;
+	JoypadUWP^ joypad;
 
 	Windows::System::Display::DisplayRequest^ display_request;
 
@@ -157,9 +144,12 @@ private:
 		void on_magnetometer_reading_changed(Windows::Devices::Sensors::Magnetometer^ sender, Windows::Devices::Sensors::MagnetometerReadingChangedEventArgs^ args);
 		void on_gyroscope_reading_changed(Windows::Devices::Sensors::Gyrometer^ sender, Windows::Devices::Sensors::GyrometerReadingChangedEventArgs^ args);
 
+	/** clang-format breaks this, it does not understand this token. */
+	/* clang-format off */
 	internal:
 		ManagedType() { alert_close_handle = false; }
 		property OSUWP* os;
+	/* clang-format on */
 	};
 	ManagedType^ managed_object;
 	Windows::Devices::Sensors::Accelerometer^ accelerometer;

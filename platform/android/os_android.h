@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,30 +33,19 @@
 #include "drivers/unix/os_unix.h"
 #include "os/main_loop.h"
 #include "servers/physics/physics_server_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 #include "main/input_default.h"
-
-//#ifdef USE_JAVA_FILE_ACCESS
-
+#include "audio_driver_jandroid.h"
+#include "audio_driver_opensl.h"
 
 #ifdef ANDROID_NATIVE_ACTIVITY
-
 #include <android/sensor.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
-
-#else
-
-
 #endif
-
-#include "audio_driver_jandroid.h"
-#include "audio_driver_opensl.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2);
 typedef int (*OpenURIFunc)(const String&);
@@ -75,6 +64,7 @@ typedef bool (*VideoIsPlayingFunc)();
 typedef void (*VideoPauseFunc)();
 typedef void (*VideoStopFunc)();
 typedef void (*SetKeepScreenOnFunc)(bool p_enabled);
+typedef void (*AlertFunc)(const String&, const String&);
 
 class OS_Android : public OS_Unix {
 public:
@@ -90,7 +80,7 @@ public:
 		JOY_EVENT_HAT = 2
 	};
 
-	struct JoystickEvent {
+	struct JoypadEvent {
 
 		int device;
 		int type;
@@ -117,10 +107,6 @@ private:
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 
@@ -154,6 +140,7 @@ private:
 	VideoPauseFunc video_pause_func;
 	VideoStopFunc video_stop_func;
 	SetKeepScreenOnFunc set_keep_screen_on_func;
+	AlertFunc alert_func;
 
 public:
 
@@ -181,7 +168,7 @@ public:
 
 	virtual void vprint(const char* p_format, va_list p_list, bool p_stderr=false);
 	virtual void print(const char *p_format, ... );
-	virtual void alert(const String& p_alert);
+	virtual void alert(const String& p_alert,const String& p_title="ALERT!");
 
 
 	virtual void set_mouse_show(bool p_show);
@@ -211,7 +198,7 @@ public:
 
 	void main_loop_begin();
 	bool main_loop_iterate();
-	void main_loop_request_quit();
+	void main_loop_request_go_back();
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();
@@ -247,7 +234,7 @@ public:
 	void process_magnetometer(const Vector3& p_magnetometer);
 	void process_gyroscope(const Vector3& p_gyroscope);
 	void process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points);
-	void process_joy_event(JoystickEvent p_event);
+	void process_joy_event(JoypadEvent p_event);
 	void process_event(InputEvent p_event);
 	void init_video_mode(int p_video_width,int p_video_height);
 
@@ -260,7 +247,7 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 
-	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, bool p_use_apk_expansion);
+	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion);
 	~OS_Android();
 
 };

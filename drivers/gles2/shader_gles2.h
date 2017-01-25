@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -213,7 +213,7 @@ private:
 
 		case Variant::MATRIX32: {
 
-			Matrix32 tr=p_value;
+			Transform2D tr=p_value;
 			GLfloat matrix[16]={ /* build a 16x16 matrix */
 				tr.elements[0][0],
 				tr.elements[0][1],

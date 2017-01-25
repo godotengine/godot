@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,11 +89,11 @@ Rect2 CapsuleShape2D::get_rect() const {
 
 void CapsuleShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&CapsuleShape2D::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&CapsuleShape2D::get_radius);
+	ClassDB::bind_method(_MD("set_radius","radius"),&CapsuleShape2D::set_radius);
+	ClassDB::bind_method(_MD("get_radius"),&CapsuleShape2D::get_radius);
 
-	ObjectTypeDB::bind_method(_MD("set_height","height"),&CapsuleShape2D::set_height);
-	ObjectTypeDB::bind_method(_MD("get_height"),&CapsuleShape2D::get_height);
+	ClassDB::bind_method(_MD("set_height","height"),&CapsuleShape2D::set_height);
+	ClassDB::bind_method(_MD("get_height"),&CapsuleShape2D::get_height);
 
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius"),_SCS("set_radius"),_SCS("get_radius") );

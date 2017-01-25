@@ -14,12 +14,12 @@ class DynamicFont;
 
 class DynamicFontData : public Resource {
 
-	OBJ_TYPE(DynamicFontData,Resource);
+	GDCLASS(DynamicFontData,Resource);
 
 	bool valid;
 
-	DVector<uint8_t> font_data;
-	DVector<uint8_t>::Read fr;
+	PoolVector<uint8_t> font_data;
+	PoolVector<uint8_t>::Read fr;
 	const uint8_t* last_data_ptr;
 
 	struct KerningPairKey {
@@ -56,7 +56,7 @@ friend class DynamicFont;
 	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(int p_size);
 public:
 
-	void set_font_data(const DVector<uint8_t>& p_font);
+	void set_font_data(const PoolVector<uint8_t>& p_font);
 	DynamicFontData();
 	~DynamicFontData();
 };
@@ -64,14 +64,14 @@ public:
 
 class DynamicFontAtSize : public Reference {
 
-	OBJ_TYPE(DynamicFontAtSize,Reference);
+	GDCLASS(DynamicFontAtSize,Reference);
 
 
 	int rect_margin;
 
 	struct CharTexture {
 
-		DVector<uint8_t> imgdata;
+		PoolVector<uint8_t> imgdata;
 		int texture_size;
 		Vector<int> offsets;
 		Ref<ImageTexture> texture;
@@ -124,7 +124,7 @@ public:
 
 class DynamicFont : public Font {
 
-	OBJ_TYPE( DynamicFont, Font );
+	GDCLASS( DynamicFont, Font );
 
 	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 
 class MultiMeshEditor : public Control {
 
-	OBJ_TYPE(MultiMeshEditor, Control );
+	GDCLASS(MultiMeshEditor, Control );
 
 friend class MultiMeshEditorPlugin;
 
@@ -86,7 +86,7 @@ public:
 
 class MultiMeshEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MultiMeshEditorPlugin, EditorPlugin );
+	GDCLASS( MultiMeshEditorPlugin, EditorPlugin );
 
 	MultiMeshEditor *multimesh_editor;
 	EditorNode *editor;

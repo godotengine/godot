@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,29 +36,26 @@
 #include "scene/gui/button.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/check_button.h"
-#include "scene/resources/material.h"
 
 class ColorPicker : public BoxContainer {
 
-	OBJ_TYPE(ColorPicker,BoxContainer);
+	GDCLASS(ColorPicker,BoxContainer);
 
 private:
 
 	Control *screen;
 	Image last_capture;
-	TextureFrame *uv_edit;
-	TextureFrame *w_edit;
-	TextureFrame *sample;
-	TextureFrame *preset;
+	Control *uv_edit;
+	Control *w_edit;
+	TextureRect *sample;
+	TextureRect *preset;
 	Button *bt_add_preset;
 	List<Color> presets;
 	ToolButton *btn_pick;
 	CheckButton *btn_mode;
-	Ref<CanvasItemMaterial> uv_material;
-	Ref<CanvasItemMaterial> w_material;
 	HSlider *scroll[4];
 	SpinBox *values[4];
 	Label *labels[4];
@@ -101,8 +98,8 @@ public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	void set_color(const Color& p_color);
-	Color get_color() const;
+	void set_pick_color(const Color& p_color);
+	Color get_pick_color() const;
 
 	void add_preset(const Color& p_color);
 	void set_raw_mode(bool p_enabled);
@@ -115,7 +112,7 @@ public:
 
 class ColorPickerButton : public Button {
 
-	OBJ_TYPE(ColorPickerButton,Button);
+	GDCLASS(ColorPickerButton,Button);
 
 	PopupPanel *popup;
 	ColorPicker *picker;
@@ -129,8 +126,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	void set_color(const Color& p_color);
-	Color get_color() const;
+	void set_pick_color(const Color& p_color);
+	Color get_pick_color() const;
 
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;

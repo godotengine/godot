@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,14 +34,14 @@
 
 class CollisionObject2D : public Node2D {
 
-	OBJ_TYPE( CollisionObject2D, Node2D );
+	GDCLASS( CollisionObject2D, Node2D );
 
 	bool area;
 	RID rid;
 	bool pickable;
 
 	struct ShapeData {
-		Matrix32 xform;
+		Transform2D xform;
 		Ref<Shape2D> shape;
 		bool trigger;
 
@@ -78,12 +78,12 @@ public:
 
 
 
-	void add_shape(const Ref<Shape2D>& p_shape, const Matrix32& p_transform=Matrix32());
+	void add_shape(const Ref<Shape2D>& p_shape, const Transform2D& p_transform=Transform2D());
 	int get_shape_count() const;
 	void set_shape(int p_shape_idx, const Ref<Shape2D>& p_shape);
-	void set_shape_transform(int p_shape_idx, const Matrix32& p_transform);
+	void set_shape_transform(int p_shape_idx, const Transform2D& p_transform);
 	Ref<Shape2D> get_shape(int p_shape_idx) const;
-	Matrix32 get_shape_transform(int p_shape_idx) const;
+	Transform2D get_shape_transform(int p_shape_idx) const;
 	void set_shape_as_trigger(int p_shape_idx, bool p_trigger);
 	bool is_shape_set_as_trigger(int p_shape_idx) const;
 	void remove_shape(int p_shape_idx);

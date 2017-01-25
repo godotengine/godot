@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 #ifndef EDITOR_SAMPLE_IMPORT_PLUGIN_H
 #define EDITOR_SAMPLE_IMPORT_PLUGIN_H
 
+#if 0
 #include "tools/editor/editor_import_export.h"
 #include "scene/resources/font.h"
 
@@ -37,10 +38,10 @@ class EditorSampleImportDialog;
 
 class EditorSampleImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorSampleImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorSampleImportPlugin,EditorImportPlugin);
 
 	EditorSampleImportDialog *dialog;
-	void _compress_ima_adpcm(const Vector<float>& p_data,DVector<uint8_t>& dst_data);
+	void _compress_ima_adpcm(const Vector<float>& p_data,PoolVector<uint8_t>& dst_data);
 public:
 
 	static EditorSampleImportPlugin *singleton;
@@ -59,7 +60,7 @@ public:
 
 class EditorSampleExportPlugin : public EditorExportPlugin {
 
-	OBJ_TYPE( EditorSampleExportPlugin, EditorExportPlugin);
+	GDCLASS( EditorSampleExportPlugin, EditorExportPlugin);
 
 
 public:
@@ -70,3 +71,4 @@ public:
 };
 
 #endif // EDITOR_SAMPLE_IMPORT_PLUGIN_H
+#endif

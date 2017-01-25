@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,8 @@ void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 	}
 
 	String name;
-	if (Globals::get_singleton())
-		name = Globals::get_singleton()->globalize_path(p_name);
+	if (GlobalConfig::get_singleton())
+		name = GlobalConfig::get_singleton()->globalize_path(p_name);
 	else
 		name = p_name;
 	//name = DirAccess::normalize_path(name);
@@ -68,7 +68,7 @@ FileAccess* FileAccessMemory::create() {
 bool FileAccessMemory::file_exists(const String& p_name) {
 
 	String name = fix_path(p_name);
-//	name = DirAccess::normalize_path(name);
+	//name = DirAccess::normalize_path(name);
 
 	return files && (files->find(name) != NULL);
 }
@@ -87,7 +87,7 @@ Error FileAccessMemory::_open(const String& p_path, int p_mode_flags) {
 	ERR_FAIL_COND_V(!files, ERR_FILE_NOT_FOUND);
 
 	String name = fix_path(p_path);
-//	name = DirAccess::normalize_path(name);
+	//name = DirAccess::normalize_path(name);
 
 	Map<String, Vector<uint8_t> >::Element* E = files->find(name);
 	ERR_FAIL_COND_V(!E, ERR_FILE_NOT_FOUND);

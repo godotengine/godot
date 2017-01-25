@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,7 +160,7 @@ bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A,const Transform& 
 
 	//quickly compute a local AABB
 
-	AABB local_aabb;
+	Rect3 local_aabb;
 	for(int i=0;i<3;i++) {
 
 	     Vector3 axis( p_transform_B.basis.get_axis(i) );
@@ -313,7 +313,7 @@ bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A,const Tran
 	return collided;
 }
 
-bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform& p_transform_A,const ShapeSW *p_shape_B,const Transform& p_transform_B,Vector3& r_point_A,Vector3& r_point_B,const AABB& p_concave_hint,Vector3 *r_sep_axis) {
+bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform& p_transform_A,const ShapeSW *p_shape_B,const Transform& p_transform_B,Vector3& r_point_A,Vector3& r_point_B,const Rect3& p_concave_hint,Vector3 *r_sep_axis) {
 
 	if (p_shape_A->is_concave())
 		return false;
@@ -351,14 +351,14 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform&
 
 		//quickly compute a local AABB
 
-		bool use_cc_hint=p_concave_hint!=AABB();
-		AABB cc_hint_aabb;
+		bool use_cc_hint=p_concave_hint!=Rect3();
+		Rect3 cc_hint_aabb;
 		if (use_cc_hint) {
 			cc_hint_aabb=p_concave_hint;
 			cc_hint_aabb.pos-=p_transform_B.origin;
 		}
 
-		AABB local_aabb;
+		Rect3 local_aabb;
 		for(int i=0;i<3;i++) {
 
 		     Vector3 axis( p_transform_B.basis.get_axis(i) );
@@ -383,7 +383,7 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform&
 
 		concave_B->cull(local_aabb,concave_distance_callback,&cinfo);
 		if (!cinfo.collided) {
-//			print_line(itos(cinfo.tested));
+			//print_line(itos(cinfo.tested));
 			r_point_A=cinfo.close_A;
 			r_point_B=cinfo.close_B;
 

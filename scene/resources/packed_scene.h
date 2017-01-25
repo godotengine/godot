@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class SceneState : public Reference {
 
-	OBJ_TYPE( SceneState, Reference );
+	GDCLASS( SceneState, Reference );
 
 
 	Vector<StringName> names;
@@ -102,7 +102,7 @@ class SceneState : public Reference {
 
 	static bool disable_placeholders;
 
-	DVector<String> _get_node_groups(int p_idx) const;
+	PoolVector<String> _get_node_groups(int p_idx) const;
 
 protected:
 
@@ -115,6 +115,12 @@ public:
 		TYPE_INSTANCED=0x7FFFFFFF,
 		FLAG_INSTANCE_IS_PLACEHOLDER=(1<<30),
 		FLAG_MASK=(1<<24)-1,
+	};
+
+	enum GenEditState {
+		GEN_EDIT_STATE_DISABLED,
+		GEN_EDIT_STATE_INSTANCE,
+		GEN_EDIT_STATE_MAIN,
 	};
 
 	static void set_disable_placeholders(bool p_disable);
@@ -136,7 +142,7 @@ public:
 	void clear();
 
 	bool can_instance() const;
-	Node *instance(bool p_gen_edit_state=false) const;
+	Node *instance(GenEditState p_edit_state) const;
 
 
 	//unbuild API
@@ -187,9 +193,11 @@ public:
 	SceneState();
 };
 
+VARIANT_ENUM_CAST(SceneState::GenEditState)
+
 class PackedScene : public Resource {
 
-	OBJ_TYPE(PackedScene, Resource );
+	GDCLASS(PackedScene, Resource );
 	RES_BASE_EXTENSION("scn");
 
 	Ref<SceneState> state;
@@ -203,13 +211,18 @@ protected:
 	static void _bind_methods();
 public:
 
+	enum GenEditState {
+		GEN_EDIT_STATE_DISABLED,
+		GEN_EDIT_STATE_INSTANCE,
+		GEN_EDIT_STATE_MAIN,
+	};
 
 	Error pack(Node *p_scene);
 
 	void clear();
 
 	bool can_instance() const;
-	Node *instance(bool p_gen_edit_state=false) const;
+	Node *instance(GenEditState p_edit_state=GEN_EDIT_STATE_DISABLED) const;
 
 	void recreate_state();
 	void replace_state(Ref<SceneState> p_by);
@@ -224,5 +237,7 @@ public:
 	PackedScene();
 
 };
+
+VARIANT_ENUM_CAST(PackedScene::GenEditState)
 
 #endif // SCENE_PRELOADER_H

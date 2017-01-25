@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 #include "servers/visual_server.h"
 #include "scene/resources/surface_tool.h"
 
+#if 0
 /*
 static const char* _var_names[Particles::VAR_MAX]={
 	"vars/lifetime",
@@ -87,9 +88,9 @@ AABB Particles::get_aabb() const {
 
 	return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
 }
-DVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 
@@ -129,16 +130,16 @@ AABB Particles::get_visibility_aabb() const {
 }
 
 
-void Particles::set_emission_points(const DVector<Vector3>& p_points) {
+void Particles::set_emission_points(const PoolVector<Vector3>& p_points) {
 
 	using_points = p_points.size();
 	VisualServer::get_singleton()->particles_set_emission_points(particles,p_points);
 }
 
-DVector<Vector3> Particles::get_emission_points() const {
+PoolVector<Vector3> Particles::get_emission_points() const {
 
 	if (!using_points)
-		return DVector<Vector3>();
+		return PoolVector<Vector3>();
 
 	return VisualServer::get_singleton()->particles_get_emission_points(particles);
 
@@ -318,13 +319,13 @@ RES Particles::_get_gizmo_geometry() const {
 
 	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
 
-	Ref<FixedMaterial> mat( memnew( FixedMaterial ));
+	Ref<FixedSpatialMaterial> mat( memnew( FixedSpatialMaterial ));
 
-	mat->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.0,0.6,0.7,0.2) );
-	mat->set_parameter( FixedMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
+	mat->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.0,0.6,0.7,0.2) );
+	mat->set_parameter( FixedSpatialMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
 	mat->set_blend_mode( Material::BLEND_MODE_ADD );
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+	//mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
 
 
 	surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -333,7 +334,7 @@ RES Particles::_get_gizmo_geometry() const {
 	int sides=16;
 	int sections=24;
 
-//	float len=1;
+	//float len=1;
 	float deg=Math::deg2rad(var[VAR_SPREAD]*180);
 	if (deg==180)
 		deg=179.5;
@@ -381,9 +382,9 @@ RES Particles::_get_gizmo_geometry() const {
 
 	Ref<Mesh> mesh = surface_tool->commit();
 
-	Ref<FixedMaterial> mat_aabb( memnew( FixedMaterial ));
+	Ref<FixedSpatialMaterial> mat_aabb( memnew( FixedSpatialMaterial ));
 
-	mat_aabb->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.8,0.8,0.9,0.7) );
+	mat_aabb->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.8,0.8,0.9,0.7) );
 	mat_aabb->set_line_width(3);
 	mat_aabb->set_flag( Material::FLAG_UNSHADED, true );
 
@@ -405,39 +406,39 @@ RES Particles::_get_gizmo_geometry() const {
 
 void Particles::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_amount","amount"),&Particles::set_amount);
-	ObjectTypeDB::bind_method(_MD("get_amount"),&Particles::get_amount);
-	ObjectTypeDB::bind_method(_MD("set_emitting","enabled"),&Particles::set_emitting);
-	ObjectTypeDB::bind_method(_MD("is_emitting"),&Particles::is_emitting);
-	ObjectTypeDB::bind_method(_MD("set_visibility_aabb","aabb"),&Particles::set_visibility_aabb);
-	ObjectTypeDB::bind_method(_MD("get_visibility_aabb"),&Particles::get_visibility_aabb);
-	ObjectTypeDB::bind_method(_MD("set_emission_half_extents","half_extents"),&Particles::set_emission_half_extents);
-	ObjectTypeDB::bind_method(_MD("get_emission_half_extents"),&Particles::get_emission_half_extents);
-	ObjectTypeDB::bind_method(_MD("set_emission_base_velocity","base_velocity"),&Particles::set_emission_base_velocity);
-	ObjectTypeDB::bind_method(_MD("get_emission_base_velocity"),&Particles::get_emission_base_velocity);
-	ObjectTypeDB::bind_method(_MD("set_emission_points","points"),&Particles::set_emission_points);
-	ObjectTypeDB::bind_method(_MD("get_emission_points"),&Particles::get_emission_points);
-	ObjectTypeDB::bind_method(_MD("set_gravity_normal","normal"),&Particles::set_gravity_normal);
-	ObjectTypeDB::bind_method(_MD("get_gravity_normal"),&Particles::get_gravity_normal);
-	ObjectTypeDB::bind_method(_MD("set_variable","variable","value"),&Particles::set_variable);
-	ObjectTypeDB::bind_method(_MD("get_variable","variable"),&Particles::get_variable);
-	ObjectTypeDB::bind_method(_MD("set_randomness","variable","randomness"),&Particles::set_randomness);
-	ObjectTypeDB::bind_method(_MD("get_randomness","variable"),&Particles::get_randomness);
-	ObjectTypeDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
-	ObjectTypeDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
-	ObjectTypeDB::bind_method(_MD("set_material","material:Material"),&Particles::set_material);
-	ObjectTypeDB::bind_method(_MD("get_material:Material"),&Particles::get_material);
-	ObjectTypeDB::bind_method(_MD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
-	ObjectTypeDB::bind_method(_MD("get_emit_timeout"),&Particles::get_emit_timeout);
-	ObjectTypeDB::bind_method(_MD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
-	ObjectTypeDB::bind_method(_MD("has_height_from_velocity"),&Particles::has_height_from_velocity);
-	ObjectTypeDB::bind_method(_MD("set_use_local_coordinates","enable"),&Particles::set_use_local_coordinates);
-	ObjectTypeDB::bind_method(_MD("is_using_local_coordinates"),&Particles::is_using_local_coordinates);
+	ClassDB::bind_method(_MD("set_amount","amount"),&Particles::set_amount);
+	ClassDB::bind_method(_MD("get_amount"),&Particles::get_amount);
+	ClassDB::bind_method(_MD("set_emitting","enabled"),&Particles::set_emitting);
+	ClassDB::bind_method(_MD("is_emitting"),&Particles::is_emitting);
+	ClassDB::bind_method(_MD("set_visibility_aabb","aabb"),&Particles::set_visibility_aabb);
+	ClassDB::bind_method(_MD("get_visibility_aabb"),&Particles::get_visibility_aabb);
+	ClassDB::bind_method(_MD("set_emission_half_extents","half_extents"),&Particles::set_emission_half_extents);
+	ClassDB::bind_method(_MD("get_emission_half_extents"),&Particles::get_emission_half_extents);
+	ClassDB::bind_method(_MD("set_emission_base_velocity","base_velocity"),&Particles::set_emission_base_velocity);
+	ClassDB::bind_method(_MD("get_emission_base_velocity"),&Particles::get_emission_base_velocity);
+	ClassDB::bind_method(_MD("set_emission_points","points"),&Particles::set_emission_points);
+	ClassDB::bind_method(_MD("get_emission_points"),&Particles::get_emission_points);
+	ClassDB::bind_method(_MD("set_gravity_normal","normal"),&Particles::set_gravity_normal);
+	ClassDB::bind_method(_MD("get_gravity_normal"),&Particles::get_gravity_normal);
+	ClassDB::bind_method(_MD("set_variable","variable","value"),&Particles::set_variable);
+	ClassDB::bind_method(_MD("get_variable","variable"),&Particles::get_variable);
+	ClassDB::bind_method(_MD("set_randomness","variable","randomness"),&Particles::set_randomness);
+	ClassDB::bind_method(_MD("get_randomness","variable"),&Particles::get_randomness);
+	ClassDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
+	ClassDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
+	ClassDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
+	ClassDB::bind_method(_MD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
+	ClassDB::bind_method(_MD("set_material","material:Material"),&Particles::set_material);
+	ClassDB::bind_method(_MD("get_material:Material"),&Particles::get_material);
+	ClassDB::bind_method(_MD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
+	ClassDB::bind_method(_MD("get_emit_timeout"),&Particles::get_emit_timeout);
+	ClassDB::bind_method(_MD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
+	ClassDB::bind_method(_MD("has_height_from_velocity"),&Particles::has_height_from_velocity);
+	ClassDB::bind_method(_MD("set_use_local_coordinates","enable"),&Particles::set_use_local_coordinates);
+	ClassDB::bind_method(_MD("is_using_local_coordinates"),&Particles::is_using_local_coordinates);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phases","count"),&Particles::set_color_phases);
-	ObjectTypeDB::bind_method(_MD("get_color_phases"),&Particles::get_color_phases);
+	ClassDB::bind_method(_MD("set_color_phases","count"),&Particles::set_color_phases);
+	ClassDB::bind_method(_MD("get_color_phases"),&Particles::get_color_phases);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), _SCS("set_material"), _SCS("get_material") );
 
@@ -557,3 +558,4 @@ Particles::~Particles() {
 	VisualServer::get_singleton()->free(particles);
 }
 
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,8 @@
 
 void MultiMeshInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_multimesh","multimesh"),&MultiMeshInstance::set_multimesh);
-	ObjectTypeDB::bind_method(_MD("get_multimesh"),&MultiMeshInstance::get_multimesh);
+	ClassDB::bind_method(_MD("set_multimesh","multimesh"),&MultiMeshInstance::set_multimesh);
+	ClassDB::bind_method(_MD("get_multimesh"),&MultiMeshInstance::get_multimesh);
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"multimesh",PROPERTY_HINT_RESOURCE_TYPE,"MultiMesh"), _SCS("set_multimesh"), _SCS("get_multimesh"));
 
 
@@ -58,15 +58,15 @@ Ref<MultiMesh> MultiMeshInstance::get_multimesh() const {
 
 
 
-DVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> MultiMeshInstance::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
-AABB MultiMeshInstance::get_aabb() const {
+Rect3 MultiMeshInstance::get_aabb() const {
 
 	if (multimesh.is_null())
-		return AABB();
+		return Rect3();
 	else
 		return multimesh->get_aabb();
 }

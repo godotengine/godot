@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,8 +83,8 @@ void CollisionShape::_update_indicator() {
 	if (shape.is_null())
 		return;
 
-	DVector<Vector3> points;
-	DVector<Vector3> normals;
+	PoolVector<Vector3> points;
+	PoolVector<Vector3> normals;
 
 	VS::PrimitiveType pt = VS::PRIMITIVE_TRIANGLES;
 
@@ -96,7 +96,7 @@ void CollisionShape::_update_indicator() {
 		pt = VS::PRIMITIVE_LINES;
 	} else if (shape->cast_to<SphereShape>()) {
 
-//		VisualServer *vs=VisualServer::get_singleton();
+		//VisualServer *vs=VisualServer::get_singleton();
 		SphereShape *shapeptr=shape->cast_to<SphereShape>();
 
 
@@ -235,7 +235,7 @@ void CollisionShape::_update_indicator() {
 
 		CapsuleShape *shapeptr=shape->cast_to<CapsuleShape>();
 
-		DVector<Plane> planes = Geometry::build_capsule_planes(shapeptr->get_radius(), shapeptr->get_height()/2.0, 12, Vector3::AXIS_Z);
+		PoolVector<Plane> planes = Geometry::build_capsule_planes(shapeptr->get_radius(), shapeptr->get_height()/2.0, 12, Vector3::AXIS_Z);
 		Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 		for(int i=0;i<md.faces.size();i++) {
@@ -337,7 +337,7 @@ void CollisionShape::_notification(int p_what) {
 			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-		//	VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
+			//VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
 			if (can_update_body && updating_body) {
 				_update_body();
 			}
@@ -414,18 +414,18 @@ String CollisionShape::get_configuration_warning() const {
 void CollisionShape::_bind_methods() {
 
 	//not sure if this should do anything
-	ObjectTypeDB::bind_method(_MD("resource_changed","resource"),&CollisionShape::resource_changed);
-	ObjectTypeDB::bind_method(_MD("set_shape","shape"),&CollisionShape::set_shape);
-	ObjectTypeDB::bind_method(_MD("get_shape"),&CollisionShape::get_shape);
-	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape::_add_to_collision_object);
-	ObjectTypeDB::bind_method(_MD("set_trigger","enable"),&CollisionShape::set_trigger);
-	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionShape::is_trigger);
-	ObjectTypeDB::bind_method(_MD("make_convex_from_brothers"),&CollisionShape::make_convex_from_brothers);
-	ObjectTypeDB::set_method_flags("CollisionShape","make_convex_from_brothers",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ObjectTypeDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape::_set_update_shape_index);
-	ObjectTypeDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape::_get_update_shape_index);
+	ClassDB::bind_method(_MD("resource_changed","resource"),&CollisionShape::resource_changed);
+	ClassDB::bind_method(_MD("set_shape","shape"),&CollisionShape::set_shape);
+	ClassDB::bind_method(_MD("get_shape"),&CollisionShape::get_shape);
+	ClassDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape::_add_to_collision_object);
+	ClassDB::bind_method(_MD("set_trigger","enable"),&CollisionShape::set_trigger);
+	ClassDB::bind_method(_MD("is_trigger"),&CollisionShape::is_trigger);
+	ClassDB::bind_method(_MD("make_convex_from_brothers"),&CollisionShape::make_convex_from_brothers);
+	ClassDB::set_method_flags("CollisionShape","make_convex_from_brothers",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape::_set_update_shape_index);
+	ClassDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape::_get_update_shape_index);
 
-	ObjectTypeDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape::get_collision_object_shape_index);
+	ClassDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape::get_collision_object_shape_index);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), _SCS("set_shape"), _SCS("get_shape"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
@@ -506,7 +506,7 @@ void CollisionShape::_create_debug_shape() {
 
 
 	if (debug_shape) {
-		debug_shape->queue_delete();;
+		debug_shape->queue_delete();
 		debug_shape=NULL;
 	}
 
@@ -620,7 +620,7 @@ RID CollisionShape::_get_visual_instance_rid() const {
 
 void CollisionShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_get_visual_instance_rid",&CollisionShape::_get_visual_instance_rid);
+	ClassDB::bind_method("_get_visual_instance_rid",&CollisionShape::_get_visual_instance_rid);
 }
 
 CollisionShape::CollisionShape() {
@@ -840,7 +840,7 @@ void CollisionShapeCylinder::update_indicator(RID p_indicator) {
 	vs->poly_clear(p_indicator);
 	Color col(0.4,1.0,1.0,0.5);
 
-	DVector<Plane> planes = Geometry::build_cylinder_planes(radius, height, 12, Vector3::AXIS_Z);
+	PoolVector<Plane> planes = Geometry::build_cylinder_planes(radius, height, 12, Vector3::AXIS_Z);
 	Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 	for(int i=0;i<md.faces.size();i++) {
@@ -906,7 +906,7 @@ void CollisionShapeCapsule::update_indicator(RID p_indicator) {
 	vs->poly_clear(p_indicator);
 	Color col(0.4,1.0,1.0,0.5);
 
-	DVector<Plane> planes = Geometry::build_capsule_planes(radius, height, 12, 3, Vector3::AXIS_Z);
+	PoolVector<Plane> planes = Geometry::build_capsule_planes(radius, height, 12, 3, Vector3::AXIS_Z);
 	Geometry::MeshData md = Geometry::build_convex_mesh(planes);
 
 	for(int i=0;i<md.faces.size();i++) {

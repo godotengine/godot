@@ -463,7 +463,7 @@
 			<argument index="1" name="to" type="float">
 			</argument>
 			<description>
-				Random range, any floating point value between 'from' and 'to'
+				Random range, any floating point value between 'from' and 'to'.
 			</description>
 		</method>
 		<method name="rand_seed">
@@ -472,28 +472,28 @@
 			<argument index="0" name="seed" type="int">
 			</argument>
 			<description>
-				Random from seed, pass a seed and an array with both number and new seed is returned.
+				Random from seed: pass a seed, and an array with both number and new seed is returned. "Seed" here refers to the internal state of the pseudo random number generator. The internal state of the current implementation is 64 bits.
 			</description>
 		</method>
 		<method name="randf">
 			<return type="float">
 			</return>
 			<description>
-				Random value (0 to 1 float).
+				Return a random floating point value between 0 and 1.
 			</description>
 		</method>
 		<method name="randi">
 			<return type="int">
 			</return>
 			<description>
-				Random 32 bits value (integer). To obtain a value	from 0 to N, you can use remainder, like (for random from 0 to 19): randi() % 20.
+				Return a random 32 bits integer value. To obtain a random value between 0 to N (where N is smaller than 2^32 - 1), you can use remainder. For example, to get a random integer between 0 and 19 inclusive, you can use randi() % 20.
 			</description>
 		</method>
 		<method name="randomize">
 			<return type="Nil">
 			</return>
 			<description>
-				Reset the seed of the random number generator with a new, different one.
+				Randomize the seed (or the internal state) of the random number generator. Current implementation reseeds using a number based on time.
 			</description>
 		</method>
 		<method name="range">
@@ -2517,6 +2517,11 @@
 		<signal name="frame_changed">
 			<description>
 				Emitted when frame is changed.
+			</description>
+		</signal>
+		<signal name="finished">
+			<description>
+				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted everytime the last frame is drawn, before looping.
 			</description>
 		</signal>
 	</signals>
@@ -4654,6 +4659,20 @@
 			</argument>
 			<description>
 				Remove the first occurrence of a value from the array.
+			</description>
+		</method>
+		<method name="front">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the first element of the array if the array is not empty (size>0).
+			</description>
+		</method>
+		<method name="back">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the last element of the array if the array is not empty (size>0).
 			</description>
 		</method>
 		<method name="find">
@@ -8797,7 +8816,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="ColorFrame" inherits="Control" category="Core">
+<class name="ColorRect" inherits="Control" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -11845,6 +11864,13 @@
 				Get the main editor control. Use this as a parent for main screens.
 			</description>
 		</method>
+		<method name="edit_resource">
+			<argument index="0" name="p_resource" type="Resource">
+			</argument>
+			<description>
+				Tells the editor to handle the edit of the given resource. Ex: If you pass a Script as a argument, the editor will open the scriptEditor.
+			</description>
+		</method>
 		<method name="get_name" qualifiers="virtual">
 			<return type="String">
 			</return>
@@ -12267,17 +12293,19 @@
 			</argument>
 			<description>
 				Add a custom property info to a property. The dictionary must contain: name:[String](the name of the property) and type:[int](see TYPE_* in [@Global Scope]), and optionally hint:[int](see PROPERTY_HINT_* in [@Global Scope]), hint_string:[String].
-			Example:[codeblock]
-			editor_settings.set("category/property_name", 0)
+				Example:
+				[codeblock]
+				editor_settings.set("category/property_name", 0)
 
-			var property_info = {
-			    "name": "category/property_name",
-			    "type": TYPE_INT,
-			    "hint": PROPERTY_HINT_ENUM,
-			    "hint_string": "one,two,three"
-			}
+				var property_info = {
+				    "name": "category/property_name",
+				    "type": TYPE_INT,
+				    "hint": PROPERTY_HINT_ENUM,
+				    "hint_string": "one,two,three"
+				}
 
-			editor_settings.add_property_info(property_info)[/codeblock]
+				editor_settings.add_property_info(property_info)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="erase">
@@ -13422,12 +13450,12 @@
 		</theme_item>
 	</theme_items>
 </class>
-<class name="FixedMaterial" inherits="Material" category="Core">
+<class name="FixedSpatialMaterial" inherits="Material" category="Core">
 	<brief_description>
 		Simple Material with a fixed parameter set.
 	</brief_description>
 	<description>
-		FixedMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
+		FixedSpatialMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
 	</description>
 	<methods>
 		<method name="get_fixed_flag" qualifiers="const">
@@ -15526,7 +15554,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a status string like STATUS_REQUESTING. Need to call [method poll] in order to get status updates.
+				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
@@ -16068,7 +16096,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
 			</argument>
 			<description>
 				Resolve a given hostname, blocking. Resolved hostname is returned as an IPv4 or IPv6 depending on "ip_type".
@@ -16079,7 +16107,7 @@
 			</return>
 			<argument index="0" name="host" type="String">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
+			<argument index="1" name="ip_type" type="int" default="IP.TYPE_ANY">
 			</argument>
 			<description>
 				Create a queue item for resolving a given hostname to an IPv4 or IPv6 depending on "ip_type". The queue ID is returned, or RESOLVER_INVALID_ID on error.
@@ -16316,15 +16344,15 @@
 		</constant>
 		<constant name="COMPRESS_ETC" value="3">
 		</constant>
-		<constant name="FORMAT_GRAYSCALE" value="0">
+		<constant name="FORMAT_L8" value="0">
 		</constant>
 		<constant name="FORMAT_INTENSITY" value="1">
 		</constant>
-		<constant name="FORMAT_GRAYSCALE_ALPHA" value="2">
+		<constant name="FORMAT_LA8" value="2">
 		</constant>
-		<constant name="FORMAT_RGB" value="3">
+		<constant name="FORMAT_RGB8" value="3">
 		</constant>
-		<constant name="FORMAT_RGBA" value="4">
+		<constant name="FORMAT_RGBA8" value="4">
 		</constant>
 		<constant name="FORMAT_INDEXED" value="5">
 		</constant>
@@ -16334,23 +16362,23 @@
 		</constant>
 		<constant name="FORMAT_YUV_444" value="8">
 		</constant>
-		<constant name="FORMAT_BC1" value="9">
+		<constant name="FORMAT_DXT1" value="9">
 		</constant>
-		<constant name="FORMAT_BC2" value="10">
+		<constant name="FORMAT_DXT3" value="10">
 		</constant>
-		<constant name="FORMAT_BC3" value="11">
+		<constant name="FORMAT_DXT5" value="11">
 		</constant>
-		<constant name="FORMAT_BC4" value="12">
+		<constant name="FORMAT_ATI1" value="12">
 		</constant>
-		<constant name="FORMAT_BC5" value="13">
+		<constant name="FORMAT_ATI2" value="13">
 		</constant>
 		<constant name="FORMAT_PVRTC2" value="14">
 		</constant>
-		<constant name="FORMAT_PVRTC2_ALPHA" value="15">
+		<constant name="FORMAT_PVRTC2A" value="15">
 		</constant>
 		<constant name="FORMAT_PVRTC4" value="16">
 		</constant>
-		<constant name="FORMAT_PVRTC4_ALPHA" value="17">
+		<constant name="FORMAT_PVRTC4A" value="17">
 		</constant>
 		<constant name="FORMAT_ETC" value="18">
 		</constant>
@@ -20668,7 +20696,8 @@
 		3x3 matrix datatype.
 	</brief_description>
 	<description>
-		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z. Can also be accessed as array of 3D vectors. Almost always used as orthogonal basis for a [Transform].
+		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. Almost always used as orthogonal basis for a [Transform].
+		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 	</description>
 	<methods>
 		<method name="Matrix3">
@@ -20677,7 +20706,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Create a matrix from a quaternion.
+				Create a rotation matrix from the given quaternion.
 			</description>
 		</method>
 		<method name="Matrix3">
@@ -20688,7 +20717,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Create a matrix from an axis vector and an angle.
+				Create a rotation matrix which rotates around the given axis by the specified angle.
 			</description>
 		</method>
 		<method name="Matrix3">
@@ -20715,33 +20744,36 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Return euler angles from the matrix.
+				Return Euler angles (in the XYZ convention: first Z, then Y, and X last) from the matrix. Returned vector contains the rotation angles in the format (third,second,first).
+				This function only works if the matrix represents a proper rotation.
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
 			<return type="int">
 			</return>
 			<description>
+				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1,0 or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to Godot source code.
 			</description>
 		</method>
 		<method name="get_scale">
 			<return type="Vector3">
 			</return>
 			<description>
+				Assuming that the matrix is the combination of a rotation and scaling, return the absolute value of scaling factors along each axis.
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Matrix3">
 			</return>
 			<description>
-				Return the affine inverse of the matrix.
+				Return the inverse of the matrix.
 			</description>
 		</method>
 		<method name="orthonormalized">
 			<return type="Matrix3">
 			</return>
 			<description>
-				Return the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error).
+				Return the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
 			</description>
 		</method>
 		<method name="rotated">
@@ -20752,16 +20784,16 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Return the rotated version of the matrix, by a given axis and angle.
+				Introduce an additional rotation around the given axis by phi. Only relevant when the matrix is being used as a part of [Transform].
 			</description>
-		</method>
+                </method>
 		<method name="scaled">
 			<return type="Matrix3">
 			</return>
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Return the scaled version of the matrix, by a 3D scale.
+				Introduce an additional scaling specified by the given 3D scaling factor. Only relevant when the matrix is being used as a part of [Transform].
 			</description>
 		</method>
 		<method name="tdotx">
@@ -20804,7 +20836,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed by the matrix and return it.
+				Return a vector transformed (multiplied) by the matrix and return it.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -20813,7 +20845,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed by the transposed matrix and return it.
+				Return a vector transformed (multiplied) by the transposed matrix and return it. Note that this is a multiplication by inverse only when the matrix represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>
@@ -20870,6 +20902,7 @@
 			<return type="Matrix32">
 			</return>
 			<description>
+				Return the inverse of the matrix.
 			</description>
 		</method>
 		<method name="basis_xform">
@@ -25361,15 +25394,10 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
-			<argument index="2" name="recv_buf_size" type="int" default="65536">
+			<argument index="1" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" using protocol "ip_type" and a buffer size "recv_buf_size". Listens on all available adresses.
-				IP_TYPE_IPV4 = IPv4 only
-				IP_TYPE_IPV6 = IPv6 only
-				IP_TYPE_ANY  = Dual stack (supports both IPv6 and IPv4 connections).
+				Make this [PacketPeerUDP] listen on the "port" with a buffer size "recv_buf_size". Listens on all available addresses.
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -25379,10 +25407,8 @@
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
-			<argument index="2" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
 			<description>
-				Set the destination address and port for sending packets and variables, a hostname will be resolved using "ip_type" (v4/v6/any) if valid.
+				Set the destination address and port for sending packets and variables, a hostname will be resolved using if valid.
 			</description>
 		</method>
 		<method name="wait">
@@ -26328,7 +26354,7 @@
 		</constant>
 	</constants>
 </class>
-<class name="Patch9Frame" inherits="Control" category="Core">
+<class name="Patch9Rect" inherits="Control" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
@@ -28704,8 +28730,20 @@
 			<description>
 			</description>
 		</method>
+		<method name="apply_torque_impulse">
+			<argument index="0" name="j" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_angular_velocity" qualifiers="const">
 			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_center_of_mass" qualifiers="const">
+			<return type="Vector3"/>
 			</return>
 			<description>
 			</description>
@@ -28788,7 +28826,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_inverse_inertia" qualifiers="const">
+		<method name="get_inverse_inertia_tensor" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
@@ -28802,6 +28840,12 @@
 		</method>
 		<method name="get_linear_velocity" qualifiers="const">
 			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_principal_inertia_axes">
+			<return type="Matrix3">
 			</return>
 			<description>
 			</description>
@@ -30917,6 +30961,13 @@
 				Clear the popup menu, in effect removing all items.
 			</description>
 		</method>
+		<method name="is_hide_on_item_selection">
+			<return type="bool">
+			</return>
+			<description>
+				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
+			</description>
+		</method>
 		<method name="get_item_ID" qualifiers="const">
 			<return type="int">
 			</return>
@@ -31034,6 +31085,13 @@
 			</argument>
 			<description>
 				Removes the item at index "idx" from the menu. Note that the indexes of items after the removed item are going to be shifted by one.
+			</description>
+		</method>
+		<method name="set_hide_on_item_selection">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+				Sets whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
 		<method name="set_item_ID">
@@ -31452,7 +31510,7 @@
 		Quaternion.
 	</brief_description>
 	<description>
-		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between to rotations obtained by a Matrix3 cheaply. Adding quaternions also cheaply adds the rotations, however quaternions need to be often normalized, or else they suffer from precision issues.
+		Quaternion is a 4 dimensional vector that is used to represent a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between two rotations. Multiplying quaternions also cheaply reproduces rotation sequences. However quaternions need to be often renormalized, or else they suffer from precision issues.
 	</description>
 	<methods>
 		<method name="Quat">
@@ -31477,6 +31535,7 @@
 			<argument index="1" name="angle" type="float">
 			</argument>
 			<description>
+                Returns a quaternion that will rotate around the given axis by the specified angle.
 			</description>
 		</method>
 		<method name="Quat">
@@ -31485,6 +31544,7 @@
 			<argument index="0" name="from" type="Matrix3">
 			</argument>
 			<description>
+				Returns the rotation matrix corresponding to the given quaternion.
 			</description>
 		</method>
 		<method name="cubic_slerp">
@@ -31507,14 +31567,14 @@
 			<argument index="0" name="b" type="Quat">
 			</argument>
 			<description>
-				Returns the dot product between two quaternions.
+				Returns the dot product of two quaternions.
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Quat">
 			</return>
 			<description>
-				Returns the inverse of the quaternion (applies to the inverse rotation too).
+				Returns the inverse of the quaternion.
 			</description>
 		</method>
 		<method name="length">
@@ -32497,7 +32557,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="ReferenceFrame" inherits="Control" category="Core">
+<class name="ReferenceRect" inherits="Control" category="Core">
 	<brief_description>
 		Reference frame for GUI.
 	</brief_description>
@@ -33504,7 +33564,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one.
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it.
 			</description>
 		</method>
 		<method name="get_friction" qualifiers="const">
@@ -33865,7 +33925,7 @@
 			<return type="Array">
 			</return>
 			<description>
-				Return a list of the bodies colliding with this one.
+				Return a list of the bodies colliding with this one. By default, number of max contacts reported is at 0 , see [method set_max_contacts_reported] to increase it. You must also enable contact monitor, see [method set_contact_monitor]
 			</description>
 		</method>
 		<method name="get_continuous_collision_detection_mode" qualifiers="const">
@@ -39192,10 +39252,8 @@
 			</argument>
 			<argument index="1" name="port" type="int">
 			</argument>
-			<argument index="2" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
 			<description>
-				Connect to the specified host:port pair. A hostname will be resolved using "ip_type" (v4/v6/any) if valid. Returns [OK] on success or [FAILED] on failure.
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [OK] on success or [FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect">
@@ -40518,15 +40576,10 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="ip_type" type="int" default="int.IP_TYPE_ANY">
-			</argument>
-			<argument index="2" name="accepted_hosts" type="StringArray" default="StringArray([])">
+			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
 			</argument>
 			<description>
-				Listen on a port using protocol "ip_type", alternatively give a white-list of accepted hosts.
-				IP_TYPE_IPV4 = IPv4 only
-				IP_TYPE_IPV6 = IPv6 only
-				IP_TYPE_ANY  = Dual stack (supports both IPv6 and IPv4 connections).
+				Listen on a port using protocol, alternatively give a white-list of accepted hosts.
 			</description>
 		</method>
 		<method name="stop">
@@ -41585,7 +41638,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="TextureFrame" inherits="Control" category="Core">
+<class name="TextureRect" inherits="Control" category="Core">
 	<brief_description>
 		Control Frame that draws a texture.
 	</brief_description>
@@ -43013,7 +43066,7 @@
 		3D Transformation.
 	</brief_description>
 	<description>
-		Transform is used to store transformations, including translations. It consists of a Matrix3 "basis" and Vector3 "origin". Transform is used to represent transformations of any object in space. It is similar to a 4x3 matrix.
+		Transform is used to store translation, rotation and scaling transformations. It consists of a Matrix3 "basis" and Vector3 "origin". Transform is used to represent transformations of objects in space, and as such, determine their position, orientation and scale. It is similar to a 3x4 matrix.
 	</description>
 	<methods>
 		<method name="Transform">
@@ -43028,7 +43081,7 @@
 			<argument index="3" name="origin" type="Vector3">
 			</argument>
 			<description>
-				Construct the Transform from four Vector3. Each axis creates the basis.
+				Construct the Transform from four Vector3. Each axis corresponds to local basis vectors (some of which may be scaled).
 			</description>
 		</method>
 		<method name="Transform">
@@ -43057,7 +43110,7 @@
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-				Construct the Transform from a Quat. The origin will be Vector3(0, 0, 0)
+				Construct the Transform from a Quat. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="Transform">
@@ -43066,21 +43119,21 @@
 			<argument index="0" name="from" type="Matrix3">
 			</argument>
 			<description>
-				Construct the Transform from a Matrix3. The origin will be Vector3(0, 0, 0)
+				Construct the Transform from a Matrix3. The origin will be Vector3(0, 0, 0).
 			</description>
 		</method>
 		<method name="affine_inverse">
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transfrom, even if the transform has scale or the axis vectors are not orthogonal.
+				Returns the inverse of the transfrom, under the assumption that the transformation is composed of rotation, scaling and translation.
 			</description>
 		</method>
 		<method name="inverse">
 			<return type="Transform">
 			</return>
 			<description>
-				Returns the inverse of the transform.
+				Returns the inverse of the transform, under the assumption that the transformation is composed of rotation and translation (no scaling).
 			</description>
 		</method>
 		<method name="looking_at">
@@ -43109,7 +43162,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Rotate the transform locally.
+				Rotate the transform around given axis by phi.
 			</description>
 		</method>
 		<method name="scaled">
@@ -43118,7 +43171,7 @@
 			<argument index="0" name="scale" type="Vector3">
 			</argument>
 			<description>
-				Scale the transform locally.
+				Scale the transform by the specified 3D scaling factors.
 			</description>
 		</method>
 		<method name="translated">
@@ -43127,7 +43180,7 @@
 			<argument index="0" name="ofs" type="Vector3">
 			</argument>
 			<description>
-				Translate the transform locally.
+				Translate the transform by the specified displacement.
 			</description>
 		</method>
 		<method name="xform">
@@ -43136,7 +43189,7 @@
 			<argument index="0" name="v" type="var">
 			</argument>
 			<description>
-				Transforms vector "v" by this transform.
+				Transforms the given vector "v" by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -43151,7 +43204,7 @@
 	</methods>
 	<members>
 		<member name="basis" type="Matrix3">
-			The basis contains 3 [Vector3]. X axis, Y axis, and Z axis.
+			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system travelling with the object.
 		</member>
 		<member name="origin" type="Vector3">
 			The origin of the transform. Which is the translation offset.
@@ -44152,7 +44205,7 @@
 			</argument>
 			<argument index="4" name="target_method" type="String">
 			</argument>
-			<argument index="5" name="times_in_sec" type="float">
+			<argument index="5" name="duration" type="float">
 			</argument>
 			<argument index="6" name="trans_type" type="int">
 			</argument>
@@ -44161,7 +44214,7 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
+				Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -44178,7 +44231,7 @@
 			</argument>
 			<argument index="4" name="target_property" type="String">
 			</argument>
-			<argument index="5" name="times_in_sec" type="float">
+			<argument index="5" name="duration" type="float">
 			</argument>
 			<argument index="6" name="trans_type" type="int">
 			</argument>
@@ -44187,7 +44240,7 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
+				Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -44217,7 +44270,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="times_in_sec" type="float">
+			<argument index="1" name="duration" type="float">
 			</argument>
 			<argument index="2" name="callback" type="String">
 			</argument>
@@ -44232,7 +44285,7 @@
 			<argument index="7" name="arg5" type="Variant" default="NULL">
 			</argument>
 			<description>
-				Call [code]callback[/code] of [code]object[/code] after [code]times_in_sec[/code]. [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
+				Call [code]callback[/code] of [code]object[/code] after [code]duration[/code]. [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_deferred_callback">
@@ -44240,7 +44293,7 @@
 			</return>
 			<argument index="0" name="object" type="Object">
 			</argument>
-			<argument index="1" name="times_in_sec" type="float">
+			<argument index="1" name="duration" type="float">
 			</argument>
 			<argument index="2" name="callback" type="String">
 			</argument>
@@ -44255,7 +44308,7 @@
 			<argument index="7" name="arg5" type="Variant" default="NULL">
 			</argument>
 			<description>
-				Call [code]callback[/code] of [code]object[/code] after [code]times_in_sec[/code] on the main thread (similar to [methog Object.call_deferred). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
+				Call [code]callback[/code] of [code]object[/code] after [code]duration[/code] on the main thread (similar to [methog Object.call_deferred). [code]arg1[/code]-[code]arg5[/code] are arguments to be passed to the callback.
 			</description>
 		</method>
 		<method name="interpolate_method">
@@ -44269,7 +44322,7 @@
 			</argument>
 			<argument index="3" name="final_val" type="Variant">
 			</argument>
-			<argument index="4" name="times_in_sec" type="float">
+			<argument index="4" name="duration" type="float">
 			</argument>
 			<argument index="5" name="trans_type" type="int">
 			</argument>
@@ -44278,7 +44331,7 @@
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
+				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -44293,7 +44346,7 @@
 			</argument>
 			<argument index="3" name="final_val" type="Variant">
 			</argument>
-			<argument index="4" name="times_in_sec" type="float">
+			<argument index="4" name="duration" type="float">
 			</argument>
 			<argument index="5" name="trans_type" type="int">
 			</argument>
@@ -44302,7 +44355,7 @@
 			<argument index="7" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later.
+				Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -44449,7 +44502,7 @@
 			</argument>
 			<argument index="4" name="final_val" type="Variant">
 			</argument>
-			<argument index="5" name="times_in_sec" type="float">
+			<argument index="5" name="duration" type="float">
 			</argument>
 			<argument index="6" name="trans_type" type="int">
 			</argument>
@@ -44458,7 +44511,7 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
+				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -44475,7 +44528,7 @@
 			</argument>
 			<argument index="4" name="final_val" type="Variant">
 			</argument>
-			<argument index="5" name="times_in_sec" type="float">
+			<argument index="5" name="duration" type="float">
 			</argument>
 			<argument index="6" name="trans_type" type="int">
 			</argument>
@@ -44484,7 +44537,7 @@
 			<argument index="8" name="delay" type="float" default="0">
 			</argument>
 			<description>
-				Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]times_in_sec[/code] seconds, [code]delay[/code] seconds later.
+				Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
 				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
@@ -44951,13 +45004,6 @@ do_property].
 				Remove the fractional part of x and y.
 			</description>
 		</method>
-		<method name="floorf">
-			<return type="Vector2">
-			</return>
-			<description>
-				Remove the fractional part of x and y.
-			</description>
-		</method>
 		<method name="get_aspect">
 			<return type="float">
 			</return>
@@ -45292,6 +45338,15 @@ do_property].
 				Return a copy of the normalized vector to unit length. This is the same as v / v.length().
 			</description>
 		</method>
+		<method name="outer">
+			<return type="Matrix3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Return the outer product with b.
+			</description>
+		</method>
 		<method name="reflect">
 			<return type="Vector3">
 			</return>
@@ -45328,6 +45383,13 @@ do_property].
 			</argument>
 			<description>
 				Return a copy of the vector, snapped to the lowest neared multiple.
+			</description>
+		</method>
+		<method name="to_diagonal_matrix">
+			<return type="Matrix3">
+			</return>
+			<description>
+				Return a diagonal matrix with the vector as main diagonal.
 			</description>
 		</method>
 	</methods>

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,12 +54,14 @@ public:
 	StringName visibility_changed;
 	StringName input_event;
 	StringName _input_event;
+	StringName gui_input;
+	StringName _gui_input;
 	StringName item_rect_changed;
 	StringName shader_shader;
 	StringName shader_unshaded;
 	StringName shading_mode;
-	StringName enter_tree;
-	StringName exit_tree;
+	StringName tree_entered;
+	StringName tree_exited;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
 	StringName sleeping_state_changed;
@@ -70,24 +72,25 @@ public:
 
 	StringName line_separation;
 
-	StringName mouse_enter;
-	StringName mouse_exit;
-	StringName focus_enter;
-	StringName focus_exit;
+	StringName mouse_entered;
+	StringName mouse_exited;
+	StringName focus_entered;
+	StringName focus_exited;
 
 	StringName sort_children;
 
 	StringName finished;
+	StringName animation_finished;
 	StringName animation_changed;
 	StringName animation_started;
 
-	StringName body_enter_shape;
-	StringName body_enter;
-	StringName body_exit_shape;
-	StringName body_exit;
+	StringName body_shape_entered;
+	StringName body_entered;
+	StringName body_shape_exited;
+	StringName body_exited;
 
-	StringName area_enter_shape;
-	StringName area_exit_shape;
+	StringName area_shape_entered;
+	StringName area_shape_exited;
 
 	StringName _body_inout;
 	StringName _area_inout;
@@ -105,6 +108,8 @@ public:
 	StringName _draw;
 	StringName _input;
 	StringName _ready;
+	StringName _unhandled_input;
+	StringName _unhandled_key_input;
 
 	StringName _pressed;
 	StringName _toggled;
@@ -123,12 +128,12 @@ public:
 	StringName can_drop_data;
 	StringName drop_data;
 
-	StringName enter_screen;
-	StringName exit_screen;
-	StringName enter_viewport;
-	StringName exit_viewport;
-	StringName enter_camera;
-	StringName exit_camera;
+	StringName screen_entered;
+	StringName screen_exited;
+	StringName viewport_entered;
+	StringName viewport_exited;
+	StringName camera_entered;
+	StringName camera_exited;
 
 	StringName _body_enter_tree;
 	StringName _body_exit_tree;
@@ -156,8 +161,8 @@ public:
 	StringName _update_remote;
 	StringName _update_pairs;
 
-	StringName area_enter;
-	StringName area_exit;
+	StringName area_entered;
+	StringName area_exited;
 
 	StringName get_minimum_size;
 

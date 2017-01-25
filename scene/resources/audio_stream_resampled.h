@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,12 +29,12 @@
 #ifndef AUDIO_STREAM_RESAMPLED_H
 #define AUDIO_STREAM_RESAMPLED_H
 
-#include "scene/resources/audio_stream.h"
+//#include "scene/resources/audio_stream.h"
 
 #if 0
 
 class AudioStreamResampled : public AudioStream {
-	OBJ_TYPE(AudioStreamResampled,AudioStream);
+	GDCLASS(AudioStreamResampled,AudioStream);
 
 	uint32_t rb_bits;
 	uint32_t rb_len;

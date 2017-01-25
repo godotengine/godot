@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "undo_redo.h"
 
+#include "os/os.h"
 
 void UndoRedo::_discard_redo() {
 
@@ -54,12 +55,14 @@ void UndoRedo::_discard_redo() {
 
 void UndoRedo::create_action(const String& p_name,MergeMode p_mode) {
 
+	uint32_t ticks = OS::get_singleton()->get_ticks_msec();
+
 	if (action_level==0) {
 
 		_discard_redo();
 
 		// Check if the merge operation is valid
-		if (p_mode!=MERGE_DISABLE && actions.size() && actions[actions.size()-1].name==p_name) {
+		if (p_mode!=MERGE_DISABLE && actions.size() && actions[actions.size()-1].name==p_name && actions[actions.size()-1].last_tick+800 > ticks) {
 
 			current_action=actions.size()-2;
 
@@ -83,12 +86,15 @@ void UndoRedo::create_action(const String& p_name,MergeMode p_mode) {
 				}
 			}
 
+			actions[actions.size()-1].last_tick=ticks;
+
 			merge_mode=p_mode;
 
 		} else {
 
 			Action new_action;
 			new_action.name=p_name;
+			new_action.last_tick=ticks;
 			actions.push_back(new_action);
 
 			merge_mode=MERGE_DISABLE;
@@ -479,11 +485,11 @@ Variant UndoRedo::_add_undo_method(const Variant** p_args, int p_argcount, Varia
 
 void UndoRedo::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create_action","name","merge_mode"),&UndoRedo::create_action, DEFVAL(MERGE_DISABLE) );
-	ObjectTypeDB::bind_method(_MD("commit_action"),&UndoRedo::commit_action);
+	ClassDB::bind_method(_MD("create_action","name","merge_mode"),&UndoRedo::create_action, DEFVAL(MERGE_DISABLE) );
+	ClassDB::bind_method(_MD("commit_action"),&UndoRedo::commit_action);
 
-	//ObjectTypeDB::bind_method(_MD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
-	//ObjectTypeDB::bind_method(_MD("add_undo_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_undo_method);
+	//ClassDB::bind_method(_MD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
+	//ClassDB::bind_method(_MD("add_undo_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_undo_method);
 
 	{
 		MethodInfo mi;
@@ -492,7 +498,7 @@ void UndoRedo::_bind_methods() {
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
 
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi);
 	}
 
 	{
@@ -502,16 +508,16 @@ void UndoRedo::_bind_methods() {
 		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
 
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi);
 	}
 
-	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:Variant"),&UndoRedo::add_do_property);
-	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:Variant"),&UndoRedo::add_undo_property);
-	ObjectTypeDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
-	ObjectTypeDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
-	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);
-	ObjectTypeDB::bind_method(_MD("get_current_action_name"),&UndoRedo::get_current_action_name);
-	ObjectTypeDB::bind_method(_MD("get_version"),&UndoRedo::get_version);
+	ClassDB::bind_method(_MD("add_do_property","object", "property", "value:Variant"),&UndoRedo::add_do_property);
+	ClassDB::bind_method(_MD("add_undo_property","object", "property", "value:Variant"),&UndoRedo::add_undo_property);
+	ClassDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
+	ClassDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
+	ClassDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);
+	ClassDB::bind_method(_MD("get_current_action_name"),&UndoRedo::get_current_action_name);
+	ClassDB::bind_method(_MD("get_version"),&UndoRedo::get_version);
 
 	BIND_CONSTANT(MERGE_DISABLE);
 	BIND_CONSTANT(MERGE_ENDS);

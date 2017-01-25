@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,21 +74,20 @@ struct DDSFormatInfo {
 
 
 static const DDSFormatInfo dds_format_info[DDS_MAX]={
-	{"DXT1",true,false,4,8,Image::FORMAT_BC1},
-	{"DXT3",true,false,4,16,Image::FORMAT_BC2},
-	{"DXT5",true,false,4,16,Image::FORMAT_BC3},
-	{"ATI1",true,false,4,8,Image::FORMAT_BC4},
-	{"ATI2",true,false,4,16,Image::FORMAT_BC5},
-	{"BGRA8",false,false,1,4,Image::FORMAT_RGBA},
-	{"BGR8",false,false,1,3,Image::FORMAT_RGB},
-	{"RGBA8",false,false,1,4,Image::FORMAT_RGBA},
-	{"RGB8",false,false,1,3,Image::FORMAT_RGB},
-	{"BGR5A1",false,false,1,2,Image::FORMAT_RGBA},
-	{"BGR565",false,false,1,2,Image::FORMAT_RGB},
-	{"BGR10A2",false,false,1,4,Image::FORMAT_RGBA},
-	{"INDEXED",false,true,1,1,Image::FORMAT_INDEXED},
-	{"GRAYSCALE",false,false,1,1,Image::FORMAT_GRAYSCALE},
-	{"GRAYSCALE_ALPHA",false,false,1,2,Image::FORMAT_GRAYSCALE_ALPHA}
+	{"DXT1",true,false,4,8,Image::FORMAT_DXT1},
+	{"DXT3",true,false,4,16,Image::FORMAT_DXT3},
+	{"DXT5",true,false,4,16,Image::FORMAT_DXT5},
+	{"ATI1",true,false,4,8,Image::FORMAT_ATI1},
+	{"ATI2",true,false,4,16,Image::FORMAT_ATI2},
+	{"BGRA8",false,false,1,4,Image::FORMAT_RGBA8},
+	{"BGR8",false,false,1,3,Image::FORMAT_RGB8},
+	{"RGBA8",false,false,1,4,Image::FORMAT_RGBA8},
+	{"RGB8",false,false,1,3,Image::FORMAT_RGB8},
+	{"BGR5A1",false,false,1,2,Image::FORMAT_RGBA8},
+	{"BGR565",false,false,1,2,Image::FORMAT_RGB8},
+	{"BGR10A2",false,false,1,4,Image::FORMAT_RGBA8},
+	{"GRAYSCALE",false,false,1,1,Image::FORMAT_L8},
+	{"GRAYSCALE_ALPHA",false,false,1,2,Image::FORMAT_LA8}
 };
 
 
@@ -222,9 +221,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 	if (!(flags&DDSD_MIPMAPCOUNT))
 		mipmaps=1;
 
-//	print_line("found format: "+String(dds_format_info[dds_format].name));
+	//print_line("found format: "+String(dds_format_info[dds_format].name));
 
-	DVector<uint8_t> src_data;
+	PoolVector<uint8_t> src_data;
 
 	const DDSFormatInfo &info=dds_format_info[dds_format];
 	uint32_t w = width;
@@ -248,9 +247,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 		}
 
 		src_data.resize(size);
-		DVector<uint8_t>::Write wb = src_data.write();
+		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(),size);
-		wb=DVector<uint8_t>::Write();
+		wb=PoolVector<uint8_t>::Write();
 
 	} else if (info.palette) {
 
@@ -282,7 +281,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 		}
 
 		src_data.resize(size + 256*colsize );
-		DVector<uint8_t>::Write wb = src_data.write();
+		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(),size);
 
 		for(int i=0;i<256;i++) {
@@ -297,7 +296,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 		}
 
 
-		wb=DVector<uint8_t>::Write();
+		wb=PoolVector<uint8_t>::Write();
 	} else {
 		//uncompressed generic...
 
@@ -317,7 +316,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 			size=size*2;
 
 		src_data.resize(size);
-		DVector<uint8_t>::Write wb = src_data.write();
+		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(),size);
 
 
@@ -450,7 +449,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 
 		}
 
-		wb=DVector<uint8_t>::Write();
+		wb=PoolVector<uint8_t>::Write();
 	}
 
 
@@ -474,12 +473,12 @@ void ResourceFormatDDS::get_recognized_extensions(List<String> *p_extensions) co
 
 bool ResourceFormatDDS::handles_type(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"Texture");
+	return ClassDB::is_parent_class(p_type,"Texture");
 }
 
 String ResourceFormatDDS::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="dds")
+	if (p_path.get_extension().to_lower()=="dds")
 		return "ImageTexture";
 	return "";
 }

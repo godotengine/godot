@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -562,7 +562,7 @@ JavaObject::~JavaObject(){
 
 void JavaClassWrapper::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("wrap:JavaClass","name"),&JavaClassWrapper::wrap);
+	ClassDB::bind_method(_MD("wrap:JavaClass","name"),&JavaClassWrapper::wrap);
 }
 
 
@@ -1240,7 +1240,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String& p_class) {
 
 
 		//args[i] = _jobject_to_variant(env, obj);
-//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
+		//print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 
 	};
 

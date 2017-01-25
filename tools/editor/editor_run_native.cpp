@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_run_native.h"
-#include "editor_import_export.h"
 
+#include "editor_import_export.h"
 
 void EditorRunNative::_notification(int p_what) {
 
@@ -54,7 +54,7 @@ void EditorRunNative::_notification(int p_what) {
 					Ref<ImageTexture> small_icon = memnew( ImageTexture);
 					small_icon->create_from_image(im);
 					MenuButton *mb = memnew( MenuButton );
-					mb->get_popup()->connect("item_pressed",this,"_run_native",varray(E->get()));
+					mb->get_popup()->connect("id_pressed",this,"_run_native",varray(E->get()));
 					mb->connect("pressed",this,"_run_native",varray(-1, E->get()));
 					mb->set_icon(small_icon);
 					add_child(mb);
@@ -129,7 +129,7 @@ void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 
 void EditorRunNative::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_run_native",&EditorRunNative::_run_native);
+	ClassDB::bind_method("_run_native",&EditorRunNative::_run_native);
 
 	ADD_SIGNAL(MethodInfo("native_run"));
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 #import "gl_view.h"
 #import "view_controller.h"
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, UIAccelerometerDelegate, GLViewDelegate> {
+#import <CoreMotion/CoreMotion.h>
+
+@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;
 	ViewController* view_controller;
-	UIAccelerationValue accel[3];
-	UIAccelerationValue last_accel[3];
 };
 
 @property (strong, nonatomic) UIWindow *window;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ class PlaceHolderScriptInstance;
 
 class Script : public Resource {
 
-	OBJ_TYPE( Script, Resource );
+	GDCLASS( Script, Resource );
 	OBJ_SAVE_TYPE( Script );
 
 protected:
@@ -207,7 +207,7 @@ public:
 	virtual Script *create_script() const=0;
 	virtual bool has_named_classes() const=0;
 	virtual int find_function(const String& p_function,const String& p_code) const=0;
-	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const=0;
+	virtual String make_function(const String& p_class,const String& p_name,const PoolStringArray& p_args) const=0;
 
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint) { return ERR_UNAVAILABLE; }
 

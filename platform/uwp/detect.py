@@ -145,9 +145,13 @@ def configure(env):
 
     env.Append(CCFLAGS=['/DGLES2_ENABLED', '/DGL_GLEXT_PROTOTYPES', '/DEGL_EGLEXT_PROTOTYPES', '/DANGLE_ENABLED'])
 
+    winver = "0x0602" # Windows 8 is the minimum target for UWP build
+    env.Append(CCFLAGS=['/DWINVER=%s' % winver, '/D_WIN32_WINNT=%s' % winver])
+
     LIBS = [
         'WindowsApp',
         'mincore',
+        'ws2_32',
         'libANGLE',
         'libEGL',
         'libGLESv2',

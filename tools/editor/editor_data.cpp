@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_data.h"
+
 #include "globals.h"
 #include "editor_settings.h"
 #include "os/dir_access.h"
@@ -524,8 +525,10 @@ void EditorData::remove_scene(int p_idx){
 
 bool EditorData::_find_updated_instances(Node* p_root,Node *p_node,Set<String> &checked_paths) {
 
-//	if (p_root!=p_node && p_node->get_owner()!=p_root && !p_root->is_editable_instance(p_node->get_owner()))
-//		return false;
+	/*
+	if (p_root!=p_node && p_node->get_owner()!=p_root && !p_root->is_editable_instance(p_node->get_owner()))
+		return false;
+	*/
 
 	Ref<SceneState> ss;
 
@@ -584,7 +587,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err!=OK,false);
 		ep.step(TTR("Updating scene.."),1);
-		Node *new_scene = pscene->instance(true);
+		Node *new_scene = pscene->instance(PackedScene::GEN_EDIT_STATE_MAIN);
 		ERR_FAIL_COND_V(!new_scene,false);
 
 		//transfer selection
@@ -667,7 +670,7 @@ String EditorData::get_scene_type(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
 	if (!edited_scene[p_idx].root)
 		return "";
-	return edited_scene[p_idx].root->get_type();
+	return edited_scene[p_idx].root->get_class();
 
 }
 void EditorData::move_edited_scene_to_index(int p_idx) {
@@ -814,7 +817,7 @@ EditorData::EditorData() {
 
 	current_edited_scene=-1;
 
-//	load_imported_scenes_from_globals();
+	//load_imported_scenes_from_globals();
 }
 
 ///////////
@@ -851,7 +854,7 @@ void EditorSelection::add_node(Node *p_node) {
 	}
 	selection[p_node]=meta;
 
-	p_node->connect("exit_tree",this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
+	p_node->connect("tree_exited",this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
 
 	//emit_signal("selection_changed");
 }
@@ -869,7 +872,7 @@ void EditorSelection::remove_node(Node *p_node) {
 	if (meta)
 		memdelete(meta);
 	selection.erase(p_node);
-	p_node->disconnect("exit_tree",this,"_node_removed");
+	p_node->disconnect("tree_exited",this,"_node_removed");
 	//emit_signal("selection_changed");
 }
 bool EditorSelection::is_selected(Node * p_node) const {
@@ -903,12 +906,12 @@ Array EditorSelection::_get_selected_nodes() {
 
 void EditorSelection::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&EditorSelection::_node_removed);
-	ObjectTypeDB::bind_method(_MD("clear"),&EditorSelection::clear);
-	ObjectTypeDB::bind_method(_MD("add_node","node:Node"),&EditorSelection::add_node);
-	ObjectTypeDB::bind_method(_MD("remove_node","node:Node"),&EditorSelection::remove_node);
-	ObjectTypeDB::bind_method(_MD("get_selected_nodes"),&EditorSelection::_get_selected_nodes);
-	ObjectTypeDB::bind_method(_MD("get_transformable_selected_nodes"),&EditorSelection::_get_transformable_selected_nodes);
+	ClassDB::bind_method(_MD("_node_removed"),&EditorSelection::_node_removed);
+	ClassDB::bind_method(_MD("clear"),&EditorSelection::clear);
+	ClassDB::bind_method(_MD("add_node","node:Node"),&EditorSelection::add_node);
+	ClassDB::bind_method(_MD("remove_node","node:Node"),&EditorSelection::remove_node);
+	ClassDB::bind_method(_MD("get_selected_nodes"),&EditorSelection::_get_selected_nodes);
+	ClassDB::bind_method(_MD("get_transformable_selected_nodes"),&EditorSelection::_get_transformable_selected_nodes);
 	ADD_SIGNAL( MethodInfo("selection_changed") );
 
 }

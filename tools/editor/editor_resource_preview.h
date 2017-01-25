@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,7 @@
 
 class EditorResourcePreviewGenerator : public Reference {
 
-	OBJ_TYPE(EditorResourcePreviewGenerator,Reference );
+	GDCLASS(EditorResourcePreviewGenerator,Reference );
 
 protected:
 
@@ -72,7 +72,7 @@ public:
 
 class EditorResourcePreview : public Node {
 
-	OBJ_TYPE(EditorResourcePreview,Node);
+	GDCLASS(EditorResourcePreview,Node);
 
 
 	static EditorResourcePreview* singleton;

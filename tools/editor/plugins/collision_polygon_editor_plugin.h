@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,11 +40,13 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+#if 0
 class CanvasItemEditor;
 
 class CollisionPolygonEditor : public HBoxContainer {
 
-	OBJ_TYPE(CollisionPolygonEditor, HBoxContainer );
+	GDCLASS(CollisionPolygonEditor, HBoxContainer );
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -60,8 +62,8 @@ class CollisionPolygonEditor : public HBoxContainer {
 	ToolButton *button_edit;
 
 
-	Ref<FixedMaterial> line_material;
-	Ref<FixedMaterial> handle_material;
+	Ref<FixedSpatialMaterial> line_material;
+	Ref<FixedSpatialMaterial> handle_material;
 
 	EditorNode *editor;
 	Panel *panel;
@@ -90,7 +92,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
+	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygonEditor(EditorNode *p_editor);
 	~CollisionPolygonEditor();
@@ -98,14 +100,14 @@ public:
 
 class CollisionPolygonEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( CollisionPolygonEditorPlugin, EditorPlugin );
+	GDCLASS( CollisionPolygonEditorPlugin, EditorPlugin );
 
 	CollisionPolygonEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
 
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) { return collision_polygon_editor->forward_spatial_input_event(p_camera,p_event); }
+	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) { return collision_polygon_editor->forward_spatial_gui_input(p_camera,p_event); }
 
 	virtual String get_name() const { return "CollisionPolygon"; }
 	bool has_main_screen() const { return false; }
@@ -117,5 +119,5 @@ public:
 	~CollisionPolygonEditorPlugin();
 
 };
-
+#endif
 #endif // COLLISION_POLYGON_EDITOR_PLUGIN_H

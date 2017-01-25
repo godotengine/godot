@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@ class GDCompiler {
 
 	const GDParser *parser;
 	struct CodeGen {
+
 		GDScript *script;
 		const GDParser::ClassNode *class_node;
 		const GDParser::FunctionNode *function_node;
@@ -133,6 +134,9 @@ class GDCompiler {
 	void _parse_function(GDParser::FunctionNode *p_func);
 	Ref<GDScript> _parse_class(GDParser::ClassNode *p_class);
 #endif
+
+	bool _is_class_member_property(CodeGen & codegen, const StringName & p_name);
+	bool _is_class_member_property(GDScript *owner, const StringName & p_name);
 
 	void _set_error(const String& p_error,const GDParser::Node *p_node);
 

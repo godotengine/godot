@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "multimesh_editor_plugin.h"
+
 #include "scene/gui/box_container.h"
 #include "scene/3d/mesh_instance.h"
 #include "spatial_editor_plugin.h"
@@ -125,7 +126,7 @@ void MultiMeshEditor::_populate() {
 
 	Transform geom_xform = node->get_global_transform().affine_inverse() * ss_instance->get_global_transform();
 
-	DVector<Face3> geometry = ss_instance->get_faces(VisualInstance::FACES_SOLID);
+	PoolVector<Face3> geometry = ss_instance->get_faces(VisualInstance::FACES_SOLID);
 
 	if (geometry.size()==0) {
 
@@ -137,7 +138,7 @@ void MultiMeshEditor::_populate() {
 	//make all faces local
 
 	int gc = geometry.size();
-	DVector<Face3>::Write w = geometry.write();
+	PoolVector<Face3>::Write w = geometry.write();
 
 	for(int i=0;i<gc;i++) {
 		for(int j=0;j<3;j++) {
@@ -147,7 +148,7 @@ void MultiMeshEditor::_populate() {
 
 
 
-	w = DVector<Face3>::Write();
+	w = PoolVector<Face3>::Write();
 #if 0
 	node->get_multimesh()->set_instance_count(populate_amount->get_val());
 	node->populate_parent(populate_rotate_random->get_val(),populate_tilt_random->get_val(),populate_scale_random->get_val(),populate_scale->get_val());
@@ -164,12 +165,12 @@ void MultiMeshEditor::_populate() {
 	ERR_FAIL_COND(!vi);
 
 #endif
-	DVector<Face3> faces = geometry;
+	PoolVector<Face3> faces = geometry;
 	ERR_EXPLAIN(TTR("Parent has no solid faces to populate."));
 	int facecount=faces.size();
 	ERR_FAIL_COND(!facecount);
 
-	DVector<Face3>::Read r = faces.read();
+	PoolVector<Face3>::Read r = faces.read();
 
 
 
@@ -177,7 +178,7 @@ void MultiMeshEditor::_populate() {
 	Map<float,int> triangle_area_map;
 	for(int i=0;i<facecount;i++) {
 
-		float area = r[i].get_area();;
+		float area = r[i].get_area();
 		if (area<CMP_EPSILON)
 			continue;
 		triangle_area_map[area_accum]=i;
@@ -193,27 +194,29 @@ void MultiMeshEditor::_populate() {
 	Ref<MultiMesh> multimesh = memnew( MultiMesh );
 	multimesh->set_mesh(mesh);
 
-	int instance_count=populate_amount->get_val();
+	int instance_count=populate_amount->get_value();
 
+	multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
+	multimesh->set_color_format(MultiMesh::COLOR_NONE);
 	multimesh->set_instance_count(instance_count);
 
-	float _tilt_random = populate_tilt_random->get_val();
-	float _rotate_random = populate_rotate_random->get_val();
-	float _scale_random = populate_scale_random->get_val();
-	float _scale = populate_scale->get_val();
+	float _tilt_random = populate_tilt_random->get_value();
+	float _rotate_random = populate_rotate_random->get_value();
+	float _scale_random = populate_scale_random->get_value();
+	float _scale = populate_scale->get_value();
 	int axis = populate_axis->get_selected();
 
 	Transform axis_xform;
 	if (axis==Vector3::AXIS_Z) {
-		axis_xform.rotate(Vector3(1,0,0),Math_PI*0.5);
+		axis_xform.rotate(Vector3(1,0,0),-Math_PI*0.5);
 	}
 	if (axis==Vector3::AXIS_X) {
-		axis_xform.rotate(Vector3(0,0,1),Math_PI*0.5);
+		axis_xform.rotate(Vector3(0,0,1),-Math_PI*0.5);
 	}
 
 	for(int i=0;i<instance_count;i++) {
 
-		float areapos = Math::random(0,area_accum);
+		float areapos = Math::random(0.0f,area_accum);
 
 		Map<float,int>::Element *E = triangle_area_map.find_closest(areapos);
 		ERR_FAIL_COND(!E)
@@ -234,11 +237,12 @@ void MultiMeshEditor::_populate() {
 		xform = xform * axis_xform;
 
 
-		Matrix3 post_xform;
+		Basis post_xform;
 
-		post_xform.rotate(xform.basis.get_axis(0),Math::random(-_tilt_random,_tilt_random)*Math_PI);
-		post_xform.rotate(xform.basis.get_axis(2),Math::random(-_tilt_random,_tilt_random)*Math_PI);
-		post_xform.rotate(xform.basis.get_axis(1),Math::random(-_rotate_random,_rotate_random)*Math_PI);
+		post_xform.rotate(xform.basis.get_axis(1),-Math::random(-_rotate_random,_rotate_random)*Math_PI);
+		post_xform.rotate(xform.basis.get_axis(2),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
+		post_xform.rotate(xform.basis.get_axis(0),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
+
 		xform.basis = post_xform * xform.basis;
 		//xform.basis.orthonormalize();
 
@@ -247,10 +251,10 @@ void MultiMeshEditor::_populate() {
 
 
 		multimesh->set_instance_transform(i,xform);
-		multimesh->set_instance_color(i,Color(1,1,1,1));
+
 	}
 
-	multimesh->generate_aabb();
+
 
 	node->set_multimesh(multimesh);
 
@@ -281,11 +285,11 @@ void MultiMeshEditor::_menu_option(int p_option) {
 				surface_source->set_text("..");
 				mesh_source->set_text("..");
 				populate_axis->select(1);
-				populate_rotate_random->set_val(0);
-				populate_tilt_random->set_val(0);
-				populate_scale_random->set_val(0);
-				populate_scale->set_val(1);
-				populate_amount->set_val(128);
+				populate_rotate_random->set_value(0);
+				populate_tilt_random->set_value(0);
+				populate_scale_random->set_value(0);
+				populate_scale->set_value(1);
+				populate_amount->set_value(128);
 
 				_last_pp_node=node;
 			}
@@ -315,10 +319,10 @@ void MultiMeshEditor::_browse(bool p_source) {
 
 void MultiMeshEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&MultiMeshEditor::_menu_option);
-	ObjectTypeDB::bind_method("_populate",&MultiMeshEditor::_populate);
-	ObjectTypeDB::bind_method("_browsed",&MultiMeshEditor::_browsed);
-	ObjectTypeDB::bind_method("_browse",&MultiMeshEditor::_browse);
+	ClassDB::bind_method("_menu_option",&MultiMeshEditor::_menu_option);
+	ClassDB::bind_method("_populate",&MultiMeshEditor::_populate);
+	ClassDB::bind_method("_browsed",&MultiMeshEditor::_browsed);
+	ClassDB::bind_method("_browse",&MultiMeshEditor::_browse);
 }
 
 MultiMeshEditor::MultiMeshEditor() {
@@ -331,7 +335,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("MultiMeshInstance","EditorIcons"));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 
 	populate_dialog = memnew( ConfirmationDialog );
 	populate_dialog->set_title(TTR("Populate MultiMesh"));
@@ -339,7 +343,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	populate_dialog->add_child(vbc);
-	populate_dialog->set_child_rect(vbc);
+	//populate_dialog->set_child_rect(vbc);
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 
@@ -385,14 +389,16 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_scale_random = memnew( SpinBox );
 	populate_scale_random->set_min(0);
 	populate_scale_random->set_max(1);
-	populate_scale_random->set_val(0);
+	populate_scale_random->set_value(0);
+	populate_scale_random->set_step(0.01);
 
 	vbc->add_margin_child(TTR("Random Scale:"),populate_scale_random);
 
 	populate_scale = memnew( SpinBox );
 	populate_scale->set_min(0.001);
 	populate_scale->set_max(4096);
-	populate_scale->set_val(1);
+	populate_scale->set_value(1);
+	populate_scale->set_step(0.01);
 
 	vbc->add_margin_child(TTR("Scale:"),populate_scale);
 
@@ -403,7 +409,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	populate_amount->set_end( Point2(5,237));
 	populate_amount->set_min(1);
 	populate_amount->set_max(65536);
-	populate_amount->set_val(128);
+	populate_amount->set_value(128);
 	vbc->add_margin_child(TTR("Amount:"),populate_amount);
 
 	populate_dialog->get_ok()->set_text(TTR("Populate"));
@@ -427,7 +433,7 @@ void MultiMeshEditorPlugin::edit(Object *p_object) {
 
 bool MultiMeshEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("MultiMeshInstance");
+	return p_object->is_class("MultiMeshInstance");
 }
 
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {

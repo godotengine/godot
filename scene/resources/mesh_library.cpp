@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -244,19 +244,19 @@ int MeshLibrary::get_last_unused_item_id() const {
 
 void MeshLibrary::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create_item","id"),&MeshLibrary::create_item);
-	ObjectTypeDB::bind_method(_MD("set_item_name","id","name"),&MeshLibrary::set_item_name);
-	ObjectTypeDB::bind_method(_MD("set_item_mesh","id","mesh:Mesh"),&MeshLibrary::set_item_mesh);
-	ObjectTypeDB::bind_method(_MD("set_item_navmesh","id","navmesh:NavigationMesh"),&MeshLibrary::set_item_navmesh);
-	ObjectTypeDB::bind_method(_MD("set_item_shape","id","shape:Shape"),&MeshLibrary::set_item_shape);
-	ObjectTypeDB::bind_method(_MD("get_item_name","id"),&MeshLibrary::get_item_name);
-	ObjectTypeDB::bind_method(_MD("get_item_mesh:Mesh","id"),&MeshLibrary::get_item_mesh);
-	ObjectTypeDB::bind_method(_MD("get_item_navmesh:NavigationMesh","id"),&MeshLibrary::get_item_navmesh);
-	ObjectTypeDB::bind_method(_MD("get_item_shape:Shape","id"),&MeshLibrary::get_item_shape);
-	ObjectTypeDB::bind_method(_MD("remove_item","id"),&MeshLibrary::remove_item);
-	ObjectTypeDB::bind_method(_MD("clear"),&MeshLibrary::clear);
-	ObjectTypeDB::bind_method(_MD("get_item_list"),&MeshLibrary::get_item_list);
-	ObjectTypeDB::bind_method(_MD("get_last_unused_item_id"),&MeshLibrary::get_last_unused_item_id);
+	ClassDB::bind_method(_MD("create_item","id"),&MeshLibrary::create_item);
+	ClassDB::bind_method(_MD("set_item_name","id","name"),&MeshLibrary::set_item_name);
+	ClassDB::bind_method(_MD("set_item_mesh","id","mesh:Mesh"),&MeshLibrary::set_item_mesh);
+	ClassDB::bind_method(_MD("set_item_navmesh","id","navmesh:NavigationMesh"),&MeshLibrary::set_item_navmesh);
+	ClassDB::bind_method(_MD("set_item_shape","id","shape:Shape"),&MeshLibrary::set_item_shape);
+	ClassDB::bind_method(_MD("get_item_name","id"),&MeshLibrary::get_item_name);
+	ClassDB::bind_method(_MD("get_item_mesh:Mesh","id"),&MeshLibrary::get_item_mesh);
+	ClassDB::bind_method(_MD("get_item_navmesh:NavigationMesh","id"),&MeshLibrary::get_item_navmesh);
+	ClassDB::bind_method(_MD("get_item_shape:Shape","id"),&MeshLibrary::get_item_shape);
+	ClassDB::bind_method(_MD("remove_item","id"),&MeshLibrary::remove_item);
+	ClassDB::bind_method(_MD("clear"),&MeshLibrary::clear);
+	ClassDB::bind_method(_MD("get_item_list"),&MeshLibrary::get_item_list);
+	ClassDB::bind_method(_MD("get_last_unused_item_id"),&MeshLibrary::get_last_unused_item_id);
 }
 
 MeshLibrary::MeshLibrary() {

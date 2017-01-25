@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ class EditorNode;
 
 class EditorHelpSearch : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorHelpSearch,ConfirmationDialog )
+	GDCLASS(EditorHelpSearch,ConfirmationDialog )
 
 	EditorNode *editor;
 	LineEdit *search_box;
@@ -75,7 +75,7 @@ public:
 };
 
 class EditorHelpIndex : public ConfirmationDialog {
-	OBJ_TYPE( EditorHelpIndex, ConfirmationDialog );
+	GDCLASS( EditorHelpIndex, ConfirmationDialog );
 
 	LineEdit *search_box;
 	Tree *class_list;
@@ -104,7 +104,7 @@ public:
 
 
 class EditorHelp : public VBoxContainer {
-	OBJ_TYPE( EditorHelp, VBoxContainer );
+	GDCLASS( EditorHelp, VBoxContainer );
 
 
 	enum Page {
@@ -187,7 +187,7 @@ public:
 	void popup_search();
 	void search_again();
 
-	String get_class_name();
+	String get_class();
 
 	void set_focused() { class_desc->grab_focus(); }
 
@@ -202,7 +202,7 @@ public:
 
 class EditorHelpBit : public Panel {
 
-	OBJ_TYPE( EditorHelpBit, Panel);
+	GDCLASS( EditorHelpBit, Panel);
 
 	RichTextLabel *rich_text;
 	void _go_to_help(String p_what);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ struct DirAccessWindowsPrivate;
 class DirAccessWindows : public DirAccess {
 
 	enum {
-		MAX_DRIVES=25
+		MAX_DRIVES=26
 	};
 
 
@@ -62,7 +62,7 @@ class DirAccessWindows : public DirAccess {
 
 public:
 
-	virtual bool list_dir_begin(); ///< This starts dir listing
+	virtual Error list_dir_begin(); ///< This starts dir listing
 	virtual String get_next();
 	virtual bool current_is_dir() const;
 	virtual bool current_is_hidden() const;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 */
 class Camera : public Spatial {
 
-	OBJ_TYPE( Camera, Spatial );
+	GDCLASS( Camera, Spatial );
 public:
 	enum Projection {
 
@@ -75,7 +75,7 @@ private:
 	Ref<Environment> environment;
 
 	virtual bool _can_gizmo_scale() const;
-	virtual RES _get_gizmo_geometry() const;
+
 
 
 	//void _camera_make_current(Node *p_camera);
@@ -126,8 +126,8 @@ public:
 	bool is_position_behind(const Vector3& p_pos) const;
 	Vector3 project_position(const Point2& p_point) const;
 
-	void set_visible_layers(uint32_t p_layers);
-	uint32_t get_visible_layers() const;
+	void set_cull_mask(uint32_t p_layers);
+	uint32_t get_cull_mask() const;
 
 	Vector<Plane> get_frustum() const;
 

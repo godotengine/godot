@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,8 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 	}
 
 	switch(type) {
+		/** Current clang-format style doesn't play well with the aligned return values of that switch. */
+		/* clang-format off */
 		case NONE:
 			return true;
 		case KEY:
@@ -61,10 +63,10 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 				&& mouse_button.button_index == p_event.mouse_button.button_index
 				&& mouse_button.button_mask == p_event.mouse_button.button_mask
 				&& key.mod == p_event.key.mod;
-		case JOYSTICK_MOTION:
+		case JOYPAD_MOTION:
 			return joy_motion.axis == p_event.joy_motion.axis
 				&& joy_motion.axis_value == p_event.joy_motion.axis_value;
-		case JOYSTICK_BUTTON:
+		case JOYPAD_BUTTON:
 			return joy_button.pressed == p_event.joy_button.pressed
 				&& joy_button.button_index == p_event.joy_button.button_index
 				&& joy_button.pressure == p_event.joy_button.pressure;
@@ -80,6 +82,7 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 		case ACTION:
 			return action.action == p_event.action.action
 				&& action.pressed == p_event.action.pressed;
+		/* clang-format on */
 		default:
 			ERR_PRINT("No logic to compare InputEvents of this type, this shouldn't happen.");
 	}
@@ -155,14 +158,14 @@ InputEvent::operator String() const {
 			return str;
 
 		} break;
-		case JOYSTICK_MOTION: {
-			str+= "Event: JoystickMotion ";
+		case JOYPAD_MOTION: {
+			str+= "Event: JoypadMotion ";
 			str=str+"Axis: "+itos(joy_motion.axis)+" Value: " +rtos(joy_motion.axis_value);
 			return str;
 
 		} break;
-		case JOYSTICK_BUTTON: {
-			str+= "Event: JoystickButton ";
+		case JOYPAD_BUTTON: {
+			str+= "Event: JoypadButton ";
 			str=str+"Pressed: "+itos(joy_button.pressed)+" Index: " +itos(joy_button.button_index)+" pressure "+rtos(joy_button.pressure);
 			return str;
 
@@ -203,9 +206,9 @@ bool InputEvent::is_pressed() const {
 
 		case KEY: return key.pressed;
 		case MOUSE_BUTTON: return mouse_button.pressed;
-		case JOYSTICK_BUTTON: return joy_button.pressed;
+		case JOYPAD_BUTTON: return joy_button.pressed;
 		case SCREEN_TOUCH: return screen_touch.pressed;
-		case JOYSTICK_MOTION: return ABS(joy_motion.axis_value) > 0.5;
+		case JOYPAD_MOTION: return ABS(joy_motion.axis_value) > 0.5;
 		case ACTION: return action.pressed;
 		default: {}
 	}
@@ -249,7 +252,7 @@ uint32_t InputEventKey::get_scancode_with_modifiers() const {
 
 }
 
-InputEvent InputEvent::xform_by(const Matrix32& p_xform) const {
+InputEvent InputEvent::xform_by(const Transform2D& p_xform) const {
 
 
 	InputEvent ev=*this;

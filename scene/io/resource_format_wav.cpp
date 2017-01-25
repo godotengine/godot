@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#if 0
 #include "resource_format_wav.h"
 #include "os/file_access.h"
 #include "scene/resources/sample.h"
@@ -171,9 +172,9 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original
 			if (format_bits>8)
 				len*=2;
 
-			DVector<uint8_t> data;
+			PoolVector<uint8_t> data;
 			data.resize(len);
-			DVector<uint8_t>::Write dataw = data.write();
+			PoolVector<uint8_t>::Write dataw = data.write();
 			void * data_ptr = dataw.ptr();
 
 			for (int i=0;i<frames;i++) {
@@ -215,7 +216,7 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original
 
 			}
 
-			dataw=DVector<uint8_t>::Write();
+			dataw=PoolVector<uint8_t>::Write();
 
 			sample->set_data(data);
 
@@ -267,8 +268,9 @@ bool ResourceFormatLoaderWAV::handles_type(const String& p_type) const {
 
 String ResourceFormatLoaderWAV::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="wav")
+	if (p_path.get_extension().to_lower()=="wav")
 		return "Sample";
 	return "";
 }
 
+#endif

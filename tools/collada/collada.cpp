@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,7 @@
 #ifdef TOOLS_ENABLED
 
 #include "collada.h"
+
 #include "stdio.h"
 
 //#define DEBUG_DEFAULT_ANIMATION
@@ -103,7 +104,7 @@ Transform Collada::fix_transform(const Transform& p_transform) {
 	}
 #endif
 
-//	tr.scale(Vector3(state.unit_scale.unit_scale.unit_scale));
+	//tr.scale(Vector3(state.unit_scale.unit_scale.unit_scale));
 	return tr;
 	//return state.matrix_fix * p_transform;
 }
@@ -144,7 +145,7 @@ Transform Collada::Node::compute_transform(Collada &state) const {
 			case XForm::OP_ROTATE: {
 				if (xf.data.size()>=4) {
 
-					xform_step.rotate(Vector3(xf.data[0],xf.data[1],xf.data[2]),-Math::deg2rad(xf.data[3]));
+					xform_step.rotate(Vector3(xf.data[0],xf.data[1],xf.data[2]),Math::deg2rad(xf.data[3]));
 				}
 			} break;
 			case XForm::OP_SCALE: {
@@ -322,7 +323,7 @@ void Collada::_parse_image(XMLParser& parser) {
 		String path = parser.get_attribute_value("source").strip_edges();
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path=Globals::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path.percent_decode());
+			image.path=GlobalConfig::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path.percent_decode());
 
 		}
 	} else {
@@ -342,11 +343,11 @@ void Collada::_parse_image(XMLParser& parser) {
 
 					if (path.find("://")==-1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path=Globals::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path);
+						path=GlobalConfig::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path);
 
 					} else if (path.find("file:///")==0) {
 						path=path.replace_first("file:///","");
-						path=Globals::get_singleton()->localize_path(path);
+						path=GlobalConfig::get_singleton()->localize_path(path);
 					}
 
 					image.path=path;
@@ -444,9 +445,11 @@ Vector<String> Collada::_read_string_array(XMLParser& parser) {
 			// parse String data
 			String str = parser.get_node_data();
 			array=str.split_spaces();
-			//for(int i=0;i<array.size();i++) {
-			//	print_line(itos(i)+": "+array[i]);
-			//}
+			/*
+			for(int i=0;i<array.size();i++) {
+				print_line(itos(i)+": "+array[i]);
+			}
+			*/
 		}
 		else
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
@@ -463,7 +466,7 @@ Transform Collada::_read_transform(XMLParser& parser) {
 	if (parser.is_empty())
 		return Transform();
 
-	Vector<float> array;
+	Vector<String> array;
 	while(parser.read()==OK) {
 		// TODO: check for comments inside the element
 		// and ignore them.
@@ -471,7 +474,7 @@ Transform Collada::_read_transform(XMLParser& parser) {
 		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
 			// parse float data
 			String str = parser.get_node_data();
-			array=str.split_floats(" ",false);
+			array=str.split_spaces();
 		}
 		else
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
@@ -479,7 +482,13 @@ Transform Collada::_read_transform(XMLParser& parser) {
 	}
 
 	ERR_FAIL_COND_V(array.size()!=16,Transform());
-	return _read_transform_from_array(array);
+	Vector<float> farr;
+	farr.resize(16);
+	for(int i=0;i<16;i++) {
+		farr[i]=array[i].to_double();
+	}
+
+	return _read_transform_from_array(farr);
 }
 
 String Collada::_read_empty_draw_type(XMLParser& parser) {
@@ -1287,7 +1296,7 @@ void Collada::_parse_skin_controller(XMLParser& parser,String p_id) {
 
 					int stride=1;
 					if (parser.has_attribute("stride"))
-						stride=parser.get_attribute_value("stride").to_int();;
+						stride=parser.get_attribute_value("stride").to_int();
 
 					skindata.sources[current_source].stride=stride;
 					COLLADA_PRINT("section: "+current_source+" stride "+itos(skindata.sources[current_source].stride));
@@ -1361,8 +1370,11 @@ void Collada::_parse_skin_controller(XMLParser& parser,String p_id) {
 
 				skindata.weights=weights;
 
-			}// else if (!parser.is_empty())
-			//	parser.skip_section();
+			}
+			/*
+			else if (!parser.is_empty())
+				parser.skip_section();
+			*/
 
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name()=="skin")
 				break;
@@ -1390,7 +1402,7 @@ void Collada::_parse_skin_controller(XMLParser& parser,String p_id) {
 	for(int i=0;i<joint_source.sarray.size();i++) {
 
 		String name = joint_source.sarray[i];
-		Transform xform = _read_transform_from_array(ibm_source.array,i*16);//	<- this is a mistake, it must be applied to vertices
+		Transform xform = _read_transform_from_array(ibm_source.array,i*16); //<- this is a mistake, it must be applied to vertices
 		xform.affine_invert(); // inverse for rest, because it's an inverse
 #ifdef COLLADA_IMPORT_SCALE_SCENE
 		xform.origin*=state.unit_scale;
@@ -1436,8 +1448,10 @@ void Collada::_parse_morph_controller(XMLParser& parser, String p_id) {
 			} else if (section=="Name_array" || section=="IDREF_array") {
 				// create a new array and read it.
 
-				//if (section=="IDREF_array")
-				//	morphdata.use_idrefs=true;
+				/*
+				if (section=="IDREF_array")
+					morphdata.use_idrefs=true;
+				*/
 				if (morphdata.sources.has(current_source)) {
 
 					morphdata.sources[current_source].sarray = _read_string_array(parser);
@@ -1457,7 +1471,7 @@ void Collada::_parse_morph_controller(XMLParser& parser, String p_id) {
 
 					int stride=1;
 					if (parser.has_attribute("stride"))
-						stride=parser.get_attribute_value("stride").to_int();;
+						stride=parser.get_attribute_value("stride").to_int();
 
 					morphdata.sources[current_source].stride=stride;
 					COLLADA_PRINT("section: "+current_source+" stride "+itos(morphdata.sources[current_source].stride));
@@ -1485,8 +1499,10 @@ void Collada::_parse_morph_controller(XMLParser& parser, String p_id) {
 
 
 			}
-			// else if (!parser.is_empty())
-			//	parser.skip_section();
+			/*
+			else if (!parser.is_empty())
+				parser.skip_section();
+			*/
 
 		} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && parser.get_node_name()=="morph")
 				break;
@@ -1598,7 +1614,7 @@ Collada::Node* Collada::_parse_visual_instance_camera(XMLParser& parser) {
 	cam->camera= _uri_to_id(parser.get_attribute_value_safe("url"));
 
 	if (state.up_axis==Vector3::AXIS_Z) //collada weirdness
-		cam->post_transform.basis.rotate(Vector3(1,0,0),Math_PI*0.5);
+		cam->post_transform.basis.rotate(Vector3(1,0,0),-Math_PI*0.5);
 
 	if (parser.is_empty()) //nothing else to parse...
 		return cam;
@@ -1619,7 +1635,7 @@ Collada::Node* Collada::_parse_visual_instance_light(XMLParser& parser) {
 	cam->light= _uri_to_id(parser.get_attribute_value_safe("url"));
 
 	if (state.up_axis==Vector3::AXIS_Z) //collada weirdness
-		cam->post_transform.basis.rotate(Vector3(1,0,0),Math_PI*0.5);
+		cam->post_transform.basis.rotate(Vector3(1,0,0),-Math_PI*0.5);
 
 	if (parser.is_empty()) //nothing else to parse...
 		return cam;
@@ -1699,7 +1715,7 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 
 		if ( parser.has_attribute("sid") ) { //bones may not have sid
 			joint->sid=parser.get_attribute_value("sid");
-//			state.bone_map[joint->sid]=joint;
+			//state.bone_map[joint->sid]=joint;
 		} else if (state.idref_joints.has(name)) {
 			joint->sid=name; //kind of a cheat but..
 		} else if (parser.has_attribute("name")) {
@@ -2714,7 +2730,7 @@ Error Collada::load(const String& p_path, int p_flags) {
 	Error err = parser.open(p_path);
 	ERR_FAIL_COND_V(err,err);
 
-	state.local_path = Globals::get_singleton()->localize_path(p_path);
+	state.local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 	state.import_flags=p_flags;
 	/* Skip headers */
 	err=OK;

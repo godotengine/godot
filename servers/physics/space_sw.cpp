@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,7 +146,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 	ShapeSW *shape = static_cast<PhysicsServerSW*>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape,0);
 
-	AABB aabb = p_xform.xform(shape->get_aabb());
+	Rect3 aabb = p_xform.xform(shape->get_aabb());
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
@@ -200,12 +200,14 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 	ShapeSW *shape = static_cast<PhysicsServerSW*>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape,false);
 
-	AABB aabb = p_xform.xform(shape->get_aabb());
-	aabb=aabb.merge(AABB(aabb.pos+p_motion,aabb.size)); //motion
+	Rect3 aabb = p_xform.xform(shape->get_aabb());
+	aabb=aabb.merge(Rect3(aabb.pos+p_motion,aabb.size)); //motion
 	aabb=aabb.grow(p_margin);
 
-	//if (p_motion!=Vector3())
-	//	print_line(p_motion);
+	/*
+	if (p_motion!=Vector3())
+		print_line(p_motion);
+	*/
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
@@ -329,7 +331,7 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_sh
 	ShapeSW *shape = static_cast<PhysicsServerSW*>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape,0);
 
-	AABB aabb = p_shape_xform.xform(shape->get_aabb());
+	Rect3 aabb = p_shape_xform.xform(shape->get_aabb());
 	aabb=aabb.grow(p_margin);
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
@@ -412,7 +414,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_
 	ShapeSW *shape = static_cast<PhysicsServerSW*>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape,0);
 
-	AABB aabb = p_shape_xform.xform(shape->get_aabb());
+	Rect3 aabb = p_shape_xform.xform(shape->get_aabb());
 	aabb=aabb.grow(p_margin);
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
@@ -719,9 +721,9 @@ SpaceSW::SpaceSW() {
 	contact_max_allowed_penetration= 0.01;
 
 	constraint_bias = 0.01;
-	body_linear_velocity_sleep_threshold=GLOBAL_DEF("physics/sleep_threshold_linear",0.1);
-	body_angular_velocity_sleep_threshold=GLOBAL_DEF("physics/sleep_threshold_angular", (8.0 / 180.0 * Math_PI) );
-	body_time_to_sleep=GLOBAL_DEF("physics/time_before_sleep",0.5);
+	body_linear_velocity_sleep_threshold=GLOBAL_DEF("physics/3d/sleep_threshold_linear",0.1);
+	body_angular_velocity_sleep_threshold=GLOBAL_DEF("physics/3d/sleep_threshold_angular", (8.0 / 180.0 * Math_PI) );
+	body_time_to_sleep=GLOBAL_DEF("physics/3d/time_before_sleep",0.5);
 	body_angular_velocity_damp_ratio=10;
 
 

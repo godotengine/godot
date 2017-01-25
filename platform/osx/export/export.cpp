@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformOSX,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformOSX,EditorExportPlatform );
 
 	String custom_release_package;
 	String custom_debug_package;
@@ -207,7 +207,7 @@ void EditorExportPlatformOSX::_make_icon(const Image& p_icon,Vector<uint8_t>& ic
 	while(size>=16) {
 
 		Image copy = p_icon;
-		copy.convert(Image::FORMAT_RGBA);
+		copy.convert(Image::FORMAT_RGBA8);
 		copy.resize(size,size);
 		it->create_from_image(copy);
 		String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/icon.png";
@@ -324,8 +324,8 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 	String pkg_name;
 	if (app_name!="")
 		pkg_name=app_name;
-	else if (String(Globals::get_singleton()->get("application/name"))!="")
-		pkg_name=String(Globals::get_singleton()->get("application/name"));
+	else if (String(GlobalConfig::get_singleton()->get("application/name"))!="")
+		pkg_name=String(GlobalConfig::get_singleton()->get("application/name"));
 	else
 		pkg_name="Unnamed";
 
@@ -371,7 +371,7 @@ Error EditorExportPlatformOSX::export_project(const String& p_path, bool p_debug
 
 		if (file=="Contents/Resources/icon.icns") {
 			//see if there is an icon
-			String iconpath = Globals::get_singleton()->get("application/icon");
+			String iconpath = GlobalConfig::get_singleton()->get("application/icon");
 			print_line("icon? "+iconpath);
 			if (iconpath!="") {
 				Image icon;

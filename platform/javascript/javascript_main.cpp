@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,11 +66,12 @@ static void _glut_mouse_button(int button, int state, int x, int y) {
 
 	if (ev.mouse_button.button_index<4) {
 		if (ev.mouse_button.pressed) {
-			_mouse_button_mask|=1<<ev.mouse_button.button_index;
+			_mouse_button_mask |= 1 << (ev.mouse_button.button_index-1);
 		} else {
-			_mouse_button_mask&=~(1<<ev.mouse_button.button_index);
+			_mouse_button_mask &= ~(1 << (ev.mouse_button.button_index-1));
 		}
 	}
+	ev.mouse_button.button_mask=_mouse_button_mask;
 
 	uint32_t m = glutGetModifiers();
 	ev.mouse_button.mod.alt=(m&GLUT_ACTIVE_ALT)!=0;
@@ -79,6 +80,11 @@ static void _glut_mouse_button(int button, int state, int x, int y) {
 
 	os->push_input(ev);
 
+	if (ev.mouse_button.button_index==BUTTON_WHEEL_UP || ev.mouse_button.button_index==BUTTON_WHEEL_DOWN) {
+		// GLUT doesn't send release events for mouse wheel, so send manually
+		ev.mouse_button.pressed=false;
+		os->push_input(ev);
+	}
 }
 
 
@@ -134,10 +140,9 @@ static void _godot_draw(void) {
 
 extern "C" {
 
-void main_after_fs_sync(int value) {
+void main_after_fs_sync() {
 
 	start_step=1;
-	printf("FS SYNCHED!\n");
 }
 
 }
@@ -148,20 +153,19 @@ int main(int argc, char *argv[]) {
 	/* Initialize the window */
 	printf("let it go!\n");
 	glutInit(&argc, argv);
-	os = new OS_JavaScript(_gfx_init,NULL,NULL,NULL,NULL);
+	os = new OS_JavaScript(_gfx_init,NULL,NULL);
 #if 0
 	char *args[]={"-test","gui","-v",NULL};
 	Error err  = Main::setup("apk",3,args);
 #else
-//	char *args[]={"-v",NULL};//
-//	Error err  = Main::setup("",1,args);
+	//char *args[]={"-v",NULL};//
+	//Error err  = Main::setup("",1,args);
 	Error err  = Main::setup("",0,NULL);
 
 #endif
 	ResourceLoader::set_abort_on_missing_resources(false); //ease up compatibility
 
 	glutMouseFunc(_glut_mouse_button);
-	glutMotionFunc(_glut_mouse_motion);
 	glutMotionFunc(_glut_mouse_motion);
 	glutPassiveMotionFunc(_glut_mouse_motion);
 
@@ -173,26 +177,27 @@ int main(int argc, char *argv[]) {
 	glutDisplayFunc(_godot_draw);
    //glutSpecialFunc(gears_special);
 
+	//mount persistent file system
+	/* clang-format off */
+	EM_ASM(
+		FS.mkdir('/userfs');
+		FS.mount(IDBFS, {}, '/userfs');
 
+		// sync from persistent state into memory and then
+		// run the 'main_after_fs_sync' function
+		FS.syncfs(true, function(err) {
 
-	 //mount persistent filesystem
-	 EM_ASM(
-		 FS.mkdir('/userfs');
-		 FS.mount(IDBFS, {}, '/userfs');
-
-
-
-		 // sync from persisted state into memory and then
-		 // run the 'test' function
-		 FS.syncfs(true, function (err) {
-			 assert(!err);
-			 console.log("done syncinc!");
-			 _after_sync_cb = Module.cwrap('main_after_fs_sync', 'void',['number']);
-			 _after_sync_cb(0);
-
-		 });
-
-	  );
+			if (err) {
+				Module.setStatus('Failed to load persistent data\nPlease allow (third-party) cookies');
+				Module.printErr('Failed to populate IDB file system: ' + err.message);
+				Module.exit();
+			} else {
+				Module.print('Successfully populated IDB file system');
+				ccall('main_after_fs_sync', 'void', []);
+			}
+		});
+	);
+	/* clang-format on */
 
 	glutMainLoop();
 

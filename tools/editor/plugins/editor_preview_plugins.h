@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,7 @@
 
 #include "tools/editor/editor_resource_preview.h"
 
+#if 0
 class EditorTexturePreviewPlugin : public EditorResourcePreviewGenerator {
 public:
 
@@ -93,7 +94,7 @@ public:
 	EditorScriptPreviewPlugin();
 };
 
-
+#if 0
 class EditorSamplePreviewPlugin : public EditorResourcePreviewGenerator {
 public:
 
@@ -103,7 +104,7 @@ public:
 	EditorSamplePreviewPlugin();
 };
 
-
+#endif
 class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
 
 	RID scenario;
@@ -123,5 +124,5 @@ public:
 	~EditorMeshPreviewPlugin();
 };
 
-
+#endif
 #endif // EDITORPREVIEWPLUGINS_H

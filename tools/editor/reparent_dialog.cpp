@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,6 @@
 
 #include "scene/gui/label.h"
 #include "scene/gui/box_container.h"
-
-
 #include "print_string.h"
 
 void ReparentDialog::_notification(int p_what) {
@@ -75,8 +73,8 @@ void ReparentDialog::set_current(const Set<Node*>& p_selection) {
 
 void ReparentDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_reparent",&ReparentDialog::_reparent);
-	ObjectTypeDB::bind_method("_cancel",&ReparentDialog::_cancel);
+	ClassDB::bind_method("_reparent",&ReparentDialog::_reparent);
+	ClassDB::bind_method("_cancel",&ReparentDialog::_cancel);
 
 	ADD_SIGNAL( MethodInfo("reparent",PropertyInfo(Variant::NODE_PATH,"path"),PropertyInfo(Variant::BOOL,"keep_global_xform")));
 }
@@ -88,7 +86,7 @@ ReparentDialog::ReparentDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 
 	tree = memnew( SceneTreeEditor(false) );
 	tree->set_show_enabled_subscene(true);
@@ -107,7 +105,7 @@ ReparentDialog::ReparentDialog() {
 	vbc->add_child(keep_transform);
 
 
-	//vbc->add_margin_child("Options:",node_only);;
+	//vbc->add_margin_child("Options:",node_only);
 
 	//cancel->connect("pressed", this,"_cancel");
 

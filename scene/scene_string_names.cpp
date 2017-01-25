@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,32 +43,33 @@ SceneStringNames::SceneStringNames() {
 	shader_shader=StaticCString::create("shader/shader");
 	shader_unshaded=StaticCString::create("shader/unshaded");
 	shading_mode=StaticCString::create("shader/shading_mode");
-	enter_tree=StaticCString::create("enter_tree");
-	exit_tree=StaticCString::create("exit_tree");
+	tree_entered=StaticCString::create("tree_entered");
+	tree_exited=StaticCString::create("tree_exited");
 	item_rect_changed=StaticCString::create("item_rect_changed");
 	size_flags_changed=StaticCString::create("size_flags_changed");
 	minimum_size_changed=StaticCString::create("minimum_size_changed");
 	sleeping_state_changed=StaticCString::create("sleeping_state_changed");
 
 	finished=StaticCString::create("finished");
+	animation_finished=StaticCString::create("animation_finished");
 	animation_changed=StaticCString::create("animation_changed");
 	animation_started=StaticCString::create("animation_started");
 
-	mouse_enter=StaticCString::create("mouse_enter");
-	mouse_exit=StaticCString::create("mouse_exit");
+	mouse_entered=StaticCString::create("mouse_entered");
+	mouse_exited=StaticCString::create("mouse_exited");
 
-	focus_enter=StaticCString::create("focus_enter");
-	focus_exit=StaticCString::create("focus_exit");
+	focus_entered=StaticCString::create("focus_entered");
+	focus_exited=StaticCString::create("focus_exited");
 
 	sort_children = StaticCString::create("sort_children");
 
-	body_enter_shape = StaticCString::create("body_enter_shape");
-	body_enter = StaticCString::create("body_enter");
-	body_exit_shape = StaticCString::create("body_exit_shape");
-	body_exit = StaticCString::create("body_exit");
+	body_shape_entered = StaticCString::create("body_shape_entered");
+	body_entered = StaticCString::create("body_entered");
+	body_shape_exited = StaticCString::create("body_shape_exited");
+	body_exited = StaticCString::create("body_exited");
 
-	area_enter_shape = StaticCString::create("area_enter_shape");
-	area_exit_shape = StaticCString::create("area_exit_shape");
+	area_shape_entered = StaticCString::create("area_shape_entered");
+	area_shape_exited = StaticCString::create("area_shape_exited");
 
 	_body_inout = StaticCString::create("_body_inout");
 	_area_inout = StaticCString::create("_area_inout");
@@ -99,14 +100,14 @@ SceneStringNames::SceneStringNames() {
 	grouped=StaticCString::create("grouped");
 	ungrouped=StaticCString::create("ungrouped");
 
-	enter_screen=StaticCString::create("enter_screen");
-	exit_screen=StaticCString::create("exit_screen");
+	screen_entered=StaticCString::create("screen_entered");
+	screen_exited=StaticCString::create("screen_exited");
 
-	enter_viewport=StaticCString::create("enter_viewport");
-	exit_viewport=StaticCString::create("exit_viewport");
+	viewport_entered=StaticCString::create("viewport_entered");
+	viewport_exited=StaticCString::create("viewport_exited");
 
-	enter_camera=StaticCString::create("enter_camera");
-	exit_camera=StaticCString::create("exit_camera");
+	camera_entered=StaticCString::create("camera_entered");
+	camera_exited=StaticCString::create("camera_exited");
 
 	_body_enter_tree = StaticCString::create("_body_enter_tree");
 	_body_exit_tree = StaticCString::create("_body_exit_tree");
@@ -115,6 +116,12 @@ SceneStringNames::SceneStringNames() {
 	_area_exit_tree = StaticCString::create("_area_exit_tree");
 
 	_input_event=StaticCString::create("_input_event");
+
+	gui_input=StaticCString::create("gui_input");
+	_gui_input=StaticCString::create("_gui_input");
+
+	_unhandled_input=StaticCString::create("_unhandled_input");
+	_unhandled_key_input=StaticCString::create("_unhandled_key_input");
 
 	changed=StaticCString::create("changed");
 	_shader_changed=StaticCString::create("_shader_changed");
@@ -138,8 +145,8 @@ SceneStringNames::SceneStringNames() {
 
 	get_minimum_size=StaticCString::create("get_minimum_size");
 
-	area_enter=StaticCString::create("area_enter");
-	area_exit=StaticCString::create("area_exit");
+	area_entered=StaticCString::create("area_entered");
+	area_exited=StaticCString::create("area_exited");
 
 	has_point = StaticCString::create("has_point");
 

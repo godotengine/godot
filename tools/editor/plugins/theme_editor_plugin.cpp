@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,8 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "theme_editor_plugin.h"
+
+#include "version.h"
 #include "os/file_access.h"
 
 void ThemeEditor::edit(const Ref<Theme>& p_theme) {
@@ -584,7 +585,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	List<StringName> types;
 	base_theme->get_type_list(&types);
 
-	type_menu->get_popup()->clear();;
+	type_menu->get_popup()->clear();
 
 	if (p_option==0 || p_option==1) {//add
 
@@ -631,12 +632,12 @@ void ThemeEditor::_notification(int p_what) {
 
 void ThemeEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_type_menu_cbk",&ThemeEditor::_type_menu_cbk);
-	ObjectTypeDB::bind_method("_name_menu_about_to_show",&ThemeEditor::_name_menu_about_to_show);
-	ObjectTypeDB::bind_method("_name_menu_cbk",&ThemeEditor::_name_menu_cbk);
-	ObjectTypeDB::bind_method("_theme_menu_cbk",&ThemeEditor::_theme_menu_cbk);
-	ObjectTypeDB::bind_method("_dialog_cbk",&ThemeEditor::_dialog_cbk);
-	ObjectTypeDB::bind_method("_save_template_cbk",&ThemeEditor::_save_template_cbk);
+	ClassDB::bind_method("_type_menu_cbk",&ThemeEditor::_type_menu_cbk);
+	ClassDB::bind_method("_name_menu_about_to_show",&ThemeEditor::_name_menu_about_to_show);
+	ClassDB::bind_method("_name_menu_cbk",&ThemeEditor::_name_menu_cbk);
+	ClassDB::bind_method("_theme_menu_cbk",&ThemeEditor::_theme_menu_cbk);
+	ClassDB::bind_method("_dialog_cbk",&ThemeEditor::_dialog_cbk);
+	ClassDB::bind_method("_save_template_cbk",&ThemeEditor::_save_template_cbk);
 }
 
 ThemeEditor::ThemeEditor() {
@@ -679,7 +680,7 @@ ThemeEditor::ThemeEditor() {
 
 	add_child(theme_menu);
 	theme_menu->set_pos(Vector2(3,3)*EDSCALE);
-	theme_menu->get_popup()->connect("item_pressed", this,"_theme_menu_cbk");
+	theme_menu->get_popup()->connect("id_pressed", this,"_theme_menu_cbk");
 
 
 	HBoxContainer *main_hb = memnew( HBoxContainer );
@@ -693,9 +694,9 @@ ThemeEditor::ThemeEditor() {
 
 
 
-//	main_panel->add_child(panel);
-//	panel->set_area_as_parent_rect();
-//	panel->set_margin( MARGIN_TOP,20 );
+	//main_panel->add_child(panel);
+	//panel->set_area_as_parent_rect();
+	//panel->set_margin( MARGIN_TOP,20 );
 
 	first_vb->add_child(memnew( Label("Label") ));
 
@@ -711,7 +712,7 @@ ThemeEditor::ThemeEditor() {
 	first_vb->add_child(cbx );
 
 
-	ButtonGroup *bg = memnew( ButtonGroup );
+	VBoxContainer *bg = memnew( VBoxContainer );
 	bg->set_v_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *gbvb = memnew( VBoxContainer );
 	gbvb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -750,7 +751,7 @@ ThemeEditor::ThemeEditor() {
 	first_vb->add_child( memnew( HScrollBar ));
 	first_vb->add_child( memnew( SpinBox ));
 	ProgressBar *pb=memnew( ProgressBar );
-	pb->set_val(50);
+	pb->set_value(50);
 	first_vb->add_child( pb);
 	Panel *pn=memnew( Panel );
 	pn->set_custom_minimum_size(Size2(40,40)*EDSCALE);
@@ -898,7 +899,7 @@ ThemeEditor::ThemeEditor() {
 	type_menu->set_text("..");
 	add_del_dialog->add_child(type_menu);
 
-	type_menu->get_popup()->connect("item_pressed", this,"_type_menu_cbk");
+	type_menu->get_popup()->connect("id_pressed", this,"_type_menu_cbk");
 
 	l = memnew( Label );
 	l->set_pos( Point2(200,5)*EDSCALE );
@@ -918,7 +919,7 @@ ThemeEditor::ThemeEditor() {
 	add_del_dialog->add_child(name_menu);
 
 	name_menu->get_popup()->connect("about_to_show", this,"_name_menu_about_to_show");
-	name_menu->get_popup()->connect("item_pressed", this,"_name_menu_cbk");
+	name_menu->get_popup()->connect("id_pressed", this,"_name_menu_cbk");
 
 	type_select_label= memnew( Label );
 	type_select_label->set_pos( Point2(400,5)*EDSCALE );
@@ -963,7 +964,7 @@ void ThemeEditorPlugin::edit(Object *p_node) {
 
 bool ThemeEditorPlugin::handles(Object *p_node) const{
 
-	return p_node->is_type("Theme");
+	return p_node->is_class("Theme");
 }
 
 void ThemeEditorPlugin::make_visible(bool p_visible){
@@ -975,7 +976,7 @@ void ThemeEditorPlugin::make_visible(bool p_visible){
 
 	} else {
 		theme_editor->set_process(false);
-		if (theme_editor->is_visible())
+		if (theme_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 	}
@@ -987,7 +988,7 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	theme_editor = memnew( ThemeEditor );
 	theme_editor->set_custom_minimum_size(Size2(0,200));
 
-//	p_node->get_viewport()->add_child(theme_editor);
+	//p_node->get_viewport()->add_child(theme_editor);
 	button=editor->add_bottom_panel_item("Theme",theme_editor);
 	button->hide();
 

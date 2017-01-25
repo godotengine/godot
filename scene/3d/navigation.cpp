@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,12 +36,12 @@ void Navigation::_navmesh_link(int p_id) {
 
 	print_line("LINK");
 
-	DVector<Vector3> vertices=nm.navmesh->get_vertices();
+	PoolVector<Vector3> vertices=nm.navmesh->get_vertices();
 	int len = vertices.size();
 	if (len==0)
 		return;
 
-	DVector<Vector3>::Read r=vertices.read();
+	PoolVector<Vector3>::Read r=vertices.read();
 
 	for(int i=0;i<nm.navmesh->get_polygon_count();i++) {
 
@@ -129,7 +129,7 @@ void Navigation::_navmesh_link(int p_id) {
 				C->get().B=&p;
 				C->get().B_edge=j;
 				C->get().A->edges[C->get().A_edge].C=&p;
-				C->get().A->edges[C->get().A_edge].C_edge=j;;
+				C->get().A->edges[C->get().A_edge].C_edge=j;
 				p.edges[j].C=C->get().A;
 				p.edges[j].C_edge=C->get().A_edge;
 				//connection successful.
@@ -368,7 +368,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 	while(!found_route) {
 
 		if (open_list.size()==0) {
-		//	print_line("NOU OPEN LIST");
+			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list
@@ -550,7 +550,7 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 			path.push_back(begin_point);
 
 
-			path.invert();;
+			path.invert();
 		}
 
 		return path;
@@ -730,18 +730,18 @@ Vector3 Navigation::get_up_vector() const{
 
 void Navigation::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("navmesh_create","mesh:NavigationMesh","xform","owner"),&Navigation::navmesh_create,DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("navmesh_set_transform","id","xform"),&Navigation::navmesh_set_transform);
-	ObjectTypeDB::bind_method(_MD("navmesh_remove","id"),&Navigation::navmesh_remove);
+	ClassDB::bind_method(_MD("navmesh_create","mesh:NavigationMesh","xform","owner"),&Navigation::navmesh_create,DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("navmesh_set_transform","id","xform"),&Navigation::navmesh_set_transform);
+	ClassDB::bind_method(_MD("navmesh_remove","id"),&Navigation::navmesh_remove);
 
-	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation::get_simple_path,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","start","end","use_collision"),&Navigation::get_closest_point_to_segment,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("get_closest_point","to_point"),&Navigation::get_closest_point);
-	ObjectTypeDB::bind_method(_MD("get_closest_point_normal","to_point"),&Navigation::get_closest_point_normal);
-	ObjectTypeDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation::get_closest_point_owner);
+	ClassDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation::get_simple_path,DEFVAL(true));
+	ClassDB::bind_method(_MD("get_closest_point_to_segment","start","end","use_collision"),&Navigation::get_closest_point_to_segment,DEFVAL(false));
+	ClassDB::bind_method(_MD("get_closest_point","to_point"),&Navigation::get_closest_point);
+	ClassDB::bind_method(_MD("get_closest_point_normal","to_point"),&Navigation::get_closest_point_normal);
+	ClassDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation::get_closest_point_owner);
 
-	ObjectTypeDB::bind_method(_MD("set_up_vector","up"),&Navigation::set_up_vector);
-	ObjectTypeDB::bind_method(_MD("get_up_vector"),&Navigation::get_up_vector);
+	ClassDB::bind_method(_MD("set_up_vector","up"),&Navigation::set_up_vector);
+	ClassDB::bind_method(_MD("get_up_vector"),&Navigation::get_up_vector);
 
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"up_vector"),_SCS("set_up_vector"),_SCS("get_up_vector"));
 }

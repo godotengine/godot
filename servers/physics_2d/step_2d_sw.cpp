@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -216,7 +216,7 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 		p_space->area_remove_from_moved_list((SelfList<Area2DSW>*)aml.first()); //faster to remove here
 	}
 
-//	print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
+	//print_line("island count: "+itos(island_count)+" active count: "+itos(active_count));
 
 	{ //profile
 		profile_endtime=OS::get_singleton()->get_ticks_usec();

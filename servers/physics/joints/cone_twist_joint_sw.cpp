@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,10 +128,10 @@ bool	ConeTwistJointSW::setup(float p_step) {
 		for (int i=0;i<3;i++)
 		{
 			memnew_placement(&m_jac[i], JacobianEntrySW(
-				A->get_transform().basis.transposed(),
-				B->get_transform().basis.transposed(),
-				pivotAInW - A->get_transform().origin,
-				pivotBInW - B->get_transform().origin,
+				A->get_principal_inertia_axes().transposed(),
+				B->get_principal_inertia_axes().transposed(),
+				pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+				pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
 				normal[i],
 				A->get_inv_inertia(),
 				A->get_inv_mass(),
@@ -156,7 +156,7 @@ bool	ConeTwistJointSW::setup(float p_step) {
 	if (m_swingSpan1 >= real_t(0.05f))
 	{
 		b1Axis2 = A->get_transform().basis.xform( this->m_rbAFrame.basis.get_axis(1) );
-//		swing1  = btAtan2Fast( b2Axis1.dot(b1Axis2),b2Axis1.dot(b1Axis1) );
+		//swing1  = btAtan2Fast( b2Axis1.dot(b1Axis2),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis2);
 		swing1  = atan2fast(swy, swx);
@@ -169,7 +169,7 @@ bool	ConeTwistJointSW::setup(float p_step) {
 	if (m_swingSpan2 >= real_t(0.05f))
 	{
 		b1Axis3 = A->get_transform().basis.xform( this->m_rbAFrame.basis.get_axis(2) );
-//		swing2 = btAtan2Fast( b2Axis1.dot(b1Axis3),b2Axis1.dot(b1Axis1) );
+		//swing2 = btAtan2Fast( b2Axis1.dot(b1Axis3),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis3);
 		swing2  = atan2fast(swy, swx);

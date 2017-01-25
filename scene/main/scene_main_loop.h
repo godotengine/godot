@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ class Mesh;
 
 
 class SceneTreeTimer : public Reference {
-	OBJ_TYPE(SceneTreeTimer,Reference);
+	GDCLASS(SceneTreeTimer,Reference);
 
 	float time_left;
 protected:
@@ -70,9 +70,11 @@ class SceneTree : public MainLoop {
 
 	_THREAD_SAFE_CLASS_
 
-	OBJ_TYPE( SceneTree, MainLoop );
+	GDCLASS( SceneTree, MainLoop );
 public:
 
+
+	typedef void (*IdleCallback)();
 
 	enum StretchMode {
 
@@ -105,6 +107,7 @@ private:
 	float fixed_process_time;
 	float idle_process_time;
 	bool accept_quit;
+	bool quit_on_go_back;
 	uint32_t last_id;
 
 	bool editor_hint;
@@ -239,7 +242,9 @@ friend class Node;
 
 	void _notify_group_pause(const StringName& p_group,int p_notification);
 	void _call_input_pause(const StringName& p_group,const StringName& p_method,const InputEvent& p_input);
+	Variant _call_group_flags(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 	Variant _call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+
 
 
 	static void _debugger_request_tree(void *self);
@@ -303,6 +308,15 @@ friend class Viewport;
 	static void _live_edit_reparent_node_funcs(void* self,const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos) { reinterpret_cast<SceneTree*>(self)->_live_edit_reparent_node_func(p_at,p_new_place,p_new_name,p_at_pos); }
 
 #endif
+
+	enum {
+		MAX_IDLE_CALLBACKS=256
+	};
+
+	static IdleCallback idle_callbacks[MAX_IDLE_CALLBACKS];
+	static int idle_callback_count;
+	void _call_idle_callbacks();
+
 protected:
 
 
@@ -320,17 +334,20 @@ public:
 		GROUP_CALL_REVERSE=1,
 		GROUP_CALL_REALTIME=2,
 		GROUP_CALL_UNIQUE=4,
-		GROUP_CALL_MULIILEVEL=8,
+		GROUP_CALL_MULTILEVEL=8,
 	};
 
 	_FORCE_INLINE_ Viewport *get_root() const { return root; }
 
 	uint32_t get_last_event_id() const;
 
-	void call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_LIST);
-	void notify_group(uint32_t p_call_flags,const StringName& p_group,int p_notification);
-	void set_group(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value);
+	void call_group_flags(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_LIST);
+	void notify_group_flags(uint32_t p_call_flags,const StringName& p_group,int p_notification);
+	void set_group_flags(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value);
 
+	void call_group(const StringName& p_group,const StringName& p_function,VARIANT_ARG_LIST);
+	void notify_group(const StringName& p_group,int p_notification);
+	void set_group(const StringName& p_group,const String& p_name,const Variant& p_value);
 
 	virtual void input_text( const String& p_text );
 	virtual void input_event( const InputEvent& p_event );
@@ -342,6 +359,7 @@ public:
 	virtual void finish();
 
 	void set_auto_accept_quit(bool p_enable);
+	void set_quit_on_go_back(bool p_enable);
 
 	void quit();
 
@@ -430,6 +448,7 @@ public:
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;
 
+	static void add_idle_callback(IdleCallback p_callback);
 	SceneTree();
 	~SceneTree();
 

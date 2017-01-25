@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -265,7 +265,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			GodotLib.quit();
 			// press 'back' button should not terminate program
-			//	normal handle 'back' event in game logic
+			//normal handle 'back' event in game logic
 			return true;
 		}
 

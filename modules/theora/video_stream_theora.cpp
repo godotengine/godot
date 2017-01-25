@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,6 +81,9 @@ void VideoStreamPlaybackTheora::video_write(void){
 	th_ycbcr_buffer yuv;
 	th_decode_ycbcr_out(td,yuv);
 
+	// FIXME: The way stuff is commented out with `//*/` closing comments
+	// sounds very fishy...
+
 	/*
 	int y_offset, uv_offset;
 	y_offset=(ti.pic_x&~1)+yuv[0].stride*(ti.pic_y&~1);
@@ -88,7 +91,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 	{
 		int pixels = size.x * size.y;
 		frame_data.resize(pixels * 4);
-		DVector<uint8_t>::Write w = frame_data.write();
+		PoolVector<uint8_t>::Write w = frame_data.write();
 		char* dst = (char*)w.ptr();
 		int p = 0;
 		for (int i=0; i<size.y; i++) {
@@ -103,16 +106,16 @@ void VideoStreamPlaybackTheora::video_write(void){
 				dst[p++] = 255;
 			};
 		}
-		format = Image::FORMAT_RGBA;
+		format = Image::FORMAT_RGBA8;
 	}
-	//	*/
+		//*/
 
 	//*
 
 	int pitch = 4;
 	frame_data.resize(size.x * size.y * pitch);
 	{
-		DVector<uint8_t>::Write w = frame_data.write();
+		PoolVector<uint8_t>::Write w = frame_data.write();
 		char* dst = (char*)w.ptr();
 
 		//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
@@ -130,10 +133,10 @@ void VideoStreamPlaybackTheora::video_write(void){
 			yuv420_2_rgb8888((uint8_t*)dst, (uint8_t*)yuv[0].data, (uint8_t*)yuv[2].data, (uint8_t*)yuv[1].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x<<2, 0);
 		};
 
-		format = Image::FORMAT_RGBA;
+		format = Image::FORMAT_RGBA8;
 	}
 
-	Image img(size.x,size.y,0,Image::FORMAT_RGBA,frame_data); //zero copy image creation
+	Image img(size.x,size.y,0,Image::FORMAT_RGBA8,frame_data); //zero copy image creation
 
 	texture->set_data(img); //zero copy send to visual server
 
@@ -143,7 +146,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 
 		int pitch = 3;
 		frame_data.resize(size.x * size.y * pitch);
-		DVector<uint8_t>::Write w = frame_data.write();
+		PoolVector<uint8_t>::Write w = frame_data.write();
 		char* dst = (char*)w.ptr();
 
 		for(int i=0;i<size.y;i++) {
@@ -174,7 +177,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 
 			int pitch = 4;
 			frame_data.resize(size.x * size.y * pitch);
-			DVector<uint8_t>::Write w = frame_data.write();
+			PoolVector<uint8_t>::Write w = frame_data.write();
 			char* dst = (char*)w.ptr();
 
 			uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y / div);
@@ -202,13 +205,13 @@ void VideoStreamPlaybackTheora::video_write(void){
 				}
 			}
 
-			format = Image::FORMAT_RGBA;
+			format = Image::FORMAT_RGBA8;
 
 		} else {
 
 			int pitch = 2;
 			frame_data.resize(size.x * size.y * pitch);
-			DVector<uint8_t>::Write w = frame_data.write();
+			PoolVector<uint8_t>::Write w = frame_data.write();
 			char* dst = (char*)w.ptr();
 
 			uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y / div);
@@ -228,7 +231,7 @@ void VideoStreamPlaybackTheora::video_write(void){
 			format = Image::FORMAT_YUV_422;
 		};
 	};
-	//	*/
+		//*/
 
 	frames_pending = 1;
 }
@@ -470,7 +473,7 @@ void VideoStreamPlaybackTheora::set_file(const String& p_file) {
 		size.x = w;
 		size.y = h;
 
-		texture->create(w,h,Image::FORMAT_RGBA,Texture::FLAG_FILTER|Texture::FLAG_VIDEO_SURFACE);
+		texture->create(w,h,Image::FORMAT_RGBA8,Texture::FLAG_FILTER|Texture::FLAG_VIDEO_SURFACE);
 
 	}else{
 		/* tear down the partial theora setup */
@@ -598,7 +601,7 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 
 
 				if (vd.granulepos>=0) {
-				//	print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
+					//print_line("wrote: "+itos(audio_frames_wrote)+" gpos: "+itos(vd.granulepos));
 				}
 
 				//print_line("mix audio!");
@@ -747,7 +750,7 @@ void VideoStreamPlaybackTheora::play() {
 	}
 
 	playing = true;
-	delay_compensation=Globals::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation=GlobalConfig::get_singleton()->get("audio/video_delay_compensation_ms");
 	delay_compensation/=1000.0;
 
 
@@ -933,7 +936,7 @@ bool ResourceFormatLoaderVideoStreamTheora::handles_type(const String& p_type) c
 
 String ResourceFormatLoaderVideoStreamTheora::get_resource_type(const String &p_path) const {
 
-	String exl=p_path.extension().to_lower();
+	String exl=p_path.get_extension().to_lower();
 	if (exl=="ogm" || exl=="ogv")
 		return "VideoStreamTheora";
 	return "";

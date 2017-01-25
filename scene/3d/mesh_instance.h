@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,19 +37,19 @@
 */
 class MeshInstance : public GeometryInstance {
 
-	OBJ_TYPE( MeshInstance, GeometryInstance );
+	GDCLASS( MeshInstance, GeometryInstance );
 
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;
 
-	struct MorphTrack {
+	struct BlendShapeTrack {
 
 		int idx;
 		float value;
-		MorphTrack() { idx=0; value=0; }
+		BlendShapeTrack() { idx=0; value=0; }
 	};
 
-	Map<StringName,MorphTrack> morph_tracks;
+	Map<StringName,BlendShapeTrack> blend_shape_tracks;
 	Vector<Ref<Material> > materials;
 
 	void _mesh_changed();
@@ -80,8 +80,8 @@ public:
 	Node* create_convex_collision_node();
 	void create_convex_collision();
 
-	virtual AABB get_aabb() const;
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual Rect3 get_aabb() const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	MeshInstance();
 	~MeshInstance();

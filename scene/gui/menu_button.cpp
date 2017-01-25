@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,16 +34,14 @@
 void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
 
-	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYSTICK_BUTTON)) {
+	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYPAD_BUTTON)) {
 
-		if (!get_parent() || !is_visible() || is_disabled())
+		if (!get_parent() || !is_visible_in_tree() || is_disabled())
 			return;
 
-		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
-			return; //ignore because of modal window
+		bool global_only = (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this));
 
-
-		if (popup->activate_item_by_event(p_event))
+		if (popup->activate_item_by_event(p_event,global_only))
 			accept_event();
 	}
 }
@@ -64,12 +62,12 @@ void MenuButton::pressed() {
 
 }
 
-void MenuButton::_input_event(InputEvent p_event) {
+void MenuButton::_gui_input(InputEvent p_event) {
 
 	/*if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT) {
 		clicked=p_event.mouse_button.pressed;
 	}
-	if (clicked && p_event.type==InputEvent::MOUSE_MOTION && popup->is_visible()) {
+	if (clicked && p_event.type==InputEvent::MOUSE_MOTION && popup->is_visible_in_tree()) {
 
 		Point2 gt = Point2(p_event.mouse_motion.x,p_event.mouse_motion.y);
 		gt = get_global_transform().xform(gt);
@@ -81,7 +79,7 @@ void MenuButton::_input_event(InputEvent p_event) {
 
 	}*/
 
-	BaseButton::_input_event(p_event);
+	BaseButton::_gui_input(p_event);
 }
 
 PopupMenu *MenuButton::get_popup() {
@@ -100,10 +98,10 @@ void MenuButton::_set_items(const Array& p_items) {
 
 void MenuButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_popup:PopupMenu"),&MenuButton::get_popup);
-	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&MenuButton::_unhandled_key_input);
-	ObjectTypeDB::bind_method(_MD("_set_items"),&MenuButton::_set_items);
-	ObjectTypeDB::bind_method(_MD("_get_items"),&MenuButton::_get_items);
+	ClassDB::bind_method(_MD("get_popup:PopupMenu"),&MenuButton::get_popup);
+	ClassDB::bind_method(_MD("_unhandled_key_input"),&MenuButton::_unhandled_key_input);
+	ClassDB::bind_method(_MD("_set_items"),&MenuButton::_set_items);
+	ClassDB::bind_method(_MD("_get_items"),&MenuButton::_get_items);
 
 	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
 
@@ -119,7 +117,7 @@ MenuButton::MenuButton() {
 	add_child(popup);
 	popup->set_as_toplevel(true);
 	set_process_unhandled_key_input(true);
-	set_click_on_press(true);
+	set_action_mode(ACTION_MODE_BUTTON_PRESS);
 }
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,8 @@ See corresponding header file for licensing info.
 
 #define GENERIC_D6_DISABLE_WARMSTARTING 1
 
-real_t btGetMatrixElem(const Matrix3& mat, int index);
-real_t btGetMatrixElem(const Matrix3& mat, int index)
+real_t btGetMatrixElem(const Basis& mat, int index);
+real_t btGetMatrixElem(const Basis& mat, int index)
 {
 	int i = index%3;
 	int j = index/3;
@@ -47,13 +47,12 @@ real_t btGetMatrixElem(const Matrix3& mat, int index)
 }
 
 ///MatrixToEulerXYZ from http://www.geometrictools.com/LibFoundation/Mathematics/Wm4Matrix3.inl.html
-bool	matrixToEulerXYZ(const Matrix3& mat,Vector3& xyz);
-bool	matrixToEulerXYZ(const Matrix3& mat,Vector3& xyz)
+bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz);
+bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz)
 {
-//	// rot =  cy*cz          -cy*sz           sy
-//	//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
-//	//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
-//
+		// rot =  cy*cz          -cy*sz           sy
+		//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
+		//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
 
 		if (btGetMatrixElem(mat,2) < real_t(1.0))
 		{
@@ -296,7 +295,7 @@ Generic6DOFJointSW::Generic6DOFJointSW(BodySW* rbA, BodySW* rbB, const Transform
 
 void Generic6DOFJointSW::calculateAngleInfo()
 {
-	Matrix3 relative_frame = m_calculatedTransformA.basis.inverse()*m_calculatedTransformB.basis;
+	Basis relative_frame = m_calculatedTransformA.basis.inverse()*m_calculatedTransformB.basis;
 
 	matrixToEulerXYZ(relative_frame,m_calculatedAxisAngleDiff);
 
@@ -325,16 +324,18 @@ void Generic6DOFJointSW::calculateAngleInfo()
 	m_calculatedAxis[2] = axis0.cross(m_calculatedAxis[1]);
 
 
-//    if(m_debugDrawer)
-//    {
-//
-//    	char buff[300];
-//		sprintf(buff,"\n X: %.2f ; Y: %.2f ; Z: %.2f ",
-//		m_calculatedAxisAngleDiff[0],
-//		m_calculatedAxisAngleDiff[1],
-//		m_calculatedAxisAngleDiff[2]);
-//    	m_debugDrawer->reportErrorWarning(buff);
-//    }
+	/*
+	if(m_debugDrawer)
+	{
+
+		char buff[300];
+		sprintf(buff,"\n X: %.2f ; Y: %.2f ; Z: %.2f ",
+		m_calculatedAxisAngleDiff[0],
+		m_calculatedAxisAngleDiff[1],
+		m_calculatedAxisAngleDiff[2]);
+		m_debugDrawer->reportErrorWarning(buff);
+	}
+	*/
 
 }
 
@@ -352,10 +353,10 @@ void Generic6DOFJointSW::buildLinearJacobian(
     const Vector3 & pivotAInW,const Vector3 & pivotBInW)
 {
    memnew_placement(&jacLinear, JacobianEntrySW(
-	A->get_transform().basis.transposed(),
-	B->get_transform().basis.transposed(),
-	pivotAInW - A->get_transform().origin,
-	pivotBInW - B->get_transform().origin,
+	A->get_principal_inertia_axes().transposed(),
+	B->get_principal_inertia_axes().transposed(),
+	pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+	pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
 	normalWorld,
 	A->get_inv_inertia(),
 	A->get_inv_mass(),
@@ -368,8 +369,8 @@ void Generic6DOFJointSW::buildAngularJacobian(
     JacobianEntrySW & jacAngular,const Vector3 & jointAxisW)
 {
     memnew_placement(&jacAngular, JacobianEntrySW(jointAxisW,
-				      A->get_transform().basis.transposed(),
-				      B->get_transform().basis.transposed(),
+				      A->get_principal_inertia_axes().transposed(),
+				      B->get_principal_inertia_axes().transposed(),
 				      A->get_inv_inertia(),
 				      B->get_inv_inertia()));
 
@@ -440,7 +441,7 @@ bool Generic6DOFJointSW::setup(float p_step) {
 }
 
 
-void Generic6DOFJointSW::solve(real_t	timeStep)
+void Generic6DOFJointSW::solve(real_t timeStep)
 {
     m_timeStep = timeStep;
 

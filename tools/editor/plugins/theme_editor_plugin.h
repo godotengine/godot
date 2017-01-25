@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #define THEME_EDITOR_PLUGIN_H
 
 #include "scene/resources/theme.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/check_box.h"
@@ -44,7 +44,7 @@
 
 class ThemeEditor : public Control {
 
-	OBJ_TYPE( ThemeEditor, Control );
+	GDCLASS( ThemeEditor, Control );
 
 
 	ScrollContainer *scroll;
@@ -103,7 +103,7 @@ public:
 
 class ThemeEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ThemeEditorPlugin, EditorPlugin );
+	GDCLASS( ThemeEditorPlugin, EditorPlugin );
 
 	ThemeEditor *theme_editor;
 	EditorNode *editor;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 class Joint2D : public Node2D {
 
-	OBJ_TYPE(Joint2D,Node2D);
+	GDCLASS(Joint2D,Node2D);
 
 	RID joint;
 
@@ -75,7 +75,7 @@ public:
 
 class PinJoint2D : public Joint2D {
 
-	OBJ_TYPE(PinJoint2D,Joint2D);
+	GDCLASS(PinJoint2D,Joint2D);
 
 	real_t softness;
 
@@ -94,7 +94,7 @@ public:
 
 class GrooveJoint2D : public Joint2D {
 
-	OBJ_TYPE(GrooveJoint2D,Joint2D);
+	GDCLASS(GrooveJoint2D,Joint2D);
 
 	real_t length;
 	real_t initial_offset;
@@ -117,7 +117,7 @@ public:
 
 class DampedSpringJoint2D : public Joint2D {
 
-	OBJ_TYPE(DampedSpringJoint2D,Joint2D);
+	GDCLASS(DampedSpringJoint2D,Joint2D);
 
 	real_t stiffness;
 	real_t damping;

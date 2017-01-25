@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 
 class EditorExportPlatformBB10 : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformBB10,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformBB10,EditorExportPlatform );
 
 	String custom_package;
 
@@ -248,7 +248,7 @@ void EditorExportPlatformBB10::_fix_descriptor(Vector<uint8_t>& p_descriptor) {
 					if (this->name!="") {
 						aname=this->name;
 					} else {
-						aname = Globals::get_singleton()->get("application/name");
+						aname = GlobalConfig::get_singleton()->get("application/name");
 
 					}
 
@@ -432,7 +432,7 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 
 			if (!found) {
 
-				String appicon = Globals::get_singleton()->get("application/icon");
+				String appicon = GlobalConfig::get_singleton()->get("application/icon");
 				if (appicon!="" && appicon.ends_with(".png")) {
 					FileAccess*f = FileAccess::open(appicon,FileAccess::READ);
 					if (f) {
@@ -469,7 +469,7 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 
 	ep.step("Creating BAR Package..",104);
 
-	String bb_packager=EditorSettings::get_singleton()->get("blackberry/host_tools");
+	String bb_packager=EditorSettings::get_singleton()->get("export/blackberry/host_tools");
 	bb_packager=bb_packager.plus_file("blackberry-nativepackager");
 	if (OS::get_singleton()->get_name()=="Windows")
 		bb_packager+=".bat";
@@ -485,7 +485,7 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 	args.push_back(p_path);
 	if (p_debug) {
 
-		String debug_token=EditorSettings::get_singleton()->get("blackberry/debug_token");
+		String debug_token=EditorSettings::get_singleton()->get("export/blackberry/debug_token");
 		if (!FileAccess::exists(debug_token)) {
 			EditorNode::add_io_error("Debug token not found!");
 		} else {
@@ -554,7 +554,7 @@ void EditorExportPlatformBB10::_device_poll_thread(void *ud) {
 
 	while(!ea->quit_request) {
 
-		String bb_deploy=EditorSettings::get_singleton()->get("blackberry/host_tools");
+		String bb_deploy=EditorSettings::get_singleton()->get("export/blackberry/host_tools");
 		bb_deploy=bb_deploy.plus_file("blackberry-deploy");
 		bool windows = OS::get_singleton()->get_name()=="Windows";
 		if (windows)
@@ -567,10 +567,10 @@ void EditorExportPlatformBB10::_device_poll_thread(void *ud) {
 
 			for (int i=0;i<MAX_DEVICES;i++) {
 
-				String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/host");
+				String host = EditorSettings::get_singleton()->get("export/blackberry/device_"+itos(i+1)+"/host");
 				if (host==String())
 					continue;
-				String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(i+1)+"/password");
+				String pass = EditorSettings::get_singleton()->get("export/blackberry/device_"+itos(i+1)+"/password");
 				if (pass==String())
 					continue;
 
@@ -661,7 +661,7 @@ Error EditorExportPlatformBB10::run(int p_device, int p_flags) {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),ERR_INVALID_PARAMETER);
 
-	String bb_deploy=EditorSettings::get_singleton()->get("blackberry/host_tools");
+	String bb_deploy=EditorSettings::get_singleton()->get("export/blackberry/host_tools");
 	bb_deploy=bb_deploy.plus_file("blackberry-deploy");
 	if (OS::get_singleton()->get_name()=="Windows")
 		bb_deploy+=".bat";
@@ -714,8 +714,8 @@ Error EditorExportPlatformBB10::run(int p_device, int p_flags) {
 	args.push_back("-installApp");
 	args.push_back("-launchApp");
 	args.push_back("-device");
-	String host = EditorSettings::get_singleton()->get("blackberry/device_"+itos(p_device+1)+"/host");
-	String pass = EditorSettings::get_singleton()->get("blackberry/device_"+itos(p_device+1)+"/password");
+	String host = EditorSettings::get_singleton()->get("export/blackberry/device_"+itos(p_device+1)+"/host");
+	String pass = EditorSettings::get_singleton()->get("export/blackberry/device_"+itos(p_device+1)+"/password");
 	args.push_back(host);
 	args.push_back("-password");
 	args.push_back(pass);
@@ -761,7 +761,7 @@ EditorExportPlatformBB10::EditorExportPlatformBB10() {
 bool EditorExportPlatformBB10::can_export(String *r_error) const {
 
 	bool valid=true;
-	String bb_deploy=EditorSettings::get_singleton()->get("blackberry/host_tools");
+	String bb_deploy=EditorSettings::get_singleton()->get("export/blackberry/host_tools");
 	String err;
 
 	if (!FileAccess::exists(bb_deploy.plus_file("blackberry-deploy"))) {
@@ -775,7 +775,7 @@ bool EditorExportPlatformBB10::can_export(String *r_error) const {
 		err+="No export template found.\nDownload and install export templates.\n";
 	}
 
-	String debug_token=EditorSettings::get_singleton()->get("blackberry/debug_token");
+	String debug_token=EditorSettings::get_singleton()->get("export/blackberry/debug_token");
 
 	if (!FileAccess::exists(debug_token)) {
 		valid=false;
@@ -806,20 +806,20 @@ EditorExportPlatformBB10::~EditorExportPlatformBB10() {
 
 void register_bb10_exporter() {
 
-	EDITOR_DEF("blackberry/host_tools","");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"blackberry/host_tools",PROPERTY_HINT_GLOBAL_DIR));
-	EDITOR_DEF("blackberry/debug_token","");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"blackberry/debug_token",PROPERTY_HINT_GLOBAL_FILE,"bar"));
-	EDITOR_DEF("blackberry/device_1/host","");
-	EDITOR_DEF("blackberry/device_1/password","");
-	EDITOR_DEF("blackberry/device_2/host","");
-	EDITOR_DEF("blackberry/device_2/password","");
-	EDITOR_DEF("blackberry/device_3/host","");
-	EDITOR_DEF("blackberry/device_3/password","");
-	EDITOR_DEF("blackberry/device_4/host","");
-	EDITOR_DEF("blackberry/device_4/password","");
-	EDITOR_DEF("blackberry/device_5/host","");
-	EDITOR_DEF("blackberry/device_5/password","");
+	EDITOR_DEF("export/blackberry/host_tools","");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"export/blackberry/host_tools",PROPERTY_HINT_GLOBAL_DIR));
+	EDITOR_DEF("export/blackberry/debug_token","");
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"export/blackberry/debug_token",PROPERTY_HINT_GLOBAL_FILE,"bar"));
+	EDITOR_DEF("export/blackberry/device_1/host","");
+	EDITOR_DEF("export/blackberry/device_1/password","");
+	EDITOR_DEF("export/blackberry/device_2/host","");
+	EDITOR_DEF("export/blackberry/device_2/password","");
+	EDITOR_DEF("export/blackberry/device_3/host","");
+	EDITOR_DEF("export/blackberry/device_3/password","");
+	EDITOR_DEF("export/blackberry/device_4/host","");
+	EDITOR_DEF("export/blackberry/device_4/password","");
+	EDITOR_DEF("export/blackberry/device_5/host","");
+	EDITOR_DEF("export/blackberry/device_5/password","");
 
 	Ref<EditorExportPlatformBB10> exporter = Ref<EditorExportPlatformBB10>( memnew(EditorExportPlatformBB10) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);

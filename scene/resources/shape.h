@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@ class Mesh;
 
 class Shape : public Resource {
 
-	OBJ_TYPE( Shape, Resource );
+	GDCLASS( Shape, Resource );
 	OBJ_SAVE_TYPE( Shape );
 	RES_BASE_EXTENSION("shp");
 	RID shape;
@@ -53,7 +53,7 @@ public:
 
 	Ref<Mesh> get_debug_mesh();
 
-	void add_vertices_to_array(DVector<Vector3> &array, const Transform& p_xform);
+	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform& p_xform);
 
 	Shape();
 	~Shape();

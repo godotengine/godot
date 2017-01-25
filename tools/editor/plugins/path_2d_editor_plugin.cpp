@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@ void Path2DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-//			button_create->set_icon( get_icon("Edit","EditorIcons"));
+			//button_create->set_icon( get_icon("Edit","EditorIcons"));
 			//button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
 			//set_pressed_button(button_edit);
 			//button_edit->set_pressed(true);
@@ -62,12 +62,12 @@ void Path2DEditor::_node_removed(Node *p_node) {
 }
 
 
-bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
+bool Path2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (!node)
 		return false;
 
-	if (!node->is_visible())
+	if (!node->is_visible_in_tree())
 		return false;
 
 	if (!node->get_curve().is_valid())
@@ -79,14 +79,14 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
 			Vector2 cpoint = !mb.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
 										: node->get_global_transform().affine_inverse().xform( canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
 
 			//first check if a point is to be added (segment split)
-			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
+			real_t grab_treshold=EDITOR_DEF("editors/poly_editor/point_grab_radius",8);
 
 
 
@@ -421,7 +421,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			if ( action!=ACTION_NONE) {
 
-				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+				Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				Vector2 cpoint = !mm.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
 											: node->get_global_transform().affine_inverse().xform( canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
@@ -475,13 +475,13 @@ void Path2DEditor::_canvas_draw() {
 	if (!node)
 		return ;
 
-	if (!node->is_visible())
+	if (!node->is_visible_in_tree())
 		return;
 
 	if (!node->get_curve().is_valid())
 		return ;
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 	Size2 handle_size = handle->get_size();
 
@@ -550,10 +550,10 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 void Path2DEditor::_bind_methods() {
 
-	//ObjectTypeDB::bind_method(_MD("_menu_option"),&Path2DEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&Path2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_node_visibility_changed"),&Path2DEditor::_node_visibility_changed);
-	ObjectTypeDB::bind_method(_MD("_mode_selected"),&Path2DEditor::_mode_selected);
+	//ClassDB::bind_method(_MD("_menu_option"),&Path2DEditor::_menu_option);
+	ClassDB::bind_method(_MD("_canvas_draw"),&Path2DEditor::_canvas_draw);
+	ClassDB::bind_method(_MD("_node_visibility_changed"),&Path2DEditor::_node_visibility_changed);
+	ClassDB::bind_method(_MD("_mode_selected"),&Path2DEditor::_mode_selected);
 }
 
 void Path2DEditor::_mode_selected(int p_mode) {
@@ -624,7 +624,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
 	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 #endif
 
 	base_hb = memnew( HBoxContainer );
@@ -683,7 +683,7 @@ void Path2DEditorPlugin::edit(Object *p_object) {
 
 bool Path2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Path2D");
+	return p_object->is_class("Path2D");
 }
 
 void Path2DEditorPlugin::make_visible(bool p_visible) {

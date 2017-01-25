@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_create_dialog.h"
+
 #include "script_language.h"
 #include "globals.h"
 #include "io/resource_saver.h"
@@ -38,7 +39,7 @@ void ScriptCreateDialog::config(const String& p_base_name,const String&p_base_pa
 	class_name->set_text("");
 	parent_name->set_text(p_base_name);
 	if (p_base_path!="")  {
-		initial_bp=p_base_path.basename();
+		initial_bp=p_base_path.get_basename();
 		file_path->set_text(initial_bp+"."+ScriptServer::get_language( language_menu->get_selected() )->get_extension());
 	} else {
 		initial_bp="";
@@ -133,7 +134,7 @@ void ScriptCreateDialog::_create_new() {
 		scr->set_name(cname);
 
 	if (!internal->is_pressed()) {
-		String lpath = Globals::get_singleton()->localize_path(file_path->get_text());
+		String lpath = GlobalConfig::get_singleton()->localize_path(file_path->get_text());
 		scr->set_path(lpath);
 		if (!path_valid) {
 			alert->set_text(TTR("Invalid path!"));
@@ -182,7 +183,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	String path=file_path->get_text();
 	String extension="";
 	if (path.find(".")>=0) {
-		extension=path.extension();
+		extension=path.get_extension();
 	}
 
 	if (extension.length()==0) {
@@ -199,7 +200,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 
 		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 			if (E->get().nocasecmp_to(extension)==0) {
-				path=path.basename()+selected_ext;
+				path=path.get_basename()+selected_ext;
 				_path_changed(path);
 				break;
 			}
@@ -243,7 +244,7 @@ void ScriptCreateDialog::_browse_path() {
 
 void ScriptCreateDialog::_file_selected(const String& p_file) {
 
-	String p = Globals::get_singleton()->localize_path(p_file);
+	String p = GlobalConfig::get_singleton()->localize_path(p_file);
 	file_path->set_text(p);
 	_path_changed(p);
 
@@ -262,7 +263,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 
 	}
 
-	p = Globals::get_singleton()->localize_path(p);
+	p = GlobalConfig::get_singleton()->localize_path(p);
 	if (!p.begins_with("res://")) {
 
 		path_error_label->set_text(TTR("Path is not local"));
@@ -288,7 +289,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 	create_new=!f->file_exists(p);
 	memdelete(f);
 
-	String extension=p.extension();
+	String extension=p.get_extension();
 	List<String> extensions;
 
 	// get all possible extensions for script
@@ -338,12 +339,12 @@ void ScriptCreateDialog::_update_controls() {
 
 void ScriptCreateDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_class_name_changed",&ScriptCreateDialog::_class_name_changed);
-	ObjectTypeDB::bind_method("_lang_changed",&ScriptCreateDialog::_lang_changed);
-	ObjectTypeDB::bind_method("_built_in_pressed",&ScriptCreateDialog::_built_in_pressed);
-	ObjectTypeDB::bind_method("_browse_path",&ScriptCreateDialog::_browse_path);
-	ObjectTypeDB::bind_method("_file_selected",&ScriptCreateDialog::_file_selected);
-	ObjectTypeDB::bind_method("_path_changed",&ScriptCreateDialog::_path_changed);
+	ClassDB::bind_method("_class_name_changed",&ScriptCreateDialog::_class_name_changed);
+	ClassDB::bind_method("_lang_changed",&ScriptCreateDialog::_lang_changed);
+	ClassDB::bind_method("_built_in_pressed",&ScriptCreateDialog::_built_in_pressed);
+	ClassDB::bind_method("_browse_path",&ScriptCreateDialog::_browse_path);
+	ClassDB::bind_method("_file_selected",&ScriptCreateDialog::_file_selected);
+	ClassDB::bind_method("_path_changed",&ScriptCreateDialog::_path_changed);
 	ADD_SIGNAL(MethodInfo("script_created",PropertyInfo(Variant::OBJECT,"script",PROPERTY_HINT_RESOURCE_TYPE,"Script")));
 }
 
@@ -353,7 +354,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+	//set_child_rect(vb);
 
 
 	class_name = memnew( LineEdit );

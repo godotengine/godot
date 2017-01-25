@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,11 +130,11 @@ void LinkButton::_notification(int p_what) {
 
 void LinkButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_text","text"),&LinkButton::set_text);
-	ObjectTypeDB::bind_method(_MD("get_text"),&LinkButton::get_text);
+	ClassDB::bind_method(_MD("set_text","text"),&LinkButton::set_text);
+	ClassDB::bind_method(_MD("get_text"),&LinkButton::get_text);
 
-	ObjectTypeDB::bind_method(_MD("set_underline_mode","underline_mode"),&LinkButton::set_underline_mode);
-	ObjectTypeDB::bind_method(_MD("get_underline_mode"),&LinkButton::get_underline_mode);
+	ClassDB::bind_method(_MD("set_underline_mode","underline_mode"),&LinkButton::set_underline_mode);
+	ClassDB::bind_method(_MD("get_underline_mode"),&LinkButton::get_underline_mode);
 
 
 	BIND_CONSTANT( 	UNDERLINE_MODE_ALWAYS );

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include "math/a_star.h"
 #include "math/triangle_mesh.h"
 #include "globals.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "geometry.h"
 #include "bind/core_bind.h"
 #include "core_string_names.h"
@@ -44,7 +44,6 @@
 #include "translation.h"
 #include "compressed_translation.h"
 #include "io/translation_loader_po.h"
-#include "io/resource_format_xml.h"
 #include "io/resource_format_binary.h"
 #include "io/stream_peer_ssl.h"
 #include "os/input.h"
@@ -56,10 +55,6 @@
 #include "input_map.h"
 #include "undo_redo.h"
 
-#ifdef XML_ENABLED
-static ResourceFormatSaverXML *resource_saver_xml=NULL;
-static ResourceFormatLoaderXML *resource_loader_xml=NULL;
-#endif
 static ResourceFormatSaverBinary *resource_saver_binary=NULL;
 static ResourceFormatLoaderBinary *resource_loader_binary=NULL;
 
@@ -67,6 +62,8 @@ static ResourceFormatLoaderBinary *resource_loader_binary=NULL;
 static _ResourceLoader *_resource_loader=NULL;
 static _ResourceSaver *_resource_saver=NULL;
 static _OS *_os=NULL;
+static _Engine *_engine=NULL;
+static _ClassDB *_classdb=NULL;
 static _Marshalls *_marshalls = NULL;
 static TranslationLoaderPO *resource_format_po=NULL;
 
@@ -84,6 +81,9 @@ extern void unregister_variant_methods();
 
 void register_core_types() {
 
+	ObjectDB::setup();
+	ResourceCache::setup();
+	MemoryPool::setup();
 
 	_global_mutex=Mutex::create();
 
@@ -105,55 +105,48 @@ void register_core_types() {
 	resource_loader_binary = memnew( ResourceFormatLoaderBinary );
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
-#ifdef XML_ENABLED
-	resource_saver_xml = memnew( ResourceFormatSaverXML );
-	ResourceSaver::add_resource_format_saver(resource_saver_xml);
-	resource_loader_xml = memnew( ResourceFormatLoaderXML );
-	ResourceLoader::add_resource_format_loader(resource_loader_xml);
-#endif
-
-	ObjectTypeDB::register_type<Object>();
+	ClassDB::register_class<Object>();
 
 
-	ObjectTypeDB::register_type<Reference>();
-	ObjectTypeDB::register_type<WeakRef>();
-	ObjectTypeDB::register_type<ResourceImportMetadata>();
-	ObjectTypeDB::register_type<Resource>();
-	ObjectTypeDB::register_type<FuncRef>();
-	ObjectTypeDB::register_virtual_type<StreamPeer>();
-	ObjectTypeDB::register_type<StreamPeerBuffer>();
-	ObjectTypeDB::register_create_type<StreamPeerTCP>();
-	ObjectTypeDB::register_create_type<TCP_Server>();
-	ObjectTypeDB::register_create_type<PacketPeerUDP>();
-	ObjectTypeDB::register_create_type<StreamPeerSSL>();
-	ObjectTypeDB::register_virtual_type<IP>();
-	ObjectTypeDB::register_virtual_type<PacketPeer>();
-	ObjectTypeDB::register_type<PacketPeerStream>();
-	ObjectTypeDB::register_type<MainLoop>();
-//	ObjectTypeDB::register_type<OptimizedSaver>();
-	ObjectTypeDB::register_type<Translation>();
-	ObjectTypeDB::register_type<PHashTranslation>();
-	ObjectTypeDB::register_type<UndoRedo>();
-	ObjectTypeDB::register_type<HTTPClient>();
-	ObjectTypeDB::register_type<TriangleMesh>();
+	ClassDB::register_class<Reference>();
+	ClassDB::register_class<WeakRef>();
+	ClassDB::register_class<ResourceImportMetadata>();
+	ClassDB::register_class<Resource>();
+	ClassDB::register_class<FuncRef>();
+	ClassDB::register_virtual_class<StreamPeer>();
+	ClassDB::register_class<StreamPeerBuffer>();
+	ClassDB::register_custom_instance_class<StreamPeerTCP>();
+	ClassDB::register_custom_instance_class<TCP_Server>();
+	ClassDB::register_custom_instance_class<PacketPeerUDP>();
+	ClassDB::register_custom_instance_class<StreamPeerSSL>();
+	ClassDB::register_virtual_class<IP>();
+	ClassDB::register_virtual_class<PacketPeer>();
+	ClassDB::register_class<PacketPeerStream>();
+	ClassDB::register_class<MainLoop>();
+	//ClassDB::register_type<OptimizedSaver>();
+	ClassDB::register_class<Translation>();
+	ClassDB::register_class<PHashTranslation>();
+	ClassDB::register_class<UndoRedo>();
+	ClassDB::register_class<HTTPClient>();
+	ClassDB::register_class<TriangleMesh>();
 
-	ObjectTypeDB::register_virtual_type<ResourceInteractiveLoader>();
+	ClassDB::register_virtual_class<ResourceInteractiveLoader>();
 
-	ObjectTypeDB::register_type<_File>();
-	ObjectTypeDB::register_type<_Directory>();
-	ObjectTypeDB::register_type<_Thread>();
-	ObjectTypeDB::register_type<_Mutex>();
-	ObjectTypeDB::register_type<_Semaphore>();
+	ClassDB::register_class<_File>();
+	ClassDB::register_class<_Directory>();
+	ClassDB::register_class<_Thread>();
+	ClassDB::register_class<_Mutex>();
+	ClassDB::register_class<_Semaphore>();
 
-	ObjectTypeDB::register_type<XMLParser>();
+	ClassDB::register_class<XMLParser>();
 
-	ObjectTypeDB::register_type<ConfigFile>();
+	ClassDB::register_class<ConfigFile>();
 
-	ObjectTypeDB::register_type<PCKPacker>();
+	ClassDB::register_class<PCKPacker>();
 
-	ObjectTypeDB::register_type<PackedDataContainer>();
-	ObjectTypeDB::register_virtual_type<PackedDataContainerRef>();
-	ObjectTypeDB::register_type<AStar>();
+	ClassDB::register_class<PackedDataContainer>();
+	ClassDB::register_virtual_class<PackedDataContainerRef>();
+	ClassDB::register_class<AStar>();
 
 	ip = IP::create();
 
@@ -164,26 +157,37 @@ void register_core_types() {
 	_resource_loader=memnew(_ResourceLoader);
 	_resource_saver=memnew(_ResourceSaver);
 	_os=memnew(_OS);
+	_engine=memnew(_Engine);
+	_classdb=memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
 
 
 
 }
 
+void register_core_settings() {
+	//since in register core types, globals may not e present
+	GLOBAL_DEF( "network/packets/packet_stream_peer_max_buffer_po2",(16));
+
+}
+
 void register_core_singletons() {
 
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Globals",Globals::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("IP",IP::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Geometry",_Geometry::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("ResourceLoader",_ResourceLoader::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("PathRemap",PathRemap::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("OS",_OS::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Marshalls",_Marshalls::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("TS",TranslationServer::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("Input",Input::get_singleton() ) );
-	Globals::get_singleton()->add_singleton( Globals::Singleton("InputMap",InputMap::get_singleton() )  );
+
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("GlobalConfig",GlobalConfig::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("IP",IP::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Geometry",_Geometry::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceLoader",_ResourceLoader::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PathRemap",PathRemap::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("OS",_OS::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Engine",_Engine::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ClassDB",_classdb ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Marshalls",_Marshalls::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TS",TranslationServer::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Input",Input::get_singleton() ) );
+	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("InputMap",InputMap::get_singleton() )  );
 
 
 }
@@ -195,15 +199,11 @@ void unregister_core_types() {
 	memdelete( _resource_loader );
 	memdelete( _resource_saver );
 	memdelete( _os);
+	memdelete( _engine );
+	memdelete( _classdb );
 	memdelete( _marshalls );
 
 	memdelete( _geometry );
-#ifdef XML_ENABLED
-	if (resource_saver_xml)
-		memdelete(resource_saver_xml);
-	if (resource_loader_xml)
-		memdelete(resource_loader_xml);
-#endif
 
 	if (resource_saver_binary)
 		memdelete(resource_saver_binary);
@@ -221,7 +221,7 @@ void unregister_core_types() {
 
 	unregister_variant_methods();
 
-	ObjectTypeDB::cleanup();
+	ClassDB::cleanup();
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
@@ -230,4 +230,7 @@ void unregister_core_types() {
 		memdelete(_global_mutex);
 		_global_mutex=NULL; //still needed at a few places
 	};
+
+	MemoryPool::cleanup();
+
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,7 +117,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest,int p_elements) const {
 
 			int size = (cache.buffer.size() - (file.offset - cache.offset));
 			size = size - (size % 4);
-			//DVector<uint8_t>::Read read = cache.buffer.read();
+			//PoolVector<uint8_t>::Read read = cache.buffer.read();
 			//memcpy(p_dest, read.ptr() + (file.offset - cache.offset), size);
 			memcpy(p_dest, cache.buffer.ptr() + (file.offset - cache.offset), size);
 			p_dest += size;
@@ -152,7 +152,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest,int p_elements) const {
 		};
 
 		int r = MIN(left, to_read);
-		//DVector<uint8_t>::Read read = cache.buffer.read();
+		//PoolVector<uint8_t>::Read read = cache.buffer.read();
 		//memcpy(p_dest+total_read, &read.ptr()[file.offset - cache.offset], r);
 		memcpy(p_dest+total_read, cache.buffer.ptr() + (file.offset - cache.offset), r);
 

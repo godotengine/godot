@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,7 +106,7 @@ class PinJoint2DSW : public Joint2DSW {
 		Body2DSW *_arr[2];
 	};
 
-	Matrix32 M;
+	Transform2D M;
 	Vector2 rA,rB;
 	Vector2 anchor_A;
 	Vector2 anchor_B;

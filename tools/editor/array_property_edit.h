@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,15 @@
 
 class ArrayPropertyEdit : public Reference {
 
-	OBJ_TYPE(ArrayPropertyEdit,Reference);
+	GDCLASS(ArrayPropertyEdit,Reference);
 
 	int page;
 	ObjectID obj;
 	StringName property;
 	String vtypes;
+	String subtype_hint_string;
+	PropertyHint subtype_hint;
+	Variant::Type subtype;
 	Variant get_array() const;
 	Variant::Type default_type;
 
@@ -56,7 +59,7 @@ protected:
 
 public:
 
-	void edit(Object* p_obj, const StringName& p_prop, Variant::Type p_deftype);
+	void edit(Object* p_obj, const StringName& p_prop, const String& p_hint_string, Variant::Type p_deftype);
 
 	Node *get_node();
 

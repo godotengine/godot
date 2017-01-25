@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "camera_editor_plugin.h"
+
 #include "spatial_editor_plugin.h"
 
 
@@ -61,7 +62,7 @@ void CameraEditor::_pressed() {
 
 void CameraEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_pressed"),&CameraEditor::_pressed);
+	ClassDB::bind_method(_MD("_pressed"),&CameraEditor::_pressed);
 
 }
 
@@ -108,16 +109,14 @@ void CameraEditorPlugin::edit(Object *p_object) {
 
 bool CameraEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Camera");
+	return p_object->is_class("Camera");
 }
 
 void CameraEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-//	SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
-
+		//SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
 	} else {
-
 		SpatialEditor::get_singleton()->set_can_preview(NULL);
 	}
 

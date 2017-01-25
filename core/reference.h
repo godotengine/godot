@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,14 @@
 #include "object.h"
 #include "safe_refcount.h"
 #include "ref_ptr.h"
-#include "object_type_db.h"
+#include "class_db.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class Reference : public Object{
 
-	OBJ_TYPE( Reference, Object );
+	GDCLASS( Reference, Object );
 friend class RefBase;
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
@@ -315,7 +315,7 @@ typedef Ref<Reference> REF;
 
 class WeakRef : public Reference {
 
-	OBJ_TYPE(WeakRef,Reference);
+	GDCLASS(WeakRef,Reference);
 
 	ObjectID ref;
 protected:

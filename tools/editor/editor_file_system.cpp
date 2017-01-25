@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_file_system.h"
+
 #include "globals.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
@@ -203,18 +204,18 @@ EditorFileSystemDirectory *EditorFileSystemDirectory::get_parent() {
 
 void EditorFileSystemDirectory::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_subdir_count"),&EditorFileSystemDirectory::get_subdir_count);
-	ObjectTypeDB::bind_method(_MD("get_subdir","idx"),&EditorFileSystemDirectory::get_subdir);
-	ObjectTypeDB::bind_method(_MD("get_file_count"),&EditorFileSystemDirectory::get_file_count);
-	ObjectTypeDB::bind_method(_MD("get_file","idx"),&EditorFileSystemDirectory::get_file);
-	ObjectTypeDB::bind_method(_MD("get_file_path","idx"),&EditorFileSystemDirectory::get_file_path);
-	ObjectTypeDB::bind_method(_MD("get_file_type","idx"),&EditorFileSystemDirectory::get_file_type);
-	ObjectTypeDB::bind_method(_MD("is_missing_sources","idx"),&EditorFileSystemDirectory::is_missing_sources);
-	ObjectTypeDB::bind_method(_MD("get_name"),&EditorFileSystemDirectory::get_name);
-	ObjectTypeDB::bind_method(_MD("get_path"),&EditorFileSystemDirectory::get_path);
-	ObjectTypeDB::bind_method(_MD("get_parent:EditorFileSystemDirectory"),&EditorFileSystemDirectory::get_parent);
-	ObjectTypeDB::bind_method(_MD("find_file_index","name"),&EditorFileSystemDirectory::find_file_index);
-	ObjectTypeDB::bind_method(_MD("find_dir_index","name"),&EditorFileSystemDirectory::find_dir_index);
+	ClassDB::bind_method(_MD("get_subdir_count"),&EditorFileSystemDirectory::get_subdir_count);
+	ClassDB::bind_method(_MD("get_subdir","idx"),&EditorFileSystemDirectory::get_subdir);
+	ClassDB::bind_method(_MD("get_file_count"),&EditorFileSystemDirectory::get_file_count);
+	ClassDB::bind_method(_MD("get_file","idx"),&EditorFileSystemDirectory::get_file);
+	ClassDB::bind_method(_MD("get_file_path","idx"),&EditorFileSystemDirectory::get_file_path);
+	ClassDB::bind_method(_MD("get_file_type","idx"),&EditorFileSystemDirectory::get_file_type);
+	ClassDB::bind_method(_MD("is_missing_sources","idx"),&EditorFileSystemDirectory::is_missing_sources);
+	ClassDB::bind_method(_MD("get_name"),&EditorFileSystemDirectory::get_name);
+	ClassDB::bind_method(_MD("get_path"),&EditorFileSystemDirectory::get_path);
+	ClassDB::bind_method(_MD("get_parent:EditorFileSystemDirectory"),&EditorFileSystemDirectory::get_parent);
+	ClassDB::bind_method(_MD("find_file_index","name"),&EditorFileSystemDirectory::find_file_index);
+	ClassDB::bind_method(_MD("find_dir_index","name"),&EditorFileSystemDirectory::find_dir_index);
 
 
 }
@@ -286,7 +287,7 @@ void EditorFileSystem::_scan_filesystem() {
 	sources_changed.clear();
 	file_cache.clear();
 
-	String project=Globals::get_singleton()->get_resource_path();
+	String project=GlobalConfig::get_singleton()->get_resource_path();
 
 	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("filesystem_cache");
 	FileAccess *f =FileAccess::open(fscache,FileAccess::READ);
@@ -378,7 +379,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 
 	//save back the findings
-//	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
+	//String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
 
 	f=FileAccess::open(fscache,FileAccess::WRITE);
 	_save_filesystem_cache(new_filesystem,f);
@@ -488,7 +489,7 @@ bool EditorFileSystem::_update_scan_actions() {
 
 void EditorFileSystem::scan() {
 
-    if (bool(Globals::get_singleton()->get("debug/disable_scan")))
+    if (false /*&& bool(Globals::get_singleton()->get("debug/disable_scan"))*/)
            return;
 
 	if (scanning || scanning_sources|| thread)
@@ -502,7 +503,7 @@ void EditorFileSystem::scan() {
 		_scan_filesystem();
 		if (filesystem)
 			memdelete(filesystem);
-//		file_type_cache.clear();
+		//file_type_cache.clear();
 		filesystem=new_filesystem;
 		new_filesystem=NULL;
 		_update_scan_actions();
@@ -670,7 +671,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 
 	for (List<String>::Element*E=files.front();E;E=E->next(),idx++) {
 
-		String ext = E->get().extension().to_lower();
+		String ext = E->get().get_extension().to_lower();
 		if (!valid_extensions.has(ext))
 			continue; //invalid
 
@@ -789,7 +790,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 
 
 			} else {
-				String ext = f.extension().to_lower();
+				String ext = f.get_extension().to_lower();
 				if (!valid_extensions.has(ext))
 					continue; //invalid
 
@@ -1088,7 +1089,7 @@ bool EditorFileSystem::_find_file(const String& p_file,EditorFileSystemDirectory
 		return false;
 
 
-	String f = Globals::get_singleton()->localize_path(p_file);
+	String f = GlobalConfig::get_singleton()->localize_path(p_file);
 
 	if (!f.begins_with("res://"))
 		return false;
@@ -1198,13 +1199,13 @@ EditorFileSystemDirectory* EditorFileSystem::find_file(const String& p_file,int*
 }
 
 
-EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
+EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String& p_path) {
 
     if (!filesystem || scanning)
     	return NULL;
 
 
-    String f = Globals::get_singleton()->localize_path(p_path);
+    String f = GlobalConfig::get_singleton()->localize_path(p_path);
 
     if (!f.begins_with("res://"))
     	return NULL;
@@ -1346,14 +1347,14 @@ void EditorFileSystem::update_file(const String& p_file) {
 void EditorFileSystem::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("get_filesystem:EditorFileSystemDirectory"),&EditorFileSystem::get_filesystem);
-	ObjectTypeDB::bind_method(_MD("is_scanning"),&EditorFileSystem::is_scanning);
-	ObjectTypeDB::bind_method(_MD("get_scanning_progress"),&EditorFileSystem::get_scanning_progress);
-	ObjectTypeDB::bind_method(_MD("scan"),&EditorFileSystem::scan);
-	ObjectTypeDB::bind_method(_MD("scan_sources"),&EditorFileSystem::scan_sources);
-	ObjectTypeDB::bind_method(_MD("update_file","path"),&EditorFileSystem::update_file);
-	ObjectTypeDB::bind_method(_MD("get_path:EditorFileSystemDirectory","path"),&EditorFileSystem::get_path);
-	ObjectTypeDB::bind_method(_MD("get_file_type","path"),&EditorFileSystem::get_file_type);
+	ClassDB::bind_method(_MD("get_filesystem:EditorFileSystemDirectory"),&EditorFileSystem::get_filesystem);
+	ClassDB::bind_method(_MD("is_scanning"),&EditorFileSystem::is_scanning);
+	ClassDB::bind_method(_MD("get_scanning_progress"),&EditorFileSystem::get_scanning_progress);
+	ClassDB::bind_method(_MD("scan"),&EditorFileSystem::scan);
+	ClassDB::bind_method(_MD("scan_sources"),&EditorFileSystem::scan_sources);
+	ClassDB::bind_method(_MD("update_file","path"),&EditorFileSystem::update_file);
+	ClassDB::bind_method(_MD("get_filesystem_path:EditorFileSystemDirectory","path"),&EditorFileSystem::get_filesystem_path);
+	ClassDB::bind_method(_MD("get_file_type","path"),&EditorFileSystem::get_file_type);
 
 	ADD_SIGNAL( MethodInfo("filesystem_changed") );
 	ADD_SIGNAL( MethodInfo("sources_changed",PropertyInfo(Variant::BOOL,"exist")) );

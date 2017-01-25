@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ class BakedLightInstance;
 class GridMap : public Spatial {
 
 
-	OBJ_TYPE( GridMap, Spatial );
+	GDCLASS( GridMap, Spatial );
 
 	enum {
 		MAP_DIRTY_TRANSFORMS=1,
@@ -268,8 +268,8 @@ public:
 
 	void set_clip(bool p_enabled, bool p_clip_above=true, int p_floor=0, Vector3::Axis p_axis=Vector3::AXIS_X);
 
-	Error create_area(int p_id,const AABB& p_area);
-	AABB area_get_bounds(int p_area) const;
+	Error create_area(int p_id,const Rect3& p_area);
+	Rect3 area_get_bounds(int p_area) const;
 	void area_set_exterior_portal(int p_area,bool p_enable);
 	void area_set_name(int p_area,const String& p_name);
 	String area_get_name(int p_area) const;

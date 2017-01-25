@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ public:
 	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int)  { return p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int)  { return (uint32_t)p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar)  { return (uint32_t)p_wchar; }
-//	static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
+	//static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
 };
 
 /**
@@ -594,6 +594,20 @@ public:
 		hash_table=NULL;
 		elements=0;
 		hash_table_power=0;
+	}
+
+	void get_key_value_ptr_array(const Pair **p_pairs) const {
+		if (!hash_table)
+			return;
+		for(int i=0;i<(1<<hash_table_power);i++) {
+
+			Entry *e=hash_table[i];
+			while(e) {
+				*p_pairs=&e->pair;
+				p_pairs++;
+				e=e->next;
+			}
+		}
 	}
 
 	void get_key_list(List<TKey> *p_keys) const {

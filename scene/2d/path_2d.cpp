@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,9 +85,9 @@ Ref<Curve2D> Path2D::get_curve() const{
 
 void Path2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_curve","curve:Curve2D"),&Path2D::set_curve);
-	ObjectTypeDB::bind_method(_MD("get_curve:Curve2D","curve"),&Path2D::get_curve);
-	ObjectTypeDB::bind_method(_MD("_curve_changed"),&Path2D::_curve_changed);
+	ClassDB::bind_method(_MD("set_curve","curve:Curve2D"),&Path2D::set_curve);
+	ClassDB::bind_method(_MD("get_curve:Curve2D","curve"),&Path2D::get_curve);
+	ClassDB::bind_method(_MD("_curve_changed"),&Path2D::_curve_changed);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D"), _SCS("set_curve"),_SCS("get_curve"));
 }
@@ -124,7 +124,7 @@ void PathFollow2D::_update_transform() {
 		pos+=n*h_offset;
 		pos+=t*v_offset;
 
-		set_rot(t.angle());
+		set_rotation(t.angle());
 
 	} else {
 
@@ -132,7 +132,7 @@ void PathFollow2D::_update_transform() {
 		pos.y+=v_offset;
 	}
 
-	set_pos(pos);
+	set_position(pos);
 
 }
 
@@ -239,7 +239,7 @@ void PathFollow2D::_get_property_list( List<PropertyInfo> *p_list) const{
 
 String PathFollow2D::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
 	if (!get_parent() || !get_parent()->cast_to<Path2D>()) {
@@ -252,26 +252,26 @@ String PathFollow2D::get_configuration_warning() const {
 
 void PathFollow2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&PathFollow2D::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&PathFollow2D::get_offset);
+	ClassDB::bind_method(_MD("set_offset","offset"),&PathFollow2D::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&PathFollow2D::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_h_offset","h_offset"),&PathFollow2D::set_h_offset);
-	ObjectTypeDB::bind_method(_MD("get_h_offset"),&PathFollow2D::get_h_offset);
+	ClassDB::bind_method(_MD("set_h_offset","h_offset"),&PathFollow2D::set_h_offset);
+	ClassDB::bind_method(_MD("get_h_offset"),&PathFollow2D::get_h_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_v_offset","v_offset"),&PathFollow2D::set_v_offset);
-	ObjectTypeDB::bind_method(_MD("get_v_offset"),&PathFollow2D::get_v_offset);
+	ClassDB::bind_method(_MD("set_v_offset","v_offset"),&PathFollow2D::set_v_offset);
+	ClassDB::bind_method(_MD("get_v_offset"),&PathFollow2D::get_v_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_unit_offset","unit_offset"),&PathFollow2D::set_unit_offset);
-	ObjectTypeDB::bind_method(_MD("get_unit_offset"),&PathFollow2D::get_unit_offset);
+	ClassDB::bind_method(_MD("set_unit_offset","unit_offset"),&PathFollow2D::set_unit_offset);
+	ClassDB::bind_method(_MD("get_unit_offset"),&PathFollow2D::get_unit_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_rotate","enable"),&PathFollow2D::set_rotate);
-	ObjectTypeDB::bind_method(_MD("is_rotating"),&PathFollow2D::is_rotating);
+	ClassDB::bind_method(_MD("set_rotate","enable"),&PathFollow2D::set_rotate);
+	ClassDB::bind_method(_MD("is_rotating"),&PathFollow2D::is_rotating);
 
-	ObjectTypeDB::bind_method(_MD("set_cubic_interpolation","enable"),&PathFollow2D::set_cubic_interpolation);
-	ObjectTypeDB::bind_method(_MD("get_cubic_interpolation"),&PathFollow2D::get_cubic_interpolation);
+	ClassDB::bind_method(_MD("set_cubic_interpolation","enable"),&PathFollow2D::set_cubic_interpolation);
+	ClassDB::bind_method(_MD("get_cubic_interpolation"),&PathFollow2D::get_cubic_interpolation);
 
-	ObjectTypeDB::bind_method(_MD("set_loop","loop"),&PathFollow2D::set_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop"),&PathFollow2D::has_loop);
+	ClassDB::bind_method(_MD("set_loop","loop"),&PathFollow2D::set_loop);
+	ClassDB::bind_method(_MD("has_loop"),&PathFollow2D::has_loop);
 
 
 }

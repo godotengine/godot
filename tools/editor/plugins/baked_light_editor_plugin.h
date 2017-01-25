@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,19 +40,19 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
+#if 0
 
 class MeshInstance;
 
 class BakedLightEditor : public Control {
 
-	OBJ_TYPE(BakedLightEditor, Control );
+	GDCLASS(BakedLightEditor, Control );
 
 
 	float update_timeout;
-	DVector<uint8_t> octree_texture;
-	DVector<uint8_t> light_texture;
-	DVector<int> octree_sampler;
+	PoolVector<uint8_t> octree_texture;
+	PoolVector<uint8_t> light_texture;
+	PoolVector<int> octree_sampler;
 
 	BakedLightBaker *baker;
 	AcceptDialog *err_dialog;
@@ -97,7 +97,7 @@ public:
 
 class BakedLightEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( BakedLightEditorPlugin, EditorPlugin );
+	GDCLASS( BakedLightEditorPlugin, EditorPlugin );
 
 	BakedLightEditor *baked_light_editor;
 	EditorNode *editor;
@@ -116,5 +116,5 @@ public:
 };
 
 #endif // MULTIMESH_EDITOR_PLUGIN_H
-
+#endif
 

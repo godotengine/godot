@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #ifdef UNIX_ENABLED
 
-#include "memory_pool_static_malloc.h"
-#include "os/memory_pool_dynamic_static.h"
+
 #include "thread_posix.h"
 #include "semaphore_posix.h"
 #include "mutex_posix.h"
+#include "rw_lock_posix.h"
 #include "core/os/thread_dummy.h"
 
 //#include "core/io/file_access_buffered_fa.h"
@@ -88,6 +88,10 @@ void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,c
 			print("\E[1;35mSCRIPT ERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
 			print("\E[0;35m   At: %s:%i.\E[0m\n",p_file,p_line);
 			break;
+		case ERR_SHADER:
+			print("\E[1;36mSHADER ERROR: %s: \E[0m\E[1m%s\n",p_function,err_details);
+			print("\E[0;36m   At: %s:%i.\E[0m\n",p_file,p_line);
+			break;
 	}
 }
 
@@ -112,8 +116,6 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 	return 0;
 }
 	
-static MemoryPoolStaticMalloc *mempool_static=NULL;
-static MemoryPoolDynamicStatic *mempool_dynamic=NULL;
 	
 	
 void OS_Unix::initialize_core() {
@@ -126,6 +128,7 @@ void OS_Unix::initialize_core() {
 	ThreadPosix::make_default();	
 	SemaphorePosix::make_default();
 	MutexPosix::make_default();	
+	RWLockPosix::make_default();
 #endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
@@ -141,8 +144,6 @@ void OS_Unix::initialize_core() {
 	PacketPeerUDPPosix::make_default();
 	IP_Unix::make_default();
 #endif
-	mempool_static = new MemoryPoolStaticMalloc;
-	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
 
 	ticks_start=0;
 	ticks_start=get_ticks_usec();
@@ -151,9 +152,6 @@ void OS_Unix::initialize_core() {
 void OS_Unix::finalize_core() {
 
 
-	if (mempool_dynamic)
-		memdelete( mempool_dynamic );
-	delete mempool_static;
 
 }
 
@@ -468,7 +466,7 @@ String OS_Unix::get_data_dir() const {
 
 		if (has_environment("HOME")) {
 
-			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			bool use_godot = GlobalConfig::get_singleton()->get("application/use_shared_user_dir");
 			if (use_godot)
 				return get_environment("HOME")+"/.godot/app_userdata/"+an;
 			else
@@ -476,7 +474,7 @@ String OS_Unix::get_data_dir() const {
 		}
 	}
 
-	return Globals::get_singleton()->get_resource_path();
+	return GlobalConfig::get_singleton()->get_resource_path();
 
 }
 
@@ -522,9 +520,6 @@ String OS_Unix::get_executable_path() const {
 	delete[] resolved_path;
 
 	return path;
-#elif defined(EMSCRIPTEN)
-	// We return nothing
-	return String();
 #else
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();

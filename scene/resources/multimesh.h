@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,30 +30,51 @@
 #define MULTIMESH_H
 
 #include "scene/resources/mesh.h"
-
+#include "servers/visual_server.h"
 
 class MultiMesh : public Resource {
 
-	OBJ_TYPE( MultiMesh, Resource );
+	GDCLASS( MultiMesh, Resource );
 	RES_BASE_EXTENSION("mmsh");
+public:
 
-	AABB aabb;
+	enum TransformFormat {
+		TRANSFORM_2D = VS::MULTIMESH_TRANSFORM_2D,
+		TRANSFORM_3D = VS::MULTIMESH_TRANSFORM_3D
+	};
+
+	enum ColorFormat {
+		COLOR_NONE = VS::MULTIMESH_COLOR_NONE,
+		COLOR_8BIT = VS::MULTIMESH_COLOR_8BIT,
+		COLOR_FLOAT = VS::MULTIMESH_COLOR_FLOAT,
+	};
+private:
 	Ref<Mesh> mesh;
 	RID multimesh;
+	TransformFormat transform_format;
+	ColorFormat color_format;
+
+
 protected:
 
 	static void _bind_methods();
 
-	void _set_transform_array(const DVector<Vector3>& p_array);
-	DVector<Vector3> _get_transform_array() const;
+	void _set_transform_array(const PoolVector<Vector3>& p_array);
+	PoolVector<Vector3> _get_transform_array() const;
 
-	void _set_color_array(const DVector<Color>& p_array);
-	DVector<Color> _get_color_array() const;
+	void _set_color_array(const PoolVector<Color>& p_array);
+	PoolVector<Color> _get_color_array() const;
 
 public:
 
 	void set_mesh(const Ref<Mesh>& p_mesh);
 	Ref<Mesh> get_mesh() const;
+
+	void set_color_format(ColorFormat p_color_format);
+	ColorFormat get_color_format() const;
+
+	void set_transform_format(TransformFormat p_transform_format);
+	TransformFormat get_transform_format() const;
 
 	void set_instance_count(int p_count);
 	int get_instance_count() const;
@@ -64,10 +85,7 @@ public:
 	void set_instance_color(int p_instance, const Color& p_color);
 	Color get_instance_color(int p_instance) const;
 
-	void set_aabb(const AABB& p_aabb);
-	virtual AABB get_aabb() const;
-
-	void generate_aabb();
+	virtual Rect3 get_aabb() const;
 
 	virtual RID get_rid() const;
 
@@ -75,5 +93,9 @@ public:
 	~MultiMesh();
 
 };
+
+
+VARIANT_ENUM_CAST( MultiMesh::TransformFormat );
+VARIANT_ENUM_CAST( MultiMesh::ColorFormat);
 
 #endif // MULTI_MESH_H

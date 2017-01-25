@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ Performance *Performance::singleton=NULL;
 
 void Performance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_monitor","monitor"),&Performance::get_monitor);
+	ClassDB::bind_method(_MD("get_monitor","monitor"),&Performance::get_monitor);
 
 	BIND_CONSTANT( TIME_FPS );
 	BIND_CONSTANT( TIME_PROCESS );
@@ -118,13 +118,13 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 float Performance::get_monitor(Monitor p_monitor) const {
 
 	switch(p_monitor) {
-		case TIME_FPS: return OS::get_singleton()->get_frames_per_second();
+		case TIME_FPS: return Engine::get_singleton()->get_frames_per_second();
 		case TIME_PROCESS: return _process_time;
 		case TIME_FIXED_PROCESS: return _fixed_process_time;
-		case MEMORY_STATIC: return Memory::get_static_mem_usage();
-		case MEMORY_DYNAMIC: return Memory::get_dynamic_mem_usage();
-		case MEMORY_STATIC_MAX: return Memory::get_static_mem_max_usage();
-		case MEMORY_DYNAMIC_MAX: return Memory::get_dynamic_mem_available();
+		case MEMORY_STATIC: return Memory::get_mem_usage();
+		case MEMORY_DYNAMIC: return MemoryPool::total_memory;
+		case MEMORY_STATIC_MAX: return MemoryPool::max_memory;
+		case MEMORY_DYNAMIC_MAX: return 0;
 		case MEMORY_MESSAGE_BUFFER_MAX: return MessageQueue::get_singleton()->get_max_buffer_usage();
 		case OBJECT_COUNT: return ObjectDB::get_object_count();
 		case OBJECT_RESOURCE_COUNT: return ResourceCache::get_cached_resource_count();
@@ -141,9 +141,9 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		};
 		case RENDER_OBJECTS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_OBJECTS_IN_FRAME);
 		case RENDER_VERTICES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_VERTICES_IN_FRAME);
-		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);;
-		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);;
-		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);;
+		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
+		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
+		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
 		case RENDER_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
 		case RENDER_VIDEO_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VIDEO_MEM_USED);
 		case RENDER_TEXTURE_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);

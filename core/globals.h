@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,9 @@
 */
 
 
-class Globals : public Object {
+class GlobalConfig : public Object {
 
-	OBJ_TYPE( Globals, Object );
+	GDCLASS( GlobalConfig, Object );
 	_THREAD_SAFE_CLASS_
 
 public:
@@ -62,6 +62,7 @@ protected:
 		int order;
 		bool persist;
 		Variant variant;
+		Variant initial;
 		bool hide_from_editor;
 		bool overrided;
 		VariantContainer(){ order=0; hide_from_editor=false; persist=false; overrided=false; }
@@ -82,7 +83,7 @@ protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
-	static Globals *singleton;
+	static GlobalConfig *singleton;
 
 	Error _load_settings(const String p_path);
 	Error _load_settings_binary(const String p_path);
@@ -109,12 +110,14 @@ public:
 	String localize_path(const String& p_path) const;
 	String globalize_path(const String& p_path) const;
 
-	void set_persisting(const String& p_name, bool p_persist);
-	bool is_persisting(const String& p_name) const;
+
+	void set_initial_value(const String& p_name, const Variant & p_value);
+	bool property_can_revert(const String& p_name);
+	Variant property_get_revert(const String& p_name);
 
 	String get_resource_path() const;
 
-	static Globals *get_singleton();
+	static GlobalConfig *get_singleton();
 
 	void clear(const String& p_name);
 	int get_order(const String& p_name) const;
@@ -144,12 +147,14 @@ public:
 
 	void set_registering_order(bool p_registering);
 
-	Globals();
-	~Globals();
+	GlobalConfig();
+	~GlobalConfig();
 
 };
 
 //not a macro any longer
 Variant _GLOBAL_DEF( const String& p_var, const Variant& p_default);
 #define GLOBAL_DEF(m_var,m_value) _GLOBAL_DEF(m_var,m_value)
+#define GLOBAL_GET(m_var) GlobalConfig::get_singleton()->get(m_var)
+
 #endif

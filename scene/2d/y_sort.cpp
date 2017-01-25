@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,10 +43,11 @@ bool YSort::is_sort_enabled() const {
 
 void YSort::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_sort_enabled","enabled"),&YSort::set_sort_enabled);
-	ObjectTypeDB::bind_method(_MD("is_sort_enabled"),&YSort::is_sort_enabled);
+	ClassDB::bind_method(_MD("set_sort_enabled","enabled"),&YSort::set_sort_enabled);
+	ClassDB::bind_method(_MD("is_sort_enabled"),&YSort::is_sort_enabled);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"sort/enabled"),_SCS("set_sort_enabled"),_SCS("is_sort_enabled"));
+	ADD_GROUP("Sort","sort_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"sort_enabled"),_SCS("set_sort_enabled"),_SCS("is_sort_enabled"));
 }
 
 

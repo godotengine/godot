@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,7 +48,7 @@ class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( ConnectDialog, ConfirmationDialog );
+	GDCLASS( ConnectDialog, ConfirmationDialog );
 
 
 	ConfirmationDialog *error;
@@ -77,7 +77,7 @@ protected:
 public:
 
 
-	bool get_make_callback() { return !make_callback->is_hidden() && make_callback->is_pressed(); }
+	bool get_make_callback() { return make_callback->is_visible() && make_callback->is_pressed(); }
 	NodePath get_dst_path() const;
 	StringName get_dst_method() const;
 	bool get_deferred() const;
@@ -86,8 +86,8 @@ public:
 	void set_dst_method(const StringName& p_method);
 	void set_dst_node(Node* p_node);
 
-//	Button *get_ok() { return ok; }
-//	Button *get_cancel() { return cancel; }
+	//Button *get_ok() { return ok; }
+	//Button *get_cancel() { return cancel; }
 	void edit(Node *p_node);
 
 	ConnectDialog();
@@ -97,7 +97,7 @@ public:
 
 class ConnectionsDock : public VBoxContainer {
 
-	OBJ_TYPE( ConnectionsDock , VBoxContainer );
+	GDCLASS( ConnectionsDock , VBoxContainer );
 
 	Button *connect_button;
 	EditorNode *editor;

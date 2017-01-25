@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 class CollisionShape2D : public Node2D {
 
-	OBJ_TYPE(CollisionShape2D,Node2D);
+	GDCLASS(CollisionShape2D,Node2D);
 	Ref<Shape2D> shape;
 	Rect2 rect;
 	bool trigger;

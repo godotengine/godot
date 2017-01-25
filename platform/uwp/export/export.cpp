@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -434,7 +434,7 @@ public:
 
 class EditorExportPlatformUWP : public EditorExportPlatform {
 
-	OBJ_TYPE(EditorExportPlatformUWP, EditorExportPlatform);
+	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 
@@ -612,15 +612,13 @@ void AppxPackager::make_content_types() {
 
 	for (int i = 0; i < file_metadata.size(); i++) {
 
-		String ext = file_metadata[i].name.extension();
+		String ext = file_metadata[i].name.get_extension();
 
 		if (types.has(ext)) continue;
 
 		types[ext] = content_type(ext);
 
-		tmp_file->store_string("<Default Extension=\"" + ext +
-			"\" ContentType=\""
-			+ types[ext] + "\" />");
+		tmp_file->store_string("<Default Extension=\"" + ext + "\" ContentType=\"" + types[ext] + "\" />");
 	}
 
 	// Appx signature file
@@ -1174,9 +1172,9 @@ Error AppxPackager::MakeIndirectDataContent(asn1::SPCIndirectDataContent &idc) {
 	MakeSPCInfoValue(*infoValue);
 
 	ASN1_TYPE* value =
-		EncodedASN1::FromItem<asn1::SPCInfoValue,
-		asn1::i2d_SPCInfoValue>(infoValue)
-		.ToSequenceType();
+			EncodedASN1::FromItem<asn1::SPCInfoValue,
+			asn1::i2d_SPCInfoValue>(infoValue)
+			.ToSequenceType();
 
 	{
 		Vector<uint8_t> digest;
@@ -1202,8 +1200,10 @@ Error AppxPackager::add_attributes(PKCS7_SIGNER_INFO * p_signer_info) {
 	asn1::SPCSpOpusInfo* opus = asn1::SPCSpOpusInfo_new();
 	if (!opus) return openssl_error(ERR_peek_last_error());
 
-	ASN1_STRING* opus_value = EncodedASN1::FromItem<asn1::SPCSpOpusInfo, asn1::i2d_SPCSpOpusInfo>(opus)
-		.ToSequenceString();
+	ASN1_STRING* opus_value =
+			EncodedASN1::FromItem<asn1::SPCSpOpusInfo,
+			asn1::i2d_SPCSpOpusInfo>(opus)
+			.ToSequenceString();
 
 	if (!PKCS7_add_signed_attribute(
 		p_signer_info,
@@ -1237,8 +1237,9 @@ Error AppxPackager::add_attributes(PKCS7_SIGNER_INFO * p_signer_info) {
 
 	statement_type->type = OBJ_nid2obj(NID_ms_code_ind);
 	ASN1_STRING* statement_type_value =
-		EncodedASN1::FromItem<asn1::SPCStatementType, asn1::i2d_SPCStatementType>(statement_type)
-		.ToSequenceString();
+			EncodedASN1::FromItem<asn1::SPCStatementType,
+			asn1::i2d_SPCStatementType>(statement_type)
+			.ToSequenceString();
 
 	if (!PKCS7_add_signed_attribute(
 		p_signer_info,
@@ -1571,7 +1572,7 @@ Vector<uint8_t> EditorExportPlatformUWP::_fix_manifest(const Vector<uint8_t> &p_
 	String architecture = arch == ARM ? "ARM" : arch == X86 ? "x86" : "x64";
 	result = result.replace("$architecture$", architecture);
 
-	result = result.replace("$display_name$", display_name.empty() ? (String)Globals::get_singleton()->get("application/name") : display_name);
+	result = result.replace("$display_name$", display_name.empty() ? (String)GlobalConfig::get_singleton()->get("application/name") : display_name);
 	result = result.replace("$publisher_display_name$", publisher_display_name);
 	result = result.replace("$app_description$", description);
 	result = result.replace("$bg_color$", background_color);

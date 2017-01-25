@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,33 +38,34 @@
 #include "scene/resources/shader.h"
 #include "servers/visual/shader_language.h"
 
-
 class ShaderTextEditor : public CodeTextEditor {
 
-	OBJ_TYPE( ShaderTextEditor, CodeTextEditor );
+	GDCLASS( ShaderTextEditor, CodeTextEditor );
 
 	Ref<Shader> shader;
-	ShaderLanguage::ShaderType type;
 
 protected:
 
 	static void _bind_methods();
 	virtual void _load_theme_settings();
+
+	virtual void _code_complete_script(const String& p_code, List<String>* r_options);
+
 public:
 
 	virtual void _validate_script();
 
 
 	Ref<Shader> get_edited_shader() const;
-	void set_edited_shader(const Ref<Shader>& p_shader,ShaderLanguage::ShaderType p_type);
+	void set_edited_shader(const Ref<Shader>& p_shader);
 	ShaderTextEditor();
 
 };
 
 
-class ShaderEditor : public Control {
+class ShaderEditor : public VBoxContainer {
 
-	OBJ_TYPE(ShaderEditor, Control );
+	GDCLASS(ShaderEditor, VBoxContainer );
 
 	enum {
 
@@ -88,22 +89,17 @@ class ShaderEditor : public Control {
 	MenuButton *settings_menu;
 	uint64_t idle;
 
-	TabContainer *tab_container;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 
-	TextureButton *close;
 
-	ShaderTextEditor *vertex_editor;
-	ShaderTextEditor *fragment_editor;
-	ShaderTextEditor *light_editor;
+	ShaderTextEditor *shader_editor;
 
-	void _tab_changed(int p_which);
+
 	void _menu_option(int p_optin);
 	void _params_changed();
 	mutable Ref<Shader> shader;
 
-	void _close_callback();
 
 	void _editor_settings_changed();
 
@@ -129,11 +125,13 @@ public:
 
 class ShaderEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ShaderEditorPlugin, EditorPlugin );
+	GDCLASS( ShaderEditorPlugin, EditorPlugin );
 
 	bool _2d;
 	ShaderEditor *shader_editor;
 	EditorNode *editor;
+	Button *button;
+
 public:
 
 	virtual String get_name() const { return "Shader"; }
@@ -150,8 +148,9 @@ public:
 	virtual void save_external_data();
 	virtual void apply_changes();
 
-	ShaderEditorPlugin(EditorNode *p_node,bool p_2d);
+	ShaderEditorPlugin(EditorNode *p_node);
 	~ShaderEditorPlugin();
 
 };
+
 #endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 class PHashTranslation : public Translation {
 
-	OBJ_TYPE(PHashTranslation,Translation);
+	GDCLASS(PHashTranslation,Translation);
 
 
 	//this translation uses a sort of modified perfect hash algorithm
@@ -42,9 +42,9 @@ class PHashTranslation : public Translation {
 	//of catching untranslated strings
 
 	//load/store friendly types
-	DVector<int> hash_table;
-	DVector<int> bucket_table;
-	DVector<uint8_t> strings;
+	PoolVector<int> hash_table;
+	PoolVector<int> bucket_table;
+	PoolVector<uint8_t> strings;
 
 
 	struct Bucket {

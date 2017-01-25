@@ -15,7 +15,7 @@ class VisualScriptEditorVariableEdit;
 
 
 class VisualScriptEditor : public ScriptEditorBase {
-	OBJ_TYPE(VisualScriptEditor,ScriptEditorBase)
+	GDCLASS(VisualScriptEditor,ScriptEditorBase)
 
 	enum {
 		TYPE_SEQUENCE=1000,
@@ -58,7 +58,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	GraphEdit *graph;
 
 	LineEdit *node_filter;
-	TextureFrame *node_filter_icon;
+	TextureRect *node_filter_icon;
 
 	VisualScriptEditorSignalEdit *signal_editor;
 
@@ -225,7 +225,7 @@ public:
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
 	virtual bool goto_method(const String& p_method);
-	virtual void add_callback(const String& p_function,StringArray p_args);
+	virtual void add_callback(const String& p_function,PoolStringArray p_args);
 	virtual void update_settings();
 	virtual void set_debugger_active(bool p_active);
 	virtual void set_tooltip_request_func(String p_method,Object* p_obj);

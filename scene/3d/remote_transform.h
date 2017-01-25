@@ -5,7 +5,7 @@
 
 class RemoteTransform : public Spatial
 {
-	OBJ_TYPE(RemoteTransform,Spatial);
+	GDCLASS(RemoteTransform,Spatial);
 	
 	NodePath remote_node;
 

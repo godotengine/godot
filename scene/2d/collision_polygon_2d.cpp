@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,16 +68,16 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 		Ref<ConcavePolygonShape2D> concave = memnew( ConcavePolygonShape2D );
 
-		DVector<Vector2> segments;
+		PoolVector<Vector2> segments;
 		segments.resize(polygon.size()*2);
-		DVector<Vector2>::Write w=segments.write();
+		PoolVector<Vector2>::Write w=segments.write();
 
 		for(int i=0;i<polygon.size();i++) {
 			w[(i<<1)+0]=polygon[i];
 			w[(i<<1)+1]=polygon[(i+1)%polygon.size()];
 		}
 
-		w=DVector<Vector2>::Write();
+		w=PoolVector<Vector2>::Write();
 		concave->set_segments(segments);
 
 		co->add_shape(concave,get_transform());
@@ -243,6 +243,7 @@ void CollisionPolygon2D::set_polygon(const Vector<Point2>& p_polygon) {
 		_update_parent();
 	}
 	update();
+	update_configuration_warning();
 }
 
 Vector<Point2> CollisionPolygon2D::get_polygon() const {
@@ -313,24 +314,24 @@ String CollisionPolygon2D::get_configuration_warning() const {
 
 void CollisionPolygon2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon2D::_add_to_collision_object);
-	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon2D::set_polygon);
-	ObjectTypeDB::bind_method(_MD("get_polygon"),&CollisionPolygon2D::get_polygon);
+	ClassDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon2D::_add_to_collision_object);
+	ClassDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon2D::set_polygon);
+	ClassDB::bind_method(_MD("get_polygon"),&CollisionPolygon2D::get_polygon);
 
-	ObjectTypeDB::bind_method(_MD("set_build_mode","build_mode"),&CollisionPolygon2D::set_build_mode);
-	ObjectTypeDB::bind_method(_MD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
+	ClassDB::bind_method(_MD("set_build_mode","build_mode"),&CollisionPolygon2D::set_build_mode);
+	ClassDB::bind_method(_MD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_trigger","trigger"),&CollisionPolygon2D::set_trigger);
-	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionPolygon2D::is_trigger);
+	ClassDB::bind_method(_MD("set_trigger","trigger"),&CollisionPolygon2D::set_trigger);
+	ClassDB::bind_method(_MD("is_trigger"),&CollisionPolygon2D::is_trigger);
 
-	ObjectTypeDB::bind_method(_MD("_set_shape_range","shape_range"),&CollisionPolygon2D::_set_shape_range);
-	ObjectTypeDB::bind_method(_MD("_get_shape_range"),&CollisionPolygon2D::_get_shape_range);
+	ClassDB::bind_method(_MD("_set_shape_range","shape_range"),&CollisionPolygon2D::_set_shape_range);
+	ClassDB::bind_method(_MD("_get_shape_range"),&CollisionPolygon2D::_get_shape_range);
 
-	ObjectTypeDB::bind_method(_MD("get_collision_object_first_shape"),&CollisionPolygon2D::get_collision_object_first_shape);
-	ObjectTypeDB::bind_method(_MD("get_collision_object_last_shape"),&CollisionPolygon2D::get_collision_object_last_shape);
+	ClassDB::bind_method(_MD("get_collision_object_first_shape"),&CollisionPolygon2D::get_collision_object_first_shape);
+	ClassDB::bind_method(_MD("get_collision_object_last_shape"),&CollisionPolygon2D::get_collision_object_last_shape);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Segments"),_SCS("set_build_mode"),_SCS("get_build_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_shape_range"),_SCS("_get_shape_range"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
 

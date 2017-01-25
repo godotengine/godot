@@ -6,7 +6,7 @@
 
 class VisualScriptBuiltinFunc : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptBuiltinFunc,VisualScriptNode)
+	GDCLASS(VisualScriptBuiltinFunc,VisualScriptNode)
 public:
 
 	enum BuiltinFunc {
@@ -66,6 +66,7 @@ public:
 		STR_TO_VAR,
 		VAR_TO_BYTES,
 		BYTES_TO_VAR,
+		COLORN,
 		FUNC_MAX
 	};
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,9 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "path_remap.h"
+
 #include "globals.h"
 #include "os/os.h"
 #include "translation.h"
+
 PathRemap* PathRemap::singleton=NULL;
 
 PathRemap* PathRemap::get_singleton() {
@@ -124,13 +126,16 @@ void PathRemap::clear_remaps() {
 void PathRemap::load_remaps() {
 
 	// default remaps first
-	DVector<String> remaps = Globals::get_singleton()->get("remap/all");
+	PoolVector<String> remaps;
+	if (GlobalConfig::get_singleton()->has("remap/all")) {
+		remaps = GlobalConfig::get_singleton()->get("remap/all");
+	}
 
 	{
 		int rlen = remaps.size();
 
 		ERR_FAIL_COND( rlen%2 );
-		DVector<String>::Read r = remaps.read();
+		PoolVector<String>::Read r = remaps.read();
 		for(int i=0;i<rlen/2;i++) {
 
 			String from = r[i*2+0];
@@ -141,18 +146,22 @@ void PathRemap::load_remaps() {
 
 
 	// platform remaps second, so override
-	remaps = Globals::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
-//	remaps = Globals::get_singleton()->get("remap/PSP");
+	if (GlobalConfig::get_singleton()->has("remap/"+OS::get_singleton()->get_name())) {
+		remaps = GlobalConfig::get_singleton()->get("remap/"+OS::get_singleton()->get_name());
+	} else {
+		remaps.resize(0);
+	}
+	//remaps = Globals::get_singleton()->get("remap/PSP");
 	{
 		int rlen = remaps.size();
 
 		ERR_FAIL_COND( rlen%2 );
-		DVector<String>::Read r = remaps.read();
+		PoolVector<String>::Read r = remaps.read();
 		for(int i=0;i<rlen/2;i++) {
 
 			String from = r[i*2+0];
 			String to = r[i*2+1];
-//			print_line("add remap: "+from+" -> "+to);
+			//print_line("add remap: "+from+" -> "+to);
 			add_remap(from,to);
 		}
 	}
@@ -160,17 +169,17 @@ void PathRemap::load_remaps() {
 
 	//locale based remaps
 
-	if (Globals::get_singleton()->has("locale/translation_remaps")) {
+	if (GlobalConfig::get_singleton()->has("locale/translation_remaps")) {
 
-		Dictionary remaps = Globals::get_singleton()->get("locale/translation_remaps");
+		Dictionary remaps = GlobalConfig::get_singleton()->get("locale/translation_remaps");
 		List<Variant> rk;
 		remaps.get_key_list(&rk);
 		for(List<Variant>::Element *E=rk.front();E;E=E->next()) {
 
 			String source = E->get();
-			StringArray sa = remaps[E->get()];
+			PoolStringArray sa = remaps[E->get()];
 			int sas = sa.size();
-			StringArray::Read r = sa.read();
+			PoolStringArray::Read r = sa.read();
 
 			for(int i=0;i<sas;i++) {
 
@@ -190,11 +199,11 @@ void PathRemap::load_remaps() {
 
 void PathRemap::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_remap","from","to","locale"),&PathRemap::add_remap,DEFVAL(String()));
-	ObjectTypeDB::bind_method(_MD("has_remap","path"),&PathRemap::has_remap);
-	ObjectTypeDB::bind_method(_MD("get_remap","path"),&PathRemap::get_remap);
-	ObjectTypeDB::bind_method(_MD("erase_remap","path"),&PathRemap::erase_remap);
-	ObjectTypeDB::bind_method(_MD("clear_remaps"),&PathRemap::clear_remaps);
+	ClassDB::bind_method(_MD("add_remap","from","to","locale"),&PathRemap::add_remap,DEFVAL(String()));
+	ClassDB::bind_method(_MD("has_remap","path"),&PathRemap::has_remap);
+	ClassDB::bind_method(_MD("get_remap","path"),&PathRemap::get_remap);
+	ClassDB::bind_method(_MD("erase_remap","path"),&PathRemap::erase_remap);
+	ClassDB::bind_method(_MD("clear_remaps"),&PathRemap::clear_remaps);
 }
 
 PathRemap::PathRemap() {

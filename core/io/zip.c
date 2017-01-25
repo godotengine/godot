@@ -855,7 +855,7 @@ extern zipFile ZEXPORT zipOpen3 (const void *pathname, int append, zipcharpc* gl
     ziinit.z_filefunc.zseek32_file = NULL;
     ziinit.z_filefunc.ztell32_file = NULL;
     if (pzlib_filefunc64_32_def==NULL) {
-//	fill_fopen64_filefunc(&ziinit.z_filefunc.zfile_func64);
+	//fill_fopen64_filefunc(&ziinit.z_filefunc.zfile_func64);
     } else
         ziinit.z_filefunc = *pzlib_filefunc64_32_def;
 

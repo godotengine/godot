@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -111,6 +111,7 @@ struct Color {
 	static Color hex(uint32_t p_hex);
 	static Color html(const String& p_color);
 	static bool html_is_valid(const String& p_color);
+	static Color named(const String& p_name);
 	String to_html(bool p_alpha=true) const;
 
 	_FORCE_INLINE_ bool operator<(const Color& p_color) const; //used in set keys

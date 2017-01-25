@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,12 +61,12 @@ void FuncRef::_bind_methods() {
 		MethodInfo mi;
 		mi.name="call_func";
 		Vector<Variant> defargs;
-		ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_func:Variant",&FuncRef::call_func,mi,defargs);
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_func:Variant",&FuncRef::call_func,mi,defargs);
 
 	}
 
-	ObjectTypeDB::bind_method(_MD("set_instance","instance"),&FuncRef::set_instance);
-	ObjectTypeDB::bind_method(_MD("set_function","name"),&FuncRef::set_function);
+	ClassDB::bind_method(_MD("set_instance","instance"),&FuncRef::set_instance);
+	ClassDB::bind_method(_MD("set_function","name"),&FuncRef::set_function);
 
 }
 

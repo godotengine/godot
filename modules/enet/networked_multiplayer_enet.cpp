@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port, int p_in_bandwidth, int p_out_bandwidth){
 
 	ERR_FAIL_COND_V(active,ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(p_ip.type != IP_Address::TYPE_IPV4, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!p_ip.is_ipv4(), ERR_INVALID_PARAMETER);
 
 	host = enet_host_create (NULL /* create a client host */,
 		    1 /* only allow 1 outgoing connection */,
@@ -91,7 +91,7 @@ Error NetworkedMultiplayerENet::create_client(const IP_Address& p_ip, int p_port
 	_setup_compressor();
 
 	ENetAddress address;
-	address.host=p_ip.field32[0];
+	address.host=*((uint32_t *)p_ip.get_ipv4());
 	address.port=p_port;
 
 	//enet_address_set_host (& address, "localhost");
@@ -150,8 +150,7 @@ void NetworkedMultiplayerENet::poll(){
 				}
 
 				IP_Address ip;
-				ip.type = IP_Address::TYPE_IPV4;
-				ip.field32[0]=event.peer -> address.host;
+				ip.set_ipv4((uint8_t *)&(event.peer -> address.host));
 
 				int *new_id = memnew( int );
 				*new_id = event.data;
@@ -507,8 +506,10 @@ uint32_t NetworkedMultiplayerENet::_gen_unique_id() const {
 					(uint32_t)OS::get_singleton()->get_unix_time(), hash );
 		hash = hash_djb2_one_32(
 					(uint32_t)OS::get_singleton()->get_data_dir().hash64(), hash );
-		//hash = hash_djb2_one_32(
-		//			(uint32_t)OS::get_singleton()->get_unique_ID().hash64(), hash );
+		/*
+		hash = hash_djb2_one_32(
+					(uint32_t)OS::get_singleton()->get_unique_ID().hash64(), hash );
+		*/
 		hash = hash_djb2_one_32(
 					(uint32_t)((uint64_t)this), hash ); //rely on aslr heap
 		hash = hash_djb2_one_32(
@@ -644,12 +645,12 @@ void NetworkedMultiplayerENet::enet_compressor_destroy(void * context){
 
 void NetworkedMultiplayerENet::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create_server","port","max_clients","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(0),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("create_client","ip","port","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_client,DEFVAL(0),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("close_connection"),&NetworkedMultiplayerENet::close_connection);
-	ObjectTypeDB::bind_method(_MD("set_compression_mode","mode"),&NetworkedMultiplayerENet::set_compression_mode);
-	ObjectTypeDB::bind_method(_MD("get_compression_mode"),&NetworkedMultiplayerENet::get_compression_mode);
-	ObjectTypeDB::bind_method(_MD("set_bind_ip", "ip"),&NetworkedMultiplayerENet::set_bind_ip);
+	ClassDB::bind_method(_MD("create_server","port","max_clients","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_server,DEFVAL(32),DEFVAL(0),DEFVAL(0));
+	ClassDB::bind_method(_MD("create_client","ip","port","in_bandwidth","out_bandwidth"),&NetworkedMultiplayerENet::create_client,DEFVAL(0),DEFVAL(0));
+	ClassDB::bind_method(_MD("close_connection"),&NetworkedMultiplayerENet::close_connection);
+	ClassDB::bind_method(_MD("set_compression_mode","mode"),&NetworkedMultiplayerENet::set_compression_mode);
+	ClassDB::bind_method(_MD("get_compression_mode"),&NetworkedMultiplayerENet::get_compression_mode);
+	ClassDB::bind_method(_MD("set_bind_ip", "ip"),&NetworkedMultiplayerENet::set_bind_ip);
 
 	BIND_CONSTANT( COMPRESS_NONE );
 	BIND_CONSTANT( COMPRESS_RANGE_CODER );
@@ -685,6 +686,6 @@ NetworkedMultiplayerENet::~NetworkedMultiplayerENet(){
 // sets IP for ENet to bind when using create_server
 // if no IP is set, then ENet bind to ENET_HOST_ANY
 void NetworkedMultiplayerENet::set_bind_ip(const IP_Address& p_ip){
-	ERR_FAIL_COND(p_ip.type != IP_Address::TYPE_IPV4);
-	bind_ip=p_ip.field32[0];
+	ERR_FAIL_COND(!p_ip.is_ipv4());
+	bind_ip=*(uint32_t *)p_ip.get_ipv4();
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "asset_library_editor_plugin.h"
+
 #include "editor_node.h"
 #include "editor_settings.h"
-
-
+#include "io/json.h"
 
 
 void EditorAssetLibraryItem::configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost) {
@@ -89,10 +89,10 @@ void EditorAssetLibraryItem::_author_clicked(){
 
 void EditorAssetLibraryItem::_bind_methods() {
 
-	ObjectTypeDB::bind_method("set_image",&EditorAssetLibraryItem::set_image);
-	ObjectTypeDB::bind_method("_asset_clicked",&EditorAssetLibraryItem::_asset_clicked);
-	ObjectTypeDB::bind_method("_category_clicked",&EditorAssetLibraryItem::_category_clicked);
-	ObjectTypeDB::bind_method("_author_clicked",&EditorAssetLibraryItem::_author_clicked);
+	ClassDB::bind_method("set_image",&EditorAssetLibraryItem::set_image);
+	ClassDB::bind_method("_asset_clicked",&EditorAssetLibraryItem::_asset_clicked);
+	ClassDB::bind_method("_category_clicked",&EditorAssetLibraryItem::_category_clicked);
+	ClassDB::bind_method("_author_clicked",&EditorAssetLibraryItem::_author_clicked);
 	ADD_SIGNAL( MethodInfo("asset_selected"));
 	ADD_SIGNAL( MethodInfo("category_selected"));
 	ADD_SIGNAL( MethodInfo("author_selected"));
@@ -147,7 +147,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	vb->add_child(rating_hb);
 
 	for(int i=0;i<5;i++) {
-		stars[i]=memnew(TextureFrame);
+		stars[i]=memnew(TextureRect);
 		rating_hb->add_child(stars[i]);
 	}
 	price = memnew( Label );
@@ -157,7 +157,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	set_custom_minimum_size(Size2(250,100));
 	set_h_size_flags(SIZE_EXPAND_FILL);
 
-	set_stop_mouse(false);
+	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -199,9 +199,9 @@ void EditorAssetLibraryItemDescription::set_image(int p_type,int p_index,const R
 }
 
 void EditorAssetLibraryItemDescription::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("set_image"),&EditorAssetLibraryItemDescription::set_image);
-	ObjectTypeDB::bind_method(_MD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
-	ObjectTypeDB::bind_method(_MD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
+	ClassDB::bind_method(_MD("set_image"),&EditorAssetLibraryItemDescription::set_image);
+	ClassDB::bind_method(_MD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
+	ClassDB::bind_method(_MD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
 
 }
 
@@ -270,7 +270,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	VBoxContainer *vbox = memnew( VBoxContainer );
 	add_child(vbox);
-	set_child_rect(vbox);
+
 
 
 	HBoxContainer *hbox = memnew( HBoxContainer);
@@ -296,7 +296,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_bg->add_child(description);
 	desc_bg->add_style_override("panel",get_stylebox("normal","TextEdit"));
 
-	preview = memnew( TextureFrame );
+	preview = memnew( TextureRect );
 	preview->set_custom_minimum_size(Size2(640,345));
 	hbox->add_child(preview);
 
@@ -321,7 +321,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
-void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data) {
 
 
 	String error_text;
@@ -379,12 +379,12 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 	}
 
 	progress->set_max( download->get_body_size() );
-	progress->set_val(download->get_downloaded_bytes());
+	progress->set_value(download->get_downloaded_bytes());
 
 	print_line("max: "+itos(download->get_body_size())+" bytes: "+itos(download->get_downloaded_bytes()));
 	install->set_disabled(false);
 
-	progress->set_val(download->get_downloaded_bytes());
+	progress->set_value(download->get_downloaded_bytes());
 
 	status->set_text("Success! ("+String::humanize_size(download->get_downloaded_bytes())+")");
 	set_process(false);
@@ -411,7 +411,7 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	if (p_what==NOTIFICATION_PROCESS) {
 
 		progress->set_max( download->get_body_size() );
-		progress->set_val(download->get_downloaded_bytes());
+		progress->set_value(download->get_downloaded_bytes());
 
 		int cstatus = download->get_http_client_status();
 
@@ -472,10 +472,10 @@ void EditorAssetLibraryItemDownload::_make_request() {
 
 void EditorAssetLibraryItemDownload::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_http_download_completed",&EditorAssetLibraryItemDownload::_http_download_completed);
-	ObjectTypeDB::bind_method("_install",&EditorAssetLibraryItemDownload::_install);
-	ObjectTypeDB::bind_method("_close",&EditorAssetLibraryItemDownload::_close);
-	ObjectTypeDB::bind_method("_make_request",&EditorAssetLibraryItemDownload::_make_request);
+	ClassDB::bind_method("_http_download_completed",&EditorAssetLibraryItemDownload::_http_download_completed);
+	ClassDB::bind_method("_install",&EditorAssetLibraryItemDownload::_install);
+	ClassDB::bind_method("_close",&EditorAssetLibraryItemDownload::_close);
+	ClassDB::bind_method("_make_request",&EditorAssetLibraryItemDownload::_make_request);
 
 	ADD_SIGNAL(MethodInfo("install_asset",PropertyInfo(Variant::STRING,"zip_path"),PropertyInfo(Variant::STRING,"name")));
 
@@ -485,7 +485,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	HBoxContainer *hb = memnew( HBoxContainer);
 	add_child(hb);
-	icon = memnew( TextureFrame );
+	icon = memnew( TextureRect );
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew( VBoxContainer );
@@ -555,7 +555,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
-		TextureFrame *tf = memnew(TextureFrame);
+		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(get_icon("Error","EditorIcons"));
 		reverse->set_icon(get_icon("Updown","EditorIcons"));
 
@@ -564,7 +564,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-		if(!is_hidden()) {
+		if(is_visible()) {
 			_repository_changed(0); // Update when shown for the first time
 		}
 	}
@@ -574,24 +574,24 @@ void EditorAssetLibrary::_notification(int p_what) {
 		HTTPClient::Status s = request->get_http_client_status();
 		bool visible = s!=HTTPClient::STATUS_DISCONNECTED;
 
-		if (visible != !load_status->is_hidden()) {
-			load_status->set_hidden(!visible);
+		if (visible != load_status->is_visible()) {
+			load_status->set_visible(visible);
 		}
 
 		if (visible) {
 			switch(s) {
 
 				case HTTPClient::STATUS_RESOLVING: {
-					load_status->set_val(0.1);
+					load_status->set_value(0.1);
 				} break;
 				case HTTPClient::STATUS_CONNECTING: {
-					load_status->set_val(0.2);
+					load_status->set_value(0.2);
 				} break;
 				case HTTPClient::STATUS_REQUESTING: {
-					load_status->set_val(0.3);
+					load_status->set_value(0.3);
 				} break;
 				case HTTPClient::STATUS_BODY: {
-					load_status->set_val(0.4);
+					load_status->set_value(0.4);
 				} break;
 				default: {}
 
@@ -599,8 +599,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		}
 
 		bool no_downloads = downloads_hb->get_child_count()==0;
-		if (no_downloads != downloads_scroll->is_hidden()) {
-			downloads_scroll->set_hidden(no_downloads);
+		if (no_downloads == downloads_scroll->is_visible()) {
+			downloads_scroll->set_visible(!no_downloads);
 		}
 	}
 
@@ -691,12 +691,12 @@ void EditorAssetLibrary::_select_asset(int p_id){
 	description->popup_centered_minsize();*/
 }
 
-void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArray& p_data, int p_queue_id) {
+void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByteArray& p_data, int p_queue_id) {
 	Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 
 	if (obj) {
 		bool image_set = false;
-		ByteArray image_data = p_data;
+		PoolByteArray image_data = p_data;
 		
 		if(use_cache) {
 			String cache_filename_base = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("assetimage_"+image_queue[p_queue_id].image_url.md5_text());
@@ -704,11 +704,11 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 			FileAccess* file = FileAccess::open(cache_filename_base+".data", FileAccess::READ);
 			
 			if(file) {
-				ByteArray cached_data;
+				PoolByteArray cached_data;
 				int len=file->get_32();
 				cached_data.resize(len);
 				
-				ByteArray::Write w=cached_data.write();
+				PoolByteArray::Write w=cached_data.write();
 				file->get_buffer(w.ptr(), len);
 				
 				image_data = cached_data;
@@ -717,7 +717,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 		}
 		
 		int len=image_data.size();
-		ByteArray::Read r=image_data.read();
+		PoolByteArray::Read r=image_data.read();
 		Image image(r.ptr(),len);
 		if (!image.empty()) {
 			float max_height = 10000;
@@ -745,7 +745,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 	}
 }
 
-void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data,int p_queue_id) {
+void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data,int p_queue_id) {
 
 	ERR_FAIL_COND( !image_queue.has(p_queue_id) );
 
@@ -767,7 +767,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					}
 					
 					int len=p_data.size();
-					ByteArray::Read r=p_data.read();
+					PoolByteArray::Read r=p_data.read();
 					file = FileAccess::open(cache_filename_base+".data", FileAccess::WRITE);
 					if(file) {
 						file->store_32(len);
@@ -789,7 +789,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		}
 	}
 
-	image_queue[p_queue_id].request->queue_delete();;
+	image_queue[p_queue_id].request->queue_delete();
 	image_queue.erase(p_queue_id);
 
 	_update_image_queue();
@@ -855,7 +855,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for,String p_image_url,ImageT
 
 	add_child(iq.request);
 
-	_image_update(true, false, ByteArray(), iq.queue_id);
+	_image_update(true, false, PoolByteArray(), iq.queue_id);
 	_update_image_queue();
 
 
@@ -1021,14 +1021,14 @@ void EditorAssetLibrary::_api_request(const String& p_request, RequestType p_req
 
 
 
-void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data) {
 
 
 	String str;
 
 	{
 		int datalen=p_data.size();
-		ByteArray::Read r = p_data.read();
+		PoolByteArray::Read r = p_data.read();
 		str.parse_utf8((const char*)r.ptr(),datalen);
 	}
 
@@ -1076,8 +1076,16 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 	}
 
 	print_line("response: "+itos(p_status)+" code: "+itos(p_code));
+
 	Dictionary d;
-	d.parse_json(str);
+	{
+		Variant js;
+		String errs;
+		int errl;
+		JSON::parse(str,js,errs,errl);
+		d=js;
+	}
+
 
 	print_line(Variant(d).get_construct_string());
 
@@ -1288,20 +1296,20 @@ void EditorAssetLibrary::_install_external_asset(String p_zip_path,String p_titl
 
 void EditorAssetLibrary::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_http_request_completed",&EditorAssetLibrary::_http_request_completed);
-	ObjectTypeDB::bind_method("_select_asset",&EditorAssetLibrary::_select_asset);
-	ObjectTypeDB::bind_method("_select_author",&EditorAssetLibrary::_select_author);
-	ObjectTypeDB::bind_method("_select_category",&EditorAssetLibrary::_select_category);
-	ObjectTypeDB::bind_method("_image_request_completed",&EditorAssetLibrary::_image_request_completed);
-	ObjectTypeDB::bind_method("_search",&EditorAssetLibrary::_search,DEFVAL(0));
-	ObjectTypeDB::bind_method("_install_asset",&EditorAssetLibrary::_install_asset);
-	ObjectTypeDB::bind_method("_manage_plugins",&EditorAssetLibrary::_manage_plugins);
-	ObjectTypeDB::bind_method("_asset_open",&EditorAssetLibrary::_asset_open);
-	ObjectTypeDB::bind_method("_asset_file_selected",&EditorAssetLibrary::_asset_file_selected);
-	ObjectTypeDB::bind_method("_repository_changed",&EditorAssetLibrary::_repository_changed);
-	ObjectTypeDB::bind_method("_support_toggled",&EditorAssetLibrary::_support_toggled);
-	ObjectTypeDB::bind_method("_rerun_search",&EditorAssetLibrary::_rerun_search);
-	ObjectTypeDB::bind_method("_install_external_asset",&EditorAssetLibrary::_install_external_asset);
+	ClassDB::bind_method("_http_request_completed",&EditorAssetLibrary::_http_request_completed);
+	ClassDB::bind_method("_select_asset",&EditorAssetLibrary::_select_asset);
+	ClassDB::bind_method("_select_author",&EditorAssetLibrary::_select_author);
+	ClassDB::bind_method("_select_category",&EditorAssetLibrary::_select_category);
+	ClassDB::bind_method("_image_request_completed",&EditorAssetLibrary::_image_request_completed);
+	ClassDB::bind_method("_search",&EditorAssetLibrary::_search,DEFVAL(0));
+	ClassDB::bind_method("_install_asset",&EditorAssetLibrary::_install_asset);
+	ClassDB::bind_method("_manage_plugins",&EditorAssetLibrary::_manage_plugins);
+	ClassDB::bind_method("_asset_open",&EditorAssetLibrary::_asset_open);
+	ClassDB::bind_method("_asset_file_selected",&EditorAssetLibrary::_asset_file_selected);
+	ClassDB::bind_method("_repository_changed",&EditorAssetLibrary::_repository_changed);
+	ClassDB::bind_method("_support_toggled",&EditorAssetLibrary::_support_toggled);
+	ClassDB::bind_method("_rerun_search",&EditorAssetLibrary::_rerun_search);
+	ClassDB::bind_method("_install_external_asset",&EditorAssetLibrary::_install_external_asset);
 
 
 
@@ -1418,7 +1426,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	support->get_popup()->add_check_item(TTR("Testing"),SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL,true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY,true);
-	support->get_popup()->connect("item_pressed",this,"_support_toggled");
+	support->get_popup()->connect("id_pressed",this,"_support_toggled");
 
 	/////////
 
@@ -1446,7 +1454,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_scroll->add_child(library_vb_border);
 	library_vb_border->add_style_override("panel",border2);
 	library_vb_border->set_h_size_flags(SIZE_EXPAND_FILL);
-	library_vb_border->set_stop_mouse(false);
+	library_vb_border->set_mouse_filter(MOUSE_FILTER_PASS);
 
 
 
@@ -1454,7 +1462,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	library_vb_border->add_child(library_vb);
-//	margin_panel->set_stop_mouse(false);
+	//margin_panel->set_stop_mouse(false);
 
 	asset_top_page = memnew( HBoxContainer );
 	library_vb->add_child(asset_top_page);

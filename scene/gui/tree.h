@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ class Tree;
 
 class TreeItem : public Object {
 
-	OBJ_TYPE(TreeItem,Object);
+	GDCLASS(TreeItem,Object);
 public:
 
 	enum TreeCellMode {
@@ -93,7 +93,8 @@ friend class Tree;
 			int id;
 			bool disabled;
 			Ref<Texture> texture;
-			Button() { id=0; disabled=false; }
+			Color color;
+			Button() { id=0; disabled=false; color=Color(1,1,1,1); }
 		};
 
 		Vector< Button > buttons;
@@ -189,6 +190,7 @@ public:
 	int get_button_by_id(int p_column,int p_id) const;
 	bool is_button_disabled(int p_column,int p_idx) const;
 	void set_button(int p_column,int p_idx,const Ref<Texture>& p_button);
+	void set_button_color(int p_column,int p_idx,const Color& p_color);
 
 	/* range works for mode number or mode combo */
 
@@ -255,7 +257,7 @@ VARIANT_ENUM_CAST( TreeItem::TreeCellMode );
 
 class Tree : public Control {
 
-	OBJ_TYPE( Tree, Control );
+	GDCLASS( Tree, Control );
 public:
 	enum SelectMode {
             SELECT_SINGLE,
@@ -332,7 +334,7 @@ friend class TreeItem;
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
-//	void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
+	//void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(const TreeItem::Cell& p_cell,const Rect2i& p_rect,const Color& p_color);
 	int draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& p_draw_size,TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col,TreeItem *p_prev=NULL,bool *r_in_range=NULL,bool p_force_deselect=false);
@@ -343,7 +345,7 @@ friend class TreeItem;
 
 	void popup_select(int p_option);
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	void _notification(int p_what);
 
 	Size2 get_minimum_size() const;
@@ -450,6 +452,7 @@ friend class TreeItem;
 	bool scrolling;
 
 	bool force_select_on_already_selected;
+	bool force_edit_checkbox_only_on_checkbox;
 
 	bool hide_folding;
 
@@ -528,6 +531,10 @@ public:
 
 	void set_single_select_cell_editing_only_when_already_selected(bool p_enable);
 	bool get_single_select_cell_editing_only_when_already_selected() const;
+
+	void set_edit_checkbox_cell_only_when_checkbox_is_pressed(bool p_enable);
+	bool get_edit_checkbox_cell_only_when_checkbox_is_pressed() const;
+
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;

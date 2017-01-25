@@ -23,6 +23,8 @@ public:
 		OPCODE_GET,
 		OPCODE_SET_NAMED,
 		OPCODE_GET_NAMED,
+		OPCODE_SET_MEMBER,
+		OPCODE_GET_MEMBER,
 		OPCODE_ASSIGN,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
@@ -204,7 +206,7 @@ public:
 
 class GDFunctionState : public Reference {
 
-	OBJ_TYPE(GDFunctionState,Reference);
+	GDCLASS(GDFunctionState,Reference);
 friend class GDFunction;
 	GDFunction *function;
 	GDFunction::CallState state;

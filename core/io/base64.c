@@ -1,3 +1,11 @@
+/*
+ * File: base64.c
+ * Description: Simple BASE64 conversion methods
+ * Author: Ari Edelkind
+ * License: Public Domain
+ * Website: http://episec.com/people/edelkind/c.html
+ */
+
 #include <string.h>
 
 char b64string[] =

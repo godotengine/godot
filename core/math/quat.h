@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,13 +26,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include "vector3.h"
+
 #ifndef QUAT_H
 #define QUAT_H
 
 #include "math_defs.h"
 #include "math_funcs.h"
 #include "ustring.h"
-#include "vector3.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -49,15 +51,16 @@ public:
 	Quat inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quat& q) const;
 	void set_euler(const Vector3& p_euler);
+	Vector3 get_euler() const;
 	Quat slerp(const Quat& q, const real_t& t) const;
 	Quat slerpni(const Quat& q, const real_t& t) const;
 	Quat cubic_slerp(const Quat& q, const Quat& prep, const Quat& postq,const real_t& t) const;
 
 	_FORCE_INLINE_ void get_axis_and_angle(Vector3& r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
-		r_axis.x = -x / Math::sqrt(1-w*w);
-		r_axis.y = -y / Math::sqrt(1-w*w);
-		r_axis.z = -z / Math::sqrt(1-w*w);
+		r_axis.x = x / Math::sqrt(1-w*w);
+		r_axis.y = y / Math::sqrt(1-w*w);
+		r_axis.z = z / Math::sqrt(1-w*w);
 	}
 
 	void operator*=(const Quat& q);
@@ -116,8 +119,8 @@ public:
 			w=0;
 		} else {
 
-			real_t  s = Math::sqrt((1.0f + d) * 2.0f);
-			real_t rs = 1.0f / s;
+			real_t  s = Math::sqrt((1.0 + d) * 2.0);
+			real_t rs = 1.0 / s;
 
 			x=c.x*rs;
 			y=c.y*rs;
@@ -183,12 +186,10 @@ Quat Quat::operator/(const real_t& s) const {
 
 
 bool Quat::operator==(const Quat& p_quat) const {
-
 	return x==p_quat.x && y==p_quat.y && z==p_quat.z && w==p_quat.w;
 }
 
 bool Quat::operator!=(const Quat& p_quat) const {
-
 	return x!=p_quat.x || y!=p_quat.y || z!=p_quat.z || w!=p_quat.w;
 }
 

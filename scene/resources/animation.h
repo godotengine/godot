@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,16 +35,11 @@
 */
 class Animation : public Resource {
 
-	OBJ_TYPE( Animation, Resource );
+	GDCLASS( Animation, Resource );
 	RES_BASE_EXTENSION("anm");
 public:
 
-	enum LoopMode {
 
-		LOOP_NONE,
-		LOOP_ENABLED,
-		LOOP_WRAP
-	};
 
 	enum TrackType {
 		TYPE_VALUE, ///< Set a value in a property, can be interpolated.
@@ -71,9 +66,10 @@ private:
 
 		TrackType type;
 		InterpolationType interpolation;
+		bool loop_wrap;
 		NodePath path; // path to something
 		bool imported;
-		Track() { interpolation=INTERPOLATION_LINEAR; imported=false;}
+		Track() { interpolation=INTERPOLATION_LINEAR; imported=false; loop_wrap=true;}
 		virtual ~Track() {}
 	};
 
@@ -164,7 +160,7 @@ private:
 	_FORCE_INLINE_ float _cubic_interpolate( const float& p_pre_a,const float& p_a, const float& p_b, const float& p_post_b, float p_c) const;
 
 	template<class T>
-	_FORCE_INLINE_ T _interpolate( const Vector< TKey<T> >& p_keys, float p_time, InterpolationType p_interp,bool *p_ok) const;
+	_FORCE_INLINE_ T _interpolate( const Vector< TKey<T> >& p_keys, float p_time, InterpolationType p_interp,bool p_loop_wrap,bool *p_ok) const;
 
 	_FORCE_INLINE_ void _value_track_get_key_indices_in_range(const ValueTrack * vt, float from_time, float to_time,List<int> *p_indices) const;
 	_FORCE_INLINE_ void _method_track_get_key_indices_in_range(const MethodTrack * mt, float from_time, float to_time,List<int> *p_indices) const;
@@ -188,11 +184,11 @@ private:
 		return ret;
 	}
 
-	DVector<int> _value_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+	PoolVector<int> _value_track_get_key_indices(int p_track, float p_time, float p_delta) const {
 
 		List<int> idxs;
 		value_track_get_key_indices(p_track,p_time,p_delta,&idxs);
-		DVector<int> idxr;
+		PoolVector<int> idxr;
 
 		for (List<int>::Element *E=idxs.front();E;E=E->next()) {
 
@@ -200,11 +196,11 @@ private:
 		}
 		return idxr;
 	}
-	DVector<int> _method_track_get_key_indices(int p_track, float p_time, float p_delta) const {
+	PoolVector<int> _method_track_get_key_indices(int p_track, float p_time, float p_delta) const {
 
 		List<int> idxs;
 		method_track_get_key_indices(p_track,p_time,p_delta,&idxs);
-		DVector<int> idxr;
+		PoolVector<int> idxr;
 
 		for (List<int>::Element *E=idxs.front();E;E=E->next()) {
 
@@ -260,6 +256,8 @@ public:
 	void track_set_interpolation_type(int p_track,InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;
 
+	void track_set_interpolation_loop_wrap(int p_track,bool p_enable);
+	bool track_get_interpolation_loop_wrap(int p_track) const;
 
 	Error transform_track_interpolate(int p_track, float p_time, Vector3 * r_loc, Quat *r_rot, Vector3 *r_scale) const;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,11 +90,11 @@ Rect2 LineShape2D::get_rect() const{
 
 void LineShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_normal","normal"),&LineShape2D::set_normal);
-	ObjectTypeDB::bind_method(_MD("get_normal"),&LineShape2D::get_normal);
+	ClassDB::bind_method(_MD("set_normal","normal"),&LineShape2D::set_normal);
+	ClassDB::bind_method(_MD("get_normal"),&LineShape2D::get_normal);
 
-	ObjectTypeDB::bind_method(_MD("set_d","d"),&LineShape2D::set_d);
-	ObjectTypeDB::bind_method(_MD("get_d"),&LineShape2D::get_d);
+	ClassDB::bind_method(_MD("set_d","d"),&LineShape2D::set_d);
+	ClassDB::bind_method(_MD("get_d"),&LineShape2D::get_d);
 
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"normal"),_SCS("set_normal"),_SCS("get_normal") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"d"),_SCS("set_d"),_SCS("get_d") );

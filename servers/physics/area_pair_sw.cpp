@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,7 +110,7 @@ bool Area2PairSW::setup(float p_step) {
 		return false;
 	}
 
-//	bool result = area_a->test_collision_mask(area_b) && CollisionSolverSW::solve(area_a->get_shape(shape_a),area_a->get_transform() * area_a->get_shape_transform(shape_a),Vector2(),area_b->get_shape(shape_b),area_b->get_transform() * area_b->get_shape_transform(shape_b),Vector2(),NULL,this);
+	//bool result = area_a->test_collision_mask(area_b) && CollisionSolverSW::solve(area_a->get_shape(shape_a),area_a->get_transform() * area_a->get_shape_transform(shape_a),Vector2(),area_b->get_shape(shape_b),area_b->get_transform() * area_b->get_shape_transform(shape_b),Vector2(),NULL,this);
 	bool result = CollisionSolverSW::solve_static(area_a->get_shape(shape_a),area_a->get_transform() * area_a->get_shape_transform(shape_a),area_b->get_shape(shape_b),area_b->get_transform() * area_b->get_shape_transform(shape_b),NULL,this);
 
 	if (result!=colliding) {

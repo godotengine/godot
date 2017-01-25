@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,10 @@
 #include "scene/resources/mesh_library.h"
 #include "tools/editor/editor_node.h"
 
-
+#if 0
 class MeshLibraryEditor : public Control {
 
-	OBJ_TYPE( MeshLibraryEditor, Control );
+	GDCLASS( MeshLibraryEditor, Control );
 
 	Ref<MeshLibrary> theme;
 
@@ -74,7 +74,7 @@ public:
 
 class MeshLibraryEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MeshLibraryEditorPlugin, EditorPlugin );
+	GDCLASS( MeshLibraryEditorPlugin, EditorPlugin );
 
 	MeshLibraryEditor *theme_editor;
 	EditorNode *editor;
@@ -93,3 +93,4 @@ public:
 
 
 #endif // CUBE_GRID_THEME_EDITOR_PLUGIN_H
+#endif

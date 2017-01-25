@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,41 +29,34 @@
 #ifndef OS_WINDOWS_H
 #define OS_WINDOWS_H
 
-#define WINVER 0x0600
-
 #include "os/input.h"
 #include "os/os.h"
 #include "context_gl_win.h"
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics/physics_server_sw.h"
-
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
+#include "servers/audio_server.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
 #endif
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/unix/ip_unix.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
-
 #include "main/input_default.h"
+#include "key_mapping_win.h"
+
 
 #include <windows.h>
-
-#include "key_mapping_win.h"
 #include <windowsx.h>
 #include <io.h>
-
 #include <fcntl.h>
 #include <stdio.h>
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class joystick_windows;
+class JoypadWindows;
 class OS_Windows : public OS {
 
         enum {
@@ -95,7 +88,7 @@ class OS_Windows : public OS {
 	int old_x,old_y;
 	Point2i center;
 	unsigned int last_id;
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED) || defined(GLES2_ENABLED)
+#if defined(OPENGL_ENABLED)
 	ContextGL_Win *gl_context;
 #endif
 	VisualServer *visual_server;
@@ -118,11 +111,6 @@ class OS_Windows : public OS {
 
 	WNDPROC user_proc;
 
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
-
 	MouseMode mouse_mode;
 	bool alt_mem;
 	bool gr_mem;
@@ -136,7 +124,7 @@ class OS_Windows : public OS {
 	CursorShape cursor_shape;
 
 	InputDefault *input;
-	joystick_windows *joystick;
+	JoypadWindows *joypad;
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,17 +79,17 @@ private:
 
 	static Vector<X509*> certs;
 
-	static void _load_certs(const ByteArray& p_array);
+	static void _load_certs(const PoolByteArray& p_array);
 protected:
 	static void _bind_methods();
 public:
 
 
-	virtual Error accept(Ref<StreamPeer> p_base);
-	virtual Error connect(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String());
+	virtual Error accept_stream(Ref<StreamPeer> p_base);
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String());
 	virtual Status get_status() const;
 
-	virtual void disconnect();
+	virtual void disconnect_from_stream();
 
 	virtual Error put_data(const uint8_t* p_data,int p_bytes);
 	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent);

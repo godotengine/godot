@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_texture_import_plugin.h"
+
 #include "io/image_loader.h"
 #include "tools/editor/editor_node.h"
 #include "io/resource_saver.h"
@@ -106,12 +107,12 @@ void EditorImportTextureOptions::set_flags(uint32_t p_flags){
 
 void EditorImportTextureOptions::set_quality(float p_quality) {
 
-	quality->set_val(p_quality);
+	quality->set_value(p_quality);
 }
 
 float EditorImportTextureOptions::get_quality() const {
 
-    return quality->get_val();
+    return quality->get_value();
 }
 
 
@@ -148,8 +149,8 @@ void EditorImportTextureOptions::_changed() {
 
 void EditorImportTextureOptions::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_changed",&EditorImportTextureOptions::_changed);
-	ObjectTypeDB::bind_method("_changedp",&EditorImportTextureOptions::_changedp);
+	ClassDB::bind_method("_changed",&EditorImportTextureOptions::_changed);
+	ClassDB::bind_method("_changedp",&EditorImportTextureOptions::_changedp);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 }
@@ -200,7 +201,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 	hs->set_min(0);
 	hs->set_max(1.0);
 	hs->set_step(0.01);
-	hs->set_val(0.7);
+	hs->set_value(0.7);
 	quality=hs;
 	quality_vb->add_margin_child(TTR("Texture Compression Quality (WebP):"),quality_hb);
 
@@ -236,7 +237,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 
 class EditorTextureImportDialog : public ConfirmationDialog  {
 
-	OBJ_TYPE(EditorTextureImportDialog,ConfirmationDialog);
+	GDCLASS(EditorTextureImportDialog,ConfirmationDialog);
 
 
 
@@ -344,7 +345,7 @@ void EditorTextureImportDialog::_choose_save_dir(const String& p_path) {
 void EditorTextureImportDialog::_import() {
 
 
-//	ImportMonitorBlock imb;
+	//ImportMonitorBlock imb;
 
 	Vector<String> files=import_path->get_text().split(",");
 
@@ -396,7 +397,7 @@ void EditorTextureImportDialog::_import() {
 		imd->set_option("flags",texture_options->get_flags());
 		imd->set_option("quality",texture_options->get_quality());
 		imd->set_option("atlas",true);
-		imd->set_option("atlas_size",int(size->get_val()));
+		imd->set_option("atlas_size",int(size->get_value()));
 		imd->set_option("large",false);
 		imd->set_option("crop",crop_source->is_pressed());
 		imd->set_option("mode",mode);
@@ -430,7 +431,7 @@ void EditorTextureImportDialog::_import() {
 		imd->set_option("quality",texture_options->get_quality());
 		imd->set_option("atlas",false);
 		imd->set_option("large",true);
-		imd->set_option("large_cell_size",int(size->get_val()));
+		imd->set_option("large_cell_size",int(size->get_value()));
 		imd->set_option("crop",crop_source->is_pressed());
 		imd->set_option("mode",mode);
 
@@ -448,7 +449,7 @@ void EditorTextureImportDialog::_import() {
 		for(int i=0;i<files.size();i++) {
 
 			String dst_file = dst_path.plus_file(files[i].get_file());
-			dst_file=dst_file.basename()+".tex";
+			dst_file=dst_file.get_basename()+".tex";
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			//imd->set_editor();
 			imd->add_source(EditorImportPlugin::validate_source_path(files[i]));
@@ -539,7 +540,7 @@ void EditorTextureImportDialog::_notification(int p_what) {
 
 		List<String> extensions;
 		ImageLoader::get_recognized_extensions(&extensions);
-	//	ResourceLoader::get_recognized_extensions_for_type("PackedTexture",&extensions);
+		//ResourceLoader::get_recognized_extensions_for_type("PackedTexture",&extensions);
 		file_select->clear_filters();
 		for(int i=0;i<extensions.size();i++) {
 
@@ -569,7 +570,7 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 	if (p_mode==EditorTextureImportPlugin::MODE_ATLAS) {
 
 		size_label->set_text(TTR("Max Texture Size:"));
-		size->set_val(2048);
+		size->set_value(2048);
 		crop_source->show();
 		size_label->show();
 		size->show();
@@ -587,7 +588,7 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 	if (p_mode==EditorTextureImportPlugin::MODE_LARGE) {
 
 		size_label->set_text(TTR("Cell Size:"));
-		size->set_val(256);
+		size->set_value(256);
 		size_label->show();
 		size->show();
 
@@ -636,14 +637,14 @@ void EditorTextureImportDialog::_mode_changed(int p_mode) {
 void EditorTextureImportDialog::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method("_choose_files",&EditorTextureImportDialog::_choose_files);
-	ObjectTypeDB::bind_method("_choose_file",&EditorTextureImportDialog::_choose_file);
-	ObjectTypeDB::bind_method("_choose_save_dir",&EditorTextureImportDialog::_choose_save_dir);
-	ObjectTypeDB::bind_method("_import",&EditorTextureImportDialog::_import);
-	ObjectTypeDB::bind_method("_browse",&EditorTextureImportDialog::_browse);
-	ObjectTypeDB::bind_method("_browse_target",&EditorTextureImportDialog::_browse_target);
-	ObjectTypeDB::bind_method("_mode_changed",&EditorTextureImportDialog::_mode_changed);
-//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
+	ClassDB::bind_method("_choose_files",&EditorTextureImportDialog::_choose_files);
+	ClassDB::bind_method("_choose_file",&EditorTextureImportDialog::_choose_file);
+	ClassDB::bind_method("_choose_save_dir",&EditorTextureImportDialog::_choose_save_dir);
+	ClassDB::bind_method("_import",&EditorTextureImportDialog::_import);
+	ClassDB::bind_method("_browse",&EditorTextureImportDialog::_browse);
+	ClassDB::bind_method("_browse_target",&EditorTextureImportDialog::_browse_target);
+	ClassDB::bind_method("_mode_changed",&EditorTextureImportDialog::_mode_changed);
+	//ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 }
 
 EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* p_plugin) {
@@ -657,14 +658,14 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	mode_hb = memnew( HBoxContainer );
 	add_child(mode_hb);
-	set_child_rect(mode_hb);
+	//set_child_rect(mode_hb);
 
 	VBoxContainer *vbcg = memnew( VBoxContainer);
 
 
 	mode_hb->add_child(vbcg);
 	mode_hb->add_constant_override("separation",15);
-	ButtonGroup *bg = memnew( ButtonGroup );
+	VBoxContainer *bg = memnew( VBoxContainer );
 	vbcg->add_margin_child("Import Mode",bg);
 
 	for(int i=0;i<EditorTextureImportPlugin::MODE_MAX;i++) {
@@ -727,7 +728,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	size->set_max(16384);
 
 
-	size->set_val(256);
+	size->set_value(256);
 	size_mc=vbc->add_margin_child(TTR("Cell Size:"),size);
 	size_label=vbc->get_child(size_mc->get_index()-1)->cast_to<Label>();
 
@@ -760,32 +761,34 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	save_select = memnew(	EditorDirDialog );
 	add_child(save_select);
 
-//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+	//save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 	save_select->connect("dir_selected", this,"_choose_save_dir");
 
 	get_ok()->connect("pressed", this,"_import");
 	get_ok()->set_text(TTR("Import"));
 
 	//move stuff up
-	//for(int i=0;i<4;i++)
-	//	vbc->move_child( vbc->get_child( vbc->get_child_count() -1), 0);
+	/*
+	for(int i=0;i<4;i++)
+		vbc->move_child( vbc->get_child( vbc->get_child_count() -1), 0);
+	*/
 
 	error_dialog = memnew ( ConfirmationDialog );
 	add_child(error_dialog);
 	error_dialog->get_ok()->set_text(TTR("Accept"));
-//	error_dialog->get_cancel()->hide();
+	//error_dialog->get_cancel()->hide();
 
 	set_hide_on_ok(false);
 
-	texture_options = memnew( EditorImportTextureOptions );;
+	texture_options = memnew( EditorImportTextureOptions );
 	vbc->add_child(texture_options);
 	texture_options->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	_mode_changed(EditorTextureImportPlugin::MODE_TEXTURE_3D);
 
 
-//	GLOBAL_DEF("import/shared_textures","res://");
-//	Globals::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
+	//GLOBAL_DEF("import/shared_textures","res://");
+	//Globals::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
 
 
 }
@@ -843,33 +846,27 @@ void EditorTextureImportPlugin::compress_image(EditorExportPlatform::ImageCompre
 
 			//do absolutely nothing
 
-		} break;
-		case EditorExportPlatform::IMAGE_COMPRESSION_INDEXED: {
-
-			//quantize
-			image.quantize();
-
-		} break;
+		} break;	
 		case EditorExportPlatform::IMAGE_COMPRESSION_BC: {
 
 
 			// for maximum compatibility, BC shall always use mipmaps and be PO2
 			image.resize_to_po2();
-			if (image.get_mipmaps()==0)
+			if (!image.has_mipmaps())
 				image.generate_mipmaps();
 
-			image.compress(Image::COMPRESS_BC);
+			image.compress(Image::COMPRESS_S3TC);
 			/*
 			if (has_alpha) {
 
 				if (flags&IMAGE_FLAG_ALPHA_BIT) {
-					image.convert(Image::FORMAT_BC3);
+					image.convert(Image::FORMAT_DXT5);
 				} else {
-					image.convert(Image::FORMAT_BC2);
+					image.convert(Image::FORMAT_DXT3);
 				}
 			} else {
 
-				image.convert(Image::FORMAT_BC1);
+				image.convert(Image::FORMAT_DXT1);
 			}*/
 
 
@@ -880,24 +877,24 @@ void EditorTextureImportPlugin::compress_image(EditorExportPlatform::ImageCompre
 			// for maximum compatibility (hi apple!), PVRT shall always
 			// use mipmaps, be PO2 and square
 
-			if (image.get_mipmaps()==0)
+			if (!image.has_mipmaps())
 				image.generate_mipmaps();
 			image.resize_to_po2(true);
 
 			if (p_smaller) {
 
 				image.compress(Image::COMPRESS_PVRTC2);
-				//image.convert(has_alpha ? Image::FORMAT_PVRTC2_ALPHA : Image::FORMAT_PVRTC2);
+				//image.convert(has_alpha ? Image::FORMAT_PVRTC2A : Image::FORMAT_PVRTC2);
 			} else {
 				image.compress(Image::COMPRESS_PVRTC4);
-				//image.convert(has_alpha ? Image::FORMAT_PVRTC4_ALPHA : Image::FORMAT_PVRTC4);
+				//image.convert(has_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
 			}
 
 		} break;
 		case EditorExportPlatform::IMAGE_COMPRESSION_ETC1: {
 
 			image.resize_to_po2(); //square or not?
-			if (image.get_mipmaps()==0)
+			if (!image.has_mipmaps())
 				image.generate_mipmaps();
 			if (!image.detect_alpha()) {
 				//ETC1 is only opaque
@@ -930,18 +927,18 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 		ERR_FAIL_COND_V(image.empty(),ERR_INVALID_DATA);
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -950,10 +947,12 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 
-		//	image.srgb_to_linear();
-		//}
+			image.srgb_to_linear();
+		}
+		*/
 
 		if (shrink>1) {
 
@@ -989,18 +988,18 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -1009,11 +1008,13 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
-//
-		//	print_line("CONVERT BECAUSE: "+itos(flags));
-		//	image.srgb_to_linear();
-		//}
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			print_line("CONVERT BECAUSE: "+itos(flags));
+			image.srgb_to_linear();
+		}
+		*/
 
 		int orig_w=image.get_width();
 		int orig_h=image.get_height();
@@ -1200,14 +1201,14 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			Image src = tsources[i];
 
 			if (alpha) {
-				src.convert(Image::FORMAT_RGBA);
+				src.convert(Image::FORMAT_RGBA8);
 			} else {
-				src.convert(Image::FORMAT_RGB);
+				src.convert(Image::FORMAT_RGB8);
 			}
 
-			DVector<uint8_t> data = src.get_data();
+			PoolVector<uint8_t> data = src.get_data();
 			MD5_CTX md5;
-			DVector<uint8_t>::Read r=data.read();
+			PoolVector<uint8_t>::Read r=data.read();
 			MD5Init(&md5);
 			int len=data.size();
 			for(int j=0;j<len;j++) {
@@ -1280,7 +1281,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			atlas_h=nearest_power_of_2(dst_size.height);
 		}
 		Image atlas;
-		atlas.create(atlas_w,atlas_h,0,alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB);
+		atlas.create(atlas_w,atlas_h,0,alpha?Image::FORMAT_RGBA8:Image::FORMAT_RGB8);
 
 
 		atlases.resize(from->get_source_count());
@@ -1313,9 +1314,9 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				String spath = from->get_source_path(E->get()).get_file();
 
 				if (p_external) {
-					apath = p_path.get_base_dir().plus_file(spath.basename()+"."+from->get_source_path(E->get()).md5_text()+".atex");
+					apath = p_path.get_base_dir().plus_file(spath.get_basename()+"."+from->get_source_path(E->get()).md5_text()+".atex");
 				} else {
-					apath = p_path.get_base_dir().plus_file(spath.basename()+".atex");
+					apath = p_path.get_base_dir().plus_file(spath.get_basename()+".atex");
 				}
 
 				Ref<AtlasTexture> at;
@@ -1378,7 +1379,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		if (p_external) {
 			//used by exporter
-			Array rects(true);
+			Array rects;
 			for(int i=0;i<atlases.size();i++) {
 				rects.push_back(atlases[i]->get_region());
 				rects.push_back(atlases[i]->get_margin());
@@ -1411,18 +1412,18 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		ERR_FAIL_COND_V(image.empty(),ERR_INVALID_DATA);
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -1431,10 +1432,12 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 
-		//	image.srgb_to_linear();
-		//}
+			image.srgb_to_linear();
+		}
+		*/
 
 		if (shrink>1) {
 
@@ -1470,18 +1473,18 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 
 		bool has_alpha=image.detect_alpha();
-		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA) {
+		if (!has_alpha && image.get_format()==Image::FORMAT_RGBA8) {
 
-			image.convert(Image::FORMAT_RGB);
+			image.convert(Image::FORMAT_RGB8);
 
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
 		}
 
-		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+		if (image.get_format()==Image::FORMAT_RGBA8 && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
 		}
@@ -1490,11 +1493,13 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.normalmap_to_xy();
 		}
 
-		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
-//
-		//	print_line("CONVERT BECAUSE: "+itos(flags));
-		//	image.srgb_to_linear();
-		//}
+		/*
+		if ((image.get_format()==Image::FORMAT_RGB8 || image.get_format()==Image::FORMAT_RGBA8) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			print_line("CONVERT BECAUSE: "+itos(flags));
+			image.srgb_to_linear();
+		}
+		*/
 
 		int orig_w=image.get_width();
 		int orig_h=image.get_height();
@@ -1603,7 +1608,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 			rimd->set_option("shrink",group_shrink);
 			rimd->add_source(validated_path,FileAccess::get_md5(p_path));
 
-		} else if (EditorImportExport::get_singleton()->get_image_formats().has(p_path.extension().to_lower()) && EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE) {
+		} else if (EditorImportExport::get_singleton()->get_image_formats().has(p_path.get_extension().to_lower()) && EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE) {
 			//handled by general image export settings
 
 			rimd = Ref<ResourceImportMetadata>( memnew( ResourceImportMetadata ) );
@@ -1645,7 +1650,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	uint8_t f4[4];
 	encode_uint32(flags,&f4[0]);
 	MD5Init(&ctx);
-	String gp = Globals::get_singleton()->globalize_path(p_path);
+	String gp = GlobalConfig::get_singleton()->globalize_path(p_path);
 	CharString cs = gp.utf8();
 	MD5Update(&ctx,(unsigned char*)cs.get_data(),cs.length());
 	MD5Update(&ctx,f4,4);
@@ -1749,7 +1754,7 @@ void EditorTextureImportPlugin::import_from_drop(const Vector<String>& p_drop,co
 	ImageLoader::get_recognized_extensions(&valid_extensions);
 	for(int i=0;i<p_drop.size();i++) {
 
-		String extension=p_drop[i].extension().to_lower();
+		String extension=p_drop[i].get_extension().to_lower();
 
 		for (List<String>::Element *E=valid_extensions.front();E;E=E->next()) {
 
@@ -1857,21 +1862,21 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor) {
 		if (pl.is_valid()) {
 			Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 			if (ce.size()) {
-				p_path=p_path.basename()+".converted.tex";
+				p_path=p_path.get_basename()+".converted.tex";
 				return ce;
 			}
 		}
 
 	} else if (EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE){
 
-		String xt = p_path.extension().to_lower();
+		String xt = p_path.get_extension().to_lower();
 		if (EditorImportExport::get_singleton()->get_image_formats().has(xt)) { //should check for more I guess?
 
 			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture");
 			if (pl.is_valid()) {
 				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
 				if (ce.size()) {
-					p_path=p_path.basename()+".converted.tex";
+					p_path=p_path.get_basename()+".converted.tex";
 					return ce;
 				}
 			}

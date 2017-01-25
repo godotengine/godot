@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#if 0
 #include "sample_library_editor_plugin.h"
 
 #include "io/resource_loader.h"
@@ -35,7 +37,7 @@
 #include "sample_editor_plugin.h"
 
 
-void SampleLibraryEditor::_input_event(InputEvent p_event) {
+void SampleLibraryEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -58,7 +60,7 @@ void SampleLibraryEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
-//		NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
+		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -66,7 +68,7 @@ void SampleLibraryEditor::_notification(int p_what) {
 	}
 }
 
-void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
+void SampleLibraryEditor::_file_load_request(const PoolVector<String>& p_path) {
 
 
 	for(int i=0;i<p_path.size();i++) {
@@ -81,7 +83,7 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
-		String basename = path.get_file().basename();
+		String basename = path.get_file().get_basename();
 		String name=basename;
 		int counter=0;
 		while(sample_library->has_sample(name)) {
@@ -236,7 +238,7 @@ void SampleLibraryEditor::_update_library() {
 
 		// Preview/edit
 		Ref<ImageTexture> preview( memnew( ImageTexture ));
-		preview->create(128,16,Image::FORMAT_RGB);
+		preview->create(128,16,Image::FORMAT_RGB8);
 		SampleEditor::generate_preview_texture(smp,preview);
 		ti->set_cell_mode(1,TreeItem::CELL_MODE_ICON);
 		ti->set_selectable(1,false);
@@ -376,7 +378,7 @@ void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_da
 			if (sample->get_name()!="") {
 				basename=sample->get_name();
 			} else if (sample->get_path().is_resource_file()) {
-				basename = sample->get_path().basename();
+				basename = sample->get_path().get_basename();
 			} else {
 				basename="Sample";
 			}
@@ -400,7 +402,7 @@ void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_da
 
 	if (String(d["type"])=="files") {
 
-		DVector<String> files = d["files"];
+		PoolVector<String> files = d["files"];
 
 		_file_load_request(files);
 
@@ -411,17 +413,17 @@ void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_da
 
 void SampleLibraryEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&SampleLibraryEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_load_pressed"),&SampleLibraryEditor::_load_pressed);
-	ObjectTypeDB::bind_method(_MD("_item_edited"),&SampleLibraryEditor::_item_edited);
-	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&SampleLibraryEditor::_delete_pressed);
-	ObjectTypeDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
-	ObjectTypeDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
-	ObjectTypeDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
+	ClassDB::bind_method(_MD("_gui_input"),&SampleLibraryEditor::_gui_input);
+	ClassDB::bind_method(_MD("_load_pressed"),&SampleLibraryEditor::_load_pressed);
+	ClassDB::bind_method(_MD("_item_edited"),&SampleLibraryEditor::_item_edited);
+	ClassDB::bind_method(_MD("_delete_pressed"),&SampleLibraryEditor::_delete_pressed);
+	ClassDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
+	ClassDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
+	ClassDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
 
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
+	ClassDB::bind_method(_MD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
+	ClassDB::bind_method(_MD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
+	ClassDB::bind_method(_MD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
 
 }
 
@@ -497,7 +499,7 @@ void SampleLibraryEditorPlugin::edit(Object *p_object) {
 
 bool SampleLibraryEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("SampleLibrary");
+	return p_object->is_class("SampleLibrary");
 }
 
 void SampleLibraryEditorPlugin::make_visible(bool p_visible) {
@@ -506,14 +508,14 @@ void SampleLibraryEditorPlugin::make_visible(bool p_visible) {
 		//sample_library_editor->show();
 		button->show();
 		editor->make_bottom_panel_item_visible(sample_library_editor);
-//		sample_library_editor->set_process(true);
+		//sample_library_editor->set_process(true);
 	} else {
 
-		if (sample_library_editor->is_visible())
+		if (sample_library_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 
-//		sample_library_editor->set_process(false);
+		//sample_library_editor->set_process(false);
 	}
 
 }
@@ -529,8 +531,8 @@ SampleLibraryEditorPlugin::SampleLibraryEditorPlugin(EditorNode *p_node) {
 	button->hide();
 
 	//sample_library_editor->set_area_as_parent_rect();
-//	sample_library_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-//	sample_library_editor->set_margin( MARGIN_TOP, 120 );
+	//sample_library_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
+	//sample_library_editor->set_margin( MARGIN_TOP, 120 );
 	//sample_library_editor->hide();
 
 
@@ -541,3 +543,4 @@ SampleLibraryEditorPlugin::SampleLibraryEditorPlugin(EditorNode *p_node) {
 SampleLibraryEditorPlugin::~SampleLibraryEditorPlugin()
 {
 }
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,14 +59,14 @@ public class PaymentsCache {
 		SharedPreferences sharedPref = context.getSharedPreferences("consumables_" + set, Context.MODE_PRIVATE); 
 	    SharedPreferences.Editor editor = sharedPref.edit();
 	    editor.putString(sku, value);
-//	    Log.d("XXX", "Setting asset: consumables_" + set + ":" + sku);
+		//Log.d("XXX", "Setting asset: consumables_" + set + ":" + sku);
 	    editor.commit();
 	}
 
 	public String getConsumableValue(String set, String sku){
 	    SharedPreferences sharedPref = context.getSharedPreferences(
 	    		"consumables_" + set, Context.MODE_PRIVATE);
-//	    Log.d("XXX", "Getting asset: consumables_" + set + ":" + sku);
+		//Log.d("XXX", "Getting asset: consumables_" + set + ":" + sku);
 	    return sharedPref.getString(sku, null);
 	}
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ String DirAccess::_get_root_path() const {
 
 	switch(_access_type) {
 
-		case ACCESS_RESOURCES: return Globals::get_singleton()->get_resource_path();
+		case ACCESS_RESOURCES: return GlobalConfig::get_singleton()->get_resource_path();
 		case ACCESS_USERDATA: return OS::get_singleton()->get_data_dir();
 		default: return "";
 	}
@@ -204,10 +204,10 @@ String DirAccess::fix_path(String p_path) const {
 
 		case ACCESS_RESOURCES: {
 
-			if (Globals::get_singleton()) {
+			if (GlobalConfig::get_singleton()) {
 				if (p_path.begins_with("res://")) {
 
-					String resource_path = Globals::get_singleton()->get_resource_path();
+					String resource_path = GlobalConfig::get_singleton()->get_resource_path();
 					if (resource_path != "") {
 
 						return p_path.replace_first("res:/",resource_path);

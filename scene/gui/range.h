@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,13 +35,13 @@
 */
 class Range : public Control {
 
-	OBJ_TYPE( Range, Control );
+	GDCLASS( Range, Control );
 
 
 	struct Shared {
 		double val,min,max;
 		double step,page;
-		bool exp_unit_value;
+		bool exp_ratio;
 		Set<Range*> owners;
 		void emit_value_changed();
 		void emit_changed(const char *p_what="");
@@ -66,25 +66,25 @@ protected:
 	bool _rounded_values;
 public:
 
-	void set_val(double p_val);
+	void set_value(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
 	void set_step(double p_step);
 	void set_page(double p_page);
-	void set_unit_value(double p_value);
+	void set_as_ratio(double p_value);
 
-	double get_val() const;
+	double get_value() const;
 	double get_min() const;
 	double get_max() const;
 	double get_step() const;
 	double get_page() const;
-	double get_unit_value() const;
+	double get_as_ratio() const;
 
-	void set_rounded_values(bool p_enable);
-	bool is_rounded_values() const;
+	void set_use_rounded_values(bool p_enable);
+	bool is_using_rounded_values() const;
 
-	void set_exp_unit_value(bool p_enable);
-	bool is_unit_value_exp() const;
+	void set_exp_ratio(bool p_enable);
+	bool is_ratio_exp() const;
 
 	void share(Range *p_range);
 	void unshare();

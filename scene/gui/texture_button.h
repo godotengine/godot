@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "scene/resources/bit_mask.h"
 class TextureButton : public BaseButton {
 
-	OBJ_TYPE( TextureButton, BaseButton );
+	GDCLASS( TextureButton, BaseButton );
 
 	Ref<Texture> normal;
 	Ref<Texture> pressed;
@@ -42,8 +42,6 @@ class TextureButton : public BaseButton {
 	Ref<Texture> focused;
 	Ref<BitMap> click_mask;
 	Size2 scale;
-	Color modulate;
-
 
 protected:
 
@@ -70,9 +68,6 @@ public:
 
 	void set_texture_scale(Size2 p_scale);
 	Size2 get_texture_scale() const;
-
-	void set_modulate(const Color& p_modulate);
-	Color get_modulate() const;
 
 	TextureButton();
 };

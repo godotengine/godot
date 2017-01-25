@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,14 +35,14 @@
 
 class Quad : public GeometryInstance {
 
-	OBJ_TYPE(Quad,GeometryInstance);
+	GDCLASS(Quad,GeometryInstance);
 
 	Vector3::Axis axis;
 	bool centered;
 	Vector2 offset;
 	Vector2 size;
 
-	AABB aabb;
+	Rect3 aabb;
 	bool configured;
 	bool pending_update;
 	RID mesh;
@@ -67,10 +67,11 @@ public:
 	void set_centered(bool p_enabled);
 	bool is_centered() const;
 
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
-	virtual AABB get_aabb() const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual Rect3 get_aabb() const;
 
 	Quad();
+	~Quad();
 };
 
 

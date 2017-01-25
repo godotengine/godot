@@ -1,5 +1,5 @@
 # Spanish (Argentina) translation of the Godot Engine editor
-# Copyright (C) 2016 Juan Linietsky, Ariel Manzur and the Godot community
+# Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
 # Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-10-10 04:20+0000\n"
+"PO-Revision-Date: 2016-12-04 06:03+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.10-dev\n"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -619,10 +619,6 @@ msgid ""
 msgstr ""
 "VisibilityEnable2D funciona mejor cuando se usa con la raíz de escena "
 "editada directamente como padre."
-
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance no contiene un recurso BakedLight."
 
 #: scene/3d/body_shape.cpp
 msgid ""
@@ -1827,7 +1823,7 @@ msgstr "EscanearFuentes"
 
 #: tools/editor/editor_help.cpp tools/editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr "Ayuda de Búsqueda"
+msgstr "Buscar en la Ayuda"
 
 #: tools/editor/editor_help.cpp
 msgid "Class List:"
@@ -1865,6 +1861,11 @@ msgstr "Items de Tema de la GUI:"
 #: tools/editor/editor_help.cpp
 msgid "Constants:"
 msgstr "Constantes:"
+
+#: tools/editor/editor_help.cpp
+#, fuzzy
+msgid "Property Description:"
+msgstr "Descripción Breve:"
 
 #: tools/editor/editor_help.cpp
 msgid "Method Description:"
@@ -2882,6 +2883,7 @@ msgstr "Textura(s) de Origen:"
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 #: tools/editor/io_plugins/editor_texture_import_plugin.cpp
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
+#: tools/editor/project_export.cpp
 msgid "Target Path:"
 msgstr "Ruta de Destino:"
 
@@ -3113,9 +3115,8 @@ msgid "Auto"
 msgstr "Auto"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
-#, fuzzy
 msgid "Root Node Name:"
-msgstr "Nombre de Nodo:"
+msgstr "Nombre del Nodo Raíz:"
 
 #: tools/editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
@@ -4029,13 +4030,12 @@ msgid "Snap (Pixels):"
 msgstr "Snap (Pixeles):"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add %s"
-msgstr "Agregar Todos"
+msgstr "Agregar %s"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
-msgstr ""
+msgstr "Agregando %s..."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 #: tools/editor/scene_tree_dock.cpp
@@ -4063,15 +4063,16 @@ msgid "This operation requires a single selected node."
 msgstr "Esta operación requiere un solo nodo seleccionado."
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change default type"
-msgstr "Cambiar Valor por Defecto"
+msgstr "Cambiar typo por defecto"
 
 #: tools/editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
+"Drag & drop + Shift : Agregar nodo como hermano\n"
+"Drag & drop + Alt : Cambiar tipo de nodo"
 
 #: tools/editor/plugins/collision_polygon_2d_editor_plugin.cpp
 #: tools/editor/plugins/light_occluder_2d_editor_plugin.cpp
@@ -4942,18 +4943,6 @@ msgstr "Ir a Línea.."
 msgid "Contextual Help"
 msgstr "Ayuda Contextual"
 
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Vertex"
-msgstr "Vértice"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Fragment"
-msgstr "Fragmento"
-
-#: tools/editor/plugins/shader_editor_plugin.cpp
-msgid "Lighting"
-msgstr "Iluminación"
-
 #: tools/editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Change Scalar Constant"
 msgstr "Cambiar Constante Escalar"
@@ -5716,6 +5705,71 @@ msgid "No exporter for platform '%s' yet."
 msgstr "No hay exportador para la plataforma '%s' aun."
 
 #: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "Crear Nuevo Recurso"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "Nombre válido"
+
+#: tools/editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "Transición"
+
+#: tools/editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "Estado:"
+
+#: tools/editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "Contraseña:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "Caracteres válidos:"
+
+#: tools/editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "Nuevo nombre:"
+
+#: tools/editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: tools/editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
+
+#: tools/editor/project_export.cpp
 msgid "Include"
 msgstr "Incluir"
 
@@ -6183,10 +6237,6 @@ msgid "Erase Input Action Event"
 msgstr "Borrar Evento de Acción de Entrada"
 
 #: tools/editor/project_settings.cpp
-msgid "Toggle Persisting"
-msgstr "Act/Desact. Persistente"
-
-#: tools/editor/project_settings.cpp
 msgid "Error saving settings."
 msgstr "Error al guardar los ajustes."
 
@@ -6361,10 +6411,6 @@ msgstr "On"
 #: tools/editor/property_editor.cpp
 msgid "Properties:"
 msgstr "Propiedades:"
-
-#: tools/editor/property_editor.cpp
-msgid "Global"
-msgstr "Global"
 
 #: tools/editor/property_editor.cpp
 msgid "Sections:"
@@ -6557,14 +6603,12 @@ msgid "Change Type"
 msgstr "Cambiar Tipo"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach Script"
-msgstr "Agregar Script"
+msgstr "Adjuntar Script"
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear Script"
-msgstr "Crear Script"
+msgstr "Reestablecer Script"
 
 #: tools/editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -6591,22 +6635,12 @@ msgstr ""
 "existe ningún nodo raíz."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Attach a new or existing script for the selected node."
-msgstr "Crear un nuevo script para el nodo seleccionado."
+msgstr "Adjuntar un script nuevo o existente para el nodo seleccionado."
 
 #: tools/editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Clear a script for the selected node."
-msgstr "Crear un nuevo script para el nodo seleccionado."
-
-#: tools/editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"Este item no puede hacerse visible porque el padre esta oculto. Desocultá el "
-"padre primero."
+msgstr "Reestablecer un script para el nodo seleccionado."
 
 #: tools/editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6701,9 +6735,8 @@ msgid "Could not create script in filesystem."
 msgstr "No se puede crear el script en el sistema de archivos."
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Error loading script from %s"
-msgstr "Error al cargar escena desde %s"
+msgstr "Error al cargar el script desde %s"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Path is empty"
@@ -6722,14 +6755,12 @@ msgid "Invalid extension"
 msgstr "Extensión invalida"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Create new script"
-msgstr "Crear Script"
+msgstr "Crear script nuevo"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Load existing script"
-msgstr "Script siguiente"
+msgstr "Cargar script existente"
 
 #: tools/editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6740,9 +6771,8 @@ msgid "Built-In Script"
 msgstr "Script Integrado (Built-In)"
 
 #: tools/editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Attach Node Script"
-msgstr "Crear Script de Nodo"
+msgstr "Adjuntar Script de Nodo"
 
 #: tools/editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6907,6 +6937,36 @@ msgstr "Cambiar Largo de Shape Rayo"
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Cambiar Alcances de Notificadores"
+
+#: tools/editor/spatial_editor_gizmos.cpp
+#, fuzzy
+msgid "Change Probe Extents"
+msgstr "Cambiar Alcances de Notificadores"
+
+#~ msgid "BakedLightInstance does not contain a BakedLight resource."
+#~ msgstr "BakedLightInstance no contiene un recurso BakedLight."
+
+#~ msgid "Vertex"
+#~ msgstr "Vértice"
+
+#~ msgid "Fragment"
+#~ msgstr "Fragmento"
+
+#~ msgid "Lighting"
+#~ msgstr "Iluminación"
+
+#~ msgid "Toggle Persisting"
+#~ msgstr "Act/Desact. Persistente"
+
+#~ msgid "Global"
+#~ msgstr "Global"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Este item no puede hacerse visible porque el padre esta oculto. Desocultá "
+#~ "el padre primero."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "

@@ -1,10 +1,38 @@
+/*************************************************************************/
+/*  texture_editor_plugin.cpp                                            */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "texture_editor_plugin.h"
 
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
 
-void TextureEditor::_input_event(InputEvent p_event) {
+void TextureEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -49,7 +77,7 @@ void TextureEditor::_notification(int p_what) {
 		if (texture->cast_to<ImageTexture>()) {
 			format = Image::get_format_name(texture->cast_to<ImageTexture>()->get_format());
 		} else {
-			format=texture->get_type();
+			format=texture->get_class();
 		}
 		String text = itos(texture->get_width())+"x"+itos(texture->get_height())+" "+format;
 
@@ -84,7 +112,7 @@ void TextureEditor::edit(Ref<Texture> p_texture) {
 
 void TextureEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&TextureEditor::_input_event);
+	ClassDB::bind_method(_MD("_gui_input"),&TextureEditor::_gui_input);
 
 }
 
@@ -106,18 +134,18 @@ void TextureEditorPlugin::edit(Object *p_object) {
 
 bool TextureEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Texture");
+	return p_object->is_class("Texture");
 }
 
 void TextureEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		texture_editor->show();
-//		texture_editor->set_process(true);
+		//texture_editor->set_process(true);
 	} else {
 
 		texture_editor->hide();
-//		texture_editor->set_process(false);
+		//texture_editor->set_process(false);
 	}
 
 }

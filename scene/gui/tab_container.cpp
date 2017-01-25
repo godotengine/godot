@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ int TabContainer::_get_top_margin() const {
 
 	int h = MAX( tab_bg->get_minimum_size().height,tab_fg->get_minimum_size().height);
 
-	int ch = font->get_height();;
+	int ch = font->get_height();
 	for(int i=0;i<get_child_count();i++) {
 
 		Control *c = get_child(i)->cast_to<Control>();
@@ -65,7 +65,7 @@ int TabContainer::_get_top_margin() const {
 
 
 
-void TabContainer::_input_event(const InputEvent& p_event) {
+void TabContainer::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON &&
 	    p_event.mouse_button.pressed &&
@@ -99,7 +99,7 @@ void TabContainer::_input_event(const InputEvent& p_event) {
 			pp_pos.y+=menu->get_height();
 
 			popup->set_global_pos( pp_pos );
-			popup->popup();;
+			popup->popup();
 			return;
 		}
 		pos.x-=tabs_ofs_cache;
@@ -680,7 +680,7 @@ Size2 TabContainer::get_minimum_size() const {
 		if (c->is_set_as_toplevel())
 			continue;
 
-		if (!c->is_visible())
+		if (!c->is_visible_in_tree())
 			continue;
 
 		Size2 cms = c->get_combined_minimum_size();
@@ -714,24 +714,24 @@ Popup* TabContainer::get_popup() const {
 
 void TabContainer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&TabContainer::_input_event);
-	ObjectTypeDB::bind_method(_MD("get_tab_count"),&TabContainer::get_tab_count);
-	ObjectTypeDB::bind_method(_MD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
-	ObjectTypeDB::bind_method(_MD("get_current_tab"),&TabContainer::get_current_tab);
-	ObjectTypeDB::bind_method(_MD("get_current_tab_control:Control"),&TabContainer::get_current_tab_control);
-	ObjectTypeDB::bind_method(_MD("get_tab_control:Control","idx"),&TabContainer::get_tab_control);
-	ObjectTypeDB::bind_method(_MD("set_tab_align","align"),&TabContainer::set_tab_align);
-	ObjectTypeDB::bind_method(_MD("get_tab_align"),&TabContainer::get_tab_align);
-	ObjectTypeDB::bind_method(_MD("set_tabs_visible","visible"),&TabContainer::set_tabs_visible);
-	ObjectTypeDB::bind_method(_MD("are_tabs_visible"),&TabContainer::are_tabs_visible);
-	ObjectTypeDB::bind_method(_MD("set_tab_title","tab_idx","title"),&TabContainer::set_tab_title);
-	ObjectTypeDB::bind_method(_MD("get_tab_title","tab_idx"),&TabContainer::get_tab_title);
-	ObjectTypeDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&TabContainer::set_tab_icon);
-	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&TabContainer::get_tab_icon);
-	ObjectTypeDB::bind_method(_MD("set_popup","popup:Popup"),&TabContainer::set_popup);
-	ObjectTypeDB::bind_method(_MD("get_popup:Popup"),&TabContainer::get_popup);
+	ClassDB::bind_method(_MD("_gui_input"),&TabContainer::_gui_input);
+	ClassDB::bind_method(_MD("get_tab_count"),&TabContainer::get_tab_count);
+	ClassDB::bind_method(_MD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
+	ClassDB::bind_method(_MD("get_current_tab"),&TabContainer::get_current_tab);
+	ClassDB::bind_method(_MD("get_current_tab_control:Control"),&TabContainer::get_current_tab_control);
+	ClassDB::bind_method(_MD("get_tab_control:Control","idx"),&TabContainer::get_tab_control);
+	ClassDB::bind_method(_MD("set_tab_align","align"),&TabContainer::set_tab_align);
+	ClassDB::bind_method(_MD("get_tab_align"),&TabContainer::get_tab_align);
+	ClassDB::bind_method(_MD("set_tabs_visible","visible"),&TabContainer::set_tabs_visible);
+	ClassDB::bind_method(_MD("are_tabs_visible"),&TabContainer::are_tabs_visible);
+	ClassDB::bind_method(_MD("set_tab_title","tab_idx","title"),&TabContainer::set_tab_title);
+	ClassDB::bind_method(_MD("get_tab_title","tab_idx"),&TabContainer::get_tab_title);
+	ClassDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&TabContainer::set_tab_icon);
+	ClassDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&TabContainer::get_tab_icon);
+	ClassDB::bind_method(_MD("set_popup","popup:Popup"),&TabContainer::set_popup);
+	ClassDB::bind_method(_MD("get_popup:Popup"),&TabContainer::get_popup);
 
-	ObjectTypeDB::bind_method(_MD("_child_renamed_callback"),&TabContainer::_child_renamed_callback);
+	ClassDB::bind_method(_MD("_child_renamed_callback"),&TabContainer::_child_renamed_callback);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));

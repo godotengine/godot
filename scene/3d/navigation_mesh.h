@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,9 +36,9 @@ class Mesh;
 
 class NavigationMesh : public Resource  {
 
-	OBJ_TYPE( NavigationMesh, Resource );
+	GDCLASS( NavigationMesh, Resource );
 
-	DVector<Vector3> vertices;
+	PoolVector<Vector3> vertices;
 	struct Polygon {
 		Vector<int> indices;
 	};
@@ -65,8 +65,8 @@ public:
 
 	void create_from_mesh(const Ref<Mesh>& p_mesh);
 
-	void set_vertices(const DVector<Vector3>& p_vertices);
-	DVector<Vector3> get_vertices() const;
+	void set_vertices(const PoolVector<Vector3>& p_vertices);
+	PoolVector<Vector3> get_vertices() const;
 
 	void add_polygon(const Vector<int>& p_polygon);
 	int get_polygon_count() const;
@@ -83,7 +83,7 @@ class Navigation;
 
 class NavigationMeshInstance : public Spatial {
 
-	OBJ_TYPE(NavigationMeshInstance,Spatial);
+	GDCLASS(NavigationMeshInstance,Spatial);
 
 	bool enabled;
 	int nav_id;

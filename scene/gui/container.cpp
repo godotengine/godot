@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -147,7 +147,7 @@ void Container::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-			if (is_visible()) {
+			if (is_visible_in_tree()) {
 				queue_sort();
 			}
 		} break;
@@ -156,11 +156,11 @@ void Container::_notification(int p_what) {
 
 void Container::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_sort_children"),&Container::_sort_children);
-	ObjectTypeDB::bind_method(_MD("_child_minsize_changed"),&Container::_child_minsize_changed);
+	ClassDB::bind_method(_MD("_sort_children"),&Container::_sort_children);
+	ClassDB::bind_method(_MD("_child_minsize_changed"),&Container::_child_minsize_changed);
 
-	ObjectTypeDB::bind_method(_MD("queue_sort"),&Container::queue_sort);
-	ObjectTypeDB::bind_method(_MD("fit_child_in_rect","child:Control","rect"),&Container::fit_child_in_rect);
+	ClassDB::bind_method(_MD("queue_sort"),&Container::queue_sort);
+	ClassDB::bind_method(_MD("fit_child_in_rect","child:Control","rect"),&Container::fit_child_in_rect);
 
 	BIND_CONSTANT( NOTIFICATION_SORT_CHILDREN );
 	ADD_SIGNAL(MethodInfo("sort_children"));

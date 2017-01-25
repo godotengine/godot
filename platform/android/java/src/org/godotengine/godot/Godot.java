@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -257,8 +257,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	public void onVideoInit(boolean use_gl2) {
 
-//		mView = new GodotView(getApplication(),io,use_gl2);
-//		setContentView(mView);
+		//mView = new GodotView(getApplication(),io,use_gl2);
+		//setContentView(mView);
 
 		layout = new FrameLayout(this);
 		layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
@@ -294,6 +294,25 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				}
 			});
 		}
+	}
+
+	public void alert(final String message, final String title) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				AlertDialog.Builder builder = new AlertDialog.Builder(getInstance());
+				builder.setMessage(message).setTitle(title);
+				builder.setPositiveButton(
+					"OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							dialog.cancel();
+						}
+					});
+				AlertDialog dialog = builder.create();
+				dialog.show();
+			}
+		});
 	}
 	
 	private static Godot _self;
@@ -563,7 +582,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		initializeGodot();
 
 		
-	//	instanceSingleton( new GodotFacebook(this) );
+		//instanceSingleton( new GodotFacebook(this) );
 
 
 	}
@@ -702,7 +721,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	@Override public void onBackPressed() {
 
 		System.out.printf("** BACK REQUEST!\n");
-		GodotLib.quit();
+		GodotLib.back();
 	}
 
 	public void forceQuit() {
@@ -785,9 +804,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			} break;
 			case MotionEvent.ACTION_MOVE: {
 				GodotLib.touch(1,0,evcount,arr);
-				//for(int i=0;i<event.getPointerCount();i++) {
-				//	System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
-				//}
+				/*
+				for(int i=0;i<event.getPointerCount();i++) {
+					System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
+				}
+				*/
 			} break;
 			case MotionEvent.ACTION_POINTER_UP: {
 				final int indexPointUp = event.getActionIndex();
@@ -803,9 +824,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			case MotionEvent.ACTION_CANCEL:
 			case MotionEvent.ACTION_UP: {
 				GodotLib.touch(2,0,evcount,arr);
-				//for(int i=0;i<event.getPointerCount();i++) {
-				//	System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
-				//}
+				/*
+				for(int i=0;i<event.getPointerCount();i++) {
+					System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
+				}
+				*/
 			} break;
 
 		}
@@ -847,9 +870,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		return mPaymentsManager;
 	}
 
-//	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
-//		this.mPaymentsManager = mPaymentsManager;
-//	};
+	/*
+	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
+		this.mPaymentsManager = mPaymentsManager;
+	}
+	*/
 
 
 	// Audio

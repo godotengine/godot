@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 #include "scene/gui/check_button.h"
 
 class ScriptCreateDialog : public ConfirmationDialog {
-	OBJ_TYPE(ScriptCreateDialog,ConfirmationDialog);
+	GDCLASS(ScriptCreateDialog,ConfirmationDialog);
 
 	LineEdit *class_name;
 	Label *error_label;

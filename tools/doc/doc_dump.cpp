@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,8 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "doc_dump.h"
+
+#include "version.h"
 #include "os/file_access.h"
 #include "scene/main/node.h"
 
@@ -77,7 +78,7 @@ void DocDump::dump(const String& p_file) {
 
 
 	List<StringName> class_list;
-	ObjectTypeDB::get_type_list(&class_list);
+	ClassDB::get_class_list(&class_list);
 
 	class_list.sort_custom<StringName::AlphCompare>();
 
@@ -92,10 +93,10 @@ void DocDump::dump(const String& p_file) {
 		String name=class_list.front()->get();
 
 		String header="<class name=\""+name+"\"";
-		String inherits=ObjectTypeDB::type_inherits_from(name);
+		String inherits=ClassDB::get_parent_class(name);
 		if (inherits!="")
 			header+=" inherits=\""+inherits+"\"";
-		String category=ObjectTypeDB::get_category(name);
+		String category=ClassDB::get_category(name);
 		if (category=="")
 			category="Core";
 		header+=" category=\""+category+"\"";
@@ -108,7 +109,7 @@ void DocDump::dump(const String& p_file) {
 		_write_string(f,1,"<methods>");
 
 		List<MethodInfo> method_list;
-		ObjectTypeDB::get_method_list(name,&method_list,true);
+		ClassDB::get_method_list(name,&method_list,true);
 		method_list.sort();
 
 
@@ -116,7 +117,7 @@ void DocDump::dump(const String& p_file) {
 			if (E->get().name=="" || E->get().name[0]=='_')
 				continue; //hiden
 
-			MethodBind *m = ObjectTypeDB::get_method(name,E->get().name);
+			MethodBind *m = ClassDB::get_method(name,E->get().name);
 
 			String qualifiers;
 			if (E->get().flags&METHOD_FLAG_CONST)
@@ -187,15 +188,15 @@ void DocDump::dump(const String& p_file) {
 							case Variant::VECTOR3:
 							case Variant::PLANE:
 							case Variant::QUAT:
-							case Variant::_AABB: //sorry naming convention fail :( not like it's used often // 10
-							case Variant::MATRIX3:
+							case Variant::RECT3: //sorry naming convention fail :( not like it's used often // 10
+							case Variant::BASIS:
 							case Variant::COLOR:
-							case Variant::RAW_ARRAY:
-							case Variant::INT_ARRAY:
-							case Variant::REAL_ARRAY:
-							case Variant::STRING_ARRAY:	//25
-							case Variant::VECTOR3_ARRAY:
-							case Variant::COLOR_ARRAY:
+							case Variant::POOL_BYTE_ARRAY:
+							case Variant::POOL_INT_ARRAY:
+							case Variant::POOL_REAL_ARRAY:
+							case Variant::POOL_STRING_ARRAY:	//25
+							case Variant::POOL_VECTOR3_ARRAY:
+							case Variant::POOL_COLOR_ARRAY:
 								default_arg_text=Variant::get_type_name(default_arg.get_type())+"("+default_arg_text+")";
 								break;
 							case Variant::OBJECT:
@@ -251,7 +252,7 @@ void DocDump::dump(const String& p_file) {
 		_write_string(f,1,"</methods>");
 
 		List<MethodInfo> signal_list;
-		ObjectTypeDB::get_signal_list(name,&signal_list,true);
+		ClassDB::get_signal_list(name,&signal_list,true);
 
 		if (signal_list.size()) {
 
@@ -278,7 +279,7 @@ void DocDump::dump(const String& p_file) {
 
 
 		List<String> constant_list;
-		ObjectTypeDB::get_integer_constant_list(name, &constant_list, true);
+		ClassDB::get_integer_constant_list(name, &constant_list, true);
 
 		/* constants are sorted in a special way */
 
@@ -287,7 +288,7 @@ void DocDump::dump(const String& p_file) {
 		for(List<String>::Element *E=constant_list.front();E;E=E->next()) {
 			_ConstantSort cs;
 			cs.name=E->get();
-			cs.value=ObjectTypeDB::get_integer_constant(name, E->get());
+			cs.value=ClassDB::get_integer_constant(name, E->get());
 			constant_sort.push_back(cs);
 		}
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,13 +34,13 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/spin_box.h"
-#include "texture_frame.h"
+#include "scene/gui/texture_rect.h"
 
 class GraphEdit;
 
 class GraphEditFilter : public Control {
 
-	OBJ_TYPE(GraphEditFilter,Control);
+	GDCLASS(GraphEditFilter,Control);
 
 	friend class GraphEdit;
 	GraphEdit *ge;
@@ -54,7 +54,7 @@ public:
 
 class GraphEdit : public Control {
 
-	OBJ_TYPE(GraphEdit,Control);
+	GDCLASS(GraphEdit,Control);
 public:
 
 	struct Connection {
@@ -123,7 +123,7 @@ private:
 
 	void _update_scroll();
 	void _scroll_moved(double);
-	void _input_event(const InputEvent& p_ev);
+	void _gui_input(const InputEvent& p_ev);
 
 	Control *connections_layer;
 	GraphEditFilter *top_layer;

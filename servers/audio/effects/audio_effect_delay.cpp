@@ -1,0 +1,326 @@
+#include "audio_effect_delay.h"
+#include "servers/audio_server.h"
+#include "math_funcs.h"
+
+void AudioEffectDelayInstance::process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count) {
+
+	int todo = p_frame_count;
+
+	while(todo) {
+
+		int to_mix = MIN(todo,256); //can't mix too much
+
+		_process_chunk(p_src_frames,p_dst_frames,to_mix);
+
+		p_src_frames+=to_mix;
+		p_dst_frames+=to_mix;
+
+		todo-=to_mix;
+	}
+}
+
+void AudioEffectDelayInstance::_process_chunk(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count) {
+
+
+
+	float main_level_f=base->dry;
+
+
+	float mix_rate = AudioServer::get_singleton()->get_mix_rate();
+
+	float tap_1_level_f=base->tap_1_active?Math::db2linear(base->tap_1_level):0.0;
+	int tap_1_delay_frames=int((base->tap_1_delay_ms/1000.0)*mix_rate);;
+
+	float tap_2_level_f=base->tap_2_active?Math::db2linear(base->tap_2_level):0.0;
+	int tap_2_delay_frames=int((base->tap_2_delay_ms/1000.0)*mix_rate);;
+
+	float feedback_level_f=base->feedback_active?Math::db2linear(base->feedback_level):0.0;
+	unsigned int feedback_delay_frames=int((base->feedback_delay_ms/1000.0)*mix_rate);;
+
+
+	AudioFrame tap1_vol=AudioFrame(tap_1_level_f,tap_1_level_f);
+
+	tap1_vol.l*=CLAMP( 1.0 - base->tap_1_pan, 0, 1);
+	tap1_vol.r*=CLAMP( 1.0 + base->tap_1_pan, 0, 1);
+
+	AudioFrame tap2_vol=AudioFrame(tap_2_level_f,tap_2_level_f);
+
+	tap2_vol.l*=CLAMP( 1.0 - base->tap_2_pan, 0, 1);
+	tap2_vol.r*=CLAMP( 1.0 + base->tap_2_pan, 0, 1);
+
+	// feedback lowpass here
+	float lpf_c=expf(-2.0*Math_PI*base->feedback_lowpass/mix_rate); // 0 .. 10khz
+	float lpf_ic=1.0-lpf_c;
+
+	const AudioFrame *src=p_src_frames;
+	AudioFrame *dst=p_dst_frames;
+	AudioFrame *rb_buf=ring_buffer.ptr();
+	AudioFrame *fb_buf=feedback_buffer.ptr();
+
+
+	for (int i=0;i<p_frame_count;i++) {
+
+
+		rb_buf[ring_buffer_pos&ring_buffer_mask]=src[i];
+
+		AudioFrame main_val=src[i]*main_level_f;
+		AudioFrame tap_1_val=rb_buf[(ring_buffer_pos-tap_1_delay_frames)&ring_buffer_mask]*tap1_vol;
+		AudioFrame tap_2_val=rb_buf[(ring_buffer_pos-tap_2_delay_frames)&ring_buffer_mask]*tap2_vol;
+
+		AudioFrame out=main_val+tap_1_val+tap_2_val;
+
+		out+=fb_buf[ feedback_buffer_pos ];
+
+		//apply lowpass and feedback gain
+		AudioFrame fb_in=out*feedback_level_f*lpf_ic+h*lpf_c;
+		fb_in.undenormalise(); //avoid denormals
+
+		h=fb_in;
+		fb_buf[ feedback_buffer_pos ]=fb_in;
+
+		dst[i]=out;
+
+		ring_buffer_pos++;
+
+		if ( (++feedback_buffer_pos) >= feedback_delay_frames )
+			feedback_buffer_pos=0;
+	}
+}
+
+
+
+Ref<AudioEffectInstance> AudioEffectDelay::instance() {
+	Ref<AudioEffectDelayInstance> ins;
+	ins.instance();
+	ins->base=Ref<AudioEffectDelay>(this);
+
+	float ring_buffer_max_size=MAX_DELAY_MS+100; //add 100ms of extra room, just in case
+	ring_buffer_max_size/=1000.0;//convert to seconds
+	ring_buffer_max_size*=AudioServer::get_singleton()->get_mix_rate();
+
+	int ringbuff_size=ring_buffer_max_size;
+
+	int bits=0;
+
+	while(ringbuff_size>0) {
+		bits++;
+		ringbuff_size/=2;
+	}
+
+	ringbuff_size=1<<bits;
+	ins->ring_buffer_mask=ringbuff_size-1;
+	ins->ring_buffer_pos=0;
+
+	ins->ring_buffer.resize( ringbuff_size );
+	ins->feedback_buffer.resize( ringbuff_size );
+
+	ins->feedback_buffer_pos=0;
+
+	ins->h=AudioFrame(0,0);
+
+	return ins;
+}
+
+
+void AudioEffectDelay::set_dry(float p_dry) {
+
+	dry=p_dry;
+}
+
+float AudioEffectDelay::get_dry(){
+
+	return dry;
+}
+
+void AudioEffectDelay::set_tap1_active(bool p_active){
+
+	tap_1_active=p_active;
+}
+bool AudioEffectDelay::is_tap1_active() const{
+
+	return tap_1_active;
+}
+
+void AudioEffectDelay::set_tap1_delay_ms(float p_delay_ms){
+
+	tap_1_delay_ms=p_delay_ms;
+}
+float AudioEffectDelay::get_tap1_delay_ms() const{
+
+	return tap_1_delay_ms;
+}
+
+void AudioEffectDelay::set_tap1_level_db(float p_level_db){
+
+	tap_1_level=p_level_db;
+}
+float AudioEffectDelay::get_tap1_level_db() const{
+
+	return tap_1_level;
+}
+
+void AudioEffectDelay::set_tap1_pan(float p_pan){
+
+	tap_1_pan=p_pan;
+}
+float AudioEffectDelay::get_tap1_pan() const{
+
+	return tap_1_pan;
+}
+
+
+void AudioEffectDelay::set_tap2_active(bool p_active){
+
+	tap_2_active=p_active;
+}
+bool AudioEffectDelay::is_tap2_active() const{
+
+	return tap_2_active;
+}
+
+void AudioEffectDelay::set_tap2_delay_ms(float p_delay_ms){
+
+	tap_2_delay_ms=p_delay_ms;
+}
+float AudioEffectDelay::get_tap2_delay_ms() const{
+
+	return tap_2_delay_ms;
+}
+
+void AudioEffectDelay::set_tap2_level_db(float p_level_db){
+
+	tap_2_level=p_level_db;
+}
+float AudioEffectDelay::get_tap2_level_db() const{
+
+	return tap_2_level;
+}
+
+void AudioEffectDelay::set_tap2_pan(float p_pan){
+
+	tap_2_pan=p_pan;
+}
+float AudioEffectDelay::get_tap2_pan() const{
+
+	return tap_2_pan;
+}
+
+void AudioEffectDelay::set_feedback_active(bool p_active){
+
+	feedback_active=p_active;
+}
+bool AudioEffectDelay::is_feedback_active() const{
+
+	return feedback_active;
+}
+
+void AudioEffectDelay::set_feedback_delay_ms(float p_delay_ms){
+
+	feedback_delay_ms=p_delay_ms;
+}
+float AudioEffectDelay::get_feedback_delay_ms() const{
+
+	return feedback_delay_ms;
+}
+
+void AudioEffectDelay::set_feedback_level_db(float p_level_db){
+
+	feedback_level=p_level_db;
+}
+float AudioEffectDelay::get_feedback_level_db() const{
+
+	return feedback_level;
+}
+
+void AudioEffectDelay::set_feedback_lowpass(float p_lowpass){
+
+	feedback_lowpass=p_lowpass;
+}
+float AudioEffectDelay::get_feedback_lowpass() const{
+
+	return feedback_lowpass;
+}
+
+
+void AudioEffectDelay::_bind_methods() {
+
+	ClassDB::bind_method(_MD("set_dry","amount"),&AudioEffectDelay::set_dry);
+	ClassDB::bind_method(_MD("get_dry"),&AudioEffectDelay::get_dry);
+
+	ClassDB::bind_method(_MD("set_tap1_active","amount"),&AudioEffectDelay::set_tap1_active);
+	ClassDB::bind_method(_MD("is_tap1_active"),&AudioEffectDelay::is_tap1_active);
+
+	ClassDB::bind_method(_MD("set_tap1_delay_ms","amount"),&AudioEffectDelay::set_tap1_delay_ms);
+	ClassDB::bind_method(_MD("get_tap1_delay_ms"),&AudioEffectDelay::get_tap1_delay_ms);
+
+	ClassDB::bind_method(_MD("set_tap1_level_db","amount"),&AudioEffectDelay::set_tap1_level_db);
+	ClassDB::bind_method(_MD("get_tap1_level_db"),&AudioEffectDelay::get_tap1_level_db);
+
+	ClassDB::bind_method(_MD("set_tap1_pan","amount"),&AudioEffectDelay::set_tap1_pan);
+	ClassDB::bind_method(_MD("get_tap1_pan"),&AudioEffectDelay::get_tap1_pan);
+
+	ClassDB::bind_method(_MD("set_tap2_active","amount"),&AudioEffectDelay::set_tap2_active);
+	ClassDB::bind_method(_MD("is_tap2_active"),&AudioEffectDelay::is_tap2_active);
+
+	ClassDB::bind_method(_MD("set_tap2_delay_ms","amount"),&AudioEffectDelay::set_tap2_delay_ms);
+	ClassDB::bind_method(_MD("get_tap2_delay_ms"),&AudioEffectDelay::get_tap2_delay_ms);
+
+	ClassDB::bind_method(_MD("set_tap2_level_db","amount"),&AudioEffectDelay::set_tap2_level_db);
+	ClassDB::bind_method(_MD("get_tap2_level_db"),&AudioEffectDelay::get_tap2_level_db);
+
+	ClassDB::bind_method(_MD("set_tap2_pan","amount"),&AudioEffectDelay::set_tap2_pan);
+	ClassDB::bind_method(_MD("get_tap2_pan"),&AudioEffectDelay::get_tap2_pan);
+
+
+	ClassDB::bind_method(_MD("set_feedback_active","amount"),&AudioEffectDelay::set_feedback_active);
+	ClassDB::bind_method(_MD("is_feedback_active"),&AudioEffectDelay::is_feedback_active);
+
+	ClassDB::bind_method(_MD("set_feedback_delay_ms","amount"),&AudioEffectDelay::set_feedback_delay_ms);
+	ClassDB::bind_method(_MD("get_feedback_delay_ms"),&AudioEffectDelay::get_feedback_delay_ms);
+
+	ClassDB::bind_method(_MD("set_feedback_level_db","amount"),&AudioEffectDelay::set_feedback_level_db);
+	ClassDB::bind_method(_MD("get_feedback_level_db"),&AudioEffectDelay::get_feedback_level_db);
+
+	ClassDB::bind_method(_MD("set_feedback_lowpass","amount"),&AudioEffectDelay::set_feedback_lowpass);
+	ClassDB::bind_method(_MD("get_feedback_lowpass"),&AudioEffectDelay::get_feedback_lowpass);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_dry"),_SCS("get_dry"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"tap1/active"),_SCS("set_tap1_active"),_SCS("is_tap1_active"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),_SCS("set_tap1_delay_ms"),_SCS("get_tap1_delay_ms"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),_SCS("set_tap1_level_db"),_SCS("get_tap1_level_db"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/pan",PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_tap1_pan"),_SCS("get_tap1_pan"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"tap2/active"),_SCS("set_tap2_active"),_SCS("is_tap2_active"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),_SCS("set_tap2_delay_ms"),_SCS("get_tap2_delay_ms"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),_SCS("set_tap2_level_db"),_SCS("get_tap2_level_db"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/pan",PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_tap2_pan"),_SCS("get_tap2_pan"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"feedback/active"),_SCS("set_feedback_active"),_SCS("is_feedback_active"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),_SCS("set_feedback_delay_ms"),_SCS("get_feedback_delay_ms"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),_SCS("set_feedback_level_db"),_SCS("get_feedback_level_db"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/lowpass",PROPERTY_HINT_RANGE,"1,16000,1"),_SCS("set_feedback_lowpass"),_SCS("get_feedback_lowpass"));
+
+
+}
+
+AudioEffectDelay::AudioEffectDelay()
+{
+	tap_1_active=true;
+	tap_1_delay_ms=250;
+	tap_1_level=-6;
+	tap_1_pan=0.2;
+
+	tap_2_active=true;
+	tap_2_delay_ms=500;
+	tap_2_level=-12;
+	tap_2_pan=-0.4;
+
+	feedback_active=false;
+	feedback_delay_ms=340;
+	feedback_level=-6;
+	feedback_lowpass=16000;
+
+	dry=1.0;
+
+}

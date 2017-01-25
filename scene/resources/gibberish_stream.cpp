@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -305,17 +305,17 @@ float AudioStreamGibberish::get_pitch_random_scale() const {
 
 void AudioStreamGibberish::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_phonemes","phonemes"),&AudioStreamGibberish::set_phonemes);
-	ObjectTypeDB::bind_method(_MD("get_phonemes"),&AudioStreamGibberish::get_phonemes);
+	ClassDB::bind_method(_MD("set_phonemes","phonemes"),&AudioStreamGibberish::set_phonemes);
+	ClassDB::bind_method(_MD("get_phonemes"),&AudioStreamGibberish::get_phonemes);
 
-	ObjectTypeDB::bind_method(_MD("set_pitch_scale","pitch_scale"),&AudioStreamGibberish::set_pitch_scale);
-	ObjectTypeDB::bind_method(_MD("get_pitch_scale"),&AudioStreamGibberish::get_pitch_scale);
+	ClassDB::bind_method(_MD("set_pitch_scale","pitch_scale"),&AudioStreamGibberish::set_pitch_scale);
+	ClassDB::bind_method(_MD("get_pitch_scale"),&AudioStreamGibberish::get_pitch_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_pitch_random_scale","pitch_random_scale"),&AudioStreamGibberish::set_pitch_random_scale);
-	ObjectTypeDB::bind_method(_MD("get_pitch_random_scale"),&AudioStreamGibberish::get_pitch_random_scale);
+	ClassDB::bind_method(_MD("set_pitch_random_scale","pitch_random_scale"),&AudioStreamGibberish::set_pitch_random_scale);
+	ClassDB::bind_method(_MD("get_pitch_random_scale"),&AudioStreamGibberish::get_pitch_random_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_xfade_time","sec"),&AudioStreamGibberish::set_xfade_time);
-	ObjectTypeDB::bind_method(_MD("get_xfade_time"),&AudioStreamGibberish::get_xfade_time);
+	ClassDB::bind_method(_MD("set_xfade_time","sec"),&AudioStreamGibberish::set_xfade_time);
+	ClassDB::bind_method(_MD("get_xfade_time"),&AudioStreamGibberish::get_xfade_time);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"phonemes",PROPERTY_HINT_RESOURCE_TYPE,"SampleLibrary"),_SCS("set_phonemes"),_SCS("get_phonemes"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"pitch_scale",PROPERTY_HINT_RANGE,"0.01,64,0.01"),_SCS("set_pitch_scale"),_SCS("get_pitch_scale"));

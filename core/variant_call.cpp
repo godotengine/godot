@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "variant.h"
+
 #include "object.h"
 #include "os/os.h"
 #include "core_string_names.h"
 #include "script_language.h"
+
 
 typedef void (*VariantFunc)(Variant& r_ret,Variant& p_self,const Variant** p_args);
 typedef void (*VariantConstructFunc)(Variant& r_ret,const Variant** p_args);
@@ -145,7 +147,16 @@ struct _VariantCall {
 		Arg(Variant::Type p_type,const StringName &p_name) { name=p_name; type=p_type; }
 	};
 
-//	void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
+	//void addfunc(Variant::Type p_type, const StringName& p_name,VariantFunc p_func);
+
+	static void make_func_return_variant(Variant::Type p_type,const StringName& p_name) {
+
+#ifdef DEBUG_ENABLED
+		type_funcs[p_type].functions[p_name].returns=true;
+#endif
+	}
+
+
 	static void addfunc(Variant::Type p_type, Variant::Type p_return,const StringName& p_name,VariantFunc p_func, const Vector<Variant>& p_defaultarg,const Arg& p_argtype1=Arg(),const Arg& p_argtype2=Arg(),const Arg& p_argtype3=Arg(),const Arg& p_argtype4=Arg(),const Arg& p_argtype5=Arg()) {
 
 		FuncData funcdata;
@@ -251,6 +262,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,is_subsequence_ofi);
 	VCALL_LOCALMEM0R(String,bigrams);
 	VCALL_LOCALMEM1R(String,similarity);
+	VCALL_LOCALMEM2R(String,format);
 	VCALL_LOCALMEM2R(String,replace);
 	VCALL_LOCALMEM2R(String,replacen);
 	VCALL_LOCALMEM2R(String,insert);
@@ -262,8 +274,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,left);
 	VCALL_LOCALMEM1R(String,right);
 	VCALL_LOCALMEM2R(String,strip_edges);
-	VCALL_LOCALMEM0R(String,extension);
-	VCALL_LOCALMEM0R(String,basename);
+	VCALL_LOCALMEM0R(String,get_extension);
+	VCALL_LOCALMEM0R(String,get_basename);
 	VCALL_LOCALMEM1R(String,plus_file);
 	VCALL_LOCALMEM1R(String,ord_at);
 	VCALL_LOCALMEM2(String,erase);
@@ -300,12 +312,12 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		String *s = reinterpret_cast<String*>(p_self._data._mem);
 		CharString charstr = s->ascii();
 
-		ByteArray retval;
+		PoolByteArray retval;
 		size_t len = charstr.length();
 		retval.resize(len);
-		ByteArray::Write w = retval.write();
+		PoolByteArray::Write w = retval.write();
 		copymem(w.ptr(), charstr.ptr(), len);
-		w = DVector<uint8_t>::Write();
+		w = PoolVector<uint8_t>::Write();
 
 		r_ret = retval;
 	}
@@ -315,12 +327,12 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		String *s = reinterpret_cast<String*>(p_self._data._mem);
 		CharString charstr = s->utf8();
 
-		ByteArray retval;
+		PoolByteArray retval;
 		size_t len = charstr.length();
 		retval.resize(len);
-		ByteArray::Write w = retval.write();
+		PoolByteArray::Write w = retval.write();
 		copymem(w.ptr(), charstr.ptr(), len);
-		w = DVector<uint8_t>::Write();
+		w = PoolVector<uint8_t>::Write();
 
 		r_ret = retval;
 	}
@@ -339,12 +351,12 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Vector2,tangent);
 	VCALL_LOCALMEM0R(Vector2,floor);
 	VCALL_LOCALMEM1R(Vector2,snapped);
-	VCALL_LOCALMEM0R(Vector2,get_aspect);
+	VCALL_LOCALMEM0R(Vector2,aspect);
 	VCALL_LOCALMEM1R(Vector2,dot);
 	VCALL_LOCALMEM1R(Vector2,slide);
 	VCALL_LOCALMEM1R(Vector2,reflect);
 	VCALL_LOCALMEM0R(Vector2,angle);
-//	VCALL_LOCALMEM1R(Vector2,cross);
+	//VCALL_LOCALMEM1R(Vector2,cross);
 	VCALL_LOCALMEM0R(Vector2,abs);
 	VCALL_LOCALMEM1R(Vector2,clamped);
 
@@ -370,6 +382,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM4R(Vector3, cubic_interpolate);
 	VCALL_LOCALMEM1R(Vector3, dot);
 	VCALL_LOCALMEM1R(Vector3, cross);
+	VCALL_LOCALMEM1R(Vector3, outer);
+	VCALL_LOCALMEM0R(Vector3, to_diagonal_matrix);
 	VCALL_LOCALMEM0R(Vector3, abs);
 	VCALL_LOCALMEM0R(Vector3, floor);
 	VCALL_LOCALMEM0R(Vector3, ceil);
@@ -413,10 +427,6 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 			r_ret=Variant();
 	}
 
-	static void _call_Vector2_floorf(Variant& r_ret,Variant& p_self,const Variant** p_args) {
-		r_ret = reinterpret_cast<Vector2*>(p_self._data._mem)->floor();
-	};
-
 	VCALL_LOCALMEM0R(Quat,length);
 	VCALL_LOCALMEM0R(Quat,length_squared);
 	VCALL_LOCALMEM0R(Quat,normalized);
@@ -455,8 +465,6 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Dictionary,hash);
 	VCALL_LOCALMEM0R(Dictionary,keys);
 	VCALL_LOCALMEM0R(Dictionary,values);
-	VCALL_LOCALMEM1R(Dictionary,parse_json);
-	VCALL_LOCALMEM0R(Dictionary,to_json);
 
 	VCALL_LOCALMEM2(Array,set);
 	VCALL_LOCALMEM1R(Array,get);
@@ -472,6 +480,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1(Array,resize);
 	VCALL_LOCALMEM2(Array,insert);
 	VCALL_LOCALMEM1(Array,remove);
+	VCALL_LOCALMEM0R(Array,front);
+	VCALL_LOCALMEM0R(Array,back);
 	VCALL_LOCALMEM2R(Array,find);
 	VCALL_LOCALMEM2R(Array,rfind);
 	VCALL_LOCALMEM1R(Array,find_last);
@@ -481,14 +491,14 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0(Array,sort);
 	VCALL_LOCALMEM2(Array,sort_custom);
 	VCALL_LOCALMEM0(Array,invert);
-	VCALL_LOCALMEM0R(Array,is_shared);
 
-	static void _call_ByteArray_get_string_from_ascii(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
-		ByteArray* ba = reinterpret_cast<ByteArray*>(p_self._data._mem);
+	static void _call_PoolByteArray_get_string_from_ascii(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+
+		PoolByteArray* ba = reinterpret_cast<PoolByteArray*>(p_self._data._mem);
 		String s;
 		if (ba->size()>=0) {
-			ByteArray::Read r = ba->read();
+			PoolByteArray::Read r = ba->read();
 			CharString cs;
 			cs.resize(ba->size()+1);
 			copymem(cs.ptr(),r.ptr(),ba->size());
@@ -499,94 +509,94 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		r_ret=s;
 	}
 
-	static void _call_ByteArray_get_string_from_utf8(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+	static void _call_PoolByteArray_get_string_from_utf8(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
-		ByteArray* ba = reinterpret_cast<ByteArray*>(p_self._data._mem);
+		PoolByteArray* ba = reinterpret_cast<PoolByteArray*>(p_self._data._mem);
 		String s;
 		if (ba->size()>=0) {
-			ByteArray::Read r = ba->read();
+			PoolByteArray::Read r = ba->read();
 			s.parse_utf8((const char*)r.ptr(),ba->size());
 		}
 		r_ret=s;
 	}
 
-	VCALL_LOCALMEM0R(ByteArray,size);
-	VCALL_LOCALMEM2(ByteArray,set);
-	VCALL_LOCALMEM1R(ByteArray,get);
-	VCALL_LOCALMEM1(ByteArray,push_back);
-	VCALL_LOCALMEM1(ByteArray,resize);
-	VCALL_LOCALMEM2R(ByteArray,insert);
-	VCALL_LOCALMEM1(ByteArray,remove);
-	VCALL_LOCALMEM1(ByteArray,append);
-	VCALL_LOCALMEM1(ByteArray,append_array);
-	VCALL_LOCALMEM0(ByteArray,invert);
-	VCALL_LOCALMEM2R(ByteArray,subarray);
+	VCALL_LOCALMEM0R(PoolByteArray,size);
+	VCALL_LOCALMEM2(PoolByteArray,set);
+	VCALL_LOCALMEM1R(PoolByteArray,get);
+	VCALL_LOCALMEM1(PoolByteArray,push_back);
+	VCALL_LOCALMEM1(PoolByteArray,resize);
+	VCALL_LOCALMEM2R(PoolByteArray,insert);
+	VCALL_LOCALMEM1(PoolByteArray,remove);
+	VCALL_LOCALMEM1(PoolByteArray,append);
+	VCALL_LOCALMEM1(PoolByteArray,append_array);
+	VCALL_LOCALMEM0(PoolByteArray,invert);
+	VCALL_LOCALMEM2R(PoolByteArray,subarray);
 
-	VCALL_LOCALMEM0R(IntArray,size);
-	VCALL_LOCALMEM2(IntArray,set);
-	VCALL_LOCALMEM1R(IntArray,get);
-	VCALL_LOCALMEM1(IntArray,push_back);
-	VCALL_LOCALMEM1(IntArray,resize);
-	VCALL_LOCALMEM2R(IntArray,insert);
-	VCALL_LOCALMEM1(IntArray,remove);
-	VCALL_LOCALMEM1(IntArray,append);
-	VCALL_LOCALMEM1(IntArray,append_array);
-	VCALL_LOCALMEM0(IntArray,invert);
+	VCALL_LOCALMEM0R(PoolIntArray,size);
+	VCALL_LOCALMEM2(PoolIntArray,set);
+	VCALL_LOCALMEM1R(PoolIntArray,get);
+	VCALL_LOCALMEM1(PoolIntArray,push_back);
+	VCALL_LOCALMEM1(PoolIntArray,resize);
+	VCALL_LOCALMEM2R(PoolIntArray,insert);
+	VCALL_LOCALMEM1(PoolIntArray,remove);
+	VCALL_LOCALMEM1(PoolIntArray,append);
+	VCALL_LOCALMEM1(PoolIntArray,append_array);
+	VCALL_LOCALMEM0(PoolIntArray,invert);
 
-	VCALL_LOCALMEM0R(RealArray,size);
-	VCALL_LOCALMEM2(RealArray,set);
-	VCALL_LOCALMEM1R(RealArray,get);
-	VCALL_LOCALMEM1(RealArray,push_back);
-	VCALL_LOCALMEM1(RealArray,resize);
-	VCALL_LOCALMEM2R(RealArray,insert);
-	VCALL_LOCALMEM1(RealArray,remove);
-	VCALL_LOCALMEM1(RealArray,append);
-	VCALL_LOCALMEM1(RealArray,append_array);
-	VCALL_LOCALMEM0(RealArray,invert);
+	VCALL_LOCALMEM0R(PoolRealArray,size);
+	VCALL_LOCALMEM2(PoolRealArray,set);
+	VCALL_LOCALMEM1R(PoolRealArray,get);
+	VCALL_LOCALMEM1(PoolRealArray,push_back);
+	VCALL_LOCALMEM1(PoolRealArray,resize);
+	VCALL_LOCALMEM2R(PoolRealArray,insert);
+	VCALL_LOCALMEM1(PoolRealArray,remove);
+	VCALL_LOCALMEM1(PoolRealArray,append);
+	VCALL_LOCALMEM1(PoolRealArray,append_array);
+	VCALL_LOCALMEM0(PoolRealArray,invert);
 
-	VCALL_LOCALMEM0R(StringArray,size);
-	VCALL_LOCALMEM2(StringArray,set);
-	VCALL_LOCALMEM1R(StringArray,get);
-	VCALL_LOCALMEM1(StringArray,push_back);
-	VCALL_LOCALMEM1(StringArray,resize);
-	VCALL_LOCALMEM2R(StringArray,insert);
-	VCALL_LOCALMEM1(StringArray,remove);
-	VCALL_LOCALMEM1(StringArray,append);
-	VCALL_LOCALMEM1(StringArray,append_array);
-	VCALL_LOCALMEM0(StringArray,invert);
+	VCALL_LOCALMEM0R(PoolStringArray,size);
+	VCALL_LOCALMEM2(PoolStringArray,set);
+	VCALL_LOCALMEM1R(PoolStringArray,get);
+	VCALL_LOCALMEM1(PoolStringArray,push_back);
+	VCALL_LOCALMEM1(PoolStringArray,resize);
+	VCALL_LOCALMEM2R(PoolStringArray,insert);
+	VCALL_LOCALMEM1(PoolStringArray,remove);
+	VCALL_LOCALMEM1(PoolStringArray,append);
+	VCALL_LOCALMEM1(PoolStringArray,append_array);
+	VCALL_LOCALMEM0(PoolStringArray,invert);
 
-	VCALL_LOCALMEM0R(Vector2Array,size);
-	VCALL_LOCALMEM2(Vector2Array,set);
-	VCALL_LOCALMEM1R(Vector2Array,get);
-	VCALL_LOCALMEM1(Vector2Array,push_back);
-	VCALL_LOCALMEM1(Vector2Array,resize);
-	VCALL_LOCALMEM2R(Vector2Array,insert);
-	VCALL_LOCALMEM1(Vector2Array,remove);
-	VCALL_LOCALMEM1(Vector2Array,append);
-	VCALL_LOCALMEM1(Vector2Array,append_array);
-	VCALL_LOCALMEM0(Vector2Array,invert);
+	VCALL_LOCALMEM0R(PoolVector2Array,size);
+	VCALL_LOCALMEM2(PoolVector2Array,set);
+	VCALL_LOCALMEM1R(PoolVector2Array,get);
+	VCALL_LOCALMEM1(PoolVector2Array,push_back);
+	VCALL_LOCALMEM1(PoolVector2Array,resize);
+	VCALL_LOCALMEM2R(PoolVector2Array,insert);
+	VCALL_LOCALMEM1(PoolVector2Array,remove);
+	VCALL_LOCALMEM1(PoolVector2Array,append);
+	VCALL_LOCALMEM1(PoolVector2Array,append_array);
+	VCALL_LOCALMEM0(PoolVector2Array,invert);
 
-	VCALL_LOCALMEM0R(Vector3Array,size);
-	VCALL_LOCALMEM2(Vector3Array,set);
-	VCALL_LOCALMEM1R(Vector3Array,get);
-	VCALL_LOCALMEM1(Vector3Array,push_back);
-	VCALL_LOCALMEM1(Vector3Array,resize);
-	VCALL_LOCALMEM2R(Vector3Array,insert);
-	VCALL_LOCALMEM1(Vector3Array,remove);
-	VCALL_LOCALMEM1(Vector3Array,append);
-	VCALL_LOCALMEM1(Vector3Array,append_array);
-	VCALL_LOCALMEM0(Vector3Array,invert);
+	VCALL_LOCALMEM0R(PoolVector3Array,size);
+	VCALL_LOCALMEM2(PoolVector3Array,set);
+	VCALL_LOCALMEM1R(PoolVector3Array,get);
+	VCALL_LOCALMEM1(PoolVector3Array,push_back);
+	VCALL_LOCALMEM1(PoolVector3Array,resize);
+	VCALL_LOCALMEM2R(PoolVector3Array,insert);
+	VCALL_LOCALMEM1(PoolVector3Array,remove);
+	VCALL_LOCALMEM1(PoolVector3Array,append);
+	VCALL_LOCALMEM1(PoolVector3Array,append_array);
+	VCALL_LOCALMEM0(PoolVector3Array,invert);
 
-	VCALL_LOCALMEM0R(ColorArray,size);
-	VCALL_LOCALMEM2(ColorArray,set);
-	VCALL_LOCALMEM1R(ColorArray,get);
-	VCALL_LOCALMEM1(ColorArray,push_back);
-	VCALL_LOCALMEM1(ColorArray,resize);
-	VCALL_LOCALMEM2R(ColorArray,insert);
-	VCALL_LOCALMEM1(ColorArray,remove);
-	VCALL_LOCALMEM1(ColorArray,append);
-	VCALL_LOCALMEM1(ColorArray,append_array);
-	VCALL_LOCALMEM0(ColorArray,invert);
+	VCALL_LOCALMEM0R(PoolColorArray,size);
+	VCALL_LOCALMEM2(PoolColorArray,set);
+	VCALL_LOCALMEM1R(PoolColorArray,get);
+	VCALL_LOCALMEM1(PoolColorArray,push_back);
+	VCALL_LOCALMEM1(PoolColorArray,resize);
+	VCALL_LOCALMEM2R(PoolColorArray,insert);
+	VCALL_LOCALMEM1(PoolColorArray,remove);
+	VCALL_LOCALMEM1(PoolColorArray,append);
+	VCALL_LOCALMEM1(PoolColorArray,append_array);
+	VCALL_LOCALMEM0(PoolColorArray,invert);
 
 #define VCALL_PTR0(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(); }
@@ -617,13 +627,9 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R(Image,get_width);
 	VCALL_PTR0R(Image,get_height);
 	VCALL_PTR0R(Image,empty);
-	VCALL_PTR3R(Image,get_pixel);
-	VCALL_PTR4(Image, put_pixel);
 	VCALL_PTR0R(Image,get_used_rect);
-	VCALL_PTR3R(Image,brushed);
 	VCALL_PTR1R(Image,load);
 	VCALL_PTR1R(Image,save_png);
-	VCALL_PTR3(Image,brush_transfer);
 	VCALL_PTR1R(Image,get_rect);
 	VCALL_PTR1R(Image,compressed);
 	VCALL_PTR0R(Image,decompressed);
@@ -633,93 +639,93 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR1R(Image, converted);
 	VCALL_PTR0(Image, fix_alpha_edges);
 
-	VCALL_PTR0R( AABB, get_area );
-	VCALL_PTR0R( AABB, has_no_area );
-	VCALL_PTR0R( AABB, has_no_surface );
-	VCALL_PTR1R( AABB, intersects );
-	VCALL_PTR1R( AABB, encloses );
-	VCALL_PTR1R( AABB, merge );
-	VCALL_PTR1R( AABB, intersection );
-	VCALL_PTR1R( AABB, intersects_plane );
-	VCALL_PTR2R( AABB, intersects_segment );
-	VCALL_PTR1R( AABB, has_point );
-	VCALL_PTR1R( AABB, get_support );
-	VCALL_PTR0R( AABB, get_longest_axis );
-	VCALL_PTR0R( AABB, get_longest_axis_index );
-	VCALL_PTR0R( AABB, get_longest_axis_size );
-	VCALL_PTR0R( AABB, get_shortest_axis );
-	VCALL_PTR0R( AABB, get_shortest_axis_index );
-	VCALL_PTR0R( AABB, get_shortest_axis_size );
-	VCALL_PTR1R( AABB, expand );
-	VCALL_PTR1R( AABB, grow );
-	VCALL_PTR1R( AABB, get_endpoint );
+	VCALL_PTR0R( Rect3, get_area );
+	VCALL_PTR0R( Rect3, has_no_area );
+	VCALL_PTR0R( Rect3, has_no_surface );
+	VCALL_PTR1R( Rect3, intersects );
+	VCALL_PTR1R( Rect3, encloses );
+	VCALL_PTR1R( Rect3, merge );
+	VCALL_PTR1R( Rect3, intersection );
+	VCALL_PTR1R( Rect3, intersects_plane );
+	VCALL_PTR2R( Rect3, intersects_segment );
+	VCALL_PTR1R( Rect3, has_point );
+	VCALL_PTR1R( Rect3, get_support );
+	VCALL_PTR0R( Rect3, get_longest_axis );
+	VCALL_PTR0R( Rect3, get_longest_axis_index );
+	VCALL_PTR0R( Rect3, get_longest_axis_size );
+	VCALL_PTR0R( Rect3, get_shortest_axis );
+	VCALL_PTR0R( Rect3, get_shortest_axis_index );
+	VCALL_PTR0R( Rect3, get_shortest_axis_size );
+	VCALL_PTR1R( Rect3, expand );
+	VCALL_PTR1R( Rect3, grow );
+	VCALL_PTR1R( Rect3, get_endpoint );
 
-	VCALL_PTR0R( Matrix32, inverse );
-	VCALL_PTR0R( Matrix32, affine_inverse );
-	VCALL_PTR0R( Matrix32, get_rotation );
-	VCALL_PTR0R( Matrix32, get_origin );
-	VCALL_PTR0R( Matrix32, get_scale );
-	VCALL_PTR0R( Matrix32, orthonormalized );
-	VCALL_PTR1R( Matrix32, rotated );
-	VCALL_PTR1R( Matrix32, scaled );
-	VCALL_PTR1R( Matrix32, translated );
-	VCALL_PTR2R( Matrix32, interpolate_with );
+	VCALL_PTR0R( Transform2D, inverse );
+	VCALL_PTR0R( Transform2D, affine_inverse );
+	VCALL_PTR0R( Transform2D, get_rotation );
+	VCALL_PTR0R( Transform2D, get_origin );
+	VCALL_PTR0R( Transform2D, get_scale );
+	VCALL_PTR0R( Transform2D, orthonormalized );
+	VCALL_PTR1R( Transform2D, rotated );
+	VCALL_PTR1R( Transform2D, scaled );
+	VCALL_PTR1R( Transform2D, translated );
+	VCALL_PTR2R( Transform2D, interpolate_with );
 
-	static void _call_Matrix32_xform(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+	static void _call_Transform2D_xform(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
 		switch(p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->xform( p_args[0]->operator Vector2()); return;
-			case Variant::RECT2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->xform( p_args[0]->operator Rect2()); return;
+			case Variant::VECTOR2: r_ret=reinterpret_cast<Transform2D*>(p_self._data._ptr)->xform( p_args[0]->operator Vector2()); return;
+			case Variant::RECT2: r_ret=reinterpret_cast<Transform2D*>(p_self._data._ptr)->xform( p_args[0]->operator Rect2()); return;
 			default: r_ret=Variant();
 		}
 
 	}
 
-	static void _call_Matrix32_xform_inv(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+	static void _call_Transform2D_xform_inv(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
 		switch(p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Vector2()); return;
-			case Variant::RECT2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Rect2()); return;
+			case Variant::VECTOR2: r_ret=reinterpret_cast<Transform2D*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Vector2()); return;
+			case Variant::RECT2: r_ret=reinterpret_cast<Transform2D*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Rect2()); return;
 			default: r_ret=Variant();
 		}
 	}
 
-	static void _call_Matrix32_basis_xform(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+	static void _call_Transform2D_basis_xform(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
 		switch(p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->basis_xform( p_args[0]->operator Vector2()); return;
+			case Variant::VECTOR2: r_ret=reinterpret_cast<Transform2D*>(p_self._data._ptr)->basis_xform( p_args[0]->operator Vector2()); return;
 			default: r_ret=Variant();
 		}
 
 	}
 
-	static void _call_Matrix32_basis_xform_inv(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+	static void _call_Transform2D_basis_xform_inv(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
 		switch(p_args[0]->type) {
 
-			case Variant::VECTOR2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->basis_xform_inv( p_args[0]->operator Vector2()); return;
+			case Variant::VECTOR2: r_ret=reinterpret_cast<Transform2D*>(p_self._data._ptr)->basis_xform_inv( p_args[0]->operator Vector2()); return;
 			default: r_ret=Variant();
 		}
 	}
 
 
-	VCALL_PTR0R( Matrix3, inverse );
-	VCALL_PTR0R( Matrix3, transposed );
-	VCALL_PTR0R( Matrix3, determinant );
-	VCALL_PTR2R( Matrix3, rotated );
-	VCALL_PTR1R( Matrix3, scaled );
-	VCALL_PTR0R( Matrix3, get_scale );
-	VCALL_PTR0R( Matrix3, get_euler );
-	VCALL_PTR1R( Matrix3, tdotx );
-	VCALL_PTR1R( Matrix3, tdoty );
-	VCALL_PTR1R( Matrix3, tdotz );
-	VCALL_PTR1R( Matrix3, xform );
-	VCALL_PTR1R( Matrix3, xform_inv );
-	VCALL_PTR0R( Matrix3, get_orthogonal_index );
-	VCALL_PTR0R( Matrix3, orthonormalized );
+	VCALL_PTR0R( Basis, inverse );
+	VCALL_PTR0R( Basis, transposed );
+	VCALL_PTR0R( Basis, determinant );
+	VCALL_PTR2R( Basis, rotated );
+	VCALL_PTR1R( Basis, scaled );
+	VCALL_PTR0R( Basis, get_scale );
+	VCALL_PTR0R( Basis, get_euler );
+	VCALL_PTR1R( Basis, tdotx );
+	VCALL_PTR1R( Basis, tdoty );
+	VCALL_PTR1R( Basis, tdotz );
+	VCALL_PTR1R( Basis, xform );
+	VCALL_PTR1R( Basis, xform_inv );
+	VCALL_PTR0R( Basis, get_orthogonal_index );
+	VCALL_PTR0R( Basis, orthonormalized );
 
 
 	VCALL_PTR0R( Transform, inverse );
@@ -736,7 +742,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 
 			case Variant::VECTOR3: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform( p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform( p_args[0]->operator Plane()); return;
-			case Variant::_AABB: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform( p_args[0]->operator AABB()); return;
+			case Variant::RECT3: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform( p_args[0]->operator Rect3()); return;
 			default: r_ret=Variant();
 		}
 
@@ -748,7 +754,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 
 			case Variant::VECTOR3: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Vector3()); return;
 			case Variant::PLANE: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Plane()); return;
-			case Variant::_AABB: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform_inv( p_args[0]->operator AABB()); return;
+			case Variant::RECT3: r_ret=reinterpret_cast<Transform*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Rect3()); return;
 			default: r_ret=Variant();
 		}
 	}
@@ -800,15 +806,15 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		r_ret=Rect2(*p_args[0],*p_args[1],*p_args[2],*p_args[3]);
 	}
 
-	static void Matrix32_init2(Variant& r_ret,const Variant** p_args) {
+	static void Transform2D_init2(Variant& r_ret,const Variant** p_args) {
 
-		Matrix32 m(*p_args[0], *p_args[1]);
+		Transform2D m(*p_args[0], *p_args[1]);
 		r_ret=m;
 	}
 
-	static void Matrix32_init3(Variant& r_ret,const Variant** p_args) {
+	static void Transform2D_init3(Variant& r_ret,const Variant** p_args) {
 
-		Matrix32 m;
+		Transform2D m;
 		m[0]=*p_args[0];
 		m[1]=*p_args[1];
 		m[2]=*p_args[2];
@@ -869,23 +875,23 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		r_ret=Color::hex(*p_args[0]);
 	}
 
-	static void AABB_init1(Variant& r_ret,const Variant** p_args) {
+	static void Rect3_init1(Variant& r_ret,const Variant** p_args) {
 
-		r_ret=AABB(*p_args[0],*p_args[1]);
+		r_ret=Rect3(*p_args[0],*p_args[1]);
 	}
 
-	static void Matrix3_init1(Variant& r_ret,const Variant** p_args) {
+	static void Basis_init1(Variant& r_ret,const Variant** p_args) {
 
-		Matrix3 m;
+		Basis m;
 		m.set_axis(0,*p_args[0]);
 		m.set_axis(1,*p_args[1]);
 		m.set_axis(2,*p_args[2]);
 		r_ret=m;
 	}
 
-	static void Matrix3_init2(Variant& r_ret,const Variant** p_args) {
+	static void Basis_init2(Variant& r_ret,const Variant** p_args) {
 
-		r_ret=Matrix3(p_args[0]->operator Vector3(),p_args[1]->operator real_t());
+		r_ret=Basis(p_args[0]->operator Vector3(),p_args[1]->operator real_t());
 	}
 
 	static void Transform_init1(Variant& r_ret,const Variant** p_args) {
@@ -900,7 +906,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 
 	static void Transform_init2(Variant& r_ret,const Variant** p_args) {
 
-		r_ret=Transform(p_args[0]->operator Matrix3(),p_args[1]->operator Vector3());
+		r_ret=Transform(p_args[0]->operator Basis(),p_args[1]->operator Vector3());
 	}
 
 	static void Image_init1(Variant& r_ret, const Variant** p_args) {
@@ -1047,32 +1053,32 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 
 			// math types
 
-			case VECTOR2: return Vector2();		// 5
+			case VECTOR2: return Vector2();	// 5
 			case RECT2: return Rect2();
 			case VECTOR3: return Vector3();
-			case MATRIX32: return Matrix32();
+			case TRANSFORM2D: return Transform2D();
 			case PLANE: return Plane();
 			case QUAT: return Quat();
-			case _AABB: return AABB(); //sorry naming convention fail :( not like it's used often // 10
-			case MATRIX3: return Matrix3();
+			case RECT3: return Rect3(); // 10
+			case BASIS: return Basis();
 			case TRANSFORM: return Transform();
 
 			// misc types
 			case COLOR: return Color();
-			case IMAGE: return Image();;
-			case NODE_PATH: return NodePath();;		// 15
-			case _RID: return RID();;
+			case IMAGE: return Image();
+			case NODE_PATH: return NodePath(); // 15
+			case _RID: return RID();
 			case OBJECT: return (Object*)NULL;
-			case INPUT_EVENT: return InputEvent();;
-			case DICTIONARY: return Dictionary();;
-			case ARRAY: return Array();;			// 20
-			case RAW_ARRAY: return ByteArray();;
-			case INT_ARRAY: return IntArray();;
-			case REAL_ARRAY: return RealArray();;
-			case STRING_ARRAY: return StringArray();;
-			case VECTOR2_ARRAY: return Vector2Array();; 	// 25
-			case VECTOR3_ARRAY: return Vector3Array();; 	// 25
-			case COLOR_ARRAY: return ColorArray();;
+			case INPUT_EVENT: return InputEvent();
+			case DICTIONARY: return Dictionary();
+			case ARRAY: return Array(); // 20
+			case POOL_BYTE_ARRAY: return PoolByteArray();
+			case POOL_INT_ARRAY: return PoolIntArray();
+			case POOL_REAL_ARRAY: return PoolRealArray();
+			case POOL_STRING_ARRAY: return PoolStringArray();
+			case POOL_VECTOR2_ARRAY: return PoolVector2Array(); // 25
+			case POOL_VECTOR3_ARRAY: return PoolVector3Array();
+			case POOL_COLOR_ARRAY: return PoolColorArray();
 			default: return Variant();
 		}
 
@@ -1121,28 +1127,28 @@ Variant Variant::construct(const Variant::Type p_type, const Variant** p_args, i
 			case VECTOR3: return (Vector3(*p_args[0]));
 			case PLANE: return (Plane(*p_args[0]));
 			case QUAT: return (Quat(*p_args[0]));
-			case _AABB: return (AABB(*p_args[0])); //sorry naming convention fail :( not like it's used often // 10
-			case MATRIX3: return (Matrix3(p_args[0]->operator Matrix3()));
+			case RECT3: return (Rect3(*p_args[0])); // 10
+			case BASIS: return (Basis(p_args[0]->operator Basis()));
 			case TRANSFORM: return (Transform(p_args[0]->operator Transform()));
 
 			// misc types
 			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
 			case IMAGE: return (Image(*p_args[0]));
-			case NODE_PATH: return (NodePath(p_args[0]->operator NodePath()));		// 15
+			case NODE_PATH: return (NodePath(p_args[0]->operator NodePath())); // 15
 			case _RID: return (RID(*p_args[0]));
 			case OBJECT: return ((Object*)(p_args[0]->operator Object *()));
 			case INPUT_EVENT: return (InputEvent(*p_args[0]));
 			case DICTIONARY: return p_args[0]->operator Dictionary();
-			case ARRAY: return p_args[0]->operator Array();
+			case ARRAY: return p_args[0]->operator Array(); // 20
 
 			// arrays
-			case RAW_ARRAY: return (ByteArray(*p_args[0]));
-			case INT_ARRAY: return (IntArray(*p_args[0]));
-			case REAL_ARRAY: return (RealArray(*p_args[0]));
-			case STRING_ARRAY: return (StringArray(*p_args[0]));
-			case VECTOR2_ARRAY: return (Vector2Array(*p_args[0])); 	// 25
-			case VECTOR3_ARRAY: return (Vector3Array(*p_args[0])); 	// 25
-			case COLOR_ARRAY: return (ColorArray(*p_args[0]));
+			case POOL_BYTE_ARRAY: return (PoolByteArray(*p_args[0]));
+			case POOL_INT_ARRAY: return (PoolIntArray(*p_args[0]));
+			case POOL_REAL_ARRAY: return (PoolRealArray(*p_args[0]));
+			case POOL_STRING_ARRAY: return (PoolStringArray(*p_args[0]));
+			case POOL_VECTOR2_ARRAY: return (PoolVector2Array(*p_args[0])); // 25
+			case POOL_VECTOR3_ARRAY: return (PoolVector3Array(*p_args[0]));
+			case POOL_COLOR_ARRAY: return (PoolColorArray(*p_args[0]));
 			default: return Variant();
 		}
 	}
@@ -1385,15 +1391,16 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,BOOL,String,ends_with,STRING,"text",varray());
 	ADDFUNC1(STRING,BOOL,String,is_subsequence_of,STRING,"text",varray());
 	ADDFUNC1(STRING,BOOL,String,is_subsequence_ofi,STRING,"text",varray());
-	ADDFUNC0(STRING,STRING_ARRAY,String,bigrams,varray());
+	ADDFUNC0(STRING,POOL_STRING_ARRAY,String,bigrams,varray());
 	ADDFUNC1(STRING,REAL,String,similarity,STRING,"text",varray());
 
+	ADDFUNC2(STRING,STRING,String,format,NIL,"values",STRING,"placeholder",varray("{_}"));
 	ADDFUNC2(STRING,STRING,String,replace,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,replacen,STRING,"what",STRING,"forwhat",varray());
 	ADDFUNC2(STRING,STRING,String,insert,INT,"pos",STRING,"what",varray());
 	ADDFUNC0(STRING,STRING,String,capitalize,varray());
-	ADDFUNC2(STRING,STRING_ARRAY,String,split,STRING,"divisor",BOOL,"allow_empty",varray(true));
-	ADDFUNC2(STRING,REAL_ARRAY,String,split_floats,STRING,"divisor",BOOL,"allow_empty",varray(true));
+	ADDFUNC2(STRING,POOL_STRING_ARRAY,String,split,STRING,"divisor",BOOL,"allow_empty",varray(true));
+	ADDFUNC2(STRING,POOL_REAL_ARRAY,String,split_floats,STRING,"divisor",BOOL,"allow_empty",varray(true));
 
 	ADDFUNC0(STRING,STRING,String,to_upper,varray());
 	ADDFUNC0(STRING,STRING,String,to_lower,varray());
@@ -1401,16 +1408,16 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,STRING,String,left,INT,"pos",varray());
 	ADDFUNC1(STRING,STRING,String,right,INT,"pos",varray());
 	ADDFUNC2(STRING,STRING,String,strip_edges,BOOL,"left",BOOL,"right",varray(true,true));
-	ADDFUNC0(STRING,STRING,String,extension,varray());
-	ADDFUNC0(STRING,STRING,String,basename,varray());
+	ADDFUNC0(STRING,STRING,String,get_extension,varray());
+	ADDFUNC0(STRING,STRING,String,get_basename,varray());
 	ADDFUNC1(STRING,STRING,String,plus_file,STRING,"file",varray());
 	ADDFUNC1(STRING,INT,String,ord_at,INT,"at",varray());
 	ADDFUNC2(STRING,NIL,String,erase,INT,"pos",INT,"chars", varray());
 	ADDFUNC0(STRING,INT,String,hash,varray());
 	ADDFUNC0(STRING,STRING,String,md5_text,varray());
 	ADDFUNC0(STRING,STRING,String,sha256_text,varray());
-	ADDFUNC0(STRING,RAW_ARRAY,String,md5_buffer,varray());
-	ADDFUNC0(STRING,RAW_ARRAY,String,sha256_buffer,varray());
+	ADDFUNC0(STRING,POOL_BYTE_ARRAY,String,md5_buffer,varray());
+	ADDFUNC0(STRING,POOL_BYTE_ARRAY,String,sha256_buffer,varray());
 	ADDFUNC0(STRING,BOOL,String,empty,varray());
 	ADDFUNC0(STRING,BOOL,String,is_abs_path,varray());
 	ADDFUNC0(STRING,BOOL,String,is_rel_path,varray());
@@ -1434,8 +1441,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,STRING,String,pad_decimals,INT,"digits",varray());
 	ADDFUNC1(STRING,STRING,String,pad_zeros,INT,"digits",varray());
 
-	ADDFUNC0(STRING,RAW_ARRAY,String,to_ascii,varray());
-	ADDFUNC0(STRING,RAW_ARRAY,String,to_utf8,varray());
+	ADDFUNC0(STRING,POOL_BYTE_ARRAY,String,to_ascii,varray());
+	ADDFUNC0(STRING,POOL_BYTE_ARRAY,String,to_utf8,varray());
+
 
 
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,normalized,varray());
@@ -1451,9 +1459,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,rotated,REAL,"phi",varray());
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,tangent,varray());
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,floor,varray());
-	ADDFUNC0(VECTOR2,VECTOR2,Vector2,floorf,varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,snapped,VECTOR2,"by",varray());
-	ADDFUNC0(VECTOR2,REAL,Vector2,get_aspect,varray());
+	ADDFUNC0(VECTOR2,REAL,Vector2,aspect,varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,dot,VECTOR2,"with",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,slide,VECTOR2,"vec",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,reflect,VECTOR2,"vec",varray());
@@ -1483,6 +1490,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC4(VECTOR3,VECTOR3,Vector3,cubic_interpolate,VECTOR3,"b",VECTOR3,"pre_a",VECTOR3,"post_b",REAL,"t",varray());
 	ADDFUNC1(VECTOR3,REAL,Vector3,dot,VECTOR3,"b",varray());
 	ADDFUNC1(VECTOR3,VECTOR3,Vector3,cross,VECTOR3,"b",varray());
+	ADDFUNC1(VECTOR3,BASIS,Vector3,outer,VECTOR3,"b",varray());
+	ADDFUNC0(VECTOR3,BASIS,Vector3,to_diagonal_matrix,varray());
+	ADDFUNC0(VECTOR3,VECTOR3,Vector3,abs,varray());
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,abs,varray());
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,floor,varray());
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,ceil,varray());
@@ -1526,18 +1536,14 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(IMAGE, INT, Image, get_width, varray());
 	ADDFUNC0(IMAGE, INT, Image, get_height, varray());
 	ADDFUNC0(IMAGE, BOOL, Image, empty, varray());
-	ADDFUNC3(IMAGE, COLOR, Image, get_pixel, INT, "x", INT, "y", INT, "mipmap_level", varray(0));
-	ADDFUNC4(IMAGE, NIL, Image, put_pixel, INT, "x", INT, "y", COLOR, "color", INT, "mipmap_level", varray(0));
-	ADDFUNC3(IMAGE, IMAGE, Image, brushed, IMAGE, "src", IMAGE, "brush", VECTOR2, "pos", varray(0));
 	ADDFUNC1(IMAGE, INT, Image, load, STRING, "path", varray(0));
 	ADDFUNC1(IMAGE, INT, Image, save_png, STRING, "path", varray(0));
-	ADDFUNC3(IMAGE, NIL, Image, brush_transfer, IMAGE, "src", IMAGE, "brush", VECTOR2, "pos", varray(0));
 	ADDFUNC0(IMAGE, RECT2, Image, get_used_rect, varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, get_rect, RECT2, "area", varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, compressed, INT, "format", varray(0));
 	ADDFUNC0(IMAGE, IMAGE, Image, decompressed, varray(0));
 	ADDFUNC3(IMAGE, IMAGE, Image, resized, INT, "x", INT, "y", INT, "interpolation", varray(((int)Image::INTERPOLATE_BILINEAR)));
-	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
+	ADDFUNC0(IMAGE, POOL_BYTE_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, converted, INT, "format", varray(0));
 	ADDFUNC0(IMAGE, NIL, Image, fix_alpha_edges, varray());
@@ -1562,9 +1568,6 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,keys,varray());
 	ADDFUNC0(DICTIONARY,ARRAY,Dictionary,values,varray());
 
-	ADDFUNC1(DICTIONARY,INT,Dictionary,parse_json,STRING,"json",varray());
-	ADDFUNC0(DICTIONARY,STRING,Dictionary,to_json,varray());
-
 	ADDFUNC0(ARRAY,INT,Array,size,varray());
 	ADDFUNC0(ARRAY,BOOL,Array,empty,varray());
 	ADDFUNC0(ARRAY,NIL,Array,clear,varray());
@@ -1576,6 +1579,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC2(ARRAY,NIL,Array,insert,INT,"pos",NIL,"value",varray());
 	ADDFUNC1(ARRAY,NIL,Array,remove,INT,"pos",varray());
 	ADDFUNC1(ARRAY,NIL,Array,erase,NIL,"value",varray());
+	ADDFUNC0(ARRAY,NIL,Array,front,varray());
+	ADDFUNC0(ARRAY,NIL,Array,back,varray());
 	ADDFUNC2(ARRAY,INT,Array,find,NIL,"what",INT,"from",varray(0));
 	ADDFUNC2(ARRAY,INT,Array,rfind,NIL,"what",INT,"from",varray(-1));
 	ADDFUNC1(ARRAY,INT,Array,find_last,NIL,"value",varray());
@@ -1586,135 +1591,135 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(ARRAY,NIL,Array,sort,varray());
 	ADDFUNC2(ARRAY,NIL,Array,sort_custom,OBJECT,"obj",STRING,"func",varray());
 	ADDFUNC0(ARRAY,NIL,Array,invert,varray());
-	ADDFUNC0(ARRAY,BOOL,Array,is_shared,varray());
-
-	ADDFUNC0(RAW_ARRAY,INT,ByteArray,size,varray());
-	ADDFUNC2(RAW_ARRAY,NIL,ByteArray,set,INT,"idx",INT,"byte",varray());
-	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,push_back,INT,"byte",varray());
-	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,append,INT,"byte",varray());
-	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,append_array,RAW_ARRAY,"array",varray());
-	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,remove,INT,"idx",varray());
-	ADDFUNC2(RAW_ARRAY,INT,ByteArray,insert,INT,"idx",INT,"byte",varray());
-	ADDFUNC1(RAW_ARRAY,NIL,ByteArray,resize,INT,"idx",varray());
-	ADDFUNC0(RAW_ARRAY,NIL,ByteArray,invert,varray());
-	ADDFUNC2(RAW_ARRAY,RAW_ARRAY,ByteArray,subarray,INT,"from",INT,"to",varray());
-
-	ADDFUNC0(RAW_ARRAY,STRING,ByteArray,get_string_from_ascii,varray());
-	ADDFUNC0(RAW_ARRAY,STRING,ByteArray,get_string_from_utf8,varray());
 
 
-	ADDFUNC0(INT_ARRAY,INT,IntArray,size,varray());
-	ADDFUNC2(INT_ARRAY,NIL,IntArray,set,INT,"idx",INT,"integer",varray());
-	ADDFUNC1(INT_ARRAY,NIL,IntArray,push_back,INT,"integer",varray());
-	ADDFUNC1(INT_ARRAY,NIL,IntArray,append,INT,"integer",varray());
-	ADDFUNC1(INT_ARRAY,NIL,IntArray,append_array,INT_ARRAY,"array",varray());
-	ADDFUNC1(INT_ARRAY,NIL,IntArray,remove,INT,"idx",varray());
-	ADDFUNC2(INT_ARRAY,INT,IntArray,insert,INT,"idx",INT,"integer",varray());
-	ADDFUNC1(INT_ARRAY,NIL,IntArray,resize,INT,"idx",varray());
-	ADDFUNC0(INT_ARRAY,NIL,IntArray,invert,varray());
+	ADDFUNC0(POOL_BYTE_ARRAY,INT,PoolByteArray,size,varray());
+	ADDFUNC2(POOL_BYTE_ARRAY,NIL,PoolByteArray,set,INT,"idx",INT,"byte",varray());
+	ADDFUNC1(POOL_BYTE_ARRAY,NIL,PoolByteArray,push_back,INT,"byte",varray());
+	ADDFUNC1(POOL_BYTE_ARRAY,NIL,PoolByteArray,append,INT,"byte",varray());
+	ADDFUNC1(POOL_BYTE_ARRAY,NIL,PoolByteArray,append_array,POOL_BYTE_ARRAY,"array",varray());
+	ADDFUNC1(POOL_BYTE_ARRAY,NIL,PoolByteArray,remove,INT,"idx",varray());
+	ADDFUNC2(POOL_BYTE_ARRAY,INT,PoolByteArray,insert,INT,"idx",INT,"byte",varray());
+	ADDFUNC1(POOL_BYTE_ARRAY,NIL,PoolByteArray,resize,INT,"idx",varray());
+	ADDFUNC0(POOL_BYTE_ARRAY,NIL,PoolByteArray,invert,varray());
+	ADDFUNC2(POOL_BYTE_ARRAY,POOL_BYTE_ARRAY,PoolByteArray,subarray,INT,"from",INT,"to",varray());
 
-	ADDFUNC0(REAL_ARRAY,INT,RealArray,size,varray());
-	ADDFUNC2(REAL_ARRAY,NIL,RealArray,set,INT,"idx",REAL,"value",varray());
-	ADDFUNC1(REAL_ARRAY,NIL,RealArray,push_back,REAL,"value",varray());
-	ADDFUNC1(REAL_ARRAY,NIL,RealArray,append,REAL,"value",varray());
-	ADDFUNC1(REAL_ARRAY,NIL,RealArray,append_array,REAL_ARRAY,"array",varray());
-	ADDFUNC1(REAL_ARRAY,NIL,RealArray,remove,INT,"idx",varray());
-	ADDFUNC2(REAL_ARRAY,INT,RealArray,insert,INT,"idx",REAL,"value",varray());
-	ADDFUNC1(REAL_ARRAY,NIL,RealArray,resize,INT,"idx",varray());
-	ADDFUNC0(REAL_ARRAY,NIL,RealArray,invert,varray());
+	ADDFUNC0(POOL_BYTE_ARRAY,STRING,PoolByteArray,get_string_from_ascii,varray());
+	ADDFUNC0(POOL_BYTE_ARRAY,STRING,PoolByteArray,get_string_from_utf8,varray());
 
-	ADDFUNC0(STRING_ARRAY,INT,StringArray,size,varray());
-	ADDFUNC2(STRING_ARRAY,NIL,StringArray,set,INT,"idx",STRING,"string",varray());
-	ADDFUNC1(STRING_ARRAY,NIL,StringArray,push_back,STRING,"string",varray());
-	ADDFUNC1(STRING_ARRAY,NIL,StringArray,append,STRING,"string",varray());
-	ADDFUNC1(STRING_ARRAY,NIL,StringArray,append_array,STRING_ARRAY,"array",varray());
-	ADDFUNC1(STRING_ARRAY,NIL,StringArray,remove,INT,"idx",varray());
-	ADDFUNC2(STRING_ARRAY,INT,StringArray,insert,INT,"idx",STRING,"string",varray());
-	ADDFUNC1(STRING_ARRAY,NIL,StringArray,resize,INT,"idx",varray());
-	ADDFUNC0(STRING_ARRAY,NIL,StringArray,invert,varray());
 
-	ADDFUNC0(VECTOR2_ARRAY,INT,Vector2Array,size,varray());
-	ADDFUNC2(VECTOR2_ARRAY,NIL,Vector2Array,set,INT,"idx",VECTOR2,"vector2",varray());
-	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,push_back,VECTOR2,"vector2",varray());
-	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,append,VECTOR2,"vector2",varray());
-	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,append_array,VECTOR2_ARRAY,"array",varray());
-	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,remove,INT,"idx",varray());
-	ADDFUNC2(VECTOR2_ARRAY,INT,Vector2Array,insert,INT,"idx",VECTOR2,"vector2",varray());
-	ADDFUNC1(VECTOR2_ARRAY,NIL,Vector2Array,resize,INT,"idx",varray());
-	ADDFUNC0(VECTOR2_ARRAY,NIL,Vector2Array,invert,varray());
+	ADDFUNC0(POOL_INT_ARRAY,INT,PoolIntArray,size,varray());
+	ADDFUNC2(POOL_INT_ARRAY,NIL,PoolIntArray,set,INT,"idx",INT,"integer",varray());
+	ADDFUNC1(POOL_INT_ARRAY,NIL,PoolIntArray,push_back,INT,"integer",varray());
+	ADDFUNC1(POOL_INT_ARRAY,NIL,PoolIntArray,append,INT,"integer",varray());
+	ADDFUNC1(POOL_INT_ARRAY,NIL,PoolIntArray,append_array,POOL_INT_ARRAY,"array",varray());
+	ADDFUNC1(POOL_INT_ARRAY,NIL,PoolIntArray,remove,INT,"idx",varray());
+	ADDFUNC2(POOL_INT_ARRAY,INT,PoolIntArray,insert,INT,"idx",INT,"integer",varray());
+	ADDFUNC1(POOL_INT_ARRAY,NIL,PoolIntArray,resize,INT,"idx",varray());
+	ADDFUNC0(POOL_INT_ARRAY,NIL,PoolIntArray,invert,varray());
 
-	ADDFUNC0(VECTOR3_ARRAY,INT,Vector3Array,size,varray());
-	ADDFUNC2(VECTOR3_ARRAY,NIL,Vector3Array,set,INT,"idx",VECTOR3,"vector3",varray());
-	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,push_back,VECTOR3,"vector3",varray());
-	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,append,VECTOR3,"vector3",varray());
-	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,append_array,VECTOR3_ARRAY,"array",varray());
-	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,remove,INT,"idx",varray());
-	ADDFUNC2(VECTOR3_ARRAY,INT,Vector3Array,insert,INT,"idx",VECTOR3,"vector3",varray());
-	ADDFUNC1(VECTOR3_ARRAY,NIL,Vector3Array,resize,INT,"idx",varray());
-	ADDFUNC0(VECTOR3_ARRAY,NIL,Vector3Array,invert,varray());
+	ADDFUNC0(POOL_REAL_ARRAY,INT,PoolRealArray,size,varray());
+	ADDFUNC2(POOL_REAL_ARRAY,NIL,PoolRealArray,set,INT,"idx",REAL,"value",varray());
+	ADDFUNC1(POOL_REAL_ARRAY,NIL,PoolRealArray,push_back,REAL,"value",varray());
+	ADDFUNC1(POOL_REAL_ARRAY,NIL,PoolRealArray,append,REAL,"value",varray());
+	ADDFUNC1(POOL_REAL_ARRAY,NIL,PoolRealArray,append_array,POOL_REAL_ARRAY,"array",varray());
+	ADDFUNC1(POOL_REAL_ARRAY,NIL,PoolRealArray,remove,INT,"idx",varray());
+	ADDFUNC2(POOL_REAL_ARRAY,INT,PoolRealArray,insert,INT,"idx",REAL,"value",varray());
+	ADDFUNC1(POOL_REAL_ARRAY,NIL,PoolRealArray,resize,INT,"idx",varray());
+	ADDFUNC0(POOL_REAL_ARRAY,NIL,PoolRealArray,invert,varray());
 
-	ADDFUNC0(COLOR_ARRAY,INT,ColorArray,size,varray());
-	ADDFUNC2(COLOR_ARRAY,NIL,ColorArray,set,INT,"idx",COLOR,"color",varray());
-	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,push_back,COLOR,"color",varray());
-	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,append,COLOR,"color",varray());
-	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,append_array,COLOR_ARRAY,"array",varray());
-	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,remove,INT,"idx",varray());
-	ADDFUNC2(COLOR_ARRAY,INT,ColorArray,insert,INT,"idx",COLOR,"color",varray());
-	ADDFUNC1(COLOR_ARRAY,NIL,ColorArray,resize,INT,"idx",varray());
-	ADDFUNC0(COLOR_ARRAY,NIL,ColorArray,invert,varray());
+	ADDFUNC0(POOL_STRING_ARRAY,INT,PoolStringArray,size,varray());
+	ADDFUNC2(POOL_STRING_ARRAY,NIL,PoolStringArray,set,INT,"idx",STRING,"string",varray());
+	ADDFUNC1(POOL_STRING_ARRAY,NIL,PoolStringArray,push_back,STRING,"string",varray());
+	ADDFUNC1(POOL_STRING_ARRAY,NIL,PoolStringArray,append,STRING,"string",varray());
+	ADDFUNC1(POOL_STRING_ARRAY,NIL,PoolStringArray,append_array,POOL_STRING_ARRAY,"array",varray());
+	ADDFUNC1(POOL_STRING_ARRAY,NIL,PoolStringArray,remove,INT,"idx",varray());
+	ADDFUNC2(POOL_STRING_ARRAY,INT,PoolStringArray,insert,INT,"idx",STRING,"string",varray());
+	ADDFUNC1(POOL_STRING_ARRAY,NIL,PoolStringArray,resize,INT,"idx",varray());
+	ADDFUNC0(POOL_STRING_ARRAY,NIL,PoolStringArray,invert,varray());
+
+	ADDFUNC0(POOL_VECTOR2_ARRAY,INT,PoolVector2Array,size,varray());
+	ADDFUNC2(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,set,INT,"idx",VECTOR2,"vector2",varray());
+	ADDFUNC1(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,push_back,VECTOR2,"vector2",varray());
+	ADDFUNC1(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,append,VECTOR2,"vector2",varray());
+	ADDFUNC1(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,append_array,POOL_VECTOR2_ARRAY,"array",varray());
+	ADDFUNC1(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,remove,INT,"idx",varray());
+	ADDFUNC2(POOL_VECTOR2_ARRAY,INT,PoolVector2Array,insert,INT,"idx",VECTOR2,"vector2",varray());
+	ADDFUNC1(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,resize,INT,"idx",varray());
+	ADDFUNC0(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,invert,varray());
+
+	ADDFUNC0(POOL_VECTOR3_ARRAY,INT,PoolVector3Array,size,varray());
+	ADDFUNC2(POOL_VECTOR3_ARRAY,NIL,PoolVector3Array,set,INT,"idx",VECTOR3,"vector3",varray());
+	ADDFUNC1(POOL_VECTOR3_ARRAY,NIL,PoolVector3Array,push_back,VECTOR3,"vector3",varray());
+	ADDFUNC1(POOL_VECTOR3_ARRAY,NIL,PoolVector3Array,append,VECTOR3,"vector3",varray());
+	ADDFUNC1(POOL_VECTOR3_ARRAY,NIL,PoolVector3Array,append_array,POOL_VECTOR3_ARRAY,"array",varray());
+	ADDFUNC1(POOL_VECTOR3_ARRAY,NIL,PoolVector3Array,remove,INT,"idx",varray());
+	ADDFUNC2(POOL_VECTOR3_ARRAY,INT,PoolVector3Array,insert,INT,"idx",VECTOR3,"vector3",varray());
+	ADDFUNC1(POOL_VECTOR3_ARRAY,NIL,PoolVector3Array,resize,INT,"idx",varray());
+	ADDFUNC0(POOL_VECTOR3_ARRAY,NIL,PoolVector3Array,invert,varray());
+
+	ADDFUNC0(POOL_COLOR_ARRAY,INT,PoolColorArray,size,varray());
+	ADDFUNC2(POOL_COLOR_ARRAY,NIL,PoolColorArray,set,INT,"idx",COLOR,"color",varray());
+	ADDFUNC1(POOL_COLOR_ARRAY,NIL,PoolColorArray,push_back,COLOR,"color",varray());
+	ADDFUNC1(POOL_COLOR_ARRAY,NIL,PoolColorArray,append,COLOR,"color",varray());
+	ADDFUNC1(POOL_COLOR_ARRAY,NIL,PoolColorArray,append_array,POOL_COLOR_ARRAY,"array",varray());
+	ADDFUNC1(POOL_COLOR_ARRAY,NIL,PoolColorArray,remove,INT,"idx",varray());
+	ADDFUNC2(POOL_COLOR_ARRAY,INT,PoolColorArray,insert,INT,"idx",COLOR,"color",varray());
+	ADDFUNC1(POOL_COLOR_ARRAY,NIL,PoolColorArray,resize,INT,"idx",varray());
+	ADDFUNC0(POOL_COLOR_ARRAY,NIL,PoolColorArray,invert,varray());
 
 	//pointerbased
 
-	ADDFUNC0(_AABB,REAL,AABB,get_area,varray());
-	ADDFUNC0(_AABB,BOOL,AABB,has_no_area,varray());
-	ADDFUNC0(_AABB,BOOL,AABB,has_no_surface,varray());
-	ADDFUNC1(_AABB,BOOL,AABB,intersects,_AABB,"with",varray());
-	ADDFUNC1(_AABB,BOOL,AABB,encloses,_AABB,"with",varray());
-	ADDFUNC1(_AABB,_AABB,AABB,merge,_AABB,"with",varray());
-	ADDFUNC1(_AABB,_AABB,AABB,intersection,_AABB,"with",varray());
-	ADDFUNC1(_AABB,BOOL,AABB,intersects_plane,PLANE,"plane",varray());
-	ADDFUNC2(_AABB,BOOL,AABB,intersects_segment,VECTOR3,"from",VECTOR3,"to",varray());
-	ADDFUNC1(_AABB,BOOL,AABB,has_point,VECTOR3,"point",varray());
-	ADDFUNC1(_AABB,VECTOR3,AABB,get_support,VECTOR3,"dir",varray());
-	ADDFUNC0(_AABB,VECTOR3,AABB,get_longest_axis,varray());
-	ADDFUNC0(_AABB,INT,AABB,get_longest_axis_index,varray());
-	ADDFUNC0(_AABB,REAL,AABB,get_longest_axis_size,varray());
-	ADDFUNC0(_AABB,VECTOR3,AABB,get_shortest_axis,varray());
-	ADDFUNC0(_AABB,INT,AABB,get_shortest_axis_index,varray());
-	ADDFUNC0(_AABB,REAL,AABB,get_shortest_axis_size,varray());
-	ADDFUNC1(_AABB,_AABB,AABB,expand,VECTOR3,"to_point",varray());
-	ADDFUNC1(_AABB,_AABB,AABB,grow,REAL,"by",varray());
-	ADDFUNC1(_AABB,VECTOR3,AABB,get_endpoint,INT,"idx",varray());
+	ADDFUNC0(RECT3,REAL,Rect3,get_area,varray());
+	ADDFUNC0(RECT3,BOOL,Rect3,has_no_area,varray());
+	ADDFUNC0(RECT3,BOOL,Rect3,has_no_surface,varray());
+	ADDFUNC1(RECT3,BOOL,Rect3,intersects,RECT3,"with",varray());
+	ADDFUNC1(RECT3,BOOL,Rect3,encloses,RECT3,"with",varray());
+	ADDFUNC1(RECT3,RECT3,Rect3,merge,RECT3,"with",varray());
+	ADDFUNC1(RECT3,RECT3,Rect3,intersection,RECT3,"with",varray());
+	ADDFUNC1(RECT3,BOOL,Rect3,intersects_plane,PLANE,"plane",varray());
+	ADDFUNC2(RECT3,BOOL,Rect3,intersects_segment,VECTOR3,"from",VECTOR3,"to",varray());
+	ADDFUNC1(RECT3,BOOL,Rect3,has_point,VECTOR3,"point",varray());
+	ADDFUNC1(RECT3,VECTOR3,Rect3,get_support,VECTOR3,"dir",varray());
+	ADDFUNC0(RECT3,VECTOR3,Rect3,get_longest_axis,varray());
+	ADDFUNC0(RECT3,INT,Rect3,get_longest_axis_index,varray());
+	ADDFUNC0(RECT3,REAL,Rect3,get_longest_axis_size,varray());
+	ADDFUNC0(RECT3,VECTOR3,Rect3,get_shortest_axis,varray());
+	ADDFUNC0(RECT3,INT,Rect3,get_shortest_axis_index,varray());
+	ADDFUNC0(RECT3,REAL,Rect3,get_shortest_axis_size,varray());
+	ADDFUNC1(RECT3,RECT3,Rect3,expand,VECTOR3,"to_point",varray());
+	ADDFUNC1(RECT3,RECT3,Rect3,grow,REAL,"by",varray());
+	ADDFUNC1(RECT3,VECTOR3,Rect3,get_endpoint,INT,"idx",varray());
 
-	ADDFUNC0(MATRIX32,MATRIX32,Matrix32,inverse,varray());
-	ADDFUNC0(MATRIX32,MATRIX32,Matrix32,affine_inverse,varray());
-	ADDFUNC0(MATRIX32,REAL,Matrix32,get_rotation,varray());
-	ADDFUNC0(MATRIX32,VECTOR2,Matrix32,get_origin,varray());
-	ADDFUNC0(MATRIX32,VECTOR2,Matrix32,get_scale,varray());
-	ADDFUNC0(MATRIX32,MATRIX32,Matrix32,orthonormalized,varray());
-	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,rotated,REAL,"phi",varray());
-	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,scaled,VECTOR2,"scale",varray());
-	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,translated,VECTOR2,"offset",varray());
-	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,xform,NIL,"v",varray());
-	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,xform_inv,NIL,"v",varray());
-	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,basis_xform,NIL,"v",varray());
-	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,basis_xform_inv,NIL,"v",varray());
-	ADDFUNC2(MATRIX32,MATRIX32,Matrix32,interpolate_with,MATRIX32,"m",REAL,"c",varray());
+	ADDFUNC0(TRANSFORM2D,TRANSFORM2D,Transform2D,inverse,varray());
+	ADDFUNC0(TRANSFORM2D,TRANSFORM2D,Transform2D,affine_inverse,varray());
+	ADDFUNC0(TRANSFORM2D,REAL,Transform2D,get_rotation,varray());
+	ADDFUNC0(TRANSFORM2D,VECTOR2,Transform2D,get_origin,varray());
+	ADDFUNC0(TRANSFORM2D,VECTOR2,Transform2D,get_scale,varray());
+	ADDFUNC0(TRANSFORM2D,TRANSFORM2D,Transform2D,orthonormalized,varray());
+	ADDFUNC1(TRANSFORM2D,TRANSFORM2D,Transform2D,rotated,REAL,"phi",varray());
+	ADDFUNC1(TRANSFORM2D,TRANSFORM2D,Transform2D,scaled,VECTOR2,"scale",varray());
+	ADDFUNC1(TRANSFORM2D,TRANSFORM2D,Transform2D,translated,VECTOR2,"offset",varray());
+	ADDFUNC1(TRANSFORM2D,TRANSFORM2D,Transform2D,xform,NIL,"v",varray());
+	ADDFUNC1(TRANSFORM2D,TRANSFORM2D,Transform2D,xform_inv,NIL,"v",varray());
+	ADDFUNC1(TRANSFORM2D,TRANSFORM2D,Transform2D,basis_xform,NIL,"v",varray());
+	ADDFUNC1(TRANSFORM2D,TRANSFORM2D,Transform2D,basis_xform_inv,NIL,"v",varray());
+	ADDFUNC2(TRANSFORM2D,TRANSFORM2D,Transform2D,interpolate_with,TRANSFORM2D,"m",REAL,"c",varray());
 
-	ADDFUNC0(MATRIX3,MATRIX3,Matrix3,inverse,varray());
-	ADDFUNC0(MATRIX3,MATRIX3,Matrix3,transposed,varray());
-	ADDFUNC0(MATRIX3,MATRIX3,Matrix3,orthonormalized,varray());
-	ADDFUNC0(MATRIX3,REAL,Matrix3,determinant,varray());
-	ADDFUNC2(MATRIX3,MATRIX3,Matrix3,rotated,VECTOR3,"axis",REAL,"phi",varray());
-	ADDFUNC1(MATRIX3,MATRIX3,Matrix3,scaled,VECTOR3,"scale",varray());
-	ADDFUNC0(MATRIX3,VECTOR3,Matrix3,get_scale,varray());
-	ADDFUNC0(MATRIX3,VECTOR3,Matrix3,get_euler,varray());
-	ADDFUNC1(MATRIX3,REAL,Matrix3,tdotx,VECTOR3,"with",varray());
-	ADDFUNC1(MATRIX3,REAL,Matrix3,tdoty,VECTOR3,"with",varray());
-	ADDFUNC1(MATRIX3,REAL,Matrix3,tdotz,VECTOR3,"with",varray());
-	ADDFUNC1(MATRIX3,VECTOR3,Matrix3,xform,VECTOR3,"v",varray());
-	ADDFUNC1(MATRIX3,VECTOR3,Matrix3,xform_inv,VECTOR3,"v",varray());
-	ADDFUNC0(MATRIX3,INT,Matrix3,get_orthogonal_index,varray());
+	ADDFUNC0(BASIS,BASIS,Basis,inverse,varray());
+	ADDFUNC0(BASIS,BASIS,Basis,transposed,varray());
+	ADDFUNC0(BASIS,BASIS,Basis,orthonormalized,varray());
+	ADDFUNC0(BASIS,REAL,Basis,determinant,varray());
+	ADDFUNC2(BASIS,BASIS,Basis,rotated,VECTOR3,"axis",REAL,"phi",varray());
+	ADDFUNC1(BASIS,BASIS,Basis,scaled,VECTOR3,"scale",varray());
+	ADDFUNC0(BASIS,VECTOR3,Basis,get_scale,varray());
+	ADDFUNC0(BASIS,VECTOR3,Basis,get_euler,varray());
+	ADDFUNC1(BASIS,REAL,Basis,tdotx,VECTOR3,"with",varray());
+	ADDFUNC1(BASIS,REAL,Basis,tdoty,VECTOR3,"with",varray());
+	ADDFUNC1(BASIS,REAL,Basis,tdotz,VECTOR3,"with",varray());
+	ADDFUNC1(BASIS,VECTOR3,Basis,xform,VECTOR3,"v",varray());
+	ADDFUNC1(BASIS,VECTOR3,Basis,xform_inv,VECTOR3,"v",varray());
+	ADDFUNC0(BASIS,INT,Basis,get_orthogonal_index,varray());
 
 	ADDFUNC0(TRANSFORM,TRANSFORM,Transform,inverse,varray());
 	ADDFUNC0(TRANSFORM,TRANSFORM,Transform,affine_inverse,varray());
@@ -1745,8 +1750,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constructor(_VariantCall::Rect2_init1,Variant::RECT2,"pos",Variant::VECTOR2,"size",Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Rect2_init2,Variant::RECT2,"x",Variant::REAL,"y",Variant::REAL,"width",Variant::REAL,"height",Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::Matrix32_init2,Variant::MATRIX32,"rot",Variant::REAL,"pos",Variant::VECTOR2);
-	_VariantCall::add_constructor(_VariantCall::Matrix32_init3,Variant::MATRIX32,"x_axis",Variant::VECTOR2,"y_axis",Variant::VECTOR2,"origin",Variant::VECTOR2);
+	_VariantCall::add_constructor(_VariantCall::Transform2D_init2,Variant::TRANSFORM2D,"rot",Variant::REAL,"pos",Variant::VECTOR2);
+	_VariantCall::add_constructor(_VariantCall::Transform2D_init3,Variant::TRANSFORM2D,"x_axis",Variant::VECTOR2,"y_axis",Variant::VECTOR2,"origin",Variant::VECTOR2);
 
 	_VariantCall::add_constructor(_VariantCall::Vector3_init1,Variant::VECTOR3,"x",Variant::REAL,"y",Variant::REAL,"z",Variant::REAL);
 
@@ -1760,13 +1765,13 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constructor(_VariantCall::Color_init1,Variant::COLOR,"r",Variant::REAL,"g",Variant::REAL,"b",Variant::REAL,"a",Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2,Variant::COLOR,"r",Variant::REAL,"g",Variant::REAL,"b",Variant::REAL);
 
-	_VariantCall::add_constructor(_VariantCall::AABB_init1,Variant::_AABB,"pos",Variant::VECTOR3,"size",Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Rect3_init1,Variant::RECT3,"pos",Variant::VECTOR3,"size",Variant::VECTOR3);
 
-	_VariantCall::add_constructor(_VariantCall::Matrix3_init1,Variant::MATRIX3,"x_axis",Variant::VECTOR3,"y_axis",Variant::VECTOR3,"z_axis",Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Matrix3_init2,Variant::MATRIX3,"axis",Variant::VECTOR3,"phi",Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Basis_init1,Variant::BASIS,"x_axis",Variant::VECTOR3,"y_axis",Variant::VECTOR3,"z_axis",Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Basis_init2,Variant::BASIS,"axis",Variant::VECTOR3,"phi",Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::Transform_init1,Variant::TRANSFORM,"x_axis",Variant::VECTOR3,"y_axis",Variant::VECTOR3,"z_axis",Variant::VECTOR3,"origin",Variant::VECTOR3);
-	_VariantCall::add_constructor(_VariantCall::Transform_init2,Variant::TRANSFORM,"basis",Variant::MATRIX3,"origin",Variant::VECTOR3);
+	_VariantCall::add_constructor(_VariantCall::Transform_init2,Variant::TRANSFORM,"basis",Variant::BASIS,"origin",Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Image_init1,Variant::IMAGE,"width",Variant::INT,"height",Variant::INT,"mipmaps",Variant::BOOL,"format",Variant::INT);
 
@@ -1781,50 +1786,65 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"KEY",InputEvent::KEY);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"MOUSE_MOTION",InputEvent::MOUSE_MOTION);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"MOUSE_BUTTON",InputEvent::MOUSE_BUTTON);
-	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYSTICK_MOTION",InputEvent::JOYSTICK_MOTION);
-	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYSTICK_BUTTON",InputEvent::JOYSTICK_BUTTON);
+	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYPAD_MOTION",InputEvent::JOYPAD_MOTION);
+	_VariantCall::add_constant(Variant::INPUT_EVENT,"JOYPAD_BUTTON",InputEvent::JOYPAD_BUTTON);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"SCREEN_TOUCH",InputEvent::SCREEN_TOUCH);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"SCREEN_DRAG",InputEvent::SCREEN_DRAG);
 	_VariantCall::add_constant(Variant::INPUT_EVENT,"ACTION",InputEvent::ACTION);
 
 
-	_VariantCall::add_constant(Variant::IMAGE,"COMPRESS_BC",Image::COMPRESS_BC);
+	_VariantCall::add_constant(Variant::IMAGE,"COMPRESS_16BIT",Image::COMPRESS_16BIT);
+	_VariantCall::add_constant(Variant::IMAGE,"COMPRESS_S3TC",Image::COMPRESS_S3TC);
 	_VariantCall::add_constant(Variant::IMAGE,"COMPRESS_PVRTC2",Image::COMPRESS_PVRTC2);
 	_VariantCall::add_constant(Variant::IMAGE,"COMPRESS_PVRTC4",Image::COMPRESS_PVRTC4);
 	_VariantCall::add_constant(Variant::IMAGE,"COMPRESS_ETC",Image::COMPRESS_ETC);
+	_VariantCall::add_constant(Variant::IMAGE,"COMPRESS_ETC2",Image::COMPRESS_ETC2);
 
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_GRAYSCALE",Image::FORMAT_GRAYSCALE);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_INTENSITY",Image::FORMAT_INTENSITY);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_GRAYSCALE_ALPHA",Image::FORMAT_GRAYSCALE_ALPHA);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGB",Image::FORMAT_RGB);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBA",Image::FORMAT_RGBA);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_INDEXED",Image::FORMAT_INDEXED);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_INDEXED_ALPHA",Image::FORMAT_INDEXED_ALPHA);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_YUV_422",Image::FORMAT_YUV_422);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_YUV_444",Image::FORMAT_YUV_444);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BC1",Image::FORMAT_BC1);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BC2",Image::FORMAT_BC2);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BC3",Image::FORMAT_BC3);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BC4",Image::FORMAT_BC4);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BC5",Image::FORMAT_BC5);
+
+
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_L8",Image::FORMAT_L8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_LA8",Image::FORMAT_LA8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_R8",Image::FORMAT_R8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RG8",Image::FORMAT_RG8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGB8",Image::FORMAT_RGB8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBA8",Image::FORMAT_RGBA8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGB565",Image::FORMAT_RGB565);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBA4444",Image::FORMAT_RGBA4444);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBA5551",Image::FORMAT_DXT1);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RF",Image::FORMAT_RF);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGF",Image::FORMAT_RGF);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBF",Image::FORMAT_RGBF);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBAF",Image::FORMAT_RGBAF);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RH",Image::FORMAT_RH);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGH",Image::FORMAT_RGH);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBH",Image::FORMAT_RGBH);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_RGBAH",Image::FORMAT_RGBAH);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_DXT1",Image::FORMAT_DXT1);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_DXT3",Image::FORMAT_DXT3);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_DXT5",Image::FORMAT_DXT5);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ATI1",Image::FORMAT_ATI1);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ATI2",Image::FORMAT_ATI2);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BPTC_RGBA",Image::FORMAT_BPTC_RGBA);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BPTC_RGBF",Image::FORMAT_BPTC_RGBF);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_BPTC_RGBFU",Image::FORMAT_BPTC_RGBFU);
 	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_PVRTC2",Image::FORMAT_PVRTC2);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_PVRTC2_ALPHA",Image::FORMAT_PVRTC2_ALPHA);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_PVRTC2A",Image::FORMAT_PVRTC2A);
 	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_PVRTC4",Image::FORMAT_PVRTC4);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_PVRTC4_ALPHA",Image::FORMAT_PVRTC4_ALPHA);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_PVRTC4A",Image::FORMAT_PVRTC4A);
 	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC",Image::FORMAT_ETC);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ATC",Image::FORMAT_ATC);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ATC_ALPHA_EXPLICIT",Image::FORMAT_ATC_ALPHA_EXPLICIT);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ATC_ALPHA_INTERPOLATED",Image::FORMAT_ATC_ALPHA_INTERPOLATED);
-	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_CUSTOM",Image::FORMAT_CUSTOM);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC2_R11",Image::FORMAT_ETC2_R11);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC2_R11S",Image::FORMAT_ETC2_R11S);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC2_RG11",Image::FORMAT_ETC2_RG11);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC2_RG11S",Image::FORMAT_ETC2_RG11S);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC2_RGB8",Image::FORMAT_ETC2_RGB8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC2_RGBA8",Image::FORMAT_ETC2_RGBA8);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_ETC2_RGB8A1",Image::FORMAT_ETC2_RGB8A1);
+	_VariantCall::add_constant(Variant::IMAGE,"FORMAT_MAX",Image::FORMAT_MAX);
 
 	_VariantCall::add_constant(Variant::IMAGE,"INTERPOLATE_NEAREST",Image::INTERPOLATE_NEAREST);
 	_VariantCall::add_constant(Variant::IMAGE,"INTERPOLATE_BILINEAR",Image::INTERPOLATE_BILINEAR);
 	_VariantCall::add_constant(Variant::IMAGE,"INTERPOLATE_CUBIC",Image::INTERPOLATE_CUBIC);
 
-	_VariantCall::add_constant(Variant::INT, "IP_TYPE_NONE", IP_Address::TYPE_NONE);
-	_VariantCall::add_constant(Variant::INT, "IP_TYPE_IPV4", IP_Address::TYPE_IPV4);
-	_VariantCall::add_constant(Variant::INT, "IP_TYPE_IPV6", IP_Address::TYPE_IPV6);
-	_VariantCall::add_constant(Variant::INT, "IP_TYPE_ANY", IP_Address::TYPE_ANY);
 }
 
 void unregister_variant_methods() {

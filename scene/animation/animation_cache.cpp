@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,10 +59,10 @@ void AnimationCache::_clear_cache() {
 
 	while(connected_nodes.size()) {
 
-		connected_nodes.front()->get()->disconnect("exit_tree",this,"_node_exit_tree");
+		connected_nodes.front()->get()->disconnect("tree_exited",this,"_node_exit_tree");
 		connected_nodes.erase(connected_nodes.front());
 	}
-	path_cache.clear();;
+	path_cache.clear();
 	cache_valid=false;
 	cache_dirty=true;
 }
@@ -206,7 +206,7 @@ void AnimationCache::_update_cache() {
 
 		if (!connected_nodes.has(path.node)) {
 			connected_nodes.insert(path.node);
-			path.node->connect("exit_tree",this,"_node_exit_tree",Node::make_binds(path.node),CONNECT_ONESHOT);
+			path.node->connect("tree_exited",this,"_node_exit_tree",Node::make_binds(path.node),CONNECT_ONESHOT);
 		}
 
 
@@ -292,7 +292,7 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 				Vector3 loc,scale;
 				Quat rot;
 				animation->transform_track_interpolate(i,p_time,&loc,&rot,&scale);
-				Transform tr( Matrix3(rot), loc );
+				Transform tr( Basis(rot), loc );
 				tr.basis.scale(scale);
 
 				set_track_transform(i,tr);
@@ -368,8 +368,8 @@ void AnimationCache::set_animation(const Ref<Animation>& p_animation) {
 
 void AnimationCache::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_node_exit_tree"),&AnimationCache::_node_exit_tree);
-	ObjectTypeDB::bind_method(_MD("_animation_changed"),&AnimationCache::_animation_changed);
+	ClassDB::bind_method(_MD("_node_exit_tree"),&AnimationCache::_node_exit_tree);
+	ClassDB::bind_method(_MD("_animation_changed"),&AnimationCache::_animation_changed);
 }
 
 void AnimationCache::set_root(Node* p_root) {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,13 +33,21 @@
 
 class Light2D : public Node2D {
 
-	OBJ_TYPE(Light2D,Node2D);
+	GDCLASS(Light2D,Node2D);
 public:
 	enum Mode {
 		MODE_ADD,
 		MODE_SUB,
 		MODE_MIX,
 		MODE_MASK,
+	};
+
+	enum ShadowFilter {
+		SHADOW_FILTER_NONE,
+		SHADOW_FILTER_PCF3,
+		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF9,
+		SHADOW_FILTER_PCF13,
 	};
 
 private:
@@ -59,10 +67,12 @@ private:
 	int item_mask;
 	int item_shadow_mask;
 	int shadow_buffer_size;
-	float shadow_esm_multiplier;
+	float shadow_gradient_length;
 	Mode mode;
 	Ref<Texture> texture;
 	Vector2 texture_offset;
+	ShadowFilter shadow_filter;
+
 
 	void _update_light_visibility();
 protected:
@@ -112,11 +122,11 @@ public:
 	void set_layer_range_max( int p_max_layer);
 	int get_layer_range_max() const;
 
-	void set_item_mask( int p_mask);
-	int get_item_mask() const;
+	void set_item_cull_mask( int p_mask);
+	int get_item_cull_mask() const;
 
-	void set_item_shadow_mask( int p_mask);
-	int get_item_shadow_mask() const;
+	void set_item_shadow_cull_mask( int p_mask);
+	int get_item_shadow_cull_mask() const;
 
 	void set_mode( Mode p_mode );
 	Mode get_mode() const;
@@ -127,8 +137,11 @@ public:
 	void set_shadow_buffer_size( int p_size );
 	int get_shadow_buffer_size() const;
 
-	void set_shadow_esm_multiplier( float p_multiplier);
-	float get_shadow_esm_multiplier() const;
+	void set_shadow_gradient_length( float p_multiplier);
+	float get_shadow_gradient_length() const;
+
+	void set_shadow_filter( ShadowFilter p_filter);
+	ShadowFilter get_shadow_filter() const;
 
 	void set_shadow_color( const Color& p_shadow_color);
 	Color get_shadow_color() const;
@@ -143,5 +156,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Light2D::Mode);
+VARIANT_ENUM_CAST(Light2D::ShadowFilter);
+
 
 #endif // LIGHT_2D_H

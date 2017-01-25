@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "scene/resources/texture.h"
 #include "scene/main/scene_main_loop.h"
 #include "scene/resources/shader.h"
+#include "scene/resources/material.h"
 
 class CanvasLayer;
 class Viewport;
@@ -40,22 +41,18 @@ class Font;
 
 class StyleBox;
 
-class CanvasItemMaterial : public Resource{
+class CanvasItemMaterial : public Material {
 
-	OBJ_TYPE(CanvasItemMaterial,Resource);
-	RID material;
+	GDCLASS(CanvasItemMaterial,Material);
 	Ref<Shader> shader;
 public:
-	enum ShadingMode {
+	/*enum ShadingMode {
 		SHADING_NORMAL,
 		SHADING_UNSHADED,
 		SHADING_ONLY_LIGHT,
-	};
+	};*/
 
 protected:
-
-	ShadingMode shading_mode;
-
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
@@ -72,20 +69,16 @@ public:
 	void set_shader_param(const StringName& p_param,const Variant& p_value);
 	Variant get_shader_param(const StringName& p_param) const;
 
-	void set_shading_mode(ShadingMode p_mode);
-	ShadingMode get_shading_mode() const;
-
-	virtual RID get_rid() const;
 	CanvasItemMaterial();
 	~CanvasItemMaterial();
 };
 
-VARIANT_ENUM_CAST( CanvasItemMaterial::ShadingMode );
+
 
 
 class CanvasItem : public Node {
 
-	OBJ_TYPE( CanvasItem, Node );
+	GDCLASS( CanvasItem, Node );
 public:
 
 	enum BlendMode {
@@ -107,46 +100,40 @@ private:
 
 	CanvasLayer *canvas_layer;
 
-	float opacity;
-	float self_opacity;
+	Color modulate;
+	Color self_modulate;
 
 	List<CanvasItem*> children_items;
 	List<CanvasItem*>::Element *C;
 
-	BlendMode blend_mode;
 	int light_mask;
 
 	bool first_draw;
-	bool hidden;
+	bool visible;
 	bool pending_update;
 	bool toplevel;
-	bool pending_children_sort;
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
 	bool use_parent_material;
 	bool notify_local_transform;
+	bool notify_transform;
 
 	Ref<CanvasItemMaterial> material;
 
-	mutable Matrix32 global_transform;
+	mutable Transform2D global_transform;
 	mutable bool global_invalid;
 
 
-	void _raise_self();
+	void _toplevel_raise_self();
 
 	void _propagate_visibility_changed(bool p_visible);
 
-	void _set_visible_(bool p_visible);
-	bool _is_visible_() const;
 
 	void _update_callback();
 
 	void _enter_canvas();
 	void _exit_canvas();
-
-	void _queue_sort_children();
-	void _sort_children();
 
 	void _notify_transform(CanvasItem *p_node);
 
@@ -185,25 +172,22 @@ public:
 
 	/* VISIBILITY */
 
+	void set_visible(bool p_visible);
 	bool is_visible() const;
-	bool is_hidden() const;
+	bool is_visible_in_tree() const;
 	void show();
 	void hide();
-	void set_hidden(bool p_hidden);
 
 	void update();
-
-	void set_blend_mode(BlendMode p_blend_mode);
-	BlendMode get_blend_mode() const;
 
 	virtual void set_light_mask(int p_light_mask);
 	int get_light_mask() const;
 
-	void set_opacity(float p_opacity);
-	float get_opacity() const;
+	void set_modulate(const Color& p_modulate);
+	Color get_modulate() const;
 
-	void set_self_opacity(float p_self_opacity);
-	float get_self_opacity() const;
+	void set_self_modulate(const Color& p_self_modulate);
+	Color get_self_modulate() const;
 
 	/* DRAWING API */
 
@@ -222,7 +206,7 @@ public:
 	float draw_char(const Ref<Font>& p_font,const Point2& p_pos, const String& p_char,const String& p_next="",const Color& p_modulate=Color(1,1,1));
 
 	void draw_set_transform(const Point2& p_offset, float p_rot, const Size2& p_scale);
-	void draw_set_transform_matrix(const Matrix32& p_matrix);
+	void draw_set_transform_matrix(const Transform2D& p_matrix);
 
 	/* RECT / TRANSFORM */
 
@@ -235,10 +219,10 @@ public:
 	CanvasItem *get_parent_item() const;
 
 	virtual Rect2 get_item_rect() const=0;
-	virtual Matrix32 get_transform() const=0;
+	virtual Transform2D get_transform() const=0;
 
-	virtual Matrix32 get_global_transform() const;
-	virtual Matrix32 get_global_transform_with_canvas() const;
+	virtual Transform2D get_global_transform() const;
+	virtual Transform2D get_global_transform_with_canvas() const;
 
 	Rect2 get_item_and_children_rect() const;
 
@@ -249,8 +233,8 @@ public:
 	bool is_block_transform_notify_enabled() const;
 
 
-	Matrix32 get_canvas_transform() const;
-	Matrix32 get_viewport_transform() const;
+	Transform2D get_canvas_transform() const;
+	Transform2D get_viewport_transform() const;
 	Rect2 get_viewport_rect() const;
 	RID get_viewport_rid() const;
 	RID get_canvas() const;
@@ -270,6 +254,9 @@ public:
 
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;
+
+	void set_notify_transform(bool p_enable);
+	bool is_transform_notification_enabled() const;
 
 	int get_canvas_layer() const;
 

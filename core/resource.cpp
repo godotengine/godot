@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource.h"
+
 #include "core_string_names.h"
-#include <stdio.h>
 #include "os/file_access.h"
 #include "io/resource_loader.h"
+#include "script_language.h"
+
+#include <stdio.h>
 
 void ResourceImportMetadata::set_editor(const String& p_editor) {
 
@@ -112,9 +115,9 @@ void ResourceImportMetadata::get_options(List<String> *r_options) const {
 
 }
 
-StringArray ResourceImportMetadata::_get_options() const {
+PoolStringArray ResourceImportMetadata::_get_options() const {
 
-	StringArray option_names;
+	PoolStringArray option_names;
 	option_names.resize(options.size());
 	int i=0;
 	for(Map<String,Variant>::Element *E=options.front();E;E=E->next()) {
@@ -127,17 +130,17 @@ StringArray ResourceImportMetadata::_get_options() const {
 
 void ResourceImportMetadata::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_editor","name"),&ResourceImportMetadata::set_editor);
-	ObjectTypeDB::bind_method(_MD("get_editor"),&ResourceImportMetadata::get_editor);
-	ObjectTypeDB::bind_method(_MD("add_source","path","md5"),&ResourceImportMetadata::add_source, "");
-	ObjectTypeDB::bind_method(_MD("get_source_path","idx"),&ResourceImportMetadata::get_source_path);
-	ObjectTypeDB::bind_method(_MD("get_source_md5","idx"),&ResourceImportMetadata::get_source_md5);
-	ObjectTypeDB::bind_method(_MD("set_source_md5","idx", "md5"),&ResourceImportMetadata::set_source_md5);
-	ObjectTypeDB::bind_method(_MD("remove_source","idx"),&ResourceImportMetadata::remove_source);
-	ObjectTypeDB::bind_method(_MD("get_source_count"),&ResourceImportMetadata::get_source_count);
-	ObjectTypeDB::bind_method(_MD("set_option","key","value"),&ResourceImportMetadata::set_option);
-	ObjectTypeDB::bind_method(_MD("get_option","key"),&ResourceImportMetadata::get_option);
-	ObjectTypeDB::bind_method(_MD("get_options"),&ResourceImportMetadata::_get_options);
+	ClassDB::bind_method(_MD("set_editor","name"),&ResourceImportMetadata::set_editor);
+	ClassDB::bind_method(_MD("get_editor"),&ResourceImportMetadata::get_editor);
+	ClassDB::bind_method(_MD("add_source","path","md5"),&ResourceImportMetadata::add_source, "");
+	ClassDB::bind_method(_MD("get_source_path","idx"),&ResourceImportMetadata::get_source_path);
+	ClassDB::bind_method(_MD("get_source_md5","idx"),&ResourceImportMetadata::get_source_md5);
+	ClassDB::bind_method(_MD("set_source_md5","idx", "md5"),&ResourceImportMetadata::set_source_md5);
+	ClassDB::bind_method(_MD("remove_source","idx"),&ResourceImportMetadata::remove_source);
+	ClassDB::bind_method(_MD("get_source_count"),&ResourceImportMetadata::get_source_count);
+	ClassDB::bind_method(_MD("set_option","key","value"),&ResourceImportMetadata::set_option);
+	ClassDB::bind_method(_MD("get_option","key"),&ResourceImportMetadata::get_option);
+	ClassDB::bind_method(_MD("get_options"),&ResourceImportMetadata::_get_options);
 }
 
 ResourceImportMetadata::ResourceImportMetadata() {
@@ -164,17 +167,31 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	if (path_cache!="") {
 
+		ResourceCache::lock->write_lock();
 		ResourceCache::resources.erase(path_cache);
+		ResourceCache::lock->write_unlock();
 	}
 
 	path_cache="";
-	if (ResourceCache::resources.has( p_path )) {
+
+	ResourceCache::lock->read_lock();
+	bool has_path = ResourceCache::resources.has( p_path );
+	ResourceCache::lock->read_unlock();
+
+	if (has_path) {
 		if (p_take_over) {
 
+			ResourceCache::lock->write_lock();
 			ResourceCache::resources.get(p_path)->set_name("");
+			ResourceCache::lock->write_unlock();
 		} else {
 			ERR_EXPLAIN("Another resource is loaded from path: "+p_path);
-			ERR_FAIL_COND( ResourceCache::resources.has( p_path ) );
+
+			ResourceCache::lock->read_lock();
+			bool exists = ResourceCache::resources.has( p_path );
+			ResourceCache::lock->read_unlock();
+
+			ERR_FAIL_COND( exists );
 		}
 
 	}
@@ -182,10 +199,12 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	if (path_cache!="") {
 
-		ResourceCache::resources[path_cache]=this;;
+		ResourceCache::lock->write_lock();
+		ResourceCache::resources[path_cache]=this;
+		ResourceCache::lock->write_unlock();
 	}
 
-	_change_notify("resource/path");
+	_change_notify("resource_path");
 	_resource_path_changed();
 
 }
@@ -209,7 +228,7 @@ int Resource::get_subindex() const{
 void Resource::set_name(const String& p_name) {
 
 	name=p_name;
-	_change_notify("resource/name");
+	_change_notify("resource_name");
 
 }
 String Resource::get_name() const {
@@ -229,7 +248,7 @@ void Resource::reload_from_file() {
 	if (!path.is_resource_file())
 		return;
 
-	Ref<Resource> s = ResourceLoader::load(path,get_type(),true);
+	Ref<Resource> s = ResourceLoader::load(path,get_class(),true);
 
 	if (!s.is_valid())
 		return;
@@ -241,7 +260,7 @@ void Resource::reload_from_file() {
 
 		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
 			continue;
-		if (E->get().name=="resource/path")
+		if (E->get().name=="resource_path")
 			continue; //do not change path
 
 		set(E->get().name,s->get(E->get().name));
@@ -250,13 +269,56 @@ void Resource::reload_from_file() {
 }
 
 
-Ref<Resource> Resource::duplicate(bool p_subresources) {
+Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache) {
+
 
 	List<PropertyInfo> plist;
 	get_property_list(&plist);
 
 
-	Resource *r = (Resource*)ObjectTypeDB::instance(get_type());
+	Resource *r = (Resource*)ClassDB::instance(get_class());
+	ERR_FAIL_COND_V(!r,Ref<Resource>());
+
+	r->local_scene=p_for_scene;
+
+	for(List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
+
+		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+			continue;
+		Variant p = get(E->get().name);
+		if (p.get_type()==Variant::OBJECT) {
+
+			RES sr = p;
+			if (sr.is_valid()) {
+
+				if (sr->is_local_to_scene()) {
+					if (remap_cache.has(sr)) {
+						p=remap_cache[sr];
+					} else {
+
+
+						RES dupe = sr->duplicate_for_local_scene(p_for_scene,remap_cache);
+						p=dupe;
+						remap_cache[sr]=dupe;
+					}
+				}
+			}
+		}
+
+		r->set(E->get().name,p);
+	}
+
+	return Ref<Resource>(r);
+}
+
+Ref<Resource> Resource::duplicate(bool p_subresources) {
+
+
+	List<PropertyInfo> plist;
+	get_property_list(&plist);
+
+
+	Resource *r = (Resource*)ClassDB::instance(get_class());
 	ERR_FAIL_COND_V(!r,Ref<Resource>());
 
 	for(List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
@@ -288,23 +350,6 @@ void Resource::_take_over_path(const String& p_path) {
 	set_path(p_path,true);
 }
 
-
-void Resource::_bind_methods() {
-
-	ObjectTypeDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
-	ObjectTypeDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
-	ObjectTypeDB::bind_method(_MD("get_path"),&Resource::get_path);
-	ObjectTypeDB::bind_method(_MD("set_name","name"),&Resource::set_name);
-	ObjectTypeDB::bind_method(_MD("get_name"),&Resource::get_name);
-	ObjectTypeDB::bind_method(_MD("get_rid"),&Resource::get_rid);
-	ObjectTypeDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
-	ObjectTypeDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
-
-	ObjectTypeDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
-	ADD_SIGNAL( MethodInfo("changed") );
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource/path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource/name"), _SCS("set_name"),_SCS("get_name"));
-}
 
 RID Resource::get_rid() const {
 
@@ -377,6 +422,62 @@ uint32_t Resource::hash_edited_version() const {
 
 #endif
 
+void Resource::set_local_to_scene(bool p_enable) {
+
+	local_to_scene=p_enable;
+}
+
+bool Resource::is_local_to_scene() const {
+
+	return local_to_scene;
+}
+
+Node* Resource::get_local_scene() const {
+
+	if (local_scene)
+		return local_scene;
+
+	if (_get_local_scene_func) {
+		return _get_local_scene_func();
+	}
+
+	return NULL;
+}
+
+void Resource::setup_local_to_scene() {
+
+	if (get_script_instance())
+		get_script_instance()->call("_setup_local_to_scene");
+}
+
+Node* (*Resource::_get_local_scene_func)()=NULL;
+
+
+void Resource::_bind_methods() {
+
+	ClassDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
+	ClassDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
+	ClassDB::bind_method(_MD("get_path"),&Resource::get_path);
+	ClassDB::bind_method(_MD("set_name","name"),&Resource::set_name);
+	ClassDB::bind_method(_MD("get_name"),&Resource::get_name);
+	ClassDB::bind_method(_MD("get_rid"),&Resource::get_rid);
+	ClassDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
+	ClassDB::bind_method(_MD("get_import_metadata"),&Resource::get_import_metadata);
+	ClassDB::bind_method(_MD("set_local_to_scene","enable"),&Resource::set_local_to_scene);
+	ClassDB::bind_method(_MD("is_local_to_scene"),&Resource::is_local_to_scene);
+	ClassDB::bind_method(_MD("get_local_scene:Node"),&Resource::get_local_scene);
+	ClassDB::bind_method(_MD("setup_local_to_scene"),&Resource::setup_local_to_scene);
+
+	ClassDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
+	ADD_SIGNAL( MethodInfo("changed") );
+	ADD_GROUP("Resource","resource_");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"resource_local_to_scene" ), _SCS("set_local_to_scene"),_SCS("is_local_to_scene"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource_name"), _SCS("set_name"),_SCS("get_name"));
+
+	BIND_VMETHOD( MethodInfo("_setup_local_to_scene") );
+
+}
 
 Resource::Resource() {
 
@@ -385,6 +486,8 @@ Resource::Resource() {
 #endif
 
 	subindex=0;
+	local_to_scene=false;
+	local_scene=NULL;
 }
 
 
@@ -392,8 +495,11 @@ Resource::Resource() {
 
 Resource::~Resource() {
 
-	if (path_cache!="")
+	if (path_cache!="") {
+		ResourceCache::lock->write_lock();
 		ResourceCache::resources.erase(path_cache);
+		ResourceCache::lock->write_unlock();
+	}
 	if (owners.size()) {
 		WARN_PRINT("Resource is still owned");
 	}
@@ -401,36 +507,49 @@ Resource::~Resource() {
 
 HashMap<String,Resource*> ResourceCache::resources;
 
+RWLock *ResourceCache::lock=NULL;
+
+void ResourceCache::setup() {
+
+	lock = RWLock::create();
+}
+
 void ResourceCache::clear() {
 	if (resources.size())
 		ERR_PRINT("Resources Still in use at Exit!");
 
 	resources.clear();
+	memdelete(lock);
 }
 
 
 void ResourceCache::reload_externals() {
 
-	GLOBAL_LOCK_FUNCTION
-
-	//const String *K=NULL;
-	//while ((K=resources.next(K))) {
-//		resources[*K]->reload_external_data();
-//	}
-
+	/*
+	const String *K=NULL;
+	while ((K=resources.next(K))) {
+		resources[*K]->reload_external_data();
+	}
+	*/
 }
 
 bool ResourceCache::has(const String& p_path) {
 
-	GLOBAL_LOCK_FUNCTION
+	lock->read_lock();
+	bool b = resources.has(p_path);
+	lock->read_unlock();
 
-	return resources.has(p_path);
+
+	return b;
 }
 Resource *ResourceCache::get(const String& p_path) {
 
-	GLOBAL_LOCK_FUNCTION
+	lock->read_lock();
 
 	Resource **res = resources.getptr(p_path);
+
+	lock->read_unlock();
+
 	if (!res) {
 		return NULL;
 	}
@@ -442,6 +561,7 @@ Resource *ResourceCache::get(const String& p_path) {
 void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
 
 
+	lock->read_lock();
 	const String* K=NULL;
 	while((K=resources.next(K))) {
 
@@ -449,17 +569,22 @@ void ResourceCache::get_cached_resources(List<Ref<Resource> > *p_resources) {
 		p_resources->push_back( Ref<Resource>( r ));
 
 	}
+	lock->read_unlock();
 
 }
 
 int ResourceCache::get_cached_resource_count() {
 
-	return resources.size();
+	lock->read_lock();
+	int rc = resources.size();
+	lock->read_unlock();
+
+	return rc;
 }
 
 void ResourceCache::dump(const char* p_file,bool p_short) {
 #ifdef DEBUG_ENABLED
-	GLOBAL_LOCK_FUNCTION
+	lock->read_lock();
 
 	Map<String,int> type_count;
 
@@ -476,16 +601,16 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 
 		Resource *r = resources[*K];
 
-		if (!type_count.has(r->get_type())) {
-			type_count[r->get_type()]=0;
+		if (!type_count.has(r->get_class())) {
+			type_count[r->get_class()]=0;
 		}
 
 
-		type_count[r->get_type()]++;
+		type_count[r->get_class()]++;
 
 		if (!p_short) {
 			if (f)
-				f->store_line(r->get_type()+": "+r->get_path());
+				f->store_line(r->get_class()+": "+r->get_path());
 		}
 	}
 
@@ -498,6 +623,8 @@ void ResourceCache::dump(const char* p_file,bool p_short) {
 		f->close();
 		memdelete(f);
 	}
+
+	lock->read_unlock();
 
 #endif
 }

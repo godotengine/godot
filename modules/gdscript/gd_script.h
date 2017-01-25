@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "gd_function.h"
 class GDNativeClass : public Reference {
 
-	OBJ_TYPE(GDNativeClass,Reference);
+	GDCLASS(GDNativeClass,Reference);
 
 	StringName name;
 protected:
@@ -55,7 +55,7 @@ public:
 class GDScript : public Script {
 
 
-	OBJ_TYPE(GDScript,Script);
+	GDCLASS(GDScript,Script);
 	bool tool;
 	bool valid;
 
@@ -139,7 +139,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_properties) const;
 
 	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
-//	void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
+	//void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
 
 	static void _bind_methods();
 public:
@@ -294,8 +294,10 @@ class GDScriptLanguage : public ScriptLanguage {
 
 	void _add_global(const StringName& p_name,const Variant& p_value);
 
+friend class GDInstance;
 
 	Mutex *lock;
+
 
 
 
@@ -406,7 +408,7 @@ public:
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual int find_function(const String& p_function,const String& p_code) const;
-	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
+	virtual String make_function(const String& p_class,const String& p_name,const PoolStringArray& p_args) const;
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
 #ifdef TOOLS_ENABLED
 	virtual Error lookup_code(const String& p_code, const String& p_symbol, const String& p_base_path, Object*p_owner, LookupResult& r_result);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,8 +64,8 @@ Rect2 RectangleShape2D::get_rect() const {
 
 void RectangleShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_extents","extents"),&RectangleShape2D::set_extents);
-	ObjectTypeDB::bind_method(_MD("get_extents"),&RectangleShape2D::get_extents);
+	ClassDB::bind_method(_MD("set_extents","extents"),&RectangleShape2D::set_extents);
+	ClassDB::bind_method(_MD("get_extents"),&RectangleShape2D::get_extents);
 
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -134,15 +134,15 @@ real_t InterpolatedCamera::get_speed() const {
 
 void InterpolatedCamera::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_target_path","target_path"),&InterpolatedCamera::set_target_path);
-	ObjectTypeDB::bind_method(_MD("get_target_path"),&InterpolatedCamera::get_target_path);
-	ObjectTypeDB::bind_method(_MD("set_target","target:Camera"),&InterpolatedCamera::_set_target);
+	ClassDB::bind_method(_MD("set_target_path","target_path"),&InterpolatedCamera::set_target_path);
+	ClassDB::bind_method(_MD("get_target_path"),&InterpolatedCamera::get_target_path);
+	ClassDB::bind_method(_MD("set_target","target:Camera"),&InterpolatedCamera::_set_target);
 
-	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&InterpolatedCamera::set_speed);
-	ObjectTypeDB::bind_method(_MD("get_speed"),&InterpolatedCamera::get_speed);
+	ClassDB::bind_method(_MD("set_speed","speed"),&InterpolatedCamera::set_speed);
+	ClassDB::bind_method(_MD("get_speed"),&InterpolatedCamera::get_speed);
 
-	ObjectTypeDB::bind_method(_MD("set_interpolation_enabled","target_path"),&InterpolatedCamera::set_interpolation_enabled);
-	ObjectTypeDB::bind_method(_MD("is_interpolation_enabled"),&InterpolatedCamera::is_interpolation_enabled);
+	ClassDB::bind_method(_MD("set_interpolation_enabled","target_path"),&InterpolatedCamera::set_interpolation_enabled);
+	ClassDB::bind_method(_MD("is_interpolation_enabled"),&InterpolatedCamera::is_interpolation_enabled);
 
 	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"target"), _SCS("set_target_path"), _SCS("get_target_path") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"speed"), _SCS("set_speed"), _SCS("get_speed") );

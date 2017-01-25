@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,7 +97,7 @@ void CharacterCamera::_get_property_list( List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::INT, "type", PROPERTY_HINT_ENUM, "Fixed,Follow") );
 	p_list->push_back( PropertyInfo( Variant::VECTOR2, "orbit" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,0.01" ) );
-	p_list->push_back( PropertyInfo( Variant::REAL, "inclination", PROPERTY_HINT_RANGE,"-90,90,0.01" )  ); ;
+	p_list->push_back( PropertyInfo( Variant::REAL, "inclination", PROPERTY_HINT_RANGE,"-90,90,0.01" )  );
 	p_list->push_back( PropertyInfo( Variant::REAL, "max_orbit_x", PROPERTY_HINT_RANGE,"-90,90,0.01" )  );
 	p_list->push_back( PropertyInfo( Variant::REAL, "min_orbit_x", PROPERTY_HINT_RANGE,"-90,90,0.01" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "min_distance", PROPERTY_HINT_RANGE,"0,100,0.01" ) );
@@ -168,7 +168,7 @@ void CharacterCamera::_compute_camera() {
 
 	Vector3 vec1 = accepted.origin;
 	Vector3 vec2 = proposed.origin;
-	final.origin = vec2.linear_interpolate(vec1, pos_ratio * time);;
+	final.origin = vec2.linear_interpolate(vec1, pos_ratio * time);
 
 	Quat q1 = accepted.basis;
 	Quat q2 = proposed.basis;
@@ -255,8 +255,8 @@ void CharacterCamera::_compute_camera() {
 			orbit.x=max_orbit_x;
 
 		Matrix3 m;
-		m.rotate(Vector3(0,1,0),Math::deg2rad(orbit.y));
-		m.rotate(Vector3(1,0,0),Math::deg2rad(orbit.x));
+		m.rotate(Vector3(0,1,0),-Math::deg2rad(orbit.y));
+		m.rotate(Vector3(1,0,0),-Math::deg2rad(orbit.x));
 
 		new_pos = (m.get_axis(2) * distance) + character_pos;
 
@@ -432,8 +432,8 @@ void CharacterCamera::set_orbit(const Vector2& p_orbit) {
 		float d = char_pos.distance_to(follow_pos);
 
 		Matrix3 m;
-		m.rotate(Vector3(0,1,0),orbit.y);
-		m.rotate(Vector3(1,0,0),orbit.x);
+		m.rotate(Vector3(0,1,0),-orbit.y);
+		m.rotate(Vector3(1,0,0),-orbit.x);
 
 		follow_pos=char_pos + m.get_axis(2) * d;
 
@@ -475,8 +475,8 @@ void CharacterCamera::rotate_orbit(const Vector2& p_relative) {
 	if (type == CAMERA_FOLLOW && is_inside_scene()) {
 
 		Matrix3 m;
-		m.rotate(Vector3(0,1,0),Math::deg2rad(p_relative.y));
-		m.rotate(Vector3(1,0,0),Math::deg2rad(p_relative.x));
+		m.rotate(Vector3(0,1,0),-Math::deg2rad(p_relative.y));
+		m.rotate(Vector3(1,0,0),-Math::deg2rad(p_relative.x));
 
 		Vector3 char_pos = get_global_transform().origin;
 		char_pos.y+=height;
@@ -634,30 +634,30 @@ float CharacterCamera::get_autoturn_speed() const {
 
 void CharacterCamera::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_camera_type","type"),&CharacterCamera::set_camera_type);
-	ObjectTypeDB::bind_method(_MD("get_camera_type"),&CharacterCamera::get_camera_type);
-	ObjectTypeDB::bind_method(_MD("set_orbit","orbit"),&CharacterCamera::set_orbit);
-	ObjectTypeDB::bind_method(_MD("get_orbit"),&CharacterCamera::get_orbit);
-	ObjectTypeDB::bind_method(_MD("set_orbit_x","x"),&CharacterCamera::set_orbit_x);
-	ObjectTypeDB::bind_method(_MD("set_orbit_y","y"),&CharacterCamera::set_orbit_y);
-	ObjectTypeDB::bind_method(_MD("set_min_orbit_x","x"),&CharacterCamera::set_min_orbit_x);
-	ObjectTypeDB::bind_method(_MD("get_min_orbit_x"),&CharacterCamera::get_min_orbit_x);
-	ObjectTypeDB::bind_method(_MD("set_max_orbit_x","x"),&CharacterCamera::set_max_orbit_x);
-	ObjectTypeDB::bind_method(_MD("get_max_orbit_x"),&CharacterCamera::get_max_orbit_x);
-	ObjectTypeDB::bind_method(_MD("rotate_orbit"),&CharacterCamera::rotate_orbit);
-	ObjectTypeDB::bind_method(_MD("set_distance","distance"),&CharacterCamera::set_distance);
-	ObjectTypeDB::bind_method(_MD("get_distance"),&CharacterCamera::get_distance);
-	ObjectTypeDB::bind_method(_MD("set_clip","enable"),&CharacterCamera::set_clip);
-	ObjectTypeDB::bind_method(_MD("has_clip"),&CharacterCamera::has_clip);
-	ObjectTypeDB::bind_method(_MD("set_autoturn","enable"),&CharacterCamera::set_autoturn);
-	ObjectTypeDB::bind_method(_MD("has_autoturn"),&CharacterCamera::has_autoturn);
-	ObjectTypeDB::bind_method(_MD("set_autoturn_tolerance","degrees"),&CharacterCamera::set_autoturn_tolerance);
-	ObjectTypeDB::bind_method(_MD("get_autoturn_tolerance"),&CharacterCamera::get_autoturn_tolerance);
-	ObjectTypeDB::bind_method(_MD("set_autoturn_speed","speed"),&CharacterCamera::set_autoturn_speed);
-	ObjectTypeDB::bind_method(_MD("get_autoturn_speed"),&CharacterCamera::get_autoturn_speed);
-	ObjectTypeDB::bind_method(_MD("set_use_lookat_target","use","lookat"),&CharacterCamera::set_use_lookat_target, DEFVAL(Vector3()));
+	ClassDB::bind_method(_MD("set_camera_type","type"),&CharacterCamera::set_camera_type);
+	ClassDB::bind_method(_MD("get_camera_type"),&CharacterCamera::get_camera_type);
+	ClassDB::bind_method(_MD("set_orbit","orbit"),&CharacterCamera::set_orbit);
+	ClassDB::bind_method(_MD("get_orbit"),&CharacterCamera::get_orbit);
+	ClassDB::bind_method(_MD("set_orbit_x","x"),&CharacterCamera::set_orbit_x);
+	ClassDB::bind_method(_MD("set_orbit_y","y"),&CharacterCamera::set_orbit_y);
+	ClassDB::bind_method(_MD("set_min_orbit_x","x"),&CharacterCamera::set_min_orbit_x);
+	ClassDB::bind_method(_MD("get_min_orbit_x"),&CharacterCamera::get_min_orbit_x);
+	ClassDB::bind_method(_MD("set_max_orbit_x","x"),&CharacterCamera::set_max_orbit_x);
+	ClassDB::bind_method(_MD("get_max_orbit_x"),&CharacterCamera::get_max_orbit_x);
+	ClassDB::bind_method(_MD("rotate_orbit"),&CharacterCamera::rotate_orbit);
+	ClassDB::bind_method(_MD("set_distance","distance"),&CharacterCamera::set_distance);
+	ClassDB::bind_method(_MD("get_distance"),&CharacterCamera::get_distance);
+	ClassDB::bind_method(_MD("set_clip","enable"),&CharacterCamera::set_clip);
+	ClassDB::bind_method(_MD("has_clip"),&CharacterCamera::has_clip);
+	ClassDB::bind_method(_MD("set_autoturn","enable"),&CharacterCamera::set_autoturn);
+	ClassDB::bind_method(_MD("has_autoturn"),&CharacterCamera::has_autoturn);
+	ClassDB::bind_method(_MD("set_autoturn_tolerance","degrees"),&CharacterCamera::set_autoturn_tolerance);
+	ClassDB::bind_method(_MD("get_autoturn_tolerance"),&CharacterCamera::get_autoturn_tolerance);
+	ClassDB::bind_method(_MD("set_autoturn_speed","speed"),&CharacterCamera::set_autoturn_speed);
+	ClassDB::bind_method(_MD("get_autoturn_speed"),&CharacterCamera::get_autoturn_speed);
+	ClassDB::bind_method(_MD("set_use_lookat_target","use","lookat"),&CharacterCamera::set_use_lookat_target, DEFVAL(Vector3()));
 
-	ObjectTypeDB::bind_method(_MD("_ray_collision"),&CharacterCamera::_ray_collision);
+	ClassDB::bind_method(_MD("_ray_collision"),&CharacterCamera::_ray_collision);
 
 	BIND_CONSTANT( CAMERA_FIXED );
 	BIND_CONSTANT( CAMERA_FOLLOW );

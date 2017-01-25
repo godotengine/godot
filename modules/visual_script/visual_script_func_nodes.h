@@ -6,7 +6,7 @@
 
 class VisualScriptFunctionCall : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptFunctionCall,VisualScriptNode)
+	GDCLASS(VisualScriptFunctionCall,VisualScriptNode)
 public:
 	enum CallMode {
 		CALL_MODE_SELF,
@@ -117,7 +117,7 @@ VARIANT_ENUM_CAST(VisualScriptFunctionCall::RPCCallMode );
 
 class VisualScriptPropertySet : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptPropertySet,VisualScriptNode)
+	GDCLASS(VisualScriptPropertySet,VisualScriptNode)
 public:
 	enum CallMode {
 		CALL_MODE_SELF,
@@ -208,7 +208,7 @@ VARIANT_ENUM_CAST(VisualScriptPropertySet::CallMode );
 
 class VisualScriptPropertyGet : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptPropertyGet,VisualScriptNode)
+	GDCLASS(VisualScriptPropertyGet,VisualScriptNode)
 public:
 	enum CallMode {
 		CALL_MODE_SELF,
@@ -299,7 +299,7 @@ VARIANT_ENUM_CAST(VisualScriptPropertyGet::CallMode );
 
 class VisualScriptEmitSignal : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptEmitSignal,VisualScriptNode)
+	GDCLASS(VisualScriptEmitSignal,VisualScriptNode)
 
 private:
 

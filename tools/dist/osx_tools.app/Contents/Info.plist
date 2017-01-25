@@ -9,7 +9,7 @@
 	<key>CFBundleName</key>
 	<string>Godot</string>
 	<key>CFBundleGetInfoString</key>
-	<string>(c) 2007-2016 Juan Linietsky, Ariel Manzur</string>
+	<string>(c) 2007-2017 Juan Linietsky, Ariel Manzur</string>
 	<key>CFBundleIconFile</key>
 	<string>Godot.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -25,13 +25,13 @@
 	<key>CFBundleVersion</key>
 	<string>2.2-dev</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© 2007-2016 Juan Linietsky, Ariel Manzur</string>
+	<string>© 2007-2017 Juan Linietsky, Ariel Manzur</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.6.0</string>
+	<string>10.9.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>x86_64</key>
-		<string>10.6.0</string>
+		<string>10.9.0</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
 	<true/>

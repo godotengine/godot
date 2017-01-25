@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -161,6 +161,8 @@ public:
 	virtual bool file_exists(const String& p_path); ///< return true if a file exists
 
 	virtual uint64_t _get_modified_time(const String& p_file);
+
+	static void configure();
 
 	FileAccessNetwork();
 	~FileAccessNetwork();

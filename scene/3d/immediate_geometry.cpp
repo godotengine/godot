@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,13 +92,13 @@ void ImmediateGeometry::clear(){
 
 }
 
-AABB ImmediateGeometry::get_aabb() const {
+Rect3 ImmediateGeometry::get_aabb() const {
 
 	return aabb;
 }
-DVector<Face3> ImmediateGeometry::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> ImmediateGeometry::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 
@@ -154,16 +154,16 @@ void ImmediateGeometry::add_sphere(int p_lats, int p_lons, float p_radius, bool 
 
 void ImmediateGeometry::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("begin","primitive","texture:Texture"),&ImmediateGeometry::begin,DEFVAL(Ref<Texture>()));
-	ObjectTypeDB::bind_method(_MD("set_normal","normal"),&ImmediateGeometry::set_normal);
-	ObjectTypeDB::bind_method(_MD("set_tangent","tangent"),&ImmediateGeometry::set_tangent);
-	ObjectTypeDB::bind_method(_MD("set_color","color"),&ImmediateGeometry::set_color);
-	ObjectTypeDB::bind_method(_MD("set_uv","uv"),&ImmediateGeometry::set_uv);
-	ObjectTypeDB::bind_method(_MD("set_uv2","uv"),&ImmediateGeometry::set_uv2);
-	ObjectTypeDB::bind_method(_MD("add_vertex","pos"),&ImmediateGeometry::add_vertex);
-	ObjectTypeDB::bind_method(_MD("add_sphere","lats","lons","radius","add_uv"),&ImmediateGeometry::add_sphere,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("end"),&ImmediateGeometry::end);
-	ObjectTypeDB::bind_method(_MD("clear"),&ImmediateGeometry::clear);
+	ClassDB::bind_method(_MD("begin","primitive","texture:Texture"),&ImmediateGeometry::begin,DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(_MD("set_normal","normal"),&ImmediateGeometry::set_normal);
+	ClassDB::bind_method(_MD("set_tangent","tangent"),&ImmediateGeometry::set_tangent);
+	ClassDB::bind_method(_MD("set_color","color"),&ImmediateGeometry::set_color);
+	ClassDB::bind_method(_MD("set_uv","uv"),&ImmediateGeometry::set_uv);
+	ClassDB::bind_method(_MD("set_uv2","uv"),&ImmediateGeometry::set_uv2);
+	ClassDB::bind_method(_MD("add_vertex","pos"),&ImmediateGeometry::add_vertex);
+	ClassDB::bind_method(_MD("add_sphere","lats","lons","radius","add_uv"),&ImmediateGeometry::add_sphere,DEFVAL(true));
+	ClassDB::bind_method(_MD("end"),&ImmediateGeometry::end);
+	ClassDB::bind_method(_MD("clear"),&ImmediateGeometry::clear);
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,24 +54,24 @@ void ColorRamp::_bind_methods() {
 
 
 
-	ObjectTypeDB::bind_method(_MD("add_point","offset","color"),&ColorRamp::add_point);
-	ObjectTypeDB::bind_method(_MD("remove_point","offset","color"),&ColorRamp::remove_point);
+	ClassDB::bind_method(_MD("add_point","offset","color"),&ColorRamp::add_point);
+	ClassDB::bind_method(_MD("remove_point","offset","color"),&ColorRamp::remove_point);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","point","offset"),&ColorRamp::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset","point"),&ColorRamp::get_offset);
+	ClassDB::bind_method(_MD("set_offset","point","offset"),&ColorRamp::set_offset);
+	ClassDB::bind_method(_MD("get_offset","point"),&ColorRamp::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_color","point","color"),&ColorRamp::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color","point"),&ColorRamp::get_color);
+	ClassDB::bind_method(_MD("set_color","point","color"),&ColorRamp::set_color);
+	ClassDB::bind_method(_MD("get_color","point"),&ColorRamp::get_color);
 
-	ObjectTypeDB::bind_method(_MD("interpolate","offset"),&ColorRamp::get_color_at_offset);
+	ClassDB::bind_method(_MD("interpolate","offset"),&ColorRamp::get_color_at_offset);
 
-	ObjectTypeDB::bind_method(_MD("get_point_count"),&ColorRamp::get_points_count);
+	ClassDB::bind_method(_MD("get_point_count"),&ColorRamp::get_points_count);
 
-	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_SET_OFFSETS,"offsets"),&ColorRamp::set_offsets);
-	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_GET_OFFSETS),&ColorRamp::get_offsets);
+	ClassDB::bind_method(_MD(COLOR_RAMP_SET_OFFSETS,"offsets"),&ColorRamp::set_offsets);
+	ClassDB::bind_method(_MD(COLOR_RAMP_GET_OFFSETS),&ColorRamp::get_offsets);
 
-	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_SET_COLORS,"colors"),&ColorRamp::set_colors);
-	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_GET_COLORS),&ColorRamp::get_colors);
+	ClassDB::bind_method(_MD(COLOR_RAMP_SET_COLORS,"colors"),&ColorRamp::set_colors);
+	ClassDB::bind_method(_MD(COLOR_RAMP_GET_COLORS),&ColorRamp::get_colors);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"offsets"),_SCS(COLOR_RAMP_SET_OFFSETS),_SCS(COLOR_RAMP_GET_OFFSETS) );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"colors"),_SCS(COLOR_RAMP_SET_COLORS),_SCS(COLOR_RAMP_GET_COLORS) );

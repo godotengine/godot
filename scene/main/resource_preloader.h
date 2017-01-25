@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,14 +34,14 @@
 
 class ResourcePreloader : public Node {
 
-	OBJ_TYPE(ResourcePreloader,Node);
+	GDCLASS(ResourcePreloader,Node);
 
 	Map<StringName,RES > resources;
 
 
 	void _set_resources(const Array& p_data);
 	Array _get_resources() const;
-	DVector<String> _get_resource_list() const;
+	PoolVector<String> _get_resource_list() const;
 
 protected:
 

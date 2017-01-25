@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,10 @@
 /*************************************************************************/
 #include "http_request.h"
 
+void HTTPRequest::set_ip_type(IP::Type p_type) {
+	client->set_ip_type(p_type);
+}
+
 void HTTPRequest::_redirect_request(const String& p_new_url) {
 
 
@@ -36,7 +40,7 @@ void HTTPRequest::_redirect_request(const String& p_new_url) {
 Error HTTPRequest::_request() {
 
 	//print_line("Requesting:\n\tURL: "+url+"\n\tString: "+request_string+"\n\tPort: "+itos(port)+"\n\tSSL: "+itos(use_ssl)+"\n\tValidate SSL: "+itos(validate_ssl));
-	return client->connect(url,port,use_ssl,validate_ssl);
+	return client->connect_to_host(url,port,use_ssl,validate_ssl);
 }
 
 Error HTTPRequest::_parse_url(const String& p_url) {
@@ -146,11 +150,11 @@ Error HTTPRequest::request(const String& p_url, const Vector<String>& p_custom_h
 		client->set_blocking_mode(false);
 		err = _request();
 		if (err!=OK) {
-			call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CANT_CONNECT,0,PoolStringArray(),PoolByteArray());
 			return ERR_CANT_CONNECT;
 		}
 
-		set_process(true);
+		set_process_internal(true);
 
 	}
 
@@ -166,7 +170,7 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 	Error err = hr->_request();
 
 	if (err!=OK) {
-		hr->call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+		hr->call_deferred("_request_done",RESULT_CANT_CONNECT,0,PoolStringArray(),PoolByteArray());
 	} else {
 		while(!hr->thread_request_quit) {
 
@@ -186,7 +190,7 @@ void HTTPRequest::cancel_request() {
 		return;
 
 	if (!use_threads) {
-		set_process(false);
+		set_process_internal(false);
 	} else {
 		thread_request_quit=true;
 		Thread::wait_to_finish(thread);
@@ -212,7 +216,7 @@ void HTTPRequest::cancel_request() {
 bool HTTPRequest::_handle_response(bool *ret_value) {
 
 	if (!client->has_response()) {
-		call_deferred("_request_done",RESULT_NO_RESPONSE,0,StringArray(),ByteArray());
+		call_deferred("_request_done",RESULT_NO_RESPONSE,0,PoolStringArray(),PoolByteArray());
 		*ret_value=true;
 		return true;
 	}
@@ -232,7 +236,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 		//redirect
 		if (max_redirects>=0 && redirections>=max_redirects) {
 
-			call_deferred("_request_done",RESULT_REDIRECT_LIMIT_REACHED,response_code,response_headers,ByteArray());
+			call_deferred("_request_done",RESULT_REDIRECT_LIMIT_REACHED,response_code,response_headers,PoolByteArray());
 			*ret_value=true;
 			return true;
 		}
@@ -284,7 +288,7 @@ bool HTTPRequest::_update_connection() {
 
 	switch( client->get_status() ) {
 		case HTTPClient::STATUS_DISCONNECTED: {
-			call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CANT_CONNECT,0,PoolStringArray(),PoolByteArray());
 			return true; //end it, since it's doing something
 		} break;
 		case HTTPClient::STATUS_RESOLVING: {
@@ -293,7 +297,7 @@ bool HTTPRequest::_update_connection() {
 			return false;
 		} break;
 		case HTTPClient::STATUS_CANT_RESOLVE: {
-			call_deferred("_request_done",RESULT_CANT_RESOLVE,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CANT_RESOLVE,0,PoolStringArray(),PoolByteArray());
 			return true;
 
 		} break;
@@ -304,7 +308,7 @@ bool HTTPRequest::_update_connection() {
 		} break; //connecting to ip
 		case HTTPClient::STATUS_CANT_CONNECT: {
 
-			call_deferred("_request_done",RESULT_CANT_CONNECT,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CANT_CONNECT,0,PoolStringArray(),PoolByteArray());
 			return true;
 
 		} break;
@@ -322,7 +326,7 @@ bool HTTPRequest::_update_connection() {
 						return ret_value;
 
 
-					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,ByteArray());
+					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,PoolByteArray());
 					return true;
 				}
 				if (got_response && body_len<0) {
@@ -332,7 +336,7 @@ bool HTTPRequest::_update_connection() {
 
 				}
 
-				call_deferred("_request_done",RESULT_CHUNKED_BODY_SIZE_MISMATCH,response_code,response_headers,ByteArray());
+				call_deferred("_request_done",RESULT_CHUNKED_BODY_SIZE_MISMATCH,response_code,response_headers,PoolByteArray());
 				return true;
 				//request migh have been done
 			} else {
@@ -340,7 +344,7 @@ bool HTTPRequest::_update_connection() {
 
 				Error err = client->request(method,request_string,headers,request_data);
 				if (err!=OK) {
-					call_deferred("_request_done",RESULT_CONNECTION_ERROR,0,StringArray(),ByteArray());
+					call_deferred("_request_done",RESULT_CONNECTION_ERROR,0,PoolStringArray(),PoolByteArray());
 					return true;
 				}
 
@@ -366,7 +370,7 @@ bool HTTPRequest::_update_connection() {
 
 				if (!client->is_response_chunked() && client->get_response_body_length()==0) {
 
-					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,ByteArray());
+					call_deferred("_request_done",RESULT_SUCCESS,response_code,response_headers,PoolByteArray());
 					return true;
 				}
 
@@ -377,7 +381,7 @@ bool HTTPRequest::_update_connection() {
 					body_len=client->get_response_body_length();
 
 					if (body_size_limit>=0 && body_len>body_size_limit) {
-						call_deferred("_request_done",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,ByteArray());
+						call_deferred("_request_done",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,PoolByteArray());
 						return true;
 					}
 				}
@@ -386,7 +390,7 @@ bool HTTPRequest::_update_connection() {
 					file=FileAccess::open(download_to_file,FileAccess::WRITE);
 					if (!file) {
 
-						call_deferred("_request_done",RESULT_DOWNLOAD_FILE_CANT_OPEN,response_code,response_headers,ByteArray());
+						call_deferred("_request_done",RESULT_DOWNLOAD_FILE_CANT_OPEN,response_code,response_headers,PoolByteArray());
 						return true;
 					}
 				}
@@ -396,14 +400,14 @@ bool HTTPRequest::_update_connection() {
 			//print_line("BODY: "+itos(body.size()));
 			client->poll();
 
-			ByteArray chunk = client->read_response_body_chunk();
+			PoolByteArray chunk = client->read_response_body_chunk();
 			downloaded+=chunk.size();
 
 			if (file) {
-				ByteArray::Read r=chunk.read();
+				PoolByteArray::Read r=chunk.read();
 				file->store_buffer(r.ptr(),chunk.size());
 				if (file->get_error()!=OK) {
-					call_deferred("_request_done",RESULT_DOWNLOAD_FILE_WRITE_ERROR,response_code,response_headers,ByteArray());
+					call_deferred("_request_done",RESULT_DOWNLOAD_FILE_WRITE_ERROR,response_code,response_headers,PoolByteArray());
 					return true;
 				}
 			} else {
@@ -411,7 +415,7 @@ bool HTTPRequest::_update_connection() {
 			}
 
 			if (body_size_limit>=0 && downloaded>body_size_limit) {
-				call_deferred("_request_done",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,ByteArray());
+				call_deferred("_request_done",RESULT_BODY_SIZE_LIMIT_EXCEEDED,response_code,response_headers,PoolByteArray());
 				return true;
 			}
 
@@ -431,11 +435,11 @@ bool HTTPRequest::_update_connection() {
 
 		} break; // request resulted in body: { } break which must be read
 		case HTTPClient::STATUS_CONNECTION_ERROR: {
-			call_deferred("_request_done",RESULT_CONNECTION_ERROR,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_CONNECTION_ERROR,0,PoolStringArray(),PoolByteArray());
 			return true;
 		} break;
 		case HTTPClient::STATUS_SSL_HANDSHAKE_ERROR: {
-			call_deferred("_request_done",RESULT_SSL_HANDSHAKE_ERROR,0,StringArray(),ByteArray());
+			call_deferred("_request_done",RESULT_SSL_HANDSHAKE_ERROR,0,PoolStringArray(),PoolByteArray());
 			return true;
 		} break;
 
@@ -445,7 +449,7 @@ bool HTTPRequest::_update_connection() {
 }
 
 
-void HTTPRequest::_request_done(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void HTTPRequest::_request_done(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data) {
 
 
 	cancel_request();
@@ -455,14 +459,14 @@ void HTTPRequest::_request_done(int p_status, int p_code, const StringArray& hea
 
 void HTTPRequest::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_PROCESS) {
+	if (p_what==NOTIFICATION_INTERNAL_PROCESS) {
 
 		if (use_threads)
 			return;
 		bool done = _update_connection();
 		if (done) {
 
-			set_process(false);
+			set_process_internal(false);
 			//cancel_request(); called from _request done now
 		}
 	}
@@ -535,34 +539,35 @@ int HTTPRequest::get_body_size() const{
 
 void HTTPRequest::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain","method","request_data"),&HTTPRequest::request,DEFVAL(StringArray()),DEFVAL(true),DEFVAL(HTTPClient::METHOD_GET),DEFVAL(String()));
-	ObjectTypeDB::bind_method(_MD("cancel_request"),&HTTPRequest::cancel_request);
+	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&HTTPRequest::set_ip_type);
+	ClassDB::bind_method(_MD("request","url","custom_headers","ssl_validate_domain","method","request_data"),&HTTPRequest::request,DEFVAL(PoolStringArray()),DEFVAL(true),DEFVAL(HTTPClient::METHOD_GET),DEFVAL(String()));
+	ClassDB::bind_method(_MD("cancel_request"),&HTTPRequest::cancel_request);
 
-	ObjectTypeDB::bind_method(_MD("get_http_client_status"),&HTTPRequest::get_http_client_status);
+	ClassDB::bind_method(_MD("get_http_client_status"),&HTTPRequest::get_http_client_status);
 
-	ObjectTypeDB::bind_method(_MD("set_use_threads","enable"),&HTTPRequest::set_use_threads);
-	ObjectTypeDB::bind_method(_MD("is_using_threads"),&HTTPRequest::is_using_threads);
+	ClassDB::bind_method(_MD("set_use_threads","enable"),&HTTPRequest::set_use_threads);
+	ClassDB::bind_method(_MD("is_using_threads"),&HTTPRequest::is_using_threads);
 
-	ObjectTypeDB::bind_method(_MD("set_body_size_limit","bytes"),&HTTPRequest::set_body_size_limit);
-	ObjectTypeDB::bind_method(_MD("get_body_size_limit"),&HTTPRequest::get_body_size_limit);
+	ClassDB::bind_method(_MD("set_body_size_limit","bytes"),&HTTPRequest::set_body_size_limit);
+	ClassDB::bind_method(_MD("get_body_size_limit"),&HTTPRequest::get_body_size_limit);
 
-	ObjectTypeDB::bind_method(_MD("set_max_redirects","amount"),&HTTPRequest::set_max_redirects);
-	ObjectTypeDB::bind_method(_MD("get_max_redirects"),&HTTPRequest::get_max_redirects);
+	ClassDB::bind_method(_MD("set_max_redirects","amount"),&HTTPRequest::set_max_redirects);
+	ClassDB::bind_method(_MD("get_max_redirects"),&HTTPRequest::get_max_redirects);
 
-	ObjectTypeDB::bind_method(_MD("set_download_file","path"),&HTTPRequest::set_download_file);
-	ObjectTypeDB::bind_method(_MD("get_download_file"),&HTTPRequest::get_download_file);
+	ClassDB::bind_method(_MD("set_download_file","path"),&HTTPRequest::set_download_file);
+	ClassDB::bind_method(_MD("get_download_file"),&HTTPRequest::get_download_file);
 
-	ObjectTypeDB::bind_method(_MD("get_downloaded_bytes"),&HTTPRequest::get_downloaded_bytes);
-	ObjectTypeDB::bind_method(_MD("get_body_size"),&HTTPRequest::get_body_size);
+	ClassDB::bind_method(_MD("get_downloaded_bytes"),&HTTPRequest::get_downloaded_bytes);
+	ClassDB::bind_method(_MD("get_body_size"),&HTTPRequest::get_body_size);
 
-	ObjectTypeDB::bind_method(_MD("_redirect_request"),&HTTPRequest::_redirect_request);
-	ObjectTypeDB::bind_method(_MD("_request_done"),&HTTPRequest::_request_done);
+	ClassDB::bind_method(_MD("_redirect_request"),&HTTPRequest::_redirect_request);
+	ClassDB::bind_method(_MD("_request_done"),&HTTPRequest::_request_done);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_threads"),_SCS("set_use_threads"),_SCS("is_using_threads"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"body_size_limit",PROPERTY_HINT_RANGE,"-1,2000000000"),_SCS("set_body_size_limit"),_SCS("get_body_size_limit"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"max_redirects",PROPERTY_HINT_RANGE,"-1,1024"),_SCS("set_max_redirects"),_SCS("get_max_redirects"));
 
-	ADD_SIGNAL(MethodInfo("request_completed",PropertyInfo(Variant::INT,"result"),PropertyInfo(Variant::INT,"response_code"),PropertyInfo(Variant::STRING_ARRAY,"headers"),PropertyInfo(Variant::RAW_ARRAY,"body")));
+	ADD_SIGNAL(MethodInfo("request_completed",PropertyInfo(Variant::INT,"result"),PropertyInfo(Variant::INT,"response_code"),PropertyInfo(Variant::POOL_STRING_ARRAY,"headers"),PropertyInfo(Variant::POOL_BYTE_ARRAY,"body")));
 
 	BIND_CONSTANT( RESULT_SUCCESS );
 	//BIND_CONSTANT( RESULT_NO_BODY );

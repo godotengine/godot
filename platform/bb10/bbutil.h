@@ -13,7 +13,11 @@ extern "C" {
 extern EGLDisplay egl_disp;
 extern EGLSurface egl_surf;
 
-enum RENDERING_API {GL_ES_1 = EGL_OPENGL_ES_BIT, GL_ES_2 = EGL_OPENGL_ES2_BIT, VG = EGL_OPENVG_BIT};
+enum RENDERING_API {
+	GL_ES_1 = EGL_OPENGL_ES_BIT,
+	GL_ES_2 = EGL_OPENGL_ES2_BIT,
+	VG = EGL_OPENVG_BIT
+};
 
 /**
  * Initializes EGL, GL and loads a default font

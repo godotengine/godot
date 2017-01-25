@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,11 +77,11 @@ BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const{
 
 void BackBufferCopy::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_rect","rect"),&BackBufferCopy::set_rect);
-	ObjectTypeDB::bind_method(_MD("get_rect"),&BackBufferCopy::get_rect);
+	ClassDB::bind_method(_MD("set_rect","rect"),&BackBufferCopy::set_rect);
+	ClassDB::bind_method(_MD("get_rect"),&BackBufferCopy::get_rect);
 
-	ObjectTypeDB::bind_method(_MD("set_copy_mode","copy_mode"),&BackBufferCopy::set_copy_mode);
-	ObjectTypeDB::bind_method(_MD("get_copy_mode"),&BackBufferCopy::get_copy_mode);
+	ClassDB::bind_method(_MD("set_copy_mode","copy_mode"),&BackBufferCopy::set_copy_mode);
+	ClassDB::bind_method(_MD("get_copy_mode"),&BackBufferCopy::get_copy_mode);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"copy_mode",PROPERTY_HINT_ENUM,"Disabled,Rect,Viewport"),_SCS("set_copy_mode"),_SCS("get_copy_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),_SCS("set_rect"),_SCS("get_rect"));

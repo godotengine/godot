@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_scene_import_plugin.h"
+
 #include "globals.h"
 #include "tools/editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
@@ -82,7 +83,7 @@ EditorScenePostImport::EditorScenePostImport() {
 
 class EditorImportAnimationOptions : public VBoxContainer {
 
-	OBJ_TYPE( EditorImportAnimationOptions, VBoxContainer );
+	GDCLASS( EditorImportAnimationOptions, VBoxContainer );
 
 
 
@@ -147,7 +148,7 @@ public:
 
 class EditorSceneImportDialog : public ConfirmationDialog  {
 
-	OBJ_TYPE(EditorSceneImportDialog,ConfirmationDialog);
+	GDCLASS(EditorSceneImportDialog,ConfirmationDialog);
 
 
 	struct FlagInfo {
@@ -374,10 +375,10 @@ void EditorImportAnimationOptions::_item_edited() {
 
 void EditorImportAnimationOptions::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_changed",&EditorImportAnimationOptions::_changed);
-	ObjectTypeDB::bind_method("_item_edited",&EditorImportAnimationOptions::_item_edited);
-	ObjectTypeDB::bind_method("_button_action",&EditorImportAnimationOptions::_button_action);
-//	ObjectTypeDB::bind_method("_changedp",&EditorImportAnimationOptions::_changedp);
+	ClassDB::bind_method("_changed",&EditorImportAnimationOptions::_changed);
+	ClassDB::bind_method("_item_edited",&EditorImportAnimationOptions::_item_edited);
+	ClassDB::bind_method("_button_action",&EditorImportAnimationOptions::_button_action);
+	//ClassDB::bind_method("_changedp",&EditorImportAnimationOptions::_changedp);
 
 	ADD_SIGNAL(MethodInfo("changed"));
 }
@@ -390,7 +391,7 @@ void EditorImportAnimationOptions::_notification(int p_what) {
 		flags->connect("item_edited",this,"_changed");
 		clips_tree->connect("item_edited",this,"_item_edited");
 		clips_tree->connect("button_pressed",this,"_button_action",varray(),CONNECT_DEFERRED);
-//		format->connect("item_selected",this,"_changedp");
+		//format->connect("item_selected",this,"_changedp");
 	}
 }
 
@@ -659,7 +660,7 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 
 	import_path->set_text(p_path);
 	if (root_node_name->get_text().size()==0){
-		root_node_name->set_text(import_path->get_text().get_file().basename());
+		root_node_name->set_text(import_path->get_text().get_file().get_basename());
 	}
 
 }
@@ -670,9 +671,9 @@ void EditorSceneImportDialog::_choose_save_file(const String& p_path) {
 
 void EditorSceneImportDialog::_choose_script(const String& p_path) {
 
-	String p = Globals::get_singleton()->localize_path(p_path);
+	String p = GlobalConfig::get_singleton()->localize_path(p_path);
 	if (!p.is_resource_file())
-		p=Globals::get_singleton()->get_resource_path().path_to(p_path.get_base_dir())+p_path.get_file();
+		p=GlobalConfig::get_singleton()->get_resource_path().path_to(p_path.get_base_dir())+p_path.get_file();
 	script_path->set_text(p);
 
 }
@@ -725,7 +726,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	if (texture_action->get_selected()==0)
 		dst_path=save_path->get_text();//.get_base_dir();
 	else
-		dst_path=Globals::get_singleton()->get("import/shared_textures");
+		dst_path=GlobalConfig::get_singleton()->get("import/shared_textures");
 
 	uint32_t flags=0;
 
@@ -763,7 +764,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 	// Scenes should always be imported as binary format since vertex data is large and would take
 	// up a lot of space and time to load if imported as text format (GH-5778)
-	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+".scn");
+	String save_file = save_path->get_text().plus_file(import_path->get_text().get_file().get_basename()+".scn");
 	print_line("Saving to: "+save_file);
 
 
@@ -794,7 +795,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		rim->set_option("root_type",root_type->get_text());
 	}
 	if (root_node_name->get_text().size()==0) {
-		root_node_name->set_text(import_path->get_text().get_file().basename());
+		root_node_name->set_text(import_path->get_text().get_file().get_basename());
 	}
 	rim->set_option("root_name",root_node_name->get_text());
 
@@ -1058,19 +1059,19 @@ void EditorSceneImportDialog::_set_root_type() {
 void EditorSceneImportDialog::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method("_choose_file",&EditorSceneImportDialog::_choose_file);
-	ObjectTypeDB::bind_method("_choose_save_file",&EditorSceneImportDialog::_choose_save_file);
-	ObjectTypeDB::bind_method("_choose_script",&EditorSceneImportDialog::_choose_script);
-	ObjectTypeDB::bind_method("_import",&EditorSceneImportDialog::_import,DEFVAL(false));
-	ObjectTypeDB::bind_method("_browse",&EditorSceneImportDialog::_browse);
-	ObjectTypeDB::bind_method("_browse_target",&EditorSceneImportDialog::_browse_target);
-	ObjectTypeDB::bind_method("_browse_script",&EditorSceneImportDialog::_browse_script);
-	ObjectTypeDB::bind_method("_dialog_hid",&EditorSceneImportDialog::_dialog_hid);
-	ObjectTypeDB::bind_method("_import_confirm",&EditorSceneImportDialog::_import_confirm);
-	ObjectTypeDB::bind_method("_open_and_import",&EditorSceneImportDialog::_open_and_import);
-	ObjectTypeDB::bind_method("_root_default_pressed",&EditorSceneImportDialog::_root_default_pressed);
-	ObjectTypeDB::bind_method("_root_type_pressed",&EditorSceneImportDialog::_root_type_pressed);
-	ObjectTypeDB::bind_method("_set_root_type",&EditorSceneImportDialog::_set_root_type);
+	ClassDB::bind_method("_choose_file",&EditorSceneImportDialog::_choose_file);
+	ClassDB::bind_method("_choose_save_file",&EditorSceneImportDialog::_choose_save_file);
+	ClassDB::bind_method("_choose_script",&EditorSceneImportDialog::_choose_script);
+	ClassDB::bind_method("_import",&EditorSceneImportDialog::_import,DEFVAL(false));
+	ClassDB::bind_method("_browse",&EditorSceneImportDialog::_browse);
+	ClassDB::bind_method("_browse_target",&EditorSceneImportDialog::_browse_target);
+	ClassDB::bind_method("_browse_script",&EditorSceneImportDialog::_browse_script);
+	ClassDB::bind_method("_dialog_hid",&EditorSceneImportDialog::_dialog_hid);
+	ClassDB::bind_method("_import_confirm",&EditorSceneImportDialog::_import_confirm);
+	ClassDB::bind_method("_open_and_import",&EditorSceneImportDialog::_open_and_import);
+	ClassDB::bind_method("_root_default_pressed",&EditorSceneImportDialog::_root_default_pressed);
+	ClassDB::bind_method("_root_type_pressed",&EditorSceneImportDialog::_root_type_pressed);
+	ClassDB::bind_method("_set_root_type",&EditorSceneImportDialog::_set_root_type);
 
 
 	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
@@ -1115,7 +1116,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	set_title(TTR("Import 3D Scene"));
 	HBoxContainer *import_hb = memnew( HBoxContainer );
 	add_child(import_hb);
-	set_child_rect(import_hb);
+	//set_child_rect(import_hb);
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	import_hb->add_child(vbc);
@@ -1237,7 +1238,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	error_dialog = memnew ( ConfirmationDialog );
 	add_child(error_dialog);
 	error_dialog->get_ok()->set_text(TTR("Accept"));
-//	error_dialog->get_cancel()->hide();
+	//error_dialog->get_cancel()->hide();
 
 
 	HBoxContainer *custom_root_hb = memnew( HBoxContainer );
@@ -1275,7 +1276,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	set_hide_on_ok(false);
 
 	GLOBAL_DEF("import/shared_textures","res://");
-	Globals::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
+	GlobalConfig::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
 
 	import_hb->add_constant_override("separation",30);
 
@@ -1302,7 +1303,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	add_child(confirm_import);
 	VBoxContainer *cvb = memnew( VBoxContainer );
 	confirm_import->add_child(cvb);
-	confirm_import->set_child_rect(cvb);
+	//confirm_import->set_child_rect(cvb);
 
 	PanelContainer *pc = memnew( PanelContainer );
 	pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
@@ -1394,7 +1395,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 			Ref<Resource> res = p_var;
 			if (res.is_valid()) {
 
-				if (res->is_type("Texture") && !image_map.has(res)) {
+				if (res->is_class("Texture") && !image_map.has(res)) {
 
 					image_map.insert(res,TEXTURE_ROLE_DEFAULT);
 
@@ -1407,7 +1408,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 					for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
 
 						if (E->get().type==Variant::OBJECT || E->get().type==Variant::ARRAY || E->get().type==Variant::DICTIONARY) {
-							if (E->get().type==Variant::OBJECT && res->cast_to<FixedMaterial>() && (E->get().name=="textures/diffuse" || E->get().name=="textures/detail" || E->get().name=="textures/emission")) {
+							if (E->get().type==Variant::OBJECT && res->cast_to<FixedSpatialMaterial>() && (E->get().name=="textures/diffuse" || E->get().name=="textures/detail" || E->get().name=="textures/emission")) {
 
 								Ref<ImageTexture> tex =res->get(E->get().name);
 								if (tex.is_valid()) {
@@ -1415,14 +1416,16 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 									image_map.insert(tex,TEXTURE_ROLE_DIFFUSE);
 								}
 
-							} else if (E->get().type==Variant::OBJECT && res->cast_to<FixedMaterial>() && (E->get().name=="textures/normal")) {
+							} else if (E->get().type==Variant::OBJECT && res->cast_to<FixedSpatialMaterial>() && (E->get().name=="textures/normal")) {
 
 								Ref<ImageTexture> tex =res->get(E->get().name);
 								if (tex.is_valid()) {
 
 									image_map.insert(tex,TEXTURE_ROLE_NORMALMAP);
+									/*
 									if (p_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
-										res->cast_to<FixedMaterial>()->set_fixed_flag(FixedMaterial::FLAG_USE_XY_NORMALMAP,true);
+										res->cast_to<FixedSpatialMaterial>()->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_XY_NORMALMAP,true);
+									*/
 								}
 
 
@@ -1529,12 +1532,12 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 				Ref<Mesh> m = mi->get_mesh();
 				for(int i=0;i<m->get_surface_count();i++) {
 
-					Ref<FixedMaterial> fm = m->surface_get_material(i);
+					Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
 					if (fm.is_valid()) {
-						fm->set_flag(Material::FLAG_UNSHADED,true);
-						fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-						fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-						fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+						//fm->set_flag(Material::FLAG_UNSHADED,true);
+						//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+						//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+						//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
 					}
 				}
 			}
@@ -1552,23 +1555,23 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 			for(int i=0;i<m->get_surface_count();i++) {
 
-				Ref<FixedMaterial> mat = m->surface_get_material(i);
+				Ref<FixedSpatialMaterial> mat = m->surface_get_material(i);
 				if (!mat.is_valid())
 					continue;
 
 				if (p_flags&SCENE_FLAG_DETECT_ALPHA && _teststr(mat->get_name(),"alpha")) {
 
-					mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
-					mat->set_name(_fixstr(mat->get_name(),"alpha"));
+					//mat->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+					//mat->set_name(_fixstr(mat->get_name(),"alpha"));
 				}
 				if (p_flags&SCENE_FLAG_DETECT_VCOLOR && _teststr(mat->get_name(),"vcol")) {
 
-					mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
-					mat->set_name(_fixstr(mat->get_name(),"vcol"));
+					//mat->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY,true);
+					//mat->set_name(_fixstr(mat->get_name(),"vcol"));
 				}
 
 				if (p_flags&SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS && m->surface_get_format(i)&Mesh::ARRAY_FORMAT_TEX_UV2) {
-					mat->set_flag(Material::FLAG_LIGHTMAP_ON_UV2,true);
+					//mat->set_flag(Material::FLAG_LIGHTMAP_ON_UV2,true);
 				}
 
 			}
@@ -1627,23 +1630,23 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 					float dist = d.to_double();
 					mi->set_flag(GeometryInstance::FLAG_BILLBOARD,true);
 					mi->set_flag(GeometryInstance::FLAG_BILLBOARD_FIX_Y,true);
-					mi->set_draw_range_begin(dist);
-					mi->set_draw_range_end(100000);
+					//mi->set_draw_range_begin(dist);
+					//mi->set_draw_range_end(100000);
 
-					mip->set_draw_range_begin(0);
-					mip->set_draw_range_end(dist);
+					//mip->set_draw_range_begin(0);
+					//mip->set_draw_range_end(dist);
 
 					if (mi->get_mesh().is_valid()) {
 
 						Ref<Mesh> m = mi->get_mesh();
 						for(int i=0;i<m->get_surface_count();i++) {
 
-							Ref<FixedMaterial> fm = m->surface_get_material(i);
+							Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
 							if (fm.is_valid()) {
-								fm->set_flag(Material::FLAG_UNSHADED,true);
-								fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-								fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-								fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+								//fm->set_flag(Material::FLAG_UNSHADED,true);
+								//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+								//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
+								//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
 							}
 						}
 					}
@@ -1675,23 +1678,23 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		    d=d.substr(1,d.length());
 		if (d.length() && d[0]>='0' && d[0]<='9') {
 		    float dist = d.to_double();
-		    mi->set_draw_range_begin(dist);
-		    mi->set_draw_range_end(100000);
+		  ///  mi->set_draw_range_begin(dist);
+		  //  mi->set_draw_range_end(100000);
 
-		    mip->set_draw_range_begin(0);
-		    mip->set_draw_range_end(dist);
+		  //  mip->set_draw_range_begin(0);
+		  //  mip->set_draw_range_end(dist);
 
 		    /*if (mi->get_mesh().is_valid()) {
 
 			Ref<Mesh> m = mi->get_mesh();
 			for(int i=0;i<m->get_surface_count();i++) {
 
-			    Ref<FixedMaterial> fm = m->surface_get_material(i);
+			    Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
 			    if (fm.is_valid()) {
 				fm->set_flag(Material::FLAG_UNSHADED,true);
 				fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 				fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
-				fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+				fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
 			    }
 			}
 		    }*/
@@ -1707,7 +1710,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 		String str=name;
 		int layer = str.substr(str.find("lm")+3,str.length()).to_int();
-		mi->set_baked_light_texture_id(layer);
+		//mi->set_baked_light_texture_id(layer);
 	}
 
 	if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"colonly")) {
@@ -1773,7 +1776,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 		// get mesh instance and bounding box
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-		AABB aabb = mi->get_aabb();
+		Rect3 aabb = mi->get_aabb();
 
 		// create a new rigid body collision node
 		RigidBody * rigid_body = memnew( RigidBody );
@@ -1788,7 +1791,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		Node * mesh = p_node->duplicate();
 		mesh->set_name(_fixstr(name,"rigid"));
 		// reset the xform matrix of the duplicated node so it can inherit parent node xform
-		mesh->cast_to<Spatial>()->set_transform(Transform(Matrix3()));
+		mesh->cast_to<Spatial>()->set_transform(Transform(Basis()));
 		// reparent the new mesh node to the rigid body collision node
 		p_node->add_child(mesh);
 		mesh->set_owner(p_node->get_owner());
@@ -1897,14 +1900,14 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			return p_node;
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-		DVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
+		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 
 		BSP_Tree bsptree(faces);
 
 		Ref<RoomBounds> area = memnew( RoomBounds );
-		area->set_bounds(faces);
-		area->set_geometry_hint(faces);
+		//area->set_bounds(faces);
+		//area->set_geometry_hint(faces);
 
 
 		Room * room = memnew( Room );
@@ -1932,7 +1935,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		memdelete(p_node);
 		p_node=room;
 
-		room->compute_room_from_subtree();
+		//room->compute_room_from_subtree();
 
 	} else if (p_flags&SCENE_FLAG_CREATE_PORTALS &&_teststr(name,"portal") && p_node->cast_to<MeshInstance>()) {
 
@@ -1940,7 +1943,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 			return p_node;
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
-		DVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
+		PoolVector<Face3> faces = mi->get_faces(VisualInstance::FACES_SOLID);
 
 		ERR_FAIL_COND_V(faces.size()==0,NULL);
 		//step 1 compute the plane
@@ -2059,18 +2062,18 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 			for(int i=0;i<mesh->get_surface_count();i++) {
 
-				Ref<FixedMaterial> fm = mesh->surface_get_material(i);
+				Ref<FixedSpatialMaterial> fm = mesh->surface_get_material(i);
 				if (fm.is_valid()) {
 					String name = fm->get_name();
-					if (_teststr(name,"alpha")) {
-						fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+				/*	if (_teststr(name,"alpha")) {
+						fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
 						name=_fixstr(name,"alpha");
 					}
 
 					if (_teststr(name,"vcol")) {
-						fm->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
+						fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY,true);
 						name=_fixstr(name,"vcol");
-					}
+					}*/
 					fm->set_name(name);
 				}
 			}
@@ -2124,7 +2127,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	String src_path=EditorImportPlugin::expand_source_path(from->get_source_path(0));
 
 	Ref<EditorSceneImporter> importer;
-	String ext=src_path.extension().to_lower();
+	String ext=src_path.get_extension().to_lower();
 
 
 	EditorProgress progress("import",TTR("Import Scene"),104);
@@ -2172,8 +2175,10 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS;
 	if (scene_flags&SCENE_FLAG_IMPORT_ANIMATIONS)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION;
-	//if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
-	//	import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
+	/*
+	if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
+		import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
+	*/
 	if (scene_flags&SCENE_FLAG_GENERATE_TANGENT_ARRAYS)
 		import_flags|=EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 
@@ -2189,7 +2194,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 
 	if (from->has_option("root_type")) {
 		String type = from->get_option("root_type");
-		Object *base = ObjectTypeDB::instance(type);
+		Object *base = ClassDB::instance(type);
 		Node *base_node = NULL;
 		if (base)
 			base_node=base->cast_to<Node>();
@@ -2801,7 +2806,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 		String path = texture->get_path();
 		String fname= path.get_file();
-		String target_path = Globals::get_singleton()->localize_path(target_res_path.plus_file(fname));
+		String target_path = GlobalConfig::get_singleton()->localize_path(target_res_path.plus_file(fname));
 		progress.step(TTR("Import Image:")+" "+fname,3+(idx)*100/imagemap.size());
 
 		idx++;
@@ -2821,7 +2826,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		{
 
 
-			target_path=target_path.basename()+".tex";
+			target_path=target_path.get_basename()+".tex";
 
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 
@@ -2936,7 +2941,7 @@ void EditorSceneImportPlugin::import_from_drop(const Vector<String>& p_drop,cons
 	//bool warn_compatible=false;
 	for(int i=0;i<p_drop.size();i++) {
 
-		String extension = p_drop[i].extension().to_lower();
+		String extension = p_drop[i].get_extension().to_lower();
 
 		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 

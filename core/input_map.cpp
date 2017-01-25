@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input_map.h"
+
 #include "globals.h"
 #include "os/keyboard.h"
 
@@ -34,19 +35,19 @@ InputMap *InputMap::singleton=NULL;
 
 void InputMap::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("has_action","action"),&InputMap::has_action);
-	ObjectTypeDB::bind_method(_MD("get_action_id","action"),&InputMap::get_action_id);
-	ObjectTypeDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
-	ObjectTypeDB::bind_method(_MD("get_actions"),&InputMap::_get_actions);
-	ObjectTypeDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
-	ObjectTypeDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
+	ClassDB::bind_method(_MD("has_action","action"),&InputMap::has_action);
+	ClassDB::bind_method(_MD("get_action_id","action"),&InputMap::get_action_id);
+	ClassDB::bind_method(_MD("get_action_from_id","id"),&InputMap::get_action_from_id);
+	ClassDB::bind_method(_MD("get_actions"),&InputMap::_get_actions);
+	ClassDB::bind_method(_MD("add_action","action"),&InputMap::add_action);
+	ClassDB::bind_method(_MD("erase_action","action"),&InputMap::erase_action);
 
-	ObjectTypeDB::bind_method(_MD("action_add_event","action","event"),&InputMap::action_add_event);
-	ObjectTypeDB::bind_method(_MD("action_has_event","action","event"),&InputMap::action_has_event);
-	ObjectTypeDB::bind_method(_MD("action_erase_event","action","event"),&InputMap::action_erase_event);
-	ObjectTypeDB::bind_method(_MD("get_action_list","action"),&InputMap::_get_action_list);
-	ObjectTypeDB::bind_method(_MD("event_is_action","event","action"),&InputMap::event_is_action);
-	ObjectTypeDB::bind_method(_MD("load_from_globals"),&InputMap::load_from_globals);
+	ClassDB::bind_method(_MD("action_add_event","action","event"),&InputMap::action_add_event);
+	ClassDB::bind_method(_MD("action_has_event","action","event"),&InputMap::action_has_event);
+	ClassDB::bind_method(_MD("action_erase_event","action","event"),&InputMap::action_erase_event);
+	ClassDB::bind_method(_MD("get_action_list","action"),&InputMap::_get_action_list);
+	ClassDB::bind_method(_MD("event_is_action","event","action"),&InputMap::event_is_action);
+	ClassDB::bind_method(_MD("load_from_globals"),&InputMap::load_from_globals);
 
 }
 
@@ -125,7 +126,7 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 				same=(e.key.scancode==p_event.key.scancode && (p_mod_ignore || e.key.mod == p_event.key.mod));
 
 			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
+			case InputEvent::JOYPAD_BUTTON: {
 
 				same=(e.joy_button.button_index==p_event.joy_button.button_index);
 
@@ -135,7 +136,7 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 				same=(e.mouse_button.button_index==p_event.mouse_button.button_index);
 
 			} break;
-			case InputEvent::JOYSTICK_MOTION: {
+			case InputEvent::JOYPAD_MOTION: {
 
 				same=(e.joy_motion.axis==p_event.joy_motion.axis && (e.joy_motion.axis_value < 0) == (p_event.joy_motion.axis_value < 0));
 
@@ -198,7 +199,7 @@ Array InputMap::_get_action_list(const StringName& p_action) {
 	if (al) {
 		for(const List<InputEvent>::Element *E=al->front();E;E=E->next()) {
 
-			ret.push_back(E->get());;
+			ret.push_back(E->get());
 		}
 	}
 
@@ -238,10 +239,10 @@ const Map<StringName, InputMap::Action>& InputMap::get_action_map() const {
 
 void InputMap::load_from_globals() {
 
-	input_map.clear();;
+	input_map.clear();
 
 	List<PropertyInfo> pinfo;
-	Globals::get_singleton()->get_property_list(&pinfo);
+	GlobalConfig::get_singleton()->get_property_list(&pinfo);
 
 	for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
 		const PropertyInfo &pi=E->get();
@@ -253,7 +254,7 @@ void InputMap::load_from_globals() {
 
 		add_action(name);
 
-		Array va = Globals::get_singleton()->get(pi.name);;
+		Array va = GlobalConfig::get_singleton()->get(pi.name);
 
 		for(int i=0;i<va.size();i++) {
 
@@ -324,7 +325,7 @@ void InputMap::load_default() {
 	key.key.scancode=KEY_PAGEDOWN;
 	action_add_event("ui_page_down",key);
 
-//	set("display/orientation", "landscape");
+	//set("display/handheld/orientation", "landscape");
 
 
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -805,6 +805,15 @@ void PhysicsServerSW::body_apply_impulse(RID p_body, const Vector3& p_pos, const
 	body->wakeup();
 };
 
+void PhysicsServerSW::body_apply_torque_impulse(RID p_body, const Vector3& p_impulse) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->apply_torque_impulse(p_impulse);
+	body->wakeup();
+};
+
 void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity) {
 
 	BodySW *body = body_owner.get(p_body);
@@ -1386,11 +1395,13 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		BodySW *body = body_owner.get(p_rid);
 
-//		if (body->get_state_query())
-//			_clear_query(body->get_state_query());
+		/*
+		if (body->get_state_query())
+			_clear_query(body->get_state_query());
 
-//		if (body->get_direct_state_query())
-//			_clear_query(body->get_direct_state_query());
+		if (body->get_direct_state_query())
+			_clear_query(body->get_direct_state_query());
+		*/
 
 		body->set_space(NULL);
 
@@ -1413,8 +1424,10 @@ void PhysicsServerSW::free(RID p_rid) {
 
 		AreaSW *area = area_owner.get(p_rid);
 
-//		if (area->get_monitor_query())
-//			_clear_query(area->get_monitor_query());
+		/*
+		if (area->get_monitor_query())
+			_clear_query(area->get_monitor_query());
+		*/
 
 		area->set_space(NULL);
 

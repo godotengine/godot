@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,18 +44,18 @@
 
 class Portal : public VisualInstance {
 
-	OBJ_TYPE(Portal, VisualInstance);
+	GDCLASS(Portal, VisualInstance);
 
 	RID portal;
+	Vector<Point2> shape;
 
 	bool enabled;
 	float disable_distance;
 	Color disabled_color;
 	float connect_range;
 
-	AABB aabb;
+	Rect3 aabb;
 
-	virtual RES _get_gizmo_geometry() const;
 
 protected:
 
@@ -67,8 +67,8 @@ protected:
 
 public:
 
-	virtual AABB get_aabb() const;
-	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	virtual Rect3 get_aabb() const;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;

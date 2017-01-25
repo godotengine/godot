@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#include "aabb.h"
+#include "rect3.h"
 #include "ustring.h"
 #include "vector3.h"
 #include "plane.h"
@@ -63,13 +63,13 @@ struct PropertyInfo;
 struct MethodInfo;
 
 
-typedef DVector<uint8_t> ByteArray;
-typedef DVector<int> IntArray;
-typedef DVector<real_t> RealArray;
-typedef DVector<String> StringArray;
-typedef DVector<Vector2> Vector2Array;
-typedef DVector<Vector3> Vector3Array;
-typedef DVector<Color> ColorArray;
+typedef PoolVector<uint8_t> PoolByteArray;
+typedef PoolVector<int> PoolIntArray;
+typedef PoolVector<real_t> PoolRealArray;
+typedef PoolVector<String> PoolStringArray;
+typedef PoolVector<Vector2> PoolVector2Array;
+typedef PoolVector<Vector3> PoolVector3Array;
+typedef PoolVector<Color> PoolColorArray;
 
 class Variant {
 public:
@@ -89,11 +89,11 @@ public:
 		VECTOR2,		// 5
 		RECT2,
 		VECTOR3,
-		MATRIX32,
+		TRANSFORM2D,
 		PLANE,
 		QUAT,			// 10
-		_AABB, //sorry naming convention fail :( not like it's used often
-		MATRIX3,
+		RECT3, //sorry naming convention fail :( not like it's used often
+		BASIS,
 		TRANSFORM,
 
 		// misc types
@@ -107,13 +107,13 @@ public:
 		ARRAY,
 
 		// arrays
-		RAW_ARRAY,
-		INT_ARRAY,
-		REAL_ARRAY,
-		STRING_ARRAY,	// 25
-		VECTOR2_ARRAY,
-		VECTOR3_ARRAY,
-		COLOR_ARRAY,
+		POOL_BYTE_ARRAY,
+		POOL_INT_ARRAY,
+		POOL_REAL_ARRAY,
+		POOL_STRING_ARRAY,	// 25
+		POOL_VECTOR2_ARRAY,
+		POOL_VECTOR3_ARRAY,
+		POOL_COLOR_ARRAY,
 
 		VARIANT_MAX
 
@@ -141,11 +141,11 @@ private:
 	union {
 
 		bool _bool;
-		int _int;
+		int64_t _int;
 		double _real;
-		Matrix32 *_matrix32;
-		AABB* _aabb;
-		Matrix3 *_matrix3;
+		Transform2D *_transform2d;
+		Rect3* _rect3;
+		Basis *_basis;
 		Transform *_transform;
 		RefPtr *_resource;
 		InputEvent *_input_event;
@@ -208,11 +208,11 @@ public:
 	operator Rect2() const;
 	operator Vector3() const;
 	operator Plane() const;
-	operator AABB() const;
+	operator Rect3() const;
 	operator Quat() const;
-	operator Matrix3() const;
+	operator Basis() const;
 	operator Transform() const;
-	operator Matrix32() const;
+	operator Transform2D() const;
 
 	operator Color() const;
 	operator Image() const;
@@ -227,14 +227,14 @@ public:
 	operator Dictionary() const;
 	operator Array() const;
 
-	operator DVector<uint8_t>() const;
-	operator DVector<int>() const;
-	operator DVector<real_t>() const;
-	operator DVector<String>() const;
-	operator DVector<Vector3>() const;
-	operator DVector<Color>() const;
-	operator DVector<Plane>() const;
-	operator DVector<Face3>() const;
+	operator PoolVector<uint8_t>() const;
+	operator PoolVector<int>() const;
+	operator PoolVector<real_t>() const;
+	operator PoolVector<String>() const;
+	operator PoolVector<Vector3>() const;
+	operator PoolVector<Color>() const;
+	operator PoolVector<Plane>() const;
+	operator PoolVector<Face3>() const;
 
 
 	operator Vector<Variant>() const;
@@ -246,7 +246,7 @@ public:
 	operator Vector<Color>() const;
 	operator Vector<RID>() const;
 	operator Vector<Vector2>() const;
-	operator DVector<Vector2>() const;
+	operator PoolVector<Vector2>() const;
 	operator Vector<Plane>() const;
 
 	// some core type enums to convert to
@@ -280,10 +280,10 @@ public:
 	Variant(const Rect2& p_rect2);
 	Variant(const Vector3& p_vector3);
 	Variant(const Plane& p_plane);
-	Variant(const AABB& p_aabb);
+	Variant(const Rect3& p_aabb);
 	Variant(const Quat& p_quat);
-	Variant(const Matrix3& p_transform);
-	Variant(const Matrix32& p_transform);
+	Variant(const Basis& p_transform);
+	Variant(const Transform2D& p_transform);
 	Variant(const Transform& p_transform);
 	Variant(const Color& p_color);
 	Variant(const Image& p_image);
@@ -295,14 +295,14 @@ public:
 	Variant(const Dictionary& p_dictionary);
 
 	Variant(const Array& p_array);
-	Variant(const DVector<Plane>& p_array); // helper
-	Variant(const DVector<uint8_t>& p_raw_array);
-	Variant(const DVector<int>& p_int_array);
-	Variant(const DVector<real_t>& p_real_array);
-	Variant(const DVector<String>& p_string_array);
-	Variant(const DVector<Vector3>& p_vector3_array);
-	Variant(const DVector<Color>& p_color_array);
-	Variant(const DVector<Face3>& p_face_array);
+	Variant(const PoolVector<Plane>& p_array); // helper
+	Variant(const PoolVector<uint8_t>& p_raw_array);
+	Variant(const PoolVector<int>& p_int_array);
+	Variant(const PoolVector<real_t>& p_real_array);
+	Variant(const PoolVector<String>& p_string_array);
+	Variant(const PoolVector<Vector3>& p_vector3_array);
+	Variant(const PoolVector<Color>& p_color_array);
+	Variant(const PoolVector<Face3>& p_face_array);
 
 
 	Variant(const Vector<Variant>& p_array);
@@ -315,7 +315,7 @@ public:
 	Variant(const Vector<Plane>& p_array); // helper
 	Variant(const Vector<RID>& p_array); // helper
 	Variant(const Vector<Vector2>& p_array); // helper
-	Variant(const DVector<Vector2>& p_array); // helper
+	Variant(const PoolVector<Vector2>& p_array); // helper
 
 	Variant(const IP_Address& p_address);
 

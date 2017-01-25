@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -299,8 +299,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				case SL::TYPE_VEC2: { Vector2 v = cnode->value; code="vec2("+_mknum(v.x)+", "+_mknum(v.y)+")"; } break;
 				case SL::TYPE_VEC3: { Vector3 v = cnode->value; code="vec3("+_mknum(v.x)+", "+_mknum(v.y)+", "+_mknum(v.z)+")"; } break;
 				case SL::TYPE_VEC4: { Plane v = cnode->value; code="vec4("+_mknum(v.normal.x)+", "+_mknum(v.normal.y)+", "+_mknum(v.normal.z)+", "+_mknum(v.d)+")"; } break;
-				case SL::TYPE_MAT2: { Matrix32 x = cnode->value; code="mat2( vec2("+_mknum(x[0][0])+", "+_mknum(x[0][1])+"), vec2("+_mknum(x[1][0])+", "+_mknum(x[1][1])+"))"; } break;
-				case SL::TYPE_MAT3: { Matrix3 x = cnode->value; code="mat3( vec3("+_mknum(x.get_axis(0).x)+", "+_mknum(x.get_axis(0).y)+", "+_mknum(x.get_axis(0).z)+"), vec3("+_mknum(x.get_axis(1).x)+", "+_mknum(x.get_axis(1).y)+", "+_mknum(x.get_axis(1).z)+"), vec3("+_mknum(x.get_axis(2).x)+", "+_mknum(x.get_axis(2).y)+", "+_mknum(x.get_axis(2).z)+"))"; } break;
+				case SL::TYPE_MAT2: { Transform2D x = cnode->value; code="mat2( vec2("+_mknum(x[0][0])+", "+_mknum(x[0][1])+"), vec2("+_mknum(x[1][0])+", "+_mknum(x[1][1])+"))"; } break;
+				case SL::TYPE_MAT3: { Basis x = cnode->value; code="mat3( vec3("+_mknum(x.get_axis(0).x)+", "+_mknum(x.get_axis(0).y)+", "+_mknum(x.get_axis(0).z)+"), vec3("+_mknum(x.get_axis(1).x)+", "+_mknum(x.get_axis(1).y)+", "+_mknum(x.get_axis(1).z)+"), vec3("+_mknum(x.get_axis(2).x)+", "+_mknum(x.get_axis(2).y)+", "+_mknum(x.get_axis(2).z)+"))"; } break;
 				case SL::TYPE_MAT4: { Transform x = cnode->value; code="mat4( vec4("+_mknum(x.basis.get_axis(0).x)+", "+_mknum(x.basis.get_axis(0).y)+", "+_mknum(x.basis.get_axis(0).z)+",0.0), vec4("+_mknum(x.basis.get_axis(1).x)+", "+_mknum(x.basis.get_axis(1).y)+", "+_mknum(x.basis.get_axis(1).z)+",0.0), vec4("+_mknum(x.basis.get_axis(2).x)+", "+_mknum(x.basis.get_axis(2).y)+", "+_mknum(x.basis.get_axis(2).z)+",0.0), vec4("+_mknum(x.origin.x)+", "+_mknum(x.origin.y)+", "+_mknum(x.origin.z)+",1.0))"; } break;
 				default: code="<error: "+Variant::get_type_name(cnode->value.get_type())+" ("+itos(cnode->datatype)+">";
 			}
@@ -435,13 +435,14 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 						//create the call to sample the screen, and clamp it
 						uses_texpos=true;
 						code="get_texpos("+dump_node_code(onode->arguments[1],p_level)+"";
-//						code="get_texpos(gl_ProjectionMatrixInverse * texture2D( depth_texture, clamp(("+dump_node_code(onode->arguments[1],p_level)+").xy,vec2(0.0),vec2(1.0))*gl_LightSource[5].specular.zw+gl_LightSource[5].specular.xy)";
+						//code="get_texpos(gl_ProjectionMatrixInverse * texture2D( depth_texture, clamp(("+dump_node_code(onode->arguments[1],p_level)+").xy,vec2(0.0),vec2(1.0))*gl_LightSource[5].specular.zw+gl_LightSource[5].specular.xy)";
 						//code="(texture2D( screen_texture, ("+dump_node_code(onode->arguments[1],p_level)+").xy).rgb";
 						break;
 					} else if (custom_h && callfunc=="cosh_custom") {
 
 						if (!cosh_used) {
-							global_code=	"float cosh_custom(float val)\n"\
+							global_code=
+									"float cosh_custom(float val)\n"\
 									"{\n"\
 									"    float tmp = exp(val);\n"\
 									"    float cosH = (tmp + 1.0 / tmp) / 2.0;\n"\
@@ -453,7 +454,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					} else if (custom_h && callfunc=="sinh_custom") {
 
 						if (!sinh_used) {
-							global_code=	"float sinh_custom(float val)\n"\
+							global_code=
+									"float sinh_custom(float val)\n"\
 									"{\n"\
 									"    float tmp = exp(val);\n"\
 									"    float sinH = (tmp - 1.0 / tmp) / 2.0;\n"\
@@ -465,7 +467,8 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					} else if (custom_h && callfunc=="tanh_custom") {
 
 						if (!tanh_used) {
-							global_code=	"float tanh_custom(float val)\n"\
+							global_code=
+									"float tanh_custom(float val)\n"\
 									"{\n"\
 									"    float tmp = exp(val);\n"\
 									"    float tanH = (tmp - 1.0 / tmp) / (tmp + 1.0 / tmp);\n"\
@@ -571,12 +574,13 @@ Error ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 
 		global_code+=uline;
 		if (uniforms) {
-			//if (uniforms->has(E->key())) {
-			//	//repeated uniform, error
-		//		ERR_EXPLAIN("Uniform already exists from other shader: "+String(E->key()));
-		//		ERR_FAIL_COND_V(uniforms->has(E->key()),ERR_ALREADY_EXISTS);
-//
-//			}
+			/*
+			if (uniforms->has(E->key())) {
+				//repeated uniform, error
+				ERR_EXPLAIN("Uniform already exists from other shader: "+String(E->key()));
+				ERR_FAIL_COND_V(uniforms->has(E->key()),ERR_ALREADY_EXISTS);
+			}
+			*/
 			SL::Uniform u = E->get();
 			u.order+=ubase;
 			uniforms->insert(E->key(),u);
@@ -812,8 +816,8 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VAR1"]="var1_interp";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["VAR2"]="var2_interp";
 
-//	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_POS"]="SCREEN_POS";
-//	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_SIZE"]="SCREEN_SIZE";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_POS"]="SCREEN_POS";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["SCREEN_SIZE"]="SCREEN_SIZE";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["INSTANCE_ID"]="instance_id";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_VERTEX]["TIME"]="time";
 

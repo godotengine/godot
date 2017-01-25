@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@ void CanvasModulate::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_CANVAS) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 			VS::get_singleton()->canvas_set_modulate(get_canvas(),color);
 			add_to_group("_canvas_modulate_"+itos(get_canvas().get_id()));
 		}
@@ -42,13 +42,13 @@ void CanvasModulate::_notification(int p_what) {
 
 	} else if (p_what==NOTIFICATION_EXIT_CANVAS) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 			VS::get_singleton()->canvas_set_modulate(get_canvas(),Color(1,1,1,1));
 			remove_from_group("_canvas_modulate_"+itos(get_canvas().get_id()));
 		}
 	} else if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 			VS::get_singleton()->canvas_set_modulate(get_canvas(),color);
 			add_to_group("_canvas_modulate_"+itos(get_canvas().get_id()));
 		} else {
@@ -62,8 +62,8 @@ void CanvasModulate::_notification(int p_what) {
 
 void CanvasModulate::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_color","color"),&CanvasModulate::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color"),&CanvasModulate::get_color);
+	ClassDB::bind_method(_MD("set_color","color"),&CanvasModulate::set_color);
+	ClassDB::bind_method(_MD("get_color"),&CanvasModulate::get_color);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
 }
@@ -83,7 +83,7 @@ Color CanvasModulate::get_color() const {
 
 String CanvasModulate::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
 	List<Node*> nodes;

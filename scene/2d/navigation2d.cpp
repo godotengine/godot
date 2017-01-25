@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,12 +36,12 @@ void Navigation2D::_navpoly_link(int p_id) {
 	NavMesh &nm=navpoly_map[p_id];
 	ERR_FAIL_COND(nm.linked);
 
-	DVector<Vector2> vertices=nm.navpoly->get_vertices();
+	PoolVector<Vector2> vertices=nm.navpoly->get_vertices();
 	int len = vertices.size();
 	if (len==0)
 		return;
 
-	DVector<Vector2>::Read r=vertices.read();
+	PoolVector<Vector2>::Read r=vertices.read();
 
 	for(int i=0;i<nm.navpoly->get_polygon_count();i++) {
 
@@ -127,7 +127,7 @@ void Navigation2D::_navpoly_link(int p_id) {
 				C->get().B=&p;
 				C->get().B_edge=j;
 				C->get().A->edges[C->get().A_edge].C=&p;
-				C->get().A->edges[C->get().A_edge].C_edge=j;;
+				C->get().A->edges[C->get().A_edge].C_edge=j;
 				p.edges[j].C=C->get().A;
 				p.edges[j].C_edge=C->get().A_edge;
 				//connection successful.
@@ -212,7 +212,7 @@ void Navigation2D::_navpoly_unlink(int p_id) {
 }
 
 
-int Navigation2D::navpoly_create(const Ref<NavigationPolygon>& p_mesh, const Matrix32& p_xform, Object *p_owner) {
+int Navigation2D::navpoly_create(const Ref<NavigationPolygon>& p_mesh, const Transform2D& p_xform, Object *p_owner) {
 
 	int id = last_id++;
 	NavMesh nm;
@@ -227,7 +227,7 @@ int Navigation2D::navpoly_create(const Ref<NavigationPolygon>& p_mesh, const Mat
 	return id;
 }
 
-void Navigation2D::navpoly_set_transform(int p_id, const Matrix32& p_xform){
+void Navigation2D::navpoly_set_transform(int p_id, const Transform2D& p_xform){
 
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
 	NavMesh &nm=navpoly_map[p_id];
@@ -432,7 +432,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 	while(!found_route) {
 
 		if (open_list.size()==0) {
-		//	print_line("NOU OPEN LIST");
+			//print_line("NOU OPEN LIST");
 			break;
 		}
 		//check open list
@@ -679,7 +679,7 @@ debug path
 			path.push_back(begin_point);
 
 
-			path.invert();;
+			path.invert();
 		}
 
 		return path;
@@ -804,13 +804,13 @@ Object* Navigation2D::get_closest_point_owner(const Vector2& p_point) {
 
 void Navigation2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("navpoly_create","mesh:NavigationPolygon","xform","owner"),&Navigation2D::navpoly_create,DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("navpoly_set_transform","id","xform"),&Navigation2D::navpoly_set_transform);
-	ObjectTypeDB::bind_method(_MD("navpoly_remove","id"),&Navigation2D::navpoly_remove);
+	ClassDB::bind_method(_MD("navpoly_create","mesh:NavigationPolygon","xform","owner"),&Navigation2D::navpoly_create,DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("navpoly_set_transform","id","xform"),&Navigation2D::navpoly_set_transform);
+	ClassDB::bind_method(_MD("navpoly_remove","id"),&Navigation2D::navpoly_remove);
 
-	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation2D::get_simple_path,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("get_closest_point","to_point"),&Navigation2D::get_closest_point);
-	ObjectTypeDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation2D::get_closest_point_owner);
+	ClassDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation2D::get_simple_path,DEFVAL(true));
+	ClassDB::bind_method(_MD("get_closest_point","to_point"),&Navigation2D::get_closest_point);
+	ClassDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation2D::get_closest_point_owner);
 
 }
 

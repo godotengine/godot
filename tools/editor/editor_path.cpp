@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,32 +28,106 @@
 /*************************************************************************/
 #include "editor_path.h"
 
+#include "editor_scale.h"
+#include "editor_node.h"
+
+void EditorPath::_add_children_to_popup(Object* p_obj,int p_depth) {
+
+	if (p_depth>8)
+		return;
+
+	List<PropertyInfo> pinfo;
+	p_obj->get_property_list(&pinfo);
+	for (List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		if (!(E->get().usage&PROPERTY_USAGE_EDITOR))
+			continue;
+		if (E->get().hint!=PROPERTY_HINT_RESOURCE_TYPE)
+			continue;
+
+		Variant value = p_obj->get(E->get().name);
+		if (value.get_type()!=Variant::OBJECT)
+			continue;
+		Object *obj = value;
+		if (!obj)
+			continue;
+
+		Ref<Texture> icon;
+
+		if (has_icon(obj->get_class(),"EditorIcons"))
+			icon=get_icon(obj->get_class(),"EditorIcons");
+		else
+			icon=get_icon("Object","EditorIcons");
+
+		int index = popup->get_item_count();
+		popup->add_icon_item(icon,E->get().name.capitalize(),objects.size());
+		popup->set_item_h_offset(index,p_depth*10*EDSCALE);
+		objects.push_back(obj->get_instance_ID());
+
+		_add_children_to_popup(obj,p_depth+1);
+	}
+}
+
+void EditorPath::_gui_input(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_LEFT && p_event.mouse_button.pressed) {
+
+
+		Object *obj = ObjectDB::get_instance(history->get_path_object( history->get_path_size()-1));
+		if (!obj)
+			return;
+
+
+
+		objects.clear();
+		popup->clear();
+		_add_children_to_popup(obj);
+		popup->set_pos( get_global_pos() + Vector2(0,get_size().height));
+		popup->set_size( Size2(get_size().width,1));
+		popup->popup();
+	}
+}
 
 void EditorPath::_notification(int p_what) {
 
 
 	switch(p_what) {
 
+		case NOTIFICATION_MOUSE_ENTER: {
+			mouse_over=true;
+			update();
+		} break;
+		case NOTIFICATION_MOUSE_EXIT: {
+			mouse_over=false;
+			update();
+		} break;
 		case NOTIFICATION_DRAW: {
 
 			RID ci=get_canvas_item();
 			Ref<Font> label_font = get_font("font","Label");
 			Size2i size = get_size();
 			Ref<Texture> sn = get_icon("SmallNext","EditorIcons");
+			Ref<StyleBox> sb = get_stylebox("pressed","Button");
 
-			int ofs=5;
+
+			int ofs=sb->get_margin(MARGIN_LEFT);
+
+			if (mouse_over) {
+				draw_style_box(sb,Rect2(Point2(),get_size()));
+			}
+
 			for(int i=0;i<history->get_path_size();i++) {
 
 				Object *obj = ObjectDB::get_instance(history->get_path_object(i));
 				if (!obj)
 					continue;
 
-				String type = obj->get_type();
+				String type = obj->get_class();
 
 				Ref<Texture> icon;
 
-				if (has_icon(obj->get_type(),"EditorIcons"))
-					icon=get_icon(obj->get_type(),"EditorIcons");
+				if (has_icon(obj->get_class(),"EditorIcons"))
+					icon=get_icon(obj->get_class(),"EditorIcons");
 				else
 					icon=get_icon("Object","EditorIcons");
 
@@ -78,17 +152,17 @@ void EditorPath::_notification(int p_what) {
 							name=r->get_name();
 
 						if (name=="")
-							name=r->get_type();
+							name=r->get_class();
 					} else if (obj->cast_to<Node>()) {
 
 						name=obj->cast_to<Node>()->get_name();
 					} else if (obj->cast_to<Resource>() && obj->cast_to<Resource>()->get_name()!="") {
 						name=obj->cast_to<Resource>()->get_name();
 					} else {
-						name=obj->get_type();
+						name=obj->get_class();
 					}
 
-					set_tooltip(obj->get_type());
+					set_tooltip(obj->get_class());
 
 
 					label_font->draw(ci,Point2i(ofs,(size.height-label_font->get_height())/2+label_font->get_ascent()),name,Color(1,1,1),left);
@@ -108,11 +182,34 @@ void EditorPath::_notification(int p_what) {
 
 void EditorPath::update_path() {
 
+
 	update();
+}
+
+void EditorPath::_popup_select(int p_idx) {
+
+	ERR_FAIL_INDEX(p_idx,objects.size());
+
+	Object* obj = ObjectDB::get_instance(objects[p_idx]);
+	if (!obj)
+		return;
+
+	EditorNode::get_singleton()->push_item(obj);
+}
+
+void EditorPath::_bind_methods() {
+
+	ClassDB::bind_method("_gui_input",&EditorPath::_gui_input);
+	ClassDB::bind_method("_popup_select",&EditorPath::_popup_select);
 }
 
 EditorPath::EditorPath(EditorHistory *p_history) {
 
 	history=p_history;
+	mouse_over=false;
+	popup = memnew( PopupMenu );
+	popup->connect("id_pressed",this,"_popup_select");
+	add_child(popup);
+
 
 }

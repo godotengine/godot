@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,10 +37,10 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-
+#if 0
 class ParticlesEditor : public Control {
 
-	OBJ_TYPE(ParticlesEditor, Control );
+	GDCLASS(ParticlesEditor, Control );
 
 	Panel *panel;
 	MenuButton *options;
@@ -69,7 +69,7 @@ class ParticlesEditor : public Control {
 
 	};
 
-	DVector<Face3> geometry;
+	PoolVector<Face3> geometry;
 
 	void _generate_emission_points();
 	void _resource_seleted(const String& p_res);
@@ -94,7 +94,7 @@ public:
 
 class ParticlesEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ParticlesEditorPlugin, EditorPlugin );
+	GDCLASS( ParticlesEditorPlugin, EditorPlugin );
 
 	ParticlesEditor *particles_editor;
 	EditorNode *editor;
@@ -113,3 +113,4 @@ public:
 };
 
 #endif // PARTICLES_EDITOR_PLUGIN_H
+#endif

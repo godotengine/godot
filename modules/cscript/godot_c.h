@@ -123,8 +123,8 @@ void GDAPI godot_array_free(godot_array p_array);
 #define INPUT_EVENT_TYPE_KEY 1
 #define INPUT_EVENT_TYPE_MOUSE_MOTION 2
 #define INPUT_EVENT_TYPE_MOUSE_BUTTON 3
-#define INPUT_EVENT_TYPE_JOYSTICK_MOTION 4
-#define INPUT_EVENT_TYPE_JOYSTICK_BUTTON 5
+#define INPUT_EVENT_TYPE_JOYPAD_MOTION 4
+#define INPUT_EVENT_TYPE_JOYPAD_BUTTON 5
 #define INPUT_EVENT_TYPE_SCREEN_TOUCH 6
 #define INPUT_EVENT_TYPE_SCREEN_DRAG 7
 #define INPUT_EVENT_TYPE_ACTION 8
@@ -166,12 +166,12 @@ int GDAPI godot_input_event_mouse_motion_get_relative_y(godot_input_event p_even
 int GDAPI godot_input_event_mouse_motion_get_speed_x(godot_input_event p_event);
 int GDAPI godot_input_event_mouse_motion_get_speed_y(godot_input_event p_event);
 
-int GDAPI godot_input_event_joystick_motion_get_axis(godot_input_event p_event);
-float GDAPI godot_input_event_joystick_motion_get_axis_value(godot_input_event p_event);
+int GDAPI godot_input_event_joypad_motion_get_axis(godot_input_event p_event);
+float GDAPI godot_input_event_joypad_motion_get_axis_value(godot_input_event p_event);
 
-int GDAPI godot_input_event_joystick_button_get_button_index(godot_input_event p_event);
-godot_bool GDAPI godot_input_event_joystick_button_is_pressed(godot_input_event p_event);
-float GDAPI godot_input_event_joystick_button_get_pressure(godot_input_event p_event);
+int GDAPI godot_input_event_joypad_button_get_button_index(godot_input_event p_event);
+godot_bool GDAPI godot_input_event_joypad_button_is_pressed(godot_input_event p_event);
+float GDAPI godot_input_event_joypad_button_get_pressure(godot_input_event p_event);
 
 
 int GDAPI godot_input_event_screen_touch_get_index(godot_input_event p_event);

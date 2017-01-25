@@ -134,11 +134,13 @@ struct b2Vec2
 		return length;
 	}
 
-	///// Does this vector contain finite coordinates?
-	//bool IsValid() const
-	//{
-	//	return b2IsValid(x) && b2IsValid(y);
-	//}
+	/*
+	/// Does this vector contain finite coordinates?
+	bool IsValid() const
+	{
+		return b2IsValid(x) && b2IsValid(y);
+	}
+	*/
 
 	float32 x, y;
 };

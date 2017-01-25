@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="7.693363"
-     inkscape:cy="8.1399132"
+     inkscape:zoom="11.313709"
+     inkscape:cx="14.11111"
+     inkscape:cy="8.6614747"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -62,7 +62,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -71,20 +71,6 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
-    <rect
-       style="opacity:1;fill:#fefeff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.99607843"
-       id="rect4175"
-       width="1"
-       height="1"
-       x="20"
-       y="1042.3622" />
-    <rect
-       y="1042.3622"
-       x="29"
-       height="1"
-       width="1"
-       id="rect4177"
-       style="opacity:1;fill:#fefeff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.99607843" />
     <path
        style="opacity:1;fill:#e0e0e0;fill-opacity:0.99607843;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.99607843"
        d="M 3,2 C 2.4695977,2.0000801 1.9609485,2.2108464 1.5859375,2.5859375 1.2108464,2.9609485 1.0000801,3.4695977 1,4 l 0,8 c 8.03e-5,0.530402 0.2108465,1.039051 0.5859375,1.414062 C 1.9609484,13.789153 2.4695976,13.99992 3,14 l 10,0 c 1.104569,0 2,-0.895431 2,-2 L 15,4 C 15,2.8954305 14.104569,2 13,2 Z m 0,1 10,0 c 0.552281,9.6e-6 0.99999,0.4477192 1,1 l 0,8 c -10e-6,0.552281 -0.447719,0.99999 -1,1 L 3,13 C 2.4477192,12.99999 2.0000096,12.552281 2,12 L 2,4 c 9.6e-6,-0.5522808 0.4477192,-0.9999904 1,-1 z"

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class ScriptTextEditor : public ScriptEditorBase {
 
-	OBJ_TYPE( ScriptTextEditor, ScriptEditorBase );
+	GDCLASS( ScriptTextEditor, ScriptEditorBase );
 
 	CodeTextEditor *code_editor;
 
@@ -105,7 +105,7 @@ protected:
 
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_color);
-	void _text_edit_input_event(const InputEvent& ev);
+	void _text_edit_gui_input(const InputEvent& ev);
 	void _color_changed(const Color& p_color);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
@@ -137,7 +137,7 @@ public:
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
 
-	virtual void add_callback(const String& p_function,StringArray p_args);
+	virtual void add_callback(const String& p_function,PoolStringArray p_args);
 	virtual void update_settings();
 	virtual bool goto_method(const String& p_method);
 

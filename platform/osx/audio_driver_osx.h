@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,11 @@
 #ifndef AUDIO_DRIVER_OSX_H
 #define AUDIO_DRIVER_OSX_H
 
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 
 #include <AudioUnit/AudioUnit.h>
 
-class AudioDriverOSX : public AudioDriverSW {
+class AudioDriverOSX : public AudioDriver {
 
 	AudioComponentInstance audio_unit;
 	bool active;
@@ -61,7 +61,7 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
-	virtual OutputFormat get_output_format() const;
+	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();

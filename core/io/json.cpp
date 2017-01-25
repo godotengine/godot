@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -52,9 +52,9 @@ String JSON::_print_var(const Variant& p_var) {
 		case Variant::BOOL: return p_var.operator bool() ? "true": "false";
 		case Variant::INT: return itos(p_var);
 		case Variant::REAL: return rtos(p_var);
-		case Variant::INT_ARRAY:
-		case Variant::REAL_ARRAY:
-		case Variant::STRING_ARRAY:
+		case Variant::POOL_INT_ARRAY:
+		case Variant::POOL_REAL_ARRAY:
+		case Variant::POOL_STRING_ARRAY:
 		case Variant::ARRAY: {
 
 			String s = "[";
@@ -92,15 +92,15 @@ String JSON::_print_var(const Variant& p_var) {
 
 }
 
-String JSON::print(const Dictionary& p_dict) {
+String JSON::print(const Variant& p_var) {
 
-	return _print_var(p_dict);
+	return _print_var(p_var);
 }
 
 
 Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_token,int &line,String &r_err_str) {
 
-	while (true) {
+	while (p_len > 0) {
 		switch(p_str[idx]) {
 
 			case '\n': {
@@ -288,7 +288,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 
 	if (token.type==TK_CURLY_BRACKET_OPEN) {
 
-		Dictionary d(true);
+		Dictionary d;
 		Error err = _parse_object(d,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -296,7 +296,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 		return OK;
 	} else if (token.type==TK_BRACKET_OPEN) {
 
-		Array a(true);
+		Array a;
 		Error err = _parse_array(a,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -450,27 +450,24 @@ Error JSON::_parse_object(Dictionary &object,const CharType *p_str,int &index, i
 }
 
 
-Error JSON::parse(const String& p_json,Dictionary& r_ret,String &r_err_str,int &r_err_line) {
+Error JSON::parse(const String& p_json, Variant &r_ret, String &r_err_str, int &r_err_line) {
 
 
 	const CharType *str = p_json.ptr();
 	int idx = 0;
 	int len = p_json.length();
 	Token token;
-	int line=0;
+	r_err_line=0;
 	String aux_key;
 
-	Error err = _get_token(str,idx,len,token,line,r_err_str);
+	Error err = _get_token(str,idx,len,token,r_err_line,r_err_str);
 	if (err)
 		return err;
 
-	if (token.type!=TK_CURLY_BRACKET_OPEN) {
+	err = _parse_value(r_ret,token,str,idx,len,r_err_line,r_err_str);
 
-		r_err_str="Expected '{'";
-		return ERR_PARSE_ERROR;
-	}
-
-	return _parse_object(r_ret,str,idx,len,r_err_line,r_err_str);
+	return err;
+	
 
 }
 

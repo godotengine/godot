@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Author: George Marques <george@gmarqu.es>                             */
 /*                                                                       */
@@ -40,7 +40,7 @@
 
 class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 
-	OBJ_TYPE(AudioStreamPlaybackOpus,AudioStreamPlayback)
+	GDCLASS(AudioStreamPlaybackOpus,AudioStreamPlayback)
 
 	enum {
 		MIN_MIX=1024
@@ -115,7 +115,7 @@ public:
 
 class AudioStreamOpus: public AudioStream {
 
-	OBJ_TYPE(AudioStreamOpus,AudioStream)
+	GDCLASS(AudioStreamOpus,AudioStream)
 
 	String file;
 public:

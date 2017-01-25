@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,8 +60,8 @@ float RayShape::get_length() const {
 
 void RayShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_length","length"),&RayShape::set_length);
-	ObjectTypeDB::bind_method(_MD("get_length"),&RayShape::get_length);
+	ClassDB::bind_method(_MD("set_length","length"),&RayShape::set_length);
+	ClassDB::bind_method(_MD("get_length"),&RayShape::get_length);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"length",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_length"), _SCS("get_length") );
 

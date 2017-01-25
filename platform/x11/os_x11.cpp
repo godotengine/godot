@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "servers/visual/visual_server_raster.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "os_x11.h"
 #include "key_mapping_x11.h"
 #include <stdio.h>
@@ -74,7 +74,7 @@ int OS_X11::get_video_driver_count() const {
 }
 
 const char * OS_X11::get_video_driver_name(int p_driver) const {
-	return "GLES2";
+	return "GLES3";
 }
 
 OS::VideoMode OS_X11::get_default_video_mode() const {
@@ -82,14 +82,14 @@ OS::VideoMode OS_X11::get_default_video_mode() const {
 }
 
 int OS_X11::get_audio_driver_count() const {
-    return AudioDriverManagerSW::get_driver_count();
+    return AudioDriverManager::get_driver_count();
 }
 
 const char *OS_X11::get_audio_driver_name(int p_driver) const {
 
-    AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+    AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
     ERR_FAIL_COND_V( !driver, "" );
-    return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+    return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
 void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
@@ -203,19 +203,22 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 
-	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
+
+	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, true ) );
 	context_gl->initialize();
 
-	rasterizer = memnew( RasterizerGLES2 );
+	RasterizerGLES3::register_config();
+
+	RasterizerGLES3::make_current();
 
 #endif
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-
+	visual_server = memnew( VisualServerRaster );
+#if 0
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
-
+#endif
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 	// needed for lxde/openbox, possibly others
@@ -266,21 +269,21 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XFree(xsh);
 	}
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
 	audio_driver_index=p_audio_driver;
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		bool success=false;
 		audio_driver_index=-1;
-		for(int i=0;i<AudioDriverManagerSW::get_driver_count();i++) {
+		for(int i=0;i<AudioDriverManager::get_driver_count();i++) {
 			if (i==p_audio_driver)
 				continue;
-			AudioDriverManagerSW::get_driver(i)->set_singleton();
-			if (AudioDriverManagerSW::get_driver(i)->init()==OK) {
+			AudioDriverManager::get_driver(i)->set_singleton();
+			if (AudioDriverManager::get_driver(i)->init()==OK) {
 				success=true;
-				print_line("Audio Driver Failed: "+String(AudioDriverManagerSW::get_driver(p_audio_driver)->get_name()));
-				print_line("Using alternate audio driver: "+String(AudioDriverManagerSW::get_driver(i)->get_name()));
+				print_line("Audio Driver Failed: "+String(AudioDriverManager::get_driver(p_audio_driver)->get_name()));
+				print_line("Using alternate audio driver: "+String(AudioDriverManager::get_driver(i)->get_name()));
 				audio_driver_index=i;
 				break;
 			}
@@ -291,13 +294,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-	audio_server->init();
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
 
 
 	ERR_FAIL_COND(!visual_server);
@@ -457,7 +453,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	window_has_focus = true; // Set focus to true at init
 #ifdef JOYDEV_ENABLED
-	joystick = memnew( joystick_linux(input));
+	joypad = memnew( JoypadLinux(input));
 #endif
 	_ensure_data_dir();
 }
@@ -468,28 +464,22 @@ void OS_X11::finalize() {
 		memdelete(main_loop);
 	main_loop=NULL;
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
 
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 #ifdef JOYDEV_ENABLED
-	memdelete(joystick);
+	memdelete(joypad);
 #endif
 	memdelete(input);
 
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);
-	memdelete(rasterizer);
+	//memdelete(rasterizer);
 
 	physics_server->finish();
 	memdelete(physics_server);
@@ -562,11 +552,10 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 			}
 		}
 
-		if (XGrabPointer(x11_display, x11_window, True,
-				    ButtonPressMask | ButtonReleaseMask |
-				    PointerMotionMask, GrabModeAsync, GrabModeAsync,
-				    x11_window, None, CurrentTime) !=
-				GrabSuccess)  {
+		if (XGrabPointer(
+				x11_display, x11_window, True,
+				ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+				GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime) != GrabSuccess)  {
 			ERR_PRINT("NO GRAB");
 		}
 
@@ -1316,10 +1305,10 @@ void OS_X11::process_xevents() {
 				else if (mouse_mode==MOUSE_MODE_CAPTURED) // or re-hide it in captured mode
 					XDefineCursor(x11_display, x11_window, null_cursor);
 
-				XGrabPointer(x11_display, x11_window, True,
-						    ButtonPressMask | ButtonReleaseMask |
-						    PointerMotionMask, GrabModeAsync, GrabModeAsync,
-						    x11_window, None, CurrentTime);
+				XGrabPointer(
+      			x11_display, x11_window, True,
+						ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+						GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 			}
 			break;
 
@@ -1482,8 +1471,8 @@ void OS_X11::process_xevents() {
 			input->set_mouse_pos(pos);
 			motion_event.mouse_motion.global_x=pos.x;
 			motion_event.mouse_motion.global_y=pos.y;
-			motion_event.mouse_motion.speed_x=input->get_mouse_speed().x;
-			motion_event.mouse_motion.speed_y=input->get_mouse_speed().y;
+			motion_event.mouse_motion.speed_x=input->get_last_mouse_speed().x;
+			motion_event.mouse_motion.speed_y=input->get_last_mouse_speed().y;
 
 			motion_event.mouse_motion.relative_x=rel.x;
 			motion_event.mouse_motion.relative_y=rel.y;
@@ -1899,7 +1888,7 @@ void OS_X11::set_icon(const Image& p_icon) {
 
 	if (!p_icon.empty()) {
 		Image img=p_icon;
-		img.convert(Image::FORMAT_RGBA);
+		img.convert(Image::FORMAT_RGBA8);
 
 		int w = img.get_width();
 		int h = img.get_height();
@@ -1912,7 +1901,7 @@ void OS_X11::set_icon(const Image& p_icon) {
 		pd[0]=w;
 		pd[1]=h;
 
-		DVector<uint8_t>::Read r = img.get_data().read();
+		PoolVector<uint8_t>::Read r = img.get_data().read();
 
 		long * wr = &pd[2];
 		uint8_t const * pr = r.ptr();
@@ -1941,16 +1930,16 @@ void OS_X11::run() {
 
 	main_loop->init();
 
-//	uint64_t last_ticks=get_ticks_usec();
+	//uint64_t last_ticks=get_ticks_usec();
 
-//	int frames=0;
-//	uint64_t frame=0;
+	//int frames=0;
+	//uint64_t frame=0;
 
 	while (!force_quit) {
 
 		process_xevents(); // get rid of pending events
 #ifdef JOYDEV_ENABLED
-		event_id = joystick->process_joysticks(event_id);
+		event_id = joypad->process_joypads(event_id);
 #endif
 		if (Main::iteration()==true)
 			break;
@@ -2000,16 +1989,21 @@ void OS_X11::set_context(int p_context) {
 OS_X11::OS_X11() {
 
 #ifdef RTAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+	AudioDriverManager::add_driver(&driver_rtaudio);
 #endif
 
 #ifdef PULSEAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_pulseaudio);
+	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif
 
 #ifdef ALSA_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_alsa);
+	AudioDriverManager::add_driver(&driver_alsa);
 #endif
+
+	if(AudioDriverManager::get_driver_count() == 0){
+		WARN_PRINT("No sound driver found... Defaulting to dummy driver");
+		AudioDriverManager::add_driver(&driver_dummy);
+	}
 
 	minimized = false;
 	xim_style=0L;

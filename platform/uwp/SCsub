@@ -8,7 +8,7 @@ files = [
     '#platform/windows/packet_peer_udp_winsock.cpp',
     '#platform/windows/stream_peer_winsock.cpp',
     '#platform/windows/key_mapping_win.cpp',
-    'joystick_uwp.cpp',
+    'joypad_uwp.cpp',
     'gl_context_egl.cpp',
     'app.cpp',
     'os_uwp.cpp',

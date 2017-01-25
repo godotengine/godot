@@ -1,11 +1,11 @@
 /*************************************************************************/
-/*  a_star.cpp                                                        */
+/*  a_star.cpp                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ int AStar::get_available_point_id() const {
 	return points.back()->key()+1;
 }
 
-void AStar::add_point(int p_id, const Vector3 &p_pos, float p_weight_scale) {
+void AStar::add_point(int p_id, const Vector3 &p_pos, real_t p_weight_scale) {
 	ERR_FAIL_COND(p_id<0);
 	if (!points.has(p_id)) {
 		Point *pt = memnew( Point );
@@ -62,7 +62,7 @@ Vector3 AStar::get_point_pos(int p_id) const{
 	return points[p_id]->pos;
 
 }
-float AStar::get_point_weight_scale(int p_id) const{
+real_t AStar::get_point_weight_scale(int p_id) const{
 
 	ERR_FAIL_COND_V(!points.has(p_id),0);
 
@@ -145,11 +145,11 @@ void AStar::clear(){
 int AStar::get_closest_point(const Vector3& p_point) const{
 
 	int closest_id=-1;
-	float closest_dist=1e20;
+	real_t closest_dist=1e20;
 
 	for (const Map<int,Point*>::Element *E=points.front();E;E=E->next()) {
 
-		float d = p_point.distance_squared_to(E->get()->pos);
+		real_t d = p_point.distance_squared_to(E->get()->pos);
 		if (closest_id<0 || d<closest_dist) {
 			closest_dist=d;
 			closest_id=E->key();
@@ -162,7 +162,7 @@ int AStar::get_closest_point(const Vector3& p_point) const{
 }
 Vector3 AStar::get_closest_pos_in_segment(const Vector3& p_point) const {
 
-	float closest_dist = 1e20;
+	real_t closest_dist = 1e20;
 	bool found=false;
 	Vector3 closest_point;
 
@@ -175,7 +175,7 @@ Vector3 AStar::get_closest_pos_in_segment(const Vector3& p_point) const {
 		};
 
 		Vector3 p = Geometry::get_closest_point_to_segment(p_point,segment);
-		float d = p_point.distance_squared_to(p);
+		real_t d = p_point.distance_squared_to(p);
 		if (!found || d<closest_dist) {
 
 			closest_point=p;
@@ -220,14 +220,14 @@ bool AStar::_solve(Point* begin_point, Point* end_point) {
 		//check open list
 
 		SelfList<Point> *least_cost_point=NULL;
-		float least_cost=1e30;
+		real_t least_cost=1e30;
 
 		//this could be faster (cache previous results)
 		for (SelfList<Point> *E=open_list.first();E;E=E->next()) {
 
 			Point *p=E->self();
 
-			float cost=p->distance;
+			real_t cost=p->distance;
 			cost+=p->pos.distance_to(end_point->pos);
 			cost*=p->weight_scale;
 
@@ -249,7 +249,7 @@ bool AStar::_solve(Point* begin_point, Point* end_point) {
 			Point* e=p->neighbours[i];
 
 
-			float distance = p->pos.distance_to(e->pos) + p->distance;
+			real_t distance = p->pos.distance_to(e->pos) + p->distance;
 			distance*=e->weight_scale;
 
 
@@ -295,10 +295,10 @@ bool AStar::_solve(Point* begin_point, Point* end_point) {
 
 }
 
-DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
+PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 
-	ERR_FAIL_COND_V(!points.has(p_from_id),DVector<Vector3>());
-	ERR_FAIL_COND_V(!points.has(p_to_id),DVector<Vector3>());
+	ERR_FAIL_COND_V(!points.has(p_from_id),PoolVector<Vector3>());
+	ERR_FAIL_COND_V(!points.has(p_to_id),PoolVector<Vector3>());
 
 
 	pass++;
@@ -307,7 +307,7 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	Point* b = points[p_to_id];
 
 	if (a==b) {
-		DVector<Vector3> ret;
+		PoolVector<Vector3> ret;
 		ret.push_back(a->pos);
 		return ret;
 	}
@@ -319,7 +319,7 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 	bool found_route=_solve(begin_point,end_point);
 
 	if (!found_route)
-		return DVector<Vector3>();
+		return PoolVector<Vector3>();
 
 	//midpoints
 	Point *p=end_point;
@@ -329,11 +329,11 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 		p=p->prev_point;
 	}
 
-	DVector<Vector3> path;
+	PoolVector<Vector3> path;
 	path.resize(pc);
 
 	{
-		DVector<Vector3>::Write w = path.write();
+		PoolVector<Vector3>::Write w = path.write();
 
 		Point *p=end_point;
 		int idx=pc-1;
@@ -351,10 +351,10 @@ DVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
 }
 
 
-DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
+PoolVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 
-	ERR_FAIL_COND_V(!points.has(p_from_id),DVector<int>());
-	ERR_FAIL_COND_V(!points.has(p_to_id),DVector<int>());
+	ERR_FAIL_COND_V(!points.has(p_from_id),PoolVector<int>());
+	ERR_FAIL_COND_V(!points.has(p_to_id),PoolVector<int>());
 
 
 	pass++;
@@ -363,7 +363,7 @@ DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 	Point* b = points[p_to_id];
 
 	if (a==b) {
-		DVector<int> ret;
+		PoolVector<int> ret;
 		ret.push_back(a->id);
 		return ret;
 	}
@@ -375,7 +375,7 @@ DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 	bool found_route=_solve(begin_point,end_point);
 
 	if (!found_route)
-		return DVector<int>();
+		return PoolVector<int>();
 
 	//midpoints
 	Point *p=end_point;
@@ -385,11 +385,11 @@ DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 		p=p->prev_point;
 	}
 
-	DVector<int> path;
+	PoolVector<int> path;
 	path.resize(pc);
 
 	{
-		DVector<int>::Write w = path.write();
+		PoolVector<int>::Write w = path.write();
 
 		p=end_point;
 		int idx=pc-1;
@@ -407,23 +407,23 @@ DVector<int> AStar::get_id_path(int p_from_id, int p_to_id) {
 
 void AStar::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_available_point_id"),&AStar::get_available_point_id);
-	ObjectTypeDB::bind_method(_MD("add_point","id","pos","weight_scale"),&AStar::add_point,DEFVAL(1.0));
-	ObjectTypeDB::bind_method(_MD("get_point_pos","id"),&AStar::get_point_pos);
-	ObjectTypeDB::bind_method(_MD("get_point_weight_scale","id"),&AStar::get_point_weight_scale);
-	ObjectTypeDB::bind_method(_MD("remove_point","id"),&AStar::remove_point);
+	ClassDB::bind_method(_MD("get_available_point_id"),&AStar::get_available_point_id);
+	ClassDB::bind_method(_MD("add_point","id","pos","weight_scale"),&AStar::add_point,DEFVAL(1.0));
+	ClassDB::bind_method(_MD("get_point_pos","id"),&AStar::get_point_pos);
+	ClassDB::bind_method(_MD("get_point_weight_scale","id"),&AStar::get_point_weight_scale);
+	ClassDB::bind_method(_MD("remove_point","id"),&AStar::remove_point);
 
-	ObjectTypeDB::bind_method(_MD("connect_points","id","to_id"),&AStar::connect_points);
-	ObjectTypeDB::bind_method(_MD("disconnect_points","id","to_id"),&AStar::disconnect_points);
-	ObjectTypeDB::bind_method(_MD("are_points_connected","id","to_id"),&AStar::are_points_connected);
+	ClassDB::bind_method(_MD("connect_points","id","to_id"),&AStar::connect_points);
+	ClassDB::bind_method(_MD("disconnect_points","id","to_id"),&AStar::disconnect_points);
+	ClassDB::bind_method(_MD("are_points_connected","id","to_id"),&AStar::are_points_connected);
 
-	ObjectTypeDB::bind_method(_MD("clear"),&AStar::clear);
+	ClassDB::bind_method(_MD("clear"),&AStar::clear);
 
-	ObjectTypeDB::bind_method(_MD("get_closest_point","to_pos"),&AStar::get_closest_point);
-	ObjectTypeDB::bind_method(_MD("get_closest_pos_in_segment","to_pos"),&AStar::get_closest_pos_in_segment);
+	ClassDB::bind_method(_MD("get_closest_point","to_pos"),&AStar::get_closest_point);
+	ClassDB::bind_method(_MD("get_closest_pos_in_segment","to_pos"),&AStar::get_closest_pos_in_segment);
 
-	ObjectTypeDB::bind_method(_MD("get_point_path","from_id","to_id"),&AStar::get_point_path);
-	ObjectTypeDB::bind_method(_MD("get_id_path","from_id","to_id"),&AStar::get_id_path);
+	ClassDB::bind_method(_MD("get_point_path","from_id","to_id"),&AStar::get_point_path);
+	ClassDB::bind_method(_MD("get_id_path","from_id","to_id"),&AStar::get_id_path);
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,7 +68,7 @@ void Body2DSW::update_inertias() {
 
 				float mass = area * this->mass / total_area;
 
-				Matrix32 mtx = get_shape_transform(i);
+				Transform2D mtx = get_shape_transform(i);
 				Vector2 scale = mtx.get_scale();
 				_inertia += shape->get_moment_of_inertia(mass,scale) + mass * mtx.get_origin().length_squared();
 				//Rect2 ab = get_shape_aabb(i);
@@ -251,8 +251,10 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 	}
 
 	_update_inertia();
-	//if (get_space())
-//		_update_queries();
+	/*
+	if (get_space())
+		_update_queries();
+	*/
 
 }
 Physics2DServer::BodyMode Body2DSW::get_mode() const {
@@ -287,7 +289,7 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
 			} else {
-				Matrix32 t = p_variant;
+				Transform2D t = p_variant;
 				t.orthonormalize();
 				new_transform=get_transform(); //used as old to compute motion
 				if (t==new_transform)
@@ -301,15 +303,19 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 		} break;
 		case Physics2DServer::BODY_STATE_LINEAR_VELOCITY: {
 
-			//if (mode==Physics2DServer::BODY_MODE_STATIC)
-			//	break;
+			/*
+			if (mode==Physics2DServer::BODY_MODE_STATIC)
+				break;
+			*/
 			linear_velocity=p_variant;
 			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_ANGULAR_VELOCITY: {
-			//if (mode!=Physics2DServer::BODY_MODE_RIGID)
-			//	break;
+			/*
+			if (mode!=Physics2DServer::BODY_MODE_RIGID)
+				break;
+			*/
 			angular_velocity=p_variant;
 			wakeup();
 
@@ -385,11 +391,13 @@ void Body2DSW::set_space(Space2DSW *p_space){
 		_update_inertia();
 		if (active)
 			get_space()->body_add_to_active_list(&active_list);
-//		_update_queries();
-		//if (is_active()) {
-		//	active=false;
-		//	set_active(true);
-		//}
+		/*
+		_update_queries();
+		if (is_active()) {
+			active=false;
+			set_active(true);
+		}
+		*/
 
 	}
 
@@ -459,13 +467,17 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	// If less than 0, override dampenings with that of the Body2D
 	if (angular_damp>=0)
 		area_angular_damp = angular_damp;
-	//else
-	//	area_angular_damp=damp_area->get_angular_damp();
+	/*
+	else
+		area_angular_damp=damp_area->get_angular_damp();
+	*/
 
 	if (linear_damp>=0)
 		area_linear_damp = linear_damp;
-	//else
-	//	area_linear_damp=damp_area->get_linear_damp();
+	/*
+	else
+		area_linear_damp=damp_area->get_linear_damp();
+	*/
 
 	Vector2 motion;
 	bool do_motion=false;
@@ -473,18 +485,21 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	if (mode==Physics2DServer::BODY_MODE_KINEMATIC) {
 
 		//compute motion, angular and etc. velocities from prev transform
-		linear_velocity = (new_transform.elements[2] - get_transform().elements[2])/p_step;
+		motion = new_transform.get_origin() - get_transform().get_origin();
+		linear_velocity = motion/p_step;
 
-		real_t rot = new_transform.affine_inverse().basis_xform(get_transform().elements[1]).angle();
+		real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
 		angular_velocity = rot / p_step;
 
-		motion = new_transform.elements[2] - get_transform().elements[2];
+
 		do_motion=true;
 
-		//for(int i=0;i<get_shape_count();i++) {
-		//	set_shape_kinematic_advance(i,Vector2());
-		//	set_shape_kinematic_retreat(i,0);
-		//}
+		/*
+		for(int i=0;i<get_shape_count();i++) {
+			set_shape_kinematic_advance(i,Vector2());
+			set_shape_kinematic_retreat(i,0);
+		}
+		*/
 
 	} else {
 		if (!omit_force_integration && !first_integration) {
@@ -556,10 +571,10 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	real_t total_angular_velocity = angular_velocity+biased_angular_velocity;
 	Vector2 total_linear_velocity=linear_velocity+biased_linear_velocity;
 
-	real_t angle = get_transform().get_rotation() - total_angular_velocity * p_step;
+	real_t angle = get_transform().get_rotation() + total_angular_velocity * p_step;
 	Vector2 pos = get_transform().get_origin() + total_linear_velocity * p_step;
 
-	_set_transform(Matrix32(angle,pos),continuous_cd_mode==Physics2DServer::CCD_MODE_DISABLED);
+	_set_transform(Transform2D(angle,pos),continuous_cd_mode==Physics2DServer::CCD_MODE_DISABLED);
 	_set_inv_transform(get_transform().inverse());
 
 	if (continuous_cd_mode!=Physics2DServer::CCD_MODE_DISABLED)

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@ void BoxContainer::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 
-	Size2i new_size=get_size();;
+	Size2i new_size=get_size();
 
 	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 
@@ -55,7 +55,7 @@ void BoxContainer::_resort() {
 
 	for(int i=0;i<get_child_count();i++) {
 		Control *c=get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
@@ -108,7 +108,7 @@ void BoxContainer::_resort() {
 		for(int i=0;i<get_child_count();i++) {
 
 			Control *c=get_child(i)->cast_to<Control>();
-			if (!c || !c->is_visible())
+			if (!c || !c->is_visible_in_tree())
 				continue;
 			if (c->is_set_as_toplevel())
 				continue;
@@ -164,7 +164,7 @@ void BoxContainer::_resort() {
 	for(int i=0;i<get_child_count();i++) {
 
 		Control *c=get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
@@ -227,7 +227,7 @@ Size2 BoxContainer::get_minimum_size() const {
 		if (c->is_set_as_toplevel())
 			continue;
 
-		if (c->is_hidden()) {
+		if (!c->is_visible()) {
 			continue;
 		}
 
@@ -280,7 +280,8 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew( Control );
-	c->set_stop_mouse(false);
+	c->set_mouse_filter(MOUSE_FILTER_PASS); //allow spacer to pass mouse events
+
 	if (vertical)
 		c->set_v_size_flags(SIZE_EXPAND_FILL);
 	else
@@ -295,15 +296,15 @@ BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical=p_vertical;
 	align = ALIGN_BEGIN;
-//	set_ignore_mouse(true);
-	set_stop_mouse(false);
+	//set_ignore_mouse(true);
+	set_mouse_filter(MOUSE_FILTER_PASS);
 }
 
 void BoxContainer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_spacer","begin"),&BoxContainer::add_spacer);
-	ObjectTypeDB::bind_method(_MD("get_alignment"),&BoxContainer::get_alignment);
-	ObjectTypeDB::bind_method(_MD("set_alignment","alignment"),&BoxContainer::set_alignment);
+	ClassDB::bind_method(_MD("add_spacer","begin"),&BoxContainer::add_spacer);
+	ClassDB::bind_method(_MD("get_alignment"),&BoxContainer::get_alignment);
+	ClassDB::bind_method(_MD("set_alignment","alignment"),&BoxContainer::set_alignment);
 
 	BIND_CONSTANT( ALIGN_BEGIN );
 	BIND_CONSTANT( ALIGN_CENTER );

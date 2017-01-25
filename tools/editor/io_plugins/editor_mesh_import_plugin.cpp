@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/property_editor.h"
-#include "scene/resources/sample.h"
+//#include "scene/resources/sample.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "io/marshalls.h"
@@ -40,7 +40,7 @@
 
 class _EditorMeshImportOptions : public Object {
 
-	OBJ_TYPE(_EditorMeshImportOptions,Object);
+	GDCLASS(_EditorMeshImportOptions,Object);
 public:
 
 
@@ -148,7 +148,7 @@ public:
 
 class EditorMeshImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorMeshImportDialog,ConfirmationDialog);
+	GDCLASS(EditorMeshImportDialog,ConfirmationDialog);
 
 	EditorMeshImportPlugin *plugin;
 
@@ -259,7 +259,7 @@ public:
 
 			imd->add_source(EditorImportPlugin::validate_source_path(meshes[i]));
 
-			String file_path = dst.plus_file(meshes[i].get_file().basename()+".msh");
+			String file_path = dst.plus_file(meshes[i].get_file().get_basename()+".msh");
 
 			plugin->import(file_path,imd);
 		}
@@ -278,11 +278,11 @@ public:
 
 	static void _bind_methods() {
 
-		ObjectTypeDB::bind_method("_choose_files",&EditorMeshImportDialog::_choose_files);
-		ObjectTypeDB::bind_method("_choose_save_dir",&EditorMeshImportDialog::_choose_save_dir);
-		ObjectTypeDB::bind_method("_import",&EditorMeshImportDialog::_import);
-		ObjectTypeDB::bind_method("_browse",&EditorMeshImportDialog::_browse);
-		ObjectTypeDB::bind_method("_browse_target",&EditorMeshImportDialog::_browse_target);
+		ClassDB::bind_method("_choose_files",&EditorMeshImportDialog::_choose_files);
+		ClassDB::bind_method("_choose_save_dir",&EditorMeshImportDialog::_choose_save_dir);
+		ClassDB::bind_method("_import",&EditorMeshImportDialog::_import);
+		ClassDB::bind_method("_browse",&EditorMeshImportDialog::_browse);
+		ClassDB::bind_method("_browse_target",&EditorMeshImportDialog::_browse_target);
 	}
 
 	EditorMeshImportDialog(EditorMeshImportPlugin *p_plugin) {
@@ -294,7 +294,7 @@ public:
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
-		set_child_rect(vbc);
+		//set_child_rect(vbc);
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		vbc->add_margin_child(TTR("Source Mesh(es):"),hbc);
@@ -568,7 +568,7 @@ void EditorMeshImportPlugin::import_from_drop(const Vector<String>& p_drop, cons
 
 	Vector<String> files;
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 		String file = p_drop[i].get_file();
 		if (ext=="obj") {
 

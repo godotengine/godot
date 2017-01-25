@@ -7,7 +7,7 @@
 
 class Listener : public Spatial {
 
-	OBJ_TYPE(Listener, Spatial);
+	GDCLASS(Listener, Spatial);
 private:
 
 	bool force_change;

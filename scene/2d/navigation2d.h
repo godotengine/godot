@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 class Navigation2D : public Node2D {
 
-	OBJ_TYPE( Navigation2D, Node2D);
+	GDCLASS( Navigation2D, Node2D);
 
 
 	union Point {
@@ -119,7 +119,7 @@ class Navigation2D : public Node2D {
 	struct NavMesh {
 
 		Object *owner;
-		Matrix32 xform;
+		Transform2D xform;
 		bool linked;
 		Ref<NavigationPolygon> navpoly;
 		List<Polygon> polygons;
@@ -164,8 +164,8 @@ protected:
 public:
 
 	//API should be as dynamic as possible
-	int navpoly_create(const Ref<NavigationPolygon>& p_mesh,const Matrix32& p_xform,Object* p_owner=NULL);
-	void navpoly_set_transform(int p_id, const Matrix32& p_xform);
+	int navpoly_create(const Ref<NavigationPolygon>& p_mesh,const Transform2D& p_xform,Object* p_owner=NULL);
+	void navpoly_set_transform(int p_id, const Transform2D& p_xform);
 	void navpoly_remove(int p_id);
 
 	Vector<Vector2> get_simple_path(const Vector2& p_start, const Vector2& p_end,bool p_optimize=true);

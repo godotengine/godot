@@ -6,7 +6,7 @@
 
 class VisualScriptExpression : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptExpression,VisualScriptNode)
+	GDCLASS(VisualScriptExpression,VisualScriptNode)
 friend class VisualScriptNodeInstanceExpression;
 
 	struct Input {

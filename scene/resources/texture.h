@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@
 
 class Texture : public Resource {
 
-	OBJ_TYPE( Texture, Resource );
+	GDCLASS( Texture, Resource );
 	OBJ_SAVE_TYPE( Texture ); //children are all saved as Texture, so they can be exchanged
 protected:
 
@@ -54,7 +54,7 @@ public:
 		FLAG_FILTER=VisualServer::TEXTURE_FLAG_FILTER,
 		FLAG_ANISOTROPIC_FILTER=VisualServer::TEXTURE_FLAG_ANISOTROPIC_FILTER,
 		FLAG_CONVERT_TO_LINEAR=VisualServer::TEXTURE_FLAG_CONVERT_TO_LINEAR,
-		FLAG_VIDEO_SURFACE=VisualServer::TEXTURE_FLAG_VIDEO_SURFACE,
+		FLAG_VIDEO_SURFACE=VisualServer::TEXTURE_FLAG_USED_FOR_STREAMING,
 		FLAGS_DEFAULT=FLAG_MIPMAPS|FLAG_REPEAT|FLAG_FILTER,
 		FLAG_MIRRORED_REPEAT=VisualServer::TEXTURE_FLAG_MIRRORED_REPEAT
 	};
@@ -85,7 +85,7 @@ VARIANT_ENUM_CAST( Texture::Flags );
 
 class ImageTexture : public Texture {
 
-	OBJ_TYPE( ImageTexture, Texture );
+	GDCLASS( ImageTexture, Texture );
 	RES_BASE_EXTENSION("tex");
 public:
 	enum Storage {
@@ -164,7 +164,7 @@ VARIANT_ENUM_CAST( ImageTexture::Storage );
 
 class AtlasTexture : public Texture {
 
-	OBJ_TYPE( AtlasTexture, Texture );
+	GDCLASS( AtlasTexture, Texture );
 	RES_BASE_EXTENSION("atex");
 protected:
 
@@ -205,7 +205,7 @@ public:
 
 class LargeTexture : public Texture {
 
-	OBJ_TYPE( LargeTexture, Texture );
+	GDCLASS( LargeTexture, Texture );
 	RES_BASE_EXTENSION("ltex");
 protected:
 
@@ -256,7 +256,7 @@ public:
 
 class CubeMap : public Resource {
 
-	OBJ_TYPE( CubeMap, Resource );
+	GDCLASS( CubeMap, Resource );
 	RES_BASE_EXTENSION("cbm");
 public:
 	enum Storage {

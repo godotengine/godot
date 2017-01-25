@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "object.h"
 #include "path_db.h"
 #include "map.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "script_language.h"
 #include "scene/main/scene_main_loop.h"
 
@@ -42,7 +42,7 @@ class Viewport;
 class SceneState;
 class Node : public Object {
 
-	OBJ_TYPE( Node, Object );
+	GDCLASS( Node, Object );
 	OBJ_CATEGORY("Nodes");
 
 public:
@@ -103,6 +103,8 @@ private:
 		StringName name;
 		SceneTree *tree;
 		bool inside_tree;
+		bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it corretly gets the _ready() notification
+		bool ready_first;
 #ifdef TOOLS_ENABLED
 		NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif
@@ -128,6 +130,9 @@ private:
 		bool fixed_process;
 		bool idle_process;
 
+		bool fixed_process_internal;
+		bool idle_process_internal;
+
 		bool input;
 		bool unhandled_input;
 		bool unhandled_key_input;
@@ -142,10 +147,15 @@ private:
 
 	} data;
 
+	enum NameCasing {
+		NAME_CASING_PASCAL_CASE,
+		NAME_CASING_CAMEL_CASE,
+		NAME_CASING_SNAKE_CASE
+	};
+
 
 	void _print_tree(const Node *p_node);
 
-	virtual bool _use_builtin_script() const { return true; }
 	Node *_get_node(const NodePath& p_path) const;
 	Node *_get_child_by_name(const StringName& p_name) const;
 
@@ -222,6 +232,10 @@ public:
 		NOTIFICATION_DRAG_BEGIN=21,
 		NOTIFICATION_DRAG_END=22,
 		NOTIFICATION_PATH_CHANGED=23,
+		NOTIFICATION_TRANSLATION_CHANGED=24,
+		NOTIFICATION_INTERNAL_PROCESS = 25,
+		NOTIFICATION_INTERNAL_FIXED_PROCESS = 26,
+
 	};
 
 	/* NODE/TREE */
@@ -301,6 +315,11 @@ public:
 	float get_process_delta_time() const;
 	bool is_processing() const;
 
+	void set_fixed_process_internal(bool p_process);
+	bool is_fixed_processing_internal() const;
+
+	void set_process_internal(bool p_process);
+	bool is_processing_internal() const;
 
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
@@ -335,6 +354,8 @@ public:
 	void set_pause_mode(PauseMode p_mode);
 	PauseMode get_pause_mode() const;
 	bool can_process() const;
+
+	void request_ready();
 
 	static void print_stray_nodes();
 

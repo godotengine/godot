@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,16 +33,7 @@
 
 struct IP_Address {
 
-public:
-	enum AddrType {
-		TYPE_NONE = 0,
-		TYPE_IPV4 = 1,
-		TYPE_IPV6 = 2,
-
-		TYPE_ANY = 3,
-	};
-
-	AddrType type;
+private:
 
 	union {
 		uint8_t field8[16];
@@ -70,11 +61,17 @@ public:
 	}
 
 	void clear();
+	bool is_ipv4() const;
+	const uint8_t *get_ipv4() const;
+	void set_ipv4(const uint8_t *p_ip);
+
+	const uint8_t *get_ipv6() const;
+	void set_ipv6(const uint8_t *buf);
 
 	operator String() const;
 	IP_Address(const String& p_string);
-	IP_Address(uint32_t p_a,uint32_t p_b,uint32_t p_c,uint32_t p_d, AddrType p_type=TYPE_IPV4);
-	IP_Address() { clear(); type=TYPE_NONE; }
+	IP_Address(uint32_t p_a,uint32_t p_b,uint32_t p_c,uint32_t p_d, bool is_v6=false);
+	IP_Address() { clear(); }
 };
 
 

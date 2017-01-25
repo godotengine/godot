@@ -1,7 +1,8 @@
 
 
 def can_build(platform):
-    return True
+    # FIXME: Disabled temporary for gles3 implementation
+    return False
 
 
 def configure(env):

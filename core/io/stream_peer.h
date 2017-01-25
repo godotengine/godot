@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +32,14 @@
 #include "reference.h"
 
 class StreamPeer : public Reference {
-	OBJ_TYPE( StreamPeer, Reference );
+	GDCLASS( StreamPeer, Reference );
 	OBJ_CATEGORY("Networking");
 protected:
 	static void _bind_methods();
 
 	//bind helpers
-	Error _put_data(const DVector<uint8_t>& p_data);
-	Array _put_partial_data(const DVector<uint8_t>& p_data);
+	Error _put_data(const PoolVector<uint8_t>& p_data);
+	Array _put_partial_data(const PoolVector<uint8_t>& p_data);
 
 	Array _get_data(int p_bytes);
 	Array _get_partial_data(int p_bytes);
@@ -94,9 +94,9 @@ public:
 
 class StreamPeerBuffer : public StreamPeer {
 
-	OBJ_TYPE(StreamPeerBuffer,StreamPeer);
+	GDCLASS(StreamPeerBuffer,StreamPeer);
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	int pointer;
 protected:
 
@@ -116,8 +116,8 @@ public:
 	void resize(int p_size);
 
 
-	void set_data_array(const DVector<uint8_t> & p_data);
-	DVector<uint8_t> get_data_array() const;
+	void set_data_array(const PoolVector<uint8_t> & p_data);
+	PoolVector<uint8_t> get_data_array() const;
 
 	void clear();
 

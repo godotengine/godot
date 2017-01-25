@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
-	OBJ_TYPE(ScriptEditorQuickOpen,ConfirmationDialog )
+	GDCLASS(ScriptEditorQuickOpen,ConfirmationDialog )
 
 	LineEdit *search_box;
 	Tree *search_options;
@@ -77,7 +77,7 @@ class ScriptEditorDebugger;
 
 class ScriptEditorBase : public Control {
 
-	OBJ_TYPE( ScriptEditorBase, Control );
+	GDCLASS( ScriptEditorBase, Control );
 protected:
 	static void _bind_methods();
 public:
@@ -99,7 +99,7 @@ public:
 	virtual void reload(bool p_soft)=0;
 	virtual void get_breakpoints(List<int> *p_breakpoints)=0;
 	virtual bool goto_method(const String& p_method)=0;
-	virtual void add_callback(const String& p_function,StringArray p_args)=0;
+	virtual void add_callback(const String& p_function,PoolStringArray p_args)=0;
 	virtual void update_settings()=0;
 	virtual void set_debugger_active(bool p_active)=0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
@@ -118,7 +118,7 @@ class EditorScriptCodeCompletionCache;
 
 class ScriptEditor : public VBoxContainer {
 
-	OBJ_TYPE(ScriptEditor, VBoxContainer );
+	GDCLASS(ScriptEditor, VBoxContainer );
 
 
 	EditorNode *editor;
@@ -179,7 +179,7 @@ class ScriptEditor : public VBoxContainer {
 
 	String current_theme;
 
-	TextureFrame *script_icon;
+	TextureRect *script_icon;
 	Label *script_name_label;
 
 	ToolButton *script_back;
@@ -219,9 +219,10 @@ class ScriptEditor : public VBoxContainer {
 
 	bool _test_script_times_on_disk(Ref<Script> p_for_script=Ref<Script>());
 
-	void _close_tab(int p_idx);
+	void _close_tab(int p_idx, bool p_save=true);
 
 	void _close_current_tab();
+	void _close_discard_current_tab(const String& p_str);
 	void _close_docs_tab();
 	void _close_all_tabs();
 
@@ -243,7 +244,7 @@ class ScriptEditor : public VBoxContainer {
 
 	int edit_pass;
 
-	void _add_callback(Object *p_obj, const String& p_function, const StringArray& p_args);
+	void _add_callback(Object *p_obj, const String& p_function, const PoolStringArray& p_args);
 	void _res_saved_callback(const Ref<Resource>& p_res);
 
 	bool trim_trailing_whitespace_on_save;
@@ -343,7 +344,7 @@ public:
 
 class ScriptEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ScriptEditorPlugin, EditorPlugin );
+	GDCLASS( ScriptEditorPlugin, EditorPlugin );
 
 	ScriptEditor *script_editor;
 	EditorNode *editor;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "quick_open.h"
-#include "os/keyboard.h"
 
+#include "os/keyboard.h"
 
 void EditorQuickOpen::popup(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
 
@@ -86,7 +86,7 @@ void EditorQuickOpen::_sbox_input(const InputEvent& p_ie) {
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
 
-				search_options->call("_input_event", p_ie);
+				search_options->call("_gui_input", p_ie);
 				search_box->accept_event();
 
 				TreeItem *root = search_options->get_root();
@@ -166,7 +166,7 @@ void EditorQuickOpen::_parse_fs(EditorFileSystemDirectory *efsd, Vector< Pair< S
 		String file = efsd->get_file_path(i);
 		file=file.substr(6,file.length());
 
-		if (ObjectTypeDB::is_type(efsd->get_file_type(i),base_type) && (search_text.is_subsequence_ofi(file))) {
+		if (ClassDB::is_parent_class(efsd->get_file_type(i),base_type) && (search_text.is_subsequence_ofi(file))) {
 			Pair< String, Ref<Texture> > pair;
 			pair.first = file;
 			pair.second = get_icon((has_icon(efsd->get_file_type(i), ei) ? efsd->get_file_type(i) : ot), ei);
@@ -252,9 +252,9 @@ StringName EditorQuickOpen::get_base_type() const {
 
 void EditorQuickOpen::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_text_changed"),&EditorQuickOpen::_text_changed);
-	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorQuickOpen::_confirmed);
-	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorQuickOpen::_sbox_input);
+	ClassDB::bind_method(_MD("_text_changed"),&EditorQuickOpen::_text_changed);
+	ClassDB::bind_method(_MD("_confirmed"),&EditorQuickOpen::_confirmed);
+	ClassDB::bind_method(_MD("_sbox_input"),&EditorQuickOpen::_sbox_input);
 
 	ADD_SIGNAL(MethodInfo("quick_open"));
 
@@ -266,11 +266,11 @@ EditorQuickOpen::EditorQuickOpen() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 	search_box = memnew( LineEdit );
 	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
-	search_box->connect("input_event",this,"_sbox_input");
+	search_box->connect("gui_input",this,"_sbox_input");
 	search_options = memnew( Tree );
 	vbc->add_margin_child(TTR("Matches:"),search_options,true);
 	get_ok()->set_text(TTR("Open"));

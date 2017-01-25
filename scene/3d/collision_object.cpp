@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -190,7 +190,7 @@ void CollisionObject::_mouse_enter() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 }
 
 
@@ -199,14 +199,14 @@ void CollisionObject::_mouse_exit() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 
 }
 
 void CollisionObject::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = ray_pickable && is_inside_tree() && is_visible();
+	bool pickable = ray_pickable && is_inside_tree() && is_visible_in_tree();
 	if (area)
 		PhysicsServer::get_singleton()->area_set_ray_pickable(rid,pickable);
 	else
@@ -228,30 +228,30 @@ bool CollisionObject::is_ray_pickable() const {
 
 void CollisionObject::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("add_shape","shape:Shape","transform"),&CollisionObject::add_shape,DEFVAL(Transform()));
-	ObjectTypeDB::bind_method(_MD("get_shape_count"),&CollisionObject::get_shape_count);
-	ObjectTypeDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject::set_shape);
-	ObjectTypeDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
-//    ObjectTypeDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
-	ObjectTypeDB::bind_method(_MD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject::set_shape_as_trigger);
-	ObjectTypeDB::bind_method(_MD("is_shape_set_as_trigger","shape_idx"),&CollisionObject::is_shape_set_as_trigger);
-	ObjectTypeDB::bind_method(_MD("get_shape:Shape","shape_idx"),&CollisionObject::get_shape);
-	ObjectTypeDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject::get_shape_transform);
-	ObjectTypeDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject::remove_shape);
-	ObjectTypeDB::bind_method(_MD("clear_shapes"),&CollisionObject::clear_shapes);
-	ObjectTypeDB::bind_method(_MD("set_ray_pickable","ray_pickable"),&CollisionObject::set_ray_pickable);
-	ObjectTypeDB::bind_method(_MD("is_ray_pickable"),&CollisionObject::is_ray_pickable);
-	ObjectTypeDB::bind_method(_MD("set_capture_input_on_drag","enable"),&CollisionObject::set_capture_input_on_drag);
-	ObjectTypeDB::bind_method(_MD("get_capture_input_on_drag"),&CollisionObject::get_capture_input_on_drag);
-	ObjectTypeDB::bind_method(_MD("get_rid"),&CollisionObject::get_rid);
+	ClassDB::bind_method(_MD("add_shape","shape:Shape","transform"),&CollisionObject::add_shape,DEFVAL(Transform()));
+	ClassDB::bind_method(_MD("get_shape_count"),&CollisionObject::get_shape_count);
+	ClassDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject::set_shape);
+	ClassDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
+//    ClassDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
+	ClassDB::bind_method(_MD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject::set_shape_as_trigger);
+	ClassDB::bind_method(_MD("is_shape_set_as_trigger","shape_idx"),&CollisionObject::is_shape_set_as_trigger);
+	ClassDB::bind_method(_MD("get_shape:Shape","shape_idx"),&CollisionObject::get_shape);
+	ClassDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject::get_shape_transform);
+	ClassDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject::remove_shape);
+	ClassDB::bind_method(_MD("clear_shapes"),&CollisionObject::clear_shapes);
+	ClassDB::bind_method(_MD("set_ray_pickable","ray_pickable"),&CollisionObject::set_ray_pickable);
+	ClassDB::bind_method(_MD("is_ray_pickable"),&CollisionObject::is_ray_pickable);
+	ClassDB::bind_method(_MD("set_capture_input_on_drag","enable"),&CollisionObject::set_capture_input_on_drag);
+	ClassDB::bind_method(_MD("get_capture_input_on_drag"),&CollisionObject::get_capture_input_on_drag);
+	ClassDB::bind_method(_MD("get_rid"),&CollisionObject::get_rid);
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
 
 	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
-	ADD_SIGNAL( MethodInfo("mouse_enter"));
-	ADD_SIGNAL( MethodInfo("mouse_exit"));
+	ADD_SIGNAL( MethodInfo("mouse_entered"));
+	ADD_SIGNAL( MethodInfo("mouse_exited"));
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input/ray_pickable"),_SCS("set_ray_pickable"),_SCS("is_ray_pickable"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"input/capture_on_drag"),_SCS("set_capture_input_on_drag"),_SCS("get_capture_input_on_drag"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_ray_pickable"),_SCS("set_ray_pickable"),_SCS("is_ray_pickable"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"input_capture_on_drag"),_SCS("set_capture_input_on_drag"),_SCS("get_capture_input_on_drag"));
 }
 
 
@@ -339,7 +339,7 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 	} else {
 		PhysicsServer::get_singleton()->body_attach_object_instance_ID(rid,get_instance_ID());
 	}
-//	set_transform_notify(true);
+	//set_transform_notify(true);
 
 }
 
@@ -360,7 +360,7 @@ CollisionObject::CollisionObject() {
 
 	capture_input_on_drag=false;
 	ray_pickable=true;
-
+	set_notify_transform(true);
 	//owner=
 
 	//set_transform_notify(true);

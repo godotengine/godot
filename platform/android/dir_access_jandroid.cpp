@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@ DirAccess *DirAccessJAndroid::create_fs() {
 	return memnew(DirAccessJAndroid);
 }
 
-bool DirAccessJAndroid::list_dir_begin() {
+Error DirAccessJAndroid::list_dir_begin() {
 
 	list_dir_end();
 	JNIEnv *env = ThreadAndroid::get_env();
@@ -55,11 +55,11 @@ bool DirAccessJAndroid::list_dir_begin() {
 	jstring js = env->NewStringUTF(current_dir.utf8().get_data());
 	int res = env->CallIntMethod(io,_dir_open,js);
 	if (res<=0)
-		return true;
+		return ERR_CANT_OPEN;
 
 	id=res;
 
-	return false;
+	return OK;
 }
 
 String DirAccessJAndroid::get_next(){
@@ -257,7 +257,7 @@ void DirAccessJAndroid::setup( jobject p_io) {
 		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _dir_is_dir ok!!");
 	}
 
-//	(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
+	//(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
 }
 
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@ Rect2 Polygon2D::get_item_rect() const {
 
 	if (rect_cache_dirty){
 		int l =polygon.size();
-		DVector<Vector2>::Read r = polygon.read();
+		PoolVector<Vector2>::Read r = polygon.read();
 		item_rect=Rect2();
 		for(int i=0;i<l;i++) {
 			Vector2 pos = r[i] + offset;
@@ -84,7 +84,7 @@ void Polygon2D::_notification(int p_what) {
 			int len = points.size();
 			{
 
-				DVector<Vector2>::Read polyr =polygon.read();
+				PoolVector<Vector2>::Read polyr =polygon.read();
 				for(int i=0;i<len;i++) {
 					points[i]=polyr[i]+offset;
 				}
@@ -148,7 +148,7 @@ void Polygon2D::_notification(int p_what) {
 
 			if (texture.is_valid()) {
 
-				Matrix32 texmat(tex_rot,tex_ofs);
+				Transform2D texmat(tex_rot,tex_ofs);
 				texmat.scale(tex_scale);
 				Size2 tex_size=Vector2(1,1);
 
@@ -157,7 +157,7 @@ void Polygon2D::_notification(int p_what) {
 
 				if (points.size()==uv.size()) {
 
-					DVector<Vector2>::Read uvr = uv.read();
+					PoolVector<Vector2>::Read uvr = uv.read();
 
 					for(int i=0;i<len;i++) {
 						uvs[i]=texmat.xform(uvr[i])/tex_size;
@@ -176,7 +176,7 @@ void Polygon2D::_notification(int p_what) {
 			int color_len=vertex_colors.size();
 			colors.resize(len);
 			{
-				DVector<Color>::Read color_r=vertex_colors.read();
+				PoolVector<Color>::Read color_r=vertex_colors.read();
 				for(int i=0;i<color_len && i<len;i++){
 					colors[i]=color_r[i];
 				}
@@ -194,25 +194,25 @@ void Polygon2D::_notification(int p_what) {
 }
 
 
-void Polygon2D::set_polygon(const DVector<Vector2>& p_polygon) {
+void Polygon2D::set_polygon(const PoolVector<Vector2>& p_polygon) {
 	polygon=p_polygon;
 	rect_cache_dirty=true;
 	update();
 }
 
-DVector<Vector2> Polygon2D::get_polygon() const{
+PoolVector<Vector2> Polygon2D::get_polygon() const{
 
 	return polygon;
 }
 
 
-void Polygon2D::set_uv(const DVector<Vector2>& p_uv) {
+void Polygon2D::set_uv(const PoolVector<Vector2>& p_uv) {
 
 	uv=p_uv;
 	update();
 }
 
-DVector<Vector2> Polygon2D::get_uv() const{
+PoolVector<Vector2> Polygon2D::get_uv() const{
 
 	return uv;
 }
@@ -227,12 +227,12 @@ Color Polygon2D::get_color() const{
 	return color;
 }
 
-void Polygon2D::set_vertex_colors(const DVector<Color>& p_colors){
+void Polygon2D::set_vertex_colors(const PoolVector<Color>& p_colors){
 
 	vertex_colors=p_colors;
 	update();
 }
-DVector<Color> Polygon2D::get_vertex_colors() const{
+PoolVector<Color> Polygon2D::get_vertex_colors() const{
 
 	return vertex_colors;
 }
@@ -333,56 +333,60 @@ Vector2 Polygon2D::get_offset() const {
 
 void Polygon2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&Polygon2D::set_polygon);
-	ObjectTypeDB::bind_method(_MD("get_polygon"),&Polygon2D::get_polygon);
+	ClassDB::bind_method(_MD("set_polygon","polygon"),&Polygon2D::set_polygon);
+	ClassDB::bind_method(_MD("get_polygon"),&Polygon2D::get_polygon);
 
-	ObjectTypeDB::bind_method(_MD("set_uv","uv"),&Polygon2D::set_uv);
-	ObjectTypeDB::bind_method(_MD("get_uv"),&Polygon2D::get_uv);
+	ClassDB::bind_method(_MD("set_uv","uv"),&Polygon2D::set_uv);
+	ClassDB::bind_method(_MD("get_uv"),&Polygon2D::get_uv);
 
-	ObjectTypeDB::bind_method(_MD("set_color","color"),&Polygon2D::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color"),&Polygon2D::get_color);
+	ClassDB::bind_method(_MD("set_color","color"),&Polygon2D::set_color);
+	ClassDB::bind_method(_MD("get_color"),&Polygon2D::get_color);
 
-	ObjectTypeDB::bind_method(_MD("set_vertex_colors","vertex_colors"),&Polygon2D::set_vertex_colors);
-	ObjectTypeDB::bind_method(_MD("get_vertex_colors"),&Polygon2D::get_vertex_colors);
+	ClassDB::bind_method(_MD("set_vertex_colors","vertex_colors"),&Polygon2D::set_vertex_colors);
+	ClassDB::bind_method(_MD("get_vertex_colors"),&Polygon2D::get_vertex_colors);
 
-	ObjectTypeDB::bind_method(_MD("set_texture","texture"),&Polygon2D::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture"),&Polygon2D::get_texture);
+	ClassDB::bind_method(_MD("set_texture","texture"),&Polygon2D::set_texture);
+	ClassDB::bind_method(_MD("get_texture"),&Polygon2D::get_texture);
 
-	ObjectTypeDB::bind_method(_MD("set_texture_offset","texture_offset"),&Polygon2D::set_texture_offset);
-	ObjectTypeDB::bind_method(_MD("get_texture_offset"),&Polygon2D::get_texture_offset);
+	ClassDB::bind_method(_MD("set_texture_offset","texture_offset"),&Polygon2D::set_texture_offset);
+	ClassDB::bind_method(_MD("get_texture_offset"),&Polygon2D::get_texture_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_texture_rotation","texture_rotation"),&Polygon2D::set_texture_rotation);
-	ObjectTypeDB::bind_method(_MD("get_texture_rotation"),&Polygon2D::get_texture_rotation);
+	ClassDB::bind_method(_MD("set_texture_rotation","texture_rotation"),&Polygon2D::set_texture_rotation);
+	ClassDB::bind_method(_MD("get_texture_rotation"),&Polygon2D::get_texture_rotation);
 
-	ObjectTypeDB::bind_method(_MD("_set_texture_rotationd","texture_rotation"),&Polygon2D::_set_texture_rotationd);
-	ObjectTypeDB::bind_method(_MD("_get_texture_rotationd"),&Polygon2D::_get_texture_rotationd);
+	ClassDB::bind_method(_MD("_set_texture_rotationd","texture_rotation"),&Polygon2D::_set_texture_rotationd);
+	ClassDB::bind_method(_MD("_get_texture_rotationd"),&Polygon2D::_get_texture_rotationd);
 
-	ObjectTypeDB::bind_method(_MD("set_texture_scale","texture_scale"),&Polygon2D::set_texture_scale);
-	ObjectTypeDB::bind_method(_MD("get_texture_scale"),&Polygon2D::get_texture_scale);
-
-
-	ObjectTypeDB::bind_method(_MD("set_invert","invert"),&Polygon2D::set_invert);
-	ObjectTypeDB::bind_method(_MD("get_invert"),&Polygon2D::get_invert);
-
-	ObjectTypeDB::bind_method(_MD("set_invert_border","invert_border"),&Polygon2D::set_invert_border);
-	ObjectTypeDB::bind_method(_MD("get_invert_border"),&Polygon2D::get_invert_border);
-
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&Polygon2D::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&Polygon2D::get_offset);
+	ClassDB::bind_method(_MD("set_texture_scale","texture_scale"),&Polygon2D::set_texture_scale);
+	ClassDB::bind_method(_MD("get_texture_scale"),&Polygon2D::get_texture_scale);
 
 
+	ClassDB::bind_method(_MD("set_invert","invert"),&Polygon2D::set_invert);
+	ClassDB::bind_method(_MD("get_invert"),&Polygon2D::get_invert);
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"uv"),_SCS("set_uv"),_SCS("get_uv"));
+	ClassDB::bind_method(_MD("set_invert_border","invert_border"),&Polygon2D::set_invert_border);
+	ClassDB::bind_method(_MD("get_invert_border"),&Polygon2D::get_invert_border);
+
+	ClassDB::bind_method(_MD("set_offset","offset"),&Polygon2D::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&Polygon2D::get_offset);
+
+
+
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"uv"),_SCS("set_uv"),_SCS("get_uv"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture/offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture/scale"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture/rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_texture_rotationd"),_SCS("_get_texture_rotationd"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert/enable"),_SCS("set_invert"),_SCS("get_invert"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert/border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),_SCS("set_invert_border"),_SCS("get_invert_border"));
+	ADD_GROUP("Texture","");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
+	ADD_GROUP("Texture","texture_");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_scale"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture_rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_texture_rotationd"),_SCS("_get_texture_rotationd"));
+
+	ADD_GROUP("Invert","invert_");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert_enable"),_SCS("set_invert"),_SCS("get_invert"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert_border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),_SCS("set_invert_border"),_SCS("get_invert_border"));
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,10 +48,10 @@ void StyleBoxEditor::_sb_changed() {
 
 void StyleBoxEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_sb_changed",&StyleBoxEditor::_sb_changed);
-//	ObjectTypeDB::bind_method("_import",&StyleBoxEditor::_import);
-//	ObjectTypeDB::bind_method("_import_accept",&StyleBoxEditor::_import_accept);
-//	ObjectTypeDB::bind_method("_preview_text_changed",&StyleBoxEditor::_preview_text_changed);
+	ClassDB::bind_method("_sb_changed",&StyleBoxEditor::_sb_changed);
+	//ClassDB::bind_method("_import",&StyleBoxEditor::_import);
+	//ClassDB::bind_method("_import_accept",&StyleBoxEditor::_import_accept);
+	//ClassDB::bind_method("_preview_text_changed",&StyleBoxEditor::_preview_text_changed);
 }
 
 StyleBoxEditor::StyleBoxEditor() {
@@ -85,7 +85,7 @@ void StyleBoxEditorPlugin::edit(Object *p_node) {
 
 bool StyleBoxEditorPlugin::handles(Object *p_node) const{
 
-	return p_node->is_type("StyleBox");
+	return p_node->is_class("StyleBox");
 }
 
 void StyleBoxEditorPlugin::make_visible(bool p_visible){
@@ -95,7 +95,7 @@ void StyleBoxEditorPlugin::make_visible(bool p_visible){
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(stylebox_editor);
 
 	} else {
-		if (stylebox_editor->is_visible())
+		if (stylebox_editor->is_visible_in_tree())
 			EditorNode::get_singleton()->hide_bottom_panel();
 		button->hide();
 	}

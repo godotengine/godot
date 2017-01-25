@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,10 +42,10 @@ bool MeshInstance::_set(const StringName& p_name, const Variant& p_value) {
 		return false;
 
 
-	Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
+	Map<StringName,BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
 		E->get().value=p_value;
-		VisualServer::get_singleton()->instance_set_morph_target_weight(get_instance(),E->get().idx,E->get().value);
+		VisualServer::get_singleton()->instance_set_blend_shape_weight(get_instance(),E->get().idx,E->get().value);
 		return true;
 	}
 
@@ -67,7 +67,7 @@ bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
 	if (!get_instance().is_valid())
 		return false;
 
-	const Map<StringName,MorphTrack>::Element *E = morph_tracks.find(p_name);
+	const Map<StringName,BlendShapeTrack>::Element *E = blend_shape_tracks.find(p_name);
 	if (E) {
 		r_ret = E->get().value;
 		return true;
@@ -86,12 +86,12 @@ bool MeshInstance::_get(const StringName& p_name,Variant &r_ret) const {
 void MeshInstance::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	List<String> ls;
-	for(const Map<StringName,MorphTrack>::Element *E=morph_tracks.front();E;E=E->next()) {
+	for(const Map<StringName,BlendShapeTrack>::Element *E=blend_shape_tracks.front();E;E=E->next()) {
 
 		ls.push_back(E->key());
 	}
 
-	ls.sort();;
+	ls.sort();
 
 	for(List<String>::Element *E=ls.front();E;E=E->next()) {
 		p_list->push_back( PropertyInfo(Variant::REAL,E->get(),PROPERTY_HINT_RANGE,"0,1,0.01"));
@@ -119,16 +119,16 @@ void MeshInstance::set_mesh(const Ref<Mesh>& p_mesh) {
 
 	mesh=p_mesh;
 
-	morph_tracks.clear();
+	blend_shape_tracks.clear();
 	if (mesh.is_valid()) {
 
 
-		for(int i=0;i<mesh->get_morph_target_count();i++) {
+		for(int i=0;i<mesh->get_blend_shape_count();i++) {
 
-			MorphTrack mt;
+			BlendShapeTrack mt;
 			mt.idx=i;
 			mt.value=0;
-			morph_tracks["morph/"+String(mesh->get_morph_target_name(i))]=mt;
+			blend_shape_tracks["blend_shapes/"+String(mesh->get_blend_shape_name(i))]=mt;
 		}
 
 		mesh->connect(CoreStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_mesh_changed);
@@ -169,21 +169,21 @@ NodePath MeshInstance::get_skeleton_path() {
 	return skeleton_path;
 }
 
-AABB MeshInstance::get_aabb() const {
+Rect3 MeshInstance::get_aabb() const {
 
 	if (!mesh.is_null())
 		return mesh->get_aabb();
 
-	return AABB();
+	return Rect3();
 }
 
-DVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> MeshInstance::get_faces(uint32_t p_usage_flags) const {
 
 	if (!(p_usage_flags&(FACES_SOLID|FACES_ENCLOSING)))
-		return DVector<Face3>();
+		return PoolVector<Face3>();
 
 	if (mesh.is_null())
-		return DVector<Face3>();
+		return PoolVector<Face3>();
 
 	return mesh->get_faces();
 }
@@ -294,18 +294,19 @@ void MeshInstance::_mesh_changed() {
 
 void MeshInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
-	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
-	ObjectTypeDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);
-	ObjectTypeDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
-	ObjectTypeDB::bind_method(_MD("get_aabb"),&MeshInstance::get_aabb);
-	ObjectTypeDB::bind_method(_MD("create_trimesh_collision"),&MeshInstance::create_trimesh_collision);
-	ObjectTypeDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT);
-	ObjectTypeDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);
-	ObjectTypeDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT);
-	ObjectTypeDB::bind_method(_MD("_mesh_changed"),&MeshInstance::_mesh_changed);
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh/mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
-	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "mesh/skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
+	ClassDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
+	ClassDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
+	ClassDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);
+	ClassDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
+
+	ClassDB::bind_method(_MD("create_trimesh_collision"),&MeshInstance::create_trimesh_collision);
+	ClassDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);
+	ClassDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT);
+	ClassDB::bind_method(_MD("_mesh_changed"),&MeshInstance::_mesh_changed);
+
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
+	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
 }
 
 MeshInstance::MeshInstance()

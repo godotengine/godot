@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ void ProgressBar::_notification(int p_what) {
 		Color font_color=get_color("font_color");
 
 		draw_style_box(bg,Rect2(Point2(),get_size()));
-		float r = get_unit_value();
+		float r = get_as_ratio();
 		int mp = fg->get_minimum_size().width;
 		int p = r*get_size().width-mp;
 		if (p>0) {
@@ -62,7 +62,7 @@ void ProgressBar::_notification(int p_what) {
 		}
 
 		if (percent_visible) {
-			String txt=itos(int(get_unit_value()*100))+"%";
+			String txt=itos(int(get_as_ratio()*100))+"%";
 			font->draw_halign(get_canvas_item(),Point2(0,font->get_ascent()+(get_size().height-font->get_height())/2),HALIGN_CENTER,get_size().width,txt,font_color);
 		}
 	}
@@ -82,9 +82,10 @@ bool ProgressBar::is_percent_visible() const{
 
 void ProgressBar::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_percent_visible","visible"),&ProgressBar::set_percent_visible);
-	ObjectTypeDB::bind_method(_MD("is_percent_visible"),&ProgressBar::is_percent_visible);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"percent/visible"),_SCS("set_percent_visible"),_SCS("is_percent_visible"));
+	ClassDB::bind_method(_MD("set_percent_visible","visible"),&ProgressBar::set_percent_visible);
+	ClassDB::bind_method(_MD("is_percent_visible"),&ProgressBar::is_percent_visible);
+	ADD_GROUP("Percent","percent_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"percent_visible"),_SCS("set_percent_visible"),_SCS("is_percent_visible"));
 }
 
 ProgressBar::ProgressBar() {

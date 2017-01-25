@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,9 +44,9 @@ void Quad::_update() {
 
 
 
-	DVector<Vector3> points;
+	PoolVector<Vector3> points;
 	points.resize(4);
-	DVector<Vector3>::Write pointsw = points.write();
+	PoolVector<Vector3>::Write pointsw = points.write();
 
 	Vector2 s2 = size*0.5;
 	Vector2 o = offset;
@@ -66,38 +66,38 @@ void Quad::_update() {
 	pointsw[3][a2]=-s2.y+offset.y;
 
 
-	aabb=AABB(pointsw[0],Vector3());
+	aabb=Rect3(pointsw[0],Vector3());
 	for(int i=1;i<4;i++)
 		aabb.expand_to(pointsw[i]);
 
-	pointsw = DVector<Vector3>::Write();
+	pointsw = PoolVector<Vector3>::Write();
 
-	DVector<Vector3> normals;
+	PoolVector<Vector3> normals;
 	normals.resize(4);
-	DVector<Vector3>::Write normalsw = normals.write();
+	PoolVector<Vector3>::Write normalsw = normals.write();
 
 	for(int i=0;i<4;i++)
 		normalsw[i]=normal;
 
-	normalsw=DVector<Vector3>::Write();
+	normalsw=PoolVector<Vector3>::Write();
 
 
 
-	DVector<Vector2> uvs;
+	PoolVector<Vector2> uvs;
 	uvs.resize(4);
-	DVector<Vector2>::Write uvsw = uvs.write();
+	PoolVector<Vector2>::Write uvsw = uvs.write();
 
 	uvsw[0]=Vector2(0,0);
 	uvsw[1]=Vector2(1,0);
 	uvsw[2]=Vector2(1,1);
 	uvsw[3]=Vector2(0,1);
 
-	uvsw = DVector<Vector2>::Write();
+	uvsw = PoolVector<Vector2>::Write();
 
-	DVector<int> indices;
+	PoolVector<int> indices;
 	indices.resize(6);
 
-	DVector<int>::Write indicesw = indices.write();
+	PoolVector<int>::Write indicesw = indices.write();
 	indicesw[0]=0;
 	indicesw[1]=1;
 	indicesw[2]=2;
@@ -105,7 +105,7 @@ void Quad::_update() {
 	indicesw[4]=3;
 	indicesw[5]=0;
 
-	indicesw=DVector<int>::Write();
+	indicesw=PoolVector<int>::Write();
 
 	Array arr;
 	arr.resize(VS::ARRAY_MAX);
@@ -120,7 +120,7 @@ void Quad::_update() {
 	} else {
 		configured=true;
 	}
-	VS::get_singleton()->mesh_add_surface(mesh,VS::PRIMITIVE_TRIANGLES,arr);
+	VS::get_singleton()->mesh_add_surface_from_arrays(mesh,VS::PRIMITIVE_TRIANGLES,arr);
 
 	pending_update=false;
 }
@@ -187,34 +187,34 @@ void Quad::_notification(int p_what) {
 	}
 }
 
-DVector<Face3> Quad::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> Quad::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
-AABB Quad::get_aabb() const {
+Rect3 Quad::get_aabb() const {
 
 	return aabb;
 }
 
 void Quad::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_axis","axis"),&Quad::set_axis);
-	ObjectTypeDB::bind_method(_MD("get_axis"),&Quad::get_axis);
+	ClassDB::bind_method(_MD("set_axis","axis"),&Quad::set_axis);
+	ClassDB::bind_method(_MD("get_axis"),&Quad::get_axis);
 
-	ObjectTypeDB::bind_method(_MD("set_size","size"),&Quad::set_size);
-	ObjectTypeDB::bind_method(_MD("get_size"),&Quad::get_size);
+	ClassDB::bind_method(_MD("set_size","size"),&Quad::set_size);
+	ClassDB::bind_method(_MD("get_size"),&Quad::get_size);
 
-	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&Quad::set_centered);
-	ObjectTypeDB::bind_method(_MD("is_centered"),&Quad::is_centered);
+	ClassDB::bind_method(_MD("set_centered","centered"),&Quad::set_centered);
+	ClassDB::bind_method(_MD("is_centered"),&Quad::is_centered);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&Quad::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&Quad::get_offset);
+	ClassDB::bind_method(_MD("set_offset","offset"),&Quad::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&Quad::get_offset);
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "quad/axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), _SCS("set_axis"), _SCS("get_axis"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "quad/size" ), _SCS("set_size"), _SCS("get_size"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "quad/offset" ), _SCS("set_offset"), _SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "quad/centered" ), _SCS("set_centered"), _SCS("is_centered"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), _SCS("set_axis"), _SCS("get_axis"));
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "size" ), _SCS("set_size"), _SCS("get_size"));
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "offset" ), _SCS("set_offset"), _SCS("get_offset"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered" ), _SCS("set_centered"), _SCS("is_centered"));
 
 }
 
@@ -229,4 +229,8 @@ Quad::Quad() {
 	set_base(mesh);
 	configured=false;
 
+}
+
+Quad::~Quad() {
+	VisualServer::get_singleton()->free(mesh);
 }

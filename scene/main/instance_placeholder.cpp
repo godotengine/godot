@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,7 +106,7 @@ void InstancePlaceholder::replace_by_instance(const Ref<PackedScene> &p_custom_s
 Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 
 	Dictionary ret;
-	StringArray order;
+	PoolStringArray order;
 
 	for(List<PropSet>::Element *E=stored_values.front();E;E=E->next()) {
 		ret[E->get().name] = E->get().value;
@@ -122,9 +122,9 @@ Dictionary InstancePlaceholder::get_stored_values(bool p_with_order) {
 
 void InstancePlaceholder::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_stored_values","with_order"),&InstancePlaceholder::get_stored_values,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("replace_by_instance","custom_scene:PackedScene"),&InstancePlaceholder::replace_by_instance,DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("get_instance_path"),&InstancePlaceholder::get_instance_path);
+	ClassDB::bind_method(_MD("get_stored_values","with_order"),&InstancePlaceholder::get_stored_values,DEFVAL(false));
+	ClassDB::bind_method(_MD("replace_by_instance","custom_scene:PackedScene"),&InstancePlaceholder::replace_by_instance,DEFVAL(Variant()));
+	ClassDB::bind_method(_MD("get_instance_path"),&InstancePlaceholder::get_instance_path);
 }
 
 InstancePlaceholder::InstancePlaceholder() {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "translation.h"
+
 #include "globals.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
@@ -309,6 +310,7 @@ static const char* locale_list[]={
 "sa_IN", //  Sanskrit (India)
 "sat_IN", //  Santali (India)
 "sc_IT", //  Sardinian (Italy)
+"sco", //  Scots
 "sd_IN", //  Sindhi (India)
 "se_NO", //  Northern Sami (Norway)
 "sgs_LT", //  Samogitian (Lithuania)
@@ -799,9 +801,9 @@ static bool is_valid_locale(const String& p_locale) {
 	return false;
 }
 
-DVector<String> Translation::_get_messages() const {
+PoolVector<String> Translation::_get_messages() const {
 
-	DVector<String> msgs;
+	PoolVector<String> msgs;
 	msgs.resize(translation_map.size()*2);
 	int idx=0;
 	for (const Map<StringName, StringName>::Element *E=translation_map.front();E;E=E->next()) {
@@ -814,9 +816,9 @@ DVector<String> Translation::_get_messages() const {
 	return msgs;
 }
 
-DVector<String> Translation::_get_message_list() const {
+PoolVector<String> Translation::_get_message_list() const {
 
-	DVector<String> msgs;
+	PoolVector<String> msgs;
 	msgs.resize(translation_map.size());
 	int idx=0;
 	for (const Map<StringName, StringName>::Element *E=translation_map.front();E;E=E->next()) {
@@ -829,12 +831,12 @@ DVector<String> Translation::_get_message_list() const {
 
 }
 
-void Translation::_set_messages(const DVector<String>& p_messages){
+void Translation::_set_messages(const PoolVector<String>& p_messages){
 
 	int msg_count=p_messages.size();
 	ERR_FAIL_COND(msg_count%2);
 
-	DVector<String>::Read r = p_messages.read();
+	PoolVector<String>::Read r = p_messages.read();
 
 	for(int i=0;i<msg_count;i+=2) {
 
@@ -898,17 +900,17 @@ int Translation::get_message_count() const {
 
 void Translation::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_locale","locale"),&Translation::set_locale);
-	ObjectTypeDB::bind_method(_MD("get_locale"),&Translation::get_locale);
-	ObjectTypeDB::bind_method(_MD("add_message","src_message","xlated_message"),&Translation::add_message);
-	ObjectTypeDB::bind_method(_MD("get_message","src_message"),&Translation::get_message);
-	ObjectTypeDB::bind_method(_MD("erase_message","src_message"),&Translation::erase_message);
-	ObjectTypeDB::bind_method(_MD("get_message_list"),&Translation::_get_message_list);
-	ObjectTypeDB::bind_method(_MD("get_message_count"),&Translation::get_message_count);
-	ObjectTypeDB::bind_method(_MD("_set_messages"),&Translation::_set_messages);
-	ObjectTypeDB::bind_method(_MD("_get_messages"),&Translation::_get_messages);
+	ClassDB::bind_method(_MD("set_locale","locale"),&Translation::set_locale);
+	ClassDB::bind_method(_MD("get_locale"),&Translation::get_locale);
+	ClassDB::bind_method(_MD("add_message","src_message","xlated_message"),&Translation::add_message);
+	ClassDB::bind_method(_MD("get_message","src_message"),&Translation::get_message);
+	ClassDB::bind_method(_MD("erase_message","src_message"),&Translation::erase_message);
+	ClassDB::bind_method(_MD("get_message_list"),&Translation::_get_message_list);
+	ClassDB::bind_method(_MD("get_message_count"),&Translation::get_message_count);
+	ClassDB::bind_method(_MD("_set_messages"),&Translation::_set_messages);
+	ClassDB::bind_method(_MD("_get_messages"),&Translation::_get_messages);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING_ARRAY,"messages",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_messages"), _SCS("_get_messages") );
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_STRING_ARRAY,"messages",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_messages"), _SCS("_get_messages") );
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"locale"), _SCS("set_locale"), _SCS("get_locale") );
 }
 
@@ -937,6 +939,10 @@ void TranslationServer::set_locale(const String& p_locale) {
 	}
 	else {
 		locale=univ_locale;
+	}
+
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
 	}
 }
 
@@ -1047,13 +1053,13 @@ TranslationServer *TranslationServer::singleton=NULL;
 
 bool TranslationServer::_load_translations(const String& p_from) {
 
-	if (Globals::get_singleton()->has(p_from)) {
-		DVector<String> translations=Globals::get_singleton()->get(p_from);
+	if (GlobalConfig::get_singleton()->has(p_from)) {
+		PoolVector<String> translations=GlobalConfig::get_singleton()->get(p_from);
 
 		int tcount=translations.size();
 
 		if (tcount) {
-			DVector<String>::Read r = translations.read();
+			PoolVector<String>::Read r = translations.read();
 
 			for(int i=0;i<tcount;i++) {
 
@@ -1089,7 +1095,7 @@ void TranslationServer::setup() {
 			options+=locale_list[idx];
 			idx++;
 		}
-		Globals::get_singleton()->set_custom_property_info("locale/fallback",PropertyInfo(Variant::STRING,"locale/fallback",PROPERTY_HINT_ENUM,options));
+		GlobalConfig::get_singleton()->set_custom_property_info("locale/fallback",PropertyInfo(Variant::STRING,"locale/fallback",PROPERTY_HINT_ENUM,options));
 	}
 #endif
 	//load translations
@@ -1116,15 +1122,15 @@ StringName TranslationServer::tool_translate(const StringName& p_message) const 
 
 void TranslationServer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_locale","locale"),&TranslationServer::set_locale);
-	ObjectTypeDB::bind_method(_MD("get_locale"),&TranslationServer::get_locale);
+	ClassDB::bind_method(_MD("set_locale","locale"),&TranslationServer::set_locale);
+	ClassDB::bind_method(_MD("get_locale"),&TranslationServer::get_locale);
 
-	ObjectTypeDB::bind_method(_MD("translate","message"),&TranslationServer::translate);
+	ClassDB::bind_method(_MD("translate","message"),&TranslationServer::translate);
 
-	ObjectTypeDB::bind_method(_MD("add_translation","translation:Translation"),&TranslationServer::add_translation);
-	ObjectTypeDB::bind_method(_MD("remove_translation","translation:Translation"),&TranslationServer::remove_translation);
+	ClassDB::bind_method(_MD("add_translation","translation:Translation"),&TranslationServer::add_translation);
+	ClassDB::bind_method(_MD("remove_translation","translation:Translation"),&TranslationServer::remove_translation);
 
-	ObjectTypeDB::bind_method(_MD("clear"),&TranslationServer::clear);
+	ClassDB::bind_method(_MD("clear"),&TranslationServer::clear);
 
 }
 

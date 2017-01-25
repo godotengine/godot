@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #if 0
 class Curve2D : public Resource {
 
-	OBJ_TYPE(Curve2D,Resource);
+	GDCLASS(Curve2D,Resource);
 
 	struct Point {
 
@@ -72,7 +72,7 @@ public:
 
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
-	DVector<Point2> bake(int p_subdivs=10) const;
+	PoolVector<Point2> bake(int p_subdivs=10) const;
 	void advance(real_t p_distance,int &r_index, real_t &r_pos) const;
 	void get_approx_position_from_offset(real_t p_offset,int &r_index, real_t &r_pos,int p_subdivs=16) const;
 
@@ -84,7 +84,7 @@ public:
 
 class Curve2D : public Resource {
 
-	OBJ_TYPE(Curve2D,Resource);
+	GDCLASS(Curve2D,Resource);
 
 	struct Point {
 
@@ -103,7 +103,7 @@ class Curve2D : public Resource {
 	};
 
 	mutable bool baked_cache_dirty;
-	mutable Vector2Array baked_point_cache;
+	mutable PoolVector2Array baked_point_cache;
 	mutable float baked_max_ofs;
 
 
@@ -133,6 +133,7 @@ public:
 	void set_point_out(int p_index, const Vector2& p_out);
 	Vector2 get_point_out(int p_index) const;
 	void remove_point(int p_index);
+	void clear_points();
 
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
@@ -144,9 +145,9 @@ public:
 
 	float get_baked_length() const;
 	Vector2 interpolate_baked(float p_offset,bool p_cubic=false) const;
-	Vector2Array get_baked_points() const; //useful for going thru
+	PoolVector2Array get_baked_points() const; //useful for going thru
 
-	Vector2Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
+	PoolVector2Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
 
 
 	Curve2D();
@@ -156,7 +157,7 @@ public:
 
 class Curve3D : public Resource {
 
-	OBJ_TYPE(Curve3D,Resource);
+	GDCLASS(Curve3D,Resource);
 
 	struct Point {
 
@@ -178,8 +179,8 @@ class Curve3D : public Resource {
 	};
 
 	mutable bool baked_cache_dirty;
-	mutable Vector3Array baked_point_cache;
-	mutable RealArray baked_tilt_cache;
+	mutable PoolVector3Array baked_point_cache;
+	mutable PoolRealArray baked_tilt_cache;
 	mutable float baked_max_ofs;
 
 
@@ -211,6 +212,7 @@ public:
 	void set_point_out(int p_index, const Vector3& p_out);
 	Vector3 get_point_out(int p_index) const;
 	void remove_point(int p_index);
+	void clear_points();
 
 	Vector3 interpolate(int p_index, float p_offset) const;
 	Vector3 interpolatef(real_t p_findex) const;
@@ -223,10 +225,10 @@ public:
 	float get_baked_length() const;
 	Vector3 interpolate_baked(float p_offset,bool p_cubic=false) const;
 	float interpolate_baked_tilt(float p_offset) const;
-	Vector3Array get_baked_points() const; //useful for going thru
-	RealArray get_baked_tilts() const; //useful for going thru
+	PoolVector3Array get_baked_points() const; //useful for going thru
+	PoolRealArray get_baked_tilts() const; //useful for going thru
 
-	Vector3Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
+	PoolVector3Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
 
 
 	Curve3D();

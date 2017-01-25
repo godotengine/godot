@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ class FileAccess;
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
 
-	OBJ_TYPE( EditorFileSystemDirectory,Object );
+	GDCLASS( EditorFileSystemDirectory,Object );
 
 	String name;
 	uint64_t modified_time;
@@ -122,7 +122,7 @@ public:
 
 class EditorFileSystem : public Node {
 
-	OBJ_TYPE( EditorFileSystem, Node );
+	GDCLASS( EditorFileSystem, Node );
 
 	_THREAD_SAFE_CLASS_
 
@@ -233,7 +233,7 @@ public:
 	void get_changed_sources(List<String> *r_changed);
 	void update_file(const String& p_file);
 	String find_resource_from_source(const String& p_path) const;
-	EditorFileSystemDirectory *get_path(const String& p_path);
+	EditorFileSystemDirectory *get_filesystem_path(const String& p_path);
 	String get_file_type(const String& p_file) const;
 	EditorFileSystemDirectory* find_file(const String& p_file,int* r_index) const;
 

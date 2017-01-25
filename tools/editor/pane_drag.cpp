@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 #include "pane_drag.h"
 
 
-void PaneDrag::_input_event(const InputEvent& p_input) {
+void PaneDrag::_gui_input(const InputEvent& p_input) {
 
 	if (p_input.type==InputEvent::MOUSE_MOTION && p_input.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
 
@@ -64,7 +64,7 @@ Size2 PaneDrag::get_minimum_size() const {
 
 void PaneDrag::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_input_event",&PaneDrag::_input_event);
+	ClassDB::bind_method("_gui_input",&PaneDrag::_gui_input);
 	ADD_SIGNAL(MethodInfo("dragged",PropertyInfo(Variant::VECTOR2,"amount")));
 }
 

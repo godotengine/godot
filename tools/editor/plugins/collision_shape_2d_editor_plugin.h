@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 class CanvasItemEditor;
 
 class CollisionShape2DEditor : public Control {
-	OBJ_TYPE(CollisionShape2DEditor, Control);
+	GDCLASS(CollisionShape2DEditor, Control);
 
 	enum ShapeType {
 		CAPSULE_SHAPE,
@@ -73,20 +73,20 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent& p_event);
 	void edit(Node* p_node);
 
 	CollisionShape2DEditor(EditorNode* p_editor);
 };
 
 class CollisionShape2DEditorPlugin : public EditorPlugin {
-	OBJ_TYPE(CollisionShape2DEditorPlugin, EditorPlugin);
+	GDCLASS(CollisionShape2DEditorPlugin, EditorPlugin);
 
 	CollisionShape2DEditor* collision_shape_2d_editor;
 	EditorNode* editor;
 
 public:
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_shape_2d_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_shape_2d_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "CollisionShape2D"; }
 	bool has_main_screen() const { return false; }

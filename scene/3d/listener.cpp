@@ -146,16 +146,17 @@ RES Listener::_get_gizmo_geometry() const {
 
 void Listener::_bind_methods() {
 
-	ObjectTypeDB::bind_method( _MD("make_current"),&Listener::make_current );
-	ObjectTypeDB::bind_method( _MD("clear_current"),&Listener::clear_current );
-	ObjectTypeDB::bind_method( _MD("is_current"),&Listener::is_current );
-	ObjectTypeDB::bind_method( _MD("get_listener_transform"),&Listener::get_listener_transform );
+	ClassDB::bind_method( _MD("make_current"),&Listener::make_current );
+	ClassDB::bind_method( _MD("clear_current"),&Listener::clear_current );
+	ClassDB::bind_method( _MD("is_current"),&Listener::is_current );
+	ClassDB::bind_method( _MD("get_listener_transform"),&Listener::get_listener_transform );
 }
 
 Listener::Listener() {
 
 	current=false;
 	force_change=false;
+	set_notify_transform(true);
 	//active=false;
 }
 

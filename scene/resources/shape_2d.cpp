@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,14 +47,14 @@ real_t Shape2D::get_custom_solver_bias() const{
 }
 
 
-bool Shape2D::collide_with_motion(const Matrix32& p_local_xform, const Vector2& p_local_motion, const Ref<Shape2D>& p_shape, const Matrix32& p_shape_xform, const Vector2 &p_shape_motion) {
+bool Shape2D::collide_with_motion(const Transform2D& p_local_xform, const Vector2& p_local_motion, const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform, const Vector2 &p_shape_motion) {
 
 	ERR_FAIL_COND_V(p_shape.is_null(),false);
 	int r;
 	return Physics2DServer::get_singleton()->shape_collide(get_rid(),p_local_xform,p_local_motion,p_shape->get_rid(),p_shape_xform,p_shape_motion,NULL,0,r);
 }
 
-bool Shape2D::collide(const Matrix32& p_local_xform,  const Ref<Shape2D>& p_shape, const Matrix32& p_shape_xform){
+bool Shape2D::collide(const Transform2D& p_local_xform,  const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform){
 	ERR_FAIL_COND_V(p_shape.is_null(),false);
 	int r;
 	return Physics2DServer::get_singleton()->shape_collide(get_rid(),p_local_xform,Vector2(),p_shape->get_rid(),p_shape_xform,Vector2(),NULL,0,r);
@@ -62,7 +62,7 @@ bool Shape2D::collide(const Matrix32& p_local_xform,  const Ref<Shape2D>& p_shap
 
 }
 
-Variant Shape2D::collide_with_motion_and_get_contacts(const Matrix32& p_local_xform, const Vector2& p_local_motion, const Ref<Shape2D>& p_shape, const Matrix32& p_shape_xform, const Vector2 &p_shape_motion){
+Variant Shape2D::collide_with_motion_and_get_contacts(const Transform2D& p_local_xform, const Vector2& p_local_motion, const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform, const Vector2 &p_shape_motion){
 
 	ERR_FAIL_COND_V(p_shape.is_null(),Variant());
 	const int max_contacts = 16;
@@ -81,7 +81,7 @@ Variant Shape2D::collide_with_motion_and_get_contacts(const Matrix32& p_local_xf
 	return results;
 
 }
-Variant Shape2D::collide_and_get_contacts(const Matrix32& p_local_xform,  const Ref<Shape2D>& p_shape, const Matrix32& p_shape_xform){
+Variant Shape2D::collide_and_get_contacts(const Transform2D& p_local_xform,  const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform){
 
 	ERR_FAIL_COND_V(p_shape.is_null(),Variant());
 	const int max_contacts = 16;
@@ -104,12 +104,12 @@ Variant Shape2D::collide_and_get_contacts(const Matrix32& p_local_xform,  const 
 
 void Shape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_custom_solver_bias","bias"),&Shape2D::set_custom_solver_bias);
-	ObjectTypeDB::bind_method(_MD("get_custom_solver_bias"),&Shape2D::get_custom_solver_bias);
-	ObjectTypeDB::bind_method(_MD("collide","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide);
-	ObjectTypeDB::bind_method(_MD("collide_with_motion","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion);
-	ObjectTypeDB::bind_method(_MD("collide_and_get_contacts:Variant","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide_and_get_contacts);
-	ObjectTypeDB::bind_method(_MD("collide_with_motion_and_get_contacts:Variant","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion_and_get_contacts);
+	ClassDB::bind_method(_MD("set_custom_solver_bias","bias"),&Shape2D::set_custom_solver_bias);
+	ClassDB::bind_method(_MD("get_custom_solver_bias"),&Shape2D::get_custom_solver_bias);
+	ClassDB::bind_method(_MD("collide","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide);
+	ClassDB::bind_method(_MD("collide_with_motion","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion);
+	ClassDB::bind_method(_MD("collide_and_get_contacts:Variant","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide_and_get_contacts);
+	ClassDB::bind_method(_MD("collide_with_motion_and_get_contacts:Variant","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion_and_get_contacts);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_solver_bias",PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_custom_solver_bias"),_SCS("get_custom_solver_bias"));
 }

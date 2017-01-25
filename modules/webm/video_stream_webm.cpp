@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,7 +127,7 @@ bool VideoStreamPlaybackWebm::open_file(const String &p_file) {
 			}
 
 			frame_data.resize((webm->getWidth() * webm->getHeight()) << 2);
-			texture->create(webm->getWidth(), webm->getHeight(), Image::FORMAT_RGBA, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
+			texture->create(webm->getWidth(), webm->getHeight(), Image::FORMAT_RGBA8, Texture::FLAG_FILTER | Texture::FLAG_VIDEO_SURFACE);
 
 			return true;
 		}
@@ -167,7 +167,7 @@ void VideoStreamPlaybackWebm::play() {
 
 	stop();
 
-	delay_compensation = Globals::get_singleton()->get("audio/video_delay_compensation_ms");
+	delay_compensation = GlobalConfig::get_singleton()->get("audio/video_delay_compensation_ms");
 	delay_compensation /= 1000.0;
 
 	playing = true;
@@ -293,7 +293,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 
 						if (err == VPXDecoder::NO_ERROR && image.w == webm->getWidth() && image.h == webm->getHeight()) {
 
-							DVector<uint8_t>::Write w = frame_data.write();
+							PoolVector<uint8_t>::Write w = frame_data.write();
 							bool converted = false;
 
 							if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
@@ -318,7 +318,7 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							}
 
 							if (converted)
-								texture->set_data(Image(image.w, image.h, 0, Image::FORMAT_RGBA, frame_data)); //Zero copy send to visual server
+								texture->set_data(Image(image.w, image.h, 0, Image::FORMAT_RGBA8, frame_data)); //Zero copy send to visual server
 						}
 
 						break;
@@ -415,7 +415,7 @@ bool ResourceFormatLoaderVideoStreamWebm::handles_type(const String &p_type) con
 
 String ResourceFormatLoaderVideoStreamWebm::get_resource_type(const String &p_path) const {
 
-	const String exl = p_path.extension().to_lower();
+	const String exl = p_path.get_extension().to_lower();
 	if (exl == "webm")
 		return "VideoStreamWebm";
 	return "";

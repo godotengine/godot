@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,9 +60,9 @@ abstract public class GenericConsumeTask extends AsyncTask<String, String, Strin
 	@Override
 	protected String doInBackground(String... params) {
 		try {
-//			Log.d("godot", "Requesting to consume an item with token ." + token);
+			//Log.d("godot", "Requesting to consume an item with token ." + token);
 			int response = mService.consumePurchase(3, context.getPackageName(), token);
-//			Log.d("godot", "consumePurchase response: " + response);
+			//Log.d("godot", "consumePurchase response: " + response);
 			if(response == 0 || response == 8){
 				return null;
 			}

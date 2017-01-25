@@ -27,11 +27,11 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>$copyright</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.6.0</string>
+	<string>10.9.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
 		<key>x86_64</key>
-		<string>10.6.0</string>
+		<string>10.9.0</string>
 	</dict>
 	<key>NSHighResolutionCapable</key>
 	$highres

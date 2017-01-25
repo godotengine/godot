@@ -11,7 +11,7 @@
 #ifdef TOOLS_ENABLED
 class VisualScriptEditorSignalEdit : public Object {
 
-	OBJ_TYPE(VisualScriptEditorSignalEdit,Object)
+	GDCLASS(VisualScriptEditorSignalEdit,Object)
 
 	StringName sig;
 public:
@@ -22,7 +22,7 @@ public:
 protected:
 
 	static void _bind_methods() {
-		ObjectTypeDB::bind_method("_sig_changed",&VisualScriptEditorSignalEdit::_sig_changed);
+		ClassDB::bind_method("_sig_changed",&VisualScriptEditorSignalEdit::_sig_changed);
 	}
 
 	void _sig_changed() {
@@ -160,7 +160,7 @@ public:
 
 class VisualScriptEditorVariableEdit : public Object {
 
-	OBJ_TYPE(VisualScriptEditorVariableEdit,Object)
+	GDCLASS(VisualScriptEditorVariableEdit,Object)
 
 	StringName var;
 public:
@@ -171,8 +171,8 @@ public:
 protected:
 
 	static void _bind_methods() {
-		ObjectTypeDB::bind_method("_var_changed",&VisualScriptEditorVariableEdit::_var_changed);
-		ObjectTypeDB::bind_method("_var_value_changed",&VisualScriptEditorVariableEdit::_var_value_changed);
+		ClassDB::bind_method("_var_changed",&VisualScriptEditorVariableEdit::_var_changed);
+		ClassDB::bind_method("_var_value_changed",&VisualScriptEditorVariableEdit::_var_value_changed);
 	}
 
 	void _var_changed() {
@@ -326,11 +326,11 @@ static Color _color_from_type(Variant::Type p_type) {
 		case Variant::VECTOR2: color = Color::html("bd91f1"); break;
 		case Variant::RECT2: color = Color::html("f191a5"); break;
 		case Variant::VECTOR3: color = Color::html("d67dee"); break;
-		case Variant::MATRIX32: color = Color::html("c4ec69"); break;
+		case Variant::TRANSFORM2D: color = Color::html("c4ec69"); break;
 		case Variant::PLANE: color = Color::html("f77070"); break;
 		case Variant::QUAT: color = Color::html("ec69a3"); break;
-		case Variant::_AABB: color = Color::html("ee7991"); break;
-		case Variant::MATRIX3: color = Color::html("e3ec69"); break;
+		case Variant::RECT3: color = Color::html("ee7991"); break;
+		case Variant::BASIS: color = Color::html("e3ec69"); break;
 		case Variant::TRANSFORM: color = Color::html("f6a86e"); break;
 
 		case Variant::COLOR: color = Color::html("9dff70"); break;
@@ -342,13 +342,13 @@ static Color _color_from_type(Variant::Type p_type) {
 		case Variant::DICTIONARY: color = Color::html("77edb1"); break;
 
 		case Variant::ARRAY: color = Color::html("e0e0e0"); break;
-		case Variant::RAW_ARRAY: color = Color::html("aaf4c8"); break;
-		case Variant::INT_ARRAY: color = Color::html("afdcf5"); break;
-		case Variant::REAL_ARRAY: color = Color::html("97e7f8"); break;
-		case Variant::STRING_ARRAY: color = Color::html("9dc4f2"); break;
-		case Variant::VECTOR2_ARRAY: color = Color::html("d1b3f5"); break;
-		case Variant::VECTOR3_ARRAY: color = Color::html("df9bf2"); break;
-		case Variant::COLOR_ARRAY: color = Color::html("e9ff97"); break;
+		case Variant::POOL_BYTE_ARRAY: color = Color::html("aaf4c8"); break;
+		case Variant::POOL_INT_ARRAY: color = Color::html("afdcf5"); break;
+		case Variant::POOL_REAL_ARRAY: color = Color::html("97e7f8"); break;
+		case Variant::POOL_STRING_ARRAY: color = Color::html("9dc4f2"); break;
+		case Variant::POOL_VECTOR2_ARRAY: color = Color::html("d1b3f5"); break;
+		case Variant::POOL_VECTOR3_ARRAY: color = Color::html("df9bf2"); break;
+		case Variant::POOL_COLOR_ARRAY: color = Color::html("e9ff97"); break;
 
 		default:
 			color.set_hsv(p_type/float(Variant::VARIANT_MAX),0.7,0.7);
@@ -438,11 +438,11 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		Control::get_icon("MiniVector2","EditorIcons"),
 		Control::get_icon("MiniRect2","EditorIcons"),
 		Control::get_icon("MiniVector3","EditorIcons"),
-		Control::get_icon("MiniMatrix32","EditorIcons"),
+		Control::get_icon("MiniTransform2D","EditorIcons"),
 		Control::get_icon("MiniPlane","EditorIcons"),
 		Control::get_icon("MiniQuat","EditorIcons"),
 		Control::get_icon("MiniAabb","EditorIcons"),
-		Control::get_icon("MiniMatrix3","EditorIcons"),
+		Control::get_icon("MiniBasis","EditorIcons"),
 		Control::get_icon("MiniTransform","EditorIcons"),
 		Control::get_icon("MiniColor","EditorIcons"),
 		Control::get_icon("MiniImage","EditorIcons"),
@@ -485,8 +485,8 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->set_overlay(GraphNode::OVERLAY_BREAKPOINT);
 		}
 
-		if (EditorSettings::get_singleton()->has("visual_script_editor/color_"+node->get_category())) {
-			gnode->set_modulate(EditorSettings::get_singleton()->get("visual_script_editor/color_"+node->get_category()));
+		if (EditorSettings::get_singleton()->has("editors/visual_script/color_"+node->get_category())) {
+			gnode->set_modulate(EditorSettings::get_singleton()->get("editors/visual_script/color_"+node->get_category()));
 		}
 
 
@@ -590,9 +590,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					t=type_icons[left_type];
 				}
 				if (t.is_valid()) {
-					TextureFrame *tf = memnew(TextureFrame);
+					TextureRect *tf = memnew(TextureRect);
 					tf->set_texture(t);
-					tf->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
+					tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 					hbc->add_child(tf);
 				}
 
@@ -657,9 +657,9 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 					t=type_icons[right_type];
 				}
 				if (t.is_valid()) {
-					TextureFrame *tf = memnew(TextureFrame);
+					TextureRect *tf = memnew(TextureRect);
 					tf->set_texture(t);
-					tf->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
+					tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 					hbc->add_child(tf);
 				}
 
@@ -822,7 +822,7 @@ void VisualScriptEditor::_member_selected() {
 
 
 	selected=ti->get_metadata(0);
-//	print_line("selected: "+String(selected));
+	//print_line("selected: "+String(selected));
 
 
 	if (ti->get_parent()==members->get_root()->get_children()) {
@@ -990,7 +990,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 				virtuals_in_menu.clear();
 
 				List<MethodInfo> mi;
-				ObjectTypeDB::get_method_list(script->get_instance_base_type(),&mi);
+				ClassDB::get_method_list(script->get_instance_base_type(),&mi);
 				for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
 					MethodInfo mi=E->get();
 					if (mi.flags&METHOD_FLAG_VIRTUAL) {
@@ -1136,9 +1136,11 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 					undo_redo->add_undo_method(script.ptr(),"data_connect",name,E->get().from_node,E->get().from_port,E->get().to_node,E->get().to_port);
 				}
 
-				//for(int i=0;i<script->function_get_argument_count(name);i++) {
-				////	undo_redo->add_undo_method(script.ptr(),"function_add_argument",name,script->function_get_argument_name(name,i),script->function_get_argument_type(name,i));
-				//}
+				/*
+				for(int i=0;i<script->function_get_argument_count(name);i++) {
+					undo_redo->add_undo_method(script.ptr(),"function_add_argument",name,script->function_get_argument_name(name,i),script->function_get_argument_type(name,i));
+				}
+				*/
 				undo_redo->add_do_method(this,"_update_members");
 				undo_redo->add_undo_method(this,"_update_members");
 				undo_redo->add_do_method(this,"_update_graph");
@@ -1776,7 +1778,7 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 			if (node) {
 				graph->set_selected(node);
 				_node_selected(node);
-			}			
+			}
 		}
 
 		if (d.has("type") && String(d["type"])=="resource") {
@@ -1916,8 +1918,8 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 					Ref<VisualScriptFunctionCall> call;
 					call.instance();
 					call->set_call_mode(VisualScriptFunctionCall::CALL_MODE_NODE_PATH);
-					call->set_base_path(sn->get_path_to(node));;
-					call->set_base_type(node->get_type());
+					call->set_base_path(sn->get_path_to(node));
+					call->set_base_type(node->get_class());
 					n=call;
 
 					method_select->select_method_from_instance(node);
@@ -1986,7 +1988,7 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 					Ref<VisualScriptPropertySet> pset;
 					pset.instance();
 					pset->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
-					pset->set_base_type(obj->get_type());
+					pset->set_base_type(obj->get_class());
 					/*if (use_value) {
 						pset->set_use_builtin_value(true);
 						pset->set_builtin_value(d["value"]);
@@ -1997,7 +1999,7 @@ void VisualScriptEditor::drop_data_fw(const Point2& p_point,const Variant& p_dat
 					Ref<VisualScriptPropertyGet> pget;
 					pget.instance();
 					pget->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
-					pget->set_base_type(obj->get_type());
+					pget->set_base_type(obj->get_class());
 
 					vnode=pget;
 
@@ -2171,7 +2173,7 @@ String VisualScriptEditor::get_name(){
 	} else if (script->get_name()!="")
 		name=script->get_name();
 	else
-		name=script->get_type()+"("+itos(script->get_instance_ID())+")";
+		name=script->get_class()+"("+itos(script->get_instance_ID())+")";
 
 	return name;
 
@@ -2321,7 +2323,7 @@ bool VisualScriptEditor::goto_method(const String& p_method){
 	return true;
 }
 
-void VisualScriptEditor::add_callback(const String& p_function,StringArray p_args){
+void VisualScriptEditor::add_callback(const String& p_function,PoolStringArray p_args){
 
 	if (script->has_function(p_function)) {
 		edited_func=p_function;
@@ -2704,7 +2706,7 @@ VisualScriptNode::TypeGuess  VisualScriptEditor::_guess_output_type(int p_node,i
 					if (obj) {
 
 						g.type=Variant::OBJECT;
-						g.obj_type=obj->get_type();
+						g.GDCLASS=obj->get_class();
 						g.script=obj->get_script();
 					}
 				}
@@ -2745,8 +2747,8 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type==Variant::OBJECT) {
 				n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_INSTANCE);
 
-				if (tg.obj_type!=StringName()) {
-					n->set_base_type(tg.obj_type);
+				if (tg.GDCLASS!=StringName()) {
+					n->set_base_type(tg.GDCLASS);
 				} else {
 					n->set_base_type("Object");
 				}
@@ -2780,8 +2782,8 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type==Variant::OBJECT) {
 				n->set_call_mode(VisualScriptPropertySet::CALL_MODE_INSTANCE);
 
-				if (tg.obj_type!=StringName()) {
-					n->set_base_type(tg.obj_type);
+				if (tg.GDCLASS!=StringName()) {
+					n->set_base_type(tg.GDCLASS);
 				} else {
 					n->set_base_type("Object");
 				}
@@ -2811,8 +2813,8 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 			if (tg.type==Variant::OBJECT) {
 				n->set_call_mode(VisualScriptPropertyGet::CALL_MODE_INSTANCE);
 
-				if (tg.obj_type!=StringName()) {
-					n->set_base_type(tg.obj_type);
+				if (tg.GDCLASS!=StringName()) {
+					n->set_base_type(tg.GDCLASS);
 				} else {
 					n->set_base_type("Object");
 				}
@@ -3082,7 +3084,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 			//popup disappearing grabs focus to owner, so use call deferred
 			node_filter->call_deferred("grab_focus");
 			node_filter->call_deferred("select_all");
-		} break;			
+		} break;
 		case EDIT_COPY_NODES:
 		case EDIT_CUT_NODES: {
 
@@ -3232,55 +3234,55 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 void VisualScriptEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_member_button",&VisualScriptEditor::_member_button);
-	ObjectTypeDB::bind_method("_member_edited",&VisualScriptEditor::_member_edited);
-	ObjectTypeDB::bind_method("_member_selected",&VisualScriptEditor::_member_selected);
-	ObjectTypeDB::bind_method("_update_members",&VisualScriptEditor::_update_members);
-	ObjectTypeDB::bind_method("_change_base_type",&VisualScriptEditor::_change_base_type);
-	ObjectTypeDB::bind_method("_change_base_type_callback",&VisualScriptEditor::_change_base_type_callback);
-	ObjectTypeDB::bind_method("_override_pressed",&VisualScriptEditor::_override_pressed);
-	ObjectTypeDB::bind_method("_node_selected",&VisualScriptEditor::_node_selected);
-	ObjectTypeDB::bind_method("_node_moved",&VisualScriptEditor::_node_moved);
-	ObjectTypeDB::bind_method("_move_node",&VisualScriptEditor::_move_node);
-	ObjectTypeDB::bind_method("_begin_node_move",&VisualScriptEditor::_begin_node_move);
-	ObjectTypeDB::bind_method("_end_node_move",&VisualScriptEditor::_end_node_move);
-	ObjectTypeDB::bind_method("_remove_node",&VisualScriptEditor::_remove_node);
-	ObjectTypeDB::bind_method("_update_graph",&VisualScriptEditor::_update_graph,DEFVAL(-1));
-	ObjectTypeDB::bind_method("_node_ports_changed",&VisualScriptEditor::_node_ports_changed);
-	ObjectTypeDB::bind_method("_available_node_doubleclicked",&VisualScriptEditor::_available_node_doubleclicked);
-	ObjectTypeDB::bind_method("_default_value_edited",&VisualScriptEditor::_default_value_edited);
-	ObjectTypeDB::bind_method("_default_value_changed",&VisualScriptEditor::_default_value_changed);
-	ObjectTypeDB::bind_method("_menu_option",&VisualScriptEditor::_menu_option);
-	ObjectTypeDB::bind_method("_graph_ofs_changed",&VisualScriptEditor::_graph_ofs_changed);
-	ObjectTypeDB::bind_method("_center_on_node",&VisualScriptEditor::_center_on_node);
-	ObjectTypeDB::bind_method("_comment_node_resized",&VisualScriptEditor::_comment_node_resized);
-	ObjectTypeDB::bind_method("_button_resource_previewed",&VisualScriptEditor::_button_resource_previewed);
-	ObjectTypeDB::bind_method("_port_action_menu",&VisualScriptEditor::_port_action_menu);
-	ObjectTypeDB::bind_method("_selected_connect_node_method_or_setget",&VisualScriptEditor::_selected_connect_node_method_or_setget);
-	ObjectTypeDB::bind_method("_expression_text_changed",&VisualScriptEditor::_expression_text_changed);
+	ClassDB::bind_method("_member_button",&VisualScriptEditor::_member_button);
+	ClassDB::bind_method("_member_edited",&VisualScriptEditor::_member_edited);
+	ClassDB::bind_method("_member_selected",&VisualScriptEditor::_member_selected);
+	ClassDB::bind_method("_update_members",&VisualScriptEditor::_update_members);
+	ClassDB::bind_method("_change_base_type",&VisualScriptEditor::_change_base_type);
+	ClassDB::bind_method("_change_base_type_callback",&VisualScriptEditor::_change_base_type_callback);
+	ClassDB::bind_method("_override_pressed",&VisualScriptEditor::_override_pressed);
+	ClassDB::bind_method("_node_selected",&VisualScriptEditor::_node_selected);
+	ClassDB::bind_method("_node_moved",&VisualScriptEditor::_node_moved);
+	ClassDB::bind_method("_move_node",&VisualScriptEditor::_move_node);
+	ClassDB::bind_method("_begin_node_move",&VisualScriptEditor::_begin_node_move);
+	ClassDB::bind_method("_end_node_move",&VisualScriptEditor::_end_node_move);
+	ClassDB::bind_method("_remove_node",&VisualScriptEditor::_remove_node);
+	ClassDB::bind_method("_update_graph",&VisualScriptEditor::_update_graph,DEFVAL(-1));
+	ClassDB::bind_method("_node_ports_changed",&VisualScriptEditor::_node_ports_changed);
+	ClassDB::bind_method("_available_node_doubleclicked",&VisualScriptEditor::_available_node_doubleclicked);
+	ClassDB::bind_method("_default_value_edited",&VisualScriptEditor::_default_value_edited);
+	ClassDB::bind_method("_default_value_changed",&VisualScriptEditor::_default_value_changed);
+	ClassDB::bind_method("_menu_option",&VisualScriptEditor::_menu_option);
+	ClassDB::bind_method("_graph_ofs_changed",&VisualScriptEditor::_graph_ofs_changed);
+	ClassDB::bind_method("_center_on_node",&VisualScriptEditor::_center_on_node);
+	ClassDB::bind_method("_comment_node_resized",&VisualScriptEditor::_comment_node_resized);
+	ClassDB::bind_method("_button_resource_previewed",&VisualScriptEditor::_button_resource_previewed);
+	ClassDB::bind_method("_port_action_menu",&VisualScriptEditor::_port_action_menu);
+	ClassDB::bind_method("_selected_connect_node_method_or_setget",&VisualScriptEditor::_selected_connect_node_method_or_setget);
+	ClassDB::bind_method("_expression_text_changed",&VisualScriptEditor::_expression_text_changed);
 
 
 
 
-	ObjectTypeDB::bind_method("get_drag_data_fw",&VisualScriptEditor::get_drag_data_fw);
-	ObjectTypeDB::bind_method("can_drop_data_fw",&VisualScriptEditor::can_drop_data_fw);
-	ObjectTypeDB::bind_method("drop_data_fw",&VisualScriptEditor::drop_data_fw);
+	ClassDB::bind_method("get_drag_data_fw",&VisualScriptEditor::get_drag_data_fw);
+	ClassDB::bind_method("can_drop_data_fw",&VisualScriptEditor::can_drop_data_fw);
+	ClassDB::bind_method("drop_data_fw",&VisualScriptEditor::drop_data_fw);
 
-	ObjectTypeDB::bind_method("_input",&VisualScriptEditor::_input);
-	ObjectTypeDB::bind_method("_on_nodes_delete",&VisualScriptEditor::_on_nodes_delete);
-	ObjectTypeDB::bind_method("_on_nodes_duplicate",&VisualScriptEditor::_on_nodes_duplicate);
+	ClassDB::bind_method("_input",&VisualScriptEditor::_input);
+	ClassDB::bind_method("_on_nodes_delete",&VisualScriptEditor::_on_nodes_delete);
+	ClassDB::bind_method("_on_nodes_duplicate",&VisualScriptEditor::_on_nodes_duplicate);
 
-	ObjectTypeDB::bind_method("_hide_timer",&VisualScriptEditor::_hide_timer);
+	ClassDB::bind_method("_hide_timer",&VisualScriptEditor::_hide_timer);
 
-	ObjectTypeDB::bind_method("_graph_connected",&VisualScriptEditor::_graph_connected);
-	ObjectTypeDB::bind_method("_graph_disconnected",&VisualScriptEditor::_graph_disconnected);
-	ObjectTypeDB::bind_method("_graph_connect_to_empty",&VisualScriptEditor::_graph_connect_to_empty);
+	ClassDB::bind_method("_graph_connected",&VisualScriptEditor::_graph_connected);
+	ClassDB::bind_method("_graph_disconnected",&VisualScriptEditor::_graph_disconnected);
+	ClassDB::bind_method("_graph_connect_to_empty",&VisualScriptEditor::_graph_connect_to_empty);
 
-	ObjectTypeDB::bind_method("_update_graph_connections",&VisualScriptEditor::_update_graph_connections);
-	ObjectTypeDB::bind_method("_node_filter_changed",&VisualScriptEditor::_node_filter_changed);
+	ClassDB::bind_method("_update_graph_connections",&VisualScriptEditor::_update_graph_connections);
+	ClassDB::bind_method("_node_filter_changed",&VisualScriptEditor::_node_filter_changed);
 
-	ObjectTypeDB::bind_method("_selected_method",&VisualScriptEditor::_selected_method);
-	ObjectTypeDB::bind_method("_draw_color_over_button",&VisualScriptEditor::_draw_color_over_button);
+	ClassDB::bind_method("_selected_method",&VisualScriptEditor::_selected_method);
+	ClassDB::bind_method("_draw_color_over_button",&VisualScriptEditor::_draw_color_over_button);
 
 
 
@@ -3306,7 +3308,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/cut_nodes"), EDIT_CUT_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/paste_nodes"), EDIT_PASTE_NODES);
 
-	edit_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+	edit_menu->get_popup()->connect("id_pressed",this,"_menu_option");
 
 	main_hsplit = memnew( HSplitContainer );
 	add_child(main_hsplit);
@@ -3346,8 +3348,8 @@ VisualScriptEditor::VisualScriptEditor() {
 	node_filter->connect("text_changed",this,"_node_filter_changed");
 	hbc_nodes->add_child(node_filter);
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	node_filter_icon = memnew( TextureFrame );
-	node_filter_icon->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
+	node_filter_icon = memnew( TextureRect );
+	node_filter_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	hbc_nodes->add_child(node_filter_icon);
 	vbc_nodes->add_child(hbc_nodes);
 
@@ -3422,7 +3424,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_signal_edit = memnew( PropertyEditor );
 	edit_signal_edit->hide_top_label();
 	edit_signal_dialog->add_child(edit_signal_edit);
-	edit_signal_dialog->set_child_rect(edit_signal_edit);
+
 	edit_signal_edit->edit(signal_editor);
 
 	edit_variable_dialog = memnew( AcceptDialog );
@@ -3434,7 +3436,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_variable_edit = memnew( PropertyEditor );
 	edit_variable_edit->hide_top_label();
 	edit_variable_dialog->add_child(edit_variable_edit);
-	edit_variable_dialog->set_child_rect(edit_variable_edit);
+
 	edit_variable_edit->edit(variable_editor);
 
 	select_base_type=memnew(CreateDialog);
@@ -3446,7 +3448,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	new_function_menu = memnew( PopupMenu );
-	new_function_menu->connect("item_pressed",this,"_override_pressed");
+	new_function_menu->connect("id_pressed",this,"_override_pressed");
 	add_child(new_function_menu);
 	updating_members=false;
 
@@ -3468,7 +3470,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 	port_action_popup = memnew( PopupMenu );
 	add_child(port_action_popup);
-	port_action_popup->connect("item_pressed",this,"_port_action_menu");
+	port_action_popup->connect("id_pressed",this,"_port_action_menu");
 
 
 }
@@ -3500,12 +3502,12 @@ void VisualScriptEditor::free_clipboard() {
 static void register_editor_callback() {
 
 	ScriptEditor::register_create_script_editor_function(create_editor);
-	EditorSettings::get_singleton()->set("visual_script_editor/color_functions",Color(1,0.9,0.9));
-	EditorSettings::get_singleton()->set("visual_script_editor/color_data",Color(0.9,1.0,0.9));
-	EditorSettings::get_singleton()->set("visual_script_editor/color_operators",Color(0.9,0.9,1.0));
-	EditorSettings::get_singleton()->set("visual_script_editor/color_flow_control",Color(1.0,1.0,0.8));
-	EditorSettings::get_singleton()->set("visual_script_editor/color_custom",Color(0.8,1.0,1.0));
-	EditorSettings::get_singleton()->set("visual_script_editor/color_constants",Color(1.0,0.8,1.0));
+	EditorSettings::get_singleton()->set("editors/visual_script/color_functions",Color(1,0.9,0.9));
+	EditorSettings::get_singleton()->set("editors/visual_script/color_data",Color(0.9,1.0,0.9));
+	EditorSettings::get_singleton()->set("editors/visual_script/color_operators",Color(0.9,0.9,1.0));
+	EditorSettings::get_singleton()->set("editors/visual_script/color_flow_control",Color(1.0,1.0,0.8));
+	EditorSettings::get_singleton()->set("editors/visual_script/color_custom",Color(0.8,1.0,1.0));
+	EditorSettings::get_singleton()->set("editors/visual_script/color_constants",Color(1.0,0.8,1.0));
 
 
 	ED_SHORTCUT("visual_script_editor/delete_selected", TTR("Delete Selected"));

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ int CanvasLayer::get_layer() const{
 	return layer;
 }
 
-void CanvasLayer::set_transform(const Matrix32& p_xform) {
+void CanvasLayer::set_transform(const Transform2D& p_xform) {
 
 	transform=p_xform;
 	locrotscale_dirty=true;
@@ -52,7 +52,7 @@ void CanvasLayer::set_transform(const Matrix32& p_xform) {
 
 }
 
-Matrix32 CanvasLayer::get_transform() const {
+Transform2D CanvasLayer::get_transform() const {
 
 	return transform;
 }
@@ -176,7 +176,7 @@ void CanvasLayer::_notification(int p_what) {
 
 			}
 			ERR_FAIL_COND(!vp);
-			viewport=vp->get_viewport();
+			viewport=vp->get_viewport_rid();
 
 			VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
 			VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);
@@ -232,7 +232,7 @@ void CanvasLayer::set_custom_viewport(Node *p_viewport) {
 		else
 			vp=Node::get_viewport();
 
-		viewport = vp->get_viewport();
+		viewport = vp->get_viewport_rid();
 
 		VisualServer::get_singleton()->viewport_attach_canvas(viewport,canvas->get_canvas());
 		VisualServer::get_singleton()->viewport_set_canvas_layer(viewport,canvas->get_canvas(),layer);
@@ -246,37 +246,46 @@ Node* CanvasLayer::get_custom_viewport() const {
 	return custom_viewport;
 }
 
+void CanvasLayer::reset_sort_index() {
+	sort_index=0;
+}
+
+int CanvasLayer::get_sort_index() {
+
+	return sort_index++;
+}
+
 
 void CanvasLayer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_layer","layer"),&CanvasLayer::set_layer);
-	ObjectTypeDB::bind_method(_MD("get_layer"),&CanvasLayer::get_layer);
+	ClassDB::bind_method(_MD("set_layer","layer"),&CanvasLayer::set_layer);
+	ClassDB::bind_method(_MD("get_layer"),&CanvasLayer::get_layer);
 
-	ObjectTypeDB::bind_method(_MD("set_transform","transform"),&CanvasLayer::set_transform);
-	ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasLayer::get_transform);
+	ClassDB::bind_method(_MD("set_transform","transform"),&CanvasLayer::set_transform);
+	ClassDB::bind_method(_MD("get_transform"),&CanvasLayer::get_transform);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&CanvasLayer::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&CanvasLayer::get_offset);
+	ClassDB::bind_method(_MD("set_offset","offset"),&CanvasLayer::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&CanvasLayer::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_rotation","radians"),&CanvasLayer::set_rotation);
-	ObjectTypeDB::bind_method(_MD("get_rotation"),&CanvasLayer::get_rotation);
+	ClassDB::bind_method(_MD("set_rotation","radians"),&CanvasLayer::set_rotation);
+	ClassDB::bind_method(_MD("get_rotation"),&CanvasLayer::get_rotation);
 
-	ObjectTypeDB::bind_method(_MD("set_rotationd","degrees"),&CanvasLayer::set_rotationd);
-	ObjectTypeDB::bind_method(_MD("get_rotationd"),&CanvasLayer::get_rotationd);
+	ClassDB::bind_method(_MD("set_rotationd","degrees"),&CanvasLayer::set_rotationd);
+	ClassDB::bind_method(_MD("get_rotationd"),&CanvasLayer::get_rotationd);
 
 	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ObjectTypeDB::bind_method(_MD("_set_rotationd","degrees"),&CanvasLayer::_set_rotationd);
-	ObjectTypeDB::bind_method(_MD("_get_rotationd"),&CanvasLayer::_get_rotationd);
+	ClassDB::bind_method(_MD("_set_rotationd","degrees"),&CanvasLayer::_set_rotationd);
+	ClassDB::bind_method(_MD("_get_rotationd"),&CanvasLayer::_get_rotationd);
 
-	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&CanvasLayer::set_scale);
-	ObjectTypeDB::bind_method(_MD("get_scale"),&CanvasLayer::get_scale);
+	ClassDB::bind_method(_MD("set_scale","scale"),&CanvasLayer::set_scale);
+	ClassDB::bind_method(_MD("get_scale"),&CanvasLayer::get_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&CanvasLayer::set_custom_viewport);
-	ObjectTypeDB::bind_method(_MD("get_custom_viewport:Viewport"),&CanvasLayer::get_custom_viewport);
+	ClassDB::bind_method(_MD("set_custom_viewport","viewport:Viewport"),&CanvasLayer::set_custom_viewport);
+	ClassDB::bind_method(_MD("get_custom_viewport:Viewport"),&CanvasLayer::get_custom_viewport);
 
-	ObjectTypeDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
-//	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
+	ClassDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
+	//ClassDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),_SCS("set_layer"),_SCS("get_layer") );
 	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),_SCS("set_transform"),_SCS("get_transform") );
@@ -296,4 +305,5 @@ CanvasLayer::CanvasLayer() {
 	canvas = Ref<World2D>( memnew(World2D) );
 	custom_viewport=NULL;
 	custom_viewport_id=0;
+	sort_index=0;
 }

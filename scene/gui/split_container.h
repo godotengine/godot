@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 class SplitContainer : public Container {
 
-	OBJ_TYPE(SplitContainer,Container);
+	GDCLASS(SplitContainer,Container);
 public:
 	enum DraggerVisibility {
 		DRAGGER_VISIBLE,
@@ -59,7 +59,7 @@ private:
 protected:
 
 
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const InputEvent& p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
@@ -86,7 +86,7 @@ VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
 
 class HSplitContainer : public SplitContainer {
 
-	OBJ_TYPE(HSplitContainer,SplitContainer);
+	GDCLASS(HSplitContainer,SplitContainer);
 
 public:
 
@@ -96,7 +96,7 @@ public:
 
 class VSplitContainer : public SplitContainer {
 
-	OBJ_TYPE(VSplitContainer,SplitContainer);
+	GDCLASS(VSplitContainer,SplitContainer);
 
 public:
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -207,13 +207,13 @@ void SpriteBase3D::_queue_update(){
 }
 
 
-AABB SpriteBase3D::get_aabb() const {
+Rect3 SpriteBase3D::get_aabb() const {
 
 	return aabb;
 }
-DVector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> SpriteBase3D::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 
 }
 
@@ -246,41 +246,41 @@ SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const{
 void SpriteBase3D::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&SpriteBase3D::set_centered);
-	ObjectTypeDB::bind_method(_MD("is_centered"),&SpriteBase3D::is_centered);
+	ClassDB::bind_method(_MD("set_centered","centered"),&SpriteBase3D::set_centered);
+	ClassDB::bind_method(_MD("is_centered"),&SpriteBase3D::is_centered);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&SpriteBase3D::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&SpriteBase3D::get_offset);
+	ClassDB::bind_method(_MD("set_offset","offset"),&SpriteBase3D::set_offset);
+	ClassDB::bind_method(_MD("get_offset"),&SpriteBase3D::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_h","flip_h"),&SpriteBase3D::set_flip_h);
-	ObjectTypeDB::bind_method(_MD("is_flipped_h"),&SpriteBase3D::is_flipped_h);
+	ClassDB::bind_method(_MD("set_flip_h","flip_h"),&SpriteBase3D::set_flip_h);
+	ClassDB::bind_method(_MD("is_flipped_h"),&SpriteBase3D::is_flipped_h);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_v","flip_v"),&SpriteBase3D::set_flip_v);
-	ObjectTypeDB::bind_method(_MD("is_flipped_v"),&SpriteBase3D::is_flipped_v);
+	ClassDB::bind_method(_MD("set_flip_v","flip_v"),&SpriteBase3D::set_flip_v);
+	ClassDB::bind_method(_MD("is_flipped_v"),&SpriteBase3D::is_flipped_v);
 
 
-	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"),&SpriteBase3D::set_modulate);
-	ObjectTypeDB::bind_method(_MD("get_modulate"),&SpriteBase3D::get_modulate);
+	ClassDB::bind_method(_MD("set_modulate","modulate"),&SpriteBase3D::set_modulate);
+	ClassDB::bind_method(_MD("get_modulate"),&SpriteBase3D::get_modulate);
 
-	ObjectTypeDB::bind_method(_MD("set_opacity","opacity"),&SpriteBase3D::set_opacity);
-	ObjectTypeDB::bind_method(_MD("get_opacity"),&SpriteBase3D::get_opacity);
+	ClassDB::bind_method(_MD("set_opacity","opacity"),&SpriteBase3D::set_opacity);
+	ClassDB::bind_method(_MD("get_opacity"),&SpriteBase3D::get_opacity);
 
-	ObjectTypeDB::bind_method(_MD("set_pixel_size","pixel_size"),&SpriteBase3D::set_pixel_size);
-	ObjectTypeDB::bind_method(_MD("get_pixel_size"),&SpriteBase3D::get_pixel_size);
+	ClassDB::bind_method(_MD("set_pixel_size","pixel_size"),&SpriteBase3D::set_pixel_size);
+	ClassDB::bind_method(_MD("get_pixel_size"),&SpriteBase3D::get_pixel_size);
 
-	ObjectTypeDB::bind_method(_MD("set_axis","axis"),&SpriteBase3D::set_axis);
-	ObjectTypeDB::bind_method(_MD("get_axis"),&SpriteBase3D::get_axis);
+	ClassDB::bind_method(_MD("set_axis","axis"),&SpriteBase3D::set_axis);
+	ClassDB::bind_method(_MD("get_axis"),&SpriteBase3D::get_axis);
 
-	ObjectTypeDB::bind_method(_MD("set_draw_flag","flag","enabled"),&SpriteBase3D::set_draw_flag);
-	ObjectTypeDB::bind_method(_MD("get_draw_flag","flag"),&SpriteBase3D::get_draw_flag);
+	ClassDB::bind_method(_MD("set_draw_flag","flag","enabled"),&SpriteBase3D::set_draw_flag);
+	ClassDB::bind_method(_MD("get_draw_flag","flag"),&SpriteBase3D::get_draw_flag);
 
-	ObjectTypeDB::bind_method(_MD("set_alpha_cut_mode","mode"),&SpriteBase3D::set_alpha_cut_mode);
-	ObjectTypeDB::bind_method(_MD("get_alpha_cut_mode"),&SpriteBase3D::get_alpha_cut_mode);
+	ClassDB::bind_method(_MD("set_alpha_cut_mode","mode"),&SpriteBase3D::set_alpha_cut_mode);
+	ClassDB::bind_method(_MD("get_alpha_cut_mode"),&SpriteBase3D::get_alpha_cut_mode);
 
-	ObjectTypeDB::bind_method(_MD("get_item_rect"),&SpriteBase3D::get_item_rect);
+	ClassDB::bind_method(_MD("get_item_rect"),&SpriteBase3D::get_item_rect);
 
-	ObjectTypeDB::bind_method(_MD("_queue_update"),&SpriteBase3D::_queue_update);
-	ObjectTypeDB::bind_method(_MD("_im_update"),&SpriteBase3D::_im_update);
+	ClassDB::bind_method(_MD("_queue_update"),&SpriteBase3D::_queue_update);
+	ClassDB::bind_method(_MD("_im_update"),&SpriteBase3D::_im_update);
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
@@ -291,9 +291,10 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "opacity",PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity"));
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "pixel_size",PROPERTY_HINT_RANGE,"0.0001,128,0.0001"), _SCS("set_pixel_size"),_SCS("get_pixel_size"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis",PROPERTY_HINT_ENUM,"X-Axis,Y-Axis,Z-Axis"), _SCS("set_axis"),_SCS("get_axis"));
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "flags/transparent"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_TRANSPARENT);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "flags/shaded"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_SHADED);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "flags/alpha_cut",PROPERTY_HINT_ENUM,"Disabled,Discard,Opaque Pre-Pass"), _SCS("set_alpha_cut_mode"),_SCS("get_alpha_cut_mode"));
+	ADD_GROUP("Flags","");
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "transparent"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_TRANSPARENT);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "shaded"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_SHADED);
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "alpha_cut",PROPERTY_HINT_ENUM,"Disabled,Discard,Opaque Pre-Pass"), _SCS("set_alpha_cut_mode"),_SCS("get_alpha_cut_mode"));
 
 
 	BIND_CONSTANT( FLAG_TRANSPARENT );
@@ -444,7 +445,7 @@ void Sprite3D::_draw() {
 		}
 	}
 
-	AABB aabb;
+	Rect3 aabb;
 
 	for(int i=0;i<4;i++) {
 		VS::get_singleton()->immediate_normal(immediate,normal);
@@ -562,8 +563,10 @@ Rect2 Sprite3D::get_item_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0,0,1,1);
-	//if (texture.is_null())
-	//	return CanvasItem::get_item_rect();
+	/*
+	if (texture.is_null())
+		return CanvasItem::get_item_rect();
+	*/
 
 	Size2i s;
 
@@ -598,23 +601,23 @@ void Sprite3D::_validate_property(PropertyInfo& property) const {
 
 void Sprite3D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite3D::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&Sprite3D::get_texture);
+	ClassDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite3D::set_texture);
+	ClassDB::bind_method(_MD("get_texture:Texture"),&Sprite3D::get_texture);
 
-	ObjectTypeDB::bind_method(_MD("set_region","enabled"),&Sprite3D::set_region);
-	ObjectTypeDB::bind_method(_MD("is_region"),&Sprite3D::is_region);
+	ClassDB::bind_method(_MD("set_region","enabled"),&Sprite3D::set_region);
+	ClassDB::bind_method(_MD("is_region"),&Sprite3D::is_region);
 
-	ObjectTypeDB::bind_method(_MD("set_region_rect","rect"),&Sprite3D::set_region_rect);
-	ObjectTypeDB::bind_method(_MD("get_region_rect"),&Sprite3D::get_region_rect);
+	ClassDB::bind_method(_MD("set_region_rect","rect"),&Sprite3D::set_region_rect);
+	ClassDB::bind_method(_MD("get_region_rect"),&Sprite3D::get_region_rect);
 
-	ObjectTypeDB::bind_method(_MD("set_frame","frame"),&Sprite3D::set_frame);
-	ObjectTypeDB::bind_method(_MD("get_frame"),&Sprite3D::get_frame);
+	ClassDB::bind_method(_MD("set_frame","frame"),&Sprite3D::set_frame);
+	ClassDB::bind_method(_MD("get_frame"),&Sprite3D::get_frame);
 
-	ObjectTypeDB::bind_method(_MD("set_vframes","vframes"),&Sprite3D::set_vframes);
-	ObjectTypeDB::bind_method(_MD("get_vframes"),&Sprite3D::get_vframes);
+	ClassDB::bind_method(_MD("set_vframes","vframes"),&Sprite3D::set_vframes);
+	ClassDB::bind_method(_MD("get_vframes"),&Sprite3D::get_vframes);
 
-	ObjectTypeDB::bind_method(_MD("set_hframes","hframes"),&Sprite3D::set_hframes);
-	ObjectTypeDB::bind_method(_MD("get_hframes"),&Sprite3D::get_hframes);
+	ClassDB::bind_method(_MD("set_hframes","hframes"),&Sprite3D::set_hframes);
+	ClassDB::bind_method(_MD("get_hframes"),&Sprite3D::get_hframes);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_vframes"),_SCS("get_vframes"));
@@ -761,10 +764,10 @@ void AnimatedSprite3D::_draw() {
 
 void AnimatedSprite3D::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
-	ObjectTypeDB::bind_method(_MD("get_sprite_frames:Texture"),&AnimatedSprite3D::get_sprite_frames);
-	ObjectTypeDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite3D::set_frame);
-	ObjectTypeDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
+	ClassDB::bind_method(_MD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
+	ClassDB::bind_method(_MD("get_sprite_frames:Texture"),&AnimatedSprite3D::get_sprite_frames);
+	ClassDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite3D::set_frame);
+	ClassDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
@@ -960,7 +963,7 @@ void AnimatedSprite3D::_draw() {
 		}
 	}
 
-	AABB aabb;
+	Rect3 aabb;
 
 	for(int i=0;i<4;i++) {
 		VS::get_singleton()->immediate_normal(immediate,normal);
@@ -1035,7 +1038,7 @@ void AnimatedSprite3D::_validate_property(PropertyInfo& property) const {
 void AnimatedSprite3D::_notification(int p_what) {
 
 	switch(p_what) {
-		case NOTIFICATION_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 
 			if (frames.is_null())
 				return;
@@ -1129,7 +1132,7 @@ void AnimatedSprite3D::_notification(int p_what) {
 
 			//texture->draw_rect(ci,dst_rect,false,modulate);
 			texture->draw_rect_region(ci,dst_rect,Rect2(Vector2(),texture->get_size()),modulate);
-//			VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
+			//VisualServer::get_singleton()->canvas_item_add_texture_rect_region(ci,dst_rect,texture->get_rid(),src_rect,modulate);
 
 		} break;
 #endif
@@ -1187,7 +1190,7 @@ void AnimatedSprite3D::set_frame(int p_frame) {
 
 	frame=p_frame;
 	_reset_timeout();
-	_queue_update();;
+	_queue_update();
 	_change_notify("frame");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 
@@ -1238,7 +1241,7 @@ void AnimatedSprite3D::_set_playing(bool p_playing) {
 		return;
 	playing=p_playing;
 	_reset_timeout();
-	set_process(playing);
+	set_process_internal(playing);
 }
 
 bool AnimatedSprite3D::_is_playing() const {
@@ -1290,7 +1293,7 @@ void AnimatedSprite3D::set_animation(const StringName& p_animation){
 	_reset_timeout();
 	set_frame(0);
 	_change_notify();
-	_queue_update();;
+	_queue_update();
 }
 StringName AnimatedSprite3D::get_animation() const{
 
@@ -1309,24 +1312,24 @@ String AnimatedSprite3D::get_configuration_warning() const {
 void AnimatedSprite3D::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
-	ObjectTypeDB::bind_method(_MD("get_sprite_frames:SpriteFrames"),&AnimatedSprite3D::get_sprite_frames);
+	ClassDB::bind_method(_MD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
+	ClassDB::bind_method(_MD("get_sprite_frames:SpriteFrames"),&AnimatedSprite3D::get_sprite_frames);
 
-	ObjectTypeDB::bind_method(_MD("set_animation","animation"),&AnimatedSprite3D::set_animation);
-	ObjectTypeDB::bind_method(_MD("get_animation"),&AnimatedSprite3D::get_animation);
+	ClassDB::bind_method(_MD("set_animation","animation"),&AnimatedSprite3D::set_animation);
+	ClassDB::bind_method(_MD("get_animation"),&AnimatedSprite3D::get_animation);
 
-	ObjectTypeDB::bind_method(_MD("_set_playing","playing"),&AnimatedSprite3D::_set_playing);
-	ObjectTypeDB::bind_method(_MD("_is_playing"),&AnimatedSprite3D::_is_playing);
+	ClassDB::bind_method(_MD("_set_playing","playing"),&AnimatedSprite3D::_set_playing);
+	ClassDB::bind_method(_MD("_is_playing"),&AnimatedSprite3D::_is_playing);
 
-	ObjectTypeDB::bind_method(_MD("play","anim"),&AnimatedSprite3D::play,DEFVAL(StringName()));
-	ObjectTypeDB::bind_method(_MD("stop"),&AnimatedSprite3D::stop);
-	ObjectTypeDB::bind_method(_MD("is_playing"),&AnimatedSprite3D::is_playing);
+	ClassDB::bind_method(_MD("play","anim"),&AnimatedSprite3D::play,DEFVAL(StringName()));
+	ClassDB::bind_method(_MD("stop"),&AnimatedSprite3D::stop);
+	ClassDB::bind_method(_MD("is_playing"),&AnimatedSprite3D::is_playing);
 
 
-	ObjectTypeDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite3D::set_frame);
-	ObjectTypeDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
+	ClassDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite3D::set_frame);
+	ClassDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
 
-	ObjectTypeDB::bind_method(_MD("_res_changed"),&AnimatedSprite3D::_res_changed);
+	ClassDB::bind_method(_MD("_res_changed"),&AnimatedSprite3D::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,7 +66,9 @@ public:
 
 		String name;
 		String type;
+		String brief_description;
 		String description;
+		String setter,getter;
 		bool operator<(const PropertyDoc& p_prop) const {
 			return name<p_prop.name;
 		}

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,7 +112,7 @@ void SpatialIndexer::_update_pairs() {
 void SpatialIndexer::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("_update_pairs"),&SpatialIndexer::_update_pairs);
+	ClassDB::bind_method(_MD("_update_pairs"),&SpatialIndexer::_update_pairs);
 }
 
 

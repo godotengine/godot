@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 class EditorFileSystemDirectory;
 
 class DependencyEditor : public AcceptDialog {
-	OBJ_TYPE(DependencyEditor,AcceptDialog);
+	GDCLASS(DependencyEditor,AcceptDialog);
 
 
 	Tree *tree;
@@ -71,7 +71,7 @@ public:
 };
 
 class DependencyEditorOwners : public AcceptDialog {
-	OBJ_TYPE(DependencyEditorOwners,AcceptDialog);
+	GDCLASS(DependencyEditorOwners,AcceptDialog);
 
 	ItemList *owners;
 	String editing;
@@ -84,7 +84,7 @@ public:
 };
 
 class DependencyRemoveDialog : public ConfirmationDialog {
-	OBJ_TYPE(DependencyRemoveDialog,ConfirmationDialog);
+	GDCLASS(DependencyRemoveDialog,ConfirmationDialog);
 
 
 	Label *text;
@@ -103,7 +103,7 @@ public:
 
 
 class DependencyErrorDialog : public ConfirmationDialog {
-	OBJ_TYPE(DependencyErrorDialog,ConfirmationDialog);
+	GDCLASS(DependencyErrorDialog,ConfirmationDialog);
 
 
 	String for_file;
@@ -122,7 +122,7 @@ public:
 
 
 class OrphanResourcesDialog : public ConfirmationDialog {
-	OBJ_TYPE(OrphanResourcesDialog,ConfirmationDialog);
+	GDCLASS(OrphanResourcesDialog,ConfirmationDialog);
 
 	DependencyEditor *dep_edit;
 	Tree *files;

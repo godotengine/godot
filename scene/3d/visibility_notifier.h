@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +34,11 @@
 class Camera;
 class VisibilityNotifier : public Spatial {
 
-	OBJ_TYPE(VisibilityNotifier,Spatial);
+	GDCLASS(VisibilityNotifier,Spatial);
 
 	Set<Camera*> cameras;
 
-	AABB aabb;
+	Rect3 aabb;
 
 protected:
 
@@ -54,8 +54,8 @@ friend class SpatialIndexer;
 
 public:
 
-	void set_aabb(const AABB& p_aabb);
-	AABB get_aabb() const;
+	void set_aabb(const Rect3& p_aabb);
+	Rect3 get_aabb() const;
 	bool is_on_screen() const;
 
 	VisibilityNotifier();
@@ -64,7 +64,7 @@ public:
 
 class VisibilityEnabler : public VisibilityNotifier {
 
-	OBJ_TYPE(VisibilityEnabler,VisibilityNotifier);
+	GDCLASS(VisibilityEnabler,VisibilityNotifier);
 public:
 
 	enum Enabler {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ class EditorNode;
 
 class SceneTreeDock : public VBoxContainer {
 
-	OBJ_TYPE( SceneTreeDock, VBoxContainer );
+	GDCLASS( SceneTreeDock, VBoxContainer );
 
 	enum Tool {
 
@@ -68,6 +68,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
+		TOOL_COPY_NODE_PATH,
 		TOOL_BUTTON_MAX
 	};
 
@@ -102,7 +103,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorFileDialog *new_scene_from_dialog;
 
 	LineEdit *filter;
-	TextureFrame *filter_icon;
+	TextureRect *filter_icon;
 
 	PopupMenu * menu;
 

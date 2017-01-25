@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 
 class SpatialGizmo : public Reference {
 
-	OBJ_TYPE(SpatialGizmo,Reference);
+	GDCLASS(SpatialGizmo,Reference);
 
 
 public:
@@ -55,7 +55,7 @@ public:
 
 class Spatial : public Node {
 
-	OBJ_TYPE( Spatial, Node );
+	GDCLASS( Spatial, Node );
 	OBJ_CATEGORY("3D");
 
 	enum TransformDirty {
@@ -92,6 +92,7 @@ class Spatial : public Node {
 
 		bool ignore_notification;
 		bool notify_local_transform;
+		bool notify_transform;
 
 		bool visible;
 
@@ -126,8 +127,6 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-	void _set_visible_(bool p_visible);
-	bool _is_visible_() const;
 public:
 
 	enum {
@@ -146,12 +145,12 @@ public:
 
 	void set_translation(const Vector3& p_translation);
 	void set_rotation(const Vector3& p_euler_rad);
-	void set_rotation_deg(const Vector3& p_euler_deg);
+	void set_rotation_in_degrees(const Vector3& p_euler_deg);
 	void set_scale(const Vector3& p_scale);
 
 	Vector3 get_translation() const;
 	Vector3 get_rotation() const;
-	Vector3 get_rotation_deg() const;
+	Vector3 get_rotation_in_degrees() const;
 	Vector3 get_scale() const;
 
 	void set_transform(const Transform& p_transform);
@@ -184,17 +183,20 @@ public:
 	void look_at(const Vector3& p_target, const Vector3& p_up_normal);
 	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
 
+	void set_notify_transform(bool p_enable);
+	bool is_transform_notification_enabled() const;
+
 	void set_notify_local_transform(bool p_enable);
 	bool is_local_transform_notification_enabled() const;
 
 	void orthonormalize();
 	void set_identity();
 
+	void set_visible(bool p_visible);
+	bool is_visible() const;
 	void show();
 	void hide();
-	bool is_visible() const;
-	bool is_hidden() const;
-	void set_hidden(bool p_hidden);
+	bool is_visible_in_tree() const;
 
 #ifdef TOOLS_ENABLED
 	void set_import_transform(const Transform& p_transform)	;

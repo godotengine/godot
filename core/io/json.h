@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,8 +74,8 @@ class JSON {
 	static Error _parse_object(Dictionary &object,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str);
 
 public:
-	static String print(const Dictionary& p_dict);
-	static Error parse(const String& p_json,Dictionary& r_ret,String &r_err_str,int &r_err_line);
+	static String print(const Variant &p_var);
+	static Error parse(const String& p_json,Variant& r_ret,String &r_err_str,int &r_err_line);
 };
 
 #endif // JSON_H

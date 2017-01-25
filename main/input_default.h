@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 class InputDefault : public Input {
 
-	OBJ_TYPE( InputDefault, Input );
+	GDCLASS( InputDefault, Input );
 	_THREAD_SAFE_CLASS_
 
 	int mouse_button_mask;
@@ -44,6 +44,7 @@ class InputDefault : public Input {
 	Set<int> joy_buttons_pressed;
 	Map<int,float> _joy_axis;
 	//Map<StringName,int> custom_action_press;
+	Vector3 gravity;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
 	Vector3 gyroscope;
@@ -84,7 +85,7 @@ class InputDefault : public Input {
 		SpeedTrack();
 	};
 
-	struct Joystick {
+	struct Joypad {
 		StringName name;
 		StringName uid;
 		bool connected;
@@ -95,7 +96,7 @@ class InputDefault : public Input {
 		int mapping;
 		int hat_current;
 
-		Joystick() {
+		Joypad() {
 
 			for (int i = 0; i < JOY_AXIS_MAX; i++) {
 
@@ -114,7 +115,7 @@ class InputDefault : public Input {
 	};
 
 	SpeedTrack mouse_speed_track;
-	Map<int, Joystick> joy_names;
+	Map<int, Joypad> joy_names;
 	int fallback_mapping;
 	RES custom_cursor;
 public:
@@ -184,25 +185,27 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis) const;
 	String get_joy_name(int p_idx);
-	virtual Array get_connected_joysticks();
+	virtual Array get_connected_joypads();
 	virtual Vector2 get_joy_vibration_strength(int p_device);
 	virtual float get_joy_vibration_duration(int p_device);
 	virtual uint64_t get_joy_vibration_timestamp(int p_device);
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
-	void parse_joystick_mapping(String p_mapping, bool p_update_existing);
+	void parse_joypad_mapping(String p_mapping, bool p_update_existing);
 
+	virtual Vector3 get_gravity() const;
 	virtual Vector3 get_accelerometer() const;
 	virtual Vector3 get_magnetometer() const;
 	virtual Vector3 get_gyroscope() const;
 
 	virtual Point2 get_mouse_pos() const;
-	virtual Point2 get_mouse_speed() const;
+	virtual Point2 get_last_mouse_speed() const;
 	virtual int get_mouse_button_mask() const;
 
 	virtual void warp_mouse_pos(const Vector2& p_to);
 
 
 	void parse_input_event(const InputEvent& p_event);
+	void set_gravity(const Vector3& p_gravity);
 	void set_accelerometer(const Vector3& p_accel);
 	void set_magnetometer(const Vector3& p_magnetometer);
 	void set_gyroscope(const Vector3& p_gyroscope);

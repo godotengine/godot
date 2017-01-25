@@ -829,8 +829,8 @@ static WebPEncodingError GenerateCandidates(
   WebPPicture* const curr_canvas = &enc->curr_canvas_copy_;
   const WebPPicture* const prev_canvas =
       is_dispose_none ? &enc->prev_canvas_ : &enc->prev_canvas_disposed_;
-  int use_blending_ll;
-  int use_blending_lossy;
+  int use_blending_ll, use_blending_lossy;
+  int evaluate_ll, evaluate_lossy;
 
   CopyCurrentCanvas(enc);
   use_blending_ll =
@@ -843,16 +843,19 @@ static WebPEncodingError GenerateCandidates(
 
   // Pick candidates to be tried.
   if (!enc->options_.allow_mixed) {
-    candidate_ll->evaluate_ = is_lossless;
-    candidate_lossy->evaluate_ = !is_lossless;
+    evaluate_ll = is_lossless;
+    evaluate_lossy = !is_lossless;
+  } else if (enc->options_.minimize_size) {
+    evaluate_ll = 1;
+    evaluate_lossy = 1;
   } else {  // Use a heuristic for trying lossless and/or lossy compression.
     const int num_colors = WebPGetColorPalette(&params->sub_frame_ll_, NULL);
-    candidate_ll->evaluate_ = (num_colors < MAX_COLORS_LOSSLESS);
-    candidate_lossy->evaluate_ = (num_colors >= MIN_COLORS_LOSSY);
+    evaluate_ll = (num_colors < MAX_COLORS_LOSSLESS);
+    evaluate_lossy = (num_colors >= MIN_COLORS_LOSSY);
   }
 
   // Generate candidates.
-  if (candidate_ll->evaluate_) {
+  if (evaluate_ll) {
     CopyCurrentCanvas(enc);
     if (use_blending_ll) {
       enc->curr_canvas_copy_modified_ =
@@ -862,7 +865,7 @@ static WebPEncodingError GenerateCandidates(
                                  config_ll, use_blending_ll, candidate_ll);
     if (error_code != VP8_ENC_OK) return error_code;
   }
-  if (candidate_lossy->evaluate_) {
+  if (evaluate_lossy) {
     CopyCurrentCanvas(enc);
     if (use_blending_lossy) {
       enc->curr_canvas_copy_modified_ =
@@ -1029,6 +1032,8 @@ static WebPEncodingError SetFrame(WebPAnimEncoder* const enc,
   const WebPPicture* const prev_canvas = &enc->prev_canvas_;
   Candidate candidates[CANDIDATE_COUNT];
   const int is_lossless = config->lossless;
+  const int consider_lossless = is_lossless || enc->options_.allow_mixed;
+  const int consider_lossy = !is_lossless || enc->options_.allow_mixed;
   const int is_first_frame = enc->is_first_frame_;
 
   // First frame cannot be skipped as there is no 'previous frame' to merge it
@@ -1066,9 +1071,7 @@ static WebPEncodingError SetFrame(WebPAnimEncoder* const enc,
     return VP8_ENC_ERROR_INVALID_CONFIGURATION;
   }
 
-  for (i = 0; i < CANDIDATE_COUNT; ++i) {
-    candidates[i].evaluate_ = 0;
-  }
+  memset(candidates, 0, sizeof(candidates));
 
   // Change-rectangle assuming previous frame was DISPOSE_NONE.
   if (!GetSubRects(prev_canvas, curr_canvas, is_key_frame, is_first_frame,
@@ -1077,8 +1080,8 @@ static WebPEncodingError SetFrame(WebPAnimEncoder* const enc,
     goto Err;
   }
 
-  if ((is_lossless && IsEmptyRect(&dispose_none_params.rect_ll_)) ||
-      (!is_lossless && IsEmptyRect(&dispose_none_params.rect_lossy_))) {
+  if ((consider_lossless && IsEmptyRect(&dispose_none_params.rect_ll_)) ||
+      (consider_lossy && IsEmptyRect(&dispose_none_params.rect_lossy_))) {
     // Don't encode the frame at all. Instead, the duration of the previous
     // frame will be increased later.
     assert(empty_rect_allowed_none);
@@ -1187,16 +1190,20 @@ static int CacheFrame(WebPAnimEncoder* const enc,
       enc->prev_candidate_undecided_ = 0;
     } else {
       int64_t curr_delta;
+      FrameRect prev_rect_key, prev_rect_sub;
 
       // Add this as a frame rectangle to enc.
       error_code = SetFrame(enc, config, 0, encoded_frame, &frame_skipped);
       if (error_code != VP8_ENC_OK) goto End;
       if (frame_skipped) goto Skip;
+      prev_rect_sub = enc->prev_rect_;
+
 
       // Add this as a key-frame to enc, too.
       error_code = SetFrame(enc, config, 1, encoded_frame, &frame_skipped);
       if (error_code != VP8_ENC_OK) goto End;
       assert(frame_skipped == 0);  // Key-frame cannot be an empty rectangle.
+      prev_rect_key = enc->prev_rect_;
 
       // Analyze size difference of the two variants.
       curr_delta = KeyFramePenalty(encoded_frame);
@@ -1207,11 +1214,13 @@ static int CacheFrame(WebPAnimEncoder* const enc,
           old_keyframe->is_key_frame_ = 0;
         }
         encoded_frame->is_key_frame_ = 1;
+        enc->prev_candidate_undecided_ = 1;
         enc->keyframe_ = (int)position;
         enc->best_delta_ = curr_delta;
         enc->flush_count_ = enc->count_ - 1;  // We can flush previous frames.
       } else {
         encoded_frame->is_key_frame_ = 0;
+        enc->prev_candidate_undecided_ = 0;
       }
       // Note: We need '>=' below because when kmin and kmax are both zero,
       // count_since_key_frame will always be > kmax.
@@ -1221,7 +1230,10 @@ static int CacheFrame(WebPAnimEncoder* const enc,
         enc->keyframe_ = KEYFRAME_NONE;
         enc->best_delta_ = DELTA_INFINITY;
       }
-      enc->prev_candidate_undecided_ = 1;
+      if (!enc->prev_candidate_undecided_) {
+        enc->prev_rect_ =
+            encoded_frame->is_key_frame_ ? prev_rect_key : prev_rect_sub;
+      }
     }
   }
 

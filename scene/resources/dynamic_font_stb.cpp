@@ -26,10 +26,10 @@ void DynamicFontData::lock() {
 
 void DynamicFontData::unlock() {
 
-	fr = DVector<uint8_t>::Read();
+	fr = PoolVector<uint8_t>::Read();
 }
 
-void DynamicFontData::set_font_data(const DVector<uint8_t>& p_font) {
+void DynamicFontData::set_font_data(const PoolVector<uint8_t>& p_font) {
 	//clear caches and stuff
 	ERR_FAIL_COND(font_data.size())	;
 	font_data=p_font;
@@ -260,7 +260,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		break;
 	}
 
-//	print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
+	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
 
 	if (tex_index==-1) {
 		//could not find texture to fit, create one
@@ -284,7 +284,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 
 		{
 			//zero texture
-			DVector<uint8_t>::Write w = tex.imgdata.write();
+			PoolVector<uint8_t>::Write w = tex.imgdata.write();
 			ERR_FAIL_COND(texsize*texsize*2 > tex.imgdata.size());
 			for(int i=0;i<texsize*texsize*2;i++) {
 				w[i]=0;
@@ -305,7 +305,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	CharTexture &tex=textures[tex_index];
 
 	{
-		DVector<uint8_t>::Write wr = tex.imgdata.write();
+		PoolVector<uint8_t>::Write wr = tex.imgdata.write();
 
 		for(int i=0;i<h;i++) {
 			for(int j=0;j<w;j++) {
@@ -321,7 +321,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 	//blit to image and texture
 	{
 
-		Image img(tex.texture_size,tex.texture_size,0,Image::FORMAT_GRAYSCALE_ALPHA,tex.imgdata);
+		Image img(tex.texture_size,tex.texture_size,0,Image::FORMAT_LA8,tex.imgdata);
 
 		if (tex.texture.is_null()) {
 			tex.texture.instance();
@@ -378,11 +378,11 @@ DynamicFontAtSize::~DynamicFontAtSize(){
 
 void DynamicFont::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_font_data","data:DynamicFontData"),&DynamicFont::set_font_data);
-	ObjectTypeDB::bind_method(_MD("get_font_data:DynamicFontData"),&DynamicFont::get_font_data);
+	ClassDB::bind_method(_MD("set_font_data","data:DynamicFontData"),&DynamicFont::set_font_data);
+	ClassDB::bind_method(_MD("get_font_data:DynamicFontData"),&DynamicFont::get_font_data);
 
-	ObjectTypeDB::bind_method(_MD("set_size","data"),&DynamicFont::set_size);
-	ObjectTypeDB::bind_method(_MD("get_size"),&DynamicFont::get_size);
+	ClassDB::bind_method(_MD("set_size","data"),&DynamicFont::set_size);
+	ClassDB::bind_method(_MD("get_size"),&DynamicFont::get_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"font/size"),_SCS("set_size"),_SCS("get_size"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font/font",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
@@ -485,14 +485,14 @@ RES ResourceFormatLoaderDynamicFont::load(const String &p_path, const String& p_
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
 	ERR_FAIL_COND_V(!f,RES());
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 
 	data.resize(f->get_len());
 
 	ERR_FAIL_COND_V(data.size()==0,RES());
 
 	{
-		DVector<uint8_t>::Write w = data.write();
+		PoolVector<uint8_t>::Write w = data.write();
 		f->get_buffer(w.ptr(),data.size());
 	}
 

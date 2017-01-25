@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "progress_dialog.h"
+
 #include "main/main.h"
 #include "message_queue.h"
 #include "os/os.h"
 #include "editor_scale.h"
+
 void BackgroundProgress::_add_task(const String& p_task,const String& p_label, int p_steps) {
 
 	_THREAD_SAFE_METHOD_
@@ -42,7 +44,7 @@ void BackgroundProgress::_add_task(const String& p_task,const String& p_label, i
 	t.hb->add_child(l);
 	t.progress = memnew( ProgressBar );
 	t.progress->set_max(p_steps);
-	t.progress->set_val(p_steps);
+	t.progress->set_value(p_steps);
 	Control *ec = memnew( Control );
 	ec->set_h_size_flags(SIZE_EXPAND_FILL);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -83,9 +85,9 @@ void BackgroundProgress::_task_step(const String& p_task, int p_step){
 
 	Task &t=tasks[p_task];
 	if (p_step<0)
-		t.progress->set_val(t.progress->get_val()+1);
+		t.progress->set_value(t.progress->get_value()+1);
 	else
-		t.progress->set_val(p_step);
+		t.progress->set_value(p_step);
 
 }
 void BackgroundProgress::_end_task(const String& p_task){
@@ -101,10 +103,10 @@ void BackgroundProgress::_end_task(const String& p_task){
 
 void BackgroundProgress::_bind_methods(){
 
-	ObjectTypeDB::bind_method("_add_task",&BackgroundProgress::_add_task);
-	ObjectTypeDB::bind_method("_task_step",&BackgroundProgress::_task_step);
-	ObjectTypeDB::bind_method("_end_task",&BackgroundProgress::_end_task);
-	ObjectTypeDB::bind_method("_update",&BackgroundProgress::_update);
+	ClassDB::bind_method("_add_task",&BackgroundProgress::_add_task);
+	ClassDB::bind_method("_task_step",&BackgroundProgress::_task_step);
+	ClassDB::bind_method("_end_task",&BackgroundProgress::_end_task);
+	ClassDB::bind_method("_update",&BackgroundProgress::_update);
 
 }
 
@@ -182,7 +184,7 @@ void ProgressDialog::add_task(const String& p_task,const String& p_label,int p_s
 	t.vb->add_margin_child(p_label,vb2);
 	t.progress = memnew( ProgressBar );
 	t.progress->set_max(p_steps);
-	t.progress->set_val(p_steps);
+	t.progress->set_value(p_steps);
 	vb2->add_child(t.progress);
 	t.state=memnew( Label );
 	t.state->set_clip_text(true);
@@ -206,9 +208,9 @@ void ProgressDialog::task_step(const String& p_task, const String& p_state, int 
 
 	Task &t=tasks[p_task];
 	if (p_step<0)
-		t.progress->set_val(t.progress->get_val()+1);
+		t.progress->set_value(t.progress->get_value()+1);
 	else
-		t.progress->set_val(p_step);
+		t.progress->set_value(p_step);
 
 	t.state->set_text(p_state);
 	last_progress_tick=OS::get_singleton()->get_ticks_usec();

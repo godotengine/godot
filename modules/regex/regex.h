@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ class RegExNode;
 
 class RegExMatch : public Reference {
 
-	OBJ_TYPE(RegExMatch, Reference);
+	GDCLASS(RegExMatch, Reference);
 
 	struct Group {
 		Variant name;
@@ -80,7 +80,7 @@ public:
 
 class RegEx : public Resource {
 
-	OBJ_TYPE(RegEx, Resource);
+	GDCLASS(RegEx, Resource);
 
 	RegExNode* root;
 	Vector<Variant> group_names;

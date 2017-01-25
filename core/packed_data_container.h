@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 class PackedDataContainer : public Resource {
 
-	OBJ_TYPE(PackedDataContainer,Resource);
+	GDCLASS(PackedDataContainer,Resource);
 
 	enum {
 		TYPE_DICT=0xFFFFFFFF,
@@ -50,7 +50,7 @@ class PackedDataContainer : public Resource {
 	};
 
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	int datalen;
 
 
@@ -73,8 +73,8 @@ friend class PackedDataContainerRef;
 
 protected:
 
-	void _set_data(const DVector<uint8_t>& p_data);
-	DVector<uint8_t> _get_data() const;
+	void _set_data(const PoolVector<uint8_t>& p_data);
+	PoolVector<uint8_t> _get_data() const;
 	static void _bind_methods();
 public:
 
@@ -87,7 +87,7 @@ public:
 };
 
 class PackedDataContainerRef : public Reference {
-	OBJ_TYPE(PackedDataContainerRef,Reference);
+	GDCLASS(PackedDataContainerRef,Reference);
 
 friend class PackedDataContainer;
 	uint32_t offset;

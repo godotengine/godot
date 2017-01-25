@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -112,7 +112,7 @@ HingeJointSW::HingeJointSW(BodySW* rbA,BodySW* rbB, const Vector3& pivotInA,cons
 		rbAxisA1 = rbAxisA2.cross(axisInA);
 	}
 
-	m_rbAFrame.basis=Matrix3( rbAxisA1.x,rbAxisA2.x,axisInA.x,
+	m_rbAFrame.basis=Basis( rbAxisA1.x,rbAxisA2.x,axisInA.x,
 									rbAxisA1.y,rbAxisA2.y,axisInA.y,
 									rbAxisA1.z,rbAxisA2.z,axisInA.z );
 
@@ -121,7 +121,7 @@ HingeJointSW::HingeJointSW(BodySW* rbA,BodySW* rbB, const Vector3& pivotInA,cons
 	Vector3 rbAxisB2 =  axisInB.cross(rbAxisB1);
 
 	m_rbBFrame.origin = pivotInB;
-	m_rbBFrame.basis=Matrix3( rbAxisB1.x,rbAxisB2.x,-axisInB.x,
+	m_rbBFrame.basis=Basis( rbAxisB1.x,rbAxisB2.x,-axisInB.x,
 									rbAxisB1.y,rbAxisB2.y,-axisInB.y,
 									rbAxisB1.z,rbAxisB2.z,-axisInB.z );
 
@@ -173,10 +173,10 @@ bool HingeJointSW::setup(float p_step) {
 		for (int i=0;i<3;i++)
 		{
 			memnew_placement(&m_jac[i], JacobianEntrySW(
-				A->get_transform().basis.transposed(),
-				B->get_transform().basis.transposed(),
-				pivotAInW - A->get_transform().origin,
-				pivotBInW - B->get_transform().origin,
+				A->get_principal_inertia_axes().transposed(),
+				B->get_principal_inertia_axes().transposed(),
+				pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+				pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
 				normal[i],
 				A->get_inv_inertia(),
 				A->get_inv_mass(),
@@ -200,20 +200,20 @@ bool HingeJointSW::setup(float p_step) {
 	Vector3 hingeAxisWorld = A->get_transform().basis.xform( m_rbAFrame.basis.get_axis(2) );
 
 	memnew_placement(&m_jacAng[0],	JacobianEntrySW(jointAxis0,
-		A->get_transform().basis.transposed(),
-		B->get_transform().basis.transposed(),
+		A->get_principal_inertia_axes().transposed(),
+		B->get_principal_inertia_axes().transposed(),
 		A->get_inv_inertia(),
 		B->get_inv_inertia()));
 
 	memnew_placement(&m_jacAng[1],	JacobianEntrySW(jointAxis1,
-		A->get_transform().basis.transposed(),
-		B->get_transform().basis.transposed(),
+		A->get_principal_inertia_axes().transposed(),
+		B->get_principal_inertia_axes().transposed(),
 		A->get_inv_inertia(),
 		B->get_inv_inertia()));
 
 	memnew_placement(&m_jacAng[2],	JacobianEntrySW(hingeAxisWorld,
-		A->get_transform().basis.transposed(),
-		B->get_transform().basis.transposed(),
+		A->get_principal_inertia_axes().transposed(),
+		B->get_principal_inertia_axes().transposed(),
 		A->get_inv_inertia(),
 		B->get_inv_inertia()));
 
@@ -221,7 +221,7 @@ bool HingeJointSW::setup(float p_step) {
 	// Compute limit information
 	real_t hingeAngle = get_hinge_angle();
 
-//	print_line("angle: "+rtos(hingeAngle));
+	//print_line("angle: "+rtos(hingeAngle));
 	//set bias, sign, clear accumulator
 	m_correction = real_t(0.);
 	m_limitSign = real_t(0.);
@@ -235,17 +235,17 @@ bool HingeJointSW::setup(float p_step) {
 		print_line("hi: "+rtos(m_upperLimit));
 	}*/
 
-//	if (m_lowerLimit < m_upperLimit)
+	//if (m_lowerLimit < m_upperLimit)
 	if (m_useLimit && m_lowerLimit <= m_upperLimit)
 	{
-//		if (hingeAngle <= m_lowerLimit*m_limitSoftness)
+		//if (hingeAngle <= m_lowerLimit*m_limitSoftness)
 		if (hingeAngle <= m_lowerLimit)
 		{
 			m_correction = (m_lowerLimit - hingeAngle);
 			m_limitSign = 1.0f;
 			m_solveLimit = true;
 		}
-//		else if (hingeAngle >= m_upperLimit*m_limitSoftness)
+		//else if (hingeAngle >= m_upperLimit*m_limitSoftness)
 		else if (hingeAngle >= m_upperLimit)
 		{
 			m_correction = m_upperLimit - hingeAngle;
@@ -371,7 +371,7 @@ void HingeJointSW::solve(float p_step) {
 			real_t desiredMotorVel = m_motorTargetVelocity;
 			real_t motor_relvel = desiredMotorVel - projRelVel;
 
-			real_t unclippedMotorImpulse = m_kHinge * motor_relvel;;
+			real_t unclippedMotorImpulse = m_kHinge * motor_relvel;
 			//todo: should clip against accumulated impulse
 			real_t clippedMotorImpulse = unclippedMotorImpulse > m_maxMotorImpulse ? m_maxMotorImpulse : unclippedMotorImpulse;
 			clippedMotorImpulse = clippedMotorImpulse < -m_maxMotorImpulse ? -m_maxMotorImpulse : clippedMotorImpulse;

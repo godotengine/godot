@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,7 +55,7 @@ bool ResourceFormatLoader::recognize(const String& p_extension) const {
 	get_recognized_extensions(&extensions);
 	for (List<String>::Element *E=extensions.front();E;E=E->next()) {
 
-		if (E->get().nocasecmp_to(p_extension.extension())==0)
+		if (E->get().nocasecmp_to(p_extension.get_extension())==0)
 			return true;
 	}
 
@@ -78,16 +78,16 @@ void ResourceLoader::get_recognized_extensions_for_type(const String& p_type,Lis
 
 void ResourceInteractiveLoader::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_resource"),&ResourceInteractiveLoader::get_resource);
-	ObjectTypeDB::bind_method(_MD("poll"),&ResourceInteractiveLoader::poll);
-	ObjectTypeDB::bind_method(_MD("wait"),&ResourceInteractiveLoader::wait);
-	ObjectTypeDB::bind_method(_MD("get_stage"),&ResourceInteractiveLoader::get_stage);
-	ObjectTypeDB::bind_method(_MD("get_stage_count"),&ResourceInteractiveLoader::get_stage_count);
+	ClassDB::bind_method(_MD("get_resource"),&ResourceInteractiveLoader::get_resource);
+	ClassDB::bind_method(_MD("poll"),&ResourceInteractiveLoader::poll);
+	ClassDB::bind_method(_MD("wait"),&ResourceInteractiveLoader::wait);
+	ClassDB::bind_method(_MD("get_stage"),&ResourceInteractiveLoader::get_stage);
+	ClassDB::bind_method(_MD("get_stage_count"),&ResourceInteractiveLoader::get_stage_count);
 }
 
 class ResourceInteractiveLoaderDefault : public ResourceInteractiveLoader {
 
-	OBJ_TYPE( ResourceInteractiveLoaderDefault, ResourceInteractiveLoader );
+	GDCLASS( ResourceInteractiveLoaderDefault, ResourceInteractiveLoader );
 public:
 
 	Ref<Resource> resource;
@@ -164,7 +164,7 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;
 	else
-		local_path = Globals::get_singleton()->localize_path(p_path);
+		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	local_path=find_complete_path(local_path,p_type_hint);
 	ERR_FAIL_COND_V(local_path=="",RES());
@@ -182,7 +182,7 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 	if (OS::get_singleton()->is_stdout_verbose())
 		print_line("load resource: "+remapped_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 	bool found=false;
 
 	for (int i=0;i<loader_count;i++) {
@@ -228,9 +228,9 @@ Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;
 	else
-		local_path = Globals::get_singleton()->localize_path(p_path);
+		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
-	String extension=p_path.extension();
+	String extension=p_path.get_extension();
 	Ref<ResourceImportMetadata> ret;
 
 	for (int i=0;i<loader_count;i++) {
@@ -285,7 +285,7 @@ String ResourceLoader::find_complete_path(const String& p_path,const String& p_t
 			for(List<String>::Element *E=candidates.front();E;E=E->next()) {
 
 				String rt = get_resource_type(E->get());
-				if (ObjectTypeDB::is_type(rt,p_type)) {
+				if (ClassDB::is_parent_class(rt,p_type)) {
 					return E->get();
 				}
 			}
@@ -307,7 +307,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;
 	else
-		local_path = Globals::get_singleton()->localize_path(p_path);
+		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	local_path=find_complete_path(local_path,p_type_hint);
 	ERR_FAIL_COND_V(local_path=="",Ref<ResourceInteractiveLoader>());
@@ -331,7 +331,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 	bool found=false;
 
 	for (int i=0;i<loader_count;i++) {
@@ -381,18 +381,20 @@ void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_depe
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;
 	else
-		local_path = Globals::get_singleton()->localize_path(p_path);
+		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		//if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
-		//	continue;
+		/*
+		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+			continue;
+		*/
 
 		loader[i]->get_dependencies(remapped_path,p_dependencies,p_add_types);
 
@@ -406,18 +408,20 @@ Error ResourceLoader::rename_dependencies(const String &p_path,const Map<String,
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;
 	else
-		local_path = Globals::get_singleton()->localize_path(p_path);
+		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 
 		if (!loader[i]->recognize(extension))
 			continue;
-		//if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
-		//	continue;
+		/*
+		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+			continue;
+		*/
 
 		return loader[i]->rename_dependencies(p_path,p_map);
 
@@ -434,7 +438,7 @@ String ResourceLoader::guess_full_filename(const String &p_path,const String& p_
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;
 	else
-		local_path = Globals::get_singleton()->localize_path(p_path);
+		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	return find_complete_path(local_path,p_type);
 
@@ -446,10 +450,10 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;
 	else
-		local_path = Globals::get_singleton()->localize_path(p_path);
+		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
-	String extension=remapped_path.extension();
+	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 

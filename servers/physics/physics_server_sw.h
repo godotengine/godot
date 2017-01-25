@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
 
 class PhysicsServerSW : public PhysicsServer {
 
-	OBJ_TYPE( PhysicsServerSW, PhysicsServer );
+	GDCLASS( PhysicsServerSW, PhysicsServer );
 
 friend class PhysicsDirectSpaceStateSW;
 	bool active;
@@ -62,7 +62,7 @@ friend class PhysicsDirectSpaceStateSW;
 	mutable RID_Owner<BodySW> body_owner;
 	mutable RID_Owner<JointSW> joint_owner;
 
-//	void _clear_query(QuerySW *p_query);
+	//void _clear_query(QuerySW *p_query);
 public:
 
 	struct CollCbkData {
@@ -193,6 +193,7 @@ public:
 	virtual Vector3 body_get_applied_torque(RID p_body) const;
 
 	virtual void body_apply_impulse(RID p_body, const Vector3& p_pos, const Vector3& p_impulse);
+	virtual void body_apply_torque_impulse(RID p_body, const Vector3& p_impulse);
 	virtual void body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity);
 
 	virtual void body_set_axis_lock(RID p_body,BodyAxisLock p_lock);

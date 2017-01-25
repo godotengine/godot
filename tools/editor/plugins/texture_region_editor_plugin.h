@@ -1,11 +1,11 @@
 /*************************************************************************/
-/*  texture_region_editor_plugin.h                                        */
+/*  texture_region_editor_plugin.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Author: Mariano Suligoy                                               */
 /*                                                                       */
@@ -36,13 +36,13 @@
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/2d/sprite.h"
-#include "scene/gui/patch_9_frame.h"
+#include "scene/gui/patch_9_rect.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
 class TextureRegionEditor : public Control {
 
-	OBJ_TYPE(TextureRegionEditor, Control );
+	GDCLASS(TextureRegionEditor, Control );
 
 	enum SnapMode {
 		SNAP_NONE,
@@ -53,7 +53,7 @@ class TextureRegionEditor : public Control {
 
 	friend class TextureRegionEditorPlugin;
 	MenuButton *snap_mode_button;
-	TextureFrame *icon_zoom;
+	TextureRect *icon_zoom;
 	ToolButton *zoom_in;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_out;
@@ -81,7 +81,7 @@ class TextureRegionEditor : public Control {
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
-	Patch9Frame *node_patch9;
+	NinePatchRect *node_patch9;
 	Sprite *node_sprite;
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;
@@ -132,7 +132,7 @@ public:
 
 class TextureRegionEditorPlugin : public EditorPlugin
 {
-	OBJ_TYPE( TextureRegionEditorPlugin, EditorPlugin );
+	GDCLASS( TextureRegionEditorPlugin, EditorPlugin );
 
 	Button *region_button;
 	TextureRegionEditor *region_editor;

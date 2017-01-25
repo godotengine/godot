@@ -207,12 +207,17 @@ def build_res_file(target, source, env):
 def configure(env):
 
     env.Append(CPPPATH=['#platform/windows'])
+
+    # Targeted Windows version: Vista (and later)
+    winver = "0x0600" # Windows Vista is the minimum target for windows builds
+
     env['is_mingw'] = False
     if (os.name == "nt" and os.getenv("VCINSTALLDIR")):
         # build using visual studio
         env['ENV']['TMP'] = os.environ['TMP']
         env.Append(CPPPATH=['#platform/windows/include'])
         env.Append(LIBPATH=['#platform/windows/lib'])
+        env.Append(CCFLAGS=['/DWINVER=%s' % winver, '/D_WIN32_WINNT=%s' % winver])
 
         if (env["target"] == "release"):
 
@@ -246,7 +251,7 @@ def configure(env):
         env.Append(CCFLAGS=['/DWIN32'])
         env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
 
-        env.Append(CCFLAGS=['/DGLES2_ENABLED'])
+        env.Append(CCFLAGS=['/DOPENGL_ENABLED'])
         LIBS = ['winmm', 'opengl32', 'dsound', 'kernel32', 'ole32', 'oleaut32', 'user32', 'gdi32', 'IPHLPAPI', 'Shlwapi', 'wsock32', 'Ws2_32', 'shell32', 'advapi32', 'dinput8', 'dxguid']
         env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
@@ -307,6 +312,7 @@ def configure(env):
         env.use_windows_spawn_fix()
 
         # build using mingw
+        env.Append(CCFLAGS=['-DWINVER=%s' % winver, '-D_WIN32_WINNT=%s' % winver])
         if (os.name == "nt"):
             env['ENV']['TMP'] = os.environ['TMP']  # way to go scons, you can be so stupid sometimes
         else:
@@ -315,7 +321,7 @@ def configure(env):
         mingw_prefix = ""
 
         if (env["bits"] == "default"):
-            env["bits"] = "32"
+            env["bits"] = "64" if "PROGRAMFILES(X86)" in os.environ else "32"
 
         if (env["bits"] == "32"):
             env.Append(LINKFLAGS=['-static'])
@@ -370,7 +376,7 @@ def configure(env):
 
         env.Append(CCFLAGS=['-DWINDOWS_ENABLED', '-mwindows'])
         env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
-        env.Append(CCFLAGS=['-DGLES2_ENABLED'])
+        env.Append(CCFLAGS=['-DOPENGL_ENABLED'])
         env.Append(LIBS=['mingw32', 'opengl32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid'])
 
         # if (env["bits"]=="32"):

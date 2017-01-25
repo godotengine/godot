@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,16 +37,16 @@ DirAccess *DirAccessAndroid::create_fs() {
 	return memnew(DirAccessAndroid);
 }
 
-bool DirAccessAndroid::list_dir_begin() {
+Error DirAccessAndroid::list_dir_begin() {
 
 	list_dir_end();
 
 	AAssetDir* aad = AAssetManager_openDir(FileAccessAndroid::asset_manager,current_dir.utf8().get_data());
 	if (!aad)
-		return true; //nothing
+		return ERR_CANT_OPEN; //nothing
 
 
-	return false;
+	return OK;
 }
 
 String DirAccessAndroid::get_next(){
@@ -192,6 +192,6 @@ DirAccessAndroid::DirAccessAndroid() {
 
 DirAccessAndroid::~DirAccessAndroid() {
 
-	list_dir_end();;
+	list_dir_end();
 }
 #endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,19 +31,19 @@
 
 void MainLoop::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("input_event","ev"),&MainLoop::input_event);
-	ObjectTypeDB::bind_method(_MD("input_text","text"),&MainLoop::input_text);
-	ObjectTypeDB::bind_method(_MD("init"),&MainLoop::init);
-	ObjectTypeDB::bind_method(_MD("iteration","delta"),&MainLoop::iteration);
-	ObjectTypeDB::bind_method(_MD("idle","delta"),&MainLoop::idle);
-	ObjectTypeDB::bind_method(_MD("finish"),&MainLoop::finish);
+	ClassDB::bind_method(_MD("input_event","ev"),&MainLoop::input_event);
+	ClassDB::bind_method(_MD("input_text","text"),&MainLoop::input_text);
+	ClassDB::bind_method(_MD("init"),&MainLoop::init);
+	ClassDB::bind_method(_MD("iteration","delta"),&MainLoop::iteration);
+	ClassDB::bind_method(_MD("idle","delta"),&MainLoop::idle);
+	ClassDB::bind_method(_MD("finish"),&MainLoop::finish);
 
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
 	BIND_VMETHOD( MethodInfo("_input_text",PropertyInfo(Variant::STRING,"text")) );
 	BIND_VMETHOD( MethodInfo("_initialize") );
 	BIND_VMETHOD( MethodInfo("_iteration",PropertyInfo(Variant::REAL,"delta")) );
 	BIND_VMETHOD( MethodInfo("_idle",PropertyInfo(Variant::REAL,"delta")) );
-	BIND_VMETHOD( MethodInfo("_drop_files",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
+	BIND_VMETHOD( MethodInfo("_drop_files",PropertyInfo(Variant::POOL_STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
 	BIND_VMETHOD( MethodInfo("_finalize") );
 
 	BIND_CONSTANT(NOTIFICATION_WM_MOUSE_ENTER);

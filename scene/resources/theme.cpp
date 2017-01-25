@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -233,7 +233,7 @@ void Theme::set_default_theme_font( const Ref<Font>& p_default_font ) {
 	}
 
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -267,7 +267,7 @@ void Theme::set_default_font( const Ref<Font>& p_font ) {
 
 void Theme::set_icon(const StringName& p_name,const StringName& p_type,const Ref<Texture>& p_icon) {
 
-//	ERR_FAIL_COND(p_icon.is_null());
+	//ERR_FAIL_COND(p_icon.is_null());
 
 	bool new_value=!icon_map.has(p_type) || !icon_map[p_type].has(p_name);
 
@@ -275,7 +275,7 @@ void Theme::set_icon(const StringName& p_name,const StringName& p_type,const Ref
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 Ref<Texture> Theme::get_icon(const StringName& p_name,const StringName& p_type) const {
@@ -301,7 +301,7 @@ void Theme::clear_icon(const StringName& p_name,const StringName& p_type) {
 
 	icon_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -326,7 +326,7 @@ void Theme::set_shader(const StringName &p_name,const StringName &p_type,const R
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 
@@ -348,7 +348,7 @@ void Theme::clear_shader(const StringName &p_name, const StringName &p_type) {
 
 	shader_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 }
 
 void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) const {
@@ -367,7 +367,7 @@ void Theme::get_shader_list(const StringName &p_type, List<StringName> *p_list) 
 
 void Theme::set_stylebox(const StringName& p_name,const StringName& p_type,const Ref<StyleBox>& p_style) {
 
-//	ERR_FAIL_COND(p_style.is_null());
+	//ERR_FAIL_COND(p_style.is_null());
 
 	bool new_value=!style_map.has(p_type) || !style_map[p_type].has(p_name);
 
@@ -375,7 +375,7 @@ void Theme::set_stylebox(const StringName& p_name,const StringName& p_type,const
 
 	if (new_value)
 		_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -403,7 +403,7 @@ void Theme::clear_stylebox(const StringName& p_name,const StringName& p_type) {
 
 	style_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -430,7 +430,7 @@ void Theme::get_stylebox_types(List<StringName> *p_list) const {
 
 void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref<Font>& p_font) {
 
-//	ERR_FAIL_COND(p_font.is_null());
+	//ERR_FAIL_COND(p_font.is_null());
 
 	bool new_value=!font_map.has(p_type) || !font_map[p_type].has(p_name);
 
@@ -447,7 +447,7 @@ void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 Ref<Font> Theme::get_font(const StringName& p_name,const StringName& p_type) const {
@@ -477,7 +477,7 @@ void Theme::clear_font(const StringName& p_name,const StringName& p_type) {
 
 	font_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -503,7 +503,7 @@ void Theme::set_color(const StringName& p_name,const StringName& p_type,const Co
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 
 	}
 }
@@ -531,7 +531,7 @@ void Theme::clear_color(const StringName& p_name,const StringName& p_type) {
 
 	color_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -556,7 +556,7 @@ void Theme::set_constant(const StringName& p_name,const StringName& p_type,int p
 
 	if (new_value) {
 		_change_notify();
-		emit_changed();;
+		emit_changed();
 	}
 }
 
@@ -582,7 +582,7 @@ void Theme::clear_constant(const StringName& p_name,const StringName& p_type) {
 
 	constant_map[p_type].erase(p_name);
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -611,7 +611,7 @@ void Theme::copy_default_theme() {
 	color_map=default_theme->color_map;
 	constant_map=default_theme->constant_map;
 	_change_notify();
-	emit_changed();;
+	emit_changed();
 
 }
 
@@ -664,48 +664,48 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 
 void Theme::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_icon","name","type","texture:Texture"),&Theme::set_icon);
-	ObjectTypeDB::bind_method(_MD("get_icon:Texture","name","type"),&Theme::get_icon);
-	ObjectTypeDB::bind_method(_MD("has_icon","name","type"),&Theme::has_icon);
-	ObjectTypeDB::bind_method(_MD("clear_icon","name","type"),&Theme::clear_icon);
-	ObjectTypeDB::bind_method(_MD("get_icon_list","type"),&Theme::_get_icon_list);
+	ClassDB::bind_method(_MD("set_icon","name","type","texture:Texture"),&Theme::set_icon);
+	ClassDB::bind_method(_MD("get_icon:Texture","name","type"),&Theme::get_icon);
+	ClassDB::bind_method(_MD("has_icon","name","type"),&Theme::has_icon);
+	ClassDB::bind_method(_MD("clear_icon","name","type"),&Theme::clear_icon);
+	ClassDB::bind_method(_MD("get_icon_list","type"),&Theme::_get_icon_list);
 
-	ObjectTypeDB::bind_method(_MD("set_stylebox","name","type","texture:StyleBox"),&Theme::set_stylebox);
-	ObjectTypeDB::bind_method(_MD("get_stylebox:StyleBox","name","type"),&Theme::get_stylebox);
-	ObjectTypeDB::bind_method(_MD("has_stylebox","name","type"),&Theme::has_stylebox);
-	ObjectTypeDB::bind_method(_MD("clear_stylebox","name","type"),&Theme::clear_stylebox);
-	ObjectTypeDB::bind_method(_MD("get_stylebox_list","type"),&Theme::_get_stylebox_list);
-	ObjectTypeDB::bind_method(_MD("get_stylebox_types"),&Theme::_get_stylebox_types);
+	ClassDB::bind_method(_MD("set_stylebox","name","type","texture:StyleBox"),&Theme::set_stylebox);
+	ClassDB::bind_method(_MD("get_stylebox:StyleBox","name","type"),&Theme::get_stylebox);
+	ClassDB::bind_method(_MD("has_stylebox","name","type"),&Theme::has_stylebox);
+	ClassDB::bind_method(_MD("clear_stylebox","name","type"),&Theme::clear_stylebox);
+	ClassDB::bind_method(_MD("get_stylebox_list","type"),&Theme::_get_stylebox_list);
+	ClassDB::bind_method(_MD("get_stylebox_types"),&Theme::_get_stylebox_types);
 
-	ObjectTypeDB::bind_method(_MD("set_font","name","type","font:Font"),&Theme::set_font);
-	ObjectTypeDB::bind_method(_MD("get_font:Font","name","type"),&Theme::get_font);
-	ObjectTypeDB::bind_method(_MD("has_font","name","type"),&Theme::has_font);
-	ObjectTypeDB::bind_method(_MD("clear_font","name","type"),&Theme::clear_font);
-	ObjectTypeDB::bind_method(_MD("get_font_list","type"),&Theme::_get_font_list);
+	ClassDB::bind_method(_MD("set_font","name","type","font:Font"),&Theme::set_font);
+	ClassDB::bind_method(_MD("get_font:Font","name","type"),&Theme::get_font);
+	ClassDB::bind_method(_MD("has_font","name","type"),&Theme::has_font);
+	ClassDB::bind_method(_MD("clear_font","name","type"),&Theme::clear_font);
+	ClassDB::bind_method(_MD("get_font_list","type"),&Theme::_get_font_list);
 
-	ObjectTypeDB::bind_method(_MD("set_color","name","type","color"),&Theme::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color","name","type"),&Theme::get_color);
-	ObjectTypeDB::bind_method(_MD("has_color","name","type"),&Theme::has_color);
-	ObjectTypeDB::bind_method(_MD("clear_color","name","type"),&Theme::clear_color);
-	ObjectTypeDB::bind_method(_MD("get_color_list","type"),&Theme::_get_color_list);
+	ClassDB::bind_method(_MD("set_color","name","type","color"),&Theme::set_color);
+	ClassDB::bind_method(_MD("get_color","name","type"),&Theme::get_color);
+	ClassDB::bind_method(_MD("has_color","name","type"),&Theme::has_color);
+	ClassDB::bind_method(_MD("clear_color","name","type"),&Theme::clear_color);
+	ClassDB::bind_method(_MD("get_color_list","type"),&Theme::_get_color_list);
 
-	ObjectTypeDB::bind_method(_MD("set_constant","name","type","constant"),&Theme::set_constant);
-	ObjectTypeDB::bind_method(_MD("get_constant","name","type"),&Theme::get_constant);
-	ObjectTypeDB::bind_method(_MD("has_constant","name","type"),&Theme::has_constant);
-	ObjectTypeDB::bind_method(_MD("clear_constant","name","type"),&Theme::clear_constant);
-	ObjectTypeDB::bind_method(_MD("get_constant_list","type"),&Theme::_get_constant_list);
+	ClassDB::bind_method(_MD("set_constant","name","type","constant"),&Theme::set_constant);
+	ClassDB::bind_method(_MD("get_constant","name","type"),&Theme::get_constant);
+	ClassDB::bind_method(_MD("has_constant","name","type"),&Theme::has_constant);
+	ClassDB::bind_method(_MD("clear_constant","name","type"),&Theme::clear_constant);
+	ClassDB::bind_method(_MD("get_constant_list","type"),&Theme::_get_constant_list);
 
-	ObjectTypeDB::bind_method(_MD("set_default_font","font"),&Theme::set_default_theme_font);
-	ObjectTypeDB::bind_method(_MD("get_default_font"),&Theme::get_default_theme_font);
+	ClassDB::bind_method(_MD("set_default_font","font"),&Theme::set_default_theme_font);
+	ClassDB::bind_method(_MD("get_default_font"),&Theme::get_default_theme_font);
 
-	ObjectTypeDB::bind_method(_MD("get_type_list","type"),&Theme::_get_type_list);
+	ClassDB::bind_method(_MD("get_type_list","type"),&Theme::_get_type_list);
 
-	ObjectTypeDB::bind_method(_MD("_emit_theme_changed"),&Theme::_emit_theme_changed);
-
-
+	ClassDB::bind_method(_MD("_emit_theme_changed"),&Theme::_emit_theme_changed);
 
 
-	ObjectTypeDB::bind_method("copy_default_theme",&Theme::copy_default_theme);
+
+
+	ClassDB::bind_method("copy_default_theme",&Theme::copy_default_theme);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"default_font",PROPERTY_HINT_RESOURCE_TYPE,"Font"),_SCS("set_default_font"),_SCS("get_default_font"));
 
@@ -999,7 +999,7 @@ RES ResourceFormatLoaderTheme::load(const String &p_path, const String& p_origin
 							ERR_FAIL_V(RES());
 						}
 
-//						int margin = params[i+ccodes+1].to_int();
+						//int margin = params[i+ccodes+1].to_int();
 						//sbflat->set_margin_size(Margin(i),margin);
 					}
 				} else if (params.size()!=ccodes+1) {
@@ -1147,7 +1147,7 @@ bool ResourceFormatLoaderTheme::handles_type(const String& p_type) const {
 
 String ResourceFormatLoaderTheme::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="theme")
+	if (p_path.get_extension().to_lower()=="theme")
 		return "Theme";
 	return "";
 }

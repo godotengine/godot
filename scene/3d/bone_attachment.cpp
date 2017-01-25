@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ void BoneAttachment::_check_bind() {
 		Skeleton *sk = get_parent()->cast_to<Skeleton>();
 		int idx = sk->find_bone(bone_name);
 		if (idx!=-1) {
-			sk->bind_child_node_to_bone(idx,this);;
+			sk->bind_child_node_to_bone(idx,this);
 			set_transform(sk->get_bone_global_pose(idx));
 			bound=true;
 		}
@@ -94,7 +94,7 @@ void BoneAttachment::_check_unbind() {
 			Skeleton *sk = get_parent()->cast_to<Skeleton>();
 			int idx = sk->find_bone(bone_name);
 			if (idx!=-1) {
-				sk->unbind_child_node_from_bone(idx,this);;
+				sk->unbind_child_node_from_bone(idx,this);
 			}
 		}
 		bound=false;
@@ -136,4 +136,9 @@ BoneAttachment::BoneAttachment()
 {
 	bound=false;
 
+}
+
+void BoneAttachment::_bind_methods(){
+	ClassDB::bind_method(_MD("set_bone_name","bone_name"),&BoneAttachment::set_bone_name);
+	ClassDB::bind_method(_MD("get_bone_name"),&BoneAttachment::get_bone_name);
 }

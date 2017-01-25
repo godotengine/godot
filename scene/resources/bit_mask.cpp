@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,20 +45,20 @@ void BitMap::create_from_image_alpha(const Image& p_image){
 
 	ERR_FAIL_COND(p_image.empty());
 	Image img=p_image;
-	img.convert(Image::FORMAT_INTENSITY);
-	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_INTENSITY);
+	img.convert(Image::FORMAT_LA8);
+	ERR_FAIL_COND(img.get_format()!=Image::FORMAT_LA8);
 
 	create(Size2(img.get_width(),img.get_height()));
 
 
-	DVector<uint8_t>::Read r = img.get_data().read();
+	PoolVector<uint8_t>::Read r = img.get_data().read();
 	uint8_t *w = bitmask.ptr();
 
 	for(int i=0;i<width*height;i++) {
 
 		int bbyte = i/8;
 		int bbit = i % 8;
-		if (r[i])
+		if (r[i*2])
 			w[bbyte]|=(1<<bbit);
 	}
 
@@ -177,22 +177,21 @@ Dictionary BitMap::_get_data() const{
 
 void BitMap::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("create","size"),&BitMap::create);
-	ObjectTypeDB::bind_method(_MD("create_from_image_alpha","image"),&BitMap::create_from_image_alpha);
+	ClassDB::bind_method(_MD("create","size"),&BitMap::create);
+	ClassDB::bind_method(_MD("create_from_image_alpha","image"),&BitMap::create_from_image_alpha);
 
-	ObjectTypeDB::bind_method(_MD("set_bit","pos","bit"),&BitMap::set_bit);
-	ObjectTypeDB::bind_method(_MD("get_bit","pos"),&BitMap::get_bit);
+	ClassDB::bind_method(_MD("set_bit","pos","bit"),&BitMap::set_bit);
+	ClassDB::bind_method(_MD("get_bit","pos"),&BitMap::get_bit);
 
-	ObjectTypeDB::bind_method(_MD("set_bit_rect","p_rect","bit"),&BitMap::set_bit_rect);
-	ObjectTypeDB::bind_method(_MD("get_true_bit_count"),&BitMap::get_true_bit_count);
+	ClassDB::bind_method(_MD("set_bit_rect","p_rect","bit"),&BitMap::set_bit_rect);
+	ClassDB::bind_method(_MD("get_true_bit_count"),&BitMap::get_true_bit_count);
 
-	ObjectTypeDB::bind_method(_MD("get_size"),&BitMap::get_size);
+	ClassDB::bind_method(_MD("get_size"),&BitMap::get_size);
 
-	ObjectTypeDB::bind_method(_MD("_set_data"),&BitMap::_set_data);
-	ObjectTypeDB::bind_method(_MD("_get_data"),&BitMap::_get_data);
+	ClassDB::bind_method(_MD("_set_data"),&BitMap::_set_data);
+	ClassDB::bind_method(_MD("_get_data"),&BitMap::_get_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_data"),_SCS("_get_data"));
-
 
 }
 

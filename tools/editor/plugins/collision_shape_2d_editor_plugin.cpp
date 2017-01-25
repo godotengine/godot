@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,6 @@
 #include "collision_shape_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
-
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/shape_line_2d.h"
 #include "scene/resources/circle_shape_2d.h"
@@ -303,7 +302,7 @@ void CollisionShape2DEditor::commit_handle(int idx, Variant& p_org) {
 	undo_redo->commit_action();
 }
 
-bool CollisionShape2DEditor::forward_input_event(const InputEvent& p_event) {
+bool CollisionShape2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (!node) {
 		return false;
@@ -321,7 +320,7 @@ bool CollisionShape2DEditor::forward_input_event(const InputEvent& p_event) {
 		case InputEvent::MOUSE_BUTTON: {
 			const InputEventMouseButton& mb = p_event.mouse_button;
 
-			Matrix32 gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 			Point2 gpoint(mb.x,mb.y);
 
@@ -436,7 +435,7 @@ void CollisionShape2DEditor::_canvas_draw() {
 	}
 
 	Control *c = canvas_item_editor->get_viewport_control();
-	Matrix32 gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 	Ref<Texture> h = get_icon("EditorHandle","EditorIcons");
 	Vector2 size = h->get_size()*0.5;
@@ -555,8 +554,8 @@ void CollisionShape2DEditor::edit(Node* p_node) {
 
 void CollisionShape2DEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_canvas_draw",&CollisionShape2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method("_get_current_shape_type",&CollisionShape2DEditor::_get_current_shape_type);
+	ClassDB::bind_method("_canvas_draw",&CollisionShape2DEditor::_canvas_draw);
+	ClassDB::bind_method("_get_current_shape_type",&CollisionShape2DEditor::_get_current_shape_type);
 }
 
 CollisionShape2DEditor::CollisionShape2DEditor(EditorNode* p_editor) {
@@ -578,7 +577,7 @@ void CollisionShape2DEditorPlugin::edit(Object* p_obj) {
 
 bool CollisionShape2DEditorPlugin::handles(Object* p_obj) const {
 
-	return p_obj->is_type("CollisionShape2D");
+	return p_obj->is_class("CollisionShape2D");
 }
 
 void CollisionShape2DEditorPlugin::make_visible(bool visible) {

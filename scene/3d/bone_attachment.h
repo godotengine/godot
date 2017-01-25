@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 class BoneAttachment : public Spatial {
 
-	OBJ_TYPE(BoneAttachment,Spatial);
+	GDCLASS(BoneAttachment,Spatial);
 
 	bool bound;
 	String bone_name;
@@ -46,6 +46,8 @@ protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
 	void _get_property_list( List<PropertyInfo>* p_list ) const;
 	void _notification(int p_what);
+
+	static void _bind_methods();
 
 public:
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@ class NewProjectDialog;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
-	OBJ_TYPE( ProjectManager, Control );
+	GDCLASS( ProjectManager, Control );
 
 	Button *erase_btn;
 	Button *open_btn;
@@ -95,8 +95,8 @@ class ProjectManager : public Control {
 	void _panel_input(const InputEvent& p_ev,Node *p_hb);
 	void _unhandled_input(const InputEvent& p_ev);
 	void _favorite_pressed(Node *p_hb);
-	void _files_dropped(StringArray p_files, int p_screen);
-	void _scan_multiple_folders(StringArray p_files);
+	void _files_dropped(PoolStringArray p_files, int p_screen);
+	void _scan_multiple_folders(PoolStringArray p_files);
 
 protected:
 
@@ -109,7 +109,7 @@ public:
 
 class ProjectListFilter : public HBoxContainer {
 
-	OBJ_TYPE( ProjectListFilter, HBoxContainer );
+	GDCLASS( ProjectListFilter, HBoxContainer );
 
 private:
 

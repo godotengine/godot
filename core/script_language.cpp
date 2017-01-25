@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,13 +46,13 @@ void Script::_notification( int p_what) {
 
 void Script::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("can_instance"),&Script::can_instance);
-	//ObjectTypeDB::bind_method(_MD("instance_create","base_object"),&Script::instance_create);
-	ObjectTypeDB::bind_method(_MD("instance_has","base_object"),&Script::instance_has);
-	ObjectTypeDB::bind_method(_MD("has_source_code"),&Script::has_source_code);
-	ObjectTypeDB::bind_method(_MD("get_source_code"),&Script::get_source_code);
-	ObjectTypeDB::bind_method(_MD("set_source_code","source"),&Script::set_source_code);
-	ObjectTypeDB::bind_method(_MD("reload","keep_state"),&Script::reload,DEFVAL(false));
+	ClassDB::bind_method(_MD("can_instance"),&Script::can_instance);
+	//ClassDB::bind_method(_MD("instance_create","base_object"),&Script::instance_create);
+	ClassDB::bind_method(_MD("instance_has","base_object"),&Script::instance_has);
+	ClassDB::bind_method(_MD("has_source_code"),&Script::has_source_code);
+	ClassDB::bind_method(_MD("get_source_code"),&Script::get_source_code);
+	ClassDB::bind_method(_MD("set_source_code","source"),&Script::set_source_code);
+	ClassDB::bind_method(_MD("reload","keep_state"),&Script::reload,DEFVAL(false));
 
 }
 

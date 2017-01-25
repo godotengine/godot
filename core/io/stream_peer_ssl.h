@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,10 @@
 #include "io/stream_peer.h"
 
 class StreamPeerSSL : public StreamPeer {
-	OBJ_TYPE(StreamPeerSSL,StreamPeer);
+	GDCLASS(StreamPeerSSL,StreamPeer);
 public:
 
-	typedef void (*LoadCertsFromMemory)(const ByteArray& p_certs);
+	typedef void (*LoadCertsFromMemory)(const PoolByteArray& p_certs);
 protected:
 	static StreamPeerSSL* (*_create)();
 	static void _bind_methods();
@@ -57,15 +57,15 @@ public:
 		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
 
-	virtual Error accept(Ref<StreamPeer> p_base)=0;
-	virtual Error connect(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String())=0;
+	virtual Error accept_stream(Ref<StreamPeer> p_base)=0;
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String())=0;
 	virtual Status get_status() const=0;
 
-	virtual void disconnect()=0;
+	virtual void disconnect_from_stream()=0;
 
 	static StreamPeerSSL* create();
 
-	static void load_certs_from_memory(const ByteArray& p_memory);
+	static void load_certs_from_memory(const PoolByteArray& p_memory);
 	static bool is_available();
 
 	StreamPeerSSL();

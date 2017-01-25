@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,7 +57,7 @@ public class GodotDownloaderService extends DownloaderService {
     	Log.d("GODOT", "getting public key:" + prefs.getString("store_public_key", null));
     	return prefs.getString("store_public_key", null);
 		
-//	return BASE64_PUBLIC_KEY;
+	//return BASE64_PUBLIC_KEY;
     }
 
     /**

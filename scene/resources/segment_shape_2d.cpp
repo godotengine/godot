@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,11 +82,11 @@ Rect2 SegmentShape2D::get_rect() const{
 
 void SegmentShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_a","a"),&SegmentShape2D::set_a);
-	ObjectTypeDB::bind_method(_MD("get_a"),&SegmentShape2D::get_a);
+	ClassDB::bind_method(_MD("set_a","a"),&SegmentShape2D::set_a);
+	ClassDB::bind_method(_MD("get_a"),&SegmentShape2D::get_a);
 
-	ObjectTypeDB::bind_method(_MD("set_b","b"),&SegmentShape2D::set_b);
-	ObjectTypeDB::bind_method(_MD("get_b"),&SegmentShape2D::get_b);
+	ClassDB::bind_method(_MD("set_b","b"),&SegmentShape2D::set_b);
+	ClassDB::bind_method(_MD("get_b"),&SegmentShape2D::get_b);
 
 
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"a"),_SCS("set_a"),_SCS("get_a") );
@@ -145,8 +145,8 @@ Rect2 RayShape2D::get_rect() const {
 
 void RayShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_length","length"),&RayShape2D::set_length);
-	ObjectTypeDB::bind_method(_MD("get_length"),&RayShape2D::get_length);
+	ClassDB::bind_method(_MD("set_length","length"),&RayShape2D::set_length);
+	ClassDB::bind_method(_MD("get_length"),&RayShape2D::get_length);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"length"),_SCS("set_length"),_SCS("get_length") );
 

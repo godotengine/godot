@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,19 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_driver_javascript.h"
+
 #include <string.h>
-
-
-
-
-
 
 #define MAX_NUMBER_INTERFACES 3
 #define MAX_NUMBER_OUTPUT_DEVICES 6
 
 /* Structure for passing information to callback function */
-
-
 
 //AudioDriverJavaScript* AudioDriverJavaScript::s_ad=NULL;
 
@@ -53,35 +47,44 @@ Error AudioDriverJavaScript::init(){
 	return OK;
 
 }
+
 void AudioDriverJavaScript::start(){
 
 
 
 }
+
 int AudioDriverJavaScript::get_mix_rate() const {
 
 	return 44100;
 }
-AudioDriverSW::OutputFormat AudioDriverJavaScript::get_output_format() const{
 
-	return OUTPUT_STEREO;
+AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const{
+
+	return SPEAKER_MODE_STEREO;
 }
+
 void AudioDriverJavaScript::lock(){
 
-	//if (active && mutex)
-	//	mutex->lock();
+	/*
+	if (active && mutex)
+		mutex->lock();
+	*/
 
 }
+
 void AudioDriverJavaScript::unlock() {
 
-	//if (active && mutex)
-	//	mutex->unlock();
+	/*
+	if (active && mutex)
+		mutex->unlock();
+	*/
 
 }
+
 void AudioDriverJavaScript::finish(){
 
 }
-
 
 AudioDriverJavaScript::AudioDriverJavaScript()
 {

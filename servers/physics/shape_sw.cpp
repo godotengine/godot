@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #define _FACE_IS_VALID_SUPPORT_TRESHOLD 0.9998
 
 
-void ShapeSW::configure(const AABB& p_aabb) {
+void ShapeSW::configure(const Rect3& p_aabb) {
 	aabb=p_aabb;
 	configured=true;
 	for (Map<ShapeOwnerSW*,int>::Element *E=owners.front();E;E=E->next()) {
@@ -133,7 +133,7 @@ Vector3 PlaneShapeSW::get_moment_of_inertia(float p_mass) const {
 void PlaneShapeSW::_setup(const Plane& p_plane)  {
 
 	plane=p_plane;
-	configure(AABB(Vector3(-1e4,-1e4,-1e4),Vector3(1e4*2,1e4*2,1e4*2)));
+	configure(Rect3(Vector3(-1e4,-1e4,-1e4),Vector3(1e4*2,1e4*2,1e4*2)));
 }
 
 void PlaneShapeSW::set_data(const Variant& p_data) {
@@ -204,7 +204,7 @@ Vector3 RayShapeSW::get_moment_of_inertia(float p_mass) const {
 void RayShapeSW::_setup(float p_length)  {
 
 	length=p_length;
-	configure(AABB(Vector3(0,0,0),Vector3(0.1,0.1,length)));
+	configure(Rect3(Vector3(0,0,0),Vector3(0.1,0.1,length)));
 }
 
 void RayShapeSW::set_data(const Variant& p_data) {
@@ -271,7 +271,7 @@ void SphereShapeSW::_setup(real_t p_radius) {
 
 
 	radius=p_radius;
-	configure(AABB( Vector3(-radius,-radius,-radius), Vector3(radius*2.0,radius*2.0,radius*2.0)));
+	configure(Rect3( Vector3(-radius,-radius,-radius), Vector3(radius*2.0,radius*2.0,radius*2.0)));
 
 }
 
@@ -412,7 +412,7 @@ void BoxShapeSW::get_supports(const Vector3& p_normal,int p_max,Vector3 *r_suppo
 
 bool BoxShapeSW::intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const {
 
-	AABB aabb(-half_extents,half_extents*2.0);
+	Rect3 aabb(-half_extents,half_extents*2.0);
 
 	return aabb.intersects_segment(p_begin,p_end,&r_result,&r_normal);
 
@@ -432,7 +432,7 @@ void BoxShapeSW::_setup(const Vector3& p_half_extents)  {
 
 	half_extents=p_half_extents.abs();
 
-	configure(AABB(-half_extents,half_extents*2));
+	configure(Rect3(-half_extents,half_extents*2));
 
 
 }
@@ -604,7 +604,7 @@ void CapsuleShapeSW::_setup(real_t p_height,real_t p_radius)  {
 
 	height=p_height;
 	radius=p_radius;
-	configure(AABB(Vector3(-radius,-radius,-height*0.5-radius),Vector3(radius*2,radius*2,height+radius*2.0)));
+	configure(Rect3(Vector3(-radius,-radius,-height*0.5-radius),Vector3(radius*2,radius*2,height+radius*2.0)));
 
 }
 
@@ -818,7 +818,7 @@ Vector3 ConvexPolygonShapeSW::get_moment_of_inertia(float p_mass) const {
 void ConvexPolygonShapeSW::_setup(const Vector<Vector3>& p_vertices)  {
 
 	Error err = QuickHull::build(p_vertices,mesh);
-	AABB _aabb;
+	Rect3 _aabb;
 
 	for(int i=0;i<mesh.vertices.size();i++) {
 
@@ -965,16 +965,16 @@ Vector3 FaceShapeSW::get_moment_of_inertia(float p_mass) const {
 
 FaceShapeSW::FaceShapeSW()  {
 
-	configure(AABB());
+	configure(Rect3());
 
 }
 
 
 
-DVector<Vector3> ConcavePolygonShapeSW::get_faces() const {
+PoolVector<Vector3> ConcavePolygonShapeSW::get_faces() const {
 
 
-	DVector<Vector3> rfaces;
+	PoolVector<Vector3> rfaces;
 	rfaces.resize(faces.size()*3);
 
 	for(int i=0;i<faces.size();i++) {
@@ -998,7 +998,7 @@ void ConcavePolygonShapeSW::project_range(const Vector3& p_normal, const Transfo
 		r_max=0;
 		return;
 	}
-	DVector<Vector3>::Read r=vertices.read();
+	PoolVector<Vector3>::Read r=vertices.read();
 	const Vector3 *vptr=r.ptr();
 
 	for (int i=0;i<count;i++) {
@@ -1020,7 +1020,7 @@ Vector3 ConcavePolygonShapeSW::get_support(const Vector3& p_normal) const {
 	if (count==0)
 		return Vector3();
 
-	DVector<Vector3>::Read r=vertices.read();
+	PoolVector<Vector3>::Read r=vertices.read();
 	const Vector3 *vptr=r.ptr();
 
 	Vector3 n=p_normal;
@@ -1048,8 +1048,10 @@ void ConcavePolygonShapeSW::_cull_segment(int p_idx,_SegmentCullParams *p_params
 	const BVH *bvh=&p_params->bvh[p_idx];
 
 
-	//if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
-	//	return; //test against whole AABB, which isn't very costly
+	/*
+	if (p_params->dir.dot(bvh->aabb.get_support(-p_params->dir))>p_params->min_d)
+		return; //test against whole AABB, which isn't very costly
+	*/
 
 
 	//printf("addr: %p\n",bvh);
@@ -1111,9 +1113,9 @@ bool ConcavePolygonShapeSW::intersect_segment(const Vector3& p_begin,const Vecto
 		return false;
 
 	// unlock data
-	DVector<Face>::Read fr=faces.read();
-	DVector<Vector3>::Read vr=vertices.read();
-	DVector<BVH>::Read br=bvh.read();
+	PoolVector<Face>::Read fr=faces.read();
+	PoolVector<Vector3>::Read vr=vertices.read();
+	PoolVector<BVH>::Read br=bvh.read();
 
 
 	_SegmentCullParams params;
@@ -1175,18 +1177,18 @@ void ConcavePolygonShapeSW::_cull(int p_idx,_CullParams *p_params) const {
 	}
 }
 
-void ConcavePolygonShapeSW::cull(const AABB& p_local_aabb,Callback p_callback,void* p_userdata) const {
+void ConcavePolygonShapeSW::cull(const Rect3& p_local_aabb,Callback p_callback,void* p_userdata) const {
 
 	// make matrix local to concave
 	if (faces.size()==0)
 		return;
 
-	AABB local_aabb=p_local_aabb;
+	Rect3 local_aabb=p_local_aabb;
 
 	// unlock data
-	DVector<Face>::Read fr=faces.read();
-	DVector<Vector3>::Read vr=vertices.read();
-	DVector<BVH>::Read br=bvh.read();
+	PoolVector<Face>::Read fr=faces.read();
+	PoolVector<Vector3>::Read vr=vertices.read();
+	PoolVector<BVH>::Read br=bvh.read();
 
 	FaceShapeSW face; // use this to send in the callback
 
@@ -1219,7 +1221,7 @@ Vector3 ConcavePolygonShapeSW::get_moment_of_inertia(float p_mass) const {
 
 struct _VolumeSW_BVH_Element {
 
-	AABB aabb;
+	Rect3 aabb;
 	Vector3 center;
 	int face_index;
 };
@@ -1251,7 +1253,7 @@ struct _VolumeSW_BVH_CompareZ {
 
 struct _VolumeSW_BVH {
 
-	AABB aabb;
+	Rect3 aabb;
 	_VolumeSW_BVH *left;
 	_VolumeSW_BVH *right;
 
@@ -1276,7 +1278,7 @@ _VolumeSW_BVH* _volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements,int p_size
 		bvh->face_index=-1;
 	}
 
-	AABB aabb;
+	Rect3 aabb;
 	for(int i=0;i<p_size;i++) {
 
 		if (i==0)
@@ -1309,7 +1311,7 @@ _VolumeSW_BVH* _volume_sw_build_bvh(_VolumeSW_BVH_Element *p_elements,int p_size
 	bvh->left=_volume_sw_build_bvh(p_elements,split,count);
 	bvh->right=_volume_sw_build_bvh(&p_elements[split],p_size-split,count);
 
-//	printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
+	//printf("branch at %p - %i: %i\n",bvh,count,bvh->face_index);
 	count++;
 	return bvh;
 }
@@ -1322,7 +1324,7 @@ void ConcavePolygonShapeSW::_fill_bvh(_VolumeSW_BVH* p_bvh_tree,BVH* p_bvh_array
 
 	p_bvh_array[idx].aabb=p_bvh_tree->aabb;
 	p_bvh_array[idx].face_index=p_bvh_tree->face_index;
-//	printf("%p - %i: %i(%p)  -- %p:%p\n",%p_bvh_array[idx],p_idx,p_bvh_array[i]->face_index,&p_bvh_tree->face_index,p_bvh_tree->left,p_bvh_tree->right);
+	//printf("%p - %i: %i(%p)  -- %p:%p\n",%p_bvh_array[idx],p_idx,p_bvh_array[i]->face_index,&p_bvh_tree->face_index,p_bvh_tree->left,p_bvh_tree->right);
 
 
 	if (p_bvh_tree->left) {
@@ -1347,17 +1349,17 @@ void ConcavePolygonShapeSW::_fill_bvh(_VolumeSW_BVH* p_bvh_tree,BVH* p_bvh_array
 
 }
 
-void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
+void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 
 	int src_face_count=p_faces.size();
 	if (src_face_count==0) {
-		configure(AABB());
+		configure(Rect3());
 		return;
 	}
 	ERR_FAIL_COND(src_face_count%3);
 	src_face_count/=3;
 
-	DVector<Vector3>::Read r = p_faces.read();
+	PoolVector<Vector3>::Read r = p_faces.read();
 	const Vector3 * facesr= r.ptr();
 
 #if 0
@@ -1399,7 +1401,7 @@ void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 
 	vertices.resize( point_map.size() );
 
-	DVector<Vector3>::Write vw = vertices.write();
+	PoolVector<Vector3>::Write vw = vertices.write();
 	Vector3 *verticesw=vw.ptr();
 
 	AABB _aabb;
@@ -1418,7 +1420,7 @@ void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 	point_map.clear(); // not needed anymore
 
 	faces.resize(face_list.size());
-	DVector<Face>::Write w = faces.write();
+	PoolVector<Face>::Write w = faces.write();
 	Face *facesw=w.ptr();
 
 	int fc=0;
@@ -1431,10 +1433,10 @@ void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 	face_list.clear();
 
 
-	DVector<_VolumeSW_BVH_Element> bvh_array;
+	PoolVector<_VolumeSW_BVH_Element> bvh_array;
 	bvh_array.resize( fc );
 
-	DVector<_VolumeSW_BVH_Element>::Write bvhw = bvh_array.write();
+	PoolVector<_VolumeSW_BVH_Element>::Write bvhw = bvh_array.write();
 	_VolumeSW_BVH_Element *bvh_arrayw=bvhw.ptr();
 
 
@@ -1451,8 +1453,8 @@ void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 
 	}
 
-	w=DVector<Face>::Write();
-	vw=DVector<Vector3>::Write();
+	w=PoolVector<Face>::Write();
+	vw=PoolVector<Vector3>::Write();
 
 
 	int count=0;
@@ -1460,11 +1462,11 @@ void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 
 	ERR_FAIL_COND(count==0);
 
-	bvhw=DVector<_VolumeSW_BVH_Element>::Write();
+	bvhw=PoolVector<_VolumeSW_BVH_Element>::Write();
 
 	bvh.resize( count+1 );
 
-	DVector<BVH>::Write bvhw2 = bvh.write();
+	PoolVector<BVH>::Write bvhw2 = bvh.write();
 	BVH*bvh_arrayw2=bvhw2.ptr();
 
 	int idx=0;
@@ -1473,22 +1475,22 @@ void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 	set_aabb(_aabb);
 
 #else
-	DVector<_VolumeSW_BVH_Element> bvh_array;
+	PoolVector<_VolumeSW_BVH_Element> bvh_array;
 	bvh_array.resize( src_face_count );
 
-	DVector<_VolumeSW_BVH_Element>::Write bvhw = bvh_array.write();
+	PoolVector<_VolumeSW_BVH_Element>::Write bvhw = bvh_array.write();
 	_VolumeSW_BVH_Element *bvh_arrayw=bvhw.ptr();
 
 	faces.resize(src_face_count);
-	DVector<Face>::Write w = faces.write();
+	PoolVector<Face>::Write w = faces.write();
 	Face *facesw=w.ptr();
 
 	vertices.resize( src_face_count*3 );
 
-	DVector<Vector3>::Write vw = vertices.write();
+	PoolVector<Vector3>::Write vw = vertices.write();
 	Vector3 *verticesw=vw.ptr();
 
-	AABB _aabb;
+	Rect3 _aabb;
 
 
 	for(int i=0;i<src_face_count;i++) {
@@ -1512,15 +1514,15 @@ void ConcavePolygonShapeSW::_setup(DVector<Vector3> p_faces) {
 
 	}
 
-	w=DVector<Face>::Write();
-	vw=DVector<Vector3>::Write();
+	w=PoolVector<Face>::Write();
+	vw=PoolVector<Vector3>::Write();
 
 	int count=0;
 	_VolumeSW_BVH *bvh_tree=_volume_sw_build_bvh(bvh_arrayw,src_face_count,count);
 
 	bvh.resize( count+1 );
 
-	DVector<BVH>::Write bvhw2 = bvh.write();
+	PoolVector<BVH>::Write bvhw2 = bvh.write();
 	BVH*bvh_arrayw2=bvhw2.ptr();
 
 	int idx=0;
@@ -1553,7 +1555,7 @@ ConcavePolygonShapeSW::ConcavePolygonShapeSW() {
 
 /* HEIGHT MAP SHAPE */
 
-DVector<float> HeightMapShapeSW::get_heights() const {
+PoolVector<float> HeightMapShapeSW::get_heights() const {
 
 	return heights;
 }
@@ -1593,7 +1595,7 @@ bool HeightMapShapeSW::intersect_segment(const Vector3& p_begin,const Vector3& p
 }
 
 
-void HeightMapShapeSW::cull(const AABB& p_local_aabb,Callback p_callback,void* p_userdata) const {
+void HeightMapShapeSW::cull(const Rect3& p_local_aabb,Callback p_callback,void* p_userdata) const {
 
 
 
@@ -1614,16 +1616,16 @@ Vector3 HeightMapShapeSW::get_moment_of_inertia(float p_mass) const {
 }
 
 
-void HeightMapShapeSW::_setup(DVector<real_t> p_heights,int p_width,int p_depth,real_t p_cell_size) {
+void HeightMapShapeSW::_setup(PoolVector<real_t> p_heights,int p_width,int p_depth,real_t p_cell_size) {
 
 	heights=p_heights;
 	width=p_width;
-	depth=p_depth;;
+	depth=p_depth;
 	cell_size=p_cell_size;
 
-	DVector<real_t>::Read r = heights. read();
+	PoolVector<real_t>::Read r = heights. read();
 
-	AABB aabb;
+	Rect3 aabb;
 
 	for(int i=0;i<depth;i++) {
 
@@ -1656,7 +1658,7 @@ void HeightMapShapeSW::set_data(const Variant& p_data) {
 	int width=d["width"];
 	int depth=d["depth"];
 	float cell_size=d["cell_size"];
-	DVector<float> heights=d["heights"];
+	PoolVector<float> heights=d["heights"];
 
 	ERR_FAIL_COND( width<= 0);
 	ERR_FAIL_COND( depth<= 0);

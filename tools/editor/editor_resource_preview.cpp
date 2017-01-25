@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_resource_preview.h"
+
 #include "editor_settings.h"
 #include "os/file_access.h"
 #include "io/resource_loader.h"
@@ -69,9 +70,9 @@ Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String& p_
 
 void EditorResourcePreviewGenerator::_bind_methods() {
 
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"handles",PropertyInfo(Variant::STRING,"type")));
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::OBJECT,"generate:Texture",PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"Resource")));
-	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::OBJECT,"generate_from_path:Texture",PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE)));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::BOOL,"handles",PropertyInfo(Variant::STRING,"type")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::OBJECT,"generate:Texture",PropertyInfo(Variant::OBJECT,"from",PROPERTY_HINT_RESOURCE_TYPE,"Resource")));
+	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::OBJECT,"generate_from_path:Texture",PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE)));
 
 }
 
@@ -127,7 +128,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 	String type;
 
 	if (p_item.resource.is_valid())
-		type=p_item.resource->get_type();
+		type=p_item.resource->get_class();
 	else
 		type=ResourceLoader::get_resource_type(p_item.path);
 	//print_line("resource type is: "+type);
@@ -154,7 +155,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 		// cache the preview in case it's a resource on disk
 		if (generated.is_valid()) {
 			//print_line("was generated");
-			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+			int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size*=EDSCALE;
 			//wow it generated a preview... save cache
 			ResourceSaver::save(cache_base+".png",generated);
@@ -207,7 +208,7 @@ void EditorResourcePreview::_thread() {
 
 				//print_line("pop from queue "+item.path);
 
-				int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+				int thumbnail_size = EditorSettings::get_singleton()->get("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size*=EDSCALE;
 
 
@@ -221,7 +222,7 @@ void EditorResourcePreview::_thread() {
 
 
 					String temp_path=EditorSettings::get_singleton()->get_settings_path().plus_file("tmp");
-					String cache_base = Globals::get_singleton()->globalize_path(item.path).md5_text();
+					String cache_base = GlobalConfig::get_singleton()->globalize_path(item.path).md5_text();
 					cache_base = temp_path.plus_file("resthumb-"+cache_base);
 
 					//does not have it, try to load a cached thumbnail
@@ -266,6 +267,8 @@ void EditorResourcePreview::_thread() {
 						} else {
 							memdelete(f);
 						}
+
+						cache_valid=false;
 
 						if (cache_valid) {
 
@@ -374,13 +377,13 @@ EditorResourcePreview* EditorResourcePreview::get_singleton() {
 
 void EditorResourcePreview::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_preview_ready",&EditorResourcePreview::_preview_ready);
+	ClassDB::bind_method("_preview_ready",&EditorResourcePreview::_preview_ready);
 
-	ObjectTypeDB::bind_method(_MD("queue_resource_preview","path","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_resource_preview);
-	ObjectTypeDB::bind_method(_MD("queue_edited_resource_preview","resource:Resource","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_edited_resource_preview);
-	ObjectTypeDB::bind_method(_MD("add_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::add_preview_generator);
-	ObjectTypeDB::bind_method(_MD("remove_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::remove_preview_generator);
-	ObjectTypeDB::bind_method(_MD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
+	ClassDB::bind_method(_MD("queue_resource_preview","path","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_resource_preview);
+	ClassDB::bind_method(_MD("queue_edited_resource_preview","resource:Resource","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_edited_resource_preview);
+	ClassDB::bind_method(_MD("add_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::add_preview_generator);
+	ClassDB::bind_method(_MD("remove_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::remove_preview_generator);
+	ClassDB::bind_method(_MD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
 
 
 	ADD_SIGNAL(MethodInfo("preview_invalidated",PropertyInfo(Variant::STRING,"path")));

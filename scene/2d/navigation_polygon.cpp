@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,12 @@
 #include "triangulator.h"
 #include "core_string_names.h"
 
-void NavigationPolygon::set_vertices(const DVector<Vector2>& p_vertices) {
+void NavigationPolygon::set_vertices(const PoolVector<Vector2>& p_vertices) {
 
 	vertices=p_vertices;
 }
 
-DVector<Vector2> NavigationPolygon::get_vertices() const{
+PoolVector<Vector2> NavigationPolygon::get_vertices() const{
 
 	return vertices;
 }
@@ -89,7 +89,7 @@ void NavigationPolygon::add_polygon(const Vector<int>& p_polygon){
 
 }
 
-void NavigationPolygon::add_outline_at_index(const DVector<Vector2>& p_outline,int p_index) {
+void NavigationPolygon::add_outline_at_index(const PoolVector<Vector2>& p_outline,int p_index) {
 
 	outlines.insert(p_index,p_outline);
 }
@@ -108,7 +108,7 @@ void NavigationPolygon::clear_polygons(){
 	polygons.clear();
 }
 
-void NavigationPolygon::add_outline(const DVector<Vector2>& p_outline) {
+void NavigationPolygon::add_outline(const PoolVector<Vector2>& p_outline) {
 
 	outlines.push_back(p_outline);
 }
@@ -118,7 +118,7 @@ int NavigationPolygon::get_outline_count() const{
 	return outlines.size();
 }
 
-void NavigationPolygon::set_outline(int p_idx,const DVector<Vector2>& p_outline) {
+void NavigationPolygon::set_outline(int p_idx,const PoolVector<Vector2>& p_outline) {
 	ERR_FAIL_INDEX(p_idx,outlines.size());
 	outlines[p_idx]=p_outline;
 }
@@ -130,14 +130,14 @@ void NavigationPolygon::remove_outline(int p_idx) {
 
 }
 
-DVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx,outlines.size(),DVector<Vector2>());
+PoolVector<Vector2> NavigationPolygon::get_outline(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx,outlines.size(),PoolVector<Vector2>());
 	return outlines[p_idx];
 }
 
 void NavigationPolygon::clear_outlines(){
 
-	outlines.clear();;
+	outlines.clear();
 }
 void NavigationPolygon::make_polygons_from_outlines(){
 
@@ -147,11 +147,11 @@ void NavigationPolygon::make_polygons_from_outlines(){
 
 	for(int i=0;i<outlines.size();i++) {
 
-		DVector<Vector2> ol = outlines[i];
+		PoolVector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize<3)
 			continue;
-		DVector<Vector2>::Read r=ol.read();
+		PoolVector<Vector2>::Read r=ol.read();
 		for(int j=0;j<olsize;j++) {
 			outside_point.x = MAX( r[j].x, outside_point.x );
 			outside_point.y = MAX( r[j].y, outside_point.y );
@@ -165,11 +165,11 @@ void NavigationPolygon::make_polygons_from_outlines(){
 
 	for(int i=0;i<outlines.size();i++) {
 
-		DVector<Vector2> ol = outlines[i];
+		PoolVector<Vector2> ol = outlines[i];
 		int olsize = ol.size();
 		if (olsize<3)
 			continue;
-		DVector<Vector2>::Read r=ol.read();
+		PoolVector<Vector2>::Read r=ol.read();
 
 		int interscount=0;
 		//test if this is an outer outline
@@ -178,11 +178,11 @@ void NavigationPolygon::make_polygons_from_outlines(){
 			if (i==k)
 				continue; //no self intersect
 
-			DVector<Vector2> ol2 = outlines[k];
+			PoolVector<Vector2> ol2 = outlines[k];
 			int olsize2 = ol2.size();
 			if (olsize2<3)
 				continue;
-			DVector<Vector2>::Read r2=ol2.read();
+			PoolVector<Vector2>::Read r2=ol2.read();
 
 			for(int l=0;l<olsize2;l++) {
 
@@ -247,30 +247,30 @@ void NavigationPolygon::make_polygons_from_outlines(){
 
 void NavigationPolygon::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_vertices","vertices"),&NavigationPolygon::set_vertices);
-	ObjectTypeDB::bind_method(_MD("get_vertices"),&NavigationPolygon::get_vertices);
+	ClassDB::bind_method(_MD("set_vertices","vertices"),&NavigationPolygon::set_vertices);
+	ClassDB::bind_method(_MD("get_vertices"),&NavigationPolygon::get_vertices);
 
-	ObjectTypeDB::bind_method(_MD("add_polygon","polygon"),&NavigationPolygon::add_polygon);
-	ObjectTypeDB::bind_method(_MD("get_polygon_count"),&NavigationPolygon::get_polygon_count);
-	ObjectTypeDB::bind_method(_MD("get_polygon","idx"),&NavigationPolygon::get_polygon);
-	ObjectTypeDB::bind_method(_MD("clear_polygons"),&NavigationPolygon::clear_polygons);
+	ClassDB::bind_method(_MD("add_polygon","polygon"),&NavigationPolygon::add_polygon);
+	ClassDB::bind_method(_MD("get_polygon_count"),&NavigationPolygon::get_polygon_count);
+	ClassDB::bind_method(_MD("get_polygon","idx"),&NavigationPolygon::get_polygon);
+	ClassDB::bind_method(_MD("clear_polygons"),&NavigationPolygon::clear_polygons);
 
-	ObjectTypeDB::bind_method(_MD("add_outline","outline"),&NavigationPolygon::add_outline);
-	ObjectTypeDB::bind_method(_MD("add_outline_at_index","outline","index"),&NavigationPolygon::add_outline_at_index);
-	ObjectTypeDB::bind_method(_MD("get_outline_count"),&NavigationPolygon::get_outline_count);
-	ObjectTypeDB::bind_method(_MD("set_outline","idx","outline"),&NavigationPolygon::set_outline);
-	ObjectTypeDB::bind_method(_MD("get_outline","idx"),&NavigationPolygon::get_outline);
-	ObjectTypeDB::bind_method(_MD("remove_outline","idx"),&NavigationPolygon::remove_outline);
-	ObjectTypeDB::bind_method(_MD("clear_outlines"),&NavigationPolygon::clear_outlines);
-	ObjectTypeDB::bind_method(_MD("make_polygons_from_outlines"),&NavigationPolygon::make_polygons_from_outlines);
+	ClassDB::bind_method(_MD("add_outline","outline"),&NavigationPolygon::add_outline);
+	ClassDB::bind_method(_MD("add_outline_at_index","outline","index"),&NavigationPolygon::add_outline_at_index);
+	ClassDB::bind_method(_MD("get_outline_count"),&NavigationPolygon::get_outline_count);
+	ClassDB::bind_method(_MD("set_outline","idx","outline"),&NavigationPolygon::set_outline);
+	ClassDB::bind_method(_MD("get_outline","idx"),&NavigationPolygon::get_outline);
+	ClassDB::bind_method(_MD("remove_outline","idx"),&NavigationPolygon::remove_outline);
+	ClassDB::bind_method(_MD("clear_outlines"),&NavigationPolygon::clear_outlines);
+	ClassDB::bind_method(_MD("make_polygons_from_outlines"),&NavigationPolygon::make_polygons_from_outlines);
 
-	ObjectTypeDB::bind_method(_MD("_set_polygons","polygons"),&NavigationPolygon::_set_polygons);
-	ObjectTypeDB::bind_method(_MD("_get_polygons"),&NavigationPolygon::_get_polygons);
+	ClassDB::bind_method(_MD("_set_polygons","polygons"),&NavigationPolygon::_set_polygons);
+	ClassDB::bind_method(_MD("_get_polygons"),&NavigationPolygon::_get_polygons);
 
-	ObjectTypeDB::bind_method(_MD("_set_outlines","outlines"),&NavigationPolygon::_set_outlines);
-	ObjectTypeDB::bind_method(_MD("_get_outlines"),&NavigationPolygon::_get_outlines);
+	ClassDB::bind_method(_MD("_set_outlines","outlines"),&NavigationPolygon::_set_outlines);
+	ClassDB::bind_method(_MD("_get_outlines"),&NavigationPolygon::_get_outlines);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"polygons",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_polygons"),_SCS("_get_polygons"));
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"outlines",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_outlines"),_SCS("_get_outlines"));
 }
@@ -310,7 +310,7 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 	if (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
 
-//	update_gizmo();
+	//update_gizmo();
 }
 
 bool NavigationPolygonInstance::is_enabled() const {
@@ -368,7 +368,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 			if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_navigation_hint()) && navpoly.is_valid()) {
 
-				DVector<Vector2> verts=navpoly->get_vertices();
+				PoolVector<Vector2> verts=navpoly->get_vertices();
 				int vsize = verts.size();
 				if (vsize<3)
 					return;
@@ -385,7 +385,7 @@ void NavigationPolygonInstance::_notification(int p_what) {
 				vertices.resize(vsize);
 				colors.resize(vsize);
 				{
-					DVector<Vector2>::Read vr = verts.read();
+					PoolVector<Vector2>::Read vr = verts.read();
 					for(int i=0;i<vsize;i++) {
 						vertices[i]=vr[i];
 						colors[i]=color;
@@ -459,7 +459,7 @@ void NavigationPolygonInstance::_navpoly_changed() {
 
 String NavigationPolygonInstance::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree())
+	if (!is_visible_in_tree() || !is_inside_tree())
 		return String();
 
 	if (!navpoly.is_valid()) {
@@ -480,13 +480,13 @@ String NavigationPolygonInstance::get_configuration_warning() const {
 
 void NavigationPolygonInstance::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_navigation_polygon","navpoly:NavigationPolygon"),&NavigationPolygonInstance::set_navigation_polygon);
-	ObjectTypeDB::bind_method(_MD("get_navigation_polygon:NavigationPolygon"),&NavigationPolygonInstance::get_navigation_polygon);
+	ClassDB::bind_method(_MD("set_navigation_polygon","navpoly:NavigationPolygon"),&NavigationPolygonInstance::set_navigation_polygon);
+	ClassDB::bind_method(_MD("get_navigation_polygon:NavigationPolygon"),&NavigationPolygonInstance::get_navigation_polygon);
 
-	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"),&NavigationPolygonInstance::set_enabled);
-	ObjectTypeDB::bind_method(_MD("is_enabled"),&NavigationPolygonInstance::is_enabled);
+	ClassDB::bind_method(_MD("set_enabled","enabled"),&NavigationPolygonInstance::set_enabled);
+	ClassDB::bind_method(_MD("is_enabled"),&NavigationPolygonInstance::is_enabled);
 
-	ObjectTypeDB::bind_method(_MD("_navpoly_changed"),&NavigationPolygonInstance::_navpoly_changed);
+	ClassDB::bind_method(_MD("_navpoly_changed"),&NavigationPolygonInstance::_navpoly_changed);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"navpoly",PROPERTY_HINT_RESOURCE_TYPE,"NavigationPolygon"),_SCS("set_navigation_polygon"),_SCS("get_navigation_polygon"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
@@ -497,5 +497,6 @@ NavigationPolygonInstance::NavigationPolygonInstance() {
 	navigation=NULL;
 	nav_id=-1;
 	enabled=true;
+	set_notify_transform(true);
 
 }
