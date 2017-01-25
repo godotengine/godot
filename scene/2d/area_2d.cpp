@@ -357,6 +357,10 @@ void Area2D::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
 			ERR_CONTINUE(!node);
+
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered,this,SceneStringNames::get_singleton()->_body_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->tree_exited,this,SceneStringNames::get_singleton()->_body_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -366,9 +370,6 @@ void Area2D::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->body_exited,obj);
-
-			node->disconnect(SceneStringNames::get_singleton()->tree_entered,this,SceneStringNames::get_singleton()->_body_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->tree_exited,this,SceneStringNames::get_singleton()->_body_exit_tree);
 		}
 
 	}
@@ -388,6 +389,9 @@ void Area2D::_clear_monitoring() {
 				continue;
 			//ERR_CONTINUE(!node);
 
+			node->disconnect(SceneStringNames::get_singleton()->tree_entered,this,SceneStringNames::get_singleton()->_area_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->tree_exited,this,SceneStringNames::get_singleton()->_area_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -397,9 +401,6 @@ void Area2D::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->area_exited,obj);
-
-			node->disconnect(SceneStringNames::get_singleton()->tree_entered,this,SceneStringNames::get_singleton()->_area_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->tree_exited,this,SceneStringNames::get_singleton()->_area_exit_tree);
 		}
 	}
 
