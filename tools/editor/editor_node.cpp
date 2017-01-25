@@ -1928,11 +1928,11 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		editor_data.save_editor_external_data();
 	}
 
-	if (bool(EDITOR_DEF("run/always_clear_output_on_play", true))) {
+	if (bool(EDITOR_DEF("run/output/always_clear_output_on_play", true))) {
 		log->clear();
 	}
 
-	if (bool(EDITOR_DEF("run/always_open_output_on_play", true))) {
+	if (bool(EDITOR_DEF("run/output/always_open_output_on_play", true))) {
 		make_bottom_panel_item_visible(log);
 	}
 
