@@ -454,8 +454,8 @@ public:
 
 };
 
-class CanvasItemEditorViewport : public VBoxContainer {
-	GDCLASS( CanvasItemEditorViewport, VBoxContainer );
+class CanvasItemEditorViewport : public Control {
+	GDCLASS( CanvasItemEditorViewport, Control );
 
 	String default_type;
 	Vector<String> types;
