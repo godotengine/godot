@@ -254,6 +254,25 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 		switch (uMsg)									// Check For Windows Messages
 	{
+		case WM_SETFOCUS:
+		{
+			window_has_focus = true;
+			// Re-capture cursor if we're in one of the capture modes
+			if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
+				SetCapture(hWnd);
+			}
+			break;
+		}
+		case WM_KILLFOCUS:
+		{
+			window_has_focus = false;
+
+			// Release capture if we're in one of the capture modes
+			if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
+				ReleaseCapture();
+			}
+			break;
+		}
 		case WM_ACTIVATE:							// Watch For Window Activate Message
 		{
 			minimized = HIWORD(wParam) != 0;
@@ -266,19 +285,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				alt_mem=false;
 				control_mem=false;
 				shift_mem=false;
-				if (mouse_mode==MOUSE_MODE_CAPTURED) {
+				if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
 					RECT clipRect;
 					GetClientRect(hWnd, &clipRect);
 					ClientToScreen(hWnd, (POINT*) &clipRect.left);
 					ClientToScreen(hWnd, (POINT*) &clipRect.right);
 					ClipCursor(&clipRect);
 					SetCapture(hWnd);
-
 				}
 			} else {
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 				alt_mem=false;
-
 			};
 
 			return 0;								// Return To The Message Loop
@@ -345,6 +362,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			}
 
+			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
+			if (!window_has_focus && mouse_mode==MOUSE_MODE_CAPTURED)
+				break;
 			/*
 			LPARAM extra = GetMessageExtraInfo();
 			if (IsPenEvent(extra)) {
@@ -376,7 +396,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mm.button_mask|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
 			mm.x=GET_X_LPARAM(lParam);
 			mm.y=GET_Y_LPARAM(lParam);
-
+			
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 
 				Point2i c(video_mode.width/2,video_mode.height/2);
@@ -410,7 +430,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mm.relative_y=mm.y-old_y;
 			old_x=mm.x;
 			old_y=mm.y;
-			if (main_loop)
+			if (window_has_focus && main_loop)
 				input->parse_input_event(event);
 
 
@@ -714,9 +734,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			joypad->probe_joypads();
 		} break;
 		case WM_SETCURSOR: {
-
 			if(LOWORD(lParam) == HTCLIENT) {
-				if(mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED) {
+				if(window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED)) {
 					//Hide the cursor
 					if(hCursor == NULL)
 						hCursor = SetCursor(NULL);
@@ -948,7 +967,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
     main_loop=NULL;
     outside=true;
-
+	window_has_focus=true;
 	WNDCLASSEXW	wc;
 
 	video_mode=p_desired;
@@ -1326,17 +1345,17 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 	if (mouse_mode==p_mode)
 		return;
 	mouse_mode=p_mode;
-	if (p_mode==MOUSE_MODE_CAPTURED) {
+	if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
 		RECT clipRect;
 		GetClientRect(hWnd, &clipRect);
 		ClientToScreen(hWnd, (POINT*) &clipRect.left);
 		ClientToScreen(hWnd, (POINT*) &clipRect.right);
 		ClipCursor(&clipRect);
-		SetCapture(hWnd);
 		center=Point2i(video_mode.width/2,video_mode.height/2);
 		POINT pos = { (int) center.x, (int) center.y };
 		ClientToScreen(hWnd, &pos);
-		SetCursorPos(pos.x, pos.y);
+		if (mouse_mode==MOUSE_MODE_CAPTURED)
+			SetCursorPos(pos.x, pos.y);
 	} else {
 		ReleaseCapture();
 		ClipCursor(NULL);

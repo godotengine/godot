@@ -38,7 +38,7 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode,3);
+	ERR_FAIL_INDEX(p_mode,4);
 	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
 }
 
@@ -87,6 +87,7 @@ void Input::_bind_methods() {
 	BIND_CONSTANT( MOUSE_MODE_VISIBLE );
 	BIND_CONSTANT( MOUSE_MODE_HIDDEN );
 	BIND_CONSTANT( MOUSE_MODE_CAPTURED );
+	BIND_CONSTANT( MOUSE_MODE_CONFINED );
 
 	ADD_SIGNAL( MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")) );
 }

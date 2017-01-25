@@ -118,6 +118,7 @@ class OS_Windows : public OS {
 	bool control_mem;
 	bool meta_mem;
 	bool force_quit;
+	bool window_has_focus;
 	uint32_t last_button_state;
 
 	CursorShape cursor_shape;

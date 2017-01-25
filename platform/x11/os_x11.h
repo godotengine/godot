@@ -134,7 +134,7 @@ class OS_X11 : public OS_Unix {
 
 	bool force_quit;
 	bool minimized;
-
+	bool window_has_focus;
 	bool do_mouse_warp;
 
 	const char *cursor_theme;
