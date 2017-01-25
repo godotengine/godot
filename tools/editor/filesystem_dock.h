@@ -199,6 +199,9 @@ public:
 
 	void set_display_mode(int p_mode);
 
+	int get_split_offset() { return split_box->get_split_offset(); }
+	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
+
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();
 };
