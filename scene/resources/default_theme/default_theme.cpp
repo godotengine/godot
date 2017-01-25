@@ -420,7 +420,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// LineEdit
 
-	t->set_stylebox("normal","LineEdit", make_stylebox( line_edit_png,10,5,10,5) );
+	t->set_stylebox("normal","LineEdit", make_stylebox( line_edit_png,5,5,5,5) );
 	t->set_stylebox("focus","LineEdit", focus );
 	t->set_stylebox("read_only","LineEdit", make_stylebox( line_edit_disabled_png,6,6,6,6) );
 
@@ -677,7 +677,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	Ref<StyleBoxTexture> item_selected = make_stylebox( selection_png,4,4,4,4,8,2,4,2);
 	Ref<StyleBoxTexture> item_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,2,4,2);
 
-	t->set_stylebox("bg","ItemList", make_stylebox( tree_bg_png,10,4,1,5) );
+	t->set_stylebox("bg","ItemList", make_stylebox( tree_bg_png,4,4,4,5) );
 	t->set_stylebox("bg_focus","ItemList", focus );
 	t->set_constant("hseparation","ItemList",4);
 	t->set_constant("vseparation","ItemList",2);
