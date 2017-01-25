@@ -218,6 +218,7 @@ public:
     String http_escape() const;
     String http_unescape() const;
 	String c_escape() const;
+	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;
 	String word_wrap(int p_chars_per_line) const;

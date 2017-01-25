@@ -3410,8 +3410,17 @@ String String::c_escape() const {
 	escaped=escaped.replace("\t","\\t");
 	escaped=escaped.replace("\v","\\v");
 	escaped=escaped.replace("\'","\\'");
-	escaped=escaped.replace("\"","\\\"");
 	escaped=escaped.replace("\?","\\?");
+	escaped=escaped.replace("\"","\\\"");
+
+	return escaped;
+}
+
+String String::c_escape_multiline() const {
+
+	String escaped=*this;
+	escaped=escaped.replace("\\","\\\\");
+	escaped=escaped.replace("\"","\\\"");
 
 	return escaped;
 }

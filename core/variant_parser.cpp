@@ -1873,7 +1873,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 
 			String str=p_variant;
 
-			str="\""+str.c_escape()+"\"";
+			str="\""+str.c_escape_multiline()+"\"";
 			p_store_string_func(p_store_string_ud, str );
 		} break;
 		case Variant::VECTOR2: {
@@ -2091,7 +2091,7 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 			dict.get_key_list(&keys);
 			keys.sort();
 
-			p_store_string_func(p_store_string_ud,"{ ");
+			p_store_string_func(p_store_string_ud,"{\n");
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 				/*
@@ -2099,14 +2099,14 @@ Error VariantWriter::write(const Variant& p_variant, StoreStringFunc p_store_str
 					continue;
 				*/
 				write(E->get(),p_store_string_func,p_store_string_ud,p_encode_res_func,p_encode_res_ud);
-				p_store_string_func(p_store_string_ud,":");
+				p_store_string_func(p_store_string_ud,": ");
 				write(dict[E->get()],p_store_string_func,p_store_string_ud,p_encode_res_func,p_encode_res_ud);
 				if (E->next())
-					p_store_string_func(p_store_string_ud,", ");
+					p_store_string_func(p_store_string_ud,",\n");
 			}
 
 
-			p_store_string_func(p_store_string_ud," }");
+			p_store_string_func(p_store_string_ud,"\n}");
 
 
 		} break;
