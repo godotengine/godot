@@ -471,6 +471,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	if (p_node->is_type("CanvasItem")) {
 		visible = !p_node->call("is_hidden");
+		CanvasItemEditor::get_singleton()->get_viewport_control()->update();
 	} else if (p_node->is_type("Spatial")) {
 		visible = !p_node->call("is_hidden");
 	}
