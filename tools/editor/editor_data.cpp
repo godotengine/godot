@@ -769,26 +769,6 @@ Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, 
 }
 
 
-void EditorData::set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata) {
-
-	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
-	edited_scene[current_edited_scene].medatata=p_mdata;
-
-}
-
-Ref<ResourceImportMetadata> EditorData::get_edited_scene_import_metadata(int idx) const{
-
-	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),Ref<ResourceImportMetadata>());
-	if(idx<0) {
-		return edited_scene[current_edited_scene].medatata;
-	} else {
-		ERR_FAIL_INDEX_V(idx,edited_scene.size(),Ref<ResourceImportMetadata>());
-		return edited_scene[idx].medatata;
-	}
-}
-
-
-
 void EditorData::clear_edited_scenes() {
 
 	for(int i=0;i<edited_scene.size();i++) {

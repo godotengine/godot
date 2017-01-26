@@ -109,7 +109,6 @@ public:
 	virtual bool handles_type(const String& p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
-	virtual Error load_import_metadata(const String &p_path, Ref<ResourceImportMetadata>& r_var) const;
 	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
 
 

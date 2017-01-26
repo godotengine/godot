@@ -38,7 +38,7 @@
 #include "os/os.h"
 #include "platform/android/logo.h"
 #include <string.h>
-
+#if 0
 
 static const char* android_perms[]={
 "ACCESS_CHECKIN_PROPERTIES",
@@ -1915,3 +1915,4 @@ void register_android_exporter() {
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
 
 }
+#endif

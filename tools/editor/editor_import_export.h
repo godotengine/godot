@@ -29,6 +29,8 @@
 #ifndef EDITOR_IMPORT_EXPORT_H
 #define EDITOR_IMPORT_EXPORT_H
 
+#if 0
+
 #include "resource.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
@@ -419,4 +421,5 @@ VARIANT_ENUM_CAST(EditorImportExport::ImageAction);
 VARIANT_ENUM_CAST(EditorImportExport::ScriptAction);
 VARIANT_ENUM_CAST(EditorImportExport::SampleAction);
 
+#endif
 #endif // EDITOR_IMPORT_EXPORT_H

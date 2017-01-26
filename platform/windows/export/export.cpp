@@ -29,7 +29,7 @@
 #include "export.h"
 #include "platform/windows/logo.h"
 #include "tools/editor/editor_import_export.h"
-
+#if 0
 void register_windows_exporter() {
 
 	Image img(_windows_logo);
@@ -50,3 +50,4 @@ void register_windows_exporter() {
 
 
 }
+#endif

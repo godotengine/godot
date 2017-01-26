@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_font_import_plugin.h"
-
+#if 0
 #include "scene/gui/dialogs.h"
 #include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_node.h"
@@ -1701,3 +1701,4 @@ EditorFontImportPlugin::EditorFontImportPlugin(EditorNode* p_editor) {
 	dialog = memnew( EditorFontImportDialog(this) );
 	p_editor->get_gui_base()->add_child(dialog);
 }
+#endif

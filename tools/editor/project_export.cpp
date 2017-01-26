@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "project_export.h"
-
+#if 0
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "globals.h"
@@ -2127,3 +2127,4 @@ ProjectExport::ProjectExport(EditorData* p_data) {
 
 
 }
+#endif

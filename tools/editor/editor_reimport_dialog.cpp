@@ -31,6 +31,7 @@
 #include "editor_file_system.h"
 #include "editor_node.h"
 
+#if 0
 void EditorReImportDialog::popup_reimport() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
@@ -144,3 +145,4 @@ EditorReImportDialog::EditorReImportDialog() {
 	scene_must_save=false;
 
 }
+#endif

@@ -431,7 +431,7 @@ void EditorNode::_fs_changed() {
 
 	if (export_defer.platform!="") {
 
-		project_export_settings->export_platform(export_defer.platform,export_defer.path,export_defer.debug,export_defer.password,true);
+		//project_export_settings->export_platform(export_defer.platform,export_defer.path,export_defer.debug,export_defer.password,true);
 		export_defer.platform="";
 	}
 
@@ -448,7 +448,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		EditorProgress ep("reimport",TTR("Re-Importing"),changed_sources.size());
 		int step_idx=0;
-
+#if 0
 		for(List<String>::Element *E=changed_sources.front();E;E=E->next()) {
 
 			ep.step(TTR("Importing:")+" "+E->get(),step_idx++);
@@ -467,7 +467,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 			}
 
 		}
-
+#endif
 		EditorFileSystem::get_singleton()->scan_sources();
 		waiting_for_sources_changed=false;
 
@@ -502,9 +502,11 @@ void EditorNode::_rebuild_import_menu()
 	p->clear();
 	//p->add_item(TTR("Node From Scene"), FILE_IMPORT_SUBSCENE);
 	//p->add_separator();
+#if 0
 	for (int i = 0; i < editor_import_export->get_import_plugin_count(); i++) {
 		p->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(), IMPORT_PLUGIN_BASE + i);
 	}
+#endif
 }
 
 void EditorNode::_node_renamed() {
@@ -1008,7 +1010,6 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
-	sdata->set_import_metadata(editor_data.get_edited_scene_import_metadata(idx));
 	int flg=0;
 	if (EditorSettings::get_singleton()->get("filesystem/on_save/compress_binary_resources"))
 		flg|=ResourceSaver::FLAG_COMPRESS;
@@ -2282,7 +2283,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case FILE_EXPORT_PROJECT: {
 
-			project_export_settings->popup_export();
+			//project_export_settings->popup_export();
 			/*
 			String target = export_db->get_current_platform();
 			Ref<EditorExporter> exporter = export_db->get_exporter(target);
@@ -2861,7 +2862,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case SOURCES_REIMPORT: {
 
-			reimport_dialog->popup_reimport();
+			//reimport_dialog->popup_reimport();
 		} break;
 		case DEPENDENCY_LOAD_CHANGED_IMAGES: {
 
@@ -2951,10 +2952,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 					current->call(name);
 			} else if (p_option>=IMPORT_PLUGIN_BASE) {
 
-				Ref<EditorImportPlugin> p = editor_import_export->get_import_plugin(p_option-IMPORT_PLUGIN_BASE);
-				if (p.is_valid()) {
-					p->import_dialog();
-				}
 
 			}
 		}
@@ -3054,20 +3051,6 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 
 }
 
-
-void EditorNode::add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
-
-	ERR_FAIL_COND( p_editor_import.is_null() );
-	editor_import_export->add_import_plugin(p_editor_import);
-	_rebuild_import_menu();
-}
-
-void EditorNode::remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
-	ERR_FAIL_COND( p_editor_import.is_null() );
-
-	editor_import_export->remove_import_plugin(p_editor_import);
-	_rebuild_import_menu();
-}
 
 
 void EditorNode::_update_addon_config() {
@@ -3812,7 +3795,6 @@ Error EditorNode::load_scene(const String& p_scene, bool p_ignore_broken_deps,bo
 	property_editor->edit(new_scene);
 	editor_data.set_edited_scene_root(new_scene);
 */
-	editor_data.set_edited_scene_import_metadata( sdata->get_import_metadata() );
 
 	//editor_data.get_undo_redo().clear_history();
 	saved_version=editor_data.get_undo_redo().get_version();
@@ -4155,9 +4137,9 @@ bool EditorNode::is_scene_in_use(const String& p_path) {
 void EditorNode::register_editor_types() {
 
 	ClassDB::register_class<EditorPlugin>();
-	ClassDB::register_class<EditorImportPlugin>();
-	ClassDB::register_class<EditorExportPlugin>();
-	ClassDB::register_class<EditorScenePostImport>();
+//	ClassDB::register_class<EditorImportPlugin>();
+//	ClassDB::register_class<EditorExportPlugin>();
+//	ClassDB::register_class<EditorScenePostImport>();
 	ClassDB::register_class<EditorScript>();
 	ClassDB::register_class<EditorSelection>();
 	ClassDB::register_class<EditorFileDialog>();
@@ -5187,9 +5169,9 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String>& p_files, Control *
 void EditorNode::_dropped_files(const Vector<String>& p_files,int p_screen) {
 
 	String cur_path = filesystem_dock->get_current_path();
-	for(int i=0;i<EditorImportExport::get_singleton()->get_import_plugin_count();i++) {
-		EditorImportExport::get_singleton()->get_import_plugin(i)->import_from_drop(p_files,cur_path);
-	}
+//	for(int i=0;i<EditorImportExport::get_singleton()->get_import_plugin_count();i++) {
+//		EditorImportExport::get_singleton()->get_import_plugin(i)->import_from_drop(p_files,cur_path);
+//	}
 }
 void EditorNode::_file_access_close_error_notify(const String& p_str) {
 
@@ -5369,8 +5351,8 @@ void EditorNode::_bind_methods() {
 
 
 
-	ClassDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
-	ClassDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
+//	ClassDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
+	//ClassDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
 	ClassDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
 	ClassDB::bind_method(_MD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);
 
@@ -5423,7 +5405,6 @@ EditorNode::EditorNode() {
 
 	FileAccess::set_backup_save(true);
 
-	PathRemap::get_singleton()->clear_remaps(); //editor uses no remaps
 	TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
 	if (!EditorSettings::get_singleton())
@@ -5476,12 +5457,7 @@ EditorNode::EditorNode() {
 	EditorFileDialog::unregister_func=_editor_file_dialog_unregister;
 
 
-	editor_import_export = memnew( EditorImportExport );
-	add_child(editor_import_export);
-
 	register_exporters();
-
-	editor_import_export->load_config();
 
 	GLOBAL_DEF("editor/main_run_args","$scene");
 
@@ -6396,11 +6372,11 @@ EditorNode::EditorNode() {
 	//gui_base->add_child(optimized_save);
 	//optimized_save->connect("confirmed",this,"_save_optimized");
 
-	project_export = memnew( ProjectExport(&editor_data) );
-	gui_base->add_child(project_export);
+	//project_export = memnew( ProjectExport(&editor_data) );
+	//gui_base->add_child(project_export);
 
-	project_export_settings = memnew( ProjectExportDialog(this) );
-	gui_base->add_child(project_export_settings);
+	//project_export_settings = memnew( ProjectExportDialog(this) );
+	//gui_base->add_child(project_export_settings);
 
 	//optimized_presets = memnew( OptimizedPresetsDialog(&editor_data) );
 	//gui_base->add_child(optimized_presets);
@@ -6514,8 +6490,8 @@ EditorNode::EditorNode() {
 	gui_base->add_child(file_script);
 	file_script->connect("file_selected",this,"_dialog_action");
 
-	reimport_dialog = memnew( EditorReImportDialog );
-	gui_base->add_child(reimport_dialog);
+	//reimport_dialog = memnew( EditorReImportDialog );
+	//gui_base->add_child(reimport_dialog);
 
 
 
@@ -6540,26 +6516,6 @@ EditorNode::EditorNode() {
 
 	file_server = memnew( EditorFileServer );
 
-
-	editor_import_export->add_import_plugin( Ref<EditorTextureImportPlugin>( memnew(EditorTextureImportPlugin(this) )));
-	Ref<EditorSceneImportPlugin> _scene_import =  memnew(EditorSceneImportPlugin(this) );
-	Ref<EditorSceneImporterCollada> _collada_import = memnew( EditorSceneImporterCollada);
-	_scene_import->add_importer(_collada_import);
-	//Ref<EditorSceneImporterFBXConv> _fbxconv_import = memnew( EditorSceneImporterFBXConv);
-	//_scene_import->add_importer(_fbxconv_import);
-	editor_import_export->add_import_plugin( _scene_import);
-	// TODO: This plugin has no code, it should be either implemented or dropped (GH-3667)
-	// editor_import_export->add_import_plugin( Ref<EditorSceneAnimationImportPlugin>( memnew(EditorSceneAnimationImportPlugin(this))));
-	editor_import_export->add_import_plugin( Ref<EditorMeshImportPlugin>( memnew(EditorMeshImportPlugin(this))));
-	editor_import_export->add_import_plugin( Ref<EditorFontImportPlugin>( memnew(EditorFontImportPlugin(this))));
-//	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
-	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
-	editor_import_export->add_import_plugin( Ref<EditorBitMaskImportPlugin>( memnew(EditorBitMaskImportPlugin(this))));
-
-
-	editor_import_export->add_export_plugin( Ref<EditorTextureExportPlugin>( memnew(EditorTextureExportPlugin)));
-//	editor_import_export->add_export_plugin( Ref<EditorSampleExportPlugin>( memnew(EditorSampleExportPlugin)));
-	editor_import_export->add_export_plugin( Ref<EditorSceneExportPlugin>( memnew(EditorSceneExportPlugin)));
 
 
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );

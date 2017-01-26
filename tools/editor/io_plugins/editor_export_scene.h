@@ -31,7 +31,7 @@
 
 #include "tools/editor/editor_import_export.h"
 
-
+#if 0
 class EditorSceneExportPlugin : public EditorExportPlugin {
 	GDCLASS( EditorSceneExportPlugin, EditorExportPlugin );
 public:
@@ -40,5 +40,5 @@ public:
 
 	EditorSceneExportPlugin();
 };
-
+#endif
 #endif // EDITOR_EXPORT_SCENE_H

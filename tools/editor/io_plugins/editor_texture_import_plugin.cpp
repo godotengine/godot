@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_texture_import_plugin.h"
-
+#if 0
 #include "io/image_loader.h"
 #include "tools/editor/editor_node.h"
 #include "io/resource_saver.h"
@@ -1890,3 +1890,4 @@ EditorTextureExportPlugin::EditorTextureExportPlugin() {
 
 
 }
+#endif

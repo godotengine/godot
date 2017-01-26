@@ -32,7 +32,7 @@
 
 void EditorRunNative::_notification(int p_what) {
 
-
+#if 0
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		List<StringName> ep;
@@ -97,11 +97,12 @@ void EditorRunNative::_notification(int p_what) {
 			first=false;
 		}
 	}
-
+#endif
 }
 
 void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 
+#if 0
 	Ref<EditorExportPlatform> eep = EditorImportExport::get_singleton()->get_export_platform(p_platform);
 	ERR_FAIL_COND(eep.is_null());
 	if (p_idx == -1) {
@@ -125,6 +126,8 @@ void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 		flags|=EditorExportPlatform::EXPORT_VIEW_NAVIGATION;
 
 	eep->run(p_idx,flags);
+
+#endif
 }
 
 void EditorRunNative::_bind_methods() {

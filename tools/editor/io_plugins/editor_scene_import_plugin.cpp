@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_scene_import_plugin.h"
-
+#if 0
 #include "globals.h"
 #include "tools/editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
@@ -2989,3 +2989,4 @@ EditorSceneAnimationImportPlugin::EditorSceneAnimationImportPlugin(EditorNode* p
 
 
 }
+#endif

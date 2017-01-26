@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "editor_import_export.h"
 
+#if 0
 #include "version.h"
 #include "script_language.h"
 #include "globals.h"
@@ -2302,3 +2303,4 @@ EditorImportExport::~EditorImportExport() {
 
 
 }
+#endif

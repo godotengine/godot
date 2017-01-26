@@ -31,7 +31,7 @@
 
 #include "tools/editor/editor_import_export.h"
 #include "scene/resources/font.h"
-
+#if 0
 class EditorNode;
 class EditorFontImportDialog;
 
@@ -55,3 +55,4 @@ public:
 };
 
 #endif // EDITOR_FONT_IMPORT_PLUGIN_H
+#endif

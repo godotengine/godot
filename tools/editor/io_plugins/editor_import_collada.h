@@ -31,7 +31,7 @@
 
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
 
-
+#if 0
 
 class EditorSceneImporterCollada : public EditorSceneImporter {
 
@@ -46,6 +46,6 @@ public:
 	EditorSceneImporterCollada();
 };
 
-
+#endif
 #endif
 

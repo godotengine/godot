@@ -139,12 +139,6 @@ public:
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
 
-	void add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-	void remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-
-	void add_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
-	void remove_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
-
 	EditorSelection* get_selection();
 	//EditorImportExport *get_import_export();
 	EditorSettings *get_editor_settings();

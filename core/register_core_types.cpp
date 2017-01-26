@@ -110,7 +110,6 @@ void register_core_types() {
 
 	ClassDB::register_class<Reference>();
 	ClassDB::register_class<WeakRef>();
-	ClassDB::register_class<ResourceImportMetadata>();
 	ClassDB::register_class<Resource>();
 	ClassDB::register_class<FuncRef>();
 	ClassDB::register_virtual_class<StreamPeer>();
@@ -179,7 +178,6 @@ void register_core_singletons() {
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Geometry",_Geometry::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceLoader",_ResourceLoader::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PathRemap",PathRemap::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("OS",_OS::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Engine",_Engine::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ClassDB",_classdb ) );

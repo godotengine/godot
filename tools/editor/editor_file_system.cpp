@@ -247,6 +247,8 @@ EditorFileSystemDirectory::~EditorFileSystemDirectory() {
 
 EditorFileSystemDirectory::ImportMeta EditorFileSystem::_get_meta(const String& p_path) {
 
+	return EditorFileSystemDirectory::ImportMeta();
+#if 0
 	Ref<ResourceImportMetadata> imd = ResourceLoader::load_import_metadata(p_path);
 	EditorFileSystemDirectory::ImportMeta m;
 	if (imd.is_null()) {
@@ -274,6 +276,7 @@ EditorFileSystemDirectory::ImportMeta EditorFileSystem::_get_meta(const String& 
 	}
 
 	return m;
+#endif
 }
 
 
@@ -535,7 +538,7 @@ bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta
 
 		for(int j=0;j<p_meta.sources.size();j++) {
 
-
+#if 0
 			String src = EditorImportPlugin::expand_source_path(p_meta.sources[j].path);
 
 			if (!FileAccess::exists(src)) {
@@ -559,6 +562,7 @@ bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta
 				}
 				p_meta.sources[j].modified_time=mt;
 			}
+#endif
 		}
 	}
 

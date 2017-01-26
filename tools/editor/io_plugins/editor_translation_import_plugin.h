@@ -31,7 +31,7 @@
 
 #include "tools/editor/editor_import_export.h"
 #include "scene/resources/font.h"
-
+#if 0
 class EditorNode;
 class EditorTranslationImportDialog;
 
@@ -52,4 +52,5 @@ public:
 	EditorTranslationImportPlugin(EditorNode* p_editor);
 };
 
+#endif
 #endif // EDITOR_TRANSLATION_IMPORT_PLUGIN_H

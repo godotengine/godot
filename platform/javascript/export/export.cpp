@@ -38,6 +38,9 @@
 #include "os/os.h"
 #include "platform/javascript/logo.h"
 #include "string.h"
+
+
+#if 0
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
 	GDCLASS( EditorExportPlatformJavaScript,EditorExportPlatform );
@@ -424,3 +427,4 @@ void register_javascript_exporter() {
 
 }
 
+#endif

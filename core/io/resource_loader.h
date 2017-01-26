@@ -61,11 +61,10 @@ public:
 	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const=0;
 	virtual void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const;
-	bool recognize(const String& p_extension) const;
+	bool recognize_path(const String& p_path,const String& p_for_type=String()) const;
 	virtual bool handles_type(const String& p_type) const=0;
 	virtual String get_resource_type(const String &p_path) const=0;
 	virtual void get_dependencies(const String& p_path,List<String> *p_dependencies,bool p_add_types=false);
-	virtual Error load_import_metadata(const String &p_path, Ref<ResourceImportMetadata>& r_var) const { return ERR_UNAVAILABLE; }
 	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map) { return OK; }
 
 	virtual ~ResourceFormatLoader() {}
@@ -92,22 +91,18 @@ class ResourceLoader {
 	static DependencyErrorNotify dep_err_notify;
 	static bool abort_on_missing_resource;
 
-	static String find_complete_path(const String& p_path,const String& p_type);
 public:
 
 
 
 	static Ref<ResourceInteractiveLoader> load_interactive(const String &p_path,const String& p_type_hint="",bool p_no_cache=false,Error *r_error=NULL);
 	static RES load(const String &p_path,const String& p_type_hint="",bool p_no_cache=false,Error *r_error=NULL);
-	static Ref<ResourceImportMetadata> load_import_metadata(const String &p_path);
 
 	static void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions);
 	static void add_resource_format_loader(ResourceFormatLoader *p_format_loader,bool p_at_front=false);
 	static String get_resource_type(const String &p_path);
 	static void get_dependencies(const String& p_path,List<String> *p_dependencies,bool p_add_types=false);
 	static Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
-
-	static String guess_full_filename(const String &p_path,const String& p_type);
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load=p_timestamp; }
 
@@ -121,5 +116,7 @@ public:
 	static void set_abort_on_missing_resources(bool p_abort) { abort_on_missing_resource=p_abort; }
 	static bool get_abort_on_missing_resources() { return abort_on_missing_resource; }
 };
+
+
 
 #endif

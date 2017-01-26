@@ -46,6 +46,7 @@
 #include "property_editor.h"
 #include "editor_import_export.h"
 
+#if 0
 class EditorNode;
 
 class ProjectExportDialog : public ConfirmationDialog {
@@ -242,3 +243,4 @@ public:
 
 
 #endif // PROJECT_EXPORT_SETTINGS_H
+#endif

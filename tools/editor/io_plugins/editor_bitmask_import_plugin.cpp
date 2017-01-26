@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_bitmask_import_plugin.h"
-
+#if 0
 #include "io/image_loader.h"
 #include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_dir_dialog.h"
@@ -384,3 +384,4 @@ EditorBitMaskImportPlugin::EditorBitMaskImportPlugin(EditorNode* p_editor) {
 EditorBitMaskExportPlugin::EditorBitMaskExportPlugin() {
 
 }
+#endif

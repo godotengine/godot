@@ -40,7 +40,7 @@
 #include "io/xml_parser.h"
 
 #define MAX_DEVICES 5
-
+#if 0
 class EditorExportPlatformBB10 : public EditorExportPlatform {
 
 	GDCLASS( EditorExportPlatformBB10,EditorExportPlatform );
@@ -827,3 +827,4 @@ void register_bb10_exporter() {
 
 }
 
+#endif

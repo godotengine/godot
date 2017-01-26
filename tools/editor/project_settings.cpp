@@ -1342,7 +1342,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	hbc->add_spacer();
 
-	List<StringName> ep;
+	/*List<StringName> ep;
 	EditorImportExport::get_singleton()->get_export_platforms(&ep);
 	ep.sort_custom<StringName::AlphCompare>();
 
@@ -1350,7 +1350,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 		popup_platform->get_popup()->add_item( E->get() );
 
-	}
+	}*/
 
 	popup_platform->get_popup()->connect("id_pressed",this,"_copy_to_platform");
 	get_ok()->set_text(TTR("Close"));

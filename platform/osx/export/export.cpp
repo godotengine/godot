@@ -39,7 +39,7 @@
 #include "os/os.h"
 #include "platform/osx/logo.h"
 #include "string.h"
-
+#if 0
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
 
@@ -546,3 +546,4 @@ void register_osx_exporter() {
 
 }
 
+#endif

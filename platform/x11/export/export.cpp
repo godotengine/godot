@@ -30,7 +30,7 @@
 #include "platform/x11/logo.h"
 #include "tools/editor/editor_import_export.h"
 #include "scene/resources/texture.h"
-
+#if 0
 void register_x11_exporter() {
 
 	Image img(_x11_logo);
@@ -50,3 +50,4 @@ void register_x11_exporter() {
 	}
 
 }
+#endif

@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "editor_translation_import_plugin.h"
 
+#if 0
 #include "scene/gui/file_dialog.h"
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
@@ -474,3 +475,5 @@ EditorTranslationImportPlugin::EditorTranslationImportPlugin(EditorNode* p_edito
 	dialog = memnew(EditorTranslationImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
+
+#endif

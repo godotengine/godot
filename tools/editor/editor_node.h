@@ -340,7 +340,7 @@ private:
 	Vector<ToolButton*> main_editor_buttons;
 	Vector<EditorPlugin*> editor_table;
 
-	EditorReImportDialog *reimport_dialog;
+//	EditorReImportDialog *reimport_dialog;
 
 	ProgressDialog *progress_dialog;
 	BackgroundProgress *progress_hb;
@@ -391,8 +391,8 @@ private:
 	EditorData editor_data;
 	EditorRun editor_run;
 	EditorSelection *editor_selection;
-	ProjectExport *project_export;
-	ProjectExportDialog *project_export_settings;
+//	ProjectExport *project_export;
+//	ProjectExportDialog *project_export_settings;
 	EditorResourcePreview *resource_preview;
 
 	EditorFileServer *file_server;
@@ -646,9 +646,6 @@ public:
 
 	void add_control_to_dock(DockSlot p_slot,Control* p_control);
 	void remove_control_from_dock(Control* p_control);
-
-	void add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-	void remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 
 	void set_addon_plugin_enabled(const String& p_addon,bool p_enabled);
 	bool is_addon_plugin_enabled(const String &p_addon) const;

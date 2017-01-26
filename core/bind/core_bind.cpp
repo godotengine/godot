@@ -106,17 +106,12 @@ bool _ResourceLoader::has(const String &p_path) {
 	return ResourceCache::has(local_path);
 };
 
-Ref<ResourceImportMetadata> _ResourceLoader::load_import_metadata(const String& p_path) {
-
-	return ResourceLoader::load_import_metadata(p_path);
-}
 
 void _ResourceLoader::_bind_methods() {
 
 
 	ClassDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
 	ClassDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
-	ClassDB::bind_method(_MD("load_import_metadata:ResourceImportMetadata","path"),&_ResourceLoader::load_import_metadata);
 	ClassDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
 	ClassDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
 	ClassDB::bind_method(_MD("get_dependencies","path"),&_ResourceLoader::get_dependencies);

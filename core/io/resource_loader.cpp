@@ -47,20 +47,28 @@ Error ResourceInteractiveLoader::wait() {
 	return err;
 }
 
+bool ResourceFormatLoader::recognize_path(const String& p_path,const String& p_for_type) const {
 
-bool ResourceFormatLoader::recognize(const String& p_extension) const {
 
+	String extension = p_path.get_extension();
 
 	List<String> extensions;
-	get_recognized_extensions(&extensions);
+	if (p_for_type==String()) {
+		get_recognized_extensions(&extensions);
+	} else {
+		get_recognized_extensions_for_type(p_for_type,&extensions);
+	}
+
 	for (List<String>::Element *E=extensions.front();E;E=E->next()) {
 
-		if (E->get().nocasecmp_to(p_extension.get_extension())==0)
+		if (E->get().nocasecmp_to(extension)==0)
 			return true;
 	}
 
 	return false;
+
 }
+
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const {
 
@@ -166,7 +174,7 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 	else
 		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
-	local_path=find_complete_path(local_path,p_type_hint);
+
 	ERR_FAIL_COND_V(local_path=="",RES());
 
 	if (!p_no_cache && ResourceCache::has(local_path)) {
@@ -177,22 +185,16 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 		return RES( ResourceCache::get(local_path ) );
 	}
 
-	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
-
 	if (OS::get_singleton()->is_stdout_verbose())
-		print_line("load resource: "+remapped_path);
-
-	String extension=remapped_path.get_extension();
+		print_line("load resource: "+local_path);
 	bool found=false;
 
 	for (int i=0;i<loader_count;i++) {
 
-		if (!loader[i]->recognize(extension))
-			continue;
-		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+		if (!loader[i]->recognize_path(local_path,p_type_hint))
 			continue;
 		found=true;
-		RES res = loader[i]->load(remapped_path,local_path,r_error);
+		RES res = loader[i]->load(local_path,local_path,r_error);
 		if (res.is_null())
 			continue;
 		if (!p_no_cache)
@@ -201,7 +203,7 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 
 		res->set_edited(false);
 		if (timestamp_on_load) {
-			uint64_t mt = FileAccess::get_modified_time(remapped_path);
+			uint64_t mt = FileAccess::get_modified_time(local_path);
 			//printf("mt %s: %lli\n",remapped_path.utf8().get_data(),mt);
 			res->set_last_modified_time(mt);
 		}
@@ -220,82 +222,6 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 }
 
 
-Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p_path) {
-
-
-
-	String local_path;
-	if (p_path.is_rel_path())
-		local_path="res://"+p_path;
-	else
-		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
-
-	String extension=p_path.get_extension();
-	Ref<ResourceImportMetadata> ret;
-
-	for (int i=0;i<loader_count;i++) {
-
-		if (!loader[i]->recognize(extension))
-			continue;
-
-		Error err = loader[i]->load_import_metadata(local_path,ret);
-		if (err==OK)
-			break;
-	}
-
-
-	return ret;
-
-}
-
-
-
-String ResourceLoader::find_complete_path(const String& p_path,const String& p_type) {
-	//this is an old vestige when the engine saved files without extension.
-	//remains here for compatibility with old projects and only because it
-	//can be sometimes nice to open files using .* from a script and have it guess
-	//the right extension.
-
-	String local_path = p_path;
-	if (local_path.ends_with("*")) {
-
-		//find the extension for resource that ends with *
-		local_path = local_path.substr(0,local_path.length()-1);
-		List<String> extensions;
-		get_recognized_extensions_for_type(p_type,&extensions);
-		List<String> candidates;
-
-		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
-
-			String path = local_path+E->get();
-
-			if (PathRemap::get_singleton()->has_remap(path) || FileAccess::exists(path)) {
-				candidates.push_back(path);
-			}
-
-		}
-
-
-		if (candidates.size()==0) {
-			return "";
-		} else if (candidates.size()==1 || p_type=="") {
-			return candidates.front()->get();
-		} else {
-
-			for(List<String>::Element *E=candidates.front();E;E=E->next()) {
-
-				String rt = get_resource_type(E->get());
-				if (ClassDB::is_parent_class(rt,p_type)) {
-					return E->get();
-				}
-			}
-
-			return "";
-		}
-	}
-
-	return local_path;
-}
 
 Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_path,const String& p_type_hint,bool p_no_cache,Error *r_error) {
 
@@ -309,7 +235,7 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	else
 		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
-	local_path=find_complete_path(local_path,p_type_hint);
+
 	ERR_FAIL_COND_V(local_path=="",Ref<ResourceInteractiveLoader>());
 
 
@@ -329,19 +255,14 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 	if (OS::get_singleton()->is_stdout_verbose())
 		print_line("load resource: ");
 
-	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
-
-	String extension=remapped_path.get_extension();
 	bool found=false;
 
 	for (int i=0;i<loader_count;i++) {
 
-		if (!loader[i]->recognize(extension))
-			continue;
-		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+		if (!loader[i]->recognize_path(local_path,p_type_hint))
 			continue;
 		found=true;
-		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(remapped_path,r_error);
+		Ref<ResourceInteractiveLoader> ril = loader[i]->load_interactive(local_path,r_error);
 		if (ril.is_null())
 			continue;
 		if (!p_no_cache)
@@ -383,20 +304,16 @@ void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_depe
 	else
 		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
-	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
-
-	String extension=remapped_path.get_extension();
-
 	for (int i=0;i<loader_count;i++) {
 
-		if (!loader[i]->recognize(extension))
+		if (!loader[i]->recognize_path(local_path))
 			continue;
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
 		*/
 
-		loader[i]->get_dependencies(remapped_path,p_dependencies,p_add_types);
+		loader[i]->get_dependencies(local_path,p_dependencies,p_add_types);
 
 	}
 }
@@ -410,20 +327,17 @@ Error ResourceLoader::rename_dependencies(const String &p_path,const Map<String,
 	else
 		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
-	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
-
-	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 
-		if (!loader[i]->recognize(extension))
+		if (!loader[i]->recognize_path(local_path))
 			continue;
 		/*
 		if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
 			continue;
 		*/
 
-		return loader[i]->rename_dependencies(p_path,p_map);
+		return loader[i]->rename_dependencies(local_path,p_map);
 
 	}
 
@@ -432,17 +346,6 @@ Error ResourceLoader::rename_dependencies(const String &p_path,const Map<String,
 }
 
 
-String ResourceLoader::guess_full_filename(const String &p_path,const String& p_type) {
-
-	String local_path;
-	if (p_path.is_rel_path())
-		local_path="res://"+p_path;
-	else
-		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
-
-	return find_complete_path(local_path,p_type);
-
-}
 
 String ResourceLoader::get_resource_type(const String &p_path) {
 
@@ -452,8 +355,6 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 	else
 		local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
-	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
-	String extension=remapped_path.get_extension();
 
 	for (int i=0;i<loader_count;i++) {
 

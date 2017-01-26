@@ -759,30 +759,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 	resource_cache.push_back(res);
 
 	if (main) {
-		if (importmd_ofs) {
 
-			f->seek(importmd_ofs);
-			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
-			imd->set_editor(get_unicode_string());
-			int sc = f->get_32();
-			for(int i=0;i<sc;i++) {
-
-				String src = get_unicode_string();
-				String md5 = get_unicode_string();
-				imd->add_source(src,md5);
-			}
-			int pc = f->get_32();
-
-			for(int i=0;i<pc;i++) {
-
-				String name = get_unicode_string();
-				Variant val;
-				parse_variant(val);
-				imd->set_option(name,val);
-			}
-			res->set_import_metadata(imd);
-
-		}
 		f->close();
 		resource=res;
 		error=ERR_FILE_EOF;
@@ -849,9 +826,6 @@ void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f,List<Stri
 	for(int i=0;i<external_resources.size();i++) {
 
 		String dep=external_resources[i].path;
-		if (dep.ends_with("*")) {
-			dep=ResourceLoader::guess_full_filename(dep,external_resources[i].type);
-		}
 
 		if (p_add_types && external_resources[i].type!=String()) {
 			dep+="::"+external_resources[i].type;
@@ -1102,53 +1076,6 @@ bool ResourceFormatLoaderBinary::handles_type(const String& p_type) const{
 
 
 	return true; //handles all
-}
-
-Error ResourceFormatLoaderBinary::load_import_metadata(const String &p_path, Ref<ResourceImportMetadata>& r_var) const {
-
-
-	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
-	if (!f) {
-		return ERR_FILE_CANT_OPEN;
-	}
-
-	Ref<ResourceInteractiveLoaderBinary> ria = memnew( ResourceInteractiveLoaderBinary );
-	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
-	ria->res_path=ria->local_path;
-	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
-	ria->recognize(f);
-	if(ria->error!=OK)
-		return ERR_FILE_UNRECOGNIZED;
-	f=ria->f;
-	uint64_t imp_ofs = f->get_64();
-
-	if (imp_ofs==0)
-		return ERR_UNAVAILABLE;
-
-	f->seek(imp_ofs);
-	Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
-	imd->set_editor(ria->get_unicode_string());
-	int sc = f->get_32();
-	for(int i=0;i<sc;i++) {
-
-		String src = ria->get_unicode_string();
-		String md5 = ria->get_unicode_string();
-		imd->add_source(src,md5);
-	}
-	int pc = f->get_32();
-
-	for(int i=0;i<pc;i++) {
-
-		String name = ria->get_unicode_string();
-		Variant val;
-		ria->parse_variant(val);
-		imd->set_option(name,val);
-	}
-
-	r_var=imd;
-
-	return OK;
-
 }
 
 
@@ -2179,30 +2106,6 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	}
 
 	f->seek_end();
-	print_line("SAVING: "+p_path);
-	if (p_resource->get_import_metadata().is_valid()) {
-		uint64_t md_pos = f->get_pos();
-		Ref<ResourceImportMetadata> imd=p_resource->get_import_metadata();
-		save_unicode_string(imd->get_editor());
-		f->store_32(imd->get_source_count());
-		for(int i=0;i<imd->get_source_count();i++) {
-			save_unicode_string(imd->get_source_path(i));
-			save_unicode_string(imd->get_source_md5(i));
-			print_line("SAVE PATH: "+imd->get_source_path(i));
-			print_line("SAVE MD5: "+imd->get_source_md5(i));
-		}
-		List<String> options;
-		imd->get_options(&options);
-		f->store_32(options.size());
-		for(List<String>::Element *E=options.front();E;E=E->next()) {
-			save_unicode_string(E->get());
-			write_variant(imd->get_option(E->get()));
-		}
-
-		f->seek(md_at);
-		f->store_64(md_pos);
-		f->seek_end();
-	}
 
 
 	f->store_buffer((const uint8_t*)"RSRC",4); //magic at end

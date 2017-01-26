@@ -363,11 +363,11 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path,List<FileInfo>* m
 				fi.import_status=0;
 			}
 			for(int j=0;j<p_path->get_source_count(i);j++) {
-				String s = EditorImportPlugin::expand_source_path(p_path->get_source_file(i,j));
+				/*String s = EditorImportPlugin::expand_source_path(p_path->get_source_file(i,j));
 				if (p_path->is_source_file_missing(i,j)) {
 					s+=" (Missing)";
 				}
-				fi.sources.push_back(s);
+				fi.sources.push_back(s);*/
 			}
 
 			matches->push_back(fi);
@@ -510,11 +510,11 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 				}
 
 				for(int j=0;j<efd->get_source_count(i);j++) {
-					String s = EditorImportPlugin::expand_source_path(efd->get_source_file(i,j));
+					/*String s = EditorImportPlugin::expand_source_path(efd->get_source_file(i,j));
 					if (efd->is_source_file_missing(i,j)) {
 						s+=" (Missing)";
 					}
-					fi.sources.push_back(s);
+					fi.sources.push_back(s);*/
 				}
 			} else {
 				fi.import_status=0;
@@ -1068,7 +1068,7 @@ void FileSystemDock::_file_option(int p_option) {
 			}
 
 			ERR_FAIL_COND(reimport.size()==0);
-
+/*
 			Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(reimport[0]);
 			ERR_FAIL_COND(!rimd.is_valid());
 			String editor=rimd->get_editor();
@@ -1086,6 +1086,7 @@ void FileSystemDock::_file_option(int p_option) {
 				rimp->reimport_multiple_files(reimport);
 
 			}
+			*/
 
 		} break;
 		case FILE_COPY_PATH:
@@ -1542,6 +1543,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 
 
 			} else {
+				/*
 				Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(path);
 				if (rimd.is_valid()) {
 
@@ -1554,7 +1556,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 				} else {
 					all_can_reimport=false;
 
-				}
+				}*/
 			}
 		} else {
 			all_can_reimport=false;
@@ -1603,7 +1605,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 
 	if (all_can_reimport && types.size()==1) { //all can reimport and are of the same type
 
-
+/*
 		bool valid=true;
 		Ref<EditorImportPlugin> rimp = EditorImportExport::get_singleton()->get_import_plugin_by_name(types.front()->get());
 		if (rimp.is_valid()) {
@@ -1619,6 +1621,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 			file_options->add_separator();
 			file_options->add_item(TTR("Re-Import.."),FILE_REIMPORT);
 		}
+		*/
 	}
 
 	file_options->set_pos(files->get_global_pos() + p_pos);

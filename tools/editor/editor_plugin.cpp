@@ -319,27 +319,6 @@ EditorResourcePreview *EditorPlugin::get_resource_previewer() {
 	return EditorResourcePreview::get_singleton();
 }
 
-void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
-
-	EditorNode::get_singleton()->add_editor_import_plugin(p_editor_import);
-}
-
-void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import){
-
-	EditorNode::get_singleton()->remove_editor_import_plugin(p_editor_import);
-
-}
-
-void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin>& p_editor_export){
-
-	EditorImportExport::get_singleton()->add_export_plugin(p_editor_export);
-}
-void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin>& p_editor_export){
-
-	EditorImportExport::get_singleton()->remove_export_plugin(p_editor_export);
-
-}
-
 Control *EditorPlugin::get_base_control() {
 
 	return EditorNode::get_singleton()->get_gui_base();
@@ -377,12 +356,6 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ClassDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
 	ClassDB::bind_method(_MD("get_editor_viewport:Control"), &EditorPlugin::get_editor_viewport);
-
-	ClassDB::bind_method(_MD("add_import_plugin","plugin:EditorImportPlugin"),&EditorPlugin::add_import_plugin);
-	ClassDB::bind_method(_MD("remove_import_plugin","plugin:EditorImportPlugin"),&EditorPlugin::remove_import_plugin);
-
-	ClassDB::bind_method(_MD("add_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::add_export_plugin);
-	ClassDB::bind_method(_MD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorPlugin::remove_export_plugin);
 
 	ClassDB::bind_method(_MD("get_resource_previewer:EditorResourcePreview"),&EditorPlugin::get_resource_previewer);
 	ClassDB::bind_method(_MD("get_resource_filesystem:EditorFileSystem"),&EditorPlugin::get_resource_file_system);

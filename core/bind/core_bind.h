@@ -54,7 +54,6 @@ public:
 	void set_abort_on_missing_resources(bool p_abort);
 	PoolStringArray get_dependencies(const String& p_path);
 	bool has(const String& p_path);
-	Ref<ResourceImportMetadata> load_import_metadata(const String& p_path);
 
 	_ResourceLoader();
 };

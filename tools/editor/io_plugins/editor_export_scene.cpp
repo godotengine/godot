@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_export_scene.h"
-
+#if 0
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
@@ -139,3 +139,4 @@ Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<
 EditorSceneExportPlugin::EditorSceneExportPlugin()
 {
 }
+#endif

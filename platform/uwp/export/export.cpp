@@ -65,7 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *************************************************************************/
 
-
+#if 0
 #include "version.h"
 #include "export.h"
 #include "object.h"
@@ -2390,3 +2390,4 @@ void register_uwp_exporter() {
 	Ref<EditorExportPlatformUWP> exporter = Ref<EditorExportPlatformUWP>(memnew(EditorExportPlatformUWP));
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
 }
+#endif

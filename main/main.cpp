@@ -38,7 +38,7 @@
 #include "script_debugger_local.h"
 #include "script_debugger_remote.h"
 #include "message_queue.h"
-#include "path_remap.h"
+
 #include "input_map.h"
 #include "io/resource_loader.h"
 #include "scene/main/scene_main_loop.h"
@@ -85,7 +85,7 @@ AudioServer *audio_server=NULL;
 
 static MessageQueue *message_queue=NULL;
 static Performance *performance = NULL;
-static PathRemap *path_remap;
+
 static PackedData *packed_data=NULL;
 #ifdef MINIZIP_ENABLED
 static ZipArchive *zip_packed_data=NULL;
@@ -215,7 +215,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	register_core_settings(); //here globals is present
 
-	path_remap = memnew( PathRemap );
 	translation_server = memnew( TranslationServer );
 	performance = memnew( Performance );
 	globals->add_singleton(GlobalConfig::Singleton("Performance",performance));
@@ -874,8 +873,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		memdelete(packed_data);
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
-	if(path_remap)
-		memdelete(path_remap);
 
 // Note 1: *zip_packed_data live into *packed_data
 // Note 2: PackedData::~PackedData destroy this.
@@ -934,8 +931,6 @@ Error Main::setup2() {
 		OS::get_singleton()->set_window_fullscreen(true);
 	}
 	MAIN_PRINT("Main: Load Remaps");
-
-	path_remap->load_remaps();
 
 	Color clear = GLOBAL_DEF("rendering/viewport/default_clear_color",Color(0.3,0.3,0.3));
 	VisualServer::get_singleton()->set_default_clear_color(clear);
@@ -1791,8 +1786,6 @@ void Main::cleanup() {
 		memdelete(input_map);
 	if (translation_server)
 		memdelete( translation_server );
-	if (path_remap)
-		memdelete(path_remap);
 	if (globals)
 		memdelete(globals);
 	if (engine)

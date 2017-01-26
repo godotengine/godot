@@ -29,6 +29,7 @@
 #ifndef EDITOR_REIMPORT_DIALOG_H
 #define EDITOR_REIMPORT_DIALOG_H
 
+#if 0
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
@@ -49,3 +50,4 @@ public:
 };
 
 #endif // EDITOR_REIMPORT_DIALOG_H
+#endif

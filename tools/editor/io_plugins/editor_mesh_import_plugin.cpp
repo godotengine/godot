@@ -28,6 +28,8 @@
 /*************************************************************************/
 #include "editor_mesh_import_plugin.h"
 
+#if 0
+
 #include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
@@ -588,3 +590,4 @@ EditorMeshImportPlugin::EditorMeshImportPlugin(EditorNode* p_editor) {
 	dialog = memnew( EditorMeshImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
+#endif

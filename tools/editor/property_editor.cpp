@@ -208,13 +208,13 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 				case OBJ_MENU_REIMPORT: {
 
 					RES r=v;
-					if (r.is_valid() && r->get_import_metadata().is_valid()) {
+/*					if (r.is_valid() && r->get_import_metadata().is_valid()) {
 						Ref<ResourceImportMetadata> rimd = r->get_import_metadata();
 						Ref<EditorImportPlugin> eip = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());
 						if (eip.is_valid()) {
 							eip->import_dialog(r->get_path());
 						}
-					}
+					}*/
 				} break;
 				case OBJ_MENU_NEW_SCRIPT: {
 
@@ -945,11 +945,11 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				menu->add_icon_item(get_icon("EditResource","EditorIcons"),"Edit",OBJ_MENU_EDIT);
 				menu->add_icon_item(get_icon("Del","EditorIcons"),"Clear",OBJ_MENU_CLEAR);
 				menu->add_icon_item(get_icon("Duplicate","EditorIcons"),"Make Unique",OBJ_MENU_MAKE_UNIQUE);
-				RES r = v;
+				/*RES r = v;
 				if (r.is_valid() && r->get_path().is_resource_file() && r->get_import_metadata().is_valid()) {
 					menu->add_separator();
 					menu->add_icon_item(get_icon("ReloadSmall","EditorIcons"),"Re-Import",OBJ_MENU_REIMPORT);
-				}
+				}*/
 				/*if (r.is_valid() && r->get_path().is_resource_file()) {
 					menu->set_item_tooltip(1,r->get_path());
 				} else if (r.is_valid()) {
