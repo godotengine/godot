@@ -482,14 +482,6 @@ void TextEdit::_notification(int p_what) {
 			Color color = cache.font_color;
 			int in_region=-1;
 
-			if (line_length_guideline) {
-				int x=xmargin_beg+cache.font->get_char_size('0').width*line_length_guideline_col-cursor.x_ofs;
-				if (x>xmargin_beg && x<xmargin_end) {
-					Color guideline_color(color.r,color.g,color.b,color.a*0.25f);
-					VisualServer::get_singleton()->canvas_item_add_line(ci,Point2(x,0),Point2(x,cache.size.height),guideline_color);
-				}
-			}
-
 			if (syntax_coloring) {
 
 				if (cache.background_color.a>0.01) {
@@ -1079,6 +1071,14 @@ void TextEdit::_notification(int p_what) {
 					}
 				}
 			}
+
+			if (line_length_guideline) {
+				int x=xmargin_beg+cache.font->get_char_size('0').width*line_length_guideline_col-cursor.x_ofs;
+				if (x>xmargin_beg && x<xmargin_end) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci,Point2(x,0),Point2(x,cache.size.height),cache.line_length_guideline_color);
+				}
+			}
+
 
 			bool completion_below = false;
 			if (completion_active) {
@@ -3484,6 +3484,7 @@ void TextEdit::_update_caches() {
 	cache.selection_color=get_color("selection_color");
 	cache.mark_color=get_color("mark_color");
 	cache.current_line_color=get_color("current_line_color");
+	cache.line_length_guideline_color=get_color("line_length_guideline_color");
 	cache.breakpoint_color=get_color("breakpoint_color");
 	cache.brace_mismatch_color=get_color("brace_mismatch_color");
 	cache.word_highlighted_color=get_color("word_highlighted_color");
