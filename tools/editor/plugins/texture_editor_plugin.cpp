@@ -31,6 +31,8 @@
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
+#include "tools/editor/resource_preview_dock.h"
+
 
 void TextureEditor::_gui_input(InputEvent p_event) {
 
@@ -119,7 +121,6 @@ void TextureEditor::_bind_methods() {
 TextureEditor::TextureEditor() {
 
 	set_custom_minimum_size(Size2(1,150));
-
 }
 
 
@@ -140,30 +141,34 @@ bool TextureEditorPlugin::handles(Object *p_object) const {
 void TextureEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		texture_editor->show();
-		//texture_editor->set_process(true);
+		preview_dock->show();
 	} else {
 
-		texture_editor->hide();
-		//texture_editor->set_process(false);
+		preview_dock->hide();
 	}
 
 }
+
 
 TextureEditorPlugin::TextureEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
 	texture_editor = memnew( TextureEditor );
-	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM,texture_editor);
-	texture_editor->hide();
+
+	preview_dock = memnew( ResourcePreview );
+
+
+	preview_dock->add_child(texture_editor);
+
+	add_control_to_container(CONTAINER_PROPERTY_EDITOR_BOTTOM,preview_dock);
+	preview_dock->hide();
 
 
 
 }
-
+void TextureEditorPlugin::_bind_methods() {
+}
 
 TextureEditorPlugin::~TextureEditorPlugin()
 {
 }
-
-

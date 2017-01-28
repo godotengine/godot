@@ -26,57 +26,28 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef TEXTURE_EDITOR_PLUGIN_H
-#define TEXTURE_EDITOR_PLUGIN_H
+#ifndef PREVIEW_PANE_H
+#define PREVIEW_PANE_H
 
 
 
-#include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
-#include "tools/editor/resource_preview_dock.h"
-#include "scene/resources/texture.h"
 
+class ResourcePreview : public VBoxContainer {
+	GDCLASS(ResourcePreview, VBoxContainer );
 
-class TextureEditor : public Control {
-
-	GDCLASS(TextureEditor, Control);
-
-
-	Ref<Texture> texture;
+	TextureButton *collapse_button;
 
 protected:
 	void _notification(int p_what);
-	void _gui_input(InputEvent p_event);
-	static void _bind_methods();
-public:
-
-	void edit(Ref<Texture> p_texture);
-	TextureEditor();
-};
-
-
-class TextureEditorPlugin : public EditorPlugin {
-
-	GDCLASS( TextureEditorPlugin, EditorPlugin );
-
-	TextureEditor *texture_editor;
-	ResourcePreview *preview_dock;
-	EditorNode *editor;
-
-protected:
+	void toggle_preview( bool visible );
 	static void _bind_methods();
 
 public:
-
-	virtual String get_name() const { return "Texture"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
-
-	TextureEditorPlugin(EditorNode *p_node);
-	~TextureEditorPlugin();
-
+	ResourcePreview();
+	~ResourcePreview();
 };
 
-#endif // TEXTURE_EDITOR_PLUGIN_H
+
+
+#endif // PREVIEW_PANE_H
