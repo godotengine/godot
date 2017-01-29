@@ -18,8 +18,13 @@ static bool _ipv6_available(){
 	if ( -1 == sockfd ){
 		WARN_PRINT( strerror( errno ) ); 
 		return false; // not supported 
-	} else 
-		close( sockfd );
+	} else {
+		#if defined( WIN32 ) && !defined(__CYGWIN__)
+			closesocket( sockfd );
+		#else
+			close( sockfd );
+		#endif
+	}
 	return true;
 }
 
