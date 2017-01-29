@@ -649,6 +649,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			Node *tocopy = selection.front()->get();
 
+			if (tocopy==scene){
+				accept->get_ok()->set_text(TTR("I see.."));
+				accept->set_text(TTR("Can not perform with the root node."));
+				accept->popup_centered_minsize();
+				break;
+			}
+
 			if (tocopy!=editor_data->get_edited_scene_root() && tocopy->get_filename()!="") {
 				accept->get_ok()->set_text(TTR("I see.."));
 				accept->set_text(TTR("This operation can't be done on instanced scenes."));
