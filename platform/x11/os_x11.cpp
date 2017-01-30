@@ -775,13 +775,31 @@ void OS_X11::set_window_position(const Point2& p_position) {
 }
 
 Size2 OS_X11::get_window_size() const {
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, x11_window, &xwa);
-	return Size2i(xwa.width, xwa.height);
+	// Use current_videomode width and height instead of XGetWindowAttributes
+	// since right after a XResizeWindow the attributes may not be updated yet
+	return Size2i(current_videomode.width, current_videomode.height);
 }
 
 void OS_X11::set_window_size(const Size2 p_size) {
+	// If window resizable is disabled we need to update the attributes first
+	if (is_window_resizable() == false) {
+		XSizeHints *xsh;
+		xsh = XAllocSizeHints();
+		xsh->flags = PMinSize | PMaxSize;
+		xsh->min_width = p_size.x;
+		xsh->max_width = p_size.x;
+		xsh->min_height = p_size.y;
+		xsh->max_height = p_size.y;
+		XSetWMNormalHints(x11_display, x11_window, xsh);
+		XFree(xsh);
+	}
+
+	// Resize the window
 	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
+
+	// Update our videomode width and height
+	current_videomode.width = p_size.x;
+	current_videomode.height = p_size.y;
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
@@ -795,15 +813,15 @@ bool OS_X11::is_window_fullscreen() const {
 
 void OS_X11::set_window_resizable(bool p_enabled) {
 	XSizeHints *xsh;
+	Size2 size = get_window_size();
+
 	xsh = XAllocSizeHints();
 	xsh->flags = p_enabled ? 0L : PMinSize | PMaxSize;
 	if(!p_enabled) {
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display,x11_window,&xwa);
-		xsh->min_width = xwa.width;
-		xsh->max_width = xwa.width;
-		xsh->min_height = xwa.height;
-		xsh->max_height = xwa.height;
+		xsh->min_width = size.x;
+		xsh->max_width = size.x;
+		xsh->min_height = size.y;
+		xsh->max_height = size.y;
 	}
 	XSetWMNormalHints(x11_display, x11_window, xsh);
 	XFree(xsh);
