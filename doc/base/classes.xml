@@ -677,7 +677,7 @@
 	</methods>
 	<constants>
 		<constant name="PI" value="3.141593">
-			Constant that represents how many times the diameter of a circumference fits around it's perimeter.
+			Constant that represents how many times the diameter of a circumference fits around its perimeter.
 		</constant>
 	</constants>
 </class>
@@ -8089,7 +8089,7 @@
 		Circular Shape for 2D Physics.
 	</brief_description>
 	<description>
-		Circular Shape for 2D Physics. This shape is useful for modeling balls or small characters and it's collision detection with everything else is very fast.
+		Circular Shape for 2D Physics. This shape is useful for modeling balls or small characters and its collision detection with everything else is very fast.
 	</description>
 	<methods>
 		<method name="get_radius" qualifiers="const">
@@ -11308,7 +11308,7 @@
 				This function is called for each file exported and depending from the return value one of many things might happen.
 				1) If returned value is null, the file is exported as is.
 				2) If the returned value is a RawAray (array of bytes), the content of that array becomes the new file being exported.
-				3) If the file must also change it's name when exported, then a [Dictionary] must be returned with two fields: 'name' with the new filename and 'data' with a [RawArray] containing the raw contents of the file. Even if the name is changed, the run-time will redirect the old file to the new file automatically when accessed.
+				3) If the file must also change its name when exported, then a [Dictionary] must be returned with two fields: 'name' with the new filename and 'data' with a [RawArray] containing the raw contents of the file. Even if the name is changed, the run-time will redirect the old file to the new file automatically when accessed.
 			</description>
 		</method>
 	</methods>
@@ -11578,7 +11578,7 @@
 </class>
 <class name="EditorPlugin" inherits="Node" category="Core">
 	<brief_description>
-		Used by the editor to extend it's functionality.
+		Used by the editor to extend its functionality.
 	</brief_description>
 	<description>
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins.
@@ -11834,7 +11834,7 @@
 		</method>
 		<method name="save_external_data" qualifiers="virtual">
 			<description>
-				This method is called after the editor save the project or when the it's closed. It asks the plugin to save edited external scenes/resources.
+				This method is called after the editor saves the project or when it's closed. It asks the plugin to save edited external scenes/resources.
 			</description>
 		</method>
 		<method name="set_state" qualifiers="virtual">
@@ -15567,7 +15567,7 @@
 			Request does not have a response(yet).
 		</constant>
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7">
-			Request exceded it's maximum size limit, see [method set_body_size_limit].
+			Request exceded its maximum size limit, see [method set_body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8">
 			Request failed. (unused)
@@ -15579,7 +15579,7 @@
 			HTTPRequest couldn't write to the download file.
 		</constant>
 		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
-			Request reached it's maximum redirect limit, see [method set_max_redirects].
+			Request reached its maximum redirect limit, see [method set_max_redirects].
 		</constant>
 	</constants>
 </class>
@@ -15691,7 +15691,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the status of hostname queued for resolving, given it's queue ID. Returned status can be any of the RESOLVER_STATUS_* enumeration.
+				Return the status of hostname queued for resolving, given its queue ID. Returned status can be any of the RESOLVER_STATUS_* enumeration.
 			</description>
 		</method>
 		<method name="resolve_hostname">
@@ -33019,7 +33019,7 @@
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
-				Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
+				Emitted when the body changes its sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
@@ -33414,7 +33414,7 @@
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
-				Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
+				Emitted when the body changes its sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
@@ -34994,7 +34994,7 @@
 			<return type="Error">
 			</return>
 			<description>
-				Tries to wait for the [Semaphore], if it's value is zero, blocks until non-zero.
+				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero.
 			</description>
 		</method>
 	</methods>
