@@ -36,8 +36,6 @@
 class AudioDriverJavaScript : public AudioDriver {
 public:
 
-	void set_singleton();
-
 	virtual const char* get_name() const;
 
 	virtual Error init();

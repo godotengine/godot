@@ -33,6 +33,7 @@
 #ifdef NO_THREADS
 
 #define OBJTYPE_RLOCK
+#define OBJTYPE_WLOCK
 
 #else
 
@@ -776,11 +777,15 @@ void ClassDB::add_property(StringName p_class,const PropertyInfo& p_pinfo, const
 
 
 
+#ifndef NO_THREADS
 	lock->read_lock();
+#endif
 
 	ClassInfo *type=classes.getptr(p_class);
 
+#ifndef NO_THREADS
 	lock->read_unlock();
+#endif
 
 	ERR_FAIL_COND(!type);
 

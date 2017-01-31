@@ -33,8 +33,6 @@
 #include "drivers/unix/os_unix.h"
 #include "os/main_loop.h"
 #include "servers/physics/physics_server_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/visual/rasterizer.h"
@@ -70,7 +68,6 @@ private:
 	int64_t time_to_save_sync;
 	int64_t last_sync_time;
 
-	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
@@ -164,8 +161,6 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	void set_opengl_extensions(const char* p_gl_extensions);
-
-	void reload_gfx();
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_data_dir() const;

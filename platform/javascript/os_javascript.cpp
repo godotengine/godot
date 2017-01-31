@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "os_javascript.h"
 
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "core/io/file_access_buffered_fa.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -47,7 +47,7 @@ int OS_JavaScript::get_video_driver_count() const {
 
 const char * OS_JavaScript::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 OS::VideoMode OS_JavaScript::get_default_video_mode() const {
@@ -237,29 +237,19 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	print_line("Init Audio");
 
 	AudioDriverManager::add_driver(&audio_driver_javascript);
+	audio_driver_javascript.set_singleton();
+	if (audio_driver_javascript.init() != OK) {
 
-	if (true) {
-		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,false,false,false) );
-		rasterizer_gles22->set_use_framebuffers(false); //not supported by emscripten
-		if (gl_extensions)
-			rasterizer_gles22->set_extensions(gl_extensions);
-		rasterizer = rasterizer_gles22;
-	} else {
-		//rasterizer = memnew( RasterizerGLES1(true, false) );
+		ERR_PRINT("Initializing audio failed.");
 	}
+
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
 
 	print_line("Init VS");
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-	visual_server->init();
+	visual_server = memnew( VisualServerRaster() );
 	visual_server->cursor_set_visible(false, 0);
-
-	/*AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}*/
 
 	print_line("Init Physicsserver");
 
@@ -767,14 +757,6 @@ void OS_JavaScript::main_loop_request_quit() {
 		main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 }
 
-void OS_JavaScript::reload_gfx() {
-
-	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2,video_mode.width,video_mode.height,video_mode.fullscreen);
-	if (rasterizer)
-		rasterizer->reload_vram();
-}
-
 Error OS_JavaScript::shell_open(String p_uri) {
 	/* clang-format off */
 	EM_ASM_({
@@ -877,7 +859,6 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Get
 	main_loop=NULL;
 	last_id=1;
 	gl_extensions=NULL;
-	rasterizer=NULL;
 	window_maximized=false;
 
 	get_data_dir_func=p_get_data_dir_func;

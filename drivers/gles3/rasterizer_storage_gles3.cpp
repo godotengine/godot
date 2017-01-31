@@ -135,7 +135,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 
 		} break;
 		case Image::FORMAT_RGB565: {
-#ifdef IPHONE_ENABLED
+#ifndef GLES_OVER_GL
 			r_gl_internal_format=GL_RGB565;
 #else
 //#warning TODO: Convert tod 555 if 565 is not supported (GLES3.3-)

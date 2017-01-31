@@ -14,9 +14,7 @@ def get_name():
 def can_build():
 
     import os
-    if (not os.environ.has_key("EMSCRIPTEN_ROOT")):
-        return False
-    return True
+    return os.environ.has_key("EMSCRIPTEN_ROOT")
 
 
 def get_opts():
@@ -79,9 +77,8 @@ def configure(env):
     # These flags help keep the file size down
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
     env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL', '-DMPC_FIXED_POINT', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
-    env.Append(CPPFLAGS=['-DGLES2_ENABLED'])
+    env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
     env.Append(CPPFLAGS=['-DGLES_NO_CLIENT_ARRAYS'])
-#	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
 
     if env['wasm'] == 'yes':
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
@@ -101,14 +98,10 @@ def configure(env):
         env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
 
     env.Append(LINKFLAGS=['-O2'])
+    env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
     # env.Append(LINKFLAGS=['-g4'])
 
     # print "CCCOM is:", env.subst('$CCCOM')
     # print "P: ", env['p'], " Platofrm: ", env['platform']
 
     import methods
-
-    env.Append(BUILDERS={'GLSL120': env.Builder(action=methods.build_legacygl_headers, suffix='glsl.h', src_suffix='.glsl')})
-    env.Append(BUILDERS={'GLSL': env.Builder(action=methods.build_glsl_headers, suffix='glsl.h', src_suffix='.glsl')})
-    env.Append(BUILDERS={'GLSL120GLES': env.Builder(action=methods.build_gles2_headers, suffix='glsl.h', src_suffix='.glsl')})
-    #env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
