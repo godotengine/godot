@@ -1214,6 +1214,28 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 
 }
 
+void RichTextLabel::_remove_item(Item* p_item, const int p_line, const int p_subitem_line) {
+
+
+	int size = p_item->subitems.size();
+	if (size == 0) {
+		p_item->parent->subitems.erase(p_item);
+		if (p_item->type == ITEM_NEWLINE) {
+			current_frame->lines.remove(p_line);
+			for (int i = p_subitem_line; i < current->subitems.size(); i++) {
+				if (current->subitems[i]->line > 0)
+					current->subitems[i]->line--;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < size; i++) {
+			_remove_item(p_item->subitems.front()->get(), p_line, p_subitem_line);
+		}
+	}
+
+}
+
 void RichTextLabel::add_image(const Ref<Texture>& p_image) {
 
 	if (current->type==ITEM_TABLE)
@@ -1236,6 +1258,26 @@ void RichTextLabel::add_newline() {
 	current_frame->lines.resize(current_frame->lines.size()+1);
 	_add_item(item,false);
 
+}
+
+bool RichTextLabel::remove_line(const int p_line) {
+
+	if (p_line >= current_frame->lines.size() || p_line < 0)
+		return false;
+
+	int lines = p_line * 2;
+
+	if (current->subitems[lines]->type != ITEM_NEWLINE)
+		_remove_item(current->subitems[lines], current->subitems[lines]->line, lines);
+
+	_remove_item(current->subitems[lines], current->subitems[lines]->line, lines);
+
+	if (p_line == 0) {
+		main->lines[0].from = main;
+	}
+
+	main->first_invalid_line = 0;
+	return true;
 }
 
 void RichTextLabel::push_font(const Ref<Font>& p_font) {
@@ -1906,6 +1948,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_text","text"),&RichTextLabel::add_text);
 	ClassDB::bind_method(D_METHOD("add_image","image:Texture"),&RichTextLabel::add_image);
 	ClassDB::bind_method(D_METHOD("newline"),&RichTextLabel::add_newline);
+	ClassDB::bind_method(D_METHOD("remove_line"),&RichTextLabel::remove_line);
 	ClassDB::bind_method(D_METHOD("push_font","font"),&RichTextLabel::push_font);
 	ClassDB::bind_method(D_METHOD("push_color","color"),&RichTextLabel::push_color);
 	ClassDB::bind_method(D_METHOD("push_align","align"),&RichTextLabel::push_align);
