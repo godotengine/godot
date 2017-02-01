@@ -178,7 +178,7 @@ public:
 
 				Balloon *b=hands[i].first;
 				hands[i].first=b->next;
-				memfree(b);
+				memfree(b+1);
 			}
 
 			hands[i].allocated=0;
