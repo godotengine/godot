@@ -30,7 +30,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String& p_path, PathAndTy
 			return OK;
 		}
 		else if (err!=OK) {
-			ERR_PRINTS("ResourceFormatImporter::load - "+p_path+":"+itos(lines)+" error: "+error_text);
+			ERR_PRINTS("ResourceFormatImporter::load - "+p_path+".import:"+itos(lines)+" error: "+error_text);
 			memdelete(f);
 			return err;
 		}
@@ -71,12 +71,20 @@ RES ResourceFormatImporter::load(const String &p_path,const String& p_original_p
 	}
 
 
-	return ResourceLoader::load(pat.path,pat.type,false,r_error);
+	RES res =  ResourceLoader::load(pat.path,pat.type,false,r_error);
+
+#ifdef TOOLS_ENABLED
+	res->set_import_last_modified_time( res->get_last_modified_time() ); //pass this, if used
+	res->set_import_path(pat.path);
+#endif
+
+	return res;
 
 }
 
 void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extensions) const{
 
+	print_line("getting exts from: "+itos(importers.size()));
 	Set<String> found;
 
 	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
@@ -84,6 +92,7 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 		E->get()->get_recognized_extensions(&local_exts);
 		for (List<String>::Element *F=local_exts.front();F;F=F->next()) {
 			if (!found.has(F->get())) {
+				print_line("adding ext "+String(F->get()));
 				p_extensions->push_back(F->get());
 				found.insert(F->get());
 			}
@@ -93,10 +102,14 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 
 void ResourceFormatImporter::get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const{
 
+	if (p_type=="") {
+		return get_recognized_extensions(p_extensions);
+	}
+
 	Set<String> found;
 
 	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
-		if (!ClassDB::is_parent_class(p_type,E->get()->get_resource_type()))
+		if (!ClassDB::is_parent_class(E->get()->get_resource_type(),p_type))
 			continue;
 
 		List<String> local_exts;
@@ -112,13 +125,21 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String& p_
 
 bool ResourceFormatImporter::recognize_path(const String& p_path,const String& p_for_type) const{
 
-	return (p_path.get_extension().to_lower()=="import");
+	return FileAccess::exists(p_path+".import");
+
 }
+
+bool ResourceFormatImporter::can_be_imported(const String& p_path) const {
+
+	return ResourceFormatLoader::recognize_path(p_path);
+}
+
 
 bool ResourceFormatImporter::handles_type(const String& p_type) const {
 
 	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
-		if (ClassDB::is_parent_class(p_type,E->get()->get_resource_type()))
+		print_line("handles "+p_type+" base is "+E->get()->get_resource_type());
+		if (ClassDB::is_parent_class(E->get()->get_resource_type(),p_type))
 			return true;
 
 	}
@@ -152,3 +173,59 @@ void ResourceFormatImporter::get_dependencies(const String& p_path,List<String> 
 	return ResourceLoader::get_dependencies(pat.path,p_dependencies,p_add_types);
 }
 
+Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String& p_name) {
+
+	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
+		if (E->get()->get_importer_name()==p_name) {
+			return E->get();
+		}
+	}
+
+	return Ref<ResourceImporter>();
+}
+
+
+void ResourceFormatImporter::get_importers_for_extension(const String& p_extension,List<Ref<ResourceImporter> > *r_importers) {
+
+	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
+		List<String> local_exts;
+		E->get()->get_recognized_extensions(&local_exts);
+		for (List<String>::Element *F=local_exts.front();F;F=F->next()) {
+			if (p_extension.to_lower()==F->get()) {
+				r_importers->push_back(E->get());
+			}
+		}
+	}
+}
+
+Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const String& p_extension) {
+
+
+	Ref<ResourceImporter> importer;
+	float priority=0;
+
+	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
+
+		List<String> local_exts;
+		E->get()->get_recognized_extensions(&local_exts);
+		for (List<String>::Element *F=local_exts.front();F;F=F->next()) {
+			if (p_extension.to_lower()==F->get() && E->get()->get_priority() > priority) {
+				importer=E->get();
+				priority=E->get()->get_priority();
+			}
+		}
+	}
+
+	return importer;
+}
+
+String ResourceFormatImporter::get_import_base_path(const String& p_for_file) const {
+
+	return "res://.import/"+p_for_file.get_file()+"-"+p_for_file.md5_text();
+}
+
+ResourceFormatImporter *ResourceFormatImporter::singleton=NULL;
+
+ResourceFormatImporter::ResourceFormatImporter() {
+	singleton=this;
+}

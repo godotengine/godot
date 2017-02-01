@@ -350,25 +350,9 @@ void FileSystemDock::_search(EditorFileSystemDirectory *p_path,List<FileInfo>* m
 			FileInfo fi;
 			fi.name=file;
 			fi.type=p_path->get_file_type(i);
-			fi.path=p_path->get_file_path(i);
-			if (p_path->get_file_meta(i)) {
-				if (p_path->is_missing_sources(i)) {
-					fi.import_status=3;
-				} else if (p_path->have_sources_changed(i)) {
-					fi.import_status=2;
-				} else {
-					fi.import_status=1;
-				}
-			} else {
-				fi.import_status=0;
-			}
-			for(int j=0;j<p_path->get_source_count(i);j++) {
-				/*String s = EditorImportPlugin::expand_source_path(p_path->get_source_file(i,j));
-				if (p_path->is_source_file_missing(i,j)) {
-					s+=" (Missing)";
-				}
-				fi.sources.push_back(s);*/
-			}
+			fi.path=p_path->get_file_path(i);			
+			fi.import_status=0;
+
 
 			matches->push_back(fi);
 			if (matches->size()>p_max_items)
@@ -500,25 +484,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 			fi.name=efd->get_file(i);
 			fi.path=path.plus_file(fi.name);
 			fi.type=efd->get_file_type(i);
-			if (efd->get_file_meta(i)) {
-				if (efd->is_missing_sources(i)) {
-					fi.import_status=3;
-				} else if (efd->have_sources_changed(i)) {
-					fi.import_status=2;
-				} else {
-					fi.import_status=1;
-				}
-
-				for(int j=0;j<efd->get_source_count(i);j++) {
-					/*String s = EditorImportPlugin::expand_source_path(efd->get_source_file(i,j));
-					if (efd->is_source_file_missing(i,j)) {
-						s+=" (Missing)";
-					}
-					fi.sources.push_back(s);*/
-				}
-			} else {
-				fi.import_status=0;
-			}
+			fi.import_status=0;
 
 
 
@@ -1538,26 +1504,6 @@ void FileSystemDock::_files_list_rmb_select(int p_item,const Vector2& p_pos) {
 		if (efsd) {
 
 
-			if (!efsd->get_file_meta(pos)) {
-				all_can_reimport=false;
-
-
-			} else {
-				/*
-				Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(path);
-				if (rimd.is_valid()) {
-
-					String editor=rimd->get_editor();
-					if (editor.begins_with("texture_")) { //compatibility fix for old texture format
-						editor="texture";
-					}
-					types.insert(editor);
-
-				} else {
-					all_can_reimport=false;
-
-				}*/
-			}
 		} else {
 			all_can_reimport=false;
 
@@ -1642,6 +1588,57 @@ void FileSystemDock::select_file(const String& p_file) {
 
 }
 
+void FileSystemDock::_file_multi_selected(int p_index,bool p_selected) {
+
+
+	_file_selected();
+}
+
+void FileSystemDock::_file_selected() {
+
+	//check import
+	Vector<String> imports;
+	String import_type;
+
+	for(int i=0;i<files->get_item_count();i++) {
+		if (!files->is_selected(i))
+			continue;
+
+		String p = files->get_item_metadata(i);
+		if (!FileAccess::exists(p+".import")) {
+			imports.clear();
+			break;
+		}
+		Ref<ConfigFile> cf;
+		cf.instance();
+		Error err = cf->load(p+".import");
+		if (err!=OK) {
+			imports.clear();
+			break;
+		}
+
+		String type = cf->get_value("remap","type");
+		if (import_type=="") {
+			import_type=type;
+		} else if (import_type!=type) {
+			//all should be the same type
+			imports.clear();
+			break;
+		}
+		imports.push_back(p);
+	}
+
+
+	if (imports.size()==0) {
+		EditorNode::get_singleton()->get_import_dock()->clear();
+	} else if (imports.size()==1) {
+		EditorNode::get_singleton()->get_import_dock()->set_edit_path(imports[0]);
+	} else {
+		EditorNode::get_singleton()->get_import_dock()->set_edit_multiple_paths(imports);
+	}
+}
+
+
 void FileSystemDock::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_update_tree"),&FileSystemDock::_update_tree);
@@ -1673,6 +1670,8 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(_MD("_files_list_rmb_select"),&FileSystemDock::_files_list_rmb_select);
 
 	ClassDB::bind_method(_MD("_preview_invalidated"),&FileSystemDock::_preview_invalidated);
+	ClassDB::bind_method(_MD("_file_selected"),&FileSystemDock::_file_selected);
+	ClassDB::bind_method(_MD("_file_multi_selected"),&FileSystemDock::_file_multi_selected);
 
 
 	ADD_SIGNAL(MethodInfo("instance", PropertyInfo(Variant::POOL_STRING_ARRAY, "files")));
@@ -1777,6 +1776,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	files->set_select_mode(ItemList::SELECT_MULTI);
 	files->set_drag_forwarding(this);
 	files->connect("item_rmb_selected",this,"_files_list_rmb_select");
+	files->connect("item_selected",this,"_file_selected");
+	files->connect("multi_selected",this,"_file_multi_selected");
 	files->set_allow_rmb_select(true);
 
 	file_list_vb = memnew( VBoxContainer );

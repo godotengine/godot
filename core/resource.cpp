@@ -353,6 +353,7 @@ Resource::Resource() {
 
 #ifdef TOOLS_ENABLED
 	last_modified_time=0;
+	import_last_modified_time=0;
 #endif
 
 	subindex=0;

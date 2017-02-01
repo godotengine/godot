@@ -453,6 +453,335 @@ ImageTexture::~ImageTexture() {
 	VisualServer::get_singleton()->free( texture );
 }
 
+//////////////////////////////////////////
+
+
+
+uint32_t StreamTexture::get_flags() const {
+
+	return flags;
+}
+Image::Format StreamTexture::get_format() const {
+
+	return format;
+}
+
+
+Error StreamTexture::_load_data(const String& p_path,int &tw,int &th,int& flags,Image& image,int p_size_limit) {
+
+
+	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
+	ERR_FAIL_COND_V(!f,ERR_CANT_OPEN);
+
+	uint8_t header[4];
+	f->get_buffer(header,4);
+	if (header[0]!='G' || header[1]!='D' || header[2]!='S' || header[3]!='T') {
+		memdelete(f);
+		ERR_FAIL_COND_V(header[0]!='G' || header[1]!='D' || header[2]!='S' || header[3]!='T',ERR_FILE_CORRUPT);
+	}
+
+	tw = f->get_32();
+	th = f->get_32();
+	flags= f->get_32(); //texture flags!
+	uint32_t df = f->get_32(); //data format
+
+	print_line("width: "+itos(tw));
+	print_line("height: "+itos(th));
+	print_line("flags: "+itos(flags));
+	print_line("df: "+itos(df));
+
+	if (!(df&FORMAT_BIT_STREAM)) {
+		p_size_limit=0;
+	}
+
+
+	if (df&FORMAT_BIT_LOSSLESS || df&FORMAT_BIT_LOSSY) {
+		//look for a PNG or WEBP file inside
+
+		int sw=tw;
+		int sh=th;
+
+		uint32_t mipmaps = f->get_32();
+		uint32_t size = f->get_32();
+
+		print_line("mipmaps: "+itos(mipmaps));
+
+		while(mipmaps>1 && p_size_limit>0 && (sw>p_size_limit || sh>p_size_limit)) {
+
+			f->seek(f->get_pos()+size);
+			mipmaps = f->get_32();
+			size = f->get_32();
+
+			sw=MAX(sw>>1,1);
+			sh=MAX(sh>>1,1);
+			mipmaps--;
+		}
+
+		//mipmaps need to be read independently, they will be later combined
+		Vector<Image> mipmap_images;
+		int total_size=0;
+
+		for(int i=0;i<mipmaps;i++) {
+			PoolVector<uint8_t> pv;
+			pv.resize(size);
+			{
+				PoolVector<uint8_t>::Write w = pv.write();
+				f->get_buffer(w.ptr(),size);
+			}
+
+			Image img;
+			if (df&FORMAT_BIT_LOSSLESS) {
+				img = Image::lossless_unpacker(pv);
+			} else {
+				img = Image::lossy_unpacker(pv);
+			}
+
+			if (img.empty()) {
+				memdelete(f);
+				ERR_FAIL_COND_V(img.empty(),ERR_FILE_CORRUPT);
+			}
+			total_size+=img.get_data().size();
+
+			mipmap_images.push_back(img);
+		}
+
+		print_line("mipmap read total: "+itos(mipmap_images.size()));
+
+
+		memdelete(f); //no longer needed
+
+		if (mipmap_images.size()==1) {
+
+			image=mipmap_images[0];
+			return OK;
+
+		} else {
+			PoolVector<uint8_t> img_data;
+			img_data.resize(total_size);
+
+			{
+				PoolVector<uint8_t>::Write w=img_data.write();
+
+				int ofs=0;
+				for(int i=0;i<mipmap_images.size();i++) {
+
+					PoolVector<uint8_t> id = mipmap_images[i].get_data();
+					int len = id.size();
+					PoolVector<uint8_t>::Read r = id.read();
+					copymem(&w[ofs],r.ptr(),len);
+					ofs+=len;
+				}
+			}
+
+			image = Image(sw,sh,true,mipmap_images[0].get_format(),img_data);
+			return OK;
+		}
+
+	} else {
+
+		//look for regular format
+		Image::Format format = (Image::Format)(df&FORMAT_MASK_IMAGE_FORMAT);
+		bool mipmaps = df&FORMAT_BIT_HAS_MIPMAPS;
+
+		if (!mipmaps) {
+			int size = Image::get_image_data_size(tw,th,format,0);
+
+			PoolVector<uint8_t> img_data;
+			img_data.resize(size);
+
+			{
+				PoolVector<uint8_t>::Write w=img_data.write();
+				f->get_buffer(w.ptr(),size);
+			}
+
+			memdelete(f);
+
+			image = Image(tw,th,false,format,img_data);
+			return OK;
+		} else {
+
+			int sw=tw;
+			int sh=th;
+
+			int mipmaps = Image::get_image_required_mipmaps(tw,th,format);
+			int total_size = Image::get_image_data_size(tw,th,format,mipmaps);
+			int idx=0;
+			int ofs=0;
+
+
+			while(mipmaps>1 && p_size_limit>0 && (sw>p_size_limit || sh>p_size_limit)) {
+
+				sw=MAX(sw>>1,1);
+				sh=MAX(sh>>1,1);
+				mipmaps--;
+				idx++;
+			}
+
+			if (idx>0) {
+				ofs=Image::get_image_data_size(tw,th,format,idx-1);
+			}
+
+			if (total_size - ofs <=0) {
+				memdelete(f);
+				ERR_FAIL_V(ERR_FILE_CORRUPT);
+			}
+
+			f->seek(f->get_pos()+ofs);
+
+
+			PoolVector<uint8_t> img_data;
+			img_data.resize(total_size - ofs);
+
+			{
+				PoolVector<uint8_t>::Write w=img_data.write();
+				int bytes = f->get_buffer(w.ptr(),total_size - ofs);
+
+				memdelete(f);
+
+				if (bytes != total_size - ofs) {
+					ERR_FAIL_V(ERR_FILE_CORRUPT);
+				}
+			}
+
+			image = Image(sw,sh,true,format,img_data);
+
+			return OK;
+		}
+	}
+
+	return ERR_BUG; //unreachable
+}
+
+Error StreamTexture::load(const String& p_path) {
+
+
+	int lw,lh,lflags;
+	Image image;
+	Error err = _load_data(p_path,lw,lh,lflags,image);
+	if (err)
+		return err;
+
+	VS::get_singleton()->texture_allocate(texture,image.get_width(),image.get_height(),image.get_format(),lflags);
+	VS::get_singleton()->texture_set_data(texture,image);
+
+	w=lw;
+	h=lh;
+	flags=lflags;
+	path_to_file=p_path;
+	format=image.get_format();
+
+	return OK;
+}
+String StreamTexture::get_load_path() const {
+
+	return path_to_file;
+}
+
+int StreamTexture::get_width() const {
+
+	return w;
+}
+int StreamTexture::get_height() const {
+
+	return h;
+}
+RID StreamTexture::get_rid() const {
+
+	return texture;
+}
+
+
+void StreamTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate, bool p_transpose) const {
+
+	if ((w|h)==0)
+		return;
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,Rect2( p_pos, Size2(w,h)),texture,false,p_modulate,p_transpose);
+
+}
+void StreamTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) const {
+
+	if ((w|h)==0)
+		return;
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,p_rect,texture,p_tile,p_modulate,p_transpose);
+
+}
+void StreamTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate, bool p_transpose) const{
+
+	if ((w|h)==0)
+		return;
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,p_rect,texture,p_src_rect,p_modulate,p_transpose);
+}
+
+bool StreamTexture::has_alpha() const {
+
+	return false;
+}
+void StreamTexture::set_flags(uint32_t p_flags){
+
+}
+
+void StreamTexture::reload_from_file() {
+
+	load(path_to_file);
+}
+
+void StreamTexture::_bind_methods() {
+
+	ClassDB::bind_method(_MD("load","path"),&StreamTexture::load);
+	ClassDB::bind_method(_MD("get_load_path"),&StreamTexture::get_load_path);
+
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"load_path",PROPERTY_HINT_FILE,"*.stex"),_SCS("load"),_SCS("get_load_path"));
+}
+
+
+StreamTexture::StreamTexture() {
+
+	format=Image::FORMAT_MAX;
+	flags=0;
+	w=0;
+	h=0;
+
+	texture = VS::get_singleton()->texture_create();
+}
+
+StreamTexture::~StreamTexture() {
+
+	VS::get_singleton()->free(texture);
+}
+
+
+
+RES ResourceFormatLoaderStreamTexture::load(const String &p_path,const String& p_original_path,Error *r_error) {
+
+	Ref<StreamTexture> st;
+	st.instance();
+	Error err = st->load(p_path);
+	if (r_error)
+		*r_error=err;
+	if (err!=OK)
+		return RES();
+
+	return st;
+}
+
+void ResourceFormatLoaderStreamTexture::get_recognized_extensions(List<String> *p_extensions) const{
+
+	p_extensions->push_back("stex");
+}
+bool ResourceFormatLoaderStreamTexture::handles_type(const String& p_type) const{
+	return p_type=="StreamTexture";
+
+}
+String ResourceFormatLoaderStreamTexture::get_resource_type(const String &p_path) const{
+
+	if (p_path.get_extension().to_lower()=="stex")
+		return "StreamTexture";
+	return "";
+}
+
+
+
+
 
 //////////////////////////////////////////
 

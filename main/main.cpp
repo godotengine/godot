@@ -183,8 +183,6 @@ void Main::print_help(const char* p_binary) {
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("\t-doctool FILE: Dump the whole engine api to FILE in XML format. If FILE exists, it will be merged.\n");
 	OS::get_singleton()->print("\t-nodocbase: Disallow dump the base types (used with -doctool).\n");
-	OS::get_singleton()->print("\t-optimize FILE Save an optimized copy of scene to FILE.\n");
-	OS::get_singleton()->print("\t-optimize_preset [preset] Use a given preset for optimization.\n");
 	OS::get_singleton()->print("\t-export [target] Export the project using given export target.\n");
 #endif
 }
@@ -1074,12 +1072,9 @@ bool Main::start() {
 	String script;
 	String test;
 	String screen;
-	String optimize;
-	String optimize_preset;
 	String _export_platform;
 	String _import;
 	String _import_script;
-	String dumpstrings;
 	bool noquit=false;
 	bool export_debug=false;
 	bool project_manager_request = false;
@@ -1108,10 +1103,6 @@ bool Main::start() {
 				Engine::get_singleton()->_custom_level=args[i+1];
 			} else if (args[i]=="-test") {
 				test=args[i+1];
-			} else if (args[i]=="-optimize") {
-				optimize=args[i+1];
-			} else if (args[i]=="-optimize_preset") {
-				optimize_preset=args[i+1];
 			} else if (args[i]=="-export") {
 				editor=true; //needs editor
 				_export_platform=args[i+1];
@@ -1125,9 +1116,6 @@ bool Main::start() {
 			} else if (args[i]=="-import_script") {
 				editor=true; //needs editor
 				_import_script=args[i+1];
-			} else if (args[i]=="-dumpstrings") {
-				editor=true; //needs editor
-				dumpstrings=args[i+1];
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
 				parsed_pair=false;
@@ -1161,10 +1149,6 @@ bool Main::start() {
 
 		return false;
 	}
-
-	if (optimize!="")
-		editor=true; //need editor
-
 
 
 #endif
@@ -1399,22 +1383,7 @@ bool Main::start() {
 
 					Error serr = editor_node->load_scene(local_game_path);
 
-					if (serr==OK) {
 
-						if (optimize!="") {
-
-							editor_node->save_optimized_copy(optimize,optimize_preset);
-							if (!noquit)
-								sml->quit();
-						}
-
-						if (dumpstrings!="") {
-
-							editor_node->save_translatable_strings(dumpstrings);
-							if (!noquit)
-								sml->quit();
-						}
-					}
 				}
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 

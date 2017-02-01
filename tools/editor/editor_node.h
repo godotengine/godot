@@ -50,6 +50,7 @@
 #include "tools/editor/reparent_dialog.h"
 #include "tools/editor/connections_dialog.h"
 #include "tools/editor/node_dock.h"
+#include "tools/editor/import_dock.h"
 #include "tools/editor/settings_config_dialog.h"
 #include "tools/editor/groups_editor.h"
 #include "tools/editor/editor_data.h"
@@ -134,7 +135,6 @@ private:
 		FILE_EXPORT_MESH_LIBRARY,
 		FILE_EXPORT_TILESET,
 		FILE_SAVE_OPTIMIZED,
-		FILE_DUMP_STRINGS,
 		FILE_OPEN_RECENT,
 		FILE_OPEN_OLD_SCENE,
 		FILE_QUICK_OPEN_SCENE,
@@ -278,6 +278,7 @@ private:
 	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
 	NodeDock *node_dock;
+	ImportDock *import_dock;
 	VBoxContainer *prop_editor_vb;
 	FileSystemDock *filesystem_dock;
 	EditorRunNative *run_native;
@@ -318,9 +319,6 @@ private:
 	//TabContainer *prop_pallete;
 	//TabContainer *top_pallete;
 	String defer_load_scene;
-	String defer_translatable;
-	String defer_optimize;
-	String defer_optimize_preset;
 	String defer_export;
 	String defer_export_platform;
 	bool defer_export_debug;
@@ -376,6 +374,7 @@ private:
 	bool unsaved_cache;
 	String open_navigate;
 	bool changing_scene;
+	bool waiting_for_first_scan;
 
 	bool waiting_for_sources_changed;
 
@@ -488,7 +487,6 @@ private:
 	static void _load_error_notify(void* p_ud,const String& p_text);
 
 	bool has_main_screen() const { return true; }
-	void _fetch_translatable_strings(const Object *p_object,Set<StringName>& strings);
 
 	bool _find_editing_changed_scene(Node *p_from);
 
@@ -683,7 +681,6 @@ public:
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	Viewport *get_scene_root() { return scene_root; } //root of the scene being edited
-	Error save_optimized_copy(const String& p_scene,const String& p_preset);
 
 	void fix_dependencies(const String& p_for_file);
 	void clear_scene() { _cleanup_scene(); }
@@ -703,12 +700,11 @@ public:
 	void request_instance_scene(const String &p_path);
 	void request_instance_scenes(const Vector<String>& p_files);
 	FileSystemDock *get_filesystem_dock();
+	ImportDock *get_import_dock();
 	SceneTreeDock *get_scene_tree_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
-
-	Error save_translatable_strings(const String& p_to_file);
 
 	void set_convert_old_scene(bool p_old) { convert_old=p_old; }
 
@@ -783,7 +779,6 @@ public:
 
 
 };
-
 
 struct EditorProgress {
 

@@ -2155,7 +2155,7 @@ void Image::fix_alpha_edges() {
 		return; //not needed
 
 	PoolVector<uint8_t> dcopy = data;
-	PoolVector<uint8_t>::Read rp = data.read();
+	PoolVector<uint8_t>::Read rp = dcopy.read();
 	const uint8_t *srcptr=rp.ptr();
 
 	PoolVector<uint8_t>::Write wp = data.write();

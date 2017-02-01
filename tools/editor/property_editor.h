@@ -192,6 +192,7 @@ class PropertyEditor : public Control {
 	bool use_doc_hints;
 	bool use_filter;
 	bool subsection_selectable;
+	bool hide_script;
 
 	HashMap<String,String> pending;
 	String selected_property;
@@ -224,7 +225,7 @@ class PropertyEditor : public Control {
 	void _node_removed(Node *p_node);
 
 friend class ProjectExportDialog;
-	void _edit_set(const String& p_name, const Variant& p_value);
+	void _edit_set(const String& p_name, const Variant& p_value,bool p_refresh_all=false);
 	void _draw_flags(Object *ti,const Rect2& p_rect);
 
 	bool _might_be_in_instance();
@@ -276,6 +277,7 @@ public:
 
 	void set_show_categories(bool p_show);
 	void set_use_doc_hints(bool p_enable) { use_doc_hints=p_enable; }
+	void set_hide_script(bool p_hide) { hide_script=p_hide; }
 
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);

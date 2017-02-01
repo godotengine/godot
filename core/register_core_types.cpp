@@ -45,6 +45,7 @@
 #include "compressed_translation.h"
 #include "io/translation_loader_po.h"
 #include "io/resource_format_binary.h"
+#include "io/resource_import.h"
 #include "io/stream_peer_ssl.h"
 #include "os/input.h"
 #include "core/io/xml_parser.h"
@@ -57,7 +58,7 @@
 
 static ResourceFormatSaverBinary *resource_saver_binary=NULL;
 static ResourceFormatLoaderBinary *resource_loader_binary=NULL;
-
+static ResourceFormatImporter *resource_format_importer=NULL;
 
 static _ResourceLoader *_resource_loader=NULL;
 static _ResourceSaver *_resource_saver=NULL;
@@ -104,6 +105,9 @@ void register_core_types() {
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
 	resource_loader_binary = memnew( ResourceFormatLoaderBinary );
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
+
+	resource_format_importer = memnew( ResourceFormatImporter );
+	ResourceLoader::add_resource_format_loader(resource_format_importer);
 
 	ClassDB::register_class<Object>();
 
@@ -183,7 +187,6 @@ void register_core_singletons() {
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ClassDB",_classdb ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Marshalls",_Marshalls::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TS",TranslationServer::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Input",Input::get_singleton() ) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("InputMap",InputMap::get_singleton() )  );
 
@@ -207,6 +210,8 @@ void unregister_core_types() {
 		memdelete(resource_saver_binary);
 	if (resource_loader_binary)
 		memdelete(resource_loader_binary);
+	if (resource_format_importer)
+		memdelete(resource_format_importer);
 
 
 	memdelete( resource_format_po );

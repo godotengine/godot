@@ -99,7 +99,7 @@
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
 #include "plugins/gi_probe_editor_plugin.h"
-
+#include "import/resource_import_texture.h"
 // end
 #include "editor_settings.h"
 #include "io_plugins/editor_texture_import_plugin.h"
@@ -333,21 +333,6 @@ void EditorNode::_notification(int p_what) {
 
 		_editor_select(EDITOR_3D);
 
-		if (defer_load_scene!="") {
-
-			load_scene(defer_load_scene);
-			defer_load_scene="";
-		}
-
-		if (defer_translatable!="") {
-
-			Error ok = save_translatable_strings(defer_translatable);
-			if (ok!=OK)
-				OS::get_singleton()->set_exit_code(255);
-			defer_translatable="";
-			get_tree()->quit();
-		}
-
 /*
 		if (defer_optimize!="") {
 			Error ok = save_optimized_copy(defer_optimize,defer_optimize_preset);
@@ -370,40 +355,7 @@ void EditorNode::_notification(int p_what) {
 
 	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
 
-		/*
-		List<Ref<Resource> > cached;
-		ResourceCache::get_cached_resources(&cached);
-
-		bool changes=false;
-		for(List<Ref<Resource> >::Element *E=cached.front();E;E=E->next()) {
-
-			if (!E->get()->can_reload_from_file())
-				continue;
-			if (E->get()->get_path().find("::")!=-1)
-				continue;
-			uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
-			if (mt!=E->get()->get_last_modified_time()) {
-				changes=true;
-				break;
-			}
-		}
-
-
-
-		sources_button->get_popup()->set_item_disabled(sources_button->get_popup()->get_item_index(DEPENDENCY_UPDATE_LOCAL),!changes);
-		if (changes && sources_button->get_popup()->is_item_disabled(sources_button->get_popup()->get_item_index(DEPENDENCY_UPDATE_IMPORTED))) {
-			sources_button->set_icon(gui_base->get_icon("DependencyLocalChanged","EditorIcons"));
-		}
-*/
-
-		if (bool(EDITOR_DEF("filesystem/resources/auto_reload_modified_images",true))) {
-
-			_menu_option_confirm(DEPENDENCY_LOAD_CHANGED_IMAGES,true);
-		}
-
-		waiting_for_sources_changed=true;
-		EditorFileSystem::get_singleton()->scan_sources();
-
+		EditorFileSystem::get_singleton()->scan_changes();
 	}
 
 	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
@@ -435,59 +387,69 @@ void EditorNode::_fs_changed() {
 		export_defer.platform="";
 	}
 
+	{
+
+		//reload changed resources
+		List<Ref<Resource> > changed;
+
+		List<Ref<Resource> > cached;
+		ResourceCache::get_cached_resources(&cached);
+		//this should probably be done in a thread..
+		for(List<Ref<Resource> >::Element *E=cached.front();E;E=E->next()) {
+
+			if (!E->get()->editor_can_reload_from_file())
+				continue;
+			if (!E->get()->get_path().is_resource_file() && !E->get()->get_path().is_abs_path())
+				continue;
+			if (!FileAccess::exists(E->get()->get_path()))
+				continue;
+
+			if (E->get()->get_import_path()!=String()) {
+				//imported resource
+				uint64_t mt = FileAccess::get_modified_time(E->get()->get_import_path());
+
+				if (mt!=E->get()->get_import_last_modified_time()) {
+					changed.push_back(E->get());
+				}
+
+			} else {
+				uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
+
+				if (mt!=E->get()->get_last_modified_time()) {
+					changed.push_back(E->get());
+				}
+			}
+		}
+
+		if (changed.size()) {
+			EditorProgress ep("reload_res","Reload Modified Resources",changed.size());
+			int idx=0;
+			for(List<Ref<Resource> >::Element *E=changed.front();E;E=E->next()) {
+
+				ep.step(E->get()->get_path(),idx++);
+				E->get()->reload_from_file();
+			}
+		}
+
+
+	}
 }
+
 
 void EditorNode::_sources_changed(bool p_exist) {
 
-	if (p_exist && bool(EditorSettings::get_singleton()->get("filesystem/import/automatic_reimport_on_sources_changed"))) {
-		p_exist=false;
+	if (waiting_for_first_scan) {
 
-		List<String> changed_sources;
-		EditorFileSystem::get_singleton()->get_changed_sources(&changed_sources);
+		if (defer_load_scene!="") {
 
-
-		EditorProgress ep("reimport",TTR("Re-Importing"),changed_sources.size());
-		int step_idx=0;
-#if 0
-		for(List<String>::Element *E=changed_sources.front();E;E=E->next()) {
-
-			ep.step(TTR("Importing:")+" "+E->get(),step_idx++);
-
-			Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(E->get());
-			ERR_CONTINUE(rimd.is_null());
-			String editor = rimd->get_editor();
-			if (editor.begins_with("texture_")) {
-				editor="texture"; //compatibility fix for old versions
-			}
-			Ref<EditorImportPlugin> eip = EditorImportExport::get_singleton()->get_import_plugin_by_name(editor);
-			ERR_CONTINUE(eip.is_null());
-			Error err = eip->import(E->get(),rimd);
-			if (err!=OK) {
-				EditorNode::add_io_error("Error Re Importing:\n  "+E->get());
-			}
-
+			print_line("loading scene DEFERED");
+			load_scene(defer_load_scene);
+			defer_load_scene="";
 		}
-#endif
-		EditorFileSystem::get_singleton()->scan_sources();
-		waiting_for_sources_changed=false;
 
-		return;
+		waiting_for_first_scan=false;
 	}
 
-
-	if (p_exist) {
-
-		sources_button->set_icon(gui_base->get_icon("DependencyChanged","EditorIcons"));
-		sources_button->set_disabled(false);
-
-	} else {
-
-		sources_button->set_icon(gui_base->get_icon("DependencyOk","EditorIcons"));
-		sources_button->set_disabled(true);
-
-	}
-
-	waiting_for_sources_changed=false;
 
 }
 
@@ -1206,12 +1168,6 @@ void EditorNode::_dialog_action(String p_file) {
 
 			get_undo_redo()->clear_history();
 		} break;
-		case FILE_DUMP_STRINGS: {
-
-			save_translatable_strings(p_file);
-
-		} break;
-
 		case FILE_SAVE_SCENE:
 		case FILE_SAVE_AS_SCENE: {
 
@@ -2203,46 +2159,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			_menu_option_confirm(FILE_SAVE_AND_RUN, true);
 		} break;
 
-		case FILE_DUMP_STRINGS: {
-
-			Node *scene = editor_data.get_edited_scene_root();
-
-			if (!scene) {
-
-				current_option=-1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text("This operation can't be done without a tree root.");
-				accept->popup_centered_minsize();
-				break;
-			}
-
-			String cpath;
-			if (scene->get_filename()!="") {
-				cpath = scene->get_filename();
-
-				String fn = cpath.substr(0,cpath.length() - cpath.get_extension().size());
-				String ext=cpath.get_extension();
-				cpath=fn+".pot";
-
-
-			} else {
-				current_option=-1;
-				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text(TTR("I see.."));
-				accept->set_text(TTR("Please save the scene first."));
-				accept->popup_centered_minsize();
-				break;
-
-			}
-
-			file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
-
-			file->set_current_path(cpath);
-			file->set_title(TTR("Save Translatable Strings"));
-			file->popup_centered_ratio();
-
-		} break;
 		case FILE_SAVE_OPTIMIZED: {
 #if 0
 			Node *scene = editor_data.get_edited_scene_root();
@@ -2867,24 +2783,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		case DEPENDENCY_LOAD_CHANGED_IMAGES: {
 
 
-			List<Ref<Resource> > cached;
-			ResourceCache::get_cached_resources(&cached);
-			//this should probably be done in a thread..
-			for(List<Ref<Resource> >::Element *E=cached.front();E;E=E->next()) {
-
-				if (!E->get()->editor_can_reload_from_file())
-					continue;
-				if (!E->get()->get_path().is_resource_file() && !E->get()->get_path().is_abs_path())
-					continue;
-				if (!FileAccess::exists(E->get()->get_path()))
-					continue;
-				uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
-				if (mt!=E->get()->get_last_modified_time()) {
-					E->get()->reload_from_file();
-				}
-
-			}
-
 
 		} break;
 		case DEPENDENCY_UPDATE_IMPORTED: {
@@ -3211,232 +3109,6 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 }
 
 
-void EditorNode::_fetch_translatable_strings(const Object *p_object,Set<StringName>& strings) {
-
-
-	List<String> tstrings;
-	p_object->get_translatable_strings(&tstrings);
-	for(List<String>::Element *E=tstrings.front();E;E=E->next())
-		strings.insert(E->get());
-
-
-
-	const Node * node = p_object->cast_to<Node>();
-
-	if (!node)
-		return;
-
-	Ref<Script> script = node->get_script();
-	if (script.is_valid())
-		_fetch_translatable_strings(script.ptr(),strings);
-
-	for(int i=0;i<node->get_child_count();i++) {
-
-		Node *c=node->get_child(i);
-		if (c->get_owner()!=get_edited_scene())
-			continue;
-
-		_fetch_translatable_strings(c,strings);
-	}
-
-}
-
-
-Error EditorNode::save_translatable_strings(const String& p_to_file) {
-
-	if (!is_inside_tree()) {
-		defer_translatable=p_to_file;
-		return OK;
-	}
-
-	ERR_FAIL_COND_V(!get_edited_scene(),ERR_INVALID_DATA);
-
-	Set<StringName> strings;
-	_fetch_translatable_strings(get_edited_scene(),strings);
-
-	Error err;
-	FileAccess *f = FileAccess::open(p_to_file,FileAccess::WRITE,&err);
-	ERR_FAIL_COND_V(err,err);
-
-	OS::Date date = OS::get_singleton()->get_date();
-	OS::Time time = OS::get_singleton()->get_time();
-	f->store_line("# Translation Strings Dump.");
-	f->store_line("# Created By.");
-	f->store_line("# \t" VERSION_FULL_NAME " (c) 2008-2017 Juan Linietsky, Ariel Manzur.");
-	f->store_line("# From Scene: ");
-	f->store_line("# \t"+get_edited_scene()->get_filename());
-	f->store_line("");
-	f->store_line("msgid \"\"");
-	f->store_line("msgstr \"\"");
-	f->store_line("\"Report-Msgid-Bugs-To: <define>\\n\"");
-	f->store_line("\"POT-Creation-Date: "+itos(date.year)+"-"+itos(date.month)+"-"+itos(date.day)+" "+itos(time.hour)+":"+itos(time.min)+"0000\\n\"");
-	//f->store_line("\"PO-Revision-Date: 2006-08-30 13:56-0700\\n\"");
-	//f->store_line("\"Last-Translator: Rubén C. Díaz Alonso <outime@gmail.com>\\n\"");
-	f->store_line("\"Language-Team: <define>\\n\"");
-	f->store_line("\"MIME-Version: 1.0\\n\"");
-	f->store_line("\"Content-Type: text/plain; charset=UTF-8\\n\"");
-	f->store_line("\"Content-Transfer-Encoding: 8bit\\n\"");
-	f->store_line("");
-
-	for(Set<StringName>::Element *E=strings.front();E;E=E->next()) {
-
-		String s = E->get();
-		if (s=="" || s.strip_edges()=="")
-			continue;
-		Vector<String> substr = s.split("\n");
-		ERR_CONTINUE(substr.size()==0);
-
-		f->store_line("");
-
-		if (substr.size()==1) {
-
-			f->store_line("msgid \""+substr[0].c_escape()+"\"");
-		} else {
-
-			f->store_line("msgid \"\"");
-			for(int i=0;i<substr.size();i++) {
-
-				String s = substr[i];
-				if (i!=substr.size()-1)
-					s+="\n";
-				f->store_line("\""+s.c_escape()+"\"");
-			}
-		}
-
-		f->store_line("msgstr \"\"");
-
-	}
-
-
-	f->close();
-	memdelete(f);
-
-	return OK;
-
-}
-
-Error EditorNode::save_optimized_copy(const String& p_scene,const String& p_preset) {
-
-#if 0
-
-	if (!is_inside_scene()) {
-		defer_optimize=p_scene;
-		defer_optimize_preset=p_preset;
-		return OK;
-	}
-
-
-	if (!get_edited_scene()) {
-
-		get_scene()->quit();
-		ERR_EXPLAIN("No scene to optimize (loading failed?)");
-		ERR_FAIL_V(ERR_FILE_NOT_FOUND);
-	}
-
-
-	String src_scene=GlobalConfig::get_singleton()->localize_path(get_edited_scene()->get_filename());
-
-
-	String path=p_scene;
-	print_line("p_path: "+p_scene);
-	print_line("src_scene: "+p_scene);
-
-	if (path.is_rel_path()) {
-		print_line("rel path!?");
-		path=src_scene.get_base_dir()+"/"+path;
-	}
-	path = GlobalConfig::get_singleton()->localize_path(path);
-
-	print_line("path: "+path);
-
-
-	String preset = "optimizer_presets/"+p_preset;
-	if (!GlobalConfig::get_singleton()->has(preset)) {
-
-		//accept->"()->hide();
-		accept->get_ok()->set_text("I see..");
-		accept->set_text("Optimizer preset not found: "+p_preset);
-		accept->popup_centered(Size2(300,70));
-		ERR_EXPLAIN("Optimizer preset not found: "+p_preset);
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-
-	}
-
-	Dictionary d = GlobalConfig::get_singleton()->get(preset);
-
-	ERR_FAIL_COND_V(!d.has("__type__"),ERR_INVALID_DATA);
-	String type=d["__type__"];
-
-	Ref<EditorOptimizedSaver> saver;
-
-	for(int i=0;i<editor_data.get_optimized_saver_count();i++) {
-
-		print_line(type+" vs "+editor_data.get_optimized_saver(i)->get_target_name());
-		if (editor_data.get_optimized_saver(i)->get_target_name()==type) {
-			saver=editor_data.get_optimized_saver(i);
-		}
-	}
-
-	ERR_EXPLAIN("Preset '"+p_preset+"' references nonexistent saver: "+type);
-	ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
-
-	List<Variant> keys;
-	d.get_key_list(&keys);
-
-	saver->clear();
-
-	for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
-
-		saver->set(E->get(),d[E->get()]);
-	}
-
-	uint32_t flags=0;
-
-	/*
-	if (saver->is_bundle_scenes_enabled())
-		flags|=ResourceSaver::FLAG_BUNDLE_INSTANCED_SCENES;
-	*/
-	if (saver->is_bundle_resources_enabled())
-		flags|=ResourceSaver::FLAG_BUNDLE_RESOURCES;
-	if (saver->is_remove_editor_data_enabled())
-		flags|=ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
-	if (saver->is_big_endian_data_enabled())
-		flags|=ResourceSaver::FLAG_SAVE_BIG_ENDIAN;
-
-	String platform=saver->get_target_platform();
-	if (platform=="")
-		platform="all";
-
-	Ref<PackedScene> sdata = memnew( PackedScene );
-	Error err = sdata->pack(get_edited_scene());
-
-	if (err) {
-
-		current_option=-1;
-		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text("I see..");
-		accept->set_text("Couldn't save scene. Likely dependencies (instances) couldn't be satisfied.");
-		accept->popup_centered(Size2(300,70));
-		return ERR_INVALID_DATA;
-
-	}
-	err = ResourceSaver::save(path,sdata,flags); //todo, saverSceneSaver::save(path,get_edited_scene(),flags,saver);
-
-	if (err) {
-
-		//accept->"()->hide();
-		accept->get_ok()->set_text("I see..");
-		accept->set_text("Error saving optimized scene: "+path);
-		accept->popup_centered(Size2(300,70));
-
-		ERR_FAIL_COND_V(err,err);
-
-	}
-
-	project_settings->add_remapped_path(src_scene,path,platform);
-#endif
-	return OK;
-}
 
 
 int EditorNode::_get_current_main_editor() {
@@ -3832,6 +3504,10 @@ void EditorNode::request_instance_scene(const String &p_path) {
 void EditorNode::request_instance_scenes(const Vector<String>& p_files) {
 
 	scene_tree_dock->instance_scenes(p_files);
+}
+
+ImportDock *EditorNode::get_import_dock() {
+	return import_dock;
 }
 
 FileSystemDock *EditorNode::get_filesystem_dock() {
@@ -5063,7 +4739,6 @@ Variant EditorNode::drag_resource(const Ref<Resource>& p_res,Control* p_from) {
 	TextureRect *drag_preview = memnew( TextureRect );
 	Label* label=memnew( Label );
 
-	waiting_for_sources_changed=true; //
 	Ref<Texture> preview;
 
 	{
@@ -5440,6 +5115,13 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
+
+	{  //register importers at the begining, so dialogs are created with the right extensions
+		Ref<ResourceImporterTexture> import_texture;
+		import_texture.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
+	}
+
 	_pvrtc_register_compressors();
 
 	editor_selection = memnew( EditorSelection );
@@ -5765,7 +5447,6 @@ EditorNode::EditorNode() {
 	pm_export->set_name("Export");
 	p->add_child(pm_export);
 	p->add_submenu_item(TTR("Convert To.."),"Export");
-	pm_export->add_item(TTR("Translatable Strings.."),FILE_DUMP_STRINGS);
 	pm_export->add_separator();
 	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_MeshLibrary", TTR("MeshLibrary..")), FILE_EXPORT_MESH_LIBRARY);
 	pm_export->add_shortcut(ED_SHORTCUT("editor/convert_to_TileSet", TTR("TileSet..")), FILE_EXPORT_TILESET);
@@ -6248,6 +5929,11 @@ EditorNode::EditorNode() {
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
 
+	import_dock = memnew( ImportDock );
+	dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(import_dock);
+	import_dock->set_name(TTR("Import"));
+
+
 	node_dock = memnew( NodeDock );
 	//node_dock->set_undoredo(&editor_data.get_undo_redo());
 	if (use_single_dock_column) {
@@ -6584,6 +6270,9 @@ EditorNode::EditorNode() {
 		plugin_init_callbacks[i]();
 	}
 
+
+
+
 	/*resource_preview->add_preview_generator( Ref<EditorTexturePreviewPlugin>( memnew(EditorTexturePreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorPackedScenePreviewPlugin>( memnew(EditorPackedScenePreviewPlugin )));
 	resource_preview->add_preview_generator( Ref<EditorMaterialPreviewPlugin>( memnew(EditorMaterialPreviewPlugin )));
@@ -6730,6 +6419,7 @@ EditorNode::EditorNode() {
 
 	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
 
+	waiting_for_first_scan=true;
 
 }
 

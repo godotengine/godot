@@ -118,7 +118,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 					Set<String> valid_extensions;
 					for (List<String>::Element *E=extensions.front();E;E=E->next()) {
-
+						print_line("found: "+E->get());
 						valid_extensions.insert(E->get());
 					}
 
@@ -3140,6 +3140,10 @@ void PropertyEditor::update_tree() {
 		} else  if ( ! (p.usage&PROPERTY_USAGE_EDITOR ) )
 			continue;
 
+
+		if (hide_script && p.name=="script/script")
+			continue;
+
 		String basename=p.name;
 		if (group!="") {
 			if (group_base!="") {
@@ -3886,7 +3890,7 @@ void PropertyEditor::_item_selected() {
 }
 
 
-void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
+void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value, bool p_refresh_all) {
 
 	if (autoclear) {
 		TreeItem *item = tree->get_selected();
@@ -3899,7 +3903,11 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 	if (!undo_redo || obj->cast_to<MultiNodeEdit>() || obj->cast_to<ArrayPropertyEdit>()) { //kind of hacky
 
 		obj->set(p_name,p_value);
-		_changed_callbacks(obj,p_name);
+		if (p_refresh_all)
+			_changed_callbacks(obj,"");
+		else
+			_changed_callbacks(obj,p_name);
+
 		emit_signal(_prop_edited,p_name);
 
 
@@ -3909,9 +3917,14 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		undo_redo->add_do_property(obj,p_name,p_value);
 		undo_redo->add_undo_property(obj,p_name,obj->get(p_name));
 
+		if (p_refresh_all) {
+			undo_redo->add_do_method(this,"_changed_callback",obj,"");
+			undo_redo->add_undo_method(this,"_changed_callback",obj,"");
+		} else {
 
-		undo_redo->add_do_method(this,"_changed_callback",obj,p_name);
-		undo_redo->add_undo_method(this,"_changed_callback",obj,p_name);
+			undo_redo->add_do_method(this,"_changed_callback",obj,p_name);
+			undo_redo->add_undo_method(this,"_changed_callback",obj,p_name);
+		}
 
 		Resource *r = obj->cast_to<Resource>();
 		if (r) {
@@ -3973,6 +3986,9 @@ void PropertyEditor::_item_edited() {
 
 	int type=d["type"];
 	int hint= d["hint"];
+	int usage = d["usage"];
+	bool refresh_all = usage&PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED;
+
 	String hint_text=d["hint_text"];
 	switch(type) {
 
@@ -3981,7 +3997,7 @@ void PropertyEditor::_item_edited() {
 		} break;
 		case Variant::BOOL: {
 
-			_edit_set(name,item->is_checked(1));
+			_edit_set(name,item->is_checked(1),refresh_all);
 			item->set_tooltip(1, item->is_checked(1) ? "True" : "False");
 		} break;
 		case Variant::INT:
@@ -3995,9 +4011,9 @@ void PropertyEditor::_item_edited() {
 				break;
 
 			if (type==Variant::INT)
-				_edit_set(name,int(item->get_range(1)));
+				_edit_set(name,int(item->get_range(1)),refresh_all);
 			else
-				_edit_set(name,item->get_range(1));
+				_edit_set(name,item->get_range(1),refresh_all);
 		} break;
 		case Variant::STRING: {
 
@@ -4012,9 +4028,9 @@ void PropertyEditor::_item_edited() {
 					txt=strings[idx];
 				}
 
-				_edit_set(name,txt);
+				_edit_set(name,txt,refresh_all);
 			} else {
-				_edit_set(name,item->get_text(1));
+				_edit_set(name,item->get_text(1),refresh_all);
 			}
 		} break;
 			// math types
@@ -4045,7 +4061,7 @@ void PropertyEditor::_item_edited() {
 
 		} break;
 		case Variant::NODE_PATH: {
-			_edit_set(name, NodePath(item->get_text(1)));
+			_edit_set(name, NodePath(item->get_text(1)),refresh_all);
 
 		} break;
 
@@ -4475,6 +4491,8 @@ void PropertyEditor::set_subsection_selectable(bool p_selectable) {
 PropertyEditor::PropertyEditor() {
 
 	_prop_edited="property_edited";
+
+	hide_script=false;
 
 	undo_redo=NULL;
 	obj=NULL;

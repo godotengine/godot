@@ -230,7 +230,6 @@
 
 #include "scene/resources/scene_format_text.h"
 
-static ResourceFormatLoaderImage *resource_loader_image=NULL;
 //static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
 
 
@@ -245,6 +244,8 @@ static ResourceFormatLoaderText *resource_loader_text=NULL;
 
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font=NULL;
 
+static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture=NULL;
+
 //static SceneStringNames *string_names;
 
 void register_scene_types() {
@@ -255,13 +256,13 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
-	resource_loader_image = memnew( ResourceFormatLoaderImage );
-	ResourceLoader::add_resource_format_loader( resource_loader_image );
-
 	//resource_loader_wav = memnew( ResourceFormatLoaderWAV );
 	//ResourceLoader::add_resource_format_loader( resource_loader_wav );
 	resource_loader_dynamic_font = memnew( ResourceFormatLoaderDynamicFont );
 	ResourceLoader::add_resource_format_loader( resource_loader_dynamic_font );
+
+	resource_loader_stream_texture = memnew( ResourceFormatLoaderStreamTexture);
+	ResourceLoader::add_resource_format_loader( resource_loader_stream_texture );
 
 #ifdef TOOLS_ENABLED
 
@@ -570,6 +571,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Texture>();
 	ClassDB::register_virtual_class<SkyBox>();
 	ClassDB::register_class<ImageSkyBox>();
+	ClassDB::register_class<StreamTexture>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
 	ClassDB::register_class<LargeTexture>();
@@ -643,9 +645,9 @@ void unregister_scene_types() {
 
 	clear_default_theme();
 
-	memdelete( resource_loader_image );
 //	memdelete( resource_loader_wav );
 	memdelete( resource_loader_dynamic_font );
+	memdelete( resource_loader_stream_texture );
 
 
 #ifdef TOOLS_ENABLED

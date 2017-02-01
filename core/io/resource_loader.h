@@ -61,7 +61,7 @@ public:
 	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const=0;
 	virtual void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const;
-	bool recognize_path(const String& p_path,const String& p_for_type=String()) const;
+	virtual bool recognize_path(const String& p_path,const String& p_for_type=String()) const;
 	virtual bool handles_type(const String& p_type) const=0;
 	virtual String get_resource_type(const String &p_path) const=0;
 	virtual void get_dependencies(const String& p_path,List<String> *p_dependencies,bool p_add_types=false);

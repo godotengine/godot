@@ -66,6 +66,8 @@ friend class ResourceCache;
 
 #ifdef TOOLS_ENABLED
 	uint64_t last_modified_time;
+	uint64_t import_last_modified_time;
+	String import_path;
 #endif
 
 	bool local_to_scene;
@@ -117,6 +119,12 @@ public:
 
 	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }
+
+	virtual void set_import_last_modified_time(uint64_t p_time) { import_last_modified_time=p_time; }
+	uint64_t get_import_last_modified_time() const { return import_last_modified_time; }
+
+	void set_import_path(const String& p_path) { import_path=p_path; }
+	String get_import_path() const { return import_path; }
 
 #endif
 

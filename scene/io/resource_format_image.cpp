@@ -27,6 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_format_image.h"
+
+#if 0
 #include "scene/resources/texture.h"
 #include "io/image_loader.h"
 #include "globals.h"
@@ -260,3 +262,4 @@ ResourceFormatLoaderImage::ResourceFormatLoaderImage() {
 	GLOBAL_DEF("rendering/image_loader/repeat",false);
 
 }
+#endif

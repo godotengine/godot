@@ -126,6 +126,11 @@ private:
 	Tree * tree; //directories
 	ItemList *files;
 
+
+	void _file_multi_selected(int p_index, bool p_selected);
+	void _file_selected();
+
+
 	void _go_to_tree();
 	void _go_to_dir(const String& p_dir);
 	void _select_file(int p_idx);

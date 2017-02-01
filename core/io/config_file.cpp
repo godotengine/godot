@@ -119,7 +119,10 @@ void ConfigFile::get_section_keys(const String& p_section,List<String> *r_keys) 
 
 }
 
+void ConfigFile::erase_section(const String& p_section) {
 
+	values.erase(p_section);
+}
 
 Error ConfigFile::save(const String& p_path){
 
@@ -214,6 +217,8 @@ void ConfigFile::_bind_methods(){
 
 	ClassDB::bind_method(_MD("get_sections"),&ConfigFile::_get_sections);
 	ClassDB::bind_method(_MD("get_section_keys","section"),&ConfigFile::_get_section_keys);
+
+	ClassDB::bind_method(_MD("erase_section","section"),&ConfigFile::erase_section);
 
 	ClassDB::bind_method(_MD("load:Error","path"),&ConfigFile::load);
 	ClassDB::bind_method(_MD("save:Error","path"),&ConfigFile::save);
