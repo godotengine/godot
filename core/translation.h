@@ -102,6 +102,7 @@ public:
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
+	static bool is_locale_valid(const String& p_locale);
 
 	void set_tool_translation(const Ref<Translation>& p_translation);
 	StringName tool_translate(const StringName& p_message) const;

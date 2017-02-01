@@ -109,7 +109,11 @@ void ResourceFormatImporter::get_recognized_extensions_for_type(const String& p_
 	Set<String> found;
 
 	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
-		if (!ClassDB::is_parent_class(E->get()->get_resource_type(),p_type))
+		String res_type = E->get()->get_resource_type();
+		if (res_type==String())
+			continue;
+
+		if (!ClassDB::is_parent_class(res_type,p_type))
 			continue;
 
 		List<String> local_exts;
@@ -138,8 +142,11 @@ bool ResourceFormatImporter::can_be_imported(const String& p_path) const {
 bool ResourceFormatImporter::handles_type(const String& p_type) const {
 
 	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
-		print_line("handles "+p_type+" base is "+E->get()->get_resource_type());
-		if (ClassDB::is_parent_class(E->get()->get_resource_type(),p_type))
+
+		String res_type = E->get()->get_resource_type();
+		if (res_type==String())
+			continue;
+		if (ClassDB::is_parent_class(res_type,p_type))
 			return true;
 
 	}

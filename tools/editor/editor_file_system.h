@@ -195,6 +195,10 @@ class EditorFileSystem : public Node {
 
 	void _reimport_file(const String &p_file);
 
+	bool _check_missing_imported_files(const String& p_path);
+
+	bool reimport_on_missing_imported_files;
+
 protected:
 
 	void _notification(int p_what);

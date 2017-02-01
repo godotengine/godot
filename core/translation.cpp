@@ -751,6 +751,20 @@ static const char* locale_names[]={
 0
 };
 
+bool TranslationServer::is_locale_valid(const String& p_locale) {
+
+	const char **ptr=locale_list;
+
+	while (*ptr) {
+
+		if (*ptr==p_locale)
+			return true;
+		ptr++;
+	}
+
+	return false;
+
+}
 
 Vector<String> TranslationServer::get_all_locales() {
 

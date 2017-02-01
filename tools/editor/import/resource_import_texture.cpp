@@ -190,7 +190,7 @@ void ResourceImporterTexture::_save_stex(const Image& p_image,const String& p_to
 	memdelete(f);
 }
 
-Error ResourceImporterTexture::import(const String& p_source_file,const String& p_save_path,const Map<StringName,Variant>& p_options,List<String>* r_platform_variants) {
+Error ResourceImporterTexture::import(const String& p_source_file, const String& p_save_path, const Map<StringName,Variant>& p_options, List<String>* r_platform_variants, List<String> *r_gen_files) {
 
 	int compress_mode = p_options["compress/mode"];
 	float lossy= p_options["compress/lossy_quality"];

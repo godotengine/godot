@@ -69,7 +69,7 @@ public:
 	virtual bool get_option_visibility(const String& p_option,const Map<StringName,Variant>& p_options) const=0;
 
 
-	virtual Error import(const String& p_source_file,const String& p_save_path,const Map<StringName,Variant>& p_options,List<String>* r_platform_variants)=0;
+	virtual Error import(const String& p_source_file,const String& p_save_path,const Map<StringName,Variant>& p_options,List<String>* r_platform_variants,List<String>* r_gen_files=NULL)=0;
 
 };
 

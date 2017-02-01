@@ -451,8 +451,76 @@ EditorFileSystem::ScanProgress EditorFileSystem::ScanProgress::get_sub(int p_cur
 	sp.hi=slice;
 	return sp;
 
-
 }
+
+bool EditorFileSystem::_check_missing_imported_files(const String& p_path) {
+
+	if (!reimport_on_missing_imported_files)
+		return true;
+
+	Error err;
+	FileAccess *f= FileAccess::open(p_path+".import",FileAccess::READ,&err);
+
+	if (!f) {
+		print_line("could not open import for "+p_path);
+		return false;
+	}
+
+	VariantParser::StreamFile stream;
+	stream.f=f;
+
+	String assign;
+	Variant value;
+	VariantParser::Tag next_tag;
+
+	int lines=0;
+	String error_text;
+
+	List<String> to_check;
+
+	while(true) {
+
+		assign=Variant();
+		next_tag.fields.clear();
+		next_tag.name=String();
+
+		err = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,NULL,true);
+		if (err==ERR_FILE_EOF) {
+			memdelete(f);
+			return OK;
+		}
+		else if (err!=OK) {
+			ERR_PRINTS("ResourceFormatImporter::load - "+p_path+".import:"+itos(lines)+" error: "+error_text);
+			memdelete(f);
+			return false;
+		}
+
+		if (assign!=String()) {
+			if (assign.begins_with("path")) {
+				to_check.push_back(value);
+			} else if (assign=="files") {
+				Array fa = value;
+				for(int i=0;i<fa.size();i++) {
+					to_check.push_back(fa[i]);
+				}
+			}
+
+		} else if (next_tag.name!="remap" && next_tag.name!="deps") {
+			break;
+		}
+	}
+
+	memdelete(f);
+
+	for (List<String>::Element *E=to_check.front();E;E=E->next()) {
+		if (!FileAccess::exists(E->get())) {
+			print_line("missing "+E->get()+", reimport" );
+			return false;
+		}
+	}
+	return true;
+}
+
 void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess *da,const ScanProgress& p_progress) {
 
 	List<String> dirs;
@@ -562,7 +630,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 				import_mt=FileAccess::get_modified_time(path+".import");
 			}
 
-			if (fc && fc->modification_time==mt && fc->import_modification_time==import_mt) {
+			if (fc && fc->modification_time==mt && fc->import_modification_time==import_mt && _check_missing_imported_files(path)) {
 
 				fi->type=fc->type;
 				fi->modified_time=fc->modification_time;
@@ -760,6 +828,9 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 				uint64_t import_mt=FileAccess::get_modified_time(path+".import");
 				if (import_mt!=p_dir->files[i]->import_modified_time) {
 					print_line("REIMPORT: import modified changed, reimport");
+					reimport=true;
+				} else if (!_check_missing_imported_files(path)) {
+					print_line("REIMPORT: imported files removed");
 					reimport=true;
 				}
 			}
@@ -1277,11 +1348,13 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 	String base_path = ResourceFormatImporter::get_singleton()->get_import_base_path(p_file);
 
 	List<String> import_variants;
+	List<String> gen_files;
 
-	Error err = importer->import(p_file,base_path,params,&import_variants);
+	Error err = importer->import(p_file,base_path,params,&import_variants,&gen_files);
 
-	ERR_EXPLAIN("Error importing: "+p_file);
-	ERR_FAIL_COND(err!=OK);
+	if (err!=OK) {
+		ERR_PRINTS("Error importing: "+p_file);
+	}
 
 	//as import is complete, save the .import file
 
@@ -1292,9 +1365,13 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 	f->store_line("[remap]");
 	f->store_line("");
 	f->store_line("importer=\""+importer->get_importer_name()+"\"");
-	f->store_line("type=\""+importer->get_resource_type()+"\"");
+	if (importer->get_resource_type()!="") {
+		f->store_line("type=\""+importer->get_resource_type()+"\"");
+	}
 
-	if (import_variants.size()) {
+	if (importer->get_save_extension()=="") {
+		//no path
+	} else if (import_variants.size()) {
 		//import with variants
 		for(List<String>::Element *E=import_variants.front();E;E=E->next()) {
 
@@ -1307,6 +1384,20 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 	}
 
 	f->store_line("");
+	if (gen_files.size()) {
+		f->store_line("[gen]");
+		Array genf;
+		for (List<String>::Element *E=gen_files.front();E;E=E->next()) {
+			genf.push_back(E->get());
+		}
+
+		String value;
+		VariantWriter::write_to_string(genf,value);
+		f->store_line("files="+value);
+		f->store_line("");
+	}
+
+
 	f->store_line("[params]");
 	f->store_line("");
 
@@ -1380,6 +1471,7 @@ void EditorFileSystem::_update_extensions() {
 
 EditorFileSystem::EditorFileSystem() {
 
+	reimport_on_missing_imported_files = GLOBAL_DEF("editor/reimport_missing_imported_files",true);
 
 	singleton=this;
 	filesystem=memnew( EditorFileSystemDirectory ); //like, empty

@@ -100,6 +100,7 @@
 #include "plugins/collision_shape_2d_editor_plugin.h"
 #include "plugins/gi_probe_editor_plugin.h"
 #include "import/resource_import_texture.h"
+#include "import/resource_importer_csv_translation.h"
 // end
 #include "editor_settings.h"
 #include "io_plugins/editor_texture_import_plugin.h"
@@ -422,11 +423,11 @@ void EditorNode::_fs_changed() {
 		}
 
 		if (changed.size()) {
-			EditorProgress ep("reload_res","Reload Modified Resources",changed.size());
+			//EditorProgress ep("reload_res","Reload Modified Resources",changed.size());
 			int idx=0;
 			for(List<Ref<Resource> >::Element *E=changed.front();E;E=E->next()) {
 
-				ep.step(E->get()->get_path(),idx++);
+				//ep.step(E->get()->get_path(),idx++);
 				E->get()->reload_from_file();
 			}
 		}
@@ -5120,6 +5121,11 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterTexture> import_texture;
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
+
+		Ref<ResourceImporterCSVTranslation> import_csv_translation;
+		import_csv_translation.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_csv_translation);
+
 	}
 
 	_pvrtc_register_compressors();
