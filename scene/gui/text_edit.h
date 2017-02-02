@@ -91,6 +91,7 @@ class TextEdit : public Control  {
 		Color mark_color;
 		Color breakpoint_color;
 		Color current_line_color;
+		Color line_length_guideline_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
 		Color search_result_color;

@@ -715,6 +715,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/highlighting/selection_color",Color::html("7b5dbe"));
 	set("text_editor/highlighting/brace_mismatch_color",Color(1,0.2,0.2));
 	set("text_editor/highlighting/current_line_color",Color(0.3,0.5,0.8,0.15));
+	set("text_editor/highlighting/line_length_guideline_color",Color(0.3,0.5,0.8,0.1));
 	set("text_editor/highlighting/mark_color", Color(1.0,0.4,0.4,0.4));
 	set("text_editor/highlighting/breakpoint_color", Color(0.8,0.8,0.4,0.2));
 	set("text_editor/highlighting/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
@@ -972,6 +973,7 @@ bool EditorSettings::_save_text_editor_theme(String p_file) {
 	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/highlighting/selection_color")).to_html());
 	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/highlighting/brace_mismatch_color")).to_html());
 	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/highlighting/current_line_color")).to_html());
+	cf->set_value(theme_section, "line_length_guideline_color", ((Color)get("text_editor/highlighting/line_length_guideline_color")).to_html());
 	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/highlighting/mark_color")).to_html());
 	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/highlighting/breakpoint_color")).to_html());
 	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/highlighting/word_highlighted_color")).to_html());

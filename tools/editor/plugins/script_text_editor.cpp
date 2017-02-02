@@ -115,6 +115,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("selection_color",EDITOR_DEF("text_editor/highlighting/selection_color",Color(0.2,0.2,1)));
 	text_edit->add_color_override("brace_mismatch_color",EDITOR_DEF("text_editor/highlighting/brace_mismatch_color",Color(1,0.2,0.2)));
 	text_edit->add_color_override("current_line_color",EDITOR_DEF("text_editor/highlighting/current_line_color",Color(0.3,0.5,0.8,0.15)));
+	text_edit->add_color_override("line_length_guideline_color", EDITOR_DEF("text_editor/highlighting/line_length_guideline_color", Color(0,0,0)));
 	text_edit->add_color_override("word_highlighted_color",EDITOR_DEF("text_editor/highlighting/word_highlighted_color",Color(0.8,0.9,0.9,0.15)));
 	text_edit->add_color_override("number_color",EDITOR_DEF("text_editor/highlighting/number_color",Color(0.9,0.6,0.0,2)));
 	text_edit->add_color_override("function_color",EDITOR_DEF("text_editor/highlighting/function_color",Color(0.4,0.6,0.8)));
