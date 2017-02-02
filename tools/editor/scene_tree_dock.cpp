@@ -1761,7 +1761,9 @@ void SceneTreeDock::_nodes_dragged(Array p_nodes,NodePath p_to,int p_type) {
 
 	for(int i=0;i<p_nodes.size();i++) {
 		Node *n=get_node((p_nodes[i]));
-		nodes.push_back(n);
+		if (n) {
+			nodes.push_back(n);
+		}
 	}
 
 	if (nodes.size()==0)
