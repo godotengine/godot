@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+Import('env')
+Export('env')
+env.add_source_files(env.tool_sources, "*.cpp")
