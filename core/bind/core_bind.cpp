@@ -2512,7 +2512,7 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(_MD("class_exists","class"),&_ClassDB::class_exists);
 	ClassDB::bind_method(_MD("is_parent_class","class","inherits"),&_ClassDB::is_parent_class);
 	ClassDB::bind_method(_MD("can_instance","class"),&_ClassDB::can_instance);
-	ClassDB::bind_method(_MD("instance","class"),&_ClassDB::instance);
+	ClassDB::bind_method(_MD("instance:Variant","class"),&_ClassDB::instance);
 
 	ClassDB::bind_method(_MD("class_has_signal","class","signal"),&_ClassDB::has_signal);
 	ClassDB::bind_method(_MD("class_get_signal","class","signal"),&_ClassDB::get_signal);
