@@ -107,7 +107,7 @@ List<StringName> InputMap::get_actions() const {
 	return actions;
 }
 
-List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_mod_ignore=false) const {
+List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_action_test) const {
 
 	for (List<InputEvent>::Element *E=p_list.front();E;E=E->next()) {
 
@@ -123,7 +123,13 @@ List<InputEvent>::Element *InputMap::_find_event(List<InputEvent> &p_list,const 
 
 			case InputEvent::KEY: {
 
-				same=(e.key.scancode==p_event.key.scancode && (p_mod_ignore || e.key.mod == p_event.key.mod));
+				if(p_action_test) {
+					uint32_t code = e.key.get_scancode_with_modifiers();
+					uint32_t event_code = p_event.key.get_scancode_with_modifiers();
+					same=(e.key.scancode==p_event.key.scancode && (!p_event.key.pressed || ((code & event_code) == code)));
+				} else {
+					same=(e.key.scancode==p_event.key.scancode && e.key.mod == p_event.key.mod);
+				}
 
 			} break;
 			case InputEvent::JOYPAD_BUTTON: {
@@ -230,7 +236,7 @@ bool InputMap::event_is_action(const InputEvent& p_event, const StringName& p_ac
 		return p_event.action.action==E->get().id;
 	}
 
-	return _find_event(E->get().inputs,p_event,!p_event.is_pressed())!=NULL;
+	return _find_event(E->get().inputs,p_event,true)!=NULL;
 }
 
 const Map<StringName, InputMap::Action>& InputMap::get_action_map() const {

@@ -381,15 +381,12 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 	if (!p_event.is_echo()) {
 		for (const Map<StringName,InputMap::Action>::Element *E=InputMap::get_singleton()->get_action_map().front();E;E=E->next()) {
 
-			if (InputMap::get_singleton()->event_is_action(p_event,E->key())) {
-
-				if(is_action_pressed(E->key()) != p_event.is_pressed()) {
-					Action action;
-					action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
-					action.idle_frame=Engine::get_singleton()->get_idle_frames();
-					action.pressed=p_event.is_pressed();
-					action_state[E->key()]=action;
-				}
+			if (InputMap::get_singleton()->event_is_action(p_event,E->key()) && is_action_pressed(E->key()) != p_event.is_pressed()) {
+				Action action;
+				action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+				action.idle_frame=Engine::get_singleton()->get_idle_frames();
+				action.pressed=p_event.is_pressed();
+				action_state[E->key()]=action;
 			}
 		}
 	}
