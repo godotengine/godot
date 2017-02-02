@@ -768,6 +768,7 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 		ERR_FAIL_COND_V(!sd.is_valid(),NULL);
 		node = sd->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
 		ERR_FAIL_COND_V(!node,NULL);
+		node->set_scene_instance_load_placeholder(p_node->get_scene_instance_load_placeholder());
 		//node->generate_instance_state();
 	} else {
 		Object *obj = ClassDB::instance(p_node->get_class());
