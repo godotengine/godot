@@ -3,8 +3,7 @@
 #include "os/os.h"
 #include "rasterizer_canvas_gles3.h"
 
-#ifdef IPHONE_ENABLED
-// for some reason glClearDepth seems to have been removed in iOS ES3.h
+#ifndef GLES_OVER_GL
 #define glClearDepth glClearDepthf
 #endif
 

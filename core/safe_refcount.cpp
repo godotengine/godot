@@ -44,6 +44,14 @@ uint32_t atomic_conditional_increment( register uint32_t * pw ) {
 	return *pw;
 }
 
+uint32_t atomic_increment( register uint32_t * pw ) {
+
+	(*pw)++;
+
+	return *pw;
+
+}
+
 uint32_t atomic_decrement( register uint32_t * pw ) {
 
 	(*pw)--;

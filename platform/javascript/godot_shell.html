@@ -277,10 +277,10 @@ $GODOT_STYLE_INCLUDE
 					statusElement.appendChild(closeNote);
 					Presentation.setStatusVisible(true);
 				},
-				isWebGLAvailable: function isWebGLAvailable() {
+				isWebGL2Available: function isWebGL2Available() {
 					var context;
 					try {
-						context = canvasElement.getContext("webgl") || canvasElement.getContext("experimental-webgl");
+						context = canvasElement.getContext("webgl2") || canvasElement.getContext("experimental-webgl2");
 					} catch (e) {}
 					return !!context;
 				},
@@ -319,12 +319,12 @@ $GODOT_STYLE_INCLUDE
 						outputElement.firstChild.remove();
 					}
 					var msg = document.createElement("div");
-					if (text.trim().startsWith("**ERROR**")
-						|| text.startsWith("**EXCEPTION**")) {
+					if (String.prototype.trim.call(text).startsWith("**ERROR**")
+						|| String.prototype.trim.call(text).startsWith("**EXCEPTION**")) {
 						msg.style.color = "#d44";
-					} else if (text.trim().startsWith("**WARNING**")) {
+					} else if (String.prototype.trim.call(text).startsWith("**WARNING**")) {
 						msg.style.color = "#ccc000";
-					} else if (text.trim().startsWith("**SCRIPT ERROR**")) {
+					} else if (String.prototype.trim.call(text).startsWith("**SCRIPT ERROR**")) {
 						msg.style.color = "#c6d";
 					}
 					msg.textContent = text;
@@ -395,8 +395,8 @@ $GODOT_STYLE_INCLUDE
 			}
 		};
 
-		if (!Presentation.isWebGLAvailable()) {
-			Presentation.setStatus("WebGL appears to be unsupported in the current browser.\nPlease try updating or use a different browser.");
+		if (!Presentation.isWebGL2Available()) {
+			Presentation.setStatus("WebGL2 appears to be unsupported in the current browser.\nPlease try updating or use a different browser.");
 			Presentation.preventLoading = true;
 		} else {
 			Presentation.setStatus("Downloading...");

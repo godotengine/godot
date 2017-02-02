@@ -81,7 +81,7 @@ class Vector {
 		size_t p;
 		if (_mul_overflow(p_elements, sizeof(T), &o)) return false;
 		*out = nearest_power_of_2(o);
-		if (_add_overflow(o, 32, &p)) return false; //no longer allocated here
+		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //no longer allocated here
 		return true;
 #else
 		// Speed is more important than correctness here, do the operations unchecked
