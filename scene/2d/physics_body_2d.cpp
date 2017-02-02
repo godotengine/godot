@@ -1175,7 +1175,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 			continue;
 
 		float lsafe,lunsafe;
-		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,get_layer_mask(),mask);
+		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, margin,lsafe,lunsafe,exclude,get_layer_mask(),mask);
 		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
 		if (!valid) {
 
