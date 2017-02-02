@@ -171,6 +171,17 @@ class ScriptEditor : public VBoxContainer {
 		WINDOW_PREV,
 		WINDOW_SELECT_BASE=100
 	};
+	
+	enum ScriptSortBy {
+		SORT_BY_NAME,
+		SORT_BY_PATH,
+	};
+	
+	enum ScriptListName {
+		DISPLAY_NAME,
+		DISPLAY_DIR_AND_NAME,
+		DISPLAY_FULL_PATH,
+	};
 
 	HBoxContainer *menu_hb;
 	MenuButton *file_menu;
