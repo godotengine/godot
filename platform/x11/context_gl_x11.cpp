@@ -130,13 +130,6 @@ Error ContextGL_X11::initialize() {
 		x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel|CWColormap|CWEventMask, &swa);
 		ERR_FAIL_COND_V(!x11_window,ERR_UNCONFIGURED);
 		XMapWindow(x11_display, x11_window);
-		while(true) {
-			// wait for mapnotify (window created)
-			XEvent e;
-			XNextEvent(x11_display, &e);
-			if (e.type == MapNotify)
-				break;
-		}
 		//};
 
 
