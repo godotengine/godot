@@ -114,11 +114,8 @@ public:
 
 				if (langs[j]==lname.substr(0,langs[j].length()).to_lower()) {
 					idx=j;
+					hint+=names[j].replace(","," ");
 				}
-				if (j>0) {
-					hint+=",";
-				}
-				hint+=names[j].replace(","," ");
 			}
 
 			ti->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
