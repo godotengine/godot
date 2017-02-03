@@ -28,17 +28,18 @@
 /*************************************************************************/
 #include "register_types.h"
 #include "audio_stream_ogg_vorbis.h"
-
-static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader = NULL;
+#include "resource_importer_ogg_vorbis.h"
 
 void register_stb_vorbis_types() {
 
-	vorbis_stream_loader = memnew( ResourceFormatLoaderAudioStreamOGGVorbis );
-	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
+#ifdef TOOLS_ENABLED
+	Ref<ResourceImporterOGGVorbis> ogg_import;
+	ogg_import.instance();
+	ResourceFormatImporter::get_singleton()->add_importer(ogg_import);
+#endif
 	ClassDB::register_class<AudioStreamOGGVorbis>();
 }
 
 void unregister_stb_vorbis_types() {
 
-	memdelete( vorbis_stream_loader );
 }

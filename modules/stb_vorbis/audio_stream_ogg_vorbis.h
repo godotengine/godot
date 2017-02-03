@@ -49,6 +49,7 @@ class AudioStreamOGGVorbis : public AudioStream {
 
 	GDCLASS( AudioStreamOGGVorbis, AudioStream )
 	OBJ_SAVE_TYPE( AudioStream ) //children are all saved as AudioStream, so they can be exchanged
+	RES_BASE_EXTENSION("asogg");
 
 friend class AudioStreamPlaybackOGGVorbis;
 
@@ -59,24 +60,22 @@ friend class AudioStreamPlaybackOGGVorbis;
 	float sample_rate;
 	int channels;
 	float length;
+	bool loop;
+protected:
 
+	static void _bind_methods();
 public:
 
+	void set_loop(bool p_enable);
+	bool has_loop() const;
 
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
 
-	Error setup(const uint8_t *p_data, uint32_t p_data_len);
+	void set_data(const PoolVector<uint8_t>& p_data);
+	PoolVector<uint8_t> get_data() const;
 
 	AudioStreamOGGVorbis();
-};
-
-class ResourceFormatLoaderAudioStreamOGGVorbis : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
 };
 
 

@@ -17,7 +17,7 @@ void AudioStreamPlaybackOGGVorbis::_mix_internal(AudioFrame* p_buffer,int p_fram
 
 		if (todo) {
 			//end of file!
-			if (false) {
+			if (vorbis_stream->loop) {
 				//loop
 				seek_pos(0);
 				loops++;
@@ -120,9 +120,9 @@ String AudioStreamOGGVorbis::get_stream_name() const {
 	return "";//return stream_name;
 }
 
-Error AudioStreamOGGVorbis::setup(const uint8_t *p_data,uint32_t p_data_len) {
+void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t>& p_data) {
 
-
+	int src_data_len=p_data.size();
 #define MAX_TEST_MEM (1<<20)
 
 	uint32_t alloc_try=1024;
@@ -139,37 +139,81 @@ Error AudioStreamOGGVorbis::setup(const uint8_t *p_data,uint32_t p_data_len) {
 		ogg_alloc.alloc_buffer=w.ptr();
 		ogg_alloc.alloc_buffer_length_in_bytes=alloc_try;
 
+		PoolVector<uint8_t>::Read src_datar = p_data.read();
+
 		int error;
-		ogg_stream = stb_vorbis_open_memory( (const unsigned char*)p_data, p_data_len, &error, &ogg_alloc );
+		ogg_stream = stb_vorbis_open_memory( (const unsigned char*)src_datar.ptr(), src_data_len, &error, &ogg_alloc );
 
 		if (!ogg_stream && error==VORBIS_outofmem) {
 			w = PoolVector<char>::Write();
 			alloc_try*=2;
 		} else {
+
+			ERR_FAIL_COND(alloc_try==MAX_TEST_MEM);
+			ERR_FAIL_COND(ogg_stream==NULL);
+
+			stb_vorbis_info info = stb_vorbis_get_info(ogg_stream);
+
+			channels = info.channels;
+			sample_rate = info.sample_rate;
+			decode_mem_size = alloc_try;
+			//does this work? (it's less mem..)
+			//decode_mem_size = ogg_alloc.alloc_buffer_length_in_bytes + info.setup_memory_required + info.temp_memory_required + info.max_frame_size;
+
+			//print_line("succeded "+itos(ogg_alloc.alloc_buffer_length_in_bytes)+" setup "+itos(info.setup_memory_required)+" setup temp "+itos(info.setup_temp_memory_required)+" temp "+itos(info.temp_memory_required)+" maxframe"+itos(info.max_frame_size));
+
+			length=stb_vorbis_stream_length_in_seconds(ogg_stream);
+			stb_vorbis_close(ogg_stream);
+
+			data = AudioServer::get_singleton()->audio_data_alloc(src_data_len,src_datar.ptr());
+			data_len=src_data_len;
+
 			break;
 		}
 	}
-	ERR_FAIL_COND_V(alloc_try==MAX_TEST_MEM,ERR_OUT_OF_MEMORY);
-	ERR_FAIL_COND_V(ogg_stream==NULL,ERR_FILE_CORRUPT);
 
-	stb_vorbis_info info = stb_vorbis_get_info(ogg_stream);
-
-	channels = info.channels;
-	sample_rate = info.sample_rate;
-	decode_mem_size = alloc_try;
-	//does this work? (it's less mem..)
-	//decode_mem_size = ogg_alloc.alloc_buffer_length_in_bytes + info.setup_memory_required + info.temp_memory_required + info.max_frame_size;
-
-	//print_line("succeded "+itos(ogg_alloc.alloc_buffer_length_in_bytes)+" setup "+itos(info.setup_memory_required)+" setup temp "+itos(info.setup_temp_memory_required)+" temp "+itos(info.temp_memory_required)+" maxframe"+itos(info.max_frame_size));
-
-	length=stb_vorbis_stream_length_in_seconds(ogg_stream);
-	stb_vorbis_close(ogg_stream);
-
-	data = AudioServer::get_singleton()->audio_data_alloc(p_data_len,p_data);
-	data_len=p_data_len;
 
 	printf("create at %p, data %p\n",this,data);
-	return OK;
+
+}
+
+PoolVector<uint8_t> AudioStreamOGGVorbis::get_data() const {
+
+	PoolVector<uint8_t> vdata;
+
+	if (data_len && data) {
+		vdata.resize(data_len);
+		{
+			PoolVector<uint8_t>::Write w = vdata.write();
+			copymem(w.ptr(),data,data_len);
+		}
+
+	}
+
+	return vdata;
+}
+
+void AudioStreamOGGVorbis::set_loop(bool p_enable) {
+	loop=p_enable;
+}
+
+bool AudioStreamOGGVorbis::has_loop() const {
+
+	return loop;
+}
+
+
+void AudioStreamOGGVorbis::_bind_methods() {
+
+	ClassDB::bind_method(_MD("set_data","data"),&AudioStreamOGGVorbis::set_data);
+	ClassDB::bind_method(_MD("get_data"),&AudioStreamOGGVorbis::get_data);
+
+	ClassDB::bind_method(_MD("set_loop","enable"),&AudioStreamOGGVorbis::set_loop);
+	ClassDB::bind_method(_MD("has_loop"),&AudioStreamOGGVorbis::has_loop);
+
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_data"),_SCS("get_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"loop",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_loop"),_SCS("has_loop"));
+
 }
 
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
@@ -180,57 +224,9 @@ AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 	sample_rate=1;
 	channels=1;
 	decode_mem_size=0;
+	loop=false;
 }
 
 
 
-
-RES ResourceFormatLoaderAudioStreamOGGVorbis::load(const String &p_path, const String& p_original_path, Error *r_error) {
-	if (r_error)
-		*r_error=OK;
-
-	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
-	if (!f) {
-		*r_error=ERR_CANT_OPEN;
-		ERR_FAIL_COND_V(!f,RES());
-	}
-
-	size_t len = f->get_len();
-
-	PoolVector<uint8_t> data;
-	data.resize(len);
-	PoolVector<uint8_t>::Write w = data.write();
-
-	f->get_buffer(w.ptr(),len);
-
-	memdelete(f);
-
-	Ref<AudioStreamOGGVorbis> ogg_stream;
-	ogg_stream.instance();
-
-	Error err = ogg_stream->setup(w.ptr(),len);
-
-	if (err!=OK) {
-		*r_error=err;
-		ogg_stream.unref();
-		ERR_FAIL_V(RES());
-	}
-
-	return ogg_stream;
-}
-
-void ResourceFormatLoaderAudioStreamOGGVorbis::get_recognized_extensions(List<String> *p_extensions) const {
-
-	p_extensions->push_back("ogg");
-}
-String ResourceFormatLoaderAudioStreamOGGVorbis::get_resource_type(const String &p_path) const {
-
-	if (p_path.get_extension().to_lower()=="ogg")
-		return "AudioStreamOGGVorbis";
-	return "";
-}
-
-bool ResourceFormatLoaderAudioStreamOGGVorbis::handles_type(const String& p_type) const {
-	return (p_type=="AudioStream" || p_type=="AudioStreamOGG" || p_type=="AudioStreamOGGVorbis");
-}
 
