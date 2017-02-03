@@ -1,4 +1,4 @@
-#include "resource_import_texture.h"
+#include "resource_importer_texture.h"
 #include "io/image_loader.h"
 #include "scene/resources/texture.h"
 

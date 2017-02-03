@@ -99,9 +99,10 @@
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
 #include "plugins/gi_probe_editor_plugin.h"
-#include "import/resource_import_texture.h"
+#include "import/resource_importer_texture.h"
 #include "import/resource_importer_csv_translation.h"
-#include "import/resource_import_wav.h"
+#include "import/resource_importer_wav.h"
+#include "import/resource_importer_obj.h"
 // end
 #include "editor_settings.h"
 #include "io_plugins/editor_texture_import_plugin.h"
@@ -5130,6 +5131,11 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterWAV> import_wav;
 		import_wav.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_wav);
+
+
+		Ref<ResourceImporterOBJ> import_obj;
+		import_obj.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_obj);
 
 	}
 

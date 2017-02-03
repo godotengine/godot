@@ -1,4 +1,4 @@
-#include "resource_import_wav.h"
+#include "resource_importer_wav.h"
 
 #include "scene/resources/audio_stream_sample.h"
 #include "os/file_access.h"
