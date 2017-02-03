@@ -721,13 +721,6 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		return;
 	}
 
-	String dst_path;
-
-	if (texture_action->get_selected()==0)
-		dst_path=save_path->get_text();//.get_base_dir();
-	else
-		dst_path=GlobalConfig::get_singleton()->get("import/shared_textures");
-
 	uint32_t flags=0;
 
 	for(int i=0;i<scene_flags.size();i++) {
@@ -782,6 +775,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("texture_flags",texture_options->get_flags());
 	rim->set_option("texture_format",texture_options->get_format());
 	rim->set_option("texture_quality",texture_options->get_quality());
+	rim->set_option("texture_action",texture_action->get_selected());
 	rim->set_option("animation_flags",animation_options->get_flags());
 	rim->set_option("animation_bake_fps",animation_options->get_fps());
 	rim->set_option("animation_optimizer_linear_error",animation_options->get_optimize_linear_error());
@@ -926,6 +920,7 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 		texture_options->set_flags(rimd->get_option("texture_flags"));
 		texture_options->set_format(EditorTextureImportPlugin::ImageFormat(int(rimd->get_option("texture_format"))));
 		texture_options->set_quality(rimd->get_option("texture_quality"));
+		texture_action->select(rimd->get_option("texture_action"));
 		animation_options->set_flags(rimd->get_option("animation_flags"));
 		if (rimd->has_option("animation_clips"))
 			animation_options->setup_clips(rimd->get_option("animation_clips"));
@@ -1148,12 +1143,6 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 
 	save_choose->connect("pressed", this,"_browse_target");
 
-	texture_action = memnew( OptionButton );
-	texture_action->add_item(TTR("Same as Target Scene"));
-	texture_action->add_item(TTR("Shared"));
-	texture_action->select(0);
-	vbc->add_margin_child(TTR("Target Texture Folder:"),texture_action);
-
 	import_options = memnew( Tree );
 	vbc->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->add_margin_child(TTR("Options:"),import_options,true);
@@ -1275,15 +1264,19 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 */
 	set_hide_on_ok(false);
 
-	GLOBAL_DEF("import/shared_textures","res://");
-	GlobalConfig::get_singleton()->set_custom_property_info("import/shared_textures",PropertyInfo(Variant::STRING,"import/shared_textures",PROPERTY_HINT_DIR));
-
 	import_hb->add_constant_override("separation",30);
 
 
 	VBoxContainer *ovb = memnew( VBoxContainer);
 	ovb->set_h_size_flags(SIZE_EXPAND_FILL);
 	import_hb->add_child(ovb);
+
+	texture_action = memnew( OptionButton );
+	texture_action->add_item(TTR("Import to Target Folder"));
+	texture_action->add_item(TTR("Import to Source Texture Folder"));
+	texture_action->add_item(TTR("Reuse Source Textures"));
+	texture_action->select(0);
+	ovb->add_margin_child(TTR("Texture Action"),texture_action);
 
 	texture_options = memnew( EditorImportTextureOptions );
 	ovb->add_child(texture_options);
@@ -2794,6 +2787,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	int image_format = from->get_option("texture_format");
 	int image_flags =  from->get_option("texture_flags");
 	float image_quality = from->get_option("texture_quality");
+	int texture_action = from->get_option("texture_action");
 
 	for (Map< Ref<ImageTexture>,TextureRole >::Element *E=imagemap.front();E;E=E->next()) {
 
@@ -2806,27 +2800,42 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 		String path = texture->get_path();
 		String fname= path.get_file();
-		String target_path = GlobalConfig::get_singleton()->localize_path(target_res_path.plus_file(fname));
+		String target_path;
+		if (texture_action == 2) {
+
+			target_path = path;
+
+		} else if (texture_action == 1) {
+
+			target_path = path.get_basename() + ".tex";
+
+		} else {
+
+			target_path = target_res_path.plus_file(fname.get_basename() + ".tex");
+
+		}
 		progress.step(TTR("Import Image:")+" "+fname,3+(idx)*100/imagemap.size());
 
 		idx++;
 
-		if (path==target_path) {
-
-			EditorNode::add_io_error(TTR("Can't import a file over itself:")+" "+target_path);
-			continue;
-		}
+		target_path = GlobalConfig::get_singleton()->localize_path(target_path);
 
 		if (!target_path.begins_with("res://")) {
 			EditorNode::add_io_error(vformat(TTR("Couldn't localize path: %s (already local)"),target_path));
 			continue;
 		}
 
+		if (texture_action == 2) {
 
-		{
+			texture->set_path(target_path);
 
+		} else {
 
-			target_path=target_path.get_basename()+".tex";
+			if (GlobalConfig::get_singleton()->localize_path(path)==target_path) {
+
+				EditorNode::add_io_error(TTR("Can't import a file over itself:")+" "+target_path);
+				continue;
+			}
 
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 
