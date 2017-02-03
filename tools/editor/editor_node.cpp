@@ -101,6 +101,7 @@
 #include "plugins/gi_probe_editor_plugin.h"
 #include "import/resource_import_texture.h"
 #include "import/resource_importer_csv_translation.h"
+#include "import/resource_import_wav.h"
 // end
 #include "editor_settings.h"
 #include "io_plugins/editor_texture_import_plugin.h"
@@ -5125,6 +5126,10 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterCSVTranslation> import_csv_translation;
 		import_csv_translation.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_csv_translation);
+
+		Ref<ResourceImporterWAV> import_wav;
+		import_wav.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_wav);
 
 	}
 
