@@ -2370,6 +2370,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.mod.shift)
 						_post_shift_selection();
+					else if(k.mod.command || k.mod.control)
+						deselect();
 
 				} break;
 #else
@@ -2379,25 +2381,30 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (k.mod.shift)
 						_pre_shift_selection();
 
-					// compute whitespace symbols seq length
-					int current_line_whitespace_len = 0;
-					while(current_line_whitespace_len < text[cursor.line].length()) {
-						CharType c = text[cursor.line][current_line_whitespace_len];
-						if(c != '\t' && c != ' ')
-							break;
-						current_line_whitespace_len++;
-					}
-
-					if(cursor_get_column() == current_line_whitespace_len)
-						cursor_set_column(0);
-					else
-						cursor_set_column(current_line_whitespace_len);
-
-					if (k.mod.command)
+					if (k.mod.command) {
 						cursor_set_line(0);
+						cursor_set_column(0);
+					}
+					else {
+						// compute whitespace symbols seq length
+						int current_line_whitespace_len = 0;
+						while( current_line_whitespace_len < text[cursor.line].length() ) {
+						  CharType c = text[cursor.line][current_line_whitespace_len];
+						  if( c != '\t' && c != ' ' )
+						    break;
+						  current_line_whitespace_len++;
+						}
+
+						if( cursor_get_column() == current_line_whitespace_len )
+						  cursor_set_column(0);
+						else
+						  cursor_set_column(current_line_whitespace_len);
+					}
 
 					if (k.mod.shift)
 						_post_shift_selection();
+					else if(k.mod.command || k.mod.control)
+						deselect();
 					_cancel_completion();
 					completion_hint="";
 
@@ -2420,6 +2427,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.mod.shift)
 						_post_shift_selection();
+					else if(k.mod.command || k.mod.control)
+						deselect();
 
 				} break;
 #else
@@ -2434,6 +2443,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.mod.shift)
 						_post_shift_selection();
+					else if(k.mod.command || k.mod.control)
+						deselect();
 
 					_cancel_completion();
 					completion_hint="";
