@@ -676,7 +676,7 @@ float Generic6DOFJointSW::get_param(Vector3::Axis p_axis,PhysicsServer::G6DOFJoi
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT: {
 
-			return m_angularLimits[p_axis].m_maxLimitForce;
+			return m_angularLimits[p_axis].m_maxMotorForce;
 
 		} break;
 	}
