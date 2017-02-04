@@ -31,6 +31,7 @@
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/bit_mask.h"
+#include "scene/gui/texture_frame.h"
 class TextureButton : public BaseButton {
 
 	OBJ_TYPE( TextureButton, BaseButton );
@@ -41,9 +42,9 @@ class TextureButton : public BaseButton {
 	Ref<Texture> disabled;
 	Ref<Texture> focused;
 	Ref<BitMap> click_mask;
-	Size2 scale;
 	Color modulate;
-
+	bool expand;
+	TextureFrame::StretchMode stretch_mode;
 
 protected:
 
@@ -68,11 +69,14 @@ public:
 	Ref<Texture> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
 
-	void set_texture_scale(Size2 p_scale);
-	Size2 get_texture_scale() const;
-
 	void set_modulate(const Color& p_modulate);
 	Color get_modulate() const;
+
+	void set_expand(bool expand);
+	bool has_expand() const;
+
+	void set_stretch_mode(TextureFrame::StretchMode stretch_mode);
+	TextureFrame::StretchMode get_stretch_mode() const;
 
 	TextureButton();
 };
