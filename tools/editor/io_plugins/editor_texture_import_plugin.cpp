@@ -1050,7 +1050,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 }
 
 
-Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external){
+Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external, bool p_preview){
 
 
 
@@ -1334,6 +1334,15 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				at->set_path(apath);
 				atlases[E->get()]=at;
 
+			}
+		}
+		if (p_preview) {
+			for(int x=0;x<atlas.get_width();x++) {
+				for(int y=0;y<atlas.get_height();y++) {
+					bool gray=(x / 32 + y / 32) & 1;
+					Color c=Color(gray?0.4:0.6,gray?0.4:0.6,gray?0.4:0.6,1);
+					atlas.put_pixel(x,y,c.blend(atlas.get_pixel(x,y)));
+				}
 			}
 		}
 		if (ResourceCache::has(p_path)) {
