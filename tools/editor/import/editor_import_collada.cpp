@@ -65,6 +65,7 @@ struct ColladaImport {
 	bool found_directional;
 	bool force_make_tangents;
 	bool apply_mesh_xform_to_vertices;
+	bool use_mesh_builtin_materials;
 	float bake_fps;
 
 
@@ -87,7 +88,7 @@ struct ColladaImport {
 	Error _create_scene(Collada::Node *p_node, Spatial *p_parent);
 	Error _create_resources(Collada::Node *p_node);
 	Error _create_material(const String& p_material);
-	Error _create_mesh_surfaces(bool p_optimize, Ref<Mesh>& p_mesh, const Map<String,Collada::NodeGeometry::Material>& p_material_map, const Collada::MeshData &meshdata, const Transform& p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data, Vector<Ref<Mesh> > p_morph_meshes=Vector<Ref<Mesh> >(), bool p_for_morph=false);
+	Error _create_mesh_surfaces(bool p_optimize, Ref<Mesh>& p_mesh, const Map<String,Collada::NodeGeometry::Material>& p_material_map, const Collada::MeshData &meshdata, const Transform& p_local_xform, const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data, Vector<Ref<Mesh> > p_morph_meshes=Vector<Ref<Mesh> >(), bool p_for_morph=false, bool p_use_mesh_material=false);
 	Error load(const String& p_path, int p_flags, bool p_force_make_tangents=false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip,bool p_make_tracks_in_all_bones, bool p_import_value_tracks);
@@ -610,7 +611,7 @@ static void _generate_tangents_and_binormals(const PoolVector<int>& p_indices,co
 	}
 }
 
-Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *skin_controller, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes,bool p_for_morph) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *skin_controller, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes,bool p_for_morph,bool p_use_mesh_material) {
 
 
 	bool local_xform_mirror=p_local_xform.basis.determinant() < 0;
@@ -1494,7 +1495,9 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES,d,mr,p_for_morph?0:Mesh::ARRAY_COMPRESS_DEFAULT);
 
 			if (material.is_valid()) {
-				p_mesh->surface_set_material(surface, material);
+				if (p_use_mesh_material) {
+					p_mesh->surface_set_material(surface, material);
+				}
 				p_mesh->surface_set_name(surface, material->get_name());
 			}
 		}
@@ -1753,7 +1756,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					mesh=Ref<Mesh>(memnew( Mesh ));
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					mesh->set_name( meshdata.name );
-					Error err = _create_mesh_surfaces(morphs.size()==0,mesh,ng->material_map,meshdata,apply_xform,bone_remap,skin,morph,morphs);
+					Error err = _create_mesh_surfaces(morphs.size()==0,mesh,ng->material_map,meshdata,apply_xform,bone_remap,skin,morph,morphs,false,use_mesh_builtin_materials);
 					ERR_FAIL_COND_V(err,err);
 
 					mesh_cache[meshid]=mesh;
@@ -1764,7 +1767,33 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 			}
 
 			if (!mesh.is_null()) {
+
 				mi->set_mesh(mesh);
+				if (!use_mesh_builtin_materials) {
+					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
+
+					for(int i=0;i<meshdata.primitives.size();i++) {
+
+						String matname=meshdata.primitives[i].material;
+
+						if (ng->material_map.has(matname)) {
+							String target=ng->material_map[matname].target;
+
+							Ref<Material> material;
+							if (!material_cache.has(target)) {
+								Error err = _create_material(target);
+								if (!err)
+									material=material_cache[target];
+							} else
+								material=material_cache[target];
+
+							mi->set_surface_material(i,material);
+						} else if (matname!=""){
+							print_line("Warning, unreferenced material in geometry instance: "+matname);
+						}
+
+					}
+				}
 			}
 		}
 	}
@@ -2375,6 +2404,7 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 	if (p_flags&IMPORT_ANIMATION)
 		flags|=Collada::IMPORT_FLAG_ANIMATION;
 
+	state.use_mesh_builtin_materials=!(p_flags&IMPORT_MATERIALS_IN_INSTANCES);
 	state.bake_fps=p_bake_fps;
 
 	Error err = state.load(p_path,flags,p_flags&EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
@@ -2434,6 +2464,8 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String& p_path
 
 	ColladaImport state;
 
+
+	state.use_mesh_builtin_materials=false;
 
 	Error err = state.load(p_path,Collada::IMPORT_FLAG_ANIMATION,p_flags&EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
 	ERR_FAIL_COND_V(err!=OK,RES());

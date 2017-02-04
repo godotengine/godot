@@ -5,6 +5,8 @@
 #include "scene/resources/animation.h"
 #include "scene/resources/shape.h"
 
+class Material;
+
 class EditorSceneImporter : public Reference {
 
 	GDCLASS(EditorSceneImporter,Reference );
@@ -18,7 +20,8 @@ public:
 		IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS=16,
 		IMPORT_ANIMATION_KEEP_VALUE_TRACKS=32,
 		IMPORT_GENERATE_TANGENT_ARRAYS=256,
-		IMPORT_FAIL_ON_MISSING_DEPENDENCIES=512
+		IMPORT_FAIL_ON_MISSING_DEPENDENCIES=512,
+		IMPORT_MATERIALS_IN_INSTANCES=1024
 
 	};
 
@@ -72,6 +75,8 @@ public:
 	virtual void get_import_options(List<ImportOption> *r_options,int p_preset=0) const;
 	virtual bool get_option_visibility(const String& p_option,const Map<StringName,Variant>& p_options) const;
 
+	void _make_external_resources(Node* p_node,const String& p_base_path, bool p_make_materials, bool p_make_meshes, Map<Ref<Material>, Ref<Material> > &p_materials, Map<Ref<Mesh>, Ref<Mesh> > &p_meshes);
+
 	Node* _fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map);
 
 	void _create_clips(Node *scene, const Array& p_clips,bool p_bake_all);
@@ -83,5 +88,6 @@ public:
 
 	ResourceImporterScene();
 };
+
 
 #endif // RESOURCEIMPORTERSCENE_H
