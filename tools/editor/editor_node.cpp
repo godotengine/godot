@@ -103,6 +103,7 @@
 #include "import/resource_importer_csv_translation.h"
 #include "import/resource_importer_wav.h"
 #include "import/resource_importer_obj.h"
+#include "import/resource_importer_scene.h"
 // end
 #include "editor_settings.h"
 #include "io_plugins/editor_texture_import_plugin.h"
@@ -113,7 +114,7 @@
 #include "io_plugins/editor_bitmask_import_plugin.h"
 #include "io_plugins/editor_mesh_import_plugin.h"
 #include "io_plugins/editor_export_scene.h"
-#include "io_plugins/editor_import_collada.h"
+#include "import/editor_import_collada.h"
 #include "io_plugins/editor_scene_importer_fbxconv.h"
 
 #include "plugins/editor_preview_plugins.h"
@@ -5136,6 +5137,16 @@ EditorNode::EditorNode() {
 		Ref<ResourceImporterOBJ> import_obj;
 		import_obj.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_obj);
+
+		Ref<ResourceImporterScene> import_scene;
+		import_scene.instance();
+		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
+
+		{
+			Ref<EditorSceneImporterCollada> import_collada;
+			import_collada.instance();
+			import_scene->add_importer(import_collada);
+		}
 
 	}
 

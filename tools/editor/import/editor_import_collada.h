@@ -29,9 +29,9 @@
 #ifndef EDITOR_IMPORT_COLLADA_H
 #define EDITOR_IMPORT_COLLADA_H
 
-#include "tools/editor/io_plugins/editor_scene_import_plugin.h"
+#include "tools/editor/import/resource_importer_scene.h"
 
-#if 0
+
 
 class EditorSceneImporterCollada : public EditorSceneImporter {
 
@@ -46,6 +46,6 @@ public:
 	EditorSceneImporterCollada();
 };
 
-#endif
+
 #endif
 

@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "editor_import_collada.h"
 
-#if 0
+
 #include "collada/collada.h"
 #include "scene/3d/spatial.h"
 #include "scene/3d/skeleton.h"
@@ -2465,4 +2465,4 @@ EditorSceneImporterCollada::EditorSceneImporterCollada() {
 
 
 }
-#endif
+
