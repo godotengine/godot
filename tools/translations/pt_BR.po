@@ -3388,8 +3388,8 @@ msgid "Compress"
 msgstr "Comprimir"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "Adicionar ao Projeto (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
+msgstr "Adicionar ao Projeto (godot.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -6012,12 +6012,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Caminho de projeto inválido, o caminho deve existir!"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
-msgstr "Caminho de projeto inválido, engine.cfg não deve existir."
+msgid "Invalid project path, godot.cfg must not exist."
+msgstr "Caminho de projeto inválido, godot.cfg não deve existir."
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
-msgstr "Caminho de projeto inválido, engine.cfg deve existir."
+msgid "Invalid project path, godot.cfg must exist."
+msgstr "Caminho de projeto inválido, godot.cfg deve existir."
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
@@ -6028,8 +6028,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Caminho de projeto inválido (mudou alguma coisa?)."
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
-msgstr "Não se pôde criar engine.cfg no caminho do projeto."
+msgid "Couldn't create godot.cfg in project path."
+msgstr "Não se pôde criar godot.cfg no caminho do projeto."
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6265,8 +6265,8 @@ msgid "Remove Resource Remap Option"
 msgstr "Remover Opção de Remapeamento de Recurso"
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
-msgstr "Configurações do Projeto (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
+msgstr "Configurações do Projeto (godot.cfg)"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"

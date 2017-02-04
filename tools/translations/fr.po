@@ -3437,8 +3437,8 @@ msgid "Compress"
 msgstr "Compresser"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "Ajouter au projet (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
+msgstr "Ajouter au projet (godot.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -6072,12 +6072,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Chemin de projet invalide, le chemin doit exister !"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
-msgstr "Chemin de projet invalide, engine.cfg ne doit pas exister."
+msgid "Invalid project path, godot.cfg must not exist."
+msgstr "Chemin de projet invalide, godot.cfg ne doit pas exister."
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
-msgstr "Chemin de projet invalide, engine.cfg doit exister."
+msgid "Invalid project path, godot.cfg must exist."
+msgstr "Chemin de projet invalide, godot.cfg doit exister."
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
@@ -6088,9 +6088,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Chemin de projet non valide (avez-vous changé quelque chose ?)."
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
+msgid "Couldn't create godot.cfg in project path."
 msgstr ""
-"Impossible de créer le fichier engine.cfg dans le répertoire du projet."
+"Impossible de créer le fichier godot.cfg dans le répertoire du projet."
 
 #: tools/editor/project_manager.cpp
 #, fuzzy
@@ -6332,8 +6332,8 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
-msgstr "Paramètres du projet (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
+msgstr "Paramètres du projet (godot.cfg)"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"

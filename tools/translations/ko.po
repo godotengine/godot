@@ -3350,8 +3350,8 @@ msgid "Compress"
 msgstr "압축"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "프로젝트에 추가 (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
+msgstr "프로젝트에 추가 (godot.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -5954,12 +5954,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "프로젝트 경로가 유효하지 않습니다. 경로가 반드시 존재해야 합니다!"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
-msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 있으면 안됩니다."
+msgid "Invalid project path, godot.cfg must not exist."
+msgstr "프로젝트 경로가 유효하지 않습니다. godot.cfg가 있으면 안됩니다."
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
-msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 존재해야합니다."
+msgid "Invalid project path, godot.cfg must exist."
+msgstr "프로젝트 경로가 유효하지 않습니다. godot.cfg가 존재해야합니다."
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
@@ -5970,8 +5970,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "유효하지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
-msgstr "프로젝트 경로에 engine.cfg를 생성할 수 없습니다."
+msgid "Couldn't create godot.cfg in project path."
+msgstr "프로젝트 경로에 godot.cfg를 생성할 수 없습니다."
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6205,8 +6205,8 @@ msgid "Remove Resource Remap Option"
 msgstr "리소스 리맵핑 옵션 제거"
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
-msgstr "프로젝트 설정 (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
+msgstr "프로젝트 설정 (godot.cfg)"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"

@@ -1601,7 +1601,7 @@ msgstr ""
 
 #: tools/editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr "Usunąć wybrane pliki z projektu? (Nie można tego cofnąć)"
+msgstr "Usunąć wybrane pliki z projektu? (Nie można tego cofnąć)"
 
 #: tools/editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -3388,8 +3388,8 @@ msgid "Compress"
 msgstr "Skompresuj"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "Dodaj do projektu (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
+msgstr "Dodaj do projektu (godot.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -5995,12 +5995,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Niepoprawna ścieżka projektu, ścieżka musi istnieć!"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
-msgstr "Niepoprawna ścieżka projektu, engine.cfg nie może istnieć."
+msgid "Invalid project path, godot.cfg must not exist."
+msgstr "Niepoprawna ścieżka projektu, godot.cfg nie może istnieć."
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
-msgstr "Niepoprawna ścieżka projektu, engine.cfg musi istnieć."
+msgid "Invalid project path, godot.cfg must exist."
+msgstr "Niepoprawna ścieżka projektu, godot.cfg musi istnieć."
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
@@ -6011,8 +6011,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Niepoprawna ścieżka projektu (zmienić cokolwiek?)."
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
-msgstr "Nie można było utworzyć engine.cfg w ścieżce projektu."
+msgid "Couldn't create godot.cfg in project path."
+msgstr "Nie można było utworzyć godot.cfg w ścieżce projektu."
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6245,8 +6245,8 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
-msgstr "Ustawienia projektu (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
+msgstr "Ustawienia projektu (godot.cfg)"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"
@@ -6884,7 +6884,7 @@ msgstr "Skróty"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
-msgstr "Zmień promień światła"
+msgstr "Zmień promień światła"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -6912,7 +6912,7 @@ msgstr "Zmień wysokośc Capsule Shape"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
-msgstr "Zmień długość Ray Shape"
+msgstr "Zmień długość Ray Shape"
 
 #: tools/editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"

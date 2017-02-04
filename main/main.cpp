@@ -130,7 +130,7 @@ void Main::print_help(const char* p_binary) {
 	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2017 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
-	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
+	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing godot.cfg\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("\t-e,-editor : Bring up the editor instead of running the scene.\n");
 #endif
@@ -707,7 +707,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	else
 		input_map->load_from_globals(); //keys for game
 
-	if (video_driver=="") // specified in engine.cfg
+	if (video_driver=="") // specified in godot.cfg
 		video_driver=GLOBAL_DEF("display/driver/name",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
 
 	if (!force_res && use_custom_res && globals->has("display/window/width"))
@@ -763,7 +763,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	/* Determine Video Driver */
 
-	if (audio_driver=="") { // specified in engine.cfg
+	if (audio_driver=="") { // specified in godot.cfg
 		audio_driver=GLOBAL_DEF("audio/driver",OS::get_singleton()->get_audio_driver_name(0));
 	}
 

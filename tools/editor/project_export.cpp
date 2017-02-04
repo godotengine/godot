@@ -450,8 +450,8 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 
 	while(true) {
 
-		print_line("TESTING: "+location.plus_file("engine.cfg"));
-		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
+		print_line("TESTING: "+location.plus_file("godot.cfg"));
+		if (FileAccess::exists(location.plus_file("godot.cfg"))) {
 
 			error->set_text(TTR("Please export outside the project folder!"));
 			error->popup_centered_minsize();
@@ -2099,7 +2099,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 		added_settings["remap/"+platform]=Variant(remaps).operator Array();
 	}
 
-	String engine_cfg_path=d->get_current_dir()+"/engine.cfg";
+	String engine_cfg_path=d->get_current_dir()+"/godot.cfg";
 	print_line("enginecfg: "+engine_cfg_path);
 	GlobalConfig::get_singleton()->save_custom(engine_cfg_path,added_settings);
 

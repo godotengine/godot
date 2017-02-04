@@ -390,8 +390,8 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 
 	Set<StringName> exported;
 
-	if (FileAccess::exists("res://engine.cfg"))
-		exported.insert("res://engine.cfg");
+	if (FileAccess::exists("res://godot.cfg"))
+		exported.insert("res://godot.cfg");
 
 	if (EditorImportExport::get_singleton()->get_export_filter()!=EditorImportExport::EXPORT_SELECTED) {
 
@@ -987,7 +987,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	}
 
 
-	StringName engine_cfg="res://engine.cfg";
+	StringName engine_cfg="res://godot.cfg";
 	StringName boot_splash;
 	{
 		String splash=GlobalConfig::get_singleton()->get("application/boot_splash"); //avoid splash from being converted
@@ -1041,7 +1041,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 	{
 
-		//make binary engine.cfg config
+		//make binary godot.cfg config
 		Map<String,Variant> custom;
 
 
@@ -1085,7 +1085,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 		}
 
-		String remap_file="engine.cfb";
+		String remap_file="godot.cfb";
 		String engine_cfb =EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp"+remap_file;
 		GlobalConfig::get_singleton()->save_custom(engine_cfb,custom);
 		Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);

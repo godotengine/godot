@@ -3239,7 +3239,7 @@ msgid "Compress"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
@@ -5830,11 +5830,11 @@ msgid "Invalid project path, the path must exist!"
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
+msgid "Invalid project path, godot.cfg must not exist."
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
+msgid "Invalid project path, godot.cfg must exist."
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -5846,7 +5846,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr ""
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
+msgid "Couldn't create godot.cfg in project path."
 msgstr ""
 
 #: tools/editor/project_manager.cpp
@@ -6080,7 +6080,7 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
 msgstr ""
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp

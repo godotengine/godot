@@ -430,7 +430,7 @@ Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String>& strings,
 	Token token;
 	get_token(p_stream,token,line,r_err_str);
 	if (token.type!=TK_PARENTHESIS_OPEN) {
-		r_err_str="Expected '(' in old-style engine.cfg construct";
+		r_err_str="Expected '(' in old-style godot.cfg construct";
 		return ERR_PARSE_ERROR;
 	}
 
@@ -442,7 +442,7 @@ Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String>& strings,
 		CharType c=p_stream->get_char();
 
 		if (p_stream->is_eof()) {
-			r_err_str="Unexpected EOF while parsing old-style engine.cfg construct";
+			r_err_str="Unexpected EOF while parsing old-style godot.cfg construct";
 			return ERR_PARSE_ERROR;
 		}
 
@@ -1328,7 +1328,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value=arr;
 
 			return OK;
-		} else if (id=="key") { // compatibility with engine.cfg
+		} else if (id=="key") { // compatibility with godot.cfg
 
 			Vector<String> params;
 			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
@@ -1364,7 +1364,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value=ie;
 			return OK;
 
-		} else if (id=="mbutton") {  // compatibility with engine.cfg
+		} else if (id=="mbutton") {  // compatibility with godot.cfg
 
 			Vector<String> params;
 			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
@@ -1379,7 +1379,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			value=ie;
 			return OK;
-		} else if (id=="jbutton") {  // compatibility with engine.cfg
+		} else if (id=="jbutton") {  // compatibility with godot.cfg
 
 			Vector<String> params;
 			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
@@ -1394,7 +1394,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value=ie;
 
 			return OK;
-		} else if (id=="jaxis") {  // compatibility with engine.cfg
+		} else if (id=="jaxis") {  // compatibility with godot.cfg
 
 			Vector<String> params;
 			Error err = _parse_enginecfg(p_stream,params,line,r_err_str);
@@ -1412,19 +1412,19 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			value= ie;
 
 			return OK;
-		} else if (id=="img") {  // compatibility with engine.cfg
+		} else if (id=="img") {  // compatibility with godot.cfg
 
 			Token token;
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type!=TK_PARENTHESIS_OPEN) {
-				r_err_str="Expected '(' in old-style engine.cfg construct";
+				r_err_str="Expected '(' in old-style godot.cfg construct";
 				return ERR_PARSE_ERROR;
 			}
 
 			while(true) {
 				CharType c = p_stream->get_char();
 				if (p_stream->is_eof()) {
-					r_err_str="Unexpected EOF in old style engine.cfg img()";
+					r_err_str="Unexpected EOF in old style godot.cfg img()";
 					return ERR_PARSE_ERROR;
 				}
 				if (c==')')

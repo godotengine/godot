@@ -3449,8 +3449,8 @@ msgid "Compress"
 msgstr "Comprimir"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "Añadir al proyecto (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
+msgstr "Añadir al proyecto (godot.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -6084,12 +6084,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "¡La ruta del proyecto no es correcta, tiene que existir!"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
-msgstr "La ruta del proyecto no es correcta, engine.cfg no debe existir."
+msgid "Invalid project path, godot.cfg must not exist."
+msgstr "La ruta del proyecto no es correcta, godot.cfg no debe existir."
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
-msgstr "¡La ruta del proyecto no es correcta, engine.cfg debe existir."
+msgid "Invalid project path, godot.cfg must exist."
+msgstr "¡La ruta del proyecto no es correcta, godot.cfg debe existir."
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
@@ -6100,8 +6100,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "La ruta del proyecto no es correcta (¿has cambiado algo?)."
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
-msgstr "No se pudo crear engine.cfg en la ruta de proyecto."
+msgid "Couldn't create godot.cfg in project path."
+msgstr "No se pudo crear godot.cfg en la ruta de proyecto."
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6338,8 +6338,8 @@ msgid "Remove Resource Remap Option"
 msgstr "Quitar opción de remapeo de recursos"
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
-msgstr "Ajustes de proyecto (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
+msgstr "Ajustes de proyecto (godot.cfg)"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"

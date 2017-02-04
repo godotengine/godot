@@ -3295,8 +3295,8 @@ msgid "Compress"
 msgstr ""
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "Zum Projekt hinzufügen (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
+msgstr "Zum Projekt hinzufügen (godot.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -5900,12 +5900,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Ungültiger Projektpfad, Pfad existiert nicht!"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
-msgstr "Ungültiger Projektpfad, engine.cfg vorhanden!"
+msgid "Invalid project path, godot.cfg must not exist."
+msgstr "Ungültiger Projektpfad, godot.cfg vorhanden!"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
-msgstr "Ungültiger Projektpfad, engine.cfg nicht vorhanden!"
+msgid "Invalid project path, godot.cfg must exist."
+msgstr "Ungültiger Projektpfad, godot.cfg nicht vorhanden!"
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
@@ -5916,8 +5916,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ungültiger Projektpfad, (wurde was geändert?)!"
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
-msgstr "Die engine.cfg kann im Projektverzeichnis nicht erstellt werden."
+msgid "Couldn't create godot.cfg in project path."
+msgstr "Die godot.cfg kann im Projektverzeichnis nicht erstellt werden."
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6150,7 +6150,7 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
 msgstr ""
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp

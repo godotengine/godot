@@ -1217,7 +1217,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 
 	singleton=this;
-	set_title(TTR("Project Settings (engine.cfg)"));
+	set_title(TTR("Project Settings (godot.cfg)"));
 	undo_redo=&p_data->get_undo_redo();
 	data=p_data;
 

@@ -3312,8 +3312,8 @@ msgid "Compress"
 msgstr "压缩"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "添加到项目（engine.cfg）"
+msgid "Add to Project (godot.cfg)"
+msgstr "添加到项目（godot.cfg）"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -5912,11 +5912,11 @@ msgid "Invalid project path, the path must exist!"
 msgstr "项目目录不存在！"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
+msgid "Invalid project path, godot.cfg must not exist."
 msgstr "项目目录下必须包含engin.cfg文件。"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
+msgid "Invalid project path, godot.cfg must exist."
 msgstr "项目目录下必须包含engin.cfg文件。"
 
 #: tools/editor/project_manager.cpp
@@ -5928,8 +5928,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "项目路径非法（被外部修改？）。"
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
-msgstr "无法在项目目录下创建engine.cfg文件。"
+msgid "Couldn't create godot.cfg in project path."
+msgstr "无法在项目目录下创建godot.cfg文件。"
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6162,8 +6162,8 @@ msgid "Remove Resource Remap Option"
 msgstr "移除资源重定向选项"
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
-msgstr "项目设置（engine.cfg）"
+msgid "Project Settings (godot.cfg)"
+msgstr "项目设置（godot.cfg）"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"

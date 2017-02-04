@@ -3416,8 +3416,8 @@ msgid "Compress"
 msgstr "Comprimi"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
-msgid "Add to Project (engine.cfg)"
-msgstr "Aggiungi a Progetto (engine.cfg)"
+msgid "Add to Project (godot.cfg)"
+msgstr "Aggiungi a Progetto (godot.cfg)"
 
 #: tools/editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -6031,12 +6031,12 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Percorso di progetto invalido, il percorso deve esistere!"
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must not exist."
-msgstr "Percorso di progetto invalido, engine.cfg non deve esistere."
+msgid "Invalid project path, godot.cfg must not exist."
+msgstr "Percorso di progetto invalido, godot.cfg non deve esistere."
 
 #: tools/editor/project_manager.cpp
-msgid "Invalid project path, engine.cfg must exist."
-msgstr "Percorso di progetto invalido, engine.cfg deve esistere."
+msgid "Invalid project path, godot.cfg must exist."
+msgstr "Percorso di progetto invalido, godot.cfg deve esistere."
 
 #: tools/editor/project_manager.cpp
 msgid "Imported Project"
@@ -6047,8 +6047,8 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Percorso di progetto invalido (cambiato qualcosa?)."
 
 #: tools/editor/project_manager.cpp
-msgid "Couldn't create engine.cfg in project path."
-msgstr "Impossibile creare engine.cfg nel percorso di progetto."
+msgid "Couldn't create godot.cfg in project path."
+msgstr "Impossibile creare godot.cfg nel percorso di progetto."
 
 #: tools/editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -6283,8 +6283,8 @@ msgid "Remove Resource Remap Option"
 msgstr "Rimuovi Opzione di Remap Rimorse"
 
 #: tools/editor/project_settings.cpp
-msgid "Project Settings (engine.cfg)"
-msgstr "Impostazioni Progetto (engine.cfg)"
+msgid "Project Settings (godot.cfg)"
+msgstr "Impostazioni Progetto (godot.cfg)"
 
 #: tools/editor/project_settings.cpp tools/editor/settings_config_dialog.cpp
 msgid "General"
