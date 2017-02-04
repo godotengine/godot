@@ -630,6 +630,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 				import_mt=FileAccess::get_modified_time(path+".import");
 			}
 
+
 			if (fc && fc->modification_time==mt && fc->import_modification_time==import_mt && _check_missing_imported_files(path)) {
 
 				fi->type=fc->type;
@@ -638,7 +639,20 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess 
 
 			} else {
 
-				print_line("REIMPORT BECAUSE: time changed");
+				if (!fc) {
+					print_line("REIMPORT BECAUSE: not previously found");
+				} else if (fc->modification_time!=mt) {
+					print_line("REIMPORT BECAUSE: modified resource time "+itos(fc->modification_time)+" vs "+itos(mt));
+
+				} else if (fc->import_modification_time!=import_mt)  {
+					print_line("REIMPORT BECAUSE: modified .import time"+itos(fc->import_modification_time)+" vs "+itos(import_mt));
+
+				} else {
+
+					print_line("REIMPORT BECAUSE: missing imported files");
+				}
+
+
 				fi->type=ResourceFormatImporter::get_singleton()->get_resource_type(path);
 				fi->modified_time=0;
 				fi->import_modified_time=0;
@@ -774,6 +788,10 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 					if (import_extensions.has(ext)) {
 						//if it can be imported, and it was added, it needs to be reimported
 						print_line("REIMPORT: file was not found before, reimport");
+						print_line("at dir: "+p_dir->get_path()+" file: "+f);
+						for(int i=0;i<p_dir->files.size();i++) {
+							print_line(itos(i)+": "+p_dir->files[i]->file);
+						}
 						ItemAction ia;
 						ia.action=ItemAction::ACTION_FILE_REIMPORT;
 						ia.dir=p_dir;
@@ -826,6 +844,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir,const S
 			} else {
 
 				uint64_t import_mt=FileAccess::get_modified_time(path+".import");
+				print_line(itos(import_mt)+" vs "+itos(p_dir->files[i]->import_modified_time));
 				if (import_mt!=p_dir->files[i]->import_modified_time) {
 					print_line("REIMPORT: import modified changed, reimport");
 					reimport=true;
@@ -1079,6 +1098,8 @@ bool EditorFileSystem::_find_file(const String& p_file,EditorFileSystemDirectory
 
 	for(int i=0;i<path.size();i++) {
 
+		if (path[i].begins_with("."))
+			return false;
 
 		int idx=-1;
 		for(int j=0;j<fs->get_subdir_count();j++) {
@@ -1266,6 +1287,7 @@ void EditorFileSystem::update_file(const String& p_file) {
 
 	    EditorFileSystemDirectory::FileInfo *fi = memnew( EditorFileSystemDirectory::FileInfo );
 	    fi->file=p_file.get_file();
+	    fi->import_modified_time=0;
 
 	    if (idx==fs->files.size()) {
 		fs->files.push_back(fi);
@@ -1281,7 +1303,9 @@ void EditorFileSystem::update_file(const String& p_file) {
 	//print_line("UPDATING: "+p_file);
 	fs->files[cpos]->type=type;
 	fs->files[cpos]->modified_time=FileAccess::get_modified_time(p_file);
-	fs->files[cpos]->import_modified_time=0;
+	//if (FileAccess::exists(p_file+".import")) {
+	//	fs->files[cpos]->import_modified_time=FileAccess::get_modified_time(p_file+".import");
+	//}
 
 	EditorResourcePreview::get_singleton()->call_deferred("check_for_invalidation",p_file);
 	call_deferred("emit_signal","filesystem_changed"); //update later
@@ -1412,6 +1436,7 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 
 	}
 
+	f->close();
 	memdelete(f);
 
 	//update modified times, to avoid reimport
