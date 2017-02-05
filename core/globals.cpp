@@ -38,6 +38,8 @@
 #include "io/file_access_network.h"
 #include "variant_parser.h"
 
+#define FORMAT_VERSION 3
+
 GlobalConfig *GlobalConfig::singleton=NULL;
 
 GlobalConfig *GlobalConfig::get_singleton() {
@@ -491,6 +493,14 @@ Error GlobalConfig::_load_settings(const String p_path) {
 		}
 
 		if (assign!=String()) {
+			if (section==String() && assign=="config_version") {
+				int config_version = value;
+				if (config_version > FORMAT_VERSION) {
+					memdelete(f);
+					ERR_FAIL_COND_V(config_version > FORMAT_VERSION,ERR_FILE_CANT_OPEN);
+				}
+
+			}
 			set(section+"/"+assign,value);
 		} else if (next_tag.name!=String()) {
 			section=next_tag.name;
@@ -607,6 +617,9 @@ Error GlobalConfig::_save_settings_text(const String& p_file,const Map<String,Li
 		ERR_EXPLAIN("Coudln't save godot.cfg - "+p_file);
 		ERR_FAIL_COND_V(err,err)
 	}
+
+	file->store_string("config_version="+itos(FORMAT_VERSION)+"\n");
+
 
 	for(Map<String,List<String> >::Element *E=props.front();E;E=E->next()) {
 
