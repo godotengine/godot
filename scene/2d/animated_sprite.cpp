@@ -362,6 +362,9 @@ void AnimatedSprite::_notification(int p_what) {
 						}
 					} else {
 						frame++;
+						// also emit if final frame
+						emit_signal(SceneStringNames::get_singleton()->frame_changed);
+						// really?
 						if (frame==fc-1) {
 							emit_signal(SceneStringNames::get_singleton()->finished);
 						}
