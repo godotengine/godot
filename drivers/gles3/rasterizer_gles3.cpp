@@ -167,6 +167,7 @@ void RasterizerGLES3::initialize() {
 
 void RasterizerGLES3::begin_frame(){
 
+
 	uint64_t tick = OS::get_singleton()->get_ticks_usec();
 
 	double time_total = double(tick)/1000000.0;

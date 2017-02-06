@@ -148,6 +148,9 @@ void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas,int p_size){
 		glClearDepth(0.0f);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+
+
 	}
 }
 
@@ -557,6 +560,8 @@ void RasterizerSceneGLES3::reflection_atlas_set_size(RID p_ref_atlas,int p_size)
 
 
 }
+
+
 void RasterizerSceneGLES3::reflection_atlas_set_subdivision(RID p_ref_atlas,int p_subdiv) {
 
 	ReflectionAtlas *reflection_atlas = reflection_atlas_owner.getornull(p_ref_atlas);
@@ -4422,17 +4427,17 @@ void RasterizerSceneGLES3::render_shadow(RID p_light,RID p_shadow_atlas,int p_pa
 
 	render_list.sort_by_depth(false); //shadow is front to back for performance
 
-	glDepthMask(true);
-	glColorMask(1,1,1,1);
 	glDisable(GL_BLEND);
 	glDisable(GL_DITHER);
 	glEnable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER,fbo);
+	glDepthMask(true);
+	glColorMask(0,0,0,0);
+
 
 	if (custom_vp_size) {
 		glViewport(0,0,custom_vp_size,custom_vp_size);
 		glScissor(0,0,custom_vp_size,custom_vp_size);
-
 
 	} else {
 		glViewport(x,y,width,height);
@@ -5028,5 +5033,4 @@ void RasterizerSceneGLES3::finalize(){
 
 RasterizerSceneGLES3::RasterizerSceneGLES3()
 {
-
 }

@@ -91,7 +91,6 @@ RES ResourceFormatImporter::load(const String &p_path,const String& p_original_p
 
 void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extensions) const{
 
-	print_line("getting exts from: "+itos(importers.size()));
 	Set<String> found;
 
 	for (Set< Ref<ResourceImporter> >::Element *E=importers.front();E;E=E->next()) {
@@ -99,7 +98,6 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 		E->get()->get_recognized_extensions(&local_exts);
 		for (List<String>::Element *F=local_exts.front();F;F=F->next()) {
 			if (!found.has(F->get())) {
-				print_line("adding ext "+String(F->get()));
 				p_extensions->push_back(F->get());
 				found.insert(F->get());
 			}

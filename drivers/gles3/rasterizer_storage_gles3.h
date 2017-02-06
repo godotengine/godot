@@ -1178,8 +1178,10 @@ public:
 			height=0;
 			depth=0;
 			fbo=0;
+			exposure.fbo=0;
 			buffers.fbo=0;
 			used_in_frame=false;
+
 
 			flags[RENDER_TARGET_VFLIP]=false;
 			flags[RENDER_TARGET_TRANSPARENT]=false;

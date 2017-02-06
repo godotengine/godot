@@ -2495,6 +2495,7 @@ RID RasterizerStorageGLES3::mesh_create(){
 
 void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<Rect3>& p_bone_aabbs){
 
+
 	PoolVector<uint8_t> array = p_array;
 
 	Mesh *mesh = mesh_owner.getornull(p_mesh);
@@ -2693,8 +2694,6 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh,uint32_t p_format,VS::P
 
 	int array_size = stride * p_vertex_count;
 	int index_array_size=0;
-
-	print_line("desired size: "+itos(array_size)+" vcount "+itos(p_vertex_count)+" should be: "+itos(array.size()+p_vertex_count*2)+" but is "+itos(array.size()));
 	if (array.size()!=array_size && array.size()+p_vertex_count*2 == array_size) {
 		//old format, convert
 		array = PoolVector<uint8_t>();
@@ -5447,11 +5446,13 @@ void RasterizerStorageGLES3::instance_remove_dependency(RID p_base,RasterizerSce
 
 void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 
+
 	if (rt->fbo) {
 		glDeleteFramebuffers(1,&rt->fbo);
 		glDeleteTextures(1,&rt->color);
 		rt->fbo=0;
 	}
+
 
 	if (rt->buffers.fbo) {
 		glDeleteFramebuffers(1,&rt->buffers.fbo);
@@ -5466,10 +5467,12 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		rt->buffers.fbo=0;
 	}
 
+
 	if (rt->depth) {
 		glDeleteTextures(1,&rt->depth);
 		rt->depth=0;
 	}
+
 
 	if (rt->effects.ssao.blur_fbo[0]) {
 		glDeleteFramebuffers(1,&rt->effects.ssao.blur_fbo[0]);
@@ -5483,17 +5486,23 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		rt->effects.ssao.depth_mipmap_fbos.clear();
 
 		glDeleteTextures(1,&rt->effects.ssao.linear_depth);
+
+		rt->effects.ssao.blur_fbo[0]=0;
+		rt->effects.ssao.blur_fbo[1]=0;
 	}
+
 
 	if (rt->exposure.fbo) {
 		glDeleteFramebuffers(1,&rt->exposure.fbo);
 		glDeleteTextures(1,&rt->exposure.color);
+		rt->exposure.fbo=0;
 	}
 	Texture *tex = texture_owner.get(rt->texture);
 	tex->alloc_height=0;
 	tex->alloc_width=0;
 	tex->width=0;
 	tex->height=0;
+
 
 	for(int i=0;i<2;i++) {
 		for(int j=0;j<rt->effects.mip_maps[i].sizes.size();j++) {
@@ -5504,6 +5513,8 @@ void RasterizerStorageGLES3::_render_target_clear(RenderTarget *rt) {
 		rt->effects.mip_maps[i].sizes.clear();
 		rt->effects.mip_maps[i].levels=0;
 	}
+
+
 /*
 	if (rt->effects.screen_space_depth) {
 		glDeleteTextures(1,&rt->effects.screen_space_depth);
@@ -5517,7 +5528,6 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 	if (rt->width<=0 || rt->height<=0)
 		return;
-
 
 	GLuint color_internal_format;
 	GLuint color_format;

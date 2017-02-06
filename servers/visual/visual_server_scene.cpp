@@ -2239,7 +2239,6 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform,const Came
 			bool redraw = VSG::scene_render->shadow_atlas_update_light(p_shadow_atlas,light->instance,coverage,light->last_version);
 
 			if (redraw) {
-				print_line("redraw shadow");
 				//must redraw!
 				_light_instance_update_shadow(ins,p_cam_transform,p_cam_projection,p_cam_orthogonal,p_shadow_atlas,scenario);
 			}
