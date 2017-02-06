@@ -711,7 +711,7 @@ float AnimationTreePlayer::_process_node(const StringName& p_node,AnimationNode 
 			else
 				rem = _process_node(tsn->inputs[0].node,r_prev_anim,p_time*tsn->scale,false,p_fallback_weight,p_weights);
 			if (tsn->scale == 0)
-				return INFINITY;
+				return Math_INF;
 			else
 				return rem / tsn->scale;
 

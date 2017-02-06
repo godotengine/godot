@@ -1738,6 +1738,8 @@ const char* VisualScriptMathConstant::const_name[MATH_CONSTANT_MAX]={
 	"PI/2",
 	"E",
 	"Sqrt2",
+	"INF",
+	"NAN"
 };
 
 double VisualScriptMathConstant::const_value[MATH_CONSTANT_MAX]={
@@ -1746,7 +1748,9 @@ double VisualScriptMathConstant::const_value[MATH_CONSTANT_MAX]={
 	Math_PI*2,
 	Math_PI*0.5,
 	2.71828182845904523536,
-	Math::sqrt(2.0)
+	Math::sqrt(2.0),
+	Math_INF,
+	Math_NAN
 };
 
 
