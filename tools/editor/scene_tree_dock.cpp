@@ -1392,50 +1392,56 @@ void SceneTreeDock::_create() {
 			ERR_FAIL_COND(!parent);
 		}
 
-		Object *c = create_dialog->instance_selected();
+		List<Object*> l;
+		create_dialog->instance_selected(&l);
 
-		ERR_FAIL_COND(!c);
-		Node *child=c->cast_to<Node>();
-		ERR_FAIL_COND(!child);
+		for(List<Object*>::Element *E=l.front();E;E=E->next()) {
+			Object* c = E->get();
 
-		editor_data->get_undo_redo().create_action(TTR("Create Node"));
+			ERR_FAIL_COND(!c);
+			Node *child=c->cast_to<Node>();
+			ERR_FAIL_COND(!child);
 
-		if (edited_scene) {
+			editor_data->get_undo_redo().create_action(TTR("Create Node"));
 
-			editor_data->get_undo_redo().add_do_method(parent,"add_child",child);
-			editor_data->get_undo_redo().add_do_method(child,"set_owner",edited_scene);
-			editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
-			editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",child);
-			editor_data->get_undo_redo().add_do_reference(child);
-			editor_data->get_undo_redo().add_undo_method(parent,"remove_child",child);
+			if (edited_scene) {
+
+				editor_data->get_undo_redo().add_do_method(parent,"add_child",child);
+				editor_data->get_undo_redo().add_do_method(child,"set_owner",edited_scene);
+				editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
+				editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",child);
+				editor_data->get_undo_redo().add_do_reference(child);
+				editor_data->get_undo_redo().add_undo_method(parent,"remove_child",child);
 
 
-			String new_name = parent->validate_child_name(child);
-			ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
-			editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",edited_scene->get_path_to(parent),child->get_class(),new_name);
-			editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
+				String new_name = parent->validate_child_name(child);
+				ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+				editor_data->get_undo_redo().add_do_method(sed,"live_debug_create_node",edited_scene->get_path_to(parent),child->get_class(),new_name);
+				editor_data->get_undo_redo().add_undo_method(sed,"live_debug_remove_node",NodePath(String(edited_scene->get_path_to(parent))+"/"+new_name));
 
-		} else {
+			} else {
 
-			editor_data->get_undo_redo().add_do_method(editor,"set_edited_scene",child);
-			editor_data->get_undo_redo().add_do_reference(child);
-			editor_data->get_undo_redo().add_undo_method(editor,"set_edited_scene",(Object*)NULL);
+				editor_data->get_undo_redo().add_do_method(editor,"set_edited_scene",child);
+				editor_data->get_undo_redo().add_do_reference(child);
+				editor_data->get_undo_redo().add_undo_method(editor,"set_edited_scene",(Object*)NULL);
 
-		}
+			}
 
-		editor_data->get_undo_redo().commit_action();
-		editor->push_item(c);
+			editor_data->get_undo_redo().commit_action();
+			editor->push_item(c);
 
-		if (c->cast_to<Control>()) {
-			//make editor more comfortable, so some controls don't appear super shrunk
-			Control *ct = c->cast_to<Control>();
+			if (c->cast_to<Control>()) {
+				//make editor more comfortable, so some controls don't appear super shrunk
+				Control *ct = c->cast_to<Control>();
 
-			Size2 ms = ct->get_minimum_size();
-			if (ms.width<4)
-				ms.width=40;
-			if (ms.height<4)
-				ms.height=40;
-			ct->set_size(ms);
+				Size2 ms = ct->get_minimum_size();
+				if (ms.width<4)
+					ms.width=40;
+				if (ms.height<4)
+					ms.height=40;
+				ct->set_size(ms);
+			}
+
 		}
 
 
@@ -1443,76 +1449,80 @@ void SceneTreeDock::_create() {
 		Node * n = scene_tree->get_selected();
 		ERR_FAIL_COND(!n);
 
-		Object *c = create_dialog->instance_selected();
+		List<Object*> l;
+		create_dialog->instance_selected(&l);
 
-		ERR_FAIL_COND(!c);
-		Node *newnode=c->cast_to<Node>();
-		ERR_FAIL_COND(!newnode);
+		for(List<Object*>::Element *E=l.front();E;E=E->next()) {
+			Object* c = E->get();
 
-		List<PropertyInfo> pinfo;
-		n->get_property_list(&pinfo);
+			ERR_FAIL_COND(!c);
+			Node *newnode=c->cast_to<Node>();
+			ERR_FAIL_COND(!newnode);
 
-		for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
-			if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
-				continue;
-			newnode->set(E->get().name,n->get(E->get().name));
-		}
+			List<PropertyInfo> pinfo;
+			n->get_property_list(&pinfo);
 
-		editor->push_item(NULL);
-
-		//reconnect signals
-		List<MethodInfo> sl;
-
-		n->get_signal_list(&sl);
-		for (List<MethodInfo>::Element *E=sl.front();E;E=E->next()) {
-
-			List<Object::Connection> cl;
-			n->get_signal_connection_list(E->get().name,&cl);
-
-			for(List<Object::Connection>::Element *F=cl.front();F;F=F->next()) {
-
-				Object::Connection &c=F->get();
-				if (!(c.flags&Object::CONNECT_PERSIST))
+			for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+				if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
 					continue;
-				newnode->connect(c.signal,c.target,c.method,varray(),Object::CONNECT_PERSIST);
+				newnode->set(E->get().name,n->get(E->get().name));
+			}
+
+			editor->push_item(NULL);
+
+			//reconnect signals
+			List<MethodInfo> sl;
+
+			n->get_signal_list(&sl);
+			for (List<MethodInfo>::Element *E=sl.front();E;E=E->next()) {
+
+				List<Object::Connection> cl;
+				n->get_signal_connection_list(E->get().name,&cl);
+
+				for(List<Object::Connection>::Element *F=cl.front();F;F=F->next()) {
+
+					Object::Connection &c=F->get();
+					if (!(c.flags&Object::CONNECT_PERSIST))
+						continue;
+					newnode->connect(c.signal,c.target,c.method,varray(),Object::CONNECT_PERSIST);
+				}
+
+			}
+
+			String newname=n->get_name();
+
+			List<Node*> to_erase;
+			for(int i=0;i<n->get_child_count();i++) {
+				if (n->get_child(i)->get_owner()==NULL && n->is_owned_by_parent()) {
+					to_erase.push_back(n->get_child(i));
+				}
+			}
+			n->replace_by(newnode,true);
+
+			if (n==edited_scene) {
+				edited_scene=newnode;
+				editor->set_edited_scene(newnode);
+				newnode->set_editable_instances(n->get_editable_instances());
+			}
+
+			//small hack to make collisionshapes and other kind of nodes to work
+			for(int i=0;i<newnode->get_child_count();i++) {
+				Node *c=newnode->get_child(i);
+				c->call("set_transform", c->call("get_transform") );
+			}
+			editor_data->get_undo_redo().clear_history();
+			newnode->set_name(newname);
+
+			editor->push_item(newnode);
+
+			memdelete(n);
+
+			while(to_erase.front()) {
+				memdelete(to_erase.front()->get());
+				to_erase.pop_front();
 			}
 
 		}
-
-		String newname=n->get_name();
-
-		List<Node*> to_erase;
-		for(int i=0;i<n->get_child_count();i++) {
-			if (n->get_child(i)->get_owner()==NULL && n->is_owned_by_parent()) {
-				to_erase.push_back(n->get_child(i));
-			}
-		}
-		n->replace_by(newnode,true);
-
-		if (n==edited_scene) {
-			edited_scene=newnode;
-			editor->set_edited_scene(newnode);
-			newnode->set_editable_instances(n->get_editable_instances());
-		}
-
-		//small hack to make collisionshapes and other kind of nodes to work
-		for(int i=0;i<newnode->get_child_count();i++) {
-			Node *c=newnode->get_child(i);
-			c->call("set_transform", c->call("get_transform") );
-		}
-		editor_data->get_undo_redo().clear_history();
-		newnode->set_name(newname);
-
-		editor->push_item(newnode);
-
-		memdelete(n);
-
-		while(to_erase.front()) {
-			memdelete(to_erase.front()->get());
-			to_erase.pop_front();
-		}
-
-
 
 	}
 

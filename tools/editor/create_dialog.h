@@ -89,7 +89,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	Object *instance_selected();
+	void instance_selected(List<Object*> *p_list);
 	String get_selected_type();
 
 	void set_base_type(const String& p_base);
