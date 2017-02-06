@@ -277,12 +277,10 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 	Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
-	//uint32_t closest=0;
-	//float closest_dist=0;
-
-	r_includes_current=false;
-
-	List<_RayResult> results;
+	ObjectID closest=0;
+	Spatial *item=NULL;
+	float closest_dist=1e20;
+	int selected_handle=-1;
 
 	for (int i=0;i<instances.size();i++) {
 
@@ -318,84 +316,30 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 		if (dist<0)
 			continue;
 
-
-
-		if (editor_selection->is_selected(spat))
-			r_includes_current=true;
-
-		_RayResult res;
-		res.item=spat;
-		res.depth=dist;
-		res.handle=handle;
-		results.push_back(res);
-	}
-
-
-	if (results.empty())
-		return 0;
-
-	results.sort();
-	Spatial *s=NULL;
-
-
-	if (!r_includes_current || results.size()==1 || (r_gizmo_handle && results.front()->get().handle>=0)) {
-
-		//return the nearest one
-		s = results.front()->get().item;
-		if (r_gizmo_handle)
-			*r_gizmo_handle=results.front()->get().handle;
-
-	} else {
-
-		//returns the next one from a curent selection
-		List<_RayResult>::Element *E=results.front();
-		List<_RayResult>::Element *S=NULL;
-
-
-		while(true) {
-
-			//very strange loop algorithm that complies with object selection standards (tm).
-
-			if (S==E) {
-				//went all around and anothing was found
-				//since can't rotate the selection
-				//just return the first one
-
-				s=results.front()->get().item;
-				break;
-
-			}
-
-			if (!S && editor_selection->is_selected(E->get().item)) {
-				//found an item currently in the selection,
-				//so start from this one
-				S=E;
-			}
-
-			if (S && !editor_selection->is_selected(E->get().item)) {
-				// free item after a selected item, this one is desired.
-				s=E->get().item;
-				break;
-			}
-
-			E=E->next();
-			if (!E) {
-
-				if (!S) {
-					//did a loop but nothing was selected, select first
-					s=results.front()->get().item;
-					break;
-
-				}
-				E=results.front();
-			}
+		if (dist < closest_dist) {
+			closest=instances[i];
+			closest_dist=dist;
+			selected_handle=handle;
+			item=spat;
 		}
+
+	//	if (editor_selection->is_selected(spat))
+	//		r_includes_current=true;
+
 	}
 
-	if (!s)
+
+	if (!item)
 		return 0;
 
-	return s->get_instance_ID();
+	if (!editor_selection->is_selected(item) || (r_gizmo_handle && selected_handle>=0)) {
+
+		if (r_gizmo_handle)
+			*r_gizmo_handle=selected_handle;
+
+	}
+
+	return closest;
 
 }
 
@@ -3143,7 +3087,7 @@ void SpatialEditor::_init_indicators() {
 
 		indicator_mat.instance();
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
+		//indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
 		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR,true);
 

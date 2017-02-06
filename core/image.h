@@ -196,7 +196,7 @@ public:
 	/**
 	 * Generate a mipmap to an image (creates an image 1/4 the size, with averaging of 4->1)
 	 */
-	Error generate_mipmaps(bool p_keep_existing=false);
+	Error generate_mipmaps();
 
 	void clear_mipmaps();
 

@@ -157,6 +157,12 @@ RID VisualServerRaster::get_test_cube() {
 	return test_cube;
 }
 
+
+bool VisualServerRaster::has_os_feature(const String& p_feature) const {
+
+	return VSG::storage->has_os_feature(p_feature);
+}
+
 VisualServerRaster::VisualServerRaster() {
 
 	VSG::canvas = memnew( VisualServerCanvas);

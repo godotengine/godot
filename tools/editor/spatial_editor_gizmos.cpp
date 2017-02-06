@@ -2484,7 +2484,7 @@ void GIProbeGizmo::redraw(){
 
 	}
 
-	add_lines(lines,SpatialEditorGizmos::singleton->reflection_probe_material_internal);
+	add_lines(lines,SpatialEditorGizmos::singleton->gi_probe_material_internal);
 
 	Vector<Vector3> handles;
 
@@ -3406,7 +3406,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	reflection_probe_material = create_line_material(Color(0.5,1.0,0.7));
 	reflection_probe_material_internal = create_line_material(Color(0.3,0.8,0.5,0.15));
 	gi_probe_material = create_line_material(Color(0.7,1.0,0.5));
-	gi_probe_material_internal = create_line_material(Color(0.5,0.8,0.3,0.4));
+	gi_probe_material_internal = create_line_material(Color(0.5,0.8,0.3,0.1));
 	joint_material = create_line_material(Color(0.6,0.8,1.0));
 
 	stream_player_icon = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));

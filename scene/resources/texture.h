@@ -178,6 +178,8 @@ public:
 		FORMAT_BIT_LOSSY=1<<21,
 		FORMAT_BIT_STREAM=1<<22,
 		FORMAT_BIT_HAS_MIPMAPS=1<<23,
+		FORMAT_BIT_DETECT_3D=1<<24,
+		FORMAT_BIT_DETECT_SRGB=1<<25,
 	};
 
 private:
@@ -191,12 +193,20 @@ private:
 
 	virtual void reload_from_file();
 
+	static void _requested_3d(void* p_ud);
+	static void _requested_srgb(void* p_ud);
+
 protected:
 
 	static void _bind_methods();
 
 public:
 
+
+	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture>&);
+
+	static TextureFormatRequestCallback request_3d_callback;
+	static TextureFormatRequestCallback request_srgb_callback;
 
 	uint32_t get_flags() const;
 	Image::Format get_format() const;

@@ -1028,7 +1028,7 @@ void EditorFileSystem::_notification(int p_what) {
 
 bool EditorFileSystem::is_scanning() const {
 
-	return scanning;
+	return scanning || scanning_changes;
 }
 float EditorFileSystem::get_scanning_progress() const {
 
@@ -1393,6 +1393,7 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 		f->store_line("type=\""+importer->get_resource_type()+"\"");
 	}
 
+
 	if (importer->get_save_extension()=="") {
 		//no path
 	} else if (import_variants.size()) {
@@ -1400,7 +1401,10 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 		for(List<String>::Element *E=import_variants.front();E;E=E->next()) {
 
 
-			f->store_line("path."+E->get()+"=\""+base_path.c_escape()+"."+E->get()+"."+importer->get_save_extension()+"\"");
+			String path = base_path.c_escape()+"."+E->get()+"."+importer->get_save_extension();
+
+			f->store_line("path."+E->get()+"=\""+path+"\"");
+
 		}
 	} else {
 
@@ -1426,6 +1430,8 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 	f->store_line("");
 
 	//store options in provided order, to avoid file changing
+
+
 	for (List<ResourceImporter::ImportOption>::Element *E=opts.front();E;E=E->next()) {
 
 		String base = E->get().option.name;
@@ -1442,11 +1448,25 @@ void EditorFileSystem::_reimport_file(const String& p_file) {
 	//update modified times, to avoid reimport
 	fs->files[cpos]->modified_time = FileAccess::get_modified_time(p_file);
 	fs->files[cpos]->import_modified_time = FileAccess::get_modified_time(p_file+".import");
+
+	//if file is currently up, maybe the source it was loaded from changed, so import math must be updated for it
+	//to reload properly
+	if (ResourceCache::has(p_file)) {
+
+		Resource *r = ResourceCache::get(p_file);
+
+		if (r->get_import_path()!=String()) {
+
+			String dst_path = ResourceFormatImporter::get_singleton()->get_internal_resource_path(p_file);
+			r->set_import_path(dst_path);
+			r->set_import_last_modified_time(0);
+		}
+	}
 }
 
 void EditorFileSystem::reimport_files(const Vector<String>& p_files) {
 
-
+	importing=true;
 	EditorProgress pr("reimport",TTR("(Re)Importing Assets"),p_files.size());
 	for(int i=0;i<p_files.size();i++) {
 		pr.step(p_files[i].get_file(),i);
@@ -1455,6 +1475,10 @@ void EditorFileSystem::reimport_files(const Vector<String>& p_files) {
 	}
 
 	_save_filesystem_cache();
+	importing=false;
+	if (!is_scanning()) {
+		emit_signal("filesystem_changed");
+	}
 }
 
 void EditorFileSystem::_bind_methods() {
@@ -1503,6 +1527,7 @@ EditorFileSystem::EditorFileSystem() {
 
 	thread = NULL;
 	scanning=false;
+	importing=false;
 	use_threads=true;
 	thread_sources=NULL;
 	new_filesystem=NULL;

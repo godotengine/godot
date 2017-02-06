@@ -456,6 +456,26 @@ ImageTexture::~ImageTexture() {
 //////////////////////////////////////////
 
 
+void StreamTexture::_requested_3d(void* p_ud) {
+
+	StreamTexture *st = (StreamTexture *)p_ud;
+	Ref<StreamTexture> stex(st);
+	ERR_FAIL_COND(!request_3d_callback);
+	request_3d_callback(stex);
+}
+
+void StreamTexture::_requested_srgb(void* p_ud) {
+
+	StreamTexture *st = (StreamTexture *)p_ud;
+	Ref<StreamTexture> stex(st);
+	ERR_FAIL_COND(!request_srgb_callback);
+	request_srgb_callback(stex);
+
+}
+
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_3d_callback=NULL;
+StreamTexture::TextureFormatRequestCallback StreamTexture::request_srgb_callback=NULL;
+
 
 uint32_t StreamTexture::get_flags() const {
 
@@ -489,6 +509,23 @@ Error StreamTexture::_load_data(const String& p_path,int &tw,int &th,int& flags,
 	print_line("height: "+itos(th));
 	print_line("flags: "+itos(flags));
 	print_line("df: "+itos(df));
+
+
+	if (request_3d_callback && df&FORMAT_BIT_DETECT_3D) {
+		print_line("request detect 3D at "+p_path);
+		VS::get_singleton()->texture_set_detect_3d_callback(texture,_requested_3d,this);
+	} else {
+		print_line("not requesting detect 3D at "+p_path);
+		VS::get_singleton()->texture_set_detect_3d_callback(texture,NULL,NULL);
+	}
+
+	if (request_srgb_callback && df&FORMAT_BIT_DETECT_SRGB) {
+		print_line("request detect srgb at "+p_path);
+		VS::get_singleton()->texture_set_detect_srgb_callback(texture,_requested_srgb,this);
+	} else {
+		VS::get_singleton()->texture_set_detect_srgb_callback(texture,NULL,NULL);
+		print_line("not requesting detect srgb at "+p_path);
+	}
 
 	if (!(df&FORMAT_BIT_STREAM)) {
 		p_size_limit=0;
@@ -635,6 +672,7 @@ Error StreamTexture::_load_data(const String& p_path,int &tw,int &th,int& flags,
 			{
 				PoolVector<uint8_t>::Write w=img_data.write();
 				int bytes = f->get_buffer(w.ptr(),total_size - ofs);
+				print_line("requested read: "+itos(total_size - ofs)+" but got: "+itos(bytes));
 
 				memdelete(f);
 
@@ -722,6 +760,12 @@ void StreamTexture::set_flags(uint32_t p_flags){
 
 void StreamTexture::reload_from_file() {
 
+#ifdef TOOLS_ENABLED
+	String ipath = get_import_path();
+	if (ipath.is_resource_file() && ipath!=path_to_file) {
+		path_to_file=ipath;
+	}
+#endif
 	load(path_to_file);
 }
 

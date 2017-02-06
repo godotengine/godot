@@ -245,7 +245,7 @@ void Image::_get_mipmap_offset_and_size(int p_mipmap,int &r_offset, int &r_width
 }
 int Image::get_mipmap_offset(int p_mipmap) const {
 
-	ERR_FAIL_INDEX_V(p_mipmap,(mipmaps+1),-1);
+	ERR_FAIL_INDEX_V(p_mipmap,get_mipmap_count()+1,-1);
 
 	int ofs,w,h;
 	_get_mipmap_offset_and_size(p_mipmap,ofs,w,h);
@@ -1011,7 +1011,7 @@ void Image::shrink_x2() {
 	}
 }
 
-Error Image::generate_mipmaps(bool p_keep_existing)  {
+Error Image::generate_mipmaps()  {
 
 	if (!_can_modify(format)) {
 		ERR_EXPLAIN("Cannot generate mipmaps in indexed, compressed or custom image formats.");
@@ -1019,15 +1019,14 @@ Error Image::generate_mipmaps(bool p_keep_existing)  {
 
 	}
 
-	int mmcount = get_mipmap_count();
+	ERR_FAIL_COND_V(width==0 || height==0,ERR_UNCONFIGURED);
 
-	int from_mm=1;
-	if (p_keep_existing) {
-		from_mm=mmcount+1;
-	}
+	int mmcount;
+
 	int size = _get_dst_image_size(width,height,format,mmcount);
 
 	data.resize(size);
+	print_line("to gen mipmaps w "+itos(width)+" h "+itos(height) +" format "+get_format_name(format)+" mipmaps " +itos(mmcount)+" new size is: "+itos(size));
 
 	PoolVector<uint8_t>::Write wp=data.write();
 
@@ -1043,18 +1042,16 @@ Error Image::generate_mipmaps(bool p_keep_existing)  {
 			int ofs,w,h;
 			_get_mipmap_offset_and_size(i,ofs, w,h);
 
-			if (i>=from_mm) {
 
-				switch(format) {
+			switch(format) {
 
-					case FORMAT_L8:
-					case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
-					case FORMAT_LA8:
-					case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
-					case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
-					case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
-					default: {}
-				}
+				case FORMAT_L8:
+				case FORMAT_R8: _generate_po2_mipmap<1>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
+				case FORMAT_LA8:
+				case FORMAT_RG8: _generate_po2_mipmap<2>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
+				case FORMAT_RGB8: _generate_po2_mipmap<3>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
+				case FORMAT_RGBA8: _generate_po2_mipmap<4>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h); break;
+				default: {}
 			}
 
 			prev_ofs=ofs;
@@ -1077,18 +1074,15 @@ Error Image::generate_mipmaps(bool p_keep_existing)  {
 			int ofs,w,h;
 			_get_mipmap_offset_and_size(i,ofs, w,h);
 
-			if (i>=from_mm) {
+			switch(format) {
 
-				switch(format) {
-
-					case FORMAT_L8:
-					case FORMAT_R8: _scale_bilinear<1>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
-					case FORMAT_LA8:
-					case FORMAT_RG8: _scale_bilinear<2>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
-					case FORMAT_RGB8:_scale_bilinear<3>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
-					case FORMAT_RGBA8: _scale_bilinear<4>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
-					default: {}
-				}
+				case FORMAT_L8:
+				case FORMAT_R8: _scale_bilinear<1>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
+				case FORMAT_LA8:
+				case FORMAT_RG8: _scale_bilinear<2>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
+				case FORMAT_RGB8:_scale_bilinear<3>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
+				case FORMAT_RGBA8: _scale_bilinear<4>(&wp[prev_ofs], &wp[ofs], prev_w,prev_h,w,h); break;
+				default: {}
 			}
 
 			prev_ofs=ofs;
@@ -1096,8 +1090,11 @@ Error Image::generate_mipmaps(bool p_keep_existing)  {
 			prev_h=h;
 		}
 
+
+
 	}
 
+	mipmaps=true;
 
 	return OK;
 }
@@ -1154,7 +1151,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	ERR_FAIL_INDEX(p_height-1,MAX_HEIGHT);
 
 	int mm;
-	int size = _get_dst_image_size(p_width,p_height,p_format,mm,p_use_mipmaps);
+	int size = _get_dst_image_size(p_width,p_height,p_format,mm,p_use_mipmaps?-1:0);
 
 	if (size!=p_data.size()) {
 		ERR_EXPLAIN("Expected data size of "+itos(size)+" in Image::create()");

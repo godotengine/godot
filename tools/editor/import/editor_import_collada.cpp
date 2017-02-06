@@ -430,8 +430,9 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 		}
 	} else {
-		//material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,effect.specular.color);
+		material->set_metalness(effect.specular.color.get_v());
 	}
+
 
 	// EMISSION
 
@@ -443,17 +444,21 @@ Error ColladaImport::_create_material(const String& p_target) {
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
 
+				material->set_feature(FixedSpatialMaterial::FEATURE_EMISSION,true);
 				material->set_texture(FixedSpatialMaterial::TEXTURE_EMISSION,texture);
 				material->set_emission(Color(1,1,1,1));
 
 				//material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,Color(1,1,1,1));
 			}else {
-				//missing_textures.push_back(texfile.get_file());
+				missing_textures.push_back(texfile.get_file());
 			}
 
 		}
 	} else {
-		//material->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,effect.emission.color);
+		if (effect.emission.color!=Color()) {
+			material->set_feature(FixedSpatialMaterial::FEATURE_EMISSION,true);
+			material->set_emission(effect.emission.color);
+		}
 	}
 
 	// NORMAL
@@ -465,6 +470,7 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 			Ref<Texture> texture = ResourceLoader::load(texfile,"Texture");
 			if (texture.is_valid()) {
+				material->set_feature(FixedSpatialMaterial::FEATURE_NORMAL_MAPPING,true);
 				material->set_texture(FixedSpatialMaterial::TEXTURE_NORMAL,texture);
 				//material->set_emission(Color(1,1,1,1));
 
@@ -477,7 +483,9 @@ Error ColladaImport::_create_material(const String& p_target) {
 	}
 
 
-	//material->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR_EXP,effect.shininess);
+	float roughness = Math::sqrt(1.0-((Math::log(effect.shininess)/Math::log(2.0))/8.0)); //not very right..
+	material->set_roughness(roughness);
+
 	if (effect.double_sided) {
 		material->set_cull_mode(FixedSpatialMaterial::CULL_DISABLED);
 	}

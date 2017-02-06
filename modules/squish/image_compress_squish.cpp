@@ -64,10 +64,9 @@ void image_compress_squish(Image *p_image) {
 
 	p_image->convert(Image::FORMAT_RGBA8); //always expects rgba
 
-	int mm_count = p_image->get_mipmap_count();
-
 	PoolVector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w,h,target_format,mm_count);
+	int target_size = Image::get_image_data_size(w,h,target_format,p_image->has_mipmaps()?-1:0);
+	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w,h,target_format) : 0;
 	data.resize(target_size);
 
 	PoolVector<uint8_t>::Read rb = p_image->get_data().read();

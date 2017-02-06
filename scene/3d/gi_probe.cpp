@@ -906,7 +906,7 @@ GIProbe::Baker::MaterialCache GIProbe::_get_material_cache(Ref<Material> p_mater
 
 }
 
-void GIProbe::_plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_baker) {
+void GIProbe::_plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_baker, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material) {
 
 
 	for(int i=0;i<p_mesh->get_surface_count();i++) {
@@ -914,7 +914,16 @@ void GIProbe::_plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_b
 		if (p_mesh->surface_get_primitive_type(i)!=Mesh::PRIMITIVE_TRIANGLES)
 			continue; //only triangles
 
-		Baker::MaterialCache material = _get_material_cache(p_mesh->surface_get_material(i),p_baker);
+		Ref<Material> src_material;
+
+		if (p_override_material.is_valid()) {
+			src_material=p_override_material;
+		} else if (i<p_materials.size() && p_materials[i].is_valid()) {
+			src_material=p_materials[i];
+		} else {
+			src_material=p_mesh->surface_get_material(i);
+		}
+		Baker::MaterialCache material = _get_material_cache(src_material,p_baker);
 
 		Array a = p_mesh->surface_get_arrays(i);
 
@@ -1009,6 +1018,10 @@ void GIProbe::_find_meshes(Node *p_at_node,Baker *p_baker){
 				Baker::PlotMesh pm;
 				pm.local_xform=xf;
 				pm.mesh=mesh;
+				for(int i=0;i<mesh->get_surface_count();i++) {
+					pm.instance_materials.push_back(mi->get_surface_material(i));
+				}
+				pm.override_material=mi->get_material_override();
 				p_baker->mesh_list.push_back(pm);
 
 			}
@@ -1083,7 +1096,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug){
 
 		print_line("plotting mesh "+itos(pmc++)+"/"+itos(baker.mesh_list.size()));
 
-		_plot_mesh(E->get().local_xform,E->get().mesh,&baker);
+		_plot_mesh(E->get().local_xform,E->get().mesh,&baker,E->get().instance_materials,E->get().override_material);
 	}
 
 	_fixup_plot(0,0,0,0,0,&baker);

@@ -1081,6 +1081,18 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 		state.current_line_width=p_material->line_width;
 	}
 
+	if (state.current_depth_test!=(!p_material->shader->spatial.ontop)) {
+		if (p_material->shader->spatial.ontop) {
+			glDisable(GL_DEPTH_TEST);
+
+		} else {
+			glEnable(GL_DEPTH_TEST);
+
+		}
+
+		state.current_depth_test=!p_material->shader->spatial.ontop;
+	}
+
 	if (state.current_depth_draw!=p_material->shader->spatial.depth_draw_mode) {
 		switch(p_material->shader->spatial.depth_draw_mode) {
 			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS:
@@ -1204,6 +1216,11 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 
 		} else {
 
+#ifdef TOOLS_ENABLED
+			if (t->detect_3d) {
+				t->detect_3d(t->detect_3d_ud);
+			}
+#endif
 			if (storage->config.srgb_decode_supported) {
 				//if SRGB decode extension is present, simply switch the texture to whathever is needed
 				bool must_srgb=false;
@@ -1216,9 +1233,8 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material* p_m
 					if (must_srgb) {
 						glTexParameteri(t->target,_TEXTURE_SRGB_DECODE_EXT,_DECODE_EXT);
 #ifdef TOOLS_ENABLED
-						if (!(t->flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
-							t->flags|=VS::TEXTURE_FLAG_CONVERT_TO_LINEAR;
-							//notify that texture must be set to linear beforehand, so it works in other platforms when exported
+						if (t->detect_srgb) {
+							t->detect_srgb(t->detect_srgb_ud);
 						}
 #endif
 
@@ -1713,6 +1729,9 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 	state.cull_front=false;
 	glCullFace(GL_BACK);
+
+	state.current_depth_test=true;
+	glEnable(GL_DEPTH_TEST);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON,false);
 

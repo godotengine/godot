@@ -403,6 +403,8 @@ public:
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
 
+	virtual bool check_feature_support(const String& p_feature)=0;
+
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
 	OS();
 	virtual ~OS();

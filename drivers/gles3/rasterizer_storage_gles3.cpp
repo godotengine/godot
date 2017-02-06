@@ -218,7 +218,7 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 			if (config.s3tc_supported) {
 
 
-				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				r_gl_internal_format=(config.srgb_decode_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_S3TC_DXT1_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 				r_gl_format=GL_RGBA;
 				r_gl_type=GL_UNSIGNED_BYTE;
 				r_compressed=true;
@@ -785,7 +785,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture,const Image& p_image
 
 		if (texture->compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-			glCompressedTexImage2D( blit_target, i, format,w,h,0,size,&read[ofs] );
+			glCompressedTexImage2D( blit_target, i, internal_format,w,h,0,size,&read[ofs] );
 
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -814,6 +814,10 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture,const Image& p_image
 	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && mipmaps==1 && !texture->ignore_mipmaps && (!(texture->flags&VS::TEXTURE_FLAG_CUBEMAP) || texture->stored_cube_sides==(1<<6)-1)) {
 		//generate mipmaps if they were requested and the image does not contain them
 		glGenerateMipmap(texture->target);
+	} else if (mipmaps>1) {
+		glTexParameteri(texture->target, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(texture->target, GL_TEXTURE_MAX_LEVEL, mipmaps-1);
+
 	}
 
 	texture->mipmaps=mipmaps;
@@ -1065,6 +1069,26 @@ void RasterizerStorageGLES3::textures_keep_original(bool p_enable) {
 
 	config.keep_original_textures=p_enable;
 }
+
+void RasterizerStorageGLES3::texture_set_detect_3d_callback(RID p_texture,VisualServer::TextureDetectCallback p_callback,void* p_userdata) {
+
+	Texture * texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->detect_3d=p_callback;
+	texture->detect_3d_ud=p_userdata;
+}
+
+void RasterizerStorageGLES3::texture_set_detect_srgb_callback(RID p_texture,VisualServer::TextureDetectCallback p_callback,void* p_userdata){
+	Texture * texture = texture_owner.get(p_texture);
+	ERR_FAIL_COND(!texture);
+
+	texture->detect_srgb=p_callback;
+	texture->detect_srgb_ud=p_userdata;
+
+}
+
+
 
 RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source,int p_resolution) const {
 
@@ -1515,12 +1539,12 @@ void RasterizerStorageGLES3::_update_shader(Shader* p_shader) const {
 			actions->uniforms=&p_shader->uniforms;
 
 
-		}
+		} break;
 		case VS::SHADER_PARTICLES: {
 
 			actions=&shaders.actions_particles;
 			actions->uniforms=&p_shader->uniforms;
-		}
+		} break;
 
 	}
 
@@ -6292,6 +6316,25 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 	}
 
 	return true;
+}
+
+
+bool RasterizerStorageGLES3::has_os_feature(const String& p_feature) const {
+
+	if (p_feature=="s3tc")
+		return config.s3tc_supported;
+
+	if (p_feature=="etc")
+		return config.etc_supported;
+
+	if (p_feature=="etc2")
+		return config.etc2_supported;
+
+	if (p_feature=="pvrtc")
+		return config.pvrtc_supported;
+
+	return false;
+
 }
 
 ////////////////////////////////////////////

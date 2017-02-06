@@ -1,5 +1,6 @@
 #include "resource_import.h"
 #include "variant_parser.h"
+#include "os/os.h"
 
 Error ResourceFormatImporter::_get_path_and_type(const String& p_path, PathAndType &r_path_and_type) const {
 
@@ -36,7 +37,13 @@ Error ResourceFormatImporter::_get_path_and_type(const String& p_path, PathAndTy
 		}
 
 		if (assign!=String()) {
-			if (assign=="path") {
+			if (assign.begins_with("path.") && r_path_and_type.path==String()) {
+				String feature = assign.get_slicec('.',1);
+				if (OS::get_singleton()->check_feature_support(feature)) {
+					r_path_and_type.path=value;
+				}
+
+			} else if (assign=="path") {
 				r_path_and_type.path=value;
 			} else if (assign=="type") {
 				r_path_and_type.type=value;
@@ -152,6 +159,20 @@ bool ResourceFormatImporter::handles_type(const String& p_type) const {
 	}
 
 	return true;
+}
+
+
+String ResourceFormatImporter::get_internal_resource_path(const String& p_path) const {
+
+	PathAndType pat;
+	Error err = _get_path_and_type(p_path,pat);
+
+	if (err!=OK) {
+
+		return String();
+	}
+
+	return pat.path;
 }
 
 String ResourceFormatImporter::get_resource_type(const String &p_path) const {

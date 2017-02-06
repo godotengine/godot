@@ -622,7 +622,8 @@ public:
 	BIND3(texture_set_size_override,RID,int,int)
 	BIND2RC(RID,texture_create_radiance_cubemap,RID,int)
 
-
+	BIND3(texture_set_detect_3d_callback,RID,TextureDetectCallback,void*)
+	BIND3(texture_set_detect_srgb_callback,RID,TextureDetectCallback,void*)
 
 	BIND2(texture_set_path,RID,const String&)
 	BIND1RC(String,texture_get_path,RID)
@@ -1134,6 +1135,8 @@ public:
 	virtual void set_default_clear_color(const Color& p_color);
 
 	virtual bool has_feature(Features p_feature) const;
+
+	virtual bool has_os_feature(const String& p_feature) const;
 
 
 	VisualServerRaster();

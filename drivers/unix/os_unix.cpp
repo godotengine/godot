@@ -30,6 +30,7 @@
 
 #ifdef UNIX_ENABLED
 
+#include "servers/visual_server.h"
 
 #include "thread_posix.h"
 #include "semaphore_posix.h"
@@ -477,6 +478,13 @@ String OS_Unix::get_data_dir() const {
 	return GlobalConfig::get_singleton()->get_resource_path();
 
 }
+
+bool OS_Unix::check_feature_support(const String& p_feature) {
+
+	return VisualServer::get_singleton()->has_os_feature(p_feature);
+
+}
+
 
 String OS_Unix::get_installed_templates_path() const {
 	String p=get_global_settings_path();

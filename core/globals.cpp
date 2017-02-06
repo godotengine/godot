@@ -125,6 +125,7 @@ bool GlobalConfig::_set(const StringName& p_name, const Variant& p_value) {
 
 	_THREAD_SAFE_METHOD_
 
+
 	if (p_value.get_type()==Variant::NIL)
 		props.erase(p_name);
 	else {

@@ -308,6 +308,8 @@ void EditorNode::_notification(int p_what) {
 
 		}
 
+		ResourceImporterTexture::get_singleton()->update_imports();
+
 	}
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
@@ -411,8 +413,10 @@ void EditorNode::_fs_changed() {
 			if (E->get()->get_import_path()!=String()) {
 				//imported resource
 				uint64_t mt = FileAccess::get_modified_time(E->get()->get_import_path());
+				print_line("testing modified: "+E->get()->get_import_path()+" "+itos(mt)+" vs "+itos(E->get()->get_import_last_modified_time()));
 
 				if (mt!=E->get()->get_import_last_modified_time()) {
+					print_line("success");
 					changed.push_back(E->get());
 				}
 

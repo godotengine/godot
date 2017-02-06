@@ -133,6 +133,7 @@ class EditorFileSystem : public Node {
 
 	bool abort_scan;
 	bool scanning;
+	bool importing;
 	float scan_total;
 
 
@@ -210,6 +211,7 @@ public:
 
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
+	bool is_importing() const { return importing; }
 	float get_scanning_progress() const;
 	void scan();
 	void scan_changes();
