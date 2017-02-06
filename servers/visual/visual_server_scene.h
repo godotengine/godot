@@ -445,6 +445,7 @@ public:
 			Vector< PoolVector<CompBlockS3TC> > mipmaps_s3tc; //for s3tc
 
 			int updating_stage;
+			float propagate;
 
 			int grid_size[3];
 
@@ -570,7 +571,7 @@ public:
 	void _gi_probe_fill_local_data(int p_idx,int p_level,int p_x,int p_y,int p_z,const GIProbeDataCell* p_cell,const GIProbeDataHeader *p_header,InstanceGIProbeData::LocalData *p_local_data,Vector<uint32_t> *prev_cell);
 
 	_FORCE_INLINE_ uint32_t _gi_bake_find_cell(const GIProbeDataCell *cells,int x,int y, int z,int p_cell_subdiv);
-	void _bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell* p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data);
+	void _bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell* p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data, float p_propagate);
 	void _bake_gi_probe_light(const GIProbeDataHeader *header,const GIProbeDataCell *cells,InstanceGIProbeData::LocalData *local_data,const uint32_t *leaves,int p_leaf_count, const InstanceGIProbeData::LightCache& light_cache,int p_sign);
 	void _bake_gi_probe(Instance *p_probe);
 	bool _check_gi_probe(Instance *p_gi_probe);

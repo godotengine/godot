@@ -2448,6 +2448,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 	probe->dynamic.bake_dynamic_range=VSG::storage->gi_probe_get_dynamic_range(p_instance->base);
 
 	probe->dynamic.mipmaps_3d.clear();
+	probe->dynamic.propagate=VSG::storage->gi_probe_get_propagation(p_instance->base);
 
 	probe->dynamic.grid_size[0]=header->width;
 	probe->dynamic.grid_size[1]=header->height;
@@ -2942,14 +2943,12 @@ void VisualServerScene::_bake_gi_probe_light(const GIProbeDataHeader *header,con
 }
 
 
-void VisualServerScene::_bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell* p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data) {
+void VisualServerScene::_bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell* p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data,float p_propagate) {
 
 	//average light to upper level
-	p_local_data[p_idx].energy[0]=0;
-	p_local_data[p_idx].energy[1]=0;
-	p_local_data[p_idx].energy[2]=0;
 
-	int divisor=0;
+	float divisor=0;
+	float sum[3]={0.0,0.0,0.0};
 
 	for(int i=0;i<8;i++) {
 
@@ -2959,20 +2958,25 @@ void VisualServerScene::_bake_gi_downscale_light(int p_idx, int p_level, const G
 			continue;
 
 		if (p_level+1 < (int)p_header->cell_subdiv-1) {
-			_bake_gi_downscale_light(child,p_level+1,p_cells,p_header,p_local_data);
+			_bake_gi_downscale_light(child,p_level+1,p_cells,p_header,p_local_data,p_propagate);
 		}
 
-		p_local_data[p_idx].energy[0]+=p_local_data[child].energy[0];
-		p_local_data[p_idx].energy[1]+=p_local_data[child].energy[1];
-		p_local_data[p_idx].energy[2]+=p_local_data[child].energy[2];
-		divisor++;
+		sum[0]+=p_local_data[child].energy[0];
+		sum[1]+=p_local_data[child].energy[1];
+		sum[2]+=p_local_data[child].energy[2];
+		divisor+=1.0;
 
 	}
 
+	divisor=Math::lerp(8.0,divisor,p_propagate);
+	sum[0]/=divisor;
+	sum[1]/=divisor;
+	sum[2]/=divisor;
+
 	//divide by eight for average
-	p_local_data[p_idx].energy[0]/=divisor;
-	p_local_data[p_idx].energy[1]/=divisor;
-	p_local_data[p_idx].energy[2]/=divisor;
+	p_local_data[p_idx].energy[0]=Math::fast_ftoi(sum[0]);
+	p_local_data[p_idx].energy[1]=Math::fast_ftoi(sum[1]);
+	p_local_data[p_idx].energy[2]=Math::fast_ftoi(sum[2]);
 
 }
 
@@ -3024,7 +3028,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 	SWAP(probe_data->dynamic.light_cache_changes,probe_data->dynamic.light_cache);
 
 	//downscale to lower res levels
-	_bake_gi_downscale_light(0,0,cells,header,local_data);
+	_bake_gi_downscale_light(0,0,cells,header,local_data,probe_data->dynamic.propagate);
 
 	//plot result to 3D texture!
 
@@ -3336,6 +3340,14 @@ void VisualServerScene::render_probes() {
 			_setup_gi_probe(instance_probe);
 			force_lighting=true;
 		}
+
+		float propagate = VSG::storage->gi_probe_get_propagation(instance_probe->base);
+
+		if (probe->dynamic.propagate!=propagate) {
+			probe->dynamic.propagate=propagate;
+			force_lighting=true;
+		}
+
 
 		if (probe->invalid==false && probe->dynamic.enabled) {
 

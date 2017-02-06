@@ -4777,6 +4777,7 @@ RID RasterizerStorageGLES3::gi_probe_create() {
 	gip->bounds=Rect3(Vector3(),Vector3(1,1,1));
 	gip->dynamic_range=1.0;
 	gip->energy=1.0;
+	gip->propagation=1.0;
 	gip->interior=false;
 	gip->compress=false;
 	gip->version=1;
@@ -4882,6 +4883,15 @@ void RasterizerStorageGLES3::gi_probe_set_energy(RID p_probe,float p_range){
 
 }
 
+void RasterizerStorageGLES3::gi_probe_set_propagation(RID p_probe,float p_range){
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->propagation=p_range;
+
+}
+
 void RasterizerStorageGLES3::gi_probe_set_interior(RID p_probe,bool p_enable) {
 
 	GIProbe *gip = gi_probe_owner.getornull(p_probe);
@@ -4925,6 +4935,16 @@ float RasterizerStorageGLES3::gi_probe_get_energy(RID p_probe) const{
 
 	return gip->energy;
 }
+
+float RasterizerStorageGLES3::gi_probe_get_propagation(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+
+	return gip->propagation;
+}
+
+
 
 
 

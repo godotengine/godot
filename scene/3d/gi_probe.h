@@ -32,6 +32,9 @@ public:
 	void set_dynamic_range(int p_range);
 	int get_dynamic_range() const;
 
+	void set_propagation(float p_range);
+	float get_propagation() const;
+
 	void set_energy(float p_range);
 	float get_energy() const;
 
@@ -134,6 +137,7 @@ private:
 	Vector3 extents;
 	int dynamic_range;
 	float energy;
+	float propagation;
 	bool interior;
 	bool compress;
 
@@ -171,6 +175,9 @@ public:
 
 	void set_energy(float p_energy);
 	float get_energy() const;
+
+	void set_propagation(float p_propagation);
+	float get_propagation() const;
 
 	void set_interior(bool p_enable);
 	bool is_interior() const;
