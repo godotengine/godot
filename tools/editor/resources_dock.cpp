@@ -308,16 +308,20 @@ void ResourcesDock::_delete(Object* p_item, int p_column, int p_id) {
 
 void ResourcesDock::_create() {
 
-	Object *c = create_dialog->instance_selected();
+	List<Object*> l;
+	create_dialog->instance_selected(&l);
 
-	ERR_FAIL_COND(!c);
-	Resource *r = c->cast_to<Resource>();
-	ERR_FAIL_COND(!r);
+	for(List<Object*>::Element *E=l.front();E;E=E->next()) {
+		Object* c = E->get();
 
-	REF res( r );
+		ERR_FAIL_COND(!c);
+		Resource *r = c->cast_to<Resource>();
+		ERR_FAIL_COND(!r);
 
-	editor->push_item(c);
+		REF res( r );
 
+		editor->push_item(c);
+	}
 }
 
 void ResourcesDock::_bind_methods() {

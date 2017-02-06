@@ -122,6 +122,11 @@ void CreateDialog::popup(bool p_dontclear) {
 	}
 	search_box->grab_focus();
 
+	if (EditorNode::get_editor_data().get_edited_scene_root())
+		search_options->set_select_mode(Tree::SELECT_MULTI);
+	else
+		search_options->set_select_mode(Tree::SELECT_SINGLE);
+
 	_update_search();
 
 
@@ -394,13 +399,11 @@ String CreateDialog::get_selected_type() {
 		return String();
 }
 
-Object *CreateDialog::instance_selected() {
-
-	TreeItem *selected = search_options->get_selected();
-
-	if (selected) {
-
-		Variant md = selected->get_metadata(0);
+void CreateDialog::instance_selected(List<Object*> *p_list)
+{
+	TreeItem* item = search_options->get_root();
+	while ( (item = search_options->get_next_selected(item)) ) {
+		Variant md = item->get_metadata(0);
 
 		String custom;
 		if (md.get_type()!=Variant::NIL)
@@ -410,34 +413,31 @@ Object *CreateDialog::instance_selected() {
 			if (EditorNode::get_editor_data().get_custom_types().has(custom)) {
 
 				for(int i=0;i<EditorNode::get_editor_data().get_custom_types()[custom].size();i++) {
-					if (EditorNode::get_editor_data().get_custom_types()[custom][i].name==selected->get_text(0)) {
+					if (EditorNode::get_editor_data().get_custom_types()[custom][i].name==item->get_text(0)) {
 						Ref<Texture> icon = EditorNode::get_editor_data().get_custom_types()[custom][i].icon;
 						Ref<Script> script = EditorNode::get_editor_data().get_custom_types()[custom][i].script;
-						String name = selected->get_text(0);
+						String name = item->get_text(0);
 
 						Object *ob = ClassDB::instance(custom);
-						ERR_FAIL_COND_V(!ob,NULL);
+						ERR_FAIL_COND(!ob);
 						if (ob->is_class("Node")) {
 							ob->call("set_name",name);
 						}
 						ob->set_script(script.get_ref_ptr());
 						if (icon.is_valid())
 							ob->set_meta("_editor_icon",icon);
-						return ob;
 
+						p_list->push_back(ob);
 					}
 				}
 
 			}
 		} else {
-			return ClassDB::instance(selected->get_text(0));
+			p_list->push_back(ClassDB::instance(item->get_text(0)));
 		}
-	}
+	};
 
-
-	return NULL;
 }
-
 
 String CreateDialog::get_base_type() const {
 
@@ -717,7 +717,7 @@ void CreateDialog::_notification(int p_what) {
 	if (p_what==NOTIFICATION_DRAW) {
 
 		//RID ci = get_canvas_item();
-		//get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
+		//get_stylebox("panel","PopupMenu")-:draw(ci,Rect2(Point2(),get_size()));
 	}
 }
 
