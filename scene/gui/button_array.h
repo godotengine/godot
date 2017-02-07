@@ -50,6 +50,7 @@ private:
 	struct Button {
 
 		String text;
+		String xl_text;
 		String tooltip;
 		Ref<Texture> icon;
 		mutable int _ms_cache;
