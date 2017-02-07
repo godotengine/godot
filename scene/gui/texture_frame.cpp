@@ -77,7 +77,7 @@ void TextureFrame::_notification(int p_what) {
 					ofs_y+=(size.height - tex_height)/2;
 				}
 
-				draw_texture_rect(texture,Rect2(ofs_x,ofs_y,tex_width,tex_height));
+				draw_texture_rect(texture,Rect2(ofs_x,ofs_y,tex_width,tex_height),false,modulate);
 			} break;
 			case STRETCH_KEEP_ASPECT_COVERED: {
 
@@ -191,5 +191,3 @@ TextureFrame::TextureFrame() {
 TextureFrame::~TextureFrame()
 {
 }
-
-
