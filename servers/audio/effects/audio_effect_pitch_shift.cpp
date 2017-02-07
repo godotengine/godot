@@ -220,7 +220,7 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 			*p1 = *p2; *p2 = temp;
 		}
 	}
-	for (k = 0, le = 2; k < (long)(log(fftFrameSize)/log(2.)+.5); k++) {
+	for (k = 0, le = 2; k < (long)(log((double)fftFrameSize)/log(2.)+.5); k++) {
 		le <<= 1;
 		le2 = le>>1;
 		ur = 1.0;
