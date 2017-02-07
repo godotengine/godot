@@ -58,9 +58,10 @@ bool ButtonArray::_set(const StringName& p_name, const Variant& p_value) {
 			int idx=what.to_int();
 			ERR_FAIL_INDEX_V(idx,buttons.size(),false);
 			String f = n.get_slicec('/',2);
-			if (f=="text")
+			if (f=="text") {
 				buttons[idx].text=p_value;
-			else if (f=="tooltip")
+				buttons[idx].xl_text=XL_MESSAGE(p_value);
+			} else if (f=="tooltip")
 				buttons[idx].tooltip=p_value;
 			else if (f=="icon")
 				buttons[idx].icon=p_value;
@@ -146,7 +147,7 @@ Size2 ButtonArray::get_minimum_size() const {
 		Ref<Font> f = i==selected ? font_selected : font_normal;
 
 		Size2 ms;
-		ms = f->get_string_size(buttons[i].text);
+		ms = f->get_string_size(buttons[i].xl_text);
 		if (buttons[i].icon.is_valid()) {
 
 			Size2 bs = buttons[i].icon->get_size();
@@ -275,7 +276,7 @@ void ButtonArray::_notification(int p_what) {
 					c=color_normal;
 				}
 
-				Size2 ssize = f->get_string_size(buttons[i].text);
+				Size2 ssize = f->get_string_size(buttons[i].xl_text);
 				if (buttons[i].icon.is_valid()) {
 
 					ssize.x+=buttons[i].icon->get_width();
@@ -287,7 +288,7 @@ void ButtonArray::_notification(int p_what) {
 					text_ofs.x+=buttons[i].icon->get_width()+icon_sep;
 
 				}
-				draw_string(f,text_ofs+r.pos,buttons[i].text,c);
+				draw_string(f,text_ofs+r.pos,buttons[i].xl_text,c);
 				buttons[i]._pos_cache=ofs;
 				buttons[i]._size_cache=s;
 
@@ -404,6 +405,7 @@ void ButtonArray::add_button(const String& p_text,const String& p_tooltip) {
 
 	Button button;
 	button.text=p_text;
+	button.xl_text=XL_MESSAGE(p_text);
 	button.tooltip=p_tooltip;
 	buttons.push_back(button);
 	update();
@@ -418,6 +420,7 @@ void ButtonArray::add_icon_button(const Ref<Texture>& p_icon,const String& p_tex
 
 	Button button;
 	button.text=p_text;
+	button.xl_text=XL_MESSAGE(p_text);
 	button.icon=p_icon;
 	button.tooltip=p_tooltip;
 	buttons.push_back(button);
@@ -432,6 +435,7 @@ void ButtonArray::set_button_text(int p_button, const String& p_text) {
 
 	ERR_FAIL_INDEX(p_button,buttons.size());
 	buttons[p_button].text=p_text;
+	buttons[p_button].xl_text=XL_MESSAGE(p_text);
 	update();
 	minimum_size_changed();
 
