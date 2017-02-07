@@ -566,11 +566,13 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 		int to_read = MIN(body_left,read_chunk_size);
 		PoolByteArray ret;
 		ret.resize(to_read);
-		PoolByteArray::Write w = ret.write();
 		int _offset = 0;
 		while (to_read > 0) {
 			int rec=0;
-			err = _get_http_data(w.ptr()+_offset,to_read,rec);
+			{
+				PoolByteArray::Write w = ret.write();
+				err = _get_http_data(w.ptr()+_offset,to_read,rec);
+			}
 			if (rec>0) {
 				body_left-=rec;
 				to_read-=rec;
