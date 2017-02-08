@@ -29,7 +29,6 @@
 #include "editor_import_collada.h"
 
 
-#include "collada/collada.h"
 #include "scene/3d/spatial.h"
 #include "scene/3d/skeleton.h"
 #include "scene/3d/path.h"
@@ -40,6 +39,7 @@
 #include "scene/resources/animation.h"
 #include "scene/resources/packed_scene.h"
 #include "os/os.h"
+#include "tools/editor/collada/collada.h"
 #include "tools/editor/editor_node.h"
 #include <iostream>
 

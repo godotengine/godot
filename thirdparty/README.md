@@ -1,6 +1,13 @@
 # Third party libraries
 
 
+## certs
+
+- Upstream: ?
+
+TODO.
+
+
 ## enet
 
 - Upstream: http://enet.bespin.org
@@ -16,6 +23,13 @@ Files extracted from upstream source:
 Important: Some files have been modified by Godot developers so that they work
 for all platforms (especially UWP). Check the diff with the 1.3.13 tarball
 before the next update.
+
+
+## fonts
+
+- Upstream: ?
+
+TODO.
 
 
 ## freetype

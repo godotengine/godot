@@ -358,7 +358,7 @@ if selected_platform in platform_list:
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
-    SConscript("tools/SCsub")
+    SConscript("tools/editor/SCsub")
     SConscript("drivers/SCsub")
 
     SConscript("modules/SCsub")
@@ -374,7 +374,7 @@ if selected_platform in platform_list:
         AddToVSProject(env.modules_sources)
         AddToVSProject(env.scene_sources)
         AddToVSProject(env.servers_sources)
-        AddToVSProject(env.tool_sources)
+        AddToVSProject(env.editor_sources)
 
         # this env flag won't work, it needs to be set in env_base=Environment(MSVC_VERSION='9.0')
         # Even then, SCons still seems to ignore it and builds with the latest MSVC...

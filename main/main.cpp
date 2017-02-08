@@ -54,17 +54,13 @@
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
+#include "tools/editor/doc/doc_data.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
-
 #endif
 
 #include "io/file_access_network.h"
-#include "tools/doc/doc_data.h"
-
-
 #include "servers/physics_2d_server.h"
-
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/thread.h"
