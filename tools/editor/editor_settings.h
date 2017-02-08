@@ -160,8 +160,8 @@ public:
 
 	void set_optimize_save(bool p_optimize);
 
-	String get_last_selected_language();
-	void set_last_selected_language(String p_language);
+	Variant get_project_metadata(const String& p_section, const String& p_key, Variant p_default);
+	void set_project_metadata(const String& p_section, const String& p_key, Variant p_data);
 
 	EditorSettings();
 	~EditorSettings();

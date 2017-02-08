@@ -432,6 +432,7 @@ private:
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option,bool p_confirmed);
+	void _update_debug_options();
 
 	void _property_editor_forward();
 	void _property_editor_back();

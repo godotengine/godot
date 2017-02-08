@@ -128,7 +128,7 @@ void ScriptCreateDialog::_create_new() {
 	Ref<Script> scr = ScriptServer::get_language( language_menu->get_selected() )->get_template(cname,parent_name->get_text());
 
 	String selected_language = language_menu->get_item_text(language_menu->get_selected());
-	editor_settings->set_last_selected_language(selected_language);
+	editor_settings->set_project_metadata("script_setup", "last_selected_language", selected_language);
 
 	if (cname!="")
 		scr->set_name(cname);
@@ -380,7 +380,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	}
 
 	editor_settings = EditorSettings::get_singleton();
-	String last_selected_language = editor_settings->get_last_selected_language();
+	String last_selected_language = editor_settings->get_project_metadata("script_setup", "last_selected_language", "");
 	if (last_selected_language != "")
 		for (int i = 0; i < language_menu->get_item_count(); i++)
 			if (language_menu->get_item_text(i) == last_selected_language)

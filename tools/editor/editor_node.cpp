@@ -338,6 +338,7 @@ void EditorNode::_notification(int p_what) {
 		VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(),true);
 
 		_editor_select(EDITOR_3D);
+		_update_debug_options();
 
 /*
 		if (defer_optimize!="") {
@@ -2674,7 +2675,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),!ischecked);
-
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_file_server", !ischecked);
 		} break;
 		case RUN_LIVE_DEBUG: {
 
@@ -2682,6 +2683,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_LIVE_DEBUG),!ischecked);
 			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_live_debug", !ischecked);
+
 		} break;
 
 		/*case RUN_DEPLOY_DUMB_CLIENTS: {
@@ -2696,6 +2699,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG),!ischecked);
 			run_native->set_deploy_debug_remote(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_deploy_remote_debug", !ischecked);
 
 		} break;
 		case RUN_DEBUG_COLLISONS: {
@@ -2704,6 +2708,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_COLLISONS),!ischecked);
 			run_native->set_debug_collisions(!ischecked);
 			editor_run.set_debug_collisions(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_collisons", !ischecked);
+
 		} break;
 		case RUN_DEBUG_NAVIGATION: {
 
@@ -2711,6 +2717,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEBUG_NAVIGATION),!ischecked);
 			run_native->set_debug_navigation(!ischecked);
 			editor_run.set_debug_navigation(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_debug_navigation", !ischecked);
+
 		} break;
 		case RUN_RELOAD_SCRIPTS: {
 
@@ -2719,6 +2727,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_RELOAD_SCRIPTS),!ischecked);
 
 			ScriptEditor::get_singleton()->set_live_auto_reload_running_scripts(!ischecked);
+			EditorSettings::get_singleton()->set_project_metadata("debug_options", "run_reload_scripts", !ischecked);
+
 		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
 
@@ -2864,6 +2874,23 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 	}
 }
 
+void EditorNode::_update_debug_options() {
+
+	bool check_deploy_remote    = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", false);
+	bool check_file_server      = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_file_server", false);
+	bool check_debug_collisons  = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_collisons", false);
+	bool check_debug_navigation = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_debug_navigation", false);
+	bool check_live_debug       = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_live_debug", false);
+	bool check_reload_scripts   = EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_reload_scripts", false);
+
+	if (check_deploy_remote)    _menu_option_confirm(RUN_DEPLOY_REMOTE_DEBUG, true);
+	if (check_file_server)      _menu_option_confirm(RUN_FILE_SERVER, true);
+	if (check_debug_collisons)  _menu_option_confirm(RUN_DEBUG_COLLISONS, true);
+	if (check_debug_navigation) _menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
+	if (check_live_debug)       _menu_option_confirm(RUN_LIVE_DEBUG, true);
+	if (check_reload_scripts)   _menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
+
+}
 
 Control* EditorNode::get_viewport() {
 
