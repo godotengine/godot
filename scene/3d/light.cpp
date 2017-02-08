@@ -253,6 +253,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "shadow_enabled"), _SCS("set_shadow"), _SCS("has_shadow"));
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "shadow_color",PROPERTY_HINT_COLOR_NO_ALPHA), _SCS("set_shadow_color"), _SCS("get_shadow_color"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow_bias",PROPERTY_HINT_RANGE,"-16,16,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_BIAS);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow_contact",PROPERTY_HINT_RANGE,"0,16,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_CONTACT_SHADOW_SIZE);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow_max_distance",PROPERTY_HINT_RANGE,"0,65536,0.1"), _SCS("set_param"), _SCS("get_param"), PARAM_SHADOW_MAX_DISTANCE);
 	ADD_GROUP("Editor","");
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "editor_only"), _SCS("set_editor_only"), _SCS("is_editor_only"));
@@ -264,6 +265,7 @@ void Light::_bind_methods() {
 	BIND_CONSTANT( PARAM_ATTENUATION );
 	BIND_CONSTANT( PARAM_SPOT_ANGLE );
 	BIND_CONSTANT( PARAM_SPOT_ATTENUATION );
+	BIND_CONSTANT( PARAM_CONTACT_SHADOW_SIZE );
 	BIND_CONSTANT( PARAM_SHADOW_MAX_DISTANCE );
 	BIND_CONSTANT( PARAM_SHADOW_SPLIT_1_OFFSET );
 	BIND_CONSTANT( PARAM_SHADOW_SPLIT_2_OFFSET );
@@ -297,6 +299,7 @@ Light::Light(VisualServer::LightType p_type) {
 	set_param(PARAM_ATTENUATION,1);
 	set_param(PARAM_SPOT_ANGLE,45);
 	set_param(PARAM_SPOT_ATTENUATION,1);
+	set_param(PARAM_CONTACT_SHADOW_SIZE,0);
 	set_param(PARAM_SHADOW_MAX_DISTANCE,0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET,0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET,0.2);

@@ -2321,10 +2321,10 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index,const Transform&
 	ubo_data.light_params[3]=0;
 
 	Color shadow_color = li->light_ptr->shadow_color.to_linear();
-	ubo_data.light_shadow_color[0]=shadow_color.r;
-	ubo_data.light_shadow_color[1]=shadow_color.g;
-	ubo_data.light_shadow_color[2]=shadow_color.b;
-	ubo_data.light_shadow_color[3]=1.0;
+	ubo_data.light_shadow_color_contact[0]=shadow_color.r;
+	ubo_data.light_shadow_color_contact[1]=shadow_color.g;
+	ubo_data.light_shadow_color_contact[2]=shadow_color.b;
+	ubo_data.light_shadow_color_contact[3]=li->light_ptr->param[VS::LIGHT_PARAM_CONTACT_SHADOW_SIZE];
 
 
 	if (p_use_shadows && li->light_ptr->shadow) {
@@ -2480,10 +2480,10 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result,int p_light_cu
 				ubo_data.light_params[3]=0;
 
 				Color shadow_color = li->light_ptr->shadow_color.to_linear();
-				ubo_data.light_shadow_color[0]=shadow_color.r;
-				ubo_data.light_shadow_color[1]=shadow_color.g;
-				ubo_data.light_shadow_color[2]=shadow_color.b;
-				ubo_data.light_shadow_color[3]=1.0;
+				ubo_data.light_shadow_color_contact[0]=shadow_color.r;
+				ubo_data.light_shadow_color_contact[1]=shadow_color.g;
+				ubo_data.light_shadow_color_contact[2]=shadow_color.b;
+				ubo_data.light_shadow_color_contact[3]=li->light_ptr->param[VS::LIGHT_PARAM_CONTACT_SHADOW_SIZE];
 
 				if (li->light_ptr->shadow && shadow_atlas && shadow_atlas->shadow_owners.has(li->self)) {
 					// fill in the shadow information
@@ -2573,10 +2573,10 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result,int p_light_cu
 				ubo_data.light_params[3]=0;
 
 				Color shadow_color = li->light_ptr->shadow_color.to_linear();
-				ubo_data.light_shadow_color[0]=shadow_color.r;
-				ubo_data.light_shadow_color[1]=shadow_color.g;
-				ubo_data.light_shadow_color[2]=shadow_color.b;
-				ubo_data.light_shadow_color[3]=1.0;
+				ubo_data.light_shadow_color_contact[0]=shadow_color.r;
+				ubo_data.light_shadow_color_contact[1]=shadow_color.g;
+				ubo_data.light_shadow_color_contact[2]=shadow_color.b;
+				ubo_data.light_shadow_color_contact[3]=li->light_ptr->param[VS::LIGHT_PARAM_CONTACT_SHADOW_SIZE];
 
 				if (li->light_ptr->shadow && shadow_atlas && shadow_atlas->shadow_owners.has(li->self)) {
 					// fill in the shadow information
@@ -3760,14 +3760,20 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 	state.ubo_data.shadow_dual_paraboloid_render_side=0;
 	state.ubo_data.shadow_dual_paraboloid_render_zfar=0;
 
+	if (storage->frame.current_rt) {
+		state.ubo_data.screen_pixel_size[0]=1.0/storage->frame.current_rt->width;
+		state.ubo_data.screen_pixel_size[1]=1.0/storage->frame.current_rt->height;
+	}
+
 	_setup_environment(env,p_cam_projection,p_cam_transform);
 
 	bool fb_cleared=false;
 
 	glDepthFunc(GL_LEQUAL);
 
+	state.used_contact_shadows=true;
 
-	if (storage->frame.current_rt && true) {
+	if (storage->frame.current_rt && true) { //detect with state.used_contact_shadows too
 		//pre z pass
 
 
@@ -3793,6 +3799,19 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 		state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH,false);
 
 		glColorMask(1,1,1,1);
+
+		if (state.used_contact_shadows) {
+
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, storage->frame.current_rt->buffers.fbo);
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, storage->frame.current_rt->fbo);
+			glBlitFramebuffer(0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, 0, 0, storage->frame.current_rt->width, storage->frame.current_rt->height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+			//bind depth for read
+			glActiveTexture(GL_TEXTURE0+storage->config.max_texture_image_units-8);
+			glBindTexture(GL_TEXTURE_2D,storage->frame.current_rt->depth);
+		}
 
 		fb_cleared=true;
 		render_pass++;
@@ -4458,7 +4477,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light,RID p_shadow_atlas,int p_pa
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH,true);
 
-	_render_list(render_list.elements,render_list.element_count,light_transform,light_projection,0,!flip_facing,false,true,false,false);
+	_render_list(render_list.elements,render_list.element_count,light_transform,light_projection,0,flip_facing,false,true,false,false);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH,false);
 	state.scene_shader.set_conditional(SceneShaderGLES3::RENDER_DEPTH_DUAL_PARABOLOID,false);

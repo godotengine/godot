@@ -91,6 +91,7 @@ public:
 			float shadow_slope_scale;
 			float shadow_dual_paraboloid_render_zfar;
 			float shadow_dual_paraboloid_render_side;
+			float screen_pixel_size[2];
 			float shadow_atlas_pixel_size[2];
 			float shadow_directional_pixel_size[2];
 			float reflection_multiplier;
@@ -136,6 +137,7 @@ public:
 		int max_ubo_reflections;
 		int max_skeleton_bones;
 
+		bool used_contact_shadows;
 
 
 		int spot_light_count;
@@ -467,7 +469,7 @@ public:
 		float light_color_energy[4];
 		float light_params[4]; //spot attenuation, spot angle, specular, shadow enabled
 		float light_clamp[4];
-		float light_shadow_color[4];
+		float light_shadow_color_contact[4];
 		float shadow_matrix1[16]; //up to here for spot and omni, rest is for directional
 		float shadow_matrix2[16];
 		float shadow_matrix3[16];
