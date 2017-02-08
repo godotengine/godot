@@ -40,6 +40,7 @@
 #include "context_gl_haiku.h"
 #include "haiku_application.h"
 #include "haiku_direct_window.h"
+#include "power_haiku.h"
 
 
 class OS_Haiku : public OS_Unix {
@@ -53,6 +54,7 @@ private:
 	VideoMode current_video_mode;
 	PhysicsServer* physics_server;
 	Physics2DServer* physics_2d_server;
+	PowerHaiku* power_manager;
 
 #ifdef MEDIA_KIT_ENABLED
 	AudioDriverMediaKit driver_media_kit;
@@ -114,6 +116,10 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen=0) const;
 	virtual String get_executable_path() const;
+	
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 };
 
 #endif

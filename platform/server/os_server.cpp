@@ -217,6 +217,18 @@ void OS_Server::set_cursor_shape(CursorShape p_shape) {
 
 }
 
+PowerState OS_Server::get_power_state() {
+	return power_manager->get_power_state();
+}
+
+int OS_Server::get_power_seconds_left() {
+	return power_manager->get_power_seconds_left();
+}
+
+int OS_Server::get_power_percent_left() {
+	return power_manager->get_power_percent_left();
+}
+
 void OS_Server::run() {
 
 	force_quit = false;

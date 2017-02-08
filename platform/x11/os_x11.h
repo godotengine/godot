@@ -46,6 +46,7 @@
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/input_default.h"
 #include "joypad_linux.h"
+#include "power_x11.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -164,6 +165,8 @@ class OS_X11 : public OS_Unix {
 	AudioDriverDummy driver_dummy;
 
 	Atom net_wm_icon;
+	
+	PowerX11 *power_manager;
 
 	int audio_driver_index;
 	unsigned int capture_idle;
@@ -259,6 +262,10 @@ public:
 
 	virtual void set_use_vsync(bool p_enable);
 	virtual bool is_vsync_enabled() const;
+
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	void run();
 

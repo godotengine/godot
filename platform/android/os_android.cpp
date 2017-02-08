@@ -159,6 +159,8 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	input = memnew( InputDefault );
 	input->set_fallback_mapping("Default Android Gamepad");
+	
+	power_manager = memnew( power_android );
 }
 
 void OS_Android::set_main_loop( MainLoop * p_main_loop ) {

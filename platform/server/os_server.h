@@ -38,6 +38,7 @@
 #include "servers/audio_server.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "../x11/power_x11.h"
 
 //bitch
 #undef CursorShape
@@ -65,6 +66,8 @@ class OS_Server : public OS_Unix {
 	bool force_quit;
 
 	InputDefault *input;
+	
+	PowerX11 *power_manager;
 
 
 
@@ -105,6 +108,10 @@ public:
 	virtual void move_window_to_foreground();
 
 	void run();
+	
+	virtual PowerState get_power_state();
+	virtual int get_power_seconds_left();
+	virtual int get_power_percent_left();
 
 	OS_Server();
 };
