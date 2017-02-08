@@ -1067,6 +1067,7 @@ bool Main::start() {
 
 	bool editor=false;
 	String doc_tool;
+	List<String> removal_docs;
 	bool doc_base=true;
 	String game_path;
 	String script;
@@ -1097,6 +1098,8 @@ bool Main::start() {
 			bool parsed_pair=true;
 			if (args[i]=="-doctool") {
 				doc_tool=args[i+1];
+				for(int j=i+2; j<args.size();j++)
+					removal_docs.push_back(args[j]);
 			} else if (args[i]=="-script" || args[i]=="-s") {
 				script=args[i+1];
 			} else if (args[i]=="-level" || args[i]=="-l") {
@@ -1143,6 +1146,14 @@ bool Main::start() {
 		} else {
 			print_line("No Doc exists. Generating empty.");
 
+		}
+
+		for(List<String>::Element* E= removal_docs.front(); E; E=E->next()) {
+			DocData rmdoc;
+			if (rmdoc.load(E->get()) == OK) {
+				print_line(String("Removing classes in ") + E->get());
+				doc.remove_from(rmdoc);
+			}
 		}
 
 		doc.save(doc_tool);

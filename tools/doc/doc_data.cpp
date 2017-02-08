@@ -158,6 +158,13 @@ void DocData::merge_from(const DocData& p_data) {
 
 }
 
+void DocData::remove_from(const DocData &p_data) {
+	for(Map<String,ClassDoc>::Element* E=p_data.class_list.front(); E; E=E->next()) {
+		if(class_list.has(E->key()))
+			class_list.erase(E->key());
+	}
+}
+
 void DocData::generate(bool p_basic_types) {
 
 
