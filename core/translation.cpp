@@ -670,6 +670,7 @@ static const char* locale_names[]={
 "Sanskrit (India)",
 "Santali (India)",
 "Sardinian (Italy)",
+"Scots (Scotland)",
 "Sindhi (India)",
 "Northern Sami (Norway)",
 "Samogitian (Lithuania)",
