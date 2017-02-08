@@ -2395,6 +2395,11 @@ bool OS_Windows::is_vsync_enabled() const{
 	return true;
 }
 
+bool OS_Windows::check_feature_support(const String& p_feature) {
+
+	return VisualServer::get_singleton()->has_os_feature(p_feature);
+
+}
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
