@@ -40,7 +40,7 @@
 
 #include "scene/main/timer.h"
 #include "tools/editor/code_editor.h"
-#include "tools/doc/doc_data.h"
+#include "tools/editor/doc/doc_data.h"
 
 
 class EditorNode;

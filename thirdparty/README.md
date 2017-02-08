@@ -1,6 +1,20 @@
 # Third party libraries
 
 
+## certs
+
+- Upstream: ?
+
+TODO.
+
+
+## fonts
+
+- Upstream: ?
+
+TODO.
+
+
 ## freetype
 
 - Upstream: https://www.freetype.org
