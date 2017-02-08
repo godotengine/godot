@@ -718,7 +718,7 @@ msgstr "Attenzione!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
-msgstr "Si Prega Di Confermare..."
+msgstr "Per Favore Conferma..."
 
 #: scene/gui/file_dialog.cpp tools/editor/editor_file_dialog.cpp
 msgid "File Exists, Overwrite?"
