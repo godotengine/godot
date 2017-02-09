@@ -80,6 +80,4 @@ GIProbeEditorPlugin::GIProbeEditorPlugin(EditorNode *p_node) {
 
 
 GIProbeEditorPlugin::~GIProbeEditorPlugin() {
-
-	memdelete(bake);
 }
