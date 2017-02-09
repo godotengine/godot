@@ -60,6 +60,8 @@ class CreateDialog : public ConfirmationDialog {
 	EditorHelpBit *help_bit;
 
 	void _item_selected();
+	void _select_item(String name);
+	void _cell_multi_selected(Object *p_object, int p_index,bool p_selected);
 
 	void _update_search();
 	void _update_favorite_list();

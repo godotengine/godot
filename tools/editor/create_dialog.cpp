@@ -320,8 +320,8 @@ void CreateDialog::_update_search() {
 		favorite->set_pressed(favorite_list.find(to_select->get_text(0))!=-1);
 	}
 
-	get_ok()->set_disabled(root->get_children()==NULL);
-
+	get_ok()->set_disabled(!search_options->get_next_selected(search_options->get_root()) ||
+						   (root->get_children()==NULL));
 }
 
 void CreateDialog::_confirmed() {
@@ -447,10 +447,28 @@ String CreateDialog::get_base_type() const {
 void CreateDialog::_item_selected() {
 
 	TreeItem *item = search_options->get_selected();
-	if (!item)
+	if (!item){
+		get_ok()->set_disabled(true);
 		return;
+	}
 
-	String name = item->get_text(0);
+	_select_item(item->get_text(0));
+}
+
+void CreateDialog::_cell_multi_selected(Object *p_object, int p_index,bool p_selected) {
+
+	if(!p_selected){
+		get_ok()->set_disabled(!search_options->get_next_selected(search_options->get_root()));
+		help_bit->set_text("");
+	}
+	else{
+		TreeItem *pitem = p_object->cast_to<TreeItem>();
+		ERR_FAIL_COND(!pitem);
+		_select_item(pitem->get_text(0));
+	}
+}
+
+void CreateDialog::_select_item(String name){
 
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.find(name)!=-1);
@@ -460,8 +478,8 @@ void CreateDialog::_item_selected() {
 
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
 
+	get_ok()->set_disabled(false);
 }
-
 
 void CreateDialog::_favorite_toggled() {
 
@@ -633,7 +651,7 @@ void CreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_favorite_selected"),&CreateDialog::_favorite_selected);
 	ClassDB::bind_method(D_METHOD("_history_activated"),&CreateDialog::_history_activated);
 	ClassDB::bind_method(D_METHOD("_favorite_activated"),&CreateDialog::_favorite_activated);
-
+	ClassDB::bind_method(D_METHOD("_multi_selected"),&CreateDialog::_cell_multi_selected);
 
 	ClassDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw",&CreateDialog::can_drop_data_fw);
@@ -693,7 +711,8 @@ CreateDialog::CreateDialog() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
-	search_options->connect("cell_selected",this,"_item_selected");
+	search_options->connect("item_selected",this,"_item_selected");
+	search_options->connect("multi_selected",this,"_multi_selected");
 	//search_options->set_hide_root(true);
 	base_type="Object";
 
