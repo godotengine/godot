@@ -242,13 +242,20 @@ void EditorSettings::create() {
 
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 	DirAccess* d = DirAccess::create_for_path(exe_path);
+	bool self_contained = false;
 
 	if (d->file_exists(exe_path + "/._sc_")) {
+		self_contained = true;
+		extra_config->load(exe_path + "/._sc_");
+	} else if (d->file_exists(exe_path + "/_sc_")) {
+		self_contained = true;
+		extra_config->load(exe_path + "/_sc_");
+	}
 
+	if (self_contained) {
 		// editor is self contained
 		config_path = exe_path;
 		config_dir = "editor_data";
-		extra_config->load(exe_path + "/._sc_");
 	} else {
 
 		if (OS::get_singleton()->has_environment("APPDATA")) {
