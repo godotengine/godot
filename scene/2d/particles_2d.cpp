@@ -607,6 +607,10 @@ void Particles2D::_notification(int p_what) {
 						src_rect.pos.y = size.y * (frame/h_frames);
 					}
 
+					if (flip_h)
+						src_rect.size.x=-src_rect.size.x;
+					if (flip_v)
+						src_rect.size.y=-src_rect.size.y;
 
 					texture->draw_rect_region(ci,Rect2(Point2(),size),src_rect,color);
 					//VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
