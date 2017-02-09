@@ -1092,11 +1092,6 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	RasterizerGLES3::register_config();
 
 	RasterizerGLES3::make_current();
-#else
-	// FIXME: Does DX support still work now that rasterizer is no longer used?
-#ifdef DX9_ENABLED
-	rasterizer = memnew( RasterizerDX9(hWnd) );
-#endif
 #endif
 
 	visual_server = memnew( VisualServerRaster );
@@ -1268,8 +1263,6 @@ void OS_Windows::finalize() {
 	if (gl_context)
 		memdelete(gl_context);
 #endif
-	if (rasterizer)
-		memdelete(rasterizer);
 
 	if (user_proc) {
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);

@@ -92,7 +92,6 @@ class OS_Windows : public OS {
 	ContextGL_Win *gl_context;
 #endif
 	VisualServer *visual_server;
-	Rasterizer *rasterizer;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 	int pressrc;
