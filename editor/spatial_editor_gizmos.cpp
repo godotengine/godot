@@ -1033,6 +1033,40 @@ void CameraSpatialGizmo::redraw() {
 			ADD_TRIANGLE(tup, right + up + back, -right + up + back);
 
 		} break;
+		case Camera::PROJECTION_FRUSTUM: {
+
+			float hoff = camera->get_h_offset();
+ 			float voff = camera->get_v_offset();
+ 			float left = camera->get_left();
+ 			float right = camera->get_right();
+ 			float top = camera->get_top();
+ 			float bottom = camera->get_bottom();
+ 			float near = camera->get_znear();
+ 			float far = camera->get_zfar();
+ 
+ 			Vector3 left_top_near = Vector3(left * near + hoff, top * near + voff, -near);
+ 			Vector3 right_top_near = Vector3(right * near + hoff, top * near + voff, -near);
+ 			Vector3 right_bottom_near = Vector3(right * near + hoff, bottom * near + voff, -near);
+ 			Vector3 left_bottom_near = Vector3(left * near + hoff, bottom * near + voff, -near);
+ 
+ 			Vector3 left_top_far = Vector3(left * far + hoff, top * far + voff, -far);
+ 			Vector3 right_top_far = Vector3(right * far + hoff, top * far + voff, -far);
+ 			Vector3 right_bottom_far = Vector3(right * far + hoff, bottom * far + voff, -far);
+ 			Vector3 left_bottom_far = Vector3(left * far + hoff, bottom * far + voff, -far);
+ 
+ 			ADD_QUAD( left_top_near, right_top_near, right_bottom_near, left_bottom_near);
+ 			ADD_QUAD( left_top_far, right_top_far, right_bottom_far, left_bottom_far);
+ 
+ 			lines.push_back(left_top_near);
+ 			lines.push_back(left_top_far);
+ 			lines.push_back(right_top_near);
+ 			lines.push_back(right_top_far);
+ 			lines.push_back(right_bottom_near);
+ 			lines.push_back(right_bottom_far);
+ 			lines.push_back(left_bottom_near);
+ 			lines.push_back(left_bottom_far);
+ 
+ 		} break;
 	}
 
 	add_lines(lines, SpatialEditorGizmos::singleton->camera_material);

@@ -397,6 +397,7 @@ public:
 	FUNC0R(RID, camera_create);
 	FUNC4(camera_set_perspective, RID, float, float, float);
 	FUNC4(camera_set_orthogonal, RID, float, float, float);
+	FUNC4(camera_set_frustum,RID, const Frustum&, float, float);
 	FUNC2(camera_set_transform, RID, const Transform &);
 
 	FUNC2(camera_set_visible_layers, RID, uint32_t);
