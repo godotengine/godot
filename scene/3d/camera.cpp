@@ -32,6 +32,7 @@
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
 
+#include "method_bind_ext.inc"
 
 void Camera::_update_audio_listener_state() {
 
@@ -50,13 +51,15 @@ void Camera::_update_camera_mode() {
 	switch(mode) {
 		case PROJECTION_PERSPECTIVE: {
 
-
 			set_perspective(fov,near,far);
 
 		} break;
 		case PROJECTION_ORTHOGONAL: {
 			set_orthogonal(size,near,far);
 		} break;
+		case PROJECTION_FRUSTUM: {
+			set_frustum(frustum.left, frustum.right, frustum.top, frustum.bottom, near, far);
+		}
 
 	}
 
@@ -72,12 +75,22 @@ bool Camera::_set(const StringName& p_name, const Variant& p_value) {
 			mode=PROJECTION_PERSPECTIVE;
 		if (proj==PROJECTION_ORTHOGONAL)
 			mode=PROJECTION_ORTHOGONAL;
+		if (proj==PROJECTION_FRUSTUM)
+			mode=PROJECTION_FRUSTUM;
 
 		changed_all=true;
 	} else if (p_name=="fov" || p_name=="fovy" || p_name=="fovx")
 		fov=p_value;
 	else if (p_name=="size" || p_name=="sizex" || p_name=="sizey")
 		size=p_value;
+	else if (p_name=="left")
+		frustum.left=p_value;
+	else if (p_name=="right")
+		frustum.right=p_value;
+	else if (p_name=="top")
+		frustum.top=p_value;
+	else if (p_name=="bottom")
+		frustum.bottom=p_value;
 	else if (p_name=="near")
 		near=p_value;
 	else if (p_name=="far")
@@ -117,6 +130,14 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= fov;
 	else if (p_name=="size" || p_name=="sizex" || p_name=="sizey")
 		r_ret= size;
+	else if (p_name=="left")
+		r_ret= frustum.left;
+	else if (p_name=="right")
+		r_ret= frustum.right;
+	else if (p_name=="top")
+		r_ret= frustum.top;
+	else if (p_name=="bottom")
+		r_ret= frustum.bottom;
 	else if (p_name=="near")
 		r_ret= near;
 	else if (p_name=="far")
@@ -146,7 +167,7 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 
 void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo( Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal") );
+	p_list->push_back( PropertyInfo( Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum") );
 
 	switch(mode) {
 
@@ -158,7 +179,6 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 			else
 				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
 
-
 		} break;
 		case PROJECTION_ORTHOGONAL: {
 
@@ -167,6 +187,13 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 				p_list->push_back( PropertyInfo( Variant::REAL, "sizex" , PROPERTY_HINT_RANGE, "0.1,16384,0.01",PROPERTY_USAGE_EDITOR) );
 			else
 				p_list->push_back( PropertyInfo( Variant::REAL, "sizey" , PROPERTY_HINT_RANGE, "0.1,16384,0.01",PROPERTY_USAGE_EDITOR) );
+
+		} break;
+		case PROJECTION_FRUSTUM: {
+			p_list->push_back( PropertyInfo( Variant::REAL, "left" , PROPERTY_HINT_EXP_RANGE, "-4096.0,4096.0,0.0001") );
+			p_list->push_back( PropertyInfo( Variant::REAL, "right" , PROPERTY_HINT_EXP_RANGE, "-4096.0,4096.0,0.0001") );
+			p_list->push_back( PropertyInfo( Variant::REAL, "top" , PROPERTY_HINT_EXP_RANGE, "-4096.0,4096.0,0.0001") );
+			p_list->push_back( PropertyInfo( Variant::REAL, "bottom" , PROPERTY_HINT_EXP_RANGE, "-4096.0,4096.0,0.0001") );
 
 		} break;
 
@@ -262,7 +289,6 @@ Transform Camera::get_camera_transform() const {
 }
 
 void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
-
 	if (!force_change && fov==p_fovy_degrees && p_z_near==near && p_z_far==far && mode==PROJECTION_PERSPECTIVE)
 		return;
 
@@ -275,6 +301,7 @@ void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far
 	update_gizmo();
 	force_change=false;
 }
+
 void Camera::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 
 	if (!force_change && size==p_size && p_z_near==near && p_z_far==far && mode==PROJECTION_ORTHOGONAL)
@@ -290,6 +317,32 @@ void Camera::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	VisualServer::get_singleton()->camera_set_orthogonal(camera,size,near,far);
 	update_gizmo();
 }
+
+void Camera::set_perspective_for_eye(float p_fovy_degrees, float p_z_near, float p_z_far, int p_eye, float p_intraocular_dist, float p_convergence_dist) {
+	Frustum eye;
+
+	eye.set_frustum(p_fovy_degrees, p_eye, p_intraocular_dist, p_convergence_dist);
+
+	set_frustum(eye.left, eye.right, eye.top, eye.bottom, p_z_near, p_z_far);
+}
+
+void Camera::set_frustum(float p_left, float p_right, float p_top, float p_bottom, float p_z_near, float p_z_far) {
+	if (!force_change && frustum.left==p_left && frustum.right == p_right && frustum.top == p_top && frustum.bottom == p_bottom && near == p_z_near && far == p_z_far && mode==PROJECTION_FRUSTUM)
+		return;
+
+	frustum.left = p_left;
+	frustum.right = p_right;
+	frustum.top = p_top;
+	frustum.bottom = p_bottom;
+	near=p_z_near;
+	far=p_z_far;
+	mode=PROJECTION_FRUSTUM;
+	force_change=false;
+
+	VisualServer::get_singleton()->camera_set_frustum(camera, frustum, near, far);
+	update_gizmo();
+}
+
 
 RID Camera::get_camera() const {
 
@@ -360,9 +413,41 @@ RES Camera::_get_gizmo_geometry() const {
 
 	switch(mode) {
 
+		case PROJECTION_FRUSTUM: {
+
+			/// FIXME we really should turn this into drawing the actual frustum (also for projection?), but not right now....
+
+			Vector3 side=Vector3( Math::sin(Math::deg2rad(60.0)), 0, -Math::cos(Math::deg2rad(60.0)) );
+			Vector3 nside=side;
+			nside.x=-nside.x;
+			Vector3 up=Vector3(0,side.x,0);
+
+
+#define ADD_TRIANGLE( m_a, m_b, m_c)\
+{\
+	surface_tool->add_vertex(m_a);\
+	surface_tool->add_vertex(m_b);\
+	surface_tool->add_vertex(m_b);\
+	surface_tool->add_vertex(m_c);\
+	surface_tool->add_vertex(m_c);\
+	surface_tool->add_vertex(m_a);\
+}
+
+			ADD_TRIANGLE( Vector3(), side+up, side-up );
+			ADD_TRIANGLE( Vector3(), nside+up, nside-up );
+			ADD_TRIANGLE( Vector3(), side+up, nside+up );
+			ADD_TRIANGLE( Vector3(), side-up, nside-up );
+
+			side.x*=0.25;
+			nside.x*=0.25;
+			Vector3 tup( 0, up.y*3/2,side.z);
+			ADD_TRIANGLE( tup, side+up, nside+up );
+
+		} break;
+
 		case PROJECTION_PERSPECTIVE: {
 
-
+			///@TODO if eye is none zero we need to use our IOD and convergence to adjust this (nice to have), at the very least we should adjust the center
 
 			Vector3 side=Vector3( Math::sin(Math::deg2rad(fov)), 0, -Math::cos(Math::deg2rad(fov)) );
 			Vector3 nside=side;
@@ -458,7 +543,11 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 		ray=Vector3(0,0,-1);
 	} else {
 		CameraMatrix cm;
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		if (mode==PROJECTION_FRUSTUM) {
+			cm = frustum.make_camera_matrix(viewport_size.get_aspect(), keep_aspect==KEEP_WIDTH, near, far);
+		} else {
+			cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		}
 		float screen_w,screen_h;
 		cm.get_viewport_size(screen_w,screen_h);
 		ray=Vector3( ((cpos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(cpos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
@@ -488,6 +577,9 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 //	float aspect = viewport_size.x / viewport_size.y;
 
 	if (mode == PROJECTION_PERSPECTIVE) {
+
+		return get_camera_transform().origin;
+	} else if (mode == PROJECTION_FRUSTUM) {
 
 		return get_camera_transform().origin;
 	} else {
@@ -535,6 +627,8 @@ Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 	if (mode==PROJECTION_ORTHOGONAL)
 		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+	else if (mode==PROJECTION_FRUSTUM)
+		cm = frustum.make_camera_matrix(viewport_size.get_aspect(),keep_aspect==KEEP_WIDTH,near,far);
 	else
 		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
@@ -565,6 +659,8 @@ Vector3 Camera::project_position(const Point2& p_point) const {
 
 	if (mode==PROJECTION_ORTHOGONAL)
 		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+	else if (mode==PROJECTION_ORTHOGONAL)
+		cm = frustum.make_camera_matrix(viewport_size.get_aspect(),keep_aspect==KEEP_WIDTH, near, far);
 	else
 		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
@@ -639,11 +735,17 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("project_position","screen_point"), &Camera::project_position);
 	ObjectTypeDB::bind_method( _MD("set_perspective","fov","z_near","z_far"),&Camera::set_perspective );
 	ObjectTypeDB::bind_method( _MD("set_orthogonal","size","z_near","z_far"),&Camera::set_orthogonal );
+	ObjectTypeDB::bind_method( _MD("set_perspective_for_eye","fov","z_near","z_far","eye","intraocular_dist","convergence_dist"),&Camera::set_perspective_for_eye );
+	ObjectTypeDB::bind_method( _MD("set_frustum","left","right","top","bottom","z_near","z_far"),&Camera::set_frustum );
 	ObjectTypeDB::bind_method( _MD("make_current"),&Camera::make_current );
 	ObjectTypeDB::bind_method( _MD("clear_current"),&Camera::clear_current );
 	ObjectTypeDB::bind_method( _MD("is_current"),&Camera::is_current );
 	ObjectTypeDB::bind_method( _MD("get_camera_transform"),&Camera::get_camera_transform );
 	ObjectTypeDB::bind_method( _MD("get_fov"),&Camera::get_fov );
+	ObjectTypeDB::bind_method( _MD("get_left"),&Camera::get_left );
+	ObjectTypeDB::bind_method( _MD("get_right"),&Camera::get_right );
+	ObjectTypeDB::bind_method( _MD("get_top"),&Camera::get_top );
+	ObjectTypeDB::bind_method( _MD("get_bottom"),&Camera::get_bottom );
 	ObjectTypeDB::bind_method( _MD("get_size"),&Camera::get_size );
 	ObjectTypeDB::bind_method( _MD("get_zfar"),&Camera::get_zfar );
 	ObjectTypeDB::bind_method( _MD("get_znear"),&Camera::get_znear );
@@ -662,6 +764,10 @@ void Camera::_bind_methods() {
 
 	BIND_CONSTANT( PROJECTION_PERSPECTIVE );
 	BIND_CONSTANT( PROJECTION_ORTHOGONAL );
+	BIND_CONSTANT( PROJECTION_FRUSTUM );
+
+	BIND_CONSTANT (EYE_LEFT );
+	BIND_CONSTANT (EYE_RIGHT );
 
 	BIND_CONSTANT( KEEP_WIDTH );
 	BIND_CONSTANT( KEEP_HEIGHT );
@@ -678,6 +784,22 @@ float Camera::get_size() const {
 	return size;
 }
 
+float Camera::get_left() const {
+	return frustum.left;
+}
+
+float Camera::get_right() const {
+	return frustum.right;
+}
+
+float Camera::get_top() const {
+	return frustum.top;
+}
+
+float Camera::get_bottom() const {
+	return frustum.bottom;
+}
+
 float Camera::get_znear() const {
 
 	return near;
@@ -687,7 +809,6 @@ float Camera::get_zfar() const {
 
 	return far;
 }
-
 
 Camera::Projection Camera::get_projection() const {
 
@@ -712,11 +833,15 @@ Vector<Plane> Camera::get_frustum() const {
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm;
-	if (mode==PROJECTION_PERSPECTIVE)
+	if (mode==PROJECTION_PERSPECTIVE) {
 		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
-	else
-		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+	} if (mode == PROJECTION_FRUSTUM) {
+		cm = frustum.make_camera_matrix(viewport_size.get_aspect(), keep_aspect == KEEP_WIDTH, near, far);
 
+	} else {
+		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+	}
+ 
 	return cm.get_projection_planes(get_camera_transform());
 
 }
@@ -751,6 +876,10 @@ Camera::Camera() {
 	camera = VisualServer::get_singleton()->camera_create();
 	size=1;
 	fov=0;
+	frustum.left=0.5;
+	frustum.right=0.5;
+	frustum.top=0.5;
+	frustum.bottom=0.5;
 	near=0;
 	far=0;
 	current=false;

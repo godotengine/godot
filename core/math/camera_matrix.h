@@ -53,7 +53,8 @@ struct CameraMatrix {
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
-	void set_perspective(float p_fovy_degrees, float p_aspect, float p_z_near, float p_z_far,bool p_flip_fov=false);
+	void set_perspective(float p_fovy_degrees, float p_aspect, float p_z_near, float p_z_far, bool p_flip_fov=false);
+	void set_perspective(float p_fovy_degrees, float p_aspect, float p_z_near, float p_z_far, int p_aspect_mode, int p_eye, float p_intraocular_dist, float p_convergence_dist);
 	void set_orthogonal(float p_left, float p_right, float p_bottom, float p_top,  float p_znear, float p_zfar);
 	void set_orthogonal(float p_size, float p_aspect, float p_znear, float p_zfar,bool p_flip_fov=false);
 	void set_frustum(float p_left, float p_right, float p_bottom, float p_top, float p_near, float p_far);
