@@ -6732,6 +6732,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_bottom" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				In frustum mode, returns the bottom size of the frustum.
+			</description>
+		</method>
 		<method name="get_camera_transform" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -6749,36 +6756,63 @@
 			<return type="float">
 			</return>
 			<description>
+				In perspective mode, returns the Field Of View value set for the camera.
 			</description>
 		</method>
 		<method name="get_h_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Gets the horizontal offset added to the camera position
 			</description>
 		</method>
 		<method name="get_keep_aspect_mode" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Gets the aspect ratio mode
+			</description>
+		</method>
+		<method name="get_left" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				In frustum mode, returns the left size of the frustum.
 			</description>
 		</method>
 		<method name="get_projection" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
+				Gets the projection mode
+			</description>
+		</method>
+		<method name="get_right" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				In frustum mode, returns the right size of the frustum.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				In orthographic mode, returns the size
+			</description>
+		</method>
+		<method name="get_top" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				In frustum mode, returns the top size of the frustum.
 			</description>
 		</method>
 		<method name="get_v_offset" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Gets the vertical offset added to the camera position
 			</description>
 		</method>
 		<method name="get_visible_layers" qualifiers="const">
@@ -6791,12 +6825,14 @@
 			<return type="float">
 			</return>
 			<description>
+				Get the far distance for the camera, anything further away will not render
 			</description>
 		</method>
 		<method name="get_znear" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Get the near distance for the camera, anything before this will not render
 			</description>
 		</method>
 		<method name="is_current" qualifiers="const">
@@ -6859,16 +6895,37 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_frustum">
+			<argument index="0" name="left" type="float">
+			</argument>
+			<argument index="1" name="right" type="float">
+			</argument>
+			<argument index="2" name="top" type="float">
+			</argument>
+			<argument index="3" name="bottom" type="float">
+			</argument>
+			<argument index="4" name="z_near" type="float">
+			</argument>
+			<argument index="5" name="z_far" type="float">
+			</argument>
+			<description>
+				Set the projection mode to frustum mode, by specifying a [i]left[/i], [i]right[/i], [i]top[/i] and [i]bottom[/i] value in unit distance along with the [i]near[/i] and [i]far[/i] clip planes in worldspace units.
+				The [i]left[/i], [i]right[/i], [i]top[/i] and [i]bottom[/i] values will be adjusted by Godot based on the aspect ratio of the viewport.
+				This mode allows for assymmetric projections, required for stereoscopic rendering.
+			</description>
+		</method>
 		<method name="set_h_offset">
 			<argument index="0" name="ofs" type="float">
 			</argument>
 			<description>
+				Sets the horizontal offset added to the camera position
 			</description>
 		</method>
 		<method name="set_keep_aspect_mode">
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
+				Sets the aspect ratio mode
 			</description>
 		</method>
 		<method name="set_orthogonal">
@@ -6893,10 +6950,29 @@
 				Set the camera projection to perspective mode, by specifying a [i]FOV[/i] Y angle in degrees (FOV means Field of View), and the [i]near[/i] and [i]far[/i] clip planes in worldspace units.
 			</description>
 		</method>
+		<method name="set_perspective_for_eye">
+			<argument index="0" name="fov" type="float">
+			</argument>
+			<argument index="1" name="z_near" type="float">
+			</argument>
+			<argument index="2" name="z_far" type="float">
+			</argument>
+			<argument index="3" name="eye" type="int">
+			</argument>
+			<argument index="4" name="intraocular_dist" type="float">
+			</argument>
+			<argument index="5" name="convergence_dist" type="float">
+			</argument>
+			<description>
+				Set the camera projection to frustum mode, by specifying a [i]FOV[/i] Y angle in degrees (FOV means Field of View), and the [i]near[/i] and [i]far[/i] clip planes in worldspace units and by specifying the [i]eye[/i], [i]intracular_dist[/i] and [i]convergence_dist[/i] values.
+				The intra oculur distance is the distance between the two eyes and the convergence distance determines how far the focus plane lies. This function should be used for stereoscopic rendering to a 3D monitor or similar device. With the convergence distance think of the distance before which things will "pop" out of the screen and after which things seem to be inside of the screen.
+			</description>
+		</method>
 		<method name="set_v_offset">
 			<argument index="0" name="ofs" type="float">
 			</argument>
 			<description>
+				Sets the vertical offset added to the camera position
 			</description>
 		</method>
 		<method name="set_visible_layers">
@@ -6922,9 +6998,20 @@
 		<constant name="PROJECTION_ORTHOGONAL" value="1">
 			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
 		</constant>
+		<constant name="PROJECTION_FRUSTUM" value="2">
+			Frustum projection, similar to perspective projection but with more control.
+		</constant>
+		<constant name="EYE_LEFT" value="0">
+			Left eye
+		</constant>
+		<constant name="EYE_RIGHT" value="1">
+			Right eye
+		</constant>
 		<constant name="KEEP_WIDTH" value="0">
+			As the user resizes the render area, keep the width of 3D objects constant by adjusting the height
 		</constant>
 		<constant name="KEEP_HEIGHT" value="1">
+			As the user resizes the render area, keep the height of 3D objects constant by adjusting the width
 		</constant>
 	</constants>
 </class>

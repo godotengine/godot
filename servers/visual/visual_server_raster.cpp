@@ -1372,6 +1372,16 @@ void VisualServerRaster::camera_set_orthogonal(RID p_camera, float p_size, float
 	camera->zfar = p_z_far;
 }
 
+void VisualServerRaster::camera_set_frustum(RID p_camera, const Frustum& p_frustum, float p_z_near, float p_z_far) {
+	VS_CHANGED;
+	Camera *camera = camera_owner.get( p_camera );
+	ERR_FAIL_COND(!camera);
+	camera->type=Camera::FRUSTUM;
+	camera->frustum=p_frustum;
+	camera->znear=p_z_near;
+	camera->zfar=p_z_far;
+}
+
 void VisualServerRaster::camera_set_transform(RID p_camera, const Transform &p_transform) {
 	VS_CHANGED;
 	Camera *camera = camera_owner.get(p_camera);
@@ -4493,6 +4503,15 @@ Vector<Vector3> VisualServerRaster::_camera_generate_endpoints(Instance *p_light
 					p_camera->vaspect);
 
 		} break;
+		case Camera::FRUSTUM: {
+			camera_matrix = p_camera->frustum.make_camera_matrix(
+				viewport_rect.width / (float)viewport_rect.height,
+				p_camera->vaspect,
+				p_range_min,
+				p_range_max
+			);
+
+		} break;
 	}
 
 	//obtain the frustum endpoints
@@ -4618,6 +4637,19 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light, S
 						p_camera->vaspect
 
 						);
+
+			} break;
+			case Camera::FRUSTUM: {
+				// FIXME well this actually changes alot in Godot 3 so maybe we don't care
+
+				camera_matrix.set_perspective(
+					60.0,
+					viewport_rect.width / (float)viewport_rect.height,
+					distances[(i==0 || !overlap )?i:i-1],
+					distances[i+1],
+					p_camera->vaspect
+
+				);
 
 			} break;
 		}
@@ -5975,6 +6007,15 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport, Camera *p_camera, 
 					);
 			ortho = false;
 
+		} break;
+		case Camera::FRUSTUM: {
+			camera_matrix = p_camera->frustum.make_camera_matrix(
+				viewport_rect.width / (float) viewport_rect.height, 
+				p_camera->vaspect, 
+				p_camera->znear, 
+				p_camera->zfar
+			);
+			ortho=false;
 		} break;
 	}
 
