@@ -396,7 +396,6 @@ Error JSON::_parse_object(Dictionary &object,const CharType *p_str,int &index, i
 				return err;
 
 			if (token.type==TK_CURLY_BRACKET_CLOSE) {
-
 				return OK;
 			}
 
@@ -446,7 +445,8 @@ Error JSON::_parse_object(Dictionary &object,const CharType *p_str,int &index, i
 		}
 	}
 
-	return OK;
+	r_err_str="Expected '}'";
+	return ERR_PARSE_ERROR;
 }
 
 
