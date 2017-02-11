@@ -400,14 +400,15 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 
 				Point2i c(video_mode.width/2,video_mode.height/2);
+				old_x = c.x;
+				old_y = c.y;
+
 				if (Point2i(mm.x,mm.y)==c) {
 					center=c;
 					return 0;
 				}
 
 				Point2i ncenter(mm.x,mm.y);
-				mm.x = old_x + (mm.x-center.x);
-				mm.y = old_y + (mm.y-center.y);
 				center=ncenter;
 				POINT pos = { (int) c.x, (int) c.y };
 				ClientToScreen(hWnd, &pos);
