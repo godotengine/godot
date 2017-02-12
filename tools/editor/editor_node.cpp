@@ -2603,6 +2603,14 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			play_custom_scene_button->set_pressed(false);
 			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom","EditorIcons"));
 			//pause_button->set_pressed(false);
+			if (bool(EDITOR_DEF("run/output/always_close_output_on_stop", true))) {
+				for(int i=0;i<bottom_panel_items.size();i++) {
+					if (bottom_panel_items[i].control==log) {
+						_bottom_panel_switch(false,i);
+						break;
+					}
+				}
+			}
 			emit_signal("stop_pressed");
 
 		} break;
