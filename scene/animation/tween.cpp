@@ -405,9 +405,9 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 
 	case Variant::TRANSFORM2D:
 		{
-			Basis i = initial_val;
-			Basis d = delta_val;
-			Basis r;
+			Transform2D i = initial_val;
+			Transform2D d = delta_val;
+			Transform2D r;
 
 			APPLY_EQUATION(elements[0][0]);
 			APPLY_EQUATION(elements[0][1]);
