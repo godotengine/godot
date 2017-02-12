@@ -31,22 +31,28 @@
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/bit_mask.h"
+#include "scene/gui/texture_rect.h"
 class TextureButton : public BaseButton {
 
 	GDCLASS( TextureButton, BaseButton );
 
+public:
+	typedef TextureRect::StretchMode StretchMode;
+
+private:
 	Ref<Texture> normal;
 	Ref<Texture> pressed;
 	Ref<Texture> hover;
 	Ref<Texture> disabled;
 	Ref<Texture> focused;
 	Ref<BitMap> click_mask;
-	Size2 scale;
+	bool expand;
+	StretchMode stretch_mode;
 
 protected:
 
-	virtual bool has_point(const Point2& p_point) const;
 	virtual Size2 get_minimum_size() const;
+	virtual bool has_point(const Point2& p_point) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -66,8 +72,11 @@ public:
 	Ref<Texture> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
 
-	void set_texture_scale(Size2 p_scale);
-	Size2 get_texture_scale() const;
+	bool get_expand() const;
+	void set_expand(bool p_expand);
+
+	void set_stretch_mode(StretchMode stretch_mode);
+	StretchMode get_stretch_mode() const;
 
 	TextureButton();
 };
