@@ -2967,7 +2967,7 @@ void VisualServerScene::_bake_gi_downscale_light(int p_idx, int p_level, const G
 
 	}
 
-	divisor=Math::lerp(8.0,divisor,p_propagate);
+	divisor=Math::lerp((float)8.0,divisor,p_propagate);
 	sum[0]/=divisor;
 	sum[1]/=divisor;
 	sum[2]/=divisor;
