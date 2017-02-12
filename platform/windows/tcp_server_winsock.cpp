@@ -63,10 +63,20 @@ void TCPServerWinsock::cleanup() {
 };
 
 
-Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+Error TCPServerWinsock::listen(uint16_t p_port,const IP_Address p_bind_address) {
+
+	ERR_FAIL_COND_V(listen_sockfd!=-1,ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	int sockfd;
-	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+	sock_type = IP::TYPE_ANY;
+
+	// If the bind address is valid use its type as the socket type
+	if (p_bind_address.is_valid())
+		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
+
+	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
 
 	unsigned long par = 1;
@@ -77,7 +87,7 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 	};
 
 	struct sockaddr_storage my_addr;
-	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, ip_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, sock_type, p_bind_address);
 
 	int reuse=1;
 	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
@@ -150,7 +160,7 @@ Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 	int port;
 	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, port, ip_type);
+	conn->set_socket(fd, ip, port, sock_type);
 
 	return conn;
 };
@@ -162,13 +172,14 @@ void TCPServerWinsock::stop() {
 	};
 
 	listen_sockfd = -1;
+	sock_type = IP::TYPE_NONE;
 };
 
 
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
-	ip_type = IP::TYPE_ANY;
+	sock_type = IP::TYPE_NONE;
 };
 
 TCPServerWinsock::~TCPServerWinsock() {

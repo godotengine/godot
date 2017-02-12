@@ -35,12 +35,13 @@
 class TCPServerPosix : public TCP_Server {
 
 	int listen_sockfd;
+	IP::Type sock_type;
 
 	static TCP_Server* _create();
 
 public:
 
-	virtual Error listen(uint16_t p_port,const List<String> *p_accepted_hosts=NULL);
+	virtual Error listen(uint16_t p_port, IP_Address p_bind_address=IP_Address("*"));
 	virtual bool is_connection_available() const;
 	virtual Ref<StreamPeerTCP> take_connection();
 

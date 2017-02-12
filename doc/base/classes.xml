@@ -25394,10 +25394,15 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="recv_buf_size" type="int" default="65536">
+			<argument index="1" name="bind_address" type="String" default="*">
+			</argument>
+			<argument index="2" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" with a buffer size "recv_buf_size". Listens on all available addresses.
+				Make this [PacketPeerUDP] listen on the "port" binding to "bind_address" with a buffer size "recv_buf_size".
+				If "bind_address" is set as "*" (default), the peer will listen on all available addresses (both IPv4 and IPv6).
+				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the peer will listen on all available addresses matching that IP type.
+				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -40576,10 +40581,13 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
+			<argument index="1" name="bind_address" type="String" default="*">
 			</argument>
 			<description>
-				Listen on a port using protocol, alternatively give a white-list of accepted hosts.
+				Listen on the "port" binding to "bind_address".
+				If "bind_address" is set as "*" (default), the server will listen on all available addresses (both IPv4 and IPv6).
+				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the server will listen on all available addresses matching that IP type.
+				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the server will only listen on the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="stop">

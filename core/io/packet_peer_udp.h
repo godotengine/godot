@@ -38,19 +38,16 @@ class PacketPeerUDP : public PacketPeer {
 
 protected:
 
-	IP::Type ip_type;
-
 	static PacketPeerUDP* (*_create)();
 	static void _bind_methods();
 
 	String _get_packet_ip() const;
 
-	virtual Error _set_dest_address(const String& p_address,int p_port);
+	Error _set_dest_address(const String& p_address,int p_port);
 
 public:
 
-	virtual void set_ip_type(IP::Type p_type);
-	virtual Error listen(int p_port, int p_recv_buffer_size=65536)=0;
+	virtual Error listen(int p_port, IP_Address p_bind_address=IP_Address("*"), int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
 	virtual Error wait()=0;
 	virtual bool is_listening() const=0;

@@ -46,6 +46,7 @@ class PacketPeerUDPWinsock : public PacketPeerUDP {
 	mutable int packet_port;
 	mutable int queue_count;
 	int sockfd;
+	IP::Type sock_type;
 
 	IP_Address peer_addr;
 	int peer_port;
@@ -67,7 +68,7 @@ public:
 
 	virtual int get_max_packet_size() const;
 
-	virtual Error listen(int p_port, int p_recv_buffer_size=65536);
+	virtual Error listen(int p_port, IP_Address p_bind_address=IP_Address("*"), int p_recv_buffer_size=65536);
 	virtual void close();
 	virtual Error wait();
 	virtual bool is_listening() const;

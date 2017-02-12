@@ -16,7 +16,7 @@ static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
 
-	ERR_FAIL_COND_V(p_ip==IP_Address(),0);
+	ERR_FAIL_COND_V(!p_ip.is_valid(),0);
 
 	// IPv6 socket
 	if (p_sock_type == IP::TYPE_IPV6 || p_sock_type == IP::TYPE_ANY) {
@@ -44,21 +44,29 @@ static size_t _set_sockaddr(struct sockaddr_storage* p_addr, const IP_Address& p
 	};
 };
 
-static size_t _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, IP::Type p_sock_type, const List<String> *p_accepted_hosts) {
+static size_t _set_listen_sockaddr(struct sockaddr_storage* p_addr, int p_port, IP::Type p_sock_type, const IP_Address p_bind_address) {
 
 	memset(p_addr, 0, sizeof(struct sockaddr_storage));
 	if (p_sock_type == IP::TYPE_IPV4) {
 		struct sockaddr_in* addr4 = (struct sockaddr_in*)p_addr;
 		addr4->sin_family = AF_INET;
 		addr4->sin_port = htons(p_port);
-		addr4->sin_addr.s_addr = INADDR_ANY; // TODO: use accepted hosts list
+		if(p_bind_address.is_valid()) {
+			copymem(&addr4->sin_addr.s_addr, p_bind_address.get_ipv4(), 4);
+		} else {
+			addr4->sin_addr.s_addr = INADDR_ANY;
+		}
 		return sizeof(sockaddr_in);
 	} else {
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*)p_addr;
 
 		addr6->sin6_family = AF_INET6;
 		addr6->sin6_port = htons(p_port);
-		addr6->sin6_addr = in6addr_any; // TODO: use accepted hosts list
+		if(p_bind_address.is_valid()) {
+			copymem(&addr6->sin6_addr.s6_addr, p_bind_address.get_ipv6(), 16);
+		} else {
+			addr6->sin6_addr = in6addr_any;
+		}
 		return sizeof(sockaddr_in6);
 	};
 };
