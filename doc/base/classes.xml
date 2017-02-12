@@ -39987,6 +39987,13 @@
 				Emitted when the current tab changes.
 			</description>
 		</signal>
+		<signal name="tab_selected">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+				Emitted when the current tab is being selected again.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 	</constants>
