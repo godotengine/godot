@@ -121,6 +121,8 @@
 #include "scene/2d/position_2d.h"
 #include "scene/2d/tile_map.h"
 //#include "scene/2d/tile_map.h"
+#include "scene/2d/line_2d.h"
+
 #include "scene/resources/tile_set.h"
 
 #include "scene/animation/animation_player.h"
@@ -494,6 +496,7 @@ void register_scene_types() {
 	ClassDB::register_class<SpriteFrames>();
 	ClassDB::register_class<AnimatedSprite>();
 	ClassDB::register_class<Position2D>();
+	ClassDB::register_class<Line2D>();
 	ClassDB::register_virtual_class<CollisionObject2D>();
 	ClassDB::register_virtual_class<PhysicsBody2D>();
 	ClassDB::register_class<StaticBody2D>();
