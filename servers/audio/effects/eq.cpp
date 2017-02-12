@@ -47,7 +47,7 @@ EQ::BandProcess::BandProcess() {
 
 void EQ::recalculate_band_coefficients() {
 
-#define BAND_LOG( m_f ) ( log((m_f)) / log(2) )
+#define BAND_LOG( m_f ) ( log((m_f)) / log(2.) )
 
 	for (int i=0;i<band.size();i++) {
 
