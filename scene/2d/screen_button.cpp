@@ -145,8 +145,12 @@ void TouchScreenButton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (is_pressed())
-				Input::get_singleton()->action_release(action);
+				_release(true);
 		} break;
+		case NOTIFICATION_PAUSED: {
+			// So the button can be pressed again even though the release gets unhandled because of coming during pause
+			allow_repress=true;
+		}
 	}
 }
 
@@ -184,22 +188,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 
 		if (p_event.type==InputEvent::SCREEN_TOUCH && !p_event.screen_touch.pressed && finger_pressed==p_event.screen_touch.index) {
 
-			emit_signal("released");
-
-			if (action_id!=-1) {
-
-				Input::get_singleton()->action_release(action);
-				InputEvent ie;
-				ie.type=InputEvent::ACTION;
-				ie.ID=0;
-				ie.action.action=action_id;
-				ie.action.pressed=false;
-				get_tree()->input_event(ie);
-			}
-			finger_pressed=-1;
-
-			update();
-
+			_release();
 		}
 
 		if ((p_event.type==InputEvent::SCREEN_TOUCH && p_event.screen_touch.pressed)|| p_event.type==InputEvent::SCREEN_DRAG) {
@@ -225,44 +214,12 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 
 
 				if (touched) {
-
 					if (finger_pressed==-1) {
-						finger_pressed=p_event.screen_touch.index;
-						//emit change stuff
-						emit_signal("pressed");
-						if (action_id!=-1) {
-
-							Input::get_singleton()->action_press(action);
-							InputEvent ie;
-							ie.type=InputEvent::ACTION;
-							ie.ID=0;
-							ie.action.action=action_id;
-							ie.action.pressed=true;
-							get_tree()->input_event(ie);
-						}
-
-						update();
+						_press(p_event.screen_touch.index);
 					}
-
 				} else {
-
 					if (finger_pressed!=-1) {
-
-						emit_signal("released");
-
-						if (action_id!=-1) {
-
-							Input::get_singleton()->action_release(action);
-							InputEvent ie;
-							ie.type=InputEvent::ACTION;
-							ie.ID=0;
-							ie.action.action=action_id;
-							ie.action.pressed=false;
-							get_tree()->input_event(ie);
-						}
-						finger_pressed=-1;
-
-						update();
+						_release();
 					}
 				}
 
@@ -280,7 +237,8 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 				if (!is_visible_in_tree())
 					return;
 
-				if (finger_pressed!=-1)
+				const bool can_press=finger_pressed==-1 || allow_repress;
+				if (!can_press)
 					return; //already fingering
 
 				Point2 coord = (get_global_transform_with_canvas()).affine_inverse().xform(Point2(p_event.screen_touch.x,p_event.screen_touch.y));
@@ -311,48 +269,56 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 				}
 
 
-
 				if (touched) {
-
-					finger_pressed=p_event.screen_touch.index;
-					//emit change stuff
-					emit_signal("pressed");
-					if (action_id!=-1) {
-
-						Input::get_singleton()->action_press(action);
-						InputEvent ie;
-						ie.type=InputEvent::ACTION;
-						ie.ID=0;
-						ie.action.action=action_id;
-						ie.action.pressed=true;
-						get_tree()->input_event(ie);
-					}
-					update();
-
+					_press(p_event.screen_touch.index);
 				}
 			} else {
-
-
 				if (p_event.screen_touch.index==finger_pressed) {
-					//untouch
-
-					emit_signal("released");
-
-					if (action_id!=-1) {
-
-						Input::get_singleton()->action_release(action);
-						InputEvent ie;
-						ie.type=InputEvent::ACTION;
-						ie.ID=0;
-						ie.action.action=action_id;
-						ie.action.pressed=false;
-						get_tree()->input_event(ie);
-					}
-					finger_pressed=-1;
-					update();
+					_release();
 				}
 			}
 		}
+	}
+}
+
+void TouchScreenButton::_press(int p_finger_pressed) {
+
+	finger_pressed=p_finger_pressed;
+	allow_repress=false;
+
+	if (action_id!=-1) {
+
+		Input::get_singleton()->action_press(action);
+		InputEvent ie;
+		ie.type=InputEvent::ACTION;
+		ie.ID=0;
+		ie.action.action=action_id;
+		ie.action.pressed=true;
+		get_tree()->input_event(ie);
+	}
+
+	emit_signal("pressed");
+	update();
+}
+
+void TouchScreenButton::_release(bool p_exiting_tree) {
+
+	finger_pressed=-1;
+
+	if (action_id!=-1) {
+
+		Input::get_singleton()->action_release(action);
+		InputEvent ie;
+		ie.type=InputEvent::ACTION;
+		ie.ID=0;
+		ie.action.action=action_id;
+		ie.action.pressed=false;
+		get_tree()->input_event(ie);
+	}
+
+	if (!p_exiting_tree) {
+		emit_signal("released");
+		update();
 	}
 }
 
@@ -440,6 +406,7 @@ void TouchScreenButton::_bind_methods() {
 TouchScreenButton::TouchScreenButton() {
 
 	finger_pressed=-1;
+	allow_repress=false;
 	action_id=-1;
 	passby_press=false;
 	visibility=VISIBILITY_ALWAYS;
