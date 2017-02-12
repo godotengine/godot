@@ -1282,6 +1282,11 @@ void OS_Windows::finalize() {
 
 	monitor_info.clear();
 
+	for (int i = 0; i < get_audio_driver_count(); i++)
+	{
+		AudioDriverManager::get_driver(i)->finish();
+	}
+
 }
 void OS_Windows::finalize_core() {
 
