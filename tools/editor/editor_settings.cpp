@@ -1030,26 +1030,22 @@ void EditorSettings::set_optimize_save(bool p_optimize) {
 	optimize_save=p_optimize;
 }
 
-String EditorSettings::get_last_selected_language()
-{
+Variant EditorSettings::get_project_metadata(const String& p_section, const String& p_key, Variant p_default) {
 	Ref<ConfigFile> cf = memnew( ConfigFile );
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
 	if (err != OK) {
-		return "";
+		return p_default;
 	}
-	Variant last_selected_language = cf->get_value("script_setup", "last_selected_language");
-	if (last_selected_language.get_type() != Variant::STRING)
-		return "";
-	return static_cast<String>(last_selected_language);
+	return cf->get_value(p_section, p_key, p_default);
 }
 
-void EditorSettings::set_last_selected_language(String p_language)
+void EditorSettings::set_project_metadata(const String& p_section, const String& p_key, Variant p_data)
 {
 	Ref<ConfigFile> cf = memnew( ConfigFile );
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
 	cf->load(path);
-	cf->set_value("script_setup", "last_selected_language", p_language);
+	cf->set_value(p_section, p_key, p_data);
 	cf->save(path);
 }
 
