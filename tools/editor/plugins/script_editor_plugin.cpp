@@ -2029,6 +2029,7 @@ void ScriptEditor::_find_scripts(Node* p_base, Node* p_current, Set<Ref<Script> 
 struct _ScriptEditorItemData {
 
 	String name;
+	String sort_key;
 	Ref<Texture> icon;
 	int index;
 	String tooltip;
@@ -2038,7 +2039,7 @@ struct _ScriptEditorItemData {
 
 	bool operator<(const _ScriptEditorItemData& id) const {
 
-		return category==id.category?name.nocasecmp_to(id.name)<0:category<id.category;
+		return category==id.category?sort_key<id.sort_key:category<id.category;
 	}
 
 };
@@ -2099,6 +2100,8 @@ void ScriptEditor::_update_script_names() {
 
 	script_list->clear();
 	bool split_script_help = EditorSettings::get_singleton()->get("text_editor/group_help_pages");
+	ScriptSortBy sort_by = (ScriptSortBy) (int) EditorSettings::get_singleton()->get("text_editor/sort_scripts_by");
+	ScriptListName display_as = (ScriptListName) (int) EditorSettings::get_singleton()->get("text_editor/list_script_names_as");
 
 	Vector<_ScriptEditorItemData> sedata;
 
@@ -2110,15 +2113,41 @@ void ScriptEditor::_update_script_names() {
 
 			String name = ste->get_name();
 			Ref<Texture> icon = ste->get_icon();
-			String tooltip = ste->get_edited_script()->get_path();
+			String path = ste->get_edited_script()->get_path();
 
 			_ScriptEditorItemData sd;
 			sd.icon=icon;
 			sd.name=name;
-			sd.tooltip=tooltip;
+			sd.tooltip=path;
 			sd.index=i;
 			sd.used=used.has(ste->get_edited_script());
 			sd.category=0;
+			
+			switch (sort_by) {
+				case SORT_BY_NAME: {
+					sd.sort_key=name.to_lower();
+				} break;
+				case SORT_BY_PATH: {
+					sd.sort_key=path;
+				} break;
+			}
+			
+			switch (display_as) {
+				case DISPLAY_NAME: {
+					sd.name=name;
+				} break;
+				case DISPLAY_DIR_AND_NAME: {
+					if (!path.get_base_dir().get_file().empty()) {
+						sd.name=path.get_base_dir().get_file() + "/" + name;
+					} else {
+						sd.name=name;
+					}
+				} break;
+				case DISPLAY_FULL_PATH: {
+					sd.name=path;
+				} break;
+			}
+
 
 			sedata.push_back(sd);
 		}
@@ -2133,6 +2162,7 @@ void ScriptEditor::_update_script_names() {
 			_ScriptEditorItemData sd;
 			sd.icon=icon;
 			sd.name=name;
+			sd.sort_key=name;
 			sd.tooltip=tooltip;
 			sd.index=i;
 			sd.used=false;
@@ -2401,6 +2431,7 @@ void ScriptEditor::_editor_settings_changed() {
         ste->update_editor_settings();
 	}
 	_update_script_colors();
+	_update_script_names();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_DEF("text_editor/auto_reload_and_parse_scripts_on_save",true));
 
@@ -3140,9 +3171,12 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/script_temperature_cold_color",Color(0,0,1,0.3));
 	EDITOR_DEF("text_editor/current_script_background_color",Color(0.81,0.81,0.14,0.63));
 	EDITOR_DEF("text_editor/group_help_pages",true);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"text_editor/sort_scripts_by",PROPERTY_HINT_ENUM,"Name,Path"));
+	EDITOR_DEF("text_editor/sort_scripts_by",0);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"text_editor/list_script_names_as",PROPERTY_HINT_ENUM,"Name,Parent Directory And Name,Full Path"));
+	EDITOR_DEF("text_editor/list_script_names_as",0);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));
 	EDITOR_DEF("external_editor/exec_flags","");
-
 
 }
 
