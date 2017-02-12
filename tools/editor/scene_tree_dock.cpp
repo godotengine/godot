@@ -403,6 +403,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if(existing.is_valid()) {
 				const RefPtr empty;
 				selected->set_script(empty);
+				button_create_script->show();
+				button_clear_script->hide();
 			}
 
 		} break;
@@ -1252,6 +1254,8 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		return;
 	selected->set_script(p_script.get_ref_ptr());
 	editor->push_item(p_script.operator->());
+	button_create_script->hide();
+	button_clear_script->show();
 
 }
 
