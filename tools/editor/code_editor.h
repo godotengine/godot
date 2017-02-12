@@ -236,6 +236,7 @@ protected:
 
 public:
 
+	void update_editor_settings();
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	virtual void apply_code() {}

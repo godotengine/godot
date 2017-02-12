@@ -684,6 +684,8 @@ void TextEdit::_notification(int p_what) {
 			// get the highlighted words
 			String highlighted_text = get_selection_text();
 
+			String line_num_padding = line_numbers_zero_padded ? "0" : " ";
+
 			for (int i=0;i<visible_rows;i++) {
 
 				int line=i+cursor.line_ofs;
@@ -748,7 +750,7 @@ void TextEdit::_notification(int p_what) {
 				if (cache.line_number_w) {
 					String fc = String::num(line+1);
 					while (fc.length() < line_number_char_count) {
-						fc="0"+fc;
+						fc=line_num_padding+fc;
 					}
 
 					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT)+cache.breakpoint_gutter_width,ofs_y+cache.font->get_ascent()),fc,cache.line_number_color);
@@ -1055,6 +1057,14 @@ void TextEdit::_notification(int p_what) {
 					}
 				}
 			}
+
+			if (line_length_guideline) {
+				int x=xmargin_beg+cache.font->get_char_size('0').width*line_length_guideline_col-cursor.x_ofs;
+				if (x>xmargin_beg && x<xmargin_end) {
+					VisualServer::get_singleton()->canvas_item_add_line(ci,Point2(x,0),Point2(x,cache.size.height),cache.line_length_guideline_color);
+				}
+			}
+
 
 			bool completion_below = false;
 			if (completion_active) {
@@ -3380,6 +3390,7 @@ void TextEdit::_update_caches() {
 	cache.selection_color=get_color("selection_color");
 	cache.mark_color=get_color("mark_color");
 	cache.current_line_color=get_color("current_line_color");
+	cache.line_length_guideline_color=get_color("line_length_guideline_color");
 	cache.breakpoint_color=get_color("breakpoint_color");
 	cache.brace_mismatch_color=get_color("brace_mismatch_color");
 	cache.word_highlighted_color=get_color("word_highlighted_color");
@@ -4386,8 +4397,24 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+void TextEdit::set_line_numbers_zero_padded(bool p_zero_padded) {
+
+	line_numbers_zero_padded=p_zero_padded;
+	update();
+}
+
 bool TextEdit::is_show_line_numbers_enabled() const {
 	return line_numbers;
+}
+
+void TextEdit::set_show_line_length_guideline(bool p_show) {
+	line_length_guideline=p_show;
+	update();
+}
+
+void TextEdit::set_line_length_guideline_column(int p_column) {
+	line_length_guideline_col=p_column;
+	update();
 }
 
 void TextEdit::set_draw_breakpoint_gutter(bool p_draw) {
@@ -4651,6 +4678,9 @@ TextEdit::TextEdit()  {
 	completion_line_ofs=0;
 	tooltip_obj=NULL;
 	line_numbers=false;
+	line_numbers_zero_padded=false;
+	line_length_guideline=false;
+	line_length_guideline_col=80;
 	draw_breakpoint_gutter=false;
 	next_operation_is_complex=false;
 	scroll_past_end_of_file_enabled=false;
