@@ -238,10 +238,10 @@ void RayCast::_bind_methods() {
 	ClassDB::bind_method(_MD("set_type_mask","mask"),&RayCast::set_type_mask);
 	ClassDB::bind_method(_MD("get_type_mask"),&RayCast::get_type_mask);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3,"cast_to"),_SCS("set_cast_to"),_SCS("get_cast_to"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layer_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"type_mask",PROPERTY_HINT_FLAGS,"Static,Kinematic,Rigid,Character,Area"),_SCS("set_type_mask"),_SCS("get_type_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),"set_enabled","is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3,"cast_to"),"set_cast_to","get_cast_to");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layer_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS),"set_layer_mask","get_layer_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"type_mask",PROPERTY_HINT_FLAGS,"Static,Kinematic,Rigid,Character,Area"),"set_type_mask","get_type_mask");
 }
 
 RayCast::RayCast() {

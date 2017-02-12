@@ -314,8 +314,8 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_items"),&OptionButton::_set_items);
 	ClassDB::bind_method(_MD("_get_items"),&OptionButton::_get_items);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"selected"), _SCS("_select_int"),_SCS("get_selected") );
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"selected"), "_select_int","get_selected") ;
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_items","_get_items") ;
 	ADD_SIGNAL( MethodInfo("item_selected", PropertyInfo( Variant::INT,"ID") ) );
 }
 

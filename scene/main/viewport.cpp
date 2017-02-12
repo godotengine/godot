@@ -142,7 +142,7 @@ void ViewportTexture::_bind_methods() {
 	ClassDB::bind_method(_MD("set_viewport_path_in_scene","path"),&ViewportTexture::set_viewport_path_in_scene);
 	ClassDB::bind_method(_MD("get_viewport_path_in_scene"),&ViewportTexture::get_viewport_path_in_scene);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"viewport_path"),_SCS("set_viewport_path_in_scene"),_SCS("get_viewport_path_in_scene"));
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"viewport_path"),"set_viewport_path_in_scene","get_viewport_path_in_scene");
 
 }
 
@@ -2870,32 +2870,32 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(_MD("set_shadow_atlas_quadrant_subdiv","quadrant","subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
 	ClassDB::bind_method(_MD("get_shadow_atlas_quadrant_subdiv","quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
 
-	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"size"), _SCS("set_size"), _SCS("get_size") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), _SCS("set_world"), _SCS("get_world") );
-	//ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
+	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"size"), "set_size", "get_size") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), "set_use_own_world", "is_using_own_world") ;
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), "set_world", "get_world") ;
+	//ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), "set_world_2d", "get_world_2d") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), "set_transparent_background", "has_transparent_background") ;
 	ADD_GROUP("Rendering","");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"), _SCS("set_msaa"), _SCS("get_msaa") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"hdr"), _SCS("set_hdr"), _SCS("get_hdr") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"disable_3d"), _SCS("set_disable_3d"), _SCS("is_3d_disabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"), "set_msaa", "get_msaa") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"hdr"), "set_hdr", "get_hdr") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"disable_3d"), "set_disable_3d", "is_3d_disabled") ;
 	ADD_GROUP("Render Target","render_target_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_v_flip"), _SCS("set_vflip"), _SCS("get_vflip") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_clear_on_new_frame"), _SCS("set_clear_on_new_frame"), _SCS("get_clear_on_new_frame") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target_update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_update_mode"), _SCS("get_update_mode") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_v_flip"), "set_vflip", "get_vflip") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_clear_on_new_frame"), "set_clear_on_new_frame", "get_clear_on_new_frame") ;
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target_update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode") ;
 	ADD_GROUP("Audio Listener","audio_listener_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_3d"), "set_as_audio_listener", "is_audio_listener") ;
 	ADD_GROUP("Physics","physics_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"physics_object_picking"), _SCS("set_physics_object_picking"), _SCS("get_physics_object_picking") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking") ;
 	ADD_GROUP("GUI","gui_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gui_disable_input"), _SCS("set_disable_input"), _SCS("is_input_disabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gui_disable_input"), "set_disable_input", "is_input_disabled") ;
 	ADD_GROUP("Shadow Atlas","shadow_atlas_");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_atlas_size"), _SCS("set_shadow_atlas_size"), _SCS("get_shadow_atlas_size") );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_0",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),0 );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_1",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),1 );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_2",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),2 );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_3",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),3 );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size") ;
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_0",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",0 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_1",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",1 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_2",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",2 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_3",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",3 );
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 

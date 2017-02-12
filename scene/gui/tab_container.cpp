@@ -736,9 +736,9 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM,"Left,Center,Right"), _SCS("set_tab_align"), _SCS("get_tab_align") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "tabs_visible"), _SCS("set_tabs_visible"), _SCS("are_tabs_visible") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM,"Left,Center,Right"), "set_tab_align", "get_tab_align") ;
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible") ;
 
 }
 

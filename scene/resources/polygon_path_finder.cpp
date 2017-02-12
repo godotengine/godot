@@ -630,7 +630,7 @@ void PolygonPathFinder::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_data"),&PolygonPathFinder::_set_data);
 	ClassDB::bind_method(_MD("_get_data"),&PolygonPathFinder::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_data"),_SCS("_get_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_data","_get_data");
 
 }
 

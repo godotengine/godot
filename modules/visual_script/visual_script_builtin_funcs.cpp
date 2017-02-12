@@ -1177,7 +1177,7 @@ void VisualScriptBuiltinFunc::_bind_methods() {
 			cc+=",";
 		cc+=func_name[i];
 	}
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"function",PROPERTY_HINT_ENUM,cc),_SCS("set_func"),_SCS("get_func"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"function",PROPERTY_HINT_ENUM,cc),"set_func","get_func");
 }
 
 VisualScriptBuiltinFunc::VisualScriptBuiltinFunc() {

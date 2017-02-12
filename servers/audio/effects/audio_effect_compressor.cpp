@@ -206,13 +206,13 @@ void AudioEffectCompressor::_bind_methods() {
 	ClassDB::bind_method(_MD("set_sidechain","sidechain"),&AudioEffectCompressor::set_sidechain);
 	ClassDB::bind_method(_MD("get_sidechain"),&AudioEffectCompressor::get_sidechain);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"treshold",PROPERTY_HINT_RANGE,"-60,0,0.1"),_SCS("set_treshold"),_SCS("get_treshold"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ratio",PROPERTY_HINT_RANGE,"1,48,0.1"),_SCS("set_ratio"),_SCS("get_ratio"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"gain",PROPERTY_HINT_RANGE,"-20,20,0.1"),_SCS("set_gain"),_SCS("get_gain"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"attack_us",PROPERTY_HINT_RANGE,"20,2000,1"),_SCS("set_attack_us"),_SCS("get_attack_us"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"release_ms",PROPERTY_HINT_RANGE,"20,2000,1"),_SCS("set_release_ms"),_SCS("get_release_ms"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"mix",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_mix"),_SCS("get_mix"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"sidechain",PROPERTY_HINT_ENUM),_SCS("set_sidechain"),_SCS("get_sidechain"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"treshold",PROPERTY_HINT_RANGE,"-60,0,0.1"),"set_treshold","get_treshold");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ratio",PROPERTY_HINT_RANGE,"1,48,0.1"),"set_ratio","get_ratio");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"gain",PROPERTY_HINT_RANGE,"-20,20,0.1"),"set_gain","get_gain");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"attack_us",PROPERTY_HINT_RANGE,"20,2000,1"),"set_attack_us","get_attack_us");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"release_ms",PROPERTY_HINT_RANGE,"20,2000,1"),"set_release_ms","get_release_ms");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"mix",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_mix","get_mix");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"sidechain",PROPERTY_HINT_ENUM),"set_sidechain","get_sidechain");
 
 }
 

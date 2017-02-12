@@ -1362,15 +1362,15 @@ void register_variant_methods() {
 	_VariantCall::constant_data = memnew_arr(_VariantCall::ConstantData, Variant::VARIANT_MAX);
 
 #define ADDFUNC0(m_vtype,m_ret,m_class,m_method,m_defarg)\
-_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_class,m_method),m_defarg);
+_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_scs_create(#m_method),VCALL(m_class,m_method),m_defarg);
 #define ADDFUNC1(m_vtype,m_ret,m_class,m_method,m_arg1,m_argname1,m_defarg)\
-_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_SCS(m_argname1)) );
+_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_scs_create(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_scs_create(m_argname1)) );
 #define ADDFUNC2(m_vtype,m_ret,m_class,m_method,m_arg1,m_argname1,m_arg2,m_argname2,m_defarg)\
-_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_SCS(m_argname1)),_VariantCall::Arg(Variant::m_arg2,_SCS(m_argname2)));
+_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_scs_create(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_scs_create(m_argname1)),_VariantCall::Arg(Variant::m_arg2,_scs_create(m_argname2)));
 #define ADDFUNC3(m_vtype,m_ret,m_class,m_method,m_arg1,m_argname1,m_arg2,m_argname2,m_arg3,m_argname3,m_defarg)\
-_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_SCS(m_argname1)),_VariantCall::Arg(Variant::m_arg2,_SCS(m_argname2)),_VariantCall::Arg(Variant::m_arg3,_SCS(m_argname3)));
+_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_scs_create(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_scs_create(m_argname1)),_VariantCall::Arg(Variant::m_arg2,_scs_create(m_argname2)),_VariantCall::Arg(Variant::m_arg3,_scs_create(m_argname3)));
 #define ADDFUNC4(m_vtype,m_ret,m_class,m_method,m_arg1,m_argname1,m_arg2,m_argname2,m_arg3,m_argname3,m_arg4,m_argname4,m_defarg)\
-_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_SCS(m_argname1)),_VariantCall::Arg(Variant::m_arg2,_SCS(m_argname2)),_VariantCall::Arg(Variant::m_arg3,_SCS(m_argname3)),_VariantCall::Arg(Variant::m_arg4,_SCS(m_argname4)));
+_VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_scs_create(#m_method),VCALL(m_class,m_method),m_defarg,_VariantCall::Arg(Variant::m_arg1,_scs_create(m_argname1)),_VariantCall::Arg(Variant::m_arg2,_scs_create(m_argname2)),_VariantCall::Arg(Variant::m_arg3,_scs_create(m_argname3)),_VariantCall::Arg(Variant::m_arg4,_scs_create(m_argname4)));
 
 
 	/* STRING */

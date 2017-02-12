@@ -86,10 +86,10 @@ void StyleBox::_bind_methods() {
 	ClassDB::bind_method(_MD("draw","canvas_item","rect"),&StyleBox::draw);
 
 	ADD_GROUP("Content Margin","content_margin_");
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_left", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_LEFT );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_right", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_RIGHT );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_top", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_TOP);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_bottom", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_BOTTOM );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_left", PROPERTY_HINT_RANGE,"-1,2048,1" ), "set_default_margin","get_default_margin", MARGIN_LEFT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_right", PROPERTY_HINT_RANGE,"-1,2048,1" ), "set_default_margin","get_default_margin", MARGIN_RIGHT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_top", PROPERTY_HINT_RANGE,"-1,2048,1" ), "set_default_margin","get_default_margin", MARGIN_TOP);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_bottom", PROPERTY_HINT_RANGE,"-1,2048,1" ), "set_default_margin","get_default_margin", MARGIN_BOTTOM );
 
 
 }
@@ -230,21 +230,21 @@ void StyleBoxTexture::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture" ), _SCS("set_texture"),_SCS("get_texture") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture" ), "set_texture","get_texture") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), "set_region_rect","get_region_rect");
 	ADD_GROUP("Margin","margin_");
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_left", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_margin_size"),_SCS("get_margin_size"), MARGIN_LEFT );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_right", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_margin_size"),_SCS("get_margin_size"), MARGIN_RIGHT );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_top", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_margin_size"),_SCS("get_margin_size"), MARGIN_TOP);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_bottom", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_margin_size"),_SCS("get_margin_size"), MARGIN_BOTTOM );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_left", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_margin_size","get_margin_size", MARGIN_LEFT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_right", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_margin_size","get_margin_size", MARGIN_RIGHT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_top", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_margin_size","get_margin_size", MARGIN_TOP);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "margin_bottom", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_margin_size","get_margin_size", MARGIN_BOTTOM );
 	ADD_GROUP("Expand Margin","expand_margin_");
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_left", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_expand_margin_size"),_SCS("get_expand_margin_size"), MARGIN_LEFT );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_right", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_expand_margin_size"),_SCS("get_expand_margin_size"), MARGIN_RIGHT );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_expand_margin_size"),_SCS("get_expand_margin_size"), MARGIN_TOP );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE,"0,2048,1" ), _SCS("set_expand_margin_size"),_SCS("get_expand_margin_size"), MARGIN_BOTTOM );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_left", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_expand_margin_size","get_expand_margin_size", MARGIN_LEFT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_right", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_expand_margin_size","get_expand_margin_size", MARGIN_RIGHT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_top", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_expand_margin_size","get_expand_margin_size", MARGIN_TOP );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "expand_margin_bottom", PROPERTY_HINT_RANGE,"0,2048,1" ), "set_expand_margin_size","get_expand_margin_size", MARGIN_BOTTOM );
 	ADD_GROUP("Modulate","modulate_");
-	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "modulate_color" ), _SCS("set_modulate"),_SCS("get_modulate"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "draw_center" ) , _SCS("set_draw_center"),_SCS("get_draw_center"));
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "modulate_color" ), "set_modulate","get_modulate");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "draw_center" ) , "set_draw_center","get_draw_center");
 
 }
 
@@ -403,12 +403,12 @@ void StyleBoxFlat::_bind_methods() {
 	ClassDB::bind_method(_MD("set_draw_center","size"),&StyleBoxFlat::set_draw_center);
 	ClassDB::bind_method(_MD("get_draw_center"),&StyleBoxFlat::get_draw_center);
 
-	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "bg_color"), _SCS("set_bg_color"),_SCS("get_bg_color") );
-	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "light_color"),_SCS("set_light_color"),_SCS("get_light_color"));
-	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "dark_color"),_SCS("set_dark_color"),_SCS("get_dark_color"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "border_size",PROPERTY_HINT_RANGE,"0,4096"),_SCS("set_border_size"),_SCS("get_border_size"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "border_blend"),_SCS("set_border_blend"),_SCS("get_border_blend"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "draw_bg"),_SCS("set_draw_center"),_SCS("get_draw_center"));
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "bg_color"), "set_bg_color","get_bg_color") ;
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "light_color"),"set_light_color","get_light_color");
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "dark_color"),"set_dark_color","get_dark_color");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "border_size",PROPERTY_HINT_RANGE,"0,4096"),"set_border_size","get_border_size");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "border_blend"),"set_border_blend","get_border_blend");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "draw_bg"),"set_draw_center","get_draw_center");
 
 }
 

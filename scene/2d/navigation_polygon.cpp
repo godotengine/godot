@@ -270,9 +270,9 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_outlines","outlines"),&NavigationPolygon::_set_outlines);
 	ClassDB::bind_method(_MD("_get_outlines"),&NavigationPolygon::_get_outlines);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"polygons",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_polygons"),_SCS("_get_polygons"));
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"outlines",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_outlines"),_SCS("_get_outlines"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_vertices","get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"polygons",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_polygons","_get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"outlines",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_outlines","_get_outlines");
 }
 
 NavigationPolygon::NavigationPolygon() {
@@ -488,8 +488,8 @@ void NavigationPolygonInstance::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_navpoly_changed"),&NavigationPolygonInstance::_navpoly_changed);
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"navpoly",PROPERTY_HINT_RESOURCE_TYPE,"NavigationPolygon"),_SCS("set_navigation_polygon"),_SCS("get_navigation_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"navpoly",PROPERTY_HINT_RESOURCE_TYPE,"NavigationPolygon"),"set_navigation_polygon","get_navigation_polygon");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),"set_enabled","is_enabled");
 }
 
 NavigationPolygonInstance::NavigationPolygonInstance() {

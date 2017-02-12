@@ -201,10 +201,10 @@ void Timer::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("timeout") );
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_timer_process_mode"), _SCS("get_timer_process_mode") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL, "wait_time", PROPERTY_HINT_EXP_RANGE, "0.01,4096,0.01" ), _SCS("set_wait_time"), _SCS("get_wait_time") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "one_shot" ), _SCS("set_one_shot"), _SCS("is_one_shot") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "autostart" ), _SCS("set_autostart"), _SCS("has_autostart") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_timer_process_mode", "get_timer_process_mode") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL, "wait_time", PROPERTY_HINT_EXP_RANGE, "0.01,4096,0.01" ), "set_wait_time", "get_wait_time") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "one_shot" ), "set_one_shot", "is_one_shot") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "autostart" ), "set_autostart", "has_autostart") ;
 
 	BIND_CONSTANT( TIMER_PROCESS_FIXED );
 	BIND_CONSTANT( TIMER_PROCESS_IDLE );

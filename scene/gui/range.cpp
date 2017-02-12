@@ -245,13 +245,13 @@ void Range::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("value_changed", PropertyInfo(Variant::REAL,"value")));
 	ADD_SIGNAL( MethodInfo("changed"));
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "min_value" ), _SCS("set_min"), _SCS("get_min") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "max_value" ), _SCS("set_max"), _SCS("get_max") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "step" ), _SCS("set_step"), _SCS("get_step") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "page" ), _SCS("set_page"), _SCS("get_page") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "value" ), _SCS("set_value"), _SCS("get_value") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "exp_edit" ), _SCS("set_exp_ratio"), _SCS("is_ratio_exp") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "rounded" ), _SCS("set_use_rounded_values"), _SCS("is_using_rounded_values") );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "min_value" ), "set_min", "get_min") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "max_value" ), "set_max", "get_max") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "step" ), "set_step", "get_step") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "page" ), "set_page", "get_page") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "value" ), "set_value", "get_value") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "exp_edit" ), "set_exp_ratio", "is_ratio_exp") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "rounded" ), "set_use_rounded_values", "is_using_rounded_values") ;
 
 }
 

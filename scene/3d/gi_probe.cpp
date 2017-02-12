@@ -142,16 +142,16 @@ void GIProbeData::_bind_methods() {
 	ClassDB::bind_method(_MD("set_compress","compress"),&GIProbeData::set_compress);
 	ClassDB::bind_method(_MD("is_compressed"),&GIProbeData::is_compressed);
 
-	ADD_PROPERTY(PropertyInfo(Variant::RECT3,"bounds",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_bounds"),_SCS("get_bounds"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"cell_size",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_cell_size"),_SCS("get_cell_size"));
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM,"to_cell_xform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_to_cell_xform"),_SCS("get_to_cell_xform"));
+	ADD_PROPERTY(PropertyInfo(Variant::RECT3,"bounds",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_bounds","get_bounds");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"cell_size",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_cell_size","get_cell_size");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM,"to_cell_xform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_to_cell_xform","get_to_cell_xform");
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY,"dynamic_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_data"),_SCS("get_dynamic_data"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_energy"),_SCS("get_energy"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"propagation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_propagation"),_SCS("get_propagation"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"interior",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_interior"),_SCS("is_interior"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"compress",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_compress"),_SCS("is_compressed"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_INT_ARRAY,"dynamic_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_dynamic_data","get_dynamic_data");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_dynamic_range","get_dynamic_range");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_energy","get_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"propagation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_propagation","get_propagation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"interior",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_interior","is_interior");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"compress",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_compress","is_compressed");
 
 }
 
@@ -1410,16 +1410,16 @@ void GIProbe::_bind_methods() {
 
 	ClassDB::bind_method(_MD("bake","from_node","create_visual_debug"),&GIProbe::bake,DEFVAL(Variant()),DEFVAL(false));
 	ClassDB::bind_method(_MD("debug_bake"),&GIProbe::_debug_bake);
-	ClassDB::set_method_flags(get_class_static(),_SCS("debug_bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("debug_bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"subdiv",PROPERTY_HINT_ENUM,"64,128,256,512"),_SCS("set_subdiv"),_SCS("get_subdiv"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"extents"),_SCS("set_extents"),_SCS("get_extents"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_RANGE,"1,16,1"),_SCS("set_dynamic_range"),_SCS("get_dynamic_range"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_energy"),_SCS("get_energy"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"propagation",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_propagation"),_SCS("get_propagation"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior"),_SCS("set_interior"),_SCS("is_interior"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"compress"),_SCS("set_compress"),_SCS("is_compressed"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"data",PROPERTY_HINT_RESOURCE_TYPE,"GIProbeData"),_SCS("set_probe_data"),_SCS("get_probe_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"subdiv",PROPERTY_HINT_ENUM,"64,128,256,512"),"set_subdiv","get_subdiv");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"extents"),"set_extents","get_extents");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"dynamic_range",PROPERTY_HINT_RANGE,"1,16,1"),"set_dynamic_range","get_dynamic_range");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0,16,0.01"),"set_energy","get_energy");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"propagation",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_propagation","get_propagation");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior"),"set_interior","is_interior");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"compress"),"set_compress","is_compressed");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"data",PROPERTY_HINT_RESOURCE_TYPE,"GIProbeData"),"set_probe_data","get_probe_data");
 
 
 	BIND_CONSTANT( SUBDIV_64 );

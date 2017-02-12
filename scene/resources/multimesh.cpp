@@ -233,12 +233,12 @@ void MultiMesh::_bind_methods() {
 	ClassDB::bind_method(_MD("_get_color_array"),&MultiMesh::_get_color_array);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"color_format",PROPERTY_HINT_ENUM,"None,Byte,Float"), _SCS("set_color_format"), _SCS("get_color_format"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"transform_format",PROPERTY_HINT_ENUM,"2D,3D"), _SCS("set_transform_format"), _SCS("get_transform_format"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"instance_count",PROPERTY_HINT_RANGE,"0,16384,1"), _SCS("set_instance_count"), _SCS("get_instance_count"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"), _SCS("set_mesh"), _SCS("get_mesh"));
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"transform_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_transform_array"), _SCS("_get_transform_array"));
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY,"color_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_color_array"), _SCS("_get_color_array"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"color_format",PROPERTY_HINT_ENUM,"None,Byte,Float"), "set_color_format", "get_color_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"transform_format",PROPERTY_HINT_ENUM,"2D,3D"), "set_transform_format", "get_transform_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"instance_count",PROPERTY_HINT_RANGE,"0,16384,1"), "set_instance_count", "get_instance_count");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"transform_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_transform_array", "_get_transform_array");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY,"color_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_color_array", "_get_color_array");
 
 
 

@@ -428,29 +428,29 @@ void Light2D::_bind_methods() {
 	ClassDB::bind_method(_MD("get_shadow_color"),&Light2D::get_shadow_color);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "editor_only"),_SCS("set_editor_only"),_SCS("is_editor_only"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,50,0.01"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0.01,100,0.01"),_SCS("set_energy"),_SCS("get_energy"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Add,Sub,Mix,Mask"),_SCS("set_mode"),_SCS("get_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),"set_enabled","is_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "editor_only"),"set_editor_only","is_editor_only");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),"set_texture_offset","get_texture_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,50,0.01"),"set_texture_scale","get_texture_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),"set_color","get_color");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy",PROPERTY_HINT_RANGE,"0.01,100,0.01"),"set_energy","get_energy");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Add,Sub,Mix,Mask"),"set_mode","get_mode");
 	ADD_GROUP("Range","range_");
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range_height",PROPERTY_HINT_RANGE,"-100,100,0.1"),_SCS("set_height"),_SCS("get_height"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_item_cull_mask",PROPERTY_HINT_LAYERS_2D_RENDER),_SCS("set_item_cull_mask"),_SCS("get_item_cull_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range_height",PROPERTY_HINT_RANGE,"-100,100,0.1"),"set_height","get_height");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),"set_z_range_min","get_z_range_min");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),"set_z_range_max","get_z_range_max");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),"set_layer_range_min","get_layer_range_min");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),"set_layer_range_max","get_layer_range_max");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range_item_cull_mask",PROPERTY_HINT_LAYERS_2D_RENDER),"set_item_cull_mask","get_item_cull_mask");
 
 	ADD_GROUP("Shadow","shadow_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow_enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"shadow_color"),_SCS("set_shadow_color"),_SCS("get_shadow_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_gradient_length",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_gradient_length"),_SCS("get_shadow_gradient_length"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_filter",PROPERTY_HINT_ENUM,"None,PCF3,PCF5,PCF9,PCF13"),_SCS("set_shadow_filter"),_SCS("get_shadow_filter"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_item_cull_mask",PROPERTY_HINT_LAYERS_2D_RENDER),_SCS("set_item_shadow_cull_mask"),_SCS("get_item_shadow_cull_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow_enabled"),"set_shadow_enabled","is_shadow_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"shadow_color"),"set_shadow_color","get_shadow_color");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),"set_shadow_buffer_size","get_shadow_buffer_size");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_gradient_length",PROPERTY_HINT_RANGE,"1,4096,0.1"),"set_shadow_gradient_length","get_shadow_gradient_length");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow_filter",PROPERTY_HINT_ENUM,"None,PCF3,PCF5,PCF9,PCF13"),"set_shadow_filter","get_shadow_filter");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_item_cull_mask",PROPERTY_HINT_LAYERS_2D_RENDER),"set_item_shadow_cull_mask","get_item_shadow_cull_mask");
 
 	BIND_CONSTANT( MODE_ADD );
 	BIND_CONSTANT( MODE_SUB );

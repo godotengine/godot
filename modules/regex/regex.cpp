@@ -1502,6 +1502,6 @@ void RegEx::_bind_methods() {
 	ClassDB::bind_method(_MD("get_group_count"),&RegEx::get_group_count);
 	ClassDB::bind_method(_MD("get_names"),&RegEx::get_names);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pattern"), _SCS("compile"), _SCS("get_pattern"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pattern"), "compile", "get_pattern");
 }
 

@@ -820,7 +820,7 @@ void ScrollBar::_bind_methods() {
 	ClassDB::bind_method(_MD("_drag_slave_input"),&ScrollBar::_drag_slave_input);
 	ClassDB::bind_method(_MD("_drag_slave_exit"),&ScrollBar::_drag_slave_exit);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_step",PROPERTY_HINT_RANGE,"-1,4096"), _SCS("set_custom_step"),_SCS("get_custom_step"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_step",PROPERTY_HINT_RANGE,"-1,4096"), "set_custom_step","get_custom_step");
 
 }
 

@@ -287,11 +287,11 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(_MD("get_world_2d:World2D"),&CanvasLayer::get_world_2d);
 	//ClassDB::bind_method(_MD("get_viewport"),&CanvasLayer::get_viewport);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),_SCS("set_layer"),_SCS("get_layer") );
-	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),_SCS("set_transform"),_SCS("get_transform") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"rotation"),_SCS("set_rotationd"),_SCS("get_rotationd") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scale"),_SCS("set_scale"),_SCS("get_scale") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer",PROPERTY_HINT_RANGE,"-128,128,1"),"set_layer","get_layer") ;
+	//ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"transform",PROPERTY_HINT_RANGE),"set_transform","get_transform") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),"set_offset","get_offset") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"rotation"),"set_rotationd","get_rotationd") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scale"),"set_scale","get_scale") ;
 
 }
 

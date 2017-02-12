@@ -4695,15 +4695,15 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(_MD("menu_option"),&TextEdit::menu_option);
 	ClassDB::bind_method(_MD("get_menu:PopupMenu"),&TextEdit::get_menu);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), _SCS("set_syntax_coloring"), _SCS("is_syntax_coloring_enabled"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), _SCS("set_show_line_numbers"), _SCS("is_show_line_numbers_enabled"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), _SCS("set_highlight_all_occurrences"), _SCS("is_highlight_all_occurrences_enabled"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "syntax_highlighting"), "set_syntax_coloring", "is_syntax_coloring_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_line_numbers"), "set_show_line_numbers", "is_show_line_numbers_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 
 
 	ADD_GROUP("Caret","caret_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), _SCS("cursor_set_block_mode"), _SCS("cursor_is_block_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), _SCS("cursor_set_blink_enabled"), _SCS("cursor_get_blink_enabled"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), _SCS("cursor_set_blink_speed"),_SCS("cursor_get_blink_speed") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), "cursor_set_block_mode", "cursor_is_block_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_blink"), "cursor_set_blink_enabled", "cursor_get_blink_enabled");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "caret_blink_speed",PROPERTY_HINT_RANGE,"0.1,10,0.1"), "cursor_set_blink_speed","cursor_get_blink_speed") ;
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));

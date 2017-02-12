@@ -768,7 +768,7 @@ void Spatial::_bind_methods() {
 	ClassDB::bind_method(_MD("_update_gizmo"), &Spatial::_update_gizmo);
 	ClassDB::bind_method(_MD("_set_import_transform"), &Spatial::set_import_transform);
 	ClassDB::bind_method(_MD("_get_import_transform"), &Spatial::get_import_transform);
-	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"_import_transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_transform"),_SCS("_get_import_transform"));
+	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"_import_transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_import_transform","_get_import_transform");
 #endif
 
 	ClassDB::bind_method(_MD("update_gizmo"), &Spatial::update_gizmo);
@@ -814,17 +814,17 @@ void Spatial::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_EXIT_WORLD );
 	BIND_CONSTANT( NOTIFICATION_VISIBILITY_CHANGED );
 
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), _SCS("set_global_transform"), _SCS("get_global_transform") );
+	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform","");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform",PROPERTY_HINT_NONE,""), _SCS("set_transform"), _SCS("get_transform") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"global_transform",PROPERTY_HINT_NONE,"",0), _SCS("set_global_transform"), _SCS("get_global_transform") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_translation"), _SCS("get_translation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation_deg",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_rotation_deg"), _SCS("get_rotation_deg") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform",PROPERTY_HINT_NONE,""), "set_transform", "get_transform") ;
+	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"global_transform",PROPERTY_HINT_NONE,"",0), "set_global_transform", "get_global_transform") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), "set_translation", "get_translation") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation_deg",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), "set_rotation_deg", "get_rotation_deg") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation",PROPERTY_HINT_NONE,"",0), "set_rotation", "get_rotation") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), "set_scale", "get_scale") ;
 	ADD_GROUP("Visibility","");
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("set_visible"), _SCS("is_visible") );
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), _SCS("set_transform"), _SCS("get_transform") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), "set_visible", "is_visible") ;
+	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), "set_transform", "get_transform") ;
 
 	ADD_SIGNAL( MethodInfo("visibility_changed" ) );
 

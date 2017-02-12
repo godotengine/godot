@@ -147,7 +147,7 @@ void WindowDialog::_bind_methods() {
 	ClassDB::bind_method( _MD("_closed"),&WindowDialog::_closed);
 	ClassDB::bind_method( _MD("get_close_button:TextureButton"),&WindowDialog::get_close_button);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"window_title",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_title"),_SCS("get_title"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"window_title",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),"set_title","get_title");
 }
 
 WindowDialog::WindowDialog() {
@@ -378,8 +378,8 @@ void AcceptDialog::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
 
 	ADD_GROUP("Dialog","dialog");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"dialog_text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_text"),_SCS("get_text"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"),_SCS("set_hide_on_ok"),_SCS("get_hide_on_ok") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"dialog_text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL),"set_text","get_text");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"),"set_hide_on_ok","get_hide_on_ok") ;
 
 }
 

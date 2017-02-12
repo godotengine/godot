@@ -250,8 +250,8 @@ void CollisionObject::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("mouse_entered"));
 	ADD_SIGNAL( MethodInfo("mouse_exited"));
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_ray_pickable"),_SCS("set_ray_pickable"),_SCS("is_ray_pickable"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"input_capture_on_drag"),_SCS("set_capture_input_on_drag"),_SCS("get_capture_input_on_drag"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_ray_pickable"),"set_ray_pickable","is_ray_pickable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"input_capture_on_drag"),"set_capture_input_on_drag","get_capture_input_on_drag");
 }
 
 

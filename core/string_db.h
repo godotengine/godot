@@ -155,7 +155,4 @@ struct StringNameHasher {
 
 StringName _scs_create(const char *p_chr);
 
-//#define _SCS(m_cstr) (m_cstr[0]?StringName(StaticCString::create(m_cstr)):StringName())
-#define _SCS(m_cstr) _scs_create(m_cstr)
-
 #endif

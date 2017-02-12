@@ -743,17 +743,17 @@ void VisualScriptFunctionCall::_bind_methods() {
 
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type,Singleton"),_SCS("set_call_mode"),_SCS("get_call_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_script",PROPERTY_HINT_FILE,script_ext_hint),_SCS("set_base_script"),_SCS("get_base_script"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/singleton"),_SCS("set_singleton"),_SCS("get_singleton"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/basic_type",PROPERTY_HINT_ENUM,bt),_SCS("set_basic_type"),_SCS("get_basic_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"function/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"function/argument_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_argument_cache"),_SCS("_get_argument_cache"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/function"),_SCS("set_function"),_SCS("get_function")); //when set, if loaded properly, will override argument count.
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/use_default_args"),_SCS("set_use_default_args"),_SCS("get_use_default_args"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"function/validate"),_SCS("set_validate"),_SCS("get_validate"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"rpc/call_mode",PROPERTY_HINT_ENUM,"Disabled,Reliable,Unreliable,ReliableToID,UnreliableToID"),_SCS("set_rpc_call_mode"),_SCS("get_rpc_call_mode")); //when set, if loaded properly, will override argument count.
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type,Singleton"),"set_call_mode","get_call_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),"set_base_type","get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_script",PROPERTY_HINT_FILE,script_ext_hint),"set_base_script","get_base_script");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/singleton"),"set_singleton","get_singleton");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/basic_type",PROPERTY_HINT_ENUM,bt),"set_basic_type","get_basic_type");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"function/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),"set_base_path","get_base_path");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"function/argument_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_argument_cache","_get_argument_cache");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/function"),"set_function","get_function"); //when set, if loaded properly, will override argument count.
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"function/use_default_args"),"set_use_default_args","get_use_default_args");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"function/validate"),"set_validate","get_validate");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"rpc/call_mode",PROPERTY_HINT_ENUM,"Disabled,Reliable,Unreliable,ReliableToID,UnreliableToID"),"set_rpc_call_mode","get_rpc_call_mode"); //when set, if loaded properly, will override argument count.
 
 	BIND_CONSTANT( CALL_MODE_SELF );
 	BIND_CONSTANT( CALL_MODE_NODE_PATH);
@@ -1507,14 +1507,14 @@ void VisualScriptPropertySet::_bind_methods() {
 		script_ext_hint+="*."+E->get();
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/set_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type"),_SCS("set_call_mode"),_SCS("get_call_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),_SCS("set_base_script"),_SCS("get_base_script"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/type_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_type_cache"),_SCS("_get_type_cache"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/basic_type",PROPERTY_HINT_ENUM,bt),_SCS("set_basic_type"),_SCS("get_basic_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/event_type",PROPERTY_HINT_ENUM,et),_SCS("set_event_type"),_SCS("get_event_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"property/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/property"),_SCS("set_property"),_SCS("get_property"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/set_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type"),"set_call_mode","get_call_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),"set_base_type","get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),"set_base_script","get_base_script");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/type_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_type_cache","_get_type_cache");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/basic_type",PROPERTY_HINT_ENUM,bt),"set_basic_type","get_basic_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/event_type",PROPERTY_HINT_ENUM,et),"set_event_type","get_event_type");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"property/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),"set_base_path","get_base_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/property"),"set_property","get_property");
 
 	BIND_CONSTANT( CALL_MODE_SELF );
 	BIND_CONSTANT( CALL_MODE_NODE_PATH);
@@ -2170,14 +2170,14 @@ void VisualScriptPropertyGet::_bind_methods() {
 		script_ext_hint+="."+E->get();
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/set_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type"),_SCS("set_call_mode"),_SCS("get_call_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),_SCS("set_base_script"),_SCS("get_base_script"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/type_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_type_cache"),_SCS("_get_type_cache"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/basic_type",PROPERTY_HINT_ENUM,bt),_SCS("set_basic_type"),_SCS("get_basic_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/event_type",PROPERTY_HINT_ENUM,et),_SCS("set_event_type"),_SCS("get_event_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"property/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/property"),_SCS("set_property"),_SCS("get_property"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/set_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance,Basic Type"),"set_call_mode","get_call_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),"set_base_type","get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),"set_base_script","get_base_script");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/type_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_type_cache","_get_type_cache");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/basic_type",PROPERTY_HINT_ENUM,bt),"set_basic_type","get_basic_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"property/event_type",PROPERTY_HINT_ENUM,et),"set_event_type","get_event_type");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"property/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),"set_base_path","get_base_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/property"),"set_property","get_property");
 
 	BIND_CONSTANT( CALL_MODE_SELF );
 	BIND_CONSTANT( CALL_MODE_NODE_PATH);
@@ -2424,7 +2424,7 @@ void VisualScriptEmitSignal::_bind_methods() {
 	ClassDB::bind_method(_MD("get_signal"),&VisualScriptEmitSignal::get_signal);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/signal"),_SCS("set_signal"),_SCS("get_signal"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/signal"),"set_signal","get_signal");
 
 
 }

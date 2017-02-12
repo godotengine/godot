@@ -533,13 +533,13 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("button_up") );
 	ADD_SIGNAL( MethodInfo("button_down") );
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "action_mode",PROPERTY_HINT_ENUM,"Button Press,Button Release"), _SCS("set_action_mode"), _SCS("get_action_mode"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT,"enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), _SCS("set_enabled_focus_mode"), _SCS("get_enabled_focus_mode") );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shortcut",PROPERTY_HINT_RESOURCE_TYPE,"ShortCut"), _SCS("set_shortcut"), _SCS("get_shortcut"));
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "group",PROPERTY_HINT_RESOURCE_TYPE,"ButtonGroup"), _SCS("set_button_group"), _SCS("get_button_group"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "is_pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "action_mode",PROPERTY_HINT_ENUM,"Button Press,Button Release"), "set_action_mode", "get_action_mode");
+	ADD_PROPERTY( PropertyInfo( Variant::INT,"enabled_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All" ), "set_enabled_focus_mode", "get_enabled_focus_mode") ;
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shortcut",PROPERTY_HINT_RESOURCE_TYPE,"ShortCut"), "set_shortcut", "get_shortcut");
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "group",PROPERTY_HINT_RESOURCE_TYPE,"ButtonGroup"), "set_button_group", "get_button_group");
 
 
 	BIND_CONSTANT( DRAW_NORMAL );

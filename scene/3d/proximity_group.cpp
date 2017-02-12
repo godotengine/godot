@@ -178,7 +178,7 @@ void ProximityGroup::_bind_methods() {
 	ClassDB::bind_method(_MD("set_grid_radius","radius"), &ProximityGroup::set_grid_radius);
 	ClassDB::bind_method(_MD("get_grid_radius"), &ProximityGroup::get_grid_radius);
 
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "grid_radius"), _SCS("set_grid_radius"), _SCS("get_grid_radius"));
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "grid_radius"), "set_grid_radius", "get_grid_radius");
 
 	ADD_SIGNAL( MethodInfo("broadcast", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::ARRAY, "parameters")) );
 };

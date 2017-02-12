@@ -113,7 +113,7 @@ void VisibilityNotifier::_bind_methods(){
 	ClassDB::bind_method(_MD("get_aabb"),&VisibilityNotifier::get_aabb);
 	ClassDB::bind_method(_MD("is_on_screen"),&VisibilityNotifier::is_on_screen);
 
-	ADD_PROPERTY( PropertyInfo(Variant::RECT3,"aabb"),_SCS("set_aabb"),_SCS("get_aabb"));
+	ADD_PROPERTY( PropertyInfo(Variant::RECT3,"aabb"),"set_aabb","get_aabb");
 
 	ADD_SIGNAL( MethodInfo("camera_entered",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
 	ADD_SIGNAL( MethodInfo("camera_exited",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera")) );
@@ -272,8 +272,8 @@ void VisibilityEnabler::_bind_methods(){
 	ClassDB::bind_method(_MD("is_enabler_enabled","enabler"),&VisibilityEnabler::is_enabler_enabled);
 	ClassDB::bind_method(_MD("_node_removed"),&VisibilityEnabler::_node_removed);
 
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_animations"),"set_enabler","is_enabler_enabled", ENABLER_PAUSE_ANIMATIONS );
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"freeze_bodies"),"set_enabler","is_enabler_enabled", ENABLER_FREEZE_BODIES);
 
 	BIND_CONSTANT( ENABLER_FREEZE_BODIES );
 	BIND_CONSTANT( ENABLER_PAUSE_ANIMATIONS );

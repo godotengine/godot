@@ -122,9 +122,9 @@ void AudioEffectStereoEnhance::_bind_methods() {
 	ClassDB::bind_method(_MD("set_surround","amount"),&AudioEffectStereoEnhance::set_surround);
 	ClassDB::bind_method(_MD("get_surround"),&AudioEffectStereoEnhance::get_surround);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"pan_pullout",PROPERTY_HINT_RANGE,"0,4,0.01"),_SCS("set_pan_pullout"),_SCS("get_pan_pullout"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"time_pullout_ms",PROPERTY_HINT_RANGE,"0,50,0.01"),_SCS("set_time_pullout"),_SCS("get_time_pullout"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"surround",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_surround"),_SCS("get_surround"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"pan_pullout",PROPERTY_HINT_RANGE,"0,4,0.01"),"set_pan_pullout","get_pan_pullout");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"time_pullout_ms",PROPERTY_HINT_RANGE,"0,50,0.01"),"set_time_pullout","get_time_pullout");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"surround",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_surround","get_surround");
 }
 
 AudioEffectStereoEnhance::AudioEffectStereoEnhance()

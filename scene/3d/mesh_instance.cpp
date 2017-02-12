@@ -305,8 +305,8 @@ void MeshInstance::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(_MD("_mesh_changed"),&MeshInstance::_mesh_changed);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
-	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), "set_mesh", "get_mesh");
+	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "skeleton"), "set_skeleton_path", "get_skeleton_path");
 }
 
 MeshInstance::MeshInstance()

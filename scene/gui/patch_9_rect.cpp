@@ -79,15 +79,15 @@ void NinePatchRect::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
-	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "draw_center"), _SCS("set_draw_center"),_SCS("get_draw_center") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture","get_texture") ;
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "draw_center"), "set_draw_center","get_draw_center") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), "set_region_rect","get_region_rect");
 
 	ADD_GROUP("Patch Margin","patch_margin_");
-	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_left",PROPERTY_HINT_RANGE,"0,16384,1"), _SCS("set_patch_margin"),_SCS("get_patch_margin"),MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_top",PROPERTY_HINT_RANGE,"0,16384,1"), _SCS("set_patch_margin"),_SCS("get_patch_margin"),MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_right",PROPERTY_HINT_RANGE,"0,16384,1"), _SCS("set_patch_margin"),_SCS("get_patch_margin"),MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_bottom",PROPERTY_HINT_RANGE,"0,16384,1"), _SCS("set_patch_margin"),_SCS("get_patch_margin"),MARGIN_BOTTOM );
+	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_left",PROPERTY_HINT_RANGE,"0,16384,1"), "set_patch_margin","get_patch_margin",MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_top",PROPERTY_HINT_RANGE,"0,16384,1"), "set_patch_margin","get_patch_margin",MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_right",PROPERTY_HINT_RANGE,"0,16384,1"), "set_patch_margin","get_patch_margin",MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo( Variant::INT, "patch_margin_bottom",PROPERTY_HINT_RANGE,"0,16384,1"), "set_patch_margin","get_patch_margin",MARGIN_BOTTOM );
 
 }
 

@@ -82,7 +82,7 @@ void ConvexPolygonShape::_bind_methods() {
 	ClassDB::bind_method(_MD("set_points","points"),&ConvexPolygonShape::set_points);
 	ClassDB::bind_method(_MD("get_points"),&ConvexPolygonShape::get_points);
 
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"points"), _SCS("set_points"), _SCS("get_points") );
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"points"), "set_points", "get_points") ;
 
 }
 

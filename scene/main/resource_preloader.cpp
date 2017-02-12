@@ -174,7 +174,7 @@ void ResourcePreloader::_bind_methods() {
 	ClassDB::bind_method(_MD("get_resource_list"),&ResourcePreloader::_get_resource_list);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"resources",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_resources"), _SCS("_get_resources"));
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"resources",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_resources", "_get_resources");
 
 }
 

@@ -737,10 +737,10 @@ void FileDialog::_bind_methods() {
 	BIND_CONSTANT( ACCESS_USERDATA );
 	BIND_CONSTANT( ACCESS_FILESYSTEM );
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"),_SCS("set_mode"),_SCS("get_mode") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"),_SCS("set_access"),_SCS("get_access") );
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"),_SCS("set_filters"),_SCS("get_filters") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "show_hidden_files"),_SCS("set_show_hidden_files"),_SCS("is_showing_hidden_files") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"),"set_mode","get_mode") ;
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"),"set_access","get_access") ;
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"),"set_filters","get_filters") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "show_hidden_files"),"set_show_hidden_files","is_showing_hidden_files") ;
 
 }
 

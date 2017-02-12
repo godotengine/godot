@@ -1954,9 +1954,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
 
 	ADD_GROUP("BBCode","bbcode_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode_enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode_text",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),_SCS("set_visible_characters"),_SCS("get_visible_characters"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode_enabled"),"set_use_bbcode","is_using_bbcode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode_text",PROPERTY_HINT_MULTILINE_TEXT),"set_bbcode","get_bbcode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),"set_visible_characters","get_visible_characters");
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));
 

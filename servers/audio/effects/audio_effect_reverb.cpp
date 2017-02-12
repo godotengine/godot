@@ -158,15 +158,15 @@ void AudioEffectReverb::_bind_methods() {
 
 
 	ADD_GROUP("Predelay","predelay_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_msec",PROPERTY_HINT_RANGE,"20,500,1"),_SCS("set_predelay_msec"),_SCS("get_predelay_msec"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_feedback",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_predelay_msec"),_SCS("get_predelay_msec"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_msec",PROPERTY_HINT_RANGE,"20,500,1"),"set_predelay_msec","get_predelay_msec");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_feedback",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_predelay_msec","get_predelay_msec");
 	ADD_GROUP("","");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"room_size",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_room_size"),_SCS("get_room_size"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"damping",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_damping"),_SCS("get_damping"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"spread",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_spread"),_SCS("get_spread"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"hipass",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_hpf"),_SCS("get_hpf"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_dry"),_SCS("get_dry"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"wet",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_wet"),_SCS("get_wet"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"room_size",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_room_size","get_room_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"damping",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_damping","get_damping");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"spread",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_spread","get_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"hipass",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_hpf","get_hpf");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_dry","get_dry");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"wet",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_wet","get_wet");
 }
 
 AudioEffectReverb::AudioEffectReverb() {

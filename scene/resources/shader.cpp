@@ -129,7 +129,7 @@ void Shader::_bind_methods() {
 	//ClassDB::bind_method(_MD("get_param_list"),&Shader::get_fragment_code);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING, "code",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("set_code"), _SCS("get_code") );
+	ADD_PROPERTY( PropertyInfo(Variant::STRING, "code",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "set_code", "get_code") ;
 
 	BIND_CONSTANT( MODE_SPATIAL);
 	BIND_CONSTANT( MODE_CANVAS_ITEM );

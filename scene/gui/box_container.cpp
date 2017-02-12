@@ -310,7 +310,7 @@ void BoxContainer::_bind_methods() {
 	BIND_CONSTANT( ALIGN_CENTER );
 	BIND_CONSTANT( ALIGN_END );
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), _SCS("set_alignment"),_SCS("get_alignment") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), "set_alignment","get_alignment") ;
 
 }
 

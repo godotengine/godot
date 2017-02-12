@@ -422,10 +422,10 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(_MD("shrink_x2_and_keep_size"),&ImageTexture::shrink_x2_and_keep_size);
 
 	ClassDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
-	ClassDB::set_method_flags(get_class_static(),_SCS("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ClassDB::set_method_flags(get_class_static(),_SCS("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ClassDB::set_method_flags(get_class_static(),_SCS("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ClassDB::set_method_flags(get_class_static(),_SCS("shrink_x2_and_keep_size"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("shrink_x2_and_keep_size"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
 
 
@@ -774,7 +774,7 @@ void StreamTexture::_bind_methods() {
 	ClassDB::bind_method(_MD("load","path"),&StreamTexture::load);
 	ClassDB::bind_method(_MD("get_load_path"),&StreamTexture::get_load_path);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"load_path",PROPERTY_HINT_FILE,"*.stex"),_SCS("load"),_SCS("get_load_path"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"load_path",PROPERTY_HINT_FILE,"*.stex"),"load","get_load_path");
 }
 
 
@@ -932,9 +932,9 @@ void AtlasTexture::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("atlas_changed"));
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_atlas"),_SCS("get_atlas") );
-	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region"), _SCS("set_region"),_SCS("get_region") );
-	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "margin"), _SCS("set_margin"),_SCS("get_margin") );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "atlas", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_atlas","get_atlas") ;
+	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region"), "set_region","get_region") ;
+	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "margin"), "set_margin","get_margin") ;
 
 }
 
@@ -1189,7 +1189,7 @@ void LargeTexture::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_data","data"),&LargeTexture::_set_data);
 	ClassDB::bind_method(_MD("_get_data"),&LargeTexture::_get_data);
 
-	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"),_SCS("_get_data") );
+	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_data","_get_data") ;
 
 }
 

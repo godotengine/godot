@@ -144,7 +144,7 @@ void VisualInstance::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_transformed_aabb"), &VisualInstance::get_transformed_aabb);
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "layers",PROPERTY_HINT_LAYERS_3D_RENDER), _SCS("set_layer_mask"), _SCS("get_layer_mask"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "layers",PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 
 
 }
@@ -353,20 +353,20 @@ void GeometryInstance::_bind_methods() {
 
 
 	ADD_GROUP("Geometry","");
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material_override",PROPERTY_HINT_RESOURCE_TYPE,"Material"), _SCS("set_material_override"), _SCS("get_material_override"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), _SCS("set_cast_shadows_setting"), _SCS("get_cast_shadows_setting"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "extra_cull_margin",PROPERTY_HINT_RANGE,"0,16384,0"), _SCS("set_extra_cull_margin"), _SCS("get_extra_cull_margin"));
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_as_billboard"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_as_y_billboard"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD_FIX_Y);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_depth_scale"), _SCS("set_flag"), _SCS("get_flag"),FLAG_DEPH_SCALE);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "visible_in_all_rooms"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE_IN_ALL_ROOMS);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_in_baked_light"), _SCS("set_flag"), _SCS("get_flag"),FLAG_USE_BAKED_LIGHT);
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material_override",PROPERTY_HINT_RESOURCE_TYPE,"Material"), "set_material_override", "get_material_override");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "extra_cull_margin",PROPERTY_HINT_RANGE,"0,16384,0"), "set_extra_cull_margin", "get_extra_cull_margin");
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_as_billboard"), "set_flag", "get_flag",FLAG_BILLBOARD);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_as_y_billboard"), "set_flag", "get_flag",FLAG_BILLBOARD_FIX_Y);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_depth_scale"), "set_flag", "get_flag",FLAG_DEPH_SCALE);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "visible_in_all_rooms"), "set_flag", "get_flag",FLAG_VISIBLE_IN_ALL_ROOMS);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "use_in_baked_light"), "set_flag", "get_flag",FLAG_USE_BAKED_LIGHT);
 
 	ADD_GROUP("LOD","lod_");
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_min_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_distance"), _SCS("get_lod_min_distance"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_min_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_min_hysteresis"), _SCS("get_lod_min_hysteresis"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_distance"), _SCS("get_lod_max_distance"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_lod_max_hysteresis"), _SCS("get_lod_max_hysteresis"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_min_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), "set_lod_min_distance", "get_lod_min_distance");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_min_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), "set_lod_min_hysteresis", "get_lod_min_hysteresis");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_distance",PROPERTY_HINT_RANGE,"0,32768,0.01"), "set_lod_max_distance", "get_lod_max_distance");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lod_max_hysteresis",PROPERTY_HINT_RANGE,"0,32768,0.01"), "set_lod_max_hysteresis", "get_lod_max_hysteresis");
 
 	//ADD_SIGNAL( MethodInfo("visibility_changed"));
 
