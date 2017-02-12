@@ -41,18 +41,35 @@ bool YSort::is_sort_enabled() const {
 	return sort_enabled;
 }
 
+void YSort::set_sort_recursion_depth(int depth) {
+
+	if(depth >= 1 && depth <= 8)
+		sort_recursion_depth=depth;
+	VS::get_singleton()->canvas_item_set_sort_children_by_y_depth(get_canvas_item(),sort_recursion_depth);
+}
+
+int YSort::get_sort_recursion_depth() const {
+
+	return sort_recursion_depth;
+}
+
 void YSort::_bind_methods() {
 
 	ClassDB::bind_method(_MD("set_sort_enabled","enabled"),&YSort::set_sort_enabled);
 	ClassDB::bind_method(_MD("is_sort_enabled"),&YSort::is_sort_enabled);
+	ClassDB::bind_method(_MD("set_sort_recursion_depth","enabled"),&YSort::set_sort_recursion_depth);
+	ClassDB::bind_method(_MD("get_sort_recursion_depth"),&YSort::get_sort_recursion_depth);
 
 	ADD_GROUP("Sort","sort_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"sort_enabled"),_SCS("set_sort_enabled"),_SCS("is_sort_enabled"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"sort_recursion_depth"),_SCS("set_sort_recursion_depth"),_SCS("get_sort_recursion_depth"));
 }
 
 
 YSort::YSort() {
 
 	sort_enabled=true;
+	sort_recursion_depth=1;
 	VS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(),true);
+	VS::get_singleton()->canvas_item_set_sort_children_by_y_depth(get_canvas_item(),sort_recursion_depth);
 }

@@ -22,6 +22,11 @@ public:
 		int index;
 		bool children_order_dirty;
 
+		int zidx;
+		bool draw;
+		short int ysort_depth;
+		Vector2 ysort_global_position;
+		bool ysort_deepest;
 
 		Vector<Item*> child_items;
 
@@ -36,18 +41,22 @@ public:
 			use_parent_material=false;
 			z_relative=true;
 			index=0;
+			zidx = 0;
+			draw = 0;
+			ysort_depth=1;
+			ysort_global_position = Vector2(0,0);
+			ysort_deepest = false;
 		}
 	};
-
 
 	struct ItemPtrSort {
 
 		_FORCE_INLINE_ bool operator()(const Item* p_left,const Item* p_right) const {
 
-			if(Math::abs(p_left->xform.elements[2].y - p_right->xform.elements[2].y) < CMP_EPSILON )
-				return p_left->xform.elements[2].x < p_right->xform.elements[2].x;
+			if(Math::abs(p_left->ysort_global_position.y - p_right->ysort_global_position.y) < CMP_EPSILON )
+				return p_left->ysort_global_position.x < p_right->ysort_global_position.x;
 			else
-				return p_left->xform.elements[2].y < p_right->xform.elements[2].y;
+				return p_left->ysort_global_position.y < p_right->ysort_global_position.y;
 		}
 	};
 
@@ -115,7 +124,10 @@ public:
 private:
 
 	void _render_canvas_item_tree(Item *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
-	void _render_canvas_item(Item *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
+	void _render_canvas_item(Item *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip,Item *p_material_owner);
+	void _apply_parameters(Item *p_canvas_item, const Transform2D& p_transform, const Transform2D& p_global_transform_inverse, const Rect2& p_clip_rect, const Color &p_modulate, int p_z, Item *p_canvas_clip, Item *p_material_owner, int ysort_depth = 0);
+	void _create_render_list(Item* item, RasterizerCanvas::Item **z_list,RasterizerCanvas::Item **z_last_list, int ysort_depth = 0, Vector<Item*>* ysort_list = NULL);
+	void _add_to_z_list(Item* p_canvas_item, int zidx, RasterizerCanvas::Item **z_list,RasterizerCanvas::Item **z_last_list);
 	void _light_mask_canvas_items(int p_z,RasterizerCanvas::Item *p_canvas_item,RasterizerCanvas::Light *p_masked_lights);
 public:
 
@@ -156,6 +168,7 @@ public:
 	void canvas_item_add_set_transform(RID p_item,const Transform2D& p_transform);
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
+	void canvas_item_set_sort_children_by_y_depth(RID p_item, int depth);
 	void canvas_item_set_z(RID p_item, int p_z);
 	void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
 	void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable,const Rect2& p_rect);
