@@ -98,8 +98,6 @@ void SpinBox::_input_event(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed) {
 		const InputEventMouseButton &mb=p_event.mouse_button;
 
-		if (mb.doubleclick)
-			return; //ignore doubleclick
 
 		bool up = mb.y < (get_size().height/2);
 
