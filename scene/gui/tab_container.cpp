@@ -761,6 +761,7 @@ TabContainer::TabContainer() {
 	buttons_visible_cache=false;
 	tabs_ofs_cache=0;
 	current=0;
+	previous=0;
 	mouse_x_cache=0;
 	align=ALIGN_CENTER;
 	tabs_visible=true;
