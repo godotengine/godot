@@ -60,7 +60,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	Semaphore *step_sem;
 	int step_pending;
-	void thread_step(float p_delta);
+	void thread_step(real_t p_delta);
 	void thread_flush();
 
 	void thread_exit();
@@ -220,8 +220,8 @@ public:
 	FUNC1RC(uint32_t,body_get_collision_mask,RID);
 
 
-	FUNC3(body_set_param,RID,BodyParameter,float);
-	FUNC2RC(float,body_get_param,RID,BodyParameter);
+	FUNC3(body_set_param,RID,BodyParameter,real_t);
+	FUNC2RC(real_t,body_get_param,RID,BodyParameter);
 
 
 	FUNC3(body_set_state,RID,BodyState,const Variant&);
@@ -230,8 +230,8 @@ public:
 	FUNC2(body_set_applied_force,RID,const Vector2&);
 	FUNC1RC(Vector2,body_get_applied_force,RID);
 
-	FUNC2(body_set_applied_torque,RID,float);
-	FUNC1RC(float,body_get_applied_torque,RID);
+	FUNC2(body_set_applied_torque,RID,real_t);
+	FUNC1RC(real_t,body_get_applied_torque,RID);
 
 	FUNC3(body_add_force,RID,const Vector2&,const Vector2&);
 	FUNC3(body_apply_impulse,RID,const Vector2&,const Vector2&);
@@ -247,12 +247,12 @@ public:
 	FUNC2(body_set_one_way_collision_direction,RID,const Vector2&);
 	FUNC1RC(Vector2,body_get_one_way_collision_direction,RID);
 
-	FUNC2(body_set_one_way_collision_max_depth,RID,float);
-	FUNC1RC(float,body_get_one_way_collision_max_depth,RID);
+	FUNC2(body_set_one_way_collision_max_depth,RID,real_t);
+	FUNC1RC(real_t,body_get_one_way_collision_max_depth,RID);
 
 
-	FUNC2(body_set_contacts_reported_depth_treshold,RID,float);
-	FUNC1RC(float,body_get_contacts_reported_depth_treshold,RID);
+	FUNC2(body_set_contacts_reported_depth_treshold,RID,real_t);
+	FUNC1RC(real_t,body_get_contacts_reported_depth_treshold,RID);
 
 	FUNC2(body_set_omit_force_integration,RID,bool);
 	FUNC1RC(bool,body_is_omitting_force_integration,RID);
@@ -266,7 +266,7 @@ public:
 
 	FUNC2(body_set_pickable,RID,bool);
 
-	bool body_test_motion(RID p_body,const Transform2D& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
+	bool body_test_motion(RID p_body,const Transform2D& p_from,const Vector2& p_motion,real_t p_margin=0.001,MotionResult *r_result=NULL) {
 
 		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
 		return physics_2d_server->body_test_motion(p_body,p_from,p_motion,p_margin,r_result);
@@ -303,7 +303,7 @@ public:
 	FUNC1(set_active,bool);
 
 	virtual void init();
-	virtual void step(float p_step);
+	virtual void step(real_t p_step);
 	virtual void sync();
 	virtual void end_sync();
 	virtual void flush_queries();

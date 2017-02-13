@@ -67,8 +67,8 @@ public:
 	_FORCE_INLINE_ int get_priority() const { return priority; }
 
 
-	virtual bool setup(float p_step)=0;
-	virtual void solve(float p_step)=0;
+	virtual bool setup(real_t p_step)=0;
+	virtual void solve(real_t p_step)=0;
 
 	virtual ~ConstraintSW() {}
 };

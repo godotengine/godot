@@ -727,7 +727,7 @@ uint32_t PhysicsServerSW::body_get_user_flags(RID p_body, uint32_t p_flags) cons
 	return 0;
 };
 
-void PhysicsServerSW::body_set_param(RID p_body, BodyParameter p_param, float p_value) {
+void PhysicsServerSW::body_set_param(RID p_body, BodyParameter p_param, real_t p_value) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -735,7 +735,7 @@ void PhysicsServerSW::body_set_param(RID p_body, BodyParameter p_param, float p_
 	body->set_param(p_param,p_value);
 };
 
-float PhysicsServerSW::body_get_param(RID p_body, BodyParameter p_param) const {
+real_t PhysicsServerSW::body_get_param(RID p_body, BodyParameter p_param) const {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -879,14 +879,14 @@ void PhysicsServerSW::body_get_collision_exceptions(RID p_body, List<RID> *p_exc
 
 };
 
-void PhysicsServerSW::body_set_contacts_reported_depth_treshold(RID p_body, float p_treshold) {
+void PhysicsServerSW::body_set_contacts_reported_depth_treshold(RID p_body, real_t p_treshold) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 };
 
-float PhysicsServerSW::body_get_contacts_reported_depth_treshold(RID p_body) const {
+real_t PhysicsServerSW::body_get_contacts_reported_depth_treshold(RID p_body) const {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -971,7 +971,7 @@ RID PhysicsServerSW::joint_create_pin(RID p_body_A,const Vector3& p_local_A,RID 
 	return rid;
 }
 
-void PhysicsServerSW::pin_joint_set_param(RID p_joint,PinJointParam p_param, float p_value){
+void PhysicsServerSW::pin_joint_set_param(RID p_joint,PinJointParam p_param, real_t p_value){
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND(!joint);
@@ -980,7 +980,7 @@ void PhysicsServerSW::pin_joint_set_param(RID p_joint,PinJointParam p_param, flo
 	pin_joint->set_param(p_param,p_value);
 
 }
-float PhysicsServerSW::pin_joint_get_param(RID p_joint,PinJointParam p_param) const{
+real_t PhysicsServerSW::pin_joint_get_param(RID p_joint,PinJointParam p_param) const{
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND_V(!joint,0);
@@ -1074,7 +1074,7 @@ RID PhysicsServerSW::joint_create_hinge_simple(RID p_body_A,const Vector3& p_piv
 
 }
 
-void PhysicsServerSW::hinge_joint_set_param(RID p_joint,HingeJointParam p_param, float p_value){
+void PhysicsServerSW::hinge_joint_set_param(RID p_joint,HingeJointParam p_param, real_t p_value){
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND(!joint);
@@ -1083,7 +1083,7 @@ void PhysicsServerSW::hinge_joint_set_param(RID p_joint,HingeJointParam p_param,
 	hinge_joint->set_param(p_param,p_value);
 
 }
-float PhysicsServerSW::hinge_joint_get_param(RID p_joint,HingeJointParam p_param) const{
+real_t PhysicsServerSW::hinge_joint_get_param(RID p_joint,HingeJointParam p_param) const{
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND_V(!joint,0);
@@ -1154,7 +1154,7 @@ RID PhysicsServerSW::joint_create_slider(RID p_body_A,const Transform& p_local_f
 	return rid;
 }
 
-void PhysicsServerSW::slider_joint_set_param(RID p_joint,SliderJointParam p_param, float p_value){
+void PhysicsServerSW::slider_joint_set_param(RID p_joint,SliderJointParam p_param, real_t p_value){
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND(!joint);
@@ -1162,7 +1162,7 @@ void PhysicsServerSW::slider_joint_set_param(RID p_joint,SliderJointParam p_para
 	SliderJointSW *slider_joint = static_cast<SliderJointSW*>(joint);
 	slider_joint->set_param(p_param,p_value);
 }
-float PhysicsServerSW::slider_joint_get_param(RID p_joint,SliderJointParam p_param) const{
+real_t PhysicsServerSW::slider_joint_get_param(RID p_joint,SliderJointParam p_param) const{
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND_V(!joint,0);
@@ -1193,7 +1193,7 @@ RID PhysicsServerSW::joint_create_cone_twist(RID p_body_A,const Transform& p_loc
 	return rid;
 }
 
-void PhysicsServerSW::cone_twist_joint_set_param(RID p_joint,ConeTwistJointParam p_param, float p_value) {
+void PhysicsServerSW::cone_twist_joint_set_param(RID p_joint,ConeTwistJointParam p_param, real_t p_value) {
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND(!joint);
@@ -1201,7 +1201,7 @@ void PhysicsServerSW::cone_twist_joint_set_param(RID p_joint,ConeTwistJointParam
 	ConeTwistJointSW *cone_twist_joint = static_cast<ConeTwistJointSW*>(joint);
 	cone_twist_joint->set_param(p_param,p_value);
 }
-float PhysicsServerSW::cone_twist_joint_get_param(RID p_joint,ConeTwistJointParam p_param) const {
+real_t PhysicsServerSW::cone_twist_joint_get_param(RID p_joint,ConeTwistJointParam p_param) const {
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND_V(!joint,0);
@@ -1232,7 +1232,7 @@ RID PhysicsServerSW::joint_create_generic_6dof(RID p_body_A,const Transform& p_l
 	return rid;
 }
 
-void PhysicsServerSW::generic_6dof_joint_set_param(RID p_joint,Vector3::Axis p_axis,G6DOFJointAxisParam p_param, float p_value){
+void PhysicsServerSW::generic_6dof_joint_set_param(RID p_joint,Vector3::Axis p_axis,G6DOFJointAxisParam p_param, real_t p_value){
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND(!joint);
@@ -1240,7 +1240,7 @@ void PhysicsServerSW::generic_6dof_joint_set_param(RID p_joint,Vector3::Axis p_a
 	Generic6DOFJointSW *generic_6dof_joint = static_cast<Generic6DOFJointSW*>(joint);
 	generic_6dof_joint->set_param(p_axis,p_param,p_value);
 }
-float PhysicsServerSW::generic_6dof_joint_get_param(RID p_joint,Vector3::Axis p_axis,G6DOFJointAxisParam p_param){
+real_t PhysicsServerSW::generic_6dof_joint_get_param(RID p_joint,Vector3::Axis p_axis,G6DOFJointAxisParam p_param){
 
 	JointSW *joint = joint_owner.get(p_joint);
 	ERR_FAIL_COND_V(!joint,0);
@@ -1488,7 +1488,7 @@ void PhysicsServerSW::init() {
 };
 
 
-void PhysicsServerSW::step(float p_step) {
+void PhysicsServerSW::step(real_t p_step) {
 
 
 	if (!active)
@@ -1611,11 +1611,11 @@ void PhysicsServerSW::_shape_col_cbk(const Vector3& p_point_A,const Vector3& p_p
 
 	if (cbk->amount == cbk->max) {
 		//find least deep
-		float min_depth=1e20;
+		real_t min_depth=1e20;
 		int min_depth_idx=0;
 		for(int i=0;i<cbk->amount;i++) {
 
-			float d = cbk->ptr[i*2+0].distance_squared_to(cbk->ptr[i*2+1]);
+			real_t d = cbk->ptr[i*2+0].distance_squared_to(cbk->ptr[i*2+1]);
 			if (d<min_depth) {
 				min_depth=d;
 				min_depth_idx=i;
@@ -1623,7 +1623,7 @@ void PhysicsServerSW::_shape_col_cbk(const Vector3& p_point_A,const Vector3& p_p
 
 		}
 
-		float d = p_point_A.distance_squared_to(p_point_B);
+		real_t d = p_point_A.distance_squared_to(p_point_B);
 		if (d<min_depth)
 			return;
 		cbk->ptr[min_depth_idx*2+0]=p_point_A;

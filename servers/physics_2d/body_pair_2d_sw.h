@@ -66,7 +66,7 @@ class BodyPair2DSW : public Constraint2DSW {
 		bool active;
 		Vector2 rA,rB;
 		bool reused;
-		float bounce;
+		real_t bounce;
 
 	};
 
@@ -80,15 +80,15 @@ class BodyPair2DSW : public Constraint2DSW {
 	int cc;
 
 
-	bool _test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Transform2D& p_xform_A,Body2DSW *p_B, int p_shape_B,const Transform2D& p_xform_B,bool p_swap_result=false);
+	bool _test_ccd(real_t p_step,Body2DSW *p_A, int p_shape_A,const Transform2D& p_xform_A,Body2DSW *p_B, int p_shape_B,const Transform2D& p_xform_B,bool p_swap_result=false);
 	void _validate_contacts();
 	static void _add_contact(const Vector2& p_point_A,const Vector2& p_point_B,void *p_self);
 	_FORCE_INLINE_ void _contact_added_callback(const Vector2& p_point_A,const Vector2& p_point_B);
 
 public:
 
-	bool setup(float p_step);
-	void solve(float p_step);
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
 
 	BodyPair2DSW(Body2DSW *p_A, int p_shape_A,Body2DSW *p_B, int p_shape_B);
 	~BodyPair2DSW();

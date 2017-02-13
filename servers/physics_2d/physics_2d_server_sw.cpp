@@ -158,11 +158,11 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2& p_point_A,const Vector2& p
 
 	if (cbk->amount == cbk->max) {
 		//find least deep
-		float min_depth=1e20;
+		real_t min_depth=1e20;
 		int min_depth_idx=0;
 		for(int i=0;i<cbk->amount;i++) {
 
-			float d = cbk->ptr[i*2+0].distance_squared_to(cbk->ptr[i*2+1]);
+			real_t d = cbk->ptr[i*2+0].distance_squared_to(cbk->ptr[i*2+1]);
 			if (d<min_depth) {
 				min_depth=d;
 				min_depth_idx=i;
@@ -170,7 +170,7 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2& p_point_A,const Vector2& p
 
 		}
 
-		float d = p_point_A.distance_squared_to(p_point_B);
+		real_t d = p_point_A.distance_squared_to(p_point_B);
 		if (d<min_depth)
 			return;
 		cbk->ptr[min_depth_idx*2+0]=p_point_A;
@@ -785,7 +785,7 @@ uint32_t Physics2DServerSW::body_get_collision_mask(RID p_body) const {
 	return body->get_collision_mask();
 };
 
-void Physics2DServerSW::body_set_param(RID p_body, BodyParameter p_param, float p_value) {
+void Physics2DServerSW::body_set_param(RID p_body, BodyParameter p_param, real_t p_value) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -793,7 +793,7 @@ void Physics2DServerSW::body_set_param(RID p_body, BodyParameter p_param, float 
 	body->set_param(p_param,p_value);
 };
 
-float Physics2DServerSW::body_get_param(RID p_body, BodyParameter p_param) const {
+real_t Physics2DServerSW::body_get_param(RID p_body, BodyParameter p_param) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -837,7 +837,7 @@ Vector2 Physics2DServerSW::body_get_applied_force(RID p_body) const {
 	return body->get_applied_force();
 };
 
-void Physics2DServerSW::body_set_applied_torque(RID p_body, float p_torque) {
+void Physics2DServerSW::body_set_applied_torque(RID p_body, real_t p_torque) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -846,7 +846,7 @@ void Physics2DServerSW::body_set_applied_torque(RID p_body, float p_torque) {
 	body->wakeup();
 };
 
-float Physics2DServerSW::body_get_applied_torque(RID p_body) const {
+real_t Physics2DServerSW::body_get_applied_torque(RID p_body) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -915,14 +915,14 @@ void Physics2DServerSW::body_get_collision_exceptions(RID p_body, List<RID> *p_e
 
 };
 
-void Physics2DServerSW::body_set_contacts_reported_depth_treshold(RID p_body, float p_treshold) {
+void Physics2DServerSW::body_set_contacts_reported_depth_treshold(RID p_body, real_t p_treshold) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
 };
 
-float Physics2DServerSW::body_get_contacts_reported_depth_treshold(RID p_body) const {
+real_t Physics2DServerSW::body_get_contacts_reported_depth_treshold(RID p_body) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -973,7 +973,7 @@ Vector2 Physics2DServerSW::body_get_one_way_collision_direction(RID p_body) cons
 
 }
 
-void Physics2DServerSW::body_set_one_way_collision_max_depth(RID p_body,float p_max_depth) {
+void Physics2DServerSW::body_set_one_way_collision_max_depth(RID p_body,real_t p_max_depth) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -981,7 +981,7 @@ void Physics2DServerSW::body_set_one_way_collision_max_depth(RID p_body,float p_
 
 }
 
-float Physics2DServerSW::body_get_one_way_collision_max_depth(RID p_body) const {
+real_t Physics2DServerSW::body_get_one_way_collision_max_depth(RID p_body) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -1016,7 +1016,7 @@ void Physics2DServerSW::body_set_pickable(RID p_body,bool p_pickable) {
 
 }
 
-bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2& p_motion, float p_margin, MotionResult *r_result) {
+bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, const Vector2& p_motion, real_t p_margin, MotionResult *r_result) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,false);
@@ -1263,7 +1263,7 @@ void Physics2DServerSW::init() {
 };
 
 
-void Physics2DServerSW::step(float p_step) {
+void Physics2DServerSW::step(real_t p_step) {
 
 
 	if (!active)

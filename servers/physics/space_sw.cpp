@@ -138,7 +138,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 }
 
 
-int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transform& p_xform,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transform& p_xform,real_t p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 	if (p_result_max<=0)
 		return 0;
@@ -193,7 +193,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 }
 
 
-bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask,ShapeRestInfo *r_info) {
+bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,real_t p_margin,real_t &p_closest_safe,real_t &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask,ShapeRestInfo *r_info) {
 
 
 
@@ -211,8 +211,8 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,SpaceSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
-	float best_safe=1;
-	float best_unsafe=1;
+	real_t best_safe=1;
+	real_t best_unsafe=1;
 
 	Transform xform_inv = p_xform.affine_inverse();
 	MotionShapeSW mshape;
@@ -264,13 +264,13 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 
 
 		//just do kinematic solving
-		float low=0;
-		float hi=1;
+		real_t low=0;
+		real_t hi=1;
 		Vector3 mnormal=p_motion.normalized();
 
 		for(int i=0;i<8;i++) { //steps should be customizable..
 
-			float ofs = (low+hi)*0.5;
+			real_t ofs = (low+hi)*0.5;
 
 			Vector3 sep=mnormal; //important optimization for this to work fast enough
 
@@ -323,7 +323,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform&
 	return true;
 }
 
-bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_shape_xform,float p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask){
+bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform& p_shape_xform,real_t p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask){
 
 	if (p_result_max<=0)
 		return 0;
@@ -388,7 +388,7 @@ struct _RestCallbackData {
 	int best_shape;
 	Vector3 best_contact;
 	Vector3 best_normal;
-	float best_len;
+	real_t best_len;
 };
 
 static void _rest_cbk_result(const Vector3& p_point_A,const Vector3& p_point_B,void *p_userdata) {
@@ -397,7 +397,7 @@ static void _rest_cbk_result(const Vector3& p_point_A,const Vector3& p_point_B,v
 	_RestCallbackData *rd=(_RestCallbackData*)p_userdata;
 
 	Vector3 contact_rel = p_point_B - p_point_A;
-	float len = contact_rel.length();
+	real_t len = contact_rel.length();
 	if (len <= rd->best_len)
 		return;
 
@@ -408,7 +408,7 @@ static void _rest_cbk_result(const Vector3& p_point_A,const Vector3& p_point_B,v
 	rd->best_shape=rd->shape;
 
 }
-bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_xform,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform& p_shape_xform,real_t p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 	ShapeSW *shape = static_cast<PhysicsServerSW*>(PhysicsServer::get_singleton())->shape_owner.get(p_shape);

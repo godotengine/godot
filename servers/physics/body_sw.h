@@ -75,8 +75,8 @@ class BodySW : public CollisionObjectSW {
 	Vector3 applied_force;
 	Vector3 applied_torque;
 
-	float area_angular_damp;
-	float area_linear_damp;
+	real_t area_angular_damp;
+	real_t area_linear_damp;
 
 
 	SelfList<BodySW> active_list;
@@ -115,7 +115,7 @@ class BodySW : public CollisionObjectSW {
 
 		Vector3 local_pos;
 		Vector3 local_normal;
-		float depth;
+		real_t depth;
 		int local_shape;
 		Vector3 collider_pos;
 		int collider_shape;
@@ -174,7 +174,7 @@ public:
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
 	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }
-	_FORCE_INLINE_ void add_contact(const Vector3& p_local_pos,const Vector3& p_local_normal, float p_depth, int p_local_shape, const Vector3& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector3& p_collider_velocity_at_pos);
+	_FORCE_INLINE_ void add_contact(const Vector3& p_local_pos,const Vector3& p_local_normal, real_t p_depth, int p_local_shape, const Vector3& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector3& p_collider_velocity_at_pos);
 
 
 	_FORCE_INLINE_ void add_exception(const RID& p_exception) { exceptions.insert(p_exception);}
@@ -248,8 +248,8 @@ public:
 		set_active(true);
 	}
 
-	void set_param(PhysicsServer::BodyParameter p_param, float);
-	float get_param(PhysicsServer::BodyParameter p_param) const;
+	void set_param(PhysicsServer::BodyParameter p_param, real_t);
+	real_t get_param(PhysicsServer::BodyParameter p_param) const;
 
 	void set_mode(PhysicsServer::BodyMode p_mode);
 	PhysicsServer::BodyMode get_mode() const;
@@ -319,7 +319,7 @@ public:
 
 //add contact inline
 
-void BodySW::add_contact(const Vector3& p_local_pos,const Vector3& p_local_normal, float p_depth, int p_local_shape, const Vector3& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector3& p_collider_velocity_at_pos) {
+void BodySW::add_contact(const Vector3& p_local_pos,const Vector3& p_local_normal, real_t p_depth, int p_local_shape, const Vector3& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector3& p_collider_velocity_at_pos) {
 
 	int c_max=contacts.size();
 
@@ -335,7 +335,7 @@ void BodySW::add_contact(const Vector3& p_local_pos,const Vector3& p_local_norma
 		idx=contact_count++;
 	} else {
 
-		float least_depth=1e20;
+		real_t least_depth=1e20;
 		int least_deep=-1;
 		for(int i=0;i<c_max;i++) {
 
@@ -377,13 +377,13 @@ public:
 	real_t step;
 
 	virtual Vector3 get_total_gravity() const {  return body->gravity;  } // get gravity vector working on this body space/area
-	virtual float get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
-	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
+	virtual real_t get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
+	virtual real_t get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
 	virtual Vector3 get_center_of_mass() const { return body->get_center_of_mass(); }
 	virtual Basis get_principal_inertia_axes() const { return body->get_principal_inertia_axes(); }
 
-	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
+	virtual real_t get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual Vector3 get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space
 	virtual Basis get_inverse_inertia_tensor() const { return body->get_inv_inertia_tensor();   } // get density of this body space
 

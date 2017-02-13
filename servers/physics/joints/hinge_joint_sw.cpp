@@ -148,7 +148,7 @@ HingeJointSW::HingeJointSW(BodySW* rbA,BodySW* rbB, const Vector3& pivotInA,cons
 
 
 
-bool HingeJointSW::setup(float p_step) {
+bool HingeJointSW::setup(real_t p_step) {
 
 	m_appliedImpulse = real_t(0.);
 
@@ -262,7 +262,7 @@ bool HingeJointSW::setup(float p_step) {
 	return true;
 }
 
-void HingeJointSW::solve(float p_step) {
+void HingeJointSW::solve(real_t p_step) {
 
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);
 	Vector3 pivotBInW = B->get_transform().xform(m_rbBFrame.origin);
@@ -418,7 +418,7 @@ real_t HingeJointSW::get_hinge_angle() {
 }
 
 
-void HingeJointSW::set_param(PhysicsServer::HingeJointParam p_param, float p_value) {
+void HingeJointSW::set_param(PhysicsServer::HingeJointParam p_param, real_t p_value) {
 
 	switch (p_param) {
 
@@ -434,7 +434,7 @@ void HingeJointSW::set_param(PhysicsServer::HingeJointParam p_param, float p_val
 	}
 }
 
-float HingeJointSW::get_param(PhysicsServer::HingeJointParam p_param) const{
+real_t HingeJointSW::get_param(PhysicsServer::HingeJointParam p_param) const{
 
 	switch (p_param) {
 

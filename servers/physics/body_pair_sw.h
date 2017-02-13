@@ -82,14 +82,14 @@ class BodyPairSW : public ConstraintSW {
 	void contact_added_callback(const Vector3& p_point_A,const Vector3& p_point_B);
 
 	void validate_contacts();
-	bool _test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transform& p_xform_A,BodySW *p_B, int p_shape_B,const Transform& p_xform_B);
+	bool _test_ccd(real_t p_step,BodySW *p_A, int p_shape_A,const Transform& p_xform_A,BodySW *p_B, int p_shape_B,const Transform& p_xform_B);
 
 	SpaceSW *space;
 
 public:
 
-	bool setup(float p_step);
-	void solve(float p_step);
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
 
 	BodyPairSW(BodySW *p_A, int p_shape_A,BodySW *p_B, int p_shape_B);
 	~BodyPairSW();

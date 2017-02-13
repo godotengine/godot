@@ -35,8 +35,8 @@
 /*
 
 SHAPE_LINE, ///< plane:"plane"
-SHAPE_SEGMENT, ///< float:"length"
-SHAPE_CIRCLE, ///< float:"radius"
+SHAPE_SEGMENT, ///< real_t:"length"
+SHAPE_CIRCLE, ///< real_t:"radius"
 SHAPE_RECTANGLE, ///< vec3:"extents"
 SHAPE_CONVEX_POLYGON, ///< array of planes:"planes"
 SHAPE_CONCAVE_POLYGON, ///< Vector3 array:"triangles" , or Dictionary with "indices" (int array) and "triangles" (Vector3 array)
@@ -90,7 +90,7 @@ public:
 	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const=0;
 
 	virtual bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_point, Vector3 &r_normal) const=0;
-	virtual Vector3 get_moment_of_inertia(float p_mass) const=0;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const=0;
 
 	virtual void set_data(const Variant& p_data)=0;
 	virtual Variant get_data() const=0;
@@ -138,7 +138,7 @@ public:
 
 	virtual bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -148,12 +148,12 @@ public:
 
 class RayShapeSW : public ShapeSW {
 
-	float length;
+	real_t length;
 
-	void _setup(float p_length);
+	void _setup(real_t p_length);
 public:
 
-	float get_length() const;
+	real_t get_length() const;
 
 	virtual real_t get_area() const { return 0.0; }
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_RAY; }
@@ -163,7 +163,7 @@ public:
 
 	virtual bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -189,7 +189,7 @@ public:
 	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const;
 	virtual bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -213,7 +213,7 @@ public:
 	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const;
 	virtual bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -242,7 +242,7 @@ public:
 	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const;
 	virtual bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -266,7 +266,7 @@ public:
 	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const;
 	virtual bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -349,7 +349,7 @@ public:
 
 	virtual void cull(const Rect3& p_local_aabb,Callback p_callback,void* p_userdata) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -364,18 +364,18 @@ struct HeightMapShapeSW : public ConcaveShapeSW {
 	PoolVector<real_t> heights;
 	int width;
 	int depth;
-	float cell_size;
+	real_t cell_size;
 
 	//void _cull_segment(int p_idx,_SegmentCullParams *p_params) const;
 	//void _cull(int p_idx,_CullParams *p_params) const;
 
-	void _setup(PoolVector<float> p_heights,int p_width,int p_depth,float p_cell_size);
+	void _setup(PoolVector<real_t> p_heights,int p_width,int p_depth,real_t p_cell_size);
 public:
 
 	PoolVector<real_t> get_heights() const;
 	int get_width() const;
 	int get_depth() const;
-	float get_cell_size() const;
+	real_t get_cell_size() const;
 
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_HEIGHTMAP; }
 
@@ -385,7 +385,7 @@ public:
 
 	virtual void cull(const Rect3& p_local_aabb,Callback p_callback,void* p_userdata) const;
 
-	virtual Vector3 get_moment_of_inertia(float p_mass) const;
+	virtual Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -409,7 +409,7 @@ struct FaceShapeSW : public ShapeSW {
 	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const;
 	bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const;
 
-	Vector3 get_moment_of_inertia(float p_mass) const;
+	Vector3 get_moment_of_inertia(real_t p_mass) const;
 
 	virtual void set_data(const Variant& p_data) {}
 	virtual Variant get_data() const { return Variant(); }
@@ -450,7 +450,7 @@ struct MotionShapeSW : public ShapeSW {
 	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const { r_amount=0; }
 	bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const { return false; }
 
-	Vector3 get_moment_of_inertia(float p_mass) const { return Vector3(); }
+	Vector3 get_moment_of_inertia(real_t p_mass) const { return Vector3(); }
 
 	virtual void set_data(const Variant& p_data) {}
 	virtual Variant get_data() const { return Variant(); }

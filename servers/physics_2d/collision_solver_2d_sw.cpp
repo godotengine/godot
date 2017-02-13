@@ -181,7 +181,7 @@ void CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex
 
 }
 
-bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Transform2D& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Transform2D& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,bool p_swap_result,Vector2 *sep_axis,float p_margin_A,float p_margin_B) {
+bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Transform2D& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Transform2D& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,bool p_swap_result,Vector2 *sep_axis,real_t p_margin_A,real_t p_margin_B) {
 
 
 	const ConcaveShape2DSW *concave_B=static_cast<const ConcaveShape2DSW*>(p_shape_B);
@@ -211,10 +211,10 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Transfo
 	for(int i=0;i<2;i++) {
 
 	     Vector2 axis( p_transform_B.elements[i] );
-	     float axis_scale = 1.0/axis.length();
+	     real_t axis_scale = 1.0/axis.length();
 	     axis*=axis_scale;
 
-	     float smin,smax;
+	     real_t smin,smax;
 	     p_shape_A->project_rangev(axis,rel_transform,smin,smax);
 	     smin*=axis_scale;
 	     smax*=axis_scale;
@@ -231,7 +231,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Transfo
 }
 
 
-bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Transform2D& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Transform2D& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,Vector2 *sep_axis,float p_margin_A,float p_margin_B) {
+bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Transform2D& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Transform2D& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,Vector2 *sep_axis,real_t p_margin_A,real_t p_margin_B) {
 
 
 

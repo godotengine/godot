@@ -58,7 +58,7 @@ void StepSW::_populate_island(BodySW* p_body,BodySW** p_island,ConstraintSW **p_
 	}
 }
 
-void StepSW::_setup_island(ConstraintSW *p_island,float p_delta) {
+void StepSW::_setup_island(ConstraintSW *p_island,real_t p_delta) {
 
 	ConstraintSW *ci=p_island;
 	while(ci) {
@@ -68,7 +68,7 @@ void StepSW::_setup_island(ConstraintSW *p_island,float p_delta) {
 	}
 }
 
-void StepSW::_solve_island(ConstraintSW *p_island,int p_iterations,float p_delta){
+void StepSW::_solve_island(ConstraintSW *p_island,int p_iterations,real_t p_delta){
 
 	int at_priority=1;
 
@@ -107,7 +107,7 @@ void StepSW::_solve_island(ConstraintSW *p_island,int p_iterations,float p_delta
 
 }
 
-void StepSW::_check_suspend(BodySW *p_island,float p_delta) {
+void StepSW::_check_suspend(BodySW *p_island,real_t p_delta) {
 
 
 	bool can_sleep=true;
@@ -145,7 +145,7 @@ void StepSW::_check_suspend(BodySW *p_island,float p_delta) {
 	}
 }
 
-void StepSW::step(SpaceSW* p_space,float p_delta,int p_iterations) {
+void StepSW::step(SpaceSW* p_space,real_t p_delta,int p_iterations) {
 
 	p_space->lock(); // can't access space during this
 

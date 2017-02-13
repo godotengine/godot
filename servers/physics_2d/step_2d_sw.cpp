@@ -56,7 +56,7 @@ void Step2DSW::_populate_island(Body2DSW* p_body,Body2DSW** p_island,Constraint2
 	}
 }
 
-bool Step2DSW::_setup_island(Constraint2DSW *p_island,float p_delta) {
+bool Step2DSW::_setup_island(Constraint2DSW *p_island,real_t p_delta) {
 
 	Constraint2DSW *ci=p_island;
 	Constraint2DSW *prev_ci=NULL;
@@ -81,7 +81,7 @@ bool Step2DSW::_setup_island(Constraint2DSW *p_island,float p_delta) {
 	return removed_root;
 }
 
-void Step2DSW::_solve_island(Constraint2DSW *p_island,int p_iterations,float p_delta){
+void Step2DSW::_solve_island(Constraint2DSW *p_island,int p_iterations,real_t p_delta){
 
 
 	for(int i=0;i<p_iterations;i++) {
@@ -94,7 +94,7 @@ void Step2DSW::_solve_island(Constraint2DSW *p_island,int p_iterations,float p_d
 	}
 }
 
-void Step2DSW::_check_suspend(Body2DSW *p_island,float p_delta) {
+void Step2DSW::_check_suspend(Body2DSW *p_island,real_t p_delta) {
 
 
 	bool can_sleep=true;
@@ -132,7 +132,7 @@ void Step2DSW::_check_suspend(Body2DSW *p_island,float p_delta) {
 	}
 }
 
-void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
+void Step2DSW::step(Space2DSW* p_space,real_t p_delta,int p_iterations) {
 
 
 	p_space->lock(); // can't access space during this

@@ -35,8 +35,8 @@
 /*
 
 SHAPE_LINE, ///< plane:"plane"
-SHAPE_SEGMENT, ///< float:"length"
-SHAPE_CIRCLE, ///< float:"radius"
+SHAPE_SEGMENT, ///< real_t:"length"
+SHAPE_CIRCLE, ///< real_t:"radius"
 SHAPE_RECTANGLE, ///< vec3:"extents"
 SHAPE_CONVEX_POLYGON, ///< array of planes:"planes"
 SHAPE_CONCAVE_POLYGON, ///< Vector2 array:"triangles" , or Dictionary with "indices" (int array) and "triangles" (Vector2 array)
@@ -86,7 +86,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const=0;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const=0;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const=0;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const=0;
 	virtual void set_data(const Variant& p_data)=0;
 	virtual Variant get_data() const=0;
 
@@ -175,7 +175,7 @@ public:
 
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -218,7 +218,7 @@ public:
 
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -266,7 +266,7 @@ public:
 
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -304,7 +304,7 @@ public:
 
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -344,7 +344,7 @@ public:
 
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -432,7 +432,7 @@ public:
 
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -440,7 +440,7 @@ public:
 	_FORCE_INLINE_ void project_range(const Vector2& p_normal, const Transform2D& p_transform, real_t &r_min, real_t &r_max) const {
 		// no matter the angle, the box is mirrored anyway
 		Vector2 n=p_transform.basis_xform_inv(p_normal).normalized();
-		float h = (n.y > 0) ? height : -height;
+		real_t h = (n.y > 0) ? height : -height;
 
 		n *= radius;
 		n.y += h * 0.5;
@@ -495,7 +495,7 @@ public:
 
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const;
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -506,7 +506,7 @@ public:
 		r_min = r_max = p_normal.dot(p_transform.xform(points[0].pos));
 		for(int i=1;i<point_count;i++) {
 
-			float d = p_normal.dot(p_transform.xform(points[i].pos));
+			real_t d = p_normal.dot(p_transform.xform(points[i].pos));
 			if (d>r_max)
 				r_max=d;
 			if (d<r_min)
@@ -584,7 +584,7 @@ public:
 	virtual bool contains_point(const Vector2& p_point) const;
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 
-	virtual real_t get_moment_of_inertia(float p_mass,const Size2& p_scale) const { return 0; }
+	virtual real_t get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const { return 0; }
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;

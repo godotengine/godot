@@ -79,11 +79,11 @@ public:
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_PIN; }
 
-	virtual bool setup(float p_step);
-	virtual void solve(float p_step);
+	virtual bool setup(real_t p_step);
+	virtual void solve(real_t p_step);
 
-	void set_param(PhysicsServer::PinJointParam p_param,float p_value);
-	float get_param(PhysicsServer::PinJointParam p_param) const;
+	void set_param(PhysicsServer::PinJointParam p_param,real_t p_value);
+	real_t get_param(PhysicsServer::PinJointParam p_param) const;
 
 	void set_pos_A(const Vector3& p_pos) { m_pivotInA=p_pos; }
 	void set_pos_B(const Vector3& p_pos) { m_pivotInB=p_pos; }
