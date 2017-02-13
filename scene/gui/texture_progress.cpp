@@ -257,26 +257,26 @@ Point2 TextureProgress::get_radial_center_offset()
 
 void TextureProgress::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_under_texture","tex"),&TextureProgress::set_under_texture);
-	ClassDB::bind_method(_MD("get_under_texture"),&TextureProgress::get_under_texture);
+	ClassDB::bind_method(D_METHOD("set_under_texture","tex"),&TextureProgress::set_under_texture);
+	ClassDB::bind_method(D_METHOD("get_under_texture"),&TextureProgress::get_under_texture);
 
-	ClassDB::bind_method(_MD("set_progress_texture","tex"),&TextureProgress::set_progress_texture);
-	ClassDB::bind_method(_MD("get_progress_texture"),&TextureProgress::get_progress_texture);
+	ClassDB::bind_method(D_METHOD("set_progress_texture","tex"),&TextureProgress::set_progress_texture);
+	ClassDB::bind_method(D_METHOD("get_progress_texture"),&TextureProgress::get_progress_texture);
 
-	ClassDB::bind_method(_MD("set_over_texture","tex"),&TextureProgress::set_over_texture);
-	ClassDB::bind_method(_MD("get_over_texture"),&TextureProgress::get_over_texture);
+	ClassDB::bind_method(D_METHOD("set_over_texture","tex"),&TextureProgress::set_over_texture);
+	ClassDB::bind_method(D_METHOD("get_over_texture"),&TextureProgress::get_over_texture);
 
-	ClassDB::bind_method(_MD("set_fill_mode","mode"),&TextureProgress::set_fill_mode);
-	ClassDB::bind_method(_MD("get_fill_mode"), &TextureProgress::get_fill_mode);
+	ClassDB::bind_method(D_METHOD("set_fill_mode","mode"),&TextureProgress::set_fill_mode);
+	ClassDB::bind_method(D_METHOD("get_fill_mode"), &TextureProgress::get_fill_mode);
 
-	ClassDB::bind_method(_MD("set_radial_initial_angle","mode"),&TextureProgress::set_radial_initial_angle);
-	ClassDB::bind_method(_MD("get_radial_initial_angle"), &TextureProgress::get_radial_initial_angle);
+	ClassDB::bind_method(D_METHOD("set_radial_initial_angle","mode"),&TextureProgress::set_radial_initial_angle);
+	ClassDB::bind_method(D_METHOD("get_radial_initial_angle"), &TextureProgress::get_radial_initial_angle);
 
-	ClassDB::bind_method(_MD("set_radial_center_offset","mode"),&TextureProgress::set_radial_center_offset);
-	ClassDB::bind_method(_MD("get_radial_center_offset"), &TextureProgress::get_radial_center_offset);
+	ClassDB::bind_method(D_METHOD("set_radial_center_offset","mode"),&TextureProgress::set_radial_center_offset);
+	ClassDB::bind_method(D_METHOD("get_radial_center_offset"), &TextureProgress::get_radial_center_offset);
 
-	ClassDB::bind_method(_MD("set_fill_degrees","mode"),&TextureProgress::set_fill_degrees);
-	ClassDB::bind_method(_MD("get_fill_degrees"), &TextureProgress::get_fill_degrees);
+	ClassDB::bind_method(D_METHOD("set_fill_degrees","mode"),&TextureProgress::set_fill_degrees);
+	ClassDB::bind_method(D_METHOD("get_fill_degrees"), &TextureProgress::get_fill_degrees);
 
 	ADD_GROUP("Textures","texture_");
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_under",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_under_texture","get_under_texture");

@@ -294,35 +294,35 @@ void Sprite::_validate_property(PropertyInfo& property) const {
 
 void Sprite::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite::set_texture);
-	ClassDB::bind_method(_MD("get_texture:Texture"),&Sprite::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture","texture:Texture"),&Sprite::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"),&Sprite::get_texture);
 
-	ClassDB::bind_method(_MD("set_centered","centered"),&Sprite::set_centered);
-	ClassDB::bind_method(_MD("is_centered"),&Sprite::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&Sprite::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&Sprite::is_centered);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&Sprite::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&Sprite::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&Sprite::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&Sprite::get_offset);
 
-	ClassDB::bind_method(_MD("set_flip_h","flip_h"),&Sprite::set_flip_h);
-	ClassDB::bind_method(_MD("is_flipped_h"),&Sprite::is_flipped_h);
+	ClassDB::bind_method(D_METHOD("set_flip_h","flip_h"),&Sprite::set_flip_h);
+	ClassDB::bind_method(D_METHOD("is_flipped_h"),&Sprite::is_flipped_h);
 
-	ClassDB::bind_method(_MD("set_flip_v","flip_v"),&Sprite::set_flip_v);
-	ClassDB::bind_method(_MD("is_flipped_v"),&Sprite::is_flipped_v);
+	ClassDB::bind_method(D_METHOD("set_flip_v","flip_v"),&Sprite::set_flip_v);
+	ClassDB::bind_method(D_METHOD("is_flipped_v"),&Sprite::is_flipped_v);
 
-	ClassDB::bind_method(_MD("set_region","enabled"),&Sprite::set_region);
-	ClassDB::bind_method(_MD("is_region"),&Sprite::is_region);
+	ClassDB::bind_method(D_METHOD("set_region","enabled"),&Sprite::set_region);
+	ClassDB::bind_method(D_METHOD("is_region"),&Sprite::is_region);
 
-	ClassDB::bind_method(_MD("set_region_rect","rect"),&Sprite::set_region_rect);
-	ClassDB::bind_method(_MD("get_region_rect"),&Sprite::get_region_rect);
+	ClassDB::bind_method(D_METHOD("set_region_rect","rect"),&Sprite::set_region_rect);
+	ClassDB::bind_method(D_METHOD("get_region_rect"),&Sprite::get_region_rect);
 
-	ClassDB::bind_method(_MD("set_frame","frame"),&Sprite::set_frame);
-	ClassDB::bind_method(_MD("get_frame"),&Sprite::get_frame);
+	ClassDB::bind_method(D_METHOD("set_frame","frame"),&Sprite::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"),&Sprite::get_frame);
 
-	ClassDB::bind_method(_MD("set_vframes","vframes"),&Sprite::set_vframes);
-	ClassDB::bind_method(_MD("get_vframes"),&Sprite::get_vframes);
+	ClassDB::bind_method(D_METHOD("set_vframes","vframes"),&Sprite::set_vframes);
+	ClassDB::bind_method(D_METHOD("get_vframes"),&Sprite::get_vframes);
 
-	ClassDB::bind_method(_MD("set_hframes","hframes"),&Sprite::set_hframes);
-	ClassDB::bind_method(_MD("get_hframes"),&Sprite::get_hframes);
+	ClassDB::bind_method(D_METHOD("set_hframes","hframes"),&Sprite::set_hframes);
+	ClassDB::bind_method(D_METHOD("get_hframes"),&Sprite::get_hframes);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
@@ -552,17 +552,17 @@ String ViewportSprite::get_configuration_warning() const {
 
 void ViewportSprite::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_viewport_path","path"),&ViewportSprite::set_viewport_path);
-	ClassDB::bind_method(_MD("get_viewport_path"),&ViewportSprite::get_viewport_path);
+	ClassDB::bind_method(D_METHOD("set_viewport_path","path"),&ViewportSprite::set_viewport_path);
+	ClassDB::bind_method(D_METHOD("get_viewport_path"),&ViewportSprite::get_viewport_path);
 
-	ClassDB::bind_method(_MD("set_centered","centered"),&ViewportSprite::set_centered);
-	ClassDB::bind_method(_MD("is_centered"),&ViewportSprite::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&ViewportSprite::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&ViewportSprite::is_centered);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&ViewportSprite::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&ViewportSprite::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&ViewportSprite::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&ViewportSprite::get_offset);
 
-	ClassDB::bind_method(_MD("set_modulate","modulate"),&ViewportSprite::set_modulate);
-	ClassDB::bind_method(_MD("get_modulate"),&ViewportSprite::get_modulate);
+	ClassDB::bind_method(D_METHOD("set_modulate","modulate"),&ViewportSprite::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"),&ViewportSprite::get_modulate);
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::NODE_PATH, "viewport"), "set_viewport_path","get_viewport_path");
 	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");

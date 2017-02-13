@@ -107,6 +107,6 @@ ColorRampEditorPlugin::~ColorRampEditorPlugin(){
 }
 
 void ColorRampEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(_MD("ramp_changed"),&ColorRampEditorPlugin::_ramp_changed);
-	ClassDB::bind_method(_MD("undo_redo_color_ramp","offsets","colors"),&ColorRampEditorPlugin::_undo_redo_color_ramp);
+	ClassDB::bind_method(D_METHOD("ramp_changed"),&ColorRampEditorPlugin::_ramp_changed);
+	ClassDB::bind_method(D_METHOD("undo_redo_color_ramp","offsets","colors"),&ColorRampEditorPlugin::_undo_redo_color_ramp);
 }

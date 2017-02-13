@@ -63,15 +63,15 @@ bool Texture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2
 
 void Texture::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_width"),&Texture::get_width);
-	ClassDB::bind_method(_MD("get_height"),&Texture::get_height);
-	ClassDB::bind_method(_MD("get_size"),&Texture::get_size);
-	ClassDB::bind_method(_MD("has_alpha"),&Texture::has_alpha);
-	ClassDB::bind_method(_MD("set_flags","flags"),&Texture::set_flags);
-	ClassDB::bind_method(_MD("get_flags"),&Texture::get_flags);
-	ClassDB::bind_method(_MD("draw","canvas_item","pos","modulate","transpose"),&Texture::draw,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ClassDB::bind_method(_MD("draw_rect","canvas_item","rect","tile","modulate","transpose"),&Texture::draw_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ClassDB::bind_method(_MD("draw_rect_region","canvas_item","rect","src_rect","modulate","transpose"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_width"),&Texture::get_width);
+	ClassDB::bind_method(D_METHOD("get_height"),&Texture::get_height);
+	ClassDB::bind_method(D_METHOD("get_size"),&Texture::get_size);
+	ClassDB::bind_method(D_METHOD("has_alpha"),&Texture::has_alpha);
+	ClassDB::bind_method(D_METHOD("set_flags","flags"),&Texture::set_flags);
+	ClassDB::bind_method(D_METHOD("get_flags"),&Texture::get_flags);
+	ClassDB::bind_method(D_METHOD("draw","canvas_item","pos","modulate","transpose"),&Texture::draw,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_rect","canvas_item","rect","tile","modulate","transpose"),&Texture::draw_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_rect_region","canvas_item","rect","src_rect","modulate","transpose"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 
 	BIND_CONSTANT( FLAG_MIPMAPS );
 	BIND_CONSTANT( FLAG_REPEAT );
@@ -406,27 +406,27 @@ void ImageTexture::_set_data(Dictionary p_data) {
 
 void ImageTexture::_bind_methods() {
 
-	ClassDB::bind_method(_MD("create","width","height","format","flags"),&ImageTexture::create,DEFVAL(FLAGS_DEFAULT));
-	ClassDB::bind_method(_MD("create_from_image","image","flags"),&ImageTexture::create_from_image,DEFVAL(FLAGS_DEFAULT));
-	ClassDB::bind_method(_MD("get_format"),&ImageTexture::get_format);
-	ClassDB::bind_method(_MD("load","path"),&ImageTexture::load);
-	ClassDB::bind_method(_MD("set_data","image"),&ImageTexture::set_data);
-	ClassDB::bind_method(_MD("get_data","cube_side"),&ImageTexture::get_data);
-	ClassDB::bind_method(_MD("set_storage","mode"),&ImageTexture::set_storage);
-	ClassDB::bind_method(_MD("get_storage"),&ImageTexture::get_storage);
-	ClassDB::bind_method(_MD("set_lossy_storage_quality","quality"),&ImageTexture::set_lossy_storage_quality);
-	ClassDB::bind_method(_MD("get_lossy_storage_quality"),&ImageTexture::get_lossy_storage_quality);
-	ClassDB::bind_method(_MD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
-	ClassDB::bind_method(_MD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
-	ClassDB::bind_method(_MD("normal_to_xy"),&ImageTexture::normal_to_xy);
-	ClassDB::bind_method(_MD("shrink_x2_and_keep_size"),&ImageTexture::shrink_x2_and_keep_size);
+	ClassDB::bind_method(D_METHOD("create","width","height","format","flags"),&ImageTexture::create,DEFVAL(FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("create_from_image","image","flags"),&ImageTexture::create_from_image,DEFVAL(FLAGS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("get_format"),&ImageTexture::get_format);
+	ClassDB::bind_method(D_METHOD("load","path"),&ImageTexture::load);
+	ClassDB::bind_method(D_METHOD("set_data","image"),&ImageTexture::set_data);
+	ClassDB::bind_method(D_METHOD("get_data","cube_side"),&ImageTexture::get_data);
+	ClassDB::bind_method(D_METHOD("set_storage","mode"),&ImageTexture::set_storage);
+	ClassDB::bind_method(D_METHOD("get_storage"),&ImageTexture::get_storage);
+	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality","quality"),&ImageTexture::set_lossy_storage_quality);
+	ClassDB::bind_method(D_METHOD("get_lossy_storage_quality"),&ImageTexture::get_lossy_storage_quality);
+	ClassDB::bind_method(D_METHOD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
+	ClassDB::bind_method(D_METHOD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
+	ClassDB::bind_method(D_METHOD("normal_to_xy"),&ImageTexture::normal_to_xy);
+	ClassDB::bind_method(D_METHOD("shrink_x2_and_keep_size"),&ImageTexture::shrink_x2_and_keep_size);
 
-	ClassDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
+	ClassDB::bind_method(D_METHOD("set_size_override","size"),&ImageTexture::set_size_override);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("shrink_x2_and_keep_size"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
+	ClassDB::bind_method(D_METHOD("_reload_hook","rid"),&ImageTexture::_reload_hook);
 
 
 	BIND_CONSTANT( STORAGE_RAW );
@@ -771,8 +771,8 @@ void StreamTexture::reload_from_file() {
 
 void StreamTexture::_bind_methods() {
 
-	ClassDB::bind_method(_MD("load","path"),&StreamTexture::load);
-	ClassDB::bind_method(_MD("get_load_path"),&StreamTexture::get_load_path);
+	ClassDB::bind_method(D_METHOD("load","path"),&StreamTexture::load);
+	ClassDB::bind_method(D_METHOD("get_load_path"),&StreamTexture::get_load_path);
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"load_path",PROPERTY_HINT_FILE,"*.stex"),"load","get_load_path");
 }
@@ -921,14 +921,14 @@ Rect2 AtlasTexture::get_margin() const {
 
 void AtlasTexture::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_atlas","atlas:Texture"),&AtlasTexture::set_atlas);
-	ClassDB::bind_method(_MD("get_atlas:Texture"),&AtlasTexture::get_atlas);
+	ClassDB::bind_method(D_METHOD("set_atlas","atlas:Texture"),&AtlasTexture::set_atlas);
+	ClassDB::bind_method(D_METHOD("get_atlas:Texture"),&AtlasTexture::get_atlas);
 
-	ClassDB::bind_method(_MD("set_region","region"),&AtlasTexture::set_region);
-	ClassDB::bind_method(_MD("get_region"),&AtlasTexture::get_region);
+	ClassDB::bind_method(D_METHOD("set_region","region"),&AtlasTexture::set_region);
+	ClassDB::bind_method(D_METHOD("get_region"),&AtlasTexture::get_region);
 
-	ClassDB::bind_method(_MD("set_margin","margin"),&AtlasTexture::set_margin);
-	ClassDB::bind_method(_MD("get_margin"),&AtlasTexture::get_margin);
+	ClassDB::bind_method(D_METHOD("set_margin","margin"),&AtlasTexture::set_margin);
+	ClassDB::bind_method(D_METHOD("get_margin"),&AtlasTexture::get_margin);
 
 	ADD_SIGNAL(MethodInfo("atlas_changed"));
 
@@ -1176,18 +1176,18 @@ Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const{
 
 void LargeTexture::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_piece","ofs","texture:Texture"),&LargeTexture::add_piece);
-	ClassDB::bind_method(_MD("set_piece_offset", "idx", "ofs"),&LargeTexture::set_piece_offset);
-	ClassDB::bind_method(_MD("set_piece_texture","idx", "texture:Texture"),&LargeTexture::set_piece_texture);
-	ClassDB::bind_method(_MD("set_size","size"),&LargeTexture::set_size);
-	ClassDB::bind_method(_MD("clear"),&LargeTexture::clear);
+	ClassDB::bind_method(D_METHOD("add_piece","ofs","texture:Texture"),&LargeTexture::add_piece);
+	ClassDB::bind_method(D_METHOD("set_piece_offset", "idx", "ofs"),&LargeTexture::set_piece_offset);
+	ClassDB::bind_method(D_METHOD("set_piece_texture","idx", "texture:Texture"),&LargeTexture::set_piece_texture);
+	ClassDB::bind_method(D_METHOD("set_size","size"),&LargeTexture::set_size);
+	ClassDB::bind_method(D_METHOD("clear"),&LargeTexture::clear);
 
-	ClassDB::bind_method(_MD("get_piece_count"),&LargeTexture::get_piece_count);
-	ClassDB::bind_method(_MD("get_piece_offset","idx"),&LargeTexture::get_piece_offset);
-	ClassDB::bind_method(_MD("get_piece_texture:Texture","idx"),&LargeTexture::get_piece_texture);
+	ClassDB::bind_method(D_METHOD("get_piece_count"),&LargeTexture::get_piece_count);
+	ClassDB::bind_method(D_METHOD("get_piece_offset","idx"),&LargeTexture::get_piece_offset);
+	ClassDB::bind_method(D_METHOD("get_piece_texture:Texture","idx"),&LargeTexture::get_piece_texture);
 
-	ClassDB::bind_method(_MD("_set_data","data"),&LargeTexture::_set_data);
-	ClassDB::bind_method(_MD("_get_data"),&LargeTexture::_get_data);
+	ClassDB::bind_method(D_METHOD("_set_data","data"),&LargeTexture::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"),&LargeTexture::_get_data);
 
 	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_data","_get_data") ;
 
@@ -1420,18 +1420,18 @@ void CubeMap::_get_property_list( List<PropertyInfo> *p_list) const {
 
 void CubeMap::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_width"),&CubeMap::get_width);
-	ClassDB::bind_method(_MD("get_height"),&CubeMap::get_height);
-	//ClassDB::bind_method(_MD("get_rid"),&CubeMap::get_rid);
-	ClassDB::bind_method(_MD("set_flags","flags"),&CubeMap::set_flags);
-	ClassDB::bind_method(_MD("get_flags"),&CubeMap::get_flags);
+	ClassDB::bind_method(D_METHOD("get_width"),&CubeMap::get_width);
+	ClassDB::bind_method(D_METHOD("get_height"),&CubeMap::get_height);
+	//ClassDB::bind_method(D_METHOD("get_rid"),&CubeMap::get_rid);
+	ClassDB::bind_method(D_METHOD("set_flags","flags"),&CubeMap::set_flags);
+	ClassDB::bind_method(D_METHOD("get_flags"),&CubeMap::get_flags);
 
-	ClassDB::bind_method(_MD("set_side","side","image"),&CubeMap::set_side);
-	ClassDB::bind_method(_MD("get_side","side"),&CubeMap::get_side);
-	ClassDB::bind_method(_MD("set_storage","mode"),&CubeMap::set_storage);
-	ClassDB::bind_method(_MD("get_storage"),&CubeMap::get_storage);
-	ClassDB::bind_method(_MD("set_lossy_storage_quality","quality"),&CubeMap::set_lossy_storage_quality);
-	ClassDB::bind_method(_MD("get_lossy_storage_quality"),&CubeMap::get_lossy_storage_quality);
+	ClassDB::bind_method(D_METHOD("set_side","side","image"),&CubeMap::set_side);
+	ClassDB::bind_method(D_METHOD("get_side","side"),&CubeMap::get_side);
+	ClassDB::bind_method(D_METHOD("set_storage","mode"),&CubeMap::set_storage);
+	ClassDB::bind_method(D_METHOD("get_storage"),&CubeMap::get_storage);
+	ClassDB::bind_method(D_METHOD("set_lossy_storage_quality","quality"),&CubeMap::set_lossy_storage_quality);
+	ClassDB::bind_method(D_METHOD("get_lossy_storage_quality"),&CubeMap::get_lossy_storage_quality);
 
 
 	BIND_CONSTANT( STORAGE_RAW );

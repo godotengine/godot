@@ -1019,31 +1019,31 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 void Mesh::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_blend_shape","name"),&Mesh::add_blend_shape);
-	ClassDB::bind_method(_MD("get_blend_shape_count"),&Mesh::get_blend_shape_count);
-	ClassDB::bind_method(_MD("get_blend_shape_name","index"),&Mesh::get_blend_shape_name);
-	ClassDB::bind_method(_MD("clear_blend_shapes"),&Mesh::clear_blend_shapes);
-	ClassDB::bind_method(_MD("set_blend_shape_mode","mode"),&Mesh::set_blend_shape_mode);
-	ClassDB::bind_method(_MD("get_blend_shape_mode"),&Mesh::get_blend_shape_mode);
+	ClassDB::bind_method(D_METHOD("add_blend_shape","name"),&Mesh::add_blend_shape);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_count"),&Mesh::get_blend_shape_count);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_name","index"),&Mesh::get_blend_shape_name);
+	ClassDB::bind_method(D_METHOD("clear_blend_shapes"),&Mesh::clear_blend_shapes);
+	ClassDB::bind_method(D_METHOD("set_blend_shape_mode","mode"),&Mesh::set_blend_shape_mode);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"),&Mesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(_MD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
-	ClassDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
-	ClassDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
-	ClassDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);
-	ClassDB::bind_method(_MD("surface_get_array_index_len","surf_idx"),&Mesh::surface_get_array_index_len);
-	ClassDB::bind_method(_MD("surface_get_format","surf_idx"),&Mesh::surface_get_format);
-	ClassDB::bind_method(_MD("surface_get_primitive_type","surf_idx"),&Mesh::surface_get_primitive_type);
-	ClassDB::bind_method(_MD("surface_set_material","surf_idx","material:Material"),&Mesh::surface_set_material);
-	ClassDB::bind_method(_MD("surface_get_material:Material","surf_idx"),&Mesh::surface_get_material);
-	ClassDB::bind_method(_MD("surface_set_name","surf_idx","name"),&Mesh::surface_set_name);
-	ClassDB::bind_method(_MD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
-	ClassDB::bind_method(_MD("center_geometry"),&Mesh::center_geometry);
+	ClassDB::bind_method(D_METHOD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("get_surface_count"),&Mesh::get_surface_count);
+	ClassDB::bind_method(D_METHOD("surface_remove","surf_idx"),&Mesh::surface_remove);
+	ClassDB::bind_method(D_METHOD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);
+	ClassDB::bind_method(D_METHOD("surface_get_array_index_len","surf_idx"),&Mesh::surface_get_array_index_len);
+	ClassDB::bind_method(D_METHOD("surface_get_format","surf_idx"),&Mesh::surface_get_format);
+	ClassDB::bind_method(D_METHOD("surface_get_primitive_type","surf_idx"),&Mesh::surface_get_primitive_type);
+	ClassDB::bind_method(D_METHOD("surface_set_material","surf_idx","material:Material"),&Mesh::surface_set_material);
+	ClassDB::bind_method(D_METHOD("surface_get_material:Material","surf_idx"),&Mesh::surface_get_material);
+	ClassDB::bind_method(D_METHOD("surface_set_name","surf_idx","name"),&Mesh::surface_set_name);
+	ClassDB::bind_method(D_METHOD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
+	ClassDB::bind_method(D_METHOD("center_geometry"),&Mesh::center_geometry);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(_MD("regen_normalmaps"),&Mesh::regen_normalmaps);
+	ClassDB::bind_method(D_METHOD("regen_normalmaps"),&Mesh::regen_normalmaps);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(_MD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
-	ClassDB::bind_method(_MD("get_custom_aabb"),&Mesh::get_custom_aabb);
+	ClassDB::bind_method(D_METHOD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("get_custom_aabb"),&Mesh::get_custom_aabb);
 
 
 	BIND_CONSTANT( NO_INDEX_ARRAY );

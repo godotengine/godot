@@ -1201,44 +1201,44 @@ void GraphEdit::_snap_value_changed(double) {
 
 void GraphEdit::_bind_methods() {
 
-	ClassDB::bind_method(_MD("connect_node:Error","from","from_port","to","to_port"),&GraphEdit::connect_node);
-	ClassDB::bind_method(_MD("is_node_connected","from","from_port","to","to_port"),&GraphEdit::is_node_connected);
-	ClassDB::bind_method(_MD("disconnect_node","from","from_port","to","to_port"),&GraphEdit::disconnect_node);
-	ClassDB::bind_method(_MD("get_connection_list"),&GraphEdit::_get_connection_list);
-	ClassDB::bind_method(_MD("get_scroll_ofs"),&GraphEdit::get_scroll_ofs);
-	ClassDB::bind_method(_MD("set_scroll_ofs","ofs"),&GraphEdit::set_scroll_ofs);
+	ClassDB::bind_method(D_METHOD("connect_node:Error","from","from_port","to","to_port"),&GraphEdit::connect_node);
+	ClassDB::bind_method(D_METHOD("is_node_connected","from","from_port","to","to_port"),&GraphEdit::is_node_connected);
+	ClassDB::bind_method(D_METHOD("disconnect_node","from","from_port","to","to_port"),&GraphEdit::disconnect_node);
+	ClassDB::bind_method(D_METHOD("get_connection_list"),&GraphEdit::_get_connection_list);
+	ClassDB::bind_method(D_METHOD("get_scroll_ofs"),&GraphEdit::get_scroll_ofs);
+	ClassDB::bind_method(D_METHOD("set_scroll_ofs","ofs"),&GraphEdit::set_scroll_ofs);
 
-	ClassDB::bind_method(_MD("set_zoom","p_zoom"),&GraphEdit::set_zoom);
-	ClassDB::bind_method(_MD("get_zoom"),&GraphEdit::get_zoom);
+	ClassDB::bind_method(D_METHOD("set_zoom","p_zoom"),&GraphEdit::set_zoom);
+	ClassDB::bind_method(D_METHOD("get_zoom"),&GraphEdit::get_zoom);
 
-	ClassDB::bind_method(_MD("set_snap","pixels"),&GraphEdit::set_snap);
-	ClassDB::bind_method(_MD("get_snap"),&GraphEdit::get_snap);
+	ClassDB::bind_method(D_METHOD("set_snap","pixels"),&GraphEdit::set_snap);
+	ClassDB::bind_method(D_METHOD("get_snap"),&GraphEdit::get_snap);
 
-	ClassDB::bind_method(_MD("set_use_snap","enable"),&GraphEdit::set_use_snap);
-	ClassDB::bind_method(_MD("is_using_snap"),&GraphEdit::is_using_snap);
+	ClassDB::bind_method(D_METHOD("set_use_snap","enable"),&GraphEdit::set_use_snap);
+	ClassDB::bind_method(D_METHOD("is_using_snap"),&GraphEdit::is_using_snap);
 
-	ClassDB::bind_method(_MD("set_right_disconnects","enable"),&GraphEdit::set_right_disconnects);
-	ClassDB::bind_method(_MD("is_right_disconnects_enabled"),&GraphEdit::is_right_disconnects_enabled);
+	ClassDB::bind_method(D_METHOD("set_right_disconnects","enable"),&GraphEdit::set_right_disconnects);
+	ClassDB::bind_method(D_METHOD("is_right_disconnects_enabled"),&GraphEdit::is_right_disconnects_enabled);
 
-	ClassDB::bind_method(_MD("_graph_node_moved"),&GraphEdit::_graph_node_moved);
-	ClassDB::bind_method(_MD("_graph_node_raised"),&GraphEdit::_graph_node_raised);
+	ClassDB::bind_method(D_METHOD("_graph_node_moved"),&GraphEdit::_graph_node_moved);
+	ClassDB::bind_method(D_METHOD("_graph_node_raised"),&GraphEdit::_graph_node_raised);
 
-	ClassDB::bind_method(_MD("_top_layer_input"),&GraphEdit::_top_layer_input);
-	ClassDB::bind_method(_MD("_top_layer_draw"),&GraphEdit::_top_layer_draw);
-	ClassDB::bind_method(_MD("_scroll_moved"),&GraphEdit::_scroll_moved);
-	ClassDB::bind_method(_MD("_zoom_minus"),&GraphEdit::_zoom_minus);
-	ClassDB::bind_method(_MD("_zoom_reset"),&GraphEdit::_zoom_reset);
-	ClassDB::bind_method(_MD("_zoom_plus"),&GraphEdit::_zoom_plus);
-	ClassDB::bind_method(_MD("_snap_toggled"),&GraphEdit::_snap_toggled);
-	ClassDB::bind_method(_MD("_snap_value_changed"),&GraphEdit::_snap_value_changed);
+	ClassDB::bind_method(D_METHOD("_top_layer_input"),&GraphEdit::_top_layer_input);
+	ClassDB::bind_method(D_METHOD("_top_layer_draw"),&GraphEdit::_top_layer_draw);
+	ClassDB::bind_method(D_METHOD("_scroll_moved"),&GraphEdit::_scroll_moved);
+	ClassDB::bind_method(D_METHOD("_zoom_minus"),&GraphEdit::_zoom_minus);
+	ClassDB::bind_method(D_METHOD("_zoom_reset"),&GraphEdit::_zoom_reset);
+	ClassDB::bind_method(D_METHOD("_zoom_plus"),&GraphEdit::_zoom_plus);
+	ClassDB::bind_method(D_METHOD("_snap_toggled"),&GraphEdit::_snap_toggled);
+	ClassDB::bind_method(D_METHOD("_snap_value_changed"),&GraphEdit::_snap_value_changed);
 
-	ClassDB::bind_method(_MD("_gui_input"),&GraphEdit::_gui_input);
-	ClassDB::bind_method(_MD("_update_scroll_offset"),&GraphEdit::_update_scroll_offset);
-	ClassDB::bind_method(_MD("_connections_layer_draw"),&GraphEdit::_connections_layer_draw);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_update_scroll_offset"),&GraphEdit::_update_scroll_offset);
+	ClassDB::bind_method(D_METHOD("_connections_layer_draw"),&GraphEdit::_connections_layer_draw);
 
 
 
-	ClassDB::bind_method(_MD("set_selected","node"),&GraphEdit::set_selected);
+	ClassDB::bind_method(D_METHOD("set_selected","node"),&GraphEdit::set_selected);
 
 	ADD_SIGNAL(MethodInfo("connection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 	ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));

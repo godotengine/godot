@@ -137,21 +137,21 @@ float AudioEffectDistortion::get_post_gain() const{
 
 void AudioEffectDistortion::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_mode","mode"),&AudioEffectDistortion::set_mode);
-	ClassDB::bind_method(_MD("get_mode"),&AudioEffectDistortion::get_mode);
+	ClassDB::bind_method(D_METHOD("set_mode","mode"),&AudioEffectDistortion::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"),&AudioEffectDistortion::get_mode);
 
-	ClassDB::bind_method(_MD("set_pre_gain","pre_gain"),&AudioEffectDistortion::set_pre_gain);
-	ClassDB::bind_method(_MD("get_pre_gain"),&AudioEffectDistortion::get_pre_gain);
+	ClassDB::bind_method(D_METHOD("set_pre_gain","pre_gain"),&AudioEffectDistortion::set_pre_gain);
+	ClassDB::bind_method(D_METHOD("get_pre_gain"),&AudioEffectDistortion::get_pre_gain);
 
-	ClassDB::bind_method(_MD("set_keep_hf_hz","keep_hf_hz"),&AudioEffectDistortion::set_keep_hf_hz);
-	ClassDB::bind_method(_MD("get_keep_hf_hz"),&AudioEffectDistortion::get_keep_hf_hz);
+	ClassDB::bind_method(D_METHOD("set_keep_hf_hz","keep_hf_hz"),&AudioEffectDistortion::set_keep_hf_hz);
+	ClassDB::bind_method(D_METHOD("get_keep_hf_hz"),&AudioEffectDistortion::get_keep_hf_hz);
 
-	ClassDB::bind_method(_MD("set_drive","drive"),&AudioEffectDistortion::set_drive);
-	ClassDB::bind_method(_MD("get_drive"),&AudioEffectDistortion::get_drive);
+	ClassDB::bind_method(D_METHOD("set_drive","drive"),&AudioEffectDistortion::set_drive);
+	ClassDB::bind_method(D_METHOD("get_drive"),&AudioEffectDistortion::get_drive);
 
 
-	ClassDB::bind_method(_MD("set_post_gain","post_gain"),&AudioEffectDistortion::set_post_gain);
-	ClassDB::bind_method(_MD("get_post_gain"),&AudioEffectDistortion::get_post_gain);
+	ClassDB::bind_method(D_METHOD("set_post_gain","post_gain"),&AudioEffectDistortion::set_post_gain);
+	ClassDB::bind_method(D_METHOD("get_post_gain"),&AudioEffectDistortion::get_post_gain);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Clip,ATan,LoFi,Overdrive,WaveShape"),"set_mode","get_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"pre_gain",PROPERTY_HINT_RANGE,"-60,60,0.01"),"set_pre_gain","get_pre_gain");

@@ -406,39 +406,39 @@ RES Particles::_get_gizmo_geometry() const {
 
 void Particles::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_amount","amount"),&Particles::set_amount);
-	ClassDB::bind_method(_MD("get_amount"),&Particles::get_amount);
-	ClassDB::bind_method(_MD("set_emitting","enabled"),&Particles::set_emitting);
-	ClassDB::bind_method(_MD("is_emitting"),&Particles::is_emitting);
-	ClassDB::bind_method(_MD("set_visibility_aabb","aabb"),&Particles::set_visibility_aabb);
-	ClassDB::bind_method(_MD("get_visibility_aabb"),&Particles::get_visibility_aabb);
-	ClassDB::bind_method(_MD("set_emission_half_extents","half_extents"),&Particles::set_emission_half_extents);
-	ClassDB::bind_method(_MD("get_emission_half_extents"),&Particles::get_emission_half_extents);
-	ClassDB::bind_method(_MD("set_emission_base_velocity","base_velocity"),&Particles::set_emission_base_velocity);
-	ClassDB::bind_method(_MD("get_emission_base_velocity"),&Particles::get_emission_base_velocity);
-	ClassDB::bind_method(_MD("set_emission_points","points"),&Particles::set_emission_points);
-	ClassDB::bind_method(_MD("get_emission_points"),&Particles::get_emission_points);
-	ClassDB::bind_method(_MD("set_gravity_normal","normal"),&Particles::set_gravity_normal);
-	ClassDB::bind_method(_MD("get_gravity_normal"),&Particles::get_gravity_normal);
-	ClassDB::bind_method(_MD("set_variable","variable","value"),&Particles::set_variable);
-	ClassDB::bind_method(_MD("get_variable","variable"),&Particles::get_variable);
-	ClassDB::bind_method(_MD("set_randomness","variable","randomness"),&Particles::set_randomness);
-	ClassDB::bind_method(_MD("get_randomness","variable"),&Particles::get_randomness);
-	ClassDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
-	ClassDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
-	ClassDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
-	ClassDB::bind_method(_MD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
-	ClassDB::bind_method(_MD("set_material","material:Material"),&Particles::set_material);
-	ClassDB::bind_method(_MD("get_material:Material"),&Particles::get_material);
-	ClassDB::bind_method(_MD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
-	ClassDB::bind_method(_MD("get_emit_timeout"),&Particles::get_emit_timeout);
-	ClassDB::bind_method(_MD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
-	ClassDB::bind_method(_MD("has_height_from_velocity"),&Particles::has_height_from_velocity);
-	ClassDB::bind_method(_MD("set_use_local_coordinates","enable"),&Particles::set_use_local_coordinates);
-	ClassDB::bind_method(_MD("is_using_local_coordinates"),&Particles::is_using_local_coordinates);
+	ClassDB::bind_method(D_METHOD("set_amount","amount"),&Particles::set_amount);
+	ClassDB::bind_method(D_METHOD("get_amount"),&Particles::get_amount);
+	ClassDB::bind_method(D_METHOD("set_emitting","enabled"),&Particles::set_emitting);
+	ClassDB::bind_method(D_METHOD("is_emitting"),&Particles::is_emitting);
+	ClassDB::bind_method(D_METHOD("set_visibility_aabb","aabb"),&Particles::set_visibility_aabb);
+	ClassDB::bind_method(D_METHOD("get_visibility_aabb"),&Particles::get_visibility_aabb);
+	ClassDB::bind_method(D_METHOD("set_emission_half_extents","half_extents"),&Particles::set_emission_half_extents);
+	ClassDB::bind_method(D_METHOD("get_emission_half_extents"),&Particles::get_emission_half_extents);
+	ClassDB::bind_method(D_METHOD("set_emission_base_velocity","base_velocity"),&Particles::set_emission_base_velocity);
+	ClassDB::bind_method(D_METHOD("get_emission_base_velocity"),&Particles::get_emission_base_velocity);
+	ClassDB::bind_method(D_METHOD("set_emission_points","points"),&Particles::set_emission_points);
+	ClassDB::bind_method(D_METHOD("get_emission_points"),&Particles::get_emission_points);
+	ClassDB::bind_method(D_METHOD("set_gravity_normal","normal"),&Particles::set_gravity_normal);
+	ClassDB::bind_method(D_METHOD("get_gravity_normal"),&Particles::get_gravity_normal);
+	ClassDB::bind_method(D_METHOD("set_variable","variable","value"),&Particles::set_variable);
+	ClassDB::bind_method(D_METHOD("get_variable","variable"),&Particles::get_variable);
+	ClassDB::bind_method(D_METHOD("set_randomness","variable","randomness"),&Particles::set_randomness);
+	ClassDB::bind_method(D_METHOD("get_randomness","variable"),&Particles::get_randomness);
+	ClassDB::bind_method(D_METHOD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
+	ClassDB::bind_method(D_METHOD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
+	ClassDB::bind_method(D_METHOD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
+	ClassDB::bind_method(D_METHOD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
+	ClassDB::bind_method(D_METHOD("set_material","material:Material"),&Particles::set_material);
+	ClassDB::bind_method(D_METHOD("get_material:Material"),&Particles::get_material);
+	ClassDB::bind_method(D_METHOD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
+	ClassDB::bind_method(D_METHOD("get_emit_timeout"),&Particles::get_emit_timeout);
+	ClassDB::bind_method(D_METHOD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
+	ClassDB::bind_method(D_METHOD("has_height_from_velocity"),&Particles::has_height_from_velocity);
+	ClassDB::bind_method(D_METHOD("set_use_local_coordinates","enable"),&Particles::set_use_local_coordinates);
+	ClassDB::bind_method(D_METHOD("is_using_local_coordinates"),&Particles::is_using_local_coordinates);
 
-	ClassDB::bind_method(_MD("set_color_phases","count"),&Particles::set_color_phases);
-	ClassDB::bind_method(_MD("get_color_phases"),&Particles::get_color_phases);
+	ClassDB::bind_method(D_METHOD("set_color_phases","count"),&Particles::set_color_phases);
+	ClassDB::bind_method(D_METHOD("get_color_phases"),&Particles::get_color_phases);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), "set_material", "get_material") ;
 

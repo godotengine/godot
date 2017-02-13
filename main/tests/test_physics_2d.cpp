@@ -356,8 +356,8 @@ protected:
 	static void _bind_methods() {
 
 
-		ClassDB::bind_method(_MD("_body_moved"),&TestPhysics2DMainLoop::_body_moved);
-		ClassDB::bind_method(_MD("_ray_query_callback"),&TestPhysics2DMainLoop::_ray_query_callback);
+		ClassDB::bind_method(D_METHOD("_body_moved"),&TestPhysics2DMainLoop::_body_moved);
+		ClassDB::bind_method(D_METHOD("_ray_query_callback"),&TestPhysics2DMainLoop::_ray_query_callback);
 	}
 
 

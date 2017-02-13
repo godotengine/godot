@@ -380,19 +380,19 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& 
 
 void ResourcePreloaderEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&ResourcePreloaderEditor::_gui_input);
-	ClassDB::bind_method(_MD("_load_pressed"),&ResourcePreloaderEditor::_load_pressed);
-	ClassDB::bind_method(_MD("_item_edited"),&ResourcePreloaderEditor::_item_edited);
-	ClassDB::bind_method(_MD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
-	ClassDB::bind_method(_MD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
-	ClassDB::bind_method(_MD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
-	ClassDB::bind_method(_MD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
-	ClassDB::bind_method(_MD("_update_library"),&ResourcePreloaderEditor::_update_library);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ResourcePreloaderEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_load_pressed"),&ResourcePreloaderEditor::_load_pressed);
+	ClassDB::bind_method(D_METHOD("_item_edited"),&ResourcePreloaderEditor::_item_edited);
+	ClassDB::bind_method(D_METHOD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
+	ClassDB::bind_method(D_METHOD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
+	ClassDB::bind_method(D_METHOD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
+	ClassDB::bind_method(D_METHOD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
+	ClassDB::bind_method(D_METHOD("_update_library"),&ResourcePreloaderEditor::_update_library);
 
 
-	ClassDB::bind_method(_MD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
-	ClassDB::bind_method(_MD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
-	ClassDB::bind_method(_MD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 
 
 }

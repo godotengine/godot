@@ -296,8 +296,8 @@ Vector<Color> GraphColorRampEdit::get_colors() const{
 
 void GraphColorRampEdit::_bind_methods(){
 
-	ClassDB::bind_method(_MD("_gui_input"),&GraphColorRampEdit::_gui_input);
-	ClassDB::bind_method(_MD("_color_changed"),&GraphColorRampEdit::_color_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphColorRampEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_color_changed"),&GraphColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }
 
@@ -657,7 +657,7 @@ Vector<Vector2> GraphCurveMapEdit::get_points() const {
 
 void GraphCurveMapEdit::_bind_methods(){
 
-	ClassDB::bind_method(_MD("_gui_input"),&GraphCurveMapEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphCurveMapEdit::_gui_input);
 	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
@@ -2732,9 +2732,9 @@ void ShaderGraphView::_bind_methods() {
 	ClassDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
 	ClassDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
 
-	ClassDB::bind_method(_MD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
-	ClassDB::bind_method(_MD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
-	ClassDB::bind_method(_MD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
 
 	ClassDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }

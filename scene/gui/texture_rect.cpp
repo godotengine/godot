@@ -103,12 +103,12 @@ Size2 TextureRect::get_minimum_size() const {
 void TextureRect::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_texture","texture"), & TextureRect::set_texture );
-	ClassDB::bind_method(_MD("get_texture"), & TextureRect::get_texture );
-	ClassDB::bind_method(_MD("set_expand","enable"), & TextureRect::set_expand );
-	ClassDB::bind_method(_MD("has_expand"), & TextureRect::has_expand );
-	ClassDB::bind_method(_MD("set_stretch_mode","stretch_mode"), & TextureRect::set_stretch_mode );
-	ClassDB::bind_method(_MD("get_stretch_mode"), & TextureRect::get_stretch_mode );
+	ClassDB::bind_method(D_METHOD("set_texture","texture"), & TextureRect::set_texture );
+	ClassDB::bind_method(D_METHOD("get_texture"), & TextureRect::get_texture );
+	ClassDB::bind_method(D_METHOD("set_expand","enable"), & TextureRect::set_expand );
+	ClassDB::bind_method(D_METHOD("has_expand"), & TextureRect::has_expand );
+	ClassDB::bind_method(D_METHOD("set_stretch_mode","stretch_mode"), & TextureRect::set_stretch_mode );
+	ClassDB::bind_method(D_METHOD("get_stretch_mode"), & TextureRect::get_stretch_mode );
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "expand" ), "set_expand","has_expand");

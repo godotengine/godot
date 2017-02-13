@@ -648,30 +648,30 @@ int Label::get_total_character_count() const {
 
 void Label::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_align","align"),&Label::set_align);
-	ClassDB::bind_method(_MD("get_align"),&Label::get_align);
-	ClassDB::bind_method(_MD("set_valign","valign"),&Label::set_valign);
-	ClassDB::bind_method(_MD("get_valign"),&Label::get_valign);
-	ClassDB::bind_method(_MD("set_text","text"),&Label::set_text);
-	ClassDB::bind_method(_MD("get_text"),&Label::get_text);
-	ClassDB::bind_method(_MD("set_autowrap","enable"),&Label::set_autowrap);
-	ClassDB::bind_method(_MD("has_autowrap"),&Label::has_autowrap);
-	ClassDB::bind_method(_MD("set_clip_text","enable"),&Label::set_clip_text);
-	ClassDB::bind_method(_MD("is_clipping_text"),&Label::is_clipping_text);
-	ClassDB::bind_method(_MD("set_uppercase","enable"),&Label::set_uppercase);
-	ClassDB::bind_method(_MD("is_uppercase"),&Label::is_uppercase);
-	ClassDB::bind_method(_MD("get_line_height"),&Label::get_line_height);
-	ClassDB::bind_method(_MD("get_line_count"),&Label::get_line_count);
-	ClassDB::bind_method(_MD("get_visible_line_count"),&Label::get_visible_line_count);
-	ClassDB::bind_method(_MD("get_total_character_count"),&Label::get_total_character_count);
-	ClassDB::bind_method(_MD("set_visible_characters","amount"),&Label::set_visible_characters);
-	ClassDB::bind_method(_MD("get_visible_characters"),&Label::get_visible_characters);
-	ClassDB::bind_method(_MD("set_percent_visible","percent_visible"),&Label::set_percent_visible);
-	ClassDB::bind_method(_MD("get_percent_visible"),&Label::get_percent_visible);
-	ClassDB::bind_method(_MD("set_lines_skipped","lines_skipped"),&Label::set_lines_skipped);
-	ClassDB::bind_method(_MD("get_lines_skipped"),&Label::get_lines_skipped);
-	ClassDB::bind_method(_MD("set_max_lines_visible","lines_visible"),&Label::set_max_lines_visible);
-	ClassDB::bind_method(_MD("get_max_lines_visible"),&Label::get_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("set_align","align"),&Label::set_align);
+	ClassDB::bind_method(D_METHOD("get_align"),&Label::get_align);
+	ClassDB::bind_method(D_METHOD("set_valign","valign"),&Label::set_valign);
+	ClassDB::bind_method(D_METHOD("get_valign"),&Label::get_valign);
+	ClassDB::bind_method(D_METHOD("set_text","text"),&Label::set_text);
+	ClassDB::bind_method(D_METHOD("get_text"),&Label::get_text);
+	ClassDB::bind_method(D_METHOD("set_autowrap","enable"),&Label::set_autowrap);
+	ClassDB::bind_method(D_METHOD("has_autowrap"),&Label::has_autowrap);
+	ClassDB::bind_method(D_METHOD("set_clip_text","enable"),&Label::set_clip_text);
+	ClassDB::bind_method(D_METHOD("is_clipping_text"),&Label::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_uppercase","enable"),&Label::set_uppercase);
+	ClassDB::bind_method(D_METHOD("is_uppercase"),&Label::is_uppercase);
+	ClassDB::bind_method(D_METHOD("get_line_height"),&Label::get_line_height);
+	ClassDB::bind_method(D_METHOD("get_line_count"),&Label::get_line_count);
+	ClassDB::bind_method(D_METHOD("get_visible_line_count"),&Label::get_visible_line_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count"),&Label::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("set_visible_characters","amount"),&Label::set_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters"),&Label::get_visible_characters);
+	ClassDB::bind_method(D_METHOD("set_percent_visible","percent_visible"),&Label::set_percent_visible);
+	ClassDB::bind_method(D_METHOD("get_percent_visible"),&Label::get_percent_visible);
+	ClassDB::bind_method(D_METHOD("set_lines_skipped","lines_skipped"),&Label::set_lines_skipped);
+	ClassDB::bind_method(D_METHOD("get_lines_skipped"),&Label::get_lines_skipped);
+	ClassDB::bind_method(D_METHOD("set_max_lines_visible","lines_visible"),&Label::set_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("get_max_lines_visible"),&Label::get_max_lines_visible);
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );

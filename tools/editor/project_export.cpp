@@ -1290,44 +1290,44 @@ void ProjectExportDialog::_image_filter_changed(String) {
 void ProjectExportDialog::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("_rescan"),&ProjectExportDialog::_rescan);
-	ClassDB::bind_method(_MD("_tree_changed"),&ProjectExportDialog::_tree_changed);
-	ClassDB::bind_method(_MD("_scan_finished"),&ProjectExportDialog::_scan_finished);
-	ClassDB::bind_method(_MD("_platform_selected"),&ProjectExportDialog::_platform_selected);
-	ClassDB::bind_method(_MD("_prop_edited"),&ProjectExportDialog::_prop_edited);
-	ClassDB::bind_method(_MD("_export_mode_changed"),&ProjectExportDialog::_export_mode_changed);
-	ClassDB::bind_method(_MD("_filters_edited"),&ProjectExportDialog::_filters_edited);
-	ClassDB::bind_method(_MD("_filters_exclude_edited"),&ProjectExportDialog::_filters_exclude_edited);
-	ClassDB::bind_method(_MD("_export_action"),&ProjectExportDialog::_export_action);
-	ClassDB::bind_method(_MD("_export_action_pck"),&ProjectExportDialog::_export_action_pck);
-	ClassDB::bind_method(_MD("_quality_edited"),&ProjectExportDialog::_quality_edited);
-	ClassDB::bind_method(_MD("_shrink_edited"),&ProjectExportDialog::_shrink_edited);
-	ClassDB::bind_method(_MD("_image_export_edited"),&ProjectExportDialog::_image_export_edited);
-	ClassDB::bind_method(_MD("_format_toggled"),&ProjectExportDialog::_format_toggled);
-	ClassDB::bind_method(_MD("_group_changed"),&ProjectExportDialog::_group_changed);
-	ClassDB::bind_method(_MD("_group_add"),&ProjectExportDialog::_group_add);
-	ClassDB::bind_method(_MD("_group_del"),&ProjectExportDialog::_group_del);
-	ClassDB::bind_method(_MD("_group_selected"),&ProjectExportDialog::_group_selected);
-	ClassDB::bind_method(_MD("_update_group"),&ProjectExportDialog::_update_group);
-	ClassDB::bind_method(_MD("_update_group_list"),&ProjectExportDialog::_update_group_list);
-	ClassDB::bind_method(_MD("_select_group"),&ProjectExportDialog::_select_group);
-	ClassDB::bind_method(_MD("_update_group_tree"),&ProjectExportDialog::_update_group_tree);
-	ClassDB::bind_method(_MD("_group_item_edited"),&ProjectExportDialog::_group_item_edited);
-	ClassDB::bind_method(_MD("_save_export_cfg"),&ProjectExportDialog::_save_export_cfg);
-	ClassDB::bind_method(_MD("_image_filter_changed"),&ProjectExportDialog::_image_filter_changed);
-	ClassDB::bind_method(_MD("_group_atlas_preview"),&ProjectExportDialog::_group_atlas_preview);
-	ClassDB::bind_method(_MD("_group_select_all"),&ProjectExportDialog::_group_select_all);
-	ClassDB::bind_method(_MD("_group_select_none"),&ProjectExportDialog::_group_select_none);
-	ClassDB::bind_method(_MD("_script_edited"),&ProjectExportDialog::_script_edited);
-	ClassDB::bind_method(_MD("_update_script"),&ProjectExportDialog::_update_script);
-	ClassDB::bind_method(_MD("_sample_convert_edited"),&ProjectExportDialog::_sample_convert_edited);
+	ClassDB::bind_method(D_METHOD("_rescan"),&ProjectExportDialog::_rescan);
+	ClassDB::bind_method(D_METHOD("_tree_changed"),&ProjectExportDialog::_tree_changed);
+	ClassDB::bind_method(D_METHOD("_scan_finished"),&ProjectExportDialog::_scan_finished);
+	ClassDB::bind_method(D_METHOD("_platform_selected"),&ProjectExportDialog::_platform_selected);
+	ClassDB::bind_method(D_METHOD("_prop_edited"),&ProjectExportDialog::_prop_edited);
+	ClassDB::bind_method(D_METHOD("_export_mode_changed"),&ProjectExportDialog::_export_mode_changed);
+	ClassDB::bind_method(D_METHOD("_filters_edited"),&ProjectExportDialog::_filters_edited);
+	ClassDB::bind_method(D_METHOD("_filters_exclude_edited"),&ProjectExportDialog::_filters_exclude_edited);
+	ClassDB::bind_method(D_METHOD("_export_action"),&ProjectExportDialog::_export_action);
+	ClassDB::bind_method(D_METHOD("_export_action_pck"),&ProjectExportDialog::_export_action_pck);
+	ClassDB::bind_method(D_METHOD("_quality_edited"),&ProjectExportDialog::_quality_edited);
+	ClassDB::bind_method(D_METHOD("_shrink_edited"),&ProjectExportDialog::_shrink_edited);
+	ClassDB::bind_method(D_METHOD("_image_export_edited"),&ProjectExportDialog::_image_export_edited);
+	ClassDB::bind_method(D_METHOD("_format_toggled"),&ProjectExportDialog::_format_toggled);
+	ClassDB::bind_method(D_METHOD("_group_changed"),&ProjectExportDialog::_group_changed);
+	ClassDB::bind_method(D_METHOD("_group_add"),&ProjectExportDialog::_group_add);
+	ClassDB::bind_method(D_METHOD("_group_del"),&ProjectExportDialog::_group_del);
+	ClassDB::bind_method(D_METHOD("_group_selected"),&ProjectExportDialog::_group_selected);
+	ClassDB::bind_method(D_METHOD("_update_group"),&ProjectExportDialog::_update_group);
+	ClassDB::bind_method(D_METHOD("_update_group_list"),&ProjectExportDialog::_update_group_list);
+	ClassDB::bind_method(D_METHOD("_select_group"),&ProjectExportDialog::_select_group);
+	ClassDB::bind_method(D_METHOD("_update_group_tree"),&ProjectExportDialog::_update_group_tree);
+	ClassDB::bind_method(D_METHOD("_group_item_edited"),&ProjectExportDialog::_group_item_edited);
+	ClassDB::bind_method(D_METHOD("_save_export_cfg"),&ProjectExportDialog::_save_export_cfg);
+	ClassDB::bind_method(D_METHOD("_image_filter_changed"),&ProjectExportDialog::_image_filter_changed);
+	ClassDB::bind_method(D_METHOD("_group_atlas_preview"),&ProjectExportDialog::_group_atlas_preview);
+	ClassDB::bind_method(D_METHOD("_group_select_all"),&ProjectExportDialog::_group_select_all);
+	ClassDB::bind_method(D_METHOD("_group_select_none"),&ProjectExportDialog::_group_select_none);
+	ClassDB::bind_method(D_METHOD("_script_edited"),&ProjectExportDialog::_script_edited);
+	ClassDB::bind_method(D_METHOD("_update_script"),&ProjectExportDialog::_update_script);
+	ClassDB::bind_method(D_METHOD("_sample_convert_edited"),&ProjectExportDialog::_sample_convert_edited);
 
 
-	ClassDB::bind_method(_MD("export_platform"),&ProjectExportDialog::export_platform);
-	ClassDB::bind_method(_MD("_create_android_keystore"),&ProjectExportDialog::_create_android_keystore);
-	ClassDB::bind_method(_MD("_check_keystore_path"),&ProjectExportDialog::_check_keystore_path);
-	ClassDB::bind_method(_MD("_keystore_dir_selected"),&ProjectExportDialog::_keystore_dir_selected);
-	ClassDB::bind_method(_MD("_keystore_created"),&ProjectExportDialog::_keystore_created);
+	ClassDB::bind_method(D_METHOD("export_platform"),&ProjectExportDialog::export_platform);
+	ClassDB::bind_method(D_METHOD("_create_android_keystore"),&ProjectExportDialog::_create_android_keystore);
+	ClassDB::bind_method(D_METHOD("_check_keystore_path"),&ProjectExportDialog::_check_keystore_path);
+	ClassDB::bind_method(D_METHOD("_keystore_dir_selected"),&ProjectExportDialog::_keystore_dir_selected);
+	ClassDB::bind_method(D_METHOD("_keystore_created"),&ProjectExportDialog::_keystore_created);
 
 
 	//ADD_SIGNAL(MethodInfo("instance"));

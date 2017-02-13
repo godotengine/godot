@@ -63,7 +63,7 @@ bool GDNativeClass::_get(const StringName& p_name,Variant &r_ret) const {
 
 void GDNativeClass::_bind_methods() {
 
-	ClassDB::bind_method(_MD("new"),&GDNativeClass::_new);
+	ClassDB::bind_method(D_METHOD("new"),&GDNativeClass::_new);
 
 }
 
@@ -789,7 +789,7 @@ void GDScript::_bind_methods() {
 
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
 
-	ClassDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
+	ClassDB::bind_method(D_METHOD("get_as_byte_code"),&GDScript::get_as_byte_code);
 
 }
 

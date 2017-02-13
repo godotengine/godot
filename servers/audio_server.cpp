@@ -1019,52 +1019,52 @@ Ref<AudioBusLayout> AudioServer::generate_bus_layout() const {
 void AudioServer::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_bus_count","amount"),&AudioServer::set_bus_count);
-	ClassDB::bind_method(_MD("get_bus_count"),&AudioServer::get_bus_count);
+	ClassDB::bind_method(D_METHOD("set_bus_count","amount"),&AudioServer::set_bus_count);
+	ClassDB::bind_method(D_METHOD("get_bus_count"),&AudioServer::get_bus_count);
 
-	ClassDB::bind_method(_MD("remove_bus","index"),&AudioServer::remove_bus);
-	ClassDB::bind_method(_MD("add_bus","at_pos"),&AudioServer::add_bus,DEFVAL(-1));
-	ClassDB::bind_method(_MD("move_bus","index","to_index"),&AudioServer::move_bus);
+	ClassDB::bind_method(D_METHOD("remove_bus","index"),&AudioServer::remove_bus);
+	ClassDB::bind_method(D_METHOD("add_bus","at_pos"),&AudioServer::add_bus,DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("move_bus","index","to_index"),&AudioServer::move_bus);
 
-	ClassDB::bind_method(_MD("set_bus_name","bus_idx","name"),&AudioServer::set_bus_name);
-	ClassDB::bind_method(_MD("get_bus_name","bus_idx"),&AudioServer::get_bus_name);
+	ClassDB::bind_method(D_METHOD("set_bus_name","bus_idx","name"),&AudioServer::set_bus_name);
+	ClassDB::bind_method(D_METHOD("get_bus_name","bus_idx"),&AudioServer::get_bus_name);
 
-	ClassDB::bind_method(_MD("set_bus_volume_db","bus_idx","volume_db"),&AudioServer::set_bus_volume_db);
-	ClassDB::bind_method(_MD("get_bus_volume_db","bus_idx"),&AudioServer::get_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("set_bus_volume_db","bus_idx","volume_db"),&AudioServer::set_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("get_bus_volume_db","bus_idx"),&AudioServer::get_bus_volume_db);
 
-	ClassDB::bind_method(_MD("set_bus_send","bus_idx","send"),&AudioServer::set_bus_send);
-	ClassDB::bind_method(_MD("get_bus_send","bus_idx"),&AudioServer::get_bus_send);
+	ClassDB::bind_method(D_METHOD("set_bus_send","bus_idx","send"),&AudioServer::set_bus_send);
+	ClassDB::bind_method(D_METHOD("get_bus_send","bus_idx"),&AudioServer::get_bus_send);
 
-	ClassDB::bind_method(_MD("set_bus_solo","bus_idx","enable"),&AudioServer::set_bus_solo);
-	ClassDB::bind_method(_MD("is_bus_solo","bus_idx"),&AudioServer::is_bus_solo);
+	ClassDB::bind_method(D_METHOD("set_bus_solo","bus_idx","enable"),&AudioServer::set_bus_solo);
+	ClassDB::bind_method(D_METHOD("is_bus_solo","bus_idx"),&AudioServer::is_bus_solo);
 
-	ClassDB::bind_method(_MD("set_bus_mute","bus_idx","enable"),&AudioServer::set_bus_mute);
-	ClassDB::bind_method(_MD("is_bus_mute","bus_idx"),&AudioServer::is_bus_mute);
+	ClassDB::bind_method(D_METHOD("set_bus_mute","bus_idx","enable"),&AudioServer::set_bus_mute);
+	ClassDB::bind_method(D_METHOD("is_bus_mute","bus_idx"),&AudioServer::is_bus_mute);
 
-	ClassDB::bind_method(_MD("set_bus_bypass_effects","bus_idx","enable"),&AudioServer::set_bus_bypass_effects);
-	ClassDB::bind_method(_MD("is_bus_bypassing_effects","bus_idx"),&AudioServer::is_bus_bypassing_effects);
+	ClassDB::bind_method(D_METHOD("set_bus_bypass_effects","bus_idx","enable"),&AudioServer::set_bus_bypass_effects);
+	ClassDB::bind_method(D_METHOD("is_bus_bypassing_effects","bus_idx"),&AudioServer::is_bus_bypassing_effects);
 
-	ClassDB::bind_method(_MD("add_bus_effect","bus_idx","effect:AudioEffect"),&AudioServer::add_bus_effect,DEFVAL(-1));
-	ClassDB::bind_method(_MD("remove_bus_effect","bus_idx","effect_idx"),&AudioServer::remove_bus_effect);
+	ClassDB::bind_method(D_METHOD("add_bus_effect","bus_idx","effect:AudioEffect"),&AudioServer::add_bus_effect,DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_bus_effect","bus_idx","effect_idx"),&AudioServer::remove_bus_effect);
 
-	ClassDB::bind_method(_MD("get_bus_effect_count","bus_idx"),&AudioServer::add_bus_effect);
-	ClassDB::bind_method(_MD("get_bus_effect:AudioEffect","bus_idx","effect_idx"),&AudioServer::get_bus_effect);
-	ClassDB::bind_method(_MD("swap_bus_effects","bus_idx","effect_idx","by_effect_idx"),&AudioServer::swap_bus_effects);
+	ClassDB::bind_method(D_METHOD("get_bus_effect_count","bus_idx"),&AudioServer::add_bus_effect);
+	ClassDB::bind_method(D_METHOD("get_bus_effect:AudioEffect","bus_idx","effect_idx"),&AudioServer::get_bus_effect);
+	ClassDB::bind_method(D_METHOD("swap_bus_effects","bus_idx","effect_idx","by_effect_idx"),&AudioServer::swap_bus_effects);
 
-	ClassDB::bind_method(_MD("set_bus_effect_enabled","bus_idx","effect_idx","enabled"),&AudioServer::set_bus_effect_enabled);
-	ClassDB::bind_method(_MD("is_bus_effect_enabled","bus_idx","effect_idx"),&AudioServer::is_bus_effect_enabled);
+	ClassDB::bind_method(D_METHOD("set_bus_effect_enabled","bus_idx","effect_idx","enabled"),&AudioServer::set_bus_effect_enabled);
+	ClassDB::bind_method(D_METHOD("is_bus_effect_enabled","bus_idx","effect_idx"),&AudioServer::is_bus_effect_enabled);
 
-	ClassDB::bind_method(_MD("get_bus_peak_volume_left_db","bus_idx","channel"),&AudioServer::get_bus_peak_volume_left_db);
-	ClassDB::bind_method(_MD("get_bus_peak_volume_right_db","bus_idx","channel"),&AudioServer::get_bus_peak_volume_right_db);
+	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_left_db","bus_idx","channel"),&AudioServer::get_bus_peak_volume_left_db);
+	ClassDB::bind_method(D_METHOD("get_bus_peak_volume_right_db","bus_idx","channel"),&AudioServer::get_bus_peak_volume_right_db);
 
-	ClassDB::bind_method(_MD("lock"),&AudioServer::lock);
-	ClassDB::bind_method(_MD("unlock"),&AudioServer::unlock);
+	ClassDB::bind_method(D_METHOD("lock"),&AudioServer::lock);
+	ClassDB::bind_method(D_METHOD("unlock"),&AudioServer::unlock);
 
-	ClassDB::bind_method(_MD("get_speaker_mode"),&AudioServer::get_speaker_mode);
-	ClassDB::bind_method(_MD("get_mix_rate"),&AudioServer::get_mix_rate);
+	ClassDB::bind_method(D_METHOD("get_speaker_mode"),&AudioServer::get_speaker_mode);
+	ClassDB::bind_method(D_METHOD("get_mix_rate"),&AudioServer::get_mix_rate);
 
-	ClassDB::bind_method(_MD("set_state","state:AudioServerState"),&AudioServer::set_bus_layout);
-	ClassDB::bind_method(_MD("generate_state:AudioServerState"),&AudioServer::generate_bus_layout);
+	ClassDB::bind_method(D_METHOD("set_state","state:AudioServerState"),&AudioServer::set_bus_layout);
+	ClassDB::bind_method(D_METHOD("generate_state:AudioServerState"),&AudioServer::generate_bus_layout);
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed") );
 }

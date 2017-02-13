@@ -235,12 +235,12 @@ void Slider::set_ticks_on_borders(bool _tob){
 
 void Slider::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&Slider::_gui_input);
-	ClassDB::bind_method(_MD("set_ticks","count"),&Slider::set_ticks);
-	ClassDB::bind_method(_MD("get_ticks"),&Slider::get_ticks);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&Slider::_gui_input);
+	ClassDB::bind_method(D_METHOD("set_ticks","count"),&Slider::set_ticks);
+	ClassDB::bind_method(D_METHOD("get_ticks"),&Slider::get_ticks);
 
-	ClassDB::bind_method(_MD("get_ticks_on_borders"),&Slider::get_ticks_on_borders);
-	ClassDB::bind_method(_MD("set_ticks_on_borders","ticks_on_border"),&Slider::set_ticks_on_borders);
+	ClassDB::bind_method(D_METHOD("get_ticks_on_borders"),&Slider::get_ticks_on_borders);
+	ClassDB::bind_method(D_METHOD("set_ticks_on_borders","ticks_on_border"),&Slider::set_ticks_on_borders);
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "tick_count", PROPERTY_HINT_RANGE,"0,4096,1"), "set_ticks", "get_ticks") ;
         ADD_PROPERTY( PropertyInfo( Variant::BOOL, "ticks_on_borders" ), "set_ticks_on_borders", "get_ticks_on_borders") ;

@@ -79,8 +79,8 @@ String EditorImportPlugin::_expand_source_path(const String& p_path) {
 void EditorImportPlugin::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("validate_source_path","path"),&EditorImportPlugin::_validate_source_path);
-	ClassDB::bind_method(_MD("expand_source_path","path"),&EditorImportPlugin::_expand_source_path);
+	ClassDB::bind_method(D_METHOD("validate_source_path","path"),&EditorImportPlugin::_validate_source_path);
+	ClassDB::bind_method(D_METHOD("expand_source_path","path"),&EditorImportPlugin::_expand_source_path);
 
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::STRING,"get_name"));
 	ClassDB::add_virtual_method(get_class_static(),MethodInfo(Variant::STRING,"get_visible_name"));
@@ -745,7 +745,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			} break; //use default
 		}
 
-		String image_list_md5;
+		String image_listD_METHOD5;
 
 		{
 			MD5_CTX ctx;
@@ -758,7 +758,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			}
 
 			MD5Final(&ctx);
-			image_list_md5=String::md5(ctx.digest);
+			image_listD_METHOD5=String::md5(ctx.digest);
 		}
 		//ok see if cached
 		String md5;
@@ -803,7 +803,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 		if (atlas_valid) {
 			//check md5 of list of image /names/
-			if (f->get_line().strip_edges()!=image_list_md5) {
+			if (f->get_line().strip_edges()!=image_listD_METHOD5) {
 				atlas_valid=false;
 				print_line("IMAGE MD5 INVALID!");
 			}
@@ -829,10 +829,10 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				uint64_t file_mod_time = FileAccess::get_modified_time(F->get());
 				if (mod_time!=file_mod_time) {
 
-					String image_md5 = slices[1];
-					String file_md5 = FileAccess::get_md5(F->get());
+					String imageD_METHOD5 = slices[1];
+					String fileD_METHOD5 = FileAccess::getD_METHOD5(F->get());
 
-					if (image_md5!=file_md5) {
+					if (imageD_METHOD5!=fileD_METHOD5) {
 						atlas_valid=false;
 						print_line("IMAGE INVALID "+slices[0]);
 						break;
@@ -867,7 +867,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 			for (List<StringName>::Element *F=atlas_images.front();F;F=F->next()) {
 
-				imd->add_source(EditorImportPlugin::validate_source_path(F->get()),FileAccess::get_md5(F->get()));
+				imd->add_source(EditorImportPlugin::validate_source_path(F->get()),FileAccess::getD_METHOD5(F->get()));
 
 			}
 
@@ -925,7 +925,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			options["shrink"]=EditorImportExport::get_singleton()->image_export_group_get_shrink(E->get());
 			options["image_format"]=group_format;
 			//f->store_line(options.to_json());
-			f->store_line(image_list_md5);
+			f->store_line(image_listD_METHOD5);
 		}
 
 		//go through all ATEX files
@@ -961,8 +961,8 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				if (f) {
 					//recreating deps..
 					String depline;
-					//depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::get_md5(F->get()); name unneccesary by top md5
-					depline=itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::get_md5(F->get());
+					//depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::getD_METHOD5(F->get()); name unneccesary by top md5
+					depline=itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::getD_METHOD5(F->get());
 					depline+="::"+itos(region.pos.x)+"::"+itos(region.pos.y)+"::"+itos(region.size.x)+"::"+itos(region.size.y);
 					depline+="::"+itos(margin.pos.x)+"::"+itos(margin.pos.y)+"::"+itos(margin.size.x)+"::"+itos(margin.size.y);
 					f->store_line(depline);
@@ -2210,49 +2210,49 @@ PoolVector<String> EditorImportExport::_get_export_platforms() {
 
 void EditorImportExport::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::add_import_plugin);
-	ClassDB::bind_method(_MD("remove_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::remove_import_plugin);
-	ClassDB::bind_method(_MD("get_import_plugin_count"),&EditorImportExport::get_import_plugin_count);
-	ClassDB::bind_method(_MD("get_import_plugin:EditorImportPlugin","idx"),&EditorImportExport::get_import_plugin);
-	ClassDB::bind_method(_MD("get_import_plugin_by_name:EditorImportPlugin","name"),&EditorImportExport::get_import_plugin_by_name);
+	ClassDB::bind_method(D_METHOD("add_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::add_import_plugin);
+	ClassDB::bind_method(D_METHOD("remove_import_plugin","plugin:EditorImportPlugin"),&EditorImportExport::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("get_import_plugin_count"),&EditorImportExport::get_import_plugin_count);
+	ClassDB::bind_method(D_METHOD("get_import_plugin:EditorImportPlugin","idx"),&EditorImportExport::get_import_plugin);
+	ClassDB::bind_method(D_METHOD("get_import_plugin_by_name:EditorImportPlugin","name"),&EditorImportExport::get_import_plugin_by_name);
 
-	ClassDB::bind_method(_MD("add_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::add_export_plugin);
-	ClassDB::bind_method(_MD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::remove_export_plugin);
-	ClassDB::bind_method(_MD("get_export_plugin_count"),&EditorImportExport::get_export_plugin_count);
-	ClassDB::bind_method(_MD("get_export_plugin:EditorExportPlugin","idx"),&EditorImportExport::get_export_plugin);
+	ClassDB::bind_method(D_METHOD("add_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::add_export_plugin);
+	ClassDB::bind_method(D_METHOD("remove_export_plugin","plugin:EditorExportPlugin"),&EditorImportExport::remove_export_plugin);
+	ClassDB::bind_method(D_METHOD("get_export_plugin_count"),&EditorImportExport::get_export_plugin_count);
+	ClassDB::bind_method(D_METHOD("get_export_plugin:EditorExportPlugin","idx"),&EditorImportExport::get_export_plugin);
 
-	ClassDB::bind_method(_MD("set_export_file_action","file","action"),&EditorImportExport::set_export_file_action);
-	ClassDB::bind_method(_MD("get_export_file_action","file"),&EditorImportExport::get_export_file_action);
-	ClassDB::bind_method(_MD("get_export_file_list"),&EditorImportExport::_get_export_file_list);
+	ClassDB::bind_method(D_METHOD("set_export_file_action","file","action"),&EditorImportExport::set_export_file_action);
+	ClassDB::bind_method(D_METHOD("get_export_file_action","file"),&EditorImportExport::get_export_file_action);
+	ClassDB::bind_method(D_METHOD("get_export_file_list"),&EditorImportExport::_get_export_file_list);
 
-	ClassDB::bind_method(_MD("add_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
-	//ClassDB::bind_method(_MD("remove_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
-	ClassDB::bind_method(_MD("get_export_platform:EditorExportPlatform","name"),&EditorImportExport::get_export_platform);
-	ClassDB::bind_method(_MD("get_export_platforms"),&EditorImportExport::_get_export_platforms);
+	ClassDB::bind_method(D_METHOD("add_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
+	//ClassDB::bind_method(D_METHOD("remove_export_platform","platform:EditorExportplatform"),&EditorImportExport::add_export_platform);
+	ClassDB::bind_method(D_METHOD("get_export_platform:EditorExportPlatform","name"),&EditorImportExport::get_export_platform);
+	ClassDB::bind_method(D_METHOD("get_export_platforms"),&EditorImportExport::_get_export_platforms);
 
-	ClassDB::bind_method(_MD("set_export_filter","filter"),&EditorImportExport::set_export_filter);
-	ClassDB::bind_method(_MD("get_export_filter"),&EditorImportExport::get_export_filter);
+	ClassDB::bind_method(D_METHOD("set_export_filter","filter"),&EditorImportExport::set_export_filter);
+	ClassDB::bind_method(D_METHOD("get_export_filter"),&EditorImportExport::get_export_filter);
 
-	ClassDB::bind_method(_MD("set_export_custom_filter","filter"),&EditorImportExport::set_export_custom_filter);
-	ClassDB::bind_method(_MD("get_export_custom_filter"),&EditorImportExport::get_export_custom_filter);
+	ClassDB::bind_method(D_METHOD("set_export_custom_filter","filter"),&EditorImportExport::set_export_custom_filter);
+	ClassDB::bind_method(D_METHOD("get_export_custom_filter"),&EditorImportExport::get_export_custom_filter);
 
-	ClassDB::bind_method(_MD("set_export_custom_filter_exclude","filter_exclude"),&EditorImportExport::set_export_custom_filter_exclude);
-	ClassDB::bind_method(_MD("get_export_custom_filter_exclude"),&EditorImportExport::get_export_custom_filter_exclude);
+	ClassDB::bind_method(D_METHOD("set_export_custom_filter_exclude","filter_exclude"),&EditorImportExport::set_export_custom_filter_exclude);
+	ClassDB::bind_method(D_METHOD("get_export_custom_filter_exclude"),&EditorImportExport::get_export_custom_filter_exclude);
 
 
-	ClassDB::bind_method(_MD("image_export_group_create"),&EditorImportExport::image_export_group_create);
-	ClassDB::bind_method(_MD("image_export_group_remove"),&EditorImportExport::image_export_group_remove);
-	ClassDB::bind_method(_MD("image_export_group_set_image_action"),&EditorImportExport::image_export_group_set_image_action);
-	ClassDB::bind_method(_MD("image_export_group_set_make_atlas"),&EditorImportExport::image_export_group_set_make_atlas);
-	ClassDB::bind_method(_MD("image_export_group_set_shrink"),&EditorImportExport::image_export_group_set_shrink);
-	ClassDB::bind_method(_MD("image_export_group_get_image_action"),&EditorImportExport::image_export_group_get_image_action);
-	ClassDB::bind_method(_MD("image_export_group_get_make_atlas"),&EditorImportExport::image_export_group_get_make_atlas);
-	ClassDB::bind_method(_MD("image_export_group_get_shrink"),&EditorImportExport::image_export_group_get_shrink);
-	ClassDB::bind_method(_MD("image_add_to_export_group"),&EditorImportExport::image_add_to_export_group);
-	ClassDB::bind_method(_MD("script_set_action"),&EditorImportExport::script_set_action);
-	ClassDB::bind_method(_MD("script_set_encryption_key"),&EditorImportExport::script_set_encryption_key);
-	ClassDB::bind_method(_MD("script_get_action"),&EditorImportExport::script_get_action);
-	ClassDB::bind_method(_MD("script_get_encryption_key"),&EditorImportExport::script_get_encryption_key);
+	ClassDB::bind_method(D_METHOD("image_export_group_create"),&EditorImportExport::image_export_group_create);
+	ClassDB::bind_method(D_METHOD("image_export_group_remove"),&EditorImportExport::image_export_group_remove);
+	ClassDB::bind_method(D_METHOD("image_export_group_set_image_action"),&EditorImportExport::image_export_group_set_image_action);
+	ClassDB::bind_method(D_METHOD("image_export_group_set_make_atlas"),&EditorImportExport::image_export_group_set_make_atlas);
+	ClassDB::bind_method(D_METHOD("image_export_group_set_shrink"),&EditorImportExport::image_export_group_set_shrink);
+	ClassDB::bind_method(D_METHOD("image_export_group_get_image_action"),&EditorImportExport::image_export_group_get_image_action);
+	ClassDB::bind_method(D_METHOD("image_export_group_get_make_atlas"),&EditorImportExport::image_export_group_get_make_atlas);
+	ClassDB::bind_method(D_METHOD("image_export_group_get_shrink"),&EditorImportExport::image_export_group_get_shrink);
+	ClassDB::bind_method(D_METHOD("image_add_to_export_group"),&EditorImportExport::image_add_to_export_group);
+	ClassDB::bind_method(D_METHOD("script_set_action"),&EditorImportExport::script_set_action);
+	ClassDB::bind_method(D_METHOD("script_set_encryption_key"),&EditorImportExport::script_set_encryption_key);
+	ClassDB::bind_method(D_METHOD("script_get_action"),&EditorImportExport::script_get_action);
+	ClassDB::bind_method(D_METHOD("script_get_encryption_key"),&EditorImportExport::script_get_encryption_key);
 
 
 

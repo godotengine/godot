@@ -1344,20 +1344,20 @@ void TileMapEditor::_icon_size_changed(float p_value) {
 
 void TileMapEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_entered"),&TileMapEditor::_text_entered);
-	ClassDB::bind_method(_MD("_text_changed"),&TileMapEditor::_text_changed);
-	ClassDB::bind_method(_MD("_sbox_input"),&TileMapEditor::_sbox_input);
-	ClassDB::bind_method(_MD("_menu_option"),&TileMapEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&TileMapEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_canvas_mouse_enter"),&TileMapEditor::_canvas_mouse_enter);
-	ClassDB::bind_method(_MD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
-	ClassDB::bind_method(_MD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
-	ClassDB::bind_method(_MD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
+	ClassDB::bind_method(D_METHOD("_text_entered"),&TileMapEditor::_text_entered);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&TileMapEditor::_text_changed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&TileMapEditor::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&TileMapEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&TileMapEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_canvas_mouse_enter"),&TileMapEditor::_canvas_mouse_enter);
+	ClassDB::bind_method(D_METHOD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
+	ClassDB::bind_method(D_METHOD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
+	ClassDB::bind_method(D_METHOD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
 
-	ClassDB::bind_method(_MD("_fill_points"),&TileMapEditor::_fill_points);
-	ClassDB::bind_method(_MD("_erase_points"),&TileMapEditor::_erase_points);
+	ClassDB::bind_method(D_METHOD("_fill_points"),&TileMapEditor::_fill_points);
+	ClassDB::bind_method(D_METHOD("_erase_points"),&TileMapEditor::_erase_points);
 
-	ClassDB::bind_method(_MD("_icon_size_changed"), &TileMapEditor::_icon_size_changed);
+	ClassDB::bind_method(D_METHOD("_icon_size_changed"), &TileMapEditor::_icon_size_changed);
 }
 
 TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)

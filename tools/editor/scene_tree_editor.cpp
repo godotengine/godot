@@ -1124,11 +1124,11 @@ void SceneTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method("_editor_settings_changed", &SceneTreeEditor::_editor_settings_changed);
 
-	ClassDB::bind_method(_MD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
-	ClassDB::bind_method(_MD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
-	ClassDB::bind_method(_MD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
 
-	ClassDB::bind_method(_MD("update_tree"), &SceneTreeEditor::update_tree);
+	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
 	ADD_SIGNAL( MethodInfo("node_selected") );
 	ADD_SIGNAL( MethodInfo("node_renamed") );

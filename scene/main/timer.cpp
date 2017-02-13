@@ -179,25 +179,25 @@ void Timer::_set_process(bool p_process, bool p_force)
 
 void Timer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_wait_time","time_sec"),&Timer::set_wait_time);
-	ClassDB::bind_method(_MD("get_wait_time"),&Timer::get_wait_time);
+	ClassDB::bind_method(D_METHOD("set_wait_time","time_sec"),&Timer::set_wait_time);
+	ClassDB::bind_method(D_METHOD("get_wait_time"),&Timer::get_wait_time);
 
-	ClassDB::bind_method(_MD("set_one_shot","enable"),&Timer::set_one_shot);
-	ClassDB::bind_method(_MD("is_one_shot"),&Timer::is_one_shot);
+	ClassDB::bind_method(D_METHOD("set_one_shot","enable"),&Timer::set_one_shot);
+	ClassDB::bind_method(D_METHOD("is_one_shot"),&Timer::is_one_shot);
 
-	ClassDB::bind_method(_MD("set_autostart","enable"),&Timer::set_autostart);
-	ClassDB::bind_method(_MD("has_autostart"),&Timer::has_autostart);
+	ClassDB::bind_method(D_METHOD("set_autostart","enable"),&Timer::set_autostart);
+	ClassDB::bind_method(D_METHOD("has_autostart"),&Timer::has_autostart);
 
-	ClassDB::bind_method(_MD("start"),&Timer::start);
-	ClassDB::bind_method(_MD("stop"),&Timer::stop);
+	ClassDB::bind_method(D_METHOD("start"),&Timer::start);
+	ClassDB::bind_method(D_METHOD("stop"),&Timer::stop);
 
-	ClassDB::bind_method(_MD("set_active", "active"), &Timer::set_active);
-	ClassDB::bind_method(_MD("is_active"), &Timer::is_active);
+	ClassDB::bind_method(D_METHOD("set_active", "active"), &Timer::set_active);
+	ClassDB::bind_method(D_METHOD("is_active"), &Timer::is_active);
 
-	ClassDB::bind_method(_MD("get_time_left"),&Timer::get_time_left);
+	ClassDB::bind_method(D_METHOD("get_time_left"),&Timer::get_time_left);
 
-	ClassDB::bind_method(_MD("set_timer_process_mode", "mode"), &Timer::set_timer_process_mode);
-	ClassDB::bind_method(_MD("get_timer_process_mode"), &Timer::get_timer_process_mode);
+	ClassDB::bind_method(D_METHOD("set_timer_process_mode", "mode"), &Timer::set_timer_process_mode);
+	ClassDB::bind_method(D_METHOD("get_timer_process_mode"), &Timer::get_timer_process_mode);
 
 	ADD_SIGNAL( MethodInfo("timeout") );
 

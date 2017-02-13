@@ -775,19 +775,19 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 
 void Polygon2DEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_option"),&Polygon2DEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_uv_mode"),&Polygon2DEditor::_uv_mode);
-	ClassDB::bind_method(_MD("_uv_draw"),&Polygon2DEditor::_uv_draw);
-	ClassDB::bind_method(_MD("_uv_input"),&Polygon2DEditor::_uv_input);
-	ClassDB::bind_method(_MD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
-	ClassDB::bind_method(_MD("_node_removed"),&Polygon2DEditor::_node_removed);
-	ClassDB::bind_method(_MD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
-	ClassDB::bind_method(_MD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
-	ClassDB::bind_method(_MD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
-	ClassDB::bind_method(_MD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
-	ClassDB::bind_method(_MD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
-	ClassDB::bind_method(_MD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&Polygon2DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_uv_mode"),&Polygon2DEditor::_uv_mode);
+	ClassDB::bind_method(D_METHOD("_uv_draw"),&Polygon2DEditor::_uv_draw);
+	ClassDB::bind_method(D_METHOD("_uv_input"),&Polygon2DEditor::_uv_input);
+	ClassDB::bind_method(D_METHOD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&Polygon2DEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
+	ClassDB::bind_method(D_METHOD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
 
 
 }

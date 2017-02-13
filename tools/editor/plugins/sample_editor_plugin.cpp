@@ -349,9 +349,9 @@ void SampleEditor::edit(Ref<Sample> p_sample) {
 
 void SampleEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&SampleEditor::_gui_input);
-	ClassDB::bind_method(_MD("_play_pressed"),&SampleEditor::_play_pressed);
-	ClassDB::bind_method(_MD("_stop_pressed"),&SampleEditor::_stop_pressed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&SampleEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_play_pressed"),&SampleEditor::_play_pressed);
+	ClassDB::bind_method(D_METHOD("_stop_pressed"),&SampleEditor::_stop_pressed);
 
 }
 

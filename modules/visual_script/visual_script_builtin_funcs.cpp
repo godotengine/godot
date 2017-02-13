@@ -1166,8 +1166,8 @@ VisualScriptNodeInstance* VisualScriptBuiltinFunc::instance(VisualScriptInstance
 
 void VisualScriptBuiltinFunc::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_func","which"),&VisualScriptBuiltinFunc::set_func);
-	ClassDB::bind_method(_MD("get_func"),&VisualScriptBuiltinFunc::get_func);
+	ClassDB::bind_method(D_METHOD("set_func","which"),&VisualScriptBuiltinFunc::set_func);
+	ClassDB::bind_method(D_METHOD("get_func"),&VisualScriptBuiltinFunc::get_func);
 
 	String cc;
 

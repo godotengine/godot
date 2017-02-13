@@ -40,7 +40,7 @@ Performance *Performance::singleton=NULL;
 
 void Performance::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_monitor","monitor"),&Performance::get_monitor);
+	ClassDB::bind_method(D_METHOD("get_monitor","monitor"),&Performance::get_monitor);
 
 	BIND_CONSTANT( TIME_FPS );
 	BIND_CONSTANT( TIME_PROCESS );

@@ -38,11 +38,11 @@ extern char* launch_dir_ptr;
 
 void PaymentService::_bind_methods() {
 
-	ClassDB::bind_method(_MD("request_product_info"),&PaymentService::request_product_info);
-	ClassDB::bind_method(_MD("purchase"),&PaymentService::purchase);
+	ClassDB::bind_method(D_METHOD("request_product_info"),&PaymentService::request_product_info);
+	ClassDB::bind_method(D_METHOD("purchase"),&PaymentService::purchase);
 
-	ClassDB::bind_method(_MD("get_pending_event_count"),&PaymentService::get_pending_event_count);
-	ClassDB::bind_method(_MD("pop_pending_event"),&PaymentService::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&PaymentService::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"),&PaymentService::pop_pending_event);
 };
 
 Error PaymentService::request_product_info(Variant p_params) {

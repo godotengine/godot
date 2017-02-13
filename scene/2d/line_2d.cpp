@@ -236,46 +236,46 @@ void Line2D::_gradient_changed() {
 // static
 void Line2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_points","points"), &Line2D::set_points);
-	ClassDB::bind_method(_MD("get_points"), &Line2D::get_points);
+	ClassDB::bind_method(D_METHOD("set_points","points"), &Line2D::set_points);
+	ClassDB::bind_method(D_METHOD("get_points"), &Line2D::get_points);
 
-	ClassDB::bind_method(_MD("set_point_pos","i", "pos"), &Line2D::set_point_pos);
-	ClassDB::bind_method(_MD("get_point_pos", "i"), &Line2D::get_point_pos);
+	ClassDB::bind_method(D_METHOD("set_point_pos","i", "pos"), &Line2D::set_point_pos);
+	ClassDB::bind_method(D_METHOD("get_point_pos", "i"), &Line2D::get_point_pos);
 
-	ClassDB::bind_method(_MD("get_point_count"), &Line2D::get_point_count);
+	ClassDB::bind_method(D_METHOD("get_point_count"), &Line2D::get_point_count);
 
-	ClassDB::bind_method(_MD("add_point", "pos"), &Line2D::add_point);
-	ClassDB::bind_method(_MD("remove_point", "i"), &Line2D::remove_point);
+	ClassDB::bind_method(D_METHOD("add_point", "pos"), &Line2D::add_point);
+	ClassDB::bind_method(D_METHOD("remove_point", "i"), &Line2D::remove_point);
 
-	ClassDB::bind_method(_MD("set_width","width"), &Line2D::set_width);
-	ClassDB::bind_method(_MD("get_width"), &Line2D::get_width);
+	ClassDB::bind_method(D_METHOD("set_width","width"), &Line2D::set_width);
+	ClassDB::bind_method(D_METHOD("get_width"), &Line2D::get_width);
 
-	ClassDB::bind_method(_MD("set_default_color", "color"), &Line2D::set_default_color);
-	ClassDB::bind_method(_MD("get_default_color"), &Line2D::get_default_color);
+	ClassDB::bind_method(D_METHOD("set_default_color", "color"), &Line2D::set_default_color);
+	ClassDB::bind_method(D_METHOD("get_default_color"), &Line2D::get_default_color);
 
-	ClassDB::bind_method(_MD("set_gradient", "color"), &Line2D::set_gradient);
-	ClassDB::bind_method(_MD("get_gradient"), &Line2D::get_gradient);
+	ClassDB::bind_method(D_METHOD("set_gradient", "color"), &Line2D::set_gradient);
+	ClassDB::bind_method(D_METHOD("get_gradient"), &Line2D::get_gradient);
 
-	ClassDB::bind_method(_MD("set_texture", "texture"), &Line2D::set_texture);
-	ClassDB::bind_method(_MD("get_texture"), &Line2D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &Line2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"), &Line2D::get_texture);
 
-	ClassDB::bind_method(_MD("set_texture_mode", "mode"), &Line2D::set_texture_mode);
-	ClassDB::bind_method(_MD("get_texture_mode"), &Line2D::get_texture_mode);
+	ClassDB::bind_method(D_METHOD("set_texture_mode", "mode"), &Line2D::set_texture_mode);
+	ClassDB::bind_method(D_METHOD("get_texture_mode"), &Line2D::get_texture_mode);
 
-	ClassDB::bind_method(_MD("set_joint_mode", "mode"), &Line2D::set_joint_mode);
-	ClassDB::bind_method(_MD("get_joint_mode"), &Line2D::get_joint_mode);
+	ClassDB::bind_method(D_METHOD("set_joint_mode", "mode"), &Line2D::set_joint_mode);
+	ClassDB::bind_method(D_METHOD("get_joint_mode"), &Line2D::get_joint_mode);
 
-	ClassDB::bind_method(_MD("set_begin_cap_mode", "mode"), &Line2D::set_begin_cap_mode);
-	ClassDB::bind_method(_MD("get_begin_cap_mode"), &Line2D::get_begin_cap_mode);
+	ClassDB::bind_method(D_METHOD("set_begin_cap_mode", "mode"), &Line2D::set_begin_cap_mode);
+	ClassDB::bind_method(D_METHOD("get_begin_cap_mode"), &Line2D::get_begin_cap_mode);
 
-	ClassDB::bind_method(_MD("set_end_cap_mode", "mode"), &Line2D::set_end_cap_mode);
-	ClassDB::bind_method(_MD("get_end_cap_mode"), &Line2D::get_end_cap_mode);
+	ClassDB::bind_method(D_METHOD("set_end_cap_mode", "mode"), &Line2D::set_end_cap_mode);
+	ClassDB::bind_method(D_METHOD("get_end_cap_mode"), &Line2D::get_end_cap_mode);
 
-	ClassDB::bind_method(_MD("set_sharp_limit", "limit"), &Line2D::set_sharp_limit);
-	ClassDB::bind_method(_MD("get_sharp_limit"), &Line2D::get_sharp_limit);
+	ClassDB::bind_method(D_METHOD("set_sharp_limit", "limit"), &Line2D::set_sharp_limit);
+	ClassDB::bind_method(D_METHOD("get_sharp_limit"), &Line2D::get_sharp_limit);
 
-	ClassDB::bind_method(_MD("set_round_precision", "precision"), &Line2D::set_round_precision);
-	ClassDB::bind_method(_MD("get_round_precision"), &Line2D::get_round_precision);
+	ClassDB::bind_method(D_METHOD("set_round_precision", "precision"), &Line2D::set_round_precision);
+	ClassDB::bind_method(D_METHOD("get_round_precision"), &Line2D::get_round_precision);
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width"), "set_width", "get_width");
@@ -300,7 +300,7 @@ void Line2D::_bind_methods() {
 	BIND_CONSTANT(LINE_TEXTURE_NONE);
 	BIND_CONSTANT(LINE_TEXTURE_TILE);
 
-	ClassDB::bind_method(_MD("_gradient_changed"), &Line2D::_gradient_changed);
+	ClassDB::bind_method(D_METHOD("_gradient_changed"), &Line2D::_gradient_changed);
 
 }
 

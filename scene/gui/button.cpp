@@ -228,16 +228,16 @@ Button::TextAlign Button::get_text_align() const {
 
 void Button::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_text","text"),&Button::set_text);
-	ClassDB::bind_method(_MD("get_text"),&Button::get_text);
-	ClassDB::bind_method(_MD("set_button_icon","texture:Texture"),&Button::set_icon);
-	ClassDB::bind_method(_MD("get_button_icon:Texture"),&Button::get_icon);
-	ClassDB::bind_method(_MD("set_flat","enabled"),&Button::set_flat);
-	ClassDB::bind_method(_MD("set_clip_text","enabled"),&Button::set_clip_text);
-	ClassDB::bind_method(_MD("get_clip_text"),&Button::get_clip_text);
-	ClassDB::bind_method(_MD("set_text_align","align"),&Button::set_text_align);
-	ClassDB::bind_method(_MD("get_text_align"),&Button::get_text_align);
-	ClassDB::bind_method(_MD("is_flat"),&Button::is_flat);
+	ClassDB::bind_method(D_METHOD("set_text","text"),&Button::set_text);
+	ClassDB::bind_method(D_METHOD("get_text"),&Button::get_text);
+	ClassDB::bind_method(D_METHOD("set_button_icon","texture:Texture"),&Button::set_icon);
+	ClassDB::bind_method(D_METHOD("get_button_icon:Texture"),&Button::get_icon);
+	ClassDB::bind_method(D_METHOD("set_flat","enabled"),&Button::set_flat);
+	ClassDB::bind_method(D_METHOD("set_clip_text","enabled"),&Button::set_clip_text);
+	ClassDB::bind_method(D_METHOD("get_clip_text"),&Button::get_clip_text);
+	ClassDB::bind_method(D_METHOD("set_text_align","align"),&Button::set_text_align);
+	ClassDB::bind_method(D_METHOD("get_text_align"),&Button::get_text_align);
+	ClassDB::bind_method(D_METHOD("is_flat"),&Button::is_flat);
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );

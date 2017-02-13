@@ -46,13 +46,13 @@ void Script::_notification( int p_what) {
 
 void Script::_bind_methods() {
 
-	ClassDB::bind_method(_MD("can_instance"),&Script::can_instance);
-	//ClassDB::bind_method(_MD("instance_create","base_object"),&Script::instance_create);
-	ClassDB::bind_method(_MD("instance_has","base_object"),&Script::instance_has);
-	ClassDB::bind_method(_MD("has_source_code"),&Script::has_source_code);
-	ClassDB::bind_method(_MD("get_source_code"),&Script::get_source_code);
-	ClassDB::bind_method(_MD("set_source_code","source"),&Script::set_source_code);
-	ClassDB::bind_method(_MD("reload","keep_state"),&Script::reload,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("can_instance"),&Script::can_instance);
+	//ClassDB::bind_method(D_METHOD("instance_create","base_object"),&Script::instance_create);
+	ClassDB::bind_method(D_METHOD("instance_has","base_object"),&Script::instance_has);
+	ClassDB::bind_method(D_METHOD("has_source_code"),&Script::has_source_code);
+	ClassDB::bind_method(D_METHOD("get_source_code"),&Script::get_source_code);
+	ClassDB::bind_method(D_METHOD("set_source_code","source"),&Script::set_source_code);
+	ClassDB::bind_method(D_METHOD("reload","keep_state"),&Script::reload,DEFVAL(false));
 
 }
 

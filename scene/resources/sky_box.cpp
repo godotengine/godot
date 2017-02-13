@@ -16,8 +16,8 @@ SkyBox::RadianceSize SkyBox::get_radiance_size() const {
 
 void SkyBox::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_radiance_size","size"),&SkyBox::set_radiance_size);
-	ClassDB::bind_method(_MD("get_radiance_size"),&SkyBox::get_radiance_size);
+	ClassDB::bind_method(D_METHOD("set_radiance_size","size"),&SkyBox::set_radiance_size);
+	ClassDB::bind_method(D_METHOD("get_radiance_size"),&SkyBox::get_radiance_size);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"radiance_size",PROPERTY_HINT_ENUM,"256,512,1024,2048"),"set_radiance_size","get_radiance_size");
 
@@ -113,8 +113,8 @@ RID ImageSkyBox::get_rid() const {
 
 void ImageSkyBox::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_image_path","image","path"),&ImageSkyBox::set_image_path);
-	ClassDB::bind_method(_MD("get_image_path","image"),&ImageSkyBox::get_image_path);
+	ClassDB::bind_method(D_METHOD("set_image_path","image","path"),&ImageSkyBox::set_image_path);
+	ClassDB::bind_method(D_METHOD("get_image_path","image"),&ImageSkyBox::get_image_path);
 
 	List<String> extensions;
 	ImageLoader::get_recognized_extensions(&extensions);

@@ -284,33 +284,33 @@ void AudioEffectChorus::_validate_property(PropertyInfo& property) const {
 
 void AudioEffectChorus::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_voice_count","voices"),&AudioEffectChorus::set_voice_count);
-	ClassDB::bind_method(_MD("get_voice_count"),&AudioEffectChorus::get_voice_count);
+	ClassDB::bind_method(D_METHOD("set_voice_count","voices"),&AudioEffectChorus::set_voice_count);
+	ClassDB::bind_method(D_METHOD("get_voice_count"),&AudioEffectChorus::get_voice_count);
 
 
-	ClassDB::bind_method(_MD("set_voice_delay_ms","voice_idx","delay_ms"),&AudioEffectChorus::set_voice_delay_ms);
-	ClassDB::bind_method(_MD("get_voice_delay_ms","voice_idx"),&AudioEffectChorus::get_voice_delay_ms);
+	ClassDB::bind_method(D_METHOD("set_voice_delay_ms","voice_idx","delay_ms"),&AudioEffectChorus::set_voice_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_voice_delay_ms","voice_idx"),&AudioEffectChorus::get_voice_delay_ms);
 
-	ClassDB::bind_method(_MD("set_voice_rate_hz","voice_idx","rate_hz"),&AudioEffectChorus::set_voice_rate_hz);
-	ClassDB::bind_method(_MD("get_voice_rate_hz","voice_idx"),&AudioEffectChorus::get_voice_rate_hz);
+	ClassDB::bind_method(D_METHOD("set_voice_rate_hz","voice_idx","rate_hz"),&AudioEffectChorus::set_voice_rate_hz);
+	ClassDB::bind_method(D_METHOD("get_voice_rate_hz","voice_idx"),&AudioEffectChorus::get_voice_rate_hz);
 
-	ClassDB::bind_method(_MD("set_voice_depth_ms","voice_idx","depth_ms"),&AudioEffectChorus::set_voice_depth_ms);
-	ClassDB::bind_method(_MD("get_voice_depth_ms","voice_idx"),&AudioEffectChorus::get_voice_depth_ms);
+	ClassDB::bind_method(D_METHOD("set_voice_depth_ms","voice_idx","depth_ms"),&AudioEffectChorus::set_voice_depth_ms);
+	ClassDB::bind_method(D_METHOD("get_voice_depth_ms","voice_idx"),&AudioEffectChorus::get_voice_depth_ms);
 
-	ClassDB::bind_method(_MD("set_voice_level_db","voice_idx","level_db"),&AudioEffectChorus::set_voice_level_db);
-	ClassDB::bind_method(_MD("get_voice_level_db","voice_idx"),&AudioEffectChorus::get_voice_level_db);
+	ClassDB::bind_method(D_METHOD("set_voice_level_db","voice_idx","level_db"),&AudioEffectChorus::set_voice_level_db);
+	ClassDB::bind_method(D_METHOD("get_voice_level_db","voice_idx"),&AudioEffectChorus::get_voice_level_db);
 
-	ClassDB::bind_method(_MD("set_voice_cutoff_hz","voice_idx","cutoff_hz"),&AudioEffectChorus::set_voice_cutoff_hz);
-	ClassDB::bind_method(_MD("get_voice_cutoff_hz","voice_idx"),&AudioEffectChorus::get_voice_cutoff_hz);
+	ClassDB::bind_method(D_METHOD("set_voice_cutoff_hz","voice_idx","cutoff_hz"),&AudioEffectChorus::set_voice_cutoff_hz);
+	ClassDB::bind_method(D_METHOD("get_voice_cutoff_hz","voice_idx"),&AudioEffectChorus::get_voice_cutoff_hz);
 
-	ClassDB::bind_method(_MD("set_voice_pan","voice_idx","pan"),&AudioEffectChorus::set_voice_pan);
-	ClassDB::bind_method(_MD("get_voice_pan","voice_idx"),&AudioEffectChorus::get_voice_pan);
+	ClassDB::bind_method(D_METHOD("set_voice_pan","voice_idx","pan"),&AudioEffectChorus::set_voice_pan);
+	ClassDB::bind_method(D_METHOD("get_voice_pan","voice_idx"),&AudioEffectChorus::get_voice_pan);
 
-	ClassDB::bind_method(_MD("set_wet","amount"),&AudioEffectChorus::set_wet);
-	ClassDB::bind_method(_MD("get_wet"),&AudioEffectChorus::get_wet);
+	ClassDB::bind_method(D_METHOD("set_wet","amount"),&AudioEffectChorus::set_wet);
+	ClassDB::bind_method(D_METHOD("get_wet"),&AudioEffectChorus::get_wet);
 
-	ClassDB::bind_method(_MD("set_dry","amount"),&AudioEffectChorus::set_dry);
-	ClassDB::bind_method(_MD("get_dry"),&AudioEffectChorus::get_dry);
+	ClassDB::bind_method(D_METHOD("set_dry","amount"),&AudioEffectChorus::set_dry);
+	ClassDB::bind_method(D_METHOD("get_dry"),&AudioEffectChorus::get_dry);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"voice_count",PROPERTY_HINT_RANGE,"1,4,1"),"set_voice_count","get_voice_count");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_dry","get_dry");

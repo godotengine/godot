@@ -110,8 +110,8 @@ PoolVector<Vector3> ConcavePolygonShape::get_faces() const {
 
 void ConcavePolygonShape::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_faces","faces"),&ConcavePolygonShape::set_faces);
-	ClassDB::bind_method(_MD("get_faces"),&ConcavePolygonShape::get_faces);
+	ClassDB::bind_method(D_METHOD("set_faces","faces"),&ConcavePolygonShape::set_faces);
+	ClassDB::bind_method(D_METHOD("get_faces"),&ConcavePolygonShape::get_faces);
 }
 
 ConcavePolygonShape::ConcavePolygonShape() : Shape( PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_CONCAVE_POLYGON)) {

@@ -228,22 +228,22 @@ bool CollisionObject::is_ray_pickable() const {
 
 void CollisionObject::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_shape","shape:Shape","transform"),&CollisionObject::add_shape,DEFVAL(Transform()));
-	ClassDB::bind_method(_MD("get_shape_count"),&CollisionObject::get_shape_count);
-	ClassDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject::set_shape);
-	ClassDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
-//    ClassDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
-	ClassDB::bind_method(_MD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject::set_shape_as_trigger);
-	ClassDB::bind_method(_MD("is_shape_set_as_trigger","shape_idx"),&CollisionObject::is_shape_set_as_trigger);
-	ClassDB::bind_method(_MD("get_shape:Shape","shape_idx"),&CollisionObject::get_shape);
-	ClassDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject::get_shape_transform);
-	ClassDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject::remove_shape);
-	ClassDB::bind_method(_MD("clear_shapes"),&CollisionObject::clear_shapes);
-	ClassDB::bind_method(_MD("set_ray_pickable","ray_pickable"),&CollisionObject::set_ray_pickable);
-	ClassDB::bind_method(_MD("is_ray_pickable"),&CollisionObject::is_ray_pickable);
-	ClassDB::bind_method(_MD("set_capture_input_on_drag","enable"),&CollisionObject::set_capture_input_on_drag);
-	ClassDB::bind_method(_MD("get_capture_input_on_drag"),&CollisionObject::get_capture_input_on_drag);
-	ClassDB::bind_method(_MD("get_rid"),&CollisionObject::get_rid);
+	ClassDB::bind_method(D_METHOD("add_shape","shape:Shape","transform"),&CollisionObject::add_shape,DEFVAL(Transform()));
+	ClassDB::bind_method(D_METHOD("get_shape_count"),&CollisionObject::get_shape_count);
+	ClassDB::bind_method(D_METHOD("set_shape","shape_idx","shape:Shape"),&CollisionObject::set_shape);
+	ClassDB::bind_method(D_METHOD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
+//    ClassDB::bind_method(D_METHOD("set_shape_transform","shape_idx","transform"),&CollisionObject::set_shape_transform);
+	ClassDB::bind_method(D_METHOD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject::set_shape_as_trigger);
+	ClassDB::bind_method(D_METHOD("is_shape_set_as_trigger","shape_idx"),&CollisionObject::is_shape_set_as_trigger);
+	ClassDB::bind_method(D_METHOD("get_shape:Shape","shape_idx"),&CollisionObject::get_shape);
+	ClassDB::bind_method(D_METHOD("get_shape_transform","shape_idx"),&CollisionObject::get_shape_transform);
+	ClassDB::bind_method(D_METHOD("remove_shape","shape_idx"),&CollisionObject::remove_shape);
+	ClassDB::bind_method(D_METHOD("clear_shapes"),&CollisionObject::clear_shapes);
+	ClassDB::bind_method(D_METHOD("set_ray_pickable","ray_pickable"),&CollisionObject::set_ray_pickable);
+	ClassDB::bind_method(D_METHOD("is_ray_pickable"),&CollisionObject::is_ray_pickable);
+	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag","enable"),&CollisionObject::set_capture_input_on_drag);
+	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"),&CollisionObject::get_capture_input_on_drag);
+	ClassDB::bind_method(D_METHOD("get_rid"),&CollisionObject::get_rid);
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
 
 	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));

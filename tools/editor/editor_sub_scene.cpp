@@ -187,9 +187,9 @@ void EditorSubScene::clear() {
 
 void EditorSubScene::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_path_selected"),&EditorSubScene::_path_selected);
-	ClassDB::bind_method(_MD("_path_changed"),&EditorSubScene::_path_changed);
-	ClassDB::bind_method(_MD("_path_browse"),&EditorSubScene::_path_browse);
+	ClassDB::bind_method(D_METHOD("_path_selected"),&EditorSubScene::_path_selected);
+	ClassDB::bind_method(D_METHOD("_path_changed"),&EditorSubScene::_path_changed);
+	ClassDB::bind_method(D_METHOD("_path_browse"),&EditorSubScene::_path_browse);
 	ADD_SIGNAL( MethodInfo("subscene_selected"));
 
 }

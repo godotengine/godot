@@ -199,17 +199,17 @@ Rect3 Quad::get_aabb() const {
 
 void Quad::_bind_methods(){
 
-	ClassDB::bind_method(_MD("set_axis","axis"),&Quad::set_axis);
-	ClassDB::bind_method(_MD("get_axis"),&Quad::get_axis);
+	ClassDB::bind_method(D_METHOD("set_axis","axis"),&Quad::set_axis);
+	ClassDB::bind_method(D_METHOD("get_axis"),&Quad::get_axis);
 
-	ClassDB::bind_method(_MD("set_size","size"),&Quad::set_size);
-	ClassDB::bind_method(_MD("get_size"),&Quad::get_size);
+	ClassDB::bind_method(D_METHOD("set_size","size"),&Quad::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"),&Quad::get_size);
 
-	ClassDB::bind_method(_MD("set_centered","centered"),&Quad::set_centered);
-	ClassDB::bind_method(_MD("is_centered"),&Quad::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&Quad::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&Quad::is_centered);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&Quad::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&Quad::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&Quad::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&Quad::get_offset);
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), "set_axis", "get_axis");
 	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "size" ), "set_size", "get_size");

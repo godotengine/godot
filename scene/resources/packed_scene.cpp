@@ -1716,25 +1716,25 @@ void SceneState::_bind_methods() {
 
 	//unbuild API
 
-	ClassDB::bind_method(_MD("get_node_count"),&SceneState::get_node_count);
-	ClassDB::bind_method(_MD("get_node_type","idx"),&SceneState::get_node_type);
-	ClassDB::bind_method(_MD("get_node_name","idx"),&SceneState::get_node_name);
-	ClassDB::bind_method(_MD("get_node_path","idx","for_parent"),&SceneState::get_node_path,DEFVAL(false));
-	ClassDB::bind_method(_MD("get_node_owner_path","idx"),&SceneState::get_node_owner_path);
-	ClassDB::bind_method(_MD("is_node_instance_placeholder","idx"),&SceneState::is_node_instance_placeholder);
-	ClassDB::bind_method(_MD("get_node_instance_placeholder","idx"),&SceneState::get_node_instance_placeholder);
-	ClassDB::bind_method(_MD("get_node_instance:PackedScene","idx"),&SceneState::get_node_instance);
-	ClassDB::bind_method(_MD("get_node_groups","idx"),&SceneState::_get_node_groups);
-	ClassDB::bind_method(_MD("get_node_property_count","idx"),&SceneState::get_node_property_count);
-	ClassDB::bind_method(_MD("get_node_property_name","idx","prop_idx"),&SceneState::get_node_property_name);
-	ClassDB::bind_method(_MD("get_node_property_value","idx","prop_idx"),&SceneState::get_node_property_value);
-	ClassDB::bind_method(_MD("get_connection_count"),&SceneState::get_connection_count);
-	ClassDB::bind_method(_MD("get_connection_source","idx"),&SceneState::get_connection_source);
-	ClassDB::bind_method(_MD("get_connection_signal","idx"),&SceneState::get_connection_signal);
-	ClassDB::bind_method(_MD("get_connection_target","idx"),&SceneState::get_connection_target);
-	ClassDB::bind_method(_MD("get_connection_method","idx"),&SceneState::get_connection_method);
-	ClassDB::bind_method(_MD("get_connection_flags","idx"),&SceneState::get_connection_flags);
-	ClassDB::bind_method(_MD("get_connection_binds","idx"),&SceneState::get_connection_binds);
+	ClassDB::bind_method(D_METHOD("get_node_count"),&SceneState::get_node_count);
+	ClassDB::bind_method(D_METHOD("get_node_type","idx"),&SceneState::get_node_type);
+	ClassDB::bind_method(D_METHOD("get_node_name","idx"),&SceneState::get_node_name);
+	ClassDB::bind_method(D_METHOD("get_node_path","idx","for_parent"),&SceneState::get_node_path,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_node_owner_path","idx"),&SceneState::get_node_owner_path);
+	ClassDB::bind_method(D_METHOD("is_node_instance_placeholder","idx"),&SceneState::is_node_instance_placeholder);
+	ClassDB::bind_method(D_METHOD("get_node_instance_placeholder","idx"),&SceneState::get_node_instance_placeholder);
+	ClassDB::bind_method(D_METHOD("get_node_instance:PackedScene","idx"),&SceneState::get_node_instance);
+	ClassDB::bind_method(D_METHOD("get_node_groups","idx"),&SceneState::_get_node_groups);
+	ClassDB::bind_method(D_METHOD("get_node_property_count","idx"),&SceneState::get_node_property_count);
+	ClassDB::bind_method(D_METHOD("get_node_property_name","idx","prop_idx"),&SceneState::get_node_property_name);
+	ClassDB::bind_method(D_METHOD("get_node_property_value","idx","prop_idx"),&SceneState::get_node_property_value);
+	ClassDB::bind_method(D_METHOD("get_connection_count"),&SceneState::get_connection_count);
+	ClassDB::bind_method(D_METHOD("get_connection_source","idx"),&SceneState::get_connection_source);
+	ClassDB::bind_method(D_METHOD("get_connection_signal","idx"),&SceneState::get_connection_signal);
+	ClassDB::bind_method(D_METHOD("get_connection_target","idx"),&SceneState::get_connection_target);
+	ClassDB::bind_method(D_METHOD("get_connection_method","idx"),&SceneState::get_connection_method);
+	ClassDB::bind_method(D_METHOD("get_connection_flags","idx"),&SceneState::get_connection_flags);
+	ClassDB::bind_method(D_METHOD("get_connection_binds","idx"),&SceneState::get_connection_binds);
 
 	BIND_CONSTANT( GEN_EDIT_STATE_DISABLED );
 	BIND_CONSTANT( GEN_EDIT_STATE_INSTANCE );
@@ -1837,12 +1837,12 @@ void PackedScene::set_path(const String& p_path,bool p_take_over) {
 
 void PackedScene::_bind_methods() {
 
-	ClassDB::bind_method(_MD("pack","path:Node"),&PackedScene::pack);
-	ClassDB::bind_method(_MD("instance:Node","edit_state"),&PackedScene::instance,DEFVAL(false));
-	ClassDB::bind_method(_MD("can_instance"),&PackedScene::can_instance);
-	ClassDB::bind_method(_MD("_set_bundled_scene"),&PackedScene::_set_bundled_scene);
-	ClassDB::bind_method(_MD("_get_bundled_scene"),&PackedScene::_get_bundled_scene);
-	ClassDB::bind_method(_MD("get_state:SceneState"),&PackedScene::get_state);
+	ClassDB::bind_method(D_METHOD("pack","path:Node"),&PackedScene::pack);
+	ClassDB::bind_method(D_METHOD("instance:Node","edit_state"),&PackedScene::instance,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("can_instance"),&PackedScene::can_instance);
+	ClassDB::bind_method(D_METHOD("_set_bundled_scene"),&PackedScene::_set_bundled_scene);
+	ClassDB::bind_method(D_METHOD("_get_bundled_scene"),&PackedScene::_get_bundled_scene);
+	ClassDB::bind_method(D_METHOD("get_state:SceneState"),&PackedScene::get_state);
 
 	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_bundled"),"_set_bundled_scene","_get_bundled_scene");
 

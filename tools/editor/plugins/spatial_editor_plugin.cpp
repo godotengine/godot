@@ -2221,15 +2221,15 @@ Dictionary SpatialEditorViewport::get_state() const {
 
 void SpatialEditorViewport::_bind_methods(){
 
-	ClassDB::bind_method(_MD("_draw"),&SpatialEditorViewport::_draw);
-	ClassDB::bind_method(_MD("_smouseenter"),&SpatialEditorViewport::_smouseenter);
-	ClassDB::bind_method(_MD("_sinput"),&SpatialEditorViewport::_sinput);
-	ClassDB::bind_method(_MD("_menu_option"),&SpatialEditorViewport::_menu_option);
-	ClassDB::bind_method(_MD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
-	ClassDB::bind_method(_MD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
-	ClassDB::bind_method(_MD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
-	ClassDB::bind_method(_MD("_selection_result_pressed"),&SpatialEditorViewport::_selection_result_pressed);
-	ClassDB::bind_method(_MD("_selection_menu_hide"),&SpatialEditorViewport::_selection_menu_hide);
+	ClassDB::bind_method(D_METHOD("_draw"),&SpatialEditorViewport::_draw);
+	ClassDB::bind_method(D_METHOD("_smouseenter"),&SpatialEditorViewport::_smouseenter);
+	ClassDB::bind_method(D_METHOD("_sinput"),&SpatialEditorViewport::_sinput);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&SpatialEditorViewport::_menu_option);
+	ClassDB::bind_method(D_METHOD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
+	ClassDB::bind_method(D_METHOD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
+	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
+	ClassDB::bind_method(D_METHOD("_selection_result_pressed"),&SpatialEditorViewport::_selection_result_pressed);
+	ClassDB::bind_method(D_METHOD("_selection_menu_hide"),&SpatialEditorViewport::_selection_menu_hide);
 
 	ADD_SIGNAL( MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")) );
 }

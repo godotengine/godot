@@ -97,17 +97,17 @@ float AudioEffectLimiter::get_soft_clip_ratio() const{
 
 void AudioEffectLimiter::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_ceiling_db","ceiling"),&AudioEffectLimiter::set_ceiling_db);
-	ClassDB::bind_method(_MD("get_ceiling_db"),&AudioEffectLimiter::get_ceiling_db);
+	ClassDB::bind_method(D_METHOD("set_ceiling_db","ceiling"),&AudioEffectLimiter::set_ceiling_db);
+	ClassDB::bind_method(D_METHOD("get_ceiling_db"),&AudioEffectLimiter::get_ceiling_db);
 
-	ClassDB::bind_method(_MD("set_treshold_db","treshold"),&AudioEffectLimiter::set_treshold_db);
-	ClassDB::bind_method(_MD("get_treshold_db"),&AudioEffectLimiter::get_treshold_db);
+	ClassDB::bind_method(D_METHOD("set_treshold_db","treshold"),&AudioEffectLimiter::set_treshold_db);
+	ClassDB::bind_method(D_METHOD("get_treshold_db"),&AudioEffectLimiter::get_treshold_db);
 
-	ClassDB::bind_method(_MD("set_soft_clip_db","soft_clip"),&AudioEffectLimiter::set_soft_clip_db);
-	ClassDB::bind_method(_MD("get_soft_clip_db"),&AudioEffectLimiter::get_soft_clip_db);
+	ClassDB::bind_method(D_METHOD("set_soft_clip_db","soft_clip"),&AudioEffectLimiter::set_soft_clip_db);
+	ClassDB::bind_method(D_METHOD("get_soft_clip_db"),&AudioEffectLimiter::get_soft_clip_db);
 
-	ClassDB::bind_method(_MD("set_soft_clip_ratio","soft_clip"),&AudioEffectLimiter::set_soft_clip_ratio);
-	ClassDB::bind_method(_MD("get_soft_clip_ratio"),&AudioEffectLimiter::get_soft_clip_ratio);
+	ClassDB::bind_method(D_METHOD("set_soft_clip_ratio","soft_clip"),&AudioEffectLimiter::set_soft_clip_ratio);
+	ClassDB::bind_method(D_METHOD("get_soft_clip_ratio"),&AudioEffectLimiter::get_soft_clip_ratio);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"ceiling_db",PROPERTY_HINT_RANGE,"-20,-0.1,0.1"),"set_ceiling_db","get_ceiling_db");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"treshold_db",PROPERTY_HINT_RANGE,"-30,0,0.1"),"set_treshold_db","get_treshold_db");

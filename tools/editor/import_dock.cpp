@@ -285,8 +285,8 @@ void ImportDock::_reimport() {
 
 void ImportDock::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_reimport"),&ImportDock::_reimport);
-	ClassDB::bind_method(_MD("_preset_selected"),&ImportDock::_preset_selected);
+	ClassDB::bind_method(D_METHOD("_reimport"),&ImportDock::_reimport);
+	ClassDB::bind_method(D_METHOD("_preset_selected"),&ImportDock::_preset_selected);
 }
 
 ImportDock::ImportDock() {

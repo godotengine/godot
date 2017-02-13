@@ -211,26 +211,26 @@ MultiMesh::TransformFormat MultiMesh::get_transform_format() const{
 
 void MultiMesh::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
-	ClassDB::bind_method(_MD("get_mesh:Mesh"),&MultiMesh::get_mesh);
-	ClassDB::bind_method(_MD("set_color_format","format"),&MultiMesh::set_color_format);
-	ClassDB::bind_method(_MD("get_color_format"),&MultiMesh::get_color_format);
-	ClassDB::bind_method(_MD("set_transform_format","format"),&MultiMesh::set_transform_format);
-	ClassDB::bind_method(_MD("get_transform_format"),&MultiMesh::get_transform_format);
+	ClassDB::bind_method(D_METHOD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
+	ClassDB::bind_method(D_METHOD("get_mesh:Mesh"),&MultiMesh::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_color_format","format"),&MultiMesh::set_color_format);
+	ClassDB::bind_method(D_METHOD("get_color_format"),&MultiMesh::get_color_format);
+	ClassDB::bind_method(D_METHOD("set_transform_format","format"),&MultiMesh::set_transform_format);
+	ClassDB::bind_method(D_METHOD("get_transform_format"),&MultiMesh::get_transform_format);
 
-	ClassDB::bind_method(_MD("set_instance_count","count"),&MultiMesh::set_instance_count);
-	ClassDB::bind_method(_MD("get_instance_count"),&MultiMesh::get_instance_count);
-	ClassDB::bind_method(_MD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
-	ClassDB::bind_method(_MD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
-	ClassDB::bind_method(_MD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
-	ClassDB::bind_method(_MD("get_instance_color","instance"),&MultiMesh::get_instance_color);
-	ClassDB::bind_method(_MD("get_aabb"),&MultiMesh::get_aabb);
+	ClassDB::bind_method(D_METHOD("set_instance_count","count"),&MultiMesh::set_instance_count);
+	ClassDB::bind_method(D_METHOD("get_instance_count"),&MultiMesh::get_instance_count);
+	ClassDB::bind_method(D_METHOD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
+	ClassDB::bind_method(D_METHOD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
+	ClassDB::bind_method(D_METHOD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
+	ClassDB::bind_method(D_METHOD("get_instance_color","instance"),&MultiMesh::get_instance_color);
+	ClassDB::bind_method(D_METHOD("get_aabb"),&MultiMesh::get_aabb);
 
 
-	ClassDB::bind_method(_MD("_set_transform_array"),&MultiMesh::_set_transform_array);
-	ClassDB::bind_method(_MD("_get_transform_array"),&MultiMesh::_get_transform_array);
-	ClassDB::bind_method(_MD("_set_color_array"),&MultiMesh::_set_color_array);
-	ClassDB::bind_method(_MD("_get_color_array"),&MultiMesh::_get_color_array);
+	ClassDB::bind_method(D_METHOD("_set_transform_array"),&MultiMesh::_set_transform_array);
+	ClassDB::bind_method(D_METHOD("_get_transform_array"),&MultiMesh::_get_transform_array);
+	ClassDB::bind_method(D_METHOD("_set_color_array"),&MultiMesh::_set_color_array);
+	ClassDB::bind_method(D_METHOD("_get_color_array"),&MultiMesh::_get_color_array);
 
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"color_format",PROPERTY_HINT_ENUM,"None,Byte,Float"), "set_color_format", "get_color_format");

@@ -115,32 +115,32 @@ RID GIProbeData::get_rid() const {
 
 void GIProbeData::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_bounds","bounds"),&GIProbeData::set_bounds);
-	ClassDB::bind_method(_MD("get_bounds"),&GIProbeData::get_bounds);
+	ClassDB::bind_method(D_METHOD("set_bounds","bounds"),&GIProbeData::set_bounds);
+	ClassDB::bind_method(D_METHOD("get_bounds"),&GIProbeData::get_bounds);
 
-	ClassDB::bind_method(_MD("set_cell_size","cell_size"),&GIProbeData::set_cell_size);
-	ClassDB::bind_method(_MD("get_cell_size"),&GIProbeData::get_cell_size);
+	ClassDB::bind_method(D_METHOD("set_cell_size","cell_size"),&GIProbeData::set_cell_size);
+	ClassDB::bind_method(D_METHOD("get_cell_size"),&GIProbeData::get_cell_size);
 
-	ClassDB::bind_method(_MD("set_to_cell_xform","to_cell_xform"),&GIProbeData::set_to_cell_xform);
-	ClassDB::bind_method(_MD("get_to_cell_xform"),&GIProbeData::get_to_cell_xform);
+	ClassDB::bind_method(D_METHOD("set_to_cell_xform","to_cell_xform"),&GIProbeData::set_to_cell_xform);
+	ClassDB::bind_method(D_METHOD("get_to_cell_xform"),&GIProbeData::get_to_cell_xform);
 
-	ClassDB::bind_method(_MD("set_dynamic_data","dynamic_data"),&GIProbeData::set_dynamic_data);
-	ClassDB::bind_method(_MD("get_dynamic_data"),&GIProbeData::get_dynamic_data);
+	ClassDB::bind_method(D_METHOD("set_dynamic_data","dynamic_data"),&GIProbeData::set_dynamic_data);
+	ClassDB::bind_method(D_METHOD("get_dynamic_data"),&GIProbeData::get_dynamic_data);
 
-	ClassDB::bind_method(_MD("set_dynamic_range","dynamic_range"),&GIProbeData::set_dynamic_range);
-	ClassDB::bind_method(_MD("get_dynamic_range"),&GIProbeData::get_dynamic_range);
+	ClassDB::bind_method(D_METHOD("set_dynamic_range","dynamic_range"),&GIProbeData::set_dynamic_range);
+	ClassDB::bind_method(D_METHOD("get_dynamic_range"),&GIProbeData::get_dynamic_range);
 
-	ClassDB::bind_method(_MD("set_energy","energy"),&GIProbeData::set_energy);
-	ClassDB::bind_method(_MD("get_energy"),&GIProbeData::get_energy);
+	ClassDB::bind_method(D_METHOD("set_energy","energy"),&GIProbeData::set_energy);
+	ClassDB::bind_method(D_METHOD("get_energy"),&GIProbeData::get_energy);
 
-	ClassDB::bind_method(_MD("set_propagation","propagation"),&GIProbeData::set_propagation);
-	ClassDB::bind_method(_MD("get_propagation"),&GIProbeData::get_propagation);
+	ClassDB::bind_method(D_METHOD("set_propagation","propagation"),&GIProbeData::set_propagation);
+	ClassDB::bind_method(D_METHOD("get_propagation"),&GIProbeData::get_propagation);
 
-	ClassDB::bind_method(_MD("set_interior","interior"),&GIProbeData::set_interior);
-	ClassDB::bind_method(_MD("is_interior"),&GIProbeData::is_interior);
+	ClassDB::bind_method(D_METHOD("set_interior","interior"),&GIProbeData::set_interior);
+	ClassDB::bind_method(D_METHOD("is_interior"),&GIProbeData::is_interior);
 
-	ClassDB::bind_method(_MD("set_compress","compress"),&GIProbeData::set_compress);
-	ClassDB::bind_method(_MD("is_compressed"),&GIProbeData::is_compressed);
+	ClassDB::bind_method(D_METHOD("set_compress","compress"),&GIProbeData::set_compress);
+	ClassDB::bind_method(D_METHOD("is_compressed"),&GIProbeData::is_compressed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::RECT3,"bounds",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_bounds","get_bounds");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"cell_size",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_cell_size","get_cell_size");
@@ -1384,32 +1384,32 @@ PoolVector<Face3> GIProbe::get_faces(uint32_t p_usage_flags) const {
 
 void GIProbe::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_probe_data","data"),&GIProbe::set_probe_data);
-	ClassDB::bind_method(_MD("get_probe_data"),&GIProbe::get_probe_data);
+	ClassDB::bind_method(D_METHOD("set_probe_data","data"),&GIProbe::set_probe_data);
+	ClassDB::bind_method(D_METHOD("get_probe_data"),&GIProbe::get_probe_data);
 
-	ClassDB::bind_method(_MD("set_subdiv","subdiv"),&GIProbe::set_subdiv);
-	ClassDB::bind_method(_MD("get_subdiv"),&GIProbe::get_subdiv);
+	ClassDB::bind_method(D_METHOD("set_subdiv","subdiv"),&GIProbe::set_subdiv);
+	ClassDB::bind_method(D_METHOD("get_subdiv"),&GIProbe::get_subdiv);
 
-	ClassDB::bind_method(_MD("set_extents","extents"),&GIProbe::set_extents);
-	ClassDB::bind_method(_MD("get_extents"),&GIProbe::get_extents);
+	ClassDB::bind_method(D_METHOD("set_extents","extents"),&GIProbe::set_extents);
+	ClassDB::bind_method(D_METHOD("get_extents"),&GIProbe::get_extents);
 
-	ClassDB::bind_method(_MD("set_dynamic_range","max"),&GIProbe::set_dynamic_range);
-	ClassDB::bind_method(_MD("get_dynamic_range"),&GIProbe::get_dynamic_range);
+	ClassDB::bind_method(D_METHOD("set_dynamic_range","max"),&GIProbe::set_dynamic_range);
+	ClassDB::bind_method(D_METHOD("get_dynamic_range"),&GIProbe::get_dynamic_range);
 
-	ClassDB::bind_method(_MD("set_energy","max"),&GIProbe::set_energy);
-	ClassDB::bind_method(_MD("get_energy"),&GIProbe::get_energy);
+	ClassDB::bind_method(D_METHOD("set_energy","max"),&GIProbe::set_energy);
+	ClassDB::bind_method(D_METHOD("get_energy"),&GIProbe::get_energy);
 
-	ClassDB::bind_method(_MD("set_propagation","max"),&GIProbe::set_propagation);
-	ClassDB::bind_method(_MD("get_propagation"),&GIProbe::get_propagation);
+	ClassDB::bind_method(D_METHOD("set_propagation","max"),&GIProbe::set_propagation);
+	ClassDB::bind_method(D_METHOD("get_propagation"),&GIProbe::get_propagation);
 
-	ClassDB::bind_method(_MD("set_interior","enable"),&GIProbe::set_interior);
-	ClassDB::bind_method(_MD("is_interior"),&GIProbe::is_interior);
+	ClassDB::bind_method(D_METHOD("set_interior","enable"),&GIProbe::set_interior);
+	ClassDB::bind_method(D_METHOD("is_interior"),&GIProbe::is_interior);
 
-	ClassDB::bind_method(_MD("set_compress","enable"),&GIProbe::set_compress);
-	ClassDB::bind_method(_MD("is_compressed"),&GIProbe::is_compressed);
+	ClassDB::bind_method(D_METHOD("set_compress","enable"),&GIProbe::set_compress);
+	ClassDB::bind_method(D_METHOD("is_compressed"),&GIProbe::is_compressed);
 
-	ClassDB::bind_method(_MD("bake","from_node","create_visual_debug"),&GIProbe::bake,DEFVAL(Variant()),DEFVAL(false));
-	ClassDB::bind_method(_MD("debug_bake"),&GIProbe::_debug_bake);
+	ClassDB::bind_method(D_METHOD("bake","from_node","create_visual_debug"),&GIProbe::bake,DEFVAL(Variant()),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("debug_bake"),&GIProbe::_debug_bake);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("debug_bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"subdiv",PROPERTY_HINT_ENUM,"64,128,256,512"),"set_subdiv","get_subdiv");

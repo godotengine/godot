@@ -132,29 +132,29 @@ float AudioEffectReverb::get_hpf() const {
 void AudioEffectReverb::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_predelay_msec","msec"),&AudioEffectReverb::set_predelay_msec);
-	ClassDB::bind_method(_MD("get_predelay_msec"),&AudioEffectReverb::get_predelay_msec);
+	ClassDB::bind_method(D_METHOD("set_predelay_msec","msec"),&AudioEffectReverb::set_predelay_msec);
+	ClassDB::bind_method(D_METHOD("get_predelay_msec"),&AudioEffectReverb::get_predelay_msec);
 
-	ClassDB::bind_method(_MD("set_predelay_feedback","feedback"),&AudioEffectReverb::set_predelay_feedback);
-	ClassDB::bind_method(_MD("get_predelay_feedback"),&AudioEffectReverb::get_predelay_feedback);
+	ClassDB::bind_method(D_METHOD("set_predelay_feedback","feedback"),&AudioEffectReverb::set_predelay_feedback);
+	ClassDB::bind_method(D_METHOD("get_predelay_feedback"),&AudioEffectReverb::get_predelay_feedback);
 
-	ClassDB::bind_method(_MD("set_room_size","size"),&AudioEffectReverb::set_room_size);
-	ClassDB::bind_method(_MD("get_room_size"),&AudioEffectReverb::get_room_size);
+	ClassDB::bind_method(D_METHOD("set_room_size","size"),&AudioEffectReverb::set_room_size);
+	ClassDB::bind_method(D_METHOD("get_room_size"),&AudioEffectReverb::get_room_size);
 
-	ClassDB::bind_method(_MD("set_damping","amount"),&AudioEffectReverb::set_damping);
-	ClassDB::bind_method(_MD("get_damping"),&AudioEffectReverb::get_damping);
+	ClassDB::bind_method(D_METHOD("set_damping","amount"),&AudioEffectReverb::set_damping);
+	ClassDB::bind_method(D_METHOD("get_damping"),&AudioEffectReverb::get_damping);
 
-	ClassDB::bind_method(_MD("set_spread","amount"),&AudioEffectReverb::set_spread);
-	ClassDB::bind_method(_MD("get_spread"),&AudioEffectReverb::get_spread);
+	ClassDB::bind_method(D_METHOD("set_spread","amount"),&AudioEffectReverb::set_spread);
+	ClassDB::bind_method(D_METHOD("get_spread"),&AudioEffectReverb::get_spread);
 
-	ClassDB::bind_method(_MD("set_dry","amount"),&AudioEffectReverb::set_dry);
-	ClassDB::bind_method(_MD("get_dry"),&AudioEffectReverb::get_dry);
+	ClassDB::bind_method(D_METHOD("set_dry","amount"),&AudioEffectReverb::set_dry);
+	ClassDB::bind_method(D_METHOD("get_dry"),&AudioEffectReverb::get_dry);
 
-	ClassDB::bind_method(_MD("set_wet","amount"),&AudioEffectReverb::set_wet);
-	ClassDB::bind_method(_MD("get_wet"),&AudioEffectReverb::get_wet);
+	ClassDB::bind_method(D_METHOD("set_wet","amount"),&AudioEffectReverb::set_wet);
+	ClassDB::bind_method(D_METHOD("get_wet"),&AudioEffectReverb::get_wet);
 
-	ClassDB::bind_method(_MD("set_hpf","amount"),&AudioEffectReverb::set_hpf);
-	ClassDB::bind_method(_MD("get_hpf"),&AudioEffectReverb::get_hpf);
+	ClassDB::bind_method(D_METHOD("set_hpf","amount"),&AudioEffectReverb::set_hpf);
+	ClassDB::bind_method(D_METHOD("get_hpf"),&AudioEffectReverb::get_hpf);
 
 
 	ADD_GROUP("Predelay","predelay_");

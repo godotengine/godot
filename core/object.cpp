@@ -1675,31 +1675,31 @@ void Object::clear_internal_resource_paths() {
 
 void Object::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_class"),&Object::get_class);
-	ClassDB::bind_method(_MD("is_class","type"),&Object::is_class);
-	ClassDB::bind_method(_MD("set","property","value"),&Object::_set_bind);
-	ClassDB::bind_method(_MD("get","property"),&Object::_get_bind);
-	ClassDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
-	ClassDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
-	ClassDB::bind_method(_MD("notification","what","reversed"),&Object::notification,DEFVAL(false));
-	ClassDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
+	ClassDB::bind_method(D_METHOD("get_class"),&Object::get_class);
+	ClassDB::bind_method(D_METHOD("is_class","type"),&Object::is_class);
+	ClassDB::bind_method(D_METHOD("set","property","value"),&Object::_set_bind);
+	ClassDB::bind_method(D_METHOD("get","property"),&Object::_get_bind);
+	ClassDB::bind_method(D_METHOD("get_property_list"),&Object::_get_property_list_bind);
+	ClassDB::bind_method(D_METHOD("get_method_list"),&Object::_get_method_list_bind);
+	ClassDB::bind_method(D_METHOD("notification","what","reversed"),&Object::notification,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_instance_ID"),&Object::get_instance_ID);
 
-	ClassDB::bind_method(_MD("set_script","script:Script"),&Object::set_script);
-	ClassDB::bind_method(_MD("get_script:Script"),&Object::get_script);
+	ClassDB::bind_method(D_METHOD("set_script","script:Script"),&Object::set_script);
+	ClassDB::bind_method(D_METHOD("get_script:Script"),&Object::get_script);
 
-	ClassDB::bind_method(_MD("set_meta","name","value"),&Object::set_meta);
-	ClassDB::bind_method(_MD("get_meta","name","value"),&Object::get_meta);
-	ClassDB::bind_method(_MD("has_meta","name"),&Object::has_meta);
-	ClassDB::bind_method(_MD("get_meta_list"),&Object::_get_meta_list_bind);
+	ClassDB::bind_method(D_METHOD("set_meta","name","value"),&Object::set_meta);
+	ClassDB::bind_method(D_METHOD("get_meta","name","value"),&Object::get_meta);
+	ClassDB::bind_method(D_METHOD("has_meta","name"),&Object::has_meta);
+	ClassDB::bind_method(D_METHOD("get_meta_list"),&Object::_get_meta_list_bind);
 
 	//todo reimplement this per language so all 5 arguments can be called
 
-	//ClassDB::bind_method(_MD("call","method","arg1","arg2","arg3","arg4"),&Object::_call_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
-	//ClassDB::bind_method(_MD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
+	//ClassDB::bind_method(D_METHOD("call","method","arg1","arg2","arg3","arg4"),&Object::_call_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
+	//ClassDB::bind_method(D_METHOD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
 
-	ClassDB::bind_method(_MD("add_user_signal","signal","arguments"),&Object::_add_user_signal,DEFVAL(Array()));
-	ClassDB::bind_method(_MD("has_user_signal","signal"),&Object::_has_user_signal);
-	//ClassDB::bind_method(_MD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("add_user_signal","signal","arguments"),&Object::_add_user_signal,DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("has_user_signal","signal"),&Object::_has_user_signal);
+	//ClassDB::bind_method(D_METHOD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
 
 
 	{
@@ -1728,27 +1728,27 @@ void Object::_bind_methods() {
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_deferred",&Object::_call_deferred_bind,mi);
 	}
 
-	ClassDB::bind_method(_MD("callv:Variant","method","arg_array"),&Object::callv);
+	ClassDB::bind_method(D_METHOD("callv:Variant","method","arg_array"),&Object::callv);
 
-	ClassDB::bind_method(_MD("has_method","method"),&Object::has_method);
+	ClassDB::bind_method(D_METHOD("has_method","method"),&Object::has_method);
 
-	ClassDB::bind_method(_MD("get_signal_list"),&Object::_get_signal_list);
-	ClassDB::bind_method(_MD("get_signal_connection_list","signal"),&Object::_get_signal_connection_list);
+	ClassDB::bind_method(D_METHOD("get_signal_list"),&Object::_get_signal_list);
+	ClassDB::bind_method(D_METHOD("get_signal_connection_list","signal"),&Object::_get_signal_connection_list);
 
-	ClassDB::bind_method(_MD("connect","signal","target:Object","method","binds","flags"),&Object::connect,DEFVAL(Array()),DEFVAL(0));
-	ClassDB::bind_method(_MD("disconnect","signal","target:Object","method"),&Object::disconnect);
-	ClassDB::bind_method(_MD("is_connected","signal","target:Object","method"),&Object::is_connected);
+	ClassDB::bind_method(D_METHOD("connect","signal","target:Object","method","binds","flags"),&Object::connect,DEFVAL(Array()),DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("disconnect","signal","target:Object","method"),&Object::disconnect);
+	ClassDB::bind_method(D_METHOD("is_connected","signal","target:Object","method"),&Object::is_connected);
 
-	ClassDB::bind_method(_MD("set_block_signals","enable"),&Object::set_block_signals);
-	ClassDB::bind_method(_MD("is_blocking_signals"),&Object::is_blocking_signals);
-	ClassDB::bind_method(_MD("set_message_translation","enable"),&Object::set_message_translation);
-	ClassDB::bind_method(_MD("can_translate_messages"),&Object::can_translate_messages);
-	ClassDB::bind_method(_MD("property_list_changed_notify"),&Object::property_list_changed_notify);
+	ClassDB::bind_method(D_METHOD("set_block_signals","enable"),&Object::set_block_signals);
+	ClassDB::bind_method(D_METHOD("is_blocking_signals"),&Object::is_blocking_signals);
+	ClassDB::bind_method(D_METHOD("set_message_translation","enable"),&Object::set_message_translation);
+	ClassDB::bind_method(D_METHOD("can_translate_messages"),&Object::can_translate_messages);
+	ClassDB::bind_method(D_METHOD("property_list_changed_notify"),&Object::property_list_changed_notify);
 
-	ClassDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
-	ClassDB::bind_method(_MD("tr","message"),&Object::tr);
+	ClassDB::bind_method(D_METHOD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
+	ClassDB::bind_method(D_METHOD("tr","message"),&Object::tr);
 
-	ClassDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
+	ClassDB::bind_method(D_METHOD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
 
 	ClassDB::add_virtual_method("Object",MethodInfo("free"),false);
 

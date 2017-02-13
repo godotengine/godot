@@ -257,12 +257,12 @@ bool Popup::is_exclusive() const  {
 
 void Popup::_bind_methods() {
 
-	ClassDB::bind_method(_MD("popup_centered","size"),&Popup::popup_centered,DEFVAL(Size2()));
-	ClassDB::bind_method(_MD("popup_centered_ratio","ratio"),&Popup::popup_centered_ratio,DEFVAL(0.75));
-	ClassDB::bind_method(_MD("popup_centered_minsize","minsize"),&Popup::popup_centered_minsize,DEFVAL(Size2()));
-	ClassDB::bind_method(_MD("popup"),&Popup::popup);
-	ClassDB::bind_method(_MD("set_exclusive","enable"),&Popup::set_exclusive);
-	ClassDB::bind_method(_MD("is_exclusive"),&Popup::is_exclusive);
+	ClassDB::bind_method(D_METHOD("popup_centered","size"),&Popup::popup_centered,DEFVAL(Size2()));
+	ClassDB::bind_method(D_METHOD("popup_centered_ratio","ratio"),&Popup::popup_centered_ratio,DEFVAL(0.75));
+	ClassDB::bind_method(D_METHOD("popup_centered_minsize","minsize"),&Popup::popup_centered_minsize,DEFVAL(Size2()));
+	ClassDB::bind_method(D_METHOD("popup"),&Popup::popup);
+	ClassDB::bind_method(D_METHOD("set_exclusive","enable"),&Popup::set_exclusive);
+	ClassDB::bind_method(D_METHOD("is_exclusive"),&Popup::is_exclusive);
 	ADD_SIGNAL( MethodInfo("about_to_show") );
 	ADD_SIGNAL( MethodInfo("popup_hide") );
 	ADD_GROUP("Popup","popup_");

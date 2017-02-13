@@ -243,32 +243,32 @@ void AudioPlayer::_bus_layout_changed() {
 
 void AudioPlayer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_stream","stream:AudioStream"),&AudioPlayer::set_stream);
-	ClassDB::bind_method(_MD("get_stream"),&AudioPlayer::get_stream);
+	ClassDB::bind_method(D_METHOD("set_stream","stream:AudioStream"),&AudioPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"),&AudioPlayer::get_stream);
 
-	ClassDB::bind_method(_MD("set_volume_db","volume_db"),&AudioPlayer::set_volume_db);
-	ClassDB::bind_method(_MD("get_volume_db"),&AudioPlayer::get_volume_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db","volume_db"),&AudioPlayer::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"),&AudioPlayer::get_volume_db);
 
-	ClassDB::bind_method(_MD("play","from_pos"),&AudioPlayer::play,DEFVAL(0.0));
-	ClassDB::bind_method(_MD("seek","to_pos"),&AudioPlayer::seek);
-	ClassDB::bind_method(_MD("stop"),&AudioPlayer::stop);
+	ClassDB::bind_method(D_METHOD("play","from_pos"),&AudioPlayer::play,DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("seek","to_pos"),&AudioPlayer::seek);
+	ClassDB::bind_method(D_METHOD("stop"),&AudioPlayer::stop);
 
-	ClassDB::bind_method(_MD("is_playing"),&AudioPlayer::is_playing);
-	ClassDB::bind_method(_MD("get_pos"),&AudioPlayer::get_pos);
+	ClassDB::bind_method(D_METHOD("is_playing"),&AudioPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("get_pos"),&AudioPlayer::get_pos);
 
-	ClassDB::bind_method(_MD("set_bus","bus"),&AudioPlayer::set_bus);
-	ClassDB::bind_method(_MD("get_bus"),&AudioPlayer::get_bus);
+	ClassDB::bind_method(D_METHOD("set_bus","bus"),&AudioPlayer::set_bus);
+	ClassDB::bind_method(D_METHOD("get_bus"),&AudioPlayer::get_bus);
 
-	ClassDB::bind_method(_MD("set_autoplay","enable"),&AudioPlayer::set_autoplay);
-	ClassDB::bind_method(_MD("is_autoplay_enabled"),&AudioPlayer::is_autoplay_enabled);
+	ClassDB::bind_method(D_METHOD("set_autoplay","enable"),&AudioPlayer::set_autoplay);
+	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"),&AudioPlayer::is_autoplay_enabled);
 
-	ClassDB::bind_method(_MD("set_mix_target","mix_target"),&AudioPlayer::set_mix_target);
-	ClassDB::bind_method(_MD("get_mix_target"),&AudioPlayer::get_mix_target);
+	ClassDB::bind_method(D_METHOD("set_mix_target","mix_target"),&AudioPlayer::set_mix_target);
+	ClassDB::bind_method(D_METHOD("get_mix_target"),&AudioPlayer::get_mix_target);
 
-	ClassDB::bind_method(_MD("_set_playing","enable"),&AudioPlayer::_set_playing);
-	ClassDB::bind_method(_MD("_is_active"),&AudioPlayer::_is_active);
+	ClassDB::bind_method(D_METHOD("_set_playing","enable"),&AudioPlayer::_set_playing);
+	ClassDB::bind_method(D_METHOD("_is_active"),&AudioPlayer::_is_active);
 
-	ClassDB::bind_method(_MD("_bus_layout_changed"),&AudioPlayer::_bus_layout_changed);
+	ClassDB::bind_method(D_METHOD("_bus_layout_changed"),&AudioPlayer::_bus_layout_changed);
 
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"stream",PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"),"set_stream","get_stream") ;

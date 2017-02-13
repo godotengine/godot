@@ -32,7 +32,7 @@
 
 void iOS::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_rate_url","app_id"),&iOS::get_rate_url);
+	ClassDB::bind_method(D_METHOD("get_rate_url","app_id"),&iOS::get_rate_url);
 };
 
 String iOS::get_rate_url(int p_app_id) const {

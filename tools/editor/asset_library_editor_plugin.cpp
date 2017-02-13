@@ -199,9 +199,9 @@ void EditorAssetLibraryItemDescription::set_image(int p_type,int p_index,const R
 }
 
 void EditorAssetLibraryItemDescription::_bind_methods() {
-	ClassDB::bind_method(_MD("set_image"),&EditorAssetLibraryItemDescription::set_image);
-	ClassDB::bind_method(_MD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
-	ClassDB::bind_method(_MD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
+	ClassDB::bind_method(D_METHOD("set_image"),&EditorAssetLibraryItemDescription::set_image);
+	ClassDB::bind_method(D_METHOD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
+	ClassDB::bind_method(D_METHOD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
 
 }
 

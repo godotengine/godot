@@ -1058,17 +1058,17 @@ void EditorSettings::set_project_metadata(const String& p_section, const String&
 
 void EditorSettings::_bind_methods() {
 
-	ClassDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
-	ClassDB::bind_method(_MD("get_settings_path"),&EditorSettings::get_settings_path);
-	ClassDB::bind_method(_MD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
+	ClassDB::bind_method(D_METHOD("erase","property"),&EditorSettings::erase);
+	ClassDB::bind_method(D_METHOD("get_settings_path"),&EditorSettings::get_settings_path);
+	ClassDB::bind_method(D_METHOD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
 
-	ClassDB::bind_method(_MD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
+	ClassDB::bind_method(D_METHOD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
 
-	ClassDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
-	ClassDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
+	ClassDB::bind_method(D_METHOD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
+	ClassDB::bind_method(D_METHOD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
 
-	ClassDB::bind_method(_MD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
-	ClassDB::bind_method(_MD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
+	ClassDB::bind_method(D_METHOD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
+	ClassDB::bind_method(D_METHOD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
