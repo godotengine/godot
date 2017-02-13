@@ -745,6 +745,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_icon:Texture","tab_idx"),&TabContainer::get_tab_icon);
 	ClassDB::bind_method(D_METHOD("set_popup","popup:Popup"),&TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup:Popup"),&TabContainer::get_popup);
+	
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"),&TabContainer::_child_renamed_callback);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
@@ -763,6 +764,7 @@ TabContainer::TabContainer() {
 	buttons_visible_cache=false;
 	tabs_ofs_cache=0;
 	current=0;
+	previous=0;
 	mouse_x_cache=0;
 	align=ALIGN_CENTER;
 	tabs_visible=true;
