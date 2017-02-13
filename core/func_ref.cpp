@@ -65,8 +65,8 @@ void FuncRef::_bind_methods() {
 
 	}
 
-	ClassDB::bind_method(_MD("set_instance","instance"),&FuncRef::set_instance);
-	ClassDB::bind_method(_MD("set_function","name"),&FuncRef::set_function);
+	ClassDB::bind_method(D_METHOD("set_instance","instance"),&FuncRef::set_instance);
+	ClassDB::bind_method(D_METHOD("set_function","name"),&FuncRef::set_function);
 
 }
 

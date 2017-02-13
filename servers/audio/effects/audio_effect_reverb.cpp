@@ -132,41 +132,41 @@ float AudioEffectReverb::get_hpf() const {
 void AudioEffectReverb::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_predelay_msec","msec"),&AudioEffectReverb::set_predelay_msec);
-	ClassDB::bind_method(_MD("get_predelay_msec"),&AudioEffectReverb::get_predelay_msec);
+	ClassDB::bind_method(D_METHOD("set_predelay_msec","msec"),&AudioEffectReverb::set_predelay_msec);
+	ClassDB::bind_method(D_METHOD("get_predelay_msec"),&AudioEffectReverb::get_predelay_msec);
 
-	ClassDB::bind_method(_MD("set_predelay_feedback","feedback"),&AudioEffectReverb::set_predelay_feedback);
-	ClassDB::bind_method(_MD("get_predelay_feedback"),&AudioEffectReverb::get_predelay_feedback);
+	ClassDB::bind_method(D_METHOD("set_predelay_feedback","feedback"),&AudioEffectReverb::set_predelay_feedback);
+	ClassDB::bind_method(D_METHOD("get_predelay_feedback"),&AudioEffectReverb::get_predelay_feedback);
 
-	ClassDB::bind_method(_MD("set_room_size","size"),&AudioEffectReverb::set_room_size);
-	ClassDB::bind_method(_MD("get_room_size"),&AudioEffectReverb::get_room_size);
+	ClassDB::bind_method(D_METHOD("set_room_size","size"),&AudioEffectReverb::set_room_size);
+	ClassDB::bind_method(D_METHOD("get_room_size"),&AudioEffectReverb::get_room_size);
 
-	ClassDB::bind_method(_MD("set_damping","amount"),&AudioEffectReverb::set_damping);
-	ClassDB::bind_method(_MD("get_damping"),&AudioEffectReverb::get_damping);
+	ClassDB::bind_method(D_METHOD("set_damping","amount"),&AudioEffectReverb::set_damping);
+	ClassDB::bind_method(D_METHOD("get_damping"),&AudioEffectReverb::get_damping);
 
-	ClassDB::bind_method(_MD("set_spread","amount"),&AudioEffectReverb::set_spread);
-	ClassDB::bind_method(_MD("get_spread"),&AudioEffectReverb::get_spread);
+	ClassDB::bind_method(D_METHOD("set_spread","amount"),&AudioEffectReverb::set_spread);
+	ClassDB::bind_method(D_METHOD("get_spread"),&AudioEffectReverb::get_spread);
 
-	ClassDB::bind_method(_MD("set_dry","amount"),&AudioEffectReverb::set_dry);
-	ClassDB::bind_method(_MD("get_dry"),&AudioEffectReverb::get_dry);
+	ClassDB::bind_method(D_METHOD("set_dry","amount"),&AudioEffectReverb::set_dry);
+	ClassDB::bind_method(D_METHOD("get_dry"),&AudioEffectReverb::get_dry);
 
-	ClassDB::bind_method(_MD("set_wet","amount"),&AudioEffectReverb::set_wet);
-	ClassDB::bind_method(_MD("get_wet"),&AudioEffectReverb::get_wet);
+	ClassDB::bind_method(D_METHOD("set_wet","amount"),&AudioEffectReverb::set_wet);
+	ClassDB::bind_method(D_METHOD("get_wet"),&AudioEffectReverb::get_wet);
 
-	ClassDB::bind_method(_MD("set_hpf","amount"),&AudioEffectReverb::set_hpf);
-	ClassDB::bind_method(_MD("get_hpf"),&AudioEffectReverb::get_hpf);
+	ClassDB::bind_method(D_METHOD("set_hpf","amount"),&AudioEffectReverb::set_hpf);
+	ClassDB::bind_method(D_METHOD("get_hpf"),&AudioEffectReverb::get_hpf);
 
 
 	ADD_GROUP("Predelay","predelay_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_msec",PROPERTY_HINT_RANGE,"20,500,1"),_SCS("set_predelay_msec"),_SCS("get_predelay_msec"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_feedback",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_predelay_msec"),_SCS("get_predelay_msec"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_msec",PROPERTY_HINT_RANGE,"20,500,1"),"set_predelay_msec","get_predelay_msec");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"predelay_feedback",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_predelay_msec","get_predelay_msec");
 	ADD_GROUP("","");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"room_size",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_room_size"),_SCS("get_room_size"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"damping",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_damping"),_SCS("get_damping"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"spread",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_spread"),_SCS("get_spread"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"hipass",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_hpf"),_SCS("get_hpf"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_dry"),_SCS("get_dry"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"wet",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_wet"),_SCS("get_wet"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"room_size",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_room_size","get_room_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"damping",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_damping","get_damping");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"spread",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_spread","get_spread");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"hipass",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_hpf","get_hpf");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_dry","get_dry");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"wet",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_wet","get_wet");
 }
 
 AudioEffectReverb::AudioEffectReverb() {

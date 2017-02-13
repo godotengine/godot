@@ -648,30 +648,30 @@ int Label::get_total_character_count() const {
 
 void Label::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_align","align"),&Label::set_align);
-	ClassDB::bind_method(_MD("get_align"),&Label::get_align);
-	ClassDB::bind_method(_MD("set_valign","valign"),&Label::set_valign);
-	ClassDB::bind_method(_MD("get_valign"),&Label::get_valign);
-	ClassDB::bind_method(_MD("set_text","text"),&Label::set_text);
-	ClassDB::bind_method(_MD("get_text"),&Label::get_text);
-	ClassDB::bind_method(_MD("set_autowrap","enable"),&Label::set_autowrap);
-	ClassDB::bind_method(_MD("has_autowrap"),&Label::has_autowrap);
-	ClassDB::bind_method(_MD("set_clip_text","enable"),&Label::set_clip_text);
-	ClassDB::bind_method(_MD("is_clipping_text"),&Label::is_clipping_text);
-	ClassDB::bind_method(_MD("set_uppercase","enable"),&Label::set_uppercase);
-	ClassDB::bind_method(_MD("is_uppercase"),&Label::is_uppercase);
-	ClassDB::bind_method(_MD("get_line_height"),&Label::get_line_height);
-	ClassDB::bind_method(_MD("get_line_count"),&Label::get_line_count);
-	ClassDB::bind_method(_MD("get_visible_line_count"),&Label::get_visible_line_count);
-	ClassDB::bind_method(_MD("get_total_character_count"),&Label::get_total_character_count);
-	ClassDB::bind_method(_MD("set_visible_characters","amount"),&Label::set_visible_characters);
-	ClassDB::bind_method(_MD("get_visible_characters"),&Label::get_visible_characters);
-	ClassDB::bind_method(_MD("set_percent_visible","percent_visible"),&Label::set_percent_visible);
-	ClassDB::bind_method(_MD("get_percent_visible"),&Label::get_percent_visible);
-	ClassDB::bind_method(_MD("set_lines_skipped","lines_skipped"),&Label::set_lines_skipped);
-	ClassDB::bind_method(_MD("get_lines_skipped"),&Label::get_lines_skipped);
-	ClassDB::bind_method(_MD("set_max_lines_visible","lines_visible"),&Label::set_max_lines_visible);
-	ClassDB::bind_method(_MD("get_max_lines_visible"),&Label::get_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("set_align","align"),&Label::set_align);
+	ClassDB::bind_method(D_METHOD("get_align"),&Label::get_align);
+	ClassDB::bind_method(D_METHOD("set_valign","valign"),&Label::set_valign);
+	ClassDB::bind_method(D_METHOD("get_valign"),&Label::get_valign);
+	ClassDB::bind_method(D_METHOD("set_text","text"),&Label::set_text);
+	ClassDB::bind_method(D_METHOD("get_text"),&Label::get_text);
+	ClassDB::bind_method(D_METHOD("set_autowrap","enable"),&Label::set_autowrap);
+	ClassDB::bind_method(D_METHOD("has_autowrap"),&Label::has_autowrap);
+	ClassDB::bind_method(D_METHOD("set_clip_text","enable"),&Label::set_clip_text);
+	ClassDB::bind_method(D_METHOD("is_clipping_text"),&Label::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_uppercase","enable"),&Label::set_uppercase);
+	ClassDB::bind_method(D_METHOD("is_uppercase"),&Label::is_uppercase);
+	ClassDB::bind_method(D_METHOD("get_line_height"),&Label::get_line_height);
+	ClassDB::bind_method(D_METHOD("get_line_count"),&Label::get_line_count);
+	ClassDB::bind_method(D_METHOD("get_visible_line_count"),&Label::get_visible_line_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count"),&Label::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("set_visible_characters","amount"),&Label::set_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters"),&Label::get_visible_characters);
+	ClassDB::bind_method(D_METHOD("set_percent_visible","percent_visible"),&Label::set_percent_visible);
+	ClassDB::bind_method(D_METHOD("get_percent_visible"),&Label::get_percent_visible);
+	ClassDB::bind_method(D_METHOD("set_lines_skipped","lines_skipped"),&Label::set_lines_skipped);
+	ClassDB::bind_method(D_METHOD("get_lines_skipped"),&Label::get_lines_skipped);
+	ClassDB::bind_method(D_METHOD("set_max_lines_visible","lines_visible"),&Label::set_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("get_max_lines_visible"),&Label::get_max_lines_visible);
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );
@@ -683,15 +683,15 @@ void Label::_bind_methods() {
 	BIND_CONSTANT( VALIGN_BOTTOM );
 	BIND_CONSTANT( VALIGN_FILL );
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),_SCS("set_align"),_SCS("get_align") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "clip_text"),_SCS("set_clip_text"),_SCS("is_clipping_text") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE,"0,999,1"),_SCS("set_lines_skipped"),_SCS("get_lines_skipped") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE,"-1,999,1"),_SCS("set_max_lines_visible"),_SCS("get_max_lines_visible") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), "set_text","get_text") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),"set_align","get_align") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),"set_valign","get_valign") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "autowrap"),"set_autowrap","has_autowrap") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "clip_text"),"set_clip_text","is_clipping_text") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "uppercase"),"set_uppercase","is_uppercase") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),"set_percent_visible","get_percent_visible") ;
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE,"0,999,1"),"set_lines_skipped","get_lines_skipped") ;
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE,"-1,999,1"),"set_max_lines_visible","get_max_lines_visible") ;
 
 }
 

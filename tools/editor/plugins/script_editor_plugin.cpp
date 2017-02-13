@@ -241,9 +241,9 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 
 void ScriptEditorQuickOpen::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&ScriptEditorQuickOpen::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&ScriptEditorQuickOpen::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&ScriptEditorQuickOpen::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&ScriptEditorQuickOpen::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&ScriptEditorQuickOpen::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&ScriptEditorQuickOpen::_sbox_input);
 
 	ADD_SIGNAL(MethodInfo("goto_line",PropertyInfo(Variant::INT,"line")));
 

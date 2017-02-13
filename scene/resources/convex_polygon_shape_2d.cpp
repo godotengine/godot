@@ -61,13 +61,13 @@ Vector<Vector2> ConvexPolygonShape2D::get_points() const {
 
 void ConvexPolygonShape2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_point_cloud","point_cloud"),&ConvexPolygonShape2D::set_point_cloud);
-	ClassDB::bind_method(_MD("set_points","points"),&ConvexPolygonShape2D::set_points);
-	ClassDB::bind_method(_MD("get_points"),&ConvexPolygonShape2D::get_points);
+	ClassDB::bind_method(D_METHOD("set_point_cloud","point_cloud"),&ConvexPolygonShape2D::set_point_cloud);
+	ClassDB::bind_method(D_METHOD("set_points","points"),&ConvexPolygonShape2D::set_points);
+	ClassDB::bind_method(D_METHOD("get_points"),&ConvexPolygonShape2D::get_points);
 
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"points"),_SCS("set_points"),_SCS("get_points") );
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"points"),"set_points","get_points") ;
 
 }
 

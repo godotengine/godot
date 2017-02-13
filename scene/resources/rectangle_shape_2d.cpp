@@ -64,12 +64,12 @@ Rect2 RectangleShape2D::get_rect() const {
 
 void RectangleShape2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_extents","extents"),&RectangleShape2D::set_extents);
-	ClassDB::bind_method(_MD("get_extents"),&RectangleShape2D::get_extents);
+	ClassDB::bind_method(D_METHOD("set_extents","extents"),&RectangleShape2D::set_extents);
+	ClassDB::bind_method(D_METHOD("get_extents"),&RectangleShape2D::get_extents);
 
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),_SCS("set_extents"),_SCS("get_extents") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),"set_extents","get_extents") ;
 
 }
 

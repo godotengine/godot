@@ -297,10 +297,10 @@ void EditorHelpSearch::_notification(int p_what) {
 
 void EditorHelpSearch::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
-	ClassDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_update_search);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&EditorHelpSearch::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&EditorHelpSearch::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&EditorHelpSearch::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_update_search"),&EditorHelpSearch::_update_search);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 

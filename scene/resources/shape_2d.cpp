@@ -104,14 +104,14 @@ Variant Shape2D::collide_and_get_contacts(const Transform2D& p_local_xform,  con
 
 void Shape2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_custom_solver_bias","bias"),&Shape2D::set_custom_solver_bias);
-	ClassDB::bind_method(_MD("get_custom_solver_bias"),&Shape2D::get_custom_solver_bias);
-	ClassDB::bind_method(_MD("collide","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide);
-	ClassDB::bind_method(_MD("collide_with_motion","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion);
-	ClassDB::bind_method(_MD("collide_and_get_contacts:Variant","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide_and_get_contacts);
-	ClassDB::bind_method(_MD("collide_with_motion_and_get_contacts:Variant","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion_and_get_contacts);
+	ClassDB::bind_method(D_METHOD("set_custom_solver_bias","bias"),&Shape2D::set_custom_solver_bias);
+	ClassDB::bind_method(D_METHOD("get_custom_solver_bias"),&Shape2D::get_custom_solver_bias);
+	ClassDB::bind_method(D_METHOD("collide","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide);
+	ClassDB::bind_method(D_METHOD("collide_with_motion","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion);
+	ClassDB::bind_method(D_METHOD("collide_and_get_contacts:Variant","local_xform","with_shape:Shape2D","shape_xform"),&Shape2D::collide_and_get_contacts);
+	ClassDB::bind_method(D_METHOD("collide_with_motion_and_get_contacts:Variant","local_xform","local_motion","with_shape:Shape2D","shape_xform","shape_motion"),&Shape2D::collide_with_motion_and_get_contacts);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_solver_bias",PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_custom_solver_bias"),_SCS("get_custom_solver_bias"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_solver_bias",PROPERTY_HINT_RANGE,"0,1,0.001"),"set_custom_solver_bias","get_custom_solver_bias");
 }
 
 

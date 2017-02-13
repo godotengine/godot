@@ -358,48 +358,48 @@ bool VideoPlayer::has_autoplay() const {
 
 void VideoPlayer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_stream","stream:VideoStream"),&VideoPlayer::set_stream);
-	ClassDB::bind_method(_MD("get_stream:VideoStream"),&VideoPlayer::get_stream);
+	ClassDB::bind_method(D_METHOD("set_stream","stream:VideoStream"),&VideoPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream:VideoStream"),&VideoPlayer::get_stream);
 
-	ClassDB::bind_method(_MD("play"),&VideoPlayer::play);
-	ClassDB::bind_method(_MD("stop"),&VideoPlayer::stop);
+	ClassDB::bind_method(D_METHOD("play"),&VideoPlayer::play);
+	ClassDB::bind_method(D_METHOD("stop"),&VideoPlayer::stop);
 
-	ClassDB::bind_method(_MD("is_playing"),&VideoPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("is_playing"),&VideoPlayer::is_playing);
 
-	ClassDB::bind_method(_MD("set_paused","paused"),&VideoPlayer::set_paused);
-	ClassDB::bind_method(_MD("is_paused"),&VideoPlayer::is_paused);
+	ClassDB::bind_method(D_METHOD("set_paused","paused"),&VideoPlayer::set_paused);
+	ClassDB::bind_method(D_METHOD("is_paused"),&VideoPlayer::is_paused);
 
-	ClassDB::bind_method(_MD("set_volume","volume"),&VideoPlayer::set_volume);
-	ClassDB::bind_method(_MD("get_volume"),&VideoPlayer::get_volume);
+	ClassDB::bind_method(D_METHOD("set_volume","volume"),&VideoPlayer::set_volume);
+	ClassDB::bind_method(D_METHOD("get_volume"),&VideoPlayer::get_volume);
 
-	ClassDB::bind_method(_MD("set_volume_db","db"),&VideoPlayer::set_volume_db);
-	ClassDB::bind_method(_MD("get_volume_db"),&VideoPlayer::get_volume_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db","db"),&VideoPlayer::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"),&VideoPlayer::get_volume_db);
 
-    ClassDB::bind_method(_MD("set_audio_track","track"),&VideoPlayer::set_audio_track);
-    ClassDB::bind_method(_MD("get_audio_track"),&VideoPlayer::get_audio_track);
+    ClassDB::bind_method(D_METHOD("set_audio_track","track"),&VideoPlayer::set_audio_track);
+    ClassDB::bind_method(D_METHOD("get_audio_track"),&VideoPlayer::get_audio_track);
 
-	ClassDB::bind_method(_MD("get_stream_name"),&VideoPlayer::get_stream_name);
+	ClassDB::bind_method(D_METHOD("get_stream_name"),&VideoPlayer::get_stream_name);
 
-	ClassDB::bind_method(_MD("get_stream_pos"),&VideoPlayer::get_stream_pos);
+	ClassDB::bind_method(D_METHOD("get_stream_pos"),&VideoPlayer::get_stream_pos);
 
-	ClassDB::bind_method(_MD("set_autoplay","enabled"),&VideoPlayer::set_autoplay);
-	ClassDB::bind_method(_MD("has_autoplay"),&VideoPlayer::has_autoplay);
+	ClassDB::bind_method(D_METHOD("set_autoplay","enabled"),&VideoPlayer::set_autoplay);
+	ClassDB::bind_method(D_METHOD("has_autoplay"),&VideoPlayer::has_autoplay);
 
-	ClassDB::bind_method(_MD("set_expand","enable"), &VideoPlayer::set_expand );
-	ClassDB::bind_method(_MD("has_expand"), &VideoPlayer::has_expand );
+	ClassDB::bind_method(D_METHOD("set_expand","enable"), &VideoPlayer::set_expand );
+	ClassDB::bind_method(D_METHOD("has_expand"), &VideoPlayer::has_expand );
 
-	ClassDB::bind_method(_MD("set_buffering_msec","msec"),&VideoPlayer::set_buffering_msec);
-	ClassDB::bind_method(_MD("get_buffering_msec"),&VideoPlayer::get_buffering_msec);
+	ClassDB::bind_method(D_METHOD("set_buffering_msec","msec"),&VideoPlayer::set_buffering_msec);
+	ClassDB::bind_method(D_METHOD("get_buffering_msec"),&VideoPlayer::get_buffering_msec);
 
-	ClassDB::bind_method(_MD("get_video_texture:Texture"), &VideoPlayer::get_video_texture );
+	ClassDB::bind_method(D_METHOD("get_video_texture:Texture"), &VideoPlayer::get_video_texture );
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "audio_track",PROPERTY_HINT_RANGE,"0,128,1"), _SCS("set_audio_track"), _SCS("get_audio_track") );
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE,"VideoStream"), _SCS("set_stream"), _SCS("get_stream") );
-	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), _SCS("set_loop"), _SCS("has_loop") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE,"-80,24,0.01"), _SCS("set_volume_db"), _SCS("get_volume_db") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "autoplay"), _SCS("set_autoplay"), _SCS("has_autoplay") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "paused"), _SCS("set_paused"), _SCS("is_paused") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "audio_track",PROPERTY_HINT_RANGE,"0,128,1"), "set_audio_track", "get_audio_track") ;
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE,"VideoStream"), "set_stream", "get_stream") ;
+	//ADD_PROPERTY( PropertyInfo(Variant::BOOL, "stream/loop"), "set_loop", "has_loop") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL, "volume_db", PROPERTY_HINT_RANGE,"-80,24,0.01"), "set_volume_db", "get_volume_db") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "has_autoplay") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "paused"), "set_paused", "is_paused") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), "set_expand","has_expand") ;
 }
 
 

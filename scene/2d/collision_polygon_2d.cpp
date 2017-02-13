@@ -314,26 +314,26 @@ String CollisionPolygon2D::get_configuration_warning() const {
 
 void CollisionPolygon2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon2D::_add_to_collision_object);
-	ClassDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon2D::set_polygon);
-	ClassDB::bind_method(_MD("get_polygon"),&CollisionPolygon2D::get_polygon);
+	ClassDB::bind_method(D_METHOD("_add_to_collision_object"),&CollisionPolygon2D::_add_to_collision_object);
+	ClassDB::bind_method(D_METHOD("set_polygon","polygon"),&CollisionPolygon2D::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon"),&CollisionPolygon2D::get_polygon);
 
-	ClassDB::bind_method(_MD("set_build_mode","build_mode"),&CollisionPolygon2D::set_build_mode);
-	ClassDB::bind_method(_MD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
+	ClassDB::bind_method(D_METHOD("set_build_mode","build_mode"),&CollisionPolygon2D::set_build_mode);
+	ClassDB::bind_method(D_METHOD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
 
-	ClassDB::bind_method(_MD("set_trigger","trigger"),&CollisionPolygon2D::set_trigger);
-	ClassDB::bind_method(_MD("is_trigger"),&CollisionPolygon2D::is_trigger);
+	ClassDB::bind_method(D_METHOD("set_trigger","trigger"),&CollisionPolygon2D::set_trigger);
+	ClassDB::bind_method(D_METHOD("is_trigger"),&CollisionPolygon2D::is_trigger);
 
-	ClassDB::bind_method(_MD("_set_shape_range","shape_range"),&CollisionPolygon2D::_set_shape_range);
-	ClassDB::bind_method(_MD("_get_shape_range"),&CollisionPolygon2D::_get_shape_range);
+	ClassDB::bind_method(D_METHOD("_set_shape_range","shape_range"),&CollisionPolygon2D::_set_shape_range);
+	ClassDB::bind_method(D_METHOD("_get_shape_range"),&CollisionPolygon2D::_get_shape_range);
 
-	ClassDB::bind_method(_MD("get_collision_object_first_shape"),&CollisionPolygon2D::get_collision_object_first_shape);
-	ClassDB::bind_method(_MD("get_collision_object_last_shape"),&CollisionPolygon2D::get_collision_object_last_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_object_first_shape"),&CollisionPolygon2D::get_collision_object_first_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_object_last_shape"),&CollisionPolygon2D::get_collision_object_last_shape);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Segments"),_SCS("set_build_mode"),_SCS("get_build_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_shape_range"),_SCS("_get_shape_range"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Segments"),"set_build_mode","get_build_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),"set_polygon","get_polygon");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_shape_range","_get_shape_range");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"trigger"),"set_trigger","is_trigger");
 
 }
 

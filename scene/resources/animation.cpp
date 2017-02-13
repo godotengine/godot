@@ -1698,61 +1698,61 @@ float Animation::get_step() const{
 
 void Animation::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_track","type","at_pos"),&Animation::add_track,DEFVAL(-1));
-	ClassDB::bind_method(_MD("remove_track","idx"),&Animation::remove_track);
-	ClassDB::bind_method(_MD("get_track_count"),&Animation::get_track_count);
-	ClassDB::bind_method(_MD("track_get_type","idx"),&Animation::track_get_type);
-	ClassDB::bind_method(_MD("track_get_path","idx"),&Animation::track_get_path);
-	ClassDB::bind_method(_MD("track_set_path","idx","path"),&Animation::track_set_path);
-	ClassDB::bind_method(_MD("find_track","path"),&Animation::find_track);
+	ClassDB::bind_method(D_METHOD("add_track","type","at_pos"),&Animation::add_track,DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("remove_track","idx"),&Animation::remove_track);
+	ClassDB::bind_method(D_METHOD("get_track_count"),&Animation::get_track_count);
+	ClassDB::bind_method(D_METHOD("track_get_type","idx"),&Animation::track_get_type);
+	ClassDB::bind_method(D_METHOD("track_get_path","idx"),&Animation::track_get_path);
+	ClassDB::bind_method(D_METHOD("track_set_path","idx","path"),&Animation::track_set_path);
+	ClassDB::bind_method(D_METHOD("find_track","path"),&Animation::find_track);
 
-	ClassDB::bind_method(_MD("track_move_up","idx"),&Animation::track_move_up);
-	ClassDB::bind_method(_MD("track_move_down","idx"),&Animation::track_move_down);
+	ClassDB::bind_method(D_METHOD("track_move_up","idx"),&Animation::track_move_up);
+	ClassDB::bind_method(D_METHOD("track_move_down","idx"),&Animation::track_move_down);
 
-	ClassDB::bind_method(_MD("track_set_imported","idx","imported"),&Animation::track_set_imported);
-	ClassDB::bind_method(_MD("track_is_imported","idx"),&Animation::track_is_imported);
-
-
-	ClassDB::bind_method(_MD("transform_track_insert_key","idx","time","loc","rot","scale"),&Animation::transform_track_insert_key);
-	ClassDB::bind_method(_MD("track_insert_key","idx","time","key","transition"),&Animation::track_insert_key,DEFVAL(1));
-	ClassDB::bind_method(_MD("track_remove_key","idx","key_idx"),&Animation::track_remove_key);
-	ClassDB::bind_method(_MD("track_remove_key_at_pos","idx","pos"),&Animation::track_remove_key_at_pos);
-	ClassDB::bind_method(_MD("track_set_key_value","idx","key","value"),&Animation::track_set_key_value);
-	ClassDB::bind_method(_MD("track_set_key_transition","idx","key_idx","transition"),&Animation::track_set_key_transition);
-	ClassDB::bind_method(_MD("track_get_key_transition","idx","key_idx"),&Animation::track_get_key_transition);
-
-	ClassDB::bind_method(_MD("track_get_key_count","idx"),&Animation::track_get_key_count);
-	ClassDB::bind_method(_MD("track_get_key_value","idx","key_idx"),&Animation::track_get_key_value);
-	ClassDB::bind_method(_MD("track_get_key_time","idx","key_idx"),&Animation::track_get_key_time);
-	ClassDB::bind_method(_MD("track_find_key","idx","time","exact"),&Animation::track_find_key,DEFVAL(false));
-
-	ClassDB::bind_method(_MD("track_set_interpolation_type","idx","interpolation"),&Animation::track_set_interpolation_type);
-	ClassDB::bind_method(_MD("track_get_interpolation_type","idx"),&Animation::track_get_interpolation_type);
-
-	ClassDB::bind_method(_MD("track_set_interpolation_loop_wrap","idx","interpolation"),&Animation::track_set_interpolation_loop_wrap);
-	ClassDB::bind_method(_MD("track_get_interpolation_loop_wrap","idx"),&Animation::track_get_interpolation_loop_wrap);
+	ClassDB::bind_method(D_METHOD("track_set_imported","idx","imported"),&Animation::track_set_imported);
+	ClassDB::bind_method(D_METHOD("track_is_imported","idx"),&Animation::track_is_imported);
 
 
-	ClassDB::bind_method(_MD("transform_track_interpolate","idx","time_sec"),&Animation::_transform_track_interpolate);
-	ClassDB::bind_method(_MD("value_track_set_update_mode","idx","mode"),&Animation::value_track_set_update_mode);
-	ClassDB::bind_method(_MD("value_track_get_update_mode","idx"),&Animation::value_track_get_update_mode);
+	ClassDB::bind_method(D_METHOD("transform_track_insert_key","idx","time","loc","rot","scale"),&Animation::transform_track_insert_key);
+	ClassDB::bind_method(D_METHOD("track_insert_key","idx","time","key","transition"),&Animation::track_insert_key,DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("track_remove_key","idx","key_idx"),&Animation::track_remove_key);
+	ClassDB::bind_method(D_METHOD("track_remove_key_at_pos","idx","pos"),&Animation::track_remove_key_at_pos);
+	ClassDB::bind_method(D_METHOD("track_set_key_value","idx","key","value"),&Animation::track_set_key_value);
+	ClassDB::bind_method(D_METHOD("track_set_key_transition","idx","key_idx","transition"),&Animation::track_set_key_transition);
+	ClassDB::bind_method(D_METHOD("track_get_key_transition","idx","key_idx"),&Animation::track_get_key_transition);
 
-	ClassDB::bind_method(_MD("value_track_get_key_indices","idx","time_sec","delta"),&Animation::_value_track_get_key_indices);
+	ClassDB::bind_method(D_METHOD("track_get_key_count","idx"),&Animation::track_get_key_count);
+	ClassDB::bind_method(D_METHOD("track_get_key_value","idx","key_idx"),&Animation::track_get_key_value);
+	ClassDB::bind_method(D_METHOD("track_get_key_time","idx","key_idx"),&Animation::track_get_key_time);
+	ClassDB::bind_method(D_METHOD("track_find_key","idx","time","exact"),&Animation::track_find_key,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("method_track_get_key_indices","idx","time_sec","delta"),&Animation::_method_track_get_key_indices);
-	ClassDB::bind_method(_MD("method_track_get_name","idx","key_idx"),&Animation::method_track_get_name);
-	ClassDB::bind_method(_MD("method_track_get_params","idx","key_idx"),&Animation::method_track_get_params);
+	ClassDB::bind_method(D_METHOD("track_set_interpolation_type","idx","interpolation"),&Animation::track_set_interpolation_type);
+	ClassDB::bind_method(D_METHOD("track_get_interpolation_type","idx"),&Animation::track_get_interpolation_type);
 
-	ClassDB::bind_method(_MD("set_length","time_sec"),&Animation::set_length);
-	ClassDB::bind_method(_MD("get_length"),&Animation::get_length);
+	ClassDB::bind_method(D_METHOD("track_set_interpolation_loop_wrap","idx","interpolation"),&Animation::track_set_interpolation_loop_wrap);
+	ClassDB::bind_method(D_METHOD("track_get_interpolation_loop_wrap","idx"),&Animation::track_get_interpolation_loop_wrap);
 
-	ClassDB::bind_method(_MD("set_loop","enabled"),&Animation::set_loop);
-	ClassDB::bind_method(_MD("has_loop"),&Animation::has_loop);
 
-	ClassDB::bind_method(_MD("set_step","size_sec"),&Animation::set_step);
-	ClassDB::bind_method(_MD("get_step"),&Animation::get_step);
+	ClassDB::bind_method(D_METHOD("transform_track_interpolate","idx","time_sec"),&Animation::_transform_track_interpolate);
+	ClassDB::bind_method(D_METHOD("value_track_set_update_mode","idx","mode"),&Animation::value_track_set_update_mode);
+	ClassDB::bind_method(D_METHOD("value_track_get_update_mode","idx"),&Animation::value_track_get_update_mode);
 
-	ClassDB::bind_method(_MD("clear"),&Animation::clear);
+	ClassDB::bind_method(D_METHOD("value_track_get_key_indices","idx","time_sec","delta"),&Animation::_value_track_get_key_indices);
+
+	ClassDB::bind_method(D_METHOD("method_track_get_key_indices","idx","time_sec","delta"),&Animation::_method_track_get_key_indices);
+	ClassDB::bind_method(D_METHOD("method_track_get_name","idx","key_idx"),&Animation::method_track_get_name);
+	ClassDB::bind_method(D_METHOD("method_track_get_params","idx","key_idx"),&Animation::method_track_get_params);
+
+	ClassDB::bind_method(D_METHOD("set_length","time_sec"),&Animation::set_length);
+	ClassDB::bind_method(D_METHOD("get_length"),&Animation::get_length);
+
+	ClassDB::bind_method(D_METHOD("set_loop","enabled"),&Animation::set_loop);
+	ClassDB::bind_method(D_METHOD("has_loop"),&Animation::has_loop);
+
+	ClassDB::bind_method(D_METHOD("set_step","size_sec"),&Animation::set_step);
+	ClassDB::bind_method(D_METHOD("get_step"),&Animation::get_step);
+
+	ClassDB::bind_method(D_METHOD("clear"),&Animation::clear);
 
 	BIND_CONSTANT( TYPE_VALUE );
 	BIND_CONSTANT( TYPE_TRANSFORM );

@@ -222,34 +222,34 @@ void SpriteFrames::_set_animations(const Array& p_animations) {
 void SpriteFrames::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("add_animation","anim"),&SpriteFrames::add_animation);
-	ClassDB::bind_method(_MD("has_animation","anim"),&SpriteFrames::has_animation);
-	ClassDB::bind_method(_MD("remove_animation","anim"),&SpriteFrames::remove_animation);
-	ClassDB::bind_method(_MD("rename_animation","anim","newname"),&SpriteFrames::rename_animation);
+	ClassDB::bind_method(D_METHOD("add_animation","anim"),&SpriteFrames::add_animation);
+	ClassDB::bind_method(D_METHOD("has_animation","anim"),&SpriteFrames::has_animation);
+	ClassDB::bind_method(D_METHOD("remove_animation","anim"),&SpriteFrames::remove_animation);
+	ClassDB::bind_method(D_METHOD("rename_animation","anim","newname"),&SpriteFrames::rename_animation);
 
-	ClassDB::bind_method(_MD("set_animation_speed","anim","speed"),&SpriteFrames::set_animation_speed);
-	ClassDB::bind_method(_MD("get_animation_speed","anim"),&SpriteFrames::get_animation_speed);
+	ClassDB::bind_method(D_METHOD("set_animation_speed","anim","speed"),&SpriteFrames::set_animation_speed);
+	ClassDB::bind_method(D_METHOD("get_animation_speed","anim"),&SpriteFrames::get_animation_speed);
 
-	ClassDB::bind_method(_MD("set_animation_loop","anim","loop"),&SpriteFrames::set_animation_loop);
-	ClassDB::bind_method(_MD("get_animation_loop","anim"),&SpriteFrames::get_animation_loop);
+	ClassDB::bind_method(D_METHOD("set_animation_loop","anim","loop"),&SpriteFrames::set_animation_loop);
+	ClassDB::bind_method(D_METHOD("get_animation_loop","anim"),&SpriteFrames::get_animation_loop);
 
-	ClassDB::bind_method(_MD("add_frame","anim","frame","atpos"),&SpriteFrames::add_frame,DEFVAL(-1));
-	ClassDB::bind_method(_MD("get_frame_count","anim"),&SpriteFrames::get_frame_count);
-	ClassDB::bind_method(_MD("get_frame","anim","idx"),&SpriteFrames::get_frame);
-	ClassDB::bind_method(_MD("set_frame","anim","idx","txt"),&SpriteFrames::set_frame);
-	ClassDB::bind_method(_MD("remove_frame","anim","idx"),&SpriteFrames::remove_frame);
-	ClassDB::bind_method(_MD("clear","anim"),&SpriteFrames::clear);
-	ClassDB::bind_method(_MD("clear_all"),&SpriteFrames::clear_all);
+	ClassDB::bind_method(D_METHOD("add_frame","anim","frame","atpos"),&SpriteFrames::add_frame,DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_frame_count","anim"),&SpriteFrames::get_frame_count);
+	ClassDB::bind_method(D_METHOD("get_frame","anim","idx"),&SpriteFrames::get_frame);
+	ClassDB::bind_method(D_METHOD("set_frame","anim","idx","txt"),&SpriteFrames::set_frame);
+	ClassDB::bind_method(D_METHOD("remove_frame","anim","idx"),&SpriteFrames::remove_frame);
+	ClassDB::bind_method(D_METHOD("clear","anim"),&SpriteFrames::clear);
+	ClassDB::bind_method(D_METHOD("clear_all"),&SpriteFrames::clear_all);
 
-	ClassDB::bind_method(_MD("_set_frames"),&SpriteFrames::_set_frames);
-	ClassDB::bind_method(_MD("_get_frames"),&SpriteFrames::_get_frames);
+	ClassDB::bind_method(D_METHOD("_set_frames"),&SpriteFrames::_set_frames);
+	ClassDB::bind_method(D_METHOD("_get_frames"),&SpriteFrames::_get_frames);
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"frames",PROPERTY_HINT_NONE,"",0),_SCS("_set_frames"),_SCS("_get_frames")); //compatibility
+	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"frames",PROPERTY_HINT_NONE,"",0),"_set_frames","_get_frames"); //compatibility
 
-	ClassDB::bind_method(_MD("_set_animations"),&SpriteFrames::_set_animations);
-	ClassDB::bind_method(_MD("_get_animations"),&SpriteFrames::_get_animations);
+	ClassDB::bind_method(D_METHOD("_set_animations"),&SpriteFrames::_set_animations);
+	ClassDB::bind_method(D_METHOD("_get_animations"),&SpriteFrames::_get_animations);
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"animations",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_animations"),_SCS("_get_animations")); //compatibility
+	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"animations",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_animations","_get_animations"); //compatibility
 
 }
 
@@ -653,48 +653,48 @@ String AnimatedSprite::get_configuration_warning() const {
 void AnimatedSprite::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite::set_sprite_frames);
-	ClassDB::bind_method(_MD("get_sprite_frames:SpriteFrames"),&AnimatedSprite::get_sprite_frames);
+	ClassDB::bind_method(D_METHOD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite::set_sprite_frames);
+	ClassDB::bind_method(D_METHOD("get_sprite_frames:SpriteFrames"),&AnimatedSprite::get_sprite_frames);
 
-	ClassDB::bind_method(_MD("set_animation","animation"),&AnimatedSprite::set_animation);
-	ClassDB::bind_method(_MD("get_animation"),&AnimatedSprite::get_animation);
+	ClassDB::bind_method(D_METHOD("set_animation","animation"),&AnimatedSprite::set_animation);
+	ClassDB::bind_method(D_METHOD("get_animation"),&AnimatedSprite::get_animation);
 
-	ClassDB::bind_method(_MD("_set_playing","playing"),&AnimatedSprite::_set_playing);
-	ClassDB::bind_method(_MD("_is_playing"),&AnimatedSprite::_is_playing);
+	ClassDB::bind_method(D_METHOD("_set_playing","playing"),&AnimatedSprite::_set_playing);
+	ClassDB::bind_method(D_METHOD("_is_playing"),&AnimatedSprite::_is_playing);
 
-	ClassDB::bind_method(_MD("play","anim"),&AnimatedSprite::play,DEFVAL(StringName()));
-	ClassDB::bind_method(_MD("stop"),&AnimatedSprite::stop);
-	ClassDB::bind_method(_MD("is_playing"),&AnimatedSprite::is_playing);
+	ClassDB::bind_method(D_METHOD("play","anim"),&AnimatedSprite::play,DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("stop"),&AnimatedSprite::stop);
+	ClassDB::bind_method(D_METHOD("is_playing"),&AnimatedSprite::is_playing);
 
-	ClassDB::bind_method(_MD("set_centered","centered"),&AnimatedSprite::set_centered);
-	ClassDB::bind_method(_MD("is_centered"),&AnimatedSprite::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&AnimatedSprite::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&AnimatedSprite::is_centered);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&AnimatedSprite::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&AnimatedSprite::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&AnimatedSprite::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&AnimatedSprite::get_offset);
 
-	ClassDB::bind_method(_MD("set_flip_h","flip_h"),&AnimatedSprite::set_flip_h);
-	ClassDB::bind_method(_MD("is_flipped_h"),&AnimatedSprite::is_flipped_h);
+	ClassDB::bind_method(D_METHOD("set_flip_h","flip_h"),&AnimatedSprite::set_flip_h);
+	ClassDB::bind_method(D_METHOD("is_flipped_h"),&AnimatedSprite::is_flipped_h);
 
-	ClassDB::bind_method(_MD("set_flip_v","flip_v"),&AnimatedSprite::set_flip_v);
-	ClassDB::bind_method(_MD("is_flipped_v"),&AnimatedSprite::is_flipped_v);
+	ClassDB::bind_method(D_METHOD("set_flip_v","flip_v"),&AnimatedSprite::set_flip_v);
+	ClassDB::bind_method(D_METHOD("is_flipped_v"),&AnimatedSprite::is_flipped_v);
 
-	ClassDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite::set_frame);
-	ClassDB::bind_method(_MD("get_frame"),&AnimatedSprite::get_frame);
+	ClassDB::bind_method(D_METHOD("set_frame","frame"),&AnimatedSprite::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"),&AnimatedSprite::get_frame);
 
 
-	ClassDB::bind_method(_MD("_res_changed"),&AnimatedSprite::_res_changed);
+	ClassDB::bind_method(D_METHOD("_res_changed"),&AnimatedSprite::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "animation"), _SCS("set_animation"),_SCS("get_animation"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "playing"), _SCS("_set_playing"),_SCS("_is_playing"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), "set_sprite_frames","get_sprite_frames");
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "animation"), "set_animation","get_animation");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "playing"), "_set_playing","_is_playing");
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), "set_offset","get_offset");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), "set_flip_h","is_flipped_h");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), "set_flip_v","is_flipped_v");
 
 
 }

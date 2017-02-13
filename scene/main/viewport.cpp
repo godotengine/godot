@@ -139,10 +139,10 @@ uint32_t ViewportTexture::get_flags() const{
 
 void ViewportTexture::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_viewport_path_in_scene","path"),&ViewportTexture::set_viewport_path_in_scene);
-	ClassDB::bind_method(_MD("get_viewport_path_in_scene"),&ViewportTexture::get_viewport_path_in_scene);
+	ClassDB::bind_method(D_METHOD("set_viewport_path_in_scene","path"),&ViewportTexture::set_viewport_path_in_scene);
+	ClassDB::bind_method(D_METHOD("get_viewport_path_in_scene"),&ViewportTexture::get_viewport_path_in_scene);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"viewport_path"),_SCS("set_viewport_path_in_scene"),_SCS("get_viewport_path_in_scene"));
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"viewport_path"),"set_viewport_path_in_scene","get_viewport_path_in_scene");
 
 }
 
@@ -2774,128 +2774,128 @@ bool Viewport::get_hdr() const{
 void Viewport::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_size","size"), &Viewport::set_size);
-	ClassDB::bind_method(_MD("get_size"), &Viewport::get_size);
-	ClassDB::bind_method(_MD("set_world_2d","world_2d:World2D"), &Viewport::set_world_2d);
-	ClassDB::bind_method(_MD("get_world_2d:World2D"), &Viewport::get_world_2d);
-	ClassDB::bind_method(_MD("find_world_2d:World2D"), &Viewport::find_world_2d);
-	ClassDB::bind_method(_MD("set_world","world:World"), &Viewport::set_world);
-	ClassDB::bind_method(_MD("get_world:World"), &Viewport::get_world);
-	ClassDB::bind_method(_MD("find_world:World"), &Viewport::find_world);
+	ClassDB::bind_method(D_METHOD("set_size","size"), &Viewport::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &Viewport::get_size);
+	ClassDB::bind_method(D_METHOD("set_world_2d","world_2d:World2D"), &Viewport::set_world_2d);
+	ClassDB::bind_method(D_METHOD("get_world_2d:World2D"), &Viewport::get_world_2d);
+	ClassDB::bind_method(D_METHOD("find_world_2d:World2D"), &Viewport::find_world_2d);
+	ClassDB::bind_method(D_METHOD("set_world","world:World"), &Viewport::set_world);
+	ClassDB::bind_method(D_METHOD("get_world:World"), &Viewport::get_world);
+	ClassDB::bind_method(D_METHOD("find_world:World"), &Viewport::find_world);
 
-	ClassDB::bind_method(_MD("set_canvas_transform","xform"), &Viewport::set_canvas_transform);
-	ClassDB::bind_method(_MD("get_canvas_transform"), &Viewport::get_canvas_transform);
+	ClassDB::bind_method(D_METHOD("set_canvas_transform","xform"), &Viewport::set_canvas_transform);
+	ClassDB::bind_method(D_METHOD("get_canvas_transform"), &Viewport::get_canvas_transform);
 
-	ClassDB::bind_method(_MD("set_global_canvas_transform","xform"), &Viewport::set_global_canvas_transform);
-	ClassDB::bind_method(_MD("get_global_canvas_transform"), &Viewport::get_global_canvas_transform);
-	ClassDB::bind_method(_MD("get_final_transform"), &Viewport::get_final_transform);
+	ClassDB::bind_method(D_METHOD("set_global_canvas_transform","xform"), &Viewport::set_global_canvas_transform);
+	ClassDB::bind_method(D_METHOD("get_global_canvas_transform"), &Viewport::get_global_canvas_transform);
+	ClassDB::bind_method(D_METHOD("get_final_transform"), &Viewport::get_final_transform);
 
-	ClassDB::bind_method(_MD("get_visible_rect"), &Viewport::get_visible_rect);
-	ClassDB::bind_method(_MD("set_transparent_background","enable"), &Viewport::set_transparent_background);
-	ClassDB::bind_method(_MD("has_transparent_background"), &Viewport::has_transparent_background);
+	ClassDB::bind_method(D_METHOD("get_visible_rect"), &Viewport::get_visible_rect);
+	ClassDB::bind_method(D_METHOD("set_transparent_background","enable"), &Viewport::set_transparent_background);
+	ClassDB::bind_method(D_METHOD("has_transparent_background"), &Viewport::has_transparent_background);
 
-	ClassDB::bind_method(_MD("_parent_visibility_changed"), &Viewport::_parent_visibility_changed);
+	ClassDB::bind_method(D_METHOD("_parent_visibility_changed"), &Viewport::_parent_visibility_changed);
 
-	ClassDB::bind_method(_MD("_parent_resized"), &Viewport::_parent_resized);
-	ClassDB::bind_method(_MD("_vp_input"), &Viewport::_vp_input);
-	ClassDB::bind_method(_MD("_vp_input_text","text"), &Viewport::_vp_input_text);
-	ClassDB::bind_method(_MD("_vp_unhandled_input"), &Viewport::_vp_unhandled_input);
+	ClassDB::bind_method(D_METHOD("_parent_resized"), &Viewport::_parent_resized);
+	ClassDB::bind_method(D_METHOD("_vp_input"), &Viewport::_vp_input);
+	ClassDB::bind_method(D_METHOD("_vp_input_text","text"), &Viewport::_vp_input_text);
+	ClassDB::bind_method(D_METHOD("_vp_unhandled_input"), &Viewport::_vp_unhandled_input);
 
-	ClassDB::bind_method(_MD("set_size_override","enable","size","margin"), &Viewport::set_size_override,DEFVAL(Size2(-1,-1)),DEFVAL(Size2(0,0)));
-	ClassDB::bind_method(_MD("get_size_override"), &Viewport::get_size_override);
-	ClassDB::bind_method(_MD("is_size_override_enabled"), &Viewport::is_size_override_enabled);
-	ClassDB::bind_method(_MD("set_size_override_stretch","enabled"), &Viewport::set_size_override_stretch);
-	ClassDB::bind_method(_MD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);
-	ClassDB::bind_method(_MD("queue_screen_capture"), &Viewport::queue_screen_capture);
-	ClassDB::bind_method(_MD("get_screen_capture"), &Viewport::get_screen_capture);
+	ClassDB::bind_method(D_METHOD("set_size_override","enable","size","margin"), &Viewport::set_size_override,DEFVAL(Size2(-1,-1)),DEFVAL(Size2(0,0)));
+	ClassDB::bind_method(D_METHOD("get_size_override"), &Viewport::get_size_override);
+	ClassDB::bind_method(D_METHOD("is_size_override_enabled"), &Viewport::is_size_override_enabled);
+	ClassDB::bind_method(D_METHOD("set_size_override_stretch","enabled"), &Viewport::set_size_override_stretch);
+	ClassDB::bind_method(D_METHOD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);
+	ClassDB::bind_method(D_METHOD("queue_screen_capture"), &Viewport::queue_screen_capture);
+	ClassDB::bind_method(D_METHOD("get_screen_capture"), &Viewport::get_screen_capture);
 
 
-	ClassDB::bind_method(_MD("set_vflip","enable"), &Viewport::set_vflip);
-	ClassDB::bind_method(_MD("get_vflip"), &Viewport::get_vflip);
+	ClassDB::bind_method(D_METHOD("set_vflip","enable"), &Viewport::set_vflip);
+	ClassDB::bind_method(D_METHOD("get_vflip"), &Viewport::get_vflip);
 
-	ClassDB::bind_method(_MD("set_clear_on_new_frame","enable"), &Viewport::set_clear_on_new_frame);
-	ClassDB::bind_method(_MD("get_clear_on_new_frame"), &Viewport::get_clear_on_new_frame);
+	ClassDB::bind_method(D_METHOD("set_clear_on_new_frame","enable"), &Viewport::set_clear_on_new_frame);
+	ClassDB::bind_method(D_METHOD("get_clear_on_new_frame"), &Viewport::get_clear_on_new_frame);
 
-	ClassDB::bind_method(_MD("clear"), &Viewport::clear);
-	ClassDB::bind_method(_MD("set_update_mode","mode"), &Viewport::set_update_mode);
-	ClassDB::bind_method(_MD("get_update_mode"), &Viewport::get_update_mode);
+	ClassDB::bind_method(D_METHOD("clear"), &Viewport::clear);
+	ClassDB::bind_method(D_METHOD("set_update_mode","mode"), &Viewport::set_update_mode);
+	ClassDB::bind_method(D_METHOD("get_update_mode"), &Viewport::get_update_mode);
 
-	ClassDB::bind_method(_MD("set_msaa","msaa"), &Viewport::set_msaa);
-	ClassDB::bind_method(_MD("get_msaa"), &Viewport::get_msaa);
+	ClassDB::bind_method(D_METHOD("set_msaa","msaa"), &Viewport::set_msaa);
+	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
 
-	ClassDB::bind_method(_MD("set_hdr","enable"), &Viewport::set_hdr);
-	ClassDB::bind_method(_MD("get_hdr"), &Viewport::get_hdr);
+	ClassDB::bind_method(D_METHOD("set_hdr","enable"), &Viewport::set_hdr);
+	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
 
-	ClassDB::bind_method(_MD("get_texture:ViewportTexture"), &Viewport::get_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:ViewportTexture"), &Viewport::get_texture);
 
-	ClassDB::bind_method(_MD("set_physics_object_picking","enable"), &Viewport::set_physics_object_picking);
-	ClassDB::bind_method(_MD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
+	ClassDB::bind_method(D_METHOD("set_physics_object_picking","enable"), &Viewport::set_physics_object_picking);
+	ClassDB::bind_method(D_METHOD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
 
-	ClassDB::bind_method(_MD("get_viewport_rid"), &Viewport::get_viewport_rid);
-	ClassDB::bind_method(_MD("input","local_event"), &Viewport::input);
-	ClassDB::bind_method(_MD("unhandled_input","local_event"), &Viewport::unhandled_input);
+	ClassDB::bind_method(D_METHOD("get_viewport_rid"), &Viewport::get_viewport_rid);
+	ClassDB::bind_method(D_METHOD("input","local_event"), &Viewport::input);
+	ClassDB::bind_method(D_METHOD("unhandled_input","local_event"), &Viewport::unhandled_input);
 
-	ClassDB::bind_method(_MD("update_worlds"), &Viewport::update_worlds);
+	ClassDB::bind_method(D_METHOD("update_worlds"), &Viewport::update_worlds);
 
-	ClassDB::bind_method(_MD("set_use_own_world","enable"), &Viewport::set_use_own_world);
-	ClassDB::bind_method(_MD("is_using_own_world"), &Viewport::is_using_own_world);
+	ClassDB::bind_method(D_METHOD("set_use_own_world","enable"), &Viewport::set_use_own_world);
+	ClassDB::bind_method(D_METHOD("is_using_own_world"), &Viewport::is_using_own_world);
 
-	ClassDB::bind_method(_MD("get_camera:Camera"), &Viewport::get_camera);
+	ClassDB::bind_method(D_METHOD("get_camera:Camera"), &Viewport::get_camera);
 
-	ClassDB::bind_method(_MD("set_as_audio_listener","enable"), &Viewport::set_as_audio_listener);
-	ClassDB::bind_method(_MD("is_audio_listener","enable"), &Viewport::is_audio_listener);
+	ClassDB::bind_method(D_METHOD("set_as_audio_listener","enable"), &Viewport::set_as_audio_listener);
+	ClassDB::bind_method(D_METHOD("is_audio_listener","enable"), &Viewport::is_audio_listener);
 
-	ClassDB::bind_method(_MD("set_as_audio_listener_2d","enable"), &Viewport::set_as_audio_listener_2d);
-	ClassDB::bind_method(_MD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
-	ClassDB::bind_method(_MD("set_attach_to_screen_rect","rect"), &Viewport::set_attach_to_screen_rect);
+	ClassDB::bind_method(D_METHOD("set_as_audio_listener_2d","enable"), &Viewport::set_as_audio_listener_2d);
+	ClassDB::bind_method(D_METHOD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
+	ClassDB::bind_method(D_METHOD("set_attach_to_screen_rect","rect"), &Viewport::set_attach_to_screen_rect);
 
-	ClassDB::bind_method(_MD("get_mouse_pos"), &Viewport::get_mouse_pos);
-	ClassDB::bind_method(_MD("warp_mouse","to_pos"), &Viewport::warp_mouse);
+	ClassDB::bind_method(D_METHOD("get_mouse_pos"), &Viewport::get_mouse_pos);
+	ClassDB::bind_method(D_METHOD("warp_mouse","to_pos"), &Viewport::warp_mouse);
 
-	ClassDB::bind_method(_MD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
-	ClassDB::bind_method(_MD("gui_get_drag_data:Variant"), &Viewport::gui_get_drag_data);
+	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
+	ClassDB::bind_method(D_METHOD("gui_get_drag_data:Variant"), &Viewport::gui_get_drag_data);
 
-	ClassDB::bind_method(_MD("set_disable_input","disable"), &Viewport::set_disable_input);
-	ClassDB::bind_method(_MD("is_input_disabled"), &Viewport::is_input_disabled);
+	ClassDB::bind_method(D_METHOD("set_disable_input","disable"), &Viewport::set_disable_input);
+	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
-	ClassDB::bind_method(_MD("set_disable_3d","disable"), &Viewport::set_disable_3d);
-	ClassDB::bind_method(_MD("is_3d_disabled"), &Viewport::is_3d_disabled);
+	ClassDB::bind_method(D_METHOD("set_disable_3d","disable"), &Viewport::set_disable_3d);
+	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
 
-	ClassDB::bind_method(_MD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
-	ClassDB::bind_method(_MD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
+	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
+	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 
-	ClassDB::bind_method(_MD("set_shadow_atlas_size","size"), &Viewport::set_shadow_atlas_size);
-	ClassDB::bind_method(_MD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
+	ClassDB::bind_method(D_METHOD("set_shadow_atlas_size","size"), &Viewport::set_shadow_atlas_size);
+	ClassDB::bind_method(D_METHOD("get_shadow_atlas_size"), &Viewport::get_shadow_atlas_size);
 
-	ClassDB::bind_method(_MD("set_shadow_atlas_quadrant_subdiv","quadrant","subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
-	ClassDB::bind_method(_MD("get_shadow_atlas_quadrant_subdiv","quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
+	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv","quadrant","subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
+	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv","quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
 
-	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"size"), _SCS("set_size"), _SCS("get_size") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), _SCS("set_world"), _SCS("get_world") );
-	//ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
+	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"size"), "set_size", "get_size") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), "set_use_own_world", "is_using_own_world") ;
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), "set_world", "get_world") ;
+	//ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), "set_world_2d", "get_world_2d") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), "set_transparent_background", "has_transparent_background") ;
 	ADD_GROUP("Rendering","");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"), _SCS("set_msaa"), _SCS("get_msaa") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"hdr"), _SCS("set_hdr"), _SCS("get_hdr") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"disable_3d"), _SCS("set_disable_3d"), _SCS("is_3d_disabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"msaa",PROPERTY_HINT_ENUM,"Disabled,2x,4x,8x,16x"), "set_msaa", "get_msaa") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"hdr"), "set_hdr", "get_hdr") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"disable_3d"), "set_disable_3d", "is_3d_disabled") ;
 	ADD_GROUP("Render Target","render_target_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_v_flip"), _SCS("set_vflip"), _SCS("get_vflip") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_clear_on_new_frame"), _SCS("set_clear_on_new_frame"), _SCS("get_clear_on_new_frame") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target_update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_update_mode"), _SCS("get_update_mode") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_v_flip"), "set_vflip", "get_vflip") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target_clear_on_new_frame"), "set_clear_on_new_frame", "get_clear_on_new_frame") ;
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target_update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode") ;
 	ADD_GROUP("Audio Listener","audio_listener_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_2d"), "set_as_audio_listener_2d", "is_audio_listener_2d") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener_enable_3d"), "set_as_audio_listener", "is_audio_listener") ;
 	ADD_GROUP("Physics","physics_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"physics_object_picking"), _SCS("set_physics_object_picking"), _SCS("get_physics_object_picking") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking") ;
 	ADD_GROUP("GUI","gui_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gui_disable_input"), _SCS("set_disable_input"), _SCS("is_input_disabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gui_disable_input"), "set_disable_input", "is_input_disabled") ;
 	ADD_GROUP("Shadow Atlas","shadow_atlas_");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_atlas_size"), _SCS("set_shadow_atlas_size"), _SCS("get_shadow_atlas_size") );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_0",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),0 );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_1",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),1 );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_2",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),2 );
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_3",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), _SCS("set_shadow_atlas_quadrant_subdiv"), _SCS("get_shadow_atlas_quadrant_subdiv"),3 );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow_atlas_size"), "set_shadow_atlas_size", "get_shadow_atlas_size") ;
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_0",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",0 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_1",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",1 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_2",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",2 );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"shadow_atlas_quad_3",PROPERTY_HINT_ENUM,"Disabled,1 Shadow,4 Shadows,16 Shadows,64 Shadows,256 Shadows,1024 Shadows"), "set_shadow_atlas_quadrant_subdiv", "get_shadow_atlas_quadrant_subdiv",3 );
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 

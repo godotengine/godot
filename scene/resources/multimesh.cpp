@@ -211,34 +211,34 @@ MultiMesh::TransformFormat MultiMesh::get_transform_format() const{
 
 void MultiMesh::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
-	ClassDB::bind_method(_MD("get_mesh:Mesh"),&MultiMesh::get_mesh);
-	ClassDB::bind_method(_MD("set_color_format","format"),&MultiMesh::set_color_format);
-	ClassDB::bind_method(_MD("get_color_format"),&MultiMesh::get_color_format);
-	ClassDB::bind_method(_MD("set_transform_format","format"),&MultiMesh::set_transform_format);
-	ClassDB::bind_method(_MD("get_transform_format"),&MultiMesh::get_transform_format);
+	ClassDB::bind_method(D_METHOD("set_mesh","mesh:Mesh"),&MultiMesh::set_mesh);
+	ClassDB::bind_method(D_METHOD("get_mesh:Mesh"),&MultiMesh::get_mesh);
+	ClassDB::bind_method(D_METHOD("set_color_format","format"),&MultiMesh::set_color_format);
+	ClassDB::bind_method(D_METHOD("get_color_format"),&MultiMesh::get_color_format);
+	ClassDB::bind_method(D_METHOD("set_transform_format","format"),&MultiMesh::set_transform_format);
+	ClassDB::bind_method(D_METHOD("get_transform_format"),&MultiMesh::get_transform_format);
 
-	ClassDB::bind_method(_MD("set_instance_count","count"),&MultiMesh::set_instance_count);
-	ClassDB::bind_method(_MD("get_instance_count"),&MultiMesh::get_instance_count);
-	ClassDB::bind_method(_MD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
-	ClassDB::bind_method(_MD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
-	ClassDB::bind_method(_MD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
-	ClassDB::bind_method(_MD("get_instance_color","instance"),&MultiMesh::get_instance_color);
-	ClassDB::bind_method(_MD("get_aabb"),&MultiMesh::get_aabb);
-
-
-	ClassDB::bind_method(_MD("_set_transform_array"),&MultiMesh::_set_transform_array);
-	ClassDB::bind_method(_MD("_get_transform_array"),&MultiMesh::_get_transform_array);
-	ClassDB::bind_method(_MD("_set_color_array"),&MultiMesh::_set_color_array);
-	ClassDB::bind_method(_MD("_get_color_array"),&MultiMesh::_get_color_array);
+	ClassDB::bind_method(D_METHOD("set_instance_count","count"),&MultiMesh::set_instance_count);
+	ClassDB::bind_method(D_METHOD("get_instance_count"),&MultiMesh::get_instance_count);
+	ClassDB::bind_method(D_METHOD("set_instance_transform","instance","transform"),&MultiMesh::set_instance_transform);
+	ClassDB::bind_method(D_METHOD("get_instance_transform","instance"),&MultiMesh::get_instance_transform);
+	ClassDB::bind_method(D_METHOD("set_instance_color","instance","color"),&MultiMesh::set_instance_color);
+	ClassDB::bind_method(D_METHOD("get_instance_color","instance"),&MultiMesh::get_instance_color);
+	ClassDB::bind_method(D_METHOD("get_aabb"),&MultiMesh::get_aabb);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"color_format",PROPERTY_HINT_ENUM,"None,Byte,Float"), _SCS("set_color_format"), _SCS("get_color_format"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"transform_format",PROPERTY_HINT_ENUM,"2D,3D"), _SCS("set_transform_format"), _SCS("get_transform_format"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"instance_count",PROPERTY_HINT_RANGE,"0,16384,1"), _SCS("set_instance_count"), _SCS("get_instance_count"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"), _SCS("set_mesh"), _SCS("get_mesh"));
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"transform_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_transform_array"), _SCS("_get_transform_array"));
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY,"color_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_color_array"), _SCS("_get_color_array"));
+	ClassDB::bind_method(D_METHOD("_set_transform_array"),&MultiMesh::_set_transform_array);
+	ClassDB::bind_method(D_METHOD("_get_transform_array"),&MultiMesh::_get_transform_array);
+	ClassDB::bind_method(D_METHOD("_set_color_array"),&MultiMesh::_set_color_array);
+	ClassDB::bind_method(D_METHOD("_get_color_array"),&MultiMesh::_get_color_array);
+
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"color_format",PROPERTY_HINT_ENUM,"None,Byte,Float"), "set_color_format", "get_color_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"transform_format",PROPERTY_HINT_ENUM,"2D,3D"), "set_transform_format", "get_transform_format");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"instance_count",PROPERTY_HINT_RANGE,"0,16384,1"), "set_instance_count", "get_instance_count");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"mesh",PROPERTY_HINT_RESOURCE_TYPE,"Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"transform_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_transform_array", "_get_transform_array");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_COLOR_ARRAY,"color_array",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_color_array", "_get_color_array");
 
 
 

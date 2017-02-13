@@ -128,22 +128,22 @@ bool Joint2D::get_exclude_nodes_from_collision() const{
 void Joint2D::_bind_methods() {
 
 
-	ClassDB::bind_method( _MD("set_node_a","node"), &Joint2D::set_node_a );
-	ClassDB::bind_method( _MD("get_node_a"), &Joint2D::get_node_a );
+	ClassDB::bind_method( D_METHOD("set_node_a","node"), &Joint2D::set_node_a );
+	ClassDB::bind_method( D_METHOD("get_node_a"), &Joint2D::get_node_a );
 
-	ClassDB::bind_method( _MD("set_node_b","node"), &Joint2D::set_node_b );
-	ClassDB::bind_method( _MD("get_node_b"), &Joint2D::get_node_b );
+	ClassDB::bind_method( D_METHOD("set_node_b","node"), &Joint2D::set_node_b );
+	ClassDB::bind_method( D_METHOD("get_node_b"), &Joint2D::get_node_b );
 
-	ClassDB::bind_method( _MD("set_bias","bias"), &Joint2D::set_bias );
-	ClassDB::bind_method( _MD("get_bias"), &Joint2D::get_bias );
+	ClassDB::bind_method( D_METHOD("set_bias","bias"), &Joint2D::set_bias );
+	ClassDB::bind_method( D_METHOD("get_bias"), &Joint2D::get_bias );
 
-	ClassDB::bind_method( _MD("set_exclude_nodes_from_collision","enable"), &Joint2D::set_exclude_nodes_from_collision );
-	ClassDB::bind_method( _MD("get_exclude_nodes_from_collision"), &Joint2D::get_exclude_nodes_from_collision );
+	ClassDB::bind_method( D_METHOD("set_exclude_nodes_from_collision","enable"), &Joint2D::set_exclude_nodes_from_collision );
+	ClassDB::bind_method( D_METHOD("get_exclude_nodes_from_collision"), &Joint2D::get_exclude_nodes_from_collision );
 
-	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
-	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias",PROPERTY_HINT_RANGE,"0,0.9,0.001"), _SCS("set_bias"),_SCS("get_bias") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disable_collision"), _SCS("set_exclude_nodes_from_collision"),_SCS("get_exclude_nodes_from_collision") );
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_a"), "set_node_a","get_node_a") ;
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "node_b"), "set_node_b","get_node_b") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bias",PROPERTY_HINT_RANGE,"0,0.9,0.001"), "set_bias","get_bias") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disable_collision"), "set_exclude_nodes_from_collision","get_exclude_nodes_from_collision") ;
 
 
 }
@@ -225,10 +225,10 @@ real_t PinJoint2D::get_softness() const {
 
 void PinJoint2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_softness","softness"), &PinJoint2D::set_softness);
-	ClassDB::bind_method(_MD("get_softness"), &PinJoint2D::get_softness);
+	ClassDB::bind_method(D_METHOD("set_softness","softness"), &PinJoint2D::set_softness);
+	ClassDB::bind_method(D_METHOD("get_softness"), &PinJoint2D::get_softness);
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "softness", PROPERTY_HINT_EXP_RANGE,"0.00,16,0.01"), _SCS("set_softness"), _SCS("get_softness"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "softness", PROPERTY_HINT_EXP_RANGE,"0.00,16,0.01"), "set_softness", "get_softness");
 }
 
 PinJoint2D::PinJoint2D() {
@@ -321,13 +321,13 @@ real_t GrooveJoint2D::get_initial_offset() const {
 void GrooveJoint2D::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_length","length"),&GrooveJoint2D::set_length);
-	ClassDB::bind_method(_MD("get_length"),&GrooveJoint2D::get_length);
-	ClassDB::bind_method(_MD("set_initial_offset","offset"),&GrooveJoint2D::set_initial_offset);
-	ClassDB::bind_method(_MD("get_initial_offset"),&GrooveJoint2D::get_initial_offset);
+	ClassDB::bind_method(D_METHOD("set_length","length"),&GrooveJoint2D::set_length);
+	ClassDB::bind_method(D_METHOD("get_length"),&GrooveJoint2D::get_length);
+	ClassDB::bind_method(D_METHOD("set_initial_offset","offset"),&GrooveJoint2D::set_initial_offset);
+	ClassDB::bind_method(D_METHOD("get_initial_offset"),&GrooveJoint2D::get_initial_offset);
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "length", PROPERTY_HINT_EXP_RANGE,"1,65535,1"), _SCS("set_length"),_SCS("get_length"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "initial_offset", PROPERTY_HINT_EXP_RANGE,"1,65535,1"), _SCS("set_initial_offset"),_SCS("get_initial_offset"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "length", PROPERTY_HINT_EXP_RANGE,"1,65535,1"), "set_length","get_length");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "initial_offset", PROPERTY_HINT_EXP_RANGE,"1,65535,1"), "set_initial_offset","get_initial_offset");
 }
 
 GrooveJoint2D::GrooveJoint2D() {
@@ -453,19 +453,19 @@ real_t DampedSpringJoint2D::get_damping() const {
 void DampedSpringJoint2D::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_length","length"),&DampedSpringJoint2D::set_length);
-	ClassDB::bind_method(_MD("get_length"),&DampedSpringJoint2D::get_length);
-	ClassDB::bind_method(_MD("set_rest_length","rest_length"),&DampedSpringJoint2D::set_rest_length);
-	ClassDB::bind_method(_MD("get_rest_length"),&DampedSpringJoint2D::get_rest_length);
-	ClassDB::bind_method(_MD("set_stiffness","stiffness"),&DampedSpringJoint2D::set_stiffness);
-	ClassDB::bind_method(_MD("get_stiffness"),&DampedSpringJoint2D::get_stiffness);
-	ClassDB::bind_method(_MD("set_damping","damping"),&DampedSpringJoint2D::set_damping);
-	ClassDB::bind_method(_MD("get_damping"),&DampedSpringJoint2D::get_damping);
+	ClassDB::bind_method(D_METHOD("set_length","length"),&DampedSpringJoint2D::set_length);
+	ClassDB::bind_method(D_METHOD("get_length"),&DampedSpringJoint2D::get_length);
+	ClassDB::bind_method(D_METHOD("set_rest_length","rest_length"),&DampedSpringJoint2D::set_rest_length);
+	ClassDB::bind_method(D_METHOD("get_rest_length"),&DampedSpringJoint2D::get_rest_length);
+	ClassDB::bind_method(D_METHOD("set_stiffness","stiffness"),&DampedSpringJoint2D::set_stiffness);
+	ClassDB::bind_method(D_METHOD("get_stiffness"),&DampedSpringJoint2D::get_stiffness);
+	ClassDB::bind_method(D_METHOD("set_damping","damping"),&DampedSpringJoint2D::set_damping);
+	ClassDB::bind_method(D_METHOD("get_damping"),&DampedSpringJoint2D::get_damping);
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "length", PROPERTY_HINT_EXP_RANGE,"1,65535,1"), _SCS("set_length"),_SCS("get_length"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rest_length", PROPERTY_HINT_EXP_RANGE,"0,65535,1"), _SCS("set_rest_length"),_SCS("get_rest_length"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "stiffness", PROPERTY_HINT_EXP_RANGE,"0.1,64,0.1"), _SCS("set_stiffness"),_SCS("get_stiffness"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping", PROPERTY_HINT_EXP_RANGE,"0.01,16,0.01"), _SCS("set_damping"),_SCS("get_damping"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "length", PROPERTY_HINT_EXP_RANGE,"1,65535,1"), "set_length","get_length");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "rest_length", PROPERTY_HINT_EXP_RANGE,"0,65535,1"), "set_rest_length","get_rest_length");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "stiffness", PROPERTY_HINT_EXP_RANGE,"0.1,64,0.1"), "set_stiffness","get_stiffness");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "damping", PROPERTY_HINT_EXP_RANGE,"0.01,16,0.01"), "set_damping","get_damping");
 
 }
 

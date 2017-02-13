@@ -742,50 +742,50 @@ bool Spatial::is_local_transform_notification_enabled() const {
 
 void Spatial::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_transform","local"), &Spatial::set_transform);
-	ClassDB::bind_method(_MD("get_transform"), &Spatial::get_transform);
-	ClassDB::bind_method(_MD("set_translation","translation"), &Spatial::set_translation);
-	ClassDB::bind_method(_MD("get_translation"), &Spatial::get_translation);
-	ClassDB::bind_method(_MD("set_rotation","rotation_rad"), &Spatial::set_rotation);
-	ClassDB::bind_method(_MD("get_rotation"), &Spatial::get_rotation);
-	ClassDB::bind_method(_MD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_in_degrees);
-	ClassDB::bind_method(_MD("get_rotation_deg"), &Spatial::get_rotation_in_degrees);
-	ClassDB::bind_method(_MD("set_scale","scale"), &Spatial::set_scale);
-	ClassDB::bind_method(_MD("get_scale"), &Spatial::get_scale);
-	ClassDB::bind_method(_MD("set_global_transform","global"), &Spatial::set_global_transform);
-	ClassDB::bind_method(_MD("get_global_transform"), &Spatial::get_global_transform);
-	ClassDB::bind_method(_MD("get_parent_spatial"), &Spatial::get_parent_spatial);
-	ClassDB::bind_method(_MD("set_ignore_transform_notification","enabled"), &Spatial::set_ignore_transform_notification);
-	ClassDB::bind_method(_MD("set_as_toplevel","enable"), &Spatial::set_as_toplevel);
-	ClassDB::bind_method(_MD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
-	ClassDB::bind_method(_MD("get_world:World"), &Spatial::get_world);
+	ClassDB::bind_method(D_METHOD("set_transform","local"), &Spatial::set_transform);
+	ClassDB::bind_method(D_METHOD("get_transform"), &Spatial::get_transform);
+	ClassDB::bind_method(D_METHOD("set_translation","translation"), &Spatial::set_translation);
+	ClassDB::bind_method(D_METHOD("get_translation"), &Spatial::get_translation);
+	ClassDB::bind_method(D_METHOD("set_rotation","rotation_rad"), &Spatial::set_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation"), &Spatial::get_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation_deg","rotation_deg"), &Spatial::set_rotation_in_degrees);
+	ClassDB::bind_method(D_METHOD("get_rotation_deg"), &Spatial::get_rotation_in_degrees);
+	ClassDB::bind_method(D_METHOD("set_scale","scale"), &Spatial::set_scale);
+	ClassDB::bind_method(D_METHOD("get_scale"), &Spatial::get_scale);
+	ClassDB::bind_method(D_METHOD("set_global_transform","global"), &Spatial::set_global_transform);
+	ClassDB::bind_method(D_METHOD("get_global_transform"), &Spatial::get_global_transform);
+	ClassDB::bind_method(D_METHOD("get_parent_spatial"), &Spatial::get_parent_spatial);
+	ClassDB::bind_method(D_METHOD("set_ignore_transform_notification","enabled"), &Spatial::set_ignore_transform_notification);
+	ClassDB::bind_method(D_METHOD("set_as_toplevel","enable"), &Spatial::set_as_toplevel);
+	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"), &Spatial::is_set_as_toplevel);
+	ClassDB::bind_method(D_METHOD("get_world:World"), &Spatial::get_world);
 
 	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ClassDB::bind_method(_MD("_set_rotation_deg","rotation_deg"), &Spatial::_set_rotation_deg);
-	ClassDB::bind_method(_MD("_get_rotation_deg"), &Spatial::_get_rotation_deg);
+	ClassDB::bind_method(D_METHOD("_set_rotation_deg","rotation_deg"), &Spatial::_set_rotation_deg);
+	ClassDB::bind_method(D_METHOD("_get_rotation_deg"), &Spatial::_get_rotation_deg);
 
 #ifdef TOOLS_ENABLED
-	ClassDB::bind_method(_MD("_update_gizmo"), &Spatial::_update_gizmo);
-	ClassDB::bind_method(_MD("_set_import_transform"), &Spatial::set_import_transform);
-	ClassDB::bind_method(_MD("_get_import_transform"), &Spatial::get_import_transform);
-	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"_import_transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_transform"),_SCS("_get_import_transform"));
+	ClassDB::bind_method(D_METHOD("_update_gizmo"), &Spatial::_update_gizmo);
+	ClassDB::bind_method(D_METHOD("_set_import_transform"), &Spatial::set_import_transform);
+	ClassDB::bind_method(D_METHOD("_get_import_transform"), &Spatial::get_import_transform);
+	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"_import_transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_import_transform","_get_import_transform");
 #endif
 
-	ClassDB::bind_method(_MD("update_gizmo"), &Spatial::update_gizmo);
-	ClassDB::bind_method(_MD("set_gizmo","gizmo:SpatialGizmo"), &Spatial::set_gizmo);
-	ClassDB::bind_method(_MD("get_gizmo:SpatialGizmo"), &Spatial::get_gizmo);
+	ClassDB::bind_method(D_METHOD("update_gizmo"), &Spatial::update_gizmo);
+	ClassDB::bind_method(D_METHOD("set_gizmo","gizmo:SpatialGizmo"), &Spatial::set_gizmo);
+	ClassDB::bind_method(D_METHOD("get_gizmo:SpatialGizmo"), &Spatial::get_gizmo);
 
-	ClassDB::bind_method(_MD("set_visible"), &Spatial::set_visible);
-	ClassDB::bind_method(_MD("is_visible"), &Spatial::is_visible);
-	ClassDB::bind_method(_MD("is_visible_in_tree"), &Spatial::is_visible_in_tree);
-	ClassDB::bind_method(_MD("show"), &Spatial::show);
-	ClassDB::bind_method(_MD("hide"), &Spatial::hide);
+	ClassDB::bind_method(D_METHOD("set_visible"), &Spatial::set_visible);
+	ClassDB::bind_method(D_METHOD("is_visible"), &Spatial::is_visible);
+	ClassDB::bind_method(D_METHOD("is_visible_in_tree"), &Spatial::is_visible_in_tree);
+	ClassDB::bind_method(D_METHOD("show"), &Spatial::show);
+	ClassDB::bind_method(D_METHOD("hide"), &Spatial::hide);
 
-	ClassDB::bind_method(_MD("set_notify_local_transform","enable"), &Spatial::set_notify_local_transform);
-	ClassDB::bind_method(_MD("is_local_transform_notification_enabled"), &Spatial::is_local_transform_notification_enabled);
+	ClassDB::bind_method(D_METHOD("set_notify_local_transform","enable"), &Spatial::set_notify_local_transform);
+	ClassDB::bind_method(D_METHOD("is_local_transform_notification_enabled"), &Spatial::is_local_transform_notification_enabled);
 
-	ClassDB::bind_method(_MD("set_notify_transform","enable"), &Spatial::set_notify_transform);
-	ClassDB::bind_method(_MD("is_transform_notification_enabled"), &Spatial::is_transform_notification_enabled);
+	ClassDB::bind_method(D_METHOD("set_notify_transform","enable"), &Spatial::set_notify_transform);
+	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &Spatial::is_transform_notification_enabled);
 
 	void rotate(const Vector3& p_normal,float p_radians);
 	void rotate_x(float p_radians);
@@ -796,35 +796,35 @@ void Spatial::_bind_methods() {
 	void global_rotate(const Vector3& p_normal,float p_radians);
 	void global_translate(const Vector3& p_offset);
 
-	ClassDB::bind_method( _MD("rotate","normal","radians"),&Spatial::rotate );
-	ClassDB::bind_method( _MD("global_rotate","normal","radians"),&Spatial::global_rotate );
-	ClassDB::bind_method( _MD("rotate_x","radians"),&Spatial::rotate_x );
-	ClassDB::bind_method( _MD("rotate_y","radians"),&Spatial::rotate_y );
-	ClassDB::bind_method( _MD("rotate_z","radians"),&Spatial::rotate_z );
-	ClassDB::bind_method( _MD("translate","offset"),&Spatial::translate );
-	ClassDB::bind_method( _MD("global_translate","offset"),&Spatial::global_translate );
-	ClassDB::bind_method( _MD("orthonormalize"),&Spatial::orthonormalize );
-	ClassDB::bind_method( _MD("set_identity"),&Spatial::set_identity );
+	ClassDB::bind_method( D_METHOD("rotate","normal","radians"),&Spatial::rotate );
+	ClassDB::bind_method( D_METHOD("global_rotate","normal","radians"),&Spatial::global_rotate );
+	ClassDB::bind_method( D_METHOD("rotate_x","radians"),&Spatial::rotate_x );
+	ClassDB::bind_method( D_METHOD("rotate_y","radians"),&Spatial::rotate_y );
+	ClassDB::bind_method( D_METHOD("rotate_z","radians"),&Spatial::rotate_z );
+	ClassDB::bind_method( D_METHOD("translate","offset"),&Spatial::translate );
+	ClassDB::bind_method( D_METHOD("global_translate","offset"),&Spatial::global_translate );
+	ClassDB::bind_method( D_METHOD("orthonormalize"),&Spatial::orthonormalize );
+	ClassDB::bind_method( D_METHOD("set_identity"),&Spatial::set_identity );
 
-	ClassDB::bind_method( _MD("look_at","target","up"),&Spatial::look_at );
-	ClassDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Spatial::look_at_from_pos );
+	ClassDB::bind_method( D_METHOD("look_at","target","up"),&Spatial::look_at );
+	ClassDB::bind_method( D_METHOD("look_at_from_pos","pos","target","up"),&Spatial::look_at_from_pos );
 
 	BIND_CONSTANT( NOTIFICATION_TRANSFORM_CHANGED );
 	BIND_CONSTANT( NOTIFICATION_ENTER_WORLD );
 	BIND_CONSTANT( NOTIFICATION_EXIT_WORLD );
 	BIND_CONSTANT( NOTIFICATION_VISIBILITY_CHANGED );
 
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), _SCS("set_global_transform"), _SCS("get_global_transform") );
+	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), "set_global_transform", "get_global_transform") ;
 	ADD_GROUP("Transform","");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform",PROPERTY_HINT_NONE,""), _SCS("set_transform"), _SCS("get_transform") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"global_transform",PROPERTY_HINT_NONE,"",0), _SCS("set_global_transform"), _SCS("get_global_transform") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_translation"), _SCS("get_translation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation_deg",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_rotation_deg"), _SCS("get_rotation_deg") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform",PROPERTY_HINT_NONE,""), "set_transform", "get_transform") ;
+	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"global_transform",PROPERTY_HINT_NONE,"",0), "set_global_transform", "get_global_transform") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"translation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), "set_translation", "get_translation") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation_deg",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), "set_rotation_deg", "get_rotation_deg") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"rotation",PROPERTY_HINT_NONE,"",0), "set_rotation", "get_rotation") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), "set_scale", "get_scale") ;
 	ADD_GROUP("Visibility","");
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("set_visible"), _SCS("is_visible") );
-	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), _SCS("set_transform"), _SCS("get_transform") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), "set_visible", "is_visible") ;
+	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), "set_transform", "get_transform") ;
 
 	ADD_SIGNAL( MethodInfo("visibility_changed" ) );
 

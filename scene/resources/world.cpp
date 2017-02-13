@@ -310,12 +310,12 @@ PhysicsDirectSpaceState *World::get_direct_space_state() {
 
 void World::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_space"),&World::get_space);
-	ClassDB::bind_method(_MD("get_scenario"),&World::get_scenario);
-	ClassDB::bind_method(_MD("set_environment","env:Environment"),&World::set_environment);
-	ClassDB::bind_method(_MD("get_environment:Environment"),&World::get_environment);
-	ClassDB::bind_method(_MD("get_direct_space_state:PhysicsDirectSpaceState"),&World::get_direct_space_state);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),_SCS("set_environment"),_SCS("get_environment"));
+	ClassDB::bind_method(D_METHOD("get_space"),&World::get_space);
+	ClassDB::bind_method(D_METHOD("get_scenario"),&World::get_scenario);
+	ClassDB::bind_method(D_METHOD("set_environment","env:Environment"),&World::set_environment);
+	ClassDB::bind_method(D_METHOD("get_environment:Environment"),&World::get_environment);
+	ClassDB::bind_method(D_METHOD("get_direct_space_state:PhysicsDirectSpaceState"),&World::get_direct_space_state);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),"set_environment","get_environment");
 
 }
 

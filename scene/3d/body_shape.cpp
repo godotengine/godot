@@ -414,22 +414,22 @@ String CollisionShape::get_configuration_warning() const {
 void CollisionShape::_bind_methods() {
 
 	//not sure if this should do anything
-	ClassDB::bind_method(_MD("resource_changed","resource"),&CollisionShape::resource_changed);
-	ClassDB::bind_method(_MD("set_shape","shape"),&CollisionShape::set_shape);
-	ClassDB::bind_method(_MD("get_shape"),&CollisionShape::get_shape);
-	ClassDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape::_add_to_collision_object);
-	ClassDB::bind_method(_MD("set_trigger","enable"),&CollisionShape::set_trigger);
-	ClassDB::bind_method(_MD("is_trigger"),&CollisionShape::is_trigger);
-	ClassDB::bind_method(_MD("make_convex_from_brothers"),&CollisionShape::make_convex_from_brothers);
+	ClassDB::bind_method(D_METHOD("resource_changed","resource"),&CollisionShape::resource_changed);
+	ClassDB::bind_method(D_METHOD("set_shape","shape"),&CollisionShape::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"),&CollisionShape::get_shape);
+	ClassDB::bind_method(D_METHOD("_add_to_collision_object"),&CollisionShape::_add_to_collision_object);
+	ClassDB::bind_method(D_METHOD("set_trigger","enable"),&CollisionShape::set_trigger);
+	ClassDB::bind_method(D_METHOD("is_trigger"),&CollisionShape::is_trigger);
+	ClassDB::bind_method(D_METHOD("make_convex_from_brothers"),&CollisionShape::make_convex_from_brothers);
 	ClassDB::set_method_flags("CollisionShape","make_convex_from_brothers",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape::_set_update_shape_index);
-	ClassDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape::_get_update_shape_index);
+	ClassDB::bind_method(D_METHOD("_set_update_shape_index","index"),&CollisionShape::_set_update_shape_index);
+	ClassDB::bind_method(D_METHOD("_get_update_shape_index"),&CollisionShape::_get_update_shape_index);
 
-	ClassDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape::get_collision_object_shape_index);
+	ClassDB::bind_method(D_METHOD("get_collision_object_shape_index"),&CollisionShape::get_collision_object_shape_index);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), _SCS("set_shape"), _SCS("get_shape"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), _SCS("_set_update_shape_index"), _SCS("_get_update_shape_index"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape"), "set_shape", "get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),"set_trigger","is_trigger");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), "_set_update_shape_index", "_get_update_shape_index");
 }
 
 

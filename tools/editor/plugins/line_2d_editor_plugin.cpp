@@ -185,9 +185,9 @@ void Line2DEditor::edit(Node *p_line2d) {
 }
 
 void Line2DEditor::_bind_methods() {
-	ClassDB::bind_method(_MD("_canvas_draw"), &Line2DEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_node_visibility_changed"), &Line2DEditor::_node_visibility_changed);
-	ClassDB::bind_method(_MD("_mode_selected"), &Line2DEditor::_mode_selected);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"), &Line2DEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_node_visibility_changed"), &Line2DEditor::_node_visibility_changed);
+	ClassDB::bind_method(D_METHOD("_mode_selected"), &Line2DEditor::_mode_selected);
 }
 
 void Line2DEditor::_mode_selected(int p_mode) {

@@ -477,10 +477,10 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 
 void NavigationPolygonEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_option"),&NavigationPolygonEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_node_removed"),&NavigationPolygonEditor::_node_removed);
-	ClassDB::bind_method(_MD("_create_nav"),&NavigationPolygonEditor::_create_nav);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&NavigationPolygonEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&NavigationPolygonEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_create_nav"),&NavigationPolygonEditor::_create_nav);
 
 }
 

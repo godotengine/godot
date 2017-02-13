@@ -185,57 +185,57 @@ void ReflectionProbe::_validate_property(PropertyInfo& property) const {
 
 void ReflectionProbe::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_intensity","intensity"),&ReflectionProbe::set_intensity);
-	ClassDB::bind_method(_MD("get_intensity"),&ReflectionProbe::get_intensity);
+	ClassDB::bind_method(D_METHOD("set_intensity","intensity"),&ReflectionProbe::set_intensity);
+	ClassDB::bind_method(D_METHOD("get_intensity"),&ReflectionProbe::get_intensity);
 
-	ClassDB::bind_method(_MD("set_interior_ambient","ambient"),&ReflectionProbe::set_interior_ambient);
-	ClassDB::bind_method(_MD("get_interior_ambient"),&ReflectionProbe::get_interior_ambient);
+	ClassDB::bind_method(D_METHOD("set_interior_ambient","ambient"),&ReflectionProbe::set_interior_ambient);
+	ClassDB::bind_method(D_METHOD("get_interior_ambient"),&ReflectionProbe::get_interior_ambient);
 
-	ClassDB::bind_method(_MD("set_interior_ambient_energy","ambient_energy"),&ReflectionProbe::set_interior_ambient_energy);
-	ClassDB::bind_method(_MD("get_interior_ambient_energy"),&ReflectionProbe::get_interior_ambient_energy);
+	ClassDB::bind_method(D_METHOD("set_interior_ambient_energy","ambient_energy"),&ReflectionProbe::set_interior_ambient_energy);
+	ClassDB::bind_method(D_METHOD("get_interior_ambient_energy"),&ReflectionProbe::get_interior_ambient_energy);
 
-	ClassDB::bind_method(_MD("set_interior_ambient_probe_contribution","ambient_probe_contribution"),&ReflectionProbe::set_interior_ambient_probe_contribution);
-	ClassDB::bind_method(_MD("get_interior_ambient_probe_contribution"),&ReflectionProbe::get_interior_ambient_probe_contribution);
+	ClassDB::bind_method(D_METHOD("set_interior_ambient_probe_contribution","ambient_probe_contribution"),&ReflectionProbe::set_interior_ambient_probe_contribution);
+	ClassDB::bind_method(D_METHOD("get_interior_ambient_probe_contribution"),&ReflectionProbe::get_interior_ambient_probe_contribution);
 
-	ClassDB::bind_method(_MD("set_max_distance","max_distance"),&ReflectionProbe::set_max_distance);
-	ClassDB::bind_method(_MD("get_max_distance"),&ReflectionProbe::get_max_distance);
+	ClassDB::bind_method(D_METHOD("set_max_distance","max_distance"),&ReflectionProbe::set_max_distance);
+	ClassDB::bind_method(D_METHOD("get_max_distance"),&ReflectionProbe::get_max_distance);
 
-	ClassDB::bind_method(_MD("set_extents","extents"),&ReflectionProbe::set_extents);
-	ClassDB::bind_method(_MD("get_extents"),&ReflectionProbe::get_extents);
+	ClassDB::bind_method(D_METHOD("set_extents","extents"),&ReflectionProbe::set_extents);
+	ClassDB::bind_method(D_METHOD("get_extents"),&ReflectionProbe::get_extents);
 
-	ClassDB::bind_method(_MD("set_origin_offset","origin_offset"),&ReflectionProbe::set_origin_offset);
-	ClassDB::bind_method(_MD("get_origin_offset"),&ReflectionProbe::get_origin_offset);
+	ClassDB::bind_method(D_METHOD("set_origin_offset","origin_offset"),&ReflectionProbe::set_origin_offset);
+	ClassDB::bind_method(D_METHOD("get_origin_offset"),&ReflectionProbe::get_origin_offset);
 
-	ClassDB::bind_method(_MD("set_as_interior","enable"),&ReflectionProbe::set_as_interior);
-	ClassDB::bind_method(_MD("is_set_as_interior"),&ReflectionProbe::is_set_as_interior);
+	ClassDB::bind_method(D_METHOD("set_as_interior","enable"),&ReflectionProbe::set_as_interior);
+	ClassDB::bind_method(D_METHOD("is_set_as_interior"),&ReflectionProbe::is_set_as_interior);
 
-	ClassDB::bind_method(_MD("set_enable_box_projection","enable"),&ReflectionProbe::set_enable_box_projection);
-	ClassDB::bind_method(_MD("is_box_projection_enabled"),&ReflectionProbe::is_box_projection_enabled);
+	ClassDB::bind_method(D_METHOD("set_enable_box_projection","enable"),&ReflectionProbe::set_enable_box_projection);
+	ClassDB::bind_method(D_METHOD("is_box_projection_enabled"),&ReflectionProbe::is_box_projection_enabled);
 
 
-	ClassDB::bind_method(_MD("set_enable_shadows","enable"),&ReflectionProbe::set_enable_shadows);
-	ClassDB::bind_method(_MD("are_shadows_enabled"),&ReflectionProbe::are_shadows_enabled);
+	ClassDB::bind_method(D_METHOD("set_enable_shadows","enable"),&ReflectionProbe::set_enable_shadows);
+	ClassDB::bind_method(D_METHOD("are_shadows_enabled"),&ReflectionProbe::are_shadows_enabled);
 
-	ClassDB::bind_method(_MD("set_cull_mask","layers"),&ReflectionProbe::set_cull_mask);
-	ClassDB::bind_method(_MD("get_cull_mask"),&ReflectionProbe::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_cull_mask","layers"),&ReflectionProbe::set_cull_mask);
+	ClassDB::bind_method(D_METHOD("get_cull_mask"),&ReflectionProbe::get_cull_mask);
 
-	ClassDB::bind_method(_MD("set_update_mode","mode"),&ReflectionProbe::set_update_mode);
-	ClassDB::bind_method(_MD("get_update_mode"),&ReflectionProbe::get_update_mode);
+	ClassDB::bind_method(D_METHOD("set_update_mode","mode"),&ReflectionProbe::set_update_mode);
+	ClassDB::bind_method(D_METHOD("get_update_mode"),&ReflectionProbe::get_update_mode);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"update_mode",PROPERTY_HINT_ENUM,"Once,Always"),_SCS("set_update_mode"),_SCS("get_update_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"intensity",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_intensity"),_SCS("get_intensity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"max_distance",PROPERTY_HINT_RANGE,"0,16384,0.1"),_SCS("set_max_distance"),_SCS("get_max_distance"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),_SCS("set_extents"),_SCS("get_extents"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"origin_offset"),_SCS("set_origin_offset"),_SCS("get_origin_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"box_projection"),_SCS("set_enable_box_projection"),_SCS("is_box_projection_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enable_shadows"),_SCS("set_enable_shadows"),_SCS("are_shadows_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mask",PROPERTY_HINT_LAYERS_3D_RENDER),_SCS("set_cull_mask"),_SCS("get_cull_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"update_mode",PROPERTY_HINT_ENUM,"Once,Always"),"set_update_mode","get_update_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"intensity",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_intensity","get_intensity");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"max_distance",PROPERTY_HINT_RANGE,"0,16384,0.1"),"set_max_distance","get_max_distance");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),"set_extents","get_extents");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"origin_offset"),"set_origin_offset","get_origin_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"box_projection"),"set_enable_box_projection","is_box_projection_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enable_shadows"),"set_enable_shadows","are_shadows_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mask",PROPERTY_HINT_LAYERS_3D_RENDER),"set_cull_mask","get_cull_mask");
 
 	ADD_GROUP("Interior","interior_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior_enable"),_SCS("set_as_interior"),_SCS("is_set_as_interior"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"interior_ambient_color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_interior_ambient"),_SCS("get_interior_ambient"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_interior_ambient_energy"),_SCS("get_interior_ambient_energy"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_contrib",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_interior_ambient_probe_contribution"),_SCS("get_interior_ambient_probe_contribution"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior_enable"),"set_as_interior","is_set_as_interior");
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"interior_ambient_color",PROPERTY_HINT_COLOR_NO_ALPHA),"set_interior_ambient","get_interior_ambient");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),"set_interior_ambient_energy","get_interior_ambient_energy");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_contrib",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_interior_ambient_probe_contribution","get_interior_ambient_probe_contribution");
 
 
 	BIND_CONSTANT( UPDATE_ONCE );

@@ -165,108 +165,108 @@ int ShaderGraph::node_count(ShaderType p_which, int p_type)
 
 void ShaderGraph::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_update_shader"),&ShaderGraph::_update_shader);
+	ClassDB::bind_method(D_METHOD("_update_shader"),&ShaderGraph::_update_shader);
 
-	ClassDB::bind_method(_MD("node_add","shader_type","node_type","id"),&ShaderGraph::node_add);
-	ClassDB::bind_method(_MD("node_remove","shader_type","id"),&ShaderGraph::node_remove);
-	ClassDB::bind_method(_MD("node_set_pos","shader_type","id","pos"),&ShaderGraph::node_set_pos);
-	ClassDB::bind_method(_MD("node_get_pos","shader_type","id"),&ShaderGraph::node_get_pos);
+	ClassDB::bind_method(D_METHOD("node_add","shader_type","node_type","id"),&ShaderGraph::node_add);
+	ClassDB::bind_method(D_METHOD("node_remove","shader_type","id"),&ShaderGraph::node_remove);
+	ClassDB::bind_method(D_METHOD("node_set_pos","shader_type","id","pos"),&ShaderGraph::node_set_pos);
+	ClassDB::bind_method(D_METHOD("node_get_pos","shader_type","id"),&ShaderGraph::node_get_pos);
 
-	ClassDB::bind_method(_MD("node_get_type","shader_type","id"),&ShaderGraph::node_get_type);
+	ClassDB::bind_method(D_METHOD("node_get_type","shader_type","id"),&ShaderGraph::node_get_type);
 
-	ClassDB::bind_method(_MD("get_node_list","shader_type"),&ShaderGraph::_get_node_list);
+	ClassDB::bind_method(D_METHOD("get_node_list","shader_type"),&ShaderGraph::_get_node_list);
 
-	ClassDB::bind_method(_MD("default_set_value","shader_type","id","param_id","value"), &ShaderGraph::default_set_value);
-	ClassDB::bind_method(_MD("default_get_value","shader_type","id","param_id"), &ShaderGraph::default_get_value);
+	ClassDB::bind_method(D_METHOD("default_set_value","shader_type","id","param_id","value"), &ShaderGraph::default_set_value);
+	ClassDB::bind_method(D_METHOD("default_get_value","shader_type","id","param_id"), &ShaderGraph::default_get_value);
 
-	ClassDB::bind_method(_MD("scalar_const_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_const_node_set_value);
-	ClassDB::bind_method(_MD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_get_value);
+	ClassDB::bind_method(D_METHOD("scalar_const_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_const_node_set_value);
+	ClassDB::bind_method(D_METHOD("scalar_const_node_get_value","shader_type","id"),&ShaderGraph::scalar_const_node_get_value);
 
-	ClassDB::bind_method(_MD("vec_const_node_set_value","shader_type","id","value"),&ShaderGraph::vec_const_node_set_value);
-	ClassDB::bind_method(_MD("vec_const_node_get_value","shader_type","id"),&ShaderGraph::vec_const_node_get_value);
+	ClassDB::bind_method(D_METHOD("vec_const_node_set_value","shader_type","id","value"),&ShaderGraph::vec_const_node_set_value);
+	ClassDB::bind_method(D_METHOD("vec_const_node_get_value","shader_type","id"),&ShaderGraph::vec_const_node_get_value);
 
-	ClassDB::bind_method(_MD("rgb_const_node_set_value","shader_type","id","value"),&ShaderGraph::rgb_const_node_set_value);
-	ClassDB::bind_method(_MD("rgb_const_node_get_value","shader_type","id"),&ShaderGraph::rgb_const_node_get_value);
+	ClassDB::bind_method(D_METHOD("rgb_const_node_set_value","shader_type","id","value"),&ShaderGraph::rgb_const_node_set_value);
+	ClassDB::bind_method(D_METHOD("rgb_const_node_get_value","shader_type","id"),&ShaderGraph::rgb_const_node_get_value);
 
-	ClassDB::bind_method(_MD("xform_const_node_set_value","shader_type","id","value"),&ShaderGraph::xform_const_node_set_value);
-	ClassDB::bind_method(_MD("xform_const_node_get_value","shader_type","id"),&ShaderGraph::xform_const_node_get_value);
+	ClassDB::bind_method(D_METHOD("xform_const_node_set_value","shader_type","id","value"),&ShaderGraph::xform_const_node_set_value);
+	ClassDB::bind_method(D_METHOD("xform_const_node_get_value","shader_type","id"),&ShaderGraph::xform_const_node_get_value);
 
 
 	//void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
 
-	ClassDB::bind_method(_MD("texture_node_set_filter_size","shader_type","id","filter_size"),&ShaderGraph::texture_node_set_filter_size);
-	ClassDB::bind_method(_MD("texture_node_get_filter_size","shader_type","id"),&ShaderGraph::texture_node_get_filter_size);
+	ClassDB::bind_method(D_METHOD("texture_node_set_filter_size","shader_type","id","filter_size"),&ShaderGraph::texture_node_set_filter_size);
+	ClassDB::bind_method(D_METHOD("texture_node_get_filter_size","shader_type","id"),&ShaderGraph::texture_node_get_filter_size);
 
-	ClassDB::bind_method(_MD("texture_node_set_filter_strength","shader_type","id","filter_strength"),&ShaderGraph::texture_node_set_filter_strength);
-	ClassDB::bind_method(_MD("texture_node_get_filter_strength","shader_type","id"),&ShaderGraph::texture_node_get_filter_strength);
+	ClassDB::bind_method(D_METHOD("texture_node_set_filter_strength","shader_type","id","filter_strength"),&ShaderGraph::texture_node_set_filter_strength);
+	ClassDB::bind_method(D_METHOD("texture_node_get_filter_strength","shader_type","id"),&ShaderGraph::texture_node_get_filter_strength);
 
-	ClassDB::bind_method(_MD("scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::scalar_op_node_set_op);
-	ClassDB::bind_method(_MD("scalar_op_node_get_op","shader_type","id"),&ShaderGraph::scalar_op_node_get_op);
+	ClassDB::bind_method(D_METHOD("scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::scalar_op_node_set_op);
+	ClassDB::bind_method(D_METHOD("scalar_op_node_get_op","shader_type","id"),&ShaderGraph::scalar_op_node_get_op);
 
-	ClassDB::bind_method(_MD("vec_op_node_set_op","shader_type","id","op"),&ShaderGraph::vec_op_node_set_op);
-	ClassDB::bind_method(_MD("vec_op_node_get_op","shader_type","id"),&ShaderGraph::vec_op_node_get_op);
+	ClassDB::bind_method(D_METHOD("vec_op_node_set_op","shader_type","id","op"),&ShaderGraph::vec_op_node_set_op);
+	ClassDB::bind_method(D_METHOD("vec_op_node_get_op","shader_type","id"),&ShaderGraph::vec_op_node_get_op);
 
-	ClassDB::bind_method(_MD("vec_scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::vec_scalar_op_node_set_op);
-	ClassDB::bind_method(_MD("vec_scalar_op_node_get_op","shader_type","id"),&ShaderGraph::vec_scalar_op_node_get_op);
+	ClassDB::bind_method(D_METHOD("vec_scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::vec_scalar_op_node_set_op);
+	ClassDB::bind_method(D_METHOD("vec_scalar_op_node_get_op","shader_type","id"),&ShaderGraph::vec_scalar_op_node_get_op);
 
-	ClassDB::bind_method(_MD("rgb_op_node_set_op","shader_type","id","op"),&ShaderGraph::rgb_op_node_set_op);
-	ClassDB::bind_method(_MD("rgb_op_node_get_op","shader_type","id"),&ShaderGraph::rgb_op_node_get_op);
+	ClassDB::bind_method(D_METHOD("rgb_op_node_set_op","shader_type","id","op"),&ShaderGraph::rgb_op_node_set_op);
+	ClassDB::bind_method(D_METHOD("rgb_op_node_get_op","shader_type","id"),&ShaderGraph::rgb_op_node_get_op);
 
 
-	ClassDB::bind_method(_MD("xform_vec_mult_node_set_no_translation","shader_type","id","disable"),&ShaderGraph::xform_vec_mult_node_set_no_translation);
-	ClassDB::bind_method(_MD("xform_vec_mult_node_get_no_translation","shader_type","id"),&ShaderGraph::xform_vec_mult_node_get_no_translation);
+	ClassDB::bind_method(D_METHOD("xform_vec_mult_node_set_no_translation","shader_type","id","disable"),&ShaderGraph::xform_vec_mult_node_set_no_translation);
+	ClassDB::bind_method(D_METHOD("xform_vec_mult_node_get_no_translation","shader_type","id"),&ShaderGraph::xform_vec_mult_node_get_no_translation);
 
-	ClassDB::bind_method(_MD("scalar_func_node_set_function","shader_type","id","func"),&ShaderGraph::scalar_func_node_set_function);
-	ClassDB::bind_method(_MD("scalar_func_node_get_function","shader_type","id"),&ShaderGraph::scalar_func_node_get_function);
+	ClassDB::bind_method(D_METHOD("scalar_func_node_set_function","shader_type","id","func"),&ShaderGraph::scalar_func_node_set_function);
+	ClassDB::bind_method(D_METHOD("scalar_func_node_get_function","shader_type","id"),&ShaderGraph::scalar_func_node_get_function);
 
-	ClassDB::bind_method(_MD("vec_func_node_set_function","shader_type","id","func"),&ShaderGraph::vec_func_node_set_function);
-	ClassDB::bind_method(_MD("vec_func_node_get_function","shader_type","id"),&ShaderGraph::vec_func_node_get_function);
+	ClassDB::bind_method(D_METHOD("vec_func_node_set_function","shader_type","id","func"),&ShaderGraph::vec_func_node_set_function);
+	ClassDB::bind_method(D_METHOD("vec_func_node_get_function","shader_type","id"),&ShaderGraph::vec_func_node_get_function);
 
-	ClassDB::bind_method(_MD("input_node_set_name","shader_type","id","name"),&ShaderGraph::input_node_set_name);
-	ClassDB::bind_method(_MD("input_node_get_name","shader_type","id"),&ShaderGraph::input_node_get_name);
+	ClassDB::bind_method(D_METHOD("input_node_set_name","shader_type","id","name"),&ShaderGraph::input_node_set_name);
+	ClassDB::bind_method(D_METHOD("input_node_get_name","shader_type","id"),&ShaderGraph::input_node_get_name);
 
-	ClassDB::bind_method(_MD("scalar_input_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_input_node_set_value);
-	ClassDB::bind_method(_MD("scalar_input_node_get_value","shader_type","id"),&ShaderGraph::scalar_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("scalar_input_node_set_value","shader_type","id","value"),&ShaderGraph::scalar_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("scalar_input_node_get_value","shader_type","id"),&ShaderGraph::scalar_input_node_get_value);
 
-	ClassDB::bind_method(_MD("vec_input_node_set_value","shader_type","id","value"),&ShaderGraph::vec_input_node_set_value);
-	ClassDB::bind_method(_MD("vec_input_node_get_value","shader_type","id"),&ShaderGraph::vec_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("vec_input_node_set_value","shader_type","id","value"),&ShaderGraph::vec_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("vec_input_node_get_value","shader_type","id"),&ShaderGraph::vec_input_node_get_value);
 
-	ClassDB::bind_method(_MD("rgb_input_node_set_value","shader_type","id","value"),&ShaderGraph::rgb_input_node_set_value);
-	ClassDB::bind_method(_MD("rgb_input_node_get_value","shader_type","id"),&ShaderGraph::rgb_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("rgb_input_node_set_value","shader_type","id","value"),&ShaderGraph::rgb_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("rgb_input_node_get_value","shader_type","id"),&ShaderGraph::rgb_input_node_get_value);
 
-	ClassDB::bind_method(_MD("xform_input_node_set_value","shader_type","id","value"),&ShaderGraph::xform_input_node_set_value);
-	ClassDB::bind_method(_MD("xform_input_node_get_value","shader_type","id"),&ShaderGraph::xform_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("xform_input_node_set_value","shader_type","id","value"),&ShaderGraph::xform_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("xform_input_node_get_value","shader_type","id"),&ShaderGraph::xform_input_node_get_value);
 
-	ClassDB::bind_method(_MD("texture_input_node_set_value","shader_type","id","value:Texture"),&ShaderGraph::texture_input_node_set_value);
-	ClassDB::bind_method(_MD("texture_input_node_get_value:Texture","shader_type","id"),&ShaderGraph::texture_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("texture_input_node_set_value","shader_type","id","value:Texture"),&ShaderGraph::texture_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("texture_input_node_get_value:Texture","shader_type","id"),&ShaderGraph::texture_input_node_get_value);
 
-	ClassDB::bind_method(_MD("cubemap_input_node_set_value","shader_type","id","value:CubeMap"),&ShaderGraph::cubemap_input_node_set_value);
-	ClassDB::bind_method(_MD("cubemap_input_node_get_value:CubeMap","shader_type","id"),&ShaderGraph::cubemap_input_node_get_value);
+	ClassDB::bind_method(D_METHOD("cubemap_input_node_set_value","shader_type","id","value:CubeMap"),&ShaderGraph::cubemap_input_node_set_value);
+	ClassDB::bind_method(D_METHOD("cubemap_input_node_get_value:CubeMap","shader_type","id"),&ShaderGraph::cubemap_input_node_get_value);
 
-	ClassDB::bind_method(_MD("comment_node_set_text","shader_type","id","text"),&ShaderGraph::comment_node_set_text);
-	ClassDB::bind_method(_MD("comment_node_get_text","shader_type","id"),&ShaderGraph::comment_node_get_text);
+	ClassDB::bind_method(D_METHOD("comment_node_set_text","shader_type","id","text"),&ShaderGraph::comment_node_set_text);
+	ClassDB::bind_method(D_METHOD("comment_node_get_text","shader_type","id"),&ShaderGraph::comment_node_get_text);
 
-	ClassDB::bind_method(_MD("color_ramp_node_set_ramp","shader_type","id","colors","offsets"),&ShaderGraph::color_ramp_node_set_ramp);
-	ClassDB::bind_method(_MD("color_ramp_node_get_colors","shader_type","id"),&ShaderGraph::color_ramp_node_get_colors);
-	ClassDB::bind_method(_MD("color_ramp_node_get_offsets","shader_type","id"),&ShaderGraph::color_ramp_node_get_offsets);
+	ClassDB::bind_method(D_METHOD("color_ramp_node_set_ramp","shader_type","id","colors","offsets"),&ShaderGraph::color_ramp_node_set_ramp);
+	ClassDB::bind_method(D_METHOD("color_ramp_node_get_colors","shader_type","id"),&ShaderGraph::color_ramp_node_get_colors);
+	ClassDB::bind_method(D_METHOD("color_ramp_node_get_offsets","shader_type","id"),&ShaderGraph::color_ramp_node_get_offsets);
 
-	ClassDB::bind_method(_MD("curve_map_node_set_points","shader_type","id","points"),&ShaderGraph::curve_map_node_set_points);
-	ClassDB::bind_method(_MD("curve_map_node_get_points","shader_type","id"),&ShaderGraph::curve_map_node_get_points);
+	ClassDB::bind_method(D_METHOD("curve_map_node_set_points","shader_type","id","points"),&ShaderGraph::curve_map_node_set_points);
+	ClassDB::bind_method(D_METHOD("curve_map_node_get_points","shader_type","id"),&ShaderGraph::curve_map_node_get_points);
 
-	ClassDB::bind_method(_MD("connect_node:Error","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::connect_node);
-	ClassDB::bind_method(_MD("is_node_connected","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::is_node_connected);
-	ClassDB::bind_method(_MD("disconnect_node","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::disconnect_node);
-	ClassDB::bind_method(_MD("get_node_connections","shader_type"),&ShaderGraph::_get_connections);
+	ClassDB::bind_method(D_METHOD("connect_node:Error","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::connect_node);
+	ClassDB::bind_method(D_METHOD("is_node_connected","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::is_node_connected);
+	ClassDB::bind_method(D_METHOD("disconnect_node","shader_type","src_id","src_slot","dst_id","dst_slot"),&ShaderGraph::disconnect_node);
+	ClassDB::bind_method(D_METHOD("get_node_connections","shader_type"),&ShaderGraph::_get_connections);
 
-	ClassDB::bind_method(_MD("clear","shader_type"),&ShaderGraph::clear);
+	ClassDB::bind_method(D_METHOD("clear","shader_type"),&ShaderGraph::clear);
 
-	ClassDB::bind_method(_MD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
-	ClassDB::bind_method(_MD("node_get_state:Variant","shader_type","id"),&ShaderGraph::node_get_state);
+	ClassDB::bind_method(D_METHOD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
+	ClassDB::bind_method(D_METHOD("node_get_state:Variant","shader_type","id"),&ShaderGraph::node_get_state);
 
-	ClassDB::bind_method(_MD("_set_data"),&ShaderGraph::_set_data);
-	ClassDB::bind_method(_MD("_get_data"),&ShaderGraph::_get_data);
+	ClassDB::bind_method(D_METHOD("_set_data"),&ShaderGraph::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"),&ShaderGraph::_get_data);
 
-	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"),_SCS("_get_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_data","_get_data");
 
 	//void get_connections(ShaderType p_which,List<Connection> *p_connections) const;
 
@@ -399,21 +399,21 @@ void ShaderGraph::_bind_methods() {
 
 
 #if 0
-	ClassDB::bind_method(_MD("node_add"),&ShaderGraph::node_add );
-	ClassDB::bind_method(_MD("node_remove"),&ShaderGraph::node_remove );
-	ClassDB::bind_method(_MD("node_set_param"),&ShaderGraph::node_set_param );
-	ClassDB::bind_method(_MD("node_set_pos"),&ShaderGraph::node_set_pos );
+	ClassDB::bind_method(D_METHOD("node_add"),&ShaderGraph::node_add );
+	ClassDB::bind_method(D_METHOD("node_remove"),&ShaderGraph::node_remove );
+	ClassDB::bind_method(D_METHOD("node_set_param"),&ShaderGraph::node_set_param );
+	ClassDB::bind_method(D_METHOD("node_set_pos"),&ShaderGraph::node_set_pos );
 
-	ClassDB::bind_method(_MD("node_get_pos"),&ShaderGraph::node_get_pos );
-	ClassDB::bind_method(_MD("node_get_param"),&ShaderGraph::node_get_param);
-	ClassDB::bind_method(_MD("node_get_type"),&ShaderGraph::node_get_type);
+	ClassDB::bind_method(D_METHOD("node_get_pos"),&ShaderGraph::node_get_pos );
+	ClassDB::bind_method(D_METHOD("node_get_param"),&ShaderGraph::node_get_param);
+	ClassDB::bind_method(D_METHOD("node_get_type"),&ShaderGraph::node_get_type);
 
-	ClassDB::bind_method(_MD("connect"),&ShaderGraph::connect );
-	ClassDB::bind_method(_MD("disconnect"),&ShaderGraph::disconnect );
+	ClassDB::bind_method(D_METHOD("connect"),&ShaderGraph::connect );
+	ClassDB::bind_method(D_METHOD("disconnect"),&ShaderGraph::disconnect );
 
-	ClassDB::bind_method(_MD("get_connections"),&ShaderGraph::_get_connections_helper );
+	ClassDB::bind_method(D_METHOD("get_connections"),&ShaderGraph::_get_connections_helper );
 
-	ClassDB::bind_method(_MD("clear"),&ShaderGraph::clear );
+	ClassDB::bind_method(D_METHOD("clear"),&ShaderGraph::clear );
 
 	BIND_CONSTANT( NODE_IN ); ///< param 0: name
 	BIND_CONSTANT( NODE_OUT ); ///< param 0: name

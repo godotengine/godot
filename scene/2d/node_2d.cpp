@@ -423,67 +423,67 @@ void Node2D::_bind_methods() {
 
 
 	// TODO: Obsolete those two methods (old name) properly (GH-4397)
-	ClassDB::bind_method(_MD("_get_rotd"),&Node2D::_get_rotd);
-	ClassDB::bind_method(_MD("_set_rotd","degrees"),&Node2D::_set_rotd);
+	ClassDB::bind_method(D_METHOD("_get_rotd"),&Node2D::_get_rotd);
+	ClassDB::bind_method(D_METHOD("_set_rotd","degrees"),&Node2D::_set_rotd);
 
-	ClassDB::bind_method(_MD("set_position","pos"),&Node2D::set_position);
-	ClassDB::bind_method(_MD("set_rotation","radians"),&Node2D::set_rotation);
-	ClassDB::bind_method(_MD("set_rotation_in_degrees","degrees"),&Node2D::set_rotation_in_degrees);
-	ClassDB::bind_method(_MD("set_scale","scale"),&Node2D::set_scale);
+	ClassDB::bind_method(D_METHOD("set_position","pos"),&Node2D::set_position);
+	ClassDB::bind_method(D_METHOD("set_rotation","radians"),&Node2D::set_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation_in_degrees","degrees"),&Node2D::set_rotation_in_degrees);
+	ClassDB::bind_method(D_METHOD("set_scale","scale"),&Node2D::set_scale);
 
-	ClassDB::bind_method(_MD("get_position"),&Node2D::get_position);
-	ClassDB::bind_method(_MD("get_rotation"),&Node2D::get_rotation);
-	ClassDB::bind_method(_MD("get_rotation_in_degrees"),&Node2D::get_rotation_in_degrees);
-	ClassDB::bind_method(_MD("get_scale"),&Node2D::get_scale);
+	ClassDB::bind_method(D_METHOD("get_position"),&Node2D::get_position);
+	ClassDB::bind_method(D_METHOD("get_rotation"),&Node2D::get_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation_in_degrees"),&Node2D::get_rotation_in_degrees);
+	ClassDB::bind_method(D_METHOD("get_scale"),&Node2D::get_scale);
 
-	ClassDB::bind_method(_MD("rotate","radians"),&Node2D::rotate);
-	ClassDB::bind_method(_MD("move_local_x","delta","scaled"),&Node2D::move_x,DEFVAL(false));
-	ClassDB::bind_method(_MD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
-	ClassDB::bind_method(_MD("translate","offset"),&Node2D::translate);
-	ClassDB::bind_method(_MD("global_translate","offset"),&Node2D::global_translate);
-	ClassDB::bind_method(_MD("scale","ratio"),&Node2D::scale);
+	ClassDB::bind_method(D_METHOD("rotate","radians"),&Node2D::rotate);
+	ClassDB::bind_method(D_METHOD("move_local_x","delta","scaled"),&Node2D::move_x,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("translate","offset"),&Node2D::translate);
+	ClassDB::bind_method(D_METHOD("global_translate","offset"),&Node2D::global_translate);
+	ClassDB::bind_method(D_METHOD("scale","ratio"),&Node2D::scale);
 
-	ClassDB::bind_method(_MD("set_global_position","pos"),&Node2D::set_global_position);
-	ClassDB::bind_method(_MD("get_global_position"),&Node2D::get_global_position);
-	ClassDB::bind_method(_MD("set_global_rotation","radians"),&Node2D::set_global_rotation);
-	ClassDB::bind_method(_MD("get_global_rotation"),&Node2D::get_global_rotation);
-	ClassDB::bind_method(_MD("set_global_rotation_in_degrees","degrees"),&Node2D::set_global_rotation_in_degrees);
-	ClassDB::bind_method(_MD("get_global_rotation_in_degrees"),&Node2D::get_global_rotation_in_degrees);
-	ClassDB::bind_method(_MD("set_global_scale","scale"),&Node2D::set_global_scale);
-	ClassDB::bind_method(_MD("get_global_scale"),&Node2D::get_global_scale);
+	ClassDB::bind_method(D_METHOD("set_global_position","pos"),&Node2D::set_global_position);
+	ClassDB::bind_method(D_METHOD("get_global_position"),&Node2D::get_global_position);
+	ClassDB::bind_method(D_METHOD("set_global_rotation","radians"),&Node2D::set_global_rotation);
+	ClassDB::bind_method(D_METHOD("get_global_rotation"),&Node2D::get_global_rotation);
+	ClassDB::bind_method(D_METHOD("set_global_rotation_in_degrees","degrees"),&Node2D::set_global_rotation_in_degrees);
+	ClassDB::bind_method(D_METHOD("get_global_rotation_in_degrees"),&Node2D::get_global_rotation_in_degrees);
+	ClassDB::bind_method(D_METHOD("set_global_scale","scale"),&Node2D::set_global_scale);
+	ClassDB::bind_method(D_METHOD("get_global_scale"),&Node2D::get_global_scale);
 
-	ClassDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
-	ClassDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);
+	ClassDB::bind_method(D_METHOD("set_transform","xform"),&Node2D::set_transform);
+	ClassDB::bind_method(D_METHOD("set_global_transform","xform"),&Node2D::set_global_transform);
 
-	ClassDB::bind_method(_MD("look_at","point"),&Node2D::look_at);
-	ClassDB::bind_method(_MD("get_angle_to","point"),&Node2D::get_angle_to);
+	ClassDB::bind_method(D_METHOD("look_at","point"),&Node2D::look_at);
+	ClassDB::bind_method(D_METHOD("get_angle_to","point"),&Node2D::get_angle_to);
 
-	ClassDB::bind_method(_MD("set_z","z"),&Node2D::set_z);
-	ClassDB::bind_method(_MD("get_z"),&Node2D::get_z);
+	ClassDB::bind_method(D_METHOD("set_z","z"),&Node2D::set_z);
+	ClassDB::bind_method(D_METHOD("get_z"),&Node2D::get_z);
 
-	ClassDB::bind_method(_MD("set_z_as_relative","enable"),&Node2D::set_z_as_relative);
-	ClassDB::bind_method(_MD("is_z_relative"),&Node2D::is_z_relative);
+	ClassDB::bind_method(D_METHOD("set_z_as_relative","enable"),&Node2D::set_z_as_relative);
+	ClassDB::bind_method(D_METHOD("is_z_relative"),&Node2D::is_z_relative);
 
-	ClassDB::bind_method(_MD("edit_set_pivot","pivot"),&Node2D::edit_set_pivot);
+	ClassDB::bind_method(D_METHOD("edit_set_pivot","pivot"),&Node2D::edit_set_pivot);
 
-	ClassDB::bind_method(_MD("get_relative_transform_to_parent","parent"),&Node2D::get_relative_transform_to_parent);
+	ClassDB::bind_method(D_METHOD("get_relative_transform_to_parent","parent"),&Node2D::get_relative_transform_to_parent);
 
 	ADD_GROUP("Transform","");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"position"),_SCS("set_position"),_SCS("get_position"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_rotation"),_SCS("get_rotation"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"rotation_deg",PROPERTY_HINT_RANGE,"-1440,1440,0.1",PROPERTY_USAGE_EDITOR),_SCS("set_rotation_in_degrees"),_SCS("get_rotation_in_degrees"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"scale"),_SCS("set_scale"),_SCS("get_scale"));
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D,"transform",PROPERTY_HINT_NONE,"",0),_SCS("set_transform"),_SCS("get_transform"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"position"),"set_position","get_position");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_rotation","get_rotation");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"rotation_deg",PROPERTY_HINT_RANGE,"-1440,1440,0.1",PROPERTY_USAGE_EDITOR),"set_rotation_in_degrees","get_rotation_in_degrees");
+	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"scale"),"set_scale","get_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D,"transform",PROPERTY_HINT_NONE,"",0),"set_transform","get_transform");
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_position",PROPERTY_HINT_NONE,"",0),_SCS("set_global_position"),_SCS("get_global_position"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_rotation",PROPERTY_HINT_NONE,"",0),_SCS("set_global_rotation"),_SCS("get_global_rotation"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_rotation_deg",PROPERTY_HINT_NONE,"",0),_SCS("set_global_rotation_in_degrees"),_SCS("get_global_rotation_in_degrees"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_scale",PROPERTY_HINT_NONE,"",0),_SCS("set_global_scale"),_SCS("get_global_scale"));
-	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D,"global_transform",PROPERTY_HINT_NONE,"",0),_SCS("set_global_transform"),_SCS("get_global_transform"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_position",PROPERTY_HINT_NONE,"",0),"set_global_position","get_global_position");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_rotation",PROPERTY_HINT_NONE,"",0),"set_global_rotation","get_global_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_rotation_deg",PROPERTY_HINT_NONE,"",0),"set_global_rotation_in_degrees","get_global_rotation_in_degrees");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"global_scale",PROPERTY_HINT_NONE,"",0),"set_global_scale","get_global_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D,"global_transform",PROPERTY_HINT_NONE,"",0),"set_global_transform","get_global_transform");
 
 	ADD_GROUP("Z","");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"z_as_relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),"set_z","get_z");
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"z_as_relative"),"set_z_as_relative","is_z_relative");
 
 
 }

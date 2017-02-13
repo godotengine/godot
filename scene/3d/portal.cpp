@@ -197,20 +197,20 @@ Color Portal::get_disabled_color() const {
 
 void Portal::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_shape","points"),&Portal::set_shape);
-	ClassDB::bind_method(_MD("get_shape"),&Portal::get_shape);
+	ClassDB::bind_method(D_METHOD("set_shape","points"),&Portal::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"),&Portal::get_shape);
 
-	ClassDB::bind_method(_MD("set_enabled","enable"),&Portal::set_enabled);
-	ClassDB::bind_method(_MD("is_enabled"),&Portal::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled","enable"),&Portal::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"),&Portal::is_enabled);
 
-	ClassDB::bind_method(_MD("set_disable_distance","distance"),&Portal::set_disable_distance);
-	ClassDB::bind_method(_MD("get_disable_distance"),&Portal::get_disable_distance);
+	ClassDB::bind_method(D_METHOD("set_disable_distance","distance"),&Portal::set_disable_distance);
+	ClassDB::bind_method(D_METHOD("get_disable_distance"),&Portal::get_disable_distance);
 
-	ClassDB::bind_method(_MD("set_disabled_color","color"),&Portal::set_disabled_color);
-	ClassDB::bind_method(_MD("get_disabled_color"),&Portal::get_disabled_color);
+	ClassDB::bind_method(D_METHOD("set_disabled_color","color"),&Portal::set_disabled_color);
+	ClassDB::bind_method(D_METHOD("get_disabled_color"),&Portal::get_disabled_color);
 
-	ClassDB::bind_method(_MD("set_connect_range","range"),&Portal::set_connect_range);
-	ClassDB::bind_method(_MD("get_connect_range"),&Portal::get_connect_range);
+	ClassDB::bind_method(D_METHOD("set_connect_range","range"),&Portal::set_connect_range);
+	ClassDB::bind_method(D_METHOD("get_connect_range"),&Portal::get_connect_range);
 
 }
 

@@ -327,23 +327,23 @@ Node* (*Resource::_get_local_scene_func)()=NULL;
 
 void Resource::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
-	ClassDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
-	ClassDB::bind_method(_MD("get_path"),&Resource::get_path);
-	ClassDB::bind_method(_MD("set_name","name"),&Resource::set_name);
-	ClassDB::bind_method(_MD("get_name"),&Resource::get_name);
-	ClassDB::bind_method(_MD("get_rid"),&Resource::get_rid);
-	ClassDB::bind_method(_MD("set_local_to_scene","enable"),&Resource::set_local_to_scene);
-	ClassDB::bind_method(_MD("is_local_to_scene"),&Resource::is_local_to_scene);
-	ClassDB::bind_method(_MD("get_local_scene:Node"),&Resource::get_local_scene);
-	ClassDB::bind_method(_MD("setup_local_to_scene"),&Resource::setup_local_to_scene);
+	ClassDB::bind_method(D_METHOD("set_path","path"),&Resource::_set_path);
+	ClassDB::bind_method(D_METHOD("take_over_path","path"),&Resource::_take_over_path);
+	ClassDB::bind_method(D_METHOD("get_path"),&Resource::get_path);
+	ClassDB::bind_method(D_METHOD("set_name","name"),&Resource::set_name);
+	ClassDB::bind_method(D_METHOD("get_name"),&Resource::get_name);
+	ClassDB::bind_method(D_METHOD("get_rid"),&Resource::get_rid);
+	ClassDB::bind_method(D_METHOD("set_local_to_scene","enable"),&Resource::set_local_to_scene);
+	ClassDB::bind_method(D_METHOD("is_local_to_scene"),&Resource::is_local_to_scene);
+	ClassDB::bind_method(D_METHOD("get_local_scene:Node"),&Resource::get_local_scene);
+	ClassDB::bind_method(D_METHOD("setup_local_to_scene"),&Resource::setup_local_to_scene);
 
-	ClassDB::bind_method(_MD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("duplicate","subresources"),&Resource::duplicate,DEFVAL(false));
 	ADD_SIGNAL( MethodInfo("changed") );
 	ADD_GROUP("Resource","resource_");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"resource_local_to_scene" ), _SCS("set_local_to_scene"),_SCS("is_local_to_scene"));
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), _SCS("set_path"),_SCS("get_path"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource_name"), _SCS("set_name"),_SCS("get_name"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"resource_local_to_scene" ), "set_local_to_scene","is_local_to_scene");
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"resource_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ), "set_path","get_path");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"resource_name"), "set_name","get_name");
 
 	BIND_VMETHOD( MethodInfo("_setup_local_to_scene") );
 

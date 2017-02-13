@@ -539,11 +539,11 @@ Variant::Type VisualScriptOperator::get_typed() const {
 
 void VisualScriptOperator::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_operator","op"),&VisualScriptOperator::set_operator);
-	ClassDB::bind_method(_MD("get_operator"),&VisualScriptOperator::get_operator);
+	ClassDB::bind_method(D_METHOD("set_operator","op"),&VisualScriptOperator::set_operator);
+	ClassDB::bind_method(D_METHOD("get_operator"),&VisualScriptOperator::get_operator);
 
-	ClassDB::bind_method(_MD("set_typed","type"),&VisualScriptOperator::set_typed);
-	ClassDB::bind_method(_MD("get_typed"),&VisualScriptOperator::get_typed);
+	ClassDB::bind_method(D_METHOD("set_typed","type"),&VisualScriptOperator::set_typed);
+	ClassDB::bind_method(D_METHOD("get_typed"),&VisualScriptOperator::get_typed);
 
 	String types;
 	for(int i=0;i<Variant::OP_MAX;i++) {
@@ -557,8 +557,8 @@ void VisualScriptOperator::_bind_methods() {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"operator_value/type",PROPERTY_HINT_ENUM,types),_SCS("set_operator"),_SCS("get_operator"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"typed_value/typed",PROPERTY_HINT_ENUM,argt),_SCS("set_typed"),_SCS("get_typed"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"operator_value/type",PROPERTY_HINT_ENUM,types),"set_operator","get_operator");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"typed_value/typed",PROPERTY_HINT_ENUM,argt),"set_typed","get_typed");
 
 }
 
@@ -717,11 +717,11 @@ void VisualScriptVariableGet::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptVariableGet::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_variable","name"),&VisualScriptVariableGet::set_variable);
-	ClassDB::bind_method(_MD("get_variable"),&VisualScriptVariableGet::get_variable);
+	ClassDB::bind_method(D_METHOD("set_variable","name"),&VisualScriptVariableGet::set_variable);
+	ClassDB::bind_method(D_METHOD("get_variable"),&VisualScriptVariableGet::get_variable);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"variable/name"),_SCS("set_variable"),_SCS("get_variable"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"variable/name"),"set_variable","get_variable");
 
 }
 
@@ -853,11 +853,11 @@ void VisualScriptVariableSet::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptVariableSet::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_variable","name"),&VisualScriptVariableSet::set_variable);
-	ClassDB::bind_method(_MD("get_variable"),&VisualScriptVariableSet::get_variable);
+	ClassDB::bind_method(D_METHOD("set_variable","name"),&VisualScriptVariableSet::set_variable);
+	ClassDB::bind_method(D_METHOD("get_variable"),&VisualScriptVariableSet::get_variable);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"variable/name"),_SCS("set_variable"),_SCS("get_variable"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"variable/name"),"set_variable","get_variable");
 
 }
 
@@ -995,11 +995,11 @@ void VisualScriptConstant::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptConstant::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_constant_type","type"),&VisualScriptConstant::set_constant_type);
-	ClassDB::bind_method(_MD("get_constant_type"),&VisualScriptConstant::get_constant_type);
+	ClassDB::bind_method(D_METHOD("set_constant_type","type"),&VisualScriptConstant::set_constant_type);
+	ClassDB::bind_method(D_METHOD("get_constant_type"),&VisualScriptConstant::get_constant_type);
 
-	ClassDB::bind_method(_MD("set_constant_value","value"),&VisualScriptConstant::set_constant_value);
-	ClassDB::bind_method(_MD("get_constant_value"),&VisualScriptConstant::get_constant_value);
+	ClassDB::bind_method(D_METHOD("set_constant_value","value"),&VisualScriptConstant::set_constant_value);
+	ClassDB::bind_method(D_METHOD("get_constant_value"),&VisualScriptConstant::get_constant_value);
 
 	String argt="Null";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
@@ -1007,8 +1007,8 @@ void VisualScriptConstant::_bind_methods() {
 	}
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"constant/type",PROPERTY_HINT_ENUM,argt),_SCS("set_constant_type"),_SCS("get_constant_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::NIL,"constant/value"),_SCS("set_constant_value"),_SCS("get_constant_value"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"constant/type",PROPERTY_HINT_ENUM,argt),"set_constant_type","get_constant_type");
+	ADD_PROPERTY(PropertyInfo(Variant::NIL,"constant/value"),"set_constant_value","get_constant_value");
 
 }
 
@@ -1123,11 +1123,11 @@ Ref<Resource> VisualScriptPreload::get_preload() const{
 void VisualScriptPreload::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_preload","resource"),&VisualScriptPreload::set_preload);
-	ClassDB::bind_method(_MD("get_preload"),&VisualScriptPreload::get_preload);
+	ClassDB::bind_method(D_METHOD("set_preload","resource"),&VisualScriptPreload::set_preload);
+	ClassDB::bind_method(D_METHOD("get_preload"),&VisualScriptPreload::get_preload);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"resource",PROPERTY_HINT_RESOURCE_TYPE,"Resource"),_SCS("set_preload"),_SCS("get_preload"));
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"resource",PROPERTY_HINT_RESOURCE_TYPE,"Resource"),"set_preload","get_preload");
 
 }
 
@@ -1425,8 +1425,8 @@ VisualScriptNodeInstance* VisualScriptGlobalConstant::instance(VisualScriptInsta
 
 void VisualScriptGlobalConstant::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_global_constant","index"),&VisualScriptGlobalConstant::set_global_constant);
-	ClassDB::bind_method(_MD("get_global_constant"),&VisualScriptGlobalConstant::get_global_constant);
+	ClassDB::bind_method(D_METHOD("set_global_constant","index"),&VisualScriptGlobalConstant::set_global_constant);
+	ClassDB::bind_method(D_METHOD("get_global_constant"),&VisualScriptGlobalConstant::get_global_constant);
 
 	String cc;
 
@@ -1436,7 +1436,7 @@ void VisualScriptGlobalConstant::_bind_methods() {
 			cc+=",";
 		cc+=GlobalConstants::get_global_constant_name(i);
 	}
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"constant",PROPERTY_HINT_ENUM,cc),_SCS("set_global_constant"),_SCS("get_global_constant"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"constant",PROPERTY_HINT_ENUM,cc),"set_global_constant","get_global_constant");
 }
 
 VisualScriptGlobalConstant::VisualScriptGlobalConstant() {
@@ -1563,14 +1563,14 @@ void VisualScriptClassConstant::_validate_property(PropertyInfo& property) const
 
 void VisualScriptClassConstant::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_class_constant","name"),&VisualScriptClassConstant::set_class_constant);
-	ClassDB::bind_method(_MD("get_class_constant"),&VisualScriptClassConstant::get_class_constant);
+	ClassDB::bind_method(D_METHOD("set_class_constant","name"),&VisualScriptClassConstant::set_class_constant);
+	ClassDB::bind_method(D_METHOD("get_class_constant"),&VisualScriptClassConstant::get_class_constant);
 
-	ClassDB::bind_method(_MD("set_base_type","name"),&VisualScriptClassConstant::set_base_type);
-	ClassDB::bind_method(_MD("get_base_type"),&VisualScriptClassConstant::get_base_type);
+	ClassDB::bind_method(D_METHOD("set_base_type","name"),&VisualScriptClassConstant::set_base_type);
+	ClassDB::bind_method(D_METHOD("get_base_type"),&VisualScriptClassConstant::get_base_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,""),_SCS("set_class_constant"),_SCS("get_class_constant"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"base_type",PROPERTY_HINT_TYPE_STRING,"Object"),"set_base_type","get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,""),"set_class_constant","get_class_constant");
 }
 
 VisualScriptClassConstant::VisualScriptClassConstant() {
@@ -1703,11 +1703,11 @@ void VisualScriptBasicTypeConstant::_validate_property(PropertyInfo& property) c
 
 void VisualScriptBasicTypeConstant::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_basic_type","name"),&VisualScriptBasicTypeConstant::set_basic_type);
-	ClassDB::bind_method(_MD("get_basic_type"),&VisualScriptBasicTypeConstant::get_basic_type);
+	ClassDB::bind_method(D_METHOD("set_basic_type","name"),&VisualScriptBasicTypeConstant::set_basic_type);
+	ClassDB::bind_method(D_METHOD("get_basic_type"),&VisualScriptBasicTypeConstant::get_basic_type);
 
-	ClassDB::bind_method(_MD("set_basic_type_constant","name"),&VisualScriptBasicTypeConstant::set_basic_type_constant);
-	ClassDB::bind_method(_MD("get_basic_type_constant"),&VisualScriptBasicTypeConstant::get_basic_type_constant);
+	ClassDB::bind_method(D_METHOD("set_basic_type_constant","name"),&VisualScriptBasicTypeConstant::set_basic_type_constant);
+	ClassDB::bind_method(D_METHOD("get_basic_type_constant"),&VisualScriptBasicTypeConstant::get_basic_type_constant);
 
 
 	String argt="Null";
@@ -1715,8 +1715,8 @@ void VisualScriptBasicTypeConstant::_bind_methods() {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"basic_type",PROPERTY_HINT_ENUM,argt),_SCS("set_basic_type"),_SCS("get_basic_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,""),_SCS("set_basic_type_constant"),_SCS("get_basic_type_constant"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"basic_type",PROPERTY_HINT_ENUM,argt),"set_basic_type","get_basic_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,""),"set_basic_type_constant","get_basic_type_constant");
 }
 
 VisualScriptBasicTypeConstant::VisualScriptBasicTypeConstant() {
@@ -1831,8 +1831,8 @@ VisualScriptNodeInstance* VisualScriptMathConstant::instance(VisualScriptInstanc
 
 void VisualScriptMathConstant::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_math_constant","which"),&VisualScriptMathConstant::set_math_constant);
-	ClassDB::bind_method(_MD("get_math_constant"),&VisualScriptMathConstant::get_math_constant);
+	ClassDB::bind_method(D_METHOD("set_math_constant","which"),&VisualScriptMathConstant::set_math_constant);
+	ClassDB::bind_method(D_METHOD("get_math_constant"),&VisualScriptMathConstant::get_math_constant);
 
 	String cc;
 
@@ -1842,7 +1842,7 @@ void VisualScriptMathConstant::_bind_methods() {
 			cc+=",";
 		cc+=const_name[i];
 	}
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"constant",PROPERTY_HINT_ENUM,cc),_SCS("set_math_constant"),_SCS("get_math_constant"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"constant",PROPERTY_HINT_ENUM,cc),"set_math_constant","get_math_constant");
 }
 
 VisualScriptMathConstant::VisualScriptMathConstant() {
@@ -1953,8 +1953,8 @@ VisualScriptEngineSingleton::TypeGuess VisualScriptEngineSingleton::guess_output
 
 void VisualScriptEngineSingleton::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_singleton","name"),&VisualScriptEngineSingleton::set_singleton);
-	ClassDB::bind_method(_MD("get_singleton"),&VisualScriptEngineSingleton::get_singleton);
+	ClassDB::bind_method(D_METHOD("set_singleton","name"),&VisualScriptEngineSingleton::set_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton"),&VisualScriptEngineSingleton::get_singleton);
 
 	String cc;
 
@@ -1971,7 +1971,7 @@ void VisualScriptEngineSingleton::_bind_methods() {
 		cc+=E->get().name;
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,cc),_SCS("set_singleton"),_SCS("get_singleton"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"constant",PROPERTY_HINT_ENUM,cc),"set_singleton","get_singleton");
 }
 
 VisualScriptEngineSingleton::VisualScriptEngineSingleton() {
@@ -2190,10 +2190,10 @@ void VisualScriptSceneNode::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptSceneNode::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_node_path","path"),&VisualScriptSceneNode::set_node_path);
-	ClassDB::bind_method(_MD("get_node_path"),&VisualScriptSceneNode::get_node_path);
+	ClassDB::bind_method(D_METHOD("set_node_path","path"),&VisualScriptSceneNode::set_node_path);
+	ClassDB::bind_method(D_METHOD("get_node_path"),&VisualScriptSceneNode::get_node_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_node_path"),_SCS("get_node_path"));
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),"set_node_path","get_node_path");
 }
 
 VisualScriptSceneNode::VisualScriptSceneNode() {
@@ -2401,10 +2401,10 @@ VisualScriptNodeInstance* VisualScriptResourcePath::instance(VisualScriptInstanc
 
 void VisualScriptResourcePath::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_resource_path","path"),&VisualScriptResourcePath::set_resource_path);
-	ClassDB::bind_method(_MD("get_resource_path"),&VisualScriptResourcePath::get_resource_path);
+	ClassDB::bind_method(D_METHOD("set_resource_path","path"),&VisualScriptResourcePath::set_resource_path);
+	ClassDB::bind_method(D_METHOD("get_resource_path"),&VisualScriptResourcePath::get_resource_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE),_SCS("set_resource_path"),_SCS("get_resource_path"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"path",PROPERTY_HINT_FILE),"set_resource_path","get_resource_path");
 }
 
 VisualScriptResourcePath::VisualScriptResourcePath() {
@@ -3001,18 +3001,18 @@ VisualScriptNodeInstance* VisualScriptComment::instance(VisualScriptInstance* p_
 void VisualScriptComment::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_title","title"),&VisualScriptComment::set_title);
-	ClassDB::bind_method(_MD("get_title"),&VisualScriptComment::get_title);
+	ClassDB::bind_method(D_METHOD("set_title","title"),&VisualScriptComment::set_title);
+	ClassDB::bind_method(D_METHOD("get_title"),&VisualScriptComment::get_title);
 
-	ClassDB::bind_method(_MD("set_description","description"),&VisualScriptComment::set_description);
-	ClassDB::bind_method(_MD("get_description"),&VisualScriptComment::get_description);
+	ClassDB::bind_method(D_METHOD("set_description","description"),&VisualScriptComment::set_description);
+	ClassDB::bind_method(D_METHOD("get_description"),&VisualScriptComment::get_description);
 
-	ClassDB::bind_method(_MD("set_size","size"),&VisualScriptComment::set_size);
-	ClassDB::bind_method(_MD("get_size"),&VisualScriptComment::get_size);
+	ClassDB::bind_method(D_METHOD("set_size","size"),&VisualScriptComment::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"),&VisualScriptComment::get_size);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"description",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_description"),_SCS("get_description"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"size"),_SCS("set_size"),_SCS("get_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),"set_title","get_title");
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"description",PROPERTY_HINT_MULTILINE_TEXT),"set_description","get_description");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"size"),"set_size","get_size");
 
 }
 
@@ -3140,14 +3140,14 @@ VisualScriptNodeInstance* VisualScriptConstructor::instance(VisualScriptInstance
 
 void VisualScriptConstructor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_constructor_type","type"),&VisualScriptConstructor::set_constructor_type);
-	ClassDB::bind_method(_MD("get_constructor_type"),&VisualScriptConstructor::get_constructor_type);
+	ClassDB::bind_method(D_METHOD("set_constructor_type","type"),&VisualScriptConstructor::set_constructor_type);
+	ClassDB::bind_method(D_METHOD("get_constructor_type"),&VisualScriptConstructor::get_constructor_type);
 
-	ClassDB::bind_method(_MD("set_constructor","constructor"),&VisualScriptConstructor::set_constructor);
-	ClassDB::bind_method(_MD("get_constructor"),&VisualScriptConstructor::get_constructor);
+	ClassDB::bind_method(D_METHOD("set_constructor","constructor"),&VisualScriptConstructor::set_constructor);
+	ClassDB::bind_method(D_METHOD("get_constructor"),&VisualScriptConstructor::get_constructor);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_constructor_type"),_SCS("get_constructor_type"));
-	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"constructor",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_constructor"),_SCS("get_constructor"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_constructor_type","get_constructor_type");
+	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"constructor",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_constructor","get_constructor");
 
 }
 
@@ -3283,19 +3283,19 @@ VisualScriptNodeInstance* VisualScriptLocalVar::instance(VisualScriptInstance* p
 
 void VisualScriptLocalVar::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_var_name","name"),&VisualScriptLocalVar::set_var_name);
-	ClassDB::bind_method(_MD("get_var_name"),&VisualScriptLocalVar::get_var_name);
+	ClassDB::bind_method(D_METHOD("set_var_name","name"),&VisualScriptLocalVar::set_var_name);
+	ClassDB::bind_method(D_METHOD("get_var_name"),&VisualScriptLocalVar::get_var_name);
 
-	ClassDB::bind_method(_MD("set_var_type","type"),&VisualScriptLocalVar::set_var_type);
-	ClassDB::bind_method(_MD("get_var_type"),&VisualScriptLocalVar::get_var_type);
+	ClassDB::bind_method(D_METHOD("set_var_type","type"),&VisualScriptLocalVar::set_var_type);
+	ClassDB::bind_method(D_METHOD("get_var_type"),&VisualScriptLocalVar::get_var_type);
 
 	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"variable/name"),_SCS("set_var_name"),_SCS("get_var_name"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"variable/type",PROPERTY_HINT_ENUM,argt),_SCS("set_var_type"),_SCS("get_var_type"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"variable/name"),"set_var_name","get_var_name");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"variable/type",PROPERTY_HINT_ENUM,argt),"set_var_type","get_var_type");
 
 
 }
@@ -3420,19 +3420,19 @@ VisualScriptNodeInstance* VisualScriptLocalVarSet::instance(VisualScriptInstance
 
 void VisualScriptLocalVarSet::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_var_name","name"),&VisualScriptLocalVarSet::set_var_name);
-	ClassDB::bind_method(_MD("get_var_name"),&VisualScriptLocalVarSet::get_var_name);
+	ClassDB::bind_method(D_METHOD("set_var_name","name"),&VisualScriptLocalVarSet::set_var_name);
+	ClassDB::bind_method(D_METHOD("get_var_name"),&VisualScriptLocalVarSet::get_var_name);
 
-	ClassDB::bind_method(_MD("set_var_type","type"),&VisualScriptLocalVarSet::set_var_type);
-	ClassDB::bind_method(_MD("get_var_type"),&VisualScriptLocalVarSet::get_var_type);
+	ClassDB::bind_method(D_METHOD("set_var_type","type"),&VisualScriptLocalVarSet::set_var_type);
+	ClassDB::bind_method(D_METHOD("get_var_type"),&VisualScriptLocalVarSet::get_var_type);
 
 	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"variable/name"),_SCS("set_var_name"),_SCS("get_var_name"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"variable/type",PROPERTY_HINT_ENUM,argt),_SCS("set_var_type"),_SCS("get_var_type"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"variable/name"),"set_var_name","get_var_name");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"variable/type",PROPERTY_HINT_ENUM,argt),"set_var_type","get_var_type");
 
 
 }
@@ -3630,14 +3630,14 @@ void VisualScriptInputAction::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptInputAction::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_action_name","name"),&VisualScriptInputAction::set_action_name);
-	ClassDB::bind_method(_MD("get_action_name"),&VisualScriptInputAction::get_action_name);
+	ClassDB::bind_method(D_METHOD("set_action_name","name"),&VisualScriptInputAction::set_action_name);
+	ClassDB::bind_method(D_METHOD("get_action_name"),&VisualScriptInputAction::get_action_name);
 
-	ClassDB::bind_method(_MD("set_action_mode","mode"),&VisualScriptInputAction::set_action_mode);
-	ClassDB::bind_method(_MD("get_action_mode"),&VisualScriptInputAction::get_action_mode);
+	ClassDB::bind_method(D_METHOD("set_action_mode","mode"),&VisualScriptInputAction::set_action_mode);
+	ClassDB::bind_method(D_METHOD("get_action_mode"),&VisualScriptInputAction::get_action_mode);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"action"),_SCS("set_action_name"),_SCS("get_action_name"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Pressed,Released,JustPressed,JustReleased"),_SCS("set_action_mode"),_SCS("get_action_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"action"),"set_action_name","get_action_name");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Pressed,Released,JustPressed,JustReleased"),"set_action_mode","get_action_mode");
 
 }
 
@@ -3834,14 +3834,14 @@ void VisualScriptDeconstruct::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptDeconstruct::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_deconstruct_type","type"),&VisualScriptDeconstruct::set_deconstruct_type);
-	ClassDB::bind_method(_MD("get_deconstruct_type"),&VisualScriptDeconstruct::get_deconstruct_type);
+	ClassDB::bind_method(D_METHOD("set_deconstruct_type","type"),&VisualScriptDeconstruct::set_deconstruct_type);
+	ClassDB::bind_method(D_METHOD("get_deconstruct_type"),&VisualScriptDeconstruct::get_deconstruct_type);
 
-	ClassDB::bind_method(_MD("set_deconstruct_input_type","input_type"),&VisualScriptDeconstruct::set_deconstruct_input_type);
-	ClassDB::bind_method(_MD("get_deconstruct_input_type"),&VisualScriptDeconstruct::get_deconstruct_input_type);
+	ClassDB::bind_method(D_METHOD("set_deconstruct_input_type","input_type"),&VisualScriptDeconstruct::set_deconstruct_input_type);
+	ClassDB::bind_method(D_METHOD("get_deconstruct_input_type"),&VisualScriptDeconstruct::get_deconstruct_input_type);
 
-	ClassDB::bind_method(_MD("_set_elem_cache","_cache"),&VisualScriptDeconstruct::_set_elem_cache);
-	ClassDB::bind_method(_MD("_get_elem_cache"),&VisualScriptDeconstruct::_get_elem_cache);
+	ClassDB::bind_method(D_METHOD("_set_elem_cache","_cache"),&VisualScriptDeconstruct::_set_elem_cache);
+	ClassDB::bind_method(D_METHOD("_get_elem_cache"),&VisualScriptDeconstruct::_get_elem_cache);
 
 	String argt="Any";
 	for(int i=1;i<Variant::VARIANT_MAX;i++) {
@@ -3850,9 +3850,9 @@ void VisualScriptDeconstruct::_bind_methods() {
 
 	String iet="None,Key,MouseMotion,MouseButton,JoypadMotion,JoypadButton,ScreenTouch,ScreenDrag,Action";
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_ENUM,argt),_SCS("set_deconstruct_type"),_SCS("get_deconstruct_type"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"input_type",PROPERTY_HINT_ENUM,iet),_SCS("set_deconstruct_input_type"),_SCS("get_deconstruct_input_type"));
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"elem_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_elem_cache"),_SCS("_get_elem_cache"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"type",PROPERTY_HINT_ENUM,argt),"set_deconstruct_type","get_deconstruct_type");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"input_type",PROPERTY_HINT_ENUM,iet),"set_deconstruct_input_type","get_deconstruct_input_type");
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"elem_cache",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_elem_cache","_get_elem_cache");
 
 }
 

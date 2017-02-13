@@ -66,13 +66,13 @@ NSMutableDictionary* pending_transactions = [NSMutableDictionary dictionary];
 InAppStore* InAppStore::instance = NULL;
 
 void InAppStore::_bind_methods() {
-	ClassDB::bind_method(_MD("request_product_info"),&InAppStore::request_product_info);
-	ClassDB::bind_method(_MD("purchase"),&InAppStore::purchase);
+	ClassDB::bind_method(D_METHOD("request_product_info"),&InAppStore::request_product_info);
+	ClassDB::bind_method(D_METHOD("purchase"),&InAppStore::purchase);
 
-	ClassDB::bind_method(_MD("get_pending_event_count"),&InAppStore::get_pending_event_count);
-	ClassDB::bind_method(_MD("pop_pending_event"),&InAppStore::pop_pending_event);
-	ClassDB::bind_method(_MD("finish_transaction"),&InAppStore::finish_transaction);
-	ClassDB::bind_method(_MD("set_auto_finish_transaction"),&InAppStore::set_auto_finish_transaction);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&InAppStore::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"),&InAppStore::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("finish_transaction"),&InAppStore::finish_transaction);
+	ClassDB::bind_method(D_METHOD("set_auto_finish_transaction"),&InAppStore::set_auto_finish_transaction);
 };
 
 @interface ProductsDelegate : NSObject<SKProductsRequestDelegate> {

@@ -382,15 +382,15 @@ Variant PackedDataContainer::_iter_get(const Variant& p_iter){
 
 void PackedDataContainer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_set_data"),&PackedDataContainer::_set_data);
-	ClassDB::bind_method(_MD("_get_data"),&PackedDataContainer::_get_data);
-	ClassDB::bind_method(_MD("_iter_init"),&PackedDataContainer::_iter_init);
-	ClassDB::bind_method(_MD("_iter_get"),&PackedDataContainer::_iter_get);
-	ClassDB::bind_method(_MD("_iter_next"),&PackedDataContainer::_iter_next);
-	ClassDB::bind_method(_MD("pack:Error","value"),&PackedDataContainer::pack);
-	ClassDB::bind_method(_MD("size"),&PackedDataContainer::size);
+	ClassDB::bind_method(D_METHOD("_set_data"),&PackedDataContainer::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"),&PackedDataContainer::_get_data);
+	ClassDB::bind_method(D_METHOD("_iter_init"),&PackedDataContainer::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"),&PackedDataContainer::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"),&PackedDataContainer::_iter_next);
+	ClassDB::bind_method(D_METHOD("pack:Error","value"),&PackedDataContainer::pack);
+	ClassDB::bind_method(D_METHOD("size"),&PackedDataContainer::size);
 
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_BYTE_ARRAY,"__data__"),_SCS("_set_data"),_SCS("_get_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_BYTE_ARRAY,"__data__"),"_set_data","_get_data");
 }
 
 
@@ -426,11 +426,11 @@ bool PackedDataContainerRef::_is_dictionary() const {
 
 void PackedDataContainerRef::_bind_methods() {
 
-	ClassDB::bind_method(_MD("size"),&PackedDataContainerRef::size);
-	ClassDB::bind_method(_MD("_iter_init"),&PackedDataContainerRef::_iter_init);
-	ClassDB::bind_method(_MD("_iter_get"),&PackedDataContainerRef::_iter_get);
-	ClassDB::bind_method(_MD("_iter_next"),&PackedDataContainerRef::_iter_next);
-	ClassDB::bind_method(_MD("_is_dictionary"),&PackedDataContainerRef::_is_dictionary);
+	ClassDB::bind_method(D_METHOD("size"),&PackedDataContainerRef::size);
+	ClassDB::bind_method(D_METHOD("_iter_init"),&PackedDataContainerRef::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"),&PackedDataContainerRef::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"),&PackedDataContainerRef::_iter_next);
+	ClassDB::bind_method(D_METHOD("_is_dictionary"),&PackedDataContainerRef::_is_dictionary);
 }
 
 

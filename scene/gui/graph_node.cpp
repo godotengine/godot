@@ -712,51 +712,51 @@ bool GraphNode::is_resizeable() const{
 
 void GraphNode::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_title","title"),&GraphNode::set_title);
-	ClassDB::bind_method(_MD("get_title"),&GraphNode::get_title);
-	ClassDB::bind_method(_MD("_gui_input"),&GraphNode::_gui_input);
+	ClassDB::bind_method(D_METHOD("set_title","title"),&GraphNode::set_title);
+	ClassDB::bind_method(D_METHOD("get_title"),&GraphNode::get_title);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphNode::_gui_input);
 
-	ClassDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
-	ClassDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);
-	ClassDB::bind_method(_MD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
-	ClassDB::bind_method(_MD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);
-	ClassDB::bind_method(_MD("get_slot_type_left","idx"),&GraphNode::get_slot_type_left);
-	ClassDB::bind_method(_MD("get_slot_color_left","idx"),&GraphNode::get_slot_color_left);
-	ClassDB::bind_method(_MD("is_slot_enabled_right","idx"),&GraphNode::is_slot_enabled_right);
-	ClassDB::bind_method(_MD("get_slot_type_right","idx"),&GraphNode::get_slot_type_right);
-	ClassDB::bind_method(_MD("get_slot_color_right","idx"),&GraphNode::get_slot_color_right);
+	ClassDB::bind_method(D_METHOD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right","custom_left","custom_right"),&GraphNode::set_slot,DEFVAL(Ref<Texture>()),DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(D_METHOD("clear_slot","idx"),&GraphNode::clear_slot);
+	ClassDB::bind_method(D_METHOD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
+	ClassDB::bind_method(D_METHOD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);
+	ClassDB::bind_method(D_METHOD("get_slot_type_left","idx"),&GraphNode::get_slot_type_left);
+	ClassDB::bind_method(D_METHOD("get_slot_color_left","idx"),&GraphNode::get_slot_color_left);
+	ClassDB::bind_method(D_METHOD("is_slot_enabled_right","idx"),&GraphNode::is_slot_enabled_right);
+	ClassDB::bind_method(D_METHOD("get_slot_type_right","idx"),&GraphNode::get_slot_type_right);
+	ClassDB::bind_method(D_METHOD("get_slot_color_right","idx"),&GraphNode::get_slot_color_right);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&GraphNode::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&GraphNode::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&GraphNode::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&GraphNode::get_offset);
 
-	ClassDB::bind_method(_MD("set_comment","comment"),&GraphNode::set_comment);
-	ClassDB::bind_method(_MD("is_comment"),&GraphNode::is_comment);
+	ClassDB::bind_method(D_METHOD("set_comment","comment"),&GraphNode::set_comment);
+	ClassDB::bind_method(D_METHOD("is_comment"),&GraphNode::is_comment);
 
-	ClassDB::bind_method(_MD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
-	ClassDB::bind_method(_MD("is_resizeable"),&GraphNode::is_resizeable);
+	ClassDB::bind_method(D_METHOD("set_resizeable","resizeable"),&GraphNode::set_resizeable);
+	ClassDB::bind_method(D_METHOD("is_resizeable"),&GraphNode::is_resizeable);
 
-	ClassDB::bind_method(_MD("set_selected","selected"),&GraphNode::set_selected);
-	ClassDB::bind_method(_MD("is_selected"),&GraphNode::is_selected);
+	ClassDB::bind_method(D_METHOD("set_selected","selected"),&GraphNode::set_selected);
+	ClassDB::bind_method(D_METHOD("is_selected"),&GraphNode::is_selected);
 
-	ClassDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
-	ClassDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
+	ClassDB::bind_method(D_METHOD("get_connection_output_count"),&GraphNode::get_connection_output_count);
+	ClassDB::bind_method(D_METHOD("get_connection_input_count"),&GraphNode::get_connection_input_count);
 
-	ClassDB::bind_method(_MD("get_connection_output_pos","idx"),&GraphNode::get_connection_output_pos);
-	ClassDB::bind_method(_MD("get_connection_output_type","idx"),&GraphNode::get_connection_output_type);
-	ClassDB::bind_method(_MD("get_connection_output_color","idx"),&GraphNode::get_connection_output_color);
-	ClassDB::bind_method(_MD("get_connection_input_pos","idx"),&GraphNode::get_connection_input_pos);
-	ClassDB::bind_method(_MD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
-	ClassDB::bind_method(_MD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
+	ClassDB::bind_method(D_METHOD("get_connection_output_pos","idx"),&GraphNode::get_connection_output_pos);
+	ClassDB::bind_method(D_METHOD("get_connection_output_type","idx"),&GraphNode::get_connection_output_type);
+	ClassDB::bind_method(D_METHOD("get_connection_output_color","idx"),&GraphNode::get_connection_output_color);
+	ClassDB::bind_method(D_METHOD("get_connection_input_pos","idx"),&GraphNode::get_connection_input_pos);
+	ClassDB::bind_method(D_METHOD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
+	ClassDB::bind_method(D_METHOD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
 
-	ClassDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
-	ClassDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);
+	ClassDB::bind_method(D_METHOD("set_show_close_button","show"),&GraphNode::set_show_close_button);
+	ClassDB::bind_method(D_METHOD("is_close_button_visible"),&GraphNode::is_close_button_visible);
 
-	ClassDB::bind_method(_MD("set_overlay","overlay"),&GraphNode::set_overlay);
-	ClassDB::bind_method(_MD("get_overlay"),&GraphNode::get_overlay);
+	ClassDB::bind_method(D_METHOD("set_overlay","overlay"),&GraphNode::set_overlay);
+	ClassDB::bind_method(D_METHOD("get_overlay"),&GraphNode::get_overlay);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),_SCS("set_title"),_SCS("get_title"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_close"),_SCS("set_show_close_button"),_SCS("is_close_button_visible"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"resizeable"),_SCS("set_resizeable"),_SCS("is_resizeable"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"title"),"set_title","get_title");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_close"),"set_show_close_button","is_close_button_visible");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"resizeable"),"set_resizeable","is_resizeable");
 
 	ADD_SIGNAL(MethodInfo("offset_changed"));
 	ADD_SIGNAL(MethodInfo("dragged",PropertyInfo(Variant::VECTOR2,"from"),PropertyInfo(Variant::VECTOR2,"to")));

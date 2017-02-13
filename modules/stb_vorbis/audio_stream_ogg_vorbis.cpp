@@ -205,14 +205,14 @@ bool AudioStreamOGGVorbis::has_loop() const {
 
 void AudioStreamOGGVorbis::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_data","data"),&AudioStreamOGGVorbis::set_data);
-	ClassDB::bind_method(_MD("get_data"),&AudioStreamOGGVorbis::get_data);
+	ClassDB::bind_method(D_METHOD("set_data","data"),&AudioStreamOGGVorbis::set_data);
+	ClassDB::bind_method(D_METHOD("get_data"),&AudioStreamOGGVorbis::get_data);
 
-	ClassDB::bind_method(_MD("set_loop","enable"),&AudioStreamOGGVorbis::set_loop);
-	ClassDB::bind_method(_MD("has_loop"),&AudioStreamOGGVorbis::has_loop);
+	ClassDB::bind_method(D_METHOD("set_loop","enable"),&AudioStreamOGGVorbis::set_loop);
+	ClassDB::bind_method(D_METHOD("has_loop"),&AudioStreamOGGVorbis::has_loop);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_data"),_SCS("get_data"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"loop",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_loop"),_SCS("has_loop"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_data","get_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"loop",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_loop","has_loop");
 
 }
 

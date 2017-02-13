@@ -517,8 +517,8 @@ void PathEditorPlugin::_notification(int p_what) {
 
 void PathEditorPlugin::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_mode_changed"),&PathEditorPlugin::_mode_changed);
-    ClassDB::bind_method(_MD("_close_curve"),&PathEditorPlugin::_close_curve);
+	ClassDB::bind_method(D_METHOD("_mode_changed"),&PathEditorPlugin::_mode_changed);
+    ClassDB::bind_method(D_METHOD("_close_curve"),&PathEditorPlugin::_close_curve);
 }
 
 PathEditorPlugin* PathEditorPlugin::singleton=NULL;

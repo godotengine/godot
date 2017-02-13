@@ -134,19 +134,19 @@ real_t InterpolatedCamera::get_speed() const {
 
 void InterpolatedCamera::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_target_path","target_path"),&InterpolatedCamera::set_target_path);
-	ClassDB::bind_method(_MD("get_target_path"),&InterpolatedCamera::get_target_path);
-	ClassDB::bind_method(_MD("set_target","target:Camera"),&InterpolatedCamera::_set_target);
+	ClassDB::bind_method(D_METHOD("set_target_path","target_path"),&InterpolatedCamera::set_target_path);
+	ClassDB::bind_method(D_METHOD("get_target_path"),&InterpolatedCamera::get_target_path);
+	ClassDB::bind_method(D_METHOD("set_target","target:Camera"),&InterpolatedCamera::_set_target);
 
-	ClassDB::bind_method(_MD("set_speed","speed"),&InterpolatedCamera::set_speed);
-	ClassDB::bind_method(_MD("get_speed"),&InterpolatedCamera::get_speed);
+	ClassDB::bind_method(D_METHOD("set_speed","speed"),&InterpolatedCamera::set_speed);
+	ClassDB::bind_method(D_METHOD("get_speed"),&InterpolatedCamera::get_speed);
 
-	ClassDB::bind_method(_MD("set_interpolation_enabled","target_path"),&InterpolatedCamera::set_interpolation_enabled);
-	ClassDB::bind_method(_MD("is_interpolation_enabled"),&InterpolatedCamera::is_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("set_interpolation_enabled","target_path"),&InterpolatedCamera::set_interpolation_enabled);
+	ClassDB::bind_method(D_METHOD("is_interpolation_enabled"),&InterpolatedCamera::is_interpolation_enabled);
 
-	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"target"), _SCS("set_target_path"), _SCS("get_target_path") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"speed"), _SCS("set_speed"), _SCS("get_speed") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"), _SCS("set_interpolation_enabled"), _SCS("is_interpolation_enabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"target"), "set_target_path", "get_target_path") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"speed"), "set_speed", "get_speed") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"), "set_interpolation_enabled", "is_interpolation_enabled") ;
 }
 
 InterpolatedCamera::InterpolatedCamera() {

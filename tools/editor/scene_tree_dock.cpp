@@ -1886,33 +1886,33 @@ void SceneTreeDock::open_script_dialog(Node* p_for_node) {
 
 void SceneTreeDock::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected,DEFVAL(false));
-	ClassDB::bind_method(_MD("_create"),&SceneTreeDock::_create);
-	//ClassDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
-	ClassDB::bind_method(_MD("_node_reparent"),&SceneTreeDock::_node_reparent);
-	ClassDB::bind_method(_MD("_set_owners"),&SceneTreeDock::_set_owners);
-	ClassDB::bind_method(_MD("_node_selected"),&SceneTreeDock::_node_selected);
-	ClassDB::bind_method(_MD("_node_renamed"),&SceneTreeDock::_node_renamed);
-	ClassDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
-	ClassDB::bind_method(_MD("_load_request"),&SceneTreeDock::_load_request);
-	ClassDB::bind_method(_MD("_script_open_request"),&SceneTreeDock::_script_open_request);
-	ClassDB::bind_method(_MD("_unhandled_key_input"),&SceneTreeDock::_unhandled_key_input);
-	ClassDB::bind_method(_MD("_input"),&SceneTreeDock::_input);
-	ClassDB::bind_method(_MD("_nodes_drag_begin"),&SceneTreeDock::_nodes_drag_begin);
-	ClassDB::bind_method(_MD("_delete_confirm"),&SceneTreeDock::_delete_confirm);
-	ClassDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
-	ClassDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
-	ClassDB::bind_method(_MD("_selection_changed"),&SceneTreeDock::_selection_changed);
-	ClassDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
-	ClassDB::bind_method(_MD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
-	ClassDB::bind_method(_MD("_files_dropped"),&SceneTreeDock::_files_dropped);
-	ClassDB::bind_method(_MD("_script_dropped"),&SceneTreeDock::_script_dropped);
-	ClassDB::bind_method(_MD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
-	ClassDB::bind_method(_MD("_filter_changed"),&SceneTreeDock::_filter_changed);
-	ClassDB::bind_method(_MD("_focus_node"),&SceneTreeDock::_focus_node);
+	ClassDB::bind_method(D_METHOD("_tool_selected"),&SceneTreeDock::_tool_selected,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_create"),&SceneTreeDock::_create);
+	//ClassDB::bind_method(D_METHOD("_script_created"),&SceneTreeDock::_script_created);
+	ClassDB::bind_method(D_METHOD("_node_reparent"),&SceneTreeDock::_node_reparent);
+	ClassDB::bind_method(D_METHOD("_set_owners"),&SceneTreeDock::_set_owners);
+	ClassDB::bind_method(D_METHOD("_node_selected"),&SceneTreeDock::_node_selected);
+	ClassDB::bind_method(D_METHOD("_node_renamed"),&SceneTreeDock::_node_renamed);
+	ClassDB::bind_method(D_METHOD("_script_created"),&SceneTreeDock::_script_created);
+	ClassDB::bind_method(D_METHOD("_load_request"),&SceneTreeDock::_load_request);
+	ClassDB::bind_method(D_METHOD("_script_open_request"),&SceneTreeDock::_script_open_request);
+	ClassDB::bind_method(D_METHOD("_unhandled_key_input"),&SceneTreeDock::_unhandled_key_input);
+	ClassDB::bind_method(D_METHOD("_input"),&SceneTreeDock::_input);
+	ClassDB::bind_method(D_METHOD("_nodes_drag_begin"),&SceneTreeDock::_nodes_drag_begin);
+	ClassDB::bind_method(D_METHOD("_delete_confirm"),&SceneTreeDock::_delete_confirm);
+	ClassDB::bind_method(D_METHOD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
+	ClassDB::bind_method(D_METHOD("_import_subscene"),&SceneTreeDock::_import_subscene);
+	ClassDB::bind_method(D_METHOD("_selection_changed"),&SceneTreeDock::_selection_changed);
+	ClassDB::bind_method(D_METHOD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
+	ClassDB::bind_method(D_METHOD("_nodes_dragged"),&SceneTreeDock::_nodes_dragged);
+	ClassDB::bind_method(D_METHOD("_files_dropped"),&SceneTreeDock::_files_dropped);
+	ClassDB::bind_method(D_METHOD("_script_dropped"),&SceneTreeDock::_script_dropped);
+	ClassDB::bind_method(D_METHOD("_tree_rmb"),&SceneTreeDock::_tree_rmb);
+	ClassDB::bind_method(D_METHOD("_filter_changed"),&SceneTreeDock::_filter_changed);
+	ClassDB::bind_method(D_METHOD("_focus_node"),&SceneTreeDock::_focus_node);
 
 
-	ClassDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
+	ClassDB::bind_method(D_METHOD("instance"),&SceneTreeDock::instance);
 }
 
 

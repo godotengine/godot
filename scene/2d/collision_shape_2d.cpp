@@ -218,21 +218,21 @@ String CollisionShape2D::get_configuration_warning() const {
 
 void CollisionShape2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_shape","shape"),&CollisionShape2D::set_shape);
-	ClassDB::bind_method(_MD("get_shape"),&CollisionShape2D::get_shape);
-	ClassDB::bind_method(_MD("_shape_changed"),&CollisionShape2D::_shape_changed);
-	ClassDB::bind_method(_MD("_add_to_collision_object"),&CollisionShape2D::_add_to_collision_object);
-	ClassDB::bind_method(_MD("set_trigger","enable"),&CollisionShape2D::set_trigger);
-	ClassDB::bind_method(_MD("is_trigger"),&CollisionShape2D::is_trigger);
+	ClassDB::bind_method(D_METHOD("set_shape","shape"),&CollisionShape2D::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"),&CollisionShape2D::get_shape);
+	ClassDB::bind_method(D_METHOD("_shape_changed"),&CollisionShape2D::_shape_changed);
+	ClassDB::bind_method(D_METHOD("_add_to_collision_object"),&CollisionShape2D::_add_to_collision_object);
+	ClassDB::bind_method(D_METHOD("set_trigger","enable"),&CollisionShape2D::set_trigger);
+	ClassDB::bind_method(D_METHOD("is_trigger"),&CollisionShape2D::is_trigger);
 
-	ClassDB::bind_method(_MD("_set_update_shape_index","index"),&CollisionShape2D::_set_update_shape_index);
-	ClassDB::bind_method(_MD("_get_update_shape_index"),&CollisionShape2D::_get_update_shape_index);
+	ClassDB::bind_method(D_METHOD("_set_update_shape_index","index"),&CollisionShape2D::_set_update_shape_index);
+	ClassDB::bind_method(D_METHOD("_get_update_shape_index"),&CollisionShape2D::_get_update_shape_index);
 
-	ClassDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape2D::get_collision_object_shape_index);
+	ClassDB::bind_method(D_METHOD("get_collision_object_shape_index"),&CollisionShape2D::get_collision_object_shape_index);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),_SCS("set_shape"),_SCS("get_shape"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), _SCS("_set_update_shape_index"), _SCS("_get_update_shape_index"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),"set_shape","get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),"set_trigger","is_trigger");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), "_set_update_shape_index", "_get_update_shape_index");
 
 }
 

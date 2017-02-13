@@ -161,11 +161,11 @@ void Room::_bounds_changed() {
 
 void Room::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_room","room:Room"),&Room::set_room );
-	ClassDB::bind_method(_MD("get_room:Room"),&Room::get_room );
+	ClassDB::bind_method(D_METHOD("set_room","room:Room"),&Room::set_room );
+	ClassDB::bind_method(D_METHOD("get_room:Room"),&Room::get_room );
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "room/room", PROPERTY_HINT_RESOURCE_TYPE, "Area" ), _SCS("set_room"), _SCS("get_room") );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "room/room", PROPERTY_HINT_RESOURCE_TYPE, "Area" ), "set_room", "get_room") ;
 
 }
 

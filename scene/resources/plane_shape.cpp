@@ -80,10 +80,10 @@ Plane PlaneShape::get_plane() const {
 
 void PlaneShape::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_plane","plane"),&PlaneShape::set_plane);
-	ClassDB::bind_method(_MD("get_plane"),&PlaneShape::get_plane);
+	ClassDB::bind_method(D_METHOD("set_plane","plane"),&PlaneShape::set_plane);
+	ClassDB::bind_method(D_METHOD("get_plane"),&PlaneShape::get_plane);
 
-	ADD_PROPERTY( PropertyInfo(Variant::PLANE,"plane"), _SCS("set_plane"), _SCS("get_plane") );
+	ADD_PROPERTY( PropertyInfo(Variant::PLANE,"plane"), "set_plane", "get_plane") ;
 
 }
 

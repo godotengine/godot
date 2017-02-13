@@ -52,9 +52,9 @@ static void _pad(FileAccess* p_file, int p_bytes) {
 
 void PCKPacker::_bind_methods() {
 
-	ClassDB::bind_method(_MD("pck_start","pck_name","alignment"),&PCKPacker::pck_start);
-	ClassDB::bind_method(_MD("add_file","pck_path","source_path"),&PCKPacker::add_file);
-	ClassDB::bind_method(_MD("flush","verbose"),&PCKPacker::flush);
+	ClassDB::bind_method(D_METHOD("pck_start","pck_name","alignment"),&PCKPacker::pck_start);
+	ClassDB::bind_method(D_METHOD("add_file","pck_path","source_path"),&PCKPacker::add_file);
+	ClassDB::bind_method(D_METHOD("flush","verbose"),&PCKPacker::flush);
 };
 
 

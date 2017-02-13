@@ -1481,27 +1481,27 @@ RegEx::~RegEx() {
 
 void RegExMatch::_bind_methods() {
 
-	ClassDB::bind_method(_MD("expand","template"),&RegExMatch::expand);
-	ClassDB::bind_method(_MD("get_group_count"),&RegExMatch::get_group_count);
-	ClassDB::bind_method(_MD("get_group_array"),&RegExMatch::get_group_array);
-	ClassDB::bind_method(_MD("get_names"),&RegExMatch::get_names);
-	ClassDB::bind_method(_MD("get_name_dict"),&RegExMatch::get_name_dict);
-	ClassDB::bind_method(_MD("get_string","name"),&RegExMatch::get_string, DEFVAL(0));
-	ClassDB::bind_method(_MD("get_start","name"),&RegExMatch::get_start, DEFVAL(0));
-	ClassDB::bind_method(_MD("get_end","name"),&RegExMatch::get_end, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("expand","template"),&RegExMatch::expand);
+	ClassDB::bind_method(D_METHOD("get_group_count"),&RegExMatch::get_group_count);
+	ClassDB::bind_method(D_METHOD("get_group_array"),&RegExMatch::get_group_array);
+	ClassDB::bind_method(D_METHOD("get_names"),&RegExMatch::get_names);
+	ClassDB::bind_method(D_METHOD("get_name_dict"),&RegExMatch::get_name_dict);
+	ClassDB::bind_method(D_METHOD("get_string","name"),&RegExMatch::get_string, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_start","name"),&RegExMatch::get_start, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_end","name"),&RegExMatch::get_end, DEFVAL(0));
 }
 
 void RegEx::_bind_methods() {
 
-	ClassDB::bind_method(_MD("clear"),&RegEx::clear);
-	ClassDB::bind_method(_MD("compile","pattern"),&RegEx::compile);
-	ClassDB::bind_method(_MD("search","text","start","end"),&RegEx::search, DEFVAL(0), DEFVAL(-1));
-	ClassDB::bind_method(_MD("sub","text","replacement","all","start","end"),&RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
-	ClassDB::bind_method(_MD("is_valid"),&RegEx::is_valid);
-	ClassDB::bind_method(_MD("get_pattern"),&RegEx::get_pattern);
-	ClassDB::bind_method(_MD("get_group_count"),&RegEx::get_group_count);
-	ClassDB::bind_method(_MD("get_names"),&RegEx::get_names);
+	ClassDB::bind_method(D_METHOD("clear"),&RegEx::clear);
+	ClassDB::bind_method(D_METHOD("compile","pattern"),&RegEx::compile);
+	ClassDB::bind_method(D_METHOD("search","text","start","end"),&RegEx::search, DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("sub","text","replacement","all","start","end"),&RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("is_valid"),&RegEx::is_valid);
+	ClassDB::bind_method(D_METHOD("get_pattern"),&RegEx::get_pattern);
+	ClassDB::bind_method(D_METHOD("get_group_count"),&RegEx::get_group_count);
+	ClassDB::bind_method(D_METHOD("get_names"),&RegEx::get_names);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pattern"), _SCS("compile"), _SCS("get_pattern"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pattern"), "compile", "get_pattern");
 }
 

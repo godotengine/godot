@@ -52,11 +52,11 @@ PoolVector<Face3> RoomBounds::get_geometry_hint() const {
 void RoomBounds::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_geometry_hint","triangles"),&RoomBounds::set_geometry_hint);
-	ClassDB::bind_method(_MD("get_geometry_hint"),&RoomBounds::get_geometry_hint);
+	ClassDB::bind_method(D_METHOD("set_geometry_hint","triangles"),&RoomBounds::set_geometry_hint);
+	ClassDB::bind_method(D_METHOD("get_geometry_hint"),&RoomBounds::get_geometry_hint);
 
-	//ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "bounds"), _SCS("set_bounds"),_SCS("get_bounds") );
-	ADD_PROPERTY( PropertyInfo( Variant::POOL_VECTOR3_ARRAY, "geometry_hint"),_SCS("set_geometry_hint"),_SCS("get_geometry_hint") );
+	//ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "bounds"), "set_bounds","get_bounds") ;
+	ADD_PROPERTY( PropertyInfo( Variant::POOL_VECTOR3_ARRAY, "geometry_hint"),"set_geometry_hint","get_geometry_hint") ;
 
 }
 

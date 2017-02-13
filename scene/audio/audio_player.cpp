@@ -243,40 +243,40 @@ void AudioPlayer::_bus_layout_changed() {
 
 void AudioPlayer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_stream","stream:AudioStream"),&AudioPlayer::set_stream);
-	ClassDB::bind_method(_MD("get_stream"),&AudioPlayer::get_stream);
+	ClassDB::bind_method(D_METHOD("set_stream","stream:AudioStream"),&AudioPlayer::set_stream);
+	ClassDB::bind_method(D_METHOD("get_stream"),&AudioPlayer::get_stream);
 
-	ClassDB::bind_method(_MD("set_volume_db","volume_db"),&AudioPlayer::set_volume_db);
-	ClassDB::bind_method(_MD("get_volume_db"),&AudioPlayer::get_volume_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db","volume_db"),&AudioPlayer::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"),&AudioPlayer::get_volume_db);
 
-	ClassDB::bind_method(_MD("play","from_pos"),&AudioPlayer::play,DEFVAL(0.0));
-	ClassDB::bind_method(_MD("seek","to_pos"),&AudioPlayer::seek);
-	ClassDB::bind_method(_MD("stop"),&AudioPlayer::stop);
+	ClassDB::bind_method(D_METHOD("play","from_pos"),&AudioPlayer::play,DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("seek","to_pos"),&AudioPlayer::seek);
+	ClassDB::bind_method(D_METHOD("stop"),&AudioPlayer::stop);
 
-	ClassDB::bind_method(_MD("is_playing"),&AudioPlayer::is_playing);
-	ClassDB::bind_method(_MD("get_pos"),&AudioPlayer::get_pos);
+	ClassDB::bind_method(D_METHOD("is_playing"),&AudioPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("get_pos"),&AudioPlayer::get_pos);
 
-	ClassDB::bind_method(_MD("set_bus","bus"),&AudioPlayer::set_bus);
-	ClassDB::bind_method(_MD("get_bus"),&AudioPlayer::get_bus);
+	ClassDB::bind_method(D_METHOD("set_bus","bus"),&AudioPlayer::set_bus);
+	ClassDB::bind_method(D_METHOD("get_bus"),&AudioPlayer::get_bus);
 
-	ClassDB::bind_method(_MD("set_autoplay","enable"),&AudioPlayer::set_autoplay);
-	ClassDB::bind_method(_MD("is_autoplay_enabled"),&AudioPlayer::is_autoplay_enabled);
+	ClassDB::bind_method(D_METHOD("set_autoplay","enable"),&AudioPlayer::set_autoplay);
+	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"),&AudioPlayer::is_autoplay_enabled);
 
-	ClassDB::bind_method(_MD("set_mix_target","mix_target"),&AudioPlayer::set_mix_target);
-	ClassDB::bind_method(_MD("get_mix_target"),&AudioPlayer::get_mix_target);
+	ClassDB::bind_method(D_METHOD("set_mix_target","mix_target"),&AudioPlayer::set_mix_target);
+	ClassDB::bind_method(D_METHOD("get_mix_target"),&AudioPlayer::get_mix_target);
 
-	ClassDB::bind_method(_MD("_set_playing","enable"),&AudioPlayer::_set_playing);
-	ClassDB::bind_method(_MD("_is_active"),&AudioPlayer::_is_active);
+	ClassDB::bind_method(D_METHOD("_set_playing","enable"),&AudioPlayer::_set_playing);
+	ClassDB::bind_method(D_METHOD("_is_active"),&AudioPlayer::_is_active);
 
-	ClassDB::bind_method(_MD("_bus_layout_changed"),&AudioPlayer::_bus_layout_changed);
+	ClassDB::bind_method(D_METHOD("_bus_layout_changed"),&AudioPlayer::_bus_layout_changed);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"stream",PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"),_SCS("set_stream"),_SCS("get_stream") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"volume_db",PROPERTY_HINT_RANGE,"-80,24"),_SCS("set_volume_db"),_SCS("get_volume_db") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"playing",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR),_SCS("_set_playing"),_SCS("_is_active" ));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"autoplay"),_SCS("set_autoplay"),_SCS("is_autoplay_enabled") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mix_target",PROPERTY_HINT_ENUM,"Stereo,Surround,Center"),_SCS("set_mix_target"),_SCS("get_mix_target"));
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"bus",PROPERTY_HINT_ENUM,""),_SCS("set_bus"),_SCS("get_bus"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"stream",PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"),"set_stream","get_stream") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"volume_db",PROPERTY_HINT_RANGE,"-80,24"),"set_volume_db","get_volume_db") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"playing",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR),"_set_playing","_is_active" );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"autoplay"),"set_autoplay","is_autoplay_enabled") ;
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mix_target",PROPERTY_HINT_ENUM,"Stereo,Surround,Center"),"set_mix_target","get_mix_target");
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"bus",PROPERTY_HINT_ENUM,""),"set_bus","get_bus");
 
 }
 

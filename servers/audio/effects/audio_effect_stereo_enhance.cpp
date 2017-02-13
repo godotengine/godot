@@ -113,18 +113,18 @@ float  AudioEffectStereoEnhance::get_surround() const {
 
 void AudioEffectStereoEnhance::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_pan_pullout","amount"),&AudioEffectStereoEnhance::set_pan_pullout);
-	ClassDB::bind_method(_MD("get_pan_pullout"),&AudioEffectStereoEnhance::get_pan_pullout);
+	ClassDB::bind_method(D_METHOD("set_pan_pullout","amount"),&AudioEffectStereoEnhance::set_pan_pullout);
+	ClassDB::bind_method(D_METHOD("get_pan_pullout"),&AudioEffectStereoEnhance::get_pan_pullout);
 
-	ClassDB::bind_method(_MD("set_time_pullout","amount"),&AudioEffectStereoEnhance::set_time_pullout);
-	ClassDB::bind_method(_MD("get_time_pullout"),&AudioEffectStereoEnhance::get_time_pullout);
+	ClassDB::bind_method(D_METHOD("set_time_pullout","amount"),&AudioEffectStereoEnhance::set_time_pullout);
+	ClassDB::bind_method(D_METHOD("get_time_pullout"),&AudioEffectStereoEnhance::get_time_pullout);
 
-	ClassDB::bind_method(_MD("set_surround","amount"),&AudioEffectStereoEnhance::set_surround);
-	ClassDB::bind_method(_MD("get_surround"),&AudioEffectStereoEnhance::get_surround);
+	ClassDB::bind_method(D_METHOD("set_surround","amount"),&AudioEffectStereoEnhance::set_surround);
+	ClassDB::bind_method(D_METHOD("get_surround"),&AudioEffectStereoEnhance::get_surround);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"pan_pullout",PROPERTY_HINT_RANGE,"0,4,0.01"),_SCS("set_pan_pullout"),_SCS("get_pan_pullout"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"time_pullout_ms",PROPERTY_HINT_RANGE,"0,50,0.01"),_SCS("set_time_pullout"),_SCS("get_time_pullout"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"surround",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_surround"),_SCS("get_surround"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"pan_pullout",PROPERTY_HINT_RANGE,"0,4,0.01"),"set_pan_pullout","get_pan_pullout");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"time_pullout_ms",PROPERTY_HINT_RANGE,"0,50,0.01"),"set_time_pullout","get_time_pullout");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"surround",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_surround","get_surround");
 }
 
 AudioEffectStereoEnhance::AudioEffectStereoEnhance()

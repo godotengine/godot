@@ -3212,8 +3212,8 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_viewport_draw",&CanvasItemEditor::_viewport_draw);
 	ClassDB::bind_method("_viewport_gui_input",&CanvasItemEditor::_viewport_gui_input);
 	ClassDB::bind_method("_snap_changed",&CanvasItemEditor::_snap_changed);
-	ClassDB::bind_method(_MD("_selection_result_pressed"),&CanvasItemEditor::_selection_result_pressed);
-	ClassDB::bind_method(_MD("_selection_menu_hide"),&CanvasItemEditor::_selection_menu_hide);
+	ClassDB::bind_method(D_METHOD("_selection_result_pressed"),&CanvasItemEditor::_selection_result_pressed);
+	ClassDB::bind_method(D_METHOD("_selection_menu_hide"),&CanvasItemEditor::_selection_menu_hide);
 
 	ADD_SIGNAL( MethodInfo("item_lock_status_changed") );
 	ADD_SIGNAL( MethodInfo("item_group_status_changed") );
@@ -3984,9 +3984,9 @@ void CanvasItemEditorViewport::_notification(int p_what) {
 }
 
 void CanvasItemEditorViewport::_bind_methods() {
-	ClassDB::bind_method(_MD("_on_select_type"),&CanvasItemEditorViewport::_on_select_type);
-	ClassDB::bind_method(_MD("_on_change_type"),&CanvasItemEditorViewport::_on_change_type);
-	ClassDB::bind_method(_MD("_on_mouse_exit"),&CanvasItemEditorViewport::_on_mouse_exit);
+	ClassDB::bind_method(D_METHOD("_on_select_type"),&CanvasItemEditorViewport::_on_select_type);
+	ClassDB::bind_method(D_METHOD("_on_change_type"),&CanvasItemEditorViewport::_on_change_type);
+	ClassDB::bind_method(D_METHOD("_on_mouse_exit"),&CanvasItemEditorViewport::_on_mouse_exit);
 }
 
 CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasItemEditor* p_canvas) {

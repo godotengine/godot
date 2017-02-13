@@ -1189,101 +1189,101 @@ void TileMap::set_light_mask(int p_light_mask) {
 void TileMap::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_tileset","tileset:TileSet"),&TileMap::set_tileset);
-	ClassDB::bind_method(_MD("get_tileset:TileSet"),&TileMap::get_tileset);
+	ClassDB::bind_method(D_METHOD("set_tileset","tileset:TileSet"),&TileMap::set_tileset);
+	ClassDB::bind_method(D_METHOD("get_tileset:TileSet"),&TileMap::get_tileset);
 
-	ClassDB::bind_method(_MD("set_mode","mode"),&TileMap::set_mode);
-	ClassDB::bind_method(_MD("get_mode"),&TileMap::get_mode);
+	ClassDB::bind_method(D_METHOD("set_mode","mode"),&TileMap::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"),&TileMap::get_mode);
 
-	ClassDB::bind_method(_MD("set_half_offset","half_offset"),&TileMap::set_half_offset);
-	ClassDB::bind_method(_MD("get_half_offset"),&TileMap::get_half_offset);
+	ClassDB::bind_method(D_METHOD("set_half_offset","half_offset"),&TileMap::set_half_offset);
+	ClassDB::bind_method(D_METHOD("get_half_offset"),&TileMap::get_half_offset);
 
-	ClassDB::bind_method(_MD("set_custom_transform","custom_transform"),&TileMap::set_custom_transform);
-	ClassDB::bind_method(_MD("get_custom_transform"),&TileMap::get_custom_transform);
+	ClassDB::bind_method(D_METHOD("set_custom_transform","custom_transform"),&TileMap::set_custom_transform);
+	ClassDB::bind_method(D_METHOD("get_custom_transform"),&TileMap::get_custom_transform);
 
-	ClassDB::bind_method(_MD("set_cell_size","size"),&TileMap::set_cell_size);
-	ClassDB::bind_method(_MD("get_cell_size"),&TileMap::get_cell_size);
+	ClassDB::bind_method(D_METHOD("set_cell_size","size"),&TileMap::set_cell_size);
+	ClassDB::bind_method(D_METHOD("get_cell_size"),&TileMap::get_cell_size);
 
-	ClassDB::bind_method(_MD("_set_old_cell_size","size"),&TileMap::_set_old_cell_size);
-	ClassDB::bind_method(_MD("_get_old_cell_size"),&TileMap::_get_old_cell_size);
+	ClassDB::bind_method(D_METHOD("_set_old_cell_size","size"),&TileMap::_set_old_cell_size);
+	ClassDB::bind_method(D_METHOD("_get_old_cell_size"),&TileMap::_get_old_cell_size);
 
-	ClassDB::bind_method(_MD("set_quadrant_size","size"),&TileMap::set_quadrant_size);
-	ClassDB::bind_method(_MD("get_quadrant_size"),&TileMap::get_quadrant_size);
+	ClassDB::bind_method(D_METHOD("set_quadrant_size","size"),&TileMap::set_quadrant_size);
+	ClassDB::bind_method(D_METHOD("get_quadrant_size"),&TileMap::get_quadrant_size);
 
-	ClassDB::bind_method(_MD("set_tile_origin","origin"),&TileMap::set_tile_origin);
-	ClassDB::bind_method(_MD("get_tile_origin"),&TileMap::get_tile_origin);
+	ClassDB::bind_method(D_METHOD("set_tile_origin","origin"),&TileMap::set_tile_origin);
+	ClassDB::bind_method(D_METHOD("get_tile_origin"),&TileMap::get_tile_origin);
 
-	ClassDB::bind_method(_MD("set_center_x","enable"),&TileMap::set_center_x);
-	ClassDB::bind_method(_MD("get_center_x"),&TileMap::get_center_x);
+	ClassDB::bind_method(D_METHOD("set_center_x","enable"),&TileMap::set_center_x);
+	ClassDB::bind_method(D_METHOD("get_center_x"),&TileMap::get_center_x);
 
-	ClassDB::bind_method(_MD("set_center_y","enable"),&TileMap::set_center_y);
-	ClassDB::bind_method(_MD("get_center_y"),&TileMap::get_center_y);
+	ClassDB::bind_method(D_METHOD("set_center_y","enable"),&TileMap::set_center_y);
+	ClassDB::bind_method(D_METHOD("get_center_y"),&TileMap::get_center_y);
 
-	ClassDB::bind_method(_MD("set_y_sort_mode","enable"),&TileMap::set_y_sort_mode);
-	ClassDB::bind_method(_MD("is_y_sort_mode_enabled"),&TileMap::is_y_sort_mode_enabled);
+	ClassDB::bind_method(D_METHOD("set_y_sort_mode","enable"),&TileMap::set_y_sort_mode);
+	ClassDB::bind_method(D_METHOD("is_y_sort_mode_enabled"),&TileMap::is_y_sort_mode_enabled);
 
-	ClassDB::bind_method(_MD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
-	ClassDB::bind_method(_MD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
+	ClassDB::bind_method(D_METHOD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
+	ClassDB::bind_method(D_METHOD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
 
-	ClassDB::bind_method(_MD("set_collision_layer","mask"),&TileMap::set_collision_layer);
-	ClassDB::bind_method(_MD("get_collision_layer"),&TileMap::get_collision_layer);
+	ClassDB::bind_method(D_METHOD("set_collision_layer","mask"),&TileMap::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"),&TileMap::get_collision_layer);
 
-	ClassDB::bind_method(_MD("set_collision_mask","mask"),&TileMap::set_collision_mask);
-	ClassDB::bind_method(_MD("get_collision_mask"),&TileMap::get_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_mask","mask"),&TileMap::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"),&TileMap::get_collision_mask);
 
-	ClassDB::bind_method(_MD("set_collision_friction","value"),&TileMap::set_collision_friction);
-	ClassDB::bind_method(_MD("get_collision_friction"),&TileMap::get_collision_friction);
+	ClassDB::bind_method(D_METHOD("set_collision_friction","value"),&TileMap::set_collision_friction);
+	ClassDB::bind_method(D_METHOD("get_collision_friction"),&TileMap::get_collision_friction);
 
-	ClassDB::bind_method(_MD("set_collision_bounce","value"),&TileMap::set_collision_bounce);
-	ClassDB::bind_method(_MD("get_collision_bounce"),&TileMap::get_collision_bounce);
+	ClassDB::bind_method(D_METHOD("set_collision_bounce","value"),&TileMap::set_collision_bounce);
+	ClassDB::bind_method(D_METHOD("get_collision_bounce"),&TileMap::get_collision_bounce);
 
-	ClassDB::bind_method(_MD("set_occluder_light_mask","mask"),&TileMap::set_occluder_light_mask);
-	ClassDB::bind_method(_MD("get_occluder_light_mask"),&TileMap::get_occluder_light_mask);
+	ClassDB::bind_method(D_METHOD("set_occluder_light_mask","mask"),&TileMap::set_occluder_light_mask);
+	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"),&TileMap::get_occluder_light_mask);
 
-	ClassDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
-	ClassDB::bind_method(_MD("set_cellv","pos","tile","flip_x","flip_y","transpose"),&TileMap::set_cellv,DEFVAL(false),DEFVAL(false),DEFVAL(false));
-	ClassDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
-	ClassDB::bind_method(_MD("get_cellv","pos"),&TileMap::get_cellv);
-	ClassDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
-	ClassDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
-	ClassDB::bind_method(_MD("is_cell_transposed","x","y"),&TileMap::is_cell_transposed);
+	ClassDB::bind_method(D_METHOD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_cellv","pos","tile","flip_x","flip_y","transpose"),&TileMap::set_cellv,DEFVAL(false),DEFVAL(false),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_cell","x","y"),&TileMap::get_cell);
+	ClassDB::bind_method(D_METHOD("get_cellv","pos"),&TileMap::get_cellv);
+	ClassDB::bind_method(D_METHOD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
+	ClassDB::bind_method(D_METHOD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
+	ClassDB::bind_method(D_METHOD("is_cell_transposed","x","y"),&TileMap::is_cell_transposed);
 
-	ClassDB::bind_method(_MD("clear"),&TileMap::clear);
+	ClassDB::bind_method(D_METHOD("clear"),&TileMap::clear);
 
-	ClassDB::bind_method(_MD("get_used_cells"),&TileMap::get_used_cells);
+	ClassDB::bind_method(D_METHOD("get_used_cells"),&TileMap::get_used_cells);
 
-	ClassDB::bind_method(_MD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
-	ClassDB::bind_method(_MD("world_to_map","worldpos"),&TileMap::world_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("world_to_map","worldpos"),&TileMap::world_to_map);
 
-	ClassDB::bind_method(_MD("_clear_quadrants"),&TileMap::_clear_quadrants);
-	ClassDB::bind_method(_MD("_recreate_quadrants"),&TileMap::_recreate_quadrants);
-	ClassDB::bind_method(_MD("_update_dirty_quadrants"),&TileMap::_update_dirty_quadrants);
+	ClassDB::bind_method(D_METHOD("_clear_quadrants"),&TileMap::_clear_quadrants);
+	ClassDB::bind_method(D_METHOD("_recreate_quadrants"),&TileMap::_recreate_quadrants);
+	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"),&TileMap::_update_dirty_quadrants);
 
-	ClassDB::bind_method(_MD("_set_tile_data"),&TileMap::_set_tile_data);
-	ClassDB::bind_method(_MD("_get_tile_data"),&TileMap::_get_tile_data);
+	ClassDB::bind_method(D_METHOD("_set_tile_data"),&TileMap::_set_tile_data);
+	ClassDB::bind_method(D_METHOD("_get_tile_data"),&TileMap::_get_tile_data);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Square,Isometric,Custom"),_SCS("set_mode"),_SCS("get_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),_SCS("set_tileset"),_SCS("get_tileset"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Square,Isometric,Custom"),"set_mode","get_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),"set_tileset","get_tileset");
 
 	ADD_GROUP("Cell","cell_");
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1"),_SCS("set_cell_size"),_SCS("get_cell_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM2D,"cell_custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_tile_origin",PROPERTY_HINT_ENUM,"Top Left,Center,Bottom Left"),_SCS("set_tile_origin"),_SCS("get_tile_origin"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"cell_y_sort"),_SCS("set_y_sort_mode"),_SCS("is_y_sort_mode_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1"),"set_cell_size","get_cell_size");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),"set_quadrant_size","get_quadrant_size");
+	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM2D,"cell_custom_transform"),"set_custom_transform","get_custom_transform");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),"set_half_offset","get_half_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_tile_origin",PROPERTY_HINT_ENUM,"Top Left,Center,Bottom Left"),"set_tile_origin","get_tile_origin");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"cell_y_sort"),"set_y_sort_mode","is_y_sort_mode_enabled");
 
 	ADD_GROUP("Collision","collision_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision_use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision_use_kinematic",PROPERTY_HINT_NONE,""),"set_collision_use_kinematic","get_collision_use_kinematic");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_friction",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_collision_friction","get_collision_friction");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision_bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_collision_bounce","get_collision_bounce");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_LAYERS_2D_PHYSICS),"set_collision_layer","get_collision_layer");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_2D_PHYSICS),"set_collision_mask","get_collision_mask");
 
 	ADD_GROUP("Occluder","occluder_");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"occluder_light_mask",PROPERTY_HINT_LAYERS_2D_RENDER),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"occluder_light_mask",PROPERTY_HINT_LAYERS_2D_RENDER),"set_occluder_light_mask","get_occluder_light_mask");
 	ADD_GROUP("","");
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_tile_data","_get_tile_data");
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 

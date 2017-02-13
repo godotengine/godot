@@ -78,14 +78,14 @@ void Font::update_changes() {
 
 void Font::_bind_methods() {
 
-	ClassDB::bind_method(_MD("draw","canvas_item","pos","string","modulate","clip_w"),&Font::draw,DEFVAL(Color(1,1,1)),DEFVAL(-1));
-	ClassDB::bind_method(_MD("get_ascent"),&Font::get_ascent);
-	ClassDB::bind_method(_MD("get_descent"),&Font::get_descent);
-	ClassDB::bind_method(_MD("get_height"),&Font::get_height);
-	ClassDB::bind_method(_MD("is_distance_field_hint"),&Font::is_distance_field_hint);
-	ClassDB::bind_method(_MD("get_string_size","string"),&Font::get_string_size);
-	ClassDB::bind_method(_MD("draw_char","canvas_item","pos","char","next","modulate"),&Font::draw_char,DEFVAL(-1),DEFVAL(Color(1,1,1)));
-	ClassDB::bind_method(_MD("update_changes"),&Font::update_changes);
+	ClassDB::bind_method(D_METHOD("draw","canvas_item","pos","string","modulate","clip_w"),&Font::draw,DEFVAL(Color(1,1,1)),DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("get_ascent"),&Font::get_ascent);
+	ClassDB::bind_method(D_METHOD("get_descent"),&Font::get_descent);
+	ClassDB::bind_method(D_METHOD("get_height"),&Font::get_height);
+	ClassDB::bind_method(D_METHOD("is_distance_field_hint"),&Font::is_distance_field_hint);
+	ClassDB::bind_method(D_METHOD("get_string_size","string"),&Font::get_string_size);
+	ClassDB::bind_method(D_METHOD("draw_char","canvas_item","pos","char","next","modulate"),&Font::draw_char,DEFVAL(-1),DEFVAL(Color(1,1,1)));
+	ClassDB::bind_method(D_METHOD("update_changes"),&Font::update_changes);
 
 }
 
@@ -566,48 +566,48 @@ Size2 BitmapFont::get_char_size(CharType p_char,CharType p_next) const {
 
 void BitmapFont::_bind_methods() {
 
-	ClassDB::bind_method(_MD("create_from_fnt","path"),&BitmapFont::create_from_fnt);
-	ClassDB::bind_method(_MD("set_height","px"),&BitmapFont::set_height);
+	ClassDB::bind_method(D_METHOD("create_from_fnt","path"),&BitmapFont::create_from_fnt);
+	ClassDB::bind_method(D_METHOD("set_height","px"),&BitmapFont::set_height);
 
-	ClassDB::bind_method(_MD("set_ascent","px"),&BitmapFont::set_ascent);
+	ClassDB::bind_method(D_METHOD("set_ascent","px"),&BitmapFont::set_ascent);
 
-	ClassDB::bind_method(_MD("add_kerning_pair","char_a","char_b","kerning"),&BitmapFont::add_kerning_pair);
-	ClassDB::bind_method(_MD("get_kerning_pair","char_a","char_b"),&BitmapFont::get_kerning_pair);
+	ClassDB::bind_method(D_METHOD("add_kerning_pair","char_a","char_b","kerning"),&BitmapFont::add_kerning_pair);
+	ClassDB::bind_method(D_METHOD("get_kerning_pair","char_a","char_b"),&BitmapFont::get_kerning_pair);
 
-	ClassDB::bind_method(_MD("add_texture","texture:Texture"),&BitmapFont::add_texture);
-	ClassDB::bind_method(_MD("add_char","character","texture","rect","align","advance"),&BitmapFont::add_char,DEFVAL(Point2()),DEFVAL(-1));
-
-
-	ClassDB::bind_method(_MD("get_texture_count"),&BitmapFont::get_texture_count);
-	ClassDB::bind_method(_MD("get_texture:Texture","idx"),&BitmapFont::get_texture);
-
-	ClassDB::bind_method(_MD("get_char_size","char","next"),&BitmapFont::get_char_size,DEFVAL(0));
-
-	ClassDB::bind_method(_MD("set_distance_field_hint","enable"),&BitmapFont::set_distance_field_hint);
-
-	ClassDB::bind_method(_MD("clear"),&BitmapFont::clear);
+	ClassDB::bind_method(D_METHOD("add_texture","texture:Texture"),&BitmapFont::add_texture);
+	ClassDB::bind_method(D_METHOD("add_char","character","texture","rect","align","advance"),&BitmapFont::add_char,DEFVAL(Point2()),DEFVAL(-1));
 
 
-	ClassDB::bind_method(_MD("_set_chars"),&BitmapFont::_set_chars);
-	ClassDB::bind_method(_MD("_get_chars"),&BitmapFont::_get_chars);
+	ClassDB::bind_method(D_METHOD("get_texture_count"),&BitmapFont::get_texture_count);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture","idx"),&BitmapFont::get_texture);
 
-	ClassDB::bind_method(_MD("_set_kernings"),&BitmapFont::_set_kernings);
-	ClassDB::bind_method(_MD("_get_kernings"),&BitmapFont::_get_kernings);
+	ClassDB::bind_method(D_METHOD("get_char_size","char","next"),&BitmapFont::get_char_size,DEFVAL(0));
 
-	ClassDB::bind_method(_MD("_set_textures"),&BitmapFont::_set_textures);
-	ClassDB::bind_method(_MD("_get_textures"),&BitmapFont::_get_textures);
+	ClassDB::bind_method(D_METHOD("set_distance_field_hint","enable"),&BitmapFont::set_distance_field_hint);
 
-	ClassDB::bind_method(_MD("set_fallback","fallback"),&BitmapFont::set_fallback);
-	ClassDB::bind_method(_MD("get_fallback"),&BitmapFont::get_fallback);
+	ClassDB::bind_method(D_METHOD("clear"),&BitmapFont::clear);
 
-	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "textures", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_textures"), _SCS("_get_textures") );
-	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_chars"), _SCS("_get_chars") );
-	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_kernings"), _SCS("_get_kernings") );
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_height"), _SCS("get_height") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_ascent"), _SCS("get_ascent") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "distance_field" ), _SCS("set_distance_field_hint"), _SCS("is_distance_field_hint") );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "fallback", PROPERTY_HINT_RESOURCE_TYPE,"BitmapFont" ), _SCS("set_fallback"), _SCS("get_fallback") );
+	ClassDB::bind_method(D_METHOD("_set_chars"),&BitmapFont::_set_chars);
+	ClassDB::bind_method(D_METHOD("_get_chars"),&BitmapFont::_get_chars);
+
+	ClassDB::bind_method(D_METHOD("_set_kernings"),&BitmapFont::_set_kernings);
+	ClassDB::bind_method(D_METHOD("_get_kernings"),&BitmapFont::_get_kernings);
+
+	ClassDB::bind_method(D_METHOD("_set_textures"),&BitmapFont::_set_textures);
+	ClassDB::bind_method(D_METHOD("_get_textures"),&BitmapFont::_get_textures);
+
+	ClassDB::bind_method(D_METHOD("set_fallback","fallback"),&BitmapFont::set_fallback);
+	ClassDB::bind_method(D_METHOD("get_fallback"),&BitmapFont::get_fallback);
+
+	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "textures", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), "_set_textures", "_get_textures") ;
+	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), "_set_chars", "_get_chars") ;
+	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), "_set_kernings", "_get_kernings") ;
+
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), "set_height", "get_height") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), "set_ascent", "get_ascent") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "distance_field" ), "set_distance_field_hint", "is_distance_field_hint") ;
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "fallback", PROPERTY_HINT_RESOURCE_TYPE,"BitmapFont" ), "set_fallback", "get_fallback") ;
 
 }
 

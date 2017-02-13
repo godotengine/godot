@@ -1189,7 +1189,7 @@ void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_area_selected",&GridMapEditor::_area_selected);
 	ClassDB::bind_method("_floor_changed",&GridMapEditor::_floor_changed);
 
-	ClassDB::bind_method(_MD("_set_display_mode","mode"), &GridMapEditor::_set_display_mode);
+	ClassDB::bind_method(D_METHOD("_set_display_mode","mode"), &GridMapEditor::_set_display_mode);
 }
 
 

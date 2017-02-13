@@ -98,12 +98,12 @@ void MenuButton::_set_items(const Array& p_items) {
 
 void MenuButton::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_popup:PopupMenu"),&MenuButton::get_popup);
-	ClassDB::bind_method(_MD("_unhandled_key_input"),&MenuButton::_unhandled_key_input);
-	ClassDB::bind_method(_MD("_set_items"),&MenuButton::_set_items);
-	ClassDB::bind_method(_MD("_get_items"),&MenuButton::_get_items);
+	ClassDB::bind_method(D_METHOD("get_popup:PopupMenu"),&MenuButton::get_popup);
+	ClassDB::bind_method(D_METHOD("_unhandled_key_input"),&MenuButton::_unhandled_key_input);
+	ClassDB::bind_method(D_METHOD("_set_items"),&MenuButton::_set_items);
+	ClassDB::bind_method(D_METHOD("_get_items"),&MenuButton::_get_items);
 
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_items","_get_items") ;
 
 	ADD_SIGNAL( MethodInfo("about_to_show") );
 }

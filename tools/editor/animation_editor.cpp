@@ -3922,48 +3922,48 @@ void AnimationKeyEditor::cleanup() {
 
 void AnimationKeyEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_root_removed"),&AnimationKeyEditor::_root_removed);
-	ClassDB::bind_method(_MD("_scale"),&AnimationKeyEditor::_scale);
-	ClassDB::bind_method(_MD("set_root"),&AnimationKeyEditor::set_root);
+	ClassDB::bind_method(D_METHOD("_root_removed"),&AnimationKeyEditor::_root_removed);
+	ClassDB::bind_method(D_METHOD("_scale"),&AnimationKeyEditor::_scale);
+	ClassDB::bind_method(D_METHOD("set_root"),&AnimationKeyEditor::set_root);
 
 
-	//ClassDB::bind_method(_MD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
-	ClassDB::bind_method(_MD("_confirm_insert_list"),&AnimationKeyEditor::_confirm_insert_list);
-
-
-
-	ClassDB::bind_method(_MD("_update_paths"),&AnimationKeyEditor::_update_paths);
-	ClassDB::bind_method(_MD("_track_editor_draw"),&AnimationKeyEditor::_track_editor_draw);
+	//ClassDB::bind_method(D_METHOD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
+	ClassDB::bind_method(D_METHOD("_confirm_insert_list"),&AnimationKeyEditor::_confirm_insert_list);
 
 
 
-
-	ClassDB::bind_method(_MD("_animation_changed"),&AnimationKeyEditor::_animation_changed);
-	ClassDB::bind_method(_MD("_scroll_changed"),&AnimationKeyEditor::_scroll_changed);
-	ClassDB::bind_method(_MD("_track_editor_gui_input"),&AnimationKeyEditor::_track_editor_gui_input);
-	ClassDB::bind_method(_MD("_track_name_changed"),&AnimationKeyEditor::_track_name_changed);
-	ClassDB::bind_method(_MD("_track_menu_selected"),&AnimationKeyEditor::_track_menu_selected);
-	ClassDB::bind_method(_MD("_menu_add_track"),&AnimationKeyEditor::_menu_add_track);
-	ClassDB::bind_method(_MD("_menu_track"),&AnimationKeyEditor::_menu_track);
-	ClassDB::bind_method(_MD("_clear_selection_for_anim"),&AnimationKeyEditor::_clear_selection_for_anim);
-	ClassDB::bind_method(_MD("_select_at_anim"),&AnimationKeyEditor::_select_at_anim);
-	ClassDB::bind_method(_MD("_track_pos_draw"),&AnimationKeyEditor::_track_pos_draw);
-	ClassDB::bind_method(_MD("_insert_delay"),&AnimationKeyEditor::_insert_delay);
-	ClassDB::bind_method(_MD("_step_changed"),&AnimationKeyEditor::_step_changed);
+	ClassDB::bind_method(D_METHOD("_update_paths"),&AnimationKeyEditor::_update_paths);
+	ClassDB::bind_method(D_METHOD("_track_editor_draw"),&AnimationKeyEditor::_track_editor_draw);
 
 
-	ClassDB::bind_method(_MD("_animation_loop_changed"),&AnimationKeyEditor::_animation_loop_changed);
-	ClassDB::bind_method(_MD("_animation_len_changed"),&AnimationKeyEditor::_animation_len_changed);
-	ClassDB::bind_method(_MD("_create_value_item"),&AnimationKeyEditor::_create_value_item);
-	ClassDB::bind_method(_MD("_pane_drag"),&AnimationKeyEditor::_pane_drag);
 
-	ClassDB::bind_method(_MD("_animation_len_update"),&AnimationKeyEditor::_animation_len_update);
 
-	ClassDB::bind_method(_MD("set_animation"),&AnimationKeyEditor::set_animation);
-	ClassDB::bind_method(_MD("_animation_optimize"),&AnimationKeyEditor::_animation_optimize);
-	ClassDB::bind_method(_MD("_curve_transition_changed"),&AnimationKeyEditor::_curve_transition_changed);
-	ClassDB::bind_method(_MD("_toggle_edit_curves"),&AnimationKeyEditor::_toggle_edit_curves);
-	ClassDB::bind_method(_MD("_add_call_track"),&AnimationKeyEditor::_add_call_track);
+	ClassDB::bind_method(D_METHOD("_animation_changed"),&AnimationKeyEditor::_animation_changed);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&AnimationKeyEditor::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_track_editor_gui_input"),&AnimationKeyEditor::_track_editor_gui_input);
+	ClassDB::bind_method(D_METHOD("_track_name_changed"),&AnimationKeyEditor::_track_name_changed);
+	ClassDB::bind_method(D_METHOD("_track_menu_selected"),&AnimationKeyEditor::_track_menu_selected);
+	ClassDB::bind_method(D_METHOD("_menu_add_track"),&AnimationKeyEditor::_menu_add_track);
+	ClassDB::bind_method(D_METHOD("_menu_track"),&AnimationKeyEditor::_menu_track);
+	ClassDB::bind_method(D_METHOD("_clear_selection_for_anim"),&AnimationKeyEditor::_clear_selection_for_anim);
+	ClassDB::bind_method(D_METHOD("_select_at_anim"),&AnimationKeyEditor::_select_at_anim);
+	ClassDB::bind_method(D_METHOD("_track_pos_draw"),&AnimationKeyEditor::_track_pos_draw);
+	ClassDB::bind_method(D_METHOD("_insert_delay"),&AnimationKeyEditor::_insert_delay);
+	ClassDB::bind_method(D_METHOD("_step_changed"),&AnimationKeyEditor::_step_changed);
+
+
+	ClassDB::bind_method(D_METHOD("_animation_loop_changed"),&AnimationKeyEditor::_animation_loop_changed);
+	ClassDB::bind_method(D_METHOD("_animation_len_changed"),&AnimationKeyEditor::_animation_len_changed);
+	ClassDB::bind_method(D_METHOD("_create_value_item"),&AnimationKeyEditor::_create_value_item);
+	ClassDB::bind_method(D_METHOD("_pane_drag"),&AnimationKeyEditor::_pane_drag);
+
+	ClassDB::bind_method(D_METHOD("_animation_len_update"),&AnimationKeyEditor::_animation_len_update);
+
+	ClassDB::bind_method(D_METHOD("set_animation"),&AnimationKeyEditor::set_animation);
+	ClassDB::bind_method(D_METHOD("_animation_optimize"),&AnimationKeyEditor::_animation_optimize);
+	ClassDB::bind_method(D_METHOD("_curve_transition_changed"),&AnimationKeyEditor::_curve_transition_changed);
+	ClassDB::bind_method(D_METHOD("_toggle_edit_curves"),&AnimationKeyEditor::_toggle_edit_curves);
+	ClassDB::bind_method(D_METHOD("_add_call_track"),&AnimationKeyEditor::_add_call_track);
 
 
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );

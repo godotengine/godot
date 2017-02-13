@@ -1900,63 +1900,63 @@ String RichTextLabel::get_text() {
 void RichTextLabel::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("_gui_input"),&RichTextLabel::_gui_input);
-	ClassDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
-	ClassDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
-	ClassDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
-	ClassDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
-	ClassDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);
-	ClassDB::bind_method(_MD("push_font","font"),&RichTextLabel::push_font);
-	ClassDB::bind_method(_MD("push_color","color"),&RichTextLabel::push_color);
-	ClassDB::bind_method(_MD("push_align","align"),&RichTextLabel::push_align);
-	ClassDB::bind_method(_MD("push_indent","level"),&RichTextLabel::push_indent);
-	ClassDB::bind_method(_MD("push_list","type"),&RichTextLabel::push_list);
-	ClassDB::bind_method(_MD("push_meta","data"),&RichTextLabel::push_meta);
-	ClassDB::bind_method(_MD("push_underline"),&RichTextLabel::push_underline);
-	ClassDB::bind_method(_MD("push_table","columns"),&RichTextLabel::push_table);
-	ClassDB::bind_method(_MD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
-	ClassDB::bind_method(_MD("push_cell"),&RichTextLabel::push_cell);
-	ClassDB::bind_method(_MD("pop"),&RichTextLabel::pop);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&RichTextLabel::_gui_input);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&RichTextLabel::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("get_text"),&RichTextLabel::get_text);
+	ClassDB::bind_method(D_METHOD("add_text","text"),&RichTextLabel::add_text);
+	ClassDB::bind_method(D_METHOD("add_image","image:Texture"),&RichTextLabel::add_image);
+	ClassDB::bind_method(D_METHOD("newline"),&RichTextLabel::add_newline);
+	ClassDB::bind_method(D_METHOD("push_font","font"),&RichTextLabel::push_font);
+	ClassDB::bind_method(D_METHOD("push_color","color"),&RichTextLabel::push_color);
+	ClassDB::bind_method(D_METHOD("push_align","align"),&RichTextLabel::push_align);
+	ClassDB::bind_method(D_METHOD("push_indent","level"),&RichTextLabel::push_indent);
+	ClassDB::bind_method(D_METHOD("push_list","type"),&RichTextLabel::push_list);
+	ClassDB::bind_method(D_METHOD("push_meta","data"),&RichTextLabel::push_meta);
+	ClassDB::bind_method(D_METHOD("push_underline"),&RichTextLabel::push_underline);
+	ClassDB::bind_method(D_METHOD("push_table","columns"),&RichTextLabel::push_table);
+	ClassDB::bind_method(D_METHOD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
+	ClassDB::bind_method(D_METHOD("push_cell"),&RichTextLabel::push_cell);
+	ClassDB::bind_method(D_METHOD("pop"),&RichTextLabel::pop);
 
-	ClassDB::bind_method(_MD("clear"),&RichTextLabel::clear);
+	ClassDB::bind_method(D_METHOD("clear"),&RichTextLabel::clear);
 
-	ClassDB::bind_method(_MD("set_meta_underline","enable"),&RichTextLabel::set_meta_underline);
-	ClassDB::bind_method(_MD("is_meta_underlined"),&RichTextLabel::is_meta_underlined);
+	ClassDB::bind_method(D_METHOD("set_meta_underline","enable"),&RichTextLabel::set_meta_underline);
+	ClassDB::bind_method(D_METHOD("is_meta_underlined"),&RichTextLabel::is_meta_underlined);
 
-	ClassDB::bind_method(_MD("set_scroll_active","active"),&RichTextLabel::set_scroll_active);
-	ClassDB::bind_method(_MD("is_scroll_active"),&RichTextLabel::is_scroll_active);
+	ClassDB::bind_method(D_METHOD("set_scroll_active","active"),&RichTextLabel::set_scroll_active);
+	ClassDB::bind_method(D_METHOD("is_scroll_active"),&RichTextLabel::is_scroll_active);
 
-	ClassDB::bind_method(_MD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
-	ClassDB::bind_method(_MD("is_scroll_following"),&RichTextLabel::is_scroll_following);
+	ClassDB::bind_method(D_METHOD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
+	ClassDB::bind_method(D_METHOD("is_scroll_following"),&RichTextLabel::is_scroll_following);
 
-	ClassDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"),&RichTextLabel::get_v_scroll);
 
-	ClassDB::bind_method(_MD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
+	ClassDB::bind_method(D_METHOD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
 
-	ClassDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
-	ClassDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
+	ClassDB::bind_method(D_METHOD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
+	ClassDB::bind_method(D_METHOD("get_tab_size"),&RichTextLabel::get_tab_size);
 
-	ClassDB::bind_method(_MD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
-	ClassDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
+	ClassDB::bind_method(D_METHOD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
+	ClassDB::bind_method(D_METHOD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
 
-	ClassDB::bind_method(_MD("parse_bbcode", "bbcode"),&RichTextLabel::parse_bbcode);
-	ClassDB::bind_method(_MD("append_bbcode", "bbcode"),&RichTextLabel::append_bbcode);
+	ClassDB::bind_method(D_METHOD("parse_bbcode", "bbcode"),&RichTextLabel::parse_bbcode);
+	ClassDB::bind_method(D_METHOD("append_bbcode", "bbcode"),&RichTextLabel::append_bbcode);
 
-	ClassDB::bind_method(_MD("set_bbcode","text"),&RichTextLabel::set_bbcode);
-	ClassDB::bind_method(_MD("get_bbcode"),&RichTextLabel::get_bbcode);
+	ClassDB::bind_method(D_METHOD("set_bbcode","text"),&RichTextLabel::set_bbcode);
+	ClassDB::bind_method(D_METHOD("get_bbcode"),&RichTextLabel::get_bbcode);
 
-	ClassDB::bind_method(_MD("set_visible_characters","amount"),&RichTextLabel::set_visible_characters);
-	ClassDB::bind_method(_MD("get_visible_characters"),&RichTextLabel::get_visible_characters);
+	ClassDB::bind_method(D_METHOD("set_visible_characters","amount"),&RichTextLabel::set_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters"),&RichTextLabel::get_visible_characters);
 
-	ClassDB::bind_method(_MD("get_total_character_count"),&RichTextLabel::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count"),&RichTextLabel::get_total_character_count);
 
-	ClassDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
-	ClassDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
+	ClassDB::bind_method(D_METHOD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
+	ClassDB::bind_method(D_METHOD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
 
 	ADD_GROUP("BBCode","bbcode_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode_enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode_text",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),_SCS("set_visible_characters"),_SCS("get_visible_characters"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode_enabled"),"set_use_bbcode","is_using_bbcode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode_text",PROPERTY_HINT_MULTILINE_TEXT),"set_bbcode","get_bbcode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),"set_visible_characters","get_visible_characters");
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));
 

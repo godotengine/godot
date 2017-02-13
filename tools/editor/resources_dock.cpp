@@ -322,12 +322,12 @@ void ResourcesDock::_create() {
 
 void ResourcesDock::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_tool_selected"),&ResourcesDock::_tool_selected);
-	ClassDB::bind_method(_MD("_create"),&ResourcesDock::_create);
-	ClassDB::bind_method(_MD("_resource_selected"),&ResourcesDock::_resource_selected);
-	ClassDB::bind_method(_MD("_delete"),&ResourcesDock::_delete);
-	ClassDB::bind_method(_MD("remove_resource"),&ResourcesDock::remove_resource);
-	ClassDB::bind_method(_MD("_file_action"),&ResourcesDock::_file_action);
+	ClassDB::bind_method(D_METHOD("_tool_selected"),&ResourcesDock::_tool_selected);
+	ClassDB::bind_method(D_METHOD("_create"),&ResourcesDock::_create);
+	ClassDB::bind_method(D_METHOD("_resource_selected"),&ResourcesDock::_resource_selected);
+	ClassDB::bind_method(D_METHOD("_delete"),&ResourcesDock::_delete);
+	ClassDB::bind_method(D_METHOD("remove_resource"),&ResourcesDock::remove_resource);
+	ClassDB::bind_method(D_METHOD("_file_action"),&ResourcesDock::_file_action);
 
 
 

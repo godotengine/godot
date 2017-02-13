@@ -4403,9 +4403,9 @@ void PropertyEditor::_bind_methods() {
 	ClassDB::bind_method( "refresh",&PropertyEditor::refresh);
 	ClassDB::bind_method( "_draw_transparency",&PropertyEditor::_draw_transparency);
 
-	ClassDB::bind_method(_MD("get_drag_data_fw"), &PropertyEditor::get_drag_data_fw);
-	ClassDB::bind_method(_MD("can_drop_data_fw"), &PropertyEditor::can_drop_data_fw);
-	ClassDB::bind_method(_MD("drop_data_fw"), &PropertyEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &PropertyEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &PropertyEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &PropertyEditor::drop_data_fw);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );

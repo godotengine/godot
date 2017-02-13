@@ -120,23 +120,22 @@ void TextureButton::_notification(int p_what) {
 				bool tile = false;
 				if (expand) {
 					switch (stretch_mode) {
-						case StretchMode::STRETCH_KEEP:
+						case STRETCH_KEEP:
 							size = texdraw->get_size();
 							break;
-						case StretchMode::STRETCH_SCALE_ON_EXPAND:
-						case StretchMode::STRETCH_SCALE:
+						case STRETCH_SCALE:
 							size = get_size();
 							break;
-						case StretchMode::STRETCH_TILE:
+						case STRETCH_TILE:
 							size = get_size();
 							tile = true;
 							break;
-						case StretchMode::STRETCH_KEEP_CENTERED:
+						case STRETCH_KEEP_CENTERED:
 							ofs = (get_size() - texdraw->get_size())/2;
 							size = texdraw->get_size();
 							break;
-						case StretchMode::STRETCH_KEEP_ASPECT_CENTERED:
-						case StretchMode::STRETCH_KEEP_ASPECT: {
+						case STRETCH_KEEP_ASPECT_CENTERED:
+						case STRETCH_KEEP_ASPECT: {
 							Size2 _size=get_size();
 							float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
 							float tex_height = _size.height;
@@ -146,14 +145,14 @@ void TextureButton::_notification(int p_what) {
 								tex_height = texdraw->get_height() * tex_width / texdraw->get_width();
 							}
 
-							if (stretch_mode==StretchMode::STRETCH_KEEP_ASPECT_CENTERED) {
+							if (stretch_mode==STRETCH_KEEP_ASPECT_CENTERED) {
 								ofs.x = (_size.width - tex_width)/2;
 								ofs.y = (_size.height - tex_height)/2;
 							}
 							size.width = tex_width;
 							size.height = tex_height;
 						} break;
-						case StretchMode::STRETCH_KEEP_ASPECT_COVERED:{
+						case STRETCH_KEEP_ASPECT_COVERED:{
 							size = get_size();
 							Size2 tex_size = texdraw->get_size();
 							Size2 scaleSize(size.width/tex_size.width, size.height/tex_size.height);
@@ -181,43 +180,34 @@ void TextureButton::_notification(int p_what) {
 
 void TextureButton::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_normal_texture","texture:Texture"),&TextureButton::set_normal_texture);
-	ClassDB::bind_method(_MD("set_pressed_texture","texture:Texture"),&TextureButton::set_pressed_texture);
-	ClassDB::bind_method(_MD("set_hover_texture","texture:Texture"),&TextureButton::set_hover_texture);
-	ClassDB::bind_method(_MD("set_disabled_texture","texture:Texture"),&TextureButton::set_disabled_texture);
-	ClassDB::bind_method(_MD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
-	ClassDB::bind_method(_MD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
-	ClassDB::bind_method(_MD("set_expand","p_expand"),&TextureButton::set_expand);
-	ClassDB::bind_method(_MD("set_stretch_mode","p_mode"),&TextureButton::set_stretch_mode);
+	ClassDB::bind_method(D_METHOD("set_normal_texture","texture:Texture"),&TextureButton::set_normal_texture);
+	ClassDB::bind_method(D_METHOD("set_pressed_texture","texture:Texture"),&TextureButton::set_pressed_texture);
+	ClassDB::bind_method(D_METHOD("set_hover_texture","texture:Texture"),&TextureButton::set_hover_texture);
+	ClassDB::bind_method(D_METHOD("set_disabled_texture","texture:Texture"),&TextureButton::set_disabled_texture);
+	ClassDB::bind_method(D_METHOD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
+	ClassDB::bind_method(D_METHOD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
+	ClassDB::bind_method(D_METHOD("set_expand","p_expand"),&TextureButton::set_expand);
+	ClassDB::bind_method(D_METHOD("set_stretch_mode","p_mode"),&TextureButton::set_stretch_mode);
 
-	ClassDB::bind_method(_MD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
-	ClassDB::bind_method(_MD("get_pressed_texture:Texture"),&TextureButton::get_pressed_texture);
-	ClassDB::bind_method(_MD("get_hover_texture:Texture"),&TextureButton::get_hover_texture);
-	ClassDB::bind_method(_MD("get_disabled_texture:Texture"),&TextureButton::get_disabled_texture);
-	ClassDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
-	ClassDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
-	ClassDB::bind_method(_MD("get_expand"),&TextureButton::get_expand);
-	ClassDB::bind_method(_MD("get_stretch_mode"),&TextureButton::get_stretch_mode);
+	ClassDB::bind_method(D_METHOD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
+	ClassDB::bind_method(D_METHOD("get_pressed_texture:Texture"),&TextureButton::get_pressed_texture);
+	ClassDB::bind_method(D_METHOD("get_hover_texture:Texture"),&TextureButton::get_hover_texture);
+	ClassDB::bind_method(D_METHOD("get_disabled_texture:Texture"),&TextureButton::get_disabled_texture);
+	ClassDB::bind_method(D_METHOD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
+	ClassDB::bind_method(D_METHOD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
+	ClassDB::bind_method(D_METHOD("get_expand"),&TextureButton::get_expand);
+	ClassDB::bind_method(D_METHOD("get_stretch_mode"),&TextureButton::get_stretch_mode);
 
 	ADD_GROUP("Textures","texture_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_pressed_texture"), _SCS("get_pressed_texture"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_hover",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_hover_texture"), _SCS("get_hover_texture"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"expand",PROPERTY_HINT_RESOURCE_TYPE,"bool"), _SCS("set_expand"), _SCS("get_expand")) ;
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), _SCS("set_stretch_mode"), _SCS("get_stretch_mode"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_normal_texture", "get_normal_texture");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_pressed_texture", "get_pressed_texture");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_hover",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_hover_texture", "get_hover_texture");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_disabled_texture", "get_disabled_texture");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_focused_texture", "get_focused_texture");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), "set_click_mask", "get_click_mask") ;
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"expand",PROPERTY_HINT_RESOURCE_TYPE,"bool"), "set_expand", "get_expand") ;
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"stretch_mode",PROPERTY_HINT_ENUM,"Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 
-	const int STRETCH_SCALE_ON_EXPAND = StretchMode::STRETCH_SCALE_ON_EXPAND;
-	const int STRETCH_SCALE = StretchMode::STRETCH_SCALE;
-	const int STRETCH_TILE = StretchMode::STRETCH_TILE;
-	const int STRETCH_KEEP = StretchMode::STRETCH_KEEP;
-	const int STRETCH_KEEP_CENTERED = StretchMode::STRETCH_KEEP_CENTERED;
-	const int STRETCH_KEEP_ASPECT = StretchMode::STRETCH_KEEP_ASPECT;
-	const int STRETCH_KEEP_ASPECT_CENTERED = StretchMode::STRETCH_KEEP_ASPECT_CENTERED;
-	const int STRETCH_KEEP_ASPECT_COVERED = StretchMode::STRETCH_KEEP_ASPECT_COVERED;
-	BIND_CONSTANT(STRETCH_SCALE_ON_EXPAND);
 	BIND_CONSTANT(STRETCH_SCALE);
 	BIND_CONSTANT(STRETCH_TILE);
 	BIND_CONSTANT(STRETCH_KEEP);
@@ -302,7 +292,7 @@ void TextureButton::set_expand(bool p_expand) {
 	update();
 }
 
-void TextureButton::set_stretch_mode(TextureButton::StretchMode p_mode) {
+void TextureButton::set_stretch_mode(StretchMode p_mode) {
 	stretch_mode = p_mode;
 	update();
 }
@@ -313,5 +303,5 @@ TextureButton::StretchMode TextureButton::get_stretch_mode() const {
 
 TextureButton::TextureButton() {
 	expand = false;
-	stretch_mode = StretchMode::STRETCH_SCALE_ON_EXPAND;
+	stretch_mode = STRETCH_SCALE;
 }

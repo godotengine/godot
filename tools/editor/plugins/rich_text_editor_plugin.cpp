@@ -90,8 +90,8 @@ void RichTextEditor::_menu_option(int p_option) {
 
 void RichTextEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_option"),&RichTextEditor::_menu_option);
-	ClassDB::bind_method(_MD("_file_selected"),&RichTextEditor::_file_selected);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&RichTextEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_file_selected"),&RichTextEditor::_file_selected);
 
 }
 

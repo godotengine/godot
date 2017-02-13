@@ -5098,13 +5098,13 @@ void EditorNode::_bind_methods() {
 
 
 
-//	ClassDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
-	//ClassDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
-	ClassDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
-	ClassDB::bind_method(_MD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);
+//	ClassDB::bind_method(D_METHOD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
+	//ClassDB::bind_method(D_METHOD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
+	ClassDB::bind_method(D_METHOD("get_gui_base"), &EditorNode::get_gui_base);
+	ClassDB::bind_method(D_METHOD("_bottom_panel_switch"), &EditorNode::_bottom_panel_switch);
 
-	ClassDB::bind_method(_MD("_open_imported"), &EditorNode::_open_imported);
-	ClassDB::bind_method(_MD("_inherit_imported"), &EditorNode::_inherit_imported);
+	ClassDB::bind_method(D_METHOD("_open_imported"), &EditorNode::_open_imported);
+	ClassDB::bind_method(D_METHOD("_inherit_imported"), &EditorNode::_inherit_imported);
 
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );

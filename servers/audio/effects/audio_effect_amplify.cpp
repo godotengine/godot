@@ -38,10 +38,10 @@ float AudioEffectAmplify::get_volume_db() const {
 
 void AudioEffectAmplify::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_volume_db","volume"),&AudioEffectAmplify::set_volume_db);
-	ClassDB::bind_method(_MD("get_volume_db"),&AudioEffectAmplify::get_volume_db);
+	ClassDB::bind_method(D_METHOD("set_volume_db","volume"),&AudioEffectAmplify::set_volume_db);
+	ClassDB::bind_method(D_METHOD("get_volume_db"),&AudioEffectAmplify::get_volume_db);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"volume_db",PROPERTY_HINT_RANGE,"-80,24,0.01"),_SCS("set_volume_db"),_SCS("get_volume_db"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"volume_db",PROPERTY_HINT_RANGE,"-80,24,0.01"),"set_volume_db","get_volume_db");
 }
 
 AudioEffectAmplify::AudioEffectAmplify()

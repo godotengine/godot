@@ -141,13 +141,13 @@ TextureButton *WindowDialog::get_close_button() {
 
 void WindowDialog::_bind_methods() {
 
-	ClassDB::bind_method( _MD("_gui_input"),&WindowDialog::_gui_input);
-	ClassDB::bind_method( _MD("set_title","title"),&WindowDialog::set_title);
-	ClassDB::bind_method( _MD("get_title"),&WindowDialog::get_title);
-	ClassDB::bind_method( _MD("_closed"),&WindowDialog::_closed);
-	ClassDB::bind_method( _MD("get_close_button:TextureButton"),&WindowDialog::get_close_button);
+	ClassDB::bind_method( D_METHOD("_gui_input"),&WindowDialog::_gui_input);
+	ClassDB::bind_method( D_METHOD("set_title","title"),&WindowDialog::set_title);
+	ClassDB::bind_method( D_METHOD("get_title"),&WindowDialog::get_title);
+	ClassDB::bind_method( D_METHOD("_closed"),&WindowDialog::_closed);
+	ClassDB::bind_method( D_METHOD("get_close_button:TextureButton"),&WindowDialog::get_close_button);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"window_title",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_title"),_SCS("get_title"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"window_title",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),"set_title","get_title");
 }
 
 WindowDialog::WindowDialog() {
@@ -361,25 +361,25 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 
 void AcceptDialog::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_ok"),&AcceptDialog::_ok_pressed);
-	ClassDB::bind_method(_MD("get_ok"),&AcceptDialog::get_ok);
-	ClassDB::bind_method(_MD("get_label"),&AcceptDialog::get_label);
-	ClassDB::bind_method(_MD("set_hide_on_ok","enabled"),&AcceptDialog::set_hide_on_ok);
-	ClassDB::bind_method(_MD("get_hide_on_ok"),&AcceptDialog::get_hide_on_ok);
-	ClassDB::bind_method(_MD("add_button:Button","text","right","action"),&AcceptDialog::add_button,DEFVAL(false),DEFVAL(""));
-	ClassDB::bind_method(_MD("add_cancel:Button","name"),&AcceptDialog::add_cancel);
-	ClassDB::bind_method(_MD("_builtin_text_entered"),&AcceptDialog::_builtin_text_entered);
-	ClassDB::bind_method(_MD("register_text_enter:LineEdit","line_edit"),&AcceptDialog::register_text_enter);
-	ClassDB::bind_method(_MD("_custom_action"),&AcceptDialog::_custom_action);
-	ClassDB::bind_method(_MD("set_text","text"),&AcceptDialog::set_text);
-	ClassDB::bind_method(_MD("get_text"),&AcceptDialog::get_text);
+	ClassDB::bind_method(D_METHOD("_ok"),&AcceptDialog::_ok_pressed);
+	ClassDB::bind_method(D_METHOD("get_ok"),&AcceptDialog::get_ok);
+	ClassDB::bind_method(D_METHOD("get_label"),&AcceptDialog::get_label);
+	ClassDB::bind_method(D_METHOD("set_hide_on_ok","enabled"),&AcceptDialog::set_hide_on_ok);
+	ClassDB::bind_method(D_METHOD("get_hide_on_ok"),&AcceptDialog::get_hide_on_ok);
+	ClassDB::bind_method(D_METHOD("add_button:Button","text","right","action"),&AcceptDialog::add_button,DEFVAL(false),DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("add_cancel:Button","name"),&AcceptDialog::add_cancel);
+	ClassDB::bind_method(D_METHOD("_builtin_text_entered"),&AcceptDialog::_builtin_text_entered);
+	ClassDB::bind_method(D_METHOD("register_text_enter:LineEdit","line_edit"),&AcceptDialog::register_text_enter);
+	ClassDB::bind_method(D_METHOD("_custom_action"),&AcceptDialog::_custom_action);
+	ClassDB::bind_method(D_METHOD("set_text","text"),&AcceptDialog::set_text);
+	ClassDB::bind_method(D_METHOD("get_text"),&AcceptDialog::get_text);
 
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
 
 	ADD_GROUP("Dialog","dialog");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"dialog_text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_text"),_SCS("get_text"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"),_SCS("set_hide_on_ok"),_SCS("get_hide_on_ok") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"dialog_text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL),"set_text","get_text");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"),"set_hide_on_ok","get_hide_on_ok") ;
 
 }
 
@@ -429,7 +429,7 @@ AcceptDialog::~AcceptDialog()
 
 void ConfirmationDialog::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_cancel:Button"),&ConfirmationDialog::get_cancel);
+	ClassDB::bind_method(D_METHOD("get_cancel:Button"),&ConfirmationDialog::get_cancel);
 }
 
 Button *ConfirmationDialog::get_cancel() {

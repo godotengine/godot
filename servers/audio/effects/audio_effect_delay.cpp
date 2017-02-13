@@ -244,62 +244,62 @@ float AudioEffectDelay::get_feedback_lowpass() const{
 
 void AudioEffectDelay::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_dry","amount"),&AudioEffectDelay::set_dry);
-	ClassDB::bind_method(_MD("get_dry"),&AudioEffectDelay::get_dry);
+	ClassDB::bind_method(D_METHOD("set_dry","amount"),&AudioEffectDelay::set_dry);
+	ClassDB::bind_method(D_METHOD("get_dry"),&AudioEffectDelay::get_dry);
 
-	ClassDB::bind_method(_MD("set_tap1_active","amount"),&AudioEffectDelay::set_tap1_active);
-	ClassDB::bind_method(_MD("is_tap1_active"),&AudioEffectDelay::is_tap1_active);
+	ClassDB::bind_method(D_METHOD("set_tap1_active","amount"),&AudioEffectDelay::set_tap1_active);
+	ClassDB::bind_method(D_METHOD("is_tap1_active"),&AudioEffectDelay::is_tap1_active);
 
-	ClassDB::bind_method(_MD("set_tap1_delay_ms","amount"),&AudioEffectDelay::set_tap1_delay_ms);
-	ClassDB::bind_method(_MD("get_tap1_delay_ms"),&AudioEffectDelay::get_tap1_delay_ms);
+	ClassDB::bind_method(D_METHOD("set_tap1_delay_ms","amount"),&AudioEffectDelay::set_tap1_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_tap1_delay_ms"),&AudioEffectDelay::get_tap1_delay_ms);
 
-	ClassDB::bind_method(_MD("set_tap1_level_db","amount"),&AudioEffectDelay::set_tap1_level_db);
-	ClassDB::bind_method(_MD("get_tap1_level_db"),&AudioEffectDelay::get_tap1_level_db);
+	ClassDB::bind_method(D_METHOD("set_tap1_level_db","amount"),&AudioEffectDelay::set_tap1_level_db);
+	ClassDB::bind_method(D_METHOD("get_tap1_level_db"),&AudioEffectDelay::get_tap1_level_db);
 
-	ClassDB::bind_method(_MD("set_tap1_pan","amount"),&AudioEffectDelay::set_tap1_pan);
-	ClassDB::bind_method(_MD("get_tap1_pan"),&AudioEffectDelay::get_tap1_pan);
+	ClassDB::bind_method(D_METHOD("set_tap1_pan","amount"),&AudioEffectDelay::set_tap1_pan);
+	ClassDB::bind_method(D_METHOD("get_tap1_pan"),&AudioEffectDelay::get_tap1_pan);
 
-	ClassDB::bind_method(_MD("set_tap2_active","amount"),&AudioEffectDelay::set_tap2_active);
-	ClassDB::bind_method(_MD("is_tap2_active"),&AudioEffectDelay::is_tap2_active);
+	ClassDB::bind_method(D_METHOD("set_tap2_active","amount"),&AudioEffectDelay::set_tap2_active);
+	ClassDB::bind_method(D_METHOD("is_tap2_active"),&AudioEffectDelay::is_tap2_active);
 
-	ClassDB::bind_method(_MD("set_tap2_delay_ms","amount"),&AudioEffectDelay::set_tap2_delay_ms);
-	ClassDB::bind_method(_MD("get_tap2_delay_ms"),&AudioEffectDelay::get_tap2_delay_ms);
+	ClassDB::bind_method(D_METHOD("set_tap2_delay_ms","amount"),&AudioEffectDelay::set_tap2_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_tap2_delay_ms"),&AudioEffectDelay::get_tap2_delay_ms);
 
-	ClassDB::bind_method(_MD("set_tap2_level_db","amount"),&AudioEffectDelay::set_tap2_level_db);
-	ClassDB::bind_method(_MD("get_tap2_level_db"),&AudioEffectDelay::get_tap2_level_db);
+	ClassDB::bind_method(D_METHOD("set_tap2_level_db","amount"),&AudioEffectDelay::set_tap2_level_db);
+	ClassDB::bind_method(D_METHOD("get_tap2_level_db"),&AudioEffectDelay::get_tap2_level_db);
 
-	ClassDB::bind_method(_MD("set_tap2_pan","amount"),&AudioEffectDelay::set_tap2_pan);
-	ClassDB::bind_method(_MD("get_tap2_pan"),&AudioEffectDelay::get_tap2_pan);
+	ClassDB::bind_method(D_METHOD("set_tap2_pan","amount"),&AudioEffectDelay::set_tap2_pan);
+	ClassDB::bind_method(D_METHOD("get_tap2_pan"),&AudioEffectDelay::get_tap2_pan);
 
 
-	ClassDB::bind_method(_MD("set_feedback_active","amount"),&AudioEffectDelay::set_feedback_active);
-	ClassDB::bind_method(_MD("is_feedback_active"),&AudioEffectDelay::is_feedback_active);
+	ClassDB::bind_method(D_METHOD("set_feedback_active","amount"),&AudioEffectDelay::set_feedback_active);
+	ClassDB::bind_method(D_METHOD("is_feedback_active"),&AudioEffectDelay::is_feedback_active);
 
-	ClassDB::bind_method(_MD("set_feedback_delay_ms","amount"),&AudioEffectDelay::set_feedback_delay_ms);
-	ClassDB::bind_method(_MD("get_feedback_delay_ms"),&AudioEffectDelay::get_feedback_delay_ms);
+	ClassDB::bind_method(D_METHOD("set_feedback_delay_ms","amount"),&AudioEffectDelay::set_feedback_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_feedback_delay_ms"),&AudioEffectDelay::get_feedback_delay_ms);
 
-	ClassDB::bind_method(_MD("set_feedback_level_db","amount"),&AudioEffectDelay::set_feedback_level_db);
-	ClassDB::bind_method(_MD("get_feedback_level_db"),&AudioEffectDelay::get_feedback_level_db);
+	ClassDB::bind_method(D_METHOD("set_feedback_level_db","amount"),&AudioEffectDelay::set_feedback_level_db);
+	ClassDB::bind_method(D_METHOD("get_feedback_level_db"),&AudioEffectDelay::get_feedback_level_db);
 
-	ClassDB::bind_method(_MD("set_feedback_lowpass","amount"),&AudioEffectDelay::set_feedback_lowpass);
-	ClassDB::bind_method(_MD("get_feedback_lowpass"),&AudioEffectDelay::get_feedback_lowpass);
+	ClassDB::bind_method(D_METHOD("set_feedback_lowpass","amount"),&AudioEffectDelay::set_feedback_lowpass);
+	ClassDB::bind_method(D_METHOD("get_feedback_lowpass"),&AudioEffectDelay::get_feedback_lowpass);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_dry"),_SCS("get_dry"));
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_dry","get_dry");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"tap1/active"),_SCS("set_tap1_active"),_SCS("is_tap1_active"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),_SCS("set_tap1_delay_ms"),_SCS("get_tap1_delay_ms"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),_SCS("set_tap1_level_db"),_SCS("get_tap1_level_db"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/pan",PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_tap1_pan"),_SCS("get_tap1_pan"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"tap1/active"),"set_tap1_active","is_tap1_active");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),"set_tap1_delay_ms","get_tap1_delay_ms");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),"set_tap1_level_db","get_tap1_level_db");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap1/pan",PROPERTY_HINT_RANGE,"-1,1,0.01"),"set_tap1_pan","get_tap1_pan");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"tap2/active"),_SCS("set_tap2_active"),_SCS("is_tap2_active"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),_SCS("set_tap2_delay_ms"),_SCS("get_tap2_delay_ms"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),_SCS("set_tap2_level_db"),_SCS("get_tap2_level_db"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/pan",PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_tap2_pan"),_SCS("get_tap2_pan"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"tap2/active"),"set_tap2_active","is_tap2_active");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),"set_tap2_delay_ms","get_tap2_delay_ms");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),"set_tap2_level_db","get_tap2_level_db");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"tap2/pan",PROPERTY_HINT_RANGE,"-1,1,0.01"),"set_tap2_pan","get_tap2_pan");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"feedback/active"),_SCS("set_feedback_active"),_SCS("is_feedback_active"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),_SCS("set_feedback_delay_ms"),_SCS("get_feedback_delay_ms"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),_SCS("set_feedback_level_db"),_SCS("get_feedback_level_db"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/lowpass",PROPERTY_HINT_RANGE,"1,16000,1"),_SCS("set_feedback_lowpass"),_SCS("get_feedback_lowpass"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"feedback/active"),"set_feedback_active","is_feedback_active");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/delay_ms",PROPERTY_HINT_RANGE,"0,1500,1"),"set_feedback_delay_ms","get_feedback_delay_ms");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/level_db",PROPERTY_HINT_RANGE,"-60,0,0.01"),"set_feedback_level_db","get_feedback_level_db");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"feedback/lowpass",PROPERTY_HINT_RANGE,"1,16000,1"),"set_feedback_lowpass","get_feedback_lowpass");
 
 
 }

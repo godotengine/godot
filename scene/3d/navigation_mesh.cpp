@@ -208,19 +208,19 @@ Ref<Mesh> NavigationMesh::get_debug_mesh() {
 
 void NavigationMesh::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_vertices","vertices"),&NavigationMesh::set_vertices);
-	ClassDB::bind_method(_MD("get_vertices"),&NavigationMesh::get_vertices);
+	ClassDB::bind_method(D_METHOD("set_vertices","vertices"),&NavigationMesh::set_vertices);
+	ClassDB::bind_method(D_METHOD("get_vertices"),&NavigationMesh::get_vertices);
 
-	ClassDB::bind_method(_MD("add_polygon","polygon"),&NavigationMesh::add_polygon);
-	ClassDB::bind_method(_MD("get_polygon_count"),&NavigationMesh::get_polygon_count);
-	ClassDB::bind_method(_MD("get_polygon","idx"),&NavigationMesh::get_polygon);
-	ClassDB::bind_method(_MD("clear_polygons"),&NavigationMesh::clear_polygons);
+	ClassDB::bind_method(D_METHOD("add_polygon","polygon"),&NavigationMesh::add_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon_count"),&NavigationMesh::get_polygon_count);
+	ClassDB::bind_method(D_METHOD("get_polygon","idx"),&NavigationMesh::get_polygon);
+	ClassDB::bind_method(D_METHOD("clear_polygons"),&NavigationMesh::clear_polygons);
 
-	ClassDB::bind_method(_MD("_set_polygons","polygons"),&NavigationMesh::_set_polygons);
-	ClassDB::bind_method(_MD("_get_polygons"),&NavigationMesh::_get_polygons);
+	ClassDB::bind_method(D_METHOD("_set_polygons","polygons"),&NavigationMesh::_set_polygons);
+	ClassDB::bind_method(D_METHOD("_get_polygons"),&NavigationMesh::_get_polygons);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_vertices"),_SCS("get_vertices"));
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"polygons",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_polygons"),_SCS("_get_polygons"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY,"vertices",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_vertices","get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"polygons",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_polygons","_get_polygons");
 }
 
 NavigationMesh::NavigationMesh() {
@@ -394,14 +394,14 @@ String NavigationMeshInstance::get_configuration_warning() const {
 
 void NavigationMeshInstance::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_navigation_mesh","navmesh"),&NavigationMeshInstance::set_navigation_mesh);
-	ClassDB::bind_method(_MD("get_navigation_mesh"),&NavigationMeshInstance::get_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("set_navigation_mesh","navmesh"),&NavigationMeshInstance::set_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("get_navigation_mesh"),&NavigationMeshInstance::get_navigation_mesh);
 
-	ClassDB::bind_method(_MD("set_enabled","enabled"),&NavigationMeshInstance::set_enabled);
-	ClassDB::bind_method(_MD("is_enabled"),&NavigationMeshInstance::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled","enabled"),&NavigationMeshInstance::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"),&NavigationMeshInstance::is_enabled);
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"navmesh",PROPERTY_HINT_RESOURCE_TYPE,"NavigationMesh"),_SCS("set_navigation_mesh"),_SCS("get_navigation_mesh"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"navmesh",PROPERTY_HINT_RESOURCE_TYPE,"NavigationMesh"),"set_navigation_mesh","get_navigation_mesh");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),"set_enabled","is_enabled");
 }
 
 NavigationMeshInstance::NavigationMeshInstance() {

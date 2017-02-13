@@ -104,13 +104,13 @@ Array VisualScriptNode::_get_default_input_values() const {
 
 void VisualScriptNode::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_visual_script:VisualScript"),&VisualScriptNode::get_visual_script);
-	ClassDB::bind_method(_MD("set_default_input_value","port_idx","value:Variant"),&VisualScriptNode::set_default_input_value);
-	ClassDB::bind_method(_MD("get_default_input_value:Variant","port_idx"),&VisualScriptNode::get_default_input_value);
-	ClassDB::bind_method(_MD("_set_default_input_values","values"),&VisualScriptNode::_set_default_input_values);
-	ClassDB::bind_method(_MD("_get_default_input_values"),&VisualScriptNode::_get_default_input_values);
+	ClassDB::bind_method(D_METHOD("get_visual_script:VisualScript"),&VisualScriptNode::get_visual_script);
+	ClassDB::bind_method(D_METHOD("set_default_input_value","port_idx","value:Variant"),&VisualScriptNode::set_default_input_value);
+	ClassDB::bind_method(D_METHOD("get_default_input_value:Variant","port_idx"),&VisualScriptNode::get_default_input_value);
+	ClassDB::bind_method(D_METHOD("_set_default_input_values","values"),&VisualScriptNode::_set_default_input_values);
+	ClassDB::bind_method(D_METHOD("_get_default_input_values"),&VisualScriptNode::_get_default_input_values);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"_default_input_values",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_default_input_values"),_SCS("_get_default_input_values"));
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY,"_default_input_values",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_default_input_values","_get_default_input_values");
 	ADD_SIGNAL(MethodInfo("ports_changed"));
 }
 
@@ -1317,65 +1317,65 @@ void VisualScript::_bind_methods() {
 
 
 
-	ClassDB::bind_method(_MD("_node_ports_changed"),&VisualScript::_node_ports_changed);
+	ClassDB::bind_method(D_METHOD("_node_ports_changed"),&VisualScript::_node_ports_changed);
 
-	ClassDB::bind_method(_MD("add_function","name"),&VisualScript::add_function);
-	ClassDB::bind_method(_MD("has_function","name"),&VisualScript::has_function);	
-	ClassDB::bind_method(_MD("remove_function","name"),&VisualScript::remove_function);
-	ClassDB::bind_method(_MD("rename_function","name","new_name"),&VisualScript::rename_function);
-	ClassDB::bind_method(_MD("set_function_scroll","ofs"),&VisualScript::set_function_scroll);
-	ClassDB::bind_method(_MD("get_function_scroll"),&VisualScript::get_function_scroll);
+	ClassDB::bind_method(D_METHOD("add_function","name"),&VisualScript::add_function);
+	ClassDB::bind_method(D_METHOD("has_function","name"),&VisualScript::has_function);	
+	ClassDB::bind_method(D_METHOD("remove_function","name"),&VisualScript::remove_function);
+	ClassDB::bind_method(D_METHOD("rename_function","name","new_name"),&VisualScript::rename_function);
+	ClassDB::bind_method(D_METHOD("set_function_scroll","ofs"),&VisualScript::set_function_scroll);
+	ClassDB::bind_method(D_METHOD("get_function_scroll"),&VisualScript::get_function_scroll);
 
-	ClassDB::bind_method(_MD("add_node","func","id","node","pos"),&VisualScript::add_node,DEFVAL(Point2()));
-	ClassDB::bind_method(_MD("remove_node","func","id"),&VisualScript::remove_node);
-	ClassDB::bind_method(_MD("get_function_node_id","name"),&VisualScript::get_function_node_id);
+	ClassDB::bind_method(D_METHOD("add_node","func","id","node","pos"),&VisualScript::add_node,DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("remove_node","func","id"),&VisualScript::remove_node);
+	ClassDB::bind_method(D_METHOD("get_function_node_id","name"),&VisualScript::get_function_node_id);
 
-	ClassDB::bind_method(_MD("get_node","func","id"),&VisualScript::get_node);
-	ClassDB::bind_method(_MD("has_node","func","id"),&VisualScript::has_node);
-	ClassDB::bind_method(_MD("set_node_pos","func","id","pos"),&VisualScript::set_node_pos);
-	ClassDB::bind_method(_MD("get_node_pos","func","id"),&VisualScript::get_node_pos);
+	ClassDB::bind_method(D_METHOD("get_node","func","id"),&VisualScript::get_node);
+	ClassDB::bind_method(D_METHOD("has_node","func","id"),&VisualScript::has_node);
+	ClassDB::bind_method(D_METHOD("set_node_pos","func","id","pos"),&VisualScript::set_node_pos);
+	ClassDB::bind_method(D_METHOD("get_node_pos","func","id"),&VisualScript::get_node_pos);
 
-	ClassDB::bind_method(_MD("sequence_connect","func","from_node","from_output","to_node"),&VisualScript::sequence_connect);
-	ClassDB::bind_method(_MD("sequence_disconnect","func","from_node","from_output","to_node"),&VisualScript::sequence_disconnect);
-	ClassDB::bind_method(_MD("has_sequence_connection","func","from_node","from_output","to_node"),&VisualScript::has_sequence_connection);
+	ClassDB::bind_method(D_METHOD("sequence_connect","func","from_node","from_output","to_node"),&VisualScript::sequence_connect);
+	ClassDB::bind_method(D_METHOD("sequence_disconnect","func","from_node","from_output","to_node"),&VisualScript::sequence_disconnect);
+	ClassDB::bind_method(D_METHOD("has_sequence_connection","func","from_node","from_output","to_node"),&VisualScript::has_sequence_connection);
 
-	ClassDB::bind_method(_MD("data_connect","func","from_node","from_port","to_node","to_port"),&VisualScript::data_connect);
-	ClassDB::bind_method(_MD("data_disconnect","func","from_node","from_port","to_node","to_port"),&VisualScript::data_disconnect);
-	ClassDB::bind_method(_MD("has_data_connection","func","from_node","from_port","to_node","to_port"),&VisualScript::has_data_connection);
+	ClassDB::bind_method(D_METHOD("data_connect","func","from_node","from_port","to_node","to_port"),&VisualScript::data_connect);
+	ClassDB::bind_method(D_METHOD("data_disconnect","func","from_node","from_port","to_node","to_port"),&VisualScript::data_disconnect);
+	ClassDB::bind_method(D_METHOD("has_data_connection","func","from_node","from_port","to_node","to_port"),&VisualScript::has_data_connection);
 
-	ClassDB::bind_method(_MD("add_variable","name","default_value","export"),&VisualScript::add_variable,DEFVAL(Variant()),DEFVAL(false));
-	ClassDB::bind_method(_MD("has_variable","name"),&VisualScript::has_variable);
-	ClassDB::bind_method(_MD("remove_variable","name"),&VisualScript::remove_variable);
-	ClassDB::bind_method(_MD("set_variable_default_value","name","value"),&VisualScript::set_variable_default_value);
-	ClassDB::bind_method(_MD("get_variable_default_value","name"),&VisualScript::get_variable_default_value);
-	ClassDB::bind_method(_MD("set_variable_info","name","value"),&VisualScript::_set_variable_info);
-	ClassDB::bind_method(_MD("get_variable_info","name"),&VisualScript::_get_variable_info);
-	ClassDB::bind_method(_MD("set_variable_export","name","enable"),&VisualScript::set_variable_export);
-	ClassDB::bind_method(_MD("get_variable_export","name"),&VisualScript::get_variable_export);
-	ClassDB::bind_method(_MD("rename_variable","name","new_name"),&VisualScript::rename_variable);
+	ClassDB::bind_method(D_METHOD("add_variable","name","default_value","export"),&VisualScript::add_variable,DEFVAL(Variant()),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("has_variable","name"),&VisualScript::has_variable);
+	ClassDB::bind_method(D_METHOD("remove_variable","name"),&VisualScript::remove_variable);
+	ClassDB::bind_method(D_METHOD("set_variable_default_value","name","value"),&VisualScript::set_variable_default_value);
+	ClassDB::bind_method(D_METHOD("get_variable_default_value","name"),&VisualScript::get_variable_default_value);
+	ClassDB::bind_method(D_METHOD("set_variable_info","name","value"),&VisualScript::_set_variable_info);
+	ClassDB::bind_method(D_METHOD("get_variable_info","name"),&VisualScript::_get_variable_info);
+	ClassDB::bind_method(D_METHOD("set_variable_export","name","enable"),&VisualScript::set_variable_export);
+	ClassDB::bind_method(D_METHOD("get_variable_export","name"),&VisualScript::get_variable_export);
+	ClassDB::bind_method(D_METHOD("rename_variable","name","new_name"),&VisualScript::rename_variable);
 
-	ClassDB::bind_method(_MD("add_custom_signal","name"),&VisualScript::add_custom_signal);
-	ClassDB::bind_method(_MD("has_custom_signal","name"),&VisualScript::has_custom_signal);
-	ClassDB::bind_method(_MD("custom_signal_add_argument","name","type","argname","index"),&VisualScript::custom_signal_add_argument,DEFVAL(-1));
-	ClassDB::bind_method(_MD("custom_signal_set_argument_type","name","argidx","type"),&VisualScript::custom_signal_set_argument_type);
-	ClassDB::bind_method(_MD("custom_signal_get_argument_type","name","argidx"),&VisualScript::custom_signal_get_argument_type);
-	ClassDB::bind_method(_MD("custom_signal_set_argument_name","name","argidx","argname"),&VisualScript::custom_signal_set_argument_name);
-	ClassDB::bind_method(_MD("custom_signal_get_argument_name","name","argidx"),&VisualScript::custom_signal_get_argument_name);
-	ClassDB::bind_method(_MD("custom_signal_remove_argument","argidx"),&VisualScript::custom_signal_remove_argument);
-	ClassDB::bind_method(_MD("custom_signal_get_argument_count","name"),&VisualScript::custom_signal_get_argument_count);
-	ClassDB::bind_method(_MD("custom_signal_swap_argument","name","argidx","withidx"),&VisualScript::custom_signal_swap_argument);
-	ClassDB::bind_method(_MD("remove_custom_signal","name"),&VisualScript::remove_custom_signal);
-	ClassDB::bind_method(_MD("rename_custom_signal","name","new_name"),&VisualScript::rename_custom_signal);
+	ClassDB::bind_method(D_METHOD("add_custom_signal","name"),&VisualScript::add_custom_signal);
+	ClassDB::bind_method(D_METHOD("has_custom_signal","name"),&VisualScript::has_custom_signal);
+	ClassDB::bind_method(D_METHOD("custom_signal_add_argument","name","type","argname","index"),&VisualScript::custom_signal_add_argument,DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("custom_signal_set_argument_type","name","argidx","type"),&VisualScript::custom_signal_set_argument_type);
+	ClassDB::bind_method(D_METHOD("custom_signal_get_argument_type","name","argidx"),&VisualScript::custom_signal_get_argument_type);
+	ClassDB::bind_method(D_METHOD("custom_signal_set_argument_name","name","argidx","argname"),&VisualScript::custom_signal_set_argument_name);
+	ClassDB::bind_method(D_METHOD("custom_signal_get_argument_name","name","argidx"),&VisualScript::custom_signal_get_argument_name);
+	ClassDB::bind_method(D_METHOD("custom_signal_remove_argument","argidx"),&VisualScript::custom_signal_remove_argument);
+	ClassDB::bind_method(D_METHOD("custom_signal_get_argument_count","name"),&VisualScript::custom_signal_get_argument_count);
+	ClassDB::bind_method(D_METHOD("custom_signal_swap_argument","name","argidx","withidx"),&VisualScript::custom_signal_swap_argument);
+	ClassDB::bind_method(D_METHOD("remove_custom_signal","name"),&VisualScript::remove_custom_signal);
+	ClassDB::bind_method(D_METHOD("rename_custom_signal","name","new_name"),&VisualScript::rename_custom_signal);
 
-	//ClassDB::bind_method(_MD("set_variable_info","name","info"),&VScript::set_variable_info);
-	//ClassDB::bind_method(_MD("get_variable_info","name"),&VScript::set_variable_info);
+	//ClassDB::bind_method(D_METHOD("set_variable_info","name","info"),&VScript::set_variable_info);
+	//ClassDB::bind_method(D_METHOD("get_variable_info","name"),&VScript::set_variable_info);
 
-	ClassDB::bind_method(_MD("set_instance_base_type","type"),&VisualScript::set_instance_base_type);
+	ClassDB::bind_method(D_METHOD("set_instance_base_type","type"),&VisualScript::set_instance_base_type);
 
-	ClassDB::bind_method(_MD("_set_data","data"),&VisualScript::_set_data);
-	ClassDB::bind_method(_MD("_get_data"),&VisualScript::_get_data);
+	ClassDB::bind_method(D_METHOD("_set_data","data"),&VisualScript::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"),&VisualScript::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_data"),_SCS("_get_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_data","_get_data");
 
 	ADD_SIGNAL(MethodInfo("node_ports_changed",PropertyInfo(Variant::STRING,"function"),PropertyInfo(Variant::INT,"id")));
 }
@@ -2436,9 +2436,9 @@ Variant VisualScriptFunctionState::resume(Array p_args) {
 
 void VisualScriptFunctionState::_bind_methods() {
 
-	ClassDB::bind_method(_MD("connect_to_signal","obj","signals","args"),&VisualScriptFunctionState::connect_to_signal);
-	ClassDB::bind_method(_MD("resume:Array","args"),&VisualScriptFunctionState::resume,DEFVAL(Variant()));
-	ClassDB::bind_method(_MD("is_valid"),&VisualScriptFunctionState::is_valid);
+	ClassDB::bind_method(D_METHOD("connect_to_signal","obj","signals","args"),&VisualScriptFunctionState::connect_to_signal);
+	ClassDB::bind_method(D_METHOD("resume:Array","args"),&VisualScriptFunctionState::resume,DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("is_valid"),&VisualScriptFunctionState::is_valid);
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&VisualScriptFunctionState::_signal_callback,MethodInfo("_signal_callback"));
 }
 

@@ -210,38 +210,38 @@ void RayCast::clear_exceptions(){
 void RayCast::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_enabled","enabled"),&RayCast::set_enabled);
-	ClassDB::bind_method(_MD("is_enabled"),&RayCast::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled","enabled"),&RayCast::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"),&RayCast::is_enabled);
 
-	ClassDB::bind_method(_MD("set_cast_to","local_point"),&RayCast::set_cast_to);
-	ClassDB::bind_method(_MD("get_cast_to"),&RayCast::get_cast_to);
+	ClassDB::bind_method(D_METHOD("set_cast_to","local_point"),&RayCast::set_cast_to);
+	ClassDB::bind_method(D_METHOD("get_cast_to"),&RayCast::get_cast_to);
 
-	ClassDB::bind_method(_MD("is_colliding"),&RayCast::is_colliding);
-	ClassDB::bind_method(_MD("force_raycast_update"),&RayCast::force_raycast_update);
+	ClassDB::bind_method(D_METHOD("is_colliding"),&RayCast::is_colliding);
+	ClassDB::bind_method(D_METHOD("force_raycast_update"),&RayCast::force_raycast_update);
 
-	ClassDB::bind_method(_MD("get_collider"),&RayCast::get_collider);
-	ClassDB::bind_method(_MD("get_collider_shape"),&RayCast::get_collider_shape);
-	ClassDB::bind_method(_MD("get_collision_point"),&RayCast::get_collision_point);
-	ClassDB::bind_method(_MD("get_collision_normal"),&RayCast::get_collision_normal);
+	ClassDB::bind_method(D_METHOD("get_collider"),&RayCast::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"),&RayCast::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_point"),&RayCast::get_collision_point);
+	ClassDB::bind_method(D_METHOD("get_collision_normal"),&RayCast::get_collision_normal);
 
-	ClassDB::bind_method(_MD("add_exception_rid","rid"),&RayCast::add_exception_rid);
-	ClassDB::bind_method(_MD("add_exception","node"),&RayCast::add_exception);
+	ClassDB::bind_method(D_METHOD("add_exception_rid","rid"),&RayCast::add_exception_rid);
+	ClassDB::bind_method(D_METHOD("add_exception","node"),&RayCast::add_exception);
 
-	ClassDB::bind_method(_MD("remove_exception_rid","rid"),&RayCast::remove_exception_rid);
-	ClassDB::bind_method(_MD("remove_exception","node"),&RayCast::remove_exception);
+	ClassDB::bind_method(D_METHOD("remove_exception_rid","rid"),&RayCast::remove_exception_rid);
+	ClassDB::bind_method(D_METHOD("remove_exception","node"),&RayCast::remove_exception);
 
-	ClassDB::bind_method(_MD("clear_exceptions"),&RayCast::clear_exceptions);
+	ClassDB::bind_method(D_METHOD("clear_exceptions"),&RayCast::clear_exceptions);
 
-	ClassDB::bind_method(_MD("set_layer_mask","mask"),&RayCast::set_layer_mask);
-	ClassDB::bind_method(_MD("get_layer_mask"),&RayCast::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_layer_mask","mask"),&RayCast::set_layer_mask);
+	ClassDB::bind_method(D_METHOD("get_layer_mask"),&RayCast::get_layer_mask);
 
-	ClassDB::bind_method(_MD("set_type_mask","mask"),&RayCast::set_type_mask);
-	ClassDB::bind_method(_MD("get_type_mask"),&RayCast::get_type_mask);
+	ClassDB::bind_method(D_METHOD("set_type_mask","mask"),&RayCast::set_type_mask);
+	ClassDB::bind_method(D_METHOD("get_type_mask"),&RayCast::get_type_mask);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3,"cast_to"),_SCS("set_cast_to"),_SCS("get_cast_to"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layer_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"type_mask",PROPERTY_HINT_FLAGS,"Static,Kinematic,Rigid,Character,Area"),_SCS("set_type_mask"),_SCS("get_type_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),"set_enabled","is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3,"cast_to"),"set_cast_to","get_cast_to");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layer_mask",PROPERTY_HINT_LAYERS_3D_PHYSICS),"set_layer_mask","get_layer_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"type_mask",PROPERTY_HINT_FLAGS,"Static,Kinematic,Rigid,Character,Area"),"set_type_mask","get_type_mask");
 }
 
 RayCast::RayCast() {

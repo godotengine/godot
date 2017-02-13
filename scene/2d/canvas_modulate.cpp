@@ -62,10 +62,10 @@ void CanvasModulate::_notification(int p_what) {
 
 void CanvasModulate::_bind_methods(){
 
-	ClassDB::bind_method(_MD("set_color","color"),&CanvasModulate::set_color);
-	ClassDB::bind_method(_MD("get_color"),&CanvasModulate::get_color);
+	ClassDB::bind_method(D_METHOD("set_color","color"),&CanvasModulate::set_color);
+	ClassDB::bind_method(D_METHOD("get_color"),&CanvasModulate::get_color);
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"color"),"set_color","get_color");
 }
 
 

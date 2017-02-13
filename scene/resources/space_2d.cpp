@@ -48,10 +48,10 @@ bool Space2D::is_active() const {
 
 void Space2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_active","active"),&Space2D::set_active);
-	ClassDB::bind_method(_MD("is_active"),&Space2D::is_active);
+	ClassDB::bind_method(D_METHOD("set_active","active"),&Space2D::set_active);
+	ClassDB::bind_method(D_METHOD("is_active"),&Space2D::is_active);
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"active"),_SCS("set_active"),_SCS("is_active") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"active"),"set_active","is_active") ;
 
 }
 

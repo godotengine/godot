@@ -730,20 +730,20 @@ Vector3 Navigation::get_up_vector() const{
 
 void Navigation::_bind_methods() {
 
-	ClassDB::bind_method(_MD("navmesh_create","mesh:NavigationMesh","xform","owner"),&Navigation::navmesh_create,DEFVAL(Variant()));
-	ClassDB::bind_method(_MD("navmesh_set_transform","id","xform"),&Navigation::navmesh_set_transform);
-	ClassDB::bind_method(_MD("navmesh_remove","id"),&Navigation::navmesh_remove);
+	ClassDB::bind_method(D_METHOD("navmesh_create","mesh:NavigationMesh","xform","owner"),&Navigation::navmesh_create,DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("navmesh_set_transform","id","xform"),&Navigation::navmesh_set_transform);
+	ClassDB::bind_method(D_METHOD("navmesh_remove","id"),&Navigation::navmesh_remove);
 
-	ClassDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation::get_simple_path,DEFVAL(true));
-	ClassDB::bind_method(_MD("get_closest_point_to_segment","start","end","use_collision"),&Navigation::get_closest_point_to_segment,DEFVAL(false));
-	ClassDB::bind_method(_MD("get_closest_point","to_point"),&Navigation::get_closest_point);
-	ClassDB::bind_method(_MD("get_closest_point_normal","to_point"),&Navigation::get_closest_point_normal);
-	ClassDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation::get_closest_point_owner);
+	ClassDB::bind_method(D_METHOD("get_simple_path","start","end","optimize"),&Navigation::get_simple_path,DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment","start","end","use_collision"),&Navigation::get_closest_point_to_segment,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_closest_point","to_point"),&Navigation::get_closest_point);
+	ClassDB::bind_method(D_METHOD("get_closest_point_normal","to_point"),&Navigation::get_closest_point_normal);
+	ClassDB::bind_method(D_METHOD("get_closest_point_owner","to_point"),&Navigation::get_closest_point_owner);
 
-	ClassDB::bind_method(_MD("set_up_vector","up"),&Navigation::set_up_vector);
-	ClassDB::bind_method(_MD("get_up_vector"),&Navigation::get_up_vector);
+	ClassDB::bind_method(D_METHOD("set_up_vector","up"),&Navigation::set_up_vector);
+	ClassDB::bind_method(D_METHOD("get_up_vector"),&Navigation::get_up_vector);
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"up_vector"),_SCS("set_up_vector"),_SCS("get_up_vector"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"up_vector"),"set_up_vector","get_up_vector");
 }
 
 Navigation::Navigation() {

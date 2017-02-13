@@ -126,12 +126,12 @@ Error PacketPeer::_get_packet_error() const {
 
 void PacketPeer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_var:Variant"),&PacketPeer::_bnd_get_var);
-	ClassDB::bind_method(_MD("put_var", "var:Variant"),&PacketPeer::put_var);
-	ClassDB::bind_method(_MD("get_packet"),&PacketPeer::_get_packet);
-	ClassDB::bind_method(_MD("put_packet:Error", "buffer"),&PacketPeer::_put_packet);
-	ClassDB::bind_method(_MD("get_packet_error:Error"),&PacketPeer::_get_packet_error);
-	ClassDB::bind_method(_MD("get_available_packet_count"),&PacketPeer::get_available_packet_count);
+	ClassDB::bind_method(D_METHOD("get_var:Variant"),&PacketPeer::_bnd_get_var);
+	ClassDB::bind_method(D_METHOD("put_var", "var:Variant"),&PacketPeer::put_var);
+	ClassDB::bind_method(D_METHOD("get_packet"),&PacketPeer::_get_packet);
+	ClassDB::bind_method(D_METHOD("put_packet:Error", "buffer"),&PacketPeer::_put_packet);
+	ClassDB::bind_method(D_METHOD("get_packet_error:Error"),&PacketPeer::_get_packet_error);
+	ClassDB::bind_method(D_METHOD("get_available_packet_count"),&PacketPeer::get_available_packet_count);
 };
 
 /***************/
@@ -145,7 +145,7 @@ void PacketPeerStream::_set_stream_peer(REF p_peer) {
 
 void PacketPeerStream::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_stream_peer","peer:StreamPeer"),&PacketPeerStream::_set_stream_peer);
+	ClassDB::bind_method(D_METHOD("set_stream_peer","peer:StreamPeer"),&PacketPeerStream::_set_stream_peer);
 }
 
 Error PacketPeerStream::_poll_buffer() const {

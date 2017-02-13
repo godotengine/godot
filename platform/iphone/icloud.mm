@@ -44,14 +44,14 @@ extern "C" {
 ICloud* ICloud::instance = NULL;
 
 void ICloud::_bind_methods() {
-	ClassDB::bind_method(_MD("remove_key"),&ICloud::remove_key);
-	ClassDB::bind_method(_MD("set_key_values"),&ICloud::set_key_values);
-	ClassDB::bind_method(_MD("get_key_value"),&ICloud::get_key_value);
-	ClassDB::bind_method(_MD("synchronize_key_values"),&ICloud::synchronize_key_values);
-	ClassDB::bind_method(_MD("get_all_key_values"),&ICloud::get_all_key_values);
+	ClassDB::bind_method(D_METHOD("remove_key"),&ICloud::remove_key);
+	ClassDB::bind_method(D_METHOD("set_key_values"),&ICloud::set_key_values);
+	ClassDB::bind_method(D_METHOD("get_key_value"),&ICloud::get_key_value);
+	ClassDB::bind_method(D_METHOD("synchronize_key_values"),&ICloud::synchronize_key_values);
+	ClassDB::bind_method(D_METHOD("get_all_key_values"),&ICloud::get_all_key_values);
 
-	ClassDB::bind_method(_MD("get_pending_event_count"),&ICloud::get_pending_event_count);
-	ClassDB::bind_method(_MD("pop_pending_event"),&ICloud::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&ICloud::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"),&ICloud::pop_pending_event);
 };
 
 int ICloud::get_pending_event_count() {

@@ -333,60 +333,60 @@ Vector2 Polygon2D::get_offset() const {
 
 void Polygon2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_polygon","polygon"),&Polygon2D::set_polygon);
-	ClassDB::bind_method(_MD("get_polygon"),&Polygon2D::get_polygon);
+	ClassDB::bind_method(D_METHOD("set_polygon","polygon"),&Polygon2D::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon"),&Polygon2D::get_polygon);
 
-	ClassDB::bind_method(_MD("set_uv","uv"),&Polygon2D::set_uv);
-	ClassDB::bind_method(_MD("get_uv"),&Polygon2D::get_uv);
+	ClassDB::bind_method(D_METHOD("set_uv","uv"),&Polygon2D::set_uv);
+	ClassDB::bind_method(D_METHOD("get_uv"),&Polygon2D::get_uv);
 
-	ClassDB::bind_method(_MD("set_color","color"),&Polygon2D::set_color);
-	ClassDB::bind_method(_MD("get_color"),&Polygon2D::get_color);
+	ClassDB::bind_method(D_METHOD("set_color","color"),&Polygon2D::set_color);
+	ClassDB::bind_method(D_METHOD("get_color"),&Polygon2D::get_color);
 
-	ClassDB::bind_method(_MD("set_vertex_colors","vertex_colors"),&Polygon2D::set_vertex_colors);
-	ClassDB::bind_method(_MD("get_vertex_colors"),&Polygon2D::get_vertex_colors);
+	ClassDB::bind_method(D_METHOD("set_vertex_colors","vertex_colors"),&Polygon2D::set_vertex_colors);
+	ClassDB::bind_method(D_METHOD("get_vertex_colors"),&Polygon2D::get_vertex_colors);
 
-	ClassDB::bind_method(_MD("set_texture","texture"),&Polygon2D::set_texture);
-	ClassDB::bind_method(_MD("get_texture"),&Polygon2D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture","texture"),&Polygon2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"),&Polygon2D::get_texture);
 
-	ClassDB::bind_method(_MD("set_texture_offset","texture_offset"),&Polygon2D::set_texture_offset);
-	ClassDB::bind_method(_MD("get_texture_offset"),&Polygon2D::get_texture_offset);
+	ClassDB::bind_method(D_METHOD("set_texture_offset","texture_offset"),&Polygon2D::set_texture_offset);
+	ClassDB::bind_method(D_METHOD("get_texture_offset"),&Polygon2D::get_texture_offset);
 
-	ClassDB::bind_method(_MD("set_texture_rotation","texture_rotation"),&Polygon2D::set_texture_rotation);
-	ClassDB::bind_method(_MD("get_texture_rotation"),&Polygon2D::get_texture_rotation);
+	ClassDB::bind_method(D_METHOD("set_texture_rotation","texture_rotation"),&Polygon2D::set_texture_rotation);
+	ClassDB::bind_method(D_METHOD("get_texture_rotation"),&Polygon2D::get_texture_rotation);
 
-	ClassDB::bind_method(_MD("_set_texture_rotationd","texture_rotation"),&Polygon2D::_set_texture_rotationd);
-	ClassDB::bind_method(_MD("_get_texture_rotationd"),&Polygon2D::_get_texture_rotationd);
+	ClassDB::bind_method(D_METHOD("_set_texture_rotationd","texture_rotation"),&Polygon2D::_set_texture_rotationd);
+	ClassDB::bind_method(D_METHOD("_get_texture_rotationd"),&Polygon2D::_get_texture_rotationd);
 
-	ClassDB::bind_method(_MD("set_texture_scale","texture_scale"),&Polygon2D::set_texture_scale);
-	ClassDB::bind_method(_MD("get_texture_scale"),&Polygon2D::get_texture_scale);
-
-
-	ClassDB::bind_method(_MD("set_invert","invert"),&Polygon2D::set_invert);
-	ClassDB::bind_method(_MD("get_invert"),&Polygon2D::get_invert);
-
-	ClassDB::bind_method(_MD("set_invert_border","invert_border"),&Polygon2D::set_invert_border);
-	ClassDB::bind_method(_MD("get_invert_border"),&Polygon2D::get_invert_border);
-
-	ClassDB::bind_method(_MD("set_offset","offset"),&Polygon2D::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&Polygon2D::get_offset);
+	ClassDB::bind_method(D_METHOD("set_texture_scale","texture_scale"),&Polygon2D::set_texture_scale);
+	ClassDB::bind_method(D_METHOD("get_texture_scale"),&Polygon2D::get_texture_scale);
 
 
+	ClassDB::bind_method(D_METHOD("set_invert","invert"),&Polygon2D::set_invert);
+	ClassDB::bind_method(D_METHOD("get_invert"),&Polygon2D::get_invert);
 
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"uv"),_SCS("set_uv"),_SCS("get_uv"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
+	ClassDB::bind_method(D_METHOD("set_invert_border","invert_border"),&Polygon2D::set_invert_border);
+	ClassDB::bind_method(D_METHOD("get_invert_border"),&Polygon2D::get_invert_border);
+
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&Polygon2D::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&Polygon2D::get_offset);
+
+
+
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),"set_polygon","get_polygon");
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"uv"),"set_uv","get_uv");
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),"set_color","get_color");
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_COLOR_ARRAY,"vertex_colors"),"set_vertex_colors","get_vertex_colors");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),"set_offset","get_offset");
 	ADD_GROUP("Texture","");
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture");
 	ADD_GROUP("Texture","texture_");
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_scale"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture_rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_texture_rotationd"),_SCS("_get_texture_rotationd"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_offset"),"set_texture_offset","get_texture_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_scale"),"set_texture_scale","get_texture_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture_rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),"_set_texture_rotationd","_get_texture_rotationd");
 
 	ADD_GROUP("Invert","invert_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert_enable"),_SCS("set_invert"),_SCS("get_invert"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert_border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),_SCS("set_invert_border"),_SCS("get_invert_border"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert_enable"),"set_invert","get_invert");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert_border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),"set_invert_border","get_invert_border");
 
 }
 

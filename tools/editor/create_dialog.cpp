@@ -624,15 +624,15 @@ void CreateDialog::drop_data_fw(const Point2& p_point,const Variant& p_data,Cont
 
 void CreateDialog::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&CreateDialog::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&CreateDialog::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&CreateDialog::_sbox_input);
-	ClassDB::bind_method(_MD("_item_selected"),&CreateDialog::_item_selected);
-	ClassDB::bind_method(_MD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
-	ClassDB::bind_method(_MD("_history_selected"),&CreateDialog::_history_selected);
-	ClassDB::bind_method(_MD("_favorite_selected"),&CreateDialog::_favorite_selected);
-	ClassDB::bind_method(_MD("_history_activated"),&CreateDialog::_history_activated);
-	ClassDB::bind_method(_MD("_favorite_activated"),&CreateDialog::_favorite_activated);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&CreateDialog::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&CreateDialog::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&CreateDialog::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_item_selected"),&CreateDialog::_item_selected);
+	ClassDB::bind_method(D_METHOD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
+	ClassDB::bind_method(D_METHOD("_history_selected"),&CreateDialog::_history_selected);
+	ClassDB::bind_method(D_METHOD("_favorite_selected"),&CreateDialog::_favorite_selected);
+	ClassDB::bind_method(D_METHOD("_history_activated"),&CreateDialog::_history_activated);
+	ClassDB::bind_method(D_METHOD("_favorite_activated"),&CreateDialog::_favorite_activated);
 
 
 	ClassDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);

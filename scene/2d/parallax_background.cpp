@@ -189,28 +189,28 @@ Vector2 ParallaxBackground::get_final_offset() const {
 
 void ParallaxBackground::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_camera_moved"),&ParallaxBackground::_camera_moved);
-	ClassDB::bind_method(_MD("set_scroll_offset","ofs"),&ParallaxBackground::set_scroll_offset);
-	ClassDB::bind_method(_MD("get_scroll_offset"),&ParallaxBackground::get_scroll_offset);
-	ClassDB::bind_method(_MD("set_scroll_base_offset","ofs"),&ParallaxBackground::set_scroll_base_offset);
-	ClassDB::bind_method(_MD("get_scroll_base_offset"),&ParallaxBackground::get_scroll_base_offset);
-	ClassDB::bind_method(_MD("set_scroll_base_scale","scale"),&ParallaxBackground::set_scroll_base_scale);
-	ClassDB::bind_method(_MD("get_scroll_base_scale"),&ParallaxBackground::get_scroll_base_scale);
-	ClassDB::bind_method(_MD("set_limit_begin","ofs"),&ParallaxBackground::set_limit_begin);
-	ClassDB::bind_method(_MD("get_limit_begin"),&ParallaxBackground::get_limit_begin);
-	ClassDB::bind_method(_MD("set_limit_end","ofs"),&ParallaxBackground::set_limit_end);
-	ClassDB::bind_method(_MD("get_limit_end"),&ParallaxBackground::get_limit_end);
-    ClassDB::bind_method(_MD("set_ignore_camera_zoom","ignore"), &ParallaxBackground::set_ignore_camera_zoom);
-    ClassDB::bind_method(_MD("is_ignore_camera_zoom"), &ParallaxBackground::is_ignore_camera_zoom);
+	ClassDB::bind_method(D_METHOD("_camera_moved"),&ParallaxBackground::_camera_moved);
+	ClassDB::bind_method(D_METHOD("set_scroll_offset","ofs"),&ParallaxBackground::set_scroll_offset);
+	ClassDB::bind_method(D_METHOD("get_scroll_offset"),&ParallaxBackground::get_scroll_offset);
+	ClassDB::bind_method(D_METHOD("set_scroll_base_offset","ofs"),&ParallaxBackground::set_scroll_base_offset);
+	ClassDB::bind_method(D_METHOD("get_scroll_base_offset"),&ParallaxBackground::get_scroll_base_offset);
+	ClassDB::bind_method(D_METHOD("set_scroll_base_scale","scale"),&ParallaxBackground::set_scroll_base_scale);
+	ClassDB::bind_method(D_METHOD("get_scroll_base_scale"),&ParallaxBackground::get_scroll_base_scale);
+	ClassDB::bind_method(D_METHOD("set_limit_begin","ofs"),&ParallaxBackground::set_limit_begin);
+	ClassDB::bind_method(D_METHOD("get_limit_begin"),&ParallaxBackground::get_limit_begin);
+	ClassDB::bind_method(D_METHOD("set_limit_end","ofs"),&ParallaxBackground::set_limit_end);
+	ClassDB::bind_method(D_METHOD("get_limit_end"),&ParallaxBackground::get_limit_end);
+    ClassDB::bind_method(D_METHOD("set_ignore_camera_zoom","ignore"), &ParallaxBackground::set_ignore_camera_zoom);
+    ClassDB::bind_method(D_METHOD("is_ignore_camera_zoom"), &ParallaxBackground::is_ignore_camera_zoom);
 
 
 	ADD_GROUP("Scroll","scroll_");
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_offset"),_SCS("set_scroll_offset"),_SCS("get_scroll_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_base_offset"),_SCS("set_scroll_base_offset"),_SCS("get_scroll_base_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_base_scale"),_SCS("set_scroll_base_scale"),_SCS("get_scroll_base_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_limit_begin"),_SCS("set_limit_begin"),_SCS("get_limit_begin"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_limit_end"),_SCS("set_limit_end"),_SCS("get_limit_end"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "scroll_ignore_camera_zoom"), _SCS("set_ignore_camera_zoom"), _SCS("is_ignore_camera_zoom"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_offset"),"set_scroll_offset","get_scroll_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_base_offset"),"set_scroll_base_offset","get_scroll_base_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_base_scale"),"set_scroll_base_scale","get_scroll_base_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_limit_begin"),"set_limit_begin","get_limit_begin");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"scroll_limit_end"),"set_limit_end","get_limit_end");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "scroll_ignore_camera_zoom"), "set_ignore_camera_zoom", "is_ignore_camera_zoom");
 
 }
 

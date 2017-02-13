@@ -146,10 +146,10 @@ RES Listener::_get_gizmo_geometry() const {
 
 void Listener::_bind_methods() {
 
-	ClassDB::bind_method( _MD("make_current"),&Listener::make_current );
-	ClassDB::bind_method( _MD("clear_current"),&Listener::clear_current );
-	ClassDB::bind_method( _MD("is_current"),&Listener::is_current );
-	ClassDB::bind_method( _MD("get_listener_transform"),&Listener::get_listener_transform );
+	ClassDB::bind_method( D_METHOD("make_current"),&Listener::make_current );
+	ClassDB::bind_method( D_METHOD("clear_current"),&Listener::clear_current );
+	ClassDB::bind_method( D_METHOD("is_current"),&Listener::is_current );
+	ClassDB::bind_method( D_METHOD("get_listener_transform"),&Listener::get_listener_transform );
 }
 
 Listener::Listener() {

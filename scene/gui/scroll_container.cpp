@@ -459,21 +459,21 @@ String ScrollContainer::get_configuration_warning() const {
 
 void ScrollContainer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_scroll_moved"),&ScrollContainer::_scroll_moved);
-	ClassDB::bind_method(_MD("_gui_input"),&ScrollContainer::_gui_input);
-	ClassDB::bind_method(_MD("set_enable_h_scroll","enable"),&ScrollContainer::set_enable_h_scroll);
-	ClassDB::bind_method(_MD("is_h_scroll_enabled"),&ScrollContainer::is_h_scroll_enabled);
-	ClassDB::bind_method(_MD("set_enable_v_scroll","enable"),&ScrollContainer::set_enable_v_scroll);
-	ClassDB::bind_method(_MD("is_v_scroll_enabled"),&ScrollContainer::is_v_scroll_enabled);
-	ClassDB::bind_method(_MD("_update_scrollbar_pos"),&ScrollContainer::_update_scrollbar_pos);
-	ClassDB::bind_method(_MD("set_h_scroll","val"),&ScrollContainer::set_h_scroll);
-	ClassDB::bind_method(_MD("get_h_scroll"),&ScrollContainer::get_h_scroll);
-	ClassDB::bind_method(_MD("set_v_scroll","val"),&ScrollContainer::set_v_scroll);
-	ClassDB::bind_method(_MD("get_v_scroll"),&ScrollContainer::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("_scroll_moved"),&ScrollContainer::_scroll_moved);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ScrollContainer::_gui_input);
+	ClassDB::bind_method(D_METHOD("set_enable_h_scroll","enable"),&ScrollContainer::set_enable_h_scroll);
+	ClassDB::bind_method(D_METHOD("is_h_scroll_enabled"),&ScrollContainer::is_h_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("set_enable_v_scroll","enable"),&ScrollContainer::set_enable_v_scroll);
+	ClassDB::bind_method(D_METHOD("is_v_scroll_enabled"),&ScrollContainer::is_v_scroll_enabled);
+	ClassDB::bind_method(D_METHOD("_update_scrollbar_pos"),&ScrollContainer::_update_scrollbar_pos);
+	ClassDB::bind_method(D_METHOD("set_h_scroll","val"),&ScrollContainer::set_h_scroll);
+	ClassDB::bind_method(D_METHOD("get_h_scroll"),&ScrollContainer::get_h_scroll);
+	ClassDB::bind_method(D_METHOD("set_v_scroll","val"),&ScrollContainer::set_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"),&ScrollContainer::get_v_scroll);
 
 	ADD_GROUP("Scroll","scroll_");
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_horizontal"), _SCS("set_enable_h_scroll"),_SCS("is_h_scroll_enabled"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_vertical"), _SCS("set_enable_v_scroll"),_SCS("is_v_scroll_enabled"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_horizontal"), "set_enable_h_scroll","is_h_scroll_enabled");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_vertical"), "set_enable_v_scroll","is_v_scroll_enabled");
 
 };
 

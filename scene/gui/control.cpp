@@ -2448,125 +2448,125 @@ bool Control::is_clipping_contents() {
 void Control::_bind_methods() {
 
 
-	//ClassDB::bind_method(_MD("_window_resize_event"),&Control::_window_resize_event);
-	ClassDB::bind_method(_MD("_size_changed"),&Control::_size_changed);
-	ClassDB::bind_method(_MD("_update_minimum_size"),&Control::_update_minimum_size);
+	//ClassDB::bind_method(D_METHOD("_window_resize_event"),&Control::_window_resize_event);
+	ClassDB::bind_method(D_METHOD("_size_changed"),&Control::_size_changed);
+	ClassDB::bind_method(D_METHOD("_update_minimum_size"),&Control::_update_minimum_size);
 
-	ClassDB::bind_method(_MD("accept_event"),&Control::accept_event);
-	ClassDB::bind_method(_MD("get_minimum_size"),&Control::get_minimum_size);
-	ClassDB::bind_method(_MD("get_combined_minimum_size"),&Control::get_combined_minimum_size);
-	ClassDB::bind_method(_MD("set_anchor","margin","anchor_mode","keep_margin"),&Control::set_anchor,DEFVAL(false));
-	ClassDB::bind_method(_MD("_set_anchor","margin","anchor_mode"),&Control::_set_anchor);
-	ClassDB::bind_method(_MD("get_anchor","margin"),&Control::get_anchor);
-	ClassDB::bind_method(_MD("set_margin","margin","offset"),&Control::set_margin);
-	ClassDB::bind_method(_MD("set_anchor_and_margin","margin","anchor_mode","offset"),&Control::set_anchor_and_margin);
-	ClassDB::bind_method(_MD("set_begin","pos"),&Control::set_begin);
-	ClassDB::bind_method(_MD("set_end","pos"),&Control::set_end);
-	ClassDB::bind_method(_MD("set_pos","pos"),&Control::set_pos);
-	ClassDB::bind_method(_MD("set_size","size"),&Control::set_size);
-	ClassDB::bind_method(_MD("set_custom_minimum_size","size"),&Control::set_custom_minimum_size);
-	ClassDB::bind_method(_MD("set_global_pos","pos"),&Control::set_global_pos);
-	ClassDB::bind_method(_MD("set_rotation","radians"),&Control::set_rotation);
-	ClassDB::bind_method(_MD("set_rotation_deg","degrees"),&Control::set_rotation_deg);
+	ClassDB::bind_method(D_METHOD("accept_event"),&Control::accept_event);
+	ClassDB::bind_method(D_METHOD("get_minimum_size"),&Control::get_minimum_size);
+	ClassDB::bind_method(D_METHOD("get_combined_minimum_size"),&Control::get_combined_minimum_size);
+	ClassDB::bind_method(D_METHOD("set_anchor","margin","anchor_mode","keep_margin"),&Control::set_anchor,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("_set_anchor","margin","anchor_mode"),&Control::_set_anchor);
+	ClassDB::bind_method(D_METHOD("get_anchor","margin"),&Control::get_anchor);
+	ClassDB::bind_method(D_METHOD("set_margin","margin","offset"),&Control::set_margin);
+	ClassDB::bind_method(D_METHOD("set_anchor_and_margin","margin","anchor_mode","offset"),&Control::set_anchor_and_margin);
+	ClassDB::bind_method(D_METHOD("set_begin","pos"),&Control::set_begin);
+	ClassDB::bind_method(D_METHOD("set_end","pos"),&Control::set_end);
+	ClassDB::bind_method(D_METHOD("set_pos","pos"),&Control::set_pos);
+	ClassDB::bind_method(D_METHOD("set_size","size"),&Control::set_size);
+	ClassDB::bind_method(D_METHOD("set_custom_minimum_size","size"),&Control::set_custom_minimum_size);
+	ClassDB::bind_method(D_METHOD("set_global_pos","pos"),&Control::set_global_pos);
+	ClassDB::bind_method(D_METHOD("set_rotation","radians"),&Control::set_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation_deg","degrees"),&Control::set_rotation_deg);
 	// TODO: Obsolete this method (old name) properly (GH-4397)
-	ClassDB::bind_method(_MD("_set_rotation_deg","degrees"),&Control::_set_rotation_deg);
-	ClassDB::bind_method(_MD("set_scale","scale"),&Control::set_scale);
-	ClassDB::bind_method(_MD("get_margin","margin"),&Control::get_margin);
-	ClassDB::bind_method(_MD("get_begin"),&Control::get_begin);
-	ClassDB::bind_method(_MD("get_end"),&Control::get_end);
-	ClassDB::bind_method(_MD("get_pos"),&Control::get_pos);
-	ClassDB::bind_method(_MD("get_size"),&Control::get_size);
-	ClassDB::bind_method(_MD("get_rotation"),&Control::get_rotation);
-	ClassDB::bind_method(_MD("get_rotation_deg"),&Control::get_rotation_deg);
+	ClassDB::bind_method(D_METHOD("_set_rotation_deg","degrees"),&Control::_set_rotation_deg);
+	ClassDB::bind_method(D_METHOD("set_scale","scale"),&Control::set_scale);
+	ClassDB::bind_method(D_METHOD("get_margin","margin"),&Control::get_margin);
+	ClassDB::bind_method(D_METHOD("get_begin"),&Control::get_begin);
+	ClassDB::bind_method(D_METHOD("get_end"),&Control::get_end);
+	ClassDB::bind_method(D_METHOD("get_pos"),&Control::get_pos);
+	ClassDB::bind_method(D_METHOD("get_size"),&Control::get_size);
+	ClassDB::bind_method(D_METHOD("get_rotation"),&Control::get_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation_deg"),&Control::get_rotation_deg);
 	// TODO: Obsolete this method (old name) properly (GH-4397)
-	ClassDB::bind_method(_MD("_get_rotation_deg"),&Control::_get_rotation_deg);
-	ClassDB::bind_method(_MD("get_scale"),&Control::get_scale);
-	ClassDB::bind_method(_MD("get_custom_minimum_size"),&Control::get_custom_minimum_size);
-	ClassDB::bind_method(_MD("get_parent_area_size"),&Control::get_size);
-	ClassDB::bind_method(_MD("get_global_pos"),&Control::get_global_pos);
-	ClassDB::bind_method(_MD("get_rect"),&Control::get_rect);
-	ClassDB::bind_method(_MD("get_global_rect"),&Control::get_global_rect);
-	ClassDB::bind_method(_MD("set_area_as_parent_rect","margin"),&Control::set_area_as_parent_rect,DEFVAL(0));
-	ClassDB::bind_method(_MD("show_modal","exclusive"),&Control::show_modal,DEFVAL(false));
-	ClassDB::bind_method(_MD("set_focus_mode","mode"),&Control::set_focus_mode);
-	ClassDB::bind_method(_MD("get_focus_mode"),&Control::get_focus_mode);
-	ClassDB::bind_method(_MD("has_focus"),&Control::has_focus);
-	ClassDB::bind_method(_MD("grab_focus"),&Control::grab_focus);
-	ClassDB::bind_method(_MD("release_focus"),&Control::release_focus);
-	ClassDB::bind_method(_MD("get_focus_owner:Control"),&Control::get_focus_owner);
+	ClassDB::bind_method(D_METHOD("_get_rotation_deg"),&Control::_get_rotation_deg);
+	ClassDB::bind_method(D_METHOD("get_scale"),&Control::get_scale);
+	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"),&Control::get_custom_minimum_size);
+	ClassDB::bind_method(D_METHOD("get_parent_area_size"),&Control::get_size);
+	ClassDB::bind_method(D_METHOD("get_global_pos"),&Control::get_global_pos);
+	ClassDB::bind_method(D_METHOD("get_rect"),&Control::get_rect);
+	ClassDB::bind_method(D_METHOD("get_global_rect"),&Control::get_global_rect);
+	ClassDB::bind_method(D_METHOD("set_area_as_parent_rect","margin"),&Control::set_area_as_parent_rect,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("show_modal","exclusive"),&Control::show_modal,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_focus_mode","mode"),&Control::set_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_focus_mode"),&Control::get_focus_mode);
+	ClassDB::bind_method(D_METHOD("has_focus"),&Control::has_focus);
+	ClassDB::bind_method(D_METHOD("grab_focus"),&Control::grab_focus);
+	ClassDB::bind_method(D_METHOD("release_focus"),&Control::release_focus);
+	ClassDB::bind_method(D_METHOD("get_focus_owner:Control"),&Control::get_focus_owner);
 
-	ClassDB::bind_method(_MD("set_h_size_flags","flags"),&Control::set_h_size_flags);
-	ClassDB::bind_method(_MD("get_h_size_flags"),&Control::get_h_size_flags);
+	ClassDB::bind_method(D_METHOD("set_h_size_flags","flags"),&Control::set_h_size_flags);
+	ClassDB::bind_method(D_METHOD("get_h_size_flags"),&Control::get_h_size_flags);
 
-	ClassDB::bind_method(_MD("set_stretch_ratio","ratio"),&Control::set_stretch_ratio);
-	ClassDB::bind_method(_MD("get_stretch_ratio"),&Control::get_stretch_ratio);
+	ClassDB::bind_method(D_METHOD("set_stretch_ratio","ratio"),&Control::set_stretch_ratio);
+	ClassDB::bind_method(D_METHOD("get_stretch_ratio"),&Control::get_stretch_ratio);
 
-	ClassDB::bind_method(_MD("set_v_size_flags","flags"),&Control::set_v_size_flags);
-	ClassDB::bind_method(_MD("get_v_size_flags"),&Control::get_v_size_flags);
+	ClassDB::bind_method(D_METHOD("set_v_size_flags","flags"),&Control::set_v_size_flags);
+	ClassDB::bind_method(D_METHOD("get_v_size_flags"),&Control::get_v_size_flags);
 
-	ClassDB::bind_method(_MD("set_theme","theme:Theme"),&Control::set_theme);
-	ClassDB::bind_method(_MD("get_theme:Theme"),&Control::get_theme);
+	ClassDB::bind_method(D_METHOD("set_theme","theme:Theme"),&Control::set_theme);
+	ClassDB::bind_method(D_METHOD("get_theme:Theme"),&Control::get_theme);
 
-	ClassDB::bind_method(_MD("add_icon_override","name","texture:Texture"),&Control::add_icon_override);
-	ClassDB::bind_method(_MD("add_shader_override","name","shader:Shader"),&Control::add_shader_override);
-	ClassDB::bind_method(_MD("add_style_override","name","stylebox:StyleBox"),&Control::add_style_override);
-	ClassDB::bind_method(_MD("add_font_override","name","font:Font"),&Control::add_font_override);
-	ClassDB::bind_method(_MD("add_color_override","name","color"),&Control::add_color_override);
-	ClassDB::bind_method(_MD("add_constant_override","name","constant"),&Control::add_constant_override);
+	ClassDB::bind_method(D_METHOD("add_icon_override","name","texture:Texture"),&Control::add_icon_override);
+	ClassDB::bind_method(D_METHOD("add_shader_override","name","shader:Shader"),&Control::add_shader_override);
+	ClassDB::bind_method(D_METHOD("add_style_override","name","stylebox:StyleBox"),&Control::add_style_override);
+	ClassDB::bind_method(D_METHOD("add_font_override","name","font:Font"),&Control::add_font_override);
+	ClassDB::bind_method(D_METHOD("add_color_override","name","color"),&Control::add_color_override);
+	ClassDB::bind_method(D_METHOD("add_constant_override","name","constant"),&Control::add_constant_override);
 
-	ClassDB::bind_method(_MD("get_icon:Texture","name","type"),&Control::get_icon,DEFVAL(""));
-	ClassDB::bind_method(_MD("get_stylebox:StyleBox","name","type"),&Control::get_stylebox,DEFVAL(""));
-	ClassDB::bind_method(_MD("get_font:Font","name","type"),&Control::get_font,DEFVAL(""));
-	ClassDB::bind_method(_MD("get_color","name","type"),&Control::get_color,DEFVAL(""));
-	ClassDB::bind_method(_MD("get_constant","name","type"),&Control::get_constant,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_icon:Texture","name","type"),&Control::get_icon,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_stylebox:StyleBox","name","type"),&Control::get_stylebox,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_font:Font","name","type"),&Control::get_font,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_color","name","type"),&Control::get_color,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_constant","name","type"),&Control::get_constant,DEFVAL(""));
 
-	ClassDB::bind_method(_MD("has_icon_override", "name"), &Control::has_icon_override);
-	ClassDB::bind_method(_MD("has_stylebox_override", "name"), &Control::has_stylebox_override);
-	ClassDB::bind_method(_MD("has_font_override", "name"), &Control::has_font_override);
-	ClassDB::bind_method(_MD("has_color_override", "name"), &Control::has_color_override);
-	ClassDB::bind_method(_MD("has_constant_override", "name"), &Control::has_constant_override);
+	ClassDB::bind_method(D_METHOD("has_icon_override", "name"), &Control::has_icon_override);
+	ClassDB::bind_method(D_METHOD("has_stylebox_override", "name"), &Control::has_stylebox_override);
+	ClassDB::bind_method(D_METHOD("has_font_override", "name"), &Control::has_font_override);
+	ClassDB::bind_method(D_METHOD("has_color_override", "name"), &Control::has_color_override);
+	ClassDB::bind_method(D_METHOD("has_constant_override", "name"), &Control::has_constant_override);
 
-	ClassDB::bind_method(_MD("has_icon", "name", "type"), &Control::has_icon, DEFVAL(""));
-	ClassDB::bind_method(_MD("has_stylebox", "name", "type"), &Control::has_stylebox, DEFVAL(""));
-	ClassDB::bind_method(_MD("has_font", "name", "type"), &Control::has_font, DEFVAL(""));
-	ClassDB::bind_method(_MD("has_color", "name", "type"), &Control::has_color, DEFVAL(""));
-	ClassDB::bind_method(_MD("has_constant", "name", "type"), &Control::has_constant, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_icon", "name", "type"), &Control::has_icon, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_stylebox", "name", "type"), &Control::has_stylebox, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_font", "name", "type"), &Control::has_font, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_color", "name", "type"), &Control::has_color, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("has_constant", "name", "type"), &Control::has_constant, DEFVAL(""));
 
-	ClassDB::bind_method(_MD("get_parent_control:Control"),&Control::get_parent_control);
+	ClassDB::bind_method(D_METHOD("get_parent_control:Control"),&Control::get_parent_control);
 
-	ClassDB::bind_method(_MD("set_tooltip","tooltip"),&Control::set_tooltip);
-	ClassDB::bind_method(_MD("get_tooltip","atpos"),&Control::get_tooltip,DEFVAL(Point2()));
-	ClassDB::bind_method(_MD("_get_tooltip"),&Control::_get_tooltip);
+	ClassDB::bind_method(D_METHOD("set_tooltip","tooltip"),&Control::set_tooltip);
+	ClassDB::bind_method(D_METHOD("get_tooltip","atpos"),&Control::get_tooltip,DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("_get_tooltip"),&Control::_get_tooltip);
 
-	ClassDB::bind_method(_MD("set_default_cursor_shape","shape"),&Control::set_default_cursor_shape);
-	ClassDB::bind_method(_MD("get_default_cursor_shape"),&Control::get_default_cursor_shape);
-	ClassDB::bind_method(_MD("get_cursor_shape","pos"),&Control::get_cursor_shape,DEFVAL(Point2()));
+	ClassDB::bind_method(D_METHOD("set_default_cursor_shape","shape"),&Control::set_default_cursor_shape);
+	ClassDB::bind_method(D_METHOD("get_default_cursor_shape"),&Control::get_default_cursor_shape);
+	ClassDB::bind_method(D_METHOD("get_cursor_shape","pos"),&Control::get_cursor_shape,DEFVAL(Point2()));
 
-	ClassDB::bind_method(_MD("set_focus_neighbour","margin","neighbour"),&Control::set_focus_neighbour);
-	ClassDB::bind_method(_MD("get_focus_neighbour","margin"),&Control::get_focus_neighbour);
+	ClassDB::bind_method(D_METHOD("set_focus_neighbour","margin","neighbour"),&Control::set_focus_neighbour);
+	ClassDB::bind_method(D_METHOD("get_focus_neighbour","margin"),&Control::get_focus_neighbour);
 
-	ClassDB::bind_method(_MD("force_drag","data","preview"),&Control::force_drag);
+	ClassDB::bind_method(D_METHOD("force_drag","data","preview"),&Control::force_drag);
 
-	ClassDB::bind_method(_MD("set_mouse_filter","filter"),&Control::set_mouse_filter);
-	ClassDB::bind_method(_MD("get_mouse_filter"),&Control::get_mouse_filter);
+	ClassDB::bind_method(D_METHOD("set_mouse_filter","filter"),&Control::set_mouse_filter);
+	ClassDB::bind_method(D_METHOD("get_mouse_filter"),&Control::get_mouse_filter);
 
-	ClassDB::bind_method(_MD("set_clip_contents","enable"),&Control::set_clip_contents);
-	ClassDB::bind_method(_MD("is_clipping_contents"),&Control::is_clipping_contents);
+	ClassDB::bind_method(D_METHOD("set_clip_contents","enable"),&Control::set_clip_contents);
+	ClassDB::bind_method(D_METHOD("is_clipping_contents"),&Control::is_clipping_contents);
 
-	ClassDB::bind_method(_MD("grab_click_focus"),&Control::grab_click_focus);
+	ClassDB::bind_method(D_METHOD("grab_click_focus"),&Control::grab_click_focus);
 
-	ClassDB::bind_method(_MD("set_drag_forwarding","target:Control"),&Control::set_drag_forwarding);
-	ClassDB::bind_method(_MD("set_drag_preview","control:Control"),&Control::set_drag_preview);
+	ClassDB::bind_method(D_METHOD("set_drag_forwarding","target:Control"),&Control::set_drag_forwarding);
+	ClassDB::bind_method(D_METHOD("set_drag_preview","control:Control"),&Control::set_drag_preview);
 
-	ClassDB::bind_method(_MD("warp_mouse","to_pos"),&Control::warp_mouse);
+	ClassDB::bind_method(D_METHOD("warp_mouse","to_pos"),&Control::warp_mouse);
 
-	ClassDB::bind_method(_MD("minimum_size_changed"), &Control::minimum_size_changed);
+	ClassDB::bind_method(D_METHOD("minimum_size_changed"), &Control::minimum_size_changed);
 
-	ClassDB::bind_method(_MD("_theme_changed"), &Control::_theme_changed);
+	ClassDB::bind_method(D_METHOD("_theme_changed"), &Control::_theme_changed);
 
 
 
-	ClassDB::bind_method(_MD("_font_changed"), &Control::_font_changed);
+	ClassDB::bind_method(D_METHOD("_font_changed"), &Control::_font_changed);
 
 	BIND_VMETHOD(MethodInfo("_gui_input",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2,"get_minimum_size"));
@@ -2575,44 +2575,44 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("drop_data",PropertyInfo(Variant::VECTOR2,"pos"),PropertyInfo(Variant::NIL,"data")));
 
 	ADD_GROUP("Anchor","anchor_");
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_left", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_top", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_right", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_bottom", PROPERTY_HINT_ENUM, "Begin,End,Center"), _SCS("_set_anchor"),_SCS("get_anchor"), MARGIN_BOTTOM );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_left", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor","get_anchor", MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_top", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor","get_anchor", MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_right", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor","get_anchor", MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor_bottom", PROPERTY_HINT_ENUM, "Begin,End,Center"), "_set_anchor","get_anchor", MARGIN_BOTTOM );
 
 	ADD_GROUP("Margin","margin_");
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_left", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_top", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_right", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"),MARGIN_BOTTOM );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_left", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin","get_margin",MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_top", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin","get_margin",MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_right", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin","get_margin",MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin","get_margin",MARGIN_BOTTOM );
 
 	ADD_GROUP("Rect","rect_");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_pos"),_SCS("get_pos") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_size"),_SCS("get_size") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect_rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), _SCS("set_rotation_deg"),_SCS("get_rotation_deg") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect_scale"), _SCS("set_scale"),_SCS("get_scale") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"rect_clip_content"), _SCS("set_clip_contents"),_SCS("is_clipping_contents") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), "set_pos","get_pos") ;
+	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), "set_size","get_size") ;
+	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect_min_size"), "set_custom_minimum_size","get_custom_minimum_size") ;
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"rect_rotation",PROPERTY_HINT_RANGE,"-1080,1080,0.01"), "set_rotation_deg","get_rotation_deg") ;
+	ADD_PROPERTYNO( PropertyInfo(Variant::VECTOR2,"rect_scale"), "set_scale","get_scale") ;
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"rect_clip_content"), "set_clip_contents","is_clipping_contents") ;
 
 
 	ADD_GROUP("Hint","hint_");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint_tooltip", PROPERTY_HINT_MULTILINE_TEXT), "set_tooltip","_get_tooltip") ;
 
 	ADD_GROUP("Focus","focus_");
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_top" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_right" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_bottom" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_BOTTOM );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_left" ), "set_focus_neighbour","get_focus_neighbour",MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_top" ), "set_focus_neighbour","get_focus_neighbour",MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_right" ), "set_focus_neighbour","get_focus_neighbour",MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour_bottom" ), "set_focus_neighbour","get_focus_neighbour",MARGIN_BOTTOM );
 
 	ADD_GROUP("Mouse","mouse_");
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mouse_filter",PROPERTY_HINT_ENUM,"Stop,Pass,Ignore"), _SCS("set_mouse_filter"),_SCS("get_mouse_filter") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mouse_filter",PROPERTY_HINT_ENUM,"Stop,Pass,Ignore"), "set_mouse_filter","get_mouse_filter") ;
 
 	ADD_GROUP("Size Flags","size_flags_");
-	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), _SCS("set_stretch_ratio"),_SCS("get_stretch_ratio") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_horizontal", PROPERTY_HINT_FLAGS, "Fill,Expand"), "set_h_size_flags","get_h_size_flags") ;
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_vertical", PROPERTY_HINT_FLAGS, "Fill,Expand"), "set_v_size_flags","get_v_size_flags") ;
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags_stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), "set_stretch_ratio","get_stretch_ratio") ;
 	ADD_GROUP("Theme","");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), _SCS("set_theme"),_SCS("get_theme") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme","get_theme") ;
 	ADD_GROUP("","");
 
 	BIND_CONSTANT( ANCHOR_BEGIN );

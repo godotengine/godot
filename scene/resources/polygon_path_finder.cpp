@@ -618,19 +618,19 @@ float PolygonPathFinder::get_point_penalty(int p_point) const {
 
 void PolygonPathFinder::_bind_methods() {
 
-	ClassDB::bind_method(_MD("setup","points","connections"),&PolygonPathFinder::setup);
-	ClassDB::bind_method(_MD("find_path","from","to"),&PolygonPathFinder::find_path);
-	ClassDB::bind_method(_MD("get_intersections","from","to"),&PolygonPathFinder::get_intersections);
-	ClassDB::bind_method(_MD("get_closest_point","point"),&PolygonPathFinder::get_closest_point);
-	ClassDB::bind_method(_MD("is_point_inside","point"),&PolygonPathFinder::is_point_inside);
-	ClassDB::bind_method(_MD("set_point_penalty","idx","penalty"),&PolygonPathFinder::set_point_penalty);
-	ClassDB::bind_method(_MD("get_point_penalty","idx"),&PolygonPathFinder::get_point_penalty);
+	ClassDB::bind_method(D_METHOD("setup","points","connections"),&PolygonPathFinder::setup);
+	ClassDB::bind_method(D_METHOD("find_path","from","to"),&PolygonPathFinder::find_path);
+	ClassDB::bind_method(D_METHOD("get_intersections","from","to"),&PolygonPathFinder::get_intersections);
+	ClassDB::bind_method(D_METHOD("get_closest_point","point"),&PolygonPathFinder::get_closest_point);
+	ClassDB::bind_method(D_METHOD("is_point_inside","point"),&PolygonPathFinder::is_point_inside);
+	ClassDB::bind_method(D_METHOD("set_point_penalty","idx","penalty"),&PolygonPathFinder::set_point_penalty);
+	ClassDB::bind_method(D_METHOD("get_point_penalty","idx"),&PolygonPathFinder::get_point_penalty);
 
-	ClassDB::bind_method(_MD("get_bounds"),&PolygonPathFinder::get_bounds);
-	ClassDB::bind_method(_MD("_set_data"),&PolygonPathFinder::_set_data);
-	ClassDB::bind_method(_MD("_get_data"),&PolygonPathFinder::_get_data);
+	ClassDB::bind_method(D_METHOD("get_bounds"),&PolygonPathFinder::get_bounds);
+	ClassDB::bind_method(D_METHOD("_set_data"),&PolygonPathFinder::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"),&PolygonPathFinder::_get_data);
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_data"),_SCS("_get_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY,"data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_data","_get_data");
 
 }
 
