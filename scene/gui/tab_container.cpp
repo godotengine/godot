@@ -732,7 +732,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_count"),&TabContainer::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"),&TabContainer::get_current_tab);
-  ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
+	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab_control:Control"),&TabContainer::get_current_tab_control);
 	ClassDB::bind_method(D_METHOD("get_tab_control:Control","idx"),&TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_align","align"),&TabContainer::set_tab_align);
