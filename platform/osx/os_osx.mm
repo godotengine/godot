@@ -1765,7 +1765,8 @@ String OS_OSX::get_joy_guid(int p_device) const {
 OS_OSX* OS_OSX::singleton=NULL;
 
 OS_OSX::OS_OSX() {
-
+	
+	mouse_mode=OS::MOUSE_MODE_VISIBLE
 	main_loop=NULL;
 	singleton=this;
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
