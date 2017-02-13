@@ -38,8 +38,8 @@ bool MultiNodeEdit::_set(const StringName& p_name, const Variant& p_value){
 
 	String name = p_name;
 
-	if (name=="scripts/script") { // script/script set is intercepted at object level (check Variant Object::get() ) ,so use a different name
-		name="script/script";
+	if (name=="scripts") { // script set is intercepted at object level (check Variant Object::get() ) ,so use a different name
+		name="script";
 	}
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
@@ -80,8 +80,8 @@ bool MultiNodeEdit::_get(const StringName& p_name,Variant &r_ret) const {
 		return false;
 
 	String name=p_name;
-	if (name=="scripts/script") { // script/script set is intercepted at object level (check Variant Object::get() ) ,so use a different name
-		name="script/script";
+	if (name=="scripts") { // script set is intercepted at object level (check Variant Object::get() ) ,so use a different name
+		name="script";
 	}
 
 	for (const List<NodePath>::Element *E=nodes.front();E;E=E->next()) {
@@ -129,7 +129,7 @@ void MultiNodeEdit::_get_property_list( List<PropertyInfo> *p_list) const{
 
 		for(List<PropertyInfo>::Element *F=plist.front();F;F=F->next()) {
 
-			if (F->get().name=="script/script")
+			if (F->get().name=="script")
 				continue; //added later manually, since this is intercepted before being set (check Variant Object::get() )
 			if (!usage.has(F->get().name)) {
 				PLData pld;
@@ -152,7 +152,7 @@ void MultiNodeEdit::_get_property_list( List<PropertyInfo> *p_list) const{
 		}
 	}
 
-	p_list->push_back(PropertyInfo(Variant::OBJECT,"scripts/script",PROPERTY_HINT_RESOURCE_TYPE,"Script"));
+	p_list->push_back(PropertyInfo(Variant::OBJECT,"scripts",PROPERTY_HINT_RESOURCE_TYPE,"Script"));
 
 
 }

@@ -889,7 +889,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			menu->clear();
 			menu->set_size(Size2(1,1));
 
-			if (p_name=="script/script" && hint_text=="Script" && owner->cast_to<Node>()) {
+			if (p_name=="script" && hint_text=="Script" && owner->cast_to<Node>()) {
 				menu->add_icon_item(get_icon("Script","EditorIcons"),TTR("New Script"),OBJ_MENU_NEW_SCRIPT);
 				menu->add_separator();
 			} else if (hint_text!="") {
@@ -3141,7 +3141,7 @@ void PropertyEditor::update_tree() {
 			continue;
 
 
-		if (hide_script && p.name=="script/script")
+		if (hide_script && p.name=="script")
 			continue;
 
 		String basename=p.name;
@@ -4780,7 +4780,7 @@ void SectionedPropertyEditor::update_category_list() {
 		else if ( !(pi.usage&PROPERTY_USAGE_EDITOR) )
 			continue;
 
-		if (pi.name.find(":")!=-1 || pi.name=="script/script" || pi.name=="resource_name" || pi.name=="resource_path")
+		if (pi.name.find(":")!=-1 || pi.name=="script" || pi.name=="resource_name" || pi.name=="resource_path")
 			continue;
 		int sp = pi.name.find("/");
 		if (sp==-1)
