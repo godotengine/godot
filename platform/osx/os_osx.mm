@@ -1766,7 +1766,7 @@ OS_OSX* OS_OSX::singleton=NULL;
 
 OS_OSX::OS_OSX() {
 	
-	mouse_mode=OS::MOUSE_MODE_VISIBLE
+	mouse_mode=OS::MOUSE_MODE_VISIBLE;
 	main_loop=NULL;
 	singleton=this;
 	autoreleasePool = [[NSAutoreleasePool alloc] init];
