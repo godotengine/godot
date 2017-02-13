@@ -79,7 +79,7 @@ friend class ResourceFormatLoaderXML;
 	_FORCE_INLINE_ void unquote(String& p_str);
 	Error goto_end_of_tag();
 	Error parse_property_data(String &r_data);
-	Error parse_property(Variant& r_v, String &r_name);
+	Error parse_property(Variant& r_v, String &r_name,bool p_for_export_data=false);
 
 	Error error;
 
@@ -98,6 +98,7 @@ public:
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map);
 
+	Error get_export_data(FileAccess *p_f,ExportData& r_export_data);
 
 	~ResourceInteractiveLoaderXML();
 
@@ -106,6 +107,7 @@ public:
 class ResourceFormatLoaderXML : public ResourceFormatLoader {
 public:
 
+	static ResourceFormatLoaderXML *singleton;
 	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path,Error *r_error=NULL);
 	virtual void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -113,7 +115,9 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
 	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
+	virtual Error get_export_data(const String& p_path,ExportData& r_export_data);
 
+	ResourceFormatLoaderXML() { singleton=this; }
 
 };
 

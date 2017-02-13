@@ -907,32 +907,25 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 
 			if (p_res_parser && id=="Resource" && p_res_parser->func){
 
-				RES res;
-				Error err = p_res_parser->func(p_res_parser->userdata,p_stream,res,line,r_err_str);
+				Error err = p_res_parser->func(p_res_parser->userdata,p_stream,value,line,r_err_str);
 				if (err)
 					return err;
-
-				value=res;
 
 				return OK;
 			} else if (p_res_parser && id=="ExtResource" && p_res_parser->ext_func){
 
-				RES res;
-				Error err = p_res_parser->ext_func(p_res_parser->userdata,p_stream,res,line,r_err_str);
+				Error err = p_res_parser->ext_func(p_res_parser->userdata,p_stream,value,line,r_err_str);
 				if (err)
 					return err;
 
-				value=res;
 
 				return OK;
 			} else if (p_res_parser && id=="SubResource" && p_res_parser->sub_func){
 
-				RES res;
-				Error err = p_res_parser->sub_func(p_res_parser->userdata,p_stream,res,line,r_err_str);
+				Error err = p_res_parser->sub_func(p_res_parser->userdata,p_stream,value,line,r_err_str);
 				if (err)
 					return err;
 
-				value=res;
 
 				return OK;
 			} else {

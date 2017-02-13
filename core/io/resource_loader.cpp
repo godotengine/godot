@@ -399,6 +399,34 @@ void ResourceLoader::get_dependencies(const String& p_path, List<String> *p_depe
 	}
 }
 
+Error ResourceLoader::get_export_data(const String& p_path,ExportData& r_export_data) {
+
+
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
+
+	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
+
+	String extension=remapped_path.extension();
+
+	for (int i=0;i<loader_count;i++) {
+
+		if (!loader[i]->recognize(extension))
+			continue;
+		//if (p_type_hint!="" && !loader[i]->handles_type(p_type_hint))
+		//	continue;
+
+		return loader[i]->get_export_data(p_path,r_export_data);
+
+	}
+
+	return ERR_UNAVAILABLE;
+
+}
+
 Error ResourceLoader::rename_dependencies(const String &p_path,const Map<String,String>& p_map) {
 
 

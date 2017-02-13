@@ -54,7 +54,7 @@ Ref<Resource> ResourceInteractiveLoaderText::get_resource() {
 	return resource;
 }
 
-Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str) {
+Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str) {
 
 	VariantParser::Token token;
 	VariantParser::get_token(p_stream,token,line,r_err_str);
@@ -74,9 +74,9 @@ Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream* 
 			return ERR_PARSE_ERROR;
 		}
 
-		r_res=RES(ResourceCache::get(path));
+		r_value_res=RES(ResourceCache::get(path));
 	} else {
-		r_res=RES();
+		r_value_res=RES();
 	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
@@ -89,7 +89,7 @@ Error ResourceInteractiveLoaderText::_parse_sub_resource(VariantParser::Stream* 
 	return OK;
 }
 
-Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str){
+Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str){
 
 	VariantParser::Token token;
 	VariantParser::get_token(p_stream,token,line,r_err_str);
@@ -116,13 +116,15 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* 
 
 		}
 
-		r_res=ResourceLoader::load(path,type);
+		RES res = ResourceLoader::load(path,type);
 
-		if (r_res.is_null()) {
+		if (res.is_null()) {
 			WARN_PRINT(String("Couldn't load external resource: "+path).utf8().get_data());
 		}
+
+		r_value_res=res;
 	} else {
-		r_res=RES();
+		r_value_res=RES();
 	}
 
 	VariantParser::get_token(p_stream,token,line,r_err_str);
@@ -134,6 +136,60 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* 
 
 	return OK;
 }
+
+
+Error ResourceInteractiveLoaderText::_parse_sub_resource_export(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str) {
+
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+
+
+	if (token.type!=VariantParser::TK_NUMBER) {
+		r_err_str="Expected number (sub-resource index)";
+		return ERR_PARSE_ERROR;
+	}
+
+	int index = token.value;
+
+	r_value_res="@RESLOCAL:"+itos(index);
+
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+	if (token.type!=VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str="Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+
+	return OK;
+}
+
+Error ResourceInteractiveLoaderText::_parse_ext_resource_export(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str){
+
+	VariantParser::Token token;
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+	if (token.type!=VariantParser::TK_NUMBER) {
+		r_err_str="Expected number (sub-resource index)";
+		return ERR_PARSE_ERROR;
+	}
+
+	int id = token.value;
+
+	{
+
+		r_value_res="@RESEXTERNAL:"+itos(id);
+
+	}
+
+	VariantParser::get_token(p_stream,token,line,r_err_str);
+	if (token.type!=VariantParser::TK_PARENTHESIS_CLOSE) {
+		r_err_str="Expected ')'";
+		return ERR_PARSE_ERROR;
+	}
+
+
+	return OK;
+}
+
 
 
 Error ResourceInteractiveLoaderText::poll() {
@@ -684,6 +740,384 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> 
 	}
 }
 
+Error ResourceInteractiveLoaderText::get_export_data(FileAccess *p_f,ExportData& r_export_data) {
+
+
+	open(p_f);
+	ERR_FAIL_COND_V(error!=OK,error);
+
+
+	while(true) {
+
+		print_line("next tag is: "+next_tag.name);
+
+		if (next_tag.name=="ext_resource") {
+
+
+			if (!next_tag.fields.has("path")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="Missing 'path' in external resource tag";
+				_printerr();
+				return error;
+			}
+
+			if (!next_tag.fields.has("type")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="Missing 'type' in external resource tag";
+				_printerr();
+				return error;
+			}
+
+			if (!next_tag.fields.has("id")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="Missing 'id' in external resource tag";
+				_printerr();
+				return error;
+			}
+
+			String path=next_tag.fields["path"];
+			String type=next_tag.fields["type"];
+			int index=next_tag.fields["id"];
+
+
+			ExportData::Dependency dep;
+			dep.path=path;
+			dep.type=type;
+			r_export_data.dependencies[index]=dep;
+
+			error = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp_export);
+
+			if (error) {
+				_printerr();
+				return error;
+			}
+
+
+		} else if (next_tag.name=="sub_resource") {
+
+
+			if (!next_tag.fields.has("type")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="Missing 'type' in external resource tag";
+				_printerr();
+				return error;
+			}
+
+			if (!next_tag.fields.has("id")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="Missing 'index' in external resource tag";
+				_printerr();
+				return error;
+			}
+
+			String type=next_tag.fields["type"];
+			int id=next_tag.fields["id"];
+
+			r_export_data.resources.resize( r_export_data.resources.size()+1 );
+			ExportData::ResourceData &res_data=r_export_data.resources[ r_export_data.resources.size()-1 ];
+
+			res_data.type=type;
+			res_data.index=id;
+
+
+			while(true) {
+
+				String assign;
+				Variant value;
+
+				error = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,&rp_export);
+				print_line("get prop: "+assign);
+
+				if (error) {
+					_printerr();
+					return error;
+				}
+
+				if (assign!=String()) {
+
+					ExportData::PropertyData pdata;
+					pdata.name=assign;
+					pdata.value=value;
+					res_data.properties.push_back(pdata);
+
+					//it's assignment
+				} else if (next_tag.name!=String()) {
+
+					error=OK;
+					break;
+
+				} else {
+					error=ERR_FILE_CORRUPT;
+					error_text="Premature end of file while parsing [sub_resource]";
+					_printerr();
+					return error;
+				}
+
+
+			}
+
+		} else if (next_tag.name=="resource") {
+
+			if (is_scene) {
+
+				error_text+="found the 'resource' tag on a scene file!";
+				_printerr();
+				error=ERR_FILE_CORRUPT;
+				return error;
+			}
+
+
+			r_export_data.resources.resize( r_export_data.resources.size()+1 );
+			ExportData::ResourceData &res_data=r_export_data.resources[ r_export_data.resources.size()-1 ];
+			res_data.index=-1;
+			res_data.type=res_type;
+
+			while(true) {
+
+				String assign;
+				Variant value;
+
+				error = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,&rp_export);
+
+				if (error) {
+					if (error!=ERR_FILE_EOF) {
+						_printerr();
+					} else {
+						return OK;
+					}
+					return error;
+				}
+
+				if (assign!=String()) {
+					ExportData::PropertyData pdata;
+					pdata.name=assign;
+					pdata.value=value;
+					res_data.properties.push_back(pdata);
+					//it's assignment
+				} else if (next_tag.name!=String()) {
+
+					error=ERR_FILE_CORRUPT;
+					error_text="Extra tag found when parsing main resource file";
+					_printerr();
+					return error;
+				} else {
+					return OK;
+				}
+
+			}
+
+			return OK;
+
+		} else if (next_tag.name=="node") {
+
+			if (!is_scene) {
+
+				error_text+="found the 'node' tag on a resource file!";
+				_printerr();
+				error=ERR_FILE_CORRUPT;
+				return error;
+			}
+
+
+			r_export_data.nodes.resize( r_export_data.nodes.size()+1 );
+			ExportData::NodeData &node_data=r_export_data.nodes[ r_export_data.nodes.size()-1 ];
+
+
+			if (next_tag.fields.has("name")) {
+				node_data.name=next_tag.fields["name"];
+			}
+
+			if (next_tag.fields.has("parent")) {
+				node_data.parent=next_tag.fields["parent"];
+			}
+
+
+
+			if (next_tag.fields.has("type")) {
+				node_data.type=next_tag.fields["type"];
+			}
+
+			if (next_tag.fields.has("instance")) {
+
+				node_data.instance = next_tag.fields["instance"];
+			}
+
+			if (next_tag.fields.has("instance_placeholder")) {
+
+				node_data.instance_placeholder = next_tag.fields["instance_placeholder"];
+			}
+
+			if (next_tag.fields.has("owner")) {
+				node_data.owner=next_tag.fields["owner"];
+			}
+
+			if (next_tag.fields.has("groups")) {
+
+				Array groups = next_tag.fields["groups"];
+				for (int i=0;i<groups.size();i++) {
+					node_data.groups.push_back(groups[i]);
+				}
+			}
+
+			while(true) {
+
+				String assign;
+				Variant value;
+
+				error = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,&rp_export);
+
+				print_line("get prop: "+assign);
+
+				if (error) {
+
+					if (error!=ERR_FILE_EOF) {
+						_printerr();
+						return error;
+					} else {
+
+						return OK;
+					}
+
+				}
+
+				if (assign!=String()) {
+
+					ExportData::PropertyData pdata;
+					pdata.name=assign;
+					pdata.value=value;
+					node_data.properties.push_back(pdata);
+					//it's assignment
+				} else if (next_tag.name!=String()) {
+					print_line("found something else?");
+					break; //something else
+				} else {
+					print_line("done i guess?");
+					//all done?
+					return OK;
+				}
+
+			}
+
+
+
+		} else if (next_tag.name=="connection") {
+
+			if (!is_scene) {
+
+				error_text+="found the 'connection' tag on a resource file!";
+				_printerr();
+				error=ERR_FILE_CORRUPT;
+				return error;
+			}
+
+			if (!next_tag.fields.has("from")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="missing 'from' field fron connection tag";
+				return error;
+			}
+
+			if (!next_tag.fields.has("to")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="missing 'to' field fron connection tag";
+				return error;
+			}
+
+			if (!next_tag.fields.has("signal")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="missing 'signal' field fron connection tag";
+				return error;
+			}
+
+			if (!next_tag.fields.has("method")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="missing 'method' field fron connection tag";
+				return error;
+			}
+
+			NodePath from = next_tag.fields["from"];
+			NodePath to = next_tag.fields["to"];
+			StringName method = next_tag.fields["method"];
+			StringName signal = next_tag.fields["signal"];
+			int flags=CONNECT_PERSIST;
+			Array binds;
+
+			if (next_tag.fields.has("flags")) {
+				flags=next_tag.fields["flags"];
+			}
+
+			if (next_tag.fields.has("binds")) {
+				binds=next_tag.fields["binds"];
+			}
+
+			ExportData::Connection conn;
+			conn.from=from;
+			conn.to=to;
+			conn.method=method;
+			conn.signal=signal;
+			conn.binds=binds;
+			conn.flags=flags;
+
+			r_export_data.connections.push_back(conn);
+
+			error = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp_export);
+
+			if (error) {
+				if (error!=ERR_FILE_EOF) {
+					_printerr();
+					return error;
+				} else {
+					return OK;
+				}
+			}
+
+			continue;
+
+		} else if (next_tag.name=="editable") {
+
+			if (!is_scene) {
+
+				error_text+="found the 'editable' tag on a resource file!";
+				_printerr();
+				error=ERR_FILE_CORRUPT;
+				return error;
+			}
+
+			if (!next_tag.fields.has("path")) {
+				error=ERR_FILE_CORRUPT;
+				error_text="missing 'path' field fron connection tag";
+				_printerr();
+				return error;
+			}
+
+			NodePath path = next_tag.fields["path"];
+
+			r_export_data.editables.push_back(path);
+
+			error = VariantParser::parse_tag(&stream,lines,error_text,next_tag,&rp_export);
+
+			if (error) {
+				if (error!=ERR_FILE_EOF) {
+					_printerr();
+					return error;
+				} else {
+					return OK;
+				}
+			}
+
+			continue;
+
+		} else {
+
+			error_text+="Unknown tag in file: "+next_tag.name;
+			_printerr();
+			error=ERR_FILE_CORRUPT;
+			return error;
+		}
+	}
+
+	ERR_FAIL_V(ERR_BUG);
+}
+
 Error ResourceInteractiveLoaderText::rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map) {
 
 
@@ -878,6 +1312,11 @@ void ResourceInteractiveLoaderText::open(FileAccess *p_f,bool p_skip_first_tag) 
 	rp.func=NULL;
 	rp.userdata=this;
 
+	rp_export.ext_func=_parse_ext_resources_export;
+	rp_export.sub_func=_parse_sub_resources_export;
+	rp_export.func=NULL;
+	rp_export.userdata=this;
+
 }
 
 
@@ -1023,6 +1462,30 @@ void ResourceFormatLoaderText::get_dependencies(const String& p_path,List<String
 
 
 }
+
+ResourceFormatLoaderText* ResourceFormatLoaderText::singleton=NULL;
+
+Error ResourceFormatLoaderText::get_export_data(const String& p_path,ExportData& r_export_data) {
+
+	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
+	if (!f) {
+
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+
+	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
+	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->res_path=ria->local_path;
+//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	Error err =  ria->get_export_data(f,r_export_data);
+	if (err!=OK) {
+		ERR_PRINTS("ERROR: "+ria->error_text);
+	}
+
+	return err;
+}
+
+
 
 Error ResourceFormatLoaderText::rename_dependencies(const String &p_path,const Map<String,String>& p_map) {
 

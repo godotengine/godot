@@ -339,7 +339,7 @@ Error ResourceInteractiveLoaderXML::_parse_array_element(Vector<char> &buff,bool
 	return OK;
 }
 
-Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)  {
+Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name, bool p_for_export_data)  {
 
 	bool exit;
 	Tag *tag = parse_tag(&exit);
@@ -382,7 +382,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 			int dictline = get_current_line();
 
 
-			err=parse_property(key,tagname);
+			err=parse_property(key,tagname,p_for_export_data);
 
 			if (err && err!=ERR_FILE_EOF) {
 				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Error parsing dictionary: "+name+" (from line "+itos(dictline)+")");
@@ -392,7 +392,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 			if (err)
 				break;
 			Variant value;
-			err=parse_property(value,tagname);
+			err=parse_property(value,tagname,p_for_export_data);
 			if (err) {
 				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": Error parsing dictionary: "+name+" (from line "+itos(dictline)+")");
 			}
@@ -429,7 +429,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		Variant v;
 		String tagname;
 		int idx=0;
-		while( (err=parse_property(v,tagname))==OK ) {
+		while( (err=parse_property(v,tagname,p_for_export_data))==OK ) {
 
 			ERR_CONTINUE( idx <0 || idx >=len );
 
@@ -463,7 +463,20 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 			if (tag->args.has("resource_type"))
 				hint=tag->args["resource_type"];
 
+			if (p_for_export_data) {
+
+				String prop;
+
+				if (path.begins_with("local://")) {
+					prop="@RESLOCAL:"+itos(path.replace("local://","").to_int());
+				}
+
+				r_v=prop;
+				return OK;
+			}
+
 			if (path.begins_with("local://"))
+
 				path=path.replace("local://",local_path+"::");
 			else if (path.find("://")==-1 && path.is_rel_path()) {
 				// path is relative to file being loaded, so convert to a resource path
@@ -488,6 +501,18 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		} else if (tag->args.has("external")) {
 
 			int index = tag->args["external"].to_int();
+
+
+			if (p_for_export_data) {
+
+				String prop;
+
+				prop="@RESEXTERNAL:"+itos(index);
+
+				r_v=prop;
+				return OK;
+			}
+
 			if (ext_resources.has(index)) {
 				String path=ext_resources[index].path;
 				String type=ext_resources[index].type;
@@ -1653,6 +1678,139 @@ void ResourceInteractiveLoaderXML::get_dependencies(FileAccess *f,List<String> *
 
 }
 
+Error ResourceInteractiveLoaderXML::get_export_data(FileAccess *p_f,ExportData& r_export_data) {
+
+	open(p_f);
+	ERR_FAIL_COND_V(error!=OK,error);
+
+
+
+	while (true) {
+		bool exit;
+		Tag *tag = parse_tag(&exit);
+
+		if (!tag) {
+			error=ERR_FILE_CORRUPT;
+			if (!exit) // shouldn't have exited
+				ERR_FAIL_V(error);
+			error=ERR_FILE_EOF;
+			return error;
+		}
+
+
+		bool main;
+
+		if (tag->name=="ext_resource") {
+
+			ExportData::Dependency dep;
+
+			error=ERR_FILE_CORRUPT;
+			ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> missing 'path' field.");
+			ERR_FAIL_COND_V(!tag->args.has("path"),ERR_FILE_CORRUPT);
+
+			String type="Resource";
+			if (tag->args.has("type"))
+				type=tag->args["type"];
+
+			String path = tag->args["path"];
+
+			dep.path=path;
+			dep.type=type;
+
+
+			if (tag->args.has("index")) {
+				ExtResource er;
+				er.path=path;
+				er.type=type;
+				r_export_data.dependencies[tag->args["index"].to_int()]=dep;
+			} else {
+
+				int index = r_export_data.dependencies.size();
+				r_export_data.dependencies[index]=dep;
+
+			}
+
+
+
+			Error err = close_tag("ext_resource");
+			if (err)
+				return error;
+
+			continue;
+
+		} else if (tag->name=="resource") {
+
+			main=false;
+		} else if (tag->name=="main_resource") {
+			main=true;
+		} else {
+			ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": unexpected main tag: "+tag->name);
+			error=ERR_FILE_CORRUPT;
+			ERR_FAIL_V(error);
+		}
+
+		r_export_data.resources.resize( r_export_data.resources.size()+1 );
+
+		ExportData::ResourceData &res_data=r_export_data.resources[ r_export_data.resources.size()-1 ];
+
+
+		res_data.index=-1;
+
+		if (!main) {
+			//loading resource
+
+
+			String path=tag->args["path"];
+
+			error=OK;
+
+			if (path.begins_with("local://")) {
+				//built-in resource (but really external)
+
+				path=path.replace("local://","");
+				res_data.index=path.to_int();
+			}
+
+			res_data.type= tag->args["type"];
+		} else {
+			res_data.type=resource_type;
+
+
+		}
+		//load properties
+
+		while(true) {
+
+			String name;
+			Variant v;
+			Error err;
+
+			err = parse_property(v,name);
+
+			if (err==ERR_FILE_EOF) //tag closed
+				break;
+
+
+			if (err!=OK) {
+				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": XML Parsing aborted.");
+				ERR_FAIL_COND_V(err!=OK,ERR_FILE_CORRUPT);
+			}
+
+			ExportData::PropertyData prop;
+			prop.name=name;
+			prop.value=v;
+			res_data.properties.push_back(prop);
+
+		}
+		if (main) {
+			return OK;
+
+		}
+	}
+	return OK;
+}
+
+
 Error ResourceInteractiveLoaderXML::rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map) {
 
 	open(p_f);
@@ -2021,6 +2179,23 @@ void ResourceFormatLoaderXML::get_dependencies(const String& p_path,List<String>
 
 }
 
+Error ResourceFormatLoaderXML::get_export_data(const String& p_path,ExportData& r_export_data) {
+
+	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
+	if (!f) {
+
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+
+	Ref<ResourceInteractiveLoaderXML> ria = memnew( ResourceInteractiveLoaderXML );
+	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->res_path=ria->local_path;
+
+	return ria->get_export_data(f,r_export_data);
+
+}
+
+
 Error ResourceFormatLoaderXML::rename_dependencies(const String &p_path,const Map<String,String>& p_map) {
 
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
@@ -2036,6 +2211,7 @@ Error ResourceFormatLoaderXML::rename_dependencies(const String &p_path,const Ma
 	return ria->rename_dependencies(f,p_path,p_map);
 }
 
+ResourceFormatLoaderXML *ResourceFormatLoaderXML::singleton=NULL;
 
 /****************************************************************************************/
 /****************************************************************************************/

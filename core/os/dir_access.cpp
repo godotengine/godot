@@ -178,9 +178,9 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	for(int i=0;i<subdirs.size();i++) {
 
 		curpath=curpath.plus_file(subdirs[i]);
+
 		Error err = make_dir(curpath);
 		if (err != OK && err != ERR_ALREADY_EXISTS) {
-
 			ERR_FAIL_V(err);
 		}
 	}

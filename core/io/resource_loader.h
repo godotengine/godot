@@ -30,7 +30,7 @@
 #define RESOURCE_LOADER_H
 
 #include "resource.h"
-
+#include "export_data.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -67,6 +67,7 @@ public:
 	virtual void get_dependencies(const String& p_path,List<String> *p_dependencies,bool p_add_types=false);
 	virtual Error load_import_metadata(const String &p_path, Ref<ResourceImportMetadata>& r_var) const { return ERR_UNAVAILABLE; }
 	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map) { return OK; }
+	virtual Error get_export_data(const String& p_path,ExportData& r_export_data) { return ERR_UNAVAILABLE; }
 
 	virtual ~ResourceFormatLoader() {}
 };
@@ -106,6 +107,8 @@ public:
 	static String get_resource_type(const String &p_path);
 	static void get_dependencies(const String& p_path,List<String> *p_dependencies,bool p_add_types=false);
 	static Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
+
+	static Error get_export_data(const String& p_path,ExportData& r_export_data);
 
 	static String guess_full_filename(const String &p_path,const String& p_type);
 

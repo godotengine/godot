@@ -79,7 +79,7 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 friend class ResourceFormatLoaderBinary;
 
 
-	Error parse_variant(Variant& r_v);
+	Error parse_variant(Variant& r_v, bool p_for_export_data=false);
 
 public:
 
@@ -94,6 +94,7 @@ public:
 	String recognize(FileAccess *p_f);
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
 
+	Error get_export_data(ExportData& r_export_data);
 
 	ResourceInteractiveLoaderBinary();
 	~ResourceInteractiveLoaderBinary();
@@ -111,9 +112,11 @@ public:
 	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
 	virtual Error load_import_metadata(const String &p_path, Ref<ResourceImportMetadata>& r_var) const;
 	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
+	virtual Error get_export_data(const String& p_path,ExportData& r_export_data);
 
+	static ResourceFormatLoaderBinary *singleton;
 
-
+	ResourceFormatLoaderBinary() { singleton=this; }
 };
 
 

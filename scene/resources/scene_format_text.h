@@ -73,13 +73,21 @@ class ResourceInteractiveLoaderText : public ResourceInteractiveLoader {
 	Map<String,String> remaps;
 	//void _printerr();
 
-	static Error _parse_sub_resources(void* p_self, VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText*>(p_self)->_parse_sub_resource(p_stream,r_res,line,r_err_str); }
-	static Error _parse_ext_resources(void* p_self, VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText*>(p_self)->_parse_ext_resource(p_stream,r_res,line,r_err_str); }
+	static Error _parse_sub_resources(void* p_self, VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText*>(p_self)->_parse_sub_resource(p_stream,r_value_res,line,r_err_str); }
+	static Error _parse_ext_resources(void* p_self, VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText*>(p_self)->_parse_ext_resource(p_stream,r_value_res,line,r_err_str); }
 
-	Error _parse_sub_resource(VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str);
-	Error _parse_ext_resource(VariantParser::Stream* p_stream,Ref<Resource>& r_res,int &line,String &r_err_str);
+	Error _parse_sub_resource(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str);
+	Error _parse_ext_resource(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str);
 
 	VariantParser::ResourceParser rp;
+
+	static Error _parse_sub_resources_export(void* p_self, VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText*>(p_self)->_parse_sub_resource_export(p_stream,r_value_res,line,r_err_str); }
+	static Error _parse_ext_resources_export(void* p_self, VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str) { return reinterpret_cast<ResourceInteractiveLoaderText*>(p_self)->_parse_ext_resource_export(p_stream,r_value_res,line,r_err_str); }
+
+	Error _parse_sub_resource_export(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str);
+	Error _parse_ext_resource_export(VariantParser::Stream* p_stream,Variant& r_value_res,int &line,String &r_err_str);
+
+	VariantParser::ResourceParser rp_export;
 
 
 	Ref<PackedScene> packed_scene;
@@ -104,6 +112,7 @@ public:
 	String recognize(FileAccess *p_f);
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
 	Error rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map);
+	Error get_export_data(FileAccess *p_f,ExportData& r_export_data);
 
 
 	~ResourceInteractiveLoaderText();
@@ -122,8 +131,10 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
 	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
+	virtual Error get_export_data(const String& p_path,ExportData& r_export_data);
 
-
+	static ResourceFormatLoaderText* singleton;
+	ResourceFormatLoaderText() { singleton=this;}
 };
 
 

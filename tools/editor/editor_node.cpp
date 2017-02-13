@@ -2426,7 +2426,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			orphan_resources->show();
 		} break;
+		case TOOLS_EXPORT_GODOT3: {
 
+			export_godot3_dialog->popup_centered_ratio();
+		} break;
 		case EDIT_REVERT: {
 
 			Node *scene = get_edited_scene();
@@ -5305,6 +5308,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_clear_search_box",&EditorNode::_clear_search_box);
 	ObjectTypeDB::bind_method("_clear_undo_history",&EditorNode::_clear_undo_history);
 	ObjectTypeDB::bind_method("_dropped_files",&EditorNode::_dropped_files);
+	ObjectTypeDB::bind_method("_export_godot3_path",&EditorNode::_export_godot3_path);
 
 
 
@@ -5323,6 +5327,15 @@ void EditorNode::_bind_methods() {
 
 
 
+}
+
+
+void EditorNode::_export_godot3_path(const String& p_path) {
+
+	Error err = export_godot3.export_godot3(p_path);
+	if (err!=OK) {
+		show_warning("Error exporting to Godot 3.0");
+	}
 }
 
 EditorNode::EditorNode() {
@@ -5797,6 +5810,7 @@ EditorNode::EditorNode() {
 	p=tool_menu->get_popup();
 	p->connect("item_pressed",this,"_menu_option");
 	p->add_item(TTR("Orphan Resource Explorer"),TOOLS_ORPHAN_RESOURCES);
+	p->add_item(TTR("Export to Godot 3.0"),TOOLS_EXPORT_GODOT3);
 
 	export_button = memnew( ToolButton );
 	export_button->set_tooltip(TTR("Export the project to many platforms."));
@@ -6623,7 +6637,11 @@ EditorNode::EditorNode() {
 		}
 	}
 
-
+	export_godot3_dialog = memnew( FileDialog );
+	export_godot3_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+	export_godot3_dialog->set_mode(FileDialog::MODE_OPEN_DIR);
+	gui_base->add_child(export_godot3_dialog);
+	export_godot3_dialog->connect("dir_selected",this,"_export_godot3_path");
 
 	Node::set_human_readable_collision_renaming(true);
 
