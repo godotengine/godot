@@ -62,7 +62,7 @@ void CameraEditor::_pressed() {
 
 void CameraEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_pressed"),&CameraEditor::_pressed);
+	ClassDB::bind_method(D_METHOD("_pressed"),&CameraEditor::_pressed);
 
 }
 

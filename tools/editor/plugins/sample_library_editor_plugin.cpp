@@ -413,17 +413,17 @@ void SampleLibraryEditor::drop_data_fw(const Point2& p_point,const Variant& p_da
 
 void SampleLibraryEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&SampleLibraryEditor::_gui_input);
-	ClassDB::bind_method(_MD("_load_pressed"),&SampleLibraryEditor::_load_pressed);
-	ClassDB::bind_method(_MD("_item_edited"),&SampleLibraryEditor::_item_edited);
-	ClassDB::bind_method(_MD("_delete_pressed"),&SampleLibraryEditor::_delete_pressed);
-	ClassDB::bind_method(_MD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
-	ClassDB::bind_method(_MD("_update_library"),&SampleLibraryEditor::_update_library);
-	ClassDB::bind_method(_MD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&SampleLibraryEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_load_pressed"),&SampleLibraryEditor::_load_pressed);
+	ClassDB::bind_method(D_METHOD("_item_edited"),&SampleLibraryEditor::_item_edited);
+	ClassDB::bind_method(D_METHOD("_delete_pressed"),&SampleLibraryEditor::_delete_pressed);
+	ClassDB::bind_method(D_METHOD("_file_load_request"),&SampleLibraryEditor::_file_load_request);
+	ClassDB::bind_method(D_METHOD("_update_library"),&SampleLibraryEditor::_update_library);
+	ClassDB::bind_method(D_METHOD("_button_pressed"),&SampleLibraryEditor::_button_pressed);
 
-	ClassDB::bind_method(_MD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
-	ClassDB::bind_method(_MD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
-	ClassDB::bind_method(_MD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &SampleLibraryEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SampleLibraryEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SampleLibraryEditor::drop_data_fw);
 
 }
 

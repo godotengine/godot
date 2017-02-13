@@ -1189,78 +1189,78 @@ void TileMap::set_light_mask(int p_light_mask) {
 void TileMap::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_tileset","tileset:TileSet"),&TileMap::set_tileset);
-	ClassDB::bind_method(_MD("get_tileset:TileSet"),&TileMap::get_tileset);
+	ClassDB::bind_method(D_METHOD("set_tileset","tileset:TileSet"),&TileMap::set_tileset);
+	ClassDB::bind_method(D_METHOD("get_tileset:TileSet"),&TileMap::get_tileset);
 
-	ClassDB::bind_method(_MD("set_mode","mode"),&TileMap::set_mode);
-	ClassDB::bind_method(_MD("get_mode"),&TileMap::get_mode);
+	ClassDB::bind_method(D_METHOD("set_mode","mode"),&TileMap::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"),&TileMap::get_mode);
 
-	ClassDB::bind_method(_MD("set_half_offset","half_offset"),&TileMap::set_half_offset);
-	ClassDB::bind_method(_MD("get_half_offset"),&TileMap::get_half_offset);
+	ClassDB::bind_method(D_METHOD("set_half_offset","half_offset"),&TileMap::set_half_offset);
+	ClassDB::bind_method(D_METHOD("get_half_offset"),&TileMap::get_half_offset);
 
-	ClassDB::bind_method(_MD("set_custom_transform","custom_transform"),&TileMap::set_custom_transform);
-	ClassDB::bind_method(_MD("get_custom_transform"),&TileMap::get_custom_transform);
+	ClassDB::bind_method(D_METHOD("set_custom_transform","custom_transform"),&TileMap::set_custom_transform);
+	ClassDB::bind_method(D_METHOD("get_custom_transform"),&TileMap::get_custom_transform);
 
-	ClassDB::bind_method(_MD("set_cell_size","size"),&TileMap::set_cell_size);
-	ClassDB::bind_method(_MD("get_cell_size"),&TileMap::get_cell_size);
+	ClassDB::bind_method(D_METHOD("set_cell_size","size"),&TileMap::set_cell_size);
+	ClassDB::bind_method(D_METHOD("get_cell_size"),&TileMap::get_cell_size);
 
-	ClassDB::bind_method(_MD("_set_old_cell_size","size"),&TileMap::_set_old_cell_size);
-	ClassDB::bind_method(_MD("_get_old_cell_size"),&TileMap::_get_old_cell_size);
+	ClassDB::bind_method(D_METHOD("_set_old_cell_size","size"),&TileMap::_set_old_cell_size);
+	ClassDB::bind_method(D_METHOD("_get_old_cell_size"),&TileMap::_get_old_cell_size);
 
-	ClassDB::bind_method(_MD("set_quadrant_size","size"),&TileMap::set_quadrant_size);
-	ClassDB::bind_method(_MD("get_quadrant_size"),&TileMap::get_quadrant_size);
+	ClassDB::bind_method(D_METHOD("set_quadrant_size","size"),&TileMap::set_quadrant_size);
+	ClassDB::bind_method(D_METHOD("get_quadrant_size"),&TileMap::get_quadrant_size);
 
-	ClassDB::bind_method(_MD("set_tile_origin","origin"),&TileMap::set_tile_origin);
-	ClassDB::bind_method(_MD("get_tile_origin"),&TileMap::get_tile_origin);
+	ClassDB::bind_method(D_METHOD("set_tile_origin","origin"),&TileMap::set_tile_origin);
+	ClassDB::bind_method(D_METHOD("get_tile_origin"),&TileMap::get_tile_origin);
 
-	ClassDB::bind_method(_MD("set_center_x","enable"),&TileMap::set_center_x);
-	ClassDB::bind_method(_MD("get_center_x"),&TileMap::get_center_x);
+	ClassDB::bind_method(D_METHOD("set_center_x","enable"),&TileMap::set_center_x);
+	ClassDB::bind_method(D_METHOD("get_center_x"),&TileMap::get_center_x);
 
-	ClassDB::bind_method(_MD("set_center_y","enable"),&TileMap::set_center_y);
-	ClassDB::bind_method(_MD("get_center_y"),&TileMap::get_center_y);
+	ClassDB::bind_method(D_METHOD("set_center_y","enable"),&TileMap::set_center_y);
+	ClassDB::bind_method(D_METHOD("get_center_y"),&TileMap::get_center_y);
 
-	ClassDB::bind_method(_MD("set_y_sort_mode","enable"),&TileMap::set_y_sort_mode);
-	ClassDB::bind_method(_MD("is_y_sort_mode_enabled"),&TileMap::is_y_sort_mode_enabled);
+	ClassDB::bind_method(D_METHOD("set_y_sort_mode","enable"),&TileMap::set_y_sort_mode);
+	ClassDB::bind_method(D_METHOD("is_y_sort_mode_enabled"),&TileMap::is_y_sort_mode_enabled);
 
-	ClassDB::bind_method(_MD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
-	ClassDB::bind_method(_MD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
+	ClassDB::bind_method(D_METHOD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
+	ClassDB::bind_method(D_METHOD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
 
-	ClassDB::bind_method(_MD("set_collision_layer","mask"),&TileMap::set_collision_layer);
-	ClassDB::bind_method(_MD("get_collision_layer"),&TileMap::get_collision_layer);
+	ClassDB::bind_method(D_METHOD("set_collision_layer","mask"),&TileMap::set_collision_layer);
+	ClassDB::bind_method(D_METHOD("get_collision_layer"),&TileMap::get_collision_layer);
 
-	ClassDB::bind_method(_MD("set_collision_mask","mask"),&TileMap::set_collision_mask);
-	ClassDB::bind_method(_MD("get_collision_mask"),&TileMap::get_collision_mask);
+	ClassDB::bind_method(D_METHOD("set_collision_mask","mask"),&TileMap::set_collision_mask);
+	ClassDB::bind_method(D_METHOD("get_collision_mask"),&TileMap::get_collision_mask);
 
-	ClassDB::bind_method(_MD("set_collision_friction","value"),&TileMap::set_collision_friction);
-	ClassDB::bind_method(_MD("get_collision_friction"),&TileMap::get_collision_friction);
+	ClassDB::bind_method(D_METHOD("set_collision_friction","value"),&TileMap::set_collision_friction);
+	ClassDB::bind_method(D_METHOD("get_collision_friction"),&TileMap::get_collision_friction);
 
-	ClassDB::bind_method(_MD("set_collision_bounce","value"),&TileMap::set_collision_bounce);
-	ClassDB::bind_method(_MD("get_collision_bounce"),&TileMap::get_collision_bounce);
+	ClassDB::bind_method(D_METHOD("set_collision_bounce","value"),&TileMap::set_collision_bounce);
+	ClassDB::bind_method(D_METHOD("get_collision_bounce"),&TileMap::get_collision_bounce);
 
-	ClassDB::bind_method(_MD("set_occluder_light_mask","mask"),&TileMap::set_occluder_light_mask);
-	ClassDB::bind_method(_MD("get_occluder_light_mask"),&TileMap::get_occluder_light_mask);
+	ClassDB::bind_method(D_METHOD("set_occluder_light_mask","mask"),&TileMap::set_occluder_light_mask);
+	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"),&TileMap::get_occluder_light_mask);
 
-	ClassDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
-	ClassDB::bind_method(_MD("set_cellv","pos","tile","flip_x","flip_y","transpose"),&TileMap::set_cellv,DEFVAL(false),DEFVAL(false),DEFVAL(false));
-	ClassDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
-	ClassDB::bind_method(_MD("get_cellv","pos"),&TileMap::get_cellv);
-	ClassDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
-	ClassDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
-	ClassDB::bind_method(_MD("is_cell_transposed","x","y"),&TileMap::is_cell_transposed);
+	ClassDB::bind_method(D_METHOD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_cellv","pos","tile","flip_x","flip_y","transpose"),&TileMap::set_cellv,DEFVAL(false),DEFVAL(false),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_cell","x","y"),&TileMap::get_cell);
+	ClassDB::bind_method(D_METHOD("get_cellv","pos"),&TileMap::get_cellv);
+	ClassDB::bind_method(D_METHOD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
+	ClassDB::bind_method(D_METHOD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
+	ClassDB::bind_method(D_METHOD("is_cell_transposed","x","y"),&TileMap::is_cell_transposed);
 
-	ClassDB::bind_method(_MD("clear"),&TileMap::clear);
+	ClassDB::bind_method(D_METHOD("clear"),&TileMap::clear);
 
-	ClassDB::bind_method(_MD("get_used_cells"),&TileMap::get_used_cells);
+	ClassDB::bind_method(D_METHOD("get_used_cells"),&TileMap::get_used_cells);
 
-	ClassDB::bind_method(_MD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
-	ClassDB::bind_method(_MD("world_to_map","worldpos"),&TileMap::world_to_map);
+	ClassDB::bind_method(D_METHOD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("world_to_map","worldpos"),&TileMap::world_to_map);
 
-	ClassDB::bind_method(_MD("_clear_quadrants"),&TileMap::_clear_quadrants);
-	ClassDB::bind_method(_MD("_recreate_quadrants"),&TileMap::_recreate_quadrants);
-	ClassDB::bind_method(_MD("_update_dirty_quadrants"),&TileMap::_update_dirty_quadrants);
+	ClassDB::bind_method(D_METHOD("_clear_quadrants"),&TileMap::_clear_quadrants);
+	ClassDB::bind_method(D_METHOD("_recreate_quadrants"),&TileMap::_recreate_quadrants);
+	ClassDB::bind_method(D_METHOD("_update_dirty_quadrants"),&TileMap::_update_dirty_quadrants);
 
-	ClassDB::bind_method(_MD("_set_tile_data"),&TileMap::_set_tile_data);
-	ClassDB::bind_method(_MD("_get_tile_data"),&TileMap::_get_tile_data);
+	ClassDB::bind_method(D_METHOD("_set_tile_data"),&TileMap::_set_tile_data);
+	ClassDB::bind_method(D_METHOD("_get_tile_data"),&TileMap::_get_tile_data);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Square,Isometric,Custom"),"set_mode","get_mode");
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),"set_tileset","get_tileset");

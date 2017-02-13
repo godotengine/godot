@@ -152,8 +152,8 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 void Particles2DEditorPlugin::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
-	ClassDB::bind_method(_MD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
+	ClassDB::bind_method(D_METHOD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
+	ClassDB::bind_method(D_METHOD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
 }
 
 

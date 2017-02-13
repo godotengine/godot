@@ -900,22 +900,22 @@ Variant GlobalConfig::property_get_revert(const String& p_name) {
 
 void GlobalConfig::_bind_methods() {
 
-	ClassDB::bind_method(_MD("has","name"),&GlobalConfig::has);
-	ClassDB::bind_method(_MD("set_order","name","pos"),&GlobalConfig::set_order);
-	ClassDB::bind_method(_MD("get_order","name"),&GlobalConfig::get_order);
-	ClassDB::bind_method(_MD("set_initial_value","name","value"),&GlobalConfig::set_initial_value);
-	ClassDB::bind_method(_MD("add_property_info", "hint"),&GlobalConfig::_add_property_info_bind);
-	ClassDB::bind_method(_MD("clear","name"),&GlobalConfig::clear);
-	ClassDB::bind_method(_MD("localize_path","path"),&GlobalConfig::localize_path);
-	ClassDB::bind_method(_MD("globalize_path","path"),&GlobalConfig::globalize_path);
-	ClassDB::bind_method(_MD("save"),&GlobalConfig::save);
-	ClassDB::bind_method(_MD("has_singleton","name"),&GlobalConfig::has_singleton);
-	ClassDB::bind_method(_MD("get_singleton","name"),&GlobalConfig::get_singleton_object);
-	ClassDB::bind_method(_MD("load_resource_pack","pack"),&GlobalConfig::_load_resource_pack);
-	ClassDB::bind_method(_MD("property_can_revert","name"),&GlobalConfig::property_can_revert);
-	ClassDB::bind_method(_MD("property_get_revert","name"),&GlobalConfig::property_get_revert);
+	ClassDB::bind_method(D_METHOD("has","name"),&GlobalConfig::has);
+	ClassDB::bind_method(D_METHOD("set_order","name","pos"),&GlobalConfig::set_order);
+	ClassDB::bind_method(D_METHOD("get_order","name"),&GlobalConfig::get_order);
+	ClassDB::bind_method(D_METHOD("set_initial_value","name","value"),&GlobalConfig::set_initial_value);
+	ClassDB::bind_method(D_METHOD("add_property_info", "hint"),&GlobalConfig::_add_property_info_bind);
+	ClassDB::bind_method(D_METHOD("clear","name"),&GlobalConfig::clear);
+	ClassDB::bind_method(D_METHOD("localize_path","path"),&GlobalConfig::localize_path);
+	ClassDB::bind_method(D_METHOD("globalize_path","path"),&GlobalConfig::globalize_path);
+	ClassDB::bind_method(D_METHOD("save"),&GlobalConfig::save);
+	ClassDB::bind_method(D_METHOD("has_singleton","name"),&GlobalConfig::has_singleton);
+	ClassDB::bind_method(D_METHOD("get_singleton","name"),&GlobalConfig::get_singleton_object);
+	ClassDB::bind_method(D_METHOD("load_resource_pack","pack"),&GlobalConfig::_load_resource_pack);
+	ClassDB::bind_method(D_METHOD("property_can_revert","name"),&GlobalConfig::property_can_revert);
+	ClassDB::bind_method(D_METHOD("property_get_revert","name"),&GlobalConfig::property_get_revert);
 
-	ClassDB::bind_method(_MD("save_custom","file"),&GlobalConfig::_save_custom_bnd);
+	ClassDB::bind_method(D_METHOD("save_custom","file"),&GlobalConfig::_save_custom_bnd);
 
 }
 

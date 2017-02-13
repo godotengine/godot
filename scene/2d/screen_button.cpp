@@ -359,33 +359,33 @@ bool TouchScreenButton::is_passby_press_enabled() const{
 
 void TouchScreenButton::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_texture","texture"),&TouchScreenButton::set_texture);
-	ClassDB::bind_method(_MD("get_texture"),&TouchScreenButton::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture","texture"),&TouchScreenButton::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"),&TouchScreenButton::get_texture);
 
-	ClassDB::bind_method(_MD("set_texture_pressed","texture_pressed"),&TouchScreenButton::set_texture_pressed);
-	ClassDB::bind_method(_MD("get_texture_pressed"),&TouchScreenButton::get_texture_pressed);
+	ClassDB::bind_method(D_METHOD("set_texture_pressed","texture_pressed"),&TouchScreenButton::set_texture_pressed);
+	ClassDB::bind_method(D_METHOD("get_texture_pressed"),&TouchScreenButton::get_texture_pressed);
 
-	ClassDB::bind_method(_MD("set_bitmask","bitmask"),&TouchScreenButton::set_bitmask);
-	ClassDB::bind_method(_MD("get_bitmask"),&TouchScreenButton::get_bitmask);
+	ClassDB::bind_method(D_METHOD("set_bitmask","bitmask"),&TouchScreenButton::set_bitmask);
+	ClassDB::bind_method(D_METHOD("get_bitmask"),&TouchScreenButton::get_bitmask);
 
-	ClassDB::bind_method(_MD("set_shape","shape"),&TouchScreenButton::set_shape);
-	ClassDB::bind_method(_MD("get_shape"),&TouchScreenButton::get_shape);
+	ClassDB::bind_method(D_METHOD("set_shape","shape"),&TouchScreenButton::set_shape);
+	ClassDB::bind_method(D_METHOD("get_shape"),&TouchScreenButton::get_shape);
 
-	ClassDB::bind_method(_MD("set_shape_centered","bool"),&TouchScreenButton::set_shape_centered);
-	ClassDB::bind_method(_MD("is_shape_centered"),&TouchScreenButton::is_shape_centered);
+	ClassDB::bind_method(D_METHOD("set_shape_centered","bool"),&TouchScreenButton::set_shape_centered);
+	ClassDB::bind_method(D_METHOD("is_shape_centered"),&TouchScreenButton::is_shape_centered);
 
-	ClassDB::bind_method(_MD("set_action","action"),&TouchScreenButton::set_action);
-	ClassDB::bind_method(_MD("get_action"),&TouchScreenButton::get_action);
+	ClassDB::bind_method(D_METHOD("set_action","action"),&TouchScreenButton::set_action);
+	ClassDB::bind_method(D_METHOD("get_action"),&TouchScreenButton::get_action);
 
-	ClassDB::bind_method(_MD("set_visibility_mode","mode"),&TouchScreenButton::set_visibility_mode);
-	ClassDB::bind_method(_MD("get_visibility_mode"),&TouchScreenButton::get_visibility_mode);
+	ClassDB::bind_method(D_METHOD("set_visibility_mode","mode"),&TouchScreenButton::set_visibility_mode);
+	ClassDB::bind_method(D_METHOD("get_visibility_mode"),&TouchScreenButton::get_visibility_mode);
 
-	ClassDB::bind_method(_MD("set_passby_press","enabled"),&TouchScreenButton::set_passby_press);
-	ClassDB::bind_method(_MD("is_passby_press_enabled"),&TouchScreenButton::is_passby_press_enabled);
+	ClassDB::bind_method(D_METHOD("set_passby_press","enabled"),&TouchScreenButton::set_passby_press);
+	ClassDB::bind_method(D_METHOD("is_passby_press_enabled"),&TouchScreenButton::is_passby_press_enabled);
 
-	ClassDB::bind_method(_MD("is_pressed"),&TouchScreenButton::is_pressed);
+	ClassDB::bind_method(D_METHOD("is_pressed"),&TouchScreenButton::is_pressed);
 
-	ClassDB::bind_method(_MD("_input"),&TouchScreenButton::_input);
+	ClassDB::bind_method(D_METHOD("_input"),&TouchScreenButton::_input);
 
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture");
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture_pressed","get_texture_pressed");

@@ -263,36 +263,36 @@ void RayCast2D::clear_exceptions(){
 void RayCast2D::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_enabled","enabled"),&RayCast2D::set_enabled);
-	ClassDB::bind_method(_MD("is_enabled"),&RayCast2D::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled","enabled"),&RayCast2D::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"),&RayCast2D::is_enabled);
 
-	ClassDB::bind_method(_MD("set_cast_to","local_point"),&RayCast2D::set_cast_to);
-	ClassDB::bind_method(_MD("get_cast_to"),&RayCast2D::get_cast_to);
+	ClassDB::bind_method(D_METHOD("set_cast_to","local_point"),&RayCast2D::set_cast_to);
+	ClassDB::bind_method(D_METHOD("get_cast_to"),&RayCast2D::get_cast_to);
 
-	ClassDB::bind_method(_MD("is_colliding"),&RayCast2D::is_colliding);
-	ClassDB::bind_method(_MD("force_raycast_update"),&RayCast2D::force_raycast_update);
+	ClassDB::bind_method(D_METHOD("is_colliding"),&RayCast2D::is_colliding);
+	ClassDB::bind_method(D_METHOD("force_raycast_update"),&RayCast2D::force_raycast_update);
 
-	ClassDB::bind_method(_MD("get_collider"),&RayCast2D::get_collider);
-	ClassDB::bind_method(_MD("get_collider_shape"),&RayCast2D::get_collider_shape);
-	ClassDB::bind_method(_MD("get_collision_point"),&RayCast2D::get_collision_point);
-	ClassDB::bind_method(_MD("get_collision_normal"),&RayCast2D::get_collision_normal);
+	ClassDB::bind_method(D_METHOD("get_collider"),&RayCast2D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"),&RayCast2D::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_point"),&RayCast2D::get_collision_point);
+	ClassDB::bind_method(D_METHOD("get_collision_normal"),&RayCast2D::get_collision_normal);
 
-	ClassDB::bind_method(_MD("add_exception_rid","rid"),&RayCast2D::add_exception_rid);
-	ClassDB::bind_method(_MD("add_exception","node"),&RayCast2D::add_exception);
+	ClassDB::bind_method(D_METHOD("add_exception_rid","rid"),&RayCast2D::add_exception_rid);
+	ClassDB::bind_method(D_METHOD("add_exception","node"),&RayCast2D::add_exception);
 
-	ClassDB::bind_method(_MD("remove_exception_rid","rid"),&RayCast2D::remove_exception_rid);
-	ClassDB::bind_method(_MD("remove_exception","node"),&RayCast2D::remove_exception);
+	ClassDB::bind_method(D_METHOD("remove_exception_rid","rid"),&RayCast2D::remove_exception_rid);
+	ClassDB::bind_method(D_METHOD("remove_exception","node"),&RayCast2D::remove_exception);
 
-	ClassDB::bind_method(_MD("clear_exceptions"),&RayCast2D::clear_exceptions);
+	ClassDB::bind_method(D_METHOD("clear_exceptions"),&RayCast2D::clear_exceptions);
 
-	ClassDB::bind_method(_MD("set_layer_mask","mask"),&RayCast2D::set_layer_mask);
-	ClassDB::bind_method(_MD("get_layer_mask"),&RayCast2D::get_layer_mask);
+	ClassDB::bind_method(D_METHOD("set_layer_mask","mask"),&RayCast2D::set_layer_mask);
+	ClassDB::bind_method(D_METHOD("get_layer_mask"),&RayCast2D::get_layer_mask);
 
-	ClassDB::bind_method(_MD("set_type_mask","mask"),&RayCast2D::set_type_mask);
-	ClassDB::bind_method(_MD("get_type_mask"),&RayCast2D::get_type_mask);
+	ClassDB::bind_method(D_METHOD("set_type_mask","mask"),&RayCast2D::set_type_mask);
+	ClassDB::bind_method(D_METHOD("get_type_mask"),&RayCast2D::get_type_mask);
 
-	ClassDB::bind_method(_MD("set_exclude_parent_body","mask"),&RayCast2D::set_exclude_parent_body);
-	ClassDB::bind_method(_MD("get_exclude_parent_body"),&RayCast2D::get_exclude_parent_body);
+	ClassDB::bind_method(D_METHOD("set_exclude_parent_body","mask"),&RayCast2D::set_exclude_parent_body);
+	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"),&RayCast2D::get_exclude_parent_body);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),"set_enabled","is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"exclude_parent"),"set_exclude_parent_body","get_exclude_parent_body");

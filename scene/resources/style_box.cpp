@@ -70,20 +70,20 @@ Size2 StyleBox::get_center_size() const {
 
 void StyleBox::_bind_methods() {
 
-	ClassDB::bind_method(_MD("test_mask","point","rect"),&StyleBox::test_mask);
+	ClassDB::bind_method(D_METHOD("test_mask","point","rect"),&StyleBox::test_mask);
 
-	ClassDB::bind_method(_MD("set_default_margin","margin","offset"),&StyleBox::set_default_margin);
-	ClassDB::bind_method(_MD("get_default_margin","margin"),&StyleBox::get_default_margin);
+	ClassDB::bind_method(D_METHOD("set_default_margin","margin","offset"),&StyleBox::set_default_margin);
+	ClassDB::bind_method(D_METHOD("get_default_margin","margin"),&StyleBox::get_default_margin);
 
-	//ClassDB::bind_method(_MD("set_default_margin"),&StyleBox::set_default_margin);
-	//ClassDB::bind_method(_MD("get_default_margin"),&StyleBox::get_default_margin);
+	//ClassDB::bind_method(D_METHOD("set_default_margin"),&StyleBox::set_default_margin);
+	//ClassDB::bind_method(D_METHOD("get_default_margin"),&StyleBox::get_default_margin);
 
-	ClassDB::bind_method(_MD("get_margin","margin"),&StyleBox::get_margin);
-	ClassDB::bind_method(_MD("get_minimum_size"),&StyleBox::get_minimum_size);
-	ClassDB::bind_method(_MD("get_center_size"),&StyleBox::get_center_size);
-	ClassDB::bind_method(_MD("get_offset"),&StyleBox::get_offset);
+	ClassDB::bind_method(D_METHOD("get_margin","margin"),&StyleBox::get_margin);
+	ClassDB::bind_method(D_METHOD("get_minimum_size"),&StyleBox::get_minimum_size);
+	ClassDB::bind_method(D_METHOD("get_center_size"),&StyleBox::get_center_size);
+	ClassDB::bind_method(D_METHOD("get_offset"),&StyleBox::get_offset);
 
-	ClassDB::bind_method(_MD("draw","canvas_item","rect"),&StyleBox::draw);
+	ClassDB::bind_method(D_METHOD("draw","canvas_item","rect"),&StyleBox::draw);
 
 	ADD_GROUP("Content Margin","content_margin_");
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin_left", PROPERTY_HINT_RANGE,"-1,2048,1" ), "set_default_margin","get_default_margin", MARGIN_LEFT );
@@ -209,23 +209,23 @@ Color StyleBoxTexture::get_modulate() const {
 
 void StyleBoxTexture::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_texture","texture:Texture"),&StyleBoxTexture::set_texture);
-	ClassDB::bind_method(_MD("get_texture:Texture"),&StyleBoxTexture::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture","texture:Texture"),&StyleBoxTexture::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"),&StyleBoxTexture::get_texture);
 
-	ClassDB::bind_method(_MD("set_margin_size","margin","size"),&StyleBoxTexture::set_margin_size);
-	ClassDB::bind_method(_MD("get_margin_size","margin"),&StyleBoxTexture::get_margin_size);
+	ClassDB::bind_method(D_METHOD("set_margin_size","margin","size"),&StyleBoxTexture::set_margin_size);
+	ClassDB::bind_method(D_METHOD("get_margin_size","margin"),&StyleBoxTexture::get_margin_size);
 
-	ClassDB::bind_method(_MD("set_expand_margin_size","margin","size"),&StyleBoxTexture::set_expand_margin_size);
-	ClassDB::bind_method(_MD("get_expand_margin_size","margin"),&StyleBoxTexture::get_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("set_expand_margin_size","margin","size"),&StyleBoxTexture::set_expand_margin_size);
+	ClassDB::bind_method(D_METHOD("get_expand_margin_size","margin"),&StyleBoxTexture::get_expand_margin_size);
 
-	ClassDB::bind_method(_MD("set_region_rect","region"),&StyleBoxTexture::set_region_rect);
-	ClassDB::bind_method(_MD("get_region_rect"),&StyleBoxTexture::get_region_rect);
+	ClassDB::bind_method(D_METHOD("set_region_rect","region"),&StyleBoxTexture::set_region_rect);
+	ClassDB::bind_method(D_METHOD("get_region_rect"),&StyleBoxTexture::get_region_rect);
 
-	ClassDB::bind_method(_MD("set_draw_center","enable"),&StyleBoxTexture::set_draw_center);
-	ClassDB::bind_method(_MD("get_draw_center"),&StyleBoxTexture::get_draw_center);
+	ClassDB::bind_method(D_METHOD("set_draw_center","enable"),&StyleBoxTexture::set_draw_center);
+	ClassDB::bind_method(D_METHOD("get_draw_center"),&StyleBoxTexture::get_draw_center);
 
-	ClassDB::bind_method(_MD("set_modulate","color"),&StyleBoxTexture::set_modulate);
-	ClassDB::bind_method(_MD("get_modulate"),&StyleBoxTexture::get_modulate);
+	ClassDB::bind_method(D_METHOD("set_modulate","color"),&StyleBoxTexture::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"),&StyleBoxTexture::get_modulate);
 
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
@@ -390,18 +390,18 @@ float StyleBoxFlat::get_style_margin(Margin p_margin) const {
 }
 void StyleBoxFlat::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_bg_color","color"),&StyleBoxFlat::set_bg_color);
-	ClassDB::bind_method(_MD("get_bg_color"),&StyleBoxFlat::get_bg_color);
-	ClassDB::bind_method(_MD("set_light_color","color"),&StyleBoxFlat::set_light_color);
-	ClassDB::bind_method(_MD("get_light_color"),&StyleBoxFlat::get_light_color);
-	ClassDB::bind_method(_MD("set_dark_color","color"),&StyleBoxFlat::set_dark_color);
-	ClassDB::bind_method(_MD("get_dark_color"),&StyleBoxFlat::get_dark_color);
-	ClassDB::bind_method(_MD("set_border_size","size"),&StyleBoxFlat::set_border_size);
-	ClassDB::bind_method(_MD("get_border_size"),&StyleBoxFlat::get_border_size);
-	ClassDB::bind_method(_MD("set_border_blend","blend"),&StyleBoxFlat::set_border_blend);
-	ClassDB::bind_method(_MD("get_border_blend"),&StyleBoxFlat::get_border_blend);
-	ClassDB::bind_method(_MD("set_draw_center","size"),&StyleBoxFlat::set_draw_center);
-	ClassDB::bind_method(_MD("get_draw_center"),&StyleBoxFlat::get_draw_center);
+	ClassDB::bind_method(D_METHOD("set_bg_color","color"),&StyleBoxFlat::set_bg_color);
+	ClassDB::bind_method(D_METHOD("get_bg_color"),&StyleBoxFlat::get_bg_color);
+	ClassDB::bind_method(D_METHOD("set_light_color","color"),&StyleBoxFlat::set_light_color);
+	ClassDB::bind_method(D_METHOD("get_light_color"),&StyleBoxFlat::get_light_color);
+	ClassDB::bind_method(D_METHOD("set_dark_color","color"),&StyleBoxFlat::set_dark_color);
+	ClassDB::bind_method(D_METHOD("get_dark_color"),&StyleBoxFlat::get_dark_color);
+	ClassDB::bind_method(D_METHOD("set_border_size","size"),&StyleBoxFlat::set_border_size);
+	ClassDB::bind_method(D_METHOD("get_border_size"),&StyleBoxFlat::get_border_size);
+	ClassDB::bind_method(D_METHOD("set_border_blend","blend"),&StyleBoxFlat::set_border_blend);
+	ClassDB::bind_method(D_METHOD("get_border_blend"),&StyleBoxFlat::get_border_blend);
+	ClassDB::bind_method(D_METHOD("set_draw_center","size"),&StyleBoxFlat::set_draw_center);
+	ClassDB::bind_method(D_METHOD("get_draw_center"),&StyleBoxFlat::get_draw_center);
 
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "bg_color"), "set_bg_color","get_bg_color") ;
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "light_color"),"set_light_color","get_light_color");

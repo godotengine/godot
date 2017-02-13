@@ -47,14 +47,14 @@
 ParamDef::ParamDef(const Variant& p_variant) { used=true; val=p_variant; }
 
 
-MethodDefinition _MD(const char* p_name) {
+MethodDefinition D_METHOD(const char* p_name) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -62,7 +62,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1) {
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -72,7 +72,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2) {
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -83,7 +83,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -95,7 +95,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -109,7 +109,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 }
 
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -123,7 +123,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -138,7 +138,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -154,7 +154,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
@@ -171,7 +171,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 	return md;
 }
 
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9,const char *p_arg10) {
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9,const char *p_arg10) {
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);

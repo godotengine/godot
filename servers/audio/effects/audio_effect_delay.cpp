@@ -244,45 +244,45 @@ float AudioEffectDelay::get_feedback_lowpass() const{
 
 void AudioEffectDelay::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_dry","amount"),&AudioEffectDelay::set_dry);
-	ClassDB::bind_method(_MD("get_dry"),&AudioEffectDelay::get_dry);
+	ClassDB::bind_method(D_METHOD("set_dry","amount"),&AudioEffectDelay::set_dry);
+	ClassDB::bind_method(D_METHOD("get_dry"),&AudioEffectDelay::get_dry);
 
-	ClassDB::bind_method(_MD("set_tap1_active","amount"),&AudioEffectDelay::set_tap1_active);
-	ClassDB::bind_method(_MD("is_tap1_active"),&AudioEffectDelay::is_tap1_active);
+	ClassDB::bind_method(D_METHOD("set_tap1_active","amount"),&AudioEffectDelay::set_tap1_active);
+	ClassDB::bind_method(D_METHOD("is_tap1_active"),&AudioEffectDelay::is_tap1_active);
 
-	ClassDB::bind_method(_MD("set_tap1_delay_ms","amount"),&AudioEffectDelay::set_tap1_delay_ms);
-	ClassDB::bind_method(_MD("get_tap1_delay_ms"),&AudioEffectDelay::get_tap1_delay_ms);
+	ClassDB::bind_method(D_METHOD("set_tap1_delay_ms","amount"),&AudioEffectDelay::set_tap1_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_tap1_delay_ms"),&AudioEffectDelay::get_tap1_delay_ms);
 
-	ClassDB::bind_method(_MD("set_tap1_level_db","amount"),&AudioEffectDelay::set_tap1_level_db);
-	ClassDB::bind_method(_MD("get_tap1_level_db"),&AudioEffectDelay::get_tap1_level_db);
+	ClassDB::bind_method(D_METHOD("set_tap1_level_db","amount"),&AudioEffectDelay::set_tap1_level_db);
+	ClassDB::bind_method(D_METHOD("get_tap1_level_db"),&AudioEffectDelay::get_tap1_level_db);
 
-	ClassDB::bind_method(_MD("set_tap1_pan","amount"),&AudioEffectDelay::set_tap1_pan);
-	ClassDB::bind_method(_MD("get_tap1_pan"),&AudioEffectDelay::get_tap1_pan);
+	ClassDB::bind_method(D_METHOD("set_tap1_pan","amount"),&AudioEffectDelay::set_tap1_pan);
+	ClassDB::bind_method(D_METHOD("get_tap1_pan"),&AudioEffectDelay::get_tap1_pan);
 
-	ClassDB::bind_method(_MD("set_tap2_active","amount"),&AudioEffectDelay::set_tap2_active);
-	ClassDB::bind_method(_MD("is_tap2_active"),&AudioEffectDelay::is_tap2_active);
+	ClassDB::bind_method(D_METHOD("set_tap2_active","amount"),&AudioEffectDelay::set_tap2_active);
+	ClassDB::bind_method(D_METHOD("is_tap2_active"),&AudioEffectDelay::is_tap2_active);
 
-	ClassDB::bind_method(_MD("set_tap2_delay_ms","amount"),&AudioEffectDelay::set_tap2_delay_ms);
-	ClassDB::bind_method(_MD("get_tap2_delay_ms"),&AudioEffectDelay::get_tap2_delay_ms);
+	ClassDB::bind_method(D_METHOD("set_tap2_delay_ms","amount"),&AudioEffectDelay::set_tap2_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_tap2_delay_ms"),&AudioEffectDelay::get_tap2_delay_ms);
 
-	ClassDB::bind_method(_MD("set_tap2_level_db","amount"),&AudioEffectDelay::set_tap2_level_db);
-	ClassDB::bind_method(_MD("get_tap2_level_db"),&AudioEffectDelay::get_tap2_level_db);
+	ClassDB::bind_method(D_METHOD("set_tap2_level_db","amount"),&AudioEffectDelay::set_tap2_level_db);
+	ClassDB::bind_method(D_METHOD("get_tap2_level_db"),&AudioEffectDelay::get_tap2_level_db);
 
-	ClassDB::bind_method(_MD("set_tap2_pan","amount"),&AudioEffectDelay::set_tap2_pan);
-	ClassDB::bind_method(_MD("get_tap2_pan"),&AudioEffectDelay::get_tap2_pan);
+	ClassDB::bind_method(D_METHOD("set_tap2_pan","amount"),&AudioEffectDelay::set_tap2_pan);
+	ClassDB::bind_method(D_METHOD("get_tap2_pan"),&AudioEffectDelay::get_tap2_pan);
 
 
-	ClassDB::bind_method(_MD("set_feedback_active","amount"),&AudioEffectDelay::set_feedback_active);
-	ClassDB::bind_method(_MD("is_feedback_active"),&AudioEffectDelay::is_feedback_active);
+	ClassDB::bind_method(D_METHOD("set_feedback_active","amount"),&AudioEffectDelay::set_feedback_active);
+	ClassDB::bind_method(D_METHOD("is_feedback_active"),&AudioEffectDelay::is_feedback_active);
 
-	ClassDB::bind_method(_MD("set_feedback_delay_ms","amount"),&AudioEffectDelay::set_feedback_delay_ms);
-	ClassDB::bind_method(_MD("get_feedback_delay_ms"),&AudioEffectDelay::get_feedback_delay_ms);
+	ClassDB::bind_method(D_METHOD("set_feedback_delay_ms","amount"),&AudioEffectDelay::set_feedback_delay_ms);
+	ClassDB::bind_method(D_METHOD("get_feedback_delay_ms"),&AudioEffectDelay::get_feedback_delay_ms);
 
-	ClassDB::bind_method(_MD("set_feedback_level_db","amount"),&AudioEffectDelay::set_feedback_level_db);
-	ClassDB::bind_method(_MD("get_feedback_level_db"),&AudioEffectDelay::get_feedback_level_db);
+	ClassDB::bind_method(D_METHOD("set_feedback_level_db","amount"),&AudioEffectDelay::set_feedback_level_db);
+	ClassDB::bind_method(D_METHOD("get_feedback_level_db"),&AudioEffectDelay::get_feedback_level_db);
 
-	ClassDB::bind_method(_MD("set_feedback_lowpass","amount"),&AudioEffectDelay::set_feedback_lowpass);
-	ClassDB::bind_method(_MD("get_feedback_lowpass"),&AudioEffectDelay::get_feedback_lowpass);
+	ClassDB::bind_method(D_METHOD("set_feedback_lowpass","amount"),&AudioEffectDelay::set_feedback_lowpass);
+	ClassDB::bind_method(D_METHOD("get_feedback_lowpass"),&AudioEffectDelay::get_feedback_lowpass);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"dry",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_dry","get_dry");
 

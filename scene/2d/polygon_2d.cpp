@@ -333,42 +333,42 @@ Vector2 Polygon2D::get_offset() const {
 
 void Polygon2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_polygon","polygon"),&Polygon2D::set_polygon);
-	ClassDB::bind_method(_MD("get_polygon"),&Polygon2D::get_polygon);
+	ClassDB::bind_method(D_METHOD("set_polygon","polygon"),&Polygon2D::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon"),&Polygon2D::get_polygon);
 
-	ClassDB::bind_method(_MD("set_uv","uv"),&Polygon2D::set_uv);
-	ClassDB::bind_method(_MD("get_uv"),&Polygon2D::get_uv);
+	ClassDB::bind_method(D_METHOD("set_uv","uv"),&Polygon2D::set_uv);
+	ClassDB::bind_method(D_METHOD("get_uv"),&Polygon2D::get_uv);
 
-	ClassDB::bind_method(_MD("set_color","color"),&Polygon2D::set_color);
-	ClassDB::bind_method(_MD("get_color"),&Polygon2D::get_color);
+	ClassDB::bind_method(D_METHOD("set_color","color"),&Polygon2D::set_color);
+	ClassDB::bind_method(D_METHOD("get_color"),&Polygon2D::get_color);
 
-	ClassDB::bind_method(_MD("set_vertex_colors","vertex_colors"),&Polygon2D::set_vertex_colors);
-	ClassDB::bind_method(_MD("get_vertex_colors"),&Polygon2D::get_vertex_colors);
+	ClassDB::bind_method(D_METHOD("set_vertex_colors","vertex_colors"),&Polygon2D::set_vertex_colors);
+	ClassDB::bind_method(D_METHOD("get_vertex_colors"),&Polygon2D::get_vertex_colors);
 
-	ClassDB::bind_method(_MD("set_texture","texture"),&Polygon2D::set_texture);
-	ClassDB::bind_method(_MD("get_texture"),&Polygon2D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture","texture"),&Polygon2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture"),&Polygon2D::get_texture);
 
-	ClassDB::bind_method(_MD("set_texture_offset","texture_offset"),&Polygon2D::set_texture_offset);
-	ClassDB::bind_method(_MD("get_texture_offset"),&Polygon2D::get_texture_offset);
+	ClassDB::bind_method(D_METHOD("set_texture_offset","texture_offset"),&Polygon2D::set_texture_offset);
+	ClassDB::bind_method(D_METHOD("get_texture_offset"),&Polygon2D::get_texture_offset);
 
-	ClassDB::bind_method(_MD("set_texture_rotation","texture_rotation"),&Polygon2D::set_texture_rotation);
-	ClassDB::bind_method(_MD("get_texture_rotation"),&Polygon2D::get_texture_rotation);
+	ClassDB::bind_method(D_METHOD("set_texture_rotation","texture_rotation"),&Polygon2D::set_texture_rotation);
+	ClassDB::bind_method(D_METHOD("get_texture_rotation"),&Polygon2D::get_texture_rotation);
 
-	ClassDB::bind_method(_MD("_set_texture_rotationd","texture_rotation"),&Polygon2D::_set_texture_rotationd);
-	ClassDB::bind_method(_MD("_get_texture_rotationd"),&Polygon2D::_get_texture_rotationd);
+	ClassDB::bind_method(D_METHOD("_set_texture_rotationd","texture_rotation"),&Polygon2D::_set_texture_rotationd);
+	ClassDB::bind_method(D_METHOD("_get_texture_rotationd"),&Polygon2D::_get_texture_rotationd);
 
-	ClassDB::bind_method(_MD("set_texture_scale","texture_scale"),&Polygon2D::set_texture_scale);
-	ClassDB::bind_method(_MD("get_texture_scale"),&Polygon2D::get_texture_scale);
+	ClassDB::bind_method(D_METHOD("set_texture_scale","texture_scale"),&Polygon2D::set_texture_scale);
+	ClassDB::bind_method(D_METHOD("get_texture_scale"),&Polygon2D::get_texture_scale);
 
 
-	ClassDB::bind_method(_MD("set_invert","invert"),&Polygon2D::set_invert);
-	ClassDB::bind_method(_MD("get_invert"),&Polygon2D::get_invert);
+	ClassDB::bind_method(D_METHOD("set_invert","invert"),&Polygon2D::set_invert);
+	ClassDB::bind_method(D_METHOD("get_invert"),&Polygon2D::get_invert);
 
-	ClassDB::bind_method(_MD("set_invert_border","invert_border"),&Polygon2D::set_invert_border);
-	ClassDB::bind_method(_MD("get_invert_border"),&Polygon2D::get_invert_border);
+	ClassDB::bind_method(D_METHOD("set_invert_border","invert_border"),&Polygon2D::set_invert_border);
+	ClassDB::bind_method(D_METHOD("get_invert_border"),&Polygon2D::get_invert_border);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&Polygon2D::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&Polygon2D::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&Polygon2D::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&Polygon2D::get_offset);
 
 
 

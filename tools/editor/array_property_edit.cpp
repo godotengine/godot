@@ -288,10 +288,10 @@ Node *ArrayPropertyEdit::get_node() {
 
 void ArrayPropertyEdit::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_set_size"),&ArrayPropertyEdit::_set_size);
-	ClassDB::bind_method(_MD("_set_value"),&ArrayPropertyEdit::_set_value);
-	ClassDB::bind_method(_MD("_notif_change"),&ArrayPropertyEdit::_notif_change);
-	ClassDB::bind_method(_MD("_notif_changev"),&ArrayPropertyEdit::_notif_changev);
+	ClassDB::bind_method(D_METHOD("_set_size"),&ArrayPropertyEdit::_set_size);
+	ClassDB::bind_method(D_METHOD("_set_value"),&ArrayPropertyEdit::_set_value);
+	ClassDB::bind_method(D_METHOD("_notif_change"),&ArrayPropertyEdit::_notif_change);
+	ClassDB::bind_method(D_METHOD("_notif_changev"),&ArrayPropertyEdit::_notif_changev);
 }
 
 ArrayPropertyEdit::ArrayPropertyEdit()

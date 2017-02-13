@@ -422,15 +422,15 @@ bool SplitContainer::is_collapsed() const {
 
 void SplitContainer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&SplitContainer::_gui_input);
-	ClassDB::bind_method(_MD("set_split_offset","offset"),&SplitContainer::set_split_offset);
-	ClassDB::bind_method(_MD("get_split_offset"),&SplitContainer::get_split_offset);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&SplitContainer::_gui_input);
+	ClassDB::bind_method(D_METHOD("set_split_offset","offset"),&SplitContainer::set_split_offset);
+	ClassDB::bind_method(D_METHOD("get_split_offset"),&SplitContainer::get_split_offset);
 
-	ClassDB::bind_method(_MD("set_collapsed","collapsed"),&SplitContainer::set_collapsed);
-	ClassDB::bind_method(_MD("is_collapsed"),&SplitContainer::is_collapsed);
+	ClassDB::bind_method(D_METHOD("set_collapsed","collapsed"),&SplitContainer::set_collapsed);
+	ClassDB::bind_method(D_METHOD("is_collapsed"),&SplitContainer::is_collapsed);
 
-	ClassDB::bind_method(_MD("set_dragger_visibility","mode"),&SplitContainer::set_dragger_visibility);
-	ClassDB::bind_method(_MD("get_dragger_visibility"),&SplitContainer::get_dragger_visibility);
+	ClassDB::bind_method(D_METHOD("set_dragger_visibility","mode"),&SplitContainer::set_dragger_visibility);
+	ClassDB::bind_method(D_METHOD("get_dragger_visibility"),&SplitContainer::get_dragger_visibility);
 
 	ADD_SIGNAL( MethodInfo("dragged",PropertyInfo(Variant::INT,"offset")));
 

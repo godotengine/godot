@@ -1185,60 +1185,60 @@ void GridMap::_update_dirty_map_callback() {
 
 void GridMap::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_theme","theme:MeshLibrary"),&GridMap::set_theme);
-	ClassDB::bind_method(_MD("get_theme:MeshLibrary"),&GridMap::get_theme);
+	ClassDB::bind_method(D_METHOD("set_theme","theme:MeshLibrary"),&GridMap::set_theme);
+	ClassDB::bind_method(D_METHOD("get_theme:MeshLibrary"),&GridMap::get_theme);
 
-	ClassDB::bind_method(_MD("set_bake","enable"),&GridMap::set_bake);
-	ClassDB::bind_method(_MD("is_baking_enabled"),&GridMap::is_baking_enabled);
+	ClassDB::bind_method(D_METHOD("set_bake","enable"),&GridMap::set_bake);
+	ClassDB::bind_method(D_METHOD("is_baking_enabled"),&GridMap::is_baking_enabled);
 
-	ClassDB::bind_method(_MD("set_cell_size","size"),&GridMap::set_cell_size);
-	ClassDB::bind_method(_MD("get_cell_size"),&GridMap::get_cell_size);
+	ClassDB::bind_method(D_METHOD("set_cell_size","size"),&GridMap::set_cell_size);
+	ClassDB::bind_method(D_METHOD("get_cell_size"),&GridMap::get_cell_size);
 
-	ClassDB::bind_method(_MD("set_octant_size","size"),&GridMap::set_octant_size);
-	ClassDB::bind_method(_MD("get_octant_size"),&GridMap::get_octant_size);
+	ClassDB::bind_method(D_METHOD("set_octant_size","size"),&GridMap::set_octant_size);
+	ClassDB::bind_method(D_METHOD("get_octant_size"),&GridMap::get_octant_size);
 
-	ClassDB::bind_method(_MD("set_cell_item","x","y","z","item","orientation"),&GridMap::set_cell_item,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_cell_item","x","y","z"),&GridMap::get_cell_item);
-	ClassDB::bind_method(_MD("get_cell_item_orientation","x","y","z"),&GridMap::get_cell_item_orientation);
+	ClassDB::bind_method(D_METHOD("set_cell_item","x","y","z","item","orientation"),&GridMap::set_cell_item,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_cell_item","x","y","z"),&GridMap::get_cell_item);
+	ClassDB::bind_method(D_METHOD("get_cell_item_orientation","x","y","z"),&GridMap::get_cell_item_orientation);
 
-	//ClassDB::bind_method(_MD("_recreate_octants"),&GridMap::_recreate_octants);
-	ClassDB::bind_method(_MD("_update_dirty_map_callback"),&GridMap::_update_dirty_map_callback);
-	ClassDB::bind_method(_MD("resource_changed","resource"),&GridMap::resource_changed);
+	//ClassDB::bind_method(D_METHOD("_recreate_octants"),&GridMap::_recreate_octants);
+	ClassDB::bind_method(D_METHOD("_update_dirty_map_callback"),&GridMap::_update_dirty_map_callback);
+	ClassDB::bind_method(D_METHOD("resource_changed","resource"),&GridMap::resource_changed);
 
-	ClassDB::bind_method(_MD("set_center_x","enable"),&GridMap::set_center_x);
-	ClassDB::bind_method(_MD("get_center_x"),&GridMap::get_center_x);
-	ClassDB::bind_method(_MD("set_center_y","enable"),&GridMap::set_center_y);
-	ClassDB::bind_method(_MD("get_center_y"),&GridMap::get_center_y);
-	ClassDB::bind_method(_MD("set_center_z","enable"),&GridMap::set_center_z);
-	ClassDB::bind_method(_MD("get_center_z"),&GridMap::get_center_z);
+	ClassDB::bind_method(D_METHOD("set_center_x","enable"),&GridMap::set_center_x);
+	ClassDB::bind_method(D_METHOD("get_center_x"),&GridMap::get_center_x);
+	ClassDB::bind_method(D_METHOD("set_center_y","enable"),&GridMap::set_center_y);
+	ClassDB::bind_method(D_METHOD("get_center_y"),&GridMap::get_center_y);
+	ClassDB::bind_method(D_METHOD("set_center_z","enable"),&GridMap::set_center_z);
+	ClassDB::bind_method(D_METHOD("get_center_z"),&GridMap::get_center_z);
 
-	ClassDB::bind_method(_MD("set_clip","enabled","clipabove","floor","axis"),&GridMap::set_clip,DEFVAL(true),DEFVAL(0),DEFVAL(Vector3::AXIS_X));
+	ClassDB::bind_method(D_METHOD("set_clip","enabled","clipabove","floor","axis"),&GridMap::set_clip,DEFVAL(true),DEFVAL(0),DEFVAL(Vector3::AXIS_X));
 
-	ClassDB::bind_method(_MD("create_area","id","area"),&GridMap::create_area);
-	ClassDB::bind_method(_MD("area_get_bounds","area","bounds"),&GridMap::area_get_bounds);
-	ClassDB::bind_method(_MD("area_set_exterior_portal","area","enable"),&GridMap::area_set_exterior_portal);
-	ClassDB::bind_method(_MD("area_set_name","area","name"),&GridMap::area_set_name);
-	ClassDB::bind_method(_MD("area_get_name","area"),&GridMap::area_get_name);
-	ClassDB::bind_method(_MD("area_is_exterior_portal","area"),&GridMap::area_is_exterior_portal);
-	ClassDB::bind_method(_MD("area_set_portal_disable_distance","area","distance"),&GridMap::area_set_portal_disable_distance);
-	ClassDB::bind_method(_MD("area_get_portal_disable_distance","area"),&GridMap::area_get_portal_disable_distance);
-	ClassDB::bind_method(_MD("area_set_portal_disable_color","area","color"),&GridMap::area_set_portal_disable_color);
-	ClassDB::bind_method(_MD("area_get_portal_disable_color","area"),&GridMap::area_get_portal_disable_color);
-	ClassDB::bind_method(_MD("erase_area","area"),&GridMap::erase_area);
-	ClassDB::bind_method(_MD("get_unused_area_id","area"),&GridMap::get_unused_area_id);
-	ClassDB::bind_method(_MD("bake_geometry"),&GridMap::bake_geometry);
+	ClassDB::bind_method(D_METHOD("create_area","id","area"),&GridMap::create_area);
+	ClassDB::bind_method(D_METHOD("area_get_bounds","area","bounds"),&GridMap::area_get_bounds);
+	ClassDB::bind_method(D_METHOD("area_set_exterior_portal","area","enable"),&GridMap::area_set_exterior_portal);
+	ClassDB::bind_method(D_METHOD("area_set_name","area","name"),&GridMap::area_set_name);
+	ClassDB::bind_method(D_METHOD("area_get_name","area"),&GridMap::area_get_name);
+	ClassDB::bind_method(D_METHOD("area_is_exterior_portal","area"),&GridMap::area_is_exterior_portal);
+	ClassDB::bind_method(D_METHOD("area_set_portal_disable_distance","area","distance"),&GridMap::area_set_portal_disable_distance);
+	ClassDB::bind_method(D_METHOD("area_get_portal_disable_distance","area"),&GridMap::area_get_portal_disable_distance);
+	ClassDB::bind_method(D_METHOD("area_set_portal_disable_color","area","color"),&GridMap::area_set_portal_disable_color);
+	ClassDB::bind_method(D_METHOD("area_get_portal_disable_color","area"),&GridMap::area_get_portal_disable_color);
+	ClassDB::bind_method(D_METHOD("erase_area","area"),&GridMap::erase_area);
+	ClassDB::bind_method(D_METHOD("get_unused_area_id","area"),&GridMap::get_unused_area_id);
+	ClassDB::bind_method(D_METHOD("bake_geometry"),&GridMap::bake_geometry);
 
-	ClassDB::bind_method(_MD("_baked_light_changed"),&GridMap::_baked_light_changed);
-	ClassDB::bind_method(_MD("set_use_baked_light","use"),&GridMap::set_use_baked_light);
-	ClassDB::bind_method(_MD("is_using_baked_light","use"),&GridMap::is_using_baked_light);
+	ClassDB::bind_method(D_METHOD("_baked_light_changed"),&GridMap::_baked_light_changed);
+	ClassDB::bind_method(D_METHOD("set_use_baked_light","use"),&GridMap::set_use_baked_light);
+	ClassDB::bind_method(D_METHOD("is_using_baked_light","use"),&GridMap::is_using_baked_light);
 
-	ClassDB::bind_method(_MD("_get_baked_light_meshes"),&GridMap::_get_baked_light_meshes);
+	ClassDB::bind_method(D_METHOD("_get_baked_light_meshes"),&GridMap::_get_baked_light_meshes);
 
 
 
 	ClassDB::set_method_flags("GridMap","bake_geometry",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(_MD("clear"),&GridMap::clear);
+	ClassDB::bind_method(D_METHOD("clear"),&GridMap::clear);
 
 	BIND_CONSTANT( INVALID_CELL_ITEM );
 

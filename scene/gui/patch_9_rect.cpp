@@ -68,14 +68,14 @@ Size2 NinePatchRect::get_minimum_size() const {
 void NinePatchRect::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_texture","texture"), & NinePatchRect::set_texture );
-	ClassDB::bind_method(_MD("get_texture"), & NinePatchRect::get_texture );
-	ClassDB::bind_method(_MD("set_patch_margin","margin","value"), & NinePatchRect::set_patch_margin );
-	ClassDB::bind_method(_MD("get_patch_margin","margin"), & NinePatchRect::get_patch_margin );
-	ClassDB::bind_method(_MD("set_region_rect","rect"),&NinePatchRect::set_region_rect);
-	ClassDB::bind_method(_MD("get_region_rect"),&NinePatchRect::get_region_rect);
-	ClassDB::bind_method(_MD("set_draw_center","draw_center"), & NinePatchRect::set_draw_center );
-	ClassDB::bind_method(_MD("get_draw_center"), & NinePatchRect::get_draw_center );
+	ClassDB::bind_method(D_METHOD("set_texture","texture"), & NinePatchRect::set_texture );
+	ClassDB::bind_method(D_METHOD("get_texture"), & NinePatchRect::get_texture );
+	ClassDB::bind_method(D_METHOD("set_patch_margin","margin","value"), & NinePatchRect::set_patch_margin );
+	ClassDB::bind_method(D_METHOD("get_patch_margin","margin"), & NinePatchRect::get_patch_margin );
+	ClassDB::bind_method(D_METHOD("set_region_rect","rect"),&NinePatchRect::set_region_rect);
+	ClassDB::bind_method(D_METHOD("get_region_rect"),&NinePatchRect::get_region_rect);
+	ClassDB::bind_method(D_METHOD("set_draw_center","draw_center"), & NinePatchRect::set_draw_center );
+	ClassDB::bind_method(D_METHOD("get_draw_center"), & NinePatchRect::get_draw_center );
 
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 

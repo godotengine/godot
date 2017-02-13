@@ -170,8 +170,8 @@ int GridContainer::get_columns() const{
 
 void GridContainer::_bind_methods(){
 
-	ClassDB::bind_method(_MD("set_columns","columns"),&GridContainer::set_columns);
-	ClassDB::bind_method(_MD("get_columns"),&GridContainer::get_columns);
+	ClassDB::bind_method(D_METHOD("set_columns","columns"),&GridContainer::set_columns);
+	ClassDB::bind_method(D_METHOD("get_columns"),&GridContainer::get_columns);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"columns",PROPERTY_HINT_RANGE,"1,1024,1"),"set_columns","get_columns");
 }

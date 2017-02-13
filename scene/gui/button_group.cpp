@@ -151,12 +151,12 @@ int ButtonGroup::get_pressed_button_index() const {
 
 void ButtonGroup::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_pressed_button:BaseButton"),&ButtonGroup::get_pressed_button);
-	ClassDB::bind_method(_MD("get_pressed_button_index"),&ButtonGroup::get_pressed_button_index);
-	ClassDB::bind_method(_MD("get_focused_button:BaseButton"),&ButtonGroup::get_focused_button);
-	ClassDB::bind_method(_MD("get_button_list"),&ButtonGroup::_get_button_list);
-	ClassDB::bind_method(_MD("_pressed"),&ButtonGroup::_pressed);
-	ClassDB::bind_method(_MD("set_pressed_button","button:BaseButton"),&ButtonGroup::_pressed);
+	ClassDB::bind_method(D_METHOD("get_pressed_button:BaseButton"),&ButtonGroup::get_pressed_button);
+	ClassDB::bind_method(D_METHOD("get_pressed_button_index"),&ButtonGroup::get_pressed_button_index);
+	ClassDB::bind_method(D_METHOD("get_focused_button:BaseButton"),&ButtonGroup::get_focused_button);
+	ClassDB::bind_method(D_METHOD("get_button_list"),&ButtonGroup::_get_button_list);
+	ClassDB::bind_method(D_METHOD("_pressed"),&ButtonGroup::_pressed);
+	ClassDB::bind_method(D_METHOD("set_pressed_button","button:BaseButton"),&ButtonGroup::_pressed);
 
 	ADD_SIGNAL( MethodInfo("button_selected",PropertyInfo(Variant::OBJECT,"button",PROPERTY_HINT_RESOURCE_TYPE,"BaseButton")));
 }

@@ -1200,7 +1200,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
 	ClassDB::bind_method("_install_project",&ProjectManager::_install_project);
 	ClassDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
-	ClassDB::bind_method(_MD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
+	ClassDB::bind_method(D_METHOD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
 
 
 }
@@ -1483,9 +1483,9 @@ void ProjectListFilter::_notification(int p_what) {
 
 void ProjectListFilter::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_command"),&ProjectListFilter::_command);
-	ClassDB::bind_method(_MD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
-	ClassDB::bind_method(_MD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
+	ClassDB::bind_method(D_METHOD("_command"),&ProjectListFilter::_command);
+	ClassDB::bind_method(D_METHOD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
+	ClassDB::bind_method(D_METHOD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
 
 	ADD_SIGNAL( MethodInfo("filter_changed") );
 }

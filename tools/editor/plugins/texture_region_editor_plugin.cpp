@@ -614,21 +614,21 @@ void TextureRegionEditor::_node_removed(Object *p_obj)
 
 void TextureRegionEditor::_bind_methods()
 {
-	ClassDB::bind_method(_MD("_edit_region"),&TextureRegionEditor::_edit_region);
-	ClassDB::bind_method(_MD("_region_draw"),&TextureRegionEditor::_region_draw);
-	ClassDB::bind_method(_MD("_region_input"),&TextureRegionEditor::_region_input);
-	ClassDB::bind_method(_MD("_scroll_changed"),&TextureRegionEditor::_scroll_changed);
-	ClassDB::bind_method(_MD("_node_removed"),&TextureRegionEditor::_node_removed);
-	ClassDB::bind_method(_MD("_set_snap_mode"),&TextureRegionEditor::_set_snap_mode);
-	ClassDB::bind_method(_MD("_set_snap_off_x"),&TextureRegionEditor::_set_snap_off_x);
-	ClassDB::bind_method(_MD("_set_snap_off_y"),&TextureRegionEditor::_set_snap_off_y);
-	ClassDB::bind_method(_MD("_set_snap_step_x"),&TextureRegionEditor::_set_snap_step_x);
-	ClassDB::bind_method(_MD("_set_snap_step_y"),&TextureRegionEditor::_set_snap_step_y);
-	ClassDB::bind_method(_MD("_set_snap_sep_x"),&TextureRegionEditor::_set_snap_sep_x);
-	ClassDB::bind_method(_MD("_set_snap_sep_y"),&TextureRegionEditor::_set_snap_sep_y);
-	ClassDB::bind_method(_MD("_zoom_in"),&TextureRegionEditor::_zoom_in);
-	ClassDB::bind_method(_MD("_zoom_reset"),&TextureRegionEditor::_zoom_reset);
-	ClassDB::bind_method(_MD("_zoom_out"),&TextureRegionEditor::_zoom_out);
+	ClassDB::bind_method(D_METHOD("_edit_region"),&TextureRegionEditor::_edit_region);
+	ClassDB::bind_method(D_METHOD("_region_draw"),&TextureRegionEditor::_region_draw);
+	ClassDB::bind_method(D_METHOD("_region_input"),&TextureRegionEditor::_region_input);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&TextureRegionEditor::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&TextureRegionEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_set_snap_mode"),&TextureRegionEditor::_set_snap_mode);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_x"),&TextureRegionEditor::_set_snap_off_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_y"),&TextureRegionEditor::_set_snap_off_y);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_x"),&TextureRegionEditor::_set_snap_step_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_y"),&TextureRegionEditor::_set_snap_step_y);
+	ClassDB::bind_method(D_METHOD("_set_snap_sep_x"),&TextureRegionEditor::_set_snap_sep_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_sep_y"),&TextureRegionEditor::_set_snap_sep_y);
+	ClassDB::bind_method(D_METHOD("_zoom_in"),&TextureRegionEditor::_zoom_in);
+	ClassDB::bind_method(D_METHOD("_zoom_reset"),&TextureRegionEditor::_zoom_reset);
+	ClassDB::bind_method(D_METHOD("_zoom_out"),&TextureRegionEditor::_zoom_out);
 }
 
 void TextureRegionEditor::edit(Object *p_obj)

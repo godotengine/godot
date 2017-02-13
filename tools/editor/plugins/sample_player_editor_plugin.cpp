@@ -54,8 +54,8 @@ void SamplePlayerEditor::_node_removed(Node *p_node) {
 
 void SamplePlayerEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_play"),&SamplePlayerEditor::_play);
-	ClassDB::bind_method(_MD("_stop"),&SamplePlayerEditor::_stop);
+	ClassDB::bind_method(D_METHOD("_play"),&SamplePlayerEditor::_play);
+	ClassDB::bind_method(D_METHOD("_stop"),&SamplePlayerEditor::_stop);
 
 }
 

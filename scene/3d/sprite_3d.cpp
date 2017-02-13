@@ -246,41 +246,41 @@ SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const{
 void SpriteBase3D::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_centered","centered"),&SpriteBase3D::set_centered);
-	ClassDB::bind_method(_MD("is_centered"),&SpriteBase3D::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&SpriteBase3D::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&SpriteBase3D::is_centered);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&SpriteBase3D::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&SpriteBase3D::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&SpriteBase3D::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&SpriteBase3D::get_offset);
 
-	ClassDB::bind_method(_MD("set_flip_h","flip_h"),&SpriteBase3D::set_flip_h);
-	ClassDB::bind_method(_MD("is_flipped_h"),&SpriteBase3D::is_flipped_h);
+	ClassDB::bind_method(D_METHOD("set_flip_h","flip_h"),&SpriteBase3D::set_flip_h);
+	ClassDB::bind_method(D_METHOD("is_flipped_h"),&SpriteBase3D::is_flipped_h);
 
-	ClassDB::bind_method(_MD("set_flip_v","flip_v"),&SpriteBase3D::set_flip_v);
-	ClassDB::bind_method(_MD("is_flipped_v"),&SpriteBase3D::is_flipped_v);
+	ClassDB::bind_method(D_METHOD("set_flip_v","flip_v"),&SpriteBase3D::set_flip_v);
+	ClassDB::bind_method(D_METHOD("is_flipped_v"),&SpriteBase3D::is_flipped_v);
 
 
-	ClassDB::bind_method(_MD("set_modulate","modulate"),&SpriteBase3D::set_modulate);
-	ClassDB::bind_method(_MD("get_modulate"),&SpriteBase3D::get_modulate);
+	ClassDB::bind_method(D_METHOD("set_modulate","modulate"),&SpriteBase3D::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"),&SpriteBase3D::get_modulate);
 
-	ClassDB::bind_method(_MD("set_opacity","opacity"),&SpriteBase3D::set_opacity);
-	ClassDB::bind_method(_MD("get_opacity"),&SpriteBase3D::get_opacity);
+	ClassDB::bind_method(D_METHOD("set_opacity","opacity"),&SpriteBase3D::set_opacity);
+	ClassDB::bind_method(D_METHOD("get_opacity"),&SpriteBase3D::get_opacity);
 
-	ClassDB::bind_method(_MD("set_pixel_size","pixel_size"),&SpriteBase3D::set_pixel_size);
-	ClassDB::bind_method(_MD("get_pixel_size"),&SpriteBase3D::get_pixel_size);
+	ClassDB::bind_method(D_METHOD("set_pixel_size","pixel_size"),&SpriteBase3D::set_pixel_size);
+	ClassDB::bind_method(D_METHOD("get_pixel_size"),&SpriteBase3D::get_pixel_size);
 
-	ClassDB::bind_method(_MD("set_axis","axis"),&SpriteBase3D::set_axis);
-	ClassDB::bind_method(_MD("get_axis"),&SpriteBase3D::get_axis);
+	ClassDB::bind_method(D_METHOD("set_axis","axis"),&SpriteBase3D::set_axis);
+	ClassDB::bind_method(D_METHOD("get_axis"),&SpriteBase3D::get_axis);
 
-	ClassDB::bind_method(_MD("set_draw_flag","flag","enabled"),&SpriteBase3D::set_draw_flag);
-	ClassDB::bind_method(_MD("get_draw_flag","flag"),&SpriteBase3D::get_draw_flag);
+	ClassDB::bind_method(D_METHOD("set_draw_flag","flag","enabled"),&SpriteBase3D::set_draw_flag);
+	ClassDB::bind_method(D_METHOD("get_draw_flag","flag"),&SpriteBase3D::get_draw_flag);
 
-	ClassDB::bind_method(_MD("set_alpha_cut_mode","mode"),&SpriteBase3D::set_alpha_cut_mode);
-	ClassDB::bind_method(_MD("get_alpha_cut_mode"),&SpriteBase3D::get_alpha_cut_mode);
+	ClassDB::bind_method(D_METHOD("set_alpha_cut_mode","mode"),&SpriteBase3D::set_alpha_cut_mode);
+	ClassDB::bind_method(D_METHOD("get_alpha_cut_mode"),&SpriteBase3D::get_alpha_cut_mode);
 
-	ClassDB::bind_method(_MD("get_item_rect"),&SpriteBase3D::get_item_rect);
+	ClassDB::bind_method(D_METHOD("get_item_rect"),&SpriteBase3D::get_item_rect);
 
-	ClassDB::bind_method(_MD("_queue_update"),&SpriteBase3D::_queue_update);
-	ClassDB::bind_method(_MD("_im_update"),&SpriteBase3D::_im_update);
+	ClassDB::bind_method(D_METHOD("_queue_update"),&SpriteBase3D::_queue_update);
+	ClassDB::bind_method(D_METHOD("_im_update"),&SpriteBase3D::_im_update);
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
@@ -601,23 +601,23 @@ void Sprite3D::_validate_property(PropertyInfo& property) const {
 
 void Sprite3D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite3D::set_texture);
-	ClassDB::bind_method(_MD("get_texture:Texture"),&Sprite3D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture","texture:Texture"),&Sprite3D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"),&Sprite3D::get_texture);
 
-	ClassDB::bind_method(_MD("set_region","enabled"),&Sprite3D::set_region);
-	ClassDB::bind_method(_MD("is_region"),&Sprite3D::is_region);
+	ClassDB::bind_method(D_METHOD("set_region","enabled"),&Sprite3D::set_region);
+	ClassDB::bind_method(D_METHOD("is_region"),&Sprite3D::is_region);
 
-	ClassDB::bind_method(_MD("set_region_rect","rect"),&Sprite3D::set_region_rect);
-	ClassDB::bind_method(_MD("get_region_rect"),&Sprite3D::get_region_rect);
+	ClassDB::bind_method(D_METHOD("set_region_rect","rect"),&Sprite3D::set_region_rect);
+	ClassDB::bind_method(D_METHOD("get_region_rect"),&Sprite3D::get_region_rect);
 
-	ClassDB::bind_method(_MD("set_frame","frame"),&Sprite3D::set_frame);
-	ClassDB::bind_method(_MD("get_frame"),&Sprite3D::get_frame);
+	ClassDB::bind_method(D_METHOD("set_frame","frame"),&Sprite3D::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"),&Sprite3D::get_frame);
 
-	ClassDB::bind_method(_MD("set_vframes","vframes"),&Sprite3D::set_vframes);
-	ClassDB::bind_method(_MD("get_vframes"),&Sprite3D::get_vframes);
+	ClassDB::bind_method(D_METHOD("set_vframes","vframes"),&Sprite3D::set_vframes);
+	ClassDB::bind_method(D_METHOD("get_vframes"),&Sprite3D::get_vframes);
 
-	ClassDB::bind_method(_MD("set_hframes","hframes"),&Sprite3D::set_hframes);
-	ClassDB::bind_method(_MD("get_hframes"),&Sprite3D::get_hframes);
+	ClassDB::bind_method(D_METHOD("set_hframes","hframes"),&Sprite3D::set_hframes);
+	ClassDB::bind_method(D_METHOD("get_hframes"),&Sprite3D::get_hframes);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_texture","get_texture");
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), "set_vframes","get_vframes");
@@ -764,10 +764,10 @@ void AnimatedSprite3D::_draw() {
 
 void AnimatedSprite3D::_bind_methods(){
 
-	ClassDB::bind_method(_MD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
-	ClassDB::bind_method(_MD("get_sprite_frames:Texture"),&AnimatedSprite3D::get_sprite_frames);
-	ClassDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite3D::set_frame);
-	ClassDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
+	ClassDB::bind_method(D_METHOD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
+	ClassDB::bind_method(D_METHOD("get_sprite_frames:Texture"),&AnimatedSprite3D::get_sprite_frames);
+	ClassDB::bind_method(D_METHOD("set_frame","frame"),&AnimatedSprite3D::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"),&AnimatedSprite3D::get_frame);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), "set_sprite_frames","get_sprite_frames");
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
@@ -1312,24 +1312,24 @@ String AnimatedSprite3D::get_configuration_warning() const {
 void AnimatedSprite3D::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
-	ClassDB::bind_method(_MD("get_sprite_frames:SpriteFrames"),&AnimatedSprite3D::get_sprite_frames);
+	ClassDB::bind_method(D_METHOD("set_sprite_frames","sprite_frames:SpriteFrames"),&AnimatedSprite3D::set_sprite_frames);
+	ClassDB::bind_method(D_METHOD("get_sprite_frames:SpriteFrames"),&AnimatedSprite3D::get_sprite_frames);
 
-	ClassDB::bind_method(_MD("set_animation","animation"),&AnimatedSprite3D::set_animation);
-	ClassDB::bind_method(_MD("get_animation"),&AnimatedSprite3D::get_animation);
+	ClassDB::bind_method(D_METHOD("set_animation","animation"),&AnimatedSprite3D::set_animation);
+	ClassDB::bind_method(D_METHOD("get_animation"),&AnimatedSprite3D::get_animation);
 
-	ClassDB::bind_method(_MD("_set_playing","playing"),&AnimatedSprite3D::_set_playing);
-	ClassDB::bind_method(_MD("_is_playing"),&AnimatedSprite3D::_is_playing);
+	ClassDB::bind_method(D_METHOD("_set_playing","playing"),&AnimatedSprite3D::_set_playing);
+	ClassDB::bind_method(D_METHOD("_is_playing"),&AnimatedSprite3D::_is_playing);
 
-	ClassDB::bind_method(_MD("play","anim"),&AnimatedSprite3D::play,DEFVAL(StringName()));
-	ClassDB::bind_method(_MD("stop"),&AnimatedSprite3D::stop);
-	ClassDB::bind_method(_MD("is_playing"),&AnimatedSprite3D::is_playing);
+	ClassDB::bind_method(D_METHOD("play","anim"),&AnimatedSprite3D::play,DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("stop"),&AnimatedSprite3D::stop);
+	ClassDB::bind_method(D_METHOD("is_playing"),&AnimatedSprite3D::is_playing);
 
 
-	ClassDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite3D::set_frame);
-	ClassDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
+	ClassDB::bind_method(D_METHOD("set_frame","frame"),&AnimatedSprite3D::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"),&AnimatedSprite3D::get_frame);
 
-	ClassDB::bind_method(_MD("_res_changed"),&AnimatedSprite3D::_res_changed);
+	ClassDB::bind_method(D_METHOD("_res_changed"),&AnimatedSprite3D::_res_changed);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 

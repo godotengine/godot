@@ -139,6 +139,6 @@ BoneAttachment::BoneAttachment()
 }
 
 void BoneAttachment::_bind_methods(){
-	ClassDB::bind_method(_MD("set_bone_name","bone_name"),&BoneAttachment::set_bone_name);
-	ClassDB::bind_method(_MD("get_bone_name"),&BoneAttachment::get_bone_name);
+	ClassDB::bind_method(D_METHOD("set_bone_name","bone_name"),&BoneAttachment::set_bone_name);
+	ClassDB::bind_method(D_METHOD("get_bone_name"),&BoneAttachment::get_bone_name);
 }

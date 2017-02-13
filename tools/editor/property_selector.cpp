@@ -587,10 +587,10 @@ void PropertySelector::select_property_from_instance(Object* p_instance, const S
 
 void PropertySelector::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&PropertySelector::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&PropertySelector::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&PropertySelector::_sbox_input);
-	ClassDB::bind_method(_MD("_item_selected"),&PropertySelector::_item_selected);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&PropertySelector::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&PropertySelector::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&PropertySelector::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_item_selected"),&PropertySelector::_item_selected);
 
 	ADD_SIGNAL(MethodInfo("selected",PropertyInfo(Variant::STRING,"name")));
 

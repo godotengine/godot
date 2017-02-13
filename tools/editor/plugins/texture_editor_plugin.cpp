@@ -112,7 +112,7 @@ void TextureEditor::edit(Ref<Texture> p_texture) {
 
 void TextureEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&TextureEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&TextureEditor::_gui_input);
 
 }
 

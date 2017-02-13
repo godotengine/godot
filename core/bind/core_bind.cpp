@@ -110,12 +110,12 @@ bool _ResourceLoader::has(const String &p_path) {
 void _ResourceLoader::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
-	ClassDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
-	ClassDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
-	ClassDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
-	ClassDB::bind_method(_MD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
-	ClassDB::bind_method(_MD("has","path"),&_ResourceLoader::has);
+	ClassDB::bind_method(D_METHOD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
+	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
+	ClassDB::bind_method(D_METHOD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
+	ClassDB::bind_method(D_METHOD("has","path"),&_ResourceLoader::has);
 }
 
 _ResourceLoader::_ResourceLoader() {
@@ -148,8 +148,8 @@ _ResourceSaver *_ResourceSaver::singleton=NULL;
 
 void _ResourceSaver::_bind_methods() {
 
-	ClassDB::bind_method(_MD("save","path","resource:Resource","flags"),&_ResourceSaver::save,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_recognized_extensions","type"),&_ResourceSaver::get_recognized_extensions);
+	ClassDB::bind_method(D_METHOD("save","path","resource:Resource","flags"),&_ResourceSaver::save,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_recognized_extensions","type"),&_ResourceSaver::get_recognized_extensions);
 
 	BIND_CONSTANT(FLAG_RELATIVE_PATHS);
 	BIND_CONSTANT(FLAG_BUNDLE_RESOURCES);
@@ -973,145 +973,145 @@ _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
 
-	//ClassDB::bind_method(_MD("get_mouse_pos"),&_OS::get_mouse_pos);
-	//ClassDB::bind_method(_MD("is_mouse_grab_enabled"),&_OS::is_mouse_grab_enabled);
+	//ClassDB::bind_method(D_METHOD("get_mouse_pos"),&_OS::get_mouse_pos);
+	//ClassDB::bind_method(D_METHOD("is_mouse_grab_enabled"),&_OS::is_mouse_grab_enabled);
 
-	ClassDB::bind_method(_MD("set_clipboard","clipboard"),&_OS::set_clipboard);
-	ClassDB::bind_method(_MD("get_clipboard"),&_OS::get_clipboard);
+	ClassDB::bind_method(D_METHOD("set_clipboard","clipboard"),&_OS::set_clipboard);
+	ClassDB::bind_method(D_METHOD("get_clipboard"),&_OS::get_clipboard);
 
 	//will not delete for now, just unexpose
-	//ClassDB::bind_method(_MD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
-	//ClassDB::bind_method(_MD("get_video_mode_size","screen"),&_OS::get_video_mode,DEFVAL(0));
-	//ClassDB::bind_method(_MD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
-	//ClassDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
-	//ClassDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("get_video_mode_size","screen"),&_OS::get_video_mode,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
 
 
-	ClassDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
-	ClassDB::bind_method(_MD("get_current_screen"),&_OS::get_current_screen);
-	ClassDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
-	ClassDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
-	ClassDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
-	ClassDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
-	ClassDB::bind_method(_MD("set_window_size","size"),&_OS::set_window_size);
-	ClassDB::bind_method(_MD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
-	ClassDB::bind_method(_MD("is_window_fullscreen"),&_OS::is_window_fullscreen);
-	ClassDB::bind_method(_MD("set_window_resizable","enabled"),&_OS::set_window_resizable);
-	ClassDB::bind_method(_MD("is_window_resizable"),&_OS::is_window_resizable);
-	ClassDB::bind_method(_MD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
-	ClassDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
-	ClassDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
-	ClassDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
-	ClassDB::bind_method(_MD("request_attention"), &_OS::request_attention);
+	ClassDB::bind_method(D_METHOD("get_screen_count"),&_OS::get_screen_count);
+	ClassDB::bind_method(D_METHOD("get_current_screen"),&_OS::get_current_screen);
+	ClassDB::bind_method(D_METHOD("set_current_screen","screen"),&_OS::set_current_screen);
+	ClassDB::bind_method(D_METHOD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_window_position"),&_OS::get_window_position);
+	ClassDB::bind_method(D_METHOD("set_window_position","position"),&_OS::set_window_position);
+	ClassDB::bind_method(D_METHOD("get_window_size"),&_OS::get_window_size);
+	ClassDB::bind_method(D_METHOD("set_window_size","size"),&_OS::set_window_size);
+	ClassDB::bind_method(D_METHOD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
+	ClassDB::bind_method(D_METHOD("is_window_fullscreen"),&_OS::is_window_fullscreen);
+	ClassDB::bind_method(D_METHOD("set_window_resizable","enabled"),&_OS::set_window_resizable);
+	ClassDB::bind_method(D_METHOD("is_window_resizable"),&_OS::is_window_resizable);
+	ClassDB::bind_method(D_METHOD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
+	ClassDB::bind_method(D_METHOD("is_window_minimized"),&_OS::is_window_minimized);
+	ClassDB::bind_method(D_METHOD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
+	ClassDB::bind_method(D_METHOD("is_window_maximized"),&_OS::is_window_maximized);
+	ClassDB::bind_method(D_METHOD("request_attention"), &_OS::request_attention);
 
-	ClassDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
-	ClassDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
+	ClassDB::bind_method(D_METHOD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
+	ClassDB::bind_method(D_METHOD("get_borderless_window"), &_OS::get_borderless_window);
 
-	ClassDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
-	ClassDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
+	ClassDB::bind_method(D_METHOD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
+	ClassDB::bind_method(D_METHOD("get_screen_orientation"),&_OS::get_screen_orientation);
 
-	ClassDB::bind_method(_MD("set_keep_screen_on","enabled"),&_OS::set_keep_screen_on);
-	ClassDB::bind_method(_MD("is_keep_screen_on"),&_OS::is_keep_screen_on);
+	ClassDB::bind_method(D_METHOD("set_keep_screen_on","enabled"),&_OS::set_keep_screen_on);
+	ClassDB::bind_method(D_METHOD("is_keep_screen_on"),&_OS::is_keep_screen_on);
 
 
-	ClassDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
+	ClassDB::bind_method(D_METHOD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
-	ClassDB::bind_method(_MD("set_window_title","title"),&_OS::set_window_title);
+	ClassDB::bind_method(D_METHOD("set_window_title","title"),&_OS::set_window_title);
 
-	ClassDB::bind_method(_MD("set_low_processor_usage_mode","enable"),&_OS::set_low_processor_usage_mode);
-	ClassDB::bind_method(_MD("is_in_low_processor_usage_mode"),&_OS::is_in_low_processor_usage_mode);
+	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode","enable"),&_OS::set_low_processor_usage_mode);
+	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"),&_OS::is_in_low_processor_usage_mode);
 
-	ClassDB::bind_method(_MD("get_processor_count"),&_OS::get_processor_count);
+	ClassDB::bind_method(D_METHOD("get_processor_count"),&_OS::get_processor_count);
 
-	ClassDB::bind_method(_MD("get_executable_path"),&_OS::get_executable_path);
-	ClassDB::bind_method(_MD("execute","path","arguments","blocking","output"),&_OS::execute,DEFVAL(Array()));
-	ClassDB::bind_method(_MD("kill","pid"),&_OS::kill);
-	ClassDB::bind_method(_MD("shell_open","uri"),&_OS::shell_open);
-	ClassDB::bind_method(_MD("get_process_ID"),&_OS::get_process_ID);
+	ClassDB::bind_method(D_METHOD("get_executable_path"),&_OS::get_executable_path);
+	ClassDB::bind_method(D_METHOD("execute","path","arguments","blocking","output"),&_OS::execute,DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("kill","pid"),&_OS::kill);
+	ClassDB::bind_method(D_METHOD("shell_open","uri"),&_OS::shell_open);
+	ClassDB::bind_method(D_METHOD("get_process_ID"),&_OS::get_process_ID);
 
-	ClassDB::bind_method(_MD("get_environment","environment"),&_OS::get_environment);
-	ClassDB::bind_method(_MD("has_environment","environment"),&_OS::has_environment);
+	ClassDB::bind_method(D_METHOD("get_environment","environment"),&_OS::get_environment);
+	ClassDB::bind_method(D_METHOD("has_environment","environment"),&_OS::has_environment);
 
-	ClassDB::bind_method(_MD("get_name"),&_OS::get_name);
-	ClassDB::bind_method(_MD("get_cmdline_args"),&_OS::get_cmdline_args);
+	ClassDB::bind_method(D_METHOD("get_name"),&_OS::get_name);
+	ClassDB::bind_method(D_METHOD("get_cmdline_args"),&_OS::get_cmdline_args);
 
-	ClassDB::bind_method(_MD("get_datetime","utc"),&_OS::get_datetime,DEFVAL(false));
-	ClassDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
-	ClassDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
-	ClassDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
-	ClassDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
-	ClassDB::bind_method(_MD("get_datetime_from_unix_time", "unix_time_val"),
+	ClassDB::bind_method(D_METHOD("get_datetime","utc"),&_OS::get_datetime,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_date","utc"),&_OS::get_date,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_time","utc"),&_OS::get_time,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_time_zone_info"),&_OS::get_time_zone_info);
+	ClassDB::bind_method(D_METHOD("get_unix_time"),&_OS::get_unix_time);
+	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"),
 			&_OS::get_datetime_from_unix_time);
-	ClassDB::bind_method(_MD("get_unix_time_from_datetime", "datetime"),
+	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"),
 			&_OS::get_unix_time_from_datetime);
-	ClassDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
+	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
 
-	ClassDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
+	ClassDB::bind_method(D_METHOD("set_icon","icon"),&_OS::set_icon);
 
-	ClassDB::bind_method(_MD("get_exit_code"),&_OS::get_exit_code);
-	ClassDB::bind_method(_MD("set_exit_code","code"),&_OS::set_exit_code);
+	ClassDB::bind_method(D_METHOD("get_exit_code"),&_OS::get_exit_code);
+	ClassDB::bind_method(D_METHOD("set_exit_code","code"),&_OS::set_exit_code);
 
-	ClassDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
-	ClassDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
-	ClassDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
-	ClassDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
-	ClassDB::bind_method(_MD("get_locale"),&_OS::get_locale);
-	ClassDB::bind_method(_MD("get_latin_keyboard_variant"),&_OS::get_latin_keyboard_variant);
-	ClassDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
-
-
-	ClassDB::bind_method(_MD("can_draw"),&_OS::can_draw);
-	ClassDB::bind_method(_MD("is_stdout_verbose"),&_OS::is_stdout_verbose);
-
-	ClassDB::bind_method(_MD("can_use_threads"),&_OS::can_use_threads);
-
-	ClassDB::bind_method(_MD("is_debug_build"),&_OS::is_debug_build);
-
-	//ClassDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
-
-	ClassDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
-	ClassDB::bind_method(_MD("dump_resources_to_file","file"),&_OS::dump_resources_to_file);
-	ClassDB::bind_method(_MD("has_virtual_keyboard"),&_OS::has_virtual_keyboard);
-	ClassDB::bind_method(_MD("show_virtual_keyboard", "existing_text"),&_OS::show_virtual_keyboard,DEFVAL(""));
-	ClassDB::bind_method(_MD("hide_virtual_keyboard"),&_OS::hide_virtual_keyboard);
-	ClassDB::bind_method(_MD("print_resources_in_use","short"),&_OS::print_resources_in_use,DEFVAL(false));
-	ClassDB::bind_method(_MD("print_all_resources","tofile"),&_OS::print_all_resources,DEFVAL(""));
-
-	ClassDB::bind_method(_MD("get_static_memory_usage"),&_OS::get_static_memory_usage);
-	ClassDB::bind_method(_MD("get_static_memory_peak_usage"),&_OS::get_static_memory_peak_usage);
-	ClassDB::bind_method(_MD("get_dynamic_memory_usage"),&_OS::get_dynamic_memory_usage);
-
-	ClassDB::bind_method(_MD("get_data_dir"),&_OS::get_data_dir);
-	ClassDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
-	ClassDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
-
-	ClassDB::bind_method(_MD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
+	ClassDB::bind_method(D_METHOD("delay_usec","usec"),&_OS::delay_usec);
+	ClassDB::bind_method(D_METHOD("delay_msec","msec"),&_OS::delay_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_msec"),&_OS::get_ticks_msec);
+	ClassDB::bind_method(D_METHOD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
+	ClassDB::bind_method(D_METHOD("get_locale"),&_OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"),&_OS::get_latin_keyboard_variant);
+	ClassDB::bind_method(D_METHOD("get_model_name"),&_OS::get_model_name);
 
 
-	ClassDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
-	ClassDB::bind_method(_MD("print_resources_by_type","types"),&_OS::print_resources_by_type);
+	ClassDB::bind_method(D_METHOD("can_draw"),&_OS::can_draw);
+	ClassDB::bind_method(D_METHOD("is_stdout_verbose"),&_OS::is_stdout_verbose);
 
-	ClassDB::bind_method(_MD("native_video_play","path","volume","audio_track","subtitle_track"),&_OS::native_video_play);
-	ClassDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
-	ClassDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
-	ClassDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
-	ClassDB::bind_method(_MD("native_video_unpause"),&_OS::native_video_unpause);
+	ClassDB::bind_method(D_METHOD("can_use_threads"),&_OS::can_use_threads);
 
-	ClassDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
-	ClassDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
-	ClassDB::bind_method(_MD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
+	ClassDB::bind_method(D_METHOD("is_debug_build"),&_OS::is_debug_build);
 
-	ClassDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
+	//ClassDB::bind_method(D_METHOD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 
-	ClassDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
+	ClassDB::bind_method(D_METHOD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
+	ClassDB::bind_method(D_METHOD("dump_resources_to_file","file"),&_OS::dump_resources_to_file);
+	ClassDB::bind_method(D_METHOD("has_virtual_keyboard"),&_OS::has_virtual_keyboard);
+	ClassDB::bind_method(D_METHOD("show_virtual_keyboard", "existing_text"),&_OS::show_virtual_keyboard,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("hide_virtual_keyboard"),&_OS::hide_virtual_keyboard);
+	ClassDB::bind_method(D_METHOD("print_resources_in_use","short"),&_OS::print_resources_in_use,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("print_all_resources","tofile"),&_OS::print_all_resources,DEFVAL(""));
 
-	ClassDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
+	ClassDB::bind_method(D_METHOD("get_static_memory_usage"),&_OS::get_static_memory_usage);
+	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"),&_OS::get_static_memory_peak_usage);
+	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"),&_OS::get_dynamic_memory_usage);
 
-	ClassDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
-	ClassDB::bind_method(_MD("is_vsync_enabled"),&_OS::is_vsync_enabled);
+	ClassDB::bind_method(D_METHOD("get_data_dir"),&_OS::get_data_dir);
+	ClassDB::bind_method(D_METHOD("get_system_dir","dir"),&_OS::get_system_dir);
+	ClassDB::bind_method(D_METHOD("get_unique_ID"),&_OS::get_unique_ID);
+
+	ClassDB::bind_method(D_METHOD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
+
+
+	ClassDB::bind_method(D_METHOD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
+	ClassDB::bind_method(D_METHOD("print_resources_by_type","types"),&_OS::print_resources_by_type);
+
+	ClassDB::bind_method(D_METHOD("native_video_play","path","volume","audio_track","subtitle_track"),&_OS::native_video_play);
+	ClassDB::bind_method(D_METHOD("native_video_is_playing"),&_OS::native_video_is_playing);
+	ClassDB::bind_method(D_METHOD("native_video_stop"),&_OS::native_video_stop);
+	ClassDB::bind_method(D_METHOD("native_video_pause"),&_OS::native_video_pause);
+	ClassDB::bind_method(D_METHOD("native_video_unpause"),&_OS::native_video_unpause);
+
+	ClassDB::bind_method(D_METHOD("get_scancode_string","code"),&_OS::get_scancode_string);
+	ClassDB::bind_method(D_METHOD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
+	ClassDB::bind_method(D_METHOD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
+
+	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
+
+	ClassDB::bind_method(D_METHOD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
+
+	ClassDB::bind_method(D_METHOD("set_thread_name","name"),&_OS::set_thread_name);
+
+	ClassDB::bind_method(D_METHOD("set_use_vsync","enable"),&_OS::set_use_vsync);
+	ClassDB::bind_method(D_METHOD("is_vsync_enabled"),&_OS::is_vsync_enabled);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -1333,29 +1333,29 @@ int _Geometry::get_uv84_normal_bit(const Vector3& p_vector) {
 void _Geometry::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("build_box_planes","extents"),&_Geometry::build_box_planes);
-	ClassDB::bind_method(_MD("build_cylinder_planes","radius","height","sides","axis"),&_Geometry::build_cylinder_planes,DEFVAL(Vector3::AXIS_Z));
-	ClassDB::bind_method(_MD("build_capsule_planes","radius","height","sides","lats","axis"),&_Geometry::build_capsule_planes,DEFVAL(Vector3::AXIS_Z));
-	ClassDB::bind_method(_MD("segment_intersects_circle","segment_from","segment_to","circle_pos","circle_radius"),&_Geometry::segment_intersects_circle);
-	ClassDB::bind_method(_MD("segment_intersects_segment_2d","from_a","to_a","from_b","to_b"),&_Geometry::segment_intersects_segment_2d);
+	ClassDB::bind_method(D_METHOD("build_box_planes","extents"),&_Geometry::build_box_planes);
+	ClassDB::bind_method(D_METHOD("build_cylinder_planes","radius","height","sides","axis"),&_Geometry::build_cylinder_planes,DEFVAL(Vector3::AXIS_Z));
+	ClassDB::bind_method(D_METHOD("build_capsule_planes","radius","height","sides","lats","axis"),&_Geometry::build_capsule_planes,DEFVAL(Vector3::AXIS_Z));
+	ClassDB::bind_method(D_METHOD("segment_intersects_circle","segment_from","segment_to","circle_pos","circle_radius"),&_Geometry::segment_intersects_circle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_segment_2d","from_a","to_a","from_b","to_b"),&_Geometry::segment_intersects_segment_2d);
 
-	ClassDB::bind_method(_MD("get_closest_points_between_segments_2d","p1","q1","p2","q2"),&_Geometry::get_closest_points_between_segments_2d);
-	ClassDB::bind_method(_MD("get_closest_points_between_segments","p1","p2","q1","q2"),&_Geometry::get_closest_points_between_segments);
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments_2d","p1","q1","p2","q2"),&_Geometry::get_closest_points_between_segments_2d);
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments","p1","p2","q1","q2"),&_Geometry::get_closest_points_between_segments);
 
-	ClassDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
 
-	ClassDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
+	ClassDB::bind_method(D_METHOD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
 
-	ClassDB::bind_method(_MD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
-	ClassDB::bind_method(_MD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);
-	ClassDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
-	ClassDB::bind_method(_MD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
-	ClassDB::bind_method(_MD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
-	ClassDB::bind_method(_MD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
+	ClassDB::bind_method(D_METHOD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
+	ClassDB::bind_method(D_METHOD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
+	ClassDB::bind_method(D_METHOD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
+	ClassDB::bind_method(D_METHOD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
 
-	ClassDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
+	ClassDB::bind_method(D_METHOD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
-	ClassDB::bind_method(_MD("make_atlas","sizes"),&_Geometry::make_atlas);
+	ClassDB::bind_method(D_METHOD("make_atlas","sizes"),&_Geometry::make_atlas);
 }
 
 
@@ -1735,52 +1735,52 @@ uint64_t _File::get_modified_time(const String &p_file) const {
 void _File::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("open_encrypted","path","mode_flags","key"),&_File::open_encrypted);
-	ClassDB::bind_method(_MD("open_encrypted_with_pass","path","mode_flags","pass"),&_File::open_encrypted_pass);
+	ClassDB::bind_method(D_METHOD("open_encrypted","path","mode_flags","key"),&_File::open_encrypted);
+	ClassDB::bind_method(D_METHOD("open_encrypted_with_pass","path","mode_flags","pass"),&_File::open_encrypted_pass);
 
-	ClassDB::bind_method(_MD("open","path","flags"),&_File::open);
-	ClassDB::bind_method(_MD("close"),&_File::close);
-	ClassDB::bind_method(_MD("is_open"),&_File::is_open);
-	ClassDB::bind_method(_MD("seek","pos"),&_File::seek);
-	ClassDB::bind_method(_MD("seek_end","pos"),&_File::seek_end,DEFVAL(0));
-	ClassDB::bind_method(_MD("get_pos"),&_File::get_pos);
-	ClassDB::bind_method(_MD("get_len"),&_File::get_len);
-	ClassDB::bind_method(_MD("eof_reached"),&_File::eof_reached);
-	ClassDB::bind_method(_MD("get_8"),&_File::get_8);
-	ClassDB::bind_method(_MD("get_16"),&_File::get_16);
-	ClassDB::bind_method(_MD("get_32"),&_File::get_32);
-	ClassDB::bind_method(_MD("get_64"),&_File::get_64);
-	ClassDB::bind_method(_MD("get_float"),&_File::get_float);
-	ClassDB::bind_method(_MD("get_double"),&_File::get_double);
-	ClassDB::bind_method(_MD("get_real"),&_File::get_real);
-	ClassDB::bind_method(_MD("get_buffer","len"),&_File::get_buffer);
-	ClassDB::bind_method(_MD("get_line"),&_File::get_line);
-	ClassDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
-	ClassDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
-	ClassDB::bind_method(_MD("get_sha256","path"),&_File::get_sha256);
-	ClassDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
-	ClassDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
-	ClassDB::bind_method(_MD("get_error:Error"),&_File::get_error);
-	ClassDB::bind_method(_MD("get_var"),&_File::get_var);
-	ClassDB::bind_method(_MD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
+	ClassDB::bind_method(D_METHOD("open","path","flags"),&_File::open);
+	ClassDB::bind_method(D_METHOD("close"),&_File::close);
+	ClassDB::bind_method(D_METHOD("is_open"),&_File::is_open);
+	ClassDB::bind_method(D_METHOD("seek","pos"),&_File::seek);
+	ClassDB::bind_method(D_METHOD("seek_end","pos"),&_File::seek_end,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_pos"),&_File::get_pos);
+	ClassDB::bind_method(D_METHOD("get_len"),&_File::get_len);
+	ClassDB::bind_method(D_METHOD("eof_reached"),&_File::eof_reached);
+	ClassDB::bind_method(D_METHOD("get_8"),&_File::get_8);
+	ClassDB::bind_method(D_METHOD("get_16"),&_File::get_16);
+	ClassDB::bind_method(D_METHOD("get_32"),&_File::get_32);
+	ClassDB::bind_method(D_METHOD("get_64"),&_File::get_64);
+	ClassDB::bind_method(D_METHOD("get_float"),&_File::get_float);
+	ClassDB::bind_method(D_METHOD("get_double"),&_File::get_double);
+	ClassDB::bind_method(D_METHOD("get_real"),&_File::get_real);
+	ClassDB::bind_method(D_METHOD("get_buffer","len"),&_File::get_buffer);
+	ClassDB::bind_method(D_METHOD("get_line"),&_File::get_line);
+	ClassDB::bind_method(D_METHOD("get_as_text"),&_File::get_as_text);
+	ClassDB::bind_method(D_METHOD("get_md5","path"),&_File::get_md5);
+	ClassDB::bind_method(D_METHOD("get_sha256","path"),&_File::get_sha256);
+	ClassDB::bind_method(D_METHOD("get_endian_swap"),&_File::get_endian_swap);
+	ClassDB::bind_method(D_METHOD("set_endian_swap","enable"),&_File::set_endian_swap);
+	ClassDB::bind_method(D_METHOD("get_error:Error"),&_File::get_error);
+	ClassDB::bind_method(D_METHOD("get_var"),&_File::get_var);
+	ClassDB::bind_method(D_METHOD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
 
-	ClassDB::bind_method(_MD("store_8","value"),&_File::store_8);
-	ClassDB::bind_method(_MD("store_16","value"),&_File::store_16);
-	ClassDB::bind_method(_MD("store_32","value"),&_File::store_32);
-	ClassDB::bind_method(_MD("store_64","value"),&_File::store_64);
-	ClassDB::bind_method(_MD("store_float","value"),&_File::store_float);
-	ClassDB::bind_method(_MD("store_double","value"),&_File::store_double);
-	ClassDB::bind_method(_MD("store_real","value"),&_File::store_real);
-	ClassDB::bind_method(_MD("store_buffer","buffer"),&_File::store_buffer);
-	ClassDB::bind_method(_MD("store_line","line"),&_File::store_line);
-	ClassDB::bind_method(_MD("store_string","string"),&_File::store_string);
-	ClassDB::bind_method(_MD("store_var","value"),&_File::store_var);
+	ClassDB::bind_method(D_METHOD("store_8","value"),&_File::store_8);
+	ClassDB::bind_method(D_METHOD("store_16","value"),&_File::store_16);
+	ClassDB::bind_method(D_METHOD("store_32","value"),&_File::store_32);
+	ClassDB::bind_method(D_METHOD("store_64","value"),&_File::store_64);
+	ClassDB::bind_method(D_METHOD("store_float","value"),&_File::store_float);
+	ClassDB::bind_method(D_METHOD("store_double","value"),&_File::store_double);
+	ClassDB::bind_method(D_METHOD("store_real","value"),&_File::store_real);
+	ClassDB::bind_method(D_METHOD("store_buffer","buffer"),&_File::store_buffer);
+	ClassDB::bind_method(D_METHOD("store_line","line"),&_File::store_line);
+	ClassDB::bind_method(D_METHOD("store_string","string"),&_File::store_string);
+	ClassDB::bind_method(D_METHOD("store_var","value"),&_File::store_var);
 
-	ClassDB::bind_method(_MD("store_pascal_string","string"),&_File::store_pascal_string);
-	ClassDB::bind_method(_MD("get_pascal_string"),&_File::get_pascal_string);
+	ClassDB::bind_method(D_METHOD("store_pascal_string","string"),&_File::store_pascal_string);
+	ClassDB::bind_method(D_METHOD("get_pascal_string"),&_File::get_pascal_string);
 
-	ClassDB::bind_method(_MD("file_exists","path"),&_File::file_exists);
-	ClassDB::bind_method(_MD("get_modified_time", "file"),&_File::get_modified_time);
+	ClassDB::bind_method(D_METHOD("file_exists","path"),&_File::file_exists);
+	ClassDB::bind_method(D_METHOD("get_modified_time", "file"),&_File::get_modified_time);
 
 	BIND_CONSTANT( READ );
 	BIND_CONSTANT( WRITE );
@@ -1970,25 +1970,25 @@ Error _Directory::remove(String p_name){
 void _Directory::_bind_methods() {
 
 
-	ClassDB::bind_method(_MD("open:Error","path"),&_Directory::open);
-	ClassDB::bind_method(_MD("list_dir_begin", "skip_navigational", "skip_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(_MD("get_next"),&_Directory::get_next);
-	ClassDB::bind_method(_MD("current_is_dir"),&_Directory::current_is_dir);
-	ClassDB::bind_method(_MD("list_dir_end"),&_Directory::list_dir_end);
-	ClassDB::bind_method(_MD("get_drive_count"),&_Directory::get_drive_count);
-	ClassDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
-	ClassDB::bind_method(_MD("get_current_drive"),&_Directory::get_current_drive);
-	ClassDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
-	ClassDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
-	ClassDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
-	ClassDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
-	ClassDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
-	ClassDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
-	//ClassDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
-	ClassDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
-	ClassDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
-	ClassDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);
-	ClassDB::bind_method(_MD("remove:Error","path"),&_Directory::remove);
+	ClassDB::bind_method(D_METHOD("open:Error","path"),&_Directory::open);
+	ClassDB::bind_method(D_METHOD("list_dir_begin", "skip_navigational", "skip_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_next"),&_Directory::get_next);
+	ClassDB::bind_method(D_METHOD("current_is_dir"),&_Directory::current_is_dir);
+	ClassDB::bind_method(D_METHOD("list_dir_end"),&_Directory::list_dir_end);
+	ClassDB::bind_method(D_METHOD("get_drive_count"),&_Directory::get_drive_count);
+	ClassDB::bind_method(D_METHOD("get_drive","idx"),&_Directory::get_drive);
+	ClassDB::bind_method(D_METHOD("get_current_drive"),&_Directory::get_current_drive);
+	ClassDB::bind_method(D_METHOD("change_dir:Error","todir"),&_Directory::change_dir);
+	ClassDB::bind_method(D_METHOD("get_current_dir"),&_Directory::get_current_dir);
+	ClassDB::bind_method(D_METHOD("make_dir:Error","path"),&_Directory::make_dir);
+	ClassDB::bind_method(D_METHOD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
+	ClassDB::bind_method(D_METHOD("file_exists","path"),&_Directory::file_exists);
+	ClassDB::bind_method(D_METHOD("dir_exists","path"),&_Directory::dir_exists);
+	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&_Directory::get_modified_time);
+	ClassDB::bind_method(D_METHOD("get_space_left"),&_Directory::get_space_left);
+	ClassDB::bind_method(D_METHOD("copy:Error","from","to"),&_Directory::copy);
+	ClassDB::bind_method(D_METHOD("rename:Error","from","to"),&_Directory::rename);
+	ClassDB::bind_method(D_METHOD("remove:Error","path"),&_Directory::remove);
 
 }
 
@@ -2128,14 +2128,14 @@ String _Marshalls::base64_to_utf8(const String& p_str) {
 
 void _Marshalls::_bind_methods() {
 
-	ClassDB::bind_method(_MD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
-	ClassDB::bind_method(_MD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
+	ClassDB::bind_method(D_METHOD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
 
-	ClassDB::bind_method(_MD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
-	ClassDB::bind_method(_MD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
+	ClassDB::bind_method(D_METHOD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
 
-	ClassDB::bind_method(_MD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
-	ClassDB::bind_method(_MD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
+	ClassDB::bind_method(D_METHOD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
 
 };
 
@@ -2159,8 +2159,8 @@ Error _Semaphore::post() {
 
 void _Semaphore::_bind_methods() {
 
-	ClassDB::bind_method(_MD("wait:Error"),&_Semaphore::wait);
-	ClassDB::bind_method(_MD("post:Error"),&_Semaphore::post);
+	ClassDB::bind_method(D_METHOD("wait:Error"),&_Semaphore::wait);
+	ClassDB::bind_method(D_METHOD("post:Error"),&_Semaphore::post);
 
 }
 
@@ -2196,9 +2196,9 @@ void _Mutex::unlock(){
 
 void _Mutex::_bind_methods() {
 
-	ClassDB::bind_method(_MD("lock"),&_Mutex::lock);
-	ClassDB::bind_method(_MD("try_lock:Error"),&_Mutex::try_lock);
-	ClassDB::bind_method(_MD("unlock"),&_Mutex::unlock);
+	ClassDB::bind_method(D_METHOD("lock"),&_Mutex::lock);
+	ClassDB::bind_method(D_METHOD("try_lock:Error"),&_Mutex::try_lock);
+	ClassDB::bind_method(D_METHOD("unlock"),&_Mutex::unlock);
 
 }
 
@@ -2318,10 +2318,10 @@ Variant _Thread::wait_to_finish() {
 
 void _Thread::_bind_methods() {
 
-	ClassDB::bind_method(_MD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
-	ClassDB::bind_method(_MD("get_id"),&_Thread::get_id);
-	ClassDB::bind_method(_MD("is_active"),&_Thread::is_active);
-	ClassDB::bind_method(_MD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
+	ClassDB::bind_method(D_METHOD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
+	ClassDB::bind_method(D_METHOD("get_id"),&_Thread::get_id);
+	ClassDB::bind_method(D_METHOD("is_active"),&_Thread::is_active);
+	ClassDB::bind_method(D_METHOD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
 
 	BIND_CONSTANT( PRIORITY_LOW );
 	BIND_CONSTANT( PRIORITY_NORMAL );
@@ -2506,31 +2506,31 @@ bool _ClassDB::is_class_enabled(StringName p_class) const {
 
 void _ClassDB::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_class_list"),&_ClassDB::get_class_list);
-	ClassDB::bind_method(_MD("get_inheriters_from_class","class"),&_ClassDB::get_inheriters_from_class);
-	ClassDB::bind_method(_MD("get_parent_class","class"),&_ClassDB::get_parent_class);
-	ClassDB::bind_method(_MD("class_exists","class"),&_ClassDB::class_exists);
-	ClassDB::bind_method(_MD("is_parent_class","class","inherits"),&_ClassDB::is_parent_class);
-	ClassDB::bind_method(_MD("can_instance","class"),&_ClassDB::can_instance);
-	ClassDB::bind_method(_MD("instance:Variant","class"),&_ClassDB::instance);
+	ClassDB::bind_method(D_METHOD("get_class_list"),&_ClassDB::get_class_list);
+	ClassDB::bind_method(D_METHOD("get_inheriters_from_class","class"),&_ClassDB::get_inheriters_from_class);
+	ClassDB::bind_method(D_METHOD("get_parent_class","class"),&_ClassDB::get_parent_class);
+	ClassDB::bind_method(D_METHOD("class_exists","class"),&_ClassDB::class_exists);
+	ClassDB::bind_method(D_METHOD("is_parent_class","class","inherits"),&_ClassDB::is_parent_class);
+	ClassDB::bind_method(D_METHOD("can_instance","class"),&_ClassDB::can_instance);
+	ClassDB::bind_method(D_METHOD("instance:Variant","class"),&_ClassDB::instance);
 
-	ClassDB::bind_method(_MD("class_has_signal","class","signal"),&_ClassDB::has_signal);
-	ClassDB::bind_method(_MD("class_get_signal","class","signal"),&_ClassDB::get_signal);
-	ClassDB::bind_method(_MD("class_get_signal_list","class","no_inheritance"),&_ClassDB::get_signal_list,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_has_signal","class","signal"),&_ClassDB::has_signal);
+	ClassDB::bind_method(D_METHOD("class_get_signal","class","signal"),&_ClassDB::get_signal);
+	ClassDB::bind_method(D_METHOD("class_get_signal_list","class","no_inheritance"),&_ClassDB::get_signal_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("class_get_property_list","class","no_inheritance"),&_ClassDB::get_property_list,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_property_list","class","no_inheritance"),&_ClassDB::get_property_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("class_has_method","class","method","no_inheritance"),&_ClassDB::has_method,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_has_method","class","method","no_inheritance"),&_ClassDB::has_method,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("class_get_method_list","class","no_inheritance"),&_ClassDB::get_method_list,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_method_list","class","no_inheritance"),&_ClassDB::get_method_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("class_get_integer_constant_list","class","no_inheritance"),&_ClassDB::get_integer_constant_list,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_integer_constant_list","class","no_inheritance"),&_ClassDB::get_integer_constant_list,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("class_has_integer_constant","class","name"),&_ClassDB::has_integer_constant);
-	ClassDB::bind_method(_MD("class_get_integer_constant","class","name"),&_ClassDB::get_integer_constant);
+	ClassDB::bind_method(D_METHOD("class_has_integer_constant","class","name"),&_ClassDB::has_integer_constant);
+	ClassDB::bind_method(D_METHOD("class_get_integer_constant","class","name"),&_ClassDB::get_integer_constant);
 
-	ClassDB::bind_method(_MD("class_get_category","class"),&_ClassDB::get_category);
-	ClassDB::bind_method(_MD("is_class_enabled","class"),&_ClassDB::is_class_enabled);
+	ClassDB::bind_method(D_METHOD("class_get_category","class"),&_ClassDB::get_category);
+	ClassDB::bind_method(D_METHOD("is_class_enabled","class"),&_ClassDB::is_class_enabled);
 
 
 }
@@ -2604,22 +2604,22 @@ Dictionary _Engine::get_version_info() const {
 
 void _Engine::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_Engine::set_iterations_per_second);
-	ClassDB::bind_method(_MD("get_iterations_per_second"),&_Engine::get_iterations_per_second);
-	ClassDB::bind_method(_MD("set_target_fps","target_fps"),&_Engine::set_target_fps);
-	ClassDB::bind_method(_MD("get_target_fps"),&_Engine::get_target_fps);
+	ClassDB::bind_method(D_METHOD("set_iterations_per_second","iterations_per_second"),&_Engine::set_iterations_per_second);
+	ClassDB::bind_method(D_METHOD("get_iterations_per_second"),&_Engine::get_iterations_per_second);
+	ClassDB::bind_method(D_METHOD("set_target_fps","target_fps"),&_Engine::set_target_fps);
+	ClassDB::bind_method(D_METHOD("get_target_fps"),&_Engine::get_target_fps);
 
-	ClassDB::bind_method(_MD("set_time_scale","time_scale"),&_Engine::set_time_scale);
-	ClassDB::bind_method(_MD("get_time_scale"),&_Engine::get_time_scale);
+	ClassDB::bind_method(D_METHOD("set_time_scale","time_scale"),&_Engine::set_time_scale);
+	ClassDB::bind_method(D_METHOD("get_time_scale"),&_Engine::get_time_scale);
 
-	ClassDB::bind_method(_MD("get_custom_level"),&_Engine::get_custom_level);
+	ClassDB::bind_method(D_METHOD("get_custom_level"),&_Engine::get_custom_level);
 
-	ClassDB::bind_method(_MD("get_frames_drawn"),&_Engine::get_frames_drawn);
-	ClassDB::bind_method(_MD("get_frames_per_second"),&_Engine::get_frames_per_second);
+	ClassDB::bind_method(D_METHOD("get_frames_drawn"),&_Engine::get_frames_drawn);
+	ClassDB::bind_method(D_METHOD("get_frames_per_second"),&_Engine::get_frames_per_second);
 
-	ClassDB::bind_method(_MD("get_main_loop:MainLoop"),&_Engine::get_main_loop);
+	ClassDB::bind_method(D_METHOD("get_main_loop:MainLoop"),&_Engine::get_main_loop);
 
-	ClassDB::bind_method(_MD("get_version_info"),&_Engine::get_version_info);
+	ClassDB::bind_method(D_METHOD("get_version_info"),&_Engine::get_version_info);
 
 }
 

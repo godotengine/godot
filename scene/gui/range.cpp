@@ -222,25 +222,25 @@ void Range::_unref_shared() {
 
 void Range::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_value"),&Range::get_value);
-	ClassDB::bind_method(_MD("get_min"),&Range::get_min);
-	ClassDB::bind_method(_MD("get_max"),&Range::get_max);
-	ClassDB::bind_method(_MD("get_step"),&Range::get_step);
-	ClassDB::bind_method(_MD("get_page"),&Range::get_page);
-	ClassDB::bind_method(_MD("get_as_ratio"),&Range::get_as_ratio);
-	ClassDB::bind_method(_MD("set_value","value"),&Range::set_value);
-	ClassDB::bind_method(_MD("set_min","minimum"),&Range::set_min);
-	ClassDB::bind_method(_MD("set_max","maximum"),&Range::set_max);
-	ClassDB::bind_method(_MD("set_step","step"),&Range::set_step);
-	ClassDB::bind_method(_MD("set_page","pagesize"),&Range::set_page);
-	ClassDB::bind_method(_MD("set_as_ratio","value"),&Range::set_as_ratio);
-	ClassDB::bind_method(_MD("set_use_rounded_values","enabled"),&Range::set_use_rounded_values);
-	ClassDB::bind_method(_MD("is_using_rounded_values"),&Range::is_using_rounded_values);
-	ClassDB::bind_method(_MD("set_exp_ratio","enabled"),&Range::set_exp_ratio);
-	ClassDB::bind_method(_MD("is_ratio_exp"),&Range::is_ratio_exp);
+	ClassDB::bind_method(D_METHOD("get_value"),&Range::get_value);
+	ClassDB::bind_method(D_METHOD("get_min"),&Range::get_min);
+	ClassDB::bind_method(D_METHOD("get_max"),&Range::get_max);
+	ClassDB::bind_method(D_METHOD("get_step"),&Range::get_step);
+	ClassDB::bind_method(D_METHOD("get_page"),&Range::get_page);
+	ClassDB::bind_method(D_METHOD("get_as_ratio"),&Range::get_as_ratio);
+	ClassDB::bind_method(D_METHOD("set_value","value"),&Range::set_value);
+	ClassDB::bind_method(D_METHOD("set_min","minimum"),&Range::set_min);
+	ClassDB::bind_method(D_METHOD("set_max","maximum"),&Range::set_max);
+	ClassDB::bind_method(D_METHOD("set_step","step"),&Range::set_step);
+	ClassDB::bind_method(D_METHOD("set_page","pagesize"),&Range::set_page);
+	ClassDB::bind_method(D_METHOD("set_as_ratio","value"),&Range::set_as_ratio);
+	ClassDB::bind_method(D_METHOD("set_use_rounded_values","enabled"),&Range::set_use_rounded_values);
+	ClassDB::bind_method(D_METHOD("is_using_rounded_values"),&Range::is_using_rounded_values);
+	ClassDB::bind_method(D_METHOD("set_exp_ratio","enabled"),&Range::set_exp_ratio);
+	ClassDB::bind_method(D_METHOD("is_ratio_exp"),&Range::is_ratio_exp);
 
-	ClassDB::bind_method(_MD("share","with"),&Range::_share);
-	ClassDB::bind_method(_MD("unshare"),&Range::unshare);
+	ClassDB::bind_method(D_METHOD("share","with"),&Range::_share);
+	ClassDB::bind_method(D_METHOD("unshare"),&Range::unshare);
 
 	ADD_SIGNAL( MethodInfo("value_changed", PropertyInfo(Variant::REAL,"value")));
 	ADD_SIGNAL( MethodInfo("changed"));

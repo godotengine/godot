@@ -115,20 +115,20 @@ float AudioEffectPhaser::get_depth() const {
 
 void AudioEffectPhaser::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_range_min_hz","hz"),&AudioEffectPhaser::set_range_min_hz);
-	ClassDB::bind_method(_MD("get_range_min_hz"),&AudioEffectPhaser::get_range_min_hz);
+	ClassDB::bind_method(D_METHOD("set_range_min_hz","hz"),&AudioEffectPhaser::set_range_min_hz);
+	ClassDB::bind_method(D_METHOD("get_range_min_hz"),&AudioEffectPhaser::get_range_min_hz);
 
-	ClassDB::bind_method(_MD("set_range_max_hz","hz"),&AudioEffectPhaser::set_range_max_hz);
-	ClassDB::bind_method(_MD("get_range_max_hz"),&AudioEffectPhaser::get_range_max_hz);
+	ClassDB::bind_method(D_METHOD("set_range_max_hz","hz"),&AudioEffectPhaser::set_range_max_hz);
+	ClassDB::bind_method(D_METHOD("get_range_max_hz"),&AudioEffectPhaser::get_range_max_hz);
 
-	ClassDB::bind_method(_MD("set_rate_hz","hz"),&AudioEffectPhaser::set_rate_hz);
-	ClassDB::bind_method(_MD("get_rate_hz"),&AudioEffectPhaser::get_rate_hz);
+	ClassDB::bind_method(D_METHOD("set_rate_hz","hz"),&AudioEffectPhaser::set_rate_hz);
+	ClassDB::bind_method(D_METHOD("get_rate_hz"),&AudioEffectPhaser::get_rate_hz);
 
-	ClassDB::bind_method(_MD("set_feedback","fbk"),&AudioEffectPhaser::set_feedback);
-	ClassDB::bind_method(_MD("get_feedback"),&AudioEffectPhaser::get_feedback);
+	ClassDB::bind_method(D_METHOD("set_feedback","fbk"),&AudioEffectPhaser::set_feedback);
+	ClassDB::bind_method(D_METHOD("get_feedback"),&AudioEffectPhaser::get_feedback);
 
-	ClassDB::bind_method(_MD("set_depth","depth"),&AudioEffectPhaser::set_depth);
-	ClassDB::bind_method(_MD("get_depth"),&AudioEffectPhaser::get_depth);
+	ClassDB::bind_method(D_METHOD("set_depth","depth"),&AudioEffectPhaser::set_depth);
+	ClassDB::bind_method(D_METHOD("get_depth"),&AudioEffectPhaser::get_depth);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"range_min_hz",PROPERTY_HINT_RANGE,"10,10000"),"set_range_min_hz","get_range_min_hz");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"range_max_hz",PROPERTY_HINT_RANGE,"10,10000"),"set_range_max_hz","get_range_max_hz");

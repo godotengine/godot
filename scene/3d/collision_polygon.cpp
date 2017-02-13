@@ -275,22 +275,22 @@ String CollisionPolygon::get_configuration_warning() const {
 
 void CollisionPolygon::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon::_add_to_collision_object);
+	ClassDB::bind_method(D_METHOD("_add_to_collision_object"),&CollisionPolygon::_add_to_collision_object);
 
-	ClassDB::bind_method(_MD("set_build_mode","build_mode"),&CollisionPolygon::set_build_mode);
-	ClassDB::bind_method(_MD("get_build_mode"),&CollisionPolygon::get_build_mode);
+	ClassDB::bind_method(D_METHOD("set_build_mode","build_mode"),&CollisionPolygon::set_build_mode);
+	ClassDB::bind_method(D_METHOD("get_build_mode"),&CollisionPolygon::get_build_mode);
 
-	ClassDB::bind_method(_MD("set_depth","depth"),&CollisionPolygon::set_depth);
-	ClassDB::bind_method(_MD("get_depth"),&CollisionPolygon::get_depth);
+	ClassDB::bind_method(D_METHOD("set_depth","depth"),&CollisionPolygon::set_depth);
+	ClassDB::bind_method(D_METHOD("get_depth"),&CollisionPolygon::get_depth);
 
-	ClassDB::bind_method(_MD("set_polygon","polygon"),&CollisionPolygon::set_polygon);
-	ClassDB::bind_method(_MD("get_polygon"),&CollisionPolygon::get_polygon);
+	ClassDB::bind_method(D_METHOD("set_polygon","polygon"),&CollisionPolygon::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon"),&CollisionPolygon::get_polygon);
 
-	ClassDB::bind_method(_MD("_set_shape_range","shape_range"),&CollisionPolygon::_set_shape_range);
-	ClassDB::bind_method(_MD("_get_shape_range"),&CollisionPolygon::_get_shape_range);
+	ClassDB::bind_method(D_METHOD("_set_shape_range","shape_range"),&CollisionPolygon::_set_shape_range);
+	ClassDB::bind_method(D_METHOD("_get_shape_range"),&CollisionPolygon::_get_shape_range);
 
-	ClassDB::bind_method(_MD("get_collision_object_first_shape"),&CollisionPolygon::get_collision_object_first_shape);
-	ClassDB::bind_method(_MD("get_collision_object_last_shape"),&CollisionPolygon::get_collision_object_last_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_object_first_shape"),&CollisionPolygon::get_collision_object_first_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_object_last_shape"),&CollisionPolygon::get_collision_object_last_shape);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Triangles"),"set_build_mode","get_build_mode");
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"depth"),"set_depth","get_depth");

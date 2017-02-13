@@ -81,17 +81,17 @@ struct MethodDefinition {
 
 
 
-MethodDefinition _MD(const char* p_name);
-MethodDefinition _MD(const char* p_name,const char *p_arg1);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9);
-MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9,const char *p_arg10);
+MethodDefinition D_METHOD(const char* p_name);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9);
+MethodDefinition D_METHOD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9,const char *p_arg10);
 
 #else
 
@@ -99,11 +99,13 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 #ifdef NO_VARIADIC_MACROS
 
-static _FORCE_INLINE_ const char* _MD(const char* m_name, ...) { return m_name; }
+static _FORCE_INLINE_ const char* D_METHOD(const char* m_name, ...) { return m_name; }
 
 #else
 
-#define _MD(m_c, ...) m_c
+// When DEBUG_METHODS_ENABLED is set this will let the engine know
+// the argument names for easier debugging.
+#define D_METHOD(m_c, ...) m_c
 
 #endif
 

@@ -530,39 +530,39 @@ void Skeleton::_bind_methods() {
 
 
 
-	ClassDB::bind_method(_MD("add_bone","name"),&Skeleton::add_bone);
-	ClassDB::bind_method(_MD("find_bone","name"),&Skeleton::find_bone);
-	ClassDB::bind_method(_MD("get_bone_name","bone_idx"),&Skeleton::get_bone_name);
+	ClassDB::bind_method(D_METHOD("add_bone","name"),&Skeleton::add_bone);
+	ClassDB::bind_method(D_METHOD("find_bone","name"),&Skeleton::find_bone);
+	ClassDB::bind_method(D_METHOD("get_bone_name","bone_idx"),&Skeleton::get_bone_name);
 
-	ClassDB::bind_method(_MD("get_bone_parent","bone_idx"),&Skeleton::get_bone_parent);
-	ClassDB::bind_method(_MD("set_bone_parent","bone_idx","parent_idx"),&Skeleton::set_bone_parent);
+	ClassDB::bind_method(D_METHOD("get_bone_parent","bone_idx"),&Skeleton::get_bone_parent);
+	ClassDB::bind_method(D_METHOD("set_bone_parent","bone_idx","parent_idx"),&Skeleton::set_bone_parent);
 
-	ClassDB::bind_method(_MD("get_bone_count"),&Skeleton::get_bone_count);
+	ClassDB::bind_method(D_METHOD("get_bone_count"),&Skeleton::get_bone_count);
 
-	ClassDB::bind_method(_MD("unparent_bone_and_rest","bone_idx"),&Skeleton::unparent_bone_and_rest);
+	ClassDB::bind_method(D_METHOD("unparent_bone_and_rest","bone_idx"),&Skeleton::unparent_bone_and_rest);
 
-	ClassDB::bind_method(_MD("get_bone_rest","bone_idx"),&Skeleton::get_bone_rest);
-	ClassDB::bind_method(_MD("set_bone_rest","bone_idx","rest"),&Skeleton::set_bone_rest);
+	ClassDB::bind_method(D_METHOD("get_bone_rest","bone_idx"),&Skeleton::get_bone_rest);
+	ClassDB::bind_method(D_METHOD("set_bone_rest","bone_idx","rest"),&Skeleton::set_bone_rest);
 
-	ClassDB::bind_method(_MD("set_bone_disable_rest","bone_idx","disable"),&Skeleton::set_bone_disable_rest);
-	ClassDB::bind_method(_MD("is_bone_rest_disabled","bone_idx"),&Skeleton::is_bone_rest_disabled);
+	ClassDB::bind_method(D_METHOD("set_bone_disable_rest","bone_idx","disable"),&Skeleton::set_bone_disable_rest);
+	ClassDB::bind_method(D_METHOD("is_bone_rest_disabled","bone_idx"),&Skeleton::is_bone_rest_disabled);
 
-	ClassDB::bind_method(_MD("bind_child_node_to_bone","bone_idx","node:Node"),&Skeleton::bind_child_node_to_bone);
-	ClassDB::bind_method(_MD("unbind_child_node_from_bone","bone_idx","node:Node"),&Skeleton::unbind_child_node_from_bone);
-	ClassDB::bind_method(_MD("get_bound_child_nodes_to_bone","bone_idx"),&Skeleton::_get_bound_child_nodes_to_bone);
+	ClassDB::bind_method(D_METHOD("bind_child_node_to_bone","bone_idx","node:Node"),&Skeleton::bind_child_node_to_bone);
+	ClassDB::bind_method(D_METHOD("unbind_child_node_from_bone","bone_idx","node:Node"),&Skeleton::unbind_child_node_from_bone);
+	ClassDB::bind_method(D_METHOD("get_bound_child_nodes_to_bone","bone_idx"),&Skeleton::_get_bound_child_nodes_to_bone);
 
-	ClassDB::bind_method(_MD("clear_bones"),&Skeleton::clear_bones);
+	ClassDB::bind_method(D_METHOD("clear_bones"),&Skeleton::clear_bones);
 
-	ClassDB::bind_method(_MD("get_bone_pose","bone_idx"),&Skeleton::get_bone_pose);
-	ClassDB::bind_method(_MD("set_bone_pose","bone_idx","pose"),&Skeleton::set_bone_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_pose","bone_idx"),&Skeleton::get_bone_pose);
+	ClassDB::bind_method(D_METHOD("set_bone_pose","bone_idx","pose"),&Skeleton::set_bone_pose);
 
-	ClassDB::bind_method(_MD("set_bone_global_pose","bone_idx","pose"),&Skeleton::set_bone_global_pose);
-	ClassDB::bind_method(_MD("get_bone_global_pose","bone_idx"),&Skeleton::get_bone_global_pose);
+	ClassDB::bind_method(D_METHOD("set_bone_global_pose","bone_idx","pose"),&Skeleton::set_bone_global_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_global_pose","bone_idx"),&Skeleton::get_bone_global_pose);
 
-	ClassDB::bind_method(_MD("get_bone_custom_pose","bone_idx"),&Skeleton::get_bone_custom_pose);
-	ClassDB::bind_method(_MD("set_bone_custom_pose","bone_idx","custom_pose"),&Skeleton::set_bone_custom_pose);
+	ClassDB::bind_method(D_METHOD("get_bone_custom_pose","bone_idx"),&Skeleton::get_bone_custom_pose);
+	ClassDB::bind_method(D_METHOD("set_bone_custom_pose","bone_idx","custom_pose"),&Skeleton::set_bone_custom_pose);
 
-	ClassDB::bind_method(_MD("get_bone_transform","bone_idx"),&Skeleton::get_bone_transform);
+	ClassDB::bind_method(D_METHOD("get_bone_transform","bone_idx"),&Skeleton::get_bone_transform);
 
 	BIND_CONSTANT( NOTIFICATION_UPDATE_SKELETON );
 }

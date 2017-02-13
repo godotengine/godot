@@ -1284,83 +1284,83 @@ Vector<int> ItemList::get_selected_items() {
 
 void ItemList::_bind_methods(){
 
-	ClassDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
-	ClassDB::bind_method(_MD("add_icon_item","icon:Texture","selectable"),&ItemList::add_icon_item,DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_icon_item","icon:Texture","selectable"),&ItemList::add_icon_item,DEFVAL(true));
 
-	ClassDB::bind_method(_MD("set_item_text","idx","text"),&ItemList::set_item_text);
-	ClassDB::bind_method(_MD("get_item_text","idx"),&ItemList::get_item_text);
+	ClassDB::bind_method(D_METHOD("set_item_text","idx","text"),&ItemList::set_item_text);
+	ClassDB::bind_method(D_METHOD("get_item_text","idx"),&ItemList::get_item_text);
 
-	ClassDB::bind_method(_MD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
-	ClassDB::bind_method(_MD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
 
-	ClassDB::bind_method(_MD("set_item_icon_region","idx","rect"),&ItemList::set_item_icon_region);
-	ClassDB::bind_method(_MD("get_item_icon_region","idx"),&ItemList::get_item_icon_region);
+	ClassDB::bind_method(D_METHOD("set_item_icon_region","idx","rect"),&ItemList::set_item_icon_region);
+	ClassDB::bind_method(D_METHOD("get_item_icon_region","idx"),&ItemList::get_item_icon_region);
 
-	ClassDB::bind_method(_MD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
-	ClassDB::bind_method(_MD("is_item_selectable","idx"),&ItemList::is_item_selectable);
+	ClassDB::bind_method(D_METHOD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
+	ClassDB::bind_method(D_METHOD("is_item_selectable","idx"),&ItemList::is_item_selectable);
 
-	ClassDB::bind_method(_MD("set_item_disabled","idx","disabled"),&ItemList::set_item_disabled);
-	ClassDB::bind_method(_MD("is_item_disabled","idx"),&ItemList::is_item_disabled);
+	ClassDB::bind_method(D_METHOD("set_item_disabled","idx","disabled"),&ItemList::set_item_disabled);
+	ClassDB::bind_method(D_METHOD("is_item_disabled","idx"),&ItemList::is_item_disabled);
 
-	ClassDB::bind_method(_MD("set_item_metadata","idx","metadata"),&ItemList::set_item_metadata);
-	ClassDB::bind_method(_MD("get_item_metadata","idx"),&ItemList::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("set_item_metadata","idx","metadata"),&ItemList::set_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_metadata","idx"),&ItemList::get_item_metadata);
 
-	ClassDB::bind_method(_MD("set_item_custom_bg_color","idx","custom_bg_color"),&ItemList::set_item_custom_bg_color);
-	ClassDB::bind_method(_MD("get_item_custom_bg_color","idx"),&ItemList::get_item_custom_bg_color);
+	ClassDB::bind_method(D_METHOD("set_item_custom_bg_color","idx","custom_bg_color"),&ItemList::set_item_custom_bg_color);
+	ClassDB::bind_method(D_METHOD("get_item_custom_bg_color","idx"),&ItemList::get_item_custom_bg_color);
 
-	ClassDB::bind_method(_MD("set_item_tooltip_enabled","idx","enable"),&ItemList::set_item_tooltip_enabled);
-	ClassDB::bind_method(_MD("is_item_tooltip_enabled","idx"),&ItemList::is_item_tooltip_enabled);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip_enabled","idx","enable"),&ItemList::set_item_tooltip_enabled);
+	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled","idx"),&ItemList::is_item_tooltip_enabled);
 
-	ClassDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
-	ClassDB::bind_method(_MD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
+	ClassDB::bind_method(D_METHOD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
 
-	ClassDB::bind_method(_MD("select","idx","single"),&ItemList::select,DEFVAL(true));
-	ClassDB::bind_method(_MD("unselect","idx"),&ItemList::unselect);
-	ClassDB::bind_method(_MD("is_selected","idx"),&ItemList::is_selected);
-	ClassDB::bind_method(_MD("get_selected_items"),&ItemList::get_selected_items);
+	ClassDB::bind_method(D_METHOD("select","idx","single"),&ItemList::select,DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("unselect","idx"),&ItemList::unselect);
+	ClassDB::bind_method(D_METHOD("is_selected","idx"),&ItemList::is_selected);
+	ClassDB::bind_method(D_METHOD("get_selected_items"),&ItemList::get_selected_items);
 
-	ClassDB::bind_method(_MD("get_item_count"),&ItemList::get_item_count);
-	ClassDB::bind_method(_MD("remove_item","idx"),&ItemList::remove_item);
+	ClassDB::bind_method(D_METHOD("get_item_count"),&ItemList::get_item_count);
+	ClassDB::bind_method(D_METHOD("remove_item","idx"),&ItemList::remove_item);
 
-	ClassDB::bind_method(_MD("clear"),&ItemList::clear);
-	ClassDB::bind_method(_MD("sort_items_by_text"),&ItemList::sort_items_by_text);
+	ClassDB::bind_method(D_METHOD("clear"),&ItemList::clear);
+	ClassDB::bind_method(D_METHOD("sort_items_by_text"),&ItemList::sort_items_by_text);
 
-	ClassDB::bind_method(_MD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
-	ClassDB::bind_method(_MD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
+	ClassDB::bind_method(D_METHOD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
+	ClassDB::bind_method(D_METHOD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
 
-	ClassDB::bind_method(_MD("set_same_column_width","enable"),&ItemList::set_same_column_width);
-	ClassDB::bind_method(_MD("is_same_column_width"),&ItemList::is_same_column_width);
+	ClassDB::bind_method(D_METHOD("set_same_column_width","enable"),&ItemList::set_same_column_width);
+	ClassDB::bind_method(D_METHOD("is_same_column_width"),&ItemList::is_same_column_width);
 
-	ClassDB::bind_method(_MD("set_max_text_lines","lines"),&ItemList::set_max_text_lines);
-	ClassDB::bind_method(_MD("get_max_text_lines"),&ItemList::get_max_text_lines);
+	ClassDB::bind_method(D_METHOD("set_max_text_lines","lines"),&ItemList::set_max_text_lines);
+	ClassDB::bind_method(D_METHOD("get_max_text_lines"),&ItemList::get_max_text_lines);
 
-	ClassDB::bind_method(_MD("set_max_columns","amount"),&ItemList::set_max_columns);
-	ClassDB::bind_method(_MD("get_max_columns"),&ItemList::get_max_columns);
+	ClassDB::bind_method(D_METHOD("set_max_columns","amount"),&ItemList::set_max_columns);
+	ClassDB::bind_method(D_METHOD("get_max_columns"),&ItemList::get_max_columns);
 
-	ClassDB::bind_method(_MD("set_select_mode","mode"),&ItemList::set_select_mode);
-	ClassDB::bind_method(_MD("get_select_mode"),&ItemList::get_select_mode);
+	ClassDB::bind_method(D_METHOD("set_select_mode","mode"),&ItemList::set_select_mode);
+	ClassDB::bind_method(D_METHOD("get_select_mode"),&ItemList::get_select_mode);
 
-	ClassDB::bind_method(_MD("set_icon_mode","mode"),&ItemList::set_icon_mode);
-	ClassDB::bind_method(_MD("get_icon_mode"),&ItemList::get_icon_mode);
+	ClassDB::bind_method(D_METHOD("set_icon_mode","mode"),&ItemList::set_icon_mode);
+	ClassDB::bind_method(D_METHOD("get_icon_mode"),&ItemList::get_icon_mode);
 
 
-	ClassDB::bind_method(_MD("set_fixed_icon_size","size"),&ItemList::set_fixed_icon_size);
-	ClassDB::bind_method(_MD("get_fixed_icon_size"),&ItemList::get_fixed_icon_size);
+	ClassDB::bind_method(D_METHOD("set_fixed_icon_size","size"),&ItemList::set_fixed_icon_size);
+	ClassDB::bind_method(D_METHOD("get_fixed_icon_size"),&ItemList::get_fixed_icon_size);
 
-	ClassDB::bind_method(_MD("set_icon_scale","scale"),&ItemList::set_icon_scale);
-	ClassDB::bind_method(_MD("get_icon_scale"),&ItemList::get_icon_scale);
+	ClassDB::bind_method(D_METHOD("set_icon_scale","scale"),&ItemList::set_icon_scale);
+	ClassDB::bind_method(D_METHOD("get_icon_scale"),&ItemList::get_icon_scale);
 
-	ClassDB::bind_method(_MD("set_allow_rmb_select","allow"),&ItemList::set_allow_rmb_select);
-	ClassDB::bind_method(_MD("get_allow_rmb_select"),&ItemList::get_allow_rmb_select);
+	ClassDB::bind_method(D_METHOD("set_allow_rmb_select","allow"),&ItemList::set_allow_rmb_select);
+	ClassDB::bind_method(D_METHOD("get_allow_rmb_select"),&ItemList::get_allow_rmb_select);
 
-	ClassDB::bind_method(_MD("get_item_at_pos","pos","exact"),&ItemList::get_item_at_pos,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_item_at_pos","pos","exact"),&ItemList::get_item_at_pos,DEFVAL(false));
 
-	ClassDB::bind_method(_MD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
+	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
 
-	ClassDB::bind_method(_MD("get_v_scroll"),&ItemList::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"),&ItemList::get_v_scroll);
 
-	ClassDB::bind_method(_MD("_scroll_changed"),&ItemList::_scroll_changed);
-	ClassDB::bind_method(_MD("_gui_input"),&ItemList::_gui_input);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&ItemList::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ItemList::_gui_input);
 
 	BIND_CONSTANT( ICON_MODE_TOP );
 	BIND_CONSTANT( ICON_MODE_LEFT );

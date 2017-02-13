@@ -550,10 +550,10 @@ void Path2DEditor::edit(Node *p_path2d) {
 
 void Path2DEditor::_bind_methods() {
 
-	//ClassDB::bind_method(_MD("_menu_option"),&Path2DEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&Path2DEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_node_visibility_changed"),&Path2DEditor::_node_visibility_changed);
-	ClassDB::bind_method(_MD("_mode_selected"),&Path2DEditor::_mode_selected);
+	//ClassDB::bind_method(D_METHOD("_menu_option"),&Path2DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&Path2DEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_node_visibility_changed"),&Path2DEditor::_node_visibility_changed);
+	ClassDB::bind_method(D_METHOD("_mode_selected"),&Path2DEditor::_mode_selected);
 }
 
 void Path2DEditor::_mode_selected(int p_mode) {

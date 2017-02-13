@@ -55,24 +55,24 @@ void ColorRamp::_bind_methods() {
 
 
 
-	ClassDB::bind_method(_MD("add_point","offset","color"),&ColorRamp::add_point);
-	ClassDB::bind_method(_MD("remove_point","offset","color"),&ColorRamp::remove_point);
+	ClassDB::bind_method(D_METHOD("add_point","offset","color"),&ColorRamp::add_point);
+	ClassDB::bind_method(D_METHOD("remove_point","offset","color"),&ColorRamp::remove_point);
 
-	ClassDB::bind_method(_MD("set_offset","point","offset"),&ColorRamp::set_offset);
-	ClassDB::bind_method(_MD("get_offset","point"),&ColorRamp::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","point","offset"),&ColorRamp::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset","point"),&ColorRamp::get_offset);
 
-	ClassDB::bind_method(_MD("set_color","point","color"),&ColorRamp::set_color);
-	ClassDB::bind_method(_MD("get_color","point"),&ColorRamp::get_color);
+	ClassDB::bind_method(D_METHOD("set_color","point","color"),&ColorRamp::set_color);
+	ClassDB::bind_method(D_METHOD("get_color","point"),&ColorRamp::get_color);
 
-	ClassDB::bind_method(_MD("interpolate","offset"),&ColorRamp::get_color_at_offset);
+	ClassDB::bind_method(D_METHOD("interpolate","offset"),&ColorRamp::get_color_at_offset);
 
-	ClassDB::bind_method(_MD("get_point_count"),&ColorRamp::get_points_count);
+	ClassDB::bind_method(D_METHOD("get_point_count"),&ColorRamp::get_points_count);
 
-	ClassDB::bind_method(_MD(COLOR_RAMP_SET_OFFSETS,"offsets"),&ColorRamp::set_offsets);
-	ClassDB::bind_method(_MD(COLOR_RAMP_GET_OFFSETS),&ColorRamp::get_offsets);
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_SET_OFFSETS,"offsets"),&ColorRamp::set_offsets);
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_GET_OFFSETS),&ColorRamp::get_offsets);
 
-	ClassDB::bind_method(_MD(COLOR_RAMP_SET_COLORS,"colors"),&ColorRamp::set_colors);
-	ClassDB::bind_method(_MD(COLOR_RAMP_GET_COLORS),&ColorRamp::get_colors);
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_SET_COLORS,"colors"),&ColorRamp::set_colors);
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_GET_COLORS),&ColorRamp::get_colors);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"offsets"),COLOR_RAMP_SET_OFFSETS,COLOR_RAMP_GET_OFFSETS) ;
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"colors"),COLOR_RAMP_SET_COLORS,COLOR_RAMP_GET_COLORS) ;

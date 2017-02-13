@@ -1718,23 +1718,23 @@ void BakedLight::_debug_mesh_light() {
 
 void BakedLight::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_cell_subdiv","steps"),&BakedLight::set_cell_subdiv);
-	ClassDB::bind_method(_MD("get_cell_subdiv"),&BakedLight::get_cell_subdiv);
+	ClassDB::bind_method(D_METHOD("set_cell_subdiv","steps"),&BakedLight::set_cell_subdiv);
+	ClassDB::bind_method(D_METHOD("get_cell_subdiv"),&BakedLight::get_cell_subdiv);
 
-	ClassDB::bind_method(_MD("bake"),&BakedLight::bake);
+	ClassDB::bind_method(D_METHOD("bake"),&BakedLight::bake);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(_MD("bake_lights"),&BakedLight::bake_lights);
+	ClassDB::bind_method(D_METHOD("bake_lights"),&BakedLight::bake_lights);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("bake_lights"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(_MD("bake_radiance"),&BakedLight::bake_radiance);
+	ClassDB::bind_method(D_METHOD("bake_radiance"),&BakedLight::bake_radiance);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("bake_radiance"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(_MD("debug_mesh_albedo"),&BakedLight::_debug_mesh_albedo);
+	ClassDB::bind_method(D_METHOD("debug_mesh_albedo"),&BakedLight::_debug_mesh_albedo);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("debug_mesh_albedo"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 
-	ClassDB::bind_method(_MD("debug_mesh_light"),&BakedLight::_debug_mesh_light);
+	ClassDB::bind_method(D_METHOD("debug_mesh_light"),&BakedLight::_debug_mesh_light);
 	ClassDB::set_method_flags(get_class_static(),_scs_create("debug_mesh_light"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"cell_subdiv"),"set_cell_subdiv","get_cell_subdiv");
@@ -1797,11 +1797,11 @@ DVector<Face3> BakedLightSampler::get_faces(uint32_t p_usage_flags) const {
 
 void BakedLightSampler::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_param","param","value"),&BakedLightSampler::set_param);
-	ClassDB::bind_method(_MD("get_param","param"),&BakedLightSampler::get_param);
+	ClassDB::bind_method(D_METHOD("set_param","param","value"),&BakedLightSampler::set_param);
+	ClassDB::bind_method(D_METHOD("get_param","param"),&BakedLightSampler::get_param);
 
-	ClassDB::bind_method(_MD("set_resolution","resolution"),&BakedLightSampler::set_resolution);
-	ClassDB::bind_method(_MD("get_resolution"),&BakedLightSampler::get_resolution);
+	ClassDB::bind_method(D_METHOD("set_resolution","resolution"),&BakedLightSampler::set_resolution);
+	ClassDB::bind_method(D_METHOD("get_resolution"),&BakedLightSampler::get_resolution);
 
 
 	BIND_CONSTANT( PARAM_RADIUS );

@@ -252,9 +252,9 @@ StringName EditorQuickOpen::get_base_type() const {
 
 void EditorQuickOpen::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&EditorQuickOpen::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&EditorQuickOpen::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&EditorQuickOpen::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&EditorQuickOpen::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&EditorQuickOpen::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&EditorQuickOpen::_sbox_input);
 
 	ADD_SIGNAL(MethodInfo("quick_open"));
 

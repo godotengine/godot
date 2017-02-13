@@ -130,11 +130,11 @@ void LinkButton::_notification(int p_what) {
 
 void LinkButton::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_text","text"),&LinkButton::set_text);
-	ClassDB::bind_method(_MD("get_text"),&LinkButton::get_text);
+	ClassDB::bind_method(D_METHOD("set_text","text"),&LinkButton::set_text);
+	ClassDB::bind_method(D_METHOD("get_text"),&LinkButton::get_text);
 
-	ClassDB::bind_method(_MD("set_underline_mode","underline_mode"),&LinkButton::set_underline_mode);
-	ClassDB::bind_method(_MD("get_underline_mode"),&LinkButton::get_underline_mode);
+	ClassDB::bind_method(D_METHOD("set_underline_mode","underline_mode"),&LinkButton::set_underline_mode);
+	ClassDB::bind_method(D_METHOD("get_underline_mode"),&LinkButton::get_underline_mode);
 
 
 	BIND_CONSTANT( 	UNDERLINE_MODE_ALWAYS );
