@@ -552,7 +552,7 @@ void ButtonArray::_bind_methods() {
 	BIND_CONSTANT( ALIGN_FILL );
 	BIND_CONSTANT( ALIGN_EXPAND_FILL );
 
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flat" ), _SCS("set_flat"),_SCS("is_flat") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flat" ), "set_flat","is_flat") ;
 
 	ADD_SIGNAL( MethodInfo("button_selected",PropertyInfo(Variant::INT,"button_idx")));
 

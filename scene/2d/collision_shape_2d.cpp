@@ -230,9 +230,9 @@ void CollisionShape2D::_bind_methods() {
 
 	ClassDB::bind_method(_MD("get_collision_object_shape_index"),&CollisionShape2D::get_collision_object_shape_index);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),_SCS("set_shape"),_SCS("get_shape"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), _SCS("_set_update_shape_index"), _SCS("_get_update_shape_index"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),"set_shape","get_shape");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"trigger"),"set_trigger","is_trigger");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "_update_shape_index", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_NOEDITOR), "_set_update_shape_index", "_get_update_shape_index");
 
 }
 

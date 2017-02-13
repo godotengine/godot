@@ -440,45 +440,45 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(_MD("set_color_phases","count"),&Particles::set_color_phases);
 	ClassDB::bind_method(_MD("get_color_phases"),&Particles::get_color_phases);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), _SCS("set_material"), _SCS("get_material") );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), "set_material", "get_material") ;
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1024,1" ), _SCS("set_amount"), _SCS("get_amount") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "emitting" ), _SCS("set_emitting"), _SCS("is_emitting") );
-	ADD_PROPERTY( PropertyInfo( Variant::_AABB, "visibility" ), _SCS("set_visibility_aabb"), _SCS("get_visibility_aabb") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_extents" ), _SCS("set_emission_half_extents"), _SCS("get_emission_half_extents") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_base_velocity" ), _SCS("set_emission_base_velocity"), _SCS("get_emission_base_velocity") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "emission_points" ), _SCS("set_emission_points"), _SCS("get_emission_points") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "gravity_normal" ), _SCS("set_gravity_normal"), _SCS("get_gravity_normal") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "local_coords" ), _SCS("set_use_local_coordinates"), _SCS("is_using_local_coordinates") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "emit_timeout",PROPERTY_HINT_RANGE,"0,256,0.01"), _SCS("set_emit_timeout"), _SCS("get_emit_timeout") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1024,1" ), "set_amount", "get_amount") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "emitting" ), "set_emitting", "is_emitting") ;
+	ADD_PROPERTY( PropertyInfo( Variant::_AABB, "visibility" ), "set_visibility_aabb", "get_visibility_aabb") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_extents" ), "set_emission_half_extents", "get_emission_half_extents") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_base_velocity" ), "set_emission_base_velocity", "get_emission_base_velocity") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "emission_points" ), "set_emission_points", "get_emission_points") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "gravity_normal" ), "set_gravity_normal", "get_gravity_normal") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "local_coords" ), "set_use_local_coordinates", "is_using_local_coordinates") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "emit_timeout",PROPERTY_HINT_RANGE,"0,256,0.01"), "set_emit_timeout", "get_emit_timeout") ;
 
 
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/lifetime", PROPERTY_HINT_RANGE,"0.1,60,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_LIFETIME );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/spread", PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_SPREAD );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/gravity", PROPERTY_HINT_RANGE,"-48,48,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_GRAVITY );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_LINEAR_VELOCITY );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/angular_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_ANGULAR_VELOCITY );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_LINEAR_ACCELERATION );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/radial_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_DRAG );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/tan_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_TANGENTIAL_ACCELERATION );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/damping", PROPERTY_HINT_RANGE,"0,128,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_DAMPING );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_size", PROPERTY_HINT_RANGE,"0,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_INITIAL_SIZE );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/final_size", PROPERTY_HINT_RANGE,"0,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_FINAL_SIZE );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_angle",PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_INITIAL_ANGLE );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "vars/height_from_velocity"), _SCS("set_height_from_velocity"), _SCS("has_height_from_velocity") );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_HEIGHT);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height_speed_scale",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_HEIGHT_SPEED_SCALE );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/lifetime", PROPERTY_HINT_RANGE,"0.1,60,0.01"), "set_variable", "get_variable", VAR_LIFETIME );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/spread", PROPERTY_HINT_RANGE,"0,1,0.01"), "set_variable", "get_variable", VAR_SPREAD );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/gravity", PROPERTY_HINT_RANGE,"-48,48,0.01"), "set_variable", "get_variable", VAR_GRAVITY );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_LINEAR_VELOCITY );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/angular_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_ANGULAR_VELOCITY );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_LINEAR_ACCELERATION );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/radial_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_DRAG );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/tan_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_TANGENTIAL_ACCELERATION );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/damping", PROPERTY_HINT_RANGE,"0,128,0.01"), "set_variable", "get_variable", VAR_DAMPING );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_size", PROPERTY_HINT_RANGE,"0,100,0.01"), "set_variable", "get_variable", VAR_INITIAL_SIZE );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/final_size", PROPERTY_HINT_RANGE,"0,100,0.01"), "set_variable", "get_variable", VAR_FINAL_SIZE );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_angle",PROPERTY_HINT_RANGE,"0,1,0.01"), "set_variable", "get_variable", VAR_INITIAL_ANGLE );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "vars/height_from_velocity"), "set_height_from_velocity", "has_height_from_velocity") ;
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height",PROPERTY_HINT_RANGE,"0,4096,0.01"), "set_variable", "get_variable", VAR_HEIGHT);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height_speed_scale",PROPERTY_HINT_RANGE,"0,4096,0.01"), "set_variable", "get_variable", VAR_HEIGHT_SPEED_SCALE );
 
 	for(int i=0;i<VAR_MAX;i++)
-		ADD_PROPERTYI( PropertyInfo( Variant::REAL, _rand_names[i], PROPERTY_HINT_RANGE,"-16.0,16.0,0.01"),_SCS("set_randomness"), _SCS("get_randomness"),_var_indices[i] );
+		ADD_PROPERTYI( PropertyInfo( Variant::REAL, _rand_names[i], PROPERTY_HINT_RANGE,"-16.0,16.0,0.01"),"set_randomness", "get_randomness",_var_indices[i] );
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1"), _SCS("set_color_phases"), _SCS("get_color_phases"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1"), "set_color_phases", "get_color_phases");
 
 	for(int i=0;i<VS::MAX_PARTICLE_COLOR_PHASES;i++) {
 		String phase="phase_"+itos(i)+"/";
-		ADD_PROPERTYI( PropertyInfo( Variant::REAL, phase+"pos", PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_color_phase_pos"),_SCS("get_color_phase_pos"),i );
-		ADD_PROPERTYI( PropertyInfo( Variant::COLOR, phase+"color"),_SCS("set_color_phase_color"),_SCS("get_color_phase_color"),i );
+		ADD_PROPERTYI( PropertyInfo( Variant::REAL, phase+"pos", PROPERTY_HINT_RANGE,"0,1,0.01"),"set_color_phase_pos","get_color_phase_pos",i );
+		ADD_PROPERTYI( PropertyInfo( Variant::COLOR, phase+"color"),"set_color_phase_color","get_color_phase_color",i );
 	}
 
 	BIND_CONSTANT( VAR_LIFETIME );

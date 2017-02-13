@@ -91,8 +91,8 @@ void VisualScriptReturn::_bind_methods() {
 		argt+=","+Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"return_value/enabled"),_SCS("set_enable_return_value"),_SCS("is_return_value_enabled"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"return_value/type",PROPERTY_HINT_ENUM,argt),_SCS("set_return_type"),_SCS("get_return_type"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"return_value/enabled"),"set_enable_return_value","is_return_value_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"return_value/type",PROPERTY_HINT_ENUM,argt),"set_return_type","get_return_type");
 
 }
 
@@ -547,7 +547,7 @@ void VisualScriptSequence::_bind_methods() {
 	ClassDB::bind_method(_MD("set_steps","steps"),&VisualScriptSequence::set_steps);
 	ClassDB::bind_method(_MD("get_steps"),&VisualScriptSequence::get_steps);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"steps",PROPERTY_HINT_RANGE,"1,64,1"),_SCS("set_steps"),_SCS("get_steps"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"steps",PROPERTY_HINT_RANGE,"1,64,1"),"set_steps","get_steps");
 
 }
 
@@ -1912,8 +1912,8 @@ void VisualScriptTypeCast::_bind_methods() {
 		script_ext_hint+="*."+E->get();
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),_SCS("set_base_script"),_SCS("get_base_script"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"function/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),"set_base_type","get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"property/base_script",PROPERTY_HINT_FILE,script_ext_hint),"set_base_script","get_base_script");
 
 }
 

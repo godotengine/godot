@@ -268,9 +268,9 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(_MD("_range_click_timeout"),&SpinBox::_range_click_timeout);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"editable"),_SCS("set_editable"),_SCS("is_editable"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"prefix"),_SCS("set_prefix"),_SCS("get_prefix"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"suffix"),_SCS("set_suffix"),_SCS("get_suffix"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"editable"),"set_editable","is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"prefix"),"set_prefix","get_prefix");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"suffix"),"set_suffix","get_suffix");
 
 
 }

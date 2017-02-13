@@ -387,14 +387,14 @@ void TouchScreenButton::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_input"),&TouchScreenButton::_input);
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture_pressed"),_SCS("get_texture_pressed"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"bitmask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"),_SCS("set_bitmask"),_SCS("get_bitmask"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),_SCS("set_shape"),_SCS("get_shape"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shape_centered"),_SCS("set_shape_centered"),_SCS("is_shape_centered"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"passby_press"),_SCS("set_passby_press"),_SCS("is_passby_press_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"action"),_SCS("set_action"),_SCS("get_action"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"visibility_mode",PROPERTY_HINT_ENUM,"Always,TouchScreen Only"),_SCS("set_visibility_mode"),_SCS("get_visibility_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture_pressed","get_texture_pressed");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"bitmask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"),"set_bitmask","get_bitmask");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D"),"set_shape","get_shape");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shape_centered"),"set_shape_centered","is_shape_centered");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"passby_press"),"set_passby_press","is_passby_press_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"action"),"set_action","get_action");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"visibility_mode",PROPERTY_HINT_ENUM,"Always,TouchScreen Only"),"set_visibility_mode","get_visibility_mode");
 
 	ADD_SIGNAL( MethodInfo("pressed" ) );
 	ADD_SIGNAL( MethodInfo("released" ) );

@@ -277,17 +277,17 @@ void Line2D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_round_precision", "precision"), &Line2D::set_round_precision);
 	ClassDB::bind_method(_MD("get_round_precision"), &Line2D::get_round_precision);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), _SCS("set_points"), _SCS("get_points"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width"), _SCS("set_width"), _SCS("get_width"));
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), _SCS("set_default_color"), _SCS("get_default_color"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "ColorRamp"), _SCS("set_gradient"), _SCS("get_gradient" ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"), _SCS("get_texture" ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile" ), _SCS("set_texture_mode"),_SCS("get_texture_mode" ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "joint_mode", PROPERTY_HINT_ENUM, "Sharp,Bevel,Round" ), _SCS("set_joint_mode"),_SCS("get_joint_mode" ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "begin_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round" ), _SCS("set_begin_cap_mode"),_SCS("get_begin_cap_mode" ) );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "end_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round" ), _SCS("set_end_cap_mode"),_SCS("get_end_cap_mode" ) );
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sharp_limit"), _SCS("set_sharp_limit"), _SCS("get_sharp_limit"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision"), _SCS("set_round_precision"), _SCS("get_round_precision"));
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "default_color"), "set_default_color", "get_default_color");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "ColorRamp"), "set_gradient", "get_gradient");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "texture_mode", PROPERTY_HINT_ENUM, "None,Tile" ), "set_texture_mode","get_texture_mode");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "joint_mode", PROPERTY_HINT_ENUM, "Sharp,Bevel,Round" ), "set_joint_mode","get_joint_mode");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "begin_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round" ), "set_begin_cap_mode","get_begin_cap_mode");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "end_cap_mode", PROPERTY_HINT_ENUM, "None,Box,Round" ), "set_end_cap_mode","get_end_cap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sharp_limit"), "set_sharp_limit", "get_sharp_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "round_precision"), "set_round_precision", "get_round_precision");
 
 	BIND_CONSTANT(LINE_JOINT_SHARP);
 	BIND_CONSTANT(LINE_JOINT_BEVEL);

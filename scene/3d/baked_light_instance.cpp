@@ -1722,22 +1722,22 @@ void BakedLight::_bind_methods() {
 	ClassDB::bind_method(_MD("get_cell_subdiv"),&BakedLight::get_cell_subdiv);
 
 	ClassDB::bind_method(_MD("bake"),&BakedLight::bake);
-	ClassDB::set_method_flags(get_class_static(),_SCS("bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("bake"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(_MD("bake_lights"),&BakedLight::bake_lights);
-	ClassDB::set_method_flags(get_class_static(),_SCS("bake_lights"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("bake_lights"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(_MD("bake_radiance"),&BakedLight::bake_radiance);
-	ClassDB::set_method_flags(get_class_static(),_SCS("bake_radiance"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("bake_radiance"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(_MD("debug_mesh_albedo"),&BakedLight::_debug_mesh_albedo);
-	ClassDB::set_method_flags(get_class_static(),_SCS("debug_mesh_albedo"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("debug_mesh_albedo"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 
 	ClassDB::bind_method(_MD("debug_mesh_light"),&BakedLight::_debug_mesh_light);
-	ClassDB::set_method_flags(get_class_static(),_SCS("debug_mesh_light"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("debug_mesh_light"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"cell_subdiv"),_SCS("set_cell_subdiv"),_SCS("get_cell_subdiv"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"cell_subdiv"),"set_cell_subdiv","get_cell_subdiv");
 	ADD_SIGNAL( MethodInfo("baked_light_changed"));
 
 }
@@ -1810,12 +1810,12 @@ void BakedLightSampler::_bind_methods() {
 	BIND_CONSTANT( PARAM_DETAIL_RATIO );
 	BIND_CONSTANT( PARAM_MAX );
 
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/radius",PROPERTY_HINT_RANGE,"0.01,1024,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_RADIUS);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/strength",PROPERTY_HINT_RANGE,"0.01,16,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_STRENGTH);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/attenuation",PROPERTY_HINT_EXP_EASING),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/detail_ratio",PROPERTY_HINT_RANGE,"0.01,1.0,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_DETAIL_RATIO);
-	//ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/detail_ratio",PROPERTY_HINT_RANGE,"0,20,1"),_SCS("set_param"),_SCS("get_param"),PARAM_DETAIL_RATIO);
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"params/resolution",PROPERTY_HINT_RANGE,"4,32,1"),_SCS("set_resolution"),_SCS("get_resolution"));
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/radius",PROPERTY_HINT_RANGE,"0.01,1024,0.01"),"set_param","get_param",PARAM_RADIUS);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/strength",PROPERTY_HINT_RANGE,"0.01,16,0.01"),"set_param","get_param",PARAM_STRENGTH);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/attenuation",PROPERTY_HINT_EXP_EASING),"set_param","get_param",PARAM_ATTENUATION);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/detail_ratio",PROPERTY_HINT_RANGE,"0.01,1.0,0.01"),"set_param","get_param",PARAM_DETAIL_RATIO);
+	//ADD_PROPERTYI( PropertyInfo(Variant::REAL,"params/detail_ratio",PROPERTY_HINT_RANGE,"0,20,1"),"set_param","get_param",PARAM_DETAIL_RATIO);
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"params/resolution",PROPERTY_HINT_RANGE,"4,32,1"),"set_resolution","get_resolution");
 
 }
 

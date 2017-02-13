@@ -117,7 +117,7 @@ void ShortCut::_bind_methods() {
 	ClassDB::bind_method(_MD("is_shortcut","event"),&ShortCut::is_shortcut);
 	ClassDB::bind_method(_MD("get_as_text"),&ShortCut::get_as_text);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INPUT_EVENT,"shortcut"),_SCS("set_shortcut"),_SCS("get_shortcut"));
+	ADD_PROPERTY(PropertyInfo(Variant::INPUT_EVENT,"shortcut"),"set_shortcut","get_shortcut");
 }
 
 ShortCut::ShortCut(){

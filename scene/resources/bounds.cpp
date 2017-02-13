@@ -34,7 +34,7 @@ void Bounds::_bind_methods() {
 	ClassDB::bind_method( _MD("set_bsp_tree","bsp_tree"),&Bounds::set_bsp_tree);
 	ClassDB::bind_method( _MD("get_bsp_tree"),&Bounds::get_bsp_tree );
 
-	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "bsp_tree" ), _SCS("set_bsp_tree"), _SCS("get_bsp_tree"));
+	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "bsp_tree" ), "set_bsp_tree", "get_bsp_tree");
 
 }
 

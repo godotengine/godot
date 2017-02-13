@@ -222,20 +222,20 @@ void ReflectionProbe::_bind_methods() {
 	ClassDB::bind_method(_MD("set_update_mode","mode"),&ReflectionProbe::set_update_mode);
 	ClassDB::bind_method(_MD("get_update_mode"),&ReflectionProbe::get_update_mode);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"update_mode",PROPERTY_HINT_ENUM,"Once,Always"),_SCS("set_update_mode"),_SCS("get_update_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"intensity",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_intensity"),_SCS("get_intensity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"max_distance",PROPERTY_HINT_RANGE,"0,16384,0.1"),_SCS("set_max_distance"),_SCS("get_max_distance"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),_SCS("set_extents"),_SCS("get_extents"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"origin_offset"),_SCS("set_origin_offset"),_SCS("get_origin_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"box_projection"),_SCS("set_enable_box_projection"),_SCS("is_box_projection_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enable_shadows"),_SCS("set_enable_shadows"),_SCS("are_shadows_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mask",PROPERTY_HINT_LAYERS_3D_RENDER),_SCS("set_cull_mask"),_SCS("get_cull_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"update_mode",PROPERTY_HINT_ENUM,"Once,Always"),"set_update_mode","get_update_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"intensity",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_intensity","get_intensity");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"max_distance",PROPERTY_HINT_RANGE,"0,16384,0.1"),"set_max_distance","get_max_distance");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),"set_extents","get_extents");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"origin_offset"),"set_origin_offset","get_origin_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"box_projection"),"set_enable_box_projection","is_box_projection_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enable_shadows"),"set_enable_shadows","are_shadows_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mask",PROPERTY_HINT_LAYERS_3D_RENDER),"set_cull_mask","get_cull_mask");
 
 	ADD_GROUP("Interior","interior_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior_enable"),_SCS("set_as_interior"),_SCS("is_set_as_interior"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"interior_ambient_color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_interior_ambient"),_SCS("get_interior_ambient"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_interior_ambient_energy"),_SCS("get_interior_ambient_energy"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_contrib",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_interior_ambient_probe_contribution"),_SCS("get_interior_ambient_probe_contribution"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"interior_enable"),"set_as_interior","is_set_as_interior");
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"interior_ambient_color",PROPERTY_HINT_COLOR_NO_ALPHA),"set_interior_ambient","get_interior_ambient");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),"set_interior_ambient_energy","get_interior_ambient_energy");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"interior_ambient_contrib",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_interior_ambient_probe_contribution","get_interior_ambient_probe_contribution");
 
 
 	BIND_CONSTANT( UPDATE_ONCE );

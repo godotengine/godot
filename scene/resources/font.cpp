@@ -600,14 +600,14 @@ void BitmapFont::_bind_methods() {
 	ClassDB::bind_method(_MD("set_fallback","fallback"),&BitmapFont::set_fallback);
 	ClassDB::bind_method(_MD("get_fallback"),&BitmapFont::get_fallback);
 
-	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "textures", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_textures"), _SCS("_get_textures") );
-	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_chars"), _SCS("_get_chars") );
-	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_kernings"), _SCS("_get_kernings") );
+	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "textures", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), "_set_textures", "_get_textures") ;
+	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "chars", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), "_set_chars", "_get_chars") ;
+	ADD_PROPERTY( PropertyInfo( Variant::POOL_INT_ARRAY, "kernings", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), "_set_kernings", "_get_kernings") ;
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_height"), _SCS("get_height") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_ascent"), _SCS("get_ascent") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "distance_field" ), _SCS("set_distance_field_hint"), _SCS("is_distance_field_hint") );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "fallback", PROPERTY_HINT_RESOURCE_TYPE,"BitmapFont" ), _SCS("set_fallback"), _SCS("get_fallback") );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), "set_height", "get_height") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), "set_ascent", "get_ascent") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "distance_field" ), "set_distance_field_hint", "is_distance_field_hint") ;
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "fallback", PROPERTY_HINT_RESOURCE_TYPE,"BitmapFont" ), "set_fallback", "get_fallback") ;
 
 }
 

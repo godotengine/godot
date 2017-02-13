@@ -1170,8 +1170,8 @@ void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_submenu_timeout"),&PopupMenu::_submenu_timeout);
 
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL, "hide_on_item_selection" ), _SCS("set_hide_on_item_selection"), _SCS("is_hide_on_item_selection") );
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_items","_get_items") ;
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL, "hide_on_item_selection" ), "set_hide_on_item_selection", "is_hide_on_item_selection") ;
 
 	ADD_SIGNAL( MethodInfo("id_pressed", PropertyInfo( Variant::INT,"ID") ) );
 	ADD_SIGNAL( MethodInfo("index_pressed", PropertyInfo( Variant::INT,"index") ) );

@@ -372,21 +372,21 @@ void Polygon2D::_bind_methods() {
 
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"uv"),_SCS("set_uv"),_SCS("get_uv"));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_COLOR_ARRAY,"vertex_colors"),_SCS("set_vertex_colors"),_SCS("get_vertex_colors"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),"set_polygon","get_polygon");
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"uv"),"set_uv","get_uv");
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),"set_color","get_color");
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_COLOR_ARRAY,"vertex_colors"),"set_vertex_colors","get_vertex_colors");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),"set_offset","get_offset");
 	ADD_GROUP("Texture","");
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture");
 	ADD_GROUP("Texture","texture_");
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_scale"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture_rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_texture_rotationd"),_SCS("_get_texture_rotationd"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_offset"),"set_texture_offset","get_texture_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_scale"),"set_texture_scale","get_texture_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"texture_rotation",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),"_set_texture_rotationd","_get_texture_rotationd");
 
 	ADD_GROUP("Invert","invert_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert_enable"),_SCS("set_invert"),_SCS("get_invert"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert_border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),_SCS("set_invert_border"),_SCS("get_invert_border"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"invert_enable"),"set_invert","get_invert");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"invert_border",PROPERTY_HINT_RANGE,"0.1,16384,0.1"),"set_invert_border","get_invert_border");
 
 }
 

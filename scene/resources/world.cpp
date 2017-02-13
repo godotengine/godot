@@ -315,7 +315,7 @@ void World::_bind_methods() {
 	ClassDB::bind_method(_MD("set_environment","env:Environment"),&World::set_environment);
 	ClassDB::bind_method(_MD("get_environment:Environment"),&World::get_environment);
 	ClassDB::bind_method(_MD("get_direct_space_state:PhysicsDirectSpaceState"),&World::get_direct_space_state);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),_SCS("set_environment"),_SCS("get_environment"));
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),"set_environment","get_environment");
 
 }
 

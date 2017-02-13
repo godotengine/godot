@@ -472,8 +472,8 @@ void ScrollContainer::_bind_methods() {
 	ClassDB::bind_method(_MD("get_v_scroll"),&ScrollContainer::get_v_scroll);
 
 	ADD_GROUP("Scroll","scroll_");
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_horizontal"), _SCS("set_enable_h_scroll"),_SCS("is_h_scroll_enabled"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_vertical"), _SCS("set_enable_v_scroll"),_SCS("is_v_scroll_enabled"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_horizontal"), "set_enable_h_scroll","is_h_scroll_enabled");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_vertical"), "set_enable_v_scroll","is_v_scroll_enabled");
 
 };
 

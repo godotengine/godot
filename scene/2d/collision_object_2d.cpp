@@ -243,7 +243,7 @@ void CollisionObject2D::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("mouse_exited"));
 
 	ADD_GROUP("Pickable","input_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_pickable"),_SCS("set_pickable"),_SCS("is_pickable"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_pickable"),"set_pickable","is_pickable");
 	ADD_GROUP("","");
 
 }

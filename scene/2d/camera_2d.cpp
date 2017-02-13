@@ -650,32 +650,32 @@ void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(_MD("_set_old_smoothing","follow_smoothing"),&Camera2D::_set_old_smoothing);
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"anchor_mode",PROPERTY_HINT_ENUM,"Fixed TopLeft,Drag Center"),_SCS("set_anchor_mode"),_SCS("get_anchor_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"rotating"),_SCS("set_rotating"),_SCS("is_rotating"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"current"),_SCS("_set_current"),_SCS("is_current"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"zoom"),_SCS("set_zoom"),_SCS("get_zoom") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"offset"),"set_offset","get_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"anchor_mode",PROPERTY_HINT_ENUM,"Fixed TopLeft,Drag Center"),"set_anchor_mode","get_anchor_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"rotating"),"set_rotating","is_rotating");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"current"),"_set_current","is_current");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"zoom"),"set_zoom","get_zoom") ;
 
 	ADD_GROUP("Limit","limit_");
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_left"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_LEFT);
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_top"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_TOP);
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_right"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_RIGHT);
-	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_bottom"),_SCS("set_limit"),_SCS("get_limit"),MARGIN_BOTTOM);
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"limit_smoothed"),_SCS("set_limit_smoothing_enabled"),_SCS("is_limit_smoothing_enabled") );
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_left"),"set_limit","get_limit",MARGIN_LEFT);
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_top"),"set_limit","get_limit",MARGIN_TOP);
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_right"),"set_limit","get_limit",MARGIN_RIGHT);
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"limit_bottom"),"set_limit","get_limit",MARGIN_BOTTOM);
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"limit_smoothed"),"set_limit_smoothing_enabled","is_limit_smoothing_enabled") ;
 
 	ADD_GROUP("Draw Margin","draw_margin_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin_h_enabled"),_SCS("set_h_drag_enabled"),_SCS("is_h_drag_enabled") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin_v_enabled"),_SCS("set_v_drag_enabled"),_SCS("is_v_drag_enabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin_h_enabled"),"set_h_drag_enabled","is_h_drag_enabled") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"drag_margin_v_enabled"),"set_v_drag_enabled","is_v_drag_enabled") ;
 
 	ADD_GROUP("Smoothing","smoothing_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"smoothing_enabled"),_SCS("set_enable_follow_smoothing"),_SCS("is_follow_smoothing_enabled") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"smoothing_speed"),_SCS("set_follow_smoothing"),_SCS("get_follow_smoothing") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"smoothing_enabled"),"set_enable_follow_smoothing","is_follow_smoothing_enabled") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"smoothing_speed"),"set_follow_smoothing","get_follow_smoothing") ;
 
 	ADD_GROUP("Drag Margin","drag_margin_");
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_left",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_drag_margin"),_SCS("get_drag_margin"),MARGIN_LEFT);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_top",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_drag_margin"),_SCS("get_drag_margin"),MARGIN_TOP);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_right",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_drag_margin"),_SCS("get_drag_margin"),MARGIN_RIGHT);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_bottom",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_drag_margin"),_SCS("get_drag_margin"),MARGIN_BOTTOM);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_left",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_drag_margin","get_drag_margin",MARGIN_LEFT);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_top",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_drag_margin","get_drag_margin",MARGIN_TOP);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_right",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_drag_margin","get_drag_margin",MARGIN_RIGHT);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin_bottom",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_drag_margin","get_drag_margin",MARGIN_BOTTOM);
 
 
 	BIND_CONSTANT( ANCHOR_MODE_DRAG_CENTER );

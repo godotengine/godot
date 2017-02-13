@@ -283,18 +283,18 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(_MD("_im_update"),&SpriteBase3D::_im_update);
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
-	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "opacity",PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "pixel_size",PROPERTY_HINT_RANGE,"0.0001,128,0.0001"), _SCS("set_pixel_size"),_SCS("get_pixel_size"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis",PROPERTY_HINT_ENUM,"X-Axis,Y-Axis,Z-Axis"), _SCS("set_axis"),_SCS("get_axis"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "offset"), "set_offset","get_offset");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip_h"), "set_flip_h","is_flipped_h");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip_v"), "set_flip_v","is_flipped_v");
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "modulate"), "set_modulate","get_modulate");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "opacity",PROPERTY_HINT_RANGE,"0,1,0.01"), "set_opacity","get_opacity");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "pixel_size",PROPERTY_HINT_RANGE,"0.0001,128,0.0001"), "set_pixel_size","get_pixel_size");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis",PROPERTY_HINT_ENUM,"X-Axis,Y-Axis,Z-Axis"), "set_axis","get_axis");
 	ADD_GROUP("Flags","");
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "transparent"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_TRANSPARENT);
-	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "shaded"), _SCS("set_draw_flag"),_SCS("get_draw_flag"),FLAG_SHADED);
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "alpha_cut",PROPERTY_HINT_ENUM,"Disabled,Discard,Opaque Pre-Pass"), _SCS("set_alpha_cut_mode"),_SCS("get_alpha_cut_mode"));
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "transparent"), "set_draw_flag","get_draw_flag",FLAG_TRANSPARENT);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "shaded"), "set_draw_flag","get_draw_flag",FLAG_SHADED);
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "alpha_cut",PROPERTY_HINT_ENUM,"Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode","get_alpha_cut_mode");
 
 
 	BIND_CONSTANT( FLAG_TRANSPARENT );
@@ -619,12 +619,12 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_hframes","hframes"),&Sprite3D::set_hframes);
 	ClassDB::bind_method(_MD("get_hframes"),&Sprite3D::get_hframes);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_vframes"),_SCS("get_vframes"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_hframes"),_SCS("get_hframes"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
-	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_texture","get_texture");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), "set_vframes","get_vframes");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), "set_hframes","get_hframes");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), "set_region","is_region");
+	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), "set_region_rect","get_region_rect");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 
@@ -769,8 +769,8 @@ void AnimatedSprite3D::_bind_methods(){
 	ClassDB::bind_method(_MD("set_frame","frame"),&AnimatedSprite3D::set_frame);
 	ClassDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), "set_sprite_frames","get_sprite_frames");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 
@@ -1333,10 +1333,10 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "animation"), _SCS("set_animation"),_SCS("get_animation"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "playing"), _SCS("_set_playing"),_SCS("_is_playing"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), "set_sprite_frames","get_sprite_frames");
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "animation"), "set_animation","get_animation");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "playing"), "_set_playing","_is_playing");
 
 
 }

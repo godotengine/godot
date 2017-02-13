@@ -1354,9 +1354,9 @@ void AnimationPlayer::_bind_methods() {
 
 
 	ADD_GROUP("Playback","playback_");
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), _SCS("set_default_blend_time"), _SCS("get_default_blend_time"));
-	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "root_node"), _SCS("set_root"), _SCS("get_root"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_animation_process_mode", "get_animation_process_mode");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "root_node"), "set_root", "get_root");
 
 	ADD_SIGNAL( MethodInfo("animation_finished", PropertyInfo(Variant::STRING,"name")) );
 	ADD_SIGNAL( MethodInfo("animation_changed", PropertyInfo(Variant::STRING,"old_name"), PropertyInfo(Variant::STRING,"new_name")) );

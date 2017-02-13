@@ -1844,7 +1844,7 @@ void PackedScene::_bind_methods() {
 	ClassDB::bind_method(_MD("_get_bundled_scene"),&PackedScene::_get_bundled_scene);
 	ClassDB::bind_method(_MD("get_state:SceneState"),&PackedScene::get_state);
 
-	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_bundled"),_SCS("_set_bundled_scene"),_SCS("_get_bundled_scene"));
+	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_bundled"),"_set_bundled_scene","_get_bundled_scene");
 
 	BIND_CONSTANT( GEN_EDIT_STATE_DISABLED );
 	BIND_CONSTANT( GEN_EDIT_STATE_INSTANCE );

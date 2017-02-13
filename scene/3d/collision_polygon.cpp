@@ -292,10 +292,10 @@ void CollisionPolygon::_bind_methods() {
 	ClassDB::bind_method(_MD("get_collision_object_first_shape"),&CollisionPolygon::get_collision_object_first_shape);
 	ClassDB::bind_method(_MD("get_collision_object_last_shape"),&CollisionPolygon::get_collision_object_last_shape);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Triangles"),_SCS("set_build_mode"),_SCS("get_build_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"depth"),_SCS("set_depth"),_SCS("get_depth"));
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_shape_range"),_SCS("_get_shape_range"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Triangles"),"set_build_mode","get_build_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"depth"),"set_depth","get_depth");
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),"set_polygon","get_polygon");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_shape_range","_get_shape_range");
 }
 
 CollisionPolygon::CollisionPolygon() {

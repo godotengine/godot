@@ -173,7 +173,7 @@ void GridContainer::_bind_methods(){
 	ClassDB::bind_method(_MD("set_columns","columns"),&GridContainer::set_columns);
 	ClassDB::bind_method(_MD("get_columns"),&GridContainer::get_columns);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"columns",PROPERTY_HINT_RANGE,"1,1024,1"),_SCS("set_columns"),_SCS("get_columns"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"columns",PROPERTY_HINT_RANGE,"1,1024,1"),"set_columns","get_columns");
 }
 
 Size2 GridContainer::get_minimum_size() const {

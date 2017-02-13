@@ -89,8 +89,8 @@ void SegmentShape2D::_bind_methods() {
 	ClassDB::bind_method(_MD("get_b"),&SegmentShape2D::get_b);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"a"),_SCS("set_a"),_SCS("get_a") );
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"b"),_SCS("set_b"),_SCS("get_b") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"a"),"set_a","get_a") ;
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"b"),"set_b","get_b") ;
 
 }
 
@@ -148,7 +148,7 @@ void RayShape2D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_length","length"),&RayShape2D::set_length);
 	ClassDB::bind_method(_MD("get_length"),&RayShape2D::get_length);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"length"),_SCS("set_length"),_SCS("get_length") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"length"),"set_length","get_length") ;
 
 }
 

@@ -158,9 +158,9 @@ void ParallaxLayer::_bind_methods() {
 	ClassDB::bind_method(_MD("get_mirroring"),&ParallaxLayer::get_mirroring);
 
 	ADD_GROUP("Motion","motion_");
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"motion_scale"),_SCS("set_motion_scale"),_SCS("get_motion_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"motion_offset"),_SCS("set_motion_offset"),_SCS("get_motion_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"motion_mirroring"),_SCS("set_mirroring"),_SCS("get_mirroring"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"motion_scale"),"set_motion_scale","get_motion_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"motion_offset"),"set_motion_offset","get_motion_offset");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"motion_mirroring"),"set_mirroring","get_mirroring");
 
 }
 

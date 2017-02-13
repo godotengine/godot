@@ -673,8 +673,8 @@ void ColorPickerButton::_bind_methods(){
 	ClassDB::bind_method(_MD("_color_changed"),&ColorPickerButton::_color_changed);
 
 	ADD_SIGNAL( MethodInfo("color_changed",PropertyInfo(Variant::COLOR,"color")));
-	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_pick_color"),_SCS("get_pick_color") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"edit_alpha"),_SCS("set_edit_alpha"),_SCS("is_editing_alpha") );
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),"set_pick_color","get_pick_color") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"edit_alpha"),"set_edit_alpha","is_editing_alpha") ;
 
 }
 

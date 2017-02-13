@@ -84,7 +84,7 @@ void Path::_bind_methods() {
 	ClassDB::bind_method(_MD("get_curve:Curve3D","curve"),&Path::get_curve);
 	ClassDB::bind_method(_MD("_curve_changed"),&Path::_curve_changed);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), _SCS("set_curve"),_SCS("get_curve"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve","get_curve");
 }
 
 Path::Path() {

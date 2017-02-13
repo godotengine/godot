@@ -370,9 +370,9 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(_MD("get_points_out"),&Curve2D::get_points_out);
 	ClassDB::bind_method(_MD("get_points_pos"),&Curve2D::get_points_pos);
 
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2_ARRAY, "points_in"), _SCS("set_points_in"),_SCS("get_points_in"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2_ARRAY, "points_out"), _SCS("set_points_out"),_SCS("get_points_out"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2_ARRAY, "points_pos"), _SCS("set_points_pos"),_SCS("get_points_pos"));
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2_ARRAY, "points_in"), "set_points_in","get_points_in");
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2_ARRAY, "points_out"), "set_points_out","get_points_out");
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2_ARRAY, "points_pos"), "set_points_pos","get_points_pos");
 }
 
 
@@ -814,10 +814,10 @@ void Curve2D::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_data"),&Curve2D::_set_data);
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bake_interval",PROPERTY_HINT_RANGE,"0.01,512,0.01"), _SCS("set_bake_interval"),_SCS("get_bake_interval"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"),_SCS("_get_data"));
-	/*ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_out"), _SCS("set_points_out"),_SCS("get_points_out"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_pos"), _SCS("set_points_pos"),_SCS("get_points_pos"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bake_interval",PROPERTY_HINT_RANGE,"0.01,512,0.01"), "set_bake_interval","get_bake_interval");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_data","_get_data");
+	/*ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_out"), "set_points_out","get_points_out");
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_pos"), "set_points_pos","get_points_pos");
 */
 }
 
@@ -1357,10 +1357,10 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_data"),&Curve3D::_set_data);
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bake_interval",PROPERTY_HINT_RANGE,"0.01,512,0.01"), _SCS("set_bake_interval"),_SCS("get_bake_interval"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"),_SCS("_get_data"));
-	/*ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_out"), _SCS("set_points_out"),_SCS("get_points_out"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_pos"), _SCS("set_points_pos"),_SCS("get_points_pos"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "bake_interval",PROPERTY_HINT_RANGE,"0.01,512,0.01"), "set_bake_interval","get_bake_interval");
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_data","_get_data");
+	/*ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_out"), "set_points_out","get_points_out");
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "points_pos"), "set_points_pos","get_points_pos");
 */
 }
 

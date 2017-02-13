@@ -87,7 +87,7 @@ void DynamicFontData::_bind_methods() {
 	ClassDB::bind_method(_MD("set_font_path","path"),&DynamicFontData::set_font_path);
 	ClassDB::bind_method(_MD("get_font_path"),&DynamicFontData::get_font_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"font_path",PROPERTY_HINT_FILE,"*.ttf,*.otf"),_SCS("set_font_path"),_SCS("get_font_path"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"font_path",PROPERTY_HINT_FILE,"*.ttf,*.otf"),"set_font_path","get_font_path");
 }
 
 DynamicFontData::DynamicFontData()
@@ -900,16 +900,16 @@ void DynamicFont::_bind_methods() {
 
 
 	ADD_GROUP("Settings","");
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"size"),_SCS("set_size"),_SCS("get_size"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_mipmaps"),_SCS("set_use_mipmaps"),_SCS("get_use_mipmaps"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_filter"),_SCS("set_use_filter"),_SCS("get_use_filter"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"size"),"set_size","get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_mipmaps"),"set_use_mipmaps","get_use_mipmaps");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"use_filter"),"set_use_filter","get_use_filter");
 	ADD_GROUP("Extra Spacing","extra_spacing");
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_top"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_TOP);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_bottom"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_BOTTOM);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_char"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_CHAR);
-	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_space"),_SCS("set_spacing"),_SCS("get_spacing"),SPACING_SPACE);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_top"),"set_spacing","get_spacing",SPACING_TOP);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_bottom"),"set_spacing","get_spacing",SPACING_BOTTOM);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_char"),"set_spacing","get_spacing",SPACING_CHAR);
+	ADD_PROPERTYINZ(PropertyInfo(Variant::INT,"extra_spacing_space"),"set_spacing","get_spacing",SPACING_SPACE);
 	ADD_GROUP("Font","");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font_data",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font_data",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),"set_font_data","get_font_data");
 
 	BIND_CONSTANT( SPACING_TOP );
 	BIND_CONSTANT( SPACING_BOTTOM );

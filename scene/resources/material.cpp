@@ -928,96 +928,96 @@ void FixedSpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(_MD("get_uv2_offset"),&FixedSpatialMaterial::get_uv2_offset);
 
 	ADD_GROUP("Flags","flags_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_transparent"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_TRANSPARENT);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_unshaded"),_SCS("set_flag"),_SCS("get_flag"),FLAG_UNSHADED);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_on_top"),_SCS("set_flag"),_SCS("get_flag"),FLAG_ONTOP);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_use_point_size"),_SCS("set_flag"),_SCS("get_flag"),FLAG_USE_POINT_SIZE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_transparent"),"set_feature","get_feature",FEATURE_TRANSPARENT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_unshaded"),"set_flag","get_flag",FLAG_UNSHADED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_on_top"),"set_flag","get_flag",FLAG_ONTOP);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"flags_use_point_size"),"set_flag","get_flag",FLAG_USE_POINT_SIZE);
 	ADD_GROUP("Vertex Color","vertex_color");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"vertex_color_use_as_albedo"),_SCS("set_flag"),_SCS("get_flag"),FLAG_ALBEDO_FROM_VERTEX_COLOR);
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"vertex_color_is_srgb"),_SCS("set_flag"),_SCS("get_flag"),FLAG_SRGB_VERTEX_COLOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"vertex_color_use_as_albedo"),"set_flag","get_flag",FLAG_ALBEDO_FROM_VERTEX_COLOR);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"vertex_color_is_srgb"),"set_flag","get_flag",FLAG_SRGB_VERTEX_COLOR);
 
 	ADD_GROUP("Parameters","params_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_diffuse_mode",PROPERTY_HINT_ENUM,"Labert,Lambert Wrap,Oren Nayar,Burley"),_SCS("set_diffuse_mode"),_SCS("get_diffuse_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub,Mul"),_SCS("set_blend_mode"),_SCS("get_blend_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_cull_mode",PROPERTY_HINT_ENUM,"Back,Front,Disabled"),_SCS("set_cull_mode"),_SCS("get_cull_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_depth_draw_mode",PROPERTY_HINT_ENUM,"Opaque Only,Always,Never,Opaque Pre-Pass"),_SCS("set_depth_draw_mode"),_SCS("get_depth_draw_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"params_line_width",PROPERTY_HINT_RANGE,"0.1,128,0.1"),_SCS("set_line_width"),_SCS("get_line_width"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"params_point_size",PROPERTY_HINT_RANGE,"0.1,128,0.1"),_SCS("set_point_size"),_SCS("get_point_size"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_diffuse_mode",PROPERTY_HINT_ENUM,"Labert,Lambert Wrap,Oren Nayar,Burley"),"set_diffuse_mode","get_diffuse_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub,Mul"),"set_blend_mode","get_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_cull_mode",PROPERTY_HINT_ENUM,"Back,Front,Disabled"),"set_cull_mode","get_cull_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"params_depth_draw_mode",PROPERTY_HINT_ENUM,"Opaque Only,Always,Never,Opaque Pre-Pass"),"set_depth_draw_mode","get_depth_draw_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"params_line_width",PROPERTY_HINT_RANGE,"0.1,128,0.1"),"set_line_width","get_line_width");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"params_point_size",PROPERTY_HINT_RANGE,"0.1,128,0.1"),"set_point_size","get_point_size");
 
 	ADD_GROUP("Albedo","albedo_");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"albedo_color"),_SCS("set_albedo"),_SCS("get_albedo"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"albedo_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_ALBEDO);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"albedo_color"),"set_albedo","get_albedo");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"albedo_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_ALBEDO);
 
 	ADD_GROUP("Specular","specular_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"specular_mode",PROPERTY_HINT_ENUM,"Metallic,Specular"),_SCS("set_specular_mode"),_SCS("get_specular_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"specular_color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_specular"),_SCS("get_specular"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"specular_metalness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_metalness"),_SCS("get_metalness"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"specular_roughness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_roughness"),_SCS("get_roughness"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"specular_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_SPECULAR);
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"specular_mode",PROPERTY_HINT_ENUM,"Metallic,Specular"),"set_specular_mode","get_specular_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"specular_color",PROPERTY_HINT_COLOR_NO_ALPHA),"set_specular","get_specular");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"specular_metalness",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_metalness","get_metalness");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"specular_roughness",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_roughness","get_roughness");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"specular_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_SPECULAR);
 
 	ADD_GROUP("Emission","emission_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"emission_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_EMISSION);
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"emission_color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("set_emission"),_SCS("get_emission"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"emission_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),_SCS("set_emission_energy"),_SCS("get_emission_energy"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"emission_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_EMISSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"emission_enabled"),"set_feature","get_feature",FEATURE_EMISSION);
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"emission_color",PROPERTY_HINT_COLOR_NO_ALPHA),"set_emission","get_emission");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"emission_energy",PROPERTY_HINT_RANGE,"0,16,0.01"),"set_emission_energy","get_emission_energy");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"emission_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_EMISSION);
 
 	ADD_GROUP("NormapMap","normal_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"normal_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_NORMAL_MAPPING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"normal_scale",PROPERTY_HINT_RANGE,"-16,16,0.01"),_SCS("set_normal_scale"),_SCS("get_normal_scale"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"normal_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_NORMAL);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"normal_enabled"),"set_feature","get_feature",FEATURE_NORMAL_MAPPING);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"normal_scale",PROPERTY_HINT_RANGE,"-16,16,0.01"),"set_normal_scale","get_normal_scale");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"normal_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_NORMAL);
 
 	ADD_GROUP("Rim","rim_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"rim_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_RIM);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"rim_amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_rim"),_SCS("get_rim"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"rim_tint",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_rim_tint"),_SCS("get_rim_tint"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"rim_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_RIM);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"rim_enabled"),"set_feature","get_feature",FEATURE_RIM);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"rim_amount",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_rim","get_rim");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"rim_tint",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_rim_tint","get_rim_tint");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"rim_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_RIM);
 
 	ADD_GROUP("Clearcoat","clearcoat_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"clearcoat_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_CLEARCOAT);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"clearcoat_amount",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_clearcoat"),_SCS("get_clearcoat"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"clearcoat_gloss",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_clearcoat_gloss"),_SCS("get_clearcoat_gloss"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"clearcoat_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_CLEARCOAT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"clearcoat_enabled"),"set_feature","get_feature",FEATURE_CLEARCOAT);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"clearcoat_amount",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_clearcoat","get_clearcoat");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"clearcoat_gloss",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_clearcoat_gloss","get_clearcoat_gloss");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"clearcoat_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_CLEARCOAT);
 
 	ADD_GROUP("Anisotropy","anisotropy_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"anisotropy_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_ANISOTROPY);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"anisotropy_anisotropy",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_anisotropy"),_SCS("get_anisotropy"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"anisotropy_flowmap",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_FLOWMAP);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"anisotropy_enabled"),"set_feature","get_feature",FEATURE_ANISOTROPY);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"anisotropy_anisotropy",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_anisotropy","get_anisotropy");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"anisotropy_flowmap",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_FLOWMAP);
 
 	ADD_GROUP("Ambient Occlusion","ao_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"ao_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_AMBIENT_OCCLUSION);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"ao_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_AMBIENT_OCCLUSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"ao_enabled"),"set_feature","get_feature",FEATURE_AMBIENT_OCCLUSION);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"ao_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_AMBIENT_OCCLUSION);
 
 	ADD_GROUP("Height","height_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"height_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_HEIGHT_MAPPING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"height_scale",PROPERTY_HINT_RANGE,"-16,16,0.01"),_SCS("set_height_scale"),_SCS("get_height_scale"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"height_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_HEIGHT);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"height_enabled"),"set_feature","get_feature",FEATURE_HEIGHT_MAPPING);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"height_scale",PROPERTY_HINT_RANGE,"-16,16,0.01"),"set_height_scale","get_height_scale");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"height_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_HEIGHT);
 
 	ADD_GROUP("Subsurf Scatter","subsurf_scatter_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"subsurf_scatter_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_SUBSURACE_SCATTERING);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"subsurf_scatter_strength",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_subsurface_scattering_strength"),_SCS("get_subsurface_scattering_strength"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"subsurf_scatter_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_SUBSURFACE_SCATTERING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"subsurf_scatter_enabled"),"set_feature","get_feature",FEATURE_SUBSURACE_SCATTERING);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"subsurf_scatter_strength",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_subsurface_scattering_strength","get_subsurface_scattering_strength");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"subsurf_scatter_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_SUBSURFACE_SCATTERING);
 
 	ADD_GROUP("Refraction","refraction_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"refraction_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_REFRACTION);
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"refraction_displacement",PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_refraction"),_SCS("get_refraction"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"refraction_roughness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_refraction_roughness"),_SCS("get_refraction_roughness"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"refraction_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_REFRACTION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"refraction_enabled"),"set_feature","get_feature",FEATURE_REFRACTION);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"refraction_displacement",PROPERTY_HINT_RANGE,"-1,1,0.01"),"set_refraction","get_refraction");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"refraction_roughness",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_refraction_roughness","get_refraction_roughness");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"refraction_texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_REFRACTION);
 
 	ADD_GROUP("Detail","detail_");
-	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"detail_enabled"),_SCS("set_feature"),_SCS("get_feature"),FEATURE_DETAIL);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail_mask",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_DETAIL_MASK);
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"detail_blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub,Mul"),_SCS("set_detail_blend_mode"),_SCS("get_detail_blend_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"detail_uv_layer",PROPERTY_HINT_ENUM,"UV1,UV2"),_SCS("set_detail_uv"),_SCS("get_detail_uv"));
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail_albedo",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_DETAIL_ALBEDO);
-	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail_normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"),TEXTURE_DETAIL_NORMAL);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL,"detail_enabled"),"set_feature","get_feature",FEATURE_DETAIL);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail_mask",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_DETAIL_MASK);
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"detail_blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub,Mul"),"set_detail_blend_mode","get_detail_blend_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"detail_uv_layer",PROPERTY_HINT_ENUM,"UV1,UV2"),"set_detail_uv","get_detail_uv");
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail_albedo",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_DETAIL_ALBEDO);
+	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT,"detail_normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture",TEXTURE_DETAIL_NORMAL);
 
 	ADD_GROUP("UV1","uv1_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv1_scale"),_SCS("set_uv1_scale"),_SCS("get_uv1_scale"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv1_offset"),_SCS("set_uv1_offset"),_SCS("get_uv1_offset"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv1_scale"),"set_uv1_scale","get_uv1_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv1_offset"),"set_uv1_offset","get_uv1_offset");
 
 	ADD_GROUP("UV2","uv2_");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv2_scale"),_SCS("set_uv2_scale"),_SCS("get_uv2_scale"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv2_offset"),_SCS("set_uv2_offset"),_SCS("get_uv2_offset"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv2_scale"),"set_uv2_scale","get_uv2_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"uv2_offset"),"set_uv2_offset","get_uv2_offset");
 
 
 	BIND_CONSTANT( TEXTURE_ALBEDO );

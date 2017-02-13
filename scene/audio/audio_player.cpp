@@ -271,12 +271,12 @@ void AudioPlayer::_bind_methods() {
 	ClassDB::bind_method(_MD("_bus_layout_changed"),&AudioPlayer::_bus_layout_changed);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"stream",PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"),_SCS("set_stream"),_SCS("get_stream") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"volume_db",PROPERTY_HINT_RANGE,"-80,24"),_SCS("set_volume_db"),_SCS("get_volume_db") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"playing",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR),_SCS("_set_playing"),_SCS("_is_active" ));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"autoplay"),_SCS("set_autoplay"),_SCS("is_autoplay_enabled") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mix_target",PROPERTY_HINT_ENUM,"Stereo,Surround,Center"),_SCS("set_mix_target"),_SCS("get_mix_target"));
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"bus",PROPERTY_HINT_ENUM,""),_SCS("set_bus"),_SCS("get_bus"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"stream",PROPERTY_HINT_RESOURCE_TYPE,"AudioStream"),"set_stream","get_stream") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"volume_db",PROPERTY_HINT_RANGE,"-80,24"),"set_volume_db","get_volume_db") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"playing",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR),"_set_playing","_is_active" );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"autoplay"),"set_autoplay","is_autoplay_enabled") ;
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mix_target",PROPERTY_HINT_ENUM,"Stereo,Surround,Center"),"set_mix_target","get_mix_target");
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"bus",PROPERTY_HINT_ENUM,""),"set_bus","get_bus");
 
 }
 

@@ -390,7 +390,7 @@ void PackedDataContainer::_bind_methods() {
 	ClassDB::bind_method(_MD("pack:Error","value"),&PackedDataContainer::pack);
 	ClassDB::bind_method(_MD("size"),&PackedDataContainer::size);
 
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_BYTE_ARRAY,"__data__"),_SCS("_set_data"),_SCS("_get_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_BYTE_ARRAY,"__data__"),"_set_data","_get_data");
 }
 
 

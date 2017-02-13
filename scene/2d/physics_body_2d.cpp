@@ -101,14 +101,14 @@ void PhysicsBody2D::_bind_methods() {
 	ClassDB::bind_method(_MD("get_one_way_collision_max_depth"),&PhysicsBody2D::get_one_way_collision_max_depth);
 	ClassDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::add_collision_exception_with);
 	ClassDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::remove_collision_exception_with);
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_LAYERS_2D_PHYSICS,"",0),_SCS("_set_layers"),_SCS("_get_layers")); //for backwards compat
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_LAYERS_2D_PHYSICS,"",0),"_set_layers","_get_layers"); //for backwards compat
 
 	ADD_GROUP("Collision","collision_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layer",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_2D_PHYSICS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_layer",PROPERTY_HINT_LAYERS_2D_PHYSICS),"set_collision_layer","get_collision_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision_mask",PROPERTY_HINT_LAYERS_2D_PHYSICS),"set_collision_mask","get_collision_mask");
 	ADD_GROUP("","");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"one_way_collision/max_depth"),_SCS("set_one_way_collision_max_depth"),_SCS("get_one_way_collision_max_depth"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),"set_one_way_collision_direction","get_one_way_collision_direction");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"one_way_collision/max_depth"),"set_one_way_collision_max_depth","get_one_way_collision_max_depth");
 }
 
 void PhysicsBody2D::set_collision_layer(uint32_t p_mask) {
@@ -281,10 +281,10 @@ void StaticBody2D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_bounce","bounce"),&StaticBody2D::set_bounce);
 	ClassDB::bind_method(_MD("get_bounce"),&StaticBody2D::get_bounce);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"constant_linear_velocity"),_SCS("set_constant_linear_velocity"),_SCS("get_constant_linear_velocity"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"constant_angular_velocity"),_SCS("set_constant_angular_velocity"),_SCS("get_constant_angular_velocity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"constant_linear_velocity"),"set_constant_linear_velocity","get_constant_linear_velocity");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"constant_angular_velocity"),"set_constant_angular_velocity","get_constant_angular_velocity");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_friction","get_friction");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_bounce","get_bounce");
 }
 
 StaticBody2D::StaticBody2D() : PhysicsBody2D(Physics2DServer::BODY_MODE_STATIC) {
@@ -954,24 +954,24 @@ void RigidBody2D::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces",PropertyInfo(Variant::OBJECT,"state:Physics2DDirectBodyState")));
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Rigid,Static,Character,Kinematic"),_SCS("set_mode"),_SCS("get_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"mass",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01"),_SCS("set_mass"),_SCS("get_mass"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"weight",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01",PROPERTY_USAGE_EDITOR),_SCS("set_weight"),_SCS("get_weight"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_scale",PROPERTY_HINT_RANGE,"-128,128,0.01"),_SCS("set_gravity_scale"),_SCS("get_gravity_scale"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"custom_integrator"),_SCS("set_use_custom_integrator"),_SCS("is_using_custom_integrator"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"continuous_cd",PROPERTY_HINT_ENUM,"Disabled,Cast Ray,Cast Shape"),_SCS("set_continuous_collision_detection_mode"),_SCS("get_continuous_collision_detection_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"contacts_reported"),_SCS("set_max_contacts_reported"),_SCS("get_max_contacts_reported"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"contact_monitor"),_SCS("set_contact_monitor"),_SCS("is_contact_monitor_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"sleeping"),_SCS("set_sleeping"),_SCS("is_sleeping"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"can_sleep"),_SCS("set_can_sleep"),_SCS("is_able_to_sleep"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Rigid,Static,Character,Kinematic"),"set_mode","get_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"mass",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01"),"set_mass","get_mass");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"weight",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01",PROPERTY_USAGE_EDITOR),"set_weight","get_weight");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_friction","get_friction");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_bounce","get_bounce");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_scale",PROPERTY_HINT_RANGE,"-128,128,0.01"),"set_gravity_scale","get_gravity_scale");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"custom_integrator"),"set_use_custom_integrator","is_using_custom_integrator");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"continuous_cd",PROPERTY_HINT_ENUM,"Disabled,Cast Ray,Cast Shape"),"set_continuous_collision_detection_mode","get_continuous_collision_detection_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"contacts_reported"),"set_max_contacts_reported","get_max_contacts_reported");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"contact_monitor"),"set_contact_monitor","is_contact_monitor_enabled");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"sleeping"),"set_sleeping","is_sleeping");
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"can_sleep"),"set_can_sleep","is_able_to_sleep");
 	ADD_GROUP("Linear","linear_");
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"linear_velocity"),_SCS("set_linear_velocity"),_SCS("get_linear_velocity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"-1,128,0.01"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"linear_velocity"),"set_linear_velocity","get_linear_velocity");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"-1,128,0.01"),"set_linear_damp","get_linear_damp");
 	ADD_GROUP("Angular","angular_");
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_velocity"),_SCS("set_angular_velocity"),_SCS("get_angular_velocity"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"-1,128,0.01"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_velocity"),"set_angular_velocity","get_angular_velocity");
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"-1,128,0.01"),"set_angular_damp","get_angular_damp");
 
 	ADD_SIGNAL( MethodInfo("body_shape_entered",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_shape_exited",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
@@ -1412,7 +1412,7 @@ void KinematicBody2D::_bind_methods() {
 	ClassDB::bind_method(_MD("set_collision_margin","pixels"),&KinematicBody2D::set_collision_margin);
 	ClassDB::bind_method(_MD("get_collision_margin","pixels"),&KinematicBody2D::get_collision_margin);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/margin",PROPERTY_HINT_RANGE,"0.001,256,0.001"),_SCS("set_collision_margin"),_SCS("get_collision_margin"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/margin",PROPERTY_HINT_RANGE,"0.001,256,0.001"),"set_collision_margin","get_collision_margin");
 
 
 }

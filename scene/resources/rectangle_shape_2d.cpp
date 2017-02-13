@@ -69,7 +69,7 @@ void RectangleShape2D::_bind_methods() {
 
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),_SCS("set_extents"),_SCS("get_extents") );
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),"set_extents","get_extents") ;
 
 }
 

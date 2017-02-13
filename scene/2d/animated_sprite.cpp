@@ -244,12 +244,12 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(_MD("_set_frames"),&SpriteFrames::_set_frames);
 	ClassDB::bind_method(_MD("_get_frames"),&SpriteFrames::_get_frames);
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"frames",PROPERTY_HINT_NONE,"",0),_SCS("_set_frames"),_SCS("_get_frames")); //compatibility
+	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"frames",PROPERTY_HINT_NONE,"",0),"_set_frames","_get_frames"); //compatibility
 
 	ClassDB::bind_method(_MD("_set_animations"),&SpriteFrames::_set_animations);
 	ClassDB::bind_method(_MD("_get_animations"),&SpriteFrames::_get_animations);
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"animations",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_animations"),_SCS("_get_animations")); //compatibility
+	ADD_PROPERTYNZ( PropertyInfo(Variant::ARRAY,"animations",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_animations","_get_animations"); //compatibility
 
 }
 
@@ -687,14 +687,14 @@ void AnimatedSprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "animation"), _SCS("set_animation"),_SCS("get_animation"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "playing"), _SCS("_set_playing"),_SCS("_is_playing"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), "set_sprite_frames","get_sprite_frames");
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "animation"), "set_animation","get_animation");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "playing"), "_set_playing","_is_playing");
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), "set_offset","get_offset");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), "set_flip_h","is_flipped_h");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), "set_flip_v","is_flipped_v");
 
 
 }

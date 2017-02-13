@@ -266,7 +266,7 @@ void Popup::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("about_to_show") );
 	ADD_SIGNAL( MethodInfo("popup_hide") );
 	ADD_GROUP("Popup","popup_");
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "popup_exclusive"), _SCS("set_exclusive"),_SCS("is_exclusive") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "popup_exclusive"), "set_exclusive","is_exclusive") ;
 	BIND_CONSTANT(NOTIFICATION_POST_POPUP);
 	BIND_CONSTANT(NOTIFICATION_POPUP_HIDE);
 

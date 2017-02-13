@@ -327,16 +327,16 @@ void Sprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_vframes"),_SCS("get_vframes"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_hframes"),_SCS("get_hframes"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_texture","get_texture");
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), "set_offset","get_offset");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), "set_flip_h","is_flipped_h");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), "set_flip_v","is_flipped_v");
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), "set_vframes","get_vframes");
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), "set_hframes","get_hframes");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "region"), "set_region","is_region");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), "set_region_rect","get_region_rect");
 
 }
 
@@ -564,10 +564,10 @@ void ViewportSprite::_bind_methods() {
 	ClassDB::bind_method(_MD("set_modulate","modulate"),&ViewportSprite::set_modulate);
 	ClassDB::bind_method(_MD("get_modulate"),&ViewportSprite::get_modulate);
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::NODE_PATH, "viewport"), _SCS("set_viewport_path"),_SCS("get_viewport_path"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::NODE_PATH, "viewport"), "set_viewport_path","get_viewport_path");
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), "set_offset","get_offset");
+	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), "set_modulate","get_modulate");
 
 }
 

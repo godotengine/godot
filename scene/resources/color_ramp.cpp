@@ -74,8 +74,8 @@ void ColorRamp::_bind_methods() {
 	ClassDB::bind_method(_MD(COLOR_RAMP_SET_COLORS,"colors"),&ColorRamp::set_colors);
 	ClassDB::bind_method(_MD(COLOR_RAMP_GET_COLORS),&ColorRamp::get_colors);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"offsets"),_SCS(COLOR_RAMP_SET_OFFSETS),_SCS(COLOR_RAMP_GET_OFFSETS) );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"colors"),_SCS(COLOR_RAMP_SET_COLORS),_SCS(COLOR_RAMP_GET_COLORS) );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"offsets"),COLOR_RAMP_SET_OFFSETS,COLOR_RAMP_GET_OFFSETS) ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"colors"),COLOR_RAMP_SET_COLORS,COLOR_RAMP_GET_COLORS) ;
 }
 
 Vector<float> ColorRamp::get_offsets() const {

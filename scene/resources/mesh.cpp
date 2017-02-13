@@ -1038,9 +1038,9 @@ void Mesh::_bind_methods() {
 	ClassDB::bind_method(_MD("surface_set_name","surf_idx","name"),&Mesh::surface_set_name);
 	ClassDB::bind_method(_MD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
 	ClassDB::bind_method(_MD("center_geometry"),&Mesh::center_geometry);
-	ClassDB::set_method_flags(get_class_static(),_SCS("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(_MD("regen_normalmaps"),&Mesh::regen_normalmaps);
-	ClassDB::set_method_flags(get_class_static(),_SCS("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ClassDB::bind_method(_MD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
 	ClassDB::bind_method(_MD("get_custom_aabb"),&Mesh::get_custom_aabb);

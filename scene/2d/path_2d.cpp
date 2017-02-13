@@ -89,7 +89,7 @@ void Path2D::_bind_methods() {
 	ClassDB::bind_method(_MD("get_curve:Curve2D","curve"),&Path2D::get_curve);
 	ClassDB::bind_method(_MD("_curve_changed"),&Path2D::_curve_changed);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D"), _SCS("set_curve"),_SCS("get_curve"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve2D"), "set_curve","get_curve");
 }
 
 Path2D::Path2D() {
