@@ -120,23 +120,22 @@ void TextureButton::_notification(int p_what) {
 				bool tile = false;
 				if (expand) {
 					switch (stretch_mode) {
-						case StretchMode::STRETCH_KEEP:
+						case STRETCH_KEEP:
 							size = texdraw->get_size();
 							break;
-						case StretchMode::STRETCH_SCALE_ON_EXPAND:
-						case StretchMode::STRETCH_SCALE:
+						case STRETCH_SCALE:
 							size = get_size();
 							break;
-						case StretchMode::STRETCH_TILE:
+						case STRETCH_TILE:
 							size = get_size();
 							tile = true;
 							break;
-						case StretchMode::STRETCH_KEEP_CENTERED:
+						case STRETCH_KEEP_CENTERED:
 							ofs = (get_size() - texdraw->get_size())/2;
 							size = texdraw->get_size();
 							break;
-						case StretchMode::STRETCH_KEEP_ASPECT_CENTERED:
-						case StretchMode::STRETCH_KEEP_ASPECT: {
+						case STRETCH_KEEP_ASPECT_CENTERED:
+						case STRETCH_KEEP_ASPECT: {
 							Size2 _size=get_size();
 							float tex_width = texdraw->get_width() * _size.height / texdraw->get_height();
 							float tex_height = _size.height;
@@ -146,14 +145,14 @@ void TextureButton::_notification(int p_what) {
 								tex_height = texdraw->get_height() * tex_width / texdraw->get_width();
 							}
 
-							if (stretch_mode==StretchMode::STRETCH_KEEP_ASPECT_CENTERED) {
+							if (stretch_mode==STRETCH_KEEP_ASPECT_CENTERED) {
 								ofs.x = (_size.width - tex_width)/2;
 								ofs.y = (_size.height - tex_height)/2;
 							}
 							size.width = tex_width;
 							size.height = tex_height;
 						} break;
-						case StretchMode::STRETCH_KEEP_ASPECT_COVERED:{
+						case STRETCH_KEEP_ASPECT_COVERED:{
 							size = get_size();
 							Size2 tex_size = texdraw->get_size();
 							Size2 scaleSize(size.width/tex_size.width, size.height/tex_size.height);
@@ -207,17 +206,8 @@ void TextureButton::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_focused_texture", "get_focused_texture");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"texture_click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), "set_click_mask", "get_click_mask") ;
 	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"expand",PROPERTY_HINT_RESOURCE_TYPE,"bool"), "set_expand", "get_expand") ;
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"stretch_mode",PROPERTY_HINT_ENUM,"Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 
-	const int STRETCH_SCALE_ON_EXPAND = StretchMode::STRETCH_SCALE_ON_EXPAND;
-	const int STRETCH_SCALE = StretchMode::STRETCH_SCALE;
-	const int STRETCH_TILE = StretchMode::STRETCH_TILE;
-	const int STRETCH_KEEP = StretchMode::STRETCH_KEEP;
-	const int STRETCH_KEEP_CENTERED = StretchMode::STRETCH_KEEP_CENTERED;
-	const int STRETCH_KEEP_ASPECT = StretchMode::STRETCH_KEEP_ASPECT;
-	const int STRETCH_KEEP_ASPECT_CENTERED = StretchMode::STRETCH_KEEP_ASPECT_CENTERED;
-	const int STRETCH_KEEP_ASPECT_COVERED = StretchMode::STRETCH_KEEP_ASPECT_COVERED;
-	BIND_CONSTANT(STRETCH_SCALE_ON_EXPAND);
 	BIND_CONSTANT(STRETCH_SCALE);
 	BIND_CONSTANT(STRETCH_TILE);
 	BIND_CONSTANT(STRETCH_KEEP);
@@ -302,7 +292,7 @@ void TextureButton::set_expand(bool p_expand) {
 	update();
 }
 
-void TextureButton::set_stretch_mode(TextureButton::StretchMode p_mode) {
+void TextureButton::set_stretch_mode(StretchMode p_mode) {
 	stretch_mode = p_mode;
 	update();
 }
@@ -313,5 +303,5 @@ TextureButton::StretchMode TextureButton::get_stretch_mode() const {
 
 TextureButton::TextureButton() {
 	expand = false;
-	stretch_mode = StretchMode::STRETCH_SCALE_ON_EXPAND;
+	stretch_mode = STRETCH_SCALE;
 }

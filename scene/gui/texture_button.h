@@ -31,13 +31,20 @@
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/bit_mask.h"
-#include "scene/gui/texture_rect.h"
 class TextureButton : public BaseButton {
 
 	GDCLASS( TextureButton, BaseButton );
 
 public:
-	typedef TextureRect::StretchMode StretchMode;
+	enum StretchMode {
+		STRETCH_SCALE,
+		STRETCH_TILE,
+		STRETCH_KEEP,
+		STRETCH_KEEP_CENTERED,
+		STRETCH_KEEP_ASPECT,
+		STRETCH_KEEP_ASPECT_CENTERED,
+		STRETCH_KEEP_ASPECT_COVERED,
+	};
 
 private:
 	Ref<Texture> normal;
@@ -81,4 +88,6 @@ public:
 	TextureButton();
 };
 
+
+VARIANT_ENUM_CAST( TextureButton::StretchMode );
 #endif // TEXTURE_BUTTON_H
