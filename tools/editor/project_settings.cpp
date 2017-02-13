@@ -242,7 +242,7 @@ void ProjectSettings::_device_input_add() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
-	_show_last_added(ie);
+	_show_last_added(ie, name);
 }
 
 
@@ -279,12 +279,14 @@ void ProjectSettings::_press_a_key_confirm() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
-	_show_last_added(ie);
+	_show_last_added(ie, name);
 }
 
-void ProjectSettings::_show_last_added(const InputEvent& p_event) {
+void ProjectSettings::_show_last_added(const InputEvent& p_event, const String &p_name) {
 	TreeItem *r = input_editor->get_root();
 
+	String name = p_name;
+	name.erase(0,6);
 	if (!r)
 		return;
 	r=r->get_children();
@@ -292,6 +294,10 @@ void ProjectSettings::_show_last_added(const InputEvent& p_event) {
 		return;
 	bool found = false;
 	while(r){
+		if (r->get_text(0) != name) {
+			r=r->get_next();
+			continue;
+		}
 		TreeItem *child = r->get_children();
 		while(child){
 			Variant input = child->get_meta("__input");
@@ -377,7 +383,7 @@ void ProjectSettings::_add_item(int p_item){
 		} break;
 		case InputEvent::JOYPAD_BUTTON: {
 
-			device_id->set_value(3);
+			device_id->set_value(0);
 			device_index_label->set_text(TTR("Joypad Button Index:"));
 			device_index->clear();
 
