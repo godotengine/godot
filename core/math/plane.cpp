@@ -164,3 +164,8 @@ Plane::operator String() const {
 
 	return normal.operator String() + ", " + rtos(d);
 }
+
+bool Plane::nan_equals(const Plane& p_plane) const {
+
+	return normal.nan_equals(p_plane.normal) && d == p_plane.d;
+}
