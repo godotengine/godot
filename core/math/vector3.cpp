@@ -176,17 +176,6 @@ Vector3 Vector3::cubic_interpolate(const Vector3& p_b,const Vector3& p_pre_a, co
 	return out;
 }
 # endif
-bool Vector3::nan_equals(const Vector3& p_v) const {
-	return (x == p_v.x && y == p_v.y && z == p_v.z) ||
-			(x == p_v.x && y == p_v.y && isnan(z) && isnan(p_v.z)) ||
-			(x == p_v.x && isnan(y) && isnan(p_v.y) && z == p_v.z) ||
-			(isnan(x) && isnan(p_v.x) && y == p_v.y && z == p_v.z) ||
-			(x == p_v.x && isnan(y) && isnan(p_v.y) && isnan(z) && isnan(p_v.z)) ||
-			(isnan(x) && isnan(p_v.x) && y == p_v.y && isnan(z) && isnan(p_v.z)) ||
-			(isnan(x) && isnan(p_v.x) && isnan(y) && isnan(p_v.y) && z == p_v.z) ||
-			(isnan(x) && isnan(p_v.x) && isnan(y) && isnan(p_v.y) && isnan(z) && isnan(p_v.z));
-}
-
 Vector3::operator String() const {
 
 	return (rtos(x)+", "+rtos(y)+", "+rtos(z));
