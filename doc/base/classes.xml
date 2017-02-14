@@ -40626,13 +40626,21 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the current tab that is being showed.
+				Return the current tab index that is being shown.
 			</description>
 		</method>
+		<method name="get_previous_tab" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the previous tab index that was being shown.
+ 			</description>
+ 		</method>
 		<method name="get_current_tab_control" qualifiers="const">
 			<return type="Control">
 			</return>
 			<description>
+				Return the current tab control that is being shown.
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
@@ -40736,6 +40744,13 @@
 			</argument>
 			<description>
 				Emitted when the current tab changes.
+			</description>
+		</signal>
+		<signal name="tab_selected">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+				Emitted when the current tab is being selected again.
 			</description>
 		</signal>
 	</signals>
