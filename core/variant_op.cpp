@@ -93,6 +93,18 @@ case m_name: {\
 	return;\
 };
 
+#define DEFAULT_OP_NUM_NAN(m_op,m_name,m_type)\
+case m_name: {\
+	switch(p_b.type) {\
+		case BOOL: _RETURN((p_a._data.m_type m_op p_b._data._bool) || (isnan(p_a._data.m_type) && isnan(p_a._data._bool)));\
+		case INT: _RETURN((p_a._data.m_type m_op p_b._data._int) || (isnan(p_a._data.m_type) && isnan(p_a._data._int)));\
+		case REAL: _RETURN((p_a._data.m_type m_op p_b._data._real) || (isnan(p_a._data.m_type) && isnan(p_a._data._real)));\
+		default: {}\
+	}\
+	r_valid=false;\
+	return;\
+};
+
 #define DEFAULT_OP_NUM_NEG(m_name,m_type)\
 case m_name: {\
 \
@@ -132,12 +144,11 @@ case m_name: {\
 
 #define DEFAULT_OP_LOCALMEM(m_op,m_name,m_type)\
 case m_name: {switch(p_b.type) {\
-	case m_name: _RETURN( *reinterpret_cast<const m_type*>(p_a._data._mem) m_op *reinterpret_cast<const m_type*>(p_b._data._mem));\
+	case m_name: _RETURN( (*reinterpret_cast<const m_type*>(p_a._data._mem))m_op(*reinterpret_cast<const m_type*>(p_b._data._mem)));\
 	default: {}\
 }\
 r_valid=false;\
 return;}
-
 
 #define DEFAULT_OP_LOCALMEM_NEG(m_name,m_type)\
 case m_name: {\
@@ -177,13 +188,28 @@ r_valid=false;\
 return;}
 
 #define DEFAULT_OP_ARRAY_EQ(m_name,m_type)\
-DEFAULT_OP_ARRAY_OP(m_name,m_type,!=,!=,true,false,false)
+DEFAULT_OP_ARRAY_OP(m_name,m_type,!=,!=,true,false,false,true)
+
+#define DEFAULT_OP_ARRAY_EQ_NAN(m_name,m_type)\
+		DEFAULT_ARRAY_OP_HEAD(m_name,m_type,!=,false,false)\
+			if ((ra[i] != rb[i]) && (isnan(ra[i]) != isnan(rb[i])))\
+				_RETURN(false);\
+		DEFAULT_ARRAY_OP_FOOT(true)
+
+#define DEFAULT_OP_ARRAY_EQ_NAN_V(m_name,m_type)\
+DEFAULT_OP_ARRAY_OP(m_name,m_type,!=,.nan_equals,true,false,false,false)
 
 #define DEFAULT_OP_ARRAY_LT(m_name,m_type)\
-DEFAULT_OP_ARRAY_OP(m_name,m_type,<,!=,false,a_len<array_b.size(),true)
+DEFAULT_OP_ARRAY_OP(m_name,m_type,<,!=,false,a_len<array_b.size(),true,true)
 
-#define DEFAULT_OP_ARRAY_OP(m_name,m_type,m_opa,m_opb,m_ret_def,m_ret_s,m_ret_f)\
-case m_name: {	\
+#define DEFAULT_OP_ARRAY_OP(m_name,m_type,m_opa,m_opb,m_ret_def,m_ret_s,m_ret_f,m_neg)\
+		DEFAULT_ARRAY_OP_HEAD(m_name,m_type,m_opa,m_ret_s,m_ret_f)\
+			if ((((ra[i])m_opb(rb[i]))==m_neg))\
+				_RETURN(m_ret_f);\
+		DEFAULT_ARRAY_OP_FOOT(m_ret_def)
+
+#define DEFAULT_ARRAY_OP_HEAD(m_name,m_type,m_opa,m_ret_s,m_ret_f)\
+	case m_name: {	\
 	if (p_a.type!=p_b.type) {\
 		r_valid=false;\
 		return;\
@@ -194,17 +220,17 @@ case m_name: {	\
 	int a_len = array_a.size();\
 	if (a_len m_opa array_b.size()){\
 		_RETURN( m_ret_s);\
-	}else {\
+	} else {\
 \
 		PoolVector<m_type>::Read ra = array_a.read();\
 		PoolVector<m_type>::Read rb = array_b.read();\
 \
 		for(int i=0;i<a_len;i++) {\
-			if (ra[i] m_opb rb[i])\
-				_RETURN( m_ret_f);\
+
+#define DEFAULT_ARRAY_OP_FOOT(m_ret_def)\
 		}\
 \
-		_RETURN( m_ret_def);\
+		_RETURN(m_ret_def);\
 	}\
 }
 
@@ -258,16 +284,16 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					_RETURN(p_b.type==NIL || (p_b.type==Variant::OBJECT && !p_b._get_obj().obj));
 				} break;
 
-				DEFAULT_OP_NUM(==,BOOL,_bool);
-				DEFAULT_OP_NUM(==,INT,_int);
-				DEFAULT_OP_NUM(==,REAL,_real);
+				DEFAULT_OP_NUM_NAN(==,BOOL,_bool);
+				DEFAULT_OP_NUM_NAN(==,INT,_int);
+				DEFAULT_OP_NUM_NAN(==,REAL,_real);
 				DEFAULT_OP_STR(==,STRING,String);
-				DEFAULT_OP_LOCALMEM(==,VECTOR2,Vector2);
-				DEFAULT_OP_LOCALMEM(==,RECT2,Rect2);
+				DEFAULT_OP_LOCALMEM(.nan_equals,VECTOR2,Vector2);
+				DEFAULT_OP_LOCALMEM(.nan_equals,RECT2,Rect2);
 				DEFAULT_OP_PTRREF(==,TRANSFORM2D,_transform2d);
-				DEFAULT_OP_LOCALMEM(==,VECTOR3,Vector3);
-				DEFAULT_OP_LOCALMEM(==,PLANE,Plane);
-				DEFAULT_OP_LOCALMEM(==,QUAT,Quat);
+				DEFAULT_OP_LOCALMEM(.nan_equals,VECTOR3,Vector3);
+				DEFAULT_OP_LOCALMEM(.nan_equals,PLANE,Plane);
+				DEFAULT_OP_LOCALMEM(.nan_equals,QUAT,Quat);
 				DEFAULT_OP_PTRREF(==,RECT3,_rect3);
 				DEFAULT_OP_PTRREF(==,BASIS,_basis);
 				DEFAULT_OP_PTRREF(==,TRANSFORM,_transform);
@@ -319,11 +345,11 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 
 
 				DEFAULT_OP_ARRAY_EQ(POOL_BYTE_ARRAY,uint8_t);
-				DEFAULT_OP_ARRAY_EQ(POOL_INT_ARRAY,int);
-				DEFAULT_OP_ARRAY_EQ(POOL_REAL_ARRAY,real_t);
+				DEFAULT_OP_ARRAY_EQ_NAN(POOL_INT_ARRAY,int);
+				DEFAULT_OP_ARRAY_EQ_NAN(POOL_REAL_ARRAY,real_t);
 				DEFAULT_OP_ARRAY_EQ(POOL_STRING_ARRAY,String);
-				DEFAULT_OP_ARRAY_EQ(POOL_VECTOR2_ARRAY,Vector3);
-				DEFAULT_OP_ARRAY_EQ(POOL_VECTOR3_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_EQ_NAN_V(POOL_VECTOR2_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_EQ_NAN_V(POOL_VECTOR3_ARRAY,Vector3);
 				DEFAULT_OP_ARRAY_EQ(POOL_COLOR_ARRAY,Color);
 
 				case VARIANT_MAX: {
@@ -416,9 +442,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 			switch(p_a.type) {
 
 				DEFAULT_OP_FAIL(NIL);
-				DEFAULT_OP_NUM(<=,BOOL,_bool);
-				DEFAULT_OP_NUM(<=,INT,_int);
-				DEFAULT_OP_NUM(<=,REAL,_real);
+				DEFAULT_OP_NUM_NAN(<=,BOOL,_bool);
+				DEFAULT_OP_NUM_NAN(<=,INT,_int);
+				DEFAULT_OP_NUM_NAN(<=,REAL,_real);
 				DEFAULT_OP_STR(<=,STRING,String);
 				DEFAULT_OP_LOCALMEM(<=,VECTOR2,Vector2);
 				DEFAULT_OP_FAIL(RECT2);

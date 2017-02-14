@@ -157,6 +157,13 @@ bool Vector2::operator!=(const Vector2& p_vec2) const {
 
 	return x!=p_vec2.x || y!=p_vec2.y;
 }
+bool Vector2::nan_equals(const Vector2& p_vec2) const {
+
+	return (x==p_vec2.x && y==p_vec2.y) ||
+			(x==p_vec2.x && isnan(y) && isnan(p_vec2.y)) ||
+			(isnan(x) && isnan(p_vec2.x) && y == p_vec2.y);
+}
+
 Vector2 Vector2::floor() const {
 
 	return Vector2( Math::floor(x), Math::floor(y) );
