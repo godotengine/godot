@@ -133,7 +133,6 @@ struct Vector2 {
 	bool operator<(const Vector2& p_vec2) const { return (x==p_vec2.x)?(y<p_vec2.y):(x<p_vec2.x); }
 	bool operator<=(const Vector2& p_vec2) const { return (x==p_vec2.x)?(y<=p_vec2.y):(x<=p_vec2.x); }
 
-	bool nan_equals(const Vector2& p_vec2) const;
 	real_t angle() const;
 
 	void set_rotation(real_t p_radians) {
@@ -319,8 +318,6 @@ struct Rect2 {
 
 	bool operator==(const Rect2& p_rect) const { return pos==p_rect.pos && size==p_rect.size; }
 	bool operator!=(const Rect2& p_rect) const { return pos!=p_rect.pos || size!=p_rect.size; }
-
-	bool nan_equals(const Rect2& p_rect) const { return pos.nan_equals(p_rect.pos) && size == p_rect.size; }
 
 	inline Rect2 grow(real_t p_by) const {
 

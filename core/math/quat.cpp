@@ -284,22 +284,3 @@ Quat::Quat(const Vector3& axis, const real_t& angle) {
 			cos_angle);
 	}
 }
-
-bool Quat::nan_equals(const Quat& q2) const {
-	return (x == q2.x && y == q2.y && z == q2.z && w == q2.w) ||
-			(x == q2.x && y == q2.y && z == q2.z && isnan(w) && isnan(q2.w)) ||
-			(x == q2.x && y == q2.y && isnan(z) && isnan(q2.z) && w == q2.w) ||
-			(x == q2.x && y == q2.y && isnan(z) && isnan(q2.z) && isnan(w) && isnan(q2.w)) ||
-			(x == q2.x && isnan(y) && isnan(q2.y) && z == q2.z && w == q2.w) ||
-			(x == q2.x && isnan(y) && isnan(q2.y) && z == q2.z && isnan(w) && isnan(q2.w)) ||
-			(x == q2.x && isnan(y) && isnan(q2.y) && isnan(z) && isnan(q2.z) && w == q2.w) ||
-			(x == q2.x && isnan(y) && isnan(q2.y) && isnan(z) && isnan(q2.z) && isnan(w) && isnan(q2.w)) ||
-			(isnan(x) && isnan(q2.x) && y == q2.y && z == q2.z && w == q2.w) ||
-			(isnan(x) && isnan(q2.x) && y == q2.y && z == q2.z && isnan(w) && isnan(q2.w)) ||
-			(isnan(x) && isnan(q2.x) && y == q2.y && isnan(z) && isnan(q2.z) && w == q2.w) ||
-			(isnan(x) && isnan(q2.x) && y == q2.y && isnan(z) && isnan(q2.z) && isnan(w) && isnan(q2.w)) ||
-			(isnan(x) && isnan(q2.x) && isnan(y) && isnan(q2.y) && z == q2.z && w == q2.w) ||
-			(isnan(x) && isnan(q2.x) && isnan(y) && isnan(q2.y) && z == q2.z && isnan(w) && isnan(q2.w)) ||
-			(isnan(x) && isnan(q2.x) && isnan(y) && isnan(q2.y) && isnan(z) && isnan(q2.z) && w == q2.w) ||
-			(isnan(x) && isnan(q2.x) && isnan(y) && isnan(q2.y) && isnan(z) && isnan(q2.z) && isnan(w) && isnan(q2.w));
-}
