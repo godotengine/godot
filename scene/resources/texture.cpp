@@ -754,6 +754,12 @@ bool StreamTexture::has_alpha() const {
 
 	return false;
 }
+
+Image StreamTexture::get_data() const {
+
+	return VS::get_singleton()->texture_get_data(texture);
+}
+
 void StreamTexture::set_flags(uint32_t p_flags){
 
 }

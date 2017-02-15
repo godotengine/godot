@@ -712,7 +712,7 @@ Error VisualServer::_surface_set_data(Array p_arrays,uint32_t p_format,uint32_t 
 			} break;
 			case VS::ARRAY_BONES: {
 
-				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::POOL_INT_ARRAY, ERR_INVALID_PARAMETER );
+				ERR_FAIL_COND_V( p_arrays[ai].get_type() != Variant::POOL_INT_ARRAY && p_arrays[ai].get_type() != Variant::POOL_REAL_ARRAY, ERR_INVALID_PARAMETER );
 
 				PoolVector<int> array = p_arrays[ai];
 

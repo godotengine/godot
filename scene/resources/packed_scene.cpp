@@ -177,6 +177,9 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 			node = obj->cast_to<Node>();
 
+		} else {
+			print_line("wtf class is disabled for: "+itos(n.type));
+			print_line("name: "+String(snames[n.type]));
 		}
 
 
@@ -195,6 +198,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 					bool valid;
 					ERR_FAIL_INDEX_V( nprops[j].name, sname_count, NULL );
 					ERR_FAIL_INDEX_V( nprops[j].value, prop_count, NULL );
+
 
 					if (snames[ nprops[j].name ]==CoreStringNames::get_singleton()->_script) {
 						//work around to avoid old script variables from disappearing, should be the proper fix to:

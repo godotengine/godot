@@ -109,6 +109,7 @@ public:
 
 	static void get_closest_points_between_segments(const Vector3& p1,const Vector3& p2,const Vector3& q1,const Vector3& q2,Vector3& c1, Vector3& c2)
 	{
+#if 0
 		//do the function 'd' as defined by pb. I think is is dot product of some sort
 #define d_of(m,n,o,p) ( (m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z) )
 
@@ -123,6 +124,33 @@ public:
 		if (mub > 1) mub = 1;
 		c1 = p1.linear_interpolate(p2,mua);
 		c2 = q1.linear_interpolate(q2,mub);
+#endif
+
+		Vector3   u = p2 - p1;
+		Vector3   v = q2 - q1;
+		Vector3   w = p1 - q1;
+		float    a = u.dot(u);
+		float    b = u.dot(v);
+		float    c = v.dot(v);         // always >= 0
+		float    d = u.dot(w);
+		float    e = v.dot(w);
+		float    D = a*c - b*b;        // always >= 0
+		float    sc, tc;
+
+		// compute the line parameters of the two closest points
+		if (D < CMP_EPSILON) {          // the lines are almost parallel
+			sc = 0.0;
+			tc = (b>c ? d/b : e/c);    // use the largest denominator
+		}
+		else {
+			sc = (b*e - c*d) / D;
+			tc = (a*e - b*d) / D;
+		}
+
+		c1 = w + sc * u;
+		c2 = w + tc * v;
+		// get the difference of the two closest points
+		//Vector   dP = w + (sc * u) - (tc * v);  // =  L1(sc) - L2(tc)
 	}
 
 	static real_t get_closest_distance_between_segments( const Vector3& p_from_a,const Vector3& p_to_a, const Vector3& p_from_b,const Vector3& p_to_b) {

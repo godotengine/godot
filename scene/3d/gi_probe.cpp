@@ -527,10 +527,16 @@ void GIProbe::_plot_face(int p_idx, int p_level,int p_x,int p_y,int p_z, const V
 						Vector3 c;
 						Vector3 inters;
 						Geometry::get_closest_points_between_segments(p_vtx[j],p_vtx[(j+1)%3],ray_from,ray_to,inters,c);
-						float d=c.distance_to(intersection);
-						if (j==0 || d<closest_dist) {
-							closest_dist=d;
+						if (c==inters) {
+							closest_dist=0;
 							intersection=inters;
+
+						} else {
+							float d=c.distance_to(intersection);
+							if (j==0 || d<closest_dist) {
+								closest_dist=d;
+								intersection=inters;
+							}
 						}
 					}
 				}
@@ -856,6 +862,10 @@ Vector<Color> GIProbe::_get_bake_texture(Image &p_image,const Color& p_color) {
 		return ret;
 	}
 
+	if (p_image.is_compressed()) {
+		print_line("DECOMPRESSING!!!!");
+		p_image.decompress();
+	}
 	p_image.convert(Image::FORMAT_RGBA8);
 	p_image.resize(bake_texture_size,bake_texture_size,Image::INTERPOLATE_CUBIC);
 
@@ -892,13 +902,14 @@ GIProbe::Baker::MaterialCache GIProbe::_get_material_cache(Ref<Material> p_mater
 
 	if (mat.is_valid()) {
 
-
-		Ref<ImageTexture> albedo_tex = mat->get_texture(FixedSpatialMaterial::TEXTURE_ALBEDO);
+		Ref<Texture> albedo_tex = mat->get_texture(FixedSpatialMaterial::TEXTURE_ALBEDO);
 
 		Image img_albedo;
 		if (albedo_tex.is_valid()) {
 
 			img_albedo = albedo_tex->get_data();
+		} else {
+
 		}
 
 		mc.albedo=_get_bake_texture(img_albedo,mat->get_albedo());
@@ -950,6 +961,7 @@ void GIProbe::_plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_b
 			src_material=p_materials[i];
 		} else {
 			src_material=p_mesh->surface_get_material(i);
+
 		}
 		Baker::MaterialCache material = _get_material_cache(src_material,p_baker);
 
@@ -1050,6 +1062,31 @@ void GIProbe::_find_meshes(Node *p_at_node,Baker *p_baker){
 					pm.instance_materials.push_back(mi->get_surface_material(i));
 				}
 				pm.override_material=mi->get_material_override();
+				p_baker->mesh_list.push_back(pm);
+
+			}
+		}
+	}
+
+	if (p_at_node->cast_to<Spatial>()) {
+
+		Spatial *s = p_at_node->cast_to<Spatial>();
+		Array meshes = p_at_node->call("get_meshes");
+		for(int i=0;i<meshes.size();i+=2) {
+
+			Transform mxf = meshes[i];
+			Ref<Mesh> mesh = meshes[i+1];
+			if (!mesh.is_valid())
+				continue;
+
+			Rect3 aabb = mesh->get_aabb();
+
+			Transform xf = get_global_transform().affine_inverse() * (s->get_global_transform() * mxf);
+
+			if (Rect3(-extents,extents*2).intersects(xf.xform(aabb))) {
+				Baker::PlotMesh pm;
+				pm.local_xform=xf;
+				pm.mesh=mesh;
 				p_baker->mesh_list.push_back(pm);
 
 			}

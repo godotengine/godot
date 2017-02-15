@@ -1256,7 +1256,7 @@ void ClassDB::get_extensions_for_type(const StringName& p_class,List<String> *p_
 
 	while((K=resource_base_extensions.next(K))) {
 		StringName cmp = resource_base_extensions[*K];
-		if (is_parent_class(cmp,p_class))
+		if (is_parent_class(p_class,cmp))
 			p_extensions->push_back(*K);
 	}
 }

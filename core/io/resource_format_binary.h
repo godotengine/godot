@@ -54,6 +54,8 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 	//Map<int,StringName> string_map;
 	Vector<StringName> string_map;
 
+	StringName _get_string();
+
 	struct ExtResoucre {
 		String path;
 		String type;

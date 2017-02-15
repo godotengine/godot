@@ -1386,6 +1386,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			int amount = MAX(multi_mesh->size,multi_mesh->visible_instances);
 
+
 			if (s->index_array_len>0) {
 
 				glDrawElementsInstanced(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0,amount);
@@ -1746,6 +1747,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 	RasterizerStorageGLES3::Material* prev_material=NULL;
 	RasterizerStorageGLES3::Geometry* prev_geometry=NULL;
+	RasterizerStorageGLES3::GeometryOwner* prev_owner=NULL;
 	VS::InstanceType prev_base_type = VS::INSTANCE_MAX;
 
 	int current_blend_mode=-1;
@@ -1764,6 +1766,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 		RenderList::Element *e = p_elements[i];
 		RasterizerStorageGLES3::Material* material= e->material;
 		RID skeleton = e->instance->skeleton;
+
 
 		bool rebind=first;
 
@@ -1934,7 +1937,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 		}
 
 
-		if (prev_base_type != e->instance->base_type || prev_geometry!=e->geometry) {
+		if (e->owner != prev_owner || prev_base_type != e->instance->base_type || prev_geometry!=e->geometry) {
 
 			_setup_geometry(e);
 			storage->info.render_surface_switch_count++;
@@ -1952,6 +1955,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 		prev_material=material;
 		prev_base_type=e->instance->base_type;
 		prev_geometry=e->geometry;
+		prev_owner=e->owner;
 		prev_shading=shading;
 		prev_skeleton=skeleton;
 		first=false;

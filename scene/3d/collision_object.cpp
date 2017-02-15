@@ -334,6 +334,7 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 	area=p_area;
 	capture_input_on_drag=false;
 	ray_pickable=true;
+	set_notify_transform(true);
 	if (p_area) {
 		PhysicsServer::get_singleton()->area_attach_object_instance_ID(rid,get_instance_ID());
 	} else {
