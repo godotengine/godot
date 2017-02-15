@@ -1334,7 +1334,7 @@ void BakedLightBaker::_make_octree_texture() {
 			base<<=16;
 			base|=int((pos.z+cell_size*0.5)/cell_size);
 
-			uint32_t hash = HashMapHahserDefault::hash(base);
+			uint32_t hash = HashMapHasherDefault::hash(base);
 			uint32_t idx = hash % hash_table_size;
 			octhashptr[oct_idx].next=hashptr[idx];
 			octhashptr[oct_idx].hash=hash;
@@ -1362,7 +1362,7 @@ void BakedLightBaker::_make_octree_texture() {
 			base<<=16;
 			base|=int((pos.z+cell_size*0.5)/cell_size);
 
-			uint32_t hash = HashMapHahserDefault::hash(base);
+			uint32_t hash = HashMapHasherDefault::hash(base);
 			uint32_t idx = hash % hash_table_size;
 
 			uint32_t bucket = hashptr[idx];

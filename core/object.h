@@ -680,7 +680,7 @@ class ObjectDB {
 				unsigned long i;
 			} u;
 			u.p=p_obj;
-			return HashMapHahserDefault::hash((uint64_t)u.i);
+			return HashMapHasherDefault::hash((uint64_t)u.i);
 		}
 	};
 

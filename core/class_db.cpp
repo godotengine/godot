@@ -295,7 +295,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	OBJTYPE_RLOCK;
 #ifdef DEBUG_METHODS_ENABLED
 
-	uint64_t hash = hash_djb2_one_64(HashMapHahserDefault::hash(VERSION_FULL_NAME));
+	uint64_t hash = hash_djb2_one_64(HashMapHasherDefault::hash(VERSION_FULL_NAME));
 
 	List<StringName> names;
 

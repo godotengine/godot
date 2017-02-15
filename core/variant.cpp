@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "variant.h"
 
+#include "math_funcs.h"
 #include "resource.h"
 #include "print_string.h"
 #include "scene/main/node.h"
@@ -2674,14 +2675,10 @@ uint32_t Variant::hash() const {
 		case INT: {
 
 			return _data._int;
-
 		} break;
 		case REAL: {
 
-			MarshallFloat mf;
-			mf.f=_data._real;
-			return mf.i;
-
+			return hash_djb2_one_float(_data._real);
 		} break;
 		case STRING: {
 
@@ -2919,6 +2916,186 @@ uint32_t Variant::hash() const {
 
 	return 0;
 
+}
+
+#define hash_compare_scalar(p_lhs, p_rhs)\
+	((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) == Math::is_nan(p_rhs))
+
+#define hash_compare_vector2(p_lhs, p_rhs)\
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) && \
+	(hash_compare_scalar((p_lhs).y, (p_rhs).y))
+
+#define hash_compare_vector3(p_lhs, p_rhs)\
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) && \
+	(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
+	(hash_compare_scalar((p_lhs).z, (p_rhs).z))
+
+#define hash_compare_quat(p_lhs, p_rhs)\
+	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) && \
+	(hash_compare_scalar((p_lhs).y, (p_rhs).y)) && \
+	(hash_compare_scalar((p_lhs).z, (p_rhs).z)) && \
+	(hash_compare_scalar((p_lhs).w, (p_rhs).w))
+
+#define hash_compare_color(p_lhs, p_rhs)\
+	(hash_compare_scalar((p_lhs).r, (p_rhs).r)) && \
+	(hash_compare_scalar((p_lhs).g, (p_rhs).g)) && \
+	(hash_compare_scalar((p_lhs).b, (p_rhs).b)) && \
+	(hash_compare_scalar((p_lhs).a, (p_rhs).a))
+
+#define hash_compare_pool_array(p_lhs, p_rhs, p_type, p_compare_func)\
+		const PoolVector<p_type>& l = *reinterpret_cast<const PoolVector<p_type>*>(p_lhs);\
+		const PoolVector<p_type>& r = *reinterpret_cast<const PoolVector<p_type>*>(p_rhs);\
+		\
+		if(l.size() != r.size()) \
+			return false; \
+		\
+		PoolVector<p_type>::Read lr = l.read(); \
+		PoolVector<p_type>::Read rr = r.read(); \
+		\
+		for(int i = 0; i < l.size(); ++i) { \
+			if(! p_compare_func((lr[0]), (rr[0]))) \
+				return false; \
+		}\
+		\
+		return true
+
+bool Variant::hash_compare(const Variant& p_variant) const {
+	if (type != p_variant.type)
+		return false;
+
+	switch( type ) {
+		case REAL: {
+			return hash_compare_scalar(_data._real, p_variant._data._real);
+		} break;
+
+		case VECTOR2: {
+			const Vector2* l = reinterpret_cast<const Vector2*>(_data._mem);
+			const Vector2* r = reinterpret_cast<const Vector2*>(p_variant._data._mem);
+
+			return hash_compare_vector2(*l, *r);
+		} break;
+
+		case RECT2: {
+			const Rect2* l = reinterpret_cast<const Rect2*>(_data._mem);
+			const Rect2* r = reinterpret_cast<const Rect2*>(p_variant._data._mem);
+
+			return (hash_compare_vector2(l->pos, r->pos)) &&
+					(hash_compare_vector2(l->size, r->size));
+		} break;
+
+		case TRANSFORM2D: {
+			Transform2D* l = _data._transform2d;
+			Transform2D* r = p_variant._data._transform2d;
+
+			for(int i=0;i<3;i++) {
+				if (! (hash_compare_vector2(l->elements[i], r->elements[i])))
+					return false;
+			}
+
+			return true;
+		} break;
+
+		case VECTOR3: {
+			const Vector3* l = reinterpret_cast<const Vector3*>(_data._mem);
+			const Vector3* r = reinterpret_cast<const Vector3*>(p_variant._data._mem);
+
+			return hash_compare_vector3(*l, *r);
+		} break;
+
+		case PLANE: {
+			const Plane* l = reinterpret_cast<const Plane*>(_data._mem);
+			const Plane* r = reinterpret_cast<const Plane*>(p_variant._data._mem);
+
+			return (hash_compare_vector3(l->normal, r->normal)) &&
+					(hash_compare_scalar(l->d, r->d));
+		} break;
+
+		case RECT3: {
+			const Rect3* l = _data._rect3;
+			const Rect3* r = p_variant._data._rect3;
+
+			return (hash_compare_vector3(l->pos, r->pos) &&
+					(hash_compare_vector3(l->size, r->size)));
+
+		} break;
+
+		case QUAT: {
+			const Quat* l = reinterpret_cast<const Quat*>(_data._mem);
+			const Quat* r = reinterpret_cast<const Quat*>(p_variant._data._mem);
+
+			return hash_compare_quat(*l, *r);
+		} break;
+
+		case BASIS: {
+			const Basis* l = _data._basis;
+			const Basis* r = p_variant._data._basis;
+
+			for(int i=0;i<3;i++) {
+				if (! (hash_compare_vector3(l->elements[i], r->elements[i])))
+					return false;
+			}
+
+			return true;
+		} break;
+
+		case TRANSFORM: {
+			const Transform* l = _data._transform;
+			const Transform* r = p_variant._data._transform;
+
+			for(int i=0;i<3;i++) {
+				if (! (hash_compare_vector3(l->basis.elements[i], r->basis.elements[i])))
+					return false;
+			}
+
+			return hash_compare_vector3(l->origin, r->origin);
+		} break;
+
+		case COLOR: {
+			const Color* l = reinterpret_cast<const Color*>(_data._mem);
+			const Color* r = reinterpret_cast<const Color*>(p_variant._data._mem);
+
+			return hash_compare_color(*l, *r);
+		} break;
+
+		case ARRAY: {
+			const Array& l = *(reinterpret_cast<const Array*>(_data._mem));
+			const Array& r = *(reinterpret_cast<const Array*>(p_variant._data._mem));
+
+			if(l.size() != r.size())
+				return false;
+
+			for(int i = 0; i < l.size(); ++i) {
+				if(! l[0].hash_compare(r[0]))
+					return false;
+			}
+
+			return true;
+		} break;
+
+		case POOL_REAL_ARRAY: {
+			hash_compare_pool_array(_data._mem, p_variant._data._mem, real_t, hash_compare_scalar);
+		} break;
+
+		case POOL_VECTOR2_ARRAY: {
+			hash_compare_pool_array(_data._mem, p_variant._data._mem, Vector2, hash_compare_vector2);
+		} break;
+
+		case POOL_VECTOR3_ARRAY: {
+			hash_compare_pool_array(_data._mem, p_variant._data._mem, Vector3, hash_compare_vector3);
+		} break;
+
+		case POOL_COLOR_ARRAY: {
+			hash_compare_pool_array(_data._mem, p_variant._data._mem, Color, hash_compare_color);
+		} break;
+
+		default:
+			bool v;
+			Variant r;
+			evaluate(OP_EQUAL,*this,p_variant,r,v);
+			return r;
+		}
+
+	return false;
 }
 
 
