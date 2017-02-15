@@ -39,6 +39,14 @@
 #include "editor_settings.h"
 #include "editor_help.h"
 
+#define SEARCH_OPTION_NEXT_SELECT (search_options->get_next_selected(search_options->get_root()))
+
+
+// TODO : check changer type dialog box! ???
+// BUG : pas de selection bleu lors d'un ctrl-click ((donc shift click tjrs sur premier item) bug ?
+// OTOD ESCAPE ?
+
+//Commit : right/left arrow to collaspe / open
 
 void CreateDialog::popup(bool p_dontclear) {
 
@@ -138,6 +146,11 @@ void CreateDialog::_text_changed(const String& p_newtext) {
 	_update_search();
 }
 
+void CreateDialog::_text_confirmed(const String& p_newtext) {
+
+//	_confirmed();
+}
+
 void CreateDialog::_sbox_input(const InputEvent& p_ie) {
 
 	if (p_ie.type==InputEvent::KEY && (
@@ -150,6 +163,24 @@ void CreateDialog::_sbox_input(const InputEvent& p_ie) {
 		search_box->accept_event();
 	}
 
+}
+
+void CreateDialog::_search_options_input(const InputEvent& p_ie){
+	if (p_ie.type==InputEvent::KEY ){
+		if(p_ie.key.scancode == KEY_RIGHT){
+			TreeItem *pitem = SEARCH_OPTION_NEXT_SELECT;
+			if (pitem){
+				pitem->set_collapsed(false);
+				search_options->accept_event();
+			}
+		}else if(p_ie.key.scancode == KEY_LEFT){
+			TreeItem *pitem = SEARCH_OPTION_NEXT_SELECT ;
+			if (pitem){
+				pitem->set_collapsed(true);
+				search_options->accept_event();
+			}
+		}
+	}
 }
 
 void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root,TreeItem **to_select) {
@@ -320,13 +351,14 @@ void CreateDialog::_update_search() {
 		favorite->set_pressed(favorite_list.find(to_select->get_text(0))!=-1);
 	}
 
-	get_ok()->set_disabled(!search_options->get_next_selected(search_options->get_root()) ||
+	get_ok()->set_disabled(!SEARCH_OPTION_NEXT_SELECT ||
 						   (root->get_children()==NULL));
 }
 
 void CreateDialog::_confirmed() {
 
-	TreeItem *ti = search_options->get_selected();
+	TreeItem *ti = SEARCH_OPTION_NEXT_SELECT ;
+//	TreeItem *ti = search_options->get_selected();
 	if (!ti)
 		return;
 
@@ -399,8 +431,7 @@ String CreateDialog::get_selected_type() {
 		return String();
 }
 
-void CreateDialog::instance_selected(List<Object*> *p_list)
-{
+void CreateDialog::instance_selected(List<Object*> *p_list){
 	TreeItem* item = search_options->get_root();
 	while ( (item = search_options->get_next_selected(item)) ) {
 		Variant md = item->get_metadata(0);
@@ -458,7 +489,7 @@ void CreateDialog::_item_selected() {
 void CreateDialog::_cell_multi_selected(Object *p_object, int p_index,bool p_selected) {
 
 	if(!p_selected){
-		get_ok()->set_disabled(!search_options->get_next_selected(search_options->get_root()));
+		get_ok()->set_disabled(!SEARCH_OPTION_NEXT_SELECT );
 		help_bit->set_text("");
 	}
 	else{
@@ -643,15 +674,17 @@ void CreateDialog::drop_data_fw(const Point2& p_point,const Variant& p_data,Cont
 void CreateDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_text_changed"),&CreateDialog::_text_changed);
+	ClassDB::bind_method(D_METHOD("_text_confirmed"),&CreateDialog::_text_confirmed);
 	ClassDB::bind_method(D_METHOD("_confirmed"),&CreateDialog::_confirmed);
 	ClassDB::bind_method(D_METHOD("_sbox_input"),&CreateDialog::_sbox_input);
-	ClassDB::bind_method(D_METHOD("_item_selected"),&CreateDialog::_item_selected);
+	ClassDB::bind_method(D_METHOD("_item_selected"),&CreateDialog::_item_selected);	
 	ClassDB::bind_method(D_METHOD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
 	ClassDB::bind_method(D_METHOD("_history_selected"),&CreateDialog::_history_selected);
 	ClassDB::bind_method(D_METHOD("_favorite_selected"),&CreateDialog::_favorite_selected);
 	ClassDB::bind_method(D_METHOD("_history_activated"),&CreateDialog::_history_activated);
 	ClassDB::bind_method(D_METHOD("_favorite_activated"),&CreateDialog::_favorite_activated);
 	ClassDB::bind_method(D_METHOD("_multi_selected"),&CreateDialog::_cell_multi_selected);
+	ClassDB::bind_method(D_METHOD("_search_options_input"),&CreateDialog::_search_options_input);
 
 	ClassDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw",&CreateDialog::can_drop_data_fw);
@@ -704,15 +737,18 @@ CreateDialog::CreateDialog() {
 	vbc->add_margin_child(TTR("Search:"),search_hb);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("gui_input",this,"_sbox_input");
+	search_box->connect("text_entered", this, "_text_confirmed");
 	search_options = memnew( Tree );
 	vbc->add_margin_child(TTR("Matches:"),search_options,true);
+	search_options->connect("item_activated",this,"_confirmed");
+	search_options->connect("item_selected",this,"_item_selected");
+	search_options->connect("multi_selected",this,"_multi_selected");
+	search_options->connect("gui_input",this,"_search_options_input");
 	get_ok()->set_text(TTR("Create"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
-	search_options->connect("item_activated",this,"_confirmed");
-	search_options->connect("item_selected",this,"_item_selected");
-	search_options->connect("multi_selected",this,"_multi_selected");
+
 	//search_options->set_hide_root(true);
 	base_type="Object";
 

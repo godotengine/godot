@@ -59,6 +59,8 @@ class CreateDialog : public ConfirmationDialog {
 
 	EditorHelpBit *help_bit;
 
+	void _search_options_input(const InputEvent& p_ie);
+
 	void _item_selected();
 	void _select_item(String name);
 	void _cell_multi_selected(Object *p_object, int p_index,bool p_selected);
@@ -78,6 +80,7 @@ class CreateDialog : public ConfirmationDialog {
 
 	void _confirmed();
 	void _text_changed(const String& p_newtext);
+	void _text_confirmed(const String& p_newtext);
 
 	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root,TreeItem **to_select);
 
