@@ -32,6 +32,7 @@ struct ExportData {
 	struct NodeData {
 
 		bool text_data;
+		bool instanced;
 		String name;
 		String type;
 		String instance;
@@ -52,7 +53,7 @@ struct ExportData {
 		List<PropertyData> properties;
 
 		
-		NodeData() { parent_int=0; owner_int=0; text_data=true; }
+		NodeData() { parent_int=0; owner_int=0; text_data=true; instanced=false;}
 	};
 
 	Vector<NodeData> nodes;

@@ -46,6 +46,9 @@ class EditorExportGodot3 {
 	Error _get_property_as_text(const Variant& p_variant,String&p_string);
 
 	void _save_text(const String& p_path,ExportData &resource);
+
+	void _save_binary_property(const Variant& p_property,FileAccess *f);
+
 	void _save_binary(const String& p_path,ExportData &resource);
 	void _save_config(const String &p_path);
 

@@ -467,10 +467,10 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v,bool p_for_exp
 		} break;
 		case VARIANT_DICTIONARY: {
 
-            uint32_t len=f->get_32();
-            Dictionary d(len&0x80000000); //last bit means shared
-            len&=0x7FFFFFFF;
-            for(uint32_t i=0;i<len;i++) {
+			uint32_t len=f->get_32();
+			Dictionary d(len&0x80000000); //last bit means shared
+			len&=0x7FFFFFFF;
+			for(uint32_t i=0;i<len;i++) {
 				Variant key;
 				Error err = parse_variant(key,p_for_export_data);
 				ERR_FAIL_COND_V(err,ERR_FILE_CORRUPT);
@@ -483,11 +483,11 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v,bool p_for_exp
 		} break;
 		case VARIANT_ARRAY: {
 
-            uint32_t len=f->get_32();
-            Array a(len&0x80000000); //last bit means shared
-            len&=0x7FFFFFFF;
+			uint32_t len=f->get_32();
+			Array a(len&0x80000000); //last bit means shared
+			len&=0x7FFFFFFF;
 			a.resize(len);
-            for(uint32_t i=0;i<len;i++) {
+			for(uint32_t i=0;i<len;i++) {
 				Variant val;
 				Error err = parse_variant(val,p_for_export_data);
 				ERR_FAIL_COND_V(err,ERR_FILE_CORRUPT);

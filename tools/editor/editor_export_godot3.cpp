@@ -294,6 +294,12 @@ static const char* prop_renames[][2]={
 {"expand_margin/right","expand_margin_right"},
 {"modulate/color","modulate_color"},
 {"modulate","self_modulate"},
+{"cell/size","cell_size"},
+{"cell/octant_size","cell_octant_size"},
+{"cell/center_x","cell_center_x"},
+{"cell/center_y","cell_center_y"},
+{"cell/center_z","cell_center_z"},
+{"cell/scale","cell_scale"},
 {NULL,NULL}
 };
 
@@ -303,12 +309,15 @@ static const char* type_renames[][2]={
 {"SpatialPlayer","Spatial"},
 {"SpatialSamplePlayer","Spatial"},
 {"SpatialStreamPlayer","Spatial"},
+{"Particles","Spatial"},
 {"SamplePlayer","Node"},
 {"SamplePlayer2D","Node2D"},
 {"SoundPlayer2D","Node2D"},
 {"StreamPlayer2D","Node2D"},
+{"Particles2D","Node2D"},
 {"SampleLibrary","Resource"},
 {"TextureFrame","TextureRect"},
+{"FixedMaterial","FixedSpatialMaterial"},
 {NULL,NULL}
 };
 
@@ -440,11 +449,20 @@ void EditorExportGodot3::_unpack_packed_scene(ExportData &resource) {
 			int name = r[idx++];
 			int instance = r[idx++];
 			
-			ExportData::NodeData node_data;
+			ExportData::NodeData &node_data=resource.nodes[i];
 			
 			node_data.text_data=false;
 			node_data.name=names[name];
-			node_data.type=names[type];
+			if (type==0x7FFFFFFF) {
+				node_data.instanced=true;
+				print_line("name: "+node_data.name+" is instanced" );
+			} else {
+				node_data.instanced=false;
+				node_data.type=names[type];
+				print_line("name: "+node_data.name+" type"+node_data.type );
+			}
+
+
 			node_data.parent_int=parent;
 			node_data.owner_int=owner;
 			if (instance>=0) {
@@ -473,7 +491,6 @@ void EditorExportGodot3::_unpack_packed_scene(ExportData &resource) {
 				node_data.groups.push_back(names[group_name]);
 			}
 
-			resource.nodes.push_back(node_data);
 		}
 
 	}
@@ -549,7 +566,14 @@ void EditorExportGodot3::_pack_packed_scene(ExportData &resource) {
 
 		node_data.push_back(node.parent_int);
 		node_data.push_back(node.owner_int);
-		node_data.push_back(_pack_name(node.type));
+		if (node.instanced) {
+			node_data.push_back(0x7FFFFFFF);
+		} else {
+			int name = _pack_name(node.type);
+			print_line("packing type: "+String(node.type)+" goes to name "+itos(name));
+			node_data.push_back(name);
+		}
+
 		node_data.push_back(_pack_name(node.name));
 		int instance=-1;
 		if (node.instance!=String()) {
@@ -597,7 +621,7 @@ void EditorExportGodot3::_pack_packed_scene(ExportData &resource) {
 		}
 	}
 
-	d["connections"]=connections;
+	d["conns"]=connections;
 
 	Array np;
 	for(int i=0;i<resource.node_paths.size();i++) {
@@ -631,11 +655,13 @@ void EditorExportGodot3::_pack_packed_scene(ExportData &resource) {
 	d["names"]=names;
 
 	Array values;
+	values.resize(pack_values.size());
 
 	const Variant*K=NULL;
 	while((K=pack_values.next(K))) {
 
-		values[pack_values[*K]]=*K;
+		int index=pack_values[*K];
+		values[index]=*K;
 	}
 
 	d["variants"]=values;
@@ -815,9 +841,9 @@ Error EditorExportGodot3::_get_property_as_text(const Variant& p_variant,String&
 
 			String s;
 
-			PoolVector<uint8_t> data = img.get_data();
+			DVector<uint8_t> data = img.get_data();
 			int len = data.size();
-			PoolVector<uint8_t>::Read r = data.read();
+			DVector<uint8_t>::Read r = data.read();
 			const uint8_t *ptr=r.ptr();
 			for (int i=0;i<len;i++) {
 
@@ -1167,10 +1193,559 @@ void EditorExportGodot3::_save_text(const String& p_path,ExportData &resource) {
 	}
 
 }
+enum {
+
+	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
+	VARIANT_NIL=1,
+	VARIANT_BOOL=2,
+	VARIANT_INT=3,
+	VARIANT_REAL=4,
+	VARIANT_STRING=5,
+	VARIANT_VECTOR2=10,
+	VARIANT_RECT2=11,
+	VARIANT_VECTOR3=12,
+	VARIANT_PLANE=13,
+	VARIANT_QUAT=14,
+	VARIANT_AABB=15,
+	VARIANT_MATRIX3=16,
+	VARIANT_TRANSFORM=17,
+	VARIANT_MATRIX32=18,
+	VARIANT_COLOR=20,
+	VARIANT_IMAGE=21,
+	VARIANT_NODE_PATH=22,
+	VARIANT_RID=23,
+	VARIANT_OBJECT=24,
+	VARIANT_INPUT_EVENT=25,
+	VARIANT_DICTIONARY=26,
+	VARIANT_ARRAY=30,
+	VARIANT_RAW_ARRAY=31,
+	VARIANT_INT_ARRAY=32,
+	VARIANT_REAL_ARRAY=33,
+	VARIANT_STRING_ARRAY=34,
+	VARIANT_VECTOR3_ARRAY=35,
+	VARIANT_COLOR_ARRAY=36,
+	VARIANT_VECTOR2_ARRAY=37,
+	VARIANT_INT64=40,
+	VARIANT_DOUBLE=41,
+
+	IMAGE_ENCODING_EMPTY=0,
+	IMAGE_ENCODING_RAW=1,
+	IMAGE_ENCODING_LOSSLESS=2,
+	IMAGE_ENCODING_LOSSY=3,
+
+	OBJECT_EMPTY=0,
+	OBJECT_EXTERNAL_RESOURCE=1,
+	OBJECT_INTERNAL_RESOURCE=2,
+	OBJECT_EXTERNAL_RESOURCE_INDEX=3,
+	//version 2: added 64 bits support for float and int
+	FORMAT_VERSION=2,
+	FORMAT_VERSION_CAN_RENAME_DEPS=1
+
+
+};
+
+enum {
+	IMAGE_FORMAT_L8, //luminance
+	IMAGE_FORMAT_LA8, //luminance-alpha
+	IMAGE_FORMAT_R8,
+	IMAGE_FORMAT_RG8,
+	IMAGE_FORMAT_RGB8,
+	IMAGE_FORMAT_RGBA8,
+	IMAGE_FORMAT_RGB565, //16 bit
+	IMAGE_FORMAT_RGBA4444,
+	IMAGE_FORMAT_RGBA5551,
+	IMAGE_FORMAT_RF, //float
+	IMAGE_FORMAT_RGF,
+	IMAGE_FORMAT_RGBF,
+	IMAGE_FORMAT_RGBAF,
+	IMAGE_FORMAT_RH, //half float
+	IMAGE_FORMAT_RGH,
+	IMAGE_FORMAT_RGBH,
+	IMAGE_FORMAT_RGBAH,
+	IMAGE_FORMAT_DXT1, //s3tc bc1
+	IMAGE_FORMAT_DXT3, //bc2
+	IMAGE_FORMAT_DXT5, //bc3
+	IMAGE_FORMAT_ATI1, //bc4
+	IMAGE_FORMAT_ATI2, //bc5
+	IMAGE_FORMAT_BPTC_RGBA, //btpc bc6h
+	IMAGE_FORMAT_BPTC_RGBF, //float /
+	IMAGE_FORMAT_BPTC_RGBFU, //unsigned float
+	IMAGE_FORMAT_PVRTC2, //pvrtc
+	IMAGE_FORMAT_PVRTC2A,
+	IMAGE_FORMAT_PVRTC4,
+	IMAGE_FORMAT_PVRTC4A,
+	IMAGE_FORMAT_ETC, //etc1
+	IMAGE_FORMAT_ETC2_R11, //etc2
+	IMAGE_FORMAT_ETC2_R11S, //signed, NOT srgb.
+	IMAGE_FORMAT_ETC2_RG11,
+	IMAGE_FORMAT_ETC2_RG11S,
+	IMAGE_FORMAT_ETC2_RGB8,
+	IMAGE_FORMAT_ETC2_RGBA8,
+	IMAGE_FORMAT_ETC2_RGB8A1,
+
+};
+
+static void _pad_buffer(int p_bytes,FileAccess *f) {
+
+	int extra = 4-(p_bytes%4);
+	if (extra<4) {
+		for(int i=0;i<extra;i++)
+			f->store_8(0); //pad to 32
+	}
+
+}
+
+static void save_unicode_string(const String& p_string,FileAccess *f,bool p_hi_bit=false) {
+
+
+	CharString utf8 = p_string.utf8();
+	f->store_32(uint32_t(utf8.length()+1) | (p_hi_bit?0x80000000:0));
+	f->store_buffer((const uint8_t*)utf8.get_data(),utf8.length()+1);
+}
+
+void EditorExportGodot3::_save_binary_property(const Variant& p_property,FileAccess *f) {
+
+	switch(p_property.get_type()) {
+
+		case Variant::NIL: {
+
+			f->store_32(VARIANT_NIL);
+			// don't store anything
+		} break;
+		case Variant::BOOL: {
+
+			f->store_32(VARIANT_BOOL);
+			bool val=p_property;
+			f->store_32(val);
+		} break;
+		case Variant::INT: {
+
+
+			f->store_32(VARIANT_INT);
+			int val=p_property;
+			f->store_32(int32_t(val));
+
+
+		} break;
+		case Variant::REAL: {
+
+			f->store_32(VARIANT_REAL);
+			f->store_real(p_property);
+
+		} break;
+		case Variant::STRING: {
+
+			String str=p_property;
+			if (str.begins_with("@RESLOCAL:")) {
+				f->store_32(VARIANT_OBJECT);
+				f->store_32(OBJECT_INTERNAL_RESOURCE);
+				f->store_32(str.get_slice(":",1).to_int());
+				print_line("SAVE RES LOCAL: "+itos(str.get_slice(":",1).to_int()));
+			} else if (str.begins_with("@RESEXTERNAL:")) {
+				f->store_32(VARIANT_OBJECT);
+				f->store_32(OBJECT_EXTERNAL_RESOURCE_INDEX);
+				f->store_32(str.get_slice(":",1).to_int());
+				print_line("SAVE RES EXTERNAL: "+itos(str.get_slice(":",1).to_int()));
+			} else {
+
+				f->store_32(VARIANT_STRING);
+				save_unicode_string(str,f);
+			}
+		} break;
+		case Variant::VECTOR2: {
+
+			f->store_32(VARIANT_VECTOR2);
+			Vector2 val=p_property;
+			f->store_real(val.x);
+			f->store_real(val.y);
+
+		} break;
+		case Variant::RECT2: {
+
+			f->store_32(VARIANT_RECT2);
+			Rect2 val=p_property;
+			f->store_real(val.pos.x);
+			f->store_real(val.pos.y);
+			f->store_real(val.size.x);
+			f->store_real(val.size.y);
+
+		} break;
+		case Variant::VECTOR3: {
+
+			f->store_32(VARIANT_VECTOR3);
+			Vector3 val=p_property;
+			f->store_real(val.x);
+			f->store_real(val.y);
+			f->store_real(val.z);
+
+		} break;
+		case Variant::PLANE: {
+
+			f->store_32(VARIANT_PLANE);
+			Plane val=p_property;
+			f->store_real(val.normal.x);
+			f->store_real(val.normal.y);
+			f->store_real(val.normal.z);
+			f->store_real(val.d);
+
+		} break;
+		case Variant::QUAT: {
+
+			f->store_32(VARIANT_QUAT);
+			Quat val=p_property;
+			f->store_real(val.x);
+			f->store_real(val.y);
+			f->store_real(val.z);
+			f->store_real(val.w);
+
+		} break;
+		case Variant::_AABB: {
+
+			f->store_32(VARIANT_AABB);
+			Rect3 val=p_property;
+			f->store_real(val.pos.x);
+			f->store_real(val.pos.y);
+			f->store_real(val.pos.z);
+			f->store_real(val.size.x);
+			f->store_real(val.size.y);
+			f->store_real(val.size.z);
+
+		} break;
+		case Variant::MATRIX32: {
+
+			f->store_32(VARIANT_MATRIX32);
+			Matrix32 val=p_property;
+			f->store_real(val.elements[0].x);
+			f->store_real(val.elements[0].y);
+			f->store_real(val.elements[1].x);
+			f->store_real(val.elements[1].y);
+			f->store_real(val.elements[2].x);
+			f->store_real(val.elements[2].y);
+
+		} break;
+		case Variant::MATRIX3: {
+
+			f->store_32(VARIANT_MATRIX3);
+			Matrix3 val=p_property;
+			f->store_real(val.elements[0].x);
+			f->store_real(val.elements[0].y);
+			f->store_real(val.elements[0].z);
+			f->store_real(val.elements[1].x);
+			f->store_real(val.elements[1].y);
+			f->store_real(val.elements[1].z);
+			f->store_real(val.elements[2].x);
+			f->store_real(val.elements[2].y);
+			f->store_real(val.elements[2].z);
+
+		} break;
+		case Variant::TRANSFORM: {
+
+			f->store_32(VARIANT_TRANSFORM);
+			Transform val=p_property;
+			f->store_real(val.basis.elements[0].x);
+			f->store_real(val.basis.elements[0].y);
+			f->store_real(val.basis.elements[0].z);
+			f->store_real(val.basis.elements[1].x);
+			f->store_real(val.basis.elements[1].y);
+			f->store_real(val.basis.elements[1].z);
+			f->store_real(val.basis.elements[2].x);
+			f->store_real(val.basis.elements[2].y);
+			f->store_real(val.basis.elements[2].z);
+			f->store_real(val.origin.x);
+			f->store_real(val.origin.y);
+			f->store_real(val.origin.z);
+
+		} break;
+		case Variant::COLOR: {
+
+			f->store_32(VARIANT_COLOR);
+			Color val=p_property;
+			f->store_real(val.r);
+			f->store_real(val.g);
+			f->store_real(val.b);
+			f->store_real(val.a);
+
+		} break;
+		case Variant::IMAGE: {
+
+			f->store_32(VARIANT_IMAGE);
+			Image val =p_property;
+			if (val.empty()) {
+				f->store_32(IMAGE_ENCODING_EMPTY);
+				break;
+			}
+
+			f->store_32(IMAGE_ENCODING_RAW);
+
+			f->store_32(val.get_width());
+			f->store_32(val.get_height());
+			f->store_32(val.get_mipmaps()?1:0);
+			switch(val.get_format()) {
+				case Image::FORMAT_GRAYSCALE: f->store_32(IMAGE_FORMAT_L8 ); break; ///< one byte per pixel: f->store_32(IMAGE_FORMAT_ ); break; 0-255
+				case Image::FORMAT_INTENSITY: f->store_32(IMAGE_FORMAT_L8 ); break; ///< one byte per pixel: f->store_32(IMAGE_FORMAT_ ); break; 0-255
+				case Image::FORMAT_GRAYSCALE_ALPHA: f->store_32(IMAGE_FORMAT_LA8 ); break; ///< two bytes per pixel: f->store_32(IMAGE_FORMAT_ ); break; 0-255. alpha 0-255
+				case Image::FORMAT_RGB: f->store_32(IMAGE_FORMAT_RGB8 ); break; ///< one byte R: f->store_32(IMAGE_FORMAT_ ); break; one byte G: f->store_32(IMAGE_FORMAT_ ); break; one byte B
+				case Image::FORMAT_RGBA: f->store_32(IMAGE_FORMAT_RGBA8 ); break; ///< one byte R: f->store_32(IMAGE_FORMAT_ ); break; one byte G: f->store_32(IMAGE_FORMAT_ ); break; one byte B: f->store_32(IMAGE_FORMAT_ ); break; one byte A
+				case Image::FORMAT_BC1: f->store_32(IMAGE_FORMAT_DXT1 ); break; // DXT1
+				case Image::FORMAT_BC2: f->store_32(IMAGE_FORMAT_DXT3 ); break; // DXT3
+				case Image::FORMAT_BC3: f->store_32(IMAGE_FORMAT_DXT5 ); break; // DXT5
+				case Image::FORMAT_BC4: f->store_32(IMAGE_FORMAT_ATI1 ); break; // ATI1
+				case Image::FORMAT_BC5: f->store_32(IMAGE_FORMAT_ATI2 ); break; // ATI2
+				case Image::FORMAT_PVRTC2: f->store_32(IMAGE_FORMAT_PVRTC2 ); break;
+				case Image::FORMAT_PVRTC2_ALPHA: f->store_32(IMAGE_FORMAT_PVRTC2A ); break;
+				case Image::FORMAT_PVRTC4: f->store_32(IMAGE_FORMAT_PVRTC4 ); break;
+				case Image::FORMAT_PVRTC4_ALPHA: f->store_32(IMAGE_FORMAT_PVRTC4A ); break;
+				case Image::FORMAT_ETC: f->store_32(IMAGE_FORMAT_ETC ); break; // regular ETC: f->store_32(IMAGE_FORMAT_ ); break; no transparency
+				default: f->store_32(IMAGE_FORMAT_L8 ); break;
+			}
+
+			int dlen = val.get_data().size();
+			f->store_32(dlen);
+			DVector<uint8_t>::Read r = val.get_data().read();
+			f->store_buffer(r.ptr(),dlen);
+			_pad_buffer(dlen,f);
+
+		} break;
+		case Variant::NODE_PATH: {
+			f->store_32(VARIANT_NODE_PATH);
+			NodePath np=p_property;
+			f->store_16(np.get_name_count());
+			uint16_t snc = np.get_subname_count();
+			if (np.is_absolute())
+				snc|=0x8000;
+			f->store_16(snc);
+			for(int i=0;i<np.get_name_count();i++) {
+				save_unicode_string(np.get_name(i),f,true);
+			}
+			for(int i=0;i<np.get_subname_count();i++) {
+				save_unicode_string(np.get_subname(i),f,true);
+			}
+
+			save_unicode_string(np.get_property(),f,true);
+
+		} break;
+		case Variant::_RID: {
+
+			f->store_32(VARIANT_RID);
+			WARN_PRINT("Can't save RIDs");
+			RID val = p_property;
+			f->store_32(val.get_id());
+		} break;
+		case Variant::OBJECT: {
+
+			ERR_FAIL();
+
+
+		} break;
+		case Variant::INPUT_EVENT: {
+
+			f->store_32(VARIANT_INPUT_EVENT);
+			InputEvent event=p_property;
+			f->store_32(0); //event type none, nothing else suported for now.
+
+		} break;
+		case Variant::DICTIONARY: {
+
+			f->store_32(VARIANT_DICTIONARY);
+			Dictionary d = p_property;
+			f->store_32(uint32_t(d.size()));
+
+			List<Variant> keys;
+			d.get_key_list(&keys);
+
+			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+				/*
+				if (!_check_type(dict[E->get()]))
+					continue;
+				*/
+
+				_save_binary_property(E->get(),f);
+				_save_binary_property(d[E->get()],f);
+			}
+
+
+		} break;
+		case Variant::ARRAY: {
+
+			f->store_32(VARIANT_ARRAY);
+			Array a=p_property;
+			f->store_32(uint32_t(a.size()));
+			for(int i=0;i<a.size();i++) {
+
+				_save_binary_property(a[i],f);
+			}
+
+		} break;
+		case Variant::RAW_ARRAY: {
+
+			f->store_32(VARIANT_RAW_ARRAY);
+			DVector<uint8_t> arr = p_property;
+			int len=arr.size();
+			f->store_32(len);
+			DVector<uint8_t>::Read r = arr.read();
+			f->store_buffer(r.ptr(),len);
+			_pad_buffer(len,f);
+
+		} break;
+		case Variant::INT_ARRAY: {
+
+			f->store_32(VARIANT_INT_ARRAY);
+			DVector<int> arr = p_property;
+			int len=arr.size();
+			f->store_32(len);
+			DVector<int>::Read r = arr.read();
+			for(int i=0;i<len;i++)
+				f->store_32(r[i]);
+
+		} break;
+		case Variant::REAL_ARRAY: {
+
+			f->store_32(VARIANT_REAL_ARRAY);
+			DVector<real_t> arr = p_property;
+			int len=arr.size();
+			f->store_32(len);
+			DVector<real_t>::Read r = arr.read();
+			for(int i=0;i<len;i++) {
+				f->store_real(r[i]);
+			}
+
+		} break;
+		case Variant::STRING_ARRAY: {
+
+			f->store_32(VARIANT_STRING_ARRAY);
+			DVector<String> arr = p_property;
+			int len=arr.size();
+			f->store_32(len);
+			DVector<String>::Read r = arr.read();
+			for(int i=0;i<len;i++) {
+				save_unicode_string(r[i],f);
+			}
+
+		} break;
+		case Variant::VECTOR3_ARRAY: {
+
+			f->store_32(VARIANT_VECTOR3_ARRAY);
+			DVector<Vector3> arr = p_property;
+			int len=arr.size();
+			f->store_32(len);
+			DVector<Vector3>::Read r = arr.read();
+			for(int i=0;i<len;i++) {
+				f->store_real(r[i].x);
+				f->store_real(r[i].y);
+				f->store_real(r[i].z);
+			}
+
+		} break;
+		case Variant::VECTOR2_ARRAY: {
+
+			f->store_32(VARIANT_VECTOR2_ARRAY);
+			DVector<Vector2> arr = p_property;
+			int len=arr.size();
+			f->store_32(len);
+			DVector<Vector2>::Read r = arr.read();
+			for(int i=0;i<len;i++) {
+				f->store_real(r[i].x);
+				f->store_real(r[i].y);
+			}
+
+		} break;
+		case Variant::COLOR_ARRAY: {
+
+			f->store_32(VARIANT_COLOR_ARRAY);
+			DVector<Color> arr = p_property;
+			int len=arr.size();
+			f->store_32(len);
+			DVector<Color>::Read r = arr.read();
+			for(int i=0;i<len;i++) {
+				f->store_real(r[i].r);
+				f->store_real(r[i].g);
+				f->store_real(r[i].b);
+				f->store_real(r[i].a);
+			}
+
+		} break;
+		default: {
+
+			ERR_EXPLAIN("Invalid variant");
+			ERR_FAIL();
+		}
+	}
+}
 
 void EditorExportGodot3::_save_binary(const String& p_path,ExportData &resource) {
 
+	FileAccessRef f = FileAccess::open(p_path,FileAccess::WRITE);
+	ERR_FAIL_COND(!f.operator ->());
 
+	//save header compressed
+	static const uint8_t header[4]={'R','S','R','C'};
+	f->store_buffer(header,4);
+	f->store_32(0);
+
+	f->store_32(0); //64 bits file, false for now
+	f->store_32(3);//major
+	f->store_32(0); //minor
+	f->store_32(2);  //format version (2 is for 3.0)
+
+
+	//f->store_32(saved_resources.size()+external_resources.size()); // load steps -not needed
+	save_unicode_string(resource.resources[resource.resources.size()-1].type,f.operator->());
+	for(int i=0;i<16;i++)
+		f->store_32(0); // unused
+
+	f->store_32(0); //no names saved
+
+	f->store_32(resource.dependencies.size()); //amount of external resources
+
+	for (Map<int,ExportData::Dependency>::Element *E=resource.dependencies.front();E;E=E->next()) {
+
+		save_unicode_string(E->get().type,f.operator->());
+		save_unicode_string(E->get().path,f.operator->());
+	}
+
+	// save internal resource table
+	Vector<uint64_t> ofs_pos;
+	f->store_32(resource.resources.size()); //amount of internal resources
+	for(int i=0;i<resource.resources.size();i++) {
+
+		save_unicode_string("local://"+itos(resource.resources[i].index),f.operator->());
+		ofs_pos.push_back(f->get_pos());
+		f->store_64(0);
+	}
+
+	Vector<uint64_t> ofs_table;
+//	int saved_idx=0;
+	//now actually save the resources
+
+	for(int i=0;i<resource.resources.size();i++) {
+
+		ofs_table.push_back(f->get_pos());
+		save_unicode_string(resource.resources[i].type,f.operator->());
+		f->store_32(resource.resources[i].properties.size());
+
+
+		for( List<ExportData::PropertyData>::Element *E=resource.resources[i].properties.front();E;E=E->next() ) {
+
+
+			save_unicode_string(E->get().name,f.operator->(),true);
+			_save_binary_property(E->get().value,f.operator->());
+		}
+
+
+	}
+
+	for(int i=0;i<ofs_table.size();i++) {
+		f->seek(ofs_pos[i]);
+		f->store_64(ofs_table[i]);
+	}
+
+	f->seek_end();
+
+
+	f->store_buffer((const uint8_t*)"RSRC",4); //magic at end
+
+	ERR_FAIL_COND(f->get_error()!=OK);
 
 }
 
@@ -1183,6 +1758,22 @@ void EditorExportGodot3::_save_config(const String &p_path) {
 	f->store_line("name=\""+name.c_escape()+"\"");
 	String main_scene = Globals::get_singleton()->get("application/main_scene");
 	f->store_line("main_scene=\""+_replace_resource(main_scene).c_escape()+"\"");
+
+	List<PropertyInfo> props;
+	Globals::get_singleton()->get_property_list(&props);
+
+	f->store_line("[input]\n");
+
+	for (List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+		if (!E->get().name.begins_with("input/"))
+			continue;
+
+		String prop;
+		_get_property_as_text(Globals::get_singleton()->get(E->get().name),prop);
+		String what = E->get().name.get_slice("/",1);
+		f->store_line(what+"="+prop);
+	}
 
 
 }
