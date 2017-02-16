@@ -38,6 +38,9 @@ public:
 	void set_energy(float p_range);
 	float get_energy() const;
 
+	void set_bias(float p_range);
+	float get_bias() const;
+
 	void set_interior(bool p_enable);
 	bool is_interior() const;
 
@@ -137,6 +140,7 @@ private:
 	Vector3 extents;
 	int dynamic_range;
 	float energy;
+	float bias;
 	float propagation;
 	bool interior;
 	bool compress;
@@ -175,6 +179,9 @@ public:
 
 	void set_energy(float p_energy);
 	float get_energy() const;
+
+	void set_bias(float p_bias);
+	float get_bias() const;
 
 	void set_propagation(float p_propagation);
 	float get_propagation() const;

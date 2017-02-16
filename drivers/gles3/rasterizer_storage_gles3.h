@@ -567,6 +567,7 @@ public:
 
 		virtual void material_changed_notify() {
 			mesh->instance_material_change_notify();
+			mesh->update_multimeshes();
 		}
 
 		Surface() {
@@ -591,6 +592,7 @@ public:
 		}
 	};
 
+	class MultiMesh;
 
 	struct Mesh : public GeometryOwner {
 
@@ -600,6 +602,17 @@ public:
 		VS::BlendShapeMode blend_shape_mode;
 		Rect3 custom_aabb;
 		mutable uint64_t last_pass;
+		SelfList<MultiMesh>::List multimeshes;
+
+		_FORCE_INLINE_ void update_multimeshes() {
+
+			SelfList<MultiMesh> *mm = multimeshes.first();
+			while(mm) {
+				mm->self()->instance_material_change_notify();
+				mm=mm->next();
+			}
+		}
+
 		Mesh() {
 			blend_shape_mode=VS::BLEND_SHAPE_MODE_NORMALIZED;
 			blend_shape_count=0;
@@ -659,6 +672,7 @@ public:
 		Vector<float> data;
 		Rect3 aabb;
 		SelfList<MultiMesh> update_list;
+		SelfList<MultiMesh> mesh_list;
 		GLuint buffer;
 		int visible_instances;
 
@@ -668,7 +682,7 @@ public:
 		bool dirty_aabb;
 		bool dirty_data;
 
-		MultiMesh() : update_list(this) {
+		MultiMesh() : update_list(this), mesh_list(this) {
 			dirty_aabb=true;
 			dirty_data=true;
 			xform_floats=0;
@@ -921,6 +935,7 @@ public:
 
 		int dynamic_range;
 		float energy;
+		float bias;
 		float propagation;
 		bool interior;
 		bool compress;
@@ -953,6 +968,9 @@ public:
 
 	virtual void gi_probe_set_energy(RID p_probe,float p_range);
 	virtual float gi_probe_get_energy(RID p_probe) const;
+
+	virtual void gi_probe_set_bias(RID p_probe,float p_range);
+	virtual float gi_probe_get_bias(RID p_probe) const;
 
 	virtual void gi_probe_set_propagation(RID p_probe,float p_range);
 	virtual float gi_probe_get_propagation(RID p_probe) const;
@@ -1259,6 +1277,7 @@ public:
 
 	virtual bool has_os_feature(const String& p_feature) const;
 
+	virtual void update_dirty_resources();
 
 	RasterizerStorageGLES3();
 };

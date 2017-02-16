@@ -475,6 +475,9 @@ public:
 	virtual void gi_probe_set_energy(RID p_probe,float p_range)=0;
 	virtual float gi_probe_get_energy(RID p_probe) const=0;
 
+	virtual void gi_probe_set_bias(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_bias(RID p_probe) const=0;
+
 	virtual void gi_probe_set_propagation(RID p_probe,float p_range)=0;
 	virtual float gi_probe_get_propagation(RID p_probe) const=0;
 

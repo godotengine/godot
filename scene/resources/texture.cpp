@@ -559,6 +559,11 @@ Error StreamTexture::_load_data(const String& p_path,int &tw,int &th,int& flags,
 		int total_size=0;
 
 		for(int i=0;i<mipmaps;i++) {
+
+			if (i>0) {
+				size = f->get_32();
+			}
+
 			PoolVector<uint8_t> pv;
 			pv.resize(size);
 			{

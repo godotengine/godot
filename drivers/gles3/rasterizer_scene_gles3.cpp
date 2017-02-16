@@ -1387,6 +1387,7 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 			int amount = MAX(multi_mesh->size,multi_mesh->visible_instances);
 
 
+
 			if (s->index_array_len>0) {
 
 				glDrawElementsInstanced(gl_primitive[s->primitive],s->index_array_len, (s->array_len>=(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0,amount);
@@ -1610,6 +1611,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e,const Transform& 
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM1, gipi->transform_to_data * p_view_transform);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS1, gipi->bounds);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_MULTIPLIER1, gipi->probe?gipi->probe->dynamic_range*gipi->probe->energy:0.0);
+		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BIAS1, gipi->probe?gipi->probe->bias:0.0);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BLEND_AMBIENT1, gipi->probe?!gipi->probe->interior:false);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_CELL_SIZE1, gipi->cell_size_cache);
 		if (gi_probe_count>1) {
@@ -1622,6 +1624,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e,const Transform& 
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS2, gipi2->bounds);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_CELL_SIZE2, gipi2->cell_size_cache);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_MULTIPLIER2, gipi2->probe?gipi2->probe->dynamic_range*gipi2->probe->energy:0.0);
+			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BIAS2, gipi2->probe?gipi2->probe->bias:0.0);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BLEND_AMBIENT2, gipi2->probe?!gipi2->probe->interior:false);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE2_ENABLED, true );
 		} else {
@@ -1938,6 +1941,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements,int p_e
 
 
 		if (e->owner != prev_owner || prev_base_type != e->instance->base_type || prev_geometry!=e->geometry) {
+
 
 			_setup_geometry(e);
 			storage->info.render_surface_switch_count++;
@@ -2881,6 +2885,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase** p_cull_result,int p_
 				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getptr(inst->base);
 				ERR_CONTINUE(!multi_mesh);
 
+
 				if (multi_mesh->size==0 || multi_mesh->visible_instances==0)
 					continue;
 
@@ -2895,6 +2900,7 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase** p_cull_result,int p_
 					RasterizerStorageGLES3::Surface *s = mesh->surfaces[i];
 					_add_geometry(s,inst,multi_mesh,-1,p_shadow);
 				}
+
 
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
@@ -3777,7 +3783,7 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 
 	state.used_contact_shadows=true;
 
-	if (storage->frame.current_rt && true) { //detect with state.used_contact_shadows too
+	if ( storage->frame.current_rt && true) { //detect with state.used_contact_shadows too
 		//pre z pass
 
 
@@ -4096,11 +4102,11 @@ void RasterizerSceneGLES3::render_scene(const Transform& p_cam_transform,const C
 
 	if (false && env_radiance_tex) {
 
-			//_copy_texture_to_front_buffer(shadow_atlas->depth);
-			storage->canvas->canvas_begin();
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D,env_radiance_tex);
-			storage->canvas->draw_generic_textured_rect(Rect2(0,0,storage->frame.current_rt->width/2,storage->frame.current_rt->height/2),Rect2(0,0,1,1));
+		//_copy_texture_to_front_buffer(shadow_atlas->depth);
+		storage->canvas->canvas_begin();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D,env_radiance_tex);
+		storage->canvas->draw_generic_textured_rect(Rect2(0,0,storage->frame.current_rt->width/2,storage->frame.current_rt->height/2),Rect2(0,0,1,1));
 
 	}
 
