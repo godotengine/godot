@@ -386,21 +386,42 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			tokenizer->advance();
 
 			String path;
+			bool found_constant = false;
 			bool valid = false;
+			ConstantNode *cn;
+
 			Node *subexpr = _parse_and_reduce_expression(p_parent, p_static);
 			if (subexpr) {
 				if (subexpr->type == Node::TYPE_CONSTANT) {
-					ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
-					if (cn->value.get_type() == Variant::STRING) {
-						valid = true;
-						path = (String) cn->value;
+					cn = static_cast<ConstantNode*>(subexpr);
+					found_constant = true;
+				}
+				if (subexpr->type == Node::TYPE_IDENTIFIER) {
+					IdentifierNode *in = static_cast<IdentifierNode*>(subexpr);
+					Vector<ClassNode::Constant> ce = current_class->constant_expressions;
+
+					// Try to find the constant expression by the identifier
+					for(int i=0; i < ce.size(); ++i){
+						if(ce[i].identifier == in->name) {
+							if(ce[i].expression->type == Node::TYPE_CONSTANT) {
+								cn = static_cast<ConstantNode*>(ce[i].expression);
+								found_constant = true;
+							}
+						}
 					}
 				}
+
+				if (found_constant && cn->value.get_type() == Variant::STRING) {
+					valid = true;
+					path = (String) cn->value;
+				}
 			}
+
 			if (!valid) {
 				_set_error("expected string constant as 'preload' argument.");
 				return NULL;
 			}
+
 			if (!path.is_abs_path() && base_path!="")
 				path=base_path+"/"+path;
 			path = path.replace("///","//").simplify_path();
