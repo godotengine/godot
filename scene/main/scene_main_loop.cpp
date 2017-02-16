@@ -1201,7 +1201,7 @@ void SceneTree::_update_root_rect() {
 	} else if (viewport_aspect < video_mode_aspect) {
 		// screen ratio is smaller vertically
 
-		if (stretch_aspect==STRETCH_ASPECT_KEEP_HEIGHT) {
+		if (stretch_aspect==STRETCH_ASPECT_KEEP_HEIGHT || stretch_aspect==STRETCH_ASPECT_KEEP) {
 
 			//will stretch horizontally
 			viewport_size.x=desired_res.y*video_mode_aspect;
@@ -1216,7 +1216,7 @@ void SceneTree::_update_root_rect() {
 		}
 	} else {
 		//screen ratio is smaller horizontally
-		if (stretch_aspect==STRETCH_ASPECT_KEEP_WIDTH) {
+		if (stretch_aspect==STRETCH_ASPECT_KEEP_WIDTH || stretch_aspect==STRETCH_ASPECT_KEEP) {
 
 			//will stretch horizontally
 			viewport_size.x=desired_res.x;
