@@ -303,7 +303,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!_validate_no_foreign())
 				break;
 			*/
-			create_dialog->popup(true);
+			create_dialog->popup(true, true);
 		} break;
 		case TOOL_INSTANCE: {
 

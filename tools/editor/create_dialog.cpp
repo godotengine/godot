@@ -40,7 +40,7 @@
 #include "editor_help.h"
 
 
-void CreateDialog::popup(bool p_dontclear) {
+void CreateDialog::popup(bool p_dontclear, bool p_allowmultiselect) {
 
 	recent->clear();
 
@@ -122,7 +122,7 @@ void CreateDialog::popup(bool p_dontclear) {
 	}
 	search_box->grab_focus();
 
-	if (EditorNode::get_editor_data().get_edited_scene_root())
+	if (p_allowmultiselect && EditorNode::get_editor_data().get_edited_scene_root())
 		search_options->set_select_mode(Tree::SELECT_MULTI);
 	else
 		search_options->set_select_mode(Tree::SELECT_SINGLE);
