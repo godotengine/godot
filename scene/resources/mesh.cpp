@@ -128,8 +128,8 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 
 		if (d.has("arrays")) {
 			//old format
-			ERR_FAIL_COND_V(!d.has("blend_shape_arrays"),false);
-			add_surface_from_arrays(PrimitiveType(int(d["primitive"])),d["arrays"],d["blend_shape_arrays"]);
+			ERR_FAIL_COND_V(!d.has("morph_arrays"),false);
+			add_surface_from_arrays(PrimitiveType(int(d["primitive"])),d["arrays"],d["morph_arrays"]);
 
 		} else if (d.has("array_data")) {
 

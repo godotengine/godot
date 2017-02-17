@@ -383,7 +383,7 @@ void Object::set(const String& p_name, const Variant& p_value) {
 
 	if (p_name=="__meta__") {
 		metadata=p_value;
-	} else if (p_name=="script/script") {
+	} else if (p_name=="script") {
 		set_script(p_value);
 	} else if (script_instance) {
 		script_instance->set(p_name,p_value);
@@ -516,7 +516,7 @@ Variant Object::get(const String& p_name) const {
 
 	if (p_name=="__meta__")
 		return metadata;
-	else if (p_name=="script/script")
+	else if (p_name=="script")
 		return script;
 
 	if (script_instance) {
@@ -539,7 +539,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list,bool p_reversed) const
 
 
 	if (!is_class("Script")) // can still be set, but this is for userfriendlyness
-		p_list->push_back( PropertyInfo( Variant::OBJECT, "script/script", PROPERTY_HINT_RESOURCE_TYPE, "Script",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_STORE_IF_NONZERO));
+		p_list->push_back( PropertyInfo( Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script",PROPERTY_USAGE_DEFAULT|PROPERTY_USAGE_STORE_IF_NONZERO));
 	if (!metadata.empty())
 		p_list->push_back( PropertyInfo( Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_STORE_IF_NONZERO));
 	if (script_instance && !p_reversed) {
@@ -1041,7 +1041,7 @@ void Object::set_script(const RefPtr& p_script) {
 
 	}
 
-	_change_notify("script/script");
+	_change_notify("script");
 	emit_signal(CoreStringNames::get_singleton()->script_changed);
 
 }

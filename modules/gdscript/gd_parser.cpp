@@ -2587,6 +2587,8 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 									constants.push_back(c->value);
 									constant=true;
 								}
+							} else {
+								constant=false;
 							}
 						}
 

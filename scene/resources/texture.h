@@ -76,7 +76,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
 	virtual bool get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const;
 
-
+	virtual Image get_data() const { return Image(); }
 
 	Texture();
 };
@@ -223,6 +223,8 @@ public:
 
 	virtual bool has_alpha() const;
 	virtual void set_flags(uint32_t p_flags);
+
+	virtual Image get_data() const;
 
 	StreamTexture();
 	~StreamTexture();

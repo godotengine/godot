@@ -98,6 +98,27 @@ void ResourceInteractiveLoaderBinary::_advance_padding(uint32_t p_len) {
 
 }
 
+
+StringName ResourceInteractiveLoaderBinary::_get_string() {
+
+	uint32_t id = f->get_32();
+	if (id&0x80000000) {
+		uint32_t len = id&0x7FFFFFFF;
+		if (len>str_buf.size()) {
+			str_buf.resize(len);
+		}
+		if (len==0)
+			return StringName();
+		f->get_buffer((uint8_t*)&str_buf[0],len);
+		String s;
+		s.parse_utf8(&str_buf[0]);
+		return s;
+	}
+
+	return string_map[id];
+
+}
+
 Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 
@@ -272,8 +293,8 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 				Image::Format fmt=Image::Format(format&format_version_mask); //if format changes, we can add a compatibility bit on top
 
-
 				uint32_t datalen = f->get_32();
+				print_line("image format: "+String(Image::get_format_name(fmt))+" datalen "+itos(datalen));
 
 				PoolVector<uint8_t> imgdata;
 				imgdata.resize(datalen);
@@ -282,6 +303,14 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 				_advance_padding(datalen);
 				w=PoolVector<uint8_t>::Write();
 
+#ifdef TOOLS_ENABLED
+//compatibility
+				int correct_size = Image::get_image_data_size(width,height,fmt,mipmaps?-1:0);
+				if (correct_size < datalen) {
+					WARN_PRINT("Image data was too large, shrinking for compatibility")
+					imgdata.resize(correct_size);
+				}
+#endif
 				r_v=Image(width,height,mipmaps,fmt,imgdata);
 
 			} else {
@@ -323,10 +352,10 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 
 			for(int i=0;i<name_count;i++)
-				names.push_back(string_map[f->get_32()]);
+				names.push_back(_get_string());
 			for(uint32_t i=0;i<subname_count;i++)
-				subnames.push_back(string_map[f->get_32()]);
-			property=string_map[f->get_32()];
+				subnames.push_back(_get_string());
+			property=_get_string();
 
 			NodePath np = NodePath(names,subnames,absolute,property);
 			//print_line("got path: "+String(np));
@@ -641,6 +670,8 @@ Error ResourceInteractiveLoaderBinary::poll(){
 	if (s<external_resources.size()) {
 
 		String path = external_resources[s].path;
+
+		print_line("load external res: "+path);
 		if (remaps.has(path)) {
 			path=remaps[path];
 		}
@@ -711,6 +742,8 @@ Error ResourceInteractiveLoaderBinary::poll(){
 
 	String t = get_unicode_string();
 
+//	print_line("loading resource of type "+t+" path is "+path);
+
 	Object *obj = ClassDB::instance(t);
 	if (!obj) {
 		error=ERR_FILE_CORRUPT;
@@ -737,8 +770,8 @@ Error ResourceInteractiveLoaderBinary::poll(){
 
 	for(int i=0;i<pc;i++) {
 
-		uint32_t name_idx = f->get_32();
-		if (name_idx>=(uint32_t)string_map.size()) {
+		StringName name = _get_string();
+		if (name==StringName()) {
 			error=ERR_FILE_CORRUPT;
 			ERR_FAIL_V(ERR_FILE_CORRUPT);
 		}
@@ -749,7 +782,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 		if (error)
 			return error;
 
-		res->set(string_map[name_idx],value);
+		res->set(name,value);
 	}
 #ifdef TOOLS_ENABLED
 	res->set_edited(false);
@@ -2143,6 +2176,8 @@ void ResourceFormatSaverBinary::get_recognized_extensions(const RES& p_resource,
 
 	String base = p_resource->get_base_extension().to_lower();
 	p_extensions->push_back(base);
+	if (base!="res")
+		p_extensions->push_back("res");
 
 }
 

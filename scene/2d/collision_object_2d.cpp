@@ -348,6 +348,8 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 	rid=p_rid;
 	area=p_area;
 	pickable=true;
+	set_notify_transform(true);
+
 	if (p_area) {
 
 		Physics2DServer::get_singleton()->area_attach_object_instance_ID(rid,get_instance_ID());

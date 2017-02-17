@@ -27,6 +27,272 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_import_export.h"
+#include "version.h"
+#include "script_language.h"
+#include "globals.h"
+#include "os/file_access.h"
+#include "os/dir_access.h"
+#include "tools/editor/editor_file_system.h"
+#include "io/resource_loader.h"
+#include "editor_node.h"
+#include "editor_settings.h"
+#include "io/config_file.h"
+#include "io/resource_saver.h"
+#include "io/md5.h"
+#include "tools/editor/plugins/script_editor_plugin.h"
+#include "io/zip_io.h"
+
+
+
+
+bool EditorExportPreset::_set(const StringName& p_name, const Variant& p_value) {
+
+	if (values.has(p_name))	 {
+		values[p_name]=p_value;
+		return true;
+	}
+
+	return false;
+}
+
+bool EditorExportPreset::_get(const StringName& p_name,Variant &r_ret) const{
+
+	if (values.has(p_name)) {
+		r_ret=values[p_name];
+		return true;
+	}
+
+	return false;
+}
+void EditorExportPreset::_get_property_list( List<PropertyInfo> *p_list) const{
+
+	for (const List<PropertyInfo>::Element *E=properties.front();E;E=E->next()) {
+
+		p_list->push_back(E->get());
+	}
+}
+
+Vector<StringName> EditorExportPreset::get_files_to_export() const {
+
+	return Vector<StringName>();
+}
+
+
+EditorExportPreset::EditorExportPreset() {
+
+
+}
+
+
+///////////////////////////////////
+
+void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags) {
+
+	String host = EditorSettings::get_singleton()->get("network/debug_host");
+
+	if (p_flags&DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
+		host="localhost";
+
+	if (p_flags&DEBUG_FLAG_DUMB_CLIENT) {
+		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
+		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
+		r_flags.push_back("-rfs");
+		r_flags.push_back(host+":"+itos(port));
+		if (passwd!="") {
+			r_flags.push_back("-rfs_pass");
+			r_flags.push_back(passwd);
+		}
+	}
+
+	if (p_flags&DEBUG_FLAG_REMOTE_DEBUG) {
+
+		r_flags.push_back("-rdebug");
+
+		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("network/debug/remote_port", 6007)));
+
+		List<String> breakpoints;
+		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+
+
+		if (breakpoints.size()) {
+
+			r_flags.push_back("-bp");
+			String bpoints;
+			for(const List<String>::Element *E=breakpoints.front();E;E=E->next()) {
+
+				bpoints+=E->get().replace(" ","%20");
+				if (E->next())
+					bpoints+=",";
+			}
+
+			r_flags.push_back(bpoints);
+		}
+
+	}
+
+	if (p_flags&DEBUG_FLAG_VIEW_COLLISONS) {
+
+		r_flags.push_back("-debugcol");
+	}
+
+	if (p_flags&DEBUG_FLAG_VIEW_NAVIGATION) {
+
+		r_flags.push_back("-debugnav");
+	}
+}
+
+Error EditorExportPlatform::_save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
+
+
+}
+
+Error EditorExportPlatform::_save_zip_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
+
+
+	String path=p_path.replace_first("res://","");
+
+	ZipData *zd = (ZipData*)p_userdata;
+
+	zipFile zip=(zipFile)zd->zip;
+
+	zipOpenNewFileInZip(zip,
+		path.utf8().get_data(),
+		NULL,
+		NULL,
+		0,
+		NULL,
+		0,
+		NULL,
+		Z_DEFLATED,
+		Z_DEFAULT_COMPRESSION);
+
+	zipWriteInFileInZip(zip,p_data.ptr(),p_data.size());
+	zipCloseFileInZip(zip);
+
+	zd->ep->step(TTR("Storing File:")+" "+p_path,2+p_file*100/p_total,false);
+	zd->count++;
+	return OK;
+}
+
+String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
+
+	String user_file = EditorSettings::get_singleton()->get_settings_path()
+		+"/templates/"+template_file_name;
+	String system_file=OS::get_singleton()->get_installed_templates_path();
+	bool has_system_path=(system_file!="");
+	system_file+=template_file_name;
+
+	// Prefer user file
+	if (FileAccess::exists(user_file)) {
+		return user_file;
+	}
+
+	// Now check system file
+	if (has_system_path) {
+		if (FileAccess::exists(system_file)) {
+			return system_file;
+		}
+	}
+
+	// Not found
+	if (err) {
+		*err+="No export template found at \""+user_file+"\"";
+		if (has_system_path)
+			*err+="\n or \""+system_file+"\".";
+		else
+			*err+=".";
+	}
+	return "";
+}
+
+
+Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset>& p_preset,EditorExportSaveFunction p_func, void* p_udata) {
+
+	return OK;
+}
+
+Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset>& p_preset,FileAccess *p_where) {
+
+	return OK;
+}
+
+Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset>& p_preset,const String& p_path) {
+
+	return OK;
+}
+
+EditorExportPlatform::EditorExportPlatform() {
+
+
+}
+
+
+////
+
+void EditorExport::add_export_platform(const Ref<EditorExportPlatform>& p_platform) {
+
+	export_platforms.push_back(p_platform);
+}
+
+int EditorExport::get_export_platform_count() {
+
+	return export_platforms.size();
+}
+
+Ref<EditorExportPlatform> EditorExport::get_export_platform(int p_idx) {
+
+	ERR_FAIL_INDEX_V(p_idx,export_platforms.size(),Ref<EditorExportPlatform>());
+
+	return export_platforms[p_idx];
+}
+
+
+void EditorExport::add_export_preset(const Ref<EditorExportPreset>& p_preset,int p_at_pos) {
+
+	if (p_at_pos<0)
+		export_presets.push_back(p_preset);
+	else
+		export_presets.insert(p_at_pos,p_preset);
+
+
+}
+
+int EditorExport::get_export_preset_count() const {
+
+	return export_presets.size();
+}
+
+Ref<EditorExportPreset> EditorExport::get_export_preset(int p_idx) {
+
+	ERR_FAIL_INDEX_V( p_idx, export_presets.size(),Ref<EditorExportPreset>() );
+	return export_presets[p_idx];
+}
+
+void EditorExport::remove_export_preset(int p_idx) {
+
+	export_presets.remove(p_idx);
+}
+
+void EditorExport::load_config() {
+
+
+}
+
+void EditorExport::save_config() {
+
+}
+
+EditorExport::EditorExport() {
+
+
+}
+
+EditorExport::~EditorExport() {
+
+
+}
+
+////////
 
 #if 0
 #include "version.h"

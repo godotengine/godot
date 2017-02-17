@@ -48,7 +48,7 @@
 
 //Commit : right/left arrow to collaspe / open
 
-void CreateDialog::popup(bool p_dontclear) {
+void CreateDialog::popup(bool p_dontclear, bool p_allowmultiselect) {
 
 	recent->clear();
 
@@ -130,7 +130,8 @@ void CreateDialog::popup(bool p_dontclear) {
 	}
 	search_box->grab_focus();
 
-	if (EditorNode::get_editor_data().get_edited_scene_root())
+
+	if (p_allowmultiselect && EditorNode::get_editor_data().get_edited_scene_root())
 		search_options->set_select_mode(Tree::SELECT_MULTI);
 	else
 		search_options->set_select_mode(Tree::SELECT_SINGLE);
@@ -432,6 +433,7 @@ String CreateDialog::get_selected_type() {
 }
 
 void CreateDialog::instance_selected(List<Object*> *p_list){
+
 	TreeItem* item = search_options->get_root();
 	while ( (item = search_options->get_next_selected(item)) ) {
 		Variant md = item->get_metadata(0);
@@ -684,7 +686,6 @@ void CreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_history_activated"),&CreateDialog::_history_activated);
 	ClassDB::bind_method(D_METHOD("_favorite_activated"),&CreateDialog::_favorite_activated);
 	ClassDB::bind_method(D_METHOD("_multi_selected"),&CreateDialog::_cell_multi_selected);
-	ClassDB::bind_method(D_METHOD("_search_options_input"),&CreateDialog::_search_options_input);
 
 	ClassDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw",&CreateDialog::can_drop_data_fw);

@@ -2320,6 +2320,7 @@ void RasterizerStorageGLES3::_update_material(Material* material) {
 		bool is_animated = false;
 
 		if (material->shader && material->shader->mode==VS::SHADER_SPATIAL) {
+
 			if (!material->shader->spatial.uses_alpha && material->shader->spatial.blend_mode==Shader::Spatial::BLEND_MODE_MIX) {
 				can_cast_shadow=true;
 			}
@@ -2332,20 +2333,19 @@ void RasterizerStorageGLES3::_update_material(Material* material) {
 				is_animated=true;
 			}
 
-		}
+			if (can_cast_shadow!=material->can_cast_shadow_cache || is_animated!=material->is_animated_cache) {
+				material->can_cast_shadow_cache=can_cast_shadow;
+				material->is_animated_cache=is_animated;
 
-		if (can_cast_shadow!=material->can_cast_shadow_cache || is_animated!=material->is_animated_cache) {
-			material->can_cast_shadow_cache=can_cast_shadow;
-			material->is_animated_cache=is_animated;
+				for(Map<Geometry*,int>::Element *E=material->geometry_owners.front();E;E=E->next()) {
+					E->key()->material_changed_notify();
+				}
 
-			for(Map<Geometry*,int>::Element *E=material->geometry_owners.front();E;E=E->next()) {
-				E->key()->material_changed_notify();
+				for(Map<RasterizerScene::InstanceBase*,int>::Element *E=material->instance_owners.front();E;E=E->next()) {
+					E->key()->base_material_changed();
+				}
+
 			}
-
-			for(Map<RasterizerScene::InstanceBase*,int>::Element *E=material->instance_owners.front();E;E=E->next()) {
-				E->key()->base_material_changed();
-			}
-
 		}
 
 	}
@@ -3619,7 +3619,22 @@ void RasterizerStorageGLES3::multimesh_set_mesh(RID p_multimesh,RID p_mesh){
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND(!multimesh);
 
+	if (multimesh->mesh.is_valid()) {
+		Mesh *mesh = mesh_owner.getornull(multimesh->mesh);
+		if (mesh) {
+			mesh->multimeshes.remove(&multimesh->mesh_list);
+		}
+	}
+
 	multimesh->mesh=p_mesh;
+
+
+	if (multimesh->mesh.is_valid()) {
+		Mesh *mesh = mesh_owner.getornull(multimesh->mesh);
+		if (mesh) {
+			mesh->multimeshes.add(&multimesh->mesh_list);
+		}
+	}
 
 	multimesh->dirty_aabb=true;
 
@@ -4778,6 +4793,7 @@ RID RasterizerStorageGLES3::gi_probe_create() {
 	gip->dynamic_range=1.0;
 	gip->energy=1.0;
 	gip->propagation=1.0;
+	gip->bias=0.4;
 	gip->interior=false;
 	gip->compress=false;
 	gip->version=1;
@@ -4883,6 +4899,16 @@ void RasterizerStorageGLES3::gi_probe_set_energy(RID p_probe,float p_range){
 
 }
 
+
+void RasterizerStorageGLES3::gi_probe_set_bias(RID p_probe,float p_range){
+
+	GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!gip);
+
+	gip->bias=p_range;
+
+}
+
 void RasterizerStorageGLES3::gi_probe_set_propagation(RID p_probe,float p_range){
 
 	GIProbe *gip = gi_probe_owner.getornull(p_probe);
@@ -4935,6 +4961,15 @@ float RasterizerStorageGLES3::gi_probe_get_energy(RID p_probe) const{
 
 	return gip->energy;
 }
+
+float RasterizerStorageGLES3::gi_probe_get_bias(RID p_probe) const{
+
+	const GIProbe *gip = gi_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!gip,0);
+
+	return gip->bias;
+}
+
 
 float RasterizerStorageGLES3::gi_probe_get_propagation(RID p_probe) const{
 
@@ -6265,6 +6300,18 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 		mesh->instance_remove_deps();
 		mesh_clear(p_rid);
 
+		while(mesh->multimeshes.first()) {
+			MultiMesh *multimesh = mesh->multimeshes.first()->self();
+			multimesh->mesh=RID();
+			multimesh->dirty_aabb=true;
+			mesh->multimeshes.remove(mesh->multimeshes.first());
+
+			if (!multimesh->update_list.in_list()) {
+				multimesh_update_list.add(&multimesh->update_list);
+			}
+
+		}
+
 		mesh_owner.free(p_rid);
 		memdelete(mesh);
 
@@ -6274,8 +6321,16 @@ bool RasterizerStorageGLES3::free(RID p_rid){
 		MultiMesh *multimesh = multimesh_owner.get(p_rid);
 		multimesh->instance_remove_deps();
 
+		if (multimesh->mesh.is_valid()) {
+			Mesh *mesh = mesh_owner.getornull(multimesh->mesh);
+			if (mesh) {
+				mesh->multimeshes.remove(&multimesh->mesh_list);
+			}
+		}
+
 		multimesh_allocate(p_rid,0,VS::MULTIMESH_TRANSFORM_2D,VS::MULTIMESH_COLOR_NONE); //frees multimesh
 		update_dirty_multimeshes();
+
 
 		multimesh_owner.free(p_rid);
 		memdelete(multimesh);
@@ -6568,6 +6623,14 @@ void RasterizerStorageGLES3::finalize() {
 
 }
 
+void RasterizerStorageGLES3::update_dirty_resources() {
+
+	update_dirty_multimeshes();
+	update_dirty_skeletons();
+	update_dirty_shaders();
+	update_dirty_materials();
+	update_particles();
+}
 
 RasterizerStorageGLES3::RasterizerStorageGLES3()
 {

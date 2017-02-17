@@ -134,7 +134,6 @@ struct Vector3 {
 	_FORCE_INLINE_ bool operator<(const Vector3& p_v) const;
 	_FORCE_INLINE_ bool operator<=(const Vector3& p_v) const;
 
-	bool nan_equals(const Vector3& p_v) const;
 	operator String() const;
 
 	_FORCE_INLINE_ Vector3() { x=y=z=0; }

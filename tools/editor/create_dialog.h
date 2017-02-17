@@ -100,7 +100,7 @@ public:
 	void set_base_type(const String& p_base);
 	String get_base_type() const;
 
-	void popup(bool p_dontclear);
+	void popup(bool p_dontclear, bool p_allowmultiselect = false);
 
 
 	CreateDialog();

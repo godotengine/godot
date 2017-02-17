@@ -61,6 +61,7 @@ bool ResourceFormatLoader::recognize_path(const String& p_path,const String& p_f
 
 	for (List<String>::Element *E=extensions.front();E;E=E->next()) {
 
+
 		if (E->get().nocasecmp_to(extension)==0)
 			return true;
 	}
@@ -191,12 +192,15 @@ RES ResourceLoader::load(const String &p_path, const String& p_type_hint, bool p
 
 	for (int i=0;i<loader_count;i++) {
 
-		if (!loader[i]->recognize_path(local_path,p_type_hint))
+		if (!loader[i]->recognize_path(local_path,p_type_hint)) {
+			print_line("path not recognized");
 			continue;
+		}
 		found=true;
 		RES res = loader[i]->load(local_path,local_path,r_error);
-		if (res.is_null())
+		if (res.is_null()) {
 			continue;
+		}
 		if (!p_no_cache)
 			res->set_path(local_path);
 #ifdef TOOLS_ENABLED

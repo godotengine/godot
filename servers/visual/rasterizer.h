@@ -432,6 +432,9 @@ public:
 	virtual void gi_probe_set_energy(RID p_probe,float p_range)=0;
 	virtual float gi_probe_get_energy(RID p_probe) const=0;
 
+	virtual void gi_probe_set_bias(RID p_probe,float p_range)=0;
+	virtual float gi_probe_get_bias(RID p_probe) const=0;
+
 	virtual void gi_probe_set_propagation(RID p_probe,float p_range)=0;
 	virtual float gi_probe_get_propagation(RID p_probe) const=0;
 
@@ -518,6 +521,8 @@ public:
 	virtual bool free(RID p_rid)=0;
 
 	virtual bool has_os_feature(const String& p_feature) const=0;
+
+	virtual void update_dirty_resources()=0;
 
 	static RasterizerStorage*base_signleton;
 	RasterizerStorage();

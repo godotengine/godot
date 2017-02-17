@@ -339,7 +339,7 @@ void FixedSpatialMaterial::_update_shader() {
 		code+="\tROUGHNESS = specular_tex.a * roughness;\n";
 	} else {
 		code+="\tvec4 specular_tex = texture(texture_specular,UV);\n";
-		code+="\tSPECULAR = vec3(metalness * specular_tex.r);\n";
+		code+="\tSPECULAR = vec3(ALBEDO.rgb * metalness * specular_tex.r);\n";
 		code+="\tROUGHNESS = specular_tex.a * roughness;\n";
 	}
 

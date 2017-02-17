@@ -559,6 +559,11 @@ Error StreamTexture::_load_data(const String& p_path,int &tw,int &th,int& flags,
 		int total_size=0;
 
 		for(int i=0;i<mipmaps;i++) {
+
+			if (i>0) {
+				size = f->get_32();
+			}
+
 			PoolVector<uint8_t> pv;
 			pv.resize(size);
 			{
@@ -754,6 +759,12 @@ bool StreamTexture::has_alpha() const {
 
 	return false;
 }
+
+Image StreamTexture::get_data() const {
+
+	return VS::get_singleton()->texture_get_data(texture);
+}
+
 void StreamTexture::set_flags(uint32_t p_flags){
 
 }

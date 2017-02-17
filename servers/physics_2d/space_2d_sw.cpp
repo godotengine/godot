@@ -622,6 +622,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 	Transform2D body_transform = p_from;
 
+
 	{
 		//STEP 1, FREE BODY IF STUCK
 
@@ -644,6 +645,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			cbkres=Physics2DServerSW::_shape_col_cbk;
 
 			bool collided=false;
+
 
 			int amount = _cull_aabb_for_body(p_body,body_aabb);
 
@@ -682,10 +684,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			}
 
 
-			if (!collided)
+			if (!collided) {
 				break;
+			}
 
 			Vector2 recover_motion;
+
 
 			for(int i=0;i<cbk.amount;i++) {
 

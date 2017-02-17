@@ -93,7 +93,6 @@ public:
 	_FORCE_INLINE_ Quat operator*(const real_t& s) const;
 	_FORCE_INLINE_ Quat operator/(const real_t& s) const;
 
-	bool nan_equals(const Quat& q2) const;
 
 	_FORCE_INLINE_ bool operator==(const Quat& p_quat) const;
 	_FORCE_INLINE_ bool operator!=(const Quat& p_quat) const;
@@ -193,5 +192,6 @@ bool Quat::operator==(const Quat& p_quat) const {
 bool Quat::operator!=(const Quat& p_quat) const {
 	return x!=p_quat.x || y!=p_quat.y || z!=p_quat.z || w!=p_quat.w;
 }
+
 
 #endif
