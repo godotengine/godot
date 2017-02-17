@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.1.stable.custom_build" name="Engine Types">
+<doc version="2.1.2.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -6323,11 +6323,25 @@
 				Return the alignment of children in the container.
 			</description>
 		</method>
+		<method name="get_secondary_alignment" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the secondary alignment for children in the container. The secondary direction depends on the primary direction of the container: If it is vertical, the secondary alignment will be horizontal, and vice versa.
+			</description>
+		</method>
 		<method name="set_alignment">
 			<argument index="0" name="alignment" type="int">
 			</argument>
 			<description>
-				Set the alignment of children in the container(Must be one of ALIGN_BEGIN, ALIGN_CENTER or ALIGN_END).
+				Set the alignment of children in the container (must be one of ALIGN_BEGIN, ALIGN_CENTER or ALIGN_END).
+			</description>
+		</method>
+		<method name="set_secondary_alignment">
+			<argument index="0" name="secondary_alignment" type="int">
+			</argument>
+			<description>
+				Set the secondary alignment for children in the container.
 			</description>
 		</method>
 	</methods>
@@ -8874,6 +8888,28 @@
 			</return>
 			<description>
 				Return the array size.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="ColorFrame" inherits="Control" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_frame_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_frame_color">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -42220,6 +42256,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -42250,6 +42292,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_shape_centered" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_action">
 			<argument index="0" name="action" type="String">
 			</argument>
@@ -42264,6 +42312,18 @@
 		</method>
 		<method name="set_passby_press">
 			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape">
+			<argument index="0" name="shape" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape_centered">
+			<argument index="0" name="bool" type="bool">
 			</argument>
 			<description>
 			</description>

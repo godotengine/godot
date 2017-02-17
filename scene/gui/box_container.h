@@ -46,6 +46,7 @@ public:
 private:
 	bool vertical;
 	AlignMode align;
+	AlignMode secondary_align;
 
 	void _resort();
 protected:
@@ -59,6 +60,9 @@ public:
 
 	void set_alignment(AlignMode p_align);
 	AlignMode get_alignment() const;
+
+	void set_secondary_alignment(AlignMode p_align);
+	AlignMode get_secondary_alignment() const;
 
 	virtual Size2 get_minimum_size() const;
 

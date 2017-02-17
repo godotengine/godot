@@ -33,6 +33,7 @@
 struct _MinSizeCache {
 
 	int min_size;
+	Size2i min_size_2d;
 	bool will_stretch;
 	int final_size;
 };
@@ -42,7 +43,7 @@ void BoxContainer::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 
-	Size2i new_size=get_size();;
+	Size2i new_size=get_size();
 
 	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 
@@ -78,6 +79,7 @@ void BoxContainer::_resort() {
 			stretch_avail+=msc.min_size;
 			stretch_ratio_total+=c->get_stretch_ratio();
 		}
+		msc.min_size_2d=size;
 		msc.final_size=msc.min_size;
 		min_size_cache[c]=msc;
 		children_count++;
@@ -193,13 +195,28 @@ void BoxContainer::_resort() {
 
 		Rect2 rect;
 
-		if (vertical) {
-
-			rect=Rect2(0,from,new_size.width,size);
-		} else {
-
-			rect=Rect2(from,0,size,new_size.height);
-
+		switch (secondary_align) {
+			case ALIGN_BEGIN:
+				if (vertical) {
+					rect=Rect2(0,from,msc.min_size_2d.width,size);
+				} else {
+					rect=Rect2(from,0,size,msc.min_size_2d.height);
+				}
+				break;
+			case ALIGN_END:
+				if (vertical) {
+					rect=Rect2(new_size.width-msc.min_size_2d.width,from,msc.min_size_2d.width,size);
+				} else {
+					rect=Rect2(from,new_size.height-msc.min_size_2d.height,size,msc.min_size_2d.height);
+				}
+				break;
+			default:
+				if(vertical) {
+					rect=Rect2(0,from,new_size.width,size);
+				} else {
+					rect=Rect2(from,0,size,new_size.height);
+				}
+				break;
 		}
 
 		fit_child_in_rect(c,rect);
@@ -277,6 +294,15 @@ BoxContainer::AlignMode BoxContainer::get_alignment() const {
 	return align;
 }
 
+void BoxContainer::set_secondary_alignment(AlignMode p_align) {
+	secondary_align = p_align;
+	_resort();
+}
+
+BoxContainer::AlignMode BoxContainer::get_secondary_alignment() const {
+	return secondary_align;
+}
+
 void BoxContainer::add_spacer(bool p_begin) {
 
 	Control *c = memnew( Control );
@@ -295,6 +321,7 @@ BoxContainer::BoxContainer(bool p_vertical) {
 
 	vertical=p_vertical;
 	align = ALIGN_BEGIN;
+	secondary_align = ALIGN_CENTER;
 //	set_ignore_mouse(true);
 	set_stop_mouse(false);
 }
@@ -304,12 +331,15 @@ void BoxContainer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_spacer","begin"),&BoxContainer::add_spacer);
 	ObjectTypeDB::bind_method(_MD("get_alignment"),&BoxContainer::get_alignment);
 	ObjectTypeDB::bind_method(_MD("set_alignment","alignment"),&BoxContainer::set_alignment);
+	ObjectTypeDB::bind_method(_MD("get_secondary_alignment"),&BoxContainer::get_secondary_alignment);
+	ObjectTypeDB::bind_method(_MD("set_secondary_alignment","secondary_alignment"),&BoxContainer::set_secondary_alignment);
 
 	BIND_CONSTANT( ALIGN_BEGIN );
 	BIND_CONSTANT( ALIGN_CENTER );
 	BIND_CONSTANT( ALIGN_END );
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), _SCS("set_alignment"),_SCS("get_alignment") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"secondary_alignment", PROPERTY_HINT_ENUM, "Begin,Center,End"), _SCS("set_secondary_alignment"),_SCS("get_secondary_alignment") );
 
 }
 
