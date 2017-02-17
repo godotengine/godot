@@ -5936,7 +5936,7 @@
 		Provides a base class for different kinds of buttons.
 	</brief_description>
 	<description>
-		BaseButton is the abstract base class for buttons, so it shouldn't be used directly (It doesn't display anything). Other types of buttons inherit from it.
+		BaseButton is the abstract base class for buttons, so it shouldn't be used directly (it doesn't display anything). Other types of buttons inherit from it.
 	</description>
 	<methods>
 		<method name="_pressed" qualifiers="virtual">
@@ -5983,6 +5983,16 @@
 			</return>
 			<description>
 				Return whether the button is in disabled state (see [method set_disabled]).
+        
+        [code]
+        extends BaseButton
+        
+        func _ready():
+          pass
+        
+        func toggle_me():
+          set_disabled(!is_disabled())
+        [/code]
 			</description>
 		</method>
 		<method name="is_hovered" qualifiers="const">
@@ -5990,6 +6000,19 @@
 			</return>
 			<description>
 				Return true if mouse entered the button before it exit.
+        
+        [code]
+        extends BaseButton
+        
+        onready var __label = find_node("Label")
+        
+        func _ready():
+          pass
+        
+        func example():
+          if is_hovered():
+            __label.show()
+        [/code]
 			</description>
 		</method>
 		<method name="is_pressed" qualifiers="const">
@@ -6018,6 +6041,21 @@
 			</argument>
 			<description>
 				Set the button into disabled state. When a button is disabled, it can't be clicked or toggled.
+        
+        [code]
+        extends Node2D
+        
+        onready var __username = find_button("LineEdit")
+        onready var __login = find_node("Button")
+        
+        func _ready():
+          # On startup, disable login button
+          __login.set_disabled(true)
+        
+        func _on_LineEdit_text_changed():
+          # When user types their username, enable login button
+          __login.set_disabled(false)
+        [/code]
 			</description>
 		</method>
 		<method name="set_enabled_focus_mode">
