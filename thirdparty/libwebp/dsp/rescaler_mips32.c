@@ -16,7 +16,7 @@
 #if defined(WEBP_USE_MIPS32)
 
 #include <assert.h>
-#include "../utils/rescaler.h"
+#include "../utils/rescaler_utils.h"
 
 //------------------------------------------------------------------------------
 // Row import

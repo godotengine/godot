@@ -15,8 +15,8 @@
 #define WEBP_MUX_MUXI_H_
 
 #include <stdlib.h>
-#include "../dec/vp8i.h"
-#include "../dec/vp8li.h"
+#include "../dec/vp8i_dec.h"
+#include "../dec/vp8li_dec.h"
 #include "../webp/mux.h"
 
 #ifdef __cplusplus
@@ -27,8 +27,8 @@ extern "C" {
 // Defines and constants.
 
 #define MUX_MAJ_VERSION 0
-#define MUX_MIN_VERSION 3
-#define MUX_REV_VERSION 2
+#define MUX_MIN_VERSION 4
+#define MUX_REV_VERSION 0
 
 // Chunk object.
 typedef struct WebPChunk WebPChunk;
@@ -36,16 +36,16 @@ struct WebPChunk {
   uint32_t        tag_;
   int             owner_;  // True if *data_ memory is owned internally.
                            // VP8X, ANIM, and other internally created chunks
-                           // like ANMF/FRGM are always owned.
+                           // like ANMF are always owned.
   WebPData        data_;
   WebPChunk*      next_;
 };
 
-// MuxImage object. Store a full WebP image (including ANMF/FRGM chunk, ALPH
+// MuxImage object. Store a full WebP image (including ANMF chunk, ALPH
 // chunk and VP8/VP8L chunk),
 typedef struct WebPMuxImage WebPMuxImage;
 struct WebPMuxImage {
-  WebPChunk*  header_;      // Corresponds to WEBP_CHUNK_ANMF/WEBP_CHUNK_FRGM.
+  WebPChunk*  header_;      // Corresponds to WEBP_CHUNK_ANMF.
   WebPChunk*  alpha_;       // Corresponds to WEBP_CHUNK_ALPHA.
   WebPChunk*  img_;         // Corresponds to WEBP_CHUNK_IMAGE.
   WebPChunk*  unknown_;     // Corresponds to WEBP_CHUNK_UNKNOWN.
@@ -79,7 +79,6 @@ typedef enum {
   IDX_ICCP,
   IDX_ANIM,
   IDX_ANMF,
-  IDX_FRGM,
   IDX_ALPHA,
   IDX_VP8,
   IDX_VP8L,
@@ -185,7 +184,6 @@ int MuxImageFinalize(WebPMuxImage* const wpi);
 static WEBP_INLINE int IsWPI(WebPChunkId id) {
   switch (id) {
     case WEBP_CHUNK_ANMF:
-    case WEBP_CHUNK_FRGM:
     case WEBP_CHUNK_ALPHA:
     case WEBP_CHUNK_IMAGE:  return 1;
     default:        return 0;

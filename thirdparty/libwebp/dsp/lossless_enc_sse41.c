@@ -32,7 +32,9 @@ static void SubtractGreenFromBlueAndRed(uint32_t* argb_data, int num_pixels) {
     _mm_storeu_si128((__m128i*)&argb_data[i], out);
   }
   // fallthrough and finish off with plain-C
-  VP8LSubtractGreenFromBlueAndRed_C(argb_data + i, num_pixels - i);
+  if (i != num_pixels) {
+    VP8LSubtractGreenFromBlueAndRed_C(argb_data + i, num_pixels - i);
+  }
 }
 
 //------------------------------------------------------------------------------
