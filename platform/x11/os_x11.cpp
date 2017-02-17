@@ -464,7 +464,6 @@ void OS_X11::finalize() {
 		memdelete(main_loop);
 	main_loop=NULL;
 
-
 	/*
 	if (debugger_connection_console) {
 		memdelete(debugger_connection_console);
@@ -512,6 +511,10 @@ void OS_X11::finalize() {
 
 
 	args.clear();
+
+	for (int i = 0; i < get_audio_driver_count(); i++) {
+		AudioDriverManager::get_driver(i)->finish();
+	}
 }
 
 
