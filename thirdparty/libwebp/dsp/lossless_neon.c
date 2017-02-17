@@ -139,6 +139,357 @@ static void ConvertBGRAToRGB(const uint32_t* src,
 
 #endif   // !WORK_AROUND_GCC
 
+
+//------------------------------------------------------------------------------
+// Predictor Transform
+
+#define LOAD_U32_AS_U8(IN) vreinterpret_u8_u32(vdup_n_u32((IN)))
+#define LOAD_U32P_AS_U8(IN) vreinterpret_u8_u32(vld1_u32((IN)))
+#define LOADQ_U32_AS_U8(IN) vreinterpretq_u8_u32(vdupq_n_u32((IN)))
+#define LOADQ_U32P_AS_U8(IN) vreinterpretq_u8_u32(vld1q_u32((IN)))
+#define GET_U8_AS_U32(IN) vget_lane_u32(vreinterpret_u32_u8((IN)), 0);
+#define GETQ_U8_AS_U32(IN) vgetq_lane_u32(vreinterpretq_u32_u8((IN)), 0);
+#define STOREQ_U8_AS_U32P(OUT, IN) vst1q_u32((OUT), vreinterpretq_u32_u8((IN)));
+#define ROTATE32_LEFT(L) vextq_u8((L), (L), 12)    // D|C|B|A -> C|B|A|D
+
+static WEBP_INLINE uint8x8_t Average2_u8_NEON(uint32_t a0, uint32_t a1) {
+  const uint8x8_t A0 = LOAD_U32_AS_U8(a0);
+  const uint8x8_t A1 = LOAD_U32_AS_U8(a1);
+  return vhadd_u8(A0, A1);
+}
+
+static WEBP_INLINE uint32_t ClampedAddSubtractHalf_NEON(uint32_t c0,
+                                                        uint32_t c1,
+                                                        uint32_t c2) {
+  const uint8x8_t avg = Average2_u8_NEON(c0, c1);
+  // Remove one to c2 when bigger than avg.
+  const uint8x8_t C2 = LOAD_U32_AS_U8(c2);
+  const uint8x8_t cmp = vcgt_u8(C2, avg);
+  const uint8x8_t C2_1 = vadd_u8(C2, cmp);
+  // Compute half of the difference between avg and c2.
+  const int8x8_t diff_avg = vreinterpret_s8_u8(vhsub_u8(avg, C2_1));
+  // Compute the sum with avg and saturate.
+  const int16x8_t avg_16 = vreinterpretq_s16_u16(vmovl_u8(avg));
+  const uint8x8_t res = vqmovun_s16(vaddw_s8(avg_16, diff_avg));
+  const uint32_t output = GET_U8_AS_U32(res);
+  return output;
+}
+
+static WEBP_INLINE uint32_t Average2_NEON(uint32_t a0, uint32_t a1) {
+  const uint8x8_t avg_u8x8 = Average2_u8_NEON(a0, a1);
+  const uint32_t avg = GET_U8_AS_U32(avg_u8x8);
+  return avg;
+}
+
+static WEBP_INLINE uint32_t Average3_NEON(uint32_t a0, uint32_t a1,
+                                          uint32_t a2) {
+  const uint8x8_t avg0 = Average2_u8_NEON(a0, a2);
+  const uint8x8_t A1 = LOAD_U32_AS_U8(a1);
+  const uint32_t avg = GET_U8_AS_U32(vhadd_u8(avg0, A1));
+  return avg;
+}
+
+static uint32_t Predictor5_NEON(uint32_t left, const uint32_t* const top) {
+  return Average3_NEON(left, top[0], top[1]);
+}
+static uint32_t Predictor6_NEON(uint32_t left, const uint32_t* const top) {
+  return Average2_NEON(left, top[-1]);
+}
+static uint32_t Predictor7_NEON(uint32_t left, const uint32_t* const top) {
+  return Average2_NEON(left, top[0]);
+}
+static uint32_t Predictor13_NEON(uint32_t left, const uint32_t* const top) {
+  return ClampedAddSubtractHalf_NEON(left, top[0], top[-1]);
+}
+
+// Batch versions of those functions.
+
+// Predictor0: ARGB_BLACK.
+static void PredictorAdd0_NEON(const uint32_t* in, const uint32_t* upper,
+                               int num_pixels, uint32_t* out) {
+  int i;
+  const uint8x16_t black = vreinterpretq_u8_u32(vdupq_n_u32(ARGB_BLACK));
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    const uint8x16_t res = vaddq_u8(src, black);
+    STOREQ_U8_AS_U32P(&out[i], res);
+  }
+  VP8LPredictorsAdd_C[0](in + i, upper + i, num_pixels - i, out + i);
+}
+
+// Predictor1: left.
+static void PredictorAdd1_NEON(const uint32_t* in, const uint32_t* upper,
+                               int num_pixels, uint32_t* out) {
+  int i;
+  const uint8x16_t zero = LOADQ_U32_AS_U8(0);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    // a | b | c | d
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    // 0 | a | b | c
+    const uint8x16_t shift0 = vextq_u8(zero, src, 12);
+    // a | a + b | b + c | c + d
+    const uint8x16_t sum0 = vaddq_u8(src, shift0);
+    // 0 | 0 | a | a + b
+    const uint8x16_t shift1 = vextq_u8(zero, sum0, 8);
+    // a | a + b | a + b + c | a + b + c + d
+    const uint8x16_t sum1 = vaddq_u8(sum0, shift1);
+    const uint8x16_t prev = LOADQ_U32_AS_U8(out[i - 1]);
+    const uint8x16_t res = vaddq_u8(sum1, prev);
+    STOREQ_U8_AS_U32P(&out[i], res);
+  }
+  VP8LPredictorsAdd_C[1](in + i, upper + i, num_pixels - i, out + i);
+}
+
+// Macro that adds 32-bit integers from IN using mod 256 arithmetic
+// per 8 bit channel.
+#define GENERATE_PREDICTOR_1(X, IN)                                       \
+static void PredictorAdd##X##_NEON(const uint32_t* in,                    \
+                                   const uint32_t* upper, int num_pixels, \
+                                   uint32_t* out) {                       \
+  int i;                                                                  \
+  for (i = 0; i + 4 <= num_pixels; i += 4) {                              \
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);                      \
+    const uint8x16_t other = LOADQ_U32P_AS_U8(&(IN));                     \
+    const uint8x16_t res = vaddq_u8(src, other);                          \
+    STOREQ_U8_AS_U32P(&out[i], res);                                      \
+  }                                                                       \
+  VP8LPredictorsAdd_C[(X)](in + i, upper + i, num_pixels - i, out + i);   \
+}
+// Predictor2: Top.
+GENERATE_PREDICTOR_1(2, upper[i])
+// Predictor3: Top-right.
+GENERATE_PREDICTOR_1(3, upper[i + 1])
+// Predictor4: Top-left.
+GENERATE_PREDICTOR_1(4, upper[i - 1])
+#undef GENERATE_PREDICTOR_1
+
+// Predictor5: average(average(left, TR), T)
+#define DO_PRED5(LANE) do {                                              \
+  const uint8x16_t avgLTR = vhaddq_u8(L, TR);                            \
+  const uint8x16_t avg = vhaddq_u8(avgLTR, T);                           \
+  const uint8x16_t res = vaddq_u8(avg, src);                             \
+  vst1q_lane_u32(&out[i + (LANE)], vreinterpretq_u32_u8(res), (LANE));   \
+  L = ROTATE32_LEFT(res);                                                \
+} while (0)
+
+static void PredictorAdd5_NEON(const uint32_t* in, const uint32_t* upper,
+                               int num_pixels, uint32_t* out) {
+  int i;
+  uint8x16_t L = LOADQ_U32_AS_U8(out[-1]);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    const uint8x16_t T = LOADQ_U32P_AS_U8(&upper[i + 0]);
+    const uint8x16_t TR = LOADQ_U32P_AS_U8(&upper[i + 1]);
+    DO_PRED5(0);
+    DO_PRED5(1);
+    DO_PRED5(2);
+    DO_PRED5(3);
+  }
+  VP8LPredictorsAdd_C[5](in + i, upper + i, num_pixels - i, out + i);
+}
+#undef DO_PRED5
+
+#define DO_PRED67(LANE) do {                                             \
+  const uint8x16_t avg = vhaddq_u8(L, top);                              \
+  const uint8x16_t res = vaddq_u8(avg, src);                             \
+  vst1q_lane_u32(&out[i + (LANE)], vreinterpretq_u32_u8(res), (LANE));   \
+  L = ROTATE32_LEFT(res);                                                \
+} while (0)
+
+// Predictor6: average(left, TL)
+static void PredictorAdd6_NEON(const uint32_t* in, const uint32_t* upper,
+                               int num_pixels, uint32_t* out) {
+  int i;
+  uint8x16_t L = LOADQ_U32_AS_U8(out[-1]);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    const uint8x16_t top = LOADQ_U32P_AS_U8(&upper[i - 1]);
+    DO_PRED67(0);
+    DO_PRED67(1);
+    DO_PRED67(2);
+    DO_PRED67(3);
+  }
+  VP8LPredictorsAdd_C[6](in + i, upper + i, num_pixels - i, out + i);
+}
+
+// Predictor7: average(left, T)
+static void PredictorAdd7_NEON(const uint32_t* in, const uint32_t* upper,
+                               int num_pixels, uint32_t* out) {
+  int i;
+  uint8x16_t L = LOADQ_U32_AS_U8(out[-1]);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    const uint8x16_t top = LOADQ_U32P_AS_U8(&upper[i]);
+    DO_PRED67(0);
+    DO_PRED67(1);
+    DO_PRED67(2);
+    DO_PRED67(3);
+  }
+  VP8LPredictorsAdd_C[7](in + i, upper + i, num_pixels - i, out + i);
+}
+#undef DO_PRED67
+
+#define GENERATE_PREDICTOR_2(X, IN)                                       \
+static void PredictorAdd##X##_NEON(const uint32_t* in,                    \
+                                   const uint32_t* upper, int num_pixels, \
+                                   uint32_t* out) {                       \
+  int i;                                                                  \
+  for (i = 0; i + 4 <= num_pixels; i += 4) {                              \
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);                      \
+    const uint8x16_t Tother = LOADQ_U32P_AS_U8(&(IN));                    \
+    const uint8x16_t T = LOADQ_U32P_AS_U8(&upper[i]);                     \
+    const uint8x16_t avg = vhaddq_u8(T, Tother);                          \
+    const uint8x16_t res = vaddq_u8(avg, src);                            \
+    STOREQ_U8_AS_U32P(&out[i], res);                                      \
+  }                                                                       \
+  VP8LPredictorsAdd_C[(X)](in + i, upper + i, num_pixels - i, out + i);   \
+}
+// Predictor8: average TL T.
+GENERATE_PREDICTOR_2(8, upper[i - 1])
+// Predictor9: average T TR.
+GENERATE_PREDICTOR_2(9, upper[i + 1])
+#undef GENERATE_PREDICTOR_2
+
+// Predictor10: average of (average of (L,TL), average of (T, TR)).
+#define DO_PRED10(LANE) do {                                             \
+  const uint8x16_t avgLTL = vhaddq_u8(L, TL);                            \
+  const uint8x16_t avg = vhaddq_u8(avgTTR, avgLTL);                      \
+  const uint8x16_t res = vaddq_u8(avg, src);                             \
+  vst1q_lane_u32(&out[i + (LANE)], vreinterpretq_u32_u8(res), (LANE));   \
+  L = ROTATE32_LEFT(res);                                                \
+} while (0)
+
+static void PredictorAdd10_NEON(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  uint8x16_t L = LOADQ_U32_AS_U8(out[-1]);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    const uint8x16_t TL = LOADQ_U32P_AS_U8(&upper[i - 1]);
+    const uint8x16_t T = LOADQ_U32P_AS_U8(&upper[i]);
+    const uint8x16_t TR = LOADQ_U32P_AS_U8(&upper[i + 1]);
+    const uint8x16_t avgTTR = vhaddq_u8(T, TR);
+    DO_PRED10(0);
+    DO_PRED10(1);
+    DO_PRED10(2);
+    DO_PRED10(3);
+  }
+  VP8LPredictorsAdd_C[10](in + i, upper + i, num_pixels - i, out + i);
+}
+#undef DO_PRED10
+
+// Predictor11: select.
+#define DO_PRED11(LANE) do {                                                   \
+  const uint8x16_t sumLin = vaddq_u8(L, src);  /* in + L */                    \
+  const uint8x16_t pLTL = vabdq_u8(L, TL);  /* |L - TL| */                     \
+  const uint16x8_t sum_LTL = vpaddlq_u8(pLTL);                                 \
+  const uint32x4_t pa = vpaddlq_u16(sum_LTL);                                  \
+  const uint32x4_t mask = vcleq_u32(pa, pb);                                   \
+  const uint8x16_t res = vbslq_u8(vreinterpretq_u8_u32(mask), sumTin, sumLin); \
+  vst1q_lane_u32(&out[i + (LANE)], vreinterpretq_u32_u8(res), (LANE));         \
+  L = ROTATE32_LEFT(res);                                                      \
+} while (0)
+
+static void PredictorAdd11_NEON(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  uint8x16_t L = LOADQ_U32_AS_U8(out[-1]);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const uint8x16_t T = LOADQ_U32P_AS_U8(&upper[i]);
+    const uint8x16_t TL = LOADQ_U32P_AS_U8(&upper[i - 1]);
+    const uint8x16_t pTTL = vabdq_u8(T, TL);   // |T - TL|
+    const uint16x8_t sum_TTL = vpaddlq_u8(pTTL);
+    const uint32x4_t pb = vpaddlq_u16(sum_TTL);
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    const uint8x16_t sumTin = vaddq_u8(T, src);   // in + T
+    DO_PRED11(0);
+    DO_PRED11(1);
+    DO_PRED11(2);
+    DO_PRED11(3);
+  }
+  VP8LPredictorsAdd_C[11](in + i, upper + i, num_pixels - i, out + i);
+}
+#undef DO_PRED11
+
+// Predictor12: ClampedAddSubtractFull.
+#define DO_PRED12(DIFF, LANE) do {                                       \
+  const uint8x8_t pred =                                                 \
+      vqmovun_s16(vaddq_s16(vreinterpretq_s16_u16(L), (DIFF)));          \
+  const uint8x8_t res =                                                  \
+      vadd_u8(pred, (LANE <= 1) ? vget_low_u8(src) : vget_high_u8(src)); \
+  const uint16x8_t res16 = vmovl_u8(res);                                \
+  vst1_lane_u32(&out[i + (LANE)], vreinterpret_u32_u8(res), (LANE) & 1); \
+  /* rotate in the left predictor for next iteration */                  \
+  L = vextq_u16(res16, res16, 4);                                        \
+} while (0)
+
+static void PredictorAdd12_NEON(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  uint16x8_t L = vmovl_u8(LOAD_U32_AS_U8(out[-1]));
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    // load four pixels of source
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    // precompute the difference T - TL once for all, stored as s16
+    const uint8x16_t TL = LOADQ_U32P_AS_U8(&upper[i - 1]);
+    const uint8x16_t T = LOADQ_U32P_AS_U8(&upper[i]);
+    const int16x8_t diff_lo =
+        vreinterpretq_s16_u16(vsubl_u8(vget_low_u8(T), vget_low_u8(TL)));
+    const int16x8_t diff_hi =
+        vreinterpretq_s16_u16(vsubl_u8(vget_high_u8(T), vget_high_u8(TL)));
+    // loop over the four reconstructed pixels
+    DO_PRED12(diff_lo, 0);
+    DO_PRED12(diff_lo, 1);
+    DO_PRED12(diff_hi, 2);
+    DO_PRED12(diff_hi, 3);
+  }
+  VP8LPredictorsAdd_C[12](in + i, upper + i, num_pixels - i, out + i);
+}
+#undef DO_PRED12
+
+// Predictor13: ClampedAddSubtractHalf
+#define DO_PRED13(LANE, LOW_OR_HI) do {                                        \
+  const uint8x16_t avg = vhaddq_u8(L, T);                                      \
+  const uint8x16_t cmp = vcgtq_u8(TL, avg);                                    \
+  const uint8x16_t TL_1 = vaddq_u8(TL, cmp);                                   \
+  /* Compute half of the difference between avg and TL'. */                    \
+  const int8x8_t diff_avg =                                                    \
+      vreinterpret_s8_u8(LOW_OR_HI(vhsubq_u8(avg, TL_1)));                     \
+  /* Compute the sum with avg and saturate. */                                 \
+  const int16x8_t avg_16 = vreinterpretq_s16_u16(vmovl_u8(LOW_OR_HI(avg)));    \
+  const uint8x8_t delta = vqmovun_s16(vaddw_s8(avg_16, diff_avg));             \
+  const uint8x8_t res = vadd_u8(LOW_OR_HI(src), delta);                        \
+  const uint8x16_t res2 = vcombine_u8(res, res);                               \
+  vst1_lane_u32(&out[i + (LANE)], vreinterpret_u32_u8(res), (LANE) & 1);       \
+  L = ROTATE32_LEFT(res2);                                                     \
+} while (0)
+
+static void PredictorAdd13_NEON(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  uint8x16_t L = LOADQ_U32_AS_U8(out[-1]);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const uint8x16_t src = LOADQ_U32P_AS_U8(&in[i]);
+    const uint8x16_t T = LOADQ_U32P_AS_U8(&upper[i]);
+    const uint8x16_t TL = LOADQ_U32P_AS_U8(&upper[i - 1]);
+    DO_PRED13(0, vget_low_u8);
+    DO_PRED13(1, vget_low_u8);
+    DO_PRED13(2, vget_high_u8);
+    DO_PRED13(3, vget_high_u8);
+  }
+  VP8LPredictorsAdd_C[13](in + i, upper + i, num_pixels - i, out + i);
+}
+#undef DO_PRED13
+
+#undef LOAD_U32_AS_U8
+#undef LOAD_U32P_AS_U8
+#undef LOADQ_U32_AS_U8
+#undef LOADQ_U32P_AS_U8
+#undef GET_U8_AS_U32
+#undef GETQ_U8_AS_U32
+#undef STOREQ_U8_AS_U32P
+#undef ROTATE32_LEFT
+
 //------------------------------------------------------------------------------
 // Subtract-Green Transform
 
@@ -171,28 +522,30 @@ static WEBP_INLINE uint8x16_t DoGreenShuffle(const uint8x16_t argb,
 }
 #endif  // USE_VTBLQ
 
-static void AddGreenToBlueAndRed(uint32_t* argb_data, int num_pixels) {
-  const uint32_t* const end = argb_data + (num_pixels & ~3);
+static void AddGreenToBlueAndRed(const uint32_t* src, int num_pixels,
+                                 uint32_t* dst) {
+  const uint32_t* const end = src + (num_pixels & ~3);
 #ifdef USE_VTBLQ
   const uint8x16_t shuffle = vld1q_u8(kGreenShuffle);
 #else
   const uint8x8_t shuffle = vld1_u8(kGreenShuffle);
 #endif
-  for (; argb_data < end; argb_data += 4) {
-    const uint8x16_t argb = vld1q_u8((uint8_t*)argb_data);
+  for (; src < end; src += 4, dst += 4) {
+    const uint8x16_t argb = vld1q_u8((const uint8_t*)src);
     const uint8x16_t greens = DoGreenShuffle(argb, shuffle);
-    vst1q_u8((uint8_t*)argb_data, vaddq_u8(argb, greens));
+    vst1q_u8((uint8_t*)dst, vaddq_u8(argb, greens));
   }
   // fallthrough and finish off with plain-C
-  VP8LAddGreenToBlueAndRed_C(argb_data, num_pixels & 3);
+  VP8LAddGreenToBlueAndRed_C(src, num_pixels & 3, dst);
 }
 
 //------------------------------------------------------------------------------
 // Color Transform
 
 static void TransformColorInverse(const VP8LMultipliers* const m,
-                                  uint32_t* argb_data, int num_pixels) {
-  // sign-extended multiplying constants, pre-shifted by 6.
+                                  const uint32_t* const src, int num_pixels,
+                                  uint32_t* dst) {
+// sign-extended multiplying constants, pre-shifted by 6.
 #define CST(X)  (((int16_t)(m->X << 8)) >> 6)
   const int16_t rb[8] = {
     CST(green_to_blue_), CST(green_to_red_),
@@ -219,7 +572,7 @@ static void TransformColorInverse(const VP8LMultipliers* const m,
   const uint32x4_t mask_ag = vdupq_n_u32(0xff00ff00u);
   int i;
   for (i = 0; i + 4 <= num_pixels; i += 4) {
-    const uint8x16_t in = vld1q_u8((uint8_t*)(argb_data + i));
+    const uint8x16_t in = vld1q_u8((const uint8_t*)(src + i));
     const uint32x4_t a0g0 = vandq_u32(vreinterpretq_u32_u8(in), mask_ag);
     // 0 g 0 g
     const uint8x16_t greens = DoGreenShuffle(in, shuffle);
@@ -240,10 +593,10 @@ static void TransformColorInverse(const VP8LMultipliers* const m,
     // 0  r'  0  b''
     const uint16x8_t G = vshrq_n_u16(vreinterpretq_u16_s8(F), 8);
     const uint32x4_t out = vorrq_u32(vreinterpretq_u32_u16(G), a0g0);
-    vst1q_u32(argb_data + i, out);
+    vst1q_u32(dst + i, out);
   }
   // Fall-back to C-version for left-overs.
-  VP8LTransformColorInverse_C(m, argb_data + i, num_pixels - i);
+  VP8LTransformColorInverse_C(m, src + i, num_pixels - i, dst + i);
 }
 
 #undef USE_VTBLQ
@@ -254,6 +607,26 @@ static void TransformColorInverse(const VP8LMultipliers* const m,
 extern void VP8LDspInitNEON(void);
 
 WEBP_TSAN_IGNORE_FUNCTION void VP8LDspInitNEON(void) {
+  VP8LPredictors[5] = Predictor5_NEON;
+  VP8LPredictors[6] = Predictor6_NEON;
+  VP8LPredictors[7] = Predictor7_NEON;
+  VP8LPredictors[13] = Predictor13_NEON;
+
+  VP8LPredictorsAdd[0] = PredictorAdd0_NEON;
+  VP8LPredictorsAdd[1] = PredictorAdd1_NEON;
+  VP8LPredictorsAdd[2] = PredictorAdd2_NEON;
+  VP8LPredictorsAdd[3] = PredictorAdd3_NEON;
+  VP8LPredictorsAdd[4] = PredictorAdd4_NEON;
+  VP8LPredictorsAdd[5] = PredictorAdd5_NEON;
+  VP8LPredictorsAdd[6] = PredictorAdd6_NEON;
+  VP8LPredictorsAdd[7] = PredictorAdd7_NEON;
+  VP8LPredictorsAdd[8] = PredictorAdd8_NEON;
+  VP8LPredictorsAdd[9] = PredictorAdd9_NEON;
+  VP8LPredictorsAdd[10] = PredictorAdd10_NEON;
+  VP8LPredictorsAdd[11] = PredictorAdd11_NEON;
+  VP8LPredictorsAdd[12] = PredictorAdd12_NEON;
+  VP8LPredictorsAdd[13] = PredictorAdd13_NEON;
+
   VP8LConvertBGRAToRGBA = ConvertBGRAToRGBA;
   VP8LConvertBGRAToBGR = ConvertBGRAToBGR;
   VP8LConvertBGRAToRGB = ConvertBGRAToRGB;

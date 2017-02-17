@@ -93,34 +93,32 @@ static WebPMuxError MuxSet(WebPMux* const mux, uint32_t tag, uint32_t nth,
 }
 #undef SWITCH_ID_LIST
 
-// Create data for frame/fragment given image data, offsets and duration.
-static WebPMuxError CreateFrameFragmentData(
-    int width, int height, const WebPMuxFrameInfo* const info, int is_frame,
-    WebPData* const frame_frgm) {
-  uint8_t* frame_frgm_bytes;
-  const size_t frame_frgm_size = kChunks[is_frame ? IDX_ANMF : IDX_FRGM].size;
+// Create data for frame given image data, offsets and duration.
+static WebPMuxError CreateFrameData(
+    int width, int height, const WebPMuxFrameInfo* const info,
+    WebPData* const frame) {
+  uint8_t* frame_bytes;
+  const size_t frame_size = kChunks[IDX_ANMF].size;
 
   assert(width > 0 && height > 0 && info->duration >= 0);
   assert(info->dispose_method == (info->dispose_method & 1));
   // Note: assertion on upper bounds is done in PutLE24().
 
-  frame_frgm_bytes = (uint8_t*)WebPSafeMalloc(1ULL, frame_frgm_size);
-  if (frame_frgm_bytes == NULL) return WEBP_MUX_MEMORY_ERROR;
+  frame_bytes = (uint8_t*)WebPSafeMalloc(1ULL, frame_size);
+  if (frame_bytes == NULL) return WEBP_MUX_MEMORY_ERROR;
 
-  PutLE24(frame_frgm_bytes + 0, info->x_offset / 2);
-  PutLE24(frame_frgm_bytes + 3, info->y_offset / 2);
+  PutLE24(frame_bytes + 0, info->x_offset / 2);
+  PutLE24(frame_bytes + 3, info->y_offset / 2);
 
-  if (is_frame) {
-    PutLE24(frame_frgm_bytes + 6, width - 1);
-    PutLE24(frame_frgm_bytes + 9, height - 1);
-    PutLE24(frame_frgm_bytes + 12, info->duration);
-    frame_frgm_bytes[15] =
-        (info->blend_method == WEBP_MUX_NO_BLEND ? 2 : 0) |
-        (info->dispose_method == WEBP_MUX_DISPOSE_BACKGROUND ? 1 : 0);
-  }
+  PutLE24(frame_bytes + 6, width - 1);
+  PutLE24(frame_bytes + 9, height - 1);
+  PutLE24(frame_bytes + 12, info->duration);
+  frame_bytes[15] =
+      (info->blend_method == WEBP_MUX_NO_BLEND ? 2 : 0) |
+      (info->dispose_method == WEBP_MUX_DISPOSE_BACKGROUND ? 1 : 0);
 
-  frame_frgm->bytes = frame_frgm_bytes;
-  frame_frgm->size = frame_frgm_size;
+  frame->bytes = frame_bytes;
+  frame->size = frame_size;
   return WEBP_MUX_OK;
 }
 
@@ -264,23 +262,16 @@ WebPMuxError WebPMuxSetImage(WebPMux* mux, const WebPData* bitstream,
   return err;
 }
 
-WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* frame,
+WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* info,
                               int copy_data) {
   WebPMuxImage wpi;
   WebPMuxError err;
-  int is_frame;
-  const WebPData* const bitstream = &frame->bitstream;
+  const WebPData* const bitstream = &info->bitstream;
 
   // Sanity checks.
-  if (mux == NULL || frame == NULL) return WEBP_MUX_INVALID_ARGUMENT;
+  if (mux == NULL || info == NULL) return WEBP_MUX_INVALID_ARGUMENT;
 
-  is_frame = (frame->id == WEBP_CHUNK_ANMF);
-  if (!(is_frame || (frame->id == WEBP_CHUNK_FRGM))) {
-    return WEBP_MUX_INVALID_ARGUMENT;
-  }
-  if (frame->id == WEBP_CHUNK_FRGM) {     // Dead experiment.
-    return WEBP_MUX_INVALID_ARGUMENT;
-  }
+  if (info->id != WEBP_CHUNK_ANMF) return WEBP_MUX_INVALID_ARGUMENT;
 
   if (bitstream->bytes == NULL || bitstream->size > MAX_CHUNK_PAYLOAD) {
     return WEBP_MUX_INVALID_ARGUMENT;
@@ -290,7 +281,7 @@ WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* frame,
     const WebPMuxImage* const image = mux->images_;
     const uint32_t image_id = (image->header_ != NULL) ?
         ChunkGetIdFromTag(image->header_->tag_) : WEBP_CHUNK_IMAGE;
-    if (image_id != frame->id) {
+    if (image_id != info->id) {
       return WEBP_MUX_INVALID_ARGUMENT;  // Conflicting frame types.
     }
   }
@@ -301,16 +292,11 @@ WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* frame,
   assert(wpi.img_ != NULL);  // As SetAlphaAndImageChunks() was successful.
 
   {
-    WebPData frame_frgm;
-    const uint32_t tag = kChunks[is_frame ? IDX_ANMF : IDX_FRGM].tag;
-    WebPMuxFrameInfo tmp = *frame;
+    WebPData frame;
+    const uint32_t tag = kChunks[IDX_ANMF].tag;
+    WebPMuxFrameInfo tmp = *info;
     tmp.x_offset &= ~1;  // Snap offsets to even.
     tmp.y_offset &= ~1;
-    if (!is_frame) {  // Reset unused values.
-      tmp.duration = 1;
-      tmp.dispose_method = WEBP_MUX_DISPOSE_NONE;
-      tmp.blend_method = WEBP_MUX_BLEND;
-    }
     if (tmp.x_offset < 0 || tmp.x_offset >= MAX_POSITION_OFFSET ||
         tmp.y_offset < 0 || tmp.y_offset >= MAX_POSITION_OFFSET ||
         (tmp.duration < 0 || tmp.duration >= MAX_DURATION) ||
@@ -318,12 +304,11 @@ WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* frame,
       err = WEBP_MUX_INVALID_ARGUMENT;
       goto Err;
     }
-    err = CreateFrameFragmentData(wpi.width_, wpi.height_, &tmp, is_frame,
-                                  &frame_frgm);
+    err = CreateFrameData(wpi.width_, wpi.height_, &tmp, &frame);
     if (err != WEBP_MUX_OK) goto Err;
-    // Add frame/fragment chunk (with copy_data = 1).
-    err = AddDataToChunkList(&frame_frgm, 1, tag, &wpi.header_);
-    WebPDataClear(&frame_frgm);  // frame_frgm owned by wpi.header_ now.
+    // Add frame chunk (with copy_data = 1).
+    err = AddDataToChunkList(&frame, 1, tag, &wpi.header_);
+    WebPDataClear(&frame);  // frame owned by wpi.header_ now.
     if (err != WEBP_MUX_OK) goto Err;
   }
 
@@ -402,21 +387,18 @@ WebPMuxError WebPMuxDeleteFrame(WebPMux* mux, uint32_t nth) {
 //------------------------------------------------------------------------------
 // Assembly of the WebP RIFF file.
 
-static WebPMuxError GetFrameFragmentInfo(
-    const WebPChunk* const frame_frgm_chunk,
+static WebPMuxError GetFrameInfo(
+    const WebPChunk* const frame_chunk,
     int* const x_offset, int* const y_offset, int* const duration) {
-  const uint32_t tag = frame_frgm_chunk->tag_;
-  const int is_frame = (tag == kChunks[IDX_ANMF].tag);
-  const WebPData* const data = &frame_frgm_chunk->data_;
-  const size_t expected_data_size =
-      is_frame ? ANMF_CHUNK_SIZE : FRGM_CHUNK_SIZE;
-  assert(frame_frgm_chunk != NULL);
-  assert(tag == kChunks[IDX_ANMF].tag || tag ==  kChunks[IDX_FRGM].tag);
+  const WebPData* const data = &frame_chunk->data_;
+  const size_t expected_data_size = ANMF_CHUNK_SIZE;
+  assert(frame_chunk->tag_ == kChunks[IDX_ANMF].tag);
+  assert(frame_chunk != NULL);
   if (data->size != expected_data_size) return WEBP_MUX_INVALID_ARGUMENT;
 
   *x_offset = 2 * GetLE24(data->bytes + 0);
   *y_offset = 2 * GetLE24(data->bytes + 3);
-  if (is_frame) *duration = GetLE24(data->bytes + 12);
+  *duration = GetLE24(data->bytes + 12);
   return WEBP_MUX_OK;
 }
 
@@ -424,13 +406,13 @@ static WebPMuxError GetImageInfo(const WebPMuxImage* const wpi,
                                  int* const x_offset, int* const y_offset,
                                  int* const duration,
                                  int* const width, int* const height) {
-  const WebPChunk* const frame_frgm_chunk = wpi->header_;
+  const WebPChunk* const frame_chunk = wpi->header_;
   WebPMuxError err;
   assert(wpi != NULL);
-  assert(frame_frgm_chunk != NULL);
+  assert(frame_chunk != NULL);
 
-  // Get offsets and duration from ANMF/FRGM chunk.
-  err = GetFrameFragmentInfo(frame_frgm_chunk, x_offset, y_offset, duration);
+  // Get offsets and duration from ANMF chunk.
+  err = GetFrameInfo(frame_chunk, x_offset, y_offset, duration);
   if (err != WEBP_MUX_OK) return err;
 
   // Get width and height from VP8/VP8L chunk.
@@ -441,7 +423,6 @@ static WebPMuxError GetImageInfo(const WebPMuxImage* const wpi,
 
 // Returns the tightest dimension for the canvas considering the image list.
 static WebPMuxError GetAdjustedCanvasSize(const WebPMux* const mux,
-                                          uint32_t flags,
                                           int* const width, int* const height) {
   WebPMuxImage* wpi = NULL;
   assert(mux != NULL);
@@ -452,12 +433,10 @@ static WebPMuxError GetAdjustedCanvasSize(const WebPMux* const mux,
   assert(wpi->img_ != NULL);
 
   if (wpi->next_ != NULL) {
-    int max_x = 0;
-    int max_y = 0;
-    int64_t image_area = 0;
+    int max_x = 0, max_y = 0;
     // if we have a chain of wpi's, header_ is necessarily set
     assert(wpi->header_ != NULL);
-    // Aggregate the bounding box for animation frames & fragmented images.
+    // Aggregate the bounding box for animation frames.
     for (; wpi != NULL; wpi = wpi->next_) {
       int x_offset = 0, y_offset = 0, duration = 0, w = 0, h = 0;
       const WebPMuxError err = GetImageInfo(wpi, &x_offset, &y_offset,
@@ -470,19 +449,9 @@ static WebPMuxError GetAdjustedCanvasSize(const WebPMux* const mux,
 
       if (max_x_pos > max_x) max_x = max_x_pos;
       if (max_y_pos > max_y) max_y = max_y_pos;
-      image_area += w * h;
     }
     *width = max_x;
     *height = max_y;
-    // Crude check to validate that there are no image overlaps/holes for
-    // fragmented images. Check that the aggregated image area for individual
-    // fragments exactly matches the image area of the constructed canvas.
-    // However, the area-match is necessary but not sufficient condition.
-    if ((flags & FRAGMENTS_FLAG) && (image_area != (max_x * max_y))) {
-      *width = 0;
-      *height = 0;
-      return WEBP_MUX_INVALID_ARGUMENT;
-    }
   } else {
     // For a single image, canvas dimensions are same as image dimensions.
     *width = wpi->width_;
@@ -528,10 +497,7 @@ static WebPMuxError CreateVP8XChunk(WebPMux* const mux) {
     flags |= XMP_FLAG;
   }
   if (images->header_ != NULL) {
-    if (images->header_->tag_ == kChunks[IDX_FRGM].tag) {
-      // This is a fragmented image.
-      flags |= FRAGMENTS_FLAG;
-    } else if (images->header_->tag_ == kChunks[IDX_ANMF].tag) {
+    if (images->header_->tag_ == kChunks[IDX_ANMF].tag) {
       // This is an image with animation.
       flags |= ANIMATION_FLAG;
     }
@@ -540,7 +506,7 @@ static WebPMuxError CreateVP8XChunk(WebPMux* const mux) {
     flags |= ALPHA_FLAG;  // Some images have an alpha channel.
   }
 
-  err = GetAdjustedCanvasSize(mux, flags, &width, &height);
+  err = GetAdjustedCanvasSize(mux, &width, &height);
   if (err != WEBP_MUX_OK) return err;
 
   if (width <= 0 || height <= 0) {
@@ -580,31 +546,26 @@ static WebPMuxError CreateVP8XChunk(WebPMux* const mux) {
 // Cleans up 'mux' by removing any unnecessary chunks.
 static WebPMuxError MuxCleanup(WebPMux* const mux) {
   int num_frames;
-  int num_fragments;
   int num_anim_chunks;
 
-  // If we have an image with a single fragment or frame, and its rectangle
-  // covers the whole canvas, convert it to a non-animated non-fragmented image
-  // (to avoid writing FRGM/ANMF chunk unnecessarily).
+  // If we have an image with a single frame, and its rectangle
+  // covers the whole canvas, convert it to a non-animated image
+  // (to avoid writing ANMF chunk unnecessarily).
   WebPMuxError err = WebPMuxNumChunks(mux, kChunks[IDX_ANMF].id, &num_frames);
   if (err != WEBP_MUX_OK) return err;
-  err = WebPMuxNumChunks(mux, kChunks[IDX_FRGM].id, &num_fragments);
-  if (err != WEBP_MUX_OK) return err;
-  if (num_frames == 1 || num_fragments == 1) {
-    WebPMuxImage* frame_frag;
-    err = MuxImageGetNth((const WebPMuxImage**)&mux->images_, 1, &frame_frag);
-    assert(err == WEBP_MUX_OK);  // We know that one frame/fragment does exist.
-    assert(frame_frag != NULL);
-    if (frame_frag->header_ != NULL &&
+  if (num_frames == 1) {
+    WebPMuxImage* frame = NULL;
+    err = MuxImageGetNth((const WebPMuxImage**)&mux->images_, 1, &frame);
+    assert(err == WEBP_MUX_OK);  // We know that one frame does exist.
+    assert(frame != NULL);
+    if (frame->header_ != NULL &&
         ((mux->canvas_width_ == 0 && mux->canvas_height_ == 0) ||
-         (frame_frag->width_ == mux->canvas_width_ &&
-          frame_frag->height_ == mux->canvas_height_))) {
-      assert(frame_frag->header_->tag_ == kChunks[IDX_ANMF].tag ||
-             frame_frag->header_->tag_ == kChunks[IDX_FRGM].tag);
-      ChunkDelete(frame_frag->header_);  // Removes ANMF/FRGM chunk.
-      frame_frag->header_ = NULL;
+         (frame->width_ == mux->canvas_width_ &&
+          frame->height_ == mux->canvas_height_))) {
+      assert(frame->header_->tag_ == kChunks[IDX_ANMF].tag);
+      ChunkDelete(frame->header_);  // Removes ANMF chunk.
+      frame->header_ = NULL;
       num_frames = 0;
-      num_fragments = 0;
     }
   }
   // Remove ANIM chunk if this is a non-animated image.

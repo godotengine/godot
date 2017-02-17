@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-#define WEBP_ENCODER_ABI_VERSION 0x0209    // MAJOR(8b) + MINOR(8b)
+#define WEBP_ENCODER_ABI_VERSION 0x020e    // MAJOR(8b) + MINOR(8b)
 
 // Note: forward declaring enumerations is not allowed in (strict) C and C++,
 // the types are left here for reference.
@@ -141,12 +141,10 @@ struct WebPConfig {
                           // RGB information for better compression. The default
                           // value is 0.
 
-#ifdef WEBP_EXPERIMENTAL_FEATURES
-  int delta_palettization;
+  int use_delta_palette;  // reserved for future lossless feature
+  int use_sharp_yuv;      // if needed, use sharp (and slow) RGB->YUV conversion
+
   uint32_t pad[2];        // padding for later use
-#else
-  uint32_t pad[3];        // padding for later use
-#endif  // WEBP_EXPERIMENTAL_FEATURES
 };
 
 // Enumerate some predefined settings for WebPConfig, depending on the type
@@ -388,9 +386,24 @@ WEBP_EXTERN(void) WebPPictureFree(WebPPicture* picture);
 // Returns false in case of memory allocation error.
 WEBP_EXTERN(int) WebPPictureCopy(const WebPPicture* src, WebPPicture* dst);
 
+// Compute the single distortion for packed planes of samples.
+// 'src' will be compared to 'ref', and the raw distortion stored into
+// '*distortion'. The refined metric (log(MSE), log(1 - ssim),...' will be
+// stored in '*result'.
+// 'x_step' is the horizontal stride (in bytes) between samples.
+// 'src/ref_stride' is the byte distance between rows.
+// Returns false in case of error (bad parameter, memory allocation error, ...).
+WEBP_EXTERN(int) WebPPlaneDistortion(const uint8_t* src, size_t src_stride,
+                                     const uint8_t* ref, size_t ref_stride,
+                                     int width, int height,
+                                     size_t x_step,
+                                     int type,   // 0 = PSNR, 1 = SSIM, 2 = LSIM
+                                     float* distortion, float* result);
+
 // Compute PSNR, SSIM or LSIM distortion metric between two pictures. Results
-// are in dB, stored in result[] in the Y/U/V/Alpha/All or B/G/R/A/All order.
-// Returns false in case of error (src and ref don't have same dimension, ...)
+// are in dB, stored in result[] in the B/G/R/A/All order. The distortion is
+// always performed using ARGB samples. Hence if the input is YUV(A), the
+// picture will be internally converted to ARGB (just for the measurement).
 // Warning: this function is rather CPU-intensive.
 WEBP_EXTERN(int) WebPPictureDistortion(
     const WebPPicture* src, const WebPPicture* ref,
@@ -473,11 +486,13 @@ WEBP_EXTERN(int) WebPPictureARGBToYUVA(WebPPicture* picture,
 WEBP_EXTERN(int) WebPPictureARGBToYUVADithered(
     WebPPicture* picture, WebPEncCSP colorspace, float dithering);
 
-// Performs 'smart' RGBA->YUVA420 downsampling and colorspace conversion.
+// Performs 'sharp' RGBA->YUVA420 downsampling and colorspace conversion.
 // Downsampling is handled with extra care in case of color clipping. This
 // method is roughly 2x slower than WebPPictureARGBToYUVA() but produces better
-// YUV representation.
+// and sharper YUV representation.
 // Returns false in case of error.
+WEBP_EXTERN(int) WebPPictureSharpARGBToYUVA(WebPPicture* picture);
+// kept for backward compatibility:
 WEBP_EXTERN(int) WebPPictureSmartARGBToYUVA(WebPPicture* picture);
 
 // Converts picture->yuv to picture->argb and sets picture->use_argb to true.

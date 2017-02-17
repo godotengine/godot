@@ -14,6 +14,7 @@
 
 #include "./dsp.h"
 #include "./lossless.h"
+#include "./lossless_common.h"
 
 #if defined(WEBP_USE_MIPS32)
 
@@ -240,6 +241,49 @@ static WEBP_INLINE void GetEntropyUnrefinedHelper(
   *i_prev = i;
 }
 
+static void GetEntropyUnrefined(const uint32_t X[], int length,
+                                VP8LBitEntropy* const bit_entropy,
+                                VP8LStreaks* const stats) {
+  int i;
+  int i_prev = 0;
+  uint32_t x_prev = X[0];
+
+  memset(stats, 0, sizeof(*stats));
+  VP8LBitEntropyInit(bit_entropy);
+
+  for (i = 1; i < length; ++i) {
+    const uint32_t x = X[i];
+    if (x != x_prev) {
+      GetEntropyUnrefinedHelper(x, i, &x_prev, &i_prev, bit_entropy, stats);
+    }
+  }
+  GetEntropyUnrefinedHelper(0, i, &x_prev, &i_prev, bit_entropy, stats);
+
+  bit_entropy->entropy += VP8LFastSLog2(bit_entropy->sum);
+}
+
+static void GetCombinedEntropyUnrefined(const uint32_t X[], const uint32_t Y[],
+                                        int length,
+                                        VP8LBitEntropy* const bit_entropy,
+                                        VP8LStreaks* const stats) {
+  int i = 1;
+  int i_prev = 0;
+  uint32_t xy_prev = X[0] + Y[0];
+
+  memset(stats, 0, sizeof(*stats));
+  VP8LBitEntropyInit(bit_entropy);
+
+  for (i = 1; i < length; ++i) {
+    const uint32_t xy = X[i] + Y[i];
+    if (xy != xy_prev) {
+      GetEntropyUnrefinedHelper(xy, i, &xy_prev, &i_prev, bit_entropy, stats);
+    }
+  }
+  GetEntropyUnrefinedHelper(0, i, &xy_prev, &i_prev, bit_entropy, stats);
+
+  bit_entropy->entropy += VP8LFastSLog2(bit_entropy->sum);
+}
+
 #define ASM_START                                       \
   __asm__ volatile(                                     \
     ".set   push                            \n\t"       \
@@ -375,7 +419,8 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitMIPS32(void) {
   VP8LFastLog2Slow = FastLog2Slow;
   VP8LExtraCost = ExtraCost;
   VP8LExtraCostCombined = ExtraCostCombined;
-  VP8LGetEntropyUnrefinedHelper = GetEntropyUnrefinedHelper;
+  VP8LGetEntropyUnrefined = GetEntropyUnrefined;
+  VP8LGetCombinedEntropyUnrefined = GetCombinedEntropyUnrefined;
   VP8LHistogramAdd = HistogramAdd;
 }
 

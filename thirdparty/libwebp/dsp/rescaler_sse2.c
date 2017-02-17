@@ -17,7 +17,7 @@
 #include <emmintrin.h>
 
 #include <assert.h>
-#include "../utils/rescaler.h"
+#include "../utils/rescaler_utils.h"
 #include "../utils/utils.h"
 
 //------------------------------------------------------------------------------
