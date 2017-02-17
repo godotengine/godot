@@ -30,6 +30,7 @@
 #include "gd_compiler.h"
 #include "globals.h"
 #include "os/file_access.h"
+#include "scene/scene_string_names.h"
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 
@@ -1016,9 +1017,9 @@ static bool _guess_identifier_from_assignment_in_function(GDCompletionContext& c
 
 	for(int i=0;i<func->body->statements.size();i++) {
 
-		if (func->body->statements[i]->line == p_src_line) {
+		/*if (func->body->statements[i]->line == p_src_line) {
 			break;
-		}
+		}*/
 
 		if (func->body->statements[i]->type==GDParser::BlockNode::TYPE_OPERATOR) {
 			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(func->body->statements[i]);
@@ -1130,7 +1131,7 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 
 					r_type=_get_type_from_pinfo(context._class->variables[i]._export);
 					return true;
-				} else if (context._class->variables[i].expression) {
+				} else if (context._class->variables[i].expression && p_line + 1 != context._class->variables[i].expression->line) {
 
 					bool rtype = _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
 					if (rtype && r_type.type!=Variant::NIL)
@@ -1138,13 +1139,26 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 					//return _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
 				}
 
+
 				//try to guess from assignment in construtor or _ready
-				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_ready",r_type))
-					return true;
-				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_enter_tree",r_type))
-					return true;
-				if (_guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,"_init",r_type))
-					return true;
+				//while preventing endless recursive loops
+				if(context.function){
+					if ( context.function->name != SceneStringNames::get_singleton()->_ready && _guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,SceneStringNames::get_singleton()->_ready,r_type))
+						return true;
+					if ( context.function->name != SceneStringNames::get_singleton()->_enter_tree && _guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,SceneStringNames::get_singleton()->_enter_tree,r_type))
+						return true;
+					if ( context.function->name != GDScriptLanguage::get_singleton()->strings._init && _guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,GDScriptLanguage::get_singleton()->strings._init,r_type))
+						return true;
+				}else{
+					if ( _guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,SceneStringNames::get_singleton()->_ready,r_type))
+						return true;
+					if ( _guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,SceneStringNames::get_singleton()->_enter_tree,r_type))
+						return true;
+					if ( _guess_identifier_from_assignment_in_function(context,p_line+1,p_identifier,GDScriptLanguage::get_singleton()->strings._init,r_type))
+						return true;
+				}
+
+
 
 				return false;
 			}
