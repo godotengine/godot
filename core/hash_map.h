@@ -30,38 +30,43 @@
 #define HASH_MAP_H
 
 #include "hashfuncs.h"
+#include "math_funcs.h"
 #include "error_macros.h"
 #include "ustring.h"
 #include "os/memory.h"
 #include "list.h"
 
-
-class HashMapHahserDefault {
-public:
-
+struct HashMapHasherDefault {
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string)  { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr)  { return hash_djb2(p_cstr); }
-	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int)  {
-		uint64_t v=p_int;
-		v = (~v) + (v << 18); // v = (v << 18) - v - 1;
-		v = v ^ (v >> 31);
-		v = v * 21; // v = (v + (v << 2)) + (v << 4);
-		v = v ^ (v >> 11);
-		v = v + (v << 6);
-		v = v ^ (v >> 22);
-		return (int) v;
-	}
+	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int)  { return hash_one_uint64(p_int);	}
+
 	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int)  { return hash(uint64_t(p_int)); }
-
-
-	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_int)  { return p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const float p_float)  { return hash_djb2_one_float(p_float); }
+	static _FORCE_INLINE_ uint32_t hash(const double p_double){ return hash_djb2_one_float(p_double); }
+	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_int) { return p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int)  { return (uint32_t)p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int)  { return p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int)  { return (uint32_t)p_int; }
 	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int)  { return p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int)  { return (uint32_t)p_int; }
-	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar)  { return (uint32_t)p_wchar; }
+	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int)   { return (uint32_t)p_int; }
+	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar){ return (uint32_t)p_wchar; }
 	//static _FORCE_INLINE_ uint32_t hash(const void* p_ptr)  { return uint32_t(uint64_t(p_ptr))*(0x9e3779b1L); }
+};
+
+template <typename T>
+struct HashMapComparatorDefault {
+	static bool compare(const T& p_lhs, const T& p_rhs) {
+		return p_lhs == p_rhs;
+	}
+
+	bool compare(const float& p_lhs, const float& p_rhs) {
+		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+	}
+
+	bool compare(const double& p_lhs, const double& p_rhs) {
+		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+	}
 };
 
 /**
@@ -74,13 +79,14 @@ public:
  * @param TKey  Key, search is based on it, needs to be hasheable. It is unique in this container.
  * @param TData Data, data associated with the key
  * @param Hasher Hasher object, needs to provide a valid static hash function for TKey
+ * @param Comparator comparator object, needs to be able to safely compare two TKey values. It needs to ensure that x == x for any items inserted in the map. Bear in mind that nan != nan when implementing an equality check.
  * @param MIN_HASH_TABLE_POWER Miminum size of the hash table, as a power of two. You rarely need to change this parameter.
  * @param RELATIONSHIP Relationship at which the hash table is resized. if amount of elements is RELATIONSHIP
  * times bigger than the hash table, table is resized to solve this condition. if RELATIONSHIP is zero, table is always MIN_HASH_TABLE_POWER.
  *
 */
 
-template<class TKey, class TData, class Hasher=HashMapHahserDefault,uint8_t MIN_HASH_TABLE_POWER=3,uint8_t RELATIONSHIP=8>
+template<class TKey, class TData, class Hasher=HashMapHasherDefault, class Comparator=HashMapComparatorDefault<TKey>, uint8_t MIN_HASH_TABLE_POWER=3,uint8_t RELATIONSHIP=8>
 class HashMap {
 public:
 
@@ -194,7 +200,6 @@ private:
 
 	}
 
-
 	/* I want to have only one function.. */
 	_FORCE_INLINE_ const Entry * get_entry( const TKey& p_key ) const {
 
@@ -206,7 +211,7 @@ private:
 		while (e) {
 
 			/* checking hash first avoids comparing key, which may take longer */
-			if (e->hash == hash && e->pair.key == p_key ) {
+			if (e->hash == hash && Comparator::compare(e->pair.key,p_key) ) {
 
 				/* the pair exists in this hashtable, so just update data */
 				return e;
@@ -253,7 +258,6 @@ private:
 		for (int i=0;i<( 1<<p_t.hash_table_power );i++) {
 
 			hash_table[i]=NULL;
-			/* elements will be in the reverse order, but it doesn't matter */
 
 			const Entry *e = p_t.hash_table[i];
 
@@ -385,7 +389,7 @@ public:
 		while (e) {
 
 			/* checking hash first avoids comparing key, which may take longer */
-			if (e->hash == hash && e->pair.key == p_custom_key ) {
+			if (e->hash == hash && Comparator::compare(e->pair.key,p_custom_key) ) {
 
 				/* the pair exists in this hashtable, so just update data */
 				return &e->pair.data;
@@ -411,7 +415,7 @@ public:
 		while (e) {
 
 			/* checking hash first avoids comparing key, which may take longer */
-			if (e->hash == hash && e->pair.key == p_custom_key ) {
+			if (e->hash == hash && Comparator::compare(e->pair.key,p_custom_key) ) {
 
 				/* the pair exists in this hashtable, so just update data */
 				return &e->pair.data;
@@ -442,7 +446,7 @@ public:
 		while (e) {
 
 			/* checking hash first avoids comparing key, which may take longer */
-			if (e->hash == hash && e->pair.key == p_key ) {
+			if (e->hash == hash && Comparator::compare(e->pair.key,p_key) ) {
 
 				if (p) {
 
@@ -637,7 +641,8 @@ public:
 
 		clear();
 	}
-
 };
+
+
 
 #endif

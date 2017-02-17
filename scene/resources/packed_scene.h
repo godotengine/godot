@@ -91,8 +91,8 @@ class SceneState : public Reference {
 	Vector<ConnectionData> connections;
 
 
-	Error _parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<StringName,int> &name_map,HashMap<Variant,int,VariantHasher> &variant_map,Map<Node*,int> &node_map,Map<Node*,int> &nodepath_map);
-	Error _parse_connections(Node *p_owner,Node *p_node, Map<StringName,int> &name_map,HashMap<Variant,int,VariantHasher> &variant_map,Map<Node*,int> &node_map,Map<Node*,int> &nodepath_map);
+	Error _parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<StringName,int> &name_map,HashMap<Variant,int,VariantHasher,VariantComparator> &variant_map,Map<Node*,int> &node_map,Map<Node*,int> &nodepath_map);
+	Error _parse_connections(Node *p_owner,Node *p_node, Map<StringName,int> &name_map,HashMap<Variant,int,VariantHasher,VariantComparator> &variant_map,Map<Node*,int> &node_map,Map<Node*,int> &nodepath_map);
 
 	String path;
 

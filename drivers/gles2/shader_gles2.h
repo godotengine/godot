@@ -134,7 +134,7 @@ private:
 
 	struct VersionKeyHash {
 
-		static _FORCE_INLINE_ uint32_t hash( const VersionKey& p_key) { return HashMapHahserDefault::hash(p_key.key); };
+		static _FORCE_INLINE_ uint32_t hash( const VersionKey& p_key) { return HashMapHasherDefault::hash(p_key.key); };
 	};
 
 	//this should use a way more cachefriendly version..
