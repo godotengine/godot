@@ -1199,7 +1199,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			} else if (p_button==0) {
 
 				signal_editor->edit(name);
-				edit_signal_dialog->set_title(TTR("Editing Signal:")+" "+name);
+				edit_signal_dialog->set_title(TTR("Editing Signal: " + name));
 				edit_signal_dialog->popup_centered_minsize(Size2(400,300)*EDSCALE);
 			}
 
