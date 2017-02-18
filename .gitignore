@@ -246,6 +246,9 @@ node_modules/
 #Kdevelop project files
 *.kdev4
 
+# xCode
+xcuserdata
+
 # RIA/Silverlight projects
 Generated_Code/
 
