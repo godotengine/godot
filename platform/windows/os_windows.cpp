@@ -1255,6 +1255,10 @@ void OS_Windows::finalize() {
 
 	main_loop=NULL;
 
+	for (int i = 0; i < get_audio_driver_count(); i++) {
+		AudioDriverManager::get_driver(i)->finish();
+	}
+
 	memdelete(joypad);
 	memdelete(input);
 
@@ -1282,13 +1286,8 @@ void OS_Windows::finalize() {
 	memdelete(physics_2d_server);
 
 	monitor_info.clear();
-
-	for (int i = 0; i < get_audio_driver_count(); i++)
-	{
-		AudioDriverManager::get_driver(i)->finish();
-	}
-
 }
+
 void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
