@@ -94,6 +94,8 @@ String GlobalConfig::localize_path(const String& p_path) const {
 		if (plocal == "") {
 			return "";
 		};
+		if (plocal.find("res:/") != -1 && (plocal.find("res://") == -1))
+			plocal = plocal.replace("res:/", "res://");
 		return plocal + path.substr(sep, path.size() - sep);
 	};
 
