@@ -50,7 +50,7 @@ int Line2DEditor::get_point_index_at(Vector2 gpos) {
 	return -1;
 }
 
-bool Line2DEditor::forward_input_event(const InputEvent& p_event) {
+bool Line2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (!node)
 		return false;
@@ -84,8 +84,8 @@ bool Line2DEditor::forward_input_event(const InputEvent& p_event) {
 						undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(), "update");
 						undo_redo->commit_action();
 					}
+					return true;
 				}
-				return true;
 			}
 
 			if(mb.pressed && mb.button_index == BUTTON_LEFT && ((mb.mod.command && mode == MODE_EDIT) || mode == MODE_CREATE)) {
