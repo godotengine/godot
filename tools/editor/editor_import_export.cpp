@@ -143,7 +143,7 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 
 Error EditorExportPlatform::_save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
-
+	return ERR_UNAVAILABLE;
 }
 
 Error EditorExportPlatform::_save_zip_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
@@ -208,17 +208,17 @@ String EditorExportPlatform::find_export_template(String template_file_name, Str
 
 Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset>& p_preset,EditorExportSaveFunction p_func, void* p_udata) {
 
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset>& p_preset,FileAccess *p_where) {
 
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset>& p_preset,const String& p_path) {
 
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 EditorExportPlatform::EditorExportPlatform() {
