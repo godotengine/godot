@@ -1647,7 +1647,8 @@ int String::to_int() const {
 	if (length()==0)
 		return 0;
 
-	int to=(find(".")>=0) ? find(".") : length() ;
+	int dot = MAX(find("."),find(","));
+	int to=(dot>=0) ? dot : length();
 
 	int integer=0;
 	int sign=1;
@@ -1675,7 +1676,8 @@ int64_t String::to_int64() const {
 	if (length()==0)
 		return 0;
 
-	int to=(find(".")>=0) ? find(".") : length() ;
+	int dot = MAX(find("."),find(","));
+	int to=(dot>=0) ? dot : length();
 
 	int64_t integer=0;
 	int64_t sign=1;
@@ -1705,7 +1707,7 @@ int String::to_int(const char* p_str,int p_len) {
 	if (p_len>=0)
 		to=p_len;
 	else {
-		while(p_str[to]!=0 && p_str[to]!='.')
+		while(p_str[to]!=0 && p_str[to]!='.' && p_str[to]!=',')
 			to++;
 	}
 
@@ -1744,7 +1746,7 @@ bool String::is_numeric() const {
 	for (int i=s; i<length(); i++) {
 
 		CharType c = operator[](i);
-		if (c == '.') {
+		if (c == '.' || c == ',') {
 			if (dot) {
 				return false;
 			};
@@ -1845,7 +1847,7 @@ static double built_in_strtod(const C *string,         /* A decimal ASCII floati
     {
 	c = *p;
 	if (!IS_DIGIT(c)) {
-	    if ((c != '.') || (decPt >= 0)) {
+	    if ((c != '.' && c != ',') || (decPt >= 0)) {
 		break;
 	    }
 	    decPt = mantSize;
@@ -1884,7 +1886,7 @@ static double built_in_strtod(const C *string,         /* A decimal ASCII floati
 	for ( ; mantSize > 9; mantSize -= 1) {
 	    c = *p;
 	    p += 1;
-	    if (c == '.') {
+	    if (c == '.' || c == ',') {
 		c = *p;
 		p += 1;
 	    }
@@ -1894,7 +1896,7 @@ static double built_in_strtod(const C *string,         /* A decimal ASCII floati
 	for (; mantSize > 0; mantSize -= 1) {
 	    c = *p;
 	    p += 1;
-	    if (c == '.') {
+	    if (c == '.' || c == ',') {
 		c = *p;
 		p += 1;
 	    }
@@ -3566,7 +3568,7 @@ String String::xml_unescape() const {
 String String::pad_decimals(int p_digits) const {
 
 	String s=*this;
-	int c = s.find(".");
+	int c = MAX(s.find("."), s.find(","));
 
 	if (c==-1) {
 		if (p_digits<=0) {
@@ -3593,7 +3595,7 @@ String String::pad_decimals(int p_digits) const {
 String String::pad_zeros(int p_digits) const {
 
 	String s=*this;
-	int end = s.find(".");
+	int end = MAX(s.find("."),s.find(","));
 
 	if (end==-1) {
 		end=s.length();
@@ -3704,7 +3706,7 @@ bool String::is_valid_float() const {
 				numbers_found=true;
 		} else if (numbers_found && !exponent_found && operator[](i)=='e') {
 			exponent_found=true;
-		} else if (!period_found && !exponent_found && operator[](i)=='.') {
+		} else if (!period_found && !exponent_found && (operator[](i)=='.' || operator[](i)==',')) {
 			period_found=true;
 		} else if ((operator[](i)=='-' || operator[](i)=='+') && exponent_found && !exponent_values_found && !sign_found) {
 			sign_found=true;
@@ -3918,7 +3920,7 @@ String String::percent_encode() const {
 	String encoded;
 	for(int i=0;i<cs.length();i++) {
 		uint8_t c = cs[i];
-		if ( (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='-' || c=='_' || c=='~' || c=='.') {
+		if ( (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='-' || c=='_' || c=='~' || c=='.' || c==',') {
 
 			char p[2]={(char)c,0};
 			encoded+=p;
