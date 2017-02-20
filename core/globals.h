@@ -85,6 +85,7 @@ protected:
 
 	static GlobalConfig *singleton;
 
+	Error _load_engine_settings(const String base_path);
 	Error _load_settings(const String p_path);
 	Error _load_settings_binary(const String p_path);
 
