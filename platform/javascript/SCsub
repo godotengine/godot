@@ -2,6 +2,9 @@
 
 Import('env')
 
+env.Tool('textfile')
+env.Tool('zip')
+
 javascript_files = [
     "os_javascript.cpp",
     "audio_driver_javascript.cpp",
@@ -21,18 +24,26 @@ for x in javascript_files:
 env.Append(LINKFLAGS=["-s", "EXPORTED_FUNCTIONS=\"['_main','_audio_server_mix_function','_main_after_fs_sync']\""])
 env.Append(LINKFLAGS=["--shell-file", '"platform/javascript/godot_shell.html"'])
 
-build = env.Program('#bin/godot', javascript_objects, PROGSUFFIX=env["PROGSUFFIX"] + ".html")
-Depends(build, "godot_shell.html")
+html_file = env.Program('#bin/godot', javascript_objects, PROGSUFFIX=env["PROGSUFFIX"] + ".html")[0]
+Depends(html_file, "godot_shell.html")
+basename = "godot" + env["PROGSUFFIX"] # output file name without file extension
 
-def make_html_shell(target, source, env):
-    html_path = target[0].rstr()
-    assert html_path[:4] == 'bin/'
-    assert html_path[-5:] == '.html'
-    basename = html_path[4:-5]
-    with open(html_path, 'r+') as html_file:
-        fixed_html = html_file.read().replace('.html.mem', '.mem').replace(basename, '$GODOT_BASE')
-        html_file.seek(0)
-        html_file.truncate()
-        html_file.write(fixed_html)
+# Emscripten hardcodes file names, so replace common base name with
+# placeholder while leaving extension; also change `.html.mem` to just `.mem`
+fixup_html = env.Substfile(html_file, SUBST_DICT=[(basename, '$$GODOT_BASE'), ('.html.mem', '.mem')], SUBSTFILESUFFIX='.fixup.html')
 
-env.AddPostAction(build, Action(make_html_shell, "Creating HTML shell file"))
+zip_dir = env.Dir('#bin/js_zip')
+zip_files = []
+js_file = env.SideEffect(html_file.File(basename+'.js'), html_file)
+zip_files.append(env.InstallAs(
+    [zip_dir.File('godot.html'), zip_dir.File('godot.js'), zip_dir.File('godotfs.js')],
+    [fixup_html, js_file, '#misc/dist/html_fs/godotfs.js']))
+
+if env['wasm'] == 'yes':
+    wasm_file = env.SideEffect(html_file.File(basename+'.wasm'), html_file)
+    zip_files.append(env.InstallAs(zip_dir.File('godot.wasm'), wasm_file))
+else:
+    asmjs_files = env.SideEffect([html_file.File(basename+'.asm.js'), html_file.File(basename+'.html.mem')], html_file)
+    zip_files.append(env.InstallAs([zip_dir.File('godot.asm.js'), zip_dir.File('godot.mem')], asmjs_files))
+
+Zip('#bin/godot', zip_files, ZIPSUFFIX=env['PROGSUFFIX']+env['ZIPSUFFIX'], ZIPROOT=zip_dir)
