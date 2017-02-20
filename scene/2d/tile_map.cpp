@@ -737,6 +737,7 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y,bo
 	c.transpose=p_transpose;
 
 	_make_quadrant_dirty(Q);
+	used_size_cache_dirty=true;
 
 }
 
@@ -825,6 +826,7 @@ void TileMap::clear() {
 
 	_clear_quadrants();
 	tile_map.clear();
+	used_size_cache_dirty=true;
 }
 
 void TileMap::_set_tile_data(const DVector<int>& p_data) {
@@ -1164,6 +1166,28 @@ Array TileMap::get_used_cells() const {
 	return a;
 }
 
+Rect2 TileMap::get_used_rect() { // Not const because of cache
+
+	if (used_size_cache_dirty) {
+		if(tile_map.size() > 0) {
+			used_size_cache = Rect2(tile_map.front()->key().x, tile_map.front()->key().y, 0, 0);
+
+			for (Map<PosKey,Cell>::Element *E=tile_map.front();E;E=E->next()) {
+				used_size_cache.expand_to(Vector2(E->key().x, E->key().y));
+			}
+
+			used_size_cache.size += Vector2(1,1);
+		} else {
+			used_size_cache = Rect2();
+		}
+
+		used_size_cache_dirty = false;
+	}
+
+	return used_size_cache;
+}
+
+
 void TileMap::set_occluder_light_mask(int p_mask) {
 
 	occluder_light_mask=p_mask;
@@ -1256,6 +1280,7 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear"),&TileMap::clear);
 
 	ObjectTypeDB::bind_method(_MD("get_used_cells"),&TileMap::get_used_cells);
+	ObjectTypeDB::bind_method(_MD("get_used_rect"),&TileMap::get_used_rect);
 
 	ObjectTypeDB::bind_method(_MD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("world_to_map","worldpos"),&TileMap::world_to_map);
@@ -1305,6 +1330,7 @@ TileMap::TileMap() {
 
 
 	rect_cache_dirty=true;
+	used_size_cache_dirty=true;
 	pending_update=false;
 	quadrant_order_dirty=false;
 	quadrant_size=16;
