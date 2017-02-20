@@ -53,6 +53,12 @@ public:
 		PAUSE_MODE_PROCESS
 	};
 
+	enum DuplicateFlags {
+
+		DUPLICATE_SIGNALS=1,
+		DUPLICATE_GROUPS=2,
+		DUPLICATE_SCRIPTS=4
+	};
 
 	struct Comparator {
 
@@ -139,7 +145,7 @@ private:
 
 	void _duplicate_signals(const Node* p_original,Node* p_copy) const;
 	void _duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const;
-	Node *_duplicate(bool p_use_instancing) const;
+	Node *_duplicate(bool p_use_instancing,int p_flags) const;
 
 	Array _get_children() const;
 	Array _get_groups() const;
@@ -278,7 +284,7 @@ public:
 
 	int get_position_in_parent() const;
 
-	Node *duplicate(bool p_use_instancing=false) const;
+	Node *duplicate(bool p_use_instancing=false,int p_flags=DUPLICATE_GROUPS|DUPLICATE_SIGNALS|DUPLICATE_SCRIPTS) const;
 	Node *duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const;
 
 	//Node *clone_tree() const;
