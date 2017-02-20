@@ -2288,7 +2288,7 @@ int Node::get_position_in_parent() const {
 
 
 
-Node *Node::_duplicate(bool p_use_instancing) const {
+Node *Node::_duplicate(int p_flags) const {
 
 
 	Node *node=NULL;
@@ -2302,7 +2302,7 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 		nip->set_instance_path( ip->get_instance_path() );
 		node=nip;
 
-	} else if (p_use_instancing && get_filename()!=String()) {
+	} else if ((p_flags&DUPLICATE_USE_INSTANCING) && get_filename()!=String()) {
 
 		Ref<PackedScene> res = ResourceLoader::load(get_filename());
 		ERR_FAIL_COND_V(res.is_null(),NULL);
@@ -2335,20 +2335,26 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
 			continue;
 		String name = E->get().name;
+		if (!(p_flags&DUPLICATE_SCRIPTS) && name=="script/script")
+			continue;
+
 		node->set( name, get(name) );
 
 	}
 
 	node->set_name(get_name());
 
-	List<GroupInfo> gi;
-	get_groups(&gi);
-	for (List<GroupInfo>::Element *E=gi.front();E;E=E->next()) {
+	if (p_flags & DUPLICATE_GROUPS) {
+		List<GroupInfo> gi;
+		get_groups(&gi);
+		for (List<GroupInfo>::Element *E=gi.front();E;E=E->next()) {
 
-		node->add_to_group(E->get().name, E->get().persistent);
+			node->add_to_group(E->get().name, E->get().persistent);
+		}
 	}
 
-	_duplicate_signals(this, node);
+	if (p_flags & DUPLICATE_SIGNALS)
+		_duplicate_signals(this, node);
 
 	for(int i=0;i<get_child_count();i++) {
 
@@ -2357,7 +2363,7 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 		if (instanced && get_child(i)->data.owner==this)
 			continue; //part of instance
 
-		Node *dup = get_child(i)->duplicate(p_use_instancing);
+		Node *dup = get_child(i)->duplicate(p_flags);
 		if (!dup) {
 
 			memdelete(node);
@@ -2371,11 +2377,11 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 	return node;
 }
 
-Node *Node::duplicate(bool p_use_instancing) const {
+Node *Node::duplicate(int p_flags) const {
 
-	Node* dupe = _duplicate(p_use_instancing);
+	Node* dupe = _duplicate(p_flags);
 
-	if (dupe) {
+	if (dupe && (p_flags&DUPLICATE_SIGNALS)) {
 		_duplicate_signals(this,dupe);
 	}
 
@@ -2968,7 +2974,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tree:SceneTree"),&Node::get_tree);
 
-	ClassDB::bind_method(D_METHOD("duplicate:Node","use_instancing"),&Node::duplicate,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("duplicate:Node","flags"),&Node::duplicate,DEFVAL(DUPLICATE_USE_INSTANCING|DUPLICATE_SIGNALS|DUPLICATE_GROUPS|DUPLICATE_SCRIPTS));
 	ClassDB::bind_method(D_METHOD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder","load_placeholder"),&Node::set_scene_instance_load_placeholder);
@@ -3057,6 +3063,10 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( PAUSE_MODE_INHERIT );
 	BIND_CONSTANT( PAUSE_MODE_STOP );
 	BIND_CONSTANT( PAUSE_MODE_PROCESS );
+
+	BIND_CONSTANT( DUPLICATE_SIGNALS );
+	BIND_CONSTANT( DUPLICATE_GROUPS );
+	BIND_CONSTANT( DUPLICATE_SCRIPTS );
 
 	ADD_SIGNAL( MethodInfo("renamed") );
 	ADD_SIGNAL( MethodInfo("tree_entered") );
