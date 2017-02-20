@@ -29,7 +29,7 @@
 #ifndef EDITOR_EXPORT_SCENE_H
 #define EDITOR_EXPORT_SCENE_H
 
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 
 #if 0
 class EditorSceneExportPlugin : public EditorExportPlugin {

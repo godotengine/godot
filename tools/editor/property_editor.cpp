@@ -38,7 +38,7 @@
 #include "pair.h"
 #include "scene/scene_string_names.h"
 #include "editor_settings.h"
-#include "editor_import_export.h"
+#include "editor_export.h"
 #include "editor_node.h"
 #include "multi_node_edit.h"
 #include "array_property_edit.h"

@@ -29,7 +29,7 @@
 #include "version.h"
 #include "export.h"
 #include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "tools/editor/editor_node.h"
 #include "io/zip_io.h"
 #include "io/marshalls.h"
@@ -803,9 +803,9 @@ EditorExportPlatformBB10::~EditorExportPlatformBB10() {
 	memdelete(device_thread);
 }
 
-
+#endif
 void register_bb10_exporter() {
-
+#if 0
 	EDITOR_DEF("export/blackberry/host_tools","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"export/blackberry/host_tools",PROPERTY_HINT_GLOBAL_DIR));
 	EDITOR_DEF("export/blackberry/debug_token","");
@@ -824,7 +824,7 @@ void register_bb10_exporter() {
 	Ref<EditorExportPlatformBB10> exporter = Ref<EditorExportPlatformBB10>( memnew(EditorExportPlatformBB10) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
 
-
+#endif
 }
 
-#endif
+

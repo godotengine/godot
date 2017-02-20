@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "editor_import_export.h"
+#include "editor_export.h"
 #include "version.h"
 #include "script_language.h"
 #include "globals.h"
@@ -49,6 +49,7 @@ bool EditorExportPreset::_set(const StringName& p_name, const Variant& p_value) 
 
 	if (values.has(p_name))	 {
 		values[p_name]=p_value;
+		EditorExport::singleton->save_presets();
 		return true;
 	}
 
@@ -72,15 +73,125 @@ void EditorExportPreset::_get_property_list( List<PropertyInfo> *p_list) const{
 	}
 }
 
-Vector<StringName> EditorExportPreset::get_files_to_export() const {
+Ref<EditorExportPlatform> EditorExportPreset::get_platform() {
 
-	return Vector<StringName>();
+	return platform;
 }
 
+Vector<String> EditorExportPreset::get_files_to_export() const {
+
+	Vector<String> files;
+	for(Set<String>::Element *E=selected_files.front();E;E=E->next()) {
+		files.push_back(E->get());
+	}
+	return files;
+}
+
+void EditorExportPreset::set_name(const String& p_name) {
+	name=p_name;
+	EditorExport::singleton->save_presets();
+
+}
+
+String EditorExportPreset::get_name() const {
+	return name;
+
+}
+
+void EditorExportPreset::set_runnable(bool p_enable) {
+
+	runnable=p_enable;
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::is_runnable() const {
+
+	return runnable;
+}
+
+void EditorExportPreset::set_export_filter(ExportFilter p_filter) {
+
+	export_filter=p_filter;
+	EditorExport::singleton->save_presets();
+
+}
+
+EditorExportPreset::ExportFilter EditorExportPreset::get_export_filter() const {
+	return export_filter;
+}
+
+void EditorExportPreset::set_include_filter(const String& p_include) {
+
+	include_filter=p_include;
+	EditorExport::singleton->save_presets();
+
+}
+
+String EditorExportPreset::get_include_filter() const {
+
+	return include_filter;
+}
+
+void EditorExportPreset::set_exclude_filter(const String& p_exclude) {
+
+	exclude_filter=p_exclude;
+	EditorExport::singleton->save_presets();
+}
+
+String EditorExportPreset::get_exclude_filter() const {
+
+	return exclude_filter;
+}
+
+void EditorExportPreset::add_export_file(const String& p_path) {
+
+	selected_files.insert(p_path);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::remove_export_file(const String& p_path) {
+	selected_files.erase(p_path);
+	EditorExport::singleton->save_presets();
+}
+
+bool EditorExportPreset::has_export_file(const String& p_path) {
+
+	return selected_files.has(p_path);
+}
+
+void EditorExportPreset::add_patch(const String& p_path,int p_at_pos) {
+
+	if (p_at_pos<0)
+		patches.push_back(p_path);
+	else
+		patches.insert(p_at_pos,p_path);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::remove_patch(int p_idx) {
+	patches.remove(p_idx);
+	EditorExport::singleton->save_presets();
+}
+
+void EditorExportPreset::set_patch(int p_index,const String& p_path) {
+	ERR_FAIL_INDEX(p_index,patches.size());
+	patches[p_index]=p_path;
+	EditorExport::singleton->save_presets();
+}
+String EditorExportPreset::get_patch(int p_index) {
+
+	ERR_FAIL_INDEX_V(p_index,patches.size(),String());
+	return patches[p_index];
+}
+
+Vector<String> EditorExportPreset::get_patches() const {
+	return patches;
+}
 
 EditorExportPreset::EditorExportPreset() {
 
-
+	export_filter=EXPORT_ALL_RESOURCES;
+	runnable=false;
 }
 
 
@@ -143,7 +254,7 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 
 Error EditorExportPlatform::_save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
-
+	return OK;
 }
 
 Error EditorExportPlatform::_save_zip_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
@@ -205,6 +316,24 @@ String EditorExportPlatform::find_export_template(String template_file_name, Str
 	return "";
 }
 
+Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
+
+	Ref<EditorExportPreset> preset;
+	preset.instance();
+	preset->platform=Ref<EditorExportPlatform>(this);
+
+	List<ExportOption> options;
+	get_export_options(&options);
+
+	for (List<ExportOption>::Element *E=options.front();E;E=E->next()) {
+
+		preset->properties.push_back(E->get().option);
+		preset->values[E->get().option.name]=E->get().default_value;
+	}
+
+	return preset;
+
+}
 
 Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset>& p_preset,EditorExportSaveFunction p_func, void* p_udata) {
 
@@ -228,6 +357,76 @@ EditorExportPlatform::EditorExportPlatform() {
 
 
 ////
+
+EditorExport *EditorExport::singleton=NULL;
+
+
+void EditorExport::_save() {
+
+
+	Ref<ConfigFile> config;
+	config.instance();
+	for(int i=0;i<export_presets.size();i++) {
+
+		Ref<EditorExportPreset> preset = export_presets[i];
+		String section="preset."+itos(i);
+
+		config->set_value(section,"name",preset->get_name());
+		config->set_value(section,"platform",preset->get_platform()->get_name());
+		config->set_value(section,"runnable",preset->is_runnable());
+		bool save_files=false;
+		switch(preset->get_export_filter()) {
+			case EditorExportPreset::EXPORT_ALL_RESOURCES: {
+				config->set_value(section,"export_filter","all_resources");
+			} break;
+			case EditorExportPreset::EXPORT_SELECTED_SCENES: {
+				config->set_value(section,"export_filter","scenes");
+				save_files=true;
+			} break;
+			case EditorExportPreset::EXPORT_SELECTED_RESOURCES: {
+				config->set_value(section,"export_filter","resources");
+				save_files=true;
+			} break;
+			case EditorExportPreset::EXPORT_ALL_FILES: {
+				config->set_value(section,"export_filter","all_files");
+			} break;
+
+		}
+
+		if (save_files) {
+			Vector<String> export_files = preset->get_files_to_export();
+			config->set_value(section,"export_files",export_files);
+		}
+		config->set_value(section,"include_filter",preset->get_include_filter());
+		config->set_value(section,"exclude_filter",preset->get_exclude_filter());
+		config->set_value(section,"patch_list",preset->get_patches());
+
+		String option_section="preset."+itos(i)+".options";
+
+		for (const List<PropertyInfo>::Element *E=preset->get_properties().front();E;E=E->next()) {
+			config->set_value(option_section,E->get().name,preset->get(E->get().name));
+		}
+	}
+
+	config->save("res://export_presets.cfg");
+
+	print_line("saved ok");
+
+}
+
+
+void EditorExport::save_presets() {
+
+	print_line("save presets");
+	if (block_save)
+		return;
+	save_timer->start();
+}
+
+void EditorExport::_bind_methods() {
+
+	ClassDB::bind_method("_save",&EditorExport::_save);
+}
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform>& p_platform) {
 
@@ -273,22 +472,185 @@ void EditorExport::remove_export_preset(int p_idx) {
 	export_presets.remove(p_idx);
 }
 
+void EditorExport::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		load_config();
+	}
+}
+
 void EditorExport::load_config() {
 
+	Ref<ConfigFile> config;
+	config.instance();
+	Error err = config->load("res://export_presets.cfg");
+	if (err!=OK)
+		return;
+
+	block_save=true;
+
+	int index=0;
+	while(true) {
+
+		String section = "preset."+itos(index);
+		if (!config->has_section(section))
+			break;
+
+		String platform=config->get_value(section,"platform");
+
+		Ref<EditorExportPreset> preset;
+
+		for(int i=0;i<export_platforms.size();i++) {
+			if (export_platforms[i]->get_name()==platform) {
+				preset = export_platforms[i]->create_preset();
+				break;
+			}
+		}
+
+		if (!preset.is_valid()) {
+			index++;
+			ERR_CONTINUE(!preset.is_valid());
+		}
+
+		preset->set_name( config->get_value(section,"name") );
+		preset->set_runnable( config->get_value(section,"runnable") );
+
+		String export_filter = config->get_value(section,"export_filter");
+
+		bool get_files=false;
+
+		if (export_filter=="all_resources") {
+			preset->set_export_filter(EditorExportPreset::EXPORT_ALL_RESOURCES);
+		} else if (export_filter=="scenes") {
+			preset->set_export_filter(EditorExportPreset::EXPORT_SELECTED_SCENES);
+			get_files=true;
+		} else if (export_filter=="resources") {
+			preset->set_export_filter(EditorExportPreset::EXPORT_SELECTED_RESOURCES);
+			get_files=true;
+		} else if (export_filter=="all_files") {
+			preset->set_export_filter(EditorExportPreset::EXPORT_ALL_FILES);
+		}
+
+		if (get_files) {
+
+			Vector<String> files = config->get_value(section,"export_files");
+
+			for(int i=0;i<files.size();i++) {
+				preset->add_export_file(files[i]);
+			}
+		}
+
+		preset->set_include_filter( config->get_value(section,"include_filter") );
+		preset->set_exclude_filter( config->get_value(section,"exclude_filter") );
+
+
+		Vector<String> patch_list = config->get_value(section,"patch_list");
+
+		for(int i=0;i<patch_list.size();i++) {
+			preset->add_patch(patch_list[i]);
+		}
+
+		String option_section="preset."+itos(index)+".options";
+
+		List<String> options;
+
+		config->get_section_keys(option_section,&options);
+
+		for (List<String>::Element *E=options.front();E;E=E->next()) {
+
+			Variant value = config->get_value(option_section,E->get());
+
+			preset->set(E->get(),value);
+		}
+
+		add_export_preset(preset);
+		index++;
+	}
+
+	block_save=false;
 
 }
 
-void EditorExport::save_config() {
 
-}
 
 EditorExport::EditorExport() {
 
+	save_timer  = memnew( Timer );
+	add_child(save_timer);
+	save_timer->set_wait_time(0.8);
+	save_timer->set_one_shot(true);
+	save_timer->connect("timeout",this,"_save");
+	block_save=false;
 
+	singleton=this;
 }
 
 EditorExport::~EditorExport() {
 
+
+}
+
+
+//////////
+
+void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset>& p_preset,List<String>* r_features) {
+
+	if (p_preset->get("texture_format/s3tc")) {
+		r_features->push_back("s3tc");
+	}
+	if (p_preset->get("texture_format/etc")) {
+		r_features->push_back("etc");
+	}
+	if (p_preset->get("texture_format/etc2")) {
+		r_features->push_back("etc2");
+	}
+}
+
+void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL,"texture_format/s3tc"),true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL,"texture_format/etc"),false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL,"texture_format/etc2"),false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL,"binary_format/64_bits"),true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING,"custom_template/release",PROPERTY_HINT_GLOBAL_FILE),""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING,"custom_template/debug",PROPERTY_HINT_GLOBAL_FILE),""));
+}
+
+String EditorExportPlatformPC::get_name() const {
+
+	return name;
+}
+Ref<Texture> EditorExportPlatformPC::get_logo() const  {
+
+	return logo;
+}
+
+bool EditorExportPlatformPC::can_export(String *r_error) const {
+	return true;
+}
+
+String EditorExportPlatformPC::get_binary_extension() const {
+	return extension;
+}
+
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset>& p_preset,const String& p_path,int p_flags) {
+
+	return OK;
+}
+
+void EditorExportPlatformPC::set_extension(const String& p_extension) {
+	extension=p_extension;
+}
+
+void EditorExportPlatformPC::set_name(const String& p_name) {
+	name=p_name;
+}
+
+void EditorExportPlatformPC::set_logo(const Ref<Texture>& p_logo) {
+	logo=p_logo;
+}
+
+EditorExportPlatformPC::EditorExportPlatformPC() {
 
 }
 

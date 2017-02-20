@@ -29,7 +29,7 @@
 #include "version.h"
 #include "export.h"
 #include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "tools/editor/editor_node.h"
 #include "io/zip_io.h"
 #include "io/marshalls.h"
@@ -1892,9 +1892,11 @@ EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 	memdelete(device_thread);
 }
 
+#endif
 
 void register_android_exporter() {
 
+#if 0
 	String exe_ext=OS::get_singleton()->get_name()=="Windows"?"exe":"";
 	EDITOR_DEF("export/android/adb","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/adb",PROPERTY_HINT_GLOBAL_FILE,exe_ext));
@@ -1913,6 +1915,6 @@ void register_android_exporter() {
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
-
-}
 #endif
+}
+

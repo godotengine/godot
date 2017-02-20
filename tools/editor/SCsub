@@ -137,7 +137,7 @@ if (env["tools"] == "yes"):
     reg_exporters = 'void register_exporters() {\n'
     for e in env.platform_exporters:
         env.editor_sources.append("#platform/" + e + "/export/export.cpp")
-        reg_exporters += '\t//register_' + e + '_exporter();\n'
+	reg_exporters += '\tregister_' + e + '_exporter();\n'
         reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
     reg_exporters += '}\n'
     f = open("register_exporters.cpp", "wb")

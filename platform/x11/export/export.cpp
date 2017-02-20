@@ -28,11 +28,27 @@
 /*************************************************************************/
 #include "export.h"
 #include "platform/x11/logo.h"
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "scene/resources/texture.h"
-#if 0
+
+
+
 void register_x11_exporter() {
 
+	Ref<EditorExportPlatformPC> platform;
+	platform.instance();
+
+	Image img(_x11_logo);
+	Ref<ImageTexture> logo;
+	logo.instance();
+	logo->create_from_image(img);
+	platform->set_logo(logo);
+	platform->set_name("Linux/X11");
+	platform->set_extension("");
+
+	EditorExport::get_singleton()->add_export_platform(platform);
+
+	#if 0
 	Image img(_x11_logo);
 	Ref<ImageTexture> logo = memnew( ImageTexture );
 	logo->create_from_image(img);
@@ -49,5 +65,6 @@ void register_x11_exporter() {
 		EditorImportExport::get_singleton()->add_export_platform(exporter);
 	}
 
+	#endif
 }
-#endif
+

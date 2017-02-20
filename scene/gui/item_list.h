@@ -191,6 +191,7 @@ public:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
 	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
+	bool is_pos_at_end_of_items(const Point2& p_pos) const;
 
 	void set_icon_scale(real_t p_scale);
 	real_t get_icon_scale() const;

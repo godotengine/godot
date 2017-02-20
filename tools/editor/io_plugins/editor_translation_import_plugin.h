@@ -29,7 +29,7 @@
 #ifndef EDITOR_TRANSLATION_IMPORT_PLUGIN_H
 #define EDITOR_TRANSLATION_IMPORT_PLUGIN_H
 
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "scene/resources/font.h"
 #if 0
 class EditorNode;

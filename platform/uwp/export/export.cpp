@@ -2384,10 +2384,11 @@ EditorExportPlatformUWP::EditorExportPlatformUWP() {
 
 EditorExportPlatformUWP::~EditorExportPlatformUWP() {}
 
-
+#endif
 void register_uwp_exporter() {
-
+#if 0
 	Ref<EditorExportPlatformUWP> exporter = Ref<EditorExportPlatformUWP>(memnew(EditorExportPlatformUWP));
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
-}
 #endif
+}
+

@@ -28,10 +28,11 @@
 /*************************************************************************/
 #include "export.h"
 #include "platform/windows/logo.h"
-#include "tools/editor/editor_import_export.h"
-#if 0
+#include "tools/editor/editor_export.h"
+
 void register_windows_exporter() {
 
+#if 0
 	Image img(_windows_logo);
 	Ref<ImageTexture> logo = memnew( ImageTexture );
 	logo->create_from_image(img);
@@ -48,6 +49,6 @@ void register_windows_exporter() {
 		EditorImportExport::get_singleton()->add_export_platform(exporter);
 	}
 
-
-}
 #endif
+}
+

@@ -43,7 +43,7 @@ class EditorNode;
 class Spatial;
 class Camera;
 class EditorSelection;
-class EditorImportExport;
+class EditorExport;
 class EditorSettings;
 class SpatialEditorGizmo;
 class EditorImportPlugin;

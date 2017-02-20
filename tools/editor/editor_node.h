@@ -73,7 +73,7 @@
 #include "tools/editor/quick_open.h"
 #include "tools/editor/project_export.h"
 #include "tools/editor/editor_sub_scene.h"
-#include "editor_import_export.h"
+#include "editor_export.h"
 #include "editor_reimport_dialog.h"
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_name_dialog.h"
@@ -365,7 +365,7 @@ private:
 
 	String _tmp_import_path;
 
-	EditorImportExport *editor_import_export;
+	EditorExport *editor_export;
 
 	Object *current;
 
@@ -395,7 +395,7 @@ private:
 	EditorRun editor_run;
 	EditorSelection *editor_selection;
 //	ProjectExport *project_export;
-//	ProjectExportDialog *project_export_settings;
+	ProjectExportDialog *project_export;
 	EditorResourcePreview *resource_preview;
 
 	EditorFileServer *file_server;

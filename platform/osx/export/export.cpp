@@ -29,7 +29,7 @@
 #include "version.h"
 #include "export.h"
 #include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "tools/editor/editor_node.h"
 #include "io/zip_io.h"
 #include "io/marshalls.h"
@@ -536,14 +536,14 @@ EditorExportPlatformOSX::~EditorExportPlatformOSX() {
 
 }
 
-
+#endif
 void register_osx_exporter() {
 
-
+#if 0
 	Ref<EditorExportPlatformOSX> exporter = Ref<EditorExportPlatformOSX>( memnew(EditorExportPlatformOSX) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
-
+#endif
 
 }
 
-#endif
+

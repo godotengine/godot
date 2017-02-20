@@ -272,7 +272,7 @@ void AcceptDialog::_update_child_rects() {
 		if (!c)
 			continue;
 
-		if (c==hbc || c==label || c==get_close_button())
+		if (c==hbc || c==label || c==get_close_button() || c->is_set_as_toplevel())
 			continue;
 
 		c->set_pos(cpos);
@@ -299,7 +299,7 @@ Size2 AcceptDialog::get_minimum_size() const {
 		if (!c)
 			continue;
 
-		if (c==hbc || c==label || c==const_cast<AcceptDialog*>(this)->get_close_button())
+		if (c==hbc || c==label || c==const_cast<AcceptDialog*>(this)->get_close_button() || c->is_set_as_toplevel())
 			continue;
 
 		Size2 cminsize = c->get_combined_minimum_size();

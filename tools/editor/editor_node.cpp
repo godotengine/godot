@@ -2209,25 +2209,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case FILE_EXPORT_PROJECT: {
 
-			//project_export_settings->popup_export();
-			/*
-			String target = export_db->get_current_platform();
-			Ref<EditorExporter> exporter = export_db->get_exporter(target);
-			if (exporter.is_null()) {
-				accept->set_text("No exporter for platform '"+target+"' yet.");
-				accept->popup_centered(Size2(300,70));
-				return;
-			}
-
-			String extension = exporter->get_binary_extension();
-			print_line("for target: "+target+" extension: "+extension);
-			file_export_password->set_editable( exporter->requieres_password(file_export_check->is_pressed()));
-
-			file_export->clear_filters();
-			if (extension!="") {
-				file_export->add_filter("*."+extension);
-			}
-			file_export->popup_centered_ratio();*/
+			project_export->popup_export();
 		} break;
 
 		case FILE_EXPORT_MESH_LIBRARY: {
@@ -5236,6 +5218,9 @@ EditorNode::EditorNode() {
 	EditorFileDialog::register_func=_editor_file_dialog_register;
 	EditorFileDialog::unregister_func=_editor_file_dialog_unregister;
 
+	editor_export = memnew( EditorExport );
+	add_child(editor_export);
+
 
 	register_exporters();
 
@@ -6156,8 +6141,8 @@ EditorNode::EditorNode() {
 	//gui_base->add_child(optimized_save);
 	//optimized_save->connect("confirmed",this,"_save_optimized");
 
-	//project_export = memnew( ProjectExport(&editor_data) );
-	//gui_base->add_child(project_export);
+	project_export = memnew( ProjectExportDialog );
+	gui_base->add_child(project_export);
 
 	//project_export_settings = memnew( ProjectExportDialog(this) );
 	//gui_base->add_child(project_export_settings);
@@ -6299,6 +6284,7 @@ EditorNode::EditorNode() {
 	//plugin stuff
 
 	file_server = memnew( EditorFileServer );
+
 
 
 

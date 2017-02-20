@@ -26,40 +26,51 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef EDITOR_IMPORT_EXPORT_H
-#define EDITOR_IMPORT_EXPORT_H
+#ifndef EDITOR_EXPORT_H
+#define EDITOR_EXPORT_H
 
 
 
 #include "resource.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "scene/main/timer.h"
 
 class EditorProgress;
 class FileAccess;
+class EditorExportPlatform;
 
 class EditorExportPreset : public Reference {
 
 	GDCLASS( EditorExportPreset,Reference )
 public:
 	enum ExportFilter {
-		EXPORT_RESOURCES,
-		EXPORT_SELECTED,
-		EXPORT_ALL,
+		EXPORT_ALL_RESOURCES,
+		EXPORT_SELECTED_SCENES,
+		EXPORT_SELECTED_RESOURCES,
+		EXPORT_ALL_FILES,
 	};
 
 private:
 
+	Ref<EditorExportPlatform> platform;
 	ExportFilter export_filter;
+	String include_filter;
+	String exclude_filter;
+
 	String exporter;
 	Set<String> selected_files;
-	bool debug;
+	bool runnable;
+
+	Vector<String> patches;
 
 friend class EditorExport;
+friend class EditorExportPlatform;
 
 	List<PropertyInfo> properties;
 	Map<StringName,Variant> values;
 
+	String name;
 protected:
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -67,8 +78,37 @@ protected:
 
 public:
 
-	Vector<StringName> get_files_to_export() const;
+	Ref<EditorExportPlatform> get_platform();
+	bool has(const StringName& p_property) const { return values.has(p_property); }
 
+	Vector<String> get_files_to_export() const;
+
+	void add_export_file(const String& p_path);
+	void remove_export_file(const String& p_path);
+	bool has_export_file(const String& p_path);
+
+	void set_name(const String& p_name);
+	String get_name() const;
+
+	void set_runnable(bool p_enable);
+	bool is_runnable() const;
+
+	void set_export_filter(ExportFilter p_filter);
+	ExportFilter get_export_filter() const;
+
+	void set_include_filter(const String& p_include);
+	String get_include_filter() const;
+
+	void set_exclude_filter(const String& p_exclude);
+	String get_exclude_filter() const;
+
+	void add_patch(const String& p_path,int p_at_pos=-1);
+	void set_patch(int p_index,const String& p_path);
+	String get_patch(int p_index);
+	void remove_patch(int p_idx);
+	Vector<String> get_patches() const;
+
+	const List<PropertyInfo>& get_properties() const { return properties; }
 
 	EditorExportPreset();
 };
@@ -113,7 +153,7 @@ private:
 
 protected:
 
-	virtual void get_preset_features(const Ref<EditorExportPreset>& p_preset,List<String*> r_features)=0;
+	virtual void get_preset_features(const Ref<EditorExportPreset>& p_preset,List<String> *r_features)=0;
 	String find_export_template(String template_file_name, String *err=NULL) const;
 
 public:
@@ -127,8 +167,9 @@ public:
 		ExportOption() {}
 	};
 
-	virtual void get_export_options(ExportOption *r_options)=0;
-	virtual Ref<EditorExportPreset> create_preset()=0;
+	virtual Ref<EditorExportPreset> create_preset();
+
+	virtual void get_export_options(List<ExportOption> *r_options)=0;
 	virtual String get_name() const =0;
 	virtual Ref<Texture> get_logo() const =0;
 
@@ -169,13 +210,22 @@ class EditorExport : public Node {
 	Vector<Ref<EditorExportPlatform> > export_platforms;
 	Vector<Ref<EditorExportPreset> > export_presets;
 
+	Timer *save_timer;
+	bool block_save;
+
 	static EditorExport *singleton;
 
+	void _save();
 protected:
 
+friend class EditorExportPreset;
+	void save_presets();
 
+	void _notification(int p_what);
 	static void _bind_methods();
 public:
+
+	static EditorExport * get_singleton() { return singleton; }
 
 	void add_export_platform(const Ref<EditorExportPlatform>& p_platform);
 	int get_export_platform_count();
@@ -188,12 +238,44 @@ public:
 	void remove_export_preset(int p_idx);
 
 	void load_config();
-	void save_config();
 
 	EditorExport();
 	~EditorExport();
 };
 
+
+
+
+class EditorExportPlatformPC : public EditorExportPlatform {
+
+	GDCLASS( EditorExportPlatformPC,EditorExportPlatform )
+
+	Ref<ImageTexture> logo;
+	String name;
+	String extension;
+
+
+
+public:
+
+	virtual void get_preset_features(const Ref<EditorExportPreset>& p_preset,List<String>* r_features);
+
+	virtual void get_export_options(List<ExportOption> *r_options);
+
+	virtual String get_name() const;
+	virtual Ref<Texture> get_logo() const;
+
+	virtual bool can_export(String *r_error=NULL) const;
+	virtual String get_binary_extension() const;
+	virtual Error export_project(const Ref<EditorExportPreset>& p_preset,const String& p_path,int p_flags=0);
+
+	void set_extension(const String& p_extension);
+	void set_name(const String& p_name);
+
+	void set_logo(const Ref<Texture>& p_loco);
+
+	EditorExportPlatformPC();
+};
 
 
 #endif // EDITOR_IMPORT_EXPORT_H
