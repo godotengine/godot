@@ -12,8 +12,6 @@ def get_name():
 
 
 def can_build():
-
-    import os
     return os.environ.has_key("EMSCRIPTEN_ROOT")
 
 
@@ -35,23 +33,41 @@ def get_flags():
     ]
 
 
+def create(env):
+    # remove Windows' .exe suffix
+    return env.Clone(PROGSUFFIX='')
+
+
+def escape_sources_backslashes(target, source, env, for_signature):
+    return [path.replace('\\','\\\\') for path in env.GetBuildPath(source)]
+
+def escape_target_backslashes(target, source, env, for_signature):
+    return env.GetBuildPath(target[0]).replace('\\','\\\\')
+
+
 def configure(env):
     env['ENV'] = os.environ
-    env.use_windows_spawn_fix('javascript')
 
     env.Append(CPPPATH=['#platform/javascript'])
 
-    em_path = os.environ["EMSCRIPTEN_ROOT"]
-
-    env['ENV']['PATH'] = em_path + ":" + env['ENV']['PATH']
-    env['CC']     = em_path + '/emcc'
-    env['CXX']    = em_path + '/em++'
-    env['LINK']   = em_path + '/emcc'
-    env['AR']     = em_path + '/emar'
-    env['RANLIB'] = em_path + '/emranlib'
+    env.PrependENVPath('PATH', os.environ['EMSCRIPTEN_ROOT'])
+    env['CC']      = 'emcc'
+    env['CXX']     = 'em++'
+    env['LINK']    = 'emcc'
+    env['RANLIB']  = 'emranlib'
+    # Emscripten's ar has issues with duplicate file names, so use cc
+    env['AR']      = 'emcc'
+    env['ARFLAGS'] = '-o'
+    if (os.name == 'nt'):
+        # use TempFileMunge on Windows since some commands get too long for
+        # cmd.exe even with spawn_fix
+        # need to escape backslashes for this
+        env['ESCAPED_SOURCES'] = escape_sources_backslashes
+        env['ESCAPED_TARGET'] = escape_target_backslashes
+        env['ARCOM'] = '${TEMPFILE("%s")}' % env['ARCOM'].replace('$SOURCES', '$ESCAPED_SOURCES').replace('$TARGET', '$ESCAPED_TARGET')
 
     env['OBJSUFFIX'] = '.bc'
-    env['LIBSUFFIX'] = '.a'
+    env['LIBSUFFIX'] = '.bc'
 
     if (env["target"] == "release"):
         env.Append(CCFLAGS=['-O2'])
