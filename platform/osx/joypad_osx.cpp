@@ -275,7 +275,6 @@ void JoypadOSX::_device_removed(int p_id) {
 	input->joy_connection_changed(p_id, false, "");
 	device_list[device].free();
 	device_list.remove(device);
-	attached_devices[p_id] = false;
 }
 
 static String _hex_str(uint8_t p_byte) {
@@ -307,7 +306,7 @@ bool JoypadOSX::configure_joypad(IOHIDDeviceRef p_device_ref, joypad* p_joy) {
 	}
 	name = c_name;
 
-	int id = get_free_joy_id();
+	int id = input->get_unused_joy_id();
 	ERR_FAIL_COND_V(id == -1, false);
 	p_joy->id = id;
 	int vendor = 0;
@@ -510,16 +509,6 @@ void JoypadOSX::joypad_vibration_stop(int p_id, uint64_t p_timestamp) {
 	FFEffectStop(joy->ff_object);
 }
 
-int JoypadOSX::get_free_joy_id() {
-	for (int i = 0; i < JOYPADS_MAX; i++) {
-		if (!attached_devices[i]) {
-			attached_devices[i] = true;
-			return i;
-		}
-	}
-	return -1;
-}
-
 int JoypadOSX::get_joy_index(int p_id) const {
 	for (int i = 0; i < device_list.size(); i++) {
 		if (device_list[i].id == p_id) return i;
@@ -581,10 +570,6 @@ JoypadOSX::JoypadOSX()
 {
 	self = this;
 	input = (InputDefault*)Input::get_singleton();
-
-	for (int i = 0; i < JOYPADS_MAX; i++) {
-		attached_devices[i] = false;
-	}
 
 	int okay = 1;
 	const void *vals[] = {

@@ -134,6 +134,11 @@ public:
 		HAT_LEFT,
 		HAT_MAX,
 	};
+
+	enum {
+		JOYPADS_MAX = 16,
+	};
+
 	struct JoyAxis {
 		int min;
 		float value;
@@ -242,6 +247,8 @@ public:
 	virtual String get_joy_axis_string(int p_axis);
 	virtual int    get_joy_axis_index_from_string(String p_axis);
 	virtual int    get_joy_button_index_from_string(String p_button);
+
+	int get_unused_joy_id();
 
 	bool is_joy_mapped(int p_device);
 	String get_joy_guid_remapped(int p_device) const;

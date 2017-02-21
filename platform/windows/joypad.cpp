@@ -87,16 +87,6 @@ bool JoypadWindows::have_device(const GUID &p_guid) {
 	return false;
 }
 
-int JoypadWindows::check_free_joy_slot() const {
-
-	for (int i = 0; i < JOYPADS_MAX; i++) {
-
-		if (!attached_joypads[i])
-			return i;
-	}
-	return -1;
-}
-
 
 // adapted from SDL2, works a lot better than the MSDN version
 bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
@@ -146,7 +136,7 @@ bool JoypadWindows::is_xinput_device(const GUID *p_guid) {
 bool JoypadWindows::setup_dinput_joypad(const DIDEVICEINSTANCE* instance) {
 
 	HRESULT hr;
-	int num = check_free_joy_slot();
+	int num = input->get_unused_joy_id();
 
 	if (have_device(instance->guidInstance) || num == -1)
 		return false;
@@ -296,7 +286,7 @@ void JoypadWindows::probe_joypads() {
 		dwResult = xinput_get_state(i, &x_joypads[i].state);
 		if ( dwResult == ERROR_SUCCESS) {
 
-			int id = check_free_joy_slot();
+			int id = input->get_unused_joy_id();
 			if (id != -1 && !x_joypads[i].attached) {
 
 				x_joypads[i].attached = true;
