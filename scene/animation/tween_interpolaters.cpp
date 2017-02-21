@@ -262,7 +262,8 @@ namespace cubic {
 
 	static real_t out(real_t t, real_t b, real_t c, real_t d)
 	{
-		return c * ((t = t / d - 1) * t * t + 1) + b;
+		t = t / d - 1;
+		return c * (t * t * t + 1) + b;
 	}
 
 	static real_t in_out(real_t t, real_t b, real_t c, real_t d)
