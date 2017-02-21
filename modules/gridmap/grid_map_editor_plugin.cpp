@@ -519,12 +519,12 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const InputEve
 
 				if (p_event.mouse_button.button_index == BUTTON_WHEEL_UP && (p_event.mouse_button.mod.command || p_event.mouse_button.mod.shift)) {
 					if (p_event.mouse_button.pressed)
-						floor->set_value(floor->get_value() + 1);
+						floor->set_value(floor->get_value() + p_event.mouse_button.factor);
 
 					return true; //eaten
 				} else if (p_event.mouse_button.button_index == BUTTON_WHEEL_DOWN && (p_event.mouse_button.mod.command || p_event.mouse_button.mod.shift)) {
 					if (p_event.mouse_button.pressed)
-						floor->set_value(floor->get_value() - 1);
+						floor->set_value(floor->get_value() - p_event.mouse_button.factor);
 					return true;
 				}
 

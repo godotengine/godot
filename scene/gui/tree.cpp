@@ -2341,11 +2341,11 @@ void Tree::_gui_input(InputEvent p_event) {
 				} break;
 				case BUTTON_WHEEL_UP: {
 
-					v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 8);
+					v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b.factor / 8);
 				} break;
 				case BUTTON_WHEEL_DOWN: {
 
-					v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 8);
+					v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b.factor / 8);
 				} break;
 			}
 

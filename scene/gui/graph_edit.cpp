@@ -962,6 +962,18 @@ void GraphEdit::_gui_input(const InputEvent &p_ev) {
 			//too difficult to get right
 			//set_zoom(zoom/ZOOM_SCALE);
 		}
+		if (b.button_index == BUTTON_WHEEL_UP) {
+			h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() * b.factor / 8);
+		}
+		if (b.button_index == BUTTON_WHEEL_DOWN) {
+			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * b.factor / 8);
+		}
+		if (b.button_index == BUTTON_WHEEL_RIGHT) {
+			v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b.factor / 8);
+		}
+		if (b.button_index == BUTTON_WHEEL_LEFT) {
+			v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b.factor / 8);
+		}
 	}
 
 	if (p_ev.type == InputEvent::KEY && p_ev.key.scancode == KEY_D && p_ev.key.pressed && p_ev.key.mod.command) {
