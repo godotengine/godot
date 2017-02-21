@@ -29,7 +29,7 @@
 #include "sprite_frames_editor_plugin.h"
 
 #include "io/resource_loader.h"
-#include "globals.h"
+#include "global_config.h"
 #include "tools/editor/editor_settings.h"
 #include "scene/3d/sprite_3d.h"
 

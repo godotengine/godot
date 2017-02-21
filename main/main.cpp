@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "main.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include "splash.h"
 #include "core/register_core_types.h"
 #include "scene/register_scene_types.h"

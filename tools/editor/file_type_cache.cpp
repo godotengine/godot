@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "file_type_cache.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 
 FileTypeCache* FileTypeCache::singleton=NULL;

@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "gd_script.h"
-#include "globals.h"
+#include "global_config.h"
 #include "global_constants.h"
 #include "gd_compiler.h"
 #include "os/file_access.h"

@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "file_access.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 #include "core/io/marshalls.h"
 #include "io/md5.h"

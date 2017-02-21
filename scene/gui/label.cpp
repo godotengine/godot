@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "label.h"
 #include "print_string.h"
-#include "globals.h"
+#include "global_config.h"
 #include "translation.h"
 
 

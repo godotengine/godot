@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "editor_data.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "editor_settings.h"
 #include "os/dir_access.h"
 #include "io/resource_loader.h"

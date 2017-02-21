@@ -32,7 +32,7 @@
 #include "io/config_file.h"
 #include "os/file_access.h"
 #include "os/main_loop.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_node.h"
 
 void EditorPluginSettings::_notification(int p_what) {

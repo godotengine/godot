@@ -38,7 +38,7 @@
 #include "tools/editor/editor_settings.h"
 #include "scene/resources/surface_tool.h"
 #include "tools/editor/spatial_editor_gizmos.h"
-#include "globals.h"
+#include "global_config.h"
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
 #include "tools/editor/animation_editor.h"
 

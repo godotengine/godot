@@ -30,7 +30,7 @@
 
 #include "rasterizer_gles2.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include <stdio.h>
 #include "servers/visual/shader_language.h"
 #include "servers/visual/particle_system_sw.h"

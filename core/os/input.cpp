@@ -29,7 +29,7 @@
 #include "input.h"
 #include "input_map.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 Input *Input::singleton=NULL;
 
 Input *Input::get_singleton() {

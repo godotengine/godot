@@ -36,7 +36,7 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
 #include "file_access_android.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 
 #ifdef ANDROID_NATIVE_ACTIVITY
 #include "file_access_android.h"

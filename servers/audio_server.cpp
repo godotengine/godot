@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_server.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
 #include "io/resource_loader.h"

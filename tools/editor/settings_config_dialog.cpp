@@ -30,7 +30,7 @@
 
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_file_system.h"
 #include "editor_node.h"
 #include "os/keyboard.h"

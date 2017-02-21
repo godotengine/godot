@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "audio_driver_jandroid.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 #include "thread_jandroid.h"
 

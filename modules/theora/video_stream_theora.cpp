@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "video_stream_theora.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 #include "yuv2rgb.h"
 

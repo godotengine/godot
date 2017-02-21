@@ -2,7 +2,7 @@
 #include "visual_server_global.h"
 #include "visual_server_canvas.h"
 #include "visual_server_scene.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 

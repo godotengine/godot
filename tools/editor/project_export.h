@@ -91,6 +91,8 @@ private:
 	FileDialog *patch_dialog;
 	ConfirmationDialog *patch_erase;
 
+	Button *export_button;
+
 	void _patch_selected(const String& p_path);
 	void _patch_deleted();
 
@@ -117,6 +119,10 @@ private:
 	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
 	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
+	FileDialog *export_pck_zip;
+
+	void _export_pck_zip();
+	void _export_pck_zip_selected(const String& p_path);
 
 protected:
 	void _notification(int p_what);

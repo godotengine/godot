@@ -33,7 +33,7 @@
 #include "tools/editor/editor_node.h"
 #include "io/zip_io.h"
 #include "io/marshalls.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/android/logo.h"

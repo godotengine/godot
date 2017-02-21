@@ -33,7 +33,7 @@
 
 
 #include "scene/resources/material.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/xml_parser.h"
 #include "map.h"
 

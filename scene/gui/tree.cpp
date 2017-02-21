@@ -30,7 +30,7 @@
 #include "print_string.h"
 #include "os/os.h"
 #include "os/keyboard.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/input.h"
 #include "scene/main/viewport.h"
 

@@ -33,7 +33,7 @@
 #include "servers/physics_2d_server.h"
 #include "command_queue_mt.h"
 #include "os/thread.h"
-#include "globals.h"
+#include "global_config.h"
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: "+String(__FUNCTION__));

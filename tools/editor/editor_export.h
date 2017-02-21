@@ -39,6 +39,7 @@
 class EditorProgress;
 class FileAccess;
 class EditorExportPlatform;
+class EditorFileSystemDirectory;
 
 class EditorExportPreset : public Reference {
 
@@ -48,7 +49,6 @@ public:
 		EXPORT_ALL_RESOURCES,
 		EXPORT_SELECTED_SCENES,
 		EXPORT_SELECTED_RESOURCES,
-		EXPORT_ALL_FILES,
 	};
 
 private:
@@ -64,6 +64,7 @@ private:
 
 	Vector<String> patches;
 
+
 friend class EditorExport;
 friend class EditorExportPlatform;
 
@@ -78,7 +79,7 @@ protected:
 
 public:
 
-	Ref<EditorExportPlatform> get_platform();
+	Ref<EditorExportPlatform> get_platform() const;
 	bool has(const StringName& p_property) const { return values.has(p_property); }
 
 	Vector<String> get_files_to_export() const;
@@ -126,9 +127,14 @@ private:
 
 	struct SavedData {
 
-		String path;
 		uint64_t ofs;
 		uint64_t size;
+		Vector<uint8_t> md5;
+		CharString path_utf8;
+
+		bool operator<(const SavedData& p_data) const {
+			return path_utf8 < p_data.path_utf8;
+		}
 	};
 
 	struct PackData {
@@ -142,9 +148,11 @@ private:
 
 		void* zip;
 		EditorProgress *ep;
-		int count;
 
 	};
+
+	void _export_find_resources(EditorFileSystemDirectory *p_dir,Set<String>& p_paths);
+	void _export_find_dependencies(const String& p_path,Set<String>& p_paths);
 
 	void gen_debug_flags(Vector<String> &r_flags, int p_flags);
 	static Error _save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total);
@@ -176,7 +184,7 @@ public:
 
 	Error export_project_files(const Ref<EditorExportPreset>& p_preset,EditorExportSaveFunction p_func, void* p_udata);
 
-	Error save_pack(const Ref<EditorExportPreset>& p_preset,FileAccess *p_where);
+	Error save_pack(const Ref<EditorExportPreset>& p_preset,const String& p_path);
 	Error save_zip(const Ref<EditorExportPreset>& p_preset,const String& p_path);
 
 

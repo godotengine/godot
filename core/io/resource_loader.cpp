@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "resource_loader.h"
 #include "print_string.h"
-#include "globals.h"
+#include "global_config.h"
 #include "path_remap.h"
 #include "os/file_access.h"
 #include "os/os.h"

@@ -29,7 +29,7 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "globals.h"
+#include "global_config.h"
 #include "object.h"
 #include "path_db.h"
 #include "map.h"

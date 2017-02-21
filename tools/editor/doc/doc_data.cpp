@@ -30,7 +30,7 @@
 
 #include "version.h"
 #include "global_constants.h"
-#include "globals.h"
+#include "global_config.h"
 #include "script_language.h"
 #include "io/marshalls.h"
 #include "io/compression.h"

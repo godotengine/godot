@@ -30,7 +30,7 @@
 #include "servers/visual_server.h"
 #include "scene/main/viewport.h"
 #include "scene/main/canvas_layer.h"
-#include "globals.h"
+#include "global_config.h"
 
 #include "print_string.h"
 #include "os/keyboard.h"

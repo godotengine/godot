@@ -30,7 +30,7 @@
 
 #include "os/dir_access.h"
 #include "os/copymem.h"
-#include "globals.h"
+#include "global_config.h"
 #include "map.h"
 
 static Map<String, Vector<uint8_t> >* files = NULL;

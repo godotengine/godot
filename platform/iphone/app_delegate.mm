@@ -30,7 +30,7 @@
 #import "gl_view.h"
 
 #include "os_iphone.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "main/main.h"
 
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED

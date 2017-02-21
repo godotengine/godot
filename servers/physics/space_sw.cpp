@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "globals.h"
+#include "global_config.h"
 #include "space_sw.h"
 #include "collision_solver_sw.h"
 #include "physics_server_sw.h"

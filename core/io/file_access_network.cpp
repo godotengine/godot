@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "file_access_network.h"
 #include "marshalls.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 #include "io/ip.h"
 

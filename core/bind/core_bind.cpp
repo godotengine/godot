@@ -31,7 +31,7 @@
 #include "geometry.h"
 #include "io/marshalls.h"
 #include "io/base64.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "io/file_access_encrypted.h"
 #include "os/keyboard.h"
 

@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_saver.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "script_language.h"
 #include "resource_loader.h"

@@ -29,7 +29,7 @@
 #include "portal.h"
 #include "servers/visual_server.h"
 #include "scene/resources/surface_tool.h"
-#include "globals.h"
+#include "global_config.h"
 
 bool Portal::_set(const StringName& p_name, const Variant& p_value) {
 

@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "gd_script.h"
 #include "gd_compiler.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {

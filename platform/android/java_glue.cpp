@@ -36,7 +36,7 @@
 #include "file_access_android.h"
 #include "dir_access_jandroid.h"
 #include "audio_driver_jandroid.h"
-#include "globals.h"
+#include "global_config.h"
 #include "thread_jandroid.h"
 #include "core/os/keyboard.h"
 #include "java_class_wrapper.h"

@@ -1,6 +1,6 @@
 #include "rasterizer_gles3.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include "gl_context/context_gl.h"
 #include <string.h>
 RasterizerStorage *RasterizerGLES3::get_storage() {

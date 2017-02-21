@@ -35,7 +35,7 @@
 #include "../theora/yuv2rgb.h"
 
 #include "os/file_access.h"
-#include "globals.h"
+#include "global_config.h"
 
 #include <string.h>
 

@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "translation.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
 

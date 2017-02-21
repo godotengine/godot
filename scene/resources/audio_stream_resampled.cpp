@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_stream_resampled.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 #if 0

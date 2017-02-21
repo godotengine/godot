@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "scene_format_text.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "version.h"
 #include "os/dir_access.h"
 

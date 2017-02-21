@@ -40,7 +40,7 @@
 #include "servers/audio_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "os/memory_pool_dynamic_prealloc.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/marshalls.h"
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"

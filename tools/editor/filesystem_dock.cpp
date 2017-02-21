@@ -30,7 +30,7 @@
 
 #include "os/dir_access.h"
 #include "os/file_access.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
 #include "editor_node.h"

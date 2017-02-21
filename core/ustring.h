@@ -41,6 +41,8 @@
 
 class CharString : public Vector<char> {
 public:
+
+	bool operator<(const CharString& p_right) const;
 	int length() const { return size() ? size()-1 : 0; }
 	const char *get_data() const;
 	operator const char*() {return get_data();};

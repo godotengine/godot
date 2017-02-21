@@ -31,7 +31,7 @@
 #include "servers/visual_server.h"
 
 #include "geometry.h"
-#include "globals.h"
+#include "global_config.h"
 #include "scene/resources/surface_tool.h"
 
 

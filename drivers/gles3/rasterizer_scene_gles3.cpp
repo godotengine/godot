@@ -1,5 +1,5 @@
 #include "rasterizer_scene_gles3.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 #include "rasterizer_canvas_gles3.h"
 

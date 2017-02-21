@@ -61,7 +61,7 @@
 #include <poll.h>
 #include <errno.h>
 #include <assert.h>
-#include "globals.h"
+#include "global_config.h"
 
 extern bool _print_error_enabled;
 

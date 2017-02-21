@@ -4,7 +4,7 @@
 #include "scene/main/node.h"
 #include "visual_script_nodes.h"
 #include "io/resource_loader.h"
-#include "globals.h"
+#include "global_config.h"
 
 //////////////////////////////////////////
 ////////////////CALL//////////////////////

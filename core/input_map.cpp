@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "input_map.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "os/keyboard.h"
 
 InputMap *InputMap::singleton=NULL;

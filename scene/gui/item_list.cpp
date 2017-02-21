@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "item_list.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 void ItemList::add_item(const String& p_item,const Ref<Texture>& p_texture,bool p_selectable) {

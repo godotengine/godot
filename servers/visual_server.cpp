@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "visual_server.h"
-#include "globals.h"
+#include "global_config.h"
 #include "method_bind_ext.inc"
 
 VisualServer *VisualServer::singleton=NULL;

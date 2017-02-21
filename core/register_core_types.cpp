@@ -35,7 +35,7 @@
 #include "io/packet_peer.h"
 #include "math/a_star.h"
 #include "math/triangle_mesh.h"
-#include "globals.h"
+#include "global_config.h"
 #include "class_db.h"
 #include "geometry.h"
 #include "bind/core_bind.h"

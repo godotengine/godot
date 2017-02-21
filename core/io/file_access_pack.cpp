@@ -31,7 +31,7 @@
 
 #include <stdio.h>
 
-#define PACK_VERSION 0
+#define PACK_VERSION 1
 
 Error PackedData::add_pack(const String& p_path) {
 
@@ -167,8 +167,8 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 	uint32_t ver_minor = f->get_32();
 	uint32_t ver_rev = f->get_32();
 
-	ERR_EXPLAIN("Pack version newer than supported by engine: "+itos(version));
-	ERR_FAIL_COND_V( version > PACK_VERSION, ERR_INVALID_DATA);
+	ERR_EXPLAIN("Pack version unsupported: "+itos(version));
+	ERR_FAIL_COND_V( version != PACK_VERSION, ERR_INVALID_DATA);
 	ERR_EXPLAIN("Pack created with a newer version of the engine: "+itos(ver_major)+"."+itos(ver_minor)+"."+itos(ver_rev));
 	ERR_FAIL_COND_V( ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), ERR_INVALID_DATA);
 

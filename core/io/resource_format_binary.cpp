@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "version.h"
 #include "resource_format_binary.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/file_access_compressed.h"
 #include "io/marshalls.h"
 #include "os/dir_access.h"

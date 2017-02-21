@@ -1,6 +1,6 @@
 #include "visual_script_flow_control.h"
 #include "os/keyboard.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 //////////////////////////////////////////

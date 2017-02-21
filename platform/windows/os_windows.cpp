@@ -44,7 +44,7 @@
 #include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
 #include "lang_table.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/marshalls.h"
 #include "joypad.h"
 

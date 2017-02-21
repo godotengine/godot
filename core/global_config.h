@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#ifndef GLOBAL_CONFIG_H
+#define GLOBAL_CONFIG_H
 
 #include "object.h"
 #include "set.h"

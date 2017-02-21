@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "editor_run.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "editor_settings.h"
 
 EditorRun::Status EditorRun::get_status() const {

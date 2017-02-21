@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_server_types.h"
-#include "globals.h"
+#include "global_config.h"
 
 #include "visual_server.h"
 #include "audio_server.h"

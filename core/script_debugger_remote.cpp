@@ -30,7 +30,7 @@
 
 #include "os/os.h"
 #include "io/ip.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/input.h"
 
 void ScriptDebuggerRemote::_send_video_memory() {

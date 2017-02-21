@@ -32,7 +32,7 @@
 #include "os/os.h"
 #include "message_queue.h"
 #include "node.h"
-#include "globals.h"
+#include "global_config.h"
 #include <stdio.h>
 #include "os/keyboard.h"
 //#include "servers/spatial_sound_2d_server.h"

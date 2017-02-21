@@ -30,7 +30,7 @@
 
 #ifdef ALSA_ENABLED
 
-#include "globals.h"
+#include "global_config.h"
 
 #include <errno.h>
 

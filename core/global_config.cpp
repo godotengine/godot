@@ -26,7 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "globals.h"
+#include "global_config.h"
 
 #include "os/dir_access.h"
 #include "os/file_access.h"
@@ -247,50 +247,7 @@ bool GlobalConfig::_load_resource_pack(const String& p_pack) {
 
 Error GlobalConfig::setup(const String& p_path,const String & p_main_pack) {
 
-	//an absolute mess of a function, must be cleaned up and reorganized somehow at some point
-
-	//_load_settings(p_path+"/override.cfg");
-
-	if (p_main_pack!="") {
-
-		bool ok = _load_resource_pack(p_main_pack);
-		ERR_FAIL_COND_V(!ok,ERR_CANT_OPEN);
-
-		if (_load_settings("res://godot.cfg")==OK || _load_settings_binary("res://godot.cfb")==OK) {
-
-			_load_settings("res://override.cfg");
-
-		}
-
-		return OK;
-
-	}
-
-	if (OS::get_singleton()->get_executable_path()!="") {
-
-		if (_load_resource_pack(OS::get_singleton()->get_executable_path())) {
-
-			if (p_path!="") {
-				resource_path=p_path;
-			} else {
-				DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-				resource_path=d->get_current_dir();
-				memdelete(d);
-
-			}
-			if (_load_settings("res://godot.cfg")==OK || _load_settings_binary("res://godot.cfb")==OK) {
-
-				_load_settings("res://override.cfg");
-
-			}
-
-
-
-			return OK;
-		}
-
-	}
-
+	//If looking for files in network, just use network!
 
 	if (FileAccessNetworkClient::get_singleton()) {
 
@@ -303,20 +260,58 @@ Error GlobalConfig::setup(const String& p_path,const String & p_main_pack) {
 		return OK;
 	}
 
+	String exec_path = OS::get_singleton()->get_executable_path();
+
+	//Attempt with a passed main pack first
+
+	if (p_main_pack!="") {
+
+		bool ok = _load_resource_pack(p_main_pack);
+		ERR_FAIL_COND_V(!ok,ERR_CANT_OPEN);
+
+		if (_load_settings("res://godot.cfg")==OK || _load_settings_binary("res://godot.cfb")==OK) {
+			//load override from location of the main pack
+			_load_settings(p_main_pack.get_base_dir().plus_file("override.cfg"));
+
+		}
+
+		return OK;
+
+	}
+
+	//Attempt with execname.pck
+	if (exec_path!="") {
+
+
+		if (_load_resource_pack(exec_path.get_basename()+".pck")) {
+
+			if (_load_settings("res://godot.cfg")==OK || _load_settings_binary("res://godot.cfb")==OK) {
+				//load override from location of executable
+				_load_settings(exec_path.get_base_dir().plus_file("override.cfg"));
+
+			}
+
+
+
+			return OK;
+		}
+
+	}
+
+
+	//Try to use the filesystem for files, according to OS. (only Android -when reading from pck- and iOS use this)
 	if (OS::get_singleton()->get_resource_dir()!="") {
-        //OS will call Globals->get_resource_path which will be empty if not overriden!
+		//OS will call Globals->get_resource_path which will be empty if not overriden!
 		//if the OS would rather use somewhere else, then it will not be empty.
+
 		resource_path=OS::get_singleton()->get_resource_dir().replace("\\","/");
 		if (resource_path.length() && resource_path[ resource_path.length()-1]=='/')
 			resource_path=resource_path.substr(0,resource_path.length()-1); // chop end
 
-		print_line("has res dir: "+resource_path);
-		if (!_load_resource_pack("res://data.pck"))
-			_load_resource_pack("res://data.zip");
-		// make sure this is load from the resource path
-		print_line("exists engine cfg? "+itos(FileAccess::exists("/godot.cfg")));
+		// data.pck and data.zip are deprecated and no longer supported, apologies.
+		// make sure this is loaded from the resource path
+
 		if (_load_settings("res://godot.cfg")==OK || _load_settings_binary("res://godot.cfb")==OK) {
-			print_line("loaded godot.cfg");
 			_load_settings("res://override.cfg");
 
 		}
@@ -324,67 +319,41 @@ Error GlobalConfig::setup(const String& p_path,const String & p_main_pack) {
 		return OK;
 	}
 
+	//Nothing was found, try to find a godot.cfg somewhere!
+
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	if (!d) {
+	ERR_FAIL_COND_V(!d,ERR_CANT_CREATE);
 
-		resource_path = p_path;
+	d->change_dir(p_path);
 
-	} else {
+	String candidate = d->get_current_dir();
+	String current_dir = d->get_current_dir();
+	bool found = false;
 
-		d->change_dir(p_path);
+	while(true) {
+		//try to load settings in ascending through dirs shape!
 
-		String candidate = d->get_current_dir();
-		String current_dir = d->get_current_dir();
-		String exec_name = OS::get_singleton()->get_executable_path().get_file().get_basename();
-		bool found = false;
-		bool first_time=true;
+		if (_load_settings(current_dir+"/godot.cfg")==OK || _load_settings_binary(current_dir+"/godot.cfb")==OK) {
 
-		while(true) {
-			//try to load settings in ascending through dirs shape!
-
-			//tries to open pack, but only first time
-			if (first_time && (_load_resource_pack(current_dir+"/"+exec_name+".pck") || _load_resource_pack(current_dir+"/"+exec_name+".zip") )) {
-				if (_load_settings("res://godot.cfg")==OK || _load_settings_binary("res://godot.cfb")==OK) {
-
-					_load_settings("res://override.cfg");
-					found=true;
-
-
-				}
-				break;
-			} else if (first_time && (_load_resource_pack(current_dir+"/data.pck") || _load_resource_pack(current_dir+"/data.zip") )) {
-				if (_load_settings("res://godot.cfg")==OK || _load_settings_binary("res://godot.cfb")==OK) {
-
-					_load_settings("res://override.cfg");
-					found=true;
-
-
-				}
-				break;
-			} else if (_load_settings(current_dir+"/godot.cfg")==OK || _load_settings_binary(current_dir+"/godot.cfb")==OK) {
-
-				_load_settings(current_dir+"/override.cfg");
-				candidate=current_dir;
-				found=true;
-				break;
-			}
-
-			d->change_dir("..");
-			if (d->get_current_dir()==current_dir)
-				break; //not doing anything useful
-			current_dir=d->get_current_dir();
-			first_time=false;
+			_load_settings(current_dir+"/override.cfg");
+			candidate=current_dir;
+			found=true;
+			break;
 		}
 
+		d->change_dir("..");
+		if (d->get_current_dir()==current_dir)
+			break; //not doing anything useful
+		current_dir=d->get_current_dir();
+	}
 
-		resource_path=candidate;
-		resource_path = resource_path.replace("\\","/"); // windows path to unix path just in case
-		memdelete(d);
 
-		if (!found)
-			return ERR_FILE_NOT_FOUND;
-	};
+	resource_path=candidate;
+	resource_path = resource_path.replace("\\","/"); // windows path to unix path just in case
+	memdelete(d);
 
+	if (!found)
+		return ERR_FILE_NOT_FOUND;
 
 	if (resource_path.length() && resource_path[ resource_path.length()-1]=='/')
 		resource_path=resource_path.substr(0,resource_path.length()-1); // chop end

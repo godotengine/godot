@@ -29,7 +29,7 @@
 #include "scene_tree_dock.h"
 
 #include "editor_node.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/keyboard.h"
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"

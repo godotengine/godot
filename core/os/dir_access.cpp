@@ -30,7 +30,7 @@
 #include "os/file_access.h"
 #include "os/memory.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 String DirAccess::_get_root_path() const {

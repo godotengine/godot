@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "light.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "scene/resources/surface_tool.h"
 #include "baked_light_instance.h"
 

@@ -31,7 +31,7 @@
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "servers/visual/visual_server_raster.h"
 #include "core/os/dir_access.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "main/main.h"
 #include "bbutil.h"
 #include "core/os/keyboard.h"

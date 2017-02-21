@@ -35,7 +35,7 @@
 #include "os/os.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/script_editor_debugger.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "scene/main/viewport.h"
 #include "os/keyboard.h"

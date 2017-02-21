@@ -29,7 +29,7 @@
 #include "os.h"
 
 #include "dir_access.h"
-#include "globals.h"
+#include "global_config.h"
 #include "input.h"
 #include "os/file_access.h"
 

@@ -39,7 +39,7 @@
 #include "scene/main/viewport.h"
 #include "io/config_file.h"
 #include "editor_node.h"
-#include "globals.h"
+#include "global_config.h"
 #include "translations.h"
 #include "io/file_access_memory.h"
 #include "io/translation_loader_po.h"

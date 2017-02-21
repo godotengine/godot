@@ -32,7 +32,7 @@
 #include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
 #include "core/io/resource_loader.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 

@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "broad_phase_2d_hash_grid.h"
-#include "globals.h"
+#include "global_config.h"
 
 #define LARGE_ELEMENT_FI 1.01239812
 

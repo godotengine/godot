@@ -39,7 +39,7 @@
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 
 #include "io/file_access_memory.h"
 

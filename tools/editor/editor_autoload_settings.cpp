@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "editor_autoload_settings.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "global_constants.h"
 #include "editor_node.h"
 

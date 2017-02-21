@@ -31,7 +31,7 @@
 
 #include <stdio.h> // If you don't know what this is for stop reading now.
 #include "io/stream_peer_ssl.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "curl_hostcheck.h"
 

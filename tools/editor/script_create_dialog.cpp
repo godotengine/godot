@@ -29,7 +29,7 @@
 #include "script_create_dialog.h"
 
 #include "script_language.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "editor_file_system.h"

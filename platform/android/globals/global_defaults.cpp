@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "global_defaults.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 void register_android_global_defaults() {

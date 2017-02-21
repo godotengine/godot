@@ -31,7 +31,7 @@
 
 #include "resource.h"
 #include "servers/physics_2d_server.h"
-#include "globals.h"
+#include "global_config.h"
 
 class SpatialIndexer2D;
 class VisibilityNotifier2D;

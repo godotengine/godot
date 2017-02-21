@@ -31,7 +31,7 @@
 #import <OpenGLES/EAGLDrawable.h>
 #include "os_iphone.h"
 #include "core/os/keyboard.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "servers/audio_server.h"
 
 #import "gl_view.h"

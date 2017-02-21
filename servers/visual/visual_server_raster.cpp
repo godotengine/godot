@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "visual_server_raster.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include "default_mouse_cursor.xpm"
 #include "sort.h"
 #include "io/marshalls.h"

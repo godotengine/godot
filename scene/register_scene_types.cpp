@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "register_scene_types.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include "scene/io/resource_format_image.h"
 #include "scene/io/resource_format_wav.h"
 

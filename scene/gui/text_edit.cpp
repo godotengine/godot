@@ -32,7 +32,7 @@
 #include "os/input.h"
 #include "os/os.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "message_queue.h"
 #include "scene/main/viewport.h"
 

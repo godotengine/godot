@@ -33,7 +33,7 @@
 #include "io/resource_saver.h"
 #include "editor_settings.h"
 #include "project_settings.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_file_system.h"
 
 

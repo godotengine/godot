@@ -37,7 +37,7 @@
 #include "servers/physics_2d_server.h"
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
-#include "globals.h"
+#include "global_config.h"
 #include <stdio.h>
 #include "class_db.h"
 #include "os/keyboard.h"

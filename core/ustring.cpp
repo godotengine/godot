@@ -52,7 +52,39 @@
 #define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
 #define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
 
+
+
+
 /** STRING **/
+
+bool CharString::operator<(const CharString& p_right) const {
+
+	if (length()==0) {
+		return p_right.length()!=0;
+	}
+
+
+	const char *this_str=get_data();
+	const char *that_str=get_data();
+	while (true) {
+
+		if (*that_str==0 && *this_str==0)
+			return false; //this can't be equal, sadly
+		else if (*this_str==0)
+			return true; //if this is empty, and the other one is not, then we're less.. I think?
+		else if (*that_str==0)
+			return false; //otherwise the other one is smaller..
+		else if (*this_str < *that_str ) //more than
+			return true;
+		else if (*this_str > *that_str ) //less than
+			return false;
+
+		this_str++;
+		that_str++;
+	}
+
+	return false; //should never reach here anyway
+}
 
 const char *CharString::get_data() const {
 

@@ -2,7 +2,7 @@
 #include "visual_script_nodes.h"
 #include "scene/main/node.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 

@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "packed_scene.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/resource_loader.h"
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"

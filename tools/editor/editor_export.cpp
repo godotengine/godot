@@ -29,7 +29,7 @@
 #include "editor_export.h"
 #include "version.h"
 #include "script_language.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "os/dir_access.h"
 #include "tools/editor/editor_file_system.h"
@@ -42,8 +42,18 @@
 #include "tools/editor/plugins/script_editor_plugin.h"
 #include "io/zip_io.h"
 
+static int _get_pad(int p_alignment, int p_n) {
 
+	int rest = p_n % p_alignment;
+	int pad = 0;
+	if (rest > 0) {
+		pad = p_alignment - rest;
+	};
 
+	return pad;
+};
+
+#define PCK_PADDING 16
 
 bool EditorExportPreset::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -73,7 +83,7 @@ void EditorExportPreset::_get_property_list( List<PropertyInfo> *p_list) const{
 	}
 }
 
-Ref<EditorExportPlatform> EditorExportPreset::get_platform() {
+Ref<EditorExportPlatform> EditorExportPreset::get_platform() const {
 
 	return platform;
 }
@@ -254,6 +264,34 @@ void EditorExportPlatform::gen_debug_flags(Vector<String> &r_flags, int p_flags)
 
 Error EditorExportPlatform::_save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
+	PackData *pd = (PackData*)p_userdata;
+
+	SavedData sd;
+	sd.path_utf8=p_path.utf8();
+	sd.ofs = pd->f->get_pos();
+	sd.size = p_data.size();
+
+	pd->f->store_buffer(p_data.ptr(),p_data.size());
+	int pad = _get_pad(PCK_PADDING,sd.size);
+	for(int i=0;i<pad;i++) {
+		pd->f->store_8(0);
+	}
+
+	{
+		MD5_CTX ctx;
+		MD5Init(&ctx);
+		MD5Update(&ctx,(unsigned char*)p_data.ptr(),p_data.size());
+		MD5Final(&ctx);
+		sd.md5.resize(16);
+		for(int i=0;i<16;i++) {
+			sd.md5[i]=ctx.digest[i];
+		}
+	}
+
+	pd->file_ofs.push_back(sd);
+
+	pd->ep->step(TTR("Storing File:")+" "+p_path,2+p_file*100/p_total,false);
+
 	return OK;
 }
 
@@ -281,7 +319,7 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata,const String& p_path
 	zipCloseFileInZip(zip);
 
 	zd->ep->step(TTR("Storing File:")+" "+p_path,2+p_file*100/p_total,false);
-	zd->count++;
+
 	return OK;
 }
 
@@ -335,17 +373,249 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 
 }
 
+void EditorExportPlatform::_export_find_resources(EditorFileSystemDirectory *p_dir,Set<String>& p_paths) {
+
+	for(int i=0;i<p_dir->get_subdir_count();i++) {
+		_export_find_resources(p_dir->get_subdir(i),p_paths);
+	}
+
+	for(int i=0;i<p_dir->get_file_count();i++) {
+		p_paths.insert(p_dir->get_file_path(i));
+	}
+}
+
+
+void EditorExportPlatform::_export_find_dependencies(const String& p_path,Set<String>& p_paths) {
+
+	if (p_paths.has(p_path))
+		return;
+
+	p_paths.insert(p_path);
+
+	EditorFileSystemDirectory *dir;
+	int file_idx;
+	dir = EditorFileSystem::get_singleton()->find_file(p_path,&file_idx);
+	if (!dir)
+		return;
+
+	Vector<String> deps = dir->get_file_deps(file_idx);
+
+	for(int i=0;i<deps.size();i++) {
+
+		_export_find_dependencies(deps[i],p_paths);
+	}
+}
+
+
 Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset>& p_preset,EditorExportSaveFunction p_func, void* p_udata) {
+
+	Ref<EditorExportPlatform> platform = p_preset->get_platform();
+	List<String> feature_list;
+	platform->get_preset_features(p_preset,&feature_list);
+	//figure out features
+	Set<String> features;
+	for (List<String>::Element *E=feature_list.front();E;E=E->next()) {
+		features.insert(E->get());
+	}
+
+	//figure out paths of files that will be exported
+	Set<String> paths;
+
+	if (p_preset->get_export_filter()==EditorExportPreset::EXPORT_ALL_RESOURCES) {
+		//find stuff
+		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(),paths);
+	} else {
+		bool scenes_only = p_preset->get_export_filter()==EditorExportPreset::EXPORT_SELECTED_SCENES;
+
+		Vector<String> files = p_preset->get_files_to_export();
+		for(int i=0;i<files.size();i++) {
+			if (scenes_only && ResourceLoader::get_resource_type(files[i])!="PackedScene")
+				continue;
+
+			_export_find_dependencies(files[i],paths);
+		}
+	}
+
+	//store everything in the export medium
+	int idx = 0;
+	int total=paths.size();
+
+	for(Set<String>::Element *E=paths.front();E;E=E->next()) {
+
+		String path = E->get();
+
+		if (FileAccess::exists(path+".import")) {
+			//file is imported, replace by what it imports
+			Ref<ConfigFile> config;
+			config.instance();
+			Error err = config->load(path+".import");
+			if (err!=OK) {
+				ERR_PRINTS("Could not parse: '"+path+"', not exported.");
+				continue;
+			}
+
+			List<String> remaps;
+			config->get_section_keys("remap",&remaps);
+
+			for(List<String>::Element *F=remaps.front();F;F=F->next()) {
+
+				String remap=F->get();
+				if (remap=="path") {
+					String remapped_path=config->get_value("remap",remap);
+					Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+					p_func(p_udata,remapped_path,array,idx,total);
+				} else if (remap.begins_with("path.")) {
+					String feature = remap.get_slice(".",1);
+					if (features.has(feature)) {
+						String remapped_path=config->get_value("remap",remap);
+						Vector<uint8_t> array = FileAccess::get_file_as_array(remapped_path);
+						p_func(p_udata,remapped_path,array,idx,total);
+					}
+				}
+			}
+
+			//also save the .import file
+			Vector<uint8_t> array = FileAccess::get_file_as_array(path+".import");
+			p_func(p_udata,path+".import",array,idx,total);
+
+		} else {
+			//just store it as it comes
+			Vector<uint8_t> array = FileAccess::get_file_as_array(path);
+			p_func(p_udata,path,array,idx,total);
+		}
+
+		idx++;
+	}
+
+	//save config!
+
+	String config_file="godot.cfb";
+	String engine_cfb =EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp"+config_file;
+	GlobalConfig::get_singleton()->save_custom(engine_cfb);
+	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
+
+	p_func(p_udata,"res://"+config_file,data,idx,total);
 
 	return OK;
 }
 
-Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset>& p_preset,FileAccess *p_where) {
+Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset>& p_preset,const String& p_path) {
+
+	EditorProgress ep("savepack",TTR("Packing"),102);
+
+	String tmppath = EditorSettings::get_singleton()->get_settings_path()+"/tmp/packtmp";
+	FileAccess *ftmp = FileAccess::open(tmppath,FileAccess::WRITE);
+	ERR_FAIL_COND_V(!ftmp,ERR_CANT_CREATE)
+
+	PackData pd;
+	pd.ep=&ep;
+	pd.f=ftmp;
+
+	Error err = export_project_files(p_preset,_save_pack_file,&pd);
+
+	memdelete(ftmp); //close tmp file
+
+	if (err)
+		return err;
+
+	pd.file_ofs.sort(); //do sort, so we can do binary search later
+
+
+	FileAccess *f = FileAccess::open(p_path,FileAccess::WRITE);
+	ERR_FAIL_COND_V(!f,ERR_CANT_CREATE)
+	f->store_32(0x43504447); //GDPK
+	f->store_32(1); //pack version
+	f->store_32(VERSION_MAJOR);
+	f->store_32(VERSION_MINOR);
+	f->store_32(0); //hmph
+	for(int i=0;i<16;i++) {
+		//reserved
+		f->store_32(0);
+	}
+
+	f->store_32(pd.file_ofs.size()); //amount of files
+
+	size_t header_size = f->get_pos();
+
+	//precalculate header size
+
+	for(int i=0;i<pd.file_ofs.size();i++) {
+		header_size += 4; // size of path string (32 bits is enough)
+		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
+		header_size += string_len + _get_pad(4,string_len); ///size of path string
+		header_size += 8; // offset to file _with_ header size included
+		header_size += 8; // size of file
+		header_size +=16; // md5
+
+	}
+
+	size_t header_padding = _get_pad(PCK_PADDING,header_size);
+
+
+	for(int i=0;i<pd.file_ofs.size();i++) {
+
+		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
+		uint32_t pad = _get_pad(4,string_len);;
+		f->store_32(string_len+pad);
+		f->store_buffer((const uint8_t*)pd.file_ofs[i].path_utf8.get_data(),string_len);
+		for(uint32_t j=0;j<pad;j++) {
+			f->store_8(0);
+		}
+
+		f->store_64(pd.file_ofs[i].ofs + header_padding + header_size);
+		f->store_64(pd.file_ofs[i].size); // pay attention here, this is where file is
+		f->store_buffer(pd.file_ofs[i].md5.ptr(),16); //also save md5 for file
+	}
+
+	for(uint32_t j=0;j<header_padding;j++) {
+		f->store_8(0);
+	}
+
+	//save the rest of the data
+
+	ftmp = FileAccess::open(tmppath,FileAccess::READ);
+	if (!ftmp) {
+		memdelete(f);
+		ERR_FAIL_COND_V(!ftmp,ERR_CANT_CREATE)
+	}
+
+	const int bufsize=16384;
+	uint8_t buf[bufsize];
+
+	while(true) {
+
+		int got = ftmp->get_buffer(buf,bufsize);
+		if (got<=0)
+			break;
+		f->store_buffer(buf,got);
+	}
+
+	memdelete(ftmp);
+
+	f->store_32(0x43504447); //GDPK
+	memdelete(f);
 
 	return OK;
 }
 
 Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset>& p_preset,const String& p_path) {
+
+	EditorProgress ep("savezip",TTR("Packing"),102);
+
+	//FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
+
+	FileAccess *src_f;
+	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+	zipFile	zip=zipOpen2(p_path.utf8().get_data(),APPEND_STATUS_CREATE,NULL,&io);
+
+	ZipData zd;
+	zd.ep=&ep;
+	zd.zip=zip;
+
+
+	Error err = export_project_files(p_preset,_save_zip_file,&zd);
+
+	zipClose(zip,NULL);
 
 	return OK;
 }
@@ -387,9 +657,7 @@ void EditorExport::_save() {
 				config->set_value(section,"export_filter","resources");
 				save_files=true;
 			} break;
-			case EditorExportPreset::EXPORT_ALL_FILES: {
-				config->set_value(section,"export_filter","all_files");
-			} break;
+
 
 		}
 
@@ -527,8 +795,6 @@ void EditorExport::load_config() {
 		} else if (export_filter=="resources") {
 			preset->set_export_filter(EditorExportPreset::EXPORT_SELECTED_RESOURCES);
 			get_files=true;
-		} else if (export_filter=="all_files") {
-			preset->set_export_filter(EditorExportPreset::EXPORT_ALL_FILES);
 		}
 
 		if (get_files) {

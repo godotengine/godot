@@ -31,7 +31,7 @@
 #include "message_queue.h"
 
 #include "scene/resources/surface_tool.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 
 
 bool Skeleton::_set(const StringName& p_path, const Variant& p_value) {

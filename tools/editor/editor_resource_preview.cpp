@@ -32,7 +32,7 @@
 #include "os/file_access.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_scale.h"
 #include "message_queue.h"
 

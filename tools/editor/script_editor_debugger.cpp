@@ -39,7 +39,7 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/margin_container.h"
 #include "property_editor.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_node.h"
 #include "main/performance.h"
 #include "editor_profiler.h"

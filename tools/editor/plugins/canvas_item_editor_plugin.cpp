@@ -38,7 +38,7 @@
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/screen_button.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/input.h"
 #include "tools/editor/editor_settings.h"
 #include "scene/gui/grid_container.h"

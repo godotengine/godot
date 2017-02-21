@@ -1,7 +1,7 @@
 #include "rasterizer_storage_gles3.h"
 #include "rasterizer_canvas_gles3.h"
 #include "rasterizer_scene_gles3.h"
-#include "globals.h"
+#include "global_config.h"
 
 /* TEXTURE API */
 

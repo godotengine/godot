@@ -37,7 +37,7 @@
 #include "area_pair_2d_sw.h"
 #include "broad_phase_2d_sw.h"
 #include "collision_object_2d_sw.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 class Physics2DDirectSpaceStateSW : public Physics2DDirectSpaceState {

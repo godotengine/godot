@@ -34,7 +34,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "servers/visual/visual_server_raster.h"
 #include "main/main.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "dom_keys.h"
 
 #include <stdlib.h>

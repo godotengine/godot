@@ -29,7 +29,7 @@
 #include "project_export.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/os.h"
@@ -48,6 +48,8 @@ void ProjectExportDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 		delete_preset->set_icon(get_icon("Del","EditorIcons"));
+		connect("confirmed",this,"_export_pck_zip");
+
 	}
 }
 
@@ -528,7 +530,7 @@ void ProjectExportDialog::_fill_resource_tree() {
 
 	EditorExportPreset::ExportFilter f = current->get_export_filter();
 
-	if (f==EditorExportPreset::EXPORT_ALL_RESOURCES || f==EditorExportPreset::EXPORT_ALL_FILES) {
+	if (f==EditorExportPreset::EXPORT_ALL_RESOURCES) {
 		return;
 	}
 
@@ -616,6 +618,27 @@ void ProjectExportDialog::_tree_changed() {
 	}
 }
 
+
+void ProjectExportDialog::_export_pck_zip() {
+
+	export_pck_zip->popup_centered_ratio();
+}
+
+void ProjectExportDialog::_export_pck_zip_selected(const String& p_path) {
+
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	ERR_FAIL_COND (current.is_null());
+	Ref<EditorExportPlatform> platform = current->get_platform();
+	ERR_FAIL_COND( platform.is_null() );
+
+	if (p_path.ends_with(".zip")) {
+		platform->save_zip(current,p_path);
+	} else if (p_path.ends_with(".pck")) {
+		platform->save_pack(current,p_path);
+	}
+}
+
+
 void ProjectExportDialog::_bind_methods() {
 
 	ClassDB::bind_method("_add_preset",&ProjectExportDialog::_add_preset);
@@ -634,8 +657,8 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_patch_selected",&ProjectExportDialog::_patch_selected);
 	ClassDB::bind_method("_patch_deleted",&ProjectExportDialog::_patch_deleted);
 	ClassDB::bind_method("_patch_edited",&ProjectExportDialog::_patch_edited);
-
-
+	ClassDB::bind_method("_export_pck_zip",&ProjectExportDialog::_export_pck_zip);
+	ClassDB::bind_method("_export_pck_zip_selected",&ProjectExportDialog::_export_pck_zip_selected);
 
 
 }
@@ -699,7 +722,6 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_filter->add_item(TTR("Export all resources in the project"));
 	export_filter->add_item(TTR("Export selected scenes (and dependencies)"));
 	export_filter->add_item(TTR("Export selected resources (and dependencies)"));
-	export_filter->add_item(TTR("Export all files in the project directory"));
 	resources_vb->add_margin_child(TTR("Export Mode:"),export_filter);
 	export_filter->connect("item_selected",this,"_export_type_changed");
 
@@ -770,7 +792,19 @@ ProjectExportDialog::ProjectExportDialog() {
 	updating=false;
 
 	get_ok()->set_text("Export PCK/Zip");
-	add_button("Export Project",!OS::get_singleton()->get_swap_ok_cancel(),"export");
+	export_button = add_button("Export Project",!OS::get_singleton()->get_swap_ok_cancel(),"export");
+
+	export_pck_zip = memnew( FileDialog );
+	export_pck_zip->add_filter("*.zip ; ZIP File");
+	export_pck_zip->add_filter("*.pck ; Godot Game Pack");
+	export_pck_zip->set_access(FileDialog::ACCESS_FILESYSTEM);
+	export_pck_zip->set_mode(FileDialog::MODE_SAVE_FILE);
+	add_child(export_pck_zip);
+	export_pck_zip->connect("file_selected",this,"_export_pck_zip_selected");
+
+	set_hide_on_ok(false);
+
+
 
 	editor_icons = "EditorIcons";
 }

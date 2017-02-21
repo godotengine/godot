@@ -34,7 +34,7 @@
 #include "io/zip_io.h"
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/osx/logo.h"

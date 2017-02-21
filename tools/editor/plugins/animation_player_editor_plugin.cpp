@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "animation_player_editor_plugin.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/keyboard.h"
