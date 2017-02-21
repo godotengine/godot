@@ -272,7 +272,7 @@ void PopupMenu::_gui_input(const InputEvent &p_event) {
 
 						Point2 pos = get_pos();
 						int s = (vseparation + font->get_height()) * 3;
-						pos.y -= s;
+						pos.y -= (s * b.factor);
 						set_pos(pos);
 
 						//update hover
@@ -291,8 +291,9 @@ void PopupMenu::_gui_input(const InputEvent &p_event) {
 						Ref<Font> font = get_font("font");
 
 						Point2 pos = get_pos();
+
 						int s = (vseparation + font->get_height()) * 3;
-						pos.y += s;
+						pos.y += (s * b.factor);
 						set_pos(pos);
 
 						//update hover
