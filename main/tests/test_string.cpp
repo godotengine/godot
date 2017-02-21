@@ -835,7 +835,6 @@ bool test_28() {
 
 bool test_29() {
 
-	bool error = false;
 	bool state = true;
 	bool success = false;
 

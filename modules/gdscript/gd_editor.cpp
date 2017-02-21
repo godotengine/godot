@@ -2645,6 +2645,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 
 	switch(p.get_completion_type()) {
 
+		case GDParser::COMPLETION_GET_NODE:
 		case GDParser::COMPLETION_NONE: {
 		} break;
 		case GDParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
