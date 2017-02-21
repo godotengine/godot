@@ -4299,17 +4299,17 @@ String String::sprintf(const Array& values, bool* error) const {
 
 #include "translation.h"
 
-#ifdef TOOLS_ENABLED
+
 String TTR(const String& p_text) {
 
+#ifdef TOOLS_ENABLED
 	if (TranslationServer::get_singleton()) {
 		return TranslationServer::get_singleton()->tool_translate(p_text);
 	}
-
+#endif
 	return p_text;
 }
 
-#endif
 
 String RTR(const String& p_text) {
 
