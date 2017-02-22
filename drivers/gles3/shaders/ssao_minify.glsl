@@ -43,7 +43,7 @@ void main() {
 	fdepth = fdepth * 2.0 - 1.0;
 	fdepth = 2.0 * camera_z_near * camera_z_far / (camera_z_far + camera_z_near - fdepth * (camera_z_far - camera_z_near));
 	fdepth /= camera_z_far;
-	depth = uint(clamp(fdepth*65535,0.0,65535.0));
+	depth = uint(clamp(fdepth*65535.0,0.0,65535.0));
 
 #else
 	depth = texelFetch(source_depth, clamp(ssP * 2 + ivec2(ssP.y & 1, ssP.x & 1), ivec2(0), from_size - ivec2(1)), source_mipmap).r;

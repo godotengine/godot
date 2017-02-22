@@ -93,16 +93,26 @@ Image RasterizerStorageGLES3::_get_gl_image_and_format(const Image& p_image, Ima
 	switch(p_format) {
 
 		case Image::FORMAT_L8: {
+#ifdef GLES_OVER_GL
 			r_gl_internal_format=GL_R8;
 			r_gl_format=GL_RED;
 			r_gl_type=GL_UNSIGNED_BYTE;
-
+#else
+			r_gl_internal_format=GL_LUMINANCE;
+			r_gl_format=GL_LUMINANCE;
+			r_gl_type=GL_UNSIGNED_BYTE;
+#endif
 		} break;
 		case Image::FORMAT_LA8: {
-
+#ifdef GLES_OVER_GL
 			r_gl_internal_format=GL_RG8;
 			r_gl_format=GL_RG;
 			r_gl_type=GL_UNSIGNED_BYTE;
+#else
+			r_gl_internal_format=GL_LUMINANCE_ALPHA;
+			r_gl_format=GL_LUMINANCE_ALPHA;
+			r_gl_type=GL_UNSIGNED_BYTE;
+#endif
 		} break;
 		case Image::FORMAT_R8: {
 
@@ -734,6 +744,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture,const Image& p_image
 	}
 
 	//set swizle for older format compatibility
+#ifdef GLES_OVER_GL
 	switch(texture->format) {
 
 		case Image::FORMAT_L8: {
@@ -759,6 +770,7 @@ void RasterizerStorageGLES3::texture_set_data(RID p_texture,const Image& p_image
 		} break;
 
 	}
+#endif
 	if (config.use_anisotropic_filter) {
 
 		if (texture->flags&VS::TEXTURE_FLAG_ANISOTROPIC_FILTER) {
@@ -1096,7 +1108,7 @@ RID RasterizerStorageGLES3::texture_create_radiance_cubemap(RID p_source,int p_r
 	ERR_FAIL_COND_V(!texture,RID());
 	ERR_FAIL_COND_V(!(texture->flags&VS::TEXTURE_FLAG_CUBEMAP),RID());
 
-	bool use_float=true;
+	bool use_float=config.hdr_supported;
 
 	if (p_resolution<0) {
 		p_resolution=texture->width;
@@ -1316,7 +1328,7 @@ void RasterizerStorageGLES3::skybox_set_texture(RID p_skybox, RID p_cube_map, in
 
 	int mm_level=mipmaps;
 
-	bool use_float=true;
+	bool use_float=config.hdr_supported;
 
 	GLenum internal_format = use_float?GL_RGBA16F:GL_RGB10_A2;
 	GLenum format = GL_RGBA;
@@ -5570,9 +5582,10 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 	GLuint color_type;
 	Image::Format image_format;
 
+	bool hdr = rt->flags[RENDER_TARGET_HDR] && config.hdr_supported;
+	hdr=false;
 
-
-	if (!rt->flags[RENDER_TARGET_HDR] || rt->flags[RENDER_TARGET_NO_3D]) {
+	if (!hdr || rt->flags[RENDER_TARGET_NO_3D]) {
 
 		color_internal_format=GL_RGBA8;
 		color_format=GL_RGBA;
@@ -5597,7 +5610,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 		glGenTextures(1, &rt->depth);
 		glBindTexture(GL_TEXTURE_2D, rt->depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, rt->width, rt->height, 0,
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, rt->width, rt->height, 0,
 			     GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -5620,6 +5633,10 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			printf("framebuffer fail, status: %x\n",status);
+		}
 
 		ERR_FAIL_COND( status != GL_FRAMEBUFFER_COMPLETE );
 
@@ -5668,7 +5685,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 		if (msaa==0)
 			glRenderbufferStorage(GL_RENDERBUFFER,color_internal_format,rt->width,rt->height);
 		else
-			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,GL_RGBA16F,rt->width,rt->height);
+			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,color_internal_format,rt->width,rt->height);
 
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,rt->buffers.diffuse);
 
@@ -5676,7 +5693,7 @@ void RasterizerStorageGLES3::_render_target_allocate(RenderTarget *rt){
 		glBindRenderbuffer(GL_RENDERBUFFER, rt->buffers.specular);
 
 		if (msaa==0)
-			glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA16F,rt->width,rt->height);
+			glRenderbufferStorage(GL_RENDERBUFFER,color_internal_format,rt->width,rt->height);
 		else
 			glRenderbufferStorageMultisample(GL_RENDERBUFFER,msaa,color_internal_format,rt->width,rt->height);
 
@@ -6460,9 +6477,11 @@ void RasterizerStorageGLES3::initialize() {
 	config.latc_supported=config.extensions.has("GL_EXT_texture_compression_latc");
 	config.bptc_supported=config.extensions.has("GL_ARB_texture_compression_bptc");
 #ifdef GLES_OVER_GL
+	config.hdr_supported=true;
 	config.etc2_supported=false;
 #else
 	config.etc2_supported=true;
+	config.hdr_supported=false;
 #endif
 	config.pvrtc_supported=config.extensions.has("GL_IMG_texture_compression_pvrtc");
 	config.srgb_decode_supported=config.extensions.has("GL_EXT_texture_sRGB_decode");

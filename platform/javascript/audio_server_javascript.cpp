@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_server_javascript.h"
-
+#if 0
 #include "emscripten.h"
 
 AudioMixer *AudioServerJavascript::get_mixer() {
@@ -847,3 +847,4 @@ AudioServerJavascript::AudioServerJavascript() {
 	stream_volume_scale=1.0;
 
 }
+#endif

@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
 
 
 	/* Initialize the window */
-	printf("let it go!\n");
+	printf("let it go dude!\n");
 	glutInit(&argc, argv);
 	os = new OS_JavaScript(_gfx_init,NULL,NULL);
 #if 0

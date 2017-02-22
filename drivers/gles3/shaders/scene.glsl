@@ -533,8 +533,8 @@ float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 	float ratio_incr = 1.0/steps;
 
 	do {
-		source += incr*2;
-		bias+=incr*2;
+		source += incr*2.0;
+		bias+=incr*2.0;
 
 		vec3 uv_depth = (source.xyz / source.w) * 0.5 + 0.5;
 		float depth = texture(depth_buffer,uv_depth.xy).r;

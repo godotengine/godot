@@ -29,7 +29,7 @@ void main() {
 
 
 uniform sampler2D source_depth; //texunit:0
-uniform usampler2D source_depth_mipmaps; //texunit:1
+uniform highp usampler2D source_depth_mipmaps; //texunit:1
 uniform sampler2D source_normal; //texunit:2
 
 uniform ivec2 screen_size;
@@ -78,8 +78,8 @@ vec3 reconstructCSFaceNormal(vec3 C) {
 /** Returns a unit vector and a screen-space radius for the tap on a unit disk (the caller should scale by the actual disk radius) */
 vec2 tapLocation(int sampleNumber, float spinAngle, out float ssR){
     // Radius relative to ssR
-    float alpha = float(sampleNumber + 0.5) * (1.0 / NUM_SAMPLES);
-    float angle = alpha * (NUM_SPIRAL_TURNS * 6.28) + spinAngle;
+    float alpha = (float(sampleNumber) + 0.5) * (1.0 / float(NUM_SAMPLES));
+    float angle = alpha * (float(NUM_SPIRAL_TURNS) * 6.28) + spinAngle;
 
     ssR = alpha;
     return vec2(cos(angle), sin(angle));
@@ -193,7 +193,7 @@ void main() {
 
 
 	// Hash function used in the HPG12 AlchemyAO paper
-	float randomPatternRotationAngle = (3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10;
+	float randomPatternRotationAngle = float((3 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 10);
 
 	// Reconstruct normals from positions. These will lead to 1-pixel black lines
 	// at depth discontinuities, however the blur will wipe those out so they are not visible
@@ -208,12 +208,12 @@ void main() {
 		sum += sampleAO(ssC, C, n_C, ssDiskRadius, radius,i, randomPatternRotationAngle);
 	}
 
-	float A = max(0.0, 1.0 - sum * intensity_div_r6 * (5.0 / NUM_SAMPLES));
+	float A = max(0.0, 1.0 - sum * intensity_div_r6 * (5.0 / float(NUM_SAMPLES)));
 
 #ifdef ENABLE_RADIUS2
 
 	//go again for radius2
-	randomPatternRotationAngle = (5 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 11;
+	randomPatternRotationAngle = float((5 * ssC.x ^ ssC.y + ssC.x * ssC.y) * 11);
 
 	// Reconstruct normals from positions. These will lead to 1-pixel black lines
 	// at depth discontinuities, however the blur will wipe those out so they are not visible
@@ -228,15 +228,15 @@ void main() {
 		sum += sampleAO(ssC, C, n_C, ssDiskRadius,radius2, i, randomPatternRotationAngle);
 	}
 
-	A= min(A,max(0.0, 1.0 - sum * intensity_div_r62 * (5.0 / NUM_SAMPLES)));
+	A= min(A,max(0.0, 1.0 - sum * intensity_div_r62 * (5.0 / float(NUM_SAMPLES))));
 #endif
 	// Bilateral box-filter over a quad for free, respecting depth edges
 	// (the difference that this makes is subtle)
 	if (abs(dFdx(C.z)) < 0.02) {
-		A -= dFdx(A) * ((ssC.x & 1) - 0.5);
+		A -= dFdx(A) * (float(ssC.x & 1) - 0.5);
 	}
 	if (abs(dFdy(C.z)) < 0.02) {
-		A -= dFdy(A) * ((ssC.y & 1) - 0.5);
+		A -= dFdy(A) * (float(ssC.y & 1) - 0.5);
 	}
 
 	visibility = A;

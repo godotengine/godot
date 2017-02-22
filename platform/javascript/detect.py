@@ -86,7 +86,6 @@ def configure(env):
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
     env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL', '-DMPC_FIXED_POINT', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
     env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
-    env.Append(CPPFLAGS=['-DGLES_NO_CLIENT_ARRAYS'])
 
     if env['wasm'] == 'yes':
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])

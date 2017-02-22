@@ -133,7 +133,7 @@ void RasterizerSceneGLES3::shadow_atlas_set_size(RID p_atlas,int p_size){
 		glActiveTexture(GL_TEXTURE0);
 		glGenTextures(1, &shadow_atlas->depth);
 		glBindTexture(GL_TEXTURE_2D, shadow_atlas->depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadow_atlas->size, shadow_atlas->size, 0,
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, shadow_atlas->size, shadow_atlas->size, 0,
 			     GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -2662,9 +2662,9 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result,int p_light_cu
 		glBindBuffer(GL_UNIFORM_BUFFER, state.omni_array_ubo);
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, state.omni_light_count*state.ubo_light_size, state.omni_array_tmp);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-		glBindBufferBase(GL_UNIFORM_BUFFER,4,state.omni_array_ubo);
 	}
+
+	glBindBufferBase(GL_UNIFORM_BUFFER,4,state.omni_array_ubo);
 
 	if (state.spot_light_count) {
 
@@ -2672,9 +2672,9 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result,int p_light_cu
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, state.spot_light_count*state.ubo_light_size, state.spot_array_tmp);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		glBindBufferBase(GL_UNIFORM_BUFFER,5,state.spot_array_ubo);
 	}
 
+	glBindBufferBase(GL_UNIFORM_BUFFER,5,state.spot_array_ubo);
 
 
 }
@@ -2770,8 +2770,9 @@ void RasterizerSceneGLES3::_setup_reflections(RID *p_reflection_probe_cull_resul
 		glBufferSubData(GL_UNIFORM_BUFFER, 0, state.reflection_probe_count*sizeof(ReflectionProbeDataUBO), state.reflection_array_tmp);
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-		glBindBufferBase(GL_UNIFORM_BUFFER,6,state.reflection_array_ubo);
 	}
+
+	glBindBufferBase(GL_UNIFORM_BUFFER,6,state.reflection_array_ubo);
 
 }
 
@@ -4804,7 +4805,7 @@ void RasterizerSceneGLES3::initialize() {
 		//gen cubemap first
 		for(int i=0;i<6;i++) {
 
-			glTexImage2D(_cube_side_enum[i], 0, GL_DEPTH_COMPONENT,  cube.size, cube.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+			glTexImage2D(_cube_side_enum[i], 0, GL_DEPTH_COMPONENT24,  cube.size, cube.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 		}
 
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -4838,7 +4839,7 @@ void RasterizerSceneGLES3::initialize() {
 		glBindFramebuffer(GL_FRAMEBUFFER,directional_shadow.fbo);
 		glGenTextures(1,&directional_shadow.depth);
 		glBindTexture(GL_TEXTURE_2D,directional_shadow.depth);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,  directional_shadow.size, directional_shadow.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,  directional_shadow.size, directional_shadow.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -4928,7 +4929,7 @@ void RasterizerSceneGLES3::initialize() {
 
 			glGenTextures(1,&cube.depth);
 			glBindTexture(GL_TEXTURE_2D,cube.depth);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,  cube.size, cube.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,  cube.size, cube.size, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
