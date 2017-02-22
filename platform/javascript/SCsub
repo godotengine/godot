@@ -32,7 +32,7 @@ basename = "godot" + env["PROGSUFFIX"] # output file name without file extension
 # placeholder while leaving extension; also change `.html.mem` to just `.mem`
 fixup_html = env.Substfile(html_file, SUBST_DICT=[(basename, '$$GODOT_BASE'), ('.html.mem', '.mem')], SUBSTFILESUFFIX='.fixup.html')
 
-zip_dir = env.Dir('#bin/js_zip')
+zip_dir = env.Dir('#bin/.javascript_zip')
 zip_files = []
 js_file = env.SideEffect(html_file.File(basename+'.js'), html_file)
 zip_files.append(env.InstallAs(
