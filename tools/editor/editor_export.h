@@ -203,10 +203,10 @@ public:
 
 	virtual Error run(int p_device,int p_debug_flags) { return OK; }
 
-	virtual bool can_export(String *r_error=NULL) const=0;
+	virtual bool can_export(const Ref<EditorExportPreset>& p_preset,String &r_error,bool &r_missing_templates) const=0;
 
 	virtual String get_binary_extension() const=0;
-	virtual Error export_project(const Ref<EditorExportPreset>& p_preset,const String& p_path,int p_flags=0)=0;
+	virtual Error export_project(const Ref<EditorExportPreset>& p_preset,bool p_debug,const String& p_path,int p_flags=0)=0;
 
 	EditorExportPlatform();
 };
@@ -262,7 +262,10 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 	String name;
 	String extension;
 
-
+	String release_file_32;
+	String release_file_64;
+	String debug_file_32;
+	String debug_file_64;
 
 public:
 
@@ -273,14 +276,19 @@ public:
 	virtual String get_name() const;
 	virtual Ref<Texture> get_logo() const;
 
-	virtual bool can_export(String *r_error=NULL) const;
+	virtual bool can_export(const Ref<EditorExportPreset>& p_preset,String &r_error,bool &r_missing_templates) const;
 	virtual String get_binary_extension() const;
-	virtual Error export_project(const Ref<EditorExportPreset>& p_preset,const String& p_path,int p_flags=0);
+	virtual Error export_project(const Ref<EditorExportPreset>& p_preset,bool p_debug,const String& p_path,int p_flags=0);
 
 	void set_extension(const String& p_extension);
 	void set_name(const String& p_name);
 
 	void set_logo(const Ref<Texture>& p_loco);
+
+	void set_release_64(const String& p_file);
+	void set_release_32(const String& p_file);
+	void set_debug_64(const String& p_file);
+	void set_debug_32(const String& p_file);
 
 	EditorExportPlatformPC();
 };

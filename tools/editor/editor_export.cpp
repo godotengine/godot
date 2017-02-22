@@ -326,7 +326,7 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata,const String& p_path
 String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 
 	String user_file = EditorSettings::get_singleton()->get_settings_path()
-		+"/templates/"+template_file_name;
+		+"/templates/"+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"."+_MKSTR(VERSION_STATUS)+"/"+template_file_name;
 	String system_file=OS::get_singleton()->get_installed_templates_path();
 	bool has_system_path=(system_file!="");
 	system_file+=template_file_name;
@@ -891,15 +891,27 @@ Ref<Texture> EditorExportPlatformPC::get_logo() const  {
 	return logo;
 }
 
-bool EditorExportPlatformPC::can_export(String *r_error) const {
-	return true;
+bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset>& p_preset,String &r_error, bool &r_missing_templates) const {
+
+	r_missing_templates=false;
+
+	if (find_export_template(release_file_32)==String()) {
+		r_missing_templates=true;
+	} else if (find_export_template(debug_file_32)==String()) {
+		r_missing_templates=true;
+	} else if (find_export_template(release_file_64)==String()) {
+		r_missing_templates=true;
+	} else if (find_export_template(debug_file_64)==String()) {
+		r_missing_templates=true;
+	}
+	return !r_missing_templates;
 }
 
 String EditorExportPlatformPC::get_binary_extension() const {
 	return extension;
 }
 
-Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset>& p_preset,const String& p_path,int p_flags) {
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset>& p_preset, bool p_debug, const String& p_path, int p_flags) {
 
 	return OK;
 }
@@ -914,6 +926,25 @@ void EditorExportPlatformPC::set_name(const String& p_name) {
 
 void EditorExportPlatformPC::set_logo(const Ref<Texture>& p_logo) {
 	logo=p_logo;
+}
+
+void EditorExportPlatformPC::set_release_64(const String& p_file) {
+
+	release_file_64=p_file;
+}
+
+void EditorExportPlatformPC::set_release_32(const String& p_file){
+
+	release_file_32=p_file;
+}
+void EditorExportPlatformPC::set_debug_64(const String& p_file){
+
+	debug_file_64=p_file;
+}
+void EditorExportPlatformPC::set_debug_32(const String& p_file){
+
+	debug_file_32=p_file;
+
 }
 
 EditorExportPlatformPC::EditorExportPlatformPC() {
