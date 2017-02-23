@@ -401,6 +401,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				String scode = _dump_node_code(bnode->statements[i],p_level,r_gen_code,p_actions,p_default_actions);
 
 				if (bnode->statements[i]->type==SL::Node::TYPE_CONTROL_FLOW || bnode->statements[i]->type==SL::Node::TYPE_CONTROL_FLOW) {
+					// FIXME: if (A || A) ? I am hesitant to delete one of them, could be copy-paste error.
 					code+=scode; //use directly
 				} else {
 					code+=_mktab(p_level)+scode+";\n";

@@ -1414,7 +1414,7 @@ Error VariantParser::parse_value(Token& token,Variant &value,Stream *p_stream,in
 			return OK;
 		} else if (id=="img") {  // compatibility with godot.cfg
 
-			Token token;
+			Token token;	// FIXME: no need for this declaration? the first argument in line 509 is a Token& token.
 			get_token(p_stream,token,line,r_err_str);
 			if (token.type!=TK_PARENTHESIS_OPEN) {
 				r_err_str="Expected '(' in old-style godot.cfg construct";

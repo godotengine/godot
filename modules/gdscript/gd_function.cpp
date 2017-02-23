@@ -725,7 +725,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 								err.argument-=1;
 							}
 						}
-					} if (methodstr=="free") {
+					} else if (methodstr=="free") {
 
 						if (err.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
 

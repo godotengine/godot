@@ -118,7 +118,7 @@ Error ResourceImporterOBJ::import(const String& p_source_file, const String& p_s
 			nrm.y=v[2].to_float();
 			nrm.z=v[3].to_float();
 			normals.push_back(nrm);
-		} if (l.begins_with("f ")) {
+		} else if (l.begins_with("f ")) {
 				//vertex
 
 			has_index_data=true;

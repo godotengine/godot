@@ -307,7 +307,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 							} if (GETCHAR(0)=='*' && GETCHAR(1)=='/') {
 								char_idx+=2;
 								break;
-							} if (GETCHAR(0)=='\n') {
+							} else if (GETCHAR(0)=='\n') {
 								tk_line++;
 							}
 
@@ -3241,7 +3241,7 @@ Error ShaderLanguage::_parse_shader(const Map< StringName, Map<StringName,DataTy
 					_set_error("void datatype not allowed here");
 					return ERR_PARSE_ERROR;
 				}
-				if (!uniform && type<TYPE_FLOAT && type>TYPE_VEC4) {
+				if (!uniform && type<TYPE_FLOAT && type>TYPE_VEC4) {	// FIXME: always false! should it be || instead?
 					_set_error("Invalid type for varying, only float,vec2,vec3,vec4 allowed.");
 					return ERR_PARSE_ERROR;
 				}

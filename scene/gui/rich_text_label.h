@@ -173,7 +173,7 @@ private:
 
 	struct ItemNewline : public Item {
 
-		int line;
+		int line;	// FIXME: Overriding base's line ?
 		ItemNewline() { type=ITEM_NEWLINE; }
 	};
 

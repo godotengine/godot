@@ -1010,7 +1010,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 		if (unshaded || (state.canvas_item_modulate.a>0.001 && (!shader_cache || shader_cache->canvas_item.light_mode!=RasterizerStorageGLES3::Shader::CanvasItem::LIGHT_MODE_LIGHT_ONLY) && !ci->light_masked ))
 			_canvas_item_render_commands(ci,current_clip,reclip);
 
-		if ((blend_mode==RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX || RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA) && p_light && !unshaded) {
+		if ((blend_mode==RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX || blend_mode==RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA) && p_light && !unshaded) {
 
 			Light *light = p_light;
 			bool light_used=false;

@@ -201,7 +201,7 @@ void AcceptDialog::_notification(int p_what) {
 	if (p_what==NOTIFICATION_MODAL_CLOSE) {
 
 		cancel_pressed();
-	} if (p_what==NOTIFICATION_RESIZED) {
+	} else if (p_what==NOTIFICATION_RESIZED) {
 
 		_update_child_rects();
 	}

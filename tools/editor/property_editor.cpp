@@ -534,7 +534,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 			} else if (hint==PROPERTY_HINT_TYPE_STRING) {
 
-
+				/* FIXME: This is repeated twice, with slightly different behavior! Which one? Check line 644 */
 				if (!create_dialog) {
 					create_dialog = memnew( CreateDialog );
 					create_dialog->connect("create",this,"_create_dialog_callback");
@@ -651,6 +651,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 			} else if (hint==PROPERTY_HINT_TYPE_STRING) {
 				if (!create_dialog) {
+					/* FIXME: ... and here. See line 529 */
 					create_dialog = memnew( CreateDialog );
 					create_dialog->connect("create",this,"_create_dialog_callback");
 					add_child(create_dialog);
@@ -2384,6 +2385,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 				p_item->set_range(1, obj->get( p_name ) );
 
 			} else {
+				/* FIXME: Why are both statements equal? */
 				p_item->set_range(1, obj->get( p_name ) );
 			}
 

@@ -353,6 +353,7 @@ void TextureRegionEditor::_region_input(const InputEvent& p_input)
 						undo_redo->add_undo_method(atlas_tex.ptr(),"set_region",rect_prev);
 					}
 					else if(node_patch9){
+						// FIXME: Is this intentional?
 					} else if(node_patch9){
 						undo_redo->add_do_method(node_patch9 ,"set_region_rect",node_patch9->get_region_rect());
 						undo_redo->add_undo_method(node_patch9,"set_region_rect",rect_prev);

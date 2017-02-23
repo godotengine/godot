@@ -4267,7 +4267,7 @@ void TextEdit::_update_completion_candidates() {
 		//no completion here
 		//print_line("cancel!");
 		cancel=true;
-	} if (inquote && first_quote!=-1) {
+	} else if (inquote && first_quote!=-1) {
 
 		s=l.substr(first_quote,cofs-first_quote);
 		//print_line("s: 1"+s);
