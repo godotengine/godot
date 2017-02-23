@@ -564,6 +564,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1(PoolStringArray,append);
 	VCALL_LOCALMEM1(PoolStringArray,append_array);
 	VCALL_LOCALMEM0(PoolStringArray,invert);
+	VCALL_LOCALMEM1R(PoolStringArray,join);
 
 	VCALL_LOCALMEM0R(PoolVector2Array,size);
 	VCALL_LOCALMEM2(PoolVector2Array,set);
@@ -1637,6 +1638,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_scs_create(#m_method),VCA
 	ADDFUNC2(POOL_STRING_ARRAY,INT,PoolStringArray,insert,INT,"idx",STRING,"string",varray());
 	ADDFUNC1(POOL_STRING_ARRAY,NIL,PoolStringArray,resize,INT,"idx",varray());
 	ADDFUNC0(POOL_STRING_ARRAY,NIL,PoolStringArray,invert,varray());
+	ADDFUNC1(POOL_STRING_ARRAY,STRING,PoolStringArray,join,STRING,"string",varray());
 
 	ADDFUNC0(POOL_VECTOR2_ARRAY,INT,PoolVector2Array,size,varray());
 	ADDFUNC2(POOL_VECTOR2_ARRAY,NIL,PoolVector2Array,set,INT,"idx",VECTOR2,"vector2",varray());
