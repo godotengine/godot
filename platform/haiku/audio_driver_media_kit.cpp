@@ -30,7 +30,7 @@
 
 #ifdef MEDIA_KIT_ENABLED
 
-#include "globals.h"
+#include "global_config.h"
 
 int32_t* AudioDriverMediaKit::samples_in = NULL;
 

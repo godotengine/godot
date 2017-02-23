@@ -35,7 +35,7 @@
 #include "tools/editor/editor_settings.h"
 #include "io/md5.h"
 #include "io/marshalls.h"
-#include "globals.h"
+#include "global_config.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/button_group.h"
 #include "scene/gui/margin_container.h"

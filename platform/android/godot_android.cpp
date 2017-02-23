@@ -43,7 +43,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "os_android.h"
-#include "globals.h"
+#include "global_config.h"
 #include "main/main.h"
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "godot", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "godot", __VA_ARGS__))

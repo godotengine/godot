@@ -31,7 +31,7 @@
 #if 0
 #include "scene/resources/texture.h"
 #include "io/image_loader.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_original_path, Error *r_error) {
 

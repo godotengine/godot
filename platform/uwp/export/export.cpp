@@ -79,7 +79,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "io/sha256.h"
 #include "io/base64.h"
 #include "bind/core_bind.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/marshalls.h"
 
 #include <zlib.h>

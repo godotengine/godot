@@ -956,7 +956,7 @@ EditorExportPlatformPC::EditorExportPlatformPC() {
 #if 0
 #include "version.h"
 #include "script_language.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "os/dir_access.h"
 #include "tools/editor/editor_file_system.h"
