@@ -34,7 +34,7 @@
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 #include "scene/resources/packed_scene.h"
-#include "globals.h"
+#include "global_config.h"
 
 Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
 

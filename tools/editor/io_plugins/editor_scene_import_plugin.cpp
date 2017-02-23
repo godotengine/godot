@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "editor_scene_import_plugin.h"
 #if 0
-#include "globals.h"
+#include "global_config.h"
 #include "tools/editor/editor_node.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/box_shape.h"
