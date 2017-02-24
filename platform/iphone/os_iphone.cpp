@@ -40,7 +40,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/io/file_access_pack.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 
 #include "sem_iphone.h"
 
