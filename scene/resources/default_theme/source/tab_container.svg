@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="7.403737"
-     inkscape:cy="9.2671177"
+     inkscape:zoom="32"
+     inkscape:cx="1.195927"
+     inkscape:cy="8.010776"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -45,7 +45,8 @@
      inkscape:window-height="1016"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     inkscape:snap-nodes="false">
     <inkscape:grid
        type="xygrid"
        id="grid4136"
@@ -59,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -70,11 +71,11 @@
      transform="translate(0,-1036.3623)">
     <path
        inkscape:connector-curvature="0"
-       style="opacity:1;fill:#6c687c;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#5b6480;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 4,1038.3623 a 2,2 0 0 0 -2,2 l 0,8 a 2,2 0 0 0 2,2 l 8,0 a 2,2 0 0 0 2,-2 l 0,-8 a 2,2 0 0 0 -2,-2 l -8,0 z"
        id="circle4178" />
     <path
-       style="opacity:1;fill:#44424f;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#525a74;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 4,1039.3623 a 1,1 0 0 0 -1,1 l 0,8 a 1,1 0 0 0 1,1 l 8,0 a 1,1 0 0 0 1,-1 l 0,-8 a 1,1 0 0 0 -1,-1 l -8,0 z"
        id="rect4188"
        inkscape:connector-curvature="0" />

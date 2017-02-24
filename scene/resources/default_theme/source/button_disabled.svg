@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="9.8140925"
-     inkscape:cy="7.510562"
+     inkscape:cx="4.3765925"
+     inkscape:cy="7.448062"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -69,9 +69,14 @@
      id="layer1"
      transform="translate(0,-1036.3623)">
     <path
-       style="opacity:1;fill:#413f48;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 4 2 A 2 2 0 0 0 2 4 L 2 12 A 2 2 0 0 0 4 14 L 12 14 A 2 2 0 0 0 14 12 L 14 4 A 2 2 0 0 0 12 2 L 4 2 z "
-       transform="translate(0,1036.3623)"
-       id="circle4178" />
+       inkscape:connector-curvature="0"
+       style="opacity:1;fill:#596177;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 4,1038.3623 a 2,2 0 0 0 -2,2 l 0,8 a 2,2 0 0 0 2,2 l 8,0 a 2,2 0 0 0 2,-2 l 0,-8 a 2,2 0 0 0 -2,-2 l -8,0 z"
+       id="circle4178-6" />
+    <path
+       inkscape:connector-curvature="0"
+       style="opacity:1;fill:#606880;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 4,1039.3623 a 1,1 0 0 0 -1,1 l 0,8 a 1,1 0 0 0 1,1 l 8,0 a 1,1 0 0 0 1,-1 l 0,-8 a 1,1 0 0 0 -1,-1 l -8,0 z"
+       id="rect4188" />
   </g>
 </svg>

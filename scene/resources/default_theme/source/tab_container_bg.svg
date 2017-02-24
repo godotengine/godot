@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="2.4952592"
-     inkscape:cy="10.014298"
+     inkscape:zoom="22.627417"
+     inkscape:cx="7.0471782"
+     inkscape:cy="9.6714674"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -70,7 +70,7 @@
      transform="translate(0,-1036.3623)">
     <path
        inkscape:connector-curvature="0"
-       style="opacity:1;fill:#565464;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#525a74;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 4,1038.3623 a 2,2 0 0 0 -2,2 l 0,8 a 2,2 0 0 0 2,2 l 8,0 a 2,2 0 0 0 2,-2 l 0,-8 a 2,2 0 0 0 -2,-2 l -8,0 z"
        id="circle4178" />
   </g>

@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="3.2203425"
-     inkscape:cy="9.198062"
+     inkscape:zoom="45.254834"
+     inkscape:cx="9.725286"
+     inkscape:cy="7.2810212"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -68,18 +68,21 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3623)">
-    <rect
-       style="opacity:1;fill:#2cffac;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4136"
-       width="14"
-       height="14.000005"
-       x="1"
-       y="1037.3623"
-       ry="1.9999949" />
     <path
-       style="opacity:1;fill:#565464;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 4 3 A 1 1 0 0 0 3 4 L 3 12 A 1 1 0 0 0 4 13 L 12 13 A 1 1 0 0 0 13 12 L 13 4 A 1 1 0 0 0 12 3 L 4 3 z "
-       transform="translate(0,1036.3623)"
-       id="rect4188" />
+       inkscape:connector-curvature="0"
+       style="opacity:1;fill:#6d799f;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 4,1038.3623 a 2,2 0 0 0 -2,2 l 0,8 a 2,2 0 0 0 2,2 l 8,0 a 2,2 0 0 0 2,-2 l 0,-8 a 2,2 0 0 0 -2,-2 l -8,0 z"
+       id="circle4178" />
+    <path
+       id="path4166"
+       d="m 2,1048.3623 c 0,1.1046 0.8954305,2 2,2 l 8,0 c 1.104569,0 2,-0.8954 2,-2 z"
+       style="opacity:1;fill:#11e9bb;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csscc" />
+    <path
+       inkscape:connector-curvature="0"
+       style="opacity:1;fill:#647198;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 4,1039.3623 a 1,1 0 0 0 -1,1 l 0,8 a 1,1 0 0 0 1,1 l 8,0 a 1,1 0 0 0 1,-1 l 0,-8 a 1,1 0 0 0 -1,-1 l -8,0 z"
+       id="rect4188-6" />
   </g>
 </svg>
