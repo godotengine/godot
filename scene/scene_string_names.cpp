@@ -115,6 +115,7 @@ SceneStringNames::SceneStringNames() {
 	_area_enter_tree = StaticCString::create("_area_enter_tree");
 	_area_exit_tree = StaticCString::create("_area_exit_tree");
 
+	_input = StaticCString::create("_input");
 	_input_event=StaticCString::create("_input_event");
 
 	gui_input=StaticCString::create("gui_input");
