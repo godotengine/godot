@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "particles_2d.h"
+#include "scene/scene_string_names.h"
 
 
 
@@ -451,6 +452,7 @@ void Particles2D::_process_particles(float p_delta) {
 
 	time=Math::fmod( time+frame_time, lifetime );
 	if (!emitting && active_count==0) {
+		emit_signal(SceneStringNames::get_singleton()->emission_finished);
 		set_process(false);
 
 	}
@@ -918,15 +920,6 @@ Vector2 Particles2D::get_emission_half_extents() const {
 	return extents;
 }
 
-void Particles2D::testee(int a, int b, int c, int d, int e) {
-
-	print_line(itos(a));
-	print_line(itos(b));
-	print_line(itos(c));
-	print_line(itos(d));
-	print_line(itos(e));
-}
-
 void Particles2D::set_initial_velocity(const Vector2& p_velocity) {
 
 
@@ -1091,6 +1084,8 @@ void Particles2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_emission_points","points"),&Particles2D::set_emission_points);
 	ClassDB::bind_method(D_METHOD("get_emission_points"),&Particles2D::get_emission_points);
+
+	ADD_SIGNAL(MethodInfo("emission_finished"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/amount",PROPERTY_HINT_EXP_RANGE,"1,1024"),"set_amount","get_amount") ;
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/lifetime",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),"set_lifetime","get_lifetime") ;
