@@ -305,19 +305,15 @@ void Label::_notification(int p_what) {
 
 Size2 Label::get_minimum_size() const {
 
-	if (autowrap)
-		return Size2(1,1);
-	else {
+	// don't want to mutable everything
+	if(word_cache_dirty)
+		const_cast<Label*>(this)->regenerate_word_cache();
 
-		// don't want to mutable everything
-		if(word_cache_dirty)
-			const_cast<Label*>(this)->regenerate_word_cache();
+	Size2 ms=minsize;
+	if (clip || autowrap)
+		ms.width=1;
+	return ms;
 
-		Size2 ms=minsize;
-		if (clip)
-			ms.width=1;
-		return ms;
-	}
 }
 
 int Label::get_longest_line_width() const {
@@ -511,13 +507,13 @@ void Label::regenerate_word_cache() {
 
 	if (!autowrap) {
 		minsize.width=width;
-		if (max_lines_visible > 0 && line_count > max_lines_visible) {
-			minsize.height=(font->get_height() * max_lines_visible) + (line_spacing * (max_lines_visible - 1));
-		} else {
-			minsize.height=(font->get_height() * line_count)+(line_spacing * (line_count - 1));
-		}
 	}
 
+	if (max_lines_visible > 0 && line_count > max_lines_visible) {
+		minsize.height=(font->get_height() * max_lines_visible) + (line_spacing * (max_lines_visible - 1));
+	} else {
+		minsize.height=(font->get_height() * line_count)+(line_spacing * (line_count - 1));
+	}
 	word_cache_dirty=false;
 
 }
