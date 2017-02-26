@@ -15,7 +15,7 @@ class Line2DEditor : public HBoxContainer {
 	GDCLASS(Line2DEditor, HBoxContainer)
 
 public:
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent& p_event);
 	void edit(Node *p_line2d);
 	Line2DEditor(EditorNode *p_editor);
 
@@ -65,7 +65,12 @@ class Line2DEditorPlugin : public EditorPlugin {
 	GDCLASS( Line2DEditorPlugin, EditorPlugin )
 
 public:
-	virtual bool forward_canvas_input_event(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return line2d_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_gui_input(
+			const Transform2D& p_canvas_xform,
+			const InputEvent& p_event)
+	{
+		return line2d_editor->forward_gui_input(p_event);
+	}
 
 	virtual String get_name() const { return "Line2D"; }
 	bool has_main_screen() const { return false; }
