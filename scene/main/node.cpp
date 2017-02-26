@@ -1545,7 +1545,7 @@ int Node::get_position_in_parent() const {
 
 
 
-Node *Node::_duplicate(bool p_use_instancing) const {
+Node *Node::_duplicate(bool p_use_instancing,int p_flags) const {
 
 
 	Node *node=NULL;
@@ -1592,20 +1592,26 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
 			continue;
 		String name = E->get().name;
+		if (!(p_flags&DUPLICATE_SCRIPTS) && name=="script/script")
+			continue;
+
 		node->set( name, get(name) );
 
 	}
 
 	node->set_name(get_name());
 
-	List<GroupInfo> gi;
-	get_groups(&gi);
-	for (List<GroupInfo>::Element *E=gi.front();E;E=E->next()) {
+	if (p_flags & DUPLICATE_GROUPS) {
+		List<GroupInfo> gi;
+		get_groups(&gi);
+		for (List<GroupInfo>::Element *E=gi.front();E;E=E->next()) {
 
-		node->add_to_group(E->get().name, E->get().persistent);
+			node->add_to_group(E->get().name, E->get().persistent);
+		}
 	}
 
-	_duplicate_signals(this, node);
+	if (p_flags & DUPLICATE_SIGNALS)
+		_duplicate_signals(this, node);
 
 	for(int i=0;i<get_child_count();i++) {
 
@@ -1614,7 +1620,7 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 		if (instanced && get_child(i)->data.owner==this)
 			continue; //part of instance
 
-		Node *dup = get_child(i)->duplicate(p_use_instancing);
+		Node *dup = get_child(i)->duplicate(p_use_instancing,p_flags);
 		if (!dup) {
 
 			memdelete(node);
@@ -1628,11 +1634,11 @@ Node *Node::_duplicate(bool p_use_instancing) const {
 	return node;
 }
 
-Node *Node::duplicate(bool p_use_instancing) const {
+Node *Node::duplicate(bool p_use_instancing,int p_flags) const {
 
-	Node* dupe = _duplicate(p_use_instancing);
+	Node* dupe = _duplicate(p_use_instancing,p_flags);
 
-	if (dupe) {
+	if (dupe && (p_flags&DUPLICATE_SIGNALS)) {
 		_duplicate_signals(this,dupe);
 	}
 
@@ -2210,7 +2216,7 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_tree:SceneTree"),&Node::get_tree);
 
-	ObjectTypeDB::bind_method(_MD("duplicate:Node","use_instancing"),&Node::duplicate,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("duplicate:Node","use_instancing","flags"),&Node::duplicate,DEFVAL(false),DEFVAL(DUPLICATE_SIGNALS|DUPLICATE_GROUPS|DUPLICATE_SCRIPTS));
 	ObjectTypeDB::bind_method(_MD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("set_scene_instance_load_placeholder","load_placeholder"),&Node::set_scene_instance_load_placeholder);
@@ -2251,6 +2257,10 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( PAUSE_MODE_INHERIT );
 	BIND_CONSTANT( PAUSE_MODE_STOP );
 	BIND_CONSTANT( PAUSE_MODE_PROCESS );
+
+	BIND_CONSTANT( DUPLICATE_SIGNALS );
+	BIND_CONSTANT( DUPLICATE_GROUPS );
+	BIND_CONSTANT( DUPLICATE_SCRIPTS );
 
 	ADD_SIGNAL( MethodInfo("renamed") );
 	ADD_SIGNAL( MethodInfo("enter_tree") );
