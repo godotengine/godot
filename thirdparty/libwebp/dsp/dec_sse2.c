@@ -22,7 +22,7 @@
 
 #include <emmintrin.h>
 #include "./common_sse2.h"
-#include "../dec/vp8i.h"
+#include "../dec/vp8i_dec.h"
 #include "../utils/utils.h"
 
 //------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ static void Transform(const int16_t* in, uint8_t* dst, int do_two) {
 
     // Transpose the two 4x4.
     VP8Transpose_2_4x4_16b(&shifted0, &shifted1, &shifted2, &shifted3, &T0, &T1,
-                        &T2, &T3);
+                           &T2, &T3);
   }
 
   // Add inverse transform to 'dst' and store.

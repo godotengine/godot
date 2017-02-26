@@ -17,7 +17,7 @@
 #if defined(WEBP_USE_NEON)
 
 #include "./neon.h"
-#include "../dec/vp8i.h"
+#include "../dec/vp8i_dec.h"
 
 //------------------------------------------------------------------------------
 // NxM Loading functions
@@ -666,9 +666,8 @@ static uint8x16_t NeedsHev(const uint8x16_t p1, const uint8x16_t p0,
   const uint8x16_t hev_thresh_v = vdupq_n_u8((uint8_t)hev_thresh);
   const uint8x16_t a_p1_p0 = vabdq_u8(p1, p0);  // abs(p1 - p0)
   const uint8x16_t a_q1_q0 = vabdq_u8(q1, q0);  // abs(q1 - q0)
-  const uint8x16_t mask1 = vcgtq_u8(a_p1_p0, hev_thresh_v);
-  const uint8x16_t mask2 = vcgtq_u8(a_q1_q0, hev_thresh_v);
-  const uint8x16_t mask = vorrq_u8(mask1, mask2);
+  const uint8x16_t a_max = vmaxq_u8(a_p1_p0, a_q1_q0);
+  const uint8x16_t mask = vcgtq_u8(a_max, hev_thresh_v);
   return mask;
 }
 
@@ -756,24 +755,25 @@ static void ApplyFilter6(
     const int8x16_t delta,
     uint8x16_t* const op2, uint8x16_t* const op1, uint8x16_t* const op0,
     uint8x16_t* const oq0, uint8x16_t* const oq1, uint8x16_t* const oq2) {
-  const int16x8_t kCst63 = vdupq_n_s16(63);
-  const int8x8_t kCst27 = vdup_n_s8(27);
-  const int8x8_t kCst18 = vdup_n_s8(18);
-  const int8x8_t kCst9 = vdup_n_s8(9);
+  // We have to compute: X = (9*a+63) >> 7, Y = (18*a+63)>>7, Z = (27*a+63) >> 7
+  // Turns out, there's a common sub-expression S=9 * a - 1 that can be used
+  // with the special vqrshrn_n_s16 rounding-shift-and-narrow instruction:
+  //   X = (S + 64) >> 7, Y = (S + 32) >> 6, Z = (18 * a + S + 64) >> 7
   const int8x8_t delta_lo = vget_low_s8(delta);
   const int8x8_t delta_hi = vget_high_s8(delta);
-  const int16x8_t s1_lo = vmlal_s8(kCst63, kCst27, delta_lo);  // 63 + 27 * a
-  const int16x8_t s1_hi = vmlal_s8(kCst63, kCst27, delta_hi);  // 63 + 27 * a
-  const int16x8_t s2_lo = vmlal_s8(kCst63, kCst18, delta_lo);  // 63 + 18 * a
-  const int16x8_t s2_hi = vmlal_s8(kCst63, kCst18, delta_hi);  // 63 + 18 * a
-  const int16x8_t s3_lo = vmlal_s8(kCst63, kCst9, delta_lo);   // 63 + 9 * a
-  const int16x8_t s3_hi = vmlal_s8(kCst63, kCst9, delta_hi);   // 63 + 9 * a
-  const int8x8_t a1_lo = vqshrn_n_s16(s1_lo, 7);
-  const int8x8_t a1_hi = vqshrn_n_s16(s1_hi, 7);
-  const int8x8_t a2_lo = vqshrn_n_s16(s2_lo, 7);
-  const int8x8_t a2_hi = vqshrn_n_s16(s2_hi, 7);
-  const int8x8_t a3_lo = vqshrn_n_s16(s3_lo, 7);
-  const int8x8_t a3_hi = vqshrn_n_s16(s3_hi, 7);
+  const int8x8_t kCst9 = vdup_n_s8(9);
+  const int16x8_t kCstm1 = vdupq_n_s16(-1);
+  const int8x8_t kCst18 = vdup_n_s8(18);
+  const int16x8_t S_lo = vmlal_s8(kCstm1, kCst9, delta_lo);  // S = 9 * a - 1
+  const int16x8_t S_hi = vmlal_s8(kCstm1, kCst9, delta_hi);
+  const int16x8_t Z_lo = vmlal_s8(S_lo, kCst18, delta_lo);   // S + 18 * a
+  const int16x8_t Z_hi = vmlal_s8(S_hi, kCst18, delta_hi);
+  const int8x8_t a3_lo = vqrshrn_n_s16(S_lo, 7);   // (9 * a + 63) >> 7
+  const int8x8_t a3_hi = vqrshrn_n_s16(S_hi, 7);
+  const int8x8_t a2_lo = vqrshrn_n_s16(S_lo, 6);   // (9 * a + 31) >> 6
+  const int8x8_t a2_hi = vqrshrn_n_s16(S_hi, 6);
+  const int8x8_t a1_lo = vqrshrn_n_s16(Z_lo, 7);   // (27 * a + 63) >> 7
+  const int8x8_t a1_hi = vqrshrn_n_s16(Z_hi, 7);
   const int8x16_t a1 = vcombine_s8(a1_lo, a1_hi);
   const int8x16_t a2 = vcombine_s8(a2_lo, a2_hi);
   const int8x16_t a3 = vcombine_s8(a3_lo, a3_hi);

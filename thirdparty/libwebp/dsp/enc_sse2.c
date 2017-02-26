@@ -14,12 +14,13 @@
 #include "./dsp.h"
 
 #if defined(WEBP_USE_SSE2)
+#include <assert.h>
 #include <stdlib.h>  // for abs()
 #include <emmintrin.h>
 
 #include "./common_sse2.h"
-#include "../enc/cost.h"
-#include "../enc/vp8enci.h"
+#include "../enc/cost_enc.h"
+#include "../enc/vp8i_enc.h"
 
 //------------------------------------------------------------------------------
 // Transforms (Paragraph 14.4)
@@ -139,7 +140,7 @@ static void ITransform(const uint8_t* ref, const int16_t* in, uint8_t* dst,
 
     // Transpose the two 4x4.
     VP8Transpose_2_4x4_16b(&shifted0, &shifted1, &shifted2, &shifted3, &T0, &T1,
-                        &T2, &T3);
+                           &T2, &T3);
   }
 
   // Add inverse transform to 'ref' and store.
@@ -250,25 +251,11 @@ static void FTransformPass2(const __m128i* const v01, const __m128i* const v32,
   const __m128i k51000 = _mm_set1_epi32(51000);
 
   // Same operations are done on the (0,3) and (1,2) pairs.
-  // a0 = v0 + v3
-  // a1 = v1 + v2
   // a3 = v0 - v3
   // a2 = v1 - v2
-  const __m128i a01 = _mm_add_epi16(*v01, *v32);
   const __m128i a32 = _mm_sub_epi16(*v01, *v32);
-  const __m128i a11 = _mm_unpackhi_epi64(a01, a01);
   const __m128i a22 = _mm_unpackhi_epi64(a32, a32);
-  const __m128i a01_plus_7 = _mm_add_epi16(a01, seven);
 
-  // d0 = (a0 + a1 + 7) >> 4;
-  // d2 = (a0 - a1 + 7) >> 4;
-  const __m128i c0 = _mm_add_epi16(a01_plus_7, a11);
-  const __m128i c2 = _mm_sub_epi16(a01_plus_7, a11);
-  const __m128i d0 = _mm_srai_epi16(c0, 4);
-  const __m128i d2 = _mm_srai_epi16(c2, 4);
-
-  // f1 = ((b3 * 5352 + b2 * 2217 + 12000) >> 16)
-  // f3 = ((b3 * 2217 - b2 * 5352 + 51000) >> 16)
   const __m128i b23 = _mm_unpacklo_epi16(a22, a32);
   const __m128i c1 = _mm_madd_epi16(b23, k5352_2217);
   const __m128i c3 = _mm_madd_epi16(b23, k2217_5352);
@@ -276,13 +263,27 @@ static void FTransformPass2(const __m128i* const v01, const __m128i* const v32,
   const __m128i d3 = _mm_add_epi32(c3, k51000);
   const __m128i e1 = _mm_srai_epi32(d1, 16);
   const __m128i e3 = _mm_srai_epi32(d3, 16);
+  // f1 = ((b3 * 5352 + b2 * 2217 + 12000) >> 16)
+  // f3 = ((b3 * 2217 - b2 * 5352 + 51000) >> 16)
   const __m128i f1 = _mm_packs_epi32(e1, e1);
   const __m128i f3 = _mm_packs_epi32(e3, e3);
-  // f1 = f1 + (a3 != 0);
+  // g1 = f1 + (a3 != 0);
   // The compare will return (0xffff, 0) for (==0, !=0). To turn that into the
   // desired (0, 1), we add one earlier through k12000_plus_one.
-  // -> f1 = f1 + 1 - (a3 == 0)
+  // -> g1 = f1 + 1 - (a3 == 0)
   const __m128i g1 = _mm_add_epi16(f1, _mm_cmpeq_epi16(a32, zero));
+
+  // a0 = v0 + v3
+  // a1 = v1 + v2
+  const __m128i a01 = _mm_add_epi16(*v01, *v32);
+  const __m128i a01_plus_7 = _mm_add_epi16(a01, seven);
+  const __m128i a11 = _mm_unpackhi_epi64(a01, a01);
+  const __m128i c0 = _mm_add_epi16(a01_plus_7, a11);
+  const __m128i c2 = _mm_sub_epi16(a01_plus_7, a11);
+  // d0 = (a0 + a1 + 7) >> 4;
+  // d2 = (a0 - a1 + 7) >> 4;
+  const __m128i d0 = _mm_srai_epi16(c0, 4);
+  const __m128i d2 = _mm_srai_epi16(c2, 4);
 
   const __m128i d0_g1 = _mm_unpacklo_epi64(d0, g1);
   const __m128i d2_f3 = _mm_unpacklo_epi64(d2, f3);
@@ -1046,6 +1047,37 @@ static int SSE4x4(const uint8_t* a, const uint8_t* b) {
 }
 
 //------------------------------------------------------------------------------
+
+static void Mean16x4(const uint8_t* ref, uint32_t dc[4]) {
+  const __m128i mask = _mm_set1_epi16(0x00ff);
+  const __m128i a0 = _mm_loadu_si128((const __m128i*)&ref[BPS * 0]);
+  const __m128i a1 = _mm_loadu_si128((const __m128i*)&ref[BPS * 1]);
+  const __m128i a2 = _mm_loadu_si128((const __m128i*)&ref[BPS * 2]);
+  const __m128i a3 = _mm_loadu_si128((const __m128i*)&ref[BPS * 3]);
+  const __m128i b0 = _mm_srli_epi16(a0, 8);     // hi byte
+  const __m128i b1 = _mm_srli_epi16(a1, 8);
+  const __m128i b2 = _mm_srli_epi16(a2, 8);
+  const __m128i b3 = _mm_srli_epi16(a3, 8);
+  const __m128i c0 = _mm_and_si128(a0, mask);   // lo byte
+  const __m128i c1 = _mm_and_si128(a1, mask);
+  const __m128i c2 = _mm_and_si128(a2, mask);
+  const __m128i c3 = _mm_and_si128(a3, mask);
+  const __m128i d0 = _mm_add_epi32(b0, c0);
+  const __m128i d1 = _mm_add_epi32(b1, c1);
+  const __m128i d2 = _mm_add_epi32(b2, c2);
+  const __m128i d3 = _mm_add_epi32(b3, c3);
+  const __m128i e0 = _mm_add_epi32(d0, d1);
+  const __m128i e1 = _mm_add_epi32(d2, d3);
+  const __m128i f0 = _mm_add_epi32(e0, e1);
+  uint16_t tmp[8];
+  _mm_storeu_si128((__m128i*)tmp, f0);
+  dc[0] = tmp[0] + tmp[1];
+  dc[1] = tmp[2] + tmp[3];
+  dc[2] = tmp[4] + tmp[5];
+  dc[3] = tmp[6] + tmp[7];
+}
+
+//------------------------------------------------------------------------------
 // Texture distortion
 //
 // We try to match the spectral content (weighted) between source and
@@ -1331,10 +1363,122 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspInitSSE2(void) {
   VP8SSE4x4 = SSE4x4;
   VP8TDisto4x4 = Disto4x4;
   VP8TDisto16x16 = Disto16x16;
+  VP8Mean16x4 = Mean16x4;
+}
+
+//------------------------------------------------------------------------------
+// SSIM / PSNR entry point (TODO(skal): move to its own file later)
+
+static uint32_t AccumulateSSE_SSE2(const uint8_t* src1,
+                                   const uint8_t* src2, int len) {
+  int i = 0;
+  uint32_t sse2 = 0;
+  if (len >= 16) {
+    const int limit = len - 32;
+    int32_t tmp[4];
+    __m128i sum1;
+    __m128i sum = _mm_setzero_si128();
+    __m128i a0 = _mm_loadu_si128((const __m128i*)&src1[i]);
+    __m128i b0 = _mm_loadu_si128((const __m128i*)&src2[i]);
+    i += 16;
+    while (i <= limit) {
+      const __m128i a1 = _mm_loadu_si128((const __m128i*)&src1[i]);
+      const __m128i b1 = _mm_loadu_si128((const __m128i*)&src2[i]);
+      __m128i sum2;
+      i += 16;
+      SubtractAndAccumulate(a0, b0, &sum1);
+      sum = _mm_add_epi32(sum, sum1);
+      a0 = _mm_loadu_si128((const __m128i*)&src1[i]);
+      b0 = _mm_loadu_si128((const __m128i*)&src2[i]);
+      i += 16;
+      SubtractAndAccumulate(a1, b1, &sum2);
+      sum = _mm_add_epi32(sum, sum2);
+    }
+    SubtractAndAccumulate(a0, b0, &sum1);
+    sum = _mm_add_epi32(sum, sum1);
+    _mm_storeu_si128((__m128i*)tmp, sum);
+    sse2 += (tmp[3] + tmp[2] + tmp[1] + tmp[0]);
+  }
+
+  for (; i < len; ++i) {
+    const int32_t diff = src1[i] - src2[i];
+    sse2 += diff * diff;
+  }
+  return sse2;
+}
+
+static uint32_t HorizontalAdd16b(const __m128i* const m) {
+  uint16_t tmp[8];
+  const __m128i a = _mm_srli_si128(*m, 8);
+  const __m128i b = _mm_add_epi16(*m, a);
+  _mm_storeu_si128((__m128i*)tmp, b);
+  return (uint32_t)tmp[3] + tmp[2] + tmp[1] + tmp[0];
+}
+
+static uint32_t HorizontalAdd32b(const __m128i* const m) {
+  const __m128i a = _mm_srli_si128(*m, 8);
+  const __m128i b = _mm_add_epi32(*m, a);
+  const __m128i c = _mm_add_epi32(b, _mm_srli_si128(b, 4));
+  return (uint32_t)_mm_cvtsi128_si32(c);
+}
+
+static const uint16_t kWeight[] = { 1, 2, 3, 4, 3, 2, 1, 0 };
+
+#define ACCUMULATE_ROW(WEIGHT) do {                         \
+  /* compute row weight (Wx * Wy) */                        \
+  const __m128i Wy = _mm_set1_epi16((WEIGHT));              \
+  const __m128i W = _mm_mullo_epi16(Wx, Wy);                \
+  /* process 8 bytes at a time (7 bytes, actually) */       \
+  const __m128i a0 = _mm_loadl_epi64((const __m128i*)src1); \
+  const __m128i b0 = _mm_loadl_epi64((const __m128i*)src2); \
+  /* convert to 16b and multiply by weight */               \
+  const __m128i a1 = _mm_unpacklo_epi8(a0, zero);           \
+  const __m128i b1 = _mm_unpacklo_epi8(b0, zero);           \
+  const __m128i wa1 = _mm_mullo_epi16(a1, W);               \
+  const __m128i wb1 = _mm_mullo_epi16(b1, W);               \
+  /* accumulate */                                          \
+  xm  = _mm_add_epi16(xm, wa1);                             \
+  ym  = _mm_add_epi16(ym, wb1);                             \
+  xxm = _mm_add_epi32(xxm, _mm_madd_epi16(a1, wa1));        \
+  xym = _mm_add_epi32(xym, _mm_madd_epi16(a1, wb1));        \
+  yym = _mm_add_epi32(yym, _mm_madd_epi16(b1, wb1));        \
+  src1 += stride1;                                          \
+  src2 += stride2;                                          \
+} while (0)
+
+static double SSIMGet_SSE2(const uint8_t* src1, int stride1,
+                           const uint8_t* src2, int stride2) {
+  VP8DistoStats stats;
+  const __m128i zero = _mm_setzero_si128();
+  __m128i xm = zero, ym = zero;                // 16b accums
+  __m128i xxm = zero, yym = zero, xym = zero;  // 32b accum
+  const __m128i Wx = _mm_loadu_si128((const __m128i*)kWeight);
+  assert(2 * VP8_SSIM_KERNEL + 1 == 7);
+  ACCUMULATE_ROW(1);
+  ACCUMULATE_ROW(2);
+  ACCUMULATE_ROW(3);
+  ACCUMULATE_ROW(4);
+  ACCUMULATE_ROW(3);
+  ACCUMULATE_ROW(2);
+  ACCUMULATE_ROW(1);
+  stats.xm  = HorizontalAdd16b(&xm);
+  stats.ym  = HorizontalAdd16b(&ym);
+  stats.xxm = HorizontalAdd32b(&xxm);
+  stats.xym = HorizontalAdd32b(&xym);
+  stats.yym = HorizontalAdd32b(&yym);
+  return VP8SSIMFromStats(&stats);
+}
+
+extern void VP8SSIMDspInitSSE2(void);
+
+WEBP_TSAN_IGNORE_FUNCTION void VP8SSIMDspInitSSE2(void) {
+  VP8AccumulateSSE = AccumulateSSE_SSE2;
+  VP8SSIMGet = SSIMGet_SSE2;
 }
 
 #else  // !WEBP_USE_SSE2
 
 WEBP_DSP_INIT_STUB(VP8EncDspInitSSE2)
+WEBP_DSP_INIT_STUB(VP8SSIMDspInitSSE2)
 
 #endif  // WEBP_USE_SSE2

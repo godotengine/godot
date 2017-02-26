@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>  // for abs()
 
+#include "../mux/animi.h"
 #include "../utils/utils.h"
 #include "../webp/decode.h"
 #include "../webp/encode.h"
@@ -128,14 +129,13 @@ static void SanitizeEncoderOptions(WebPAnimEncoderOptions* const enc_options) {
     DisableKeyframes(enc_options);
   }
 
-  if (enc_options->kmin <= 0) {
-    DisableKeyframes(enc_options);
-    print_warning = 0;
-  }
-  if (enc_options->kmax <= 0) {  // All frames will be key-frames.
+  if (enc_options->kmax == 1) {  // All frames will be key-frames.
     enc_options->kmin = 0;
     enc_options->kmax = 0;
     return;
+  } else if (enc_options->kmax <= 0) {
+    DisableKeyframes(enc_options);
+    print_warning = 0;
   }
 
   if (enc_options->kmin >= enc_options->kmax) {
@@ -378,10 +378,10 @@ static WEBP_INLINE int PixelsAreSimilar(uint32_t src, uint32_t dst,
   const int dst_g = (dst >> 8) & 0xff;
   const int dst_b = (dst >> 0) & 0xff;
 
-  return (abs(src_r * src_a - dst_r * dst_a) <= (max_allowed_diff * 255)) &&
-         (abs(src_g * src_a - dst_g * dst_a) <= (max_allowed_diff * 255)) &&
-         (abs(src_b * src_a - dst_b * dst_a) <= (max_allowed_diff * 255)) &&
-         (abs(src_a - dst_a) <= max_allowed_diff);
+  return (src_a == dst_a) &&
+         (abs(src_r - dst_r) * dst_a <= (max_allowed_diff * 255)) &&
+         (abs(src_g - dst_g) * dst_a <= (max_allowed_diff * 255)) &&
+         (abs(src_b - dst_b) * dst_a <= (max_allowed_diff * 255));
 }
 
 // Returns true if 'length' number of pixels in 'src' and 'dst' are within an
@@ -584,6 +584,39 @@ static int GetSubRects(const WebPPicture* const prev_canvas,
   return GetSubRect(prev_canvas, curr_canvas, is_key_frame, is_first_frame,
                     params->empty_rect_allowed_, 0, quality,
                     &params->rect_lossy_, &params->sub_frame_lossy_);
+}
+
+static WEBP_INLINE int clip(int v, int min_v, int max_v) {
+  return (v < min_v) ? min_v : (v > max_v) ? max_v : v;
+}
+
+int WebPAnimEncoderRefineRect(
+    const WebPPicture* const prev_canvas, const WebPPicture* const curr_canvas,
+    int is_lossless, float quality, int* const x_offset, int* const y_offset,
+    int* const width, int* const height) {
+  FrameRect rect;
+  const int right = clip(*x_offset + *width, 0, curr_canvas->width);
+  const int left = clip(*x_offset, 0, curr_canvas->width - 1);
+  const int bottom = clip(*y_offset + *height, 0, curr_canvas->height);
+  const int top = clip(*y_offset, 0, curr_canvas->height - 1);
+  if (prev_canvas == NULL || curr_canvas == NULL ||
+      prev_canvas->width != curr_canvas->width ||
+      prev_canvas->height != curr_canvas->height ||
+      !prev_canvas->use_argb || !curr_canvas->use_argb) {
+    return 0;
+  }
+  rect.x_offset_ = left;
+  rect.y_offset_ = top;
+  rect.width_ = clip(right - left, 0, curr_canvas->width - rect.x_offset_);
+  rect.height_ = clip(bottom - top, 0, curr_canvas->height - rect.y_offset_);
+  MinimizeChangeRectangle(prev_canvas, curr_canvas, &rect, is_lossless,
+                          quality);
+  SnapToEvenOffsets(&rect);
+  *x_offset = rect.x_offset_;
+  *y_offset = rect.y_offset_;
+  *width = rect.width_;
+  *height = rect.height_;
+  return 1;
 }
 
 static void DisposeFrameRectangle(int dispose_method,

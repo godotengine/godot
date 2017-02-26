@@ -23,7 +23,6 @@ const ChunkInfo kChunks[] = {
   { MKFOURCC('I', 'C', 'C', 'P'),  WEBP_CHUNK_ICCP,    UNDEFINED_CHUNK_SIZE },
   { MKFOURCC('A', 'N', 'I', 'M'),  WEBP_CHUNK_ANIM,    ANIM_CHUNK_SIZE },
   { MKFOURCC('A', 'N', 'M', 'F'),  WEBP_CHUNK_ANMF,    ANMF_CHUNK_SIZE },
-  { MKFOURCC('F', 'R', 'G', 'M'),  WEBP_CHUNK_FRGM,    FRGM_CHUNK_SIZE },
   { MKFOURCC('A', 'L', 'P', 'H'),  WEBP_CHUNK_ALPHA,   UNDEFINED_CHUNK_SIZE },
   { MKFOURCC('V', 'P', '8', ' '),  WEBP_CHUNK_IMAGE,   UNDEFINED_CHUNK_SIZE },
   { MKFOURCC('V', 'P', '8', 'L'),  WEBP_CHUNK_IMAGE,   UNDEFINED_CHUNK_SIZE },
@@ -251,8 +250,7 @@ static WebPChunk** GetChunkListFromId(const WebPMuxImage* const wpi,
                                       WebPChunkId id) {
   assert(wpi != NULL);
   switch (id) {
-    case WEBP_CHUNK_ANMF:
-    case WEBP_CHUNK_FRGM:  return (WebPChunk**)&wpi->header_;
+    case WEBP_CHUNK_ANMF:  return (WebPChunk**)&wpi->header_;
     case WEBP_CHUNK_ALPHA: return (WebPChunk**)&wpi->alpha_;
     case WEBP_CHUNK_IMAGE: return (WebPChunk**)&wpi->img_;
     default: return NULL;
@@ -372,13 +370,12 @@ size_t MuxImageDiskSize(const WebPMuxImage* const wpi) {
   return size;
 }
 
-// Special case as ANMF/FRGM chunk encapsulates other image chunks.
+// Special case as ANMF chunk encapsulates other image chunks.
 static uint8_t* ChunkEmitSpecial(const WebPChunk* const header,
                                  size_t total_size, uint8_t* dst) {
   const size_t header_size = header->data_.size;
   const size_t offset_to_next = total_size - CHUNK_HEADER_SIZE;
-  assert(header->tag_ == kChunks[IDX_ANMF].tag ||
-         header->tag_ == kChunks[IDX_FRGM].tag);
+  assert(header->tag_ == kChunks[IDX_ANMF].tag);
   PutLE32(dst + 0, header->tag_);
   PutLE32(dst + TAG_SIZE, (uint32_t)offset_to_next);
   assert(header_size == (uint32_t)header_size);
@@ -391,7 +388,7 @@ static uint8_t* ChunkEmitSpecial(const WebPChunk* const header,
 
 uint8_t* MuxImageEmit(const WebPMuxImage* const wpi, uint8_t* dst) {
   // Ordering of chunks to be emitted is strictly as follows:
-  // 1. ANMF/FRGM chunk (if present).
+  // 1. ANMF chunk (if present).
   // 2. ALPH chunk (if present).
   // 3. VP8/VP8L chunk.
   assert(wpi);
@@ -465,7 +462,6 @@ WebPMuxError MuxValidate(const WebPMux* const mux) {
   int num_xmp;
   int num_anim;
   int num_frames;
-  int num_fragments;
   int num_vp8x;
   int num_images;
   int num_alpha;
@@ -510,10 +506,6 @@ WebPMuxError MuxValidate(const WebPMux* const mux) {
     }
   }
 
-  // Fragmentation: FRAGMENTS_FLAG and FRGM chunk(s) are consistent.
-  err = ValidateChunk(mux, IDX_FRGM, FRAGMENTS_FLAG, flags, -1, &num_fragments);
-  if (err != WEBP_MUX_OK) return err;
-
   // Verify either VP8X chunk is present OR there is only one elem in
   // mux->images_.
   err = ValidateChunk(mux, IDX_VP8X, NO_FLAG, flags, 1, &num_vp8x);
@@ -535,11 +527,6 @@ WebPMuxError MuxValidate(const WebPMux* const mux) {
     }
   } else {  // Mux doesn't need alpha. So, ALPHA_FLAG should NOT be present.
     if (flags & ALPHA_FLAG) return WEBP_MUX_INVALID_ARGUMENT;
-  }
-
-  // num_fragments & num_images are consistent.
-  if (num_fragments > 0 && num_images != num_fragments) {
-    return WEBP_MUX_INVALID_ARGUMENT;
   }
 
   return WEBP_MUX_OK;
