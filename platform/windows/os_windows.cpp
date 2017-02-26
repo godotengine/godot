@@ -1968,10 +1968,10 @@ Error OS_Windows::execute(const String& p_path, const List<String>& p_arguments,
 
 		String argss;
 		argss="\"\""+p_path+"\"";
+		
+		for (const List<String>::Element* E=p_arguments.front(); E; E=E->next()) {
 
-		for(int i=0;i<p_arguments.size();i++) {
-
-			argss+=String(" \"")+p_arguments[i]+"\"";
+			argss+=String(" \"")+E->get()+"\"";
 		}
 
 		//print_line("ARGS: "+argss);
