@@ -308,12 +308,14 @@ void TouchScreenButton::_release(bool p_exiting_tree) {
 	if (action_id!=-1) {
 
 		Input::get_singleton()->action_release(action);
-		InputEvent ie;
-		ie.type=InputEvent::ACTION;
-		ie.ID=0;
-		ie.action.action=action_id;
-		ie.action.pressed=false;
-		get_tree()->input_event(ie);
+		if (!p_exiting_tree) {
+			InputEvent ie;
+			ie.type=InputEvent::ACTION;
+			ie.ID=0;
+			ie.action.action=action_id;
+			ie.action.pressed=false;
+			get_tree()->input_event(ie);
+		}
 	}
 
 	if (!p_exiting_tree) {
