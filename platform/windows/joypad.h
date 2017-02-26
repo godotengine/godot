@@ -132,7 +132,6 @@ private:
 	void load_xinput();
 	void unload_xinput();
 
-	int check_free_joy_slot() const;
 	unsigned int post_hat(unsigned int p_last_id, int p_device, DWORD p_dpad);
 
 	bool have_device(const GUID &p_guid);

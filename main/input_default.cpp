@@ -1214,6 +1214,15 @@ int InputDefault::get_joy_button_index_from_string(String p_button) {
 	ERR_FAIL_V(-1);
 }
 
+int InputDefault::get_unused_joy_id() {
+	for (int i=0;i<JOYPADS_MAX;i++) {
+		if (!joy_names.has(i) || !joy_names[i].connected) {
+			return i;
+		}
+	}
+	return -1;
+}
+
 String InputDefault::get_joy_axis_string(int p_axis) {
 	ERR_FAIL_INDEX_V(p_axis, JOY_AXIS_MAX, "");
 	return _axes[p_axis];
