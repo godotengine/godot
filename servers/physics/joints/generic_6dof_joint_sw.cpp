@@ -38,54 +38,6 @@ See corresponding header file for licensing info.
 
 #define GENERIC_D6_DISABLE_WARMSTARTING 1
 
-real_t btGetMatrixElem(const Basis& mat, int index);
-real_t btGetMatrixElem(const Basis& mat, int index)
-{
-	int i = index%3;
-	int j = index/3;
-	return mat[i][j];
-}
-
-///MatrixToEulerXYZ from http://www.geometrictools.com/LibFoundation/Mathematics/Wm4Matrix3.inl.html
-bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz);
-bool	matrixToEulerXYZ(const Basis& mat,Vector3& xyz)
-{
-		// rot =  cy*cz          -cy*sz           sy
-		//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
-		//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
-
-		if (btGetMatrixElem(mat,2) < real_t(1.0))
-		{
-			if (btGetMatrixElem(mat,2) > real_t(-1.0))
-			{
-				xyz[0] = Math::atan2(-btGetMatrixElem(mat,5),btGetMatrixElem(mat,8));
-				xyz[1] = Math::asin(btGetMatrixElem(mat,2));
-				xyz[2] = Math::atan2(-btGetMatrixElem(mat,1),btGetMatrixElem(mat,0));
-				return true;
-			}
-			else
-			{
-				// WARNING.  Not unique.  XA - ZA = -atan2(r10,r11)
-				xyz[0] = -Math::atan2(btGetMatrixElem(mat,3),btGetMatrixElem(mat,4));
-				xyz[1] = -Math_PI*0.5;
-				xyz[2] = real_t(0.0);
-				return false;
-			}
-		}
-		else
-		{
-			// WARNING.  Not unique.  XAngle + ZAngle = atan2(r10,r11)
-			xyz[0] = Math::atan2(btGetMatrixElem(mat,3),btGetMatrixElem(mat,4));
-			xyz[1] = Math_PI*0.5;
-			xyz[2] = 0.0;
-
-		}
-
-
-	return false;
-}
-
-
 
 //////////////////////////// G6DOFRotationalLimitMotorSW ////////////////////////////////////
 
@@ -297,7 +249,7 @@ void Generic6DOFJointSW::calculateAngleInfo()
 {
 	Basis relative_frame = m_calculatedTransformA.basis.inverse()*m_calculatedTransformB.basis;
 
-	matrixToEulerXYZ(relative_frame,m_calculatedAxisAngleDiff);
+	m_calculatedAxisAngleDiff = relative_frame.get_euler();
 
 
 
@@ -385,7 +337,7 @@ bool Generic6DOFJointSW::testAngularLimitMotor(int axis_index)
     return m_angularLimits[axis_index].needApplyTorques();
 }
 
-bool Generic6DOFJointSW::setup(float p_step) {
+bool Generic6DOFJointSW::setup(real_t p_step) {
 
 	// Clear accumulated impulses for the next simulation step
     m_linearLimits.m_accumulatedImpulse=Vector3(real_t(0.), real_t(0.), real_t(0.));
@@ -531,7 +483,7 @@ void Generic6DOFJointSW::calcAnchorPos(void)
 } // Generic6DOFJointSW::calcAnchorPos()
 
 
-void Generic6DOFJointSW::set_param(Vector3::Axis p_axis,PhysicsServer::G6DOFJointAxisParam p_param, float p_value) {
+void Generic6DOFJointSW::set_param(Vector3::Axis p_axis,PhysicsServer::G6DOFJointAxisParam p_param, real_t p_value) {
 
 	ERR_FAIL_INDEX(p_axis,3);
 	switch(p_param) {
@@ -607,7 +559,7 @@ void Generic6DOFJointSW::set_param(Vector3::Axis p_axis,PhysicsServer::G6DOFJoin
 	}
 }
 
-float Generic6DOFJointSW::get_param(Vector3::Axis p_axis,PhysicsServer::G6DOFJointAxisParam p_param) const{
+real_t Generic6DOFJointSW::get_param(Vector3::Axis p_axis,PhysicsServer::G6DOFJointAxisParam p_param) const{
 	ERR_FAIL_INDEX_V(p_axis,3,0);
 	switch(p_param) {
 		case PhysicsServer::G6DOF_JOINT_LINEAR_LOWER_LIMIT: {

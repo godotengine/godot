@@ -96,7 +96,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW* rbA,BodySW* rbB,const Transform& rbAF
 }
 
 
-bool	ConeTwistJointSW::setup(float p_step) {
+bool	ConeTwistJointSW::setup(real_t p_step) {
 	m_appliedImpulse = real_t(0.);
 
 	//set bias, sign, clear accumulator
@@ -318,7 +318,7 @@ void	ConeTwistJointSW::solve(real_t	timeStep)
 
 }
 
-void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, float p_value) {
+void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value) {
 
 	switch(p_param) {
 		case PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN: {
@@ -345,7 +345,7 @@ void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, flo
 	}
 }
 
-float ConeTwistJointSW::get_param(PhysicsServer::ConeTwistJointParam p_param) const{
+real_t ConeTwistJointSW::get_param(PhysicsServer::ConeTwistJointParam p_param) const{
 
 	switch(p_param) {
 		case PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN: {

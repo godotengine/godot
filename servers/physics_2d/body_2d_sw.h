@@ -69,7 +69,7 @@ class Body2DSW : public CollisionObject2DSW {
 	real_t applied_torque;
 
 	Vector2 one_way_collision_direction;
-	float one_way_collision_max_depth;
+	real_t one_way_collision_max_depth;
 
 
 	SelfList<Body2DSW> active_list;
@@ -109,7 +109,7 @@ class Body2DSW : public CollisionObject2DSW {
 
 		Vector2 local_pos;
 		Vector2 local_normal;
-		float depth;
+		real_t depth;
 		int local_shape;
 		Vector2 collider_pos;
 		int collider_shape;
@@ -168,7 +168,7 @@ public:
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
 	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }
-	_FORCE_INLINE_ void add_contact(const Vector2& p_local_pos,const Vector2& p_local_normal, float p_depth, int p_local_shape, const Vector2& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector2& p_collider_velocity_at_pos);
+	_FORCE_INLINE_ void add_contact(const Vector2& p_local_pos,const Vector2& p_local_normal, real_t p_depth, int p_local_shape, const Vector2& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector2& p_collider_velocity_at_pos);
 
 
 	_FORCE_INLINE_ void add_exception(const RID& p_exception) { exceptions.insert(p_exception);}
@@ -229,8 +229,8 @@ public:
 
 
 
-	void set_param(Physics2DServer::BodyParameter p_param, float);
-	float get_param(Physics2DServer::BodyParameter p_param) const;
+	void set_param(Physics2DServer::BodyParameter p_param, real_t);
+	real_t get_param(Physics2DServer::BodyParameter p_param) const;
 
 	void set_mode(Physics2DServer::BodyMode p_mode);
 	Physics2DServer::BodyMode get_mode() const;
@@ -259,8 +259,8 @@ public:
 	}
 	Vector2 get_one_way_collision_direction() const { return one_way_collision_direction; }
 
-	void set_one_way_collision_max_depth(float p_depth) { one_way_collision_max_depth=p_depth; }
-	float get_one_way_collision_max_depth() const { return one_way_collision_max_depth; }
+	void set_one_way_collision_max_depth(real_t p_depth) { one_way_collision_max_depth=p_depth; }
+	real_t get_one_way_collision_max_depth() const { return one_way_collision_max_depth; }
 
 	_FORCE_INLINE_ bool is_using_one_way_collision() const { return using_one_way_cache; }
 
@@ -303,7 +303,7 @@ public:
 
 //add contact inline
 
-void Body2DSW::add_contact(const Vector2& p_local_pos,const Vector2& p_local_normal, float p_depth, int p_local_shape, const Vector2& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector2& p_collider_velocity_at_pos) {
+void Body2DSW::add_contact(const Vector2& p_local_pos,const Vector2& p_local_normal, real_t p_depth, int p_local_shape, const Vector2& p_collider_pos, int p_collider_shape, ObjectID p_collider_instance_id, const RID& p_collider,const Vector2& p_collider_velocity_at_pos) {
 
 	int c_max=contacts.size();
 
@@ -319,7 +319,7 @@ void Body2DSW::add_contact(const Vector2& p_local_pos,const Vector2& p_local_nor
 		idx=contact_count++;
 	} else {
 
-		float least_depth=1e20;
+		real_t least_depth=1e20;
 		int least_deep=-1;
 		for(int i=0;i<c_max;i++) {
 
@@ -361,10 +361,10 @@ public:
 	real_t step;
 
 	virtual Vector2 get_total_gravity() const {  return body->gravity;  } // get gravity vector working on this body space/area
-	virtual float get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
-	virtual float get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
+	virtual real_t get_total_angular_damp() const {  return body->area_angular_damp;  } // get density of this body space/area
+	virtual real_t get_total_linear_damp() const {  return body->area_linear_damp;  } // get density of this body space/area
 
-	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
+	virtual real_t get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual real_t get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space
 
 	virtual void set_linear_velocity(const Vector2& p_velocity) {  body->set_linear_velocity(p_velocity);  }

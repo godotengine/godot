@@ -59,7 +59,7 @@ void BodySW::update_inertias() {
 		case PhysicsServer::BODY_MODE_RIGID: {
 
 			//update tensor for all shapes, not the best way but should be somehow OK. (inspired from bullet)
-			float total_area=0;
+			real_t total_area=0;
 
 			for (int i=0;i<get_shape_count();i++) {
 
@@ -70,9 +70,9 @@ void BodySW::update_inertias() {
 			center_of_mass_local.zero();
 
 			for (int i=0; i<get_shape_count(); i++) {
-				float area=get_shape_area(i);
+				real_t area=get_shape_area(i);
 
-				float mass = area * this->mass / total_area;
+				real_t mass = area * this->mass / total_area;
 
 				// NOTE: we assume that the shape origin is also its center of mass
 				center_of_mass_local += mass * get_shape_transform(i).origin;
@@ -88,9 +88,9 @@ void BodySW::update_inertias() {
 
 				const ShapeSW* shape=get_shape(i);
 
-				float area=get_shape_area(i);
+				real_t area=get_shape_area(i);
 
-				float mass = area * this->mass / total_area;
+				real_t mass = area * this->mass / total_area;
 
 				Basis shape_inertia_tensor=shape->get_moment_of_inertia(mass).to_diagonal_matrix();
 				Transform shape_transform=get_shape_transform(i);
@@ -170,7 +170,7 @@ void BodySW::set_active(bool p_active) {
 
 
 
-void BodySW::set_param(PhysicsServer::BodyParameter p_param, float p_value) {
+void BodySW::set_param(PhysicsServer::BodyParameter p_param, real_t p_value) {
 
 	switch(p_param) {
 		case PhysicsServer::BODY_PARAM_BOUNCE: {
@@ -202,7 +202,7 @@ void BodySW::set_param(PhysicsServer::BodyParameter p_param, float p_value) {
 	}
 }
 
-float BodySW::get_param(PhysicsServer::BodyParameter p_param) const {
+real_t BodySW::get_param(PhysicsServer::BodyParameter p_param) const {
 
 	switch(p_param) {
 		case PhysicsServer::BODY_PARAM_BOUNCE: {
@@ -511,7 +511,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		//compute a FAKE angular velocity, not so easy
 		Basis rot=new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
 		Vector3 axis;
-		float angle;
+		real_t angle;
 
 		rot.get_axis_and_angle(axis,angle);
 		axis.normalize();
@@ -615,7 +615,7 @@ void BodySW::integrate_velocities(real_t p_step) {
 
 
 
-	float ang_vel = total_angular_velocity.length();
+	real_t ang_vel = total_angular_velocity.length();
 	Transform transform = get_transform();
 
 
@@ -666,7 +666,7 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 	//compute a FAKE angular velocity, not so easy
 	Matrix3 rot=get_transform().basis.orthonormalized().transposed() * p_xform.basis.orthonormalized();
 	Vector3 axis;
-	float angle;
+	real_t angle;
 
 	rot.get_axis_and_angle(axis,angle);
 	axis.normalize();

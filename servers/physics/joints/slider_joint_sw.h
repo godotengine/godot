@@ -237,11 +237,11 @@ public:
 	Vector3 getAncorInA(void);
 	Vector3 getAncorInB(void);
 
-	void set_param(PhysicsServer::SliderJointParam p_param, float p_value);
-	float get_param(PhysicsServer::SliderJointParam p_param) const;
+	void set_param(PhysicsServer::SliderJointParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer::SliderJointParam p_param) const;
 
-	bool setup(float p_step);
-	void solve(float p_step);
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_SLIDER; }
 

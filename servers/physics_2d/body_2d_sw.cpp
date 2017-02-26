@@ -51,7 +51,7 @@ void Body2DSW::update_inertias() {
 			if(user_inertia) break;
 
 			//update tensor for allshapes, not the best way but should be somehow OK. (inspired from bullet)
-			float total_area=0;
+			real_t total_area=0;
 
 			for (int i=0;i<get_shape_count();i++) {
 
@@ -64,9 +64,9 @@ void Body2DSW::update_inertias() {
 
 				const Shape2DSW* shape=get_shape(i);
 
-				float area=get_shape_aabb(i).get_area();
+				real_t area=get_shape_aabb(i).get_area();
 
-				float mass = area * this->mass / total_area;
+				real_t mass = area * this->mass / total_area;
 
 				Transform2D mtx = get_shape_transform(i);
 				Vector2 scale = mtx.get_scale();
@@ -142,7 +142,7 @@ void Body2DSW::set_active(bool p_active) {
 
 
 
-void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, float p_value) {
+void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, real_t p_value) {
 
 	switch(p_param) {
 		case Physics2DServer::BODY_PARAM_BOUNCE: {
@@ -183,7 +183,7 @@ void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, float p_value) 
 	}
 }
 
-float Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
+real_t Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 
 	switch(p_param) {
 		case Physics2DServer::BODY_PARAM_BOUNCE: {

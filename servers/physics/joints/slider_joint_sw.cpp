@@ -112,7 +112,7 @@ SliderJointSW::SliderJointSW(BodySW* rbA, BodySW* rbB, const Transform& frameInA
 
 //-----------------------------------------------------------------------------
 
-bool SliderJointSW::setup(float p_step)
+bool SliderJointSW::setup(real_t p_step)
 {
 
 	//calculate transforms
@@ -406,7 +406,7 @@ Vector3 SliderJointSW::getAncorInB(void)
 	return ancorInB;
 } // SliderJointSW::getAncorInB();
 
-void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, float p_value) {
+void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, real_t p_value) {
 
 	switch(p_param) {
 		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER: m_upperLinLimit=p_value; break;
@@ -437,7 +437,7 @@ void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, float p_v
 
 }
 
-float SliderJointSW::get_param(PhysicsServer::SliderJointParam p_param) const {
+real_t SliderJointSW::get_param(PhysicsServer::SliderJointParam p_param) const {
 
 	switch(p_param) {
 		case PhysicsServer::SLIDER_JOINT_LINEAR_LIMIT_UPPER: return m_upperLinLimit;

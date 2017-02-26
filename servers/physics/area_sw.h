@@ -42,13 +42,13 @@ class AreaSW : public CollisionObjectSW{
 
 
 	PhysicsServer::AreaSpaceOverrideMode space_override_mode;
-	float gravity;
+	real_t gravity;
 	Vector3 gravity_vector;
 	bool gravity_is_point;
-	float gravity_distance_scale;
-	float point_attenuation;
-	float linear_damp;
-	float angular_damp;
+	real_t gravity_distance_scale;
+	real_t point_attenuation;
+	real_t linear_damp;
+	real_t angular_damp;
 	int priority;
 	bool monitorable;
 
@@ -131,8 +131,8 @@ public:
 	void set_space_override_mode(PhysicsServer::AreaSpaceOverrideMode p_mode);
 	PhysicsServer::AreaSpaceOverrideMode get_space_override_mode() const { return space_override_mode; }
 
-	_FORCE_INLINE_ void set_gravity(float p_gravity) { gravity=p_gravity; }
-	_FORCE_INLINE_ float get_gravity() const { return gravity; }
+	_FORCE_INLINE_ void set_gravity(real_t p_gravity) { gravity=p_gravity; }
+	_FORCE_INLINE_ real_t get_gravity() const { return gravity; }
 
 	_FORCE_INLINE_ void set_gravity_vector(const Vector3& p_gravity) { gravity_vector=p_gravity; }
 	_FORCE_INLINE_ Vector3 get_gravity_vector() const { return gravity_vector; }
@@ -140,17 +140,17 @@ public:
 	_FORCE_INLINE_ void set_gravity_as_point(bool p_enable) { gravity_is_point=p_enable; }
 	_FORCE_INLINE_ bool is_gravity_point() const { return gravity_is_point; }
 
-	_FORCE_INLINE_ void set_gravity_distance_scale(float scale) { gravity_distance_scale=scale; }
-	_FORCE_INLINE_ float get_gravity_distance_scale() const { return gravity_distance_scale; }
+	_FORCE_INLINE_ void set_gravity_distance_scale(real_t scale) { gravity_distance_scale=scale; }
+	_FORCE_INLINE_ real_t get_gravity_distance_scale() const { return gravity_distance_scale; }
 
-	_FORCE_INLINE_ void set_point_attenuation(float p_point_attenuation) { point_attenuation=p_point_attenuation; }
-	_FORCE_INLINE_ float get_point_attenuation() const { return point_attenuation; }
+	_FORCE_INLINE_ void set_point_attenuation(real_t p_point_attenuation) { point_attenuation=p_point_attenuation; }
+	_FORCE_INLINE_ real_t get_point_attenuation() const { return point_attenuation; }
 
-	_FORCE_INLINE_ void set_linear_damp(float p_linear_damp) { linear_damp=p_linear_damp; }
-	_FORCE_INLINE_ float get_linear_damp() const { return linear_damp; }
+	_FORCE_INLINE_ void set_linear_damp(real_t p_linear_damp) { linear_damp=p_linear_damp; }
+	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
 
-	_FORCE_INLINE_ void set_angular_damp(float p_angular_damp) { angular_damp=p_angular_damp; }
-	_FORCE_INLINE_ float get_angular_damp() const { return angular_damp; }
+	_FORCE_INLINE_ void set_angular_damp(real_t p_angular_damp) { angular_damp=p_angular_damp; }
+	_FORCE_INLINE_ real_t get_angular_damp() const { return angular_damp; }
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority=p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }

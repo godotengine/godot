@@ -35,7 +35,7 @@ void Physics2DServerWrapMT::thread_exit() {
 	exit=true;
 }
 
-void Physics2DServerWrapMT::thread_step(float p_delta) {
+void Physics2DServerWrapMT::thread_step(real_t p_delta) {
 
 	physics_2d_server->step(p_delta);
 	step_sem->post();
@@ -75,7 +75,7 @@ void Physics2DServerWrapMT::thread_loop() {
 /* EVENT QUEUING */
 
 
-void Physics2DServerWrapMT::step(float p_step) {
+void Physics2DServerWrapMT::step(real_t p_step) {
 
 	if (create_thread) {
 

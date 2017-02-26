@@ -91,7 +91,7 @@ normal_relative_velocity(Body2DSW *a, Body2DSW *b, Vector2 rA, Vector2 rB, Vecto
 
 #if 0
 
-bool PinJoint2DSW::setup(float p_step) {
+bool PinJoint2DSW::setup(real_t p_step) {
 
 	Space2DSW *space = A->get_space();
 	ERR_FAIL_COND_V(!space,false;)
@@ -136,7 +136,7 @@ bool PinJoint2DSW::setup(float p_step) {
 
 
 
-void PinJoint2DSW::solve(float p_step){
+void PinJoint2DSW::solve(real_t p_step){
 
 	if (!correct)
 		return;
@@ -189,7 +189,7 @@ PinJoint2DSW::~PinJoint2DSW() {
 #else
 
 
-bool PinJoint2DSW::setup(float p_step) {
+bool PinJoint2DSW::setup(real_t p_step) {
 
 	Space2DSW *space = A->get_space();
 	ERR_FAIL_COND_V(!space,false;)
@@ -257,7 +257,7 @@ bool PinJoint2DSW::setup(float p_step) {
 	return true;
 }
 
-void PinJoint2DSW::solve(float p_step){
+void PinJoint2DSW::solve(real_t p_step){
 
 
 	// compute relative velocity
@@ -370,7 +370,7 @@ mult_k(const Vector2& vr, const Vector2 &k1, const Vector2 &k2)
 	return Vector2(vr.dot(k1), vr.dot(k2));
 }
 
-bool GrooveJoint2DSW::setup(float p_step) {
+bool GrooveJoint2DSW::setup(real_t p_step) {
 
 
 	// calculate endpoints in worldspace
@@ -412,7 +412,7 @@ bool GrooveJoint2DSW::setup(float p_step) {
 
 
 	Vector2 delta = (B->get_transform().get_origin() +rB) - (A->get_transform().get_origin() + rA);
-	float _b = get_bias();
+	real_t _b = get_bias();
 	_b=0.001;
 	gbias=(delta*-(_b==0?space->get_constraint_bias():_b)*(1.0/p_step)).clamped(get_max_bias());
 
@@ -424,7 +424,7 @@ bool GrooveJoint2DSW::setup(float p_step) {
 	return true;
 }
 
-void GrooveJoint2DSW::solve(float p_step){
+void GrooveJoint2DSW::solve(real_t p_step){
 
 
 	// compute impulse
@@ -470,7 +470,7 @@ GrooveJoint2DSW::~GrooveJoint2DSW() {
 //////////////////////////////////////////////
 
 
-bool DampedSpringJoint2DSW::setup(float p_step) {
+bool DampedSpringJoint2DSW::setup(real_t p_step) {
 
 	rA = A->get_transform().basis_xform(anchor_A);
 	rB = B->get_transform().basis_xform(anchor_B);
@@ -500,7 +500,7 @@ bool DampedSpringJoint2DSW::setup(float p_step) {
 	return true;
 }
 
-void DampedSpringJoint2DSW::solve(float p_step) {
+void DampedSpringJoint2DSW::solve(real_t p_step) {
 
 	// compute relative velocity
 	real_t vrn = normal_relative_velocity(A, B, rA, rB, n) - target_vrn;

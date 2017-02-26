@@ -30,7 +30,7 @@
 #include "collision_solver_sw.h"
 
 
-bool AreaPairSW::setup(float p_step) {
+bool AreaPairSW::setup(real_t p_step) {
 
 	if (!area->test_collision_mask(body)) {
 		colliding = false;
@@ -64,7 +64,7 @@ bool AreaPairSW::setup(float p_step) {
 	return false; //never do any post solving
 }
 
-void AreaPairSW::solve(float p_step) {
+void AreaPairSW::solve(real_t p_step) {
 
 
 }
@@ -103,7 +103,7 @@ AreaPairSW::~AreaPairSW() {
 
 
 
-bool Area2PairSW::setup(float p_step) {
+bool Area2PairSW::setup(real_t p_step) {
 
 	if (!area_a->test_collision_mask(area_b)) {
 		colliding = false;
@@ -139,7 +139,7 @@ bool Area2PairSW::setup(float p_step) {
 	return false; //never do any post solving
 }
 
-void Area2PairSW::solve(float p_step) {
+void Area2PairSW::solve(real_t p_step) {
 
 
 }

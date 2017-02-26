@@ -190,7 +190,7 @@ bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vec
 }
 
 
-int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transform2D& p_xform,const Vector2& p_motion,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transform2D& p_xform,const Vector2& p_motion,real_t p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 	if (p_result_max<=0)
 		return 0;
@@ -237,7 +237,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Trans
 
 
 
-bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform2D& p_xform,const Vector2& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transform2D& p_xform,const Vector2& p_motion,real_t p_margin,real_t &p_closest_safe,real_t &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 
@@ -255,8 +255,8 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transfor
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,Space2DSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
-	float best_safe=1;
-	float best_unsafe=1;
+	real_t best_safe=1;
+	real_t best_unsafe=1;
 
 	for(int i=0;i<amount;i++) {
 
@@ -305,13 +305,13 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transfor
 
 
 		//just do kinematic solving
-		float low=0;
-		float hi=1;
+		real_t low=0;
+		real_t hi=1;
 		Vector2 mnormal=p_motion.normalized();
 
 		for(int i=0;i<8;i++) { //steps should be customizable..
 
-			float ofs = (low+hi)*0.5;
+			real_t ofs = (low+hi)*0.5;
 
 			Vector2 sep=mnormal; //important optimization for this to work fast enough
 			bool collided = CollisionSolver2DSW::solve(shape,p_xform,p_motion*ofs,col_obj->get_shape(shape_idx),col_obj_xform,Vector2(),NULL,NULL,&sep,p_margin);
@@ -364,7 +364,7 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Transfor
 }
 
 
-bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Transform2D& p_shape_xform,const Vector2& p_motion,float p_margin,Vector2 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Transform2D& p_shape_xform,const Vector2& p_motion,real_t p_margin,Vector2 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 	if (p_result_max<=0)
@@ -436,9 +436,9 @@ struct _RestCallbackData2D {
 	int best_shape;
 	Vector2 best_contact;
 	Vector2 best_normal;
-	float best_len;
+	real_t best_len;
 	Vector2 valid_dir;
-	float valid_depth;
+	real_t valid_depth;
 };
 
 static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,void *p_userdata) {
@@ -458,7 +458,7 @@ static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,v
 	}
 
 	Vector2 contact_rel = p_point_B - p_point_A;
-	float len = contact_rel.length();
+	real_t len = contact_rel.length();
 	if (len <= rd->best_len)
 		return;
 
@@ -473,7 +473,7 @@ static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,v
 }
 
 
-bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Transform2D& p_shape_xform,const Vector2& p_motion,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Transform2D& p_shape_xform,const Vector2& p_motion,real_t p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 	Shape2DSW *shape = Physics2DServerSW::singletonsw->shape_owner.get(p_shape);
@@ -594,7 +594,7 @@ int Space2DSW::_cull_aabb_for_body(Body2DSW *p_body,const Rect2& p_aabb) {
 	return amount;
 }
 
-bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result) {
+bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, const Vector2&p_motion, real_t p_margin, Physics2DServer::MotionResult *r_result) {
 
 	//give me back regular physics engine logic
 	//this is madness
@@ -698,15 +698,15 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 #if 0
 				Vector2 rel = b-a;
-				float d = rel.length();
+				real_t d = rel.length();
 				if (d==0)
 					continue;
 
 				Vector2 n = rel/d;
-				float traveled = n.dot(recover_motion);
+				real_t traveled = n.dot(recover_motion);
 				a+=n*traveled;
 
-				float d = a.distance_to(b);
+				real_t d = a.distance_to(b);
 				if (d<margin)
 					continue;
 #endif
@@ -728,8 +728,8 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 
 
-	float safe = 1.0;
-	float unsafe = 1.0;
+	real_t safe = 1.0;
+	real_t unsafe = 1.0;
 	int best_shape=-1;
 
 	{
@@ -751,8 +751,8 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 			bool stuck=false;
 
-			float best_safe=1;
-			float best_unsafe=1;
+			real_t best_safe=1;
+			real_t best_unsafe=1;
 
 			for(int i=0;i<amount;i++) {
 
@@ -784,13 +784,13 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 
 				//just do kinematic solving
-				float low=0;
-				float hi=1;
+				real_t low=0;
+				real_t hi=1;
 				Vector2 mnormal=p_motion.normalized();
 
 				for(int i=0;i<8;i++) { //steps should be customizable..
 
-					float ofs = (low+hi)*0.5;
+					real_t ofs = (low+hi)*0.5;
 
 					Vector2 sep=mnormal; //important optimization for this to work fast enough
 					bool collided = CollisionSolver2DSW::solve(body_shape,body_shape_xform,p_motion*ofs,col_obj->get_shape(shape_idx),col_obj_xform,Vector2(),NULL,NULL,&sep,0);
@@ -1004,7 +1004,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			Vector2 a = sr[i*2+0];
 			Vector2 b = sr[i*2+1];
 
-			float d = a.distance_to(b);
+			real_t d = a.distance_to(b);
 
 			/*
 			if (d<margin)
@@ -1028,8 +1028,8 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 
 
 	//move second
-	float safe = 1.0;
-	float unsafe = 1.0;
+	real_t safe = 1.0;
+	real_t unsafe = 1.0;
 	int best_shape=-1;
 
 	for(int i=0;i<get_shape_count();i++) {
@@ -1037,7 +1037,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 		if (is_shape_set_as_trigger(i))
 			continue;
 
-		float lsafe,lunsafe;
+		real_t lsafe,lunsafe;
 		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,get_layer_mask(),mask);
 		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
 		if (!valid) {

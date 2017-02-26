@@ -99,7 +99,7 @@ void BodyPair2DSW::_contact_added_callback(const Vector2& p_point_A,const Vector
 			Vector2 global_B = B->get_transform().basis_xform(c.local_B)+offset_B;
 
 			Vector2 axis = global_A - global_B;
-			float depth = axis.dot( c.normal );
+			real_t depth = axis.dot( c.normal );
 
 
 			if (depth<min_depth) {
@@ -149,7 +149,7 @@ void BodyPair2DSW::_validate_contacts() {
 			Vector2 global_A = A->get_transform().basis_xform(c.local_A);
 			Vector2 global_B = B->get_transform().basis_xform(c.local_B)+offset_B;
 			Vector2 axis = global_A - global_B;
-			float depth = axis.dot( c.normal );
+			real_t depth = axis.dot( c.normal );
 
 
 
@@ -175,7 +175,7 @@ void BodyPair2DSW::_validate_contacts() {
 }
 
 
-bool BodyPair2DSW::_test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Transform2D& p_xform_A,Body2DSW *p_B, int p_shape_B,const Transform2D& p_xform_B,bool p_swap_result) {
+bool BodyPair2DSW::_test_ccd(real_t p_step,Body2DSW *p_A, int p_shape_A,const Transform2D& p_xform_A,Body2DSW *p_B, int p_shape_B,const Transform2D& p_xform_B,bool p_swap_result) {
 
 
 
@@ -230,7 +230,7 @@ bool BodyPair2DSW::_test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Tra
 	return true;
 }
 
-bool BodyPair2DSW::setup(float p_step) {
+bool BodyPair2DSW::setup(real_t p_step) {
 
 
 	//cannot collide
@@ -343,7 +343,7 @@ bool BodyPair2DSW::setup(float p_step) {
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
-	float bias = 0.3f;
+	real_t bias = 0.3;
 	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
 
 		if (shape_A_ptr->get_custom_bias()==0)
@@ -464,7 +464,7 @@ bool BodyPair2DSW::setup(float p_step) {
 	return do_process;
 }
 
-void BodyPair2DSW::solve(float p_step) {
+void BodyPair2DSW::solve(real_t p_step) {
 
 	if (!collided)
 		return;

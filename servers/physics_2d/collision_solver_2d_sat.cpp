@@ -81,7 +81,7 @@ _FORCE_INLINE_ static void _generate_contacts_point_edge(const Vector2 * p_point
 struct _generate_contacts_Pair {
 	bool a;
 	int idx;
-	float d;
+	real_t d;
 	_FORCE_INLINE_ bool operator <(const _generate_contacts_Pair& l) const { return d< l.d; }
 };
 
@@ -108,7 +108,7 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 * p_points
 		SWAP(pA[0],pA[1]);
 	}
 
-	float dB[2]={t.dot(p_points_B[0]),t.dot(p_points_B[1])};
+	real_t dB[2]={t.dot(p_points_B[0]),t.dot(p_points_B[1])};
 	Vector2 pB[2]={p_points_B[0],p_points_B[1]};
 	if (dB[0]>dB[1]) {
 		SWAP(dB[0],dB[1]);
@@ -265,10 +265,10 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 * p_points
 	Vector2 base_B = p_points_B[0] - axis * axis.dot(p_points_B[0]);
 
 	//sort all 4 points in axis
-	float dvec[4]={ axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
+	real_t dvec[4]={ axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
 
 	//todo , find max/min and then use 2 central points
-	SortArray<float> sa;
+	SortArray<real_t> sa;
 	sa.sort(dvec,4);
 
 	//use the middle ones as contacts
@@ -596,11 +596,11 @@ public:
 		(castA && castB && !separator.test_axis(((m_a)+p_motion_a-((m_b)+p_motion_b)).normalized())) )
 
 
-typedef void (*CollisionFunc)(const Shape2DSW*,const Transform2D&,const Shape2DSW*,const Transform2D&,_CollectorCallback2D *p_collector,const Vector2&,const Vector2&,float,float);
+typedef void (*CollisionFunc)(const Shape2DSW*,const Transform2D&,const Shape2DSW*,const Transform2D&,_CollectorCallback2D *p_collector,const Vector2&,const Vector2&,real_t,real_t);
 
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_segment_segment(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_segment_segment(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const SegmentShape2DSW *segment_B = static_cast<const SegmentShape2DSW*>(p_b);
@@ -645,7 +645,7 @@ static void _collision_segment_segment(const Shape2DSW* p_a,const Transform2D& p
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_segment_circle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_segment_circle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
@@ -678,7 +678,7 @@ static void _collision_segment_circle(const Shape2DSW* p_a,const Transform2D& p_
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_segment_rectangle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_segment_rectangle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW*>(p_b);
@@ -743,7 +743,7 @@ static void _collision_segment_rectangle(const Shape2DSW* p_a,const Transform2D&
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_segment_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_segment_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
@@ -775,7 +775,7 @@ static void _collision_segment_capsule(const Shape2DSW* p_a,const Transform2D& p
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_segment_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_segment_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
@@ -815,7 +815,7 @@ static void _collision_segment_convex_polygon(const Shape2DSW* p_a,const Transfo
 /////////
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_circle_circle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_circle_circle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const CircleShape2DSW *circle_B = static_cast<const CircleShape2DSW*>(p_b);
@@ -838,7 +838,7 @@ static void _collision_circle_circle(const Shape2DSW* p_a,const Transform2D& p_t
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_circle_rectangle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_circle_rectangle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW*>(p_b);
@@ -894,7 +894,7 @@ static void _collision_circle_rectangle(const Shape2DSW* p_a,const Transform2D& 
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_circle_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_circle_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
@@ -924,7 +924,7 @@ static void _collision_circle_capsule(const Shape2DSW* p_a,const Transform2D& p_
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_circle_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_circle_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
@@ -956,7 +956,7 @@ static void _collision_circle_convex_polygon(const Shape2DSW* p_a,const Transfor
 /////////
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_rectangle_rectangle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_rectangle_rectangle(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW*>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW*>(p_b);
@@ -1027,7 +1027,7 @@ static void _collision_rectangle_rectangle(const Shape2DSW* p_a,const Transform2
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_rectangle_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_rectangle_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
@@ -1100,7 +1100,7 @@ static void _collision_rectangle_capsule(const Shape2DSW* p_a,const Transform2D&
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
@@ -1162,7 +1162,7 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Trans
 /////////
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_capsule_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_capsule_capsule(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const CapsuleShape2DSW *capsule_A = static_cast<const CapsuleShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
@@ -1205,7 +1205,7 @@ static void _collision_capsule_capsule(const Shape2DSW* p_a,const Transform2D& p
 }
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_capsule_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_capsule_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 	const CapsuleShape2DSW *capsule_A = static_cast<const CapsuleShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
@@ -1251,7 +1251,7 @@ static void _collision_capsule_convex_polygon(const Shape2DSW* p_a,const Transfo
 
 
 template<bool castA, bool castB,bool withMargin>
-static void _collision_convex_polygon_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,float p_margin_A,float p_margin_B) {
+static void _collision_convex_polygon_convex_polygon(const Shape2DSW* p_a,const Transform2D& p_transform_a,const Shape2DSW* p_b,const Transform2D& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b,real_t p_margin_A,real_t p_margin_B) {
 
 
 	const ConvexPolygonShape2DSW *convex_A = static_cast<const ConvexPolygonShape2DSW*>(p_a);
@@ -1298,7 +1298,7 @@ static void _collision_convex_polygon_convex_polygon(const Shape2DSW* p_a,const 
 
 ////////
 
-bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D& p_transform_A, const Vector2& p_motion_A, const Shape2DSW *p_shape_B, const Transform2D& p_transform_B,const Vector2& p_motion_B, CollisionSolver2DSW::CallbackResult p_result_callback,void *p_userdata, bool p_swap,Vector2 *sep_axis,float p_margin_A,float p_margin_B) {
+bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Transform2D& p_transform_A, const Vector2& p_motion_A, const Shape2DSW *p_shape_B, const Transform2D& p_transform_B,const Vector2& p_motion_B, CollisionSolver2DSW::CallbackResult p_result_callback,void *p_userdata, bool p_swap,Vector2 *sep_axis,real_t p_margin_A,real_t p_margin_B) {
 
 	Physics2DServer::ShapeType type_A=p_shape_A->get_type();
 

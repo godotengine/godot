@@ -76,7 +76,7 @@ public:
 	struct CollCbkData {
 
 		Vector2 valid_dir;
-		float valid_depth;
+		real_t valid_depth;
 		int max;
 		int amount;
 		Vector2 *ptr;
@@ -193,8 +193,8 @@ public:
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_collision_mask(RID p_) const;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
-	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
+	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;
 
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant& p_variant);
@@ -203,8 +203,8 @@ public:
 	virtual void body_set_applied_force(RID p_body, const Vector2& p_force);
 	virtual Vector2 body_get_applied_force(RID p_body) const;
 
-	virtual void body_set_applied_torque(RID p_body, float p_torque);
-	virtual float body_get_applied_torque(RID p_body) const;
+	virtual void body_set_applied_torque(RID p_body, real_t p_torque);
+	virtual real_t body_get_applied_torque(RID p_body) const;
 
 	virtual void body_add_force(RID p_body, const Vector2& p_offset, const Vector2& p_force);
 
@@ -215,8 +215,8 @@ public:
 	virtual void body_remove_collision_exception(RID p_body, RID p_body_b);
 	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions);
 
-	virtual void body_set_contacts_reported_depth_treshold(RID p_body, float p_treshold);
-	virtual float body_get_contacts_reported_depth_treshold(RID p_body) const;
+	virtual void body_set_contacts_reported_depth_treshold(RID p_body, real_t p_treshold);
+	virtual real_t body_get_contacts_reported_depth_treshold(RID p_body) const;
 
 	virtual void body_set_omit_force_integration(RID p_body,bool p_omit);
 	virtual bool body_is_omitting_force_integration(RID p_body) const;
@@ -227,8 +227,8 @@ public:
 	virtual void body_set_one_way_collision_direction(RID p_body,const Vector2& p_direction);
 	virtual Vector2 body_get_one_way_collision_direction(RID p_body) const;
 
-	virtual void body_set_one_way_collision_max_depth(RID p_body,float p_max_depth);
-	virtual float body_get_one_way_collision_max_depth(RID p_body) const;
+	virtual void body_set_one_way_collision_max_depth(RID p_body,real_t p_max_depth);
+	virtual real_t body_get_one_way_collision_max_depth(RID p_body) const;
 
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
@@ -236,7 +236,7 @@ public:
 
 	virtual void body_set_pickable(RID p_body,bool p_pickable);
 
-	virtual bool body_test_motion(RID p_body,const Transform2D& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL);
+	virtual bool body_test_motion(RID p_body,const Transform2D& p_from,const Vector2& p_motion,real_t p_margin=0.001,MotionResult *r_result=NULL);
 
 
 	/* JOINT API */
@@ -260,7 +260,7 @@ public:
 
 	virtual void set_active(bool p_active);
 	virtual void init();
-	virtual void step(float p_step);
+	virtual void step(real_t p_step);
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void end_sync();

@@ -136,7 +136,7 @@ bool LineShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_en
 	return true;
 }
 
-real_t LineShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
+real_t LineShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
 	return 0;
 }
@@ -191,7 +191,7 @@ bool RayShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end
 
 }
 
-real_t RayShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
+real_t RayShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
 	return 0; //rays are mass-less
 }
@@ -224,7 +224,7 @@ void SegmentShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,
 
 	}
 
-	float dp=p_normal.dot(b-a);
+	real_t dp=p_normal.dot(b-a);
 	if (dp>0)
 		*r_supports=b;
 	else
@@ -252,14 +252,14 @@ bool SegmentShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p
 	return true;
 }
 
-real_t SegmentShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
+real_t SegmentShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
 	Vector2 s[2]={a*p_scale,b*p_scale};
 
 	real_t l = s[1].distance_to(s[0]);
 	Vector2 ofs = (s[0]+s[1])*0.5;
 
-	return p_mass*(l*l/12.0f + ofs.length_squared());
+	return p_mass*(l*l/12.0 + ofs.length_squared());
 }
 
 void SegmentShape2DSW::set_data(const Variant& p_data) {
@@ -336,7 +336,7 @@ bool CircleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_
 	return true;
 }
 
-real_t CircleShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
+real_t CircleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
 	return (radius*radius)*(p_scale.x*0.5+p_scale.y*0.5);
 
@@ -367,11 +367,11 @@ void RectangleShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_support
 
 		Vector2 ag;
 		ag[i]=1.0;
-		float dp = ag.dot(p_normal);
+		real_t dp = ag.dot(p_normal);
 		if (Math::abs(dp)<_SEGMENT_IS_VALID_SUPPORT_TRESHOLD)
 			continue;
 
-		float sgn = dp>0 ? 1.0 : -1.0;
+		real_t sgn = dp>0 ? 1.0 : -1.0;
 
 		r_amount=2;
 
@@ -407,10 +407,10 @@ bool RectangleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2&
 	return get_aabb().intersects_segment(p_begin,p_end,&r_point,&r_normal);
 }
 
-real_t RectangleShape2DSW::get_moment_of_inertia(float p_mass,const Size2& p_scale) const {
+real_t RectangleShape2DSW::get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const {
 
 	Vector2 he2=half_extents*2*p_scale;
-	return p_mass*he2.dot(he2)/12.0f;
+	return p_mass*he2.dot(he2)/12.0;
 }
 
 void RectangleShape2DSW::set_data(const Variant& p_data) {
@@ -438,7 +438,7 @@ void CapsuleShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,
 
 	Vector2 n=p_normal;
 
-	float d = n.y;
+	real_t d = n.y;
 
 	if (Math::abs( d )<(1.0-_SEGMENT_IS_VALID_SUPPORT_TRESHOLD) ) {
 
@@ -455,7 +455,7 @@ void CapsuleShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,
 
 	} else {
 
-		float h = (d > 0) ? height : -height;
+		real_t h = (d > 0) ? height : -height;
 
 		n*=radius;
 		n.y += h*0.5;
@@ -479,7 +479,7 @@ bool CapsuleShape2DSW::contains_point(const Vector2& p_point) const {
 bool CapsuleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
 
 
-	float d = 1e10;
+	real_t d = 1e10;
 	Vector2 n = (p_end-p_begin).normalized();
 	bool collided=false;
 
@@ -488,7 +488,7 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p
 
 		Vector2 begin = p_begin;
 		Vector2 end = p_end;
-		float ofs = (i==0)?-height*0.5:height*0.5;
+		real_t ofs = (i==0)?-height*0.5:height*0.5;
 		begin.y+=ofs;
 		end.y+=ofs;
 
@@ -540,10 +540,10 @@ bool CapsuleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p
 	return collided; //todo
 }
 
-real_t CapsuleShape2DSW::get_moment_of_inertia(float p_mass, const Size2 &p_scale) const {
+real_t CapsuleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
 	Vector2 he2=Vector2(radius*2,height+radius*2)*p_scale;
-	return p_mass*he2.dot(he2)/12.0f;
+	return p_mass*he2.dot(he2)/12.0;
 }
 
 void CapsuleShape2DSW::set_data(const Variant& p_data) {
@@ -619,7 +619,7 @@ bool ConvexPolygonShape2DSW::contains_point(const Vector2& p_point) const {
 
 	for(int i=0;i<point_count;i++) {
 
-		float d = points[i].normal.dot(p_point) - points[i].normal.dot(points[i].pos);
+		real_t d = points[i].normal.dot(p_point) - points[i].normal.dot(points[i].pos);
 		if (d>0)
 			out=true;
 		else
@@ -650,7 +650,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vect
 		if (!Geometry::segment_intersects_segment_2d(p_begin,p_end,points[i].pos,points[(i+1)%point_count].pos,&res))
 			continue;
 
-		float nd = n.dot(res);
+		real_t nd = n.dot(res);
 		if (nd<d) {
 
 			d=nd;
@@ -672,7 +672,7 @@ bool ConvexPolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vect
 	return inters; //todo
 }
 
-real_t ConvexPolygonShape2DSW::get_moment_of_inertia(float p_mass,const Size2& p_scale) const {
+real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass,const Size2& p_scale) const {
 
 	Rect2 aabb;
 	aabb.pos=points[0].pos*p_scale;
@@ -681,7 +681,7 @@ real_t ConvexPolygonShape2DSW::get_moment_of_inertia(float p_mass,const Size2& p
 		aabb.expand_to(points[i].pos*p_scale);
 	}
 
-	return p_mass*aabb.size.dot(aabb.size)/12.0f + p_mass * (aabb.pos+aabb.size*0.5).length_squared();
+	return p_mass*aabb.size.dot(aabb.size)/12.0 + p_mass * (aabb.pos+aabb.size*0.5).length_squared();
 }
 
 void ConvexPolygonShape2DSW::set_data(const Variant& p_data) {
@@ -859,7 +859,7 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vec
 
 						if (Geometry::segment_intersects_segment_2d(p_begin,p_end,a,b,&res)) {
 
-							float nd = n.dot(res);
+							real_t nd = n.dot(res);
 							if (nd<d) {
 
 								d=nd;
