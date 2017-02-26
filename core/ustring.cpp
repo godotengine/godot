@@ -4101,12 +4101,8 @@ String String::sprintf(const Array& values, bool* error) const {
 						case 'X': base = 16; capitalize = true; break;
 					}
 					// Get basic number.
-					String str = String::num_int64(value, base, capitalize);
-
-					// Sign.
-					if (show_sign && value >= 0) {
-						str = str.insert(0, "+");
-					}
+					String str = String::num_int64(ABS(value), base, capitalize);
+					int number_len = str.length();
 
 					// Padding.
 					String pad_char = pad_with_zeroes ? String("0") : String(" ");
@@ -4114,6 +4110,13 @@ String String::sprintf(const Array& values, bool* error) const {
 						str = str.rpad(min_chars, pad_char);
 					} else {
 						str = str.lpad(min_chars, pad_char);
+					}
+
+					// Sign.
+					if (show_sign && value >= 0) {
+						str = str.insert(pad_with_zeroes?0:str.length()-number_len, "+");
+					} else if (value < 0) {
+						str = str.insert(pad_with_zeroes?0:str.length()-number_len, "-");
 					}
 
 					formatted += str;
