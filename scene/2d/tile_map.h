@@ -141,6 +141,8 @@ private:
 
 	Rect2 rect_cache;
 	bool rect_cache_dirty;
+	Rect2 used_size_cache;
+	bool used_size_cache_dirty;
 	bool quadrant_order_dirty;
 	bool y_sort_mode;
 	float fp_adjust;
@@ -175,8 +177,6 @@ private:
 	int _get_old_cell_size() const { return cell_size.x; }
 
 	_FORCE_INLINE_ Vector2 _map_to_world(int p_x,int p_y,bool p_ignore_ofs=false) const;
-
-	Array get_used_cells() const;
 
 protected:
 
@@ -251,6 +251,9 @@ public:
 
 	void set_y_sort_mode(bool p_enable);
 	bool is_y_sort_mode_enabled() const;
+
+	Array get_used_cells() const;
+	Rect2 get_used_rect(); // Not const because of cache
 
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
