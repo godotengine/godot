@@ -162,7 +162,6 @@ private:
 	Color default_color;
 	Ref<ColorRamp> color_ramp;
 
-	void testee(int a, int b, int c, int d, int e);
 	void _process_particles(float p_delta);
 friend class ParticleAttractor2D;
 
