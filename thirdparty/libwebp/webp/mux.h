@@ -21,13 +21,13 @@
 extern "C" {
 #endif
 
-#define WEBP_MUX_ABI_VERSION 0x0106        // MAJOR(8b) + MINOR(8b)
+#define WEBP_MUX_ABI_VERSION 0x0108        // MAJOR(8b) + MINOR(8b)
 
 //------------------------------------------------------------------------------
 // Mux API
 //
 // This API allows manipulation of WebP container images containing features
-// like color profile, metadata, animation and fragmented images.
+// like color profile, metadata, animation.
 //
 // Code Example#1: Create a WebPMux object with image data, color profile and
 // XMP metadata.
@@ -81,16 +81,16 @@ typedef enum WebPMuxError {
 
 // IDs for different types of chunks.
 typedef enum WebPChunkId {
-  WEBP_CHUNK_VP8X,     // VP8X
-  WEBP_CHUNK_ICCP,     // ICCP
-  WEBP_CHUNK_ANIM,     // ANIM
-  WEBP_CHUNK_ANMF,     // ANMF
-  WEBP_CHUNK_FRGM,     // FRGM
-  WEBP_CHUNK_ALPHA,    // ALPH
-  WEBP_CHUNK_IMAGE,    // VP8/VP8L
-  WEBP_CHUNK_EXIF,     // EXIF
-  WEBP_CHUNK_XMP,      // XMP
-  WEBP_CHUNK_UNKNOWN,  // Other chunks.
+  WEBP_CHUNK_VP8X,        // VP8X
+  WEBP_CHUNK_ICCP,        // ICCP
+  WEBP_CHUNK_ANIM,        // ANIM
+  WEBP_CHUNK_ANMF,        // ANMF
+  WEBP_CHUNK_DEPRECATED,  // (deprecated from FRGM)
+  WEBP_CHUNK_ALPHA,       // ALPH
+  WEBP_CHUNK_IMAGE,       // VP8/VP8L
+  WEBP_CHUNK_EXIF,        // EXIF
+  WEBP_CHUNK_XMP,         // XMP
+  WEBP_CHUNK_UNKNOWN,     // Other chunks.
   WEBP_CHUNK_NIL
 } WebPChunkId;
 
@@ -142,7 +142,7 @@ static WEBP_INLINE WebPMux* WebPMuxCreate(const WebPData* bitstream,
 // Non-image chunks.
 
 // Note: Only non-image related chunks should be managed through chunk APIs.
-// (Image related chunks are: "ANMF", "FRGM", "VP8 ", "VP8L" and "ALPH").
+// (Image related chunks are: "ANMF", "VP8 ", "VP8L" and "ALPH").
 // To add, get and delete images, use WebPMuxSetImage(), WebPMuxPushFrame(),
 // WebPMuxGetFrame() and WebPMuxDeleteFrame().
 
@@ -195,7 +195,7 @@ WEBP_EXTERN(WebPMuxError) WebPMuxDeleteChunk(
 //------------------------------------------------------------------------------
 // Images.
 
-// Encapsulates data about a single frame/fragment.
+// Encapsulates data about a single frame.
 struct WebPMuxFrameInfo {
   WebPData    bitstream;  // image data: can be a raw VP8/VP8L bitstream
                           // or a single-image WebP file.
@@ -203,19 +203,19 @@ struct WebPMuxFrameInfo {
   int         y_offset;   // y-offset of the frame.
   int         duration;   // duration of the frame (in milliseconds).
 
-  WebPChunkId id;         // frame type: should be one of WEBP_CHUNK_ANMF,
-                          // WEBP_CHUNK_FRGM or WEBP_CHUNK_IMAGE
+  WebPChunkId id;         // frame type: should be one of WEBP_CHUNK_ANMF
+                          // or WEBP_CHUNK_IMAGE
   WebPMuxAnimDispose dispose_method;  // Disposal method for the frame.
   WebPMuxAnimBlend   blend_method;    // Blend operation for the frame.
   uint32_t    pad[1];     // padding for later use
 };
 
-// Sets the (non-animated and non-fragmented) image in the mux object.
-// Note: Any existing images (including frames/fragments) will be removed.
+// Sets the (non-animated) image in the mux object.
+// Note: Any existing images (including frames) will be removed.
 // Parameters:
 //   mux - (in/out) object in which the image is to be set
 //   bitstream - (in) can be a raw VP8/VP8L bitstream or a single-image
-//               WebP file (non-animated and non-fragmented)
+//               WebP file (non-animated)
 //   copy_data - (in) value 1 indicates given data WILL be copied to the mux
 //               object and value 0 indicates data will NOT be copied.
 // Returns:
@@ -226,9 +226,8 @@ WEBP_EXTERN(WebPMuxError) WebPMuxSetImage(
     WebPMux* mux, const WebPData* bitstream, int copy_data);
 
 // Adds a frame at the end of the mux object.
-// Notes: (1) frame.id should be one of WEBP_CHUNK_ANMF or WEBP_CHUNK_FRGM
-//        (2) For setting a non-animated non-fragmented image, use
-//            WebPMuxSetImage() instead.
+// Notes: (1) frame.id should be WEBP_CHUNK_ANMF
+//        (2) For setting a non-animated image, use WebPMuxSetImage() instead.
 //        (3) Type of frame being pushed must be same as the frames in mux.
 //        (4) As WebP only supports even offsets, any odd offset will be snapped
 //            to an even location using: offset &= ~1
@@ -431,9 +430,10 @@ struct WebPAnimEncoderOptions {
                         // frames in the output. The library may insert some key
                         // frames as needed to satisfy this criteria.
                         // Note that these conditions should hold: kmax > kmin
-                        // and kmin >= kmax / 2 + 1. Also, if kmin == 0, then
-                        // key-frame insertion is disabled; and if kmax == 0,
-                        // then all frames will be key-frames.
+                        // and kmin >= kmax / 2 + 1. Also, if kmax <= 0, then
+                        // key-frame insertion is disabled; and if kmax == 1,
+                        // then all frames will be key-frames (kmin value does
+                        // not matter for these special cases).
   int allow_mixed;      // If true, use mixed compression mode; may choose
                         // either lossy and lossless for each frame.
   int verbose;          // If true, print info and warning messages to stderr.

@@ -124,15 +124,15 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 0.5.2
+- Version: 0.6.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*` except from: .am and .in, files, extras/, `webp/extras.h`
+- `src/*` except from: .am, .rc and .in files
 - AUTHORS, COPYING, PATENTS
 
-Important: The files `utils/bit_reader.{c,h}` have Godot-made
+Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 

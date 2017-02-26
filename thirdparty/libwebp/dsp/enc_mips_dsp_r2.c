@@ -17,8 +17,8 @@
 #if defined(WEBP_USE_MIPS_DSP_R2)
 
 #include "./mips_macro.h"
-#include "../enc/cost.h"
-#include "../enc/vp8enci.h"
+#include "../enc/cost_enc.h"
+#include "../enc/vp8i_enc.h"
 
 static const int kC1 = 20091 + (1 << 16);
 static const int kC2 = 35468;

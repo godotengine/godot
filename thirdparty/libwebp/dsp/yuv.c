@@ -13,6 +13,8 @@
 
 #include "./yuv.h"
 
+#include <stdlib.h>
+
 #if defined(WEBP_YUV_USE_TABLE)
 
 static int done = 0;
@@ -244,6 +246,48 @@ void WebPConvertRGBA32ToUV_C(const uint16_t* rgb,
 
 //-----------------------------------------------------------------------------
 
+#define MAX_Y ((1 << 10) - 1)    // 10b precision over 16b-arithmetic
+static uint16_t clip_y(int v) {
+  return (v < 0) ? 0 : (v > MAX_Y) ? MAX_Y : (uint16_t)v;
+}
+
+static uint64_t SharpYUVUpdateY_C(const uint16_t* ref, const uint16_t* src,
+                                  uint16_t* dst, int len) {
+  uint64_t diff = 0;
+  int i;
+  for (i = 0; i < len; ++i) {
+    const int diff_y = ref[i] - src[i];
+    const int new_y = (int)dst[i] + diff_y;
+    dst[i] = clip_y(new_y);
+    diff += (uint64_t)abs(diff_y);
+  }
+  return diff;
+}
+
+static void SharpYUVUpdateRGB_C(const int16_t* ref, const int16_t* src,
+                                int16_t* dst, int len) {
+  int i;
+  for (i = 0; i < len; ++i) {
+    const int diff_uv = ref[i] - src[i];
+    dst[i] += diff_uv;
+  }
+}
+
+static void SharpYUVFilterRow_C(const int16_t* A, const int16_t* B, int len,
+                                const uint16_t* best_y, uint16_t* out) {
+  int i;
+  for (i = 0; i < len; ++i, ++A, ++B) {
+    const int v0 = (A[0] * 9 + A[1] * 3 + B[0] * 3 + B[1] + 8) >> 4;
+    const int v1 = (A[1] * 9 + A[0] * 3 + B[1] * 3 + B[0] + 8) >> 4;
+    out[2 * i + 0] = clip_y(best_y[2 * i + 0] + v0);
+    out[2 * i + 1] = clip_y(best_y[2 * i + 1] + v1);
+  }
+}
+
+#undef MAX_Y
+
+//-----------------------------------------------------------------------------
+
 void (*WebPConvertRGB24ToY)(const uint8_t* rgb, uint8_t* y, int width);
 void (*WebPConvertBGR24ToY)(const uint8_t* bgr, uint8_t* y, int width);
 void (*WebPConvertRGBA32ToUV)(const uint16_t* rgb,
@@ -253,10 +297,18 @@ void (*WebPConvertARGBToY)(const uint32_t* argb, uint8_t* y, int width);
 void (*WebPConvertARGBToUV)(const uint32_t* argb, uint8_t* u, uint8_t* v,
                             int src_width, int do_store);
 
+uint64_t (*WebPSharpYUVUpdateY)(const uint16_t* ref, const uint16_t* src,
+                                uint16_t* dst, int len);
+void (*WebPSharpYUVUpdateRGB)(const int16_t* ref, const int16_t* src,
+                              int16_t* dst, int len);
+void (*WebPSharpYUVFilterRow)(const int16_t* A, const int16_t* B, int len,
+                              const uint16_t* best_y, uint16_t* out);
+
 static volatile VP8CPUInfo rgba_to_yuv_last_cpuinfo_used =
     (VP8CPUInfo)&rgba_to_yuv_last_cpuinfo_used;
 
 extern void WebPInitConvertARGBToYUVSSE2(void);
+extern void WebPInitSharpYUVSSE2(void);
 
 WEBP_TSAN_IGNORE_FUNCTION void WebPInitConvertARGBToYUV(void) {
   if (rgba_to_yuv_last_cpuinfo_used == VP8GetCPUInfo) return;
@@ -269,10 +321,15 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitConvertARGBToYUV(void) {
 
   WebPConvertRGBA32ToUV = WebPConvertRGBA32ToUV_C;
 
+  WebPSharpYUVUpdateY = SharpYUVUpdateY_C;
+  WebPSharpYUVUpdateRGB = SharpYUVUpdateRGB_C;
+  WebPSharpYUVFilterRow = SharpYUVFilterRow_C;
+
   if (VP8GetCPUInfo != NULL) {
 #if defined(WEBP_USE_SSE2)
     if (VP8GetCPUInfo(kSSE2)) {
       WebPInitConvertARGBToYUVSSE2();
+      WebPInitSharpYUVSSE2();
     }
 #endif  // WEBP_USE_SSE2
   }

@@ -17,6 +17,8 @@
 #include <assert.h>
 #include <emmintrin.h>
 #include "./lossless.h"
+#include "./common_sse2.h"
+#include "./lossless_common.h"
 
 // For sign-extended multiplying constants, pre-shifted by 5:
 #define CST_5b(X)  (((int16_t)((uint16_t)X << 8)) >> 5)
@@ -35,7 +37,9 @@ static void SubtractGreenFromBlueAndRed(uint32_t* argb_data, int num_pixels) {
     _mm_storeu_si128((__m128i*)&argb_data[i], out);
   }
   // fallthrough and finish off with plain-C
-  VP8LSubtractGreenFromBlueAndRed_C(argb_data + i, num_pixels - i);
+  if (i != num_pixels) {
+    VP8LSubtractGreenFromBlueAndRed_C(argb_data + i, num_pixels - i);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -69,7 +73,9 @@ static void TransformColor(const VP8LMultipliers* const m,
     _mm_storeu_si128((__m128i*)&argb_data[i], out);
   }
   // fallthrough and finish off with plain-C
-  VP8LTransformColor_C(m, argb_data + i, num_pixels - i);
+  if (i != num_pixels) {
+    VP8LTransformColor_C(m, argb_data + i, num_pixels - i);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -364,8 +370,9 @@ static int VectorMismatch(const uint32_t* const array1,
       if (length >= 8 &&
           _mm_movemask_epi8(_mm_cmpeq_epi32(
               _mm_loadu_si128((const __m128i*)&array1[4]),
-              _mm_loadu_si128((const __m128i*)&array2[4]))) == 0xffff)
+              _mm_loadu_si128((const __m128i*)&array2[4]))) == 0xffff) {
         match_len = 8;
+      }
     }
   }
 
@@ -373,6 +380,295 @@ static int VectorMismatch(const uint32_t* const array1,
     ++match_len;
   }
   return match_len;
+}
+
+// Bundles multiple (1, 2, 4 or 8) pixels into a single pixel.
+static void BundleColorMap_SSE2(const uint8_t* const row, int width, int xbits,
+                                uint32_t* dst) {
+  int x;
+  assert(xbits >= 0);
+  assert(xbits <= 3);
+  switch (xbits) {
+    case 0: {
+      const __m128i ff = _mm_set1_epi16(0xff00);
+      const __m128i zero = _mm_setzero_si128();
+      // Store 0xff000000 | (row[x] << 8).
+      for (x = 0; x + 16 <= width; x += 16, dst += 16) {
+        const __m128i in = _mm_loadu_si128((const __m128i*)&row[x]);
+        const __m128i in_lo = _mm_unpacklo_epi8(zero, in);
+        const __m128i dst0 = _mm_unpacklo_epi16(in_lo, ff);
+        const __m128i dst1 = _mm_unpackhi_epi16(in_lo, ff);
+        const __m128i in_hi = _mm_unpackhi_epi8(zero, in);
+        const __m128i dst2 = _mm_unpacklo_epi16(in_hi, ff);
+        const __m128i dst3 = _mm_unpackhi_epi16(in_hi, ff);
+        _mm_storeu_si128((__m128i*)&dst[0], dst0);
+        _mm_storeu_si128((__m128i*)&dst[4], dst1);
+        _mm_storeu_si128((__m128i*)&dst[8], dst2);
+        _mm_storeu_si128((__m128i*)&dst[12], dst3);
+      }
+      break;
+    }
+    case 1: {
+      const __m128i ff = _mm_set1_epi16(0xff00);
+      const __m128i mul = _mm_set1_epi16(0x110);
+      for (x = 0; x + 16 <= width; x += 16, dst += 8) {
+        // 0a0b | (where a/b are 4 bits).
+        const __m128i in = _mm_loadu_si128((const __m128i*)&row[x]);
+        const __m128i tmp = _mm_mullo_epi16(in, mul);  // aba0
+        const __m128i pack = _mm_and_si128(tmp, ff);   // ab00
+        const __m128i dst0 = _mm_unpacklo_epi16(pack, ff);
+        const __m128i dst1 = _mm_unpackhi_epi16(pack, ff);
+        _mm_storeu_si128((__m128i*)&dst[0], dst0);
+        _mm_storeu_si128((__m128i*)&dst[4], dst1);
+      }
+      break;
+    }
+    case 2: {
+      const __m128i mask_or = _mm_set1_epi32(0xff000000);
+      const __m128i mul_cst = _mm_set1_epi16(0x0104);
+      const __m128i mask_mul = _mm_set1_epi16(0x0f00);
+      for (x = 0; x + 16 <= width; x += 16, dst += 4) {
+        // 000a000b000c000d | (where a/b/c/d are 2 bits).
+        const __m128i in = _mm_loadu_si128((const __m128i*)&row[x]);
+        const __m128i mul = _mm_mullo_epi16(in, mul_cst);  // 00ab00b000cd00d0
+        const __m128i tmp = _mm_and_si128(mul, mask_mul);  // 00ab000000cd0000
+        const __m128i shift = _mm_srli_epi32(tmp, 12);     // 00000000ab000000
+        const __m128i pack = _mm_or_si128(shift, tmp);     // 00000000abcd0000
+        // Convert to 0xff00**00.
+        const __m128i res = _mm_or_si128(pack, mask_or);
+        _mm_storeu_si128((__m128i*)dst, res);
+      }
+      break;
+    }
+    default: {
+      assert(xbits == 3);
+      for (x = 0; x + 16 <= width; x += 16, dst += 2) {
+        // 0000000a00000000b... | (where a/b are 1 bit).
+        const __m128i in = _mm_loadu_si128((const __m128i*)&row[x]);
+        const __m128i shift = _mm_slli_epi64(in, 7);
+        const uint32_t move = _mm_movemask_epi8(shift);
+        dst[0] = 0xff000000 | ((move & 0xff) << 8);
+        dst[1] = 0xff000000 | (move & 0xff00);
+      }
+      break;
+    }
+  }
+  if (x != width) {
+    VP8LBundleColorMap_C(row + x, width - x, xbits, dst);
+  }
+}
+
+//------------------------------------------------------------------------------
+// Batch version of Predictor Transform subtraction
+
+static WEBP_INLINE void Average2_m128i(const __m128i* const a0,
+                                       const __m128i* const a1,
+                                       __m128i* const avg) {
+  // (a + b) >> 1 = ((a + b + 1) >> 1) - ((a ^ b) & 1)
+  const __m128i ones = _mm_set1_epi8(1);
+  const __m128i avg1 = _mm_avg_epu8(*a0, *a1);
+  const __m128i one = _mm_and_si128(_mm_xor_si128(*a0, *a1), ones);
+  *avg = _mm_sub_epi8(avg1, one);
+}
+
+// Predictor0: ARGB_BLACK.
+static void PredictorSub0_SSE2(const uint32_t* in, const uint32_t* upper,
+                               int num_pixels, uint32_t* out) {
+  int i;
+  const __m128i black = _mm_set1_epi32(ARGB_BLACK);
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
+    const __m128i res = _mm_sub_epi8(src, black);
+    _mm_storeu_si128((__m128i*)&out[i], res);
+  }
+  if (i != num_pixels) {
+    VP8LPredictorsSub_C[0](in + i, upper + i, num_pixels - i, out + i);
+  }
+}
+
+#define GENERATE_PREDICTOR_1(X, IN)                                           \
+static void PredictorSub##X##_SSE2(const uint32_t* in, const uint32_t* upper, \
+                                   int num_pixels, uint32_t* out) {           \
+  int i;                                                                      \
+  for (i = 0; i + 4 <= num_pixels; i += 4) {                                  \
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);              \
+    const __m128i pred = _mm_loadu_si128((const __m128i*)&(IN));              \
+    const __m128i res = _mm_sub_epi8(src, pred);                              \
+    _mm_storeu_si128((__m128i*)&out[i], res);                                 \
+  }                                                                           \
+  if (i != num_pixels) {                                                      \
+    VP8LPredictorsSub_C[(X)](in + i, upper + i, num_pixels - i, out + i);     \
+  }                                                                           \
+}
+
+GENERATE_PREDICTOR_1(1, in[i - 1])       // Predictor1: L
+GENERATE_PREDICTOR_1(2, upper[i])        // Predictor2: T
+GENERATE_PREDICTOR_1(3, upper[i + 1])    // Predictor3: TR
+GENERATE_PREDICTOR_1(4, upper[i - 1])    // Predictor4: TL
+#undef GENERATE_PREDICTOR_1
+
+// Predictor5: avg2(avg2(L, TR), T)
+static void PredictorSub5_SSE2(const uint32_t* in, const uint32_t* upper,
+                               int num_pixels, uint32_t* out) {
+  int i;
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
+    const __m128i T = _mm_loadu_si128((const __m128i*)&upper[i]);
+    const __m128i TR = _mm_loadu_si128((const __m128i*)&upper[i + 1]);
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
+    __m128i avg, pred, res;
+    Average2_m128i(&L, &TR, &avg);
+    Average2_m128i(&avg, &T, &pred);
+    res = _mm_sub_epi8(src, pred);
+    _mm_storeu_si128((__m128i*)&out[i], res);
+  }
+  if (i != num_pixels) {
+    VP8LPredictorsSub_C[5](in + i, upper + i, num_pixels - i, out + i);
+  }
+}
+
+#define GENERATE_PREDICTOR_2(X, A, B)                                         \
+static void PredictorSub##X##_SSE2(const uint32_t* in, const uint32_t* upper, \
+                                   int num_pixels, uint32_t* out) {           \
+  int i;                                                                      \
+  for (i = 0; i + 4 <= num_pixels; i += 4) {                                  \
+    const __m128i tA = _mm_loadu_si128((const __m128i*)&(A));                 \
+    const __m128i tB = _mm_loadu_si128((const __m128i*)&(B));                 \
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);              \
+    __m128i pred, res;                                                        \
+    Average2_m128i(&tA, &tB, &pred);                                          \
+    res = _mm_sub_epi8(src, pred);                                            \
+    _mm_storeu_si128((__m128i*)&out[i], res);                                 \
+  }                                                                           \
+  if (i != num_pixels) {                                                      \
+    VP8LPredictorsSub_C[(X)](in + i, upper + i, num_pixels - i, out + i);     \
+  }                                                                           \
+}
+
+GENERATE_PREDICTOR_2(6, in[i - 1], upper[i - 1])   // Predictor6: avg(L, TL)
+GENERATE_PREDICTOR_2(7, in[i - 1], upper[i])       // Predictor7: avg(L, T)
+GENERATE_PREDICTOR_2(8, upper[i - 1], upper[i])    // Predictor8: avg(TL, T)
+GENERATE_PREDICTOR_2(9, upper[i], upper[i + 1])    // Predictor9: average(T, TR)
+#undef GENERATE_PREDICTOR_2
+
+// Predictor10: avg(avg(L,TL), avg(T, TR)).
+static void PredictorSub10_SSE2(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
+    const __m128i TL = _mm_loadu_si128((const __m128i*)&upper[i - 1]);
+    const __m128i T = _mm_loadu_si128((const __m128i*)&upper[i]);
+    const __m128i TR = _mm_loadu_si128((const __m128i*)&upper[i + 1]);
+    __m128i avgTTR, avgLTL, avg, res;
+    Average2_m128i(&T, &TR, &avgTTR);
+    Average2_m128i(&L, &TL, &avgLTL);
+    Average2_m128i(&avgTTR, &avgLTL, &avg);
+    res = _mm_sub_epi8(src, avg);
+    _mm_storeu_si128((__m128i*)&out[i], res);
+  }
+  if (i != num_pixels) {
+    VP8LPredictorsSub_C[10](in + i, upper + i, num_pixels - i, out + i);
+  }
+}
+
+// Predictor11: select.
+static void GetSumAbsDiff32(const __m128i* const A, const __m128i* const B,
+                            __m128i* const out) {
+  // We can unpack with any value on the upper 32 bits, provided it's the same
+  // on both operands (to that their sum of abs diff is zero). Here we use *A.
+  const __m128i A_lo = _mm_unpacklo_epi32(*A, *A);
+  const __m128i B_lo = _mm_unpacklo_epi32(*B, *A);
+  const __m128i A_hi = _mm_unpackhi_epi32(*A, *A);
+  const __m128i B_hi = _mm_unpackhi_epi32(*B, *A);
+  const __m128i s_lo = _mm_sad_epu8(A_lo, B_lo);
+  const __m128i s_hi = _mm_sad_epu8(A_hi, B_hi);
+  *out = _mm_packs_epi32(s_lo, s_hi);
+}
+
+static void PredictorSub11_SSE2(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
+    const __m128i T = _mm_loadu_si128((const __m128i*)&upper[i]);
+    const __m128i TL = _mm_loadu_si128((const __m128i*)&upper[i - 1]);
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
+    __m128i pa, pb;
+    GetSumAbsDiff32(&T, &TL, &pa);   // pa = sum |T-TL|
+    GetSumAbsDiff32(&L, &TL, &pb);   // pb = sum |L-TL|
+    {
+      const __m128i mask = _mm_cmpgt_epi32(pb, pa);
+      const __m128i A = _mm_and_si128(mask, L);
+      const __m128i B = _mm_andnot_si128(mask, T);
+      const __m128i pred = _mm_or_si128(A, B);    // pred = (L > T)? L : T
+      const __m128i res = _mm_sub_epi8(src, pred);
+      _mm_storeu_si128((__m128i*)&out[i], res);
+    }
+  }
+  if (i != num_pixels) {
+    VP8LPredictorsSub_C[11](in + i, upper + i, num_pixels - i, out + i);
+  }
+}
+
+// Predictor12: ClampedSubSubtractFull.
+static void PredictorSub12_SSE2(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  const __m128i zero = _mm_setzero_si128();
+  for (i = 0; i + 4 <= num_pixels; i += 4) {
+    const __m128i src = _mm_loadu_si128((const __m128i*)&in[i]);
+    const __m128i L = _mm_loadu_si128((const __m128i*)&in[i - 1]);
+    const __m128i L_lo = _mm_unpacklo_epi8(L, zero);
+    const __m128i L_hi = _mm_unpackhi_epi8(L, zero);
+    const __m128i T = _mm_loadu_si128((const __m128i*)&upper[i]);
+    const __m128i T_lo = _mm_unpacklo_epi8(T, zero);
+    const __m128i T_hi = _mm_unpackhi_epi8(T, zero);
+    const __m128i TL = _mm_loadu_si128((const __m128i*)&upper[i - 1]);
+    const __m128i TL_lo = _mm_unpacklo_epi8(TL, zero);
+    const __m128i TL_hi = _mm_unpackhi_epi8(TL, zero);
+    const __m128i diff_lo = _mm_sub_epi16(T_lo, TL_lo);
+    const __m128i diff_hi = _mm_sub_epi16(T_hi, TL_hi);
+    const __m128i pred_lo = _mm_add_epi16(L_lo, diff_lo);
+    const __m128i pred_hi = _mm_add_epi16(L_hi, diff_hi);
+    const __m128i pred = _mm_packus_epi16(pred_lo, pred_hi);
+    const __m128i res = _mm_sub_epi8(src, pred);
+    _mm_storeu_si128((__m128i*)&out[i], res);
+  }
+  if (i != num_pixels) {
+    VP8LPredictorsSub_C[12](in + i, upper + i, num_pixels - i, out + i);
+  }
+}
+
+// Predictors13: ClampedAddSubtractHalf
+static void PredictorSub13_SSE2(const uint32_t* in, const uint32_t* upper,
+                                int num_pixels, uint32_t* out) {
+  int i;
+  const __m128i zero = _mm_setzero_si128();
+  for (i = 0; i + 2 <= num_pixels; i += 2) {
+    // we can only process two pixels at a time
+    const __m128i L = _mm_loadl_epi64((const __m128i*)&in[i - 1]);
+    const __m128i src = _mm_loadl_epi64((const __m128i*)&in[i]);
+    const __m128i T = _mm_loadl_epi64((const __m128i*)&upper[i]);
+    const __m128i TL = _mm_loadl_epi64((const __m128i*)&upper[i - 1]);
+    const __m128i L_lo = _mm_unpacklo_epi8(L, zero);
+    const __m128i T_lo = _mm_unpacklo_epi8(T, zero);
+    const __m128i TL_lo = _mm_unpacklo_epi8(TL, zero);
+    const __m128i sum = _mm_add_epi16(T_lo, L_lo);
+    const __m128i avg = _mm_srli_epi16(sum, 1);
+    const __m128i A1 = _mm_sub_epi16(avg, TL_lo);
+    const __m128i bit_fix = _mm_cmpgt_epi16(TL_lo, avg);
+    const __m128i A2 = _mm_sub_epi16(A1, bit_fix);
+    const __m128i A3 = _mm_srai_epi16(A2, 1);
+    const __m128i A4 = _mm_add_epi16(avg, A3);
+    const __m128i pred = _mm_packus_epi16(A4, A4);
+    const __m128i res = _mm_sub_epi8(src, pred);
+    _mm_storel_epi64((__m128i*)&out[i], res);
+  }
+  if (i != num_pixels) {
+    VP8LPredictorsSub_C[13](in + i, upper + i, num_pixels - i, out + i);
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -388,6 +684,24 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8LEncDspInitSSE2(void) {
   VP8LHistogramAdd = HistogramAdd;
   VP8LCombinedShannonEntropy = CombinedShannonEntropy;
   VP8LVectorMismatch = VectorMismatch;
+  VP8LBundleColorMap = BundleColorMap_SSE2;
+
+  VP8LPredictorsSub[0] = PredictorSub0_SSE2;
+  VP8LPredictorsSub[1] = PredictorSub1_SSE2;
+  VP8LPredictorsSub[2] = PredictorSub2_SSE2;
+  VP8LPredictorsSub[3] = PredictorSub3_SSE2;
+  VP8LPredictorsSub[4] = PredictorSub4_SSE2;
+  VP8LPredictorsSub[5] = PredictorSub5_SSE2;
+  VP8LPredictorsSub[6] = PredictorSub6_SSE2;
+  VP8LPredictorsSub[7] = PredictorSub7_SSE2;
+  VP8LPredictorsSub[8] = PredictorSub8_SSE2;
+  VP8LPredictorsSub[9] = PredictorSub9_SSE2;
+  VP8LPredictorsSub[10] = PredictorSub10_SSE2;
+  VP8LPredictorsSub[11] = PredictorSub11_SSE2;
+  VP8LPredictorsSub[12] = PredictorSub12_SSE2;
+  VP8LPredictorsSub[13] = PredictorSub13_SSE2;
+  VP8LPredictorsSub[14] = PredictorSub0_SSE2;  // <- padding security sentinels
+  VP8LPredictorsSub[15] = PredictorSub0_SSE2;
 }
 
 #else  // !WEBP_USE_SSE2

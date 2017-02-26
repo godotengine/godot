@@ -215,6 +215,7 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitYUV444Converters(void) {
 extern void WebPInitUpsamplersSSE2(void);
 extern void WebPInitUpsamplersNEON(void);
 extern void WebPInitUpsamplersMIPSdspR2(void);
+extern void WebPInitUpsamplersMSA(void);
 
 static volatile VP8CPUInfo upsampling_last_cpuinfo_used2 =
     (VP8CPUInfo)&upsampling_last_cpuinfo_used2;
@@ -250,6 +251,11 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitUpsamplers(void) {
 #if defined(WEBP_USE_MIPS_DSP_R2)
     if (VP8GetCPUInfo(kMIPSdspR2)) {
       WebPInitUpsamplersMIPSdspR2();
+    }
+#endif
+#if defined(WEBP_USE_MSA)
+    if (VP8GetCPUInfo(kMSA)) {
+      WebPInitUpsamplersMSA();
     }
 #endif
   }
