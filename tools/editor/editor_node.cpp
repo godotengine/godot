@@ -1792,7 +1792,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	play_custom_scene_button->set_pressed(false);
 	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom","EditorIcons"));
 
-	String current_filename;
+	String main_scene;
 	String run_filename;
 	String args;
 
@@ -1819,25 +1819,16 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 		}
 
-
-
-		if (run_settings_dialog->get_run_mode()==RunSettingsDialog::RUN_LOCAL_SCENE) {
-
-			run_filename=scene->get_filename();
-		} else {
-			current_filename=scene->get_filename();
-		}
-
+		run_filename=scene->get_filename();
 	} else if (p_custom!="") {
-
-		run_filename=p_custom;
+		run_filename = p_custom;
 	}
 
 	if (run_filename=="") {
 
 		//evidently, run the scene
-		run_filename=GLOBAL_DEF("application/main_scene","");
-		if (run_filename=="") {
+		main_scene=GLOBAL_DEF("application/main_scene","");
+		if (main_scene=="") {
 
 			current_option=-1;
 			//accept->get_cancel()->hide();
@@ -1846,21 +1837,21 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 			return;
 		}
 
-		if (!FileAccess::exists(run_filename)) {
+		if (!FileAccess::exists(main_scene)) {
 
 			current_option=-1;
 			//accept->get_cancel()->hide();
-			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), run_filename));
+			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' does not exist, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
 			pick_main_scene->popup_centered_minsize();
 			return;
 
 		}
 
-		if (ResourceLoader::get_resource_type(run_filename)!="PackedScene") {
+		if (ResourceLoader::get_resource_type(main_scene)!="PackedScene") {
 
 			current_option=-1;
 			//accept->get_cancel()->hide();
-			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), run_filename));
+			pick_main_scene->set_text(vformat(TTR("Selected scene '%s' is not a scene file, select a valid one?\nYou can change it later in \"Project Settings\" under the 'application' category."), main_scene));
 			pick_main_scene->popup_centered_minsize();
 			return;
 
@@ -1908,7 +1899,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 	args = GlobalConfig::get_singleton()->get("editor/main_run_args");
 
-	Error error = editor_run.run(run_filename,args,breakpoints,current_filename);
+	Error error = editor_run.run(run_filename,args,breakpoints);
 
 	if (error!=OK) {
 
@@ -1926,7 +1917,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		play_scene_button->set_pressed(true);
 		play_scene_button->set_icon(gui_base->get_icon("Reload","EditorIcons"));
 	} else if (p_custom!="") {
-		run_custom_filename=run_filename;
+		run_custom_filename=p_custom;
 		play_custom_scene_button->set_pressed(true);
 		play_custom_scene_button->set_icon(gui_base->get_icon("Reload","EditorIcons"));
 	} else {
@@ -5224,7 +5215,7 @@ EditorNode::EditorNode() {
 
 	register_exporters();
 
-	GLOBAL_DEF("editor/main_run_args","$scene");
+	GLOBAL_DEF("editor/main_run_args","");
 
 	ClassDB::set_class_enabled("CollisionShape",true);
 	ClassDB::set_class_enabled("CollisionShape2D",true);

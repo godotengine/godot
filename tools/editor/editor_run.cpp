@@ -35,7 +35,7 @@ EditorRun::Status EditorRun::get_status() const {
 
 	return status;
 }
-Error EditorRun::run(const String& p_scene,const String p_custom_args,const List<String>& p_breakpoints,const String& p_edited_scene) {
+Error EditorRun::run(const String& p_scene,const String p_custom_args,const List<String>& p_breakpoints) {
 
 	List<String> args;
 
@@ -141,11 +141,15 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 		args.push_back(bpoints);
 	}
+	
+	if (p_scene!="") {
+		args.push_back(p_scene);
+	}
 
 	if (p_custom_args!="") {
 		Vector<String> cargs=p_custom_args.split(" ",false);
 		for(int i=0;i<cargs.size();i++) {
-			args.push_back(cargs[i].replace("$scene",p_scene).replace(" ","%20"));
+			args.push_back(cargs[i].replace(" ","%20"));
 		}
 	}
 
