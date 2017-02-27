@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include <unistd.h>
 #include <limits.h>
+#include <stdlib.h>
 
 #include "main/main.h"
 #include "os_x11.h"
