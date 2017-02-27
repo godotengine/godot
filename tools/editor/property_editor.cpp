@@ -222,6 +222,14 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(owner->cast_to<Node>());
 
 				} break;
+				case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
+					RES r=v;
+					FileSystemDock *file_system_dock=EditorNode::get_singleton()->get_filesystem_dock();
+					file_system_dock->navigate_to_path(r->get_path());
+					// Ensure that the FileSystem dock is visible.
+					TabContainer* tab_container=(TabContainer*)file_system_dock->get_parent_control();
+					tab_container->set_current_tab(file_system_dock->get_position_in_parent());
+				} break;
 				default: {
 
 
@@ -945,11 +953,15 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				menu->add_icon_item(get_icon("EditResource","EditorIcons"),"Edit",OBJ_MENU_EDIT);
 				menu->add_icon_item(get_icon("Del","EditorIcons"),"Clear",OBJ_MENU_CLEAR);
 				menu->add_icon_item(get_icon("Duplicate","EditorIcons"),"Make Unique",OBJ_MENU_MAKE_UNIQUE);
-				/*RES r = v;
-				if (r.is_valid() && r->get_path().is_resource_file() && r->get_import_metadata().is_valid()) {
+				RES r = v;
+				if (r.is_valid() && r->get_path().is_resource_file()) {
+					/*if (r->get_import_metadata().is_valid()) {
+						menu->add_separator();
+						menu->add_icon_item(get_icon("ReloadSmall","EditorIcons"),"Re-Import",OBJ_MENU_REIMPORT);
+					}*/
 					menu->add_separator();
-					menu->add_icon_item(get_icon("ReloadSmall","EditorIcons"),"Re-Import",OBJ_MENU_REIMPORT);
-				}*/
+					menu->add_item(TTR("Show in File System"),OBJ_MENU_SHOW_IN_FILE_SYSTEM);
+				}
 				/*if (r.is_valid() && r->get_path().is_resource_file()) {
 					menu->set_item_tooltip(1,r->get_path());
 				} else if (r.is_valid()) {
