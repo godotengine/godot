@@ -31,19 +31,38 @@
 
 #include "scene/gui/base_button.h"
 #include "scene/resources/bit_mask.h"
+
 class TextureButton : public BaseButton {
 
 	OBJ_TYPE( TextureButton, BaseButton );
+public:
+	enum ResizeMode {
+		RESIZE_SCALE, // for backwards compatibility
+		RESIZE_STRETCH,
+	};
 
+	enum StretchMode {
+		STRETCH_SCALE_ON_EXPAND, //default, for backwards compatibility
+		STRETCH_SCALE,
+		STRETCH_TILE,
+		STRETCH_KEEP,
+		STRETCH_KEEP_CENTERED,
+		STRETCH_KEEP_ASPECT,
+		STRETCH_KEEP_ASPECT_CENTERED,
+		STRETCH_KEEP_ASPECT_COVERED,
+	};
+
+private:
 	Ref<Texture> normal;
 	Ref<Texture> pressed;
 	Ref<Texture> hover;
 	Ref<Texture> disabled;
 	Ref<Texture> focused;
 	Ref<BitMap> click_mask;
-	Size2 scale;
 	Color modulate;
-
+	ResizeMode resize_mode;
+	Size2 scale;
+	StretchMode stretch_mode;
 
 protected:
 
@@ -68,13 +87,21 @@ public:
 	Ref<Texture> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
 
+	void set_modulate(const Color& p_modulate);
+	Color get_modulate() const;
+
+	ResizeMode get_resize_mode() const;
+	void set_resize_mode(ResizeMode p_mode);
+
 	void set_texture_scale(Size2 p_scale);
 	Size2 get_texture_scale() const;
 
-	void set_modulate(const Color& p_modulate);
-	Color get_modulate() const;
+	void set_stretch_mode(StretchMode stretch_mode);
+	StretchMode get_stretch_mode() const;
 
 	TextureButton();
 };
 
+VARIANT_ENUM_CAST( TextureButton::ResizeMode );
+VARIANT_ENUM_CAST( TextureButton::StretchMode );
 #endif // TEXTURE_BUTTON_H

@@ -77,9 +77,19 @@ void TextureFrame::_notification(int p_what) {
 					ofs_y+=(size.height - tex_height)/2;
 				}
 
-				draw_texture_rect(texture,Rect2(ofs_x,ofs_y,tex_width,tex_height));
+				draw_texture_rect(texture,Rect2(ofs_x,ofs_y,tex_width,tex_height),false,modulate);
 			} break;
+			case STRETCH_KEEP_ASPECT_COVERED: {
 
+				Size2 size = get_size();
+				Size2 tex_size = texture->get_size();
+				Size2 scaleSize(size.width/tex_size.width, size.height/tex_size.height);
+				float scale = scaleSize.width > scaleSize.height? scaleSize.width : scaleSize.height;
+				Size2 scaledTexSize = tex_size * scale;
+				Point2 ofs = ((scaledTexSize - size) / scale).abs() / 2.0f;
+
+				draw_texture_rect_region(texture, Rect2(Point2(), size), Rect2(ofs, size/scale), modulate);
+			} break;
 		}
 
 	}
@@ -107,7 +117,7 @@ void TextureFrame::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
 	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
 	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered"), _SCS("set_stretch_mode"),_SCS("get_stretch_mode") );
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "stretch_mode",PROPERTY_HINT_ENUM,"Scale On Expand (Compat),Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), _SCS("set_stretch_mode"),_SCS("get_stretch_mode") );
 
 	BIND_CONSTANT( STRETCH_SCALE_ON_EXPAND );
 	BIND_CONSTANT( STRETCH_SCALE );
@@ -116,7 +126,7 @@ void TextureFrame::_bind_methods() {
 	BIND_CONSTANT( STRETCH_KEEP_CENTERED );
 	BIND_CONSTANT( STRETCH_KEEP_ASPECT );
 	BIND_CONSTANT( STRETCH_KEEP_ASPECT_CENTERED );
-
+	BIND_CONSTANT( STRETCH_KEEP_ASPECT_COVERED );
 }
 
 
@@ -181,5 +191,3 @@ TextureFrame::TextureFrame() {
 TextureFrame::~TextureFrame()
 {
 }
-
-
