@@ -571,6 +571,7 @@ void GDTokenizerText::_advance() {
 				}
 
 
+				bool is_multi_line_comment = false;
 				String str;
 				while(true) {
 					if (CharType(GETCHAR(i))==0) {
@@ -582,7 +583,8 @@ void GDTokenizerText::_advance() {
 					} else if( string_mode==STRING_SINGLE_QUOTE && CharType(GETCHAR(i))=='\'' ) {
 						break;
 					} else if( string_mode==STRING_MULTILINE && CharType(GETCHAR(i))=='\"' &&  CharType(GETCHAR(i+1))=='\"' && CharType(GETCHAR(i+2))=='\"') {
-						i+=2;
+						is_multi_line_comment = true;
+						i+=3;
 						break;
 					} else if( string_mode!=STRING_MULTILINE && CharType(GETCHAR(i))=='\n') {
 						_make_error("Unexpected EOL at String.");
@@ -672,7 +674,9 @@ void GDTokenizerText::_advance() {
 				}
 				INCPOS(i);
 
-				if (is_node_path) {
+				if (is_multi_line_comment) {
+					continue;
+				} else if (is_node_path) {
 					_make_constant(NodePath(str));
 				} else {
 					_make_constant(str);
