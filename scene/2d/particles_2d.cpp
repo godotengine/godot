@@ -452,7 +452,7 @@ void Particles2D::_process_particles(float p_delta) {
 	time=Math::fmod( time+frame_time, lifetime );
 	if (!emitting && active_count==0) {
 		set_process(false);
-
+		set_fixed_process(false);
 	}
 
 	update();
@@ -468,6 +468,11 @@ void Particles2D::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 
 			_process_particles( get_process_delta_time() );
+		} break;
+
+		case NOTIFICATION_FIXED_PROCESS: {
+
+			_process_particles( get_fixed_process_delta_time() );
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -691,9 +696,10 @@ void Particles2D::set_emitting(bool p_emitting) {
 
 		if (active_count==0)
 			time=0;
-		set_process(true);
+		set_process(process_mode==PROCESS_IDLE);
+		set_fixed_process(process_mode==PROCESS_FIXED);
 		time_to_live = emit_timeout;
-	};
+	}
 	emitting=p_emitting;
 	_change_notify("config/emitting");
 }
@@ -701,6 +707,19 @@ void Particles2D::set_emitting(bool p_emitting) {
 bool Particles2D::is_emitting() const {
 
 	return emitting;
+}
+
+void Particles2D::set_process_mode(ProcessMode p_mode) {
+
+	process_mode=p_mode;
+	const bool should_process=emitting || active_count!=0;
+	set_process(should_process && process_mode==PROCESS_IDLE);
+	set_fixed_process(should_process && process_mode==PROCESS_FIXED);
+}
+
+Particles2D::ProcessMode Particles2D::get_process_mode() const {
+
+	return process_mode;
 }
 
 void Particles2D::set_amount(int p_amount) {
@@ -1016,6 +1035,9 @@ void Particles2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_emitting","active"),&Particles2D::set_emitting);
 	ObjectTypeDB::bind_method(_MD("is_emitting"),&Particles2D::is_emitting);
 
+	ObjectTypeDB::bind_method(_MD("set_process_mode","mode"),&Particles2D::set_process_mode);
+	ObjectTypeDB::bind_method(_MD("get_process_mode"),&Particles2D::get_process_mode);
+
 	ObjectTypeDB::bind_method(_MD("set_amount","amount"),&Particles2D::set_amount);
 	ObjectTypeDB::bind_method(_MD("get_amount"),&Particles2D::get_amount);
 
@@ -1094,6 +1116,7 @@ void Particles2D::_bind_methods() {
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/preprocess",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),_SCS("set_pre_process_time"),_SCS("get_pre_process_time") );
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/emit_timeout",PROPERTY_HINT_RANGE,"0,3600,0.1"),_SCS("set_emit_timeout"),_SCS("get_emit_timeout") );
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/emitting"),_SCS("set_emitting"),_SCS("is_emitting") );
+	ADD_PROPERTY(PropertyInfo( Variant::INT, "config/process_mode",PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_process_mode"), _SCS("get_process_mode") );
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/offset"),_SCS("set_emissor_offset"),_SCS("get_emissor_offset"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/half_extents"),_SCS("set_emission_half_extents"),_SCS("get_emission_half_extents"));
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/local_space"),_SCS("set_use_local_space"),_SCS("is_using_local_space"));
@@ -1176,6 +1199,7 @@ Particles2D::Particles2D() {
 	particles.resize(32);
 	active_count=-1;
 	set_emitting(true);
+	process_mode=PROCESS_IDLE;
 	local_space=true;
 	preprocess=0;
 	time_scale=1.0;
