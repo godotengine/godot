@@ -127,7 +127,7 @@ private:
 		Vector2 velocity;
 		float rot;
 		float frame;
-		uint32_t seed;
+		uint64_t seed;
 		Particle() { active=false; seed=123465789; rot=0; frame=0;}
 	};
 
