@@ -27,16 +27,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_server_types.h"
-#include "globals.h"
+#include "global_config.h"
 
 #include "visual_server.h"
 #include "audio_server.h"
 #include "physics_server.h"
 #include "physics_2d_server.h"
-#include "spatial_sound_server.h"
-#include "spatial_sound_2d_server.h"
 #include "script_debugger_remote.h"
 #include "visual/shader_types.h"
+#include "audio/audio_stream.h"
+#include "audio/audio_effect.h"
+#include "audio/effects/audio_effect_amplify.h"
+#include "audio/effects/audio_effect_reverb.h"
+#include "audio/effects/audio_effect_filter.h"
+#include "audio/effects/audio_effect_eq.h"
+#include "audio/effects/audio_effect_distortion.h"
+#include "audio/effects/audio_effect_stereo_enhance.h"
+#include "audio/effects/audio_effect_panner.h"
+#include "audio/effects/audio_effect_chorus.h"
+#include "audio/effects/audio_effect_delay.h"
+#include "audio/effects/audio_effect_compressor.h"
+#include "audio/effects/audio_effect_limiter.h"
+#include "audio/effects/audio_effect_pitch_shift.h"
+#include "audio/effects/audio_effect_phaser.h"
+
 static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
 
 	List<VS::TextureInfo> tinfo;
@@ -62,19 +76,47 @@ void register_server_types() {
 	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc",20);
 
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("VisualServer",VisualServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("VS",VisualServer::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("AudioServer",AudioServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("AS",AudioServer::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PhysicsServer",PhysicsServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PS",PhysicsServer::get_singleton()) );
 	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Physics2DServer",Physics2DServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PS2D",Physics2DServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SpatialSoundServer",SpatialSoundServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SS",SpatialSoundServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SpatialSound2DServer",SpatialSound2DServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("SS2D",SpatialSound2DServer::get_singleton()) );
 
 	shader_types = memnew( ShaderTypes );
+
+	ClassDB::register_virtual_class<AudioStream>();
+	ClassDB::register_virtual_class<AudioStreamPlayback>();
+	ClassDB::register_virtual_class<AudioEffect>();
+	ClassDB::register_class<AudioBusLayout>();
+
+	{
+		//audio effects
+		ClassDB::register_class<AudioEffectAmplify>();
+
+		ClassDB::register_class<AudioEffectReverb>();
+
+		ClassDB::register_class<AudioEffectLowPassFilter>();
+		ClassDB::register_class<AudioEffectHighPassFilter>();
+		ClassDB::register_class<AudioEffectBandPassFilter>();
+		ClassDB::register_class<AudioEffectNotchFilter>();
+		ClassDB::register_class<AudioEffectBandLimitFilter>();
+		ClassDB::register_class<AudioEffectLowShelfFilter>();
+		ClassDB::register_class<AudioEffectHighShelfFilter>();
+
+		ClassDB::register_class<AudioEffectEQ6>();
+		ClassDB::register_class<AudioEffectEQ10>();
+		ClassDB::register_class<AudioEffectEQ21>();
+
+		ClassDB::register_class<AudioEffectDistortion>();
+
+		ClassDB::register_class<AudioEffectStereoEnhance>();
+
+		ClassDB::register_class<AudioEffectPanner>();
+		ClassDB::register_class<AudioEffectChorus>();
+		ClassDB::register_class<AudioEffectDelay>();
+		ClassDB::register_class<AudioEffectCompressor>();
+		ClassDB::register_class<AudioEffectLimiter>();
+		ClassDB::register_class<AudioEffectPitchShift>();
+		ClassDB::register_class<AudioEffectPhaser>();
+	}
 
 
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();

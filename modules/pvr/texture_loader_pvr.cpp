@@ -185,7 +185,7 @@ bool ResourceFormatPVR::handles_type(const String& p_type) const {
 String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 
 
-	if (p_path.extension().to_lower()=="pvr")
+	if (p_path.get_extension().to_lower()=="pvr")
 		return "Texture";
 	return "";
 }
@@ -464,16 +464,19 @@ static void get_modulation_value(int x, int y, const int p_2bit, const int p_mod
 		if(((x^y)&1)==0)
 			mod_val = rep_vals0[p_modulation[y][x]];
 		else if(p_modulation_modes[y][x] == 1) {
-			mod_val = (rep_vals0[p_modulation[y-1][x]] +
-					  rep_vals0[p_modulation[y+1][x]] +
-					  rep_vals0[p_modulation[y][x-1]] +
-					  rep_vals0[p_modulation[y][x+1]] + 2) / 4;
+			mod_val = (
+					rep_vals0[p_modulation[y-1][x]] +
+					rep_vals0[p_modulation[y+1][x]] +
+					rep_vals0[p_modulation[y][x-1]] +
+					rep_vals0[p_modulation[y][x+1]] + 2) / 4;
 		} else if(p_modulation_modes[y][x] == 2) {
-			mod_val = (rep_vals0[p_modulation[y][x-1]] +
-					  rep_vals0[p_modulation[y][x+1]] + 1) / 2;
+			mod_val = (
+					rep_vals0[p_modulation[y][x-1]] +
+					rep_vals0[p_modulation[y][x+1]] + 1) / 2;
 		} else {
-			mod_val = (rep_vals0[p_modulation[y-1][x]] +
-					  rep_vals0[p_modulation[y+1][x]] + 1) / 2;
+			mod_val = (
+					rep_vals0[p_modulation[y-1][x]] +
+					rep_vals0[p_modulation[y+1][x]] + 1) / 2;
 		}
 	} else  {
 		mod_val = rep_vals1[p_modulation[y][x]];
@@ -615,11 +618,12 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 					for(j = 0; j < 2; j++) {
 						unpack_5554(p_blocks[i][j], colors5554[i][j].Reps);
 
-						unpack_modulations(p_blocks[i][j],
-										  p_2bit,
-										  p_modulation,
-										  p_modulation_modes,
-										  p_x, p_y);
+						unpack_modulations(
+								p_blocks[i][j],
+								p_2bit,
+								p_modulation,
+								p_modulation_modes,
+								p_x, p_y);
 
 						p_x += x_block_size;
 					}
@@ -632,19 +636,21 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 			}
 
 
-			interpolate_colors(colors5554[0][0].Reps[0],
-							   colors5554[0][1].Reps[0],
-							   colors5554[1][0].Reps[0],
-							   colors5554[1][1].Reps[0],
-							   p_2bit, x, y,
-							   ASig);
+			interpolate_colors(
+					colors5554[0][0].Reps[0],
+					colors5554[0][1].Reps[0],
+					colors5554[1][0].Reps[0],
+					colors5554[1][1].Reps[0],
+					p_2bit, x, y,
+					ASig);
 
-			interpolate_colors(colors5554[0][0].Reps[1],
-							   colors5554[0][1].Reps[1],
-							   colors5554[1][0].Reps[1],
-							   colors5554[1][1].Reps[1],
-							   p_2bit, x, y,
-							   BSig);
+			interpolate_colors(
+					colors5554[0][0].Reps[1],
+					colors5554[0][1].Reps[1],
+					colors5554[1][0].Reps[1],
+					colors5554[1][1].Reps[1],
+					p_2bit, x, y,
+					BSig);
 
 			get_modulation_value(x,y, p_2bit, (const int (*)[16])p_modulation, (const int (*)[16])p_modulation_modes,
 							   &Mod, &DoPT);
@@ -669,9 +675,11 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 static void _pvrtc_decompress(Image* p_img) {
 
-//	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
-//		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
-//	}
+	/*
+	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
+		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
+	}
+	*/
 
 	ERR_FAIL_COND( p_img->get_format()!=Image::FORMAT_PVRTC2 && p_img->get_format()!=Image::FORMAT_PVRTC2A && p_img->get_format()!=Image::FORMAT_PVRTC4 && p_img->get_format()!=Image::FORMAT_PVRTC4A);
 
@@ -687,9 +695,11 @@ static void _pvrtc_decompress(Image* p_img) {
 
 	decompress_pvrtc((PVRTCBlock*)r.ptr(),_2bit,p_img->get_width(),p_img->get_height(),0,(unsigned char*)w.ptr());
 
-	//for(int i=0;i<newdata.size();i++) {
-	//	print_line(itos(w[i]));
-	//}
+	/*
+	for(int i=0;i<newdata.size();i++) {
+		print_line(itos(w[i]));
+	}
+	*/
 
 	w=PoolVector<uint8_t>::Write();
 	r=PoolVector<uint8_t>::Read();

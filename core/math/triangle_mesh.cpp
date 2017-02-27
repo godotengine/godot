@@ -48,7 +48,7 @@ int TriangleMesh::_create_bvh(BVH*p_bvh,BVH** p_bb,int p_from,int p_size,int p_d
 	}
 
 
-	AABB aabb;
+	Rect3 aabb;
 	aabb=p_bb[p_from]->aabb;
 	for(int i=1;i<p_size;i++) {
 
@@ -176,7 +176,7 @@ void TriangleMesh::create(const PoolVector<Vector3>& p_faces) {
 }
 
 
-Vector3 TriangleMesh::get_area_normal(const AABB& p_aabb) const {
+Vector3 TriangleMesh::get_area_normal(const Rect3& p_aabb) const {
 
 	uint32_t* stack = (uint32_t*)alloca(sizeof(int)*max_depth);
 
@@ -236,21 +236,22 @@ Vector3 TriangleMesh::get_area_normal(const AABB& p_aabb) const {
 						stack[level]=(VISIT_LEFT_BIT<<VISITED_BIT_SHIFT)|node;
 					}
 				}
-
-			} continue;
+				continue;
+			}
 			case VISIT_LEFT_BIT: {
 
 				stack[level]=(VISIT_RIGHT_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.left|TEST_AABB_BIT;
 				level++;
-
-			} continue;
+				continue;
+			}
 			case VISIT_RIGHT_BIT: {
 
 				stack[level]=(VISIT_DONE_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.right|TEST_AABB_BIT;
 				level++;
-			} continue;
+				continue;
+			}
 			case VISIT_DONE_BIT: {
 
 				if (level==0) {
@@ -258,8 +259,8 @@ Vector3 TriangleMesh::get_area_normal(const AABB& p_aabb) const {
 					break;
 				} else
 					level--;
-
-			} continue;
+				continue;
+			}
 		}
 
 
@@ -320,7 +321,7 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 
 
 				bool valid = b.aabb.intersects_segment(p_begin,p_end);
-//				bool valid = b.aabb.intersects(ray_aabb);
+				//bool valid = b.aabb.intersects(ray_aabb);
 
 				if (!valid) {
 
@@ -339,7 +340,7 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 						if (f3.intersects_segment(p_begin,p_end,&res)) {
 
 
-							float nd = n.dot(res);
+							real_t nd = n.dot(res);
 							if (nd<d) {
 
 								d=nd;
@@ -357,21 +358,22 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 						stack[level]=(VISIT_LEFT_BIT<<VISITED_BIT_SHIFT)|node;
 					}
 				}
-
-			} continue;
+				continue;
+			}
 			case VISIT_LEFT_BIT: {
 
 				stack[level]=(VISIT_RIGHT_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.left|TEST_AABB_BIT;
 				level++;
-
-			} continue;
+				continue;
+			}
 			case VISIT_RIGHT_BIT: {
 
 				stack[level]=(VISIT_DONE_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.right|TEST_AABB_BIT;
 				level++;
-			} continue;
+				continue;
+			}
 			case VISIT_DONE_BIT: {
 
 				if (level==0) {
@@ -379,8 +381,8 @@ bool TriangleMesh::intersect_segment(const Vector3& p_begin,const Vector3& p_end
 					break;
 				} else
 					level--;
-
-			} continue;
+				continue;
+			}
 		}
 
 
@@ -460,7 +462,7 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 						if (f3.intersects_ray(p_begin,p_dir,&res)) {
 
 
-							float nd = n.dot(res);
+							real_t nd = n.dot(res);
 							if (nd<d) {
 
 								d=nd;
@@ -478,21 +480,22 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 						stack[level]=(VISIT_LEFT_BIT<<VISITED_BIT_SHIFT)|node;
 					}
 				}
-
-			} continue;
+				continue;
+			}
 			case VISIT_LEFT_BIT: {
 
 				stack[level]=(VISIT_RIGHT_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.left|TEST_AABB_BIT;
 				level++;
-
-			} continue;
+				continue;
+			}
 			case VISIT_RIGHT_BIT: {
 
 				stack[level]=(VISIT_DONE_BIT<<VISITED_BIT_SHIFT)|node;
 				stack[level+1]=b.right|TEST_AABB_BIT;
 				level++;
-			} continue;
+				continue;
+			}
 			case VISIT_DONE_BIT: {
 
 				if (level==0) {
@@ -500,8 +503,8 @@ bool TriangleMesh::intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vec
 					break;
 				} else
 					level--;
-
-			} continue;
+				continue;
+			}
 		}
 
 

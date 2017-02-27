@@ -26,8 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "project_manager.h"
+
+#include "version.h"
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
@@ -36,20 +37,16 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tool_button.h"
 #include "io/config_file.h"
-
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/center_container.h"
 #include "io/stream_peer_ssl.h"
-
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
-
 #include "editor_themes.h"
 #include "editor_initialize_ssl.h"
 #include "editor_scale.h"
-
 #include "io/zip_io.h"
 
 class NewProjectDialog : public ConfirmationDialog {
@@ -95,18 +92,18 @@ private:
 
 		if (mode!=MODE_IMPORT) {
 
-			if (d->file_exists("engine.cfg")) {
+			if (d->file_exists("godot.cfg")) {
 
-				error->set_text(TTR("Invalid project path, engine.cfg must not exist."));
+				error->set_text(TTR("Invalid project path, godot.cfg must not exist."));
 				memdelete(d);
 				return "";
 			}
 
 		} else {
 
-			if (valid_path != "" && !d->file_exists("engine.cfg")) {
+			if (valid_path != "" && !d->file_exists("godot.cfg")) {
 
-				error->set_text(TTR("Invalid project path, engine.cfg must exist."));
+				error->set_text(TTR("Invalid project path, godot.cfg must exist."));
 				memdelete(d);
 				return "";
 			}
@@ -140,7 +137,7 @@ private:
 
 		String p = p_path;
 		if (mode==MODE_IMPORT) {
-			if (p.ends_with("engine.cfg")) {
+			if (p.ends_with("godot.cfg")) {
 
 				p=p.get_base_dir();
 			}
@@ -166,7 +163,7 @@ private:
 
 			fdialog->set_mode(FileDialog::MODE_OPEN_FILE);
 			fdialog->clear_filters();
-			fdialog->add_filter("engine.cfg ; " _MKSTR(VERSION_NAME) " Project");
+			fdialog->add_filter("godot.cfg ; " _MKSTR(VERSION_NAME) " Project");
 		} else {
 			fdialog->set_mode(FileDialog::MODE_OPEN_DIR);
 		}
@@ -193,9 +190,9 @@ private:
 
 
 
-				FileAccess *f = FileAccess::open(dir.plus_file("/engine.cfg"),FileAccess::WRITE);
+				FileAccess *f = FileAccess::open(dir.plus_file("/godot.cfg"),FileAccess::WRITE);
 				if (!f) {
-					error->set_text(TTR("Couldn't create engine.cfg in project path."));
+					error->set_text(TTR("Couldn't create godot.cfg in project path."));
 				} else {
 
 					f->store_line("; Engine configuration file.");
@@ -404,7 +401,7 @@ public:
 
 		VBoxContainer *vb = memnew( VBoxContainer );
 		add_child(vb);
-		set_child_rect(vb);
+		//set_child_rect(vb);
 
 		Label* l = memnew(Label);
 		l->set_text(TTR("Project Path:"));
@@ -488,7 +485,7 @@ void ProjectManager::_notification(int p_what) {
 
 	} else if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		set_process_unhandled_input(is_visible());
+		set_process_unhandled_input(is_visible_in_tree());
 	}
 }
 
@@ -762,7 +759,7 @@ void ProjectManager::_load_recent_projects() {
 			continue;
 
 		String project = _name.get_slice("/",1);
-		String conf=path.plus_file("engine.cfg");
+		String conf=path.plus_file("godot.cfg");
 		bool favorite = (_name.begins_with("favorite_projects/"))?true:false;
 
 		uint64_t last_modified = 0;
@@ -869,7 +866,7 @@ void ProjectManager::_load_recent_projects() {
 		favorite_box->add_child(favorite);
 		hb->add_child(favorite_box);
 
-		TextureFrame *tf = memnew( TextureFrame );
+		TextureRect *tf = memnew( TextureRect );
 		tf->set_texture(icon);
 		hb->add_child(tf);
 
@@ -1003,7 +1000,7 @@ void ProjectManager::_run_project_confirm() {
 		Error err = OS::get_singleton()->execute(exec,args,false,&pid);
 		ERR_FAIL_COND(err);
 	}
-	//	get_scene()->quit(); do not quit
+	//get_scene()->quit(); do not quit
 }
 
 void ProjectManager::_run_project() {
@@ -1030,7 +1027,7 @@ void ProjectManager::_scan_dir(DirAccess *da,float pos, float total,List<String>
 	while(n!=String()) {
 		if (da->current_is_dir() && !n.begins_with(".")) {
 			subdirs.push_front(n);
-		} else if (n=="engine.cfg") {
+		} else if (n=="godot.cfg") {
 			r_projects->push_back(da->get_current_dir());
 		}
 		n=da->get_next();
@@ -1133,7 +1130,7 @@ void ProjectManager::_install_project(const String& p_zip_path,const String& p_t
 	npdialog->show_dialog();
 }
 
-void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
+void ProjectManager::_files_dropped(PoolStringArray p_files, int p_screen) {
 	Set<String> folders_set;
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	for (int i = 0; i < p_files.size(); i++) {
@@ -1142,7 +1139,7 @@ void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
 	}
 	memdelete(da);
 	if (folders_set.size()>0) {
-		StringArray folders;
+		PoolStringArray folders;
 		for (Set<String>::Element *E=folders_set.front();E;E=E->next()) {
 			folders.append(E->get());
 		}
@@ -1154,7 +1151,7 @@ void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
 				dir->list_dir_begin();
 				String file = dir->get_next();
 				while(confirm && file!=String()) {
-					if (!dir->current_is_dir() && file.ends_with("engine.cfg")) {
+					if (!dir->current_is_dir() && file.ends_with("godot.cfg")) {
 						confirm = false;
 					}
 					file = dir->get_next();
@@ -1174,7 +1171,7 @@ void ProjectManager::_files_dropped(StringArray p_files, int p_screen) {
 	}
 }
 
-void ProjectManager::_scan_multiple_folders(StringArray p_files)
+void ProjectManager::_scan_multiple_folders(PoolStringArray p_files)
 {
 	for (int i = 0; i < p_files.size(); i++) {
 		_scan_begin(p_files.get(i));
@@ -1203,7 +1200,7 @@ void ProjectManager::_bind_methods() {
 	ClassDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
 	ClassDB::bind_method("_install_project",&ProjectManager::_install_project);
 	ClassDB::bind_method("_files_dropped",&ProjectManager::_files_dropped);
-	ClassDB::bind_method(_MD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
+	ClassDB::bind_method(D_METHOD("_scan_multiple_folders", "files"),&ProjectManager::_scan_multiple_folders);
 
 
 }
@@ -1486,9 +1483,9 @@ void ProjectListFilter::_notification(int p_what) {
 
 void ProjectListFilter::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_command"),&ProjectListFilter::_command);
-	ClassDB::bind_method(_MD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
-	ClassDB::bind_method(_MD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
+	ClassDB::bind_method(D_METHOD("_command"),&ProjectListFilter::_command);
+	ClassDB::bind_method(D_METHOD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
+	ClassDB::bind_method(D_METHOD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
 
 	ADD_SIGNAL( MethodInfo("filter_changed") );
 }

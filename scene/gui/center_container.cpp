@@ -42,7 +42,7 @@ Size2 CenterContainer::get_minimum_size() const {
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
-		if (c->is_hidden())
+		if (!c->is_visible())
 			continue;
 		Size2 minsize = c->get_combined_minimum_size();
 		ms.width = MAX(ms.width , minsize.width);
@@ -92,10 +92,10 @@ void CenterContainer::_notification(int p_what) {
 
 void CenterContainer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_use_top_left","enable"),&CenterContainer::set_use_top_left);
-	ClassDB::bind_method(_MD("is_using_top_left"),&CenterContainer::is_using_top_left);
+	ClassDB::bind_method(D_METHOD("set_use_top_left","enable"),&CenterContainer::set_use_top_left);
+	ClassDB::bind_method(D_METHOD("is_using_top_left"),&CenterContainer::is_using_top_left);
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"use_top_left"),_SCS("set_use_top_left"),_SCS("is_using_top_left"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"use_top_left"),"set_use_top_left","is_using_top_left");
 }
 
 CenterContainer::CenterContainer() {

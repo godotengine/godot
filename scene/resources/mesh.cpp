@@ -77,19 +77,19 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 
 	String sname=p_name;
 
-	if (p_name=="morph_target/names") {
+	if (p_name=="blend_shape/names") {
 
 		PoolVector<String> sk=p_value;
 		int sz = sk.size();
 		PoolVector<String>::Read r = sk.read();
 		for(int i=0;i<sz;i++)
-			add_morph_target(r[i]);
+			add_blend_shape(r[i]);
 		return true;
 	}
 
-	if (p_name=="morph_target/mode") {
+	if (p_name=="blend_shape/mode") {
 
-		set_morph_target_mode(MorphTargetMode(int(p_value)));
+		set_blend_shape_mode(BlendShapeMode(int(p_value)));
 		return true;
 	}
 
@@ -151,20 +151,20 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 			if (d.has("index_count"))
 				index_count=d["index_count"];
 
-			Vector< PoolVector<uint8_t> > morphs;
+			Vector< PoolVector<uint8_t> > blend_shapes;
 
-			if (d.has("morph_data")) {
-				Array morph_data=d["morph_data"];
-				for(int i=0;i<morph_data.size();i++) {
-					PoolVector<uint8_t> morph = morph_data[i];
-					morphs.push_back(morph_data[i]);
+			if (d.has("blend_shape_data")) {
+				Array blend_shape_data=d["blend_shape_data"];
+				for(int i=0;i<blend_shape_data.size();i++) {
+					PoolVector<uint8_t> shape = blend_shape_data[i];
+					blend_shapes.push_back(shape);
 				}
 			}
 
 			ERR_FAIL_COND_V(!d.has("aabb"),false);
-			AABB aabb = d["aabb"];
+			Rect3 aabb = d["aabb"];
 
-			Vector<AABB> bone_aabb;
+			Vector<Rect3> bone_aabb;
 			if (d.has("bone_aabb")) {
 				Array baabb = d["bone_aabb"];
 				bone_aabb.resize(baabb.size());
@@ -174,7 +174,7 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 				}
 			}
 
-			add_surface(format,PrimitiveType(primitive),array_data,vertex_count,array_index_data,index_count,aabb,morphs,bone_aabb);
+			add_surface(format,PrimitiveType(primitive),array_data,vertex_count,array_index_data,index_count,aabb,blend_shapes,bone_aabb);
 		} else {
 			ERR_FAIL_V(false);
 		}
@@ -199,16 +199,16 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 
 	String sname=p_name;
 
-	if (p_name=="morph_target/names") {
+	if (p_name=="blend_shape/names") {
 
 		PoolVector<String> sk;
-		for(int i=0;i<morph_targets.size();i++)
-			sk.push_back(morph_targets[i]);
+		for(int i=0;i<blend_shapes.size();i++)
+			sk.push_back(blend_shapes[i]);
 		r_ret=sk;
 		return true;
-	} else if (p_name=="morph_target/mode") {
+	} else if (p_name=="blend_shape/mode") {
 
-		r_ret = get_morph_target_mode();
+		r_ret = get_blend_shape_mode();
 		return true;
 	} else if (sname.begins_with("surface_")) {
 
@@ -244,21 +244,21 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 	d["format"]=VS::get_singleton()->mesh_surface_get_format(mesh,idx);
 	d["aabb"]=VS::get_singleton()->mesh_surface_get_aabb(mesh,idx);
 
-	Vector<AABB> skel_aabb = VS::get_singleton()->mesh_surface_get_skeleton_aabb(mesh,idx);
+	Vector<Rect3> skel_aabb = VS::get_singleton()->mesh_surface_get_skeleton_aabb(mesh,idx);
 	Array arr;
 	for(int i=0;i<skel_aabb.size();i++) {
 		arr[i]=skel_aabb[i];
 	}
 	d["skeleton_aabb"]=arr;
 
-	Vector< PoolVector<uint8_t> > morph_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh,idx);
+	Vector< PoolVector<uint8_t> > blend_shape_data = VS::get_singleton()->mesh_surface_get_blend_shapes(mesh,idx);
 
 	Array md;
-	for(int i=0;i<morph_data.size();i++) {
-		md.push_back(morph_data[i]);
+	for(int i=0;i<blend_shape_data.size();i++) {
+		md.push_back(blend_shape_data[i]);
 	}
 
-	d["morph_data"]=md;
+	d["blend_shape_data"]=md;
 
 	Ref<Material> m = surface_get_material(idx);
 	if (m.is_valid())
@@ -274,9 +274,9 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 
 void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	if (morph_targets.size()) {
-		p_list->push_back(PropertyInfo(Variant::STRING_ARRAY,"morph_target/names",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR));
-		p_list->push_back(PropertyInfo(Variant::INT,"morph_target/mode",PROPERTY_HINT_ENUM,"Normalized,Relative"));
+	if (blend_shapes.size()) {
+		p_list->push_back(PropertyInfo(Variant::POOL_STRING_ARRAY,"blend_shape/names",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR));
+		p_list->push_back(PropertyInfo(Variant::INT,"blend_shape/mode",PROPERTY_HINT_ENUM,"Normalized,Relative"));
 	}
 
 	for (int i=0;i<surfaces.size();i++) {
@@ -286,7 +286,7 @@ void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 		p_list->push_back( PropertyInfo( Variant::OBJECT,"surface_"+itos(i+1)+"/material", PROPERTY_HINT_RESOURCE_TYPE,"Material",PROPERTY_USAGE_EDITOR ) );
 	}
 
-	p_list->push_back( PropertyInfo( Variant::_AABB,"custom_aabb/custom_aabb" ) );
+	p_list->push_back( PropertyInfo( Variant::RECT3,"custom_aabb/custom_aabb" ) );
 
 }
 
@@ -294,7 +294,7 @@ void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 void Mesh::_recompute_aabb() {
 
 	// regenerate AABB
-	aabb=AABB();
+	aabb=Rect3();
 
 	for (int i=0;i<surfaces.size();i++) {
 
@@ -306,7 +306,7 @@ void Mesh::_recompute_aabb() {
 
 }
 
-void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<AABB>& p_bone_aabbs) {
+void Mesh::add_surface(uint32_t p_format,PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes,const Vector<Rect3>& p_bone_aabbs) {
 
 	Surface s;
 	s.aabb=p_aabb;
@@ -337,7 +337,7 @@ void Mesh::add_surface_from_arrays(PrimitiveType p_primitive,const Array& p_arra
 		const Vector3 *vtx=r.ptr();
 
 		// check AABB
-		AABB aabb;
+		Rect3 aabb;
 		for (int i=0;i<len;i++) {
 
 			if (i==0)
@@ -364,7 +364,7 @@ Array Mesh::surface_get_arrays(int p_surface) const {
 	return VisualServer::get_singleton()->mesh_surface_get_arrays(mesh,p_surface);
 
 }
-Array Mesh::surface_get_morph_arrays(int p_surface) const {
+Array Mesh::surface_get_blend_shape_arrays(int p_surface) const {
 
 	ERR_FAIL_INDEX_V(p_surface,surfaces.size(),Array());
 	return Array();
@@ -379,7 +379,7 @@ int Mesh::get_surface_count() const {
 	return surfaces.size();
 }
 
-void Mesh::add_morph_target(const StringName& p_name) {
+void Mesh::add_blend_shape(const StringName& p_name) {
 
 	if (surfaces.size()) {
 		ERR_EXPLAIN("Can't add a shape key count if surfaces are already created.");
@@ -388,49 +388,49 @@ void Mesh::add_morph_target(const StringName& p_name) {
 
 	StringName name=p_name;
 
-	if (morph_targets.find(name)!=-1 ) {
+	if (blend_shapes.find(name)!=-1 ) {
 
 		int count=2;
 		do {
 
 			name = String(p_name) + " " + itos(count);
 			count++;
-		} while(morph_targets.find(name)!=-1);
+		} while(blend_shapes.find(name)!=-1);
 	}
 
-	morph_targets.push_back(name);
-	VS::get_singleton()->mesh_set_morph_target_count(mesh,morph_targets.size());
+	blend_shapes.push_back(name);
+	VS::get_singleton()->mesh_set_blend_shape_count(mesh,blend_shapes.size());
 
 }
 
 
-int Mesh::get_morph_target_count() const {
+int Mesh::get_blend_shape_count() const {
 
-	return morph_targets.size();
+	return blend_shapes.size();
 }
-StringName Mesh::get_morph_target_name(int p_index) const {
-	ERR_FAIL_INDEX_V( p_index, morph_targets.size(),StringName() );
-	return morph_targets[p_index];
+StringName Mesh::get_blend_shape_name(int p_index) const {
+	ERR_FAIL_INDEX_V( p_index, blend_shapes.size(),StringName() );
+	return blend_shapes[p_index];
 }
-void Mesh::clear_morph_targets() {
+void Mesh::clear_blend_shapes() {
 
 	if (surfaces.size()) {
 		ERR_EXPLAIN("Can't set shape key count if surfaces are already created.");
 		ERR_FAIL_COND(surfaces.size());
 	}
 
-	morph_targets.clear();
+	blend_shapes.clear();
 }
 
-void Mesh::set_morph_target_mode(MorphTargetMode p_mode) {
+void Mesh::set_blend_shape_mode(BlendShapeMode p_mode) {
 
-	morph_target_mode=p_mode;
-	VS::get_singleton()->mesh_set_morph_target_mode(mesh,(VS::MorphTargetMode)p_mode);
+	blend_shape_mode=p_mode;
+	VS::get_singleton()->mesh_set_blend_shape_mode(mesh,(VS::BlendShapeMode)p_mode);
 }
 
-Mesh::MorphTargetMode Mesh::get_morph_target_mode() const {
+Mesh::BlendShapeMode Mesh::get_blend_shape_mode() const {
 
-	return morph_target_mode;
+	return blend_shape_mode;
 }
 
 
@@ -505,7 +505,7 @@ String Mesh::surface_get_name(int p_idx) const{
 
 }
 
-void Mesh::surface_set_custom_aabb(int p_idx,const AABB& p_aabb) {
+void Mesh::surface_set_custom_aabb(int p_idx,const Rect3& p_aabb) {
 
 	ERR_FAIL_INDEX( p_idx, surfaces.size() );
 	surfaces[p_idx].aabb=p_aabb;
@@ -522,7 +522,7 @@ Ref<Material> Mesh::surface_get_material(int p_idx)  const {
 void Mesh::add_surface_from_mesh_data(const Geometry::MeshData& p_mesh_data) {
 
 	VisualServer::get_singleton()->mesh_add_surface_from_mesh_data( mesh, p_mesh_data );
-	AABB aabb;
+	Rect3 aabb;
 	for (int i=0;i<p_mesh_data.vertices.size();i++) {
 
 		if (i==0)
@@ -551,19 +551,19 @@ RID Mesh::get_rid() const {
 
 	return mesh;
 }
-AABB Mesh::get_aabb() const {
+Rect3 Mesh::get_aabb() const {
 
 	return aabb;
 }
 
 
-void Mesh::set_custom_aabb(const AABB& p_custom) {
+void Mesh::set_custom_aabb(const Rect3& p_custom) {
 
 	custom_aabb=p_custom;
 	VS::get_singleton()->mesh_set_custom_aabb(mesh,custom_aabb);
 }
 
-AABB Mesh::get_custom_aabb() const {
+Rect3 Mesh::get_custom_aabb() const {
 
 	return custom_aabb;
 }
@@ -1019,31 +1019,31 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 void Mesh::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_morph_target","name"),&Mesh::add_morph_target);
-	ClassDB::bind_method(_MD("get_morph_target_count"),&Mesh::get_morph_target_count);
-	ClassDB::bind_method(_MD("get_morph_target_name","index"),&Mesh::get_morph_target_name);
-	ClassDB::bind_method(_MD("clear_morph_targets"),&Mesh::clear_morph_targets);
-	ClassDB::bind_method(_MD("set_morph_target_mode","mode"),&Mesh::set_morph_target_mode);
-	ClassDB::bind_method(_MD("get_morph_target_mode"),&Mesh::get_morph_target_mode);
+	ClassDB::bind_method(D_METHOD("add_blend_shape","name"),&Mesh::add_blend_shape);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_count"),&Mesh::get_blend_shape_count);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_name","index"),&Mesh::get_blend_shape_name);
+	ClassDB::bind_method(D_METHOD("clear_blend_shapes"),&Mesh::clear_blend_shapes);
+	ClassDB::bind_method(D_METHOD("set_blend_shape_mode","mode"),&Mesh::set_blend_shape_mode);
+	ClassDB::bind_method(D_METHOD("get_blend_shape_mode"),&Mesh::get_blend_shape_mode);
 
-	ClassDB::bind_method(_MD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
-	ClassDB::bind_method(_MD("get_surface_count"),&Mesh::get_surface_count);
-	ClassDB::bind_method(_MD("surface_remove","surf_idx"),&Mesh::surface_remove);
-	ClassDB::bind_method(_MD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);
-	ClassDB::bind_method(_MD("surface_get_array_index_len","surf_idx"),&Mesh::surface_get_array_index_len);
-	ClassDB::bind_method(_MD("surface_get_format","surf_idx"),&Mesh::surface_get_format);
-	ClassDB::bind_method(_MD("surface_get_primitive_type","surf_idx"),&Mesh::surface_get_primitive_type);
-	ClassDB::bind_method(_MD("surface_set_material","surf_idx","material:Material"),&Mesh::surface_set_material);
-	ClassDB::bind_method(_MD("surface_get_material:Material","surf_idx"),&Mesh::surface_get_material);
-	ClassDB::bind_method(_MD("surface_set_name","surf_idx","name"),&Mesh::surface_set_name);
-	ClassDB::bind_method(_MD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
-	ClassDB::bind_method(_MD("center_geometry"),&Mesh::center_geometry);
-	ClassDB::set_method_flags(get_class_static(),_SCS("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
-	ClassDB::bind_method(_MD("regen_normalmaps"),&Mesh::regen_normalmaps);
-	ClassDB::set_method_flags(get_class_static(),_SCS("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(D_METHOD("add_surface_from_arrays","primitive","arrays","blend_shapes","compress_flags"),&Mesh::add_surface_from_arrays,DEFVAL(Array()),DEFVAL(ARRAY_COMPRESS_DEFAULT));
+	ClassDB::bind_method(D_METHOD("get_surface_count"),&Mesh::get_surface_count);
+	ClassDB::bind_method(D_METHOD("surface_remove","surf_idx"),&Mesh::surface_remove);
+	ClassDB::bind_method(D_METHOD("surface_get_array_len","surf_idx"),&Mesh::surface_get_array_len);
+	ClassDB::bind_method(D_METHOD("surface_get_array_index_len","surf_idx"),&Mesh::surface_get_array_index_len);
+	ClassDB::bind_method(D_METHOD("surface_get_format","surf_idx"),&Mesh::surface_get_format);
+	ClassDB::bind_method(D_METHOD("surface_get_primitive_type","surf_idx"),&Mesh::surface_get_primitive_type);
+	ClassDB::bind_method(D_METHOD("surface_set_material","surf_idx","material:Material"),&Mesh::surface_set_material);
+	ClassDB::bind_method(D_METHOD("surface_get_material:Material","surf_idx"),&Mesh::surface_get_material);
+	ClassDB::bind_method(D_METHOD("surface_set_name","surf_idx","name"),&Mesh::surface_set_name);
+	ClassDB::bind_method(D_METHOD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
+	ClassDB::bind_method(D_METHOD("center_geometry"),&Mesh::center_geometry);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ClassDB::bind_method(D_METHOD("regen_normalmaps"),&Mesh::regen_normalmaps);
+	ClassDB::set_method_flags(get_class_static(),_scs_create("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
-	ClassDB::bind_method(_MD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
-	ClassDB::bind_method(_MD("get_custom_aabb"),&Mesh::get_custom_aabb);
+	ClassDB::bind_method(D_METHOD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("get_custom_aabb"),&Mesh::get_custom_aabb);
 
 
 	BIND_CONSTANT( NO_INDEX_ARRAY );
@@ -1084,7 +1084,7 @@ void Mesh::_bind_methods() {
 Mesh::Mesh() {
 
 	mesh=VisualServer::get_singleton()->mesh_create();
-	morph_target_mode=MORPH_MODE_RELATIVE;
+	blend_shape_mode=BLEND_SHAPE_MODE_RELATIVE;
 
 }
 

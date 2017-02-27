@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "spatial_editor_gizmos.h"
+
 #include "geometry.h"
 #include "scene/3d/camera.h"
 #include "scene/resources/surface_tool.h"
@@ -144,7 +145,7 @@ void EditorSpatialGizmo::add_lines(const Vector<Vector3> &p_lines, const Ref<Mat
 
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+			mesh->set_custom_aabb(Rect3(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
 		}
 	}
 
@@ -193,7 +194,7 @@ void EditorSpatialGizmo::add_unscaled_billboard(const Ref<Material>& p_material,
 
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+			mesh->set_custom_aabb(Rect3(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
 		}
 	}
 
@@ -271,7 +272,7 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+			mesh->set_custom_aabb(Rect3(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
 		}
 	}
 
@@ -285,7 +286,8 @@ void EditorSpatialGizmo::add_handles(const Vector<Vector3> &p_handles, bool p_bi
 		Vector<Vector3> normals;
 
 		int vtx_idx=0;
-#define ADD_VTX(m_idx);\
+
+#define ADD_VTX(m_idx) \
 	vertices.push_back( (face_points[m_idx]*HANDLE_HALF_SIZE+p_handles[ih]) );\
 	normals.push_back( normal_points[m_idx] );\
 	vtx_idx++;\
@@ -616,14 +618,14 @@ void EditorSpatialGizmo::free(){
 
 void EditorSpatialGizmo::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_lines","lines","material:Material","billboard"),&EditorSpatialGizmo::add_lines,DEFVAL(false));
-	ClassDB::bind_method(_MD("add_mesh","mesh:Mesh","billboard","skeleton"),&EditorSpatialGizmo::add_mesh,DEFVAL(false),DEFVAL(RID()));
-	ClassDB::bind_method(_MD("add_collision_segments","segments"),&EditorSpatialGizmo::add_collision_segments);
-	ClassDB::bind_method(_MD("add_collision_triangles","triangles:TriangleMesh"),&EditorSpatialGizmo::add_collision_triangles);
-	ClassDB::bind_method(_MD("add_unscaled_billboard","material:Material","default_scale"),&EditorSpatialGizmo::add_unscaled_billboard,DEFVAL(1));
-	ClassDB::bind_method(_MD("add_handles","handles","billboard","secondary"),&EditorSpatialGizmo::add_handles,DEFVAL(false),DEFVAL(false));
-	ClassDB::bind_method(_MD("set_spatial_node","node:Spatial"),&EditorSpatialGizmo::_set_spatial_node);
-	ClassDB::bind_method(_MD("clear"),&EditorSpatialGizmo::clear);
+	ClassDB::bind_method(D_METHOD("add_lines","lines","material:Material","billboard"),&EditorSpatialGizmo::add_lines,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_mesh","mesh:Mesh","billboard","skeleton"),&EditorSpatialGizmo::add_mesh,DEFVAL(false),DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("add_collision_segments","segments"),&EditorSpatialGizmo::add_collision_segments);
+	ClassDB::bind_method(D_METHOD("add_collision_triangles","triangles:TriangleMesh"),&EditorSpatialGizmo::add_collision_triangles);
+	ClassDB::bind_method(D_METHOD("add_unscaled_billboard","material:Material","default_scale"),&EditorSpatialGizmo::add_unscaled_billboard,DEFVAL(1));
+	ClassDB::bind_method(D_METHOD("add_handles","handles","billboard","secondary"),&EditorSpatialGizmo::add_handles,DEFVAL(false),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_spatial_node","node:Spatial"),&EditorSpatialGizmo::_set_spatial_node);
+	ClassDB::bind_method(D_METHOD("clear"),&EditorSpatialGizmo::clear);
 
 	BIND_VMETHOD( MethodInfo("redraw"));
 	BIND_VMETHOD( MethodInfo(Variant::STRING,"get_handle_name",PropertyInfo(Variant::INT,"index")));
@@ -800,8 +802,8 @@ void LightSpatialGizmo::redraw() {
 		for(int i = 0; i < arrow_sides ; i++) {
 
 
-			Matrix3 ma(Vector3(0,0,1),Math_PI*2*float(i)/arrow_sides);
-			Matrix3 mb(Vector3(0,0,1),Math_PI*2*float(i+1)/arrow_sides);
+			Basis ma(Vector3(0,0,1),Math_PI*2*float(i)/arrow_sides);
+			Basis mb(Vector3(0,0,1),Math_PI*2*float(i+1)/arrow_sides);
 
 
 			for(int j=1;j<arrow_points-1;j++) {
@@ -837,8 +839,8 @@ void LightSpatialGizmo::redraw() {
 
 		for(int i=0;i<=360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
 
@@ -879,8 +881,8 @@ void LightSpatialGizmo::redraw() {
 
 		for(int i=0;i<360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*w;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*w;
 
@@ -953,28 +955,6 @@ LightSpatialGizmo::LightSpatialGizmo(Light* p_light){
 	set_spatial_node(p_light);
 
 }
-//////
-
-void ListenerSpatialGizmo::redraw() {
-
-	clear();
-
-	add_unscaled_billboard(SpatialEditorGizmos::singleton->listener_icon, 0.05);
-
-	add_mesh(SpatialEditorGizmos::singleton->listener_line_mesh);
-	Vector<Vector3> cursor_points;
-	cursor_points.push_back(Vector3(0, 0, 0));
-	cursor_points.push_back(Vector3(0, 0, -1.0));
-	add_collision_segments(cursor_points);
-
-}
-
-ListenerSpatialGizmo::ListenerSpatialGizmo(Listener* p_listener){
-
-	set_spatial_node(p_listener);
-	listener = p_listener;
-}
-
 
 //////
 
@@ -1219,7 +1199,7 @@ void SkeletonSpatialGizmo::redraw() {
 	weights[0]=1;
 
 
-	AABB aabb;
+	Rect3 aabb;
 
 	Color bonecolor = Color(1.0,0.4,0.4,0.3);
 	Color rootcolor = Color(0.4,1.0,0.4,0.1);
@@ -1391,32 +1371,6 @@ SkeletonSpatialGizmo::SkeletonSpatialGizmo(Skeleton* p_skel) {
 	set_spatial_node(p_skel);
 }
 
-/////
-
-
-void SpatialPlayerSpatialGizmo::redraw() {
-
-	clear();
-	if (splayer->cast_to<SpatialStreamPlayer>()) {
-
-		add_unscaled_billboard(SpatialEditorGizmos::singleton->stream_player_icon,0.05);
-
-	} else if (splayer->cast_to<SpatialSamplePlayer>()) {
-
-		add_unscaled_billboard(SpatialEditorGizmos::singleton->sample_player_icon,0.05);
-
-	}
-
-}
-
-SpatialPlayerSpatialGizmo::SpatialPlayerSpatialGizmo(SpatialPlayer* p_splayer){
-
-	set_spatial_node(p_splayer);
-	splayer=p_splayer;
-}
-
-
-/////
 
 
 void RoomSpatialGizmo::redraw() {
@@ -1565,8 +1519,8 @@ void VehicleWheelSpatialGizmo::redraw() {
 	const int skip=10;
 	for(int i=0;i<=360;i+=skip) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+skip);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+skip);
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
 		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
 
@@ -1872,8 +1826,8 @@ void CollisionShapeSpatialGizmo::redraw(){
 
 		for(int i=0;i<=360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
 
@@ -1915,7 +1869,7 @@ void CollisionShapeSpatialGizmo::redraw(){
 
 		Ref<BoxShape> bs=s;
 		Vector<Vector3> lines;
-		AABB aabb;
+		Rect3 aabb;
 		aabb.pos=-bs->get_extents();
 		aabb.size=aabb.pos*-2;
 
@@ -1953,8 +1907,8 @@ void CollisionShapeSpatialGizmo::redraw(){
 		Vector3 d(0,0,height*0.5);
 		for(int i=0;i<360;i++) {
 
-			float ra=Math::deg2rad(i);
-			float rb=Math::deg2rad(i+1);
+			float ra=Math::deg2rad((float)i);
+			float rb=Math::deg2rad((float)i+1);
 			Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*radius;
 			Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*radius;
 
@@ -2163,12 +2117,12 @@ void VisibilityNotifierGizmo::set_handle(int p_idx,Camera *p_camera, const Point
 	//gt.orthonormalize();
 	Transform gi = gt.affine_inverse();
 
-	AABB aabb = notifier->get_aabb();
+	Rect3 aabb = notifier->get_aabb();
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
 	Vector3 sg[2]={gi.xform(ray_from),gi.xform(ray_from+ray_dir*4096)};
-	Vector3 ofs = aabb.pos+aabb.size*0.5;;
+	Vector3 ofs = aabb.pos+aabb.size*0.5;
 
 	Vector3 axis;
 	axis[p_idx]=1.0;
@@ -2205,7 +2159,7 @@ void VisibilityNotifierGizmo::redraw(){
 	clear();
 
 	Vector<Vector3> lines;
-	AABB aabb = notifier->get_aabb();
+	Rect3 aabb = notifier->get_aabb();
 
 	for(int i=0;i<12;i++) {
 		Vector3 a,b;
@@ -2257,7 +2211,7 @@ String ReflectionProbeGizmo::get_handle_name(int p_idx) const {
 }
 Variant ReflectionProbeGizmo::get_handle_value(int p_idx) const{
 
-	return AABB(probe->get_extents(),probe->get_origin_offset());
+	return Rect3(probe->get_extents(),probe->get_origin_offset());
 }
 void ReflectionProbeGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& p_point){
 
@@ -2313,7 +2267,7 @@ void ReflectionProbeGizmo::set_handle(int p_idx,Camera *p_camera, const Point2& 
 
 void ReflectionProbeGizmo::commit_handle(int p_idx,const Variant& p_restore,bool p_cancel){
 
-	AABB restore = p_restore;
+	Rect3 restore = p_restore;
 
 	if (p_cancel) {
 		probe->set_extents(restore.pos);
@@ -2339,7 +2293,7 @@ void ReflectionProbeGizmo::redraw(){
 	Vector<Vector3> internal_lines;
 	Vector3 extents = probe->get_extents();
 
-	AABB aabb;
+	Rect3 aabb;
 	aabb.pos=-extents;
 	aabb.size=extents*2;
 
@@ -2468,7 +2422,7 @@ void GIProbeGizmo::redraw(){
 
 	static const int subdivs[GIProbe::SUBDIV_MAX]={64,128,256,512};
 
-	AABB aabb = AABB(-extents,extents*2);
+	Rect3 aabb = Rect3(-extents,extents*2);
 	int subdiv = subdivs[probe->get_subdiv()];
 	float cell_size = aabb.get_longest_axis_size()/subdiv;
 
@@ -2530,7 +2484,7 @@ void GIProbeGizmo::redraw(){
 
 	}
 
-	add_lines(lines,SpatialEditorGizmos::singleton->reflection_probe_material_internal);
+	add_lines(lines,SpatialEditorGizmos::singleton->gi_probe_material_internal);
 
 	Vector<Vector3> handles;
 
@@ -2890,8 +2844,8 @@ void ConeTwistJointSpatialGizmo::redraw() {
 	//swing
 	for(int i=0;i<360;i+=10) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+10);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+10);
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*w;
 		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*w;
 
@@ -2922,8 +2876,8 @@ void ConeTwistJointSpatialGizmo::redraw() {
 
 	for(int i=0;i<int(ts);i+=5) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+5);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+5);
 		float c = i/720.0;
 		float cn = (i+5)/720.0;
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*w*c;
@@ -3117,8 +3071,8 @@ void Generic6DOFJointSpatialGizmo::redraw() {
 				float s = ll+i*(Math_PI*2.0)/points;
 				float n = ll+(i+1)*(Math_PI*2.0)/points;
 
-//				Vector3 from=Vector3(0,Math::cos(s),-Math::sin(s) )*cs;
-//				Vector3 to=Vector3( 0,Math::cos(n),-Math::sin(n) )*cs;
+				//Vector3 from=Vector3(0,Math::cos(s),-Math::sin(s) )*cs;
+				//Vector3 to=Vector3( 0,Math::cos(n),-Math::sin(n) )*cs;
 
 				Vector3 from;
 				SET_VTX(from,0, Math::cos(s), -Math::sin(s) );
@@ -3165,11 +3119,7 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		return lsg;
 	}
 
-	if (p_spatial->cast_to<Listener>()) {
 
-		Ref<ListenerSpatialGizmo> misg = memnew(ListenerSpatialGizmo(p_spatial->cast_to<Listener>()));
-		return misg;
-	}
 
 	if (p_spatial->cast_to<Camera>()) {
 
@@ -3224,12 +3174,6 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 	if (p_spatial->cast_to<TestCube>()) {
 
 		Ref<TestCubeSpatialGizmo> misg = memnew( TestCubeSpatialGizmo(p_spatial->cast_to<TestCube>()) );
-		return misg;
-	}
-
-	if (p_spatial->cast_to<SpatialPlayer>()) {
-
-		Ref<SpatialPlayerSpatialGizmo> misg = memnew( SpatialPlayerSpatialGizmo(p_spatial->cast_to<SpatialPlayer>()) );
 		return misg;
 	}
 
@@ -3462,7 +3406,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	reflection_probe_material = create_line_material(Color(0.5,1.0,0.7));
 	reflection_probe_material_internal = create_line_material(Color(0.3,0.8,0.5,0.15));
 	gi_probe_material = create_line_material(Color(0.7,1.0,0.5));
-	gi_probe_material_internal = create_line_material(Color(0.5,0.8,0.3,0.4));
+	gi_probe_material_internal = create_line_material(Color(0.5,0.8,0.3,0.1));
 	joint_material = create_line_material(Color(0.6,0.8,1.0));
 
 	stream_player_icon = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
@@ -3494,7 +3438,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		PoolVector<Vector3> vertices;
 
 #undef ADD_VTX
-#define ADD_VTX(m_idx);\
+#define ADD_VTX(m_idx) \
 	vertices.push_back( face_points[m_idx] );
 
 		for (int i=0;i<6;i++) {

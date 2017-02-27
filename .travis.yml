@@ -11,7 +11,7 @@ os:
   - osx
 
 env:
-  #- GODOT_TARGET=iphone
+  - GODOT_TARGET=iphone
   - GODOT_TARGET=osx
   - GODOT_TARGET=x11
   #- GODOT_TARGET=android

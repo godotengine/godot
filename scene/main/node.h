@@ -29,11 +29,11 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "globals.h"
+#include "global_config.h"
 #include "object.h"
 #include "path_db.h"
 #include "map.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "script_language.h"
 #include "scene/main/scene_main_loop.h"
 
@@ -52,6 +52,14 @@ public:
 		PAUSE_MODE_INHERIT,
 		PAUSE_MODE_STOP,
 		PAUSE_MODE_PROCESS
+	};
+
+	enum DuplicateFlags {
+
+		DUPLICATE_SIGNALS=1,
+		DUPLICATE_GROUPS=2,
+		DUPLICATE_SCRIPTS=4,
+		DUPLICATE_USE_INSTANCING=8
 	};
 
 	enum NetworkMode {
@@ -103,7 +111,8 @@ private:
 		StringName name;
 		SceneTree *tree;
 		bool inside_tree;
-		bool ready_notified;
+		bool ready_notified; //this is a small hack, so if a node is added during _ready() to the tree, it corretly gets the _ready() notification
+		bool ready_first;
 #ifdef TOOLS_ENABLED
 		NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif
@@ -129,6 +138,9 @@ private:
 		bool fixed_process;
 		bool idle_process;
 
+		bool fixed_process_internal;
+		bool idle_process_internal;
+
 		bool input;
 		bool unhandled_input;
 		bool unhandled_key_input;
@@ -142,6 +154,12 @@ private:
 		mutable NodePath *path_cache;
 
 	} data;
+
+	enum NameCasing {
+		NAME_CASING_PASCAL_CASE,
+		NAME_CASING_CAMEL_CASE,
+		NAME_CASING_SNAKE_CASE
+	};
 
 
 	void _print_tree(const Node *p_node);
@@ -167,7 +185,7 @@ private:
 
 	void _duplicate_signals(const Node* p_original,Node* p_copy) const;
 	void _duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const;
-	Node *_duplicate(bool p_use_instancing) const;
+	Node *_duplicate(int p_flags) const;
 
 	Array _get_children() const;
 	Array _get_groups() const;
@@ -223,6 +241,9 @@ public:
 		NOTIFICATION_DRAG_END=22,
 		NOTIFICATION_PATH_CHANGED=23,
 		NOTIFICATION_TRANSLATION_CHANGED=24,
+		NOTIFICATION_INTERNAL_PROCESS = 25,
+		NOTIFICATION_INTERNAL_FIXED_PROCESS = 26,
+
 	};
 
 	/* NODE/TREE */
@@ -302,6 +323,11 @@ public:
 	float get_process_delta_time() const;
 	bool is_processing() const;
 
+	void set_fixed_process_internal(bool p_process);
+	bool is_fixed_processing_internal() const;
+
+	void set_process_internal(bool p_process);
+	bool is_processing_internal() const;
 
 	void set_process_input(bool p_enable);
 	bool is_processing_input() const;
@@ -314,7 +340,7 @@ public:
 
 	int get_position_in_parent() const;
 
-	Node *duplicate(bool p_use_instancing=false) const;
+	Node *duplicate(int p_flags=DUPLICATE_GROUPS|DUPLICATE_SIGNALS|DUPLICATE_SCRIPTS) const;
 	Node *duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const;
 
 	//Node *clone_tree() const;
@@ -336,6 +362,8 @@ public:
 	void set_pause_mode(PauseMode p_mode);
 	PauseMode get_pause_mode() const;
 	bool can_process() const;
+
+	void request_ready();
 
 	static void print_stray_nodes();
 

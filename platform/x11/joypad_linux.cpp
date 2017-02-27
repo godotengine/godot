@@ -219,15 +219,6 @@ void JoypadLinux::monitor_joypads() {
 	}
 }
 
-int JoypadLinux::get_free_joy_slot() const {
-
-	for (int i = 0; i < JOYPADS_MAX; i++) {
-
-		if (joypads[i].fd == -1) return i;
-	}
-	return -1;
-}
-
 int JoypadLinux::get_joy_from_path(String p_path) const {
 
 	for (int i = 0; i < JOYPADS_MAX; i++) {
@@ -329,7 +320,7 @@ void JoypadLinux::setup_joypad_properties(int p_id) {
 
 void JoypadLinux::open_joypad(const char *p_path) {
 
-	int joy_num = get_free_joy_slot();
+	int joy_num = input->get_unused_joy_id();
 	int fd = open(p_path, O_RDWR | O_NONBLOCK);
 	if (fd != -1 && joy_num != -1) {
 

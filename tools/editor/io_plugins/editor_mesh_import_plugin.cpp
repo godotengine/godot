@@ -28,11 +28,13 @@
 /*************************************************************************/
 #include "editor_mesh_import_plugin.h"
 
+#if 0
+
 #include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/property_editor.h"
-#include "scene/resources/sample.h"
+//#include "scene/resources/sample.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "io/marshalls.h"
@@ -259,7 +261,7 @@ public:
 
 			imd->add_source(EditorImportPlugin::validate_source_path(meshes[i]));
 
-			String file_path = dst.plus_file(meshes[i].get_file().basename()+".msh");
+			String file_path = dst.plus_file(meshes[i].get_file().get_basename()+".msh");
 
 			plugin->import(file_path,imd);
 		}
@@ -294,7 +296,7 @@ public:
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
-		set_child_rect(vbc);
+		//set_child_rect(vbc);
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
 		vbc->add_margin_child(TTR("Source Mesh(es):"),hbc);
@@ -568,7 +570,7 @@ void EditorMeshImportPlugin::import_from_drop(const Vector<String>& p_drop, cons
 
 	Vector<String> files;
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 		String file = p_drop[i].get_file();
 		if (ext=="obj") {
 
@@ -588,3 +590,4 @@ EditorMeshImportPlugin::EditorMeshImportPlugin(EditorNode* p_editor) {
 	dialog = memnew( EditorMeshImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
+#endif

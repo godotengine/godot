@@ -27,9 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_driver_jandroid.h"
-#include "globals.h"
+
+#include "global_config.h"
 #include "os/os.h"
 #include "thread_jandroid.h"
+
 #ifndef ANDROID_NATIVE_ACTIVITY
 
 AudioDriverAndroid* AudioDriverAndroid::s_ad=NULL;
@@ -71,7 +73,7 @@ Error AudioDriverAndroid::init(){
 	   }
 */
 
-//	Android_JNI_SetupThread();
+	//Android_JNI_SetupThread();
 
 
   //        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device");
@@ -199,9 +201,9 @@ int AudioDriverAndroid::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriverSW::OutputFormat AudioDriverAndroid::get_output_format() const{
+AudioDriver::SpeakerMode AudioDriverAndroid::get_speaker_mode() const{
 
-	return OUTPUT_STEREO;
+	return SPEAKER_MODE_STEREO;
 }
 
 void AudioDriverAndroid::lock(){

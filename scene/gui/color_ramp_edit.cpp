@@ -37,7 +37,7 @@ ColorRampEdit::ColorRampEdit(){
 	popup = memnew( PopupPanel );
 	picker = memnew( ColorPicker );
 	popup->add_child(picker);
-	popup->set_child_rect(picker);
+
 	add_child(popup);
 
 	checker = Ref<ImageTexture>(memnew( ImageTexture ));
@@ -60,7 +60,7 @@ void ColorRampEdit::_show_color_picker() {
 	if (grabbed==-1)
 		return;
 	Size2 ms = Size2(350, picker->get_combined_minimum_size().height+10);
-	picker->set_color(points[grabbed].color);
+	picker->set_pick_color(points[grabbed].color);
 	popup->set_pos(get_global_pos()-Vector2(ms.width-get_size().width,ms.height));
 	popup->set_size(ms);
 	popup->popup();
@@ -446,7 +446,7 @@ Vector<ColorRamp::Point>& ColorRampEdit::get_points() {
 }
 
 void ColorRampEdit::_bind_methods() {
-	ClassDB::bind_method(_MD("_gui_input"),&ColorRampEdit::_gui_input);
-	ClassDB::bind_method(_MD("_color_changed"),&ColorRampEdit::_color_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ColorRampEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_color_changed"),&ColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

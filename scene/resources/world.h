@@ -32,7 +32,6 @@
 #include "resource.h"
 #include "servers/physics_server.h"
 #include "servers/visual_server.h"
-#include "servers/spatial_sound_server.h"
 #include "scene/resources/environment.h"
 
 class SpatialIndexer;
@@ -45,7 +44,6 @@ class World : public Resource {
 private:
 	RID space;
 	RID scenario;
-	RID sound_space;
 	SpatialIndexer* indexer;
 	Ref<Environment> environment;
 
@@ -60,8 +58,8 @@ friend class VisibilityNotifier;
 	void _update_camera(Camera* p_camera);
 	void _remove_camera(Camera* p_camera);
 
-	void _register_notifier(VisibilityNotifier* p_notifier,const AABB& p_rect);
-	void _update_notifier(VisibilityNotifier *p_notifier,const AABB& p_rect);
+	void _register_notifier(VisibilityNotifier* p_notifier,const Rect3& p_rect);
+	void _update_notifier(VisibilityNotifier *p_notifier,const Rect3& p_rect);
 	void _remove_notifier(VisibilityNotifier* p_notifier);
 friend class Viewport;
 	void _update(uint64_t p_frame);
@@ -71,7 +69,6 @@ public:
 
 	RID get_space() const;
 	RID get_scenario() const;
-	RID get_sound_space() const;
 	void set_environment(const Ref<Environment>& p_environment);
 	Ref<Environment> get_environment() const;
 

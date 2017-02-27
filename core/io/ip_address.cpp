@@ -38,6 +38,9 @@ IP_Address::operator Variant() const {
 
 IP_Address::operator String() const {
 
+	if(!valid)
+		return "";
+
 	if(is_ipv4())
 		// IPv4 address mapped to IPv6
 		return itos(field8[12])+"."+itos(field8[13])+"."+itos(field8[14])+"."+itos(field8[15]);
@@ -171,6 +174,8 @@ void IP_Address::_parse_ipv4(const String& p_string, int p_start, uint8_t* p_ret
 void IP_Address::clear() {
 
 	memset(&field8[0], 0, sizeof(field8));
+	valid = false;
+	wildcard = false;
 };
 
 bool IP_Address::is_ipv4() const{
@@ -184,6 +189,7 @@ const uint8_t *IP_Address::get_ipv4() const{
 
 void IP_Address::set_ipv4(const uint8_t *p_ip) {
 	clear();
+	valid = true;
 	field16[5]=0xffff;
 	field32[3]=*((const uint32_t *)p_ip);
 }
@@ -194,6 +200,7 @@ const uint8_t *IP_Address::get_ipv6() const{
 
 void IP_Address::set_ipv6(const uint8_t *p_buf) {
 	clear();
+	valid = true;
 	for (int i=0; i<16; i++)
 		field8[i] = p_buf[i];
 }
@@ -201,14 +208,25 @@ void IP_Address::set_ipv6(const uint8_t *p_buf) {
 IP_Address::IP_Address(const String& p_string) {
 
 	clear();
-	if (p_string.find(":") >= 0) {
 
+	if (p_string == "*") {
+		// Wildcard (not a vaild IP)
+		wildcard = true;
+
+	} else if (p_string.find(":") >= 0) {
+		// IPv6
 		_parse_ipv6(p_string);
-	} else {
-		// Mapped to IPv6
+		valid = true;
+
+	} else if (p_string.get_slice_count(".") == 4) {
+		// IPv4 (mapped to IPv6 internally)
 		field16[5] = 0xffff;
 		_parse_ipv4(p_string, 0, &field8[12]);
-	};
+		valid = true;
+
+	} else {
+		ERR_PRINT("Invalid IP address");
+	}
 }
 
 _FORCE_INLINE_ static void _32_to_buf(uint8_t* p_dst, uint32_t p_n) {
@@ -222,6 +240,7 @@ _FORCE_INLINE_ static void _32_to_buf(uint8_t* p_dst, uint32_t p_n) {
 IP_Address::IP_Address(uint32_t p_a,uint32_t p_b,uint32_t p_c,uint32_t p_d, bool is_v6) {
 
 	clear();
+	valid = true;
 	if (!is_v6) {
 		// Mapped to IPv6
 		field16[5]=0xffff;

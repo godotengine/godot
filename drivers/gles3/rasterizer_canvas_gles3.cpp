@@ -1,7 +1,11 @@
 #include "rasterizer_canvas_gles3.h"
 #include "os/os.h"
 
-static _FORCE_INLINE_ void store_matrix32(const Matrix32& p_mtx, float* p_array) {
+#ifndef GLES_OVER_GL
+#define glClearDepth glClearDepthf
+#endif
+
+static _FORCE_INLINE_ void store_transform2d(const Transform2D& p_mtx, float* p_array) {
 
 	p_array[ 0]=p_mtx.elements[0][0];
 	p_array[ 1]=p_mtx.elements[0][1];
@@ -69,8 +73,8 @@ void RasterizerCanvasGLES3::light_internal_update(RID p_rid, Light* p_light) {
 	LightInternal * li = light_internal_owner.getornull(p_rid);
 	ERR_FAIL_COND(!li);
 
-	store_matrix32(p_light->light_shader_xform,li->ubo_data.light_matrix);
-	store_matrix32(p_light->xform_cache.affine_inverse(),li->ubo_data.local_matrix);
+	store_transform2d(p_light->light_shader_xform,li->ubo_data.light_matrix);
+	store_transform2d(p_light->xform_cache.affine_inverse(),li->ubo_data.local_matrix);
 	store_camera(p_light->shadow_matrix_cache,li->ubo_data.shadow_matrix);
 
 	for(int i=0;i<4;i++) {
@@ -87,7 +91,7 @@ void RasterizerCanvasGLES3::light_internal_update(RID p_rid, Light* p_light) {
 	if (p_light->radius_cache==0)
 		li->ubo_data.shadow_gradient=0;
 	else
-		li->ubo_data.shadow_gradient=p_light->shadow_gradient_length/(p_light->radius_cache*1.1);;
+		li->ubo_data.shadow_gradient=p_light->shadow_gradient_length/(p_light->radius_cache*1.1);
 
 	li->ubo_data.shadow_distance_mult=(p_light->radius_cache*1.1);
 
@@ -141,13 +145,13 @@ void RasterizerCanvasGLES3::canvas_begin(){
 	state.canvas_shader.set_custom_shader(0);
 	state.canvas_shader.bind();
 	state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,Color(1,1,1,1));
-	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Matrix32());
-	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Transform2D());
+	state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform2D());
 
 
 
 
-//	state.canvas_shader.set_uniform(CanvasShaderGLES3::PROJECTION_MATRIX,state.vp);
+	//state.canvas_shader.set_uniform(CanvasShaderGLES3::PROJECTION_MATRIX,state.vp);
 	//state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,Transform());
 	//state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform());
 
@@ -378,7 +382,7 @@ void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_v
 	}
 
 
-	float b[(2+2+4)];
+	float b[(2+2+4)*4];
 
 
 	for(int i=0;i<p_points;i++) {
@@ -642,7 +646,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item,Item *curr
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE,texpixel_size);
 
 				}
-				_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
+				//_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
 
 			} break;
 			case Item::Command::TYPE_CIRCLE: {
@@ -662,7 +666,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item,Item *curr
 					indices[i*3+1]=(i+1)%numpoints;
 					indices[i*3+2]=numpoints;
 				}
-				_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
+				//_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
 				//canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
 			} break;
 			case Item::Command::TYPE_TRANSFORM: {
@@ -743,9 +747,6 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 			} else {
 				glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
 			}
-//			if (current_clip) {
-//			//	print_line(" a clip ");
-//			}
 
 			canvas_texscreen_used=true;
 		}
@@ -999,7 +1000,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 					ci->final_modulate.a * p_modulate.a );
 
 		state.final_transform = ci->final_transform;
-		state.extra_matrix=Matrix32();
+		state.extra_matrix=Transform2D();
 
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,state.final_transform);
@@ -1081,7 +1082,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,state.final_transform);
-						state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform2D());
 
 					}
 
@@ -1141,7 +1142,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list,int p_z,const 
 
 
 				state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX,state.final_transform);
-				state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Matrix32());
+				state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX,Transform2D());
 				state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE,state.canvas_item_modulate);
 
 				glBlendEquation(GL_FUNC_ADD);
@@ -1193,10 +1194,10 @@ void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light* p_lights_with_s
 	while(light) {
 
 
-	//	print_line("debug light");
+		//print_line("debug light");
 		if (light->shadow_buffer.is_valid()) {
 
-	//		print_line("sb is valid");
+			//print_line("sb is valid");
 			RasterizerStorageGLES3::CanvasLightShadow * sb = storage->canvas_light_shadow_owner.get(light->shadow_buffer);
 			if (sb) {
 				glBindTexture(GL_TEXTURE_2D,sb->distance);
@@ -1212,7 +1213,7 @@ void RasterizerCanvasGLES3::canvas_debug_viewport_shadows(Light* p_lights_with_s
 }
 
 
-void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
+void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, const Transform2D& p_light_xform, int p_light_mask,float p_near, float p_far, LightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
 
 	RasterizerStorageGLES3::CanvasLightShadow *cls = storage->canvas_light_shadow_owner.get(p_buffer);
 	ERR_FAIL_COND(!cls);
@@ -1253,7 +1254,7 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 
 		//light.basis.scale(Vector3(to_light.elements[0].length(),to_light.elements[1].length(),1));
 
-	///	p_near=1;
+		//p_near=1;
 		CameraMatrix projection;
 		{
 			real_t fov =  90;
@@ -1269,7 +1270,7 @@ void RasterizerCanvasGLES3::canvas_light_shadow_buffer_update(RID p_buffer, cons
 			projection.set_frustum( xmin, xmax, ymin, ymax, nearp, farp );
 		}
 
-		Vector3 cam_target=Matrix3(Vector3(0,0,Math_PI*2*(i/4.0))).xform(Vector3(0,1,0));
+		Vector3 cam_target=Basis(Vector3(0,0,Math_PI*2*(i/4.0))).xform(Vector3(0,1,0));
 		projection = projection * CameraMatrix(Transform().looking_at(cam_target,Vector3(0,0,-1)).affine_inverse());
 
 		state.canvas_shadow_shader.set_uniform(CanvasShadowShaderGLES3::PROJECTION_MATRIX,projection);
@@ -1458,7 +1459,7 @@ void RasterizerCanvasGLES3::initialize() {
 
 		glGenBuffers(1,&data.primitive_quad_buffer);
 		glBindBuffer(GL_ARRAY_BUFFER,data.primitive_quad_buffer);
-		glBufferData(GL_ARRAY_BUFFER,sizeof(float)*2+sizeof(float)*2+sizeof(float)*4,NULL,GL_DYNAMIC_DRAW); //allocate max size
+		glBufferData(GL_ARRAY_BUFFER,(2+2+4)*4*sizeof(float),NULL,GL_DYNAMIC_DRAW); //allocate max size
 		glBindBuffer(GL_ARRAY_BUFFER,0);
 
 

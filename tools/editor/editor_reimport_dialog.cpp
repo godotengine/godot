@@ -27,8 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_reimport_dialog.h"
+
 #include "editor_file_system.h"
 #include "editor_node.h"
+
+#if 0
 void EditorReImportDialog::popup_reimport() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
@@ -135,10 +138,11 @@ EditorReImportDialog::EditorReImportDialog() {
 	tree = memnew( Tree );
 	add_child(tree);
 	tree->set_hide_root(true);
-	set_child_rect(tree);
+	//set_child_rect(tree);
 	set_title(TTR("Re-Import Changed Resources"));
 	error = memnew( AcceptDialog);
 	add_child(error);
 	scene_must_save=false;
 
 }
+#endif

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_text_editor.h"
+
 #include "tools/editor/editor_settings.h"
 #include "os/keyboard.h"
 #include "tools/editor/script_editor_debugger.h"
@@ -60,7 +61,7 @@ void ScriptTextEditor::apply_code() {
 
 	if (script.is_null())
 		return;
-//	print_line("applying code");
+	//print_line("applying code");
 	script->set_source_code(code_editor->get_text_edit()->get_text());
 	script->update_exports();
 }
@@ -114,6 +115,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	text_edit->add_color_override("selection_color",EDITOR_DEF("text_editor/highlighting/selection_color",Color(0.2,0.2,1)));
 	text_edit->add_color_override("brace_mismatch_color",EDITOR_DEF("text_editor/highlighting/brace_mismatch_color",Color(1,0.2,0.2)));
 	text_edit->add_color_override("current_line_color",EDITOR_DEF("text_editor/highlighting/current_line_color",Color(0.3,0.5,0.8,0.15)));
+	text_edit->add_color_override("line_length_guideline_color", EDITOR_DEF("text_editor/highlighting/line_length_guideline_color", Color(0,0,0)));
 	text_edit->add_color_override("word_highlighted_color",EDITOR_DEF("text_editor/highlighting/word_highlighted_color",Color(0.8,0.9,0.9,0.15)));
 	text_edit->add_color_override("number_color",EDITOR_DEF("text_editor/highlighting/number_color",Color(0.9,0.6,0.0,2)));
 	text_edit->add_color_override("function_color",EDITOR_DEF("text_editor/highlighting/function_color",Color(0.4,0.6,0.8)));
@@ -225,7 +227,7 @@ void ScriptTextEditor::_notification(int p_what) {
 	}
 }
 
-void ScriptTextEditor::add_callback(const String& p_function,StringArray p_args) {
+void ScriptTextEditor::add_callback(const String& p_function,PoolStringArray p_args) {
 
 	String code = code_editor->get_text_edit()->get_text();
 	int pos = script->get_language()->find_function(p_function,code);
@@ -484,7 +486,7 @@ void ScriptTextEditor::_code_complete_scripts(void* p_ud,const String& p_code, L
 
 void ScriptTextEditor::_code_complete_script(const String& p_code, List<String>* r_options) {
 
-	if (color_panel->is_visible()) return;
+	if (color_panel->is_visible_in_tree()) return;
 	Node *base = get_tree()->get_edited_scene_root();
 	if (base) {
 		base = _find_node_for_script(base,base,script);
@@ -1194,7 +1196,7 @@ void ScriptTextEditor::_text_edit_gui_input(const InputEvent& ev) {
 					Vector<float> color = stripped.split_floats(",");
 					if (color.size() > 2) {
 						float alpha = color.size() > 3 ? color[3] : 1.0f;
-						color_picker->set_color(Color(color[0], color[1], color[2], alpha));
+						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 					}
 					color_panel->set_pos(get_global_transform().xform(get_local_mouse_pos()));
 					Size2 ms = Size2(300, color_picker->get_combined_minimum_size().height+10);
@@ -1280,7 +1282,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	add_child(color_panel);
 	color_picker = memnew(ColorPicker);
 	color_panel->add_child(color_picker);
-	color_panel->set_child_rect(color_picker);
+	color_panel->set_child_rect(color_picker); //NOT
 	color_picker->connect("color_changed", this, "_color_changed");
 
 	edit_hb = memnew (HBoxContainer);

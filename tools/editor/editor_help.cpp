@@ -27,14 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_help.h"
+
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "doc_data_compressed.h"
 #include "tools/editor/plugins/script_editor_plugin.h"
-
-
-#include "os/keyboard.h"
 
 void EditorHelpSearch::popup() {
 	popup_centered_ratio(0.6);
@@ -287,7 +285,7 @@ void EditorHelpSearch::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();
@@ -299,10 +297,10 @@ void EditorHelpSearch::_notification(int p_what) {
 
 void EditorHelpSearch::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
-	ClassDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_update_search);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&EditorHelpSearch::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&EditorHelpSearch::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&EditorHelpSearch::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_update_search"),&EditorHelpSearch::_update_search);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 
@@ -314,7 +312,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	editor=EditorNode::get_singleton();
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 	HBoxContainer *sb_hb = memnew( HBoxContainer);
 	search_box = memnew( LineEdit );
 	sb_hb->add_child(search_box);
@@ -334,7 +332,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_options->connect("item_activated",this,"_confirmed");
 	set_title(TTR("Search Help"));
 
-//	search_options->set_hide_root(true);
+	//search_options->set_hide_root(true);
 
 }
 
@@ -349,8 +347,10 @@ void EditorHelpIndex::add_type(const String& p_type,HashMap<String,TreeItem*>& p
 
 	if (p_types.has(p_type))
 		return;
-//	if (!ClassDB::is_type(p_type,base) || p_type==base)
-//		return;
+	/*
+	if (!ClassDB::is_type(p_type,base) || p_type==base)
+		return;
+	*/
 
 	String inherits=EditorHelp::get_doc_data()->class_list[p_type].inherits;
 
@@ -508,7 +508,6 @@ EditorHelpIndex::EditorHelpIndex() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
 
 	search_box = memnew( LineEdit );
 	vbc->add_margin_child(TTR("Search:"), search_box);
@@ -539,7 +538,7 @@ DocData *EditorHelp::doc=NULL;
 
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
-	if (!is_visible())
+	if (!is_visible_in_tree())
 		return;
 	if ( p_ev.key.mod.control && p_ev.key.scancode==KEY_F) {
 
@@ -572,15 +571,15 @@ void EditorHelp::_button_pressed(int p_idx) {
 
 	if (p_idx==PAGE_CLASS_LIST) {
 
-	//	edited_class->set_pressed(false);
-	//	class_list_button->set_pressed(true);
-	//	tabs->set_current_tab(PAGE_CLASS_LIST);
+		//edited_class->set_pressed(false);
+		//class_list_button->set_pressed(true);
+		//tabs->set_current_tab(PAGE_CLASS_LIST);
 
 	} else if (p_idx==PAGE_CLASS_DESC) {
 
-	//	edited_class->set_pressed(true);
-	//	class_list_button->set_pressed(false);
-	//	tabs->set_current_tab(PAGE_CLASS_DESC);
+		//edited_class->set_pressed(true);
+		//class_list_button->set_pressed(false);
+		//tabs->set_current_tab(PAGE_CLASS_DESC);
 
 	} else if (p_idx==PAGE_CLASS_PREV) {
 
@@ -620,7 +619,7 @@ void EditorHelp::_class_desc_select(const String& p_select) {
 
 
 
-//	print_line("LINK: "+p_select);
+	//print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		emit_signal("go_to_help","class_name:"+p_select.substr(1,p_select.length()));
@@ -675,7 +674,7 @@ void EditorHelp::_scroll_changed(double p_scroll) {
 	if (scroll_locked)
 		return;
 
-	if (class_desc->get_v_scroll()->is_hidden())
+	if (!class_desc->get_v_scroll()->is_visible())
 		p_scroll=0;
 
 	//history[p].scroll=p_scroll;
@@ -825,7 +824,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_text(TTR("Members:"));
 		class_desc->pop();
 		class_desc->pop();
-//		class_desc->add_newline();
+		//class_desc->add_newline();
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
@@ -925,7 +924,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->pop();
 
 		//class_desc->add_newline();
-//		class_desc->add_newline();
+		//class_desc->add_newline();
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
@@ -998,7 +997,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 			}
 			class_desc->pop();//monofont
-//			class_desc->add_newline();
+			//class_desc->add_newline();
 			class_desc->pop(); //cell
 
 		}
@@ -1735,8 +1734,8 @@ void EditorHelp::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 
-//			forward->set_icon(get_icon("Forward","EditorIcons"));
-//			back->set_icon(get_icon("Back","EditorIcons"));
+			//forward->set_icon(get_icon("Forward","EditorIcons"));
+			//back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
 
 		} break;
@@ -1790,7 +1789,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
 	ClassDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
 	ClassDB::bind_method("_class_desc_input",&EditorHelp::_class_desc_input);
-//	ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
+	//ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
 	ClassDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
 	ClassDB::bind_method("_request_help",&EditorHelp::_request_help);
 	ClassDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
@@ -1839,7 +1838,7 @@ EditorHelp::EditorHelp() {
 	add_child(search_dialog);
 	VBoxContainer *search_vb = memnew( VBoxContainer );
 	search_dialog->add_child(search_vb);
-	search_dialog->set_child_rect(search_vb);
+
 	search = memnew( LineEdit );
 	search_dialog->register_text_enter(search);
 	search_vb->add_margin_child(TTR("Search Text"),search);
@@ -1853,7 +1852,7 @@ EditorHelp::EditorHelp() {
 	editor->get_gui_base()->add_child(class_search);
 	class_search->connect("go_to_help",this,"_help_callback");*/
 
-//	prev_search_page=-1;
+	//prev_search_page=-1;
 }
 
 EditorHelp::~EditorHelp() {
@@ -1873,8 +1872,7 @@ void EditorHelpBit::_go_to_help(String p_what) {
 
 void EditorHelpBit::_meta_clicked(String p_select) {
 
-
-	//	print_line("LINK: "+p_select);
+	//print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		_go_to_help("class_name:"+p_select.substr(1,p_select.length()));
@@ -1888,10 +1886,11 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 			_go_to_help("class_method:"+m.get_slice(".",0)+":"+m.get_slice(".",0));
 		} else {
-//
-	//		if (!method_line.has(m))
-			//	return;
-			//class_desc->scroll_to_line(method_line[m]);
+			/*
+			if (!method_line.has(m))
+				return;
+			class_desc->scroll_to_line(method_line[m]);
+			*/
 		}
 
 	}

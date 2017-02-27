@@ -244,7 +244,7 @@ bool ResourceFormatPBM::handles_type(const String& p_type) const {
 }
 String ResourceFormatPBM::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="pbm")
+	if (p_path.get_extension().to_lower()=="pbm")
 		return "BitMap";
 	return "";
 }

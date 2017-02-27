@@ -46,7 +46,9 @@ void TextureProgress::set_over_texture(const Ref<Texture>& p_texture) {
 
 	over=p_texture;
 	update();
-	minimum_size_changed();
+	if (under.is_null()) {
+		minimum_size_changed();
+	}
 }
 
 Ref<Texture> TextureProgress::get_over_texture() const{
@@ -135,24 +137,24 @@ void TextureProgress::_notification(int p_what){
 				Size2 s = progress->get_size();
 				switch (mode) {
 				case FILL_LEFT_TO_RIGHT: {
-					Rect2 region=Rect2(Point2(),Size2(s.x*get_unit_value(),s.y));
+					Rect2 region=Rect2(Point2(),Size2(s.x*get_as_ratio(),s.y));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_RIGHT_TO_LEFT: {
-					Rect2 region=Rect2(Point2(s.x-s.x*get_unit_value(),0),Size2(s.x*get_unit_value(),s.y));
+					Rect2 region=Rect2(Point2(s.x-s.x*get_as_ratio(),0),Size2(s.x*get_as_ratio(),s.y));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_TOP_TO_BOTTOM: {
-					Rect2 region=Rect2(Point2(),Size2(s.x,s.y*get_unit_value()));
+					Rect2 region=Rect2(Point2(),Size2(s.x,s.y*get_as_ratio()));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_BOTTOM_TO_TOP: {
-					Rect2 region=Rect2(Point2(0,s.y-s.y*get_unit_value()),Size2(s.x,s.y*get_unit_value()));
+					Rect2 region=Rect2(Point2(0,s.y-s.y*get_as_ratio()),Size2(s.x,s.y*get_as_ratio()));
 					draw_texture_rect_region(progress,region,region);
 				} break;
 				case FILL_CLOCKWISE:
 				case FILL_COUNTER_CLOCKWISE: {
-					float val=get_unit_value()*rad_max_degrees/360;
+					float val=get_as_ratio()*rad_max_degrees/360;
 					if (val==1) {
 						Rect2 region=Rect2(Point2(),s);
 						draw_texture_rect_region(progress,region,region);
@@ -192,7 +194,7 @@ void TextureProgress::_notification(int p_what){
 					}
 				} break;
 				default:
-					draw_texture_rect_region(progress,Rect2(Point2(),Size2(s.x*get_unit_value(),s.y)),Rect2(Point2(),Size2(s.x*get_unit_value(),s.y)));
+					draw_texture_rect_region(progress,Rect2(Point2(),Size2(s.x*get_as_ratio(),s.y)),Rect2(Point2(),Size2(s.x*get_as_ratio(),s.y)));
 				}
 
 
@@ -255,36 +257,36 @@ Point2 TextureProgress::get_radial_center_offset()
 
 void TextureProgress::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_under_texture","tex"),&TextureProgress::set_under_texture);
-	ClassDB::bind_method(_MD("get_under_texture"),&TextureProgress::get_under_texture);
+	ClassDB::bind_method(D_METHOD("set_under_texture","tex"),&TextureProgress::set_under_texture);
+	ClassDB::bind_method(D_METHOD("get_under_texture"),&TextureProgress::get_under_texture);
 
-	ClassDB::bind_method(_MD("set_progress_texture","tex"),&TextureProgress::set_progress_texture);
-	ClassDB::bind_method(_MD("get_progress_texture"),&TextureProgress::get_progress_texture);
+	ClassDB::bind_method(D_METHOD("set_progress_texture","tex"),&TextureProgress::set_progress_texture);
+	ClassDB::bind_method(D_METHOD("get_progress_texture"),&TextureProgress::get_progress_texture);
 
-	ClassDB::bind_method(_MD("set_over_texture","tex"),&TextureProgress::set_over_texture);
-	ClassDB::bind_method(_MD("get_over_texture"),&TextureProgress::get_over_texture);
+	ClassDB::bind_method(D_METHOD("set_over_texture","tex"),&TextureProgress::set_over_texture);
+	ClassDB::bind_method(D_METHOD("get_over_texture"),&TextureProgress::get_over_texture);
 
-	ClassDB::bind_method(_MD("set_fill_mode","mode"),&TextureProgress::set_fill_mode);
-	ClassDB::bind_method(_MD("get_fill_mode"), &TextureProgress::get_fill_mode);
+	ClassDB::bind_method(D_METHOD("set_fill_mode","mode"),&TextureProgress::set_fill_mode);
+	ClassDB::bind_method(D_METHOD("get_fill_mode"), &TextureProgress::get_fill_mode);
 
-	ClassDB::bind_method(_MD("set_radial_initial_angle","mode"),&TextureProgress::set_radial_initial_angle);
-	ClassDB::bind_method(_MD("get_radial_initial_angle"), &TextureProgress::get_radial_initial_angle);
+	ClassDB::bind_method(D_METHOD("set_radial_initial_angle","mode"),&TextureProgress::set_radial_initial_angle);
+	ClassDB::bind_method(D_METHOD("get_radial_initial_angle"), &TextureProgress::get_radial_initial_angle);
 
-	ClassDB::bind_method(_MD("set_radial_center_offset","mode"),&TextureProgress::set_radial_center_offset);
-	ClassDB::bind_method(_MD("get_radial_center_offset"), &TextureProgress::get_radial_center_offset);
+	ClassDB::bind_method(D_METHOD("set_radial_center_offset","mode"),&TextureProgress::set_radial_center_offset);
+	ClassDB::bind_method(D_METHOD("get_radial_center_offset"), &TextureProgress::get_radial_center_offset);
 
-	ClassDB::bind_method(_MD("set_fill_degrees","mode"),&TextureProgress::set_fill_degrees);
-	ClassDB::bind_method(_MD("get_fill_degrees"), &TextureProgress::get_fill_degrees);
+	ClassDB::bind_method(D_METHOD("set_fill_degrees","mode"),&TextureProgress::set_fill_degrees);
+	ClassDB::bind_method(D_METHOD("get_fill_degrees"), &TextureProgress::get_fill_degrees);
 
 	ADD_GROUP("Textures","texture_");
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_under",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_under_texture"),_SCS("get_under_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_over",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_over_texture"),_SCS("get_over_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_progress",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_progress_texture"),_SCS("get_progress_texture"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"fill_mode",PROPERTY_HINT_ENUM,"Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"),_SCS("set_fill_mode"),_SCS("get_fill_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_under",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_under_texture","get_under_texture");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_over",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_over_texture","get_over_texture");
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture_progress",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_progress_texture","get_progress_texture");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"fill_mode",PROPERTY_HINT_ENUM,"Left to Right,Right to Left,Top to Bottom,Bottom to Top,Clockwise,Counter Clockwise"),"set_fill_mode","get_fill_mode");
 	ADD_GROUP("Radial Fill","radial_");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_initial_angle",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_radial_initial_angle"),_SCS("get_radial_initial_angle"));
-	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_fill_degrees",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),_SCS("set_fill_degrees"),_SCS("get_fill_degrees"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"radial_center_offset"),_SCS("set_radial_center_offset"),_SCS("get_radial_center_offset"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_initial_angle",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),"set_radial_initial_angle","get_radial_initial_angle");
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"radial_fill_degrees",PROPERTY_HINT_RANGE,"0.0,360.0,0.1,slider"),"set_fill_degrees","get_fill_degrees");
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"radial_center_offset"),"set_radial_center_offset","get_radial_center_offset");
 
 	BIND_CONSTANT( FILL_LEFT_TO_RIGHT );
 	BIND_CONSTANT( FILL_RIGHT_TO_LEFT );
@@ -302,4 +304,5 @@ TextureProgress::TextureProgress()
 	rad_init_angle=0;
 	rad_center_off=Point2();
 	rad_max_degrees=360;
+	set_mouse_filter(MOUSE_FILTER_PASS);
 }

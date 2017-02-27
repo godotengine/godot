@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "stream_editor_plugin.h"
 
-
+#if 0
 
 void StreamEditor::_notification(int p_what) {
 
@@ -59,8 +59,8 @@ void StreamEditor::_stop() {
 
 void StreamEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_play"),&StreamEditor::_play);
-	ClassDB::bind_method(_MD("_stop"),&StreamEditor::_stop);
+	ClassDB::bind_method(D_METHOD("_play"),&StreamEditor::_play);
+	ClassDB::bind_method(D_METHOD("_stop"),&StreamEditor::_stop);
 
 }
 
@@ -146,3 +146,4 @@ StreamEditorPlugin::~StreamEditorPlugin()
 {
 }
 
+#endif

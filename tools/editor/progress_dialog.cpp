@@ -27,10 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "progress_dialog.h"
+
 #include "main/main.h"
 #include "message_queue.h"
 #include "os/os.h"
 #include "editor_scale.h"
+
 void BackgroundProgress::_add_task(const String& p_task,const String& p_label, int p_steps) {
 
 	_THREAD_SAFE_METHOD_

@@ -32,7 +32,7 @@
 #include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
 #include "core/io/resource_loader.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "os/input.h"
 #include "os/keyboard.h"
 
@@ -261,9 +261,9 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 	}
 
 	edit_option->hide();
-	edit_button->hide();;
+	edit_button->hide();
 	filter_button->hide();
-	edit_check->hide();;
+	edit_check->hide();
 
 	Point2 pos = anim_tree->node_get_pos(edited_node)-Point2(h_scroll->get_value(),v_scroll->get_value());
 	Ref<StyleBox> style = get_stylebox("panel","PopupMenu");
@@ -450,7 +450,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				 edit_label[1]->show();
 				 edit_option->set_begin(Point2(15,75));
 
-				 edit_option->clear();;
+				 edit_option->clear();
 
 				 for(int i=0;i<anim_tree->transition_node_get_input_count(edited_node);i++) {
 					 edit_option->add_item(itos(i),i);
@@ -621,9 +621,9 @@ void AnimationTreeEditor::_draw_node(const StringName& p_node) {
 #if 0
 void AnimationTreeEditor::_node_param_changed() {
 
-//	anim_tree->node_set_param( click_node,property_editor->get_variant() );
-//	update();
-//	_write_anim_tree_graph();
+	//anim_tree->node_set_param( click_node,property_editor->get_variant() );
+	//update();
+	//_write_anim_tree_graph();
 }
 #endif
 
@@ -792,7 +792,7 @@ void AnimationTreeEditor::_gui_input(InputEvent p_event) {
 							renaming_edit=false;
 							_popup_edit_dialog();
 							//open editor
-					//		_node_edit_property(click_node);
+							//_node_edit_property(click_node);
 						} break;
 						default:{}
 					}
@@ -856,12 +856,12 @@ void AnimationTreeEditor::_gui_input(InputEvent p_event) {
 
 							if (dst_click_type==CLICK_INPUT_SLOT && click_type==CLICK_OUTPUT_SLOT) {
 
-								anim_tree->connect(click_node,id,slot);
+								anim_tree->connect_nodes(click_node,id,slot);
 
 							}
 							if (click_type==CLICK_INPUT_SLOT && dst_click_type==CLICK_OUTPUT_SLOT) {
 
-								anim_tree->connect(id,click_node,click_slot);
+								anim_tree->connect_nodes(id,click_node,click_slot);
 							}
 
 						} break;
@@ -1057,7 +1057,7 @@ void AnimationTreeEditor::_node_menu_item(int p_item) {
 
 			if (rclick_type==CLICK_INPUT_SLOT) {
 
-				anim_tree->disconnect(rclick_node,rclick_slot);
+				anim_tree->disconnect_nodes(rclick_node,rclick_slot);
 				update();
 			}
 
@@ -1072,7 +1072,7 @@ void AnimationTreeEditor::_node_menu_item(int p_item) {
 					const AnimationTreePlayer::Connection &c=E->get();
 					if( c.dst_node==rclick_node) {
 
-						anim_tree->disconnect(c.dst_node,c.dst_input);
+						anim_tree->disconnect_nodes(c.dst_node,c.dst_input);
 					}
 				}
 				update();
@@ -1325,7 +1325,7 @@ void AnimationTreeEditor::_bind_methods() {
 	ClassDB::bind_method( "_add_menu_item", &AnimationTreeEditor::_add_menu_item );
 	ClassDB::bind_method( "_node_menu_item", &AnimationTreeEditor::_node_menu_item );
 	ClassDB::bind_method( "_gui_input", &AnimationTreeEditor::_gui_input );
-//	ClassDB::bind_method( "_node_param_changed", &AnimationTreeEditor::_node_param_changed );
+	//ClassDB::bind_method( "_node_param_changed", &AnimationTreeEditor::_node_param_changed );
 	ClassDB::bind_method( "_scroll_moved", &AnimationTreeEditor::_scroll_moved );
 	ClassDB::bind_method( "_edit_dialog_changeds", &AnimationTreeEditor::_edit_dialog_changeds );
 	ClassDB::bind_method( "_edit_dialog_changede", &AnimationTreeEditor::_edit_dialog_changede );
@@ -1414,8 +1414,8 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	updating_edit=false;
 
 	edit_dialog = memnew( PopupPanel );
-//	edit_dialog->get_ok()->hide();
-//	edit_dialog->get_cancel()->hide();
+	//edit_dialog->get_ok()->hide();
+	//edit_dialog->get_cancel()->hide();
 	add_child(edit_dialog);
 
 	edit_option = memnew( OptionButton );
@@ -1451,14 +1451,14 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	edit_button->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	edit_button->set_margin(MARGIN_RIGHT, 10);
 	edit_dialog->add_child(edit_button);
-	edit_button->hide();;
+	edit_button->hide();
 	edit_button->connect("pressed", this,"_edit_oneshot_start");
 
 	edit_check = memnew( CheckButton );
 	edit_check->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	edit_check->set_margin(MARGIN_RIGHT, 10);
 	edit_dialog->add_child(edit_check);
-	edit_check->hide();;
+	edit_check->hide();
 	edit_check->connect("pressed", this,"_edit_dialog_changed");
 
 	file_dialog = memnew( EditorFileDialog );
@@ -1473,14 +1473,14 @@ AnimationTreeEditor::AnimationTreeEditor() {
 
 	filter = memnew( Tree );
 	filter_dialog->add_child(filter);
-	filter_dialog->set_child_rect(filter);
+	//filter_dialog->set_child_rect(filter);
 	filter->connect("item_edited",this,"_filter_edited");
 
 	filter_button = memnew( Button );
 	filter_button->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	filter_button->set_margin(MARGIN_RIGHT, 10);
 	edit_dialog->add_child(filter_button);
-	filter_button->hide();;
+	filter_button->hide();
 	filter_button->set_text(TTR("Filters.."));
 	filter_button->connect("pressed", this,"_edit_filters");
 
@@ -1502,14 +1502,14 @@ bool AnimationTreeEditorPlugin::handles(Object *p_object) const {
 void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-//		editor->hide_animation_player_editors();
-//		editor->animation_panel_make_visible(true);
+		//editor->hide_animation_player_editors();
+		//editor->animation_panel_make_visible(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(anim_tree_editor);
 		anim_tree_editor->set_fixed_process(true);
 	} else {
 
-		if (anim_tree_editor->is_visible())
+		if (anim_tree_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 		anim_tree_editor->set_fixed_process(false);

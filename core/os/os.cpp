@@ -27,13 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os.h"
-#include "os/file_access.h"
-#include <stdarg.h>
+
 #include "dir_access.h"
-#include "globals.h"
+#include "global_config.h"
 #include "input.h"
-// For get_engine_version, could be removed if it's moved to a new Engine singleton
-#include "version.h"
+#include "os/file_access.h"
+
+#include <stdarg.h>
 
 OS* OS::singleton=NULL;
 
@@ -98,23 +98,6 @@ void OS::printerr(const char* p_format, ...) {
 };
 
 
-void OS::set_iterations_per_second(int p_ips) {
-
-	ips=p_ips;
-}
-int OS::get_iterations_per_second() const {
-
-	return ips;
-}
-
-void OS::set_target_fps(int p_fps) {
-	_target_fps=p_fps>0? p_fps : 0;
-}
-
-float OS::get_target_fps() const {
-	return _target_fps;
-}
-
 void OS::set_keep_screen_on(bool p_enabled) {
 	_keep_screen_on=p_enabled;
 }
@@ -152,10 +135,6 @@ int OS::get_process_ID() const {
 	return -1;
 };
 
-uint64_t OS::get_frames_drawn() {
-
-	return frames_drawn;
-}
 
 bool OS::is_stdout_verbose() const {
 
@@ -187,7 +166,7 @@ const char *OS::get_last_error() const {
 
 void OS::dump_memory_to_file(const char* p_file) {
 
-//	Memory::dump_static_mem_to_file(p_file);
+	//Memory::dump_static_mem_to_file(p_file);
 }
 
 static FileAccess *_OSPRF=NULL;
@@ -261,15 +240,7 @@ void OS::clear_last_error() {
 		memfree(last_error);
 	last_error=NULL;
 }
-void OS::set_frame_delay(uint32_t p_msec) {
 
-	_frame_delay=p_msec;
-}
-
-uint32_t OS::get_frame_delay() const {
-
-	return _frame_delay;
-}
 
 void OS::set_no_window_mode(bool p_enable) {
 
@@ -513,20 +484,13 @@ OS::MouseMode OS::get_mouse_mode() const{
 	return MOUSE_MODE_VISIBLE;
 }
 
-void OS::set_time_scale(float p_scale) {
-
-	_time_scale=p_scale;
-}
 
 OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
 
 	return LATIN_KEYBOARD_QWERTY;
 }
 
-float OS::get_time_scale() const {
 
-	return _time_scale;
-}
 
 bool OS::is_joy_known(int p_device) {
 	return true;
@@ -548,49 +512,21 @@ bool OS::is_vsync_enabled() const{
 	return true;
 }
 
-Dictionary OS::get_engine_version() const {
-
-	Dictionary dict;
-	dict["major"] = _MKSTR(VERSION_MAJOR);
-	dict["minor"] = _MKSTR(VERSION_MINOR);
-#ifdef VERSION_PATCH
-	dict["patch"] = _MKSTR(VERSION_PATCH);
-#else
-	dict["patch"] = "";
-#endif
-	dict["status"] = _MKSTR(VERSION_STATUS);
-	dict["revision"] = _MKSTR(VERSION_REVISION);
-
-	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
-	if (dict["patch"] != "")
-		stringver += "." + String(dict["patch"]);
-	stringver += "-" + String(dict["status"]) + " (" + String(dict["revision"]) + ")";
-	dict["string"] = stringver;
-
-	return dict;
-}
 
 OS::OS() {
 	last_error=NULL;
-	frames_drawn=0;
 	singleton=this;
-	ips=60;
 	_keep_screen_on=true; // set default value to true, because this had been true before godot 2.0.
 	low_processor_usage_mode=false;
 	_verbose_stdout=false;
-	_frame_delay=0;
 	_no_window=false;
 	_exit_code=0;
 	_orientation=SCREEN_LANDSCAPE;
-	_fps=1;
-	_target_fps=0;
+
 	_render_thread_mode=RENDER_THREAD_SAFE;
-	_time_scale=1.0;
-	_pixel_snap=false;
+
+
 	_allow_hidpi=true;
-	_fixed_frames=0;
-	_idle_frames=0;
-	_in_fixed=false;
 	Math::seed(1234567);
 }
 

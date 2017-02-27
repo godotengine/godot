@@ -164,10 +164,10 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4*3;
 
 		} break;
-		case Variant::MATRIX32: {
+		case Variant::TRANSFORM2D: {
 
 			ERR_FAIL_COND_V(len<(int)4*6,ERR_INVALID_DATA);
-			Matrix32 val;
+			Transform2D val;
 			for(int i=0;i<3;i++) {
 				for(int j=0;j<2;j++) {
 
@@ -209,10 +209,10 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4*4;
 
 		} break;
-		case Variant::_AABB: {
+		case Variant::RECT3: {
 
 			ERR_FAIL_COND_V(len<(int)4*6,ERR_INVALID_DATA);
-			AABB val;
+			Rect3 val;
 			val.pos.x=decode_float(&buf[0]);
 			val.pos.y=decode_float(&buf[4]);
 			val.pos.z=decode_float(&buf[8]);
@@ -225,10 +225,10 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4*6;
 
 		} break;
-		case Variant::MATRIX3: {
+		case Variant::BASIS: {
 
 			ERR_FAIL_COND_V(len<(int)4*9,ERR_INVALID_DATA);
-			Matrix3 val;
+			Basis val;
 			for(int i=0;i<3;i++) {
 				for(int j=0;j<3;j++) {
 
@@ -471,7 +471,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
             uint32_t count = decode_uint32(buf);
-            bool shared = count&0x80000000;
+	  //  bool shared = count&0x80000000;
             count&=0x7FFFFFFF;
 
 			buf+=4;
@@ -481,7 +481,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4;
 			}
 
-            Dictionary d(shared);
+	    Dictionary d;
 
             for(uint32_t i=0;i<count;i++) {
 
@@ -516,7 +516,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
-            bool shared = count&0x80000000;
+	  //  bool shared = count&0x80000000;
             count&=0x7FFFFFFF;
 
 			buf+=4;
@@ -526,7 +526,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4;
 			}
 
-            Array varr(shared);
+	    Array varr;
 
             for(uint32_t i=0;i<count;i++) {
 
@@ -548,7 +548,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 		} break;
 
 		// arrays
-		case Variant::RAW_ARRAY: {
+		case Variant::POOL_BYTE_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
@@ -581,7 +581,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 
 		} break;
-		case Variant::INT_ARRAY: {
+		case Variant::POOL_INT_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
@@ -608,7 +608,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			}
 
 		} break;
-		case Variant::REAL_ARRAY: {
+		case Variant::POOL_REAL_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
@@ -637,7 +637,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 
 		} break;
-		case Variant::STRING_ARRAY: {
+		case Variant::POOL_STRING_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
@@ -687,7 +687,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 
 		} break;
-		case Variant::VECTOR2_ARRAY: {
+		case Variant::POOL_VECTOR2_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
@@ -725,7 +725,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			r_variant=varray;
 
 		} break;
-		case Variant::VECTOR3_ARRAY: {
+		case Variant::POOL_VECTOR3_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
@@ -764,7 +764,7 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			r_variant=varray;
 
 		} break;
-		case Variant::COLOR_ARRAY: {
+		case Variant::POOL_COLOR_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
@@ -1004,10 +1004,10 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			r_len+=3*4;
 
 		} break;
-		case Variant::MATRIX32: {
+		case Variant::TRANSFORM2D: {
 
 			if (buf) {
-				Matrix32 val=p_variant;
+				Transform2D val=p_variant;
 				for(int i=0;i<3;i++) {
 					for(int j=0;j<2;j++) {
 
@@ -1046,10 +1046,10 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			r_len+=4*4;
 
 		} break;
-		case Variant::_AABB: {
+		case Variant::RECT3: {
 
 			if (buf) {
-				AABB aabb=p_variant;
+				Rect3 aabb=p_variant;
 				encode_float(aabb.pos.x,&buf[0]);
 				encode_float(aabb.pos.y,&buf[4]);
 				encode_float(aabb.pos.z,&buf[8]);
@@ -1062,10 +1062,10 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 
 		} break;
-		case Variant::MATRIX3: {
+		case Variant::BASIS: {
 
 			if (buf) {
-				Matrix3 val=p_variant;
+				Basis val=p_variant;
 				for(int i=0;i<3;i++) {
 					for(int j=0;j<3;j++) {
 
@@ -1232,7 +1232,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			Dictionary d = p_variant;
 
 			if (buf) {
-                encode_uint32(uint32_t(d.size())|(d.is_shared()?0x80000000:0),buf);
+				encode_uint32(uint32_t(d.size()),buf);
 				buf+=4;
 			}
 			r_len+=4;
@@ -1275,7 +1275,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			Array v = p_variant;
 
 			if (buf) {
-                encode_uint32(uint32_t(v.size())|(v.is_shared()?0x80000000:0),buf);
+		encode_uint32(uint32_t(v.size()),buf);
 				buf+=4;
 			}
 
@@ -1294,7 +1294,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 		} break;
 		// arrays
-		case Variant::RAW_ARRAY: {
+		case Variant::POOL_BYTE_ARRAY: {
 
 			PoolVector<uint8_t> data = p_variant;
 			int datalen=data.size();
@@ -1313,7 +1313,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 				r_len++;
 
 		} break;
-		case Variant::INT_ARRAY: {
+		case Variant::POOL_INT_ARRAY: {
 
 			PoolVector<int> data = p_variant;
 			int datalen=data.size();
@@ -1331,7 +1331,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			r_len+=4+datalen*datasize;
 
 		} break;
-		case Variant::REAL_ARRAY: {
+		case Variant::POOL_REAL_ARRAY: {
 
 			PoolVector<real_t> data = p_variant;
 			int datalen=data.size();
@@ -1349,7 +1349,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			r_len+=4+datalen*datasize;
 
 		} break;
-		case Variant::STRING_ARRAY: {
+		case Variant::POOL_STRING_ARRAY: {
 
 
 			PoolVector<String> data = p_variant;
@@ -1383,7 +1383,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			}
 
 		} break;
-		case Variant::VECTOR2_ARRAY: {
+		case Variant::POOL_VECTOR2_ARRAY: {
 
 			PoolVector<Vector2> data = p_variant;
 			int len=data.size();
@@ -1411,7 +1411,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			r_len+=4*2*len;
 
 		} break;
-		case Variant::VECTOR3_ARRAY: {
+		case Variant::POOL_VECTOR3_ARRAY: {
 
 			PoolVector<Vector3> data = p_variant;
 			int len=data.size();
@@ -1440,7 +1440,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			r_len+=4*3*len;
 
 		} break;
-		case Variant::COLOR_ARRAY: {
+		case Variant::POOL_COLOR_ARRAY: {
 
 			PoolVector<Color> data = p_variant;
 			int len=data.size();

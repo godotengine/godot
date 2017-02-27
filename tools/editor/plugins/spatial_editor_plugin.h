@@ -156,13 +156,11 @@ private:
 		NAVIGATION_MAYA,
 		NAVIGATION_MODO,
 	};
-	NavigationScheme _get_navigation_schema(const String& p_property);
 
 	enum NavigationZoomStyle {
 		NAVIGATION_ZOOM_VERTICAL,
 		NAVIGATION_ZOOM_HORIZONTAL
 	};
-	NavigationZoomStyle _get_navigation_zoom_style(const String& p_property);
 
 	enum NavigationMode {
 		NAVIGATION_NONE,
@@ -210,7 +208,7 @@ private:
 		bool region_select;
 		Point2 region_begin,region_end;
 
-		Cursor() { x_rot=y_rot=0; distance=4; region_select=false; }
+		Cursor() { x_rot=y_rot=0.5; distance=4; region_select=false; }
 	} cursor;
 
 	RID move_gizmo_instance[3], rotate_gizmo_instance[3];
@@ -271,7 +269,7 @@ class SpatialEditorSelectedItem : public Object {
 
 public:
 
-	AABB aabb;
+	Rect3 aabb;
 	Transform original; // original location when moving
 	Transform last_xform; // last transform
 	Spatial *sp;

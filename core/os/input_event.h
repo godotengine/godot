@@ -205,8 +205,8 @@ struct InputEventMouse  {
 
 	InputModifierState mod;
 	int button_mask;
-	int x,y;
-	int global_x,global_y;
+	float x,y;
+	float global_x,global_y;
 	int pointer_index;
 };
 
@@ -221,7 +221,7 @@ struct InputEventMouseButton : public InputEventMouse {
 
 struct InputEventMouseMotion : public InputEventMouse {
 
-	int relative_x,relative_y;
+	float relative_x,relative_y;
 	float speed_x,speed_y;
 };
 
@@ -241,14 +241,14 @@ struct InputEventJoypadButton  {
 struct InputEventScreenTouch  {
 
 	int index;
-	int x,y;
+	float x,y;
 	bool pressed;
 };
 struct InputEventScreenDrag  {
 
 	int index;
-	int x,y;
-	int relative_x,relative_y;
+	float x,y;
+	float relative_x,relative_y;
 	float speed_x,speed_y;
 };
 
@@ -298,7 +298,7 @@ struct InputEvent {
 	void set_as_action(const String& p_action, bool p_pressed);
 
 
-	InputEvent xform_by(const Matrix32& p_xform) const;
+	InputEvent xform_by(const Transform2D& p_xform) const;
 	bool operator==(const InputEvent &p_event) const;
 	operator String() const;
 	InputEvent() { zeromem(this,sizeof(InputEvent)); }

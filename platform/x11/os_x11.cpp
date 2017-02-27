@@ -82,14 +82,14 @@ OS::VideoMode OS_X11::get_default_video_mode() const {
 }
 
 int OS_X11::get_audio_driver_count() const {
-    return AudioDriverManagerSW::get_driver_count();
+    return AudioDriverManager::get_driver_count();
 }
 
 const char *OS_X11::get_audio_driver_name(int p_driver) const {
 
-    AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+    AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
     ERR_FAIL_COND_V( !driver, "" );
-    return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+    return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
 void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
@@ -269,21 +269,21 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XFree(xsh);
 	}
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
 	audio_driver_index=p_audio_driver;
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		bool success=false;
 		audio_driver_index=-1;
-		for(int i=0;i<AudioDriverManagerSW::get_driver_count();i++) {
+		for(int i=0;i<AudioDriverManager::get_driver_count();i++) {
 			if (i==p_audio_driver)
 				continue;
-			AudioDriverManagerSW::get_driver(i)->set_singleton();
-			if (AudioDriverManagerSW::get_driver(i)->init()==OK) {
+			AudioDriverManager::get_driver(i)->set_singleton();
+			if (AudioDriverManager::get_driver(i)->init()==OK) {
 				success=true;
-				print_line("Audio Driver Failed: "+String(AudioDriverManagerSW::get_driver(p_audio_driver)->get_name()));
-				print_line("Using alternate audio driver: "+String(AudioDriverManagerSW::get_driver(i)->get_name()));
+				print_line("Audio Driver Failed: "+String(AudioDriverManager::get_driver(p_audio_driver)->get_name()));
+				print_line("Using alternate audio driver: "+String(AudioDriverManager::get_driver(i)->get_name()));
 				audio_driver_index=i;
 				break;
 			}
@@ -294,13 +294,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-	audio_server->init();
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
 
 
 	ERR_FAIL_COND(!visual_server);
@@ -457,6 +450,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
+
+	window_has_focus = true; // Set focus to true at init
 #ifdef JOYDEV_ENABLED
 	joypad = memnew( JoypadLinux(input));
 #endif
@@ -469,24 +464,20 @@ void OS_X11::finalize() {
 		memdelete(main_loop);
 	main_loop=NULL;
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
+	for (int i = 0; i < get_audio_driver_count(); i++) {
+		AudioDriverManager::get_driver(i)->finish();
+	}
 
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 #ifdef JOYDEV_ENABLED
 	memdelete(joypad);
 #endif
 	memdelete(input);
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);
@@ -523,6 +514,7 @@ void OS_X11::finalize() {
 
 
 	args.clear();
+
 }
 
 
@@ -531,17 +523,21 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 	if (p_mode==mouse_mode)
 		return;
 
-	if (mouse_mode==MOUSE_MODE_CAPTURED)
+	if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED)
 		XUngrabPointer(x11_display, CurrentTime);
-	if (mouse_mode!=MOUSE_MODE_VISIBLE && p_mode==MOUSE_MODE_VISIBLE)
-		XUndefineCursor(x11_display,x11_window);
-	if (p_mode!=MOUSE_MODE_VISIBLE && mouse_mode==MOUSE_MODE_VISIBLE) {
-		XDefineCursor(x11_display,x11_window,null_cursor);
+
+	// The only modes that show a cursor are VISIBLE and CONFINED
+	bool showCursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+
+	if (showCursor) {
+		XUndefineCursor(x11_display,x11_window); // show cursor
+	} else {
+		XDefineCursor(x11_display,x11_window,null_cursor); // hide cursor
 	}
 
 	mouse_mode=p_mode;
 
-	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+	if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED) {
 
 		while(true) {
 			//flush pending motion events
@@ -559,11 +555,10 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 			}
 		}
 
-		if (XGrabPointer(x11_display, x11_window, True,
-				    ButtonPressMask | ButtonReleaseMask |
-				    PointerMotionMask, GrabModeAsync, GrabModeAsync,
-				    x11_window, None, CurrentTime) !=
-				GrabSuccess)  {
+		if (XGrabPointer(
+				x11_display, x11_window, True,
+				ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+				GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime) != GrabSuccess)  {
 			ERR_PRINT("NO GRAB");
 		}
 
@@ -783,13 +778,31 @@ void OS_X11::set_window_position(const Point2& p_position) {
 }
 
 Size2 OS_X11::get_window_size() const {
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, x11_window, &xwa);
-	return Size2i(xwa.width, xwa.height);
+	// Use current_videomode width and height instead of XGetWindowAttributes
+	// since right after a XResizeWindow the attributes may not be updated yet
+	return Size2i(current_videomode.width, current_videomode.height);
 }
 
 void OS_X11::set_window_size(const Size2 p_size) {
+	// If window resizable is disabled we need to update the attributes first
+	if (is_window_resizable() == false) {
+		XSizeHints *xsh;
+		xsh = XAllocSizeHints();
+		xsh->flags = PMinSize | PMaxSize;
+		xsh->min_width = p_size.x;
+		xsh->max_width = p_size.x;
+		xsh->min_height = p_size.y;
+		xsh->max_height = p_size.y;
+		XSetWMNormalHints(x11_display, x11_window, xsh);
+		XFree(xsh);
+	}
+
+	// Resize the window
 	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
+
+	// Update our videomode width and height
+	current_videomode.width = p_size.x;
+	current_videomode.height = p_size.y;
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
@@ -803,15 +816,15 @@ bool OS_X11::is_window_fullscreen() const {
 
 void OS_X11::set_window_resizable(bool p_enabled) {
 	XSizeHints *xsh;
+	Size2 size = get_window_size();
+
 	xsh = XAllocSizeHints();
 	xsh->flags = p_enabled ? 0L : PMinSize | PMaxSize;
 	if(!p_enabled) {
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display,x11_window,&xwa);
-		xsh->min_width = xwa.width;
-		xsh->max_width = xwa.width;
-		xsh->min_height = xwa.height;
-		xsh->max_height = xwa.height;
+		xsh->min_width = size.x;
+		xsh->max_width = size.x;
+		xsh->min_height = size.y;
+		xsh->max_height = size.y;
 	}
 	XSetWMNormalHints(x11_display, x11_window, xsh);
 	XFree(xsh);
@@ -1228,7 +1241,7 @@ static Property read_property(Display* p_display, Window p_window, Atom p_proper
 
 	}while(bytes_after != 0);
 
-	Property p = {ret, actual_format, nitems, actual_type};
+	Property p = {ret, actual_format, (int)nitems, actual_type};
 
 	return p;
 }
@@ -1268,6 +1281,10 @@ void OS_X11::process_xevents() {
 
 	do_mouse_warp=false;
 
+
+	// Is the current mouse mode one where it needs to be grabbed.
+	bool mouse_mode_grab = mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED;
+
 	while (XPending(x11_display) > 0) {
 		XEvent event;
 		XNextEvent(x11_display, &event);
@@ -1286,35 +1303,45 @@ void OS_X11::process_xevents() {
 			minimized = (visibility->state == VisibilityFullyObscured);
 		} break;
 		case LeaveNotify: {
-
-			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+			if (main_loop && !mouse_mode_grab)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_EXIT);
 			if (input)
 				input->set_mouse_in_window(false);
 
 		} break;
 		case EnterNotify: {
-
-			if (main_loop && mouse_mode!=MOUSE_MODE_CAPTURED)
+			if (main_loop && !mouse_mode_grab)
 				main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
 			if (input)
 				input->set_mouse_in_window(true);
 		} break;
 		case FocusIn:
 			minimized = false;
+			window_has_focus = true;
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
-			if (mouse_mode==MOUSE_MODE_CAPTURED) {
-				XGrabPointer(x11_display, x11_window, True,
-						    ButtonPressMask | ButtonReleaseMask |
-						    PointerMotionMask, GrabModeAsync, GrabModeAsync,
-						    x11_window, None, CurrentTime);
+			if (mouse_mode_grab) {
+				// Show and update the cursor if confined and the window regained focus.
+				if (mouse_mode==MOUSE_MODE_CONFINED)
+					XUndefineCursor(x11_display, x11_window);
+				else if (mouse_mode==MOUSE_MODE_CAPTURED) // or re-hide it in captured mode
+					XDefineCursor(x11_display, x11_window, null_cursor);
+
+				XGrabPointer(
+      			x11_display, x11_window, True,
+						ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+						GrabModeAsync, GrabModeAsync, x11_window, None, CurrentTime);
 			}
 			break;
 
 		case FocusOut:
+			window_has_focus = false;
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
-			if (mouse_mode==MOUSE_MODE_CAPTURED) {
+			if (mouse_mode_grab) {
 				//dear X11, I try, I really try, but you never work, you do whathever you want.
+				if (mouse_mode==MOUSE_MODE_CAPTURED) {
+					// Show the cursor if we're in captured mode so it doesn't look weird.
+					XUndefineCursor(x11_display, x11_window);
+				}
 				XUngrabPointer(x11_display, CurrentTime);
 			}
 			break;
@@ -1334,7 +1361,7 @@ void OS_X11::process_xevents() {
 
 			/* exit in case of a mouse button press */
 			last_timestamp=event.xbutton.time;
-			if (mouse_mode==MOUSE_MODE_CAPTURED) {
+			if (mouse_mode == MOUSE_MODE_CAPTURED) {
 				event.xbutton.x=last_mouse_pos.x;
 				event.xbutton.y=last_mouse_pos.y;
 			}
@@ -1356,7 +1383,6 @@ void OS_X11::process_xevents() {
 				mouse_event.mouse_button.button_index=2;
 
 			mouse_event.mouse_button.pressed=(event.type==ButtonPress);
-
 
 			if (event.type==ButtonPress && event.xbutton.button==1) {
 
@@ -1390,7 +1416,6 @@ void OS_X11::process_xevents() {
 			// YOU ARE FORCING ME TO FILTER ONE BY ONE TO FIND IT
 			// PLEASE DO ME A FAVOR AND DIE DROWNED IN A FECAL
 			// MOUNTAIN BECAUSE THAT'S WHERE YOU BELONG.
-
 
 			while(true) {
 				if (mouse_mode==MOUSE_MODE_CAPTURED && event.xmotion.x==current_videomode.width/2 && event.xmotion.y==current_videomode.height/2) {
@@ -1433,7 +1458,7 @@ void OS_X11::process_xevents() {
 				Point2i new_center = pos;
 				pos = last_mouse_pos + ( pos - center );
 				center=new_center;
-				do_mouse_warp=true;
+				do_mouse_warp=window_has_focus; // warp the cursor if we're focused in
 #else
 				//Dear X11, thanks for making my life miserable
 
@@ -1467,8 +1492,8 @@ void OS_X11::process_xevents() {
 			input->set_mouse_pos(pos);
 			motion_event.mouse_motion.global_x=pos.x;
 			motion_event.mouse_motion.global_y=pos.y;
-			motion_event.mouse_motion.speed_x=input->get_mouse_speed().x;
-			motion_event.mouse_motion.speed_y=input->get_mouse_speed().y;
+			motion_event.mouse_motion.speed_x=input->get_last_mouse_speed().x;
+			motion_event.mouse_motion.speed_y=input->get_last_mouse_speed().y;
 
 			motion_event.mouse_motion.relative_x=rel.x;
 			motion_event.mouse_motion.relative_y=rel.y;
@@ -1476,8 +1501,11 @@ void OS_X11::process_xevents() {
 			last_mouse_pos=pos;
 
 			// printf("rel: %d,%d\n", rel.x, rel.y );
-
-			input->parse_input_event( motion_event);
+			// Don't propagate the motion event unless we have focus
+			// this is so that the relative motion doesn't get messed up
+			// after we regain focus.
+			if (window_has_focus || !mouse_mode_grab)
+				input->parse_input_event( motion_event);
 
 		} break;
 		case KeyPress:
@@ -1923,10 +1951,10 @@ void OS_X11::run() {
 
 	main_loop->init();
 
-//	uint64_t last_ticks=get_ticks_usec();
+	//uint64_t last_ticks=get_ticks_usec();
 
-//	int frames=0;
-//	uint64_t frame=0;
+	//int frames=0;
+	//uint64_t frame=0;
 
 	while (!force_quit) {
 
@@ -1982,20 +2010,20 @@ void OS_X11::set_context(int p_context) {
 OS_X11::OS_X11() {
 
 #ifdef RTAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+	AudioDriverManager::add_driver(&driver_rtaudio);
 #endif
 
 #ifdef PULSEAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_pulseaudio);
+	AudioDriverManager::add_driver(&driver_pulseaudio);
 #endif
 
 #ifdef ALSA_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_alsa);
+	AudioDriverManager::add_driver(&driver_alsa);
 #endif
 
-	if(AudioDriverManagerSW::get_driver_count() == 0){
+	if(AudioDriverManager::get_driver_count() == 0){
 		WARN_PRINT("No sound driver found... Defaulting to dummy driver");
-		AudioDriverManagerSW::add_driver(&driver_dummy);
+		AudioDriverManager::add_driver(&driver_dummy);
 	}
 
 	minimized = false;

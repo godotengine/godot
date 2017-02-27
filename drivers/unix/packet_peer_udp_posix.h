@@ -48,6 +48,7 @@ class PacketPeerUDPPosix : public PacketPeerUDP {
 	mutable int packet_port;
 	mutable int queue_count;
 	int sockfd;
+	IP::Type sock_type;
 
 	IP_Address peer_addr;
 	int peer_port;
@@ -65,7 +66,7 @@ public:
 
 	virtual int get_max_packet_size() const;
 
-	virtual Error listen(int p_port, int p_recv_buffer_size=65536);
+	virtual Error listen(int p_port, IP_Address p_bind_address=IP_Address("*"), int p_recv_buffer_size=65536);
 	virtual void close();
 	virtual Error wait();
 	virtual bool is_listening() const;
@@ -73,7 +74,7 @@ public:
 	virtual IP_Address get_packet_address() const;
 	virtual int get_packet_port() const;
 
-	virtual void set_send_address(const IP_Address& p_address,int p_port);
+	virtual void set_dest_address(const IP_Address& p_address,int p_port);
 
 	static void make_default();
 

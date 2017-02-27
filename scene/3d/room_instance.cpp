@@ -31,7 +31,7 @@
 #include "servers/visual_server.h"
 
 #include "geometry.h"
-#include "globals.h"
+#include "global_config.h"
 #include "scene/resources/surface_tool.h"
 
 
@@ -56,17 +56,11 @@ void Room::_notification(int p_what) {
 			}
 
 
-			if (sound_enabled)
-				SpatialSoundServer::get_singleton()->room_set_space(sound_room,get_world()->get_sound_space());
-
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			SpatialSoundServer::get_singleton()->room_set_transform(sound_room,get_global_transform());
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 
-			if (sound_enabled)
-				SpatialSoundServer::get_singleton()->room_set_space(sound_room,RID());
 
 
 		 } break;
@@ -78,12 +72,12 @@ void Room::_notification(int p_what) {
 
 
 
-AABB Room::get_aabb() const {
+Rect3 Room::get_aabb() const {
 
 	if (room.is_null())
-		return AABB();
+		return Rect3();
 
-	return AABB();
+	return Rect3();
 }
 
 PoolVector<Face3> Room::get_faces(uint32_t p_usage_flags) const {
@@ -158,69 +152,36 @@ void Room::_parse_node_faces(PoolVector<Face3> &all_faces,const Node *p_node) co
 
 
 
-void Room::set_simulate_acoustics(bool p_enable) {
-
-	if (sound_enabled==p_enable)
-		return;
-
-	sound_enabled=p_enable;
-	if (!is_inside_world())
-		return; //nothing to do
-
-	if (sound_enabled)
-		SpatialSoundServer::get_singleton()->room_set_space(sound_room,get_world()->get_sound_space());
-	else
-		SpatialSoundServer::get_singleton()->room_set_space(sound_room,RID());
-
-
-}
-
 void Room::_bounds_changed() {
 
 	update_gizmo();
 }
 
-bool Room::is_simulating_acoustics() const {
 
-	return sound_enabled;
-}
-
-
-
-RID Room::get_sound_room() const {
-
-	return RID();
-}
 
 void Room::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_room","room:Room"),&Room::set_room );
-	ClassDB::bind_method(_MD("get_room:Room"),&Room::get_room );
+	ClassDB::bind_method(D_METHOD("set_room","room:Room"),&Room::set_room );
+	ClassDB::bind_method(D_METHOD("get_room:Room"),&Room::get_room );
 
 
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "room/room", PROPERTY_HINT_RESOURCE_TYPE, "Area" ), "set_room", "get_room") ;
 
-	ClassDB::bind_method(_MD("set_simulate_acoustics","enable"),&Room::set_simulate_acoustics );
-	ClassDB::bind_method(_MD("is_simulating_acoustics"),&Room::is_simulating_acoustics );
-
-
-
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "room/room", PROPERTY_HINT_RESOURCE_TYPE, "Area" ), _SCS("set_room"), _SCS("get_room") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "room/simulate_acoustics"), _SCS("set_simulate_acoustics"), _SCS("is_simulating_acoustics") );
 }
 
 
 Room::Room() {
 
-	sound_enabled=false;
-	sound_room=SpatialSoundServer::get_singleton()->room_create();
+//	sound_enabled=false;
 
 	level=0;
+
 
 }
 
 
 Room::~Room() {
 
-	SpatialSoundServer::get_singleton()->free(sound_room);
+
 }
 

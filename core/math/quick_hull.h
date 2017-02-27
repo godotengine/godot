@@ -29,7 +29,7 @@
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
-#include "aabb.h"
+#include "rect3.h"
 #include "set.h"
 #include "list.h"
 #include "geometry.h"

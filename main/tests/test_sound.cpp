@@ -30,11 +30,13 @@
 #include "servers/visual_server.h"
 #include "os/main_loop.h"
 #include "math_funcs.h"
-#include "scene/resources/sample.h"
+
 #include "io/resource_loader.h"
 #include "print_string.h"
 #include "servers/audio_server.h"
 #include "os/os.h"
+
+#if 0
 namespace TestSound {
 
 
@@ -93,3 +95,4 @@ MainLoop* test() {
 }
 
 }
+#endif

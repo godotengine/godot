@@ -31,7 +31,7 @@
 #import <OpenGLES/EAGLDrawable.h>
 #include "os_iphone.h"
 #include "core/os/keyboard.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "servers/audio_server.h"
 
 #import "gl_view.h"
@@ -274,7 +274,7 @@ static void clear_touches() {
 										nil];
 
 	// Create our EAGLContext, and if successful make it current and create our framebuffer.
-	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
 
 	if(!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer])
 	{

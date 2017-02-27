@@ -27,12 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resources_dock.h"
+
 #include "editor_node.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "editor_settings.h"
 #include "project_settings.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_file_system.h"
 
 
@@ -122,12 +123,14 @@ void ResourcesDock::_notification(int p_what) {
 
 void ResourcesDock::save_resource(const String& p_path,const Ref<Resource>& p_resource) {
 
-	editor->get_editor_data().apply_changes_in_editors();;
+	editor->get_editor_data().apply_changes_in_editors();
 	int flg=0;
 	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
 		flg|=ResourceSaver::FLAG_COMPRESS;
-	//if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
-	//	flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+	/*
+	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+	*/
 
 	String path = GlobalConfig::get_singleton()->localize_path(p_path);
 	Error err = ResourceSaver::save(path,p_resource,flg|ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
@@ -137,7 +140,7 @@ void ResourcesDock::save_resource(const String& p_path,const Ref<Resource>& p_re
 		accept->popup_centered_minsize();
         return;
 	}
-//	EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());
+	//EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());
 
 	((Resource*)p_resource.ptr())->set_path(path);
 	editor->emit_signal("resource_saved",p_resource);
@@ -319,12 +322,12 @@ void ResourcesDock::_create() {
 
 void ResourcesDock::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_tool_selected"),&ResourcesDock::_tool_selected);
-	ClassDB::bind_method(_MD("_create"),&ResourcesDock::_create);
-	ClassDB::bind_method(_MD("_resource_selected"),&ResourcesDock::_resource_selected);
-	ClassDB::bind_method(_MD("_delete"),&ResourcesDock::_delete);
-	ClassDB::bind_method(_MD("remove_resource"),&ResourcesDock::remove_resource);
-	ClassDB::bind_method(_MD("_file_action"),&ResourcesDock::_file_action);
+	ClassDB::bind_method(D_METHOD("_tool_selected"),&ResourcesDock::_tool_selected);
+	ClassDB::bind_method(D_METHOD("_create"),&ResourcesDock::_create);
+	ClassDB::bind_method(D_METHOD("_resource_selected"),&ResourcesDock::_resource_selected);
+	ClassDB::bind_method(D_METHOD("_delete"),&ResourcesDock::_delete);
+	ClassDB::bind_method(D_METHOD("remove_resource"),&ResourcesDock::remove_resource);
+	ClassDB::bind_method(D_METHOD("_file_action"),&ResourcesDock::_file_action);
 
 
 

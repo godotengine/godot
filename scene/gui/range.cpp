@@ -135,14 +135,14 @@ double Range::get_page() const {
 	return shared->page;
 }
 
-void Range::set_unit_value(double p_value) {
+void Range::set_as_ratio(double p_value) {
 
 	double v;
 
-	if (shared->exp_unit_value && get_min()>0) {
+	if (shared->exp_ratio && get_min()>0) {
 
-		double exp_min = Math::log(get_min())/Math::log(2);
-		double exp_max = Math::log(get_max())/Math::log(2);
+		double exp_min = Math::log(get_min())/Math::log((double)2);
+		double exp_max = Math::log(get_max())/Math::log((double)2);
 		v = Math::pow(2,exp_min+(exp_max-exp_min)*p_value);
 	} else {
 
@@ -156,13 +156,13 @@ void Range::set_unit_value(double p_value) {
 	}
 	set_value( v );
 }
-double Range::get_unit_value() const {
+double Range::get_as_ratio() const {
 
-	if (shared->exp_unit_value && get_min()>0) {
+	if (shared->exp_ratio && get_min()>0) {
 
-		double exp_min = Math::log(get_min())/Math::log(2);
-		double exp_max = Math::log(get_max())/Math::log(2);
-		double v = Math::log(get_value())/Math::log(2);
+		double exp_min = Math::log(get_min())/Math::log((double)2);
+		double exp_max = Math::log(get_max())/Math::log((double)2);
+		double v = Math::log(get_value())/Math::log((double)2);
 
 		return (v - exp_min) / (exp_max - exp_min);
 
@@ -222,57 +222,57 @@ void Range::_unref_shared() {
 
 void Range::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_value"),&Range::get_value);
-	ClassDB::bind_method(_MD("get_min"),&Range::get_min);
-	ClassDB::bind_method(_MD("get_max"),&Range::get_max);
-	ClassDB::bind_method(_MD("get_step"),&Range::get_step);
-	ClassDB::bind_method(_MD("get_page"),&Range::get_page);
-	ClassDB::bind_method(_MD("get_unit_value"),&Range::get_unit_value);
-	ClassDB::bind_method(_MD("set_value","value"),&Range::set_value);
-	ClassDB::bind_method(_MD("set_min","minimum"),&Range::set_min);
-	ClassDB::bind_method(_MD("set_max","maximum"),&Range::set_max);
-	ClassDB::bind_method(_MD("set_step","step"),&Range::set_step);
-	ClassDB::bind_method(_MD("set_page","pagesize"),&Range::set_page);
-	ClassDB::bind_method(_MD("set_unit_value","value"),&Range::set_unit_value);
-	ClassDB::bind_method(_MD("set_rounded_values","enabled"),&Range::set_rounded_values);
-	ClassDB::bind_method(_MD("is_rounded_values"),&Range::is_rounded_values);
-	ClassDB::bind_method(_MD("set_exp_unit_value","enabled"),&Range::set_exp_unit_value);
-	ClassDB::bind_method(_MD("is_unit_value_exp"),&Range::is_unit_value_exp);
+	ClassDB::bind_method(D_METHOD("get_value"),&Range::get_value);
+	ClassDB::bind_method(D_METHOD("get_min"),&Range::get_min);
+	ClassDB::bind_method(D_METHOD("get_max"),&Range::get_max);
+	ClassDB::bind_method(D_METHOD("get_step"),&Range::get_step);
+	ClassDB::bind_method(D_METHOD("get_page"),&Range::get_page);
+	ClassDB::bind_method(D_METHOD("get_as_ratio"),&Range::get_as_ratio);
+	ClassDB::bind_method(D_METHOD("set_value","value"),&Range::set_value);
+	ClassDB::bind_method(D_METHOD("set_min","minimum"),&Range::set_min);
+	ClassDB::bind_method(D_METHOD("set_max","maximum"),&Range::set_max);
+	ClassDB::bind_method(D_METHOD("set_step","step"),&Range::set_step);
+	ClassDB::bind_method(D_METHOD("set_page","pagesize"),&Range::set_page);
+	ClassDB::bind_method(D_METHOD("set_as_ratio","value"),&Range::set_as_ratio);
+	ClassDB::bind_method(D_METHOD("set_use_rounded_values","enabled"),&Range::set_use_rounded_values);
+	ClassDB::bind_method(D_METHOD("is_using_rounded_values"),&Range::is_using_rounded_values);
+	ClassDB::bind_method(D_METHOD("set_exp_ratio","enabled"),&Range::set_exp_ratio);
+	ClassDB::bind_method(D_METHOD("is_ratio_exp"),&Range::is_ratio_exp);
 
-	ClassDB::bind_method(_MD("share","with"),&Range::_share);
-	ClassDB::bind_method(_MD("unshare"),&Range::unshare);
+	ClassDB::bind_method(D_METHOD("share","with"),&Range::_share);
+	ClassDB::bind_method(D_METHOD("unshare"),&Range::unshare);
 
 	ADD_SIGNAL( MethodInfo("value_changed", PropertyInfo(Variant::REAL,"value")));
 	ADD_SIGNAL( MethodInfo("changed"));
 
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "min_value" ), _SCS("set_min"), _SCS("get_min") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "max_value" ), _SCS("set_max"), _SCS("get_max") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "step" ), _SCS("set_step"), _SCS("get_step") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "page" ), _SCS("set_page"), _SCS("get_page") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "value" ), _SCS("set_value"), _SCS("get_value") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "exp_edit" ), _SCS("set_exp_unit_value"), _SCS("is_unit_value_exp") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "rounded" ), _SCS("set_rounded_values"), _SCS("is_rounded_values") );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "min_value" ), "set_min", "get_min") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "max_value" ), "set_max", "get_max") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "step" ), "set_step", "get_step") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "page" ), "set_page", "get_page") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "value" ), "set_value", "get_value") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "exp_edit" ), "set_exp_ratio", "is_ratio_exp") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "rounded" ), "set_use_rounded_values", "is_using_rounded_values") ;
 
 }
 
-void Range::set_rounded_values(bool p_enable) {
+void Range::set_use_rounded_values(bool p_enable) {
 
 	_rounded_values = p_enable;
 }
 
-bool Range::is_rounded_values() const {
+bool Range::is_using_rounded_values() const {
 
 	return _rounded_values;
 }
 
-void Range::set_exp_unit_value(bool p_enable) {
+void Range::set_exp_ratio(bool p_enable) {
 
-	shared->exp_unit_value=p_enable;
+	shared->exp_ratio=p_enable;
 }
 
-bool Range::is_unit_value_exp() const {
+bool Range::is_ratio_exp() const {
 
-	return shared->exp_unit_value;
+	return shared->exp_ratio;
 }
 
 
@@ -285,7 +285,7 @@ Range::Range()
 	shared->step=1;
 	shared->page=0;
 	shared->owners.insert(this);
-	shared->exp_unit_value=false;
+	shared->exp_ratio=false;
 
 	_rounded_values = false;
 }

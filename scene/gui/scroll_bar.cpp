@@ -51,9 +51,11 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 			if (b.button_index==5 && b.pressed) {
 
-				//if (orientation==VERTICAL)
-				//	set_val( get_val() + get_page() / 4.0 );
-				//else
+				/*
+				if (orientation==VERTICAL)
+					set_val( get_val() + get_page() / 4.0 );
+				else
+				*/
 				set_value( get_value() + get_page() / 4.0 );
 				accept_event();
 
@@ -61,9 +63,11 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 			if (b.button_index==4 && b.pressed) {
 
-				//if (orientation==HORIZONTAL)
-				//	set_val( get_val() - get_page() / 4.0 );
-				//else
+				/*
+				if (orientation==HORIZONTAL)
+					set_val( get_val() - get_page() / 4.0 );
+				else
+				*/
 				set_value( get_value() - get_page() / 4.0  );
 				accept_event();
 			}
@@ -112,7 +116,7 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 					drag.active=true;
 					drag.pos_at_click=grabber_ofs+ofs;
-					drag.value_at_click=get_unit_value();
+					drag.value_at_click=get_as_ratio();
 					update();
 				} else {
 
@@ -145,7 +149,7 @@ void ScrollBar::_gui_input(InputEvent p_event) {
 
 				double diff = (ofs-drag.pos_at_click) / get_area_size();
 
-				set_unit_value( drag.value_at_click + diff );
+				set_as_ratio( drag.value_at_click + diff );
 			} else {
 
 
@@ -303,7 +307,7 @@ void ScrollBar::_notification(int p_what) {
 
 		if (drag_slave) {
 			drag_slave->connect("gui_input",this,"_drag_slave_input");
-			drag_slave->connect("exit_tree",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
+			drag_slave->connect("tree_exited",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
 		}
 
 
@@ -312,7 +316,7 @@ void ScrollBar::_notification(int p_what) {
 
 		if (drag_slave) {
 			drag_slave->disconnect("gui_input",this,"_drag_slave_input");
-			drag_slave->disconnect("exit_tree",this,"_drag_slave_exit");
+			drag_slave->disconnect("tree_exited",this,"_drag_slave_exit");
 		}
 
 		drag_slave=NULL;
@@ -425,8 +429,10 @@ double ScrollBar::get_grabber_size() const {
 		return 0;
 
 	float page = (get_page()>0)? get_page() : 0;
-//	if (grabber_range < get_step())
-//		grabber_range=get_step();
+	/*
+	if (grabber_range < get_step())
+		grabber_range=get_step();
+	*/
 
 	double area_size=get_area_size();
 	double grabber_size = page / range * area_size;
@@ -497,7 +503,7 @@ double ScrollBar::get_click_pos(const Point2& p_pos) const {
 double ScrollBar::get_grabber_offset() const {
 
 
-	return (get_area_size()) * get_unit_value();
+	return (get_area_size()) * get_as_ratio();
 
 }
 
@@ -620,12 +626,16 @@ void ScrollBar::_drag_slave_input(const InputEvent& p_input) {
 
 				if (orientation==HORIZONTAL)
 					set_value(diff.x);
-				//else
-				//	drag_slave_accum.x=0;
+				/*
+				else
+					drag_slave_accum.x=0;
+				*/
 				if (orientation==VERTICAL)
 					set_value(diff.y);
-				//else
-				//	drag_slave_accum.y=0;
+				/*
+				else
+					drag_slave_accum.y=0;
+				*/
 				time_since_motion=0;
 			}
 
@@ -639,7 +649,7 @@ void ScrollBar::set_drag_slave(const NodePath& p_path) {
 
 		if (drag_slave) {
 			drag_slave->disconnect("gui_input",this,"_drag_slave_input");
-			drag_slave->disconnect("exit_tree",this,"_drag_slave_exit");
+			drag_slave->disconnect("tree_exited",this,"_drag_slave_exit");
 		}
 	}
 
@@ -655,7 +665,7 @@ void ScrollBar::set_drag_slave(const NodePath& p_path) {
 
 		if (drag_slave) {
 			drag_slave->connect("gui_input",this,"_drag_slave_input");
-			drag_slave->connect("exit_tree",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
+			drag_slave->connect("tree_exited",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
 		}
 	}
 }
@@ -804,13 +814,13 @@ bool ScrollBar::key(unsigned long p_unicode, unsigned long p_scan_code,bool b.pr
 
 void ScrollBar::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&ScrollBar::_gui_input);
-	ClassDB::bind_method(_MD("set_custom_step","step"),&ScrollBar::set_custom_step);
-	ClassDB::bind_method(_MD("get_custom_step"),&ScrollBar::get_custom_step);
-	ClassDB::bind_method(_MD("_drag_slave_input"),&ScrollBar::_drag_slave_input);
-	ClassDB::bind_method(_MD("_drag_slave_exit"),&ScrollBar::_drag_slave_exit);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ScrollBar::_gui_input);
+	ClassDB::bind_method(D_METHOD("set_custom_step","step"),&ScrollBar::set_custom_step);
+	ClassDB::bind_method(D_METHOD("get_custom_step"),&ScrollBar::get_custom_step);
+	ClassDB::bind_method(D_METHOD("_drag_slave_input"),&ScrollBar::_drag_slave_input);
+	ClassDB::bind_method(D_METHOD("_drag_slave_exit"),&ScrollBar::_drag_slave_exit);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_step",PROPERTY_HINT_RANGE,"-1,4096"), _SCS("set_custom_step"),_SCS("get_custom_step"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_step",PROPERTY_HINT_RANGE,"-1,4096"), "set_custom_step","get_custom_step");
 
 }
 

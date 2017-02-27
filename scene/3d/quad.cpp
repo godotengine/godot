@@ -66,7 +66,7 @@ void Quad::_update() {
 	pointsw[3][a2]=-s2.y+offset.y;
 
 
-	aabb=AABB(pointsw[0],Vector3());
+	aabb=Rect3(pointsw[0],Vector3());
 	for(int i=1;i<4;i++)
 		aabb.expand_to(pointsw[i]);
 
@@ -192,29 +192,29 @@ PoolVector<Face3> Quad::get_faces(uint32_t p_usage_flags) const {
 	return PoolVector<Face3>();
 }
 
-AABB Quad::get_aabb() const {
+Rect3 Quad::get_aabb() const {
 
 	return aabb;
 }
 
 void Quad::_bind_methods(){
 
-	ClassDB::bind_method(_MD("set_axis","axis"),&Quad::set_axis);
-	ClassDB::bind_method(_MD("get_axis"),&Quad::get_axis);
+	ClassDB::bind_method(D_METHOD("set_axis","axis"),&Quad::set_axis);
+	ClassDB::bind_method(D_METHOD("get_axis"),&Quad::get_axis);
 
-	ClassDB::bind_method(_MD("set_size","size"),&Quad::set_size);
-	ClassDB::bind_method(_MD("get_size"),&Quad::get_size);
+	ClassDB::bind_method(D_METHOD("set_size","size"),&Quad::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"),&Quad::get_size);
 
-	ClassDB::bind_method(_MD("set_centered","centered"),&Quad::set_centered);
-	ClassDB::bind_method(_MD("is_centered"),&Quad::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&Quad::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&Quad::is_centered);
 
-	ClassDB::bind_method(_MD("set_offset","offset"),&Quad::set_offset);
-	ClassDB::bind_method(_MD("get_offset"),&Quad::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&Quad::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&Quad::get_offset);
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), _SCS("set_axis"), _SCS("get_axis"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "size" ), _SCS("set_size"), _SCS("get_size"));
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "offset" ), _SCS("set_offset"), _SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered" ), _SCS("set_centered"), _SCS("is_centered"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "axis", PROPERTY_HINT_ENUM,"X,Y,Z" ), "set_axis", "get_axis");
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "size" ), "set_size", "get_size");
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR2, "offset" ), "set_offset", "get_offset");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered" ), "set_centered", "is_centered");
 
 }
 

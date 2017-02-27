@@ -54,7 +54,8 @@ void Transform::invert() {
 }
 
 Transform Transform::inverse() const {
-
+	// FIXME: this function assumes the basis is a rotation matrix, with no scaling.
+	// Transform::affine_inverse can handle matrices with scaling, so GDScript should eventually use that.
 	Transform ret=*this;
 	ret.invert();
 	return ret;
@@ -63,12 +64,12 @@ Transform Transform::inverse() const {
 
 void Transform::rotate(const Vector3& p_axis,real_t p_phi) {
 
-	*this = *this * Transform( Matrix3( p_axis, p_phi ), Vector3()  );
+	*this = rotated(p_axis, p_phi);
 }
 
 Transform Transform::rotated(const Vector3& p_axis,real_t p_phi) const{
 
-	return *this * Transform( Matrix3( p_axis, p_phi ), Vector3()  );
+	return Transform(Basis( p_axis, p_phi ), Vector3()) * (*this);
 }
 
 void Transform::rotate_basis(const Vector3& p_axis,real_t p_phi) {
@@ -113,7 +114,7 @@ void Transform::set_look_at( const Vector3& p_eye, const Vector3& p_target, cons
 
 }
 
-Transform Transform::interpolate_with(const Transform& p_transform, float p_c) const {
+Transform Transform::interpolate_with(const Transform& p_transform, real_t p_c) const {
 
 	/* not sure if very "efficient" but good enough? */
 
@@ -209,7 +210,7 @@ Transform::operator String() const {
 }
 
 
-Transform::Transform(const Matrix3& p_basis, const Vector3& p_origin) {
+Transform::Transform(const Basis& p_basis, const Vector3& p_origin) {
 
 	basis=p_basis;
 	origin=p_origin;

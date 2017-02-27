@@ -260,7 +260,7 @@ void DynamicFontAtSize::_update_char(CharType p_char) {
 		break;
 	}
 
-//	print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
+	//print_line("CHAR: "+String::chr(p_char)+" TEX INDEX: "+itos(tex_index)+" X: "+itos(tex_x)+" Y: "+itos(tex_y));
 
 	if (tex_index==-1) {
 		//could not find texture to fit, create one
@@ -378,14 +378,14 @@ DynamicFontAtSize::~DynamicFontAtSize(){
 
 void DynamicFont::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_font_data","data:DynamicFontData"),&DynamicFont::set_font_data);
-	ClassDB::bind_method(_MD("get_font_data:DynamicFontData"),&DynamicFont::get_font_data);
+	ClassDB::bind_method(D_METHOD("set_font_data","data:DynamicFontData"),&DynamicFont::set_font_data);
+	ClassDB::bind_method(D_METHOD("get_font_data:DynamicFontData"),&DynamicFont::get_font_data);
 
-	ClassDB::bind_method(_MD("set_size","data"),&DynamicFont::set_size);
-	ClassDB::bind_method(_MD("get_size"),&DynamicFont::get_size);
+	ClassDB::bind_method(D_METHOD("set_size","data"),&DynamicFont::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"),&DynamicFont::get_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"font/size"),_SCS("set_size"),_SCS("get_size"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font/font",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),_SCS("set_font_data"),_SCS("get_font_data"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"font/size"),"set_size","get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"font/font",PROPERTY_HINT_RESOURCE_TYPE,"DynamicFontData"),"set_font_data","get_font_data");
 }
 
 

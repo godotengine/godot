@@ -58,7 +58,10 @@ enum PropertyHint {
 	PROPERTY_HINT_SPRITE_FRAME,
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
-	PROPERTY_HINT_ALL_FLAGS,
+	PROPERTY_HINT_LAYERS_2D_RENDER,
+	PROPERTY_HINT_LAYERS_2D_PHYSICS,
+	PROPERTY_HINT_LAYERS_3D_RENDER,
+	PROPERTY_HINT_LAYERS_3D_PHYSICS,
 	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_DIR, ///< a directort path must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
@@ -100,6 +103,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_SCRIPT_VARIABLE=8192,
 	PROPERTY_USAGE_STORE_IF_NULL=16384,
 	PROPERTY_USAGE_ANIMATE_AS_TRIGGER=32768,
+	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED=65536,
 
 	PROPERTY_USAGE_DEFAULT=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK|PROPERTY_USAGE_INTERNATIONALIZED,
@@ -110,12 +114,12 @@ enum PropertyUsageFlags {
 
 
 #define ADD_SIGNAL( m_signal ) ClassDB::add_signal( get_class_static(), m_signal )
-#define ADD_PROPERTY( m_property, m_setter, m_getter ) ClassDB::add_property( get_class_static(), m_property, m_setter, m_getter )
-#define ADD_PROPERTYI( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), m_property, m_setter, m_getter, m_index )
-#define ADD_PROPERTYNZ( m_property, m_setter, m_getter ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), m_setter, m_getter )
-#define ADD_PROPERTYINZ( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), m_setter, m_getter, m_index )
-#define ADD_PROPERTYNO( m_property, m_setter, m_getter ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter )
-#define ADD_PROPERTYINO( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), m_setter, m_getter, m_index )
+#define ADD_PROPERTY( m_property, m_setter, m_getter ) ClassDB::add_property( get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter) )
+#define ADD_PROPERTYI( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index )
+#define ADD_PROPERTYNZ( m_property, m_setter, m_getter ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), _scs_create(m_setter), _scs_create(m_getter) )
+#define ADD_PROPERTYINZ( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONZERO), _scs_create(m_setter), _scs_create(m_getter), m_index )
+#define ADD_PROPERTYNO( m_property, m_setter, m_getter ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), _scs_create(m_setter), _scs_create(m_getter) )
+#define ADD_PROPERTYINO( m_property, m_setter, m_getter, m_index ) ClassDB::add_property( get_class_static(), (m_property).added_usage(PROPERTY_USAGE_STORE_IF_NONONE), _scs_create(m_setter), _scs_create(m_getter), m_index )
 #define ADD_GROUP( m_name, m_prefix ) ClassDB::add_property_group( get_class_static(), m_name, m_prefix )
 
 struct PropertyInfo {
@@ -576,8 +580,8 @@ public:
 	}
 
 	/* IAPI */
-//	void set(const String& p_name, const Variant& p_value);
-//	Variant get(const String& p_name) const;
+	//void set(const String& p_name, const Variant& p_value);
+	//Variant get(const String& p_name) const;
 
 	void set(const StringName& p_name, const Variant& p_value, bool *r_valid=NULL);
 	Variant get(const StringName& p_name, bool *r_valid=NULL) const;
@@ -676,7 +680,7 @@ class ObjectDB {
 				unsigned long i;
 			} u;
 			u.p=p_obj;
-			return HashMapHahserDefault::hash((uint64_t)u.i);
+			return HashMapHasherDefault::hash((uint64_t)u.i);
 		}
 	};
 
@@ -718,6 +722,6 @@ public:
 };
 
 //needed by macros
-#include "object_type_db.h"
+#include "class_db.h"
 
 #endif

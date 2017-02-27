@@ -104,10 +104,10 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 	}
 	#endif
 
-	if (p_test=="sound") {
+	//if (p_test=="sound") {
 
-		return TestSound::test();
-	}
+	//	return TestSound::test();
+	//}
 
 	if (p_test=="io") {
 

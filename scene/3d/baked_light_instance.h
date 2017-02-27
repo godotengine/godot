@@ -49,7 +49,7 @@ public:
 private:
 	RID baked_light;
 	int cell_subdiv;
-	AABB bounds;
+	Rect3 bounds;
 	int cells_per_axis;
 
 	enum {
@@ -112,12 +112,12 @@ private:
 
 
 
-	void _plot_face(int p_idx,int p_level,const Vector3 *p_vtx,const Vector2* p_uv, const MaterialCache& p_material,const AABB& p_aabb);
+	void _plot_face(int p_idx,int p_level,const Vector3 *p_vtx,const Vector2* p_uv, const MaterialCache& p_material,const Rect3& p_aabb);
 	void _fixup_plot(int p_idx, int p_level, int p_x, int p_y, int p_z);
 	void _bake_add_mesh(const Transform& p_xform,Ref<Mesh>& p_mesh);
 	void _bake_add_to_aabb(const Transform& p_xform,Ref<Mesh>& p_mesh,bool &first);
 
-	void _debug_mesh(int p_idx, int p_level, const AABB &p_aabb,DebugMode p_mode,Ref<MultiMesh> &p_multimesh,int &idx);
+	void _debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb,DebugMode p_mode,Ref<MultiMesh> &p_multimesh,int &idx);
 	void _debug_mesh_albedo();
 	void _debug_mesh_light();
 
@@ -156,7 +156,7 @@ public:
 
 	void create_debug_mesh(DebugMode p_mode);
 
-	virtual AABB get_aabb() const;
+	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	String get_configuration_warning() const;

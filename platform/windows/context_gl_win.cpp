@@ -199,7 +199,7 @@ Error ContextGL_Win::initialize() {
 	}
 
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)  wglGetProcAddress ("wglSwapIntervalEXT");
-//	glWrapperInit(wrapper_get_proc_address);
+	//glWrapperInit(wrapper_get_proc_address);
 
 	return OK;
 }

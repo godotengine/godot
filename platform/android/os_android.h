@@ -33,30 +33,19 @@
 #include "drivers/unix/os_unix.h"
 #include "os/main_loop.h"
 #include "servers/physics/physics_server_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 #include "main/input_default.h"
-
-//#ifdef USE_JAVA_FILE_ACCESS
-
+#include "audio_driver_jandroid.h"
+#include "audio_driver_opensl.h"
 
 #ifdef ANDROID_NATIVE_ACTIVITY
-
 #include <android/sensor.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
-
-#else
-
-
 #endif
-
-#include "audio_driver_jandroid.h"
-#include "audio_driver_opensl.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2);
 typedef int (*OpenURIFunc)(const String&);
@@ -118,10 +107,6 @@ private:
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 
@@ -213,7 +198,7 @@ public:
 
 	void main_loop_begin();
 	bool main_loop_iterate();
-	void main_loop_request_quit();
+	void main_loop_request_go_back();
 	void main_loop_end();
 	void main_loop_focusout();
 	void main_loop_focusin();

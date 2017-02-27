@@ -77,7 +77,7 @@ class Polygon2DEditor : public HBoxContainer {
 	HScrollBar *uv_hscroll;
 	VScrollBar *uv_vscroll;
 	MenuButton *uv_menu;
-	TextureFrame *uv_icon_zoom;
+	TextureRect *uv_icon_zoom;
 
 	Vector2 uv_draw_ofs;
 	float uv_draw_zoom;
@@ -151,7 +151,7 @@ class Polygon2DEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_canvas_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "Polygon2D"; }
 	bool has_main_screen() const { return false; }

@@ -29,16 +29,16 @@
 #include "version.h"
 #include "export.h"
 #include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "tools/editor/editor_node.h"
 #include "io/zip_io.h"
 #include "io/marshalls.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/android/logo.h"
 #include <string.h>
-
+#if 0
 
 static const char* android_perms[]={
 "ACCESS_CHECKIN_PROPERTIES",
@@ -729,17 +729,17 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 					}
 
 
-//					print_line("String "+itos(i)+": "+string_table[i]);
+					//print_line("String "+itos(i)+": "+string_table[i]);
 				}
 
 				for(uint32_t i=string_end;i<(ofs+size);i++) {
 					stable_extra.push_back(p_manifest[i]);
 				}
 
-//				printf("stable extra: %i\n",int(stable_extra.size()));
+				//printf("stable extra: %i\n",int(stable_extra.size()));
 				string_table_ends=ofs+size;
 
-//				print_line("STABLE SIZE: "+itos(size)+" ACTUAL: "+itos(string_table_ends));
+				//print_line("STABLE SIZE: "+itos(size)+" ACTUAL: "+itos(string_table_ends));
 
 			} break;
 			case CHUNK_XML_START_TAG: {
@@ -752,7 +752,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 				String tname=string_table[name];
 
-//				printf("NSPACE: %i\n",nspace);
+				//printf("NSPACE: %i\n",nspace);
 				//printf("NAME: %i (%s)\n",name,tname.utf8().get_data());
 				//printf("CHECK: %x\n",check);
 				uint32_t attrcount=decode_uint32(&p_manifest[iofs+20]);
@@ -1523,7 +1523,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 				if (dpos==-1)
 					continue;
 				d=d.substr(0,dpos).strip_edges();
-	//			print_line("found devuce: "+d);
+				//print_line("found devuce: "+d);
 				ldevices.push_back(d);
 			}
 
@@ -1602,8 +1602,8 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 						}
 
 						d.name=vendor+" "+device;
-	//					print_line("name: "+d.name);
-	//					print_line("description: "+d.description);
+						//print_line("name: "+d.name);
+						//print_line("description: "+d.description);
 
 					}
 
@@ -1748,6 +1748,7 @@ Error EditorExportPlatformAndroid::run(int p_device, int p_flags) {
 	args.push_back("shell");
 	args.push_back("am");
 	args.push_back("start");
+	args.push_back("--user 0");
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
 	args.push_back("-n");
@@ -1864,10 +1865,12 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 
 	if (apk_expansion) {
 
-		//if (apk_expansion_salt=="") {
-		//	valid=false;
-		//	err+="Invalid SALT for apk expansion.\n";
-		//}
+		/*
+		if (apk_expansion_salt=="") {
+			valid=false;
+			err+="Invalid SALT for apk expansion.\n";
+		}
+		*/
 		if (apk_expansion_pkey=="") {
 			valid=false;
 			err+="Invalid public key for apk expansion.\n";
@@ -1889,9 +1892,11 @@ EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 	memdelete(device_thread);
 }
 
+#endif
 
 void register_android_exporter() {
 
+#if 0
 	String exe_ext=OS::get_singleton()->get_name()=="Windows"?"exe":"";
 	EDITOR_DEF("export/android/adb","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/adb",PROPERTY_HINT_GLOBAL_FILE,exe_ext));
@@ -1910,6 +1915,6 @@ void register_android_exporter() {
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
-
+#endif
 }
 

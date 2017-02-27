@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "broad_phase_2d_hash_grid.h"
-#include "globals.h"
+#include "global_config.h"
 
 #define LARGE_ELEMENT_FI 1.01239812
 
@@ -539,14 +539,14 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 	Vector2 max;
 
 	if (dir.x<0)
-		max.x= (Math::floor(pos.x)*cell_size - p_from.x) / dir.x;
+		max.x= (Math::floor((double)pos.x)*cell_size - p_from.x) / dir.x;
 	else
-		max.x= (Math::floor(pos.x + 1)*cell_size - p_from.x) / dir.x;
+		max.x= (Math::floor((double)pos.x + 1)*cell_size - p_from.x) / dir.x;
 
 	if (dir.y<0)
-		max.y= (Math::floor(pos.y)*cell_size - p_from.y) / dir.y;
+		max.y= (Math::floor((double)pos.y)*cell_size - p_from.y) / dir.y;
 	else
-		max.y= (Math::floor(pos.y + 1)*cell_size - p_from.y) / dir.y;
+		max.y= (Math::floor((double)pos.y + 1)*cell_size - p_from.y) / dir.y;
 
 	int cullcount=0;
 	_cull<false,true>(pos,Rect2(),p_from,p_to,p_results,p_max_results,p_result_indices,cullcount);
@@ -599,8 +599,10 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 
 		E->key()->pass=pass;
 
-//		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
-//			continue;
+		/*
+		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
+			continue;
+		*/
 
 		if (!E->key()->aabb.intersects_segment(p_from,p_to))
 			continue;
@@ -645,8 +647,10 @@ int BroadPhase2DHashGrid::cull_aabb(const Rect2& p_aabb,CollisionObject2DSW** p_
 		if (!p_aabb.intersects(E->key()->aabb))
 			continue;
 
-//		if (!E->key()->aabb.intersects_segment(p_from,p_to))
-//			continue;
+		/*
+		if (!E->key()->aabb.intersects_segment(p_from,p_to))
+			continue;
+		*/
 
 		p_results[cullcount]=E->key()->owner;
 		p_result_indices[cullcount]=E->key()->subindex;

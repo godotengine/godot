@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "register_types.h"
 #ifndef _3D_DISABLED
-#include "object_type_db.h"
+#include "class_db.h"
 #include "grid_map.h"
 #include "grid_map_editor_plugin.h"
 #endif

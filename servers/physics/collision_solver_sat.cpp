@@ -42,9 +42,11 @@ struct _CollectorCallback {
 
 	_FORCE_INLINE_ void call(const Vector3& p_point_A, const Vector3& p_point_B) {
 
-		//if (normal.dot(p_point_A) >= normal.dot(p_point_B))
-		//	return;
-//		print_line("** A: "+p_point_A+" B: "+p_point_B+" D: "+rtos(p_point_A.distance_to(p_point_B)));
+		/*
+		if (normal.dot(p_point_A) >= normal.dot(p_point_B))
+			return;
+		print_line("** A: "+p_point_A+" B: "+p_point_B+" D: "+rtos(p_point_A.distance_to(p_point_B)));
+		*/
 
 		if (swap)
 			callback(p_point_B,p_point_A,userdata);
@@ -108,7 +110,7 @@ static void _generate_contacts_edge_edge(const Vector3 * p_points_A,int p_point_
 
 	Vector3 c=rel_A.cross(rel_B).cross(rel_B);
 
-//	if ( Math::abs(rel_A.dot(c) )<_EDGE_IS_VALID_SUPPORT_TRESHOLD ) {
+	//if ( Math::abs(rel_A.dot(c) )<_EDGE_IS_VALID_SUPPORT_TRESHOLD ) {
 	if ( Math::abs(rel_A.dot(c) )<CMP_EPSILON ) {
 
 		// should handle somehow..
@@ -120,9 +122,9 @@ static void _generate_contacts_edge_edge(const Vector3 * p_points_A,int p_point_
 		Vector3 base_B = p_points_B[0] - axis * axis.dot(p_points_B[0]);
 
 		//sort all 4 points in axis
-		float dvec[4]={ axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
+		real_t dvec[4]={ axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
 
-		SortArray<float> sa;
+		SortArray<real_t> sa;
 		sa.sort(dvec,4);
 
 		//use the middle ones as contacts
@@ -205,7 +207,7 @@ static void _generate_contacts_face_face(const Vector3 * p_points_A,int p_point_
 
 
 			// check for different sides and non coplanar
-//			if ( (dist0*dist1) < -CMP_EPSILON && !(edge && j)) {
+			//if ( (dist0*dist1) < -CMP_EPSILON && !(edge && j)) {
 			if ( (dist0*dist1) < 0 && !(edge && j)) {
 
 				// calculate intersection
@@ -232,9 +234,11 @@ static void _generate_contacts_face_face(const Vector3 * p_points_A,int p_point_
 
 	for (int i=0;i<clipbuf_len;i++) {
 
-		float d = plane_B.distance_to(clipbuf_src[i]);
-		//if (d>CMP_EPSILON)
-		//	continue;
+		real_t d = plane_B.distance_to(clipbuf_src[i]);
+		/*
+		if (d>CMP_EPSILON)
+			continue;
+		*/
 
 		Vector3 closest_B=clipbuf_src[i] - plane_B.normal*d;
 
@@ -472,11 +476,11 @@ public:
 /****** SAT TESTS *******/
 
 
-typedef void (*CollisionFunc)(const ShapeSW*,const Transform&,const ShapeSW*,const Transform&,_CollectorCallback *p_callback,float,float);
+typedef void (*CollisionFunc)(const ShapeSW*,const Transform&,const ShapeSW*,const Transform&,_CollectorCallback *p_callback,real_t,real_t);
 
 
 template<bool withMargin>
-static void _collision_sphere_sphere(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_sphere_sphere(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
@@ -496,7 +500,7 @@ static void _collision_sphere_sphere(const ShapeSW *p_a,const Transform &p_trans
 }
 
 template<bool withMargin>
-static void _collision_sphere_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_sphere_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
@@ -551,7 +555,7 @@ static void _collision_sphere_box(const ShapeSW *p_a,const Transform &p_transfor
 }
 
 template<bool withMargin>
-static void _collision_sphere_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_sphere_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW*>(p_b);
@@ -591,7 +595,7 @@ static void _collision_sphere_capsule(const ShapeSW *p_a,const Transform &p_tran
 }
 
 template<bool withMargin>
-static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
@@ -635,7 +639,7 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform 
 		Vector3 n1=v2-v1;
 		Vector3 n2=v2-v3;
 
-		Vector3 axis = n1.cross(n2).cross(n1).normalized();;
+		Vector3 axis = n1.cross(n2).cross(n1).normalized();
 
 		if (!separator.test_axis( axis ))
 			return;
@@ -662,7 +666,7 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform 
 }
 
 template<bool withMargin>
-static void _collision_sphere_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_sphere_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW*>(p_b);
@@ -706,7 +710,7 @@ static void _collision_sphere_face(const ShapeSW *p_a,const Transform &p_transfo
 
 
 template<bool withMargin>
-static void _collision_box_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_box_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW*>(p_a);
@@ -814,7 +818,7 @@ static void _collision_box_box(const ShapeSW *p_a,const Transform &p_transform_a
 }
 
 template<bool withMargin>
-static void _collision_box_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_box_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW*>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW*>(p_b);
@@ -914,7 +918,7 @@ static void _collision_box_capsule(const ShapeSW *p_a,const Transform &p_transfo
 }
 
 template<bool withMargin>
-static void _collision_box_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_box_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 
@@ -1042,7 +1046,7 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a,const Transform &p_
 
 
 template<bool withMargin>
-static void _collision_box_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_box_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW*>(p_a);
@@ -1154,7 +1158,7 @@ static void _collision_box_face(const ShapeSW *p_a,const Transform &p_transform_
 
 
 template<bool withMargin>
-static void _collision_capsule_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_capsule_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW*>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW*>(p_b);
@@ -1212,7 +1216,7 @@ static void _collision_capsule_capsule(const ShapeSW *p_a,const Transform &p_tra
 }
 
 template<bool withMargin>
-static void _collision_capsule_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_capsule_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW*>(p_a);
@@ -1283,7 +1287,7 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a,const Transform
 
 
 template<bool withMargin>
-static void _collision_capsule_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_capsule_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW*>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW*>(p_b);
@@ -1346,7 +1350,7 @@ static void _collision_capsule_face(const ShapeSW *p_a,const Transform &p_transf
 
 
 template<bool withMargin>
-static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const ConvexPolygonShapeSW *convex_polygon_A = static_cast<const ConvexPolygonShapeSW*>(p_a);
@@ -1379,7 +1383,7 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Tr
 	for (int i=0;i<face_count_A;i++) {
 
 		Vector3 axis = p_transform_a.xform( faces_A[i].plane ).normal;
-//		Vector3 axis = p_transform_a.basis.xform( faces_A[i].plane.normal ).normalized();
+		//Vector3 axis = p_transform_a.basis.xform( faces_A[i].plane.normal ).normalized();
 
 		if (!separator.test_axis( axis ))
 			return;
@@ -1389,7 +1393,7 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Tr
 	for (int i=0;i<face_count_B;i++) {
 
 		Vector3 axis = p_transform_b.xform( faces_B[i].plane ).normal;
-//		Vector3 axis = p_transform_b.basis.xform( faces_B[i].plane.normal ).normalized();
+		//Vector3 axis = p_transform_b.basis.xform( faces_B[i].plane.normal ).normalized();
 
 
 		if (!separator.test_axis( axis ))
@@ -1470,7 +1474,7 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Tr
 
 
 template<bool withMargin>
-static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
+static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,real_t p_margin_a,real_t p_margin_b) {
 
 
 	const ConvexPolygonShapeSW *convex_polygon_A = static_cast<const ConvexPolygonShapeSW*>(p_a);
@@ -1502,7 +1506,7 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p
 	// faces of A
 	for (int i=0;i<face_count;i++) {
 
-//		Vector3 axis = p_transform_a.xform( faces[i].plane ).normal;
+		//Vector3 axis = p_transform_a.xform( faces[i].plane ).normal;
 		Vector3 axis = p_transform_a.basis.xform( faces[i].plane.normal ).normalized();
 
 		if (!separator.test_axis( axis ))
@@ -1581,7 +1585,7 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p
 }
 
 
-bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, CollisionSolverSW::CallbackResult p_result_callback,void *p_userdata,bool p_swap,Vector3* r_prev_axis,float p_margin_a,float p_margin_b) {
+bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, CollisionSolverSW::CallbackResult p_result_callback,void *p_userdata,bool p_swap,Vector3* r_prev_axis,real_t p_margin_a,real_t p_margin_b) {
 
 	PhysicsServer::ShapeType type_A=p_shape_A->get_type();
 
@@ -1663,8 +1667,8 @@ bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_tran
 	const ShapeSW *B=p_shape_B;
 	const Transform *transform_A=&p_transform_A;
 	const Transform *transform_B=&p_transform_B;
-	float margin_A=p_margin_a;
-	float margin_B=p_margin_b;
+	real_t margin_A=p_margin_a;
+	real_t margin_B=p_margin_b;
 
 	if (type_A > type_B) {
 		SWAP(A,B);

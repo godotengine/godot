@@ -27,8 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tile_set_editor_plugin.h"
+
 #include "scene/2d/sprite.h"
 #include "scene/2d/physics_body_2d.h"
+
 void TileSetEditor::edit(const Ref<TileSet>& p_tileset) {
 
 	tileset=p_tileset;
@@ -75,6 +77,8 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 		p_library->tile_set_texture(id,texture);
 		p_library->tile_set_material(id,material);
+
+		p_library->tile_set_modulate(id,mi->get_modulate());
 
 		Vector2 phys_offset;
 		Size2 s;

@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="3.5600026"
-     inkscape:cy="5.9708001"
+     inkscape:cx="9.2162526"
+     inkscape:cy="7.9395501"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -71,20 +71,8 @@
      transform="translate(0,-1036.3622)">
     <path
        style="opacity:1;fill:#fc9c9c;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 1 4 L 1 13 A 2 2.0000174 0 0 0 3 15 L 7 15 L 7 13 L 3 13 L 3 7 L 7 7 L 13 7 L 15 7 L 15 4 L 1 4 z M 3 5 L 4 5 L 4 6 L 3 6 L 3 5 z M 6 5 L 7 5 L 7 6 L 6 6 L 6 5 z M 9 5 L 10 5 L 10 6 L 9 6 L 9 5 z M 12 5 L 13 5 L 13 6 L 12 6 L 12 5 z M 6 8 L 6 9 L 7 9 L 7 8 L 6 8 z "
+       d="M 2 1 L 2 3 L 14 3 L 14 1 L 2 1 z M 1 4 L 1 13 A 2 2.0000174 0 0 0 3 15 L 7 15 L 7 13 L 3 13 L 3 7 L 7 7 L 13 7 L 15 7 L 15 4 L 1 4 z M 3 5 L 4 5 L 4 6 L 3 6 L 3 5 z M 6 5 L 7 5 L 7 6 L 6 6 L 6 5 z M 9 5 L 10 5 L 10 6 L 9 6 L 9 5 z M 12 5 L 13 5 L 13 6 L 12 6 L 12 5 z M 6 8 L 6 9 L 7 9 L 7 8 L 6 8 z M 10 9 A 1 1 0 0 0 9 10 L 9 14 A 1 1 0 0 0 10 15 L 14 15 A 1 1 0 0 0 15 14 L 15 10 A 1 1 0 0 0 14 9 L 10 9 z M 13 10 A 1 1 0 0 1 14 11 A 1 1 0 0 1 13 12 A 1 1 0 0 1 12 11 A 1 1 0 0 1 13 10 z M 11 12 A 1 1 0 0 1 12 13 A 1 1 0 0 1 11 14 A 1 1 0 0 1 10 13 A 1 1 0 0 1 11 12 z "
        transform="translate(0,1036.3622)"
        id="rect4155" />
-    <rect
-       style="opacity:1;fill:#fc9c9c;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4173"
-       width="12"
-       height="2.0000174"
-       x="2"
-       y="1037.3622" />
-    <path
-       style="opacity:1;fill:#fc9c9c;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 10 9 A 1 1 0 0 0 9 10 L 9 14 A 1 1 0 0 0 10 15 L 14 15 A 1 1 0 0 0 15 14 L 15 10 A 1 1 0 0 0 14 9 L 10 9 z M 13 10 A 1 1 0 0 1 14 11 A 1 1 0 0 1 13 12 A 1 1 0 0 1 12 11 A 1 1 0 0 1 13 10 z M 11 12 A 1 1 0 0 1 12 13 A 1 1 0 0 1 11 14 A 1 1 0 0 1 10 13 A 1 1 0 0 1 11 12 z "
-       transform="translate(0,1036.3622)"
-       id="rect4156" />
   </g>
 </svg>

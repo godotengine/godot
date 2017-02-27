@@ -30,7 +30,7 @@
 #define SAMPLE_LIBRARY_EDITOR_PLUGIN_H
 
 
-
+#if 0
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/audio/sample_player.h"
@@ -104,4 +104,5 @@ public:
 
 };
 
+#endif
 #endif // SAMPLE_LIBRARY_EDITOR_PLUGIN_H

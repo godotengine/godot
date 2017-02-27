@@ -27,15 +27,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_sample_import_plugin.h"
+
 #include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/property_editor.h"
-#include "scene/resources/sample.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "io/marshalls.h"
 #include "tools/editor/editor_settings.h"
+
+#if 0
 
 class _EditorSampleImportOptions : public Object {
 
@@ -296,7 +298,7 @@ public:
 				error_dialog->popup_centered(Size2(200,100)*EDSCALE);
 			}
 
-			dst = dst.plus_file(samples[i].get_file().basename()+".smp");
+			dst = dst.plus_file(samples[i].get_file().get_basename()+".smp");
 
 			plugin->import(dst,imd);
 		}
@@ -323,7 +325,7 @@ public:
 		ClassDB::bind_method("_import",&EditorSampleImportDialog::_import);
 		ClassDB::bind_method("_browse",&EditorSampleImportDialog::_browse);
 		ClassDB::bind_method("_browse_target",&EditorSampleImportDialog::_browse_target);
-	//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
+		//ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 
 	EditorSampleImportDialog(EditorSampleImportPlugin *p_plugin) {
@@ -335,7 +337,7 @@ public:
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
-		set_child_rect(vbc);
+		//set_child_rect(vbc);
 
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
@@ -373,7 +375,7 @@ public:
 		save_select = memnew(	EditorDirDialog );
 		add_child(save_select);
 
-	//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+		//save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
@@ -383,7 +385,7 @@ public:
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
 		error_dialog->get_ok()->set_text(TTR("Accept"));
-	//	error_dialog->get_cancel()->hide();
+		//error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
 		options = memnew( _EditorSampleImportOptions );
@@ -539,7 +541,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 		int first=0;
 		int last=(len*chans)-1;
 		bool found=false;
-		float limit = Math::db2linear(-30);
+		float limit = Math::db2linear((float)-30);
 		for(int i=0;i<data.size();i++) {
 			float amp = Math::abs(data[i]);
 
@@ -648,7 +650,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 			}
 		}
 
-//		print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
+		//print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
 
 	} else {
 
@@ -758,12 +760,14 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,P
 
 
 			xm_sample=CLAMP(in[i]*32767.0,-32768,32767);
-			//if (xm_sample==32767 || xm_sample==-32768)
-			//	printf("clippy!\n",xm_sample);
+			/*
+			if (xm_sample==32767 || xm_sample==-32768)
+				printf("clippy!\n",xm_sample);
+			*/
 		}
 
-	//	xm_sample=xm_sample+xm_prev;
-	//	xm_prev=xm_sample;
+		//xm_sample=xm_sample+xm_prev;
+		//xm_prev=xm_sample;
 
 		diff = (int)xm_sample - prev ;
 
@@ -828,7 +832,7 @@ void EditorSampleImportPlugin::import_from_drop(const Vector<String>& p_drop, co
 
 	Vector<String> files;
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 
 		if (ext=="wav") {
 
@@ -887,7 +891,7 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 
 
 
-	if (EditorImportExport::get_singleton()->sample_get_action()==EditorImportExport::SAMPLE_ACTION_NONE || p_path.extension().to_lower()!="wav") {
+	if (EditorImportExport::get_singleton()->sample_get_action()==EditorImportExport::SAMPLE_ACTION_NONE || p_path.get_extension().to_lower()!="wav") {
 
 		return Vector<uint8_t>();
 	}
@@ -911,7 +915,7 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 
 	ERR_FAIL_COND_V(err!=OK,Vector<uint8_t>());
 
-	p_path=p_path.basename()+".converted.smp";
+	p_path=p_path.get_basename()+".converted.smp";
 	return FileAccess::get_file_as_array(savepath);
 
 }
@@ -921,3 +925,5 @@ Vector<uint8_t> EditorSampleExportPlugin::custom_export(String& p_path,const Ref
 EditorSampleExportPlugin::EditorSampleExportPlugin() {
 
 }
+
+#endif

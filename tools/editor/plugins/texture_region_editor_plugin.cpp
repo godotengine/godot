@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_region_editor_plugin.cpp                                      */
+/*  texture_region_editor_plugin.cpp                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,9 +28,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "texture_region_editor_plugin.h"
 
 #include "core/core_string_names.h"
-#include "texture_region_editor_plugin.h"
 #include "scene/gui/check_box.h"
 #include "os/input.h"
 #include "os/keyboard.h"
@@ -57,13 +57,13 @@ void TextureRegionEditor::_region_draw()
 	if (base_tex.is_null())
 		return;
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-draw_ofs;
 	mtx.scale_basis(Vector2(draw_zoom,draw_zoom));
 
 	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(),mtx);
 	edit_draw->draw_texture(base_tex,Point2());
-	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(),Matrix32());
+	VS::get_singleton()->canvas_item_add_set_transform(edit_draw->get_canvas_item(),Transform2D());
 
 	if (snap_mode == SNAP_GRID) {
 		Size2 s = edit_draw->get_size();
@@ -203,7 +203,7 @@ void TextureRegionEditor::_region_draw()
 
 void TextureRegionEditor::_region_input(const InputEvent& p_input)
 {
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-draw_ofs;
 	mtx.scale_basis(Vector2(draw_zoom,draw_zoom));
 
@@ -614,21 +614,21 @@ void TextureRegionEditor::_node_removed(Object *p_obj)
 
 void TextureRegionEditor::_bind_methods()
 {
-	ClassDB::bind_method(_MD("_edit_region"),&TextureRegionEditor::_edit_region);
-	ClassDB::bind_method(_MD("_region_draw"),&TextureRegionEditor::_region_draw);
-	ClassDB::bind_method(_MD("_region_input"),&TextureRegionEditor::_region_input);
-	ClassDB::bind_method(_MD("_scroll_changed"),&TextureRegionEditor::_scroll_changed);
-	ClassDB::bind_method(_MD("_node_removed"),&TextureRegionEditor::_node_removed);
-	ClassDB::bind_method(_MD("_set_snap_mode"),&TextureRegionEditor::_set_snap_mode);
-	ClassDB::bind_method(_MD("_set_snap_off_x"),&TextureRegionEditor::_set_snap_off_x);
-	ClassDB::bind_method(_MD("_set_snap_off_y"),&TextureRegionEditor::_set_snap_off_y);
-	ClassDB::bind_method(_MD("_set_snap_step_x"),&TextureRegionEditor::_set_snap_step_x);
-	ClassDB::bind_method(_MD("_set_snap_step_y"),&TextureRegionEditor::_set_snap_step_y);
-	ClassDB::bind_method(_MD("_set_snap_sep_x"),&TextureRegionEditor::_set_snap_sep_x);
-	ClassDB::bind_method(_MD("_set_snap_sep_y"),&TextureRegionEditor::_set_snap_sep_y);
-	ClassDB::bind_method(_MD("_zoom_in"),&TextureRegionEditor::_zoom_in);
-	ClassDB::bind_method(_MD("_zoom_reset"),&TextureRegionEditor::_zoom_reset);
-	ClassDB::bind_method(_MD("_zoom_out"),&TextureRegionEditor::_zoom_out);
+	ClassDB::bind_method(D_METHOD("_edit_region"),&TextureRegionEditor::_edit_region);
+	ClassDB::bind_method(D_METHOD("_region_draw"),&TextureRegionEditor::_region_draw);
+	ClassDB::bind_method(D_METHOD("_region_input"),&TextureRegionEditor::_region_input);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&TextureRegionEditor::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&TextureRegionEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_set_snap_mode"),&TextureRegionEditor::_set_snap_mode);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_x"),&TextureRegionEditor::_set_snap_off_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_y"),&TextureRegionEditor::_set_snap_off_y);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_x"),&TextureRegionEditor::_set_snap_step_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_y"),&TextureRegionEditor::_set_snap_step_y);
+	ClassDB::bind_method(D_METHOD("_set_snap_sep_x"),&TextureRegionEditor::_set_snap_sep_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_sep_y"),&TextureRegionEditor::_set_snap_sep_y);
+	ClassDB::bind_method(D_METHOD("_zoom_in"),&TextureRegionEditor::_zoom_in);
+	ClassDB::bind_method(D_METHOD("_zoom_reset"),&TextureRegionEditor::_zoom_reset);
+	ClassDB::bind_method(D_METHOD("_zoom_out"),&TextureRegionEditor::_zoom_out);
 }
 
 void TextureRegionEditor::edit(Object *p_obj)
@@ -643,7 +643,7 @@ void TextureRegionEditor::edit(Object *p_obj)
 		atlas_tex->disconnect("atlas_changed",this,"_edit_region");
 	if (p_obj) {
 		node_sprite = p_obj->cast_to<Sprite>();
-		node_patch9 = p_obj->cast_to<Patch9Frame>();
+		node_patch9 = p_obj->cast_to<NinePatchRect>();
 		if (p_obj->cast_to<StyleBoxTexture>())
 			obj_styleBox = Ref<StyleBoxTexture>(p_obj->cast_to<StyleBoxTexture>());
 		if (p_obj->cast_to<AtlasTexture>()) {
@@ -653,17 +653,17 @@ void TextureRegionEditor::edit(Object *p_obj)
 			p_obj->connect("texture_changed",this,"_edit_region");
 		}
 		p_obj->add_change_receptor(this);
-		p_obj->connect("exit_tree",this,"_node_removed",varray(p_obj),CONNECT_ONESHOT);
+		p_obj->connect("tree_exited",this,"_node_removed",varray(p_obj),CONNECT_ONESHOT);
 		_edit_region();
 	} else {
 		if(node_sprite)
-			node_sprite->disconnect("exit_tree",this,"_node_removed");
+			node_sprite->disconnect("tree_exited",this,"_node_removed");
 		else if(node_patch9)
-			node_patch9->disconnect("exit_tree",this,"_node_removed");
+			node_patch9->disconnect("tree_exited",this,"_node_removed");
 		else if(obj_styleBox.is_valid())
-			obj_styleBox->disconnect("exit_tree",this,"_node_removed");
+			obj_styleBox->disconnect("tree_exited",this,"_node_removed");
 		else if(atlas_tex.is_valid())
-			atlas_tex->disconnect("exit_tree",this,"_node_removed");
+			atlas_tex->disconnect("tree_exited",this,"_node_removed");
 
 		node_sprite = NULL;
 		node_patch9 = NULL;
@@ -897,7 +897,7 @@ TextureRegionEditor::TextureRegionEditor(EditorNode* p_editor)
 	separator->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb_tools->add_child(separator);
 
-	icon_zoom = memnew( TextureFrame );
+	icon_zoom = memnew( TextureRect );
 	hb_tools->add_child(icon_zoom);
 
 	zoom_out = memnew( ToolButton );
@@ -935,7 +935,7 @@ void TextureRegionEditorPlugin::edit(Object *p_node)
 
 bool TextureRegionEditorPlugin::handles(Object *p_obj) const
 {
-	return p_obj->is_class("Sprite") || p_obj->is_class("Patch9Frame") || p_obj->is_class("StyleBoxTexture") || p_obj->is_class("AtlasTexture");
+	return p_obj->is_class("Sprite") || p_obj->is_class("Patch9Rect") || p_obj->is_class("StyleBoxTexture") || p_obj->is_class("AtlasTexture");
 }
 
 void TextureRegionEditorPlugin::make_visible(bool p_visible)

@@ -27,13 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "scene_tree_editor.h"
+
 #include "scene/gui/label.h"
 #include "editor_node.h"
 #include "print_string.h"
 #include "message_queue.h"
 #include "scene/main/viewport.h"
 #include "tools/editor/plugins/canvas_item_editor_plugin.h"
-
 #include "scene/resources/packed_scene.h"
 
 Node *SceneTreeEditor::get_scene_node() {
@@ -208,14 +208,15 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 		if (n->is_class("Spatial")) {
 
-			bool v = !bool(n->call("is_hidden"));
+			bool v = bool(n->call("is_visible"));
 			undo_redo->create_action(TTR("Toggle Spatial Visible"));
-			undo_redo->add_do_method(n,"_set_visible_",!v);
-			undo_redo->add_undo_method(n,"_set_visible_",v);
+			undo_redo->add_do_method(n,"set_visible",!v);
+			undo_redo->add_undo_method(n,"set_visible",v);
 			undo_redo->commit_action();
+
 		} else if (n->is_class("CanvasItem")) {
 
-			bool v = !bool(n->call("is_hidden"));
+			bool v = bool(n->call("is_visible"));
 			undo_redo->create_action(TTR("Toggle CanvasItem Visible"));
 			undo_redo->add_do_method(n,v?"hide":"show");
 			undo_redo->add_undo_method(n,v?"show":"hide");
@@ -393,11 +394,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			if (is_grouped)
 				item->add_button(0,get_icon("Group", "EditorIcons"), BUTTON_GROUP);
 
-			bool h = p_node->call("is_hidden");
-			if (h)
-				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
-			else
+			bool v = p_node->call("is_visible");
+			if (v)
 				item->add_button(0,get_icon("Visible","EditorIcons"),BUTTON_VISIBILITY);
+			else
+				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
 
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
@@ -405,11 +406,11 @@ bool SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			_update_visibility_color(p_node, item);
 		} else if (p_node->is_class("Spatial")) {
 
-			bool h = p_node->call("is_hidden");
-			if (h)
-				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
-			else
+			bool v = p_node->call("is_visible");
+			if (v)
 				item->add_button(0,get_icon("Visible","EditorIcons"),BUTTON_VISIBILITY);
+			else
+				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
 
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
@@ -470,15 +471,16 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 	bool visible=false;
 
 	if (p_node->is_class("CanvasItem")) {
-		visible = !p_node->call("is_hidden");
+		visible = p_node->call("is_visible");
+		CanvasItemEditor::get_singleton()->get_viewport_control()->update();
 	} else if (p_node->is_class("Spatial")) {
-		visible = !p_node->call("is_hidden");
+		visible = p_node->call("is_visible");
 	}
 
-	if (!visible)
-		item->set_button(0,idx,get_icon("Hidden","EditorIcons"));
-	else
+	if (visible)
 		item->set_button(0,idx,get_icon("Visible","EditorIcons"));
+	else
+		item->set_button(0,idx,get_icon("Hidden","EditorIcons"));
 
 	_update_visibility_color(p_node, item);
 }
@@ -671,8 +673,8 @@ void SceneTreeEditor::_notification(int p_what) {
 		EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
 
 
-//		get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
-//		get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
+		//get_scene()->connect("tree_changed",this,"_tree_changed",Vector<Variant>(),CONNECT_DEFERRED);
+		//get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
 		_update_tree();
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
@@ -953,7 +955,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2& p_point,Control* p_from)
 
 		if (i<list_max){
 			HBoxContainer *hb = memnew( HBoxContainer );
-			TextureFrame *tf = memnew(TextureFrame);
+			TextureRect *tf = memnew(TextureRect);
 			tf->set_texture(icons[i]);
 			hb->add_child(tf);
 			Label *label = memnew( Label( selected[i]->get_name() ) );
@@ -1081,7 +1083,7 @@ void SceneTreeEditor::_warning_changed(Node* p_for_node) {
 
 	//should use a timer
 	update_timer->start();
-//	print_line("WARNING CHANGED "+String(p_for_node->get_name()));
+	//print_line("WARNING CHANGED "+String(p_for_node->get_name()));
 
 }
 
@@ -1122,11 +1124,11 @@ void SceneTreeEditor::_bind_methods() {
 
 	ClassDB::bind_method("_editor_settings_changed", &SceneTreeEditor::_editor_settings_changed);
 
-	ClassDB::bind_method(_MD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
-	ClassDB::bind_method(_MD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
-	ClassDB::bind_method(_MD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &SceneTreeEditor::drop_data_fw);
 
-	ClassDB::bind_method(_MD("update_tree"), &SceneTreeEditor::update_tree);
+	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
 	ADD_SIGNAL( MethodInfo("node_selected") );
 	ADD_SIGNAL( MethodInfo("node_renamed") );
@@ -1134,7 +1136,7 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("node_changed") );
 	ADD_SIGNAL( MethodInfo("nodes_dragged") );
 	ADD_SIGNAL( MethodInfo("nodes_rearranged",PropertyInfo(Variant::ARRAY,"paths"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
-	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::POOL_STRING_ARRAY,"files"),PropertyInfo(Variant::NODE_PATH,"to_path"),PropertyInfo(Variant::INT,"type") ) );
 	ADD_SIGNAL( MethodInfo("script_dropped",PropertyInfo(Variant::STRING,"file"),PropertyInfo(Variant::NODE_PATH,"to_path")));
 	ADD_SIGNAL( MethodInfo("rmb_pressed",PropertyInfo(Variant::VECTOR2,"pos")) ) ;
 
@@ -1186,7 +1188,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	tree->connect("item_edited", this,"_renamed",varray(),CONNECT_DEFERRED);
 	tree->connect("multi_selected",this,"_cell_multi_selected");
 	tree->connect("button_pressed",this,"_cell_button_pressed");
-//	tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
+	//tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
 
 	error = memnew( AcceptDialog );
 	add_child(error);
@@ -1264,7 +1266,7 @@ void SceneTreeDialog::_notification(int p_what) {
 		get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	}
 
-	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && is_visible()) {
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && is_visible_in_tree()) {
 
 		tree->update_tree();
 	}
@@ -1302,7 +1304,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	tree = memnew( SceneTreeEditor(false,false) );
 	add_child(tree);
-	set_child_rect(tree);
+	//set_child_rect(tree);
 
 	tree->get_scene_tree()->connect("item_activated",this,"_select");
 

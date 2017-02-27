@@ -96,7 +96,7 @@ ConeTwistJointSW::ConeTwistJointSW(BodySW* rbA,BodySW* rbB,const Transform& rbAF
 }
 
 
-bool	ConeTwistJointSW::setup(float p_step) {
+bool	ConeTwistJointSW::setup(real_t p_step) {
 	m_appliedImpulse = real_t(0.);
 
 	//set bias, sign, clear accumulator
@@ -128,10 +128,10 @@ bool	ConeTwistJointSW::setup(float p_step) {
 		for (int i=0;i<3;i++)
 		{
 			memnew_placement(&m_jac[i], JacobianEntrySW(
-				A->get_transform().basis.transposed(),
-				B->get_transform().basis.transposed(),
-				pivotAInW - A->get_transform().origin,
-				pivotBInW - B->get_transform().origin,
+				A->get_principal_inertia_axes().transposed(),
+				B->get_principal_inertia_axes().transposed(),
+				pivotAInW - A->get_transform().origin - A->get_center_of_mass(),
+				pivotBInW - B->get_transform().origin - B->get_center_of_mass(),
 				normal[i],
 				A->get_inv_inertia(),
 				A->get_inv_mass(),
@@ -156,7 +156,7 @@ bool	ConeTwistJointSW::setup(float p_step) {
 	if (m_swingSpan1 >= real_t(0.05f))
 	{
 		b1Axis2 = A->get_transform().basis.xform( this->m_rbAFrame.basis.get_axis(1) );
-//		swing1  = btAtan2Fast( b2Axis1.dot(b1Axis2),b2Axis1.dot(b1Axis1) );
+		//swing1  = btAtan2Fast( b2Axis1.dot(b1Axis2),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis2);
 		swing1  = atan2fast(swy, swx);
@@ -169,7 +169,7 @@ bool	ConeTwistJointSW::setup(float p_step) {
 	if (m_swingSpan2 >= real_t(0.05f))
 	{
 		b1Axis3 = A->get_transform().basis.xform( this->m_rbAFrame.basis.get_axis(2) );
-//		swing2 = btAtan2Fast( b2Axis1.dot(b1Axis3),b2Axis1.dot(b1Axis1) );
+		//swing2 = btAtan2Fast( b2Axis1.dot(b1Axis3),b2Axis1.dot(b1Axis1) );
 		swx = b2Axis1.dot(b1Axis1);
 		swy = b2Axis1.dot(b1Axis3);
 		swing2  = atan2fast(swy, swx);
@@ -318,7 +318,7 @@ void	ConeTwistJointSW::solve(real_t	timeStep)
 
 }
 
-void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, float p_value) {
+void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, real_t p_value) {
 
 	switch(p_param) {
 		case PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN: {
@@ -345,7 +345,7 @@ void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, flo
 	}
 }
 
-float ConeTwistJointSW::get_param(PhysicsServer::ConeTwistJointParam p_param) const{
+real_t ConeTwistJointSW::get_param(PhysicsServer::ConeTwistJointParam p_param) const{
 
 	switch(p_param) {
 		case PhysicsServer::CONE_TWIST_JOINT_SWING_SPAN: {

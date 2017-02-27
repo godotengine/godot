@@ -82,7 +82,7 @@ struct _IP_ResolverPrivate {
 				continue;
 			queue[i].response=IP::get_singleton()->resolve_hostname(queue[i].hostname, queue[i].type);
 
-			if (queue[i].response==IP_Address())
+			if (!queue[i].response.is_valid())
 				queue[i].status=IP::RESOLVER_STATUS_ERROR;
 			else
 				queue[i].status=IP::RESOLVER_STATUS_DONE;
@@ -218,13 +218,13 @@ Array IP::_get_local_addresses() const {
 
 void IP::_bind_methods() {
 
-	ClassDB::bind_method(_MD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP::TYPE_ANY));
-	ClassDB::bind_method(_MD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP::TYPE_ANY));
-	ClassDB::bind_method(_MD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
-	ClassDB::bind_method(_MD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
-	ClassDB::bind_method(_MD("erase_resolve_item","id"),&IP::erase_resolve_item);
-	ClassDB::bind_method(_MD("get_local_addresses"),&IP::_get_local_addresses);
-	ClassDB::bind_method(_MD("clear_cache"),&IP::clear_cache, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("resolve_hostname","host","ip_type"),&IP::resolve_hostname,DEFVAL(IP::TYPE_ANY));
+	ClassDB::bind_method(D_METHOD("resolve_hostname_queue_item","host","ip_type"),&IP::resolve_hostname_queue_item,DEFVAL(IP::TYPE_ANY));
+	ClassDB::bind_method(D_METHOD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
+	ClassDB::bind_method(D_METHOD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
+	ClassDB::bind_method(D_METHOD("erase_resolve_item","id"),&IP::erase_resolve_item);
+	ClassDB::bind_method(D_METHOD("get_local_addresses"),&IP::_get_local_addresses);
+	ClassDB::bind_method(D_METHOD("clear_cache"),&IP::clear_cache, DEFVAL(""));
 
 	BIND_CONSTANT( RESOLVER_STATUS_NONE );
 	BIND_CONSTANT( RESOLVER_STATUS_WAITING );

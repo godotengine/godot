@@ -31,16 +31,16 @@
 
 #ifdef RTAUDIO_ENABLED
 
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 
 #include <RtAudio.h>
 
-class AudioDriverRtAudio : public AudioDriverSW {
+class AudioDriverRtAudio : public AudioDriver {
 
 
 	static int callback( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
 	 double streamTime, RtAudioStreamStatus status, void *userData );
-	OutputFormat output_format;
+	SpeakerMode speaker_mode;
 	Mutex *mutex;
 	RtAudio *dac;
 	int mix_rate;
@@ -53,7 +53,7 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const ;
-	virtual OutputFormat get_output_format() const;
+	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();

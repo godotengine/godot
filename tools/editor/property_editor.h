@@ -37,10 +37,11 @@
 #include "scene/gui/dialogs.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/menu_button.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/grid_container.h"
 #include "scene_tree_editor.h"
 
 /**
@@ -95,10 +96,12 @@ class CustomPropertyEditor : public Popup {
 	Button *action_buttons[MAX_ACTION_BUTTONS];
 	MenuButton *type_button;
 	Vector<String> inheritors_array;
-	TextureFrame *texture_preview;
+	TextureRect *texture_preview;
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
 	bool read_only;
+	bool picking_viewport;
+	GridContainer *checks20gc;
 	CheckBox *checks20[20];
 	SpinBox *spinbox;
 	HSlider *slider;
@@ -189,6 +192,7 @@ class PropertyEditor : public Control {
 	bool use_doc_hints;
 	bool use_filter;
 	bool subsection_selectable;
+	bool hide_script;
 
 	HashMap<String,String> pending;
 	String selected_property;
@@ -221,7 +225,7 @@ class PropertyEditor : public Control {
 	void _node_removed(Node *p_node);
 
 friend class ProjectExportDialog;
-	void _edit_set(const String& p_name, const Variant& p_value);
+	void _edit_set(const String& p_name, const Variant& p_value,bool p_refresh_all=false);
 	void _draw_flags(Object *ti,const Rect2& p_rect);
 
 	bool _might_be_in_instance();
@@ -242,6 +246,7 @@ friend class ProjectExportDialog;
 	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
 
 	void _resource_preview_done(const String& p_path,const Ref<Texture>& p_preview,Variant p_ud);
+	void _draw_transparency(Object *t, const Rect2& p_rect);
 
 	UndoRedo *undo_redo;
 protected:
@@ -272,6 +277,7 @@ public:
 
 	void set_show_categories(bool p_show);
 	void set_use_doc_hints(bool p_enable) { use_doc_hints=p_enable; }
+	void set_hide_script(bool p_hide) { hide_script=p_hide; }
 
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);

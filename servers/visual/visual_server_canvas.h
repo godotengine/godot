@@ -114,12 +114,12 @@ public:
 
 private:
 
-	void _render_canvas_item_tree(Item *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
-	void _render_canvas_item(Item *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
+	void _render_canvas_item_tree(Item *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights);
+	void _render_canvas_item(Item *p_canvas_item, const Transform2D& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, int p_z, RasterizerCanvas::Item **z_list, RasterizerCanvas::Item **z_last_list, Item *p_canvas_clip, Item *p_material_owner);
 	void _light_mask_canvas_items(int p_z,RasterizerCanvas::Item *p_canvas_item,RasterizerCanvas::Light *p_masked_lights);
 public:
 
-	void render_canvas(Canvas *p_canvas, const Matrix32 &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights,const Rect2& p_clip_rect);
+	void render_canvas(Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights,const Rect2& p_clip_rect);
 
 	RID canvas_create();
 	void canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring);
@@ -132,7 +132,7 @@ public:
 	void canvas_item_set_visible(RID p_item,bool p_visible);
 	void canvas_item_set_light_mask(RID p_item,int p_mask);
 
-	void canvas_item_set_transform(RID p_item, const Matrix32& p_transform);
+	void canvas_item_set_transform(RID p_item, const Transform2D& p_transform);
 	void canvas_item_set_clip(RID p_item, bool p_clip);
 	void canvas_item_set_distance_field_mode(RID p_item, bool p_enable);
 	void canvas_item_set_custom_rect(RID p_item, bool p_custom_rect,const Rect2& p_rect=Rect2());
@@ -153,7 +153,7 @@ public:
 	void canvas_item_add_triangle_array(RID p_item, const Vector<int>& p_indices, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID(), int p_count=-1);
 	void canvas_item_add_mesh(RID p_item, const RID& p_mesh,RID p_skeleton=RID());
 	void canvas_item_add_multimesh(RID p_item, RID p_mesh,RID p_skeleton=RID());
-	void canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform);
+	void canvas_item_add_set_transform(RID p_item,const Transform2D& p_transform);
 	void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	void canvas_item_set_z(RID p_item, int p_z);
@@ -171,7 +171,7 @@ public:
 	void canvas_light_attach_to_canvas(RID p_light,RID p_canvas);
 	void canvas_light_set_enabled(RID p_light, bool p_enabled);
 	void canvas_light_set_scale(RID p_light, float p_scale);
-	void canvas_light_set_transform(RID p_light, const Matrix32& p_transform);
+	void canvas_light_set_transform(RID p_light, const Transform2D& p_transform);
 	void canvas_light_set_texture(RID p_light, RID p_texture);
 	void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset);
 	void canvas_light_set_color(RID p_light, const Color& p_color);
@@ -197,7 +197,7 @@ public:
 	void canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas);
 	void canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled);
 	void canvas_light_occluder_set_polygon(RID p_occluder,RID p_polygon);
-	void canvas_light_occluder_set_transform(RID p_occluder,const Matrix32& p_xform);
+	void canvas_light_occluder_set_transform(RID p_occluder,const Transform2D& p_xform);
 	void canvas_light_occluder_set_light_mask(RID p_occluder,int p_mask);
 
 	RID canvas_occluder_polygon_create();

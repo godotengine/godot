@@ -92,7 +92,7 @@ private:
 		Variant final_val;
 		ObjectID target_id;
 		StringName target_key;
-		real_t times_in_sec;
+		real_t duration;
 		TransitionType trans_type;
 		EaseType ease_type;
 		real_t delay;
@@ -165,8 +165,8 @@ public:
 	void set_tween_process_mode(TweenProcessMode p_mode);
 	TweenProcessMode get_tween_process_mode() const;
 
-	void set_speed(float p_speed);
-	float get_speed() const;
+	void set_speed_scale(float p_speed);
+	float get_speed_scale() const;
 
 	bool start();
 	bool reset(Object *p_node, String p_key);
@@ -186,7 +186,7 @@ public:
 		, String p_property
 		, Variant p_initial_val
 		, Variant p_final_val
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
 		, real_t p_delay = 0
@@ -196,20 +196,20 @@ public:
 		, String p_method
 		, Variant p_initial_val
 		, Variant p_final_val
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
 		, real_t p_delay = 0
 	);
 
 	bool interpolate_callback(Object *p_object
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, String p_callback
 		, VARIANT_ARG_DECLARE
 	);
 
 	bool interpolate_deferred_callback(Object *p_object
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, String p_callback
 		, VARIANT_ARG_DECLARE
 	);
@@ -219,7 +219,7 @@ public:
 		, Variant p_initial_val
 		, Object *p_target
 		, String p_target_property
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
 		, real_t p_delay = 0
@@ -230,7 +230,7 @@ public:
 		, Variant p_initial_val
 		, Object *p_target
 		, String p_target_method
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
 		, real_t p_delay = 0
@@ -241,7 +241,7 @@ public:
 		, Object *p_initial
 		, String p_initial_property
 		, Variant p_final_val
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
 		, real_t p_delay = 0
@@ -252,7 +252,7 @@ public:
 		, Object *p_initial
 		, String p_initial_method
 		, Variant p_final_val
-		, real_t p_times_in_sec
+		, real_t p_duration
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
 		, real_t p_delay = 0

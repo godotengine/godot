@@ -26,8 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "theme_editor_plugin.h"
+
+#include "version.h"
 #include "os/file_access.h"
 
 void ThemeEditor::edit(const Ref<Theme>& p_theme) {
@@ -584,7 +585,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	List<StringName> types;
 	base_theme->get_type_list(&types);
 
-	type_menu->get_popup()->clear();;
+	type_menu->get_popup()->clear();
 
 	if (p_option==0 || p_option==1) {//add
 
@@ -693,9 +694,9 @@ ThemeEditor::ThemeEditor() {
 
 
 
-//	main_panel->add_child(panel);
-//	panel->set_area_as_parent_rect();
-//	panel->set_margin( MARGIN_TOP,20 );
+	//main_panel->add_child(panel);
+	//panel->set_area_as_parent_rect();
+	//panel->set_margin( MARGIN_TOP,20 );
 
 	first_vb->add_child(memnew( Label("Label") ));
 
@@ -711,7 +712,7 @@ ThemeEditor::ThemeEditor() {
 	first_vb->add_child(cbx );
 
 
-	ButtonGroup *bg = memnew( ButtonGroup );
+	VBoxContainer *bg = memnew( VBoxContainer );
 	bg->set_v_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *gbvb = memnew( VBoxContainer );
 	gbvb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -975,7 +976,7 @@ void ThemeEditorPlugin::make_visible(bool p_visible){
 
 	} else {
 		theme_editor->set_process(false);
-		if (theme_editor->is_visible())
+		if (theme_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 	}
@@ -987,7 +988,7 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	theme_editor = memnew( ThemeEditor );
 	theme_editor->set_custom_minimum_size(Size2(0,200));
 
-//	p_node->get_viewport()->add_child(theme_editor);
+	//p_node->get_viewport()->add_child(theme_editor);
 	button=editor->add_bottom_panel_item("Theme",theme_editor);
 	button->hide();
 

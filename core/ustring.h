@@ -41,6 +41,8 @@
 
 class CharString : public Vector<char> {
 public:
+
+	bool operator<(const CharString& p_right) const;
 	int length() const { return size() ? size()-1 : 0; }
 	const char *get_data() const;
 	operator const char*() {return get_data();};
@@ -125,6 +127,7 @@ public:
 	bool is_subsequence_ofi(const String& p_string) const;
 	Vector<String> bigrams() const;
 	float similarity(const String& p_string) const;
+	String format(const Variant& values,String placeholder="{_}") const;
 	String replace_first(String p_key,String p_with) const;
 	String replace(String p_key,String p_with) const;
 	String replacen(String p_key,String p_with) const;
@@ -176,8 +179,8 @@ public:
 	String right(int p_pos) const;
 	String strip_edges(bool left = true, bool right = true) const;
 	String strip_escapes() const;
-	String extension() const;
-	String basename() const;
+	String get_extension() const;
+	String get_basename() const;
 	String plus_file(const String& p_file) const;
 	CharType ord_at(int p_idx) const;
 
@@ -217,6 +220,7 @@ public:
     String http_escape() const;
     String http_unescape() const;
 	String c_escape() const;
+	String c_escape_multiline() const;
 	String c_unescape() const;
 	String json_escape() const;
 	String word_wrap(int p_chars_per_line) const;

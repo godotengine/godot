@@ -34,28 +34,19 @@
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics/physics_server_sw.h"
-
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
-
 #include "gl_context_egl.h"
-
 #include "core/math/math_2d.h"
 #include "core/ustring.h"
+#include "main/input_default.h"
+#include "joypad_uwp.h"
 
 #include <windows.h>
-
 #include <io.h>
-
 #include <fcntl.h>
 #include <stdio.h>
-#include "main/input_default.h"
-
-#include "joypad_uwp.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -119,10 +110,6 @@ private:
 	MainLoop *main_loop;
 
 	AudioDriverXAudio2 audio_driver;
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 
 	MouseMode mouse_mode;
 	bool alt_mem;
@@ -157,9 +144,12 @@ private:
 		void on_magnetometer_reading_changed(Windows::Devices::Sensors::Magnetometer^ sender, Windows::Devices::Sensors::MagnetometerReadingChangedEventArgs^ args);
 		void on_gyroscope_reading_changed(Windows::Devices::Sensors::Gyrometer^ sender, Windows::Devices::Sensors::GyrometerReadingChangedEventArgs^ args);
 
+	/** clang-format breaks this, it does not understand this token. */
+	/* clang-format off */
 	internal:
 		ManagedType() { alert_close_handle = false; }
 		property OSUWP* os;
+	/* clang-format on */
 	};
 	ManagedType^ managed_object;
 	Windows::Devices::Sensors::Accelerometer^ accelerometer;

@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "multimesh_editor_plugin.h"
+
 #include "scene/gui/box_container.h"
 #include "scene/3d/mesh_instance.h"
 #include "spatial_editor_plugin.h"
@@ -177,7 +178,7 @@ void MultiMeshEditor::_populate() {
 	Map<float,int> triangle_area_map;
 	for(int i=0;i<facecount;i++) {
 
-		float area = r[i].get_area();;
+		float area = r[i].get_area();
 		if (area<CMP_EPSILON)
 			continue;
 		triangle_area_map[area_accum]=i;
@@ -215,7 +216,7 @@ void MultiMeshEditor::_populate() {
 
 	for(int i=0;i<instance_count;i++) {
 
-		float areapos = Math::random(0,area_accum);
+		float areapos = Math::random(0.0f,area_accum);
 
 		Map<float,int>::Element *E = triangle_area_map.find_closest(areapos);
 		ERR_FAIL_COND(!E)
@@ -236,11 +237,12 @@ void MultiMeshEditor::_populate() {
 		xform = xform * axis_xform;
 
 
-		Matrix3 post_xform;
+		Basis post_xform;
 
-		post_xform.rotate(xform.basis.get_axis(0),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
-		post_xform.rotate(xform.basis.get_axis(2),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
 		post_xform.rotate(xform.basis.get_axis(1),-Math::random(-_rotate_random,_rotate_random)*Math_PI);
+		post_xform.rotate(xform.basis.get_axis(2),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
+		post_xform.rotate(xform.basis.get_axis(0),-Math::random(-_tilt_random,_tilt_random)*Math_PI);
+
 		xform.basis = post_xform * xform.basis;
 		//xform.basis.orthonormalize();
 
@@ -341,7 +343,7 @@ MultiMeshEditor::MultiMeshEditor() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	populate_dialog->add_child(vbc);
-	populate_dialog->set_child_rect(vbc);
+	//populate_dialog->set_child_rect(vbc);
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 

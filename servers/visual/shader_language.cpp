@@ -374,7 +374,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					char_idx++;
 					return _make_token(TK_OP_GREATER_EQUAL);
 				} else if (GETCHAR(0)=='<') {
-					char_idx++;;
+					char_idx++;
 					if (GETCHAR(0)=='=') {
 						char_idx++;
 						return _make_token(TK_OP_ASSIGN_SHIFT_RIGHT);
@@ -1966,7 +1966,7 @@ bool ShaderLanguage::_parse_function_arguments(BlockNode* p_block,const Map<Stri
 		return true;
 	}
 
-	_set_tkpos(pos);;
+	_set_tkpos(pos);
 
 
 	while(true) {
@@ -2557,7 +2557,7 @@ ShaderLanguage::Node* ShaderLanguage::_parse_expression(BlockNode* p_block,const
 						} else if (l==2) {
 							member_type=DataType(dt-2);
 						} else if (l==3) {
-							member_type=DataType(dt-1);;
+							member_type=DataType(dt-1);
 						} else if (l==4) {
 							member_type=dt;
 						} else {
@@ -2920,7 +2920,7 @@ ShaderLanguage::Node* ShaderLanguage::_reduce_expression(BlockNode *p_block, Sha
 
 		ERR_FAIL_COND_V(op->arguments[0]->type!=Node::TYPE_VARIABLE,p_node);
 		VariableNode *vn = static_cast<VariableNode*>(op->arguments[0]);
-	//	StringName name=vn->name;
+		//StringName name=vn->name;
 
 		DataType base=get_scalar_type(op->get_datatype());
 

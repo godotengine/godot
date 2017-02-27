@@ -116,20 +116,20 @@ bool Shader::has_param(const StringName& p_param) const {
 
 void Shader::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_mode"),&Shader::get_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"),&Shader::get_mode);
 
-	ClassDB::bind_method(_MD("set_code","code"),&Shader::set_code);
-	ClassDB::bind_method(_MD("get_code"),&Shader::get_code);
+	ClassDB::bind_method(D_METHOD("set_code","code"),&Shader::set_code);
+	ClassDB::bind_method(D_METHOD("get_code"),&Shader::get_code);
 
-	ClassDB::bind_method(_MD("set_default_texture_param","param","texture:Texture"),&Shader::set_default_texture_param);
-	ClassDB::bind_method(_MD("get_default_texture_param:Texture","param"),&Shader::get_default_texture_param);
+	ClassDB::bind_method(D_METHOD("set_default_texture_param","param","texture:Texture"),&Shader::set_default_texture_param);
+	ClassDB::bind_method(D_METHOD("get_default_texture_param:Texture","param"),&Shader::get_default_texture_param);
 
-	ClassDB::bind_method(_MD("has_param","name"),&Shader::has_param);
+	ClassDB::bind_method(D_METHOD("has_param","name"),&Shader::has_param);
 
-	//ClassDB::bind_method(_MD("get_param_list"),&Shader::get_fragment_code);
+	//ClassDB::bind_method(D_METHOD("get_param_list"),&Shader::get_fragment_code);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING, "code",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("set_code"), _SCS("get_code") );
+	ADD_PROPERTY( PropertyInfo(Variant::STRING, "code",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "set_code", "get_code") ;
 
 	BIND_CONSTANT( MODE_SPATIAL);
 	BIND_CONSTANT( MODE_CANVAS_ITEM );

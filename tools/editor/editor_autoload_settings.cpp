@@ -26,12 +26,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "editor_autoload_settings.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "global_constants.h"
-
 #include "editor_node.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
@@ -307,7 +305,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 
 void EditorAutoloadSettings::_autoload_file_callback(const String& p_path) {
 
-	autoload_add_name->set_text(p_path.get_file().basename());
+	autoload_add_name->set_text(p_path.get_file().get_basename());
 }
 
 void EditorAutoloadSettings::update_autoload() {
@@ -377,7 +375,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2& p_point, Control 
 	if (autoload_cache.size() <= 1)
 		return false;
 
-	StringArray autoloads;
+	PoolStringArray autoloads;
 
 	TreeItem *next = tree->get_next_selected(NULL);
 
@@ -471,7 +469,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2& p_point, const Variant& 
 	}
 
 	Dictionary drop_data = p_data;
-	StringArray autoloads = drop_data["autoloads"];
+	PoolStringArray autoloads = drop_data["autoloads"];
 
 	Vector<int> orders;
 	orders.resize(autoload_cache.size());

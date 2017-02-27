@@ -168,7 +168,7 @@ private:
 	} data;
 
 	// used internally
-	Control* _find_control_at_pos(CanvasItem* p_node,const Point2& p_pos,const Matrix32& p_xform,Matrix32& r_inv_xform);
+	Control* _find_control_at_pos(CanvasItem* p_node,const Point2& p_pos,const Transform2D& p_xform,Transform2D& r_inv_xform);
 
 
 	void _window_find_focus_neighbour(const Vector2& p_dir, Node *p_at, const Point2* p_points ,float p_min,float &r_closest_dist,Control **r_closest);
@@ -389,7 +389,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i()) const;
 
 	virtual Rect2 get_item_rect() const;
-	virtual Matrix32 get_transform() const;
+	virtual Transform2D get_transform() const;
 
 	bool is_toplevel_control() const;
 

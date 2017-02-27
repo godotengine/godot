@@ -85,6 +85,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "continue",
 "pass",
 "return",
+"match",
 "func",
 "class",
 "extends",
@@ -118,6 +119,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "':'",
 "'\\n'",
 "PI",
+"_",
 "Error",
 "EOF",
 "Cursor"};
@@ -513,9 +515,11 @@ void GDTokenizerText::_advance() {
 				if (GETCHAR(1)=='=') {
 					_make_token(TK_OP_ASSIGN_ADD);
 					INCPOS(1);
-				//}  else if (GETCHAR(1)=='+') {
-				//	_make_token(TK_OP_PLUS_PLUS);
-				//	INCPOS(1);
+				/*
+				}  else if (GETCHAR(1)=='+') {
+					_make_token(TK_OP_PLUS_PLUS);
+					INCPOS(1);
+				*/
 				} else {
 					_make_token(TK_OP_ADD);
 				}
@@ -526,9 +530,11 @@ void GDTokenizerText::_advance() {
 				if (GETCHAR(1)=='=') {
 					_make_token(TK_OP_ASSIGN_SUB);
 					INCPOS(1);
-				//}  else if (GETCHAR(1)=='-') {
-				//	_make_token(TK_OP_MINUS_MINUS);
-				//	INCPOS(1);
+				/*
+				}  else if (GETCHAR(1)=='-') {
+					_make_token(TK_OP_MINUS_MINUS);
+					INCPOS(1);
+				*/
 				} else {
 					_make_token(TK_OP_SUB);
 				}
@@ -788,13 +794,12 @@ void GDTokenizerText::_advance() {
 							{Variant::STRING,"String"},
 							{Variant::VECTOR2,"Vector2"},
 							{Variant::RECT2,"Rect2"},
-							{Variant::MATRIX32,"Matrix32"},
+							{Variant::TRANSFORM2D,"Transform2D"},
 							{Variant::VECTOR3,"Vector3"},
-							{Variant::_AABB,"AABB"},
-							{Variant::_AABB,"Rect3"},
+							{Variant::RECT3,"Rect3"},
 							{Variant::PLANE,"Plane"},
 							{Variant::QUAT,"Quat"},
-							{Variant::MATRIX3,"Matrix3"},
+							{Variant::BASIS,"Basis"},
 							{Variant::TRANSFORM,"Transform"},
 							{Variant::COLOR,"Color"},
 							{Variant::IMAGE,"Image"},
@@ -804,13 +809,13 @@ void GDTokenizerText::_advance() {
 							{Variant::NODE_PATH,"NodePath"},
 							{Variant::DICTIONARY,"Dictionary"},
 							{Variant::ARRAY,"Array"},
-							{Variant::RAW_ARRAY,"RawArray"},
-							{Variant::INT_ARRAY,"IntArray"},
-							{Variant::REAL_ARRAY,"FloatArray"},
-							{Variant::STRING_ARRAY,"StringArray"},
-							{Variant::VECTOR2_ARRAY,"Vector2Array"},
-							{Variant::VECTOR3_ARRAY,"Vector3Array"},
-							{Variant::COLOR_ARRAY,"ColorArray"},
+							{Variant::POOL_BYTE_ARRAY,"PoolByteArray"},
+							{Variant::POOL_INT_ARRAY,"PoolIntArray"},
+							{Variant::POOL_REAL_ARRAY,"PoolFloatArray"},
+							{Variant::POOL_STRING_ARRAY,"PoolStringArray"},
+							{Variant::POOL_VECTOR2_ARRAY,"PoolVector2Array"},
+							{Variant::POOL_VECTOR3_ARRAY,"PoolVector3Array"},
+							{Variant::POOL_COLOR_ARRAY,"PoolColorArray"},
 							{Variant::VARIANT_MAX,NULL},
 						};
 
@@ -891,9 +896,11 @@ void GDTokenizerText::_advance() {
 								{TK_CF_BREAK,"break"},
 								{TK_CF_CONTINUE,"continue"},
 								{TK_CF_RETURN,"return"},
+								{TK_CF_MATCH, "match"},
 								{TK_CF_PASS,"pass"},
 								{TK_SELF,"self"},
 								{TK_CONST_PI,"PI"},
+								{TK_WILDCARD,"_"},
 								{TK_ERROR,NULL}
 							};
 
@@ -1162,7 +1169,7 @@ Vector<uint8_t> GDTokenizerBuffer::parse_code_string(const String& p_code) {
 
 
 	Map<StringName,int> identifier_map;
-	HashMap<Variant,int,VariantHasher> constant_map;
+	HashMap<Variant,int,VariantHasher,VariantComparator> constant_map;
 	Map<uint32_t,int> line_map;
 	Vector<uint32_t> token_array;
 

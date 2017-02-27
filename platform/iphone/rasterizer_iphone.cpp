@@ -30,7 +30,7 @@
 
 #include "rasterizer_iphone.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include <stdio.h>
 
 _FORCE_INLINE_ static void _gl_load_transform(const Transform& tr) {

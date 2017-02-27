@@ -29,7 +29,7 @@
 #ifndef STREAM_EDITOR_PLUGIN_H
 #define STREAM_EDITOR_PLUGIN_H
 
-
+#if 0
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/audio/stream_player.h"
@@ -81,3 +81,4 @@ public:
 };
 
 #endif // STREAM_EDITOR_PLUGIN_H
+#endif

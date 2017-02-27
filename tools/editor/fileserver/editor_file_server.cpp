@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_file_server.h"
+
 #include "io/marshalls.h"
 #include "io/marshalls.h"
 #include "../editor_settings.h"
@@ -38,7 +39,7 @@
 
 void EditorFileServer::_close_client(ClientData *cd) {
 
-	cd->connection->disconnect();
+	cd->connection->disconnect_from_host();
 	cd->efs->wait_mutex->lock();
 	cd->efs->to_wait.insert(cd->thread);
 	cd->efs->wait_mutex->unlock();

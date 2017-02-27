@@ -68,6 +68,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MERGE_FROM_SCENE,
 		TOOL_MULTI_EDIT,
 		TOOL_ERASE,
+		TOOL_COPY_NODE_PATH,
 		TOOL_BUTTON_MAX
 	};
 
@@ -102,7 +103,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorFileDialog *new_scene_from_dialog;
 
 	LineEdit *filter;
-	TextureFrame *filter_icon;
+	TextureRect *filter_icon;
 
 	PopupMenu * menu;
 

@@ -1,6 +1,13 @@
 # Third party libraries
 
 
+## certs
+
+- Upstream: ?
+
+TODO.
+
+
 ## enet
 
 - Upstream: http://enet.bespin.org
@@ -16,6 +23,13 @@ Files extracted from upstream source:
 Important: Some files have been modified by Godot developers so that they work
 for all platforms (especially UWP). Check the diff with the 1.3.13 tarball
 before the next update.
+
+
+## fonts
+
+- Upstream: ?
+
+TODO.
 
 
 ## freetype
@@ -51,19 +65,6 @@ the GLES version Godot targets.
 Files extracted from upstream source:
 
 - `jpgd.{c,h}`
-
-
-## libmpcdec
-
-- Upstream: https://www.musepack.net
-- Version: SVN somewhere between SV7 and SV8 (r475)
-- License: BSD-3-Clause
-
-Files extracted from upstream source:
-
-- all .c and .h files in libmpcdec/
-- include/mpc as mpc/
-- COPYING from libmpcdec/
 
 
 ## libogg
@@ -123,15 +124,15 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 0.5.2
+- Version: 0.6.0
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
 
-- `src/*` except from: .am and .in, files, extras/, `webp/extras.h`
+- `src/*` except from: .am, .rc and .in files
 - AUTHORS, COPYING, PATENTS
 
-Important: The files `utils/bit_reader.{c,h}` have Godot-made
+Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
@@ -222,7 +223,7 @@ Files extracted from upstream source:
 ## zlib
 
 - Upstream: http://www.zlib.net/
-- Version: 1.2.10
+- Version: 1.2.11
 - License: zlib
 
 Files extracted from upstream source:

@@ -649,25 +649,25 @@ void Tabs::set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy) {
 
 void Tabs::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&Tabs::_gui_input);
-	ClassDB::bind_method(_MD("get_tab_count"),&Tabs::get_tab_count);
-	ClassDB::bind_method(_MD("set_current_tab","tab_idx"),&Tabs::set_current_tab);
-	ClassDB::bind_method(_MD("get_current_tab"),&Tabs::get_current_tab);
-	ClassDB::bind_method(_MD("set_tab_title","tab_idx","title"),&Tabs::set_tab_title);
-	ClassDB::bind_method(_MD("get_tab_title","tab_idx"),&Tabs::get_tab_title);
-	ClassDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&Tabs::set_tab_icon);
-	ClassDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&Tabs::get_tab_icon);
-	ClassDB::bind_method(_MD("remove_tab","tab_idx"),&Tabs::remove_tab);
-	ClassDB::bind_method(_MD("add_tab","title","icon:Texture"),&Tabs::add_tab);
-	ClassDB::bind_method(_MD("set_tab_align","align"),&Tabs::set_tab_align);
-	ClassDB::bind_method(_MD("get_tab_align"),&Tabs::get_tab_align);
-	ClassDB::bind_method(_MD("ensure_tab_visible","idx"),&Tabs::ensure_tab_visible);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&Tabs::_gui_input);
+	ClassDB::bind_method(D_METHOD("get_tab_count"),&Tabs::get_tab_count);
+	ClassDB::bind_method(D_METHOD("set_current_tab","tab_idx"),&Tabs::set_current_tab);
+	ClassDB::bind_method(D_METHOD("get_current_tab"),&Tabs::get_current_tab);
+	ClassDB::bind_method(D_METHOD("set_tab_title","tab_idx","title"),&Tabs::set_tab_title);
+	ClassDB::bind_method(D_METHOD("get_tab_title","tab_idx"),&Tabs::get_tab_title);
+	ClassDB::bind_method(D_METHOD("set_tab_icon","tab_idx","icon:Texture"),&Tabs::set_tab_icon);
+	ClassDB::bind_method(D_METHOD("get_tab_icon:Texture","tab_idx"),&Tabs::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("remove_tab","tab_idx"),&Tabs::remove_tab);
+	ClassDB::bind_method(D_METHOD("add_tab","title","icon:Texture"),&Tabs::add_tab);
+	ClassDB::bind_method(D_METHOD("set_tab_align","align"),&Tabs::set_tab_align);
+	ClassDB::bind_method(D_METHOD("get_tab_align"),&Tabs::get_tab_align);
+	ClassDB::bind_method(D_METHOD("ensure_tab_visible","idx"),&Tabs::ensure_tab_visible);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("right_button_pressed",PropertyInfo(Variant::INT,"tab")));
 	ADD_SIGNAL(MethodInfo("tab_close",PropertyInfo(Variant::INT,"tab")));
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab") ;
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );

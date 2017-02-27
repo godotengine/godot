@@ -56,12 +56,16 @@ class SceneTreeTimer : public Reference {
 	GDCLASS(SceneTreeTimer,Reference);
 
 	float time_left;
+	bool process_pause;
 protected:
 	static void _bind_methods();
 public:
 
 	void set_time_left(float p_time);
 	float get_time_left() const;
+
+	void set_pause_mode_process(bool p_pause_mode_process);
+	bool is_pause_mode_process();
 
 	SceneTreeTimer();
 };
@@ -107,6 +111,7 @@ private:
 	float fixed_process_time;
 	float idle_process_time;
 	bool accept_quit;
+	bool quit_on_go_back;
 	uint32_t last_id;
 
 	bool editor_hint;
@@ -241,7 +246,9 @@ friend class Node;
 
 	void _notify_group_pause(const StringName& p_group,int p_notification);
 	void _call_input_pause(const StringName& p_group,const StringName& p_method,const InputEvent& p_input);
+	Variant _call_group_flags(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 	Variant _call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+
 
 
 	static void _debugger_request_tree(void *self);
@@ -331,17 +338,20 @@ public:
 		GROUP_CALL_REVERSE=1,
 		GROUP_CALL_REALTIME=2,
 		GROUP_CALL_UNIQUE=4,
-		GROUP_CALL_MULIILEVEL=8,
+		GROUP_CALL_MULTILEVEL=8,
 	};
 
 	_FORCE_INLINE_ Viewport *get_root() const { return root; }
 
 	uint32_t get_last_event_id() const;
 
-	void call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_LIST);
-	void notify_group(uint32_t p_call_flags,const StringName& p_group,int p_notification);
-	void set_group(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value);
+	void call_group_flags(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_LIST);
+	void notify_group_flags(uint32_t p_call_flags,const StringName& p_group,int p_notification);
+	void set_group_flags(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value);
 
+	void call_group(const StringName& p_group,const StringName& p_function,VARIANT_ARG_LIST);
+	void notify_group(const StringName& p_group,int p_notification);
+	void set_group(const StringName& p_group,const String& p_name,const Variant& p_value);
 
 	virtual void input_text( const String& p_text );
 	virtual void input_event( const InputEvent& p_event );
@@ -353,6 +363,7 @@ public:
 	virtual void finish();
 
 	void set_auto_accept_quit(bool p_enable);
+	void set_quit_on_go_back(bool p_enable);
 
 	void quit();
 
@@ -423,7 +434,7 @@ public:
 	Error change_scene_to(const Ref<PackedScene>& p_scene);
 	Error reload_current_scene();
 
-	Ref<SceneTreeTimer> create_timer(float p_delay_sec);
+	Ref<SceneTreeTimer> create_timer(float p_delay_sec, bool p_process_pause=true);
 
 	//used by Main::start, don't use otherwise
 	void add_current_scene(Node * p_current);

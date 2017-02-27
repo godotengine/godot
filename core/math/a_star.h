@@ -48,14 +48,14 @@ class AStar: public Reference {
 
 		int id;
 		Vector3 pos;
-		float weight_scale;
+		real_t weight_scale;
 		uint64_t last_pass;
 
 		Vector<Point*> neighbours;
 
 		//used for pathfinding
 		Point *prev_point;
-		float distance;
+		real_t distance;
 
 		Point() : list(this) {}
 	};
@@ -98,9 +98,9 @@ public:
 
 	int get_available_point_id() const;
 
-	void add_point(int p_id,const Vector3& p_pos,float p_weight_scale=1);
+	void add_point(int p_id,const Vector3& p_pos,real_t p_weight_scale=1);
 	Vector3 get_point_pos(int p_id) const;
-	float get_point_weight_scale(int p_id) const;
+	real_t get_point_weight_scale(int p_id) const;
 	void remove_point(int p_id);
 
 	void connect_points(int p_id,int p_with_id);

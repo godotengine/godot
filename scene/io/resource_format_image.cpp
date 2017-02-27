@@ -27,16 +27,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_format_image.h"
+
+#if 0
 #include "scene/resources/texture.h"
 #include "io/image_loader.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_original_path, Error *r_error) {
 
 	if (r_error)
 		*r_error=ERR_CANT_OPEN;
 
-	if (p_path.extension()=="cube") {
+	if (p_path.get_extension()=="cube") {
 		// open as cubemap txture
 
 		CubeMap* ptr = memnew(CubeMap);
@@ -235,7 +237,7 @@ void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extens
 
 String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const {
 
-	String ext=p_path.extension().to_lower();
+	String ext=p_path.get_extension().to_lower();
 	if (ext=="cube")
 		return "CubeMap";
 
@@ -260,3 +262,4 @@ ResourceFormatLoaderImage::ResourceFormatLoaderImage() {
 	GLOBAL_DEF("rendering/image_loader/repeat",false);
 
 }
+#endif

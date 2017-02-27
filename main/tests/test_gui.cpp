@@ -46,7 +46,7 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "io/image_loader.h"
 #include "print_string.h"
 #include "scene/2d/sprite.h"
@@ -93,11 +93,11 @@ public:
 
 		TestCube *testcube = memnew( TestCube );
 		vp->add_child(testcube);
-		testcube->set_transform(Transform( Matrix3().rotated(Vector3(0,1,0),Math_PI*0.25), Vector3(0,0,-8)));
+		testcube->set_transform(Transform( Basis().rotated(Vector3(0,1,0),Math_PI*0.25), Vector3(0,0,-8)));
 
 		Sprite *sp = memnew( Sprite );
 		sp->set_texture( vp->get_render_target_texture() );
-//		sp->set_texture( ResourceLoader::load("res://ball.png") );
+		//sp->set_texture( ResourceLoader::load("res://ball.png") );
 		sp->set_pos(Point2(300,300));
 		get_root()->add_child(sp);
 
@@ -353,14 +353,14 @@ public:
 		label = memnew( Label );
 		label->set_text("Some Label");
 		label->set_pos( Point2(20,20) );
-		ctl->add_child(label);;
+		ctl->add_child(label);
 
 		ctl= memnew( Control );
 		ctl->set_name("tab 3");
 		button = memnew( Button );
 		button->set_text("Some Button");
 		button->set_pos( Point2(30,50) );
-		ctl->add_child(button);;
+		ctl->add_child(button);
 
 		tabc->add_child(ctl);
 

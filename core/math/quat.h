@@ -26,13 +26,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#include "vector3.h"
+
 #ifndef QUAT_H
 #define QUAT_H
 
 #include "math_defs.h"
 #include "math_funcs.h"
 #include "ustring.h"
-#include "vector3.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -117,8 +119,8 @@ public:
 			w=0;
 		} else {
 
-			real_t  s = Math::sqrt((1.0f + d) * 2.0f);
-			real_t rs = 1.0f / s;
+			real_t  s = Math::sqrt((1.0 + d) * 2.0);
+			real_t rs = 1.0 / s;
 
 			x=c.x*rs;
 			y=c.y*rs;

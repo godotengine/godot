@@ -47,19 +47,19 @@ abstract public class ConsumeTask {
 	
 
 	public void consume(final String sku){
-//		Log.d("XXX", "Consuming product " + sku);
+		//Log.d("XXX", "Consuming product " + sku);
 		PaymentsCache pc = new PaymentsCache(context);
 		Boolean isBlocked = pc.getConsumableFlag("block", sku);
 		String _token = pc.getConsumableValue("token", sku);
-//		Log.d("XXX", "token " + _token);		
+		//Log.d("XXX", "token " + _token);		
 		if(!isBlocked && _token == null){
-//			_token = "inapp:"+context.getPackageName()+":android.test.purchased";
-//			Log.d("XXX", "Consuming product " + sku + " with token " + _token);
+			//_token = "inapp:"+context.getPackageName()+":android.test.purchased";
+			//Log.d("XXX", "Consuming product " + sku + " with token " + _token);
 		}else if(!isBlocked){
-//			Log.d("XXX", "It is not blocked ¿?");
+			//Log.d("XXX", "It is not blocked ¿?");
 			return;
 		}else if(_token == null){
-//			Log.d("XXX", "No token available");
+			//Log.d("XXX", "No token available");
 			this.error("No token for sku:" + sku);
 			return;
 		}
@@ -69,9 +69,9 @@ abstract public class ConsumeTask {
 			@Override
 			protected String doInBackground(String... params) {
 				try {
-//					Log.d("XXX", "Requesting to release item.");
+					//Log.d("XXX", "Requesting to release item.");
 					int response = mService.consumePurchase(3, context.getPackageName(), token);
-//					Log.d("XXX", "release response code: " + response);
+					//Log.d("XXX", "release response code: " + response);
 					if(response == 0 || response == 8){
 						return null;
 					}

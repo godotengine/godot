@@ -129,7 +129,6 @@ private:
 	struct EditedScene {
 		Node* root;
 		Dictionary editor_states;
-		Ref<ResourceImportMetadata> medatata;
 		List<Node*> selection;
 		Vector<EditorHistory::History> history_stored;
 		int history_current;
@@ -184,8 +183,6 @@ public:
 	void remove_scene(int p_idx);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node* p_root);
-	void set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata);
-	Ref<ResourceImportMetadata> get_edited_scene_import_metadata(int p_idx = -1) const;
 	int get_edited_scene() const;
 	Node* get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;

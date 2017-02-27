@@ -36,37 +36,31 @@ String PacketPeerUDP::_get_packet_ip() const {
 	return get_packet_address();
 }
 
-Error PacketPeerUDP::_set_send_address(const String& p_address, int p_port) {
+Error PacketPeerUDP::_set_dest_address(const String& p_address, int p_port) {
 
 	IP_Address ip;
 	if (p_address.is_valid_ip_address()) {
 		ip=p_address;
 	} else {
-		ip=IP::get_singleton()->resolve_hostname(p_address, ip_type);
-		if (ip==IP_Address())
+		ip=IP::get_singleton()->resolve_hostname(p_address);
+		if (!ip.is_valid())
 			return ERR_CANT_RESOLVE;
 	}
 
-	set_send_address(ip,p_port);
+	set_dest_address(ip,p_port);
 	return OK;
-}
-
-void PacketPeerUDP::set_ip_type(IP::Type p_type) {
-	close();
-	ip_type = p_type;
 }
 
 void PacketPeerUDP::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&PacketPeerUDP::set_ip_type);
-	ClassDB::bind_method(_MD("listen:Error","port", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL(65536));
-	ClassDB::bind_method(_MD("close"),&PacketPeerUDP::close);
-	ClassDB::bind_method(_MD("wait:Error"),&PacketPeerUDP::wait);
-	ClassDB::bind_method(_MD("is_listening"),&PacketPeerUDP::is_listening);
-	ClassDB::bind_method(_MD("get_packet_ip"),&PacketPeerUDP::_get_packet_ip);
-	//ClassDB::bind_method(_MD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
-	ClassDB::bind_method(_MD("get_packet_port"),&PacketPeerUDP::get_packet_port);
-	ClassDB::bind_method(_MD("set_send_address","host","port"),&PacketPeerUDP::_set_send_address);
+	ClassDB::bind_method(D_METHOD("listen:Error","port", "bind_address", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL("*"),DEFVAL(65536));
+	ClassDB::bind_method(D_METHOD("close"),&PacketPeerUDP::close);
+	ClassDB::bind_method(D_METHOD("wait:Error"),&PacketPeerUDP::wait);
+	ClassDB::bind_method(D_METHOD("is_listening"),&PacketPeerUDP::is_listening);
+	ClassDB::bind_method(D_METHOD("get_packet_ip"),&PacketPeerUDP::_get_packet_ip);
+	//ClassDB::bind_method(D_METHOD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
+	ClassDB::bind_method(D_METHOD("get_packet_port"),&PacketPeerUDP::get_packet_port);
+	ClassDB::bind_method(D_METHOD("set_dest_address","host","port"),&PacketPeerUDP::_set_dest_address);
 
 
 }
@@ -87,5 +81,5 @@ PacketPeerUDP* PacketPeerUDP::create() {
 
 PacketPeerUDP::PacketPeerUDP()
 {
-	ip_type = IP::TYPE_ANY;
+
 }

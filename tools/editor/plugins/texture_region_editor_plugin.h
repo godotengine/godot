@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  texture_region_editor_plugin.h                                        */
+/*  texture_region_editor_plugin.h                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -36,7 +36,7 @@
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/2d/sprite.h"
-#include "scene/gui/patch_9_frame.h"
+#include "scene/gui/patch_9_rect.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
@@ -53,7 +53,7 @@ class TextureRegionEditor : public Control {
 
 	friend class TextureRegionEditorPlugin;
 	MenuButton *snap_mode_button;
-	TextureFrame *icon_zoom;
+	TextureRect *icon_zoom;
 	ToolButton *zoom_in;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_out;
@@ -81,7 +81,7 @@ class TextureRegionEditor : public Control {
 	Vector2 snap_step;
 	Vector2 snap_separation;
 
-	Patch9Frame *node_patch9;
+	NinePatchRect *node_patch9;
 	Sprite *node_sprite;
 	Ref<StyleBoxTexture> obj_styleBox;
 	Ref<AtlasTexture> atlas_tex;

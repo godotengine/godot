@@ -18,7 +18,7 @@
 #include <arm_neon.h>
 #include <assert.h>
 #include "./neon.h"
-#include "../utils/rescaler.h"
+#include "../utils/rescaler_utils.h"
 
 #define ROUNDER (WEBP_RESCALER_ONE >> 1)
 #define MULT_FIX_C(x, y) (((uint64_t)(x) * (y) + ROUNDER) >> WEBP_RESCALER_RFIX)

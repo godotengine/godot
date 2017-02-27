@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "compressed_translation.h"
+
 #include "pair.h"
 #include <string.h>
 
@@ -467,7 +468,7 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 	//print_line("Hash: "+itos(p));
 
 	if (p==0xFFFFFFFF) {
-//		print_line("GETMSG: Nothing!");
+		//print_line("GETMSG: Nothing!");
 		return StringName(); //nothing
 	}
 
@@ -489,7 +490,7 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 
 	//print_line("bucket pos: "+itos(idx));
 	if (idx==-1) {
-//		print_line("GETMSG: Not in Bucket!");
+		//print_line("GETMSG: Not in Bucket!");
 		return StringName();
 	}
 
@@ -497,8 +498,8 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 
 		String rstr;
 		rstr.parse_utf8(&sptr[ bucket.elem[idx].str_offset ], bucket.elem[idx].uncomp_size );
-//		print_line("Uncompressed, size: "+itos(bucket.elem[idx].comp_size));
-//		print_line("Return: "+rstr);
+		//print_line("Uncompressed, size: "+itos(bucket.elem[idx].comp_size));
+		//print_line("Return: "+rstr);
 
 		return rstr;
 	} else {
@@ -508,8 +509,8 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 		smaz_decompress(&sptr[ bucket.elem[idx].str_offset ], bucket.elem[idx].comp_size,uncomp.ptr(),bucket.elem[idx].uncomp_size );
 		String rstr;
 		rstr.parse_utf8(uncomp.get_data());
-//		print_line("Compressed, size: "+itos(bucket.elem[idx].comp_size));
-//		print_line("Return: "+rstr);
+		//print_line("Compressed, size: "+itos(bucket.elem[idx].comp_size));
+		//print_line("Return: "+rstr);
 		return rstr;
 	}
 
@@ -518,15 +519,15 @@ StringName PHashTranslation::get_message(const StringName& p_src_text) const {
 
 void PHashTranslation::_get_property_list( List<PropertyInfo> *p_list) const{
 
-	p_list->push_back( PropertyInfo(Variant::INT_ARRAY, "hash_table"));
-	p_list->push_back( PropertyInfo(Variant::INT_ARRAY, "bucket_table"));
-	p_list->push_back( PropertyInfo(Variant::RAW_ARRAY, "strings"));
+	p_list->push_back( PropertyInfo(Variant::POOL_INT_ARRAY, "hash_table"));
+	p_list->push_back( PropertyInfo(Variant::POOL_INT_ARRAY, "bucket_table"));
+	p_list->push_back( PropertyInfo(Variant::POOL_BYTE_ARRAY, "strings"));
 	p_list->push_back( PropertyInfo(Variant::OBJECT, "load_from",PROPERTY_HINT_RESOURCE_TYPE,"Translation",PROPERTY_USAGE_EDITOR));
 
 }
 void PHashTranslation::_bind_methods() {
 
-	ClassDB::bind_method(_MD("generate","from:Translation"),&PHashTranslation::generate);
+	ClassDB::bind_method(D_METHOD("generate","from:Translation"),&PHashTranslation::generate);
 }
 
 PHashTranslation::PHashTranslation()

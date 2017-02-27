@@ -61,9 +61,9 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 
 	//visual_server = memnew( VisualServerRaster(rasterizer) );
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
@@ -103,9 +103,11 @@ void OS_Server::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 	memdelete(sample_manager);
 
@@ -235,7 +237,7 @@ void OS_Server::run() {
 
 OS_Server::OS_Server() {
 
-	AudioDriverManagerSW::add_driver(&driver_dummy);
+	AudioDriverManager::add_driver(&driver_dummy);
 	//adriver here
 	grab=false;
 

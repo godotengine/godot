@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "polygon_2d_editor_plugin.h"
+
 #include "canvas_item_editor_plugin.h"
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
@@ -227,7 +227,7 @@ bool Polygon2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -463,7 +463,7 @@ void Polygon2DEditor::_canvas_draw() {
 		poly=Variant(node->get_polygon());
 
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 	for(int i=0;i<poly.size();i++) {
@@ -499,7 +499,7 @@ void Polygon2DEditor::_uv_mode(int p_mode) {
 void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom,uv_draw_zoom));
 
@@ -680,13 +680,13 @@ void Polygon2DEditor::_uv_draw() {
 	if (base_tex.is_null())
 		return;
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom,uv_draw_zoom));
 
 	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),mtx);
 	uv_edit_draw->draw_texture(base_tex,Point2());
-	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Matrix32());
+	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Transform2D());
 
 	if (snap_show_grid) {
 		Size2 s = uv_edit_draw->get_size();
@@ -775,19 +775,19 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 
 void Polygon2DEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_option"),&Polygon2DEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_uv_mode"),&Polygon2DEditor::_uv_mode);
-	ClassDB::bind_method(_MD("_uv_draw"),&Polygon2DEditor::_uv_draw);
-	ClassDB::bind_method(_MD("_uv_input"),&Polygon2DEditor::_uv_input);
-	ClassDB::bind_method(_MD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
-	ClassDB::bind_method(_MD("_node_removed"),&Polygon2DEditor::_node_removed);
-	ClassDB::bind_method(_MD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
-	ClassDB::bind_method(_MD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
-	ClassDB::bind_method(_MD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
-	ClassDB::bind_method(_MD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
-	ClassDB::bind_method(_MD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
-	ClassDB::bind_method(_MD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&Polygon2DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_uv_mode"),&Polygon2DEditor::_uv_mode);
+	ClassDB::bind_method(D_METHOD("_uv_draw"),&Polygon2DEditor::_uv_draw);
+	ClassDB::bind_method(D_METHOD("_uv_input"),&Polygon2DEditor::_uv_input);
+	ClassDB::bind_method(D_METHOD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&Polygon2DEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
+	ClassDB::bind_method(D_METHOD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
 
 
 }
@@ -853,7 +853,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 
 	VBoxContainer *uv_main_vb = memnew( VBoxContainer );
 	uv_edit->add_child(uv_main_vb);
-	uv_edit->set_child_rect(uv_main_vb);
+	//uv_edit->set_child_rect(uv_main_vb);
 	HBoxContainer *uv_mode_hb = memnew( HBoxContainer );
 	uv_main_vb->add_child(uv_mode_hb);
 	for(int i=0;i<UV_MODE_MAX;i++) {
@@ -949,7 +949,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_mode_hb->add_child(sb_step_y);
 
 	uv_mode_hb->add_child( memnew( VSeparator ));
-	uv_icon_zoom = memnew( TextureFrame );
+	uv_icon_zoom = memnew( TextureRect );
 	uv_mode_hb->add_child( uv_icon_zoom );
 	uv_zoom = memnew( HSlider );
 	uv_zoom->set_min(0.01);

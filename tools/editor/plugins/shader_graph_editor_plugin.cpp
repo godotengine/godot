@@ -296,8 +296,8 @@ Vector<Color> GraphColorRampEdit::get_colors() const{
 
 void GraphColorRampEdit::_bind_methods(){
 
-	ClassDB::bind_method(_MD("_gui_input"),&GraphColorRampEdit::_gui_input);
-	ClassDB::bind_method(_MD("_color_changed"),&GraphColorRampEdit::_color_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphColorRampEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_color_changed"),&GraphColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }
 
@@ -310,7 +310,7 @@ GraphColorRampEdit::GraphColorRampEdit(){
 	popup = memnew( PopupPanel );
 	picker = memnew( ColorPicker );
 	popup->add_child(picker);
-	popup->set_child_rect(picker);
+	/popup->set_child_rect(picker);
 	add_child(popup);
 
 }
@@ -464,8 +464,7 @@ void GraphCurveMapEdit::_plot_curve(const Vector2& p_a,const Vector2& p_b,const 
 
 	/* compose the basis and geometry matrices */
 
-	static const float CR_basis[4][4] =
-	{
+	static const float CR_basis[4][4] = {
 		{ -0.5,  1.5, -1.5,  0.5 },
 		{  1.0, -2.5,  2.0, -0.5 },
 		{ -0.5,  0.0,  0.5,  0.0 },
@@ -658,7 +657,7 @@ Vector<Vector2> GraphCurveMapEdit::get_points() const {
 
 void GraphCurveMapEdit::_bind_methods(){
 
-	ClassDB::bind_method(_MD("_gui_input"),&GraphCurveMapEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphCurveMapEdit::_gui_input);
 	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
@@ -2315,7 +2314,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
 		le->connect("text_entered",this,"_input_name_changed",varray(p_id,le));
-		TextureFrame *tex = memnew( TextureFrame );
+		TextureRect *tex = memnew( TextureRect );
 		tex->set_expand(true);
 		tex->set_custom_minimum_size(Size2(80,80));
 		tex->set_drag_forwarding(this);
@@ -2530,7 +2529,7 @@ void ShaderGraphView::_sg_updated() {
 
 Variant ShaderGraphView::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 {
-	TextureFrame* frame = p_from->cast_to<TextureFrame>();
+	TextureRect* frame = p_from->cast_to<TextureRect>();
 	if (!frame)
 		return Variant();
 
@@ -2576,7 +2575,7 @@ void ShaderGraphView::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (!can_drop_data_fw(p_point, p_data, p_from))
 		return;
 
-	TextureFrame *frame = p_from->cast_to<TextureFrame>();
+	TextureRect *frame = p_from->cast_to<TextureRect>();
 	if (!frame)
 		return;
 
@@ -2733,9 +2732,9 @@ void ShaderGraphView::_bind_methods() {
 	ClassDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
 	ClassDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
 
-	ClassDB::bind_method(_MD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
-	ClassDB::bind_method(_MD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
-	ClassDB::bind_method(_MD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
 
 	ClassDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
@@ -2933,9 +2932,9 @@ ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node, bool p_2d) 
 		SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
 
 
-	//	editor->get_viewport()->add_child(shader_editor);
-	//	shader_editor->set_area_as_parent_rect();
-	//	shader_editor->hide();
+		//editor->get_viewport()->add_child(shader_editor);
+		//shader_editor->set_area_as_parent_rect();
+		//shader_editor->hide();
 
 }
 

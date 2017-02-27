@@ -111,7 +111,7 @@ protected:
 
 		PhysicsServer * ps = PhysicsServer::get_singleton();
 
-		RID plane_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);;
+		RID plane_shape = ps->shape_create(PhysicsServer::SHAPE_PLANE);
 		ps->shape_set_data( plane_shape, p_plane );
 
 		RID b = ps->body_create( PhysicsServer::BODY_MODE_STATIC );
@@ -345,22 +345,27 @@ public:
 		/* CAMERA */
 
 		camera = vs->camera_create();
+
 		RID viewport = vs->viewport_create();
+		Size2i screen_size = OS::get_singleton()->get_window_size();
+		vs->viewport_set_size(viewport,screen_size.x,screen_size.y);
+		vs->viewport_attach_to_screen(viewport,Rect2(Vector2(),screen_size));
+		vs->viewport_set_active(viewport,true);
 		vs->viewport_attach_camera( viewport, camera );
-		vs->viewport_attach_to_screen(viewport);
 		vs->viewport_set_scenario( viewport, scenario );
 
+
 		vs->camera_set_perspective(camera,60,0.1,40.0);
-		vs->camera_set_transform(camera,Transform( Matrix3(), Vector3(0,9,12)));
+		vs->camera_set_transform(camera,Transform( Basis(), Vector3(0,9,12)));
 		//vs->scenario_set_debug(scenario,VS::SCENARIO_DEBUG_WIREFRAME);
 
 		Transform gxf;
 		gxf.basis.scale(Vector3(1.4,0.4,1.4));
 		gxf.origin=Vector3(-2,1,-2);
 		make_grid(5,5,2.5,1,gxf);
-	//	create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,gxf);
+		//create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,gxf);
 		//create_static_plane( Plane( Vector3(0,1,0), -2) );
-//		test_joint();
+		//test_joint();
 		test_fall();
 		//test_joint();
 
@@ -441,7 +446,7 @@ public:
 
 
 		RID tribody = ps->body_create( PhysicsServer::BODY_MODE_STATIC, trimesh_shape);
-		Transform tritrans = Transform( Matrix3(), Vector3(0,0,-2) );
+		Transform tritrans = Transform( Basis(), Vector3(0,0,-2) );
 		ps->body_set_state( tribody, PhysicsServer::BODY_STATE_TRANSFORM, tritrans );
 		vs->instance_set_transform( triins, tritrans );
 		RID trimesh_material = vs->fixed_material_create();
@@ -477,7 +482,7 @@ public:
 #if 0
 		PhysicsServer * ps = PhysicsServer::get_singleton();
 
-		mover = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,Transform(Matrix3(),Vector3(0,0,-24)));
+		mover = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,Transform(Basis(),Vector3(0,0,-24)));
 		RID b = create_body(PhysicsServer::SHAPE_CAPSULE,PhysicsServer::BODY_MODE_RIGID,Transform());
 
 		ps->joint_create_double_pin(b,Vector3(0,0,1.0),mover,Vector3(0,0,0));
@@ -508,17 +513,17 @@ public:
 		PhysicsServer * ps = PhysicsServer::get_singleton();
 
 
-		mover = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,Transform(Matrix3(),Vector3(0,0,-24)));
+		mover = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_STATIC,Transform(Basis(),Vector3(0,0,-24)));
 		RID b = create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_RIGID,Transform());
 
-		ps->joint_create_double_hinge(b,Transform(Matrix3(),Vector3(1,1,1.0)),mover,Transform(Matrix3(),Vector3(0,0,0)));
+		ps->joint_create_double_hinge(b,Transform(Basis(),Vector3(1,1,1.0)),mover,Transform(Basis(),Vector3(0,0,0)));
 		ps->body_add_collision_exception(mover,b);
 
 /*
 		for(int i=0;i<20;i++) {
 
 			RID c = create_body(PhysicsServer::SHAPE_CAPSULE,PhysicsServer::BODY_MODE_RIGID,Transform());
-			ps->joint_create_double_hinge(b,Transform(Matrix3(),Vector3(0,0,-0.7)),c,Transform(Matrix3(),Vector3(0,0,0.7)));
+			ps->joint_create_double_hinge(b,Transform(Basis(),Vector3(0,0,-0.7)),c,Transform(Basis(),Vector3(0,0,0.7)));
 			ps->body_add_collision_exception(c,b);
 			b=c;
 		}
@@ -560,7 +565,7 @@ public:
 		ps->body_set_force_integration_callback(character,this,"body_changed_transform",mesh_instance);
 
 
-		ps->body_set_state( character, PhysicsServer::BODY_STATE_TRANSFORM,Transform(Matrix3(),Vector3(-2,5,-2)));
+		ps->body_set_state( character, PhysicsServer::BODY_STATE_TRANSFORM,Transform(Basis(),Vector3(-2,5,-2)));
 		bodies.push_back(character);
 
 
@@ -611,8 +616,8 @@ public:
 
 	void test_activate() {
 
-		create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_RIGID,Transform(Matrix3(),Vector3(0,2,0)),true);
-		//create_body(PhysicsServer::SHAPE_SPHERE,PhysicsServer::BODY_MODE_RIGID,Transform(Matrix3(),Vector3(0,6,0)),true);
+		create_body(PhysicsServer::SHAPE_BOX,PhysicsServer::BODY_MODE_RIGID,Transform(Basis(),Vector3(0,2,0)),true);
+		//create_body(PhysicsServer::SHAPE_SPHERE,PhysicsServer::BODY_MODE_RIGID,Transform(Basis(),Vector3(0,6,0)),true);
 		create_static_plane( Plane( Vector3(0,1,0), -1) );
 
 	}

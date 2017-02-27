@@ -18,7 +18,7 @@
 #include <assert.h>
 
 #include "./neon.h"
-#include "../enc/vp8enci.h"
+#include "../enc/vp8i_enc.h"
 
 //------------------------------------------------------------------------------
 // Transforms (Paragraph 14.4)
@@ -746,9 +746,14 @@ static WEBP_INLINE void AccumulateSSE16(const uint8_t* const a,
   const uint8x16_t a0 = vld1q_u8(a);
   const uint8x16_t b0 = vld1q_u8(b);
   const uint8x16_t abs_diff = vabdq_u8(a0, b0);
-  uint16x8_t prod = vmull_u8(vget_low_u8(abs_diff), vget_low_u8(abs_diff));
-  prod = vmlal_u8(prod, vget_high_u8(abs_diff), vget_high_u8(abs_diff));
-  *sum = vpadalq_u16(*sum, prod);      // pair-wise add and accumulate
+  const uint16x8_t prod1 = vmull_u8(vget_low_u8(abs_diff),
+                                    vget_low_u8(abs_diff));
+  const uint16x8_t prod2 = vmull_u8(vget_high_u8(abs_diff),
+                                    vget_high_u8(abs_diff));
+  /* pair-wise adds and widen */
+  const uint32x4_t sum1 = vpaddlq_u16(prod1);
+  const uint32x4_t sum2 = vpaddlq_u16(prod2);
+  *sum = vaddq_u32(*sum, vaddq_u32(sum1, sum2));
 }
 
 // Horizontal sum of all four uint32_t values in 'sum'.
@@ -758,7 +763,7 @@ static int SumToInt(uint32x4_t sum) {
   return (int)sum3;
 }
 
-static int SSE16x16(const uint8_t* a, const uint8_t* b) {
+static int SSE16x16_NEON(const uint8_t* a, const uint8_t* b) {
   uint32x4_t sum = vdupq_n_u32(0);
   int y;
   for (y = 0; y < 16; ++y) {
@@ -767,7 +772,7 @@ static int SSE16x16(const uint8_t* a, const uint8_t* b) {
   return SumToInt(sum);
 }
 
-static int SSE16x8(const uint8_t* a, const uint8_t* b) {
+static int SSE16x8_NEON(const uint8_t* a, const uint8_t* b) {
   uint32x4_t sum = vdupq_n_u32(0);
   int y;
   for (y = 0; y < 8; ++y) {
@@ -776,7 +781,7 @@ static int SSE16x8(const uint8_t* a, const uint8_t* b) {
   return SumToInt(sum);
 }
 
-static int SSE8x8(const uint8_t* a, const uint8_t* b) {
+static int SSE8x8_NEON(const uint8_t* a, const uint8_t* b) {
   uint32x4_t sum = vdupq_n_u32(0);
   int y;
   for (y = 0; y < 8; ++y) {
@@ -789,13 +794,18 @@ static int SSE8x8(const uint8_t* a, const uint8_t* b) {
   return SumToInt(sum);
 }
 
-static int SSE4x4(const uint8_t* a, const uint8_t* b) {
+static int SSE4x4_NEON(const uint8_t* a, const uint8_t* b) {
   const uint8x16_t a0 = Load4x4(a);
   const uint8x16_t b0 = Load4x4(b);
   const uint8x16_t abs_diff = vabdq_u8(a0, b0);
-  uint16x8_t prod = vmull_u8(vget_low_u8(abs_diff), vget_low_u8(abs_diff));
-  prod = vmlal_u8(prod, vget_high_u8(abs_diff), vget_high_u8(abs_diff));
-  return SumToInt(vpaddlq_u16(prod));
+  const uint16x8_t prod1 = vmull_u8(vget_low_u8(abs_diff),
+                                    vget_low_u8(abs_diff));
+  const uint16x8_t prod2 = vmull_u8(vget_high_u8(abs_diff),
+                                    vget_high_u8(abs_diff));
+  /* pair-wise adds and widen */
+  const uint32x4_t sum1 = vpaddlq_u16(prod1);
+  const uint32x4_t sum2 = vpaddlq_u16(prod2);
+  return SumToInt(vaddq_u32(sum1, sum2));
 }
 
 //------------------------------------------------------------------------------
@@ -903,10 +913,12 @@ WEBP_TSAN_IGNORE_FUNCTION void VP8EncDspInitNEON(void) {
   VP8TDisto4x4 = Disto4x4;
   VP8TDisto16x16 = Disto16x16;
   VP8CollectHistogram = CollectHistogram;
-  VP8SSE16x16 = SSE16x16;
-  VP8SSE16x8 = SSE16x8;
-  VP8SSE8x8 = SSE8x8;
-  VP8SSE4x4 = SSE4x4;
+
+  VP8SSE16x16 = SSE16x16_NEON;
+  VP8SSE16x8 = SSE16x8_NEON;
+  VP8SSE8x8 = SSE8x8_NEON;
+  VP8SSE4x4 = SSE4x4_NEON;
+
 #if !defined(WORK_AROUND_GCC)
   VP8EncQuantizeBlock = QuantizeBlock;
   VP8EncQuantize2Blocks = Quantize2Blocks;

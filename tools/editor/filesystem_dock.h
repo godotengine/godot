@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  scenes_dock.h                                                        */
+/*  filesystem_dock.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -73,6 +73,11 @@ private:
 		FILE_COPY_PATH
 	};
 
+	enum FolderMenu {
+		FOLDER_EXPAND_ALL,
+		FOLDER_COLLAPSE_ALL
+	};
+
 
 	VBoxContainer *scanning_vb;
 	ProgressBar *scanning_progress;
@@ -90,13 +95,14 @@ private:
 	Button *button_hist_prev;
 	LineEdit *current_path;
 	LineEdit *search_box;
-	TextureFrame *search_icon;
+	TextureRect *search_icon;
 	HBoxContainer *path_hb;
 
 	bool split_mode;
 	DisplayMode display_mode;
 
 	PopupMenu *file_options;
+	PopupMenu *folder_options;
 
 	DependencyEditor *deps_editor;
 	DependencyEditorOwners *owners_editor;
@@ -120,6 +126,11 @@ private:
 	Tree * tree; //directories
 	ItemList *files;
 
+
+	void _file_multi_selected(int p_index, bool p_selected);
+	void _file_selected();
+
+
 	void _go_to_tree();
 	void _go_to_dir(const String& p_dir);
 	void _select_file(int p_idx);
@@ -134,6 +145,7 @@ private:
 
 
 	void _file_option(int p_option);
+	void _folder_option(int p_option);
 	void _update_files(bool p_keep_selection);
 	void _change_file_display();
 
@@ -146,11 +158,12 @@ private:
 	void _dir_selected();
 	void _update_tree();
 	void _rescan();
-	void _set_scannig_mode();
+	void _set_scanning_mode();
 
 
 	void _favorites_pressed();
 	void _open_pressed();
+	void _dir_rmb_pressed(const Vector2& local_mouse_pos);
 	void _search_changed(const String& p_text);
 
 
@@ -190,6 +203,10 @@ public:
 	void fix_dependencies(const String& p_for_file);
 
 	void set_display_mode(int p_mode);
+
+	int get_split_offset() { return split_box->get_split_offset(); }
+	void set_split_offset(int p_offset) { split_box->set_split_offset(p_offset); }
+	void select_file(const String& p_file);
 
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();

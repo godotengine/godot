@@ -24,6 +24,7 @@ public:
 
 	RasterizerCanvasGLES3 *canvas;
 	RasterizerSceneGLES3 *scene;
+	static GLuint system_fbo; //on some devices, such as apple, screen is rendered to yet another fbo.
 
 	enum RenderArchitecture {
 		RENDER_ARCH_MOBILE,
@@ -33,8 +34,6 @@ public:
 	struct Config {
 
 		RenderArchitecture render_arch;
-
-		GLuint system_fbo; //on some devices, such as apple, screen is rendered to yet another fbo.
 
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
@@ -46,6 +45,8 @@ public:
 		bool etc_supported;
 		bool etc2_supported;
 		bool pvrtc_supported;
+
+		bool hdr_supported;
 
 		bool srgb_decode_supported;
 
@@ -229,6 +230,12 @@ public:
 
 		Image images[6];
 
+		VisualServer::TextureDetectCallback detect_3d;
+		void *detect_3d_ud;
+
+		VisualServer::TextureDetectCallback detect_srgb;
+		void *detect_srgb_ud;
+
 		Texture() {
 
 			using_srgb=false;
@@ -244,6 +251,10 @@ public:
 			total_data_size=0;
 			target=GL_TEXTURE_2D;
 			mipmaps=0;
+			detect_3d=NULL;
+			detect_3d_ud=NULL;
+			detect_srgb=NULL;
+			detect_srgb_ud=NULL;
 
 		}
 
@@ -281,6 +292,10 @@ public:
 	virtual RID texture_create_radiance_cubemap(RID p_source,int p_resolution=-1) const;
 
 	virtual void textures_keep_original(bool p_enable);
+
+	virtual void texture_set_detect_3d_callback(RID p_texture,VisualServer::TextureDetectCallback p_callback,void* p_userdata);
+	virtual void texture_set_detect_srgb_callback(RID p_texture,VisualServer::TextureDetectCallback p_callback,void* p_userdata);
+
 
 	/* SKYBOX API */
 
@@ -526,19 +541,19 @@ public:
 		GLuint vertex_id;
 		GLuint index_id;
 
-		Vector<AABB> skeleton_bone_aabb;
+		Vector<Rect3> skeleton_bone_aabb;
 		Vector<bool> skeleton_bone_used;
 
 		//bool packed;
 
-		struct MorphTarget {
+		struct BlendShape {
 			GLuint vertex_id;
 			GLuint array_id;
 		};
 
-		Vector<MorphTarget> morph_targets;
+		Vector<BlendShape> blend_shapes;
 
-		AABB aabb;
+		Rect3 aabb;
 
 		int array_len;
 		int index_array_len;
@@ -554,6 +569,7 @@ public:
 
 		virtual void material_changed_notify() {
 			mesh->instance_material_change_notify();
+			mesh->update_multimeshes();
 		}
 
 		Surface() {
@@ -578,18 +594,30 @@ public:
 		}
 	};
 
+	class MultiMesh;
 
 	struct Mesh : public GeometryOwner {
 
 		bool active;
 		Vector<Surface*> surfaces;
-		int morph_target_count;
-		VS::MorphTargetMode morph_target_mode;
-		AABB custom_aabb;
+		int blend_shape_count;
+		VS::BlendShapeMode blend_shape_mode;
+		Rect3 custom_aabb;
 		mutable uint64_t last_pass;
+		SelfList<MultiMesh>::List multimeshes;
+
+		_FORCE_INLINE_ void update_multimeshes() {
+
+			SelfList<MultiMesh> *mm = multimeshes.first();
+			while(mm) {
+				mm->self()->instance_material_change_notify();
+				mm=mm->next();
+			}
+		}
+
 		Mesh() {
-			morph_target_mode=VS::MORPH_MODE_NORMALIZED;
-			morph_target_count=0;
+			blend_shape_mode=VS::BLEND_SHAPE_MODE_NORMALIZED;
+			blend_shape_count=0;
 			last_pass=0;
 			active=false;
 		}
@@ -599,14 +627,14 @@ public:
 
 	virtual RID mesh_create();
 
-	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const AABB& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<AABB>& p_bone_aabbs=Vector<AABB>());
+	virtual void mesh_add_surface(RID p_mesh,uint32_t p_format,VS::PrimitiveType p_primitive,const PoolVector<uint8_t>& p_array,int p_vertex_count,const PoolVector<uint8_t>& p_index_array,int p_index_count,const Rect3& p_aabb,const Vector<PoolVector<uint8_t> >& p_blend_shapes=Vector<PoolVector<uint8_t> >(),const Vector<Rect3>& p_bone_aabbs=Vector<Rect3>());
 
-	virtual void mesh_set_morph_target_count(RID p_mesh,int p_amount);
-	virtual int mesh_get_morph_target_count(RID p_mesh) const;
+	virtual void mesh_set_blend_shape_count(RID p_mesh,int p_amount);
+	virtual int mesh_get_blend_shape_count(RID p_mesh) const;
 
 
-	virtual void mesh_set_morph_target_mode(RID p_mesh,VS::MorphTargetMode p_mode);
-	virtual VS::MorphTargetMode mesh_get_morph_target_mode(RID p_mesh) const;
+	virtual void mesh_set_blend_shape_mode(RID p_mesh,VS::BlendShapeMode p_mode);
+	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
@@ -621,17 +649,17 @@ public:
 	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const;
 	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const;
 
-	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
+	virtual Rect3 mesh_surface_get_aabb(RID p_mesh, int p_surface) const;
 	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const;
-	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const;
+	virtual Vector<Rect3> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const;
 
 	virtual void mesh_remove_surface(RID p_mesh, int p_surface);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
-	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
-	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
+	virtual void mesh_set_custom_aabb(RID p_mesh,const Rect3& p_aabb);
+	virtual Rect3 mesh_get_custom_aabb(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
+	virtual Rect3 mesh_get_aabb(RID p_mesh, RID p_skeleton) const;
 	virtual void mesh_clear(RID p_mesh);
 
 	void mesh_render_blend_shapes(Surface *s, float *p_weights);
@@ -644,8 +672,9 @@ public:
 		VS::MultimeshTransformFormat transform_format;
 		VS::MultimeshColorFormat color_format;
 		Vector<float> data;
-		AABB aabb;
+		Rect3 aabb;
 		SelfList<MultiMesh> update_list;
+		SelfList<MultiMesh> mesh_list;
 		GLuint buffer;
 		int visible_instances;
 
@@ -655,7 +684,7 @@ public:
 		bool dirty_aabb;
 		bool dirty_data;
 
-		MultiMesh() : update_list(this) {
+		MultiMesh() : update_list(this), mesh_list(this) {
 			dirty_aabb=true;
 			dirty_data=true;
 			xform_floats=0;
@@ -681,19 +710,19 @@ public:
 
 	virtual void multimesh_set_mesh(RID p_multimesh,RID p_mesh);
 	virtual void multimesh_instance_set_transform(RID p_multimesh,int p_index,const Transform& p_transform);
-	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Matrix32& p_transform);
+	virtual void multimesh_instance_set_transform_2d(RID p_multimesh,int p_index,const Transform2D& p_transform);
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color);
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const;
-	virtual Matrix32 multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const;
+	virtual Transform2D multimesh_instance_get_transform_2d(RID p_multimesh,int p_index) const;
 	virtual Color multimesh_instance_get_color(RID p_multimesh,int p_index) const;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
 
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
+	virtual Rect3 multimesh_get_aabb(RID p_multimesh) const;
 
 	/* IMMEDIATE API */
 
@@ -714,7 +743,7 @@ public:
 		List<Chunk> chunks;
 		bool building;
 		int mask;
-		AABB aabb;
+		Rect3 aabb;
 
 		Immediate() { type=GEOMETRY_IMMEDIATE; building=false;}
 
@@ -741,7 +770,7 @@ public:
 	virtual void immediate_clear(RID p_immediate);
 	virtual void immediate_set_material(RID p_immediate,RID p_material);
 	virtual RID immediate_get_material(RID p_immediate) const;
-	virtual AABB immediate_get_aabb(RID p_immediate) const;
+	virtual Rect3 immediate_get_aabb(RID p_immediate) const;
 
 	/* SKELETON API */
 
@@ -771,8 +800,8 @@ public:
 	virtual int skeleton_get_bone_count(RID p_skeleton) const;
 	virtual void skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform);
 	virtual Transform skeleton_bone_get_transform(RID p_skeleton,int p_bone) const;
-	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Matrix32& p_transform);
-	virtual Matrix32 skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const;
+	virtual void skeleton_bone_set_transform_2d(RID p_skeleton,int p_bone, const Transform2D& p_transform);
+	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton,int p_bone) const;
 
 	/* Light API */
 
@@ -823,7 +852,7 @@ public:
 	virtual float light_get_param(RID p_light,VS::LightParam p_param);
 	virtual Color light_get_color(RID p_light);
 
-	virtual AABB light_get_aabb(RID p_light) const;
+	virtual Rect3 light_get_aabb(RID p_light) const;
 	virtual uint64_t light_get_version(RID p_light) const;
 
 	/* PROBE API */
@@ -862,7 +891,7 @@ public:
 	virtual void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
 	virtual void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
 
-	virtual AABB reflection_probe_get_aabb(RID p_probe) const;
+	virtual Rect3 reflection_probe_get_aabb(RID p_probe) const;
 	virtual VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const;
 
@@ -902,12 +931,14 @@ public:
 	struct GIProbe : public Instantiable {
 
 
-		AABB bounds;
+		Rect3 bounds;
 		Transform to_cell;
 		float cell_size;
 
 		int dynamic_range;
 		float energy;
+		float bias;
+		float propagation;
 		bool interior;
 		bool compress;
 
@@ -922,8 +953,8 @@ public:
 
 	virtual RID gi_probe_create();
 
-	virtual void gi_probe_set_bounds(RID p_probe,const AABB& p_bounds);
-	virtual AABB gi_probe_get_bounds(RID p_probe) const;
+	virtual void gi_probe_set_bounds(RID p_probe,const Rect3& p_bounds);
+	virtual Rect3 gi_probe_get_bounds(RID p_probe) const;
 
 	virtual void gi_probe_set_cell_size(RID p_probe, float p_size);
 	virtual float gi_probe_get_cell_size(RID p_probe) const;
@@ -939,6 +970,12 @@ public:
 
 	virtual void gi_probe_set_energy(RID p_probe,float p_range);
 	virtual float gi_probe_get_energy(RID p_probe) const;
+
+	virtual void gi_probe_set_bias(RID p_probe,float p_range);
+	virtual float gi_probe_get_bias(RID p_probe) const;
+
+	virtual void gi_probe_set_propagation(RID p_probe,float p_range);
+	virtual float gi_probe_get_propagation(RID p_probe) const;
 
 	virtual void gi_probe_set_interior(RID p_probe,bool p_enable);
 	virtual bool gi_probe_is_interior(RID p_probe) const;
@@ -977,7 +1014,7 @@ public:
 		float pre_process_time;
 		float explosiveness;
 		float randomness;
-		AABB custom_aabb;
+		Rect3 custom_aabb;
 		Vector3 gravity;
 		bool use_local_coords;
 		RID process_material;
@@ -996,7 +1033,7 @@ public:
 
 		Vector<DrawPass> draw_passes;
 
-		AABB computed_aabb;
+		Rect3 computed_aabb;
 
 		GLuint particle_buffers[2];
 
@@ -1011,7 +1048,7 @@ public:
 		Particles() : particle_element(this) {
 			emitting=false;
 			amount=0;
-			lifetime=1.0;;
+			lifetime=1.0;
 			pre_process_time=0.0;
 			explosiveness=0.0;
 			randomness=0.0;
@@ -1053,7 +1090,7 @@ public:
 	virtual void particles_set_pre_process_time(RID p_particles,float p_time);
 	virtual void particles_set_explosiveness_ratio(RID p_particles,float p_ratio);
 	virtual void particles_set_randomness_ratio(RID p_particles,float p_ratio);
-	virtual void particles_set_custom_aabb(RID p_particles,const AABB& p_aabb);
+	virtual void particles_set_custom_aabb(RID p_particles,const Rect3& p_aabb);
 	virtual void particles_set_gravity(RID p_particles,const Vector3& p_gravity);
 	virtual void particles_set_use_local_coordinates(RID p_particles,bool p_enable);
 	virtual void particles_set_process_material(RID p_particles,RID p_material);
@@ -1070,7 +1107,7 @@ public:
 	virtual void particles_set_draw_pass_material(RID p_particles,int p_pass, RID p_material);
 	virtual void particles_set_draw_pass_mesh(RID p_particles,int p_pass, RID p_mesh);
 
-	virtual AABB particles_get_current_aabb(RID p_particles);
+	virtual Rect3 particles_get_current_aabb(RID p_particles);
 
 	/* INSTANCE */
 
@@ -1161,8 +1198,10 @@ public:
 			height=0;
 			depth=0;
 			fbo=0;
+			exposure.fbo=0;
 			buffers.fbo=0;
 			used_in_frame=false;
+
 
 			flags[RENDER_TARGET_VFLIP]=false;
 			flags[RENDER_TARGET_TRANSPARENT]=false;
@@ -1238,7 +1277,9 @@ public:
 	void initialize();
 	void finalize();
 
+	virtual bool has_os_feature(const String& p_feature) const;
 
+	virtual void update_dirty_resources();
 
 	RasterizerStorageGLES3();
 };

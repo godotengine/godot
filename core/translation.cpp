@@ -27,7 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "translation.h"
-#include "globals.h"
+
+#include "global_config.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
 
@@ -669,6 +670,7 @@ static const char* locale_names[]={
 "Sanskrit (India)",
 "Santali (India)",
 "Sardinian (Italy)",
+"Scots (Scotland)",
 "Sindhi (India)",
 "Northern Sami (Norway)",
 "Samogitian (Lithuania)",
@@ -750,6 +752,20 @@ static const char* locale_names[]={
 0
 };
 
+bool TranslationServer::is_locale_valid(const String& p_locale) {
+
+	const char **ptr=locale_list;
+
+	while (*ptr) {
+
+		if (*ptr==p_locale)
+			return true;
+		ptr++;
+	}
+
+	return false;
+
+}
 
 Vector<String> TranslationServer::get_all_locales() {
 
@@ -899,18 +915,18 @@ int Translation::get_message_count() const {
 
 void Translation::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_locale","locale"),&Translation::set_locale);
-	ClassDB::bind_method(_MD("get_locale"),&Translation::get_locale);
-	ClassDB::bind_method(_MD("add_message","src_message","xlated_message"),&Translation::add_message);
-	ClassDB::bind_method(_MD("get_message","src_message"),&Translation::get_message);
-	ClassDB::bind_method(_MD("erase_message","src_message"),&Translation::erase_message);
-	ClassDB::bind_method(_MD("get_message_list"),&Translation::_get_message_list);
-	ClassDB::bind_method(_MD("get_message_count"),&Translation::get_message_count);
-	ClassDB::bind_method(_MD("_set_messages"),&Translation::_set_messages);
-	ClassDB::bind_method(_MD("_get_messages"),&Translation::_get_messages);
+	ClassDB::bind_method(D_METHOD("set_locale","locale"),&Translation::set_locale);
+	ClassDB::bind_method(D_METHOD("get_locale"),&Translation::get_locale);
+	ClassDB::bind_method(D_METHOD("add_message","src_message","xlated_message"),&Translation::add_message);
+	ClassDB::bind_method(D_METHOD("get_message","src_message"),&Translation::get_message);
+	ClassDB::bind_method(D_METHOD("erase_message","src_message"),&Translation::erase_message);
+	ClassDB::bind_method(D_METHOD("get_message_list"),&Translation::_get_message_list);
+	ClassDB::bind_method(D_METHOD("get_message_count"),&Translation::get_message_count);
+	ClassDB::bind_method(D_METHOD("_set_messages"),&Translation::_set_messages);
+	ClassDB::bind_method(D_METHOD("_get_messages"),&Translation::_get_messages);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING_ARRAY,"messages",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_messages"), _SCS("_get_messages") );
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"locale"), _SCS("set_locale"), _SCS("get_locale") );
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_STRING_ARRAY,"messages",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_messages", "_get_messages") ;
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"locale"), "set_locale", "get_locale") ;
 }
 
 Translation::Translation() {
@@ -1121,15 +1137,15 @@ StringName TranslationServer::tool_translate(const StringName& p_message) const 
 
 void TranslationServer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_locale","locale"),&TranslationServer::set_locale);
-	ClassDB::bind_method(_MD("get_locale"),&TranslationServer::get_locale);
+	ClassDB::bind_method(D_METHOD("set_locale","locale"),&TranslationServer::set_locale);
+	ClassDB::bind_method(D_METHOD("get_locale"),&TranslationServer::get_locale);
 
-	ClassDB::bind_method(_MD("translate","message"),&TranslationServer::translate);
+	ClassDB::bind_method(D_METHOD("translate","message"),&TranslationServer::translate);
 
-	ClassDB::bind_method(_MD("add_translation","translation:Translation"),&TranslationServer::add_translation);
-	ClassDB::bind_method(_MD("remove_translation","translation:Translation"),&TranslationServer::remove_translation);
+	ClassDB::bind_method(D_METHOD("add_translation","translation:Translation"),&TranslationServer::add_translation);
+	ClassDB::bind_method(D_METHOD("remove_translation","translation:Translation"),&TranslationServer::remove_translation);
 
-	ClassDB::bind_method(_MD("clear"),&TranslationServer::clear);
+	ClassDB::bind_method(D_METHOD("clear"),&TranslationServer::clear);
 
 }
 

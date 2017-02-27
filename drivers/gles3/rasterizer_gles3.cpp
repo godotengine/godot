@@ -1,6 +1,6 @@
 #include "rasterizer_gles3.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include "gl_context/context_gl.h"
 #include <string.h>
 RasterizerStorage *RasterizerGLES3::get_storage() {
@@ -185,12 +185,8 @@ void RasterizerGLES3::begin_frame(){
 	storage->frame.prev_tick=tick;
 
 
+	storage->update_dirty_resources();
 
-	storage->update_dirty_multimeshes();
-	storage->update_dirty_skeletons();
-	storage->update_dirty_shaders();
-	storage->update_dirty_materials();
-	storage->update_particles();
 
 	storage->info.render_object_count=0;
 	storage->info.render_material_switch_count=0;
@@ -237,7 +233,7 @@ void RasterizerGLES3::set_current_render_target(RID p_render_target){
 		storage->frame.current_rt=NULL;
 		storage->frame.clear_request=false;
 		glViewport(0,0,OS::get_singleton()->get_window_size().width,OS::get_singleton()->get_window_size().height);
-		glBindFramebuffer(GL_FRAMEBUFFER,storage->config.system_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER,RasterizerStorageGLES3::system_fbo);
 	}
 }
 
@@ -268,7 +264,7 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target,const Rec
 
 	canvas->canvas_begin();
 	glDisable(GL_BLEND);
-	glBindFramebuffer(GL_FRAMEBUFFER,storage->config.system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER,RasterizerStorageGLES3::system_fbo);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D,rt->color);
 	canvas->draw_generic_textured_rect(p_screen_rect,Rect2(0,0,1,-1));
@@ -300,9 +296,9 @@ void RasterizerGLES3::end_frame(){
 	glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, 0, vtx );
 
 
-//	glBindBuffer(GL_ARRAY_BUFFER,canvas->data.canvas_quad_vertices);
-//	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
-//	glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, 0, 0 );
+	//glBindBuffer(GL_ARRAY_BUFFER,canvas->data.canvas_quad_vertices);
+	//glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+	//glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, 0, 0 );
 
 	glBindVertexArray(canvas->data.canvas_quad_array);
 

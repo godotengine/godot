@@ -127,7 +127,7 @@ bool NavigationPolygonEditor::forward_gui_input(const InputEvent& p_event) {
 			create_nav->set_text("No NavigationPolygon resource on this node.\nCreate and assign one?");
 			create_nav->popup_centered_minsize();
 		}
-		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);;
+		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);
 	}
 
 
@@ -137,7 +137,7 @@ bool NavigationPolygonEditor::forward_gui_input(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -411,7 +411,7 @@ void NavigationPolygonEditor::_canvas_draw() {
 	if (node->get_navigation_polygon().is_null())
 			return;
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 
@@ -477,10 +477,10 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 
 void NavigationPolygonEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_option"),&NavigationPolygonEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_node_removed"),&NavigationPolygonEditor::_node_removed);
-	ClassDB::bind_method(_MD("_create_nav"),&NavigationPolygonEditor::_create_nav);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&NavigationPolygonEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&NavigationPolygonEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_create_nav"),&NavigationPolygonEditor::_create_nav);
 
 }
 

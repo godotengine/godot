@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "global_constants.h"
+
 #include "variant.h"
 #include "os/keyboard.h"
 #include "object.h"
@@ -433,7 +434,7 @@ static _GlobalConstant _global_constants[]={
 	BIND_GLOBAL_CONSTANT( ERR_CANT_OPEN ), ///< Can't open a resource/socket/file
 	BIND_GLOBAL_CONSTANT( ERR_CANT_CREATE ),
 	BIND_GLOBAL_CONSTANT( ERR_PARSE_ERROR ),
-	BIND_GLOBAL_CONSTANT( ERROR_QUERY_FAILED ),
+	BIND_GLOBAL_CONSTANT( ERR_QUERY_FAILED ),
 	BIND_GLOBAL_CONSTANT( ERR_ALREADY_IN_USE ),
 	BIND_GLOBAL_CONSTANT( ERR_LOCKED ), ///< resource is locked
 	BIND_GLOBAL_CONSTANT( ERR_TIMEOUT ),
@@ -463,7 +464,12 @@ static _GlobalConstant _global_constants[]={
 	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_LENGTH ),
 	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_KEY_ACCEL ),
 	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_FLAGS ),
-	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_ALL_FLAGS ),
+
+	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_LAYERS_2D_RENDER ),
+	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_LAYERS_2D_PHYSICS ),
+	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_LAYERS_3D_RENDER ),
+	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_LAYERS_3D_PHYSICS),
+
 	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_FILE ),
 	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_DIR ),
 	BIND_GLOBAL_CONSTANT( PROPERTY_HINT_GLOBAL_FILE ),
@@ -512,11 +518,11 @@ static _GlobalConstant _global_constants[]={
 	{"TYPE_VECTOR2",Variant::VECTOR2},		// 5
 	{"TYPE_RECT2",Variant::RECT2},
 	{"TYPE_VECTOR3",Variant::VECTOR3},
-	{"TYPE_MATRIX32",Variant::MATRIX32},
+	{"TYPE_TRANSFORM2D",Variant::TRANSFORM2D},
 	{"TYPE_PLANE",Variant::PLANE},
 	{"TYPE_QUAT",Variant::QUAT},			// 10
-	{"TYPE_AABB",Variant::_AABB}, //sorry naming convention fail :( not like it's used often
-	{"TYPE_MATRIX3",Variant::MATRIX3},
+	{"TYPE_RECT3",Variant::RECT3}, //sorry naming convention fail :( not like it's used often
+	{"TYPE_BASIS",Variant::BASIS},
 	{"TYPE_TRANSFORM",Variant::TRANSFORM},
 	{"TYPE_COLOR",Variant::COLOR},
 	{"TYPE_IMAGE",Variant::IMAGE},			// 15
@@ -526,13 +532,13 @@ static _GlobalConstant _global_constants[]={
 	{"TYPE_INPUT_EVENT",Variant::INPUT_EVENT},
 	{"TYPE_DICTIONARY",Variant::DICTIONARY},		// 20
 	{"TYPE_ARRAY",Variant::ARRAY},
-	{"TYPE_RAW_ARRAY",Variant::RAW_ARRAY},
-	{"TYPE_INT_ARRAY",Variant::INT_ARRAY},
-	{"TYPE_REAL_ARRAY",Variant::REAL_ARRAY},
-	{"TYPE_STRING_ARRAY",Variant::STRING_ARRAY},	// 25
-	{"TYPE_VECTOR2_ARRAY",Variant::VECTOR2_ARRAY},
-	{"TYPE_VECTOR3_ARRAY",Variant::VECTOR3_ARRAY},
-	{"TYPE_COLOR_ARRAY",Variant::COLOR_ARRAY},
+	{"TYPE_RAW_ARRAY",Variant::POOL_BYTE_ARRAY},
+	{"TYPE_INT_ARRAY",Variant::POOL_INT_ARRAY},
+	{"TYPE_REAL_ARRAY",Variant::POOL_REAL_ARRAY},
+	{"TYPE_STRING_ARRAY",Variant::POOL_STRING_ARRAY},	// 25
+	{"TYPE_VECTOR2_ARRAY",Variant::POOL_VECTOR2_ARRAY},
+	{"TYPE_VECTOR3_ARRAY",Variant::POOL_VECTOR3_ARRAY},
+	{"TYPE_COLOR_ARRAY",Variant::POOL_COLOR_ARRAY},
 	{"TYPE_MAX",Variant::VARIANT_MAX},
 	{NULL,0}
 

@@ -52,9 +52,8 @@ public:
 	RES load(const String &p_path,const String& p_type_hint="", bool p_no_cache = false);
 	PoolVector<String> get_recognized_extensions_for_type(const String& p_type);
 	void set_abort_on_missing_resources(bool p_abort);
-	StringArray get_dependencies(const String& p_path);
+	PoolStringArray get_dependencies(const String& p_path);
 	bool has(const String& p_path);
-	Ref<ResourceImportMetadata> load_import_metadata(const String& p_path);
 
 	_ResourceLoader();
 };
@@ -169,12 +168,6 @@ public:
 	void native_video_unpause();
 	void native_video_stop();
 
-	void set_iterations_per_second(int p_ips);
-	int get_iterations_per_second() const;
-
-	void set_target_fps(int p_fps);
-	float get_target_fps() const;
-
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
 
@@ -196,11 +189,7 @@ public:
 	String get_latin_keyboard_variant() const;
 
 	String get_model_name() const;
-	MainLoop *get_main_loop() const;
 
-	String get_custom_level() const;
-
-	float get_frames_per_second() const;
 
 	void dump_memory_to_file(const String& p_file);
 	void dump_resources_to_file(const String& p_file);
@@ -246,6 +235,9 @@ public:
 	void set_use_file_access_save_and_swap(bool p_enable);
 
 	void set_icon(const Image& p_icon);
+
+	int get_exit_code() const;
+	void set_exit_code(int p_code);
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
 	Dictionary get_datetime(bool utc) const;
@@ -267,8 +259,6 @@ public:
 	bool can_use_threads() const;
 
 	bool can_draw() const;
-
-	int  get_frames_drawn();
 
 	bool is_stdout_verbose() const;
 
@@ -310,8 +300,6 @@ public:
 	void set_keep_screen_on(bool p_enabled);
 	bool is_keep_screen_on() const;
 
-	void set_time_scale(float p_scale);
-	float get_time_scale();
 
 	bool is_ok_left_and_cancel_right() const;
 
@@ -319,8 +307,6 @@ public:
 
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
-
-	Dictionary get_engine_version() const;
 
 	static _OS *get_singleton() { return singleton; }
 
@@ -453,6 +439,8 @@ public:
 
 	bool file_exists(const String& p_name) const; ///< return true if a file exists
 
+	uint64_t get_modified_time(const String& p_file) const;
+
 	_File();
 	virtual ~_File();
 
@@ -469,7 +457,7 @@ public:
 
 	Error open(const String& p_path);
 
-	bool list_dir_begin(); ///< This starts dir listing
+	Error list_dir_begin(bool p_skip_internal = false, bool p_skip_hidden = false); ///< This starts dir listing
 	String get_next();
 	bool current_is_dir() const;
 
@@ -477,6 +465,7 @@ public:
 
 	int get_drive_count();
 	String get_drive(int p_drive);
+	int get_current_drive();
 
 	Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
 	String get_current_dir(); ///< return current dir location
@@ -497,6 +486,9 @@ public:
 	_Directory();
 	virtual ~_Directory();
 
+private:
+	bool _list_skip_navigational;
+	bool _list_skip_hidden;
 };
 
 class _Marshalls : public Reference {
@@ -599,8 +591,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	StringArray get_class_list() const;
-	StringArray get_inheriters_from_class( const StringName& p_class) const;
+	PoolStringArray get_class_list() const;
+	PoolStringArray get_inheriters_from_class( const StringName& p_class) const;
 	StringName get_parent_class(const StringName& p_class) const;
 	bool class_exists(const StringName &p_class) const;
 	bool is_parent_class(const StringName &p_class,const StringName& p_inherits) const;
@@ -618,7 +610,7 @@ public:
 
 	Array get_method_list(StringName p_class,bool p_no_inheritance=false) const;
 
-	StringArray get_integer_constant_list(const StringName& p_class, bool p_no_inheritance=false) const;
+	PoolStringArray get_integer_constant_list(const StringName& p_class, bool p_no_inheritance=false) const;
 	bool has_integer_constant(const StringName& p_class, const StringName &p_name) const;
 	int get_integer_constant(const StringName& p_class, const StringName &p_name) const;
 	StringName get_category(const StringName& p_node) const;
@@ -628,5 +620,40 @@ public:
 	_ClassDB();
 	~_ClassDB();
 };
+
+
+class _Engine : public Object  {
+	GDCLASS(_Engine,Object);
+
+protected:
+
+	static void _bind_methods();
+	static _Engine *singleton;
+
+public:
+
+	static _Engine* get_singleton() { return singleton; }
+	void set_iterations_per_second(int p_ips);
+	int get_iterations_per_second() const;
+
+	void set_target_fps(int p_fps);
+	float get_target_fps() const;
+
+	float get_frames_per_second() const;
+
+	int  get_frames_drawn();
+
+	void set_time_scale(float p_scale);
+	float get_time_scale();
+
+	String get_custom_level() const;
+
+	MainLoop *get_main_loop() const;
+
+	Dictionary get_version_info() const;
+
+	_Engine();
+};
+
 
 #endif // CORE_BIND_H

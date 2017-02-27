@@ -28,8 +28,7 @@
 /*************************************************************************/
 #ifndef AUDIO_SERVER_JAVASCRIPT_H
 #define AUDIO_SERVER_JAVASCRIPT_H
-
-
+#if 0
 #include "servers/audio_server.h"
 
 class AudioServerJavascript  : public AudioServer  {
@@ -224,3 +223,4 @@ public:
 };
 
 #endif // AUDIO_SERVER_JAVASCRIPT_H
+#endif

@@ -99,7 +99,7 @@ class LightOccluder2DEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_canvas_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "LightOccluder2D"; }
 	bool has_main_screen() const { return false; }

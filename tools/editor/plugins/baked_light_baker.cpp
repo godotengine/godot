@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "baked_light_baker.h"
+
 #include <stdlib.h>
 #include <cmath>
 #include "io/marshalls.h"
@@ -1006,8 +1007,10 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 	Triangle *triangle=NULL;
 
-	//for(int i=0;i<max_depth;i++)
-	//	stack[i]=0;
+	/*
+	for(int i=0;i<max_depth;i++)
+		stack[i]=0;
+	*/
 
 	int level=0;
 	//AABB ray_aabb;
@@ -1059,7 +1062,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 					bool valid = b.aabb.smits_intersect_ray(p_begin,n,0,len);
 					//bool valid = b.aabb.intersects_segment(p_begin,p_end);
-	//				bool valid = b.aabb.intersects(ray_aabb);
+					//bool valid = b.aabb.intersects(ray_aabb);
 
 					if (!valid) {
 
@@ -1234,7 +1237,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 		}
 
 		//specular later
-//		_plot_light_point(r_point,octree,octree_aabb,p_light);
+		//_plot_light_point(r_point,octree,octree_aabb,p_light);
 
 
 		Color plot_light=res_light.linear_interpolate(diffuse_at_point,tint);
@@ -1331,7 +1334,7 @@ void BakedLightBaker::_make_octree_texture() {
 			base<<=16;
 			base|=int((pos.z+cell_size*0.5)/cell_size);
 
-			uint32_t hash = HashMapHahserDefault::hash(base);
+			uint32_t hash = HashMapHasherDefault::hash(base);
 			uint32_t idx = hash % hash_table_size;
 			octhashptr[oct_idx].next=hashptr[idx];
 			octhashptr[oct_idx].hash=hash;
@@ -1359,7 +1362,7 @@ void BakedLightBaker::_make_octree_texture() {
 			base<<=16;
 			base|=int((pos.z+cell_size*0.5)/cell_size);
 
-			uint32_t hash = HashMapHahserDefault::hash(base);
+			uint32_t hash = HashMapHasherDefault::hash(base);
 			uint32_t idx = hash % hash_table_size;
 
 			uint32_t bucket = hashptr[idx];
@@ -1571,7 +1574,7 @@ double BakedLightBaker::get_normalization(int p_light_idx) const {
 	double nrg=0;
 
 	const LightData &dl=lights[p_light_idx];
-	double cell_area = cell_size*cell_size;;
+	double cell_area = cell_size*cell_size;
 	//nrg+= /*dl.energy */ (dl.rays_thrown * cell_area / dl.area);
 	nrg=dl.rays_thrown * cell_area;
 	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
@@ -1589,7 +1592,7 @@ double BakedLightBaker::get_modifier(int p_light_idx) const {
 	double nrg=0;
 
 	const LightData &dl=lights[p_light_idx];
-	double cell_area = cell_size*cell_size;;
+	double cell_area = cell_size*cell_size;
 	//nrg+= /*dl.energy */ (dl.rays_thrown * cell_area / dl.area);
 	nrg=cell_area;
 	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
@@ -1678,7 +1681,7 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 					dl.rays_thrown++;
 					baked_light_baker_add_64i(&total_rays,1);
 					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
-//					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
+					//_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
 			} break;
@@ -1710,7 +1713,7 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 					dl.rays_thrown++;
 					baked_light_baker_add_64i(&total_rays,1);
 					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
-	//					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
+					//_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
 			} break;
@@ -2010,8 +2013,10 @@ void BakedLightBaker::update_octree_images(PoolVector<uint8_t> &p_octree,PoolVec
 			//write colors
 			for(int j=0;j<8;j++) {
 
-				//if (!oct.children[j])
-				//	continue;
+				/*
+				if (!oct.children[j])
+					continue;
+				*/
 				uint8_t *iptr=&lptr[ofs+lchild_offsets[j]];
 
 				float r=oct.light_accum[j][0]*norm;
@@ -2291,7 +2296,7 @@ void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int heigh
 
 								bool valid = b.aabb.smits_intersect_ray(from,n,0,len);
 								//bool valid = b.aabb.intersects_segment(p_begin,p_end);
-				//				bool valid = b.aabb.intersects(ray_aabb);
+								//bool valid = b.aabb.intersects(ray_aabb);
 
 								if (!valid) {
 
@@ -2649,10 +2654,13 @@ void BakedLightBaker::clear() {
 /*
  * ???
 	for(int i=0;i<octant_pool.size();i++) {
-		//if (octant_pool[i].leaf) {
-		//	memdelete_arr( octant_pool[i].light );
-		//}	Vector<double> norm_arr;
-		//norm_arr.resize(lights.size());
+		/*
+		if (octant_pool[i].leaf) {
+			memdelete_arr( octant_pool[i].light );
+		}
+		Vector<double> norm_arr;
+		norm_arr.resize(lights.size());
+		*/
 
 		for(int i=0;i<lights.size();i++) {
 			norm_arr[i] =  1.0/get_normalization(i);
@@ -2674,7 +2682,7 @@ void BakedLightBaker::clear() {
 	materials.clear();
 	textures.clear();
 	lights.clear();
-	triangles.clear();;
+	triangles.clear();
 	endpoint_normal.clear();
 	endpoint_normal_bits.clear();
 	baked_octree_texture_w=0;

@@ -1,4 +1,33 @@
+/*************************************************************************/
+/*  editor_profiler.cpp                                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "editor_profiler.h"
+
 #include "editor_settings.h"
 #include "os/os.h"
 
@@ -349,7 +378,7 @@ void EditorProfiler::_update_plot() {
 
 	}
 
-	graph_texture->set_data(img);;
+	graph_texture->set_data(img);
 
 
 	graph->set_texture(graph_texture);
@@ -617,16 +646,16 @@ void EditorProfiler::_combo_changed(int) {
 
 void EditorProfiler::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_update_frame"),&EditorProfiler::_update_frame);
-	ClassDB::bind_method(_MD("_update_plot"),&EditorProfiler::_update_plot);
-	ClassDB::bind_method(_MD("_activate_pressed"),&EditorProfiler::_activate_pressed);
-	ClassDB::bind_method(_MD("_graph_tex_draw"),&EditorProfiler::_graph_tex_draw);
-	ClassDB::bind_method(_MD("_graph_tex_input"),&EditorProfiler::_graph_tex_input);
-	ClassDB::bind_method(_MD("_graph_tex_mouse_exit"),&EditorProfiler::_graph_tex_mouse_exit);
-	ClassDB::bind_method(_MD("_cursor_metric_changed"),&EditorProfiler::_cursor_metric_changed);
-	ClassDB::bind_method(_MD("_combo_changed"),&EditorProfiler::_combo_changed);
+	ClassDB::bind_method(D_METHOD("_update_frame"),&EditorProfiler::_update_frame);
+	ClassDB::bind_method(D_METHOD("_update_plot"),&EditorProfiler::_update_plot);
+	ClassDB::bind_method(D_METHOD("_activate_pressed"),&EditorProfiler::_activate_pressed);
+	ClassDB::bind_method(D_METHOD("_graph_tex_draw"),&EditorProfiler::_graph_tex_draw);
+	ClassDB::bind_method(D_METHOD("_graph_tex_input"),&EditorProfiler::_graph_tex_input);
+	ClassDB::bind_method(D_METHOD("_graph_tex_mouse_exit"),&EditorProfiler::_graph_tex_mouse_exit);
+	ClassDB::bind_method(D_METHOD("_cursor_metric_changed"),&EditorProfiler::_cursor_metric_changed);
+	ClassDB::bind_method(D_METHOD("_combo_changed"),&EditorProfiler::_combo_changed);
 
-	ClassDB::bind_method(_MD("_item_edited"),&EditorProfiler::_item_edited);
+	ClassDB::bind_method(D_METHOD("_item_edited"),&EditorProfiler::_item_edited);
 	ADD_SIGNAL( MethodInfo("enable_profiling",PropertyInfo(Variant::BOOL,"enable")));
 	ADD_SIGNAL( MethodInfo("break_request"));
 
@@ -708,13 +737,13 @@ EditorProfiler::EditorProfiler()
 	variables->connect("item_edited",this,"_item_edited");
 
 
-	graph = memnew( TextureFrame );
+	graph = memnew( TextureRect );
 	graph->set_expand(true);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	//graph->set_ignore_mouse(false);
 	graph->connect("draw",this,"_graph_tex_draw");
 	graph->connect("gui_input",this,"_graph_tex_input");
-	graph->connect("mouse_exit",this,"_graph_tex_mouse_exit");
+	graph->connect("mouse_exited",this,"_graph_tex_mouse_exit");
 
 	h_split->add_child(graph);
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -724,7 +753,7 @@ EditorProfiler::EditorProfiler()
 	int metric_size=CLAMP(int(EDITOR_DEF("debugger/profiler_frame_history_size",600)),60,1024);
 	frame_metrics.resize(metric_size);
 	last_metric=-1;
-//	cursor_metric=-1;
+	//cursor_metric=-1;
 	hover_metric=-1;
 
 
@@ -750,6 +779,6 @@ EditorProfiler::EditorProfiler()
 	seeking=false;
 	graph_height=1;
 
-//	activate->set_disabled(true);
+	//activate->set_disabled(true);
 
 }

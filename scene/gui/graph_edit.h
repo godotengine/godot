@@ -34,7 +34,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/spin_box.h"
-#include "texture_frame.h"
+#include "scene/gui/texture_rect.h"
 
 class GraphEdit;
 

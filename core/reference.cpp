@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "reference.h"
+
 #include "script_language.h"
 
 
@@ -54,9 +55,9 @@ bool Reference::init_ref() {
 
 void Reference::_bind_methods() {
 
-	ClassDB::bind_method(_MD("init_ref"),&Reference::init_ref);
-	ClassDB::bind_method(_MD("reference"),&Reference::reference);
-	ClassDB::bind_method(_MD("unreference"),&Reference::unreference);
+	ClassDB::bind_method(D_METHOD("init_ref"),&Reference::init_ref);
+	ClassDB::bind_method(D_METHOD("reference"),&Reference::reference);
+	ClassDB::bind_method(D_METHOD("unreference"),&Reference::unreference);
 }
 
 int Reference::reference_get_count() const {
@@ -126,7 +127,7 @@ WeakRef::WeakRef() {
 
 void WeakRef::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_ref:Object"),&WeakRef::get_ref);
+	ClassDB::bind_method(D_METHOD("get_ref:Object"),&WeakRef::get_ref);
 }
 #if 0
 

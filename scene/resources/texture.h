@@ -31,6 +31,7 @@
 
 #include "resource.h"
 #include "servers/visual_server.h"
+#include "io/resource_loader.h"
 #include "math_2d.h"
 
 /**
@@ -75,7 +76,7 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
 	virtual bool get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const;
 
-
+	virtual Image get_data() const { return Image(); }
 
 	Texture();
 };
@@ -158,6 +159,88 @@ public:
 	~ImageTexture();
 
 };
+
+
+
+class StreamTexture : public Texture {
+
+	GDCLASS( StreamTexture, Texture );
+public:
+	enum DataFormat {
+		DATA_FORMAT_IMAGE,
+		DATA_FORMAT_LOSSLESS,
+		DATA_FORMAT_LOSSY
+	};
+
+	enum FormatBits {
+		FORMAT_MASK_IMAGE_FORMAT=(1<<20)-1,
+		FORMAT_BIT_LOSSLESS=1<<20,
+		FORMAT_BIT_LOSSY=1<<21,
+		FORMAT_BIT_STREAM=1<<22,
+		FORMAT_BIT_HAS_MIPMAPS=1<<23,
+		FORMAT_BIT_DETECT_3D=1<<24,
+		FORMAT_BIT_DETECT_SRGB=1<<25,
+	};
+
+private:
+
+	Error _load_data(const String &p_path, int &tw, int &th, int& flags, Image& image, int p_size_limit=0);
+	String path_to_file;
+	RID texture;
+	Image::Format format;
+	uint32_t flags;
+	int w,h;
+
+	virtual void reload_from_file();
+
+	static void _requested_3d(void* p_ud);
+	static void _requested_srgb(void* p_ud);
+
+protected:
+
+	static void _bind_methods();
+
+public:
+
+
+	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture>&);
+
+	static TextureFormatRequestCallback request_3d_callback;
+	static TextureFormatRequestCallback request_srgb_callback;
+
+	uint32_t get_flags() const;
+	Image::Format get_format() const;
+	Error load(const String& p_path);
+	String get_load_path() const;
+
+	int get_width() const;
+	int get_height() const;
+	virtual RID get_rid() const;
+
+	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false) const;
+
+	virtual bool has_alpha() const;
+	virtual void set_flags(uint32_t p_flags);
+
+	virtual Image get_data() const;
+
+	StreamTexture();
+	~StreamTexture();
+
+};
+
+
+class ResourceFormatLoaderStreamTexture : public ResourceFormatLoader {
+public:
+	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String& p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+
+};
+
 
 
 VARIANT_ENUM_CAST( ImageTexture::Storage );

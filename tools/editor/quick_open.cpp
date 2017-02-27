@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "quick_open.h"
-#include "os/keyboard.h"
 
+#include "os/keyboard.h"
 
 void EditorQuickOpen::popup(const StringName &p_base, bool p_enable_multi, bool p_add_dirs, bool p_dontclear) {
 
@@ -252,9 +252,9 @@ StringName EditorQuickOpen::get_base_type() const {
 
 void EditorQuickOpen::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&EditorQuickOpen::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&EditorQuickOpen::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&EditorQuickOpen::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&EditorQuickOpen::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&EditorQuickOpen::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&EditorQuickOpen::_sbox_input);
 
 	ADD_SIGNAL(MethodInfo("quick_open"));
 
@@ -266,7 +266,7 @@ EditorQuickOpen::EditorQuickOpen() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 	search_box = memnew( LineEdit );
 	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");

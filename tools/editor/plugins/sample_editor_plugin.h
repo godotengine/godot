@@ -29,7 +29,7 @@
 #ifndef SAMPLE_EDITOR_PLUGIN_H
 #define SAMPLE_EDITOR_PLUGIN_H
 
-
+#if 0
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/audio/sample_player.h"
@@ -47,7 +47,7 @@ class SampleEditor : public Panel {
 	Ref<ImageTexture> peakdisplay;
 	Ref<Sample> sample;
 	Ref<SampleLibrary> library;
-	TextureFrame *sample_texframe;
+	TextureRect *sample_texframe;
 	Button *stop;
 	Button *play;
 
@@ -86,5 +86,7 @@ public:
 	~SampleEditorPlugin();
 
 };
+
+#endif
 
 #endif // SAMPLE_EDITOR_PLUGIN_H

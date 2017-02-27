@@ -103,13 +103,13 @@ public:
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_HINGE; }
 
-	virtual bool setup(float p_step);
-	virtual void solve(float p_step);
+	virtual bool setup(real_t p_step);
+	virtual void solve(real_t p_step);
 
 	real_t get_hinge_angle();
 
-	void set_param(PhysicsServer::HingeJointParam p_param, float p_value);
-	float get_param(PhysicsServer::HingeJointParam p_param) const;
+	void set_param(PhysicsServer::HingeJointParam p_param, real_t p_value);
+	real_t get_param(PhysicsServer::HingeJointParam p_param) const;
 
 	void set_flag(PhysicsServer::HingeJointFlag p_flag, bool p_value);
 	bool get_flag(PhysicsServer::HingeJointFlag p_flag) const;

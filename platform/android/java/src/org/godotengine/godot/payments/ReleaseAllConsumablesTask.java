@@ -56,13 +56,13 @@ abstract public class ReleaseAllConsumablesTask {
 
 	public void consumeItAll(){
 		try{
-//			Log.d("godot", "consumeItall for " + context.getPackageName());
+			//Log.d("godot", "consumeItall for " + context.getPackageName());
 			Bundle bundle = mService.getPurchases(3, context.getPackageName(), "inapp",null);
 			
 			for (String key : bundle.keySet()) {
-			    Object value = bundle.get(key);
-//			    Log.d("godot", String.format("%s %s (%s)", key,  
-//			        value.toString(), value.getClass().getName()));
+				Object value = bundle.get(key);
+				//Log.d("godot", String.format("%s %s (%s)", key,
+				//value.toString(), value.getClass().getName()));
 			}
 			
 			
@@ -73,13 +73,13 @@ abstract public class ReleaseAllConsumablesTask {
 				
 
 				if (myPurchases == null || myPurchases.size() == 0){
-//					Log.d("godot", "No purchases!");
+					//Log.d("godot", "No purchases!");
 					notRequired();
 					return;
 				}
 		
 				
-//				Log.d("godot", "# products to be consumed:" + myPurchases.size());
+				//Log.d("godot", "# products to be consumed:" + myPurchases.size());
 				for (int i=0;i<myPurchases.size();i++)
 				{
 					
@@ -89,7 +89,7 @@ abstract public class ReleaseAllConsumablesTask {
 						String sku = inappPurchaseData.getString("productId");
 						String token = inappPurchaseData.getString("purchaseToken");
 						String signature = mySignatures.get(i);
-//						Log.d("godot", "A punto de consumir un item con token:" + token + "\n" + receipt);
+						//Log.d("godot", "A punto de consumir un item con token:" + token + "\n" + receipt);
 						new GenericConsumeTask(context, mService, sku, receipt,signature, token) {
 							
 							@Override

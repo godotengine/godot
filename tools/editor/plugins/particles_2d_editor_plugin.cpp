@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "particles_2d_editor_plugin.h"
+
 #include "canvas_item_editor_plugin.h"
 #include "io/image_loader.h"
 #include "scene/gui/separator.h"
@@ -152,8 +152,8 @@ void Particles2DEditorPlugin::_notification(int p_what) {
 
 void Particles2DEditorPlugin::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
-	ClassDB::bind_method(_MD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
+	ClassDB::bind_method(D_METHOD("_menu_callback"),&Particles2DEditorPlugin::_menu_callback);
+	ClassDB::bind_method(D_METHOD("_file_selected"),&Particles2DEditorPlugin::_file_selected);
 }
 
 

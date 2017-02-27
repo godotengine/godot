@@ -45,10 +45,11 @@ public:
 		OCTANT_POOL_CHUNK=1000000
 	};
 
-	//struct OctantLight {
-
-	//	double accum[8][3];
-	//};
+	/*
+	struct OctantLight {
+		double accum[8][3];
+	};
+	*/
 
 	struct Octant {
 		bool leaf;

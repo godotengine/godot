@@ -3,7 +3,7 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http:/www.godotengine.org                         */
+/*                    http:/www.godotengine.org                          */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
@@ -27,25 +27,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_settings.h"
+
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
-
 #include "version.h"
 #include "scene/main/scene_main_loop.h"
-#include "os/os.h"
 #include "scene/main/node.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "scene/main/viewport.h"
 #include "io/config_file.h"
 #include "editor_node.h"
-#include "globals.h"
+#include "global_config.h"
 #include "translations.h"
 #include "io/file_access_memory.h"
 #include "io/translation_loader_po.h"
 #include "io/compression.h"
 #include "os/keyboard.h"
+
+
+
 
 Ref<EditorSettings> EditorSettings::singleton=NULL;
 
@@ -124,7 +126,7 @@ bool EditorSettings::_get(const StringName& p_name,Variant &r_ret) const {
 
 	const VariantContainer *v=props.getptr(p_name);
 	if (!v) {
-		//print_line("WARNING NOT FOUND: "+String(p_name));
+		print_line("EditorSettings::_get - Warning, not found: "+String(p_name));
 		return false;
 	}
 	r_ret = v->variant;
@@ -240,12 +242,20 @@ void EditorSettings::create() {
 
 	String exe_path = OS::get_singleton()->get_executable_path().get_base_dir();
 	DirAccess* d = DirAccess::create_for_path(exe_path);
-	if (d->file_exists(exe_path + "/._sc_")) {
+	bool self_contained = false;
 
+	if (d->file_exists(exe_path + "/._sc_")) {
+		self_contained = true;
+		extra_config->load(exe_path + "/._sc_");
+	} else if (d->file_exists(exe_path + "/_sc_")) {
+		self_contained = true;
+		extra_config->load(exe_path + "/_sc_");
+	}
+
+	if (self_contained) {
 		// editor is self contained
 		config_path = exe_path;
 		config_dir = "editor_data";
-		extra_config->load(exe_path + "/._sc_");
 	} else {
 
 		if (OS::get_singleton()->has_environment("APPDATA")) {
@@ -324,12 +334,12 @@ void EditorSettings::create() {
 
 		// path at least is validated, so validate config file
 
-
-		config_file_path = config_path+"/"+config_dir+"/editor_config.tres";
+		String config_file_name = "editor_settings-" + String(_MKSTR(VERSION_MAJOR)) + ".tres";
+		config_file_path = config_path + "/" + config_dir + "/" + config_file_name;
 
 		String open_path = config_file_path;
 
-		if (!dir->file_exists("editor_config.tres")) {
+		if (!dir->file_exists(config_file_name)) {
 
 			goto fail;
 		}
@@ -650,6 +660,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 
 	set("run/auto_save/save_before_running",true);
+	set("run/output/always_clear_output_on_play",true);
+	set("run/output/always_open_output_on_play",true);
+	set("run/output/always_close_output_on_stop",false);
 	set("filesystem/resources/save_compressed_resources",true);
 	set("filesystem/resources/auto_reload_modified_images",true);
 
@@ -710,6 +723,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	set("text_editor/highlighting/selection_color",Color::html("7b5dbe"));
 	set("text_editor/highlighting/brace_mismatch_color",Color(1,0.2,0.2));
 	set("text_editor/highlighting/current_line_color",Color(0.3,0.5,0.8,0.15));
+	set("text_editor/highlighting/line_length_guideline_color",Color(0.3,0.5,0.8,0.1));
 	set("text_editor/highlighting/mark_color", Color(1.0,0.4,0.4,0.4));
 	set("text_editor/highlighting/breakpoint_color", Color(0.8,0.8,0.4,0.2));
 	set("text_editor/highlighting/word_highlighted_color",Color(0.8,0.9,0.9,0.15));
@@ -842,8 +856,8 @@ void EditorSettings::list_text_editor_themes() {
 		d->list_dir_begin();
 		String file = d->get_next();
 		while(file != String()) {
-			if (file.extension() == "tet" && file.basename().to_lower() != "default") {
-				themes += "," + file.basename();
+			if (file.get_extension() == "tet" && file.get_basename().to_lower() != "default") {
+				themes += "," + file.get_basename();
 			}
 			file = d->get_next();
 		}
@@ -876,11 +890,11 @@ void EditorSettings::load_text_editor_theme() {
 		String val = cf->get_value("color_theme", key);
 
 		// don't load if it's not already there!
-		if (has("text_editor/" + key)) {
+		if (has("text_editor/highlighting/" + key)) {
 
 			// make sure it is actually a color
 			if (val.is_valid_html_color() && key.find("color") >= 0) {
-				props["text_editor/"+key].variant = Color::html(val);	// change manually to prevent "Settings changed" console spam
+				props["text_editor/highlighting/"+key].variant = Color::html(val);	// change manually to prevent "Settings changed" console spam
 			}
 		}
 	}
@@ -944,34 +958,35 @@ bool EditorSettings::save_text_editor_theme_as(String p_file) {
 bool EditorSettings::_save_text_editor_theme(String p_file) {
 	String theme_section = "color_theme";
 	Ref<ConfigFile> cf = memnew( ConfigFile );	// hex is better?
-	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/background_color")).to_html());
-	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/completion_background_color")).to_html());
-	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/completion_selected_color")).to_html());
-	cf->set_value(theme_section, "completion_existing_color", ((Color)get("text_editor/completion_existing_color")).to_html());
-	cf->set_value(theme_section, "completion_scroll_color", ((Color)get("text_editor/completion_scroll_color")).to_html());
-	cf->set_value(theme_section, "completion_font_color", ((Color)get("text_editor/completion_font_color")).to_html());
-	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/caret_color")).to_html());
-	cf->set_value(theme_section, "caret_background_color", ((Color)get("text_editor/caret_background_color")).to_html());
-	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/line_number_color")).to_html());
-	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/text_color")).to_html());
-	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/text_selected_color")).to_html());
-	cf->set_value(theme_section, "keyword_color", ((Color)get("text_editor/keyword_color")).to_html());
-	cf->set_value(theme_section, "base_type_color", ((Color)get("text_editor/base_type_color")).to_html());
-	cf->set_value(theme_section, "engine_type_color", ((Color)get("text_editor/engine_type_color")).to_html());
-	cf->set_value(theme_section, "function_color", ((Color)get("text_editor/function_color")).to_html());
-	cf->set_value(theme_section, "member_variable_color", ((Color)get("text_editor/member_variable_color")).to_html());
-	cf->set_value(theme_section, "comment_color", ((Color)get("text_editor/comment_color")).to_html());
-	cf->set_value(theme_section, "string_color", ((Color)get("text_editor/string_color")).to_html());
-	cf->set_value(theme_section, "number_color", ((Color)get("text_editor/number_color")).to_html());
-	cf->set_value(theme_section, "symbol_color", ((Color)get("text_editor/symbol_color")).to_html());
-	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/selection_color")).to_html());
-	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/brace_mismatch_color")).to_html());
-	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/current_line_color")).to_html());
-	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/mark_color")).to_html());
-	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/breakpoint_color")).to_html());
-	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/word_highlighted_color")).to_html());
-	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/search_result_color")).to_html());
-	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/search_result_border_color")).to_html());
+	cf->set_value(theme_section, "background_color", ((Color)get("text_editor/highlighting/background_color")).to_html());
+	cf->set_value(theme_section, "completion_background_color", ((Color)get("text_editor/highlighting/completion_background_color")).to_html());
+	cf->set_value(theme_section, "completion_selected_color", ((Color)get("text_editor/highlighting/completion_selected_color")).to_html());
+	cf->set_value(theme_section, "completion_existing_color", ((Color)get("text_editor/highlighting/completion_existing_color")).to_html());
+	cf->set_value(theme_section, "completion_scroll_color", ((Color)get("text_editor/highlighting/completion_scroll_color")).to_html());
+	cf->set_value(theme_section, "completion_font_color", ((Color)get("text_editor/highlighting/completion_font_color")).to_html());
+	cf->set_value(theme_section, "caret_color", ((Color)get("text_editor/highlighting/caret_color")).to_html());
+	cf->set_value(theme_section, "caret_background_color", ((Color)get("text_editor/highlighting/caret_background_color")).to_html());
+	cf->set_value(theme_section, "line_number_color", ((Color)get("text_editor/highlighting/line_number_color")).to_html());
+	cf->set_value(theme_section, "text_color", ((Color)get("text_editor/highlighting/text_color")).to_html());
+	cf->set_value(theme_section, "text_selected_color", ((Color)get("text_editor/highlighting/text_selected_color")).to_html());
+	cf->set_value(theme_section, "keyword_color", ((Color)get("text_editor/highlighting/keyword_color")).to_html());
+	cf->set_value(theme_section, "base_type_color", ((Color)get("text_editor/highlighting/base_type_color")).to_html());
+	cf->set_value(theme_section, "engine_type_color", ((Color)get("text_editor/highlighting/engine_type_color")).to_html());
+	cf->set_value(theme_section, "function_color", ((Color)get("text_editor/highlighting/function_color")).to_html());
+	cf->set_value(theme_section, "member_variable_color", ((Color)get("text_editor/highlighting/member_variable_color")).to_html());
+	cf->set_value(theme_section, "comment_color", ((Color)get("text_editor/highlighting/comment_color")).to_html());
+	cf->set_value(theme_section, "string_color", ((Color)get("text_editor/highlighting/string_color")).to_html());
+	cf->set_value(theme_section, "number_color", ((Color)get("text_editor/highlighting/number_color")).to_html());
+	cf->set_value(theme_section, "symbol_color", ((Color)get("text_editor/highlighting/symbol_color")).to_html());
+	cf->set_value(theme_section, "selection_color", ((Color)get("text_editor/highlighting/selection_color")).to_html());
+	cf->set_value(theme_section, "brace_mismatch_color", ((Color)get("text_editor/highlighting/brace_mismatch_color")).to_html());
+	cf->set_value(theme_section, "current_line_color", ((Color)get("text_editor/highlighting/current_line_color")).to_html());
+	cf->set_value(theme_section, "line_length_guideline_color", ((Color)get("text_editor/highlighting/line_length_guideline_color")).to_html());
+	cf->set_value(theme_section, "mark_color", ((Color)get("text_editor/highlighting/mark_color")).to_html());
+	cf->set_value(theme_section, "breakpoint_color", ((Color)get("text_editor/highlighting/breakpoint_color")).to_html());
+	cf->set_value(theme_section, "word_highlighted_color", ((Color)get("text_editor/highlighting/word_highlighted_color")).to_html());
+	cf->set_value(theme_section, "search_result_color", ((Color)get("text_editor/highlighting/search_result_color")).to_html());
+	cf->set_value(theme_section, "search_result_border_color", ((Color)get("text_editor/highlighting/search_result_border_color")).to_html());
 
 
 	Error err = cf->save(p_file);
@@ -1022,42 +1037,38 @@ void EditorSettings::set_optimize_save(bool p_optimize) {
 	optimize_save=p_optimize;
 }
 
-String EditorSettings::get_last_selected_language()
-{
+Variant EditorSettings::get_project_metadata(const String& p_section, const String& p_key, Variant p_default) {
 	Ref<ConfigFile> cf = memnew( ConfigFile );
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
 	Error err = cf->load(path);
 	if (err != OK) {
-		return "";
+		return p_default;
 	}
-	Variant last_selected_language = cf->get_value("script_setup", "last_selected_language");
-	if (last_selected_language.get_type() != Variant::STRING)
-		return "";
-	return static_cast<String>(last_selected_language);
+	return cf->get_value(p_section, p_key, p_default);
 }
 
-void EditorSettings::set_last_selected_language(String p_language)
+void EditorSettings::set_project_metadata(const String& p_section, const String& p_key, Variant p_data)
 {
 	Ref<ConfigFile> cf = memnew( ConfigFile );
 	String path = get_project_settings_path().plus_file("project_metadata.cfg");
 	cf->load(path);
-	cf->set_value("script_setup", "last_selected_language", p_language);
+	cf->set_value(p_section, p_key, p_data);
 	cf->save(path);
 }
 
 void EditorSettings::_bind_methods() {
 
-	ClassDB::bind_method(_MD("erase","property"),&EditorSettings::erase);
-	ClassDB::bind_method(_MD("get_settings_path"),&EditorSettings::get_settings_path);
-	ClassDB::bind_method(_MD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
+	ClassDB::bind_method(D_METHOD("erase","property"),&EditorSettings::erase);
+	ClassDB::bind_method(D_METHOD("get_settings_path"),&EditorSettings::get_settings_path);
+	ClassDB::bind_method(D_METHOD("get_project_settings_path"),&EditorSettings::get_project_settings_path);
 
-	ClassDB::bind_method(_MD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
+	ClassDB::bind_method(D_METHOD("add_property_info", "info"),&EditorSettings::_add_property_info_bind);
 
-	ClassDB::bind_method(_MD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
-	ClassDB::bind_method(_MD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
+	ClassDB::bind_method(D_METHOD("set_favorite_dirs","dirs"),&EditorSettings::set_favorite_dirs);
+	ClassDB::bind_method(D_METHOD("get_favorite_dirs"),&EditorSettings::get_favorite_dirs);
 
-	ClassDB::bind_method(_MD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
-	ClassDB::bind_method(_MD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
+	ClassDB::bind_method(D_METHOD("set_recent_dirs","dirs"),&EditorSettings::set_recent_dirs);
+	ClassDB::bind_method(D_METHOD("get_recent_dirs"),&EditorSettings::get_recent_dirs);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
@@ -1101,7 +1112,7 @@ EditorSettings::EditorSettings() {
 
 EditorSettings::~EditorSettings() {
 
-//	singleton=NULL;
+	//singleton=NULL;
 }
 
 Ref<ShortCut> ED_GET_SHORTCUT(const String& p_path) {

@@ -149,7 +149,7 @@ private:
 #ifdef GLOBALNIL_DISABLED
 			memdelete_allocator<Element,A>(_nil);
 #endif
-//			memdelete_allocator<Element,A>(_root);
+			//memdelete_allocator<Element,A>(_root);
 		}
 	};
 
@@ -428,7 +428,7 @@ private:
 				Element *aux=node->parent->left;
 				if (aux->color==RED) {
 					_set_color(aux,BLACK);
-					_set_color(node->parent,RED);;
+					_set_color(node->parent,RED);
 					_rotate_right(node->parent);
 					aux=node->parent->left;
 				}

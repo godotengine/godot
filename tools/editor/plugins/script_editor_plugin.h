@@ -99,7 +99,7 @@ public:
 	virtual void reload(bool p_soft)=0;
 	virtual void get_breakpoints(List<int> *p_breakpoints)=0;
 	virtual bool goto_method(const String& p_method)=0;
-	virtual void add_callback(const String& p_function,StringArray p_args)=0;
+	virtual void add_callback(const String& p_function,PoolStringArray p_args)=0;
 	virtual void update_settings()=0;
 	virtual void set_debugger_active(bool p_active)=0;
 	virtual bool can_lose_focus_on_node_selection() { return true; }
@@ -154,6 +154,17 @@ class ScriptEditor : public VBoxContainer {
 		WINDOW_PREV,
 		WINDOW_SELECT_BASE=100
 	};
+	
+	enum ScriptSortBy {
+		SORT_BY_NAME,
+		SORT_BY_PATH,
+	};
+	
+	enum ScriptListName {
+		DISPLAY_NAME,
+		DISPLAY_DIR_AND_NAME,
+		DISPLAY_FULL_PATH,
+	};
 
 	HBoxContainer *menu_hb;
 	MenuButton *file_menu;
@@ -179,7 +190,7 @@ class ScriptEditor : public VBoxContainer {
 
 	String current_theme;
 
-	TextureFrame *script_icon;
+	TextureRect *script_icon;
 	Label *script_name_label;
 
 	ToolButton *script_back;
@@ -219,9 +230,10 @@ class ScriptEditor : public VBoxContainer {
 
 	bool _test_script_times_on_disk(Ref<Script> p_for_script=Ref<Script>());
 
-	void _close_tab(int p_idx);
+	void _close_tab(int p_idx, bool p_save=true);
 
 	void _close_current_tab();
+	void _close_discard_current_tab(const String& p_str);
 	void _close_docs_tab();
 	void _close_all_tabs();
 
@@ -243,7 +255,7 @@ class ScriptEditor : public VBoxContainer {
 
 	int edit_pass;
 
-	void _add_callback(Object *p_obj, const String& p_function, const StringArray& p_args);
+	void _add_callback(Object *p_obj, const String& p_function, const PoolStringArray& p_args);
 	void _res_saved_callback(const Ref<Resource>& p_res);
 
 	bool trim_trailing_whitespace_on_save;

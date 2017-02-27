@@ -207,7 +207,7 @@ public:
 	virtual Script *create_script() const=0;
 	virtual bool has_named_classes() const=0;
 	virtual int find_function(const String& p_function,const String& p_code) const=0;
-	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const=0;
+	virtual String make_function(const String& p_class,const String& p_name,const PoolStringArray& p_args) const=0;
 
 	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint) { return ERR_UNAVAILABLE; }
 

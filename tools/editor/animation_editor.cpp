@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "animation_editor.h"
+
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "os/os.h"
@@ -178,12 +179,12 @@ private:
 			bool sg = val < 0;
 			val = Math::absf(val);
 
-			val = Math::log(val)/Math::log(2);
+			val = Math::log(val)/Math::log((float)2.0);
 			//logspace
 			val+=rel*0.05;
 			//
 
-			val = Math::pow(2,val);
+			val = Math::pow((float)2.0,val);
 			if (sg)
 				val=-val;
 
@@ -198,7 +199,7 @@ public:
 
 	static void _bind_methods() {
 
-	//	ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
+		//ClassDB::bind_method("_update_obj",&AnimationKeyEdit::_update_obj);
 		ClassDB::bind_method("_gui_input",&AnimationCurveEdit::_gui_input);
 		ADD_SIGNAL(MethodInfo("transition_changed"));
 	}
@@ -518,7 +519,7 @@ public:
 			case Animation::TYPE_VALUE: {
 
 				if (name=="value") {
-					r_ret = animation->track_get_key_value(track,key);;
+					r_ret = animation->track_get_key_value(track,key);
 					return true;
 				}
 
@@ -647,8 +648,10 @@ public:
 			} break;
 		}
 
-		//if (animation->track_get_type(track)!=Animation::TYPE_METHOD)
-		//	p_list->push_back( PropertyInfo( Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
+		/*
+		if (animation->track_get_type(track)!=Animation::TYPE_METHOD)
+			p_list->push_back( PropertyInfo( Variant::REAL, "easing", PROPERTY_HINT_EXP_EASING));
+		*/
 	}
 
 	UndoRedo *undo_redo;
@@ -1052,9 +1055,9 @@ float AnimationKeyEditor::_get_zoom_scale() const {
 	float zv = zoom->get_value();
 	if (zv<1) {
 		zv = 1.0-zv;
-		return Math::pow(1.0+zv,8.0)*100;
+		return Math::pow(1.0f+zv,8.0f)*100;
 	} else {
-		return 1.0/Math::pow(zv,8.0)*100;
+		return 1.0/Math::pow(zv,8.0f)*100;
 	}
 }
 
@@ -1484,8 +1487,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 
 		//draw the keys;
 		int tt = animation->track_get_type(idx);
-		float key_vofs = Math::floor((h - type_icon[tt]->get_height())/2);
-		float key_hofs = -Math::floor(type_icon[tt]->get_height()/2);
+		float key_vofs = Math::floor((float)(h - type_icon[tt]->get_height())/2);
+		float key_hofs = -Math::floor((float)type_icon[tt]->get_height()/2);
 
 		int kc=animation->track_get_key_count(idx);
 		bool first=true;
@@ -1589,8 +1592,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 					continue;
 				int y = h+i*h+sep;
 
-				float key_vofs = Math::floor((h - type_selected->get_height())/2);
-				float key_hofs = -Math::floor(type_selected->get_height()/2);
+				float key_vofs = Math::floor((float)(h - type_selected->get_height())/2);
+				float key_hofs = -Math::floor((float)type_selected->get_height()/2);
 
 				float time = animation->track_get_key_time(idx,E->key().key);
 				float diff = time-from_t;
@@ -1914,7 +1917,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 				else
 					_menu_track(TRACK_MENU_DUPLICATE);
 
-				accept_event();;
+				accept_event();
 
 			} else if (p_input.key.scancode==KEY_DELETE && p_input.key.pressed && click.click==ClickOver::CLICK_NONE) {
 
@@ -1925,14 +1928,14 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 
 					if (p_input.is_action("ui_up"))
 						selected_track--;
-					if (v_scroll->is_visible() && p_input.is_action("ui_page_up"))
+					if (v_scroll->is_visible_in_tree() && p_input.is_action("ui_page_up"))
 						selected_track--;
 
 					if (selected_track<0)
 						selected_track=0;
 
 
-					if (v_scroll->is_visible()) {
+					if (v_scroll->is_visible_in_tree()) {
 						if (v_scroll->get_value() > selected_track)
 							v_scroll->set_value(selected_track);
 
@@ -1947,13 +1950,13 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 
 					if (p_input.is_action("ui_down"))
 						selected_track++;
-					else if (v_scroll->is_visible() && p_input.is_action("ui_page_down"))
+					else if (v_scroll->is_visible_in_tree() && p_input.is_action("ui_page_down"))
 						selected_track+=v_scroll->get_page();
 
 					if (selected_track >= animation->get_track_count())
 						selected_track=animation->get_track_count()-1;
 
-					if (v_scroll->is_visible() && v_scroll->get_page()+v_scroll->get_value() < selected_track+1) {
+					if (v_scroll->is_visible_in_tree() && v_scroll->get_page()+v_scroll->get_value() < selected_track+1) {
 						v_scroll->set_value(selected_track-v_scroll->get_page()+1);
 					}
 
@@ -2641,8 +2644,10 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							for(Map<SelectedKey,KeyInfo>::Element *E=selection.back();E;E=E->prev()) {
 
 								float newpos=E->get().pos-from_t+motion;
-								//if (newpos<0)
-								//	continue; //no add at the begining
+								/*
+								if (newpos<0)
+									continue; //no add at the begining
+								*/
 								undo_redo->add_do_method(animation.ptr(),"track_insert_key",E->key().track,newpos,animation->track_get_key_value(E->key().track,E->key().key),animation->track_get_key_transition(E->key().track,E->key().key));
 
 							}
@@ -2651,8 +2656,10 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							for(Map<SelectedKey,KeyInfo>::Element *E=selection.back();E;E=E->prev()) {
 
 								float newpos=E->get().pos+-from_t+motion;
-								//if (newpos<0)
-								//	continue; //no remove what no inserted
+								/*
+								if (newpos<0)
+									continue; //no remove what no inserted
+								*/
 								undo_redo->add_undo_method(animation.ptr(),"track_remove_key_at_pos",E->key().track,newpos);
 
 							}
@@ -2690,7 +2697,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 								float oldpos=E->get().pos;
 								float newpos=oldpos-from_t+motion;
 								//if (newpos>=0)
-									undo_redo->add_do_method(this,"_select_at_anim",animation,E->key().track,newpos);
+								undo_redo->add_do_method(this,"_select_at_anim",animation,E->key().track,newpos);
 								undo_redo->add_undo_method(this,"_select_at_anim",animation,E->key().track,oldpos);
 
 							}
@@ -2911,7 +2918,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent& p_input) {
 							} break;
 							case Animation::TYPE_VALUE: {
 
-								Variant v = animation->track_get_key_value(idx,mouse_over.over_key);;
+								Variant v = animation->track_get_key_value(idx,mouse_over.over_key);
 								//text+="value: "+String(v)+"\n";
 
 								bool prop_exists=false;
@@ -3148,7 +3155,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 				}
 				call_select->connect("selected",this,"_add_call_track");
-//				rename_anim->set_icon( get_icon("Rename","EditorIcons") );
+				//rename_anim->set_icon( get_icon("Rename","EditorIcons") );
 /*
 				edit_anim->set_icon( get_icon("Edit","EditorIcons") );
 				blend_anim->set_icon( get_icon("Blend","EditorIcons") );
@@ -3156,8 +3163,8 @@ void AnimationKeyEditor::_notification(int p_what) {
 				stop->set_icon( get_icon("Stop","EditorIcons") );
 				pause->set_icon( get_icon("Pause","EditorIcons") );
 */
-//			menu->set_icon(get_icon("Animation","EditorIcons"));
-//			play->set_icon(get_icon("AnimationPlay","EditorIcons"));
+			//menu->set_icon(get_icon("Animation","EditorIcons"));
+			//play->set_icon(get_icon("AnimationPlay","EditorIcons"));
 			//menu->set_icon(get_icon("Animation","EditorIcons"));
 			_update_menu();
 
@@ -3248,12 +3255,12 @@ void AnimationKeyEditor::set_animation(const Ref<Animation>& p_anim) {
 void AnimationKeyEditor::set_root(Node *p_root) {
 
 	if (root)
-		root->disconnect("exit_tree",this,"_root_removed");
+		root->disconnect("tree_exited",this,"_root_removed");
 
 	root=p_root;
 
 	if (root)
-		root->connect("exit_tree",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
+		root->connect("tree_exited",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
 
 
 }
@@ -3270,7 +3277,7 @@ Node *AnimationKeyEditor::get_root() const {
 
 void AnimationKeyEditor::update_keying() {
 
-	bool keying_enabled=is_visible() && animation.is_valid();
+	bool keying_enabled=is_visible_in_tree() && animation.is_valid();
 
 	if (keying_enabled==keying)
 		return;
@@ -3289,14 +3296,14 @@ bool AnimationKeyEditor::has_keying() const {
 void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 
 
-	if (insert_frame!=OS::get_singleton()->get_frames_drawn()) {
+	if (insert_frame!=Engine::get_singleton()->get_frames_drawn()) {
 		//clear insert list for the frame if frame changed
-		if (insert_confirm->is_visible())
+		if (insert_confirm->is_visible_in_tree())
 			return; //do nothing
 		insert_data.clear();
 		insert_query=false;
 	}
-	insert_frame=OS::get_singleton()->get_frames_drawn();
+	insert_frame=Engine::get_singleton()->get_frames_drawn();
 
 	for (List<InsertData>::Element *E=insert_data.front();E;E=E->next()) {
 		//prevent insertion of multiple tracks
@@ -3525,7 +3532,7 @@ int AnimationKeyEditor::_confirm_insert(InsertData p_id,int p_last_track) {
 					h.type==Variant::VECTOR2 ||
 					h.type==Variant::RECT2 ||
 					h.type==Variant::VECTOR3 ||
-					h.type==Variant::_AABB ||
+					h.type==Variant::RECT3 ||
 					h.type==Variant::QUAT ||
 					h.type==Variant::COLOR ||
 					h.type==Variant::TRANSFORM ) {
@@ -3700,7 +3707,7 @@ void AnimationKeyEditor::_pane_drag(const Point2& p_delta) {
 	ecs.y-=p_delta.y;
 	if (ecs.y<100)
 		ecs.y=100;
-	ec->set_custom_minimum_size(ecs);;
+	ec->set_custom_minimum_size(ecs);
 
 }
 
@@ -3915,48 +3922,48 @@ void AnimationKeyEditor::cleanup() {
 
 void AnimationKeyEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_root_removed"),&AnimationKeyEditor::_root_removed);
-	ClassDB::bind_method(_MD("_scale"),&AnimationKeyEditor::_scale);
-	ClassDB::bind_method(_MD("set_root"),&AnimationKeyEditor::set_root);
+	ClassDB::bind_method(D_METHOD("_root_removed"),&AnimationKeyEditor::_root_removed);
+	ClassDB::bind_method(D_METHOD("_scale"),&AnimationKeyEditor::_scale);
+	ClassDB::bind_method(D_METHOD("set_root"),&AnimationKeyEditor::set_root);
 
 
-//	ClassDB::bind_method(_MD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
-	ClassDB::bind_method(_MD("_confirm_insert_list"),&AnimationKeyEditor::_confirm_insert_list);
-
-
-
-	ClassDB::bind_method(_MD("_update_paths"),&AnimationKeyEditor::_update_paths);
-	ClassDB::bind_method(_MD("_track_editor_draw"),&AnimationKeyEditor::_track_editor_draw);
+	//ClassDB::bind_method(D_METHOD("_confirm_insert"),&AnimationKeyEditor::_confirm_insert);
+	ClassDB::bind_method(D_METHOD("_confirm_insert_list"),&AnimationKeyEditor::_confirm_insert_list);
 
 
 
-
-	ClassDB::bind_method(_MD("_animation_changed"),&AnimationKeyEditor::_animation_changed);
-	ClassDB::bind_method(_MD("_scroll_changed"),&AnimationKeyEditor::_scroll_changed);
-	ClassDB::bind_method(_MD("_track_editor_gui_input"),&AnimationKeyEditor::_track_editor_gui_input);
-	ClassDB::bind_method(_MD("_track_name_changed"),&AnimationKeyEditor::_track_name_changed);
-	ClassDB::bind_method(_MD("_track_menu_selected"),&AnimationKeyEditor::_track_menu_selected);
-	ClassDB::bind_method(_MD("_menu_add_track"),&AnimationKeyEditor::_menu_add_track);
-	ClassDB::bind_method(_MD("_menu_track"),&AnimationKeyEditor::_menu_track);
-	ClassDB::bind_method(_MD("_clear_selection_for_anim"),&AnimationKeyEditor::_clear_selection_for_anim);
-	ClassDB::bind_method(_MD("_select_at_anim"),&AnimationKeyEditor::_select_at_anim);
-	ClassDB::bind_method(_MD("_track_pos_draw"),&AnimationKeyEditor::_track_pos_draw);
-	ClassDB::bind_method(_MD("_insert_delay"),&AnimationKeyEditor::_insert_delay);
-	ClassDB::bind_method(_MD("_step_changed"),&AnimationKeyEditor::_step_changed);
+	ClassDB::bind_method(D_METHOD("_update_paths"),&AnimationKeyEditor::_update_paths);
+	ClassDB::bind_method(D_METHOD("_track_editor_draw"),&AnimationKeyEditor::_track_editor_draw);
 
 
-	ClassDB::bind_method(_MD("_animation_loop_changed"),&AnimationKeyEditor::_animation_loop_changed);
-	ClassDB::bind_method(_MD("_animation_len_changed"),&AnimationKeyEditor::_animation_len_changed);
-	ClassDB::bind_method(_MD("_create_value_item"),&AnimationKeyEditor::_create_value_item);
-	ClassDB::bind_method(_MD("_pane_drag"),&AnimationKeyEditor::_pane_drag);
 
-	ClassDB::bind_method(_MD("_animation_len_update"),&AnimationKeyEditor::_animation_len_update);
 
-	ClassDB::bind_method(_MD("set_animation"),&AnimationKeyEditor::set_animation);
-	ClassDB::bind_method(_MD("_animation_optimize"),&AnimationKeyEditor::_animation_optimize);
-	ClassDB::bind_method(_MD("_curve_transition_changed"),&AnimationKeyEditor::_curve_transition_changed);
-	ClassDB::bind_method(_MD("_toggle_edit_curves"),&AnimationKeyEditor::_toggle_edit_curves);
-	ClassDB::bind_method(_MD("_add_call_track"),&AnimationKeyEditor::_add_call_track);
+	ClassDB::bind_method(D_METHOD("_animation_changed"),&AnimationKeyEditor::_animation_changed);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&AnimationKeyEditor::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_track_editor_gui_input"),&AnimationKeyEditor::_track_editor_gui_input);
+	ClassDB::bind_method(D_METHOD("_track_name_changed"),&AnimationKeyEditor::_track_name_changed);
+	ClassDB::bind_method(D_METHOD("_track_menu_selected"),&AnimationKeyEditor::_track_menu_selected);
+	ClassDB::bind_method(D_METHOD("_menu_add_track"),&AnimationKeyEditor::_menu_add_track);
+	ClassDB::bind_method(D_METHOD("_menu_track"),&AnimationKeyEditor::_menu_track);
+	ClassDB::bind_method(D_METHOD("_clear_selection_for_anim"),&AnimationKeyEditor::_clear_selection_for_anim);
+	ClassDB::bind_method(D_METHOD("_select_at_anim"),&AnimationKeyEditor::_select_at_anim);
+	ClassDB::bind_method(D_METHOD("_track_pos_draw"),&AnimationKeyEditor::_track_pos_draw);
+	ClassDB::bind_method(D_METHOD("_insert_delay"),&AnimationKeyEditor::_insert_delay);
+	ClassDB::bind_method(D_METHOD("_step_changed"),&AnimationKeyEditor::_step_changed);
+
+
+	ClassDB::bind_method(D_METHOD("_animation_loop_changed"),&AnimationKeyEditor::_animation_loop_changed);
+	ClassDB::bind_method(D_METHOD("_animation_len_changed"),&AnimationKeyEditor::_animation_len_changed);
+	ClassDB::bind_method(D_METHOD("_create_value_item"),&AnimationKeyEditor::_create_value_item);
+	ClassDB::bind_method(D_METHOD("_pane_drag"),&AnimationKeyEditor::_pane_drag);
+
+	ClassDB::bind_method(D_METHOD("_animation_len_update"),&AnimationKeyEditor::_animation_len_update);
+
+	ClassDB::bind_method(D_METHOD("set_animation"),&AnimationKeyEditor::set_animation);
+	ClassDB::bind_method(D_METHOD("_animation_optimize"),&AnimationKeyEditor::_animation_optimize);
+	ClassDB::bind_method(D_METHOD("_curve_transition_changed"),&AnimationKeyEditor::_curve_transition_changed);
+	ClassDB::bind_method(D_METHOD("_toggle_edit_curves"),&AnimationKeyEditor::_toggle_edit_curves);
+	ClassDB::bind_method(D_METHOD("_add_call_track"),&AnimationKeyEditor::_add_call_track);
 
 
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
@@ -4001,7 +4008,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	//menu->set_pos(Point2());
 	//add_child(menu);
 
-	zoomicon = memnew( TextureFrame );
+	zoomicon = memnew( TextureRect );
 	hb->add_child(zoomicon);
 	zoomicon->set_tooltip(TTR("Animation zoom."));
 
@@ -4104,7 +4111,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	optimize_dialog->set_title(TTR("Anim. Optimizer"));
 	VBoxContainer *optimize_vb = memnew( VBoxContainer );
 	optimize_dialog->add_child(optimize_vb);
-	optimize_dialog->set_child_rect(optimize_vb);
+
 	optimize_linear_error = memnew( SpinBox );
 	optimize_linear_error->set_max(1.0);
 	optimize_linear_error->set_min(0.001);
@@ -4143,9 +4150,9 @@ AnimationKeyEditor::AnimationKeyEditor() {
 /*	l = memnew( Label );
 	l->set_text("Base: ");
 	l->set_pos(Point2(0,3));
-//	dr_panel->add_child(l);*/
+	//dr_panel->add_child(l);*/
 
-//	menu->get_popup()->connect("id_pressed",this,"_menu_callback");
+	//menu->get_popup()->connect("id_pressed",this,"_menu_callback");
 
 
 	hb = memnew( HBoxContainer);
@@ -4272,7 +4279,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	scale_dialog = memnew( ConfirmationDialog );
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	scale_dialog->add_child(vbc);
-	scale_dialog->set_child_rect(vbc);
+
 	scale = memnew( SpinBox );
 	scale->set_min(-99999);
 	scale->set_max(99999);
@@ -4289,7 +4296,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	add_child(cleanup_dialog);
 	VBoxContainer *cleanup_vb = memnew( VBoxContainer );
 	cleanup_dialog->add_child(cleanup_vb);
-	cleanup_dialog->set_child_rect(cleanup_vb);
+
 	cleanup_keys = memnew( CheckButton );
 	cleanup_keys->set_text(TTR("Remove invalid keys"));
 	cleanup_keys->set_pressed(true);

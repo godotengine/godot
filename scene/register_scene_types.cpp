@@ -28,13 +28,13 @@
 /*************************************************************************/
 #include "register_scene_types.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include "scene/io/resource_format_image.h"
 #include "scene/io/resource_format_wav.h"
 
 //#include "scene/io/scene_format_script.h"
 #include "resources/default_theme/default_theme.h"
-#include "object_type_db.h"
+#include "class_db.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/instance_placeholder.h"
 #include "scene/main/viewport.h"
@@ -54,9 +54,9 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/color_picker.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/patch_9_frame.h"
+#include "scene/gui/patch_9_rect.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -81,10 +81,11 @@
 #include "scene/gui/grid_container.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/video_player.h"
-#include "scene/gui/reference_frame.h"
+#include "scene/gui/reference_rect.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/tool_button.h"
+#include "scene/resources/audio_stream_sample.h"
 #include "scene/resources/video_stream.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/path_2d.h"
@@ -109,8 +110,8 @@
 #include "scene/2d/collision_polygon_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
-#include "scene/2d/sound_player_2d.h"
-#include "scene/2d/sample_player_2d.h"
+//#include "scene/2d/sound_player_2d.h"
+//#include "scene/2d/sample_player_2d.h"
 #include "scene/2d/screen_button.h"
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/y_sort.h"
@@ -120,6 +121,8 @@
 #include "scene/2d/position_2d.h"
 #include "scene/2d/tile_map.h"
 //#include "scene/2d/tile_map.h"
+#include "scene/2d/line_2d.h"
+
 #include "scene/resources/tile_set.h"
 
 #include "scene/animation/animation_player.h"
@@ -139,9 +142,9 @@
 
 #include "scene/main/timer.h"
 
-#include "scene/audio/stream_player.h"
-#include "scene/audio/event_player.h"
-#include "scene/audio/sound_room_params.h"
+#include "scene/audio/audio_player.h"
+//#include "scene/audio/event_player.h"
+//#include "scene/audio/sound_room_params.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/box_shape.h"
@@ -163,8 +166,8 @@
 
 #include "scene/resources/polygon_path_finder.h"
 
-#include "scene/resources/sample.h"
-#include "scene/audio/sample_player.h"
+//#include "scene/resources/sample.h"
+//#include "scene/audio/sample_player.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/sky_box.h"
 #include "scene/resources/material.h"
@@ -176,8 +179,8 @@
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 
-#include "scene/resources/sample_library.h"
-#include "scene/resources/audio_stream.h"
+//#include "scene/resources/sample_library.h"
+//#include "scene/resources/audio_stream.h"
 #include "scene/resources/gibberish_stream.h"
 #include "scene/resources/bit_mask.h"
 #include "scene/resources/color_ramp.h"
@@ -220,8 +223,8 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/sprite_3d.h"
-#include "scene/3d/spatial_sample_player.h"
-#include "scene/3d/spatial_stream_player.h"
+//#include "scene/3d/spatial_sample_player.h"
+//#include "scene/3d/spatial_stream_player.h"
 #include "scene/3d/proximity_group.h"
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/navigation.h"
@@ -230,8 +233,7 @@
 
 #include "scene/resources/scene_format_text.h"
 
-static ResourceFormatLoaderImage *resource_loader_image=NULL;
-static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
+//static ResourceFormatLoaderWAV *resource_loader_wav=NULL;
 
 
 #ifdef TOOLS_ENABLED
@@ -245,6 +247,8 @@ static ResourceFormatLoaderText *resource_loader_text=NULL;
 
 static ResourceFormatLoaderDynamicFont *resource_loader_dynamic_font=NULL;
 
+static ResourceFormatLoaderStreamTexture *resource_loader_stream_texture=NULL;
+
 //static SceneStringNames *string_names;
 
 void register_scene_types() {
@@ -255,13 +259,13 @@ void register_scene_types() {
 
 	Node::init_node_hrcr();
 
-	resource_loader_image = memnew( ResourceFormatLoaderImage );
-	ResourceLoader::add_resource_format_loader( resource_loader_image );
-
-	resource_loader_wav = memnew( ResourceFormatLoaderWAV );
-	ResourceLoader::add_resource_format_loader( resource_loader_wav );
+	//resource_loader_wav = memnew( ResourceFormatLoaderWAV );
+	//ResourceLoader::add_resource_format_loader( resource_loader_wav );
 	resource_loader_dynamic_font = memnew( ResourceFormatLoaderDynamicFont );
 	ResourceLoader::add_resource_format_loader( resource_loader_dynamic_font );
+
+	resource_loader_stream_texture = memnew( ResourceFormatLoaderStreamTexture);
+	ResourceLoader::add_resource_format_loader( resource_loader_stream_texture );
 
 #ifdef TOOLS_ENABLED
 
@@ -319,7 +323,7 @@ void register_scene_types() {
 
 	ClassDB::register_class<ShortCut>();
 	ClassDB::register_class<Control>();
-//	ClassDB::register_type<EmptyControl>();
+	//ClassDB::register_type<EmptyControl>();
 	ClassDB::register_class<Button>();
 	ClassDB::register_class<Label>();
 	ClassDB::register_class<HScrollBar>();
@@ -339,9 +343,9 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<TextureFrame>();
-	ClassDB::register_class<ColorFrame>();
-	ClassDB::register_class<Patch9Frame>();
+	ClassDB::register_class<TextureRect>();
+	ClassDB::register_class<ColorRect>();
+	ClassDB::register_class<NinePatchRect>();
 	ClassDB::register_class<TabContainer>();
 	ClassDB::register_class<Tabs>();
 	ClassDB::register_virtual_class<Separator>();
@@ -383,7 +387,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<TreeItem>();
 	ClassDB::register_class<OptionButton>();
 	ClassDB::register_class<SpinBox>();
-	ClassDB::register_class<ReferenceFrame>();
+	ClassDB::register_class<ReferenceRect>();
 	ClassDB::register_class<ColorPicker>();
 	ClassDB::register_class<ColorPickerButton>();
 	ClassDB::register_class<RichTextLabel>();
@@ -474,18 +478,12 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<SpatialSamplePlayer>();
-	ClassDB::register_class<SpatialStreamPlayer>();
-	ClassDB::register_class<SoundRoomParams>();
 
 
 #endif
 	ClassDB::register_class<MeshLibrary>();
 	AcceptDialog::set_swap_ok_cancel( GLOBAL_DEF("gui/common/swap_ok_cancel",bool(OS::get_singleton()->get_swap_ok_cancel())) );
 
-	ClassDB::register_class<SamplePlayer>();
-	ClassDB::register_class<StreamPlayer>();
-	ClassDB::register_class<EventPlayer>();
 
 
 	ClassDB::register_class<CanvasItemMaterial>();
@@ -494,10 +492,11 @@ void register_scene_types() {
 	ClassDB::register_class<Particles2D>();
 	ClassDB::register_class<ParticleAttractor2D>();
 	ClassDB::register_class<Sprite>();
-//	ClassDB::register_type<ViewportSprite>();
+	//ClassDB::register_type<ViewportSprite>();
 	ClassDB::register_class<SpriteFrames>();
 	ClassDB::register_class<AnimatedSprite>();
 	ClassDB::register_class<Position2D>();
+	ClassDB::register_class<Line2D>();
 	ClassDB::register_virtual_class<CollisionObject2D>();
 	ClassDB::register_virtual_class<PhysicsBody2D>();
 	ClassDB::register_class<StaticBody2D>();
@@ -527,8 +526,6 @@ void register_scene_types() {
 	ClassDB::register_class<TileMap>();
 	ClassDB::register_class<ParallaxBackground>();
 	ClassDB::register_class<ParallaxLayer>();
-	ClassDB::register_virtual_class<SoundPlayer2D>();
-	ClassDB::register_class<SamplePlayer2D>();
 	ClassDB::register_class<TouchScreenButton>();
 	ClassDB::register_class<RemoteTransform2D>();
 
@@ -537,9 +534,9 @@ void register_scene_types() {
 	/* REGISTER RESOURCES */
 
 	ClassDB::register_virtual_class<Shader>();
-//	ClassDB::register_virtual_type<ShaderGraph>();
+	//ClassDB::register_virtual_type<ShaderGraph>();
 	ClassDB::register_class<CanvasItemShader>();
-//	ClassDB::register_type<CanvasItemShaderGraph>();
+	//ClassDB::register_type<CanvasItemShaderGraph>();
 
 #ifndef _3D_DISABLED
 	ClassDB::register_class<Mesh>();
@@ -547,9 +544,9 @@ void register_scene_types() {
 	ClassDB::register_class<FixedSpatialMaterial>();
 	SceneTree::add_idle_callback(FixedSpatialMaterial::flush_changes);
 	FixedSpatialMaterial::init_shaders();
-//	ClassDB::register_type<ShaderMaterial>();
+	//ClassDB::register_type<ShaderMaterial>();
 	ClassDB::register_class<RoomBounds>();
-//	ClassDB::register_type<MaterialShaderGraph>();
+	//ClassDB::register_type<MaterialShaderGraph>();
 	ClassDB::register_class<SpatialShader>();
 	ClassDB::register_class<ParticlesShader>();
 	ClassDB::register_class<MultiMesh>();
@@ -578,6 +575,7 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<Texture>();
 	ClassDB::register_virtual_class<SkyBox>();
 	ClassDB::register_class<ImageSkyBox>();
+	ClassDB::register_class<StreamTexture>();
 	ClassDB::register_class<ImageTexture>();
 	ClassDB::register_class<AtlasTexture>();
 	ClassDB::register_class<LargeTexture>();
@@ -600,13 +598,9 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-	ClassDB::register_class<Sample>();
-	ClassDB::register_class<SampleLibrary>();
-	ClassDB::register_virtual_class<AudioStream>();
-	ClassDB::register_virtual_class<AudioStreamPlayback>();
-//TODO: Adapt to the new AudioStream API or drop (GH-3307)
-//	ClassDB::register_type<AudioStreamGibberish>();
+	ClassDB::register_class<AudioPlayer>();
 	ClassDB::register_virtual_class<VideoStream>();
+	ClassDB::register_class<AudioStreamSample>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -644,15 +638,21 @@ void register_scene_types() {
 	resource_loader_text = memnew( ResourceFormatLoaderText );
 	ResourceLoader::add_resource_format_loader(resource_loader_text,true);
 
+	for(int i=0;i<20;i++) {
+		GLOBAL_DEF("layer_names/2d_render/layer_"+itos(i+1),"");
+		GLOBAL_DEF("layer_names/2d_physics/layer_"+itos(i+1),"");
+		GLOBAL_DEF("layer_names/3d_render/layer_"+itos(i+1),"");
+		GLOBAL_DEF("layer_names/3d_physics/layer_"+itos(i+1),"");
+	}
 }
 
 void unregister_scene_types() {
 
 	clear_default_theme();
 
-	memdelete( resource_loader_image );
-	memdelete( resource_loader_wav );
+//	memdelete( resource_loader_wav );
 	memdelete( resource_loader_dynamic_font );
+	memdelete( resource_loader_stream_texture );
 
 
 #ifdef TOOLS_ENABLED

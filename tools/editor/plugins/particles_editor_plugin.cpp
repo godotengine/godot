@@ -212,7 +212,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 		for(int i=0;i<geometry.size();i++) {
 
-			float area = geometry[i].get_area();;
+			float area = geometry[i].get_area();
 			if (area<CMP_EPSILON)
 				continue;
 			triangle_area_map[area_accum]=i;

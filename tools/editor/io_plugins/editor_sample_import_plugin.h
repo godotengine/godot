@@ -29,6 +29,7 @@
 #ifndef EDITOR_SAMPLE_IMPORT_PLUGIN_H
 #define EDITOR_SAMPLE_IMPORT_PLUGIN_H
 
+#if 0
 #include "tools/editor/editor_import_export.h"
 #include "scene/resources/font.h"
 
@@ -70,3 +71,4 @@ public:
 };
 
 #endif // EDITOR_SAMPLE_IMPORT_PLUGIN_H
+#endif

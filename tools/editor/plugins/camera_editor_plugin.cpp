@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "camera_editor_plugin.h"
+
 #include "spatial_editor_plugin.h"
 
 
@@ -61,7 +62,7 @@ void CameraEditor::_pressed() {
 
 void CameraEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_pressed"),&CameraEditor::_pressed);
+	ClassDB::bind_method(D_METHOD("_pressed"),&CameraEditor::_pressed);
 
 }
 
@@ -114,10 +115,8 @@ bool CameraEditorPlugin::handles(Object *p_object) const {
 void CameraEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-//	SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
-
+		//SpatialEditor::get_singleton()->set_can_preview(p_object->cast_to<Camera>());
 	} else {
-
 		SpatialEditor::get_singleton()->set_can_preview(NULL);
 	}
 

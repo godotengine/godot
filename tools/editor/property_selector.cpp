@@ -1,6 +1,34 @@
+/*************************************************************************/
+/*  property_selector.cpp                                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "property_selector.h"
-#include "editor_scale.h"
 
+#include "editor_scale.h"
 #include "os/keyboard.h"
 
 void PropertySelector::_text_changed(const String& p_newtext) {
@@ -559,10 +587,10 @@ void PropertySelector::select_property_from_instance(Object* p_instance, const S
 
 void PropertySelector::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&PropertySelector::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&PropertySelector::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&PropertySelector::_sbox_input);
-	ClassDB::bind_method(_MD("_item_selected"),&PropertySelector::_item_selected);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&PropertySelector::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&PropertySelector::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&PropertySelector::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_item_selected"),&PropertySelector::_item_selected);
 
 	ADD_SIGNAL(MethodInfo("selected",PropertyInfo(Variant::STRING,"name")));
 
@@ -574,7 +602,7 @@ PropertySelector::PropertySelector() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 	search_box = memnew( LineEdit );
 	vbc->add_margin_child(TTR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");

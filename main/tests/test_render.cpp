@@ -95,7 +95,7 @@ public:
 
 		static const int s = 20;
 		for(int i=0;i<s;i++) {
-			Matrix3 rot(Vector3(0,1,0),i*Math_PI/s);
+			Basis rot(Vector3(0,1,0),i*Math_PI/s);
 
 			for(int j=0;j<s;j++) {
 				Vector3 v;
@@ -179,7 +179,7 @@ public:
 		vs->viewport_set_active(viewport,true);
 		vs->viewport_attach_camera( viewport, camera );
 		vs->viewport_set_scenario( viewport, scenario );
-		vs->camera_set_transform(camera, Transform( Matrix3(), Vector3(0,3,30 ) ) );
+		vs->camera_set_transform(camera, Transform( Basis(), Vector3(0,3,30 ) ) );
 		vs->camera_set_perspective( camera, 60, 0.1, 1000);
 
 
@@ -192,7 +192,6 @@ public:
 		*/
 		RID lightaux;
 
-		//*
 		lightaux = vs->light_create( VisualServer::LIGHT_DIRECTIONAL );
 		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		vs->light_set_color( lightaux,  Color(1.0,1.0,1.0) );
@@ -203,17 +202,14 @@ public:
 		lla.set_look_at(Vector3(),Vector3(-0.000000,-0.836026,-0.548690),Vector3(0,1,0));
 
 		vs->instance_set_transform( light, lla );
-		//	*/
 
-		//*
 		lightaux = vs->light_create( VisualServer::LIGHT_OMNI );
-//		vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
+		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,1.0) );
 		vs->light_set_color( lightaux,  Color(1.0,1.0,0.0) );
 		vs->light_set_param( lightaux, VisualServer::LIGHT_PARAM_RANGE, 4 );
 		vs->light_set_param( lightaux, VisualServer::LIGHT_PARAM_ENERGY, 8 );
 		//vs->light_set_shadow( lightaux, true );
 		//light = vs->instance_create( lightaux );
-		//	*/
 
 		ofs=0;
 		quit=false;
@@ -232,7 +228,7 @@ public:
 
 		for(List<InstanceInfo>::Element *E=instances.front();E;E=E->next()) {
 
-			Transform pre( Matrix3(E->get().rot_axis, ofs), Vector3() );
+			Transform pre( Basis(E->get().rot_axis, ofs), Vector3() );
 			vs->instance_set_transform( E->get().instance, pre * E->get().base );
 			/*
 			if( !E->next() ) {

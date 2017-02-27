@@ -334,7 +334,7 @@ friend class TreeItem;
 
 	int compute_item_height(TreeItem *p_item) const;
 	int get_item_height(TreeItem *p_item) const;
-//	void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
+	//void draw_item_text(String p_text,const Ref<Texture>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(const TreeItem::Cell& p_cell,const Rect2i& p_rect,const Color& p_color);
 	int draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& p_draw_size,TreeItem *p_item);
 	void select_single_item(TreeItem *p_selected,TreeItem *p_current,int p_col,TreeItem *p_prev=NULL,bool *r_in_range=NULL,bool p_force_deselect=false);
@@ -452,6 +452,7 @@ friend class TreeItem;
 	bool scrolling;
 
 	bool force_select_on_already_selected;
+	bool force_edit_checkbox_only_on_checkbox;
 
 	bool hide_folding;
 
@@ -530,6 +531,10 @@ public:
 
 	void set_single_select_cell_editing_only_when_already_selected(bool p_enable);
 	bool get_single_select_cell_editing_only_when_already_selected() const;
+
+	void set_edit_checkbox_cell_only_when_checkbox_is_pressed(bool p_enable);
+	bool get_edit_checkbox_cell_only_when_checkbox_is_pressed() const;
+
 
 	void set_allow_rmb_select(bool p_allow);
 	bool get_allow_rmb_select() const;

@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "gd_script.h"
 #include "gd_compiler.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
@@ -325,7 +325,7 @@ void GDScriptLanguage::get_public_constants(List<Pair<String,Variant> > *p_const
 	p_constants->push_back(pi);
 }
 
-String GDScriptLanguage::make_function(const String& p_class,const String& p_name,const StringArray& p_args) const {
+String GDScriptLanguage::make_function(const String& p_class,const String& p_name,const PoolStringArray& p_args) const {
 
 	String s="func "+p_name+"(";
 	if (p_args.size()) {
@@ -364,10 +364,12 @@ static GDCompletionIdentifier _get_type_from_variant(const Variant& p_variant) {
 	if (p_variant.get_type()==Variant::OBJECT) {
 		Object *obj = p_variant;
 		if (obj) {
-			//if (obj->cast_to<GDNativeClass>()) {
-			//	t.obj_type=obj->cast_to<GDNativeClass>()->get_name();
-			//	t.value=Variant();
-			//} else {
+			/*
+			if (obj->cast_to<GDNativeClass>()) {
+				t.obj_type=obj->cast_to<GDNativeClass>()->get_name();
+				t.value=Variant();
+			} else {
+			*/
 				t.obj_type=obj->get_class();
 			//}
 		}
@@ -671,7 +673,7 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 												if (!script.ends_with(".gd")) {
 													//not a script, try find the script anyway,
 													//may have some success
-													script=script.basename()+".gd";
+													script=script.get_basename()+".gd";
 												}
 
 												if (FileAccess::exists(script)) {
@@ -1168,7 +1170,7 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 				if (!script.ends_with(".gd")) {
 					//not a script, try find the script anyway,
 					//may have some success
-					script=script.basename()+".gd";
+					script=script.get_basename()+".gd";
 				}
 
 				if (FileAccess::exists(script)) {
@@ -1393,7 +1395,7 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 	}
 
 	static const char*_type_names[Variant::VARIANT_MAX]={
-		"null","bool","int","float","String","Vector2","Rect2","Vector3","Matrix32","Plane","Quat","AABB","Matrix3","Transform",
+		"null","bool","int","float","String","Vector2","Rect2","Vector3","Transform2D","Plane","Quat","AABB","Basis","Transform",
 		"Color","Image","NodePath","RID","Object","InputEvent","Dictionary","Array","RawArray","IntArray","FloatArray","StringArray",
 		"Vector2Array","Vector3Array","ColorArray"};
 
@@ -1771,7 +1773,7 @@ static void _find_type_arguments(GDCompletionContext& context,const GDParser::No
 						String s = E->get().name;
 						if (!s.begins_with("autoload/"))
 							continue;
-					//	print_line("found "+s);
+						//print_line("found "+s);
 						String name = s.get_slice("/",1);
 						result.insert("\"/root/"+name+"\"");
 					}
@@ -1998,10 +2000,10 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 						List<MethodInfo> methods;
 						ClassDB::get_method_list(type,&methods);
 						for(List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
-							//if (E->get().arguments.size())
-							//	result.insert(E->get().name+"(");
-							//else
-							//	result.insert(E->get().name+"()");
+							if (E->get().arguments.size())
+								result.insert(E->get().name+"(");
+							else
+								result.insert(E->get().name+"()");
 						}*/
 					}
 					break;
@@ -2643,6 +2645,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 
 	switch(p.get_completion_type()) {
 
+		case GDParser::COMPLETION_GET_NODE:
 		case GDParser::COMPLETION_NONE: {
 		} break;
 		case GDParser::COMPLETION_BUILT_IN_TYPE_CONSTANT: {
@@ -2832,7 +2835,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 							if (!script.ends_with(".gd")) {
 								//not a script, try find the script anyway,
 								//may have some success
-								script=script.basename()+".gd";
+								script=script.get_basename()+".gd";
 							}
 
 							if (FileAccess::exists(script)) {
@@ -2912,7 +2915,7 @@ Error GDScriptLanguage::lookup_code(const String& p_code, const String& p_symbol
 					Ref<GDNativeClass> gdn = t.value;
 					if (gdn.is_valid()) {
 						r_result.type=ScriptLanguage::LookupResult::RESULT_CLASS_CONSTANT;
-						r_result.class_name=gdn->get_name();;
+						r_result.class_name=gdn->get_name();
 						r_result.class_member=p_symbol;
 						return OK;
 

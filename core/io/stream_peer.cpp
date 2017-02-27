@@ -389,57 +389,57 @@ Variant StreamPeer::get_var(){
 
 void StreamPeer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("put_data","data"),&StreamPeer::_put_data);
-	ClassDB::bind_method(_MD("put_partial_data","data"),&StreamPeer::_put_partial_data);
+	ClassDB::bind_method(D_METHOD("put_data","data"),&StreamPeer::_put_data);
+	ClassDB::bind_method(D_METHOD("put_partial_data","data"),&StreamPeer::_put_partial_data);
 
-	ClassDB::bind_method(_MD("get_data","bytes"),&StreamPeer::_get_data);
-	ClassDB::bind_method(_MD("get_partial_data","bytes"),&StreamPeer::_get_partial_data);
+	ClassDB::bind_method(D_METHOD("get_data","bytes"),&StreamPeer::_get_data);
+	ClassDB::bind_method(D_METHOD("get_partial_data","bytes"),&StreamPeer::_get_partial_data);
 
-	ClassDB::bind_method(_MD("get_available_bytes"),&StreamPeer::get_available_bytes);
+	ClassDB::bind_method(D_METHOD("get_available_bytes"),&StreamPeer::get_available_bytes);
 
-	ClassDB::bind_method(_MD("set_big_endian","enable"),&StreamPeer::set_big_endian);
-	ClassDB::bind_method(_MD("is_big_endian_enabled"),&StreamPeer::is_big_endian_enabled);
+	ClassDB::bind_method(D_METHOD("set_big_endian","enable"),&StreamPeer::set_big_endian);
+	ClassDB::bind_method(D_METHOD("is_big_endian_enabled"),&StreamPeer::is_big_endian_enabled);
 
-	ClassDB::bind_method(_MD("put_8","val"),&StreamPeer::put_8);
-	ClassDB::bind_method(_MD("put_u8","val"),&StreamPeer::put_u8);
-	ClassDB::bind_method(_MD("put_16","val"),&StreamPeer::put_16);
-	ClassDB::bind_method(_MD("put_u16","val"),&StreamPeer::put_u16);
-	ClassDB::bind_method(_MD("put_32","val"),&StreamPeer::put_32);
-	ClassDB::bind_method(_MD("put_u32","val"),&StreamPeer::put_u32);
-	ClassDB::bind_method(_MD("put_64","val"),&StreamPeer::put_64);
-	ClassDB::bind_method(_MD("put_u64","val"),&StreamPeer::put_u64);
-	ClassDB::bind_method(_MD("put_float","val"),&StreamPeer::put_float);
-	ClassDB::bind_method(_MD("put_double","val"),&StreamPeer::put_double);
-	ClassDB::bind_method(_MD("put_utf8_string","val"),&StreamPeer::put_utf8_string);
-	ClassDB::bind_method(_MD("put_var","val:Variant"),&StreamPeer::put_var);
+	ClassDB::bind_method(D_METHOD("put_8","val"),&StreamPeer::put_8);
+	ClassDB::bind_method(D_METHOD("put_u8","val"),&StreamPeer::put_u8);
+	ClassDB::bind_method(D_METHOD("put_16","val"),&StreamPeer::put_16);
+	ClassDB::bind_method(D_METHOD("put_u16","val"),&StreamPeer::put_u16);
+	ClassDB::bind_method(D_METHOD("put_32","val"),&StreamPeer::put_32);
+	ClassDB::bind_method(D_METHOD("put_u32","val"),&StreamPeer::put_u32);
+	ClassDB::bind_method(D_METHOD("put_64","val"),&StreamPeer::put_64);
+	ClassDB::bind_method(D_METHOD("put_u64","val"),&StreamPeer::put_u64);
+	ClassDB::bind_method(D_METHOD("put_float","val"),&StreamPeer::put_float);
+	ClassDB::bind_method(D_METHOD("put_double","val"),&StreamPeer::put_double);
+	ClassDB::bind_method(D_METHOD("put_utf8_string","val"),&StreamPeer::put_utf8_string);
+	ClassDB::bind_method(D_METHOD("put_var","val:Variant"),&StreamPeer::put_var);
 
-	ClassDB::bind_method(_MD("get_8"),&StreamPeer::get_8);
-	ClassDB::bind_method(_MD("get_u8"),&StreamPeer::get_u8);
-	ClassDB::bind_method(_MD("get_16"),&StreamPeer::get_16);
-	ClassDB::bind_method(_MD("get_u16"),&StreamPeer::get_u16);
-	ClassDB::bind_method(_MD("get_32"),&StreamPeer::get_32);
-	ClassDB::bind_method(_MD("get_u32"),&StreamPeer::get_u32);
-	ClassDB::bind_method(_MD("get_64"),&StreamPeer::get_64);
-	ClassDB::bind_method(_MD("get_u64"),&StreamPeer::get_u64);
-	ClassDB::bind_method(_MD("get_float"),&StreamPeer::get_float);
-	ClassDB::bind_method(_MD("get_double"),&StreamPeer::get_double);
-	ClassDB::bind_method(_MD("get_string","bytes"),&StreamPeer::get_string);
-	ClassDB::bind_method(_MD("get_utf8_string","bytes"),&StreamPeer::get_utf8_string);
-	ClassDB::bind_method(_MD("get_var:Variant"),&StreamPeer::get_var);
+	ClassDB::bind_method(D_METHOD("get_8"),&StreamPeer::get_8);
+	ClassDB::bind_method(D_METHOD("get_u8"),&StreamPeer::get_u8);
+	ClassDB::bind_method(D_METHOD("get_16"),&StreamPeer::get_16);
+	ClassDB::bind_method(D_METHOD("get_u16"),&StreamPeer::get_u16);
+	ClassDB::bind_method(D_METHOD("get_32"),&StreamPeer::get_32);
+	ClassDB::bind_method(D_METHOD("get_u32"),&StreamPeer::get_u32);
+	ClassDB::bind_method(D_METHOD("get_64"),&StreamPeer::get_64);
+	ClassDB::bind_method(D_METHOD("get_u64"),&StreamPeer::get_u64);
+	ClassDB::bind_method(D_METHOD("get_float"),&StreamPeer::get_float);
+	ClassDB::bind_method(D_METHOD("get_double"),&StreamPeer::get_double);
+	ClassDB::bind_method(D_METHOD("get_string","bytes"),&StreamPeer::get_string);
+	ClassDB::bind_method(D_METHOD("get_utf8_string","bytes"),&StreamPeer::get_utf8_string);
+	ClassDB::bind_method(D_METHOD("get_var:Variant"),&StreamPeer::get_var);
 }
 ////////////////////////////////
 
 
 void StreamPeerBuffer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("seek","pos"),&StreamPeerBuffer::seek);
-	ClassDB::bind_method(_MD("get_size"),&StreamPeerBuffer::get_size);
-	ClassDB::bind_method(_MD("get_pos"),&StreamPeerBuffer::get_pos);
-	ClassDB::bind_method(_MD("resize","size"),&StreamPeerBuffer::resize);
-	ClassDB::bind_method(_MD("set_data_array","data"),&StreamPeerBuffer::set_data_array);
-	ClassDB::bind_method(_MD("get_data_array"),&StreamPeerBuffer::get_data_array);
-	ClassDB::bind_method(_MD("clear"),&StreamPeerBuffer::clear);
-	ClassDB::bind_method(_MD("duplicate:StreamPeerBuffer"),&StreamPeerBuffer::duplicate);
+	ClassDB::bind_method(D_METHOD("seek","pos"),&StreamPeerBuffer::seek);
+	ClassDB::bind_method(D_METHOD("get_size"),&StreamPeerBuffer::get_size);
+	ClassDB::bind_method(D_METHOD("get_pos"),&StreamPeerBuffer::get_pos);
+	ClassDB::bind_method(D_METHOD("resize","size"),&StreamPeerBuffer::resize);
+	ClassDB::bind_method(D_METHOD("set_data_array","data"),&StreamPeerBuffer::set_data_array);
+	ClassDB::bind_method(D_METHOD("get_data_array"),&StreamPeerBuffer::get_data_array);
+	ClassDB::bind_method(D_METHOD("clear"),&StreamPeerBuffer::clear);
+	ClassDB::bind_method(D_METHOD("duplicate:StreamPeerBuffer"),&StreamPeerBuffer::duplicate);
 
 }
 

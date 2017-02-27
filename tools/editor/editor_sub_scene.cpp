@@ -27,10 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_sub_scene.h"
+
 #include "scene/gui/margin_container.h"
 #include "scene/resources/packed_scene.h"
-void EditorSubScene::_path_selected(const String& p_path) {
 
+void EditorSubScene::_path_selected(const String& p_path) {
 
 	path->set_text(p_path);
 	_path_changed(p_path);
@@ -75,7 +76,7 @@ void EditorSubScene::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (!is_visible()) {
+		if (!is_visible_in_tree()) {
 
 
 		}
@@ -186,9 +187,9 @@ void EditorSubScene::clear() {
 
 void EditorSubScene::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_path_selected"),&EditorSubScene::_path_selected);
-	ClassDB::bind_method(_MD("_path_changed"),&EditorSubScene::_path_changed);
-	ClassDB::bind_method(_MD("_path_browse"),&EditorSubScene::_path_browse);
+	ClassDB::bind_method(D_METHOD("_path_selected"),&EditorSubScene::_path_selected);
+	ClassDB::bind_method(D_METHOD("_path_changed"),&EditorSubScene::_path_changed);
+	ClassDB::bind_method(D_METHOD("_path_browse"),&EditorSubScene::_path_browse);
 	ADD_SIGNAL( MethodInfo("subscene_selected"));
 
 }
@@ -203,7 +204,7 @@ EditorSubScene::EditorSubScene() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+	//set_child_rect(vb);
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	path = memnew( LineEdit );

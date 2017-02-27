@@ -27,9 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "packed_data_container.h"
+
 #include "io/marshalls.h"
 #include "core_string_names.h"
-
 
 
 Variant PackedDataContainer::getvar(const Variant& p_key, bool *r_valid) const {
@@ -239,21 +239,21 @@ uint32_t PackedDataContainer::_pack(const Variant& p_data, Vector<uint8_t>& tmpd
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
-		case Variant::MATRIX32:
+		case Variant::TRANSFORM2D:
 		case Variant::PLANE:
 		case Variant::QUAT:
-		case Variant::_AABB:
-		case Variant::MATRIX3:
+		case Variant::RECT3:
+		case Variant::BASIS:
 		case Variant::TRANSFORM:
 		case Variant::IMAGE:
 		case Variant::INPUT_EVENT:
-		case Variant::RAW_ARRAY:
-		case Variant::INT_ARRAY:
-		case Variant::REAL_ARRAY:
-		case Variant::STRING_ARRAY:
-		case Variant::VECTOR2_ARRAY:
-		case Variant::VECTOR3_ARRAY:
-		case Variant::COLOR_ARRAY:
+		case Variant::POOL_BYTE_ARRAY:
+		case Variant::POOL_INT_ARRAY:
+		case Variant::POOL_REAL_ARRAY:
+		case Variant::POOL_STRING_ARRAY:
+		case Variant::POOL_VECTOR2_ARRAY:
+		case Variant::POOL_VECTOR3_ARRAY:
+		case Variant::POOL_COLOR_ARRAY:
 		case Variant::NODE_PATH: {
 
 			uint32_t pos = tmpdata.size();
@@ -382,15 +382,15 @@ Variant PackedDataContainer::_iter_get(const Variant& p_iter){
 
 void PackedDataContainer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_set_data"),&PackedDataContainer::_set_data);
-	ClassDB::bind_method(_MD("_get_data"),&PackedDataContainer::_get_data);
-	ClassDB::bind_method(_MD("_iter_init"),&PackedDataContainer::_iter_init);
-	ClassDB::bind_method(_MD("_iter_get"),&PackedDataContainer::_iter_get);
-	ClassDB::bind_method(_MD("_iter_next"),&PackedDataContainer::_iter_next);
-	ClassDB::bind_method(_MD("pack:Error","value"),&PackedDataContainer::pack);
-	ClassDB::bind_method(_MD("size"),&PackedDataContainer::size);
+	ClassDB::bind_method(D_METHOD("_set_data"),&PackedDataContainer::_set_data);
+	ClassDB::bind_method(D_METHOD("_get_data"),&PackedDataContainer::_get_data);
+	ClassDB::bind_method(D_METHOD("_iter_init"),&PackedDataContainer::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"),&PackedDataContainer::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"),&PackedDataContainer::_iter_next);
+	ClassDB::bind_method(D_METHOD("pack:Error","value"),&PackedDataContainer::pack);
+	ClassDB::bind_method(D_METHOD("size"),&PackedDataContainer::size);
 
-	ADD_PROPERTY( PropertyInfo(Variant::RAW_ARRAY,"__data__"),_SCS("_set_data"),_SCS("_get_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_BYTE_ARRAY,"__data__"),"_set_data","_get_data");
 }
 
 
@@ -426,11 +426,11 @@ bool PackedDataContainerRef::_is_dictionary() const {
 
 void PackedDataContainerRef::_bind_methods() {
 
-	ClassDB::bind_method(_MD("size"),&PackedDataContainerRef::size);
-	ClassDB::bind_method(_MD("_iter_init"),&PackedDataContainerRef::_iter_init);
-	ClassDB::bind_method(_MD("_iter_get"),&PackedDataContainerRef::_iter_get);
-	ClassDB::bind_method(_MD("_iter_next"),&PackedDataContainerRef::_iter_next);
-	ClassDB::bind_method(_MD("_is_dictionary"),&PackedDataContainerRef::_is_dictionary);
+	ClassDB::bind_method(D_METHOD("size"),&PackedDataContainerRef::size);
+	ClassDB::bind_method(D_METHOD("_iter_init"),&PackedDataContainerRef::_iter_init);
+	ClassDB::bind_method(D_METHOD("_iter_get"),&PackedDataContainerRef::_iter_get);
+	ClassDB::bind_method(D_METHOD("_iter_next"),&PackedDataContainerRef::_iter_next);
+	ClassDB::bind_method(D_METHOD("_is_dictionary"),&PackedDataContainerRef::_is_dictionary);
 }
 
 

@@ -27,10 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "asset_library_editor_plugin.h"
+
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "io/json.h"
-
 
 
 void EditorAssetLibraryItem::configure(const String& p_title,int p_asset_id,const String& p_category,int p_category_id,const String& p_author,int p_author_id,int p_rating,const String& p_cost) {
@@ -147,7 +147,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	vb->add_child(rating_hb);
 
 	for(int i=0;i<5;i++) {
-		stars[i]=memnew(TextureFrame);
+		stars[i]=memnew(TextureRect);
 		rating_hb->add_child(stars[i]);
 	}
 	price = memnew( Label );
@@ -199,9 +199,9 @@ void EditorAssetLibraryItemDescription::set_image(int p_type,int p_index,const R
 }
 
 void EditorAssetLibraryItemDescription::_bind_methods() {
-	ClassDB::bind_method(_MD("set_image"),&EditorAssetLibraryItemDescription::set_image);
-	ClassDB::bind_method(_MD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
-	ClassDB::bind_method(_MD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
+	ClassDB::bind_method(D_METHOD("set_image"),&EditorAssetLibraryItemDescription::set_image);
+	ClassDB::bind_method(D_METHOD("_link_click"),&EditorAssetLibraryItemDescription::_link_click);
+	ClassDB::bind_method(D_METHOD("_preview_click"),&EditorAssetLibraryItemDescription::_preview_click);
 
 }
 
@@ -270,7 +270,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	VBoxContainer *vbox = memnew( VBoxContainer );
 	add_child(vbox);
-	set_child_rect(vbox);
+
 
 
 	HBoxContainer *hbox = memnew( HBoxContainer);
@@ -296,7 +296,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	desc_bg->add_child(description);
 	desc_bg->add_style_override("panel",get_stylebox("normal","TextEdit"));
 
-	preview = memnew( TextureFrame );
+	preview = memnew( TextureRect );
 	preview->set_custom_minimum_size(Size2(640,345));
 	hbox->add_child(preview);
 
@@ -321,7 +321,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
-void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data) {
 
 
 	String error_text;
@@ -485,7 +485,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	HBoxContainer *hb = memnew( HBoxContainer);
 	add_child(hb);
-	icon = memnew( TextureFrame );
+	icon = memnew( TextureRect );
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew( VBoxContainer );
@@ -555,7 +555,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
-		TextureFrame *tf = memnew(TextureFrame);
+		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(get_icon("Error","EditorIcons"));
 		reverse->set_icon(get_icon("Updown","EditorIcons"));
 
@@ -564,7 +564,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-		if(!is_hidden()) {
+		if(is_visible()) {
 			_repository_changed(0); // Update when shown for the first time
 		}
 	}
@@ -574,8 +574,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		HTTPClient::Status s = request->get_http_client_status();
 		bool visible = s!=HTTPClient::STATUS_DISCONNECTED;
 
-		if (visible != !load_status->is_hidden()) {
-			load_status->set_hidden(!visible);
+		if (visible != load_status->is_visible()) {
+			load_status->set_visible(visible);
 		}
 
 		if (visible) {
@@ -599,8 +599,8 @@ void EditorAssetLibrary::_notification(int p_what) {
 		}
 
 		bool no_downloads = downloads_hb->get_child_count()==0;
-		if (no_downloads != downloads_scroll->is_hidden()) {
-			downloads_scroll->set_hidden(no_downloads);
+		if (no_downloads == downloads_scroll->is_visible()) {
+			downloads_scroll->set_visible(!no_downloads);
 		}
 	}
 
@@ -691,12 +691,12 @@ void EditorAssetLibrary::_select_asset(int p_id){
 	description->popup_centered_minsize();*/
 }
 
-void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArray& p_data, int p_queue_id) {
+void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByteArray& p_data, int p_queue_id) {
 	Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 
 	if (obj) {
 		bool image_set = false;
-		ByteArray image_data = p_data;
+		PoolByteArray image_data = p_data;
 		
 		if(use_cache) {
 			String cache_filename_base = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp").plus_file("assetimage_"+image_queue[p_queue_id].image_url.md5_text());
@@ -704,11 +704,11 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 			FileAccess* file = FileAccess::open(cache_filename_base+".data", FileAccess::READ);
 			
 			if(file) {
-				ByteArray cached_data;
+				PoolByteArray cached_data;
 				int len=file->get_32();
 				cached_data.resize(len);
 				
-				ByteArray::Write w=cached_data.write();
+				PoolByteArray::Write w=cached_data.write();
 				file->get_buffer(w.ptr(), len);
 				
 				image_data = cached_data;
@@ -717,7 +717,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 		}
 		
 		int len=image_data.size();
-		ByteArray::Read r=image_data.read();
+		PoolByteArray::Read r=image_data.read();
 		Image image(r.ptr(),len);
 		if (!image.empty()) {
 			float max_height = 10000;
@@ -745,7 +745,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const ByteArr
 	}
 }
 
-void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data,int p_queue_id) {
+void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data,int p_queue_id) {
 
 	ERR_FAIL_COND( !image_queue.has(p_queue_id) );
 
@@ -767,7 +767,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					}
 					
 					int len=p_data.size();
-					ByteArray::Read r=p_data.read();
+					PoolByteArray::Read r=p_data.read();
 					file = FileAccess::open(cache_filename_base+".data", FileAccess::WRITE);
 					if(file) {
 						file->store_32(len);
@@ -789,7 +789,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		}
 	}
 
-	image_queue[p_queue_id].request->queue_delete();;
+	image_queue[p_queue_id].request->queue_delete();
 	image_queue.erase(p_queue_id);
 
 	_update_image_queue();
@@ -855,7 +855,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for,String p_image_url,ImageT
 
 	add_child(iq.request);
 
-	_image_update(true, false, ByteArray(), iq.queue_id);
+	_image_update(true, false, PoolByteArray(), iq.queue_id);
 	_update_image_queue();
 
 
@@ -1021,14 +1021,14 @@ void EditorAssetLibrary::_api_request(const String& p_request, RequestType p_req
 
 
 
-void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data) {
+void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data) {
 
 
 	String str;
 
 	{
 		int datalen=p_data.size();
-		ByteArray::Read r = p_data.read();
+		PoolByteArray::Read r = p_data.read();
 		str.parse_utf8((const char*)r.ptr(),datalen);
 	}
 
@@ -1462,7 +1462,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	library_vb_border->add_child(library_vb);
-//	margin_panel->set_stop_mouse(false);
+	//margin_panel->set_stop_mouse(false);
 
 	asset_top_page = memnew( HBoxContainer );
 	library_vb->add_child(asset_top_page);

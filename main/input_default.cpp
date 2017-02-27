@@ -158,10 +158,10 @@ bool InputDefault::is_action_just_pressed(const StringName& p_action) const {
 	if (!E)
 		return false;
 
-	if (OS::get_singleton()->is_in_fixed_frame()) {
-		return E->get().pressed && E->get().fixed_frame==OS::get_singleton()->get_fixed_frames();
+	if (Engine::get_singleton()->is_in_fixed_frame()) {
+		return E->get().pressed && E->get().fixed_frame==Engine::get_singleton()->get_fixed_frames();
 	} else {
-		return E->get().pressed && E->get().idle_frame==OS::get_singleton()->get_idle_frames();
+		return E->get().pressed && E->get().idle_frame==Engine::get_singleton()->get_idle_frames();
 	}
 }
 
@@ -171,10 +171,10 @@ bool InputDefault::is_action_just_released(const StringName& p_action) const{
 	if (!E)
 		return false;
 
-	if (OS::get_singleton()->is_in_fixed_frame()) {
-		return !E->get().pressed && E->get().fixed_frame==OS::get_singleton()->get_fixed_frames();
+	if (Engine::get_singleton()->is_in_fixed_frame()) {
+		return !E->get().pressed && E->get().fixed_frame==Engine::get_singleton()->get_fixed_frames();
 	} else {
-		return !E->get().pressed && E->get().idle_frame==OS::get_singleton()->get_idle_frames();
+		return !E->get().pressed && E->get().idle_frame==Engine::get_singleton()->get_idle_frames();
 	}
 }
 
@@ -277,6 +277,12 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	emit_signal("joy_connection_changed", p_idx, p_connected);
 };
 
+Vector3 InputDefault::get_gravity() const{
+
+	_THREAD_SAFE_METHOD_
+	return gravity;
+}
+
 Vector3 InputDefault::get_accelerometer() const{
 
 	_THREAD_SAFE_METHOD_
@@ -307,7 +313,7 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 			if (p_event.key.scancode==0)
 				break;
 
-		//	print_line(p_event);
+			//print_line(p_event);
 
 			if (p_event.key.pressed)
 				keys_pressed.insert(p_event.key.scancode);
@@ -375,15 +381,12 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 	if (!p_event.is_echo()) {
 		for (const Map<StringName,InputMap::Action>::Element *E=InputMap::get_singleton()->get_action_map().front();E;E=E->next()) {
 
-			if (InputMap::get_singleton()->event_is_action(p_event,E->key())) {
-
-				if(is_action_pressed(E->key()) != p_event.is_pressed()) {
-					Action action;
-					action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-					action.idle_frame=OS::get_singleton()->get_idle_frames();
-					action.pressed=p_event.is_pressed();
-					action_state[E->key()]=action;
-				}
+			if (InputMap::get_singleton()->event_is_action(p_event,E->key()) && is_action_pressed(E->key()) != p_event.is_pressed()) {
+				Action action;
+				action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+				action.idle_frame=Engine::get_singleton()->get_idle_frames();
+				action.pressed=p_event.is_pressed();
+				action_state[E->key()]=action;
 			}
 		}
 	}
@@ -421,6 +424,14 @@ void InputDefault::stop_joy_vibration(int p_device) {
 	vibration.duration = 0;
 	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
 	joy_vibration[p_device] = vibration;
+}
+
+void InputDefault::set_gravity(const Vector3& p_gravity) {
+
+	_THREAD_SAFE_METHOD_
+
+	gravity=p_gravity;
+
 }
 
 void InputDefault::set_accelerometer(const Vector3& p_accel) {
@@ -465,14 +476,14 @@ Point2 InputDefault::get_mouse_pos() const {
 
 	return mouse_pos;
 }
-Point2 InputDefault::get_mouse_speed() const {
+Point2 InputDefault::get_last_mouse_speed() const {
 
 	return mouse_speed_track.speed;
 }
 
 int InputDefault::get_mouse_button_mask() const {
 
-	return OS::get_singleton()->get_mouse_button_state();
+	return mouse_button_mask;// do not trust OS implementaiton, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
 void InputDefault::warp_mouse_pos(const Vector2& p_to) {
@@ -490,8 +501,8 @@ void InputDefault::action_press(const StringName& p_action) {
 
 	Action action;
 
-	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-	action.idle_frame=OS::get_singleton()->get_idle_frames();
+	action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+	action.idle_frame=Engine::get_singleton()->get_idle_frames();
 	action.pressed=true;
 
 	action_state[p_action]=action;
@@ -502,8 +513,8 @@ void InputDefault::action_release(const StringName& p_action){
 
 	Action action;
 
-	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-	action.idle_frame=OS::get_singleton()->get_idle_frames();
+	action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+	action.idle_frame=Engine::get_singleton()->get_idle_frames();
 	action.pressed=false;
 
 	action_state[p_action]=action;
@@ -554,8 +565,7 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 }
 
 // from github.com/gabomdq/SDL_GameControllerDB
-static const char *s_ControllerMappings [] =
-{
+static const char *s_ControllerMappings [] = {
 	#ifdef WINDOWS_ENABLED
 	"00f00300000000000000504944564944,RetroUSB.com RetroPad,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
 	"00f0f100000000000000504944564944,RetroUSB.com Super RetroPort,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
@@ -1202,6 +1212,15 @@ int InputDefault::get_joy_button_index_from_string(String p_button) {
 		}
 	}
 	ERR_FAIL_V(-1);
+}
+
+int InputDefault::get_unused_joy_id() {
+	for (int i=0;i<JOYPADS_MAX;i++) {
+		if (!joy_names.has(i) || !joy_names[i].connected) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 String InputDefault::get_joy_axis_string(int p_axis) {

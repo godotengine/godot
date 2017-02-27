@@ -26,7 +26,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#if 0
 #include "sample_player_editor_plugin.h"
+
+
 #include "scene/resources/sample_library.h"
 
 
@@ -50,8 +54,8 @@ void SamplePlayerEditor::_node_removed(Node *p_node) {
 
 void SamplePlayerEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_play"),&SamplePlayerEditor::_play);
-	ClassDB::bind_method(_MD("_stop"),&SamplePlayerEditor::_stop);
+	ClassDB::bind_method(D_METHOD("_play"),&SamplePlayerEditor::_play);
+	ClassDB::bind_method(D_METHOD("_stop"),&SamplePlayerEditor::_stop);
 
 }
 
@@ -89,7 +93,7 @@ void SamplePlayerEditor::_update_sample_library() {
 	Ref<SampleLibrary> sl = node->call("get_sample_library");
 	if (sl.is_null()) {
 		samples->add_item("<NO SAMPLE LIBRARY>");
-		return; //no sample library;;
+		return; //no sample library;
 	}
 
 	List<StringName> samplenames;
@@ -196,3 +200,4 @@ SamplePlayerEditorPlugin::~SamplePlayerEditorPlugin()
 }
 
 
+#endif

@@ -26,8 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "editor_log.h"
+
+#include "version.h"
 #include "scene/gui/center_container.h"
 #include "editor_node.h"
 
@@ -44,8 +45,10 @@ void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_fil
 		err_str=String(p_file)+":"+itos(p_line)+" - "+String(p_error);
 	}
 
-//	if (!self->is_visible())
-//		self->emit_signal("show_request");
+	/*
+	if (!self->is_visible_in_tree())
+		self->emit_signal("show_request");
+	*/
 
 	err_str=" "+err_str;
 	self->log->add_newline();
@@ -129,7 +132,7 @@ void EditorLog::add_message(const String& p_msg,bool p_error) {
 
 	log->add_newline();
 	log->add_text(p_msg);
-//	button->set_text(p_msg);
+	//button->set_text(p_msg);
 
 	if (p_error)
 		log->pop();
@@ -164,9 +167,9 @@ void EditorLog::_undo_redo_cbk(void *p_self,const String& p_name) {
 
 void EditorLog::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_clear_request"),&EditorLog::_clear_request );
+	ClassDB::bind_method(D_METHOD("_clear_request"),&EditorLog::_clear_request );
 	ClassDB::bind_method("_override_logger_styles",&EditorLog::_override_logger_styles );
-	//ClassDB::bind_method(_MD("_dragged"),&EditorLog::_dragged );
+	//ClassDB::bind_method(D_METHOD("_dragged"),&EditorLog::_dragged );
 	ADD_SIGNAL( MethodInfo("clear_request"));
 }
 
@@ -200,7 +203,7 @@ EditorLog::EditorLog() {
 	pc = memnew( PanelContainer );
 	ec->add_child(pc);
 	pc->set_area_as_parent_rect();
-	pc->connect("enter_tree", this, "_override_logger_styles");
+	pc->connect("tree_entered", this, "_override_logger_styles");
 
 	log = memnew( RichTextLabel );
 	log->set_scroll_follow(true);

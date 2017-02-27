@@ -27,11 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_translation_import_plugin.h"
+
+#if 0
 #include "scene/gui/file_dialog.h"
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/property_editor.h"
-#include "scene/resources/sample.h"
+//#include "scene/resources/sample.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "translation.h"
@@ -255,7 +257,7 @@ public:
 			imd->set_option("skip_first",ignore_first->is_pressed());
 			imd->set_option("compress",compress->is_pressed());
 
-			String savefile = save_path->get_text().plus_file(import_path->get_text().get_file().basename()+"."+locale+".xl");
+			String savefile = save_path->get_text().plus_file(import_path->get_text().get_file().get_basename()+"."+locale+".xl");
 			Error err = plugin->import(savefile,imd);
 			if (err!=OK) {
 				error_dialog->set_text(TTR("Couldn't import!"));
@@ -287,7 +289,7 @@ public:
 		ClassDB::bind_method("_import",&EditorTranslationImportDialog::_import);
 		ClassDB::bind_method("_browse",&EditorTranslationImportDialog::_browse);
 		ClassDB::bind_method("_browse_target",&EditorTranslationImportDialog::_browse_target);
-	//	ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
+		//ADD_SIGNAL( MethodInfo("imported",PropertyInfo(Variant::OBJECT,"scene")) );
 	}
 
 	EditorTranslationImportDialog(EditorTranslationImportPlugin *p_plugin) {
@@ -299,7 +301,7 @@ public:
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
-		set_child_rect(vbc);
+		//set_child_rect(vbc);
 
 
 
@@ -344,7 +346,7 @@ public:
 
 		add_to_project = memnew( CheckButton);
 		add_to_project->set_pressed(true);
-		add_to_project->set_text(TTR("Add to Project (engine.cfg)"));
+		add_to_project->set_text(TTR("Add to Project (godot.cfg)"));
 		tcomp->add_child(add_to_project);
 
 		file_select = memnew(EditorFileDialog);
@@ -356,7 +358,7 @@ public:
 		save_select = memnew(	EditorDirDialog );
 		add_child(save_select);
 
-	//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
+		//save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
@@ -366,7 +368,7 @@ public:
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
 		error_dialog->get_ok()->set_text(TTR("Accept"));
-	//	error_dialog->get_cancel()->hide();
+		//error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
 
@@ -400,7 +402,7 @@ void EditorTranslationImportPlugin::import_from_drop(const Vector<String>& p_dro
 
 
 	for(int i=0;i<p_drop.size();i++) {
-		String ext = p_drop[i].extension().to_lower();
+		String ext = p_drop[i].get_extension().to_lower();
 
 		if (ext=="csv") {
 
@@ -473,3 +475,5 @@ EditorTranslationImportPlugin::EditorTranslationImportPlugin(EditorNode* p_edito
 	dialog = memnew(EditorTranslationImportDialog(this));
 	p_editor->get_gui_base()->add_child(dialog);
 }
+
+#endif

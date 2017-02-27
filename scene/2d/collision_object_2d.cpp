@@ -196,7 +196,7 @@ void CollisionObject2D::_mouse_enter() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
 }
 
 
@@ -205,14 +205,14 @@ void CollisionObject2D::_mouse_exit() {
 	if (get_script_instance()) {
 		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
 	}
-	emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
 
 }
 
 void CollisionObject2D::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = this->pickable && is_inside_tree() && is_visible();
+	bool pickable = this->pickable && is_inside_tree() && is_visible_in_tree();
 	if (area)
 		Physics2DServer::get_singleton()->area_set_pickable(rid,pickable);
 	else
@@ -221,35 +221,35 @@ void CollisionObject2D::_update_pickable() {
 
 void CollisionObject2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("add_shape","shape:Shape2D","transform"),&CollisionObject2D::add_shape,DEFVAL(Matrix32()));
-	ClassDB::bind_method(_MD("get_shape_count"),&CollisionObject2D::get_shape_count);
-	ClassDB::bind_method(_MD("set_shape","shape_idx","shape:Shape"),&CollisionObject2D::set_shape);
-	ClassDB::bind_method(_MD("set_shape_transform","shape_idx","transform"),&CollisionObject2D::set_shape_transform);
-	ClassDB::bind_method(_MD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject2D::set_shape_as_trigger);
-	ClassDB::bind_method(_MD("get_shape:Shape2D","shape_idx"),&CollisionObject2D::get_shape);
-	ClassDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject2D::get_shape_transform);
-	ClassDB::bind_method(_MD("is_shape_set_as_trigger","shape_idx"),&CollisionObject2D::is_shape_set_as_trigger);
-	ClassDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject2D::remove_shape);
-	ClassDB::bind_method(_MD("clear_shapes"),&CollisionObject2D::clear_shapes);
-	ClassDB::bind_method(_MD("get_rid"),&CollisionObject2D::get_rid);
+	ClassDB::bind_method(D_METHOD("add_shape","shape:Shape2D","transform"),&CollisionObject2D::add_shape,DEFVAL(Transform2D()));
+	ClassDB::bind_method(D_METHOD("get_shape_count"),&CollisionObject2D::get_shape_count);
+	ClassDB::bind_method(D_METHOD("set_shape","shape_idx","shape:Shape"),&CollisionObject2D::set_shape);
+	ClassDB::bind_method(D_METHOD("set_shape_transform","shape_idx","transform"),&CollisionObject2D::set_shape_transform);
+	ClassDB::bind_method(D_METHOD("set_shape_as_trigger","shape_idx","enable"),&CollisionObject2D::set_shape_as_trigger);
+	ClassDB::bind_method(D_METHOD("get_shape:Shape2D","shape_idx"),&CollisionObject2D::get_shape);
+	ClassDB::bind_method(D_METHOD("get_shape_transform","shape_idx"),&CollisionObject2D::get_shape_transform);
+	ClassDB::bind_method(D_METHOD("is_shape_set_as_trigger","shape_idx"),&CollisionObject2D::is_shape_set_as_trigger);
+	ClassDB::bind_method(D_METHOD("remove_shape","shape_idx"),&CollisionObject2D::remove_shape);
+	ClassDB::bind_method(D_METHOD("clear_shapes"),&CollisionObject2D::clear_shapes);
+	ClassDB::bind_method(D_METHOD("get_rid"),&CollisionObject2D::get_rid);
 
-	ClassDB::bind_method(_MD("set_pickable","enabled"),&CollisionObject2D::set_pickable);
-	ClassDB::bind_method(_MD("is_pickable"),&CollisionObject2D::is_pickable);
+	ClassDB::bind_method(D_METHOD("set_pickable","enabled"),&CollisionObject2D::set_pickable);
+	ClassDB::bind_method(D_METHOD("is_pickable"),&CollisionObject2D::is_pickable);
 
 	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"viewport"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::INT,"shape_idx")));
 
 	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::OBJECT,"viewport"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::INT,"shape_idx")));
-	ADD_SIGNAL( MethodInfo("mouse_enter"));
-	ADD_SIGNAL( MethodInfo("mouse_exit"));
+	ADD_SIGNAL( MethodInfo("mouse_entered"));
+	ADD_SIGNAL( MethodInfo("mouse_exited"));
 
 	ADD_GROUP("Pickable","input_");
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_pickable"),_SCS("set_pickable"),_SCS("is_pickable"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input_pickable"),"set_pickable","is_pickable");
 	ADD_GROUP("","");
 
 }
 
 
-void CollisionObject2D::add_shape(const Ref<Shape2D>& p_shape, const Matrix32& p_transform) {
+void CollisionObject2D::add_shape(const Ref<Shape2D>& p_shape, const Transform2D& p_transform) {
 
 	ERR_FAIL_COND(p_shape.is_null());
 
@@ -282,10 +282,10 @@ void CollisionObject2D::set_shape(int p_shape_idx, const Ref<Shape2D>& p_shape) 
 	else
 		Physics2DServer::get_singleton()->body_set_shape(get_rid(),p_shape_idx,p_shape->get_rid());
 
-//	_update_shapes();
+	//_update_shapes();
 }
 
-void CollisionObject2D::set_shape_transform(int p_shape_idx, const Matrix32& p_transform) {
+void CollisionObject2D::set_shape_transform(int p_shape_idx, const Transform2D& p_transform) {
 
 	ERR_FAIL_INDEX(p_shape_idx,shapes.size());
 	shapes[p_shape_idx].xform=p_transform;
@@ -295,7 +295,7 @@ void CollisionObject2D::set_shape_transform(int p_shape_idx, const Matrix32& p_t
 	else
 		Physics2DServer::get_singleton()->body_set_shape_transform(get_rid(),p_shape_idx,p_transform);
 
-//	_update_shapes();
+	//_update_shapes();
 }
 
 Ref<Shape2D> CollisionObject2D::get_shape(int p_shape_idx) const {
@@ -304,9 +304,9 @@ Ref<Shape2D> CollisionObject2D::get_shape(int p_shape_idx) const {
 	return shapes[p_shape_idx].shape;
 
 }
-Matrix32 CollisionObject2D::get_shape_transform(int p_shape_idx) const {
+Transform2D CollisionObject2D::get_shape_transform(int p_shape_idx) const {
 
-	ERR_FAIL_INDEX_V(p_shape_idx,shapes.size(),Matrix32());
+	ERR_FAIL_INDEX_V(p_shape_idx,shapes.size(),Transform2D());
 	return shapes[p_shape_idx].xform;
 
 }
@@ -348,6 +348,8 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 	rid=p_rid;
 	area=p_area;
 	pickable=true;
+	set_notify_transform(true);
+
 	if (p_area) {
 
 		Physics2DServer::get_singleton()->area_attach_object_instance_ID(rid,get_instance_ID());
@@ -363,6 +365,7 @@ CollisionObject2D::CollisionObject2D() {
 
 
 	//owner=
+	set_notify_transform(true);
 
 
 }

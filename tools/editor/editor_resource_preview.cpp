@@ -27,11 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_resource_preview.h"
+
 #include "editor_settings.h"
 #include "os/file_access.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_scale.h"
 #include "message_queue.h"
 
@@ -378,11 +379,11 @@ void EditorResourcePreview::_bind_methods() {
 
 	ClassDB::bind_method("_preview_ready",&EditorResourcePreview::_preview_ready);
 
-	ClassDB::bind_method(_MD("queue_resource_preview","path","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_resource_preview);
-	ClassDB::bind_method(_MD("queue_edited_resource_preview","resource:Resource","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_edited_resource_preview);
-	ClassDB::bind_method(_MD("add_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::add_preview_generator);
-	ClassDB::bind_method(_MD("remove_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::remove_preview_generator);
-	ClassDB::bind_method(_MD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
+	ClassDB::bind_method(D_METHOD("queue_resource_preview","path","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_resource_preview);
+	ClassDB::bind_method(D_METHOD("queue_edited_resource_preview","resource:Resource","receiver","receiver_func","userdata:Variant"),&EditorResourcePreview::queue_edited_resource_preview);
+	ClassDB::bind_method(D_METHOD("add_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::add_preview_generator);
+	ClassDB::bind_method(D_METHOD("remove_preview_generator","generator:EditorResourcePreviewGenerator"),&EditorResourcePreview::remove_preview_generator);
+	ClassDB::bind_method(D_METHOD("check_for_invalidation","path"),&EditorResourcePreview::check_for_invalidation);
 
 
 	ADD_SIGNAL(MethodInfo("preview_invalidated",PropertyInfo(Variant::STRING,"path")));

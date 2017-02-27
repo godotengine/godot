@@ -562,7 +562,7 @@ JavaObject::~JavaObject(){
 
 void JavaClassWrapper::_bind_methods() {
 
-	ClassDB::bind_method(_MD("wrap:JavaClass","name"),&JavaClassWrapper::wrap);
+	ClassDB::bind_method(D_METHOD("wrap:JavaClass","name"),&JavaClassWrapper::wrap);
 }
 
 
@@ -1240,7 +1240,7 @@ Ref<JavaClass> JavaClassWrapper::wrap(const String& p_class) {
 
 
 		//args[i] = _jobject_to_variant(env, obj);
-//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
+		//print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 
 	};
 

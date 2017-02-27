@@ -582,6 +582,7 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String& p_code, 
 
 	used_name_defines.clear();
 	used_rmode_defines.clear();
+	used_flag_pointers.clear();
 
 	_dump_node_code(parser.get_shader(),1,r_gen_code,*p_actions,actions[p_mode]);
 
@@ -676,7 +677,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["AO"]="ao";
 	actions[VS::SHADER_SPATIAL].renames["EMISSION"]="emission";
 	actions[VS::SHADER_SPATIAL].renames["DISCARD"]="_discard";
-//	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
+	//actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"]="gl_PointCoord";
 
 

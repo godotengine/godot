@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_debugger_local.h"
+
 #include "os/os.h"
 
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
@@ -286,7 +287,7 @@ void ScriptDebuggerLocal::profiling_end() {
 	for(int i=0;i<ofs;i++) {
 
 		print_line(itos(i)+":"+pinfo[i].signature);
-		float tt=USEC_TO_SEC(pinfo[i].total_time);;
+		float tt=USEC_TO_SEC(pinfo[i].total_time);
 		float st=USEC_TO_SEC(pinfo[i].self_time);
 		print_line("\ttotal_ms: "+rtos(tt)+"\tself_ms: "+rtos(st)+"total%: "+itos(tt*100/total_time)+"\tself%: "+itos(st*100/total_time)+"\tcalls: "+itos(pinfo[i].call_count));
 	}

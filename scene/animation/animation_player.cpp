@@ -36,7 +36,7 @@ bool AnimationPlayer::_set(const StringName& p_name, const Variant& p_value) {
 	String name=p_name;
 
 	if (p_name==SceneStringNames::get_singleton()->playback_speed || p_name==SceneStringNames::get_singleton()->speed) { //bw compatibility
-		set_speed(p_value);
+		set_speed_scale(p_value);
 
 	} else if (p_name==SceneStringNames::get_singleton()->playback_active) {
 		set_active(p_value);
@@ -118,17 +118,20 @@ bool AnimationPlayer::_get(const StringName& p_name,Variant &r_ret) const {
 
 	} else if (name=="blend_times") {
 
-		Array array;
-
-		array.resize(blend_times.size()*3);
-		int idx=0;
+		Vector<BlendKey> keys;
 		for(Map<BlendKey, float >::Element *E=blend_times.front();E;E=E->next()) {
 
-			array.set(idx*3+0,E->key().from);
-			array.set(idx*3+1,E->key().to);
-			array.set(idx*3+2,E->get());
-			idx++;
+			keys.ordered_insert(E->key());
 		}
+
+		Array array;
+		for(int i=0;i<keys.size();i++) {
+
+			array.push_back(keys[i].from);
+			array.push_back(keys[i].to);
+			array.push_back(blend_times[keys[i]]);
+		}
+
 		r_ret=array;
 	} else if (name=="autoplay") {
 		r_ret=autoplay;
@@ -214,14 +217,14 @@ void AnimationPlayer::_notification(int p_what) {
 				set_autoplay(""); //this line is the fix for autoplay issues with animatio
 			}
 		} break;
-		case NOTIFICATION_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (animation_process_mode==ANIMATION_PROCESS_FIXED)
 				break;
 
 			if (processing)
 				_animation_process( get_process_delta_time() );
 		} break;
-		case NOTIFICATION_FIXED_PROCESS: {
+		case NOTIFICATION_INTERNAL_FIXED_PROCESS: {
 
 			if (animation_process_mode==ANIMATION_PROCESS_IDLE)
 				break;
@@ -269,8 +272,8 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 		}
 
 		{
-			if (!child->is_connected("exit_tree",this,"_node_removed"))
-				child->connect("exit_tree",this,"_node_removed",make_binds(child),CONNECT_ONESHOT);
+			if (!child->is_connected("tree_exited",this,"_node_removed"))
+				child->connect("tree_exited",this,"_node_removed",make_binds(child),CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -426,8 +429,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 
 					Variant value=a->value_track_interpolate(i,p_time);
 					//thanks to trigger mode, this should be solved now..
-					//if (p_delta==0 && value.get_type()==Variant::STRING)
-					//	continue; // doing this with strings is messy, should find another way
+					/*
+					if (p_delta==0 && value.get_type()==Variant::STRING)
+						continue; // doing this with strings is messy, should find another way
+					*/
 					if (pa->accum_pass!=accum_pass) {
 						ERR_CONTINUE( cache_update_prop_size >= NODE_CACHE_UPDATE_MAX );
 						cache_update_prop[cache_update_prop_size++]=pa;
@@ -474,7 +479,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 								}
 #endif
 
-								static_cast<Node2D*>(pa->object)->set_rotation(Math::deg2rad(value));
+								static_cast<Node2D*>(pa->object)->set_rotation(Math::deg2rad((double)value));
 							} break;
 							case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
@@ -583,35 +588,26 @@ void AnimationPlayer::_animation_process2(float p_delta) {
 
 	Playback &c=playback;
 
-	float prev_blend=1.0;
 	accum_pass++;
 
-	int pop_count=1;
-	int pop=0; // if >0, then amount of elements to pop from the back
+	_animation_process_data(c.current,p_delta,1.0f);
 
-
-	for (List<Blend>::Element *E=c.blend.back();E;E=E->prev(),pop_count++) {
+	List<Blend>::Element *prev = NULL;
+	for (List<Blend>::Element *E=c.blend.back();E;E=prev) {
 
 		Blend& b=E->get();
-		_animation_process_data(b.data,p_delta,prev_blend);
-
-		prev_blend=1.0-b.blend_left/b.blend_time;
+		float blend=b.blend_left/b.blend_time;
+		_animation_process_data(b.data,p_delta,blend);
 
 		b.blend_left-=Math::absf(speed_scale*p_delta);
 
+		prev = E->prev();
 		if (b.blend_left<0) {
 
-			pop=pop_count;
+			c.blend.erase(E);
 		}
 	}
-
-	while(pop--) {
-
-		c.blend.pop_back();
-	}
-
-
-	_animation_process_data(c.current,p_delta,prev_blend);
+	
 
 }
 
@@ -688,7 +684,7 @@ void AnimationPlayer::_animation_update_transforms() {
 				}
 #endif
 
-				static_cast<Node2D*>(pa->object)->set_rotation(Math::deg2rad(pa->value_accum));
+				static_cast<Node2D*>(pa->object)->set_rotation(Math::deg2rad((double)pa->value_accum));
 			} break;
 			case SP_NODE2D_SCALE: {
 #ifdef DEBUG_ENABLED
@@ -713,7 +709,7 @@ void AnimationPlayer::_animation_process(float p_delta) {
 
 
 
-//	bool any_active=false;
+	//bool any_active=false;
 
 	if (playback.current.from) {
 
@@ -853,7 +849,7 @@ void AnimationPlayer::rename_animation(const StringName& p_name,const StringName
 	while(to_erase.size()) {
 
 		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();;
+		to_erase.pop_front();
 	}
 
 	while(to_insert.size()) {
@@ -1082,13 +1078,13 @@ void AnimationPlayer::stop_all() {
 
 }
 
-void AnimationPlayer::set_speed(float p_speed) {
+void AnimationPlayer::set_speed_scale(float p_speed) {
 
 	speed_scale=p_speed;
 
 
 }
-float AnimationPlayer::get_speed() const {
+float AnimationPlayer::get_speed_scale() const {
 
 	return speed_scale;
 }
@@ -1231,8 +1227,8 @@ void AnimationPlayer::_set_process(bool p_process,bool p_force) {
 
 	switch(animation_process_mode) {
 
-		case ANIMATION_PROCESS_FIXED: set_fixed_process(p_process && active); break;
-		case ANIMATION_PROCESS_IDLE: set_process(p_process && active); break;
+		case ANIMATION_PROCESS_FIXED: set_fixed_process_internal(p_process && active); break;
+		case ANIMATION_PROCESS_IDLE: set_process_internal(p_process && active); break;
 	}
 
 	processing=p_process;
@@ -1291,67 +1287,67 @@ void AnimationPlayer::get_argument_options(const StringName& p_function,int p_id
 
 void AnimationPlayer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_node_removed"),&AnimationPlayer::_node_removed);
-	ClassDB::bind_method(_MD("_animation_changed"),&AnimationPlayer::_animation_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&AnimationPlayer::_node_removed);
+	ClassDB::bind_method(D_METHOD("_animation_changed"),&AnimationPlayer::_animation_changed);
 
-	ClassDB::bind_method(_MD("add_animation","name","animation:Animation"),&AnimationPlayer::add_animation);
-	ClassDB::bind_method(_MD("remove_animation","name"),&AnimationPlayer::remove_animation);
-	ClassDB::bind_method(_MD("rename_animation","name","newname"),&AnimationPlayer::rename_animation);
-	ClassDB::bind_method(_MD("has_animation","name"),&AnimationPlayer::has_animation);
-	ClassDB::bind_method(_MD("get_animation:Animation","name"),&AnimationPlayer::get_animation);
-	ClassDB::bind_method(_MD("get_animation_list"),&AnimationPlayer::_get_animation_list);
+	ClassDB::bind_method(D_METHOD("add_animation","name","animation:Animation"),&AnimationPlayer::add_animation);
+	ClassDB::bind_method(D_METHOD("remove_animation","name"),&AnimationPlayer::remove_animation);
+	ClassDB::bind_method(D_METHOD("rename_animation","name","newname"),&AnimationPlayer::rename_animation);
+	ClassDB::bind_method(D_METHOD("has_animation","name"),&AnimationPlayer::has_animation);
+	ClassDB::bind_method(D_METHOD("get_animation:Animation","name"),&AnimationPlayer::get_animation);
+	ClassDB::bind_method(D_METHOD("get_animation_list"),&AnimationPlayer::_get_animation_list);
 
-	ClassDB::bind_method(_MD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
-	ClassDB::bind_method(_MD("animation_get_next", "anim_from"), &AnimationPlayer::animation_get_next);
+	ClassDB::bind_method(D_METHOD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
+	ClassDB::bind_method(D_METHOD("animation_get_next", "anim_from"), &AnimationPlayer::animation_get_next);
 
-	ClassDB::bind_method(_MD("set_blend_time","anim_from","anim_to","sec"),&AnimationPlayer::set_blend_time);
-	ClassDB::bind_method(_MD("get_blend_time","anim_from","anim_to"),&AnimationPlayer::get_blend_time);
+	ClassDB::bind_method(D_METHOD("set_blend_time","anim_from","anim_to","sec"),&AnimationPlayer::set_blend_time);
+	ClassDB::bind_method(D_METHOD("get_blend_time","anim_from","anim_to"),&AnimationPlayer::get_blend_time);
 
-	ClassDB::bind_method(_MD("set_default_blend_time","sec"),&AnimationPlayer::set_default_blend_time);
-	ClassDB::bind_method(_MD("get_default_blend_time"),&AnimationPlayer::get_default_blend_time);
+	ClassDB::bind_method(D_METHOD("set_default_blend_time","sec"),&AnimationPlayer::set_default_blend_time);
+	ClassDB::bind_method(D_METHOD("get_default_blend_time"),&AnimationPlayer::get_default_blend_time);
 
-	ClassDB::bind_method(_MD("play","name","custom_blend","custom_speed","from_end"),&AnimationPlayer::play,DEFVAL(""),DEFVAL(-1),DEFVAL(1.0),DEFVAL(false));
-	ClassDB::bind_method(_MD("play_backwards","name","custom_blend"),&AnimationPlayer::play_backwards,DEFVAL(""),DEFVAL(-1));
-	ClassDB::bind_method(_MD("stop","reset"),&AnimationPlayer::stop,DEFVAL(true));
-	ClassDB::bind_method(_MD("stop_all"),&AnimationPlayer::stop_all);
-	ClassDB::bind_method(_MD("is_playing"),&AnimationPlayer::is_playing);
-	ClassDB::bind_method(_MD("set_current_animation","anim"),&AnimationPlayer::set_current_animation);
-	ClassDB::bind_method(_MD("get_current_animation"),&AnimationPlayer::get_current_animation);
-	ClassDB::bind_method(_MD("queue","name"),&AnimationPlayer::queue);
-	ClassDB::bind_method(_MD("clear_queue"),&AnimationPlayer::clear_queue);
+	ClassDB::bind_method(D_METHOD("play","name","custom_blend","custom_speed","from_end"),&AnimationPlayer::play,DEFVAL(""),DEFVAL(-1),DEFVAL(1.0),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play_backwards","name","custom_blend"),&AnimationPlayer::play_backwards,DEFVAL(""),DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("stop","reset"),&AnimationPlayer::stop,DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("stop_all"),&AnimationPlayer::stop_all);
+	ClassDB::bind_method(D_METHOD("is_playing"),&AnimationPlayer::is_playing);
+	ClassDB::bind_method(D_METHOD("set_current_animation","anim"),&AnimationPlayer::set_current_animation);
+	ClassDB::bind_method(D_METHOD("get_current_animation"),&AnimationPlayer::get_current_animation);
+	ClassDB::bind_method(D_METHOD("queue","name"),&AnimationPlayer::queue);
+	ClassDB::bind_method(D_METHOD("clear_queue"),&AnimationPlayer::clear_queue);
 
-	ClassDB::bind_method(_MD("set_active","active"),&AnimationPlayer::set_active);
-	ClassDB::bind_method(_MD("is_active"),&AnimationPlayer::is_active);
+	ClassDB::bind_method(D_METHOD("set_active","active"),&AnimationPlayer::set_active);
+	ClassDB::bind_method(D_METHOD("is_active"),&AnimationPlayer::is_active);
 
-	ClassDB::bind_method(_MD("set_speed","speed"),&AnimationPlayer::set_speed);
-	ClassDB::bind_method(_MD("get_speed"),&AnimationPlayer::get_speed);
+	ClassDB::bind_method(D_METHOD("set_speed_scale","speed"),&AnimationPlayer::set_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_speed_scale"),&AnimationPlayer::get_speed_scale);
 
-	ClassDB::bind_method(_MD("set_autoplay","name"),&AnimationPlayer::set_autoplay);
-	ClassDB::bind_method(_MD("get_autoplay"),&AnimationPlayer::get_autoplay);
+	ClassDB::bind_method(D_METHOD("set_autoplay","name"),&AnimationPlayer::set_autoplay);
+	ClassDB::bind_method(D_METHOD("get_autoplay"),&AnimationPlayer::get_autoplay);
 
-	ClassDB::bind_method(_MD("set_root","path"),&AnimationPlayer::set_root);
-	ClassDB::bind_method(_MD("get_root"),&AnimationPlayer::get_root);
+	ClassDB::bind_method(D_METHOD("set_root","path"),&AnimationPlayer::set_root);
+	ClassDB::bind_method(D_METHOD("get_root"),&AnimationPlayer::get_root);
 
-	ClassDB::bind_method(_MD("seek","pos_sec","update"),&AnimationPlayer::seek,DEFVAL(false));
-	ClassDB::bind_method(_MD("get_pos"),&AnimationPlayer::get_current_animation_pos);
+	ClassDB::bind_method(D_METHOD("seek","pos_sec","update"),&AnimationPlayer::seek,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_pos"),&AnimationPlayer::get_current_animation_pos);
 
-	ClassDB::bind_method(_MD("find_animation","animation:Animation"),&AnimationPlayer::find_animation);
+	ClassDB::bind_method(D_METHOD("find_animation","animation:Animation"),&AnimationPlayer::find_animation);
 
-	ClassDB::bind_method(_MD("clear_caches"),&AnimationPlayer::clear_caches);
+	ClassDB::bind_method(D_METHOD("clear_caches"),&AnimationPlayer::clear_caches);
 
-	ClassDB::bind_method(_MD("set_animation_process_mode","mode"),&AnimationPlayer::set_animation_process_mode);
-	ClassDB::bind_method(_MD("get_animation_process_mode"),&AnimationPlayer::get_animation_process_mode);
+	ClassDB::bind_method(D_METHOD("set_animation_process_mode","mode"),&AnimationPlayer::set_animation_process_mode);
+	ClassDB::bind_method(D_METHOD("get_animation_process_mode"),&AnimationPlayer::get_animation_process_mode);
 
-	ClassDB::bind_method(_MD("get_current_animation_pos"),&AnimationPlayer::get_current_animation_pos);
-	ClassDB::bind_method(_MD("get_current_animation_length"),&AnimationPlayer::get_current_animation_length);
+	ClassDB::bind_method(D_METHOD("get_current_animation_pos"),&AnimationPlayer::get_current_animation_pos);
+	ClassDB::bind_method(D_METHOD("get_current_animation_length"),&AnimationPlayer::get_current_animation_length);
 
-	ClassDB::bind_method(_MD("advance","delta"),&AnimationPlayer::advance);
+	ClassDB::bind_method(D_METHOD("advance","delta"),&AnimationPlayer::advance);
 
 
 	ADD_GROUP("Playback","playback_");
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), _SCS("set_default_blend_time"), _SCS("get_default_blend_time"));
-	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "root_node"), _SCS("set_root"), _SCS("get_root"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_animation_process_mode", "get_animation_process_mode");
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01"), "set_default_blend_time", "get_default_blend_time");
+	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "root_node"), "set_root", "get_root");
 
 	ADD_SIGNAL( MethodInfo("animation_finished", PropertyInfo(Variant::STRING,"name")) );
 	ADD_SIGNAL( MethodInfo("animation_changed", PropertyInfo(Variant::STRING,"old_name"), PropertyInfo(Variant::STRING,"new_name")) );

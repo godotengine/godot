@@ -153,8 +153,8 @@ public:
 	void set_priority(real_t p_priority);
 	real_t get_priority() const;
 
-	void set_enable_monitoring(bool p_enable);
-	bool is_monitoring_enabled() const;
+	void set_monitoring(bool p_enable);
+	bool is_monitoring() const;
 
 	void set_monitorable(bool p_enable);
 	bool is_monitorable() const;

@@ -103,7 +103,7 @@ class Curve2D : public Resource {
 	};
 
 	mutable bool baked_cache_dirty;
-	mutable Vector2Array baked_point_cache;
+	mutable PoolVector2Array baked_point_cache;
 	mutable float baked_max_ofs;
 
 
@@ -145,9 +145,9 @@ public:
 
 	float get_baked_length() const;
 	Vector2 interpolate_baked(float p_offset,bool p_cubic=false) const;
-	Vector2Array get_baked_points() const; //useful for going thru
+	PoolVector2Array get_baked_points() const; //useful for going thru
 
-	Vector2Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
+	PoolVector2Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
 
 
 	Curve2D();
@@ -179,8 +179,8 @@ class Curve3D : public Resource {
 	};
 
 	mutable bool baked_cache_dirty;
-	mutable Vector3Array baked_point_cache;
-	mutable RealArray baked_tilt_cache;
+	mutable PoolVector3Array baked_point_cache;
+	mutable PoolRealArray baked_tilt_cache;
 	mutable float baked_max_ofs;
 
 
@@ -225,10 +225,10 @@ public:
 	float get_baked_length() const;
 	Vector3 interpolate_baked(float p_offset,bool p_cubic=false) const;
 	float interpolate_baked_tilt(float p_offset) const;
-	Vector3Array get_baked_points() const; //useful for going thru
-	RealArray get_baked_tilts() const; //useful for going thru
+	PoolVector3Array get_baked_points() const; //useful for going thru
+	PoolRealArray get_baked_tilts() const; //useful for going thru
 
-	Vector3Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
+	PoolVector3Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
 
 
 	Curve3D();

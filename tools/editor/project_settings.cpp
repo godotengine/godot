@@ -27,8 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "project_settings.h"
+
 #include "scene/gui/tab_container.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/keyboard.h"
 #include "editor_node.h"
 #include "scene/gui/margin_container.h"
@@ -241,7 +242,7 @@ void ProjectSettings::_device_input_add() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
-	_show_last_added(ie);
+	_show_last_added(ie, name);
 }
 
 
@@ -278,12 +279,14 @@ void ProjectSettings::_press_a_key_confirm() {
 	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
-	_show_last_added(ie);
+	_show_last_added(ie, name);
 }
 
-void ProjectSettings::_show_last_added(const InputEvent& p_event) {
+void ProjectSettings::_show_last_added(const InputEvent& p_event, const String &p_name) {
 	TreeItem *r = input_editor->get_root();
 
+	String name = p_name;
+	name.erase(0,6);
 	if (!r)
 		return;
 	r=r->get_children();
@@ -291,6 +294,10 @@ void ProjectSettings::_show_last_added(const InputEvent& p_event) {
 		return;
 	bool found = false;
 	while(r){
+		if (r->get_text(0) != name) {
+			r=r->get_next();
+			continue;
+		}
 		TreeItem *child = r->get_children();
 		while(child){
 			Variant input = child->get_meta("__input");
@@ -376,7 +383,7 @@ void ProjectSettings::_add_item(int p_item){
 		} break;
 		case InputEvent::JOYPAD_BUTTON: {
 
-			device_id->set_value(3);
+			device_id->set_value(0);
 			device_index_label->set_text(TTR("Joypad Button Index:"));
 			device_index->clear();
 
@@ -779,7 +786,7 @@ void ProjectSettings::_copy_to_platform(int p_which) {
 	String name = catname+"/"+propname;
 	Variant value=GlobalConfig::get_singleton()->get(name);
 
-	catname+="."+popup_platform->get_popup()->get_item_text(p_which);;
+	catname+="."+popup_platform->get_popup()->get_item_text(p_which);
 	name = catname+"/"+propname;
 
 	GlobalConfig::get_singleton()->set(name,value);
@@ -795,7 +802,7 @@ void ProjectSettings::add_translation(const String& p_translation) {
 
 void ProjectSettings::_translation_add(const String& p_path) {
 
-	StringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
+	PoolStringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
 
 
 	for(int i=0;i<translations.size();i++) {
@@ -828,7 +835,7 @@ void ProjectSettings::_translation_delete(Object *p_item,int p_column, int p_but
 
 	int idx=ti->get_metadata(0);
 
-	StringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
+	PoolStringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
 
 	ERR_FAIL_INDEX(idx,translations.size());
 
@@ -865,7 +872,7 @@ void ProjectSettings::_translation_res_add(const String& p_path){
 	if (remaps.has(p_path))
 		return; //pointless already has it
 
-	remaps[p_path]=StringArray();
+	remaps[p_path]=PoolStringArray();
 
 	undo_redo->create_action(TTR("Add Remapped Path"));
 	undo_redo->add_do_property(GlobalConfig::get_singleton(),"locale/translation_remaps",remaps);
@@ -895,7 +902,7 @@ void ProjectSettings::_translation_res_option_add(const String& p_path) {
 	String key = k->get_metadata(0);
 
 	ERR_FAIL_COND(!remaps.has(key));
-	StringArray r = remaps[key];
+	PoolStringArray r = remaps[key];
 	r.push_back(p_path+":"+"en");
 	remaps[key]=r;
 
@@ -948,7 +955,7 @@ void ProjectSettings::_translation_res_option_changed() {
 
 
 	ERR_FAIL_COND(!remaps.has(key));
-	StringArray r = remaps[key];
+	PoolStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx,r.size());
 	r.set(idx,path+":"+langs[which]);
 	remaps[key]=r;
@@ -1014,7 +1021,7 @@ void ProjectSettings::_translation_res_option_delete(Object *p_item,int p_column
 	int idx = ed->get_metadata(0);
 
 	ERR_FAIL_COND(!remaps.has(key));
-	StringArray r = remaps[key];
+	PoolStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx,remaps.size());
 	r.remove(idx);
 	remaps[key]=r;
@@ -1045,7 +1052,7 @@ void ProjectSettings::_update_translations() {
 	translation_list->set_hide_root(true);
 	if (GlobalConfig::get_singleton()->has("locale/translations")) {
 
-		StringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
+		PoolStringArray translations = GlobalConfig::get_singleton()->get("locale/translations");
 		for(int i=0;i<translations.size();i++) {
 
 			TreeItem *t = translation_list->create_item(root);
@@ -1105,7 +1112,7 @@ void ProjectSettings::_update_translations() {
 				t->select(0);
 				translation_res_option_add_button->set_disabled(false);
 
-				StringArray selected = remaps[keys[i]];
+				PoolStringArray selected = remaps[keys[i]];
 				for(int j=0;j<selected.size();j++) {
 
 					String s = selected[j];
@@ -1174,41 +1181,41 @@ void ProjectSettings::set_plugins_page() {
 
 void ProjectSettings::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_item_selected"),&ProjectSettings::_item_selected);
-	ClassDB::bind_method(_MD("_item_add"),&ProjectSettings::_item_add);
-	ClassDB::bind_method(_MD("_item_adds"),&ProjectSettings::_item_adds);
-	ClassDB::bind_method(_MD("_item_del"),&ProjectSettings::_item_del);
-	ClassDB::bind_method(_MD("_item_checked"),&ProjectSettings::_item_checked);
-	ClassDB::bind_method(_MD("_save"),&ProjectSettings::_save);
-	ClassDB::bind_method(_MD("_action_add"),&ProjectSettings::_action_add);
-	ClassDB::bind_method(_MD("_action_adds"),&ProjectSettings::_action_adds);
-	ClassDB::bind_method(_MD("_action_selected"),&ProjectSettings::_action_selected);
-	ClassDB::bind_method(_MD("_action_edited"),&ProjectSettings::_action_edited);
-	ClassDB::bind_method(_MD("_action_button_pressed"),&ProjectSettings::_action_button_pressed);
-	ClassDB::bind_method(_MD("_update_actions"),&ProjectSettings::_update_actions);
-	ClassDB::bind_method(_MD("_wait_for_key"),&ProjectSettings::_wait_for_key);
-	ClassDB::bind_method(_MD("_add_item"),&ProjectSettings::_add_item);
-	ClassDB::bind_method(_MD("_device_input_add"),&ProjectSettings::_device_input_add);
-	ClassDB::bind_method(_MD("_press_a_key_confirm"),&ProjectSettings::_press_a_key_confirm);
-	ClassDB::bind_method(_MD("_settings_prop_edited"),&ProjectSettings::_settings_prop_edited);
-	ClassDB::bind_method(_MD("_copy_to_platform"),&ProjectSettings::_copy_to_platform);
-	ClassDB::bind_method(_MD("_update_translations"),&ProjectSettings::_update_translations);
-	ClassDB::bind_method(_MD("_translation_delete"),&ProjectSettings::_translation_delete);
-	ClassDB::bind_method(_MD("_settings_changed"),&ProjectSettings::_settings_changed);
-	ClassDB::bind_method(_MD("_translation_add"),&ProjectSettings::_translation_add);
-	ClassDB::bind_method(_MD("_translation_file_open"),&ProjectSettings::_translation_file_open);
+	ClassDB::bind_method(D_METHOD("_item_selected"),&ProjectSettings::_item_selected);
+	ClassDB::bind_method(D_METHOD("_item_add"),&ProjectSettings::_item_add);
+	ClassDB::bind_method(D_METHOD("_item_adds"),&ProjectSettings::_item_adds);
+	ClassDB::bind_method(D_METHOD("_item_del"),&ProjectSettings::_item_del);
+	ClassDB::bind_method(D_METHOD("_item_checked"),&ProjectSettings::_item_checked);
+	ClassDB::bind_method(D_METHOD("_save"),&ProjectSettings::_save);
+	ClassDB::bind_method(D_METHOD("_action_add"),&ProjectSettings::_action_add);
+	ClassDB::bind_method(D_METHOD("_action_adds"),&ProjectSettings::_action_adds);
+	ClassDB::bind_method(D_METHOD("_action_selected"),&ProjectSettings::_action_selected);
+	ClassDB::bind_method(D_METHOD("_action_edited"),&ProjectSettings::_action_edited);
+	ClassDB::bind_method(D_METHOD("_action_button_pressed"),&ProjectSettings::_action_button_pressed);
+	ClassDB::bind_method(D_METHOD("_update_actions"),&ProjectSettings::_update_actions);
+	ClassDB::bind_method(D_METHOD("_wait_for_key"),&ProjectSettings::_wait_for_key);
+	ClassDB::bind_method(D_METHOD("_add_item"),&ProjectSettings::_add_item);
+	ClassDB::bind_method(D_METHOD("_device_input_add"),&ProjectSettings::_device_input_add);
+	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"),&ProjectSettings::_press_a_key_confirm);
+	ClassDB::bind_method(D_METHOD("_settings_prop_edited"),&ProjectSettings::_settings_prop_edited);
+	ClassDB::bind_method(D_METHOD("_copy_to_platform"),&ProjectSettings::_copy_to_platform);
+	ClassDB::bind_method(D_METHOD("_update_translations"),&ProjectSettings::_update_translations);
+	ClassDB::bind_method(D_METHOD("_translation_delete"),&ProjectSettings::_translation_delete);
+	ClassDB::bind_method(D_METHOD("_settings_changed"),&ProjectSettings::_settings_changed);
+	ClassDB::bind_method(D_METHOD("_translation_add"),&ProjectSettings::_translation_add);
+	ClassDB::bind_method(D_METHOD("_translation_file_open"),&ProjectSettings::_translation_file_open);
 
-	ClassDB::bind_method(_MD("_translation_res_add"),&ProjectSettings::_translation_res_add);
-	ClassDB::bind_method(_MD("_translation_res_file_open"),&ProjectSettings::_translation_res_file_open);
-	ClassDB::bind_method(_MD("_translation_res_option_add"),&ProjectSettings::_translation_res_option_add);
-	ClassDB::bind_method(_MD("_translation_res_option_file_open"),&ProjectSettings::_translation_res_option_file_open);
-	ClassDB::bind_method(_MD("_translation_res_select"),&ProjectSettings::_translation_res_select);
-	ClassDB::bind_method(_MD("_translation_res_option_changed"),&ProjectSettings::_translation_res_option_changed);
-	ClassDB::bind_method(_MD("_translation_res_delete"),&ProjectSettings::_translation_res_delete);
-	ClassDB::bind_method(_MD("_translation_res_option_delete"),&ProjectSettings::_translation_res_option_delete);
+	ClassDB::bind_method(D_METHOD("_translation_res_add"),&ProjectSettings::_translation_res_add);
+	ClassDB::bind_method(D_METHOD("_translation_res_file_open"),&ProjectSettings::_translation_res_file_open);
+	ClassDB::bind_method(D_METHOD("_translation_res_option_add"),&ProjectSettings::_translation_res_option_add);
+	ClassDB::bind_method(D_METHOD("_translation_res_option_file_open"),&ProjectSettings::_translation_res_option_file_open);
+	ClassDB::bind_method(D_METHOD("_translation_res_select"),&ProjectSettings::_translation_res_select);
+	ClassDB::bind_method(D_METHOD("_translation_res_option_changed"),&ProjectSettings::_translation_res_option_changed);
+	ClassDB::bind_method(D_METHOD("_translation_res_delete"),&ProjectSettings::_translation_res_delete);
+	ClassDB::bind_method(D_METHOD("_translation_res_option_delete"),&ProjectSettings::_translation_res_option_delete);
 
-	ClassDB::bind_method(_MD("_clear_search_box"),&ProjectSettings::_clear_search_box);
-	ClassDB::bind_method(_MD("_toggle_search_bar"),&ProjectSettings::_toggle_search_bar);
+	ClassDB::bind_method(D_METHOD("_clear_search_box"),&ProjectSettings::_clear_search_box);
+	ClassDB::bind_method(D_METHOD("_toggle_search_bar"),&ProjectSettings::_toggle_search_bar);
 
 }
 
@@ -1216,14 +1223,14 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 
 	singleton=this;
-	set_title(TTR("Project Settings (engine.cfg)"));
+	set_title(TTR("Project Settings (godot.cfg)"));
 	undo_redo=&p_data->get_undo_redo();
 	data=p_data;
 
 
 	tab_container = memnew( TabContainer );
 	add_child(tab_container);
-	set_child_rect(tab_container);
+	//set_child_rect(tab_container);
 
 	//tab_container->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 15 );
 	//tab_container->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 15 );
@@ -1341,7 +1348,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	hbc->add_spacer();
 
-	List<StringName> ep;
+	/*List<StringName> ep;
 	EditorImportExport::get_singleton()->get_export_platforms(&ep);
 	ep.sort_custom<StringName::AlphCompare>();
 
@@ -1349,7 +1356,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 		popup_platform->get_popup()->add_item( E->get() );
 
-	}
+	}*/
 
 	popup_platform->get_popup()->connect("id_pressed",this,"_copy_to_platform");
 	get_ok()->set_text(TTR("Close"));
@@ -1357,12 +1364,12 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	message = memnew( ConfirmationDialog );
 	add_child(message);
-//	message->get_cancel()->hide();
+	//message->get_cancel()->hide();
 	message->set_hide_on_ok(true);
 
 	Control *input_base = memnew( Control );
 	input_base->set_name(TTR("Input Map"));
-	input_base->set_area_as_parent_rect();;
+	input_base->set_area_as_parent_rect();
 	tab_container->add_child(input_base);
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
@@ -1424,7 +1431,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	hbc = memnew( HBoxContainer );
 	device_input->add_child(hbc);
-	device_input->set_child_rect(hbc);
+	//device_input->set_child_rect(hbc);
 
 	VBoxContainer *vbc_left = memnew( VBoxContainer );
 	hbc->add_child(vbc_left);

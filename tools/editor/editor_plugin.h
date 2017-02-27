@@ -43,7 +43,7 @@ class EditorNode;
 class Spatial;
 class Camera;
 class EditorSelection;
-class EditorImportExport;
+class EditorExport;
 class EditorSettings;
 class SpatialEditorGizmo;
 class EditorImportPlugin;
@@ -103,9 +103,13 @@ public:
 	Control* get_editor_viewport();
 	void edit_resource(const Ref<Resource>& p_resource);
 
+	void add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud = Variant());
+	void add_tool_submenu_item(const String& p_name, Object *p_submenu);
+	void remove_tool_menu_item(const String& p_name);
+
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
-	virtual bool forward_canvas_gui_input(const Matrix32& p_canvas_xform, const InputEvent& p_event);
-	virtual void forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control *p_canvas);
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform, const InputEvent& p_event);
+	virtual void forward_draw_over_canvas(const Transform2D& p_canvas_xform,Control *p_canvas);
 	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;
@@ -134,12 +138,6 @@ public:
 
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
-
-	void add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-	void remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-
-	void add_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
-	void remove_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
 
 	EditorSelection* get_selection();
 	//EditorImportExport *get_import_export();

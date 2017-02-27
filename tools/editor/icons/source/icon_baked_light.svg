@@ -18,7 +18,7 @@
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_bone.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90"
-   sodipodi:docname="icon_bake.svg">
+   sodipodi:docname="icon_baked_light.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="4.5449307"
-     inkscape:cy="12.981869"
+     inkscape:cx="6.1801151"
+     inkscape:cy="10.551189"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -60,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -71,22 +71,8 @@
      transform="translate(0,-1036.3622)">
     <path
        style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 1 4 L 1 13 A 2 2.0000174 0 0 0 3 15 L 13 15 A 2 2.0000174 0 0 0 15 13 L 15 4 L 1 4 z M 3 5 L 4 5 L 4 6 L 3 6 L 3 5 z M 6 5 L 7 5 L 7 6 L 6 6 L 6 5 z M 9 5 L 10 5 L 10 6 L 9 6 L 9 5 z M 12 5 L 13 5 L 13 6 L 12 6 L 12 5 z M 3 7 L 13 7 L 13 13 L 3 13 L 3 7 z "
+       d="M 2 1 L 2 3 L 14 3 L 14 1 L 2 1 z M 1 4 L 1 13 A 2 2.0000174 0 0 0 3 15 L 13 15 A 2 2.0000174 0 0 0 15 13 L 15 4 L 1 4 z M 3 5 L 4 5 L 4 6 L 3 6 L 3 5 z M 6 5 L 7 5 L 7 6 L 6 6 L 6 5 z M 9 5 L 10 5 L 10 6 L 9 6 L 9 5 z M 12 5 L 13 5 L 13 6 L 12 6 L 12 5 z M 3 7 L 13 7 L 13 13 L 3 13 L 3 7 z M 6 8 L 6 9 L 10 9 L 10 8 L 6 8 z "
        transform="translate(0,1036.3622)"
        id="rect4155" />
-    <rect
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4173"
-       width="12"
-       height="2.0000174"
-       x="2"
-       y="1037.3622" />
-    <rect
-       style="opacity:1;fill:#e0e0e0;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4159"
-       width="4"
-       height="1.0000174"
-       x="6"
-       y="1044.3622" />
   </g>
 </svg>

@@ -210,8 +210,8 @@ public:
 		SelfList<Instance> update_item;
 
 
-		AABB aabb;
-		AABB transformed_aabb;
+		Rect3 aabb;
+		Rect3 transformed_aabb;
 		float extra_margin;
 		uint32_t object_ID;
 
@@ -445,6 +445,7 @@ public:
 			Vector< PoolVector<CompBlockS3TC> > mipmaps_s3tc; //for s3tc
 
 			int updating_stage;
+			float propagate;
 
 			int grid_size[3];
 
@@ -491,7 +492,7 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_transform(RID p_instance, const Transform& p_transform);
 	virtual void instance_attach_object_instance_ID(RID p_instance,ObjectID p_ID);
-	virtual void instance_set_morph_target_weight(RID p_instance,int p_shape, float p_weight);
+	virtual void instance_set_blend_shape_weight(RID p_instance,int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance,int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance,bool p_visible);
 
@@ -504,7 +505,7 @@ public:
 
 
 	// don't use these in a game!
-	virtual Vector<ObjectID> instances_cull_aabb(const AABB& p_aabb, RID p_scenario=RID()) const;
+	virtual Vector<ObjectID> instances_cull_aabb(const Rect3& p_aabb, RID p_scenario=RID()) const;
 	virtual Vector<ObjectID> instances_cull_ray(const Vector3& p_from, const Vector3& p_to, RID p_scenario=RID()) const;
 	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane>& p_convex, RID p_scenario=RID()) const;
 
@@ -570,7 +571,7 @@ public:
 	void _gi_probe_fill_local_data(int p_idx,int p_level,int p_x,int p_y,int p_z,const GIProbeDataCell* p_cell,const GIProbeDataHeader *p_header,InstanceGIProbeData::LocalData *p_local_data,Vector<uint32_t> *prev_cell);
 
 	_FORCE_INLINE_ uint32_t _gi_bake_find_cell(const GIProbeDataCell *cells,int x,int y, int z,int p_cell_subdiv);
-	void _bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell* p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data);
+	void _bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell* p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data, float p_propagate);
 	void _bake_gi_probe_light(const GIProbeDataHeader *header,const GIProbeDataCell *cells,InstanceGIProbeData::LocalData *local_data,const uint32_t *leaves,int p_leaf_count, const InstanceGIProbeData::LightCache& light_cache,int p_sign);
 	void _bake_gi_probe(Instance *p_probe);
 	bool _check_gi_probe(Instance *p_gi_probe);

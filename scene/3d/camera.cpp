@@ -176,7 +176,7 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::REAL, "far" , PROPERTY_HINT_EXP_RANGE, "0.01,4096.0,0.01") );
 	p_list->push_back( PropertyInfo( Variant::INT, "keep_aspect",PROPERTY_HINT_ENUM,"Keep Width,Keep Height") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "current" ) );
-	p_list->push_back( PropertyInfo( Variant::INT, "cull_mask",PROPERTY_HINT_ALL_FLAGS ) );
+	p_list->push_back( PropertyInfo( Variant::INT, "cull_mask",PROPERTY_HINT_LAYERS_3D_RENDER ) );
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "h_offset" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "v_offset" ) );
@@ -190,9 +190,11 @@ void Camera::_update_camera() {
 	tr.origin+=tr.basis.get_axis(0)*h_offset;
 	VisualServer::get_singleton()->camera_set_transform( camera, tr );
 
-// here goes listener stuff
-//	if (viewport_ptr && is_inside_scene() && is_current())
-//		get_viewport()->_camera_transform_changed_notify();
+	// here goes listener stuff
+	/*
+	if (viewport_ptr && is_inside_scene() && is_current())
+		get_viewport()->_camera_transform_changed_notify();
+	*/
 
 	if (is_inside_tree() && is_current()) {
 		get_viewport()->_camera_transform_changed_notify();
@@ -373,7 +375,7 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 		ray=Vector3(0,0,-1);
 	} else {
 		CameraMatrix cm;
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 		float screen_w,screen_h;
 		cm.get_viewport_size(screen_w,screen_h);
 		ray=Vector3( ((cpos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(cpos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
@@ -400,7 +402,7 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 #endif
 
 	ERR_FAIL_COND_V( viewport_size.y == 0, Vector3() );
-//	float aspect = viewport_size.x / viewport_size.y;
+	//float aspect = viewport_size.x / viewport_size.y;
 
 	if (mode == PROJECTION_PERSPECTIVE) {
 
@@ -410,10 +412,10 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 		Vector2 pos = cpos / viewport_size;
 		float vsize,hsize;
 		if (keep_aspect==KEEP_WIDTH) {
-			vsize = size/viewport_size.get_aspect();
+			vsize = size/viewport_size.aspect();
 			hsize = size;
 		} else {
-			hsize = size*viewport_size.get_aspect();
+			hsize = size*viewport_size.aspect();
 			vsize = size;
 
 		}
@@ -449,9 +451,9 @@ Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 
 	if (mode==PROJECTION_ORTHOGONAL)
-		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_orthogonal(size,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 	else
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
 	Plane p(get_camera_transform().xform_inv(p_pos),1.0);
 
@@ -479,9 +481,9 @@ Vector3 Camera::project_position(const Point2& p_point) const {
 	CameraMatrix cm;
 
 	if (mode==PROJECTION_ORTHOGONAL)
-		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_orthogonal(size,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 	else
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
 	Size2 vp_size;
 	cm.get_viewport_size(vp_size.x,vp_size.y);
@@ -546,34 +548,34 @@ Camera::KeepAspect Camera::get_keep_aspect_mode() const{
 
 void Camera::_bind_methods() {
 
-	ClassDB::bind_method( _MD("project_ray_normal","screen_point"), &Camera::project_ray_normal);
-	ClassDB::bind_method( _MD("project_local_ray_normal","screen_point"), &Camera::project_local_ray_normal);
-	ClassDB::bind_method( _MD("project_ray_origin","screen_point"), &Camera::project_ray_origin);
-	ClassDB::bind_method( _MD("unproject_position","world_point"), &Camera::unproject_position);
-	ClassDB::bind_method( _MD("is_position_behind","world_point"), &Camera::is_position_behind);
-	ClassDB::bind_method( _MD("project_position","screen_point"), &Camera::project_position);
-	ClassDB::bind_method( _MD("set_perspective","fov","z_near","z_far"),&Camera::set_perspective );
-	ClassDB::bind_method( _MD("set_orthogonal","size","z_near","z_far"),&Camera::set_orthogonal );
-	ClassDB::bind_method( _MD("make_current"),&Camera::make_current );
-	ClassDB::bind_method( _MD("clear_current"),&Camera::clear_current );
-	ClassDB::bind_method( _MD("is_current"),&Camera::is_current );
-	ClassDB::bind_method( _MD("get_camera_transform"),&Camera::get_camera_transform );
-	ClassDB::bind_method( _MD("get_fov"),&Camera::get_fov );
-	ClassDB::bind_method( _MD("get_size"),&Camera::get_size );
-	ClassDB::bind_method( _MD("get_zfar"),&Camera::get_zfar );
-	ClassDB::bind_method( _MD("get_znear"),&Camera::get_znear );
-	ClassDB::bind_method( _MD("get_projection"),&Camera::get_projection );
-	ClassDB::bind_method( _MD("set_h_offset","ofs"),&Camera::set_h_offset );
-	ClassDB::bind_method( _MD("get_h_offset"),&Camera::get_h_offset );
-	ClassDB::bind_method( _MD("set_v_offset","ofs"),&Camera::set_v_offset );
-	ClassDB::bind_method( _MD("get_v_offset"),&Camera::get_v_offset );
-	ClassDB::bind_method( _MD("set_cull_mask","mask"),&Camera::set_cull_mask );
-	ClassDB::bind_method( _MD("get_cull_mask"),&Camera::get_cull_mask );
-	ClassDB::bind_method( _MD("set_environment","env:Environment"),&Camera::set_environment );
-	ClassDB::bind_method( _MD("get_environment:Environment"),&Camera::get_environment );
-	ClassDB::bind_method( _MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode );
-	ClassDB::bind_method( _MD("get_keep_aspect_mode"),&Camera::get_keep_aspect_mode );
-	//ClassDB::bind_method( _MD("_camera_make_current"),&Camera::_camera_make_current );
+	ClassDB::bind_method(D_METHOD("project_ray_normal","screen_point"), &Camera::project_ray_normal);
+	ClassDB::bind_method(D_METHOD("project_local_ray_normal","screen_point"), &Camera::project_local_ray_normal);
+	ClassDB::bind_method(D_METHOD("project_ray_origin","screen_point"), &Camera::project_ray_origin);
+	ClassDB::bind_method(D_METHOD("unproject_position","world_point"), &Camera::unproject_position);
+	ClassDB::bind_method(D_METHOD("is_position_behind","world_point"), &Camera::is_position_behind);
+	ClassDB::bind_method(D_METHOD("project_position","screen_point"), &Camera::project_position);
+	ClassDB::bind_method(D_METHOD("set_perspective","fov","z_near","z_far"),&Camera::set_perspective );
+	ClassDB::bind_method(D_METHOD("set_orthogonal","size","z_near","z_far"),&Camera::set_orthogonal );
+	ClassDB::bind_method(D_METHOD("make_current"),&Camera::make_current );
+	ClassDB::bind_method(D_METHOD("clear_current"),&Camera::clear_current );
+	ClassDB::bind_method(D_METHOD("is_current"),&Camera::is_current );
+	ClassDB::bind_method(D_METHOD("get_camera_transform"),&Camera::get_camera_transform );
+	ClassDB::bind_method(D_METHOD("get_fov"),&Camera::get_fov );
+	ClassDB::bind_method(D_METHOD("get_size"),&Camera::get_size );
+	ClassDB::bind_method(D_METHOD("get_zfar"),&Camera::get_zfar );
+	ClassDB::bind_method(D_METHOD("get_znear"),&Camera::get_znear );
+	ClassDB::bind_method(D_METHOD("get_projection"),&Camera::get_projection );
+	ClassDB::bind_method(D_METHOD("set_h_offset","ofs"),&Camera::set_h_offset );
+	ClassDB::bind_method(D_METHOD("get_h_offset"),&Camera::get_h_offset );
+	ClassDB::bind_method(D_METHOD("set_v_offset","ofs"),&Camera::set_v_offset );
+	ClassDB::bind_method(D_METHOD("get_v_offset"),&Camera::get_v_offset );
+	ClassDB::bind_method(D_METHOD("set_cull_mask","mask"),&Camera::set_cull_mask );
+	ClassDB::bind_method(D_METHOD("get_cull_mask"),&Camera::get_cull_mask );
+	ClassDB::bind_method(D_METHOD("set_environment","env:Environment"),&Camera::set_environment );
+	ClassDB::bind_method(D_METHOD("get_environment:Environment"),&Camera::get_environment );
+	ClassDB::bind_method(D_METHOD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode );
+	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"),&Camera::get_keep_aspect_mode );
+	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
 	BIND_CONSTANT( PROJECTION_PERSPECTIVE );
 	BIND_CONSTANT( PROJECTION_ORTHOGONAL );
@@ -628,9 +630,9 @@ Vector<Plane> Camera::get_frustum() const {
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 	CameraMatrix cm;
 	if (mode==PROJECTION_PERSPECTIVE)
-		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_perspective(fov,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 	else
-		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
+		cm.set_orthogonal(size,viewport_size.aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
 	return cm.get_projection_planes(get_camera_transform());
 
@@ -642,7 +644,7 @@ Vector<Plane> Camera::get_frustum() const {
 void Camera::set_v_offset(float p_offset) {
 
 	v_offset=p_offset;
-	_update_camera();;
+	_update_camera();
 }
 
 float Camera::get_v_offset() const {
@@ -678,6 +680,7 @@ Camera::Camera() {
 	h_offset=0;
 	VisualServer::get_singleton()->camera_set_cull_mask(camera,layers);
 	//active=false;
+	set_notify_transform(true);
 }
 
 

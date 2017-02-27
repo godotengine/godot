@@ -46,7 +46,7 @@ private:
 	mutable Map<StringName, Action> input_map;
 	mutable Map<int,StringName> input_id_map;
 
-	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_mod_ignore) const;
+	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_action_test=false) const;
 
 	Array _get_action_list(const StringName& p_action);
 	Array _get_actions();

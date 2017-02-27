@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_dir_dialog.h"
+
 #include "os/os.h"
 #include "os/keyboard.h"
 #include "tools/editor/editor_settings.h"
@@ -78,7 +79,7 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
 void EditorDirDialog::reload() {
 
-	if (!is_visible()) {
+	if (!is_visible_in_tree()) {
 		must_reload=true;
 		return;
 	}
@@ -111,7 +112,7 @@ void EditorDirDialog::_notification(int p_what) {
 	}
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-		if (must_reload && is_visible()) {
+		if (must_reload && is_visible_in_tree()) {
 			reload();
 		}
 	}
@@ -224,10 +225,10 @@ void EditorDirDialog::_make_dir_confirm() {
 
 void EditorDirDialog::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_item_collapsed"),&EditorDirDialog::_item_collapsed);
-	ClassDB::bind_method(_MD("_make_dir"),&EditorDirDialog::_make_dir);
-	ClassDB::bind_method(_MD("_make_dir_confirm"),&EditorDirDialog::_make_dir_confirm);
-	ClassDB::bind_method(_MD("reload"),&EditorDirDialog::reload);
+	ClassDB::bind_method(D_METHOD("_item_collapsed"),&EditorDirDialog::_item_collapsed);
+	ClassDB::bind_method(D_METHOD("_make_dir"),&EditorDirDialog::_make_dir);
+	ClassDB::bind_method(D_METHOD("_make_dir_confirm"),&EditorDirDialog::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("reload"),&EditorDirDialog::reload);
 
 	ADD_SIGNAL(MethodInfo("dir_selected",PropertyInfo(Variant::STRING,"dir")));
 }
@@ -243,7 +244,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	tree = memnew( Tree );
 	add_child(tree);
-	set_child_rect(tree);
+
 	tree->connect("item_activated",this,"_ok");
 
 	makedir = add_button(TTR("Create Folder"),OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
@@ -255,7 +256,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
-	makedialog->set_child_rect(makevb);
+	//makedialog->set_child_rect(makevb);
 
 	makedirname = memnew( LineEdit );
 	makevb->add_margin_child(TTR("Name:"),makedirname);

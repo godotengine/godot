@@ -47,7 +47,7 @@ Mutex::~Mutex() {
 
 }
 
-Mutex *_global_mutex=NULL;;
+Mutex *_global_mutex=NULL;
 
 void _global_lock() {
 

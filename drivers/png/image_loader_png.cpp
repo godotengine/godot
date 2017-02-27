@@ -134,7 +134,7 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 	}
 
 	if (png_get_valid(png,info,PNG_INFO_tRNS)) {
-//		png_set_expand_gray_1_2_4_to_8(png);
+		//png_set_expand_gray_1_2_4_to_8(png);
 		png_set_tRNS_to_alpha(png);
 		update_info=true;
 	}

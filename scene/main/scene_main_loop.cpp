@@ -32,10 +32,10 @@
 #include "os/os.h"
 #include "message_queue.h"
 #include "node.h"
-#include "globals.h"
+#include "global_config.h"
 #include <stdio.h>
 #include "os/keyboard.h"
-#include "servers/spatial_sound_2d_server.h"
+//#include "servers/spatial_sound_2d_server.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "scene/scene_string_names.h"
@@ -48,8 +48,8 @@
 
 void SceneTreeTimer::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_time_left","time"),&SceneTreeTimer::set_time_left);
-	ClassDB::bind_method(_MD("get_time_left"),&SceneTreeTimer::get_time_left);
+	ClassDB::bind_method(D_METHOD("set_time_left","time"),&SceneTreeTimer::set_time_left);
+	ClassDB::bind_method(D_METHOD("get_time_left"),&SceneTreeTimer::get_time_left);
 
 	ADD_SIGNAL(MethodInfo("timeout"));
 }
@@ -63,9 +63,19 @@ float SceneTreeTimer::get_time_left() const {
 	return time_left;
 }
 
+void SceneTreeTimer::set_pause_mode_process(bool p_pause_mode_process) {
+	if (process_pause != p_pause_mode_process) {
+		process_pause = p_pause_mode_process;
+	}
+}
+
+bool SceneTreeTimer::is_pause_mode_process() {
+	return process_pause;
+}
 
 SceneTreeTimer::SceneTreeTimer() {
 	time_left=0;
+	process_pause = true;
 }
 
 
@@ -141,7 +151,7 @@ void SceneTree::_flush_ugc() {
 		for(int i=0;i<E->get().size();i++)
 			v[i]=E->get()[i];
 
-		call_group(GROUP_CALL_REALTIME,E->key().group,E->key().call,v[0],v[1],v[2],v[3],v[4]);
+		call_group_flags(GROUP_CALL_REALTIME,E->key().group,E->key().call,v[0],v[1],v[2],v[3],v[4]);
 
 		unique_group_calls.erase(E);
 	}
@@ -166,7 +176,7 @@ void SceneTree::_update_group_order(Group& g) {
 }
 
 
-void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
+void SceneTree::call_group_flags(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -216,7 +226,7 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 				continue;
 
 			if (p_call_flags&GROUP_CALL_REALTIME) {
-				if (p_call_flags&GROUP_CALL_MULIILEVEL)
+				if (p_call_flags&GROUP_CALL_MULTILEVEL)
 					nodes[i]->call_multilevel(p_function,VARIANT_ARG_PASS);
 				else
 					nodes[i]->call(p_function,VARIANT_ARG_PASS);
@@ -233,7 +243,7 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 				continue;
 
 			if (p_call_flags&GROUP_CALL_REALTIME) {
-				if (p_call_flags&GROUP_CALL_MULIILEVEL)
+				if (p_call_flags&GROUP_CALL_MULTILEVEL)
 					nodes[i]->call_multilevel(p_function,VARIANT_ARG_PASS);
 				else
 					nodes[i]->call(p_function,VARIANT_ARG_PASS);
@@ -248,7 +258,7 @@ void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const
 		call_skip.clear();
 }
 
-void SceneTree::notify_group(uint32_t p_call_flags,const StringName& p_group,int p_notification) {
+void SceneTree::notify_group_flags(uint32_t p_call_flags,const StringName& p_group,int p_notification) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -298,7 +308,7 @@ void SceneTree::notify_group(uint32_t p_call_flags,const StringName& p_group,int
 		call_skip.clear();
 }
 
-void SceneTree::set_group(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value) {
+void SceneTree::set_group_flags(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -347,6 +357,23 @@ void SceneTree::set_group(uint32_t p_call_flags,const StringName& p_group,const 
 	if (call_lock==0)
 		call_skip.clear();
 }
+
+
+void SceneTree::call_group(const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
+
+	call_group_flags(0,p_group,VARIANT_ARG_PASS);
+}
+
+void SceneTree::notify_group(const StringName& p_group,int p_notification) {
+
+	notify_group_flags(0,p_group,p_notification);
+}
+
+void SceneTree::set_group(const StringName& p_group,const String& p_name,const Variant& p_value) {
+
+	set_group_flags(0,p_group,p_name,p_value);
+}
+
 
 void SceneTree::set_input_as_handled() {
 
@@ -357,7 +384,7 @@ void SceneTree::input_text( const String& p_text ) {
 
 	root_lock++;
 
-	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input_text",p_text); //special one for GUI, as controls use their own process check
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","_vp_input_text",p_text); //special one for GUI, as controls use their own process check
 
 	root_lock--;
 
@@ -438,21 +465,22 @@ void SceneTree::input_event( const InputEvent& p_event ) {
 
 	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input","_input",ev);
 
-	/*if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F12) {
+	/*
+	if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F12) {
 
 		print_line("RAM: "+itos(Memory::get_static_mem_usage()));
 		print_line("DRAM: "+itos(Memory::get_dynamic_mem_usage()));
 	}
-*/
-	//if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F11) {
+	if (ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F11) {
 
-	//	Memory::dump_static_mem_to_file("memdump.txt");
-	//}
+		Memory::dump_static_mem_to_file("memdump.txt");
+	}
+	*/
 
 	//transform for the rest
 #else
 
-	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input",ev); //special one for GUI, as controls use their own process check
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","_vp_input",ev); //special one for GUI, as controls use their own process check
 
 #endif
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote() && ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F8) {
@@ -477,7 +505,7 @@ void SceneTree::input_event( const InputEvent& p_event ) {
 		}
 #else
 
-		call_group(GROUP_CALL_REALTIME,"_viewports","_vp_unhandled_input",ev); //special one for GUI, as controls use their own process check
+		call_group_flags(GROUP_CALL_REALTIME,"_viewports","_vp_unhandled_input",ev); //special one for GUI, as controls use their own process check
 
 #endif
 		input_handled=true;
@@ -498,6 +526,7 @@ void SceneTree::init() {
 
 	//_quit=false;
 	accept_quit=true;
+	quit_on_go_back=true;
 	initialized=true;
 	input_handled=false;
 
@@ -523,10 +552,11 @@ bool SceneTree::iteration(float p_time) {
 
 	emit_signal("fixed_frame");
 
+	_notify_group_pause("fixed_process_internal",Node::NOTIFICATION_INTERNAL_FIXED_PROCESS);
 	_notify_group_pause("fixed_process",Node::NOTIFICATION_FIXED_PROCESS);
 	_flush_ugc();
 	_flush_transform_notifications();
-	call_group(GROUP_CALL_REALTIME,"_viewports","update_worlds");
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","update_worlds");
 	root_lock--;
 
 	_flush_delete_queue();
@@ -538,9 +568,9 @@ bool SceneTree::iteration(float p_time) {
 bool SceneTree::idle(float p_time){
 
 
-//	print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
-//	print_line("node count: "+itos(get_node_count()));
-//	print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
+	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
+	//print_line("node count: "+itos(get_node_count()));
+	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
 
 	root_lock++;
 
@@ -554,6 +584,7 @@ bool SceneTree::idle(float p_time){
 
 	_flush_transform_notifications();
 
+	_notify_group_pause("idle_process_internal",Node::NOTIFICATION_INTERNAL_PROCESS);
 	_notify_group_pause("idle_process",Node::NOTIFICATION_PROCESS);
 
 	Size2 win_size=Size2( OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height );
@@ -570,7 +601,7 @@ bool SceneTree::idle(float p_time){
 
 	_flush_ugc();
 	_flush_transform_notifications(); //transforms after world update, to avoid unnecesary enter/exit notifications
-	call_group(GROUP_CALL_REALTIME,"_viewports","update_worlds");
+	call_group_flags(GROUP_CALL_REALTIME,"_viewports","update_worlds");
 
 	root_lock--;
 
@@ -581,7 +612,10 @@ bool SceneTree::idle(float p_time){
 	for (List<Ref<SceneTreeTimer> >::Element *E=timers.front();E;) {
 
 		List<Ref<SceneTreeTimer> >::Element *N = E->next();
-
+		if (pause && !E->get()->is_pause_mode_process()) {
+			E=N;
+			continue;
+		}
 		float time_left = E->get()->get_time_left();
 		time_left-=p_time;
 		E->get()->set_time_left(time_left);
@@ -644,6 +678,15 @@ void SceneTree::_notification(int p_notification) {
 				break;
 			}
 		} break;
+		case NOTIFICATION_WM_GO_BACK_REQUEST: {
+
+			get_root()->propagate_notification(p_notification);
+
+			if (quit_on_go_back) {
+				_quit=true;
+				break;
+			}
+		} break;
 		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_WM_FOCUS_IN:
 		case NOTIFICATION_WM_FOCUS_OUT: {
@@ -655,7 +698,7 @@ void SceneTree::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_WM_UNFOCUS_REQUEST: {
 
-			notify_group(GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"input",NOTIFICATION_WM_UNFOCUS_REQUEST);
+			notify_group_flags(GROUP_CALL_REALTIME|GROUP_CALL_MULTILEVEL,"input",NOTIFICATION_WM_UNFOCUS_REQUEST);
 
 		} break;
 
@@ -668,6 +711,11 @@ void SceneTree::_notification(int p_notification) {
 void SceneTree::set_auto_accept_quit(bool p_enable) {
 
 	accept_quit=p_enable;
+}
+
+void SceneTree::set_quit_on_go_back(bool p_enable) {
+
+	quit_on_go_back=p_enable;
 }
 
 void SceneTree::set_editor_hint(bool p_enabled) {
@@ -974,7 +1022,7 @@ uint32_t SceneTree::get_last_event_id() const {
 }
 
 
-Variant SceneTree::_call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+Variant SceneTree::_call_group_flags(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
 
 
 	r_error.error=Variant::CallError::CALL_OK;
@@ -994,10 +1042,32 @@ Variant SceneTree::_call_group(const Variant** p_args, int p_argcount, Variant::
 		v[i]=*p_args[i+3];
 	}
 
-	call_group(flags,group,method,v[0],v[1],v[2],v[3],v[4]);
+	call_group_flags(flags,group,method,v[0],v[1],v[2],v[3],v[4]);
 	return Variant();
 }
 
+
+Variant SceneTree::_call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	ERR_FAIL_COND_V(p_argcount<2,Variant());
+	ERR_FAIL_COND_V(p_args[0]->get_type()!=Variant::STRING,Variant());
+	ERR_FAIL_COND_V(p_args[1]->get_type()!=Variant::STRING,Variant());
+
+	StringName group = *p_args[0];
+	StringName method = *p_args[1];
+	Variant v[VARIANT_ARG_MAX];
+
+	for(int i=0;i<MIN(p_argcount-2,5);i++) {
+
+		v[i]=*p_args[i+2];
+	}
+
+	call_group_flags(0,group,method,v[0],v[1],v[2],v[3],v[4]);
+	return Variant();
+}
 
 int64_t SceneTree::get_frame() const {
 
@@ -1121,8 +1191,8 @@ void SceneTree::_update_root_rect() {
 	Size2 viewport_size;
 	Size2 screen_size;
 
-	float viewport_aspect = desired_res.get_aspect();
-	float video_mode_aspect = video_mode.get_aspect();
+	float viewport_aspect = desired_res.aspect();
+	float video_mode_aspect = video_mode.aspect();
 
 	if (stretch_aspect==STRETCH_ASPECT_IGNORE || ABS(viewport_aspect - video_mode_aspect)<CMP_EPSILON) {
 		//same aspect or ignore aspect
@@ -1181,8 +1251,8 @@ void SceneTree::_update_root_rect() {
 		VisualServer::get_singleton()->black_bars_set_margins(0,0,0,0);
 	}
 
-//	print_line("VP SIZE: "+viewport_size+" OFFSET: "+offset+" = "+(offset*2+viewport_size));
-//	print_line("SS: "+video_mode);
+	//print_line("VP SIZE: "+viewport_size+" OFFSET: "+offset+" = "+(offset*2+viewport_size));
+	//print_line("SS: "+video_mode);
 	switch (stretch_mode) {
 		case STRETCH_MODE_2D: {
 
@@ -1657,10 +1727,11 @@ void SceneTree::drop_files(const Vector<String>& p_files,int p_from_screen) {
 }
 
 
-Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec) {
+Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_pause) {
 
 	Ref<SceneTreeTimer> stt;
 	stt.instance();
+	stt->set_pause_mode_process(p_process_pause);
 	stt->set_time_left(p_delay_sec);
 	timers.push_back(stt);
 	return stt;
@@ -2163,77 +2234,90 @@ void SceneTree::_network_poll() {
 void SceneTree::_bind_methods() {
 
 
-	//ClassDB::bind_method(_MD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
-	ClassDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
-	ClassDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
+	//ClassDB::bind_method(D_METHOD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
 
-	ClassDB::bind_method(_MD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
+	ClassDB::bind_method(D_METHOD("get_root:Viewport"),&SceneTree::get_root);
+	ClassDB::bind_method(D_METHOD("has_group","name"),&SceneTree::has_group);
 
-	ClassDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
-	ClassDB::bind_method(_MD("has_group","name"),&SceneTree::has_group);
+	ClassDB::bind_method(D_METHOD("set_auto_accept_quit","enabled"),&SceneTree::set_auto_accept_quit);
 
-	ClassDB::bind_method(_MD("set_auto_accept_quit","enabled"),&SceneTree::set_auto_accept_quit);
-
-	ClassDB::bind_method(_MD("set_editor_hint","enable"),&SceneTree::set_editor_hint);
-	ClassDB::bind_method(_MD("is_editor_hint"),&SceneTree::is_editor_hint);
-	ClassDB::bind_method(_MD("set_debug_collisions_hint","enable"),&SceneTree::set_debug_collisions_hint);
-	ClassDB::bind_method(_MD("is_debugging_collisions_hint"),&SceneTree::is_debugging_collisions_hint);
-	ClassDB::bind_method(_MD("set_debug_navigation_hint","enable"),&SceneTree::set_debug_navigation_hint);
-	ClassDB::bind_method(_MD("is_debugging_navigation_hint"),&SceneTree::is_debugging_navigation_hint);
+	ClassDB::bind_method(D_METHOD("set_editor_hint","enable"),&SceneTree::set_editor_hint);
+	ClassDB::bind_method(D_METHOD("is_editor_hint"),&SceneTree::is_editor_hint);
+	ClassDB::bind_method(D_METHOD("set_debug_collisions_hint","enable"),&SceneTree::set_debug_collisions_hint);
+	ClassDB::bind_method(D_METHOD("is_debugging_collisions_hint"),&SceneTree::is_debugging_collisions_hint);
+	ClassDB::bind_method(D_METHOD("set_debug_navigation_hint","enable"),&SceneTree::set_debug_navigation_hint);
+	ClassDB::bind_method(D_METHOD("is_debugging_navigation_hint"),&SceneTree::is_debugging_navigation_hint);
 
 #ifdef TOOLS_ENABLED
-	ClassDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneTree::set_edited_scene_root);
-	ClassDB::bind_method(_MD("get_edited_scene_root"),&SceneTree::get_edited_scene_root);
+	ClassDB::bind_method(D_METHOD("set_edited_scene_root","scene"),&SceneTree::set_edited_scene_root);
+	ClassDB::bind_method(D_METHOD("get_edited_scene_root"),&SceneTree::get_edited_scene_root);
 #endif
 
-	ClassDB::bind_method(_MD("set_pause","enable"),&SceneTree::set_pause);
-	ClassDB::bind_method(_MD("is_paused"),&SceneTree::is_paused);
-	ClassDB::bind_method(_MD("set_input_as_handled"),&SceneTree::set_input_as_handled);
+	ClassDB::bind_method(D_METHOD("set_pause","enable"),&SceneTree::set_pause);
+	ClassDB::bind_method(D_METHOD("is_paused"),&SceneTree::is_paused);
+	ClassDB::bind_method(D_METHOD("set_input_as_handled"),&SceneTree::set_input_as_handled);
 
-	ClassDB::bind_method(_MD("create_timer:SceneTreeTimer","time_sec"),&SceneTree::create_timer);
+	ClassDB::bind_method(D_METHOD("create_timer:SceneTreeTimer","time_sec", "pause_mode_process"),&SceneTree::create_timer, DEFVAL(true));
 
 
-	ClassDB::bind_method(_MD("get_node_count"),&SceneTree::get_node_count);
-	ClassDB::bind_method(_MD("get_frame"),&SceneTree::get_frame);
-	ClassDB::bind_method(_MD("quit"),&SceneTree::quit);
+	ClassDB::bind_method(D_METHOD("get_node_count"),&SceneTree::get_node_count);
+	ClassDB::bind_method(D_METHOD("get_frame"),&SceneTree::get_frame);
+	ClassDB::bind_method(D_METHOD("quit"),&SceneTree::quit);
 
-	ClassDB::bind_method(_MD("set_screen_stretch","mode","aspect","minsize"),&SceneTree::set_screen_stretch);
+	ClassDB::bind_method(D_METHOD("set_screen_stretch","mode","aspect","minsize"),&SceneTree::set_screen_stretch);
 
-	ClassDB::bind_method(_MD("queue_delete","obj"),&SceneTree::queue_delete);
+	ClassDB::bind_method(D_METHOD("queue_delete","obj"),&SceneTree::queue_delete);
 
 
 
 
 	MethodInfo mi;
-	mi.name="call_group";
+	mi.name="call_group_flags";
 	mi.arguments.push_back( PropertyInfo( Variant::INT, "flags"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "group"));
 	mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
 
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group_flags",&SceneTree::_call_group_flags,mi);
 
-	ClassDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
-	ClassDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);
+	ClassDB::bind_method(D_METHOD("notify_group_flags","call_flags","group","notification"),&SceneTree::notify_group_flags);
+	ClassDB::bind_method(D_METHOD("set_group_flags","call_flags","group","property","value"),&SceneTree::set_group_flags);
 
-	ClassDB::bind_method(_MD("change_scene","path"),&SceneTree::change_scene);
-	ClassDB::bind_method(_MD("change_scene_to","packed_scene:PackedScene"),&SceneTree::change_scene_to);
-
-	ClassDB::bind_method(_MD("reload_current_scene"),&SceneTree::reload_current_scene);
-
-	ClassDB::bind_method(_MD("_change_scene"),&SceneTree::_change_scene);
+	MethodInfo mi2;
+	mi2.name="call_group";
+	mi2.arguments.push_back( PropertyInfo( Variant::STRING, "group"));
+	mi2.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
 
 
-	ClassDB::bind_method(_MD("set_network_peer","peer:NetworkedMultiplayerPeer"),&SceneTree::set_network_peer);
-	ClassDB::bind_method(_MD("is_network_server"),&SceneTree::is_network_server);
-	ClassDB::bind_method(_MD("get_network_unique_id"),&SceneTree::get_network_unique_id);
-	ClassDB::bind_method(_MD("set_refuse_new_network_connections","refuse"),&SceneTree::set_refuse_new_network_connections);
-	ClassDB::bind_method(_MD("is_refusing_new_network_connections"),&SceneTree::is_refusing_new_network_connections);
-	ClassDB::bind_method(_MD("_network_peer_connected"),&SceneTree::_network_peer_connected);
-	ClassDB::bind_method(_MD("_network_peer_disconnected"),&SceneTree::_network_peer_disconnected);
-	ClassDB::bind_method(_MD("_connected_to_server"),&SceneTree::_connected_to_server);
-	ClassDB::bind_method(_MD("_connection_failed"),&SceneTree::_connection_failed);
-	ClassDB::bind_method(_MD("_server_disconnected"),&SceneTree::_server_disconnected);
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi2);
+
+	ClassDB::bind_method(D_METHOD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
+	ClassDB::bind_method(D_METHOD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
+
+	ClassDB::bind_method(D_METHOD("get_nodes_in_group","group"),&SceneTree::_get_nodes_in_group);
+
+
+	ClassDB::bind_method(D_METHOD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
+	ClassDB::bind_method(D_METHOD("get_current_scene:Node"),&SceneTree::get_current_scene);
+
+	ClassDB::bind_method(D_METHOD("change_scene","path"),&SceneTree::change_scene);
+	ClassDB::bind_method(D_METHOD("change_scene_to","packed_scene:PackedScene"),&SceneTree::change_scene_to);
+
+	ClassDB::bind_method(D_METHOD("reload_current_scene"),&SceneTree::reload_current_scene);
+
+	ClassDB::bind_method(D_METHOD("_change_scene"),&SceneTree::_change_scene);
+
+
+	ClassDB::bind_method(D_METHOD("set_network_peer","peer:NetworkedMultiplayerPeer"),&SceneTree::set_network_peer);
+	ClassDB::bind_method(D_METHOD("is_network_server"),&SceneTree::is_network_server);
+	ClassDB::bind_method(D_METHOD("get_network_unique_id"),&SceneTree::get_network_unique_id);
+	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections","refuse"),&SceneTree::set_refuse_new_network_connections);
+	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"),&SceneTree::is_refusing_new_network_connections);
+	ClassDB::bind_method(D_METHOD("_network_peer_connected"),&SceneTree::_network_peer_connected);
+	ClassDB::bind_method(D_METHOD("_network_peer_disconnected"),&SceneTree::_network_peer_disconnected);
+	ClassDB::bind_method(D_METHOD("_connected_to_server"),&SceneTree::_connected_to_server);
+	ClassDB::bind_method(D_METHOD("_connection_failed"),&SceneTree::_connection_failed);
+	ClassDB::bind_method(D_METHOD("_server_disconnected"),&SceneTree::_server_disconnected);
 
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
@@ -2243,7 +2327,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("idle_frame"));
 	ADD_SIGNAL( MethodInfo("fixed_frame"));
 
-	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
+	ADD_SIGNAL( MethodInfo("files_dropped",PropertyInfo(Variant::POOL_STRING_ARRAY,"files"),PropertyInfo(Variant::INT,"screen")) );
 	ADD_SIGNAL( MethodInfo("network_peer_connected",PropertyInfo(Variant::INT,"id")));
 	ADD_SIGNAL( MethodInfo("network_peer_disconnected",PropertyInfo(Variant::INT,"id")));
 	ADD_SIGNAL( MethodInfo("connected_to_server"));

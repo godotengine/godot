@@ -77,14 +77,14 @@ BackBufferCopy::CopyMode BackBufferCopy::get_copy_mode() const{
 
 void BackBufferCopy::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_rect","rect"),&BackBufferCopy::set_rect);
-	ClassDB::bind_method(_MD("get_rect"),&BackBufferCopy::get_rect);
+	ClassDB::bind_method(D_METHOD("set_rect","rect"),&BackBufferCopy::set_rect);
+	ClassDB::bind_method(D_METHOD("get_rect"),&BackBufferCopy::get_rect);
 
-	ClassDB::bind_method(_MD("set_copy_mode","copy_mode"),&BackBufferCopy::set_copy_mode);
-	ClassDB::bind_method(_MD("get_copy_mode"),&BackBufferCopy::get_copy_mode);
+	ClassDB::bind_method(D_METHOD("set_copy_mode","copy_mode"),&BackBufferCopy::set_copy_mode);
+	ClassDB::bind_method(D_METHOD("get_copy_mode"),&BackBufferCopy::get_copy_mode);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"copy_mode",PROPERTY_HINT_ENUM,"Disabled,Rect,Viewport"),_SCS("set_copy_mode"),_SCS("get_copy_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),_SCS("set_rect"),_SCS("get_rect"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"copy_mode",PROPERTY_HINT_ENUM,"Disabled,Rect,Viewport"),"set_copy_mode","get_copy_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),"set_rect","get_rect");
 
 	BIND_CONSTANT( COPY_MODE_DISABLED );
 	BIND_CONSTANT( COPY_MODE_RECT );

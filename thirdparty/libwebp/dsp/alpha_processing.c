@@ -284,9 +284,9 @@ static void ApplyAlphaMultiply_16b(uint8_t* rgba4444,
 #endif
 }
 
-static int DispatchAlpha(const uint8_t* alpha, int alpha_stride,
-                         int width, int height,
-                         uint8_t* dst, int dst_stride) {
+static int DispatchAlpha_C(const uint8_t* alpha, int alpha_stride,
+                           int width, int height,
+                           uint8_t* dst, int dst_stride) {
   uint32_t alpha_mask = 0xff;
   int i, j;
 
@@ -303,9 +303,9 @@ static int DispatchAlpha(const uint8_t* alpha, int alpha_stride,
   return (alpha_mask != 0xff);
 }
 
-static void DispatchAlphaToGreen(const uint8_t* alpha, int alpha_stride,
-                                 int width, int height,
-                                 uint32_t* dst, int dst_stride) {
+static void DispatchAlphaToGreen_C(const uint8_t* alpha, int alpha_stride,
+                                   int width, int height,
+                                   uint32_t* dst, int dst_stride) {
   int i, j;
   for (j = 0; j < height; ++j) {
     for (i = 0; i < width; ++i) {
@@ -316,9 +316,9 @@ static void DispatchAlphaToGreen(const uint8_t* alpha, int alpha_stride,
   }
 }
 
-static int ExtractAlpha(const uint8_t* argb, int argb_stride,
-                        int width, int height,
-                        uint8_t* alpha, int alpha_stride) {
+static int ExtractAlpha_C(const uint8_t* argb, int argb_stride,
+                          int width, int height,
+                          uint8_t* alpha, int alpha_stride) {
   uint8_t alpha_mask = 0xff;
   int i, j;
 
@@ -334,11 +334,17 @@ static int ExtractAlpha(const uint8_t* argb, int argb_stride,
   return (alpha_mask == 0xff);
 }
 
+static void ExtractGreen_C(const uint32_t* argb, uint8_t* alpha, int size) {
+  int i;
+  for (i = 0; i < size; ++i) alpha[i] = argb[i] >> 8;
+}
+
 void (*WebPApplyAlphaMultiply)(uint8_t*, int, int, int, int);
 void (*WebPApplyAlphaMultiply4444)(uint8_t*, int, int, int);
 int (*WebPDispatchAlpha)(const uint8_t*, int, int, int, uint8_t*, int);
 void (*WebPDispatchAlphaToGreen)(const uint8_t*, int, int, int, uint32_t*, int);
 int (*WebPExtractAlpha)(const uint8_t*, int, int, int, uint8_t*, int);
+void (*WebPExtractGreen)(const uint32_t* argb, uint8_t* alpha, int size);
 
 //------------------------------------------------------------------------------
 // Init function
@@ -346,6 +352,7 @@ int (*WebPExtractAlpha)(const uint8_t*, int, int, int, uint8_t*, int);
 extern void WebPInitAlphaProcessingMIPSdspR2(void);
 extern void WebPInitAlphaProcessingSSE2(void);
 extern void WebPInitAlphaProcessingSSE41(void);
+extern void WebPInitAlphaProcessingNEON(void);
 
 static volatile VP8CPUInfo alpha_processing_last_cpuinfo_used =
     (VP8CPUInfo)&alpha_processing_last_cpuinfo_used;
@@ -357,9 +364,11 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessing(void) {
   WebPMultRow = WebPMultRowC;
   WebPApplyAlphaMultiply = ApplyAlphaMultiply;
   WebPApplyAlphaMultiply4444 = ApplyAlphaMultiply_16b;
-  WebPDispatchAlpha = DispatchAlpha;
-  WebPDispatchAlphaToGreen = DispatchAlphaToGreen;
-  WebPExtractAlpha = ExtractAlpha;
+
+  WebPDispatchAlpha = DispatchAlpha_C;
+  WebPDispatchAlphaToGreen = DispatchAlphaToGreen_C;
+  WebPExtractAlpha = ExtractAlpha_C;
+  WebPExtractGreen = ExtractGreen_C;
 
   // If defined, use CPUInfo() to overwrite some pointers with faster versions.
   if (VP8GetCPUInfo != NULL) {
@@ -371,6 +380,11 @@ WEBP_TSAN_IGNORE_FUNCTION void WebPInitAlphaProcessing(void) {
         WebPInitAlphaProcessingSSE41();
       }
 #endif
+    }
+#endif
+#if defined(WEBP_USE_NEON)
+    if (VP8GetCPUInfo(kNEON)) {
+      WebPInitAlphaProcessingNEON();
     }
 #endif
 #if defined(WEBP_USE_MIPS_DSP_R2)

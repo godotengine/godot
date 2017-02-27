@@ -157,14 +157,14 @@ void VisualScriptYield::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptYield::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_yield_mode","mode"),&VisualScriptYield::set_yield_mode);
-	ClassDB::bind_method(_MD("get_yield_mode"),&VisualScriptYield::get_yield_mode);
+	ClassDB::bind_method(D_METHOD("set_yield_mode","mode"),&VisualScriptYield::set_yield_mode);
+	ClassDB::bind_method(D_METHOD("get_yield_mode"),&VisualScriptYield::get_yield_mode);
 
-	ClassDB::bind_method(_MD("set_wait_time","sec"),&VisualScriptYield::set_wait_time);
-	ClassDB::bind_method(_MD("get_wait_time"),&VisualScriptYield::get_wait_time);
+	ClassDB::bind_method(D_METHOD("set_wait_time","sec"),&VisualScriptYield::set_wait_time);
+	ClassDB::bind_method(D_METHOD("get_wait_time"),&VisualScriptYield::get_wait_time);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Frame,FixedFrame,Time",PROPERTY_USAGE_NOEDITOR),_SCS("set_yield_mode"),_SCS("get_yield_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"wait_time"),_SCS("set_wait_time"),_SCS("get_wait_time"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Frame,FixedFrame,Time",PROPERTY_USAGE_NOEDITOR),"set_yield_mode","get_yield_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"wait_time"),"set_wait_time","get_wait_time");
 
 
 	BIND_CONSTANT( YIELD_FRAME );
@@ -468,17 +468,17 @@ void VisualScriptYieldSignal::_validate_property(PropertyInfo& property) const {
 
 void VisualScriptYieldSignal::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_base_type","base_type"),&VisualScriptYieldSignal::set_base_type);
-	ClassDB::bind_method(_MD("get_base_type"),&VisualScriptYieldSignal::get_base_type);
+	ClassDB::bind_method(D_METHOD("set_base_type","base_type"),&VisualScriptYieldSignal::set_base_type);
+	ClassDB::bind_method(D_METHOD("get_base_type"),&VisualScriptYieldSignal::get_base_type);
 
-	ClassDB::bind_method(_MD("set_signal","signal"),&VisualScriptYieldSignal::set_signal);
-	ClassDB::bind_method(_MD("get_signal"),&VisualScriptYieldSignal::get_signal);
+	ClassDB::bind_method(D_METHOD("set_signal","signal"),&VisualScriptYieldSignal::set_signal);
+	ClassDB::bind_method(D_METHOD("get_signal"),&VisualScriptYieldSignal::get_signal);
 
-	ClassDB::bind_method(_MD("set_call_mode","mode"),&VisualScriptYieldSignal::set_call_mode);
-	ClassDB::bind_method(_MD("get_call_mode"),&VisualScriptYieldSignal::get_call_mode);
+	ClassDB::bind_method(D_METHOD("set_call_mode","mode"),&VisualScriptYieldSignal::set_call_mode);
+	ClassDB::bind_method(D_METHOD("get_call_mode"),&VisualScriptYieldSignal::get_call_mode);
 
-	ClassDB::bind_method(_MD("set_base_path","base_path"),&VisualScriptYieldSignal::set_base_path);
-	ClassDB::bind_method(_MD("get_base_path"),&VisualScriptYieldSignal::get_base_path);
+	ClassDB::bind_method(D_METHOD("set_base_path","base_path"),&VisualScriptYieldSignal::set_base_path);
+	ClassDB::bind_method(D_METHOD("get_base_path"),&VisualScriptYieldSignal::get_base_path);
 
 
 
@@ -490,10 +490,10 @@ void VisualScriptYieldSignal::_bind_methods() {
 		bt+=Variant::get_type_name(Variant::Type(i));
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"signal/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance"),_SCS("set_call_mode"),_SCS("get_call_mode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),_SCS("set_base_type"),_SCS("get_base_type"));
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"signal/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),_SCS("set_base_path"),_SCS("get_base_path"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/signal"),_SCS("set_signal"),_SCS("get_signal"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"signal/call_mode",PROPERTY_HINT_ENUM,"Self,Node Path,Instance"),"set_call_mode","get_call_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/base_type",PROPERTY_HINT_TYPE_STRING,"Object"),"set_base_type","get_base_type");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"signal/node_path",PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE),"set_base_path","get_base_path");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"signal/signal"),"set_signal","get_signal");
 
 
 	BIND_CONSTANT( CALL_MODE_SELF );

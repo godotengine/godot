@@ -449,7 +449,7 @@ LIGHT_SHADER_CODE
 
 //use lighting
 #endif
-//	color.rgb*=color.a;
+	//color.rgb*=color.a;
 	frag_color = color;
 
 }

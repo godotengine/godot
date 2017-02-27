@@ -31,7 +31,7 @@
 
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/room.h"
-#include "servers/spatial_sound_server.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -58,9 +58,6 @@ public:
 private:
 	Ref<RoomBounds> room;
 
-	RID sound_room;
-
-	bool sound_enabled;
 
 	int level;
 	void _parse_node_faces(PoolVector<Face3> &all_faces,const Node *p_node) const;
@@ -82,17 +79,12 @@ public:
 		NOTIFICATION_AREA_CHANGED=60
 	};
 
-	virtual AABB get_aabb() const;
+	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_room( const Ref<RoomBounds>& p_room );
 	Ref<RoomBounds> get_room() const;
 
-	void set_simulate_acoustics(bool p_enable);
-	bool is_simulating_acoustics() const;
-
-
-	RID get_sound_room() const;
 
 	Room();
 	~Room();

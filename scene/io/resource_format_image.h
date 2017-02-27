@@ -29,6 +29,8 @@
 #ifndef RESOURCE_FORMAT_IMAGE_H
 #define RESOURCE_FORMAT_IMAGE_H
 
+#if 0
+
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 /**
@@ -48,4 +50,5 @@ public:
 	ResourceFormatLoaderImage();
 };
 
+#endif
 #endif

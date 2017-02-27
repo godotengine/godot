@@ -165,7 +165,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 bool ZipArchive::try_open_pack(const String& p_name) {
 
 	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
-	if (p_name.extension().nocasecmp_to("zip") != 0 && p_name.extension().nocasecmp_to("pcz") != 0)
+	if (p_name.get_extension().nocasecmp_to("zip") != 0 && p_name.get_extension().nocasecmp_to("pcz") != 0)
 		return false;
 
 	zlib_filefunc_def io;

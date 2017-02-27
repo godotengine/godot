@@ -28,7 +28,7 @@
 /*************************************************************************/
 #ifndef EDITOR_SCENE_IMPORT_PLUGIN_H
 #define EDITOR_SCENE_IMPORT_PLUGIN_H
-
+#if 0
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/label.h"
@@ -196,5 +196,5 @@ public:
 
 };
 
-
+#endif
 #endif // EDITOR_SCENE_IMPORT_PLUGIN_H

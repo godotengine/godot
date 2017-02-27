@@ -40,7 +40,7 @@ Performance *Performance::singleton=NULL;
 
 void Performance::_bind_methods() {
 
-	ClassDB::bind_method(_MD("get_monitor","monitor"),&Performance::get_monitor);
+	ClassDB::bind_method(D_METHOD("get_monitor","monitor"),&Performance::get_monitor);
 
 	BIND_CONSTANT( TIME_FPS );
 	BIND_CONSTANT( TIME_PROCESS );
@@ -118,7 +118,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 float Performance::get_monitor(Monitor p_monitor) const {
 
 	switch(p_monitor) {
-		case TIME_FPS: return OS::get_singleton()->get_frames_per_second();
+		case TIME_FPS: return Engine::get_singleton()->get_frames_per_second();
 		case TIME_PROCESS: return _process_time;
 		case TIME_FIXED_PROCESS: return _fixed_process_time;
 		case MEMORY_STATIC: return Memory::get_mem_usage();
@@ -141,9 +141,9 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		};
 		case RENDER_OBJECTS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_OBJECTS_IN_FRAME);
 		case RENDER_VERTICES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_VERTICES_IN_FRAME);
-		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);;
-		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);;
-		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);;
+		case RENDER_MATERIAL_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_MATERIAL_CHANGES_IN_FRAME);
+		case RENDER_SHADER_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SHADER_CHANGES_IN_FRAME);
+		case RENDER_SURFACE_CHANGES_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_SURFACE_CHANGES_IN_FRAME);
 		case RENDER_DRAW_CALLS_IN_FRAME: return VS::get_singleton()->get_render_info(VS::INFO_DRAW_CALLS_IN_FRAME);
 		case RENDER_VIDEO_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VIDEO_MEM_USED);
 		case RENDER_TEXTURE_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);

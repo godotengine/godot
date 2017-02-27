@@ -43,7 +43,7 @@ class CanvasLayer : public Node {
 	Size2 scale;
 	real_t rot;
 	int layer;
-	Matrix32 transform;
+	Transform2D transform;
 	Ref<World2D> canvas;
 
 	ObjectID custom_viewport_id; // to check validity
@@ -71,8 +71,8 @@ public:
 	void set_layer(int p_xform);
 	int get_layer() const;
 
-	void set_transform(const Matrix32& p_xform);
-	Matrix32 get_transform() const;
+	void set_transform(const Transform2D& p_xform);
+	Transform2D get_transform() const;
 
 	void set_offset(const Vector2& p_offset);
 	Vector2 get_offset() const;

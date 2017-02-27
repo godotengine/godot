@@ -41,7 +41,7 @@ class Node2D : public CanvasItem {
 	int z;
 	bool z_relative;
 
-	Matrix32 _mat;
+	Transform2D _mat;
 
 	bool _xform_dirty;
 
@@ -92,8 +92,8 @@ public:
 	Size2 get_global_scale() const;
 	virtual Rect2 get_item_rect() const;
 
-	void set_transform(const Matrix32& p_transform);
-	void set_global_transform(const Matrix32& p_transform);
+	void set_transform(const Transform2D& p_transform);
+	void set_global_transform(const Transform2D& p_transform);
 	void set_global_position(const Point2& p_pos);
 	void set_global_rotation(float p_radians);
 	void set_global_rotation_in_degrees(float p_degrees);
@@ -108,9 +108,9 @@ public:
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 
-	Matrix32 get_relative_transform_to_parent(const Node *p_parent) const;
+	Transform2D get_relative_transform_to_parent(const Node *p_parent) const;
 
-	Matrix32 get_transform() const;
+	Transform2D get_transform() const;
 
 	Node2D();
 };

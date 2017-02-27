@@ -111,6 +111,11 @@ public:
 		MAX_COLOR_PHASES=4
 	};
 
+	enum ProcessMode {
+		PROCESS_FIXED,
+		PROCESS_IDLE,
+	};
+
 private:
 
 	float param[PARAM_MAX];
@@ -153,6 +158,8 @@ private:
 	Vector2 extents;
 	PoolVector<Vector2> emission_points;
 
+	ProcessMode process_mode;
+
 	float time;
 	int active_count;
 
@@ -162,7 +169,6 @@ private:
 	Color default_color;
 	Ref<ColorRamp> color_ramp;
 
-	void testee(int a, int b, int c, int d, int e);
 	void _process_particles(float p_delta);
 friend class ParticleAttractor2D;
 
@@ -177,6 +183,9 @@ public:
 
 	void set_emitting(bool p_emitting);
 	bool is_emitting() const;
+
+	void set_process_mode(ProcessMode p_mode);
+	ProcessMode get_process_mode() const;
 
 	void set_amount(int p_amount);
 	int get_amount() const;
@@ -254,6 +263,7 @@ public:
 	Particles2D();
 };
 
+VARIANT_ENUM_CAST( Particles2D::ProcessMode );
 VARIANT_ENUM_CAST( Particles2D::Parameter );
 
 #endif // PARTICLES_FRAME_H

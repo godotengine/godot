@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "create_dialog.h"
 
-#include "object_type_db.h"
+#include "class_db.h"
 #include "print_string.h"
 #include "scene/gui/box_container.h"
 #include "editor_node.h"
@@ -369,7 +369,7 @@ void CreateDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();
@@ -624,15 +624,15 @@ void CreateDialog::drop_data_fw(const Point2& p_point,const Variant& p_data,Cont
 
 void CreateDialog::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_changed"),&CreateDialog::_text_changed);
-	ClassDB::bind_method(_MD("_confirmed"),&CreateDialog::_confirmed);
-	ClassDB::bind_method(_MD("_sbox_input"),&CreateDialog::_sbox_input);
-	ClassDB::bind_method(_MD("_item_selected"),&CreateDialog::_item_selected);
-	ClassDB::bind_method(_MD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
-	ClassDB::bind_method(_MD("_history_selected"),&CreateDialog::_history_selected);
-	ClassDB::bind_method(_MD("_favorite_selected"),&CreateDialog::_favorite_selected);
-	ClassDB::bind_method(_MD("_history_activated"),&CreateDialog::_history_activated);
-	ClassDB::bind_method(_MD("_favorite_activated"),&CreateDialog::_favorite_activated);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&CreateDialog::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&CreateDialog::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&CreateDialog::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_item_selected"),&CreateDialog::_item_selected);
+	ClassDB::bind_method(D_METHOD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
+	ClassDB::bind_method(D_METHOD("_history_selected"),&CreateDialog::_history_selected);
+	ClassDB::bind_method(D_METHOD("_favorite_selected"),&CreateDialog::_favorite_selected);
+	ClassDB::bind_method(D_METHOD("_history_activated"),&CreateDialog::_history_activated);
+	ClassDB::bind_method(D_METHOD("_favorite_activated"),&CreateDialog::_favorite_activated);
 
 
 	ClassDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);
@@ -649,7 +649,7 @@ CreateDialog::CreateDialog() {
 	HSplitContainer *hbc = memnew( HSplitContainer );
 
 	add_child(hbc);
-	set_child_rect(hbc);
+
 
 	VBoxContainer *lvbc = memnew( VBoxContainer);
 	hbc->add_child(lvbc);
@@ -694,7 +694,7 @@ CreateDialog::CreateDialog() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
 	search_options->connect("cell_selected",this,"_item_selected");
-//	search_options->set_hide_root(true);
+	//search_options->set_hide_root(true);
 	base_type="Object";
 
 	help_bit = memnew( EditorHelpBit );
@@ -932,7 +932,7 @@ CreateDialog::CreateDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 
 	get_ok()->set_text("Create");
 

@@ -36,29 +36,23 @@ Error StreamPeerTCP::_connect(const String& p_address,int p_port) {
 	if (p_address.is_valid_ip_address()) {
 		ip=p_address;
 	} else {
-		ip=IP::get_singleton()->resolve_hostname(p_address, ip_type);
-		if (ip==IP_Address())
+		ip=IP::get_singleton()->resolve_hostname(p_address);
+		if (!ip.is_valid())
 			return ERR_CANT_RESOLVE;
 	}
 
-	connect(ip,p_port);
+	connect_to_host(ip,p_port);
 	return OK;
-}
-
-void StreamPeerTCP::set_ip_type(IP::Type p_type) {
-	disconnect();
-	ip_type = p_type;
 }
 
 void StreamPeerTCP::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_ip_type","ip_type"),&StreamPeerTCP::set_ip_type);
-	ClassDB::bind_method(_MD("connect","host","port"),&StreamPeerTCP::_connect);
-	ClassDB::bind_method(_MD("is_connected"),&StreamPeerTCP::is_connected);
-	ClassDB::bind_method(_MD("get_status"),&StreamPeerTCP::get_status);
-	ClassDB::bind_method(_MD("get_connected_host"),&StreamPeerTCP::get_connected_host);
-	ClassDB::bind_method(_MD("get_connected_port"),&StreamPeerTCP::get_connected_port);
-	ClassDB::bind_method(_MD("disconnect"),&StreamPeerTCP::disconnect);
+	ClassDB::bind_method(D_METHOD("connect_to_host","host","port"),&StreamPeerTCP::_connect);
+	ClassDB::bind_method(D_METHOD("is_connected_to_host"),&StreamPeerTCP::is_connected_to_host);
+	ClassDB::bind_method(D_METHOD("get_status"),&StreamPeerTCP::get_status);
+	ClassDB::bind_method(D_METHOD("get_connected_host"),&StreamPeerTCP::get_connected_host);
+	ClassDB::bind_method(D_METHOD("get_connected_port"),&StreamPeerTCP::get_connected_port);
+	ClassDB::bind_method(D_METHOD("disconnect_from_host"),&StreamPeerTCP::disconnect_from_host);
 
 	BIND_CONSTANT( STATUS_NONE );
 	BIND_CONSTANT( STATUS_CONNECTING );
@@ -83,7 +77,6 @@ StreamPeerTCP* StreamPeerTCP::create() {
 
 StreamPeerTCP::StreamPeerTCP() {
 
-	ip_type = IP::TYPE_ANY;
 }
 
 StreamPeerTCP::~StreamPeerTCP() {

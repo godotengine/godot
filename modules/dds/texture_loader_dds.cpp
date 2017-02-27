@@ -114,7 +114,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 	uint32_t width = f->get_32();
 	uint32_t height = f->get_32();
 	uint32_t pitch = f->get_32();
-	uint32_t depth = f->get_32();
+	/* uint32_t depth = */ f->get_32();
 	uint32_t mipmaps = f->get_32();
 
 	//skip 11
@@ -130,7 +130,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 	}
 
 
-	uint32_t format_size = f->get_32();
+	/* uint32_t format_size = */ f->get_32();
 	uint32_t format_flags = f->get_32();
 	uint32_t format_fourcc = f->get_32();
 	uint32_t format_rgb_bits = f->get_32();
@@ -139,9 +139,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 	uint32_t format_blue_mask = f->get_32();
 	uint32_t format_alpha_mask = f->get_32();
 
-	uint32_t caps_1 = f->get_32();
-	uint32_t caps_2 = f->get_32();
-	uint32_t caps_ddsx = f->get_32();
+	/* uint32_t caps_1 = */ f->get_32();
+	/* uint32_t caps_2 = */ f->get_32();
+	/* uint32_t caps_ddsx = */ f->get_32();
 
 	//reserved skip
 	f->get_32();
@@ -221,7 +221,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String& p_original_path,
 	if (!(flags&DDSD_MIPMAPCOUNT))
 		mipmaps=1;
 
-//	print_line("found format: "+String(dds_format_info[dds_format].name));
+	//print_line("found format: "+String(dds_format_info[dds_format].name));
 
 	PoolVector<uint8_t> src_data;
 
@@ -478,7 +478,7 @@ bool ResourceFormatDDS::handles_type(const String& p_type) const {
 
 String ResourceFormatDDS::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="dds")
+	if (p_path.get_extension().to_lower()=="dds")
 		return "ImageTexture";
 	return "";
 }

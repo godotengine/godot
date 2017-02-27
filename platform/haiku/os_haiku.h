@@ -34,12 +34,8 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/physics_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "servers/audio_server.h"
 #include "main/input_default.h"
-
 #include "audio_driver_media_kit.h"
 #include "context_gl_haiku.h"
 #include "haiku_application.h"
@@ -57,10 +53,6 @@ private:
 	VideoMode current_video_mode;
 	PhysicsServer* physics_server;
 	Physics2DServer* physics_2d_server;
-	AudioServerSW* audio_server;
-	SampleManagerMallocSW* sample_manager;
-	SpatialSoundServerSW* spatial_sound_server;
-	SpatialSound2DServerSW* spatial_sound_2d_server;
 
 #ifdef MEDIA_KIT_ENABLED
 	AudioDriverMediaKit driver_media_kit;

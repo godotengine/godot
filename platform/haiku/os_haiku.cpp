@@ -40,7 +40,7 @@
 
 OS_Haiku::OS_Haiku() {
 #ifdef MEDIA_KIT_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_media_kit);
+	AudioDriverManager::add_driver(&driver_media_kit);
 #endif
 };
 
@@ -119,9 +119,11 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	ERR_FAIL_COND(!visual_server);
 
 	// TODO: enable multithreaded VS
-	//if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-	//	visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	//}
+	/*
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+	}
+	*/
 
 	input = memnew(InputDefault);
 	window->SetInput(input);
@@ -136,20 +138,11 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	//physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init() != OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
 		ERR_PRINT("Initializing audio failed.");
 	}
-
-	sample_manager = memnew(SampleManagerMallocSW);
-	audio_server = memnew(AudioServerSW(sample_manager));
-	audio_server->init();
-
-	spatial_sound_server = memnew(SpatialSoundServerSW);
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
-	spatial_sound_2d_server->init();
 }
 
 void OS_Haiku::finalize() {
@@ -158,17 +151,6 @@ void OS_Haiku::finalize() {
 	}
 
 	main_loop = NULL;
-
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);

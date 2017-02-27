@@ -27,8 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "script_create_dialog.h"
+
 #include "script_language.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "editor_file_system.h"
@@ -38,7 +39,7 @@ void ScriptCreateDialog::config(const String& p_base_name,const String&p_base_pa
 	class_name->set_text("");
 	parent_name->set_text(p_base_name);
 	if (p_base_path!="")  {
-		initial_bp=p_base_path.basename();
+		initial_bp=p_base_path.get_basename();
 		file_path->set_text(initial_bp+"."+ScriptServer::get_language( language_menu->get_selected() )->get_extension());
 	} else {
 		initial_bp="";
@@ -127,7 +128,7 @@ void ScriptCreateDialog::_create_new() {
 	Ref<Script> scr = ScriptServer::get_language( language_menu->get_selected() )->get_template(cname,parent_name->get_text());
 
 	String selected_language = language_menu->get_item_text(language_menu->get_selected());
-	editor_settings->set_last_selected_language(selected_language);
+	editor_settings->set_project_metadata("script_setup", "last_selected_language", selected_language);
 
 	if (cname!="")
 		scr->set_name(cname);
@@ -182,7 +183,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	String path=file_path->get_text();
 	String extension="";
 	if (path.find(".")>=0) {
-		extension=path.extension();
+		extension=path.get_extension();
 	}
 
 	if (extension.length()==0) {
@@ -199,7 +200,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 
 		for(List<String>::Element *E=extensions.front();E;E=E->next()) {
 			if (E->get().nocasecmp_to(extension)==0) {
-				path=path.basename()+selected_ext;
+				path=path.get_basename()+selected_ext;
 				_path_changed(path);
 				break;
 			}
@@ -288,7 +289,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 	create_new=!f->file_exists(p);
 	memdelete(f);
 
-	String extension=p.extension();
+	String extension=p.get_extension();
 	List<String> extensions;
 
 	// get all possible extensions for script
@@ -353,7 +354,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+	//set_child_rect(vb);
 
 
 	class_name = memnew( LineEdit );
@@ -379,7 +380,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	}
 
 	editor_settings = EditorSettings::get_singleton();
-	String last_selected_language = editor_settings->get_last_selected_language();
+	String last_selected_language = editor_settings->get_project_metadata("script_setup", "last_selected_language", "");
 	if (last_selected_language != "")
 		for (int i = 0; i < language_menu->get_item_count(); i++)
 			if (language_menu->get_item_text(i) == last_selected_language)

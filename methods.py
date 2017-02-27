@@ -279,9 +279,9 @@ def build_glsl_header(filename):
 
 	""")
 
-    fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Matrix32& p_transform) {  _FU
+    fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform2D& p_transform) {  _FU
 
-		const Matrix32 &tr = p_transform;
+		const Transform2D &tr = p_transform;
 
 		GLfloat matrix[16]={ /* build a 16x16 matrix */
 			tr.elements[0][0],
@@ -933,9 +933,9 @@ def build_legacygl_header(filename, include, class_suffix, output_attribs):
 
 	""")
 
-    fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Matrix32& p_transform) {  _FU
+    fd.write("""\t_FORCE_INLINE_ void set_uniform(Uniforms p_uniform, const Transform2D& p_transform) {  _FU
 
-		const Matrix32 &tr = p_transform;
+		const Transform2D &tr = p_transform;
 
 		GLfloat matrix[16]={ /* build a 16x16 matrix */
 			tr.elements[0][0],

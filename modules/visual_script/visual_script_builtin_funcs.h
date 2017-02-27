@@ -66,6 +66,7 @@ public:
 		STR_TO_VAR,
 		VAR_TO_BYTES,
 		BYTES_TO_VAR,
+		COLORN,
 		FUNC_MAX
 	};
 

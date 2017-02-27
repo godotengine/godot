@@ -58,7 +58,7 @@ enum Error {
 	ERR_FILE_EOF,
 	ERR_CANT_OPEN, ///< Can't open a resource/socket/file
 	ERR_CANT_CREATE,		// (20)
-	ERROR_QUERY_FAILED,
+	ERR_QUERY_FAILED,
 	ERR_ALREADY_IN_USE,
  	ERR_LOCKED, ///< resource is locked
  	ERR_TIMEOUT,

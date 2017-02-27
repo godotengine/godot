@@ -47,7 +47,8 @@ public:
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED
+		MOUSE_MODE_CAPTURED,
+		MOUSE_MODE_CONFINED
 	};
 
 	void set_mouse_mode(MouseMode p_mode);
@@ -77,11 +78,12 @@ public:
 	virtual void stop_joy_vibration(int p_device)=0;
 
 	virtual Point2 get_mouse_pos() const=0;
-	virtual Point2 get_mouse_speed() const=0;
+	virtual Point2 get_last_mouse_speed() const=0;
 	virtual int get_mouse_button_mask() const=0;
 
 	virtual void warp_mouse_pos(const Vector2& p_to)=0;
 
+	virtual Vector3 get_gravity() const=0;
 	virtual Vector3 get_accelerometer() const=0;
 	virtual Vector3 get_magnetometer() const=0;
 	virtual Vector3 get_gyroscope() const=0;

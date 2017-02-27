@@ -51,8 +51,8 @@ private:
 
 	struct Shape {
 
-		Matrix32 xform;
-		Matrix32 xform_inv;
+		Transform2D xform;
+		Transform2D xform_inv;
 		BroadPhase2DSW::ID bpid;
 		Rect2 aabb_cache; //for rayqueries
 		Shape2DSW *shape;
@@ -63,8 +63,8 @@ private:
 
 	Vector<Shape> shapes;
 	Space2DSW *space;
-	Matrix32 transform;
-	Matrix32 inv_transform;
+	Transform2D transform;
+	Transform2D inv_transform;
 	uint32_t collision_mask;
 	uint32_t layer_mask;
 	bool _static;
@@ -77,8 +77,8 @@ protected:
 	void _update_shapes_with_motion(const Vector2& p_motion);
 	void _unregister_shapes();
 
-	_FORCE_INLINE_ void _set_transform(const Matrix32& p_transform, bool p_update_shapes=true) { transform=p_transform; if (p_update_shapes) {_update_shapes();} }
-	_FORCE_INLINE_ void _set_inv_transform(const Matrix32& p_transform) { inv_transform=p_transform; }
+	_FORCE_INLINE_ void _set_transform(const Transform2D& p_transform, bool p_update_shapes=true) { transform=p_transform; if (p_update_shapes) {_update_shapes();} }
+	_FORCE_INLINE_ void _set_inv_transform(const Transform2D& p_transform) { inv_transform=p_transform; }
 	void _set_static(bool p_static);
 
 	virtual void _shapes_changed()=0;
@@ -96,21 +96,21 @@ public:
 	void _shape_changed();
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
-	void add_shape(Shape2DSW *p_shape,const Matrix32& p_transform=Matrix32());
+	void add_shape(Shape2DSW *p_shape,const Transform2D& p_transform=Transform2D());
 	void set_shape(int p_index,Shape2DSW *p_shape);
-	void set_shape_transform(int p_index,const Matrix32& p_transform);
+	void set_shape_transform(int p_index,const Transform2D& p_transform);
 	void set_shape_metadata(int p_index,const Variant& p_metadata);
 
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
 	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const { return shapes[p_index].shape; }
-	_FORCE_INLINE_ const Matrix32& get_shape_transform(int p_index) const { return shapes[p_index].xform; }
-	_FORCE_INLINE_ const Matrix32& get_shape_inv_transform(int p_index) const { return shapes[p_index].xform_inv; }
+	_FORCE_INLINE_ const Transform2D& get_shape_transform(int p_index) const { return shapes[p_index].xform; }
+	_FORCE_INLINE_ const Transform2D& get_shape_inv_transform(int p_index) const { return shapes[p_index].xform_inv; }
 	_FORCE_INLINE_ const Rect2& get_shape_aabb(int p_index) const { return shapes[p_index].aabb_cache; }
 	_FORCE_INLINE_ const Variant& get_shape_metadata(int p_index) const { return shapes[p_index].metadata; }
 
-	_FORCE_INLINE_ Matrix32 get_transform() const { return transform; }
-	_FORCE_INLINE_ Matrix32 get_inv_transform() const { return inv_transform; }
+	_FORCE_INLINE_ Transform2D get_transform() const { return transform; }
+	_FORCE_INLINE_ Transform2D get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ Space2DSW* get_space() const { return space; }
 
 	_FORCE_INLINE_ void set_shape_as_trigger(int p_idx,bool p_enable) { shapes[p_idx].trigger=p_enable; }

@@ -45,9 +45,11 @@ public:
 	virtual float get_total_angular_damp() const=0;
 	virtual float get_total_linear_damp() const=0;
 
+	virtual Vector3 get_center_of_mass() const=0;
+	virtual Basis get_principal_inertia_axes() const=0;
 	virtual float get_inverse_mass() const=0; // get the mass
 	virtual Vector3 get_inverse_inertia() const=0; // get density of this body space
-	virtual Matrix3 get_inverse_inertia_tensor() const=0; // get density of this body space
+	virtual Basis get_inverse_inertia_tensor() const=0; // get density of this body space
 
 	virtual void set_linear_velocity(const Vector3& p_velocity)=0;
 	virtual Vector3 get_linear_velocity() const=0;
@@ -60,6 +62,7 @@ public:
 
 	virtual void add_force(const Vector3& p_force, const Vector3& p_pos)=0;
 	virtual void apply_impulse(const Vector3& p_pos, const Vector3& p_j)=0;
+	virtual void apply_torque_impulse(const Vector3& p_j)=0;
 
 	virtual void set_sleep_state(bool p_enable)=0;
 	virtual bool is_sleeping() const=0;
@@ -132,8 +135,8 @@ class PhysicsDirectSpaceState : public Object {
 
 	GDCLASS( PhysicsDirectSpaceState, Object );
 
-//	Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
-//	Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
+	//Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
+	//Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
 public:
 
 	enum ObjectTypeMask {
@@ -441,6 +444,7 @@ public:
 	virtual Vector3 body_get_applied_torque(RID p_body) const=0;
 
 	virtual void body_apply_impulse(RID p_body, const Vector3& p_pos, const Vector3& p_impulse)=0;
+	virtual void body_apply_torque_impulse(RID p_body, const Vector3& p_impulse)=0;
 	virtual void body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity)=0;
 
 	enum BodyAxisLock {

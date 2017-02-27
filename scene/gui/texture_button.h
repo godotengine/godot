@@ -35,20 +35,31 @@ class TextureButton : public BaseButton {
 
 	GDCLASS( TextureButton, BaseButton );
 
+public:
+	enum StretchMode {
+		STRETCH_SCALE,
+		STRETCH_TILE,
+		STRETCH_KEEP,
+		STRETCH_KEEP_CENTERED,
+		STRETCH_KEEP_ASPECT,
+		STRETCH_KEEP_ASPECT_CENTERED,
+		STRETCH_KEEP_ASPECT_COVERED,
+	};
+
+private:
 	Ref<Texture> normal;
 	Ref<Texture> pressed;
 	Ref<Texture> hover;
 	Ref<Texture> disabled;
 	Ref<Texture> focused;
 	Ref<BitMap> click_mask;
-	Size2 scale;
-	Color modulate;
-
+	bool expand;
+	StretchMode stretch_mode;
 
 protected:
 
-	virtual bool has_point(const Point2& p_point) const;
 	virtual Size2 get_minimum_size() const;
+	virtual bool has_point(const Point2& p_point) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -68,13 +79,15 @@ public:
 	Ref<Texture> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
 
-	void set_texture_scale(Size2 p_scale);
-	Size2 get_texture_scale() const;
+	bool get_expand() const;
+	void set_expand(bool p_expand);
 
-	void set_modulate(const Color& p_modulate);
-	Color get_modulate() const;
+	void set_stretch_mode(StretchMode stretch_mode);
+	StretchMode get_stretch_mode() const;
 
 	TextureButton();
 };
 
+
+VARIANT_ENUM_CAST( TextureButton::StretchMode );
 #endif // TEXTURE_BUTTON_H

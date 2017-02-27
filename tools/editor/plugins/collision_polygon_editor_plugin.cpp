@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "collision_polygon_editor_plugin.h"
+
 #include "spatial_editor_plugin.h"
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
@@ -529,9 +530,9 @@ void CollisionPolygonEditor::edit(Node *p_collision_polygon) {
 
 void CollisionPolygonEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_option"),&CollisionPolygonEditor::_menu_option);
-	ClassDB::bind_method(_MD("_polygon_draw"),&CollisionPolygonEditor::_polygon_draw);
-	ClassDB::bind_method(_MD("_node_removed"),&CollisionPolygonEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&CollisionPolygonEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_polygon_draw"),&CollisionPolygonEditor::_polygon_draw);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&CollisionPolygonEditor::_node_removed);
 
 }
 

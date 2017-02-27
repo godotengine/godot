@@ -38,7 +38,7 @@
 GDScriptLanguage *script_language_gd=NULL;
 ResourceFormatLoaderGDScript *resource_loader_gd=NULL;
 ResourceFormatSaverGDScript *resource_saver_gd=NULL;
-
+#if 0
 #ifdef TOOLS_ENABLED
 
 #include "tools/editor/editor_import_export.h"
@@ -100,7 +100,7 @@ public:
 						if (err==OK) {
 
 							fae->store_buffer(file.ptr(),file.size());
-							p_path=p_path.basename()+".gde";
+							p_path=p_path.get_basename()+".gde";
 						}
 
 						memdelete(fae);
@@ -111,7 +111,7 @@ public:
 
 					} else {
 
-						p_path=p_path.basename()+".gdc";
+						p_path=p_path.get_basename()+".gdc";
 						return file;
 					}
 				}
@@ -135,7 +135,7 @@ static void register_editor_plugin() {
 
 
 #endif
-
+#endif
 void register_gdscript_types() {
 
 	ClassDB::register_class<GDScript>();
@@ -148,10 +148,11 @@ void register_gdscript_types() {
 	ResourceLoader::add_resource_format_loader(resource_loader_gd);
 	resource_saver_gd=memnew( ResourceFormatSaverGDScript );
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
-
+#if 0
 #ifdef TOOLS_ENABLED
 
 	EditorNode::add_init_callback(register_editor_plugin);
+#endif
 #endif
 
 }

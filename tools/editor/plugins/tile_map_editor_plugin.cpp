@@ -26,12 +26,10 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "tile_map_editor_plugin.h"
 
 #include "os/keyboard.h"
 #include "os/input.h"
-
 #include "canvas_item_editor_plugin.h"
 #include "tools/editor/editor_settings.h"
 #include "tools/editor/editor_scale.h"
@@ -53,7 +51,7 @@ void TileMapEditor::_notification(int p_what) {
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			if (is_visible()) {
+			if (is_visible_in_tree()) {
 				_update_palette();
 			}
 		} break;
@@ -417,7 +415,7 @@ void TileMapEditor::_select(const Point2i& p_from, const Point2i& p_to) {
 	canvas_item_editor->update();
 }
 
-void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform) {
+void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform) {
 
 	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
 
@@ -505,7 +503,7 @@ void TileMapEditor::_draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h
 		canvas_item_editor->draw_texture_rect_region(t, rect, r, Color(1,1,1,0.5), p_transpose);
 }
 
-void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform) {
+void TileMapEditor::_draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform) {
 
 	PoolVector<Vector2> points = _bucket_fill(p_point, false, true);
 	PoolVector<Vector2>::Read pr = points.read();
@@ -597,11 +595,11 @@ static inline Vector<Point2i> line(int x0, int x1, int y0, int y1) {
 
 bool TileMapEditor::forward_gui_input(const InputEvent& p_event) {
 
-	if (!node || !node->get_tileset().is_valid() || !node->is_visible())
+	if (!node || !node->get_tileset().is_valid() || !node->is_visible_in_tree())
 		return false;
 
-	Matrix32 xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
-	Matrix32 xform_inv = xform.affine_inverse();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform_inv = xform.affine_inverse();
 
 	switch(p_event.type) {
 
@@ -1071,10 +1069,10 @@ void TileMapEditor::_canvas_draw() {
 	if (!node)
 		return;
 
-	Matrix32 cell_xf = node->get_cell_transform();
+	Transform2D cell_xf = node->get_cell_transform();
 
-	Matrix32 xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
-	Matrix32 xform_inv = xform.affine_inverse();
+	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform_inv = xform.affine_inverse();
 
 
 	Size2 screen_size=canvas_item_editor->get_size();
@@ -1302,10 +1300,10 @@ void TileMapEditor::edit(Node *p_tile_map) {
 		node=p_tile_map->cast_to<TileMap>();
 		if (!canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->connect("draw",this,"_canvas_draw");
-		if (!canvas_item_editor->is_connected("mouse_enter",this,"_canvas_mouse_enter"))
-			canvas_item_editor->connect("mouse_enter",this,"_canvas_mouse_enter");
-		if (!canvas_item_editor->is_connected("mouse_exit",this,"_canvas_mouse_exit"))
-			canvas_item_editor->connect("mouse_exit",this,"_canvas_mouse_exit");
+		if (!canvas_item_editor->is_connected("mouse_entered",this,"_canvas_mouse_enter"))
+			canvas_item_editor->connect("mouse_entered",this,"_canvas_mouse_enter");
+		if (!canvas_item_editor->is_connected("mouse_exited",this,"_canvas_mouse_exit"))
+			canvas_item_editor->connect("mouse_exited",this,"_canvas_mouse_exit");
 
 		_update_palette();
 
@@ -1314,10 +1312,10 @@ void TileMapEditor::edit(Node *p_tile_map) {
 
 		if (canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->disconnect("draw",this,"_canvas_draw");
-		if (canvas_item_editor->is_connected("mouse_enter",this,"_canvas_mouse_enter"))
-			canvas_item_editor->disconnect("mouse_enter",this,"_canvas_mouse_enter");
-		if (canvas_item_editor->is_connected("mouse_exit",this,"_canvas_mouse_exit"))
-			canvas_item_editor->disconnect("mouse_exit",this,"_canvas_mouse_exit");
+		if (canvas_item_editor->is_connected("mouse_entered",this,"_canvas_mouse_enter"))
+			canvas_item_editor->disconnect("mouse_entered",this,"_canvas_mouse_enter");
+		if (canvas_item_editor->is_connected("mouse_exited",this,"_canvas_mouse_exit"))
+			canvas_item_editor->disconnect("mouse_exited",this,"_canvas_mouse_exit");
 
 		_update_palette();
 	}
@@ -1346,20 +1344,20 @@ void TileMapEditor::_icon_size_changed(float p_value) {
 
 void TileMapEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_text_entered"),&TileMapEditor::_text_entered);
-	ClassDB::bind_method(_MD("_text_changed"),&TileMapEditor::_text_changed);
-	ClassDB::bind_method(_MD("_sbox_input"),&TileMapEditor::_sbox_input);
-	ClassDB::bind_method(_MD("_menu_option"),&TileMapEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&TileMapEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_canvas_mouse_enter"),&TileMapEditor::_canvas_mouse_enter);
-	ClassDB::bind_method(_MD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
-	ClassDB::bind_method(_MD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
-	ClassDB::bind_method(_MD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
+	ClassDB::bind_method(D_METHOD("_text_entered"),&TileMapEditor::_text_entered);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&TileMapEditor::_text_changed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&TileMapEditor::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&TileMapEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&TileMapEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_canvas_mouse_enter"),&TileMapEditor::_canvas_mouse_enter);
+	ClassDB::bind_method(D_METHOD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
+	ClassDB::bind_method(D_METHOD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
+	ClassDB::bind_method(D_METHOD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
 
-	ClassDB::bind_method(_MD("_fill_points"),&TileMapEditor::_fill_points);
-	ClassDB::bind_method(_MD("_erase_points"),&TileMapEditor::_erase_points);
+	ClassDB::bind_method(D_METHOD("_fill_points"),&TileMapEditor::_fill_points);
+	ClassDB::bind_method(D_METHOD("_erase_points"),&TileMapEditor::_erase_points);
 
-	ClassDB::bind_method(_MD("_icon_size_changed"), &TileMapEditor::_icon_size_changed);
+	ClassDB::bind_method(D_METHOD("_icon_size_changed"), &TileMapEditor::_icon_size_changed);
 }
 
 TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)

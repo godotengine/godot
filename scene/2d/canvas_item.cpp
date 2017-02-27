@@ -135,10 +135,10 @@ Variant CanvasItemMaterial::get_shader_param(const StringName& p_param) const{
 
 void CanvasItemMaterial::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_shader","shader:Shader"),&CanvasItemMaterial::set_shader);
-	ClassDB::bind_method(_MD("get_shader:Shader"),&CanvasItemMaterial::get_shader);
-	ClassDB::bind_method(_MD("set_shader_param","param","value"),&CanvasItemMaterial::set_shader_param);
-	ClassDB::bind_method(_MD("get_shader_param","param"),&CanvasItemMaterial::get_shader_param);
+	ClassDB::bind_method(D_METHOD("set_shader","shader:Shader"),&CanvasItemMaterial::set_shader);
+	ClassDB::bind_method(D_METHOD("get_shader:Shader"),&CanvasItemMaterial::get_shader);
+	ClassDB::bind_method(D_METHOD("set_shader_param","param","value"),&CanvasItemMaterial::set_shader_param);
+	ClassDB::bind_method(D_METHOD("get_shader_param","param"),&CanvasItemMaterial::get_shader_param);
 
 
 
@@ -182,7 +182,7 @@ CanvasItemMaterial::~CanvasItemMaterial(){
 
 
 
-bool CanvasItem::is_visible() const {
+bool CanvasItem::is_visible_in_tree() const {
 
 	if (!is_inside_tree())
 		return false;
@@ -190,7 +190,7 @@ bool CanvasItem::is_visible() const {
 	const CanvasItem *p=this;
 
 	while(p) {
-		if (p->hidden)
+		if (!p->visible)
 			return false;
 		p=p->get_parent_item();
 	}
@@ -199,13 +199,6 @@ bool CanvasItem::is_visible() const {
 	return true;
 }
 
-bool CanvasItem::is_hidden() const {
-
-	/*if (!is_inside_scene())
-		return false;*/
-
-	return hidden;
-}
 
 void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
@@ -221,7 +214,7 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
 		CanvasItem *c=get_child(i)->cast_to<CanvasItem>();
 
-		if (c && !c->hidden) //should the toplevels stop propagation? i think so but..
+		if (c && c->visible) //should the toplevels stop propagation? i think so but..
 			c->_propagate_visibility_changed(p_visible);
 	}
 
@@ -231,10 +224,10 @@ void CanvasItem::_propagate_visibility_changed(bool p_visible) {
 
 void CanvasItem::show() {
 
-	if (!hidden)
+	if (visible)
 		return;
 
-	hidden=false;
+	visible=true;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,true);
 
 	if (!is_inside_tree())
@@ -247,10 +240,10 @@ void CanvasItem::show() {
 
 void CanvasItem::hide() {
 
-	if (hidden)
+	if (!visible)
 		return;
 
-	hidden=true;
+	visible=false;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,false);
 
 	if (!is_inside_tree())
@@ -259,16 +252,6 @@ void CanvasItem::hide() {
 	_propagate_visibility_changed(false);
 	_change_notify("visibility/visible");
 }
-
-void CanvasItem::set_hidden(bool p_hidden) {
-
-	if (hidden == p_hidden) {
-		return;
-	}
-
-	_set_visible_(!p_hidden);
-}
-
 
 Variant CanvasItem::edit_get_state() const {
 
@@ -306,7 +289,7 @@ void CanvasItem::_update_callback() {
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
-	if (is_visible()) { //todo optimize this!!
+	if (is_visible_in_tree()) { //todo optimize this!!
 		if (first_draw) {
 			notification(NOTIFICATION_VISIBILITY_CHANGED);
 			first_draw=false;
@@ -325,10 +308,10 @@ void CanvasItem::_update_callback() {
 	pending_update=false; // don't change to false until finished drawing (avoid recursive update)
 }
 
-Matrix32 CanvasItem::get_global_transform_with_canvas() const {
+Transform2D CanvasItem::get_global_transform_with_canvas() const {
 
 	const CanvasItem *ci = this;
-	Matrix32 xform;
+	Transform2D xform;
 	const CanvasItem *last_valid=NULL;
 
 	while(ci) {
@@ -346,7 +329,7 @@ Matrix32 CanvasItem::get_global_transform_with_canvas() const {
 	return xform;
 }
 
-Matrix32 CanvasItem::get_global_transform() const {
+Transform2D CanvasItem::get_global_transform() const {
 
 
 	if (global_invalid) {
@@ -411,7 +394,7 @@ void CanvasItem::_enter_canvas() {
 		else
 			get_viewport()->gui_reset_canvas_sort_index();
 
-		get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 
 	} else {
 
@@ -461,7 +444,7 @@ void CanvasItem::_notification(int p_what) {
 				break;
 
 			if (group!="") {
-				get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
+				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE,group,"_toplevel_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
@@ -495,16 +478,16 @@ void CanvasItem::_notification(int p_what) {
 	}
 }
 
-void CanvasItem::_set_visible_(bool p_visible) {
+void CanvasItem::set_visible(bool p_visible) {
 
 	if (p_visible)
 		show();
 	else
 		hide();
 }
-bool CanvasItem::_is_visible_() const {
+bool CanvasItem::is_visible() const {
 
-	return !is_hidden();
+	return visible;
 }
 
 
@@ -691,12 +674,12 @@ void CanvasItem::draw_set_transform(const Point2& p_offset, float p_rot, const S
 		ERR_FAIL();
 	}
 
-	Matrix32 xform(p_rot,p_offset);
+	Transform2D xform(p_rot,p_offset);
 	xform.scale_basis(p_scale);
 	VisualServer::get_singleton()->canvas_item_add_set_transform(canvas_item,xform);
 }
 
-void CanvasItem::draw_set_transform_matrix(const Matrix32& p_matrix) {
+void CanvasItem::draw_set_transform_matrix(const Transform2D& p_matrix) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -764,12 +747,12 @@ float CanvasItem::draw_char(const Ref<Font>& p_font,const Point2& p_pos, const S
 
 void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
-	if (p_node->xform_change.in_list() && p_node->global_invalid)
+	if (/*p_node->xform_change.in_list() &&*/ p_node->global_invalid)
 		return; //nothing to do
 
 	p_node->global_invalid=true;
 
-	if (!p_node->xform_change.in_list()) {
+	if (p_node->notify_transform && !p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
 			if (p_node->is_inside_tree())
 				get_tree()->xform_change_list.add(&p_node->xform_change);
@@ -835,7 +818,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 RID CanvasItem::get_viewport_rid() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),RID());
-	return get_viewport()->get_viewport();
+	return get_viewport()->get_viewport_rid();
 }
 
 void CanvasItem::set_block_transform_notify(bool p_enable) {
@@ -892,7 +875,7 @@ Vector2 CanvasItem::make_canvas_pos_local(const Vector2& screen_point) const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),screen_point);
 
-	Matrix32 local_matrix = (get_canvas_transform() * 
+	Transform2D local_matrix = (get_canvas_transform() * 
 			get_global_transform()).affine_inverse();
 
 	return local_matrix.xform(screen_point);
@@ -922,101 +905,105 @@ Vector2 CanvasItem::get_local_mouse_pos() const{
 
 void CanvasItem::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_toplevel_raise_self"),&CanvasItem::_toplevel_raise_self);
-	ClassDB::bind_method(_MD("_update_callback"),&CanvasItem::_update_callback);
-	ClassDB::bind_method(_MD("_set_visible_"),&CanvasItem::_set_visible_);
-	ClassDB::bind_method(_MD("_is_visible_"),&CanvasItem::_is_visible_);
+	ClassDB::bind_method(D_METHOD("_toplevel_raise_self"),&CanvasItem::_toplevel_raise_self);
+	ClassDB::bind_method(D_METHOD("_update_callback"),&CanvasItem::_update_callback);
 
-	ClassDB::bind_method(_MD("edit_set_state","state"),&CanvasItem::edit_set_state);
-	ClassDB::bind_method(_MD("edit_get_state:Variant"),&CanvasItem::edit_get_state);
-	ClassDB::bind_method(_MD("edit_set_rect","rect"),&CanvasItem::edit_set_rect);
-	ClassDB::bind_method(_MD("edit_rotate","degrees"),&CanvasItem::edit_rotate);
+	ClassDB::bind_method(D_METHOD("edit_set_state","state"),&CanvasItem::edit_set_state);
+	ClassDB::bind_method(D_METHOD("edit_get_state:Variant"),&CanvasItem::edit_get_state);
+	ClassDB::bind_method(D_METHOD("edit_set_rect","rect"),&CanvasItem::edit_set_rect);
+	ClassDB::bind_method(D_METHOD("edit_rotate","degrees"),&CanvasItem::edit_rotate);
 
-	ClassDB::bind_method(_MD("get_item_rect"),&CanvasItem::get_item_rect);
-	ClassDB::bind_method(_MD("get_item_and_children_rect"),&CanvasItem::get_item_and_children_rect);
-	//ClassDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
+	ClassDB::bind_method(D_METHOD("get_item_rect"),&CanvasItem::get_item_rect);
+	ClassDB::bind_method(D_METHOD("get_item_and_children_rect"),&CanvasItem::get_item_and_children_rect);
+	//ClassDB::bind_method(D_METHOD("get_transform"),&CanvasItem::get_transform);
 
-	ClassDB::bind_method(_MD("get_canvas_item"),&CanvasItem::get_canvas_item);
+	ClassDB::bind_method(D_METHOD("get_canvas_item"),&CanvasItem::get_canvas_item);
 
-	ClassDB::bind_method(_MD("is_visible"),&CanvasItem::is_visible);
-	ClassDB::bind_method(_MD("is_hidden"),&CanvasItem::is_hidden);
-	ClassDB::bind_method(_MD("show"),&CanvasItem::show);
-	ClassDB::bind_method(_MD("hide"),&CanvasItem::hide);
-	ClassDB::bind_method(_MD("set_hidden","hidden"),&CanvasItem::set_hidden);
+	ClassDB::bind_method(D_METHOD("set_visible"),&CanvasItem::set_visible);
+	ClassDB::bind_method(D_METHOD("is_visible"),&CanvasItem::is_visible);
+	ClassDB::bind_method(D_METHOD("is_visible_in_tree"),&CanvasItem::is_visible_in_tree);
+	ClassDB::bind_method(D_METHOD("show"),&CanvasItem::show);
+	ClassDB::bind_method(D_METHOD("hide"),&CanvasItem::hide);
 
-	ClassDB::bind_method(_MD("update"),&CanvasItem::update);
+	ClassDB::bind_method(D_METHOD("update"),&CanvasItem::update);
 
-	ClassDB::bind_method(_MD("set_as_toplevel","enable"),&CanvasItem::set_as_toplevel);
-	ClassDB::bind_method(_MD("is_set_as_toplevel"),&CanvasItem::is_set_as_toplevel);
+	ClassDB::bind_method(D_METHOD("set_as_toplevel","enable"),&CanvasItem::set_as_toplevel);
+	ClassDB::bind_method(D_METHOD("is_set_as_toplevel"),&CanvasItem::is_set_as_toplevel);
 
-	ClassDB::bind_method(_MD("set_light_mask","light_mask"),&CanvasItem::set_light_mask);
-	ClassDB::bind_method(_MD("get_light_mask"),&CanvasItem::get_light_mask);
+	ClassDB::bind_method(D_METHOD("set_light_mask","light_mask"),&CanvasItem::set_light_mask);
+	ClassDB::bind_method(D_METHOD("get_light_mask"),&CanvasItem::get_light_mask);
 
-	ClassDB::bind_method(_MD("set_modulate","modulate"),&CanvasItem::set_modulate);
-	ClassDB::bind_method(_MD("get_modulate"),&CanvasItem::get_modulate);
-	ClassDB::bind_method(_MD("set_self_modulate","self_modulate"),&CanvasItem::set_self_modulate);
-	ClassDB::bind_method(_MD("get_self_modulate"),&CanvasItem::get_self_modulate);
+	ClassDB::bind_method(D_METHOD("set_modulate","modulate"),&CanvasItem::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"),&CanvasItem::get_modulate);
+	ClassDB::bind_method(D_METHOD("set_self_modulate","self_modulate"),&CanvasItem::set_self_modulate);
+	ClassDB::bind_method(D_METHOD("get_self_modulate"),&CanvasItem::get_self_modulate);
 
-	ClassDB::bind_method(_MD("set_draw_behind_parent","enable"),&CanvasItem::set_draw_behind_parent);
-	ClassDB::bind_method(_MD("is_draw_behind_parent_enabled"),&CanvasItem::is_draw_behind_parent_enabled);
+	ClassDB::bind_method(D_METHOD("set_draw_behind_parent","enable"),&CanvasItem::set_draw_behind_parent);
+	ClassDB::bind_method(D_METHOD("is_draw_behind_parent_enabled"),&CanvasItem::is_draw_behind_parent_enabled);
 
-	ClassDB::bind_method(_MD("_set_on_top","on_top"),&CanvasItem::_set_on_top);
-	ClassDB::bind_method(_MD("_is_on_top"),&CanvasItem::_is_on_top);
-	//ClassDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
+	ClassDB::bind_method(D_METHOD("_set_on_top","on_top"),&CanvasItem::_set_on_top);
+	ClassDB::bind_method(D_METHOD("_is_on_top"),&CanvasItem::_is_on_top);
+	//ClassDB::bind_method(D_METHOD("get_transform"),&CanvasItem::get_transform);
 
-	ClassDB::bind_method(_MD("draw_line","from","to","color","width","antialiased"),&CanvasItem::draw_line,DEFVAL(1.0),DEFVAL(false));
-	ClassDB::bind_method(_MD("draw_rect","rect","color"),&CanvasItem::draw_rect);
-	ClassDB::bind_method(_MD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
-	ClassDB::bind_method(_MD("draw_texture","texture:Texture","pos","modulate"),&CanvasItem::draw_texture,DEFVAL(Color(1,1,1,1)));
-	ClassDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate","transpose"),&CanvasItem::draw_texture_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ClassDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
-	ClassDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
-	ClassDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Variant()),DEFVAL(1.0));
-	ClassDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
-	ClassDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Vector2Array()),DEFVAL(Variant()));
-	ClassDB::bind_method(_MD("draw_string","font:Font","pos","text","modulate","clip_w"),&CanvasItem::draw_string,DEFVAL(Color(1,1,1)),DEFVAL(-1));
-	ClassDB::bind_method(_MD("draw_char","font:Font","pos","char","next","modulate"),&CanvasItem::draw_char,DEFVAL(Color(1,1,1)));
+	ClassDB::bind_method(D_METHOD("draw_line","from","to","color","width","antialiased"),&CanvasItem::draw_line,DEFVAL(1.0),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_rect","rect","color"),&CanvasItem::draw_rect);
+	ClassDB::bind_method(D_METHOD("draw_circle","pos","radius","color"),&CanvasItem::draw_circle);
+	ClassDB::bind_method(D_METHOD("draw_texture","texture:Texture","pos","modulate"),&CanvasItem::draw_texture,DEFVAL(Color(1,1,1,1)));
+	ClassDB::bind_method(D_METHOD("draw_texture_rect","texture:Texture","rect","tile","modulate","transpose"),&CanvasItem::draw_texture_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate","transpose"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
+	ClassDB::bind_method(D_METHOD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Variant()),DEFVAL(1.0));
+	ClassDB::bind_method(D_METHOD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(PoolVector2Array()),DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(PoolVector2Array()),DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("draw_string","font:Font","pos","text","modulate","clip_w"),&CanvasItem::draw_string,DEFVAL(Color(1,1,1)),DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("draw_char","font:Font","pos","char","next","modulate"),&CanvasItem::draw_char,DEFVAL(Color(1,1,1)));
 
-	ClassDB::bind_method(_MD("draw_set_transform","pos","rot","scale"),&CanvasItem::draw_set_transform);
-	ClassDB::bind_method(_MD("draw_set_transform_matrix","xform"),&CanvasItem::draw_set_transform_matrix);
-	ClassDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
-	ClassDB::bind_method(_MD("get_global_transform"),&CanvasItem::get_global_transform);
-	ClassDB::bind_method(_MD("get_global_transform_with_canvas"),&CanvasItem::get_global_transform_with_canvas);
-	ClassDB::bind_method(_MD("get_viewport_transform"),&CanvasItem::get_viewport_transform);
-	ClassDB::bind_method(_MD("get_viewport_rect"),&CanvasItem::get_viewport_rect);
-	ClassDB::bind_method(_MD("get_canvas_transform"),&CanvasItem::get_canvas_transform);
-	ClassDB::bind_method(_MD("get_local_mouse_pos"),&CanvasItem::get_local_mouse_pos);
-	ClassDB::bind_method(_MD("get_global_mouse_pos"),&CanvasItem::get_global_mouse_pos);
-	ClassDB::bind_method(_MD("get_canvas"),&CanvasItem::get_canvas);
-	ClassDB::bind_method(_MD("get_world_2d"),&CanvasItem::get_world_2d);
-	//ClassDB::bind_method(_MD("get_viewport"),&CanvasItem::get_viewport);
+	ClassDB::bind_method(D_METHOD("draw_set_transform","pos","rot","scale"),&CanvasItem::draw_set_transform);
+	ClassDB::bind_method(D_METHOD("draw_set_transform_matrix","xform"),&CanvasItem::draw_set_transform_matrix);
+	ClassDB::bind_method(D_METHOD("get_transform"),&CanvasItem::get_transform);
+	ClassDB::bind_method(D_METHOD("get_global_transform"),&CanvasItem::get_global_transform);
+	ClassDB::bind_method(D_METHOD("get_global_transform_with_canvas"),&CanvasItem::get_global_transform_with_canvas);
+	ClassDB::bind_method(D_METHOD("get_viewport_transform"),&CanvasItem::get_viewport_transform);
+	ClassDB::bind_method(D_METHOD("get_viewport_rect"),&CanvasItem::get_viewport_rect);
+	ClassDB::bind_method(D_METHOD("get_canvas_transform"),&CanvasItem::get_canvas_transform);
+	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"),&CanvasItem::get_local_mouse_pos);
+	ClassDB::bind_method(D_METHOD("get_global_mouse_pos"),&CanvasItem::get_global_mouse_pos);
+	ClassDB::bind_method(D_METHOD("get_canvas"),&CanvasItem::get_canvas);
+	ClassDB::bind_method(D_METHOD("get_world_2d"),&CanvasItem::get_world_2d);
+	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);
 
-	ClassDB::bind_method(_MD("set_material","material:CanvasItemMaterial"),&CanvasItem::set_material);
-	ClassDB::bind_method(_MD("get_material:CanvasItemMaterial"),&CanvasItem::get_material);
+	ClassDB::bind_method(D_METHOD("set_material","material:CanvasItemMaterial"),&CanvasItem::set_material);
+	ClassDB::bind_method(D_METHOD("get_material:CanvasItemMaterial"),&CanvasItem::get_material);
 
-	ClassDB::bind_method(_MD("set_use_parent_material","enable"),&CanvasItem::set_use_parent_material);
-	ClassDB::bind_method(_MD("get_use_parent_material"),&CanvasItem::get_use_parent_material);
+	ClassDB::bind_method(D_METHOD("set_use_parent_material","enable"),&CanvasItem::set_use_parent_material);
+	ClassDB::bind_method(D_METHOD("get_use_parent_material"),&CanvasItem::get_use_parent_material);
 
-	ClassDB::bind_method(_MD("make_canvas_pos_local","screen_point"),
+	ClassDB::bind_method(D_METHOD("set_notify_local_transform","enable"),&CanvasItem::set_notify_local_transform);
+	ClassDB::bind_method(D_METHOD("is_local_transform_notification_enabled"),&CanvasItem::is_local_transform_notification_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_notify_transform","enable"),&CanvasItem::set_notify_transform);
+	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"),&CanvasItem::is_transform_notification_enabled);
+
+	ClassDB::bind_method(D_METHOD("make_canvas_pos_local","screen_point"),
 			&CanvasItem::make_canvas_pos_local);
-	ClassDB::bind_method(_MD("make_input_local","event"),&CanvasItem::make_input_local);
+	ClassDB::bind_method(D_METHOD("make_input_local","event"),&CanvasItem::make_input_local);
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_GROUP("Visibility","");
-	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_modulate"),_SCS("get_modulate") );
-	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"self_modulate",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_modulate"),_SCS("get_self_modulate") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"show_behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
-	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visible"), "set_visible","is_visible") ;
+	ADD_PROPERTYNO( PropertyInfo(Variant::COLOR,"modulate"), "set_modulate","get_modulate") ;
+	ADD_PROPERTYNO( PropertyInfo(Variant::COLOR,"self_modulate"), "set_self_modulate","get_self_modulate") ;
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"show_behind_parent"), "set_draw_behind_parent","is_draw_behind_parent_enabled") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"show_on_top",PROPERTY_HINT_NONE,"",0), "_set_on_top","_is_on_top") ; //compatibility
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask","get_light_mask") ;
 
 	ADD_GROUP("Material","");
-	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"material",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), _SCS("set_material"),_SCS("get_material") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"use_parent_material"), _SCS("set_use_parent_material"),_SCS("get_use_parent_material") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"material",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), "set_material","get_material") ;
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"use_parent_material"), "set_use_parent_material","get_use_parent_material") ;
 	//exporting these two things doesn't really make much sense i think
-	//ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transform/toplevel"), _SCS("set_as_toplevel"),_SCS("is_set_as_toplevel") );
-	//ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),_SCS("set_transform_notify"),_SCS("is_transform_notify_enabled"));
+	//ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transform/toplevel"), "set_as_toplevel","is_set_as_toplevel") ;
+	//ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),"set_transform_notify","is_transform_notify_enabled");
 
 	ADD_SIGNAL( MethodInfo("draw") );
 	ADD_SIGNAL( MethodInfo("visibility_changed") );
@@ -1041,9 +1028,9 @@ void CanvasItem::_bind_methods() {
 
 }
 
-Matrix32 CanvasItem::get_canvas_transform() const {
+Transform2D CanvasItem::get_canvas_transform() const {
 
-	ERR_FAIL_COND_V(!is_inside_tree(),Matrix32());
+	ERR_FAIL_COND_V(!is_inside_tree(),Transform2D());
 
 	if (canvas_layer)
 		return canvas_layer->get_transform();
@@ -1054,9 +1041,9 @@ Matrix32 CanvasItem::get_canvas_transform() const {
 
 }
 
-Matrix32 CanvasItem::get_viewport_transform() const {
+Transform2D CanvasItem::get_viewport_transform() const {
 
-	ERR_FAIL_COND_V(!is_inside_tree(),Matrix32());
+	ERR_FAIL_COND_V(!is_inside_tree(),Transform2D());
 
 	if (canvas_layer) {
 
@@ -1079,6 +1066,15 @@ void CanvasItem::set_notify_local_transform(bool p_enable) {
 
 bool CanvasItem::is_local_transform_notification_enabled() const {
 	return notify_local_transform;
+}
+
+
+void CanvasItem::set_notify_transform(bool p_enable) {
+	notify_transform=p_enable;
+}
+
+bool CanvasItem::is_transform_notification_enabled() const {
+	return notify_transform;
 }
 
 int CanvasItem::get_canvas_layer() const {
@@ -1110,7 +1106,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 
 
 	canvas_item=VisualServer::get_singleton()->canvas_item_create();
-	hidden=false;
+	visible=true;
 	pending_update=false;
 	modulate=Color(1,1,1,1);
 	self_modulate=Color(1,1,1,1);
@@ -1118,12 +1114,13 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	first_draw=false;
 	drawing=false;
 	behind=false;
-	block_transform_notify=false;
-//	viewport=NULL;
+	block_transform_notify=false;	
+	//viewport=NULL;
 	canvas_layer=NULL;
 	use_parent_material=false;
 	global_invalid=true;
 	notify_local_transform=false;
+	notify_transform=false;
 	light_mask=1;
 
 	C=NULL;

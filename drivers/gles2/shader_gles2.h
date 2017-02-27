@@ -134,7 +134,7 @@ private:
 
 	struct VersionKeyHash {
 
-		static _FORCE_INLINE_ uint32_t hash( const VersionKey& p_key) { return HashMapHahserDefault::hash(p_key.key); };
+		static _FORCE_INLINE_ uint32_t hash( const VersionKey& p_key) { return HashMapHasherDefault::hash(p_key.key); };
 	};
 
 	//this should use a way more cachefriendly version..
@@ -213,7 +213,7 @@ private:
 
 		case Variant::MATRIX32: {
 
-			Matrix32 tr=p_value;
+			Transform2D tr=p_value;
 			GLfloat matrix[16]={ /* build a 16x16 matrix */
 				tr.elements[0][0],
 				tr.elements[0][1],

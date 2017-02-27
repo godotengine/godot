@@ -61,6 +61,7 @@ public:
 		int current_blend_mode;
 		float current_line_width;
 		int current_depth_draw;
+		bool current_depth_test;
 		GLuint current_main_tex;
 
 		SceneShaderGLES3 scene_shader;
@@ -90,6 +91,7 @@ public:
 			float shadow_slope_scale;
 			float shadow_dual_paraboloid_render_zfar;
 			float shadow_dual_paraboloid_render_side;
+			float screen_pixel_size[2];
 			float shadow_atlas_pixel_size[2];
 			float shadow_directional_pixel_size[2];
 			float reflection_multiplier;
@@ -135,6 +137,7 @@ public:
 		int max_ubo_reflections;
 		int max_skeleton_bones;
 
+		bool used_contact_shadows;
 
 
 		int spot_light_count;
@@ -208,7 +211,6 @@ public:
 	void shadow_atlas_set_quadrant_subdivision(RID p_atlas,int p_quadrant,int p_subdivision);
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
 	bool shadow_atlas_update_light(RID p_atlas,RID p_light_intance,float p_coverage,uint64_t p_light_version);
-
 
 	struct DirectionalShadow {
 		GLuint fbo;
@@ -467,7 +469,7 @@ public:
 		float light_color_energy[4];
 		float light_params[4]; //spot attenuation, spot angle, specular, shadow enabled
 		float light_clamp[4];
-		float light_shadow_color[4];
+		float light_shadow_color_contact[4];
 		float shadow_matrix1[16]; //up to here for spot and omni, rest is for directional
 		float shadow_matrix2[16];
 		float shadow_matrix3[16];

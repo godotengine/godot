@@ -32,6 +32,7 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/bit_mask.h"
+#include "scene/resources/rectangle_shape_2d.h"
 
 class TouchScreenButton : public Node2D {
 
@@ -47,15 +48,23 @@ private:
 	Ref<Texture> texture;
 	Ref<Texture> texture_pressed;
 	Ref<BitMap> bitmask;
+	Ref<Shape2D> shape;
+	bool shape_centered;
+
+	Ref<RectangleShape2D> unit_rect;
 
 	StringName action;
 	bool passby_press;
 	int finger_pressed;
+	bool allow_repress;
 	int action_id;
 
 	VisibilityMode visibility;
 
 	void _input(const InputEvent& p_Event);
+
+	void _press(int p_finger_pressed);
+	void _release(bool p_exiting_tree=false);
 
 protected:
 
@@ -72,6 +81,12 @@ public:
 
 	void set_bitmask(const Ref<BitMap>& p_bitmask);
 	Ref<BitMap> get_bitmask() const;
+
+	void set_shape(const Ref<Shape2D>& p_shape);
+	Ref<Shape2D> get_shape() const;
+
+	void set_shape_centered(bool p_shape_centered);
+	bool is_shape_centered() const;
 
 	void set_action(const String& p_action);
 	String get_action() const;

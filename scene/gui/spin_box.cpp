@@ -49,8 +49,10 @@ void SpinBox::_value_changed(double) {
 
 void SpinBox::_text_entered(const String& p_string) {
 
-	//if (!p_string.is_numeric())
-	//	return;
+	/*
+	if (!p_string.is_numeric())
+		return;
+	*/
 	String value = p_string;
 	if (prefix!="" && p_string.begins_with(prefix))
 		value = p_string.substr(prefix.length(), p_string.length()-prefix.length());
@@ -98,8 +100,6 @@ void SpinBox::_gui_input(const InputEvent& p_event) {
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed) {
 		const InputEventMouseButton &mb=p_event.mouse_button;
 
-		if (mb.doubleclick)
-			return; //ignore doubleclick
 
 		bool up = mb.y < (get_size().height/2);
 
@@ -160,7 +160,7 @@ void SpinBox::_gui_input(const InputEvent& p_event) {
 		if (drag.enabled) {
 
 			float diff_y = drag.mouse_pos.y - cpos.y;
-			diff_y=Math::pow(ABS(diff_y),1.8)*SGN(diff_y);
+			diff_y=Math::pow(ABS(diff_y),1.8f)*SGN(diff_y);
 			diff_y*=0.1;
 
 			drag.mouse_pos=cpos;
@@ -251,24 +251,24 @@ bool SpinBox::is_editable() const {
 
 void SpinBox::_bind_methods() {
 
-	//ClassDB::bind_method(_MD("_value_changed"),&SpinBox::_value_changed);
-	ClassDB::bind_method(_MD("_gui_input"),&SpinBox::_gui_input);
-	ClassDB::bind_method(_MD("_text_entered"),&SpinBox::_text_entered);
-	ClassDB::bind_method(_MD("set_suffix","suffix"),&SpinBox::set_suffix);
-	ClassDB::bind_method(_MD("get_suffix"),&SpinBox::get_suffix);
-	ClassDB::bind_method(_MD("set_prefix","prefix"),&SpinBox::set_prefix);
-	ClassDB::bind_method(_MD("get_prefix"),&SpinBox::get_prefix);
-	ClassDB::bind_method(_MD("set_editable","editable"),&SpinBox::set_editable);
-	ClassDB::bind_method(_MD("is_editable"),&SpinBox::is_editable);
-	ClassDB::bind_method(_MD("_line_edit_focus_exit"),&SpinBox::_line_edit_focus_exit);
-	ClassDB::bind_method(_MD("get_line_edit"),&SpinBox::get_line_edit);
-	ClassDB::bind_method(_MD("_line_edit_input"),&SpinBox::_line_edit_input);
-	ClassDB::bind_method(_MD("_range_click_timeout"),&SpinBox::_range_click_timeout);
+	//ClassDB::bind_method(D_METHOD("_value_changed"),&SpinBox::_value_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&SpinBox::_gui_input);
+	ClassDB::bind_method(D_METHOD("_text_entered"),&SpinBox::_text_entered);
+	ClassDB::bind_method(D_METHOD("set_suffix","suffix"),&SpinBox::set_suffix);
+	ClassDB::bind_method(D_METHOD("get_suffix"),&SpinBox::get_suffix);
+	ClassDB::bind_method(D_METHOD("set_prefix","prefix"),&SpinBox::set_prefix);
+	ClassDB::bind_method(D_METHOD("get_prefix"),&SpinBox::get_prefix);
+	ClassDB::bind_method(D_METHOD("set_editable","editable"),&SpinBox::set_editable);
+	ClassDB::bind_method(D_METHOD("is_editable"),&SpinBox::is_editable);
+	ClassDB::bind_method(D_METHOD("_line_edit_focus_exit"),&SpinBox::_line_edit_focus_exit);
+	ClassDB::bind_method(D_METHOD("get_line_edit"),&SpinBox::get_line_edit);
+	ClassDB::bind_method(D_METHOD("_line_edit_input"),&SpinBox::_line_edit_input);
+	ClassDB::bind_method(D_METHOD("_range_click_timeout"),&SpinBox::_range_click_timeout);
 
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"editable"),_SCS("set_editable"),_SCS("is_editable"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"prefix"),_SCS("set_prefix"),_SCS("get_prefix"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"suffix"),_SCS("set_suffix"),_SCS("get_suffix"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"editable"),"set_editable","is_editable");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"prefix"),"set_prefix","get_prefix");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"suffix"),"set_suffix","get_suffix");
 
 
 }
@@ -282,7 +282,7 @@ SpinBox::SpinBox() {
 	line_edit->set_area_as_parent_rect();
 	//connect("value_changed",this,"_value_changed");
 	line_edit->connect("text_entered",this,"_text_entered",Vector<Variant>(),CONNECT_DEFERRED);
-	line_edit->connect("focus_exit",this,"_line_edit_focus_exit",Vector<Variant>(),CONNECT_DEFERRED);
+	line_edit->connect("focus_exited",this,"_line_edit_focus_exit",Vector<Variant>(),CONNECT_DEFERRED);
 	line_edit->connect("gui_input",this,"_line_edit_input");
 	drag.enabled=false;
 

@@ -121,7 +121,7 @@ bool LightOccluder2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -361,7 +361,7 @@ void LightOccluder2DEditor::_canvas_draw() {
 		poly=Variant(node->get_occluder_polygon()->get_polygon());
 
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 	for(int i=0;i<poly.size();i++) {
@@ -427,10 +427,10 @@ void LightOccluder2DEditor::_create_poly()  {
 
 void LightOccluder2DEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_menu_option"),&LightOccluder2DEditor::_menu_option);
-	ClassDB::bind_method(_MD("_canvas_draw"),&LightOccluder2DEditor::_canvas_draw);
-	ClassDB::bind_method(_MD("_node_removed"),&LightOccluder2DEditor::_node_removed);
-	ClassDB::bind_method(_MD("_create_poly"),&LightOccluder2DEditor::_create_poly);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&LightOccluder2DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&LightOccluder2DEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&LightOccluder2DEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_create_poly"),&LightOccluder2DEditor::_create_poly);
 
 }
 

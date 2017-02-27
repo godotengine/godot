@@ -28,8 +28,9 @@
 /*************************************************************************/
 #include "sample_editor_plugin.h"
 
+#if 0
 #include "io/resource_loader.h"
-#include "globals.h"
+#include "global_config.h"
 #include "tools/editor/editor_settings.h"
 
 
@@ -348,9 +349,9 @@ void SampleEditor::edit(Ref<Sample> p_sample) {
 
 void SampleEditor::_bind_methods() {
 
-	ClassDB::bind_method(_MD("_gui_input"),&SampleEditor::_gui_input);
-	ClassDB::bind_method(_MD("_play_pressed"),&SampleEditor::_play_pressed);
-	ClassDB::bind_method(_MD("_stop_pressed"),&SampleEditor::_stop_pressed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&SampleEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_play_pressed"),&SampleEditor::_play_pressed);
+	ClassDB::bind_method(D_METHOD("_stop_pressed"),&SampleEditor::_stop_pressed);
 
 }
 
@@ -361,7 +362,7 @@ SampleEditor::SampleEditor() {
 	add_style_override("panel", get_stylebox("panel","Panel"));
 	library = Ref<SampleLibrary>(memnew(SampleLibrary));
 	player->set_sample_library(library);
-	sample_texframe = memnew( TextureFrame );
+	sample_texframe = memnew( TextureRect );
 	add_child(sample_texframe);
 	sample_texframe->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
 	sample_texframe->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
@@ -422,11 +423,11 @@ void SampleEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		sample_editor->show();
-//		sample_editor->set_process(true);
+		//sample_editor->set_process(true);
 	} else {
 
 		sample_editor->hide();
-//		sample_editor->set_process(false);
+		//sample_editor->set_process(false);
 	}
 
 }
@@ -447,4 +448,4 @@ SampleEditorPlugin::~SampleEditorPlugin()
 {
 }
 
-
+#endif

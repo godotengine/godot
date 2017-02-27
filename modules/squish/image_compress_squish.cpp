@@ -54,20 +54,19 @@ void image_compress_squish(Image *p_image) {
 
 	if (p_image->get_format()==Image::FORMAT_LA8) {
 		//compressed normalmap
-		target_format = Image::FORMAT_DXT5; squish_comp|=squish::kDxt5;;
+		target_format = Image::FORMAT_DXT5; squish_comp|=squish::kDxt5;
 	} else if (p_image->detect_alpha()!=Image::ALPHA_NONE) {
 
-		target_format = Image::FORMAT_DXT3; squish_comp|=squish::kDxt3;;
+		target_format = Image::FORMAT_DXT3; squish_comp|=squish::kDxt3;
 	} else {
-		target_format = Image::FORMAT_DXT1; shift=1; squish_comp|=squish::kDxt1;;
+		target_format = Image::FORMAT_DXT1; shift=1; squish_comp|=squish::kDxt1;
 	}
 
 	p_image->convert(Image::FORMAT_RGBA8); //always expects rgba
 
-	int mm_count = p_image->get_mipmap_count();
-
 	PoolVector<uint8_t> data;
-	int target_size = Image::get_image_data_size(w,h,target_format,mm_count);
+	int target_size = Image::get_image_data_size(w,h,target_format,p_image->has_mipmaps()?-1:0);
+	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w,h,target_format) : 0;
 	data.resize(target_size);
 
 	PoolVector<uint8_t>::Read rb = p_image->get_data().read();

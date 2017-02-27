@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "main.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 #include "splash.h"
 #include "core/register_core_types.h"
 #include "scene/register_scene_types.h"
@@ -38,11 +38,11 @@
 #include "script_debugger_local.h"
 #include "script_debugger_remote.h"
 #include "message_queue.h"
-#include "path_remap.h"
+
 #include "input_map.h"
 #include "io/resource_loader.h"
 #include "scene/main/scene_main_loop.h"
-
+#include "servers/audio_server.h"
 
 #include "script_language.h"
 #include "io/resource_loader.h"
@@ -54,19 +54,13 @@
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
+#include "tools/editor/doc/doc_data.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
-
 #endif
 
 #include "io/file_access_network.h"
-#include "tools/doc/doc_data.h"
-
-
-#include "servers/spatial_sound_server.h"
-#include "servers/spatial_sound_2d_server.h"
 #include "servers/physics_2d_server.h"
-
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/thread.h"
@@ -79,13 +73,15 @@
 #include "performance.h"
 
 static GlobalConfig *globals=NULL;
+static Engine *engine=NULL;
 static InputMap *input_map=NULL;
 static bool _start_success=false;
 static ScriptDebugger *script_debugger=NULL;
+AudioServer *audio_server=NULL;
 
 static MessageQueue *message_queue=NULL;
 static Performance *performance = NULL;
-static PathRemap *path_remap;
+
 static PackedData *packed_data=NULL;
 #ifdef MINIZIP_ENABLED
 static ZipArchive *zip_packed_data=NULL;
@@ -130,7 +126,7 @@ void Main::print_help(const char* p_binary) {
 	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2017 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
-	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
+	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing godot.cfg\n");
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("\t-e,-editor : Bring up the editor instead of running the scene.\n");
 #endif
@@ -183,8 +179,6 @@ void Main::print_help(const char* p_binary) {
 #ifdef TOOLS_ENABLED
 	OS::get_singleton()->print("\t-doctool FILE: Dump the whole engine api to FILE in XML format. If FILE exists, it will be merged.\n");
 	OS::get_singleton()->print("\t-nodocbase: Disallow dump the base types (used with -doctool).\n");
-	OS::get_singleton()->print("\t-optimize FILE Save an optimized copy of scene to FILE.\n");
-	OS::get_singleton()->print("\t-optimize_preset [preset] Use a given preset for optimization.\n");
 	OS::get_singleton()->print("\t-export [target] Export the project using given export target.\n");
 #endif
 }
@@ -195,6 +189,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	RID_OwnerBase::init_rid();
 
 	OS::get_singleton()->initialize_core();
+
+	engine = memnew( Engine );
+
 	ClassDB::init();
 
 	MAIN_PRINT("Main: Initialize CORE");
@@ -212,7 +209,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	register_core_settings(); //here globals is present
 
-	path_remap = memnew( PathRemap );
 	translation_server = memnew( TranslationServer );
 	performance = memnew( Performance );
 	globals->add_singleton(GlobalConfig::Singleton("Performance",performance));
@@ -235,7 +231,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	while (I) {
 
 		I->get()=unescape_cmdline(I->get().strip_escapes());
-//		print_line("CMD: "+I->get());
+		//print_line("CMD: "+I->get());
 		I=I->next();
 	}
 
@@ -499,7 +495,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 			if (I->next()) {
 
-				OS::get_singleton()->set_time_scale(I->next()->get().to_double());
+				Engine::get_singleton()->set_time_scale(I->next()->get().to_double());
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -592,6 +588,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		I=N;
 	}
 
+	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc",60);
 
 	GLOBAL_DEF("network/debug/max_remote_stdout_chars_per_second",2048);
 	GLOBAL_DEF("network/debug/remote_port",6007);
@@ -706,8 +703,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	else
 		input_map->load_from_globals(); //keys for game
 
-	if (video_driver=="") // specified in engine.cfg
-		video_driver=_GLOBAL_DEF("display/driver/name",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
+	if (video_driver=="") // specified in godot.cfg
+		video_driver=GLOBAL_DEF("display/driver/name",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
 
 	if (!force_res && use_custom_res && globals->has("display/window/width"))
 		video_mode.width=globals->get("display/window/width");
@@ -742,7 +739,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	use_vsync = GLOBAL_DEF("display/window/use_vsync", use_vsync);
 	GLOBAL_DEF("display/window/test_width",0);
 	GLOBAL_DEF("display/window/test_height",0);
-	OS::get_singleton()->_pixel_snap=GLOBAL_DEF("rendering/2d/use_pixel_snap",false);
+	Engine::get_singleton()->_pixel_snap=GLOBAL_DEF("rendering/2d/use_pixel_snap",false);
 	OS::get_singleton()->_keep_screen_on=GLOBAL_DEF("display/energy_saving/keep_screen_on",true);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("rendering/threads/thread_model",OS::RENDER_THREAD_SAFE);
@@ -762,7 +759,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	/* Determine Video Driver */
 
-	if (audio_driver=="") { // specified in engine.cfg
+	if (audio_driver=="") { // specified in godot.cfg
 		audio_driver=GLOBAL_DEF("audio/driver",OS::get_singleton()->get_audio_driver_name(0));
 	}
 
@@ -819,8 +816,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	}
 
 
-	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps",60));
-	OS::get_singleton()->set_target_fps(GLOBAL_DEF("debug/fps/force_fps",0));
+	Engine::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/common/fixed_fps",60));
+	Engine::get_singleton()->set_target_fps(GLOBAL_DEF("debug/fps/force_fps",0));
 
 	GLOBAL_DEF("debug/stdout/print_fps", OS::get_singleton()->is_stdout_verbose());
 
@@ -831,7 +828,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		frame_delay=GLOBAL_DEF("application/frame_delay_msec",0);
 	}
 
-	OS::get_singleton()->set_frame_delay(frame_delay);
+	Engine::get_singleton()->set_frame_delay(frame_delay);
 
 	message_queue = memnew( MessageQueue );
 
@@ -862,21 +859,23 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		memdelete( translation_server );
 	if (globals)
 		memdelete(globals);
+	if (engine)
+		memdelete(engine);
 	if (script_debugger)
 		memdelete(script_debugger);
 	if (packed_data)
 		memdelete(packed_data);
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
-	if(path_remap)
-		memdelete(path_remap);
 
 // Note 1: *zip_packed_data live into *packed_data
 // Note 2: PackedData::~PackedData destroy this.
-//#ifdef MINIZIP_ENABLED
-//	if (zip_packed_data)
-//		memdelete( zip_packed_data );
-//#endif
+/*
+#ifdef MINIZIP_ENABLED
+	if (zip_packed_data)
+		memdelete( zip_packed_data );
+#endif
+*/
 
 	unregister_core_driver_types();
 	unregister_core_types();
@@ -898,6 +897,11 @@ Error Main::setup2() {
 	if (init_use_custom_pos) {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
+
+	//right moment to create and initialize the audio server
+
+	audio_server = memnew( AudioServer );
+	audio_server->init();
 
 	OS::get_singleton()->set_use_vsync(use_vsync);
 
@@ -921,8 +925,6 @@ Error Main::setup2() {
 		OS::get_singleton()->set_window_fullscreen(true);
 	}
 	MAIN_PRINT("Main: Load Remaps");
-
-	path_remap->load_remaps();
 
 	Color clear = GLOBAL_DEF("rendering/viewport/default_clear_color",Color(0.3,0.3,0.3));
 	VisualServer::get_singleton()->set_default_clear_color(clear);
@@ -949,7 +951,7 @@ Error Main::setup2() {
 			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg,boot_logo_scale);
 #ifndef TOOLS_ENABLED
 			//no tools, so free the boot logo (no longer needed)
-		//	GlobalConfig::get_singleton()->set("application/boot_logo",Image());
+			//GlobalConfig::get_singleton()->set("application/boot_logo",Image());
 #endif
 
 		} else {
@@ -1003,7 +1005,7 @@ Error Main::setup2() {
 		//print_line("use custom cursor");
 		Ref<Texture> cursor=ResourceLoader::load(GlobalConfig::get_singleton()->get("display/mouse_cursor/custom_image"));
 		if (cursor.is_valid()) {
-		//	print_line("loaded ok");
+			//print_line("loaded ok");
 			Vector2 hotspot = GlobalConfig::get_singleton()->get("display/mouse_cursor/custom_image_hotspot");
 			Input::get_singleton()->set_custom_mouse_cursor(cursor,hotspot);
 		}
@@ -1033,6 +1035,7 @@ Error Main::setup2() {
 	translation_server->load_translations();
 
 
+	audio_server->load_default_bus_layout();
 
 	if (use_debug_profiler && script_debugger) {
 		script_debugger->profiling_start();
@@ -1065,12 +1068,9 @@ bool Main::start() {
 	String script;
 	String test;
 	String screen;
-	String optimize;
-	String optimize_preset;
 	String _export_platform;
 	String _import;
 	String _import_script;
-	String dumpstrings;
 	bool noquit=false;
 	bool export_debug=false;
 	bool project_manager_request = false;
@@ -1096,13 +1096,9 @@ bool Main::start() {
 			} else if (args[i]=="-script" || args[i]=="-s") {
 				script=args[i+1];
 			} else if (args[i]=="-level" || args[i]=="-l") {
-				OS::get_singleton()->_custom_level=args[i+1];
+				Engine::get_singleton()->_custom_level=args[i+1];
 			} else if (args[i]=="-test") {
 				test=args[i+1];
-			} else if (args[i]=="-optimize") {
-				optimize=args[i+1];
-			} else if (args[i]=="-optimize_preset") {
-				optimize_preset=args[i+1];
 			} else if (args[i]=="-export") {
 				editor=true; //needs editor
 				_export_platform=args[i+1];
@@ -1116,9 +1112,6 @@ bool Main::start() {
 			} else if (args[i]=="-import_script") {
 				editor=true; //needs editor
 				_import_script=args[i+1];
-			} else if (args[i]=="-dumpstrings") {
-				editor=true; //needs editor
-				dumpstrings=args[i+1];
 			} else {
 				// The parameter does not match anything known, don't skip the next argument
 				parsed_pair=false;
@@ -1152,10 +1145,6 @@ bool Main::start() {
 
 		return false;
 	}
-
-	if (optimize!="")
-		editor=true; //need editor
-
 
 
 #endif
@@ -1301,6 +1290,7 @@ bool Main::start() {
 			sml->set_screen_stretch(sml_sm,sml_aspect,stretch_size);
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
+			sml->set_quit_on_go_back(GLOBAL_DEF("application/quit_on_go_back",true));
 			String appname = GlobalConfig::get_singleton()->get("application/name");
 			appname = TranslationServer::get_singleton()->translate(appname);
 			OS::get_singleton()->set_window_title(appname);
@@ -1323,6 +1313,7 @@ bool Main::start() {
 			GLOBAL_DEF("display/stretch/aspect","ignore");
 			GlobalConfig::get_singleton()->set_custom_property_info("display/stretch/aspect",PropertyInfo(Variant::STRING,"display/stretch/aspect",PROPERTY_HINT_ENUM,"ignore,keep,keep_width,keep_height"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
+			sml->set_quit_on_go_back(GLOBAL_DEF("application/quit_on_go_back",true));
 
 			GLOBAL_DEF("rendering/shadow_atlas/size",2048);
 			GlobalConfig::get_singleton()->set_custom_property_info("rendering/shadow_atlas/size",PropertyInfo(Variant::INT,"rendering/shadow_atlas/size",PROPERTY_HINT_RANGE,"256,16384"));
@@ -1363,7 +1354,7 @@ bool Main::start() {
 
 							DirAccess *da = DirAccess::open(local_game_path.substr(0,sep));
 							if (da) {
-								local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());;
+								local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());
 								memdelete(da);
 							}
 						}
@@ -1388,22 +1379,7 @@ bool Main::start() {
 
 					Error serr = editor_node->load_scene(local_game_path);
 
-					if (serr==OK) {
 
-						if (optimize!="") {
-
-							editor_node->save_optimized_copy(optimize,optimize_preset);
-							if (!noquit)
-								sml->quit();
-						}
-
-						if (dumpstrings!="") {
-
-							editor_node->save_translatable_strings(dumpstrings);
-							if (!noquit)
-								sml->quit();
-						}
-					}
 				}
 				OS::get_singleton()->set_context(OS::CONTEXT_EDITOR);
 
@@ -1511,7 +1487,7 @@ bool Main::start() {
 				//sml->get_root()->add_child(scene);
 				sml->add_current_scene(scene);
 
-				String iconpath = GLOBAL_DEF("application/icon","Variant()""");
+				String iconpath = GLOBAL_DEF("application/icon","Variant()");
 				if (iconpath!="") {
 					Image icon;
 					if (icon.load(iconpath)==OK)
@@ -1577,11 +1553,12 @@ bool Main::iteration() {
 	uint64_t ticks_elapsed=ticks-last_ticks;
 
 	double step=(double)ticks_elapsed / 1000000.0;
-	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
+	float frame_slice=1.0/Engine::get_singleton()->get_iterations_per_second();
 
-//	if (time_accum+step < frame_slice)
-//		return false;
-
+	/*
+	if (time_accum+step < frame_slice)
+		return false;
+	*/
 
 	uint64_t fixed_process_ticks=0;
 	uint64_t idle_process_ticks=0;
@@ -1595,13 +1572,13 @@ bool Main::iteration() {
 
 	time_accum+=step;
 
-	float time_scale = OS::get_singleton()->get_time_scale();
+	float time_scale = Engine::get_singleton()->get_time_scale();
 
 	bool exit=false;
 
 	int iters = 0;
 
-	OS::get_singleton()->_in_fixed=true;
+	Engine::get_singleton()->_in_fixed=true;
 
 	while(time_accum>frame_slice) {
 
@@ -1627,26 +1604,23 @@ bool Main::iteration() {
 
 		time_accum-=frame_slice;
 		message_queue->flush();
-		//if (AudioServer::get_singleton())
-		//	AudioServer::get_singleton()->update();
+		/*
+		if (AudioServer::get_singleton())
+			AudioServer::get_singleton()->update();
+		*/
 
 		fixed_process_ticks=MAX(fixed_process_ticks,OS::get_singleton()->get_ticks_usec()-fixed_begin); // keep the largest one for reference
 		fixed_process_max=MAX(OS::get_singleton()->get_ticks_usec()-fixed_begin,fixed_process_max);
 		iters++;
-		OS::get_singleton()->_fixed_frames++;
+		Engine::get_singleton()->_fixed_frames++;
 	}
 
-	OS::get_singleton()->_in_fixed=false;
+	Engine::get_singleton()->_in_fixed=false;
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
 	OS::get_singleton()->get_main_loop()->idle( step*time_scale );
 	message_queue->flush();
-
-	if (SpatialSoundServer::get_singleton())
-		SpatialSoundServer::get_singleton()->update( step*time_scale );
-	if (SpatialSound2DServer::get_singleton())
-		SpatialSound2DServer::get_singleton()->update( step*time_scale );
 
 
 	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
@@ -1656,11 +1630,11 @@ bool Main::iteration() {
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
 			if (VisualServer::get_singleton()->has_changed()) {
 				VisualServer::get_singleton()->draw(); // flush visual commands
-				OS::get_singleton()->frames_drawn++;
+				Engine::get_singleton()->frames_drawn++;
 			}
 		} else {
 			VisualServer::get_singleton()->draw(); // flush visual commands
-			OS::get_singleton()->frames_drawn++;
+			Engine::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
 	}
@@ -1684,9 +1658,9 @@ bool Main::iteration() {
 	}
 
 
-	//	x11_delay_usec(10000);
+	//x11_delay_usec(10000);
 	frames++;
-	OS::get_singleton()->_idle_frames++;
+	Engine::get_singleton()->_idle_frames++;
 
 	if (frame>1000000) {
 
@@ -1694,7 +1668,7 @@ bool Main::iteration() {
 			print_line("FPS: "+itos(frames));
 		};
 
-		OS::get_singleton()->_fps=frames;
+		Engine::get_singleton()->_fps=frames;
 		performance->set_process_time(USEC_TO_SEC(idle_process_max));
 		performance->set_fixed_process_time(USEC_TO_SEC(fixed_process_max));
 		idle_process_max=0;
@@ -1708,12 +1682,12 @@ bool Main::iteration() {
 	if (OS::get_singleton()->is_in_low_processor_usage_mode() || !OS::get_singleton()->can_draw())
 		OS::get_singleton()->delay_usec(16600); //apply some delay to force idle time (results in about 60 FPS max)
 	else {
-		uint32_t frame_delay = OS::get_singleton()->get_frame_delay();
+		uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 		if (frame_delay)
-			OS::get_singleton()->delay_usec( OS::get_singleton()->get_frame_delay()*1000 );
+			OS::get_singleton()->delay_usec( Engine::get_singleton()->get_frame_delay()*1000 );
 	}
 
-	int target_fps = OS::get_singleton()->get_target_fps();
+	int target_fps = Engine::get_singleton()->get_target_fps();
 	if (target_fps>0) {
 		uint64_t time_step = 1000000L/target_fps;
 		target_ticks += time_step;
@@ -1750,6 +1724,11 @@ void Main::cleanup() {
 	OS::get_singleton()->_execpath="";
 	OS::get_singleton()->_local_clipboard="";
 
+	if (audio_server) {
+		memdelete(audio_server);
+	}
+
+
 #ifdef TOOLS_ENABLED
 	EditorNode::unregister_editor_types();
 #endif
@@ -1761,6 +1740,7 @@ void Main::cleanup() {
 
 	OS::get_singleton()->finalize();
 
+
 	if (packed_data)
 		memdelete(packed_data);
 	if (file_access_network_client)
@@ -1771,10 +1751,10 @@ void Main::cleanup() {
 		memdelete(input_map);
 	if (translation_server)
 		memdelete( translation_server );
-	if (path_remap)
-		memdelete(path_remap);
 	if (globals)
 		memdelete(globals);
+	if (engine)
+		memdelete(engine);
 
 
 

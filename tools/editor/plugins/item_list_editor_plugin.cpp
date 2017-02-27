@@ -309,7 +309,7 @@ ItemListEditor::ItemListEditor() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	dialog->add_child(vbc);
-	dialog->set_child_rect(vbc);
+	//dialog->set_child_rect(vbc);
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	hbc->set_h_size_flags(SIZE_EXPAND_FILL);

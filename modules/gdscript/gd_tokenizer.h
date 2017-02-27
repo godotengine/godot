@@ -92,6 +92,7 @@ public:
 		TK_CF_CONTINUE,
 		TK_CF_PASS,
 		TK_CF_RETURN,
+		TK_CF_MATCH,
 		TK_PR_FUNCTION,
 		TK_PR_CLASS,
 		TK_PR_EXTENDS,
@@ -126,6 +127,7 @@ public:
 		TK_DOLLAR,
 		TK_NEWLINE,
 		TK_CONST_PI,
+		TK_WILDCARD,
 		TK_ERROR,
 		TK_EOF,
 		TK_CURSOR, //used for code completion

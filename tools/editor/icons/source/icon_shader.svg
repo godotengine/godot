@@ -32,12 +32,13 @@
     </clipPath>
     <clipPath
        clipPathUnits="userSpaceOnUse"
-       id="clipPath4199">
+       id="clipPath4207">
       <path
+         style="color:#000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:medium;line-height:normal;font-family:sans-serif;text-indent:0;text-align:start;text-decoration:none;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000000;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;baseline-shift:baseline;text-anchor:start;white-space:normal;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+         d="m 6.3749999,1025.8622 c -0.931942,10e-5 -1.6874069,0.6715 -1.6875,1.5 l 0,18 c 9.31e-5,0.8284 0.755558,1.4998 1.6875,1.5 l 20.2500001,0 c 0.931942,-2e-4 1.687407,-0.6716 1.6875,-1.5 l 0,-12 -8.4375,-7.5 z m 1.6875,3 10.1250001,0 0,4.5 c 0,0.831 0.752609,1.5 1.6875,1.5 l 5.0625,0 0,9 -16.8750001,0 z"
+         id="path4209"
          inkscape:connector-curvature="0"
-         id="path4201"
-         d="m 16.5,1025.8622 a 11.8125,10.499999 0 0 0 -11.8125001,10.5 11.8125,10.499999 0 0 0 11.8125001,10.5 11.8125,10.499999 0 0 0 11.8125,-10.5 11.8125,10.499999 0 0 0 -11.8125,-10.5 z m -3.375,3 a 3.375,2.9999997 0 0 1 3.375,3 3.375,2.9999997 0 0 1 -3.375,3 3.375,2.9999997 0 0 1 -3.3750001,-3 3.375,2.9999997 0 0 1 3.3750001,-3 z"
-         style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         sodipodi:nodetypes="ccccccccccccccccc" />
     </clipPath>
   </defs>
   <sodipodi:namedview
@@ -48,8 +49,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="31.999999"
-     inkscape:cx="6.7591143"
-     inkscape:cy="9.6862321"
+     inkscape:cx="20.042938"
+     inkscape:cy="7.6712905"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -95,7 +96,7 @@
     <g
        id="g4181"
        mask="none"
-       clip-path="url(#clipPath4199)"
+       clip-path="url(#clipPath4207)"
        transform="matrix(0.59259259,0,0,0.66666674,-1.7777777,353.454)">
       <rect
          y="1025.8622"

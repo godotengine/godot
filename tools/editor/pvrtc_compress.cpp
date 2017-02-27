@@ -27,12 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "pvrtc_compress.h"
+
 #include "editor_settings.h"
 #include "scene/resources/texture.h"
 #include "io/resource_saver.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
 #include "os/file_access.h"
+
 static void (*_base_image_compress_pvrtc2_func)(Image *)=NULL;
 static void (*_base_image_compress_pvrtc4_func)(Image *)=NULL;
 

@@ -44,6 +44,7 @@ class InputDefault : public Input {
 	Set<int> joy_buttons_pressed;
 	Map<int,float> _joy_axis;
 	//Map<StringName,int> custom_action_press;
+	Vector3 gravity;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
 	Vector3 gyroscope;
@@ -133,6 +134,11 @@ public:
 		HAT_LEFT,
 		HAT_MAX,
 	};
+
+	enum {
+		JOYPADS_MAX = 16,
+	};
+
 	struct JoyAxis {
 		int min;
 		float value;
@@ -191,18 +197,20 @@ public:
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
 	void parse_joypad_mapping(String p_mapping, bool p_update_existing);
 
+	virtual Vector3 get_gravity() const;
 	virtual Vector3 get_accelerometer() const;
 	virtual Vector3 get_magnetometer() const;
 	virtual Vector3 get_gyroscope() const;
 
 	virtual Point2 get_mouse_pos() const;
-	virtual Point2 get_mouse_speed() const;
+	virtual Point2 get_last_mouse_speed() const;
 	virtual int get_mouse_button_mask() const;
 
 	virtual void warp_mouse_pos(const Vector2& p_to);
 
 
 	void parse_input_event(const InputEvent& p_event);
+	void set_gravity(const Vector3& p_gravity);
 	void set_accelerometer(const Vector3& p_accel);
 	void set_magnetometer(const Vector3& p_magnetometer);
 	void set_gyroscope(const Vector3& p_gyroscope);
@@ -239,6 +247,8 @@ public:
 	virtual String get_joy_axis_string(int p_axis);
 	virtual int    get_joy_axis_index_from_string(String p_axis);
 	virtual int    get_joy_button_index_from_string(String p_button);
+
+	int get_unused_joy_id();
 
 	bool is_joy_mapped(int p_device);
 	String get_joy_guid_remapped(int p_device) const;

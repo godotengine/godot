@@ -30,6 +30,7 @@
 
 #ifdef UNIX_ENABLED
 
+#include "servers/visual_server.h"
 
 #include "thread_posix.h"
 #include "semaphore_posix.h"
@@ -60,7 +61,7 @@
 #include <poll.h>
 #include <errno.h>
 #include <assert.h>
-#include "globals.h"
+#include "global_config.h"
 
 extern bool _print_error_enabled;
 
@@ -116,7 +117,13 @@ int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 	return 0;
 }
 	
-	
+// Very simple signal handler to reap processes where ::execute was called with
+// !p_blocking
+void handle_sigchld(int sig) {
+	int saved_errno = errno;
+	while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {}
+	errno = saved_errno;
+}
 	
 void OS_Unix::initialize_core() {
 
@@ -147,6 +154,14 @@ void OS_Unix::initialize_core() {
 
 	ticks_start=0;
 	ticks_start=get_ticks_usec();
+
+	struct sigaction sa;
+	sa.sa_handler = &handle_sigchld;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+	if (sigaction(SIGCHLD, &sa, 0) == -1) {
+		perror("ERROR sigaction() failed:");
+	}
 }
 
 void OS_Unix::finalize_core() {
@@ -477,6 +492,13 @@ String OS_Unix::get_data_dir() const {
 	return GlobalConfig::get_singleton()->get_resource_path();
 
 }
+
+bool OS_Unix::check_feature_support(const String& p_feature) {
+
+	return VisualServer::get_singleton()->has_os_feature(p_feature);
+
+}
+
 
 String OS_Unix::get_installed_templates_path() const {
 	String p=get_global_settings_path();

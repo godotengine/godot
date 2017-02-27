@@ -83,7 +83,7 @@ Ref<Environment> WorldEnvironment::get_environment() const {
 
 String WorldEnvironment::get_configuration_warning() const {
 
-	if (!is_visible() || !is_inside_tree() || !environment.is_valid())
+	if (!is_visible_in_tree() || !is_inside_tree() || !environment.is_valid())
 		return String();
 
 	List<Node*> nodes;
@@ -99,9 +99,9 @@ String WorldEnvironment::get_configuration_warning() const {
 
 void WorldEnvironment::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_environment","env:Environment"),&WorldEnvironment::set_environment);
-	ClassDB::bind_method(_MD("get_environment:Environment"),&WorldEnvironment::get_environment);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),_SCS("set_environment"),_SCS("get_environment"));
+	ClassDB::bind_method(D_METHOD("set_environment","env:Environment"),&WorldEnvironment::set_environment);
+	ClassDB::bind_method(D_METHOD("get_environment:Environment"),&WorldEnvironment::get_environment);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),"set_environment","get_environment");
 
 }
 

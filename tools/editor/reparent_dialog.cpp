@@ -30,8 +30,6 @@
 
 #include "scene/gui/label.h"
 #include "scene/gui/box_container.h"
-
-
 #include "print_string.h"
 
 void ReparentDialog::_notification(int p_what) {
@@ -88,7 +86,7 @@ ReparentDialog::ReparentDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 
 	tree = memnew( SceneTreeEditor(false) );
 	tree->set_show_enabled_subscene(true);
@@ -107,7 +105,7 @@ ReparentDialog::ReparentDialog() {
 	vbc->add_child(keep_transform);
 
 
-	//vbc->add_margin_child("Options:",node_only);;
+	//vbc->add_margin_child("Options:",node_only);
 
 	//cancel->connect("pressed", this,"_cancel");
 

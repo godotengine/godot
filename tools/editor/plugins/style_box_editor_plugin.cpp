@@ -49,9 +49,9 @@ void StyleBoxEditor::_sb_changed() {
 void StyleBoxEditor::_bind_methods() {
 
 	ClassDB::bind_method("_sb_changed",&StyleBoxEditor::_sb_changed);
-//	ClassDB::bind_method("_import",&StyleBoxEditor::_import);
-//	ClassDB::bind_method("_import_accept",&StyleBoxEditor::_import_accept);
-//	ClassDB::bind_method("_preview_text_changed",&StyleBoxEditor::_preview_text_changed);
+	//ClassDB::bind_method("_import",&StyleBoxEditor::_import);
+	//ClassDB::bind_method("_import_accept",&StyleBoxEditor::_import_accept);
+	//ClassDB::bind_method("_preview_text_changed",&StyleBoxEditor::_preview_text_changed);
 }
 
 StyleBoxEditor::StyleBoxEditor() {
@@ -95,7 +95,7 @@ void StyleBoxEditorPlugin::make_visible(bool p_visible){
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(stylebox_editor);
 
 	} else {
-		if (stylebox_editor->is_visible())
+		if (stylebox_editor->is_visible_in_tree())
 			EditorNode::get_singleton()->hide_bottom_panel();
 		button->hide();
 	}

@@ -1,5 +1,11 @@
 # How to contribute efficiently
 
+Sections covered in this file:
+
+* [Reporting bugs or proposing features](#reporting-bugs-or-proposing-features)
+* [Contributing pull requests](#contributing-pull-requests)
+* [Communicating with developers](#communicating-with-developers)
+
 **Please read the first section before reporting a bug!**
 
 ## Reporting bugs or proposing features
@@ -71,12 +77,21 @@ unwanted side effects in the physics engine.
 
 By fixing the regulation system via an added binding to the internal feature,
 this commit now ensures that Godot will not go past the ebullition temperature
-of cooking oil under normal atmosheric conditions.
+of cooking oil under normal atmospheric conditions.
 
 Fixes #1789, long live the Realm!
 ```
 
 *Note:* When using the GitHub online editor (or worse, the drag and drop feature), *please* edit the commit title to something meaningful. Commits named "Update my_file.cpp" will not be accepted.
+
+## Communicating with developers
+
+The Godot Engine community has [many communication channels](https://godotengine.org/community), some used more for user-level discussions and support, others more for development discussions.
+
+To communicate with developers (e.g. to discuss a feature you want to implement or a bug you want to fix), the following channels can be used:
+- [GitHub issues](https://github.com/godotengine/godot/issues): If there is an existing issue about a topic you want to discuss, just add a comment to it - all developers watch the repository and will get an email notification. You can also create a new issue - please keep in mind to create issues only to discuss quite specific points about the development, and not general user feedback or support requests.
+- [#godotengine-devel IRC channel on Freenode](http://webchat.freenode.net/?channels=godotengine-devel): You will find most core developers there, so it's the go-to channel for direct chat about Godot Engine development. Feel free to start discussing something there to get some early feedback before writing up a detailed proposal in a GitHub issue.
+- [devel@godotengine.org mailing list](https://listengine.tuxfamily.org/godotengine.org/devel/): Mailing list for Godot developers, used primarily to announce developer meetings on IRC and other important discussions that need to reach people directly in their mailbox. See the [index page](https://listengine.tuxfamily.org/godotengine.org/devel/) for subscription instructions.
 
 Thanks!
 

@@ -26,6 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#if 0
 #include "resource_format_wav.h"
 #include "os/file_access.h"
 #include "scene/resources/sample.h"
@@ -267,8 +268,9 @@ bool ResourceFormatLoaderWAV::handles_type(const String& p_type) const {
 
 String ResourceFormatLoaderWAV::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="wav")
+	if (p_path.get_extension().to_lower()=="wav")
 		return "Sample";
 	return "";
 }
 
+#endif

@@ -50,6 +50,7 @@
 #include "tools/editor/reparent_dialog.h"
 #include "tools/editor/connections_dialog.h"
 #include "tools/editor/node_dock.h"
+#include "tools/editor/import_dock.h"
 #include "tools/editor/settings_config_dialog.h"
 #include "tools/editor/groups_editor.h"
 #include "tools/editor/editor_data.h"
@@ -72,7 +73,7 @@
 #include "tools/editor/quick_open.h"
 #include "tools/editor/project_export.h"
 #include "tools/editor/editor_sub_scene.h"
-#include "editor_import_export.h"
+#include "editor_export.h"
 #include "editor_reimport_dialog.h"
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_name_dialog.h"
@@ -134,12 +135,10 @@ private:
 		FILE_EXPORT_MESH_LIBRARY,
 		FILE_EXPORT_TILESET,
 		FILE_SAVE_OPTIMIZED,
-		FILE_DUMP_STRINGS,
 		FILE_OPEN_RECENT,
 		FILE_OPEN_OLD_SCENE,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
-		FILE_QUICK_OPEN_FILE,
 		FILE_RUN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
@@ -197,7 +196,9 @@ private:
 
 		IMPORT_PLUGIN_BASE=100,
 
-		OBJECT_METHOD_BASE=500
+		OBJECT_METHOD_BASE=500,
+
+		TOOL_MENU_BASE=1000
 	};
 
 
@@ -277,8 +278,9 @@ private:
 	//ResourcesDock *resources_dock;
 	PropertyEditor *property_editor;
 	NodeDock *node_dock;
+	ImportDock *import_dock;
 	VBoxContainer *prop_editor_vb;
-	FileSystemDock *scenes_dock;
+	FileSystemDock *filesystem_dock;
 	EditorRunNative *run_native;
 
 	HBoxContainer *search_bar;
@@ -286,7 +288,7 @@ private:
 
 	CreateDialog *create_dialog;
 
-//	CallDialog *call_dialog;
+	//CallDialog *call_dialog;
 	ConfirmationDialog *confirmation;
 	ConfirmationDialog *import_confirmation;
 	ConfirmationDialog *open_recent_confirmation;
@@ -317,9 +319,6 @@ private:
 	//TabContainer *prop_pallete;
 	//TabContainer *top_pallete;
 	String defer_load_scene;
-	String defer_translatable;
-	String defer_optimize;
-	String defer_optimize_preset;
 	String defer_export;
 	String defer_export_platform;
 	bool defer_export_debug;
@@ -339,7 +338,7 @@ private:
 	Vector<ToolButton*> main_editor_buttons;
 	Vector<EditorPlugin*> editor_table;
 
-	EditorReImportDialog *reimport_dialog;
+//	EditorReImportDialog *reimport_dialog;
 
 	ProgressDialog *progress_dialog;
 	BackgroundProgress *progress_hb;
@@ -347,6 +346,10 @@ private:
 	DependencyErrorDialog *dependency_error;
 	DependencyEditor *dependency_fixer;
 	OrphanResourcesDialog *orphan_resources;
+	ConfirmationDialog *open_imported;
+	Button *new_inherited_button;
+	String open_import_request;
+
 
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
 	Rect2 dock_select_rect[DOCK_SLOT_MAX];
@@ -362,7 +365,7 @@ private:
 
 	String _tmp_import_path;
 
-	EditorImportExport *editor_import_export;
+	EditorExport *editor_export;
 
 	Object *current;
 
@@ -375,6 +378,7 @@ private:
 	bool unsaved_cache;
 	String open_navigate;
 	bool changing_scene;
+	bool waiting_for_first_scan;
 
 	bool waiting_for_sources_changed;
 
@@ -390,8 +394,8 @@ private:
 	EditorData editor_data;
 	EditorRun editor_run;
 	EditorSelection *editor_selection;
-	ProjectExport *project_export;
-	ProjectExportDialog *project_export_settings;
+//	ProjectExport *project_export;
+	ProjectExportDialog *project_export;
 	EditorResourcePreview *resource_preview;
 
 	EditorFileServer *file_server;
@@ -428,6 +432,7 @@ private:
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option,bool p_confirmed);
+	void _update_debug_options();
 
 	void _property_editor_forward();
 	void _property_editor_back();
@@ -487,7 +492,6 @@ private:
 	static void _load_error_notify(void* p_ud,const String& p_text);
 
 	bool has_main_screen() const { return true; }
-	void _fetch_translatable_strings(const Object *p_object,Set<StringName>& strings);
 
 	bool _find_editing_changed_scene(Node *p_from);
 
@@ -585,6 +589,8 @@ private:
 		MAX_BUILD_CALLBACKS=128
 	};
 
+	void _inherit_imported(const String &p_action);
+	void _open_imported();
 
 
 	static int plugin_init_callback_count;
@@ -593,6 +599,22 @@ private:
 	void _call_build();
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
+
+	bool _initializing_tool_menu;
+
+	struct ToolMenuItem {
+		String name;
+		String submenu;
+		Variant ud;
+		ObjectID handler;
+		String callback;
+	};
+
+	Vector<ToolMenuItem> tool_menu_items;
+
+	void _tool_menu_insert_item(const ToolMenuItem& p_item);
+	void _rebuild_tool_menu() const;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -630,9 +652,6 @@ public:
 	void add_control_to_dock(DockSlot p_slot,Control* p_control);
 	void remove_control_from_dock(Control* p_control);
 
-	void add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-	void remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-
 	void set_addon_plugin_enabled(const String& p_addon,bool p_enabled);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
@@ -669,11 +688,10 @@ public:
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	Viewport *get_scene_root() { return scene_root; } //root of the scene being edited
-	Error save_optimized_copy(const String& p_scene,const String& p_preset);
 
 	void fix_dependencies(const String& p_for_file);
 	void clear_scene() { _cleanup_scene(); }
-	Error load_scene(const String& p_scene, bool p_ignore_broken_deps=false, bool p_set_inherited=false, bool p_clear_errors=true);
+	Error load_scene(const String& p_scene, bool p_ignore_broken_deps=false, bool p_set_inherited=false, bool p_clear_errors=true,bool p_force_open_imported=false);
 	Error load_resource(const String& p_scene);
 
 	bool is_scene_open(const String& p_path);
@@ -688,13 +706,12 @@ public:
 
 	void request_instance_scene(const String &p_path);
 	void request_instance_scenes(const Vector<String>& p_files);
-	FileSystemDock *get_scenes_dock();
+	FileSystemDock *get_filesystem_dock();
+	ImportDock *get_import_dock();
 	SceneTreeDock *get_scene_tree_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }
-
-	Error save_translatable_strings(const String& p_to_file);
 
 	void set_convert_old_scene(bool p_old) { convert_old=p_old; }
 
@@ -755,6 +772,9 @@ public:
 	Variant drag_files(const Vector<String>& p_files,Control* p_from);
 	Variant drag_files_and_dirs(const Vector<String>& p_files,Control* p_from);
 
+	void add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud = Variant());
+	void add_tool_submenu_item(const String& p_name, PopupMenu *p_submenu);
+	void remove_tool_menu_item(const String& p_name);
 
 	EditorNode();
 	~EditorNode();
@@ -766,7 +786,6 @@ public:
 
 
 };
-
 
 struct EditorProgress {
 
@@ -792,9 +811,9 @@ public:
 
 	void make_visible(bool p_visible);
 	void edit(Object *p_object);
-	bool forward_gui_input(const Matrix32& p_canvas_xform,const InputEvent& p_event);
+	bool forward_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event);
 	bool forward_spatial_gui_input(Camera* p_camera, const InputEvent& p_event);
-	void forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control* p_canvas);
+	void forward_draw_over_canvas(const Transform2D& p_canvas_xform,Control* p_canvas);
 	void clear();
 	bool empty();
 

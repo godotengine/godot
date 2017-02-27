@@ -89,15 +89,15 @@ Rect2 CapsuleShape2D::get_rect() const {
 
 void CapsuleShape2D::_bind_methods() {
 
-	ClassDB::bind_method(_MD("set_radius","radius"),&CapsuleShape2D::set_radius);
-	ClassDB::bind_method(_MD("get_radius"),&CapsuleShape2D::get_radius);
+	ClassDB::bind_method(D_METHOD("set_radius","radius"),&CapsuleShape2D::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"),&CapsuleShape2D::get_radius);
 
-	ClassDB::bind_method(_MD("set_height","height"),&CapsuleShape2D::set_height);
-	ClassDB::bind_method(_MD("get_height"),&CapsuleShape2D::get_height);
+	ClassDB::bind_method(D_METHOD("set_height","height"),&CapsuleShape2D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"),&CapsuleShape2D::get_height);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius"),_SCS("set_radius"),_SCS("get_radius") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height"),_SCS("set_height"),_SCS("get_height") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius"),"set_radius","get_radius") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height"),"set_height","get_height") ;
 
 }
 

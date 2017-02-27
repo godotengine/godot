@@ -31,11 +31,11 @@
 #include "os/file_access.h"
 #include "variant_parser.h"
 
-StringArray ConfigFile::_get_sections() const {
+PoolStringArray ConfigFile::_get_sections() const {
 
 	List<String> s;
 	get_sections(&s);
-	StringArray arr;
+	PoolStringArray arr;
 	arr.resize(s.size());
 	int idx=0;
 	for(const List<String>::Element *E=s.front();E;E=E->next()) {
@@ -46,11 +46,11 @@ StringArray ConfigFile::_get_sections() const {
 	return arr;
 }
 
-StringArray ConfigFile::_get_section_keys(const String& p_section) const{
+PoolStringArray ConfigFile::_get_section_keys(const String& p_section) const{
 
 	List<String> s;
 	get_section_keys(p_section,&s);
-	StringArray arr;
+	PoolStringArray arr;
 	arr.resize(s.size());
 	int idx=0;
 	for(const List<String>::Element *E=s.front();E;E=E->next()) {
@@ -119,7 +119,10 @@ void ConfigFile::get_section_keys(const String& p_section,List<String> *r_keys) 
 
 }
 
+void ConfigFile::erase_section(const String& p_section) {
 
+	values.erase(p_section);
+}
 
 Error ConfigFile::save(const String& p_path){
 
@@ -206,17 +209,19 @@ Error ConfigFile::load(const String& p_path) {
 
 void ConfigFile::_bind_methods(){
 
-	ClassDB::bind_method(_MD("set_value","section","key","value"),&ConfigFile::set_value);
-	ClassDB::bind_method(_MD("get_value:Variant","section","key","default"),&ConfigFile::get_value,DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("set_value","section","key","value"),&ConfigFile::set_value);
+	ClassDB::bind_method(D_METHOD("get_value:Variant","section","key","default"),&ConfigFile::get_value,DEFVAL(Variant()));
 
-	ClassDB::bind_method(_MD("has_section","section"),&ConfigFile::has_section);
-	ClassDB::bind_method(_MD("has_section_key","section","key"),&ConfigFile::has_section_key);
+	ClassDB::bind_method(D_METHOD("has_section","section"),&ConfigFile::has_section);
+	ClassDB::bind_method(D_METHOD("has_section_key","section","key"),&ConfigFile::has_section_key);
 
-	ClassDB::bind_method(_MD("get_sections"),&ConfigFile::_get_sections);
-	ClassDB::bind_method(_MD("get_section_keys","section"),&ConfigFile::_get_section_keys);
+	ClassDB::bind_method(D_METHOD("get_sections"),&ConfigFile::_get_sections);
+	ClassDB::bind_method(D_METHOD("get_section_keys","section"),&ConfigFile::_get_section_keys);
 
-	ClassDB::bind_method(_MD("load:Error","path"),&ConfigFile::load);
-	ClassDB::bind_method(_MD("save:Error","path"),&ConfigFile::save);
+	ClassDB::bind_method(D_METHOD("erase_section","section"),&ConfigFile::erase_section);
+
+	ClassDB::bind_method(D_METHOD("load:Error","path"),&ConfigFile::load);
+	ClassDB::bind_method(D_METHOD("save:Error","path"),&ConfigFile::save);
 
 }
 
