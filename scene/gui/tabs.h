@@ -57,6 +57,7 @@ private:
 		String text;
 		Ref<Texture> icon;
 		int ofs_cache;
+		bool disabled;
 		int size_cache;
 		int x_cache;
 		int x_size_cache;
@@ -105,6 +106,9 @@ public:
 
 	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
+		
+	void set_tab_disabled(int p_tab, bool p_disabled);
+	bool get_tab_disabled(int p_tab) const;
 
 	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
 	Ref<Texture> get_tab_right_button(int p_tab) const;
