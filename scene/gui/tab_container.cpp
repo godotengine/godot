@@ -39,8 +39,9 @@ int TabContainer::_get_top_margin() const {
 	// Respect the minimum tab height.
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 
-	int tab_height = MAX(tab_bg->get_minimum_size().height, tab_fg->get_minimum_size().height);
+	int tab_height = MAX(MAX(tab_bg->get_minimum_size().height, tab_fg->get_minimum_size().height), tab_disabled->get_minimum_size().height);
 
 	// Font height or higher icon wins.
 	Ref<Font> font = get_font("font");
@@ -117,7 +118,9 @@ void TabContainer::_gui_input(const InputEvent& p_event) {
 		for (int i = first_tab_cache; i <= last_tab_cache; i++) {
 			int tab_width = _get_tab_width(i);
 			if (pos.x < tab_width) {
-				set_current_tab(i);
+				if (!get_tab_disabled(i)) {
+					set_current_tab(i);
+				}
 				break;
 			}
 			pos.x -= tab_width;
@@ -144,6 +147,7 @@ void TabContainer::_notification(int p_what) {
 			Vector<Control*> tabs = _get_tabs();
 			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+			Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 			Ref<Texture> increment = get_icon("increment");
 			Ref<Texture> decrement = get_icon("decrement");
 			Ref<Texture> menu = get_icon("menu");
@@ -151,6 +155,7 @@ void TabContainer::_notification(int p_what) {
 			Ref<Font> font = get_font("font");
 			Color font_color_fg = get_color("font_color_fg");
 			Color font_color_bg = get_color("font_color_bg");
+			Color font_color_disabled = get_color("font_color_disabled");
 			int side_margin = get_constant("side_margin");
 			int icon_text_distance = get_constant("hseparation");
 
@@ -210,7 +215,10 @@ void TabContainer::_notification(int p_what) {
 			for (int i = 0; i < tab_widths.size(); i++) {
 				Ref<StyleBox> tab_style;
 				Color font_color;
-				if (i + first_tab_cache == current) {
+				if (get_tab_disabled(i + first_tab_cache)) {
+					tab_style = tab_disabled;
+					font_color = font_color_disabled;
+				} else if (i + first_tab_cache == current) {
 					tab_style = tab_fg;
 					font_color = font_color_fg;
 				} else {
@@ -313,7 +321,10 @@ int TabContainer::_get_tab_width(int p_index) const {
 	// Respect a minimum size.
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
-	if (p_index == current) {
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
+	if (get_tab_disabled(p_index)) {
+		width += tab_disabled->get_minimum_size().width;
+	} else if (p_index == current) {
 		width += tab_fg->get_minimum_size().width;
 	} else {
 		width += tab_bg->get_minimum_size().width;
@@ -533,6 +544,23 @@ Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 		return Ref<Texture>();
 }
 
+void TabContainer::set_tab_disabled(int p_tab, bool p_enabled) {
+
+	Control *child = _get_tab(p_tab);
+	ERR_FAIL_COND(!child);
+	child->set_meta("_tab_disabled", p_enabled);
+	update();
+}
+bool TabContainer::get_tab_disabled(int p_tab) const {
+
+	Control *child = _get_tab(p_tab);
+	ERR_FAIL_COND_V(!child, false);
+	if (child->has_meta("_tab_disabled"))
+		return child->get_meta("_tab_disabled");
+	else
+		return false;
+}
+
 void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 
 	Vector<Control*> tabs = _get_tabs();
@@ -570,9 +598,10 @@ Size2 TabContainer::get_minimum_size() const {
 
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 	Ref<Font> font = get_font("font");
 
-	ms.y += MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y);
+	ms.y += MAX(MAX(tab_bg->get_minimum_size().y, tab_fg->get_minimum_size().y), tab_disabled->get_minimum_size().y);
 	ms.y += font->get_height();
 
 	Ref<StyleBox> sb = get_stylebox("panel");
@@ -608,6 +637,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_title", "tab_idx"), &TabContainer::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_icon", "tab_idx", "icon:Texture"), &TabContainer::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon:Texture", "tab_idx"), &TabContainer::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &TabContainer::set_tab_disabled);
+	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &TabContainer::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("set_popup", "popup:Popup"), &TabContainer::set_popup);
 	ClassDB::bind_method(D_METHOD("get_popup:Popup"), &TabContainer::get_popup);
 

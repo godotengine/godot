@@ -34,9 +34,10 @@ Size2 Tabs::get_minimum_size() const {
 
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 	Ref<Font> font = get_font("font");
 
-	Size2 ms(0, MAX(tab_bg->get_minimum_size().height, tab_fg->get_minimum_size().height)+font->get_height());
+	Size2 ms(0, MAX(MAX(tab_bg->get_minimum_size().height, tab_fg->get_minimum_size().height), tab_disabled->get_minimum_size().height)+font->get_height());
 
 	for(int i=0;i<tabs.size();i++) {
 
@@ -49,7 +50,9 @@ Size2 Tabs::get_minimum_size() const {
 
 		ms.width+=font->get_string_size(tabs[i].text).width;
 
-		if (current==i)
+		if (tabs[i].disabled)
+			ms.width += tab_disabled->get_minimum_size().width;
+		else if (current==i)
 			ms.width+=tab_fg->get_minimum_size().width;
 		else
 			ms.width+=tab_bg->get_minimum_size().width;
@@ -111,7 +114,7 @@ void Tabs::_gui_input(const InputEvent& p_event) {
 				hover_buttons = i;
 				break;
 			}
-			else if (tabs[i].cb_rect.has_point(pos)) {
+			else if (!tabs[i].disabled && tabs[i].cb_rect.has_point(pos)) {
 				cb_hover=i;
 				rb_hover=-1;
 				hover_buttons = i;
@@ -206,7 +209,9 @@ void Tabs::_gui_input(const InputEvent& p_event) {
 			}
 
 			if (pos.x >=tabs[i].ofs_cache && pos.x<tabs[i].ofs_cache+tabs[i].size_cache) {
-				found=i;
+				if (!tabs[i].disabled) {
+					found = i;
+				}
 				break;
 			}
 		}
@@ -242,9 +247,11 @@ void Tabs::_notification(int p_what) {
 
 			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+			Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 			Ref<Font> font = get_font("font");
 			Color color_fg = get_color("font_color_fg");
 			Color color_bg = get_color("font_color_bg");
+			Color color_disabled = get_color("font_color_disabled");
 			Ref<Texture> close=get_icon("close");
 
 			int h = get_size().height;
@@ -301,7 +308,10 @@ void Tabs::_notification(int p_what) {
 				Ref<StyleBox> sb;
 				Color col;
 
-				if (i==current) {
+				if (tabs[i].disabled) {
+					sb = tab_disabled;
+					col = color_disabled;
+				} else if (i == current) {
 					sb=tab_fg;
 					col=color_fg;
 				} else {
@@ -366,7 +376,7 @@ void Tabs::_notification(int p_what) {
 					cb_rect.pos.x=w;
 					cb_rect.pos.y=sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-(cb_rect.size.y))/2;
 
-					if (cb_hover==i) {
+					if (!tabs[i].disabled && cb_hover == i) {
 						if (cb_pressing)
 							get_stylebox("button_pressed")->draw(ci,cb_rect);
 						else
@@ -463,6 +473,18 @@ Ref<Texture> Tabs::get_tab_icon(int p_tab) const{
 }
 
 
+void Tabs::set_tab_disabled(int p_tab, bool p_disabled) {
+	
+	ERR_FAIL_INDEX(p_tab, tabs.size());
+	tabs[p_tab].disabled = p_disabled;
+	update();
+}
+bool Tabs::get_tab_disabled(int p_tab) const {
+	
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), false);
+	return tabs[p_tab].disabled;
+}
+
 void Tabs::set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button){
 
 	ERR_FAIL_INDEX(p_tab,tabs.size());
@@ -484,6 +506,7 @@ void Tabs::add_tab(const String& p_str,const Ref<Texture>& p_icon) {
 	Tab t;
 	t.text=p_str;
 	t.icon=p_icon;
+	t.disabled = false;
 
 	tabs.push_back(t);
 
@@ -534,6 +557,7 @@ int Tabs::get_tab_width(int p_idx) const {
 
 	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
 	Ref<Font> font = get_font("font");
 
 
@@ -549,7 +573,9 @@ int Tabs::get_tab_width(int p_idx) const {
 
 	x+=font->get_string_size(tabs[p_idx].text).width;
 
-	if (current==p_idx)
+	if (tabs[p_idx].disabled)
+		x += tab_disabled->get_minimum_size().width;
+	else if (current==p_idx)
 		x+=tab_fg->get_minimum_size().width;
 	else
 		x+=tab_bg->get_minimum_size().width;
@@ -657,6 +683,8 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_title","tab_idx"),&Tabs::get_tab_title);
 	ClassDB::bind_method(D_METHOD("set_tab_icon","tab_idx","icon:Texture"),&Tabs::set_tab_icon);
 	ClassDB::bind_method(D_METHOD("get_tab_icon:Texture","tab_idx"),&Tabs::get_tab_icon);
+	ClassDB::bind_method(D_METHOD("set_tab_disabled", "tab_idx", "disabled"), &Tabs::set_tab_disabled);
+	ClassDB::bind_method(D_METHOD("get_tab_disabled", "tab_idx"), &Tabs::get_tab_disabled);
 	ClassDB::bind_method(D_METHOD("remove_tab","tab_idx"),&Tabs::remove_tab);
 	ClassDB::bind_method(D_METHOD("add_tab","title","icon:Texture"),&Tabs::add_tab);
 	ClassDB::bind_method(D_METHOD("set_tab_align","align"),&Tabs::set_tab_align);

@@ -85,6 +85,9 @@ public:
 	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
 
+	void set_tab_disabled(int p_tab, bool p_disabled);
+	bool get_tab_disabled(int p_tab) const;
+
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;

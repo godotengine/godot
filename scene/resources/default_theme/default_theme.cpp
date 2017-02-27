@@ -750,6 +750,7 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_stylebox("tab_fg","TabContainer", sb_expand( make_stylebox( tab_current_png,4,4,4,1,16,4,16,4),2,2,2,2) );
 	t->set_stylebox("tab_bg","TabContainer", sb_expand( make_stylebox( tab_behind_png,5,5,5,1,16,6,16,4),3,0,3,3) );
+	t->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	t->set_stylebox("panel","TabContainer", tc_sb );
 
 	t->set_icon("increment","TabContainer",make_icon( scroll_button_right_png));
@@ -763,6 +764,7 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_color("font_color_fg","TabContainer", control_font_color_hover );
 	t->set_color("font_color_bg","TabContainer", control_font_color_low );
+	t->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
 	t->set_constant("side_margin","TabContainer", 8 *scale);
 	t->set_constant("top_margin","TabContainer", 24 *scale);
@@ -776,6 +778,7 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_stylebox("tab_fg","Tabs", sb_expand( make_stylebox( tab_current_png,4,3,4,1,16,3,16,2),2,2,2,2) );
 	t->set_stylebox("tab_bg","Tabs", sb_expand( make_stylebox( tab_behind_png,5,4,5,1,16,5,16,2),3,3,3,3) );
+	t->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
 	t->set_stylebox("panel","Tabs",tc_sb );
 	t->set_stylebox("button_pressed","Tabs", make_stylebox( button_pressed_png,4,4,4,4) );
 	t->set_stylebox("button","Tabs", make_stylebox( button_normal_png,4,4,4,4) );
@@ -790,6 +793,7 @@ void fill_default_theme(Ref<Theme>& t, const Ref<Font> & default_font, const Ref
 
 	t->set_color("font_color_fg","Tabs", control_font_color_hover );
 	t->set_color("font_color_bg","Tabs", control_font_color_low );
+	t->set_color("font_color_disabled", "Tabs", control_font_color_disabled);
 
 	t->set_constant("top_margin","Tabs", 24 *scale);
 	t->set_constant("label_valign_fg","Tabs", 0 *scale);
