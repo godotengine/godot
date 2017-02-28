@@ -1,0 +1,38 @@
+#!/usr/bin/env python
+
+Import('env')
+
+# Not building in a separate env as core needs it
+
+# Thirdparty source files
+if (env['builtin_recast'] != 'no'):
+    thirdparty_dir = "#thirdparty/recastnavigation/Recast/"
+    thirdparty_sources = [
+		"Source/Recast.cpp",
+		"Source/RecastAlloc.cpp",
+		"Source/RecastArea.cpp",
+		"Source/RecastAssert.cpp",
+		"Source/RecastContour.cpp",
+		"Source/RecastFilter.cpp",
+		"Source/RecastLayers.cpp",
+		"Source/RecastMesh.cpp",
+		"Source/RecastMeshDetail.cpp",
+		"Source/RecastRasterization.cpp",
+		"Source/RecastRegion.cpp",
+    ]
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "/Include"])
+
+    # also requires recast headers
+    if (env['builtin_recast'] != 'no'):
+        env.Append(CPPPATH=["#thirdparty/recastnavigation/Recast"])
+
+    lib = env.Library("recast_builtin", thirdparty_sources)
+    env.Append(LIBS=[lib])
+
+# Godot source files
+env.add_source_files(env.modules_sources, "*.cpp")
+env.Append(CCFLAGS=['-DRECAST_ENABLED'])
+
+Export('env')
