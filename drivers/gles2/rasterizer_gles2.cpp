@@ -7241,6 +7241,7 @@ void RasterizerGLES2::end_scene() {
 	glDisable(GL_SCISSOR_TEST);
 
 	bool use_fb=false;
+	bool use_msaa=false;
 
 	if (framebuffer.active) {
 
@@ -7260,12 +7261,28 @@ void RasterizerGLES2::end_scene() {
 				}
 			}
 		}
+
+		if (framebuffer.ms_active==true) {
+			use_fb = true;
+	}
 	}
 
 
 	if (use_fb) {
 
+		if (msaa_multisamples > 1 && framebuffer.ms_active == true) {
+			use_msaa = true;
+		}
+
+		if (use_msaa) {
+			glEnable(GL_MULTISAMPLE);
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.ms_fbo);
+		}
+		else {
+			glDisable(GL_MULTISAMPLE);
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
+		}
+
 		glViewport( 0,0,viewport.width / framebuffer.scale, viewport.height / framebuffer.scale );
 		glScissor(  0,0,viewport.width / framebuffer.scale, viewport.height / framebuffer.scale );
 
@@ -7403,7 +7420,14 @@ void RasterizerGLES2::end_scene() {
 
 	if (use_fb) {
 
+		// If we're using MSAA, blit the multisampled framebuffer into the main one
+		if (use_msaa) {
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer.fbo);
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer.ms_fbo);
+			glBlitFramebuffer(0, 0, framebuffer.width, framebuffer.height, 0, 0, framebuffer.width, framebuffer.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
+			glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
+		}
 
 		for(int i=0;i<VS::ARRAY_MAX;i++) {
 			glDisableVertexAttribArray(i);
@@ -10421,12 +10445,18 @@ void RasterizerGLES2::_update_framebuffer() {
 	if (scale<1)
 		scale=1;
 
+	msaa_multisamples = GLOBAL_DEF("rasterizer/multisamples",1);
+
 	int dwidth = OS::get_singleton()->get_video_mode().width/scale;
 	int dheight = OS::get_singleton()->get_video_mode().height/scale;
 
-	if (framebuffer.fbo && dwidth==framebuffer.width && dheight==framebuffer.height)
+	if (framebuffer.fbo && dwidth==framebuffer.width && dheight==framebuffer.height) {
+		if (msaa_multisamples == msaa_multisamples_prev) {
 		return;
+		}
+	}
 
+	msaa_multisamples_prev = msaa_multisamples;
 
 	bool use_fbo=true;
 
@@ -10462,10 +10492,18 @@ void RasterizerGLES2::_update_framebuffer() {
 		framebuffer.fbo=0;
 	}
 
+	if (framebuffer.ms_fbo != 0) {
+		glDeleteFramebuffers(1, &framebuffer.ms_fbo);
+		glDeleteRenderbuffers(1, &framebuffer.ms_depth);
+		glDeleteTextures(1, &framebuffer.ms_color);
+	}
+
 #ifdef TOOLS_ENABLED
 	framebuffer.active=use_fbo;
+	framebuffer.ms_active = use_fbo;
 #else
 	framebuffer.active=use_fbo && !low_memory_2d;
+	framebuffer.ms_active = use_fbo && !low_memory_2d;
 #endif
 	framebuffer.width=dwidth;
 	framebuffer.height=dheight;
@@ -10553,6 +10591,52 @@ void RasterizerGLES2::_update_framebuffer() {
 		framebuffer.active=false;
 		//print_line("**************** NO FAMEBUFFEEEERRRR????");
 		WARN_PRINT(String("Could not create framebuffer!!, code: "+itos(status)).ascii().get_data());
+	}
+
+
+	//ms
+	if (msaa_multisamples > 1 && framebuffer.ms_active) {
+		glGenFramebuffers(1, &framebuffer.ms_fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.ms_fbo);
+
+		//ms color
+		glGenTextures(1, &framebuffer.ms_color);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, framebuffer.ms_color);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, msaa_multisamples, format_rgba, framebuffer.width, framebuffer.height, GL_FALSE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		//ms depth
+		glGenTextures(1, &framebuffer.ms_depth);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, framebuffer.ms_depth);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, msaa_multisamples, GL_DEPTH_COMPONENT24, framebuffer.width, framebuffer.height, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, framebuffer.ms_color, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, framebuffer.ms_depth, 0);
+	#
+		status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+
+			glDeleteFramebuffers(1, &framebuffer.ms_fbo);
+
+			glDeleteRenderbuffers(1, &framebuffer.ms_depth);
+			glDeleteTextures(1, &framebuffer.ms_color);
+
+			framebuffer.ms_fbo = 0;
+			framebuffer.ms_active = false;
+			WARN_PRINT("Could not create multisampled framebuffer!!");
+		}
+
+	}
+	else {
+		framebuffer.ms_active = false;
 	}
 
 	//sample
@@ -11366,7 +11450,13 @@ void RasterizerGLES2::reload_vram() {
 		}
 
 		framebuffer.luminance.clear();
+	}
 
+	if (framebuffer.ms_fbo != 0) {
+
+		framebuffer.ms_fbo = 0;
+		framebuffer.ms_depth = 0;
+		framebuffer.ms_color = 0;
 	}
 
 	for(int i=0;i<near_shadow_buffers.size();i++) {
@@ -11461,6 +11551,9 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	use_shadow_mapping=true;
 	use_fast_texture_filter=!bool(GLOBAL_DEF("rasterizer/trilinear_mipmap_filter",true));
 	low_memory_2d=bool(GLOBAL_DEF("rasterizer/low_memory_2d_mode",false));
+
+	msaa_multisamples = int(GLOBAL_DEF("rasterizer/multisamples", 1));
+
 	skel_default.resize(1024*4);
 	for(int i=0;i<1024/3;i++) {
 
