@@ -228,21 +228,9 @@ ParticleAttractor2D::ParticleAttractor2D() {
 
 /****************************************/
 
-_FORCE_INLINE_ static float _rand_from_seed(uint32_t *seed) {
-
-	uint32_t k;
-	uint32_t s = (*seed);
-	if (s == 0)
-		s = 0x12345987;
-	k = s / 127773;
-	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
-		s += 2147483647;
-	(*seed) = s;
-
-	float v=((float)((*seed) & 0xFFFFF))/(float)0xFFFFF;
-	v=v*2.0-1.0;
-	return v;
+_FORCE_INLINE_ static float _rand_from_seed(uint64_t *seed) {
+	uint32_t r = Math::rand_from_seed(seed);
+	return 2.0f * (float)r / (float)Math::RANDOM_MAX - 1.0f;
 }
 
 void Particles2D::_process_particles(float p_delta) {
@@ -349,7 +337,7 @@ void Particles2D::_process_particles(float p_delta) {
 					}
 				}
 				p.seed=Math::rand() % 12345678;
-				uint32_t rand_seed=p.seed*(i+1);
+				uint64_t rand_seed=p.seed*(i+1);
 
 				float angle = Math::deg2rad(param[PARAM_DIRECTION]+_rand_from_seed(&rand_seed)*param[PARAM_SPREAD]);
 
@@ -378,7 +366,7 @@ void Particles2D::_process_particles(float p_delta) {
 			if (!p.active)
 				continue;
 
-			uint32_t rand_seed=p.seed*(i+1);
+			uint64_t rand_seed=p.seed*(i+1);
 
 			Vector2 force;
 
@@ -537,7 +525,7 @@ void Particles2D::_notification(int p_what) {
 				else
 					ptime=(1.0-ptime)+time_pos;
 
-				uint32_t rand_seed=p.seed*(i+1);
+				uint64_t rand_seed=p.seed*(i+1);
 
 				Color color;
 
