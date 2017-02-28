@@ -193,6 +193,7 @@ void AcceptDialog::_post_popup() {
 
 	WindowDialog::_post_popup();
 	get_ok()->grab_focus();
+	_update_child_rect();
 
 }
 
@@ -201,7 +202,7 @@ void AcceptDialog::_notification(int p_what) {
 	if (p_what==NOTIFICATION_MODAL_CLOSE) {
 
 		cancel_pressed();
-	} if (p_what==NOTIFICATION_RESIZED) {
+	} if (p_what==NOTIFICATION_RESIZED || p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
 		_update_child_rects();
 	}
