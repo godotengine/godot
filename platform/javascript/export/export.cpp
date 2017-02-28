@@ -320,6 +320,11 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 			file=p_path.get_file().basename()+".js";
 		}
 
+		if (file=="godot.asm.js") {
+
+			file=p_path.get_file().basename()+".asm.js";
+		}
+
 		if (file=="godot.mem") {
 
 			file=p_path.get_file().basename()+".mem";

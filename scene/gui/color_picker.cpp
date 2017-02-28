@@ -296,7 +296,7 @@ void ColorPicker::_hsv_draw(int p_wich,Control* c)
 void ColorPicker::_uv_input(const InputEvent &ev) {
 	if (ev.type == InputEvent::MOUSE_BUTTON) {
 		const InputEventMouseButton &bev = ev.mouse_button;
-		if (bev.pressed) {
+		if (bev.pressed && bev.button_index==BUTTON_LEFT) {
 			changing_color = true;
 			float x = CLAMP((float)bev.x,0,256);
 			float y = CLAMP((float)bev.y,0,256);
@@ -329,7 +329,7 @@ void ColorPicker::_uv_input(const InputEvent &ev) {
 void ColorPicker::_w_input(const InputEvent &ev) {
 	if (ev.type == InputEvent::MOUSE_BUTTON) {
 		const InputEventMouseButton &bev = ev.mouse_button;
-		if (bev.pressed) {
+		if (bev.pressed && bev.button_index==BUTTON_LEFT) {
 			changing_color = true;
 			h=1-((float)bev.y)/256.0;
 

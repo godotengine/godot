@@ -267,9 +267,9 @@ void ButtonArray::_notification(int p_what) {
 				} else {
 					if (hover==i)
 						draw_style_box(style_hover,r);
-					else
+					else if (!flat)
 						draw_style_box(style_normal,r);
-					sbsize=style_selected->get_minimum_size();
+					sbsize=style_normal->get_minimum_size();
 					sbofs=style_normal->get_offset();
 					f=font_normal;
 					c=color_normal;
@@ -386,6 +386,17 @@ void ButtonArray::set_align(Align p_align) {
 ButtonArray::Align ButtonArray::get_align() const {
 
 	return align;
+}
+
+void ButtonArray::set_flat(bool p_flat) {
+
+	flat=p_flat;
+	update();
+}
+
+bool ButtonArray::is_flat() const {
+
+	return flat;
 }
 
 
@@ -525,6 +536,8 @@ void ButtonArray::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_button_tooltip","button_idx"),&ButtonArray::get_button_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_button_icon:Texture","button_idx"),&ButtonArray::get_button_icon);
 	ObjectTypeDB::bind_method(_MD("get_button_count"),&ButtonArray::get_button_count);
+	ObjectTypeDB::bind_method(_MD("set_flat","enabled"),&ButtonArray::set_flat);
+	ObjectTypeDB::bind_method(_MD("is_flat"),&ButtonArray::is_flat);
 	ObjectTypeDB::bind_method(_MD("get_selected"),&ButtonArray::get_selected);
 	ObjectTypeDB::bind_method(_MD("get_hovered"),&ButtonArray::get_hovered);
 	ObjectTypeDB::bind_method(_MD("set_selected","button_idx"),&ButtonArray::set_selected);
@@ -539,6 +552,8 @@ void ButtonArray::_bind_methods() {
 	BIND_CONSTANT( ALIGN_FILL );
 	BIND_CONSTANT( ALIGN_EXPAND_FILL );
 
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flat" ), _SCS("set_flat"),_SCS("is_flat") );
+
 	ADD_SIGNAL( MethodInfo("button_selected",PropertyInfo(Variant::INT,"button_idx")));
 
 }
@@ -549,5 +564,6 @@ ButtonArray::ButtonArray(Orientation p_orientation) {
 	selected=-1;
 	set_focus_mode(FOCUS_ALL);
 	hover=-1;
+	flat=false;
 	min_button_size = -1;
 }

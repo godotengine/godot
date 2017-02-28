@@ -67,6 +67,9 @@ public:
 	void insert(int p_pos, const Variant& p_value);
 	void remove(int p_pos);
 
+	Variant front() const;
+	Variant back() const;
+
 	void sort();
 	void sort_custom(Object *p_obj,const StringName& p_function);
 	void invert();

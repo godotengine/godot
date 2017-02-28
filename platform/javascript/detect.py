@@ -96,6 +96,7 @@ def configure(env):
     else:
         env.Append(CPPFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
+        env.Append(LINKFLAGS=['--separate-asm'])
 
     if env['javascript_eval'] == 'yes':
         env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])

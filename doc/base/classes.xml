@@ -4656,6 +4656,20 @@
 				Remove the first occurrence of a value from the array.
 			</description>
 		</method>
+		<method name="front">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the first element of the array if the array is not empty (size>0).
+			</description>
+		</method>
+		<method name="back">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the last element of the array if the array is not empty (size>0).
+			</description>
+		</method>
 		<method name="find">
 			<return type="int">
 			</return>
@@ -15526,7 +15540,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns a status string like STATUS_REQUESTING. Need to call [method poll] in order to get status updates.
+				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">

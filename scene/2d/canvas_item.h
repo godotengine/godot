@@ -193,7 +193,7 @@ public:
 
 	void update();
 
-	void set_blend_mode(BlendMode p_blend_mode);
+	virtual void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
 
 	virtual void set_light_mask(int p_light_mask);

@@ -43,16 +43,17 @@ struct VorbisDecoder
 
 OpusVorbisDecoder::OpusVorbisDecoder(const WebMDemuxer &demuxer) :
 	m_vorbis(NULL), m_opus(NULL),
-	m_numSamples(0),
-	m_channels(demuxer.getChannels())
+	m_numSamples(0)
 {
 	switch (demuxer.getAudioCodec())
 	{
 		case WebMDemuxer::AUDIO_VORBIS:
+			m_channels = demuxer.getChannels();
 			if (openVorbis(demuxer))
 				return;
 			break;
 		case WebMDemuxer::AUDIO_OPUS:
+			m_channels = demuxer.getChannels();
 			if (openOpus(demuxer))
 				return;
 			break;

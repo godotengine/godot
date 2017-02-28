@@ -98,6 +98,7 @@ Files extracted from upstream source:
 ## libsimplewebm
 
 - Upstream: https://github.com/zaps166/libsimplewebm
+- Version: 05cfdc2 (git)
 - License: MIT, BSD-3-Clause
 
 

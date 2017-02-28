@@ -522,9 +522,6 @@ String OS_Unix::get_executable_path() const {
 	delete[] resolved_path;
 
 	return path;
-#elif defined(EMSCRIPTEN)
-	// We return nothing
-	return String();
 #else
 	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
 	return OS::get_executable_path();
