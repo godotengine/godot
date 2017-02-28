@@ -641,7 +641,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count<0,ERR_INVALID_DATA);
 
 			PoolVector<String> strings;
 			buf+=4;
@@ -691,7 +690,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count<0,ERR_INVALID_DATA);
 			buf+=4;
 			len-=4;
 
@@ -729,7 +727,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count<0,ERR_INVALID_DATA);
 			buf+=4;
 			len-=4;
 
@@ -768,7 +765,6 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
 			uint32_t count = decode_uint32(buf);
-			ERR_FAIL_COND_V(count<0,ERR_INVALID_DATA);
 			buf+=4;
 			len-=4;
 

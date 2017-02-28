@@ -986,7 +986,7 @@ void make_default_theme(bool p_hidpi,Ref<Font> p_font) {
 	Ref<BitmapFont> default_font;
 	if (p_font.is_valid()) {
 		default_font=p_font;
-	} if (p_hidpi) {
+	} else if (p_hidpi) {
 		default_font=make_font2(_hidpi_font_height,_hidpi_font_ascent,_hidpi_font_charcount,&_hidpi_font_charrects[0][0],_hidpi_font_kerning_pair_count,&_hidpi_font_kerning_pairs[0][0],_hidpi_font_img_width,_hidpi_font_img_height,_hidpi_font_img_data);
 	} else {
 		default_font=make_font2(_lodpi_font_height,_lodpi_font_ascent,_lodpi_font_charcount,&_lodpi_font_charrects[0][0],_lodpi_font_kerning_pair_count,&_lodpi_font_kerning_pairs[0][0],_lodpi_font_img_width,_lodpi_font_img_height,_lodpi_font_img_data);

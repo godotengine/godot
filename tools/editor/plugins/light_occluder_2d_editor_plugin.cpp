@@ -283,7 +283,7 @@ bool LightOccluder2DEditor::forward_gui_input(const InputEvent& p_event) {
 								return true;
 							}
 						}
-					} if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
+					} else if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
 
 
 

@@ -2953,7 +2953,7 @@ uint32_t Variant::hash() const {
 		PoolVector<p_type>::Read rr = r.read(); \
 		\
 		for(int i = 0; i < l.size(); ++i) { \
-			if(! p_compare_func((lr[0]), (rr[0]))) \
+			if(! p_compare_func((lr[i]), (rr[i]))) \
 				return false; \
 		}\
 		\
@@ -3065,7 +3065,7 @@ bool Variant::hash_compare(const Variant& p_variant) const {
 				return false;
 
 			for(int i = 0; i < l.size(); ++i) {
-				if(! l[0].hash_compare(r[0]))
+				if(! l[i].hash_compare(r[i]))
 					return false;
 			}
 

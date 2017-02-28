@@ -1393,7 +1393,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 						v->basis.set_axis(index,p_value);
 					return;
 				}
-			} if (p_index.get_type()==Variant::STRING) {
+			} else if (p_index.get_type()==Variant::STRING) {
 
 				Transform *v=_data._transform;
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
@@ -2150,7 +2150,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 					valid=true;
 					return index==3?v->origin:v->basis.get_axis(index);
 				}
-			} if (p_index.get_type()==Variant::STRING) {
+			} else if (p_index.get_type()==Variant::STRING) {
 
 				const Transform *v=_data._transform;
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);

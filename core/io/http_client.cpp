@@ -340,7 +340,7 @@ Error HTTPClient::poll(){
 				int rs = response_str.size();
 				if (
 					(rs>=2 && response_str[rs-2]=='\n' && response_str[rs-1]=='\n') ||
-					(rs>=4 && response_str[rs-4]=='\r' && response_str[rs-3]=='\n' && rs>=4 && response_str[rs-2]=='\r' && response_str[rs-1]=='\n')
+					(rs>=4 && response_str[rs-4]=='\r' && response_str[rs-3]=='\n' && response_str[rs-2]=='\r' && response_str[rs-1]=='\n')
 				) {
 
 

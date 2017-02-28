@@ -314,7 +314,7 @@ void ItemList::move_item(int p_item,int p_to_pos) {
 
 	if (current<0) {
 		//do none
-	} if (p_item==current) {
+	} else if (p_item==current) {
 		current=p_to_pos;
 	} else if (p_to_pos>p_item && current>p_item && current<p_to_pos) {
 		current--;

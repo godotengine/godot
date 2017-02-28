@@ -504,7 +504,7 @@ const void *PoolAllocator::get(ID p_mem) const {
 		return NULL;
 	}
 
-	if (e->pos<0 || (int)e->pos>=pool_size) {
+	if ((int)e->pos>=pool_size) {
 
 		mt_unlock();
 		ERR_PRINT("e->pos<0 || e->pos>=pool_size");
@@ -546,7 +546,7 @@ void *PoolAllocator::get(ID p_mem) {
 		return NULL;
 	}
 
-	if (e->pos<0 || (int)e->pos>=pool_size) {
+	if ((int)e->pos>=pool_size) {
 
 		mt_unlock();
 		ERR_PRINT("e->pos<0 || e->pos>=pool_size");

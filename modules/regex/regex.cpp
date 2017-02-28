@@ -321,7 +321,7 @@ struct RegExNodeClass : public RegExNode {
 			case Type_lower:
 				return ('a' <= c && c <= 'z');
 			case Type_print:
-				return (0x1F < c && c < 0x1F);
+				return (0x20 < c && c < 0x7f);
 			case Type_punct:
 				return (REGEX_NODE_PUNCT.find(c) >= 0);
 			case Type_space:

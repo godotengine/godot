@@ -181,7 +181,7 @@ void RayShapeSW::get_supports(const Vector3& p_normal,int p_max,Vector3 *r_suppo
 		r_amount=2;
 		r_supports[0]=Vector3(0,0,0);
 		r_supports[1]=Vector3(0,0,length);
-	} if (p_normal.z>0) {
+	} else if (p_normal.z>0) {
 		r_amount=1;
 		*r_supports=Vector3(0,0,length);
 	} else {

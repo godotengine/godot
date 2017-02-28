@@ -2806,6 +2806,7 @@ void RasterizerSceneGLES3::_copy_to_front_buffer(Environment *env) {
 		//no environment, simply convert from linear to srgb
 		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB,true);
 	} else {
+		/* Why are both statements equal? */
 		storage->shaders.copy.set_conditional(CopyShaderGLES3::LINEAR_TO_SRGB,true);
 
 	}

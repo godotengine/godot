@@ -352,7 +352,7 @@ void Collada::_parse_image(XMLParser& parser) {
 
 					image.path=path;
 
-				} if (name=="data") {
+				} else if (name=="data") {
 
 					ERR_PRINT("COLLADA Embedded image data not supported!");
 
@@ -728,7 +728,7 @@ void Collada::_parse_effect_material(XMLParser& parser,Effect &effect,String &id
 #endif
 
 						}
-					} if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && (
+					} else if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END && (
 						parser.get_node_name()=="constant" ||
 						parser.get_node_name()=="lambert" ||
 						parser.get_node_name()=="phong"  ||
@@ -1100,7 +1100,7 @@ void Collada::_parse_mesh_geometry(XMLParser& parser,String p_id,String p_name) 
 				current_source=id;
 				COLLADA_PRINT("source data: "+id);
 
-			} else if (section=="float_array" || section=="array" || section=="float_array") {
+			} else if (section=="float_array" || section=="array") {
 				// create a new array and read it.
 				if (meshdata.sources.has(current_source)) {
 
@@ -2192,7 +2192,7 @@ void Collada::_parse_scene(XMLParser& parser) {
 
 				state.root_visual_scene=_uri_to_id(parser.get_attribute_value("url"));
 				print_line("***ROOT VISUAL SCENE: "+state.root_visual_scene);
-			} if (name=="instance_physics_scene") {
+			} else if (name=="instance_physics_scene") {
 
 				state.root_physics_scene=_uri_to_id(parser.get_attribute_value("url"));
 

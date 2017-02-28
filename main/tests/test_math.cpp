@@ -144,11 +144,11 @@ class GetClassAndNamespace {
 									error_str="Unterminated comment";
 									error=true;
 									return TK_ERROR;
-								} if (code[idx]=='*' &&code[idx+1]=='/') {
+								} else if (code[idx]=='*' &&code[idx+1]=='/') {
 
 									idx+=2;
 									break;
-								} if (code[idx]=='\n') {
+								} else if (code[idx]=='\n') {
 									line++;
 								}
 

@@ -229,6 +229,7 @@ ParticleAttractor2D::ParticleAttractor2D() {
 /****************************************/
 
 _FORCE_INLINE_ static float _rand_from_seed(uint64_t *seed) {
+
 	uint32_t r = Math::rand_from_seed(seed);
 	return 2.0f * (float)r / (float)Math::RANDOM_MAX - 1.0f;
 }

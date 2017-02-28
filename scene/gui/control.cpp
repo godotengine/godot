@@ -2421,8 +2421,6 @@ void Control::get_argument_options(const StringName& p_function,int p_idx,List<S
 			Theme::get_default()->get_font_list(get_class(),&sn);
 		} else if (pf=="add_constant_override" || pf=="has_constant" || pf=="has_constant_override" || pf=="get_constant") {
 			Theme::get_default()->get_constant_list(get_class(),&sn);
-		} else if (pf=="add_color_override" || pf=="has_color" || pf=="has_color_override" || pf=="get_color") {
-			Theme::get_default()->get_color_list(get_class(),&sn);
 		}
 
 		sn.sort_custom<StringName::AlphCompare>();
