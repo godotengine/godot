@@ -130,7 +130,7 @@ public:
 
 	Plane get_plane() const;
 
-	virtual real_t get_area() const { return INFINITY; }
+	virtual real_t get_area() const { return Math_INF; }
 	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_PLANE; }
 	virtual void project_range(const Vector3& p_normal, const Transform& p_transform, real_t &r_min, real_t &r_max) const;
 	virtual Vector3 get_support(const Vector3& p_normal) const;

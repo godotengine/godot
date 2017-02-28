@@ -558,6 +558,12 @@ Error VisualScriptExpression::_get_token(Token& r_token) {
 					} else if (id=="PI") {
 						r_token.type=TK_CONSTANT;
 						r_token.value=Math_PI;
+					} else if (id == "INF") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_INF;
+					} else if (id == "NAN") {
+						r_token.type = TK_CONSTANT;
+						r_token.value = Math_NAN;
 					} else if (id=="not") {
 						r_token.type=TK_OP_NOT;
 					} else if (id=="or") {

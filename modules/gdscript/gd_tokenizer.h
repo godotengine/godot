@@ -128,6 +128,8 @@ public:
 		TK_NEWLINE,
 		TK_CONST_PI,
 		TK_WILDCARD,
+		TK_CONST_INF,
+		TK_CONST_NAN,
 		TK_ERROR,
 		TK_EOF,
 		TK_CURSOR, //used for code completion

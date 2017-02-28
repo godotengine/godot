@@ -1517,6 +1517,8 @@ void GDScriptLanguage::init() {
 	}
 
 	_add_global(StaticCString::create("PI"),Math_PI);
+	_add_global(StaticCString::create("INF"),Math_INF);
+	_add_global(StaticCString::create("NAN"),Math_NAN);
 
 	//populate native classes
 
@@ -1909,6 +1911,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"bool",
 		"null",
 		"PI",
+		"INF",
+		"NAN",
 		"self",
 		"true",
 		// functions
