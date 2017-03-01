@@ -89,8 +89,17 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			//Log.d(TAG, "afterTextChanged: " + s);
 		//}
 		int nModified = s.length() - this.mText.length();
-		if (nModified > 0) {
-			final String insertText = s.subSequence(this.mText.length(), s.length()).toString();
+		if (nModified >= 0) {
+			int beforeChangeLength = this.mText.length();
+			if (beforeChangeLength > 0) {
+				// Code to remove the previous composition state and add the last character
+				// because you have not put the correct combination of characters before.
+				// Erase a last character.
+				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
+				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
+				beforeChangeLength--;
+			}
+			final String insertText = s.subSequence(beforeChangeLength, s.length()).toString();
 			for(int i = 0; i < insertText.length(); i++) {
 				int ch = insertText.codePointAt(i);
 				GodotLib.key(0, ch, true);
