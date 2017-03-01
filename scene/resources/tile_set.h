@@ -52,6 +52,10 @@ class TileSet : public Resource {
 		Vector2 navigation_polygon_offset;
 		Ref<NavigationPolygon> navigation_polygon;
 		Ref<CanvasItemMaterial> material;
+		Color modulate;
+
+		// Default modulate for back-compat
+		explicit Data() : modulate(1,1,1) {}
 	};
 
 	Map<int,Data> tile_map;
@@ -93,6 +97,9 @@ public:
 
 	void tile_set_material(int p_id,const Ref<CanvasItemMaterial> &p_material);
 	Ref<CanvasItemMaterial> tile_get_material(int p_id) const;
+
+	void tile_set_modulate(int p_id,const Color &p_color);
+	Color tile_get_modulate(int p_id) const;
 
 	void tile_set_occluder_offset(int p_id,const Vector2& p_offset);
 	Vector2 tile_get_occluder_offset(int p_id) const;
