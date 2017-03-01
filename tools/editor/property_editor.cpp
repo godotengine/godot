@@ -30,6 +30,8 @@
 #include "scene/gui/label.h"
 #include "io/resource_loader.h"
 #include "io/image_loader.h"
+#include "os/input.h"
+#include "os/keyboard.h"
 #include "object_type_db.h"
 #include "print_string.h"
 #include "globals.h"
@@ -233,6 +235,7 @@ Variant CustomPropertyEditor::get_variant() const {
 
 	return v;
 }
+
 String CustomPropertyEditor::get_name() const {
 
 	return name;
@@ -244,6 +247,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 	updating=true;
 	name=p_name;
 	v=p_variant;
+	field_names.clear();
 	hint=p_hint;
 	hint_text=p_hint_text;
 	type_button->hide();
@@ -441,22 +445,20 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::VECTOR2: {
 
-			List<String> names;
-			names.push_back("x");
-			names.push_back("y");
-			config_value_editors(2,2,10,names);
+			field_names.push_back("x");
+			field_names.push_back("y");
+			config_value_editors(2,2,10,field_names);
 			Vector2 vec=v;
 			value_editor[0]->set_text( String::num( vec.x) );
 			value_editor[1]->set_text( String::num( vec.y) );
 		} break;
 		case Variant::RECT2: {
 
-			List<String> names;
-			names.push_back("x");
-			names.push_back("y");
-			names.push_back("w");
-			names.push_back("h");
-			config_value_editors(4,4,10,names);
+			field_names.push_back("x");
+			field_names.push_back("y");
+			field_names.push_back("w");
+			field_names.push_back("h");
+			config_value_editors(4,4,10,field_names);
 			Rect2 r=v;
 			value_editor[0]->set_text( String::num( r.pos.x) );
 			value_editor[1]->set_text( String::num( r.pos.y) );
@@ -465,11 +467,10 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::VECTOR3: {
 
-			List<String> names;
-			names.push_back("x");
-			names.push_back("y");
-			names.push_back("z");
-			config_value_editors(3,3,10,names);
+			field_names.push_back("x");
+			field_names.push_back("y");
+			field_names.push_back("z");
+			config_value_editors(3,3,10,field_names);
 			Vector3 vec=v;
 			value_editor[0]->set_text( String::num( vec.x) );
 			value_editor[1]->set_text( String::num( vec.y) );
@@ -477,12 +478,11 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::PLANE: {
 
-			List<String> names;
-			names.push_back("x");
-			names.push_back("y");
-			names.push_back("z");
-			names.push_back("d");
-			config_value_editors(4,4,10,names);
+			field_names.push_back("x");
+			field_names.push_back("y");
+			field_names.push_back("z");
+			field_names.push_back("d");
+			config_value_editors(4,4,10,field_names);
 			Plane plane=v;
 			value_editor[0]->set_text( String::num( plane.normal.x ) );
 			value_editor[1]->set_text( String::num( plane.normal.y ) );
@@ -492,12 +492,11 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::QUAT: {
 
-			List<String> names;
-			names.push_back("x");
-			names.push_back("y");
-			names.push_back("z");
-			names.push_back("w");
-			config_value_editors(4,4,10,names);
+			field_names.push_back("x");
+			field_names.push_back("y");
+			field_names.push_back("z");
+			field_names.push_back("w");
+			config_value_editors(4,4,10,field_names);
 			Quat q=v;
 			value_editor[0]->set_text( String::num( q.x ) );
 			value_editor[1]->set_text( String::num( q.y ) );
@@ -507,14 +506,13 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::_AABB: {
 
-			List<String> names;
-			names.push_back("px");
-			names.push_back("py");
-			names.push_back("pz");
-			names.push_back("sx");
-			names.push_back("sy");
-			names.push_back("sz");
-			config_value_editors(6,3,16,names);
+			field_names.push_back("px");
+			field_names.push_back("py");
+			field_names.push_back("pz");
+			field_names.push_back("sx");
+			field_names.push_back("sy");
+			field_names.push_back("sz");
+			config_value_editors(6,3,16,field_names);
 
 			AABB aabb=v;
 			value_editor[0]->set_text( String::num( aabb.pos.x ) );
@@ -527,14 +525,13 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::MATRIX32: {
 
-			List<String> names;
-			names.push_back("xx");
-			names.push_back("xy");
-			names.push_back("yx");
-			names.push_back("yy");
-			names.push_back("ox");
-			names.push_back("oy");
-			config_value_editors(6,2,16,names);
+			field_names.push_back("xx");
+			field_names.push_back("xy");
+			field_names.push_back("yx");
+			field_names.push_back("yy");
+			field_names.push_back("ox");
+			field_names.push_back("oy");
+			config_value_editors(6,2,16,field_names);
 
 			Matrix32 basis=v;
 			for(int i=0;i<6;i++) {
@@ -545,17 +542,16 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		} break;
 		case Variant::MATRIX3: {
 
-			List<String> names;
-			names.push_back("xx");
-			names.push_back("xy");
-			names.push_back("xz");
-			names.push_back("yx");
-			names.push_back("yy");
-			names.push_back("yz");
-			names.push_back("zx");
-			names.push_back("zy");
-			names.push_back("zz");
-			config_value_editors(9,3,16,names);
+			field_names.push_back("xx");
+			field_names.push_back("xy");
+			field_names.push_back("xz");
+			field_names.push_back("yx");
+			field_names.push_back("yy");
+			field_names.push_back("yz");
+			field_names.push_back("zx");
+			field_names.push_back("zy");
+			field_names.push_back("zz");
+			config_value_editors(9,3,16,field_names);
 
 			Matrix3 basis=v;
 			for(int i=0;i<9;i++) {
@@ -567,20 +563,19 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		case Variant::TRANSFORM: {
 
 
-			List<String> names;
-			names.push_back("xx");
-			names.push_back("xy");
-			names.push_back("xz");
-			names.push_back("xo");
-			names.push_back("yx");
-			names.push_back("yy");
-			names.push_back("yz");
-			names.push_back("yo");
-			names.push_back("zx");
-			names.push_back("zy");
-			names.push_back("zz");
-			names.push_back("zo");
-			config_value_editors(12,4,16,names);
+			field_names.push_back("xx");
+			field_names.push_back("xy");
+			field_names.push_back("xz");
+			field_names.push_back("xo");
+			field_names.push_back("yx");
+			field_names.push_back("yy");
+			field_names.push_back("yz");
+			field_names.push_back("yo");
+			field_names.push_back("zx");
+			field_names.push_back("zy");
+			field_names.push_back("zz");
+			field_names.push_back("zo");
+			config_value_editors(12,4,16,field_names);
 
 			Transform tr=v;
 			for(int i=0;i<9;i++) {
@@ -817,6 +812,14 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 	updating=false;
 	return true;
 }
+
+////void CustomPropertyEditor::_save_properties_values(List<String> p_names) {
+////
+////	field_names=p_names;
+////	for (int i=0;i<p_names.size();i++) {
+////		field_values.push_back(v.get(p_names[i]));
+////	}
+////}
 
 void CustomPropertyEditor::_file_selected(String p_file) {
 
@@ -1353,7 +1356,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				vec.y=value_editor[1]->get_text().to_double();
 			}
 			v=vec;
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 		case Variant::RECT2: {
@@ -1371,7 +1374,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				r2.size.y=value_editor[3]->get_text().to_double();
 			}
 			v=r2;
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 
@@ -1388,7 +1391,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				vec.z=value_editor[2]->get_text().to_double();
 			}
 			v=vec;
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 		case Variant::PLANE: {
@@ -1406,7 +1409,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				pl.d=value_editor[3]->get_text().to_double();
 			}
 			v=pl;
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 		case Variant::QUAT: {
@@ -1424,7 +1427,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				q.w=value_editor[3]->get_text().to_double();
 			}
 			v=q;
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 		case Variant::_AABB: {
@@ -1448,7 +1451,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 				size.z=value_editor[5]->get_text().to_double();
 			}
 			v=AABB(pos,size);
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 		case Variant::MATRIX32: {
@@ -1463,7 +1466,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			}
 
 			v=m;
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 		case Variant::MATRIX3: {
@@ -1479,7 +1482,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			}
 
 			v=m;
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 		} break;
 		case Variant::TRANSFORM: {
@@ -1507,7 +1510,7 @@ void CustomPropertyEditor::_modified(String p_string) {
 			}
 
 			v=Transform(basis,origin);
-			emit_signal("variant_changed");
+			_emit_changed_whole_or_field();
 
 
 		} break;
@@ -1573,6 +1576,15 @@ void CustomPropertyEditor::_modified(String p_string) {
 	updating=false;
 }
 
+void CustomPropertyEditor::_emit_changed_whole_or_field() {
+
+	if (!Input::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+		emit_signal("variant_changed");
+	} else {
+		emit_signal("variant_field_changed",field_names[focused_value_editor]);
+	}
+}
+
 void CustomPropertyEditor::_range_modified(double p_value)
 {
 	v=p_value;
@@ -1594,6 +1606,7 @@ void CustomPropertyEditor::_focus_enter() {
 		case Variant::TRANSFORM: {
 			for (int i=0;i<MAX_VALUE_EDITORS;++i) {
 				if (value_editor[i]->has_focus()) {
+					focused_value_editor=i;
 					value_editor[i]->select_all();
 					break;
 				}
@@ -1704,6 +1717,7 @@ void CustomPropertyEditor::_bind_methods() {
 
 
 	ADD_SIGNAL( MethodInfo("variant_changed") );
+	ADD_SIGNAL( MethodInfo("variant_field_changed",PropertyInfo(Variant::STRING,"field")) );
 	ADD_SIGNAL( MethodInfo("resource_edit_request") );
 }
 CustomPropertyEditor::CustomPropertyEditor() {
@@ -1724,6 +1738,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		value_editor[i]->connect("focus_enter", this, "_focus_enter");
 		value_editor[i]->connect("focus_exit", this, "_focus_exit");
 	}
+	focused_value_editor=-1;
 
 	for(int i=0;i<4;i++) {
 
@@ -3464,7 +3479,7 @@ void PropertyEditor::_item_selected() {
 }
 
 
-void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
+void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value, const String& p_changed_field) {
 
 	if (autoclear) {
 		TreeItem *item = tree->get_selected();
@@ -3474,13 +3489,17 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		}
 	}
 
-	if (!undo_redo || obj->cast_to<MultiNodeEdit>() || obj->cast_to<ArrayPropertyEdit>()) { //kind of hacky
+	if (!undo_redo|| obj->cast_to<ArrayPropertyEdit>()) { //kind of hacky
 
 		obj->set(p_name,p_value);
 		_changed_callbacks(obj,p_name);
 		emit_signal(_prop_edited,p_name);
 
+	} else if (obj->cast_to<MultiNodeEdit>()) {
 
+		obj->cast_to<MultiNodeEdit>()->set_property_field(p_name,p_value,p_changed_field);
+		_changed_callbacks(obj,p_name);
+		emit_signal(_prop_edited,p_name);
 	} else {
 
 
@@ -3665,8 +3684,17 @@ void PropertyEditor::_custom_editor_edited() {
 	if (!obj)
 		return;
 
-
 	_edit_set(custom_editor->get_name(), custom_editor->get_variant());
+}
+
+void PropertyEditor::_custom_editor_edited_field(const String& p_field_name) {
+
+	ERR_FAIL_COND(p_field_name=="");
+
+	if (!obj)
+		return;
+
+	_edit_set(custom_editor->get_name(), custom_editor->get_variant(), p_field_name);
 }
 
 void PropertyEditor::_custom_editor_request(bool p_arrow) {
@@ -3936,6 +3964,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_item_selected",&PropertyEditor::_item_selected);
 	ObjectTypeDB::bind_method( "_custom_editor_request",&PropertyEditor::_custom_editor_request);
 	ObjectTypeDB::bind_method( "_custom_editor_edited",&PropertyEditor::_custom_editor_edited);
+	ObjectTypeDB::bind_method( "_custom_editor_edited_field",&PropertyEditor::_custom_editor_edited_field,DEFVAL(""));
 	ObjectTypeDB::bind_method( "_resource_edit_request",&PropertyEditor::_resource_edit_request);
 	ObjectTypeDB::bind_method( "_node_removed",&PropertyEditor::_node_removed);
 	ObjectTypeDB::bind_method( "_edit_button",&PropertyEditor::_edit_button);
@@ -4079,6 +4108,7 @@ PropertyEditor::PropertyEditor() {
 	tree->connect("custom_popup_edited", this,"_custom_editor_request");
 	tree->connect("button_pressed", this,"_edit_button");
 	custom_editor->connect("variant_changed", this,"_custom_editor_edited");
+	custom_editor->connect("variant_field_changed", this,"_custom_editor_edited_field");
 	custom_editor->connect("resource_edit_request", this,"_resource_edit_request",make_binds(),CONNECT_DEFERRED);
 	tree->set_hide_folding(true);
 
