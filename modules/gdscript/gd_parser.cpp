@@ -125,7 +125,6 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 		int argidx=0;
 
 		while(true) {
-
 			if (tokenizer->get_token()==GDTokenizer::TK_CURSOR) {
 				_make_completable_call(argidx);
 				completion_node=p_parent;
@@ -145,6 +144,9 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 
 			p_args.push_back(arg);
 
+			while (tokenizer->get_token() == GDTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
 			if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
 				tokenizer->advance();
 				break;
@@ -1073,12 +1075,13 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		/* Parse Operator */
 		/******************/
 
-		if (parenthesis>0) {
-			//remove empty space (only allowed if inside parenthesis
-			while(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
-				tokenizer->advance();
-			}
-		}
+		// moved to _parse_arguments
+		// if (parenthesis>0) {
+		// 	//remove empty space (only allowed if inside parenthesis
+		// 	while(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+		// 		tokenizer->advance();
+		// 	}
+		// }
 
 		Expression e;
 		e.is_op=false;
@@ -1143,7 +1146,6 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 	}
 
 	/* Reduce the set set of expressions and place them in an operator tree, respecting precedence */
-
 
 	while(expression.size()>1) {
 
@@ -1968,7 +1970,6 @@ void GDParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode
 		branch->body->parent_block = p_block;
 		p_block->sub_blocks.push_back(branch->body);
 		current_block = branch->body;
-		
 		_parse_block(branch->body, p_static);
 		
 		current_block = p_block;
