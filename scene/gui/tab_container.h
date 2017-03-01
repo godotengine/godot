@@ -50,6 +50,7 @@ private:
 	int tabs_ofs_cache;
 	int last_tab_cache;
 	int current;
+	int previous;
 	bool tabs_visible;
 	bool buttons_visible_cache;
 	TabAlign align;
@@ -91,6 +92,7 @@ public:
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
+	int get_previous_tab() const;
 
 	Control* get_tab_control(int p_idx) const;
 	Control* get_current_tab_control() const;
