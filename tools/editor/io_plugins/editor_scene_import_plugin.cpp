@@ -1092,6 +1092,7 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_MERGE_KEEP_EXTRA_ANIM_TRACKS,("Merge"),"Keep user-added Animation tracks.",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,("Materials"),"Set Alpha in Materials (-alpha)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,("Materials"),"Set Vert. Color in Materials (-vcol)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_SEPARATE_MATERIALS,("Materials"),"Import materials as files",false},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,("Create"),"Create Collisions and/or Rigid Bodies (-col,-colonly,-rigid)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,("Create"),"Create Portals (-portal)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,("Create"),"Create Rooms (-room)",true},
@@ -2682,6 +2683,61 @@ void EditorSceneImportPlugin::_merge_found_resources(Node *scene, Node *node, bo
 
 }
 
+Error EditorSceneImportPlugin::_save_material(const String &path, Ref<Material> material) {
+	String name = material->get_name() + ".tres";
+	String save_path = Globals::get_singleton()->localize_path(path.plus_file(name));
+	Error err = ResourceSaver::save(save_path, material, ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
+	((Resource*)material.ptr())->set_path(save_path);
+
+	return err;
+}
+
+void EditorSceneImportPlugin::_find_materials(Node *scene, Node *node, Set<Ref<Material>> &materials, Set<Ref<Mesh> > &tested_meshes) {
+	if (node!=scene && node->get_owner()!=scene)
+		return;
+
+	String path = scene->get_path_to(node);
+
+	if (node->cast_to<MeshInstance>()) {
+		MeshInstance *mi=node->cast_to<MeshInstance>();
+		Ref<Mesh> mesh = mi->get_mesh();
+		if (mesh.is_valid() && mesh->get_name()!=String() && !tested_meshes.has(mesh)) {
+
+			for(int i=0;i<mesh->get_surface_count();i++) {
+				Ref<Material> material = mesh->surface_get_material(i);
+
+				if (material.is_valid()) {
+					materials.insert(material);
+					// add material
+				}
+			}
+
+			tested_meshes.insert(mesh);
+		}
+
+		if (mesh.is_valid()) {
+
+			for(int i=0;i<mesh->get_surface_count();i++) {
+				Ref<Material> material = mi->get_surface_material(i);
+				if (material.is_valid()) {
+					materials.insert(material);
+				}
+			}
+
+		}
+
+		Ref<Material> override = mi->get_material_override();
+
+		if (override.is_valid()) {
+			materials.insert(override);
+		}
+	}
+
+	for(int i=0;i<node->get_child_count();i++) {
+		_find_materials(scene,node->get_child(i), materials, tested_meshes);
+	}
+}
+
 Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, const Ref<ResourceImportMetadata>& p_from) {
 
 	Error err=OK;
@@ -2748,6 +2804,17 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 		}
 
+	}
+
+	if (scene_flags & SCENE_FLAG_SEPARATE_MATERIALS) {
+		Set<Ref<Material> > found_materials;
+		Set<Ref<Mesh> > tested_meshes;
+		_find_materials(scene, scene, found_materials, tested_meshes);
+
+		for (Set<Ref<Material>>::Element *E=found_materials.front();E;E=E->next()) {
+			Ref< Material > material = E->get();
+			_save_material(target_res_path, material);
+		}
 	}
 
 	/// BEFORE ANYTHING, RUN SCRIPT
