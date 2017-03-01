@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -205,8 +205,8 @@ struct InputEventMouse  {
 
 	InputModifierState mod;
 	int button_mask;
-	int x,y;
-	int global_x,global_y;
+	float x,y;
+	float global_x,global_y;
 	int pointer_index;
 };
 
@@ -221,17 +221,17 @@ struct InputEventMouseButton : public InputEventMouse {
 
 struct InputEventMouseMotion : public InputEventMouse {
 
-	int relative_x,relative_y;
+	float relative_x,relative_y;
 	float speed_x,speed_y;
 };
 
-struct InputEventJoystickMotion  {
+struct InputEventJoypadMotion  {
 
-	int axis; ///< Joystick axis
+	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
 };
 
-struct InputEventJoystickButton  {
+struct InputEventJoypadButton  {
 
 	int button_index;
 	bool pressed;
@@ -241,14 +241,14 @@ struct InputEventJoystickButton  {
 struct InputEventScreenTouch  {
 
 	int index;
-	int x,y;
+	float x,y;
 	bool pressed;
 };
 struct InputEventScreenDrag  {
 
 	int index;
-	int x,y;
-	int relative_x,relative_y;
+	float x,y;
+	float relative_x,relative_y;
 	float speed_x,speed_y;
 };
 
@@ -267,8 +267,8 @@ struct InputEvent {
 		KEY,
 		MOUSE_MOTION,
 		MOUSE_BUTTON,
-		JOYSTICK_MOTION,
-		JOYSTICK_BUTTON,
+		JOYPAD_MOTION,
+		JOYPAD_BUTTON,
 		SCREEN_TOUCH,
 		SCREEN_DRAG,
 		ACTION,
@@ -282,8 +282,8 @@ struct InputEvent {
 	union {
 		InputEventMouseMotion mouse_motion;
 		InputEventMouseButton mouse_button;
-		InputEventJoystickMotion joy_motion;
-		InputEventJoystickButton joy_button;
+		InputEventJoypadMotion joy_motion;
+		InputEventJoypadButton joy_button;
 		InputEventKey key;
 		InputEventScreenTouch screen_touch;
 		InputEventScreenDrag screen_drag;
@@ -298,7 +298,7 @@ struct InputEvent {
 	void set_as_action(const String& p_action, bool p_pressed);
 
 
-	InputEvent xform_by(const Matrix32& p_xform) const;
+	InputEvent xform_by(const Transform2D& p_xform) const;
 	bool operator==(const InputEvent &p_event) const;
 	operator String() const;
 	InputEvent() { zeromem(this,sizeof(InputEvent)); }

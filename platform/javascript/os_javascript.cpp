@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,27 +27,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_javascript.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "core/io/file_access_buffered_fa.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/dir_access_unix.h"
-
 #include "servers/visual/visual_server_raster.h"
-
 #include "main/main.h"
-
-#include "core/globals.h"
-#include "stdlib.h"
-#include "emscripten.h"
+#include "core/global_config.h"
 #include "dom_keys.h"
+
+#include <stdlib.h>
+#include <emscripten.h>
 
 int OS_JavaScript::get_video_driver_count() const {
 
 	return 1;
 }
+
 const char * OS_JavaScript::get_video_driver_name(int p_driver) const {
 
-	return "GLES2";
+	return "GLES3";
 }
 
 OS::VideoMode OS_JavaScript::get_default_video_mode() const {
@@ -215,6 +215,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	// find locale, emscripten only sets "C"
 	char locale_ptr[16];
+	/* clang-format off */
 	EM_ASM_({
 		var locale = "";
 		if (Module.locale) {
@@ -230,56 +231,26 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 		locale = locale.split('.')[0];
 		stringToUTF8(locale, $0, 16);
 	}, locale_ptr);
+	/* clang-format on */
 	setenv("LANG", locale_ptr, true);
 
 	print_line("Init Audio");
 
-	AudioDriverManagerSW::add_driver(&audio_driver_javascript);
+	AudioDriverManager::add_driver(&audio_driver_javascript);
+	audio_driver_javascript.set_singleton();
+	if (audio_driver_javascript.init() != OK) {
 
-	if (true) {
-		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,false,false,false) );;
-		rasterizer_gles22->set_use_framebuffers(false); //not supported by emscripten
-		if (gl_extensions)
-			rasterizer_gles22->set_extensions(gl_extensions);
-		rasterizer = rasterizer_gles22;
-	} else {
-//		rasterizer = memnew( RasterizerGLES1(true, false) );
+		ERR_PRINT("Initializing audio failed.");
 	}
+
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
 
 	print_line("Init VS");
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-	visual_server->init();
+	visual_server = memnew( VisualServerRaster() );
 	visual_server->cursor_set_visible(false, 0);
 
-	/*AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
-
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
-
-		ERR_PRINT("Initializing audio failed.");
-	}*/
-
-	print_line("Init SM");
-
-	//sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerJavascript );
-
-	print_line("Init Mixer");
-
-	//audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
-	audio_server->init();
-
-	print_line("Init SoundServer");
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-
-	print_line("Init SpatialSoundServer");
-
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
-	//
 	print_line("Init Physicsserver");
 
 	physics_server = memnew( PhysicsServerSW );
@@ -309,8 +280,10 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 #ifdef JAVASCRIPT_EVAL_ENABLED
 	javascript_eval = memnew(JavaScript);
-	Globals::get_singleton()->add_singleton(Globals::Singleton("JavaScript", javascript_eval));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("JavaScript", javascript_eval));
 #endif
+
+	visual_server->init();
 }
 
 void OS_JavaScript::set_main_loop( MainLoop * p_main_loop ) {
@@ -332,9 +305,11 @@ void OS_JavaScript::finalize() {
 
 void OS_JavaScript::alert(const String& p_alert,const String& p_title) {
 
+	/* clang-format off */
 	EM_ASM_({
 		window.alert(UTF8ToString($0));
 	}, p_alert.utf8().get_data());
+	/* clang-format on */
 }
 
 
@@ -366,9 +341,11 @@ int OS_JavaScript::get_mouse_button_state() const {
 
 void OS_JavaScript::set_window_title(const String& p_title) {
 
+	/* clang-format off */
 	EM_ASM_({
 		document.title = UTF8ToString($0);
 	}, p_title.utf8().get_data());
+	/* clang-format on */
 }
 
 //interesting byt not yet
@@ -424,8 +401,10 @@ void OS_JavaScript::set_window_maximized(bool p_enabled) {
 			set_window_fullscreen(false);
 		}
 		else {
+			/* clang-format off */
 			video_mode.width = EM_ASM_INT_V(return window.innerWidth);
 			video_mode.height = EM_ASM_INT_V(return window.innerHeight);
+			/* clang-format on */
 			emscripten_set_canvas_size(video_mode.width, video_mode.height);
 		}
 	}
@@ -444,7 +423,9 @@ void OS_JavaScript::set_window_fullscreen(bool p_enable) {
 	// _browser_resize_callback or _fullscreen_change_callback
 	EMSCRIPTEN_RESULT result;
 	if (p_enable) {
+		/* clang-format off */
 		EM_ASM(Module.requestFullscreen(false, false););
+		/* clang-format on */
 	}
 	else {
 		result = emscripten_exit_fullscreen();
@@ -502,24 +483,20 @@ bool OS_JavaScript::main_loop_iterate() {
 
 		time_to_save_sync-=elapsed;
 
-		print_line("elapsed "+itos(elapsed)+" tts "+itos(time_to_save_sync));
-
 		if (time_to_save_sync<0) {
 			//time to sync, for real
-			// run 'success'
-			print_line("DOING SYNCH!");
+			/* clang-format off */
 			EM_ASM(
-			  FS.syncfs(function (err) {
-			    assert(!err);
-				console.log("Synched!");
-			    //ccall('success', 'v');
-			  });
+				FS.syncfs(function(err) {
+					if (err) { Module.printErr('Failed to save IDB file system: ' + err.message); }
+				});
 			);
+			/* clang-format on */
 		}
 
 
 	}
-	process_joysticks();
+	process_joypads();
 	return Main::iteration();
 }
 
@@ -561,7 +538,7 @@ void OS_JavaScript::push_input(const InputEvent& p_ev) {
 
 void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points) {
 
-//	print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
+	//print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
 
 	switch(p_what) {
 		case 0: { //gesture begin
@@ -644,8 +621,8 @@ void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPo
 				ev.mouse_motion.x=p_points[0].pos.x;
 				ev.mouse_motion.y=p_points[0].pos.y;
 				input->set_mouse_pos(Point2(ev.mouse_motion.x,ev.mouse_motion.y));
-				ev.mouse_motion.speed_x=input->get_mouse_speed().x;
-				ev.mouse_motion.speed_y=input->get_mouse_speed().y;
+				ev.mouse_motion.speed_x=input->get_last_mouse_speed().x;
+				ev.mouse_motion.speed_y=input->get_last_mouse_speed().y;
 				ev.mouse_motion.relative_x=p_points[0].pos.x-last_mouse.x;
 				ev.mouse_motion.relative_y=p_points[0].pos.y-last_mouse.y;
 				last_mouse=p_points[0].pos;
@@ -782,18 +759,12 @@ void OS_JavaScript::main_loop_request_quit() {
 		main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
 }
 
-void OS_JavaScript::reload_gfx() {
-
-	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2,video_mode.width,video_mode.height,video_mode.fullscreen);
-	if (rasterizer)
-		rasterizer->reload_vram();
-}
-
 Error OS_JavaScript::shell_open(String p_uri) {
+	/* clang-format off */
 	EM_ASM_({
 		window.open(UTF8ToString($0), '_blank');
 	}, p_uri.utf8().get_data());
+	/* clang-format on */
 	return OK;
 }
 
@@ -804,10 +775,12 @@ String OS_JavaScript::get_resource_dir() const {
 
 String OS_JavaScript::get_data_dir() const {
 
-	//if (get_data_dir_func)
-	//	return get_data_dir_func();
+	/*
+	if (get_data_dir_func)
+		return get_data_dir_func();
+	*/
 	return "/userfs";
-	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 };
 
 String OS_JavaScript::get_executable_path() const {
@@ -824,7 +797,7 @@ void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) 
 	}
 }
 
-void OS_JavaScript::process_joysticks() {
+void OS_JavaScript::process_joypads() {
 
 	int joy_count = emscripten_get_num_gamepads();
 	for (int i = 0; i < joy_count; i++) {
@@ -888,7 +861,6 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Get
 	main_loop=NULL;
 	last_id=1;
 	gl_extensions=NULL;
-	rasterizer=NULL;
 	window_maximized=false;
 
 	get_data_dir_func=p_get_data_dir_func;

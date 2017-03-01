@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -262,7 +262,8 @@ namespace cubic {
 
 	static real_t out(real_t t, real_t b, real_t c, real_t d)
 	{
-		return c * ((t = t / d - 1) * t * t + 1) + b;
+		t = t / d - 1;
+		return c * (t * t * t + 1) + b;
 	}
 
 	static real_t in_out(real_t t, real_t b, real_t c, real_t d)

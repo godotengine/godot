@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,19 +27,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_android.h"
-#include "drivers/gles2/rasterizer_gles2.h"
 
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "core/io/file_access_buffered_fa.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/dir_access_unix.h"
-
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
-
 #include "file_access_android.h"
-
-#include "core/globals.h"
+#include "core/global_config.h"
 
 #ifdef ANDROID_NATIVE_ACTIVITY
 #include "file_access_android.h"
@@ -129,7 +126,7 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud,use_gl2);
 
-	AudioDriverManagerSW::add_driver(&audio_driver_android);
+	AudioDriverManager::add_driver(&audio_driver_android);
 
 
 	RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
@@ -147,26 +144,13 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,true);
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
-
-	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
 	//physics_2d_server = memnew( Physics2DServerSW );
@@ -370,7 +354,7 @@ void OS_Android::main_loop_focusin(){
 
 }
 
-void OS_Android::process_joy_event(OS_Android::JoystickEvent p_event) {
+void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
 
 	switch (p_event.type) {
 	case JOY_EVENT_BUTTON:
@@ -399,7 +383,7 @@ void OS_Android::process_event(InputEvent p_event) {
 
 void OS_Android::process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points) {
 
-//	print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
+	//print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
 
 	switch(p_what) {
 		case 0: { //gesture begin
@@ -482,8 +466,8 @@ void OS_Android::process_touch(int p_what,int p_pointer, const Vector<TouchPos>&
 				ev.mouse_motion.x=p_points[0].pos.x;
 				ev.mouse_motion.y=p_points[0].pos.y;
 				input->set_mouse_pos(Point2(ev.mouse_motion.x,ev.mouse_motion.y));
-				ev.mouse_motion.speed_x=input->get_mouse_speed().x;
-				ev.mouse_motion.speed_y=input->get_mouse_speed().y;
+				ev.mouse_motion.speed_x=input->get_last_mouse_speed().x;
+				ev.mouse_motion.speed_y=input->get_last_mouse_speed().y;
 				ev.mouse_motion.relative_x=p_points[0].pos.x-last_mouse.x;
 				ev.mouse_motion.relative_y=p_points[0].pos.y-last_mouse.y;
 				last_mouse=p_points[0].pos;
@@ -659,10 +643,10 @@ void OS_Android::init_video_mode(int p_video_width,int p_video_height) {
 	default_videomode.resizable=false;
 }
 
-void OS_Android::main_loop_request_quit() {
+void OS_Android::main_loop_request_go_back() {
 
 	if (main_loop)
-		main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+		main_loop->notification(MainLoop::NOTIFICATION_WM_GO_BACK_REQUEST);
 }
 
 void OS_Android::set_display_size(Size2 p_size) {
@@ -748,7 +732,7 @@ String OS_Android::get_data_dir() const {
 
 
 	return ".";
-	//return Globals::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
+	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 }
 
 

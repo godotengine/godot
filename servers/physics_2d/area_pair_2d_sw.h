@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,8 @@ class AreaPair2DSW : public Constraint2DSW {
 	bool colliding;
 public:
 
-	bool setup(float p_step);
-	void solve(float p_step);
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
 
 	AreaPair2DSW(Body2DSW *p_body,int p_body_shape, Area2DSW *p_area,int p_area_shape);
 	~AreaPair2DSW();
@@ -59,8 +59,8 @@ class Area2Pair2DSW : public Constraint2DSW {
 	bool colliding;
 public:
 
-	bool setup(float p_step);
-	void solve(float p_step);
+	bool setup(real_t p_step);
+	void solve(real_t p_step);
 
 	Area2Pair2DSW(Area2DSW *p_area_a,int p_shape_a, Area2DSW *p_area_b,int p_shape_b);
 	~Area2Pair2DSW();

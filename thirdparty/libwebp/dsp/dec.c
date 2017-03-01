@@ -12,7 +12,7 @@
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include "./dsp.h"
-#include "../dec/vp8i.h"
+#include "../dec/vp8i_dec.h"
 #include "../utils/utils.h"
 
 //------------------------------------------------------------------------------
@@ -239,7 +239,7 @@ VP8PredFunc VP8PredLuma16[NUM_B_DC_MODES];
 //------------------------------------------------------------------------------
 // 4x4
 
-#define AVG3(a, b, c) (((a) + 2 * (b) + (c) + 2) >> 2)
+#define AVG3(a, b, c) ((uint8_t)(((a) + 2 * (b) + (c) + 2) >> 2))
 #define AVG2(a, b) (((a) + (b) + 1) >> 1)
 
 static void VE4(uint8_t* dst) {    // vertical

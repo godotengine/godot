@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,18 +48,18 @@ extern "C" {
 GameCenter* GameCenter::instance = NULL;
 
 void GameCenter::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("connect"),&GameCenter::connect);
-	ObjectTypeDB::bind_method(_MD("is_connected"),&GameCenter::is_connected);
+	ClassDB::bind_method(D_METHOD("connect"),&GameCenter::connect);
+	ClassDB::bind_method(D_METHOD("is_connected"),&GameCenter::is_connected);
 
-	ObjectTypeDB::bind_method(_MD("post_score"),&GameCenter::post_score);
-	ObjectTypeDB::bind_method(_MD("award_achievement"),&GameCenter::award_achievement);
-	ObjectTypeDB::bind_method(_MD("reset_achievements"),&GameCenter::reset_achievements);
-	ObjectTypeDB::bind_method(_MD("request_achievements"),&GameCenter::request_achievements);
-	ObjectTypeDB::bind_method(_MD("request_achievement_descriptions"),&GameCenter::request_achievement_descriptions);
-	ObjectTypeDB::bind_method(_MD("show_game_center"),&GameCenter::show_game_center);
+	ClassDB::bind_method(D_METHOD("post_score"),&GameCenter::post_score);
+	ClassDB::bind_method(D_METHOD("award_achievement"),&GameCenter::award_achievement);
+	ClassDB::bind_method(D_METHOD("reset_achievements"),&GameCenter::reset_achievements);
+	ClassDB::bind_method(D_METHOD("request_achievements"),&GameCenter::request_achievements);
+	ClassDB::bind_method(D_METHOD("request_achievement_descriptions"),&GameCenter::request_achievement_descriptions);
+	ClassDB::bind_method(D_METHOD("show_game_center"),&GameCenter::show_game_center);
 
-	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&GameCenter::get_pending_event_count);
-	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&GameCenter::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&GameCenter::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"),&GameCenter::pop_pending_event);
 };
 
 
@@ -182,11 +182,11 @@ void GameCenter::request_achievement_descriptions() {
 		ret["type"] = "achievement_descriptions";
 		if (error == nil) {
 			ret["result"] = "ok";
-			StringArray names;
-			StringArray titles;
-			StringArray unachieved_descriptions;
-			StringArray achieved_descriptions;
-			IntArray maximum_points;
+			PoolStringArray names;
+			PoolStringArray titles;
+			PoolStringArray unachieved_descriptions;
+			PoolStringArray achieved_descriptions;
+			PoolIntArray maximum_points;
 			Array hidden;
 			Array replayable;
 
@@ -239,8 +239,8 @@ void GameCenter::request_achievements() {
 		ret["type"] = "achievements";
 		if (error == nil) {
 			ret["result"] = "ok";
-			StringArray names;
-			RealArray percentages;
+			PoolStringArray names;
+			PoolRealArray percentages;
 
 			for (int i=0; i<[achievements count]; i++) {
 

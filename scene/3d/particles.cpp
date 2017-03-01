@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 #include "servers/visual_server.h"
 #include "scene/resources/surface_tool.h"
 
+#if 0
 /*
 static const char* _var_names[Particles::VAR_MAX]={
 	"vars/lifetime",
@@ -87,9 +88,9 @@ AABB Particles::get_aabb() const {
 
 	return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
 }
-DVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
+PoolVector<Face3> Particles::get_faces(uint32_t p_usage_flags) const {
 
-	return DVector<Face3>();
+	return PoolVector<Face3>();
 }
 
 
@@ -129,16 +130,16 @@ AABB Particles::get_visibility_aabb() const {
 }
 
 
-void Particles::set_emission_points(const DVector<Vector3>& p_points) {
+void Particles::set_emission_points(const PoolVector<Vector3>& p_points) {
 
 	using_points = p_points.size();
 	VisualServer::get_singleton()->particles_set_emission_points(particles,p_points);
 }
 
-DVector<Vector3> Particles::get_emission_points() const {
+PoolVector<Vector3> Particles::get_emission_points() const {
 
 	if (!using_points)
-		return DVector<Vector3>();
+		return PoolVector<Vector3>();
 
 	return VisualServer::get_singleton()->particles_get_emission_points(particles);
 
@@ -318,13 +319,13 @@ RES Particles::_get_gizmo_geometry() const {
 
 	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
 
-	Ref<FixedMaterial> mat( memnew( FixedMaterial ));
+	Ref<FixedSpatialMaterial> mat( memnew( FixedSpatialMaterial ));
 
-	mat->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.0,0.6,0.7,0.2) );
-	mat->set_parameter( FixedMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
+	mat->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.0,0.6,0.7,0.2) );
+	mat->set_parameter( FixedSpatialMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
 	mat->set_blend_mode( Material::BLEND_MODE_ADD );
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+	//mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
 
 
 	surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);
@@ -333,7 +334,7 @@ RES Particles::_get_gizmo_geometry() const {
 	int sides=16;
 	int sections=24;
 
-//	float len=1;
+	//float len=1;
 	float deg=Math::deg2rad(var[VAR_SPREAD]*180);
 	if (deg==180)
 		deg=179.5;
@@ -381,9 +382,9 @@ RES Particles::_get_gizmo_geometry() const {
 
 	Ref<Mesh> mesh = surface_tool->commit();
 
-	Ref<FixedMaterial> mat_aabb( memnew( FixedMaterial ));
+	Ref<FixedSpatialMaterial> mat_aabb( memnew( FixedSpatialMaterial ));
 
-	mat_aabb->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.8,0.8,0.9,0.7) );
+	mat_aabb->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.8,0.8,0.9,0.7) );
 	mat_aabb->set_line_width(3);
 	mat_aabb->set_flag( Material::FLAG_UNSHADED, true );
 
@@ -405,79 +406,79 @@ RES Particles::_get_gizmo_geometry() const {
 
 void Particles::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_amount","amount"),&Particles::set_amount);
-	ObjectTypeDB::bind_method(_MD("get_amount"),&Particles::get_amount);
-	ObjectTypeDB::bind_method(_MD("set_emitting","enabled"),&Particles::set_emitting);
-	ObjectTypeDB::bind_method(_MD("is_emitting"),&Particles::is_emitting);
-	ObjectTypeDB::bind_method(_MD("set_visibility_aabb","aabb"),&Particles::set_visibility_aabb);
-	ObjectTypeDB::bind_method(_MD("get_visibility_aabb"),&Particles::get_visibility_aabb);
-	ObjectTypeDB::bind_method(_MD("set_emission_half_extents","half_extents"),&Particles::set_emission_half_extents);
-	ObjectTypeDB::bind_method(_MD("get_emission_half_extents"),&Particles::get_emission_half_extents);
-	ObjectTypeDB::bind_method(_MD("set_emission_base_velocity","base_velocity"),&Particles::set_emission_base_velocity);
-	ObjectTypeDB::bind_method(_MD("get_emission_base_velocity"),&Particles::get_emission_base_velocity);
-	ObjectTypeDB::bind_method(_MD("set_emission_points","points"),&Particles::set_emission_points);
-	ObjectTypeDB::bind_method(_MD("get_emission_points"),&Particles::get_emission_points);
-	ObjectTypeDB::bind_method(_MD("set_gravity_normal","normal"),&Particles::set_gravity_normal);
-	ObjectTypeDB::bind_method(_MD("get_gravity_normal"),&Particles::get_gravity_normal);
-	ObjectTypeDB::bind_method(_MD("set_variable","variable","value"),&Particles::set_variable);
-	ObjectTypeDB::bind_method(_MD("get_variable","variable"),&Particles::get_variable);
-	ObjectTypeDB::bind_method(_MD("set_randomness","variable","randomness"),&Particles::set_randomness);
-	ObjectTypeDB::bind_method(_MD("get_randomness","variable"),&Particles::get_randomness);
-	ObjectTypeDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
-	ObjectTypeDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
-	ObjectTypeDB::bind_method(_MD("set_material","material:Material"),&Particles::set_material);
-	ObjectTypeDB::bind_method(_MD("get_material:Material"),&Particles::get_material);
-	ObjectTypeDB::bind_method(_MD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
-	ObjectTypeDB::bind_method(_MD("get_emit_timeout"),&Particles::get_emit_timeout);
-	ObjectTypeDB::bind_method(_MD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
-	ObjectTypeDB::bind_method(_MD("has_height_from_velocity"),&Particles::has_height_from_velocity);
-	ObjectTypeDB::bind_method(_MD("set_use_local_coordinates","enable"),&Particles::set_use_local_coordinates);
-	ObjectTypeDB::bind_method(_MD("is_using_local_coordinates"),&Particles::is_using_local_coordinates);
+	ClassDB::bind_method(D_METHOD("set_amount","amount"),&Particles::set_amount);
+	ClassDB::bind_method(D_METHOD("get_amount"),&Particles::get_amount);
+	ClassDB::bind_method(D_METHOD("set_emitting","enabled"),&Particles::set_emitting);
+	ClassDB::bind_method(D_METHOD("is_emitting"),&Particles::is_emitting);
+	ClassDB::bind_method(D_METHOD("set_visibility_aabb","aabb"),&Particles::set_visibility_aabb);
+	ClassDB::bind_method(D_METHOD("get_visibility_aabb"),&Particles::get_visibility_aabb);
+	ClassDB::bind_method(D_METHOD("set_emission_half_extents","half_extents"),&Particles::set_emission_half_extents);
+	ClassDB::bind_method(D_METHOD("get_emission_half_extents"),&Particles::get_emission_half_extents);
+	ClassDB::bind_method(D_METHOD("set_emission_base_velocity","base_velocity"),&Particles::set_emission_base_velocity);
+	ClassDB::bind_method(D_METHOD("get_emission_base_velocity"),&Particles::get_emission_base_velocity);
+	ClassDB::bind_method(D_METHOD("set_emission_points","points"),&Particles::set_emission_points);
+	ClassDB::bind_method(D_METHOD("get_emission_points"),&Particles::get_emission_points);
+	ClassDB::bind_method(D_METHOD("set_gravity_normal","normal"),&Particles::set_gravity_normal);
+	ClassDB::bind_method(D_METHOD("get_gravity_normal"),&Particles::get_gravity_normal);
+	ClassDB::bind_method(D_METHOD("set_variable","variable","value"),&Particles::set_variable);
+	ClassDB::bind_method(D_METHOD("get_variable","variable"),&Particles::get_variable);
+	ClassDB::bind_method(D_METHOD("set_randomness","variable","randomness"),&Particles::set_randomness);
+	ClassDB::bind_method(D_METHOD("get_randomness","variable"),&Particles::get_randomness);
+	ClassDB::bind_method(D_METHOD("set_color_phase_pos","phase","pos"),&Particles::set_color_phase_pos);
+	ClassDB::bind_method(D_METHOD("get_color_phase_pos","phase"),&Particles::get_color_phase_pos);
+	ClassDB::bind_method(D_METHOD("set_color_phase_color","phase","color"),&Particles::set_color_phase_color);
+	ClassDB::bind_method(D_METHOD("get_color_phase_color","phase"),&Particles::get_color_phase_color);
+	ClassDB::bind_method(D_METHOD("set_material","material:Material"),&Particles::set_material);
+	ClassDB::bind_method(D_METHOD("get_material:Material"),&Particles::get_material);
+	ClassDB::bind_method(D_METHOD("set_emit_timeout","timeout"),&Particles::set_emit_timeout);
+	ClassDB::bind_method(D_METHOD("get_emit_timeout"),&Particles::get_emit_timeout);
+	ClassDB::bind_method(D_METHOD("set_height_from_velocity","enable"),&Particles::set_height_from_velocity);
+	ClassDB::bind_method(D_METHOD("has_height_from_velocity"),&Particles::has_height_from_velocity);
+	ClassDB::bind_method(D_METHOD("set_use_local_coordinates","enable"),&Particles::set_use_local_coordinates);
+	ClassDB::bind_method(D_METHOD("is_using_local_coordinates"),&Particles::is_using_local_coordinates);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phases","count"),&Particles::set_color_phases);
-	ObjectTypeDB::bind_method(_MD("get_color_phases"),&Particles::get_color_phases);
+	ClassDB::bind_method(D_METHOD("set_color_phases","count"),&Particles::set_color_phases);
+	ClassDB::bind_method(D_METHOD("get_color_phases"),&Particles::get_color_phases);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), _SCS("set_material"), _SCS("get_material") );
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "Material" ), "set_material", "get_material") ;
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1024,1" ), _SCS("set_amount"), _SCS("get_amount") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "emitting" ), _SCS("set_emitting"), _SCS("is_emitting") );
-	ADD_PROPERTY( PropertyInfo( Variant::_AABB, "visibility" ), _SCS("set_visibility_aabb"), _SCS("get_visibility_aabb") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_extents" ), _SCS("set_emission_half_extents"), _SCS("get_emission_half_extents") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_base_velocity" ), _SCS("set_emission_base_velocity"), _SCS("get_emission_base_velocity") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "emission_points" ), _SCS("set_emission_points"), _SCS("get_emission_points") );
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "gravity_normal" ), _SCS("set_gravity_normal"), _SCS("get_gravity_normal") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "local_coords" ), _SCS("set_use_local_coordinates"), _SCS("is_using_local_coordinates") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "emit_timeout",PROPERTY_HINT_RANGE,"0,256,0.01"), _SCS("set_emit_timeout"), _SCS("get_emit_timeout") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,1024,1" ), "set_amount", "get_amount") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "emitting" ), "set_emitting", "is_emitting") ;
+	ADD_PROPERTY( PropertyInfo( Variant::_AABB, "visibility" ), "set_visibility_aabb", "get_visibility_aabb") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_extents" ), "set_emission_half_extents", "get_emission_half_extents") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "emission_base_velocity" ), "set_emission_base_velocity", "get_emission_base_velocity") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3_ARRAY, "emission_points" ), "set_emission_points", "get_emission_points") ;
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "gravity_normal" ), "set_gravity_normal", "get_gravity_normal") ;
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "local_coords" ), "set_use_local_coordinates", "is_using_local_coordinates") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "emit_timeout",PROPERTY_HINT_RANGE,"0,256,0.01"), "set_emit_timeout", "get_emit_timeout") ;
 
 
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/lifetime", PROPERTY_HINT_RANGE,"0.1,60,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_LIFETIME );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/spread", PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_SPREAD );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/gravity", PROPERTY_HINT_RANGE,"-48,48,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_GRAVITY );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_LINEAR_VELOCITY );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/angular_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_ANGULAR_VELOCITY );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_LINEAR_ACCELERATION );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/radial_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_DRAG );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/tan_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_TANGENTIAL_ACCELERATION );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/damping", PROPERTY_HINT_RANGE,"0,128,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_DAMPING );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_size", PROPERTY_HINT_RANGE,"0,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_INITIAL_SIZE );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/final_size", PROPERTY_HINT_RANGE,"0,100,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_FINAL_SIZE );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_angle",PROPERTY_HINT_RANGE,"0,1,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_INITIAL_ANGLE );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "vars/height_from_velocity"), _SCS("set_height_from_velocity"), _SCS("has_height_from_velocity") );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_HEIGHT);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height_speed_scale",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_variable"), _SCS("get_variable"), VAR_HEIGHT_SPEED_SCALE );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/lifetime", PROPERTY_HINT_RANGE,"0.1,60,0.01"), "set_variable", "get_variable", VAR_LIFETIME );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/spread", PROPERTY_HINT_RANGE,"0,1,0.01"), "set_variable", "get_variable", VAR_SPREAD );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/gravity", PROPERTY_HINT_RANGE,"-48,48,0.01"), "set_variable", "get_variable", VAR_GRAVITY );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_LINEAR_VELOCITY );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/angular_vel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_ANGULAR_VELOCITY );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/linear_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_LINEAR_ACCELERATION );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/radial_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_DRAG );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/tan_accel", PROPERTY_HINT_RANGE,"-100,100,0.01"), "set_variable", "get_variable", VAR_TANGENTIAL_ACCELERATION );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/damping", PROPERTY_HINT_RANGE,"0,128,0.01"), "set_variable", "get_variable", VAR_DAMPING );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_size", PROPERTY_HINT_RANGE,"0,100,0.01"), "set_variable", "get_variable", VAR_INITIAL_SIZE );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/final_size", PROPERTY_HINT_RANGE,"0,100,0.01"), "set_variable", "get_variable", VAR_FINAL_SIZE );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/initial_angle",PROPERTY_HINT_RANGE,"0,1,0.01"), "set_variable", "get_variable", VAR_INITIAL_ANGLE );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "vars/height_from_velocity"), "set_height_from_velocity", "has_height_from_velocity") ;
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height",PROPERTY_HINT_RANGE,"0,4096,0.01"), "set_variable", "get_variable", VAR_HEIGHT);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "vars/height_speed_scale",PROPERTY_HINT_RANGE,"0,4096,0.01"), "set_variable", "get_variable", VAR_HEIGHT_SPEED_SCALE );
 
 	for(int i=0;i<VAR_MAX;i++)
-		ADD_PROPERTYI( PropertyInfo( Variant::REAL, _rand_names[i], PROPERTY_HINT_RANGE,"-16.0,16.0,0.01"),_SCS("set_randomness"), _SCS("get_randomness"),_var_indices[i] );
+		ADD_PROPERTYI( PropertyInfo( Variant::REAL, _rand_names[i], PROPERTY_HINT_RANGE,"-16.0,16.0,0.01"),"set_randomness", "get_randomness",_var_indices[i] );
 
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1"), _SCS("set_color_phases"), _SCS("get_color_phases"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1"), "set_color_phases", "get_color_phases");
 
 	for(int i=0;i<VS::MAX_PARTICLE_COLOR_PHASES;i++) {
 		String phase="phase_"+itos(i)+"/";
-		ADD_PROPERTYI( PropertyInfo( Variant::REAL, phase+"pos", PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_color_phase_pos"),_SCS("get_color_phase_pos"),i );
-		ADD_PROPERTYI( PropertyInfo( Variant::COLOR, phase+"color"),_SCS("set_color_phase_color"),_SCS("get_color_phase_color"),i );
+		ADD_PROPERTYI( PropertyInfo( Variant::REAL, phase+"pos", PROPERTY_HINT_RANGE,"0,1,0.01"),"set_color_phase_pos","get_color_phase_pos",i );
+		ADD_PROPERTYI( PropertyInfo( Variant::COLOR, phase+"color"),"set_color_phase_color","get_color_phase_color",i );
 	}
 
 	BIND_CONSTANT( VAR_LIFETIME );
@@ -557,3 +558,4 @@ Particles::~Particles() {
 	VisualServer::get_singleton()->free(particles);
 }
 
+#endif

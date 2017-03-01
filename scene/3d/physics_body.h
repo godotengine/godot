@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 class PhysicsBody : public CollisionObject {
 
-	OBJ_TYPE(PhysicsBody,CollisionObject);
+	GDCLASS(PhysicsBody,CollisionObject);
 
 	uint32_t layer_mask;
 	uint32_t collision_mask;
@@ -55,14 +55,14 @@ public:
 	virtual Vector3 get_angular_velocity() const;
 	virtual float get_inverse_mass() const;
 
-	void set_layer_mask(uint32_t p_mask);
-	uint32_t get_layer_mask() const;
+	void set_collision_layer(uint32_t p_mask);
+	uint32_t get_collision_layer() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
 
-	void set_layer_mask_bit(int p_bit, bool p_value);
-	bool get_layer_mask_bit(int p_bit) const;
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
 
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
@@ -78,7 +78,7 @@ public:
 
 class StaticBody : public PhysicsBody {
 
-	OBJ_TYPE(StaticBody,PhysicsBody);
+	GDCLASS(StaticBody,PhysicsBody);
 
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
@@ -114,7 +114,7 @@ public:
 
 class RigidBody : public PhysicsBody {
 
-	OBJ_TYPE(RigidBody,PhysicsBody);
+	GDCLASS(RigidBody,PhysicsBody);
 public:
 
 	enum Mode {
@@ -284,7 +284,7 @@ VARIANT_ENUM_CAST(RigidBody::AxisLock);
 
 class KinematicBody : public PhysicsBody {
 
-	OBJ_TYPE(KinematicBody,PhysicsBody);
+	GDCLASS(KinematicBody,PhysicsBody);
 
 	float margin;
 	bool collide_static;

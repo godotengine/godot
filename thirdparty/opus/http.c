@@ -231,7 +231,7 @@ typedef SOCKET op_sock;
 #   define POLLRDBAND (0x0200)
 /*There is data to read.*/
 #   define POLLIN     (POLLRDNORM|POLLRDBAND)
-/* There is urgent data to read.*/
+/*There is urgent data to read.*/
 #   define POLLPRI    (0x0400)
 /*Equivalent to POLLOUT.*/
 #   define POLLWRNORM (0x0010)
@@ -894,7 +894,7 @@ static void op_http_stream_init(OpusHTTPStream *_stream){
 /*Close the connection and move it to the free list.
   _stream:     The stream containing the free list.
   _conn:       The connection to close.
-  _penxt:      The linked-list pointer currently pointing to this connection.
+  _pnext:      The linked-list pointer currently pointing to this connection.
   _gracefully: Whether or not to shut down cleanly.*/
 static void op_http_conn_close(OpusHTTPStream *_stream,OpusHTTPConn *_conn,
  OpusHTTPConn **_pnext,int _gracefully){
@@ -1517,10 +1517,17 @@ static long op_bio_retry_ctrl(BIO *_b,int _cmd,long _num,void *_ptr){
   return ret;
 }
 
+# if OPENSSL_VERSION_NUMBER<0x10100000L
+#  define BIO_set_data(_b,_ptr) ((_b)->ptr=(_ptr))
+#  define BIO_set_init(_b,_init) ((_b)->init=(_init))
+# endif
+
 static int op_bio_retry_new(BIO *_b){
-  _b->init=1;
+  BIO_set_init(_b,1);
+# if OPENSSL_VERSION_NUMBER<0x10100000L
   _b->num=0;
-  _b->ptr=NULL;
+# endif
+  BIO_set_data(_b,NULL);
   return 1;
 }
 
@@ -1528,6 +1535,7 @@ static int op_bio_retry_free(BIO *_b){
   return _b!=NULL;
 }
 
+# if OPENSSL_VERSION_NUMBER<0x10100000L
 /*This is not const because OpenSSL doesn't allow it, even though it won't
    write to it.*/
 static BIO_METHOD op_bio_retry_method={
@@ -1542,11 +1550,15 @@ static BIO_METHOD op_bio_retry_method={
   op_bio_retry_free,
   NULL
 };
+# endif
 
 /*Establish a CONNECT tunnel and pipeline the start of the TLS handshake for
    proxying https URL requests.*/
 static int op_http_conn_establish_tunnel(OpusHTTPStream *_stream,
  OpusHTTPConn *_conn,op_sock _fd,SSL *_ssl_conn,BIO *_ssl_bio){
+# if OPENSSL_VERSION_NUMBER>=0x10100000L
+  BIO_METHOD *bio_retry_method;
+# endif
   BIO  *retry_bio;
   char *status_code;
   char *next;
@@ -1557,13 +1569,32 @@ static int op_http_conn_establish_tunnel(OpusHTTPStream *_stream,
   ret=op_http_conn_write_fully(_conn,
    _stream->proxy_connect.buf,_stream->proxy_connect.nbuf);
   if(OP_UNLIKELY(ret<0))return ret;
+# if OPENSSL_VERSION_NUMBER>=0x10100000L
+  bio_retry_method=BIO_meth_new(BIO_TYPE_NULL,"retry");
+  if(bio_retry_method==NULL)return OP_EFAULT;
+  BIO_meth_set_write(bio_retry_method,op_bio_retry_write);
+  BIO_meth_set_read(bio_retry_method,op_bio_retry_read);
+  BIO_meth_set_puts(bio_retry_method,op_bio_retry_puts);
+  BIO_meth_set_ctrl(bio_retry_method,op_bio_retry_ctrl);
+  BIO_meth_set_create(bio_retry_method,op_bio_retry_new);
+  BIO_meth_set_destroy(bio_retry_method,op_bio_retry_free);
+  retry_bio=BIO_new(bio_retry_method);
+  if(OP_UNLIKELY(retry_bio==NULL)){
+    BIO_meth_free(bio_retry_method);
+    return OP_EFAULT;
+  }
+# else
   retry_bio=BIO_new(&op_bio_retry_method);
   if(OP_UNLIKELY(retry_bio==NULL))return OP_EFAULT;
+# endif
   SSL_set_bio(_ssl_conn,retry_bio,_ssl_bio);
   SSL_set_connect_state(_ssl_conn);
   /*This shouldn't succeed, since we can't read yet.*/
   OP_ALWAYS_TRUE(SSL_connect(_ssl_conn)<0);
   SSL_set_bio(_ssl_conn,_ssl_bio,_ssl_bio);
+# if OPENSSL_VERSION_NUMBER>=0x10100000L
+  BIO_meth_free(bio_retry_method);
+# endif
   /*Only now do we disable write coalescing, to allow the CONNECT
      request and the start of the TLS handshake to be combined.*/
   op_sock_set_tcp_nodelay(_fd,1);
@@ -2200,7 +2231,8 @@ static int op_http_stream_open(OpusHTTPStream *_stream,const char *_url,
     /*Initialize the SSL library if necessary.*/
     if(OP_URL_IS_SSL(&_stream->url)&&_stream->ssl_ctx==NULL){
       SSL_CTX *ssl_ctx;
-# if !defined(OPENSSL_NO_LOCKING)
+# if OPENSSL_VERSION_NUMBER<0x10100000L
+#  if !defined(OPENSSL_NO_LOCKING)
       /*The documentation says SSL_library_init() is not reentrant.
         We don't want to add our own depenencies on a threading library, and it
          appears that it's safe to call OpenSSL's locking functions before the
@@ -2210,12 +2242,16 @@ static int op_http_stream_open(OpusHTTPStream *_stream,const char *_url,
          calling SSL_library_init() at the same time, but there's not much we
          can do about that.*/
       CRYPTO_w_lock(CRYPTO_LOCK_SSL);
-# endif
+#  endif
       SSL_library_init();
       /*Needed to get SHA2 algorithms with old OpenSSL versions.*/
       OpenSSL_add_ssl_algorithms();
-# if !defined(OPENSSL_NO_LOCKING)
+#  if !defined(OPENSSL_NO_LOCKING)
       CRYPTO_w_unlock(CRYPTO_LOCK_SSL);
+#  endif
+# else
+      /*Finally, OpenSSL does this for us, but as penance, it can now fail.*/
+      if(!OPENSSL_init_ssl(0,NULL))return OP_EFAULT;
 # endif
       ssl_ctx=SSL_CTX_new(SSLv23_client_method());
       if(ssl_ctx==NULL)return OP_EFAULT;
@@ -2779,7 +2815,7 @@ static int op_http_conn_read_body(OpusHTTPStream *_stream,
     Otherwise, we'd need a _pnext pointer if we needed to close the connection,
      and re-opening it would re-organize the lists.*/
   OP_ASSERT(_stream->lru_head==_conn);
-  /*We should have filterd out empty reads by this point.*/
+  /*We should have filtered out empty reads by this point.*/
   OP_ASSERT(_buf_size>0);
   pos=_conn->pos;
   end_pos=_conn->end_pos;

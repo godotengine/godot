@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "item_list.h"
 #include "os/os.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 void ItemList::add_item(const String& p_item,const Ref<Texture>& p_texture,bool p_selectable) {
@@ -300,7 +300,7 @@ void ItemList::move_item(int p_item,int p_to_pos) {
 	ERR_FAIL_INDEX(p_to_pos,items.size()+1);
 
 	Item it=items[p_item];
-	items.remove(p_item);;
+	items.remove(p_item);
 
 	if (p_to_pos>p_item) {
 		p_to_pos--;
@@ -314,7 +314,7 @@ void ItemList::move_item(int p_item,int p_to_pos) {
 
 	if (current<0) {
 		//do none
-	} if (p_item==current) {
+	} else if (p_item==current) {
 		current=p_to_pos;
 	} else if (p_to_pos>p_item && current>p_item && current<p_to_pos) {
 		current--;
@@ -446,7 +446,7 @@ Size2 ItemList::Item::get_icon_size() const {
 	return icon_region.size;
 }
 
-void ItemList::_input_event(const InputEvent& p_event) {
+void ItemList::_gui_input(const InputEvent& p_event) {
 
 	if (defer_select_single>=0 && p_event.type==InputEvent::MOUSE_MOTION) {
 		defer_select_single=-1;
@@ -471,7 +471,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 		Vector2 pos(mb.x,mb.y);
 		Ref<StyleBox> bg = get_stylebox("bg");
 		pos-=bg->get_offset();
-		pos.y+=scroll_bar->get_val();
+		pos.y+=scroll_bar->get_value();
 
 		int closest = -1;
 
@@ -561,12 +561,12 @@ void ItemList::_input_event(const InputEvent& p_event) {
 	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_UP && p_event.mouse_button.pressed) {
 
-		scroll_bar->set_val( scroll_bar->get_val()-scroll_bar->get_page()/8 );
+		scroll_bar->set_value( scroll_bar->get_value()-scroll_bar->get_page()/8 );
 
 	}
 	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==BUTTON_WHEEL_DOWN && p_event.mouse_button.pressed) {
 
-		scroll_bar->set_val( scroll_bar->get_val()+scroll_bar->get_page()/8 );
+		scroll_bar->set_value( scroll_bar->get_value()+scroll_bar->get_page()/8 );
 
 	}
 
@@ -578,7 +578,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now-search_time_msec;
 
-				if (diff<int(Globals::get_singleton()->get("gui/incr_search_max_interval_msec"))*2) {
+				if (diff<int(GlobalConfig::get_singleton()->get("gui/timers/incremental_search_max_interval_msec"))*2) {
 
 					for(int i=current-1;i>=0;i--) {
 
@@ -614,7 +614,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now-search_time_msec;
 
-				if (diff<int(Globals::get_singleton()->get("gui/incr_search_max_interval_msec"))*2) {
+				if (diff<int(GlobalConfig::get_singleton()->get("gui/timers/incremental_search_max_interval_msec"))*2) {
 
 					for(int i=current+1;i<items.size();i++) {
 
@@ -725,7 +725,7 @@ void ItemList::_input_event(const InputEvent& p_event) {
 
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now-search_time_msec;
-				uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/incr_search_max_interval_msec",2000));
+				uint64_t max_interval = uint64_t(GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec",2000));
 				search_time_msec = now;
 
 				if (diff>max_interval) {
@@ -788,7 +788,6 @@ void ItemList::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
 
-		VS::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 		Ref<StyleBox> bg = get_stylebox("bg");
 
 		int mw = scroll_bar->get_minimum_size().x;
@@ -802,7 +801,7 @@ void ItemList::_notification(int p_what) {
 
 		float page = size.height-bg->get_minimum_size().height;
 		int width = size.width-bg->get_minimum_size().width;
-		if (!scroll_bar->is_hidden()){
+		if (scroll_bar->is_visible()){
 			width-=mw+bg->get_margin(MARGIN_RIGHT);
 		}
 		scroll_bar->set_page(page);
@@ -906,7 +905,7 @@ void ItemList::_notification(int p_what) {
 				Vector2 ofs;
 				int col=0;
 				int max_h=0;
-				separators.clear();;
+				separators.clear();
 				for(int i=0;i<items.size();i++) {
 
 					if (current_columns>1 && items[i].rect_cache.size.width+ofs.x > fit_size) {
@@ -949,7 +948,7 @@ void ItemList::_notification(int p_what) {
 					scroll_bar->set_max(max);
 					//print_line("max: "+rtos(max)+" page "+rtos(page));
 					if (max<=page) {
-						scroll_bar->set_val(0);
+						scroll_bar->set_value(0);
 						scroll_bar->hide();
 					} else {
 						scroll_bar->show();
@@ -966,13 +965,13 @@ void ItemList::_notification(int p_what) {
 		if (ensure_selected_visible && current>=0 && current <=items.size()) {
 
 			Rect2 r = items[current].rect_cache;
-			int from = scroll_bar->get_val();
+			int from = scroll_bar->get_value();
 			int to = from + scroll_bar->get_page();
 
 			if (r.pos.y < from) {
-				scroll_bar->set_val(r.pos.y);
+				scroll_bar->set_value(r.pos.y);
 			} else if (r.pos.y+r.size.y > to) {
-				scroll_bar->set_val(r.pos.y+r.size.y - (to-from));
+				scroll_bar->set_value(r.pos.y+r.size.y - (to-from));
 			}
 
 
@@ -981,9 +980,9 @@ void ItemList::_notification(int p_what) {
 		ensure_selected_visible=false;		
 
 		Vector2 base_ofs = bg->get_offset();
-		base_ofs.y-=int(scroll_bar->get_val());
+		base_ofs.y-=int(scroll_bar->get_value());
 
-		Rect2 clip(Point2(),size-bg->get_minimum_size()+Vector2(0,scroll_bar->get_val()));
+		Rect2 clip(Point2(),size-bg->get_minimum_size()+Vector2(0,scroll_bar->get_value()));
 
 		for(int i=0;i<items.size();i++) {
 
@@ -1178,7 +1177,7 @@ int ItemList::get_item_at_pos(const Point2& p_pos, bool p_exact) const {
 	Vector2 pos=p_pos;
 	Ref<StyleBox> bg = get_stylebox("bg");
 	pos-=bg->get_offset();
-	pos.y+=scroll_bar->get_val();
+	pos.y+=scroll_bar->get_value();
 
 	int closest = -1;
 	int closest_dist=0x7FFFFFFF;
@@ -1204,6 +1203,22 @@ int ItemList::get_item_at_pos(const Point2& p_pos, bool p_exact) const {
 
 	return closest;
 }
+
+bool ItemList::is_pos_at_end_of_items(const Point2& p_pos) const {
+
+	if (items.empty())
+		return true;
+
+	Vector2 pos=p_pos;
+	Ref<StyleBox> bg = get_stylebox("bg");
+	pos-=bg->get_offset();
+	pos.y+=scroll_bar->get_value();
+
+	Rect2 endrect = items[items.size()-1].rect_cache;
+	return (pos.y > endrect.pos.y + endrect.size.y);
+
+}
+
 
 String ItemList::get_tooltip(const Point2& p_pos) const {
 
@@ -1285,83 +1300,83 @@ Vector<int> ItemList::get_selected_items() {
 
 void ItemList::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("add_icon_item","icon:Texture","selectable"),&ItemList::add_icon_item,DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_item","text","icon:Texture","selectable"),&ItemList::add_item,DEFVAL(Variant()),DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("add_icon_item","icon:Texture","selectable"),&ItemList::add_icon_item,DEFVAL(true));
 
-	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&ItemList::set_item_text);
-	ObjectTypeDB::bind_method(_MD("get_item_text","idx"),&ItemList::get_item_text);
+	ClassDB::bind_method(D_METHOD("set_item_text","idx","text"),&ItemList::set_item_text);
+	ClassDB::bind_method(D_METHOD("get_item_text","idx"),&ItemList::get_item_text);
 
-	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
-	ObjectTypeDB::bind_method(_MD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
+	ClassDB::bind_method(D_METHOD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
+	ClassDB::bind_method(D_METHOD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
 
-	ObjectTypeDB::bind_method(_MD("set_item_icon_region","idx","rect"),&ItemList::set_item_icon_region);
-	ObjectTypeDB::bind_method(_MD("get_item_icon_region","idx"),&ItemList::get_item_icon_region);
+	ClassDB::bind_method(D_METHOD("set_item_icon_region","idx","rect"),&ItemList::set_item_icon_region);
+	ClassDB::bind_method(D_METHOD("get_item_icon_region","idx"),&ItemList::get_item_icon_region);
 
-	ObjectTypeDB::bind_method(_MD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
-	ObjectTypeDB::bind_method(_MD("is_item_selectable","idx"),&ItemList::is_item_selectable);
+	ClassDB::bind_method(D_METHOD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
+	ClassDB::bind_method(D_METHOD("is_item_selectable","idx"),&ItemList::is_item_selectable);
 
-	ObjectTypeDB::bind_method(_MD("set_item_disabled","idx","disabled"),&ItemList::set_item_disabled);
-	ObjectTypeDB::bind_method(_MD("is_item_disabled","idx"),&ItemList::is_item_disabled);
+	ClassDB::bind_method(D_METHOD("set_item_disabled","idx","disabled"),&ItemList::set_item_disabled);
+	ClassDB::bind_method(D_METHOD("is_item_disabled","idx"),&ItemList::is_item_disabled);
 
-	ObjectTypeDB::bind_method(_MD("set_item_metadata","idx","metadata"),&ItemList::set_item_metadata);
-	ObjectTypeDB::bind_method(_MD("get_item_metadata","idx"),&ItemList::get_item_metadata);
+	ClassDB::bind_method(D_METHOD("set_item_metadata","idx","metadata"),&ItemList::set_item_metadata);
+	ClassDB::bind_method(D_METHOD("get_item_metadata","idx"),&ItemList::get_item_metadata);
 
-	ObjectTypeDB::bind_method(_MD("set_item_custom_bg_color","idx","custom_bg_color"),&ItemList::set_item_custom_bg_color);
-	ObjectTypeDB::bind_method(_MD("get_item_custom_bg_color","idx"),&ItemList::get_item_custom_bg_color);
+	ClassDB::bind_method(D_METHOD("set_item_custom_bg_color","idx","custom_bg_color"),&ItemList::set_item_custom_bg_color);
+	ClassDB::bind_method(D_METHOD("get_item_custom_bg_color","idx"),&ItemList::get_item_custom_bg_color);
 
-	ObjectTypeDB::bind_method(_MD("set_item_tooltip_enabled","idx","enable"),&ItemList::set_item_tooltip_enabled);
-	ObjectTypeDB::bind_method(_MD("is_item_tooltip_enabled","idx"),&ItemList::is_item_tooltip_enabled);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip_enabled","idx","enable"),&ItemList::set_item_tooltip_enabled);
+	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled","idx"),&ItemList::is_item_tooltip_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
-	ObjectTypeDB::bind_method(_MD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
+	ClassDB::bind_method(D_METHOD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
+	ClassDB::bind_method(D_METHOD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
 
-	ObjectTypeDB::bind_method(_MD("select","idx","single"),&ItemList::select,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("unselect","idx"),&ItemList::unselect);
-	ObjectTypeDB::bind_method(_MD("is_selected","idx"),&ItemList::is_selected);
-	ObjectTypeDB::bind_method(_MD("get_selected_items"),&ItemList::get_selected_items);
+	ClassDB::bind_method(D_METHOD("select","idx","single"),&ItemList::select,DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("unselect","idx"),&ItemList::unselect);
+	ClassDB::bind_method(D_METHOD("is_selected","idx"),&ItemList::is_selected);
+	ClassDB::bind_method(D_METHOD("get_selected_items"),&ItemList::get_selected_items);
 
-	ObjectTypeDB::bind_method(_MD("get_item_count"),&ItemList::get_item_count);
-	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&ItemList::remove_item);
+	ClassDB::bind_method(D_METHOD("get_item_count"),&ItemList::get_item_count);
+	ClassDB::bind_method(D_METHOD("remove_item","idx"),&ItemList::remove_item);
 
-	ObjectTypeDB::bind_method(_MD("clear"),&ItemList::clear);
-	ObjectTypeDB::bind_method(_MD("sort_items_by_text"),&ItemList::sort_items_by_text);
+	ClassDB::bind_method(D_METHOD("clear"),&ItemList::clear);
+	ClassDB::bind_method(D_METHOD("sort_items_by_text"),&ItemList::sort_items_by_text);
 
-	ObjectTypeDB::bind_method(_MD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
-	ObjectTypeDB::bind_method(_MD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
+	ClassDB::bind_method(D_METHOD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
+	ClassDB::bind_method(D_METHOD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
 
-	ObjectTypeDB::bind_method(_MD("set_same_column_width","enable"),&ItemList::set_same_column_width);
-	ObjectTypeDB::bind_method(_MD("is_same_column_width"),&ItemList::is_same_column_width);
+	ClassDB::bind_method(D_METHOD("set_same_column_width","enable"),&ItemList::set_same_column_width);
+	ClassDB::bind_method(D_METHOD("is_same_column_width"),&ItemList::is_same_column_width);
 
-	ObjectTypeDB::bind_method(_MD("set_max_text_lines","lines"),&ItemList::set_max_text_lines);
-	ObjectTypeDB::bind_method(_MD("get_max_text_lines"),&ItemList::get_max_text_lines);
+	ClassDB::bind_method(D_METHOD("set_max_text_lines","lines"),&ItemList::set_max_text_lines);
+	ClassDB::bind_method(D_METHOD("get_max_text_lines"),&ItemList::get_max_text_lines);
 
-	ObjectTypeDB::bind_method(_MD("set_max_columns","amount"),&ItemList::set_max_columns);
-	ObjectTypeDB::bind_method(_MD("get_max_columns"),&ItemList::get_max_columns);
+	ClassDB::bind_method(D_METHOD("set_max_columns","amount"),&ItemList::set_max_columns);
+	ClassDB::bind_method(D_METHOD("get_max_columns"),&ItemList::get_max_columns);
 
-	ObjectTypeDB::bind_method(_MD("set_select_mode","mode"),&ItemList::set_select_mode);
-	ObjectTypeDB::bind_method(_MD("get_select_mode"),&ItemList::get_select_mode);
+	ClassDB::bind_method(D_METHOD("set_select_mode","mode"),&ItemList::set_select_mode);
+	ClassDB::bind_method(D_METHOD("get_select_mode"),&ItemList::get_select_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_icon_mode","mode"),&ItemList::set_icon_mode);
-	ObjectTypeDB::bind_method(_MD("get_icon_mode"),&ItemList::get_icon_mode);
+	ClassDB::bind_method(D_METHOD("set_icon_mode","mode"),&ItemList::set_icon_mode);
+	ClassDB::bind_method(D_METHOD("get_icon_mode"),&ItemList::get_icon_mode);
 
 
-	ObjectTypeDB::bind_method(_MD("set_fixed_icon_size","size"),&ItemList::set_fixed_icon_size);
-	ObjectTypeDB::bind_method(_MD("get_fixed_icon_size"),&ItemList::get_fixed_icon_size);
+	ClassDB::bind_method(D_METHOD("set_fixed_icon_size","size"),&ItemList::set_fixed_icon_size);
+	ClassDB::bind_method(D_METHOD("get_fixed_icon_size"),&ItemList::get_fixed_icon_size);
 
-	ObjectTypeDB::bind_method(_MD("set_icon_scale","scale"),&ItemList::set_icon_scale);
-	ObjectTypeDB::bind_method(_MD("get_icon_scale"),&ItemList::get_icon_scale);
+	ClassDB::bind_method(D_METHOD("set_icon_scale","scale"),&ItemList::set_icon_scale);
+	ClassDB::bind_method(D_METHOD("get_icon_scale"),&ItemList::get_icon_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_allow_rmb_select","allow"),&ItemList::set_allow_rmb_select);
-	ObjectTypeDB::bind_method(_MD("get_allow_rmb_select"),&ItemList::get_allow_rmb_select);
+	ClassDB::bind_method(D_METHOD("set_allow_rmb_select","allow"),&ItemList::set_allow_rmb_select);
+	ClassDB::bind_method(D_METHOD("get_allow_rmb_select"),&ItemList::get_allow_rmb_select);
 
-	ObjectTypeDB::bind_method(_MD("get_item_at_pos","pos","exact"),&ItemList::get_item_at_pos,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_item_at_pos","pos","exact"),&ItemList::get_item_at_pos,DEFVAL(false));
 
-	ObjectTypeDB::bind_method(_MD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
+	ClassDB::bind_method(D_METHOD("ensure_current_is_visible"),&ItemList::ensure_current_is_visible);
 
-	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&ItemList::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"),&ItemList::get_v_scroll);
 
-	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&ItemList::_scroll_changed);
-	ObjectTypeDB::bind_method(_MD("_input_event"),&ItemList::_input_event);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&ItemList::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ItemList::_gui_input);
 
 	BIND_CONSTANT( ICON_MODE_TOP );
 	BIND_CONSTANT( ICON_MODE_LEFT );
@@ -1372,6 +1387,8 @@ void ItemList::_bind_methods(){
 	ADD_SIGNAL( MethodInfo("item_rmb_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::VECTOR2,"atpos")));
 	ADD_SIGNAL( MethodInfo("multi_selected",PropertyInfo(Variant::INT,"index"),PropertyInfo(Variant::BOOL,"selected")));
 	ADD_SIGNAL( MethodInfo("item_activated",PropertyInfo(Variant::INT,"index")));
+
+	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec",2000);
 }
 
 ItemList::ItemList() {
@@ -1400,6 +1417,7 @@ ItemList::ItemList() {
 	allow_rmb_select=false;
 
 	icon_scale = 1.0f;
+	set_clip_contents(true);
 }
 
 ItemList::~ItemList() {

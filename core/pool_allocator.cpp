@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,12 +27,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "pool_allocator.h"
+
 #include "error_macros.h"
 #include "core/os/os.h"
 #include "os/memory.h"
 #include "os/copymem.h"
 #include "print_string.h"
+
 #include <assert.h>
+
 #define COMPACT_CHUNK( m_entry , m_to_pos ) 			\
 do {								\
 	void *_dst=&((unsigned char*)pool)[m_to_pos];	\
@@ -501,7 +504,7 @@ const void *PoolAllocator::get(ID p_mem) const {
 		return NULL;
 	}
 
-	if (e->pos<0 || (int)e->pos>=pool_size) {
+	if ((int)e->pos>=pool_size) {
 
 		mt_unlock();
 		ERR_PRINT("e->pos<0 || e->pos>=pool_size");
@@ -543,7 +546,7 @@ void *PoolAllocator::get(ID p_mem) {
 		return NULL;
 	}
 
-	if (e->pos<0 || (int)e->pos>=pool_size) {
+	if ((int)e->pos>=pool_size) {
 
 		mt_unlock();
 		ERR_PRINT("e->pos<0 || e->pos>=pool_size");
@@ -604,7 +607,7 @@ void PoolAllocator::create_pool(void * p_mem,int p_size,int p_max_entries) {
 
 PoolAllocator::PoolAllocator(int p_size,bool p_needs_locking,int p_max_entries) {
 
-	mem_ptr=Memory::alloc_static( p_size,"PoolAllocator()");
+	mem_ptr=memalloc( p_size);
 	ERR_FAIL_COND(!mem_ptr);
 	align=1;
 	create_pool(mem_ptr,p_size,p_max_entries);
@@ -648,7 +651,7 @@ PoolAllocator::PoolAllocator(int p_align,int p_size,bool p_needs_locking,int p_m
 PoolAllocator::~PoolAllocator() {
 
 	if (mem_ptr)
-		Memory::free_static( mem_ptr );
+		memfree( mem_ptr );
 
 	memdelete_arr( entry_array );
 	memdelete_arr( entry_indices );

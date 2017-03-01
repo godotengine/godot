@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@
 
 class SpriteFramesEditor : public PanelContainer {
 
-	OBJ_TYPE(SpriteFramesEditor, PanelContainer );
+	GDCLASS(SpriteFramesEditor, PanelContainer );
 
 	Button *load;
 	Button *_delete;
@@ -73,7 +73,7 @@ class SpriteFramesEditor : public PanelContainer {
 
 	void _load_pressed();
 	void _load_scene_pressed();
-	void _file_load_request(const DVector<String>& p_path, int p_at_pos=-1);
+	void _file_load_request(const PoolVector<String>& p_path, int p_at_pos=-1);
 	void _paste_pressed();
 	void _empty_pressed();
 	void _empty2_pressed();
@@ -104,7 +104,7 @@ class SpriteFramesEditor : public PanelContainer {
 
 protected:
 	void _notification(int p_what);
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	static void _bind_methods();
 public:
 
@@ -116,7 +116,7 @@ public:
 
 class SpriteFramesEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SpriteFramesEditorPlugin, EditorPlugin );
+	GDCLASS( SpriteFramesEditorPlugin, EditorPlugin );
 
 	SpriteFramesEditor *frames_editor;
 	EditorNode *editor;

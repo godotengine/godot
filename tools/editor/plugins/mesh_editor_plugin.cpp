@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,8 @@
 /*************************************************************************/
 #include "mesh_editor_plugin.h"
 
-void MeshEditor::_input_event(InputEvent p_event) {
+#if 0
+void MeshEditor::_gui_input(InputEvent p_event) {
 
 
 	if (p_event.type==InputEvent::MOUSE_MOTION && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
@@ -81,8 +82,8 @@ void MeshEditor::_notification(int p_what) {
 void MeshEditor::_update_rotation() {
 
 	Transform t;
-	t.basis.rotate(Vector3(0, 1, 0), rot_y);
-	t.basis.rotate(Vector3(1, 0, 0), rot_x);
+	t.basis.rotate(Vector3(0, 1, 0), -rot_y);
+	t.basis.rotate(Vector3(1, 0, 0), -rot_x);
 	mesh_instance->set_transform(t);
 
 }
@@ -135,8 +136,8 @@ void MeshEditor::_button_pressed(Node* p_button) {
 
 void MeshEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&MeshEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_button_pressed"),&MeshEditor::_button_pressed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&MeshEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_button_pressed"),&MeshEditor::_button_pressed);
 
 }
 
@@ -217,11 +218,11 @@ void MeshEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		mesh_editor->show();
-//		mesh_editor->set_process(true);
+		//mesh_editor->set_process(true);
 	} else {
 
 		mesh_editor->hide();
-//		mesh_editor->set_process(false);
+		//mesh_editor->set_process(false);
 	}
 
 }
@@ -241,3 +242,4 @@ MeshEditorPlugin::MeshEditorPlugin(EditorNode *p_node) {
 MeshEditorPlugin::~MeshEditorPlugin()
 {
 }
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,8 @@
 enum ErrorHandlerType {
 	ERR_HANDLER_ERROR,
 	ERR_HANDLER_WARNING,
-	ERR_HANDLER_SCRIPT
+	ERR_HANDLER_SCRIPT,
+	ERR_HANDLER_SHADER,
 };
 
 typedef void (*ErrorHandlerFunc)(void*,const char*,const char*,int p_line,const char *, const char *,ErrorHandlerType p_type);

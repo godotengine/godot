@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ void GridContainer::_notification(int p_what) {
 			for(int i=0;i<get_child_count();i++) {
 
 				Control *c = get_child(i)->cast_to<Control>();
-				if (!c || !c->is_visible())
+				if (!c || !c->is_visible_in_tree())
 					continue;
 
 				int row = idx / columns;
@@ -70,7 +70,7 @@ void GridContainer::_notification(int p_what) {
 				else
 					row_minh[row]=ms.height;
 
-			//	print_line("store row "+itos(row)+" mw "+itos(ms.height));
+				//print_line("store row "+itos(row)+" mw "+itos(ms.height));
 
 				if (c->get_h_size_flags()&SIZE_EXPAND)
 					col_expanded.insert(col);
@@ -112,7 +112,7 @@ void GridContainer::_notification(int p_what) {
 			for(int i=0;i<get_child_count();i++) {
 
 				Control *c = get_child(i)->cast_to<Control>();
-				if (!c || !c->is_visible())
+				if (!c || !c->is_visible_in_tree())
 					continue;
 				int row = idx / columns;
 				int col = idx % columns;
@@ -136,7 +136,7 @@ void GridContainer::_notification(int p_what) {
 
 				Point2 p(col_ofs,row_ofs);
 
-//				print_line("col: "+itos(col)+" row: "+itos(row)+" col_ofs: "+itos(col_ofs)+" row_ofs: "+itos(row_ofs));
+				//print_line("col: "+itos(col)+" row: "+itos(row)+" col_ofs: "+itos(col_ofs)+" row_ofs: "+itos(row_ofs));
 				fit_child_in_rect(c,Rect2(p,s));
 				//print_line("col: "+itos(col)+" row: "+itos(row)+" rect: "+Rect2(p,s));
 
@@ -170,10 +170,10 @@ int GridContainer::get_columns() const{
 
 void GridContainer::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_columns","columns"),&GridContainer::set_columns);
-	ObjectTypeDB::bind_method(_MD("get_columns"),&GridContainer::get_columns);
+	ClassDB::bind_method(D_METHOD("set_columns","columns"),&GridContainer::set_columns);
+	ClassDB::bind_method(D_METHOD("get_columns"),&GridContainer::get_columns);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"columns",PROPERTY_HINT_RANGE,"1,1024,1"),_SCS("set_columns"),_SCS("get_columns"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"columns",PROPERTY_HINT_RANGE,"1,1024,1"),"set_columns","get_columns");
 }
 
 Size2 GridContainer::get_minimum_size() const {
@@ -191,7 +191,7 @@ Size2 GridContainer::get_minimum_size() const {
 	for(int i=0;i<get_child_count();i++) {
 
 		Control *c = get_child(i)->cast_to<Control>();
-		if (!c || !c->is_visible())
+		if (!c || !c->is_visible_in_tree())
 			continue;
 		int row = idx / columns;
 		int col = idx % columns;
@@ -230,6 +230,6 @@ Size2 GridContainer::get_minimum_size() const {
 
 GridContainer::GridContainer() {
 
-	set_stop_mouse(false);
+	set_mouse_filter(MOUSE_FILTER_PASS);
 	columns=1;
 }

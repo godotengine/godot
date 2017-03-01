@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,16 +27,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_format_image.h"
+
+#if 0
 #include "scene/resources/texture.h"
 #include "io/image_loader.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_original_path, Error *r_error) {
 
 	if (r_error)
 		*r_error=ERR_CANT_OPEN;
 
-	if (p_path.extension()=="cube") {
+	if (p_path.get_extension()=="cube") {
 		// open as cubemap txture
 
 		CubeMap* ptr = memnew(CubeMap);
@@ -125,7 +127,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_origin
 		if (max_texture_size && (image.get_width() > max_texture_size || image.get_height() > max_texture_size)) {
 
 
-			if (bool(Globals::get_singleton()->get("debug/max_texture_size_alert"))) {
+			if (bool(GlobalConfig::get_singleton()->get("debug/image_loader/max_texture_size_alert"))) {
 				OS::get_singleton()->alert("Texture is too large: '"+p_path+"', at "+itos(image.get_width())+"x"+itos(image.get_height())+". Max allowed size is: "+itos(max_texture_size)+"x"+itos(max_texture_size)+".","BAD ARTIST, NO COOKIE!");
 			}
 
@@ -185,7 +187,7 @@ uint32_t ResourceFormatLoaderImage::load_image_flags(const String &p_path) {
 	if (flags_found.has("filter")) {
 		if (flags_found["filter"])
 			flags|=Texture::FLAG_FILTER;
-	} else if (bool(GLOBAL_DEF("image_loader/filter",true))) {
+	} else if (bool(GLOBAL_DEF("rendering/image_loader/filter",true))) {
 		flags|=Texture::FLAG_FILTER;
 	}
 
@@ -193,14 +195,14 @@ uint32_t ResourceFormatLoaderImage::load_image_flags(const String &p_path) {
 	if (flags_found.has("gen_mipmaps")) {
 		if (flags_found["gen_mipmaps"])
 			flags|=Texture::FLAG_MIPMAPS;
-	} else if (bool(GLOBAL_DEF("image_loader/gen_mipmaps",true))) {
+	} else if (bool(GLOBAL_DEF("rendering/image_loader/gen_mipmaps",true))) {
 		flags|=Texture::FLAG_MIPMAPS;
 	}
 
 	if (flags_found.has("repeat")) {
 		if (flags_found["repeat"])
 			flags|=Texture::FLAG_REPEAT;
-	} else if (bool(GLOBAL_DEF("image_loader/repeat",true))) {
+	} else if (bool(GLOBAL_DEF("rendering/image_loader/repeat",true))) {
 		flags|=Texture::FLAG_REPEAT;
 	}
 
@@ -224,7 +226,7 @@ uint32_t ResourceFormatLoaderImage::load_image_flags(const String &p_path) {
 
 bool ResourceFormatLoaderImage::handles_type(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"Texture") || ObjectTypeDB::is_type(p_type,"CubeMap");
+	return ClassDB::is_parent_class(p_type,"Texture") || ClassDB::is_parent_class(p_type,"CubeMap");
 }
 
 void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extensions) const {
@@ -235,7 +237,7 @@ void ResourceFormatLoaderImage::get_recognized_extensions(List<String> *p_extens
 
 String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const {
 
-	String ext=p_path.extension().to_lower();
+	String ext=p_path.get_extension().to_lower();
 	if (ext=="cube")
 		return "CubeMap";
 
@@ -252,11 +254,12 @@ String ResourceFormatLoaderImage::get_resource_type(const String &p_path) const 
 
 ResourceFormatLoaderImage::ResourceFormatLoaderImage() {
 
-	max_texture_size = GLOBAL_DEF("debug/max_texture_size",0);
-	GLOBAL_DEF("debug/max_texture_size_alert",false);
-	debug_load_times=GLOBAL_DEF("debug/image_load_times",false);
-	GLOBAL_DEF("image_loader/filter",true);
-	GLOBAL_DEF("image_loader/gen_mipmaps",true);
-	GLOBAL_DEF("image_loader/repeat",false);
+	max_texture_size = GLOBAL_DEF("debug/image_loader/max_texture_size",0);
+	GLOBAL_DEF("debug/image_loader/max_texture_size_alert",false);
+	debug_load_times=GLOBAL_DEF("debug/image_loader/image_load_times",false);
+	GLOBAL_DEF("rendering/image_loader/filter",true);
+	GLOBAL_DEF("rendering/image_loader/gen_mipmaps",true);
+	GLOBAL_DEF("rendering/image_loader/repeat",false);
 
 }
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "gd_script.h"
-#include "globals.h"
+#include "global_config.h"
 #include "global_constants.h"
 #include "gd_compiler.h"
 #include "os/file_access.h"
@@ -50,7 +50,7 @@ GDNativeClass::GDNativeClass(const StringName& p_name) {
 bool GDNativeClass::_get(const StringName& p_name,Variant &r_ret) const {
 
 	bool ok;
-	int v = ObjectTypeDB::get_integer_constant(name, p_name, &ok);
+	int v = ClassDB::get_integer_constant(name, p_name, &ok);
 
 	if (ok) {
 		r_ret=v;
@@ -63,7 +63,7 @@ bool GDNativeClass::_get(const StringName& p_name,Variant &r_ret) const {
 
 void GDNativeClass::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("new"),&GDNativeClass::_new);
+	ClassDB::bind_method(D_METHOD("new"),&GDNativeClass::_new);
 
 }
 
@@ -86,7 +86,7 @@ Variant GDNativeClass::_new() {
 
 Object *GDNativeClass::instance() {
 
-	return ObjectTypeDB::instance(name);
+	return ClassDB::instance(name);
 }
 
 
@@ -111,15 +111,30 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 
 	/* STEP 2, INITIALIZE AND CONSRTUCT */
 
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+
 	instances.insert(instance->owner);
+
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
 
 	initializer->call(instance,p_args,p_argcount,r_error);
 
 	if (r_error.error!=Variant::CallError::CALL_OK) {
 		instance->script=Ref<GDScript>();
 		instance->owner->set_script_instance(NULL);
+#ifndef NO_THREADS
+		GDScriptLanguage::singleton->lock->lock();
+#endif
 		instances.erase(p_owner);
-		ERR_FAIL_COND_V(r_error.error!=Variant::CallError::CALL_OK, NULL); //error consrtucting
+#ifndef NO_THREADS
+		GDScriptLanguage::singleton->lock->unlock();
+#endif
+
+		ERR_FAIL_COND_V(r_error.error!=Variant::CallError::CALL_OK, NULL); //error constructing
 	}
 
 	//@TODO make thread safe
@@ -144,6 +159,8 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 	while (_baseptr->_base) {
 		_baseptr=_baseptr->_base;
 	}
+
+	ERR_FAIL_COND_V(_baseptr->native.is_null(), Variant());
 
 	if (_baseptr->native.ptr()) {
 		owner=_baseptr->native->instance();
@@ -340,19 +357,21 @@ MethodInfo GDScript::get_method_info(const StringName& p_method) const {
 bool GDScript::get_property_default_value(const StringName& p_property, Variant &r_value) const {
     
 #ifdef TOOLS_ENABLED
-    
-    //for (const Map<StringName,Variant>::Element *I=member_default_values.front();I;I=I->next()) {
-    //	print_line("\t"+String(String(I->key())+":"+String(I->get())));
-    //}
-    const Map<StringName,Variant>::Element *E=member_default_values_cache.find(p_property);
-    if (E) {
-        r_value=E->get();
-        return true;
-    }
-    
-    if (base_cache.is_valid()) {
-        return base_cache->get_property_default_value(p_property,r_value);
-    }
+
+	/*
+	for (const Map<StringName,Variant>::Element *I=member_default_values.front();I;I=I->next()) {
+		print_line("\t"+String(String(I->key())+":"+String(I->get())));
+	}
+	*/
+	const Map<StringName,Variant>::Element *E=member_default_values_cache.find(p_property);
+	if (E) {
+		r_value=E->get();
+		return true;
+	}
+
+	if (base_cache.is_valid()) {
+		return base_cache->get_property_default_value(p_property,r_value);
+	}
 #endif
     return false;
     
@@ -388,12 +407,12 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 		top=top->_base;
 
 	if (top->native.is_valid()) {
-		if (!ObjectTypeDB::is_type(p_this->get_type_name(),top->native->get_name())) {
+		if (!ClassDB::is_parent_class(p_this->get_class_name(),top->native->get_name())) {
 
 			if (ScriptDebugger::get_singleton()) {
-				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),0,"Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_type()+"'");
+				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),0,"Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_class()+"'");
 			}
-			ERR_EXPLAIN("Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_type()+"'");
+			ERR_EXPLAIN("Script inherits from native type '"+String(top->native->get_name())+"', so it can't be instanced in object of type: '"+p_this->get_class()+"'");
 			ERR_FAIL_V(NULL);
 
 		}
@@ -405,7 +424,16 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 }
 bool GDScript::instance_has(const Object *p_this) const {
 
-	return instances.has((Object*)p_this);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+	bool hasit = instances.has((Object*)p_this);
+
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+
+	return hasit;
 }
 
 bool GDScript::has_source_code() const {
@@ -508,7 +536,7 @@ bool GDScript::_update_exports() {
 				}
 			}
 
-			members_cache.clear();;
+			members_cache.clear();
 			member_default_values_cache.clear();
 
 			for(int i=0;i<c->variables.size();i++) {
@@ -591,8 +619,16 @@ void GDScript::_set_subclass_path(Ref<GDScript>& p_sc,const String& p_path) {
 
 Error GDScript::reload(bool p_keep_state) {
 
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+	bool has_instances = instances.size();
 
-	ERR_FAIL_COND_V(!p_keep_state && instances.size(),ERR_ALREADY_IN_USE);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+
+	ERR_FAIL_COND_V(!p_keep_state && has_instances,ERR_ALREADY_IN_USE);
 
 	String basedir=path;
 
@@ -745,9 +781,9 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 
-	ObjectTypeDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo(Variant::OBJECT,"new"));
 
-	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
+	ClassDB::bind_method(D_METHOD("get_as_byte_code"),&GDScript::get_as_byte_code);
 
 }
 
@@ -824,7 +860,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 Error GDScript::load_source_code(const String& p_path) {
 
 
-	DVector<uint8_t> sourcef;
+	PoolVector<uint8_t> sourcef;
 	Error err;
 	FileAccess *f=FileAccess::open(p_path,FileAccess::READ,&err);
 	if (err) {
@@ -834,7 +870,7 @@ Error GDScript::load_source_code(const String& p_path) {
 
 	int len = f->get_len();
 	sourcef.resize(len+1);
-	DVector<uint8_t>::Write w = sourcef.write();
+	PoolVector<uint8_t>::Write w = sourcef.write();
 	int r = f->get_buffer(w.ptr(),len);
 	f->close();
 	memdelete(f);
@@ -1505,7 +1541,15 @@ GDInstance::GDInstance() {
 
 GDInstance::~GDInstance() {
 	if (script.is_valid() && owner) {
-		script->instances.erase(owner);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->lock();
+#endif
+
+	script->instances.erase(owner);
+#ifndef NO_THREADS
+	GDScriptLanguage::singleton->lock->unlock();
+#endif
+
 	}
 	for (Map<StringName, Ref<GDFunctionObject> >::Element *E = functions.front(); E ; E=E->next()) {
 		E->get()->instance = NULL;
@@ -1562,11 +1606,13 @@ void GDScriptLanguage::init() {
 	}
 
 	_add_global(StaticCString::create("PI"),Math_PI);
+	_add_global(StaticCString::create("INF"),Math_INF);
+	_add_global(StaticCString::create("NAN"),Math_NAN);
 
 	//populate native classes
 
 	List<StringName> class_list;
-	ObjectTypeDB::get_type_list(&class_list);
+	ClassDB::get_class_list(&class_list);
 	for(List<StringName>::Element *E=class_list.front();E;E=E->next()) {
 
 		StringName n = E->get();
@@ -1582,9 +1628,9 @@ void GDScriptLanguage::init() {
 
 	//populate singletons
 
-	List<Globals::Singleton> singletons;
-	Globals::get_singleton()->get_singletons(&singletons);
-	for(List<Globals::Singleton>::Element *E=singletons.front();E;E=E->next()) {
+	List<GlobalConfig::Singleton> singletons;
+	GlobalConfig::get_singleton()->get_singletons(&singletons);
+	for(List<GlobalConfig::Singleton>::Element *E=singletons.front();E;E=E->next()) {
 
 		_add_global(E->get().name,E->get().ptr);
 	}
@@ -1909,7 +1955,7 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script>& p_script,bool p_sof
 
 void GDScriptLanguage::frame() {
 
-	//	print_line("calls: "+itos(calls));
+	//print_line("calls: "+itos(calls));
 	calls=0;
 
 #ifdef DEBUG_ENABLED
@@ -1953,6 +1999,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"bool",
 		"null",
 		"PI",
+		"INF",
+		"NAN",
 		"self",
 		"true",
 		// functions
@@ -1982,6 +2030,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"for",
 		"pass",
 		"return",
+		"match",
 		"while",
 		"remote",
 		"sync",
@@ -2028,7 +2077,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	script_frame_time=0;
 
 	_debug_call_stack_pos=0;
-	int dmcs=GLOBAL_DEF("debug/script_max_call_stack",1024);
+	int dmcs=GLOBAL_DEF("debug/script/max_call_stack",1024);
 	if (ScriptDebugger::get_singleton()) {
 		//debugging enabled!
 
@@ -2114,7 +2163,7 @@ bool ResourceFormatLoaderGDScript::handles_type(const String& p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
 
-	String el = p_path.extension().to_lower();
+	String el = p_path.get_extension().to_lower();
 	if (el=="gd" || el=="gdc" || el=="gde")
 		return "GDScript";
 	return "";

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "os_android.h"
-#include "globals.h"
+#include "global_config.h"
 #include "main/main.h"
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "godot", __VA_ARGS__))
 #define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "godot", __VA_ARGS__))
@@ -57,7 +57,7 @@ extern "C" {
 
 class JNISingleton : public Object {
 
-	OBJ_TYPE( JNISingleton, Object );
+	GDCLASS( JNISingleton, Object );
 
 
 	struct MethodData {
@@ -153,7 +153,7 @@ public:
 				} break;
 				case Variant::STRING_ARRAY: {
 
-					DVector<String> sarray = *p_args[i];
+					PoolVector<String> sarray = *p_args[i];
 					jobjectArray arr = env->NewObjectArray(sarray.size(),env->FindClass("java/lang/String"),env->NewStringUTF(""));
 
 					for(int j=0;j<sarray.size();j++) {
@@ -165,18 +165,18 @@ public:
 				} break;
 				case Variant::INT_ARRAY: {
 
-					DVector<int> array = *p_args[i];
+					PoolVector<int> array = *p_args[i];
 					jintArray arr = env->NewIntArray(array.size());
-					DVector<int>::Read r = array.read();
+					PoolVector<int>::Read r = array.read();
 					env->SetIntArrayRegion(arr,0,array.size(),r.ptr());
 					v[i].l=arr;
 
 				} break;
 				case Variant::REAL_ARRAY: {
 
-					DVector<float> array = *p_args[i];
+					PoolVector<float> array = *p_args[i];
 					jfloatArray arr = env->NewFloatArray(array.size());
-					DVector<float>::Read r = array.read();
+					PoolVector<float>::Read r = array.read();
 					env->SetFloatArrayRegion(arr,0,array.size(),r.ptr());
 					v[i].l=arr;
 
@@ -225,7 +225,7 @@ public:
 				jobjectArray arr = (jobjectArray)env->CallObjectMethodA(instance,E->get().method,v);
 
 				int stringCount = env->GetArrayLength(arr);
-				DVector<String> sarr;
+				PoolVector<String> sarr;
 
 				for (int i=0; i<stringCount; i++) {
 					jstring string = (jstring) env->GetObjectArrayElement(arr, i);
@@ -241,12 +241,12 @@ public:
 				jintArray arr = (jintArray)env->CallObjectMethodA(instance,E->get().method,v);
 
 				int fCount = env->GetArrayLength(arr);
-				DVector<int> sarr;
+				PoolVector<int> sarr;
 				sarr.resize(fCount);
 
-				DVector<int>::Write w = sarr.write();
+				PoolVector<int>::Write w = sarr.write();
 				env->GetIntArrayRegion(arr,0,fCount,w.ptr());
-				w = DVector<int>::Write();
+				w = PoolVector<int>::Write();
 				ret=sarr;
 			} break;
 			case Variant::REAL_ARRAY: {
@@ -254,12 +254,12 @@ public:
 				jfloatArray arr = (jfloatArray)env->CallObjectMethodA(instance,E->get().method,v);
 
 				int fCount = env->GetArrayLength(arr);
-				DVector<float> sarr;
+				PoolVector<float> sarr;
 				sarr.resize(fCount);
 
-				DVector<float>::Write w = sarr.write();
+				PoolVector<float>::Write w = sarr.write();
 				env->GetFloatArrayRegion(arr,0,fCount,w.ptr());
-				w = DVector<float>::Write();
+				w = PoolVector<float>::Write();
 				ret=sarr;
 			} break;
 			default: {
@@ -535,29 +535,33 @@ static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) 
 				case AMOTION_EVENT_ACTION_DOWN: {
 					engine->os->process_touch(0,0,touchvec);
 
-				    //System.out.printf("action down at: %f,%f\n", event.getX(),event.getY());
+					//System.out.printf("action down at: %f,%f\n", event.getX(),event.getY());
 				} break;
 				case AMOTION_EVENT_ACTION_MOVE: {
 					engine->os->process_touch(1,0,touchvec);
-				    //for(int i=0;i<event.getPointerCount();i++) {
-				    //	System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
-				    //}
+					/*
+					for(int i=0;i<event.getPointerCount();i++) {
+						System.out.printf("%d - moved to: %f,%f\n",i, event.getX(i),event.getY(i));
+					}
+					*/
 				} break;
 				case AMOTION_EVENT_ACTION_POINTER_UP: {
 
 					engine->os->process_touch(4,pidx,touchvec);
-				    //System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+					//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 				} break;
 				case AMOTION_EVENT_ACTION_POINTER_DOWN: {
 					engine->os->process_touch(3,pidx,touchvec);
-				    //System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
+					//System.out.printf("%d - s.down at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 				} break;
 				case AMOTION_EVENT_ACTION_CANCEL:
 				case AMOTION_EVENT_ACTION_UP: {
 					engine->os->process_touch(2,0,touchvec);
-				    //for(int i=0;i<event.getPointerCount();i++) {
-				    //	System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
-				    //}
+					/*
+					for(int i=0;i<event.getPointerCount();i++) {
+						System.out.printf("%d - up! %f,%f\n",i, event.getX(i),event.getY(i));
+					}
+					*/
 				} break;
 			}
 
@@ -638,8 +642,8 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 
 	} break;
 	case APP_CMD_INIT_WINDOW:
-	     //The window is being shown, get it ready.
-	//	LOGI("INIT WINDOW");
+		//The window is being shown, get it ready.
+		//LOGI("INIT WINDOW");
 		if (engine->app->window != NULL) {
 
 			if (engine->os==NULL) {
@@ -647,14 +651,14 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 				//do initialization here, when there's OpenGL! hackish but the only way
 				engine->os = new OS_Android(_gfx_init,engine);
 
-			//	char *args[]={"-test","gui",NULL};
+				//char *args[]={"-test","gui",NULL};
 				__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
 #if 0
 				Error err  = Main::setup("apk",2,args);
 #else
 				Error err  = Main::setup("apk",0,NULL);
 
-				String modules = Globals::get_singleton()->get("android/modules");
+				String modules = GlobalConfig::get_singleton()->get("android/modules");
 				Vector<String> mods = modules.split(",",false);
 				mods.push_back("GodotOS");
 				__android_log_print(ANDROID_LOG_INFO,"godot","mod count: %i",mods.size());
@@ -722,15 +726,15 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
 			engine->animating=1;
 			engine_draw_frame(engine);
 		}
-	    break;
+		break;
 	case APP_CMD_TERM_WINDOW:
-	    // The window is being hidden or closed, clean it up.
-	//    LOGI("TERM WINDOW");
-	    engine_term_display(engine);
-	    break;
+		// The window is being hidden or closed, clean it up.
+		//LOGI("TERM WINDOW");
+		engine_term_display(engine);
+		break;
 	case APP_CMD_GAINED_FOCUS:
-	    // When our app gains focus, we start monitoring the accelerometer.
-	    if (engine->accelerometerSensor != NULL) {
+		// When our app gains focus, we start monitoring the accelerometer.
+		if (engine->accelerometerSensor != NULL) {
 		ASensorEventQueue_enableSensor(engine->sensorEventQueue,
 			engine->accelerometerSensor);
 		// We'd like to get 60 events per second (in us).
@@ -833,7 +837,7 @@ void android_main(struct android_app* state) {
 	     // Process this event.
 
 	     if (source != NULL) {
-	//	 LOGI("process\n");
+		// LOGI("process\n");
 		 source->process(state, source);
 	     } else {
 		     nullmax--;
@@ -883,12 +887,12 @@ void android_main(struct android_app* state) {
 		return;
 	     }
 
-//	     LOGI("end\n");
+	//     LOGI("end\n");
 
 
 	 }
 
-//	 LOGI("engine animating? %i\n",engine.animating);
+	// LOGI("engine animating? %i\n",engine.animating);
 
 	 if (engine.animating) {
 	     //do os render
@@ -912,7 +916,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_Godot_registerSingleton(JNIEnv
 	s->set_instance(env->NewGlobalRef(p_object));
 	jni_singletons[singname]=s;
 
-	Globals::get_singleton()->add_singleton(Globals::Singleton(singname,s));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton(singname,s));
 
 }
 
@@ -983,7 +987,7 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_Godot_getGlobal(JNIEnv * en
 
 	String js = env->GetStringUTFChars( path, NULL );
 
-	return env->NewStringUTF(Globals::get_singleton()->get(js).operator String().utf8().get_data());
+	return env->NewStringUTF(GlobalConfig::get_singleton()->get(js).operator String().utf8().get_data());
 
 
 }

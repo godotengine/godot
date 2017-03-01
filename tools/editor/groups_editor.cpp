@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #include "scene/gui/label.h"
 #include "editor_node.h"
 #include "scene/resources/packed_scene.h"
+
 void GroupsEditor::_add_group(const String& p_group) {
 
 	if (!node)
@@ -147,9 +148,9 @@ void GroupsEditor::set_current(Node* p_node) {
 
 void GroupsEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_add_group",&GroupsEditor::_add_group);
-	ObjectTypeDB::bind_method("_remove_group",&GroupsEditor::_remove_group);
-	ObjectTypeDB::bind_method("update_tree",&GroupsEditor::update_tree);
+	ClassDB::bind_method("_add_group",&GroupsEditor::_add_group);
+	ClassDB::bind_method("_remove_group",&GroupsEditor::_remove_group);
+	ClassDB::bind_method("update_tree",&GroupsEditor::update_tree);
 }
 
 GroupsEditor::GroupsEditor() {

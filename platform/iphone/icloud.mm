@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,14 +44,14 @@ extern "C" {
 ICloud* ICloud::instance = NULL;
 
 void ICloud::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("remove_key"),&ICloud::remove_key);
-	ObjectTypeDB::bind_method(_MD("set_key_values"),&ICloud::set_key_values);
-	ObjectTypeDB::bind_method(_MD("get_key_value"),&ICloud::get_key_value);
-	ObjectTypeDB::bind_method(_MD("synchronize_key_values"),&ICloud::synchronize_key_values);
-	ObjectTypeDB::bind_method(_MD("get_all_key_values"),&ICloud::get_all_key_values);
+	ClassDB::bind_method(D_METHOD("remove_key"),&ICloud::remove_key);
+	ClassDB::bind_method(D_METHOD("set_key_values"),&ICloud::set_key_values);
+	ClassDB::bind_method(D_METHOD("get_key_value"),&ICloud::get_key_value);
+	ClassDB::bind_method(D_METHOD("synchronize_key_values"),&ICloud::synchronize_key_values);
+	ClassDB::bind_method(D_METHOD("get_all_key_values"),&ICloud::get_all_key_values);
 
-	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&ICloud::get_pending_event_count);
-	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&ICloud::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&ICloud::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"),&ICloud::pop_pending_event);
 };
 
 int ICloud::get_pending_event_count() {
@@ -78,12 +78,12 @@ Variant nsobject_to_variant(NSObject* object) {
 		return String::utf8(str != NULL ? str : "");
 	}
 	else if ([object isKindOfClass:[NSData class]]) {
-		ByteArray ret;
+		PoolByteArray ret;
 		NSData* data = (NSData*)object;
 		if ([data length] > 0) {
 			ret.resize([data length]);
 			{
-				ByteArray::Write w = ret.write();
+				PoolByteArray::Write w = ret.write();
 				copymem(w.ptr(), [data bytes], [data length]);
 			}
 		}
@@ -199,9 +199,9 @@ NSObject* variant_to_nsobject(Variant v) {
 		}
 		return result;
 	}
-	else if (v.get_type() == Variant::RAW_ARRAY) {
-		ByteArray arr = v;
-		ByteArray::Read r = arr.read();
+	else if (v.get_type() == Variant::POOL_BYTE_ARRAY) {
+		PoolByteArray arr = v;
+		PoolByteArray::Read r = arr.read();
 		NSData* result = [NSData dataWithBytes:r.ptr() length:arr.size()];
 		return result;
 	}
@@ -333,7 +333,7 @@ ICloud::ICloud() {
 			Dictionary ret;
 			ret["type"] = "key_value_changed";
 
-			//StringArray result_keys;
+			//PoolStringArray result_keys;
 			//Array result_values;
 			Dictionary keyValues;
 			String reason = "";

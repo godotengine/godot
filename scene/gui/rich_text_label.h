@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 class RichTextLabel : public Control {
 
-	OBJ_TYPE( RichTextLabel, Control );
+	GDCLASS( RichTextLabel, Control );
 public:
 
 	enum Align {
@@ -173,7 +173,7 @@ private:
 
 	struct ItemNewline : public Item {
 
-		int line;
+		int line;	// FIXME: Overriding base's line ?
 		ItemNewline() { type=ITEM_NEWLINE; }
 	};
 
@@ -217,6 +217,7 @@ private:
 	void _validate_line_caches(ItemFrame *p_frame);
 
 	void _add_item(Item *p_item, bool p_enter=false,bool p_ensure_newline=false);
+	void _remove_item(Item *p_item, const int p_line, const int p_subitem_line);
 
 
 
@@ -267,7 +268,7 @@ private:
 	void _update_scroll();
 	void _scroll_changed(double);
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	Item *_get_next_item(Item* p_item, bool p_free=false);
 
 	bool use_bbcode;
@@ -284,6 +285,7 @@ public:
 	void add_text(const String& p_text);
 	void add_image(const Ref<Texture>& p_image);
 	void add_newline();
+	bool remove_line(const int p_line);
 	void push_font(const Ref<Font>& p_font);
 	void push_color(const Color& p_color);
 	void push_underline();

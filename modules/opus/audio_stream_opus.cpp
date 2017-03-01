@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Author: George Marques <george@gmarqu.es>                             */
 /*                                                                       */
@@ -366,7 +366,7 @@ void ResourceFormatLoaderAudioStreamOpus::get_recognized_extensions(List<String>
 }
 String ResourceFormatLoaderAudioStreamOpus::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="opus")
+	if (p_path.get_extension().to_lower()=="opus")
 		return "AudioStreamOpus";
 	return "";
 }

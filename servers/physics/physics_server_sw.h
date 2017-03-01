@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
 
 class PhysicsServerSW : public PhysicsServer {
 
-	OBJ_TYPE( PhysicsServerSW, PhysicsServer );
+	GDCLASS( PhysicsServerSW, PhysicsServer );
 
 friend class PhysicsDirectSpaceStateSW;
 	bool active;
@@ -62,7 +62,7 @@ friend class PhysicsDirectSpaceStateSW;
 	mutable RID_Owner<BodySW> body_owner;
 	mutable RID_Owner<JointSW> joint_owner;
 
-//	void _clear_query(QuerySW *p_query);
+	//void _clear_query(QuerySW *p_query);
 public:
 
 	struct CollCbkData {
@@ -180,8 +180,8 @@ public:
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
 	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const;
 
-	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
-	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
+	virtual void body_set_param(RID p_body, BodyParameter p_param, real_t p_value);
+	virtual real_t body_get_param(RID p_body, BodyParameter p_param) const;
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant& p_variant);
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const;
@@ -193,6 +193,7 @@ public:
 	virtual Vector3 body_get_applied_torque(RID p_body) const;
 
 	virtual void body_apply_impulse(RID p_body, const Vector3& p_pos, const Vector3& p_impulse);
+	virtual void body_apply_torque_impulse(RID p_body, const Vector3& p_impulse);
 	virtual void body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity);
 
 	virtual void body_set_axis_lock(RID p_body,BodyAxisLock p_lock);
@@ -202,8 +203,8 @@ public:
 	virtual void body_remove_collision_exception(RID p_body, RID p_body_b);
 	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions);
 
-	virtual void body_set_contacts_reported_depth_treshold(RID p_body, float p_treshold);
-	virtual float body_get_contacts_reported_depth_treshold(RID p_body) const;
+	virtual void body_set_contacts_reported_depth_treshold(RID p_body, real_t p_treshold);
+	virtual real_t body_get_contacts_reported_depth_treshold(RID p_body) const;
 
 	virtual void body_set_omit_force_integration(RID p_body,bool p_omit);
 	virtual bool body_is_omitting_force_integration(RID p_body) const;
@@ -220,8 +221,8 @@ public:
 
 	virtual RID joint_create_pin(RID p_body_A,const Vector3& p_local_A,RID p_body_B,const Vector3& p_local_B);
 
-	virtual void pin_joint_set_param(RID p_joint,PinJointParam p_param, float p_value);
-	virtual float pin_joint_get_param(RID p_joint,PinJointParam p_param) const;
+	virtual void pin_joint_set_param(RID p_joint,PinJointParam p_param, real_t p_value);
+	virtual real_t pin_joint_get_param(RID p_joint,PinJointParam p_param) const;
 
 	virtual void pin_joint_set_local_A(RID p_joint, const Vector3& p_A);
 	virtual Vector3 pin_joint_get_local_A(RID p_joint) const;
@@ -232,8 +233,8 @@ public:
 	virtual RID joint_create_hinge(RID p_body_A,const Transform& p_frame_A,RID p_body_B,const Transform& p_frame_B);
 	virtual RID joint_create_hinge_simple(RID p_body_A,const Vector3& p_pivot_A,const Vector3& p_axis_A,RID p_body_B,const Vector3& p_pivot_B,const Vector3& p_axis_B);
 
-	virtual void hinge_joint_set_param(RID p_joint,HingeJointParam p_param, float p_value);
-	virtual float hinge_joint_get_param(RID p_joint,HingeJointParam p_param) const;
+	virtual void hinge_joint_set_param(RID p_joint,HingeJointParam p_param, real_t p_value);
+	virtual real_t hinge_joint_get_param(RID p_joint,HingeJointParam p_param) const;
 
 	virtual void hinge_joint_set_flag(RID p_joint,HingeJointFlag p_flag, bool p_value);
 	virtual bool hinge_joint_get_flag(RID p_joint,HingeJointFlag p_flag) const;
@@ -241,18 +242,18 @@ public:
 
 	virtual RID joint_create_slider(RID p_body_A,const Transform& p_local_frame_A,RID p_body_B,const Transform& p_local_frame_B); //reference frame is A
 
-	virtual void slider_joint_set_param(RID p_joint,SliderJointParam p_param, float p_value);
-	virtual float slider_joint_get_param(RID p_joint,SliderJointParam p_param) const;
+	virtual void slider_joint_set_param(RID p_joint,SliderJointParam p_param, real_t p_value);
+	virtual real_t slider_joint_get_param(RID p_joint,SliderJointParam p_param) const;
 
 	virtual RID joint_create_cone_twist(RID p_body_A,const Transform& p_local_frame_A,RID p_body_B,const Transform& p_local_frame_B); //reference frame is A
 
-	virtual void cone_twist_joint_set_param(RID p_joint,ConeTwistJointParam p_param, float p_value);
-	virtual float cone_twist_joint_get_param(RID p_joint,ConeTwistJointParam p_param) const;
+	virtual void cone_twist_joint_set_param(RID p_joint,ConeTwistJointParam p_param, real_t p_value);
+	virtual real_t cone_twist_joint_get_param(RID p_joint,ConeTwistJointParam p_param) const;
 
 	virtual RID joint_create_generic_6dof(RID p_body_A,const Transform& p_local_frame_A,RID p_body_B,const Transform& p_local_frame_B); //reference frame is A
 
-	virtual void generic_6dof_joint_set_param(RID p_joint,Vector3::Axis,G6DOFJointAxisParam p_param, float p_value);
-	virtual float generic_6dof_joint_get_param(RID p_joint,Vector3::Axis,G6DOFJointAxisParam p_param);
+	virtual void generic_6dof_joint_set_param(RID p_joint,Vector3::Axis,G6DOFJointAxisParam p_param, real_t p_value);
+	virtual real_t generic_6dof_joint_get_param(RID p_joint,Vector3::Axis,G6DOFJointAxisParam p_param);
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint,Vector3::Axis,G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint,Vector3::Axis,G6DOFJointAxisFlag p_flag);
@@ -280,7 +281,7 @@ public:
 
 	virtual void set_active(bool p_active);
 	virtual void init();
-	virtual void step(float p_step);
+	virtual void step(real_t p_step);
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();

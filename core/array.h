@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,8 +53,6 @@ public:
 	bool empty() const;
 	void clear();
 
-	bool is_shared() const;
-
 	bool operator==(const Array& p_array) const;
 
 	uint32_t hash() const;
@@ -87,7 +85,7 @@ public:
 	Variant pop_front();
 
 	Array(const Array& p_from);
-	Array(bool p_shared=false);
+	Array();
 	~Array();
 
 };

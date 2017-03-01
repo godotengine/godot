@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "cube_grid_theme_editor_plugin.h"
 
+#if 0
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
@@ -150,8 +151,8 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 		 VS::ViewportRect vr;
 		 vr.x=0;
 		 vr.y=0;
-		 vr.width=EditorSettings::get_singleton()->get("grid_map/preview_size");
-		 vr.height=EditorSettings::get_singleton()->get("grid_map/preview_size");
+		 vr.width=EditorSettings::get_singleton()->get("editors/grid_map/preview_size");
+		 vr.height=EditorSettings::get_singleton()->get("editors/grid_map/preview_size");
 		 VS::get_singleton()->viewport_set_rect(vp,vr);
 		 VS::get_singleton()->viewport_set_as_render_target(vp,true);
 		 VS::get_singleton()->viewport_set_render_target_update_mode(vp,VS::RENDER_TARGET_UPDATE_ALWAYS);
@@ -178,8 +179,8 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			Vector3 ofs = aabb.pos + aabb.size*0.5;
 			aabb.pos-=ofs;
 			Transform xform;
-			xform.basis=Matrix3().rotated(Vector3(0,1,0),Math_PI*0.25);
-			xform.basis = Matrix3().rotated(Vector3(1,0,0),-Math_PI*0.25)*xform.basis;
+			xform.basis=Matrix3().rotated(Vector3(0,1,0),-Math_PI*0.25);
+			xform.basis = Matrix3().rotated(Vector3(1,0,0),Math_PI*0.25)*xform.basis;
 			AABB rot_aabb = xform.xform(aabb);
 			print_line("rot_aabb: "+rot_aabb);
 			float m = MAX(rot_aabb.size.x,rot_aabb.size.y)*0.5;
@@ -202,7 +203,7 @@ void MeshLibraryEditor::_import_scene(Node *p_scene, Ref<MeshLibrary> p_library,
 			it->create_from_image(img);
 			p_library->set_item_preview(id,it);
 
-//					print_line("loaded image, size: "+rtos(m)+" dist: "+rtos(dist)+" empty?"+itos(img.empty())+" w: "+itos(it->get_width())+" h: "+itos(it->get_height()));
+			//print_line("loaded image, size: "+rtos(m)+" dist: "+rtos(dist)+" empty?"+itos(img.empty())+" w: "+itos(it->get_width())+" h: "+itos(it->get_height()));
 			VS::get_singleton()->free(inst);
 		 }
 
@@ -275,9 +276,9 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 
 void MeshLibraryEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_cbk",&MeshLibraryEditor::_menu_cbk);
-	ObjectTypeDB::bind_method("_menu_confirm",&MeshLibraryEditor::_menu_confirm);
-	ObjectTypeDB::bind_method("_import_scene_cbk",&MeshLibraryEditor::_import_scene_cbk);
+	ClassDB::bind_method("_menu_cbk",&MeshLibraryEditor::_menu_cbk);
+	ClassDB::bind_method("_menu_confirm",&MeshLibraryEditor::_menu_confirm);
+	ClassDB::bind_method("_import_scene_cbk",&MeshLibraryEditor::_import_scene_cbk);
 }
 
 MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
@@ -309,7 +310,7 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Import from Scene"),MENU_OPTION_IMPORT_FROM_SCENE);
 	options->get_popup()->add_item(TTR("Update from Scene"),MENU_OPTION_UPDATE_FROM_SCENE);
 	options->get_popup()->set_item_disabled(options->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE),true);
-	options->get_popup()->connect("item_pressed", this,"_menu_cbk");
+	options->get_popup()->connect("id_pressed", this,"_menu_cbk");
 	menu=options;
 	editor=p_editor;
 	cd = memnew(ConfirmationDialog);
@@ -342,7 +343,7 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible){
 
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 
-	EDITOR_DEF("grid_map/preview_size",64);
+	EDITOR_DEF("editors/grid_map/preview_size",64);
 	theme_editor = memnew( MeshLibraryEditor(p_node) );
 
 	p_node->get_viewport()->add_child(theme_editor);
@@ -353,4 +354,4 @@ MeshLibraryEditorPlugin::MeshLibraryEditorPlugin(EditorNode *p_node) {
 	theme_editor->hide();
 
 }
-
+#endif

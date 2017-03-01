@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 			cache.buffer.resize(p_size);
 
 			// on dvector
-			//DVector<uint8_t>::Write write = cache.buffer.write();
+			//PoolVector<uint8_t>::Write write = cache.buffer.write();
 			//f.get_buffer(write.ptr(), p_size);
 
 			// on vector
@@ -127,10 +127,11 @@ public:
 		set_error(OK);
 	};
 
-//	static void make_default() {
-
-		//FileAccess::create_func = FileAccessBufferedFA<T>::create;
-//	};
+	/*
+	static void make_default() {
+		FileAccess::create_func = FileAccessBufferedFA<T>::create;
+	};
+	*/
 
 	virtual uint64_t _get_modified_time(const String& p_file) {
 

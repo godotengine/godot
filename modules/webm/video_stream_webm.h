@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@ class OpusVorbisDecoder;
 
 class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 
-	OBJ_TYPE(VideoStreamPlaybackWebm, VideoStreamPlayback)
+	GDCLASS(VideoStreamPlaybackWebm, VideoStreamPlayback)
 
 	String file_name;
 	int audio_track;
@@ -56,7 +56,7 @@ class VideoStreamPlaybackWebm : public VideoStreamPlayback {
 	double delay_compensation;
 	double time, video_frame_delay, video_pos;
 
-	DVector<uint8_t> frame_data;
+	PoolVector<uint8_t> frame_data;
 	Ref<ImageTexture> texture;
 
 	int16_t *pcm;
@@ -102,7 +102,7 @@ private:
 
 class VideoStreamWebm : public VideoStream {
 
-	OBJ_TYPE(VideoStreamWebm, VideoStream)
+	GDCLASS(VideoStreamWebm, VideoStream)
 
 	String file;
 	int audio_track;

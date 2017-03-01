@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,9 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "variant.h"
+
 #include "object.h"
 #include "script_language.h"
 #include "core_string_names.h"
+
 Variant::operator bool() const {
 
 	bool b;
@@ -47,12 +49,12 @@ bool Variant::booleanize(bool &r_valid) const {
 		case STRING: return (*reinterpret_cast<const String*>(_data._mem))!="";
 		case VECTOR2:
 		case RECT2:
-		case MATRIX32:
+		case TRANSFORM2D:
 		case VECTOR3:
 		case PLANE:
-		case _AABB:
+		case RECT3:
 		case QUAT:
-		case MATRIX3:
+		case BASIS:
 		case TRANSFORM:
 		case COLOR:
 		case IMAGE: r_valid=false; return false;
@@ -62,13 +64,13 @@ bool Variant::booleanize(bool &r_valid) const {
 		case INPUT_EVENT:
 		case DICTIONARY:
 		case ARRAY:
-		case RAW_ARRAY:
-		case INT_ARRAY:
-		case REAL_ARRAY:
-		case STRING_ARRAY:
-		case VECTOR2_ARRAY:
-		case VECTOR3_ARRAY:
-		case COLOR_ARRAY:
+		case POOL_BYTE_ARRAY:
+		case POOL_INT_ARRAY:
+		case POOL_REAL_ARRAY:
+		case POOL_STRING_ARRAY:
+		case POOL_VECTOR2_ARRAY:
+		case POOL_VECTOR3_ARRAY:
+		case POOL_COLOR_ARRAY:
 			r_valid=false;
 			return false;
 			default: {}
@@ -186,16 +188,16 @@ case m_name: {	\
 		r_valid=false;\
 		return;\
 	}\
-	const DVector<m_type> &array_a=*reinterpret_cast<const DVector<m_type> *>(p_a._data._mem);\
-	const DVector<m_type> &array_b=*reinterpret_cast<const DVector<m_type> *>(p_b._data._mem);\
+	const PoolVector<m_type> &array_a=*reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem);\
+	const PoolVector<m_type> &array_b=*reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem);\
 \
 	int a_len = array_a.size();\
 	if (a_len m_opa array_b.size()){\
 		_RETURN( m_ret_s);\
 	}else {\
 \
-		DVector<m_type>::Read ra = array_a.read();\
-		DVector<m_type>::Read rb = array_b.read();\
+		PoolVector<m_type>::Read ra = array_a.read();\
+		PoolVector<m_type>::Read rb = array_b.read();\
 \
 		for(int i=0;i<a_len;i++) {\
 			if (ra[i] m_opb rb[i])\
@@ -212,9 +214,9 @@ case m_name: {	\
 		r_valid=false;\
 		_RETURN( NIL);\
 	}\
-	const DVector<m_type> &array_a=*reinterpret_cast<const DVector<m_type> *>(p_a._data._mem);\
-	const DVector<m_type> &array_b=*reinterpret_cast<const DVector<m_type> *>(p_b._data._mem);\
-	DVector<m_type> sum = array_a;\
+	const PoolVector<m_type> &array_a=*reinterpret_cast<const PoolVector<m_type> *>(p_a._data._mem);\
+	const PoolVector<m_type> &array_b=*reinterpret_cast<const PoolVector<m_type> *>(p_b._data._mem);\
+	PoolVector<m_type> sum = array_a;\
 	sum.append_array(array_b);\
 	_RETURN( sum );\
 }
@@ -262,12 +264,12 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_STR(==,STRING,String);
 				DEFAULT_OP_LOCALMEM(==,VECTOR2,Vector2);
 				DEFAULT_OP_LOCALMEM(==,RECT2,Rect2);
-				DEFAULT_OP_PTRREF(==,MATRIX32,_matrix32);
+				DEFAULT_OP_PTRREF(==,TRANSFORM2D,_transform2d);
 				DEFAULT_OP_LOCALMEM(==,VECTOR3,Vector3);
 				DEFAULT_OP_LOCALMEM(==,PLANE,Plane);
 				DEFAULT_OP_LOCALMEM(==,QUAT,Quat);
-				DEFAULT_OP_PTRREF(==,_AABB,_aabb);
-				DEFAULT_OP_PTRREF(==,MATRIX3,_matrix3);
+				DEFAULT_OP_PTRREF(==,RECT3,_rect3);
+				DEFAULT_OP_PTRREF(==,BASIS,_basis);
 				DEFAULT_OP_PTRREF(==,TRANSFORM,_transform);
 
 				DEFAULT_OP_LOCALMEM(==,COLOR,Color);
@@ -316,13 +318,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				} break;
 
 
-				DEFAULT_OP_ARRAY_EQ(RAW_ARRAY,uint8_t);
-				DEFAULT_OP_ARRAY_EQ(INT_ARRAY,int);
-				DEFAULT_OP_ARRAY_EQ(REAL_ARRAY,real_t);
-				DEFAULT_OP_ARRAY_EQ(STRING_ARRAY,String);
-				DEFAULT_OP_ARRAY_EQ(VECTOR2_ARRAY,Vector3);
-				DEFAULT_OP_ARRAY_EQ(VECTOR3_ARRAY,Vector3);
-				DEFAULT_OP_ARRAY_EQ(COLOR_ARRAY,Color);
+				DEFAULT_OP_ARRAY_EQ(POOL_BYTE_ARRAY,uint8_t);
+				DEFAULT_OP_ARRAY_EQ(POOL_INT_ARRAY,int);
+				DEFAULT_OP_ARRAY_EQ(POOL_REAL_ARRAY,real_t);
+				DEFAULT_OP_ARRAY_EQ(POOL_STRING_ARRAY,String);
+				DEFAULT_OP_ARRAY_EQ(POOL_VECTOR2_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_EQ(POOL_VECTOR3_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_EQ(POOL_COLOR_ARRAY,Color);
 
 				case VARIANT_MAX: {
 					r_valid=false;
@@ -354,12 +356,12 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_STR(<,STRING,String);
 				DEFAULT_OP_LOCALMEM(<,VECTOR2,Vector2);
 				DEFAULT_OP_FAIL(RECT2);
-				DEFAULT_OP_FAIL(MATRIX32);
+				DEFAULT_OP_FAIL(TRANSFORM2D);
 				DEFAULT_OP_LOCALMEM(<,VECTOR3,Vector3);
 				DEFAULT_OP_FAIL(PLANE);
 				DEFAULT_OP_FAIL(QUAT);
-				DEFAULT_OP_FAIL(_AABB);
-				DEFAULT_OP_FAIL(MATRIX3);
+				DEFAULT_OP_FAIL(RECT3);
+				DEFAULT_OP_FAIL(BASIS);
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
@@ -393,13 +395,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					_RETURN( false );
 
 				} break;
-				DEFAULT_OP_ARRAY_LT(RAW_ARRAY,uint8_t);
-				DEFAULT_OP_ARRAY_LT(INT_ARRAY,int);
-				DEFAULT_OP_ARRAY_LT(REAL_ARRAY,real_t);
-				DEFAULT_OP_ARRAY_LT(STRING_ARRAY,String);
-				DEFAULT_OP_ARRAY_LT(VECTOR2_ARRAY,Vector3);
-				DEFAULT_OP_ARRAY_LT(VECTOR3_ARRAY,Vector3);
-				DEFAULT_OP_ARRAY_LT(COLOR_ARRAY,Color);
+				DEFAULT_OP_ARRAY_LT(POOL_BYTE_ARRAY,uint8_t);
+				DEFAULT_OP_ARRAY_LT(POOL_INT_ARRAY,int);
+				DEFAULT_OP_ARRAY_LT(POOL_REAL_ARRAY,real_t);
+				DEFAULT_OP_ARRAY_LT(POOL_STRING_ARRAY,String);
+				DEFAULT_OP_ARRAY_LT(POOL_VECTOR2_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_LT(POOL_VECTOR3_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_LT(POOL_COLOR_ARRAY,Color);
 				case VARIANT_MAX: {
 					r_valid=false;
 					return;
@@ -420,12 +422,12 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_STR(<=,STRING,String);
 				DEFAULT_OP_LOCALMEM(<=,VECTOR2,Vector2);
 				DEFAULT_OP_FAIL(RECT2);
-				DEFAULT_OP_FAIL(MATRIX32);
+				DEFAULT_OP_FAIL(TRANSFORM2D);
 				DEFAULT_OP_LOCALMEM(<=,VECTOR3,Vector3);
 				DEFAULT_OP_FAIL(PLANE);
 				DEFAULT_OP_FAIL(QUAT);
-				DEFAULT_OP_FAIL(_AABB);
-				DEFAULT_OP_FAIL(MATRIX3);
+				DEFAULT_OP_FAIL(RECT3);
+				DEFAULT_OP_FAIL(BASIS);
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
@@ -440,13 +442,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 				DEFAULT_OP_FAIL(ARRAY);
-				DEFAULT_OP_FAIL(RAW_ARRAY);
-				DEFAULT_OP_FAIL(INT_ARRAY);
-				DEFAULT_OP_FAIL(REAL_ARRAY);
-				DEFAULT_OP_FAIL(STRING_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-				DEFAULT_OP_FAIL(COLOR_ARRAY);
+				DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
+				DEFAULT_OP_FAIL(POOL_INT_ARRAY);
+				DEFAULT_OP_FAIL(POOL_REAL_ARRAY);
+				DEFAULT_OP_FAIL(POOL_STRING_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR2_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR3_ARRAY);
+				DEFAULT_OP_FAIL(POOL_COLOR_ARRAY);
 				case VARIANT_MAX: {
 					r_valid=false;
 					return;
@@ -484,12 +486,12 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					DEFAULT_OP_STR(+,STRING,String);
 					DEFAULT_OP_LOCALMEM(+,VECTOR2,Vector2);
 					DEFAULT_OP_FAIL(RECT2);
-					DEFAULT_OP_FAIL(MATRIX32);
+					DEFAULT_OP_FAIL(TRANSFORM2D);
 					DEFAULT_OP_LOCALMEM(+,VECTOR3,Vector3);
 					DEFAULT_OP_FAIL(PLANE);
 					DEFAULT_OP_LOCALMEM(+, QUAT, Quat);
-					DEFAULT_OP_FAIL(_AABB);
-					DEFAULT_OP_FAIL(MATRIX3);
+					DEFAULT_OP_FAIL(RECT3);
+					DEFAULT_OP_FAIL(BASIS);
 					DEFAULT_OP_FAIL(TRANSFORM);
 
 					DEFAULT_OP_FAIL(COLOR);
@@ -507,7 +509,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						}
 						const Array &array_a=*reinterpret_cast<const Array *>(p_a._data._mem);
 						const Array &array_b=*reinterpret_cast<const Array *>(p_b._data._mem);
-						Array sum(array_a.is_shared() || array_b.is_shared());
+						Array sum;
 						int asize=array_a.size();
 						int bsize=array_b.size();
 						sum.resize(asize+bsize);
@@ -517,13 +519,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 							sum[i+asize]=array_b[i];
 						_RETURN( sum );
 					}
-					DEFAULT_OP_ARRAY_ADD(RAW_ARRAY,uint8_t);
-					DEFAULT_OP_ARRAY_ADD(INT_ARRAY,int);
-					DEFAULT_OP_ARRAY_ADD(REAL_ARRAY,real_t);
-					DEFAULT_OP_ARRAY_ADD(STRING_ARRAY,String);
-					DEFAULT_OP_ARRAY_ADD(VECTOR2_ARRAY,Vector2);
-					DEFAULT_OP_ARRAY_ADD(VECTOR3_ARRAY,Vector3);
-					DEFAULT_OP_ARRAY_ADD(COLOR_ARRAY,Color);
+					DEFAULT_OP_ARRAY_ADD(POOL_BYTE_ARRAY,uint8_t);
+					DEFAULT_OP_ARRAY_ADD(POOL_INT_ARRAY,int);
+					DEFAULT_OP_ARRAY_ADD(POOL_REAL_ARRAY,real_t);
+					DEFAULT_OP_ARRAY_ADD(POOL_STRING_ARRAY,String);
+					DEFAULT_OP_ARRAY_ADD(POOL_VECTOR2_ARRAY,Vector2);
+					DEFAULT_OP_ARRAY_ADD(POOL_VECTOR3_ARRAY,Vector3);
+					DEFAULT_OP_ARRAY_ADD(POOL_COLOR_ARRAY,Color);
 					case VARIANT_MAX: {
 						r_valid=false;
 						return;
@@ -542,12 +544,12 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(STRING);
 				DEFAULT_OP_LOCALMEM(-,VECTOR2,Vector2);
 				DEFAULT_OP_FAIL(RECT2);
-				DEFAULT_OP_FAIL(MATRIX32);
+				DEFAULT_OP_FAIL(TRANSFORM2D);
 				DEFAULT_OP_LOCALMEM(-,VECTOR3,Vector3);
 				DEFAULT_OP_FAIL(PLANE);
 				DEFAULT_OP_LOCALMEM(-, QUAT, Quat);
-				DEFAULT_OP_FAIL(_AABB);
-				DEFAULT_OP_FAIL(MATRIX3);
+				DEFAULT_OP_FAIL(RECT3);
+				DEFAULT_OP_FAIL(BASIS);
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
@@ -558,13 +560,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 				DEFAULT_OP_FAIL(ARRAY);
-				DEFAULT_OP_FAIL(RAW_ARRAY);
-				DEFAULT_OP_FAIL(INT_ARRAY);
-				DEFAULT_OP_FAIL(REAL_ARRAY);
-				DEFAULT_OP_FAIL(STRING_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-				DEFAULT_OP_FAIL(COLOR_ARRAY);
+				DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
+				DEFAULT_OP_FAIL(POOL_INT_ARRAY);
+				DEFAULT_OP_FAIL(POOL_REAL_ARRAY);
+				DEFAULT_OP_FAIL(POOL_STRING_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR2_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR3_ARRAY);
+				DEFAULT_OP_FAIL(POOL_COLOR_ARRAY);
 				case VARIANT_MAX: {
 					r_valid=false;
 					return;
@@ -583,13 +585,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(STRING);
 				DEFAULT_OP_LOCALMEM_NUM(*,VECTOR2,Vector2);
 				DEFAULT_OP_FAIL(RECT2);
-				case MATRIX32: {
+				case TRANSFORM2D: {
 
-					if (p_b.type==MATRIX32) {
-						_RETURN( *p_a._data._matrix32 * *p_b._data._matrix32 );
+					if (p_b.type==TRANSFORM2D) {
+						_RETURN( *p_a._data._transform2d * *p_b._data._transform2d );
 					};
 					if (p_b.type==VECTOR2) {
-						_RETURN( p_a._data._matrix32->xform( *(const Vector2*)p_b._data._mem) );
+						_RETURN( p_a._data._transform2d->xform( *(const Vector2*)p_b._data._mem) );
 					};
 					r_valid=false;
 					return;
@@ -615,18 +617,18 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					r_valid=false;
 					return;
 				} break;
-				DEFAULT_OP_FAIL(_AABB);
-				case MATRIX3: {
+				DEFAULT_OP_FAIL(RECT3);
+				case BASIS: {
 
 					switch(p_b.type) {
 						case VECTOR3: {
 
-							_RETURN( p_a._data._matrix3->xform( *(const Vector3*)p_b._data._mem) );
+							_RETURN( p_a._data._basis->xform( *(const Vector3*)p_b._data._mem) );
 
 						} ;
-						case MATRIX3: {
+						case BASIS: {
 
-							_RETURN( *p_a._data._matrix3 * *p_b._data._matrix3 );
+							_RETURN( *p_a._data._basis * *p_b._data._basis );
 
 						};
 						default: {}
@@ -660,13 +662,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 				DEFAULT_OP_FAIL(ARRAY);
-				DEFAULT_OP_FAIL(RAW_ARRAY);
-				DEFAULT_OP_FAIL(INT_ARRAY);
-				DEFAULT_OP_FAIL(REAL_ARRAY);
-				DEFAULT_OP_FAIL(STRING_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-				DEFAULT_OP_FAIL(COLOR_ARRAY);
+				DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
+				DEFAULT_OP_FAIL(POOL_INT_ARRAY);
+				DEFAULT_OP_FAIL(POOL_REAL_ARRAY);
+				DEFAULT_OP_FAIL(POOL_STRING_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR2_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR3_ARRAY);
+				DEFAULT_OP_FAIL(POOL_COLOR_ARRAY);
 				case VARIANT_MAX: {
 					r_valid=false;
 					return;
@@ -683,7 +685,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				case INT: {
 					switch(p_b.type) {
 						case BOOL: {
-							int b = p_b._data._bool;
+							int64_t b = p_b._data._bool;
 							if (b==0) {
 
 								r_valid=false;
@@ -693,7 +695,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 
 						} break;
 						case INT: {
-							int b = p_b._data._int;
+							int64_t b = p_b._data._int;
 							if (b==0) {
 
 								r_valid=false;
@@ -712,7 +714,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(STRING);
 				DEFAULT_OP_LOCALMEM_NUM(/,VECTOR2,Vector2);
 				DEFAULT_OP_FAIL(RECT2);
-				DEFAULT_OP_FAIL(MATRIX32);
+				DEFAULT_OP_FAIL(TRANSFORM2D);
 				DEFAULT_OP_LOCALMEM_NUM(/,VECTOR3,Vector3);
 				DEFAULT_OP_FAIL(PLANE);
 				case QUAT: {
@@ -722,8 +724,8 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					}
 					_RETURN( *reinterpret_cast<const Quat*>(p_a._data._mem) / p_b._data._real);
 				} break;
-				DEFAULT_OP_FAIL(_AABB);
-				DEFAULT_OP_FAIL(MATRIX3);
+				DEFAULT_OP_FAIL(RECT3);
+				DEFAULT_OP_FAIL(BASIS);
 				DEFAULT_OP_FAIL(TRANSFORM);
 
 				DEFAULT_OP_FAIL(COLOR);
@@ -734,13 +736,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
 				DEFAULT_OP_FAIL(ARRAY);
-				DEFAULT_OP_FAIL(RAW_ARRAY);
-				DEFAULT_OP_FAIL(INT_ARRAY);
-				DEFAULT_OP_FAIL(REAL_ARRAY);
-				DEFAULT_OP_FAIL(STRING_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-				DEFAULT_OP_FAIL(COLOR_ARRAY);
+				DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
+				DEFAULT_OP_FAIL(POOL_INT_ARRAY);
+				DEFAULT_OP_FAIL(POOL_REAL_ARRAY);
+				DEFAULT_OP_FAIL(POOL_STRING_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR2_ARRAY);
+				DEFAULT_OP_FAIL(POOL_VECTOR3_ARRAY);
+				DEFAULT_OP_FAIL(POOL_COLOR_ARRAY);
 				case VARIANT_MAX: {
 					r_valid=false;
 					return;
@@ -757,9 +759,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					DEFAULT_OP_FAIL(NIL);
 					DEFAULT_OP_FAIL(STRING);
 					DEFAULT_OP_FAIL(RECT2);
-					DEFAULT_OP_FAIL(MATRIX32);
-					DEFAULT_OP_FAIL(_AABB);
-					DEFAULT_OP_FAIL(MATRIX3);
+					DEFAULT_OP_FAIL(TRANSFORM2D);
+					DEFAULT_OP_FAIL(RECT3);
+					DEFAULT_OP_FAIL(BASIS);
 					DEFAULT_OP_FAIL(TRANSFORM);
 					DEFAULT_OP_NUM_POS(BOOL,_bool);
 					DEFAULT_OP_NUM_POS(INT,_int);
@@ -777,13 +779,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
 					DEFAULT_OP_FAIL(ARRAY);
-					DEFAULT_OP_FAIL(RAW_ARRAY);
-					DEFAULT_OP_FAIL(INT_ARRAY);
-					DEFAULT_OP_FAIL(REAL_ARRAY);
-					DEFAULT_OP_FAIL(STRING_ARRAY);
-					DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-					DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-					DEFAULT_OP_FAIL(COLOR_ARRAY);
+					DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
+					DEFAULT_OP_FAIL(POOL_INT_ARRAY);
+					DEFAULT_OP_FAIL(POOL_REAL_ARRAY);
+					DEFAULT_OP_FAIL(POOL_STRING_ARRAY);
+					DEFAULT_OP_FAIL(POOL_VECTOR2_ARRAY);
+					DEFAULT_OP_FAIL(POOL_VECTOR3_ARRAY);
+					DEFAULT_OP_FAIL(POOL_COLOR_ARRAY);
 					case VARIANT_MAX: {
 						r_valid=false;
 						return;
@@ -802,12 +804,12 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					DEFAULT_OP_FAIL(STRING);
 					DEFAULT_OP_LOCALMEM_NEG(VECTOR2,Vector2);
 					DEFAULT_OP_FAIL(RECT2);
-					DEFAULT_OP_FAIL(MATRIX32);
+					DEFAULT_OP_FAIL(TRANSFORM2D);
 					DEFAULT_OP_LOCALMEM_NEG(VECTOR3,Vector3);
 					DEFAULT_OP_LOCALMEM_NEG(PLANE,Plane);
 					DEFAULT_OP_LOCALMEM_NEG(QUAT,Quat);
-					DEFAULT_OP_FAIL(_AABB);
-					DEFAULT_OP_FAIL(MATRIX3);
+					DEFAULT_OP_FAIL(RECT3);
+					DEFAULT_OP_FAIL(BASIS);
 					DEFAULT_OP_FAIL(TRANSFORM);
 
 					DEFAULT_OP_FAIL(COLOR);
@@ -818,13 +820,13 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					DEFAULT_OP_FAIL(INPUT_EVENT);
 					DEFAULT_OP_FAIL(DICTIONARY);
 					DEFAULT_OP_FAIL(ARRAY);
-					DEFAULT_OP_FAIL(RAW_ARRAY);
-					DEFAULT_OP_FAIL(INT_ARRAY);
-					DEFAULT_OP_FAIL(REAL_ARRAY);
-					DEFAULT_OP_FAIL(STRING_ARRAY);
-					DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-					DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-					DEFAULT_OP_FAIL(COLOR_ARRAY);
+					DEFAULT_OP_FAIL(POOL_BYTE_ARRAY);
+					DEFAULT_OP_FAIL(POOL_INT_ARRAY);
+					DEFAULT_OP_FAIL(POOL_REAL_ARRAY);
+					DEFAULT_OP_FAIL(POOL_STRING_ARRAY);
+					DEFAULT_OP_FAIL(POOL_VECTOR2_ARRAY);
+					DEFAULT_OP_FAIL(POOL_VECTOR3_ARRAY);
+					DEFAULT_OP_FAIL(POOL_COLOR_ARRAY);
 					case VARIANT_MAX: {
 						r_valid=false;
 						return;
@@ -1049,10 +1051,10 @@ Variant Variant::get_named(const StringName& p_index, bool *r_valid) const {
 	} break;
 
 #define DEFAULT_OP_DVECTOR_SET(m_name, dv_type, skip_cond)\
-	DEFAULT_OP_ARRAY_CMD(m_name, DVector<dv_type>, if(skip_cond) return;, arr->set(index, p_value);return)
+	DEFAULT_OP_ARRAY_CMD(m_name, PoolVector<dv_type>, if(skip_cond) return;, arr->set(index, p_value);return)
 
 #define DEFAULT_OP_DVECTOR_GET(m_name, dv_type)\
-	DEFAULT_OP_ARRAY_CMD(m_name, const DVector<dv_type>, ;, return arr->get(index))
+	DEFAULT_OP_ARRAY_CMD(m_name, const PoolVector<dv_type>, ;, return arr->get(index))
 
 void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid) {
 
@@ -1157,7 +1159,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				}
 			}
 		} break;
-		case MATRIX32: {
+		case TRANSFORM2D: {
 
 			if (p_value.type!=Variant::VECTOR2)
 				return;
@@ -1169,7 +1171,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				if (index<0)
 					index += 3;
 				if (index>=0 && index<3) {
-					Matrix32 *v=_data._matrix32;
+					Transform2D *v=_data._transform2d;
 
 					valid=true;
 					v->elements[index]=p_value;
@@ -1179,7 +1181,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 				//scalar name
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
-				Matrix32 *v=_data._matrix32;
+				Transform2D *v=_data._transform2d;
 				if (*str=="x") {
 					valid=true;
 					v->elements[0]=p_value;
@@ -1305,7 +1307,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			}
 
 		} break;
-		case _AABB: {
+		case RECT3: {
 
 			if (p_value.type!=Variant::VECTOR3)
 				return;
@@ -1315,7 +1317,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				//scalar name
 
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
-				AABB *v=_data._aabb;
+				Rect3 *v=_data._rect3;
 				if (*str=="pos") {
 					valid=true;
 					v->pos=p_value;
@@ -1331,7 +1333,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				}
 			}
 		} break; //sorry naming convention fail :( not like it's used often // 10
-		case MATRIX3: {
+		case BASIS: {
 
 			if (p_value.type!=Variant::VECTOR3)
 				return;
@@ -1343,7 +1345,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 				if (index<0)
 					index += 3;
 				if (index>=0 && index<3) {
-					Matrix3 *v=_data._matrix3;
+					Basis *v=_data._basis;
 
 					valid=true;
 					v->set_axis(index,p_value);
@@ -1352,7 +1354,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			} else if (p_index.get_type()==Variant::STRING) {
 
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
-				Matrix3 *v=_data._matrix3;
+				Basis *v=_data._basis;
 
 				if (*str=="x") {
 					valid=true;
@@ -1391,14 +1393,14 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 						v->basis.set_axis(index,p_value);
 					return;
 				}
-			} if (p_index.get_type()==Variant::STRING) {
+			} else if (p_index.get_type()==Variant::STRING) {
 
 				Transform *v=_data._transform;
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
 
 				if (*str=="basis") {
 
-					if (p_value.type!=Variant::MATRIX3)
+					if (p_value.type!=Variant::BASIS)
 						return;
 					valid=true;
 					v->basis=p_value;
@@ -1744,7 +1746,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_BUTTON) {
+			if (ie.type==InputEvent::JOYPAD_BUTTON) {
 
 				if (str=="button_index") {
 					if (p_value.type!=Variant::REAL && p_value.type!=Variant::INT)
@@ -1769,7 +1771,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_MOTION) {
+			if (ie.type==InputEvent::JOYPAD_MOTION) {
 
 				if (str=="axis") {
 					if (p_value.type!=Variant::REAL && p_value.type!=Variant::INT)
@@ -1887,13 +1889,13 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			return;
 		} break;		// 20
 		DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index]=p_value;return)
-		DEFAULT_OP_DVECTOR_SET(RAW_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-		DEFAULT_OP_DVECTOR_SET(INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-		DEFAULT_OP_DVECTOR_SET(REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
-		DEFAULT_OP_DVECTOR_SET(STRING_ARRAY, String, p_value.type != Variant::STRING) // 25
-		DEFAULT_OP_DVECTOR_SET(VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2)
-		DEFAULT_OP_DVECTOR_SET(VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
-		DEFAULT_OP_DVECTOR_SET(COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
+		DEFAULT_OP_DVECTOR_SET(POOL_BYTE_ARRAY, uint8_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+		DEFAULT_OP_DVECTOR_SET(POOL_INT_ARRAY, int, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+		DEFAULT_OP_DVECTOR_SET(POOL_REAL_ARRAY, real_t, p_value.type != Variant::REAL && p_value.type != Variant::INT)
+		DEFAULT_OP_DVECTOR_SET(POOL_STRING_ARRAY, String, p_value.type != Variant::STRING) // 25
+		DEFAULT_OP_DVECTOR_SET(POOL_VECTOR2_ARRAY, Vector2, p_value.type != Variant::VECTOR2)
+		DEFAULT_OP_DVECTOR_SET(POOL_VECTOR3_ARRAY, Vector3, p_value.type != Variant::VECTOR3)
+		DEFAULT_OP_DVECTOR_SET(POOL_COLOR_ARRAY, Color, p_value.type != Variant::COLOR)
 		default: return;
 	}
 
@@ -2007,7 +2009,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case MATRIX32: {
+		case TRANSFORM2D: {
 
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
@@ -2016,7 +2018,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				if (index<0)
 					index += 3;
 				if (index>=0 && index<3) {
-					const Matrix32 *v=_data._matrix32;
+					const Transform2D *v=_data._transform2d;
 
 					valid=true;
 					return v->elements[index];
@@ -2025,7 +2027,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 				//scalar name
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
-				const Matrix32 *v=_data._matrix32;
+				const Transform2D *v=_data._transform2d;
 				if (*str=="x") {
 					valid=true;
 					return v->elements[0];
@@ -2086,13 +2088,13 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case _AABB: {
+		case RECT3: {
 
 			if (p_index.get_type()==Variant::STRING) {
 				//scalar name
 
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
-				const AABB *v=_data._aabb;
+				const Rect3 *v=_data._rect3;
 				if (*str=="pos") {
 					valid=true;
 					return v->pos;
@@ -2105,7 +2107,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				}
 			}
 		} break; //sorry naming convention fail :( not like it's used often // 10
-		case MATRIX3: {
+		case BASIS: {
 
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
@@ -2113,7 +2115,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				if (index<0)
 					index += 3;
 				if (index>=0 && index<3) {
-					const Matrix3 *v=_data._matrix3;
+					const Basis *v=_data._basis;
 
 					valid=true;
 					return v->get_axis(index);
@@ -2121,7 +2123,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			} else if (p_index.get_type()==Variant::STRING) {
 
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
-				const Matrix3 *v=_data._matrix3;
+				const Basis *v=_data._basis;
 
 				if (*str=="x") {
 					valid=true;
@@ -2148,7 +2150,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 					valid=true;
 					return index==3?v->origin:v->basis.get_axis(index);
 				}
-			} if (p_index.get_type()==Variant::STRING) {
+			} else if (p_index.get_type()==Variant::STRING) {
 
 				const Transform *v=_data._transform;
 				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
@@ -2367,7 +2369,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_BUTTON) {
+			if (ie.type==InputEvent::JOYPAD_BUTTON) {
 
 				if (str=="button_index") {
 					valid=true;
@@ -2382,7 +2384,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_MOTION) {
+			if (ie.type==InputEvent::JOYPAD_MOTION) {
 
 				if (str=="axis") {
 					valid=true;
@@ -2471,13 +2473,13 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 			}
 		} break;		// 20
 		DEFAULT_OP_ARRAY_CMD(ARRAY, const Array, ;, return (*arr)[index])
-		DEFAULT_OP_DVECTOR_GET(RAW_ARRAY, uint8_t)
-		DEFAULT_OP_DVECTOR_GET(INT_ARRAY, int)
-		DEFAULT_OP_DVECTOR_GET(REAL_ARRAY, real_t)
-		DEFAULT_OP_DVECTOR_GET(STRING_ARRAY, String)
-		DEFAULT_OP_DVECTOR_GET(VECTOR2_ARRAY, Vector2)
-		DEFAULT_OP_DVECTOR_GET(VECTOR3_ARRAY, Vector3)
-		DEFAULT_OP_DVECTOR_GET(COLOR_ARRAY, Color)
+		DEFAULT_OP_DVECTOR_GET(POOL_BYTE_ARRAY, uint8_t)
+		DEFAULT_OP_DVECTOR_GET(POOL_INT_ARRAY, int)
+		DEFAULT_OP_DVECTOR_GET(POOL_REAL_ARRAY, real_t)
+		DEFAULT_OP_DVECTOR_GET(POOL_STRING_ARRAY, String)
+		DEFAULT_OP_DVECTOR_GET(POOL_VECTOR2_ARRAY, Vector2)
+		DEFAULT_OP_DVECTOR_GET(POOL_VECTOR3_ARRAY, Vector3)
+		DEFAULT_OP_DVECTOR_GET(POOL_COLOR_ARRAY, Color)
 		default: return Variant();
 	}
 
@@ -2557,14 +2559,14 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			return false;
 
 		} break;
-		case RAW_ARRAY: {
+		case POOL_BYTE_ARRAY: {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-				const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>* >(_data._mem);
+				const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>* >(_data._mem);
 				int l=arr->size();
 				if (l) {
-					DVector<uint8_t>::Read r = arr->read();
+					PoolVector<uint8_t>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2576,14 +2578,14 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case INT_ARRAY: {
+		case POOL_INT_ARRAY: {
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				int index = p_index;
-				const DVector<int> *arr=reinterpret_cast<const DVector<int>* >(_data._mem);
+				const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>* >(_data._mem);
 				int l=arr->size();
 				if (l) {
-					DVector<int>::Read r = arr->read();
+					PoolVector<int>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2594,15 +2596,15 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 				return false;
 			}
 		} break;
-		case REAL_ARRAY: {
+		case POOL_REAL_ARRAY: {
 
 			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
 
 				real_t index = p_index;
-				const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>* >(_data._mem);
+				const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>* >(_data._mem);
 				int l=arr->size();
 				if (l) {
-					DVector<real_t>::Read r = arr->read();
+					PoolVector<real_t>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2614,15 +2616,15 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case STRING_ARRAY: {
+		case POOL_STRING_ARRAY: {
 			if (p_index.get_type()==Variant::STRING) {
 
 				String index = p_index;
-				const DVector<String> *arr=reinterpret_cast<const DVector<String>* >(_data._mem);
+				const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>* >(_data._mem);
 
 				int l=arr->size();
 				if (l) {
-					DVector<String>::Read r = arr->read();
+					PoolVector<String>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2634,15 +2636,15 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			}
 
 		} break;	//25
-		case VECTOR2_ARRAY: {
+		case POOL_VECTOR2_ARRAY: {
 			if (p_index.get_type()==Variant::VECTOR2) {
 
 				Vector2 index = p_index;
-				const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>* >(_data._mem);
+				const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>* >(_data._mem);
 
 				int l=arr->size();
 				if (l) {
-					DVector<Vector2>::Read r = arr->read();
+					PoolVector<Vector2>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2654,15 +2656,15 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case VECTOR3_ARRAY: {
+		case POOL_VECTOR3_ARRAY: {
 			if (p_index.get_type()==Variant::VECTOR3) {
 
 				Vector3 index = p_index;
-				const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>* >(_data._mem);
+				const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>* >(_data._mem);
 
 				int l=arr->size();
 				if (l) {
-					DVector<Vector3>::Read r = arr->read();
+					PoolVector<Vector3>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2674,17 +2676,17 @@ bool Variant::in(const Variant& p_index, bool *r_valid) const {
 			}
 
 		} break;
-		case COLOR_ARRAY: {
+		case POOL_COLOR_ARRAY: {
 
 			if (p_index.get_type()==Variant::COLOR) {
 
 				Color index = p_index;
-				const DVector<Color> *arr=reinterpret_cast<const DVector<Color>* >(_data._mem);
+				const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>* >(_data._mem);
 
 
 				int l=arr->size();
 				if (l) {
-					DVector<Color>::Read r = arr->read();
+					PoolVector<Color>::Read r = arr->read();
 					for(int i=0;i<l;i++) {
 						if (r[i]==index)
 							return true;
@@ -2729,7 +2731,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back( PropertyInfo(Variant::REAL,"z"));
 
 		} break;
-		case MATRIX32: {
+		case TRANSFORM2D: {
 
 			p_list->push_back( PropertyInfo(Variant::VECTOR2,"x"));
 			p_list->push_back( PropertyInfo(Variant::VECTOR2,"y"));
@@ -2753,12 +2755,12 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back( PropertyInfo(Variant::REAL,"w"));
 
 		} break;
-		case _AABB: {
+		case RECT3: {
 			p_list->push_back( PropertyInfo(Variant::VECTOR3,"pos"));
 			p_list->push_back( PropertyInfo(Variant::VECTOR3,"size"));
 			p_list->push_back( PropertyInfo(Variant::VECTOR3,"end"));
 		} break; //sorry naming convention fail :( not like it's used often // 10
-		case MATRIX3: {
+		case BASIS: {
 
 			p_list->push_back( PropertyInfo(Variant::VECTOR3,"x"));
 			p_list->push_back( PropertyInfo(Variant::VECTOR3,"y"));
@@ -2767,7 +2769,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		} break;
 		case TRANSFORM: {
 
-			p_list->push_back( PropertyInfo(Variant::MATRIX3,"basis"));
+			p_list->push_back( PropertyInfo(Variant::BASIS,"basis"));
 			p_list->push_back( PropertyInfo(Variant::VECTOR3,"origin"));
 
 		} break;
@@ -2836,18 +2838,18 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			if (ie.type==InputEvent::MOUSE_MOTION || ie.type==InputEvent::MOUSE_BUTTON) {
 
 				p_list->push_back( PropertyInfo(Variant::INT,"button_mask") );
-				p_list->push_back( PropertyInfo(Variant::INT,"x") );
-				p_list->push_back( PropertyInfo(Variant::INT,"y") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"x") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"y") );
 				p_list->push_back( PropertyInfo(Variant::VECTOR2,"pos") );
-				p_list->push_back( PropertyInfo(Variant::INT,"global_x") );
-				p_list->push_back( PropertyInfo(Variant::INT,"global_y") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"global_x") );
+				p_list->push_back( PropertyInfo(Variant::REAL,"global_y") );
 				p_list->push_back( PropertyInfo(Variant::VECTOR2,"global_pos") );
 
 
 				if (ie.type==InputEvent::MOUSE_MOTION) {
 
-					p_list->push_back( PropertyInfo(Variant::INT,"relative_x") );
-					p_list->push_back( PropertyInfo(Variant::INT,"relative_y") );
+					p_list->push_back( PropertyInfo(Variant::REAL,"relative_x") );
+					p_list->push_back( PropertyInfo(Variant::REAL,"relative_y") );
 					p_list->push_back( PropertyInfo(Variant::VECTOR2,"relative_pos") );
 					p_list->push_back( PropertyInfo(Variant::REAL,"speed_x") );
 					p_list->push_back( PropertyInfo(Variant::REAL,"speed_y") );
@@ -2863,7 +2865,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_BUTTON) {
+			if (ie.type==InputEvent::JOYPAD_BUTTON) {
 
 				p_list->push_back( PropertyInfo(Variant::INT,"button_index") );
 				p_list->push_back( PropertyInfo(Variant::BOOL,"pressed") );
@@ -2871,7 +2873,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 
 			}
 
-			if (ie.type==InputEvent::JOYSTICK_MOTION) {
+			if (ie.type==InputEvent::JOYPAD_MOTION) {
 
 				p_list->push_back( PropertyInfo(Variant::INT,"axis") );
 				p_list->push_back( PropertyInfo(Variant::REAL,"value") );
@@ -2914,12 +2916,12 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 			}
 			} break;		// 20
 		case ARRAY:
-		case RAW_ARRAY:
-		case INT_ARRAY:
-		case REAL_ARRAY:
-		case STRING_ARRAY:
-		case VECTOR3_ARRAY:
-		case COLOR_ARRAY: {
+		case POOL_BYTE_ARRAY:
+		case POOL_INT_ARRAY:
+		case POOL_REAL_ARRAY:
+		case POOL_STRING_ARRAY:
+		case POOL_VECTOR3_ARRAY:
+		case POOL_COLOR_ARRAY: {
 
 			//nothing
 		} break;
@@ -2934,6 +2936,38 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 
 	valid=true;
 	switch(type) {
+		case INT: {
+			r_iter=0;
+			return _data._int>0;
+		} break;
+		case REAL: {
+			r_iter=0.0;
+			return _data._real>0.0;
+		} break;
+		case VECTOR2: {
+			real_t from = reinterpret_cast<const Vector2*>(_data._mem)->x;
+			real_t to = reinterpret_cast<const Vector2*>(_data._mem)->y;
+
+			r_iter=from;
+
+			return from < to;
+		} break;
+		case VECTOR3: {
+			real_t from = reinterpret_cast<const Vector3*>(_data._mem)->x;
+			real_t to = reinterpret_cast<const Vector3*>(_data._mem)->y;
+			real_t step = reinterpret_cast<const Vector3*>(_data._mem)->z;
+
+				r_iter=from;
+
+			if (from == to ) {
+				return false;
+			} else if (from < to) {
+				return step>0.0;
+			} else {
+				return step<0.0;
+			}
+			//return true;
+		} break;
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
@@ -2949,7 +2983,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 #endif
 			Variant::CallError ce;
 			ce.error=Variant::CallError::CALL_OK;
-			Array ref(true);
+			Array ref;
 			ref.push_back(r_iter);
 			Variant vref=ref;
 			const Variant *refp[]={&vref};
@@ -2991,56 +3025,56 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 			r_iter=0;
 			return true;
 		} break;
-		case RAW_ARRAY: {
-			const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>*>(_data._mem);
+		case POOL_BYTE_ARRAY: {
+			const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
 			return true;
 
 		} break;
-		case INT_ARRAY: {
-			const DVector<int> *arr=reinterpret_cast<const DVector<int>*>(_data._mem);
+		case POOL_INT_ARRAY: {
+			const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
 			return true;
 
 		} break;
-		case REAL_ARRAY: {
-			const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>*>(_data._mem);
+		case POOL_REAL_ARRAY: {
+			const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
 			return true;
 
 		} break;
-		case STRING_ARRAY: {
-			const DVector<String> *arr=reinterpret_cast<const DVector<String>*>(_data._mem);
+		case POOL_STRING_ARRAY: {
+			const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
 			return true;
 		} break;
-		case VECTOR2_ARRAY: {
+		case POOL_VECTOR2_ARRAY: {
 
-			const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>*>(_data._mem);
+			const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
 			return true;
 		} break;
-		case VECTOR3_ARRAY: {
+		case POOL_VECTOR3_ARRAY: {
 
-			const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>*>(_data._mem);
+			const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
 			return true;
 		} break;
-		case COLOR_ARRAY: {
+		case POOL_COLOR_ARRAY: {
 
-			const DVector<Color> *arr=reinterpret_cast<const DVector<Color>*>(_data._mem);
+			const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>*>(_data._mem);
 			if (arr->size()==0)
 				return false;
 			r_iter=0;
@@ -3059,7 +3093,48 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 
 	valid=true;
 	switch(type) {
+		case INT: {
 
+			int64_t idx = r_iter;
+			idx++;
+			if (idx >= _data._int)
+				return false;
+			r_iter = idx;
+			return true;
+		} break;
+		case REAL: {
+
+			double idx = r_iter;
+			idx+=1.0;
+			if (idx >= _data._real)
+				return false;
+			r_iter = idx;
+			return true;
+		} break;
+		case VECTOR2: {
+			real_t idx = r_iter;
+			idx+=1.0;
+			if (idx>=reinterpret_cast<const Vector2*>(_data._mem)->y)
+				return false;
+			r_iter=idx;
+			return true;
+		} break;
+		case VECTOR3: {
+			real_t to = reinterpret_cast<const Vector3*>(_data._mem)->y;
+			real_t step = reinterpret_cast<const Vector3*>(_data._mem)->z;
+
+			real_t idx = r_iter;
+			idx+=step;
+
+			if (step<0.0 && idx <= to)
+				return false;
+
+			if (step>0.0 && idx >= to)
+				return false;
+
+			r_iter=idx;
+			return true;
+		} break;
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
@@ -3075,7 +3150,7 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 #endif
 			Variant::CallError ce;
 			ce.error=Variant::CallError::CALL_OK;
-			Array ref(true);
+			Array ref;
 			ref.push_back(r_iter);
 			Variant vref=ref;
 			const Variant *refp[]={&vref};
@@ -3122,8 +3197,8 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			r_iter=idx;
 			return true;
 		} break;
-		case RAW_ARRAY: {
-			const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>*>(_data._mem);
+		case POOL_BYTE_ARRAY: {
+			const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3132,8 +3207,8 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			return true;
 
 		} break;
-		case INT_ARRAY: {
-			const DVector<int> *arr=reinterpret_cast<const DVector<int>*>(_data._mem);
+		case POOL_INT_ARRAY: {
+			const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3142,8 +3217,8 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			return true;
 
 		} break;
-		case REAL_ARRAY: {
-			const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>*>(_data._mem);
+		case POOL_REAL_ARRAY: {
+			const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3152,8 +3227,8 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			return true;
 
 		} break;
-		case STRING_ARRAY: {
-			const DVector<String> *arr=reinterpret_cast<const DVector<String>*>(_data._mem);
+		case POOL_STRING_ARRAY: {
+			const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3161,9 +3236,9 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			r_iter=idx;
 			return true;
 		} break;
-		case VECTOR2_ARRAY: {
+		case POOL_VECTOR2_ARRAY: {
 
-			const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>*>(_data._mem);
+			const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3171,9 +3246,9 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			r_iter=idx;
 			return true;
 		} break;
-		case VECTOR3_ARRAY: {
+		case POOL_VECTOR3_ARRAY: {
 
-			const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>*>(_data._mem);
+			const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3181,9 +3256,9 @@ bool Variant::iter_next(Variant& r_iter,bool &valid) const {
 			r_iter=idx;
 			return true;
 		} break;
-		case COLOR_ARRAY: {
+		case POOL_COLOR_ARRAY: {
 
-			const DVector<Color> *arr=reinterpret_cast<const DVector<Color>*>(_data._mem);
+			const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>*>(_data._mem);
 			int idx=r_iter;
 			idx++;
 			if (idx>=arr->size())
@@ -3204,6 +3279,22 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 
 	r_valid=true;
 	switch(type) {
+		case INT: {
+
+			return r_iter;
+		} break;
+		case REAL: {
+
+			return r_iter;
+		} break;
+		case VECTOR2: {
+
+			return r_iter;
+		} break;
+		case VECTOR3: {
+
+			return r_iter;
+		} break;
 		case OBJECT: {
 
 #ifdef DEBUG_ENABLED
@@ -3254,8 +3345,8 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case RAW_ARRAY: {
-			const DVector<uint8_t> *arr=reinterpret_cast<const DVector<uint8_t>*>(_data._mem);
+		case POOL_BYTE_ARRAY: {
+			const PoolVector<uint8_t> *arr=reinterpret_cast<const PoolVector<uint8_t>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3265,8 +3356,8 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case INT_ARRAY: {
-			const DVector<int> *arr=reinterpret_cast<const DVector<int>*>(_data._mem);
+		case POOL_INT_ARRAY: {
+			const PoolVector<int> *arr=reinterpret_cast<const PoolVector<int>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3276,8 +3367,8 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case REAL_ARRAY: {
-			const DVector<real_t> *arr=reinterpret_cast<const DVector<real_t>*>(_data._mem);
+		case POOL_REAL_ARRAY: {
+			const PoolVector<real_t> *arr=reinterpret_cast<const PoolVector<real_t>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3287,8 +3378,8 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case STRING_ARRAY: {
-			const DVector<String> *arr=reinterpret_cast<const DVector<String>*>(_data._mem);
+		case POOL_STRING_ARRAY: {
+			const PoolVector<String> *arr=reinterpret_cast<const PoolVector<String>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3298,9 +3389,9 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case VECTOR2_ARRAY: {
+		case POOL_VECTOR2_ARRAY: {
 
-			const DVector<Vector2> *arr=reinterpret_cast<const DVector<Vector2>*>(_data._mem);
+			const PoolVector<Vector2> *arr=reinterpret_cast<const PoolVector<Vector2>*>(_data._mem);
 			int idx=r_iter;
 	#ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3310,9 +3401,9 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 	#endif
 			return arr->get(idx);
 		} break;
-		case VECTOR3_ARRAY: {
+		case POOL_VECTOR3_ARRAY: {
 
-			const DVector<Vector3> *arr=reinterpret_cast<const DVector<Vector3>*>(_data._mem);
+			const PoolVector<Vector3> *arr=reinterpret_cast<const PoolVector<Vector3>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3322,9 +3413,9 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 #endif
 			return arr->get(idx);
 		} break;
-		case COLOR_ARRAY: {
+		case POOL_COLOR_ARRAY: {
 
-			const DVector<Color> *arr=reinterpret_cast<const DVector<Color>*>(_data._mem);
+			const PoolVector<Color> *arr=reinterpret_cast<const PoolVector<Color>*>(_data._mem);
 			int idx=r_iter;
 #ifdef DEBUG_ENABLED
 			if (idx<0 || idx>=arr->size()) {
@@ -3358,8 +3449,8 @@ void Variant::blend(const Variant& a, const Variant& b, float c, Variant &r_dst)
 	switch(a.type) {
 		case NIL: { r_dst=Variant(); } return;
 		case INT:{
-			int va=a._data._int;
-			int vb=b._data._int;
+			int64_t va=a._data._int;
+			int64_t vb=b._data._int;
 			r_dst=int(va + vb * c + 0.5);
 		} return;
 		case REAL:{
@@ -3374,10 +3465,10 @@ void Variant::blend(const Variant& a, const Variant& b, float c, Variant &r_dst)
 					   r_dst=Rect2(ra->pos + rb->pos * c, ra->size + rb->size * c);
 				   } return;
 		case VECTOR3:{ r_dst=*reinterpret_cast<const Vector3*>(a._data._mem)+*reinterpret_cast<const Vector3*>(b._data._mem)*c; } return;
-		case _AABB:{
-					   const AABB *ra = reinterpret_cast<const AABB*>(a._data._mem);
-					   const AABB *rb = reinterpret_cast<const AABB*>(b._data._mem);
-					   r_dst=AABB(ra->pos + rb->pos * c, ra->size + rb->size * c);
+		case RECT3:{
+					   const Rect3 *ra = reinterpret_cast<const Rect3*>(a._data._mem);
+					   const Rect3 *rb = reinterpret_cast<const Rect3*>(b._data._mem);
+					   r_dst=Rect3(ra->pos + rb->pos * c, ra->size + rb->size * c);
 				   } return;
 		case QUAT:{
 					  Quat empty_rot;
@@ -3423,8 +3514,8 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case NIL:{   r_dst=Variant();    } return;
 		case BOOL:{  r_dst=a;     } return;
 		case INT:{
-			int va=a._data._int;
-			int vb=b._data._int;
+			int64_t va=a._data._int;
+			int64_t vb=b._data._int;
 			r_dst=int((1.0-c) * va + vb * c);
 		} return;
 		case REAL:{
@@ -3476,11 +3567,11 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case VECTOR2:{  r_dst=reinterpret_cast<const Vector2*>(a._data._mem)->linear_interpolate(*reinterpret_cast<const Vector2*>(b._data._mem),c);      } return;
 		case RECT2:{  r_dst = Rect2( reinterpret_cast<const Rect2*>(a._data._mem)->pos.linear_interpolate(reinterpret_cast<const Rect2*>(b._data._mem)->pos,c), reinterpret_cast<const Rect2*>(a._data._mem)->size.linear_interpolate(reinterpret_cast<const Rect2*>(b._data._mem)->size,c) );     } return;
 		case VECTOR3:{  r_dst=reinterpret_cast<const Vector3*>(a._data._mem)->linear_interpolate(*reinterpret_cast<const Vector3*>(b._data._mem),c);     } return;
-		case MATRIX32:{  r_dst=a._data._matrix32->interpolate_with(*b._data._matrix32,c);     } return;
+		case TRANSFORM2D:{  r_dst=a._data._transform2d->interpolate_with(*b._data._transform2d,c);     } return;
 		case PLANE:{    r_dst=a;   } return;
 		case QUAT:{  r_dst=reinterpret_cast<const Quat*>(a._data._mem)->slerp(*reinterpret_cast<const Quat*>(b._data._mem),c);   } return;
-		case _AABB:{  r_dst=AABB( a._data._aabb->pos.linear_interpolate(b._data._aabb->pos,c), a._data._aabb->size.linear_interpolate(b._data._aabb->size,c) );    } return;
-		case MATRIX3:{  r_dst=Transform(*a._data._matrix3).interpolate_with(Transform(*b._data._matrix3),c).basis;     } return;
+		case RECT3:{  r_dst=Rect3( a._data._rect3->pos.linear_interpolate(b._data._rect3->pos,c), a._data._rect3->size.linear_interpolate(b._data._rect3->size,c) );    } return;
+		case BASIS:{  r_dst=Transform(*a._data._basis).interpolate_with(Transform(*b._data._basis),c).basis;     } return;
 		case TRANSFORM:{  r_dst=a._data._transform->interpolate_with(*b._data._transform,c);     } return;
 		case COLOR:{  r_dst=reinterpret_cast<const Color*>(a._data._mem)->linear_interpolate(*reinterpret_cast<const Color*>(b._data._mem),c);      } return;
 		case IMAGE:{  r_dst=a;     } return;
@@ -3490,25 +3581,25 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case INPUT_EVENT:{ r_dst=a;   } return;
 		case DICTIONARY:{       } return;
 		case ARRAY:{  r_dst=a;     } return;
-		case RAW_ARRAY:{  r_dst=a;     } return;
-		case INT_ARRAY:{   r_dst=a;    } return;
-		case REAL_ARRAY:{   r_dst=a;    } return;
-		case STRING_ARRAY:{   r_dst=a;    } return;
-		case VECTOR2_ARRAY:{
-			const DVector<Vector2> *arr_a=reinterpret_cast<const DVector<Vector2>* >(a._data._mem);
-			const DVector<Vector2> *arr_b=reinterpret_cast<const DVector<Vector2>* >(b._data._mem);
+		case POOL_BYTE_ARRAY:{  r_dst=a;     } return;
+		case POOL_INT_ARRAY:{   r_dst=a;    } return;
+		case POOL_REAL_ARRAY:{   r_dst=a;    } return;
+		case POOL_STRING_ARRAY:{   r_dst=a;    } return;
+		case POOL_VECTOR2_ARRAY:{
+			const PoolVector<Vector2> *arr_a=reinterpret_cast<const PoolVector<Vector2>* >(a._data._mem);
+			const PoolVector<Vector2> *arr_b=reinterpret_cast<const PoolVector<Vector2>* >(b._data._mem);
 			int sz = arr_a->size();
 			if (sz==0 || arr_b->size()!=sz) {
 
 				r_dst=a;
 			} else {
 
-				DVector<Vector2> v;
+				PoolVector<Vector2> v;
 				v.resize(sz);
 				{
-					DVector<Vector2>::Write vw=v.write();
-					DVector<Vector2>::Read ar=arr_a->read();
-					DVector<Vector2>::Read br=arr_b->read();
+					PoolVector<Vector2>::Write vw=v.write();
+					PoolVector<Vector2>::Read ar=arr_a->read();
+					PoolVector<Vector2>::Read br=arr_b->read();
 
 					for(int i=0;i<sz;i++) {
 						vw[i]=ar[i].linear_interpolate(br[i],c);
@@ -3520,23 +3611,23 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 
 
 		} return;
-		case VECTOR3_ARRAY:{
+		case POOL_VECTOR3_ARRAY:{
 
 
-			const DVector<Vector3> *arr_a=reinterpret_cast<const DVector<Vector3>* >(a._data._mem);
-			const DVector<Vector3> *arr_b=reinterpret_cast<const DVector<Vector3>* >(b._data._mem);
+			const PoolVector<Vector3> *arr_a=reinterpret_cast<const PoolVector<Vector3>* >(a._data._mem);
+			const PoolVector<Vector3> *arr_b=reinterpret_cast<const PoolVector<Vector3>* >(b._data._mem);
 			int sz = arr_a->size();
 			if (sz==0 || arr_b->size()!=sz) {
 
 				r_dst=a;
 			} else {
 
-				DVector<Vector3> v;
+				PoolVector<Vector3> v;
 				v.resize(sz);
 				{
-					DVector<Vector3>::Write vw=v.write();
-					DVector<Vector3>::Read ar=arr_a->read();
-					DVector<Vector3>::Read br=arr_b->read();
+					PoolVector<Vector3>::Write vw=v.write();
+					PoolVector<Vector3>::Read ar=arr_a->read();
+					PoolVector<Vector3>::Read br=arr_b->read();
 
 					for(int i=0;i<sz;i++) {
 						vw[i]=ar[i].linear_interpolate(br[i],c);
@@ -3547,7 +3638,7 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 			}
 
 		} return;
-		case COLOR_ARRAY:{  r_dst=a;     } return;
+		case POOL_COLOR_ARRAY:{  r_dst=a;     } return;
 		default: {
 
 			r_dst=a;

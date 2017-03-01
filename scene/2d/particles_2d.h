@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 class Particles2D;
 class ParticleAttractor2D : public Node2D {
 
-	OBJ_TYPE(ParticleAttractor2D,Node2D);
+	GDCLASS(ParticleAttractor2D,Node2D);
 
 
 friend class Particles2D;
@@ -84,7 +84,7 @@ public:
 
 class Particles2D : public Node2D {
 
-	OBJ_TYPE(Particles2D, Node2D);
+	GDCLASS(Particles2D, Node2D);
 public:
 
 	enum Parameter {
@@ -111,19 +111,23 @@ public:
 		MAX_COLOR_PHASES=4
 	};
 
+	enum ProcessMode {
+		PROCESS_FIXED,
+		PROCESS_IDLE,
+	};
+
 private:
 
 	float param[PARAM_MAX];
 	float randomness[PARAM_MAX];
 
 	struct Particle {
-
 		bool active;
 		Point2 pos;
 		Vector2 velocity;
 		float rot;
 		float frame;
-		uint32_t seed;
+		uint64_t seed;
 		Particle() { active=false; seed=123465789; rot=0; frame=0;}
 	};
 
@@ -152,7 +156,9 @@ private:
 	Point2 emissor_offset;
 	Vector2 initial_velocity;
 	Vector2 extents;
-	DVector<Vector2> emission_points;
+	PoolVector<Vector2> emission_points;
+
+	ProcessMode process_mode;
 
 	float time;
 	int active_count;
@@ -163,7 +169,6 @@ private:
 	Color default_color;
 	Ref<ColorRamp> color_ramp;
 
-	void testee(int a, int b, int c, int d, int e);
 	void _process_particles(float p_delta);
 friend class ParticleAttractor2D;
 
@@ -178,6 +183,9 @@ public:
 
 	void set_emitting(bool p_emitting);
 	bool is_emitting() const;
+
+	void set_process_mode(ProcessMode p_mode);
+	ProcessMode get_process_mode() const;
 
 	void set_amount(int p_amount);
 	int get_amount() const;
@@ -246,8 +254,8 @@ public:
 	void set_initial_velocity(const Vector2& p_velocity);
 	Vector2 get_initial_velocity() const;
 
-	void set_emission_points(const DVector<Vector2>& p_points);
-	DVector<Vector2> get_emission_points() const;
+	void set_emission_points(const PoolVector<Vector2>& p_points);
+	PoolVector<Vector2> get_emission_points() const;
 
 	void pre_process(float p_delta);
 	void reset();
@@ -255,6 +263,7 @@ public:
 	Particles2D();
 };
 
+VARIANT_ENUM_CAST( Particles2D::ProcessMode );
 VARIANT_ENUM_CAST( Particles2D::Parameter );
 
 #endif // PARTICLES_FRAME_H

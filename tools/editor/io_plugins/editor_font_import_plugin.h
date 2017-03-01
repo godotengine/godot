@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,15 +29,15 @@
 #ifndef EDITOR_FONT_IMPORT_PLUGIN_H
 #define EDITOR_FONT_IMPORT_PLUGIN_H
 
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "scene/resources/font.h"
-
+#if 0
 class EditorNode;
 class EditorFontImportDialog;
 
 class EditorFontImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorFontImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorFontImportPlugin,EditorImportPlugin);
 
 	EditorFontImportDialog *dialog;
 public:
@@ -55,3 +55,4 @@ public:
 };
 
 #endif // EDITOR_FONT_IMPORT_PLUGIN_H
+#endif

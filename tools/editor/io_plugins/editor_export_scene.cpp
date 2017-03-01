@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,13 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_export_scene.h"
+#if 0
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 #include "scene/resources/packed_scene.h"
-#include "globals.h"
+#include "global_config.h"
 
 Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
 
@@ -42,7 +43,7 @@ Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<
 	}
 
 
-	String extension = p_path.extension();
+	String extension = p_path.get_extension();
 
 	//step 1 check if scene
 
@@ -61,7 +62,7 @@ Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<
 
 	uint64_t sd=0;
 	String smd5;
-	String gp = Globals::get_singleton()->globalize_path(p_path);
+	String gp = GlobalConfig::get_singleton()->globalize_path(p_path);
 	String md5=gp.md5_text();
 	String tmp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/");
 
@@ -138,3 +139,4 @@ Vector<uint8_t> EditorSceneExportPlugin::custom_export(String& p_path,const Ref<
 EditorSceneExportPlugin::EditorSceneExportPlugin()
 {
 }
+#endif

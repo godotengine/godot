@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 
 #include "body_2d_sw.h"
 
-class Constraint2DSW {
+class Constraint2DSW : public RID_Data {
 
 	Body2DSW **_body_ptr;
 	int _body_count;
@@ -63,8 +63,8 @@ public:
 	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
 
 
-	virtual bool setup(float p_step)=0;
-	virtual void solve(float p_step)=0;
+	virtual bool setup(real_t p_step)=0;
+	virtual void solve(real_t p_step)=0;
 
 	virtual ~Constraint2DSW() {}
 };

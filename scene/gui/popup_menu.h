@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,11 +39,12 @@
 
 class PopupMenu : public Popup {
 
-	OBJ_TYPE(PopupMenu, Popup );
+	GDCLASS(PopupMenu, Popup );
 
 	struct Item {
 		Ref<Texture> icon;
 		String text;
+		String xl_text;
 		bool checked;
 		bool checkable;
 		bool separator;
@@ -54,9 +55,11 @@ class PopupMenu : public Popup {
 		String tooltip;
 		uint32_t accel;
 		int _ofs_cache;
+		int h_ofs;
 		Ref<ShortCut> shortcut;
+		bool shortcut_is_global;
 
-		Item() { checked=false; checkable=false; separator=false; accel=0; disabled=false; _ofs_cache=0; }
+		Item() { checked=false; checkable=false; separator=false; accel=0; disabled=false; _ofs_cache=0; h_ofs=0; shortcut_is_global=false; }
 	};
 
 
@@ -69,11 +72,12 @@ class PopupMenu : public Popup {
 	String _get_accel_text(int p_item) const;
 	int _get_mouse_over(const Point2& p_over) const;
 	virtual Size2 get_minimum_size() const;
-	void _input_event(const InputEvent &p_event);
+	void _gui_input(const InputEvent &p_event);
 	void _activate_submenu(int over);
 	void _submenu_timeout();
 
 	bool invalidated_click;
+	bool hide_on_item_selection;
 	Vector2 moved;
 
 	Array _get_items() const;
@@ -98,10 +102,10 @@ public:
 	void add_check_item(const String& p_label,int p_ID=-1,uint32_t p_accel=0);
 	void add_submenu_item(const String& p_label,const String& p_submenu, int p_ID=-1);
 
-	void add_icon_shortcut(const Ref<Texture>& p_icon,const Ref<ShortCut>& p_shortcut,int p_ID=-1);
-	void add_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID=-1);
-	void add_icon_check_shortcut(const Ref<Texture>& p_icon,const Ref<ShortCut>& p_shortcut,int p_ID=-1);
-	void add_check_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID=-1);
+	void add_icon_shortcut(const Ref<Texture>& p_icon,const Ref<ShortCut>& p_shortcut,int p_ID=-1,bool p_global=false);
+	void add_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID=-1,bool p_global=false);
+	void add_icon_check_shortcut(const Ref<Texture>& p_icon,const Ref<ShortCut>& p_shortcut,int p_ID=-1,bool p_global=false);
+	void add_check_shortcut(const Ref<ShortCut>& p_shortcut,int p_ID=-1,bool p_global=false);
 
 	void set_item_text(int p_idx,const String& p_text);
 	void set_item_icon(int p_idx,const Ref<Texture>& p_icon);
@@ -114,7 +118,8 @@ public:
 	void set_item_as_separator(int p_idx, bool p_separator);
 	void set_item_as_checkable(int p_idx, bool p_checkable);
 	void set_item_tooltip(int p_idx,const String& p_tooltip);
-	void set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut);
+	void set_item_shortcut(int p_idx, const Ref<ShortCut>& p_shortcut,bool p_global=false);
+	void set_item_h_offset(int p_idx, int p_offset);
 
 	void toggle_item_checked(int p_idx);
 
@@ -134,7 +139,7 @@ public:
 
 	int get_item_count() const;
 
-	bool activate_item_by_event(const InputEvent& p_event);
+	bool activate_item_by_event(const InputEvent& p_event,bool p_for_global_only=false);
 	void activate_item(int p_item);
 
 	void remove_item(int p_idx);
@@ -153,6 +158,8 @@ public:
 	void clear_autohide_areas();
 
 	void set_invalidate_click_until_motion();
+	void set_hide_on_item_selection(bool p_enabled);
+	bool is_hide_on_item_selection();
 
 	PopupMenu();
 	~PopupMenu();

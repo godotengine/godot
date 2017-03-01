@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 class OccluderPolygon2D : public Resource {
 
-	OBJ_TYPE(OccluderPolygon2D,Resource);
+	GDCLASS(OccluderPolygon2D,Resource);
 public:
 
 	enum CullMode {
@@ -45,7 +45,7 @@ private:
 
 
 	RID occ_polygon;
-	DVector<Vector2> polygon;
+	PoolVector<Vector2> polygon;
 	bool closed;
 	CullMode cull;
 
@@ -54,8 +54,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	void set_polygon(const DVector<Vector2>& p_polygon);
-	DVector<Vector2> get_polygon() const;
+	void set_polygon(const PoolVector<Vector2>& p_polygon);
+	PoolVector<Vector2> get_polygon() const;
 
 	void set_closed(bool p_closed);
 	bool is_closed() const;
@@ -72,7 +72,7 @@ public:
 VARIANT_ENUM_CAST(OccluderPolygon2D::CullMode);
 
 class LightOccluder2D : public Node2D {
-	OBJ_TYPE(LightOccluder2D,Node2D);
+	GDCLASS(LightOccluder2D,Node2D);
 
 	RID occluder;
 	bool enabled;

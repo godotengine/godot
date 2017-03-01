@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 GDScriptLanguage *script_language_gd=NULL;
 ResourceFormatLoaderGDScript *resource_loader_gd=NULL;
 ResourceFormatSaverGDScript *resource_saver_gd=NULL;
-
+#if 0
 #ifdef TOOLS_ENABLED
 
 #include "tools/editor/editor_import_export.h"
@@ -48,7 +48,7 @@ ResourceFormatSaverGDScript *resource_saver_gd=NULL;
 
 class EditorExportGDScript : public EditorExportPlugin {
 
-	OBJ_TYPE(EditorExportGDScript,EditorExportPlugin);
+	GDCLASS(EditorExportGDScript,EditorExportPlugin);
 
 public:
 
@@ -100,7 +100,7 @@ public:
 						if (err==OK) {
 
 							fae->store_buffer(file.ptr(),file.size());
-							p_path=p_path.basename()+".gde";
+							p_path=p_path.get_basename()+".gde";
 						}
 
 						memdelete(fae);
@@ -111,7 +111,7 @@ public:
 
 					} else {
 
-						p_path=p_path.basename()+".gdc";
+						p_path=p_path.get_basename()+".gdc";
 						return file;
 					}
 				}
@@ -135,14 +135,14 @@ static void register_editor_plugin() {
 
 
 #endif
-
+#endif
 void register_gdscript_types() {
 
-	ObjectTypeDB::register_type<GDScript>();
-	ObjectTypeDB::register_virtual_type<GDFunctionObject>();
-	ObjectTypeDB::register_virtual_type<GDNativeFunctionObject>();
-	ObjectTypeDB::register_virtual_type<GDLambdaFunctionObject>();
-	ObjectTypeDB::register_virtual_type<GDFunctionState>();
+	ClassDB::register_class<GDScript>();
+	ClassDB::register_virtual_class<GDFunctionObject>();
+	ClassDB::register_virtual_class<GDNativeFunctionObject>();
+	ClassDB::register_virtual_class<GDLambdaFunctionObject>();
+	ClassDB::register_virtual_class<GDFunctionState>();
 
 	script_language_gd=memnew( GDScriptLanguage );
 	//script_language_gd->init();
@@ -151,10 +151,11 @@ void register_gdscript_types() {
 	ResourceLoader::add_resource_format_loader(resource_loader_gd);
 	resource_saver_gd=memnew( ResourceFormatSaverGDScript );
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
-
+#if 0
 #ifdef TOOLS_ENABLED
 
 	EditorNode::add_init_callback(register_editor_plugin);
+#endif
 #endif
 
 }

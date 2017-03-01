@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class Camera2D : public Node2D {
 
-	OBJ_TYPE( Camera2D, Node2D );
+	GDCLASS( Camera2D, Node2D );
 public:
 
 	enum AnchorMode {
@@ -80,7 +80,7 @@ protected:
 	void _set_old_smoothing(float p_enable);
 protected:
 
-	virtual Matrix32 get_camera_transform();
+	virtual Transform2D get_camera_transform();
 	void _notification(int p_what);
 	static void _bind_methods();
 public:

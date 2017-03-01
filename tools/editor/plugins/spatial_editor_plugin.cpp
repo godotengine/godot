@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "spatial_editor_plugin.h"
-#include "print_string.h"
 
+#include "print_string.h"
 #include "os/keyboard.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/3d/camera.h"
@@ -38,7 +38,7 @@
 #include "tools/editor/editor_settings.h"
 #include "scene/resources/surface_tool.h"
 #include "tools/editor/spatial_editor_gizmos.h"
-#include "globals.h"
+#include "global_config.h"
 #include "tools/editor/plugins/animation_player_editor_plugin.h"
 #include "tools/editor/animation_editor.h"
 
@@ -61,8 +61,8 @@ void SpatialEditorViewport::_update_camera() {
 
 	Transform camera_transform;
 	camera_transform.translate(cursor.pos);
-	camera_transform.basis.rotate(Vector3(0, 1, 0), cursor.y_rot);
-	camera_transform.basis.rotate(Vector3(1, 0, 0), cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(1, 0, 0), -cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0, 1, 0), -cursor.y_rot);
 
 	if (orthogonal)
 		camera_transform.translate(0, 0, 4096);
@@ -274,20 +274,17 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 	Vector3 ray=_get_ray(p_pos);
 	Vector3 pos=_get_ray_pos(p_pos);
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
+	Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
-	//uint32_t closest=0;
-//	float closest_dist=0;
-
-	r_includes_current=false;
-
-	List<_RayResult> results;
+	ObjectID closest=0;
+	Spatial *item=NULL;
+	float closest_dist=1e20;
+	int selected_handle=-1;
 
 	for (int i=0;i<instances.size();i++) {
 
-		uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-		Object *obj=ObjectDB::get_instance(id);
+		Object *obj=ObjectDB::get_instance(instances[i]);
 		if (!obj)
 			continue;
 
@@ -319,84 +316,30 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 		if (dist<0)
 			continue;
 
-
-
-		if (editor_selection->is_selected(spat))
-			r_includes_current=true;
-
-		_RayResult res;
-		res.item=spat;
-		res.depth=dist;
-		res.handle=handle;
-		results.push_back(res);
-	}
-
-
-	if (results.empty())
-		return 0;
-
-	results.sort();
-	Spatial *s=NULL;
-
-
-	if (!r_includes_current || results.size()==1 || (r_gizmo_handle && results.front()->get().handle>=0)) {
-
-		//return the nearest one
-		s = results.front()->get().item;
-		if (r_gizmo_handle)
-			*r_gizmo_handle=results.front()->get().handle;
-
-	} else {
-
-		//returns the next one from a curent selection
-		List<_RayResult>::Element *E=results.front();
-		List<_RayResult>::Element *S=NULL;
-
-
-		while(true) {
-
-			//very strange loop algorithm that complies with object selection standards (tm).
-
-			if (S==E) {
-				//went all around and anothing was found
-				//since can't rotate the selection
-				//just return the first one
-
-				s=results.front()->get().item;
-				break;
-
-			}
-
-			if (!S && editor_selection->is_selected(E->get().item)) {
-				//found an item currently in the selection,
-				//so start from this one
-				S=E;
-			}
-
-			if (S && !editor_selection->is_selected(E->get().item)) {
-				// free item after a selected item, this one is desired.
-				s=E->get().item;
-				break;
-			}
-
-			E=E->next();
-			if (!E) {
-
-				if (!S) {
-					//did a loop but nothing was selected, select first
-					s=results.front()->get().item;
-					break;
-
-				}
-				E=results.front();
-			}
+		if (dist < closest_dist) {
+			closest=instances[i];
+			closest_dist=dist;
+			selected_handle=handle;
+			item=spat;
 		}
+
+	//	if (editor_selection->is_selected(spat))
+	//		r_includes_current=true;
+
 	}
 
-	if (!s)
+
+	if (!item)
 		return 0;
 
-	return s->get_instance_ID();
+	if (!editor_selection->is_selected(item) || (r_gizmo_handle && selected_handle>=0)) {
+
+		if (r_gizmo_handle)
+			*r_gizmo_handle=selected_handle;
+
+	}
+
+	return closest;
 
 }
 
@@ -405,15 +348,15 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2& p_pos,bool &r_inclu
 	Vector3 ray=_get_ray(p_pos);
 	Vector3 pos=_get_ray_pos(p_pos);
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
+	Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	r_includes_current=false;
 
 	for (int i=0;i<instances.size();i++) {
 
-		uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-		Object *obj=ObjectDB::get_instance(id);
+		Object *obj=ObjectDB::get_instance(instances[i]);
+
 		if (!obj)
 			continue;
 
@@ -469,14 +412,14 @@ Vector3 SpatialEditorViewport::_get_screen_to_space(const Vector3& p_pos) {
 
 
 	CameraMatrix cm;
-	cm.set_perspective(get_fov(),get_size().get_aspect(),get_znear(),get_zfar());
+	cm.set_perspective(get_fov(),get_size().aspect(),get_znear(),get_zfar());
 	float screen_w,screen_h;
 	cm.get_viewport_size(screen_w,screen_h);
 
 	Transform camera_transform;
 	camera_transform.translate( cursor.pos );
-	camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
-	camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(1,0,0),-cursor.x_rot);
+	camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
 	camera_transform.translate(0,0,cursor.distance);
 
 	return camera_transform.xform(Vector3( ((p_pos.x/get_size().width)*2.0-1.0)*screen_w, ((1.0-(p_pos.y/get_size().height))*2.0-1.0)*screen_h,-get_znear()));
@@ -534,14 +477,12 @@ void SpatialEditorViewport::_select_region() {
 
 	frustum.push_back( far );
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_convex(frustum,get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_convex(frustum,get_tree()->get_root()->get_world()->get_scenario());
 
 
 	for (int i=0;i<instances.size();i++) {
 
-		uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-
-		Object *obj=ObjectDB::get_instance(id);
+		Object *obj=ObjectDB::get_instance(instances[i]);
 		if (!obj)
 			continue;
 		Spatial *sp = obj->cast_to<Spatial>();
@@ -583,8 +524,8 @@ void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 
 	List<Node*> &selection = editor_selection->get_selected_node_list();
 
-//	Vector3 center;
-//	int nc=0;
+	//Vector3 center;
+	//int nc=0;
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 		Spatial *sp = E->get()->cast_to<Spatial>();
@@ -596,16 +537,14 @@ void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 			continue;
 
 		se->original=se->sp->get_global_transform();
-//		center+=se->original.origin;
-//		nc++;
+		//center+=se->original.origin;
+		//nc++;
 	}
 
-
-//	if (nc)
-//		_edit.center=center/float(nc);
-
-
-
+	/*
+	if (nc)
+		_edit.center=center/float(nc);
+	*/
 }
 
 static int _get_key_modifier(const String& p_property) {
@@ -619,23 +558,6 @@ static int _get_key_modifier(const String& p_property) {
 		case 4: return KEY_CONTROL;
 	}
 	return 0;
-}
-
-SpatialEditorViewport::NavigationScheme SpatialEditorViewport::_get_navigation_schema(const String& p_property) {
-	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
-		case 0: return NAVIGATION_GODOT;
-		case 1: return NAVIGATION_MAYA;
-		case 2: return NAVIGATION_MODO;
-	}
-	return NAVIGATION_GODOT;
-}
-
-SpatialEditorViewport::NavigationZoomStyle SpatialEditorViewport::_get_navigation_zoom_style(const String& p_property) {
-	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
-		case 0: return NAVIGATION_ZOOM_VERTICAL;
-		case 1: return NAVIGATION_ZOOM_HORIZONTAL;
-	}
-	return NAVIGATION_ZOOM_VERTICAL;
 }
 
 bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hilite_only) {
@@ -795,7 +717,7 @@ void SpatialEditorViewport::_list_select(InputEventMouseButton b) {
 			if (spat->has_meta("_editor_icon"))
 				icon=spat->get_meta("_editor_icon");
 			else
-				icon=get_icon( has_icon(spat->get_type(),"EditorIcons")?spat->get_type():String("Object"),"EditorIcons");
+				icon=get_icon( has_icon(spat->get_class(),"EditorIcons")?spat->get_class():String("Object"),"EditorIcons");
 
 			String node_path="/"+root_name+"/"+root_path.rel_path_to(spat->get_path());
 
@@ -803,7 +725,7 @@ void SpatialEditorViewport::_list_select(InputEventMouseButton b) {
 			selection_menu->set_item_icon(i, icon );
 			selection_menu->set_item_metadata(i, node_path);
 			selection_menu->set_item_tooltip(i,String(spat->get_name())+
-					"\nType: "+spat->get_type()+"\nPath: "+node_path);
+					"\nType: "+spat->get_class()+"\nPath: "+node_path);
 		}
 
 		selection_menu->set_global_pos(Vector2( b.global_x, b.global_y ));
@@ -827,7 +749,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
 		if (!over_plugin_list->empty()) {
-			bool discard = over_plugin_list->forward_spatial_input_event(camera,p_event);
+			bool discard = over_plugin_list->forward_spatial_gui_input(camera,p_event);
 			if (discard)
 				return;
 		}
@@ -857,7 +779,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 				case BUTTON_RIGHT: {
 
-					NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+					NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
 
 					if (b.pressed && _edit.gizmo.is_valid()) {
 						//restore
@@ -877,7 +799,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 						if (b.mod.control) {
 
-							Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(ray_origin,ray_dir,get_tree()->get_root()->get_world()->get_scenario() );
+							Vector<ObjectID> instances=VisualServer::get_singleton()->instances_cull_ray(ray_origin,ray_dir,get_tree()->get_root()->get_world()->get_scenario() );
 
 							Plane p(ray_origin,_get_camera_normal());
 
@@ -886,8 +808,9 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 							for (int i=0;i<instances.size();i++) {
 
-								uint32_t id=VisualServer::get_singleton()->instance_get_object_instance_ID(instances[i]);
-								Object *obj=ObjectDB::get_instance(id);
+
+								Object *obj=ObjectDB::get_instance(instances[i]);
+
 								if (!obj)
 									continue;
 
@@ -896,14 +819,14 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 									continue;
 
 								//optimize by checking AABB (although should pre sort by distance)
-								AABB aabb =  vi->get_global_transform().xform(vi->get_aabb());
+								Rect3 aabb =  vi->get_global_transform().xform(vi->get_aabb());
 								if (p.distance_to(aabb.get_support(-ray_dir))>min_d)
 									continue;
 
-								DVector<Face3> faces = vi->get_faces(VisualInstance::FACES_SOLID);
+								PoolVector<Face3> faces = vi->get_faces(VisualInstance::FACES_SOLID);
 								int c = faces.size();
 								if (c>0) {
-									DVector<Face3>::Read r = faces.read();
+									PoolVector<Face3>::Read r = faces.read();
 
 									for(int j=0;j<c;j++) {
 
@@ -1016,7 +939,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 					if (b.pressed) {
 
-						NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+						NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
 						if ( (nav_scheme==NAVIGATION_MAYA || nav_scheme==NAVIGATION_MODO) && b.mod.alt) {
 							break;
 						}
@@ -1253,7 +1176,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			}
 
-			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+			NavigationScheme nav_scheme = (NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation_scheme").operator int();
 			NavigationMode nav_mode = NAVIGATION_NONE;
 
 			if (_edit.gizmo.is_valid()) {
@@ -1354,7 +1277,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 								Transform original=se->original;
 
-								Transform base=Transform( Matrix3(), _edit.center);
+								Transform base=Transform( Basis(), _edit.center);
 								Transform t=base * (r * (base.inverse() * original));
 
 								sp->set_global_transform(t);
@@ -1486,7 +1409,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 
 							Transform r;
-							r.basis.rotate(plane.normal,-angle);
+							r.basis.rotate(plane.normal,angle);
 
 							List<Node*> &selection = editor_selection->get_selected_node_list();
 
@@ -1503,8 +1426,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 								Transform original=se->original;
 
-								Transform base=Transform( Matrix3(), _edit.center);
-								Transform t=base * (r * (base.inverse() * original));
+								Transform base=Transform( Basis(), _edit.center);
+								Transform t=base * r * base.inverse() * original;
 
 								sp->set_global_transform(t);
 							}
@@ -1548,11 +1471,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (m.mod.meta)
 						mod=KEY_META;
 
-					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
+					if (mod == _get_key_modifier("editors/3d/pan_modifier"))
 						nav_mode = NAVIGATION_PAN;
-					else if (mod == _get_key_modifier("3d_editor/zoom_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/zoom_modifier"))
 						nav_mode = NAVIGATION_ZOOM;
-					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/orbit_modifier"))
 						nav_mode = NAVIGATION_ORBIT;
 
 				} else if (nav_scheme == NAVIGATION_MAYA) {
@@ -1560,7 +1483,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						nav_mode = NAVIGATION_PAN;
 				}
 
-			} else if (EditorSettings::get_singleton()->get("3d_editor/emulate_3_button_mouse")) {
+            } else if (EditorSettings::get_singleton()->get("editors/3d/emulate_3_button_mouse")) {
 				// Handle trackpad (no external mouse) use case
 				int mod = 0;
 				if (m.mod.shift)
@@ -1573,11 +1496,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					mod=KEY_META;
 
 				if(mod){
-					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
+					if (mod == _get_key_modifier("editors/3d/pan_modifier"))
 						nav_mode = NAVIGATION_PAN;
-					else if (mod == _get_key_modifier("3d_editor/zoom_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/zoom_modifier"))
 						nav_mode = NAVIGATION_ZOOM;
-					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
+					else if (mod == _get_key_modifier("editors/3d/orbit_modifier"))
 						nav_mode = NAVIGATION_ORBIT;
 				}
 			}
@@ -1593,8 +1516,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					Transform camera_transform;
 
 					camera_transform.translate(cursor.pos);
-					camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
-					camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
+					camera_transform.basis.rotate(Vector3(1,0,0),-cursor.x_rot);
+					camera_transform.basis.rotate(Vector3(0,1,0),-cursor.y_rot);
 					Vector3 translation(-m.relative_x*pan_speed,m.relative_y*pan_speed,0);
 					translation*=cursor.distance/DISTANCE_DEFAULT;
 					camera_transform.translate(translation);
@@ -1608,7 +1531,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
 						zoom_speed *= zoom_speed_modifier;
 
-					NavigationZoomStyle zoom_style = _get_navigation_zoom_style("3d_editor/zoom_style");
+					NavigationZoomStyle zoom_style = (NavigationZoomStyle)EditorSettings::get_singleton()->get("editors/3d/zoom_style").operator int();
 					if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
 						if ( m.relative_x > 0)
 							cursor.distance*=1-m.relative_x*zoom_speed;
@@ -1742,7 +1665,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		bool visible=is_visible();
+		bool visible=is_visible_in_tree();
 
 		set_process(visible);
 
@@ -1793,7 +1716,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			if (se->aabb.has_no_surface()) {
 
-				se->aabb=vi?vi->get_aabb():AABB( Vector3(-0.2,-0.2,-0.2),Vector3(0.4,0.4,0.4));
+				se->aabb=vi?vi->get_aabb():Rect3( Vector3(-0.2,-0.2,-0.2),Vector3(0.4,0.4,0.4));
 			}
 
 			Transform t=sp->get_global_transform();
@@ -1825,13 +1748,37 @@ void SpatialEditorViewport::_notification(int p_what) {
 				surface->update();
 		}
 
+		//update shadow atlas if changed
+
+		int shadowmap_size = GlobalConfig::get_singleton()->get("rendering/shadow_atlas/size");
+		int atlas_q0 = GlobalConfig::get_singleton()->get("rendering/shadow_atlas/quadrant_0_subdiv");
+		int atlas_q1 = GlobalConfig::get_singleton()->get("rendering/shadow_atlas/quadrant_1_subdiv");
+		int atlas_q2 = GlobalConfig::get_singleton()->get("rendering/shadow_atlas/quadrant_2_subdiv");
+		int atlas_q3 = GlobalConfig::get_singleton()->get("rendering/shadow_atlas/quadrant_3_subdiv");
+
+
+		viewport->set_shadow_atlas_size(shadowmap_size);
+		viewport->set_shadow_atlas_quadrant_subdiv(0,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q0));
+		viewport->set_shadow_atlas_quadrant_subdiv(1,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q1));
+		viewport->set_shadow_atlas_quadrant_subdiv(2,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
+		viewport->set_shadow_atlas_quadrant_subdiv(3,Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
+
+		//update msaa if changed
+
+		int msaa_mode = GlobalConfig::get_singleton()->get("rendering/quality/msaa");
+		viewport->set_msaa(Viewport::MSAA(msaa_mode));
+
+		bool hdr = GlobalConfig::get_singleton()->get("rendering/quality/hdr");
+		viewport->set_hdr(hdr);
+
+
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		surface->connect("draw",this,"_draw");
-		surface->connect("input_event",this,"_sinput");
-		surface->connect("mouse_enter",this,"_smouseenter");
+		surface->connect("gui_input",this,"_sinput");
+		surface->connect("mouse_entered",this,"_smouseenter");
 		preview_camera->set_icon(get_icon("Camera","EditorIcons"));
 		_init_gizmo_instance(index);
 	}
@@ -1892,8 +1839,8 @@ void SpatialEditorViewport::_draw() {
 	if (previewing) {
 
 
-		Size2 ss = Size2( Globals::get_singleton()->get("display/width"), Globals::get_singleton()->get("display/height") );
-		float aspect = ss.get_aspect();
+		Size2 ss = Size2( GlobalConfig::get_singleton()->get("display/width"), GlobalConfig::get_singleton()->get("display/height") );
+		float aspect = ss.aspect();
 		Size2 s = get_size();
 
 		Rect2 draw_rect;
@@ -2066,9 +2013,9 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			bool current = 	view_menu->get_popup()->is_item_checked( idx );
 			current=!current;
 			if (current)
-				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
+				camera->set_cull_mask( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
 			else
-				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_GRID_LAYER) );
+				camera->set_cull_mask( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_GRID_LAYER) );
 			view_menu->get_popup()->set_item_checked( idx, current );
 
 		} break;
@@ -2094,7 +2041,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		move_gizmo_instance[i]=VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(move_gizmo_instance[i],spatial_editor->get_move_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(move_gizmo_instance[i],get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
+		VS::get_singleton()->instance_set_visible(move_gizmo_instance[i],false);
 		//VS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_DEPH_SCALE,true);
 		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(move_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 		VS::get_singleton()->instance_set_layer_mask(move_gizmo_instance[i],layer);
@@ -2102,7 +2049,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 		rotate_gizmo_instance[i]=VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(rotate_gizmo_instance[i],spatial_editor->get_rotate_gizmo(i)->get_rid());
 		VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i],get_tree()->get_root()->get_world()->get_scenario());
-		VS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
+		VS::get_singleton()->instance_set_visible(rotate_gizmo_instance[i],false);
 		//VS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_DEPH_SCALE,true);
 		VS::get_singleton()->instance_geometry_set_cast_shadows_setting(rotate_gizmo_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 		VS::get_singleton()->instance_set_layer_mask(rotate_gizmo_instance[i],layer);
@@ -2128,9 +2075,9 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 	if (!p_activate) {
 
-		previewing->disconnect("exit_tree",this,"_preview_exited_scene");
+		previewing->disconnect("tree_exited",this,"_preview_exited_scene");
 		previewing=NULL;
-		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), camera->get_camera() ); //restore
+		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport_rid(), camera->get_camera() ); //restore
 		if (!preview)
 			preview_camera->hide();
 		view_menu->show();
@@ -2139,8 +2086,8 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 	} else {
 
 		previewing=preview;
-		previewing->connect("exit_tree",this,"_preview_exited_scene");
-		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), preview->get_camera() ); //replace
+		previewing->connect("tree_exited",this,"_preview_exited_scene");
+		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport_rid(), preview->get_camera() ); //replace
 		view_menu->hide();
 		surface->update();
 
@@ -2183,7 +2130,7 @@ void SpatialEditorViewport::set_can_preview(Camera* p_preview) {
 
 void SpatialEditorViewport::update_transform_gizmo_view() {
 
-	if (!is_visible())
+	if (!is_visible_in_tree())
 		return;
 
 	Transform xform = spatial_editor->get_gizmo_transform();
@@ -2200,7 +2147,7 @@ void SpatialEditorViewport::update_transform_gizmo_view() {
 	if (dd==0)
 		dd=0.0001;
 
-	float gsize = EditorSettings::get_singleton()->get("3d_editor/manipulator_gizmo_size");
+	float gsize = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_size");
 	gizmo_scale=(gsize/Math::abs(dd));
 	Vector3 scale = Vector3(1,1,1) * gizmo_scale;
 
@@ -2211,9 +2158,9 @@ void SpatialEditorViewport::update_transform_gizmo_view() {
 
 	for(int i=0;i<3;i++) {
 		VisualServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], xform );
-		VisualServer::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,spatial_editor->is_gizmo_visible()&& (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_MOVE) );
+		VisualServer::get_singleton()->instance_set_visible(move_gizmo_instance[i],spatial_editor->is_gizmo_visible()&& (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_MOVE) );
 		VisualServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], xform );
-		VisualServer::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_ROTATE) );
+		VisualServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i],spatial_editor->is_gizmo_visible() && (spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode()==SpatialEditor::TOOL_MODE_ROTATE) );
 	}
 
 }
@@ -2244,8 +2191,8 @@ void SpatialEditorViewport::set_state(const Dictionary& p_state) {
 		Node *pv = EditorNode::get_singleton()->get_edited_scene()->get_node(p_state["previewing"]);
 		if (pv && pv->cast_to<Camera>()) {
 			previewing=pv->cast_to<Camera>();
-			previewing->connect("exit_tree",this,"_preview_exited_scene");
-			VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), previewing->get_camera() ); //replace
+			previewing->connect("tree_exited",this,"_preview_exited_scene");
+			VS::get_singleton()->viewport_attach_camera( viewport->get_viewport_rid(), previewing->get_camera() ); //replace
 			view_menu->hide();
 			surface->update();
 			preview_camera->set_pressed(true);
@@ -2274,15 +2221,15 @@ Dictionary SpatialEditorViewport::get_state() const {
 
 void SpatialEditorViewport::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("_draw"),&SpatialEditorViewport::_draw);
-	ObjectTypeDB::bind_method(_MD("_smouseenter"),&SpatialEditorViewport::_smouseenter);
-	ObjectTypeDB::bind_method(_MD("_sinput"),&SpatialEditorViewport::_sinput);
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&SpatialEditorViewport::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
-	ObjectTypeDB::bind_method(_MD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
-	ObjectTypeDB::bind_method(_MD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
-	ObjectTypeDB::bind_method(_MD("_selection_result_pressed"),&SpatialEditorViewport::_selection_result_pressed);
-	ObjectTypeDB::bind_method(_MD("_selection_menu_hide"),&SpatialEditorViewport::_selection_menu_hide);
+	ClassDB::bind_method(D_METHOD("_draw"),&SpatialEditorViewport::_draw);
+	ClassDB::bind_method(D_METHOD("_smouseenter"),&SpatialEditorViewport::_smouseenter);
+	ClassDB::bind_method(D_METHOD("_sinput"),&SpatialEditorViewport::_sinput);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&SpatialEditorViewport::_menu_option);
+	ClassDB::bind_method(D_METHOD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
+	ClassDB::bind_method(D_METHOD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
+	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
+	ClassDB::bind_method(D_METHOD("_selection_result_pressed"),&SpatialEditorViewport::_selection_result_pressed);
+	ClassDB::bind_method(D_METHOD("_selection_menu_hide"),&SpatialEditorViewport::_selection_menu_hide);
 
 	ADD_SIGNAL( MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")) );
 }
@@ -2294,10 +2241,10 @@ void SpatialEditorViewport::reset() {
 	message_time=0;
 	message="";
 	last_message="";
-	name=TTR("Top");
+	name="";
 
-	cursor.x_rot=0;
-	cursor.y_rot=0;
+	cursor.x_rot=0.5;
+	cursor.y_rot=0.5;
 	cursor.distance=4;
 	cursor.region_select=false;
 	_update_name();
@@ -2347,7 +2294,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	index=p_index;
 	editor=p_editor;
-	editor_selection=editor->get_editor_selection();;
+	editor_selection=editor->get_editor_selection();
 	undo_redo=editor->get_undo_redo();
 	clicked=0;
 	clicked_includes_current=false;
@@ -2355,18 +2302,20 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	message_time=0;
 
 	spatial_editor=p_spatial_editor;
-	Control *c=memnew(Control);
+	ViewportContainer *c=memnew(ViewportContainer);
+	c->set_stretch(true);
 	add_child(c);
 	c->set_area_as_parent_rect();
 	viewport = memnew( Viewport );
 	viewport->set_disable_input(true);
+
 	c->add_child(viewport);
 	surface = memnew( Control );
 	add_child(surface);
 	surface->set_area_as_parent_rect();
 	camera = memnew(Camera);
 	camera->set_disable_gizmo(true);
-	camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+p_index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
+	camera->set_cull_mask( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+p_index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
 	//camera->set_environment(SpatialEditor::get_singleton()->get_viewport_environment());
 	viewport->add_child(camera);
 	camera->make_current();
@@ -2375,7 +2324,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu = memnew( MenuButton );
 	surface->add_child(view_menu);
 	view_menu->set_pos( Point2(4,4));
-	view_menu->set_self_opacity(0.5);
+	view_menu->set_self_modulate(Color(1,1,1,0.5));
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
@@ -2399,7 +2348,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_origin"), VIEW_CENTER_TO_ORIGIN);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_selection_with_view"), VIEW_ALIGN_SELECTION_WITH_VIEW);
-	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+	view_menu->get_popup()->connect("id_pressed",this,"_menu_option");
 
 	preview_camera = memnew( Button );
 	preview_camera->set_toggle_mode(true);
@@ -2416,7 +2365,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	selection_menu = memnew( PopupMenu );
 	add_child(selection_menu);
 	selection_menu->set_custom_minimum_size(Vector2(100, 0));
-	selection_menu->connect("item_pressed", this, "_selection_result_pressed");
+	selection_menu->connect("id_pressed", this, "_selection_result_pressed");
 	selection_menu->connect("popup_hide", this, "_selection_menu_hide");
 
 	if (p_index==0) {
@@ -2462,10 +2411,10 @@ void SpatialEditor::select_gizmo_hilight_axis(int p_axis) {
 void SpatialEditor::update_transform_gizmo() {
 
 	List<Node*> &selection = editor_selection->get_selected_node_list();
-	AABB center;
+	Rect3 center;
 	bool first=true;
 
-	Matrix3 gizmo_basis;
+	Basis gizmo_basis;
 	bool local_gizmo_coords = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS) );
 
 
@@ -2489,9 +2438,9 @@ void SpatialEditor::update_transform_gizmo() {
 			}
 		} else {
 			center.expand_to(xf.origin);
-			gizmo_basis=Matrix3();
+			gizmo_basis=Basis();
 		}
-//		count++;
+		//count++;
 	}
 
 	Vector3 pcenter = center.pos+center.size*0.5;
@@ -2527,7 +2476,7 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 
 void SpatialEditor::_generate_selection_box() {
 
-	AABB aabb( Vector3(), Vector3(1,1,1) );
+	Rect3 aabb( Vector3(), Vector3(1,1,1) );
 	aabb.grow_by( aabb.get_longest_axis_size()/20.0 );
 
 	Ref<SurfaceTool> st = memnew( SurfaceTool );
@@ -2555,11 +2504,12 @@ void SpatialEditor::_generate_selection_box() {
 
 	}
 
-	Ref<FixedMaterial> mat = memnew( FixedMaterial );
-	mat->set_flag(Material::FLAG_UNSHADED,true);
-	mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
-	mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
-	mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
+	Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
+	mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
+	mat->set_albedo(Color(1,1,1));
+	mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
+	mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
+	mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR,true);
 	st->set_material(mat);
 	selection_box = st->commit();
 }
@@ -2600,12 +2550,12 @@ Dictionary SpatialEditor::get_state() const {
 
 	d["viewports"]=vpdata;
 
-	d["default_light"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT) );;
-	d["ambient_light_color"]=settings_ambient_color->get_color();
+	d["default_light"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT) );
+	d["ambient_light_color"]=settings_ambient_color->get_pick_color();
 
-	d["default_srgb"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB) );;
-	d["show_grid"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID) );;
-	d["show_origin"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN) );;
+	d["default_srgb"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB) );
+	d["show_grid"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID) );
+	d["show_origin"]=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN) );
 	d["fov"]=get_fov();
 	d["znear"]=get_znear();
 	d["zfar"]=get_zfar();
@@ -2666,11 +2616,11 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 	}
 
 	if (d.has("zfar"))
-		settings_zfar->set_val(float(d["zfar"]));
+		settings_zfar->set_value(float(d["zfar"]));
 	if (d.has("znear"))
-		settings_znear->set_val(float(d["znear"]));
+		settings_znear->set_value(float(d["znear"]));
 	if (d.has("fov"))
-		settings_fov->set_val(float(d["fov"]));
+		settings_fov->set_value(float(d["fov"]));
 
 	if (d.has("default_light")) {
 		bool use = d["default_light"];
@@ -2690,15 +2640,15 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 
 	}
 	if (d.has("ambient_light_color")) {
-		settings_ambient_color->set_color(d["ambient_light_color"]);
-		viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,d["ambient_light_color"]);
+		settings_ambient_color->set_pick_color(d["ambient_light_color"]);
+		//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,d["ambient_light_color"]);
 	}
 
 	if (d.has("default_srgb")) {
 		bool use = d["default_srgb"];
 
-		viewport_environment->set_enable_fx(Environment::FX_SRGB,use);
-		view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB), use );
+		//viewport_environment->set_enable_fx(Environment::FX_SRGB,use);
+		//view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB), use );
 	}
 	if (d.has("show_grid")) {
 		bool use = d["show_grid"];
@@ -2713,7 +2663,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 
 		if (use!=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN))) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), use );
-			VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_VISIBLE,use);
+			VisualServer::get_singleton()->instance_set_visible(origin_instance,use);
 		}
 	}
 
@@ -2753,16 +2703,16 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 		}
 	}
 
+	/*
 	if (p_spatial) {
-		//_validate_selection();
-		//if (selected.has(p_spatial->get_instance_ID()) && selected.size()==1)
-		//	return;
-		//_select(p_spatial->get_instance_ID(),false,true);
+		_validate_selection();
+		if (selected.has(p_spatial->get_instance_ID()) && selected.size()==1)
+			return;
+		_select(p_spatial->get_instance_ID(),false,true);
 
 		// should become the selection
 	}
-
-
+	*/
 }
 
 void SpatialEditor::_xform_dialog_action() {
@@ -2778,21 +2728,10 @@ void SpatialEditor::_xform_dialog_action() {
 		rotate[i]=Math::deg2rad(xform_rotate[i]->get_text().to_double());
 		scale[i]=xform_scale[i]->get_text().to_double();
 	}
-
+	
+	t.basis.scale(scale);
+	t.basis.rotate(rotate);
 	t.origin=translate;
-	for(int i=0;i<3;i++) {
-		if (!rotate[i])
-			continue;
-		Vector3 axis;
-		axis[i]=1.0;
-		t.basis.rotate(axis,rotate[i]);
-	}
-
-	for(int i=0;i<3;i++) {
-		if (scale[i]==1)
-			continue;
-		t.basis.set_axis(i,t.basis.get_axis(i)*scale[i]);
-	}
 
 
 	undo_redo->create_action(TTR("XForm Dialog"));
@@ -2840,8 +2779,8 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				tool_button[i]->set_pressed(i==p_option);
 			tool_mode=(ToolMode)p_option;
 
-	//		static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode.","List Selection Mode."};
-//			set_message(_mode[p_option],3);
+			//static const char *_mode[]={"Selection Mode.","Translation Mode.","Rotation Mode.","Scale Mode.","List Selection Mode."};
+			//set_message(_mode[p_option],3);
 			update_transform_gizmo();
 
 		} break;
@@ -2898,9 +2837,9 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			bool is_checked = view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(p_option) );
 
 			if (is_checked) {
-				viewport_environment->set_enable_fx(Environment::FX_SRGB,false);
+				//viewport_environment->set_enable_fx(Environment::FX_SRGB,false);
 			} else {
-				viewport_environment->set_enable_fx(Environment::FX_SRGB,true);
+				//viewport_environment->set_enable_fx(Environment::FX_SRGB,true);
 			}
 
 			is_checked = ! is_checked;
@@ -2938,9 +2877,9 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			}
 			viewports[0]->set_area_as_parent_rect();
-			viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
+			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
 			viewports[2]->set_area_as_parent_rect();
-			viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), true );
@@ -2962,9 +2901,9 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			}
 			viewports[0]->set_area_as_parent_rect();
-			viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			//viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
 			viewports[2]->set_area_as_parent_rect();
-			viewports[2]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
@@ -2984,13 +2923,13 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 					viewports[i]->show();
 			}
 			viewports[0]->set_area_as_parent_rect();
-			viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
+			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
 			viewports[2]->set_area_as_parent_rect();
-			viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
 			viewports[3]->set_area_as_parent_rect();
-			viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
-			viewports[3]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			//viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+			//viewports[3]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
@@ -3010,13 +2949,13 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 					viewports[i]->show();
 			}
 			viewports[0]->set_area_as_parent_rect();
-			viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
-			viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
+			//viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
 			viewports[2]->set_area_as_parent_rect();
-			viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
-			viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
 			viewports[3]->set_area_as_parent_rect();
-			viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+			//viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
@@ -3033,17 +2972,17 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				viewports[i]->show();
 			}
 			viewports[0]->set_area_as_parent_rect();
-			viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
+			//viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			//viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
 			viewports[1]->set_area_as_parent_rect();
-			viewports[1]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
-			viewports[1]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
+			//viewports[1]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+			//viewports[1]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
 			viewports[2]->set_area_as_parent_rect();
-			viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
-			viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			//viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
 			viewports[3]->set_area_as_parent_rect();
-			viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
-			viewports[3]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			//viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+			//viewports[3]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
@@ -3096,7 +3035,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			bool is_checked = view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(p_option) );
 
 			is_checked=!is_checked;
-			VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_VISIBLE,is_checked);
+			VisualServer::get_singleton()->instance_set_visible(origin_instance,is_checked);
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(p_option), is_checked);
 		} break;
@@ -3108,7 +3047,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			for(int i=0;i<3;++i) {
 				if (grid_enable[i]) {
-					VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,grid_enabled);
+					VisualServer::get_singleton()->instance_set_visible(grid_instance[i],grid_enabled);
 					grid_visible[i]=grid_enabled;
 				}
 			}
@@ -3135,7 +3074,7 @@ void SpatialEditor::_init_indicators() {
 
 
 
-	light_transform.rotate(Vector3(1,0,0),Math_PI/5.0);
+	light_transform.rotate(Vector3(1,0,0),-Math_PI/5.0);
 	VisualServer::get_singleton()->instance_set_transform(light_instance,light_transform);
 
 
@@ -3146,18 +3085,20 @@ void SpatialEditor::_init_indicators() {
 
 	{
 
-		indicator_mat = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
-		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+		indicator_mat.instance();
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
+		//indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR,true);
+		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR,true);
 
-		DVector<Color> grid_colors[3];
-		DVector<Vector3> grid_points[3];
+		indicator_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT,true);
+
+		PoolVector<Color> grid_colors[3];
+		PoolVector<Vector3> grid_points[3];
 		Vector<Color> origin_colors;
 		Vector<Vector3> origin_points;
 
-		Color grid_color = EditorSettings::get_singleton()->get("3d_editor/grid_color");
+		Color grid_color = EditorSettings::get_singleton()->get("editors/3d/grid_color");
 
 		for(int i=0;i<3;i++) {
 			Vector3 axis;
@@ -3192,13 +3133,13 @@ void SpatialEditor::_init_indicators() {
 			d.resize(VS::ARRAY_MAX);
 			d[VisualServer::ARRAY_VERTEX]=grid_points[i];
 			d[VisualServer::ARRAY_COLOR]=grid_colors[i];
-			VisualServer::get_singleton()->mesh_add_surface(grid[i],VisualServer::PRIMITIVE_LINES,d);
-			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat);
+			VisualServer::get_singleton()->mesh_add_surface_from_arrays(grid[i],VisualServer::PRIMITIVE_LINES,d);
+			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat->get_rid());
 			grid_instance[i] = VisualServer::get_singleton()->instance_create2(grid[i],get_tree()->get_root()->get_world()->get_scenario());
 
 			grid_visible[i]=false;
 			grid_enable[i]=false;
-			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
+			VisualServer::get_singleton()->instance_set_visible(grid_instance[i],false);
 			VisualServer::get_singleton()->instance_geometry_set_cast_shadows_setting(grid_instance[i], VS::SHADOW_CASTING_SETTING_OFF);
 			VS::get_singleton()->instance_set_layer_mask(grid_instance[i], 1 << SpatialEditorViewport::GIZMO_GRID_LAYER);
 
@@ -3211,13 +3152,13 @@ void SpatialEditor::_init_indicators() {
 		d[VisualServer::ARRAY_VERTEX]=origin_points;
 		d[VisualServer::ARRAY_COLOR]=origin_colors;
 
-		VisualServer::get_singleton()->mesh_add_surface(origin,VisualServer::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat);
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(origin,VisualServer::PRIMITIVE_LINES,d);
+		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat->get_rid());
 
 
-//		origin = VisualServer::get_singleton()->poly_create();
-//		VisualServer::get_singleton()->poly_add_primitive(origin,origin_points,Vector<Vector3>(),origin_colors,Vector<Vector3>());
-//		VisualServer::get_singleton()->poly_set_material(origin,indicator_mat,true);
+		//origin = VisualServer::get_singleton()->poly_create();
+		//VisualServer::get_singleton()->poly_add_primitive(origin,origin_points,Vector<Vector3>(),origin_colors,Vector<Vector3>());
+		//VisualServer::get_singleton()->poly_set_material(origin,indicator_mat,true);
 		origin_instance = VisualServer::get_singleton()->instance_create2(origin,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(origin_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
 
@@ -3225,7 +3166,7 @@ void SpatialEditor::_init_indicators() {
 
 
 
-		VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[1],VS::INSTANCE_FLAG_VISIBLE,true);
+		VisualServer::get_singleton()->instance_set_visible(grid_instance[1],true);
 		grid_enable[1]=true;
 		grid_visible[1]=true;
 		grid_enabled=true;
@@ -3235,7 +3176,7 @@ void SpatialEditor::_init_indicators() {
 
 	{
 		cursor_mesh = VisualServer::get_singleton()->mesh_create();
-		DVector<Vector3> cursor_points;
+		PoolVector<Vector3> cursor_points;
 		float cs = 0.25;
 		cursor_points.push_back(Vector3(+cs,0,0));
 		cursor_points.push_back(Vector3(-cs,0,0));
@@ -3243,17 +3184,15 @@ void SpatialEditor::_init_indicators() {
 		cursor_points.push_back(Vector3(0,-cs,0));
 		cursor_points.push_back(Vector3(0,0,+cs));
 		cursor_points.push_back(Vector3(0,0,-cs));
-		cursor_material=VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param(cursor_material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0,1,1));
-		VisualServer::get_singleton()->material_set_flag( cursor_material, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+		cursor_material.instance();
+		cursor_material->set_albedo(Color(0,1,1));
+		cursor_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED,true);
 
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 		d[VS::ARRAY_VERTEX]=cursor_points;
-		VisualServer::get_singleton()->mesh_add_surface(cursor_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cursor_material);
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(cursor_mesh,VS::PRIMITIVE_LINES,d);
+		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cursor_material->get_rid());
 
 		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(cursor_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
@@ -3269,13 +3208,13 @@ void SpatialEditor::_init_indicators() {
 		//move gizmo
 
 
-		float gizmo_alph = EditorSettings::get_singleton()->get("3d_editor/manipulator_gizmo_opacity");
+		float gizmo_alph = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_opacity");
 
-		gizmo_hl = Ref<FixedMaterial>( memnew( FixedMaterial ) );
-		gizmo_hl->set_flag(Material::FLAG_UNSHADED, true);
-		gizmo_hl->set_flag(Material::FLAG_ONTOP, true);
-		gizmo_hl->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-		gizmo_hl->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,gizmo_alph+0.2f));
+		gizmo_hl = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ) );
+		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
+		gizmo_hl->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		gizmo_hl->set_albedo(Color(1,1,1,gizmo_alph+0.2f));
 
 		for(int i=0;i<3;i++) {
 
@@ -3283,14 +3222,14 @@ void SpatialEditor::_init_indicators() {
 			rotate_gizmo[i]=Ref<Mesh>( memnew( Mesh ) );
 
 
-			Ref<FixedMaterial> mat = memnew( FixedMaterial );
-			mat->set_flag(Material::FLAG_UNSHADED, true);
-			mat->set_flag(Material::FLAG_ONTOP, true);
-			mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+			Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
+			mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+			mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
+			mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
 			Color col;
 			col[i]=1.0;
 			col.a= gizmo_alph;
-			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,col);
+			mat->set_albedo(col);
 			gizmo_color[i]=mat;
 
 
@@ -3329,8 +3268,8 @@ void SpatialEditor::_init_indicators() {
 				for(int k = 0; k < 7 ; k++) {
 
 
-					Matrix3 ma(ivec,Math_PI*2*float(k)/arrow_sides);
-					Matrix3 mb(ivec,Math_PI*2*float(k+1)/arrow_sides);
+					Basis ma(ivec,Math_PI*2*float(k)/arrow_sides);
+					Basis mb(ivec,Math_PI*2*float(k+1)/arrow_sides);
 
 
 					for(int j=0;j<arrow_points-1;j++) {
@@ -3374,8 +3313,8 @@ void SpatialEditor::_init_indicators() {
 				for(int k = 0; k < 33 ; k++) {
 
 
-					Matrix3 ma(ivec,Math_PI*2*float(k)/32);
-					Matrix3 mb(ivec,Math_PI*2*float(k+1)/32);
+					Basis ma(ivec,Math_PI*2*float(k)/32);
+					Basis mb(ivec,Math_PI*2*float(k+1)/32);
 
 
 					for(int j=0;j<4;j++) {
@@ -3436,15 +3375,13 @@ void SpatialEditor::_finish_indicators() {
 
 	VisualServer::get_singleton()->free(cursor_instance);
 	VisualServer::get_singleton()->free(cursor_mesh);
-	VisualServer::get_singleton()->free(indicator_mat);
-	VisualServer::get_singleton()->free(cursor_material);
 }
 
 void SpatialEditor::_instance_scene() {
 #if 0
 	EditorNode *en = get_scene()->get_root_node()->cast_to<EditorNode>();
 	ERR_FAIL_COND(!en);
-	String path = en->get_scenes_dock()->get_selected_path();
+	String path = en->get_filesystem_dock()->get_selected_path();
 	if (path=="") {
 		set_message(TTR("No scene selected to instance!"));
 		return;
@@ -3472,7 +3409,7 @@ void SpatialEditor::_instance_scene() {
 
 void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 
-	if (!is_visible() || get_viewport()->gui_has_modal_stack())
+	if (!is_visible_in_tree() || get_viewport()->gui_has_modal_stack())
 		return;
 
 #if 0
@@ -3482,7 +3419,7 @@ void SpatialEditor::_unhandled_key_input(InputEvent p_event) {
 		EditorNode *en = editor;
 		EditorPluginList *over_plugin_list = en->get_editor_plugins_over();
 
-		if (!over_plugin_list->empty() && over_plugin_list->forward_input_event(p_event)) {
+		if (!over_plugin_list->empty() && over_plugin_list->forward_gui_input(p_event)) {
 
 			return; //ate the over input event
 		}
@@ -3679,17 +3616,17 @@ void SpatialEditor::_node_removed(Node* p_node) {
 
 void SpatialEditor::_bind_methods() {
 
-//	ObjectTypeDB::bind_method("_input_event",&SpatialEditor::_input_event);
-	ObjectTypeDB::bind_method("_unhandled_key_input",&SpatialEditor::_unhandled_key_input);
-	ObjectTypeDB::bind_method("_node_removed",&SpatialEditor::_node_removed);
-	ObjectTypeDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
-	ObjectTypeDB::bind_method("_xform_dialog_action",&SpatialEditor::_xform_dialog_action);
-	ObjectTypeDB::bind_method("_instance_scene",&SpatialEditor::_instance_scene);
-	ObjectTypeDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
-	ObjectTypeDB::bind_method("_request_gizmo",&SpatialEditor::_request_gizmo);
-	ObjectTypeDB::bind_method("_default_light_angle_input",&SpatialEditor::_default_light_angle_input);
-	ObjectTypeDB::bind_method("_update_ambient_light_color",&SpatialEditor::_update_ambient_light_color);
-	ObjectTypeDB::bind_method("_toggle_maximize_view",&SpatialEditor::_toggle_maximize_view);
+	//ClassDB::bind_method("_gui_input",&SpatialEditor::_gui_input);
+	ClassDB::bind_method("_unhandled_key_input",&SpatialEditor::_unhandled_key_input);
+	ClassDB::bind_method("_node_removed",&SpatialEditor::_node_removed);
+	ClassDB::bind_method("_menu_item_pressed",&SpatialEditor::_menu_item_pressed);
+	ClassDB::bind_method("_xform_dialog_action",&SpatialEditor::_xform_dialog_action);
+	ClassDB::bind_method("_instance_scene",&SpatialEditor::_instance_scene);
+	ClassDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
+	ClassDB::bind_method("_request_gizmo",&SpatialEditor::_request_gizmo);
+	ClassDB::bind_method("_default_light_angle_input",&SpatialEditor::_default_light_angle_input);
+	ClassDB::bind_method("_update_ambient_light_color",&SpatialEditor::_update_ambient_light_color);
+	ClassDB::bind_method("_toggle_maximize_view",&SpatialEditor::_toggle_maximize_view);
 
 	ADD_SIGNAL( MethodInfo("transform_key_request") );
 
@@ -3698,9 +3635,9 @@ void SpatialEditor::_bind_methods() {
 
 void SpatialEditor::clear() {
 
-	settings_fov->set_val(EDITOR_DEF("3d_editor/default_fov",60.0));
-	settings_znear->set_val(EDITOR_DEF("3d_editor/default_z_near",0.1));
-	settings_zfar->set_val(EDITOR_DEF("3d_editor/default_z_far",1500.0));
+	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov",60.0));
+	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near",0.1));
+	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far",1500.0));
 
 	for(int i=0;i<4;i++) {
 		viewports[i]->reset();
@@ -3710,11 +3647,11 @@ void SpatialEditor::clear() {
 	_menu_item_pressed(MENU_VIEW_DISPLAY_NORMAL);
 
 
-	VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_VISIBLE,true);
+	VisualServer::get_singleton()->instance_set_visible(origin_instance,true);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
 	for(int i=0;i<3;++i) {
 		if (grid_enable[i]) {
-			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,true);
+			VisualServer::get_singleton()->instance_set_visible(grid_instance[i],true);
 			grid_visible[i]=true;
 		}
 	}
@@ -3730,8 +3667,8 @@ void SpatialEditor::clear() {
 	settings_default_light_rot_x=Math_PI*0.3;
 	settings_default_light_rot_y=Math_PI*0.2;
 
-	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
-	settings_ambient_color->set_color(Color(0.15,0.15,0.15));
+	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
+	settings_ambient_color->set_pick_color(Color(0.15,0.15,0.15));
 	if (!light_instance.is_valid())
 		_menu_item_pressed(MENU_VIEW_USE_DEFAULT_LIGHT);
 
@@ -3743,15 +3680,15 @@ void SpatialEditor::clear() {
 
 void SpatialEditor::_update_ambient_light_color(const Color& p_color) {
 
-	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,settings_ambient_color->get_color());
+	//viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,settings_ambient_color->get_color());
 
 }
 
 void SpatialEditor::_update_default_light_angle() {
 
 	Transform t;
-	t.basis.rotate(Vector3(1,0,0),settings_default_light_rot_x);
-	t.basis.rotate(Vector3(0,1,0),settings_default_light_rot_y);
+	t.basis.rotate(Vector3(1,0,0),-settings_default_light_rot_x);
+	t.basis.rotate(Vector3(0,1,0),-settings_default_light_rot_y);
 	settings_dlight->set_transform(t);
 	if (light_instance.is_valid()) {
 		VS::get_singleton()->instance_set_transform(light_instance,t);
@@ -3884,7 +3821,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("spatial_editor/transform_dialog", TTR("Transform Dialog..")), MENU_TRANSFORM_DIALOG);
 
-	p->connect("item_pressed", this,"_menu_item_pressed");
+	p->connect("id_pressed", this,"_menu_item_pressed");
 
 	view_menu = memnew( MenuButton );
 	view_menu->set_text(TTR("View"));
@@ -3922,7 +3859,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->set_item_checked( p->get_item_index(MENU_VIEW_GRID), true );
 
 
-	p->connect("item_pressed", this,"_menu_item_pressed");
+	p->connect("id_pressed", this,"_menu_item_pressed");
 
 
 	/* REST OF MENU */
@@ -3956,7 +3893,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	VBoxContainer *snap_dialog_vbc = memnew( VBoxContainer );
 	snap_dialog->add_child(snap_dialog_vbc);
-	snap_dialog->set_child_rect(snap_dialog_vbc);
+	//snap_dialog->set_child_rect(snap_dialog_vbc);
 
 	snap_translate = memnew( LineEdit );
 	snap_translate->set_text("1");
@@ -3978,13 +3915,13 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_vbc = memnew( VBoxContainer );
 	settings_vbc->set_custom_minimum_size(Size2(200,0));
 	settings_dialog->add_child(settings_vbc);
-	settings_dialog->set_child_rect(settings_vbc);
+	//settings_dialog->set_child_rect(settings_vbc);
 
 
 
-	settings_light_base = memnew( Control );
+	settings_light_base = memnew( ViewportContainer );
 	settings_light_base->set_custom_minimum_size(Size2(128,128));
-	settings_light_base->connect("input_event",this,"_default_light_angle_input");
+	settings_light_base->connect("gui_input",this,"_default_light_angle_input");
 	settings_vbc->add_margin_child(TTR("Default Light Normal:"),settings_light_base);
 	settings_light_vp = memnew( Viewport );
 	settings_light_vp->set_disable_input(true);
@@ -4012,31 +3949,28 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_ambient_color = memnew( ColorPickerButton );
 	settings_vbc->add_margin_child(TTR("Ambient Light Color:"),settings_ambient_color);
 	settings_ambient_color->connect("color_changed",this,"_update_ambient_light_color");
-
-	viewport_environment->set_enable_fx(Environment::FX_AMBIENT_LIGHT,true);
-	viewport_environment->fx_set_param(Environment::FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0.15,0.15,0.15));
-	settings_ambient_color->set_color(Color(0.15,0.15,0.15));
+	settings_ambient_color->set_pick_color(Color(0.15,0.15,0.15));
 
 
 	settings_fov = memnew( SpinBox );
 	settings_fov->set_max(179);
 	settings_fov->set_min(1);
 	settings_fov->set_step(0.01);
-	settings_fov->set_val(EDITOR_DEF("3d_editor/default_fov",60.0));
+	settings_fov->set_value(EDITOR_DEF("editors/3d/default_fov",60.0));
 	settings_vbc->add_margin_child(TTR("Perspective FOV (deg.):"),settings_fov);
 
 	settings_znear = memnew( SpinBox );
 	settings_znear->set_max(10000);
 	settings_znear->set_min(0.1);
 	settings_znear->set_step(0.01);
-	settings_znear->set_val(EDITOR_DEF("3d_editor/default_z_near",0.1));
+	settings_znear->set_value(EDITOR_DEF("editors/3d/default_z_near",0.1));
 	settings_vbc->add_margin_child(TTR("View Z-Near:"),settings_znear);
 
 	settings_zfar = memnew( SpinBox );
 	settings_zfar->set_max(10000);
 	settings_zfar->set_min(0.1);
 	settings_zfar->set_step(0.01);
-	settings_zfar->set_val(EDITOR_DEF("3d_editor/default_z_far",1500));
+	settings_zfar->set_value(EDITOR_DEF("editors/3d/default_z_far",1500));
 	settings_vbc->add_margin_child(TTR("View Z-Far:"),settings_zfar);
 
 	//settings_dialog->get_cancel()->hide();
@@ -4104,9 +4038,9 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	set_process_unhandled_key_input(true);
 	add_to_group("_spatial_editor_group");
 
-	EDITOR_DEF("3d_editor/manipulator_gizmo_size",80);
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"3d_editor/manipulator_gizmo_size",PROPERTY_HINT_RANGE,"16,1024,1"));
-	EDITOR_DEF("3d_editor/manipulator_gizmo_opacity",0.2);
+	EDITOR_DEF("editors/3d/manipulator_gizmo_size",80);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"editors/3d/manipulator_gizmo_size",PROPERTY_HINT_RANGE,"16,1024,1"));
+	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity",0.2);
 
 	over_gizmo_handle=-1;
 }
@@ -4145,7 +4079,7 @@ void SpatialEditorPlugin::edit(Object *p_object) {
 
 bool SpatialEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Spatial");
+	return p_object->is_class("Spatial");
 }
 
 Dictionary SpatialEditorPlugin::get_state() const {
@@ -4159,12 +4093,12 @@ void SpatialEditorPlugin::set_state(const Dictionary& p_state) {
 
 void SpatialEditor::snap_cursor_to_plane(const Plane& p_plane) {
 
-//	cursor.pos=p_plane.project(cursor.pos);
+	//cursor.pos=p_plane.project(cursor.pos);
 }
 
 void SpatialEditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method("snap_cursor_to_plane",&SpatialEditorPlugin::snap_cursor_to_plane);
+	ClassDB::bind_method("snap_cursor_to_plane",&SpatialEditorPlugin::snap_cursor_to_plane);
 
 }
 

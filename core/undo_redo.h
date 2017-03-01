@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 class UndoRedo : public Object {
 
-	OBJ_TYPE(UndoRedo,Object);
+	GDCLASS(UndoRedo,Object);
 	OBJ_SAVE_TYPE( UndoRedo );
 public:
 
@@ -76,6 +76,7 @@ private:
 		String name;
 		List<Operation> do_ops;
 		List<Operation> undo_ops;
+		uint64_t last_tick;
 	};
 
 	Vector<Action> actions;

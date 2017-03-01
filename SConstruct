@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 EnsureSConsVersion(0, 14)
@@ -144,8 +145,6 @@ opts.Add('vsproj', "Generate Visual Studio Project. (yes/no)", 'no')
 # Thirdparty libraries
 opts.Add('builtin_enet', "Use the builtin enet library (yes/no)", 'yes')
 opts.Add('builtin_freetype', "Use the builtin freetype library (yes/no)", 'yes')
-opts.Add('builtin_glew', "Use the builtin glew library (yes/no)", 'yes')
-opts.Add('builtin_libmpcdec', "Use the builtin libmpcdec library (yes/no)", 'yes')
 opts.Add('builtin_libogg', "Use the builtin libogg library (yes/no)", 'yes')
 opts.Add('builtin_libpng', "Use the builtin libpng library (yes/no)", 'yes')
 opts.Add('builtin_libtheora', "Use the builtin libtheora library (yes/no)", 'yes')
@@ -349,6 +348,9 @@ if selected_platform in platform_list:
     if (env['verbose'] == 'no'):
         methods.no_verbose(sys, env)
 
+    if (True): # FIXME: detect GLES3
+        env.Append( BUILDERS = { 'GLES3_GLSL' : env.Builder(action = methods.build_gles3_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+
     Export('env')
 
     # build subdirs, the build order is dependent on link order.
@@ -356,9 +358,8 @@ if selected_platform in platform_list:
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
-    SConscript("tools/SCsub")
+    SConscript("tools/editor/SCsub")
     SConscript("drivers/SCsub")
-    SConscript("bin/SCsub")
 
     SConscript("modules/SCsub")
     SConscript("main/SCsub")
@@ -373,7 +374,7 @@ if selected_platform in platform_list:
         AddToVSProject(env.modules_sources)
         AddToVSProject(env.scene_sources)
         AddToVSProject(env.servers_sources)
-        AddToVSProject(env.tool_sources)
+        AddToVSProject(env.editor_sources)
 
         # this env flag won't work, it needs to be set in env_base=Environment(MSVC_VERSION='9.0')
         # Even then, SCons still seems to ignore it and builds with the latest MSVC...

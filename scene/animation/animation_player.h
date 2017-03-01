@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
 */
 
 class AnimationPlayer : public Node {
-	OBJ_TYPE( AnimationPlayer, Node );
+	GDCLASS( AnimationPlayer, Node );
 	OBJ_CATEGORY("Animation Nodes");
 
 public:
@@ -142,7 +142,7 @@ private:
 
 		StringName from;
 		StringName to;
-		bool operator<(const BlendKey& bk) const { return from==bk.from?to<bk.to:from<bk.from; }
+		bool operator<(const BlendKey& bk) const { return from==bk.from?String(to)<String(bk.to):String(from)<String(bk.from); }
 	};
 
 
@@ -208,11 +208,11 @@ private:
 	void _node_removed(Node *p_node);
 
 // bind helpers
-	DVector<String> _get_animation_list() const {
+	PoolVector<String> _get_animation_list() const {
 
 		List<StringName> animations;
 		get_animation_list(&animations);
-		DVector<String> ret;
+		PoolVector<String> ret;
 		while(animations.size()) {
 
 			ret.push_back( animations.front()->get());
@@ -271,8 +271,8 @@ public:
 	bool is_active() const;
 	bool is_valid() const;
 
-	void set_speed(float p_speed);
-	float get_speed() const;
+	void set_speed_scale(float p_speed);
+	float get_speed_scale() const;
 
 	void set_autoplay(const String& pname);
 	String get_autoplay() const;

@@ -9,7 +9,7 @@ files = [
     'sem_osx.cpp',
     #	'context_gl_osx.cpp',
     'dir_access_osx.mm',
-    'joystick_osx.cpp',
+    'joypad_osx.cpp',
 ]
 
 env.Program('#bin/godot', files)

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,6 +53,8 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	//Map<int,StringName> string_map;
 	Vector<StringName> string_map;
+
+	StringName _get_string();
 
 	struct ExtResoucre {
 		String path;
@@ -109,7 +111,6 @@ public:
 	virtual bool handles_type(const String& p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
-	virtual Error load_import_metadata(const String &p_path, Ref<ResourceImportMetadata>& r_var) const;
 	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
 
 

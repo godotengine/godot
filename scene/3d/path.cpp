@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,11 +80,11 @@ Ref<Curve3D> Path::get_curve() const{
 
 void Path::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_curve","curve:Curve3D"),&Path::set_curve);
-	ObjectTypeDB::bind_method(_MD("get_curve:Curve3D","curve"),&Path::get_curve);
-	ObjectTypeDB::bind_method(_MD("_curve_changed"),&Path::_curve_changed);
+	ClassDB::bind_method(D_METHOD("set_curve","curve:Curve3D"),&Path::set_curve);
+	ClassDB::bind_method(D_METHOD("get_curve:Curve3D","curve"),&Path::get_curve);
+	ClassDB::bind_method(D_METHOD("_curve_changed"),&Path::_curve_changed);
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), _SCS("set_curve"),_SCS("get_curve"));
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve3D"), "set_curve","get_curve");
 }
 
 Path::Path() {
@@ -137,7 +137,7 @@ void PathFollow::_update_transform() {
 			float tilt = c->interpolate_baked_tilt(o);
 			if (tilt!=0) {
 
-				Matrix3 rot(-n,tilt); //remember.. lookat will be znegative.. znegative!! we abide by opengl clan.
+				Basis rot(-n,tilt); //remember.. lookat will be znegative.. znegative!! we abide by opengl clan.
 				up=rot.xform(up);
 			}
 		}
@@ -257,26 +257,26 @@ void PathFollow::_get_property_list( List<PropertyInfo> *p_list) const{
 
 void PathFollow::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&PathFollow::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&PathFollow::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&PathFollow::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&PathFollow::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_h_offset","h_offset"),&PathFollow::set_h_offset);
-	ObjectTypeDB::bind_method(_MD("get_h_offset"),&PathFollow::get_h_offset);
+	ClassDB::bind_method(D_METHOD("set_h_offset","h_offset"),&PathFollow::set_h_offset);
+	ClassDB::bind_method(D_METHOD("get_h_offset"),&PathFollow::get_h_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_v_offset","v_offset"),&PathFollow::set_v_offset);
-	ObjectTypeDB::bind_method(_MD("get_v_offset"),&PathFollow::get_v_offset);
+	ClassDB::bind_method(D_METHOD("set_v_offset","v_offset"),&PathFollow::set_v_offset);
+	ClassDB::bind_method(D_METHOD("get_v_offset"),&PathFollow::get_v_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_unit_offset","unit_offset"),&PathFollow::set_unit_offset);
-	ObjectTypeDB::bind_method(_MD("get_unit_offset"),&PathFollow::get_unit_offset);
+	ClassDB::bind_method(D_METHOD("set_unit_offset","unit_offset"),&PathFollow::set_unit_offset);
+	ClassDB::bind_method(D_METHOD("get_unit_offset"),&PathFollow::get_unit_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_rotation_mode","rotation_mode"),&PathFollow::set_rotation_mode);
-	ObjectTypeDB::bind_method(_MD("get_rotation_mode"),&PathFollow::get_rotation_mode);
+	ClassDB::bind_method(D_METHOD("set_rotation_mode","rotation_mode"),&PathFollow::set_rotation_mode);
+	ClassDB::bind_method(D_METHOD("get_rotation_mode"),&PathFollow::get_rotation_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_cubic_interpolation","enable"),&PathFollow::set_cubic_interpolation);
-	ObjectTypeDB::bind_method(_MD("get_cubic_interpolation"),&PathFollow::get_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("set_cubic_interpolation","enable"),&PathFollow::set_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"),&PathFollow::get_cubic_interpolation);
 
-	ObjectTypeDB::bind_method(_MD("set_loop","loop"),&PathFollow::set_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop"),&PathFollow::has_loop);
+	ClassDB::bind_method(D_METHOD("set_loop","loop"),&PathFollow::set_loop);
+	ClassDB::bind_method(D_METHOD("has_loop"),&PathFollow::has_loop);
 
 	BIND_CONSTANT( ROTATION_NONE );
 	BIND_CONSTANT( ROTATION_Y );

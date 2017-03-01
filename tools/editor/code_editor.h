@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 
 class GotoLineDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(GotoLineDialog,ConfirmationDialog);
+	GDCLASS(GotoLineDialog,ConfirmationDialog);
 
 	Label *line_label;
 	LineEdit *line;
@@ -62,7 +62,7 @@ public:
 
 class FindReplaceBar : public HBoxContainer {
 
-	OBJ_TYPE(FindReplaceBar,HBoxContainer);
+	GDCLASS(FindReplaceBar,HBoxContainer);
 
 	LineEdit *search_text;
 	ToolButton *find_prev;
@@ -134,7 +134,7 @@ public:
 
 class FindReplaceDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(FindReplaceDialog,ConfirmationDialog);
+	GDCLASS(FindReplaceDialog,ConfirmationDialog);
 
 	LineEdit *search_text;
 	LineEdit *replace_text;
@@ -194,7 +194,7 @@ typedef void (*CodeTextEditorCodeCompleteFunc)(void* p_ud,const String& p_code, 
 
 class CodeTextEditor : public VBoxContainer {
 
-	OBJ_TYPE(CodeTextEditor,VBoxContainer);
+	GDCLASS(CodeTextEditor,VBoxContainer);
 
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
@@ -217,7 +217,7 @@ class CodeTextEditor : public VBoxContainer {
 	void _complete_request();
 	void _font_resize_timeout();
 
-	void _text_editor_input_event(const InputEvent& p_event);
+	void _text_editor_gui_input(const InputEvent& p_event);
 	void _zoom_in();
 	void _zoom_out();
 	void _reset_zoom();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class VideoStreamPlayback : public Resource {
 
-	OBJ_TYPE(VideoStreamPlayback,Resource);
+	GDCLASS(VideoStreamPlayback,Resource);
 
 protected:
 	static void _bind_methods();
@@ -77,7 +77,7 @@ public:
 
 class VideoStream : public Resource {
 
-	OBJ_TYPE( VideoStream, Resource );
+	GDCLASS( VideoStream, Resource );
 	OBJ_SAVE_TYPE( VideoStream ); //children are all saved as AudioStream, so they can be exchanged
 
 public:

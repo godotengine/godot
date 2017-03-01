@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,13 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_scene_importer_fbxconv.h"
+
 #include "os/file_access.h"
 #include "os/os.h"
 #include "tools/editor/editor_settings.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
 
-
+#if 0
 String EditorSceneImporterFBXConv::_id(const String& p_id) const {
 
 	return p_id.replace(":","_").replace("/","_");
@@ -336,7 +337,7 @@ void EditorSceneImporterFBXConv::_add_surface(State& state,Ref<Mesh>& m,const Di
 		int idx = m->get_surface_count();
 
 		Array array = state.surface_cache[id].array;
-		DVector<float> indices = array[Mesh::ARRAY_BONES];
+		PoolVector<float> indices = array[Mesh::ARRAY_BONES];
 		if (indices.size() && part.has("bones")) {
 
 
@@ -361,7 +362,7 @@ void EditorSceneImporterFBXConv::_add_surface(State& state,Ref<Mesh>& m,const Di
 
 			int ilen=indices.size();
 			{
-				DVector<float>::Write iw=indices.write();
+				PoolVector<float>::Write iw=indices.write();
 				for(int j=0;j<ilen;j++) {
 					int b = iw[j];
 					ERR_CONTINUE(!index_map.has(b));
@@ -482,29 +483,29 @@ void EditorSceneImporterFBXConv::_parse_materials(State& state) {
 		ERR_CONTINUE(!material.has("id"));
 		String id = _id(material["id"]);
 
-		Ref<FixedMaterial> mat = memnew( FixedMaterial );
+		Ref<FixedSpatialMaterial> mat = memnew( FixedSpatialMaterial );
 
 		if (material.has("diffuse")) {
-			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,_get_color(material["diffuse"]));
+			mat->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,_get_color(material["diffuse"]));
 		}
 
 		if (material.has("specular")) {
-			mat->set_parameter(FixedMaterial::PARAM_SPECULAR,_get_color(material["specular"]));
+			mat->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR,_get_color(material["specular"]));
 		}
 
 		if (material.has("emissive")) {
-			mat->set_parameter(FixedMaterial::PARAM_EMISSION,_get_color(material["emissive"]));
+			mat->set_parameter(FixedSpatialMaterial::PARAM_EMISSION,_get_color(material["emissive"]));
 		}
 
 		if (material.has("shininess")) {
 			float exp = material["shininess"];
-			mat->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,exp);
+			mat->set_parameter(FixedSpatialMaterial::PARAM_SPECULAR_EXP,exp);
 		}
 
 		if (material.has("opacity")) {
-			Color c = mat->get_parameter(FixedMaterial::PARAM_DIFFUSE);
+			Color c = mat->get_parameter(FixedSpatialMaterial::PARAM_DIFFUSE);
 			c.a=material["opacity"];
-			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,c);
+			mat->set_parameter(FixedSpatialMaterial::PARAM_DIFFUSE,c);
 		}
 
 
@@ -536,15 +537,15 @@ void EditorSceneImporterFBXConv::_parse_materials(State& state) {
 
 					String type=texture["type"];
 					if (type=="DIFFUSE")
-						mat->set_texture(FixedMaterial::PARAM_DIFFUSE,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_DIFFUSE,tex);
 					else if (type=="SPECULAR")
-						mat->set_texture(FixedMaterial::PARAM_SPECULAR,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_SPECULAR,tex);
 					else if (type=="SHININESS")
-						mat->set_texture(FixedMaterial::PARAM_SPECULAR_EXP,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_SPECULAR_EXP,tex);
 					else if (type=="NORMAL")
-						mat->set_texture(FixedMaterial::PARAM_NORMAL,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_NORMAL,tex);
 					else if (type=="EMISSIVE")
-						mat->set_texture(FixedMaterial::PARAM_EMISSION,tex);
+						mat->set_texture(FixedSpatialMaterial::PARAM_EMISSION,tex);
 				}
 
 			}
@@ -680,11 +681,11 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					case Mesh::ARRAY_VERTEX:
 					case Mesh::ARRAY_NORMAL: {
 
-						DVector<Vector3> vtx;
+						PoolVector<Vector3> vtx;
 						vtx.resize(array.size());
 						{
 							int len=array.size();
-							DVector<Vector3>::Write w = vtx.write();
+							PoolVector<Vector3>::Write w = vtx.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -701,12 +702,12 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 						if (binormal_ofs<0)
 							break;
 
-						DVector<float> tangents;
+						PoolVector<float> tangents;
 						tangents.resize(array.size()*4);
 						{
 							int len=array.size();
 
-							DVector<float>::Write w = tangents.write();
+							PoolVector<float>::Write w = tangents.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -736,11 +737,11 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					} break;
 					case Mesh::ARRAY_COLOR: {
 
-						DVector<Color> cols;
+						PoolVector<Color> cols;
 						cols.resize(array.size());
 						{
 							int len=array.size();
-							DVector<Color>::Write w = cols.write();
+							PoolVector<Color>::Write w = cols.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -756,11 +757,11 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					case Mesh::ARRAY_TEX_UV:
 					case Mesh::ARRAY_TEX_UV2: {
 
-						DVector<Vector2> uvs;
+						PoolVector<Vector2> uvs;
 						uvs.resize(array.size());
 						{
 							int len=array.size();
-							DVector<Vector2>::Write w = uvs.write();
+							PoolVector<Vector2>::Write w = uvs.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -775,14 +776,14 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					case Mesh::ARRAY_BONES:
 					case Mesh::ARRAY_WEIGHTS: {
 
-						DVector<float> arr;
+						PoolVector<float> arr;
 						arr.resize(array.size()*4);
 						int po=k==Mesh::ARRAY_WEIGHTS?1:0;
 						lofs=ofs[Mesh::ARRAY_BONES];
 						{
 							int len=array.size();
 
-							DVector<float>::Write w = arr.write();
+							PoolVector<float>::Write w = arr.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -801,12 +802,12 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					} break;
 					case Mesh::ARRAY_INDEX: {
 
-						DVector<int> arr;
+						PoolVector<int> arr;
 						arr.resize(indices.size());
 						{
 							int len=indices.size();
 
-							DVector<int>::Write w = arr.write();
+							PoolVector<int>::Write w = arr.write();
 							for(int l=0;l<len;l++) {
 
 								w[l]=iarray[ indices[l] ];
@@ -838,10 +839,10 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 			}
 
 			if (pt==Mesh::PRIMITIVE_TRIANGLES) {
-				DVector<int> ia=arrays[Mesh::ARRAY_INDEX];
+				PoolVector<int> ia=arrays[Mesh::ARRAY_INDEX];
 				int len=ia.size();
 				{
-					DVector<int>::Write w=ia.write();
+					PoolVector<int>::Write w=ia.write();
 					for(int l=0;l<len;l+=3) {
 						SWAP(w[l+1],w[l+2]);
 					}
@@ -1132,3 +1133,4 @@ EditorSceneImporterFBXConv::EditorSceneImporterFBXConv() {
 #endif
 
 }
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_asset_installer.h"
+
 #include "io/zip_io.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "editor_node.h"
+
 void EditorAssetInstaller::_update_subitems(TreeItem* p_item,bool p_check,bool p_first) {
 
 
@@ -196,7 +198,7 @@ void EditorAssetInstaller::open(const String& p_path,int p_depth) {
 			ti->set_icon(0,get_icon("folder","FileDialog"));
 		} else {
 			String file = path.get_file();
-			String extension = file.extension().to_lower();
+			String extension = file.get_extension().to_lower();
 			if (extension_guess.has(extension)) {
 				ti->set_icon(0,extension_guess[extension]);
 			} else {
@@ -331,7 +333,7 @@ void EditorAssetInstaller::ok_pressed() {
 
 void EditorAssetInstaller::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_item_edited",&EditorAssetInstaller::_item_edited);
+	ClassDB::bind_method("_item_edited",&EditorAssetInstaller::_item_edited);
 
 }
 
@@ -339,7 +341,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+
 
 	tree = memnew( Tree );
 	vb->add_margin_child("Package Contents:",tree,true);

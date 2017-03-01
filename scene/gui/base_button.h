@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,12 +39,21 @@ class ButtonGroup;
 
 class BaseButton : public Control {
 
-	OBJ_TYPE( BaseButton, Control );
+	GDCLASS( BaseButton, Control );
+public:
+
+	enum ActionMode {
+		ACTION_MODE_BUTTON_PRESS,
+		ACTION_MODE_BUTTON_RELEASE,
+	};
+
+private:
 
 	bool toggle_mode;
 	FocusMode enabled_focus_mode;
 	Ref<ShortCut> shortcut;
 
+	ActionMode action_mode;
 	struct Status {
 
 		bool pressed;
@@ -53,14 +62,15 @@ class BaseButton : public Control {
 		bool pressing_inside;
 
 		bool disabled;
-		bool click_on_press;
 		int pressing_button;
 
 	} status;
 
 
-	ButtonGroup *group;
+	Ref<ButtonGroup> button_group;
 
+
+	void _unpress_group();
 
 protected:
 
@@ -70,7 +80,7 @@ protected:
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
-	virtual void _input_event(InputEvent p_event);
+	virtual void _gui_input(InputEvent p_event);
 	virtual void _unhandled_input(InputEvent p_event);
 	void _notification(int p_what);
 
@@ -98,8 +108,8 @@ public:
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
 
-	void set_click_on_press(bool p_click_on_press);
-	bool get_click_on_press() const;
+	void set_action_mode(ActionMode p_mode);
+	ActionMode get_action_mode() const;
 
 	void set_enabled_focus_mode(FocusMode p_mode);
 	FocusMode get_enabled_focus_mode() const;
@@ -109,11 +119,31 @@ public:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
 
+	void set_button_group(const Ref<ButtonGroup>& p_group);
+	Ref<ButtonGroup> get_button_group() const;
+
 	BaseButton();
 	~BaseButton();
 
 };
 
-VARIANT_ENUM_CAST( BaseButton::DrawMode );
+VARIANT_ENUM_CAST( BaseButton::DrawMode )
+VARIANT_ENUM_CAST( BaseButton::ActionMode )
+
+
+
+class ButtonGroup : public Resource {
+
+	GDCLASS(ButtonGroup,Resource)
+friend class BaseButton;
+	Set<BaseButton*> buttons;
+protected:
+	static void _bind_methods();
+public:
+
+	BaseButton* get_pressed_button();
+	void get_buttons(List<BaseButton*> *r_buttons);
+	ButtonGroup();
+};
 
 #endif

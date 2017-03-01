@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 class TileMap : public Node2D {
 
-	OBJ_TYPE( TileMap, Node2D );
+	GDCLASS( TileMap, Node2D );
 public:
 
 	enum Mode {
@@ -66,7 +66,7 @@ private:
 	int quadrant_size;
 	bool center_x,center_y;
 	Mode mode;
-	Matrix32 custom_transform;
+	Transform2D custom_transform;
 	HalfOffset half_offset;
 	bool use_kinematic;
 	Navigation2D *navigation;
@@ -114,12 +114,12 @@ private:
 
 		struct NavPoly {
 			int id;
-			Matrix32 xform;
+			Transform2D xform;
 		};
 
 		struct Occluder {
 			RID id;
-			Matrix32 xform;
+			Transform2D xform;
 		};
 
 
@@ -141,6 +141,8 @@ private:
 
 	Rect2 rect_cache;
 	bool rect_cache_dirty;
+	Rect2 used_size_cache;
+	bool used_size_cache_dirty;
 	bool quadrant_order_dirty;
 	bool y_sort_mode;
 	float fp_adjust;
@@ -153,7 +155,7 @@ private:
 
 	int occluder_light_mask;
 
-	void _fix_cell_transform(Matrix32& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
+	void _fix_cell_transform(Transform2D& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
 
 	Map<PosKey,Quadrant>::Element *_create_quadrant(const PosKey& p_qk);
 	void _erase_quadrant(Map<PosKey,Quadrant>::Element *Q);
@@ -168,15 +170,13 @@ private:
 	_FORCE_INLINE_ int _get_quadrant_size() const;
 
 
-	void _set_tile_data(const DVector<int>& p_data);
-	DVector<int> _get_tile_data() const;
+	void _set_tile_data(const PoolVector<int>& p_data);
+	PoolVector<int> _get_tile_data() const;
 
 	void _set_old_cell_size(int p_size) { set_cell_size(Size2(p_size,p_size)); }
 	int _get_old_cell_size() const { return cell_size.x; }
 
 	_FORCE_INLINE_ Vector2 _map_to_world(int p_x,int p_y,bool p_ignore_ofs=false) const;
-
-	Array get_used_cells() const;
 
 protected:
 
@@ -240,10 +240,10 @@ public:
 	void set_tile_origin(TileOrigin p_tile_origin);
 	TileOrigin get_tile_origin() const;
 
-	void set_custom_transform(const Matrix32& p_xform);
-	Matrix32 get_custom_transform() const;
+	void set_custom_transform(const Transform2D& p_xform);
+	Transform2D get_custom_transform() const;
 
-	Matrix32 get_cell_transform() const;
+	Transform2D get_cell_transform() const;
 	Vector2 get_cell_draw_offset() const;
 
 	Vector2 map_to_world(const Vector2& p_pos, bool p_ignore_ofs=false) const;
@@ -252,10 +252,11 @@ public:
 	void set_y_sort_mode(bool p_enable);
 	bool is_y_sort_mode_enabled() const;
 
+	Array get_used_cells() const;
+	Rect2 get_used_rect(); // Not const because of cache
+
 	void set_occluder_light_mask(int p_mask);
 	int get_occluder_light_mask() const;
-
-	void set_blend_mode(BlendMode p_blend_mode);
 
 	virtual void set_light_mask(int p_light_mask);
 

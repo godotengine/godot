@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -74,7 +74,7 @@ class RasterizerIPhone : public Rasterizer {
 
 			flags=width=height=0;
 			tex_id=0;
-			format=Image::FORMAT_GRAYSCALE;
+			format=Image::FORMAT_L8;
 			gl_components_cache=0;
 			format_has_alpha=false;
 			has_alpha=false;
@@ -100,11 +100,11 @@ class RasterizerIPhone : public Rasterizer {
 		RID textures[VisualServer::FIXED_MATERIAL_PARAM_MAX];
 
 		Transform uv_transform;
-		VS::FixedMaterialTexCoordMode texcoord_mode[VisualServer::FIXED_MATERIAL_PARAM_MAX];
+		VS::FixedSpatialMaterialTexCoordMode texcoord_mode[VisualServer::FIXED_MATERIAL_PARAM_MAX];
 
 		VS::MaterialBlendMode detail_blend_mode;
 
-		VS::FixedMaterialTexGenMode texgen_mode;
+		VS::FixedSpatialMaterialTexGenMode texgen_mode;
 
 		Material() {
 
@@ -624,20 +624,20 @@ public:
 
 	virtual RID material_create();
 
-	virtual void fixed_material_set_parameter(RID p_material, VS::FixedMaterialParam p_parameter, const Variant& p_value);
-	virtual Variant fixed_material_get_parameter(RID p_material,VS::FixedMaterialParam p_parameter) const;
+	virtual void fixed_material_set_parameter(RID p_material, VS::FixedSpatialMaterialParam p_parameter, const Variant& p_value);
+	virtual Variant fixed_material_get_parameter(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const;
 
-	virtual void fixed_material_set_texture(RID p_material,VS::FixedMaterialParam p_parameter, RID p_texture);
-	virtual RID fixed_material_get_texture(RID p_material,VS::FixedMaterialParam p_parameter) const;
+	virtual void fixed_material_set_texture(RID p_material,VS::FixedSpatialMaterialParam p_parameter, RID p_texture);
+	virtual RID fixed_material_get_texture(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const;
 
 	virtual void fixed_material_set_detail_blend_mode(RID p_material,VS::MaterialBlendMode p_mode);
 	virtual VS::MaterialBlendMode fixed_material_get_detail_blend_mode(RID p_material) const;
 
-	virtual void fixed_material_set_texgen_mode(RID p_material,VS::FixedMaterialTexGenMode p_mode);
-	virtual VS::FixedMaterialTexGenMode fixed_material_get_texgen_mode(RID p_material) const;
+	virtual void fixed_material_set_texgen_mode(RID p_material,VS::FixedSpatialMaterialTexGenMode p_mode);
+	virtual VS::FixedSpatialMaterialTexGenMode fixed_material_get_texgen_mode(RID p_material) const;
 
-	virtual void fixed_material_set_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter, VS::FixedMaterialTexCoordMode p_mode);
-	virtual VS::FixedMaterialTexCoordMode fixed_material_get_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter) const;
+	virtual void fixed_material_set_texcoord_mode(RID p_material,VS::FixedSpatialMaterialParam p_parameter, VS::FixedSpatialMaterialTexCoordMode p_mode);
+	virtual VS::FixedSpatialMaterialTexCoordMode fixed_material_get_texcoord_mode(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const;
 
 	virtual void fixed_material_set_uv_transform(RID p_material,const Transform& p_transform);
 	virtual Transform fixed_material_get_uv_transform(RID p_material) const;
@@ -688,7 +688,7 @@ public:
 	virtual void multimesh_instance_set_color(RID p_multimesh,int p_index,const Color& p_color);
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const;
-	virtual AABB multimesh_get_aabb(RID p_multimesh) const;;
+	virtual AABB multimesh_get_aabb(RID p_multimesh) const;
 
 	virtual Transform multimesh_instance_get_transform(RID p_multimesh,int p_index) const;
 	virtual Color multimesh_instance_get_color(RID p_multimesh,int p_index) const;
@@ -846,7 +846,7 @@ public:
 
 	virtual void canvas_begin();
 	virtual void canvas_set_transparency(float p_transparency);
-	virtual void canvas_set_rect(const Rect2& p_rect, bool p_clip);;
+	virtual void canvas_set_rect(const Rect2& p_rect, bool p_clip);
 	virtual void canvas_draw_line(const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width);
 	virtual void canvas_draw_rect(const Rect2& p_rect, bool p_region, const Rect2& p_source,bool p_tile,RID p_texture,const Color& p_modulate);
 	virtual void canvas_draw_style_box(const Rect2& p_rect, RID p_texture,const float *p_margins, bool p_draw_center=true);

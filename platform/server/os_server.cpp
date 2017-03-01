@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/rasterizer_dummy.h"
+//#include "servers/visual/visual_server_raster.h"
+//#include "servers/visual/rasterizer_dummy.h"
 #include "os_server.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,13 +57,13 @@ void OS_Server::initialize(const VideoMode& p_desired,int p_video_driver,int p_a
 	current_videomode=p_desired;
 	main_loop=NULL;
 
-	rasterizer = memnew( RasterizerDummy );
+	//rasterizer = memnew( RasterizerDummy );
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
+	//visual_server = memnew( VisualServerRaster(rasterizer) );
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
@@ -103,9 +103,11 @@ void OS_Server::finalize() {
 	spatial_sound_2d_server->finish();
 	memdelete(spatial_sound_2d_server);
 
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 	memdelete(sample_manager);
 
@@ -114,7 +116,7 @@ void OS_Server::finalize() {
 
 	visual_server->finish();
 	memdelete(visual_server);
-	memdelete(rasterizer);
+	//memdelete(rasterizer);
 
 	physics_server->finish();
 	memdelete(physics_server);
@@ -235,7 +237,7 @@ void OS_Server::run() {
 
 OS_Server::OS_Server() {
 
-	AudioDriverManagerSW::add_driver(&driver_dummy);
+	AudioDriverManager::add_driver(&driver_dummy);
 	//adriver here
 	grab=false;
 

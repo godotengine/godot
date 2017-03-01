@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 class Tabs : public Control {
 
-	OBJ_TYPE( Tabs, Control );
+	GDCLASS( Tabs, Control );
 public:
 
 	enum TabAlign {
@@ -57,6 +57,7 @@ private:
 		String text;
 		Ref<Texture> icon;
 		int ofs_cache;
+		bool disabled;
 		int size_cache;
 		int x_cache;
 		int x_size_cache;
@@ -92,7 +93,7 @@ private:
 
 protected:
 
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const InputEvent& p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -105,6 +106,9 @@ public:
 
 	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
+		
+	void set_tab_disabled(int p_tab, bool p_disabled);
+	bool get_tab_disabled(int p_tab) const;
 
 	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
 	Ref<Texture> get_tab_right_button(int p_tab) const;

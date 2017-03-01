@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -135,7 +135,7 @@ void ProximityGroup::broadcast(String p_name, Variant p_params) {
 	E = groups.front();
 	while (E) {
 
-		get_tree()->call_group(SceneTree::GROUP_CALL_DEFAULT, E->key(), "_proximity_group_broadcast", p_name, p_params);
+		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFAULT, E->key(), "_proximity_group_broadcast", p_name, p_params);
 		E = E->next();
 	};
 
@@ -171,14 +171,14 @@ Vector3 ProximityGroup::get_grid_radius() const {
 
 void ProximityGroup::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_group_name","name"), &ProximityGroup::set_group_name);
-	ObjectTypeDB::bind_method(_MD("broadcast","name", "parameters"), &ProximityGroup::broadcast);
-	ObjectTypeDB::bind_method(_MD("set_dispatch_mode","mode"), &ProximityGroup::set_dispatch_mode);
-	ObjectTypeDB::bind_method(_MD("_proximity_group_broadcast","name","params"), &ProximityGroup::_proximity_group_broadcast);
-	ObjectTypeDB::bind_method(_MD("set_grid_radius","radius"), &ProximityGroup::set_grid_radius);
-	ObjectTypeDB::bind_method(_MD("get_grid_radius"), &ProximityGroup::get_grid_radius);
+	ClassDB::bind_method(D_METHOD("set_group_name","name"), &ProximityGroup::set_group_name);
+	ClassDB::bind_method(D_METHOD("broadcast","name", "parameters"), &ProximityGroup::broadcast);
+	ClassDB::bind_method(D_METHOD("set_dispatch_mode","mode"), &ProximityGroup::set_dispatch_mode);
+	ClassDB::bind_method(D_METHOD("_proximity_group_broadcast","name","params"), &ProximityGroup::_proximity_group_broadcast);
+	ClassDB::bind_method(D_METHOD("set_grid_radius","radius"), &ProximityGroup::set_grid_radius);
+	ClassDB::bind_method(D_METHOD("get_grid_radius"), &ProximityGroup::get_grid_radius);
 
-	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "grid_radius"), _SCS("set_grid_radius"), _SCS("get_grid_radius"));
+	ADD_PROPERTY( PropertyInfo( Variant::VECTOR3, "grid_radius"), "set_grid_radius", "get_grid_radius");
 
 	ADD_SIGNAL( MethodInfo("broadcast", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::ARRAY, "parameters")) );
 };
@@ -190,6 +190,7 @@ ProximityGroup::ProximityGroup() {
 	dispatch_mode = MODE_PROXY;
 
 	grid_radius = Vector3(1, 1, 1);
+	set_notify_transform(true);
 
 };
 

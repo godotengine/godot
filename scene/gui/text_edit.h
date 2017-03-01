@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 class TextEdit : public Control  {
 
-	OBJ_TYPE( TextEdit, Control );
+	GDCLASS( TextEdit, Control );
 
 	struct Cursor {
 		int last_fit_x;
@@ -91,6 +91,7 @@ class TextEdit : public Control  {
 		Color mark_color;
 		Color breakpoint_color;
 		Color current_line_color;
+		Color line_length_guideline_color;
 		Color brace_mismatch_color;
 		Color word_highlighted_color;
 		Color search_result_color;
@@ -294,7 +295,7 @@ class TextEdit : public Control  {
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-//	void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
+	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
 
 	int get_row_height() const;
@@ -316,7 +317,7 @@ class TextEdit : public Control  {
 
 	int _get_column_pos_of_word(const String &p_key, const String &p_search, uint32_t p_search_flags, int p_from_column);
 
-	DVector<int> _search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const;
+	PoolVector<int> _search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const;
 
 	PopupMenu *menu;
 
@@ -333,7 +334,7 @@ protected:
 	void _insert_text(int p_line, int p_column,const String& p_text,int *r_end_line=NULL,int *r_end_char=NULL);
 	void _remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
 	void _insert_text_at_cursor(const String& p_text);
-	void _input_event(const InputEvent& p_input);
+	void _gui_input(const InputEvent& p_input);
 	void _notification(int p_what);
 
 	void _consume_pair_symbol(CharType ch);

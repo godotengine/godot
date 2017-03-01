@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,7 +105,7 @@ void BodyPairSW::contact_added_callback(const Vector3& p_point_A,const Vector3& 
 		// remove the contact with the minimum depth
 
 		int least_deep=-1;
-		float min_depth=1e10;
+		real_t min_depth=1e10;
 
 		for (int i=0;i<=contact_count;i++) {
 
@@ -114,7 +114,7 @@ void BodyPairSW::contact_added_callback(const Vector3& p_point_A,const Vector3& 
 			Vector3 global_B = B->get_transform().basis.xform(c.local_B)+offset_B;
 
 			Vector3 axis = global_A - global_B;
-			float depth = axis.dot( c.normal );
+			real_t depth = axis.dot( c.normal );
 
 			if (depth<min_depth) {
 
@@ -154,7 +154,7 @@ void BodyPairSW::validate_contacts() {
 		Vector3 global_A = A->get_transform().basis.xform(c.local_A);
 		Vector3 global_B = B->get_transform().basis.xform(c.local_B)+offset_B;
 		Vector3 axis = global_A - global_B;
-		float depth = axis.dot( c.normal );
+		real_t depth = axis.dot( c.normal );
 
 		if (depth < -contact_max_separation || (global_B + c.normal * depth - global_A).length() > contact_max_separation) {
 			// contact no longer needed, remove
@@ -173,7 +173,7 @@ void BodyPairSW::validate_contacts() {
 }
 
 
-bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transform& p_xform_A,BodySW *p_B, int p_shape_B,const Transform& p_xform_B) {
+bool BodyPairSW::_test_ccd(real_t p_step,BodySW *p_A, int p_shape_A,const Transform& p_xform_A,BodySW *p_B, int p_shape_B,const Transform& p_xform_B) {
 
 
 
@@ -211,14 +211,14 @@ bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transfo
 	//shorten the linear velocity so it does not hit, but gets close enough, next frame will hit softly or soft enough
 	Vector3 hitpos = p_xform_B.xform(rpos);
 
-	float newlen = hitpos.distance_to(from)-(max-min)*0.01;
+	real_t newlen = hitpos.distance_to(from)-(max-min)*0.01;
 	p_A->set_linear_velocity((mnormal*newlen)/p_step);
 
 	return true;
 }
 
 
-bool BodyPairSW::setup(float p_step) {
+bool BodyPairSW::setup(real_t p_step) {
 
 	//cannot collide
 	if (!A->test_collision_mask(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
@@ -264,7 +264,7 @@ bool BodyPairSW::setup(float p_step) {
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
-	float bias = 0.3f;
+	real_t bias = (real_t)0.3;
 
 	if (shape_A_ptr->get_custom_bias() || shape_B_ptr->get_custom_bias()) {
 
@@ -307,8 +307,8 @@ bool BodyPairSW::setup(float p_step) {
 		}
 #endif
 
-		c.rA = global_A;
-		c.rB = global_B-offset_B;
+		c.rA = global_A-A->get_center_of_mass();
+		c.rB = global_B-B->get_center_of_mass()-offset_B;
 
 		// contact query reporting...
 #if 0
@@ -356,7 +356,7 @@ bool BodyPairSW::setup(float p_step) {
 		if (depth > max_penetration) {
 			c.bias = (depth - max_penetration) * (1.0/(p_step*(1.0/RELAXATION_TIMESTEPS)));
 		} else {
-			float approach = -0.1f * (depth - max_penetration) / (CMP_EPSILON + max_penetration);
+			real_t approach = -0.1 * (depth - max_penetration) / (CMP_EPSILON + max_penetration);
 			approach = CLAMP( approach, CMP_EPSILON, 1.0 );
 			c.bias = approach * (depth - max_penetration) * (1.0/p_step);
 		}
@@ -364,12 +364,12 @@ bool BodyPairSW::setup(float p_step) {
 		c.depth=depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
-		A->apply_impulse( c.rA, -j_vec );
-		B->apply_impulse( c.rB, j_vec );
+		A->apply_impulse( c.rA+A->get_center_of_mass(), -j_vec );
+		B->apply_impulse( c.rB+B->get_center_of_mass(), j_vec );
 		c.acc_bias_impulse=0;
 		Vector3 jb_vec = c.normal * c.acc_bias_impulse;
-		A->apply_bias_impulse( c.rA, -jb_vec );
-		B->apply_bias_impulse( c.rB, jb_vec );
+		A->apply_bias_impulse( c.rA+A->get_center_of_mass(), -jb_vec );
+		B->apply_bias_impulse( c.rB+B->get_center_of_mass(), jb_vec );
 
 		c.bounce = MAX(A->get_bounce(),B->get_bounce());
 		if (c.bounce) {
@@ -387,7 +387,7 @@ bool BodyPairSW::setup(float p_step) {
 	return true;
 }
 
-void BodyPairSW::solve(float p_step) {
+void BodyPairSW::solve(real_t p_step) {
 
 	if (!collided)
 		return;
@@ -418,8 +418,8 @@ void BodyPairSW::solve(float p_step) {
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
 
-			A->apply_bias_impulse(c.rA,-jb);
-			B->apply_bias_impulse(c.rB, jb);
+			A->apply_bias_impulse(c.rA+A->get_center_of_mass(),-jb);
+			B->apply_bias_impulse(c.rB+B->get_center_of_mass(), jb);
 
 			c.active=true;
 		}
@@ -442,8 +442,8 @@ void BodyPairSW::solve(float p_step) {
 			Vector3 j =c.normal * (c.acc_normal_impulse - jnOld);
 
 
-			A->apply_impulse(c.rA,-j);
-			B->apply_impulse(c.rB, j);
+			A->apply_impulse(c.rA+A->get_center_of_mass(),-j);
+			B->apply_impulse(c.rB+B->get_center_of_mass(), j);
 
 			c.active=true;
 		}
@@ -489,8 +489,8 @@ void BodyPairSW::solve(float p_step) {
 			jt = c.acc_tangent_impulse - jtOld;
 
 
-			A->apply_impulse( c.rA, -jt );
-			B->apply_impulse( c.rB, jt );
+			A->apply_impulse( c.rA+A->get_center_of_mass(), -jt );
+			B->apply_impulse( c.rB+B->get_center_of_mass(), jt );
 
 			c.active=true;
 

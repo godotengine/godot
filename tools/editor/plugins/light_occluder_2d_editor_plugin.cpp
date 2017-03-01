@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,7 +102,7 @@ void LightOccluder2DEditor::_wip_close(bool p_closed) {
 	edited_point=-1;
 }
 
-bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
+bool LightOccluder2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 
 	if (!node)
@@ -121,7 +121,7 @@ bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -132,7 +132,7 @@ bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 			Vector<Vector2> poly = Variant(node->get_occluder_polygon()->get_polygon());
 
 			//first check if a point is to be added (segment split)
-			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
+			real_t grab_treshold=EDITOR_DEF("editors/poly_editor/point_grab_radius",8);
 
 			switch(mode) {
 
@@ -283,7 +283,7 @@ bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							}
 						}
-					} if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
+					} else if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
 
 
 
@@ -361,7 +361,7 @@ void LightOccluder2DEditor::_canvas_draw() {
 		poly=Variant(node->get_occluder_polygon()->get_polygon());
 
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 	for(int i=0;i<poly.size();i++) {
@@ -427,10 +427,10 @@ void LightOccluder2DEditor::_create_poly()  {
 
 void LightOccluder2DEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&LightOccluder2DEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&LightOccluder2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&LightOccluder2DEditor::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_create_poly"),&LightOccluder2DEditor::_create_poly);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&LightOccluder2DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&LightOccluder2DEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&LightOccluder2DEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_create_poly"),&LightOccluder2DEditor::_create_poly);
 
 }
 
@@ -468,7 +468,7 @@ LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
 	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 #endif
 
 	mode = MODE_EDIT;
@@ -484,7 +484,7 @@ void LightOccluder2DEditorPlugin::edit(Object *p_object) {
 
 bool LightOccluder2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("LightOccluder2D");
+	return p_object->is_class("LightOccluder2D");
 }
 
 void LightOccluder2DEditorPlugin::make_visible(bool p_visible) {

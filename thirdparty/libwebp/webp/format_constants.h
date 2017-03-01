@@ -72,14 +72,13 @@ typedef enum {
 #define RIFF_HEADER_SIZE   12    // Size of the RIFF header ("RIFFnnnnWEBP").
 #define ANMF_CHUNK_SIZE    16    // Size of an ANMF chunk.
 #define ANIM_CHUNK_SIZE    6     // Size of an ANIM chunk.
-#define FRGM_CHUNK_SIZE    6     // Size of a FRGM chunk.
 #define VP8X_CHUNK_SIZE    10    // Size of a VP8X chunk.
 
 #define MAX_CANVAS_SIZE     (1 << 24)     // 24-bit max for VP8X width/height.
 #define MAX_IMAGE_AREA      (1ULL << 32)  // 32-bit max for width x height.
 #define MAX_LOOP_COUNT      (1 << 16)     // maximum value for loop-count
 #define MAX_DURATION        (1 << 24)     // maximum duration
-#define MAX_POSITION_OFFSET (1 << 24)     // maximum frame/fragment x/y offset
+#define MAX_POSITION_OFFSET (1 << 24)     // maximum frame x/y offset
 
 // Maximum chunk payload is such that adding the header and padding won't
 // overflow a uint32_t.

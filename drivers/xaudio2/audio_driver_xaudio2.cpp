@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "audio_driver_xaudio2.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "os/os.h"
 
 const char * AudioDriverXAudio2::get_name() const
@@ -46,7 +46,8 @@ Error AudioDriverXAudio2::init() {
 
 
 	mix_rate = 48000;
-	output_format = OUTPUT_STEREO;
+	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
+	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
@@ -156,9 +157,9 @@ int AudioDriverXAudio2::get_mix_rate() const {
 	return mix_rate;
 };
 
-AudioDriverSW::OutputFormat AudioDriverXAudio2::get_output_format() const {
+AudioDriver::SpeakerMode AudioDriverXAudio2::get_speaker_mode() const {
 
-	return output_format;
+	return speaker_mode;
 };
 
 float AudioDriverXAudio2::get_latency() {

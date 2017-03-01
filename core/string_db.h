@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "hash_map.h"
 #include "ustring.h"
 #include "safe_refcount.h"
-
+#include "os/mutex.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -83,6 +83,7 @@ class StringName {
 friend void register_core_types();
 friend void unregister_core_types();
 
+	static Mutex *lock;
 	static void setup();
 	static void cleanup();
 	static bool configured;
@@ -153,8 +154,5 @@ struct StringNameHasher {
 };
 
 StringName _scs_create(const char *p_chr);
-
-//#define _SCS(m_cstr) (m_cstr[0]?StringName(StaticCString::create(m_cstr)):StringName())
-#define _SCS(m_cstr) _scs_create(m_cstr)
 
 #endif

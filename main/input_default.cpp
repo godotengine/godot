@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,16 +126,16 @@ bool InputDefault::is_action_pressed(const StringName& p_action) const{
 				 if(mouse_button_mask&(1<<iemb.button_index))
 					 return true;
 			} break;
-			case InputEvent::JOYSTICK_BUTTON: {
+			case InputEvent::JOYPAD_BUTTON: {
 
-				const InputEventJoystickButton &iejb=E->get().joy_button;
+				const InputEventJoypadButton &iejb=E->get().joy_button;
 				int c = _combine_device(iejb.button_index,device);
 				if (joy_buttons_pressed.has(c))
 					return true;
 			} break;
-			case InputEvent::JOYSTICK_MOTION: {
+			case InputEvent::JOYPAD_MOTION: {
 
-				const InputEventJoystickMotion &iejm=E->get().joy_motion;
+				const InputEventJoypadMotion &iejm=E->get().joy_motion;
 				int c = _combine_device(iejm.axis,device);
 				if (_joy_axis.has(c)) {
 					if (iejm.axis_value < 0) {
@@ -158,10 +158,10 @@ bool InputDefault::is_action_just_pressed(const StringName& p_action) const {
 	if (!E)
 		return false;
 
-	if (OS::get_singleton()->is_in_fixed_frame()) {
-		return E->get().pressed && E->get().fixed_frame==OS::get_singleton()->get_fixed_frames();
+	if (Engine::get_singleton()->is_in_fixed_frame()) {
+		return E->get().pressed && E->get().fixed_frame==Engine::get_singleton()->get_fixed_frames();
 	} else {
-		return E->get().pressed && E->get().idle_frame==OS::get_singleton()->get_idle_frames();
+		return E->get().pressed && E->get().idle_frame==Engine::get_singleton()->get_idle_frames();
 	}
 }
 
@@ -171,10 +171,10 @@ bool InputDefault::is_action_just_released(const StringName& p_action) const{
 	if (!E)
 		return false;
 
-	if (OS::get_singleton()->is_in_fixed_frame()) {
-		return !E->get().pressed && E->get().fixed_frame==OS::get_singleton()->get_fixed_frames();
+	if (Engine::get_singleton()->is_in_fixed_frame()) {
+		return !E->get().pressed && E->get().fixed_frame==Engine::get_singleton()->get_fixed_frames();
 	} else {
-		return !E->get().pressed && E->get().idle_frame==OS::get_singleton()->get_idle_frames();
+		return !E->get().pressed && E->get().idle_frame==Engine::get_singleton()->get_idle_frames();
 	}
 }
 
@@ -235,7 +235,7 @@ static String _hex_str(uint8_t p_byte) {
 void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) {
 
 	_THREAD_SAFE_METHOD_
-	Joystick js;
+	Joypad js;
 	js.name = p_connected ? p_name : "";
 	js.uid = p_connected ? p_guid : "";
 	js.mapping = -1;
@@ -277,6 +277,12 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 	emit_signal("joy_connection_changed", p_idx, p_connected);
 };
 
+Vector3 InputDefault::get_gravity() const{
+
+	_THREAD_SAFE_METHOD_
+	return gravity;
+}
+
 Vector3 InputDefault::get_accelerometer() const{
 
 	_THREAD_SAFE_METHOD_
@@ -307,7 +313,7 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 			if (p_event.key.scancode==0)
 				break;
 
-		//	print_line(p_event);
+			//print_line(p_event);
 
 			if (p_event.key.pressed)
 				keys_pressed.insert(p_event.key.scancode);
@@ -356,7 +362,7 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 			}
 
 		} break;
-		case InputEvent::JOYSTICK_BUTTON: {
+		case InputEvent::JOYPAD_BUTTON: {
 
 			int c = _combine_device(p_event.joy_button.button_index,p_event.device);
 
@@ -365,7 +371,7 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 			else
 				joy_buttons_pressed.erase(c);
 		} break;
-		case InputEvent::JOYSTICK_MOTION: {
+		case InputEvent::JOYPAD_MOTION: {
 			set_joy_axis(p_event.device, p_event.joy_motion.axis, p_event.joy_motion.axis_value);
 		} break;
 
@@ -375,15 +381,12 @@ void InputDefault::parse_input_event(const InputEvent& p_event) {
 	if (!p_event.is_echo()) {
 		for (const Map<StringName,InputMap::Action>::Element *E=InputMap::get_singleton()->get_action_map().front();E;E=E->next()) {
 
-			if (InputMap::get_singleton()->event_is_action(p_event,E->key())) {
-
-				if(is_action_pressed(E->key()) != p_event.is_pressed()) {
-					Action action;
-					action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-					action.idle_frame=OS::get_singleton()->get_idle_frames();
-					action.pressed=p_event.is_pressed();
-					action_state[E->key()]=action;
-				}
+			if (InputMap::get_singleton()->event_is_action(p_event,E->key()) && is_action_pressed(E->key()) != p_event.is_pressed()) {
+				Action action;
+				action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+				action.idle_frame=Engine::get_singleton()->get_idle_frames();
+				action.pressed=p_event.is_pressed();
+				action_state[E->key()]=action;
 			}
 		}
 	}
@@ -421,6 +424,14 @@ void InputDefault::stop_joy_vibration(int p_device) {
 	vibration.duration = 0;
 	vibration.timestamp = OS::get_singleton()->get_ticks_usec();
 	joy_vibration[p_device] = vibration;
+}
+
+void InputDefault::set_gravity(const Vector3& p_gravity) {
+
+	_THREAD_SAFE_METHOD_
+
+	gravity=p_gravity;
+
 }
 
 void InputDefault::set_accelerometer(const Vector3& p_accel) {
@@ -465,14 +476,14 @@ Point2 InputDefault::get_mouse_pos() const {
 
 	return mouse_pos;
 }
-Point2 InputDefault::get_mouse_speed() const {
+Point2 InputDefault::get_last_mouse_speed() const {
 
 	return mouse_speed_track.speed;
 }
 
 int InputDefault::get_mouse_button_mask() const {
 
-	return OS::get_singleton()->get_mouse_button_state();
+	return mouse_button_mask;// do not trust OS implementaiton, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
 void InputDefault::warp_mouse_pos(const Vector2& p_to) {
@@ -490,8 +501,8 @@ void InputDefault::action_press(const StringName& p_action) {
 
 	Action action;
 
-	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-	action.idle_frame=OS::get_singleton()->get_idle_frames();
+	action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+	action.idle_frame=Engine::get_singleton()->get_idle_frames();
 	action.pressed=true;
 
 	action_state[p_action]=action;
@@ -502,8 +513,8 @@ void InputDefault::action_release(const StringName& p_action){
 
 	Action action;
 
-	action.fixed_frame=OS::get_singleton()->get_fixed_frames();
-	action.idle_frame=OS::get_singleton()->get_idle_frames();
+	action.fixed_frame=Engine::get_singleton()->get_fixed_frames();
+	action.idle_frame=Engine::get_singleton()->get_idle_frames();
 	action.pressed=false;
 
 	action_state[p_action]=action;
@@ -554,8 +565,7 @@ void InputDefault::set_mouse_in_window(bool p_in_window) {
 }
 
 // from github.com/gabomdq/SDL_GameControllerDB
-static const char *s_ControllerMappings [] =
-{
+static const char *s_ControllerMappings [] = {
 	#ifdef WINDOWS_ENABLED
 	"00f00300000000000000504944564944,RetroUSB.com RetroPad,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
 	"00f0f100000000000000504944564944,RetroUSB.com Super RetroPort,a:b1,b:b5,x:b0,y:b4,back:b2,start:b3,leftshoulder:b6,rightshoulder:b7,leftx:a0,lefty:a1,",
@@ -791,7 +801,7 @@ InputDefault::InputDefault() {
 uint32_t InputDefault::joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed) {
 
 	_THREAD_SAFE_METHOD_;
-	Joystick& joy = joy_names[p_device];
+	Joypad& joy = joy_names[p_device];
 	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
 	if (joy.last_buttons[p_button] == p_pressed) {
 		return p_last_id;
@@ -831,7 +841,7 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 	_THREAD_SAFE_METHOD_;
 
-	Joystick& joy = joy_names[p_device];
+	Joypad& joy = joy_names[p_device];
 
 	if (joy.last_axis[p_axis] == p_value.value) {
 		return p_last_id;
@@ -935,7 +945,7 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
 
 	_THREAD_SAFE_METHOD_;
-	const Joystick& joy = joy_names[p_device];
+	const Joypad& joy = joy_names[p_device];
 
 	JoyEvent* map;
 
@@ -969,7 +979,7 @@ uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
 uint32_t InputDefault::_button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed) {
 
 	InputEvent ievent;
-	ievent.type = InputEvent::JOYSTICK_BUTTON;
+	ievent.type = InputEvent::JOYPAD_BUTTON;
 	ievent.device = p_device;
 	ievent.ID = ++p_last_id;
 	ievent.joy_button.button_index = p_index;
@@ -983,7 +993,7 @@ uint32_t InputDefault::_button_event(uint32_t p_last_id, int p_device, int p_ind
 uint32_t InputDefault::_axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value) {
 
 	InputEvent ievent;
-	ievent.type = InputEvent::JOYSTICK_MOTION;
+	ievent.type = InputEvent::JOYPAD_MOTION;
 	ievent.device = p_device;
 	ievent.ID = ++p_last_id;
 	ievent.joy_motion.axis = p_axis;
@@ -1148,9 +1158,9 @@ String InputDefault::get_joy_guid_remapped(int p_device) const {
 	return joy_names[p_device].uid;
 }
 
-Array InputDefault::get_connected_joysticks() {
+Array InputDefault::get_connected_joypads() {
 	Array ret;
-	Map<int, Joystick>::Element *elem = joy_names.front();
+	Map<int, Joypad>::Element *elem = joy_names.front();
 	while (elem) {
 		if (elem->get().connected) {
 			ret.push_back(elem->key());
@@ -1202,6 +1212,15 @@ int InputDefault::get_joy_button_index_from_string(String p_button) {
 		}
 	}
 	ERR_FAIL_V(-1);
+}
+
+int InputDefault::get_unused_joy_id() {
+	for (int i=0;i<JOYPADS_MAX;i++) {
+		if (!joy_names.has(i) || !joy_names[i].connected) {
+			return i;
+		}
+	}
+	return -1;
 }
 
 String InputDefault::get_joy_axis_string(int p_axis) {

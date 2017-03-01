@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,219 +34,377 @@
 #include "scene/resources/shader.h"
 #include "resource.h"
 #include "servers/visual/shader_language.h"
-
+#include "self_list.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
 class Material : public Resource {
 
-	OBJ_TYPE(Material,Resource);
+	GDCLASS(Material,Resource);
 	RES_BASE_EXTENSION("mtl");
 	OBJ_SAVE_TYPE( Material );
 
-public:
-
-	enum Flag {
-		FLAG_VISIBLE = VS::MATERIAL_FLAG_VISIBLE,
-		FLAG_DOUBLE_SIDED = VS::MATERIAL_FLAG_DOUBLE_SIDED,
-		FLAG_INVERT_FACES = VS::MATERIAL_FLAG_INVERT_FACES,
-		FLAG_UNSHADED = VS::MATERIAL_FLAG_UNSHADED,
-		FLAG_ONTOP = VS::MATERIAL_FLAG_ONTOP,
-		FLAG_LIGHTMAP_ON_UV2 = VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2,
-		FLAG_COLOR_ARRAY_SRGB = VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB,
-		FLAG_MAX = VS::MATERIAL_FLAG_MAX
-	};
-
-	enum BlendMode {
-		BLEND_MODE_MIX = VS::MATERIAL_BLEND_MODE_MIX,
-		BLEND_MODE_MUL = VS::MATERIAL_BLEND_MODE_MUL,
-		BLEND_MODE_ADD = VS::MATERIAL_BLEND_MODE_ADD,
-		BLEND_MODE_SUB = VS::MATERIAL_BLEND_MODE_SUB,
-		BLEND_MODE_PREMULT_ALPHA = VS::MATERIAL_BLEND_MODE_PREMULT_ALPHA,
-
-	};
-
-	enum DepthDrawMode {
-		DEPTH_DRAW_ALWAYS = VS::MATERIAL_DEPTH_DRAW_ALWAYS,
-		DEPTH_DRAW_OPAQUE_ONLY = VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY,
-		DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA = VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA,
-		DEPTH_DRAW_NEVER = VS::MATERIAL_DEPTH_DRAW_NEVER
-	};
-
-
-
-private:
-	BlendMode blend_mode;
-	bool flags[VS::MATERIAL_FLAG_MAX];
-	float line_width;
-	DepthDrawMode depth_draw_mode;
-protected:
 	RID material;
+protected:
 
-	static void _bind_methods();
-
+	_FORCE_INLINE_  RID _get_material() const { return material; }
 public:
-	void set_flag(Flag p_flag,bool p_enabled);
-	bool get_flag(Flag p_flag) const;
-
-	void set_blend_mode(BlendMode p_blend_mode);
-	BlendMode get_blend_mode() const;
-
-	void set_depth_draw_mode(DepthDrawMode p_depth_draw_mode);
-	DepthDrawMode get_depth_draw_mode() const;
-
-	void set_line_width(float p_width);
-	float get_line_width() const;
 
 	virtual RID get_rid() const;
-
-	Material(const RID& p_rid=RID());
+	Material();
 	virtual ~Material();
 };
 
-VARIANT_ENUM_CAST( Material::Flag );
-VARIANT_ENUM_CAST( Material::DepthDrawMode );
 
-VARIANT_ENUM_CAST( Material::BlendMode );
+class FixedSpatialMaterial : public Material {
+
+	GDCLASS(FixedSpatialMaterial,Material)
 
 
-class FixedMaterial : public Material {
-
-	OBJ_TYPE( FixedMaterial, Material );
-	REVERSE_GET_PROPERTY_LIST
 public:
 
-	enum Parameter {
-		PARAM_DIFFUSE=VS::FIXED_MATERIAL_PARAM_DIFFUSE,
-		PARAM_DETAIL=VS::FIXED_MATERIAL_PARAM_DETAIL,
-		PARAM_SPECULAR=VS::FIXED_MATERIAL_PARAM_SPECULAR,
-		PARAM_EMISSION=VS::FIXED_MATERIAL_PARAM_EMISSION,
-		PARAM_SPECULAR_EXP=VS::FIXED_MATERIAL_PARAM_SPECULAR_EXP,
-		PARAM_GLOW=VS::FIXED_MATERIAL_PARAM_GLOW,
-		PARAM_NORMAL=VS::FIXED_MATERIAL_PARAM_NORMAL,
-		PARAM_SHADE_PARAM=VS::FIXED_MATERIAL_PARAM_SHADE_PARAM,
-		PARAM_MAX=VS::FIXED_MATERIAL_PARAM_MAX
+	enum TextureParam {
+		TEXTURE_ALBEDO,
+		TEXTURE_SPECULAR,
+		TEXTURE_EMISSION,
+		TEXTURE_NORMAL,
+		TEXTURE_RIM,
+		TEXTURE_CLEARCOAT,
+		TEXTURE_FLOWMAP,
+		TEXTURE_AMBIENT_OCCLUSION,
+		TEXTURE_HEIGHT,
+		TEXTURE_SUBSURFACE_SCATTERING,
+		TEXTURE_REFRACTION,
+		TEXTURE_REFRACTION_ROUGHNESS,
+		TEXTURE_DETAIL_MASK,
+		TEXTURE_DETAIL_ALBEDO,
+		TEXTURE_DETAIL_NORMAL,
+		TEXTURE_MAX
+
+
 	};
 
 
-	enum TexCoordMode {
-
-		TEXCOORD_UV=VS::FIXED_MATERIAL_TEXCOORD_UV,
-		TEXCOORD_UV_TRANSFORM=VS::FIXED_MATERIAL_TEXCOORD_UV_TRANSFORM,
-		TEXCOORD_UV2=VS::FIXED_MATERIAL_TEXCOORD_UV2,
-		TEXCOORD_SPHERE=VS::FIXED_MATERIAL_TEXCOORD_SPHERE
+	enum DetailUV {
+		DETAIL_UV_1,
+		DETAIL_UV_2
 	};
 
-	enum FixedFlag {
-		FLAG_USE_ALPHA=VS::FIXED_MATERIAL_FLAG_USE_ALPHA,
-		FLAG_USE_COLOR_ARRAY=VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,
-		FLAG_USE_POINT_SIZE=VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE,
-		FLAG_DISCARD_ALPHA=VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA,
-		FLAG_USE_XY_NORMALMAP=VS::FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP,
-		FLAG_MAX=VS::FIXED_MATERIAL_FLAG_MAX
+	enum Feature {
+		FEATURE_TRANSPARENT,
+		FEATURE_EMISSION,
+		FEATURE_NORMAL_MAPPING,
+		FEATURE_RIM,
+		FEATURE_CLEARCOAT,
+		FEATURE_ANISOTROPY,
+		FEATURE_AMBIENT_OCCLUSION,
+		FEATURE_HEIGHT_MAPPING,
+		FEATURE_SUBSURACE_SCATTERING,
+		FEATURE_REFRACTION,
+		FEATURE_DETAIL,
+		FEATURE_MAX
 	};
 
-	enum LightShader {
 
-		LIGHT_SHADER_LAMBERT=VS::FIXED_MATERIAL_LIGHT_SHADER_LAMBERT,
-		LIGHT_SHADER_WRAP=VS::FIXED_MATERIAL_LIGHT_SHADER_WRAP,
-		LIGHT_SHADER_VELVET=VS::FIXED_MATERIAL_LIGHT_SHADER_VELVET,
-		LIGHT_SHADER_TOON=VS::FIXED_MATERIAL_LIGHT_SHADER_TOON
+	enum BlendMode {
+		BLEND_MODE_MIX,
+		BLEND_MODE_ADD,
+		BLEND_MODE_SUB,
+		BLEND_MODE_MUL,
+	};
+
+	enum DepthDrawMode {
+		DEPTH_DRAW_OPAQUE_ONLY,
+		DEPTH_DRAW_ALWAYS,
+		DEPTH_DRAW_DISABLED,
+		DEPTH_DRAW_ALPHA_OPAQUE_PREPASS
+
+	};
+
+	enum CullMode {
+		CULL_BACK,
+		CULL_FRONT,
+		CULL_DISABLED
+	};
+
+	enum Flags {
+		FLAG_UNSHADED,
+		FLAG_ONTOP,
+		FLAG_ALBEDO_FROM_VERTEX_COLOR,
+		FLAG_SRGB_VERTEX_COLOR,
+		FLAG_USE_POINT_SIZE,
+		FLAG_MAX
+	};
+
+	enum DiffuseMode {
+		DIFFUSE_LAMBERT,
+		DIFFUSE_LAMBERT_WRAP,
+		DIFFUSE_OREN_NAYAR,
+		DIFFUSE_BURLEY,
+	};
+
+	enum SpecularMode {
+		SPECULAR_MODE_METALLIC,
+		SPECULAR_MODE_SPECULAR,
 	};
 
 private:
+	union MaterialKey {
 
+		struct {
+			uint32_t feature_mask : 14;
+			uint32_t detail_uv : 1;
+			uint32_t blend_mode : 2;
+			uint32_t depth_draw_mode : 2;
+			uint32_t cull_mode : 2;
+			uint32_t flags : 5;
+			uint32_t detail_blend_mode : 2;
+			uint32_t diffuse_mode : 2;
+			uint32_t invalid_key : 1;
+			uint32_t specular_mode : 1;
+		};
 
-	struct Node {
+		uint32_t key;
 
-		int param;
-		int mult;
-		int tex;
+		bool operator<(const MaterialKey& p_key) const {
+			return key < p_key.key;
+		}
+
 	};
 
-	Variant param[PARAM_MAX];
-	Ref<Texture> texture_param[PARAM_MAX];
-	TexCoordMode texture_texcoord[PARAM_MAX];
-	LightShader light_shader;
-	bool fixed_flags[FLAG_MAX];
+	struct ShaderData {
+		RID shader;
+		int users;
+	};
+
+	static Map<MaterialKey,ShaderData> shader_map;
+
+	MaterialKey current_key;
+
+	_FORCE_INLINE_ MaterialKey _compute_key() const {
+
+		MaterialKey mk;
+		mk.key=0;
+		for(int i=0;i<FEATURE_MAX;i++) {
+			if (features[i]) {
+				mk.feature_mask|=(1<<i);
+			}
+		}
+		mk.detail_uv=detail_uv;
+		mk.blend_mode=blend_mode;
+		mk.depth_draw_mode=depth_draw_mode;
+		mk.cull_mode=cull_mode;
+		for(int i=0;i<FLAG_MAX;i++) {
+			if (flags[i]) {
+				mk.flags|=(1<<i);
+			}
+		}
+		mk.detail_blend_mode=detail_blend_mode;
+		mk.diffuse_mode=diffuse_mode;
+		mk.specular_mode=specular_mode;
+
+		return mk;
+	}
+
+	struct ShaderNames {
+		StringName albedo;
+		StringName specular;
+		StringName metalness;
+		StringName roughness;
+		StringName emission;
+		StringName emission_energy;
+		StringName normal_scale;
+		StringName rim;
+		StringName rim_tint;
+		StringName clearcoat;
+		StringName clearcoat_gloss;
+		StringName anisotropy;
+		StringName height_scale;
+		StringName subsurface_scattering_strength;
+		StringName refraction;
+		StringName refraction_roughness;
+		StringName point_size;
+		StringName uv1_scale;
+		StringName uv1_offset;
+		StringName uv2_scale;
+		StringName uv2_offset;
+		StringName texture_names[TEXTURE_MAX];
+
+	};
+
+	static Mutex *material_mutex;
+	static SelfList<FixedSpatialMaterial>::List dirty_materials;
+	static ShaderNames* shader_names;
+
+	SelfList<FixedSpatialMaterial> element;
+
+	void _update_shader();
+	_FORCE_INLINE_ void _queue_shader_change();
+	_FORCE_INLINE_ bool _is_shader_dirty() const;
+
+	Color albedo;
+	Color specular;
+	float metalness;
+	float roughness;
+	Color emission;
+	float emission_energy;
+	float normal_scale;
+	float rim;
+	float rim_tint;
+	float clearcoat;
+	float clearcoat_gloss;
+	float anisotropy;
+	float height_scale;
+	float subsurface_scattering_strength;
+	float refraction;
+	float refraction_roughness;
+	float line_width;
 	float point_size;
 
+	Vector2 uv1_scale;
+	Vector2 uv1_offset;
 
-	Transform uv_transform;
+	Vector2 uv2_scale;
+	Vector2 uv2_offset;
+
+	DetailUV detail_uv;
+
+	BlendMode blend_mode;
+	BlendMode detail_blend_mode;
+	DepthDrawMode depth_draw_mode;
+	CullMode cull_mode;
+	bool flags[FLAG_MAX];
+	DiffuseMode diffuse_mode;
+	SpecularMode specular_mode;
+
+	bool features[FEATURE_MAX];
+
+	Ref<Texture> textures[TEXTURE_MAX];
+
+	_FORCE_INLINE_ void _validate_feature(const String& text, Feature feature,PropertyInfo& property) const;
 
 protected:
 
-
 	static void _bind_methods();
-
+	void _validate_property(PropertyInfo& property) const;
 
 public:
 
-	void set_fixed_flag(FixedFlag p_flag, bool p_value);
-	bool get_fixed_flag(FixedFlag p_flag) const;
 
-	void set_parameter(Parameter p_parameter, const Variant& p_value);
-	Variant get_parameter(Parameter p_parameter) const;
+	void set_albedo(const Color& p_albedo);
+	Color get_albedo() const;
 
-	void set_texture(Parameter p_parameter, Ref<Texture> p_texture);
-	Ref<Texture> get_texture(Parameter p_parameter) const;
+	void set_specular_mode(SpecularMode p_mode);
+	SpecularMode get_specular_mode() const;
 
-	void set_texcoord_mode(Parameter p_parameter, TexCoordMode p_mode);
-	TexCoordMode get_texcoord_mode(Parameter p_parameter) const;
+	void set_specular(const Color& p_specular);
+	Color get_specular() const;
 
-	void set_light_shader(LightShader p_shader);
-	LightShader get_light_shader() const;
+	void set_metalness(float p_metalness);
+	float get_metalness() const;
 
-	void set_uv_transform(const Transform& p_transform);
-	Transform get_uv_transform() const;
+	void set_roughness(float p_roughness);
+	float get_roughness() const;
 
-	void set_point_size(float p_transform);
+	void set_emission(const Color& p_emission);
+	Color get_emission() const;
+
+	void set_emission_energy(float p_emission_energy);
+	float get_emission_energy() const;
+
+	void set_normal_scale(float p_normal_scale);
+	float get_normal_scale() const;
+
+	void set_rim(float p_rim);
+	float get_rim() const;
+
+	void set_rim_tint(float p_rim_tint);
+	float get_rim_tint() const;
+
+	void set_clearcoat(float p_clearcoat);
+	float get_clearcoat() const;
+
+	void set_clearcoat_gloss(float p_clearcoat_gloss);
+	float get_clearcoat_gloss() const;
+
+	void set_anisotropy(float p_anisotropy);
+	float get_anisotropy() const;
+
+	void set_height_scale(float p_height_scale);
+	float get_height_scale() const;
+
+	void set_subsurface_scattering_strength(float p_strength);
+	float get_subsurface_scattering_strength() const;
+
+	void set_refraction(float p_refraction);
+	float get_refraction() const;
+
+	void set_refraction_roughness(float p_refraction_roughness);
+	float get_refraction_roughness() const;
+
+	void set_line_width(float p_line_width);
+	float get_line_width() const;
+
+	void set_point_size(float p_point_size);
 	float get_point_size() const;
 
-	FixedMaterial();
-	~FixedMaterial();
+	void set_detail_uv(DetailUV p_detail_uv);
+	DetailUV get_detail_uv() const;
 
+	void set_blend_mode(BlendMode p_mode);
+	BlendMode get_blend_mode() const;
+
+	void set_detail_blend_mode(BlendMode p_mode);
+	BlendMode get_detail_blend_mode() const;
+
+	void set_depth_draw_mode(DepthDrawMode p_mode);
+	DepthDrawMode get_depth_draw_mode() const;
+
+	void set_cull_mode(CullMode p_mode);
+	CullMode get_cull_mode() const;
+
+	void set_diffuse_mode(DiffuseMode p_mode);
+	DiffuseMode get_diffuse_mode() const;
+
+	void set_flag(Flags p_flag,bool p_enabled);
+	bool get_flag(Flags p_flag) const;
+
+	void set_texture(TextureParam p_param,const Ref<Texture>& p_texture);
+	Ref<Texture> get_texture(TextureParam p_param) const;
+
+	void set_feature(Feature p_feature,bool p_enabled);
+	bool get_feature(Feature p_feature) const;
+
+	void set_uv1_scale(const Vector2& p_scale);
+	Vector2 get_uv1_scale() const;
+
+	void set_uv1_offset(const Vector2& p_offset);
+	Vector2 get_uv1_offset() const;
+
+	void set_uv2_scale(const Vector2& p_scale);
+	Vector2 get_uv2_scale() const;
+
+	void set_uv2_offset(const Vector2& p_offset);
+	Vector2 get_uv2_offset() const;
+
+	static void init_shaders();
+	static void finish_shaders();
+	static void flush_changes();
+
+	FixedSpatialMaterial();
+	virtual ~FixedSpatialMaterial();
 };
 
-
-
-VARIANT_ENUM_CAST( FixedMaterial::Parameter );
-VARIANT_ENUM_CAST( FixedMaterial::TexCoordMode );
-VARIANT_ENUM_CAST( FixedMaterial::FixedFlag );
-VARIANT_ENUM_CAST( FixedMaterial::LightShader );
-
-class ShaderMaterial : public Material {
-
-	OBJ_TYPE( ShaderMaterial, Material );
-
-	Ref<Shader> shader;
-
-
-
-	void _shader_changed();
-	static void _shader_parse(void*p_self,ShaderLanguage::ProgramNode*p_node);
-
-protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
-
-	static void _bind_methods();
-
-public:
-
-	void set_shader(const Ref<Shader>& p_shader);
-	Ref<Shader> get_shader() const;
-
-	void set_shader_param(const StringName& p_param,const Variant& p_value);
-	Variant get_shader_param(const StringName& p_param) const;
-
-	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
-
-	ShaderMaterial();
-};
+VARIANT_ENUM_CAST( FixedSpatialMaterial::TextureParam )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::DetailUV )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::Feature )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::BlendMode )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::DepthDrawMode )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::CullMode )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::Flags )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::DiffuseMode )
+VARIANT_ENUM_CAST( FixedSpatialMaterial::SpecularMode )
 
 //////////////////////
 

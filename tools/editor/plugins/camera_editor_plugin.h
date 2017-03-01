@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@
 
 class CameraEditor : public Control {
 
-	OBJ_TYPE(CameraEditor, Control );
+	GDCLASS(CameraEditor, Control );
 
 	Panel *panel;
 	Button * preview;
@@ -58,9 +58,9 @@ public:
 
 class CameraEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( CameraEditorPlugin, EditorPlugin );
+	GDCLASS( CameraEditorPlugin, EditorPlugin );
 
-//	CameraEditor *camera_editor;
+	//CameraEditor *camera_editor;
 	EditorNode *editor;
 
 public:

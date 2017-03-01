@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 #ifndef SAMPLE_EDITOR_PLUGIN_H
 #define SAMPLE_EDITOR_PLUGIN_H
 
-
+#if 0
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/audio/sample_player.h"
@@ -39,7 +39,7 @@
 
 class SampleEditor : public Panel {
 
-	OBJ_TYPE(SampleEditor, Panel );
+	GDCLASS(SampleEditor, Panel );
 
 
 	SamplePlayer *player;
@@ -47,7 +47,7 @@ class SampleEditor : public Panel {
 	Ref<ImageTexture> peakdisplay;
 	Ref<Sample> sample;
 	Ref<SampleLibrary> library;
-	TextureFrame *sample_texframe;
+	TextureRect *sample_texframe;
 	Button *stop;
 	Button *play;
 
@@ -57,7 +57,7 @@ class SampleEditor : public Panel {
 
 protected:
 	void _notification(int p_what);
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	static void _bind_methods();
 public:
 
@@ -69,7 +69,7 @@ public:
 
 class SampleEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SampleEditorPlugin, EditorPlugin );
+	GDCLASS( SampleEditorPlugin, EditorPlugin );
 
 	SampleEditor *sample_editor;
 	EditorNode *editor;
@@ -86,5 +86,7 @@ public:
 	~SampleEditorPlugin();
 
 };
+
+#endif
 
 #endif // SAMPLE_EDITOR_PLUGIN_H

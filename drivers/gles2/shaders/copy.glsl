@@ -71,6 +71,11 @@ uniform sampler2D source;
 #endif
 varying vec2 uv2_interp;
 
+
+#ifdef USE_DEPTH
+uniform highp sampler2D source_depth; //texunit:1
+#endif
+
 #ifdef USE_GLOW
 
 uniform sampler2D glow_source;
@@ -547,5 +552,10 @@ void main() {
 
 
         gl_FragColor = color;
+
+#ifdef USE_DEPTH
+	gl_FragDepth = texture(source_depth,uv_interp).r;
+#endif
+
 }
 

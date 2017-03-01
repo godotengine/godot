@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class Joint : public Spatial {
 
-	OBJ_TYPE(Joint,Spatial);
+	GDCLASS(Joint,Spatial);
 
 	RID ba,bb;
 
@@ -81,7 +81,7 @@ public:
 
 class PinJoint : public Joint {
 
-	OBJ_TYPE(PinJoint,Joint);
+	GDCLASS(PinJoint,Joint);
 public:
 
 	enum Param {
@@ -108,7 +108,7 @@ VARIANT_ENUM_CAST(PinJoint::Param);
 
 class HingeJoint : public Joint {
 
-	OBJ_TYPE(HingeJoint,Joint);
+	GDCLASS(HingeJoint,Joint);
 public:
 
 	enum Param {
@@ -161,7 +161,7 @@ VARIANT_ENUM_CAST(HingeJoint::Flag);
 
 class SliderJoint : public Joint {
 
-	OBJ_TYPE(SliderJoint,Joint);
+	GDCLASS(SliderJoint,Joint);
 public:
 
 	enum Param {
@@ -221,7 +221,7 @@ VARIANT_ENUM_CAST(SliderJoint::Param);
 
 class ConeTwistJoint : public Joint {
 
-	OBJ_TYPE(ConeTwistJoint,Joint);
+	GDCLASS(ConeTwistJoint,Joint);
 public:
 
 	enum Param {
@@ -260,7 +260,7 @@ VARIANT_ENUM_CAST(ConeTwistJoint::Param);
 
 class Generic6DOFJoint : public Joint {
 
-	OBJ_TYPE(Generic6DOFJoint,Joint);
+	GDCLASS(Generic6DOFJoint,Joint);
 public:
 
 	enum Param {
@@ -351,7 +351,7 @@ VARIANT_ENUM_CAST(Generic6DOFJoint::Flag);
 #if 0
 class PhysicsJoint : public Spatial {
 
-	OBJ_TYPE(PhysicsJoint,Spatial);
+	GDCLASS(PhysicsJoint,Spatial);
 	OBJ_CATEGORY("3D Physics Nodes");
 
 	NodePath body_A;
@@ -404,7 +404,7 @@ public:
 
 class PhysicsJointPin : public PhysicsJoint {
 
-	OBJ_TYPE( PhysicsJointPin, PhysicsJoint );
+	GDCLASS( PhysicsJointPin, PhysicsJoint );
 
 protected:
 

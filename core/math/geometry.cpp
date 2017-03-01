@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -204,21 +204,21 @@ static bool _group_face(_FaceClassify *p_faces, int len, int p_index,int p_group
 }
 
 
-DVector< DVector< Face3 > > Geometry::separate_objects( DVector< Face3 > p_array ) {
+PoolVector< PoolVector< Face3 > > Geometry::separate_objects( PoolVector< Face3 > p_array ) {
 
-	DVector< DVector< Face3 > > objects;
+	PoolVector< PoolVector< Face3 > > objects;
 
 	int len = p_array.size();
 
-	DVector<Face3>::Read r=p_array.read();
+	PoolVector<Face3>::Read r=p_array.read();
 
 	const Face3* arrayptr = r.ptr();
 
-	DVector< _FaceClassify> fc;
+	PoolVector< _FaceClassify> fc;
 
 	fc.resize( len );
 
-	DVector< _FaceClassify >::Write fcw=fc.write();
+	PoolVector< _FaceClassify >::Write fcw=fc.write();
 
 	_FaceClassify * _fcptr = fcw.ptr();
 
@@ -231,7 +231,7 @@ DVector< DVector< Face3 > > Geometry::separate_objects( DVector< Face3 > p_array
 
 	if (error) {
 
-		ERR_FAIL_COND_V(error, DVector< DVector< Face3 > >() ); // invalid geometry
+		ERR_FAIL_COND_V(error, PoolVector< PoolVector< Face3 > >() ); // invalid geometry
 	}
 
 	/* group connected faces in separate objects */
@@ -257,8 +257,8 @@ DVector< DVector< Face3 > > Geometry::separate_objects( DVector< Face3 > p_array
 	if (group>=0) {
 
 		objects.resize(group);
-		DVector< DVector<Face3> >::Write obw=objects.write();
-		DVector< Face3 > *group_faces = obw.ptr();
+		PoolVector< PoolVector<Face3> >::Write obw=objects.write();
+		PoolVector< Face3 > *group_faces = obw.ptr();
 
 		for (int i=0;i<len;i++) {
 			if (!_fcptr[i].valid)
@@ -304,7 +304,7 @@ enum _CellFlags {
 
 static inline void _plot_face(uint8_t*** p_cell_status,int x,int y,int z,int len_x,int len_y,int len_z,const Vector3& voxelsize,const Face3& p_face) {
 
-	AABB aabb( Vector3(x,y,z),Vector3(len_x,len_y,len_z));
+	Rect3 aabb( Vector3(x,y,z),Vector3(len_x,len_y,len_z));
 	aabb.pos=aabb.pos*voxelsize;
 	aabb.size=aabb.size*voxelsize;
 
@@ -487,7 +487,7 @@ static inline void _mark_outside(uint8_t*** p_cell_status,int x,int y,int z,int 
 	}
 }
 
-static inline void _build_faces(uint8_t*** p_cell_status,int x,int y,int z,int len_x,int len_y,int len_z,DVector<Face3>& p_faces) {
+static inline void _build_faces(uint8_t*** p_cell_status,int x,int y,int z,int len_x,int len_y,int len_z,PoolVector<Face3>& p_faces) {
 
 	ERR_FAIL_INDEX(x,len_x);
 	ERR_FAIL_INDEX(y,len_y);
@@ -580,16 +580,16 @@ static inline void _build_faces(uint8_t*** p_cell_status,int x,int y,int z,int l
 
 }
 
-DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_error ) {
+PoolVector< Face3 > Geometry::wrap_geometry( PoolVector< Face3 > p_array,real_t *p_error ) {
 
 #define _MIN_SIZE 1.0
 #define _MAX_LENGTH 20
 
 	int face_count=p_array.size();
-	DVector<Face3>::Read facesr=p_array.read();
+	PoolVector<Face3>::Read facesr=p_array.read();
 	const Face3 *faces = facesr.ptr();
 
-	AABB global_aabb;
+	Rect3 global_aabb;
 
 	for(int i=0;i<face_count;i++) {
 
@@ -696,7 +696,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 
 	//print_line("Wrapper (3/6): Building Faces");
 
-	DVector<Face3> wrapped_faces;
+	PoolVector<Face3> wrapped_faces;
 
 	for (int i=0;i<div_x;i++) {
 
@@ -714,7 +714,7 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 	// transform face vertices to global coords
 
 	int wrapped_faces_count=wrapped_faces.size();
-	DVector<Face3>::Write wrapped_facesw=wrapped_faces.write();
+	PoolVector<Face3>::Write wrapped_facesw=wrapped_faces.write();
 	Face3* wrapped_faces_ptr=wrapped_facesw.ptr();
 
 	for(int i=0;i<wrapped_faces_count;i++) {
@@ -748,14 +748,14 @@ DVector< Face3 > Geometry::wrap_geometry( DVector< Face3 > p_array,float *p_erro
 	return wrapped_faces;
 }
 
-Geometry::MeshData Geometry::build_convex_mesh(const DVector<Plane> &p_planes) {
+Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes) {
 
 	MeshData mesh;
 
 
 #define SUBPLANE_SIZE 1024.0
 
-	float subplane_size = 1024.0; // should compute this from the actual plane
+	real_t subplane_size = 1024.0; // should compute this from the actual plane
 	for (int i=0;i<p_planes.size();i++) {
 
 		Plane p =p_planes[i];
@@ -896,9 +896,9 @@ Geometry::MeshData Geometry::build_convex_mesh(const DVector<Plane> &p_planes) {
 }
 
 
-DVector<Plane> Geometry::build_box_planes(const Vector3& p_extents) {
+PoolVector<Plane> Geometry::build_box_planes(const Vector3& p_extents) {
 
-	DVector<Plane> planes;
+	PoolVector<Plane> planes;
 
 	planes.push_back( Plane( Vector3(1,0,0), p_extents.x ) );
 	planes.push_back( Plane( Vector3(-1,0,0), p_extents.x ) );
@@ -910,9 +910,9 @@ DVector<Plane> Geometry::build_box_planes(const Vector3& p_extents) {
 	return planes;
 }
 
-DVector<Plane> Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
+PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_height, int p_sides, Vector3::Axis p_axis) {
 
-	DVector<Plane> planes;
+	PoolVector<Plane> planes;
 
 	for (int i=0;i<p_sides;i++) {
 
@@ -933,10 +933,10 @@ DVector<Plane> Geometry::build_cylinder_planes(float p_radius, float p_height, i
 
 }
 
-DVector<Plane> Geometry::build_sphere_planes(float p_radius, int p_lats,int p_lons, Vector3::Axis p_axis) {
+PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats,int p_lons, Vector3::Axis p_axis) {
 
 
-	DVector<Plane> planes;
+	PoolVector<Plane> planes;
 
 	Vector3 axis;
 	axis[p_axis]=1.0;
@@ -957,7 +957,7 @@ DVector<Plane> Geometry::build_sphere_planes(float p_radius, int p_lats,int p_lo
 		for (int j=1;j<=p_lats;j++) {
 
 			//todo this is stupid, fix
-			Vector3 angle = normal.linear_interpolate(axis,j/(float)p_lats).normalized();
+			Vector3 angle = normal.linear_interpolate(axis,j/(real_t)p_lats).normalized();
 			Vector3 pos = angle*p_radius;
 			planes.push_back( Plane( pos, angle ) );
 			planes.push_back( Plane( pos * axis_neg, angle * axis_neg) );
@@ -969,9 +969,9 @@ DVector<Plane> Geometry::build_sphere_planes(float p_radius, int p_lats,int p_lo
 
 }
 
-DVector<Plane> Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
 
-	DVector<Plane> planes;
+	PoolVector<Plane> planes;
 
 		Vector3 axis;
 	axis[p_axis]=1.0;
@@ -991,7 +991,7 @@ DVector<Plane> Geometry::build_capsule_planes(float p_radius, float p_height, in
 
 		for (int j=1;j<=p_lats;j++) {
 
-			Vector3 angle = normal.linear_interpolate(axis,j/(float)p_lats).normalized();
+			Vector3 angle = normal.linear_interpolate(axis,j/(real_t)p_lats).normalized();
 			Vector3 pos = axis*p_height*0.5 + angle*p_radius;
 			planes.push_back( Plane( pos, angle ) );
 			planes.push_back( Plane( pos * axis_neg, angle * axis_neg) );
@@ -1108,13 +1108,13 @@ void Geometry::make_atlas(const Vector<Size2i>& p_rects,Vector<Point2i>& r_resul
 	//find the result with the best aspect ratio
 
 	int best=-1;
-	float best_aspect=1e20;
+	real_t best_aspect=1e20;
 
 	for(int i=0;i<results.size();i++) {
 
-		float h = nearest_power_of_2(results[i].max_h);
-		float w = nearest_power_of_2(results[i].max_w);
-		float aspect = h>w ? h/w : w/h;
+		real_t h = nearest_power_of_2(results[i].max_h);
+		real_t w = nearest_power_of_2(results[i].max_w);
+		real_t aspect = h>w ? h/w : w/h;
 		if (aspect < best_aspect) {
 			best=i;
 			best_aspect=aspect;

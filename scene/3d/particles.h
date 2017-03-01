@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-
+#if 0
 class Particles : public GeometryInstance {
 public:
 
@@ -60,7 +60,7 @@ public:
 	};
 
 private:
-	OBJ_TYPE( Particles, GeometryInstance );
+	GDCLASS( Particles, GeometryInstance );
 
 	RID particles;
 
@@ -103,7 +103,7 @@ public:
 
 
 	AABB get_aabb() const;
-	DVector<Face3> get_faces(uint32_t p_usage_flags) const;
+	PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	void set_amount(int p_amount);
 	int get_amount() const;
@@ -120,8 +120,8 @@ public:
 	void set_emission_base_velocity(const Vector3& p_base_velocity);
 	Vector3 get_emission_base_velocity() const;
 
-	void set_emission_points(const DVector<Vector3>& p_points);
-	DVector<Vector3> get_emission_points() const;
+	void set_emission_points(const PoolVector<Vector3>& p_points);
+	PoolVector<Vector3> get_emission_points() const;
 
 	void set_gravity_normal(const Vector3& p_normal);
 	Vector3 get_gravity_normal() const;
@@ -162,4 +162,5 @@ public:
 };
 
 VARIANT_ENUM_CAST( Particles::Variable );
+#endif
 #endif

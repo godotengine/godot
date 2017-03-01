@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,16 +29,16 @@
 #include "stream_peer.h"
 #include "io/marshalls.h"
 
-Error StreamPeer::_put_data(const DVector<uint8_t>& p_data) {
+Error StreamPeer::_put_data(const PoolVector<uint8_t>& p_data) {
 
 	int len = p_data.size();
 	if (len==0)
 		return OK;
-	DVector<uint8_t>::Read r = p_data.read();
+	PoolVector<uint8_t>::Read r = p_data.read();
 	return put_data(&r[0],len);
 }
 
-Array StreamPeer::_put_partial_data(const DVector<uint8_t>& p_data) {
+Array StreamPeer::_put_partial_data(const PoolVector<uint8_t>& p_data) {
 
 	Array ret;
 
@@ -49,7 +49,7 @@ Array StreamPeer::_put_partial_data(const DVector<uint8_t>& p_data) {
 		return ret;
 	}
 
-	DVector<uint8_t>::Read r = p_data.read();
+	PoolVector<uint8_t>::Read r = p_data.read();
 	int sent;
 	Error err = put_partial_data(&r[0],len,sent);
 
@@ -66,18 +66,18 @@ Array StreamPeer::_get_data(int p_bytes) {
 
 	Array ret;
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	data.resize(p_bytes);
 	if (data.size()!=p_bytes) {
 
 		ret.push_back(ERR_OUT_OF_MEMORY);
-		ret.push_back(DVector<uint8_t>());
+		ret.push_back(PoolVector<uint8_t>());
 		return ret;
 	}
 
-	DVector<uint8_t>::Write w = data.write();
+	PoolVector<uint8_t>::Write w = data.write();
 	Error err = get_data(&w[0],p_bytes);
-	w = DVector<uint8_t>::Write();
+	w = PoolVector<uint8_t>::Write();
 	ret.push_back(err);
 	ret.push_back(data);
 	return ret;
@@ -88,19 +88,19 @@ Array StreamPeer::_get_partial_data(int p_bytes) {
 
 	Array ret;
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	data.resize(p_bytes);
 	if (data.size()!=p_bytes) {
 
 		ret.push_back(ERR_OUT_OF_MEMORY);
-		ret.push_back(DVector<uint8_t>());
+		ret.push_back(PoolVector<uint8_t>());
 		return ret;
 	}
 
-	DVector<uint8_t>::Write w = data.write();
+	PoolVector<uint8_t>::Write w = data.write();
 	int received;
 	Error err = get_partial_data(&w[0],p_bytes,received);
-	w = DVector<uint8_t>::Write();
+	w = PoolVector<uint8_t>::Write();
 
 	if (err!=OK) {
 		data.resize(0);
@@ -389,57 +389,57 @@ Variant StreamPeer::get_var(){
 
 void StreamPeer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("put_data","data"),&StreamPeer::_put_data);
-	ObjectTypeDB::bind_method(_MD("put_partial_data","data"),&StreamPeer::_put_partial_data);
+	ClassDB::bind_method(D_METHOD("put_data","data"),&StreamPeer::_put_data);
+	ClassDB::bind_method(D_METHOD("put_partial_data","data"),&StreamPeer::_put_partial_data);
 
-	ObjectTypeDB::bind_method(_MD("get_data","bytes"),&StreamPeer::_get_data);
-	ObjectTypeDB::bind_method(_MD("get_partial_data","bytes"),&StreamPeer::_get_partial_data);
+	ClassDB::bind_method(D_METHOD("get_data","bytes"),&StreamPeer::_get_data);
+	ClassDB::bind_method(D_METHOD("get_partial_data","bytes"),&StreamPeer::_get_partial_data);
 
-	ObjectTypeDB::bind_method(_MD("get_available_bytes"),&StreamPeer::get_available_bytes);
+	ClassDB::bind_method(D_METHOD("get_available_bytes"),&StreamPeer::get_available_bytes);
 
-	ObjectTypeDB::bind_method(_MD("set_big_endian","enable"),&StreamPeer::set_big_endian);
-	ObjectTypeDB::bind_method(_MD("is_big_endian_enabled"),&StreamPeer::is_big_endian_enabled);
+	ClassDB::bind_method(D_METHOD("set_big_endian","enable"),&StreamPeer::set_big_endian);
+	ClassDB::bind_method(D_METHOD("is_big_endian_enabled"),&StreamPeer::is_big_endian_enabled);
 
-	ObjectTypeDB::bind_method(_MD("put_8","val"),&StreamPeer::put_8);
-	ObjectTypeDB::bind_method(_MD("put_u8","val"),&StreamPeer::put_u8);
-	ObjectTypeDB::bind_method(_MD("put_16","val"),&StreamPeer::put_16);
-	ObjectTypeDB::bind_method(_MD("put_u16","val"),&StreamPeer::put_u16);
-	ObjectTypeDB::bind_method(_MD("put_32","val"),&StreamPeer::put_32);
-	ObjectTypeDB::bind_method(_MD("put_u32","val"),&StreamPeer::put_u32);
-	ObjectTypeDB::bind_method(_MD("put_64","val"),&StreamPeer::put_64);
-	ObjectTypeDB::bind_method(_MD("put_u64","val"),&StreamPeer::put_u64);
-	ObjectTypeDB::bind_method(_MD("put_float","val"),&StreamPeer::put_float);
-	ObjectTypeDB::bind_method(_MD("put_double","val"),&StreamPeer::put_double);
-	ObjectTypeDB::bind_method(_MD("put_utf8_string","val"),&StreamPeer::put_utf8_string);
-	ObjectTypeDB::bind_method(_MD("put_var","val:Variant"),&StreamPeer::put_var);
+	ClassDB::bind_method(D_METHOD("put_8","val"),&StreamPeer::put_8);
+	ClassDB::bind_method(D_METHOD("put_u8","val"),&StreamPeer::put_u8);
+	ClassDB::bind_method(D_METHOD("put_16","val"),&StreamPeer::put_16);
+	ClassDB::bind_method(D_METHOD("put_u16","val"),&StreamPeer::put_u16);
+	ClassDB::bind_method(D_METHOD("put_32","val"),&StreamPeer::put_32);
+	ClassDB::bind_method(D_METHOD("put_u32","val"),&StreamPeer::put_u32);
+	ClassDB::bind_method(D_METHOD("put_64","val"),&StreamPeer::put_64);
+	ClassDB::bind_method(D_METHOD("put_u64","val"),&StreamPeer::put_u64);
+	ClassDB::bind_method(D_METHOD("put_float","val"),&StreamPeer::put_float);
+	ClassDB::bind_method(D_METHOD("put_double","val"),&StreamPeer::put_double);
+	ClassDB::bind_method(D_METHOD("put_utf8_string","val"),&StreamPeer::put_utf8_string);
+	ClassDB::bind_method(D_METHOD("put_var","val:Variant"),&StreamPeer::put_var);
 
-	ObjectTypeDB::bind_method(_MD("get_8"),&StreamPeer::get_8);
-	ObjectTypeDB::bind_method(_MD("get_u8"),&StreamPeer::get_u8);
-	ObjectTypeDB::bind_method(_MD("get_16"),&StreamPeer::get_16);
-	ObjectTypeDB::bind_method(_MD("get_u16"),&StreamPeer::get_u16);
-	ObjectTypeDB::bind_method(_MD("get_32"),&StreamPeer::get_32);
-	ObjectTypeDB::bind_method(_MD("get_u32"),&StreamPeer::get_u32);
-	ObjectTypeDB::bind_method(_MD("get_64"),&StreamPeer::get_64);
-	ObjectTypeDB::bind_method(_MD("get_u64"),&StreamPeer::get_u64);
-	ObjectTypeDB::bind_method(_MD("get_float"),&StreamPeer::get_float);
-	ObjectTypeDB::bind_method(_MD("get_double"),&StreamPeer::get_double);
-	ObjectTypeDB::bind_method(_MD("get_string","bytes"),&StreamPeer::get_string);
-	ObjectTypeDB::bind_method(_MD("get_utf8_string","bytes"),&StreamPeer::get_utf8_string);
-	ObjectTypeDB::bind_method(_MD("get_var:Variant"),&StreamPeer::get_var);
+	ClassDB::bind_method(D_METHOD("get_8"),&StreamPeer::get_8);
+	ClassDB::bind_method(D_METHOD("get_u8"),&StreamPeer::get_u8);
+	ClassDB::bind_method(D_METHOD("get_16"),&StreamPeer::get_16);
+	ClassDB::bind_method(D_METHOD("get_u16"),&StreamPeer::get_u16);
+	ClassDB::bind_method(D_METHOD("get_32"),&StreamPeer::get_32);
+	ClassDB::bind_method(D_METHOD("get_u32"),&StreamPeer::get_u32);
+	ClassDB::bind_method(D_METHOD("get_64"),&StreamPeer::get_64);
+	ClassDB::bind_method(D_METHOD("get_u64"),&StreamPeer::get_u64);
+	ClassDB::bind_method(D_METHOD("get_float"),&StreamPeer::get_float);
+	ClassDB::bind_method(D_METHOD("get_double"),&StreamPeer::get_double);
+	ClassDB::bind_method(D_METHOD("get_string","bytes"),&StreamPeer::get_string);
+	ClassDB::bind_method(D_METHOD("get_utf8_string","bytes"),&StreamPeer::get_utf8_string);
+	ClassDB::bind_method(D_METHOD("get_var:Variant"),&StreamPeer::get_var);
 }
 ////////////////////////////////
 
 
 void StreamPeerBuffer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("seek","pos"),&StreamPeerBuffer::seek);
-	ObjectTypeDB::bind_method(_MD("get_size"),&StreamPeerBuffer::get_size);
-	ObjectTypeDB::bind_method(_MD("get_pos"),&StreamPeerBuffer::get_pos);
-	ObjectTypeDB::bind_method(_MD("resize","size"),&StreamPeerBuffer::resize);
-	ObjectTypeDB::bind_method(_MD("set_data_array","data"),&StreamPeerBuffer::set_data_array);
-	ObjectTypeDB::bind_method(_MD("get_data_array"),&StreamPeerBuffer::get_data_array);
-	ObjectTypeDB::bind_method(_MD("clear"),&StreamPeerBuffer::clear);
-	ObjectTypeDB::bind_method(_MD("duplicate:StreamPeerBuffer"),&StreamPeerBuffer::duplicate);
+	ClassDB::bind_method(D_METHOD("seek","pos"),&StreamPeerBuffer::seek);
+	ClassDB::bind_method(D_METHOD("get_size"),&StreamPeerBuffer::get_size);
+	ClassDB::bind_method(D_METHOD("get_pos"),&StreamPeerBuffer::get_pos);
+	ClassDB::bind_method(D_METHOD("resize","size"),&StreamPeerBuffer::resize);
+	ClassDB::bind_method(D_METHOD("set_data_array","data"),&StreamPeerBuffer::set_data_array);
+	ClassDB::bind_method(D_METHOD("get_data_array"),&StreamPeerBuffer::get_data_array);
+	ClassDB::bind_method(D_METHOD("clear"),&StreamPeerBuffer::clear);
+	ClassDB::bind_method(D_METHOD("duplicate:StreamPeerBuffer"),&StreamPeerBuffer::duplicate);
 
 }
 
@@ -454,7 +454,7 @@ Error StreamPeerBuffer::put_data(const uint8_t* p_data,int p_bytes) {
 
 	}
 
-	DVector<uint8_t>::Write w = data.write();
+	PoolVector<uint8_t>::Write w = data.write();
 	copymem(&w[pointer],p_data,p_bytes);
 
 	pointer+=p_bytes;
@@ -490,8 +490,10 @@ Error StreamPeerBuffer::get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_r
 		r_received=p_bytes;
 	}
 
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t>::Read r = data.read();
 	copymem(p_buffer,r.ptr(),r_received);
+	
+	// FIXME: return what? OK or ERR_*
 }
 
 int StreamPeerBuffer::get_available_bytes() const {
@@ -520,13 +522,13 @@ void StreamPeerBuffer::resize(int p_size){
 	data.resize(p_size);
 }
 
-void StreamPeerBuffer::set_data_array(const DVector<uint8_t> & p_data){
+void StreamPeerBuffer::set_data_array(const PoolVector<uint8_t> & p_data){
 
 	data=p_data;
 	pointer=0;
 }
 
-DVector<uint8_t> StreamPeerBuffer::get_data_array() const{
+PoolVector<uint8_t> StreamPeerBuffer::get_data_array() const{
 
 	return data;
 }

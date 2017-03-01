@@ -5,7 +5,7 @@
 
 class VisualScriptReturn : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptReturn,VisualScriptNode)
+	GDCLASS(VisualScriptReturn,VisualScriptNode)
 
 
 	Variant::Type type;
@@ -48,7 +48,7 @@ public:
 
 class VisualScriptCondition : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptCondition,VisualScriptNode)
+	GDCLASS(VisualScriptCondition,VisualScriptNode)
 
 
 
@@ -84,7 +84,7 @@ public:
 
 class VisualScriptWhile : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptWhile,VisualScriptNode)
+	GDCLASS(VisualScriptWhile,VisualScriptNode)
 
 
 
@@ -121,7 +121,7 @@ public:
 
 class VisualScriptIterator : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptIterator,VisualScriptNode)
+	GDCLASS(VisualScriptIterator,VisualScriptNode)
 
 
 
@@ -158,7 +158,7 @@ public:
 
 class VisualScriptSequence : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptSequence,VisualScriptNode)
+	GDCLASS(VisualScriptSequence,VisualScriptNode)
 
 
 	int steps;
@@ -199,7 +199,7 @@ public:
 
 class VisualScriptSwitch : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptSwitch,VisualScriptNode)
+	GDCLASS(VisualScriptSwitch,VisualScriptNode)
 
 	struct Case {
 		Variant::Type type;
@@ -248,7 +248,7 @@ public:
 
 class VisualScriptInputFilter : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptInputFilter,VisualScriptNode)
+	GDCLASS(VisualScriptInputFilter,VisualScriptNode)
 
 	Vector<InputEvent> filters;
 
@@ -290,7 +290,7 @@ public:
 
 class VisualScriptTypeCast : public VisualScriptNode {
 
-	OBJ_TYPE(VisualScriptTypeCast,VisualScriptNode)
+	GDCLASS(VisualScriptTypeCast,VisualScriptNode)
 
 
 	StringName base_type;

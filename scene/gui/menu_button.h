@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 */
 class MenuButton : public Button {
 
-	OBJ_TYPE( MenuButton, Button );
+	GDCLASS( MenuButton, Button );
 
 	bool clicked;
 	PopupMenu *popup;
@@ -46,7 +46,7 @@ class MenuButton : public Button {
 	Array _get_items() const;
 	void _set_items(const Array& p_items);
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 protected:
 
 

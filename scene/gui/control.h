@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,7 +46,7 @@ class Panel;
 
 class Control : public CanvasItem {
 
-	OBJ_TYPE( Control, CanvasItem );
+	GDCLASS( Control, CanvasItem );
 	OBJ_CATEGORY("GUI Nodes");
 
 public:
@@ -54,7 +54,6 @@ public:
 	enum AnchorType {
 		ANCHOR_BEGIN,
 		ANCHOR_END,
-		ANCHOR_RATIO,
 		ANCHOR_CENTER,
 	};
 
@@ -66,10 +65,16 @@ public:
 
 	enum SizeFlags {
 
-		SIZE_EXPAND=1,
-		SIZE_FILL=2,
+		SIZE_FILL=1,
+		SIZE_EXPAND=2,
 		SIZE_EXPAND_FILL=SIZE_EXPAND|SIZE_FILL
 
+	};
+
+	enum MouseFilter {
+		MOUSE_FILTER_STOP,
+		MOUSE_FILTER_PASS,
+		MOUSE_FILTER_IGNORE
 	};
 
 	enum CursorShape {
@@ -125,8 +130,9 @@ private:
 		bool pending_min_size_update;
 		Point2 custom_minimum_size;
 
-		bool ignore_mouse;
-		bool stop_mouse;
+		MouseFilter mouse_filter;
+
+		bool clip_contents;
 
 		bool block_minimum_size_adjust;
 		bool disable_visibility_clip;
@@ -162,7 +168,7 @@ private:
 	} data;
 
 	// used internally
-	Control* _find_control_at_pos(CanvasItem* p_node,const Point2& p_pos,const Matrix32& p_xform,Matrix32& r_inv_xform);
+	Control* _find_control_at_pos(CanvasItem* p_node,const Point2& p_pos,const Transform2D& p_xform,Transform2D& r_inv_xform);
 
 
 	void _window_find_focus_neighbour(const Vector2& p_dir, Node *p_at, const Point2* p_points ,float p_min,float &r_closest_dist,Control **r_closest);
@@ -208,7 +214,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 
-	//virtual void _window_input_event(InputEvent p_event);
+	//virtual void _window_gui_input(InputEvent p_event);
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -338,11 +344,8 @@ public:
 
 	Control *get_focus_owner() const;
 
-	void set_ignore_mouse(bool p_ignore);
-	bool is_ignoring_mouse() const;
-
-	void set_stop_mouse(bool p_stop);
-	bool is_stopping_mouse() const;
+	void set_mouse_filter(MouseFilter p_filter);
+	MouseFilter get_mouse_filter() const;
 
 	/* SKINNING */
 
@@ -386,7 +389,7 @@ public:
 	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i()) const;
 
 	virtual Rect2 get_item_rect() const;
-	virtual Matrix32 get_transform() const;
+	virtual Transform2D get_transform() const;
 
 	bool is_toplevel_control() const;
 
@@ -400,6 +403,8 @@ public:
 
 	Control *get_root_parent_control() const;
 
+	void set_clip_contents(bool p_clip);
+	bool is_clipping_contents();
 
 	void set_block_minimum_size_adjust(bool p_block);
 	bool is_minimum_size_adjust_blocked() const;
@@ -418,5 +423,6 @@ VARIANT_ENUM_CAST(Control::AnchorType);
 VARIANT_ENUM_CAST(Control::FocusMode);
 VARIANT_ENUM_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
+VARIANT_ENUM_CAST(Control::MouseFilter);
 
 #endif

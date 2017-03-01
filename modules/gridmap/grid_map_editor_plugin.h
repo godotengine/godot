@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 class SpatialEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {
-	OBJ_TYPE(GridMapEditor, VBoxContainer );
+	GDCLASS(GridMapEditor, VBoxContainer );
 
 	enum {
 
@@ -112,12 +112,9 @@ class GridMapEditor : public VBoxContainer {
 	RID duplicate_mesh;
 	RID duplicate_instance;
 
-	RID indicator_mat;
-
-	RID inner_mat;
-	RID outer_mat;
-	RID inner_mat_dup;
-	RID outer_mat_dup;
+	Ref<FixedSpatialMaterial> indicator_mat;
+	Ref<FixedSpatialMaterial> inner_mat;
+	Ref<FixedSpatialMaterial> outer_mat;
 
 	bool updating;
 
@@ -238,7 +235,7 @@ public:
 
 class GridMapEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( GridMapEditorPlugin, EditorPlugin );
+	GDCLASS( GridMapEditorPlugin, EditorPlugin );
 
 	GridMapEditor *gridmap_editor;
 	EditorNode *editor;

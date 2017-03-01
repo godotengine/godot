@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@
 class AnimationKeyEditor;
 class AnimationPlayerEditor : public VBoxContainer {
 
-	OBJ_TYPE(AnimationPlayerEditor, VBoxContainer );
+	GDCLASS(AnimationPlayerEditor, VBoxContainer );
 
 	EditorNode *editor;
 	AnimationPlayer *player;
@@ -73,7 +73,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *play_bw;
 	Button *play_bw_from;
 
-//	Button *pause;
+	//Button *pause;
 	Button *add_anim;
 	Button *autoplay;
 	Button *rename_anim;
@@ -97,6 +97,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	EditorFileDialog *file;
 	AcceptDialog *accept;
+	ConfirmationDialog* delete_dialog;
 	int current_option;
 
 	struct BlendEditor {
@@ -138,6 +139,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	void _animation_save_as(const Ref<Resource>& p_resource);
 
 	void _animation_remove();
+	void _animation_remove_confirmed();
 	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
@@ -171,7 +173,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 protected:
 
 	void _notification(int p_what);
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 public:
@@ -193,7 +195,7 @@ public:
 
 class AnimationPlayerEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( AnimationPlayerEditorPlugin, EditorPlugin );
+	GDCLASS( AnimationPlayerEditorPlugin, EditorPlugin );
 
 	AnimationPlayerEditor *anim_editor;
 	EditorNode *editor;

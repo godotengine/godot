@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ class EditorNode;
 class Spatial;
 class Camera;
 class EditorSelection;
-class EditorImportExport;
+class EditorExport;
 class EditorSettings;
 class SpatialEditorGizmo;
 class EditorImportPlugin;
@@ -53,7 +53,7 @@ class EditorFileSystem;
 
 class EditorPlugin : public Node {
 
-	OBJ_TYPE( EditorPlugin, Node );
+	GDCLASS( EditorPlugin, Node );
 friend class EditorData;
 	UndoRedo *undo_redo;
 
@@ -101,11 +101,16 @@ public:
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
 	Control* get_editor_viewport();
+	void edit_resource(const Ref<Resource>& p_resource);
+
+	void add_tool_menu_item(const String& p_name, Object *p_handler, const String& p_callback, const Variant& p_ud = Variant());
+	void add_tool_submenu_item(const String& p_name, Object *p_submenu);
+	void remove_tool_menu_item(const String& p_name);
 
 	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform, const InputEvent& p_event);
-	virtual void forward_draw_over_canvas(const Matrix32& p_canvas_xform,Control *p_canvas);
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform, const InputEvent& p_event);
+	virtual void forward_draw_over_canvas(const Transform2D& p_canvas_xform,Control *p_canvas);
+	virtual bool forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
@@ -133,12 +138,6 @@ public:
 
 	void make_bottom_panel_item_visible(Control *p_item);
 	void hide_bottom_panel();
-
-	void add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-	void remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-
-	void add_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
-	void remove_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
 
 	EditorSelection* get_selection();
 	//EditorImportExport *get_import_export();

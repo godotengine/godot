@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,13 +38,14 @@
 #include "servers/visual/visual_server_raster.h"
 //#include "drivers/opengl/rasterizer_gl.h"
 //#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "os_osx.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
-#include "drivers/gles2/rasterizer_instance_gles2.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+// #include "drivers/gles2/rasterizer_instance_gles2.h"
+// #include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
 #include "os/keyboard.h"
 #include "dir_access_osx.h"
@@ -147,36 +148,36 @@ static int button_mask=0;
 
 - (void)applicationDidHide:(NSNotification *)notification
 {
-  /*  _Godotwindow* window;
-
-    for (window = _Godot.windowListHead;  window;  window = window->next)
-	_GodotInputWindowVisibility(window, GL_FALSE);
+	/*
+	_Godotwindow* window;
+	for (window = _Godot.windowListHead;  window;  window = window->next)
+		_GodotInputWindowVisibility(window, GL_FALSE);
 	*/
 }
 
 - (void)applicationDidUnhide:(NSNotification *)notification
 {
 	/*
-    _Godotwindow* window;
+	_Godotwindow* window;
 
-    for (window = _Godot.windowListHead;  window;  window = window->next)
-    {
+	for (window = _Godot.windowListHead;  window;  window = window->next)
+	{
 	if ([window_object isVisible])
 	    _GodotInputWindowVisibility(window, GL_TRUE);
-    }
-    */
+	}
+	*/
 }
 
 - (void)applicationDidChangeScreenParameters:(NSNotification *) notification
 {
-    //_GodotInputMonitorChange();
+	//_GodotInputMonitorChange();
 }
 
 @end
 
 @interface GodotWindowDelegate : NSObject
 {
- //   _Godotwindow* window;
+	//_Godotwindow* window;
 }
 
 @end
@@ -186,7 +187,7 @@ static int button_mask=0;
 
 - (BOOL)windowShouldClose:(id)sender
 {
-    //_GodotInputWindowCloseRequest(window);
+	//_GodotInputWindowCloseRequest(window);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
     return NO;
@@ -206,38 +207,42 @@ static int button_mask=0;
     OS_OSX::singleton->window_size.height=fbRect.size.height*OS_OSX::singleton->display_scale;
 
 
-   // _GodotInputFramebufferSize(window, fbRect.size.width, fbRect.size.height);
-   // _GodotInputWindowSize(window, contentRect.size.width, contentRect.size.height);
-    //_GodotInputWindowDamage(window);
+	/*
+	_GodotInputFramebufferSize(window, fbRect.size.width, fbRect.size.height);
+	_GodotInputWindowSize(window, contentRect.size.width, contentRect.size.height);
+	_GodotInputWindowDamage(window);
 
-    //if (window->cursorMode == Godot_CURSOR_DISABLED)
-     //   centerCursor(window);
+	if (window->cursorMode == Godot_CURSOR_DISABLED)
+		centerCursor(window);
+	*/
 }
 
 - (void)windowDidMove:(NSNotification *)notification
 {
-   // [window->nsgl.context update];
+	/*
+	[window->nsgl.context update];
 
-   // int x, y;
-  //  _GodotPlatformGetWindowPos(window, &x, &y);
-   // _GodotInputWindowPos(window, x, y);
+	int x, y;
+	_GodotPlatformGetWindowPos(window, &x, &y);
+	_GodotInputWindowPos(window, x, y);
 
-    //if (window->cursorMode == Godot_CURSOR_DISABLED)
-      //  centerCursor(window);
+	if (window->cursorMode == Godot_CURSOR_DISABLED)
+		centerCursor(window);
+	*/
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
-   // _GodotInputWindowFocus(window, GL_TRUE);
-   // _GodotPlatformSetCursorMode(window, window->cursorMode);
+	//_GodotInputWindowFocus(window, GL_TRUE);
+	//_GodotPlatformSetCursorMode(window, window->cursorMode);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification
 {
-   // _GodotInputWindowFocus(window, GL_FALSE);
-   // _GodotPlatformSetCursorMode(window, Godot_CURSOR_NORMAL);
+	//_GodotInputWindowFocus(window, GL_FALSE);
+	//_GodotPlatformSetCursorMode(window, Godot_CURSOR_NORMAL);
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 }
@@ -272,16 +277,18 @@ static int button_mask=0;
 
 + (void)initialize
 {
-    if (self == [GodotContentView class])
-    {
-       /* if (_glfw.ns.cursor == nil)
+	if (self == [GodotContentView class])
 	{
-	    NSImage* data = [[NSImage alloc] initWithSize:NSMakeSize(1, 1)];
-	    _glfw.ns.cursor = [[NSCursor alloc] initWithImage:data
-						      hotSpot:NSZeroPoint];
-	    [data release];
-	}*/
-    }
+		/*
+		if (_glfw.ns.cursor == nil)
+		{
+			NSImage* data = [[NSImage alloc] initWithSize:NSMakeSize(1, 1)];
+			_glfw.ns.cursor = [[NSCursor alloc] initWithImage:data
+			hotSpot:NSZeroPoint];
+			[data release];
+		}
+		*/
+	}
 }
 
 - (id)init
@@ -986,24 +993,20 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	window_size.width = p_desired.width;
 	window_size.height = p_desired.height;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6 && display_scale>1) {
 	    [window_view setWantsBestResolutionOpenGLSurface:YES];
 	    //if (current_videomode.resizable)
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	}
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
-//	[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
+	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
 	[window_object setContentView:window_view];
 	[window_object setDelegate:window_delegate];
 	[window_object setAcceptsMouseMovedEvents:YES];
 	[window_object center];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6)
 		[window_object setRestorable:NO];
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 	unsigned int attributeCount = 0;
 
@@ -1022,10 +1025,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	ADD_ATTR(NSOpenGLPFADoubleBuffer);
 	ADD_ATTR(NSOpenGLPFAClosestPolicy);
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-	if (false/* use gl3*/)
-		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
-#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
+	//we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
+	ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
 
 	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
 
@@ -1082,38 +1083,31 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 
 
-	AudioDriverManagerSW::add_driver(&audio_driver_osx);
+	AudioDriverManager::add_driver(&audio_driver_osx);
 
+	// only opengl support here... 
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
 
-	rasterizer = instance_RasterizerGLES2();
+	//rasterizer = instance_RasterizerGLES2();
+	//visual_server = memnew( VisualServerRaster(rasterizer) );
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-
+	visual_server = memnew( VisualServerRaster );
+	// FIXME: Reimplement threaded rendering? Or remove?
+	/*
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
-
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
+	*/
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
-
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
 
 	//
 	physics_server = memnew( PhysicsServerSW );
@@ -1123,7 +1117,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
-	joystick_osx = memnew( JoystickOSX );
+	joypad_osx = memnew( JoypadOSX );
 
 	_ensure_data_dir();
 
@@ -1161,22 +1155,12 @@ void OS_OSX::finalize() {
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
 	delete_main_loop();
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
-	memdelete(joystick_osx);
+	memdelete(joypad_osx);
 	memdelete(input);
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
 
 	visual_server->finish();
 	memdelete(visual_server);
-	memdelete(rasterizer);
+	//memdelete(rasterizer);
 
 	physics_server->finish();
 	memdelete(physics_server);
@@ -1313,7 +1297,7 @@ void OS_OSX::set_window_title(const String& p_title) {
 void OS_OSX::set_icon(const Image& p_icon) {
 
 	Image img=p_icon;
-	img.convert(Image::FORMAT_RGBA);
+	img.convert(Image::FORMAT_RGBA8);
 	NSBitmapImageRep *imgrep= [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes: NULL
 			  pixelsWide: p_icon.get_width()
 			  pixelsHigh: p_icon.get_height()
@@ -1328,8 +1312,8 @@ void OS_OSX::set_icon(const Image& p_icon) {
 	uint8_t *pixels = [imgrep bitmapData];
 
 	int len = img.get_width()*img.get_height();
-	DVector<uint8_t> data = img.get_data();
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t> data = img.get_data();
+	PoolVector<uint8_t>::Read r = data.read();
 
 	/* Premultiply the alpha channel */
 	for (int i = 0; i<len ; i++) {
@@ -1731,15 +1715,15 @@ void OS_OSX::run() {
 		set_window_fullscreen(true);
 	}
 
-//	uint64_t last_ticks=get_ticks_usec();
+	//uint64_t last_ticks=get_ticks_usec();
 
-//	int frames=0;
-//	uint64_t frame=0;
+	//int frames=0;
+	//uint64_t frame=0;
 
 	while (!force_quit) {
 
 		process_events(); // get rid of pending events
-		last_id = joystick_osx->process_joysticks(last_id);
+		last_id = joypad_osx->process_joypads(last_id);
 		if (Main::iteration()==true)
 			break;
 	};
@@ -1781,7 +1765,8 @@ String OS_OSX::get_joy_guid(int p_device) const {
 OS_OSX* OS_OSX::singleton=NULL;
 
 OS_OSX::OS_OSX() {
-
+	
+	mouse_mode=OS::MOUSE_MODE_VISIBLE;
 	main_loop=NULL;
 	singleton=this;
 	autoreleasePool = [[NSAutoreleasePool alloc] init];

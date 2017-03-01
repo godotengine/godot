@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,18 +29,21 @@
 #include "version.h"
 #include "export.h"
 #include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 #include "tools/editor/editor_node.h"
 #include "io/zip_io.h"
 #include "io/marshalls.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/javascript/logo.h"
 #include "string.h"
+
+
+#if 0
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
-	OBJ_TYPE( EditorExportPlatformJavaScript,EditorExportPlatform );
+	GDCLASS( EditorExportPlatformJavaScript,EditorExportPlatform );
 
 	String custom_release_package;
 	String custom_debug_package;
@@ -181,9 +184,9 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t>& p_html, const St
 		String current_line = lines[i];
 		current_line = current_line.replace("$GODOT_TMEM",itos((1<<(max_memory+5))*1024*1024));
 		current_line = current_line.replace("$GODOT_BASE",p_name);
-		current_line = current_line.replace("$GODOT_CANVAS_WIDTH",Globals::get_singleton()->get("display/width"));
-		current_line = current_line.replace("$GODOT_CANVAS_HEIGHT",Globals::get_singleton()->get("display/height"));
-		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:(String) Globals::get_singleton()->get("application/name"));
+		current_line = current_line.replace("$GODOT_CANVAS_WIDTH",GlobalConfig::get_singleton()->get("display/window/width"));
+		current_line = current_line.replace("$GODOT_CANVAS_HEIGHT",GlobalConfig::get_singleton()->get("display/window/height"));
+		current_line = current_line.replace("$GODOT_HEAD_TITLE",!html_title.empty()?html_title:(String) GlobalConfig::get_singleton()->get("application/name"));
 		current_line = current_line.replace("$GODOT_HEAD_INCLUDE",html_head_include);
 		current_line = current_line.replace("$GODOT_STYLE_FONT_FAMILY",html_font_family);
 		current_line = current_line.replace("$GODOT_STYLE_INCLUDE",html_style_include);
@@ -265,7 +268,7 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 
 	FileAccess *f=FileAccess::open(p_path.get_base_dir()+"/data.pck",FileAccess::WRITE);
 	if (!f) {
-		EditorNode::add_io_error("Could not create file for writing:\n"+p_path.basename()+"_files.js");
+		EditorNode::add_io_error("Could not create file for writing:\n"+p_path.get_basename()+"_files.js");
 		return ERR_FILE_CANT_WRITE;
 	}
 	Error err = save_pack(f);
@@ -307,32 +310,32 @@ Error EditorExportPlatformJavaScript::export_project(const String& p_path, bool 
 
 		if (file=="godot.html") {
 
-			_fix_html(data,p_path.get_file().basename(), p_debug);
+			_fix_html(data,p_path.get_file().get_basename(), p_debug);
 			file=p_path.get_file();
 		}
 		if (file=="godotfs.js") {
 
 			_fix_files(data,len);
-			file=p_path.get_file().basename()+"fs.js";
+			file=p_path.get_file().get_basename()+"fs.js";
 		}
 		if (file=="godot.js") {
 
-			file=p_path.get_file().basename()+".js";
+			file=p_path.get_file().get_basename()+".js";
 		}
 
 		if (file=="godot.asm.js") {
 
-			file=p_path.get_file().basename()+".asm.js";
+			file=p_path.get_file().get_basename()+".asm.js";
 		}
 
 		if (file=="godot.mem") {
 
-			file=p_path.get_file().basename()+".mem";
+			file=p_path.get_file().get_basename()+".mem";
 		}
 
 		if (file=="godot.wasm") {
 
-			file=p_path.get_file().basename()+".wasm";
+			file=p_path.get_file().get_basename()+".wasm";
 		}
 
 		String dst = p_path.get_base_dir().plus_file(file);
@@ -377,7 +380,7 @@ EditorExportPlatformJavaScript::EditorExportPlatformJavaScript() {
 	logo->create_from_image(img);
 	max_memory=3;
 	html_title="";
-	html_font_family="arial,sans-serif";
+	html_font_family="'Droid Sans',arial,sans-serif";
 	html_controls_enabled=true;
 	pack_mode=PACK_SINGLE_FILE;
 }
@@ -414,13 +417,14 @@ EditorExportPlatformJavaScript::~EditorExportPlatformJavaScript() {
 
 }
 
-
+#endif
 void register_javascript_exporter() {
 
 
-	Ref<EditorExportPlatformJavaScript> exporter = Ref<EditorExportPlatformJavaScript>( memnew(EditorExportPlatformJavaScript) );
-	EditorImportExport::get_singleton()->add_export_platform(exporter);
+	//Ref<EditorExportPlatformJavaScript> exporter = Ref<EditorExportPlatformJavaScript>( memnew(EditorExportPlatformJavaScript) );
+	//EditorImportExport::get_singleton()->add_export_platform(exporter);
 
 
 }
+
 

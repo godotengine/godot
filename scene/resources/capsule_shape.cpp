@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,8 +42,8 @@ Vector<Vector3> CapsuleShape::_gen_debug_mesh_lines() {
 	Vector3 d(0,0,height*0.5);
 	for(int i=0;i<360;i++) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+1);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+1);
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*radius;
 		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*radius;
 
@@ -107,13 +107,13 @@ float CapsuleShape::get_height() const {
 
 void CapsuleShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&CapsuleShape::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&CapsuleShape::get_radius);
-	ObjectTypeDB::bind_method(_MD("set_height","height"),&CapsuleShape::set_height);
-	ObjectTypeDB::bind_method(_MD("get_height"),&CapsuleShape::get_height);
+	ClassDB::bind_method(D_METHOD("set_radius","radius"),&CapsuleShape::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"),&CapsuleShape::get_radius);
+	ClassDB::bind_method(D_METHOD("set_height","height"),&CapsuleShape::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"),&CapsuleShape::get_height);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.01,4096,0.01"), _SCS("set_radius"),_SCS("get_radius") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height",PROPERTY_HINT_RANGE,"0.01,4096,0.01"), _SCS("set_height"),_SCS("get_height") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.01,4096,0.01"), "set_radius","get_radius") ;
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height",PROPERTY_HINT_RANGE,"0.01,4096,0.01"), "set_height","get_height") ;
 
 }
 

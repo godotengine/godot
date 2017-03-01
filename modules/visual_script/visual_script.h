@@ -9,7 +9,7 @@ class VisualScriptNodeInstance;
 class VisualScript;
 
 class VisualScriptNode : public Resource {
-	OBJ_TYPE(VisualScriptNode,Resource)
+	GDCLASS(VisualScriptNode,Resource)
 
 friend class VisualScript;
 
@@ -23,8 +23,6 @@ friend class VisualScript;
 
 	void validate_input_default_values();
 protected:
-
-	virtual bool _use_builtin_script() const { return false; }
 
 	void _notification(int p_what);
 	void ports_changed_notify();
@@ -64,7 +62,7 @@ public:
 
 		Variant::Type type;
 		InputEvent::Type ev_type;
-		StringName obj_type;
+		StringName GDCLASS;
 		Ref<Script> script;
 
 		TypeGuess() { type=Variant::NIL; ev_type=InputEvent::NONE; }
@@ -143,7 +141,7 @@ public:
 
 class VisualScript : public Script {
 
-	OBJ_TYPE( VisualScript, Script )
+	GDCLASS( VisualScript, Script )
 
 	RES_BASE_EXTENSION("vs");
 
@@ -437,7 +435,7 @@ public:
 
 class VisualScriptFunctionState : public Reference {
 
-	OBJ_TYPE(VisualScriptFunctionState,Reference);
+	GDCLASS(VisualScriptFunctionState,Reference);
 friend class VisualScriptInstance;
 
 	ObjectID instance_id;
@@ -562,7 +560,7 @@ public:
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
 	virtual int find_function(const String& p_function,const String& p_code) const;
-	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
+	virtual String make_function(const String& p_class,const String& p_name,const PoolStringArray& p_args) const;
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 	virtual void add_global_constant(const StringName& p_variable,const Variant& p_value);
 

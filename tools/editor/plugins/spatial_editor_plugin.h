@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,7 +45,7 @@ class SpatialEditorGizmos;
 
 class SpatialEditorGizmo : public SpatialGizmo {
 
-	OBJ_TYPE(SpatialEditorGizmo,SpatialGizmo);
+	GDCLASS(SpatialEditorGizmo,SpatialGizmo);
 
 	bool selected;
 public:
@@ -66,7 +66,7 @@ public:
 
 class SpatialEditorViewport : public Control {
 
-	OBJ_TYPE( SpatialEditorViewport, Control );
+	GDCLASS( SpatialEditorViewport, Control );
 friend class SpatialEditor;
 	enum {
 
@@ -156,13 +156,11 @@ private:
 		NAVIGATION_MAYA,
 		NAVIGATION_MODO,
 	};
-	NavigationScheme _get_navigation_schema(const String& p_property);
 
 	enum NavigationZoomStyle {
 		NAVIGATION_ZOOM_VERTICAL,
 		NAVIGATION_ZOOM_HORIZONTAL
 	};
-	NavigationZoomStyle _get_navigation_zoom_style(const String& p_property);
 
 	enum NavigationMode {
 		NAVIGATION_NONE,
@@ -210,7 +208,7 @@ private:
 		bool region_select;
 		Point2 region_begin,region_end;
 
-		Cursor() { x_rot=y_rot=0; distance=4; region_select=false; }
+		Cursor() { x_rot=y_rot=0.5; distance=4; region_select=false; }
 	} cursor;
 
 	RID move_gizmo_instance[3], rotate_gizmo_instance[3];
@@ -267,11 +265,11 @@ public:
 
 class SpatialEditorSelectedItem : public Object {
 
-	OBJ_TYPE(SpatialEditorSelectedItem,Object);
+	GDCLASS(SpatialEditorSelectedItem,Object);
 
 public:
 
-	AABB aabb;
+	Rect3 aabb;
 	Transform original; // original location when moving
 	Transform last_xform; // last transform
 	Spatial *sp;
@@ -283,7 +281,7 @@ public:
 
 class SpatialEditor : public VBoxContainer {
 
-	OBJ_TYPE(SpatialEditor, VBoxContainer );
+	GDCLASS(SpatialEditor, VBoxContainer );
 public:
 
 	enum ToolMode {
@@ -332,8 +330,8 @@ private:
 	bool grid_enabled;
 
 	Ref<Mesh> move_gizmo[3], rotate_gizmo[3];
-	Ref<FixedMaterial> gizmo_color[3];
-	Ref<FixedMaterial> gizmo_hl;
+	Ref<FixedSpatialMaterial> gizmo_color[3];
+	Ref<FixedSpatialMaterial> gizmo_hl;
 
 
 	int over_gizmo_handle;
@@ -345,8 +343,8 @@ private:
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
-	RID indicator_mat;
-	RID cursor_material;
+	Ref<FixedSpatialMaterial> indicator_mat;
+	Ref<FixedSpatialMaterial> cursor_material;
 
 /*
 	struct Selected {
@@ -431,7 +429,7 @@ private:
 	float settings_default_light_rot_x;
 	float settings_default_light_rot_y;
 
-	Control *settings_light_base;
+	ViewportContainer *settings_light_base;
 	Viewport *settings_light_vp;
 	ColorPickerButton *settings_ambient_color;
 	Image settings_light_dir_image;
@@ -481,7 +479,7 @@ protected:
 
 
 	void _notification(int p_what);
-	//void _input_event(InputEvent p_event);
+	//void _gui_input(InputEvent p_event);
 	void _unhandled_key_input(InputEvent p_event);
 
 	static void _bind_methods();
@@ -491,9 +489,9 @@ public:
 	static SpatialEditor *get_singleton() { return singleton; }
 	void snap_cursor_to_plane(const Plane& p_plane);
 
-	float get_znear() const { return settings_znear->get_val(); }
-	float get_zfar() const { return settings_zfar->get_val(); }
-	float get_fov() const { return settings_fov->get_val(); }
+	float get_znear() const { return settings_znear->get_value(); }
+	float get_zfar() const { return settings_zfar->get_value(); }
+	float get_fov() const { return settings_fov->get_value(); }
 
 	Transform get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const { return gizmo.visible; }
@@ -546,7 +544,7 @@ public:
 
 class SpatialEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SpatialEditorPlugin, EditorPlugin );
+	GDCLASS( SpatialEditorPlugin, EditorPlugin );
 
 	SpatialEditor *spatial_editor;
 	EditorNode *editor;

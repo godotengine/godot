@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "create_dialog.h"
 
-#include "object_type_db.h"
+#include "class_db.h"
 #include "print_string.h"
 #include "scene/gui/box_container.h"
 #include "editor_node.h"
@@ -141,7 +141,7 @@ void CreateDialog::_sbox_input(const InputEvent& p_ie) {
 		p_ie.key.scancode == KEY_PAGEUP ||
 		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
 
-		search_options->call("_input_event",p_ie);
+		search_options->call("_gui_input",p_ie);
 		search_box->accept_event();
 	}
 
@@ -151,10 +151,10 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 
 	if (p_types.has(p_type))
 		return;
-	if (!ObjectTypeDB::is_type(p_type,base_type) || p_type==base_type)
+	if (!ClassDB::is_parent_class(p_type,base_type) || p_type==base_type)
 		return;
 
-	String inherits=ObjectTypeDB::type_inherits_from(p_type);
+	String inherits=ClassDB::get_parent_class(p_type);
 
 	TreeItem *parent=p_root;
 
@@ -172,7 +172,7 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 
 	TreeItem *item = search_options->create_item(parent);
 	item->set_text(0,p_type);
-	if (!ObjectTypeDB::can_instance(p_type)) {
+	if (!ClassDB::can_instance(p_type)) {
 		item->set_custom_color(0, Color(0.5,0.5,0.5) );
 		item->set_selectable(0,false);
 	} else {
@@ -183,7 +183,7 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 
 	}
 
-	if (bool(EditorSettings::get_singleton()->get("scenetree_editor/start_create_dialog_fully_expanded"))) {
+	if (bool(EditorSettings::get_singleton()->get("docks/scene_tree/start_create_dialog_fully_expanded"))) {
 		item->set_collapsed(false);
 	} else {
 		// don't collapse search results
@@ -191,7 +191,7 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 		// don't collapse the root node
 		collapse &= (item != p_root);
 		// don't collapse abstract nodes on the first tree level
-		collapse &= ((parent != p_root) || (ObjectTypeDB::can_instance(p_type)));
+		collapse &= ((parent != p_root) || (ClassDB::can_instance(p_type)));
 		item->set_collapsed(collapse);
 	}
 
@@ -222,7 +222,7 @@ void CreateDialog::_update_search() {
 */
 
 	List<StringName> type_list;
-	ObjectTypeDB::get_type_list(&type_list);
+	ClassDB::get_class_list(&type_list);
 
 	HashMap<String,TreeItem*> types;
 
@@ -245,7 +245,7 @@ void CreateDialog::_update_search() {
 		if (base_type=="Node" && type.begins_with("Editor"))
 			continue; // do not show editor nodes
 
-		if (!ObjectTypeDB::can_instance(type))
+		if (!ClassDB::can_instance(type))
 			continue; // cant create what can't be instanced
 
 		if (search_box->get_text()=="") {
@@ -254,14 +254,14 @@ void CreateDialog::_update_search() {
 
 			bool found=false;
 			String type=I->get();
-			while(type!="" && ObjectTypeDB::is_type(type,base_type) && type!=base_type) {
+			while(type!="" && ClassDB::is_parent_class(type,base_type) && type!=base_type) {
 				if (search_box->get_text().is_subsequence_ofi(type)) {
 
 					found=true;
 					break;
 				}
 
-				type=ObjectTypeDB::type_inherits_from(type);
+				type=ClassDB::get_parent_class(type);
 			}
 
 
@@ -269,7 +269,7 @@ void CreateDialog::_update_search() {
 				add_type(I->get(),types,root,&to_select);
 		}
 
-		if (EditorNode::get_editor_data().get_custom_types().has(type) && ObjectTypeDB::is_type(type, base_type)) {
+		if (EditorNode::get_editor_data().get_custom_types().has(type) && ClassDB::is_parent_class(type, base_type)) {
 			//there are custom types based on this... cool.
 			//print_line("there are custom types");
 
@@ -369,7 +369,7 @@ void CreateDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();
@@ -400,8 +400,11 @@ Object *CreateDialog::instance_selected() {
 
 	if (selected) {
 
-		String custom = selected->get_metadata(0);
+		Variant md = selected->get_metadata(0);
 
+		String custom;
+		if (md.get_type()!=Variant::NIL)
+			custom=md;
 
 		if (custom!=String()) {
 			if (EditorNode::get_editor_data().get_custom_types().has(custom)) {
@@ -412,9 +415,9 @@ Object *CreateDialog::instance_selected() {
 						Ref<Script> script = EditorNode::get_editor_data().get_custom_types()[custom][i].script;
 						String name = selected->get_text(0);
 
-						Object *ob = ObjectTypeDB::instance(custom);
+						Object *ob = ClassDB::instance(custom);
 						ERR_FAIL_COND_V(!ob,NULL);
-						if (ob->is_type("Node")) {
+						if (ob->is_class("Node")) {
 							ob->call("set_name",name);
 						}
 						ob->set_script(script.get_ref_ptr());
@@ -427,7 +430,7 @@ Object *CreateDialog::instance_selected() {
 
 			}
 		} else {
-			return ObjectTypeDB::instance(selected->get_text(0));
+			return ClassDB::instance(selected->get_text(0));
 		}
 	}
 
@@ -621,20 +624,20 @@ void CreateDialog::drop_data_fw(const Point2& p_point,const Variant& p_data,Cont
 
 void CreateDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_text_changed"),&CreateDialog::_text_changed);
-	ObjectTypeDB::bind_method(_MD("_confirmed"),&CreateDialog::_confirmed);
-	ObjectTypeDB::bind_method(_MD("_sbox_input"),&CreateDialog::_sbox_input);
-	ObjectTypeDB::bind_method(_MD("_item_selected"),&CreateDialog::_item_selected);
-	ObjectTypeDB::bind_method(_MD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
-	ObjectTypeDB::bind_method(_MD("_history_selected"),&CreateDialog::_history_selected);
-	ObjectTypeDB::bind_method(_MD("_favorite_selected"),&CreateDialog::_favorite_selected);
-	ObjectTypeDB::bind_method(_MD("_history_activated"),&CreateDialog::_history_activated);
-	ObjectTypeDB::bind_method(_MD("_favorite_activated"),&CreateDialog::_favorite_activated);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&CreateDialog::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&CreateDialog::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&CreateDialog::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_item_selected"),&CreateDialog::_item_selected);
+	ClassDB::bind_method(D_METHOD("_favorite_toggled"),&CreateDialog::_favorite_toggled);
+	ClassDB::bind_method(D_METHOD("_history_selected"),&CreateDialog::_history_selected);
+	ClassDB::bind_method(D_METHOD("_favorite_selected"),&CreateDialog::_favorite_selected);
+	ClassDB::bind_method(D_METHOD("_history_activated"),&CreateDialog::_history_activated);
+	ClassDB::bind_method(D_METHOD("_favorite_activated"),&CreateDialog::_favorite_activated);
 
 
-	ObjectTypeDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);
-	ObjectTypeDB::bind_method("can_drop_data_fw",&CreateDialog::can_drop_data_fw);
-	ObjectTypeDB::bind_method("drop_data_fw",&CreateDialog::drop_data_fw);
+	ClassDB::bind_method("get_drag_data_fw",&CreateDialog::get_drag_data_fw);
+	ClassDB::bind_method("can_drop_data_fw",&CreateDialog::can_drop_data_fw);
+	ClassDB::bind_method("drop_data_fw",&CreateDialog::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("create"));
 
@@ -646,7 +649,7 @@ CreateDialog::CreateDialog() {
 	HSplitContainer *hbc = memnew( HSplitContainer );
 
 	add_child(hbc);
-	set_child_rect(hbc);
+
 
 	VBoxContainer *lvbc = memnew( VBoxContainer);
 	hbc->add_child(lvbc);
@@ -682,7 +685,7 @@ CreateDialog::CreateDialog() {
 	favorite->connect("pressed",this,"_favorite_toggled");
 	vbc->add_margin_child(TTR("Search:"),search_hb);
 	search_box->connect("text_changed",this,"_text_changed");
-	search_box->connect("input_event",this,"_sbox_input");
+	search_box->connect("gui_input",this,"_sbox_input");
 	search_options = memnew( Tree );
 	vbc->add_margin_child(TTR("Matches:"),search_options,true);
 	get_ok()->set_text(TTR("Create"));
@@ -691,7 +694,7 @@ CreateDialog::CreateDialog() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated",this,"_confirmed");
 	search_options->connect("cell_selected",this,"_item_selected");
-//	search_options->set_hide_root(true);
+	//search_options->set_hide_root(true);
 	base_type="Object";
 
 	help_bit = memnew( EditorHelpBit );
@@ -740,10 +743,10 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 
 	if (p_types.has(p_type))
 		return;
-	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
+	if (!ClassDB::is_type(p_type,base) || p_type==base)
 		return;
 
-	String inherits=ObjectTypeDB::type_inherits_from(p_type);
+	String inherits=ClassDB::type_inherits_from(p_type);
 
 	TreeItem *parent=p_root;
 
@@ -761,7 +764,7 @@ void CreateDialog::add_type(const String& p_type,HashMap<String,TreeItem*>& p_ty
 
 	TreeItem *item = tree->create_item(parent);
 	item->set_text(0,p_type);
-	if (!ObjectTypeDB::can_instance(p_type)) {
+	if (!ClassDB::can_instance(p_type)) {
 		item->set_custom_color(0, Color(0.5,0.5,0.5) );
 		item->set_selectable(0,false);
 	}
@@ -782,7 +785,7 @@ void CreateDialog::update_tree() {
 	tree->clear();
 
 	List<String> type_list;
-	ObjectTypeDB::get_type_list(&type_list);
+	ClassDB::get_type_list(&type_list);
 
 	HashMap<String,TreeItem*> types;
 
@@ -798,7 +801,7 @@ void CreateDialog::update_tree() {
 		String type=I->get();
 
 
-		if (!ObjectTypeDB::can_instance(type))
+		if (!ClassDB::can_instance(type))
 			continue; // cant create what can't be instanced
 		if (filter->get_text()=="")
 			add_type(type,types,root);
@@ -806,14 +809,14 @@ void CreateDialog::update_tree() {
 
 			bool found=false;
 			String type=I->get();
-			while(type!="" && ObjectTypeDB::is_type(type,base) && type!=base) {
+			while(type!="" && ClassDB::is_type(type,base) && type!=base) {
 				if (type.findn(filter->get_text())!=-1) {
 
 					found=true;
 					break;
 				}
 
-				type=ObjectTypeDB::type_inherits_from(type);
+				type=ClassDB::type_inherits_from(type);
 			}
 
 
@@ -875,7 +878,7 @@ Object *CreateDialog::instance_selected() {
 
 				if (ct[i].name==name) {
 
-					Object* obj = ObjectTypeDB::instance(base);
+					Object* obj = ClassDB::instance(base);
 					ERR_FAIL_COND_V(!obj,NULL);
 					obj->set_script(ct[i].script.get_ref_ptr());
 					if (ct[i].icon.is_valid())
@@ -891,16 +894,16 @@ Object *CreateDialog::instance_selected() {
 
 	}
 
-	return ObjectTypeDB::instance(tree->get_selected()->get_text(0));
+	return ClassDB::instance(tree->get_selected()->get_text(0));
 
 }
 
 
 void CreateDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_create",&CreateDialog::_create);
-	ObjectTypeDB::bind_method("_cancel",&CreateDialog::_cancel);
-	ObjectTypeDB::bind_method("_text_changed", &CreateDialog::_text_changed);
+	ClassDB::bind_method("_create",&CreateDialog::_create);
+	ClassDB::bind_method("_cancel",&CreateDialog::_cancel);
+	ClassDB::bind_method("_text_changed", &CreateDialog::_text_changed);
 	ADD_SIGNAL( MethodInfo("create"));
 
 }
@@ -929,7 +932,7 @@ CreateDialog::CreateDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 
 	get_ok()->set_text("Create");
 

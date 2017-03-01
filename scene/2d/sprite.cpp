@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -86,7 +86,7 @@ void Sprite::_notification(int p_what) {
 			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
-			if (OS::get_singleton()->get_use_pixel_snap()) {
+			if (Engine::get_singleton()->get_use_pixel_snap()) {
 				ofs=ofs.floor();
 			}
 
@@ -97,7 +97,7 @@ void Sprite::_notification(int p_what) {
 			if (vflip)
 				dst_rect.size.y=-dst_rect.size.y;
 
-			texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
+			texture->draw_rect_region(ci,dst_rect,src_rect);
 
 		} break;
 	}
@@ -249,24 +249,16 @@ int Sprite::get_hframes() const {
 	return hframes;
 }
 
-void Sprite::set_modulate(const Color& p_color) {
-
-	modulate=p_color;
-	update();
-}
-
-Color Sprite::get_modulate() const{
-
-	return modulate;
-}
 
 
 Rect2 Sprite::get_item_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0,0,1,1);
-	//if (texture.is_null())
-	//	return CanvasItem::get_item_rect();
+	/*
+	if (texture.is_null())
+		return CanvasItem::get_item_rect();
+	*/
 
 	Size2i s;
 
@@ -302,53 +294,49 @@ void Sprite::_validate_property(PropertyInfo& property) const {
 
 void Sprite::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_texture","texture:Texture"),&Sprite::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&Sprite::get_texture);
+	ClassDB::bind_method(D_METHOD("set_texture","texture:Texture"),&Sprite::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"),&Sprite::get_texture);
 
-	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&Sprite::set_centered);
-	ObjectTypeDB::bind_method(_MD("is_centered"),&Sprite::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&Sprite::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&Sprite::is_centered);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&Sprite::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&Sprite::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&Sprite::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&Sprite::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_h","flip_h"),&Sprite::set_flip_h);
-	ObjectTypeDB::bind_method(_MD("is_flipped_h"),&Sprite::is_flipped_h);
+	ClassDB::bind_method(D_METHOD("set_flip_h","flip_h"),&Sprite::set_flip_h);
+	ClassDB::bind_method(D_METHOD("is_flipped_h"),&Sprite::is_flipped_h);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_v","flip_v"),&Sprite::set_flip_v);
-	ObjectTypeDB::bind_method(_MD("is_flipped_v"),&Sprite::is_flipped_v);
+	ClassDB::bind_method(D_METHOD("set_flip_v","flip_v"),&Sprite::set_flip_v);
+	ClassDB::bind_method(D_METHOD("is_flipped_v"),&Sprite::is_flipped_v);
 
-	ObjectTypeDB::bind_method(_MD("set_region","enabled"),&Sprite::set_region);
-	ObjectTypeDB::bind_method(_MD("is_region"),&Sprite::is_region);
+	ClassDB::bind_method(D_METHOD("set_region","enabled"),&Sprite::set_region);
+	ClassDB::bind_method(D_METHOD("is_region"),&Sprite::is_region);
 
-	ObjectTypeDB::bind_method(_MD("set_region_rect","rect"),&Sprite::set_region_rect);
-	ObjectTypeDB::bind_method(_MD("get_region_rect"),&Sprite::get_region_rect);
+	ClassDB::bind_method(D_METHOD("set_region_rect","rect"),&Sprite::set_region_rect);
+	ClassDB::bind_method(D_METHOD("get_region_rect"),&Sprite::get_region_rect);
 
-	ObjectTypeDB::bind_method(_MD("set_frame","frame"),&Sprite::set_frame);
-	ObjectTypeDB::bind_method(_MD("get_frame"),&Sprite::get_frame);
+	ClassDB::bind_method(D_METHOD("set_frame","frame"),&Sprite::set_frame);
+	ClassDB::bind_method(D_METHOD("get_frame"),&Sprite::get_frame);
 
-	ObjectTypeDB::bind_method(_MD("set_vframes","vframes"),&Sprite::set_vframes);
-	ObjectTypeDB::bind_method(_MD("get_vframes"),&Sprite::get_vframes);
+	ClassDB::bind_method(D_METHOD("set_vframes","vframes"),&Sprite::set_vframes);
+	ClassDB::bind_method(D_METHOD("get_vframes"),&Sprite::get_vframes);
 
-	ObjectTypeDB::bind_method(_MD("set_hframes","hframes"),&Sprite::set_hframes);
-	ObjectTypeDB::bind_method(_MD("get_hframes"),&Sprite::get_hframes);
-
-	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"),&Sprite::set_modulate);
-	ObjectTypeDB::bind_method(_MD("get_modulate"),&Sprite::get_modulate);
+	ClassDB::bind_method(D_METHOD("set_hframes","hframes"),&Sprite::set_hframes);
+	ClassDB::bind_method(D_METHOD("get_hframes"),&Sprite::get_hframes);
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_vframes"),_SCS("get_vframes"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), _SCS("set_hframes"),_SCS("get_hframes"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), "set_texture","get_texture");
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), "set_offset","get_offset");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_h"), "set_flip_h","is_flipped_h");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "flip_v"), "set_flip_v","is_flipped_v");
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "vframes",PROPERTY_HINT_RANGE,"1,16384,1"), "set_vframes","get_vframes");
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "hframes",PROPERTY_HINT_RANGE,"1,16384,1"), "set_hframes","get_hframes");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), "set_frame","get_frame");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "region"), "set_region","is_region");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::RECT2, "region_rect"), "set_region_rect","get_region_rect");
 
 }
 
@@ -364,9 +352,6 @@ Sprite::Sprite() {
 	vframes=1;
 	hframes=1;
 
-	modulate=Color(1,1,1,1);
-
-
 }
 
 
@@ -377,7 +362,7 @@ Sprite::Sprite() {
 ///
 ///
 
-
+#if 0
 void ViewportSprite::edit_set_pivot(const Point2& p_pivot) {
 
 	set_offset(p_pivot);
@@ -527,8 +512,10 @@ Rect2 ViewportSprite::get_item_rect() const {
 
 	if (texture.is_null())
 		return Rect2(0,0,1,1);
-	//if (texture.is_null())
-	//	return CanvasItem::get_item_rect();
+	/*
+	if (texture.is_null())
+		return CanvasItem::get_item_rect();
+	*/
 
 	Size2i s;
 
@@ -565,22 +552,22 @@ String ViewportSprite::get_configuration_warning() const {
 
 void ViewportSprite::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_viewport_path","path"),&ViewportSprite::set_viewport_path);
-	ObjectTypeDB::bind_method(_MD("get_viewport_path"),&ViewportSprite::get_viewport_path);
+	ClassDB::bind_method(D_METHOD("set_viewport_path","path"),&ViewportSprite::set_viewport_path);
+	ClassDB::bind_method(D_METHOD("get_viewport_path"),&ViewportSprite::get_viewport_path);
 
-	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&ViewportSprite::set_centered);
-	ObjectTypeDB::bind_method(_MD("is_centered"),&ViewportSprite::is_centered);
+	ClassDB::bind_method(D_METHOD("set_centered","centered"),&ViewportSprite::set_centered);
+	ClassDB::bind_method(D_METHOD("is_centered"),&ViewportSprite::is_centered);
 
-	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&ViewportSprite::set_offset);
-	ObjectTypeDB::bind_method(_MD("get_offset"),&ViewportSprite::get_offset);
+	ClassDB::bind_method(D_METHOD("set_offset","offset"),&ViewportSprite::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset"),&ViewportSprite::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"),&ViewportSprite::set_modulate);
-	ObjectTypeDB::bind_method(_MD("get_modulate"),&ViewportSprite::get_modulate);
+	ClassDB::bind_method(D_METHOD("set_modulate","modulate"),&ViewportSprite::set_modulate);
+	ClassDB::bind_method(D_METHOD("get_modulate"),&ViewportSprite::get_modulate);
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::NODE_PATH, "viewport"), _SCS("set_viewport_path"),_SCS("get_viewport_path"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::NODE_PATH, "viewport"), "set_viewport_path","get_viewport_path");
+	ADD_PROPERTYNO( PropertyInfo( Variant::BOOL, "centered"), "set_centered","is_centered");
+	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), "set_offset","get_offset");
+	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), "set_modulate","get_modulate");
 
 }
 
@@ -589,3 +576,4 @@ ViewportSprite::ViewportSprite() {
 	centered=true;
 	modulate=Color(1,1,1,1);
 }
+#endif

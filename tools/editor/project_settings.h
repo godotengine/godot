@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 //#include "project_export_settings.h"
 
 class ProjectSettings : public AcceptDialog {
-	OBJ_TYPE( ProjectSettings, AcceptDialog );
+	GDCLASS( ProjectSettings, AcceptDialog );
 
 
 	TabContainer *tab_container;
@@ -111,7 +111,7 @@ class ProjectSettings : public AcceptDialog {
 	void _action_button_pressed(Object* p_obj, int p_column,int p_id);
 	void _wait_for_key(const InputEvent& p_event);
 	void _press_a_key_confirm();
-	void _show_last_added(const InputEvent& p_event);
+	void _show_last_added(const InputEvent& p_event, const String& p_name);
 
 	void _settings_prop_edited(const String& p_name);
 	void _settings_changed();

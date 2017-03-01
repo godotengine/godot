@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,16 +36,12 @@
 #include "main/main.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/dir_access_windows.h"
-
-
 #include "servers/visual/visual_server_raster.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/visual/visual_server_wrap_mt.h"
-
+#include "servers/audio_server.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 #include "os/memory_pool_dynamic_prealloc.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/marshalls.h"
-
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
@@ -145,13 +141,14 @@ void OSUWP::set_keep_screen_on(bool p_enabled) {
 
 int OSUWP::get_audio_driver_count() const {
 
-	return AudioDriverManagerSW::get_driver_count();
+	return AudioDriverManager::get_driver_count();
 }
+
 const char * OSUWP::get_audio_driver_name(int p_driver) const {
 
-	AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+	AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
 	ERR_FAIL_COND_V( !driver, "" );
-	return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
 static MemoryPoolStatic *mempool_static=NULL;
@@ -285,25 +282,15 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 
 	input = memnew( InputDefault );
 
-	joystick = ref new JoystickUWP(input);
-	joystick->register_events();
+	joypad = ref new JoypadUWP(input);
+	joypad->register_events();
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
-
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
 
 	managed_object->update_clipboard();
 
@@ -407,19 +394,11 @@ void OSUWP::finalize() {
 	if (rasterizer)
 		memdelete(rasterizer);
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 	memdelete(input);
 
@@ -429,7 +408,7 @@ void OSUWP::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
-	joystick = nullptr;
+	joypad = nullptr;
 
 }
 void OSUWP::finalize_core() {
@@ -725,7 +704,7 @@ uint64_t OSUWP::get_ticks_usec() const {
 
 void OSUWP::process_events() {
 
-	last_id = joystick->process_controllers(last_id);
+	last_id = joypad->process_controllers(last_id);
 	process_key_events();
 }
 
@@ -969,7 +948,7 @@ OSUWP::OSUWP() {
 
 	mouse_mode_changed = CreateEvent(NULL, TRUE, FALSE, L"os_mouse_mode_changed");
 
-	AudioDriverManagerSW::add_driver(&audio_driver);
+	AudioDriverManager::add_driver(&audio_driver);
 }
 
 

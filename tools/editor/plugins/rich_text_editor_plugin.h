@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 
 class RichTextEditor : public Control {
 
-	OBJ_TYPE(RichTextEditor, Control );
+	GDCLASS(RichTextEditor, Control );
 
         friend class RichTextEditorPlugin;
 
@@ -70,7 +70,7 @@ public:
 
 class RichTextEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( RichTextEditorPlugin, EditorPlugin );
+	GDCLASS( RichTextEditorPlugin, EditorPlugin );
 
 	RichTextEditor *rich_text_editor;
 	EditorNode *editor;

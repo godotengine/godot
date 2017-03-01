@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -116,7 +116,7 @@ void NavigationPolygonEditor::_wip_close() {
 	edited_point=-1;
 }
 
-bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
+bool NavigationPolygonEditor::forward_gui_input(const InputEvent& p_event) {
 
 
 	if (!node)
@@ -127,7 +127,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 			create_nav->set_text("No NavigationPolygon resource on this node.\nCreate and assign one?");
 			create_nav->popup_centered_minsize();
 		}
-		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);;
+		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);
 	}
 
 
@@ -137,7 +137,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -148,7 +148,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 
 			//first check if a point is to be added (segment split)
-			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
+			real_t grab_treshold=EDITOR_DEF("editors/poly_editor/point_grab_radius",8);
 
 			switch(mode) {
 
@@ -211,10 +211,10 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								for(int j=0;j<node->get_navigation_polygon()->get_outline_count();j++) {
 
 
-									DVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
+									PoolVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
 
 									int pc=points.size();
-									DVector<Vector2>::Read poly=points.read();
+									PoolVector<Vector2>::Read poly=points.read();
 
 									for(int i=0;i<pc;i++) {
 
@@ -240,7 +240,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								if (closest_idx>=0) {
 
 									pre_move_edit=node->get_navigation_polygon()->get_outline(closest_outline);
-									DVector<Point2> poly = pre_move_edit;
+									PoolVector<Point2> poly = pre_move_edit;
 									poly.insert(closest_idx+1,xform.affine_inverse().xform(closest_pos));
 									edited_point=closest_idx+1;
 									edited_outline=closest_outline;
@@ -260,10 +260,10 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								for(int j=0;j<node->get_navigation_polygon()->get_outline_count();j++) {
 
 
-									DVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
+									PoolVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
 
 									int pc=points.size();
-									DVector<Vector2>::Read poly=points.read();
+									PoolVector<Vector2>::Read poly=points.read();
 
 									for(int i=0;i<pc;i++) {
 
@@ -296,7 +296,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 								//apply
 
-								DVector<Vector2> poly = node->get_navigation_polygon()->get_outline(edited_outline);
+								PoolVector<Vector2> poly = node->get_navigation_polygon()->get_outline(edited_outline);
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly.set(edited_point,edited_point_pos);
 								undo_redo->create_action(TTR("Edit Poly"));
@@ -312,7 +312,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							}
 						}
-					} if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
+					} else if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
 
 						int closest_outline=-1;
 						int closest_idx=-1;
@@ -322,10 +322,10 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 						for(int j=0;j<node->get_navigation_polygon()->get_outline_count();j++) {
 
 
-							DVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
+							PoolVector<Vector2> points=node->get_navigation_polygon()->get_outline(j);
 
 							int pc=points.size();
-							DVector<Vector2>::Read poly=points.read();
+							PoolVector<Vector2>::Read poly=points.read();
 
 							for(int i=0;i<pc;i++) {
 
@@ -345,7 +345,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 						if (closest_idx>=0) {
 
 
-							DVector<Vector2> poly = node->get_navigation_polygon()->get_outline(closest_outline);
+							PoolVector<Vector2> poly = node->get_navigation_polygon()->get_outline(closest_outline);
 
 							if (poly.size()>3) {
 								undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
@@ -411,7 +411,7 @@ void NavigationPolygonEditor::_canvas_draw() {
 	if (node->get_navigation_polygon().is_null())
 			return;
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 
@@ -477,10 +477,10 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 
 void NavigationPolygonEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&NavigationPolygonEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&NavigationPolygonEditor::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_create_nav"),&NavigationPolygonEditor::_create_nav);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&NavigationPolygonEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&NavigationPolygonEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&NavigationPolygonEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_create_nav"),&NavigationPolygonEditor::_create_nav);
 
 }
 
@@ -515,7 +515,7 @@ NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) {
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
 	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 #endif
 
 	mode = MODE_EDIT;
@@ -532,7 +532,7 @@ void NavigationPolygonEditorPlugin::edit(Object *p_object) {
 
 bool NavigationPolygonEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("NavigationPolygonInstance");
+	return p_object->is_class("NavigationPolygonInstance");
 }
 
 void NavigationPolygonEditorPlugin::make_visible(bool p_visible) {

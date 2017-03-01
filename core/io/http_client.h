@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 
 class HTTPClient : public Reference {
 
-	OBJ_TYPE(HTTPClient,Reference);
+	GDCLASS(HTTPClient,Reference);
 public:
 
 	enum ResponseCode {
@@ -155,7 +155,7 @@ private:
 	Vector<String> response_headers;
 
 	static void _bind_methods();
-	StringArray _get_response_headers();
+	PoolStringArray _get_response_headers();
 	Dictionary _get_response_headers_as_dictionary();
 	int read_chunk_size;
 
@@ -165,15 +165,15 @@ public:
 
 
 	//Error connect_and_get(const String& p_url,bool p_verify_host=true); //connects to a full url and perform request
-	Error connect(const String &p_host,int p_port,bool p_ssl=false,bool p_verify_host=true, IP_Address::AddrType p_addr_type = IP_Address::TYPE_ANY);
+	Error connect_to_host(const String &p_host,int p_port,bool p_ssl=false,bool p_verify_host=true);
 
 	void set_connection(const Ref<StreamPeer>& p_connection);
 	Ref<StreamPeer> get_connection() const;
 
-	Error request_raw( Method p_method, const String& p_url, const Vector<String>& p_headers,const DVector<uint8_t>& p_body);
+	Error request_raw( Method p_method, const String& p_url, const Vector<String>& p_headers,const PoolVector<uint8_t>& p_body);
 	Error request( Method p_method, const String& p_url, const Vector<String>& p_headers,const String& p_body=String());
 	Error send_body_text(const String& p_body);
-	Error send_body_data(const ByteArray& p_body);
+	Error send_body_data(const PoolByteArray& p_body);
 
 	void close();
 
@@ -185,7 +185,7 @@ public:
 	Error get_response_headers(List<String> *r_response);
 	int get_response_body_length() const;
 
-	ByteArray read_response_body_chunk(); // can't get body as partial text because of most encodings UTF8, gzip, etc.
+	PoolByteArray read_response_body_chunk(); // can't get body as partial text because of most encodings UTF8, gzip, etc.
 
 	void set_blocking_mode(bool p_enable); //useful mostly if running in a thread
 	bool is_blocking_mode_enabled() const;

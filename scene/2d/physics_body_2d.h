@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 class PhysicsBody2D : public CollisionObject2D {
 
-	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
+	GDCLASS(PhysicsBody2D,CollisionObject2D);
 
 	uint32_t mask;
 	uint32_t collision_mask;
@@ -55,8 +55,8 @@ protected:
 	static void _bind_methods();
 public:
 
-	void set_layer_mask(uint32_t p_mask);
-	uint32_t get_layer_mask() const;
+	void set_collision_layer(uint32_t p_mask);
+	uint32_t get_collision_layer() const;
 
 	void set_collision_mask(uint32_t p_mask);
 	uint32_t get_collision_mask() const;
@@ -65,8 +65,8 @@ public:
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
-	void set_layer_mask_bit(int p_bit, bool p_value);
-	bool get_layer_mask_bit(int p_bit) const;
+	void set_collision_layer_bit(int p_bit, bool p_value);
+	bool get_collision_layer_bit(int p_bit) const;
 
 	void add_collision_exception_with(Node* p_node); //must be physicsbody
 	void remove_collision_exception_with(Node* p_node);
@@ -83,7 +83,7 @@ public:
 
 class StaticBody2D : public PhysicsBody2D {
 
-	OBJ_TYPE(StaticBody2D,PhysicsBody2D);
+	GDCLASS(StaticBody2D,PhysicsBody2D);
 
 	Vector2 constant_linear_velocity;
 	real_t constant_angular_velocity;
@@ -118,7 +118,7 @@ public:
 
 class RigidBody2D : public PhysicsBody2D {
 
-	OBJ_TYPE(RigidBody2D,PhysicsBody2D);
+	GDCLASS(RigidBody2D,PhysicsBody2D);
 public:
 
 	enum Mode {
@@ -290,7 +290,7 @@ VARIANT_ENUM_CAST(RigidBody2D::CCDMode);
 
 class KinematicBody2D : public PhysicsBody2D {
 
-	OBJ_TYPE(KinematicBody2D,PhysicsBody2D);
+	GDCLASS(KinematicBody2D,PhysicsBody2D);
 
 	float margin;
 	bool colliding;
@@ -319,7 +319,7 @@ public:
 	Vector2 move(const Vector2& p_motion);
 	Vector2 move_to(const Vector2& p_position);
 
-	bool test_move(const Matrix32 &p_from, const Vector2& p_motion);
+	bool test_move(const Transform2D &p_from, const Vector2& p_motion);
 	bool is_colliding() const;
 
 	Vector2 get_travel() const;

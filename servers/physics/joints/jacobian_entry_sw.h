@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,8 +56,8 @@ public:
 	JacobianEntrySW() {};
 	//constraint between two different rigidbodies
 	JacobianEntrySW(
-		const Matrix3& world2A,
-		const Matrix3& world2B,
+		const Basis& world2A,
+		const Basis& world2B,
 		const Vector3& rel_pos1,const Vector3& rel_pos2,
 		const Vector3& jointAxis,
 		const Vector3& inertiaInvA,
@@ -77,8 +77,8 @@ public:
 
 	//angular constraint between two different rigidbodies
 	JacobianEntrySW(const Vector3& jointAxis,
-		const Matrix3& world2A,
-		const Matrix3& world2B,
+		const Basis& world2A,
+		const Basis& world2B,
 		const Vector3& inertiaInvA,
 		const Vector3& inertiaInvB)
 		:m_linearJointAxis(Vector3(real_t(0.),real_t(0.),real_t(0.)))
@@ -110,7 +110,7 @@ public:
 
 	//constraint on one rigidbody
 	JacobianEntrySW(
-		const Matrix3& world2A,
+		const Basis& world2A,
 		const Vector3& rel_pos1,const Vector3& rel_pos2,
 		const Vector3& jointAxis,
 		const Vector3& inertiaInvA,

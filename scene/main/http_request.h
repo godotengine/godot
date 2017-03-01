@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 class HTTPRequest : public Node {
 
-	OBJ_TYPE(HTTPRequest,Node);
+	GDCLASS(HTTPRequest,Node);
 public:
 
 	enum Result {
@@ -71,12 +71,12 @@ private:
 
 	bool request_sent;
 	Ref<HTTPClient> client;
-	ByteArray body;
+	PoolByteArray body;
 	volatile bool use_threads;
 
 	bool got_response;
 	int response_code;
-	DVector<String> response_headers;
+	PoolVector<String> response_headers;
 
 	String download_to_file;
 
@@ -107,7 +107,7 @@ private:
 
 	Thread *thread;
 
-	void _request_done(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
+	void _request_done(int p_status, int p_code, const PoolStringArray& headers, const PoolByteArray& p_data);
 	static void _thread_func(void *p_userdata);
 
 protected:

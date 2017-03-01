@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "shader_graph_editor_plugin.h"
 
+#if 0
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
@@ -36,7 +37,7 @@
 #include "os/keyboard.h"
 #include "canvas_item_editor_plugin.h"
 
-void GraphColorRampEdit::_input_event(const InputEvent& p_event) {
+void GraphColorRampEdit::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
 
@@ -295,8 +296,8 @@ Vector<Color> GraphColorRampEdit::get_colors() const{
 
 void GraphColorRampEdit::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphColorRampEdit::_input_event);
-	ObjectTypeDB::bind_method(_MD("_color_changed"),&GraphColorRampEdit::_color_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphColorRampEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_color_changed"),&GraphColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }
 
@@ -309,13 +310,13 @@ GraphColorRampEdit::GraphColorRampEdit(){
 	popup = memnew( PopupPanel );
 	picker = memnew( ColorPicker );
 	popup->add_child(picker);
-	popup->set_child_rect(picker);
+	/popup->set_child_rect(picker);
 	add_child(popup);
 
 }
 ////////////
 
-void GraphCurveMapEdit::_input_event(const InputEvent& p_event) {
+void GraphCurveMapEdit::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
 
@@ -463,8 +464,7 @@ void GraphCurveMapEdit::_plot_curve(const Vector2& p_a,const Vector2& p_b,const 
 
 	/* compose the basis and geometry matrices */
 
-	static const float CR_basis[4][4] =
-	{
+	static const float CR_basis[4][4] = {
 		{ -0.5,  1.5, -1.5,  0.5 },
 		{  1.0, -2.5,  2.0, -0.5 },
 		{ -0.5,  0.0,  0.5,  0.0 },
@@ -657,7 +657,7 @@ Vector<Vector2> GraphCurveMapEdit::get_points() const {
 
 void GraphCurveMapEdit::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphCurveMapEdit::_input_event);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&GraphCurveMapEdit::_gui_input);
 	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
@@ -985,13 +985,13 @@ void ShaderGraphView::_color_ramp_changed(int p_id,Node* p_ramp) {
 	Vector<float> offsets=cr->get_offsets();
 	Vector<Color> colors=cr->get_colors();
 
-	DVector<float> new_offsets;
-	DVector<Color> new_colors;
+	PoolVector<float> new_offsets;
+	PoolVector<Color> new_colors;
 	{
 		new_offsets.resize(offsets.size());
 		new_colors.resize(colors.size());
-		DVector<float>::Write ow=new_offsets.write();
-		DVector<Color>::Write cw=new_colors.write();
+		PoolVector<float>::Write ow=new_offsets.write();
+		PoolVector<Color>::Write cw=new_colors.write();
 		for(int i=0;i<new_offsets.size();i++) {
 			ow[i]=offsets[i];
 			cw[i]=colors[i];
@@ -1000,8 +1000,8 @@ void ShaderGraphView::_color_ramp_changed(int p_id,Node* p_ramp) {
 	}
 
 
-	DVector<float> old_offsets=graph->color_ramp_node_get_offsets(type,p_id);
-	DVector<Color> old_colors=graph->color_ramp_node_get_colors(type,p_id);
+	PoolVector<float> old_offsets=graph->color_ramp_node_get_offsets(type,p_id);
+	PoolVector<Color> old_colors=graph->color_ramp_node_get_colors(type,p_id);
 
 	if (old_offsets.size()!=new_offsets.size())
 		ur->create_action(TTR("Add/Remove to Color Ramp"));
@@ -1026,10 +1026,10 @@ void ShaderGraphView::_curve_changed(int p_id,Node* p_curve) {
 
 	Vector<Point2> points=cr->get_points();
 
-	DVector<Vector2> new_points;
+	PoolVector<Vector2> new_points;
 	{
 		new_points.resize(points.size());
-		DVector<Vector2>::Write ow=new_points.write();
+		PoolVector<Vector2>::Write ow=new_points.write();
 		for(int i=0;i<new_points.size();i++) {
 			ow[i]=points[i];
 		}
@@ -1037,7 +1037,7 @@ void ShaderGraphView::_curve_changed(int p_id,Node* p_curve) {
 	}
 
 
-	DVector<Vector2> old_points=graph->curve_map_node_get_points(type,p_id);
+	PoolVector<Vector2> old_points=graph->curve_map_node_get_points(type,p_id);
 
 	if (old_points.size()!=new_points.size())
 		ur->create_action(TTR("Add/Remove to Curve Map"));
@@ -1377,7 +1377,7 @@ ToolButton *ShaderGraphView::make_editor(String text,GraphNode* gn,int p_id,int 
 		edit->set_icon(ped_popup->get_icon("Matrix", "EditorIcons"));
 		break;
 	case Variant::COLOR: {
-		Image icon_color = Image(15,15,false,Image::FORMAT_RGB);
+		Image icon_color = Image(15,15,false,Image::FORMAT_RGB8);
 		Color c = graph->default_get_value(type,p_id,param);
 		for (int x=1;x<14;x++)
 			for (int y=1;y<14;y++)
@@ -2130,14 +2130,14 @@ void ShaderGraphView::_create_node(int p_id) {
 		gn->set_title("ColorRamp");
 		GraphColorRampEdit * ramp  = memnew( GraphColorRampEdit );
 
-		DVector<real_t> offsets = graph->color_ramp_node_get_offsets(type,p_id);
-		DVector<Color> colors = graph->color_ramp_node_get_colors(type,p_id);
+		PoolVector<real_t> offsets = graph->color_ramp_node_get_offsets(type,p_id);
+		PoolVector<Color> colors = graph->color_ramp_node_get_colors(type,p_id);
 
 		int oc = offsets.size();
 
 		if (oc) {
-			DVector<real_t>::Read rofs = offsets.read();
-			DVector<Color>::Read rcol = colors.read();
+			PoolVector<real_t>::Read rofs = offsets.read();
+			PoolVector<Color>::Read rcol = colors.read();
 
 			Vector<float> ofsv;
 			Vector<Color> colorv;
@@ -2183,12 +2183,12 @@ void ShaderGraphView::_create_node(int p_id) {
 		gn->set_title("CurveMap");
 		GraphCurveMapEdit * map  = memnew( GraphCurveMapEdit );
 
-		DVector<Vector2> points = graph->curve_map_node_get_points(type,p_id);
+		PoolVector<Vector2> points = graph->curve_map_node_get_points(type,p_id);
 
 		int oc = points.size();
 
 		if (oc) {
-			DVector<Vector2>::Read rofs = points.read();
+			PoolVector<Vector2>::Read rofs = points.read();
 
 
 			Vector<Vector2> ofsv;
@@ -2314,12 +2314,12 @@ void ShaderGraphView::_create_node(int p_id) {
 		gn->add_child(le);
 		le->set_text(graph->input_node_get_name(type,p_id));
 		le->connect("text_entered",this,"_input_name_changed",varray(p_id,le));
-		TextureFrame *tex = memnew( TextureFrame );
+		TextureRect *tex = memnew( TextureRect );
 		tex->set_expand(true);
 		tex->set_custom_minimum_size(Size2(80,80));
 		tex->set_drag_forwarding(this);
 		gn->add_child(tex);
-		tex->set_ignore_mouse(false);
+		tex->set_mouse_filter(MOUSE_FILTER_PASS);
 		tex->set_texture(graph->texture_input_node_get_value(type,p_id));
 		ToolButton *edit = memnew( ToolButton );
 		edit->set_text("edit..");
@@ -2529,7 +2529,7 @@ void ShaderGraphView::_sg_updated() {
 
 Variant ShaderGraphView::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 {
-	TextureFrame* frame = p_from->cast_to<TextureFrame>();
+	TextureRect* frame = p_from->cast_to<TextureRect>();
 	if (!frame)
 		return Variant();
 
@@ -2575,7 +2575,7 @@ void ShaderGraphView::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 	if (!can_drop_data_fw(p_point, p_data, p_from))
 		return;
 
-	TextureFrame *frame = p_from->cast_to<TextureFrame>();
+	TextureRect *frame = p_from->cast_to<TextureRect>();
 	if (!frame)
 		return;
 
@@ -2694,49 +2694,49 @@ void ShaderGraphView::add_node(int p_type, const Vector2 &location) {
 
 void ShaderGraphView::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_update_graph",&ShaderGraphView::_update_graph);
-	ObjectTypeDB::bind_method("_begin_node_move", &ShaderGraphView::_begin_node_move);
-	ObjectTypeDB::bind_method("_node_moved",&ShaderGraphView::_node_moved);
-	ObjectTypeDB::bind_method("_end_node_move", &ShaderGraphView::_end_node_move);
-	ObjectTypeDB::bind_method("_move_node",&ShaderGraphView::_move_node);
-	ObjectTypeDB::bind_method("_node_removed",&ShaderGraphView::_node_removed);
-	ObjectTypeDB::bind_method("_connection_request",&ShaderGraphView::_connection_request);
-	ObjectTypeDB::bind_method("_disconnection_request",&ShaderGraphView::_disconnection_request);
-	ObjectTypeDB::bind_method("_duplicate_nodes_request", &ShaderGraphView::_duplicate_nodes_request);
-	ObjectTypeDB::bind_method("_duplicate_nodes", &ShaderGraphView::_duplicate_nodes);
-	ObjectTypeDB::bind_method("_delete_nodes_request", &ShaderGraphView::_delete_nodes_request);
+	ClassDB::bind_method("_update_graph",&ShaderGraphView::_update_graph);
+	ClassDB::bind_method("_begin_node_move", &ShaderGraphView::_begin_node_move);
+	ClassDB::bind_method("_node_moved",&ShaderGraphView::_node_moved);
+	ClassDB::bind_method("_end_node_move", &ShaderGraphView::_end_node_move);
+	ClassDB::bind_method("_move_node",&ShaderGraphView::_move_node);
+	ClassDB::bind_method("_node_removed",&ShaderGraphView::_node_removed);
+	ClassDB::bind_method("_connection_request",&ShaderGraphView::_connection_request);
+	ClassDB::bind_method("_disconnection_request",&ShaderGraphView::_disconnection_request);
+	ClassDB::bind_method("_duplicate_nodes_request", &ShaderGraphView::_duplicate_nodes_request);
+	ClassDB::bind_method("_duplicate_nodes", &ShaderGraphView::_duplicate_nodes);
+	ClassDB::bind_method("_delete_nodes_request", &ShaderGraphView::_delete_nodes_request);
 
-	ObjectTypeDB::bind_method("_default_changed",&ShaderGraphView::_default_changed);
-	ObjectTypeDB::bind_method("_scalar_const_changed",&ShaderGraphView::_scalar_const_changed);
-	ObjectTypeDB::bind_method("_vec_const_changed",&ShaderGraphView::_vec_const_changed);
-	ObjectTypeDB::bind_method("_rgb_const_changed",&ShaderGraphView::_rgb_const_changed);
-	ObjectTypeDB::bind_method("_xform_const_changed",&ShaderGraphView::_xform_const_changed);
-	ObjectTypeDB::bind_method("_scalar_op_changed",&ShaderGraphView::_scalar_op_changed);
-	ObjectTypeDB::bind_method("_vec_op_changed",&ShaderGraphView::_vec_op_changed);
-	ObjectTypeDB::bind_method("_vec_scalar_op_changed",&ShaderGraphView::_vec_scalar_op_changed);
-	ObjectTypeDB::bind_method("_rgb_op_changed",&ShaderGraphView::_rgb_op_changed);
-	ObjectTypeDB::bind_method("_xform_inv_rev_changed",&ShaderGraphView::_xform_inv_rev_changed);
-	ObjectTypeDB::bind_method("_scalar_func_changed",&ShaderGraphView::_scalar_func_changed);
-	ObjectTypeDB::bind_method("_vec_func_changed",&ShaderGraphView::_vec_func_changed);
-	ObjectTypeDB::bind_method("_scalar_input_changed",&ShaderGraphView::_scalar_input_changed);
-	ObjectTypeDB::bind_method("_vec_input_changed",&ShaderGraphView::_vec_input_changed);
-	ObjectTypeDB::bind_method("_xform_input_changed",&ShaderGraphView::_xform_input_changed);
-	ObjectTypeDB::bind_method("_rgb_input_changed",&ShaderGraphView::_rgb_input_changed);
-	ObjectTypeDB::bind_method("_tex_input_change",&ShaderGraphView::_tex_input_change);
-	ObjectTypeDB::bind_method("_cube_input_change",&ShaderGraphView::_cube_input_change);
-	ObjectTypeDB::bind_method("_input_name_changed",&ShaderGraphView::_input_name_changed);
-	ObjectTypeDB::bind_method("_tex_edited",&ShaderGraphView::_tex_edited);
-	ObjectTypeDB::bind_method("_variant_edited",&ShaderGraphView::_variant_edited);
-	ObjectTypeDB::bind_method("_cube_edited",&ShaderGraphView::_cube_edited);
-	ObjectTypeDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
-	ObjectTypeDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
-	ObjectTypeDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
+	ClassDB::bind_method("_default_changed",&ShaderGraphView::_default_changed);
+	ClassDB::bind_method("_scalar_const_changed",&ShaderGraphView::_scalar_const_changed);
+	ClassDB::bind_method("_vec_const_changed",&ShaderGraphView::_vec_const_changed);
+	ClassDB::bind_method("_rgb_const_changed",&ShaderGraphView::_rgb_const_changed);
+	ClassDB::bind_method("_xform_const_changed",&ShaderGraphView::_xform_const_changed);
+	ClassDB::bind_method("_scalar_op_changed",&ShaderGraphView::_scalar_op_changed);
+	ClassDB::bind_method("_vec_op_changed",&ShaderGraphView::_vec_op_changed);
+	ClassDB::bind_method("_vec_scalar_op_changed",&ShaderGraphView::_vec_scalar_op_changed);
+	ClassDB::bind_method("_rgb_op_changed",&ShaderGraphView::_rgb_op_changed);
+	ClassDB::bind_method("_xform_inv_rev_changed",&ShaderGraphView::_xform_inv_rev_changed);
+	ClassDB::bind_method("_scalar_func_changed",&ShaderGraphView::_scalar_func_changed);
+	ClassDB::bind_method("_vec_func_changed",&ShaderGraphView::_vec_func_changed);
+	ClassDB::bind_method("_scalar_input_changed",&ShaderGraphView::_scalar_input_changed);
+	ClassDB::bind_method("_vec_input_changed",&ShaderGraphView::_vec_input_changed);
+	ClassDB::bind_method("_xform_input_changed",&ShaderGraphView::_xform_input_changed);
+	ClassDB::bind_method("_rgb_input_changed",&ShaderGraphView::_rgb_input_changed);
+	ClassDB::bind_method("_tex_input_change",&ShaderGraphView::_tex_input_change);
+	ClassDB::bind_method("_cube_input_change",&ShaderGraphView::_cube_input_change);
+	ClassDB::bind_method("_input_name_changed",&ShaderGraphView::_input_name_changed);
+	ClassDB::bind_method("_tex_edited",&ShaderGraphView::_tex_edited);
+	ClassDB::bind_method("_variant_edited",&ShaderGraphView::_variant_edited);
+	ClassDB::bind_method("_cube_edited",&ShaderGraphView::_cube_edited);
+	ClassDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
+	ClassDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
+	ClassDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
 
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ShaderGraphView::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ShaderGraphView::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ShaderGraphView::drop_data_fw);
 
-	ObjectTypeDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
+	ClassDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
 
 ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
@@ -2806,7 +2806,7 @@ void ShaderGraphEditor::_notification(int p_what) {
 			if (addsep)
 				popup->add_separator();
 		}
-		popup->connect("item_pressed",this,"_add_node");
+		popup->connect("id_pressed",this,"_add_node");
 
 
 	}
@@ -2814,8 +2814,8 @@ void ShaderGraphEditor::_notification(int p_what) {
 
 void ShaderGraphEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_add_node",&ShaderGraphEditor::_add_node);
-	ObjectTypeDB::bind_method("_popup_requested",&ShaderGraphEditor::_popup_requested);
+	ClassDB::bind_method("_add_node",&ShaderGraphEditor::_add_node);
+	ClassDB::bind_method("_popup_requested",&ShaderGraphEditor::_popup_requested);
 }
 
 
@@ -2932,9 +2932,9 @@ ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node, bool p_2d) 
 		SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
 
 
-	//	editor->get_viewport()->add_child(shader_editor);
-	//	shader_editor->set_area_as_parent_rect();
-	//	shader_editor->hide();
+		//editor->get_viewport()->add_child(shader_editor);
+		//shader_editor->set_area_as_parent_rect();
+		//shader_editor->hide();
 
 }
 
@@ -2945,3 +2945,4 @@ ShaderGraphEditorPlugin::~ShaderGraphEditorPlugin()
 
 
 
+#endif

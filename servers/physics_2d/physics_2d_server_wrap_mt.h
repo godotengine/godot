@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "servers/physics_2d_server.h"
 #include "command_queue_mt.h"
 #include "os/thread.h"
-#include "globals.h"
+#include "global_config.h"
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: "+String(__FUNCTION__));
@@ -60,7 +60,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 
 	Semaphore *step_sem;
 	int step_pending;
-	void thread_step(float p_delta);
+	void thread_step(real_t p_delta);
 	void thread_flush();
 
 	void thread_exit();
@@ -100,7 +100,7 @@ public:
 
 
 	//these work well, but should be used from the main thread only
-	bool shape_collide(RID p_shape_A, const Matrix32& p_xform_A,const Vector2& p_motion_A,RID p_shape_B, const Matrix32& p_xform_B, const Vector2& p_motion_B,Vector2 *r_results,int p_result_max,int &r_result_count) {
+	bool shape_collide(RID p_shape_A, const Transform2D& p_xform_A,const Vector2& p_motion_A,RID p_shape_B, const Transform2D& p_xform_B, const Vector2& p_motion_B,Vector2 *r_results,int p_result_max,int &r_result_count) {
 
 		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
 		return physics_2d_server->shape_collide(p_shape_A,p_xform_A,p_motion_A,p_shape_B,p_xform_B,p_motion_B,r_results,p_result_max,r_result_count);
@@ -150,13 +150,13 @@ public:
 	FUNC2(area_set_space_override_mode,RID,AreaSpaceOverrideMode);
 	FUNC1RC(AreaSpaceOverrideMode,area_get_space_override_mode,RID);
 
-	FUNC3(area_add_shape,RID,RID,const Matrix32&);
+	FUNC3(area_add_shape,RID,RID,const Transform2D&);
 	FUNC3(area_set_shape,RID,int,RID);
-	FUNC3(area_set_shape_transform,RID,int,const Matrix32&);
+	FUNC3(area_set_shape_transform,RID,int,const Transform2D&);
 
 	FUNC1RC(int,area_get_shape_count,RID);
 	FUNC2RC(RID,area_get_shape,RID,int);
-	FUNC2RC(Matrix32,area_get_shape_transform,RID,int);
+	FUNC2RC(Transform2D,area_get_shape_transform,RID,int);
 	FUNC2(area_remove_shape,RID,int);
 	FUNC1(area_clear_shapes,RID);
 
@@ -164,10 +164,10 @@ public:
 	FUNC1RC(ObjectID,area_get_object_instance_ID,RID);
 
 	FUNC3(area_set_param,RID,AreaParameter,const Variant&);
-	FUNC2(area_set_transform,RID,const Matrix32&);
+	FUNC2(area_set_transform,RID,const Transform2D&);
 
 	FUNC2RC(Variant,area_get_param,RID,AreaParameter);
-	FUNC1RC(Matrix32,area_get_transform,RID);
+	FUNC1RC(Transform2D,area_get_transform,RID);
 
 	FUNC2(area_set_collision_mask,RID,uint32_t);
 	FUNC2(area_set_layer_mask,RID,uint32_t);
@@ -191,13 +191,13 @@ public:
 	FUNC1RC(BodyMode,body_get_mode,RID);
 
 
-	FUNC3(body_add_shape,RID,RID,const Matrix32&);
+	FUNC3(body_add_shape,RID,RID,const Transform2D&);
 	FUNC3(body_set_shape,RID,int,RID);
-	FUNC3(body_set_shape_transform,RID,int,const Matrix32&);
+	FUNC3(body_set_shape_transform,RID,int,const Transform2D&);
 	FUNC3(body_set_shape_metadata,RID,int,const Variant&);
 
 	FUNC1RC(int,body_get_shape_count,RID);
-	FUNC2RC(Matrix32,body_get_shape_transform,RID,int);
+	FUNC2RC(Transform2D,body_get_shape_transform,RID,int);
 	FUNC2RC(Variant,body_get_shape_metadata,RID,int);
 	FUNC2RC(RID,body_get_shape,RID,int);
 
@@ -220,8 +220,8 @@ public:
 	FUNC1RC(uint32_t,body_get_collision_mask,RID);
 
 
-	FUNC3(body_set_param,RID,BodyParameter,float);
-	FUNC2RC(float,body_get_param,RID,BodyParameter);
+	FUNC3(body_set_param,RID,BodyParameter,real_t);
+	FUNC2RC(real_t,body_get_param,RID,BodyParameter);
 
 
 	FUNC3(body_set_state,RID,BodyState,const Variant&);
@@ -230,8 +230,8 @@ public:
 	FUNC2(body_set_applied_force,RID,const Vector2&);
 	FUNC1RC(Vector2,body_get_applied_force,RID);
 
-	FUNC2(body_set_applied_torque,RID,float);
-	FUNC1RC(float,body_get_applied_torque,RID);
+	FUNC2(body_set_applied_torque,RID,real_t);
+	FUNC1RC(real_t,body_get_applied_torque,RID);
 
 	FUNC3(body_add_force,RID,const Vector2&,const Vector2&);
 	FUNC3(body_apply_impulse,RID,const Vector2&,const Vector2&);
@@ -247,12 +247,12 @@ public:
 	FUNC2(body_set_one_way_collision_direction,RID,const Vector2&);
 	FUNC1RC(Vector2,body_get_one_way_collision_direction,RID);
 
-	FUNC2(body_set_one_way_collision_max_depth,RID,float);
-	FUNC1RC(float,body_get_one_way_collision_max_depth,RID);
+	FUNC2(body_set_one_way_collision_max_depth,RID,real_t);
+	FUNC1RC(real_t,body_get_one_way_collision_max_depth,RID);
 
 
-	FUNC2(body_set_contacts_reported_depth_treshold,RID,float);
-	FUNC1RC(float,body_get_contacts_reported_depth_treshold,RID);
+	FUNC2(body_set_contacts_reported_depth_treshold,RID,real_t);
+	FUNC1RC(real_t,body_get_contacts_reported_depth_treshold,RID);
 
 	FUNC2(body_set_omit_force_integration,RID,bool);
 	FUNC1RC(bool,body_is_omitting_force_integration,RID);
@@ -260,13 +260,13 @@ public:
 	FUNC4(body_set_force_integration_callback,RID ,Object *,const StringName& ,const Variant& );
 
 
-	bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count) {
+	bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Transform2D& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count) {
 		return physics_2d_server->body_collide_shape(p_body,p_body_shape,p_shape,p_shape_xform,p_motion,r_results,p_result_max,r_result_count);
 	}
 
 	FUNC2(body_set_pickable,RID,bool);
 
-	bool body_test_motion(RID p_body,const Matrix32& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
+	bool body_test_motion(RID p_body,const Transform2D& p_from,const Vector2& p_motion,real_t p_margin=0.001,MotionResult *r_result=NULL) {
 
 		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
 		return physics_2d_server->body_test_motion(p_body,p_from,p_motion,p_margin,r_result);
@@ -303,7 +303,7 @@ public:
 	FUNC1(set_active,bool);
 
 	virtual void init();
-	virtual void step(float p_step);
+	virtual void step(real_t p_step);
 	virtual void sync();
 	virtual void end_sync();
 	virtual void flush_queries();
@@ -320,7 +320,7 @@ public:
 	template<class T>
 	static Physics2DServer* init_server() {
 
-		int tm = GLOBAL_DEF("physics_2d/thread_model",1);
+		int tm = GLOBAL_DEF("physics/2d/thread_model",1);
 		if (tm==0) //single unsafe
 			return memnew( T );
 		else if (tm==1) //single saef

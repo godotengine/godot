@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,9 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "settings_config_dialog.h"
+
 #include "editor_settings.h"
 #include "scene/gui/margin_container.h"
-#include "globals.h"
+#include "global_config.h"
 #include "editor_file_system.h"
 #include "editor_node.h"
 #include "os/keyboard.h"
@@ -55,7 +56,7 @@ void EditorSettingsDialog::_settings_property_edited(const String& p_name) {
 
 	// Small usability workaround to update the text color settings when the
 	// color theme is changed
-	if (full_name == "text_editor/color_theme") {
+	if (full_name == "text_editor/theme/color_theme") {
 		property_editor->get_property_editor()->update_tree();
 	}
 }
@@ -288,16 +289,16 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 
 void EditorSettingsDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_settings_save"),&EditorSettingsDialog::_settings_save);
-	ObjectTypeDB::bind_method(_MD("_settings_changed"),&EditorSettingsDialog::_settings_changed);
-	ObjectTypeDB::bind_method(_MD("_settings_property_edited"),&EditorSettingsDialog::_settings_property_edited);
-	ObjectTypeDB::bind_method(_MD("_clear_search_box"),&EditorSettingsDialog::_clear_search_box);
-	ObjectTypeDB::bind_method(_MD("_clear_shortcut_search_box"),&EditorSettingsDialog::_clear_shortcut_search_box);
-	ObjectTypeDB::bind_method(_MD("_shortcut_button_pressed"),&EditorSettingsDialog::_shortcut_button_pressed);
-	ObjectTypeDB::bind_method(_MD("_filter_shortcuts"),&EditorSettingsDialog::_filter_shortcuts);
-	ObjectTypeDB::bind_method(_MD("_update_shortcuts"),&EditorSettingsDialog::_update_shortcuts);
-	ObjectTypeDB::bind_method(_MD("_press_a_key_confirm"),&EditorSettingsDialog::_press_a_key_confirm);
-	ObjectTypeDB::bind_method(_MD("_wait_for_key"),&EditorSettingsDialog::_wait_for_key);
+	ClassDB::bind_method(D_METHOD("_settings_save"),&EditorSettingsDialog::_settings_save);
+	ClassDB::bind_method(D_METHOD("_settings_changed"),&EditorSettingsDialog::_settings_changed);
+	ClassDB::bind_method(D_METHOD("_settings_property_edited"),&EditorSettingsDialog::_settings_property_edited);
+	ClassDB::bind_method(D_METHOD("_clear_search_box"),&EditorSettingsDialog::_clear_search_box);
+	ClassDB::bind_method(D_METHOD("_clear_shortcut_search_box"),&EditorSettingsDialog::_clear_shortcut_search_box);
+	ClassDB::bind_method(D_METHOD("_shortcut_button_pressed"),&EditorSettingsDialog::_shortcut_button_pressed);
+	ClassDB::bind_method(D_METHOD("_filter_shortcuts"),&EditorSettingsDialog::_filter_shortcuts);
+	ClassDB::bind_method(D_METHOD("_update_shortcuts"),&EditorSettingsDialog::_update_shortcuts);
+	ClassDB::bind_method(D_METHOD("_press_a_key_confirm"),&EditorSettingsDialog::_press_a_key_confirm);
+	ClassDB::bind_method(D_METHOD("_wait_for_key"),&EditorSettingsDialog::_wait_for_key);
 
 }
 
@@ -307,7 +308,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	tabs = memnew( TabContainer );
 	add_child(tabs);
-	set_child_rect(tabs);
+	//set_child_rect(tabs);
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
@@ -380,7 +381,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	l->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_BEGIN,30);
 	press_a_key_label=l;
 	press_a_key->add_child(l);
-	press_a_key->connect("input_event",this,"_wait_for_key");
+	press_a_key->connect("gui_input",this,"_wait_for_key");
 	press_a_key->connect("confirmed",this,"_press_a_key_confirm");
 	//Button *load = memnew( Button );
 

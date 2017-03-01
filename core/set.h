@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -141,7 +141,7 @@ private:
 #ifdef GLOBALNIL_DISABLED
 			memdelete_allocator<Element,A>(_nil);
 #endif
-//			memdelete_allocator<Element,A>(_root);
+			//memdelete_allocator<Element,A>(_root);
 		}
 	};
 
@@ -307,7 +307,7 @@ private:
 		new_node->right=_data._nil;
 		new_node->left=_data._nil;
 		new_node->value=p_value;
-//		new_node->data=_data;
+		//new_node->data=_data;
 		if (new_parent==_data._root || less(p_value,new_parent->value)) {
 
 			new_parent->left=new_node;
@@ -416,7 +416,7 @@ private:
 				Element *aux=node->parent->left;
 				if (aux->color==RED) {
 					_set_color(aux,BLACK);
-					_set_color(node->parent,RED);;
+					_set_color(node->parent,RED);
 					_rotate_right(node->parent);
 					aux=node->parent->left;
 				}

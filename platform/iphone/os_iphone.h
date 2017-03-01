@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,10 +39,7 @@
 #include "servers/physics/physics_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "servers/audio_server.h"
 #include "main/input_default.h"
 #include "game_center.h"
 #include "in_app_store.h"
@@ -50,7 +47,7 @@
 
 
 class AudioDriverIphone;
-class RasterizerGLES2;
+// class RasterizerGLES2;
 
 class OSIPhone : public OS_Unix {
 
@@ -71,18 +68,13 @@ private:
 
 	uint8_t supported_orientations;
 
-	Rasterizer *rasterizer;
-
-	RasterizerGLES2* rasterizer_gles22;
+//	Rasterizer *rasterizer;
+//	RasterizerGLES2* rasterizer_gles22;
 
 	VisualServer *visual_server;
 	PhysicsServer* physics_server;
 	Physics2DServer *physics_2d_server;
 
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 	AudioDriverIphone* audio_driver;
 
 #ifdef GAME_CENTER_ENABLED
@@ -152,7 +144,10 @@ public:
 
 	int set_base_framebuffer(int p_fb);
 
+	void update_gravity(float p_x, float p_y, float p_z);
 	void update_accelerometer(float p_x, float p_y, float p_z);
+	void update_magnetometer(float p_x, float p_y, float p_z);
+	void update_gyroscope(float p_x, float p_y, float p_z);
 
 	static OSIPhone* get_singleton();
 

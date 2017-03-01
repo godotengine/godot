@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,37 +29,6 @@
 #include "position_3d.h"
 #include "scene/resources/mesh.h"
 
-RES Position3D::_get_gizmo_geometry() const {
-
-
-	Ref<Mesh> mesh = memnew( Mesh );
-
-	DVector<Vector3> cursor_points;
-	DVector<Color> cursor_colors;
-	float cs = 0.25;
-	cursor_points.push_back(Vector3(+cs,0,0));
-	cursor_points.push_back(Vector3(-cs,0,0));
-	cursor_points.push_back(Vector3(0,+cs,0));
-	cursor_points.push_back(Vector3(0,-cs,0));
-	cursor_points.push_back(Vector3(0,0,+cs));
-	cursor_points.push_back(Vector3(0,0,-cs));
-	cursor_colors.push_back(Color(1,0.5,0.5,1));
-	cursor_colors.push_back(Color(1,0.5,0.5,1));
-	cursor_colors.push_back(Color(0.5,1,0.5,1));
-	cursor_colors.push_back(Color(0.5,1,0.5,1));
-	cursor_colors.push_back(Color(0.5,0.5,1,1));
-	cursor_colors.push_back(Color(0.5,0.5,1,1));
-
-	Ref<FixedMaterial> mat = memnew( FixedMaterial );
-	mat->set_flag(Material::FLAG_UNSHADED,true);
-	mat->set_line_width(3);
-	Array d;
-	d[Mesh::ARRAY_VERTEX]=cursor_points;
-	d[Mesh::ARRAY_COLOR]=cursor_colors;
-	mesh->add_surface(Mesh::PRIMITIVE_LINES,d);
-	mesh->surface_set_material(0,mat);
-	return mesh;
-}
 
 Position3D::Position3D()
 {

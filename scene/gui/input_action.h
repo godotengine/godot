@@ -5,7 +5,7 @@
 
 class ShortCut : public Resource {
 
-	OBJ_TYPE(ShortCut,Resource);
+	GDCLASS(ShortCut,Resource);
 
 	InputEvent shortcut;
 protected:

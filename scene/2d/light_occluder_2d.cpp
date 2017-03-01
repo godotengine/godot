@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +29,14 @@
 #include "light_occluder_2d.h"
 
 
-void OccluderPolygon2D::set_polygon(const DVector<Vector2>& p_polygon) {
+void OccluderPolygon2D::set_polygon(const PoolVector<Vector2>& p_polygon) {
 
 	polygon=p_polygon;
 	VS::get_singleton()->canvas_occluder_polygon_set_shape(occ_polygon,p_polygon,closed);
 	emit_changed();
 }
 
-DVector<Vector2> OccluderPolygon2D::get_polygon() const{
+PoolVector<Vector2> OccluderPolygon2D::get_polygon() const{
 
 	return polygon;
 }
@@ -78,18 +78,18 @@ RID OccluderPolygon2D::get_rid() const {
 void OccluderPolygon2D::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("set_closed","closed"),&OccluderPolygon2D::set_closed);
-	ObjectTypeDB::bind_method(_MD("is_closed"),&OccluderPolygon2D::is_closed);
+	ClassDB::bind_method(D_METHOD("set_closed","closed"),&OccluderPolygon2D::set_closed);
+	ClassDB::bind_method(D_METHOD("is_closed"),&OccluderPolygon2D::is_closed);
 
-	ObjectTypeDB::bind_method(_MD("set_cull_mode","cull_mode"),&OccluderPolygon2D::set_cull_mode);
-	ObjectTypeDB::bind_method(_MD("get_cull_mode"),&OccluderPolygon2D::get_cull_mode);
+	ClassDB::bind_method(D_METHOD("set_cull_mode","cull_mode"),&OccluderPolygon2D::set_cull_mode);
+	ClassDB::bind_method(D_METHOD("get_cull_mode"),&OccluderPolygon2D::get_cull_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&OccluderPolygon2D::set_polygon);
-	ObjectTypeDB::bind_method(_MD("get_polygon"),&OccluderPolygon2D::get_polygon);
+	ClassDB::bind_method(D_METHOD("set_polygon","polygon"),&OccluderPolygon2D::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon"),&OccluderPolygon2D::get_polygon);
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"closed"),_SCS("set_closed"),_SCS("is_closed"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mode",PROPERTY_HINT_ENUM,"Disabled,ClockWise,CounterClockWise"),_SCS("set_cull_mode"),_SCS("get_cull_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"closed"),"set_closed","is_closed");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mode",PROPERTY_HINT_ENUM,"Disabled,ClockWise,CounterClockWise"),"set_cull_mode","get_cull_mode");
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),"set_polygon","get_polygon");
 
 	BIND_CONSTANT(CULL_DISABLED);
 	BIND_CONSTANT(CULL_CLOCKWISE);
@@ -123,7 +123,7 @@ void LightOccluder2D::_notification(int p_what) {
 
 		VS::get_singleton()->canvas_light_occluder_attach_to_canvas(occluder,get_canvas());
 		VS::get_singleton()->canvas_light_occluder_set_transform(occluder,get_global_transform());
-		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder,is_visible());
+		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder,is_visible_in_tree());
 
 	}
 	if (p_what==NOTIFICATION_TRANSFORM_CHANGED) {
@@ -132,7 +132,7 @@ void LightOccluder2D::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder,is_visible());
+		VS::get_singleton()->canvas_light_occluder_set_enabled(occluder,is_visible_in_tree());
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -141,7 +141,7 @@ void LightOccluder2D::_notification(int p_what) {
 
 			if (occluder_polygon.is_valid()) {
 
-				DVector<Vector2> poly = occluder_polygon->get_polygon();
+				PoolVector<Vector2> poly = occluder_polygon->get_polygon();
 
 				if (poly.size()) {
 					if (occluder_polygon->is_closed()) {
@@ -151,7 +151,7 @@ void LightOccluder2D::_notification(int p_what) {
 					} else {
 
 						int ps=poly.size();
-						DVector<Vector2>::Read r = poly.read();
+						PoolVector<Vector2>::Read r = poly.read();
 						for(int i=0;i<ps-1;i++) {
 
 							draw_line(r[i],r[i+1],Color(0,0,0,0.6),3);
@@ -224,24 +224,25 @@ String LightOccluder2D::get_configuration_warning() const {
 
 void LightOccluder2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_occluder_polygon","polygon:OccluderPolygon2D"),&LightOccluder2D::set_occluder_polygon);
-	ObjectTypeDB::bind_method(_MD("get_occluder_polygon:OccluderPolygon2D"),&LightOccluder2D::get_occluder_polygon);
+	ClassDB::bind_method(D_METHOD("set_occluder_polygon","polygon:OccluderPolygon2D"),&LightOccluder2D::set_occluder_polygon);
+	ClassDB::bind_method(D_METHOD("get_occluder_polygon:OccluderPolygon2D"),&LightOccluder2D::get_occluder_polygon);
 
-	ObjectTypeDB::bind_method(_MD("set_occluder_light_mask","mask"),&LightOccluder2D::set_occluder_light_mask);
-	ObjectTypeDB::bind_method(_MD("get_occluder_light_mask"),&LightOccluder2D::get_occluder_light_mask);
+	ClassDB::bind_method(D_METHOD("set_occluder_light_mask","mask"),&LightOccluder2D::set_occluder_light_mask);
+	ClassDB::bind_method(D_METHOD("get_occluder_light_mask"),&LightOccluder2D::get_occluder_light_mask);
 
 #ifdef DEBUG_ENABLED
-	ObjectTypeDB::bind_method("_poly_changed",&LightOccluder2D::_poly_changed);
+	ClassDB::bind_method("_poly_changed",&LightOccluder2D::_poly_changed);
 #endif
 
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"occluder",PROPERTY_HINT_RESOURCE_TYPE,"OccluderPolygon2D"),_SCS("set_occluder_polygon"),_SCS("get_occluder_polygon"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_occluder_light_mask"),_SCS("get_occluder_light_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"occluder",PROPERTY_HINT_RESOURCE_TYPE,"OccluderPolygon2D"),"set_occluder_polygon","get_occluder_polygon");
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"light_mask",PROPERTY_HINT_LAYERS_2D_RENDER),"set_occluder_light_mask","get_occluder_light_mask");
 }
 
 LightOccluder2D::LightOccluder2D() {
 
 	occluder=VS::get_singleton()->canvas_light_occluder_create();
 	mask=1;
+	set_notify_transform(true);
 }
 
 LightOccluder2D::~LightOccluder2D() {

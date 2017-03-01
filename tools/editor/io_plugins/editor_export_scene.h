@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,16 +29,16 @@
 #ifndef EDITOR_EXPORT_SCENE_H
 #define EDITOR_EXPORT_SCENE_H
 
-#include "tools/editor/editor_import_export.h"
+#include "tools/editor/editor_export.h"
 
-
+#if 0
 class EditorSceneExportPlugin : public EditorExportPlugin {
-	OBJ_TYPE( EditorSceneExportPlugin, EditorExportPlugin );
+	GDCLASS( EditorSceneExportPlugin, EditorExportPlugin );
 public:
 
 	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
 
 	EditorSceneExportPlugin();
 };
-
+#endif
 #endif // EDITOR_EXPORT_SCENE_H

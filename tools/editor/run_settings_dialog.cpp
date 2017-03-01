@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,8 +47,8 @@ String RunSettingsDialog::get_custom_arguments() const {
 
 void RunSettingsDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_run_mode_changed",&RunSettingsDialog::_run_mode_changed);
-	//ObjectTypeDB::bind_method("_browse_selected_file",&RunSettingsDialog::_browse_selected_file);
+	ClassDB::bind_method("_run_mode_changed",&RunSettingsDialog::_run_mode_changed);
+	//ClassDB::bind_method("_browse_selected_file",&RunSettingsDialog::_browse_selected_file);
 }
 
 void RunSettingsDialog::_run_mode_changed(int idx) {
@@ -76,7 +76,7 @@ RunSettingsDialog::RunSettingsDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+	//set_child_rect(vbc);
 
 	run_mode = memnew( OptionButton );
 	vbc->add_margin_child(TTR("Run Mode:"),run_mode);

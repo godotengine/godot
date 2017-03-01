@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,20 +34,18 @@
 #include "drivers/unix/os_unix.h"
 #include "context_gl_x11.h"
 #include "servers/visual_server.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/physics_server.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "servers/audio_server.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "servers/audio/audio_driver_dummy.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/input_default.h"
-#include "joystick_linux.h"
+#include "joypad_linux.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -99,7 +97,7 @@ class OS_X11 : public OS_Unix {
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
-	Rasterizer *rasterizer;
+	//Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
 	List<String> args;
@@ -134,14 +132,9 @@ class OS_X11 : public OS_Unix {
 	virtual void delete_main_loop();
 	IP_Unix *ip_unix;
 
-	AudioServerSW *audio_server;
-	SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
-
 	bool force_quit;
 	bool minimized;
-
+	bool window_has_focus;
 	bool do_mouse_warp;
 
 	const char *cursor_theme;
@@ -154,7 +147,7 @@ class OS_X11 : public OS_Unix {
 	InputDefault *input;
 
 #ifdef JOYDEV_ENABLED
-	joystick_linux *joystick;
+	JoypadLinux *joypad;
 #endif
 
 #ifdef RTAUDIO_ENABLED
@@ -168,6 +161,7 @@ class OS_X11 : public OS_Unix {
 #ifdef PULSEAUDIO_ENABLED
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
+	AudioDriverDummy driver_dummy;
 
 	Atom net_wm_icon;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@ void register_webm_types() {
 
 	webm_stream_loader = memnew(ResourceFormatLoaderVideoStreamWebm);
 	ResourceLoader::add_resource_format_loader(webm_stream_loader);
-	ObjectTypeDB::register_type<VideoStreamWebm>();
+	ClassDB::register_class<VideoStreamWebm>();
 }
 
 void unregister_webm_types() {

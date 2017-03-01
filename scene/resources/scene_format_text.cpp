@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,11 +28,12 @@
 /*************************************************************************/
 #include "scene_format_text.h"
 
-#include "globals.h"
+#include "global_config.h"
 #include "version.h"
 #include "os/dir_access.h"
 
-#define FORMAT_VERSION 1
+//version 2: changed names for basis, rect3, poolvectors, etc.
+#define FORMAT_VERSION 2
 
 #include "version.h"
 #include "os/dir_access.h"
@@ -112,7 +113,7 @@ Error ResourceInteractiveLoaderText::_parse_ext_resource(VariantParser::Stream* 
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
+			path=GlobalConfig::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 
 		}
 
@@ -172,7 +173,7 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path=GlobalConfig::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (remaps.has(path)) {
@@ -240,7 +241,7 @@ Error ResourceInteractiveLoaderText::poll() {
 
 		if ( !ResourceCache::has(path)) { //only if it doesn't exist
 
-			Object *obj = ObjectTypeDB::instance(type);
+			Object *obj = ClassDB::instance(type);
 			if (!obj) {
 
 				error_text+="Can't create sub resource of type: "+type;
@@ -310,7 +311,7 @@ Error ResourceInteractiveLoaderText::poll() {
 			return error;
 		}
 
-		Object *obj = ObjectTypeDB::instance(res_type);
+		Object *obj = ClassDB::instance(res_type);
 		if (!obj) {
 
 			error_text+="Can't create sub resource of type: "+res_type;
@@ -397,7 +398,7 @@ Error ResourceInteractiveLoaderText::poll() {
 		int type=-1;
 		int name=-1;
 		int instance=-1;
-//		int base_scene=-1;
+		//int base_scene=-1;
 
 		if (next_tag.fields.has("name")) {
 			name=packed_scene->get_state()->add_name(next_tag.fields["name"]);
@@ -661,7 +662,7 @@ void ResourceInteractiveLoaderText::get_dependencies(FileAccess *f,List<String> 
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
+			path=GlobalConfig::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 
@@ -948,9 +949,9 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderText::load_interactive(const 
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	ria->open(f);
 
 	return ria;
@@ -984,7 +985,7 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const{
 
 
 
-	String ext=p_path.extension().to_lower();
+	String ext=p_path.get_extension().to_lower();
 	if (ext=="tscn")
 		return "PackedScene";
 	else if (ext!="tres")
@@ -999,9 +1000,9 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const{
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	String r = ria->recognize(f);
 	return r;
 }
@@ -1016,9 +1017,9 @@ void ResourceFormatLoaderText::get_dependencies(const String& p_path,List<String
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	ria->get_dependencies(f,p_dependencies,p_add_types);
 
 
@@ -1033,9 +1034,9 @@ Error ResourceFormatLoaderText::rename_dependencies(const String &p_path,const M
 	}
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew( ResourceInteractiveLoaderText );
-	ria->local_path=Globals::get_singleton()->localize_path(p_path);
+	ria->local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 	ria->res_path=ria->local_path;
-//	ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
+	//ria->set_local_path( GlobalConfig::get_singleton()->localize_path(p_path) );
 	return ria->rename_dependencies(f,p_path,p_map);
 }
 
@@ -1115,7 +1116,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant& p_variant,b
 
 				PropertyInfo pi=I->get();
 
-				if (pi.usage&PROPERTY_USAGE_STORAGE || (bundle_resources && pi.usage&PROPERTY_USAGE_BUNDLE)) {
+				if (pi.usage&PROPERTY_USAGE_STORAGE) {
 
 					Variant v=res->get(I->get().name);
 					_find_resources(v);
@@ -1158,7 +1159,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant& p_variant,b
 static String _valprop(const String& p_name) {
 
 	if (p_name.find("\"")!=-1 || p_name.find("=")!=-1 || p_name.find(" ")!=-1)
-		return "\""+p_name.c_escape()+"\"";
+		return "\""+p_name.c_escape_multiline()+"\"";
 	return p_name;
 }
 
@@ -1173,7 +1174,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 	ERR_FAIL_COND_V( err, ERR_CANT_OPEN );
 	FileAccessRef _fref(f);
 
-	local_path = Globals::get_singleton()->localize_path(p_path);
+	local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 	relative_paths=p_flags&ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor=p_flags&ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
@@ -1206,12 +1207,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 	{
 		String title=packed_scene.is_valid()?"[gd_scene ":"[gd_resource ";
 		if (packed_scene.is_null())
-			title+="type=\""+p_resource->get_type()+"\" ";
+			title+="type=\""+p_resource->get_class()+"\" ";
 		int load_steps=saved_resources.size()+external_resources.size();
-		//if (packed_scene.is_valid()) {
-		//	load_steps+=packed_scene->get_node_count();
-		//}
+		/*
+		if (packed_scene.is_valid()) {
+			load_steps+=packed_scene->get_node_count();
+		}
 		//no, better to not use load steps from nodes, no point to that
+		*/
 
 		if (load_steps>1) {
 			title+="load_steps="+itos(load_steps)+" ";
@@ -1235,7 +1238,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 	for(int i=0;i<sorted_er.size();i++) {
 		String p = sorted_er[i]->get_path();
 
-		f->store_string("[ext_resource path=\""+p+"\" type=\""+sorted_er[i]->get_save_type()+"\" id="+itos(i+1)+"]\n"); //bundled
+		f->store_string("[ext_resource path=\""+p+"\" type=\""+sorted_er[i]->get_save_class()+"\" id="+itos(i+1)+"]\n"); //bundled
 	}
 
 	if (external_resources.size())
@@ -1282,7 +1285,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			}
 
 			int idx = res->get_subindex();
-			line+="type=\""+res->get_type()+"\" id="+itos(idx);
+			line+="type=\""+res->get_class()+"\" id="+itos(idx);
 			f->store_line(line+"]\n");
 			if (takeover_paths) {
 				res->set_path(p_path+"::"+itos(idx),true);
@@ -1299,14 +1302,14 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
-//		property_list.sort();
+		//property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 
 			if (skip_editor && PE->get().name.begins_with("__editor"))
 				continue;
 
-			if (PE->get().usage&PROPERTY_USAGE_STORAGE || (bundle_resources && PE->get().usage&PROPERTY_USAGE_BUNDLE)) {
+			if (PE->get().usage&PROPERTY_USAGE_STORAGE) {
 
 				String name = PE->get().name;
 				Variant value = res->get(name);
@@ -1358,13 +1361,11 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 			}
 
 			if (groups.size()) {
-				String sgroups=" groups=[ ";
+				String sgroups=" groups=[\n";
 				for(int j=0;j<groups.size();j++) {
-					if (j>0)
-						sgroups+=", ";
-					sgroups+="\""+groups[j].operator String().c_escape()+"\"";
+					sgroups+="\""+String(groups[j]).c_escape()+"\",\n";
 				}
-				sgroups+=" ]";
+				sgroups+="]";
 				header+=sgroups;
 			}
 
@@ -1451,7 +1452,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path,const RES& p_re
 
 Error ResourceFormatSaverText::save(const String &p_path,const RES& p_resource,uint32_t p_flags) {
 
-	if (p_path.ends_with(".sct") && p_resource->get_type()!="PackedScene") {
+	if (p_path.ends_with(".sct") && p_resource->get_class()!="PackedScene") {
 		return ERR_FILE_UNRECOGNIZED;
 	}
 
@@ -1467,7 +1468,7 @@ bool ResourceFormatSaverText::recognize(const RES& p_resource) const {
 }
 void ResourceFormatSaverText::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const {
 
-	if (p_resource->get_type()=="PackedScene")
+	if (p_resource->get_class()=="PackedScene")
 		p_extensions->push_back("tscn"); //text scene
 	else
 		p_extensions->push_back("tres"); //text resource

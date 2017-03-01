@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,28 +37,28 @@
 #include "area_pair_sw.h"
 #include "broad_phase_sw.h"
 #include "collision_object_sw.h"
-#include "globals.h"
+#include "global_config.h"
 
 
 class PhysicsDirectSpaceStateSW : public PhysicsDirectSpaceState {
 
-	OBJ_TYPE( PhysicsDirectSpaceStateSW, PhysicsDirectSpaceState );
+	GDCLASS( PhysicsDirectSpaceStateSW, PhysicsDirectSpaceState );
 public:
 
 	SpaceSW *space;
 
 	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,bool p_pick_ray=false);
-	virtual int intersect_shape(const RID& p_shape, const Transform& p_xform,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
-	virtual bool cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,ShapeRestInfo *r_info=NULL);
-	virtual bool collide_shape(RID p_shape, const Transform& p_shape_xform,float p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
-	virtual bool rest_info(RID p_shape, const Transform& p_shape_xform,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
+	virtual int intersect_shape(const RID& p_shape, const Transform& p_xform,real_t p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
+	virtual bool cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,real_t p_margin,real_t &p_closest_safe,real_t &p_closest_unsafe, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,ShapeRestInfo *r_info=NULL);
+	virtual bool collide_shape(RID p_shape, const Transform& p_shape_xform,real_t p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
+	virtual bool rest_info(RID p_shape, const Transform& p_shape_xform,real_t p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 
 	PhysicsDirectSpaceStateSW();
 };
 
 
 
-class SpaceSW {
+class SpaceSW : public RID_Data {
 
 public:
 
@@ -105,10 +105,10 @@ private:
 	CollisionObjectSW *intersection_query_results[INTERSECTION_QUERY_MAX];
 	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX];
 
-	float body_linear_velocity_sleep_threshold;
-	float body_angular_velocity_sleep_threshold;
-	float body_time_to_sleep;
-	float body_angular_velocity_damp_ratio;
+	real_t body_linear_velocity_sleep_threshold;
+	real_t body_angular_velocity_sleep_threshold;
+	real_t body_time_to_sleep;
+	real_t body_angular_velocity_damp_ratio;
 
 	bool locked;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,12 +29,13 @@
 #ifndef EDITOR_REIMPORT_DIALOG_H
 #define EDITOR_REIMPORT_DIALOG_H
 
+#if 0
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
 class EditorReImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorReImportDialog,ConfirmationDialog);
+	GDCLASS(EditorReImportDialog,ConfirmationDialog);
 
 	Tree *tree;
 	Vector<TreeItem*> items;
@@ -49,3 +50,4 @@ public:
 };
 
 #endif // EDITOR_REIMPORT_DIALOG_H
+#endif

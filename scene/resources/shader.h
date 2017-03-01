@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,26 +32,24 @@
 #include "resource.h"
 #include "io/resource_loader.h"
 #include "scene/resources/texture.h"
+
 class Shader : public Resource {
 
-	OBJ_TYPE(Shader,Resource);
+	GDCLASS(Shader,Resource);
 	OBJ_SAVE_TYPE( Shader );
 	RES_BASE_EXTENSION("shd");
 
 public:
 	enum Mode {
 
-		MODE_MATERIAL,
+		MODE_SPATIAL,
 		MODE_CANVAS_ITEM,
-		MODE_POST_PROCESS,
+		MODE_PARTICLES,
 		MODE_MAX
 	};
 private:
 	RID shader;
 	Mode mode;
-	Dictionary _get_code();
-	void _set_code(const Dictionary& p_string);
-
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> VisualServer name translations, to make
@@ -73,10 +71,8 @@ public:
 	//void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
-	void set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs=0,int p_light_ofs=0);
-	String get_vertex_code() const;
-	String get_fragment_code() const;
-	String get_light_code() const;
+	void set_code( const String& p_code);
+	String get_code() const;
 
 	void get_param_list(List<PropertyInfo> *p_params) const;
 	bool has_param(const StringName& p_param) const;
@@ -104,18 +100,18 @@ public:
 
 VARIANT_ENUM_CAST( Shader::Mode );
 
-class MaterialShader : public Shader {
+class SpatialShader : public Shader {
 
-	OBJ_TYPE(MaterialShader,Shader);
+	GDCLASS(SpatialShader,Shader);
 
 public:
 
-	MaterialShader() : Shader(MODE_MATERIAL) {};
+	SpatialShader() : Shader(MODE_SPATIAL) {};
 };
 
 class CanvasItemShader : public Shader {
 
-	OBJ_TYPE(CanvasItemShader,Shader);
+	GDCLASS(CanvasItemShader,Shader);
 
 public:
 
@@ -123,15 +119,14 @@ public:
 };
 
 
+class ParticlesShader : public Shader {
 
-class ResourceFormatLoaderShader : public ResourceFormatLoader {
+	GDCLASS(ParticlesShader,Shader);
+
 public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
-};
 
+	ParticlesShader() : Shader(MODE_PARTICLES) {};
+};
 
 
 #endif // SHADER_H

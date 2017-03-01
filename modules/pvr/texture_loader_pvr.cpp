@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,13 +99,13 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path,E
 	print_line("surfcount: "+itos(surfcount));
 */
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	data.resize(surfsize);
 
 	ERR_FAIL_COND_V(data.size()==0,RES());
 
 
-	DVector<uint8_t>::Write w = data.write();
+	PoolVector<uint8_t>::Write w = data.write();
 	f->get_buffer(&w[0],surfsize);
 	err = f->get_error();
 	ERR_FAIL_COND_V(err!=OK,RES());
@@ -116,33 +116,33 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path,E
 	switch(flags&0xFF) {
 
 		case 0x18:
-		case 0xC: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC2_ALPHA:Image::FORMAT_PVRTC2;  break;
+		case 0xC: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC2A:Image::FORMAT_PVRTC2;  break;
 		case 0x19:
-		case 0xD: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC4_ALPHA:Image::FORMAT_PVRTC4;  break;
+		case 0xD: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC4A:Image::FORMAT_PVRTC4;  break;
 		case 0x16:
-			format=Image::FORMAT_GRAYSCALE; break;
+			format=Image::FORMAT_L8; break;
 		case 0x17:
-			format=Image::FORMAT_GRAYSCALE_ALPHA; break;
+			format=Image::FORMAT_LA8; break;
 		case 0x20:
 		case 0x80:
 		case 0x81:
-			format=Image::FORMAT_BC1; break;
+			format=Image::FORMAT_DXT1; break;
 		case 0x21:
 		case 0x22:
 		case 0x82:
 		case 0x83:
-			format=Image::FORMAT_BC2; break;
+			format=Image::FORMAT_DXT3; break;
 		case 0x23:
 		case 0x24:
 		case 0x84:
 		case 0x85:
-			format=Image::FORMAT_BC3; break;
+			format=Image::FORMAT_DXT5; break;
 		case 0x4:
 		case 0x15:
-			format=Image::FORMAT_RGB; break;
+			format=Image::FORMAT_RGB8; break;
 		case 0x5:
 		case 0x12:
-			format=Image::FORMAT_RGBA; break;
+			format=Image::FORMAT_RGBA8; break;
 		case 0x36:
 			format=Image::FORMAT_ETC; break;
 		default:
@@ -151,7 +151,7 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path,E
 
 	}
 
-	w = DVector<uint8_t>::Write();
+	w = PoolVector<uint8_t>::Write();
 
 	int tex_flags=Texture::FLAG_FILTER|Texture::FLAG_REPEAT;
 
@@ -180,12 +180,12 @@ void ResourceFormatPVR::get_recognized_extensions(List<String> *p_extensions) co
 }
 bool ResourceFormatPVR::handles_type(const String& p_type) const {
 
-	return ObjectTypeDB::is_type(p_type,"Texture");
+	return ClassDB::is_parent_class(p_type,"Texture");
 }
 String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 
 
-	if (p_path.extension().to_lower()=="pvr")
+	if (p_path.get_extension().to_lower()=="pvr")
 		return "Texture";
 	return "";
 }
@@ -198,24 +198,24 @@ static void _compress_pvrtc4(Image * p_img) {
 
 	bool make_mipmaps=false;
 	if (img.get_width()%8 || img.get_height()%8) {
-		make_mipmaps=img.get_mipmaps()>0;
+		make_mipmaps=img.has_mipmaps();
 		img.resize(img.get_width()+(8-(img.get_width()%8)),img.get_height()+(8-(img.get_height()%8)));
 	}
-	img.convert(Image::FORMAT_RGBA);
-	if (img.get_mipmaps()==0 && make_mipmaps)
+	img.convert(Image::FORMAT_RGBA8);
+	if (!img.has_mipmaps() && make_mipmaps)
 		img.generate_mipmaps();
 
 	bool use_alpha=img.detect_alpha();
 
 	Image new_img;
-	new_img.create(img.get_width(),img.get_height(),true,use_alpha?Image::FORMAT_PVRTC4_ALPHA:Image::FORMAT_PVRTC4);
-	DVector<uint8_t> data=new_img.get_data();
+	new_img.create(img.get_width(),img.get_height(),true,use_alpha?Image::FORMAT_PVRTC4A:Image::FORMAT_PVRTC4);
+	PoolVector<uint8_t> data=new_img.get_data();
 	{
-		DVector<uint8_t>::Write wr=data.write();
-		DVector<uint8_t>::Read r=img.get_data().read();
+		PoolVector<uint8_t>::Write wr=data.write();
+		PoolVector<uint8_t>::Read r=img.get_data().read();
 
 
-		for(int i=0;i<=new_img.get_mipmaps();i++) {
+		for(int i=0;i<=new_img.get_mipmap_count();i++) {
 
 			int ofs,size,w,h;
 			img.get_mipmap_offset_size_and_dimensions(i,ofs,size,w,h);
@@ -234,7 +234,7 @@ static void _compress_pvrtc4(Image * p_img) {
 
 	}
 
-	*p_img = Image(new_img.get_width(),new_img.get_height(),new_img.get_mipmaps(),new_img.get_format(),data);
+	*p_img = Image(new_img.get_width(),new_img.get_height(),new_img.has_mipmaps(),new_img.get_format(),data);
 
 }
 
@@ -464,16 +464,19 @@ static void get_modulation_value(int x, int y, const int p_2bit, const int p_mod
 		if(((x^y)&1)==0)
 			mod_val = rep_vals0[p_modulation[y][x]];
 		else if(p_modulation_modes[y][x] == 1) {
-			mod_val = (rep_vals0[p_modulation[y-1][x]] +
-					  rep_vals0[p_modulation[y+1][x]] +
-					  rep_vals0[p_modulation[y][x-1]] +
-					  rep_vals0[p_modulation[y][x+1]] + 2) / 4;
+			mod_val = (
+					rep_vals0[p_modulation[y-1][x]] +
+					rep_vals0[p_modulation[y+1][x]] +
+					rep_vals0[p_modulation[y][x-1]] +
+					rep_vals0[p_modulation[y][x+1]] + 2) / 4;
 		} else if(p_modulation_modes[y][x] == 2) {
-			mod_val = (rep_vals0[p_modulation[y][x-1]] +
-					  rep_vals0[p_modulation[y][x+1]] + 1) / 2;
+			mod_val = (
+					rep_vals0[p_modulation[y][x-1]] +
+					rep_vals0[p_modulation[y][x+1]] + 1) / 2;
 		} else {
-			mod_val = (rep_vals0[p_modulation[y-1][x]] +
-					  rep_vals0[p_modulation[y+1][x]] + 1) / 2;
+			mod_val = (
+					rep_vals0[p_modulation[y-1][x]] +
+					rep_vals0[p_modulation[y+1][x]] + 1) / 2;
 		}
 	} else  {
 		mod_val = rep_vals1[p_modulation[y][x]];
@@ -615,11 +618,12 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 					for(j = 0; j < 2; j++) {
 						unpack_5554(p_blocks[i][j], colors5554[i][j].Reps);
 
-						unpack_modulations(p_blocks[i][j],
-										  p_2bit,
-										  p_modulation,
-										  p_modulation_modes,
-										  p_x, p_y);
+						unpack_modulations(
+								p_blocks[i][j],
+								p_2bit,
+								p_modulation,
+								p_modulation_modes,
+								p_x, p_y);
 
 						p_x += x_block_size;
 					}
@@ -632,19 +636,21 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 			}
 
 
-			interpolate_colors(colors5554[0][0].Reps[0],
-							   colors5554[0][1].Reps[0],
-							   colors5554[1][0].Reps[0],
-							   colors5554[1][1].Reps[0],
-							   p_2bit, x, y,
-							   ASig);
+			interpolate_colors(
+					colors5554[0][0].Reps[0],
+					colors5554[0][1].Reps[0],
+					colors5554[1][0].Reps[0],
+					colors5554[1][1].Reps[0],
+					p_2bit, x, y,
+					ASig);
 
-			interpolate_colors(colors5554[0][0].Reps[1],
-							   colors5554[0][1].Reps[1],
-							   colors5554[1][0].Reps[1],
-							   colors5554[1][1].Reps[1],
-							   p_2bit, x, y,
-							   BSig);
+			interpolate_colors(
+					colors5554[0][0].Reps[1],
+					colors5554[0][1].Reps[1],
+					colors5554[1][0].Reps[1],
+					colors5554[1][1].Reps[1],
+					p_2bit, x, y,
+					BSig);
 
 			get_modulation_value(x,y, p_2bit, (const int (*)[16])p_modulation, (const int (*)[16])p_modulation_modes,
 							   &Mod, &DoPT);
@@ -669,33 +675,37 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 static void _pvrtc_decompress(Image* p_img) {
 
-//	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
-//		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
-//	}
+	/*
+	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
+		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
+	}
+	*/
 
-	ERR_FAIL_COND( p_img->get_format()!=Image::FORMAT_PVRTC2 && p_img->get_format()!=Image::FORMAT_PVRTC2_ALPHA && p_img->get_format()!=Image::FORMAT_PVRTC4 && p_img->get_format()!=Image::FORMAT_PVRTC4_ALPHA);
+	ERR_FAIL_COND( p_img->get_format()!=Image::FORMAT_PVRTC2 && p_img->get_format()!=Image::FORMAT_PVRTC2A && p_img->get_format()!=Image::FORMAT_PVRTC4 && p_img->get_format()!=Image::FORMAT_PVRTC4A);
 
-	bool _2bit = (p_img->get_format()==Image::FORMAT_PVRTC2 || p_img->get_format()==Image::FORMAT_PVRTC2_ALPHA );
+	bool _2bit = (p_img->get_format()==Image::FORMAT_PVRTC2 || p_img->get_format()==Image::FORMAT_PVRTC2A );
 
-	DVector<uint8_t> data = p_img->get_data();
-	DVector<uint8_t>::Read r = data.read();
+	PoolVector<uint8_t> data = p_img->get_data();
+	PoolVector<uint8_t>::Read r = data.read();
 
 
-	DVector<uint8_t> newdata;
+	PoolVector<uint8_t> newdata;
 	newdata.resize( p_img->get_width() * p_img->get_height() * 4);
-	DVector<uint8_t>::Write w=newdata.write();
+	PoolVector<uint8_t>::Write w=newdata.write();
 
 	decompress_pvrtc((PVRTCBlock*)r.ptr(),_2bit,p_img->get_width(),p_img->get_height(),0,(unsigned char*)w.ptr());
 
-	//for(int i=0;i<newdata.size();i++) {
-	//	print_line(itos(w[i]));
-	//}
+	/*
+	for(int i=0;i<newdata.size();i++) {
+		print_line(itos(w[i]));
+	}
+	*/
 
-	w=DVector<uint8_t>::Write();
-	r=DVector<uint8_t>::Read();
+	w=PoolVector<uint8_t>::Write();
+	r=PoolVector<uint8_t>::Read();
 
-	bool make_mipmaps=p_img->get_mipmaps()>0;
-	Image newimg(p_img->get_width(),p_img->get_height(),0,Image::FORMAT_RGBA,newdata);
+	bool make_mipmaps=p_img->has_mipmaps();
+	Image newimg(p_img->get_width(),p_img->get_height(),false,Image::FORMAT_RGBA8,newdata);
 	if (make_mipmaps)
 		newimg.generate_mipmaps();
 	*p_img=newimg;

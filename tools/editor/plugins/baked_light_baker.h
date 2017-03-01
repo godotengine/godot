@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,8 @@
 #include "scene/3d/mesh_instance.h"
 #include "os/thread.h"
 
+#if 0
+
 class BakedLightBaker {
 public:
 
@@ -43,10 +45,11 @@ public:
 		OCTANT_POOL_CHUNK=1000000
 	};
 
-	//struct OctantLight {
-
-	//	double accum[8][3];
-	//};
+	/*
+	struct OctantLight {
+		double accum[8][3];
+	};
+	*/
 
 	struct Octant {
 		bool leaf;
@@ -362,8 +365,8 @@ public:
 
 	Error transfer_to_lightmaps();
 
-	void update_octree_sampler(DVector<int> &p_sampler);
-	void update_octree_images(DVector<uint8_t> &p_octree,DVector<uint8_t> &p_light);
+	void update_octree_sampler(PoolVector<int> &p_sampler);
+	void update_octree_images(PoolVector<uint8_t> &p_octree,PoolVector<uint8_t> &p_light);
 
 	Ref<BakedLight> get_baked_light() { return baked_light; }
 
@@ -375,3 +378,4 @@ public:
 };
 
 #endif // BAKED_LIGHT_BAKER_H
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@ See corresponding header file for licensing info.
 
 #include "pin_joint_sw.h"
 
-bool PinJointSW::setup(float p_step) {
+bool PinJointSW::setup(real_t p_step) {
 
 	m_appliedImpulse = real_t(0.);
 
@@ -44,10 +44,10 @@ bool PinJointSW::setup(float p_step) {
 	{
 		normal[i] = 1;
 		memnew_placement(&m_jac[i],JacobianEntrySW(
-			A->get_transform().basis.transposed(),
-			B->get_transform().basis.transposed(),
-			A->get_transform().xform(m_pivotInA) - A->get_transform().origin,
-			B->get_transform().xform(m_pivotInB) - B->get_transform().origin,
+			A->get_principal_inertia_axes().transposed(),
+			B->get_principal_inertia_axes().transposed(),
+			A->get_transform().xform(m_pivotInA) - A->get_transform().origin - A->get_center_of_mass(),
+			B->get_transform().xform(m_pivotInB) - B->get_transform().origin - B->get_center_of_mass(),
 			normal,
 			A->get_inv_inertia(),
 			A->get_inv_mass(),
@@ -59,7 +59,7 @@ bool PinJointSW::setup(float p_step) {
 	return true;
 }
 
-void PinJointSW::solve(float p_step){
+void PinJointSW::solve(real_t p_step){
 
 	Vector3 pivotAInW = A->get_transform().xform(m_pivotInA);
 	Vector3 pivotBInW = B->get_transform().xform(m_pivotInB);
@@ -68,8 +68,8 @@ void PinJointSW::solve(float p_step){
 	Vector3 normal(0,0,0);
 
 
-//	Vector3 angvelA = A->get_transform().origin.getBasis().transpose() * A->getAngularVelocity();
-//	Vector3 angvelB = B->get_transform().origin.getBasis().transpose() * B->getAngularVelocity();
+	//Vector3 angvelA = A->get_transform().origin.getBasis().transpose() * A->getAngularVelocity();
+	//Vector3 angvelB = B->get_transform().origin.getBasis().transpose() * B->getAngularVelocity();
 
 	for (int i=0;i<3;i++)
 	{
@@ -116,7 +116,7 @@ void PinJointSW::solve(float p_step){
 	}
 }
 
-void PinJointSW::set_param(PhysicsServer::PinJointParam p_param,float p_value) {
+void PinJointSW::set_param(PhysicsServer::PinJointParam p_param,real_t p_value) {
 
 	switch(p_param)	 {
 		case PhysicsServer::PIN_JOINT_BIAS: m_tau=p_value; break;
@@ -125,7 +125,7 @@ void PinJointSW::set_param(PhysicsServer::PinJointParam p_param,float p_value) {
 	}
 }
 
-float PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const{
+real_t PinJointSW::get_param(PhysicsServer::PinJointParam p_param) const{
 
 	switch(p_param)	 {
 		case PhysicsServer::PIN_JOINT_BIAS: return m_tau;

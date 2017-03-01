@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,6 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#if 0
 #include "particles_editor_plugin.h"
 #include "io/resource_loader.h"
 #include "servers/visual/particle_system_sw.h"
@@ -75,7 +77,7 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 	Transform geom_xform = node->get_global_transform().affine_inverse() * vi->get_global_transform();
 
 	int gc = geometry.size();
-	DVector<Face3>::Write w = geometry.write();
+	PoolVector<Face3>::Write w = geometry.write();
 
 
 	for(int i=0;i<gc;i++) {
@@ -85,7 +87,7 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 	}
 
 
-	w = DVector<Face3>::Write();
+	w = PoolVector<Face3>::Write();
 
 	emission_dialog->popup_centered(Size2(300,130));
 }
@@ -200,7 +202,7 @@ void ParticlesEditor::edit(Particles *p_particles) {
 void ParticlesEditor::_generate_emission_points() {
 
 	/// hacer codigo aca
-	DVector<Vector3> points;
+	PoolVector<Vector3> points;
 
 	if (emission_fill->get_selected()==0) {
 
@@ -210,7 +212,7 @@ void ParticlesEditor::_generate_emission_points() {
 
 		for(int i=0;i<geometry.size();i++) {
 
-			float area = geometry[i].get_area();;
+			float area = geometry[i].get_area();
 			if (area<CMP_EPSILON)
 				continue;
 			triangle_area_map[area_accum]=i;
@@ -254,7 +256,7 @@ void ParticlesEditor::_generate_emission_points() {
 			return;
 		}
 
-		DVector<Face3>::Read r = geometry.read();
+		PoolVector<Face3>::Read r = geometry.read();
 
 		AABB aabb;
 
@@ -330,12 +332,12 @@ void ParticlesEditor::_generate_emission_points() {
 
 void ParticlesEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&ParticlesEditor::_menu_option);
-	ObjectTypeDB::bind_method("_resource_seleted",&ParticlesEditor::_resource_seleted);
-	ObjectTypeDB::bind_method("_node_selected",&ParticlesEditor::_node_selected);
-	ObjectTypeDB::bind_method("_generate_emission_points",&ParticlesEditor::_generate_emission_points);
+	ClassDB::bind_method("_menu_option",&ParticlesEditor::_menu_option);
+	ClassDB::bind_method("_resource_seleted",&ParticlesEditor::_resource_seleted);
+	ClassDB::bind_method("_node_selected",&ParticlesEditor::_node_selected);
+	ClassDB::bind_method("_generate_emission_points",&ParticlesEditor::_generate_emission_points);
 
-	//ObjectTypeDB::bind_method("_populate",&ParticlesEditor::_populate);
+	//ClassDB::bind_method("_populate",&ParticlesEditor::_populate);
 
 }
 
@@ -354,7 +356,7 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emitter From Node"),MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_item(TTR("Clear Emitter"),MENU_OPTION_CLEAR_EMISSION_VOLUME);
 
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 
 	emission_dialog = memnew( ConfirmationDialog );
 	emission_dialog->set_title(TTR("Create Emitter"));
@@ -456,3 +458,4 @@ ParticlesEditorPlugin::~ParticlesEditorPlugin()
 }
 
 
+#endif

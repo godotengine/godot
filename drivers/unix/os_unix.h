@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -116,6 +116,8 @@ public:
 	virtual String get_installed_templates_path() const;
 	virtual String get_executable_path() const;
 	virtual String get_data_dir() const;
+
+	virtual bool check_feature_support(const String& p_feature);
 
 	//virtual void run( MainLoop * p_main_loop );
 

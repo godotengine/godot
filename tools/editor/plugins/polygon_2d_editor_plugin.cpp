@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-
 #include "polygon_2d_editor_plugin.h"
+
 #include "canvas_item_editor_plugin.h"
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
@@ -102,8 +102,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			}
 
 
-			DVector<Vector2> points = node->get_polygon();
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> points = node->get_polygon();
+			PoolVector<Vector2> uvs = node->get_uv();
 			if (uvs.size()!=points.size()) {
 				undo_redo->create_action(TTR("Create UV Map"));
 				undo_redo->add_do_method(node,"set_uv",points);
@@ -119,10 +119,10 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_POLYGON_TO_UV: {
 
-			DVector<Vector2> points = node->get_polygon();
+			PoolVector<Vector2> points = node->get_polygon();
 			if (points.size()==0)
 				break;
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> uvs = node->get_uv();
 			undo_redo->create_action(TTR("Create UV Map"));
 			undo_redo->add_do_method(node,"set_uv",points);
 			undo_redo->add_undo_method(node,"set_uv",uvs);
@@ -134,8 +134,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_TO_POLYGON: {
 
-			DVector<Vector2> points = node->get_polygon();
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> points = node->get_polygon();
+			PoolVector<Vector2> uvs = node->get_uv();
 			if (uvs.size()==0)
 				break;
 
@@ -149,11 +149,11 @@ void Polygon2DEditor::_menu_option(int p_option) {
 		} break;
 		case UVEDIT_UV_CLEAR: {
 
-			DVector<Vector2> uvs = node->get_uv();
+			PoolVector<Vector2> uvs = node->get_uv();
 			if (uvs.size()==0)
 				break;
 			undo_redo->create_action(TTR("Create UV Map"));
-			undo_redo->add_do_method(node,"set_uv",DVector<Vector2>());
+			undo_redo->add_do_method(node,"set_uv",PoolVector<Vector2>());
 			undo_redo->add_undo_method(node,"set_uv",uvs);
 			undo_redo->add_do_method(uv_edit_draw,"update");
 			undo_redo->add_undo_method(uv_edit_draw,"update");
@@ -216,7 +216,7 @@ void Polygon2DEditor::_wip_close() {
 	edited_point=-1;
 }
 
-bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
+bool Polygon2DEditor::forward_gui_input(const InputEvent& p_event) {
 
 	if (node==NULL)
 		return false;
@@ -227,7 +227,7 @@ bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			const InputEventMouseButton &mb=p_event.mouse_button;
 
-			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
@@ -239,7 +239,7 @@ bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
 			Vector<Vector2> poly = Variant(node->get_polygon());
 
 			//first check if a point is to be added (segment split)
-			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
+			real_t grab_treshold=EDITOR_DEF("editors/poly_editor/point_grab_radius",8);
 
 			switch(mode) {
 
@@ -385,7 +385,7 @@ bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							}
 						}
-					} if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
+					} else if (mb.button_index==BUTTON_RIGHT && mb.pressed && edited_point==-1) {
 
 
 
@@ -463,7 +463,7 @@ void Polygon2DEditor::_canvas_draw() {
 		poly=Variant(node->get_polygon());
 
 
-	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
 
 	for(int i=0;i<poly.size();i++) {
@@ -499,7 +499,7 @@ void Polygon2DEditor::_uv_mode(int p_mode) {
 void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom,uv_draw_zoom));
 
@@ -567,10 +567,10 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 		} else if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed) {
 
-			uv_zoom->set_val( uv_zoom->get_val()/0.9 );
+			uv_zoom->set_value( uv_zoom->get_value()/0.9 );
 		} else if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed) {
 
-			uv_zoom->set_val( uv_zoom->get_val()*0.9);
+			uv_zoom->set_value( uv_zoom->get_value()*0.9);
 		}
 
 	} else if (p_input.type==InputEvent::MOUSE_MOTION) {
@@ -580,8 +580,8 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 		if (mm.button_mask&BUTTON_MASK_MIDDLE || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
 			Vector2 drag(mm.relative_x,mm.relative_y);
-			uv_hscroll->set_val( uv_hscroll->get_val()-drag.x );
-			uv_vscroll->set_val( uv_vscroll->get_val()-drag.y );
+			uv_hscroll->set_value( uv_hscroll->get_value()-drag.x );
+			uv_vscroll->set_value( uv_vscroll->get_value()-drag.y );
 
 		} else if (uv_drag) {
 
@@ -593,13 +593,13 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 
 				case UV_MODE_EDIT_POINT: {
 
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 					uv_new.set( uv_drag_index, uv_new[uv_drag_index]+drag );
 					node->set_uv(uv_new);
 				} break;
 				case UV_MODE_MOVE: {
 
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 					for(int i=0;i<uv_new.size();i++)
 						uv_new.set( i, uv_new[i]+drag );
 
@@ -610,7 +610,7 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 				case UV_MODE_ROTATE: {
 
 					Vector2 center;
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 
 					for(int i=0;i<uv_new.size();i++)
 						center+=uv_prev[i];
@@ -630,7 +630,7 @@ void Polygon2DEditor::_uv_input(const InputEvent& p_input) {
 				case UV_MODE_SCALE: {
 
 					Vector2 center;
-					DVector<Vector2> uv_new=uv_prev;
+					PoolVector<Vector2> uv_new=uv_prev;
 
 					for(int i=0;i<uv_new.size();i++)
 						center+=uv_prev[i];
@@ -668,9 +668,9 @@ void Polygon2DEditor::_uv_scroll_changed(float) {
 	if (updating_uv_scroll)
 		return;
 
-	uv_draw_ofs.x=uv_hscroll->get_val();
-	uv_draw_ofs.y=uv_vscroll->get_val();
-	uv_draw_zoom=uv_zoom->get_val();
+	uv_draw_ofs.x=uv_hscroll->get_value();
+	uv_draw_ofs.y=uv_vscroll->get_value();
+	uv_draw_zoom=uv_zoom->get_value();
 	uv_edit_draw->update();
 }
 
@@ -680,14 +680,13 @@ void Polygon2DEditor::_uv_draw() {
 	if (base_tex.is_null())
 		return;
 
-	Matrix32 mtx;
+	Transform2D mtx;
 	mtx.elements[2]=-uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom,uv_draw_zoom));
 
-	VS::get_singleton()->canvas_item_set_clip(uv_edit_draw->get_canvas_item(),true);
 	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),mtx);
 	uv_edit_draw->draw_texture(base_tex,Point2());
-	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Matrix32());
+	VS::get_singleton()->canvas_item_add_set_transform(uv_edit_draw->get_canvas_item(),Transform2D());
 
 	if (snap_show_grid) {
 		Size2 s = uv_edit_draw->get_size();
@@ -716,7 +715,7 @@ void Polygon2DEditor::_uv_draw() {
 		}
 	}
 
-	DVector<Vector2> uvs = node->get_uv();
+	PoolVector<Vector2> uvs = node->get_uv();
 	Ref<Texture> handle = get_icon("EditorHandle","EditorIcons");
 
 	Rect2 rect(Point2(),mtx.basis_xform(base_tex->get_size()));
@@ -735,13 +734,13 @@ void Polygon2DEditor::_uv_draw() {
 	uv_hscroll->set_min(rect.pos.x);
 	uv_hscroll->set_max(rect.pos.x+rect.size.x);
 	uv_hscroll->set_page(uv_edit_draw->get_size().x);
-	uv_hscroll->set_val(uv_draw_ofs.x);
+	uv_hscroll->set_value(uv_draw_ofs.x);
 	uv_hscroll->set_step(0.001);
 
 	uv_vscroll->set_min(rect.pos.y);
 	uv_vscroll->set_max(rect.pos.y+rect.size.y);
 	uv_vscroll->set_page(uv_edit_draw->get_size().y);
-	uv_vscroll->set_val(uv_draw_ofs.y);
+	uv_vscroll->set_value(uv_draw_ofs.y);
 	uv_vscroll->set_step(0.001);
 	updating_uv_scroll=false;
 
@@ -776,19 +775,19 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 
 void Polygon2DEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&Polygon2DEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_uv_mode"),&Polygon2DEditor::_uv_mode);
-	ObjectTypeDB::bind_method(_MD("_uv_draw"),&Polygon2DEditor::_uv_draw);
-	ObjectTypeDB::bind_method(_MD("_uv_input"),&Polygon2DEditor::_uv_input);
-	ObjectTypeDB::bind_method(_MD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&Polygon2DEditor::_node_removed);
-	ObjectTypeDB::bind_method(_MD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
-	ObjectTypeDB::bind_method(_MD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
-	ObjectTypeDB::bind_method(_MD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
-	ObjectTypeDB::bind_method(_MD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
-	ObjectTypeDB::bind_method(_MD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
-	ObjectTypeDB::bind_method(_MD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
+	ClassDB::bind_method(D_METHOD("_menu_option"),&Polygon2DEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_canvas_draw"),&Polygon2DEditor::_canvas_draw);
+	ClassDB::bind_method(D_METHOD("_uv_mode"),&Polygon2DEditor::_uv_mode);
+	ClassDB::bind_method(D_METHOD("_uv_draw"),&Polygon2DEditor::_uv_draw);
+	ClassDB::bind_method(D_METHOD("_uv_input"),&Polygon2DEditor::_uv_input);
+	ClassDB::bind_method(D_METHOD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&Polygon2DEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_set_use_snap"),&Polygon2DEditor::_set_use_snap);
+	ClassDB::bind_method(D_METHOD("_set_show_grid"),&Polygon2DEditor::_set_show_grid);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_x"),&Polygon2DEditor::_set_snap_off_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_off_y"),&Polygon2DEditor::_set_snap_off_y);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_x"),&Polygon2DEditor::_set_snap_step_x);
+	ClassDB::bind_method(D_METHOD("_set_snap_step_y"),&Polygon2DEditor::_set_snap_step_y);
 
 
 }
@@ -840,7 +839,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	options->set_area_as_parent_rect();
 	options->set_text("Polygon");
 	//options->get_popup()->add_item("Parse BBCode",PARSE_BBCODE);
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	options->get_popup()->connect("id_pressed", this,"_menu_option");
 #endif
 
 	mode = MODE_EDIT;
@@ -850,11 +849,11 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_edit = memnew( AcceptDialog );
 	add_child(uv_edit);
 	uv_edit->set_title(TTR("Polygon 2D UV Editor"));
-	uv_edit->set_self_opacity(0.9);
+	uv_edit->set_self_modulate(Color(1,1,1,0.9));
 
 	VBoxContainer *uv_main_vb = memnew( VBoxContainer );
 	uv_edit->add_child(uv_main_vb);
-	uv_edit->set_child_rect(uv_main_vb);
+	//uv_edit->set_child_rect(uv_main_vb);
 	HBoxContainer *uv_mode_hb = memnew( HBoxContainer );
 	uv_main_vb->add_child(uv_mode_hb);
 	for(int i=0;i<UV_MODE_MAX;i++) {
@@ -885,7 +884,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_menu->get_popup()->add_item(TTR("UV->Polygon"),UVEDIT_UV_TO_POLYGON);
 	uv_menu->get_popup()->add_separator();
 	uv_menu->get_popup()->add_item(TTR("Clear UV"),UVEDIT_UV_CLEAR);
-	uv_menu->get_popup()->connect("item_pressed",this,"_menu_option");
+	uv_menu->get_popup()->connect("id_pressed",this,"_menu_option");
 
 	uv_mode_hb->add_child( memnew( VSeparator ));
 
@@ -914,7 +913,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	sb_off_x->set_min(-256);
 	sb_off_x->set_max(256);
 	sb_off_x->set_step(1);
-	sb_off_x->set_val(snap_offset.x);
+	sb_off_x->set_value(snap_offset.x);
 	sb_off_x->set_suffix("px");
 	sb_off_x->connect("value_changed", this, "_set_snap_off_x");
 	uv_mode_hb->add_child(sb_off_x);
@@ -923,7 +922,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	sb_off_y->set_min(-256);
 	sb_off_y->set_max(256);
 	sb_off_y->set_step(1);
-	sb_off_y->set_val(snap_offset.y);
+	sb_off_y->set_value(snap_offset.y);
 	sb_off_y->set_suffix("px");
 	sb_off_y->connect("value_changed", this, "_set_snap_off_y");
 	uv_mode_hb->add_child(sb_off_y);
@@ -935,7 +934,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	sb_step_x->set_min(-256);
 	sb_step_x->set_max(256);
 	sb_step_x->set_step(1);
-	sb_step_x->set_val(snap_step.x);
+	sb_step_x->set_value(snap_step.x);
 	sb_step_x->set_suffix("px");
 	sb_step_x->connect("value_changed", this, "_set_snap_step_x");
 	uv_mode_hb->add_child(sb_step_x);
@@ -944,18 +943,18 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	sb_step_y->set_min(-256);
 	sb_step_y->set_max(256);
 	sb_step_y->set_step(1);
-	sb_step_y->set_val(snap_step.y);
+	sb_step_y->set_value(snap_step.y);
 	sb_step_y->set_suffix("px");
 	sb_step_y->connect("value_changed", this, "_set_snap_step_y");
 	uv_mode_hb->add_child(sb_step_y);
 
 	uv_mode_hb->add_child( memnew( VSeparator ));
-	uv_icon_zoom = memnew( TextureFrame );
+	uv_icon_zoom = memnew( TextureRect );
 	uv_mode_hb->add_child( uv_icon_zoom );
 	uv_zoom = memnew( HSlider );
 	uv_zoom->set_min(0.01);
 	uv_zoom->set_max(4);
-	uv_zoom->set_val(1);
+	uv_zoom->set_value(1);
 	uv_zoom->set_step(0.01);
 	uv_mode_hb->add_child(uv_zoom);
 	uv_zoom->set_custom_minimum_size(Size2(200,0));
@@ -975,7 +974,7 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 	uv_hscroll->connect("value_changed",this,"_uv_scroll_changed");
 
 	uv_edit_draw->connect("draw",this,"_uv_draw");
-	uv_edit_draw->connect("input_event",this,"_uv_input");
+	uv_edit_draw->connect("gui_input",this,"_uv_input");
 	uv_draw_zoom=1.0;
 	uv_drag_index=-1;
 	uv_drag=false;
@@ -983,6 +982,8 @@ Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 
 	error = memnew( AcceptDialog);
 	add_child(error);
+
+	uv_edit_draw->set_clip_contents(true);
 
 }
 
@@ -995,7 +996,7 @@ void Polygon2DEditorPlugin::edit(Object *p_object) {
 
 bool Polygon2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Polygon2D");
+	return p_object->is_class("Polygon2D");
 }
 
 void Polygon2DEditorPlugin::make_visible(bool p_visible) {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ struct SpatialIndexer {
 
 	struct NotifierData {
 
-		AABB aabb;
+		Rect3 aabb;
 		OctreeElementID id;
 
 	};
@@ -64,7 +64,7 @@ struct SpatialIndexer {
 	uint64_t pass;
 	uint64_t last_frame;
 
-	void _notifier_add(VisibilityNotifier* p_notifier,const AABB& p_rect) {
+	void _notifier_add(VisibilityNotifier* p_notifier,const Rect3& p_rect) {
 
 		ERR_FAIL_COND(notifiers.has(p_notifier));
 		notifiers[p_notifier].aabb=p_rect;
@@ -73,7 +73,7 @@ struct SpatialIndexer {
 
 	}
 
-	void _notifier_update(VisibilityNotifier* p_notifier,const AABB& p_rect) {
+	void _notifier_update(VisibilityNotifier* p_notifier,const Rect3& p_rect) {
 
 		Map<VisibilityNotifier*,NotifierData>::Element *E=notifiers.find(p_notifier);
 		ERR_FAIL_COND(!E);
@@ -246,14 +246,14 @@ void World::_remove_camera(Camera* p_camera){
 
 
 
-void World::_register_notifier(VisibilityNotifier* p_notifier,const AABB& p_rect){
+void World::_register_notifier(VisibilityNotifier* p_notifier,const Rect3& p_rect){
 
 #ifndef _3D_DISABLED
 	indexer->_notifier_add(p_notifier,p_rect);
 #endif
 }
 
-void World::_update_notifier(VisibilityNotifier* p_notifier,const AABB& p_rect){
+void World::_update_notifier(VisibilityNotifier* p_notifier,const Rect3& p_rect){
 
 #ifndef _3D_DISABLED
 	indexer->_notifier_update(p_notifier,p_rect);
@@ -287,10 +287,6 @@ RID World::get_scenario() const{
 
 	return scenario;
 }
-RID World::get_sound_space() const{
-
-	return sound_space;
-}
 
 void World::set_environment(const Ref<Environment>& p_environment) {
 
@@ -314,13 +310,12 @@ PhysicsDirectSpaceState *World::get_direct_space_state() {
 
 void World::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_space"),&World::get_space);
-	ObjectTypeDB::bind_method(_MD("get_scenario"),&World::get_scenario);
-	ObjectTypeDB::bind_method(_MD("get_sound_space"),&World::get_sound_space);
-	ObjectTypeDB::bind_method(_MD("set_environment","env:Environment"),&World::set_environment);
-	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&World::get_environment);
-	ObjectTypeDB::bind_method(_MD("get_direct_space_state:PhysicsDirectSpaceState"),&World::get_direct_space_state);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),_SCS("set_environment"),_SCS("get_environment"));
+	ClassDB::bind_method(D_METHOD("get_space"),&World::get_space);
+	ClassDB::bind_method(D_METHOD("get_scenario"),&World::get_scenario);
+	ClassDB::bind_method(D_METHOD("set_environment","env:Environment"),&World::set_environment);
+	ClassDB::bind_method(D_METHOD("get_environment:Environment"),&World::get_environment);
+	ClassDB::bind_method(D_METHOD("get_direct_space_state:PhysicsDirectSpaceState"),&World::get_direct_space_state);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),"set_environment","get_environment");
 
 }
 
@@ -329,13 +324,12 @@ World::World() {
 
 	space = PhysicsServer::get_singleton()->space_create();
 	scenario = VisualServer::get_singleton()->scenario_create();
-	sound_space = SpatialSoundServer::get_singleton()->space_create();
 
 	PhysicsServer::get_singleton()->space_set_active(space,true);
-	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics/default_gravity",9.8));
-	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_GRAVITY_VECTOR,GLOBAL_DEF("physics/default_gravity_vector",Vector3(0,-1,0)));
-	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics/default_linear_damp",0.1));
-	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics/default_angular_damp",0.1));
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_GRAVITY,GLOBAL_DEF("physics/3d/default_gravity",9.8));
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_GRAVITY_VECTOR,GLOBAL_DEF("physics/3d/default_gravity_vector",Vector3(0,-1,0)));
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_LINEAR_DAMP,GLOBAL_DEF("physics/3d/default_linear_damp",0.1));
+	PhysicsServer::get_singleton()->area_set_param(space,PhysicsServer::AREA_PARAM_ANGULAR_DAMP,GLOBAL_DEF("physics/3d/default_angular_damp",0.1));
 
 #ifdef _3D_DISABLED
 	indexer = NULL;
@@ -348,7 +342,6 @@ World::~World() {
 
 	PhysicsServer::get_singleton()->free(space);
 	VisualServer::get_singleton()->free(scenario);
-	SpatialSoundServer::get_singleton()->free(sound_space);
 
 #ifndef _3D_DISABLED
 	memdelete( indexer );

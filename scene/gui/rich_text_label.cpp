@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -103,7 +103,7 @@ void RichTextLabel::_process_line(ItemFrame *p_frame,const Vector2& p_ofs,int &y
 
 	int line_ofs=0;
 	int margin=_find_margin(it,p_base_font);
-	Align align=_find_align(it);;
+	Align align=_find_align(it);
 	int line=0;
 	int spaces=0;
 
@@ -610,7 +610,7 @@ void RichTextLabel::_scroll_changed(double) {
 	if (updating_scroll)
 		return;
 
-	if (scroll_follow && vscroll->get_val()>=(vscroll->get_max()-vscroll->get_page()))
+	if (scroll_follow && vscroll->get_value()>=(vscroll->get_max()-vscroll->get_page()))
 		scroll_following=true;
 	else
 		scroll_following=false;
@@ -687,15 +687,13 @@ void RichTextLabel::_notification(int p_what) {
 			RID ci=get_canvas_item();
 			Size2 size = get_size();
 
-			VisualServer::get_singleton()->canvas_item_set_clip(ci,true);
-
 			if (has_focus()) {
 				VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci,true);
 				draw_style_box(get_stylebox("focus"),Rect2(Point2(),size));
 				VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci,false);
 			}
 
-			int ofs = vscroll->get_val();
+			int ofs = vscroll->get_value();
 
 			//todo, change to binary search
 
@@ -734,7 +732,7 @@ void RichTextLabel::_find_click(ItemFrame* p_frame,const Point2i& p_click,Item *
 
 	Size2 size = get_size();
 
-	int ofs = vscroll->get_val();
+	int ofs = vscroll->get_value();
 
 	//todo, change to binary search
 	int from_line = 0;
@@ -789,7 +787,7 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2& p_pos) const 
 }
 
 
-void RichTextLabel::_input_event(InputEvent p_event) {
+void RichTextLabel::_gui_input(InputEvent p_event) {
 
 	switch(p_event.type) {
 
@@ -838,12 +836,12 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 			if (b.button_index==BUTTON_WHEEL_UP) {
 
 				if (scroll_active)
-					vscroll->set_val( vscroll->get_val()-vscroll->get_page()/8 );
+					vscroll->set_value( vscroll->get_value()-vscroll->get_page()/8 );
 			}
 			if (b.button_index==BUTTON_WHEEL_DOWN) {
 
 				if (scroll_active)
-					vscroll->set_val( vscroll->get_val()+vscroll->get_page()/8 );
+					vscroll->set_value( vscroll->get_value()+vscroll->get_page()/8 );
 			}
 		} break;
 		case InputEvent::KEY: {
@@ -854,33 +852,33 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 				switch(k.scancode) {
 					case KEY_PAGEUP: {
 
-						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() - vscroll->get_page() );
+						if (vscroll->is_visible_in_tree())
+							vscroll->set_value( vscroll->get_value() - vscroll->get_page() );
 					} break;
 					case KEY_PAGEDOWN: {
 
-						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() + vscroll->get_page() );
+						if (vscroll->is_visible_in_tree())
+							vscroll->set_value( vscroll->get_value() + vscroll->get_page() );
 					} break;
 					case KEY_UP: {
 
-						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() - get_font("normal_font")->get_height() );
+						if (vscroll->is_visible_in_tree())
+							vscroll->set_value( vscroll->get_value() - get_font("normal_font")->get_height() );
 					} break;
 					case KEY_DOWN: {
 
-						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_val() + get_font("normal_font")->get_height() );
+						if (vscroll->is_visible_in_tree())
+							vscroll->set_value( vscroll->get_value() + get_font("normal_font")->get_height() );
 					} break;
 					case KEY_HOME: {
 
-						if (vscroll->is_visible())
-							vscroll->set_val( 0 );
+						if (vscroll->is_visible_in_tree())
+							vscroll->set_value( 0 );
 					} break;
 					case KEY_END: {
 
-						if (vscroll->is_visible())
-							vscroll->set_val( vscroll->get_max() );
+						if (vscroll->is_visible_in_tree())
+							vscroll->set_value( vscroll->get_max() );
 					} break;
 					case KEY_INSERT:
 					case KEY_C: {
@@ -1113,7 +1111,7 @@ void RichTextLabel::_validate_line_caches(ItemFrame* p_frame) {
 	vscroll->set_max(total_height);
 	vscroll->set_page(size.height);
 	if (scroll_follow && scroll_following)
-		vscroll->set_val(total_height-size.height);
+		vscroll->set_value(total_height-size.height);
 
 	updating_scroll=false;
 
@@ -1179,7 +1177,8 @@ void RichTextLabel::add_text(const String& p_text) {
 			item->line=current_frame->lines.size();
 			_add_item(item,false);
 			current_frame->lines.resize(current_frame->lines.size()+1);
-			current_frame->lines[current_frame->lines.size()-1].from=item;
+			if (item->type!=ITEM_NEWLINE)
+				current_frame->lines[current_frame->lines.size()-1].from=item;
 			_invalidate_current_line(current_frame);
 
 		}
@@ -1215,6 +1214,28 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 
 }
 
+void RichTextLabel::_remove_item(Item* p_item, const int p_line, const int p_subitem_line) {
+
+
+	int size = p_item->subitems.size();
+	if (size == 0) {
+		p_item->parent->subitems.erase(p_item);
+		if (p_item->type == ITEM_NEWLINE) {
+			current_frame->lines.remove(p_line);
+			for (int i = p_subitem_line; i < current->subitems.size(); i++) {
+				if (current->subitems[i]->line > 0)
+					current->subitems[i]->line--;
+			}
+		}
+	}
+	else {
+		for (int i = 0; i < size; i++) {
+			_remove_item(p_item->subitems.front()->get(), p_line, p_subitem_line);
+		}
+	}
+
+}
+
 void RichTextLabel::add_image(const Ref<Texture>& p_image) {
 
 	if (current->type==ITEM_TABLE)
@@ -1237,6 +1258,26 @@ void RichTextLabel::add_newline() {
 	current_frame->lines.resize(current_frame->lines.size()+1);
 	_add_item(item,false);
 
+}
+
+bool RichTextLabel::remove_line(const int p_line) {
+
+	if (p_line >= current_frame->lines.size() || p_line < 0)
+		return false;
+
+	int lines = p_line * 2;
+
+	if (current->subitems[lines]->type != ITEM_NEWLINE)
+		_remove_item(current->subitems[lines], current->subitems[lines]->line, lines);
+
+	_remove_item(current->subitems[lines], current->subitems[lines]->line, lines);
+
+	if (p_line == 0) {
+		main->lines[0].from = main;
+	}
+
+	main->first_invalid_line = 0;
+	return true;
 }
 
 void RichTextLabel::push_font(const Ref<Font>& p_font) {
@@ -1410,7 +1451,7 @@ bool RichTextLabel::is_meta_underlined() const {
 
 void RichTextLabel::set_offset(int p_pixel) {
 
-	vscroll->set_val(p_pixel);
+	vscroll->set_value(p_pixel);
 }
 
 void RichTextLabel::set_scroll_active(bool p_active) {
@@ -1430,7 +1471,7 @@ bool RichTextLabel::is_scroll_active() const {
 void RichTextLabel::set_scroll_follow(bool p_follow) {
 
 	scroll_follow=p_follow;
-	if (!vscroll->is_visible() || vscroll->get_val()>=(vscroll->get_max()-vscroll->get_page()))
+	if (!vscroll->is_visible_in_tree() || vscroll->get_value()>=(vscroll->get_max()-vscroll->get_page()))
 		scroll_following=true;
 }
 
@@ -1727,7 +1768,7 @@ void RichTextLabel::scroll_to_line(int p_line) {
 
 	ERR_FAIL_INDEX(p_line,main->lines.size());
 	_validate_line_caches(main);
-	vscroll->set_val(main->lines[p_line].height_accum_cache-main->lines[p_line].height_cache);
+	vscroll->set_value(main->lines[p_line].height_accum_cache-main->lines[p_line].height_cache);
 
 }
 
@@ -1794,7 +1835,7 @@ bool RichTextLabel::search(const String& p_string,bool p_from_selection) {
 					}
 					item=item->parent;
 				}
-				vscroll->set_val(offset-fh);
+				vscroll->set_value(offset-fh);
 
 				return true;
 			}
@@ -1901,62 +1942,64 @@ String RichTextLabel::get_text() {
 void RichTextLabel::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
-	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
-	ObjectTypeDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
-	ObjectTypeDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
-	ObjectTypeDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
-	ObjectTypeDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);
-	ObjectTypeDB::bind_method(_MD("push_font","font"),&RichTextLabel::push_font);
-	ObjectTypeDB::bind_method(_MD("push_color","color"),&RichTextLabel::push_color);
-	ObjectTypeDB::bind_method(_MD("push_align","align"),&RichTextLabel::push_align);
-	ObjectTypeDB::bind_method(_MD("push_indent","level"),&RichTextLabel::push_indent);
-	ObjectTypeDB::bind_method(_MD("push_list","type"),&RichTextLabel::push_list);
-	ObjectTypeDB::bind_method(_MD("push_meta","data"),&RichTextLabel::push_meta);
-	ObjectTypeDB::bind_method(_MD("push_underline"),&RichTextLabel::push_underline);
-	ObjectTypeDB::bind_method(_MD("push_table","columns"),&RichTextLabel::push_table);
-	ObjectTypeDB::bind_method(_MD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
-	ObjectTypeDB::bind_method(_MD("push_cell"),&RichTextLabel::push_cell);
-	ObjectTypeDB::bind_method(_MD("pop"),&RichTextLabel::pop);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&RichTextLabel::_gui_input);
+	ClassDB::bind_method(D_METHOD("_scroll_changed"),&RichTextLabel::_scroll_changed);
+	ClassDB::bind_method(D_METHOD("get_text"),&RichTextLabel::get_text);
+	ClassDB::bind_method(D_METHOD("add_text","text"),&RichTextLabel::add_text);
+	ClassDB::bind_method(D_METHOD("add_image","image:Texture"),&RichTextLabel::add_image);
+	ClassDB::bind_method(D_METHOD("newline"),&RichTextLabel::add_newline);
+	ClassDB::bind_method(D_METHOD("remove_line"),&RichTextLabel::remove_line);
+	ClassDB::bind_method(D_METHOD("push_font","font"),&RichTextLabel::push_font);
+	ClassDB::bind_method(D_METHOD("push_color","color"),&RichTextLabel::push_color);
+	ClassDB::bind_method(D_METHOD("push_align","align"),&RichTextLabel::push_align);
+	ClassDB::bind_method(D_METHOD("push_indent","level"),&RichTextLabel::push_indent);
+	ClassDB::bind_method(D_METHOD("push_list","type"),&RichTextLabel::push_list);
+	ClassDB::bind_method(D_METHOD("push_meta","data"),&RichTextLabel::push_meta);
+	ClassDB::bind_method(D_METHOD("push_underline"),&RichTextLabel::push_underline);
+	ClassDB::bind_method(D_METHOD("push_table","columns"),&RichTextLabel::push_table);
+	ClassDB::bind_method(D_METHOD("set_table_column_expand","column","expand","ratio"),&RichTextLabel::set_table_column_expand);
+	ClassDB::bind_method(D_METHOD("push_cell"),&RichTextLabel::push_cell);
+	ClassDB::bind_method(D_METHOD("pop"),&RichTextLabel::pop);
 
-	ObjectTypeDB::bind_method(_MD("clear"),&RichTextLabel::clear);
+	ClassDB::bind_method(D_METHOD("clear"),&RichTextLabel::clear);
 
-	ObjectTypeDB::bind_method(_MD("set_meta_underline","enable"),&RichTextLabel::set_meta_underline);
-	ObjectTypeDB::bind_method(_MD("is_meta_underlined"),&RichTextLabel::is_meta_underlined);
+	ClassDB::bind_method(D_METHOD("set_meta_underline","enable"),&RichTextLabel::set_meta_underline);
+	ClassDB::bind_method(D_METHOD("is_meta_underlined"),&RichTextLabel::is_meta_underlined);
 
-	ObjectTypeDB::bind_method(_MD("set_scroll_active","active"),&RichTextLabel::set_scroll_active);
-	ObjectTypeDB::bind_method(_MD("is_scroll_active"),&RichTextLabel::is_scroll_active);
+	ClassDB::bind_method(D_METHOD("set_scroll_active","active"),&RichTextLabel::set_scroll_active);
+	ClassDB::bind_method(D_METHOD("is_scroll_active"),&RichTextLabel::is_scroll_active);
 
-	ObjectTypeDB::bind_method(_MD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
-	ObjectTypeDB::bind_method(_MD("is_scroll_following"),&RichTextLabel::is_scroll_following);
+	ClassDB::bind_method(D_METHOD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
+	ClassDB::bind_method(D_METHOD("is_scroll_following"),&RichTextLabel::is_scroll_following);
 
-	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
+	ClassDB::bind_method(D_METHOD("get_v_scroll"),&RichTextLabel::get_v_scroll);
 
-	ObjectTypeDB::bind_method(_MD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
+	ClassDB::bind_method(D_METHOD("scroll_to_line","line"),&RichTextLabel::scroll_to_line);
 
-	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
-	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
+	ClassDB::bind_method(D_METHOD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
+	ClassDB::bind_method(D_METHOD("get_tab_size"),&RichTextLabel::get_tab_size);
 
-	ObjectTypeDB::bind_method(_MD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
-	ObjectTypeDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
+	ClassDB::bind_method(D_METHOD("set_selection_enabled","enabled"),&RichTextLabel::set_selection_enabled);
+	ClassDB::bind_method(D_METHOD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
 
-	ObjectTypeDB::bind_method(_MD("parse_bbcode", "bbcode"),&RichTextLabel::parse_bbcode);
-	ObjectTypeDB::bind_method(_MD("append_bbcode", "bbcode"),&RichTextLabel::append_bbcode);
+	ClassDB::bind_method(D_METHOD("parse_bbcode", "bbcode"),&RichTextLabel::parse_bbcode);
+	ClassDB::bind_method(D_METHOD("append_bbcode", "bbcode"),&RichTextLabel::append_bbcode);
 
-	ObjectTypeDB::bind_method(_MD("set_bbcode","text"),&RichTextLabel::set_bbcode);
-	ObjectTypeDB::bind_method(_MD("get_bbcode"),&RichTextLabel::get_bbcode);
+	ClassDB::bind_method(D_METHOD("set_bbcode","text"),&RichTextLabel::set_bbcode);
+	ClassDB::bind_method(D_METHOD("get_bbcode"),&RichTextLabel::get_bbcode);
 
-	ObjectTypeDB::bind_method(_MD("set_visible_characters","amount"),&RichTextLabel::set_visible_characters);
-	ObjectTypeDB::bind_method(_MD("get_visible_characters"),&RichTextLabel::get_visible_characters);
+	ClassDB::bind_method(D_METHOD("set_visible_characters","amount"),&RichTextLabel::set_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters"),&RichTextLabel::get_visible_characters);
 
-	ObjectTypeDB::bind_method(_MD("get_total_character_count"),&RichTextLabel::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count"),&RichTextLabel::get_total_character_count);
 
-	ObjectTypeDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
-	ObjectTypeDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
+	ClassDB::bind_method(D_METHOD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
+	ClassDB::bind_method(D_METHOD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode/enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode/bbcode",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),_SCS("set_visible_characters"),_SCS("get_visible_characters"));
+	ADD_GROUP("BBCode","bbcode_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode_enabled"),"set_use_bbcode","is_using_bbcode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode_text",PROPERTY_HINT_MULTILINE_TEXT),"set_bbcode","get_bbcode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),"set_visible_characters","get_visible_characters");
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));
 
@@ -2044,6 +2087,7 @@ RichTextLabel::RichTextLabel() {
 
 	visible_characters=-1;
 
+	set_clip_contents(true);
 }
 
 RichTextLabel::~RichTextLabel() {

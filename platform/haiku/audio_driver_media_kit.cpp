@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #ifdef MEDIA_KIT_ENABLED
 
-#include "globals.h"
+#include "global_config.h"
 
 int32_t* AudioDriverMediaKit::samples_in = NULL;
 
@@ -38,7 +38,7 @@ Error AudioDriverMediaKit::init() {
 	active = false;
 
 	mix_rate = 44100;
-	output_format = OUTPUT_STEREO;
+	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
@@ -99,8 +99,8 @@ int AudioDriverMediaKit::get_mix_rate() const {
 	return mix_rate;
 }
 
-AudioDriverSW::OutputFormat AudioDriverMediaKit::get_output_format() const {
-	return output_format;
+AudioDriverSW::SpeakerMode AudioDriverMediaKit::get_speaker_mode() const {
+	return speaker_mode;
 }
 
 void AudioDriverMediaKit::lock() {

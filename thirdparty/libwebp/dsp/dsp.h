@@ -111,8 +111,7 @@ extern "C" {
 
 #define WEBP_UBSAN_IGNORE_UNDEF
 #define WEBP_UBSAN_IGNORE_UNSIGNED_OVERFLOW
-#if !defined(WEBP_FORCE_ALIGNED) && defined(__clang__) && \
-    defined(__has_attribute)
+#if defined(__clang__) && defined(__has_attribute)
 #if __has_attribute(no_sanitize)
 // This macro prevents the undefined behavior sanitizer from reporting
 // failures. This is only meant to silence unaligned loads on platforms that
@@ -133,6 +132,7 @@ extern "C" {
 typedef enum {
   kSSE2,
   kSSE3,
+  kSlowSSSE3,  // special feature for slow SSSE3 architectures
   kSSE4_1,
   kAVX,
   kAVX2,
@@ -184,6 +184,11 @@ typedef int (*VP8WMetric)(const uint8_t* pix, const uint8_t* ref,
 // The weights for VP8TDisto4x4 and VP8TDisto16x16 contain a row-major
 // 4 by 4 symmetric matrix.
 extern VP8WMetric VP8TDisto4x4, VP8TDisto16x16;
+
+// Compute the average (DC) of four 4x4 blocks.
+// Each sub-4x4 block #i sum is stored in dc[i].
+typedef void (*VP8MeanMetric)(const uint8_t* ref, uint32_t dc[4]);
+extern VP8MeanMetric VP8Mean16x4;
 
 typedef void (*VP8BlockCopy)(const uint8_t* src, uint8_t* dst);
 extern VP8BlockCopy VP8Copy4x4;
@@ -246,30 +251,37 @@ extern VP8GetResidualCostFunc VP8GetResidualCost;
 void VP8EncDspCostInit(void);
 
 //------------------------------------------------------------------------------
-// SSIM utils
+// SSIM / PSNR utils
 
 // struct for accumulating statistical moments
 typedef struct {
-  double w;              // sum(w_i) : sum of weights
-  double xm, ym;         // sum(w_i * x_i), sum(w_i * y_i)
-  double xxm, xym, yym;  // sum(w_i * x_i * x_i), etc.
+  uint32_t w;              // sum(w_i) : sum of weights
+  uint32_t xm, ym;         // sum(w_i * x_i), sum(w_i * y_i)
+  uint32_t xxm, xym, yym;  // sum(w_i * x_i * x_i), etc.
 } VP8DistoStats;
 
+// Compute the final SSIM value
+// The non-clipped version assumes stats->w = (2 * VP8_SSIM_KERNEL + 1)^2.
+double VP8SSIMFromStats(const VP8DistoStats* const stats);
+double VP8SSIMFromStatsClipped(const VP8DistoStats* const stats);
+
 #define VP8_SSIM_KERNEL 3   // total size of the kernel: 2 * VP8_SSIM_KERNEL + 1
-typedef void (*VP8SSIMAccumulateClippedFunc)(const uint8_t* src1, int stride1,
-                                             const uint8_t* src2, int stride2,
-                                             int xo, int yo,  // center position
-                                             int W, int H,    // plane dimension
-                                             VP8DistoStats* const stats);
+typedef double (*VP8SSIMGetClippedFunc)(const uint8_t* src1, int stride1,
+                                        const uint8_t* src2, int stride2,
+                                        int xo, int yo,  // center position
+                                        int W, int H);   // plane dimension
 
 // This version is called with the guarantee that you can load 8 bytes and
 // 8 rows at offset src1 and src2
-typedef void (*VP8SSIMAccumulateFunc)(const uint8_t* src1, int stride1,
-                                      const uint8_t* src2, int stride2,
-                                      VP8DistoStats* const stats);
+typedef double (*VP8SSIMGetFunc)(const uint8_t* src1, int stride1,
+                                 const uint8_t* src2, int stride2);
 
-extern VP8SSIMAccumulateFunc VP8SSIMAccumulate;         // unclipped / unchecked
-extern VP8SSIMAccumulateClippedFunc VP8SSIMAccumulateClipped;   // with clipping
+extern VP8SSIMGetFunc VP8SSIMGet;         // unclipped / unchecked
+extern VP8SSIMGetClippedFunc VP8SSIMGetClipped;   // with clipping
+
+typedef uint32_t (*VP8AccumulateSSEFunc)(const uint8_t* src1,
+                                         const uint8_t* src2, int len);
+extern VP8AccumulateSSEFunc VP8AccumulateSSE;
 
 // must be called before using any of the above directly
 void VP8SSIMDspInit(void);
@@ -416,6 +428,15 @@ extern void WebPConvertARGBToUV_C(const uint32_t* argb, uint8_t* u, uint8_t* v,
 extern void WebPConvertRGBA32ToUV_C(const uint16_t* rgb,
                                     uint8_t* u, uint8_t* v, int width);
 
+// utilities for accurate RGB->YUV conversion
+extern uint64_t (*WebPSharpYUVUpdateY)(const uint16_t* src, const uint16_t* ref,
+                                       uint16_t* dst, int len);
+extern void (*WebPSharpYUVUpdateRGB)(const int16_t* src, const int16_t* ref,
+                                     int16_t* dst, int len);
+extern void (*WebPSharpYUVFilterRow)(const int16_t* A, const int16_t* B,
+                                     int len,
+                                     const uint16_t* best_y, uint16_t* out);
+
 // Must be called before using the above.
 void WebPInitConvertARGBToYUV(void);
 
@@ -487,6 +508,10 @@ extern void (*WebPDispatchAlphaToGreen)(const uint8_t* alpha, int alpha_stride,
 extern int (*WebPExtractAlpha)(const uint8_t* argb, int argb_stride,
                                int width, int height,
                                uint8_t* alpha, int alpha_stride);
+
+// Extract the green values from 32b values in argb[] and pack them into alpha[]
+// (this is the opposite of WebPDispatchAlphaToGreen).
+extern void (*WebPExtractGreen)(const uint32_t* argb, uint8_t* alpha, int size);
 
 // Pre-Multiply operation transforms x into x * A / 255  (where x=Y,R,G or B).
 // Un-Multiply operation transforms x into x * 255 / A.

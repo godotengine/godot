@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "label.h"
 #include "print_string.h"
-#include "globals.h"
+#include "global_config.h"
 #include "translation.h"
 
 
@@ -68,10 +68,18 @@ int Label::get_line_height() const {
 
 void Label::_notification(int p_what) {
 
+	if (p_what==NOTIFICATION_TRANSLATION_CHANGED) {
+
+		xl_text=XL_MESSAGE(text);
+		minimum_size_changed();
+		update();
+	}
+
 	if (p_what==NOTIFICATION_DRAW) {
 
-		if (clip || autowrap)
+		if (clip || autowrap) {
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
+		}
 
 		if (word_cache_dirty)
 			regenerate_word_cache();
@@ -196,7 +204,7 @@ void Label::_notification(int p_what) {
 				} break;
 				case ALIGN_CENTER: {
 
-					x_ofs=int(size.width-(taken+spaces*space_w))/2;;
+					x_ofs=int(size.width-(taken+spaces*space_w))/2;
 
 				} break;
 				case ALIGN_RIGHT: {
@@ -239,8 +247,8 @@ void Label::_notification(int p_what) {
 					for (int i=0;i<from->word_len;i++) {
 
 						if (visible_chars < 0 || chars_total_shadow<visible_chars) {
-							CharType c = text[i+pos];
-							CharType n = text[i+pos+1];
+							CharType c = xl_text[i+pos];
+							CharType n = xl_text[i+pos+1];
 							if (uppercase) {
 								c=String::char_uppercase(c);
 								n=String::char_uppercase(c);
@@ -262,8 +270,8 @@ void Label::_notification(int p_what) {
 				for (int i=0;i<from->word_len;i++) {
 
 					if (visible_chars < 0 || chars_total<visible_chars) {
-						CharType c = text[i+pos];
-						CharType n = text[i+pos+1];
+						CharType c = xl_text[i+pos];
+						CharType n = xl_text[i+pos+1];
 						if (uppercase) {
 							c=String::char_uppercase(c);
 							n=String::char_uppercase(c);
@@ -318,9 +326,9 @@ int Label::get_longest_line_width() const {
 	int max_line_width=0;
 	int line_width=0;
 
-	for (int i=0;i<text.size();i++) {
+	for (int i=0;i<xl_text.size();i++) {
 
-		CharType current=text[i];
+		CharType current=xl_text[i];
 		if (uppercase)
 			current=String::char_uppercase(current);
 
@@ -334,7 +342,7 @@ int Label::get_longest_line_width() const {
 			}
 		} else {
 
-			int char_width=font->get_char_size(current,text[i+1]).width;
+			int char_width=font->get_char_size(current,xl_text[i+1]).width;
 			line_width+=char_width;
 		}
 
@@ -395,9 +403,9 @@ void Label::regenerate_word_cache() {
 
 	WordCache *last=NULL;
 
-	for (int i=0;i<text.size()+1;i++) {
+	for (int i=0;i<xl_text.size()+1;i++) {
 
-		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+		CharType current=i<xl_text.length()?xl_text[i]:' '; //always a space at the end, so the algo works
 
 		if (uppercase)
 			current=String::char_uppercase(current);
@@ -437,7 +445,7 @@ void Label::regenerate_word_cache() {
 				total_char_cache++;
 			}
 
-			if (i<text.length() && text[i] == ' ') {
+			if (i<xl_text.length() && xl_text[i] == ' ') {
 				total_char_cache--;  // do not count spaces
 				if (line_width > 0 || last==NULL || last->char_pos!=WordCache::CHAR_WRAPLINE) {
 					space_count++;
@@ -454,7 +462,7 @@ void Label::regenerate_word_cache() {
 				word_pos=i;
 			}
 
-			char_width=font->get_char_size(current,text[i+1]).width;
+			char_width=font->get_char_size(current,xl_text[i+1]).width;
 			current_word_size+=char_width;
 			line_width+=char_width;
 			total_char_cache++;
@@ -540,12 +548,11 @@ Label::VAlign Label::get_valign() const{
 
 void Label::set_text(const String& p_string) {
 
-	String str = XL_MESSAGE(p_string);
 
-	if (text==str)
+	if (text==p_string)
 		return;
-
-	text=str;
+	text=p_string;
+	xl_text=XL_MESSAGE(p_string);
 	word_cache_dirty=true;
 	if (percent_visible<1)
 		visible_chars=get_total_character_count()*percent_visible;
@@ -641,30 +648,30 @@ int Label::get_total_character_count() const {
 
 void Label::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_align","align"),&Label::set_align);
-	ObjectTypeDB::bind_method(_MD("get_align"),&Label::get_align);
-	ObjectTypeDB::bind_method(_MD("set_valign","valign"),&Label::set_valign);
-	ObjectTypeDB::bind_method(_MD("get_valign"),&Label::get_valign);
-	ObjectTypeDB::bind_method(_MD("set_text","text"),&Label::set_text);
-	ObjectTypeDB::bind_method(_MD("get_text"),&Label::get_text);
-	ObjectTypeDB::bind_method(_MD("set_autowrap","enable"),&Label::set_autowrap);
-	ObjectTypeDB::bind_method(_MD("has_autowrap"),&Label::has_autowrap);
-	ObjectTypeDB::bind_method(_MD("set_clip_text","enable"),&Label::set_clip_text);
-	ObjectTypeDB::bind_method(_MD("is_clipping_text"),&Label::is_clipping_text);
-	ObjectTypeDB::bind_method(_MD("set_uppercase","enable"),&Label::set_uppercase);
-	ObjectTypeDB::bind_method(_MD("is_uppercase"),&Label::is_uppercase);
-	ObjectTypeDB::bind_method(_MD("get_line_height"),&Label::get_line_height);
-	ObjectTypeDB::bind_method(_MD("get_line_count"),&Label::get_line_count);
-	ObjectTypeDB::bind_method(_MD("get_visible_line_count"),&Label::get_visible_line_count);
-	ObjectTypeDB::bind_method(_MD("get_total_character_count"),&Label::get_total_character_count);
-	ObjectTypeDB::bind_method(_MD("set_visible_characters","amount"),&Label::set_visible_characters);
-	ObjectTypeDB::bind_method(_MD("get_visible_characters"),&Label::get_visible_characters);
-	ObjectTypeDB::bind_method(_MD("set_percent_visible","percent_visible"),&Label::set_percent_visible);
-	ObjectTypeDB::bind_method(_MD("get_percent_visible"),&Label::get_percent_visible);
-	ObjectTypeDB::bind_method(_MD("set_lines_skipped","lines_skipped"),&Label::set_lines_skipped);
-	ObjectTypeDB::bind_method(_MD("get_lines_skipped"),&Label::get_lines_skipped);
-	ObjectTypeDB::bind_method(_MD("set_max_lines_visible","lines_visible"),&Label::set_max_lines_visible);
-	ObjectTypeDB::bind_method(_MD("get_max_lines_visible"),&Label::get_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("set_align","align"),&Label::set_align);
+	ClassDB::bind_method(D_METHOD("get_align"),&Label::get_align);
+	ClassDB::bind_method(D_METHOD("set_valign","valign"),&Label::set_valign);
+	ClassDB::bind_method(D_METHOD("get_valign"),&Label::get_valign);
+	ClassDB::bind_method(D_METHOD("set_text","text"),&Label::set_text);
+	ClassDB::bind_method(D_METHOD("get_text"),&Label::get_text);
+	ClassDB::bind_method(D_METHOD("set_autowrap","enable"),&Label::set_autowrap);
+	ClassDB::bind_method(D_METHOD("has_autowrap"),&Label::has_autowrap);
+	ClassDB::bind_method(D_METHOD("set_clip_text","enable"),&Label::set_clip_text);
+	ClassDB::bind_method(D_METHOD("is_clipping_text"),&Label::is_clipping_text);
+	ClassDB::bind_method(D_METHOD("set_uppercase","enable"),&Label::set_uppercase);
+	ClassDB::bind_method(D_METHOD("is_uppercase"),&Label::is_uppercase);
+	ClassDB::bind_method(D_METHOD("get_line_height"),&Label::get_line_height);
+	ClassDB::bind_method(D_METHOD("get_line_count"),&Label::get_line_count);
+	ClassDB::bind_method(D_METHOD("get_visible_line_count"),&Label::get_visible_line_count);
+	ClassDB::bind_method(D_METHOD("get_total_character_count"),&Label::get_total_character_count);
+	ClassDB::bind_method(D_METHOD("set_visible_characters","amount"),&Label::set_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters"),&Label::get_visible_characters);
+	ClassDB::bind_method(D_METHOD("set_percent_visible","percent_visible"),&Label::set_percent_visible);
+	ClassDB::bind_method(D_METHOD("get_percent_visible"),&Label::get_percent_visible);
+	ClassDB::bind_method(D_METHOD("set_lines_skipped","lines_skipped"),&Label::set_lines_skipped);
+	ClassDB::bind_method(D_METHOD("get_lines_skipped"),&Label::get_lines_skipped);
+	ClassDB::bind_method(D_METHOD("set_max_lines_visible","lines_visible"),&Label::set_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("get_max_lines_visible"),&Label::get_max_lines_visible);
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );
@@ -676,15 +683,15 @@ void Label::_bind_methods() {
 	BIND_CONSTANT( VALIGN_BOTTOM );
 	BIND_CONSTANT( VALIGN_FILL );
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),_SCS("set_align"),_SCS("get_align") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "clip_text"),_SCS("set_clip_text"),_SCS("is_clipping_text") );
-	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE,"0,999,1"),_SCS("set_lines_skipped"),_SCS("get_lines_skipped") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE,"-1,999,1"),_SCS("set_max_lines_visible"),_SCS("get_max_lines_visible") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), "set_text","get_text") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),"set_align","get_align") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),"set_valign","get_valign") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "autowrap"),"set_autowrap","has_autowrap") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "clip_text"),"set_clip_text","is_clipping_text") ;
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "uppercase"),"set_uppercase","is_uppercase") ;
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),"set_percent_visible","get_percent_visible") ;
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "lines_skipped", PROPERTY_HINT_RANGE,"0,999,1"),"set_lines_skipped","get_lines_skipped") ;
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_lines_visible", PROPERTY_HINT_RANGE,"-1,999,1"),"set_max_lines_visible","get_max_lines_visible") ;
 
 }
 
@@ -692,14 +699,14 @@ Label::Label(const String &p_text) {
 
 	align=ALIGN_LEFT;
 	valign=VALIGN_TOP;
-	text="";
+	xl_text="";
 	word_cache=NULL;
 	word_cache_dirty=true;
 	autowrap=false;
 	line_count=0;
 	set_v_size_flags(0);
 	clip=false;
-	set_ignore_mouse(true);
+	set_mouse_filter(MOUSE_FILTER_IGNORE);
 	total_char_cache=0;
 	visible_chars=-1;
 	percent_visible=1;

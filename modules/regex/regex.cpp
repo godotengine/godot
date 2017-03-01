@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -321,7 +321,7 @@ struct RegExNodeClass : public RegExNode {
 			case Type_lower:
 				return ('a' <= c && c <= 'z');
 			case Type_print:
-				return (0x1F < c && c < 0x1F);
+				return (0x20 < c && c < 0x7f);
 			case Type_punct:
 				return (REGEX_NODE_PUNCT.find(c) >= 0);
 			case Type_space:
@@ -1481,27 +1481,27 @@ RegEx::~RegEx() {
 
 void RegExMatch::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("expand","template"),&RegExMatch::expand);
-	ObjectTypeDB::bind_method(_MD("get_group_count"),&RegExMatch::get_group_count);
-	ObjectTypeDB::bind_method(_MD("get_group_array"),&RegExMatch::get_group_array);
-	ObjectTypeDB::bind_method(_MD("get_names"),&RegExMatch::get_names);
-	ObjectTypeDB::bind_method(_MD("get_name_dict"),&RegExMatch::get_name_dict);
-	ObjectTypeDB::bind_method(_MD("get_string","name"),&RegExMatch::get_string, DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_start","name"),&RegExMatch::get_start, DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_end","name"),&RegExMatch::get_end, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("expand","template"),&RegExMatch::expand);
+	ClassDB::bind_method(D_METHOD("get_group_count"),&RegExMatch::get_group_count);
+	ClassDB::bind_method(D_METHOD("get_group_array"),&RegExMatch::get_group_array);
+	ClassDB::bind_method(D_METHOD("get_names"),&RegExMatch::get_names);
+	ClassDB::bind_method(D_METHOD("get_name_dict"),&RegExMatch::get_name_dict);
+	ClassDB::bind_method(D_METHOD("get_string","name"),&RegExMatch::get_string, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_start","name"),&RegExMatch::get_start, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_end","name"),&RegExMatch::get_end, DEFVAL(0));
 }
 
 void RegEx::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("clear"),&RegEx::clear);
-	ObjectTypeDB::bind_method(_MD("compile","pattern"),&RegEx::compile);
-	ObjectTypeDB::bind_method(_MD("search","text","start","end"),&RegEx::search, DEFVAL(0), DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("sub","text","replacement","all","start","end"),&RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
-	ObjectTypeDB::bind_method(_MD("is_valid"),&RegEx::is_valid);
-	ObjectTypeDB::bind_method(_MD("get_pattern"),&RegEx::get_pattern);
-	ObjectTypeDB::bind_method(_MD("get_group_count"),&RegEx::get_group_count);
-	ObjectTypeDB::bind_method(_MD("get_names"),&RegEx::get_names);
+	ClassDB::bind_method(D_METHOD("clear"),&RegEx::clear);
+	ClassDB::bind_method(D_METHOD("compile","pattern"),&RegEx::compile);
+	ClassDB::bind_method(D_METHOD("search","text","start","end"),&RegEx::search, DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("sub","text","replacement","all","start","end"),&RegEx::sub, DEFVAL(false), DEFVAL(0), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("is_valid"),&RegEx::is_valid);
+	ClassDB::bind_method(D_METHOD("get_pattern"),&RegEx::get_pattern);
+	ClassDB::bind_method(D_METHOD("get_group_count"),&RegEx::get_group_count);
+	ClassDB::bind_method(D_METHOD("get_names"),&RegEx::get_names);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pattern"), _SCS("compile"), _SCS("get_pattern"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "pattern"), "compile", "get_pattern");
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "scene/gui/slider.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/spin_box.h"
-#include "scene/gui/texture_frame.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/file_dialog.h"
@@ -51,7 +51,7 @@ class AnimationCurveEdit;
 
 class AnimationKeyEditor : public VBoxContainer  {
 
-	OBJ_TYPE( AnimationKeyEditor, VBoxContainer );
+	GDCLASS( AnimationKeyEditor, VBoxContainer );
 
 /*
 	enum {
@@ -113,6 +113,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 			OVER_KEY,
 			OVER_VALUE,
 			OVER_INTERP,
+			OVER_WRAP,
 			OVER_UP,
 			OVER_DOWN,
 			OVER_REMOVE,
@@ -166,7 +167,9 @@ class AnimationKeyEditor : public VBoxContainer  {
 	int track_name_editing;
 	int interp_editing;
 	int cont_editing;
+	int wrap_editing;
 	int selected_track;
+	int track_ofs[5];
 
 	int last_menu_track_opt;
 	LineEdit *track_name;
@@ -174,7 +177,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	PopupMenu *type_menu;
 
 	Control *ec;
-	TextureFrame *zoomicon;
+	TextureRect *zoomicon;
 	HSlider *zoom;
 	//MenuButton *menu;
 	SpinBox *length;
@@ -274,7 +277,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	float _get_zoom_scale() const;
 
 	void _track_editor_draw();
-	void _track_editor_input_event(const InputEvent& p_input);
+	void _track_editor_gui_input(const InputEvent& p_input);
 	void _track_pos_draw();
 
 
@@ -344,7 +347,7 @@ public:
 	void insert_value_key(const String& p_property, const Variant& p_value, bool p_advance);
 	void insert_transform_key(Spatial *p_node,const String& p_sub,const Transform& p_xform);
 
-	void show_select_node_warning(bool p_show) { select_anim_warning->set_hidden(!p_show); }
+	void show_select_node_warning(bool p_show) { select_anim_warning->set_visible(p_show); }
 	AnimationKeyEditor();
 	~AnimationKeyEditor();
 };

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,7 +26,11 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
+#if 0
 #include "sample_player_editor_plugin.h"
+
+
 #include "scene/resources/sample_library.h"
 
 
@@ -50,8 +54,8 @@ void SamplePlayerEditor::_node_removed(Node *p_node) {
 
 void SamplePlayerEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_play"),&SamplePlayerEditor::_play);
-	ObjectTypeDB::bind_method(_MD("_stop"),&SamplePlayerEditor::_stop);
+	ClassDB::bind_method(D_METHOD("_play"),&SamplePlayerEditor::_play);
+	ClassDB::bind_method(D_METHOD("_stop"),&SamplePlayerEditor::_stop);
 
 }
 
@@ -89,7 +93,7 @@ void SamplePlayerEditor::_update_sample_library() {
 	Ref<SampleLibrary> sl = node->call("get_sample_library");
 	if (sl.is_null()) {
 		samples->add_item("<NO SAMPLE LIBRARY>");
-		return; //no sample library;;
+		return; //no sample library;
 	}
 
 	List<StringName> samplenames;
@@ -153,7 +157,7 @@ void SamplePlayerEditorPlugin::edit(Object *p_object) {
 
 bool SamplePlayerEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("SamplePlayer2D") || p_object->is_type("SamplePlayer") || p_object->is_type("SpatialSamplePlayer");
+	return p_object->is_class("SamplePlayer2D") || p_object->is_class("SamplePlayer") || p_object->is_class("SpatialSamplePlayer");
 }
 
 void SamplePlayerEditorPlugin::make_visible(bool p_visible) {
@@ -196,3 +200,4 @@ SamplePlayerEditorPlugin::~SamplePlayerEditorPlugin()
 }
 
 
+#endif

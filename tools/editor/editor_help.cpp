@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,14 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_help.h"
+
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "doc_data_compressed.h"
 #include "tools/editor/plugins/script_editor_plugin.h"
-
-
-#include "os/keyboard.h"
 
 void EditorHelpSearch::popup() {
 	popup_centered_ratio(0.6);
@@ -71,7 +69,7 @@ void EditorHelpSearch::_sbox_input(const InputEvent& p_ie) {
 		p_ie.key.scancode == KEY_PAGEUP ||
 		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
 
-		search_options->call("_input_event",p_ie);
+		search_options->call("_gui_input",p_ie);
 		search_box->accept_event();
 	}
 
@@ -88,7 +86,7 @@ void EditorHelpSearch::_update_search() {
 */
 
 	List<StringName> type_list;
-	ObjectTypeDB::get_type_list(&type_list);
+	ClassDB::get_class_list(&type_list);
 
 	DocData *doc=EditorHelp::get_doc_data();
 	String term = search_box->get_text();
@@ -287,7 +285,7 @@ void EditorHelpSearch::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (is_visible()) {
+		if (is_visible_in_tree()) {
 
 			search_box->call_deferred("grab_focus"); // still not visible
 			search_box->select_all();
@@ -299,10 +297,10 @@ void EditorHelpSearch::_notification(int p_what) {
 
 void EditorHelpSearch::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
-	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
-	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
-	ObjectTypeDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_update_search);
+	ClassDB::bind_method(D_METHOD("_text_changed"),&EditorHelpSearch::_text_changed);
+	ClassDB::bind_method(D_METHOD("_confirmed"),&EditorHelpSearch::_confirmed);
+	ClassDB::bind_method(D_METHOD("_sbox_input"),&EditorHelpSearch::_sbox_input);
+	ClassDB::bind_method(D_METHOD("_update_search"),&EditorHelpSearch::_update_search);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 
@@ -314,7 +312,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	editor=EditorNode::get_singleton();
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 	HBoxContainer *sb_hb = memnew( HBoxContainer);
 	search_box = memnew( LineEdit );
 	sb_hb->add_child(search_box);
@@ -324,7 +322,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	sb_hb->add_child(sb);
 	vbc->add_margin_child(TTR("Search:"),sb_hb);
 	search_box->connect("text_changed",this,"_text_changed");
-	search_box->connect("input_event",this,"_sbox_input");
+	search_box->connect("gui_input",this,"_sbox_input");
 	search_options = memnew( Tree );
 	vbc->add_margin_child(TTR("Matches:"),search_options,true);
 	get_ok()->set_text(TTR("Open"));
@@ -334,7 +332,7 @@ EditorHelpSearch::EditorHelpSearch() {
 	search_options->connect("item_activated",this,"_confirmed");
 	set_title(TTR("Search Help"));
 
-//	search_options->set_hide_root(true);
+	//search_options->set_hide_root(true);
 
 }
 
@@ -349,8 +347,10 @@ void EditorHelpIndex::add_type(const String& p_type,HashMap<String,TreeItem*>& p
 
 	if (p_types.has(p_type))
 		return;
-//	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
-//		return;
+	/*
+	if (!ClassDB::is_type(p_type,base) || p_type==base)
+		return;
+	*/
 
 	String inherits=EditorHelp::get_doc_data()->class_list[p_type].inherits;
 
@@ -488,17 +488,17 @@ void EditorHelpIndex::_sbox_input(const InputEvent& p_ie) {
 		p_ie.key.scancode == KEY_PAGEUP ||
 		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
 
-		class_list->call("_input_event",p_ie);
+		class_list->call("_gui_input",p_ie);
 		search_box->accept_event();
 	}
 }
 
 void EditorHelpIndex::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
-	ObjectTypeDB::bind_method("_text_changed",&EditorHelpIndex::_text_changed);
-	ObjectTypeDB::bind_method("_sbox_input",&EditorHelpIndex::_sbox_input);
-	ObjectTypeDB::bind_method("select_class",&EditorHelpIndex::select_class);
+	ClassDB::bind_method("_tree_item_selected",&EditorHelpIndex::_tree_item_selected);
+	ClassDB::bind_method("_text_changed",&EditorHelpIndex::_text_changed);
+	ClassDB::bind_method("_sbox_input",&EditorHelpIndex::_sbox_input);
+	ClassDB::bind_method("select_class",&EditorHelpIndex::select_class);
 	ADD_SIGNAL( MethodInfo("open_class"));
 }
 
@@ -508,7 +508,6 @@ EditorHelpIndex::EditorHelpIndex() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
 
 	search_box = memnew( LineEdit );
 	vbc->add_margin_child(TTR("Search:"), search_box);
@@ -517,7 +516,7 @@ EditorHelpIndex::EditorHelpIndex() {
 	register_text_enter(search_box);
 
 	search_box->connect("text_changed", this, "_text_changed");
-	search_box->connect("input_event", this, "_sbox_input");
+	search_box->connect("gui_input", this, "_sbox_input");
 
 	class_list = memnew( Tree );
 	vbc->add_margin_child(TTR("Class List:")+" ", class_list, true);
@@ -539,7 +538,7 @@ DocData *EditorHelp::doc=NULL;
 
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
-	if (!is_visible())
+	if (!is_visible_in_tree())
 		return;
 	if ( p_ev.key.mod.control && p_ev.key.scancode==KEY_F) {
 
@@ -572,15 +571,15 @@ void EditorHelp::_button_pressed(int p_idx) {
 
 	if (p_idx==PAGE_CLASS_LIST) {
 
-	//	edited_class->set_pressed(false);
-	//	class_list_button->set_pressed(true);
-	//	tabs->set_current_tab(PAGE_CLASS_LIST);
+		//edited_class->set_pressed(false);
+		//class_list_button->set_pressed(true);
+		//tabs->set_current_tab(PAGE_CLASS_LIST);
 
 	} else if (p_idx==PAGE_CLASS_DESC) {
 
-	//	edited_class->set_pressed(true);
-	//	class_list_button->set_pressed(false);
-	//	tabs->set_current_tab(PAGE_CLASS_DESC);
+		//edited_class->set_pressed(true);
+		//class_list_button->set_pressed(false);
+		//tabs->set_current_tab(PAGE_CLASS_DESC);
 
 	} else if (p_idx==PAGE_CLASS_PREV) {
 
@@ -620,7 +619,7 @@ void EditorHelp::_class_desc_select(const String& p_select) {
 
 
 
-//	print_line("LINK: "+p_select);
+	//print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		emit_signal("go_to_help","class_name:"+p_select.substr(1,p_select.length()));
@@ -660,7 +659,7 @@ void EditorHelp::_add_type(const String& p_type) {
 		t="void";
 	bool can_ref = (t!="int" && t!="real" && t!="bool" && t!="void");
 
-	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
+	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/base_type_color"));
 	if (can_ref)
 		class_desc->push_meta("#"+t); //class
 	class_desc->add_text(t);
@@ -675,7 +674,7 @@ void EditorHelp::_scroll_changed(double p_scroll) {
 	if (scroll_locked)
 		return;
 
-	if (class_desc->get_v_scroll()->is_hidden())
+	if (!class_desc->get_v_scroll()->is_visible())
 		p_scroll=0;
 
 	//history[p].scroll=p_scroll;
@@ -719,9 +718,9 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 	h_color=Color(1,1,1,1);
 
 	class_desc->push_font(doc_title_font);
-	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 	class_desc->add_text(TTR("Class:")+" ");
-	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
+	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/base_type_color"));
 	_add_text(p_class);
 	class_desc->pop();
 	class_desc->pop();
@@ -730,7 +729,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 	if (cd.inherits!="") {
 
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Inherits:")+" ");
 		class_desc->pop();
@@ -754,7 +753,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_newline();
 	}
 
-	if (ObjectTypeDB::type_exists(cd.name)) {
+	if (ClassDB::class_exists(cd.name)) {
 
 		bool found = false;
 		bool prev = false;
@@ -764,7 +763,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			if (E->get().inherits == cd.name) {
 
 				if (!found) {
-					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 					class_desc->push_font(doc_title_font);
 					class_desc->add_text(TTR("Inherited by:")+" ");
 					class_desc->pop();
@@ -795,7 +794,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 	if (cd.brief_description!="") {
 
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Brief Description:"));
 		class_desc->pop();
@@ -803,7 +802,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		//class_desc->add_newline();
 		class_desc->add_newline();
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 		class_desc->push_font( doc_font );
 		class_desc->push_indent(1);
 		_add_text(cd.brief_description);
@@ -814,37 +813,132 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_newline();
 	}
 
+	Set<String> skip_methods;
+	bool property_descr=false;
+
+	if (cd.properties.size()) {
+
+
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
+		class_desc->push_font(doc_title_font);
+		class_desc->add_text(TTR("Members:"));
+		class_desc->pop();
+		class_desc->pop();
+		//class_desc->add_newline();
+
+		class_desc->push_indent(1);
+		class_desc->push_table(2);
+		class_desc->set_table_column_expand(1,1);
+
+		for(int i=0;i<cd.properties.size();i++) {
+			property_line[cd.properties[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
+
+			class_desc->push_cell();
+			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
+			class_desc->push_font(doc_code_font);
+			_add_type(cd.properties[i].type);
+			class_desc->add_text(" ");
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop();
+
+			bool describe=false;
+
+			if (cd.properties[i].setter!="") {
+				skip_methods.insert(cd.properties[i].setter);
+				describe=true;
+
+			}
+			if (cd.properties[i].getter!="") {
+				skip_methods.insert(cd.properties[i].getter);
+				describe=true;
+			}
+
+			if (cd.properties[i].description!="") {
+				describe=true;
+
+			}
+			class_desc->push_cell();
+			if (describe) {
+				class_desc->push_meta("@"+cd.properties[i].name);
+			}
+
+			class_desc->push_font(doc_code_font);
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+			_add_text(cd.properties[i].name);
+
+			if (describe) {
+				class_desc->pop();
+			}
+
+
+			if (cd.properties[i].brief_description!="") {
+				class_desc->push_font(doc_font);
+				class_desc->add_text("  ");
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
+				_add_text(cd.properties[i].description);
+				class_desc->pop();
+				class_desc->pop();
+
+			}
+
+			if (describe) {
+				property_descr=true;
+			}
+
+
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop();
+
+		}
+
+
+		class_desc->pop(); //table
+		class_desc->pop();
+		class_desc->add_newline();
+		class_desc->add_newline();
+	}
+
+
 	bool method_descr=false;
-	bool sort_methods = EditorSettings::get_singleton()->get("help/sort_functions_alphabetically");
+	bool sort_methods = EditorSettings::get_singleton()->get("text_editor/help/sort_functions_alphabetically");
 
+	Vector<DocData::MethodDoc> methods;
 
-	if (cd.methods.size()) {
+	for(int i=0;i<cd.methods.size();i++) {
+		if (skip_methods.has(cd.methods[i].name))
+			continue;
+		methods.push_back(cd.methods[i]);
+	}
+
+	if (methods.size()) {
 
 		if (sort_methods)
-			cd.methods.sort();
+			methods.sort();
 
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Public Methods:"));
 		class_desc->pop();
 		class_desc->pop();
 
 		//class_desc->add_newline();
-//		class_desc->add_newline();
+		//class_desc->add_newline();
 
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1,1);
 
-		for(int i=0;i<cd.methods.size();i++) {
+		for(int i=0;i<methods.size();i++) {
 
 			class_desc->push_cell();
 
 
-			method_line[cd.methods[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
+			method_line[methods[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
 			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
 			class_desc->push_font(doc_code_font);
-			_add_type(cd.methods[i].return_type);
+			_add_type(methods[i].return_type);
 			//class_desc->add_text(" ");
 			class_desc->pop(); //align
 			class_desc->pop(); //font
@@ -852,58 +946,58 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);
 
-			if (cd.methods[i].description!="") {
+			if (methods[i].description!="") {
 				method_descr=true;
-				class_desc->push_meta("@"+cd.methods[i].name);
+				class_desc->push_meta("@"+methods[i].name);
 			}
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			_add_text(cd.methods[i].name);
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+			_add_text(methods[i].name);
 			class_desc->pop();
-			if (cd.methods[i].description!="")
+			if (methods[i].description!="")
 				class_desc->pop();
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
-			class_desc->add_text(cd.methods[i].arguments.size()?"( ":"(");
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
+			class_desc->add_text(methods[i].arguments.size()?"( ":"(");
 			class_desc->pop();
-			for(int j=0;j<cd.methods[i].arguments.size();j++) {
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			for(int j=0;j<methods[i].arguments.size();j++) {
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 				if (j>0)
 					class_desc->add_text(", ");
-				_add_type(cd.methods[i].arguments[j].type);
+				_add_type(methods[i].arguments[j].type);
 				class_desc->add_text(" ");
-				_add_text(cd.methods[i].arguments[j].name);
-				if (cd.methods[i].arguments[j].default_value!="") {
+				_add_text(methods[i].arguments[j].name);
+				if (methods[i].arguments[j].default_value!="") {
 
-					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					_add_text(cd.methods[i].arguments[j].default_value);
+					_add_text(methods[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
 			}
 
-			if (cd.methods[i].qualifiers.find("vararg")!=-1) {
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			if (methods[i].qualifiers.find("vararg")!=-1) {
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 				class_desc->add_text(",");
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
 				class_desc->add_text(" ... ");
 				class_desc->pop();
 				class_desc->pop();
 			}
 
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
-			class_desc->add_text(cd.methods[i].arguments.size()?" )":")");
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
+			class_desc->add_text(methods[i].arguments.size()?" )":")");
 			class_desc->pop();
-			if (cd.methods[i].qualifiers!="") {
+			if (methods[i].qualifiers!="") {
 
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 				class_desc->add_text(" ");
-				_add_text(cd.methods[i].qualifiers);
+				_add_text(methods[i].qualifiers);
 				class_desc->pop();
 
 			}
 			class_desc->pop();//monofont
-//			class_desc->add_newline();
+			//class_desc->add_newline();
 			class_desc->pop(); //cell
 
 		}
@@ -914,53 +1008,11 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 	}
 
-	if (cd.properties.size()) {
-
-
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
-		class_desc->push_font(doc_title_font);
-		class_desc->add_text(TTR("Members:"));
-		class_desc->pop();
-		class_desc->pop();
-		class_desc->add_newline();
-
-		class_desc->push_indent(1);
-
-		//class_desc->add_newline();
-
-		for(int i=0;i<cd.properties.size();i++) {
-
-			property_line[cd.properties[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
-			class_desc->push_font(doc_code_font);
-			_add_type(cd.properties[i].type);
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			class_desc->add_text(" ");
-			_add_text(cd.properties[i].name);
-			class_desc->pop();
-			class_desc->pop();
-
-			if (cd.properties[i].description!="") {
-				class_desc->push_font(doc_font);
-				class_desc->add_text("  ");
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
-				_add_text(cd.properties[i].description);
-				class_desc->pop();
-				class_desc->pop();
-
-			}
-
-			class_desc->add_newline();
-		}
-
-
-		class_desc->pop();
-		class_desc->add_newline();
-	}
 
 	if (cd.theme_properties.size()) {
 
 
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("GUI Theme Items:"));
 		class_desc->pop();
@@ -976,7 +1028,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			theme_property_line[cd.theme_properties[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.theme_properties[i].type);
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 			class_desc->add_text(" ");
 			_add_text(cd.theme_properties[i].name);
 			class_desc->pop();
@@ -985,7 +1037,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			if (cd.theme_properties[i].description!="") {
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
 				_add_text(cd.theme_properties[i].description);
 				class_desc->pop();
 				class_desc->pop();
@@ -1004,7 +1056,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		if (sort_methods) {
 			cd.signals.sort();
 		}
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Signals:"));
 		class_desc->pop();
@@ -1021,14 +1073,14 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			class_desc->push_font(doc_code_font);  // monofont
 			//_add_type("void");
 			//class_desc->add_text(" ");
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 			_add_text(cd.signals[i].name);
 			class_desc->pop();
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
 			class_desc->add_text(cd.signals[i].arguments.size()?"( ":"(");
 			class_desc->pop();
 			for(int j=0;j<cd.signals[i].arguments.size();j++) {
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 				if (j>0)
 					class_desc->add_text(", ");
 				_add_type(cd.signals[i].arguments[j].type);
@@ -1036,7 +1088,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 				_add_text(cd.signals[i].arguments[j].name);
 				if (cd.signals[i].arguments[j].default_value!="") {
 
-					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
 					_add_text(cd.signals[i].arguments[j].default_value);
@@ -1045,13 +1097,13 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 				class_desc->pop();
 			}
 
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
 			class_desc->add_text(cd.signals[i].arguments.size()?" )":")");
 			class_desc->pop();
 			class_desc->pop(); // end monofont
 			if (cd.signals[i].description!="") {
 
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
 				class_desc->add_text(" ");
 				_add_text(cd.signals[i].description);
 				class_desc->pop();
@@ -1069,7 +1121,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 	if (cd.constants.size()) {
 
 
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Constants:"));
 		class_desc->pop();
@@ -1083,20 +1135,20 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 			constant_line[cd.constants[i].name]=class_desc->get_line_count()-2;
 			class_desc->push_font(doc_code_font);
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/base_type_color"));
 			_add_text(cd.constants[i].name);
 			class_desc->pop();
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
 			class_desc->add_text(" = ");
 			class_desc->pop();
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 			_add_text(cd.constants[i].value);
 			class_desc->pop();
 			class_desc->pop();
 			if (cd.constants[i].description!="") {
 				class_desc->push_font(doc_font);
 				class_desc->add_text("  ");
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/comment_color"));
 				_add_text(cd.constants[i].description);
 				class_desc->pop();
 				class_desc->pop();
@@ -1114,7 +1166,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 	if (cd.description!="") {
 
 		description_line=class_desc->get_line_count()-2;
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Description:"));
 		class_desc->pop();
@@ -1122,7 +1174,7 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 
 		class_desc->add_newline();
 		class_desc->add_newline();
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 		class_desc->push_font( doc_font );
 		class_desc->push_indent(1);
 		_add_text(cd.description);
@@ -1133,9 +1185,92 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_newline();
 	}
 
+	if (property_descr) {
+
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
+		class_desc->push_font(doc_title_font);
+		class_desc->add_text(TTR("Property Description:"));
+		class_desc->pop();
+		class_desc->pop();
+
+		class_desc->add_newline();
+		class_desc->add_newline();
+
+
+		for(int i=0;i<cd.properties.size();i++) {
+
+			method_line[cd.properties[i].name]=class_desc->get_line_count()-2;
+
+			class_desc->push_font(doc_code_font);
+			_add_type(cd.properties[i].type);
+
+			class_desc->add_text(" ");
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+			_add_text(cd.properties[i].name);
+			class_desc->pop(); //color
+
+			class_desc->add_text(" ");
+
+			class_desc->pop(); //font
+
+			if (cd.properties[i].setter!="") {
+
+				class_desc->push_font( doc_font );
+
+				class_desc->push_indent(2);
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
+				class_desc->add_text("Setter: ");
+				class_desc->pop();
+
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+				class_desc->add_text(cd.properties[i].setter+"(value)");
+				class_desc->pop(); //color
+
+				class_desc->pop(); //indent
+
+				class_desc->pop(); //font
+
+			}
+
+			if (cd.properties[i].getter!="") {
+
+				class_desc->push_font( doc_font );
+
+				class_desc->push_indent(2);
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
+				class_desc->add_text("Getter: ");
+				class_desc->pop();
+
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+				class_desc->add_text(cd.properties[i].getter+"()");
+				class_desc->pop(); //color
+
+				class_desc->pop(); //indent
+
+				class_desc->pop(); //font
+
+			}
+
+			class_desc->add_newline();
+
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+			class_desc->push_font( doc_font );
+			class_desc->push_indent(1);
+			_add_text(cd.properties[i].description);
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->pop();
+			class_desc->add_newline();
+			class_desc->add_newline();
+			class_desc->add_newline();
+
+		}
+
+	}
+
 	if (method_descr) {
 
-		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text(TTR("Method Description:"));
 		class_desc->pop();
@@ -1145,46 +1280,46 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 		class_desc->add_newline();
 
 
-		for(int i=0;i<cd.methods.size();i++) {
+		for(int i=0;i<methods.size();i++) {
 
-			method_line[cd.methods[i].name]=class_desc->get_line_count()-2;
+			method_line[methods[i].name]=class_desc->get_line_count()-2;
 
 			class_desc->push_font(doc_code_font);
-			_add_type(cd.methods[i].return_type);
+			_add_type(methods[i].return_type);
 
 			class_desc->add_text(" ");
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
-			_add_text(cd.methods[i].name);
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
+			_add_text(methods[i].name);
 			class_desc->pop();
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
-			class_desc->add_text(cd.methods[i].arguments.size()?"( ":"(");
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
+			class_desc->add_text(methods[i].arguments.size()?"( ":"(");
 			class_desc->pop();
-			for(int j=0;j<cd.methods[i].arguments.size();j++) {
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			for(int j=0;j<methods[i].arguments.size();j++) {
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 				if (j>0)
 					class_desc->add_text(", ");
-				_add_type(cd.methods[i].arguments[j].type);
+				_add_type(methods[i].arguments[j].type);
 				class_desc->add_text(" ");
-				_add_text(cd.methods[i].arguments[j].name);
-				if (cd.methods[i].arguments[j].default_value!="") {
+				_add_text(methods[i].arguments[j].name);
+				if (methods[i].arguments[j].default_value!="") {
 
-					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
+					class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
 					class_desc->add_text("=");
 					class_desc->pop();
-					_add_text(cd.methods[i].arguments[j].default_value);
+					_add_text(methods[i].arguments[j].default_value);
 				}
 
 				class_desc->pop();
 			}
 
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/symbol_color"));
-			class_desc->add_text(cd.methods[i].arguments.size()?" )":")");
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/symbol_color"));
+			class_desc->add_text(methods[i].arguments.size()?" )":")");
 			class_desc->pop();
-			if (cd.methods[i].qualifiers!="") {
+			if (methods[i].qualifiers!="") {
 
-				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 				class_desc->add_text(" ");
-				_add_text(cd.methods[i].qualifiers);
+				_add_text(methods[i].qualifiers);
 				class_desc->pop();
 
 			}
@@ -1192,10 +1327,10 @@ Error EditorHelp::_goto_desc(const String& p_class,int p_vscr) {
 			class_desc->pop();
 
 			class_desc->add_newline();
-			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 			class_desc->push_font( doc_font );
 			class_desc->push_indent(1);
-			_add_text(cd.methods[i].description);
+			_add_text(methods[i].description);
 			class_desc->pop();
 			class_desc->pop();
 			class_desc->pop();
@@ -1272,7 +1407,7 @@ static void _add_text_to_rt(const String& p_bbcode,RichTextLabel *p_rt) {
 	DocData *doc = EditorHelp::get_doc_data();
 	String base_path;
 
-	/*p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+	/*p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
 	p_rt->push_font( get_font("normal","Fonts") );
 	p_rt->push_indent(1);*/
 	int pos = 0;
@@ -1388,7 +1523,7 @@ static void _add_text_to_rt(const String& p_bbcode,RichTextLabel *p_rt) {
 		} else if (tag.begins_with("method ")) {
 
 			String m = tag.substr(7,tag.length());
-			p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+			p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 			p_rt->push_meta("@"+m);
 			p_rt->add_text(m+"()");
 			p_rt->pop();
@@ -1398,7 +1533,7 @@ static void _add_text_to_rt(const String& p_bbcode,RichTextLabel *p_rt) {
 		} else if (doc->class_list.has(tag)) {
 
 
-			p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+			p_rt->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/keyword_color"));
 			p_rt->push_meta("#"+tag);
 			p_rt->add_text(tag);
 			p_rt->pop();
@@ -1414,7 +1549,7 @@ static void _add_text_to_rt(const String& p_bbcode,RichTextLabel *p_rt) {
 		} else if (tag=="i") {
 
 			//use italics font
-			Color text_color = EditorSettings::get_singleton()->get("text_editor/text_color");
+			Color text_color = EditorSettings::get_singleton()->get("text_editor/highlighting/text_color");
 			//no italics so emphasize with color
 			text_color.r*=1.1;
 			text_color.g*=1.1;
@@ -1599,8 +1734,8 @@ void EditorHelp::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 
 
-//			forward->set_icon(get_icon("Forward","EditorIcons"));
-//			back->set_icon(get_icon("Back","EditorIcons"));
+			//forward->set_icon(get_icon("Forward","EditorIcons"));
+			//back->set_icon(get_icon("Back","EditorIcons"));
 			_update_doc();
 
 		} break;
@@ -1629,7 +1764,7 @@ void EditorHelp::_search_cbk() {
 	_search(search->get_text());
 }
 
-String EditorHelp::get_class_name() {
+String EditorHelp::get_class() {
 
 	return edited_class;
 }
@@ -1640,27 +1775,27 @@ void EditorHelp::search_again() {
 
 int EditorHelp::get_scroll() const {
 
-	return class_desc->get_v_scroll()->get_val();
+	return class_desc->get_v_scroll()->get_value();
 }
 void EditorHelp::set_scroll(int p_scroll) {
 
 
-	class_desc->get_v_scroll()->set_val(p_scroll);
+	class_desc->get_v_scroll()->set_value(p_scroll);
 
 }
 
 void EditorHelp::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
-	ObjectTypeDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
-	ObjectTypeDB::bind_method("_class_desc_input",&EditorHelp::_class_desc_input);
-//	ObjectTypeDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
-	ObjectTypeDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
-	ObjectTypeDB::bind_method("_request_help",&EditorHelp::_request_help);
-	ObjectTypeDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
-	ObjectTypeDB::bind_method("_search",&EditorHelp::_search);
-	ObjectTypeDB::bind_method("_search_cbk",&EditorHelp::_search_cbk);
-	ObjectTypeDB::bind_method("_help_callback",&EditorHelp::_help_callback);
+	ClassDB::bind_method("_class_list_select",&EditorHelp::_class_list_select);
+	ClassDB::bind_method("_class_desc_select",&EditorHelp::_class_desc_select);
+	ClassDB::bind_method("_class_desc_input",&EditorHelp::_class_desc_input);
+	//ClassDB::bind_method("_button_pressed",&EditorHelp::_button_pressed);
+	ClassDB::bind_method("_scroll_changed",&EditorHelp::_scroll_changed);
+	ClassDB::bind_method("_request_help",&EditorHelp::_request_help);
+	ClassDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
+	ClassDB::bind_method("_search",&EditorHelp::_search);
+	ClassDB::bind_method("_search_cbk",&EditorHelp::_search_cbk);
+	ClassDB::bind_method("_help_callback",&EditorHelp::_help_callback);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 
@@ -1672,7 +1807,7 @@ EditorHelp::EditorHelp() {
 
 	VBoxContainer *vbc = this;
 
-	EDITOR_DEF("help/sort_functions_alphabetically",true);
+	EDITOR_DEF("text_editor/help/sort_functions_alphabetically",true);
 
 	//class_list->connect("meta_clicked",this,"_class_list_select");
 	//class_list->set_selection_enabled(true);
@@ -1680,7 +1815,7 @@ EditorHelp::EditorHelp() {
 	{
 		Panel *pc = memnew( Panel );
 		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
-		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );
+		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/highlighting/background_color") );
 		pc->set_v_size_flags(SIZE_EXPAND_FILL);
 		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
 		vbc->add_child(pc);
@@ -1688,7 +1823,7 @@ EditorHelp::EditorHelp() {
 		pc->add_child(class_desc);
 		class_desc->set_area_as_parent_rect(8);
 		class_desc->connect("meta_clicked",this,"_class_desc_select");
-		class_desc->connect("input_event",this,"_class_desc_input");
+		class_desc->connect("gui_input",this,"_class_desc_input");
 	}
 
 	class_desc->get_v_scroll()->connect("value_changed",this,"_scroll_changed");
@@ -1703,21 +1838,21 @@ EditorHelp::EditorHelp() {
 	add_child(search_dialog);
 	VBoxContainer *search_vb = memnew( VBoxContainer );
 	search_dialog->add_child(search_vb);
-	search_dialog->set_child_rect(search_vb);
+
 	search = memnew( LineEdit );
 	search_dialog->register_text_enter(search);
 	search_vb->add_margin_child(TTR("Search Text"),search);
 	search_dialog->get_ok()->set_text(TTR("Find"));
 	search_dialog->connect("confirmed",this,"_search_cbk");
 	search_dialog->set_hide_on_ok(false);
-	search_dialog->set_self_opacity(0.8);
+	search_dialog->set_self_modulate(Color(1,1,1,0.8));
 
 
 	/*class_search = memnew( EditorHelpSearch(editor) );
 	editor->get_gui_base()->add_child(class_search);
 	class_search->connect("go_to_help",this,"_help_callback");*/
 
-//	prev_search_page=-1;
+	//prev_search_page=-1;
 }
 
 EditorHelp::~EditorHelp() {
@@ -1737,8 +1872,7 @@ void EditorHelpBit::_go_to_help(String p_what) {
 
 void EditorHelpBit::_meta_clicked(String p_select) {
 
-
-	//	print_line("LINK: "+p_select);
+	//print_line("LINK: "+p_select);
 	if (p_select.begins_with("#")) {
 		//_goto_desc(p_select.substr(1,p_select.length()));
 		_go_to_help("class_name:"+p_select.substr(1,p_select.length()));
@@ -1752,10 +1886,11 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 			_go_to_help("class_method:"+m.get_slice(".",0)+":"+m.get_slice(".",0));
 		} else {
-//
-	//		if (!method_line.has(m))
-			//	return;
-			//class_desc->scroll_to_line(method_line[m]);
+			/*
+			if (!method_line.has(m))
+				return;
+			class_desc->scroll_to_line(method_line[m]);
+			*/
 		}
 
 	}
@@ -1765,7 +1900,7 @@ void EditorHelpBit::_meta_clicked(String p_select) {
 
 void EditorHelpBit::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_meta_clicked",&EditorHelpBit::_meta_clicked);
+	ClassDB::bind_method("_meta_clicked",&EditorHelpBit::_meta_clicked);
 	ADD_SIGNAL(MethodInfo("request_hide"));
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class Input : public Object {
 
-	OBJ_TYPE( Input, Object );
+	GDCLASS( Input, Object );
 
 	static Input *singleton;
 
@@ -47,7 +47,8 @@ public:
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
-		MOUSE_MODE_CAPTURED
+		MOUSE_MODE_CAPTURED,
+		MOUSE_MODE_CONFINED
 	};
 
 	void set_mouse_mode(MouseMode p_mode);
@@ -64,7 +65,7 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis) const=0;
 	virtual String get_joy_name(int p_idx)=0;
-	virtual Array get_connected_joysticks()=0;
+	virtual Array get_connected_joypads()=0;
 	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid)=0;
 	virtual void add_joy_mapping(String p_mapping, bool p_update_existing=false)=0;
 	virtual void remove_joy_mapping(String p_guid)=0;
@@ -77,11 +78,12 @@ public:
 	virtual void stop_joy_vibration(int p_device)=0;
 
 	virtual Point2 get_mouse_pos() const=0;
-	virtual Point2 get_mouse_speed() const=0;
+	virtual Point2 get_last_mouse_speed() const=0;
 	virtual int get_mouse_button_mask() const=0;
 
 	virtual void warp_mouse_pos(const Vector2& p_to)=0;
 
+	virtual Vector3 get_gravity() const=0;
 	virtual Vector3 get_accelerometer() const=0;
 	virtual Vector3 get_magnetometer() const=0;
 	virtual Vector3 get_gyroscope() const=0;

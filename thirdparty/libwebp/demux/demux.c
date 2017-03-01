@@ -25,7 +25,7 @@
 
 #define DMUX_MAJ_VERSION 0
 #define DMUX_MIN_VERSION 3
-#define DMUX_REV_VERSION 0
+#define DMUX_REV_VERSION 2
 
 typedef struct {
   size_t start_;        // start location of the data
@@ -590,7 +590,6 @@ static int CheckFrameBounds(const Frame* const frame, int exact,
 
 static int IsValidExtendedFormat(const WebPDemuxer* const dmux) {
   const int is_animation = !!(dmux->feature_flags_ & ANIMATION_FLAG);
-  const int is_fragmented = !!(dmux->feature_flags_ & FRAGMENTS_FLAG);
   const Frame* f = dmux->frames_;
 
   if (dmux->state_ == WEBP_DEMUX_PARSING_HEADER) return 1;
@@ -598,7 +597,7 @@ static int IsValidExtendedFormat(const WebPDemuxer* const dmux) {
   if (dmux->canvas_width_ <= 0 || dmux->canvas_height_ <= 0) return 0;
   if (dmux->loop_count_ < 0) return 0;
   if (dmux->state_ == WEBP_DEMUX_DONE && dmux->frames_ == NULL) return 0;
-  if (is_fragmented) return 0;
+  if (dmux->feature_flags_ & ~ALL_VALID_FLAGS) return 0;  // invalid bitstream
 
   while (f != NULL) {
     const int cur_frame_set = f->frame_num_;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,7 +99,7 @@ real_t Plane::distance_to(const Vector3 &p_point) const {
 
 bool Plane::has_point(const Vector3 &p_point,real_t _epsilon) const {
 
-	float dist=normal.dot(p_point) - d;
+	real_t dist=normal.dot(p_point) - d;
 	dist=ABS(dist);
 	return ( dist <= _epsilon);
 

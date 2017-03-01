@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #define SAMPLE_LIBRARY_EDITOR_PLUGIN_H
 
 
-
+#if 0
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/audio/sample_player.h"
@@ -42,7 +42,7 @@
 
 class SampleLibraryEditor : public Panel {
 
-	OBJ_TYPE(SampleLibraryEditor, Panel );
+	GDCLASS(SampleLibraryEditor, Panel );
 
 
 
@@ -59,7 +59,7 @@ class SampleLibraryEditor : public Panel {
 
 
 	void _load_pressed();
-	void _file_load_request(const DVector<String>& p_path);
+	void _file_load_request(const PoolVector<String>& p_path);
 	void _delete_pressed();
 	void _update_library();
 	void _item_edited();
@@ -74,7 +74,7 @@ class SampleLibraryEditor : public Panel {
 
 protected:
 	void _notification(int p_what);
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	static void _bind_methods();
 public:
 
@@ -85,7 +85,7 @@ public:
 
 class SampleLibraryEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SampleLibraryEditorPlugin, EditorPlugin );
+	GDCLASS( SampleLibraryEditorPlugin, EditorPlugin );
 
 	SampleLibraryEditor *sample_library_editor;
 	EditorNode *editor;
@@ -104,4 +104,5 @@ public:
 
 };
 
+#endif
 #endif // SAMPLE_LIBRARY_EDITOR_PLUGIN_H

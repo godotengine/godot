@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,13 @@
 #define SHADER_GRAPH_H
 
 
-
+#if 0
 #include "map.h"
 #include "scene/resources/shader.h"
 
 class ShaderGraph : public Shader {
 
-	OBJ_TYPE( ShaderGraph, Shader );
+	GDCLASS( ShaderGraph, Shader );
 	RES_BASE_EXTENSION("sgp");
 
 public:
@@ -326,12 +326,12 @@ public:
 	void vec_func_node_set_function(ShaderType p_which,int p_id,VecFunc p_func);
 	VecFunc vec_func_node_get_function(ShaderType p_which,int p_id) const;
 
-	void color_ramp_node_set_ramp(ShaderType p_which,int p_id,const DVector<Color>& p_colors, const DVector<real_t>& p_offsets);
-	DVector<Color> color_ramp_node_get_colors(ShaderType p_which,int p_id) const;
-	DVector<real_t> color_ramp_node_get_offsets(ShaderType p_which,int p_id) const;
+	void color_ramp_node_set_ramp(ShaderType p_which,int p_id,const PoolVector<Color>& p_colors, const PoolVector<real_t>& p_offsets);
+	PoolVector<Color> color_ramp_node_get_colors(ShaderType p_which,int p_id) const;
+	PoolVector<real_t> color_ramp_node_get_offsets(ShaderType p_which,int p_id) const;
 
-	void curve_map_node_set_points(ShaderType p_which, int p_id, const DVector<Vector2>& p_points);
-	DVector<Vector2> curve_map_node_get_points(ShaderType p_which,int p_id) const;
+	void curve_map_node_set_points(ShaderType p_which, int p_id, const PoolVector<Vector2>& p_points);
+	PoolVector<Vector2> curve_map_node_get_points(ShaderType p_which,int p_id) const;
 
 	void input_node_set_name(ShaderType p_which,int p_id,const String& p_name);
 	String input_node_get_name(ShaderType p_which,int p_id);
@@ -418,7 +418,7 @@ VARIANT_ENUM_CAST( ShaderGraph::GraphError );
 
 class MaterialShaderGraph : public ShaderGraph {
 
-	OBJ_TYPE( MaterialShaderGraph, ShaderGraph );
+	GDCLASS( MaterialShaderGraph, ShaderGraph );
 
 public:
 
@@ -430,7 +430,7 @@ public:
 
 class CanvasItemShaderGraph : public ShaderGraph {
 
-	OBJ_TYPE( CanvasItemShaderGraph, ShaderGraph );
+	GDCLASS( CanvasItemShaderGraph, ShaderGraph );
 
 public:
 
@@ -440,5 +440,5 @@ public:
 	}
 };
 
-
+#endif
 #endif // SHADER_GRAPH_H

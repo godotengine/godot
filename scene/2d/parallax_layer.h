@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 class ParallaxLayer : public Node2D {
 
-	OBJ_TYPE( ParallaxLayer, Node2D );
+	GDCLASS( ParallaxLayer, Node2D );
 
 	Point2 orig_offset;
 	Point2 orig_scale;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,6 @@
 
 
 RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const String &p_path) {
-
-	String l = f->get_line();
 
 	enum Status {
 
@@ -206,7 +204,7 @@ bool TranslationLoaderPO::handles_type(const String& p_type) const{
 
 String TranslationLoaderPO::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="po")
+	if (p_path.get_extension().to_lower()=="po")
 		return "Translation";
 	return "";
 }

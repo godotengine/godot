@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,6 +29,12 @@
 #ifndef EDITOR_TEXTURE_IMPORT_PLUGIN_H
 #define EDITOR_TEXTURE_IMPORT_PLUGIN_H
 
+
+
+
+
+
+#if 0
 #include "tools/editor/editor_import_export.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
@@ -49,7 +55,7 @@ class EditorTextureImportDialog;
 
 class EditorTextureImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorTextureImportPlugin,EditorImportPlugin);
+	GDCLASS(EditorTextureImportPlugin,EditorImportPlugin);
 public:
 
 
@@ -119,7 +125,7 @@ public:
 
 class EditorTextureExportPlugin : public EditorExportPlugin {
 
-	OBJ_TYPE( EditorTextureExportPlugin, EditorExportPlugin);
+	GDCLASS( EditorTextureExportPlugin, EditorExportPlugin);
 
 
 public:
@@ -130,7 +136,7 @@ public:
 
 class EditorImportTextureOptions : public VBoxContainer {
 
-	OBJ_TYPE( EditorImportTextureOptions, VBoxContainer );
+	GDCLASS( EditorImportTextureOptions, VBoxContainer );
 
 
 	OptionButton *format;
@@ -170,3 +176,4 @@ public:
 
 };
 #endif // EDITOR_TEXTURE_IMPORT_PLUGIN_H
+#endif

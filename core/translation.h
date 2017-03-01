@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,17 +35,17 @@
 class Translation : public Resource {
 
 
-	OBJ_TYPE( Translation, Resource );
+	GDCLASS( Translation, Resource );
 	OBJ_SAVE_TYPE( Translation );
 	RES_BASE_EXTENSION("xl");
 
 	String locale;
 	Map<StringName, StringName> translation_map;
 
-	DVector<String> _get_message_list() const;
+	PoolVector<String> _get_message_list() const;
 
-	DVector<String> _get_messages() const;
-	void _set_messages(const DVector<String>& p_messages);
+	PoolVector<String> _get_messages() const;
+	void _set_messages(const PoolVector<String>& p_messages);
 protected:
 	static void _bind_methods();
 
@@ -68,7 +68,7 @@ public:
 
 class TranslationServer : public Object {
 
-	OBJ_TYPE(TranslationServer, Object);
+	GDCLASS(TranslationServer, Object);
 
 	String locale;
 	String fallback;
@@ -102,6 +102,7 @@ public:
 
 	static Vector<String> get_all_locales();
 	static Vector<String> get_all_locale_names();
+	static bool is_locale_valid(const String& p_locale);
 
 	void set_tool_translation(const Ref<Translation>& p_translation);
 	StringName tool_translate(const StringName& p_message) const;

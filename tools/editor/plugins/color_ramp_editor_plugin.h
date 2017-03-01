@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class ColorRampEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ColorRampEditorPlugin, EditorPlugin );
+	GDCLASS( ColorRampEditorPlugin, EditorPlugin );
 
 	bool _2d;
 	Ref<ColorRamp> color_ramp_ref;

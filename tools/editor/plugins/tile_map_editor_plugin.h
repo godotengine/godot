@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@
 
 class TileMapEditor : public VBoxContainer {
 
-	OBJ_TYPE(TileMapEditor, VBoxContainer );
+	GDCLASS(TileMapEditor, VBoxContainer );
 
 	enum Tool {
 
@@ -106,6 +106,11 @@ class TileMapEditor : public VBoxContainer {
 
 	Point2i over_tile;
 
+	bool * bucket_cache_visited;
+	Rect2i bucket_cache_rect;
+	int bucket_cache_tile;
+	PoolVector<Vector2> bucket_cache;
+
 	struct CellOp {
 		int idx;
 		bool xf;
@@ -129,14 +134,17 @@ class TileMapEditor : public VBoxContainer {
 
 	void _pick_tile(const Point2& p_pos);
 
-	DVector<Vector2> _bucket_fill(const Point2i& p_start, bool erase=false);
+	PoolVector<Vector2> _bucket_fill(const Point2i& p_start, bool erase=false, bool preview=false);
 
-	void _fill_points(const DVector<Vector2> p_points, const Dictionary& p_op);
-	void _erase_points(const DVector<Vector2> p_points);
+	void _fill_points(const PoolVector<Vector2> p_points, const Dictionary& p_op);
+	void _erase_points(const PoolVector<Vector2> p_points);
 
 	void _select(const Point2i& p_from, const Point2i& p_to);
 
-	void _draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Matrix32& p_xform);
+	void _draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform);
+	void _draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform);
+	void _clear_bucket_cache();
+
 	void _update_copydata();
 
 	int get_selected_tile() const;
@@ -167,21 +175,22 @@ public:
 
 	HBoxContainer *get_toolbar() const { return toolbar; }
 
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent& p_event);
 	void edit(Node *p_tile_map);
 
 	TileMapEditor(EditorNode *p_editor);
+	~TileMapEditor();
 };
 
 class TileMapEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( TileMapEditorPlugin, EditorPlugin );
+	GDCLASS( TileMapEditorPlugin, EditorPlugin );
 
 	TileMapEditor *tile_map_editor;
 
 public:
 
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return tile_map_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return tile_map_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "TileMap"; }
 	bool has_main_screen() const { return false; }

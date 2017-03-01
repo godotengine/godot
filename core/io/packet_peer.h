@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "ring_buffer.h"
 class PacketPeer : public Reference {
 
-	OBJ_TYPE( PacketPeer, Reference );
+	GDCLASS( PacketPeer, Reference );
 
 	Variant _bnd_get_var() const;
 	void _bnd_put_var(const Variant& p_var);
@@ -42,8 +42,8 @@ class PacketPeer : public Reference {
 	static void _bind_methods();
 
 
-	Error _put_packet(const DVector<uint8_t> &p_buffer);
-	DVector<uint8_t> _get_packet() const;
+	Error _put_packet(const PoolVector<uint8_t> &p_buffer);
+	PoolVector<uint8_t> _get_packet() const;
 	Error _get_packet_error() const;
 
 
@@ -59,8 +59,8 @@ public:
 
 	/* helpers / binders */
 
-	virtual Error get_packet_buffer(DVector<uint8_t> &r_buffer) const;
-	virtual Error put_packet_buffer(const DVector<uint8_t> &p_buffer);
+	virtual Error get_packet_buffer(PoolVector<uint8_t> &r_buffer) const;
+	virtual Error put_packet_buffer(const PoolVector<uint8_t> &p_buffer);
 
 	virtual Error get_var(Variant &r_variant) const;
 	virtual Error put_var(const Variant& p_packet);
@@ -71,7 +71,7 @@ public:
 
 class PacketPeerStream : public PacketPeer {
 
-	OBJ_TYPE(PacketPeerStream,PacketPeer);
+	GDCLASS(PacketPeerStream,PacketPeer);
 
 	//the way the buffers work sucks, will change later
 
@@ -91,6 +91,8 @@ public:
 	virtual Error put_packet(const uint8_t *p_buffer,int p_buffer_size);
 
 	virtual int get_max_packet_size() const;
+
+
 
 	void set_stream_peer(const Ref<StreamPeer>&  p_peer);
 	void set_input_buffer_max_size(int p_max_size);

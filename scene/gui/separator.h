@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include "scene/gui/control.h"
 class Separator : public Control {
 
-	OBJ_TYPE( Separator, Control );
+	GDCLASS( Separator, Control );
 
 
 protected:
@@ -45,7 +45,7 @@ protected:
 	void _notification(int p_what);
 public:
 
-	virtual Size2 get_minimum_size() const;;
+	virtual Size2 get_minimum_size() const;
 
 	Separator();
 	~Separator();
@@ -54,7 +54,7 @@ public:
 
 class VSeparator : public Separator {
 
-	OBJ_TYPE( VSeparator, Separator );
+	GDCLASS( VSeparator, Separator );
 
 public:
 
@@ -64,7 +64,7 @@ public:
 
 class HSeparator : public Separator {
 
-	OBJ_TYPE( HSeparator, Separator );
+	GDCLASS( HSeparator, Separator );
 
 public:
 

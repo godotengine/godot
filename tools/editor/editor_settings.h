@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ class EditorPlugin;
 
 class EditorSettings : public Resource {
 
-	OBJ_TYPE( EditorSettings, Resource );
+	GDCLASS( EditorSettings, Resource );
 private:
 	_THREAD_SAFE_CLASS_
 
@@ -160,8 +160,8 @@ public:
 
 	void set_optimize_save(bool p_optimize);
 
-	String get_last_selected_language();
-	void set_last_selected_language(String p_language);
+	Variant get_project_metadata(const String& p_section, const String& p_key, Variant p_default);
+	void set_project_metadata(const String& p_section, const String& p_key, Variant p_data);
 
 	EditorSettings();
 	~EditorSettings();

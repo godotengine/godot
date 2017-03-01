@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
-	OBJ_TYPE(VideoStreamPlaybackTheora, VideoStreamPlayback);
+	GDCLASS(VideoStreamPlaybackTheora, VideoStreamPlayback);
 
 	enum {
 		MAX_FRAMES = 4,
@@ -51,7 +51,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	//Image frames[MAX_FRAMES];
 	Image::Format format;
-	DVector<uint8_t> frame_data;
+	PoolVector<uint8_t> frame_data;
 	int frames_pending;
 	FileAccess* file;
 	String file_name;
@@ -165,7 +165,7 @@ public:
 
 class VideoStreamTheora : public VideoStream {
 
-	OBJ_TYPE(VideoStreamTheora,VideoStream);
+	GDCLASS(VideoStreamTheora,VideoStream);
 
 	String file;
 	int audio_track;

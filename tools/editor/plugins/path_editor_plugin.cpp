@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "path_editor_plugin.h"
+
 #include "spatial_editor_plugin.h"
 #include "scene/resources/curve.h"
 #include "os/keyboard.h"
 
+#if 0
 String PathSpatialGizmo::get_handle_name(int p_idx) const {
 
 	Ref<Curve3D> c = path->get_curve();
@@ -284,7 +286,7 @@ Ref<SpatialEditorGizmo> PathEditorPlugin::create_spatial_gizmo(Spatial* p_spatia
 	return Ref<SpatialEditorGizmo>();
 }
 
-bool PathEditorPlugin::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
+bool PathEditorPlugin::forward_spatial_gui_input(Camera* p_camera,const InputEvent& p_event) {
 
 	if (!path)
 		return false;
@@ -375,7 +377,7 @@ bool PathEditorPlugin::forward_spatial_input_event(Camera* p_camera,const InputE
 				ur->create_action(TTR("Split Path"));
 				ur->add_do_method(c.ptr(),"add_point",closest_seg_point,Vector3(),Vector3(),closest_seg+1);
 				ur->add_undo_method(c.ptr(),"remove_point",closest_seg+1);
-				ur->commit_action();;
+				ur->commit_action();
 				return true;
 
 			} else {
@@ -395,7 +397,7 @@ bool PathEditorPlugin::forward_spatial_input_event(Camera* p_camera,const InputE
 					ur->create_action(TTR("Add Point to Curve"));
 					ur->add_do_method(c.ptr(),"add_point",it.xform(inters),Vector3(),Vector3(),-1);
 					ur->add_undo_method(c.ptr(),"remove_point",c->get_point_count());
-					ur->commit_action();;
+					ur->commit_action();
 					return true;
 				}
 
@@ -448,7 +450,7 @@ void PathEditorPlugin::edit(Object *p_object) {
 			pre->get_curve()->emit_signal("changed");
 		}
 	}
-//	collision_polygon_editor->edit(p_object->cast_to<Node>());
+	//collision_polygon_editor->edit(p_object->cast_to<Node>());
 }
 
 bool PathEditorPlugin::handles(Object *p_object) const {
@@ -515,8 +517,8 @@ void PathEditorPlugin::_notification(int p_what) {
 
 void PathEditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_mode_changed"),&PathEditorPlugin::_mode_changed);
-    ObjectTypeDB::bind_method(_MD("_close_curve"),&PathEditorPlugin::_close_curve);
+	ClassDB::bind_method(D_METHOD("_mode_changed"),&PathEditorPlugin::_mode_changed);
+    ClassDB::bind_method(D_METHOD("_close_curve"),&PathEditorPlugin::_close_curve);
 }
 
 PathEditorPlugin* PathEditorPlugin::singleton=NULL;
@@ -528,21 +530,21 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	singleton=this;
 
-	path_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	path_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.8) );
-	path_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	path_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	path_material->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.8) );
+	path_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
 	path_material->set_line_width(3);
 	path_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_material->set_flag(Material::FLAG_UNSHADED,true);
 
-	path_thin_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	path_thin_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.4) );
-	path_thin_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	path_thin_material = Ref<FixedSpatialMaterial>( memnew( FixedSpatialMaterial ));
+	path_thin_material->set_parameter( FixedSpatialMaterial::PARAM_DIFFUSE,Color(0.5,0.5,1.0,0.4) );
+	path_thin_material->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA, true);
 	path_thin_material->set_line_width(1);
 	path_thin_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	path_thin_material->set_flag(Material::FLAG_UNSHADED,true);
 
-//	SpatialEditor::get_singleton()->add_gizmo_plugin(this);
+	//SpatialEditor::get_singleton()->add_gizmo_plugin(this);
 
 	sep = memnew( VSeparator);
 	sep->hide();
@@ -599,3 +601,4 @@ PathEditorPlugin::~PathEditorPlugin()
 {
 }
 
+#endif

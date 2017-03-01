@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "message_queue.h"
-#include "globals.h"
+
+#include "global_config.h"
 #include "script_language.h"
+
 MessageQueue *MessageQueue::singleton=NULL;
 
 MessageQueue *MessageQueue::get_singleton() {
@@ -45,7 +47,7 @@ Error MessageQueue::push_call(ObjectID p_id,const StringName& p_method,const Var
 	if ((buffer_end+room_needed) >= buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
-			type=ObjectDB::get_instance(p_id)->get_type();
+			type=ObjectDB::get_instance(p_id)->get_class();
 		print_line("failed method: "+type+":"+p_method+" target ID: "+itos(p_id));
 		statistics();
 
@@ -98,7 +100,7 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName& p_prop, const Vari
 	if ((buffer_end+room_needed) >= buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
-			type=ObjectDB::get_instance(p_id)->get_type();
+			type=ObjectDB::get_instance(p_id)->get_class();
 		print_line("failed set: "+type+":"+p_prop+" target ID: "+itos(p_id));
 		statistics();
 
@@ -133,7 +135,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	if ((buffer_end+room_needed) >= buffer_size) {
 		String type;
 		if (ObjectDB::get_instance(p_id))
-			type=ObjectDB::get_instance(p_id)->get_type();
+			type=ObjectDB::get_instance(p_id)->get_class();
 		print_line("failed notification: "+itos(p_notification)+" target ID: "+itos(p_id));
 		statistics();
 
@@ -398,7 +400,7 @@ MessageQueue::MessageQueue() {
 
 	buffer_end=0;
 	buffer_max_used=0;
-	buffer_size=GLOBAL_DEF( "core/message_queue_size_kb", DEFAULT_QUEUE_SIZE_KB );
+	buffer_size=GLOBAL_DEF( "memory/buffers/message_queue_max_size_kb", DEFAULT_QUEUE_SIZE_KB );
 	buffer_size*=1024;
 	buffer = memnew_arr( uint8_t, buffer_size );
 }

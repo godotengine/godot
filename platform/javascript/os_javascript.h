@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,16 +33,15 @@
 #include "drivers/unix/os_unix.h"
 #include "os/main_loop.h"
 #include "servers/physics/physics_server_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "servers/audio/audio_server_sw.h"
+#include "servers/audio_server.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/visual/rasterizer.h"
 #include "audio_server_javascript.h"
 #include "audio_driver_javascript.h"
 #include "main/input_default.h"
-#include "emscripten/html5.h"
 #include "javascript_eval.h"
+
+#include <emscripten/html5.h>
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
 typedef String (*GetDataDirFunc)();
@@ -69,12 +68,7 @@ private:
 	int64_t time_to_save_sync;
 	int64_t last_sync_time;
 
-	Rasterizer *rasterizer;
 	VisualServer *visual_server;
-	AudioServerJavascript *audio_server;
-	//SampleManagerMallocSW *sample_manager;
-	SpatialSoundServerSW *spatial_sound_server;
-	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 	AudioDriverJavaScript audio_driver_javascript;
@@ -93,7 +87,7 @@ private:
 
 	static void _close_notification_funcs(const String& p_file,int p_flags);
 
-	void process_joysticks();
+	void process_joypads();
 
 public:
 
@@ -167,8 +161,6 @@ public:
 	virtual bool has_touchscreen_ui_hint() const;
 
 	void set_opengl_extensions(const char* p_gl_extensions);
-
-	void reload_gfx();
 
 	virtual Error shell_open(String p_uri);
 	virtual String get_data_dir() const;

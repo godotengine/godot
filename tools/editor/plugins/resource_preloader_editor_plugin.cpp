@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,14 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_preloader_editor_plugin.h"
+
 #include "io/resource_loader.h"
-#include "globals.h"
+#include "global_config.h"
 #include "tools/editor/editor_settings.h"
-#include "scene/resources/scene_preloader.h"
 
 
-
-void ResourcePreloaderEditor::_input_event(InputEvent p_event) {
+void ResourcePreloaderEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -52,7 +51,7 @@ void ResourcePreloaderEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
-//		NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
+		//NodePath("/root")->connect("node_removed", this,"_node_removed",Vector<Variant>(),true);
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -79,7 +78,7 @@ void ResourcePreloaderEditor::_files_load_request(const Vector<String>& p_paths)
 		}
 
 
-		String basename = path.get_file().basename();
+		String basename = path.get_file().get_basename();
 		String name=basename;
 		int counter=1;
 		while(preloader->has_resource(name)) {
@@ -179,7 +178,7 @@ void ResourcePreloaderEditor::_paste_pressed() {
 	if (name=="")
 		name=r->get_path().get_file();
 	if (name=="")
-		name=r->get_type();
+		name=r->get_class();
 
 	String basename = name;
 	int counter=1;
@@ -248,7 +247,7 @@ void ResourcePreloaderEditor::_update_library() {
 		ERR_CONTINUE(r.is_null());
 
 		ti->set_tooltip(0,r->get_path());
-		String type = r->get_type();
+		String type = r->get_class();
 		ti->set_text(1,type);
 		ti->set_selectable(1,false);
 
@@ -347,7 +346,7 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& 
 			if (r->get_name()!="") {
 				basename=r->get_name();
 			} else if (r->get_path().is_resource_file()) {
-				basename = r->get_path().basename();
+				basename = r->get_path().get_basename();
 			} else {
 				basename="Resource";
 			}
@@ -381,19 +380,19 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2& p_point,const Variant& 
 
 void ResourcePreloaderEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&ResourcePreloaderEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_load_pressed"),&ResourcePreloaderEditor::_load_pressed);
-	ObjectTypeDB::bind_method(_MD("_item_edited"),&ResourcePreloaderEditor::_item_edited);
-	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
-	ObjectTypeDB::bind_method(_MD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
-	ObjectTypeDB::bind_method(_MD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
-	ObjectTypeDB::bind_method(_MD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
-	ObjectTypeDB::bind_method(_MD("_update_library"),&ResourcePreloaderEditor::_update_library);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ResourcePreloaderEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_load_pressed"),&ResourcePreloaderEditor::_load_pressed);
+	ClassDB::bind_method(D_METHOD("_item_edited"),&ResourcePreloaderEditor::_item_edited);
+	ClassDB::bind_method(D_METHOD("_delete_pressed"),&ResourcePreloaderEditor::_delete_pressed);
+	ClassDB::bind_method(D_METHOD("_paste_pressed"),&ResourcePreloaderEditor::_paste_pressed);
+	ClassDB::bind_method(D_METHOD("_delete_confirm_pressed"),&ResourcePreloaderEditor::_delete_confirm_pressed);
+	ClassDB::bind_method(D_METHOD("_files_load_request"),&ResourcePreloaderEditor::_files_load_request);
+	ClassDB::bind_method(D_METHOD("_update_library"),&ResourcePreloaderEditor::_update_library);
 
 
-	ObjectTypeDB::bind_method(_MD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
-	ObjectTypeDB::bind_method(_MD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
-	ObjectTypeDB::bind_method(_MD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 
 
 }
@@ -462,7 +461,7 @@ void ResourcePreloaderEditorPlugin::edit(Object *p_object) {
 
 bool ResourcePreloaderEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("ResourcePreloader");
+	return p_object->is_class("ResourcePreloader");
 }
 
 void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
@@ -471,14 +470,14 @@ void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 		//preloader_editor->show();
 		button->show();
 		editor->make_bottom_panel_item_visible(preloader_editor);
-//		preloader_editor->set_process(true);
+		//preloader_editor->set_process(true);
 	} else {
 
-		if (preloader_editor->is_visible())
+		if (preloader_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
 		button->hide();
 		//preloader_editor->hide();
-//		preloader_editor->set_process(false);
+		//preloader_editor->set_process(false);
 	}
 
 }
@@ -492,8 +491,8 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin(EditorNode *p_node)
 	button=editor->add_bottom_panel_item("ResourcePreloader",preloader_editor);
 	button->hide();
 
-//	preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
-//	preloader_editor->set_margin( MARGIN_TOP, 120 );
+	//preloader_editor->set_anchor( MARGIN_TOP, Control::ANCHOR_END);
+	//preloader_editor->set_margin( MARGIN_TOP, 120 );
 
 
 

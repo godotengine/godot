@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,18 +35,18 @@
 
 class VideoPlayer : public Control {
 
-	OBJ_TYPE(VideoPlayer,Control);
+	GDCLASS(VideoPlayer,Control);
 
-	struct InternalStream : public AudioServer::AudioStream {
+/*	struct InternalStream : public AudioServer::AudioStream {
 		VideoPlayer *player;
 		virtual int get_channel_count() const;
 		virtual void set_mix_rate(int p_rate); //notify the stream of the mix rate
 		virtual bool mix(int32_t *p_buffer,int p_frames);
 		virtual void update();
 	};
+*/
 
-
-	InternalStream internal_stream;
+//	InternalStream internal_stream;
 	Ref<VideoStreamPlayback> playback;
 	Ref<VideoStream> stream;
 

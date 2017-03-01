@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,12 +34,12 @@
 
 class ConfigFile : public Reference {
 
-	OBJ_TYPE(ConfigFile,Reference);
+	GDCLASS(ConfigFile,Reference);
 
 	Map< String, Map<String, Variant> > values;
 
-	StringArray _get_sections() const;
-	StringArray _get_section_keys(const String& p_section) const;
+	PoolStringArray _get_sections() const;
+	PoolStringArray _get_section_keys(const String& p_section) const;
 protected:
 
 	static void _bind_methods();
@@ -53,6 +53,8 @@ public:
 
 	void get_sections(List<String> *r_sections) const;
 	void get_section_keys(const String& p_section,List<String> *r_keys) const;
+
+	void erase_section(const String& p_section);
 
 	Error save(const String& p_path);
 	Error load(const String& p_path);

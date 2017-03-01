@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,12 +76,14 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 	uint32_t size;
 	uint8_t type;
 	rb.read(&type, 1, true);
-	if (type == IP_Address::TYPE_IPV4) {
-		rb.read((uint8_t*)&packet_ip.field8,4,true);
-		packet_ip.type = IP_Address::TYPE_IPV4;
+	if (type == IP::TYPE_IPV4) {
+		uint8_t ip[4];
+		rb.read(ip,4,true);
+		packet_ip.set_ipv4(ip);
 	} else {
-		rb.read((uint8_t*)&packet_ip.field8,16,true);
-		packet_ip.type = IP_Address::TYPE_IPV6;
+		uint8_t ipv6[16];
+		rb.read(ipv6,16,true);
+		packet_ip.set_ipv6(ipv6);
 	};
 	rb.read((uint8_t*)&packet_port,4,true);
 	rb.read((uint8_t*)&size,4,true);
@@ -94,12 +96,15 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 }
 Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
-	ERR_FAIL_COND_V(peer_addr.type == IP_Address::TYPE_NONE, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!peer_addr.is_valid(), ERR_UNCONFIGURED);
 
-	int sock = _get_socket(peer_addr.type);
+	if (sock_type==IP::TYPE_NONE)
+		sock_type = peer_addr.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
+	int sock = _get_socket();
 	ERR_FAIL_COND_V( sock == -1, FAILED );
 	struct sockaddr_storage addr;
-	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port);
+	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port, sock_type);
 
 	errno = 0;
 	int err;
@@ -119,24 +124,27 @@ int PacketPeerUDPPosix::get_max_packet_size() const{
 	return 512; // uhm maybe not
 }
 
-Error PacketPeerUDPPosix::listen(int p_port, IP_Address::AddrType p_type, int p_recv_buffer_size) {
+Error PacketPeerUDPPosix::listen(int p_port, IP_Address p_bind_address, int p_recv_buffer_size) {
 
-	close();
-	int sock = _get_socket(p_type);
+	ERR_FAIL_COND_V(sockfd!=-1,ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(),ERR_INVALID_PARAMETER);
+
+#ifdef __OpenBSD__
+	sock_type = IP::TYPE_IPV4; // OpenBSD does not support dual stacking, fallback to IPv4 only.
+#else
+	sock_type = IP::TYPE_ANY;
+#endif
+
+	if(p_bind_address.is_valid())
+		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
+	int sock = _get_socket();
 
 	if (sock == -1 )
 		return ERR_CANT_CREATE;
 
-	if(p_type == IP_Address::TYPE_IPV6) {
-		// Use IPv6 only socket
-		int yes = 1;
-		if(setsockopt(sockfd, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&yes, sizeof(yes)) != 0) {
-				WARN_PRINT("Unable to unset IPv4 address mapping over IPv6");
-		}
-	}
-
 	sockaddr_storage addr = {0};
-	size_t addr_size = _set_listen_sockaddr(&addr, p_port, p_type, NULL);
+	size_t addr_size = _set_listen_sockaddr(&addr, p_port, sock_type, IP_Address());
 
 	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
 		close();
@@ -151,7 +159,8 @@ void PacketPeerUDPPosix::close(){
 	if (sockfd != -1)
 		::close(sockfd);
 	sockfd=-1;
-	rb.resize(8);
+	sock_type = IP::TYPE_NONE;
+	rb.resize(16);
 	queue_count=0;
 }
 
@@ -163,15 +172,19 @@ Error PacketPeerUDPPosix::wait() {
 
 Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
+	if (sockfd==-1) {
+		return FAILED;
+	}
+
 	struct sockaddr_storage from = {0};
 	socklen_t len = sizeof(struct sockaddr_storage);
 	int ret;
-	while ( (ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-12, 0)), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
+	while ( (ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-24, 0)), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
 
 		uint32_t port = 0;
 
 		if (from.ss_family == AF_INET) {
-			uint8_t type = (uint8_t)IP_Address::TYPE_IPV4;
+			uint8_t type = (uint8_t)IP::TYPE_IPV4;
 			rb.write(&type, 1);
 			struct sockaddr_in* sin_from = (struct sockaddr_in*)&from;
 			rb.write((uint8_t*)&sin_from->sin_addr, 4);
@@ -179,7 +192,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
 		} else if (from.ss_family == AF_INET6) {
 
-			uint8_t type = (uint8_t)IP_Address::TYPE_IPV6;
+			uint8_t type = (uint8_t)IP::TYPE_IPV6;
 			rb.write(&type, 1);
 
 			struct sockaddr_in6* s6_from = (struct sockaddr_in6*)&from;
@@ -189,7 +202,7 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
 		} else {
 			// WARN_PRINT("Ignoring packet with unknown address family");
-			uint8_t type = (uint8_t)IP_Address::TYPE_NONE;
+			uint8_t type = (uint8_t)IP::TYPE_NONE;
 			rb.write(&type, 1);
 		};
 
@@ -225,18 +238,20 @@ int PacketPeerUDPPosix::get_packet_port() const{
 	return packet_port;
 }
 
-int PacketPeerUDPPosix::_get_socket(IP_Address::AddrType p_type) {
+int PacketPeerUDPPosix::_get_socket() {
+
+	ERR_FAIL_COND_V(sock_type==IP::TYPE_NONE, -1);
 
 	if (sockfd != -1)
 		return sockfd;
 
-	sockfd = _socket_create(p_type, SOCK_DGRAM, IPPROTO_UDP);
+	sockfd = _socket_create(sock_type, SOCK_DGRAM, IPPROTO_UDP);
 
 	return sockfd;
 }
 
 
-void PacketPeerUDPPosix::set_send_address(const IP_Address& p_address,int p_port) {
+void PacketPeerUDPPosix::set_dest_address(const IP_Address& p_address,int p_port) {
 
 	peer_addr=p_address;
 	peer_port=p_port;
@@ -259,6 +274,8 @@ PacketPeerUDPPosix::PacketPeerUDPPosix() {
 	packet_port=0;
 	queue_count=0;
 	peer_port=0;
+	sock_type = IP::TYPE_NONE;
+	rb.resize(16);
 }
 
 PacketPeerUDPPosix::~PacketPeerUDPPosix() {

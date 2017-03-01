@@ -199,16 +199,21 @@ static int opus_tags_parse_impl(OpusTags *_tags,
       if(_tags->user_comments[ci]==NULL)return OP_EFAULT;
       _tags->comment_lengths[ci]=(int)count;
       _tags->comments=ci+1;
+      /*Needed by opus_tags_clear() if we fail before parsing the (optional)
+         binary metadata.*/
+      _tags->user_comments[ci+1]=NULL;
     }
     _data+=count;
     len-=count;
   }
   if(len>0&&(_data[0]&1)){
     if(len>(opus_uint32)INT_MAX)return OP_EFAULT;
-    _tags->user_comments[ncomments]=(char *)_ogg_malloc(len);
-    if(OP_UNLIKELY(_tags->user_comments[ncomments]==NULL))return OP_EFAULT;
-    memcpy(_tags->user_comments[ncomments],_data,len);
-    _tags->comment_lengths[ncomments]=(int)len;
+    if(_tags!=NULL){
+      _tags->user_comments[ncomments]=(char *)_ogg_malloc(len);
+      if(OP_UNLIKELY(_tags->user_comments[ncomments]==NULL))return OP_EFAULT;
+      memcpy(_tags->user_comments[ncomments],_data,len);
+      _tags->comment_lengths[ncomments]=(int)len;
+    }
   }
   return 0;
 }
@@ -306,7 +311,7 @@ int opus_tags_add_comment(OpusTags *_tags,const char *_comment){
   if(OP_UNLIKELY(ret<0))return ret;
   comment_len=(int)strlen(_comment);
   comment=op_strdup_with_len(_comment,comment_len);
-  if(OP_UNLIKELY(_tags->user_comments[ncomments]==NULL))return OP_EFAULT;
+  if(OP_UNLIKELY(comment==NULL))return OP_EFAULT;
   _tags->user_comments[ncomments]=comment;
   _tags->comment_lengths[ncomments]=comment_len;
   _tags->comments=ncomments+1;

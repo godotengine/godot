@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 
 
 
-void Popup::_input_event(InputEvent p_event) {
+void Popup::_gui_input(InputEvent p_event) {
 
 
 }
@@ -39,7 +39,7 @@ void Popup::_input_event(InputEvent p_event) {
 void Popup::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
-		if (popped_up && !is_visible()) {
+		if (popped_up && !is_visible_in_tree()) {
 			popped_up=false;
 			notification(NOTIFICATION_POPUP_HIDE);
 			emit_signal("popup_hide");
@@ -103,7 +103,7 @@ void Popup::set_as_minsize() {
 		Control *c=get_child(i)->cast_to<Control>();
 		if (!c)
 			continue;
-		if (c->is_hidden())
+		if (!c->is_visible())
 			continue;
 
 		Size2 minsize = c->get_combined_minimum_size();
@@ -144,7 +144,7 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 		Control *c=get_child(i)->cast_to<Control>();
 		if (!c)
 			continue;
-		if (c->is_hidden())
+		if (!c->is_visible())
 			continue;
 
 		Size2 minsize = c->get_combined_minimum_size();
@@ -257,15 +257,16 @@ bool Popup::is_exclusive() const  {
 
 void Popup::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("popup_centered","size"),&Popup::popup_centered,DEFVAL(Size2()));
-	ObjectTypeDB::bind_method(_MD("popup_centered_ratio","ratio"),&Popup::popup_centered_ratio,DEFVAL(0.75));
-	ObjectTypeDB::bind_method(_MD("popup_centered_minsize","minsize"),&Popup::popup_centered_minsize,DEFVAL(Size2()));
-	ObjectTypeDB::bind_method(_MD("popup"),&Popup::popup);
-	ObjectTypeDB::bind_method(_MD("set_exclusive","enable"),&Popup::set_exclusive);
-	ObjectTypeDB::bind_method(_MD("is_exclusive"),&Popup::is_exclusive);
+	ClassDB::bind_method(D_METHOD("popup_centered","size"),&Popup::popup_centered,DEFVAL(Size2()));
+	ClassDB::bind_method(D_METHOD("popup_centered_ratio","ratio"),&Popup::popup_centered_ratio,DEFVAL(0.75));
+	ClassDB::bind_method(D_METHOD("popup_centered_minsize","minsize"),&Popup::popup_centered_minsize,DEFVAL(Size2()));
+	ClassDB::bind_method(D_METHOD("popup"),&Popup::popup);
+	ClassDB::bind_method(D_METHOD("set_exclusive","enable"),&Popup::set_exclusive);
+	ClassDB::bind_method(D_METHOD("is_exclusive"),&Popup::is_exclusive);
 	ADD_SIGNAL( MethodInfo("about_to_show") );
 	ADD_SIGNAL( MethodInfo("popup_hide") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "popup/exclusive"), _SCS("set_exclusive"),_SCS("is_exclusive") );
+	ADD_GROUP("Popup","popup_");
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "popup_exclusive"), "set_exclusive","is_exclusive") ;
 	BIND_CONSTANT(NOTIFICATION_POST_POPUP);
 	BIND_CONSTANT(NOTIFICATION_POPUP_HIDE);
 
@@ -282,7 +283,7 @@ Popup::Popup() {
 
 String Popup::get_configuration_warning() const {
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine though, but they will hide upon running.");
 	}
 

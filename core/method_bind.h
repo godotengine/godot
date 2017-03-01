@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -231,7 +231,7 @@ public:
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags=p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags|(is_const()?METHOD_FLAG_CONST:0)|(is_vararg()?METHOD_FLAG_VARARG:0); }
-	virtual String get_instance_type() const=0;
+	virtual String get_instance_class() const=0;
 
 	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
 
@@ -328,7 +328,7 @@ public:
 
 	void set_method(NativeCall p_method) { call_method=p_method; }
 	virtual bool is_const() const { return false; }
-	virtual String get_instance_type() const { return T::get_type_static(); }
+	virtual String get_instance_class() const { return T::get_class_static(); }
 
 	virtual bool is_vararg() const { return true; }
 

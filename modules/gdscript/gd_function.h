@@ -23,6 +23,8 @@ public:
 		OPCODE_GET,
 		OPCODE_SET_NAMED,
 		OPCODE_GET_NAMED,
+		OPCODE_SET_MEMBER,
+		OPCODE_GET_MEMBER,
 		OPCODE_ASSIGN,
 		OPCODE_ASSIGN_TRUE,
 		OPCODE_ASSIGN_FALSE,
@@ -214,7 +216,7 @@ public:
 
 class GDFunctionState : public Reference {
 
-	OBJ_TYPE(GDFunctionState,Reference);
+	GDCLASS(GDFunctionState,Reference);
 friend class GDFunction;
 	GDFunction *function;
 	GDFunction::CallState state;
@@ -231,7 +233,7 @@ public:
 
 
 class GDFunctionObject : public Reference {
-	OBJ_TYPE(GDFunctionObject,Reference);
+	GDCLASS(GDFunctionObject,Reference);
 
 protected:
 	GDFunction *function;
@@ -256,7 +258,7 @@ public:
 };
 
 class GDNativeFunctionObject : public GDFunctionObject {
-	OBJ_TYPE(GDNativeFunctionObject,GDFunctionObject);
+	GDCLASS(GDNativeFunctionObject,GDFunctionObject);
 
 	friend class GDFunction;
 	friend class GDInstance;
@@ -273,7 +275,7 @@ public:
 };
 
 class GDLambdaFunctionObject : public GDFunctionObject {
-	OBJ_TYPE(GDLambdaFunctionObject,GDFunctionObject);
+	GDCLASS(GDLambdaFunctionObject,GDFunctionObject);
 	friend class GDInstance;
 	Vector<Variant> variants;
 public:

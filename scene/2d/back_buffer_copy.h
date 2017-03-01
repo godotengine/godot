@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "scene/2d/node_2d.h"
 
 class BackBufferCopy : public Node2D {
-	OBJ_TYPE( BackBufferCopy,Node2D);
+	GDCLASS( BackBufferCopy,Node2D);
 public:
 	enum CopyMode {
 		COPY_MODE_DISABLED,

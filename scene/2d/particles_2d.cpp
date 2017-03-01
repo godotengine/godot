@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "particles_2d.h"
+#include "scene/scene_string_names.h"
 
 
 
@@ -98,7 +99,7 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 		return;
 
 	if (owner) {
-		owner->disconnect("exit_tree",this,"_owner_exited");
+		owner->disconnect("tree_exited",this,"_owner_exited");
 		owner->attractors.erase(this);
 		owner=NULL;
 	}
@@ -106,37 +107,37 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 
 	if (owner) {
 
-		owner->connect("exit_tree",this,"_owner_exited",varray(),CONNECT_ONESHOT);
+		owner->connect("tree_exited",this,"_owner_exited",varray(),CONNECT_ONESHOT);
 		owner->attractors.insert(this);
 	}
 }
 
 void ParticleAttractor2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"),&ParticleAttractor2D::set_enabled);
-	ObjectTypeDB::bind_method(_MD("is_enabled"),&ParticleAttractor2D::is_enabled);
+	ClassDB::bind_method(D_METHOD("set_enabled","enabled"),&ParticleAttractor2D::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"),&ParticleAttractor2D::is_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&ParticleAttractor2D::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&ParticleAttractor2D::get_radius);
+	ClassDB::bind_method(D_METHOD("set_radius","radius"),&ParticleAttractor2D::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"),&ParticleAttractor2D::get_radius);
 
-	ObjectTypeDB::bind_method(_MD("set_disable_radius","radius"),&ParticleAttractor2D::set_disable_radius);
-	ObjectTypeDB::bind_method(_MD("get_disable_radius"),&ParticleAttractor2D::get_disable_radius);
+	ClassDB::bind_method(D_METHOD("set_disable_radius","radius"),&ParticleAttractor2D::set_disable_radius);
+	ClassDB::bind_method(D_METHOD("get_disable_radius"),&ParticleAttractor2D::get_disable_radius);
 
-	ObjectTypeDB::bind_method(_MD("set_gravity","gravity"),&ParticleAttractor2D::set_gravity);
-	ObjectTypeDB::bind_method(_MD("get_gravity"),&ParticleAttractor2D::get_gravity);
+	ClassDB::bind_method(D_METHOD("set_gravity","gravity"),&ParticleAttractor2D::set_gravity);
+	ClassDB::bind_method(D_METHOD("get_gravity"),&ParticleAttractor2D::get_gravity);
 
-	ObjectTypeDB::bind_method(_MD("set_absorption","absorption"),&ParticleAttractor2D::set_absorption);
-	ObjectTypeDB::bind_method(_MD("get_absorption"),&ParticleAttractor2D::get_absorption);
+	ClassDB::bind_method(D_METHOD("set_absorption","absorption"),&ParticleAttractor2D::set_absorption);
+	ClassDB::bind_method(D_METHOD("get_absorption"),&ParticleAttractor2D::get_absorption);
 
-	ObjectTypeDB::bind_method(_MD("set_particles_path","path"),&ParticleAttractor2D::set_particles_path);
-	ObjectTypeDB::bind_method(_MD("get_particles_path"),&ParticleAttractor2D::get_particles_path);
+	ClassDB::bind_method(D_METHOD("set_particles_path","path"),&ParticleAttractor2D::set_particles_path);
+	ClassDB::bind_method(D_METHOD("get_particles_path"),&ParticleAttractor2D::get_particles_path);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.1,16000,0.1"),_SCS("set_radius"),_SCS("get_radius"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"disable_radius",PROPERTY_HINT_RANGE,"0.1,16000,0.1"),_SCS("set_disable_radius"),_SCS("get_disable_radius"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-512,512,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"absorption",PROPERTY_HINT_RANGE,"0,512,0.01"),_SCS("set_absorption"),_SCS("get_absorption"));
-	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"particles_path",PROPERTY_HINT_RESOURCE_TYPE,"Particles2D"),_SCS("set_particles_path"),_SCS("get_particles_path"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),"set_enabled","is_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.1,16000,0.1"),"set_radius","get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"disable_radius",PROPERTY_HINT_RANGE,"0.1,16000,0.1"),"set_disable_radius","get_disable_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-512,512,0.01"),"set_gravity","get_gravity");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"absorption",PROPERTY_HINT_RANGE,"0,512,0.01"),"set_absorption","get_absorption");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH,"particles_path",PROPERTY_HINT_RESOURCE_TYPE,"Particles2D"),"set_particles_path","get_particles_path");
 
 
 
@@ -227,21 +228,10 @@ ParticleAttractor2D::ParticleAttractor2D() {
 
 /****************************************/
 
-_FORCE_INLINE_ static float _rand_from_seed(uint32_t *seed) {
+_FORCE_INLINE_ static float _rand_from_seed(uint64_t *seed) {
 
-	uint32_t k;
-	uint32_t s = (*seed);
-	if (s == 0)
-		s = 0x12345987;
-	k = s / 127773;
-	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
-		s += 2147483647;
-	(*seed) = s;
-
-	float v=((float)((*seed) & 0xFFFFF))/(float)0xFFFFF;
-	v=v*2.0-1.0;
-	return v;
+	uint32_t r = Math::rand_from_seed(seed);
+	return 2.0f * (float)r / (float)Math::RANDOM_MAX - 1.0f;
 }
 
 void Particles2D::_process_particles(float p_delta) {
@@ -270,13 +260,13 @@ void Particles2D::_process_particles(float p_delta) {
 
 	Particle *pdata=&particles[0];
 	int particle_count=particles.size();
-	Matrix32 xform;
+	Transform2D xform;
 	if (!local_space)
 		xform=get_global_transform();
 
 	active_count=0;
 
-	DVector<Point2>::Read r;
+	PoolVector<Point2>::Read r;
 	int emission_point_count=0;
 	if (emission_points.size()) {
 
@@ -293,13 +283,13 @@ void Particles2D::_process_particles(float p_delta) {
 		}
 
 		int idx=0;
-		Matrix32 m;
+		Transform2D m;
 		if (local_space) {
 			m= get_global_transform().affine_inverse();
 		}
 		for (Set<ParticleAttractor2D*>::Element *E=attractors.front();E;E=E->next()) {
 
-			attractor_cache[idx].pos=m.xform( E->get()->get_global_pos() );
+			attractor_cache[idx].pos=m.xform( E->get()->get_global_position() );
 			attractor_cache[idx].attractor=E->get();
 			idx++;
 		}
@@ -348,7 +338,7 @@ void Particles2D::_process_particles(float p_delta) {
 					}
 				}
 				p.seed=Math::rand() % 12345678;
-				uint32_t rand_seed=p.seed*(i+1);
+				uint64_t rand_seed=p.seed*(i+1);
 
 				float angle = Math::deg2rad(param[PARAM_DIRECTION]+_rand_from_seed(&rand_seed)*param[PARAM_SPREAD]);
 
@@ -364,7 +354,7 @@ void Particles2D::_process_particles(float p_delta) {
 				p.rot=Math::deg2rad(param[PARAM_INITIAL_ANGLE]+param[PARAM_INITIAL_ANGLE]*randomness[PARAM_INITIAL_ANGLE]*_rand_from_seed(&rand_seed));
 				active_count++;
 
-				p.frame=Math::fmod(param[PARAM_ANIM_INITIAL_POS]+randomness[PARAM_ANIM_INITIAL_POS]*_rand_from_seed(&rand_seed),1.0);
+				p.frame=Math::fmod(param[PARAM_ANIM_INITIAL_POS]+randomness[PARAM_ANIM_INITIAL_POS]*_rand_from_seed(&rand_seed),1.0f);
 
 
 			} else {
@@ -377,7 +367,7 @@ void Particles2D::_process_particles(float p_delta) {
 			if (!p.active)
 				continue;
 
-			uint32_t rand_seed=p.seed*(i+1);
+			uint64_t rand_seed=p.seed*(i+1);
 
 			Vector2 force;
 
@@ -391,7 +381,7 @@ void Particles2D::_process_particles(float p_delta) {
 			float orbitvel = (param[PARAM_ORBIT_VELOCITY]+param[PARAM_ORBIT_VELOCITY]*randomness[PARAM_ORBIT_VELOCITY]*_rand_from_seed(&rand_seed));
 			if (orbitvel!=0) {
 				Vector2 rel = p.pos - xform.elements[2];
-				Matrix32 rot(orbitvel*frame_time,Vector2());
+				Transform2D rot(orbitvel*frame_time,Vector2());
 				p.pos = rot.xform(rel) + xform.elements[2];
 
 			}
@@ -438,7 +428,7 @@ void Particles2D::_process_particles(float p_delta) {
 			p.pos+=p.velocity*frame_time;
 			p.rot+=Math::lerp(param[PARAM_SPIN_VELOCITY],param[PARAM_SPIN_VELOCITY]*randomness[PARAM_SPIN_VELOCITY]*_rand_from_seed(&rand_seed),randomness[PARAM_SPIN_VELOCITY])*frame_time;
 			float anim_spd=param[PARAM_ANIM_SPEED_SCALE]+param[PARAM_ANIM_SPEED_SCALE]*randomness[PARAM_ANIM_SPEED_SCALE]*_rand_from_seed(&rand_seed);
-			p.frame=Math::fposmod(p.frame+(frame_time/lifetime)*anim_spd,1.0);
+			p.frame=Math::fposmod(p.frame+(frame_time/lifetime)*anim_spd,1.0f);
 
 			active_count++;
 
@@ -451,8 +441,9 @@ void Particles2D::_process_particles(float p_delta) {
 
 	time=Math::fmod( time+frame_time, lifetime );
 	if (!emitting && active_count==0) {
+		emit_signal(SceneStringNames::get_singleton()->emission_finished);
 		set_process(false);
-
+		set_fixed_process(false);
 	}
 
 	update();
@@ -468,6 +459,11 @@ void Particles2D::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 
 			_process_particles( get_process_delta_time() );
+		} break;
+
+		case NOTIFICATION_FIXED_PROCESS: {
+
+			_process_particles( get_fixed_process_delta_time() );
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -507,7 +503,7 @@ void Particles2D::_notification(int p_what) {
 			if (texture.is_valid())
 				texrid = texture->get_rid();
 
-			Matrix32 invxform;
+			Transform2D invxform;
 			if (!local_space)
 				invxform=get_global_transform().affine_inverse();
 
@@ -530,7 +526,7 @@ void Particles2D::_notification(int p_what) {
 				else
 					ptime=(1.0-ptime)+time_pos;
 
-				uint32_t rand_seed=p.seed*(i+1);
+				uint64_t rand_seed=p.seed*(i+1);
 
 				Color color;
 
@@ -555,7 +551,7 @@ void Particles2D::_notification(int p_what) {
 						float a=color.a;
 						//float preh=h;
 						h+=huerot;
-						h=Math::abs(Math::fposmod(h,1.0));
+						h=Math::abs(Math::fposmod(h,1.0f));
 						//print_line("rand: "+rtos(randomness[PARAM_HUE_VARIATION])+" rand: "+rtos(huerand));
 						//print_line(itos(i)+":hue: "+rtos(preh)+" + "+rtos(huerot)+" = "+rtos(h));
 						color.set_hsv(h,s,v);
@@ -563,7 +559,7 @@ void Particles2D::_notification(int p_what) {
 					}
 				}
 
-				float initial_size = param[PARAM_INITIAL_SIZE]+param[PARAM_INITIAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_FINAL_SIZE];
+				float initial_size = param[PARAM_INITIAL_SIZE]+param[PARAM_INITIAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_INITIAL_SIZE];
 				float final_size = param[PARAM_FINAL_SIZE]+param[PARAM_FINAL_SIZE]*_rand_from_seed(&rand_seed)*randomness[PARAM_FINAL_SIZE];
 
 				float size_mult=initial_size*(1.0-ptime) + final_size*ptime;
@@ -573,7 +569,7 @@ void Particles2D::_notification(int p_what) {
 
 				//Rect2 r = Rect2(Vecto,rectsize);
 
-				Matrix32 xform;
+				Transform2D xform;
 
 				if (p.rot) {
 
@@ -607,6 +603,10 @@ void Particles2D::_notification(int p_what) {
 						src_rect.pos.y = size.y * (frame/h_frames);
 					}
 
+					if (flip_h)
+						src_rect.size.x=-src_rect.size.x;
+					if (flip_v)
+						src_rect.size.y=-src_rect.size.y;
 
 					texture->draw_rect_region(ci,Rect2(Point2(),size),src_rect,color);
 					//VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
@@ -691,7 +691,8 @@ void Particles2D::set_emitting(bool p_emitting) {
 
 		if (active_count==0)
 			time=0;
-		set_process(true);
+		set_process(process_mode==PROCESS_IDLE);
+		set_fixed_process(process_mode==PROCESS_FIXED);
 		time_to_live = emit_timeout;
 	};
 	emitting=p_emitting;
@@ -701,6 +702,19 @@ void Particles2D::set_emitting(bool p_emitting) {
 bool Particles2D::is_emitting() const {
 
 	return emitting;
+}
+
+void Particles2D::set_process_mode(ProcessMode p_mode) {
+
+	process_mode=p_mode;
+	const bool should_process=emitting || active_count!=0;
+	set_process(should_process && process_mode==PROCESS_IDLE);
+	set_fixed_process(should_process && process_mode==PROCESS_FIXED);
+}
+
+Particles2D::ProcessMode Particles2D::get_process_mode() const {
+
+	return process_mode;
 }
 
 void Particles2D::set_amount(int p_amount) {
@@ -914,15 +928,6 @@ Vector2 Particles2D::get_emission_half_extents() const {
 	return extents;
 }
 
-void Particles2D::testee(int a, int b, int c, int d, int e) {
-
-	print_line(itos(a));
-	print_line(itos(b));
-	print_line(itos(c));
-	print_line(itos(d));
-	print_line(itos(e));
-}
-
 void Particles2D::set_initial_velocity(const Vector2& p_velocity) {
 
 
@@ -992,12 +997,12 @@ int Particles2D::get_v_frames() const{
 
 
 
-void Particles2D::set_emission_points(const DVector<Vector2>& p_points) {
+void Particles2D::set_emission_points(const PoolVector<Vector2>& p_points) {
 
 	emission_points=p_points;
 }
 
-DVector<Vector2> Particles2D::get_emission_points() const{
+PoolVector<Vector2> Particles2D::get_emission_points() const{
 
 	return emission_points;
 }
@@ -1013,119 +1018,125 @@ void Particles2D::reset() {
 
 void Particles2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_emitting","active"),&Particles2D::set_emitting);
-	ObjectTypeDB::bind_method(_MD("is_emitting"),&Particles2D::is_emitting);
+	ClassDB::bind_method(D_METHOD("set_emitting","active"),&Particles2D::set_emitting);
+	ClassDB::bind_method(D_METHOD("is_emitting"),&Particles2D::is_emitting);
 
-	ObjectTypeDB::bind_method(_MD("set_amount","amount"),&Particles2D::set_amount);
-	ObjectTypeDB::bind_method(_MD("get_amount"),&Particles2D::get_amount);
+	ClassDB::bind_method(D_METHOD("set_process_mode","mode"),&Particles2D::set_process_mode);
+	ClassDB::bind_method(D_METHOD("get_process_mode"),&Particles2D::get_process_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_lifetime","lifetime"),&Particles2D::set_lifetime);
-	ObjectTypeDB::bind_method(_MD("get_lifetime"),&Particles2D::get_lifetime);
+	ClassDB::bind_method(D_METHOD("set_amount","amount"),&Particles2D::set_amount);
+	ClassDB::bind_method(D_METHOD("get_amount"),&Particles2D::get_amount);
 
-	ObjectTypeDB::bind_method(_MD("set_time_scale","time_scale"),&Particles2D::set_time_scale);
-	ObjectTypeDB::bind_method(_MD("get_time_scale"),&Particles2D::get_time_scale);
+	ClassDB::bind_method(D_METHOD("set_lifetime","lifetime"),&Particles2D::set_lifetime);
+	ClassDB::bind_method(D_METHOD("get_lifetime"),&Particles2D::get_lifetime);
 
-	ObjectTypeDB::bind_method(_MD("set_pre_process_time","time"),&Particles2D::set_pre_process_time);
-	ObjectTypeDB::bind_method(_MD("get_pre_process_time"),&Particles2D::get_pre_process_time);
+	ClassDB::bind_method(D_METHOD("set_time_scale","time_scale"),&Particles2D::set_time_scale);
+	ClassDB::bind_method(D_METHOD("get_time_scale"),&Particles2D::get_time_scale);
 
-	ObjectTypeDB::bind_method(_MD("set_emit_timeout","value"),&Particles2D::set_emit_timeout);
-	ObjectTypeDB::bind_method(_MD("get_emit_timeout"),&Particles2D::get_emit_timeout);
+	ClassDB::bind_method(D_METHOD("set_pre_process_time","time"),&Particles2D::set_pre_process_time);
+	ClassDB::bind_method(D_METHOD("get_pre_process_time"),&Particles2D::get_pre_process_time);
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&Particles2D::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&Particles2D::get_param);
+	ClassDB::bind_method(D_METHOD("set_emit_timeout","value"),&Particles2D::set_emit_timeout);
+	ClassDB::bind_method(D_METHOD("get_emit_timeout"),&Particles2D::get_emit_timeout);
 
-	ObjectTypeDB::bind_method(_MD("set_randomness","param","value"),&Particles2D::set_randomness);
-	ObjectTypeDB::bind_method(_MD("get_randomness","param"),&Particles2D::get_randomness);
+	ClassDB::bind_method(D_METHOD("set_param","param","value"),&Particles2D::set_param);
+	ClassDB::bind_method(D_METHOD("get_param","param"),&Particles2D::get_param);
 
-	ObjectTypeDB::bind_method(_MD("set_texture:Texture","texture"),&Particles2D::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&Particles2D::get_texture);
+	ClassDB::bind_method(D_METHOD("set_randomness","param","value"),&Particles2D::set_randomness);
+	ClassDB::bind_method(D_METHOD("get_randomness","param"),&Particles2D::get_randomness);
 
-	ObjectTypeDB::bind_method(_MD("set_color","color"),&Particles2D::set_color);
-	ObjectTypeDB::bind_method(_MD("get_color"),&Particles2D::get_color);
+	ClassDB::bind_method(D_METHOD("set_texture:Texture","texture"),&Particles2D::set_texture);
+	ClassDB::bind_method(D_METHOD("get_texture:Texture"),&Particles2D::get_texture);
 
-	ObjectTypeDB::bind_method(_MD("set_color_ramp:ColorRamp","color_ramp"),&Particles2D::set_color_ramp);
-	ObjectTypeDB::bind_method(_MD("get_color_ramp:ColorRamp"),&Particles2D::get_color_ramp);
+	ClassDB::bind_method(D_METHOD("set_color","color"),&Particles2D::set_color);
+	ClassDB::bind_method(D_METHOD("get_color"),&Particles2D::get_color);
 
-	ObjectTypeDB::bind_method(_MD("set_emissor_offset","offset"),&Particles2D::set_emissor_offset);
-	ObjectTypeDB::bind_method(_MD("get_emissor_offset"),&Particles2D::get_emissor_offset);
+	ClassDB::bind_method(D_METHOD("set_color_ramp:ColorRamp","color_ramp"),&Particles2D::set_color_ramp);
+	ClassDB::bind_method(D_METHOD("get_color_ramp:ColorRamp"),&Particles2D::get_color_ramp);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_h","enable"),&Particles2D::set_flip_h);
-	ObjectTypeDB::bind_method(_MD("is_flipped_h"),&Particles2D::is_flipped_h);
+	ClassDB::bind_method(D_METHOD("set_emissor_offset","offset"),&Particles2D::set_emissor_offset);
+	ClassDB::bind_method(D_METHOD("get_emissor_offset"),&Particles2D::get_emissor_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_flip_v","enable"),&Particles2D::set_flip_v);
-	ObjectTypeDB::bind_method(_MD("is_flipped_v"),&Particles2D::is_flipped_v);
+	ClassDB::bind_method(D_METHOD("set_flip_h","enable"),&Particles2D::set_flip_h);
+	ClassDB::bind_method(D_METHOD("is_flipped_h"),&Particles2D::is_flipped_h);
 
-	ObjectTypeDB::bind_method(_MD("set_h_frames","enable"),&Particles2D::set_h_frames);
-	ObjectTypeDB::bind_method(_MD("get_h_frames"),&Particles2D::get_h_frames);
+	ClassDB::bind_method(D_METHOD("set_flip_v","enable"),&Particles2D::set_flip_v);
+	ClassDB::bind_method(D_METHOD("is_flipped_v"),&Particles2D::is_flipped_v);
 
-	ObjectTypeDB::bind_method(_MD("set_v_frames","enable"),&Particles2D::set_v_frames);
-	ObjectTypeDB::bind_method(_MD("get_v_frames"),&Particles2D::get_v_frames);
+	ClassDB::bind_method(D_METHOD("set_h_frames","enable"),&Particles2D::set_h_frames);
+	ClassDB::bind_method(D_METHOD("get_h_frames"),&Particles2D::get_h_frames);
 
-	ObjectTypeDB::bind_method(_MD("set_emission_half_extents","extents"),&Particles2D::set_emission_half_extents);
-	ObjectTypeDB::bind_method(_MD("get_emission_half_extents"),&Particles2D::get_emission_half_extents);
+	ClassDB::bind_method(D_METHOD("set_v_frames","enable"),&Particles2D::set_v_frames);
+	ClassDB::bind_method(D_METHOD("get_v_frames"),&Particles2D::get_v_frames);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phases","phases"),&Particles2D::set_color_phases);
-	ObjectTypeDB::bind_method(_MD("get_color_phases"),&Particles2D::get_color_phases);
+	ClassDB::bind_method(D_METHOD("set_emission_half_extents","extents"),&Particles2D::set_emission_half_extents);
+	ClassDB::bind_method(D_METHOD("get_emission_half_extents"),&Particles2D::get_emission_half_extents);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phase_color","phase","color"),&Particles2D::set_color_phase_color);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_color","phase"),&Particles2D::get_color_phase_color);
+	ClassDB::bind_method(D_METHOD("set_color_phases","phases"),&Particles2D::set_color_phases);
+	ClassDB::bind_method(D_METHOD("get_color_phases"),&Particles2D::get_color_phases);
 
-	ObjectTypeDB::bind_method(_MD("set_color_phase_pos","phase","pos"),&Particles2D::set_color_phase_pos);
-	ObjectTypeDB::bind_method(_MD("get_color_phase_pos","phase"),&Particles2D::get_color_phase_pos);
+	ClassDB::bind_method(D_METHOD("set_color_phase_color","phase","color"),&Particles2D::set_color_phase_color);
+	ClassDB::bind_method(D_METHOD("get_color_phase_color","phase"),&Particles2D::get_color_phase_color);
 
-	ObjectTypeDB::bind_method(_MD("pre_process","time"),&Particles2D::pre_process);
-	ObjectTypeDB::bind_method(_MD("reset"),&Particles2D::reset);
+	ClassDB::bind_method(D_METHOD("set_color_phase_pos","phase","pos"),&Particles2D::set_color_phase_pos);
+	ClassDB::bind_method(D_METHOD("get_color_phase_pos","phase"),&Particles2D::get_color_phase_pos);
 
-	ObjectTypeDB::bind_method(_MD("set_use_local_space","enable"),&Particles2D::set_use_local_space);
-	ObjectTypeDB::bind_method(_MD("is_using_local_space"),&Particles2D::is_using_local_space);
+	ClassDB::bind_method(D_METHOD("pre_process","time"),&Particles2D::pre_process);
+	ClassDB::bind_method(D_METHOD("reset"),&Particles2D::reset);
 
-	ObjectTypeDB::bind_method(_MD("set_initial_velocity","velocity"),&Particles2D::set_initial_velocity);
-	ObjectTypeDB::bind_method(_MD("get_initial_velocity"),&Particles2D::get_initial_velocity);
+	ClassDB::bind_method(D_METHOD("set_use_local_space","enable"),&Particles2D::set_use_local_space);
+	ClassDB::bind_method(D_METHOD("is_using_local_space"),&Particles2D::is_using_local_space);
 
-	ObjectTypeDB::bind_method(_MD("set_explosiveness","amount"),&Particles2D::set_explosiveness);
-	ObjectTypeDB::bind_method(_MD("get_explosiveness"),&Particles2D::get_explosiveness);
+	ClassDB::bind_method(D_METHOD("set_initial_velocity","velocity"),&Particles2D::set_initial_velocity);
+	ClassDB::bind_method(D_METHOD("get_initial_velocity"),&Particles2D::get_initial_velocity);
 
-	ObjectTypeDB::bind_method(_MD("set_emission_points","points"),&Particles2D::set_emission_points);
-	ObjectTypeDB::bind_method(_MD("get_emission_points"),&Particles2D::get_emission_points);
+	ClassDB::bind_method(D_METHOD("set_explosiveness","amount"),&Particles2D::set_explosiveness);
+	ClassDB::bind_method(D_METHOD("get_explosiveness"),&Particles2D::get_explosiveness);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/amount",PROPERTY_HINT_EXP_RANGE,"1,1024"),_SCS("set_amount"),_SCS("get_amount") );
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/lifetime",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),_SCS("set_lifetime"),_SCS("get_lifetime") );
-	ADD_PROPERTYNO(PropertyInfo(Variant::REAL,"config/time_scale",PROPERTY_HINT_EXP_RANGE,"0.01,128,0.01"),_SCS("set_time_scale"),_SCS("get_time_scale") );
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/preprocess",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),_SCS("set_pre_process_time"),_SCS("get_pre_process_time") );
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/emit_timeout",PROPERTY_HINT_RANGE,"0,3600,0.1"),_SCS("set_emit_timeout"),_SCS("get_emit_timeout") );
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/emitting"),_SCS("set_emitting"),_SCS("is_emitting") );
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/offset"),_SCS("set_emissor_offset"),_SCS("get_emissor_offset"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/half_extents"),_SCS("set_emission_half_extents"),_SCS("get_emission_half_extents"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/local_space"),_SCS("set_use_local_space"),_SCS("is_using_local_space"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::REAL,"config/explosiveness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_explosiveness"),_SCS("get_explosiveness"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"config/flip_h"),_SCS("set_flip_h"),_SCS("is_flipped_h"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"config/flip_v"),_SCS("set_flip_v"),_SCS("is_flipped_v"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"config/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"config/h_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_h_frames"),_SCS("get_h_frames"));
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"config/v_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_v_frames"),_SCS("get_v_frames"));
+	ClassDB::bind_method(D_METHOD("set_emission_points","points"),&Particles2D::set_emission_points);
+	ClassDB::bind_method(D_METHOD("get_emission_points"),&Particles2D::get_emission_points);
+
+	ADD_SIGNAL(MethodInfo("emission_finished"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/amount",PROPERTY_HINT_EXP_RANGE,"1,1024"),"set_amount","get_amount") ;
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/lifetime",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),"set_lifetime","get_lifetime") ;
+	ADD_PROPERTYNO(PropertyInfo(Variant::REAL,"config/time_scale",PROPERTY_HINT_EXP_RANGE,"0.01,128,0.01"),"set_time_scale","get_time_scale") ;
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/preprocess",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),"set_pre_process_time","get_pre_process_time") ;
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/emit_timeout",PROPERTY_HINT_RANGE,"0,3600,0.1"),"set_emit_timeout","get_emit_timeout") ;
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/emitting"),"set_emitting","is_emitting") ;
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/process_mode",PROPERTY_HINT_ENUM, "Fixed,Idle"),"set_process_mode","get_process_mode");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/offset"),"set_emissor_offset","get_emissor_offset");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/half_extents"),"set_emission_half_extents","get_emission_half_extents");
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/local_space"),"set_use_local_space","is_using_local_space");
+	ADD_PROPERTYNO(PropertyInfo(Variant::REAL,"config/explosiveness",PROPERTY_HINT_RANGE,"0,1,0.01"),"set_explosiveness","get_explosiveness");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"config/flip_h"),"set_flip_h","is_flipped_h");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"config/flip_v"),"set_flip_v","is_flipped_v");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"config/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),"set_texture","get_texture");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"config/h_frames",PROPERTY_HINT_RANGE,"1,512,1"),"set_h_frames","get_h_frames");
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"config/v_frames",PROPERTY_HINT_RANGE,"1,512,1"),"set_v_frames","get_v_frames");
 
 
 	for(int i=0;i<PARAM_MAX;i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::REAL,_particlesframe_property_names[i],PROPERTY_HINT_RANGE,_particlesframe_property_ranges[i]),_SCS("set_param"),_SCS("get_param"),i);
+		ADD_PROPERTYI(PropertyInfo(Variant::REAL,_particlesframe_property_names[i],PROPERTY_HINT_RANGE,_particlesframe_property_ranges[i]),"set_param","get_param",i);
 	}
 
 	for(int i=0;i<PARAM_MAX;i++) {
-		ADD_PROPERTYINZ(PropertyInfo(Variant::REAL,_particlesframe_property_rnames[i],PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_randomness"),_SCS("get_randomness"),i);
+		ADD_PROPERTYINZ(PropertyInfo(Variant::REAL,_particlesframe_property_rnames[i],PROPERTY_HINT_RANGE,"-1,1,0.01"),"set_randomness","get_randomness",i);
 	}
 
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1", 0), _SCS("set_color_phases"), _SCS("get_color_phases"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1", 0), "set_color_phases", "get_color_phases");
 
 	//Backward compatibility. They will be converted to color ramp
 	for(int i=0;i<MAX_COLOR_PHASES;i++) {
 		String phase="phase_"+itos(i)+"/";
-		ADD_PROPERTYI( PropertyInfo( Variant::REAL, phase+"pos", PROPERTY_HINT_RANGE,"0,1,0.01", 0),_SCS("set_color_phase_pos"),_SCS("get_color_phase_pos"),i );
-		ADD_PROPERTYI( PropertyInfo( Variant::COLOR, phase+"color", PROPERTY_HINT_NONE, "", 0),_SCS("set_color_phase_color"),_SCS("get_color_phase_color"),i );
+		ADD_PROPERTYI( PropertyInfo( Variant::REAL, phase+"pos", PROPERTY_HINT_RANGE,"0,1,0.01", 0),"set_color_phase_pos","get_color_phase_pos",i );
+		ADD_PROPERTYI( PropertyInfo( Variant::COLOR, phase+"color", PROPERTY_HINT_NONE, "", 0),"set_color_phase_color","get_color_phase_color",i );
 	}
 
-	ADD_PROPERTYNO(PropertyInfo(Variant::COLOR, "color/color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"color/color_ramp",PROPERTY_HINT_RESOURCE_TYPE,"ColorRamp"),_SCS("set_color_ramp"),_SCS("get_color_ramp"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::COLOR, "color/color"),"set_color","get_color");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"color/color_ramp",PROPERTY_HINT_RESOURCE_TYPE,"ColorRamp"),"set_color_ramp","get_color_ramp");
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2_ARRAY,"emission_points",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_emission_points"),_SCS("get_emission_points"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"emission_points",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"set_emission_points","get_emission_points");
 
 	BIND_CONSTANT( PARAM_DIRECTION );
 	BIND_CONSTANT( PARAM_SPREAD );
@@ -1176,6 +1187,7 @@ Particles2D::Particles2D() {
 	particles.resize(32);
 	active_count=-1;
 	set_emitting(true);
+	process_mode=PROCESS_IDLE;
 	local_space=true;
 	preprocess=0;
 	time_scale=1.0;

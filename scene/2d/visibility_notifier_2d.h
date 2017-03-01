@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 class Viewport;
 class VisibilityNotifier2D : public Node2D {
 
-	OBJ_TYPE(VisibilityNotifier2D,Node2D);
+	GDCLASS(VisibilityNotifier2D,Node2D);
 
 	Set<Viewport*> viewports;
 
@@ -67,7 +67,7 @@ public:
 
 class VisibilityEnabler2D : public VisibilityNotifier2D {
 
-	OBJ_TYPE(VisibilityEnabler2D,VisibilityNotifier2D);
+	GDCLASS(VisibilityEnabler2D,VisibilityNotifier2D);
 public:
 
 	enum Enabler {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,6 @@
 
 TCP_Server* (*TCP_Server::_create)()=NULL;
 
-VARIANT_ENUM_CAST(IP_Address::AddrType);
-
 Ref<TCP_Server> TCP_Server::create_ref() {
 
 	if (!_create)
@@ -46,26 +44,17 @@ TCP_Server* TCP_Server::create() {
 	return _create();
 }
 
-Error TCP_Server::_listen(uint16_t p_port, IP_Address::AddrType p_type, DVector<String> p_accepted_hosts) {
-
-	List<String> hosts;
-	for(int i=0;i<p_accepted_hosts.size();i++)
-		hosts.push_back(p_accepted_hosts.get(i));
-
-	return listen(p_port,p_type, hosts.size()?&hosts:NULL);
-
-}
-
 void TCP_Server::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("listen","port","ip_type", "accepted_hosts"),&TCP_Server::_listen,DEFVAL(IP_Address::TYPE_ANY),DEFVAL(DVector<String>()));
-	ObjectTypeDB::bind_method(_MD("is_connection_available"),&TCP_Server::is_connection_available);
-	ObjectTypeDB::bind_method(_MD("take_connection"),&TCP_Server::take_connection);
-	ObjectTypeDB::bind_method(_MD("stop"),&TCP_Server::stop);
+	ClassDB::bind_method(D_METHOD("listen","port","bind_address"),&TCP_Server::listen,DEFVAL("*"));
+	ClassDB::bind_method(D_METHOD("is_connection_available"),&TCP_Server::is_connection_available);
+	ClassDB::bind_method(D_METHOD("take_connection"),&TCP_Server::take_connection);
+	ClassDB::bind_method(D_METHOD("stop"),&TCP_Server::stop);
 
 }
 
 
 TCP_Server::TCP_Server()
 {
+
 }

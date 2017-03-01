@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_sub_scene.h"
+
 #include "scene/gui/margin_container.h"
 #include "scene/resources/packed_scene.h"
-void EditorSubScene::_path_selected(const String& p_path) {
 
+void EditorSubScene::_path_selected(const String& p_path) {
 
 	path->set_text(p_path);
 	_path_changed(p_path);
@@ -75,7 +76,7 @@ void EditorSubScene::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
-		if (!is_visible()) {
+		if (!is_visible_in_tree()) {
 
 
 		}
@@ -90,8 +91,8 @@ void EditorSubScene::_fill_tree(Node* p_node,TreeItem *p_parent) {
 	it->set_text(0,p_node->get_name());
 	it->set_editable(0,false);
 	it->set_selectable(0,true);
-	if (has_icon(p_node->get_type(),"EditorIcons")) {
-		it->set_icon(0,get_icon(p_node->get_type(),"EditorIcons"));
+	if (has_icon(p_node->get_class(),"EditorIcons")) {
+		it->set_icon(0,get_icon(p_node->get_class(),"EditorIcons"));
 
 	}
 
@@ -186,9 +187,9 @@ void EditorSubScene::clear() {
 
 void EditorSubScene::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_path_selected"),&EditorSubScene::_path_selected);
-	ObjectTypeDB::bind_method(_MD("_path_changed"),&EditorSubScene::_path_changed);
-	ObjectTypeDB::bind_method(_MD("_path_browse"),&EditorSubScene::_path_browse);
+	ClassDB::bind_method(D_METHOD("_path_selected"),&EditorSubScene::_path_selected);
+	ClassDB::bind_method(D_METHOD("_path_changed"),&EditorSubScene::_path_changed);
+	ClassDB::bind_method(D_METHOD("_path_browse"),&EditorSubScene::_path_browse);
 	ADD_SIGNAL( MethodInfo("subscene_selected"));
 
 }
@@ -203,7 +204,7 @@ EditorSubScene::EditorSubScene() {
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
-	set_child_rect(vb);
+	//set_child_rect(vb);
 
 	HBoxContainer *hb = memnew( HBoxContainer );
 	path = memnew( LineEdit );

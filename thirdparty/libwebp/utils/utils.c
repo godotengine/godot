@@ -25,7 +25,7 @@
 //    http://valgrind.org/docs/manual/ms-manual.html
 // Here is an example command line:
 /*    valgrind --tool=massif --massif-out-file=massif.out \
-               --stacks=yes --alloc-fn=WebPSafeAlloc --alloc-fn=WebPSafeCalloc
+               --stacks=yes --alloc-fn=WebPSafeMalloc --alloc-fn=WebPSafeCalloc
       ms_print massif.out
 */
 // In addition:
@@ -175,8 +175,12 @@ static int CheckSizeArgumentsOverflow(uint64_t nmemb, size_t size) {
   }
 #endif
 #if defined(MALLOC_LIMIT)
-  if (mem_limit > 0 && total_mem + total_size >= mem_limit) {
-    return 0;   // fake fail!
+  if (mem_limit > 0) {
+    const uint64_t new_total_mem = (uint64_t)total_mem + total_size;
+    if (new_total_mem != (size_t)new_total_mem ||
+        new_total_mem > mem_limit) {
+      return 0;   // fake fail!
+    }
   }
 #endif
 
@@ -239,8 +243,7 @@ void WebPCopyPixels(const WebPPicture* const src, WebPPicture* const dst) {
 
 //------------------------------------------------------------------------------
 
-#define MAX_COLOR_COUNT         MAX_PALETTE_SIZE
-#define COLOR_HASH_SIZE         (MAX_COLOR_COUNT * 4)
+#define COLOR_HASH_SIZE         (MAX_PALETTE_SIZE * 4)
 #define COLOR_HASH_RIGHT_SHIFT  22  // 32 - log2(COLOR_HASH_SIZE).
 
 int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
@@ -249,7 +252,7 @@ int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
   int num_colors = 0;
   uint8_t in_use[COLOR_HASH_SIZE] = { 0 };
   uint32_t colors[COLOR_HASH_SIZE];
-  static const uint32_t kHashMul = 0x1e35a7bdU;
+  static const uint64_t kHashMul = 0x1e35a7bdull;
   const uint32_t* argb = pic->argb;
   const int width = pic->width;
   const int height = pic->height;
@@ -264,14 +267,14 @@ int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
         continue;
       }
       last_pix = argb[x];
-      key = (kHashMul * last_pix) >> COLOR_HASH_RIGHT_SHIFT;
+      key = ((last_pix * kHashMul) & 0xffffffffu) >> COLOR_HASH_RIGHT_SHIFT;
       while (1) {
         if (!in_use[key]) {
           colors[key] = last_pix;
           in_use[key] = 1;
           ++num_colors;
-          if (num_colors > MAX_COLOR_COUNT) {
-            return MAX_COLOR_COUNT + 1;  // Exact count not needed.
+          if (num_colors > MAX_PALETTE_SIZE) {
+            return MAX_PALETTE_SIZE + 1;  // Exact count not needed.
           }
           break;
         } else if (colors[key] == last_pix) {
@@ -298,8 +301,30 @@ int WebPGetColorPalette(const WebPPicture* const pic, uint32_t* const palette) {
   return num_colors;
 }
 
-#undef MAX_COLOR_COUNT
 #undef COLOR_HASH_SIZE
 #undef COLOR_HASH_RIGHT_SHIFT
+
+//------------------------------------------------------------------------------
+
+#if defined(WEBP_NEED_LOG_TABLE_8BIT)
+const uint8_t WebPLogTable8bit[256] = {   // 31 ^ clz(i)
+  0, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
+  4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+  5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+  6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+  7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7
+};
+#endif
 
 //------------------------------------------------------------------------------

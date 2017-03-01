@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@ void ResourcePreloader::_set_resources(const Array& p_data) {
 	resources.clear();
 
 	ERR_FAIL_COND(p_data.size()!=2);
-	DVector<String> names=p_data[0];
+	PoolVector<String> names=p_data[0];
 	Array resdata=p_data[1];
 
 	ERR_FAIL_COND(names.size()!=resdata.size());
@@ -52,7 +52,7 @@ void ResourcePreloader::_set_resources(const Array& p_data) {
 
 Array ResourcePreloader::_get_resources() const {
 
-	DVector<String> names;
+	PoolVector<String> names;
 	Array arr;
 	arr.resize(resources.size());
 	names.resize(resources.size());
@@ -139,9 +139,9 @@ RES ResourcePreloader::get_resource(const StringName& p_name) const {
 	return resources[p_name];
 }
 
-DVector<String> ResourcePreloader::_get_resource_list() const {
+PoolVector<String> ResourcePreloader::_get_resource_list() const {
 
-	DVector<String> res;
+	PoolVector<String> res;
 	res.resize(resources.size());
 	int i=0;
 	for(Map<StringName,RES >::Element *E=resources.front();E;E=E->next(),i++) {
@@ -163,18 +163,18 @@ void ResourcePreloader::get_resource_list(List<StringName> *p_list) {
 
 void ResourcePreloader::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_set_resources"),&ResourcePreloader::_set_resources);
-	ObjectTypeDB::bind_method(_MD("_get_resources"),&ResourcePreloader::_get_resources);
+	ClassDB::bind_method(D_METHOD("_set_resources"),&ResourcePreloader::_set_resources);
+	ClassDB::bind_method(D_METHOD("_get_resources"),&ResourcePreloader::_get_resources);
 
-	ObjectTypeDB::bind_method(_MD("add_resource","name","resource"),&ResourcePreloader::add_resource);
-	ObjectTypeDB::bind_method(_MD("remove_resource","name"),&ResourcePreloader::remove_resource);
-	ObjectTypeDB::bind_method(_MD("rename_resource","name","newname"),&ResourcePreloader::rename_resource);
-	ObjectTypeDB::bind_method(_MD("has_resource","name"),&ResourcePreloader::has_resource);
-	ObjectTypeDB::bind_method(_MD("get_resource","name"),&ResourcePreloader::get_resource);
-	ObjectTypeDB::bind_method(_MD("get_resource_list"),&ResourcePreloader::_get_resource_list);
+	ClassDB::bind_method(D_METHOD("add_resource","name","resource"),&ResourcePreloader::add_resource);
+	ClassDB::bind_method(D_METHOD("remove_resource","name"),&ResourcePreloader::remove_resource);
+	ClassDB::bind_method(D_METHOD("rename_resource","name","newname"),&ResourcePreloader::rename_resource);
+	ClassDB::bind_method(D_METHOD("has_resource","name"),&ResourcePreloader::has_resource);
+	ClassDB::bind_method(D_METHOD("get_resource","name"),&ResourcePreloader::get_resource);
+	ClassDB::bind_method(D_METHOD("get_resource_list"),&ResourcePreloader::_get_resource_list);
 
 
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"resources",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_resources"), _SCS("_get_resources"));
+	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"resources",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "_set_resources", "_get_resources");
 
 }
 

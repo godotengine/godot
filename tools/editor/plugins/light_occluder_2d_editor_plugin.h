@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,7 +44,7 @@ class CanvasItemEditor;
 
 class LightOccluder2DEditor : public HBoxContainer {
 
-	OBJ_TYPE(LightOccluder2DEditor, HBoxContainer );
+	GDCLASS(LightOccluder2DEditor, HBoxContainer );
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -85,21 +85,21 @@ protected:
 public:
 
 	Vector2 snap_point(const Vector2& p_point) const;
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	LightOccluder2DEditor(EditorNode *p_editor);
 };
 
 class LightOccluder2DEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( LightOccluder2DEditorPlugin, EditorPlugin );
+	GDCLASS( LightOccluder2DEditorPlugin, EditorPlugin );
 
 	LightOccluder2DEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
 
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "LightOccluder2D"; }
 	bool has_main_screen() const { return false; }

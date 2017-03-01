@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -78,7 +78,7 @@ int AudioStreamPlaybackOGGVorbis::_ov_seek_func(void *_f,ogg_int64_t offs, int w
 }
 int AudioStreamPlaybackOGGVorbis::_ov_close_func(void *_f) {
 
-//	printf("close %p\n",_f);
+	//printf("close %p\n",_f);
 	if (!_f)
 		return 0;
 	FileAccess *fa=(FileAccess*)_f;
@@ -141,7 +141,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t* p_bufer,int p_frames) {
 			int errv = ov_open_callbacks(f,&vf,NULL,0,_ov_callbacks);
 			if (errv!=0) {
 				playing=false;
-				break;; // :(
+				break; // :(
 			}
 
 			if (loop_restart_time) {
@@ -419,7 +419,7 @@ void ResourceFormatLoaderAudioStreamOGGVorbis::get_recognized_extensions(List<St
 }
 String ResourceFormatLoaderAudioStreamOGGVorbis::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="ogg")
+	if (p_path.get_extension().to_lower()=="ogg")
 		return "AudioStreamOGGVorbis";
 	return "";
 }

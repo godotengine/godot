@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,11 +44,11 @@ void VisibilityNotifier2D::_enter_viewport(Viewport* p_viewport) {
 		return;
 
 	if (viewports.size()==1) {
-		emit_signal(SceneStringNames::get_singleton()->enter_screen);
+		emit_signal(SceneStringNames::get_singleton()->screen_entered);
 
 		_screen_enter();
 	}
-	emit_signal(SceneStringNames::get_singleton()->enter_viewport,p_viewport);
+	emit_signal(SceneStringNames::get_singleton()->viewport_entered,p_viewport);
 
 }
 
@@ -60,9 +60,9 @@ void VisibilityNotifier2D::_exit_viewport(Viewport* p_viewport){
 	if (is_inside_tree() && get_tree()->is_editor_hint())
 		return;
 
-	emit_signal(SceneStringNames::get_singleton()->exit_viewport,p_viewport);
+	emit_signal(SceneStringNames::get_singleton()->viewport_exited,p_viewport);
 	if (viewports.size()==0) {
-		emit_signal(SceneStringNames::get_singleton()->exit_screen);
+		emit_signal(SceneStringNames::get_singleton()->screen_exited);
 
 		_screen_exit();
 	}
@@ -129,22 +129,23 @@ bool VisibilityNotifier2D::is_on_screen() const {
 
 void VisibilityNotifier2D::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_rect","rect"),&VisibilityNotifier2D::set_rect);
-	ObjectTypeDB::bind_method(_MD("get_rect"),&VisibilityNotifier2D::get_rect);
-	ObjectTypeDB::bind_method(_MD("is_on_screen"),&VisibilityNotifier2D::is_on_screen);
+	ClassDB::bind_method(D_METHOD("set_rect","rect"),&VisibilityNotifier2D::set_rect);
+	ClassDB::bind_method(D_METHOD("get_rect"),&VisibilityNotifier2D::get_rect);
+	ClassDB::bind_method(D_METHOD("is_on_screen"),&VisibilityNotifier2D::is_on_screen);
 
-	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),_SCS("set_rect"),_SCS("get_rect"));
+	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),"set_rect","get_rect");
 
-	ADD_SIGNAL( MethodInfo("enter_viewport",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
-	ADD_SIGNAL( MethodInfo("exit_viewport",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
-	ADD_SIGNAL( MethodInfo("enter_screen"));
-	ADD_SIGNAL( MethodInfo("exit_screen"));
+	ADD_SIGNAL( MethodInfo("viewport_entered",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
+	ADD_SIGNAL( MethodInfo("viewport_exited",PropertyInfo(Variant::OBJECT,"viewport",PROPERTY_HINT_RESOURCE_TYPE,"Viewport")) );
+	ADD_SIGNAL( MethodInfo("screen_entered"));
+	ADD_SIGNAL( MethodInfo("screen_exited"));
 }
 
 
 VisibilityNotifier2D::VisibilityNotifier2D() {
 
 	rect=Rect2(-10,-10,20,20);
+	set_notify_transform(true);
 }
 
 
@@ -232,7 +233,7 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	if (add) {
 
-		p_node->connect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
+		p_node->connect(SceneStringNames::get_singleton()->tree_exited,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
 		nodes[p_node]=meta;
 		_change_node_state(p_node,false);
 	}
@@ -280,7 +281,7 @@ void VisibilityEnabler2D::_notification(int p_what){
 
 			if (!visible)
 				_change_node_state(E->key(),true);
-			E->key()->disconnect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed");
+			E->key()->disconnect(SceneStringNames::get_singleton()->tree_exited,this,"_node_removed");
 		}
 
 		nodes.clear();
@@ -354,16 +355,16 @@ String VisibilityEnabler2D::get_configuration_warning() const {
 
 void VisibilityEnabler2D::_bind_methods(){
 
-	ObjectTypeDB::bind_method(_MD("set_enabler","enabler","enabled"),&VisibilityEnabler2D::set_enabler);
-	ObjectTypeDB::bind_method(_MD("is_enabler_enabled","enabler"),&VisibilityEnabler2D::is_enabler_enabled);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&VisibilityEnabler2D::_node_removed);
+	ClassDB::bind_method(D_METHOD("set_enabler","enabler","enabled"),&VisibilityEnabler2D::set_enabler);
+	ClassDB::bind_method(D_METHOD("is_enabler_enabled","enabler"),&VisibilityEnabler2D::is_enabler_enabled);
+	ClassDB::bind_method(D_METHOD("_node_removed"),&VisibilityEnabler2D::_node_removed);
 
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_particles"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_PARTICLES);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animated_sprites"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATED_SPRITES);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_PROCESS);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/fixed_process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_FIXED_PROCESS);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_animations"),"set_enabler","is_enabler_enabled", ENABLER_PAUSE_ANIMATIONS );
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"freeze_bodies"),"set_enabler","is_enabler_enabled", ENABLER_FREEZE_BODIES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_particles"),"set_enabler","is_enabler_enabled", ENABLER_PAUSE_PARTICLES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"pause_animated_sprites"),"set_enabler","is_enabler_enabled", ENABLER_PAUSE_ANIMATED_SPRITES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"process_parent"),"set_enabler","is_enabler_enabled", ENABLER_PARENT_PROCESS);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"fixed_process_parent"),"set_enabler","is_enabler_enabled", ENABLER_PARENT_FIXED_PROCESS);
 
 	BIND_CONSTANT( ENABLER_FREEZE_BODIES );
 	BIND_CONSTANT( ENABLER_PAUSE_ANIMATIONS );

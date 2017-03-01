@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 
 void Bounds::_bind_methods() {
 
-	ObjectTypeDB::bind_method( _MD("set_bsp_tree","bsp_tree"),&Bounds::set_bsp_tree);
-	ObjectTypeDB::bind_method( _MD("get_bsp_tree"),&Bounds::get_bsp_tree );
+	ClassDB::bind_method( D_METHOD("set_bsp_tree","bsp_tree"),&Bounds::set_bsp_tree);
+	ClassDB::bind_method( D_METHOD("get_bsp_tree"),&Bounds::get_bsp_tree );
 
-	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "bsp_tree" ), _SCS("set_bsp_tree"), _SCS("get_bsp_tree"));
+	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "bsp_tree" ), "set_bsp_tree", "get_bsp_tree");
 
 }
 

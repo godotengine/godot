@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #import <OpenGLES/EAGLDrawable.h>
 #include "os_iphone.h"
 #include "core/os/keyboard.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "servers/audio_server.h"
 
 #import "gl_view.h"
@@ -76,7 +76,7 @@ void _hide_keyboard() {
 };
 
 bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
-	p_path = Globals::get_singleton()->globalize_path(p_path);
+	p_path = GlobalConfig::get_singleton()->globalize_path(p_path);
 
 	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
 
@@ -274,7 +274,7 @@ static void clear_touches() {
 										nil];
 
 	// Create our EAGLContext, and if successful make it current and create our framebuffer.
-	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES3];
 
 	if(!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer])
 	{

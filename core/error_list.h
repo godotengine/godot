@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +58,7 @@ enum Error {
 	ERR_FILE_EOF,
 	ERR_CANT_OPEN, ///< Can't open a resource/socket/file
 	ERR_CANT_CREATE,		// (20)
-	ERROR_QUERY_FAILED,
+	ERR_QUERY_FAILED,
 	ERR_ALREADY_IN_USE,
  	ERR_LOCKED, ///< resource is locked
  	ERR_TIMEOUT,

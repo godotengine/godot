@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 
 class ResourcePreloaderEditor : public PanelContainer {
 
-	OBJ_TYPE(ResourcePreloaderEditor, PanelContainer );
+	GDCLASS(ResourcePreloaderEditor, PanelContainer );
 
 	Button *load;
 	Button *_delete;
@@ -74,7 +74,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 protected:
 	void _notification(int p_what);
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 	static void _bind_methods();
 public:
 
@@ -86,7 +86,7 @@ public:
 
 class ResourcePreloaderEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ResourcePreloaderEditorPlugin, EditorPlugin );
+	GDCLASS( ResourcePreloaderEditorPlugin, EditorPlugin );
 
 	ResourcePreloaderEditor *preloader_editor;
 	EditorNode *editor;

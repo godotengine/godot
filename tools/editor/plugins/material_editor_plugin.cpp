@@ -1,7 +1,38 @@
+/*************************************************************************/
+/*  material_editor_plugin.cpp                                           */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 #include "material_editor_plugin.h"
+
 #include "scene/main/viewport.h"
 
-void MaterialEditor::_input_event(InputEvent p_event) {
+#if 0
+
+void MaterialEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -91,8 +122,8 @@ void MaterialEditor::_button_pressed(Node* p_button) {
 
 void MaterialEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&MaterialEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_button_pressed"),&MaterialEditor::_button_pressed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&MaterialEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_button_pressed"),&MaterialEditor::_button_pressed);
 
 }
 
@@ -127,8 +158,8 @@ MaterialEditor::MaterialEditor() {
 	viewport->add_child(box_instance);
 
 	Transform box_xform;
-	box_xform.basis.rotate(Vector3(1,0,0),Math::deg2rad(-25));
-	box_xform.basis = box_xform.basis * Matrix3().rotated(Vector3(0,1,0),Math::deg2rad(-25));
+	box_xform.basis.rotate(Vector3(1,0,0),Math::deg2rad(25));
+	box_xform.basis = box_xform.basis * Matrix3().rotated(Vector3(0,1,0),Math::deg2rad(25));
 	box_xform.basis.scale(Vector3(0.8,0.8,0.8));
 	box_instance->set_transform(box_xform);
 
@@ -141,10 +172,10 @@ MaterialEditor::MaterialEditor() {
 		int lons=32;
 		float radius=1.0;
 
-		DVector<Vector3> vertices;
-		DVector<Vector3> normals;
-		DVector<Vector2> uvs;
-		DVector<float> tangents;
+		PoolVector<Vector3> vertices;
+		PoolVector<Vector3> normals;
+		PoolVector<Vector2> uvs;
+		PoolVector<float> tangents;
 		Matrix3 tt = Matrix3(Vector3(0,1,0),Math_PI*0.5);
 
 		for(int i = 1; i <= lats; i++) {
@@ -219,10 +250,10 @@ MaterialEditor::MaterialEditor() {
 
 		box_mesh.instance();
 
-		DVector<Vector3> vertices;
-		DVector<Vector3> normals;
-		DVector<float> tangents;
-		DVector<Vector3> uvs;
+		PoolVector<Vector3> vertices;
+		PoolVector<Vector3> normals;
+		PoolVector<float> tangents;
+		PoolVector<Vector3> uvs;
 
 		int vtx_idx=0;
 	#define ADD_VTX(m_idx);\
@@ -280,7 +311,7 @@ MaterialEditor::MaterialEditor() {
 		d[VisualServer::ARRAY_TEX_UV]= uvs ;
 		d[VisualServer::ARRAY_VERTEX]= vertices ;
 
-		DVector<int> indices;
+		PoolVector<int> indices;
 		indices.resize(vertices.size());
 		for(int i=0;i<vertices.size();i++)
 			indices.set(i,i);
@@ -353,11 +384,11 @@ void MaterialEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		material_editor->show();
-//		material_editor->set_process(true);
+		//material_editor->set_process(true);
 	} else {
 
 		material_editor->hide();
-//		material_editor->set_process(false);
+		//material_editor->set_process(false);
 	}
 
 }
@@ -379,3 +410,4 @@ MaterialEditorPlugin::~MaterialEditorPlugin()
 }
 
 
+#endif

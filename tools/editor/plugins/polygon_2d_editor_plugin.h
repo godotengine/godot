@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@ class CanvasItemEditor;
 
 class Polygon2DEditor : public HBoxContainer {
 
-	OBJ_TYPE(Polygon2DEditor, HBoxContainer );
+	GDCLASS(Polygon2DEditor, HBoxContainer );
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -77,11 +77,11 @@ class Polygon2DEditor : public HBoxContainer {
 	HScrollBar *uv_hscroll;
 	VScrollBar *uv_vscroll;
 	MenuButton *uv_menu;
-	TextureFrame *uv_icon_zoom;
+	TextureRect *uv_icon_zoom;
 
 	Vector2 uv_draw_ofs;
 	float uv_draw_zoom;
-	DVector<Vector2> uv_prev;
+	PoolVector<Vector2> uv_prev;
 	int uv_drag_index;
 	bool uv_drag;
 	UVMode uv_move_current;
@@ -137,21 +137,21 @@ protected:
 
 public:
 
-	bool forward_input_event(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	Polygon2DEditor(EditorNode *p_editor);
 };
 
 class Polygon2DEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( Polygon2DEditorPlugin, EditorPlugin );
+	GDCLASS( Polygon2DEditorPlugin, EditorPlugin );
 
 	Polygon2DEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
 
-	virtual bool forward_canvas_input_event(const Matrix32& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "Polygon2D"; }
 	bool has_main_screen() const { return false; }

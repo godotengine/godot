@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,6 +92,7 @@ public:
 		TK_CF_CONTINUE,
 		TK_CF_PASS,
 		TK_CF_RETURN,
+		TK_CF_MATCH,
 		TK_PR_FUNCTION,
 		TK_PR_CLASS,
 		TK_PR_EXTENDS,
@@ -123,8 +124,12 @@ public:
 		TK_PERIOD,
 		TK_QUESTION_MARK,
 		TK_COLON,
+		TK_DOLLAR,
 		TK_NEWLINE,
 		TK_CONST_PI,
+		TK_WILDCARD,
+		TK_CONST_INF,
+		TK_CONST_NAN,
 		TK_ERROR,
 		TK_EOF,
 		TK_CURSOR, //used for code completion

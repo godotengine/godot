@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,14 +28,15 @@
 /*************************************************************************/
 #include "sample_editor_plugin.h"
 
+#if 0
 #include "io/resource_loader.h"
-#include "globals.h"
+#include "global_config.h"
 #include "tools/editor/editor_settings.h"
 
 
 
 
-void SampleEditor::_input_event(InputEvent p_event) {
+void SampleEditor::_gui_input(InputEvent p_event) {
 
 
 }
@@ -77,15 +78,15 @@ void SampleEditor::_stop_pressed() {
 void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<ImageTexture> &p_texture) {
 
 
-	DVector<uint8_t> data = p_sample->get_data();
+	PoolVector<uint8_t> data = p_sample->get_data();
 
-	DVector<uint8_t> img;
+	PoolVector<uint8_t> img;
 	int w = p_texture->get_width();
 	int h = p_texture->get_height();
 	img.resize(w*h*3);
-	DVector<uint8_t>::Write imgdata = img.write();
+	PoolVector<uint8_t>::Write imgdata = img.write();
 	uint8_t * imgw = imgdata.ptr();
-	DVector<uint8_t>::Read sampledata = data.read();
+	PoolVector<uint8_t>::Read sampledata = data.read();
 	const uint8_t *sdata=sampledata.ptr();
 
 	bool stereo = p_sample->is_stereo();
@@ -308,10 +309,10 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 		}
 	}
 
-	imgdata = DVector<uint8_t>::Write();
+	imgdata = PoolVector<uint8_t>::Write();
 
 
-	p_texture->set_data(Image(w,h,0,Image::FORMAT_RGB,img));
+	p_texture->set_data(Image(w,h,0,Image::FORMAT_RGB8,img));
 
 }
 
@@ -348,9 +349,9 @@ void SampleEditor::edit(Ref<Sample> p_sample) {
 
 void SampleEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_input_event"),&SampleEditor::_input_event);
-	ObjectTypeDB::bind_method(_MD("_play_pressed"),&SampleEditor::_play_pressed);
-	ObjectTypeDB::bind_method(_MD("_stop_pressed"),&SampleEditor::_stop_pressed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&SampleEditor::_gui_input);
+	ClassDB::bind_method(D_METHOD("_play_pressed"),&SampleEditor::_play_pressed);
+	ClassDB::bind_method(D_METHOD("_stop_pressed"),&SampleEditor::_stop_pressed);
 
 }
 
@@ -361,7 +362,7 @@ SampleEditor::SampleEditor() {
 	add_style_override("panel", get_stylebox("panel","Panel"));
 	library = Ref<SampleLibrary>(memnew(SampleLibrary));
 	player->set_sample_library(library);
-	sample_texframe = memnew( TextureFrame );
+	sample_texframe = memnew( TextureRect );
 	add_child(sample_texframe);
 	sample_texframe->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
 	sample_texframe->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,5);
@@ -392,7 +393,7 @@ SampleEditor::SampleEditor() {
 	add_child(stop);
 
 	peakdisplay=Ref<ImageTexture>( memnew( ImageTexture) );
-	peakdisplay->create( EDITOR_DEF("audio/sample_editor_preview_width",512),EDITOR_DEF("audio/sample_editor_preview_height",128),Image::FORMAT_RGB);
+	peakdisplay->create( EDITOR_DEF("editors/sample_editor/preview_width",512),EDITOR_DEF("editors/sample_editor/preview_height",128),Image::FORMAT_RGB8);
 	sample_texframe->set_expand(true);
 	sample_texframe->set_texture(peakdisplay);
 
@@ -415,18 +416,18 @@ void SampleEditorPlugin::edit(Object *p_object) {
 
 bool SampleEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Sample");
+	return p_object->is_class("Sample");
 }
 
 void SampleEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		sample_editor->show();
-//		sample_editor->set_process(true);
+		//sample_editor->set_process(true);
 	} else {
 
 		sample_editor->hide();
-//		sample_editor->set_process(false);
+		//sample_editor->set_process(false);
 	}
 
 }
@@ -447,4 +448,4 @@ SampleEditorPlugin::~SampleEditorPlugin()
 {
 }
 
-
+#endif

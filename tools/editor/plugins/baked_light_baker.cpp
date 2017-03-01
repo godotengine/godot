@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,13 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "baked_light_baker.h"
+
 #include <stdlib.h>
 #include <cmath>
 #include "io/marshalls.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/editor_settings.h"
 
-
+#if 0
 void baked_light_baker_add_64f(double *dst,double value);
 void baked_light_baker_add_64i(int64_t *dst,int64_t value);
 
@@ -91,15 +92,15 @@ BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& 
 		if (image.empty())
 			return NULL;
 
-		if (image.get_format()!=Image::FORMAT_RGBA) {
+		if (image.get_format()!=Image::FORMAT_RGBA8) {
 			if (image.get_format()>Image::FORMAT_INDEXED_ALPHA) {
 				Error err = image.decompress();
 				if (err)
 					return NULL;
 			}
 
-			if (image.get_format()!=Image::FORMAT_RGBA)
-				image.convert(Image::FORMAT_RGBA);
+			if (image.get_format()!=Image::FORMAT_RGBA8)
+				image.convert(Image::FORMAT_RGBA8);
 		}
 
 		if (imgtex->get_flags()&Texture::FLAG_CONVERT_TO_LINEAR) {
@@ -108,8 +109,8 @@ BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& 
 			image=copy;
 		}
 
-		DVector<uint8_t> dvt=image.get_data();
-		DVector<uint8_t>::Read r=dvt.read();
+		PoolVector<uint8_t> dvt=image.get_data();
+		PoolVector<uint8_t>::Read r=dvt.read();
 		MeshTexture mt;
 		mt.tex_w=image.get_width();
 		mt.tex_h=image.get_height();
@@ -143,18 +144,18 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 
 				MeshMaterial mm;
 
-				Ref<FixedMaterial> fm = mat;
+				Ref<FixedSpatialMaterial> fm = mat;
 				if (fm.is_valid()) {
 					//fixed route
-					mm.diffuse.color=fm->get_parameter(FixedMaterial::PARAM_DIFFUSE);
+					mm.diffuse.color=fm->get_parameter(FixedSpatialMaterial::PARAM_DIFFUSE);
 					if (linear_color)
 						mm.diffuse.color=mm.diffuse.color.to_linear();
-					mm.diffuse.tex=_get_mat_tex(fm->get_texture(FixedMaterial::PARAM_DIFFUSE));
-					mm.specular.color=fm->get_parameter(FixedMaterial::PARAM_SPECULAR);
+					mm.diffuse.tex=_get_mat_tex(fm->get_texture(FixedSpatialMaterial::PARAM_DIFFUSE));
+					mm.specular.color=fm->get_parameter(FixedSpatialMaterial::PARAM_SPECULAR);
 					if (linear_color)
 						mm.specular.color=mm.specular.color.to_linear();
 
-					mm.specular.tex=_get_mat_tex(fm->get_texture(FixedMaterial::PARAM_SPECULAR));
+					mm.specular.tex=_get_mat_tex(fm->get_texture(FixedSpatialMaterial::PARAM_SPECULAR));
 				} else {
 
 					mm.diffuse.color=Color(1,1,1,1);
@@ -194,14 +195,14 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 
 		Array a = p_mesh->surface_get_arrays(i);
 
-		DVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
-		DVector<Vector3>::Read vr=vertices.read();
-		DVector<Vector2> uv;
-		DVector<Vector2>::Read uvr;
-		DVector<Vector2> uv2;
-		DVector<Vector2>::Read uv2r;
-		DVector<Vector3> normal;
-		DVector<Vector3>::Read normalr;
+		PoolVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
+		PoolVector<Vector3>::Read vr=vertices.read();
+		PoolVector<Vector2> uv;
+		PoolVector<Vector2>::Read uvr;
+		PoolVector<Vector2> uv2;
+		PoolVector<Vector2>::Read uv2r;
+		PoolVector<Vector3> normal;
+		PoolVector<Vector3>::Read normalr;
 		bool read_uv=false;
 		bool read_normal=false;
 
@@ -236,8 +237,8 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 
 		if (p_mesh->surface_get_format(i)&Mesh::ARRAY_FORMAT_INDEX) {
 
-			DVector<int> indices = a[Mesh::ARRAY_INDEX];
-			DVector<int>::Read ir = indices.read();
+			PoolVector<int> indices = a[Mesh::ARRAY_INDEX];
+			PoolVector<int>::Read ir = indices.read();
 
 			for(int i=0;i<facecount;i++) {
 				Triangle &t=triangles[tbase+i];
@@ -1006,8 +1007,10 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 	Triangle *triangle=NULL;
 
-	//for(int i=0;i<max_depth;i++)
-	//	stack[i]=0;
+	/*
+	for(int i=0;i<max_depth;i++)
+		stack[i]=0;
+	*/
 
 	int level=0;
 	//AABB ray_aabb;
@@ -1059,7 +1062,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 
 					bool valid = b.aabb.smits_intersect_ray(p_begin,n,0,len);
 					//bool valid = b.aabb.intersects_segment(p_begin,p_end);
-	//				bool valid = b.aabb.intersects(ray_aabb);
+					//bool valid = b.aabb.intersects(ray_aabb);
 
 					if (!valid) {
 
@@ -1234,7 +1237,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 		}
 
 		//specular later
-//		_plot_light_point(r_point,octree,octree_aabb,p_light);
+		//_plot_light_point(r_point,octree,octree_aabb,p_light);
 
 
 		Color plot_light=res_light.linear_interpolate(diffuse_at_point,tint);
@@ -1331,7 +1334,7 @@ void BakedLightBaker::_make_octree_texture() {
 			base<<=16;
 			base|=int((pos.z+cell_size*0.5)/cell_size);
 
-			uint32_t hash = HashMapHahserDefault::hash(base);
+			uint32_t hash = HashMapHasherDefault::hash(base);
 			uint32_t idx = hash % hash_table_size;
 			octhashptr[oct_idx].next=hashptr[idx];
 			octhashptr[oct_idx].hash=hash;
@@ -1359,7 +1362,7 @@ void BakedLightBaker::_make_octree_texture() {
 			base<<=16;
 			base|=int((pos.z+cell_size*0.5)/cell_size);
 
-			uint32_t hash = HashMapHahserDefault::hash(base);
+			uint32_t hash = HashMapHasherDefault::hash(base);
 			uint32_t idx = hash % hash_table_size;
 
 			uint32_t bucket = hashptr[idx];
@@ -1571,7 +1574,7 @@ double BakedLightBaker::get_normalization(int p_light_idx) const {
 	double nrg=0;
 
 	const LightData &dl=lights[p_light_idx];
-	double cell_area = cell_size*cell_size;;
+	double cell_area = cell_size*cell_size;
 	//nrg+= /*dl.energy */ (dl.rays_thrown * cell_area / dl.area);
 	nrg=dl.rays_thrown * cell_area;
 	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
@@ -1589,7 +1592,7 @@ double BakedLightBaker::get_modifier(int p_light_idx) const {
 	double nrg=0;
 
 	const LightData &dl=lights[p_light_idx];
-	double cell_area = cell_size*cell_size;;
+	double cell_area = cell_size*cell_size;
 	//nrg+= /*dl.energy */ (dl.rays_thrown * cell_area / dl.area);
 	nrg=cell_area;
 	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
@@ -1678,7 +1681,7 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 					dl.rays_thrown++;
 					baked_light_baker_add_64i(&total_rays,1);
 					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
-//					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
+					//_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
 			} break;
@@ -1710,7 +1713,7 @@ void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 					dl.rays_thrown++;
 					baked_light_baker_add_64i(&total_rays,1);
 					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
-	//					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
+					//_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
 			} break;
@@ -1788,7 +1791,7 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 }
 
 
-void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
+void BakedLightBaker::update_octree_sampler(PoolVector<int> &p_sampler) {
 
 	BakedLightBaker::Octant *octants=octant_pool.ptr();
 	double norm = 1.0/double(total_rays);
@@ -1845,7 +1848,7 @@ void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
 		}
 
 		p_sampler.resize(tmp_smp.size());
-		DVector<int>::Write w = p_sampler.write();
+		PoolVector<int>::Write w = p_sampler.write();
 		int ss = tmp_smp.size();
 		for(int i=0;i<ss;i++) {
 			w[i]=tmp_smp[i];
@@ -1859,7 +1862,7 @@ void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
 	double mult = baked_light->get_energy_multiplier();
 	float saturation = baked_light->get_saturation();
 
-	DVector<int>::Write w = p_sampler.write();
+	PoolVector<int>::Write w = p_sampler.write();
 
 	encode_uint32(octree_depth,(uint8_t*)&w[2]);
 	encode_uint32(linear_color,(uint8_t*)&w[3]);
@@ -1900,7 +1903,7 @@ void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
 
 }
 
-void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<uint8_t> &p_light) {
+void BakedLightBaker::update_octree_images(PoolVector<uint8_t> &p_octree,PoolVector<uint8_t> &p_light) {
 
 
 	int len = baked_octree_texture_w*baked_octree_texture_h*4;
@@ -1910,10 +1913,10 @@ void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<ui
 	p_light.resize(ilen);
 
 
-	DVector<uint8_t>::Write w = p_octree.write();
+	PoolVector<uint8_t>::Write w = p_octree.write();
 	zeromem(w.ptr(),len);
 
-	DVector<uint8_t>::Write iw = p_light.write();
+	PoolVector<uint8_t>::Write iw = p_light.write();
 	zeromem(iw.ptr(),ilen);
 
 	float gamma = baked_light->get_gamma_adjust();
@@ -2010,8 +2013,10 @@ void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<ui
 			//write colors
 			for(int j=0;j<8;j++) {
 
-				//if (!oct.children[j])
-				//	continue;
+				/*
+				if (!oct.children[j])
+					continue;
+				*/
 				uint8_t *iptr=&lptr[ofs+lchild_offsets[j]];
 
 				float r=oct.light_accum[j][0]*norm;
@@ -2291,7 +2296,7 @@ void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int heigh
 
 								bool valid = b.aabb.smits_intersect_ray(from,n,0,len);
 								//bool valid = b.aabb.intersects_segment(p_begin,p_end);
-				//				bool valid = b.aabb.intersects(ray_aabb);
+								//bool valid = b.aabb.intersects(ray_aabb);
 
 								if (!valid) {
 
@@ -2612,14 +2617,14 @@ Error BakedLightBaker::transfer_to_lightmaps() {
 			}
 		}
 
-		DVector<uint8_t> dv;
+		PoolVector<uint8_t> dv;
 		dv.resize(baked_textures[i].data.size());
 		{
-			DVector<uint8_t>::Write w = dv.write();
+			PoolVector<uint8_t>::Write w = dv.write();
 			copymem(w.ptr(),baked_textures[i].data.ptr(),baked_textures[i].data.size());
 		}
 
-		Image img(baked_textures[i].width,baked_textures[i].height,0,Image::FORMAT_RGBA,dv);
+		Image img(baked_textures[i].width,baked_textures[i].height,0,Image::FORMAT_RGBA8,dv);
 		Ref<ImageTexture> tex = memnew( ImageTexture );
 		tex->create_from_image(img);
 		baked_light->set_lightmap_texture(i,tex);
@@ -2649,10 +2654,13 @@ void BakedLightBaker::clear() {
 /*
  * ???
 	for(int i=0;i<octant_pool.size();i++) {
-		//if (octant_pool[i].leaf) {
-		//	memdelete_arr( octant_pool[i].light );
-		//}	Vector<double> norm_arr;
-		//norm_arr.resize(lights.size());
+		/*
+		if (octant_pool[i].leaf) {
+			memdelete_arr( octant_pool[i].light );
+		}
+		Vector<double> norm_arr;
+		norm_arr.resize(lights.size());
+		*/
 
 		for(int i=0;i<lights.size();i++) {
 			norm_arr[i] =  1.0/get_normalization(i);
@@ -2674,7 +2682,7 @@ void BakedLightBaker::clear() {
 	materials.clear();
 	textures.clear();
 	lights.clear();
-	triangles.clear();;
+	triangles.clear();
 	endpoint_normal.clear();
 	endpoint_normal_bits.clear();
 	baked_octree_texture_w=0;
@@ -2720,3 +2728,4 @@ BakedLightBaker::~BakedLightBaker() {
 
 	clear();
 }
+#endif

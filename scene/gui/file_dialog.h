@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 */
 class FileDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( FileDialog, ConfirmationDialog );
+	GDCLASS( FileDialog, ConfirmationDialog );
 
 public:
 
@@ -167,7 +167,7 @@ public:
 
 class LineEditFileChooser : public HBoxContainer {
 
-	OBJ_TYPE( LineEditFileChooser, HBoxContainer );
+	GDCLASS( LineEditFileChooser, HBoxContainer );
 	Button *button;
 	LineEdit *line_edit;
 	FileDialog *dialog;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,12 +26,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include <unistd.h>
+#include <limits.h>
+#include <stdlib.h>
+
 #include "main/main.h"
 #include "os_x11.h"
 
 int main(int argc, char* argv[]) {
 
 	OS_X11 os;
+
+	char *cwd = (char*)malloc(PATH_MAX);
+	getcwd(cwd, PATH_MAX);
 
 	Error err  = Main::setup(argv[0],argc-1,&argv[1]);
 	if (err!=OK)
@@ -40,6 +47,9 @@ int main(int argc, char* argv[]) {
 	if (Main::start())
 		os.run(); // it is actually the OS that decides how to run
 	Main::cleanup();
+
+	chdir(cwd);
+	free(cwd);
 
 	return os.get_exit_code();
 }

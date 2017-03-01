@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class SpriteFrames : public Resource {
 
-	OBJ_TYPE(SpriteFrames,Resource);
+	GDCLASS(SpriteFrames,Resource);
 
 	struct Anim {
 
@@ -109,7 +109,7 @@ public:
 
 class AnimatedSprite : public Node2D {
 
-	OBJ_TYPE(AnimatedSprite,Node2D);
+	GDCLASS(AnimatedSprite,Node2D);
 
 	Ref<SpriteFrames> frames;
 	bool playing;
@@ -124,7 +124,6 @@ class AnimatedSprite : public Node2D {
 	bool hflip;
 	bool vflip;
 
-	Color modulate;
 
 	void _res_changed();
 

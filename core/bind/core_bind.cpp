@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "geometry.h"
 #include "io/marshalls.h"
 #include "io/base64.h"
-#include "core/globals.h"
+#include "core/global_config.h"
 #include "io/file_access_encrypted.h"
 #include "os/keyboard.h"
 
@@ -69,11 +69,11 @@ RES _ResourceLoader::load(const String &p_path,const String& p_type_hint, bool p
 	return ret;
 }
 
-DVector<String> _ResourceLoader::get_recognized_extensions_for_type(const String& p_type) {
+PoolVector<String> _ResourceLoader::get_recognized_extensions_for_type(const String& p_type) {
 
 	List<String> exts;
 	ResourceLoader::get_recognized_extensions_for_type(p_type,&exts);
-	DVector<String> ret;
+	PoolVector<String> ret;
 	for(List<String>::Element *E=exts.front();E;E=E->next()) {
 
 		ret.push_back(E->get());
@@ -87,12 +87,12 @@ void _ResourceLoader::set_abort_on_missing_resources(bool p_abort) {
 	ResourceLoader::set_abort_on_missing_resources(p_abort);
 }
 
-StringArray _ResourceLoader::get_dependencies(const String& p_path) {
+PoolStringArray _ResourceLoader::get_dependencies(const String& p_path) {
 
 	List<String> deps;
 	ResourceLoader::get_dependencies(p_path, &deps);
 
-	StringArray ret;
+	PoolStringArray ret;
 	for(List<String>::Element *E=deps.front();E;E=E->next()) {
 		ret.push_back(E->get());
 	}
@@ -102,25 +102,20 @@ StringArray _ResourceLoader::get_dependencies(const String& p_path) {
 
 bool _ResourceLoader::has(const String &p_path) {
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+	String local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 	return ResourceCache::has(local_path);
 };
 
-Ref<ResourceImportMetadata> _ResourceLoader::load_import_metadata(const String& p_path) {
-
-	return ResourceLoader::load_import_metadata(p_path);
-}
 
 void _ResourceLoader::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("load_import_metadata:ResourceImportMetadata","path"),&_ResourceLoader::load_import_metadata);
-	ObjectTypeDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
-	ObjectTypeDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
-	ObjectTypeDB::bind_method(_MD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
-	ObjectTypeDB::bind_method(_MD("has","path"),&_ResourceLoader::has);
+	ClassDB::bind_method(D_METHOD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
+	ClassDB::bind_method(D_METHOD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
+	ClassDB::bind_method(D_METHOD("get_dependencies","path"),&_ResourceLoader::get_dependencies);
+	ClassDB::bind_method(D_METHOD("has","path"),&_ResourceLoader::has);
 }
 
 _ResourceLoader::_ResourceLoader() {
@@ -135,12 +130,12 @@ Error _ResourceSaver::save(const String &p_path,const RES& p_resource, uint32_t 
 	return ResourceSaver::save(p_path,p_resource, p_flags);
 }
 
-DVector<String> _ResourceSaver::get_recognized_extensions(const RES& p_resource) {
+PoolVector<String> _ResourceSaver::get_recognized_extensions(const RES& p_resource) {
 
-	ERR_FAIL_COND_V(p_resource.is_null(),DVector<String>());
+	ERR_FAIL_COND_V(p_resource.is_null(),PoolVector<String>());
 	List<String> exts;
 	ResourceSaver::get_recognized_extensions(p_resource,&exts);
-	DVector<String> ret;
+	PoolVector<String> ret;
 	for(List<String>::Element *E=exts.front();E;E=E->next()) {
 
 		ret.push_back(E->get());
@@ -153,8 +148,8 @@ _ResourceSaver *_ResourceSaver::singleton=NULL;
 
 void _ResourceSaver::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("save","path","resource:Resource","flags"),&_ResourceSaver::save,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_recognized_extensions","type"),&_ResourceSaver::get_recognized_extensions);
+	ClassDB::bind_method(D_METHOD("save","path","resource:Resource","flags"),&_ResourceSaver::save,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_recognized_extensions","type"),&_ResourceSaver::get_recognized_extensions);
 
 	BIND_CONSTANT(FLAG_RELATIVE_PATHS);
 	BIND_CONSTANT(FLAG_BUNDLE_RESOURCES);
@@ -340,24 +335,6 @@ Array _OS::get_fullscreen_mode_list(int p_screen) const {
 	return vmarr;
 }
 
-void _OS::set_iterations_per_second(int p_ips) {
-
-	OS::get_singleton()->set_iterations_per_second(p_ips);
-}
-int _OS::get_iterations_per_second() const {
-
-	return OS::get_singleton()->get_iterations_per_second();
-
-}
-
-void _OS::set_target_fps(int p_fps) {
-	OS::get_singleton()->set_target_fps(p_fps);
-}
-
-float _OS::get_target_fps() const {
-	return OS::get_singleton()->get_target_fps();
-}
-
 void _OS::set_low_processor_usage_mode(bool p_enabled) {
 
 	OS::get_singleton()->set_low_processor_usage_mode(p_enabled);
@@ -449,22 +426,10 @@ String _OS::get_latin_keyboard_variant() const {
 
 String _OS::get_model_name() const {
 
-    return OS::get_singleton()->get_model_name();
+	return OS::get_singleton()->get_model_name();
 }
 
-MainLoop *_OS::get_main_loop() const {
 
-	return OS::get_singleton()->get_main_loop();
-}
-
-void _OS::set_time_scale(float p_scale) {
-	OS::get_singleton()->set_time_scale(p_scale);
-}
-
-float _OS::get_time_scale() {
-
-	return OS::get_singleton()->get_time_scale();
-}
 
 bool _OS::is_ok_left_and_cancel_right() const {
 
@@ -553,6 +518,16 @@ void _OS::set_icon(const Image& p_icon) {
 	OS::get_singleton()->set_icon(p_icon);
 }
 
+int _OS::get_exit_code() const {
+
+	return OS::get_singleton()->get_exit_code();
+}
+
+void _OS::set_exit_code(int p_code) {
+
+	OS::get_singleton()->set_exit_code(p_code);
+}
+
 /**
  *  Get current datetime with consideration for utc and
  *     dst
@@ -612,28 +587,20 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	static const unsigned int SECONDS_PER_MINUTE = 60;
 	static const unsigned int MINUTES_PER_HOUR = 60;
 	static const unsigned int HOURS_PER_DAY = 24;
-	static const unsigned int SECONDS_PER_HOUR = MINUTES_PER_HOUR *
-		SECONDS_PER_MINUTE;
+	static const unsigned int SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 	static const unsigned int SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
 
 	// Get all time values from the dictionary, set to zero if it doesn't exist.
 	//   Risk incorrect calculation over throwing errors
-	unsigned int second = ((datetime.has(SECOND_KEY))?
-			static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
-	unsigned int minute = ((datetime.has(MINUTE_KEY))?
-			static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
-	unsigned int hour = ((datetime.has(HOUR_KEY))?
-			static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
-	unsigned int day = ((datetime.has(DAY_KEY))?
-			static_cast<unsigned int>(datetime[DAY_KEY]): 0);
-	unsigned int month = ((datetime.has(MONTH_KEY))?
-			static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
-	unsigned int year = ((datetime.has(YEAR_KEY))?
-			static_cast<unsigned int>(datetime[YEAR_KEY]):0);
+	unsigned int second = ((datetime.has(SECOND_KEY)) ? static_cast<unsigned int>(datetime[SECOND_KEY]): 0);
+	unsigned int minute = ((datetime.has(MINUTE_KEY)) ? static_cast<unsigned int>(datetime[MINUTE_KEY]): 0);
+	unsigned int hour = ((datetime.has(HOUR_KEY)) ? static_cast<unsigned int>(datetime[HOUR_KEY]): 0);
+	unsigned int day = ((datetime.has(DAY_KEY)) ? static_cast<unsigned int>(datetime[DAY_KEY]): 0);
+	unsigned int month = ((datetime.has(MONTH_KEY)) ? static_cast<unsigned int>(datetime[MONTH_KEY]) -1: 0);
+	unsigned int year = ((datetime.has(YEAR_KEY)) ? static_cast<unsigned int>(datetime[YEAR_KEY]):0);
 
 	/// How many days come before each month (0-12)
-	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] =
-	{
+	static const unsigned short int DAYS_PAST_THIS_YEAR_TABLE[2][13] = {
 		/* Normal years.  */
 		{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
 		/* Leap years.  */
@@ -653,19 +620,16 @@ uint64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 	ERR_FAIL_COND_V( month+1 > 12, 0);
 
 	// Do this check after month is tested as valid
-	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger "
-			"than "+ itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month]));
+	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger than "+ itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month]));
 	ERR_FAIL_COND_V( day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month], 0);
 
 	// Calculate all the seconds from months past in this year
-	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR =
-		DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
+	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR = DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month] * SECONDS_PER_DAY;
 
 	uint64_t SECONDS_FROM_YEARS_PAST = 0;
 	for(unsigned int iyear = EPOCH_YR; iyear < year; iyear++) {
 
-		SECONDS_FROM_YEARS_PAST += YEARSIZE(iyear) *
-			SECONDS_PER_DAY;
+		SECONDS_FROM_YEARS_PAST += YEARSIZE(iyear) * SECONDS_PER_DAY;
 	}
 
 	uint64_t epoch =
@@ -696,8 +660,7 @@ Dictionary _OS::get_datetime_from_unix_time( uint64_t unix_time_val) const {
 
 	// Just fail if unix time is negative (when interpreted as an int).
 	//  This means the user passed in a negative value by accident
-	ERR_EXPLAIN("unix_time_val was really huge!"+ itos(unix_time_val) +
-			" You probably passed in a negative value!");
+	ERR_EXPLAIN("unix_time_val was really huge!"+ itos(unix_time_val) + " You probably passed in a negative value!");
 	ERR_FAIL_COND_V( (int64_t)unix_time_val < 0, Dictionary());
 
 	OS::Date date;
@@ -794,10 +757,6 @@ bool _OS::can_draw() const {
 	return OS::get_singleton()->can_draw();
 }
 
-int  _OS::get_frames_drawn() {
-
-	return OS::get_singleton()->get_frames_drawn();
-}
 
 int _OS::get_processor_count() const {
 
@@ -836,7 +795,7 @@ void _OS::print_all_textures_by_size() {
 
 		for (List<Ref<Resource> >::Element *E=rsrc.front();E;E=E->next()) {
 
-			if (!E->get()->is_type("ImageTexture"))
+			if (!E->get()->is_class("ImageTexture"))
 				continue;
 
 			Size2 size = E->get()->call("get_size");
@@ -878,18 +837,18 @@ void _OS::print_resources_by_type(const Vector<String>& p_types) {
 		bool found = false;
 
 		for (int i=0; i<p_types.size(); i++) {
-			if (r->is_type(p_types[i]))
+			if (r->is_class(p_types[i]))
 				found = true;
 		}
 		if (!found)
 			continue;
 
-		if (!type_count.has(r->get_type())) {
-			type_count[r->get_type()]=0;
+		if (!type_count.has(r->get_class())) {
+			type_count[r->get_class()]=0;
 		}
 
 
-		type_count[r->get_type()]++;
+		type_count[r->get_class()]++;
 	}
 
 };
@@ -925,11 +884,6 @@ String _OS::get_data_dir() const {
 
 	return OS::get_singleton()->get_data_dir();
 };
-
-float _OS::get_frames_per_second() const {
-
-	return OS::get_singleton()->get_frames_per_second();
-}
 
 Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 
@@ -995,10 +949,7 @@ String _OS::get_system_dir(SystemDir p_dir) const {
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
 }
 
-String _OS::get_custom_level() const {
 
-	return OS::get_singleton()->get_custom_level();
-}
 
 String _OS::get_scancode_string(uint32_t p_code) const {
 
@@ -1018,163 +969,149 @@ void _OS::alert(const String& p_alert,const String& p_title) {
 	OS::get_singleton()->alert(p_alert,p_title);
 }
 
-Dictionary _OS::get_engine_version() const {
-
-	return OS::get_singleton()->get_engine_version();
-}
-
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
 
-	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&_OS::get_mouse_pos);
-	//ObjectTypeDB::bind_method(_MD("is_mouse_grab_enabled"),&_OS::is_mouse_grab_enabled);
+	//ClassDB::bind_method(D_METHOD("get_mouse_pos"),&_OS::get_mouse_pos);
+	//ClassDB::bind_method(D_METHOD("is_mouse_grab_enabled"),&_OS::is_mouse_grab_enabled);
 
-	ObjectTypeDB::bind_method(_MD("set_clipboard","clipboard"),&_OS::set_clipboard);
-	ObjectTypeDB::bind_method(_MD("get_clipboard"),&_OS::get_clipboard);
+	ClassDB::bind_method(D_METHOD("set_clipboard","clipboard"),&_OS::set_clipboard);
+	ClassDB::bind_method(D_METHOD("get_clipboard"),&_OS::get_clipboard);
 
-	ObjectTypeDB::bind_method(_MD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_video_mode_size","screen"),&_OS::get_video_mode,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+	//will not delete for now, just unexpose
+	//ClassDB::bind_method(D_METHOD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("get_video_mode_size","screen"),&_OS::get_video_mode,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
 
 
-	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
-	ObjectTypeDB::bind_method(_MD("get_current_screen"),&_OS::get_current_screen);
-	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
-	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
-	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
-	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
-	ObjectTypeDB::bind_method(_MD("set_window_size","size"),&_OS::set_window_size);
-	ObjectTypeDB::bind_method(_MD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
-	ObjectTypeDB::bind_method(_MD("is_window_fullscreen"),&_OS::is_window_fullscreen);
-	ObjectTypeDB::bind_method(_MD("set_window_resizable","enabled"),&_OS::set_window_resizable);
-	ObjectTypeDB::bind_method(_MD("is_window_resizable"),&_OS::is_window_resizable);
-	ObjectTypeDB::bind_method(_MD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
-	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
-	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
-	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
-	ObjectTypeDB::bind_method(_MD("request_attention"), &_OS::request_attention);
+	ClassDB::bind_method(D_METHOD("get_screen_count"),&_OS::get_screen_count);
+	ClassDB::bind_method(D_METHOD("get_current_screen"),&_OS::get_current_screen);
+	ClassDB::bind_method(D_METHOD("set_current_screen","screen"),&_OS::set_current_screen);
+	ClassDB::bind_method(D_METHOD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_screen_dpi","screen"),&_OS::get_screen_dpi,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_window_position"),&_OS::get_window_position);
+	ClassDB::bind_method(D_METHOD("set_window_position","position"),&_OS::set_window_position);
+	ClassDB::bind_method(D_METHOD("get_window_size"),&_OS::get_window_size);
+	ClassDB::bind_method(D_METHOD("set_window_size","size"),&_OS::set_window_size);
+	ClassDB::bind_method(D_METHOD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
+	ClassDB::bind_method(D_METHOD("is_window_fullscreen"),&_OS::is_window_fullscreen);
+	ClassDB::bind_method(D_METHOD("set_window_resizable","enabled"),&_OS::set_window_resizable);
+	ClassDB::bind_method(D_METHOD("is_window_resizable"),&_OS::is_window_resizable);
+	ClassDB::bind_method(D_METHOD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
+	ClassDB::bind_method(D_METHOD("is_window_minimized"),&_OS::is_window_minimized);
+	ClassDB::bind_method(D_METHOD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
+	ClassDB::bind_method(D_METHOD("is_window_maximized"),&_OS::is_window_maximized);
+	ClassDB::bind_method(D_METHOD("request_attention"), &_OS::request_attention);
 
-	ObjectTypeDB::bind_method(_MD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
-	ObjectTypeDB::bind_method(_MD("get_borderless_window"), &_OS::get_borderless_window);
+	ClassDB::bind_method(D_METHOD("set_borderless_window", "borderless"), &_OS::set_borderless_window);
+	ClassDB::bind_method(D_METHOD("get_borderless_window"), &_OS::get_borderless_window);
 
-	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
-	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
+	ClassDB::bind_method(D_METHOD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
+	ClassDB::bind_method(D_METHOD("get_screen_orientation"),&_OS::get_screen_orientation);
 
-	ObjectTypeDB::bind_method(_MD("set_keep_screen_on","enabled"),&_OS::set_keep_screen_on);
-	ObjectTypeDB::bind_method(_MD("is_keep_screen_on"),&_OS::is_keep_screen_on);
+	ClassDB::bind_method(D_METHOD("set_keep_screen_on","enabled"),&_OS::set_keep_screen_on);
+	ClassDB::bind_method(D_METHOD("is_keep_screen_on"),&_OS::is_keep_screen_on);
 
-	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
-	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
-	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
-	ObjectTypeDB::bind_method(_MD("get_target_fps"),&_OS::get_target_fps);
 
-	ObjectTypeDB::bind_method(_MD("set_time_scale","time_scale"),&_OS::set_time_scale);
-	ObjectTypeDB::bind_method(_MD("get_time_scale"),&_OS::get_time_scale);
+	ClassDB::bind_method(D_METHOD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
-	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
+	ClassDB::bind_method(D_METHOD("set_window_title","title"),&_OS::set_window_title);
 
-	ObjectTypeDB::bind_method(_MD("set_window_title","title"),&_OS::set_window_title);
+	ClassDB::bind_method(D_METHOD("set_low_processor_usage_mode","enable"),&_OS::set_low_processor_usage_mode);
+	ClassDB::bind_method(D_METHOD("is_in_low_processor_usage_mode"),&_OS::is_in_low_processor_usage_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_low_processor_usage_mode","enable"),&_OS::set_low_processor_usage_mode);
-	ObjectTypeDB::bind_method(_MD("is_in_low_processor_usage_mode"),&_OS::is_in_low_processor_usage_mode);
+	ClassDB::bind_method(D_METHOD("get_processor_count"),&_OS::get_processor_count);
 
-	ObjectTypeDB::bind_method(_MD("get_processor_count"),&_OS::get_processor_count);
+	ClassDB::bind_method(D_METHOD("get_executable_path"),&_OS::get_executable_path);
+	ClassDB::bind_method(D_METHOD("execute","path","arguments","blocking","output"),&_OS::execute,DEFVAL(Array()));
+	ClassDB::bind_method(D_METHOD("kill","pid"),&_OS::kill);
+	ClassDB::bind_method(D_METHOD("shell_open","uri"),&_OS::shell_open);
+	ClassDB::bind_method(D_METHOD("get_process_ID"),&_OS::get_process_ID);
 
-	ObjectTypeDB::bind_method(_MD("get_executable_path"),&_OS::get_executable_path);
-	ObjectTypeDB::bind_method(_MD("execute","path","arguments","blocking","output"),&_OS::execute,DEFVAL(Array()));
-	ObjectTypeDB::bind_method(_MD("kill","pid"),&_OS::kill);
-	ObjectTypeDB::bind_method(_MD("shell_open","uri"),&_OS::shell_open);
-	ObjectTypeDB::bind_method(_MD("get_process_ID"),&_OS::get_process_ID);
+	ClassDB::bind_method(D_METHOD("get_environment","environment"),&_OS::get_environment);
+	ClassDB::bind_method(D_METHOD("has_environment","environment"),&_OS::has_environment);
 
-	ObjectTypeDB::bind_method(_MD("get_environment","environment"),&_OS::get_environment);
-	ObjectTypeDB::bind_method(_MD("has_environment","environment"),&_OS::has_environment);
+	ClassDB::bind_method(D_METHOD("get_name"),&_OS::get_name);
+	ClassDB::bind_method(D_METHOD("get_cmdline_args"),&_OS::get_cmdline_args);
 
-	ObjectTypeDB::bind_method(_MD("get_name"),&_OS::get_name);
-	ObjectTypeDB::bind_method(_MD("get_cmdline_args"),&_OS::get_cmdline_args);
-	ObjectTypeDB::bind_method(_MD("get_main_loop"),&_OS::get_main_loop);
-
-	ObjectTypeDB::bind_method(_MD("get_datetime","utc"),&_OS::get_datetime,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
-	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
-	ObjectTypeDB::bind_method(_MD("get_datetime_from_unix_time", "unix_time_val"),
+	ClassDB::bind_method(D_METHOD("get_datetime","utc"),&_OS::get_datetime,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_date","utc"),&_OS::get_date,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_time","utc"),&_OS::get_time,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_time_zone_info"),&_OS::get_time_zone_info);
+	ClassDB::bind_method(D_METHOD("get_unix_time"),&_OS::get_unix_time);
+	ClassDB::bind_method(D_METHOD("get_datetime_from_unix_time", "unix_time_val"),
 			&_OS::get_datetime_from_unix_time);
-	ObjectTypeDB::bind_method(_MD("get_unix_time_from_datetime", "datetime"),
+	ClassDB::bind_method(D_METHOD("get_unix_time_from_datetime", "datetime"),
 			&_OS::get_unix_time_from_datetime);
-	ObjectTypeDB::bind_method(_MD("get_system_time_secs"), &_OS::get_system_time_secs);
+	ClassDB::bind_method(D_METHOD("get_system_time_secs"), &_OS::get_system_time_secs);
 
-	ObjectTypeDB::bind_method(_MD("set_icon","icon"),&_OS::set_icon);
+	ClassDB::bind_method(D_METHOD("set_icon","icon"),&_OS::set_icon);
 
-	ObjectTypeDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
-	ObjectTypeDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
-	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
-	ObjectTypeDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
-	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
-	ObjectTypeDB::bind_method(_MD("get_latin_keyboard_variant"),&_OS::get_latin_keyboard_variant);
-	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
+	ClassDB::bind_method(D_METHOD("get_exit_code"),&_OS::get_exit_code);
+	ClassDB::bind_method(D_METHOD("set_exit_code","code"),&_OS::set_exit_code);
 
-	ObjectTypeDB::bind_method(_MD("get_custom_level"),&_OS::get_custom_level);
+	ClassDB::bind_method(D_METHOD("delay_usec","usec"),&_OS::delay_usec);
+	ClassDB::bind_method(D_METHOD("delay_msec","msec"),&_OS::delay_msec);
+	ClassDB::bind_method(D_METHOD("get_ticks_msec"),&_OS::get_ticks_msec);
+	ClassDB::bind_method(D_METHOD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
+	ClassDB::bind_method(D_METHOD("get_locale"),&_OS::get_locale);
+	ClassDB::bind_method(D_METHOD("get_latin_keyboard_variant"),&_OS::get_latin_keyboard_variant);
+	ClassDB::bind_method(D_METHOD("get_model_name"),&_OS::get_model_name);
 
-	ObjectTypeDB::bind_method(_MD("can_draw"),&_OS::can_draw);
-	ObjectTypeDB::bind_method(_MD("get_frames_drawn"),&_OS::get_frames_drawn);
-	ObjectTypeDB::bind_method(_MD("is_stdout_verbose"),&_OS::is_stdout_verbose);
 
-	ObjectTypeDB::bind_method(_MD("can_use_threads"),&_OS::can_use_threads);
+	ClassDB::bind_method(D_METHOD("can_draw"),&_OS::can_draw);
+	ClassDB::bind_method(D_METHOD("is_stdout_verbose"),&_OS::is_stdout_verbose);
 
-	ObjectTypeDB::bind_method(_MD("is_debug_build"),&_OS::is_debug_build);
+	ClassDB::bind_method(D_METHOD("can_use_threads"),&_OS::can_use_threads);
 
-	//ObjectTypeDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
+	ClassDB::bind_method(D_METHOD("is_debug_build"),&_OS::is_debug_build);
 
-	ObjectTypeDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
-	ObjectTypeDB::bind_method(_MD("dump_resources_to_file","file"),&_OS::dump_resources_to_file);
-	ObjectTypeDB::bind_method(_MD("has_virtual_keyboard"),&_OS::has_virtual_keyboard);
-	ObjectTypeDB::bind_method(_MD("show_virtual_keyboard", "existing_text"),&_OS::show_virtual_keyboard,DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("hide_virtual_keyboard"),&_OS::hide_virtual_keyboard);
-	ObjectTypeDB::bind_method(_MD("print_resources_in_use","short"),&_OS::print_resources_in_use,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("print_all_resources","tofile"),&_OS::print_all_resources,DEFVAL(""));
+	//ClassDB::bind_method(D_METHOD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 
-	ObjectTypeDB::bind_method(_MD("get_static_memory_usage"),&_OS::get_static_memory_usage);
-	ObjectTypeDB::bind_method(_MD("get_static_memory_peak_usage"),&_OS::get_static_memory_peak_usage);
-	ObjectTypeDB::bind_method(_MD("get_dynamic_memory_usage"),&_OS::get_dynamic_memory_usage);
+	ClassDB::bind_method(D_METHOD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
+	ClassDB::bind_method(D_METHOD("dump_resources_to_file","file"),&_OS::dump_resources_to_file);
+	ClassDB::bind_method(D_METHOD("has_virtual_keyboard"),&_OS::has_virtual_keyboard);
+	ClassDB::bind_method(D_METHOD("show_virtual_keyboard", "existing_text"),&_OS::show_virtual_keyboard,DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("hide_virtual_keyboard"),&_OS::hide_virtual_keyboard);
+	ClassDB::bind_method(D_METHOD("print_resources_in_use","short"),&_OS::print_resources_in_use,DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("print_all_resources","tofile"),&_OS::print_all_resources,DEFVAL(""));
 
-	ObjectTypeDB::bind_method(_MD("get_data_dir"),&_OS::get_data_dir);
-	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
-	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
+	ClassDB::bind_method(D_METHOD("get_static_memory_usage"),&_OS::get_static_memory_usage);
+	ClassDB::bind_method(D_METHOD("get_static_memory_peak_usage"),&_OS::get_static_memory_peak_usage);
+	ClassDB::bind_method(D_METHOD("get_dynamic_memory_usage"),&_OS::get_dynamic_memory_usage);
 
-	ObjectTypeDB::bind_method(_MD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
+	ClassDB::bind_method(D_METHOD("get_data_dir"),&_OS::get_data_dir);
+	ClassDB::bind_method(D_METHOD("get_system_dir","dir"),&_OS::get_system_dir);
+	ClassDB::bind_method(D_METHOD("get_unique_ID"),&_OS::get_unique_ID);
 
-	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
+	ClassDB::bind_method(D_METHOD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
 
-	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
-	ObjectTypeDB::bind_method(_MD("print_resources_by_type","types"),&_OS::print_resources_by_type);
 
-	ObjectTypeDB::bind_method(_MD("native_video_play","path","volume","audio_track","subtitle_track"),&_OS::native_video_play);
-	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
-	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
-	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
-	ObjectTypeDB::bind_method(_MD("native_video_unpause"),&_OS::native_video_unpause);
+	ClassDB::bind_method(D_METHOD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
+	ClassDB::bind_method(D_METHOD("print_resources_by_type","types"),&_OS::print_resources_by_type);
 
-	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
-	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
-	ObjectTypeDB::bind_method(_MD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
+	ClassDB::bind_method(D_METHOD("native_video_play","path","volume","audio_track","subtitle_track"),&_OS::native_video_play);
+	ClassDB::bind_method(D_METHOD("native_video_is_playing"),&_OS::native_video_is_playing);
+	ClassDB::bind_method(D_METHOD("native_video_stop"),&_OS::native_video_stop);
+	ClassDB::bind_method(D_METHOD("native_video_pause"),&_OS::native_video_pause);
+	ClassDB::bind_method(D_METHOD("native_video_unpause"),&_OS::native_video_unpause);
 
-	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
+	ClassDB::bind_method(D_METHOD("get_scancode_string","code"),&_OS::get_scancode_string);
+	ClassDB::bind_method(D_METHOD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
+	ClassDB::bind_method(D_METHOD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
 
-	ObjectTypeDB::bind_method(_MD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
+	ClassDB::bind_method(D_METHOD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
-	ObjectTypeDB::bind_method(_MD("set_thread_name","name"),&_OS::set_thread_name);
+	ClassDB::bind_method(D_METHOD("alert","text","title"),&_OS::alert,DEFVAL("Alert!"));
 
-	ObjectTypeDB::bind_method(_MD("set_use_vsync","enable"),&_OS::set_use_vsync);
-	ObjectTypeDB::bind_method(_MD("is_vsync_enabled"),&_OS::is_vsync_enabled);
+	ClassDB::bind_method(D_METHOD("set_thread_name","name"),&_OS::set_thread_name);
 
-	ObjectTypeDB::bind_method(_MD("get_engine_version"),&_OS::get_engine_version);
+	ClassDB::bind_method(D_METHOD("set_use_vsync","enable"),&_OS::set_use_vsync);
+	ClassDB::bind_method(D_METHOD("is_vsync_enabled"),&_OS::is_vsync_enabled);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -1232,16 +1169,16 @@ _Geometry *_Geometry::get_singleton() {
 	return singleton;
 }
 
-DVector<Plane> _Geometry::build_box_planes(const Vector3& p_extents) {
+PoolVector<Plane> _Geometry::build_box_planes(const Vector3& p_extents) {
 
 	return Geometry::build_box_planes(p_extents);
 }
 
-DVector<Plane> _Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
+PoolVector<Plane> _Geometry::build_cylinder_planes(float p_radius, float p_height, int p_sides, Vector3::Axis p_axis) {
 
 	return Geometry::build_cylinder_planes(p_radius,p_height,p_sides,p_axis);
 }
-DVector<Plane> _Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+PoolVector<Plane> _Geometry::build_capsule_planes(float p_radius, float p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
 
 	return Geometry::build_capsule_planes(p_radius,p_height,p_sides,p_lats,p_axis);
 }
@@ -1262,22 +1199,22 @@ Variant _Geometry::segment_intersects_segment_2d(const Vector2& p_from_a,const V
 	};
 };
 
-DVector<Vector2> _Geometry::get_closest_points_between_segments_2d( const Vector2& p1,const Vector2& q1, const Vector2& p2,const Vector2& q2) {
+PoolVector<Vector2> _Geometry::get_closest_points_between_segments_2d( const Vector2& p1,const Vector2& q1, const Vector2& p2,const Vector2& q2) {
 
 	Vector2 r1, r2;
 	Geometry::get_closest_points_between_segments(p1,q1,p2,q2,r1,r2);
-	DVector<Vector2> r;
+	PoolVector<Vector2> r;
 	r.resize(2);
 	r.set(0,r1);
 	r.set(1,r2);
 	return r;
 }
 
-DVector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3& p1,const Vector3& p2,const Vector3& q1,const Vector3& q2) {
+PoolVector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3& p1,const Vector3& p2,const Vector3& q1,const Vector3& q2) {
 
 	Vector3 r1, r2;
 	Geometry::get_closest_points_between_segments(p1,p2,q1,q2,r1,r2);
-	DVector<Vector3> r;
+	PoolVector<Vector3> r;
 	r.resize(2);
 	r.set(0,r1);
 	r.set(1,r2);
@@ -1314,9 +1251,9 @@ bool _Geometry::point_is_inside_triangle(const Vector2& s, const Vector2& a, con
 	return Geometry::is_point_in_triangle(s,a,b,c);
 }
 
-DVector<Vector3> _Geometry::segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius) {
+PoolVector<Vector3> _Geometry::segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius) {
 
-	DVector<Vector3> r;
+	PoolVector<Vector3> r;
 	Vector3 res,norm;
 	if (!Geometry::segment_intersects_sphere(p_from,p_to,p_sphere_pos,p_sphere_radius,&res,&norm))
 		return r;
@@ -1326,9 +1263,9 @@ DVector<Vector3> _Geometry::segment_intersects_sphere( const Vector3& p_from, co
 	r.set(1,norm);
 	return r;
 }
-DVector<Vector3> _Geometry::segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius) {
+PoolVector<Vector3> _Geometry::segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius) {
 
-	DVector<Vector3> r;
+	PoolVector<Vector3> r;
 	Vector3 res,norm;
 	if (!Geometry::segment_intersects_cylinder(p_from,p_to,p_height,p_radius,&res,&norm))
 		return r;
@@ -1339,9 +1276,9 @@ DVector<Vector3> _Geometry::segment_intersects_cylinder( const Vector3& p_from, 
 	return r;
 
 }
-DVector<Vector3> _Geometry::segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes) {
+PoolVector<Vector3> _Geometry::segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes) {
 
-	DVector<Vector3> r;
+	PoolVector<Vector3> r;
 	Vector3 res,norm;
 	if (!Geometry::segment_intersects_convex(p_from,p_to,p_planes.ptr(),p_planes.size(),&res,&norm))
 		return r;
@@ -1396,29 +1333,29 @@ int _Geometry::get_uv84_normal_bit(const Vector3& p_vector) {
 void _Geometry::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("build_box_planes","extents"),&_Geometry::build_box_planes);
-	ObjectTypeDB::bind_method(_MD("build_cylinder_planes","radius","height","sides","axis"),&_Geometry::build_cylinder_planes,DEFVAL(Vector3::AXIS_Z));
-	ObjectTypeDB::bind_method(_MD("build_capsule_planes","radius","height","sides","lats","axis"),&_Geometry::build_capsule_planes,DEFVAL(Vector3::AXIS_Z));
-	ObjectTypeDB::bind_method(_MD("segment_intersects_circle","segment_from","segment_to","circle_pos","circle_radius"),&_Geometry::segment_intersects_circle);
-	ObjectTypeDB::bind_method(_MD("segment_intersects_segment_2d","from_a","to_a","from_b","to_b"),&_Geometry::segment_intersects_segment_2d);
+	ClassDB::bind_method(D_METHOD("build_box_planes","extents"),&_Geometry::build_box_planes);
+	ClassDB::bind_method(D_METHOD("build_cylinder_planes","radius","height","sides","axis"),&_Geometry::build_cylinder_planes,DEFVAL(Vector3::AXIS_Z));
+	ClassDB::bind_method(D_METHOD("build_capsule_planes","radius","height","sides","lats","axis"),&_Geometry::build_capsule_planes,DEFVAL(Vector3::AXIS_Z));
+	ClassDB::bind_method(D_METHOD("segment_intersects_circle","segment_from","segment_to","circle_pos","circle_radius"),&_Geometry::segment_intersects_circle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_segment_2d","from_a","to_a","from_b","to_b"),&_Geometry::segment_intersects_segment_2d);
 
-	ObjectTypeDB::bind_method(_MD("get_closest_points_between_segments_2d","p1","q1","p2","q2"),&_Geometry::get_closest_points_between_segments_2d);
-	ObjectTypeDB::bind_method(_MD("get_closest_points_between_segments","p1","p2","q1","q2"),&_Geometry::get_closest_points_between_segments);
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments_2d","p1","q1","p2","q2"),&_Geometry::get_closest_points_between_segments_2d);
+	ClassDB::bind_method(D_METHOD("get_closest_points_between_segments","p1","p2","q1","q2"),&_Geometry::get_closest_points_between_segments);
 
-	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
+	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
 
-	ObjectTypeDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
+	ClassDB::bind_method(D_METHOD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
 
-	ObjectTypeDB::bind_method(_MD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
-	ObjectTypeDB::bind_method(_MD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);
-	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
-	ObjectTypeDB::bind_method(_MD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
-	ObjectTypeDB::bind_method(_MD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
-	ObjectTypeDB::bind_method(_MD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
+	ClassDB::bind_method(D_METHOD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);
+	ClassDB::bind_method(D_METHOD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
+	ClassDB::bind_method(D_METHOD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
+	ClassDB::bind_method(D_METHOD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
+	ClassDB::bind_method(D_METHOD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
 
-	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
+	ClassDB::bind_method(D_METHOD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
-	ObjectTypeDB::bind_method(_MD("make_atlas","sizes"),&_Geometry::make_atlas);
+	ClassDB::bind_method(D_METHOD("make_atlas","sizes"),&_Geometry::make_atlas);
 }
 
 
@@ -1566,9 +1503,9 @@ real_t _File::get_real() const{
 	return f->get_real();
 }
 
-DVector<uint8_t> _File::get_buffer(int p_length) const{
+PoolVector<uint8_t> _File::get_buffer(int p_length) const{
 
-	DVector<uint8_t> data;
+	PoolVector<uint8_t> data;
 	ERR_FAIL_COND_V(!f,data);
 
 	ERR_FAIL_COND_V(p_length<0,data);
@@ -1576,11 +1513,11 @@ DVector<uint8_t> _File::get_buffer(int p_length) const{
 		return data;
 	Error err = data.resize(p_length);
 	ERR_FAIL_COND_V(err!=OK,data);
-	DVector<uint8_t>::Write w = data.write();
+	PoolVector<uint8_t>::Write w = data.write();
 	int len = f->get_buffer(&w[0],p_length);
-	ERR_FAIL_COND_V( len < 0 , DVector<uint8_t>());
+	ERR_FAIL_COND_V( len < 0 , PoolVector<uint8_t>());
 
-	w = DVector<uint8_t>::Write();
+	w = PoolVector<uint8_t>::Write();
 
 	if (len < p_length)
 		data.resize(p_length);
@@ -1735,7 +1672,7 @@ void _File::store_line(const String& p_string){
 	f->store_line(p_string);
 }
 
-void _File::store_buffer(const DVector<uint8_t>& p_buffer){
+void _File::store_buffer(const PoolVector<uint8_t>& p_buffer){
 
 	ERR_FAIL_COND(!f);
 
@@ -1743,7 +1680,7 @@ void _File::store_buffer(const DVector<uint8_t>& p_buffer){
 	if (len==0)
 		return;
 
-	DVector<uint8_t>::Read r = p_buffer.read();
+	PoolVector<uint8_t>::Read r = p_buffer.read();
 
 	f->store_buffer(&r[0],len);
 }
@@ -1762,13 +1699,13 @@ void _File::store_var(const Variant& p_var) {
 	Error err = encode_variant(p_var,NULL,len);
 	ERR_FAIL_COND( err != OK );
 
-	DVector<uint8_t> buff;
+	PoolVector<uint8_t> buff;
 	buff.resize(len);
-	DVector<uint8_t>::Write w = buff.write();
+	PoolVector<uint8_t>::Write w = buff.write();
 
 	err = encode_variant(p_var,&w[0],len);
 	ERR_FAIL_COND( err != OK );
-	w=DVector<uint8_t>::Write();
+	w=PoolVector<uint8_t>::Write();
 
 	store_32(len);
 	store_buffer(buff);
@@ -1778,10 +1715,10 @@ Variant _File::get_var() const {
 
 	ERR_FAIL_COND_V(!f,Variant());
 	uint32_t len = get_32();
-	DVector<uint8_t> buff = get_buffer(len);
+	PoolVector<uint8_t> buff = get_buffer(len);
 	ERR_FAIL_COND_V(buff.size() != len, Variant());
 
-	DVector<uint8_t>::Read r = buff.read();
+	PoolVector<uint8_t>::Read r = buff.read();
 
 	Variant v;
 	Error err = decode_variant(v,&r[0],len);
@@ -1790,54 +1727,60 @@ Variant _File::get_var() const {
 	return v;
 }
 
+uint64_t _File::get_modified_time(const String &p_file) const {
+
+	return FileAccess::get_modified_time(p_file);
+}
+
 void _File::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("open_encrypted","path","mode_flags","key"),&_File::open_encrypted);
-	ObjectTypeDB::bind_method(_MD("open_encrypted_with_pass","path","mode_flags","pass"),&_File::open_encrypted_pass);
+	ClassDB::bind_method(D_METHOD("open_encrypted","path","mode_flags","key"),&_File::open_encrypted);
+	ClassDB::bind_method(D_METHOD("open_encrypted_with_pass","path","mode_flags","pass"),&_File::open_encrypted_pass);
 
-	ObjectTypeDB::bind_method(_MD("open","path","flags"),&_File::open);
-	ObjectTypeDB::bind_method(_MD("close"),&_File::close);
-	ObjectTypeDB::bind_method(_MD("is_open"),&_File::is_open);
-	ObjectTypeDB::bind_method(_MD("seek","pos"),&_File::seek);
-	ObjectTypeDB::bind_method(_MD("seek_end","pos"),&_File::seek_end,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_pos"),&_File::get_pos);
-	ObjectTypeDB::bind_method(_MD("get_len"),&_File::get_len);
-	ObjectTypeDB::bind_method(_MD("eof_reached"),&_File::eof_reached);
-	ObjectTypeDB::bind_method(_MD("get_8"),&_File::get_8);
-	ObjectTypeDB::bind_method(_MD("get_16"),&_File::get_16);
-	ObjectTypeDB::bind_method(_MD("get_32"),&_File::get_32);
-	ObjectTypeDB::bind_method(_MD("get_64"),&_File::get_64);
-	ObjectTypeDB::bind_method(_MD("get_float"),&_File::get_float);
-	ObjectTypeDB::bind_method(_MD("get_double"),&_File::get_double);
-	ObjectTypeDB::bind_method(_MD("get_real"),&_File::get_real);
-	ObjectTypeDB::bind_method(_MD("get_buffer","len"),&_File::get_buffer);
-	ObjectTypeDB::bind_method(_MD("get_line"),&_File::get_line);
-	ObjectTypeDB::bind_method(_MD("get_as_text"),&_File::get_as_text);
-	ObjectTypeDB::bind_method(_MD("get_md5","path"),&_File::get_md5);
-	ObjectTypeDB::bind_method(_MD("get_sha256","path"),&_File::get_sha256);
-	ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_File::get_endian_swap);
-	ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_File::set_endian_swap);
-	ObjectTypeDB::bind_method(_MD("get_error:Error"),&_File::get_error);
-	ObjectTypeDB::bind_method(_MD("get_var"),&_File::get_var);
-	ObjectTypeDB::bind_method(_MD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
+	ClassDB::bind_method(D_METHOD("open","path","flags"),&_File::open);
+	ClassDB::bind_method(D_METHOD("close"),&_File::close);
+	ClassDB::bind_method(D_METHOD("is_open"),&_File::is_open);
+	ClassDB::bind_method(D_METHOD("seek","pos"),&_File::seek);
+	ClassDB::bind_method(D_METHOD("seek_end","pos"),&_File::seek_end,DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_pos"),&_File::get_pos);
+	ClassDB::bind_method(D_METHOD("get_len"),&_File::get_len);
+	ClassDB::bind_method(D_METHOD("eof_reached"),&_File::eof_reached);
+	ClassDB::bind_method(D_METHOD("get_8"),&_File::get_8);
+	ClassDB::bind_method(D_METHOD("get_16"),&_File::get_16);
+	ClassDB::bind_method(D_METHOD("get_32"),&_File::get_32);
+	ClassDB::bind_method(D_METHOD("get_64"),&_File::get_64);
+	ClassDB::bind_method(D_METHOD("get_float"),&_File::get_float);
+	ClassDB::bind_method(D_METHOD("get_double"),&_File::get_double);
+	ClassDB::bind_method(D_METHOD("get_real"),&_File::get_real);
+	ClassDB::bind_method(D_METHOD("get_buffer","len"),&_File::get_buffer);
+	ClassDB::bind_method(D_METHOD("get_line"),&_File::get_line);
+	ClassDB::bind_method(D_METHOD("get_as_text"),&_File::get_as_text);
+	ClassDB::bind_method(D_METHOD("get_md5","path"),&_File::get_md5);
+	ClassDB::bind_method(D_METHOD("get_sha256","path"),&_File::get_sha256);
+	ClassDB::bind_method(D_METHOD("get_endian_swap"),&_File::get_endian_swap);
+	ClassDB::bind_method(D_METHOD("set_endian_swap","enable"),&_File::set_endian_swap);
+	ClassDB::bind_method(D_METHOD("get_error:Error"),&_File::get_error);
+	ClassDB::bind_method(D_METHOD("get_var"),&_File::get_var);
+	ClassDB::bind_method(D_METHOD("get_csv_line","delim"),&_File::get_csv_line,DEFVAL(","));
 
-	ObjectTypeDB::bind_method(_MD("store_8","value"),&_File::store_8);
-	ObjectTypeDB::bind_method(_MD("store_16","value"),&_File::store_16);
-	ObjectTypeDB::bind_method(_MD("store_32","value"),&_File::store_32);
-	ObjectTypeDB::bind_method(_MD("store_64","value"),&_File::store_64);
-	ObjectTypeDB::bind_method(_MD("store_float","value"),&_File::store_float);
-	ObjectTypeDB::bind_method(_MD("store_double","value"),&_File::store_double);
-	ObjectTypeDB::bind_method(_MD("store_real","value"),&_File::store_real);
-	ObjectTypeDB::bind_method(_MD("store_buffer","buffer"),&_File::store_buffer);
-	ObjectTypeDB::bind_method(_MD("store_line","line"),&_File::store_line);
-	ObjectTypeDB::bind_method(_MD("store_string","string"),&_File::store_string);
-	ObjectTypeDB::bind_method(_MD("store_var","value"),&_File::store_var);
+	ClassDB::bind_method(D_METHOD("store_8","value"),&_File::store_8);
+	ClassDB::bind_method(D_METHOD("store_16","value"),&_File::store_16);
+	ClassDB::bind_method(D_METHOD("store_32","value"),&_File::store_32);
+	ClassDB::bind_method(D_METHOD("store_64","value"),&_File::store_64);
+	ClassDB::bind_method(D_METHOD("store_float","value"),&_File::store_float);
+	ClassDB::bind_method(D_METHOD("store_double","value"),&_File::store_double);
+	ClassDB::bind_method(D_METHOD("store_real","value"),&_File::store_real);
+	ClassDB::bind_method(D_METHOD("store_buffer","buffer"),&_File::store_buffer);
+	ClassDB::bind_method(D_METHOD("store_line","line"),&_File::store_line);
+	ClassDB::bind_method(D_METHOD("store_string","string"),&_File::store_string);
+	ClassDB::bind_method(D_METHOD("store_var","value"),&_File::store_var);
 
-	ObjectTypeDB::bind_method(_MD("store_pascal_string","string"),&_File::store_pascal_string);
-	ObjectTypeDB::bind_method(_MD("get_pascal_string"),&_File::get_pascal_string);
+	ClassDB::bind_method(D_METHOD("store_pascal_string","string"),&_File::store_pascal_string);
+	ClassDB::bind_method(D_METHOD("get_pascal_string"),&_File::get_pascal_string);
 
-	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_File::file_exists);
+	ClassDB::bind_method(D_METHOD("file_exists","path"),&_File::file_exists);
+	ClassDB::bind_method(D_METHOD("get_modified_time", "file"),&_File::get_modified_time);
 
 	BIND_CONSTANT( READ );
 	BIND_CONSTANT( WRITE );
@@ -1877,16 +1820,28 @@ Error _Directory::open(const String& p_path) {
 	return OK;
 }
 
-bool _Directory::list_dir_begin() {
+Error _Directory::list_dir_begin(bool p_skip_navigational, bool p_skip_hidden) {
 
-	ERR_FAIL_COND_V(!d,false);
+	ERR_FAIL_COND_V(!d,ERR_UNCONFIGURED);
+
+	_list_skip_navigational = p_skip_navigational;
+	_list_skip_hidden = p_skip_hidden;
+
 	return d->list_dir_begin();
 }
 
 String _Directory::get_next(){
 
 	ERR_FAIL_COND_V(!d,"");
-	return d->get_next();
+
+	String next = d->get_next();
+	while (next != ""
+		&& ((_list_skip_navigational && (next == "." || next == ".."))
+		|| (_list_skip_hidden && d->current_is_hidden()))) {
+
+		next = d->get_next();
+	}
+	return next;
 }
 bool _Directory::current_is_dir() const{
 
@@ -1909,6 +1864,10 @@ String _Directory::get_drive(int p_drive){
 
 	ERR_FAIL_COND_V(!d,"");
 	return d->get_drive(p_drive);
+}
+int _Directory::get_current_drive() {
+	ERR_FAIL_COND_V(!d,0);
+	return d->get_current_drive();
 }
 
 Error _Directory::change_dir(String p_dir){
@@ -2011,24 +1970,25 @@ Error _Directory::remove(String p_name){
 void _Directory::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("open:Error","path"),&_Directory::open);
-	ObjectTypeDB::bind_method(_MD("list_dir_begin"),&_Directory::list_dir_begin);
-	ObjectTypeDB::bind_method(_MD("get_next"),&_Directory::get_next);
-	ObjectTypeDB::bind_method(_MD("current_is_dir"),&_Directory::current_is_dir);
-	ObjectTypeDB::bind_method(_MD("list_dir_end"),&_Directory::list_dir_end);
-	ObjectTypeDB::bind_method(_MD("get_drive_count"),&_Directory::get_drive_count);
-	ObjectTypeDB::bind_method(_MD("get_drive","idx"),&_Directory::get_drive);
-	ObjectTypeDB::bind_method(_MD("change_dir:Error","todir"),&_Directory::change_dir);
-	ObjectTypeDB::bind_method(_MD("get_current_dir"),&_Directory::get_current_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir:Error","path"),&_Directory::make_dir);
-	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
-	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_Directory::file_exists);
-	ObjectTypeDB::bind_method(_MD("dir_exists","path"),&_Directory::dir_exists);
-//	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
-	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
-	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
-	ObjectTypeDB::bind_method(_MD("rename:Error","from","to"),&_Directory::rename);
-	ObjectTypeDB::bind_method(_MD("remove:Error","path"),&_Directory::remove);
+	ClassDB::bind_method(D_METHOD("open:Error","path"),&_Directory::open);
+	ClassDB::bind_method(D_METHOD("list_dir_begin", "skip_navigational", "skip_hidden"), &_Directory::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_next"),&_Directory::get_next);
+	ClassDB::bind_method(D_METHOD("current_is_dir"),&_Directory::current_is_dir);
+	ClassDB::bind_method(D_METHOD("list_dir_end"),&_Directory::list_dir_end);
+	ClassDB::bind_method(D_METHOD("get_drive_count"),&_Directory::get_drive_count);
+	ClassDB::bind_method(D_METHOD("get_drive","idx"),&_Directory::get_drive);
+	ClassDB::bind_method(D_METHOD("get_current_drive"),&_Directory::get_current_drive);
+	ClassDB::bind_method(D_METHOD("change_dir:Error","todir"),&_Directory::change_dir);
+	ClassDB::bind_method(D_METHOD("get_current_dir"),&_Directory::get_current_dir);
+	ClassDB::bind_method(D_METHOD("make_dir:Error","path"),&_Directory::make_dir);
+	ClassDB::bind_method(D_METHOD("make_dir_recursive:Error","path"),&_Directory::make_dir_recursive);
+	ClassDB::bind_method(D_METHOD("file_exists","path"),&_Directory::file_exists);
+	ClassDB::bind_method(D_METHOD("dir_exists","path"),&_Directory::dir_exists);
+	//ClassDB::bind_method(D_METHOD("get_modified_time","file"),&_Directory::get_modified_time);
+	ClassDB::bind_method(D_METHOD("get_space_left"),&_Directory::get_space_left);
+	ClassDB::bind_method(D_METHOD("copy:Error","from","to"),&_Directory::copy);
+	ClassDB::bind_method(D_METHOD("rename:Error","from","to"),&_Directory::rename);
+	ClassDB::bind_method(D_METHOD("remove:Error","path"),&_Directory::remove);
 
 }
 
@@ -2056,17 +2016,17 @@ String _Marshalls::variant_to_base64(const Variant& p_var) {
 	Error err = encode_variant(p_var,NULL,len);
 	ERR_FAIL_COND_V( err != OK, "" );
 
-	DVector<uint8_t> buff;
+	PoolVector<uint8_t> buff;
 	buff.resize(len);
-	DVector<uint8_t>::Write w = buff.write();
+	PoolVector<uint8_t>::Write w = buff.write();
 
 	err = encode_variant(p_var,&w[0],len);
 	ERR_FAIL_COND_V( err != OK, "" );
 
 	int b64len = len / 3 * 4 + 4 + 1;
-	DVector<uint8_t> b64buff;
+	PoolVector<uint8_t> b64buff;
 	b64buff.resize(b64len);
-	DVector<uint8_t>::Write w64 = b64buff.write();
+	PoolVector<uint8_t>::Write w64 = b64buff.write();
 
 	int strlen = base64_encode((char*)(&w64[0]), (char*)(&w[0]), len);
 	//OS::get_singleton()->print("len is %i, vector size is %i\n", b64len, strlen);
@@ -2081,9 +2041,9 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	DVector<uint8_t> buf;
+	PoolVector<uint8_t> buf;
 	buf.resize(strlen / 4 * 3 + 1);
-	DVector<uint8_t>::Write w = buf.write();
+	PoolVector<uint8_t>::Write w = buf.write();
 
 	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
 
@@ -2094,15 +2054,15 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	return v;
 };
 
-String _Marshalls::raw_to_base64(const DVector<uint8_t> &p_arr) {
+String _Marshalls::raw_to_base64(const PoolVector<uint8_t> &p_arr) {
 
 	int len = p_arr.size();
-	DVector<uint8_t>::Read r = p_arr.read();
+	PoolVector<uint8_t>::Read r = p_arr.read();
 
 	int b64len = len / 3 * 4 + 4 + 1;
-	DVector<uint8_t> b64buff;
+	PoolVector<uint8_t> b64buff;
 	b64buff.resize(b64len);
-	DVector<uint8_t>::Write w64 = b64buff.write();
+	PoolVector<uint8_t>::Write w64 = b64buff.write();
 
 	int strlen = base64_encode((char*)(&w64[0]), (char*)(&r[0]), len);
 	w64[strlen] = 0;
@@ -2111,22 +2071,22 @@ String _Marshalls::raw_to_base64(const DVector<uint8_t> &p_arr) {
 	return ret;
 };
 
-DVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
+PoolVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
 
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
 	int arr_len;
-	DVector<uint8_t> buf;
+	PoolVector<uint8_t> buf;
 	{
 		buf.resize(strlen / 4 * 3 + 1);
-		DVector<uint8_t>::Write w = buf.write();
+		PoolVector<uint8_t>::Write w = buf.write();
 
 		arr_len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
 	};
 	buf.resize(arr_len);
 
-	// conversion from DVector<uint8_t> to raw array?
+	// conversion from PoolVector<uint8_t> to raw array?
 	return buf;
 };
 
@@ -2136,9 +2096,9 @@ String _Marshalls::utf8_to_base64(const String& p_str) {
 	int len = cstr.length();
 
 	int b64len = len / 3 * 4 + 4 + 1;
-	DVector<uint8_t> b64buff;
+	PoolVector<uint8_t> b64buff;
 	b64buff.resize(b64len);
-	DVector<uint8_t>::Write w64 = b64buff.write();
+	PoolVector<uint8_t>::Write w64 = b64buff.write();
 
 	int strlen = base64_encode((char*)(&w64[0]), (char*)cstr.get_data(), len);
 
@@ -2153,9 +2113,9 @@ String _Marshalls::base64_to_utf8(const String& p_str) {
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	DVector<uint8_t> buf;
+	PoolVector<uint8_t> buf;
 	buf.resize(strlen / 4 * 3 + 1 + 1);
-	DVector<uint8_t>::Write w = buf.write();
+	PoolVector<uint8_t>::Write w = buf.write();
 
 	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
 
@@ -2168,14 +2128,14 @@ String _Marshalls::base64_to_utf8(const String& p_str) {
 
 void _Marshalls::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
-	ObjectTypeDB::bind_method(_MD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
+	ClassDB::bind_method(D_METHOD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
 
-	ObjectTypeDB::bind_method(_MD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
-	ObjectTypeDB::bind_method(_MD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
+	ClassDB::bind_method(D_METHOD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
 
-	ObjectTypeDB::bind_method(_MD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
-	ObjectTypeDB::bind_method(_MD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
+	ClassDB::bind_method(D_METHOD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
+	ClassDB::bind_method(D_METHOD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
 
 };
 
@@ -2199,8 +2159,8 @@ Error _Semaphore::post() {
 
 void _Semaphore::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("wait:Error"),&_Semaphore::wait);
-	ObjectTypeDB::bind_method(_MD("post:Error"),&_Semaphore::post);
+	ClassDB::bind_method(D_METHOD("wait:Error"),&_Semaphore::wait);
+	ClassDB::bind_method(D_METHOD("post:Error"),&_Semaphore::post);
 
 }
 
@@ -2236,9 +2196,9 @@ void _Mutex::unlock(){
 
 void _Mutex::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("lock"),&_Mutex::lock);
-	ObjectTypeDB::bind_method(_MD("try_lock:Error"),&_Mutex::try_lock);
-	ObjectTypeDB::bind_method(_MD("unlock"),&_Mutex::unlock);
+	ClassDB::bind_method(D_METHOD("lock"),&_Mutex::lock);
+	ClassDB::bind_method(D_METHOD("try_lock:Error"),&_Mutex::try_lock);
+	ClassDB::bind_method(D_METHOD("unlock"),&_Mutex::unlock);
 
 }
 
@@ -2358,10 +2318,10 @@ Variant _Thread::wait_to_finish() {
 
 void _Thread::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
-	ObjectTypeDB::bind_method(_MD("get_id"),&_Thread::get_id);
-	ObjectTypeDB::bind_method(_MD("is_active"),&_Thread::is_active);
-	ObjectTypeDB::bind_method(_MD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
+	ClassDB::bind_method(D_METHOD("start:Error","instance","method","userdata","priority"),&_Thread::start,DEFVAL(Variant()),DEFVAL(PRIORITY_NORMAL));
+	ClassDB::bind_method(D_METHOD("get_id"),&_Thread::get_id);
+	ClassDB::bind_method(D_METHOD("is_active"),&_Thread::is_active);
+	ClassDB::bind_method(D_METHOD("wait_to_finish:Variant"),&_Thread::wait_to_finish);
 
 	BIND_CONSTANT( PRIORITY_LOW );
 	BIND_CONSTANT( PRIORITY_NORMAL );
@@ -2381,4 +2341,290 @@ _Thread::~_Thread() {
 		ERR_EXPLAIN("Reference to a Thread object object was lost while the thread is still running..");
 	}
 	ERR_FAIL_COND(active==true);
+}
+/////////////////////////////////////
+
+
+PoolStringArray _ClassDB::get_class_list() const {
+
+	List<StringName> classes;
+	ClassDB::get_class_list(&classes);
+
+	PoolStringArray ret;
+	ret.resize(classes.size());
+	int idx=0;
+	for (List<StringName>::Element *E=classes.front();E;E=E->next()) {
+		ret.set(idx++,E->get());
+	}
+
+	return ret;
+
+}
+PoolStringArray _ClassDB::get_inheriters_from_class( const StringName& p_class) const {
+
+	List<StringName> classes;
+	ClassDB::get_inheriters_from_class(p_class,&classes);
+
+	PoolStringArray ret;
+	ret.resize(classes.size());
+	int idx=0;
+	for (List<StringName>::Element *E=classes.front();E;E=E->next()) {
+		ret.set(idx++,E->get());
+	}
+
+	return ret;
+}
+StringName _ClassDB::get_parent_class(const StringName& p_class) const {
+
+	return ClassDB::get_parent_class(p_class);
+}
+bool _ClassDB::class_exists(const StringName &p_class) const {
+
+	return ClassDB::class_exists(p_class);
+}
+bool _ClassDB::is_parent_class(const StringName &p_class,const StringName& p_inherits) const {
+
+	return ClassDB::is_parent_class(p_class,p_inherits);
+}
+bool _ClassDB::can_instance(const StringName &p_class) const {
+
+	return ClassDB::can_instance(p_class);
+}
+Variant _ClassDB::instance(const StringName &p_class) const {
+
+	Object *obj = ClassDB::instance(p_class);
+	if (!obj)
+		return Variant();
+
+	Reference *r = obj->cast_to<Reference>();
+	if (r) {
+		return REF(r);
+	} else {
+		return obj;
+	}
+}
+
+bool _ClassDB::has_signal(StringName p_class,StringName p_signal) const {
+
+	return ClassDB::has_signal(p_class,p_signal);
+}
+Dictionary _ClassDB::get_signal(StringName p_class,StringName p_signal) const {
+
+	MethodInfo signal;
+	if (ClassDB::get_signal(p_class,p_signal,&signal)) {
+		return signal.operator Dictionary();
+	} else {
+		return Dictionary();
+	}
+
+}
+Array _ClassDB::get_signal_list(StringName p_class,bool p_no_inheritance) const {
+
+	List<MethodInfo> signals;
+	ClassDB::get_signal_list(p_class,&signals,p_no_inheritance);
+	Array ret;
+
+	for (List<MethodInfo>::Element *E=signals.front();E;E=E->next()) {
+		ret.push_back(E->get().operator Dictionary());
+	}
+
+	return ret;
+}
+
+Array _ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) const {
+
+	List<PropertyInfo> plist;
+	ClassDB::get_property_list(p_class,&plist,p_no_inheritance);
+	Array ret;
+	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
+		ret.push_back(E->get().operator Dictionary());
+	}
+
+	return ret;
+
+
+}
+
+bool _ClassDB::has_method(StringName p_class,StringName p_method,bool p_no_inheritance) const {
+
+	return ClassDB::has_method(p_class,p_method,p_no_inheritance);
+}
+
+
+Array _ClassDB::get_method_list(StringName p_class,bool p_no_inheritance) const {
+
+	List<MethodInfo> methods;
+	ClassDB::get_method_list(p_class,&methods,p_no_inheritance);
+	Array ret;
+
+	for (List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
+		ret.push_back(E->get().operator Dictionary());
+	}
+
+	return ret;
+}
+
+PoolStringArray _ClassDB::get_integer_constant_list(const StringName& p_class, bool p_no_inheritance) const {
+
+	List<String> constants;
+	ClassDB::get_integer_constant_list(p_class,&constants,p_no_inheritance);
+
+	PoolStringArray ret;
+	ret.resize(constants.size());
+	int idx=0;
+	for (List<String>::Element *E=constants.front();E;E=E->next()) {
+		ret.set(idx++,E->get());
+	}
+
+	return ret;
+}
+
+bool _ClassDB::has_integer_constant(const StringName& p_class, const StringName &p_name) const {
+
+	bool success;
+	ClassDB::get_integer_constant(p_class,p_name,&success);
+	return success;
+}
+
+int _ClassDB::get_integer_constant(const StringName& p_class, const StringName &p_name) const {
+
+	bool found;
+	int c = ClassDB::get_integer_constant(p_class,p_name,&found);
+	ERR_FAIL_COND_V(!found,0);
+	return c;
+
+}
+StringName _ClassDB::get_category(const StringName& p_node) const {
+
+	return ClassDB::get_category(p_node);
+}
+
+bool _ClassDB::is_class_enabled(StringName p_class) const {
+
+	return ClassDB::is_class_enabled(p_class);
+}
+
+void _ClassDB::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("get_class_list"),&_ClassDB::get_class_list);
+	ClassDB::bind_method(D_METHOD("get_inheriters_from_class","class"),&_ClassDB::get_inheriters_from_class);
+	ClassDB::bind_method(D_METHOD("get_parent_class","class"),&_ClassDB::get_parent_class);
+	ClassDB::bind_method(D_METHOD("class_exists","class"),&_ClassDB::class_exists);
+	ClassDB::bind_method(D_METHOD("is_parent_class","class","inherits"),&_ClassDB::is_parent_class);
+	ClassDB::bind_method(D_METHOD("can_instance","class"),&_ClassDB::can_instance);
+	ClassDB::bind_method(D_METHOD("instance:Variant","class"),&_ClassDB::instance);
+
+	ClassDB::bind_method(D_METHOD("class_has_signal","class","signal"),&_ClassDB::has_signal);
+	ClassDB::bind_method(D_METHOD("class_get_signal","class","signal"),&_ClassDB::get_signal);
+	ClassDB::bind_method(D_METHOD("class_get_signal_list","class","no_inheritance"),&_ClassDB::get_signal_list,DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("class_get_property_list","class","no_inheritance"),&_ClassDB::get_property_list,DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("class_has_method","class","method","no_inheritance"),&_ClassDB::has_method,DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("class_get_method_list","class","no_inheritance"),&_ClassDB::get_method_list,DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("class_get_integer_constant_list","class","no_inheritance"),&_ClassDB::get_integer_constant_list,DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("class_has_integer_constant","class","name"),&_ClassDB::has_integer_constant);
+	ClassDB::bind_method(D_METHOD("class_get_integer_constant","class","name"),&_ClassDB::get_integer_constant);
+
+	ClassDB::bind_method(D_METHOD("class_get_category","class"),&_ClassDB::get_category);
+	ClassDB::bind_method(D_METHOD("is_class_enabled","class"),&_ClassDB::is_class_enabled);
+
+
+}
+
+_ClassDB::_ClassDB(){
+
+
+}
+_ClassDB::~_ClassDB(){
+
+
+}
+///////////////////////////////
+
+
+void _Engine::set_iterations_per_second(int p_ips) {
+
+	Engine::get_singleton()->set_iterations_per_second(p_ips);
+}
+int _Engine::get_iterations_per_second() const {
+
+	return Engine::get_singleton()->get_iterations_per_second();
+
+}
+
+void _Engine::set_target_fps(int p_fps) {
+	Engine::get_singleton()->set_target_fps(p_fps);
+}
+
+float _Engine::get_target_fps() const {
+	return Engine::get_singleton()->get_target_fps();
+}
+
+
+
+float _Engine::get_frames_per_second() const {
+
+	return Engine::get_singleton()->get_frames_per_second();
+}
+
+String _Engine::get_custom_level() const {
+
+	return Engine::get_singleton()->get_custom_level();
+}
+
+void _Engine::set_time_scale(float p_scale) {
+	Engine::get_singleton()->set_time_scale(p_scale);
+}
+
+float _Engine::get_time_scale() {
+
+	return Engine::get_singleton()->get_time_scale();
+}
+
+int  _Engine::get_frames_drawn() {
+
+	return Engine::get_singleton()->get_frames_drawn();
+}
+
+MainLoop *_Engine::get_main_loop() const {
+
+	//needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here
+	return OS::get_singleton()->get_main_loop();
+}
+
+Dictionary _Engine::get_version_info() const {
+
+	return Engine::get_singleton()->get_version_info();
+}
+
+
+void _Engine::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_iterations_per_second","iterations_per_second"),&_Engine::set_iterations_per_second);
+	ClassDB::bind_method(D_METHOD("get_iterations_per_second"),&_Engine::get_iterations_per_second);
+	ClassDB::bind_method(D_METHOD("set_target_fps","target_fps"),&_Engine::set_target_fps);
+	ClassDB::bind_method(D_METHOD("get_target_fps"),&_Engine::get_target_fps);
+
+	ClassDB::bind_method(D_METHOD("set_time_scale","time_scale"),&_Engine::set_time_scale);
+	ClassDB::bind_method(D_METHOD("get_time_scale"),&_Engine::get_time_scale);
+
+	ClassDB::bind_method(D_METHOD("get_custom_level"),&_Engine::get_custom_level);
+
+	ClassDB::bind_method(D_METHOD("get_frames_drawn"),&_Engine::get_frames_drawn);
+	ClassDB::bind_method(D_METHOD("get_frames_per_second"),&_Engine::get_frames_per_second);
+
+	ClassDB::bind_method(D_METHOD("get_main_loop:MainLoop"),&_Engine::get_main_loop);
+
+	ClassDB::bind_method(D_METHOD("get_version_info"),&_Engine::get_version_info);
+
+}
+
+_Engine *_Engine::singleton = NULL;
+
+_Engine::_Engine() {
+	singleton=this;
 }

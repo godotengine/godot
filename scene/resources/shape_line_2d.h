@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "scene/resources/shape_2d.h"
 
 class LineShape2D : public Shape2D {
-	OBJ_TYPE( LineShape2D, Shape2D );
+	GDCLASS( LineShape2D, Shape2D );
 
 	Vector2 normal;
 	real_t d;

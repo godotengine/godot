@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "color_ramp_editor_plugin.h"
+
 #include "spatial_editor_plugin.h"
 #include "canvas_item_editor_plugin.h"
 
@@ -54,7 +55,7 @@ void ColorRampEditorPlugin::edit(Object *p_object) {
 
 bool ColorRampEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("ColorRamp");
+	return p_object->is_class("ColorRamp");
 
 }
 
@@ -75,7 +76,7 @@ void ColorRampEditorPlugin::_ramp_changed() {
 
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 
-		//Not sure if I should convert this data to DVector
+		//Not sure if I should convert this data to PoolVector
 		Vector<float> new_offsets=ramp_editor->get_offsets();
 		Vector<Color> new_colors=ramp_editor->get_colors();
 		Vector<float> old_offsets=color_ramp_ref->get_offsets();
@@ -106,6 +107,6 @@ ColorRampEditorPlugin::~ColorRampEditorPlugin(){
 }
 
 void ColorRampEditorPlugin::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("ramp_changed"),&ColorRampEditorPlugin::_ramp_changed);
-	ObjectTypeDB::bind_method(_MD("undo_redo_color_ramp","offsets","colors"),&ColorRampEditorPlugin::_undo_redo_color_ramp);
+	ClassDB::bind_method(D_METHOD("ramp_changed"),&ColorRampEditorPlugin::_ramp_changed);
+	ClassDB::bind_method(D_METHOD("undo_redo_color_ramp","offsets","colors"),&ColorRampEditorPlugin::_undo_redo_color_ramp);
 }

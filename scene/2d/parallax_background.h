@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class ParallaxBackground : public CanvasLayer {
 
-	OBJ_TYPE( ParallaxBackground, CanvasLayer  );
+	GDCLASS( ParallaxBackground, CanvasLayer  );
 
 	Point2 offset;
 	float scale;
@@ -50,7 +50,7 @@ class ParallaxBackground : public CanvasLayer {
 	void _update_scroll();
 protected:
 
-	void _camera_moved(const Matrix32& p_transform);
+	void _camera_moved(const Transform2D& p_transform);
 
 	void _notification(int p_what);
 	static void _bind_methods();

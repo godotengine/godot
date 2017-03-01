@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,7 @@
 #ifndef AUDIO_DRIVER_XAUDIO2_H
 #define AUDIO_DRIVER_XAUDIO2_H
 
-#include "servers/audio/audio_server_sw.h"
-
+#include "servers/audio_server.h"
 #include "core/os/thread.h"
 #include "core/os/mutex.h"
 
@@ -40,7 +39,7 @@
 #include <xaudio2.h>
 #include <wrl/client.h>
 
-class AudioDriverXAudio2 : public AudioDriverSW {
+class AudioDriverXAudio2 : public AudioDriver {
 
 	enum {
 		AUDIO_BUFFERS = 2
@@ -72,7 +71,7 @@ class AudioDriverXAudio2 : public AudioDriverSW {
 	int buffer_size;
 
 	unsigned int mix_rate;
-	OutputFormat output_format;
+	SpeakerMode speaker_mode;
 
 	int channels;
 
@@ -96,7 +95,7 @@ public:
 	virtual Error init();
 	virtual void start();
 	virtual int get_mix_rate() const;
-	virtual OutputFormat get_output_format() const;
+	virtual SpeakerMode get_speaker_mode() const;
 	virtual float get_latency();
 	virtual void lock();
 	virtual void unlock();

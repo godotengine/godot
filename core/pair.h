@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,18 @@ struct Pair {
 
 	F first;
 	S second;
+
+	Pair() {}
+	Pair( F p_first,  S p_second) { first=p_first; second=p_second; }
 };
+
+template<class F,class S>
+struct PairSort {
+
+	bool operator()(const Pair<F,S>& A, const Pair<F,S>& B) const {
+		return A.first < B.first;
+	}
+};
+
 
 #endif // PAIR_H

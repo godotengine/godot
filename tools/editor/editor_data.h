@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,7 +129,6 @@ private:
 	struct EditedScene {
 		Node* root;
 		Dictionary editor_states;
-		Ref<ResourceImportMetadata> medatata;
 		List<Node*> selection;
 		Vector<EditorHistory::History> history_stored;
 		int history_current;
@@ -184,8 +183,6 @@ public:
 	void remove_scene(int p_idx);
 	void set_edited_scene(int p_idx);
 	void set_edited_scene_root(Node* p_root);
-	void set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata);
-	Ref<ResourceImportMetadata> get_edited_scene_import_metadata(int p_idx = -1) const;
 	int get_edited_scene() const;
 	Node* get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
@@ -218,7 +215,7 @@ public:
 
 class EditorSelection : public Object {
 
-	OBJ_TYPE(EditorSelection,Object);
+	GDCLASS(EditorSelection,Object);
 public:
 
 	Map<Node*,Object*> selection;

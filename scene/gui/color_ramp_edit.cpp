@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ ColorRampEdit::ColorRampEdit(){
 	popup = memnew( PopupPanel );
 	picker = memnew( ColorPicker );
 	popup->add_child(picker);
-	popup->set_child_rect(picker);
+
 	add_child(popup);
 
 	checker = Ref<ImageTexture>(memnew( ImageTexture ));
@@ -60,7 +60,7 @@ void ColorRampEdit::_show_color_picker() {
 	if (grabbed==-1)
 		return;
 	Size2 ms = Size2(350, picker->get_combined_minimum_size().height+10);
-	picker->set_color(points[grabbed].color);
+	picker->set_pick_color(points[grabbed].color);
 	popup->set_pos(get_global_pos()-Vector2(ms.width-get_size().width,ms.height));
 	popup->set_size(ms);
 	popup->popup();
@@ -70,7 +70,7 @@ ColorRampEdit::~ColorRampEdit() {
 
 }
 
-void ColorRampEdit::_input_event(const InputEvent& p_event) {
+void ColorRampEdit::_gui_input(const InputEvent& p_event) {
 
 	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
 
@@ -446,7 +446,7 @@ Vector<ColorRamp::Point>& ColorRampEdit::get_points() {
 }
 
 void ColorRampEdit::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("_input_event"),&ColorRampEdit::_input_event);
-	ObjectTypeDB::bind_method(_MD("_color_changed"),&ColorRampEdit::_color_changed);
+	ClassDB::bind_method(D_METHOD("_gui_input"),&ColorRampEdit::_gui_input);
+	ClassDB::bind_method(D_METHOD("_color_changed"),&ColorRampEdit::_color_changed);
 	ADD_SIGNAL(MethodInfo("ramp_changed"));
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "resource_saver.h"
-#include "globals.h"
+#include "global_config.h"
 #include "os/file_access.h"
 #include "script_language.h"
 #include "resource_loader.h"
@@ -40,7 +40,7 @@ ResourceSavedCallback ResourceSaver::save_callback=0;
 
 Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_flags) {
 
-	String extension=p_path.extension();
+	String extension=p_path.get_extension();
 	Error err=ERR_FILE_UNRECOGNIZED;
 
 	for (int i=0;i<saver_count;i++) {
@@ -54,7 +54,7 @@ Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_
 
 		for (List<String>::Element *E=extensions.front();E;E=E->next()) {
 
-			if (E->get().nocasecmp_to(extension.extension())==0)
+			if (E->get().nocasecmp_to(extension.get_extension())==0)
 				recognized=true;
 		}
 
@@ -64,7 +64,7 @@ Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_
 		String old_path=p_resource->get_path();
 
 
-		String local_path=Globals::get_singleton()->localize_path(p_path);
+		String local_path=GlobalConfig::get_singleton()->localize_path(p_path);
 
 		RES rwcopy = p_resource;
 		if (p_flags&FLAG_CHANGE_PATH)

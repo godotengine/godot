@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,33 +26,29 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "drivers/gles2/rasterizer_gles2.h"
 
 #include "os_windows.h"
-#include "drivers/unix/memory_pool_static_malloc.h"
-#include "os/memory_pool_dynamic_static.h"
+
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/windows/thread_windows.h"
 #include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/mutex_windows.h"
-#include "main/main.h"
+#include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/dir_access_windows.h"
-
-
 #include "servers/visual/visual_server_raster.h"
-#include "servers/audio/audio_server_sw.h"
-#include "servers/visual/visual_server_wrap_mt.h"
-
+#include "servers/audio_server.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
+#include "main/main.h"
 #include "tcp_server_winsock.h"
 #include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
 #include "lang_table.h"
-#include "os/memory_pool_dynamic_prealloc.h"
-#include "globals.h"
+#include "global_config.h"
 #include "io/marshalls.h"
-#include "joystick.h"
+#include "joypad.h"
 
-#include "shlobj.h"
+#include <shlobj.h>
 #include <regstr.h>
 #include <process.h>
 
@@ -157,17 +153,15 @@ OS::VideoMode OS_Windows::get_default_video_mode() const {
 
 int OS_Windows::get_audio_driver_count() const {
 
-	return AudioDriverManagerSW::get_driver_count();
+	return AudioDriverManager::get_driver_count();
 }
 const char * OS_Windows::get_audio_driver_name(int p_driver) const {
 
-	AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+	AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
 	ERR_FAIL_COND_V( !driver, "" );
-	return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
-static MemoryPoolStatic *mempool_static=NULL;
-static MemoryPoolDynamic *mempool_dynamic=NULL;
 
 void OS_Windows::initialize_core() {
 
@@ -182,6 +176,7 @@ void OS_Windows::initialize_core() {
 	ThreadWindows::make_default();
 	SemaphoreWindows::make_default();
 	MutexWindows::make_default();
+	RWLockWindows::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
@@ -195,15 +190,6 @@ void OS_Windows::initialize_core() {
 	StreamPeerWinsock::make_default();
 	PacketPeerUDPWinsock::make_default();
 
-	mempool_static = new MemoryPoolStaticMalloc;
-#if 1
-	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
-#else
-#define DYNPOOL_SIZE 4*1024*1024
-	void * buffer = malloc( DYNPOOL_SIZE );
-	mempool_dynamic = memnew( MemoryPoolDynamicPrealloc(buffer,DYNPOOL_SIZE) );
-
-#endif
 
 	   // We need to know how often the clock is updated
 	if( !QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second) )
@@ -268,6 +254,25 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 		switch (uMsg)									// Check For Windows Messages
 	{
+		case WM_SETFOCUS:
+		{
+			window_has_focus = true;
+			// Re-capture cursor if we're in one of the capture modes
+			if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
+				SetCapture(hWnd);
+			}
+			break;
+		}
+		case WM_KILLFOCUS:
+		{
+			window_has_focus = false;
+
+			// Release capture if we're in one of the capture modes
+			if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
+				ReleaseCapture();
+			}
+			break;
+		}
 		case WM_ACTIVATE:							// Watch For Window Activate Message
 		{
 			minimized = HIWORD(wParam) != 0;
@@ -280,19 +285,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				alt_mem=false;
 				control_mem=false;
 				shift_mem=false;
-				if (mouse_mode==MOUSE_MODE_CAPTURED) {
+				if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
 					RECT clipRect;
 					GetClientRect(hWnd, &clipRect);
 					ClientToScreen(hWnd, (POINT*) &clipRect.left);
 					ClientToScreen(hWnd, (POINT*) &clipRect.right);
 					ClipCursor(&clipRect);
 					SetCapture(hWnd);
-
 				}
 			} else {
 				main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 				alt_mem=false;
-
 			};
 
 			return 0;								// Return To The Message Loop
@@ -359,6 +362,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			}
 
+			// Don't calculate relative mouse movement if we don't have focus in CAPTURED mode.
+			if (!window_has_focus && mouse_mode==MOUSE_MODE_CAPTURED)
+				break;
 			/*
 			LPARAM extra = GetMessageExtraInfo();
 			if (IsPenEvent(extra)) {
@@ -390,18 +396,19 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mm.button_mask|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
 			mm.x=GET_X_LPARAM(lParam);
 			mm.y=GET_Y_LPARAM(lParam);
-
+			
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 
 				Point2i c(video_mode.width/2,video_mode.height/2);
+				old_x = c.x;
+				old_y = c.y;
+
 				if (Point2i(mm.x,mm.y)==c) {
 					center=c;
 					return 0;
 				}
 
 				Point2i ncenter(mm.x,mm.y);
-				mm.x = old_x + (mm.x-center.x);
-				mm.y = old_y + (mm.y-center.y);
 				center=ncenter;
 				POINT pos = { (int) c.x, (int) c.y };
 				ClientToScreen(hWnd, &pos);
@@ -410,8 +417,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			}
 
 			input->set_mouse_pos(Point2(mm.x,mm.y));
-			mm.speed_x=input->get_mouse_speed().x;
-			mm.speed_y=input->get_mouse_speed().y;
+			mm.speed_x=input->get_last_mouse_speed().x;
+			mm.speed_y=input->get_last_mouse_speed().y;
 
 			if (old_invalid) {
 
@@ -424,7 +431,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mm.relative_y=mm.y-old_y;
 			old_x=mm.x;
 			old_y=mm.y;
-			if (main_loop)
+			if (window_has_focus && main_loop)
 				input->parse_input_event(event);
 
 
@@ -644,8 +651,10 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 					gr_mem=alt_mem;
 			}
 
-			//if (wParam==VK_WIN) TODO wtf is this?
-			//	meta_mem=uMsg==WM_KEYDOWN;
+			/*
+			if (wParam==VK_WIN) TODO wtf is this?
+				meta_mem=uMsg==WM_KEYDOWN;
+			*/
 
 
 		} //fallthrough
@@ -686,7 +695,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			print_line("input lang change");
 		} break;
 
-		#if WINVER >= 0x0700 // for windows 7
+		#if WINVER >= 0x0601 // for windows 7
 		case WM_TOUCH: {
 
 			BOOL bHandled = FALSE;
@@ -723,12 +732,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		#endif
 		case WM_DEVICECHANGE: {
 
-			joystick->probe_joysticks();
+			joypad->probe_joypads();
 		} break;
 		case WM_SETCURSOR: {
-
 			if(LOWORD(lParam) == HTCLIENT) {
-				if(mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED) {
+				if(window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED)) {
 					//Hide the cursor
 					if(hCursor == NULL)
 						hCursor = SetCursor(NULL);
@@ -960,7 +968,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
     main_loop=NULL;
     outside=true;
-
+	window_has_focus=true;
 	WNDCLASSEXW	wc;
 
 	video_mode=p_desired;
@@ -1078,23 +1086,23 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	};
 
-#if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED) || defined(LEGACYGL_ENABLED)
-	gl_context = memnew( ContextGL_Win(hWnd,false) );
+#if defined(OPENGL_ENABLED)
+	gl_context = memnew( ContextGL_Win(hWnd,true) );
 	gl_context->initialize();
-	rasterizer = memnew( RasterizerGLES2 );
-#else
- #ifdef DX9_ENABLED
-	rasterizer = memnew( RasterizerDX9(hWnd) );
- #endif
+
+	RasterizerGLES3::register_config();
+
+	RasterizerGLES3::make_current();
 #endif
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
+	visual_server = memnew( VisualServerRaster );
+ 	// FIXME: Reimplement threaded rendering? Or remove?
+	/*
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
-
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
+	*/
 
-	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
 
@@ -1124,24 +1132,14 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	visual_server->init();
 
 	input = memnew( InputDefault );
-	joystick = memnew (joystick_windows(input, &hWnd));
+	joypad = memnew (JoypadWindows(input, &hWnd));
 
-	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
-
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
-
-	audio_server->init();
-
-	spatial_sound_server = memnew( SpatialSoundServerSW );
-	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
-	spatial_sound_2d_server->init();
 
 	TRACKMOUSEEVENT tme;
 	tme.cbSize=sizeof(TRACKMOUSEEVENT);
@@ -1257,7 +1255,11 @@ void OS_Windows::finalize() {
 
 	main_loop=NULL;
 
-	memdelete(joystick);
+	for (int i = 0; i < get_audio_driver_count(); i++) {
+		AudioDriverManager::get_driver(i)->finish();
+	}
+
+	memdelete(joypad);
 	memdelete(input);
 
 	visual_server->finish();
@@ -1266,26 +1268,16 @@ void OS_Windows::finalize() {
 	if (gl_context)
 		memdelete(gl_context);
 #endif
-	if (rasterizer)
-		memdelete(rasterizer);
 
 	if (user_proc) {
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
 	};
 
-	spatial_sound_server->finish();
-	memdelete(spatial_sound_server);
-	spatial_sound_2d_server->finish();
-	memdelete(spatial_sound_2d_server);
-
-	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
-
-	memdelete(sample_manager);
-
-	audio_server->finish();
-	memdelete(audio_server);
+	/*
+	if (debugger_connection_console) {
+		memdelete(debugger_connection_console);
+	}
+	*/
 
 	physics_server->finish();
 	memdelete(physics_server);
@@ -1294,15 +1286,11 @@ void OS_Windows::finalize() {
 	memdelete(physics_2d_server);
 
 	monitor_info.clear();
-
 }
+
 void OS_Windows::finalize_core() {
 
 	memdelete(process_map);
-
-	if (mempool_dynamic)
-		memdelete( mempool_dynamic );
-	delete mempool_static;
 
 
 	TCPServerWinsock::cleanup();
@@ -1329,18 +1317,10 @@ void OS_Windows::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 	MultiByteToWideChar(CP_UTF8,0,buf,len,wbuf,wlen);
 	wbuf[wlen]=0;
 
-// Recent MinGW and MSVC compilers seem to disagree on the case here
-#ifdef __MINGW32__
 	if (p_stderr)
-		fwprintf(stderr, L"%S", wbuf);
+		fwprintf(stderr, L"%ls", wbuf);
 	else
-		wprintf(L"%S", wbuf);
-#else  // MSVC
-	if (p_stderr)
-		fwprintf(stderr, L"%s", wbuf);
-	else
-		wprintf(L"%s", wbuf);
-#endif
+		wprintf(L"%ls", wbuf);
 
 #ifdef STDOUT_FILE
 	//vwfprintf(stdo,p_format,p_list);
@@ -1363,17 +1343,17 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 	if (mouse_mode==p_mode)
 		return;
 	mouse_mode=p_mode;
-	if (p_mode==MOUSE_MODE_CAPTURED) {
+	if (mouse_mode==MOUSE_MODE_CAPTURED || mouse_mode==MOUSE_MODE_CONFINED) {
 		RECT clipRect;
 		GetClientRect(hWnd, &clipRect);
 		ClientToScreen(hWnd, (POINT*) &clipRect.left);
 		ClientToScreen(hWnd, (POINT*) &clipRect.right);
 		ClipCursor(&clipRect);
-		SetCapture(hWnd);
 		center=Point2i(video_mode.width/2,video_mode.height/2);
 		POINT pos = { (int) center.x, (int) center.y };
 		ClientToScreen(hWnd, &pos);
-		SetCursorPos(pos.x, pos.y);
+		if (mouse_mode==MOUSE_MODE_CAPTURED)
+			SetCursorPos(pos.x, pos.y);
 	} else {
 		ReleaseCapture();
 		ClipCursor(NULL);
@@ -1616,7 +1596,7 @@ void OS_Windows::set_window_fullscreen(bool p_enabled){
 */
 	}
 
-//	MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
+	//MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
 
 
 }
@@ -1737,6 +1717,10 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				print("SCRIPT ERROR: %s: %s\n", p_function, err_details);
 				print("          At: %s:%i\n", p_file, p_line);
 				break;
+			case ERR_SHADER:
+				print("SHADER ERROR: %s: %s\n", p_function, err_details);
+				print("          At: %s:%i\n", p_file, p_line);
+				break;
 		}
 
 	} else {
@@ -1752,6 +1736,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 			case ERR_ERROR: basecol = FOREGROUND_RED; break;
 			case ERR_WARNING: basecol = FOREGROUND_RED | FOREGROUND_GREEN; break;
 			case ERR_SCRIPT: basecol = FOREGROUND_RED | FOREGROUND_BLUE; break;
+			case ERR_SHADER: basecol = FOREGROUND_GREEN | FOREGROUND_BLUE; break;
 		}
 
 		basecol |= current_bg;
@@ -1763,6 +1748,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("ERROR: "); break;
 				case ERR_WARNING: print("WARNING: "); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
+				case ERR_SHADER: print("SHADER ERROR: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -1773,6 +1759,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("   At: "); break;
 				case ERR_WARNING: print("     At: "); break;
 				case ERR_SCRIPT: print("          At: "); break;
+				case ERR_SHADER: print("          At: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
@@ -1785,6 +1772,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("ERROR: %s: ", p_function); break;
 				case ERR_WARNING: print("WARNING: %s: ", p_function); break;
 				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ", p_function); break;
+				case ERR_SHADER: print("SCRIPT ERROR: %s: ", p_function); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg | FOREGROUND_INTENSITY);
@@ -1795,6 +1783,7 @@ void OS_Windows::print_error(const char* p_function, const char* p_file, int p_l
 				case ERR_ERROR: print("   At: "); break;
 				case ERR_WARNING: print("     At: "); break;
 				case ERR_SCRIPT: print("          At: "); break;
+				case ERR_SHADER: print("          At: "); break;
 			}
 
 			SetConsoleTextAttribute(hCon, current_fg | current_bg);
@@ -1927,7 +1916,7 @@ void OS_Windows::process_events() {
 
 	MSG msg;
 
-	last_id = joystick->process_joysticks(last_id);
+	last_id = joypad->process_joypads(last_id);
 
 	while(PeekMessageW(&msg,NULL,0,0,PM_REMOVE)) {
 
@@ -1979,13 +1968,13 @@ Error OS_Windows::execute(const String& p_path, const List<String>& p_arguments,
 
 		String argss;
 		argss="\"\""+p_path+"\"";
+		
+		for (const List<String>::Element* E=p_arguments.front(); E; E=E->next()) {
 
-		for(int i=0;i<p_arguments.size();i++) {
-
-			argss+=String(" \"")+p_arguments[i]+"\"";
+			argss+=String(" \"")+E->get()+"\"";
 		}
 
-//		print_line("ARGS: "+argss);
+		//print_line("ARGS: "+argss);
 		//argss+"\"";
 		//argss+=" 2>nul";
 
@@ -2091,8 +2080,8 @@ void OS_Windows::set_icon(const Image& p_icon) {
 
 
 	Image icon=p_icon;
-	if (icon.get_format()!=Image::FORMAT_RGBA)
-		icon.convert(Image::FORMAT_RGBA);
+	if (icon.get_format()!=Image::FORMAT_RGBA8)
+		icon.convert(Image::FORMAT_RGBA8);
 	int w = icon.get_width();
 	int h = icon.get_height();
 
@@ -2115,7 +2104,7 @@ void OS_Windows::set_icon(const Image& p_icon) {
 	encode_uint32(0,&icon_bmp[36]);
 
 	uint8_t *wr=&icon_bmp[40];
-	DVector<uint8_t>::Read r= icon.get_data().read();
+	PoolVector<uint8_t>::Read r= icon.get_data().read();
 
 	for(int i=0;i<h;i++) {
 
@@ -2369,7 +2358,7 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			bool use_godot = GlobalConfig::get_singleton()->get("application/use_shared_user_dir");
 			if (!use_godot)
 				return (OS::get_singleton()->get_environment("APPDATA")+"/"+an).replace("\\","/");
 			else
@@ -2377,7 +2366,7 @@ String OS_Windows::get_data_dir() const {
 		}
 	}
 
-	return Globals::get_singleton()->get_resource_path();
+	return GlobalConfig::get_singleton()->get_resource_path();
 
 
 }
@@ -2404,6 +2393,11 @@ bool OS_Windows::is_vsync_enabled() const{
 	return true;
 }
 
+bool OS_Windows::check_feature_support(const String& p_feature) {
+
+	return VisualServer::get_singleton()->has_os_feature(p_feature);
+
+}
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
@@ -2427,10 +2421,10 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	user_proc = NULL;
 
 #ifdef RTAUDIO_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+	AudioDriverManager::add_driver(&driver_rtaudio);
 #endif
 #ifdef XAUDIO2_ENABLED
-	AudioDriverManagerSW::add_driver(&driver_xaudio2);
+	AudioDriverManager::add_driver(&driver_xaudio2);
 #endif
 
 }

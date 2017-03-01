@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +37,8 @@ Vector<Vector3> SphereShape::_gen_debug_mesh_lines() {
 
 	for(int i=0;i<=360;i++) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+1);
+		float ra=Math::deg2rad((float)i);
+		float rb=Math::deg2rad((float)i+1);
 		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
 		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
 
@@ -75,10 +75,10 @@ float SphereShape::get_radius() const {
 
 void SphereShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&SphereShape::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&SphereShape::get_radius);
+	ClassDB::bind_method(D_METHOD("set_radius","radius"),&SphereShape::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"),&SphereShape::get_radius);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_radius"), _SCS("get_radius"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0,4096,0.01"), "set_radius", "get_radius");
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -164,7 +164,7 @@ void FileDialog::_action_pressed() {
 		TreeItem *ti=tree->get_next_selected(NULL);
 		String fbase=dir_access->get_current_dir();
 
-		DVector<String> files;
+		PoolVector<String> files;
 		while(ti) {
 
 			files.push_back( fbase.plus_file(ti->get_text(0)) );
@@ -615,7 +615,7 @@ void FileDialog::set_access(Access p_access) {
 
 void FileDialog::invalidate() {
 
-	if (is_visible()) {
+	if (is_visible_in_tree()) {
 		update_file_list();
 		invalidated=false;
 	} else {
@@ -686,44 +686,44 @@ bool FileDialog::default_show_hidden_files=false;
 
 void FileDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_unhandled_input"),&FileDialog::_unhandled_input);
+	ClassDB::bind_method(D_METHOD("_unhandled_input"),&FileDialog::_unhandled_input);
 
-	ObjectTypeDB::bind_method(_MD("_tree_selected"),&FileDialog::_tree_selected);
-	ObjectTypeDB::bind_method(_MD("_tree_db_selected"),&FileDialog::_tree_dc_selected);
-	ObjectTypeDB::bind_method(_MD("_dir_entered"),&FileDialog::_dir_entered);
-	ObjectTypeDB::bind_method(_MD("_file_entered"),&FileDialog::_file_entered);
-	ObjectTypeDB::bind_method(_MD("_action_pressed"),&FileDialog::_action_pressed);
-	ObjectTypeDB::bind_method(_MD("_cancel_pressed"),&FileDialog::_cancel_pressed);
-	ObjectTypeDB::bind_method(_MD("_filter_selected"),&FileDialog::_filter_selected);
-	ObjectTypeDB::bind_method(_MD("_save_confirm_pressed"),&FileDialog::_save_confirm_pressed);
+	ClassDB::bind_method(D_METHOD("_tree_selected"),&FileDialog::_tree_selected);
+	ClassDB::bind_method(D_METHOD("_tree_db_selected"),&FileDialog::_tree_dc_selected);
+	ClassDB::bind_method(D_METHOD("_dir_entered"),&FileDialog::_dir_entered);
+	ClassDB::bind_method(D_METHOD("_file_entered"),&FileDialog::_file_entered);
+	ClassDB::bind_method(D_METHOD("_action_pressed"),&FileDialog::_action_pressed);
+	ClassDB::bind_method(D_METHOD("_cancel_pressed"),&FileDialog::_cancel_pressed);
+	ClassDB::bind_method(D_METHOD("_filter_selected"),&FileDialog::_filter_selected);
+	ClassDB::bind_method(D_METHOD("_save_confirm_pressed"),&FileDialog::_save_confirm_pressed);
 
-	ObjectTypeDB::bind_method(_MD("clear_filters"),&FileDialog::clear_filters);
-	ObjectTypeDB::bind_method(_MD("add_filter","filter"),&FileDialog::add_filter);
-	ObjectTypeDB::bind_method(_MD("set_filters","filters"),&FileDialog::set_filters);
-	ObjectTypeDB::bind_method(_MD("get_filters"),&FileDialog::get_filters);
-	ObjectTypeDB::bind_method(_MD("get_current_dir"),&FileDialog::get_current_dir);
-	ObjectTypeDB::bind_method(_MD("get_current_file"),&FileDialog::get_current_file);
-	ObjectTypeDB::bind_method(_MD("get_current_path"),&FileDialog::get_current_path);
-	ObjectTypeDB::bind_method(_MD("set_current_dir","dir"),&FileDialog::set_current_dir);
-	ObjectTypeDB::bind_method(_MD("set_current_file","file"),&FileDialog::set_current_file);
-	ObjectTypeDB::bind_method(_MD("set_current_path","path"),&FileDialog::set_current_path);
-	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&FileDialog::set_mode);
-	ObjectTypeDB::bind_method(_MD("get_mode"),&FileDialog::get_mode);
-	ObjectTypeDB::bind_method(_MD("get_vbox:VBoxContainer"),&FileDialog::get_vbox);
-	ObjectTypeDB::bind_method(_MD("set_access","access"),&FileDialog::set_access);
-	ObjectTypeDB::bind_method(_MD("get_access"),&FileDialog::get_access);
-	ObjectTypeDB::bind_method(_MD("set_show_hidden_files","show"),&FileDialog::set_show_hidden_files);
-	ObjectTypeDB::bind_method(_MD("is_showing_hidden_files"),&FileDialog::is_showing_hidden_files);
-	ObjectTypeDB::bind_method(_MD("_select_drive"),&FileDialog::_select_drive);
-	ObjectTypeDB::bind_method(_MD("_make_dir"),&FileDialog::_make_dir);
-	ObjectTypeDB::bind_method(_MD("_make_dir_confirm"),&FileDialog::_make_dir_confirm);
-	ObjectTypeDB::bind_method(_MD("_update_file_list"),&FileDialog::update_file_list);
-	ObjectTypeDB::bind_method(_MD("_update_dir"),&FileDialog::update_dir);
+	ClassDB::bind_method(D_METHOD("clear_filters"),&FileDialog::clear_filters);
+	ClassDB::bind_method(D_METHOD("add_filter","filter"),&FileDialog::add_filter);
+	ClassDB::bind_method(D_METHOD("set_filters","filters"),&FileDialog::set_filters);
+	ClassDB::bind_method(D_METHOD("get_filters"),&FileDialog::get_filters);
+	ClassDB::bind_method(D_METHOD("get_current_dir"),&FileDialog::get_current_dir);
+	ClassDB::bind_method(D_METHOD("get_current_file"),&FileDialog::get_current_file);
+	ClassDB::bind_method(D_METHOD("get_current_path"),&FileDialog::get_current_path);
+	ClassDB::bind_method(D_METHOD("set_current_dir","dir"),&FileDialog::set_current_dir);
+	ClassDB::bind_method(D_METHOD("set_current_file","file"),&FileDialog::set_current_file);
+	ClassDB::bind_method(D_METHOD("set_current_path","path"),&FileDialog::set_current_path);
+	ClassDB::bind_method(D_METHOD("set_mode","mode"),&FileDialog::set_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"),&FileDialog::get_mode);
+	ClassDB::bind_method(D_METHOD("get_vbox:VBoxContainer"),&FileDialog::get_vbox);
+	ClassDB::bind_method(D_METHOD("set_access","access"),&FileDialog::set_access);
+	ClassDB::bind_method(D_METHOD("get_access"),&FileDialog::get_access);
+	ClassDB::bind_method(D_METHOD("set_show_hidden_files","show"),&FileDialog::set_show_hidden_files);
+	ClassDB::bind_method(D_METHOD("is_showing_hidden_files"),&FileDialog::is_showing_hidden_files);
+	ClassDB::bind_method(D_METHOD("_select_drive"),&FileDialog::_select_drive);
+	ClassDB::bind_method(D_METHOD("_make_dir"),&FileDialog::_make_dir);
+	ClassDB::bind_method(D_METHOD("_make_dir_confirm"),&FileDialog::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_update_file_list"),&FileDialog::update_file_list);
+	ClassDB::bind_method(D_METHOD("_update_dir"),&FileDialog::update_dir);
 
-	ObjectTypeDB::bind_method(_MD("invalidate"),&FileDialog::invalidate);
+	ClassDB::bind_method(D_METHOD("invalidate"),&FileDialog::invalidate);
 
 	ADD_SIGNAL(MethodInfo("file_selected",PropertyInfo( Variant::STRING,"path")));
-	ADD_SIGNAL(MethodInfo("files_selected",PropertyInfo( Variant::STRING_ARRAY,"paths")));
+	ADD_SIGNAL(MethodInfo("files_selected",PropertyInfo( Variant::POOL_STRING_ARRAY,"paths")));
 	ADD_SIGNAL(MethodInfo("dir_selected",PropertyInfo( Variant::STRING,"dir")));
 
 	BIND_CONSTANT( MODE_OPEN_FILE );
@@ -737,10 +737,10 @@ void FileDialog::_bind_methods() {
 	BIND_CONSTANT( ACCESS_USERDATA );
 	BIND_CONSTANT( ACCESS_FILESYSTEM );
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"),_SCS("set_mode"),_SCS("get_mode") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"),_SCS("set_access"),_SCS("get_access") );
-	ADD_PROPERTY( PropertyInfo(Variant::STRING_ARRAY, "filters"),_SCS("set_filters"),_SCS("get_filters") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "show_hidden_files"),_SCS("set_show_hidden_files"),_SCS("is_showing_hidden_files") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Open one,Open many,Open folder,Open any,Save"),"set_mode","get_mode") ;
+	ADD_PROPERTY( PropertyInfo(Variant::INT, "access", PROPERTY_HINT_ENUM, "Resources,User data,File system"),"set_access","get_access") ;
+	ADD_PROPERTY( PropertyInfo(Variant::POOL_STRING_ARRAY, "filters"),"set_filters","get_filters") ;
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "show_hidden_files"),"set_show_hidden_files","is_showing_hidden_files") ;
 
 }
 
@@ -764,7 +764,7 @@ FileDialog::FileDialog() {
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
-	set_child_rect(vbc);
+
 
 	mode=MODE_SAVE_FILE;
 	set_title(RTR("Save a File"));
@@ -828,7 +828,7 @@ FileDialog::FileDialog() {
 	makedialog->set_title(RTR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
-	makedialog->set_child_rect(makevb);
+
 	makedirname = memnew( LineEdit );
 	makevb->add_margin_child(RTR("Name:"),makedirname);
 	add_child(makedialog);
@@ -868,11 +868,11 @@ FileDialog::~FileDialog() {
 
 void LineEditFileChooser::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_browse"),&LineEditFileChooser::_browse);
-	ObjectTypeDB::bind_method(_MD("_chosen"),&LineEditFileChooser::_chosen);
-	ObjectTypeDB::bind_method(_MD("get_button:Button"),&LineEditFileChooser::get_button);
-	ObjectTypeDB::bind_method(_MD("get_line_edit:LineEdit"),&LineEditFileChooser::get_line_edit);
-	ObjectTypeDB::bind_method(_MD("get_file_dialog:FileDialog"),&LineEditFileChooser::get_file_dialog);
+	ClassDB::bind_method(D_METHOD("_browse"),&LineEditFileChooser::_browse);
+	ClassDB::bind_method(D_METHOD("_chosen"),&LineEditFileChooser::_chosen);
+	ClassDB::bind_method(D_METHOD("get_button:Button"),&LineEditFileChooser::get_button);
+	ClassDB::bind_method(D_METHOD("get_line_edit:LineEdit"),&LineEditFileChooser::get_line_edit);
+	ClassDB::bind_method(D_METHOD("get_file_dialog:FileDialog"),&LineEditFileChooser::get_file_dialog);
 
 }
 

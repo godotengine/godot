@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@
 */
 class ScrollBar : public Range {
 
-	OBJ_TYPE( ScrollBar, Range );
+	GDCLASS( ScrollBar, Range );
 
 	enum HiliteStatus {
 		HILITE_NONE,
@@ -87,7 +87,7 @@ class ScrollBar : public Range {
 	void _drag_slave_exit();
 	void _drag_slave_input(const InputEvent& p_input);
 
-	void _input_event(InputEvent p_event);
+	void _gui_input(InputEvent p_event);
 protected:
 	void _notification(int p_what);
 
@@ -109,7 +109,7 @@ public:
 
 class HScrollBar : public ScrollBar {
 
-	OBJ_TYPE( HScrollBar, ScrollBar );
+	GDCLASS( HScrollBar, ScrollBar );
 public:
 
 	HScrollBar() : ScrollBar(HORIZONTAL) { 	set_v_size_flags(0); }
@@ -117,7 +117,7 @@ public:
 
 class VScrollBar : public ScrollBar {
 
-	OBJ_TYPE( VScrollBar, ScrollBar );
+	GDCLASS( VScrollBar, ScrollBar );
 public:
 
 	VScrollBar() : ScrollBar(VERTICAL) { set_h_size_flags(0); }

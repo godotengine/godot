@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 #include "scene/gui/popup.h"
 class TabContainer : public Control {
 
-	OBJ_TYPE( TabContainer, Control );
+	GDCLASS( TabContainer, Control );
 public:
 
 	enum TabAlign {
@@ -46,7 +46,7 @@ public:
 private:
 
 	int mouse_x_cache;
-	int tab_display_ofs;
+	int first_tab_cache;
 	int tabs_ofs_cache;
 	int last_tab_cache;
 	int current;
@@ -57,11 +57,13 @@ private:
 	int _get_top_margin() const;
 	Popup *popup;
 
+	Vector<Control*> _get_tabs() const;
+	int _get_tab_width(int p_index) const;
 
 protected:
 
 	void _child_renamed_callback();
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const InputEvent& p_event);
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
@@ -82,6 +84,9 @@ public:
 
 	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
+
+	void set_tab_disabled(int p_tab, bool p_disabled);
+	bool get_tab_disabled(int p_tab) const;
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);

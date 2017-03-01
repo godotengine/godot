@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,12 +76,19 @@ static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
 
 }*/
 
+static bool ctxErrorOccurred = false;
+static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
+{
+    ctxErrorOccurred = true;
+    return 0;
+}
+
 Error ContextGL_X11::initialize() {
 
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = NULL;
 
-//	const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
+	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
 	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 
@@ -123,14 +130,11 @@ Error ContextGL_X11::initialize() {
 		x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel|CWColormap|CWEventMask, &swa);
 		ERR_FAIL_COND_V(!x11_window,ERR_UNCONFIGURED);
 		XMapWindow(x11_display, x11_window);
-		while(true) {
-			// wait for mapnotify (window created)
-			XEvent e;
-			XNextEvent(x11_display, &e);
-			if (e.type == MapNotify)
-				break;
-		}
 		//};
+
+
+	int (*oldHandler)(Display*, XErrorEvent*) =
+		     XSetErrorHandler(&ctxErrorHandler);
 
 
 	if (!opengl_3_context) {
@@ -139,13 +143,20 @@ Error ContextGL_X11::initialize() {
 	} else {
 		static int context_attribs[] = {
 			GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-			GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+			GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+			GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB/*|GLX_CONTEXT_DEBUG_BIT_ARB*/,
 			None
 		};
 
 		p->glx_context = glXCreateContextAttribsARB(x11_display, fbc[0], NULL, true, context_attribs);
-		ERR_FAIL_COND_V(!p->glx_context,ERR_UNCONFIGURED);
+		ERR_EXPLAIN("Could not obtain an OpenGL 3.3 context!");
+		ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context,ERR_UNCONFIGURED);
 	}
+
+	XSync( x11_display, False );
+	XSetErrorHandler( oldHandler );
+
+	print_line("ALL IS GOOD");
 
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 

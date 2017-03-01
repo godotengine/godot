@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "array.h"
+
 #include "vector.h"
 #include "hashfuncs.h"
 #include "variant.h"
@@ -36,7 +37,6 @@ struct ArrayPrivate {
 
 	SafeRefCount refcount;
 	Vector<Variant> array;
-	bool shared;
 };
 
 void Array::_ref(const Array& p_from) const {
@@ -54,20 +54,9 @@ void Array::_ref(const Array& p_from) const {
 
 	_unref();
 
-	if (_fp->shared) {
+	_p = p_from._p;
 
-		_p = p_from._p;
 
-	} else {
-
-		_p = memnew( ArrayPrivate );
-		_p->shared=false;
-		_p->refcount.init();
-		_p->array=_fp->array;
-
-		if (_fp->refcount.unref())
-			memdelete(_fp);
-	}
 }
 
 void Array::_unref() const {
@@ -106,10 +95,6 @@ void Array::clear() {
 	_p->array.clear();
 }
 
-bool Array::is_shared() const {
-
-    return _p->shared;
-}
 
 bool Array::operator==(const Array& p_array) const {
 
@@ -316,11 +301,11 @@ Array::Array(const Array& p_from) {
 	_ref(p_from);
 
 }
-Array::Array(bool p_shared) {
+Array::Array() {
 
 	_p = memnew( ArrayPrivate );
 	_p->refcount.init();
-	_p->shared=p_shared;
+
 }
 Array::~Array() {
 

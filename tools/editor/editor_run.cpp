@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,19 +27,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "editor_run.h"
-#include "globals.h"
+
+#include "global_config.h"
 #include "editor_settings.h"
 
 EditorRun::Status EditorRun::get_status() const {
 
 	return status;
 }
-Error EditorRun::run(const String& p_scene,const String p_custom_args,const List<String>& p_breakpoints,const String& p_edited_scene) {
+Error EditorRun::run(const String& p_scene,const String p_custom_args,const List<String>& p_breakpoints) {
 
 	List<String> args;
 
 
-	String resource_path = Globals::get_singleton()->get_resource_path();
+	String resource_path = GlobalConfig::get_singleton()->get_resource_path();
 
 	if (resource_path!="") {
 		args.push_back("-path");
@@ -49,20 +50,11 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 	if (true) {
 		args.push_back("-rdebug");
-		args.push_back("localhost:"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+		args.push_back("localhost:"+String::num(GLOBAL_GET("network/debug/remote_port")));
 	}
 
 	args.push_back("-epid");
 	args.push_back(String::num(OS::get_singleton()->get_process_ID()));
-
-	if (p_custom_args!="") {
-
-		Vector<String> cargs=p_custom_args.split(" ",false);
-		for(int i=0;i<cargs.size();i++) {
-
-			args.push_back(cargs[i].replace("%20"," ").replace("$scene",p_edited_scene.replace(" ","%20")));
-		}
-	}
 
 	if (debug_collisions) {
 		args.push_back("-debugcol");
@@ -72,7 +64,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 		args.push_back("-debugnav");
 	}
 
-	int screen = EditorSettings::get_singleton()->get("game_window_placement/screen");
+	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
 
 	if (screen==0) {
 		screen=OS::get_singleton()->get_current_screen();
@@ -87,19 +79,19 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 	Size2 desired_size;
 
-	desired_size.x=Globals::get_singleton()->get("display/width");
-	desired_size.y=Globals::get_singleton()->get("display/height");
+	desired_size.x=GlobalConfig::get_singleton()->get("display/width");
+	desired_size.y=GlobalConfig::get_singleton()->get("display/height");
 
 	Size2 test_size;
-	test_size.x=Globals::get_singleton()->get("display/test_width");
-	test_size.y=Globals::get_singleton()->get("display/test_height");
+	test_size.x=GlobalConfig::get_singleton()->get("display/test_width");
+	test_size.y=GlobalConfig::get_singleton()->get("display/test_height");
 	if (test_size.x>0 && test_size.y>0) {
 
 		desired_size=test_size;
 	}
 
 
-	int window_placement=EditorSettings::get_singleton()->get("game_window_placement/rect");
+	int window_placement=EditorSettings::get_singleton()->get("run/window_placement/rect");
 
 	switch(window_placement) {
 		case 0: { // default
@@ -113,7 +105,7 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 			args.push_back(itos(pos.x)+"x"+itos(pos.y));
 		} break;
 		case 2: { // custom pos
-			Vector2 pos = EditorSettings::get_singleton()->get("game_window_placement/rect_custom_position");
+			Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
 			pos+=screen_rect.pos;
 			args.push_back("-p");
 			args.push_back(itos(pos.x)+"x"+itos(pos.y));
@@ -149,8 +141,17 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 		args.push_back(bpoints);
 	}
+	
+	if (p_scene!="") {
+		args.push_back(p_scene);
+	}
 
-	args.push_back(p_scene);
+	if (p_custom_args!="") {
+		Vector<String> cargs=p_custom_args.split(" ",false);
+		for(int i=0;i<cargs.size();i++) {
+			args.push_back(cargs[i].replace(" ","%20"));
+		}
+	}
 
 	String exec = OS::get_singleton()->get_executable_path();
 

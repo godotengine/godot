@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@ class Dictionary {
 
 	mutable DictionaryPrivate *_p;
 
-	void _copy_on_write() const;
+
 	void _ref(const Dictionary& p_from) const;
 	void _unref() const;
 public:
@@ -61,12 +61,6 @@ public:
 	int size() const;
 	bool empty() const;
 	void clear();
-
-
-	Error parse_json(const String& p_json);
-	String to_json() const;
-
-	bool is_shared() const;
 
 	bool has(const Variant& p_key) const;
 	bool has_all(const Array& p_keys) const;
@@ -86,7 +80,7 @@ public:
 	Dictionary copy() const;
 
 	Dictionary(const Dictionary& p_from);
-	Dictionary(bool p_shared=false);
+	Dictionary();
 	~Dictionary();
 };
 

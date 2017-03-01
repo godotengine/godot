@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "stream_editor_plugin.h"
 
-
+#if 0
 
 void StreamEditor::_notification(int p_what) {
 
@@ -59,8 +59,8 @@ void StreamEditor::_stop() {
 
 void StreamEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_play"),&StreamEditor::_play);
-	ObjectTypeDB::bind_method(_MD("_stop"),&StreamEditor::_stop);
+	ClassDB::bind_method(D_METHOD("_play"),&StreamEditor::_play);
+	ClassDB::bind_method(D_METHOD("_stop"),&StreamEditor::_stop);
 
 }
 
@@ -104,7 +104,7 @@ void StreamEditorPlugin::edit(Object *p_object) {
 
 bool StreamEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("StreamPlayer") || p_object->is_type("SpatialStreamPlayer");
+	return p_object->is_class("StreamPlayer") || p_object->is_class("SpatialStreamPlayer");
 }
 
 void StreamEditorPlugin::make_visible(bool p_visible) {
@@ -146,3 +146,4 @@ StreamEditorPlugin::~StreamEditorPlugin()
 {
 }
 
+#endif

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,13 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "baked_light_editor_plugin.h"
+
 #include "scene/gui/box_container.h"
 #include "scene/3d/mesh_instance.h"
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
 
 
-
+#if 0
 
 
 void BakedLightEditor::_end_baking() {
@@ -88,7 +89,7 @@ void BakedLightEditor::_notification(int p_option) {
 				float max_lum=0;
 
 				{
-					DVector<Color>::Write cw=colors.write();
+					PoolVector<Color>::Write cw=colors.write();
 					BakedLightBaker::Octant *octants=baker->octant_pool.ptr();
 					BakedLightBaker::Octant *oct = &octants[baker->leaf_list];
 					int vert_idx=0;
@@ -105,8 +106,10 @@ void BakedLightEditor::_notification(int p_option) {
 							colors[i].b=oct->light_accum[i][2]/norm;
 
 							float lum = colors[i].get_v();
-							//if (lum<0.05)
-							//	color.a=0;
+							/*
+							if (lum<0.05)
+								color.a=0;
+							*/
 							if (lum>max_lum)
 								max_lum=lum;
 
@@ -141,11 +144,11 @@ void BakedLightEditor::_notification(int p_option) {
 
 				baker->update_octree_images(octree_texture,light_texture);
 				baker->update_octree_sampler(octree_sampler);
-			//	print_line("sampler size: "+itos(octree_sampler.size()*4));
+				//print_line("sampler size: "+itos(octree_sampler.size()*4));
 
 #if 1
 //debug
-				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA,octree_texture);
+				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA8,octree_texture);
 				Ref<ImageTexture> it = memnew( ImageTexture );
 				it->create_from_image(img);
 				ResourceSaver::save("baked_octree.png",it);
@@ -283,10 +286,10 @@ void BakedLightEditor::_bake_lightmaps() {
 
 void BakedLightEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&BakedLightEditor::_menu_option);
-	ObjectTypeDB::bind_method("_bake_pressed",&BakedLightEditor::_bake_pressed);
-	ObjectTypeDB::bind_method("_clear_pressed",&BakedLightEditor::_clear_pressed);
-	ObjectTypeDB::bind_method("_bake_lightmaps",&BakedLightEditor::_bake_lightmaps);
+	ClassDB::bind_method("_menu_option",&BakedLightEditor::_menu_option);
+	ClassDB::bind_method("_bake_pressed",&BakedLightEditor::_bake_pressed);
+	ClassDB::bind_method("_clear_pressed",&BakedLightEditor::_clear_pressed);
+	ClassDB::bind_method("_bake_lightmaps",&BakedLightEditor::_bake_lightmaps);
 }
 
 BakedLightEditor::BakedLightEditor() {
@@ -373,3 +376,4 @@ BakedLightEditorPlugin::~BakedLightEditorPlugin()
 }
 
 
+#endif

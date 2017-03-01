@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,6 @@
 #include "resource.h"
 #include "servers/physics_server.h"
 #include "servers/visual_server.h"
-#include "servers/spatial_sound_server.h"
 #include "scene/resources/environment.h"
 
 class SpatialIndexer;
@@ -40,12 +39,11 @@ class Camera;
 class VisibilityNotifier;
 
 class World : public Resource {
-	OBJ_TYPE(World, Resource);
+	GDCLASS(World, Resource);
 	RES_BASE_EXTENSION("wrd");
 private:
 	RID space;
 	RID scenario;
-	RID sound_space;
 	SpatialIndexer* indexer;
 	Ref<Environment> environment;
 
@@ -60,8 +58,8 @@ friend class VisibilityNotifier;
 	void _update_camera(Camera* p_camera);
 	void _remove_camera(Camera* p_camera);
 
-	void _register_notifier(VisibilityNotifier* p_notifier,const AABB& p_rect);
-	void _update_notifier(VisibilityNotifier *p_notifier,const AABB& p_rect);
+	void _register_notifier(VisibilityNotifier* p_notifier,const Rect3& p_rect);
+	void _update_notifier(VisibilityNotifier *p_notifier,const Rect3& p_rect);
 	void _remove_notifier(VisibilityNotifier* p_notifier);
 friend class Viewport;
 	void _update(uint64_t p_frame);
@@ -71,7 +69,6 @@ public:
 
 	RID get_space() const;
 	RID get_scenario() const;
-	RID get_sound_space() const;
 	void set_environment(const Ref<Environment>& p_environment);
 	Ref<Environment> get_environment() const;
 

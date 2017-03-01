@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +34,7 @@
 
 class ItemList : public Control {
 
-	OBJ_TYPE( ItemList, Control );
+	GDCLASS( ItemList, Control );
 public:
 
 	enum IconMode {
@@ -102,7 +102,7 @@ private:
 	real_t icon_scale;
 
 	void _scroll_changed(double);
-	void _input_event(const InputEvent& p_event);
+	void _gui_input(const InputEvent& p_event);
 
 
 protected:
@@ -191,6 +191,7 @@ public:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
 	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
+	bool is_pos_at_end_of_items(const Point2& p_pos) const;
 
 	void set_icon_scale(real_t p_scale);
 	real_t get_icon_scale() const;

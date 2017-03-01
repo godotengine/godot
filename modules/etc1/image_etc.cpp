@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,19 +37,19 @@ static void _decompress_etc(Image *p_img) {
 
 	int imgw = p_img->get_width();
 	int imgh = p_img->get_height();
-	DVector<uint8_t> src=p_img->get_data();
-	DVector<uint8_t> dst;
+	PoolVector<uint8_t> src=p_img->get_data();
+	PoolVector<uint8_t> dst;
 
-	DVector<uint8_t>::Read r = src.read();
+	PoolVector<uint8_t>::Read r = src.read();
 
-	int mmc=p_img->get_mipmaps();
+	int mmc=p_img->get_mipmap_count();
 
 
 	for(int i=0;i<=mmc;i++) {
 
 		dst.resize(dst.size()+imgw*imgh*3);
 		const uint8_t *srcbr=&r[p_img->get_mipmap_offset(i)];
-		DVector<uint8_t>::Write w = dst.write();
+		PoolVector<uint8_t>::Write w = dst.write();
 
 		uint8_t *wptr = &w[dst.size()-imgw*imgh*3];
 
@@ -91,11 +91,11 @@ static void _decompress_etc(Image *p_img) {
 	}
 
 
-	r=DVector<uint8_t>::Read();
+	r=PoolVector<uint8_t>::Read();
 	//print_line("Re Creating ETC into regular image: w "+itos(p_img->get_width())+" h "+itos(p_img->get_height())+" mm "+itos(p_img->get_mipmaps()));
-	*p_img=Image(p_img->get_width(),p_img->get_height(),p_img->get_mipmaps(),Image::FORMAT_RGB,dst);
-	if (p_img->get_mipmaps())
-		p_img->generate_mipmaps(-1,true);
+	*p_img=Image(p_img->get_width(),p_img->get_height(),p_img->has_mipmaps(),Image::FORMAT_RGB8,dst);
+	if (p_img->has_mipmaps())
+		p_img->generate_mipmaps();
 
 
 }
@@ -108,20 +108,21 @@ static void _compress_etc(Image *p_img) {
 
 	ERR_FAIL_COND( nearest_power_of_2(imgw)!=imgw || nearest_power_of_2(imgh)!=imgh );
 
-	if (img.get_format()!=Image::FORMAT_RGB)
-		img.convert(Image::FORMAT_RGB);
+	if (img.get_format()!=Image::FORMAT_RGB8)
+		img.convert(Image::FORMAT_RGB8);
 
 
-	int mmc=img.get_mipmaps();
-	if (mmc==0)
-		img.generate_mipmaps(); // force mipmaps, so it works on most hardware
+	PoolVector<uint8_t> res_data;
+	PoolVector<uint8_t> dst_data;
+	PoolVector<uint8_t>::Read r = img.get_data().read();
 
+	int target_size = Image::get_image_data_size(p_img->get_width(),p_img->get_height(),Image::FORMAT_ETC,p_img->has_mipmaps()?-1:0);
+	int mmc = p_img->has_mipmaps() ? Image::get_image_required_mipmaps(p_img->get_width(),p_img->get_height(),Image::FORMAT_ETC) : 0;
 
-	DVector<uint8_t> res_data;
-	DVector<uint8_t> dst_data;
-	DVector<uint8_t>::Read r = img.get_data().read();
-
+	dst_data.resize(target_size);
 	int mc=0;
+	int ofs=0;
+	PoolVector<uint8_t>::Write w=dst_data.write();
 
 
 	rg_etc1::etc1_pack_params pp;
@@ -133,18 +134,18 @@ static void _compress_etc(Image *p_img) {
 		int bh=MAX(imgh/4,1);
 		const uint8_t *src = &r[img.get_mipmap_offset(i)];
 		int mmsize = MAX(bw,1)*MAX(bh,1)*8;
-		dst_data.resize(dst_data.size()+mmsize);
-		DVector<uint8_t>::Write w=dst_data.write();
-		uint8_t *dst = &w[dst_data.size()-mmsize];
+
+		uint8_t *dst = &w[ofs];
+		ofs+=mmsize;
 
 
-//		print_line("bh: "+itos(bh)+" bw: "+itos(bw));
+		//print_line("bh: "+itos(bh)+" bw: "+itos(bw));
 
 		for(int y=0;y<bh;y++) {
 
 			for(int x=0;x<bw;x++) {
 
-//				print_line("x: "+itos(x)+" y: "+itos(y));
+				//print_line("x: "+itos(x)+" y: "+itos(y));
 
 				uint8_t block[4*4*4];
 				zeromem(block,4*4*4);
@@ -186,7 +187,7 @@ static void _compress_etc(Image *p_img) {
 
 	}
 
-	*p_img=Image(p_img->get_width(),p_img->get_height(),mc-1,Image::FORMAT_ETC,dst_data);
+	*p_img=Image(p_img->get_width(),p_img->get_height(),(mc-1)?true:false,Image::FORMAT_ETC,dst_data);
 
 
 }

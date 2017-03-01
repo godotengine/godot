@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,8 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include <wchar.h>
 #include "ustring.h"
+
 #include "os/memory.h"
 #include "print_string.h"
 #include "math_funcs.h"
@@ -36,10 +36,8 @@
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
-#define MAX_DIGITS 6
-#define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
-#define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
 
+#include <wchar.h>
 
 #ifndef NO_USE_STDLIB
 #include <stdlib.h>
@@ -50,7 +48,43 @@
 #define snprintf _snprintf
 #endif
 
+#define MAX_DIGITS 6
+#define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
+#define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
+
+
+
+
 /** STRING **/
+
+bool CharString::operator<(const CharString& p_right) const {
+
+	if (length()==0) {
+		return p_right.length()!=0;
+	}
+
+
+	const char *this_str=get_data();
+	const char *that_str=get_data();
+	while (true) {
+
+		if (*that_str==0 && *this_str==0)
+			return false; //this can't be equal, sadly
+		else if (*this_str==0)
+			return true; //if this is empty, and the other one is not, then we're less.. I think?
+		else if (*that_str==0)
+			return false; //otherwise the other one is smaller..
+		else if (*this_str < *that_str ) //more than
+			return true;
+		else if (*this_str > *that_str ) //less than
+			return false;
+
+		this_str++;
+		that_str++;
+	}
+
+	return false; //should never reach here anyway
+}
 
 const char *CharString::get_data() const {
 
@@ -560,7 +594,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 	int pos=0;
 	int prev_pos=0;
-//	int slices=1;
+	//int slices=1;
 	if (p_slice<0)
 		return "";
 	if (find(p_splitter)==-1)
@@ -574,7 +608,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 			pos=length(); //reached end
 
 		int from=prev_pos;
-	//	int to=pos;
+		//int to=pos;
 
 		if (p_slice==i) {
 
@@ -612,6 +646,8 @@ String String::get_slicec(CharType p_splitter, int p_slice) const {
 			if (p_slice==count) {
 
 				return substr(prev,i-prev);
+			} else if (c[i]==0) {
+				return String();
 			} else {
 				count++;
 				prev=i+1;
@@ -1253,7 +1289,7 @@ _FORCE_INLINE static int parse_utf8_char(const char *p_utf8,unsigned int *p_ucs4
 		unichar=*p_utf8;
 	else {
 
-		unichar=(0xFF >> (len +1)) & *p_utf8;;
+		unichar=(0xFF >> (len +1)) & *p_utf8;
 
 		for (int i=1;i<len;i++) {
 
@@ -1402,7 +1438,7 @@ bool String::parse_utf8(const char* p_utf8,int p_len) {
 			unichar=*p_utf8;
 		else {
 
-			unichar=(0xFF >> (len +1)) & *p_utf8;;
+			unichar=(0xFF >> (len +1)) & *p_utf8;
 
 			for (int i=1;i<len;i++) {
 
@@ -1418,7 +1454,7 @@ bool String::parse_utf8(const char* p_utf8,int p_len) {
 			}
 		}
 
-//		printf("char %i, len %i\n",unichar,len);
+		//printf("char %i, len %i\n",unichar,len);
 		if (sizeof(wchar_t)==2 && unichar>0xFFFF) {
 			unichar=' '; //too long for windows
 
@@ -1545,20 +1581,20 @@ String::String(const StrRange& p_range) {
 
 int String::hex_to_int(bool p_with_prefix) const {
 
-    int l = length();
+	int l = length();
 	if (p_with_prefix && l<3)
 		return 0;
 
-    const CharType *s=ptr();
+	const CharType *s=ptr();
 
-    int sign = s[0]=='-' ? -1 : 1;
+	int sign = s[0]=='-' ? -1 : 1;
 
-    if (sign<0) {
-        s++;
-        l--;
+	if (sign<0) {
+		s++;
+		l--;
 		if (p_with_prefix && l<2)
-            return 0;
-    }
+			return 0;
+	}
 
 	if (p_with_prefix) {
 		if (s[0]!='0' || s[1]!='x')
@@ -1567,26 +1603,74 @@ int String::hex_to_int(bool p_with_prefix) const {
 		l-=2;
 	};
 
-    int hex=0;
+	int hex=0;
 
-    while(*s) {
+	while(*s) {
 
-        CharType c = LOWERCASE(*s);
-        int n;
-        if (c>='0' && c<='9') {
-            n=c-'0';
-        } else if (c>='a' && c<='f') {
-            n=(c-'a')+10;
-        } else {
-            return 0;
-        }
+		CharType c = LOWERCASE(*s);
+		int n;
+		if (c>='0' && c<='9') {
+			n=c-'0';
+		} else if (c>='a' && c<='f') {
+			n=(c-'a')+10;
+		} else {
+			return 0;
+		}
 
-        hex*=16;
-        hex+=n;
-        s++;
-    }
+		hex*=16;
+		hex+=n;
+		s++;
+	}
 
-    return hex*sign;
+	return hex*sign;
+
+}
+
+
+int64_t String::hex_to_int64(bool p_with_prefix) const {
+
+	int l = length();
+	if (p_with_prefix && l<3)
+		return 0;
+
+	const CharType *s=ptr();
+
+	int64_t sign = s[0]=='-' ? -1 : 1;
+
+	if (sign<0) {
+		s++;
+		l--;
+		if (p_with_prefix && l<2)
+			return 0;
+	}
+
+	if (p_with_prefix) {
+		if (s[0]!='0' || s[1]!='x')
+			return 0;
+		s+=2;
+		l-=2;
+	};
+
+	int64_t hex=0;
+
+	while(*s) {
+
+		CharType c = LOWERCASE(*s);
+		int64_t n;
+		if (c>='0' && c<='9') {
+			n=c-'0';
+		} else if (c>='a' && c<='f') {
+			n=(c-'a')+10;
+		} else {
+			return 0;
+		}
+
+		hex*=16;
+		hex+=n;
+		s++;
+	}
+
+	return hex*sign;
 
 }
 
@@ -2901,6 +2985,78 @@ bool String::matchn(const String& p_wildcard) const {
 
 }
 
+String String::format(const Variant& values,String placeholder) const {
+
+	String new_string = String( this->ptr() );
+
+	if( values.get_type() == Variant::ARRAY ) {
+		Array values_arr = values;
+
+		for(int i=0;i<values_arr.size();i++) {
+			String i_as_str = String::num_int64( i );
+
+			if( values_arr[i].get_type() == Variant::ARRAY ) {//Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
+				Array value_arr = values_arr[i];
+
+				if( value_arr.size()==2 ) {
+					Variant v_key = value_arr[0];
+					String key;
+
+					key = v_key.get_construct_string();
+					if( key.left(1)=="\"" && key.right(key.length()-1)=="\"" ) {
+						key = key.substr(1,key.length()-2);
+					}
+
+					Variant v_val = value_arr[1];
+					String val;
+					val = v_val.get_construct_string();
+
+					if( val.left(1)=="\"" && val.right(val.length()-1)=="\"" ) {
+						val = val.substr(1,val.length()-2);
+					}
+
+					new_string = new_string.replacen( placeholder.replace("_", key ), val );
+				}else {
+					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
+				}
+			} else {//Array structure ["RobotGuy","Logis","rookie"]
+				Variant v_val = values_arr[i];
+				String val;
+				val = v_val.get_construct_string();
+
+				if( val.left(1)=="\"" && val.right(val.length()-1)=="\"" ) {
+					val = val.substr(1,val.length()-2);
+				}
+
+				new_string = new_string.replacen( placeholder.replace("_", i_as_str ), val );
+			}
+		}
+	}else if( values.get_type() == Variant::DICTIONARY ) {
+		Dictionary d = values;
+		List<Variant> keys;
+		d.get_key_list(&keys);
+
+		for (List<Variant>::Element *E=keys.front();E;E=E->next()) {
+			String key = E->get().get_construct_string();
+			String val = d[E->get()].get_construct_string();
+
+			if( key.left(1)=="\"" && key.right(key.length()-1)=="\"" ) {
+				key = key.substr(1,key.length()-2);
+			}
+
+			if( val.left(1)=="\"" && val.right(val.length()-1)=="\"" ) {
+				val = val.substr(1,val.length()-2);
+			}
+
+			new_string = new_string.replacen( placeholder.replace("_", key ), val );
+		}
+	}else{
+		ERR_PRINT(String("Invalid type: use Array or Dictionary.").ascii().get_data());
+	}
+
+	return new_string;
+}
+
 String String::replace(String p_key,String p_with) const {
 
 	String new_string;
@@ -3286,8 +3442,17 @@ String String::c_escape() const {
 	escaped=escaped.replace("\t","\\t");
 	escaped=escaped.replace("\v","\\v");
 	escaped=escaped.replace("\'","\\'");
-	escaped=escaped.replace("\"","\\\"");
 	escaped=escaped.replace("\?","\\?");
+	escaped=escaped.replace("\"","\\\"");
+
+	return escaped;
+}
+
+String String::c_escape_multiline() const {
+
+	String escaped=*this;
+	escaped=escaped.replace("\\","\\\\");
+	escaped=escaped.replace("\"","\\\"");
 
 	return escaped;
 }
@@ -3762,7 +3927,7 @@ String String::get_file() const {
 	return substr(sep+1,length());
 }
 
-String String::extension() const {
+String String::get_extension() const {
 
 	int pos = find_last(".");
 	if (pos<0)
@@ -3772,11 +3937,11 @@ String String::extension() const {
 }
 
 String String::plus_file(const String& p_file) const {
-
-	if (length()>0 && operator [](length()-1)=='/')
+	if (empty())
+		return p_file;
+	if (operator [](length()-1)=='/' || (p_file.size()>0 && p_file.operator [](0)=='/'))
 		return *this+p_file;
-	else
-		return *this+"/"+p_file;
+	return *this+"/"+p_file;
 }
 
 String String::percent_encode() const {
@@ -3841,7 +4006,7 @@ String String::percent_decode() const {
 	return String::utf8(pe.ptr());
 }
 
-String String::basename() const {
+String String::get_basename() const {
 
 	int pos = find_last(".");
 	if (pos<0)
@@ -3936,12 +4101,8 @@ String String::sprintf(const Array& values, bool* error) const {
 						case 'X': base = 16; capitalize = true; break;
 					}
 					// Get basic number.
-					String str = String::num_int64(value, base, capitalize);
-
-					// Sign.
-					if (show_sign && value >= 0) {
-						str = str.insert(0, "+");
-					}
+					String str = String::num_int64(ABS(value), base, capitalize);
+					int number_len = str.length();
 
 					// Padding.
 					String pad_char = pad_with_zeroes ? String("0") : String(" ");
@@ -3949,6 +4110,13 @@ String String::sprintf(const Array& values, bool* error) const {
 						str = str.rpad(min_chars, pad_char);
 					} else {
 						str = str.lpad(min_chars, pad_char);
+					}
+
+					// Sign.
+					if (show_sign && value >= 0) {
+						str = str.insert(pad_with_zeroes?0:str.length()-number_len, "+");
+					} else if (value < 0) {
+						str = str.insert(pad_with_zeroes?0:str.length()-number_len, "-");
 					}
 
 					formatted += str;
@@ -4161,4 +4329,3 @@ String RTR(const String& p_text) {
 
 	return p_text;
 }
-
