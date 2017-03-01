@@ -50,7 +50,7 @@ public:
 	Math() {} // useless to instance
 
 	enum {
-		RANDOM_MAX=2147483647L
+		RANDOM_MAX=4294967295L
 	};
 
 
