@@ -4116,7 +4116,6 @@ void TextEdit::_push_current_op() {
 		return; // do nothing
 
 	if(next_operation_is_complex) {
-		current_op.chain_forward=true;
 		next_operation_is_complex=false;
 	}
 
