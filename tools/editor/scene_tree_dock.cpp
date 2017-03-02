@@ -1522,6 +1522,39 @@ void SceneTreeDock::_create() {
 void SceneTreeDock::set_edited_scene(Node* p_scene) {
 
 	edited_scene=p_scene;
+
+	if (!edited_scene){
+		if (!scene_tree->has_node(String("new_root"))){
+			Button *new_root = memnew( Button );
+			new_root->set_name("new_root");
+			for(int i=0;i<4;i++)
+				new_root->set_anchor(Margin(i), ANCHOR_CENTER);
+			new_root->set_margin(MARGIN_LEFT, 80);
+			new_root->set_margin(MARGIN_RIGHT, -80);
+			new_root->set_margin(MARGIN_TOP, 60);
+			new_root->set_margin(MARGIN_BOTTOM, 5);
+			new_root->set_icon(get_icon("Add","EditorIcons"));
+			new_root->set_text(TTR("New Scene Root"));
+			new_root->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW, false));
+			scene_tree->add_child(new_root);
+
+			Button *inherit_root = memnew( Button );
+			inherit_root->set_name("inherit_root");
+			for(int i=0;i<4;i++)
+				inherit_root->set_anchor(Margin(i), ANCHOR_CENTER);
+			inherit_root->set_margin(MARGIN_LEFT, 80);
+			inherit_root->set_margin(MARGIN_RIGHT, -80);
+			inherit_root->set_margin(MARGIN_TOP, -5);
+			inherit_root->set_margin(MARGIN_BOTTOM, -60);
+			inherit_root->set_icon(get_icon("Instance","EditorIcons"));
+			inherit_root->set_text(TTR("Inherit Scene"));
+			inherit_root->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE, false));
+			scene_tree->add_child(inherit_root);
+		}
+	} else if (scene_tree->has_node(String("new_root"))){
+		scene_tree->get_node(String("new_root"))->queue_delete();
+		scene_tree->get_node(String("inherit_root"))->queue_delete();
+	}
 }
 
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected ) {
