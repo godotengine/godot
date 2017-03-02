@@ -29,8 +29,14 @@
 #include "multi_node_edit.h"
 
 #include "editor_node.h"
+#include "core/helper/math_fieldwise.h"
 
 bool MultiNodeEdit::_set(const StringName& p_name, const Variant& p_value){
+
+	return _set_impl(p_name, p_value, "");
+}
+
+bool MultiNodeEdit::_set_impl(const StringName& p_name, const Variant& p_value, const String& p_field) {
 
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	if (!es)
@@ -59,7 +65,15 @@ bool MultiNodeEdit::_set(const StringName& p_name, const Variant& p_value){
 			NodePath p_path = n->get_path_to(tonode);
 			ur->add_do_property(n,name,p_path);
 		} else {
-			ur->add_do_property(n,name,p_value);
+			Variant new_value;
+			if (p_field=="") {
+				// whole value
+				new_value=p_value;
+			} else {
+				// only one field
+				new_value=fieldwise_assign(n->get(name),p_value,p_field);
+			}
+			ur->add_do_property(n,name,new_value);
 		}
 
 		ur->add_undo_property(n,name,n->get(name));
@@ -165,6 +179,11 @@ void MultiNodeEdit::clear_nodes() {
 void MultiNodeEdit::add_node(const NodePath& p_node){
 
 	nodes.push_back(p_node);
+}
+
+void MultiNodeEdit::set_property_field(const StringName& p_property, const Variant& p_value, const String& p_field) {
+
+	_set_impl(p_property, p_value, p_field);
 }
 
 MultiNodeEdit::MultiNodeEdit()

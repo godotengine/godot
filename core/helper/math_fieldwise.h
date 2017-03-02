@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  multi_node_edit.h                                                    */
+/*  fieldwise.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,40 +26,15 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef MULTI_NODE_EDIT_H
-#define MULTI_NODE_EDIT_H
+#ifndef MATH_FIELDWISE_H
+#define MATH_FIELDWISE_H
 
-#include "scene/main/node.h"
+#ifdef TOOLS_ENABLED
 
-class MultiNodeEdit : public Reference {
+#include "core/variant.h"
 
-	GDCLASS(MultiNodeEdit,Reference);
+Variant fieldwise_assign(const Variant& p_target, const Variant& p_source, const String& p_field);
 
-	List<NodePath> nodes;
-	struct PLData {
-		int uses;
-		PropertyInfo info;
-	};
+#endif // TOOLS_ENABLED
 
-	bool _set_impl(const StringName& p_name, const Variant& p_value, const String& p_field);
-
-
-protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
-
-public:
-
-
-
-	void clear_nodes();
-	void add_node(const NodePath& p_node);
-
-	void set_property_field(const StringName& p_property, const Variant& p_value, const String& p_field);
-
-	MultiNodeEdit();
-};
-
-#endif // MULTI_NODE_EDIT_H
+#endif // MATH_FIELDWISE_H
