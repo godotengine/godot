@@ -833,7 +833,6 @@ void Tree::update_cache() {
 	cache.title_button_color = get_color("title_button_color");
 
 	v_scroll->set_custom_step(cache.font->get_height());
-	cache.click_item=get_selected();
 
 }
 
