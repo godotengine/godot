@@ -47,7 +47,7 @@ protected:
 
 	void _gui_input(InputEvent p_event);
 	void _notification(int p_what);
-	void _fix_size();
+	virtual void _fix_size();
 	static void _bind_methods();
 public:
 
@@ -63,7 +63,7 @@ public:
 	void popup_centered(const Size2& p_size=Size2());
 	void popup_centered_minsize(const Size2& p_minsize=Size2());
 	void set_as_minsize();
-	virtual void popup();
+	virtual void popup(const Rect2& p_bounds=Rect2());
 
 	virtual String get_configuration_warning() const;
 

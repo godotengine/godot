@@ -46,10 +46,14 @@
 
 void ProjectExportDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_READY) {
-		delete_preset->set_icon(get_icon("Del","EditorIcons"));
-		connect("confirmed",this,"_export_pck_zip");
-
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			delete_preset->set_icon(get_icon("Del","EditorIcons"));
+			connect("confirmed",this,"_export_pck_zip");
+		} break;
+		case NOTIFICATION_POPUP_HIDE: {
+			EditorSettings::get_singleton()->set("interface/dialogs/export_bounds", get_rect());
+		} break;
 	}
 }
 
@@ -66,7 +70,13 @@ void ProjectExportDialog::popup_export() {
 	}
 
 	_update_presets();
-	popup_centered_ratio();
+
+	// Restore valid window bounds or pop up at default size.
+	if (EditorSettings::get_singleton()->has("interface/dialogs/export_bounds")) {
+		popup(EditorSettings::get_singleton()->get("interface/dialogs/export_bounds"));
+	} else {
+		popup_centered_ratio();
+	}
 }
 
 void ProjectExportDialog::_add_preset(int p_platform) {
@@ -663,6 +673,9 @@ void ProjectExportDialog::_bind_methods() {
 
 }
 ProjectExportDialog::ProjectExportDialog() {
+
+	set_title(TTR("Export"));
+	set_resizable(true);
 
 	HBoxContainer *hbox = memnew( HBoxContainer );
 	add_child(hbox);
