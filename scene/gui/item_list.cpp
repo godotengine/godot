@@ -507,7 +507,7 @@ void ItemList::_gui_input(const InputEvent& p_event) {
 					bool selected = !items[j].selected;
 					select(j,false);
 					if (selected)
-						emit_signal("multi_selected",i,true);
+						emit_signal("multi_selected",j,true);
 				}
 
 				if (p_event.mouse_button.button_index==BUTTON_RIGHT) {
