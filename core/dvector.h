@@ -34,6 +34,7 @@
 #include "pool_allocator.h"
 #include "safe_refcount.h"
 #include "os/rw_lock.h"
+#include "ustring.h"
 
 struct MemoryPool {
 
@@ -466,6 +467,16 @@ public:
 		return OK;
 	}
 
+	String join(String delimiter) {
+		String rs = "";
+		int s = size();
+		Read r = read();
+		for(int i=0;i<s;i++) {
+			rs += r[i] + delimiter;
+		}
+		rs.erase( rs.length()-delimiter.length(), delimiter.length());
+		return rs;
+	}
 
 	bool is_locked() const { return alloc && alloc->lock>0; }
 
