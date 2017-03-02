@@ -329,7 +329,7 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 		case LOGIC_CLAMP: {
 			if (p_idx==0)
 				return PropertyInfo(Variant::REAL,"a");
-			else if (p_idx==0)	// is it ok to test p_idx == 0 twice?
+			else if (p_idx==0)	// FIXME: is it ok to test p_idx == 0 twice?
 				return PropertyInfo(Variant::REAL,"min");
 			else
 				return PropertyInfo(Variant::REAL,"max");
