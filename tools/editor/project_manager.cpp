@@ -1264,11 +1264,6 @@ ProjectManager::ProjectManager() {
 	ccl->add_child(l);
 	top_hb->add_child(ccl);
 	top_hb->add_spacer();
-	l = memnew( Label );
-	l->set_text("v" VERSION_MKSTRING);
-	//l->add_font_override("font",get_font("bold","Fonts"));
-	l->set_align(Label::ALIGN_CENTER);
-	top_hb->add_child(l);
 	//vb->add_child(memnew(HSeparator));
 	//vb->add_margin_child("\n",memnew(Control));
 
@@ -1333,7 +1328,7 @@ ProjectManager::ProjectManager() {
 	scan->connect("pressed", this,"_scan_projects");
 
 	tree_vb->add_child(memnew( HSeparator ));
-
+	
 	scan_dir = memnew( FileDialog );
 	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
 	scan_dir->set_mode(FileDialog::MODE_OPEN_DIR);
@@ -1341,7 +1336,6 @@ ProjectManager::ProjectManager() {
 	scan_dir->set_current_dir( EditorSettings::get_singleton()->get("filesystem/directories/default_project_path") );
 	gui_base->add_child(scan_dir);
 	scan_dir->connect("dir_selected",this,"_scan_begin");
-
 
 	Button* create = memnew( Button );
 	create->set_text(TTR("New Project"));
@@ -1353,16 +1347,20 @@ ProjectManager::ProjectManager() {
 	tree_vb->add_child(import);
 	import->connect("pressed", this,"_import_project");
 
-
 	Button* erase = memnew( Button );
 	erase->set_text(TTR("Remove"));
 	tree_vb->add_child(erase);
 	erase->connect("pressed", this,"_erase_project");
 	erase_btn=erase;
 
-
 	tree_vb->add_spacer();
 
+	// exit button
+	Button * cancel = memnew( Button );
+	cancel->set_text(TTR("Exit"));
+	//cancel->set_custom_minimum_size(Size2(100,1)*EDSCALE);
+	cancel->connect("pressed", this,"_exit_dialog");
+	tree_vb->add_child(cancel);
 
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew( EditorAssetLibrary(true) );
@@ -1373,16 +1371,15 @@ ProjectManager::ProjectManager() {
 		WARN_PRINT("Asset Library not available, as it requires SSL to work.");
 	}
 
+	// version in bottom
+	l = memnew( Label );
+	l->set_text("v" VERSION_MKSTRING);
+	//l->add_font_override("font",get_font("bold","Fonts"));
+	l->set_align(Label::ALIGN_CENTER);
+	vb->add_child(l);
+	//CenterContainer *cc = memnew( CenterContainer );
+	//cc->add_child(l);
 
-	CenterContainer *cc = memnew( CenterContainer );
-	Button * cancel = memnew( Button );
-	cancel->set_text(TTR("Exit"));
-	cancel->set_custom_minimum_size(Size2(100,1)*EDSCALE);
-	cc->add_child(cancel);
-	cancel->connect("pressed", this,"_exit_dialog");
-	vb->add_child(cc);
-
-	//
 
 	erase_ask = memnew( ConfirmationDialog );
 	erase_ask->get_ok()->set_text(TTR("Remove"));
