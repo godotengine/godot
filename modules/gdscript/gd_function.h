@@ -36,6 +36,8 @@ public:
 		OPCODE_CALL_BUILT_IN,
 		OPCODE_CALL_SELF,
 		OPCODE_CALL_SELF_BASE,
+		OPCODE_CALL_STACK,
+		OPCODE_CALL_STACK_RETURN,
 		OPCODE_YIELD,
 		OPCODE_YIELD_SIGNAL,
 		OPCODE_YIELD_RESUME,
@@ -64,7 +66,9 @@ public:
 		ADDR_TYPE_STACK=5,
 		ADDR_TYPE_STACK_VARIABLE=6,
 		ADDR_TYPE_GLOBAL=7,
-		ADDR_TYPE_NIL=8
+		ADDR_TYPE_NIL=8,
+		ADDR_TYPE_FUNCTION=9,
+		ADDR_TYPE_LAMBDA_FUNCTION=10,
 	};
 
 	enum RPCMode {
@@ -85,6 +89,8 @@ public:
 
 private:
 friend class GDCompiler;
+friend class GDInstance;
+friend class GDLambdaFunctionObject;
 
 	StringName source;
 
@@ -102,6 +108,7 @@ friend class GDCompiler;
 	int _call_size;
 	int _initial_line;
 	bool _static;
+	bool _lambda;
 	ScriptInstance::RPCMode rpc_mode;
 
 	GDScript *_script;
@@ -111,13 +118,16 @@ friend class GDCompiler;
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
 	Vector<int> code;
+	Vector<int> lambda_variants;
 
 #ifdef TOOLS_ENABLED
 	Vector<StringName> arg_names;
 #endif
 
+	Vector<Variant> cache;
 	List<StackDebug> stack_debug;
 
+	_FORCE_INLINE_ Variant call_method(Variant* p_self, const StringName& p_method, const Variant** p_args, int p_argcount, Variant::CallError& r_error) const;
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Variant::CallError& p_err, const String& p_where,const Variant**argptrs) const;
 
@@ -196,7 +206,7 @@ public:
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
+	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL, const Variant **p_requires_args=NULL);
 
 	_FORCE_INLINE_ ScriptInstance::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDFunction();
@@ -221,5 +231,58 @@ public:
 	~GDFunctionState();
 };
 
+
+class GDFunctionObject : public Reference {
+	GDCLASS(GDFunctionObject,Reference);
+
+protected:
+	GDFunction *function;
+	GDInstance *instance;
+	friend class GDInstance;
+	friend class GDFunction;
+	friend class GDSignalObject;
+	static void _bind_methods();
+
+public:
+	_FORCE_INLINE_ virtual bool is_valid() const {return instance && function;}
+	virtual Object *get_owner() const;
+
+	_FORCE_INLINE_ virtual StringName get_name() const { return function->get_name(); }
+	virtual Variant applyv(const Array p_args);
+	Variant _apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	Variant apply(VARIANT_ARG_LIST);
+	virtual Variant apply_with(Object *p_target, const Array p_args);
+	GDFunctionObject() {instance=NULL, function=NULL;}
+//	~GDFunctoionObject();
+};
+
+class GDNativeFunctionObject : public GDFunctionObject {
+	GDCLASS(GDNativeFunctionObject,GDFunctionObject);
+
+	friend class GDFunction;
+	friend class GDInstance;
+	ObjectID target_id;
+	StringName method_name;
+public:
+	virtual Object *get_owner() const {return (target_id == 0 ? NULL : ObjectDB::get_instance(target_id));}
+	_FORCE_INLINE_ virtual bool is_valid() const { return target_id != 0 && ObjectDB::get_instance(target_id); }
+	
+	_FORCE_INLINE_ virtual StringName get_name() const { return method_name; }
+	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual Variant apply_with(Object *p_target, const Array p_args);
+	GDNativeFunctionObject() {target_id = 0;}
+};
+
+class GDLambdaFunctionObject : public GDFunctionObject {
+	GDCLASS(GDLambdaFunctionObject,GDFunctionObject);
+	friend class GDInstance;
+	Vector<Variant> variants;
+public:
+	virtual Variant apply(const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual Variant apply_with(Object *p_target, const Array p_args);
+
+	~GDLambdaFunctionObject();
+};
 
 #endif // GD_FUNCTION_H

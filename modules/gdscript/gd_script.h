@@ -81,6 +81,7 @@ friend class GDScriptLanguage;
 	GDScript *_owner; //for subclasses
 
 	Set<StringName> members; //members are just indices to the instanced script.
+	Vector<StringName> function_indices;
 	Map<StringName,Variant> constants;
 	Map<StringName,GDFunction*> member_functions;
 	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
@@ -185,15 +186,14 @@ public:
 	Error load_byte_code(const String& p_path);
 
 	Vector<uint8_t> get_as_byte_code() const;
-
-	bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
+    
+    bool get_property_default_value(const StringName& p_property,Variant& r_value) const;
 
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
 	virtual bool has_method(const StringName& p_method) const;
 	virtual MethodInfo get_method_info(const StringName& p_method) const;
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
-
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -215,6 +215,10 @@ class GDInstance : public ScriptInstance {
 friend class GDScript;
 friend class GDFunction;
 friend class GDFunctions;
+friend class GDFunctionObject;
+friend class GDLambdaFunctionObject;
+friend class GDNativeFunctionObject;
+friend class GDSignalObject;
 friend class GDCompiler;
 
 	Object *owner;
@@ -223,11 +227,16 @@ friend class GDCompiler;
 	Map<StringName,int> member_indices_cache; //used only for hot script reloading
 #endif
 	Vector<Variant> members;
+	Map<StringName, Ref<GDFunctionObject> > functions;
+	Vector< GDLambdaFunctionObject* > lambda_functions;
 	bool base_ref;
 
-
 	void _ml_call_reversed(GDScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
-
+	Ref<GDFunctionObject> get_function(StringName p_name);
+	Ref<GDLambdaFunctionObject> get_lambda_function(StringName p_name, Variant *p_stack, int p_stack_size);
+	_FORCE_INLINE_ void remove_lambda_function( GDLambdaFunctionObject *func) {lambda_functions.erase(func);}
+	
+	Variant call_member(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
 public:
 
 	_FORCE_INLINE_ Object* get_owner() { return owner; }

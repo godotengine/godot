@@ -59,7 +59,7 @@ bool GDParser::_end_statement() {
 		return true; //will be handled properly
 	}
 
-	return false;
+	return _after_function;
 }
 
 bool GDParser::_enter_indent_block(BlockNode* p_block) {
@@ -125,7 +125,6 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 		int argidx=0;
 
 		while(true) {
-
 			if (tokenizer->get_token()==GDTokenizer::TK_CURSOR) {
 				_make_completable_call(argidx);
 				completion_node=p_parent;
@@ -145,6 +144,9 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 
 			p_args.push_back(arg);
 
+			while (tokenizer->get_token() == GDTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
 			if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
 				tokenizer->advance();
 				break;
@@ -248,6 +250,8 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			}
 		}
 
+
+		GDTokenizer::Token last_token = tokenizer->get_token();
 		if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
 			//subexpression ()
 			tokenizer->advance();
@@ -375,6 +379,32 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			constant->value=Math_PI;
 			tokenizer->advance();
 			expr=constant;
+        } else if (tokenizer->get_token() == GDTokenizer::TK_PR_FUNCTION) {
+			StringName method_name;
+			StringName current_name;
+			bool has_id = false;
+			Node *node = _parse_function(current_class, current_function, &method_name, &has_id, &current_name);
+			if (!node) {
+				_set_error("Parse function error");
+				return NULL;
+			}
+			if (has_id) {
+				current_block->variables.push_back(current_name);
+				current_block->variable_lines.push_back(tokenizer->get_token_line());
+
+				LocalVarNode *lv = alloc_node<LocalVarNode>();
+				lv->name=current_name;
+				current_block->statements.push_back(lv);
+				OperatorNode *op = alloc_node<OperatorNode>();
+				op->op = OperatorNode::OP_ASSIGN;
+
+				IdentifierNode *id1 = alloc_node<IdentifierNode>();
+				id1->name = current_name;
+				op->arguments.push_back(id1);
+				op->arguments.push_back(node);
+				current_block->statements.push_back(op);
+			}
+			expr = node;
 		}
 		else if (tokenizer->get_token() == GDTokenizer::TK_CONST_INF) {
 
@@ -610,6 +640,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			} else {
 
 				SelfNode *self = alloc_node<SelfNode>();
+				self->implicit = true;
 				op->arguments.push_back(self);
 
 				StringName identifier;
@@ -617,6 +648,9 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 				}
 
+				if (current_block && current_block->outer_stack(identifier) && current_function) {
+					if (current_function->type == Node::TYPE_LAMBDA_FUNCTION) static_cast<LambdaFunctionNode*>(current_function)->insert_require(identifier);
+				}
 				IdentifierNode* id = alloc_node<IdentifierNode>();
 				id->name=identifier;
 				op->arguments.push_back(id);
@@ -667,6 +701,10 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				IdentifierNode *id = alloc_node<IdentifierNode>();
 				id->name = identifier;
 				expr = id;
+
+				if (current_block && current_block->outer_stack(identifier) && current_function) {
+					if (current_function->type == Node::TYPE_LAMBDA_FUNCTION) static_cast<LambdaFunctionNode*>(current_function)->insert_require(identifier);
+				}
 			}
 
 		} else if (tokenizer->get_token()==GDTokenizer::TK_OP_ADD || tokenizer->get_token()==GDTokenizer::TK_OP_SUB || tokenizer->get_token()==GDTokenizer::TK_OP_NOT || tokenizer->get_token()==GDTokenizer::TK_OP_BIT_INVERT) {
@@ -922,6 +960,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		}
 
 
+		_after_function = last_token == GDTokenizer::TK_PR_FUNCTION;
 		/******************/
 		/* Parse Indexing */
 		/******************/
@@ -1036,12 +1075,13 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		/* Parse Operator */
 		/******************/
 
-		if (parenthesis>0) {
-			//remove empty space (only allowed if inside parenthesis
-			while(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
-				tokenizer->advance();
-			}
-		}
+		// moved to _parse_arguments
+		// if (parenthesis>0) {
+		// 	//remove empty space (only allowed if inside parenthesis
+		// 	while(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+		// 		tokenizer->advance();
+		// 	}
+		// }
 
 		Expression e;
 		e.is_op=false;
@@ -1106,7 +1146,6 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 	}
 
 	/* Reduce the set set of expressions and place them in an operator tree, respecting precedence */
-
 
 	while(expression.size()>1) {
 
@@ -1931,7 +1970,6 @@ void GDParser::_parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode
 		branch->body->parent_block = p_block;
 		p_block->sub_blocks.push_back(branch->body);
 		current_block = branch->body;
-		
 		_parse_block(branch->body, p_static);
 		
 		current_block = p_block;
@@ -2671,6 +2709,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				cf_for->arguments.push_back(container);
 
 				cf_for->body = alloc_node<BlockNode>();
+				cf_for->body->arguments.push_back(id->name);
 				cf_for->body->parent_block=p_block;
 				p_block->sub_blocks.push_back(cf_for->body);
 
@@ -2820,8 +2859,35 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 					return;
 				}
 			} break;
-			default: {
+			case GDTokenizer::TK_PR_FUNCTION: {
+				StringName method_name;
+				StringName current_name;
+				bool has_id = false;
+				Node *node = _parse_function(current_class, current_function, &method_name, &has_id, &current_name);
+				if (!node) {
+					_set_error("Parse function error");
+					return;
+				}
 
+				if (has_id) {
+					p_block->variables.push_back(current_name);
+					p_block->variable_lines.push_back(tokenizer->get_token_line());
+
+					LocalVarNode *lv = alloc_node<LocalVarNode>();
+					lv->name=current_name;
+					p_block->statements.push_back(lv);
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_ASSIGN;
+
+					IdentifierNode *id1 = alloc_node<IdentifierNode>();
+					id1->name = current_name;
+					op->arguments.push_back(id1);
+					op->arguments.push_back(node);
+					p_block->statements.push_back(op);
+					}
+			} break;
+			default: {
 				Node *expression = _parse_and_reduce_expression(p_block,p_static,false,true);
 				if (!expression) {
 					if (_recover_from_completion()) {
@@ -2850,6 +2916,237 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 		}
 	}
 
+}
+
+GDParser::Node* GDParser::_parse_function(ClassNode *p_class, FunctionNode *p_func, StringName *method_name, bool *has_identifier, StringName *identifier) {
+	bool _static=p_func?p_func->_static:tokenizer->get_token(-1)==GDTokenizer::TK_PR_STATIC;
+
+	tokenizer->advance();
+	StringName name;
+
+	if (p_func) {
+		String current_name = String(p_func->name);
+		if (tokenizer->get_token() == GDTokenizer::TK_IDENTIFIER) {
+			StringName mn = tokenizer->get_token_identifier();
+			name = StringName("@" + current_name + "@" + mn + "@" + itos(tokenizer->get_token_line(-1)) + "@" + self_path);
+			if (has_identifier) *has_identifier = true;
+			if (identifier) *identifier = mn;
+			tokenizer->advance();
+		}else {
+			name = StringName("@" + current_name + "@" + itos(tokenizer->get_token_line(-1)) + self_path);
+		}
+
+	}else {
+		if (_get_completable_identifier(COMPLETION_VIRTUAL_FUNC,name)) {
+
+		}
+	}
+
+	if (name==StringName()) {
+
+		_set_error("Expected identifier after 'func' (syntax: 'func <identifier>([arguments]):' ).");
+		return NULL;
+	}
+
+	for(int i=0;i<p_class->functions.size();i++) {
+		if (p_class->functions[i]->name==name) {
+			_set_error("Function '"+String(name)+"' already exists in this class (at line: "+itos(p_class->functions[i]->line)+").");
+		}
+	}
+	for(int i=0;i<p_class->static_functions.size();i++) {
+		if (p_class->static_functions[i]->name==name) {
+			_set_error("Function '"+String(name)+"' already exists in this class (at line: "+itos(p_class->static_functions[i]->line)+").");
+		}
+	}
+
+
+	if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_OPEN) {
+
+		_set_error("Expected '(' after identifier (syntax: 'func <identifier>([arguments]):' ).");
+		return NULL;
+	}
+
+	tokenizer->advance();
+
+	Vector<StringName> arguments;
+	Vector<Node*> default_values;
+
+	int fnline = tokenizer->get_token_line();
+
+
+	if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+		//has arguments
+		bool defaulting=false;
+		while(true) {
+
+			if (tokenizer->get_token()==GDTokenizer::TK_PR_VAR) {
+
+				tokenizer->advance(); //var before the identifier is allowed
+			}
+
+
+			if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
+
+				_set_error("Expected identifier for argument.");
+				return NULL;
+			}
+
+			StringName argname=tokenizer->get_token_identifier();
+			arguments.push_back(argname);
+
+			tokenizer->advance();
+
+			if (defaulting && tokenizer->get_token()!=GDTokenizer::TK_OP_ASSIGN) {
+
+				_set_error("Default parameter expected.");
+				return NULL;
+			}
+
+			//tokenizer->advance();
+
+
+			if (tokenizer->get_token()==GDTokenizer::TK_OP_ASSIGN) {
+				defaulting=true;
+				tokenizer->advance(1);
+				Node *defval=NULL;
+
+				defval=_parse_and_reduce_expression(p_class,_static);
+				if (!defval || error_set)
+					return NULL;
+
+				OperatorNode *on = alloc_node<OperatorNode>();
+				on->op=OperatorNode::OP_ASSIGN;
+
+				IdentifierNode *in = alloc_node<IdentifierNode>();
+				in->name=argname;
+
+				on->arguments.push_back(in);
+				on->arguments.push_back(defval);
+				/* no ..
+                if (defval->type!=Node::TYPE_CONSTANT) {
+
+                    _set_error("default argument must be constant");
+                }
+                */
+				default_values.push_back(on);
+			}
+
+			if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+				tokenizer->advance();
+				continue;
+			} else if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+
+				_set_error("Expected ',' or ')'.");
+				return NULL;
+			}
+
+			break;
+		}
+
+
+	}
+
+	tokenizer->advance();
+
+	BlockNode *block = alloc_node<BlockNode>();
+	block->parent_class=p_class;
+	block->arguments = arguments;
+
+	if (name=="_init") {
+
+		if (p_class->extends_used) {
+
+			OperatorNode *cparent = alloc_node<OperatorNode>();
+			cparent->op=OperatorNode::OP_PARENT_CALL;
+			block->statements.push_back(cparent);
+
+			IdentifierNode *id = alloc_node<IdentifierNode>();
+			id->name="_init";
+			cparent->arguments.push_back(id);
+
+			if (tokenizer->get_token()==GDTokenizer::TK_PERIOD) {
+				tokenizer->advance();
+				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_OPEN) {
+					_set_error("expected '(' for parent constructor arguments.");
+				}
+				tokenizer->advance();
+
+				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+					//has arguments
+					while(true) {
+
+						Node *arg = _parse_and_reduce_expression(p_class,_static);
+						cparent->arguments.push_back(arg);
+
+						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+							tokenizer->advance();
+							continue;
+						} else if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+
+							_set_error("Expected ',' or ')'.");
+							return NULL;
+						}
+
+						break;
+
+					}
+				}
+
+				tokenizer->advance();
+			}
+		} else {
+
+
+			if (tokenizer->get_token()==GDTokenizer::TK_PERIOD) {
+
+				_set_error("Parent constructor call found for a class without inheritance.");
+				return NULL;
+			}
+
+		}
+	}
+
+	if (!_enter_indent_block(block)) {
+
+		_set_error("Indented block expected.");
+		return NULL;
+	}
+
+
+	FunctionNode *function;
+	if (p_func && current_block) {
+		block->parent_block = current_block;
+		LambdaFunctionNode *f = alloc_node<LambdaFunctionNode>();
+		f->parent = p_func;
+		function = f;
+	}else {
+		function = alloc_node<FunctionNode>();
+	}
+	function->name=name;
+	function->arguments=arguments;
+	function->default_values=default_values;
+	function->_static=_static;
+	function->line=fnline;
+
+
+	if (_static)
+		p_class->static_functions.push_back(function);
+	else
+		p_class->functions.push_back(function);
+
+
+	FunctionNode *pre_func = current_function;
+	BlockNode *pre_block = current_block;
+	current_function=function;
+	function->body=block;
+	current_block=block;
+	_parse_block(block,_static);
+	current_function=pre_func;
+	current_block= pre_func?pre_block:NULL;
+
+	if (method_name != NULL) *method_name = name;
+
+	return function;
 }
 
 bool GDParser::_parse_newline() {
@@ -3071,225 +3368,8 @@ void GDParser::_parse_class(ClassNode *p_class) {
 			}; //fallthrough to function
 			case GDTokenizer::TK_PR_FUNCTION: {
 
-				bool _static=false;
 				pending_newline=-1;
-
-				if (tokenizer->get_token(-1)==GDTokenizer::TK_PR_STATIC) {
-
-					_static=true;
-				}
-
-
-				tokenizer->advance();
-				StringName name;
-
-				if (_get_completable_identifier(COMPLETION_VIRTUAL_FUNC,name)) {
-
-				}
-
-
-				if (name==StringName()) {
-
-					_set_error("Expected identifier after 'func' (syntax: 'func <identifier>([arguments]):' ).");
-					return;
-				}
-
-				for(int i=0;i<p_class->functions.size();i++) {
-					if (p_class->functions[i]->name==name) {
-						_set_error("Function '"+String(name)+"' already exists in this class (at line: "+itos(p_class->functions[i]->line)+").");
-					}
-				}
-				for(int i=0;i<p_class->static_functions.size();i++) {
-					if (p_class->static_functions[i]->name==name) {
-						_set_error("Function '"+String(name)+"' already exists in this class (at line: "+itos(p_class->static_functions[i]->line)+").");
-					}
-				}
-
-
-				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_OPEN) {
-
-					_set_error("Expected '(' after identifier (syntax: 'func <identifier>([arguments]):' ).");
-					return;
-				}
-
-				tokenizer->advance();
-
-				Vector<StringName> arguments;
-				Vector<Node*> default_values;
-
-				int fnline = tokenizer->get_token_line();
-
-
-				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
-					//has arguments
-					bool defaulting=false;
-					while(true) {
-
-						if (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
-							tokenizer->advance();
-							continue;
-						}
-
-						if (tokenizer->get_token()==GDTokenizer::TK_PR_VAR) {
-
-							tokenizer->advance(); //var before the identifier is allowed
-						}
-
-
-						if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
-
-							_set_error("Expected identifier for argument.");
-							return;
-						}
-
-						StringName argname=tokenizer->get_token_identifier();
-						arguments.push_back(argname);
-
-						tokenizer->advance();
-
-						if (defaulting && tokenizer->get_token()!=GDTokenizer::TK_OP_ASSIGN) {
-
-							_set_error("Default parameter expected.");
-							return;
-						}
-
-						//tokenizer->advance();
-
-
-						if (tokenizer->get_token()==GDTokenizer::TK_OP_ASSIGN) {
-							defaulting=true;
-							tokenizer->advance(1);
-							Node *defval=NULL;
-
-							defval=_parse_and_reduce_expression(p_class,_static);
-							if (!defval || error_set)
-								return;
-
-							OperatorNode *on = alloc_node<OperatorNode>();
-							on->op=OperatorNode::OP_ASSIGN;
-
-							IdentifierNode *in = alloc_node<IdentifierNode>();
-							in->name=argname;
-
-							on->arguments.push_back(in);
-							on->arguments.push_back(defval);
-							/* no ..
-							if (defval->type!=Node::TYPE_CONSTANT) {
-
-								_set_error("default argument must be constant");
-							}
-							*/
-							default_values.push_back(on);
-						}
-
-						while (tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
-							tokenizer->advance();
-						}
-
-						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
-							tokenizer->advance();
-							continue;
-						} else if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
-
-							_set_error("Expected ',' or ')'.");
-							return;
-						}
-
-						break;
-					}
-
-
-				}
-
-				tokenizer->advance();
-
-				BlockNode *block = alloc_node<BlockNode>();
-				block->parent_class=p_class;
-
-				if (name=="_init") {
-
-					if (p_class->extends_used) {
-
-						OperatorNode *cparent = alloc_node<OperatorNode>();
-						cparent->op=OperatorNode::OP_PARENT_CALL;
-						block->statements.push_back(cparent);
-
-						IdentifierNode *id = alloc_node<IdentifierNode>();
-						id->name="_init";
-						cparent->arguments.push_back(id);
-
-						if (tokenizer->get_token()==GDTokenizer::TK_PERIOD) {
-							tokenizer->advance();
-							if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_OPEN) {
-								_set_error("expected '(' for parent constructor arguments.");
-							}
-							tokenizer->advance();
-
-							if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
-								//has arguments
-								parenthesis ++;
-								while(true) {
-
-									Node *arg = _parse_and_reduce_expression(p_class,_static);
-									cparent->arguments.push_back(arg);
-
-									if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
-										tokenizer->advance();
-										continue;
-									} else if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
-
-										_set_error("Expected ',' or ')'.");
-										return;
-									}
-
-									break;
-
-								}
-								parenthesis --;
-							}
-
-							tokenizer->advance();
-						}
-					} else {
-
-
-						if (tokenizer->get_token()==GDTokenizer::TK_PERIOD) {
-
-							_set_error("Parent constructor call found for a class without inheritance.");
-							return;
-						}
-
-					}
-				}
-
-				if (!_enter_indent_block(block)) {
-
-					_set_error("Indented block expected.");
-					return;
-				}
-
-				FunctionNode *function = alloc_node<FunctionNode>();
-				function->name=name;
-				function->arguments=arguments;
-				function->default_values=default_values;
-				function->_static=_static;
-				function->line=fnline;
-
-				function->rpc_mode=rpc_mode;
-				rpc_mode=ScriptInstance::RPC_MODE_DISABLED;
-
-
-				if (_static)
-					p_class->static_functions.push_back(function);
-				else
-					p_class->functions.push_back(function);
-
-
-				current_function=function;
-				function->body=block;
-				current_block=block;
-				_parse_block(block,_static);
-				current_block=NULL;
+				_parse_function(p_class);
 
 				//arguments
 			} break;
@@ -4456,6 +4536,7 @@ GDParser::GDParser() {
 	list=NULL;
 	tokenizer=NULL;
 	pending_newline=-1;
+	_after_function=false;
 	clear();
 
 }

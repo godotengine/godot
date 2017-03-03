@@ -43,6 +43,7 @@ public:
 		enum Type {
 			TYPE_CLASS,
 			TYPE_FUNCTION,
+			TYPE_LAMBDA_FUNCTION,
 			TYPE_BUILT_IN_FUNCTION,
 			TYPE_BLOCK,
 			TYPE_IDENTIFIER,
@@ -131,18 +132,52 @@ public:
 
 	};
 
+	struct LambdaFunctionNode : public FunctionNode {
+
+		FunctionNode *parent;
+		Vector<StringName> require_keys;
+
+		void insert_require(StringName p_key) {
+			if (body->variables.find(p_key) < 0 && body->arguments.find(p_key) < 0) {
+				if (require_keys.find(p_key) < 0) {
+					require_keys.push_back(p_key);
+				}else if (parent->type == Node::TYPE_LAMBDA_FUNCTION) {
+					LambdaFunctionNode *func = static_cast<LambdaFunctionNode*>(parent);
+					func->insert_require(p_key);
+				}
+			}
+		}
+
+
+		LambdaFunctionNode() { type=TYPE_LAMBDA_FUNCTION; _static=false; }
+	};
+
 	struct BlockNode : public Node {
 
 		ClassNode *parent_class;
 		BlockNode *parent_block;
 		Map<StringName,int> locals;
 		List<Node*> statements;
+		Vector<StringName> arguments;
 		Vector<StringName> variables;
 		Vector<int> variable_lines;
 
 		//the following is useful for code completion
 		List<BlockNode*> sub_blocks;
 		int end_line;
+
+		_FORCE_INLINE_ bool has_identifier(const StringName &identifier) const {
+			return variables.find(identifier)>=0?true:(parent_block?parent_block->has_identifier(identifier): false);
+		}
+
+		_FORCE_INLINE_ bool is_stack_argument(const StringName &identifier) {
+			return arguments.find(identifier) >= 0?true:parent_block?parent_block->is_stack_argument(identifier):false;
+		}
+
+		_FORCE_INLINE_ bool outer_stack(const StringName &identifier) const {
+			return arguments.find(identifier) >= 0 || variables.find(identifier)>=0 ? false : (parent_block?parent_block->has_identifier(identifier) || parent_block->is_stack_argument(identifier) : false);
+		}
+
 		BlockNode() { type=TYPE_BLOCK; end_line=-1; parent_block=NULL; parent_class=NULL; }
 	};
 
@@ -194,7 +229,8 @@ public:
 	};
 
 	struct SelfNode : public Node {
-		SelfNode() { type=TYPE_SELF; }
+		bool implicit;
+		SelfNode() { type=TYPE_SELF; implicit=false;}
 	};
 
 	struct OperatorNode : public Node {
@@ -451,6 +487,8 @@ private:
 
 	int pending_newline;
 
+	bool _after_function;
+
 	List<int> tab_level;
 
 	String base_path;
@@ -489,7 +527,8 @@ private:
 	bool _parse_arguments(Node* p_parent, Vector<Node*>& p_args, bool p_static, bool p_can_codecomplete=false);
 	bool _enter_indent_block(BlockNode *p_block=NULL);
 	bool _parse_newline();
-	Node* _parse_expression(Node *p_parent, bool p_static, bool p_allow_assign=false, bool p_parsing_constant=false);
+	Node* _parse_function(ClassNode *p_class, FunctionNode *p_func = NULL, StringName *method_name = NULL, bool *has_identifier = NULL, StringName *identifier = NULL);
+	Node* _parse_expression(Node *p_parent,bool p_static,bool p_allow_assign=false, bool p_parsing_constant=false);
 	Node* _reduce_expression(Node *p_node,bool p_to_const=false);
 	Node* _parse_and_reduce_expression(Node *p_parent,bool p_static,bool p_reduce_const=false,bool p_allow_assign=false);
 
