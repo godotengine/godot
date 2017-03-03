@@ -3969,6 +3969,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 								_set_error("Can't accept a null constant expression for infering export type.");
 								return;
 							}
+							if (cn->value.get_type()==Variant::OBJECT) {
+								_set_error("Can't accept an Object Type as expression for export value.");
+								return;
+							}
 							member._export.type=cn->value.get_type();
 							member._export.usage|=PROPERTY_USAGE_SCRIPT_VARIABLE;
 							if (cn->value.get_type()==Variant::OBJECT) {
