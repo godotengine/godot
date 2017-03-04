@@ -1723,6 +1723,10 @@ bool SceneTree::is_network_server() const {
 
 }
 
+bool SceneTree::has_network_peer() const {
+	return network_peer.is_valid();
+}
+
 int SceneTree::get_network_unique_id() const {
 
 	ERR_FAIL_COND_V(!network_peer.is_valid(),0);
@@ -2217,6 +2221,7 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_network_peer","peer:NetworkedMultiplayerPeer"),&SceneTree::set_network_peer);
 	ObjectTypeDB::bind_method(_MD("is_network_server"),&SceneTree::is_network_server);
+	ObjectTypeDB::bind_method(_MD("has_network_peer"),&SceneTree::has_network_peer);
 	ObjectTypeDB::bind_method(_MD("get_network_unique_id"),&SceneTree::get_network_unique_id);
 	ObjectTypeDB::bind_method(_MD("set_refuse_new_network_connections","refuse"),&SceneTree::set_refuse_new_network_connections);
 	ObjectTypeDB::bind_method(_MD("is_refusing_new_network_connections"),&SceneTree::is_refusing_new_network_connections);
