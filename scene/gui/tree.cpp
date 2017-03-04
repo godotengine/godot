@@ -848,7 +848,6 @@ void Tree::update_cache() {
 	cache.title_button_color = get_color("title_button_color");
 
 	v_scroll->set_custom_step(cache.font->get_height());
-	cache.click_item=get_selected();
 
 }
 
@@ -1611,6 +1610,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 				cache.click_id=c.buttons[j].id;
 				cache.click_item=p_item;
 				cache.click_column=col;
+				cache.click_pos=get_global_mouse_pos()-get_global_pos();
 				update();
 				//emit_signal("button_pressed");
 				return -1;
@@ -2391,6 +2391,8 @@ void Tree::_gui_input(InputEvent p_event) {
 
 
 					if (cache.click_type==Cache::CLICK_BUTTON) {
+						// make sure in case of wrong reference after reconstructing whole TreeItems
+						cache.click_item=get_item_at_pos(cache.click_pos);
 						emit_signal("button_pressed",cache.click_item,cache.click_column,cache.click_id);
 
 					}
@@ -2971,7 +2973,6 @@ void Tree::clear() {
 	selected_item=NULL;
 	edited_item=NULL;
 	popup_edited_item=NULL;
-	selected_item=NULL;
 
 	update();
 };

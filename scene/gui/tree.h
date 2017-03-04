@@ -409,6 +409,7 @@ friend class TreeItem;
 		TreeItem *click_item;
 		int click_column;
 		int hover_index;
+		Point2 click_pos;
 
 	} cache;
 
