@@ -35451,6 +35451,13 @@
 				Returns true if this SceneTree's [NetworkedMultiplayerPeer] is in server mode (listening for connections).
 			</description>
 		</method>
+		<method name="has_network_peer" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns true if there is a [NetworkedMultiplayerPeer] set (with [method SceneTree.set_network_peer]).
+			</description>
+		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
