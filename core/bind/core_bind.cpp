@@ -1297,6 +1297,11 @@ DVector<Vector3> _Geometry::get_closest_points_between_segments(const Vector3& p
 	return r;
 
 }
+Vector2 _Geometry::get_closest_point_to_segment_2d(const Vector2& p_point, const Vector2& p_a,const Vector2& p_b) {
+
+	Vector2 s[2]={p_a,p_b};
+	return Geometry::get_closest_point_to_segment_2d(p_point,s);
+}
 Vector3 _Geometry::get_closest_point_to_segment(const Vector3& p_point, const Vector3& p_a,const Vector3& p_b) {
 
 	Vector3 s[2]={p_a,p_b};
@@ -1418,6 +1423,7 @@ void _Geometry::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_closest_points_between_segments_2d","p1","q1","p2","q2"),&_Geometry::get_closest_points_between_segments_2d);
 	ObjectTypeDB::bind_method(_MD("get_closest_points_between_segments","p1","p2","q1","q2"),&_Geometry::get_closest_points_between_segments);
 
+	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment_2d","point","s1","s2"),&_Geometry::get_closest_point_to_segment_2d);
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
 
 	ObjectTypeDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
