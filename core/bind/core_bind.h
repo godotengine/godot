@@ -334,6 +334,7 @@ public:
 	Variant segment_intersects_segment_2d(const Vector2& p_from_a,const Vector2& p_to_a,const Vector2& p_from_b,const Vector2& p_to_b);
 	PoolVector<Vector2> get_closest_points_between_segments_2d( const Vector2& p1,const Vector2& q1, const Vector2& p2,const Vector2& q2);
 	PoolVector<Vector3> get_closest_points_between_segments(const Vector3& p1,const Vector3& p2,const Vector3& q1,const Vector3& q2);
+	Vector2 get_closest_point_to_segment_2d(const Vector2& p_point, const Vector2& p_a,const Vector2& p_b);
 	Vector3 get_closest_point_to_segment(const Vector3& p_point, const Vector3& p_a,const Vector3& p_b);
 	Variant ray_intersects_triangle( const Vector3& p_from, const Vector3& p_dir, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2);
 	Variant segment_intersects_triangle( const Vector3& p_from, const Vector3& p_to, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2);
