@@ -226,12 +226,16 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 
 }
 
-void Popup::popup() {
+void Popup::popup(const Rect2& bounds) {
 
 	emit_signal("about_to_show");
 	show_modal(exclusive);
 
-
+	// Fit the popup into the optionally provided bounds.
+	if (!bounds.has_no_area()) {
+		set_pos(bounds.pos);
+		set_size(bounds.size);
+	}
 	_fix_size();
 
 	Control *focusable = find_next_valid_focus();
@@ -260,7 +264,7 @@ void Popup::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_centered","size"),&Popup::popup_centered,DEFVAL(Size2()));
 	ClassDB::bind_method(D_METHOD("popup_centered_ratio","ratio"),&Popup::popup_centered_ratio,DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("popup_centered_minsize","minsize"),&Popup::popup_centered_minsize,DEFVAL(Size2()));
-	ClassDB::bind_method(D_METHOD("popup"),&Popup::popup);
+	ClassDB::bind_method(D_METHOD("popup","bounds"),&Popup::popup,DEFVAL(Rect2()));
 	ClassDB::bind_method(D_METHOD("set_exclusive","enable"),&Popup::set_exclusive);
 	ClassDB::bind_method(D_METHOD("is_exclusive"),&Popup::is_exclusive);
 	ADD_SIGNAL( MethodInfo("about_to_show") );

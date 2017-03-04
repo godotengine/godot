@@ -66,7 +66,7 @@ class WindowDialog : public Popup {
 
 protected:
 	virtual void _post_popup();
-
+	virtual void _fix_size();
 	virtual void _close_pressed()  {}
 	virtual bool has_point(const Point2& p_point) const;
 	void _notification(int p_what);

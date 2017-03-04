@@ -73,34 +73,38 @@ static const char* _axis_names[JOY_AXIS_MAX*2] = {
 
 void ProjectSettings::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			globals_editor->edit(GlobalConfig::get_singleton());
 
-		globals_editor->edit(GlobalConfig::get_singleton());
+			search_button->set_icon(get_icon("Zoom","EditorIcons"));
+			clear_button->set_icon(get_icon("Close","EditorIcons"));
 
-		search_button->set_icon(get_icon("Zoom","EditorIcons"));
-		clear_button->set_icon(get_icon("Close","EditorIcons"));
+			translation_list->connect("button_pressed",this,"_translation_delete");
+			_update_actions();
+			popup_add->add_icon_item(get_icon("Keyboard","EditorIcons"),TTR("Key "),InputEvent::KEY);//"Key " - because the word 'key' has already been used as a key animation
+			popup_add->add_icon_item(get_icon("JoyButton","EditorIcons"),TTR("Joy Button"),InputEvent::JOYPAD_BUTTON);
+			popup_add->add_icon_item(get_icon("JoyAxis","EditorIcons"),TTR("Joy Axis"),InputEvent::JOYPAD_MOTION);
+			popup_add->add_icon_item(get_icon("Mouse","EditorIcons"),TTR("Mouse Button"),InputEvent::MOUSE_BUTTON);
 
-		translation_list->connect("button_pressed",this,"_translation_delete");
-		_update_actions();
-		popup_add->add_icon_item(get_icon("Keyboard","EditorIcons"),TTR("Key "),InputEvent::KEY);//"Key " - because the word 'key' has already been used as a key animation
-		popup_add->add_icon_item(get_icon("JoyButton","EditorIcons"),TTR("Joy Button"),InputEvent::JOYPAD_BUTTON);
-		popup_add->add_icon_item(get_icon("JoyAxis","EditorIcons"),TTR("Joy Axis"),InputEvent::JOYPAD_MOTION);
-		popup_add->add_icon_item(get_icon("Mouse","EditorIcons"),TTR("Mouse Button"),InputEvent::MOUSE_BUTTON);
+			List<String> tfn;
+			ResourceLoader::get_recognized_extensions_for_type("Translation",&tfn);
+			for (List<String>::Element *E=tfn.front();E;E=E->next()) {
 
-		List<String> tfn;
-		ResourceLoader::get_recognized_extensions_for_type("Translation",&tfn);
-		for (List<String>::Element *E=tfn.front();E;E=E->next()) {
+				translation_file_open->add_filter("*."+E->get());
+			}
 
-			translation_file_open->add_filter("*."+E->get());
-		}
+			List<String> rfn;
+			ResourceLoader::get_recognized_extensions_for_type("Resource",&rfn);
+			for (List<String>::Element *E=rfn.front();E;E=E->next()) {
 
-		List<String> rfn;
-		ResourceLoader::get_recognized_extensions_for_type("Resource",&rfn);
-		for (List<String>::Element *E=rfn.front();E;E=E->next()) {
-
-			translation_res_file_open->add_filter("*."+E->get());
-			translation_res_option_file_open->add_filter("*."+E->get());
-		}
+				translation_res_file_open->add_filter("*."+E->get());
+				translation_res_option_file_open->add_filter("*."+E->get());
+			}
+		} break;
+		case NOTIFICATION_POPUP_HIDE: {
+			EditorSettings::get_singleton()->set("interface/dialogs/project_settings_bounds", get_rect());
+		} break;
 	}
 }
 
@@ -579,8 +583,12 @@ void ProjectSettings::_update_actions() {
 
 void ProjectSettings::popup_project_settings() {
 
-	//popup_centered(Size2(500,400));
-	popup_centered_ratio();
+	// Restore valid window bounds or pop up at default size.
+	if (EditorSettings::get_singleton()->has("interface/dialogs/project_settings_bounds")) {
+		popup(EditorSettings::get_singleton()->get("interface/dialogs/project_settings_bounds"));
+	} else {
+		popup_centered_ratio();
+	}
 	globals_editor->update_category_list();
 	_update_translations();
 	autoload_settings->update_autoload();
@@ -1224,6 +1232,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	singleton=this;
 	set_title(TTR("Project Settings (godot.cfg)"));
+	set_resizable(true);
 	undo_redo=&p_data->get_undo_redo();
 	data=p_data;
 

@@ -36,6 +36,34 @@ void WindowDialog::_post_popup() {
 	drag_type = DRAG_NONE; // just in case
 }
 
+void WindowDialog::_fix_size() {
+
+	// Perhaps this should be called when the viewport resizes aswell or windows go out of bounds...
+
+	// Ensure the whole window is visible.
+	Point2i pos = get_global_pos();
+	Size2i size = get_size();
+	Size2i viewport_size = get_viewport_rect().size;
+	
+	// Windows require additional padding to keep the window chrome visible.
+	Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
+	float top = panel->get_margin(MARGIN_TOP);
+	float left = panel->get_margin(MARGIN_LEFT);
+	float bottom = panel->get_margin(MARGIN_BOTTOM);
+	float right = panel->get_margin(MARGIN_RIGHT);
+
+	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
+	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
+	set_global_pos(pos);
+
+	// Also resize the window to fit if a resize should be possible at all.
+	if (resizable) {
+		size.x = MIN(size.x, viewport_size.x - left - right);
+		size.y = MIN(size.y, viewport_size.y - top - bottom);
+		set_size(size);
+	}
+}
+
 bool WindowDialog::has_point(const Point2& p_point) const {
 
 	Rect2 r(Point2(), get_size());

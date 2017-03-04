@@ -93,10 +93,14 @@ void EditorSettingsDialog::popup_edit_settings() {
 	search_box->grab_focus();
 
 	_update_shortcuts();
-	popup_centered_ratio(0.7);
+
+	// Restore valid window bounds or pop up at default size.
+	if (EditorSettings::get_singleton()->has("interface/dialogs/editor_settings_bounds")) {
+		popup(EditorSettings::get_singleton()->get("interface/dialogs/editor_settings_bounds"));
+	} else {
+		popup_centered_ratio(0.7);
+	}
 }
-
-
 
 void EditorSettingsDialog::_clear_search_box() {
 
@@ -121,10 +125,14 @@ void EditorSettingsDialog::_filter_shortcuts(const String& p_filter) {
 
 void EditorSettingsDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_TREE) {
-
-		clear_button->set_icon(get_icon("Close","EditorIcons"));
-		shortcut_clear_button->set_icon(get_icon("Close","EditorIcons"));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			clear_button->set_icon(get_icon("Close", "EditorIcons"));
+			shortcut_clear_button->set_icon(get_icon("Close", "EditorIcons"));
+		} break;
+		case NOTIFICATION_POPUP_HIDE: {
+			EditorSettings::get_singleton()->set("interface/dialogs/editor_settings_bounds", get_rect());
+		} break;
 	}
 }
 
@@ -305,6 +313,7 @@ void EditorSettingsDialog::_bind_methods() {
 EditorSettingsDialog::EditorSettingsDialog() {
 
 	set_title(TTR("Editor Settings"));
+	set_resizable(true);
 
 	tabs = memnew( TabContainer );
 	add_child(tabs);
