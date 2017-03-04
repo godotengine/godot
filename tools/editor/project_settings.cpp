@@ -578,9 +578,12 @@ void ProjectSettings::_update_actions() {
 
 
 void ProjectSettings::popup_project_settings() {
+	// Popup the settings window with a maximum width - otherwise property names are hard to track back to their values.
+	Size2 size = get_viewport_rect().size;
+	size = (size * 0.75).floor();
+	size.x = MIN(size.x, 800 * EDSCALE);
+	popup_centered(size);
 
-	//popup_centered(Size2(500,400));
-	popup_centered_ratio();
 	globals_editor->update_category_list();
 	_update_translations();
 	autoload_settings->update_autoload();
