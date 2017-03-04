@@ -58,6 +58,7 @@ private:
 	uint32_t layer_mask;
 	int priority;
 	bool monitoring;
+	bool monitoring_stored;
 	bool monitorable;
 	bool locked;
 

@@ -357,6 +357,10 @@ void Area2D::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
 			ERR_CONTINUE(!node);
+
+			node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -367,8 +371,6 @@ void Area2D::_clear_monitoring() {
 
 			emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
-			node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
 		}
 
 	}
@@ -388,6 +390,9 @@ void Area2D::_clear_monitoring() {
 				continue;
 			//ERR_CONTINUE(!node);
 
+			node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_area_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_area_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -397,9 +402,6 @@ void Area2D::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->area_exit,obj);
-
-			node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_area_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_area_exit_tree);
 		}
 	}
 
@@ -411,7 +413,13 @@ void Area2D::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 
+			monitoring_stored = monitoring;
+			set_enable_monitoring(false);
 			_clear_monitoring();
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			
+			set_enable_monitoring(monitoring_stored);
 		} break;
 	}
 
@@ -686,6 +694,7 @@ Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_crea
 	monitorable=false;
 	collision_mask=1;
 	layer_mask=1;
+	monitoring_stored = true;
 	set_enable_monitoring(true);
 	set_monitorable(true);
 }
