@@ -49,7 +49,6 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	// ===========================================================
 	private final GodotView mView;
 	private final GodotEditText mEdit;
-	private String mText;
 	private String mOriginText;
 
 	// ===========================================================
@@ -81,52 +80,28 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 	@Override
 	public void afterTextChanged(final Editable s) {
-		if (this.isFullScreenEdit()) {
-			return;
-		}
 
-		//if (BuildConfig.DEBUG) {
-			//Log.d(TAG, "afterTextChanged: " + s);
-		//}
-		int nModified = s.length() - this.mText.length();
-		if (nModified > 0) {
-			final String insertText = s.subSequence(this.mText.length(), s.length()).toString();
-			for(int i = 0; i < insertText.length(); i++) {
-				int ch = insertText.codePointAt(i);
-				GodotLib.key(0, ch, true);
-				GodotLib.key(0, ch, false);
-			}
-			/*
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "insertText(" + insertText + ")");
-			}
-			*/
-		} else {
-			for (; nModified < 0; ++nModified) {
-				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
-				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
-				/*
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "deleteBackward");
-				}
-				*/
-			}
-		}
-		this.mText = s.toString();
 	}
 
 	@Override
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
-		/*
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "beforeTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",after: " + after);
+		//Log.d(TAG, "beforeTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",after: " + after);
+
+		for (int i=0;i<count;i++){
+			GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
+			GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
 		}
-		*/
-		this.mText = pCharSequence.toString();
 	}
 
 	@Override
 	public void onTextChanged(final CharSequence pCharSequence, final int start, final int before, final int count) {
+		//Log.d(TAG, "onTextChanged(" + pCharSequence + ")start: " + start + ",count: " + count + ",before: " + before);
+
+		for (int i=start;i<start+count;i++){
+			int ch = pCharSequence.charAt(i);
+			GodotLib.key(0, ch, true);
+			GodotLib.key(0, ch, false);
+		}
 
 	}
 
