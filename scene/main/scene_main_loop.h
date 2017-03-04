@@ -447,6 +447,7 @@ public:
 
 	void set_network_peer(const Ref<NetworkedMultiplayerPeer>& p_network_peer);
 	bool is_network_server() const;
+	bool has_network_peer() const;
 	int get_network_unique_id() const;
 
 	void set_refuse_new_network_connections(bool p_refuse);
