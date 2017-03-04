@@ -1307,6 +1307,16 @@ Vector3 _Geometry::get_closest_point_to_segment(const Vector3& p_point, const Ve
 	Vector3 s[2]={p_a,p_b};
 	return Geometry::get_closest_point_to_segment(p_point,s);
 }
+Vector2 _Geometry::get_closest_point_to_segment_uncapped_2d(const Vector2& p_point, const Vector2& p_a,const Vector2& p_b) {
+
+	Vector2 s[2]={p_a,p_b};
+	return Geometry::get_closest_point_to_segment_uncapped_2d(p_point,s);
+}
+Vector3 _Geometry::get_closest_point_to_segment_uncapped(const Vector3& p_point, const Vector3& p_a,const Vector3& p_b) {
+
+	Vector3 s[2]={p_a,p_b};
+	return Geometry::get_closest_point_to_segment_uncapped(p_point,s);
+}
 Variant _Geometry::ray_intersects_triangle( const Vector3& p_from, const Vector3& p_dir, const Vector3& p_v0,const Vector3& p_v1,const Vector3& p_v2) {
 
 	Vector3 res;
@@ -1425,6 +1435,9 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment_2d","point","s1","s2"),&_Geometry::get_closest_point_to_segment_2d);
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
+
+	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment_uncapped_2d","point","s1","s2"),&_Geometry::get_closest_point_to_segment_uncapped_2d);
+	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment_uncapped","point","s1","s2"),&_Geometry::get_closest_point_to_segment_uncapped);
 
 	ObjectTypeDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
 
