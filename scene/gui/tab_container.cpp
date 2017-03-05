@@ -371,6 +371,7 @@ void TabContainer::add_child_notify(Node *p_child) {
 		//call_deferred("set_current_tab",0);
 		first = true;
 		current = 0;
+		previous = 0;
 	}
 	c->set_area_as_parent_rect();
 	if (tabs_visible)
@@ -396,6 +397,7 @@ void TabContainer::set_current_tab(int p_current) {
 
 	ERR_FAIL_INDEX(p_current, get_tab_count());
 
+	int pending_previous = current;
 	current = p_current;
 
 	Ref<StyleBox> sb = get_stylebox("panel");
@@ -412,18 +414,32 @@ void TabContainer::set_current_tab(int p_current) {
 				c->set_margin(Margin(i), c->get_margin(Margin(i)) + sb->get_margin(Margin(i)));
 
 
-		} else
+		}
+		else
 			c->hide();
 	}
 
 	_change_notify("current_tab");
-	emit_signal("tab_changed", current);
+
+	if (pending_previous == current)
+		emit_signal("tab_selected", current);
+	else {
+		previous = pending_previous;
+		emit_signal("tab_selected", current);
+		emit_signal("tab_changed", current);
+	}
+
 	update();
 }
 
 int TabContainer::get_current_tab() const {
 
 	return current;
+}
+
+int TabContainer::get_previous_tab() const {
+	
+		return previous;
 }
 
 Control* TabContainer::get_tab_control(int p_idx) const {
@@ -434,6 +450,7 @@ Control* TabContainer::get_tab_control(int p_idx) const {
 	else
 		return NULL;
 }
+
 Control* TabContainer::get_current_tab_control() const {
 
 	Vector<Control*> tabs = _get_tabs();
@@ -501,7 +518,6 @@ bool TabContainer::are_tabs_visible() const {
 
 }
 
-
 Control *TabContainer::_get_tab(int p_idx) const {
 
 	return get_tab_control(p_idx);
@@ -551,6 +567,7 @@ void TabContainer::set_tab_disabled(int p_tab, bool p_enabled) {
 	child->set_meta("_tab_disabled", p_enabled);
 	update();
 }
+
 bool TabContainer::get_tab_disabled(int p_tab) const {
 
 	Control *child = _get_tab(p_tab);
@@ -577,7 +594,6 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 			p_strings->push_back(name);
 	}
 }
-
 
 Size2 TabContainer::get_minimum_size() const {
 
@@ -620,13 +636,13 @@ Popup* TabContainer::get_popup() const {
 	return popup;
 }
 
-
 void TabContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TabContainer::_gui_input);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &TabContainer::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &TabContainer::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &TabContainer::get_current_tab);
+	ClassDB::bind_method(D_METHOD("get_previous_tab"), &TabContainer::get_previous_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab_control:Control"), &TabContainer::get_current_tab_control);
 	ClassDB::bind_method(D_METHOD("get_tab_control:Control", "idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabContainer::set_tab_align);
@@ -645,6 +661,7 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
+	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
@@ -659,6 +676,7 @@ TabContainer::TabContainer() {
 	buttons_visible_cache = false;
 	tabs_ofs_cache = 0;
 	current = 0;
+	previous = 0;
 	mouse_x_cache = 0;
 	align = ALIGN_CENTER;
 	tabs_visible = true;
