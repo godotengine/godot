@@ -28,9 +28,9 @@
 /*************************************************************************/
 #include "version.h"
 #include "export.h"
-#include "tools/editor/editor_settings.h"
-#include "tools/editor/editor_export.h"
-#include "tools/editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "editor/editor_export.h"
+#include "editor/editor_node.h"
 #include "io/zip_io.h"
 #include "io/marshalls.h"
 #include "global_config.h"

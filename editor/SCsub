@@ -1,0 +1,205 @@
+#!/usr/bin/env python
+
+Import('env')
+env.editor_sources = []
+
+import os
+
+
+def make_certs_header(target, source, env):
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open(src, "rb")
+    g = open(dst, "wb")
+    buf = f.read()
+    decomp_size = len(buf)
+    import zlib
+    buf = zlib.compress(buf)
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _CERTS_RAW_H\n")
+    g.write("#define _CERTS_RAW_H\n")
+    g.write("static const int _certs_compressed_size=" + str(len(buf)) + ";\n")
+    g.write("static const int _certs_uncompressed_size=" + str(decomp_size) + ";\n")
+    g.write("static const unsigned char _certs_compressed[]={\n")
+    for i in range(len(buf)):
+        g.write(str(ord(buf[i])) + ",\n")
+    g.write("};\n")
+    g.write("#endif")
+
+
+def make_doc_header(target, source, env):
+
+    dst = target[0].srcnode().abspath
+    g = open(dst, "wb")
+    buf = ""
+    docbegin = ""
+    docend = ""
+    for s in source:
+        src = s.srcnode().abspath
+        f = open(src, "rb")
+        content = f.read()
+        buf += content[content.find("<class"): content.rfind("</doc>")]
+        if len(docbegin) == 0:
+            docbegin = content[0: content.find("<class")]
+        if len(docend) == 0:
+            docend = content[content.rfind("</doc>"): len(buf)]
+    buf = docbegin + buf + docend
+    decomp_size = len(buf)
+    import zlib
+    buf = zlib.compress(buf)
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _DOC_DATA_RAW_H\n")
+    g.write("#define _DOC_DATA_RAW_H\n")
+    g.write("static const int _doc_data_compressed_size=" + str(len(buf)) + ";\n")
+    g.write("static const int _doc_data_uncompressed_size=" + str(decomp_size) + ";\n")
+    g.write("static const unsigned char _doc_data_compressed[]={\n")
+    for i in range(len(buf)):
+        g.write(str(ord(buf[i])) + ",\n")
+    g.write("};\n")
+    g.write("#endif")
+
+
+def make_fonts_header(target, source, env):
+
+    dst = target[0].srcnode().abspath
+
+    g = open(dst, "wb")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _EDITOR_FONTS_H\n")
+    g.write("#define _EDITOR_FONTS_H\n")
+
+    # saving uncompressed, since freetype will reference from memory pointer
+    xl_names = []
+    for i in range(len(source)):
+        print("Appending font: " + source[i].srcnode().abspath)
+        f = open(source[i].srcnode().abspath, "rb")
+        buf = f.read()
+        import os.path
+
+        name = os.path.splitext(os.path.basename(source[i].srcnode().abspath))[0]
+
+        g.write("static const int _font_" + name + "_size=" + str(len(buf)) + ";\n")
+        g.write("static const unsigned char _font_" + name + "[]={\n")
+        for i in range(len(buf)):
+            g.write(str(ord(buf[i])) + ",\n")
+
+        g.write("};\n")
+
+    g.write("#endif")
+
+
+def make_translations_header(target, source, env):
+
+    dst = target[0].srcnode().abspath
+
+    g = open(dst, "wb")
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef _EDITOR_TRANSLATIONS_H\n")
+    g.write("#define _EDITOR_TRANSLATIONS_H\n")
+
+    import zlib
+    import os.path
+
+    paths = [node.srcnode().abspath for node in source]
+    sorted_paths = sorted(paths, key=lambda path: os.path.splitext(os.path.basename(path))[0])
+
+    xl_names = []
+    for i in range(len(sorted_paths)):
+        print("Appending translation: " + sorted_paths[i])
+        f = open(sorted_paths[i], "rb")
+        buf = f.read()
+        decomp_size = len(buf)
+        buf = zlib.compress(buf)
+        name = os.path.splitext(os.path.basename(sorted_paths[i]))[0]
+
+        #g.write("static const int _translation_"+name+"_compressed_size="+str(len(buf))+";\n")
+        #g.write("static const int _translation_"+name+"_uncompressed_size="+str(decomp_size)+";\n")
+        g.write("static const unsigned char _translation_" + name + "_compressed[]={\n")
+        for i in range(len(buf)):
+            g.write(str(ord(buf[i])) + ",\n")
+
+        g.write("};\n")
+
+        xl_names.append([name, len(buf), str(decomp_size)])
+
+    g.write("struct EditorTranslationList {\n")
+    g.write("\tconst char* lang;\n")
+    g.write("\tint comp_size;\n")
+    g.write("\tint uncomp_size;\n")
+    g.write("\tconst unsigned char* data;\n")
+    g.write("};\n\n")
+    g.write("static EditorTranslationList _editor_translations[]={\n")
+    for x in xl_names:
+        g.write("\t{ \"" + x[0] + "\", " + str(x[1]) + ", " + str(x[2]) + ",_translation_" + x[0] + "_compressed},\n")
+    g.write("\t{NULL,0,0,NULL}\n")
+    g.write("};\n")
+
+    g.write("#endif")
+
+
+if (env["tools"] == "yes"):
+
+    # Register exporters
+    reg_exporters_inc = '#include "register_exporters.h"\n'
+    reg_exporters = 'void register_exporters() {\n'
+    for e in env.platform_exporters:
+        env.editor_sources.append("#platform/" + e + "/export/export.cpp")
+	reg_exporters += '\tregister_' + e + '_exporter();\n'
+        reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
+    reg_exporters += '}\n'
+    f = open("register_exporters.cpp", "wb")
+    f.write(reg_exporters_inc)
+    f.write(reg_exporters)
+    f.close()
+
+    # API documentation
+    docs = ["#doc/base/classes.xml"]
+    moduledir = os.path.join(os.getcwd(), "..", "modules")
+    for m in os.listdir(moduledir):
+        curmodle = os.path.join(moduledir, m)
+        docfile = os.path.join(curmodle, "classes.xml")
+        if os.path.isdir(curmodle) and os.path.isfile(docfile):
+            docs.append(docfile)
+    env.Depends("#editor/doc_data_compressed.h", docs)
+    env.Command("#editor/doc_data_compressed.h", docs, make_doc_header)
+
+    # Certificates
+    env.Depends("#editor/certs_compressed.h", "#thirdparty/certs/ca-certificates.crt")
+    env.Command("#editor/certs_compressed.h", "#thirdparty/certs/ca-certificates.crt", make_certs_header)
+
+    import glob
+    path = env.Dir('.').abspath
+
+    # Translations
+    tlist = glob.glob(path + "/translations/*.po")
+    print("translations: ", tlist)
+    env.Depends('#editor/translations.h', tlist)
+    env.Command('#editor/translations.h', tlist, make_translations_header)
+
+    # Fonts
+    flist = glob.glob(path + "/../thirdparty/fonts/*.ttf")
+    flist.append(glob.glob(path + "/../thirdparty/fonts/*.otf"))
+    print("fonts: ", flist)
+    env.Depends('#editor/builtin_fonts.h', flist)
+    env.Command('#editor/builtin_fonts.h', flist, make_fonts_header)
+
+
+    env.add_source_files(env.editor_sources, "*.cpp")
+
+    SConscript('collada/SCsub')
+    SConscript('doc/SCsub')
+    SConscript('fileserver/SCsub')
+    SConscript('icons/SCsub')
+    SConscript('import/SCsub')
+    SConscript('io_plugins/SCsub')
+    SConscript('plugins/SCsub')
+
+    lib = env.Library("editor", env.editor_sources)
+    env.Prepend(LIBS=[lib])
+
+    Export('env')

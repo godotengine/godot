@@ -1,12 +1,12 @@
 #ifndef VisualSCRIPT_EDITOR_H
 #define VisualSCRIPT_EDITOR_H
 
-#include "tools/editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script_editor_plugin.h"
 #include "visual_script.h"
-#include "tools/editor/property_editor.h"
+#include "editor/property_editor.h"
 #include "scene/gui/graph_edit.h"
-#include "tools/editor/create_dialog.h"
-#include "tools/editor/property_selector.h"
+#include "editor/create_dialog.h"
+#include "editor/property_selector.h"
 class VisualScriptEditorSignalEdit;
 class VisualScriptEditorVariableEdit;
 

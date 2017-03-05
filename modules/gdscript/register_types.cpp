@@ -41,10 +41,10 @@ ResourceFormatSaverGDScript *resource_saver_gd=NULL;
 #if 0
 #ifdef TOOLS_ENABLED
 
-#include "tools/editor/editor_import_export.h"
+#include "editor/editor_import_export.h"
 #include "gd_tokenizer.h"
-#include "tools/editor/editor_node.h"
-#include "tools/editor/editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
 class EditorExportGDScript : public EditorExportPlugin {
 

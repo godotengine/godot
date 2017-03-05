@@ -29,10 +29,10 @@
 #ifndef GRID_MAP_EDITOR_PLUGIN_H
 #define GRID_MAP_EDITOR_PLUGIN_H
 
-#include "tools/editor/editor_plugin.h"
-#include "tools/editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "editor/editor_node.h"
 #include "grid_map.h"
-#include "tools/editor/pane_drag.h"
+#include "editor/pane_drag.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

@@ -54,9 +54,9 @@
 #include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
-#include "tools/editor/doc/doc_data.h"
-#include "tools/editor/editor_node.h"
-#include "tools/editor/project_manager.h"
+#include "editor/doc/doc_data.h"
+#include "editor/editor_node.h"
+#include "editor/project_manager.h"
 #endif
 
 #include "io/file_access_network.h"

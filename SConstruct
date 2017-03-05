@@ -179,7 +179,7 @@ Help(opts.GenerateHelpText(env_base))  # generate help
 
 # add default include paths
 
-env_base.Append(CPPPATH=['#core', '#core/math', '#tools', '#drivers', '#'])
+env_base.Append(CPPPATH=['#core', '#core/math', '#editor', '#drivers', '#'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
@@ -358,7 +358,7 @@ if selected_platform in platform_list:
     SConscript("core/SCsub")
     SConscript("servers/SCsub")
     SConscript("scene/SCsub")
-    SConscript("tools/editor/SCsub")
+    SConscript("editor/SCsub")
     SConscript("drivers/SCsub")
 
     SConscript("modules/SCsub")

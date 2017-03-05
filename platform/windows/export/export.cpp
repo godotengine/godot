@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "export.h"
 #include "platform/windows/logo.h"
-#include "tools/editor/editor_export.h"
+#include "editor/editor_export.h"
 
 void register_windows_exporter() {
 
