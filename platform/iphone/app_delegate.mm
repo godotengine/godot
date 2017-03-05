@@ -52,10 +52,6 @@
 #define kRenderingFrequency						60
 #define kAccelerometerFrequency         100.0 // Hz
 
-#ifdef APPIRATER_ENABLED
-#import "Appirater.h"
-#endif
-
 Error _shell_open(String);
 void _set_keep_screen_on(bool p_enabled);
 
@@ -187,11 +183,6 @@ static int frame_count = 0;
 
 		Main::start();
 		++frame_count;
-
-		#ifdef APPIRATER_ENABLED
-		int aid = GlobalConfig::get_singleton()->get("ios/app_id");
-		[Appirater appLaunched:YES app_id:aid];
-		#endif
 
 	}; break; // no fallthrough
 

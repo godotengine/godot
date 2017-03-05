@@ -30,7 +30,6 @@ def get_opts():
         ('store_kit', 'Support for in-app store', 'yes'),
         ('icloud', 'Support for iCloud', 'yes'),
         ('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
-        ('ios_appirater', 'Enable Appirater', 'no'),
         ('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
         ('ios_triple', 'Triple for ios toolchain', ''),
         ('ios_sim', 'Build simulator binary', 'no'),
