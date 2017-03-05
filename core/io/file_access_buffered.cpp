@@ -92,7 +92,7 @@ bool FileAccessBuffered::eof_reached() const {
 
 uint8_t FileAccessBuffered::get_8() const {
 
-	ERR_FAIL_COND_V(!file.open,0);
+	ERR_FAIL_COND_V(!file.open, 0);
 
 	uint8_t byte = 0;
 	if (cache_data_left() >= 1) {
@@ -105,7 +105,7 @@ uint8_t FileAccessBuffered::get_8() const {
 	return byte;
 };
 
-int FileAccessBuffered::get_buffer(uint8_t *p_dest,int p_elements) const {
+int FileAccessBuffered::get_buffer(uint8_t *p_dest, int p_elements) const {
 
 	ERR_FAIL_COND_V(!file.open, -1);
 
@@ -135,7 +135,6 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest,int p_elements) const {
 		return total_read;
 	};
 
-
 	int to_read = p_elements;
 	int total_read = 0;
 	while (to_read > 0) {
@@ -154,7 +153,7 @@ int FileAccessBuffered::get_buffer(uint8_t *p_dest,int p_elements) const {
 		int r = MIN(left, to_read);
 		//PoolVector<uint8_t>::Read read = cache.buffer.read();
 		//memcpy(p_dest+total_read, &read.ptr()[file.offset - cache.offset], r);
-		memcpy(p_dest+total_read, cache.buffer.ptr() + (file.offset - cache.offset), r);
+		memcpy(p_dest + total_read, cache.buffer.ptr() + (file.offset - cache.offset), r);
 
 		file.offset += r;
 		total_read += r;
@@ -179,6 +178,5 @@ FileAccessBuffered::FileAccessBuffered() {
 	cache_size = DEFAULT_CACHE_SIZE;
 };
 
-FileAccessBuffered::~FileAccessBuffered(){
-
+FileAccessBuffered::~FileAccessBuffered() {
 }

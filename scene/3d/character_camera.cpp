@@ -237,7 +237,6 @@ void CharacterCamera::_compute_camera() {
 
 		new_pos = character_pos + rel_n * l;
 
-
 #endif
 		follow_pos=new_pos;
 

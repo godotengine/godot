@@ -36,8 +36,8 @@
 
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 
-#include "os/os.h"
 #include "drivers/gl_context/context_gl.h"
+#include "os/os.h"
 #include <AGL/agl.h>
 #include <Carbon/Carbon.h>
 
@@ -47,7 +47,6 @@ class ContextGL_OSX : public ContextGL {
 	WindowRef window;
 
 public:
-
 	virtual void release_current();
 	virtual void make_current();
 	virtual void swap_buffers();
@@ -56,7 +55,6 @@ public:
 
 	ContextGL_OSX(WindowRef window);
 	~ContextGL_OSX();
-
 };
 
 #endif

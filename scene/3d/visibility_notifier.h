@@ -34,39 +34,36 @@
 class Camera;
 class VisibilityNotifier : public Spatial {
 
-	GDCLASS(VisibilityNotifier,Spatial);
+	GDCLASS(VisibilityNotifier, Spatial);
 
-	Set<Camera*> cameras;
+	Set<Camera *> cameras;
 
 	Rect3 aabb;
 
 protected:
-
 	virtual void _screen_enter() {}
 	virtual void _screen_exit() {}
 
 	void _notification(int p_what);
 	static void _bind_methods();
-friend class SpatialIndexer;
+	friend class SpatialIndexer;
 
-	void _enter_camera(Camera* p_camera);
-	void _exit_camera(Camera* p_camera);
+	void _enter_camera(Camera *p_camera);
+	void _exit_camera(Camera *p_camera);
 
 public:
-
-	void set_aabb(const Rect3& p_aabb);
+	void set_aabb(const Rect3 &p_aabb);
 	Rect3 get_aabb() const;
 	bool is_on_screen() const;
 
 	VisibilityNotifier();
 };
 
-
 class VisibilityEnabler : public VisibilityNotifier {
 
-	GDCLASS(VisibilityEnabler,VisibilityNotifier);
-public:
+	GDCLASS(VisibilityEnabler, VisibilityNotifier);
 
+public:
 	enum Enabler {
 		ENABLER_PAUSE_ANIMATIONS,
 		ENABLER_FREEZE_BODIES,
@@ -74,33 +71,29 @@ public:
 	};
 
 protected:
-
 	virtual void _screen_enter();
 	virtual void _screen_exit();
 
 	bool visible;
 
-	void _find_nodes(Node* p_node);
+	void _find_nodes(Node *p_node);
 
-	Map<Node*,Variant> nodes;
-	void _node_removed(Node* p_node);
+	Map<Node *, Variant> nodes;
+	void _node_removed(Node *p_node);
 	bool enabler[ENABLER_MAX];
 
-	void _change_node_state(Node* p_node,bool p_enabled);
+	void _change_node_state(Node *p_node, bool p_enabled);
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-	void set_enabler(Enabler p_enabler,bool p_enable);
+	void set_enabler(Enabler p_enabler, bool p_enable);
 	bool is_enabler_enabled(Enabler p_enabler) const;
 
 	VisibilityEnabler();
-
 };
 
 VARIANT_ENUM_CAST(VisibilityEnabler::Enabler);
-
 
 #endif // VISIBILITY_NOTIFIER_H

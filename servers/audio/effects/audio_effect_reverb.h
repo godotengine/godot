@@ -29,36 +29,32 @@
 #ifndef AUDIOEFFECTREVERB_H
 #define AUDIOEFFECTREVERB_H
 
-
 #include "servers/audio/audio_effect.h"
 #include "servers/audio/effects/reverb.h"
 
 class AudioEffectReverb;
 
 class AudioEffectReverbInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectReverbInstance,AudioEffectInstance)
+	GDCLASS(AudioEffectReverbInstance, AudioEffectInstance)
 
 	Ref<AudioEffectReverb> base;
 
 	float tmp_src[Reverb::INPUT_BUFFER_MAX_SIZE];
 	float tmp_dst[Reverb::INPUT_BUFFER_MAX_SIZE];
 
-friend class AudioEffectReverb;
+	friend class AudioEffectReverb;
 
 	Reverb reverb[2];
 
-
 public:
-
-	virtual void process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count);
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 	AudioEffectReverbInstance();
 };
 
-
 class AudioEffectReverb : public AudioEffect {
-	GDCLASS(AudioEffectReverb,AudioEffect)
+	GDCLASS(AudioEffectReverb, AudioEffect)
 
-friend class AudioEffectReverbInstance;
+	friend class AudioEffectReverbInstance;
 
 	float predelay;
 	float predelay_fb;
@@ -70,11 +66,9 @@ friend class AudioEffectReverbInstance;
 	float wet;
 
 protected:
-
 	static void _bind_methods();
+
 public:
-
-
 	void set_predelay_msec(float p_msec);
 	void set_predelay_feedback(float p_feedback);
 	void set_room_size(float p_size);
@@ -99,6 +93,5 @@ public:
 
 	AudioEffectReverb();
 };
-
 
 #endif // AUDIOEFFECTREVERB_H

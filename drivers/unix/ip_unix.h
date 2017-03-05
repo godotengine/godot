@@ -36,11 +36,11 @@
 class IP_Unix : public IP {
 	GDCLASS(IP_Unix, IP);
 
-	virtual IP_Address _resolve_hostname(const String& p_hostname, IP::Type p_type);
+	virtual IP_Address _resolve_hostname(const String &p_hostname, IP::Type p_type);
 
-	static IP* _create_unix();
+	static IP *_create_unix();
+
 public:
-
 	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;
 
 	static void make_default();

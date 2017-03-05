@@ -36,7 +36,7 @@
 
 class EditorAutoloadSettings : public VBoxContainer {
 
-	GDCLASS( EditorAutoloadSettings, VBoxContainer );
+	GDCLASS(EditorAutoloadSettings, VBoxContainer);
 
 	enum {
 		BUTTON_MOVE_UP,
@@ -50,7 +50,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 		String name;
 		int order;
 
-		bool operator==(const AutoLoadInfo& p_info) {
+		bool operator==(const AutoLoadInfo &p_info) {
 			return order == p_info.order;
 		}
 	};
@@ -65,30 +65,26 @@ class EditorAutoloadSettings : public VBoxContainer {
 	EditorLineEditFileChooser *autoload_add_path;
 	LineEdit *autoload_add_name;
 
-	bool _autoload_name_is_valid(const String& p_string, String *r_error = NULL);
+	bool _autoload_name_is_valid(const String &p_string, String *r_error = NULL);
 
 	void _autoload_add();
 	void _autoload_selected();
 	void _autoload_edited();
 	void _autoload_button_pressed(Object *p_item, int p_column, int p_button);
-	void _autoload_file_callback(const String& p_path);
+	void _autoload_file_callback(const String &p_path);
 
-	Variant get_drag_data_fw(const Point2& p_point, Control *p_from);
-	bool can_drop_data_fw(const Point2& p_point, const Variant& p_data, Control *p_from) const;
-	void drop_data_fw(const Point2& p_point, const Variant& p_data, Control *p_from);
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
 	void update_autoload();
 
 	EditorAutoloadSettings();
-
 };
 
 #endif
-

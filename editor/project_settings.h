@@ -29,19 +29,18 @@
 #ifndef PROJECT_SETTINGS_H
 #define PROJECT_SETTINGS_H
 
-#include "scene/gui/dialogs.h"
-#include "property_editor.h"
-#include "undo_redo.h"
-#include "editor_data.h"
-#include "scene/gui/tab_container.h"
 #include "editor_autoload_settings.h"
+#include "editor_data.h"
 #include "editor_plugin_settings.h"
+#include "property_editor.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/tab_container.h"
+#include "undo_redo.h"
 
 //#include "project_export_settings.h"
 
 class ProjectSettings : public AcceptDialog {
-	GDCLASS( ProjectSettings, AcceptDialog );
-
+	GDCLASS(ProjectSettings, AcceptDialog);
 
 	TabContainer *tab_container;
 
@@ -65,7 +64,7 @@ class ProjectSettings : public AcceptDialog {
 	OptionButton *type;
 	PopupMenu *popup_add;
 	ConfirmationDialog *press_a_key;
-	Label*press_a_key_label;
+	Label *press_a_key_label;
 	ConfirmationDialog *device_input;
 	SpinBox *device_id;
 	OptionButton *device_index;
@@ -81,7 +80,6 @@ class ProjectSettings : public AcceptDialog {
 
 	EditorFileDialog *translation_file_open;
 	Tree *translation_list;
-
 
 	Button *translation_res_option_add_button;
 	EditorFileDialog *translation_res_file_open;
@@ -105,58 +103,52 @@ class ProjectSettings : public AcceptDialog {
 	void _action_add();
 	void _device_input_add();
 
-	void _item_checked(const String& p_item, bool p_check);
+	void _item_checked(const String &p_item, bool p_check);
 	void _action_selected();
 	void _action_edited();
-	void _action_button_pressed(Object* p_obj, int p_column,int p_id);
-	void _wait_for_key(const InputEvent& p_event);
+	void _action_button_pressed(Object *p_obj, int p_column, int p_id);
+	void _wait_for_key(const InputEvent &p_event);
 	void _press_a_key_confirm();
-	void _show_last_added(const InputEvent& p_event, const String& p_name);
+	void _show_last_added(const InputEvent &p_event, const String &p_name);
 
-	void _settings_prop_edited(const String& p_name);
+	void _settings_prop_edited(const String &p_name);
 	void _settings_changed();
 
 	//ProjectExportSettings *export_settings;
 	void _copy_to_platform(int p_which);
 
-
 	void _translation_file_open();
-	void _translation_add(const String& p_path);
-	void _translation_delete(Object *p_item,int p_column, int p_button);
+	void _translation_add(const String &p_path);
+	void _translation_delete(Object *p_item, int p_column, int p_button);
 	void _update_translations();
 
 	void _translation_res_file_open();
-	void _translation_res_add(const String& p_path);
-	void _translation_res_delete(Object *p_item,int p_column, int p_button);
+	void _translation_res_add(const String &p_path);
+	void _translation_res_delete(Object *p_item, int p_column, int p_button);
 	void _translation_res_select();
 	void _translation_res_option_file_open();
-	void _translation_res_option_add(const String& p_path);
+	void _translation_res_option_add(const String &p_path);
 	void _translation_res_option_changed();
-	void _translation_res_option_delete(Object *p_item,int p_column, int p_button);
+	void _translation_res_option_delete(Object *p_item, int p_column, int p_button);
 
 	void _toggle_search_bar(bool p_pressed);
 	void _clear_search_box();
 
-
-
 	ProjectSettings();
 
-
 	static ProjectSettings *singleton;
-protected:
 
+protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-	void add_translation(const String& p_translation);
+	void add_translation(const String &p_translation);
 	static ProjectSettings *get_singleton() { return singleton; }
 	void popup_project_settings();
 	void set_plugins_page();
 
 	void queue_save();
-
 
 	ProjectSettings(EditorData *p_data);
 };

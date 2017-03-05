@@ -29,27 +29,26 @@
 #ifndef REFERENCE_H
 #define REFERENCE_H
 
-#include "object.h"
-#include "safe_refcount.h"
-#include "ref_ptr.h"
 #include "class_db.h"
+#include "object.h"
+#include "ref_ptr.h"
+#include "safe_refcount.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class Reference : public Object{
+class Reference : public Object {
 
-	GDCLASS( Reference, Object );
-friend class RefBase;
+	GDCLASS(Reference, Object);
+	friend class RefBase;
 	SafeRefCount refcount;
 	SafeRefCount refcount_init;
+
 protected:
-
 	static void _bind_methods();
+
 public:
-
-
-	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get()<1; }
+	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() < 1; }
 	bool init_ref();
 	void reference();
 	bool unreference();
@@ -74,73 +73,71 @@ public:
 };
 #endif
 
-template<class T>
+template <class T>
 class Ref {
 
 	T *reference;
 
-	void ref( const Ref& p_from ) {
+	void ref(const Ref &p_from) {
 
-		if (p_from.reference==reference)
+		if (p_from.reference == reference)
 			return;
 
 		unref();
 
-		reference=p_from.reference;
+		reference = p_from.reference;
 		if (reference)
 			reference->reference();
 	}
 
-	void ref_pointer( T* p_ref ) {
+	void ref_pointer(T *p_ref) {
 
 		ERR_FAIL_COND(!p_ref);
 
 		if (p_ref->init_ref())
-			reference=p_ref;
+			reference = p_ref;
 	}
 
 	//virtual Reference * get_reference() const { return reference; }
 public:
+	_FORCE_INLINE_ bool operator<(const Ref<T> &p_r) const {
 
-
-	_FORCE_INLINE_ bool operator<(const Ref<T>& p_r) const {
-
-		return reference<p_r.reference;
+		return reference < p_r.reference;
 	}
-	_FORCE_INLINE_ bool operator==(const Ref<T>& p_r) const {
+	_FORCE_INLINE_ bool operator==(const Ref<T> &p_r) const {
 
-		return reference==p_r.reference;
+		return reference == p_r.reference;
 	}
-	_FORCE_INLINE_ bool operator!=(const Ref<T>& p_r) const {
+	_FORCE_INLINE_ bool operator!=(const Ref<T> &p_r) const {
 
-		return reference!=p_r.reference;
+		return reference != p_r.reference;
 	}
 
-	_FORCE_INLINE_ T* operator->() {
+	_FORCE_INLINE_ T *operator->() {
 
 		return reference;
 	}
 
-	_FORCE_INLINE_ T* operator*() {
+	_FORCE_INLINE_ T *operator*() {
 
 		return reference;
 	}
 
-	_FORCE_INLINE_ const T* operator->() const {
+	_FORCE_INLINE_ const T *operator->() const {
 
 		return reference;
 	}
 
-	_FORCE_INLINE_ const T* ptr() const {
+	_FORCE_INLINE_ const T *ptr() const {
 
 		return reference;
 	}
-	_FORCE_INLINE_ T* ptr() {
+	_FORCE_INLINE_ T *ptr() {
 
 		return reference;
 	}
 
-	_FORCE_INLINE_ const T* operator*() const  {
+	_FORCE_INLINE_ const T *operator*() const {
 
 		return reference;
 	}
@@ -148,7 +145,7 @@ public:
 	RefPtr get_ref_ptr() const {
 
 		RefPtr refptr;
-		Ref<Reference> * irr = reinterpret_cast<Ref<Reference>*>( refptr.get_data() );
+		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
 		*irr = *this;
 		return refptr;
 	};
@@ -164,123 +161,120 @@ public:
 #if 1
 	operator Variant() const {
 
-		return Variant( get_ref_ptr() );
+		return Variant(get_ref_ptr());
 	}
 #endif
 
-	void operator=( const Ref& p_from ) {
+	void operator=(const Ref &p_from) {
 
 		ref(p_from);
 	}
 
-	template<class T_Other>
-	void operator=( const Ref<T_Other>& p_from ) {
+	template <class T_Other>
+	void operator=(const Ref<T_Other> &p_from) {
 
-		Reference *refb = const_cast<Reference*>(static_cast<const Reference*>(p_from.ptr()));
+		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
 		if (!refb) {
 			unref();
 			return;
 		}
 		Ref r;
-		r.reference=refb->cast_to<T>();
+		r.reference = refb->cast_to<T>();
 		ref(r);
-		r.reference=NULL;
+		r.reference = NULL;
 	}
 
-	void operator=( const RefPtr& p_refptr ) {
+	void operator=(const RefPtr &p_refptr) {
 
-		Ref<Reference> * irr = reinterpret_cast<Ref<Reference>*>( p_refptr.get_data() );
+		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(p_refptr.get_data());
 		Reference *refb = irr->ptr();
 		if (!refb) {
 			unref();
 			return;
 		}
 		Ref r;
-		r.reference=refb->cast_to<T>();
+		r.reference = refb->cast_to<T>();
 		ref(r);
-		r.reference=NULL;
+		r.reference = NULL;
 	}
 
+	void operator=(const Variant &p_variant) {
 
-	void operator=( const Variant& p_variant ) {
-
-		RefPtr refptr=p_variant;
-		Ref<Reference> * irr = reinterpret_cast<Ref<Reference>*>( refptr.get_data() );
+		RefPtr refptr = p_variant;
+		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
 		Reference *refb = irr->ptr();
 		if (!refb) {
 			unref();
 			return;
 		}
 		Ref r;
-		r.reference=refb->cast_to<T>();
+		r.reference = refb->cast_to<T>();
 		ref(r);
-		r.reference=NULL;
+		r.reference = NULL;
 	}
 
-	Ref( const Ref& p_from ) {
+	Ref(const Ref &p_from) {
 
-		reference=NULL;
+		reference = NULL;
 		ref(p_from);
 	}
 
-	template<class T_Other>
-	Ref( const Ref<T_Other>& p_from ) {
+	template <class T_Other>
+	Ref(const Ref<T_Other> &p_from) {
 
-		reference=NULL;
-		Reference *refb = const_cast<Reference*>(static_cast<const Reference*>(p_from.ptr()));
+		reference = NULL;
+		Reference *refb = const_cast<Reference *>(static_cast<const Reference *>(p_from.ptr()));
 		if (!refb) {
 			unref();
 			return;
 		}
 		Ref r;
-		r.reference=refb->cast_to<T>();
+		r.reference = refb->cast_to<T>();
 		ref(r);
-		r.reference=NULL;
+		r.reference = NULL;
 	}
 
-	Ref( T* p_reference ) {
+	Ref(T *p_reference) {
 
 		if (p_reference)
 			ref_pointer(p_reference);
 		else
-			reference=NULL;
+			reference = NULL;
 	}
 
-	Ref( const Variant& p_variant) {
+	Ref(const Variant &p_variant) {
 
-		RefPtr refptr=p_variant;
-		Ref<Reference> * irr = reinterpret_cast<Ref<Reference>*>( refptr.get_data() );
-		reference=NULL;
+		RefPtr refptr = p_variant;
+		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(refptr.get_data());
+		reference = NULL;
 		Reference *refb = irr->ptr();
 		if (!refb) {
 			unref();
 			return;
 		}
 		Ref r;
-		r.reference=refb->cast_to<T>();
+		r.reference = refb->cast_to<T>();
 		ref(r);
-		r.reference=NULL;
+		r.reference = NULL;
 	}
 
+	Ref(const RefPtr &p_refptr) {
 
-
-	Ref( const RefPtr& p_refptr) {
-
-		Ref<Reference> * irr = reinterpret_cast<Ref<Reference>*>( p_refptr.get_data() );
-		reference=NULL;
+		Ref<Reference> *irr = reinterpret_cast<Ref<Reference> *>(p_refptr.get_data());
+		reference = NULL;
 		Reference *refb = irr->ptr();
 		if (!refb) {
 			unref();
 			return;
 		}
 		Ref r;
-		r.reference=refb->cast_to<T>();
+		r.reference = refb->cast_to<T>();
 		ref(r);
-		r.reference=NULL;
+		r.reference = NULL;
 	}
 
-	inline bool is_valid() const { return reference!=NULL; }
-	inline bool is_null() const { return reference==NULL; }
+	inline bool is_valid() const { return reference != NULL; }
+	inline bool is_null() const { return reference == NULL; }
 
 	void unref() {
 		//TODO this should be moved to mutexes, since this engine does not really
@@ -291,99 +285,92 @@ public:
 
 			memdelete(reference);
 		}
-		reference=NULL;
+		reference = NULL;
 	}
 
 	void instance() {
-		ref( memnew( T ));
+		ref(memnew(T));
 	}
 
 	Ref() {
 
-		reference=NULL;
+		reference = NULL;
 	}
 
 	~Ref() {
 
 		unref();
 	}
-
 };
 
 typedef Ref<Reference> REF;
 
-
 class WeakRef : public Reference {
 
-	GDCLASS(WeakRef,Reference);
+	GDCLASS(WeakRef, Reference);
 
 	ObjectID ref;
+
 protected:
 	static void _bind_methods();
 
 public:
 	Variant get_ref() const;
 	void set_obj(Object *p_object);
-	void set_ref(const REF& p_ref);
+	void set_ref(const REF &p_ref);
 
 	WeakRef();
 };
 
 #ifdef PTRCALL_ENABLED
 
-template<class T>
-struct PtrToArg< Ref<T> > {
+template <class T>
+struct PtrToArg<Ref<T> > {
 
-	_FORCE_INLINE_ static Ref<T> convert(const void* p_ptr) {
+	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
 
-		return Ref<T>(reinterpret_cast<const T*>(p_ptr));
+		return Ref<T>(reinterpret_cast<const T *>(p_ptr));
 	}
 
-	_FORCE_INLINE_ static void encode(Ref<T> p_val,const void* p_ptr) {
+	_FORCE_INLINE_ static void encode(Ref<T> p_val, const void *p_ptr) {
 
-		*(Ref<Reference>*)p_ptr=p_val;
+		*(Ref<Reference> *)p_ptr = p_val;
 	}
-
 };
 
+template <class T>
+struct PtrToArg<const Ref<T> &> {
 
-template<class T>
-struct PtrToArg< const Ref<T>& > {
+	_FORCE_INLINE_ static Ref<T> convert(const void *p_ptr) {
 
-	_FORCE_INLINE_ static Ref<T> convert(const void* p_ptr) {
-
-		return Ref<T>(reinterpret_cast<const T*>(p_ptr));
+		return Ref<T>(reinterpret_cast<const T *>(p_ptr));
 	}
-
 };
-
 
 //this is for RefPtr
 
-template<>
-struct PtrToArg< RefPtr > {
+template <>
+struct PtrToArg<RefPtr> {
 
-	_FORCE_INLINE_ static RefPtr convert(const void* p_ptr) {
+	_FORCE_INLINE_ static RefPtr convert(const void *p_ptr) {
 
-		return Ref<Reference>(reinterpret_cast<const Reference*>(p_ptr)).get_ref_ptr();
+		return Ref<Reference>(reinterpret_cast<const Reference *>(p_ptr)).get_ref_ptr();
 	}
 
-	_FORCE_INLINE_ static void encode(RefPtr p_val,const void* p_ptr) {
+	_FORCE_INLINE_ static void encode(RefPtr p_val, const void *p_ptr) {
 
 		Ref<Reference> r = p_val;
-		*(Ref<Reference>*)p_ptr=r;
+		*(Ref<Reference> *)p_ptr = r;
 	}
-
 };
 
-template<>
-struct PtrToArg< const RefPtr& > {
+template <>
+struct PtrToArg<const RefPtr &> {
 
-	_FORCE_INLINE_ static RefPtr convert(const void* p_ptr) {
+	_FORCE_INLINE_ static RefPtr convert(const void *p_ptr) {
 
-		return Ref<Reference>(reinterpret_cast<const Reference*>(p_ptr)).get_ref_ptr();
+		return Ref<Reference>(reinterpret_cast<const Reference *>(p_ptr)).get_ref_ptr();
 	}
-
 };
 
 #endif

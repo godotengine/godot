@@ -32,7 +32,8 @@
 #include "scene/gui/button.h"
 
 class ToolButton : public Button {
-	GDCLASS(ToolButton,Button);
+	GDCLASS(ToolButton, Button);
+
 public:
 	ToolButton();
 };

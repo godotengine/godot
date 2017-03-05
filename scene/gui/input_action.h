@@ -33,17 +33,17 @@
 
 class ShortCut : public Resource {
 
-	GDCLASS(ShortCut,Resource);
+	GDCLASS(ShortCut, Resource);
 
 	InputEvent shortcut;
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_shortcut(const InputEvent& p_shortcut);
+public:
+	void set_shortcut(const InputEvent &p_shortcut);
 	InputEvent get_shortcut() const;
-	bool is_shortcut(const InputEvent& p_Event) const;
+	bool is_shortcut(const InputEvent &p_Event) const;
 	bool is_valid() const;
 
 	String get_as_text() const;

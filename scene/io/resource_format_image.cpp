@@ -29,10 +29,10 @@
 #include "resource_format_image.h"
 
 #if 0
-#include "scene/resources/texture.h"
-#include "io/image_loader.h"
 #include "global_config.h"
+#include "io/image_loader.h"
 #include "os/os.h"
+#include "scene/resources/texture.h"
 RES ResourceFormatLoaderImage::load(const String &p_path, const String& p_original_path, Error *r_error) {
 
 	if (r_error)

@@ -33,25 +33,24 @@
 
 class BoneAttachment : public Spatial {
 
-	GDCLASS(BoneAttachment,Spatial);
+	GDCLASS(BoneAttachment, Spatial);
 
 	bool bound;
 	String bone_name;
 
 	void _check_bind();
 	void _check_unbind();
-protected:
 
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	bool _set(const StringName& p_name, const Variant& p_value);
-	void _get_property_list( List<PropertyInfo>* p_list ) const;
+protected:
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 public:
-
-	void set_bone_name(const String& p_name);
+	void set_bone_name(const String &p_name);
 	String get_bone_name() const;
 
 	BoneAttachment();

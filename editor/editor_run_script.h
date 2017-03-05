@@ -31,18 +31,17 @@
 
 #include "reference.h"
 
-
 class EditorNode;
 class EditorScript : public Reference {
 
-	GDCLASS( EditorScript, Reference );
+	GDCLASS(EditorScript, Reference);
 
 	EditorNode *editor;
+
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	void add_root_node(Node *p_node);
 	Node *get_scene();
 

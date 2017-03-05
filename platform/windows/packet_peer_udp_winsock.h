@@ -34,9 +34,8 @@
 
 class PacketPeerUDPWinsock : public PacketPeerUDP {
 
-
 	enum {
-		PACKET_BUFFER_SIZE=65536
+		PACKET_BUFFER_SIZE = 65536
 	};
 
 	mutable RingBuffer<uint8_t> rb;
@@ -53,7 +52,7 @@ class PacketPeerUDPWinsock : public PacketPeerUDP {
 
 	_FORCE_INLINE_ int _get_socket();
 
-	static PacketPeerUDP* _create();
+	static PacketPeerUDP *_create();
 
 	bool blocking;
 	void _set_blocking(bool p_blocking);
@@ -61,14 +60,13 @@ class PacketPeerUDPWinsock : public PacketPeerUDP {
 	Error _poll(bool p_wait);
 
 public:
-
 	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer,int &r_buffer_size) const;
-	virtual Error put_packet(const uint8_t *p_buffer,int p_buffer_size);
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) const;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
 	virtual int get_max_packet_size() const;
 
-	virtual Error listen(int p_port, IP_Address p_bind_address=IP_Address("*"), int p_recv_buffer_size=65536);
+	virtual Error listen(int p_port, IP_Address p_bind_address = IP_Address("*"), int p_recv_buffer_size = 65536);
 	virtual void close();
 	virtual Error wait();
 	virtual bool is_listening() const;
@@ -76,7 +74,7 @@ public:
 	virtual IP_Address get_packet_address() const;
 	virtual int get_packet_port() const;
 
-	virtual void set_dest_address(const IP_Address& p_address,int p_port);
+	virtual void set_dest_address(const IP_Address &p_address, int p_port);
 
 	static void make_default();
 	PacketPeerUDPWinsock();

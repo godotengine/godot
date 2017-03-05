@@ -27,10 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-
-#include "core/error_macros.h"
 #include "power_javascript.h"
-
+#include "core/error_macros.h"
 
 bool PowerJavascript::UpdatePowerInfo() {
 	// TODO Javascript implementation
@@ -40,8 +38,7 @@ bool PowerJavascript::UpdatePowerInfo() {
 PowerState PowerJavascript::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to POWERSTATE_UNKNOWN");
 		return POWERSTATE_UNKNOWN;
 	}
@@ -50,8 +47,7 @@ PowerState PowerJavascript::get_power_state() {
 int PowerJavascript::get_power_seconds_left() {
 	if (UpdatePowerInfo()) {
 		return nsecs_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
@@ -60,16 +56,14 @@ int PowerJavascript::get_power_seconds_left() {
 int PowerJavascript::get_power_percent_left() {
 	if (UpdatePowerInfo()) {
 		return percent_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
 }
 
-
-PowerJavascript::PowerJavascript() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
-
+PowerJavascript::PowerJavascript()
+	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
 }
 
 PowerJavascript::~PowerJavascript() {

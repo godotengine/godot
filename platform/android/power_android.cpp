@@ -32,51 +32,45 @@
 #include "power_android.h"
 
 static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder) {
-    if (refholder->m_env) {
-        JNIEnv* env = refholder->m_env;
-        (*env)->PopLocalFrame(env, NULL);
-        --s_active;
-    }
+	if (refholder->m_env) {
+		JNIEnv *env = refholder->m_env;
+		(*env)->PopLocalFrame(env, NULL);
+		--s_active;
+	}
 }
 
-static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func)
-{
-    struct LocalReferenceHolder refholder;
-    refholder.m_env = NULL;
-    refholder.m_func = func;
-    return refholder;
+static struct LocalReferenceHolder LocalReferenceHolder_Setup(const char *func) {
+	struct LocalReferenceHolder refholder;
+	refholder.m_env = NULL;
+	refholder.m_func = func;
+	return refholder;
 }
 
-static bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env)
-{
-    const int capacity = 16;
-    if ((*env)->PushLocalFrame(env, capacity) < 0) {
-        return false;
-    }
-    ++s_active;
-    refholder->m_env = env;
-    return true;
+static bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder, JNIEnv *env) {
+	const int capacity = 16;
+	if ((*env)->PushLocalFrame(env, capacity) < 0) {
+		return false;
+	}
+	++s_active;
+	refholder->m_env = env;
+	return true;
 }
 
-
-static SDL_bool LocalReferenceHolder_IsActive(void)
-{
-    return s_active > 0;
+static SDL_bool LocalReferenceHolder_IsActive(void) {
+	return s_active > 0;
 }
 
-ANativeWindow* Android_JNI_GetNativeWindow(void)
-{
-    ANativeWindow* anw;
-    jobject s;
-    JNIEnv *env = Android_JNI_GetEnv();
+ANativeWindow *Android_JNI_GetNativeWindow(void) {
+	ANativeWindow *anw;
+	jobject s;
+	JNIEnv *env = Android_JNI_GetEnv();
 
-    s = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetNativeSurface);
-    anw = ANativeWindow_fromSurface(env, s);
-    (*env)->DeleteLocalRef(env, s);
-  
-    return anw;
+	s = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetNativeSurface);
+	anw = ANativeWindow_fromSurface(env, s);
+	(*env)->DeleteLocalRef(env, s);
+
+	return anw;
 }
-
 
 /* 
  *  CODE CHUNK IMPORTED FROM SDL 2.0
@@ -84,11 +78,10 @@ ANativeWindow* Android_JNI_GetNativeWindow(void)
  * returns truthy or falsy value in plugged, charged and battery
  * returns the value in seconds and percent or -1 if not available
  */
-int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seconds, int* percent)
-{
+int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seconds, int *percent) {
 	env = Android_JNI_GetEnv();
 	refs = LocalReferenceHolder_Setup(__FUNCTION__);
-	
+
 	if (!LocalReferenceHolder_Init(&refs, env)) {
 		LocalReferenceHolder_Cleanup(&refs);
 		return -1;
@@ -105,17 +98,17 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
 	(*env)->DeleteLocalRef(env, filter);
 	cls = (*env)->GetObjectClass(env, intent);
 	imid = (*env)->GetMethodID(env, cls, "getIntExtra", "(Ljava/lang/String;I)I");
-	// Watch out for C89 scoping rules because of the macro
-#define GET_INT_EXTRA(var, key) \
-	int var; \
-	iname = (*env)->NewStringUTF(env, key); \
+// Watch out for C89 scoping rules because of the macro
+#define GET_INT_EXTRA(var, key)                                \
+	int var;                                                   \
+	iname = (*env)->NewStringUTF(env, key);                    \
 	var = (*env)->CallIntMethod(env, intent, imid, iname, -1); \
 	(*env)->DeleteLocalRef(env, iname);
 	bmid = (*env)->GetMethodID(env, cls, "getBooleanExtra", "(Ljava/lang/String;Z)Z");
-	// Watch out for C89 scoping rules because of the macro
-#define GET_BOOL_EXTRA(var, key) \
-	int var; \
-	bname = (*env)->NewStringUTF(env, key); \
+// Watch out for C89 scoping rules because of the macro
+#define GET_BOOL_EXTRA(var, key)                                          \
+	int var;                                                              \
+	bname = (*env)->NewStringUTF(env, key);                               \
 	var = (*env)->CallBooleanMethod(env, intent, bmid, bname, JNI_FALSE); \
 	(*env)->DeleteLocalRef(env, bname);
 	if (plugged) {
@@ -167,10 +160,9 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
 	}
 	(*env)->DeleteLocalRef(env, intent);
 	LocalReferenceHolder_Cleanup(&refs);
-	
+
 	return 0;
 }
-
 
 bool power_android::GetPowerInfo_Android() {
 	int battery;
@@ -203,8 +195,7 @@ bool power_android::GetPowerInfo_Android() {
 PowerState power_android::get_power_state() {
 	if (GetPowerInfo_Android()) {
 		return power_state;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to POWERSTATE_UNKNOWN");
 		return POWERSTATE_UNKNOWN;
 	}
@@ -213,8 +204,7 @@ PowerState power_android::get_power_state() {
 int power_android::get_power_seconds_left() {
 	if (GetPowerInfo_Android()) {
 		return nsecs_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
@@ -223,15 +213,14 @@ int power_android::get_power_seconds_left() {
 int power_android::get_power_percent_left() {
 	if (GetPowerInfo_Android()) {
 		return percent_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
 }
 
-power_android::power_android() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
-
+power_android::power_android()
+	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
 }
 
 power_android::~power_android() {

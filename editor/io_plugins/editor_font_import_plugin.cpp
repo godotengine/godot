@@ -28,13 +28,13 @@
 /*************************************************************************/
 #include "editor_font_import_plugin.h"
 #if 0
-#include "scene/gui/dialogs.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
-#include "os/file_access.h"
 #include "editor_atlas.h"
 #include "io/image_loader.h"
 #include "io/resource_saver.h"
+#include "os/file_access.h"
+#include "scene/gui/dialogs.h"
 
 #ifdef FREETYPE_ENABLED
 #include <ft2build.h>
@@ -1406,7 +1406,7 @@ Ref<BitmapFont> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMe
 
 		for(int si=0;si<2;si++) {
 
-#define S_VAR(m_v) (String(si==0?"shadow/":"shadow2/")+m_v)
+#define S_VAR(m_v) (String(si == 0 ? "shadow/" : "shadow2/") + m_v)
 			if (from->get_option(S_VAR("enabled")).operator bool()) {
 				int r = from->get_option(S_VAR("radius"));
 

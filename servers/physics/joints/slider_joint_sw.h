@@ -34,9 +34,8 @@ Adapted to Godot from the Bullet library.
 #ifndef SLIDER_JOINT_SW_H
 #define SLIDER_JOINT_SW_H
 
-#include "servers/physics/joints_sw.h"
 #include "servers/physics/joints/jacobian_entry_sw.h"
-
+#include "servers/physics/joints_sw.h"
 
 /*
 Bullet Continuous Collision Detection and Physics Library
@@ -59,15 +58,14 @@ April 04, 2008
 
 */
 
-#define SLIDER_CONSTRAINT_DEF_SOFTNESS		(real_t(1.0))
-#define SLIDER_CONSTRAINT_DEF_DAMPING		(real_t(1.0))
-#define SLIDER_CONSTRAINT_DEF_RESTITUTION	(real_t(0.7))
+#define SLIDER_CONSTRAINT_DEF_SOFTNESS (real_t(1.0))
+#define SLIDER_CONSTRAINT_DEF_DAMPING (real_t(1.0))
+#define SLIDER_CONSTRAINT_DEF_RESTITUTION (real_t(0.7))
 
 //-----------------------------------------------------------------------------
 
 class SliderJointSW : public JointSW {
 protected:
-
 	union {
 		struct {
 			BodySW *A;
@@ -77,8 +75,8 @@ protected:
 		BodySW *_arr[2];
 	};
 
-	Transform	m_frameInA;
-    Transform	m_frameInB;
+	Transform m_frameInA;
+	Transform m_frameInB;
 
 	// linear limits
 	real_t m_lowerLinLimit;
@@ -115,14 +113,14 @@ protected:
 	bool m_solveLinLim;
 	bool m_solveAngLim;
 
-	JacobianEntrySW	m_jacLin[3];
-	real_t		m_jacLinDiagABInv[3];
+	JacobianEntrySW m_jacLin[3];
+	real_t m_jacLinDiagABInv[3];
 
-    JacobianEntrySW	m_jacAng[3];
+	JacobianEntrySW m_jacAng[3];
 
 	real_t m_timeStep;
-    Transform m_calculatedTransformA;
-    Transform m_calculatedTransformB;
+	Transform m_calculatedTransformA;
+	Transform m_calculatedTransformB;
 
 	Vector3 m_sliderAxis;
 	Vector3 m_realPivotAInW;
@@ -138,45 +136,46 @@ protected:
 	real_t m_angDepth;
 	real_t m_kAngle;
 
-	bool	 m_poweredLinMotor;
-    real_t m_targetLinMotorVelocity;
-    real_t m_maxLinMotorForce;
-    real_t m_accumulatedLinMotorImpulse;
+	bool m_poweredLinMotor;
+	real_t m_targetLinMotorVelocity;
+	real_t m_maxLinMotorForce;
+	real_t m_accumulatedLinMotorImpulse;
 
-	bool	 m_poweredAngMotor;
-    real_t m_targetAngMotorVelocity;
-    real_t m_maxAngMotorForce;
-    real_t m_accumulatedAngMotorImpulse;
+	bool m_poweredAngMotor;
+	real_t m_targetAngMotorVelocity;
+	real_t m_maxAngMotorForce;
+	real_t m_accumulatedAngMotorImpulse;
 
 	//------------------------
 	void initParams();
+
 public:
 	// constructors
-    SliderJointSW(BodySW* rbA, BodySW* rbB, const Transform& frameInA, const Transform& frameInB);
-    //SliderJointSW();
+	SliderJointSW(BodySW *rbA, BodySW *rbB, const Transform &frameInA, const Transform &frameInB);
+	//SliderJointSW();
 	// overrides
 
 	// access
-    const BodySW* getRigidBodyA() const { return A; }
-    const BodySW* getRigidBodyB() const { return B; }
-    const Transform & getCalculatedTransformA() const { return m_calculatedTransformA; }
-    const Transform & getCalculatedTransformB() const { return m_calculatedTransformB; }
-    const Transform & getFrameOffsetA() const { return m_frameInA; }
-    const Transform & getFrameOffsetB() const { return m_frameInB; }
-    Transform & getFrameOffsetA() { return m_frameInA; }
-    Transform & getFrameOffsetB() { return m_frameInB; }
-    real_t getLowerLinLimit() { return m_lowerLinLimit; }
-    void setLowerLinLimit(real_t lowerLimit) { m_lowerLinLimit = lowerLimit; }
-    real_t getUpperLinLimit() { return m_upperLinLimit; }
-    void setUpperLinLimit(real_t upperLimit) { m_upperLinLimit = upperLimit; }
-    real_t getLowerAngLimit() { return m_lowerAngLimit; }
-    void setLowerAngLimit(real_t lowerLimit) { m_lowerAngLimit = lowerLimit; }
-    real_t getUpperAngLimit() { return m_upperAngLimit; }
-    void setUpperAngLimit(real_t upperLimit) { m_upperAngLimit = upperLimit; }
+	const BodySW *getRigidBodyA() const { return A; }
+	const BodySW *getRigidBodyB() const { return B; }
+	const Transform &getCalculatedTransformA() const { return m_calculatedTransformA; }
+	const Transform &getCalculatedTransformB() const { return m_calculatedTransformB; }
+	const Transform &getFrameOffsetA() const { return m_frameInA; }
+	const Transform &getFrameOffsetB() const { return m_frameInB; }
+	Transform &getFrameOffsetA() { return m_frameInA; }
+	Transform &getFrameOffsetB() { return m_frameInB; }
+	real_t getLowerLinLimit() { return m_lowerLinLimit; }
+	void setLowerLinLimit(real_t lowerLimit) { m_lowerLinLimit = lowerLimit; }
+	real_t getUpperLinLimit() { return m_upperLinLimit; }
+	void setUpperLinLimit(real_t upperLimit) { m_upperLinLimit = upperLimit; }
+	real_t getLowerAngLimit() { return m_lowerAngLimit; }
+	void setLowerAngLimit(real_t lowerLimit) { m_lowerAngLimit = lowerLimit; }
+	real_t getUpperAngLimit() { return m_upperAngLimit; }
+	void setUpperAngLimit(real_t upperLimit) { m_upperAngLimit = upperLimit; }
 
 	real_t getSoftnessDirLin() { return m_softnessDirLin; }
 	real_t getRestitutionDirLin() { return m_restitutionDirLin; }
-	real_t getDampingDirLin() { return m_dampingDirLin ; }
+	real_t getDampingDirLin() { return m_dampingDirLin; }
 	real_t getSoftnessDirAng() { return m_softnessDirAng; }
 	real_t getRestitutionDirAng() { return m_restitutionDirAng; }
 	real_t getDampingDirAng() { return m_dampingDirAng; }
@@ -230,9 +229,9 @@ public:
 	bool getSolveAngLimit() { return m_solveAngLim; }
 	real_t getAngDepth() { return m_angDepth; }
 	// shared code used by ODE solver
-	void	calculateTransforms(void);
-	void	testLinLimits(void);
-	void	testAngLimits(void);
+	void calculateTransforms(void);
+	void testLinLimits(void);
+	void testAngLimits(void);
 	// access for PE Solver
 	Vector3 getAncorInA(void);
 	Vector3 getAncorInB(void);
@@ -244,8 +243,6 @@ public:
 	void solve(real_t p_step);
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_SLIDER; }
-
 };
-
 
 #endif // SLIDER_JOINT_SW_H

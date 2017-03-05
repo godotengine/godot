@@ -38,6 +38,4 @@ void register_regex_types() {
 }
 
 void unregister_regex_types() {
-
 }
-

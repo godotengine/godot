@@ -37,13 +37,11 @@
 */
 class ShellWindows : public Shell {
 public:
-	
 	virtual void execute(String p_path);
 
 	ShellWindows();
-	
-	~ShellWindows();
 
+	~ShellWindows();
 };
 
 #endif

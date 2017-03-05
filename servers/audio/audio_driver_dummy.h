@@ -31,18 +31,17 @@
 
 #include "servers/audio_server.h"
 
-#include "core/os/thread.h"
 #include "core/os/mutex.h"
-
+#include "core/os/thread.h"
 
 class AudioDriverDummy : public AudioDriver {
 
-	Thread* thread;
-	Mutex* mutex;
+	Thread *thread;
+	Mutex *mutex;
 
-	int32_t* samples_in;
+	int32_t *samples_in;
 
-	static void thread_func(void* p_udata);
+	static void thread_func(void *p_udata);
 	int buffer_size;
 
 	unsigned int mix_rate;
@@ -56,8 +55,7 @@ class AudioDriverDummy : public AudioDriver {
 	bool pcm_open;
 
 public:
-
-	const char* get_name() const {
+	const char *get_name() const {
 		return "Dummy";
 	};
 

@@ -31,17 +31,17 @@
 #ifdef X11_ENABLED
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define GLX_GLXEXT_PROTOTYPES
 #include <GL/glx.h>
 #include <GL/glxext.h>
 
-#define GLX_CONTEXT_MAJOR_VERSION_ARB		0x2091
-#define GLX_CONTEXT_MINOR_VERSION_ARB		0x2092
+#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
+#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
 
-typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 
 struct ContextGL_X11_Private {
 
@@ -60,7 +60,7 @@ void ContextGL_X11::make_current() {
 
 void ContextGL_X11::swap_buffers() {
 
-	glXSwapBuffers(x11_display,x11_window);
+	glXSwapBuffers(x11_display, x11_window);
 }
 
 /*
@@ -77,38 +77,35 @@ static GLWrapperFuncPtr wrapper_get_proc_address(const char* p_function) {
 }*/
 
 static bool ctxErrorOccurred = false;
-static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )
-{
-    ctxErrorOccurred = true;
-    return 0;
+static int ctxErrorHandler(Display *dpy, XErrorEvent *ev) {
+	ctxErrorOccurred = true;
+	return 0;
 }
 
 Error ContextGL_X11::initialize() {
-
 
 	GLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribsARB = NULL;
 
 	//const char *extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 
-	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
+	glXCreateContextAttribsARB = (GLXCREATECONTEXTATTRIBSARBPROC)glXGetProcAddress((const GLubyte *)"glXCreateContextAttribsARB");
 
-	ERR_FAIL_COND_V( !glXCreateContextAttribsARB, ERR_UNCONFIGURED );
-
+	ERR_FAIL_COND_V(!glXCreateContextAttribsARB, ERR_UNCONFIGURED);
 
 	static int visual_attribs[] = {
-	    GLX_RENDER_TYPE, GLX_RGBA_BIT,
-	    GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
-	    GLX_DOUBLEBUFFER, true,
-	    GLX_RED_SIZE, 1,
-	    GLX_GREEN_SIZE, 1,
-	    GLX_BLUE_SIZE, 1,
-	    GLX_DEPTH_SIZE, 24,
-	    None
+		GLX_RENDER_TYPE, GLX_RGBA_BIT,
+		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+		GLX_DOUBLEBUFFER, true,
+		GLX_RED_SIZE, 1,
+		GLX_GREEN_SIZE, 1,
+		GLX_BLUE_SIZE, 1,
+		GLX_DEPTH_SIZE, 24,
+		None
 	};
 
 	int fbcount;
 	GLXFBConfig *fbc = glXChooseFBConfig(x11_display, DefaultScreen(x11_display), visual_attribs, &fbcount);
-	ERR_FAIL_COND_V(!fbc,ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!fbc, ERR_UNCONFIGURED);
 
 	XVisualInfo *vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 
@@ -127,15 +124,13 @@ Error ContextGL_X11::initialize() {
 		x11_window = atol(windowid);
 	} else {
 	*/
-		x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel|CWColormap|CWEventMask, &swa);
-		ERR_FAIL_COND_V(!x11_window,ERR_UNCONFIGURED);
-		XMapWindow(x11_display, x11_window);
-		//};
+	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, vi->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
+	ERR_FAIL_COND_V(!x11_window, ERR_UNCONFIGURED);
+	XMapWindow(x11_display, x11_window);
+	//};
 
-
-	int (*oldHandler)(Display*, XErrorEvent*) =
-		     XSetErrorHandler(&ctxErrorHandler);
-
+	int (*oldHandler)(Display *, XErrorEvent *) =
+			XSetErrorHandler(&ctxErrorHandler);
 
 	if (!opengl_3_context) {
 		//oldstyle context:
@@ -144,17 +139,17 @@ Error ContextGL_X11::initialize() {
 		static int context_attribs[] = {
 			GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 			GLX_CONTEXT_MINOR_VERSION_ARB, 3,
-			GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB/*|GLX_CONTEXT_DEBUG_BIT_ARB*/,
+			GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB /*|GLX_CONTEXT_DEBUG_BIT_ARB*/,
 			None
 		};
 
 		p->glx_context = glXCreateContextAttribsARB(x11_display, fbc[0], NULL, true, context_attribs);
 		ERR_EXPLAIN("Could not obtain an OpenGL 3.3 context!");
-		ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context,ERR_UNCONFIGURED);
+		ERR_FAIL_COND_V(ctxErrorOccurred || !p->glx_context, ERR_UNCONFIGURED);
 	}
 
-	XSync( x11_display, False );
-	XSetErrorHandler( oldHandler );
+	XSync(x11_display, False);
+	XSetErrorHandler(oldHandler);
 
 	print_line("ALL IS GOOD");
 
@@ -168,8 +163,8 @@ Error ContextGL_X11::initialize() {
 */
 	//glXMakeCurrent(x11_display, None, NULL);
 
-	XFree( vi );
-	XFree( fbc );
+	XFree(vi);
+	XFree(fbc);
 
 	return OK;
 }
@@ -177,14 +172,14 @@ Error ContextGL_X11::initialize() {
 int ContextGL_X11::get_window_width() {
 
 	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display,x11_window,&xwa);
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
 
 	return xwa.width;
 }
 
 int ContextGL_X11::get_window_height() {
 	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display,x11_window,&xwa);
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
 
 	return xwa.height;
 }
@@ -199,24 +194,22 @@ void ContextGL_X11::set_use_vsync(bool p_use) {
 		setup = true;
 		String extensions = glXQueryExtensionsString(x11_display, DefaultScreen(x11_display));
 		if (extensions.find("GLX_EXT_swap_control") != -1)
-			glXSwapIntervalEXT  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalEXT");
+			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
 		if (extensions.find("GLX_MESA_swap_control") != -1)
-			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC) glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalMESA");
+			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
 		if (extensions.find("GLX_SGI_swap_control") != -1)
-			glXSwapIntervalSGI  = (PFNGLXSWAPINTERVALSGIPROC) glXGetProcAddressARB((const GLubyte*)"glXSwapIntervalSGI");
+			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
 	}
-	int val = p_use ? 1:0;
+	int val = p_use ? 1 : 0;
 	if (glXSwapIntervalMESA) {
 		glXSwapIntervalMESA(val);
-	}
-	else if (glXSwapIntervalSGI) {
+	} else if (glXSwapIntervalSGI) {
 		glXSwapIntervalSGI(val);
-	}
-	else if (glXSwapIntervalEXT) {
+	} else if (glXSwapIntervalEXT) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(x11_display, drawable, val);
-	}
-	else return;
+	} else
+		return;
 	use_vsync = p_use;
 }
 bool ContextGL_X11::is_using_vsync() const {
@@ -224,30 +217,28 @@ bool ContextGL_X11::is_using_vsync() const {
 	return use_vsync;
 }
 
+ContextGL_X11::ContextGL_X11(::Display *p_x11_display, ::Window &p_x11_window, const OS::VideoMode &p_default_video_mode, bool p_opengl_3_context)
+	: x11_window(p_x11_window) {
 
-ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,const OS::VideoMode& p_default_video_mode,bool p_opengl_3_context) : x11_window(p_x11_window) {
+	default_video_mode = p_default_video_mode;
+	x11_display = p_x11_display;
 
-	default_video_mode=p_default_video_mode;
-	x11_display=p_x11_display;
+	opengl_3_context = p_opengl_3_context;
 
-	opengl_3_context=p_opengl_3_context;
-
-	double_buffer=false;
-	direct_render=false;
-	glx_minor=glx_major=0;
-	p = memnew( ContextGL_X11_Private );
-	p->glx_context=0;
-	use_vsync=false;
+	double_buffer = false;
+	direct_render = false;
+	glx_minor = glx_major = 0;
+	p = memnew(ContextGL_X11_Private);
+	p->glx_context = 0;
+	use_vsync = false;
 }
-
 
 ContextGL_X11::~ContextGL_X11() {
 	release_current();
-	glXDestroyContext( x11_display, p->glx_context );
+	glXDestroyContext(x11_display, p->glx_context);
 
-	memdelete( p );
+	memdelete(p);
 }
-
 
 #endif
 #endif

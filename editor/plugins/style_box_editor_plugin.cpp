@@ -28,16 +28,14 @@
 /*************************************************************************/
 #include "style_box_editor_plugin.h"
 
-
-void StyleBoxEditor::edit(const Ref<StyleBox>& p_stylebox) {
+void StyleBoxEditor::edit(const Ref<StyleBox> &p_stylebox) {
 
 	if (stylebox.is_valid())
-		stylebox->disconnect("changed",this,"_sb_changed");
-	stylebox=p_stylebox;
+		stylebox->disconnect("changed", this, "_sb_changed");
+	stylebox = p_stylebox;
 	if (p_stylebox.is_valid()) {
-		preview->add_style_override("panel",stylebox);
-		stylebox->connect("changed",this,"_sb_changed");
-
+		preview->add_style_override("panel", stylebox);
+		stylebox->connect("changed", this, "_sb_changed");
 	}
 }
 
@@ -48,7 +46,7 @@ void StyleBoxEditor::_sb_changed() {
 
 void StyleBoxEditor::_bind_methods() {
 
-	ClassDB::bind_method("_sb_changed",&StyleBoxEditor::_sb_changed);
+	ClassDB::bind_method("_sb_changed", &StyleBoxEditor::_sb_changed);
 	//ClassDB::bind_method("_import",&StyleBoxEditor::_import);
 	//ClassDB::bind_method("_import_accept",&StyleBoxEditor::_import_accept);
 	//ClassDB::bind_method("_preview_text_changed",&StyleBoxEditor::_preview_text_changed);
@@ -56,39 +54,36 @@ void StyleBoxEditor::_bind_methods() {
 
 StyleBoxEditor::StyleBoxEditor() {
 
-	panel = memnew( Panel );
+	panel = memnew(Panel);
 	add_child(panel);
 	panel->set_area_as_parent_rect();
 
-	Label *l = memnew( Label );
+	Label *l = memnew(Label);
 	l->set_text(TTR("StyleBox Preview:"));
-	l->set_pos(Point2(5,5));
+	l->set_pos(Point2(5, 5));
 	panel->add_child(l);
 
-
-	preview = memnew( Panel );
+	preview = memnew(Panel);
 	panel->add_child(preview);
-	preview->set_pos(Point2(50,50));
-	preview->set_size(Size2(200,100));
-
-
+	preview->set_pos(Point2(50, 50));
+	preview->set_size(Size2(200, 100));
 }
 
 void StyleBoxEditorPlugin::edit(Object *p_node) {
 
 	if (p_node && p_node->cast_to<StyleBox>()) {
-		stylebox_editor->edit( p_node->cast_to<StyleBox>() );
+		stylebox_editor->edit(p_node->cast_to<StyleBox>());
 		stylebox_editor->show();
 	} else
 		stylebox_editor->hide();
 }
 
-bool StyleBoxEditorPlugin::handles(Object *p_node) const{
+bool StyleBoxEditorPlugin::handles(Object *p_node) const {
 
 	return p_node->is_class("StyleBox");
 }
 
-void StyleBoxEditorPlugin::make_visible(bool p_visible){
+void StyleBoxEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		button->show();
@@ -103,13 +98,10 @@ void StyleBoxEditorPlugin::make_visible(bool p_visible){
 
 StyleBoxEditorPlugin::StyleBoxEditorPlugin(EditorNode *p_node) {
 
-	stylebox_editor = memnew( StyleBoxEditor );
-	stylebox_editor->set_custom_minimum_size(Size2(0,250));
+	stylebox_editor = memnew(StyleBoxEditor);
+	stylebox_editor->set_custom_minimum_size(Size2(0, 250));
 
 	//p_node->get_viewport()->add_child(stylebox_editor);
-	button = p_node->add_bottom_panel_item("StyleBox",stylebox_editor);
+	button = p_node->add_bottom_panel_item("StyleBox", stylebox_editor);
 	button->hide();
-
-
 }
-

@@ -29,23 +29,25 @@
 #ifndef PAIR_H
 #define PAIR_H
 
-template<class F,class S>
+template <class F, class S>
 struct Pair {
 
 	F first;
 	S second;
 
 	Pair() {}
-	Pair( F p_first,  S p_second) { first=p_first; second=p_second; }
-};
-
-template<class F,class S>
-struct PairSort {
-
-	bool operator()(const Pair<F,S>& A, const Pair<F,S>& B) const {
-		return A.first < B.first;
+	Pair(F p_first, S p_second) {
+		first = p_first;
+		second = p_second;
 	}
 };
 
+template <class F, class S>
+struct PairSort {
+
+	bool operator()(const Pair<F, S> &A, const Pair<F, S> &B) const {
+		return A.first < B.first;
+	}
+};
 
 #endif // PAIR_H

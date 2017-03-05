@@ -37,6 +37,7 @@ private:
 	PowerState power_state;
 
 	bool UpdatePowerInfo();
+
 public:
 	PowerBB10();
 	virtual ~PowerBB10();

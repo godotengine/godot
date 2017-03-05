@@ -29,10 +29,10 @@
 #ifndef VISUALINSTANCEPARTICLES_H
 #define VISUALINSTANCEPARTICLES_H
 
-#include "scene/3d/visual_instance.h"
-#include "scene/resources/material.h"
-#include "scene/main/timer.h"
 #include "rid.h"
+#include "scene/3d/visual_instance.h"
+#include "scene/main/timer.h"
+#include "scene/resources/material.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

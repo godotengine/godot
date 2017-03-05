@@ -28,8 +28,8 @@
 /*************************************************************************/
 #include "audio_effect_pitch_shift.h"
 
-#include "servers/audio_server.h"
 #include "math_funcs.h"
+#include "servers/audio_server.h"
 
 /* Thirdparty code, so disable clang-format with Godot style */
 /* clang-format off */
@@ -281,34 +281,31 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 /* Godot code again */
 /* clang-format on */
 
-void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count) {
+void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 
 	float sample_rate = AudioServer::get_singleton()->get_mix_rate();
 
-	float *in_l = (float*)p_src_frames;
+	float *in_l = (float *)p_src_frames;
 	float *in_r = in_l + 1;
 
-	float *out_l = (float*)p_dst_frames;
+	float *out_l = (float *)p_dst_frames;
 	float *out_r = out_l + 1;
 
-	shift_l.PitchShift(base->pitch_scale,p_frame_count,2048,4,sample_rate,in_l,out_l,2);
-	shift_r.PitchShift(base->pitch_scale,p_frame_count,2048,4,sample_rate,in_r,out_r,2);
-
+	shift_l.PitchShift(base->pitch_scale, p_frame_count, 2048, 4, sample_rate, in_l, out_l, 2);
+	shift_r.PitchShift(base->pitch_scale, p_frame_count, 2048, 4, sample_rate, in_r, out_r, 2);
 }
-
 
 Ref<AudioEffectInstance> AudioEffectPitchShift::instance() {
 	Ref<AudioEffectPitchShiftInstance> ins;
 	ins.instance();
-	ins->base=Ref<AudioEffectPitchShift>(this);
-
+	ins->base = Ref<AudioEffectPitchShift>(this);
 
 	return ins;
 }
 
 void AudioEffectPitchShift::set_pitch_scale(float p_adjust) {
 
-	pitch_scale=p_adjust;
+	pitch_scale = p_adjust;
 }
 
 float AudioEffectPitchShift::get_pitch_scale() const {
@@ -316,17 +313,14 @@ float AudioEffectPitchShift::get_pitch_scale() const {
 	return pitch_scale;
 }
 
-
 void AudioEffectPitchShift::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_pitch_scale","rate"),&AudioEffectPitchShift::set_pitch_scale);
-	ClassDB::bind_method(D_METHOD("get_pitch_scale"),&AudioEffectPitchShift::get_pitch_scale);
+	ClassDB::bind_method(D_METHOD("set_pitch_scale", "rate"), &AudioEffectPitchShift::set_pitch_scale);
+	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioEffectPitchShift::get_pitch_scale);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"pitch_scale",PROPERTY_HINT_RANGE,"0.01,16,0.01"),"set_pitch_scale","get_pitch_scale");
-
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,16,0.01"), "set_pitch_scale", "get_pitch_scale");
 }
 
 AudioEffectPitchShift::AudioEffectPitchShift() {
-	pitch_scale=1.0;
-
+	pitch_scale = 1.0;
 }

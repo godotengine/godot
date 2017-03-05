@@ -30,31 +30,25 @@
 
 #ifdef MINIZIP_ENABLED
 
-
-
-#include "os/main_loop.h"
-#include "os/os.h"
-#include "scene/resources/texture.h"
-#include "print_string.h"
+#include "core/global_config.h"
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/dir_access.h"
-#include "core/global_config.h"
+#include "os/main_loop.h"
+#include "os/os.h"
+#include "print_string.h"
+#include "scene/resources/texture.h"
 
 #include "io/file_access_memory.h"
 
 namespace TestIO {
 
-
 class TestMainLoop : public MainLoop {
-
 
 	bool quit;
 
 public:
-	virtual void input_event(const InputEvent& p_event) {
-
-
+	virtual void input_event(const InputEvent &p_event) {
 	}
 	virtual bool idle(float p_time) {
 		return false;
@@ -62,53 +56,48 @@ public:
 
 	virtual void request_quit() {
 
-		quit=true;
-
+		quit = true;
 	}
 	virtual void init() {
 
-		quit=true;
+		quit = true;
 	}
 	virtual bool iteration(float p_time) {
 
 		return quit;
 	}
 	virtual void finish() {
-
 	}
-
-
 };
 
-
-MainLoop* test() {
+MainLoop *test() {
 
 	print_line("this is test io");
-	DirAccess* da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->change_dir(".");
-	print_line("Opening current dir "+ da->get_current_dir());
+	print_line("Opening current dir " + da->get_current_dir());
 	String entry;
 	da->list_dir_begin();
-	while ( (entry = da->get_next()) != "") {
+	while ((entry = da->get_next()) != "") {
 
-		print_line("entry "+entry+" is dir: " + Variant(da->current_is_dir()));
+		print_line("entry " + entry + " is dir: " + Variant(da->current_is_dir()));
 	};
 	da->list_dir_end();
 
 	RES texture = ResourceLoader::load("test_data/rock.png");
 	ERR_FAIL_COND_V(texture.is_null(), NULL);
 
-	ResourceSaver::save("test_data/rock.xml",texture);
+	ResourceSaver::save("test_data/rock.xml", texture);
 
 	print_line("localize paths");
 	print_line(GlobalConfig::get_singleton()->localize_path("algo.xml"));
 	print_line(GlobalConfig::get_singleton()->localize_path("c:\\windows\\algo.xml"));
-	print_line(GlobalConfig::get_singleton()->localize_path(GlobalConfig::get_singleton()->get_resource_path()+"/something/something.xml"));
+	print_line(GlobalConfig::get_singleton()->localize_path(GlobalConfig::get_singleton()->get_resource_path() + "/something/something.xml"));
 	print_line(GlobalConfig::get_singleton()->localize_path("somedir/algo.xml"));
 
 	{
 
-		FileAccess* z = FileAccess::open("test_data/archive.zip", FileAccess::READ);
+		FileAccess *z = FileAccess::open("test_data/archive.zip", FileAccess::READ);
 		int len = z->get_len();
 		Vector<uint8_t> zip;
 		zip.resize(len);
@@ -186,23 +175,17 @@ MainLoop* test() {
 
 	print_line("test done");
 
-
-	return memnew( TestMainLoop );
-
+	return memnew(TestMainLoop);
 }
-
 }
 
 #else
 
 namespace TestIO {
 
-
-MainLoop* test() {
+MainLoop *test() {
 
 	return NULL;
 }
-
 }
 #endif
-

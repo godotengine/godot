@@ -30,12 +30,12 @@
 
 #if 0
 
+#include "canvas_item_editor_plugin.h"
+#include "os/keyboard.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "spatial_editor_plugin.h"
-#include "os/keyboard.h"
-#include "canvas_item_editor_plugin.h"
 
 void GraphColorRampEdit::_gui_input(const InputEvent& p_event) {
 
@@ -2942,7 +2942,5 @@ ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node, bool p_2d) 
 ShaderGraphEditorPlugin::~ShaderGraphEditorPlugin()
 {
 }
-
-
 
 #endif

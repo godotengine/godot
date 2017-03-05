@@ -29,19 +29,17 @@
 #ifndef AUDIO_FILTER_SW_H
 #define AUDIO_FILTER_SW_H
 
-
 #include "math_funcs.h"
 
 class AudioFilterSW {
 public:
-
 	struct Coeffs {
 
-		float a1,a2;
-		float b0,b1,b2;
+		float a1, a2;
+		float b0, b1, b2;
 
 		//bool operator==(const Coeffs &p_rv) { return (FLOATS_EQ(a1,p_rv.a1) && FLOATS_EQ(a2,p_rv.a2) && FLOATS_EQ(b1,p_rv.b1) && FLOATS_EQ(b2,p_rv.b2) && FLOATS_EQ(b0,p_rv.b0) ); }
-		Coeffs() { a1=a2=b0=b1=b2=0.0; }
+		Coeffs() { a1 = a2 = b0 = b1 = b2 = 0.0; }
 	};
 
 	enum Mode {
@@ -58,21 +56,19 @@ public:
 
 	class Processor { // simple filter processor
 
-		AudioFilterSW * filter;
+		AudioFilterSW *filter;
 		Coeffs coeffs;
-		float ha1,ha2,hb1,hb2; //history
+		float ha1, ha2, hb1, hb2; //history
 	public:
-		void set_filter(AudioFilterSW * p_filter);
-		void process(float *p_samples,int p_amount, int p_stride=1);
+		void set_filter(AudioFilterSW *p_filter);
+		void process(float *p_samples, int p_amount, int p_stride = 1);
 		void update_coeffs();
-		_ALWAYS_INLINE_ void process_one(float& p_sample);
+		_ALWAYS_INLINE_ void process_one(float &p_sample);
 
 		Processor();
 	};
 
 private:
-
-
 	float cutoff;
 	float resonance;
 	float gain;
@@ -80,11 +76,8 @@ private:
 	int stages;
 	Mode mode;
 
-
-
 public:
-
-	float get_response(float p_freq,Coeffs *p_coeffs);
+	float get_response(float p_freq, Coeffs *p_coeffs);
 
 	void set_mode(Mode p_mode);
 	void set_cutoff(float p_cutoff);
@@ -96,24 +89,18 @@ public:
 	void prepare_coefficients(Coeffs *p_coeffs);
 
 	AudioFilterSW();
-
 };
-
-
-
 
 /* inline methods */
 
-
 void AudioFilterSW::Processor::process_one(float &p_val) {
 
-	float pre=p_val;
-	p_val = (p_val * coeffs.b0 + hb1 * coeffs.b1  + hb2 * coeffs.b2 + ha1 * coeffs.a1 + ha2 * coeffs.a2);
-	ha2=ha1;
-	hb2=hb1;
-	hb1=pre;
-	ha1=p_val;
+	float pre = p_val;
+	p_val = (p_val * coeffs.b0 + hb1 * coeffs.b1 + hb2 * coeffs.b2 + ha1 * coeffs.a1 + ha2 * coeffs.a2);
+	ha2 = ha1;
+	hb2 = hb1;
+	hb1 = pre;
+	ha1 = p_val;
 }
-
 
 #endif // AUDIO_FILTER_SW_H

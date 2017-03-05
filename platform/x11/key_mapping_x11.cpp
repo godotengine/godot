@@ -28,7 +28,6 @@
 /*************************************************************************/
 #include "key_mapping_x11.h"
 
-
 /***** SCAN CODE CONVERSION ******/
 
 struct _XTranslatePair {
@@ -37,162 +36,161 @@ struct _XTranslatePair {
 	unsigned int keycode;
 };
 
-static _XTranslatePair _xkeysym_to_keycode[]={
-  // misc keys
+static _XTranslatePair _xkeysym_to_keycode[] = {
+	// misc keys
 
-	{ XK_Escape,                  KEY_ESCAPE   },
-	{ XK_Tab,                     KEY_TAB   },
-	{ XK_ISO_Left_Tab,            KEY_BACKTAB   },
-	{ XK_BackSpace,               KEY_BACKSPACE   },
-	{ XK_Return,                  KEY_RETURN   },
-	{ XK_Insert,                  KEY_INSERT   },
-	{ XK_Delete,                  KEY_DELETE   },
-	{ XK_Clear,                   KEY_DELETE   },
-	{ XK_Pause,                   KEY_PAUSE   },
-	{ XK_Print,                   KEY_PRINT   },
-	{ XK_Home,                    KEY_HOME   },
-	{ XK_End,                     KEY_END   },
-	{ XK_Left,                    KEY_LEFT   },
-	{ XK_Up,                      KEY_UP   },
-	{ XK_Right,                   KEY_RIGHT   },
-	{ XK_Down,                    KEY_DOWN   },
-	{ XK_Prior,                   KEY_PAGEUP   },
-	{ XK_Next,                    KEY_PAGEDOWN   },
-	{ XK_Shift_L,                 KEY_SHIFT   },
-	{ XK_Shift_R,                 KEY_SHIFT   },
-	{ XK_Shift_Lock,              KEY_SHIFT   },
-	{ XK_Control_L,               KEY_CONTROL   },
-	{ XK_Control_R,               KEY_CONTROL   },
-	{ XK_Meta_L,                  KEY_META   },
-	{ XK_Meta_R,                  KEY_META   },
-	{ XK_Alt_L,                   KEY_ALT   },
-	{ XK_Alt_R,                   KEY_ALT   },
-	{ XK_Caps_Lock,               KEY_CAPSLOCK   },
-	{ XK_Num_Lock,                KEY_NUMLOCK   },
-	{ XK_Scroll_Lock,             KEY_SCROLLLOCK   },
-	{ XK_Super_L,                 KEY_SUPER_L   },
-	{ XK_Super_R,                 KEY_SUPER_R   },
-	{ XK_Menu,                    KEY_MENU   },
-	{ XK_Hyper_L,                 KEY_HYPER_L   },
-	{ XK_Hyper_R,                 KEY_HYPER_R   },
-	{ XK_Help,                    KEY_HELP   },
-	{ XK_KP_Space,                KEY_SPACE   },
-	{ XK_KP_Tab,                  KEY_TAB   },
-	{ XK_KP_Enter,                KEY_ENTER   },
-	{ XK_Home,                 KEY_HOME   },
-	{ XK_Left,                 KEY_LEFT   },
-	{ XK_Up,                   KEY_UP   },
-	{ XK_Right,                KEY_RIGHT   },
-	{ XK_Down,                 KEY_DOWN   },
-	{ XK_Prior,                KEY_PAGEUP   },
-	{ XK_Next,                 KEY_PAGEDOWN   },
-	{ XK_End,                  KEY_END   },
-	{ XK_Begin,                KEY_CLEAR   },
-	{ XK_Insert,               KEY_INSERT   },
-	{ XK_Delete,               KEY_DELETE   },
+	{ XK_Escape, KEY_ESCAPE },
+	{ XK_Tab, KEY_TAB },
+	{ XK_ISO_Left_Tab, KEY_BACKTAB },
+	{ XK_BackSpace, KEY_BACKSPACE },
+	{ XK_Return, KEY_RETURN },
+	{ XK_Insert, KEY_INSERT },
+	{ XK_Delete, KEY_DELETE },
+	{ XK_Clear, KEY_DELETE },
+	{ XK_Pause, KEY_PAUSE },
+	{ XK_Print, KEY_PRINT },
+	{ XK_Home, KEY_HOME },
+	{ XK_End, KEY_END },
+	{ XK_Left, KEY_LEFT },
+	{ XK_Up, KEY_UP },
+	{ XK_Right, KEY_RIGHT },
+	{ XK_Down, KEY_DOWN },
+	{ XK_Prior, KEY_PAGEUP },
+	{ XK_Next, KEY_PAGEDOWN },
+	{ XK_Shift_L, KEY_SHIFT },
+	{ XK_Shift_R, KEY_SHIFT },
+	{ XK_Shift_Lock, KEY_SHIFT },
+	{ XK_Control_L, KEY_CONTROL },
+	{ XK_Control_R, KEY_CONTROL },
+	{ XK_Meta_L, KEY_META },
+	{ XK_Meta_R, KEY_META },
+	{ XK_Alt_L, KEY_ALT },
+	{ XK_Alt_R, KEY_ALT },
+	{ XK_Caps_Lock, KEY_CAPSLOCK },
+	{ XK_Num_Lock, KEY_NUMLOCK },
+	{ XK_Scroll_Lock, KEY_SCROLLLOCK },
+	{ XK_Super_L, KEY_SUPER_L },
+	{ XK_Super_R, KEY_SUPER_R },
+	{ XK_Menu, KEY_MENU },
+	{ XK_Hyper_L, KEY_HYPER_L },
+	{ XK_Hyper_R, KEY_HYPER_R },
+	{ XK_Help, KEY_HELP },
+	{ XK_KP_Space, KEY_SPACE },
+	{ XK_KP_Tab, KEY_TAB },
+	{ XK_KP_Enter, KEY_ENTER },
+	{ XK_Home, KEY_HOME },
+	{ XK_Left, KEY_LEFT },
+	{ XK_Up, KEY_UP },
+	{ XK_Right, KEY_RIGHT },
+	{ XK_Down, KEY_DOWN },
+	{ XK_Prior, KEY_PAGEUP },
+	{ XK_Next, KEY_PAGEDOWN },
+	{ XK_End, KEY_END },
+	{ XK_Begin, KEY_CLEAR },
+	{ XK_Insert, KEY_INSERT },
+	{ XK_Delete, KEY_DELETE },
 	//{ XK_KP_Equal,                KEY_EQUAL   },
 	//{ XK_KP_Separator,            KEY_COMMA   },
-	{ XK_KP_Decimal,              KEY_KP_PERIOD   },
-	{ XK_KP_Delete,              KEY_KP_PERIOD   },
-	{ XK_KP_Enter,		      KEY_KP_ENTER },
-	{ XK_KP_Multiply,	      KEY_KP_MULTIPLY},
-	{ XK_KP_Divide,		     KEY_KP_DIVIDE},
-	{ XK_KP_Subtract,		KEY_KP_SUBTRACT},
-	{ XK_KP_Add,		KEY_KP_ADD},
-	{ XK_KP_0,		KEY_KP_0},
-	{ XK_KP_1,		KEY_KP_1},
-	{ XK_KP_2,		KEY_KP_2},
-	{ XK_KP_3,		KEY_KP_3},
-	{ XK_KP_4,		KEY_KP_4},
-	{ XK_KP_5,		KEY_KP_5},
-	{ XK_KP_6,		KEY_KP_6},
-	{ XK_KP_7,		KEY_KP_7},
-	{ XK_KP_8,		KEY_KP_8},
-	{ XK_KP_9,		KEY_KP_9},
+	{ XK_KP_Decimal, KEY_KP_PERIOD },
+	{ XK_KP_Delete, KEY_KP_PERIOD },
+	{ XK_KP_Enter, KEY_KP_ENTER },
+	{ XK_KP_Multiply, KEY_KP_MULTIPLY },
+	{ XK_KP_Divide, KEY_KP_DIVIDE },
+	{ XK_KP_Subtract, KEY_KP_SUBTRACT },
+	{ XK_KP_Add, KEY_KP_ADD },
+	{ XK_KP_0, KEY_KP_0 },
+	{ XK_KP_1, KEY_KP_1 },
+	{ XK_KP_2, KEY_KP_2 },
+	{ XK_KP_3, KEY_KP_3 },
+	{ XK_KP_4, KEY_KP_4 },
+	{ XK_KP_5, KEY_KP_5 },
+	{ XK_KP_6, KEY_KP_6 },
+	{ XK_KP_7, KEY_KP_7 },
+	{ XK_KP_8, KEY_KP_8 },
+	{ XK_KP_9, KEY_KP_9 },
 	// same but with numlock
-	{ XK_KP_Insert,		KEY_KP_0},
-	{ XK_KP_End,		KEY_KP_1},
-	{ XK_KP_Down,		KEY_KP_2},
-	{ XK_KP_Page_Down,	KEY_KP_3},
-	{ XK_KP_Left,		KEY_KP_4},
-	{ XK_KP_Begin,		KEY_KP_5},
-	{ XK_KP_Right,		KEY_KP_6},
-	{ XK_KP_Home,		KEY_KP_7},
-	{ XK_KP_Up,		KEY_KP_8},
-	{ XK_KP_Page_Up,		KEY_KP_9},
-	{ XK_F1,		KEY_F1},
-	{ XK_F2,		KEY_F2},
-	{ XK_F3,		KEY_F3},
-	{ XK_F4,		KEY_F4},
-	{ XK_F5,		KEY_F5},
-	{ XK_F6,		KEY_F6},
-	{ XK_F7,		KEY_F7},
-	{ XK_F8,		KEY_F8},
-	{ XK_F9,		KEY_F9},
-	{ XK_F10,		KEY_F10},
-	{ XK_F11,		KEY_F11},
-	{ XK_F12,		KEY_F12},
-	{ XK_F13,		KEY_F13},
-	{ XK_F14,		KEY_F14},
-	{ XK_F15,		KEY_F15},
-	{ XK_F16,		KEY_F16},
+	{ XK_KP_Insert, KEY_KP_0 },
+	{ XK_KP_End, KEY_KP_1 },
+	{ XK_KP_Down, KEY_KP_2 },
+	{ XK_KP_Page_Down, KEY_KP_3 },
+	{ XK_KP_Left, KEY_KP_4 },
+	{ XK_KP_Begin, KEY_KP_5 },
+	{ XK_KP_Right, KEY_KP_6 },
+	{ XK_KP_Home, KEY_KP_7 },
+	{ XK_KP_Up, KEY_KP_8 },
+	{ XK_KP_Page_Up, KEY_KP_9 },
+	{ XK_F1, KEY_F1 },
+	{ XK_F2, KEY_F2 },
+	{ XK_F3, KEY_F3 },
+	{ XK_F4, KEY_F4 },
+	{ XK_F5, KEY_F5 },
+	{ XK_F6, KEY_F6 },
+	{ XK_F7, KEY_F7 },
+	{ XK_F8, KEY_F8 },
+	{ XK_F9, KEY_F9 },
+	{ XK_F10, KEY_F10 },
+	{ XK_F11, KEY_F11 },
+	{ XK_F12, KEY_F12 },
+	{ XK_F13, KEY_F13 },
+	{ XK_F14, KEY_F14 },
+	{ XK_F15, KEY_F15 },
+	{ XK_F16, KEY_F16 },
 
-    // media keys
-	{ XF86XK_Back,                KEY_BACK   },
-	{ XF86XK_Forward,             KEY_FORWARD   },
-	{ XF86XK_Stop,                KEY_STOP   },
-	{ XF86XK_Refresh,             KEY_REFRESH   },
-	{ XF86XK_Favorites,           KEY_FAVORITES   },
-	{ XF86XK_AudioMedia,          KEY_LAUNCHMEDIA   },
-	{ XF86XK_OpenURL,             KEY_OPENURL   },
-	{ XF86XK_HomePage,            KEY_HOMEPAGE   },
-	{ XF86XK_Search,              KEY_SEARCH   },
-	{ XF86XK_AudioLowerVolume,    KEY_VOLUMEDOWN   },
-	{ XF86XK_AudioMute,           KEY_VOLUMEMUTE   },
-	{ XF86XK_AudioRaiseVolume,    KEY_VOLUMEUP   },
-	{ XF86XK_AudioPlay,           KEY_MEDIAPLAY   },
-	{ XF86XK_AudioStop,           KEY_MEDIASTOP   },
-	{ XF86XK_AudioPrev,           KEY_MEDIAPREVIOUS   },
-	{ XF86XK_AudioNext,           KEY_MEDIANEXT   },
-	{ XF86XK_AudioRecord,         KEY_MEDIARECORD   },
+	// media keys
+	{ XF86XK_Back, KEY_BACK },
+	{ XF86XK_Forward, KEY_FORWARD },
+	{ XF86XK_Stop, KEY_STOP },
+	{ XF86XK_Refresh, KEY_REFRESH },
+	{ XF86XK_Favorites, KEY_FAVORITES },
+	{ XF86XK_AudioMedia, KEY_LAUNCHMEDIA },
+	{ XF86XK_OpenURL, KEY_OPENURL },
+	{ XF86XK_HomePage, KEY_HOMEPAGE },
+	{ XF86XK_Search, KEY_SEARCH },
+	{ XF86XK_AudioLowerVolume, KEY_VOLUMEDOWN },
+	{ XF86XK_AudioMute, KEY_VOLUMEMUTE },
+	{ XF86XK_AudioRaiseVolume, KEY_VOLUMEUP },
+	{ XF86XK_AudioPlay, KEY_MEDIAPLAY },
+	{ XF86XK_AudioStop, KEY_MEDIASTOP },
+	{ XF86XK_AudioPrev, KEY_MEDIAPREVIOUS },
+	{ XF86XK_AudioNext, KEY_MEDIANEXT },
+	{ XF86XK_AudioRecord, KEY_MEDIARECORD },
 
-    // launch keys
-	{ XF86XK_Mail,                KEY_LAUNCHMAIL   },
-	{ XF86XK_MyComputer,          KEY_LAUNCH0   },
-	{ XF86XK_Calculator,          KEY_LAUNCH1   },
-	{ XF86XK_Standby,             KEY_STANDBY   },
+	// launch keys
+	{ XF86XK_Mail, KEY_LAUNCHMAIL },
+	{ XF86XK_MyComputer, KEY_LAUNCH0 },
+	{ XF86XK_Calculator, KEY_LAUNCH1 },
+	{ XF86XK_Standby, KEY_STANDBY },
 
-	{ XF86XK_Launch0,             KEY_LAUNCH2   },
-	{ XF86XK_Launch1,             KEY_LAUNCH3   },
-	{ XF86XK_Launch2,             KEY_LAUNCH4   },
-	{ XF86XK_Launch3,             KEY_LAUNCH5   },
-	{ XF86XK_Launch4,             KEY_LAUNCH6   },
-	{ XF86XK_Launch5,             KEY_LAUNCH7   },
-	{ XF86XK_Launch6,             KEY_LAUNCH8   },
-	{ XF86XK_Launch7,             KEY_LAUNCH9   },
-	{ XF86XK_Launch8,             KEY_LAUNCHA   },
-	{ XF86XK_Launch9,             KEY_LAUNCHB   },
-	{ XF86XK_LaunchA,             KEY_LAUNCHC   },
-	{ XF86XK_LaunchB,             KEY_LAUNCHD   },
-	{ XF86XK_LaunchC,             KEY_LAUNCHE   },
-	{ XF86XK_LaunchD,             KEY_LAUNCHF   },
+	{ XF86XK_Launch0, KEY_LAUNCH2 },
+	{ XF86XK_Launch1, KEY_LAUNCH3 },
+	{ XF86XK_Launch2, KEY_LAUNCH4 },
+	{ XF86XK_Launch3, KEY_LAUNCH5 },
+	{ XF86XK_Launch4, KEY_LAUNCH6 },
+	{ XF86XK_Launch5, KEY_LAUNCH7 },
+	{ XF86XK_Launch6, KEY_LAUNCH8 },
+	{ XF86XK_Launch7, KEY_LAUNCH9 },
+	{ XF86XK_Launch8, KEY_LAUNCHA },
+	{ XF86XK_Launch9, KEY_LAUNCHB },
+	{ XF86XK_LaunchA, KEY_LAUNCHC },
+	{ XF86XK_LaunchB, KEY_LAUNCHD },
+	{ XF86XK_LaunchC, KEY_LAUNCHE },
+	{ XF86XK_LaunchD, KEY_LAUNCHF },
 
-	{0,                          0  }
+	{ 0, 0 }
 };
-
 
 unsigned int KeyMappingX11::get_keycode(KeySym p_keysym) {
 
 	// kinda bruteforce.. could optimize.
 
-	if (p_keysym<0x100) // Latin 1, maps 1-1
+	if (p_keysym < 0x100) // Latin 1, maps 1-1
 		return p_keysym;
 
 	// look for special key
-	for(int idx=0;_xkeysym_to_keycode[idx].keysym!=0;idx++) {
+	for (int idx = 0; _xkeysym_to_keycode[idx].keysym != 0; idx++) {
 
-		if (_xkeysym_to_keycode[idx].keysym==p_keysym)
-			return  _xkeysym_to_keycode[idx].keycode;
+		if (_xkeysym_to_keycode[idx].keysym == p_keysym)
+			return _xkeysym_to_keycode[idx].keycode;
 	}
 
 	return 0;
@@ -202,19 +200,18 @@ KeySym KeyMappingX11::get_keysym(unsigned int p_code) {
 
 	// kinda bruteforce.. could optimize.
 
-	if (p_code<0x100) // Latin 1, maps 1-1
+	if (p_code < 0x100) // Latin 1, maps 1-1
 		return p_code;
 
 	// look for special key
-	for(int idx=0;_xkeysym_to_keycode[idx].keysym!=0;idx++) {
+	for (int idx = 0; _xkeysym_to_keycode[idx].keysym != 0; idx++) {
 
-		if (_xkeysym_to_keycode[idx].keycode==p_code)
-			return  _xkeysym_to_keycode[idx].keysym;
+		if (_xkeysym_to_keycode[idx].keycode == p_code)
+			return _xkeysym_to_keycode[idx].keysym;
 	}
 
 	return 0;
 }
-
 
 /***** UNICODE CONVERSION ******/
 
@@ -228,7 +225,7 @@ struct _XTranslateUnicodePair {
 
 enum {
 
-	_KEYSYM_MAX=759
+	_KEYSYM_MAX = 759
 };
 
 static _XTranslateUnicodePair _xkeysym_to_unicode[_KEYSYM_MAX] = {
@@ -995,32 +992,31 @@ static _XTranslateUnicodePair _xkeysym_to_unicode[_KEYSYM_MAX] = {
 unsigned int KeyMappingX11::get_unicode_from_keysym(KeySym p_keysym) {
 
 	/* Latin-1 */
-	if (p_keysym>=0x20 && p_keysym<=0x7e)
+	if (p_keysym >= 0x20 && p_keysym <= 0x7e)
 		return p_keysym;
-	if (p_keysym>=0xa0 && p_keysym<=0xff)
+	if (p_keysym >= 0xa0 && p_keysym <= 0xff)
 		return p_keysym;
 	// keypad to latin1 is easy
-	if (p_keysym>=0xffaa && p_keysym<=0xffb9)
-		return p_keysym-0xff80;
+	if (p_keysym >= 0xffaa && p_keysym <= 0xffb9)
+		return p_keysym - 0xff80;
 
 	/* Unicode (may be present)*/
 
-	if((p_keysym&0xff000000)==0x01000000)
-		return p_keysym&0x00ffffff;
+	if ((p_keysym & 0xff000000) == 0x01000000)
+		return p_keysym & 0x00ffffff;
 
-	int middle,low=0,high=_KEYSYM_MAX-1;
+	int middle, low = 0, high = _KEYSYM_MAX - 1;
 	do {
-		middle=(high+low)/2;
-		if ( _xkeysym_to_unicode[middle].keysym==p_keysym)
+		middle = (high + low) / 2;
+		if (_xkeysym_to_unicode[middle].keysym == p_keysym)
 			return _xkeysym_to_unicode[middle].unicode;
-		if ( _xkeysym_to_unicode[middle].keysym<=p_keysym )
-			low=middle+1;
+		if (_xkeysym_to_unicode[middle].keysym <= p_keysym)
+			low = middle + 1;
 		else
-			high=middle-1;
-	} while (high>=low);
+			high = middle - 1;
+	} while (high >= low);
 
 	return 0;
-
 }
 
 struct _XTranslateUnicodePairReverse {
@@ -1031,7 +1027,7 @@ struct _XTranslateUnicodePairReverse {
 
 enum {
 
-	_UNICODE_MAX=750
+	_UNICODE_MAX = 750
 };
 
 static _XTranslateUnicodePairReverse _unicode_to_xkeysym[_UNICODE_MAX] = {
@@ -1791,23 +1787,23 @@ KeySym KeyMappingX11::get_keysym_from_unicode(unsigned int p_unicode) {
 
 	/* Latin 1 */
 
-	if (p_unicode>=0x20 && p_unicode<=0x7e)
+	if (p_unicode >= 0x20 && p_unicode <= 0x7e)
 		return p_unicode;
 
-	if (p_unicode>=0xa0 && p_unicode<=0xff)
+	if (p_unicode >= 0xa0 && p_unicode <= 0xff)
 		return p_unicode;
 
-	int middle,low=0,high=_UNICODE_MAX-1;
+	int middle, low = 0, high = _UNICODE_MAX - 1;
 	do {
-		middle=(high+low)/2;
-		if ( _unicode_to_xkeysym[middle].keysym==p_unicode)
+		middle = (high + low) / 2;
+		if (_unicode_to_xkeysym[middle].keysym == p_unicode)
 			return _unicode_to_xkeysym[middle].keysym;
-		if ( _unicode_to_xkeysym[middle].keysym<=p_unicode )
-			low=middle+1;
+		if (_unicode_to_xkeysym[middle].keysym <= p_unicode)
+			low = middle + 1;
 		else
-			high=middle-1;
-	} while (high>=low);
+			high = middle - 1;
+	} while (high >= low);
 
 	// if not found, let's hope X understands it as unicode
-	return p_unicode|0x01000000;
+	return p_unicode | 0x01000000;
 }

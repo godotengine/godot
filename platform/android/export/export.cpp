@@ -26,17 +26,17 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "export.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
-#include "io/zip_io.h"
-#include "io/marshalls.h"
+#include "editor/editor_settings.h"
 #include "global_config.h"
+#include "io/marshalls.h"
+#include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/android/logo.h"
+#include "version.h"
 #include <string.h>
 #if 0
 
@@ -938,11 +938,6 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 
 	p_manifest=ret;
 
-
-
-
-
-
 #if 0
 	uint32_t header[9];
 	for(int i=0;i<9;i++) {
@@ -971,7 +966,6 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest,bool
 		ucstring[len]=0;
 		string_table[i]=ucstring.ptr();
 	}
-
 
 #endif
 
@@ -1917,4 +1911,3 @@ void register_android_exporter() {
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
 #endif
 }
-

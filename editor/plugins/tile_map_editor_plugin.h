@@ -29,14 +29,14 @@
 #ifndef TILE_MAP_EDITOR_PLUGIN_H
 #define TILE_MAP_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 
 #include "scene/2d/tile_map.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -44,7 +44,7 @@
 
 class TileMapEditor : public VBoxContainer {
 
-	GDCLASS(TileMapEditor, VBoxContainer );
+	GDCLASS(TileMapEditor, VBoxContainer);
 
 	enum Tool {
 
@@ -77,7 +77,7 @@ class TileMapEditor : public VBoxContainer {
 	Control *canvas_item_editor;
 
 	LineEdit *search_box;
-	HSlider  *size_slider;
+	HSlider *size_slider;
 	ItemList *palette;
 
 	HBoxContainer *toolbar;
@@ -106,7 +106,7 @@ class TileMapEditor : public VBoxContainer {
 
 	Point2i over_tile;
 
-	bool * bucket_cache_visited;
+	bool *bucket_cache_visited;
 	Rect2i bucket_cache_rect;
 	int bucket_cache_tile;
 	PoolVector<Vector2> bucket_cache;
@@ -117,7 +117,12 @@ class TileMapEditor : public VBoxContainer {
 		bool yf;
 		bool tr;
 
-		CellOp() { idx=-1; xf=false; yf=false; tr=false; }
+		CellOp() {
+			idx = -1;
+			xf = false;
+			yf = false;
+			tr = false;
+		}
 	};
 
 	Map<Point2i, CellOp> paint_undo;
@@ -132,17 +137,17 @@ class TileMapEditor : public VBoxContainer {
 
 	List<TileData> copydata;
 
-	void _pick_tile(const Point2& p_pos);
+	void _pick_tile(const Point2 &p_pos);
 
-	PoolVector<Vector2> _bucket_fill(const Point2i& p_start, bool erase=false, bool preview=false);
+	PoolVector<Vector2> _bucket_fill(const Point2i &p_start, bool erase = false, bool preview = false);
 
-	void _fill_points(const PoolVector<Vector2> p_points, const Dictionary& p_op);
+	void _fill_points(const PoolVector<Vector2> p_points, const Dictionary &p_op);
 	void _erase_points(const PoolVector<Vector2> p_points);
 
-	void _select(const Point2i& p_from, const Point2i& p_to);
+	void _select(const Point2i &p_from, const Point2i &p_to);
 
-	void _draw_cell(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform);
-	void _draw_fill_preview(int p_cell, const Point2i& p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D& p_xform);
+	void _draw_cell(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
+	void _draw_fill_preview(int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Transform2D &p_xform);
 	void _clear_bucket_cache();
 
 	void _update_copydata();
@@ -150,14 +155,14 @@ class TileMapEditor : public VBoxContainer {
 	int get_selected_tile() const;
 	void set_selected_tile(int p_tile);
 
-	void _text_entered(const String& p_text);
-	void _text_changed(const String& p_text);
-	void _sbox_input(const InputEvent& p_ie);
+	void _text_entered(const String &p_text);
+	void _text_changed(const String &p_text);
+	void _sbox_input(const InputEvent &p_ie);
 	void _update_palette();
 	void _canvas_draw();
 	void _menu_option(int p_option);
 
-	void _set_cell(const Point2i& p_pos, int p_value, bool p_flip_h=false, bool p_flip_v=false, bool p_transpose=false, bool p_with_undo=false);
+	void _set_cell(const Point2i &p_pos, int p_value, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false, bool p_with_undo = false);
 
 	void _canvas_mouse_enter();
 	void _canvas_mouse_exit();
@@ -165,17 +170,15 @@ class TileMapEditor : public VBoxContainer {
 	void _icon_size_changed(float p_value);
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-	CellOp _get_op_from_cell(const Point2i& p_pos);
-	void _update_transform_buttons(Object *p_button=NULL);
+	CellOp _get_op_from_cell(const Point2i &p_pos);
+	void _update_transform_buttons(Object *p_button = NULL);
 
 public:
-
 	HBoxContainer *get_toolbar() const { return toolbar; }
 
-	bool forward_gui_input(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent &p_event);
 	void edit(Node *p_tile_map);
 
 	TileMapEditor(EditorNode *p_editor);
@@ -184,13 +187,12 @@ public:
 
 class TileMapEditorPlugin : public EditorPlugin {
 
-	GDCLASS( TileMapEditorPlugin, EditorPlugin );
+	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
 	TileMapEditor *tile_map_editor;
 
 public:
-
-	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return tile_map_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event) { return tile_map_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "TileMap"; }
 	bool has_main_screen() const { return false; }
@@ -200,8 +202,6 @@ public:
 
 	TileMapEditorPlugin(EditorNode *p_node);
 	~TileMapEditorPlugin();
-
 };
-
 
 #endif // TILE_MAP_EDITOR_PLUGIN_H

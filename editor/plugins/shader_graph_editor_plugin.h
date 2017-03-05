@@ -29,15 +29,14 @@
 #ifndef SHADER_GRAPH_EDITOR_PLUGIN_H
 #define SHADER_GRAPH_EDITOR_PLUGIN_H
 
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
-#include "scene/resources/shader.h"
-#include "scene/gui/tree.h"
+#include "editor/editor_plugin.h"
+#include "editor/property_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
-#include "editor/property_editor.h"
+#include "scene/gui/tree.h"
+#include "scene/resources/shader.h"
 #include "scene/resources/shader_graph.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

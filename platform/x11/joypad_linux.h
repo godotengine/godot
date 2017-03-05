@@ -33,23 +33,22 @@
 
 #ifdef JOYDEV_ENABLED
 #include "main/input_default.h"
-#include "os/thread.h"
 #include "os/mutex.h"
+#include "os/thread.h"
 
 struct input_absinfo;
 
-class JoypadLinux
-{
+class JoypadLinux {
 public:
 	JoypadLinux(InputDefault *in);
 	~JoypadLinux();
 	uint32_t process_joypads(uint32_t p_event_id);
-private:
 
+private:
 	enum {
 		JOYPADS_MAX = 16,
 		MAX_ABS = 63,
-		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
+		MAX_KEY = 767, // Hack because <linux/input.h> can't be included here
 	};
 
 	struct Joypad {
@@ -90,7 +89,7 @@ private:
 #endif
 	void monitor_joypads();
 	void run_joypad_thread();
-	void open_joypad(const char* path);
+	void open_joypad(const char *path);
 
 	void joypad_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);

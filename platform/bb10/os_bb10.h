@@ -29,22 +29,22 @@
 #ifndef OS_BB10_H
 #define OS_BB10_H
 
-#include "os/input.h"
-#include "drivers/unix/os_unix.h"
-#include "os/main_loop.h"
-#include "main/input_default.h"
-#include "servers/physics/physics_server_sw.h"
-#include "servers/audio_server.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
-#include "servers/visual/rasterizer.h"
 #include "audio_driver_bb10.h"
+#include "drivers/unix/os_unix.h"
+#include "main/input_default.h"
+#include "os/input.h"
+#include "os/main_loop.h"
 #include "payment_service.h"
 #include "power_bb10.h"
+#include "servers/audio_server.h"
+#include "servers/physics/physics_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/visual/rasterizer.h"
 
-#include <screen/screen.h>
-#include <sys/platform.h>
 #include <bps/event.h>
+#include <screen/screen.h>
 #include <stdint.h>
+#include <sys/platform.h>
 
 class OSBB10 : public OS_Unix {
 
@@ -58,15 +58,15 @@ class OSBB10 : public OS_Unix {
 	VisualServer *visual_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
-	AudioDriverBB10* audio_driver;
+	AudioDriverBB10 *audio_driver;
 	PowerBB10 *power_manager;
 
 #ifdef PAYMENT_SERVICE_ENABLED
-	PaymentService* payment_service;
+	PaymentService *payment_service;
 #endif
 
 	VideoMode default_videomode;
-	MainLoop * main_loop;
+	MainLoop *main_loop;
 
 	void process_events();
 
@@ -87,48 +87,47 @@ class OSBB10 : public OS_Unix {
 	String data_dir;
 
 	InputDefault *input;
-public:
 
+public:
 	// functions used by main to initialize/deintialize the OS
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;
+	virtual const char *get_video_driver_name(int p_driver) const;
 
 	virtual VideoMode get_default_video_mode() const;
 
 	virtual String get_data_dir() const;
 
 	virtual int get_audio_driver_count() const;
-	virtual const char * get_audio_driver_name(int p_driver) const;
+	virtual const char *get_audio_driver_name(int p_driver) const;
 
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
+	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
-	virtual void set_main_loop( MainLoop * p_main_loop );
+	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
 
 	virtual void finalize();
 
 	typedef int64_t ProcessID;
 
-	static OS* get_singleton();
+	static OS *get_singleton();
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String& p_title);
+	virtual void set_window_title(const String &p_title);
 
 	//virtual void set_clipboard(const String& p_text);
 	//virtual String get_clipboard() const;
 
-
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String& p_existing_text,const Rect2& p_screen_rect);
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect);
 	virtual void hide_virtual_keyboard();
 
-	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
-	virtual VideoMode get_video_mode(int p_screen=0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
+	virtual VideoMode get_video_mode(int p_screen = 0) const;
+	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual Size2 get_window_size() const;
 	virtual String get_name();
@@ -150,8 +149,6 @@ public:
 
 	OSBB10();
 	~OSBB10();
-
 };
 
 #endif
-

@@ -31,20 +31,17 @@
 #ifndef COLLADA_H
 #define COLLADA_H
 
-
-#include "scene/resources/material.h"
 #include "global_config.h"
 #include "io/xml_parser.h"
 #include "map.h"
+#include "scene/resources/material.h"
 
 class Collada {
 public:
-
 	enum ImportFlags {
-		IMPORT_FLAG_SCENE=1,
-		IMPORT_FLAG_ANIMATION=2
+		IMPORT_FLAG_SCENE = 1,
+		IMPORT_FLAG_ANIMATION = 2
 	};
-
 
 	struct Image {
 
@@ -57,7 +54,6 @@ public:
 		String instance_effect;
 	};
 
-
 	struct Effect {
 
 		String name;
@@ -68,23 +64,23 @@ public:
 			int uv_idx;
 			String texture;
 			Color color;
-			Channel() { uv_idx=0; }
+			Channel() { uv_idx = 0; }
 		};
 
-		Channel diffuse,specular,emission,bump;
+		Channel diffuse, specular, emission, bump;
 		float shininess;
 		bool found_double_sided;
 		bool double_sided;
 		bool unshaded;
 
-		String get_texture_path(const String& p_source,Collada& state) const;
+		String get_texture_path(const String &p_source, Collada &state) const;
 
 		Effect() {
-			diffuse.color=Color(1,1,1,1);
-			double_sided=true;
-			found_double_sided=false;
-			shininess=40;
-			unshaded=false;
+			diffuse.color = Color(1, 1, 1, 1);
+			double_sided = true;
+			found_double_sided = false;
+			shininess = 40;
+			unshaded = false;
 		}
 	};
 
@@ -114,12 +110,12 @@ public:
 
 		CameraData() {
 
-			mode=MODE_PERSPECTIVE;
-			perspective.y_fov=0;
-			perspective.x_fov=0;
-			aspect=1;
-			z_near=0.1;
-			z_far=100;
+			mode = MODE_PERSPECTIVE;
+			perspective.y_fov = 0;
+			perspective.x_fov = 0;
+			aspect = 1;
+			z_near = 0.1;
+			z_far = 100;
 		}
 	};
 
@@ -145,37 +141,34 @@ public:
 
 		LightData() {
 
-			mode=MODE_AMBIENT;
-			color=Color(1,1,1,1);
-			constant_att=0;
-			linear_att=0;
-			quad_att=0;
+			mode = MODE_AMBIENT;
+			color = Color(1, 1, 1, 1);
+			constant_att = 0;
+			linear_att = 0;
+			quad_att = 0;
 
-			spot_angle=45;
-			spot_exp=1;
+			spot_angle = 45;
+			spot_exp = 1;
 		}
 	};
 
-
 	struct MeshData {
-
 
 		String name;
 		struct Source {
 
 			Vector<float> array;
 			int stride;
-
 		};
 
-		Map<String,Source> sources;
+		Map<String, Source> sources;
 
 		struct Vertices {
 
-			Map<String,String> sources;
+			Map<String, String> sources;
 		};
 
-		Map<String,Vertices> vertices;
+		Map<String, Vertices> vertices;
 
 		struct Primitives {
 
@@ -183,12 +176,10 @@ public:
 
 				String source;
 				int offset;
-
-
 			};
 
 			String material;
-			Map<String,SourceRef> sources;
+			Map<String, SourceRef> sources;
 			Vector<float> polygons;
 			Vector<float> indices;
 			int count;
@@ -200,11 +191,13 @@ public:
 		bool found_double_sided;
 		bool double_sided;
 
-		MeshData() { found_double_sided=false; double_sided=true; }
+		MeshData() {
+			found_double_sided = false;
+			double_sided = true;
+		}
 	};
 
 	struct CurveData {
-
 
 		String name;
 		bool closed;
@@ -216,16 +209,14 @@ public:
 			int stride;
 		};
 
-		Map<String,Source> sources;
+		Map<String, Source> sources;
 
-
-		Map<String,String> control_vertices;
+		Map<String, String> control_vertices;
 
 		CurveData() {
 
-			closed=false;
+			closed = false;
 		}
-
 	};
 	struct SkinControllerData {
 
@@ -240,15 +231,15 @@ public:
 			Vector<float> array;
 			int stride;
 			Source() {
-				stride=1;
+				stride = 1;
 			}
 		};
 
-		Map<String,Source> sources;
+		Map<String, Source> sources;
 
 		struct Joints {
 
-			Map<String,String> sources;
+			Map<String, String> sources;
 		} joints;
 
 		struct Weights {
@@ -257,22 +248,19 @@ public:
 
 				String source;
 				int offset;
-
-
 			};
 
 			String material;
-			Map<String,SourceRef> sources;
+			Map<String, SourceRef> sources;
 			Vector<float> sets;
 			Vector<float> indices;
 			int count;
 		} weights;
 
-		Map<String,Transform> bone_rest_map;
+		Map<String, Transform> bone_rest_map;
 
-		SkinControllerData() { use_idrefs=false; }
+		SkinControllerData() { use_idrefs = false; }
 	};
-
 
 	struct MorphControllerData {
 
@@ -284,21 +272,20 @@ public:
 			int stride;
 			Vector<String> sarray; //maybe for names
 			Vector<float> array;
-			Source() { stride=1; }
+			Source() { stride = 1; }
 		};
 
-		Map<String,Source> sources;
+		Map<String, Source> sources;
 
-		Map<String,String> targets;
-		MorphControllerData() {  }
+		Map<String, String> targets;
+		MorphControllerData() {}
 	};
-
 
 	struct Vertex {
 
 		int idx;
 		Vector3 vertex;
-		Vector3	normal;
+		Vector3 normal;
 		Vector3 uv;
 		Vector3 uv2;
 		Plane tangent;
@@ -307,8 +294,7 @@ public:
 		struct Weight {
 			int bone_idx;
 			float weight;
-			bool operator<(const Weight w) const { return weight>w.weight; } //heaviest first
-
+			bool operator<(const Weight w) const { return weight > w.weight; } //heaviest first
 		};
 
 		Vector<Weight> weights;
@@ -316,61 +302,61 @@ public:
 		void fix_weights() {
 
 			weights.sort();
-			if (weights.size()>4) {
+			if (weights.size() > 4) {
 				//cap to 4 and make weights add up 1
 				weights.resize(4);
-				float total=0;
-				for(int i=0;i<4;i++)
-					total+=weights[i].weight;
+				float total = 0;
+				for (int i = 0; i < 4; i++)
+					total += weights[i].weight;
 				if (total)
-					for(int i=0;i<4;i++)
-						weights[i].weight/=total;
-
+					for (int i = 0; i < 4; i++)
+						weights[i].weight /= total;
 			}
 		}
 
 		void fix_unit_scale(Collada &state);
 
-		bool operator<(const Vertex& p_vert) const {
+		bool operator<(const Vertex &p_vert) const {
 
-			if (uid==p_vert.uid) {
-				if (vertex==p_vert.vertex) {
-					if(normal==p_vert.normal) {
-						if(uv==p_vert.uv) {
-							if(uv2==p_vert.uv2) {
+			if (uid == p_vert.uid) {
+				if (vertex == p_vert.vertex) {
+					if (normal == p_vert.normal) {
+						if (uv == p_vert.uv) {
+							if (uv2 == p_vert.uv2) {
 
 								if (!weights.empty() || !p_vert.weights.empty()) {
 
-									if (weights.size()==p_vert.weights.size()) {
+									if (weights.size() == p_vert.weights.size()) {
 
-										for(int i=0;i<weights.size();i++) {
-											if (weights[i].bone_idx!=p_vert.weights[i].bone_idx)
-												return weights[i].bone_idx<p_vert.weights[i].bone_idx;
+										for (int i = 0; i < weights.size(); i++) {
+											if (weights[i].bone_idx != p_vert.weights[i].bone_idx)
+												return weights[i].bone_idx < p_vert.weights[i].bone_idx;
 
-											if (weights[i].weight!=p_vert.weights[i].weight)
-												return weights[i].weight<p_vert.weights[i].weight;
+											if (weights[i].weight != p_vert.weights[i].weight)
+												return weights[i].weight < p_vert.weights[i].weight;
 										}
-									}  else {
+									} else {
 										return weights.size() < p_vert.weights.size();
 									}
-
 								}
 
-								return (color<p_vert.color);
+								return (color < p_vert.color);
 							} else
-								return (uv2<p_vert.uv2);
+								return (uv2 < p_vert.uv2);
 						} else
-							return (uv<p_vert.uv);
+							return (uv < p_vert.uv);
 					} else
-						return (normal<p_vert.normal);
+						return (normal < p_vert.normal);
 				} else
-					return vertex<p_vert.vertex;
+					return vertex < p_vert.vertex;
 			} else
 				return uid < p_vert.uid;
-
 		}
 
-		Vertex() { uid=0; idx=0; }
+		Vertex() {
+			uid = 0;
+			idx = 0;
+		}
 	};
 	struct Node {
 
@@ -383,7 +369,6 @@ public:
 			TYPE_CAMERA,
 			TYPE_GEOMETRY
 		};
-
 
 		struct XForm {
 
@@ -409,9 +394,9 @@ public:
 		Vector<XForm> xform_list;
 		Transform default_transform;
 		Transform post_transform;
-		Vector<Node*> children;
+		Vector<Node *> children;
 
-		Node* parent;
+		Node *parent;
 
 		Transform compute_transform(Collada &state) const;
 		Transform get_global_transform() const;
@@ -419,25 +404,32 @@ public:
 
 		bool ignore_anim;
 
-
-		Node() {noname=false; type=TYPE_NODE; parent=NULL; ignore_anim=false;  }
-		virtual ~Node() { for(int i=0;i<children.size();i++) memdelete( children[i] ); };
-
+		Node() {
+			noname = false;
+			type = TYPE_NODE;
+			parent = NULL;
+			ignore_anim = false;
+		}
+		virtual ~Node() {
+			for (int i = 0; i < children.size(); i++)
+				memdelete(children[i]);
+		};
 	};
 
 	struct NodeSkeleton : public Node {
 
-
-		NodeSkeleton() { type=TYPE_SKELETON; }
+		NodeSkeleton() { type = TYPE_SKELETON; }
 	};
 
 	struct NodeJoint : public Node {
 
 		NodeSkeleton *owner;
 		String sid;
-		NodeJoint() { type=TYPE_JOINT; owner=NULL; }
+		NodeJoint() {
+			type = TYPE_JOINT;
+			owner = NULL;
+		}
 	};
-
 
 	struct NodeGeometry : public Node {
 
@@ -448,35 +440,36 @@ public:
 			String target;
 		};
 
-		Map<String,Material> material_map;
+		Map<String, Material> material_map;
 		Vector<String> skeletons;
 
-		NodeGeometry() { type=TYPE_GEOMETRY; }
+		NodeGeometry() { type = TYPE_GEOMETRY; }
 	};
 
 	struct NodeCamera : public Node {
 
 		String camera;
 
-		NodeCamera() { type=TYPE_CAMERA; }
+		NodeCamera() { type = TYPE_CAMERA; }
 	};
 
 	struct NodeLight : public Node {
 
 		String light;
 
-		NodeLight() { type=TYPE_LIGHT; }
+		NodeLight() { type = TYPE_LIGHT; }
 	};
-
 
 	struct VisualScene {
 
 		String name;
-		Vector<Node*> root_nodes;
+		Vector<Node *> root_nodes;
 
-		~VisualScene() { for(int i=0;i<root_nodes.size();i++) memdelete( root_nodes[i] ); }
+		~VisualScene() {
+			for (int i = 0; i < root_nodes.size(); i++)
+				memdelete(root_nodes[i]);
+		}
 	};
-
 
 	struct AnimationClip {
 
@@ -485,7 +478,10 @@ public:
 		float end;
 		Vector<String> tracks;
 
-		AnimationClip() { begin=0; end=1; }
+		AnimationClip() {
+			begin = 0;
+			end = 1;
+		}
 	};
 
 	struct AnimationTrack {
@@ -514,25 +510,21 @@ public:
 			Point2 out_tangent;
 			InterpolationType interp_type;
 
-			Key() { interp_type=INTERP_LINEAR; }
+			Key() { interp_type = INTERP_LINEAR; }
 		};
-
 
 		Vector<float> get_value_at_time(float p_time);
 
 		Vector<Key> keys;
 
-		AnimationTrack() { property=false; }
+		AnimationTrack() { property = false; }
 	};
-
 
 	/****************/
 	/* IMPORT STATE */
 	/****************/
 
-
 	struct State {
-
 
 		int import_flags;
 
@@ -542,38 +534,38 @@ public:
 
 		struct Version {
 
-			int major,minor,rev;
+			int major, minor, rev;
 
-			bool operator<(const Version& p_ver) const { return (major==p_ver.major)?((minor==p_ver.minor)?(rev<p_ver.rev):minor<p_ver.minor):major<p_ver.major; }
-			Version(int p_major=0,int p_minor=0,int p_rev=0) { major=p_major; minor=p_minor; rev=p_rev; }
+			bool operator<(const Version &p_ver) const { return (major == p_ver.major) ? ((minor == p_ver.minor) ? (rev < p_ver.rev) : minor < p_ver.minor) : major < p_ver.major; }
+			Version(int p_major = 0, int p_minor = 0, int p_rev = 0) {
+				major = p_major;
+				minor = p_minor;
+				rev = p_rev;
+			}
 		} version;
 
+		Map<String, CameraData> camera_data_map;
+		Map<String, MeshData> mesh_data_map;
+		Map<String, LightData> light_data_map;
+		Map<String, CurveData> curve_data_map;
 
-		Map<String,CameraData> camera_data_map;
-		Map<String,MeshData> mesh_data_map;
-		Map<String,LightData> light_data_map;
-		Map<String,CurveData> curve_data_map;
+		Map<String, String> mesh_name_map;
+		Map<String, String> morph_name_map;
+		Map<String, String> morph_ownership_map;
+		Map<String, SkinControllerData> skin_controller_data_map;
+		Map<String, MorphControllerData> morph_controller_data_map;
 
+		Map<String, Image> image_map;
+		Map<String, Material> material_map;
+		Map<String, Effect> effect_map;
 
-		Map<String,String> mesh_name_map;
-		Map<String,String> morph_name_map;
-		Map<String,String> morph_ownership_map;
-		Map<String,SkinControllerData> skin_controller_data_map;
-		Map<String,MorphControllerData> morph_controller_data_map;
-
-
-
-		Map<String,Image > image_map;
-		Map<String,Material> material_map;
-		Map<String,Effect> effect_map;
-
-		Map<String,VisualScene> visual_scene_map;
-		Map<String,Node*> scene_map;
+		Map<String, VisualScene> visual_scene_map;
+		Map<String, Node *> scene_map;
 		Set<String> idref_joints;
-		Map<String,String> sid_to_node_map;
+		Map<String, String> sid_to_node_map;
 		//Map<String,NodeJoint*> bone_map;
 
-		Map<String,Transform> bone_rest_map;
+		Map<String, Transform> bone_rest_map;
 
 		String local_path;
 		String root_visual_scene;
@@ -581,81 +573,78 @@ public:
 
 		Vector<AnimationClip> animation_clips;
 		Vector<AnimationTrack> animation_tracks;
-		Map<String,Vector<int> > referenced_tracks;
-		Map<String,Vector<int> > by_id_tracks;
+		Map<String, Vector<int> > referenced_tracks;
+		Map<String, Vector<int> > by_id_tracks;
 
 		float animation_length;
 
-		State() { unit_scale=1.0; up_axis=Vector3::AXIS_Y;  import_flags=0; animation_length=0; }
+		State() {
+			unit_scale = 1.0;
+			up_axis = Vector3::AXIS_Y;
+			import_flags = 0;
+			animation_length = 0;
+		}
 	} state;
 
-
-	Error load(const String& p_path, int p_flags=0);
+	Error load(const String &p_path, int p_flags = 0);
 
 	Collada();
 
-	Transform fix_transform(const Transform& p_transform);
+	Transform fix_transform(const Transform &p_transform);
 
 	Transform get_root_transform() const;
 
 	int get_uv_channel(String p_name);
 
 private: // private stuff
+	Map<String, int> channel_map;
 
-	Map<String,int> channel_map;
+	void _parse_asset(XMLParser &parser);
+	void _parse_image(XMLParser &parser);
+	void _parse_material(XMLParser &parser);
+	void _parse_effect_material(XMLParser &parser, Effect &effect, String &id);
+	void _parse_effect(XMLParser &parser);
+	void _parse_camera(XMLParser &parser);
+	void _parse_light(XMLParser &parser);
+	void _parse_animation_clip(XMLParser &parser);
 
-	void _parse_asset(XMLParser& parser);
-	void _parse_image(XMLParser& parser);
-	void _parse_material(XMLParser& parser);
-	void _parse_effect_material(XMLParser& parser,Effect &effect,String &id);
-	void _parse_effect(XMLParser& parser);
-	void _parse_camera(XMLParser& parser);
-	void _parse_light(XMLParser& parser);
-	void _parse_animation_clip(XMLParser& parser);
+	void _parse_mesh_geometry(XMLParser &parser, String p_id, String p_name);
+	void _parse_curve_geometry(XMLParser &parser, String p_id, String p_name);
 
-	void _parse_mesh_geometry(XMLParser& parser,String p_id,String p_name);
-	void _parse_curve_geometry(XMLParser& parser,String p_id,String p_name);
+	void _parse_skin_controller(XMLParser &parser, String p_id);
+	void _parse_morph_controller(XMLParser &parser, String id);
+	void _parse_controller(XMLParser &parser);
 
-	void _parse_skin_controller(XMLParser& parser,String p_id);
-	void _parse_morph_controller(XMLParser& parser, String id);
-	void _parse_controller(XMLParser& parser);
+	Node *_parse_visual_instance_geometry(XMLParser &parser);
+	Node *_parse_visual_instance_camera(XMLParser &parser);
+	Node *_parse_visual_instance_light(XMLParser &parser);
 
-	Node* _parse_visual_instance_geometry(XMLParser& parser);
-	Node* _parse_visual_instance_camera(XMLParser& parser);
-	Node* _parse_visual_instance_light(XMLParser& parser);
+	Node *_parse_visual_node_instance_data(XMLParser &parser);
+	Node *_parse_visual_scene_node(XMLParser &parser);
+	void _parse_visual_scene(XMLParser &parser);
 
-	Node* _parse_visual_node_instance_data(XMLParser& parser);
-	Node* _parse_visual_scene_node(XMLParser& parser);
-	void _parse_visual_scene(XMLParser& parser);
+	void _parse_animation(XMLParser &parser);
+	void _parse_scene(XMLParser &parser);
+	void _parse_library(XMLParser &parser);
 
-	void _parse_animation(XMLParser& parser);
-	void _parse_scene(XMLParser& parser);
-	void _parse_library(XMLParser& parser);
-
-
-	Variant _parse_param(XMLParser& parser);
-	Vector<float> _read_float_array(XMLParser& parser);
-	Vector<String> _read_string_array(XMLParser& parser);
-	Transform _read_transform(XMLParser& parser);
-	String _read_empty_draw_type(XMLParser& parser);
+	Variant _parse_param(XMLParser &parser);
+	Vector<float> _read_float_array(XMLParser &parser);
+	Vector<String> _read_string_array(XMLParser &parser);
+	Transform _read_transform(XMLParser &parser);
+	String _read_empty_draw_type(XMLParser &parser);
 
 	void _joint_set_owner(Collada::Node *p_node, NodeSkeleton *p_owner);
-	void _create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton=NULL);
-	void _find_morph_nodes(VisualScene *p_vscene,Node *p_node);
-	bool _remove_node(Node *p_parent,Node *p_node);
-	void _remove_node(VisualScene *p_vscene,Node *p_node);
+	void _create_skeletons(Collada::Node **p_node, NodeSkeleton *p_skeleton = NULL);
+	void _find_morph_nodes(VisualScene *p_vscene, Node *p_node);
+	bool _remove_node(Node *p_parent, Node *p_node);
+	void _remove_node(VisualScene *p_vscene, Node *p_node);
 	void _merge_skeletons2(VisualScene *p_vscene);
-	void _merge_skeletons(VisualScene *p_vscene,Node *p_node);
-	bool _optimize_skeletons(VisualScene *p_vscene,Node *p_node);
+	void _merge_skeletons(VisualScene *p_vscene, Node *p_node);
+	bool _optimize_skeletons(VisualScene *p_vscene, Node *p_node);
 
-
-	bool _move_geometry_to_skeletons(VisualScene *p_vscene,Node *p_node,List<Node*> *p_mgeom);
-
-
+	bool _move_geometry_to_skeletons(VisualScene *p_vscene, Node *p_node, List<Node *> *p_mgeom);
 
 	void _optimize();
-
-
 };
 
 #endif // COLLADA_H

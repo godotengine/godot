@@ -29,14 +29,14 @@
 #include "cube_grid_theme_editor_plugin.h"
 
 #if 0
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
+#include "main/main.h"
 #include "scene/3d/mesh_instance.h"
+#include "scene/3d/navigation_mesh.h"
 #include "scene/3d/physics_body.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/packed_scene.h"
-#include "editor/editor_node.h"
-#include "main/main.h"
-#include "editor/editor_settings.h"
-#include "scene/3d/navigation_mesh.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary>& p_theme) {
 

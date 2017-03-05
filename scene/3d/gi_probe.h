@@ -29,32 +29,29 @@
 #ifndef GIPROBE_H
 #define GIPROBE_H
 
-#include "scene/3d/visual_instance.h"
 #include "multimesh_instance.h"
+#include "scene/3d/visual_instance.h"
 
 class GIProbeData : public Resource {
 
-	GDCLASS(GIProbeData,Resource);
+	GDCLASS(GIProbeData, Resource);
 
 	RID probe;
 
 protected:
-
 	static void _bind_methods();
+
 public:
-
-
-
-	void set_bounds(const Rect3& p_bounds);
+	void set_bounds(const Rect3 &p_bounds);
 	Rect3 get_bounds() const;
 
 	void set_cell_size(float p_size);
 	float get_cell_size() const;
 
-	void set_to_cell_xform(const Transform& p_xform);
+	void set_to_cell_xform(const Transform &p_xform);
 	Transform get_to_cell_xform() const;
 
-	void set_dynamic_data(const PoolVector<int>& p_data);
+	void set_dynamic_data(const PoolVector<int> &p_data);
 	PoolVector<int> get_dynamic_data() const;
 
 	void set_dynamic_range(int p_range);
@@ -81,12 +78,11 @@ public:
 	~GIProbeData();
 };
 
+class GIProbe : public VisualInstance {
+	GDCLASS(GIProbe, VisualInstance);
 
-
-class GIProbe : public VisualInstance  {
-	GDCLASS(GIProbe,VisualInstance);
 public:
-	enum Subdiv{
+	enum Subdiv {
 		SUBDIV_64,
 		SUBDIV_128,
 		SUBDIV_256,
@@ -94,13 +90,13 @@ public:
 		SUBDIV_MAX
 
 	};
-private:
 
+private:
 	//stuff used for bake
 	struct Baker {
 
 		enum {
-			CHILD_EMPTY=0xFFFFFFFF
+			CHILD_EMPTY = 0xFFFFFFFF
 		};
 		struct Cell {
 
@@ -113,18 +109,18 @@ private:
 			int level;
 
 			Cell() {
-				for(int i=0;i<8;i++) {
-					childs[i]=CHILD_EMPTY;
+				for (int i = 0; i < 8; i++) {
+					childs[i] = CHILD_EMPTY;
 				}
 
-				for(int i=0;i<3;i++) {
-					emission[i]=0;
-					albedo[i]=0;
-					normal[i]=0;
+				for (int i = 0; i < 3; i++) {
+					emission[i] = 0;
+					albedo[i] = 0;
+					normal[i] = 0;
 				}
-				alpha=0;
-				used_sides=0;
-				level=0;
+				alpha = 0;
+				used_sides = 0;
+				level = 0;
 			}
 		};
 
@@ -137,12 +133,10 @@ private:
 			Vector<Color> emission;
 		};
 
-
 		Vector<Color> _get_bake_texture(Image &p_image, const Color &p_color);
-		Map<Ref<Material>,MaterialCache> material_cache;
+		Map<Ref<Material>, MaterialCache> material_cache;
 		MaterialCache _get_material_cache(Ref<Material> p_material);
 		int leaf_voxel_count;
-
 
 		Rect3 po2_bounds;
 		int axis_cell_size[3];
@@ -158,7 +152,6 @@ private:
 
 		List<PlotMesh> mesh_list;
 	};
-
 
 	Ref<GIProbeData> probe_data;
 
@@ -176,30 +169,29 @@ private:
 	int color_scan_cell_width;
 	int bake_texture_size;
 
-	Vector<Color> _get_bake_texture(Image &p_image,const Color& p_color);
-	Baker::MaterialCache _get_material_cache(Ref<Material> p_material,Baker *p_baker);
-	void _plot_face(int p_idx, int p_level, int p_x,int p_y,int p_z,const Vector3 *p_vtx, const Vector2* p_uv, const Baker::MaterialCache& p_material, const Rect3 &p_aabb,Baker *p_baker);
-	void _plot_mesh(const Transform& p_xform, Ref<Mesh>& p_mesh, Baker *p_baker,const Vector<Ref<Material> >& p_materials,const Ref<Material>& p_override_material);
-	void _find_meshes(Node *p_at_node,Baker *p_baker);
-	void _fixup_plot(int p_idx, int p_level,int p_x,int p_y, int p_z,Baker *p_baker);
+	Vector<Color> _get_bake_texture(Image &p_image, const Color &p_color);
+	Baker::MaterialCache _get_material_cache(Ref<Material> p_material, Baker *p_baker);
+	void _plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector2 *p_uv, const Baker::MaterialCache &p_material, const Rect3 &p_aabb, Baker *p_baker);
+	void _plot_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh, Baker *p_baker, const Vector<Ref<Material> > &p_materials, const Ref<Material> &p_override_material);
+	void _find_meshes(Node *p_at_node, Baker *p_baker);
+	void _fixup_plot(int p_idx, int p_level, int p_x, int p_y, int p_z, Baker *p_baker);
 
-	void _debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb,Ref<MultiMesh> &p_multimesh,int &idx,Baker *p_baker);
+	void _debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb, Ref<MultiMesh> &p_multimesh, int &idx, Baker *p_baker);
 	void _create_debug_mesh(Baker *p_baker);
 
 	void _debug_bake();
 
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_probe_data(const Ref<GIProbeData>& p_data);
+public:
+	void set_probe_data(const Ref<GIProbeData> &p_data);
 	Ref<GIProbeData> get_probe_data() const;
 
 	void set_subdiv(Subdiv p_subdiv);
 	Subdiv get_subdiv() const;
 
-	void set_extents(const Vector3& p_extents);
+	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
 
 	void set_dynamic_range(int p_dynamic_range);
@@ -220,7 +212,7 @@ public:
 	void set_compress(bool p_enable);
 	bool is_compressed() const;
 
-	void bake(Node *p_from_node=NULL,bool p_create_visual_debug=false);
+	void bake(Node *p_from_node = NULL, bool p_create_visual_debug = false);
 
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

@@ -41,5 +41,4 @@ void register_stb_vorbis_types() {
 }
 
 void unregister_stb_vorbis_types() {
-
 }

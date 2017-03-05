@@ -36,18 +36,16 @@
 */
 class Semaphore {
 protected:
-	static Semaphore* (*create_func)();
+	static Semaphore *(*create_func)();
 
 public:
+	virtual Error wait() = 0; ///< wait until semaphore has positive value, then decrement and pass
+	virtual Error post() = 0; ///< unlock the semaphore, incrementing the    value
+	virtual int get() const = 0; ///< get semaphore value
 
-	virtual Error wait()=0; ///< wait until semaphore has positive value, then decrement and pass
-	virtual Error post()=0; ///< unlock the semaphore, incrementing the    value
-	virtual int get() const=0; ///< get semaphore value
-
-	static Semaphore * create(); ///< Create a mutex
+	static Semaphore *create(); ///< Create a mutex
 
 	virtual ~Semaphore();
 };
-
 
 #endif

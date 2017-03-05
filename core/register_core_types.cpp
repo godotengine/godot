@@ -28,57 +28,54 @@
 /*************************************************************************/
 #include "register_core_types.h"
 
-#include "io/tcp_server.h"
-#include "io/packet_peer_udp.h"
-#include "io/config_file.h"
-#include "os/main_loop.h"
-#include "io/packet_peer.h"
-#include "math/a_star.h"
-#include "math/triangle_mesh.h"
-#include "global_config.h"
-#include "class_db.h"
-#include "geometry.h"
 #include "bind/core_bind.h"
-#include "core_string_names.h"
-#include "path_remap.h"
-#include "translation.h"
+#include "class_db.h"
 #include "compressed_translation.h"
-#include "io/translation_loader_po.h"
+#include "core/io/xml_parser.h"
+#include "core_string_names.h"
+#include "func_ref.h"
+#include "geometry.h"
+#include "global_config.h"
+#include "input_map.h"
+#include "io/config_file.h"
+#include "io/http_client.h"
+#include "io/packet_peer.h"
+#include "io/packet_peer_udp.h"
+#include "io/pck_packer.h"
 #include "io/resource_format_binary.h"
 #include "io/resource_import.h"
 #include "io/stream_peer_ssl.h"
+#include "io/tcp_server.h"
+#include "io/translation_loader_po.h"
+#include "math/a_star.h"
+#include "math/triangle_mesh.h"
 #include "os/input.h"
-#include "core/io/xml_parser.h"
-#include "io/http_client.h"
-#include "io/pck_packer.h"
+#include "os/main_loop.h"
 #include "packed_data_container.h"
-#include "func_ref.h"
-#include "input_map.h"
+#include "path_remap.h"
+#include "translation.h"
 #include "undo_redo.h"
 
-static ResourceFormatSaverBinary *resource_saver_binary=NULL;
-static ResourceFormatLoaderBinary *resource_loader_binary=NULL;
-static ResourceFormatImporter *resource_format_importer=NULL;
+static ResourceFormatSaverBinary *resource_saver_binary = NULL;
+static ResourceFormatLoaderBinary *resource_loader_binary = NULL;
+static ResourceFormatImporter *resource_format_importer = NULL;
 
-static _ResourceLoader *_resource_loader=NULL;
-static _ResourceSaver *_resource_saver=NULL;
-static _OS *_os=NULL;
-static _Engine *_engine=NULL;
-static _ClassDB *_classdb=NULL;
+static _ResourceLoader *_resource_loader = NULL;
+static _ResourceSaver *_resource_saver = NULL;
+static _OS *_os = NULL;
+static _Engine *_engine = NULL;
+static _ClassDB *_classdb = NULL;
 static _Marshalls *_marshalls = NULL;
-static TranslationLoaderPO *resource_format_po=NULL;
+static TranslationLoaderPO *resource_format_po = NULL;
 
-static IP* ip = NULL;
+static IP *ip = NULL;
 
-static _Geometry *_geometry=NULL;
+static _Geometry *_geometry = NULL;
 
 extern Mutex *_global_mutex;
 
-
-
 extern void register_variant_methods();
 extern void unregister_variant_methods();
-
 
 void register_core_types() {
 
@@ -86,31 +83,26 @@ void register_core_types() {
 	ResourceCache::setup();
 	MemoryPool::setup();
 
-	_global_mutex=Mutex::create();
-
+	_global_mutex = Mutex::create();
 
 	StringName::setup();
 
-
 	register_variant_methods();
-
 
 	CoreStringNames::create();
 
-	resource_format_po = memnew( TranslationLoaderPO );
-	ResourceLoader::add_resource_format_loader( resource_format_po );
+	resource_format_po = memnew(TranslationLoaderPO);
+	ResourceLoader::add_resource_format_loader(resource_format_po);
 
-
-	resource_saver_binary = memnew( ResourceFormatSaverBinary );
+	resource_saver_binary = memnew(ResourceFormatSaverBinary);
 	ResourceSaver::add_resource_format_saver(resource_saver_binary);
-	resource_loader_binary = memnew( ResourceFormatLoaderBinary );
+	resource_loader_binary = memnew(ResourceFormatLoaderBinary);
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
-	resource_format_importer = memnew( ResourceFormatImporter );
+	resource_format_importer = memnew(ResourceFormatImporter);
 	ResourceLoader::add_resource_format_loader(resource_format_importer);
 
 	ClassDB::register_class<Object>();
-
 
 	ClassDB::register_class<Reference>();
 	ClassDB::register_class<WeakRef>();
@@ -153,58 +145,47 @@ void register_core_types() {
 
 	ip = IP::create();
 
-
 	_geometry = memnew(_Geometry);
 
-
-	_resource_loader=memnew(_ResourceLoader);
-	_resource_saver=memnew(_ResourceSaver);
-	_os=memnew(_OS);
-	_engine=memnew(_Engine);
-	_classdb=memnew(_ClassDB);
+	_resource_loader = memnew(_ResourceLoader);
+	_resource_saver = memnew(_ResourceSaver);
+	_os = memnew(_OS);
+	_engine = memnew(_Engine);
+	_classdb = memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
-
-
-
 }
 
 void register_core_settings() {
 	//since in register core types, globals may not e present
-	GLOBAL_DEF( "network/packets/packet_stream_peer_max_buffer_po2",(16));
-
+	GLOBAL_DEF("network/packets/packet_stream_peer_max_buffer_po2", (16));
 }
 
 void register_core_singletons() {
 
-
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("GlobalConfig",GlobalConfig::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("IP",IP::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Geometry",_Geometry::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceLoader",_ResourceLoader::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ResourceSaver",_ResourceSaver::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("OS",_OS::get_singleton() ) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Engine",_Engine::get_singleton() ) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("ClassDB",_classdb ) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Marshalls",_Marshalls::get_singleton() ) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Input",Input::get_singleton() ) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("InputMap",InputMap::get_singleton() )  );
-
-
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("GlobalConfig", GlobalConfig::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("IP", IP::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("Geometry", _Geometry::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("ResourceLoader", _ResourceLoader::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("ResourceSaver", _ResourceSaver::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("OS", _OS::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("Engine", _Engine::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("ClassDB", _classdb));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("Marshalls", _Marshalls::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("TranslationServer", TranslationServer::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("Input", Input::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("InputMap", InputMap::get_singleton()));
 }
 
 void unregister_core_types() {
 
+	memdelete(_resource_loader);
+	memdelete(_resource_saver);
+	memdelete(_os);
+	memdelete(_engine);
+	memdelete(_classdb);
+	memdelete(_marshalls);
 
-
-	memdelete( _resource_loader );
-	memdelete( _resource_saver );
-	memdelete( _os);
-	memdelete( _engine );
-	memdelete( _classdb );
-	memdelete( _marshalls );
-
-	memdelete( _geometry );
+	memdelete(_geometry);
 
 	if (resource_saver_binary)
 		memdelete(resource_saver_binary);
@@ -213,12 +194,10 @@ void unregister_core_types() {
 	if (resource_format_importer)
 		memdelete(resource_format_importer);
 
-
-	memdelete( resource_format_po );
+	memdelete(resource_format_po);
 
 	if (ip)
 		memdelete(ip);
-
 
 	ObjectDB::cleanup();
 
@@ -231,9 +210,8 @@ void unregister_core_types() {
 
 	if (_global_mutex) {
 		memdelete(_global_mutex);
-		_global_mutex=NULL; //still needed at a few places
+		_global_mutex = NULL; //still needed at a few places
 	};
 
 	MemoryPool::cleanup();
-
 }

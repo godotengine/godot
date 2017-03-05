@@ -33,14 +33,13 @@
 
 void CapsuleShape2D::_update_shape() {
 
-	Physics2DServer::get_singleton()->shape_set_data(get_rid(),Vector2(radius,height));
+	Physics2DServer::get_singleton()->shape_set_data(get_rid(), Vector2(radius, height));
 	emit_changed();
 }
 
-
 void CapsuleShape2D::set_radius(real_t p_radius) {
 
-	radius=p_radius;
+	radius = p_radius;
 	_update_shape();
 }
 
@@ -51,7 +50,7 @@ real_t CapsuleShape2D::get_radius() const {
 
 void CapsuleShape2D::set_height(real_t p_height) {
 
-	height=p_height;
+	height = p_height;
 	_update_shape();
 }
 
@@ -60,50 +59,47 @@ real_t CapsuleShape2D::get_height() const {
 	return height;
 }
 
-
-void CapsuleShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+void CapsuleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	Vector<Vector2> points;
-	for(int i=0;i<24;i++) {
-		Vector2 ofs = Vector2(0,(i>6 && i<=18) ? -get_height()*0.5 : get_height()*0.5);
+	for (int i = 0; i < 24; i++) {
+		Vector2 ofs = Vector2(0, (i > 6 && i <= 18) ? -get_height() * 0.5 : get_height() * 0.5);
 
-		points.push_back(Vector2(Math::sin(i*Math_PI*2/24.0),Math::cos(i*Math_PI*2/24.0))*get_radius() + ofs);
-		if (i==6 || i==18)
-			points.push_back(Vector2(Math::sin(i*Math_PI*2/24.0),Math::cos(i*Math_PI*2/24.0))*get_radius() - ofs);
+		points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() + ofs);
+		if (i == 6 || i == 18)
+			points.push_back(Vector2(Math::sin(i * Math_PI * 2 / 24.0), Math::cos(i * Math_PI * 2 / 24.0)) * get_radius() - ofs);
 	}
 
 	Vector<Color> col;
 	col.push_back(p_color);
-	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid,points,col);
-
+	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
 }
 
 Rect2 CapsuleShape2D::get_rect() const {
 
-	Vector2 he=Point2(get_radius(),get_radius()+get_height()*0.5);
+	Vector2 he = Point2(get_radius(), get_radius() + get_height() * 0.5);
 	Rect2 rect;
-	rect.pos=-he;
-	rect.size=he*2.0;
+	rect.pos = -he;
+	rect.size = he * 2.0;
 	return rect;
 }
 
 void CapsuleShape2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_radius","radius"),&CapsuleShape2D::set_radius);
-	ClassDB::bind_method(D_METHOD("get_radius"),&CapsuleShape2D::get_radius);
+	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CapsuleShape2D::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"), &CapsuleShape2D::get_radius);
 
-	ClassDB::bind_method(D_METHOD("set_height","height"),&CapsuleShape2D::set_height);
-	ClassDB::bind_method(D_METHOD("get_height"),&CapsuleShape2D::get_height);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &CapsuleShape2D::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &CapsuleShape2D::get_height);
 
-
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius"),"set_radius","get_radius") ;
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height"),"set_height","get_height") ;
-
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height"), "set_height", "get_height");
 }
 
-CapsuleShape2D::CapsuleShape2D() : Shape2D( Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CAPSULE)) {
+CapsuleShape2D::CapsuleShape2D()
+	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CAPSULE)) {
 
-	radius=10;
-	height=20;
+	radius = 10;
+	height = 20;
 	_update_shape();
 }

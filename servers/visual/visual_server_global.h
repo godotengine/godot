@@ -35,10 +35,8 @@ class VisualServerCanvas;
 class VisualServerViewport;
 class VisualServerScene;
 
-class VisualServerGlobals
-{
+class VisualServerGlobals {
 public:
-
 	static RasterizerStorage *storage;
 	static RasterizerCanvas *canvas_render;
 	static RasterizerScene *scene_render;

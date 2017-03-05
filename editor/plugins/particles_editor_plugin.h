@@ -29,8 +29,8 @@
 #ifndef PARTICLES_EDITOR_PLUGIN_H
 #define PARTICLES_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/particles.h"
 #include "scene/gui/spin_box.h"
 

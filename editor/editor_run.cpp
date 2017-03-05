@@ -28,29 +28,27 @@
 /*************************************************************************/
 #include "editor_run.h"
 
-#include "global_config.h"
 #include "editor_settings.h"
+#include "global_config.h"
 
 EditorRun::Status EditorRun::get_status() const {
 
 	return status;
 }
-Error EditorRun::run(const String& p_scene,const String p_custom_args,const List<String>& p_breakpoints) {
+Error EditorRun::run(const String &p_scene, const String p_custom_args, const List<String> &p_breakpoints) {
 
 	List<String> args;
 
-
 	String resource_path = GlobalConfig::get_singleton()->get_resource_path();
 
-	if (resource_path!="") {
+	if (resource_path != "") {
 		args.push_back("-path");
-		args.push_back(resource_path.replace(" ","%20"));
-
+		args.push_back(resource_path.replace(" ", "%20"));
 	}
 
 	if (true) {
 		args.push_back("-rdebug");
-		args.push_back("localhost:"+String::num(GLOBAL_GET("network/debug/remote_port")));
+		args.push_back("localhost:" + String::num(GLOBAL_GET("network/debug/remote_port")));
 	}
 
 	args.push_back("-epid");
@@ -66,105 +64,101 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 	int screen = EditorSettings::get_singleton()->get("run/window_placement/screen");
 
-	if (screen==0) {
-		screen=OS::get_singleton()->get_current_screen();
+	if (screen == 0) {
+		screen = OS::get_singleton()->get_current_screen();
 	} else {
 		screen--;
 	}
 
 	Rect2 screen_rect;
-	screen_rect.pos=OS::get_singleton()->get_screen_position(screen);
-	screen_rect.size=OS::get_singleton()->get_screen_size(screen);
-
+	screen_rect.pos = OS::get_singleton()->get_screen_position(screen);
+	screen_rect.size = OS::get_singleton()->get_screen_size(screen);
 
 	Size2 desired_size;
 
-	desired_size.x=GlobalConfig::get_singleton()->get("display/width");
-	desired_size.y=GlobalConfig::get_singleton()->get("display/height");
+	desired_size.x = GlobalConfig::get_singleton()->get("display/width");
+	desired_size.y = GlobalConfig::get_singleton()->get("display/height");
 
 	Size2 test_size;
-	test_size.x=GlobalConfig::get_singleton()->get("display/test_width");
-	test_size.y=GlobalConfig::get_singleton()->get("display/test_height");
-	if (test_size.x>0 && test_size.y>0) {
+	test_size.x = GlobalConfig::get_singleton()->get("display/test_width");
+	test_size.y = GlobalConfig::get_singleton()->get("display/test_height");
+	if (test_size.x > 0 && test_size.y > 0) {
 
-		desired_size=test_size;
+		desired_size = test_size;
 	}
 
+	int window_placement = EditorSettings::get_singleton()->get("run/window_placement/rect");
 
-	int window_placement=EditorSettings::get_singleton()->get("run/window_placement/rect");
-
-	switch(window_placement) {
+	switch (window_placement) {
 		case 0: { // default
 
 			args.push_back("-p");
-			args.push_back(itos(screen_rect.pos.x)+"x"+itos(screen_rect.pos.y));
+			args.push_back(itos(screen_rect.pos.x) + "x" + itos(screen_rect.pos.y));
 		} break;
 		case 1: { // centered
-			Vector2 pos=screen_rect.pos+((screen_rect.size-desired_size)/2).floor();
+			Vector2 pos = screen_rect.pos + ((screen_rect.size - desired_size) / 2).floor();
 			args.push_back("-p");
-			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 		} break;
 		case 2: { // custom pos
 			Vector2 pos = EditorSettings::get_singleton()->get("run/window_placement/rect_custom_position");
-			pos+=screen_rect.pos;
+			pos += screen_rect.pos;
 			args.push_back("-p");
-			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 		} break;
 		case 3: { // force maximized
-			Vector2 pos=screen_rect.pos;
+			Vector2 pos = screen_rect.pos;
 			args.push_back("-p");
-			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 			args.push_back("-mx");
 
 		} break;
 		case 4: { // force fullscreen
 
-			Vector2 pos=screen_rect.pos;
+			Vector2 pos = screen_rect.pos;
 			args.push_back("-p");
-			args.push_back(itos(pos.x)+"x"+itos(pos.y));
+			args.push_back(itos(pos.x) + "x" + itos(pos.y));
 			args.push_back("-f");
 		} break;
 	}
-
-
 
 	if (p_breakpoints.size()) {
 
 		args.push_back("-bp");
 		String bpoints;
-		for(const List<String>::Element *E=p_breakpoints.front();E;E=E->next()) {
+		for (const List<String>::Element *E = p_breakpoints.front(); E; E = E->next()) {
 
-			bpoints+=E->get().replace(" ","%20");
+			bpoints += E->get().replace(" ", "%20");
 			if (E->next())
-				bpoints+=",";
+				bpoints += ",";
 		}
 
 		args.push_back(bpoints);
 	}
-	
-	if (p_scene!="") {
+
+	if (p_scene != "") {
 		args.push_back(p_scene);
 	}
 
-	if (p_custom_args!="") {
-		Vector<String> cargs=p_custom_args.split(" ",false);
-		for(int i=0;i<cargs.size();i++) {
-			args.push_back(cargs[i].replace(" ","%20"));
+	if (p_custom_args != "") {
+		Vector<String> cargs = p_custom_args.split(" ", false);
+		for (int i = 0; i < cargs.size(); i++) {
+			args.push_back(cargs[i].replace(" ", "%20"));
 		}
 	}
 
 	String exec = OS::get_singleton()->get_executable_path();
 
 	printf("running: %ls", exec.c_str());
-	for (List<String>::Element* E = args.front(); E ; E = E->next()) {
+	for (List<String>::Element *E = args.front(); E; E = E->next()) {
 
 		printf(" %ls", E->get().c_str());
 	};
 	printf("\n");
 
-	pid=0;
-	Error err = OS::get_singleton()->execute(exec,args,false,&pid);
-	ERR_FAIL_COND_V(err,err);
+	pid = 0;
+	Error err = OS::get_singleton()->execute(exec, args, false, &pid);
+	ERR_FAIL_COND_V(err, err);
 
 	status = STATUS_PLAY;
 
@@ -173,39 +167,37 @@ Error EditorRun::run(const String& p_scene,const String p_custom_args,const List
 
 void EditorRun::stop() {
 
-	if (status!=STATUS_STOP && pid!=0) {
+	if (status != STATUS_STOP && pid != 0) {
 
 		OS::get_singleton()->kill(pid);
 	}
 
-	status=STATUS_STOP;
+	status = STATUS_STOP;
 }
 
 void EditorRun::set_debug_collisions(bool p_debug) {
 
-	debug_collisions=p_debug;
+	debug_collisions = p_debug;
 }
 
-bool EditorRun::get_debug_collisions() const{
+bool EditorRun::get_debug_collisions() const {
 
 	return debug_collisions;
 }
 
 void EditorRun::set_debug_navigation(bool p_debug) {
 
-	debug_navigation=p_debug;
+	debug_navigation = p_debug;
 }
 
-bool EditorRun::get_debug_navigation() const{
+bool EditorRun::get_debug_navigation() const {
 
 	return debug_navigation;
 }
 
-
 EditorRun::EditorRun() {
 
-	status=STATUS_STOP;
-	debug_collisions=false;
-	debug_navigation=false;
-
+	status = STATUS_STOP;
+	debug_collisions = false;
+	debug_navigation = false;
 }

@@ -36,11 +36,9 @@ RID Canvas::get_rid() const {
 
 Canvas::Canvas() {
 
-	canvas=VisualServer::get_singleton()->canvas_create();
+	canvas = VisualServer::get_singleton()->canvas_create();
 }
-
 
 Canvas::~Canvas() {
 	VisualServer::get_singleton()->free(canvas);
 }
-

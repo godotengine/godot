@@ -28,37 +28,36 @@
 /*************************************************************************/
 #include "stream_peer_tcp.h"
 
-StreamPeerTCP* (*StreamPeerTCP::_create)()=NULL;
+StreamPeerTCP *(*StreamPeerTCP::_create)() = NULL;
 
-Error StreamPeerTCP::_connect(const String& p_address,int p_port) {
+Error StreamPeerTCP::_connect(const String &p_address, int p_port) {
 
 	IP_Address ip;
 	if (p_address.is_valid_ip_address()) {
-		ip=p_address;
+		ip = p_address;
 	} else {
-		ip=IP::get_singleton()->resolve_hostname(p_address);
+		ip = IP::get_singleton()->resolve_hostname(p_address);
 		if (!ip.is_valid())
 			return ERR_CANT_RESOLVE;
 	}
 
-	connect_to_host(ip,p_port);
+	connect_to_host(ip, p_port);
 	return OK;
 }
 
 void StreamPeerTCP::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("connect_to_host","host","port"),&StreamPeerTCP::_connect);
-	ClassDB::bind_method(D_METHOD("is_connected_to_host"),&StreamPeerTCP::is_connected_to_host);
-	ClassDB::bind_method(D_METHOD("get_status"),&StreamPeerTCP::get_status);
-	ClassDB::bind_method(D_METHOD("get_connected_host"),&StreamPeerTCP::get_connected_host);
-	ClassDB::bind_method(D_METHOD("get_connected_port"),&StreamPeerTCP::get_connected_port);
-	ClassDB::bind_method(D_METHOD("disconnect_from_host"),&StreamPeerTCP::disconnect_from_host);
+	ClassDB::bind_method(D_METHOD("connect_to_host", "host", "port"), &StreamPeerTCP::_connect);
+	ClassDB::bind_method(D_METHOD("is_connected_to_host"), &StreamPeerTCP::is_connected_to_host);
+	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTCP::get_status);
+	ClassDB::bind_method(D_METHOD("get_connected_host"), &StreamPeerTCP::get_connected_host);
+	ClassDB::bind_method(D_METHOD("get_connected_port"), &StreamPeerTCP::get_connected_port);
+	ClassDB::bind_method(D_METHOD("disconnect_from_host"), &StreamPeerTCP::disconnect_from_host);
 
-	BIND_CONSTANT( STATUS_NONE );
-	BIND_CONSTANT( STATUS_CONNECTING );
-	BIND_CONSTANT( STATUS_CONNECTED );
-	BIND_CONSTANT( STATUS_ERROR );
-
+	BIND_CONSTANT(STATUS_NONE);
+	BIND_CONSTANT(STATUS_CONNECTING);
+	BIND_CONSTANT(STATUS_CONNECTED);
+	BIND_CONSTANT(STATUS_ERROR);
 }
 
 Ref<StreamPeerTCP> StreamPeerTCP::create_ref() {
@@ -68,7 +67,7 @@ Ref<StreamPeerTCP> StreamPeerTCP::create_ref() {
 	return Ref<StreamPeerTCP>(_create());
 }
 
-StreamPeerTCP* StreamPeerTCP::create() {
+StreamPeerTCP *StreamPeerTCP::create() {
 
 	if (!_create)
 		return NULL;
@@ -76,10 +75,8 @@ StreamPeerTCP* StreamPeerTCP::create() {
 }
 
 StreamPeerTCP::StreamPeerTCP() {
-
 }
 
-StreamPeerTCP::~StreamPeerTCP() {
+StreamPeerTCP::~StreamPeerTCP(){
 
 };
-

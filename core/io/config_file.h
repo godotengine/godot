@@ -31,33 +31,32 @@
 
 #include "reference.h"
 
-
 class ConfigFile : public Reference {
 
-	GDCLASS(ConfigFile,Reference);
+	GDCLASS(ConfigFile, Reference);
 
-	Map< String, Map<String, Variant> > values;
+	Map<String, Map<String, Variant> > values;
 
 	PoolStringArray _get_sections() const;
-	PoolStringArray _get_section_keys(const String& p_section) const;
+	PoolStringArray _get_section_keys(const String &p_section) const;
+
 protected:
-
 	static void _bind_methods();
+
 public:
+	void set_value(const String &p_section, const String &p_key, const Variant &p_value);
+	Variant get_value(const String &p_section, const String &p_key, Variant p_default = Variant()) const;
 
-	void set_value(const String& p_section, const String& p_key, const Variant& p_value);
-	Variant get_value(const String& p_section, const String& p_key, Variant p_default=Variant()) const;
-
-	bool has_section(const String& p_section) const;
-	bool has_section_key(const String& p_section,const String& p_key) const;
+	bool has_section(const String &p_section) const;
+	bool has_section_key(const String &p_section, const String &p_key) const;
 
 	void get_sections(List<String> *r_sections) const;
-	void get_section_keys(const String& p_section,List<String> *r_keys) const;
+	void get_section_keys(const String &p_section, List<String> *r_keys) const;
 
-	void erase_section(const String& p_section);
+	void erase_section(const String &p_section);
 
-	Error save(const String& p_path);
-	Error load(const String& p_path);
+	Error save(const String &p_path);
+	Error load(const String &p_path);
 
 	ConfigFile();
 };

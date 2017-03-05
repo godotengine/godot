@@ -29,7 +29,6 @@
 #ifndef DIR_ACCESS_WINDOWS_H
 #define DIR_ACCESS_WINDOWS_H
 
-
 #ifdef WINDOWS_ENABLED
 
 #include "os/dir_access.h"
@@ -40,13 +39,11 @@
 
 struct DirAccessWindowsPrivate;
 
-
 class DirAccessWindows : public DirAccess {
 
 	enum {
-		MAX_DRIVES=26
+		MAX_DRIVES = 26
 	};
-
 
 	DirAccessWindowsPrivate *p;
 	/* Windows stuff */
@@ -56,12 +53,10 @@ class DirAccessWindows : public DirAccess {
 
 	String current_dir;
 
-
 	bool _cisdir;
 	bool _cishidden;
 
 public:
-
 	virtual Error list_dir_begin(); ///< This starts dir listing
 	virtual String get_next();
 	virtual bool current_is_dir() const;
@@ -73,7 +68,6 @@ public:
 
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
 	virtual String get_current_dir(); ///< return current dir location
-
 
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
@@ -88,7 +82,6 @@ public:
 
 	DirAccessWindows();
 	~DirAccessWindows();
-
 };
 
 #endif //WINDOWS_ENABLED

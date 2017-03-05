@@ -32,17 +32,17 @@
 #include "scene/resources/shape_2d.h"
 
 class ConcavePolygonShape2D : public Shape2D {
-	GDCLASS( ConcavePolygonShape2D, Shape2D );
+	GDCLASS(ConcavePolygonShape2D, Shape2D);
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_segments(const PoolVector<Vector2>& p_segments);
+public:
+	void set_segments(const PoolVector<Vector2> &p_segments);
 	PoolVector<Vector2> get_segments() const;
 
-	virtual void draw(const RID& p_to_rid,const Color& p_color);
-	virtual Rect2 get_rect() const ;
+	virtual void draw(const RID &p_to_rid, const Color &p_color);
+	virtual Rect2 get_rect() const;
 
 	ConcavePolygonShape2D();
 };

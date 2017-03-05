@@ -33,5 +33,4 @@
 
 void _pvrtc_register_compressors();
 
-
 #endif // PVRTC_COMPRESS_H

@@ -29,29 +29,27 @@
 #ifndef FILE_DIALOG_H
 #define FILE_DIALOG_H
 
+#include "box_container.h"
+#include "os/dir_access.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/tool_button.h"
-#include "os/dir_access.h"
-#include "box_container.h"
+#include "scene/gui/tree.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class FileDialog : public ConfirmationDialog {
 
-	GDCLASS( FileDialog, ConfirmationDialog );
+	GDCLASS(FileDialog, ConfirmationDialog);
 
 public:
-
 	enum Access {
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM
 	};
-
 
 	enum Mode {
 		MODE_OPEN_FILE,
@@ -61,8 +59,8 @@ public:
 		MODE_SAVE_FILE
 	};
 
-	typedef Ref<Texture> (*GetIconFunc)(const String&);
-	typedef void (*RegisterFunc)(FileDialog*);
+	typedef Ref<Texture> (*GetIconFunc)(const String &);
+	typedef void (*RegisterFunc)(FileDialog *);
 
 	static GetIconFunc get_icon_func;
 	static GetIconFunc get_large_icon_func;
@@ -70,7 +68,6 @@ public:
 	static RegisterFunc unregister_func;
 
 private:
-
 	ConfirmationDialog *makedialog;
 	LineEdit *makedirname;
 
@@ -93,7 +90,6 @@ private:
 
 	Vector<String> filters;
 
-
 	static bool default_show_hidden_files;
 	bool show_hidden_files;
 
@@ -108,7 +104,7 @@ private:
 	void _select_drive(int p_idx);
 	void _tree_dc_selected();
 	void _dir_entered(String p_dir);
-	void _file_entered(const String& p_file);
+	void _file_entered(const String &p_file);
 	void _action_pressed();
 	void _save_confirm_pressed();
 	void _cancel_pressed();
@@ -118,20 +114,18 @@ private:
 
 	void _update_drives();
 
-	void _unhandled_input(const InputEvent& p_event);
+	void _unhandled_input(const InputEvent &p_event);
 
 	virtual void _post_popup();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
 	//bind helpers
 public:
-
 	void clear_filters();
-	void add_filter(const String& p_filter);
-	void set_filters(const Vector<String>& p_filters);
+	void add_filter(const String &p_filter);
+	void set_filters(const Vector<String> &p_filters);
 	Vector<String> get_filters() const;
 
 	void set_enable_multiple_selection(bool p_enable);
@@ -140,9 +134,9 @@ public:
 	String get_current_dir() const;
 	String get_current_file() const;
 	String get_current_path() const;
-	void set_current_dir(const String& p_dir);
-	void set_current_file(const String& p_file);
-	void set_current_path(const String& p_path);
+	void set_current_dir(const String &p_dir);
+	void set_current_file(const String &p_file);
+	void set_current_path(const String &p_path);
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
@@ -162,22 +156,22 @@ public:
 
 	FileDialog();
 	~FileDialog();
-
 };
 
 class LineEditFileChooser : public HBoxContainer {
 
-	GDCLASS( LineEditFileChooser, HBoxContainer );
+	GDCLASS(LineEditFileChooser, HBoxContainer);
 	Button *button;
 	LineEdit *line_edit;
 	FileDialog *dialog;
 
-	void _chosen(const String& p_text);
+	void _chosen(const String &p_text);
 	void _browse();
+
 protected:
 	static void _bind_methods();
-public:
 
+public:
 	Button *get_button() { return button; }
 	LineEdit *get_line_edit() { return line_edit; }
 	FileDialog *get_file_dialog() { return dialog; }
@@ -185,7 +179,7 @@ public:
 	LineEditFileChooser();
 };
 
-VARIANT_ENUM_CAST( FileDialog::Mode );
-VARIANT_ENUM_CAST( FileDialog::Access );
+VARIANT_ENUM_CAST(FileDialog::Mode);
+VARIANT_ENUM_CAST(FileDialog::Access);
 
 #endif

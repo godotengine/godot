@@ -33,7 +33,7 @@
 // set_euler expects a vector containing the Euler angles in the format
 // (c,b,a), where a is the angle of the first rotation, and c is the last.
 // The current implementation uses XYZ convention (Z is the first rotation).
-void Quat::set_euler(const Vector3& p_euler) {
+void Quat::set_euler(const Vector3 &p_euler) {
 	real_t half_a1 = p_euler.x * 0.5;
 	real_t half_a2 = p_euler.y * 0.5;
 	real_t half_a3 = p_euler.z * 0.5;
@@ -49,10 +49,10 @@ void Quat::set_euler(const Vector3& p_euler) {
 	real_t cos_a3 = Math::cos(half_a3);
 	real_t sin_a3 = Math::sin(half_a3);
 
-	set(sin_a1*cos_a2*cos_a3 + sin_a2*sin_a3*cos_a1,
-		-sin_a1*sin_a3*cos_a2 + sin_a2*cos_a1*cos_a3,
-		sin_a1*sin_a2*cos_a3 + sin_a3*cos_a1*cos_a2,
-		-sin_a1*sin_a2*sin_a3 + cos_a1*cos_a2*cos_a3);
+	set(sin_a1 * cos_a2 * cos_a3 + sin_a2 * sin_a3 * cos_a1,
+			-sin_a1 * sin_a3 * cos_a2 + sin_a2 * cos_a1 * cos_a3,
+			sin_a1 * sin_a2 * cos_a3 + sin_a3 * cos_a1 * cos_a2,
+			-sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3);
 }
 
 // get_euler returns a vector containing the Euler angles in the format
@@ -63,23 +63,20 @@ Vector3 Quat::get_euler() const {
 	return m.get_euler();
 }
 
-void Quat::operator*=(const Quat& q) {
+void Quat::operator*=(const Quat &q) {
 
-	set(w * q.x+x * q.w+y * q.z - z * q.y,
-		w * q.y+y * q.w+z * q.x - x * q.z,
-		w * q.z+z * q.w+x * q.y - y * q.x,
-		w * q.w - x * q.x - y * q.y - z * q.z);
+	set(w * q.x + x * q.w + y * q.z - z * q.y,
+			w * q.y + y * q.w + z * q.x - x * q.z,
+			w * q.z + z * q.w + x * q.y - y * q.x,
+			w * q.w - x * q.x - y * q.y - z * q.z);
 }
 
-Quat Quat::operator*(const Quat& q) const {
+Quat Quat::operator*(const Quat &q) const {
 
-	Quat r=*this;
-	r*=q;
+	Quat r = *this;
+	r *= q;
 	return r;
 }
-
-
-
 
 real_t Quat::length() const {
 
@@ -90,17 +87,15 @@ void Quat::normalize() {
 	*this /= length();
 }
 
-
 Quat Quat::normalized() const {
 	return *this / length();
 }
 
 Quat Quat::inverse() const {
-	return Quat( -x, -y, -z, w );
+	return Quat(-x, -y, -z, w);
 }
 
-
-Quat Quat::slerp(const Quat& q, const real_t& t) const {
+Quat Quat::slerp(const Quat &q, const real_t &t) const {
 
 #if 0
 
@@ -144,31 +139,29 @@ Quat Quat::slerp(const Quat& q, const real_t& t) const {
 	}
 #else
 
-	Quat          to1;
-	real_t        omega, cosom, sinom, scale0, scale1;
-
+	Quat to1;
+	real_t omega, cosom, sinom, scale0, scale1;
 
 	// calc cosine
 	cosom = dot(q);
 
 	// adjust signs (if necessary)
-	if ( cosom <0.0 ) {
+	if (cosom < 0.0) {
 		cosom = -cosom;
-		to1.x = - q.x;
-		to1.y = - q.y;
-		to1.z = - q.z;
-		to1.w = - q.w;
-	} else  {
+		to1.x = -q.x;
+		to1.y = -q.y;
+		to1.z = -q.z;
+		to1.w = -q.w;
+	} else {
 		to1.x = q.x;
 		to1.y = q.y;
 		to1.z = q.z;
 		to1.w = q.w;
 	}
 
-
 	// calculate coefficients
 
-	if ( (1.0 - cosom) > CMP_EPSILON ) {
+	if ((1.0 - cosom) > CMP_EPSILON) {
 		// standard case (slerp)
 		omega = Math::acos(cosom);
 		sinom = Math::sin(omega);
@@ -182,15 +175,14 @@ Quat Quat::slerp(const Quat& q, const real_t& t) const {
 	}
 	// calculate final values
 	return Quat(
-		scale0 * x + scale1 * to1.x,
-		scale0 * y + scale1 * to1.y,
-		scale0 * z + scale1 * to1.z,
-		scale0 * w + scale1 * to1.w
-	);
+			scale0 * x + scale1 * to1.x,
+			scale0 * y + scale1 * to1.y,
+			scale0 * z + scale1 * to1.z,
+			scale0 * w + scale1 * to1.w);
 #endif
 }
 
-Quat Quat::slerpni(const Quat& q, const real_t& t) const {
+Quat Quat::slerpni(const Quat &q, const real_t &t) const {
 
 	const Quat &from = *this;
 
@@ -198,15 +190,15 @@ Quat Quat::slerpni(const Quat& q, const real_t& t) const {
 
 	if (Math::absf(dot) > 0.9999) return from;
 
-	real_t	theta		= Math::acos(dot),
-		sinT		= 1.0 / Math::sin(theta),
-		newFactor	= Math::sin(t * theta) * sinT,
-		invFactor	= Math::sin((1.0 - t) * theta) * sinT;
+	real_t theta = Math::acos(dot),
+		   sinT = 1.0 / Math::sin(theta),
+		   newFactor = Math::sin(t * theta) * sinT,
+		   invFactor = Math::sin((1.0 - t) * theta) * sinT;
 
 	return Quat(invFactor * from.x + newFactor * q.x,
-				invFactor * from.y + newFactor * q.y,
-				invFactor * from.z + newFactor * q.z,
-				invFactor * from.w + newFactor * q.w);
+			invFactor * from.y + newFactor * q.y,
+			invFactor * from.z + newFactor * q.z,
+			invFactor * from.w + newFactor * q.w);
 
 #if 0
 	real_t         to1[4];
@@ -256,31 +248,29 @@ Quat Quat::slerpni(const Quat& q, const real_t& t) const {
 #endif
 }
 
-Quat Quat::cubic_slerp(const Quat& q, const Quat& prep, const Quat& postq,const real_t& t) const {
+Quat Quat::cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const {
 
 	//the only way to do slerp :|
-	real_t t2 = (1.0-t)*t*2;
-	Quat sp = this->slerp(q,t);
-	Quat sq = prep.slerpni(postq,t);
-	return sp.slerpni(sq,t2);
-
+	real_t t2 = (1.0 - t) * t * 2;
+	Quat sp = this->slerp(q, t);
+	Quat sq = prep.slerpni(postq, t);
+	return sp.slerpni(sq, t2);
 }
-
 
 Quat::operator String() const {
 
-	return String::num(x)+", "+String::num(y)+", "+ String::num(z)+", "+ String::num(w);
+	return String::num(x) + ", " + String::num(y) + ", " + String::num(z) + ", " + String::num(w);
 }
 
-Quat::Quat(const Vector3& axis, const real_t& angle) {
+Quat::Quat(const Vector3 &axis, const real_t &angle) {
 	real_t d = axis.length();
-	if (d==0)
-		set(0,0,0,0);
+	if (d == 0)
+		set(0, 0, 0, 0);
 	else {
 		real_t sin_angle = Math::sin(angle * 0.5);
 		real_t cos_angle = Math::cos(angle * 0.5);
 		real_t s = sin_angle / d;
 		set(axis.x * s, axis.y * s, axis.z * s,
-			cos_angle);
+				cos_angle);
 	}
 }

@@ -34,9 +34,9 @@
 
 class ItemList : public Control {
 
-	GDCLASS( ItemList, Control );
-public:
+	GDCLASS(ItemList, Control);
 
+public:
 	enum IconMode {
 		ICON_MODE_TOP,
 		ICON_MODE_LEFT
@@ -46,6 +46,7 @@ public:
 		SELECT_SINGLE,
 		SELECT_MULTI
 	};
+
 private:
 	struct Item {
 
@@ -66,7 +67,7 @@ private:
 
 		Size2 get_icon_size() const;
 
-		bool operator<(const Item& p_another) const { return text<p_another.text; }
+		bool operator<(const Item &p_another) const { return text < p_another.text; }
 	};
 
 	int current;
@@ -102,50 +103,47 @@ private:
 	real_t icon_scale;
 
 	void _scroll_changed(double);
-	void _gui_input(const InputEvent& p_event);
-
+	void _gui_input(const InputEvent &p_event);
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
+	void add_item(const String &p_item, const Ref<Texture> &p_texture = Ref<Texture>(), bool p_selectable = true);
+	void add_icon_item(const Ref<Texture> &p_item, bool p_selectable = true);
 
-
-	void add_item(const String& p_item,const Ref<Texture>& p_texture=Ref<Texture>(),bool p_selectable=true);
-	void add_icon_item(const Ref<Texture>& p_item,bool p_selectable=true);
-
-	void set_item_text(int p_idx,const String& p_text);
+	void set_item_text(int p_idx, const String &p_text);
 	String get_item_text(int p_idx) const;
 
-	void set_item_icon(int p_idx,const Ref<Texture>& p_icon);
+	void set_item_icon(int p_idx, const Ref<Texture> &p_icon);
 	Ref<Texture> get_item_icon(int p_idx) const;
 
-	void set_item_icon_region(int p_idx,const Rect2& p_region);
+	void set_item_icon_region(int p_idx, const Rect2 &p_region);
 	Rect2 get_item_icon_region(int p_idx) const;
 
-	void set_item_selectable(int p_idx,bool p_selectable);
+	void set_item_selectable(int p_idx, bool p_selectable);
 	bool is_item_selectable(int p_idx) const;
 
-	void set_item_disabled(int p_idx,bool p_disabled);
+	void set_item_disabled(int p_idx, bool p_disabled);
 	bool is_item_disabled(int p_idx) const;
 
-	void set_item_metadata(int p_idx,const Variant& p_metadata);
+	void set_item_metadata(int p_idx, const Variant &p_metadata);
 	Variant get_item_metadata(int p_idx) const;
 
-	void set_item_tag_icon(int p_idx,const Ref<Texture>& p_tag_icon);
+	void set_item_tag_icon(int p_idx, const Ref<Texture> &p_tag_icon);
 	Ref<Texture> get_item_tag_icon(int p_idx) const;
 
 	void set_item_tooltip_enabled(int p_idx, const bool p_enabled);
 	bool is_item_tooltip_enabled(int p_idx) const;
 
-	void set_item_tooltip(int p_idx,const String& p_tooltip);
+	void set_item_tooltip(int p_idx, const String &p_tooltip);
 	String get_item_tooltip(int p_idx) const;
 
-	void set_item_custom_bg_color(int p_idx,const Color& p_custom_bg_color);
+	void set_item_custom_bg_color(int p_idx, const Color &p_custom_bg_color);
 	Color get_item_custom_bg_color(int p_idx) const;
 
-	void select(int p_idx,bool p_single=true);
+	void select(int p_idx, bool p_single = true);
 	void unselect(int p_idx);
 	bool is_selected(int p_idx) const;
 	Vector<int> get_selected_items();
@@ -153,7 +151,7 @@ public:
 	void set_current(int p_current);
 	int get_current() const;
 
-	void move_item(int p_item,int p_to_pos);
+	void move_item(int p_item, int p_to_pos);
 
 	int get_item_count() const;
 	void remove_item(int p_idx);
@@ -178,7 +176,7 @@ public:
 	void set_icon_mode(IconMode p_mode);
 	IconMode get_icon_mode() const;
 
-	void set_fixed_icon_size(const Size2& p_size);
+	void set_fixed_icon_size(const Size2 &p_size);
 	Size2 get_fixed_icon_size() const;
 
 	void set_allow_rmb_select(bool p_allow);
@@ -187,11 +185,11 @@ public:
 	void ensure_current_is_visible();
 
 	void sort_items_by_text();
-	int find_metadata(const Variant& p_metadata) const;
+	int find_metadata(const Variant &p_metadata) const;
 
-	virtual String get_tooltip(const Point2& p_pos) const;
-	int get_item_at_pos(const Point2& p_pos,bool p_exact=false) const;
-	bool is_pos_at_end_of_items(const Point2& p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const;
+	int get_item_at_pos(const Point2 &p_pos, bool p_exact = false) const;
+	bool is_pos_at_end_of_items(const Point2 &p_pos) const;
 
 	void set_icon_scale(real_t p_scale);
 	real_t get_icon_scale() const;
@@ -204,6 +202,5 @@ public:
 
 VARIANT_ENUM_CAST(ItemList::SelectMode);
 VARIANT_ENUM_CAST(ItemList::IconMode);
-
 
 #endif // ITEMLIST_H

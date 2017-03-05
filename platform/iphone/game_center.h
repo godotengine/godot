@@ -37,7 +37,7 @@ class GameCenter : public Object {
 
 	GDCLASS(GameCenter, Object);
 
-	static GameCenter* instance;
+	static GameCenter *instance;
 	static void _bind_methods();
 
 	List<Variant> pending_events;
@@ -45,7 +45,6 @@ class GameCenter : public Object {
 	bool connected;
 
 public:
-
 	Error connect();
 	bool is_connected();
 
@@ -61,12 +60,11 @@ public:
 	int get_pending_event_count();
 	Variant pop_pending_event();
 
-	static GameCenter* get_singleton();
+	static GameCenter *get_singleton();
 
 	GameCenter();
 	~GameCenter();
 };
-
 
 #endif
 

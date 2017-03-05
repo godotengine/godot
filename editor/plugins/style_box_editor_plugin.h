@@ -29,15 +29,14 @@
 #ifndef STYLE_BOX_EDITOR_PLUGIN_H
 #define STYLE_BOX_EDITOR_PLUGIN_H
 
-#include "scene/resources/style_box.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/option_button.h"
 #include "editor/editor_node.h"
-
+#include "scene/gui/option_button.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/resources/style_box.h"
 
 class StyleBoxEditor : public Control {
 
-	GDCLASS( StyleBoxEditor, Control );
+	GDCLASS(StyleBoxEditor, Control);
 
 	Panel *panel;
 	Panel *preview;
@@ -47,28 +46,23 @@ class StyleBoxEditor : public Control {
 	void _sb_changed();
 
 protected:
-
-
 	static void _bind_methods();
-public:
 
-	void edit(const Ref<StyleBox>& p_stylebox);
+public:
+	void edit(const Ref<StyleBox> &p_stylebox);
 
 	StyleBoxEditor();
 };
 
-
-
 class StyleBoxEditorPlugin : public EditorPlugin {
 
-	GDCLASS( StyleBoxEditorPlugin, EditorPlugin );
+	GDCLASS(StyleBoxEditorPlugin, EditorPlugin);
 
 	StyleBoxEditor *stylebox_editor;
 	EditorNode *editor;
 	Button *button;
 
 public:
-
 	virtual String get_name() const { return "StyleBox"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -76,8 +70,6 @@ public:
 	virtual void make_visible(bool p_visible);
 
 	StyleBoxEditorPlugin(EditorNode *p_node);
-
 };
-
 
 #endif // STYLE_BOX_EDITOR_PLUGIN_H

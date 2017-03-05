@@ -29,16 +29,16 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
-#include "main/input_default.h"
-#include "drivers/unix/os_unix.h"
-#include "servers/visual_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/audio/audio_driver_dummy.h"
-#include "servers/physics_server.h"
-#include "servers/audio_server.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
 #include "../x11/power_x11.h"
+#include "drivers/rtaudio/audio_driver_rtaudio.h"
+#include "drivers/unix/os_unix.h"
+#include "main/input_default.h"
+#include "servers/audio/audio_driver_dummy.h"
+#include "servers/audio_server.h"
+#include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_server.h"
+#include "servers/visual/rasterizer.h"
+#include "servers/visual_server.h"
 
 //bitch
 #undef CursorShape
@@ -66,24 +66,20 @@ class OS_Server : public OS_Unix {
 	bool force_quit;
 
 	InputDefault *input;
-	
+
 	PowerX11 *power_manager;
 
-
-
 protected:
-
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;
+	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
 
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
+	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );
+	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
@@ -93,22 +89,22 @@ public:
 	virtual bool is_mouse_grab_enabled() const;
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String& p_title);
+	virtual void set_window_title(const String &p_title);
 
 	virtual MainLoop *get_main_loop() const;
 
 	virtual bool can_draw() const;
 
-	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
-	virtual VideoMode get_video_mode(int p_screen=0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
+	virtual VideoMode get_video_mode(int p_screen = 0) const;
+	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual Size2 get_window_size() const;
 
 	virtual void move_window_to_foreground();
 
 	void run();
-	
+
 	virtual PowerState get_power_state();
 	virtual int get_power_seconds_left();
 	virtual int get_power_percent_left();

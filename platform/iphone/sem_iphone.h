@@ -44,7 +44,6 @@ class SemaphoreIphone : public Semaphore {
 	static Semaphore *create_semaphore_iphone();
 
 public:
-
 	virtual Error wait();
 	virtual Error post();
 	virtual int get() const;
@@ -53,8 +52,6 @@ public:
 	SemaphoreIphone();
 
 	~SemaphoreIphone();
-
 };
-
 
 #endif

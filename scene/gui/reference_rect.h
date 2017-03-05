@@ -33,11 +33,11 @@
 
 class ReferenceRect : public Control {
 
-	GDCLASS( ReferenceRect, Control);
+	GDCLASS(ReferenceRect, Control);
 
 protected:
-
 	void _notification(int p_what);
+
 public:
 	ReferenceRect();
 };

@@ -884,33 +884,30 @@ bool Penetration(	const ShapeSW*	shape0,
 
 /* clang-format on */
 
-
-bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, Vector3& r_result_A, Vector3& r_result_B) {
-
+bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B) {
 
 	GjkEpa2::sResults res;
 
-	if (GjkEpa2::Distance(p_shape_A,p_transform_A,p_shape_B,p_transform_B,p_transform_B.origin-p_transform_A.origin,res)) {
+	if (GjkEpa2::Distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
 
-		r_result_A=res.witnesses[0];
-		r_result_B=res.witnesses[1];
+		r_result_A = res.witnesses[0];
+		r_result_B = res.witnesses[1];
 		return true;
 	}
 
 	return false;
-
 }
 
-bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, CollisionSolverSW::CallbackResult p_result_callback,void *p_userdata, bool p_swap ) {
+bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform &p_transform_A, const ShapeSW *p_shape_B, const Transform &p_transform_B, CollisionSolverSW::CallbackResult p_result_callback, void *p_userdata, bool p_swap) {
 
 	GjkEpa2::sResults res;
 
-	if (GjkEpa2::Penetration(p_shape_A,p_transform_A,p_shape_B,p_transform_B,p_transform_B.origin-p_transform_A.origin,res)) {
+	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_transform_B.origin - p_transform_A.origin, res)) {
 		if (p_result_callback) {
 			if (p_swap)
-				p_result_callback(res.witnesses[1],res.witnesses[0],p_userdata);
+				p_result_callback(res.witnesses[1], res.witnesses[0], p_userdata);
 			else
-				p_result_callback(res.witnesses[0],res.witnesses[1],p_userdata);
+				p_result_callback(res.witnesses[0], res.witnesses[1], p_userdata);
 		}
 		return true;
 	}

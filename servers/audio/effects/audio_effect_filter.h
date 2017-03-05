@@ -35,33 +35,31 @@
 class AudioEffectFilter;
 
 class AudioEffectFilterInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectFilterInstance,AudioEffectInstance)
-friend class AudioEffectFilter;
+	GDCLASS(AudioEffectFilterInstance, AudioEffectInstance)
+	friend class AudioEffectFilter;
 
 	Ref<AudioEffectFilter> base;
 
 	AudioFilterSW filter;
 	AudioFilterSW::Processor filter_process[2][4];
 
-	template<int S>
-	void _process_filter(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count);
-public:
+	template <int S>
+	void _process_filter(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
-	virtual void process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count);
+public:
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
 	AudioEffectFilterInstance();
 };
 
-
 class AudioEffectFilter : public AudioEffect {
-	GDCLASS(AudioEffectFilter,AudioEffect)
+	GDCLASS(AudioEffectFilter, AudioEffect)
 public:
-
 	enum FilterDB {
-	     FILTER_6DB,
-	     FILTER_12DB,
-	     FILTER_18DB,
-	     FILTER_24DB,
+		FILTER_6DB,
+		FILTER_12DB,
+		FILTER_18DB,
+		FILTER_24DB,
 	};
 	friend class AudioEffectFilterInstance;
 
@@ -71,13 +69,10 @@ public:
 	float gain;
 	FilterDB db;
 
-
 protected:
-
-
 	static void _bind_methods();
-public:
 
+public:
 	void set_cutoff(float p_freq);
 	float get_cutoff() const;
 
@@ -92,62 +87,58 @@ public:
 
 	Ref<AudioEffectInstance> instance();
 
-	AudioEffectFilter(AudioFilterSW::Mode p_mode=AudioFilterSW::LOWPASS);
+	AudioEffectFilter(AudioFilterSW::Mode p_mode = AudioFilterSW::LOWPASS);
 };
 
 VARIANT_ENUM_CAST(AudioEffectFilter::FilterDB)
 
 class AudioEffectLowPassFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectLowPassFilter,AudioEffectFilter)
+	GDCLASS(AudioEffectLowPassFilter, AudioEffectFilter)
 public:
-
-	AudioEffectLowPassFilter() : AudioEffectFilter(AudioFilterSW::LOWPASS) {}
+	AudioEffectLowPassFilter()
+		: AudioEffectFilter(AudioFilterSW::LOWPASS) {}
 };
 
 class AudioEffectHighPassFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectHighPassFilter,AudioEffectFilter)
+	GDCLASS(AudioEffectHighPassFilter, AudioEffectFilter)
 public:
-
-	AudioEffectHighPassFilter() : AudioEffectFilter(AudioFilterSW::HIGHPASS) {}
+	AudioEffectHighPassFilter()
+		: AudioEffectFilter(AudioFilterSW::HIGHPASS) {}
 };
 
 class AudioEffectBandPassFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectBandPassFilter,AudioEffectFilter)
+	GDCLASS(AudioEffectBandPassFilter, AudioEffectFilter)
 public:
-
-	AudioEffectBandPassFilter() : AudioEffectFilter(AudioFilterSW::BANDPASS) {}
+	AudioEffectBandPassFilter()
+		: AudioEffectFilter(AudioFilterSW::BANDPASS) {}
 };
 
 class AudioEffectNotchFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectNotchFilter,AudioEffectFilter)
+	GDCLASS(AudioEffectNotchFilter, AudioEffectFilter)
 public:
-
-	AudioEffectNotchFilter() : AudioEffectFilter(AudioFilterSW::NOTCH) {}
+	AudioEffectNotchFilter()
+		: AudioEffectFilter(AudioFilterSW::NOTCH) {}
 };
 
 class AudioEffectBandLimitFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectBandLimitFilter,AudioEffectFilter)
+	GDCLASS(AudioEffectBandLimitFilter, AudioEffectFilter)
 public:
-
-	AudioEffectBandLimitFilter() : AudioEffectFilter(AudioFilterSW::BANDLIMIT) {}
+	AudioEffectBandLimitFilter()
+		: AudioEffectFilter(AudioFilterSW::BANDLIMIT) {}
 };
-
 
 class AudioEffectLowShelfFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectLowShelfFilter,AudioEffectFilter)
+	GDCLASS(AudioEffectLowShelfFilter, AudioEffectFilter)
 public:
-
-	AudioEffectLowShelfFilter() : AudioEffectFilter(AudioFilterSW::LOWSHELF) {}
+	AudioEffectLowShelfFilter()
+		: AudioEffectFilter(AudioFilterSW::LOWSHELF) {}
 };
-
 
 class AudioEffectHighShelfFilter : public AudioEffectFilter {
-	GDCLASS(AudioEffectHighShelfFilter,AudioEffectFilter)
+	GDCLASS(AudioEffectHighShelfFilter, AudioEffectFilter)
 public:
-
-	AudioEffectHighShelfFilter() : AudioEffectFilter(AudioFilterSW::HIGHSHELF) {}
+	AudioEffectHighShelfFilter()
+		: AudioEffectFilter(AudioFilterSW::HIGHSHELF) {}
 };
-
-
 
 #endif // AUDIOEFFECTFILTER_H

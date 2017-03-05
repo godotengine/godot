@@ -37,8 +37,8 @@ class ScrollContainer : public Container {
 
 	GDCLASS(ScrollContainer, Container);
 
-	HScrollBar* h_scroll;
-	VScrollBar* v_scroll;
+	HScrollBar *h_scroll;
+	VScrollBar *v_scroll;
 
 	Size2 child_max_size;
 	Size2 scroll;
@@ -63,16 +63,15 @@ class ScrollContainer : public Container {
 protected:
 	Size2 get_minimum_size() const;
 
-
-	void _gui_input(const InputEvent& p_gui_input);
+	void _gui_input(const InputEvent &p_gui_input);
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
 	static void _bind_methods();
 
 	void _update_scrollbar_pos();
-public:
 
+public:
 	int get_v_scroll() const;
 	void set_v_scroll(int p_pos);
 

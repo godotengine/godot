@@ -41,10 +41,9 @@ internal:
 	/* clang-format on */
 
 	JoypadUWP();
-	JoypadUWP(InputDefault* p_input);
+	JoypadUWP(InputDefault *p_input);
 
 private:
-
 	enum {
 		MAX_CONTROLLERS = 4,
 	};
@@ -57,7 +56,7 @@ private:
 
 	struct ControllerDevice {
 
-		Windows::Gaming::Input::IGameController^ controller_reference;
+		Windows::Gaming::Input::IGameController ^ controller_reference;
 
 		int id;
 		bool connected;
@@ -72,10 +71,10 @@ private:
 
 	ControllerDevice controllers[MAX_CONTROLLERS];
 
-	InputDefault* input;
+	InputDefault *input;
 
-	void OnGamepadAdded(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
-	void OnGamepadRemoved(Platform::Object^ sender, Windows::Gaming::Input::Gamepad^ value);
+	void OnGamepadAdded(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
+	void OnGamepadRemoved(Platform::Object ^ sender, Windows::Gaming::Input::Gamepad ^ value);
 
 	InputDefault::JoyAxis axis_correct(double p_val, bool p_negate = false, bool p_trigger = false) const;
 };

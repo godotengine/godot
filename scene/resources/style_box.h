@@ -30,32 +30,31 @@
 #define STYLE_BOX_H
 
 #include "resource.h"
-#include "servers/visual_server.h"
 #include "scene/resources/texture.h"
+#include "servers/visual_server.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class StyleBox : public Resource {
 
-	GDCLASS( StyleBox, Resource );
+	GDCLASS(StyleBox, Resource);
 	RES_BASE_EXTENSION("sbx");
-	OBJ_SAVE_TYPE( StyleBox );
+	OBJ_SAVE_TYPE(StyleBox);
 	float margin[4];
 
 protected:
-
-	virtual float get_style_margin(Margin p_margin) const=0;
+	virtual float get_style_margin(Margin p_margin) const = 0;
 	static void _bind_methods();
-public:
 
-	virtual bool test_mask(const Point2& p_point, const Rect2& p_rect) const;
+public:
+	virtual bool test_mask(const Point2 &p_point, const Rect2 &p_rect) const;
 
 	void set_default_margin(Margin p_margin, float p_value);
 	float get_default_margin(Margin p_margin) const;
 	float get_margin(Margin p_margin) const;
 	virtual Size2 get_center_size() const;
 
-	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const=0;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const = 0;
 
 	Size2 get_minimum_size() const;
 	Point2 get_offset() const;
@@ -65,19 +64,17 @@ public:
 
 class StyleBoxEmpty : public StyleBox {
 
-	GDCLASS( StyleBoxEmpty, StyleBox );
+	GDCLASS(StyleBoxEmpty, StyleBox);
 	virtual float get_style_margin(Margin p_margin) const { return 0; }
+
 public:
-
-	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const {}
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const {}
 	StyleBoxEmpty() {}
-
 };
 
 class StyleBoxTexture : public StyleBox {
 
-	GDCLASS( StyleBoxTexture, StyleBox );
-
+	GDCLASS(StyleBoxTexture, StyleBox);
 
 	float expand_margin[4];
 	float margin[4];
@@ -86,21 +83,18 @@ class StyleBoxTexture : public StyleBox {
 	bool draw_center;
 	Color modulate;
 
-
 protected:
-
 	virtual float get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
 
 public:
-
-	void set_expand_margin_size(Margin p_expand_margin,float p_size);
+	void set_expand_margin_size(Margin p_expand_margin, float p_size);
 	float get_expand_margin_size(Margin p_expand_margin) const;
 
-	void set_margin_size(Margin p_margin,float p_size);
+	void set_margin_size(Margin p_margin, float p_size);
 	float get_margin_size(Margin p_margin) const;
 
-	void set_region_rect(const Rect2& p_region_rect);
+	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
 	void set_texture(RES p_texture);
@@ -110,20 +104,18 @@ public:
 	bool get_draw_center() const;
 	virtual Size2 get_center_size() const;
 
-	void set_modulate(const Color& p_modulate);
+	void set_modulate(const Color &p_modulate);
 	Color get_modulate() const;
 
-
-	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	StyleBoxTexture();
 	~StyleBoxTexture();
-
 };
 
 class StyleBoxFlat : public StyleBox {
 
-	GDCLASS( StyleBoxFlat, StyleBox );
+	GDCLASS(StyleBoxFlat, StyleBox);
 
 	Color bg_color;
 	Color light_color;
@@ -135,15 +127,13 @@ class StyleBoxFlat : public StyleBox {
 	bool blend;
 
 protected:
-
 	virtual float get_style_margin(Margin p_margin) const;
 	static void _bind_methods();
 
 public:
-
-	void set_bg_color(const Color& p_color);
-	void set_light_color(const Color& p_color);
-	void set_dark_color(const Color& p_color);
+	void set_bg_color(const Color &p_color);
+	void set_light_color(const Color &p_color);
+	void set_dark_color(const Color &p_color);
 
 	Color get_bg_color() const;
 	Color get_light_color() const;
@@ -159,13 +149,10 @@ public:
 	bool get_draw_center() const;
 	virtual Size2 get_center_size() const;
 
-	virtual void draw(RID p_canvas_item,const Rect2& p_rect) const;
+	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const;
 
 	StyleBoxFlat();
 	~StyleBoxFlat();
-
 };
-
-
 
 #endif

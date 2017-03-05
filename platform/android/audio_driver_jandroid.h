@@ -37,9 +37,8 @@
 
 class AudioDriverAndroid : public AudioDriver {
 
-
 	static Mutex *mutex;
-	static AudioDriverAndroid* s_ad;
+	static AudioDriverAndroid *s_ad;
 	static jobject io;
 	static jmethodID _init_audio;
 	static jmethodID _write_buffer;
@@ -51,21 +50,19 @@ class AudioDriverAndroid : public AudioDriver {
 	static jclass cls;
 
 	static jobject audioBuffer;
-	static void* audioBufferPinned;
-	static int32_t* audioBuffer32;
+	static void *audioBufferPinned;
+	static int32_t *audioBuffer32;
 	static int audioBufferFrames;
 	static int mix_rate;
 
-
 public:
-
 	void set_singleton();
 
-	virtual const char* get_name() const;
+	virtual const char *get_name() const;
 
 	virtual Error init();
 	virtual void start();
-	virtual int get_mix_rate() const ;
+	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual void lock();
 	virtual void unlock();
@@ -73,7 +70,7 @@ public:
 
 	virtual void set_pause(bool p_pause);
 
-	static void setup( jobject act);
+	static void setup(jobject act);
 	static void thread_func(JNIEnv *env);
 
 	AudioDriverAndroid();

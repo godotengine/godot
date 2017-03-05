@@ -29,22 +29,25 @@
 #ifndef SCENE_STRING_NAMES_H
 #define SCENE_STRING_NAMES_H
 
-#include "string_db.h"
 #include "path_db.h"
+#include "string_db.h"
 class SceneStringNames {
 
-friend void register_scene_types();
-friend void unregister_scene_types();
+	friend void register_scene_types();
+	friend void unregister_scene_types();
 
-	static SceneStringNames* singleton;
+	static SceneStringNames *singleton;
 
 	static void create() { singleton = memnew(SceneStringNames); }
-	static void free() { memdelete( singleton); singleton=NULL; }
+	static void free() {
+		memdelete(singleton);
+		singleton = NULL;
+	}
 
 	SceneStringNames();
-public:
-	_FORCE_INLINE_ static SceneStringNames* get_singleton() { return singleton; }
 
+public:
+	_FORCE_INLINE_ static SceneStringNames *get_singleton() { return singleton; }
 
 	StringName resized;
 	StringName dot;
@@ -95,7 +98,6 @@ public:
 
 	StringName _body_inout;
 	StringName _area_inout;
-
 
 	StringName _get_gizmo_geometry;
 	StringName _can_gizmo_scale;
@@ -193,12 +195,10 @@ public:
 	StringName node_configuration_warning_changed;
 
 	enum {
-		MAX_MATERIALS=32
+		MAX_MATERIALS = 32
 	};
 	StringName mesh_materials[MAX_MATERIALS];
 	StringName _mesh_changed;
-
 };
-
 
 #endif // SCENE_STRING_NAMES_H

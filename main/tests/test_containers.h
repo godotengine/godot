@@ -36,8 +36,7 @@
 
 namespace TestContainers {
 
-MainLoop * test();
-
+MainLoop *test();
 }
 
 #endif

@@ -30,7 +30,7 @@
 
 class RemoteTransform2D : public Node2D {
 
-	GDCLASS(RemoteTransform2D,Node2D);
+	GDCLASS(RemoteTransform2D, Node2D);
 
 	NodePath remote_node;
 
@@ -40,12 +40,11 @@ class RemoteTransform2D : public Node2D {
 	void _update_cache();
 	//void _node_exited_scene();
 protected:
-
 	static void _bind_methods();
 	void _notification(int p_what);
-public:
 
-	void set_remote_node(const NodePath& p_remote_node);
+public:
+	void set_remote_node(const NodePath &p_remote_node);
 	NodePath get_remote_node() const;
 
 	virtual String get_configuration_warning() const;

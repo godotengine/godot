@@ -29,9 +29,9 @@
 #include "sample_editor_plugin.h"
 
 #if 0
-#include "io/resource_loader.h"
-#include "global_config.h"
 #include "editor/editor_settings.h"
+#include "global_config.h"
+#include "io/resource_loader.h"
 
 
 

@@ -29,16 +29,13 @@
 #ifndef SETTINGS_CONFIG_DIALOG_H
 #define SETTINGS_CONFIG_DIALOG_H
 
-
 #include "property_editor.h"
-#include "scene/gui/tab_container.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/tab_container.h"
 
 class EditorSettingsDialog : public AcceptDialog {
 
-	GDCLASS(EditorSettingsDialog,AcceptDialog);
-
-
+	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
 	bool updating;
 
@@ -64,28 +61,26 @@ class EditorSettingsDialog : public AcceptDialog {
 	virtual void ok_pressed();
 
 	void _settings_changed();
-	void _settings_property_edited(const String& p_name);
+	void _settings_property_edited(const String &p_name);
 	void _settings_save();
 
 	void _notification(int p_what);
 
-
 	void _press_a_key_confirm();
-	void _wait_for_key(const InputEvent& p_event);
+	void _wait_for_key(const InputEvent &p_event);
 
 	void _clear_shortcut_search_box();
 	void _clear_search_box();
 
-	void _filter_shortcuts(const String& p_filter);
+	void _filter_shortcuts(const String &p_filter);
 
 	void _update_shortcuts();
-	void _shortcut_button_pressed(Object* p_item,int p_column,int p_idx);
+	void _shortcut_button_pressed(Object *p_item, int p_column, int p_idx);
 
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	void popup_edit_settings();
 
 	EditorSettingsDialog();

@@ -31,41 +31,36 @@
 
 #include "scene/2d/node_2d.h"
 
+class NavigationPolygon : public Resource {
 
-class NavigationPolygon : public Resource  {
-
-	GDCLASS( NavigationPolygon, Resource );
+	GDCLASS(NavigationPolygon, Resource);
 
 	PoolVector<Vector2> vertices;
 	struct Polygon {
 		Vector<int> indices;
 	};
 	Vector<Polygon> polygons;
-	Vector< PoolVector<Vector2> > outlines;
+	Vector<PoolVector<Vector2> > outlines;
 
 protected:
-
 	static void _bind_methods();
 
-	void _set_polygons(const Array& p_array);
+	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;
 
-	void _set_outlines(const Array& p_array);
+	void _set_outlines(const Array &p_array);
 	Array _get_outlines() const;
 
 public:
-
-
-
-	void set_vertices(const PoolVector<Vector2>& p_vertices);
+	void set_vertices(const PoolVector<Vector2> &p_vertices);
 	PoolVector<Vector2> get_vertices() const;
 
-	void add_polygon(const Vector<int>& p_polygon);
+	void add_polygon(const Vector<int> &p_polygon);
 	int get_polygon_count() const;
 
-	void add_outline(const PoolVector<Vector2>& p_outline);
-	void add_outline_at_index(const PoolVector<Vector2>& p_outline,int p_index);
-	void set_outline(int p_idx,const PoolVector<Vector2>& p_outline);
+	void add_outline(const PoolVector<Vector2> &p_outline);
+	void add_outline_at_index(const PoolVector<Vector2> &p_outline, int p_index);
+	void set_outline(int p_idx, const PoolVector<Vector2> &p_outline);
 	PoolVector<Vector2> get_outline(int p_idx) const;
 	void remove_outline(int p_idx);
 	int get_outline_count() const;
@@ -79,12 +74,11 @@ public:
 	NavigationPolygon();
 };
 
-
 class Navigation2D;
 
 class NavigationPolygonInstance : public Node2D {
 
-	GDCLASS(NavigationPolygonInstance,Node2D);
+	GDCLASS(NavigationPolygonInstance, Node2D);
 
 	bool enabled;
 	int nav_id;
@@ -94,21 +88,19 @@ class NavigationPolygonInstance : public Node2D {
 	void _navpoly_changed();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_navigation_polygon(const Ref<NavigationPolygon>& p_navpoly);
+	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
 	Ref<NavigationPolygon> get_navigation_polygon() const;
 
 	String get_configuration_warning() const;
 
 	NavigationPolygonInstance();
 };
-
 
 #endif // NAVIGATIONPOLYGON_H

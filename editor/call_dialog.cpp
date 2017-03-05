@@ -29,9 +29,9 @@
 #include "call_dialog.h"
 
 #if 0
-#include "scene/gui/label.h"
 #include "class_db.h"
 #include "print_string.h"
+#include "scene/gui/label.h"
 
 
 class CallDialogParams : public Object {

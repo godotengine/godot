@@ -26,19 +26,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "export.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
-#include "io/zip_io.h"
+#include "editor/editor_settings.h"
+#include "global_config.h"
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
-#include "global_config.h"
+#include "io/zip_io.h"
 #include "os/file_access.h"
 #include "os/os.h"
 #include "platform/osx/logo.h"
 #include "string.h"
+#include "version.h"
 #if 0
 
 class EditorExportPlatformOSX : public EditorExportPlatform {
@@ -543,7 +543,4 @@ void register_osx_exporter() {
 	Ref<EditorExportPlatformOSX> exporter = Ref<EditorExportPlatformOSX>( memnew(EditorExportPlatformOSX) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
 #endif
-
 }
-
-

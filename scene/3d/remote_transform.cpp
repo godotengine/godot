@@ -31,19 +31,18 @@
 #include "remote_transform.h"
 
 void RemoteTransform::_update_cache() {
-	cache=0;
+	cache = 0;
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
-		if (!node || this==node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
+		if (!node || this == node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
 			return;
 		}
 
-		cache=node->get_instance_ID();
+		cache = node->get_instance_ID();
 	}
 }
 
 void RemoteTransform::_update_remote() {
-
 
 	if (!is_inside_tree())
 		return;
@@ -64,12 +63,11 @@ void RemoteTransform::_update_remote() {
 
 	//todo make faster
 	n->set_global_transform(get_global_transform());
-
 }
 
 void RemoteTransform::_notification(int p_what) {
 
-	switch(p_what) {
+	switch (p_what) {
 
 		case NOTIFICATION_READY: {
 
@@ -83,29 +81,25 @@ void RemoteTransform::_notification(int p_what) {
 			if (cache) {
 
 				_update_remote();
-
 			}
 
 		} break;
-
 	}
 }
 
+void RemoteTransform::set_remote_node(const NodePath &p_remote_node) {
 
-void RemoteTransform::set_remote_node(const NodePath& p_remote_node) {
-
-	remote_node=p_remote_node;
+	remote_node = p_remote_node;
 	if (is_inside_tree())
 		_update_cache();
 
 	update_configuration_warning();
 }
 
-NodePath RemoteTransform::get_remote_node() const{
+NodePath RemoteTransform::get_remote_node() const {
 
 	return remote_node;
 }
-
 
 String RemoteTransform::get_configuration_warning() const {
 
@@ -118,16 +112,14 @@ String RemoteTransform::get_configuration_warning() const {
 
 void RemoteTransform::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_remote_node","path"),&RemoteTransform::set_remote_node);
-	ClassDB::bind_method(D_METHOD("get_remote_node"),&RemoteTransform::get_remote_node);
+	ClassDB::bind_method(D_METHOD("set_remote_node", "path"), &RemoteTransform::set_remote_node);
+	ClassDB::bind_method(D_METHOD("get_remote_node"), &RemoteTransform::get_remote_node);
 
-	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"remote_path"),"set_remote_node","get_remote_node");
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path"), "set_remote_node", "get_remote_node");
 }
 
 RemoteTransform::RemoteTransform() {
 
-	cache=0;
+	cache = 0;
 	set_notify_transform(true);
-
 }
-

@@ -32,21 +32,20 @@
 #include "scene/resources/shape_2d.h"
 
 class CircleShape2D : public Shape2D {
-	GDCLASS( CircleShape2D, Shape2D );
+	GDCLASS(CircleShape2D, Shape2D);
 
 	real_t radius;
 	void _update_shape();
+
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	void set_radius(real_t p_radius);
 	real_t get_radius() const;
 
-	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual void draw(const RID &p_to_rid, const Color &p_color);
 	virtual Rect2 get_rect() const;
-
 
 	CircleShape2D();
 };

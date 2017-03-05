@@ -34,20 +34,19 @@
 #include <sys/statvfs.h>
 #endif
 
-#include <stdio.h>
 #include "os/memory.h"
 #include "print_string.h"
 #include <errno.h>
+#include <stdio.h>
 
 DirAccess *DirAccessUnix::create_fs() {
 
-	return memnew( DirAccessUnix );
+	return memnew(DirAccessUnix);
 }
 
 Error DirAccessUnix::list_dir_begin() {
-	
+
 	list_dir_end(); //close any previous dir opening!
-	
 
 	//char real_current_dir_name[2048]; //is this enough?!
 	//getcwd(real_current_dir_name,2048);
@@ -61,55 +60,51 @@ Error DirAccessUnix::list_dir_begin() {
 }
 
 bool DirAccessUnix::file_exists(String p_file) {
-	
+
 	GLOBAL_LOCK_FUNCTION
 
-
 	if (p_file.is_rel_path())
-		p_file=current_dir.plus_file(p_file);
+		p_file = current_dir.plus_file(p_file);
 
-	p_file=fix_path(p_file);
+	p_file = fix_path(p_file);
 
 	struct stat flags;
-	bool success = 	(stat(p_file.utf8().get_data(),&flags)==0);
+	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
 
 	if (success && S_ISDIR(flags.st_mode)) {
-		success=false;
+		success = false;
 	}
 
 	return success;
-
 }
 
 bool DirAccessUnix::dir_exists(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-
 	if (p_dir.is_rel_path())
-		p_dir=get_current_dir().plus_file(p_dir);
+		p_dir = get_current_dir().plus_file(p_dir);
 
-	p_dir=fix_path(p_dir);
+	p_dir = fix_path(p_dir);
 
 	struct stat flags;
-	bool success = 	(stat(p_dir.utf8().get_data(),&flags)==0);
+	bool success = (stat(p_dir.utf8().get_data(), &flags) == 0);
 
 	if (success && S_ISDIR(flags.st_mode))
 		return true;
 
 	return false;
-
 }
 
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
 
 	if (p_file.is_rel_path())
-		p_file=current_dir.plus_file(p_file);
+		p_file = current_dir.plus_file(p_file);
 
-	p_file=fix_path(p_file);
+	p_file = fix_path(p_file);
 
 	struct stat flags;
-	bool success = 	(stat(p_file.utf8().get_data(),&flags)==0);
+	bool success = (stat(p_file.utf8().get_data(), &flags) == 0);
 
 	if (success) {
 		return flags.st_mtime;
@@ -120,16 +115,15 @@ uint64_t DirAccessUnix::get_modified_time(String p_file) {
 	return 0;
 };
 
-
-String DirAccessUnix::get_next() { 
+String DirAccessUnix::get_next() {
 
 	if (!dir_stream)
 		return "";
 	dirent *entry;
 
-	entry=readdir(dir_stream);
+	entry = readdir(dir_stream);
 
-	if (entry==NULL) {
+	if (entry == NULL) {
 
 		list_dir_end();
 		return "";
@@ -140,31 +134,27 @@ String DirAccessUnix::get_next() {
 
 	String fname = fix_unicode_name(entry->d_name);
 
-	String f=current_dir.plus_file(fname);
+	String f = current_dir.plus_file(fname);
 
-	if (stat(f.utf8().get_data(),&flags)==0) {
+	if (stat(f.utf8().get_data(), &flags) == 0) {
 
 		if (S_ISDIR(flags.st_mode)) {
 
-			_cisdir=true;
+			_cisdir = true;
 
 		} else {
 
-			_cisdir=false;
+			_cisdir = false;
 		}
 
 	} else {
 
-		_cisdir=false;
-
+		_cisdir = false;
 	}
 
-	_cishidden=(fname!="." && fname!=".." && fname.begins_with("."));
-
-
+	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
 
 	return fname;
-
 }
 
 bool DirAccessUnix::current_is_dir() const {
@@ -177,13 +167,12 @@ bool DirAccessUnix::current_is_hidden() const {
 	return _cishidden;
 }
 
-
 void DirAccessUnix::list_dir_end() {
 
 	if (dir_stream)
 		closedir(dir_stream);
-	dir_stream=0;
-	_cisdir=false;
+	dir_stream = 0;
+	_cisdir = false;
 }
 
 int DirAccessUnix::get_drive_count() {
@@ -200,24 +189,21 @@ Error DirAccessUnix::make_dir(String p_dir) {
 	GLOBAL_LOCK_FUNCTION
 
 	if (p_dir.is_rel_path())
-		p_dir=get_current_dir().plus_file(p_dir);
+		p_dir = get_current_dir().plus_file(p_dir);
 
-
-	p_dir=fix_path(p_dir);
-
+	p_dir = fix_path(p_dir);
 
 #if 1
 
-
-	bool success=(mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)==0);
+	bool success = (mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
 	int err = errno;
 
 #else
 	char real_current_dir_name[2048];
-	getcwd(real_current_dir_name,2048);
+	getcwd(real_current_dir_name, 2048);
 	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
 
-	bool success=(mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)==0);
+	bool success = (mkdir(p_dir.utf8().get_data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0);
 	int err = errno;
 
 	chdir(real_current_dir_name);
@@ -233,90 +219,85 @@ Error DirAccessUnix::make_dir(String p_dir) {
 	return ERR_CANT_CREATE;
 }
 
-
 Error DirAccessUnix::change_dir(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
-	p_dir=fix_path(p_dir);
-
+	p_dir = fix_path(p_dir);
 
 	char real_current_dir_name[2048];
-	getcwd(real_current_dir_name,2048);
+	getcwd(real_current_dir_name, 2048);
 	String prev_dir;
 	if (prev_dir.parse_utf8(real_current_dir_name))
-		prev_dir=real_current_dir_name; //no utf8, maybe latin?
+		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 
 	chdir(current_dir.utf8().get_data()); //ascii since this may be unicode or wathever the host os wants
-	bool worked=(chdir(p_dir.utf8().get_data())==0); // we can only give this utf8
+	bool worked = (chdir(p_dir.utf8().get_data()) == 0); // we can only give this utf8
 
 	String base = _get_root_path();
-	if (base!="") {
+	if (base != "") {
 
-		getcwd(real_current_dir_name,2048);
+		getcwd(real_current_dir_name, 2048);
 		String new_dir;
 		new_dir.parse_utf8(real_current_dir_name);
 		if (!new_dir.begins_with(base))
-			worked=false;
+			worked = false;
 	}
 
 	if (worked) {
 
-		getcwd(real_current_dir_name,2048);
+		getcwd(real_current_dir_name, 2048);
 		if (current_dir.parse_utf8(real_current_dir_name))
-			current_dir=real_current_dir_name; //no utf8, maybe latin?
+			current_dir = real_current_dir_name; //no utf8, maybe latin?
 	}
 
 	chdir(prev_dir.utf8().get_data());
-	return worked?OK:ERR_INVALID_PARAMETER;
-
+	return worked ? OK : ERR_INVALID_PARAMETER;
 }
 
 String DirAccessUnix::get_current_dir() {
 
 	String base = _get_root_path();
-	if (base!="") {
+	if (base != "") {
 
-		String bd = current_dir.replace_first(base,"");
+		String bd = current_dir.replace_first(base, "");
 		if (bd.begins_with("/"))
-			return _get_root_string()+bd.substr(1,bd.length());
+			return _get_root_string() + bd.substr(1, bd.length());
 		else
-			return _get_root_string()+bd;
-
+			return _get_root_string() + bd;
 	}
 	return current_dir;
 }
 
-Error DirAccessUnix::rename(String p_path,String p_new_path) {
+Error DirAccessUnix::rename(String p_path, String p_new_path) {
 
 	if (p_path.is_rel_path())
-		p_path=get_current_dir().plus_file(p_path);
+		p_path = get_current_dir().plus_file(p_path);
 
-	p_path=fix_path(p_path);
+	p_path = fix_path(p_path);
 
 	if (p_new_path.is_rel_path())
-		p_new_path=get_current_dir().plus_file(p_new_path);
+		p_new_path = get_current_dir().plus_file(p_new_path);
 
-	p_new_path=fix_path(p_new_path);
+	p_new_path = fix_path(p_new_path);
 
-	return ::rename(p_path.utf8().get_data(),p_new_path.utf8().get_data())==0?OK:FAILED;
+	return ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data()) == 0 ? OK : FAILED;
 }
-Error DirAccessUnix::remove(String p_path)  {
+Error DirAccessUnix::remove(String p_path) {
 
 	if (p_path.is_rel_path())
-		p_path=get_current_dir().plus_file(p_path);
+		p_path = get_current_dir().plus_file(p_path);
 
-	p_path=fix_path(p_path);
+	p_path = fix_path(p_path);
 
 	struct stat flags;
-	if ((stat(p_path.utf8().get_data(),&flags)!=0))
+	if ((stat(p_path.utf8().get_data(), &flags) != 0))
 		return FAILED;
 
 	if (S_ISDIR(flags.st_mode))
-		return ::rmdir(p_path.utf8().get_data())==0?OK:FAILED;
+		return ::rmdir(p_path.utf8().get_data()) == 0 ? OK : FAILED;
 	else
-		return ::unlink(p_path.utf8().get_data())==0?OK:FAILED;
+		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
 }
-
 
 size_t DirAccessUnix::get_space_left() {
 
@@ -331,28 +312,23 @@ size_t DirAccessUnix::get_space_left() {
 #else
 #warning THIS IS BROKEN
 	return 0;
-#endif	
+#endif
 };
-
-
 
 DirAccessUnix::DirAccessUnix() {
 
-	dir_stream=0;
-	current_dir=".";
-	_cisdir=false;
+	dir_stream = 0;
+	current_dir = ".";
+	_cisdir = false;
 
 	/* determine drive count */
 
 	change_dir(current_dir);
-
 }
-
 
 DirAccessUnix::~DirAccessUnix() {
 
 	list_dir_end();
 }
-
 
 #endif //posix_enabled

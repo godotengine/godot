@@ -33,8 +33,7 @@
 
 namespace TestSound {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif // TEST_SOUND_H

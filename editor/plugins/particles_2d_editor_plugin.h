@@ -29,17 +29,17 @@
 #ifndef PARTICLES_2D_EDITOR_PLUGIN_H
 #define PARTICLES_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
 
+#include "scene/2d/particles_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/file_dialog.h"
-#include "scene/2d/particles_2d.h"
 
 class Particles2DEditorPlugin : public EditorPlugin {
 
-	GDCLASS( Particles2DEditorPlugin, EditorPlugin );
+	GDCLASS(Particles2DEditorPlugin, EditorPlugin);
 
 	enum {
 
@@ -58,15 +58,14 @@ class Particles2DEditorPlugin : public EditorPlugin {
 	SpinBox *epoints;
 
 	UndoRedo *undo_redo;
-	void _file_selected(const String& p_file);
+	void _file_selected(const String &p_file);
 	void _menu_callback(int p_idx);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-
 	virtual String get_name() const { return "Particles2D"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -75,8 +74,6 @@ public:
 
 	Particles2DEditorPlugin(EditorNode *p_node);
 	~Particles2DEditorPlugin();
-
 };
-
 
 #endif // PARTICLES_2D_EDITOR_PLUGIN_H

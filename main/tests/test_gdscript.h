@@ -40,8 +40,7 @@ enum TestType {
 	TEST_BYTECODE,
 };
 
-MainLoop* test(TestType p_type);
-
+MainLoop *test(TestType p_type);
 }
 
 #endif // TEST_GDSCRIPT_H

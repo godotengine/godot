@@ -33,7 +33,7 @@
 
 class Slider : public Range {
 
-	GDCLASS( Slider, Range );
+	GDCLASS(Slider, Range);
 
 	struct Grab {
 		int pos;
@@ -46,16 +46,13 @@ class Slider : public Range {
 	Orientation orientation;
 	float custom_step;
 
-
 protected:
-
 	void _gui_input(InputEvent p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool ticks_on_borders;
 
 public:
-
 	virtual Size2 get_minimum_size() const;
 
 	void set_custom_step(float p_custom_step);
@@ -67,25 +64,25 @@ public:
 	void set_ticks_on_borders(bool);
 	bool get_ticks_on_borders() const;
 
-	Slider(Orientation p_orientation=VERTICAL);
+	Slider(Orientation p_orientation = VERTICAL);
 };
-
-
 
 class HSlider : public Slider {
 
-	GDCLASS( HSlider, Slider );
-public:
+	GDCLASS(HSlider, Slider);
 
-	HSlider() : Slider(HORIZONTAL) { set_v_size_flags(0);}
+public:
+	HSlider()
+		: Slider(HORIZONTAL) { set_v_size_flags(0); }
 };
 
 class VSlider : public Slider {
 
-	GDCLASS( VSlider, Slider );
-public:
+	GDCLASS(VSlider, Slider);
 
-	VSlider() : Slider(VERTICAL) { set_h_size_flags(0);}
+public:
+	VSlider()
+		: Slider(VERTICAL) { set_h_size_flags(0); }
 };
 
 #endif // SLIDER_H

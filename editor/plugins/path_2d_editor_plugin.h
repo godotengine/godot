@@ -29,11 +29,11 @@
 #ifndef PATH_2D_EDITOR_PLUGIN_H
 #define PATH_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/2d/path_2d.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -77,7 +77,6 @@ class Path2DEditor : public HBoxContainer {
 		ACTION_MOVING_OUT,
 	};
 
-
 	Action action;
 	int action_point;
 	Point2 moving_from;
@@ -87,28 +86,28 @@ class Path2DEditor : public HBoxContainer {
 
 	void _canvas_draw();
 	void _node_visibility_changed();
-friend class Path2DEditorPlugin;
+	friend class Path2DEditorPlugin;
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
-	bool forward_gui_input(const InputEvent& p_event);
+public:
+	bool forward_gui_input(const InputEvent &p_event);
 	void edit(Node *p_path2d);
 	Path2DEditor(EditorNode *p_editor);
 };
 
 class Path2DEditorPlugin : public EditorPlugin {
 
-	GDCLASS( Path2DEditorPlugin, EditorPlugin );
+	GDCLASS(Path2DEditorPlugin, EditorPlugin);
 
 	Path2DEditor *path2d_editor;
 	EditorNode *editor;
 
 public:
-
-	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return path2d_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event) { return path2d_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "Path2D"; }
 	bool has_main_screen() const { return false; }
@@ -118,9 +117,6 @@ public:
 
 	Path2DEditorPlugin(EditorNode *p_node);
 	~Path2DEditorPlugin();
-
 };
-
-
 
 #endif // PATH_2D_EDITOR_PLUGIN_H

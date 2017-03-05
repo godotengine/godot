@@ -29,16 +29,15 @@
 #ifndef EDITOR_PATH_H
 #define EDITOR_PATH_H
 
+#include "editor_data.h"
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
-#include "editor_data.h"
 
 class EditorPath : public Control {
 
-	GDCLASS(EditorPath,Control);
+	GDCLASS(EditorPath, Control);
 
 	EditorHistory *history;
-
 
 	Vector<ObjectID> objects;
 	PopupMenu *popup;
@@ -46,15 +45,14 @@ class EditorPath : public Control {
 	EditorPath();
 
 	void _popup_select(int p_idx);
-	void _gui_input(const InputEvent& p_event);
-	void _add_children_to_popup(Object* p_obj,int p_depth=0);
-protected:
+	void _gui_input(const InputEvent &p_event);
+	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
 
+protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-
 	void update_path();
 
 	EditorPath(EditorHistory *p_history);

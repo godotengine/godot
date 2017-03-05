@@ -30,20 +30,19 @@
 #define INPUT_H
 
 #include "object.h"
-#include "os/thread_safe.h"
 #include "os/main_loop.h"
+#include "os/thread_safe.h"
 
 class Input : public Object {
 
-	GDCLASS( Input, Object );
+	GDCLASS(Input, Object);
 
 	static Input *singleton;
 
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
@@ -56,57 +55,56 @@ public:
 
 	static Input *get_singleton();
 
-	virtual bool is_key_pressed(int p_scancode) const=0;
-	virtual bool is_mouse_button_pressed(int p_button) const=0;
-	virtual bool is_joy_button_pressed(int p_device, int p_button) const=0;
-	virtual bool is_action_pressed(const StringName& p_action) const=0;
-	virtual bool is_action_just_pressed(const StringName& p_action) const=0;
-	virtual bool is_action_just_released(const StringName& p_action) const=0;
+	virtual bool is_key_pressed(int p_scancode) const = 0;
+	virtual bool is_mouse_button_pressed(int p_button) const = 0;
+	virtual bool is_joy_button_pressed(int p_device, int p_button) const = 0;
+	virtual bool is_action_pressed(const StringName &p_action) const = 0;
+	virtual bool is_action_just_pressed(const StringName &p_action) const = 0;
+	virtual bool is_action_just_released(const StringName &p_action) const = 0;
 
-	virtual float get_joy_axis(int p_device,int p_axis) const=0;
-	virtual String get_joy_name(int p_idx)=0;
-	virtual Array get_connected_joypads()=0;
-	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid)=0;
-	virtual void add_joy_mapping(String p_mapping, bool p_update_existing=false)=0;
-	virtual void remove_joy_mapping(String p_guid)=0;
-	virtual bool is_joy_known(int p_device)=0;
-	virtual String get_joy_guid(int p_device) const=0;
-	virtual Vector2 get_joy_vibration_strength(int p_device)=0;
-	virtual float get_joy_vibration_duration(int p_device)=0;
-	virtual uint64_t get_joy_vibration_timestamp(int p_device)=0;
-	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration=0)=0;
-	virtual void stop_joy_vibration(int p_device)=0;
+	virtual float get_joy_axis(int p_device, int p_axis) const = 0;
+	virtual String get_joy_name(int p_idx) = 0;
+	virtual Array get_connected_joypads() = 0;
+	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid) = 0;
+	virtual void add_joy_mapping(String p_mapping, bool p_update_existing = false) = 0;
+	virtual void remove_joy_mapping(String p_guid) = 0;
+	virtual bool is_joy_known(int p_device) = 0;
+	virtual String get_joy_guid(int p_device) const = 0;
+	virtual Vector2 get_joy_vibration_strength(int p_device) = 0;
+	virtual float get_joy_vibration_duration(int p_device) = 0;
+	virtual uint64_t get_joy_vibration_timestamp(int p_device) = 0;
+	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0) = 0;
+	virtual void stop_joy_vibration(int p_device) = 0;
 
-	virtual Point2 get_mouse_pos() const=0;
-	virtual Point2 get_last_mouse_speed() const=0;
-	virtual int get_mouse_button_mask() const=0;
+	virtual Point2 get_mouse_pos() const = 0;
+	virtual Point2 get_last_mouse_speed() const = 0;
+	virtual int get_mouse_button_mask() const = 0;
 
-	virtual void warp_mouse_pos(const Vector2& p_to)=0;
+	virtual void warp_mouse_pos(const Vector2 &p_to) = 0;
 
-	virtual Vector3 get_gravity() const=0;
-	virtual Vector3 get_accelerometer() const=0;
-	virtual Vector3 get_magnetometer() const=0;
-	virtual Vector3 get_gyroscope() const=0;
+	virtual Vector3 get_gravity() const = 0;
+	virtual Vector3 get_accelerometer() const = 0;
+	virtual Vector3 get_magnetometer() const = 0;
+	virtual Vector3 get_gyroscope() const = 0;
 
-	virtual void action_press(const StringName& p_action)=0;
-	virtual void action_release(const StringName& p_action)=0;
+	virtual void action_press(const StringName &p_action) = 0;
+	virtual void action_release(const StringName &p_action) = 0;
 
-	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
+	void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
 
-	virtual bool is_emulating_touchscreen() const=0;
+	virtual bool is_emulating_touchscreen() const = 0;
 
-	virtual void set_custom_mouse_cursor(const RES& p_cursor,const Vector2& p_hotspot=Vector2())=0;
-	virtual void set_mouse_in_window(bool p_in_window)=0;
+	virtual void set_custom_mouse_cursor(const RES &p_cursor, const Vector2 &p_hotspot = Vector2()) = 0;
+	virtual void set_mouse_in_window(bool p_in_window) = 0;
 
-	virtual String get_joy_button_string(int p_button)=0;
-	virtual String get_joy_axis_string(int p_axis)=0;
-	virtual int    get_joy_button_index_from_string(String p_button)=0;
-	virtual int    get_joy_axis_index_from_string(String p_axis)=0;
+	virtual String get_joy_button_string(int p_button) = 0;
+	virtual String get_joy_axis_string(int p_axis) = 0;
+	virtual int get_joy_button_index_from_string(String p_button) = 0;
+	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
 	Input();
 };
 
 VARIANT_ENUM_CAST(Input::MouseMode);
-
 
 #endif // INPUT_H

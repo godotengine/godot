@@ -34,7 +34,7 @@ class PCKPacker : public Reference {
 
 	GDCLASS(PCKPacker, Reference);
 
-	FileAccess* file;
+	FileAccess *file;
 	int alignment;
 
 	static void _bind_methods();
@@ -49,10 +49,9 @@ class PCKPacker : public Reference {
 	Vector<File> files;
 
 public:
-	Error pck_start(const String& p_file, int p_alignment);
-	Error add_file(const String& p_file, const String& p_src);
+	Error pck_start(const String &p_file, int p_alignment);
+	Error add_file(const String &p_file, const String &p_src);
 	Error flush(bool p_verbose = false);
-
 
 	PCKPacker();
 	~PCKPacker();

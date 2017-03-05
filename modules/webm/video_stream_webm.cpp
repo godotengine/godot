@@ -28,14 +28,14 @@
 /*************************************************************************/
 #include "video_stream_webm.h"
 
-#include "VPXDecoder.hpp"
 #include "OpusVorbisDecoder.hpp"
+#include "VPXDecoder.hpp"
 
-#include "mkvparser/mkvparser.h"
 #include "../theora/yuv2rgb.h"
+#include "mkvparser/mkvparser.h"
 
-#include "os/file_access.h"
 #include "global_config.h"
+#include "os/file_access.h"
 
 #include <string.h>
 
@@ -85,22 +85,21 @@ private:
 
 /**/
 
-VideoStreamPlaybackWebm::VideoStreamPlaybackWebm() :
-	audio_track(0),
-	webm(NULL),
-	video(NULL),
-	audio(NULL),
-	video_frames(NULL), audio_frame(NULL),
-	video_frames_pos(0), video_frames_capacity(0),
-	num_decoded_samples(0), samples_offset(-1),
-	mix_callback(NULL),
-	mix_udata(NULL),
-	playing(false), paused(false),
-	delay_compensation(0.0),
-	time(0.0), video_frame_delay(0.0), video_pos(0.0),
-	texture(memnew(ImageTexture)),
-	pcm(NULL)
-{}
+VideoStreamPlaybackWebm::VideoStreamPlaybackWebm()
+	: audio_track(0),
+	  webm(NULL),
+	  video(NULL),
+	  audio(NULL),
+	  video_frames(NULL), audio_frame(NULL),
+	  video_frames_pos(0), video_frames_capacity(0),
+	  num_decoded_samples(0), samples_offset(-1),
+	  mix_callback(NULL),
+	  mix_udata(NULL),
+	  playing(false), paused(false),
+	  delay_compensation(0.0),
+	  time(0.0), video_frame_delay(0.0), video_pos(0.0),
+	  texture(memnew(ImageTexture)),
+	  pcm(NULL) {}
 VideoStreamPlaybackWebm::~VideoStreamPlaybackWebm() {
 
 	delete_pointers();
@@ -299,22 +298,22 @@ void VideoStreamPlaybackWebm::update(float p_delta) {
 							if (image.chromaShiftW == 1 && image.chromaShiftH == 1) {
 
 								yuv420_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
-// 								libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+								// 								libyuv::I420ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 								converted = true;
 							} else if (image.chromaShiftW == 1 && image.chromaShiftH == 0) {
 
 								yuv422_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
-// 								libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+								// 								libyuv::I422ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 								converted = true;
 							} else if (image.chromaShiftW == 0 && image.chromaShiftH == 0) {
 
 								yuv444_2_rgb8888(w.ptr(), image.planes[0], image.planes[2], image.planes[1], image.w, image.h, image.linesize[0], image.linesize[1], image.w << 2, 0);
-// 								libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+								// 								libyuv::I444ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
 								converted = true;
 							} else if (image.chromaShiftW == 2 && image.chromaShiftH == 0) {
 
-// 								libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
-// 								converted = true;
+								// 								libyuv::I411ToARGB(image.planes[0], image.linesize[0], image.planes[2], image.linesize[2], image.planes[1], image.linesize[1], w.ptr(), image.w << 2, image.w, image.h);
+								// 								converted = true;
 							}
 
 							if (converted)
@@ -361,8 +360,7 @@ int VideoStreamPlaybackWebm::get_mix_rate() const {
 	return 0;
 }
 
-inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const
-{
+inline bool VideoStreamPlaybackWebm::has_enough_video_frames() const {
 	if (video_frames_pos > 0) {
 
 		const double audio_delay = AudioServer::get_singleton()->get_output_delay();
@@ -423,9 +421,8 @@ String ResourceFormatLoaderVideoStreamWebm::get_resource_type(const String &p_pa
 
 /**/
 
-VideoStreamWebm::VideoStreamWebm() :
-	audio_track(0)
-{}
+VideoStreamWebm::VideoStreamWebm()
+	: audio_track(0) {}
 
 Ref<VideoStreamPlayback> VideoStreamWebm::instance_playback() {
 

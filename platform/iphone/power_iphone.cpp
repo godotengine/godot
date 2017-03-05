@@ -33,12 +33,10 @@ bool PowerState::UpdatePowerInfo() {
 	return false;
 }
 
-
 PowerState PowerIphone::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
-	}
-	else {
+	} else {
 		return POWERSTATE_UNKNOWN;
 	}
 }
@@ -46,8 +44,7 @@ PowerState PowerIphone::get_power_state() {
 int PowerIphone::get_power_seconds_left() {
 	if (UpdatePowerInfo()) {
 		return nsecs_left;
-	}
-	else {
+	} else {
 		return -1;
 	}
 }
@@ -55,15 +52,14 @@ int PowerIphone::get_power_seconds_left() {
 int PowerIphone::get_power_percent_left() {
 	if (UpdatePowerInfo()) {
 		return percent_left;
-	}
-	else {
+	} else {
 		return -1;
 	}
 }
 
-PowerIphone::PowerIphone() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
+PowerIphone::PowerIphone()
+	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
 	// TODO Auto-generated constructor stub
-
 }
 
 PowerIphone::~PowerIphone() {

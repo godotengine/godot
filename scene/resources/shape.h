@@ -34,26 +34,24 @@ class Mesh;
 
 class Shape : public Resource {
 
-	GDCLASS( Shape, Resource );
-	OBJ_SAVE_TYPE( Shape );
+	GDCLASS(Shape, Resource);
+	OBJ_SAVE_TYPE(Shape);
 	RES_BASE_EXTENSION("shp");
 	RID shape;
 
 	Ref<Mesh> debug_mesh_cache;
 
 protected:
-
 	_FORCE_INLINE_ RID get_shape() const { return shape; }
 	Shape(RID p_shape);
 
-	virtual Vector<Vector3> _gen_debug_mesh_lines()=0;// { return Vector<Vector3>(); }
+	virtual Vector<Vector3> _gen_debug_mesh_lines() = 0; // { return Vector<Vector3>(); }
 public:
-
 	virtual RID get_rid() const { return shape; }
 
 	Ref<Mesh> get_debug_mesh();
 
-	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform& p_xform);
+	void add_vertices_to_array(PoolVector<Vector3> &array, const Transform &p_xform);
 
 	Shape();
 	~Shape();

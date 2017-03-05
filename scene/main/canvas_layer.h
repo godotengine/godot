@@ -32,11 +32,10 @@
 #include "scene/main/node.h"
 #include "scene/resources/world_2d.h"
 
-
 class Viewport;
 class CanvasLayer : public Node {
 
-	GDCLASS( CanvasLayer, Node );
+	GDCLASS(CanvasLayer, Node);
 
 	bool locrotscale_dirty;
 	Vector2 ofs;
@@ -61,20 +60,18 @@ class CanvasLayer : public Node {
 	void _update_xform();
 	void _update_locrotscale();
 
-
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void set_layer(int p_xform);
 	int get_layer() const;
 
-	void set_transform(const Transform2D& p_xform);
+	void set_transform(const Transform2D &p_xform);
 	Transform2D get_transform() const;
 
-	void set_offset(const Vector2& p_offset);
+	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
 	void set_rotation(real_t p_radians);
@@ -83,7 +80,7 @@ public:
 	void set_rotationd(real_t p_degrees);
 	real_t get_rotationd() const;
 
-	void set_scale(const Size2& p_scale);
+	void set_scale(const Size2 &p_scale);
 	Size2 get_scale() const;
 
 	Ref<World2D> get_world_2d() const;
@@ -93,7 +90,7 @@ public:
 	RID get_viewport() const;
 
 	void set_custom_viewport(Node *p_viewport);
-	Node* get_custom_viewport() const;
+	Node *get_custom_viewport() const;
 
 	void reset_sort_index();
 	int get_sort_index();

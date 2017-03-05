@@ -30,7 +30,6 @@
 
 #include "message_queue.h"
 
-
 int TabContainer::_get_top_margin() const {
 
 	if (!tabs_visible)
@@ -47,7 +46,7 @@ int TabContainer::_get_top_margin() const {
 	Ref<Font> font = get_font("font");
 	int content_height = font->get_height();
 
-	Vector<Control*> tabs = _get_tabs();
+	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
@@ -63,13 +62,9 @@ int TabContainer::_get_top_margin() const {
 	return tab_height + content_height;
 }
 
+void TabContainer::_gui_input(const InputEvent &p_event) {
 
-
-void TabContainer::_gui_input(const InputEvent& p_event) {
-
-	if (p_event.type == InputEvent::MOUSE_BUTTON
-		&& p_event.mouse_button.pressed
-		&& p_event.mouse_button.button_index == BUTTON_LEFT) {
+	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index == BUTTON_LEFT) {
 
 		Point2 pos(p_event.mouse_button.x, p_event.mouse_button.y);
 		Size2 size = get_size();
@@ -92,7 +87,7 @@ void TabContainer::_gui_input(const InputEvent& p_event) {
 			return;
 		}
 
-		Vector<Control*> tabs = _get_tabs();
+		Vector<Control *> tabs = _get_tabs();
 
 		// Handle navigation buttons.
 		if (buttons_visible_cache) {
@@ -144,7 +139,7 @@ void TabContainer::_notification(int p_what) {
 				return;
 			}
 
-			Vector<Control*> tabs = _get_tabs();
+			Vector<Control *> tabs = _get_tabs();
 			Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
 			Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
 			Ref<StyleBox> tab_disabled = get_stylebox("tab_disabled");
@@ -233,9 +228,7 @@ void TabContainer::_notification(int p_what) {
 
 				// Draw the tab contents.
 				Control *control = tabs[i + first_tab_cache]->cast_to<Control>();
-				String text = control->has_meta("_tab_name")
-					? String(XL_MESSAGE(String(control->get_meta("_tab_name"))))
-					: String(control->get_name());
+				String text = control->has_meta("_tab_name") ? String(XL_MESSAGE(String(control->get_meta("_tab_name")))) : String(control->get_name());
 
 				int x_content = tab_rect.pos.x + tab_style->get_margin(MARGIN_LEFT);
 				int top_margin = tab_style->get_margin(MARGIN_TOP);
@@ -276,13 +269,13 @@ void TabContainer::_notification(int p_what) {
 
 				x -= increment->get_width();
 				increment->draw(canvas,
-					Point2(x, y_center - (increment->get_height() / 2)),
-					Color(1, 1, 1, last_tab_cache < tabs.size() - 1 ? 1.0 : 0.5));
+						Point2(x, y_center - (increment->get_height() / 2)),
+						Color(1, 1, 1, last_tab_cache < tabs.size() - 1 ? 1.0 : 0.5));
 
 				x -= decrement->get_width();
 				decrement->draw(canvas,
-					Point2(x, y_center - (decrement->get_height() / 2)),
-					Color(1, 1, 1, first_tab_cache > 0 ? 1.0 : 0.5));
+						Point2(x, y_center - (decrement->get_height() / 2)),
+						Color(1, 1, 1, first_tab_cache > 0 ? 1.0 : 0.5));
 			}
 
 			// Draw the tab area.
@@ -303,9 +296,7 @@ int TabContainer::_get_tab_width(int p_index) const {
 
 	// Get the width of the text displayed on the tab.
 	Ref<Font> font = get_font("font");
-	String text = control->has_meta("_tab_name")
-		? String(XL_MESSAGE(String(control->get_meta("_tab_name"))))
-		: String(control->get_name());
+	String text = control->has_meta("_tab_name") ? String(XL_MESSAGE(String(control->get_meta("_tab_name")))) : String(control->get_name());
 	int width = font->get_string_size(text).width;
 
 	// Add space for a tab icon.
@@ -333,9 +324,9 @@ int TabContainer::_get_tab_width(int p_index) const {
 	return width;
 }
 
-Vector<Control*> TabContainer::_get_tabs() const {
+Vector<Control *> TabContainer::_get_tabs() const {
 
-	Vector<Control*> controls;
+	Vector<Control *> controls;
 	for (int i = 0; i < get_child_count(); i++) {
 
 		Control *control = get_child(i)->cast_to<Control>();
@@ -380,7 +371,6 @@ void TabContainer::add_child_notify(Node *p_child) {
 	for (int i = 0; i < 4; i++)
 		c->set_margin(Margin(i), c->get_margin(Margin(i)) + sb->get_margin(Margin(i)));
 
-
 	update();
 	p_child->connect("renamed", this, "_child_renamed_callback");
 	if (first)
@@ -392,7 +382,6 @@ int TabContainer::get_tab_count() const {
 	return _get_tabs().size();
 }
 
-
 void TabContainer::set_current_tab(int p_current) {
 
 	ERR_FAIL_INDEX(p_current, get_tab_count());
@@ -401,7 +390,7 @@ void TabContainer::set_current_tab(int p_current) {
 	current = p_current;
 
 	Ref<StyleBox> sb = get_stylebox("panel");
-	Vector<Control*> tabs = _get_tabs();
+	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
@@ -413,9 +402,7 @@ void TabContainer::set_current_tab(int p_current) {
 			for (int i = 0; i < 4; i++)
 				c->set_margin(Margin(i), c->get_margin(Margin(i)) + sb->get_margin(Margin(i)));
 
-
-		}
-		else
+		} else
 			c->hide();
 	}
 
@@ -438,22 +425,22 @@ int TabContainer::get_current_tab() const {
 }
 
 int TabContainer::get_previous_tab() const {
-	
-		return previous;
+
+	return previous;
 }
 
-Control* TabContainer::get_tab_control(int p_idx) const {
+Control *TabContainer::get_tab_control(int p_idx) const {
 
-	Vector<Control*> tabs = _get_tabs();
+	Vector<Control *> tabs = _get_tabs();
 	if (p_idx >= 0 && p_idx < tabs.size())
 		return tabs[p_idx];
 	else
 		return NULL;
 }
 
-Control* TabContainer::get_current_tab_control() const {
+Control *TabContainer::get_current_tab_control() const {
 
-	Vector<Control*> tabs = _get_tabs();
+	Vector<Control *> tabs = _get_tabs();
 	if (current >= 0 && current < tabs.size())
 		return tabs[current];
 	else
@@ -499,7 +486,7 @@ void TabContainer::set_tabs_visible(bool p_visibe) {
 
 	tabs_visible = p_visibe;
 
-	Vector<Control*> tabs = _get_tabs();
+	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
@@ -507,7 +494,6 @@ void TabContainer::set_tabs_visible(bool p_visibe) {
 			c->set_margin(MARGIN_TOP, _get_top_margin());
 		else
 			c->set_margin(MARGIN_TOP, 0);
-
 	}
 	update();
 }
@@ -515,21 +501,18 @@ void TabContainer::set_tabs_visible(bool p_visibe) {
 bool TabContainer::are_tabs_visible() const {
 
 	return tabs_visible;
-
 }
 
 Control *TabContainer::_get_tab(int p_idx) const {
 
 	return get_tab_control(p_idx);
-
 }
 
-void TabContainer::set_tab_title(int p_tab, const String& p_title) {
+void TabContainer::set_tab_title(int p_tab, const String &p_title) {
 
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_name", p_title);
-
 }
 
 String TabContainer::get_tab_title(int p_tab) const {
@@ -540,15 +523,13 @@ String TabContainer::get_tab_title(int p_tab) const {
 		return child->get_meta("_tab_name");
 	else
 		return child->get_name();
-
 }
 
-void TabContainer::set_tab_icon(int p_tab, const Ref<Texture>& p_icon) {
+void TabContainer::set_tab_icon(int p_tab, const Ref<Texture> &p_icon) {
 
 	Control *child = _get_tab(p_tab);
 	ERR_FAIL_COND(!child);
 	child->set_meta("_tab_icon", p_icon);
-
 }
 Ref<Texture> TabContainer::get_tab_icon(int p_tab) const {
 
@@ -580,7 +561,7 @@ bool TabContainer::get_tab_disabled(int p_tab) const {
 
 void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 
-	Vector<Control*> tabs = _get_tabs();
+	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
@@ -599,7 +580,7 @@ Size2 TabContainer::get_minimum_size() const {
 
 	Size2 ms;
 
-	Vector<Control*> tabs = _get_tabs();
+	Vector<Control *> tabs = _get_tabs();
 	for (int i = 0; i < tabs.size(); i++) {
 
 		Control *c = tabs[i];
@@ -632,7 +613,7 @@ void TabContainer::set_popup(Node *p_popup) {
 	update();
 }
 
-Popup* TabContainer::get_popup() const {
+Popup *TabContainer::get_popup() const {
 	return popup;
 }
 
@@ -667,7 +648,6 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
-
 }
 
 TabContainer::TabContainer() {
@@ -681,5 +661,4 @@ TabContainer::TabContainer() {
 	align = ALIGN_CENTER;
 	tabs_visible = true;
 	popup = NULL;
-
 }

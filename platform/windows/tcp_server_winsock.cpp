@@ -37,7 +37,7 @@
 
 extern int winsock_refcount;
 
-TCP_Server* TCPServerWinsock::_create() {
+TCP_Server *TCPServerWinsock::_create() {
 
 	return memnew(TCPServerWinsock);
 };
@@ -48,7 +48,7 @@ void TCPServerWinsock::make_default() {
 
 	if (winsock_refcount == 0) {
 		WSADATA data;
-		WSAStartup(MAKEWORD(2,2), &data);
+		WSAStartup(MAKEWORD(2, 2), &data);
 	};
 	++winsock_refcount;
 };
@@ -62,10 +62,9 @@ void TCPServerWinsock::cleanup() {
 	};
 };
 
+Error TCPServerWinsock::listen(uint16_t p_port, const IP_Address p_bind_address) {
 
-Error TCPServerWinsock::listen(uint16_t p_port,const IP_Address p_bind_address) {
-
-	ERR_FAIL_COND_V(listen_sockfd!=-1,ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(listen_sockfd != -1, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	int sockfd;
@@ -74,7 +73,6 @@ Error TCPServerWinsock::listen(uint16_t p_port,const IP_Address p_bind_address) 
 	// If the bind address is valid use its type as the socket type
 	if (p_bind_address.is_valid())
 		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-
 
 	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
@@ -89,12 +87,11 @@ Error TCPServerWinsock::listen(uint16_t p_port,const IP_Address p_bind_address) 
 	struct sockaddr_storage my_addr;
 	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, sock_type, p_bind_address);
 
-	int reuse=1;
-	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
+	int reuse = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 
 		printf("REUSEADDR failed!");
 	}
-
 
 	if (bind(sockfd, (struct sockaddr *)&my_addr, addr_size) != SOCKET_ERROR) {
 
@@ -103,8 +100,7 @@ Error TCPServerWinsock::listen(uint16_t p_port,const IP_Address p_bind_address) 
 			closesocket(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
-	}
-	else {
+	} else {
 		return ERR_ALREADY_IN_USE;
 	};
 
@@ -143,7 +139,6 @@ bool TCPServerWinsock::is_connection_available() const {
 	return false;
 };
 
-
 Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 
 	if (!is_connection_available()) {
@@ -175,7 +170,6 @@ void TCPServerWinsock::stop() {
 	sock_type = IP::TYPE_NONE;
 };
 
-
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
@@ -186,4 +180,3 @@ TCPServerWinsock::~TCPServerWinsock() {
 
 	stop();
 };
-

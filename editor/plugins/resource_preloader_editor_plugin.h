@@ -29,18 +29,16 @@
 #ifndef RESOURCE_PRELOADER_EDITOR_PLUGIN_H
 #define RESOURCE_PRELOADER_EDITOR_PLUGIN_H
 
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/file_dialog.h"
 #include "scene/gui/tree.h"
 #include "scene/main/resource_preloader.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/dialogs.h"
-
 
 class ResourcePreloaderEditor : public PanelContainer {
 
-	GDCLASS(ResourcePreloaderEditor, PanelContainer );
+	GDCLASS(ResourcePreloaderEditor, PanelContainer);
 
 	Button *load;
 	Button *_delete;
@@ -48,17 +46,15 @@ class ResourcePreloaderEditor : public PanelContainer {
 	Tree *tree;
 	bool loading_scene;
 
-
 	EditorFileDialog *file;
 
 	AcceptDialog *dialog;
 
 	ResourcePreloader *preloader;
 
-
 	void _load_pressed();
 	void _load_scene_pressed();
-	void _files_load_request(const Vector<String>& p_paths);
+	void _files_load_request(const Vector<String> &p_paths);
 	void _paste_pressed();
 	void _delete_pressed();
 	void _delete_confirm_pressed();
@@ -67,33 +63,31 @@ class ResourcePreloaderEditor : public PanelContainer {
 
 	UndoRedo *undo_redo;
 
-	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
-	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
-	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
-
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	void _notification(int p_what);
 	void _gui_input(InputEvent p_event);
 	static void _bind_methods();
+
 public:
+	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 
-	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
-
-	void edit(ResourcePreloader* p_preloader);
+	void edit(ResourcePreloader *p_preloader);
 	ResourcePreloaderEditor();
 };
 
 class ResourcePreloaderEditorPlugin : public EditorPlugin {
 
-	GDCLASS( ResourcePreloaderEditorPlugin, EditorPlugin );
+	GDCLASS(ResourcePreloaderEditorPlugin, EditorPlugin);
 
 	ResourcePreloaderEditor *preloader_editor;
 	EditorNode *editor;
 	Button *button;
 
 public:
-
 	virtual String get_name() const { return "ResourcePreloader"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -102,7 +96,6 @@ public:
 
 	ResourcePreloaderEditorPlugin(EditorNode *p_node);
 	~ResourcePreloaderEditorPlugin();
-
 };
 
 #endif // RESOURCE_PRELOADER_EDITOR_PLUGIN_H

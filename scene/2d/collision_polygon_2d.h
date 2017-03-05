@@ -32,21 +32,17 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/shape_2d.h"
 
-
-
 class CollisionPolygon2D : public Node2D {
 
-	GDCLASS(CollisionPolygon2D,Node2D);
-public:
+	GDCLASS(CollisionPolygon2D, Node2D);
 
+public:
 	enum BuildMode {
 		BUILD_SOLIDS,
 		BUILD_SEGMENTS,
 	};
 
 protected:
-
-
 	Rect2 aabb;
 	BuildMode build_mode;
 	Vector<Point2> polygon;
@@ -60,24 +56,23 @@ protected:
 	int shape_from;
 	int shape_to;
 
-	void _set_shape_range(const Vector2& p_range);
+	void _set_shape_range(const Vector2 &p_range);
 	Vector2 _get_shape_range() const;
 
-	Vector< Vector<Vector2> > _decompose_in_convex();
+	Vector<Vector<Vector2> > _decompose_in_convex();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void set_trigger(bool p_trigger);
 	bool is_trigger() const;
 
 	void set_build_mode(BuildMode p_mode);
 	BuildMode get_build_mode() const;
 
-	void set_polygon(const Vector<Point2>& p_polygon);
+	void set_polygon(const Vector<Point2> &p_polygon);
 	Vector<Point2> get_polygon() const;
 
 	virtual Rect2 get_item_rect() const;
@@ -90,6 +85,6 @@ public:
 	CollisionPolygon2D();
 };
 
-VARIANT_ENUM_CAST( CollisionPolygon2D::BuildMode );
+VARIANT_ENUM_CAST(CollisionPolygon2D::BuildMode);
 
 #endif // COLLISION_POLYGON_2D_H

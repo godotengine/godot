@@ -30,8 +30,8 @@
 #define SAMPLE_EDITOR_PLUGIN_H
 
 #if 0
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/audio/sample_player.h"
 #include "scene/resources/sample.h"
 #include "scene/resources/sample_library.h"

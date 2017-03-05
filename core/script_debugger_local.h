@@ -34,26 +34,23 @@
 class ScriptDebuggerLocal : public ScriptDebugger {
 
 	bool profiling;
-	float frame_time,idle_time,fixed_time,fixed_frame_time;
+	float frame_time, idle_time, fixed_time, fixed_frame_time;
 	uint64_t idle_accum;
 
 	Vector<ScriptLanguage::ProfilingInfo> pinfo;
 
-
 public:
-
-	void debug(ScriptLanguage *p_script,bool p_can_continue);
-	virtual void send_message(const String& p_message, const Array& p_args);
+	void debug(ScriptLanguage *p_script, bool p_can_continue);
+	virtual void send_message(const String &p_message, const Array &p_args);
 
 	virtual bool is_profiling() const { return profiling; }
-	virtual void add_profiling_frame_data(const StringName& p_name,const Array& p_data) {}
+	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) {}
 
 	virtual void idle_poll();
 
 	virtual void profiling_start();
 	virtual void profiling_end();
-	virtual void profiling_set_frame_times(float p_frame_time,float p_idle_time,float p_fixed_time,float p_fixed_frame_time);
-
+	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_fixed_time, float p_fixed_frame_time);
 
 	ScriptDebuggerLocal();
 };

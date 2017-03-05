@@ -29,19 +29,17 @@
 #ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
 #define SPRITE_FRAMES_EDITOR_PLUGIN_H
 
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
-#include "scene/gui/tree.h"
+#include "editor/editor_plugin.h"
 #include "scene/2d/animated_sprite.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/file_dialog.h"
 #include "scene/gui/split_container.h"
-
+#include "scene/gui/tree.h"
 
 class SpriteFramesEditor : public PanelContainer {
 
-	GDCLASS(SpriteFramesEditor, PanelContainer );
+	GDCLASS(SpriteFramesEditor, PanelContainer);
 
 	Button *load;
 	Button *_delete;
@@ -58,7 +56,6 @@ class SpriteFramesEditor : public PanelContainer {
 	Button *new_anim;
 	Button *remove_anim;
 
-
 	Tree *animations;
 	SpinBox *anim_speed;
 	CheckButton *anim_loop;
@@ -73,7 +70,7 @@ class SpriteFramesEditor : public PanelContainer {
 
 	void _load_pressed();
 	void _load_scene_pressed();
-	void _file_load_request(const PoolVector<String>& p_path, int p_at_pos=-1);
+	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
 	void _paste_pressed();
 	void _empty_pressed();
 	void _empty2_pressed();
@@ -81,10 +78,8 @@ class SpriteFramesEditor : public PanelContainer {
 	void _delete_confirm_pressed();
 	void _up_pressed();
 	void _down_pressed();
-	void _update_library(bool p_skip_selector=false);
+	void _update_library(bool p_skip_selector = false);
 	void _item_edited();
-
-
 
 	void _animation_select();
 	void _animation_name_edited();
@@ -97,33 +92,32 @@ class SpriteFramesEditor : public PanelContainer {
 
 	UndoRedo *undo_redo;
 
-	bool _is_drop_valid(const Dictionary& p_drag_data, const Dictionary& p_item_data) const;
-	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
-	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
-	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	void _notification(int p_what);
 	void _gui_input(InputEvent p_event);
 	static void _bind_methods();
+
 public:
+	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 
-	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
-
-	void edit(SpriteFrames* p_frames);
+	void edit(SpriteFrames *p_frames);
 	SpriteFramesEditor();
 };
 
 class SpriteFramesEditorPlugin : public EditorPlugin {
 
-	GDCLASS( SpriteFramesEditorPlugin, EditorPlugin );
+	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor;
 	EditorNode *editor;
 	Button *button;
 
 public:
-
 	virtual String get_name() const { return "SpriteFrames"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -132,7 +126,6 @@ public:
 
 	SpriteFramesEditorPlugin(EditorNode *p_node);
 	~SpriteFramesEditorPlugin();
-
 };
 
 #endif // SPRITE_FRAMES_EDITOR_PLUGIN_H

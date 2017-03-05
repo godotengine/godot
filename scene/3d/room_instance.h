@@ -36,7 +36,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 /* RoomInstance Logic:
    a) Instances that belong to the room are drawn only if the room is visible (seen through portal, or player inside)
    b) Instances that don't belong to any room are considered to belong to the root room (RID empty)
@@ -44,52 +43,38 @@
 
 */
 
-
-
-
 class Room : public VisualInstance {
 
-	GDCLASS( Room, VisualInstance );
+	GDCLASS(Room, VisualInstance);
+
 public:
-
-
-
-
 private:
 	Ref<RoomBounds> room;
 
-
 	int level;
-	void _parse_node_faces(PoolVector<Face3> &all_faces,const Node *p_node) const;
-
+	void _parse_node_faces(PoolVector<Face3> &all_faces, const Node *p_node) const;
 
 	void _bounds_changed();
 
-
 protected:
-
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 public:
-
 	enum {
 		// used to notify portals that the room in which they are has changed.
-		NOTIFICATION_AREA_CHANGED=60
+		NOTIFICATION_AREA_CHANGED = 60
 	};
 
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	void set_room( const Ref<RoomBounds>& p_room );
+	void set_room(const Ref<RoomBounds> &p_room);
 	Ref<RoomBounds> get_room() const;
-
 
 	Room();
 	~Room();
-
 };
-
 
 #endif // ROOM_INSTANCE_H

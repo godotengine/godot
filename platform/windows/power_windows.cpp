@@ -31,53 +31,50 @@
 
 // CODE CHUNK IMPORTED FROM SDL 2.0
 
-bool PowerWindows::GetPowerInfo_Windows()
-{
-    SYSTEM_POWER_STATUS status;
-    bool need_details = FALSE;
+bool PowerWindows::GetPowerInfo_Windows() {
+	SYSTEM_POWER_STATUS status;
+	bool need_details = FALSE;
 
-    /* This API should exist back to Win95. */
-    if (!GetSystemPowerStatus(&status))
-    {
-        /* !!! FIXME: push GetLastError() into GetError() */
-        power_state = POWERSTATE_UNKNOWN;
-    } else if (status.BatteryFlag == 0xFF) {    /* unknown state */
-        power_state = POWERSTATE_UNKNOWN;
-    } else if (status.BatteryFlag & (1 << 7)) { /* no battery */
-        power_state = POWERSTATE_NO_BATTERY;
-    } else if (status.BatteryFlag & (1 << 3)) { /* charging */
-        power_state = POWERSTATE_CHARGING;
-        need_details = TRUE;
-    } else if (status.ACLineStatus == 1) {
-        power_state = POWERSTATE_CHARGED;        /* on AC, not charging. */
-        need_details = TRUE;
-    } else {
-        power_state = POWERSTATE_ON_BATTERY;     /* not on AC. */
-        need_details = TRUE;
-    }
+	/* This API should exist back to Win95. */
+	if (!GetSystemPowerStatus(&status)) {
+		/* !!! FIXME: push GetLastError() into GetError() */
+		power_state = POWERSTATE_UNKNOWN;
+	} else if (status.BatteryFlag == 0xFF) { /* unknown state */
+		power_state = POWERSTATE_UNKNOWN;
+	} else if (status.BatteryFlag & (1 << 7)) { /* no battery */
+		power_state = POWERSTATE_NO_BATTERY;
+	} else if (status.BatteryFlag & (1 << 3)) { /* charging */
+		power_state = POWERSTATE_CHARGING;
+		need_details = TRUE;
+	} else if (status.ACLineStatus == 1) {
+		power_state = POWERSTATE_CHARGED; /* on AC, not charging. */
+		need_details = TRUE;
+	} else {
+		power_state = POWERSTATE_ON_BATTERY; /* not on AC. */
+		need_details = TRUE;
+	}
 
-    percent_left = -1;
-    nsecs_left = -1;
-    if (need_details) {
-        const int pct = (int) status.BatteryLifePercent;
-        const int secs = (int) status.BatteryLifeTime;
+	percent_left = -1;
+	nsecs_left = -1;
+	if (need_details) {
+		const int pct = (int)status.BatteryLifePercent;
+		const int secs = (int)status.BatteryLifeTime;
 
-        if (pct != 255) {       /* 255 == unknown */
-        	percent_left = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
-        }
-        if (secs != 0xFFFFFFFF) {       /* ((DWORD)-1) == unknown */
-            nsecs_left = secs;
-        }
-    }
+		if (pct != 255) { /* 255 == unknown */
+			percent_left = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
+		}
+		if (secs != 0xFFFFFFFF) { /* ((DWORD)-1) == unknown */
+			nsecs_left = secs;
+		}
+	}
 
-    return TRUE;            /* always the definitive answer on Windows. */
+	return TRUE; /* always the definitive answer on Windows. */
 }
 
 PowerState PowerWindows::get_power_state() {
 	if (GetPowerInfo_Windows()) {
 		return power_state;
-	}
-	else {
+	} else {
 		return POWERSTATE_UNKNOWN;
 	}
 }
@@ -85,8 +82,7 @@ PowerState PowerWindows::get_power_state() {
 int PowerWindows::get_power_seconds_left() {
 	if (GetPowerInfo_Windows()) {
 		return nsecs_left;
-	}
-	else {
+	} else {
 		return -1;
 	}
 }
@@ -94,14 +90,13 @@ int PowerWindows::get_power_seconds_left() {
 int PowerWindows::get_power_percent_left() {
 	if (GetPowerInfo_Windows()) {
 		return percent_left;
-	}
-	else {
+	} else {
 		return -1;
 	}
 }
 
-PowerWindows::PowerWindows() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
-
+PowerWindows::PowerWindows()
+	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
 }
 
 PowerWindows::~PowerWindows() {

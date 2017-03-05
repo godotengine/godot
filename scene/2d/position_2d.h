@@ -29,19 +29,18 @@
 #ifndef POSITION_2D_H
 #define POSITION_2D_H
 
-
 #include "scene/2d/node_2d.h"
 
 class Position2D : public Node2D {
 
-	GDCLASS(Position2D,Node2D)
+	GDCLASS(Position2D, Node2D)
 
 	void _draw_cross();
+
 protected:
-
 	void _notification(int p_what);
-public:
 
+public:
 	virtual Rect2 get_item_rect() const;
 	Position2D();
 };

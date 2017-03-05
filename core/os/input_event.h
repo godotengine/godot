@@ -29,16 +29,13 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
-
-#include "typedefs.h"
-#include "os/copymem.h"
-#include "ustring.h"
 #include "math_2d.h"
+#include "os/copymem.h"
+#include "typedefs.h"
+#include "ustring.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-
-
 
 /**
  * Input Event classes. These are used in the main loop.
@@ -46,16 +43,16 @@
  */
 
 enum {
-	BUTTON_LEFT=1,
-	BUTTON_RIGHT=2,
-	BUTTON_MIDDLE=3,
-	BUTTON_WHEEL_UP=4,
-	BUTTON_WHEEL_DOWN=5,
-	BUTTON_WHEEL_LEFT=6,
-	BUTTON_WHEEL_RIGHT=7,
-	BUTTON_MASK_LEFT=(1<<(BUTTON_LEFT-1)),
-	BUTTON_MASK_RIGHT=(1<<(BUTTON_RIGHT-1)),
-	BUTTON_MASK_MIDDLE=(1<<(BUTTON_MIDDLE-1)),
+	BUTTON_LEFT = 1,
+	BUTTON_RIGHT = 2,
+	BUTTON_MIDDLE = 3,
+	BUTTON_WHEEL_UP = 4,
+	BUTTON_WHEEL_DOWN = 5,
+	BUTTON_WHEEL_LEFT = 6,
+	BUTTON_WHEEL_RIGHT = 7,
+	BUTTON_MASK_LEFT = (1 << (BUTTON_LEFT - 1)),
+	BUTTON_MASK_RIGHT = (1 << (BUTTON_RIGHT - 1)),
+	BUTTON_MASK_MIDDLE = (1 << (BUTTON_MIDDLE - 1)),
 
 };
 
@@ -99,20 +96,20 @@ enum {
 	JOY_SNES_Y = JOY_BUTTON_2,
 	JOY_SNES_X = JOY_BUTTON_3,
 
-	JOY_SONY_CIRCLE=JOY_SNES_A,
-	JOY_SONY_X=JOY_SNES_B,
-	JOY_SONY_SQUARE=JOY_SNES_Y,
-	JOY_SONY_TRIANGLE=JOY_SNES_X,
+	JOY_SONY_CIRCLE = JOY_SNES_A,
+	JOY_SONY_X = JOY_SNES_B,
+	JOY_SONY_SQUARE = JOY_SNES_Y,
+	JOY_SONY_TRIANGLE = JOY_SNES_X,
 
-	JOY_SEGA_B=JOY_SNES_A,
-	JOY_SEGA_A=JOY_SNES_B,
-	JOY_SEGA_X=JOY_SNES_Y,
-	JOY_SEGA_Y=JOY_SNES_X,
+	JOY_SEGA_B = JOY_SNES_A,
+	JOY_SEGA_A = JOY_SNES_B,
+	JOY_SEGA_X = JOY_SNES_Y,
+	JOY_SEGA_Y = JOY_SNES_X,
 
-	JOY_XBOX_B=JOY_SEGA_B,
-	JOY_XBOX_A=JOY_SEGA_A,
-	JOY_XBOX_X=JOY_SEGA_X,
-	JOY_XBOX_Y=JOY_SEGA_Y,
+	JOY_XBOX_B = JOY_SEGA_B,
+	JOY_XBOX_A = JOY_SEGA_A,
+	JOY_XBOX_X = JOY_SEGA_X,
+	JOY_XBOX_Y = JOY_SEGA_Y,
 
 	JOY_DS_A = JOY_SNES_A,
 	JOY_DS_B = JOY_SNES_B,
@@ -127,15 +124,15 @@ enum {
 
 	// end of history
 
-	JOY_AXIS_0=0,
-	JOY_AXIS_1=1,
-	JOY_AXIS_2=2,
-	JOY_AXIS_3=3,
-	JOY_AXIS_4=4,
-	JOY_AXIS_5=5,
-	JOY_AXIS_6=6,
-	JOY_AXIS_7=7,
-	JOY_AXIS_MAX=8,
+	JOY_AXIS_0 = 0,
+	JOY_AXIS_1 = 1,
+	JOY_AXIS_2 = 2,
+	JOY_AXIS_3 = 3,
+	JOY_AXIS_4 = 4,
+	JOY_AXIS_5 = 5,
+	JOY_AXIS_6 = 6,
+	JOY_AXIS_7 = 7,
+	JOY_AXIS_MAX = 8,
 
 	JOY_ANALOG_0_X = JOY_AXIS_0,
 	JOY_ANALOG_0_Y = JOY_AXIS_1,
@@ -150,7 +147,6 @@ enum {
 	JOY_ANALOG_R2 = JOY_AXIS_7,
 };
 
-
 /**
  * Input Modifier Status
  * for keyboard/mouse events.
@@ -161,32 +157,27 @@ struct InputModifierState {
 	bool alt;
 #ifdef APPLE_STYLE_KEYS
 	union {
-	bool command;
-	bool meta; //< windows/mac key
+		bool command;
+		bool meta; //< windows/mac key
 	};
 
 	bool control;
 #else
 	union {
-	bool command; //< windows/mac key
-	bool control;
+		bool command; //< windows/mac key
+		bool control;
 	};
 	bool meta; //< windows/mac key
 
 #endif
 
-	bool operator==(const InputModifierState& rvalue) const {
+	bool operator==(const InputModifierState &rvalue) const {
 
-		return ( (shift==rvalue.shift) && (alt==rvalue.alt) && (control==rvalue.control) && (meta==rvalue.meta));
+		return ((shift == rvalue.shift) && (alt == rvalue.alt) && (control == rvalue.control) && (meta == rvalue.meta));
 	}
 };
 
-
-
-
-
-
-struct InputEventKey  {
+struct InputEventKey {
 
 	InputModifierState mod;
 
@@ -200,65 +191,60 @@ struct InputEventKey  {
 	bool echo; /// true if this is an echo key
 };
 
-
-struct InputEventMouse  {
+struct InputEventMouse {
 
 	InputModifierState mod;
 	int button_mask;
-	float x,y;
-	float global_x,global_y;
+	float x, y;
+	float global_x, global_y;
 	int pointer_index;
 };
 
 struct InputEventMouseButton : public InputEventMouse {
 
-
 	int button_index;
 	bool pressed; //otherwise released
 	bool doubleclick; //last even less than doubleclick time
-
 };
 
 struct InputEventMouseMotion : public InputEventMouse {
 
-	float relative_x,relative_y;
-	float speed_x,speed_y;
+	float relative_x, relative_y;
+	float speed_x, speed_y;
 };
 
-struct InputEventJoypadMotion  {
+struct InputEventJoypadMotion {
 
 	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
 };
 
-struct InputEventJoypadButton  {
+struct InputEventJoypadButton {
 
 	int button_index;
 	bool pressed;
 	float pressure; //0 to 1
 };
 
-struct InputEventScreenTouch  {
+struct InputEventScreenTouch {
 
 	int index;
-	float x,y;
+	float x, y;
 	bool pressed;
 };
-struct InputEventScreenDrag  {
+struct InputEventScreenDrag {
 
 	int index;
-	float x,y;
-	float relative_x,relative_y;
-	float speed_x,speed_y;
+	float x, y;
+	float relative_x, relative_y;
+	float speed_x, speed_y;
 };
 
-struct InputEventAction  {
+struct InputEventAction {
 
 	int action;
 	bool pressed;
 };
-
-
 
 struct InputEvent {
 
@@ -291,18 +277,16 @@ struct InputEvent {
 	};
 
 	bool is_pressed() const;
-	bool is_action(const String& p_action) const;
-	bool is_action_pressed(const String& p_action) const;
-	bool is_action_released(const String& p_action) const;
+	bool is_action(const String &p_action) const;
+	bool is_action_pressed(const String &p_action) const;
+	bool is_action_released(const String &p_action) const;
 	bool is_echo() const;
-	void set_as_action(const String& p_action, bool p_pressed);
+	void set_as_action(const String &p_action, bool p_pressed);
 
-
-	InputEvent xform_by(const Transform2D& p_xform) const;
+	InputEvent xform_by(const Transform2D &p_xform) const;
 	bool operator==(const InputEvent &p_event) const;
 	operator String() const;
-	InputEvent() { zeromem(this,sizeof(InputEvent)); }
+	InputEvent() { zeromem(this, sizeof(InputEvent)); }
 };
-
 
 #endif

@@ -29,13 +29,13 @@
 #ifndef TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
 #define TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/gui/color_ramp_edit.h"
 
 class ColorRampEditorPlugin : public EditorPlugin {
 
-	GDCLASS( ColorRampEditorPlugin, EditorPlugin );
+	GDCLASS(ColorRampEditorPlugin, EditorPlugin);
 
 	bool _2d;
 	Ref<ColorRamp> color_ramp_ref;
@@ -45,7 +45,7 @@ class ColorRampEditorPlugin : public EditorPlugin {
 protected:
 	static void _bind_methods();
 	void _ramp_changed();
-	void _undo_redo_color_ramp(const Vector<float>& offsets, const Vector<Color>& colors);
+	void _undo_redo_color_ramp(const Vector<float> &offsets, const Vector<Color> &colors);
 
 public:
 	virtual String get_name() const { return "ColorRamp"; }
@@ -56,7 +56,6 @@ public:
 
 	ColorRampEditorPlugin(EditorNode *p_node);
 	~ColorRampEditorPlugin();
-
 };
 
 #endif /* TOOLS_EDITOR_PLUGINS_COLOR_RAMP_EDITOR_PLUGIN_H_ */

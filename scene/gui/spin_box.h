@@ -35,7 +35,7 @@
 
 class SpinBox : public Range {
 
-	GDCLASS( SpinBox, Range );
+	GDCLASS(SpinBox, Range);
 
 	LineEdit *line_edit;
 	int last_w;
@@ -43,35 +43,31 @@ class SpinBox : public Range {
 	Timer *range_click_timer;
 	void _range_click_timeout();
 
-	void _text_entered(const String& p_string);
+	void _text_entered(const String &p_string);
 	virtual void _value_changed(double);
 	String prefix;
 	String suffix;
 
-	void _line_edit_input(const InputEvent& p_event);
-
+	void _line_edit_input(const InputEvent &p_event);
 
 	struct Drag {
 		float base_val;
 		bool enabled;
 		Vector2 from;
-		Vector2	mouse_pos;
+		Vector2 mouse_pos;
 		Vector2 capture_pos;
 	} drag;
-
 
 	void _line_edit_focus_exit();
 
 protected:
-
-	void _gui_input(const InputEvent& p_event);
-
+	void _gui_input(const InputEvent &p_event);
 
 	void _notification(int p_what);
 
 	static void _bind_methods();
-public:
 
+public:
 	LineEdit *get_line_edit();
 
 	virtual Size2 get_minimum_size() const;
@@ -79,10 +75,10 @@ public:
 	void set_editable(bool p_editable);
 	bool is_editable() const;
 
-	void set_suffix(const String& p_suffix);
+	void set_suffix(const String &p_suffix);
 	String get_suffix() const;
 
-	void set_prefix(const String& p_prefix);
+	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
 
 	SpinBox();

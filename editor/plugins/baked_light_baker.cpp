@@ -28,11 +28,11 @@
 /*************************************************************************/
 #include "baked_light_baker.h"
 
-#include <stdlib.h>
-#include <cmath>
-#include "io/marshalls.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "io/marshalls.h"
+#include <stdlib.h>
+#include <cmath>
 
 #if 0
 void baked_light_baker_add_64f(double *dst,double value);

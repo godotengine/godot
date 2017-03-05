@@ -30,27 +30,27 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
-#include "core/os/thread.h"
 #include "core/os/mutex.h"
+#include "core/os/thread.h"
 
 #include <pulse/simple.h>
 
-class AudioDriverPulseAudio : public AudioDriver{
+class AudioDriverPulseAudio : public AudioDriver {
 
-	Thread* thread;
-	Mutex* mutex;
+	Thread *thread;
+	Mutex *mutex;
 
-    pa_simple* pulse;
+	pa_simple *pulse;
 
-	int32_t* samples_in;
-	int16_t* samples_out;
+	int32_t *samples_in;
+	int16_t *samples_out;
 
-	static void thread_func(void* p_udata);
+	static void thread_func(void *p_udata);
 
 	unsigned int mix_rate;
 	SpeakerMode speaker_mode;
 
-    unsigned int buffer_size;
+	unsigned int buffer_size;
 	int channels;
 
 	bool active;
@@ -61,9 +61,8 @@ class AudioDriverPulseAudio : public AudioDriver{
 	float latency;
 
 public:
-
-	const char* get_name() const {
-        return "PulseAudio";
+	const char *get_name() const {
+		return "PulseAudio";
 	};
 
 	virtual Error init();
@@ -76,9 +75,8 @@ public:
 
 	virtual float get_latency();
 
-
-    AudioDriverPulseAudio();
-    ~AudioDriverPulseAudio();
+	AudioDriverPulseAudio();
+	~AudioDriverPulseAudio();
 };
 
 #endif

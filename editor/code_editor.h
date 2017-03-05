@@ -30,19 +30,17 @@
 #define CODE_EDITOR_H
 
 #include "editor/editor_plugin.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/dialogs.h"
-#include "scene/main/timer.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-
-
+#include "scene/gui/text_edit.h"
+#include "scene/gui/tool_button.h"
+#include "scene/main/timer.h"
 
 class GotoLineDialog : public ConfirmationDialog {
 
-	GDCLASS(GotoLineDialog,ConfirmationDialog);
+	GDCLASS(GotoLineDialog, ConfirmationDialog);
 
 	Label *line_label;
 	LineEdit *line;
@@ -50,11 +48,10 @@ class GotoLineDialog : public ConfirmationDialog {
 	TextEdit *text_editor;
 
 	virtual void ok_pressed();
-public:
 
+public:
 	void popup_find_line(TextEdit *p_edit);
 	int get_line() const;
-
 
 	void set_text_editor(TextEdit *p_text_editor);
 	GotoLineDialog();
@@ -62,7 +59,7 @@ public:
 
 class FindReplaceBar : public HBoxContainer {
 
-	GDCLASS(FindReplaceBar,HBoxContainer);
+	GDCLASS(FindReplaceBar, HBoxContainer);
 
 	LineEdit *search_text;
 	ToolButton *find_prev;
@@ -89,16 +86,16 @@ class FindReplaceBar : public HBoxContainer {
 	bool replace_all_mode;
 	bool preserve_cursor;
 
-	void _get_search_from(int& r_line, int& r_col);
+	void _get_search_from(int &r_line, int &r_col);
 
 	void _show_search();
 	void _hide_bar();
 
 	void _editor_text_changed();
 	void _search_options_changed(bool p_pressed);
-	void _search_text_changed(const String& p_text);
-	void _search_text_entered(const String& p_text);
-	void _replace_text_entered(const String& p_text);
+	void _search_text_changed(const String &p_text);
+	void _search_text_entered(const String &p_text);
+	void _replace_text_entered(const String &p_text);
 
 protected:
 	void _notification(int p_what);
@@ -118,7 +115,7 @@ public:
 	bool is_case_sensitive() const;
 	bool is_whole_words() const;
 	bool is_selection_only() const;
-	void set_error(const String& p_label);
+	void set_error(const String &p_label);
 
 	void set_text_edit(TextEdit *p_text_edit);
 
@@ -134,7 +131,7 @@ public:
 
 class FindReplaceDialog : public ConfirmationDialog {
 
-	GDCLASS(FindReplaceDialog,ConfirmationDialog);
+	GDCLASS(FindReplaceDialog, ConfirmationDialog);
 
 	LineEdit *search_text;
 	LineEdit *replace_text;
@@ -149,15 +146,14 @@ class FindReplaceDialog : public ConfirmationDialog {
 	Label *replace_label;
 	VBoxContainer *replace_vb;
 
-	void _search_text_entered(const String& p_text);
-	void _replace_text_entered(const String& p_text);
+	void _search_text_entered(const String &p_text);
+	void _replace_text_entered(const String &p_text);
 	void _prompt_changed();
 	void _skip_pressed();
 
-
 	TextEdit *text_edit;
-protected:
 
+protected:
 	void _search_callback();
 	void _replace_skip_callback();
 
@@ -166,8 +162,8 @@ protected:
 
 	virtual void ok_pressed();
 	static void _bind_methods();
-public:
 
+public:
 	String get_search_text() const;
 	String get_replace_text() const;
 	bool is_whole_words() const;
@@ -178,7 +174,7 @@ public:
 	bool is_replace_selection_only() const;
 	void set_replace_selection_only(bool p_enable);
 
-	void set_error(const String& p_error);
+	void set_error(const String &p_error);
 
 	void popup_search();
 	void popup_replace();
@@ -189,12 +185,11 @@ public:
 	FindReplaceDialog();
 };
 
-
-typedef void (*CodeTextEditorCodeCompleteFunc)(void* p_ud,const String& p_code, List<String>* r_options);
+typedef void (*CodeTextEditorCodeCompleteFunc)(void *p_ud, const String &p_code, List<String> *r_options);
 
 class CodeTextEditor : public VBoxContainer {
 
-	GDCLASS(CodeTextEditor,VBoxContainer);
+	GDCLASS(CodeTextEditor, VBoxContainer);
 
 	TextEdit *text_editor;
 	FindReplaceBar *find_replace_bar;
@@ -217,21 +212,18 @@ class CodeTextEditor : public VBoxContainer {
 	void _complete_request();
 	void _font_resize_timeout();
 
-	void _text_editor_gui_input(const InputEvent& p_event);
+	void _text_editor_gui_input(const InputEvent &p_event);
 	void _zoom_in();
 	void _zoom_out();
 	void _reset_zoom();
-
 
 	CodeTextEditorCodeCompleteFunc code_complete_func;
 	void *code_complete_ud;
 
 protected:
-
-
 	virtual void _load_theme_settings() {}
 	virtual void _validate_script() {}
-	virtual void _code_complete_script(const String& p_code, List<String>* r_options) {}
+	virtual void _code_complete_script(const String &p_code, List<String> *r_options) {}
 
 	void _text_changed_idle_timeout();
 	void _code_complete_timer_timeout();
@@ -241,21 +233,16 @@ protected:
 	static void _bind_methods();
 
 public:
-
 	void update_editor_settings();
-	void set_error(const String& p_error);
+	void set_error(const String &p_error);
 	void update_line_and_column() { _line_col_changed(); }
 	TextEdit *get_text_edit() { return text_editor; }
 	FindReplaceBar *get_find_replace_bar() { return find_replace_bar; }
 	virtual void apply_code() {}
 
-
-	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void * p_ud);
-
+	void set_code_complete_func(CodeTextEditorCodeCompleteFunc p_code_complete_func, void *p_ud);
 
 	CodeTextEditor();
 };
-
-
 
 #endif // CODE_EDITOR_H

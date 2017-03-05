@@ -31,20 +31,19 @@
 
 #include "reference.h"
 
-class FuncRef : public Reference{
+class FuncRef : public Reference {
 
-	GDCLASS(FuncRef,Reference);
+	GDCLASS(FuncRef, Reference);
 	ObjectID id;
 	StringName function;
 
 protected:
-
 	static void _bind_methods();
-public:
 
-	Variant call_func(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+public:
+	Variant call_func(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	void set_instance(Object *p_obj);
-	void set_function(const StringName& p_func);
+	void set_function(const StringName &p_func);
 	FuncRef();
 };
 

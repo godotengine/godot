@@ -27,14 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "test_sound.h"
-#include "servers/visual_server.h"
-#include "os/main_loop.h"
 #include "math_funcs.h"
+#include "os/main_loop.h"
+#include "servers/visual_server.h"
 
 #include "io/resource_loader.h"
+#include "os/os.h"
 #include "print_string.h"
 #include "servers/audio_server.h"
-#include "os/os.h"
 
 #if 0
 namespace TestSound {

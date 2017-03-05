@@ -34,19 +34,17 @@
 class AudioEffectDistortion;
 
 class AudioEffectDistortionInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectDistortionInstance,AudioEffectInstance)
-friend class AudioEffectDistortion;
+	GDCLASS(AudioEffectDistortionInstance, AudioEffectInstance)
+	friend class AudioEffectDistortion;
 	Ref<AudioEffectDistortion> base;
 	float h[2];
+
 public:
-
-	virtual void process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count);
-
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 };
 
-
 class AudioEffectDistortion : public AudioEffect {
-	GDCLASS(AudioEffectDistortion,AudioEffect)
+	GDCLASS(AudioEffectDistortion, AudioEffect)
 public:
 	enum Mode {
 		MODE_CLIP,
@@ -56,7 +54,7 @@ public:
 		MODE_WAVESHAPE,
 	};
 
-friend class AudioEffectDistortionInstance;
+	friend class AudioEffectDistortionInstance;
 	Mode mode;
 	float pre_gain;
 	float post_gain;
@@ -64,13 +62,10 @@ friend class AudioEffectDistortionInstance;
 	float drive;
 
 protected:
-
 	static void _bind_methods();
+
 public:
-
-
 	Ref<AudioEffectInstance> instance();
-
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
@@ -87,11 +82,9 @@ public:
 	void set_post_gain(float post_gain);
 	float get_post_gain() const;
 
-
-
 	AudioEffectDistortion();
 };
 
-VARIANT_ENUM_CAST( AudioEffectDistortion::Mode )
+VARIANT_ENUM_CAST(AudioEffectDistortion::Mode)
 
 #endif // AUDIOEFFECTDISTORTION_H

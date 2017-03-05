@@ -32,27 +32,26 @@
 #include "scene/2d/node_2d.h"
 
 class BackBufferCopy : public Node2D {
-	GDCLASS( BackBufferCopy,Node2D);
+	GDCLASS(BackBufferCopy, Node2D);
+
 public:
 	enum CopyMode {
 		COPY_MODE_DISABLED,
 		COPY_MODE_RECT,
 		COPY_MODE_VIEWPORT
 	};
-private:
 
+private:
 	Rect2 rect;
 	CopyMode copy_mode;
 
 	void _update_copy_mode();
 
 protected:
-
 	static void _bind_methods();
 
 public:
-
-	void set_rect(const Rect2& p_rect);
+	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
 
 	void set_copy_mode(CopyMode p_mode);

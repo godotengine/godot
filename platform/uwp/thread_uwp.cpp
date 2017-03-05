@@ -30,10 +30,9 @@
 
 #include "os/memory.h"
 
-Thread* ThreadUWP::create_func_uwp(ThreadCreateCallback p_callback,void *p_user,const Settings&) {
+Thread *ThreadUWP::create_func_uwp(ThreadCreateCallback p_callback, void *p_user, const Settings &) {
 
-	ThreadUWP* thread = memnew(ThreadUWP);
-
+	ThreadUWP *thread = memnew(ThreadUWP);
 
 	std::thread new_thread(p_callback, p_user);
 	std::swap(thread->thread, new_thread);
@@ -46,12 +45,11 @@ Thread::ID ThreadUWP::get_thread_ID_func_uwp() {
 	return std::hash<std::thread::id>()(std::this_thread::get_id());
 };
 
-void ThreadUWP::wait_to_finish_func_uwp(Thread* p_thread) {
+void ThreadUWP::wait_to_finish_func_uwp(Thread *p_thread) {
 
-	ThreadUWP *tp=static_cast<ThreadUWP*>(p_thread);
+	ThreadUWP *tp = static_cast<ThreadUWP *>(p_thread);
 	tp->thread.join();
 };
-
 
 Thread::ID ThreadUWP::get_ID() const {
 
@@ -64,11 +62,10 @@ void ThreadUWP::make_default() {
 	wait_to_finish_func = wait_to_finish_func_uwp;
 };
 
-ThreadUWP::ThreadUWP() {
+ThreadUWP::ThreadUWP(){
 
 };
 
-ThreadUWP::~ThreadUWP() {
+ThreadUWP::~ThreadUWP(){
 
 };
-

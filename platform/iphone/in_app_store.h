@@ -37,25 +37,24 @@ class InAppStore : public Object {
 
 	GDCLASS(InAppStore, Object);
 
-	static InAppStore* instance;
+	static InAppStore *instance;
 	static void _bind_methods();
 
 	List<Variant> pending_events;
 
 public:
-
 	Error request_product_info(Variant p_params);
 	Error purchase(Variant p_params);
 
 	int get_pending_event_count();
 	Variant pop_pending_event();
 	void finish_transaction(String product_id);
-    void set_auto_finish_transaction(bool b);
+	void set_auto_finish_transaction(bool b);
 
 	void _post_event(Variant p_event);
 	void _record_purchase(String product_id);
 
-	static InAppStore* get_singleton();
+	static InAppStore *get_singleton();
 
 	InAppStore();
 	~InAppStore();
@@ -63,6 +62,4 @@ public:
 
 #endif
 
-
 #endif
-

@@ -30,11 +30,11 @@
 #if 0
 #include "sample_library_editor_plugin.h"
 
-#include "io/resource_loader.h"
-#include "global_config.h"
 #include "editor/editor_settings.h"
-#include "scene/main/viewport.h"
+#include "global_config.h"
+#include "io/resource_loader.h"
 #include "sample_editor_plugin.h"
+#include "scene/main/viewport.h"
 
 
 void SampleLibraryEditor::_gui_input(InputEvent p_event) {

@@ -37,8 +37,7 @@
 
 namespace TestRender {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif

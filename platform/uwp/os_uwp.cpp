@@ -26,28 +26,28 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "drivers/gles2/rasterizer_gles2.h"
 #include "os_uwp.h"
-#include "os/memory_pool_dynamic_static.h"
-#include "thread_uwp.h"
-#include "drivers/windows/semaphore_windows.h"
-#include "drivers/windows/mutex_windows.h"
-#include "main/main.h"
-#include "drivers/windows/file_access_windows.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/windows/dir_access_windows.h"
-#include "servers/visual/visual_server_raster.h"
+#include "drivers/windows/file_access_windows.h"
+#include "drivers/windows/mutex_windows.h"
+#include "drivers/windows/semaphore_windows.h"
+#include "main/main.h"
+#include "os/memory_pool_dynamic_static.h"
 #include "servers/audio_server.h"
+#include "servers/visual/visual_server_raster.h"
+#include "thread_uwp.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
-#include "os/memory_pool_dynamic_prealloc.h"
+#include "drivers/unix/ip_unix.h"
 #include "global_config.h"
 #include "io/marshalls.h"
+#include "os/memory_pool_dynamic_prealloc.h"
 #include "platform/windows/packet_peer_udp_winsock.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
-#include "drivers/unix/ip_unix.h"
 
-#include <wrl.h>
 #include <ppltasks.h>
+#include <wrl.h>
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
@@ -63,12 +63,11 @@ using namespace Windows::Devices::Sensors;
 using namespace Windows::ApplicationModel::DataTransfer;
 using namespace concurrency;
 
-
 int OSUWP::get_video_driver_count() const {
 
 	return 1;
 }
-const char * OSUWP::get_video_driver_name(int p_driver) const {
+const char *OSUWP::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
 }
@@ -91,7 +90,7 @@ void OSUWP::set_window_size(const Size2 p_size) {
 	new_size.Width = p_size.width;
 	new_size.Height = p_size.height;
 
-	ApplicationView^ view = ApplicationView::GetForCurrentView();
+	ApplicationView ^ view = ApplicationView::GetForCurrentView();
 
 	if (view->TryResizeView(new_size)) {
 
@@ -102,7 +101,7 @@ void OSUWP::set_window_size(const Size2 p_size) {
 
 void OSUWP::set_window_fullscreen(bool p_enabled) {
 
-	ApplicationView^ view = ApplicationView::GetForCurrentView();
+	ApplicationView ^ view = ApplicationView::GetForCurrentView();
 
 	video_mode.fullscreen = view->IsFullScreenMode;
 
@@ -117,7 +116,6 @@ void OSUWP::set_window_fullscreen(bool p_enabled) {
 
 		view->ExitFullScreenMode();
 		video_mode.fullscreen = false;
-
 	}
 }
 
@@ -143,20 +141,19 @@ int OSUWP::get_audio_driver_count() const {
 	return AudioDriverManager::get_driver_count();
 }
 
-const char * OSUWP::get_audio_driver_name(int p_driver) const {
+const char *OSUWP::get_audio_driver_name(int p_driver) const {
 
-	AudioDriver* driver = AudioDriverManager::get_driver(p_driver);
-	ERR_FAIL_COND_V( !driver, "" );
+	AudioDriver *driver = AudioDriverManager::get_driver(p_driver);
+	ERR_FAIL_COND_V(!driver, "");
 	return AudioDriverManager::get_driver(p_driver)->get_name();
 }
 
-static MemoryPoolStatic *mempool_static=NULL;
-static MemoryPoolDynamic *mempool_dynamic=NULL;
+static MemoryPoolStatic *mempool_static = NULL;
+static MemoryPoolDynamic *mempool_dynamic = NULL;
 
 void OSUWP::initialize_core() {
 
-
-	last_button_state=0;
+	last_button_state = 0;
 
 	//RedirectIOToConsole();
 
@@ -181,16 +178,16 @@ void OSUWP::initialize_core() {
 
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
-	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
+	mempool_dynamic = memnew(MemoryPoolDynamicStatic);
 #else
-#define DYNPOOL_SIZE 4*1024*1024
-	void * buffer = malloc( DYNPOOL_SIZE );
-	mempool_dynamic = memnew( MemoryPoolDynamicPrealloc(buffer,DYNPOOL_SIZE) );
+#define DYNPOOL_SIZE 4 * 1024 * 1024
+	void *buffer = malloc(DYNPOOL_SIZE);
+	mempool_dynamic = memnew(MemoryPoolDynamicPrealloc(buffer, DYNPOOL_SIZE));
 
 #endif
 
-	   // We need to know how often the clock is updated
-	if( !QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second) )
+	// We need to know how often the clock is updated
+	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
 		ticks_per_second = 1000;
 	// If timeAtGameStart is 0 then we get the time since
 	// the start of the computer when we call GetGameTime()
@@ -199,7 +196,7 @@ void OSUWP::initialize_core() {
 
 	IP_Unix::make_default();
 
-	cursor_shape=CURSOR_ARROW;
+	cursor_shape = CURSOR_ARROW;
 }
 
 bool OSUWP::can_draw() const {
@@ -207,8 +204,7 @@ bool OSUWP::can_draw() const {
 	return !minimized;
 };
 
-
-void OSUWP::set_gl_context(ContextEGL* p_context) {
+void OSUWP::set_gl_context(ContextEGL *p_context) {
 
 	gl_context = p_context;
 };
@@ -218,10 +214,10 @@ void OSUWP::screen_size_changed() {
 	gl_context->reset();
 };
 
-void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
+void OSUWP::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-    main_loop=NULL;
-    outside=true;
+	main_loop = NULL;
+	outside = true;
 
 	gl_context->initialize();
 	VideoMode vm;
@@ -229,7 +225,7 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 	vm.height = gl_context->get_window_height();
 	vm.resizable = false;
 
-	ApplicationView^ view = ApplicationView::GetForCurrentView();
+	ApplicationView ^ view = ApplicationView::GetForCurrentView();
 	vm.fullscreen = view->IsFullScreenMode;
 
 	view->SetDesiredBoundsMode(ApplicationViewBoundsMode::UseVisible);
@@ -262,48 +258,47 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 	set_video_mode(vm);
 
 	gl_context->make_current();
-	rasterizer = memnew( RasterizerGLES2 );
+	rasterizer = memnew(RasterizerGLES2);
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
+	visual_server = memnew(VisualServerRaster(rasterizer));
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
 	//
-	physics_server = memnew( PhysicsServerSW );
+	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
 
-	physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = memnew(Physics2DServerSW);
 	physics_2d_server->init();
 
 	visual_server->init();
 
-	input = memnew( InputDefault );
+	input = memnew(InputDefault);
 
 	joypad = ref new JoypadUWP(input);
 	joypad->register_events();
 
 	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	power_manager = memnew ( PowerWinRT );
+	power_manager = memnew(PowerWinRT);
 
 	managed_object->update_clipboard();
 
-	Clipboard::ContentChanged += ref new EventHandler<Platform::Object^>(managed_object, &ManagedType::on_clipboard_changed);
+	Clipboard::ContentChanged += ref new EventHandler<Platform::Object ^>(managed_object, &ManagedType::on_clipboard_changed);
 
 	accelerometer = Accelerometer::GetDefault();
 	if (accelerometer != nullptr) {
 		// 60 FPS
 		accelerometer->ReportInterval = (1.0f / 60.0f) * 1000;
 		accelerometer->ReadingChanged +=
-			ref new TypedEventHandler<Accelerometer^, AccelerometerReadingChangedEventArgs^>
-			(managed_object, &ManagedType::on_accelerometer_reading_changed);
+				ref new TypedEventHandler<Accelerometer ^, AccelerometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_accelerometer_reading_changed);
 	}
 
 	magnetometer = Magnetometer::GetDefault();
@@ -311,8 +306,7 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 		// 60 FPS
 		magnetometer->ReportInterval = (1.0f / 60.0f) * 1000;
 		magnetometer->ReadingChanged +=
-			ref new TypedEventHandler<Magnetometer^, MagnetometerReadingChangedEventArgs^>
-			(managed_object, &ManagedType::on_magnetometer_reading_changed);
+				ref new TypedEventHandler<Magnetometer ^, MagnetometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_magnetometer_reading_changed);
 	}
 
 	gyrometer = Gyrometer::GetDefault();
@@ -320,8 +314,7 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 		// 60 FPS
 		gyrometer->ReportInterval = (1.0f / 60.0f) * 1000;
 		gyrometer->ReadingChanged +=
-			ref new TypedEventHandler<Gyrometer^, GyrometerReadingChangedEventArgs^>
-			(managed_object, &ManagedType::on_gyroscope_reading_changed);
+				ref new TypedEventHandler<Gyrometer ^, GyrometerReadingChangedEventArgs ^>(managed_object, &ManagedType::on_gyroscope_reading_changed);
 	}
 
 	_ensure_data_dir();
@@ -330,14 +323,13 @@ void OSUWP::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio
 		display_request->RequestActive();
 
 	set_keep_screen_on(GLOBAL_DEF("display/keep_screen_on", true));
-
 }
 
-void OSUWP::set_clipboard(const String& p_text) {
+void OSUWP::set_clipboard(const String &p_text) {
 
-	DataPackage^ clip = ref new DataPackage();
+	DataPackage ^ clip = ref new DataPackage();
 	clip->RequestedOperation = DataPackageOperation::Copy;
-	clip->SetText(ref new Platform::String((const wchar_t*)p_text.c_str()));
+	clip->SetText(ref new Platform::String((const wchar_t *)p_text.c_str()));
 
 	Clipboard::SetContent(clip);
 };
@@ -350,14 +342,13 @@ String OSUWP::get_clipboard() const {
 		return "";
 };
 
-
 void OSUWP::input_event(InputEvent &p_event) {
 
 	p_event.ID = ++last_id;
 
 	input->parse_input_event(p_event);
 
-	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index>3) {
+	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index > 3) {
 
 		//send release for mouse wheel
 		p_event.mouse_button.pressed = false;
@@ -370,21 +361,21 @@ void OSUWP::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop=NULL;
+	main_loop = NULL;
 }
 
-void OSUWP::set_main_loop( MainLoop * p_main_loop ) {
+void OSUWP::set_main_loop(MainLoop *p_main_loop) {
 
 	input->set_main_loop(p_main_loop);
-	main_loop=p_main_loop;
+	main_loop = p_main_loop;
 }
 
 void OSUWP::finalize() {
 
-	if(main_loop)
+	if (main_loop)
 		memdelete(main_loop);
 
-	main_loop=NULL;
+	main_loop = NULL;
 
 	visual_server->finish();
 	memdelete(visual_server);
@@ -410,60 +401,57 @@ void OSUWP::finalize() {
 	memdelete(physics_2d_server);
 
 	joypad = nullptr;
-
 }
 void OSUWP::finalize_core() {
 
 	if (mempool_dynamic)
-		memdelete( mempool_dynamic );
+		memdelete(mempool_dynamic);
 	delete mempool_static;
-
 }
 
-void OSUWP::vprint(const char* p_format, va_list p_list, bool p_stderr) {
+void OSUWP::vprint(const char *p_format, va_list p_list, bool p_stderr) {
 
-	char buf[16384+1];
-	int len = vsnprintf(buf,16384,p_format,p_list);
-	if (len<=0)
+	char buf[16384 + 1];
+	int len = vsnprintf(buf, 16384, p_format, p_list);
+	if (len <= 0)
 		return;
-	buf[len]=0;
+	buf[len] = 0;
 
-
-	int wlen = MultiByteToWideChar(CP_UTF8,0,buf,len,NULL,0);
-	if (wlen<0)
+	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, NULL, 0);
+	if (wlen < 0)
 		return;
 
-	wchar_t *wbuf = (wchar_t*)malloc((len+1)*sizeof(wchar_t));
-	MultiByteToWideChar(CP_UTF8,0,buf,len,wbuf,wlen);
-	wbuf[wlen]=0;
+	wchar_t *wbuf = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
+	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
+	wbuf[wlen] = 0;
 
 	if (p_stderr)
-		fwprintf(stderr,L"%s",wbuf);
+		fwprintf(stderr, L"%s", wbuf);
 	else
-		wprintf(L"%s",wbuf);
+		wprintf(L"%s", wbuf);
 
 	free(wbuf);
 
 	fflush(stdout);
 };
 
-void OSUWP::alert(const String& p_alert,const String& p_title) {
+void OSUWP::alert(const String &p_alert, const String &p_title) {
 
-	Platform::String^ alert = ref new Platform::String(p_alert.c_str());
-	Platform::String^ title = ref new Platform::String(p_title.c_str());
+	Platform::String ^ alert = ref new Platform::String(p_alert.c_str());
+	Platform::String ^ title = ref new Platform::String(p_title.c_str());
 
-	MessageDialog^ msg = ref new MessageDialog(alert, title);
+	MessageDialog ^ msg = ref new MessageDialog(alert, title);
 
-	UICommand^ close = ref new UICommand("Close", ref new UICommandInvokedHandler(managed_object, &OSUWP::ManagedType::alert_close));
+	UICommand ^ close = ref new UICommand("Close", ref new UICommandInvokedHandler(managed_object, &OSUWP::ManagedType::alert_close));
 	msg->Commands->Append(close);
 	msg->DefaultCommandIndex = 0;
-	
+
 	managed_object->alert_close_handle = true;
 
 	msg->ShowAsync();
 }
 
-void OSUWP::ManagedType::alert_close(IUICommand^ command) {
+void OSUWP::ManagedType::alert_close(IUICommand ^ command) {
 
 	alert_close_handle = false;
 }
@@ -475,12 +463,11 @@ void OSUWP::ManagedType::on_clipboard_changed(Platform::Object ^ sender, Platfor
 
 void OSUWP::ManagedType::update_clipboard() {
 
-	DataPackageView^ data = Clipboard::GetContent();
+	DataPackageView ^ data = Clipboard::GetContent();
 
 	if (data->Contains(StandardDataFormats::Text)) {
 
-		create_task(data->GetTextAsync()).then(
-			[this](Platform::String^ clipboard_content) {
+		create_task(data->GetTextAsync()).then([this](Platform::String ^ clipboard_content) {
 
 			this->clipboard = clipboard_content;
 		});
@@ -488,36 +475,33 @@ void OSUWP::ManagedType::update_clipboard() {
 }
 
 void OSUWP::ManagedType::on_accelerometer_reading_changed(Accelerometer ^ sender, AccelerometerReadingChangedEventArgs ^ args) {
-	
-	AccelerometerReading^ reading = args->Reading;
+
+	AccelerometerReading ^ reading = args->Reading;
 
 	os->input->set_accelerometer(Vector3(
-		reading->AccelerationX,
-		reading->AccelerationY,
-		reading->AccelerationZ
-	));
+			reading->AccelerationX,
+			reading->AccelerationY,
+			reading->AccelerationZ));
 }
 
 void OSUWP::ManagedType::on_magnetometer_reading_changed(Magnetometer ^ sender, MagnetometerReadingChangedEventArgs ^ args) {
 
-	MagnetometerReading^ reading = args->Reading;
+	MagnetometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
-		reading->MagneticFieldX,
-		reading->MagneticFieldY,
-		reading->MagneticFieldZ
-	));
+			reading->MagneticFieldX,
+			reading->MagneticFieldY,
+			reading->MagneticFieldZ));
 }
 
 void OSUWP::ManagedType::on_gyroscope_reading_changed(Gyrometer ^ sender, GyrometerReadingChangedEventArgs ^ args) {
 
-	GyrometerReading^ reading = args->Reading;
+	GyrometerReading ^ reading = args->Reading;
 
 	os->input->set_magnetometer(Vector3(
-		reading->AngularVelocityX,
-		reading->AngularVelocityY,
-		reading->AngularVelocityZ
-	));
+			reading->AngularVelocityX,
+			reading->AngularVelocityY,
+			reading->AngularVelocityZ));
 }
 
 void OSUWP::set_mouse_mode(MouseMode p_mode) {
@@ -529,7 +513,6 @@ void OSUWP::set_mouse_mode(MouseMode p_mode) {
 	} else {
 
 		CoreWindow::GetForCurrentThread()->ReleasePointerCapture();
-
 	}
 
 	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED || p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
@@ -546,12 +529,10 @@ void OSUWP::set_mouse_mode(MouseMode p_mode) {
 	SetEvent(mouse_mode_changed);
 }
 
-OSUWP::MouseMode OSUWP::get_mouse_mode() const{
+OSUWP::MouseMode OSUWP::get_mouse_mode() const {
 
 	return mouse_mode;
 }
-
-
 
 Point2 OSUWP::get_mouse_pos() const {
 
@@ -563,11 +544,10 @@ int OSUWP::get_mouse_button_state() const {
 	return last_button_state;
 }
 
-void OSUWP::set_window_title(const String& p_title) {
-
+void OSUWP::set_window_title(const String &p_title) {
 }
 
-void OSUWP::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
+void OSUWP::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	video_mode = p_video_mode;
 }
@@ -575,20 +555,18 @@ OS::VideoMode OSUWP::get_video_mode(int p_screen) const {
 
 	return video_mode;
 }
-void OSUWP::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
-
-
+void OSUWP::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
-void OSUWP::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
+void OSUWP::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
 
-	const char* err_details;
+	const char *err_details;
 	if (p_rationale && p_rationale[0])
 		err_details = p_rationale;
 	else
 		err_details = p_code;
 
-	switch(p_type) {
+	switch (p_type) {
 		case ERR_ERROR:
 			print("ERROR: %s: %s\n", p_function, err_details);
 			print("   At: %s:%i\n", p_file, p_line);
@@ -604,7 +582,6 @@ void OSUWP::print_error(const char* p_function, const char* p_file, int p_line, 
 	}
 }
 
-
 String OSUWP::get_name() {
 
 	return "UWP";
@@ -619,11 +596,11 @@ OS::Date OSUWP::get_date(bool utc) const {
 		GetLocalTime(&systemtime);
 
 	Date date;
-	date.day=systemtime.wDay;
-	date.month=Month(systemtime.wMonth);
-	date.weekday=Weekday(systemtime.wDayOfWeek);
-	date.year=systemtime.wYear;
-	date.dst=false;
+	date.day = systemtime.wDay;
+	date.month = Month(systemtime.wMonth);
+	date.weekday = Weekday(systemtime.wDayOfWeek);
+	date.year = systemtime.wYear;
+	date.dst = false;
 	return date;
 }
 OS::Time OSUWP::get_time(bool utc) const {
@@ -635,9 +612,9 @@ OS::Time OSUWP::get_time(bool utc) const {
 		GetLocalTime(&systemtime);
 
 	Time time;
-	time.hour=systemtime.wHour;
-	time.min=systemtime.wMinute;
-	time.sec=systemtime.wSecond;
+	time.hour = systemtime.wHour;
+	time.min = systemtime.wMinute;
+	time.sec = systemtime.wSecond;
 	return time;
 }
 
@@ -677,7 +654,7 @@ uint64_t OSUWP::get_unix_time() const {
 	FILETIME fep;
 	SystemTimeToFileTime(&ep, &fep);
 
-	return (*(uint64_t*)&ft - *(uint64_t*)&fep) / 10000000;
+	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
 };
 
 void OSUWP::delay_usec(uint32_t p_usec) const {
@@ -686,7 +663,6 @@ void OSUWP::delay_usec(uint32_t p_usec) const {
 
 	// no Sleep()
 	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
-
 }
 uint64_t OSUWP::get_ticks_usec() const {
 
@@ -702,15 +678,13 @@ uint64_t OSUWP::get_ticks_usec() const {
 	return time;
 }
 
-
 void OSUWP::process_events() {
 
 	last_id = joypad->process_controllers(last_id);
 	process_key_events();
 }
 
-void OSUWP::process_key_events()
-{
+void OSUWP::process_key_events() {
 
 	for (int i = 0; i < key_event_pos; i++) {
 
@@ -725,13 +699,11 @@ void OSUWP::process_key_events()
 		iev.key.pressed = kev.pressed;
 
 		input_event(iev);
-
 	}
 	key_event_pos = 0;
 }
 
-void OSUWP::queue_key_event(KeyEvent & p_event)
-{
+void OSUWP::queue_key_event(KeyEvent &p_event) {
 	// This merges Char events with the previous Key event, so
 	// the unicode can be retrieved without sending duplicate events.
 	if (p_event.type == KeyEvent::MessageType::CHAR_EVENT_MESSAGE && key_event_pos > 0) {
@@ -780,17 +752,17 @@ void OSUWP::set_cursor_shape(CursorShape p_shape) {
 	cursor_shape = p_shape;
 }
 
-Error OSUWP::execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id,String* r_pipe,int *r_exitcode) {
+Error OSUWP::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode) {
 
 	return FAILED;
 };
 
-Error OSUWP::kill(const ProcessID& p_pid) {
+Error OSUWP::kill(const ProcessID &p_pid) {
 
 	return FAILED;
 };
 
-Error OSUWP::set_cwd(const String& p_cwd) {
+Error OSUWP::set_cwd(const String &p_cwd) {
 
 	return FAILED;
 }
@@ -800,17 +772,15 @@ String OSUWP::get_executable_path() const {
 	return "";
 }
 
-void OSUWP::set_icon(const Image& p_icon) {
-
+void OSUWP::set_icon(const Image &p_icon) {
 }
 
-
-bool OSUWP::has_environment(const String& p_var) const {
+bool OSUWP::has_environment(const String &p_var) const {
 
 	return false;
 };
 
-String OSUWP::get_environment(const String& p_var) const {
+String OSUWP::get_environment(const String &p_var) const {
 
 	return "";
 };
@@ -820,9 +790,7 @@ String OSUWP::get_stdin_string(bool p_block) {
 	return String();
 }
 
-
 void OSUWP::move_window_to_foreground() {
-
 }
 
 Error OSUWP::shell_open(String p_uri) {
@@ -830,13 +798,12 @@ Error OSUWP::shell_open(String p_uri) {
 	return FAILED;
 }
 
-
 String OSUWP::get_locale() const {
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
 	return "en";
 #else
-	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
+	Platform::String ^ language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
 	return String(language->Data()).replace("-", "_");
 #endif
 }
@@ -858,7 +825,7 @@ void OSUWP::swap_buffers() {
 
 bool OSUWP::has_touchscreen_ui_hint() const {
 
-	TouchCapabilities^ tc = ref new TouchCapabilities();
+	TouchCapabilities ^ tc = ref new TouchCapabilities();
 	return tc->TouchPresent != 0 || UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
 }
 
@@ -867,18 +834,17 @@ bool OSUWP::has_virtual_keyboard() const {
 	return UIViewSettings::GetForCurrentView()->UserInteractionMode == UserInteractionMode::Touch;
 }
 
-void OSUWP::show_virtual_keyboard(const String & p_existing_text, const Rect2 & p_screen_rect) {
+void OSUWP::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 
-	InputPane^ pane = InputPane::GetForCurrentView();
+	InputPane ^ pane = InputPane::GetForCurrentView();
 	pane->TryShow();
 }
 
 void OSUWP::hide_virtual_keyboard() {
 
-	InputPane^ pane = InputPane::GetForCurrentView();
+	InputPane ^ pane = InputPane::GetForCurrentView();
 	pane->TryHide();
 }
-
 
 void OSUWP::run() {
 
@@ -887,35 +853,31 @@ void OSUWP::run() {
 
 	main_loop->init();
 
-	uint64_t last_ticks=get_ticks_usec();
+	uint64_t last_ticks = get_ticks_usec();
 
-	int frames=0;
-	uint64_t frame=0;
+	int frames = 0;
+	uint64_t frame = 0;
 
 	while (!force_quit) {
 
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		if (managed_object->alert_close_handle) continue;
 		process_events(); // get rid of pending events
-		if (Main::iteration()==true)
+		if (Main::iteration() == true)
 			break;
 	};
 
 	main_loop->finish();
-
 }
-
-
 
 MainLoop *OSUWP::get_main_loop() const {
 
 	return main_loop;
 }
 
-
 String OSUWP::get_data_dir() const {
 
-	Windows::Storage::StorageFolder ^data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
+	Windows::Storage::StorageFolder ^ data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
 	return String(data_folder->Path->Data()).replace("\\", "/");
 }
@@ -932,24 +894,23 @@ int OSWinrt::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
 }
 
-
 OSUWP::OSUWP() {
 
-	key_event_pos=0;
-	force_quit=false;
-	alt_mem=false;
-	gr_mem=false;
-	shift_mem=false;
-	control_mem=false;
-	meta_mem=false;
+	key_event_pos = 0;
+	force_quit = false;
+	alt_mem = false;
+	gr_mem = false;
+	shift_mem = false;
+	control_mem = false;
+	meta_mem = false;
 	minimized = false;
 
-	pressrc=0;
-	old_invalid=true;
-	last_id=0;
-	mouse_mode=MOUSE_MODE_VISIBLE;
+	pressrc = 0;
+	old_invalid = true;
+	last_id = 0;
+	mouse_mode = MOUSE_MODE_VISIBLE;
 #ifdef STDOUT_FILE
-	stdo=fopen("stdout.txt","wb");
+	stdo = fopen("stdout.txt", "wb");
 #endif
 
 	gl_context = NULL;
@@ -964,12 +925,8 @@ OSUWP::OSUWP() {
 	AudioDriverManager::add_driver(&audio_driver);
 }
 
-
-OSUWP::~OSUWP()
-{
+OSUWP::~OSUWP() {
 #ifdef STDOUT_FILE
 	fclose(stdo);
 #endif
 }
-
-

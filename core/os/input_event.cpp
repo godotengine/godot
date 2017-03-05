@@ -34,11 +34,11 @@
  */
 
 bool InputEvent::operator==(const InputEvent &p_event) const {
-	if (type != p_event.type){
+	if (type != p_event.type) {
 		return false;
 	}
 
-	switch(type) {
+	switch (type) {
 		/** Current clang-format style doesn't play well with the aligned return values of that switch. */
 		/* clang-format off */
 		case NONE:
@@ -91,9 +91,9 @@ bool InputEvent::operator==(const InputEvent &p_event) const {
 }
 InputEvent::operator String() const {
 
-	String str="Device "+itos(device)+" ID "+itos(ID)+" ";
+	String str = "Device " + itos(device) + " ID " + itos(ID) + " ";
 
-	switch(type) {
+	switch (type) {
 
 		case NONE: {
 
@@ -101,108 +101,107 @@ InputEvent::operator String() const {
 		} break;
 		case KEY: {
 
-			str+= "Event: Key ";
-			str=str+"Unicode: "+String::chr(key.unicode)+" Scan: "+itos( key.scancode )+" Echo: "+String(key.echo?"True":"False")+" Pressed"+String(key.pressed?"True":"False")+" Mod: ";
+			str += "Event: Key ";
+			str = str + "Unicode: " + String::chr(key.unicode) + " Scan: " + itos(key.scancode) + " Echo: " + String(key.echo ? "True" : "False") + " Pressed" + String(key.pressed ? "True" : "False") + " Mod: ";
 			if (key.mod.shift)
-				str+="S";
+				str += "S";
 			if (key.mod.control)
-				str+="C";
+				str += "C";
 			if (key.mod.alt)
-				str+="A";
+				str += "A";
 			if (key.mod.meta)
-				str+="M";
+				str += "M";
 
 			return str;
 		} break;
 		case MOUSE_MOTION: {
 
-			str+= "Event: Motion ";
-			str=str+" Pos: " +itos(mouse_motion.x)+","+itos(mouse_motion.y)+" Rel: "+itos(mouse_motion.relative_x)+","+itos(mouse_motion.relative_y)+" Mask: ";
-			for (int i=0;i<8;i++) {
+			str += "Event: Motion ";
+			str = str + " Pos: " + itos(mouse_motion.x) + "," + itos(mouse_motion.y) + " Rel: " + itos(mouse_motion.relative_x) + "," + itos(mouse_motion.relative_y) + " Mask: ";
+			for (int i = 0; i < 8; i++) {
 
-				if ((1<<i)&mouse_motion.button_mask)
-					str+=itos(i+1);
+				if ((1 << i) & mouse_motion.button_mask)
+					str += itos(i + 1);
 			}
-			str+=" Mod: ";
+			str += " Mod: ";
 			if (key.mod.shift)
-				str+="S";
+				str += "S";
 			if (key.mod.control)
-				str+="C";
+				str += "C";
 			if (key.mod.alt)
-				str+="A";
+				str += "A";
 			if (key.mod.meta)
-				str+="M";
+				str += "M";
 
 			return str;
 		} break;
 		case MOUSE_BUTTON: {
-			str+= "Event: Button ";
-			str=str+"Pressed: "+itos(mouse_button.pressed)+" Pos: " +itos(mouse_button.x)+","+itos(mouse_button.y)+" Button: "+itos(mouse_button.button_index)+" Mask: ";
-			for (int i=0;i<8;i++) {
+			str += "Event: Button ";
+			str = str + "Pressed: " + itos(mouse_button.pressed) + " Pos: " + itos(mouse_button.x) + "," + itos(mouse_button.y) + " Button: " + itos(mouse_button.button_index) + " Mask: ";
+			for (int i = 0; i < 8; i++) {
 
-				if ((1<<i)&mouse_button.button_mask)
-					str+=itos(i+1);
+				if ((1 << i) & mouse_button.button_mask)
+					str += itos(i + 1);
 			}
-			str+=" Mod: ";
+			str += " Mod: ";
 			if (key.mod.shift)
-				str+="S";
+				str += "S";
 			if (key.mod.control)
-				str+="C";
+				str += "C";
 			if (key.mod.alt)
-				str+="A";
+				str += "A";
 			if (key.mod.meta)
-				str+="M";
+				str += "M";
 
-			str+=String(" DoubleClick: ")+(mouse_button.doubleclick?"Yes":"No");
+			str += String(" DoubleClick: ") + (mouse_button.doubleclick ? "Yes" : "No");
 
 			return str;
 
 		} break;
 		case JOYPAD_MOTION: {
-			str+= "Event: JoypadMotion ";
-			str=str+"Axis: "+itos(joy_motion.axis)+" Value: " +rtos(joy_motion.axis_value);
+			str += "Event: JoypadMotion ";
+			str = str + "Axis: " + itos(joy_motion.axis) + " Value: " + rtos(joy_motion.axis_value);
 			return str;
 
 		} break;
 		case JOYPAD_BUTTON: {
-			str+= "Event: JoypadButton ";
-			str=str+"Pressed: "+itos(joy_button.pressed)+" Index: " +itos(joy_button.button_index)+" pressure "+rtos(joy_button.pressure);
+			str += "Event: JoypadButton ";
+			str = str + "Pressed: " + itos(joy_button.pressed) + " Index: " + itos(joy_button.button_index) + " pressure " + rtos(joy_button.pressure);
 			return str;
 
 		} break;
 		case SCREEN_TOUCH: {
-			str+= "Event: ScreenTouch ";
-			str=str+"Pressed: "+itos(screen_touch.pressed)+" Index: " +itos(screen_touch.index)+" pos "+rtos(screen_touch.x)+","+rtos(screen_touch.y);
+			str += "Event: ScreenTouch ";
+			str = str + "Pressed: " + itos(screen_touch.pressed) + " Index: " + itos(screen_touch.index) + " pos " + rtos(screen_touch.x) + "," + rtos(screen_touch.y);
 			return str;
 
 		} break;
 		case SCREEN_DRAG: {
-			str+= "Event: ScreenDrag ";
-			str=str+" Index: " +itos(screen_drag.index)+" pos "+rtos(screen_drag.x)+","+rtos(screen_drag.y);
+			str += "Event: ScreenDrag ";
+			str = str + " Index: " + itos(screen_drag.index) + " pos " + rtos(screen_drag.x) + "," + rtos(screen_drag.y);
 			return str;
 
 		} break;
 		case ACTION: {
-			str+= "Event: Action: "+InputMap::get_singleton()->get_action_from_id(action.action)+" Pressed: "+itos(action.pressed);
+			str += "Event: Action: " + InputMap::get_singleton()->get_action_from_id(action.action) + " Pressed: " + itos(action.pressed);
 			return str;
 
 		} break;
-
 	}
 
 	return "";
 }
 
-void InputEvent::set_as_action(const String& p_action, bool p_pressed) {
+void InputEvent::set_as_action(const String &p_action, bool p_pressed) {
 
-	type=ACTION;
-	action.action=InputMap::get_singleton()->get_action_id(p_action);
-	action.pressed=p_pressed;
+	type = ACTION;
+	action.action = InputMap::get_singleton()->get_action_id(p_action);
+	action.pressed = p_pressed;
 }
 
 bool InputEvent::is_pressed() const {
 
-	switch(type) {
+	switch (type) {
 
 		case KEY: return key.pressed;
 		case MOUSE_BUTTON: return mouse_button.pressed;
@@ -218,93 +217,89 @@ bool InputEvent::is_pressed() const {
 
 bool InputEvent::is_echo() const {
 
-	return (type==KEY && key.echo);
+	return (type == KEY && key.echo);
 }
 
-bool InputEvent::is_action(const String& p_action) const {
+bool InputEvent::is_action(const String &p_action) const {
 
-	return InputMap::get_singleton()->event_is_action(*this,p_action);
+	return InputMap::get_singleton()->event_is_action(*this, p_action);
 }
 
-bool InputEvent::is_action_pressed(const String& p_action) const {
+bool InputEvent::is_action_pressed(const String &p_action) const {
 
 	return is_action(p_action) && is_pressed() && !is_echo();
 }
 
-bool InputEvent::is_action_released(const String& p_action) const {
+bool InputEvent::is_action_released(const String &p_action) const {
 
 	return is_action(p_action) && !is_pressed();
 }
 
 uint32_t InputEventKey::get_scancode_with_modifiers() const {
 
-	uint32_t sc=scancode;
+	uint32_t sc = scancode;
 	if (mod.control)
-		sc|=KEY_MASK_CTRL;
+		sc |= KEY_MASK_CTRL;
 	if (mod.alt)
-		sc|=KEY_MASK_ALT;
+		sc |= KEY_MASK_ALT;
 	if (mod.shift)
-		sc|=KEY_MASK_SHIFT;
+		sc |= KEY_MASK_SHIFT;
 	if (mod.meta)
-		sc|=KEY_MASK_META;
+		sc |= KEY_MASK_META;
 
 	return sc;
-
 }
 
-InputEvent InputEvent::xform_by(const Transform2D& p_xform) const {
+InputEvent InputEvent::xform_by(const Transform2D &p_xform) const {
 
+	InputEvent ev = *this;
 
-	InputEvent ev=*this;
-
-	switch(ev.type) {
+	switch (ev.type) {
 
 		case InputEvent::MOUSE_BUTTON: {
 
-			Vector2 g = p_xform.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
-			Vector2 l = p_xform.xform(Vector2(ev.mouse_button.x,ev.mouse_button.y));
-			ev.mouse_button.x=l.x;
-			ev.mouse_button.y=l.y;
-			ev.mouse_button.global_x=g.x;
-			ev.mouse_button.global_y=g.y;
+			Vector2 g = p_xform.xform(Vector2(ev.mouse_button.global_x, ev.mouse_button.global_y));
+			Vector2 l = p_xform.xform(Vector2(ev.mouse_button.x, ev.mouse_button.y));
+			ev.mouse_button.x = l.x;
+			ev.mouse_button.y = l.y;
+			ev.mouse_button.global_x = g.x;
+			ev.mouse_button.global_y = g.y;
 
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
-			Vector2 g = p_xform.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
-			Vector2 l = p_xform.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
-			Vector2 r = p_xform.basis_xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
-			Vector2 s = p_xform.basis_xform(Vector2(ev.mouse_motion.speed_x,ev.mouse_motion.speed_y));
-			ev.mouse_motion.x=l.x;
-			ev.mouse_motion.y=l.y;
-			ev.mouse_motion.global_x=g.x;
-			ev.mouse_motion.global_y=g.y;
-			ev.mouse_motion.relative_x=r.x;
-			ev.mouse_motion.relative_y=r.y;
-			ev.mouse_motion.speed_x=s.x;
-			ev.mouse_motion.speed_y=s.y;
+			Vector2 g = p_xform.xform(Vector2(ev.mouse_motion.global_x, ev.mouse_motion.global_y));
+			Vector2 l = p_xform.xform(Vector2(ev.mouse_motion.x, ev.mouse_motion.y));
+			Vector2 r = p_xform.basis_xform(Vector2(ev.mouse_motion.relative_x, ev.mouse_motion.relative_y));
+			Vector2 s = p_xform.basis_xform(Vector2(ev.mouse_motion.speed_x, ev.mouse_motion.speed_y));
+			ev.mouse_motion.x = l.x;
+			ev.mouse_motion.y = l.y;
+			ev.mouse_motion.global_x = g.x;
+			ev.mouse_motion.global_y = g.y;
+			ev.mouse_motion.relative_x = r.x;
+			ev.mouse_motion.relative_y = r.y;
+			ev.mouse_motion.speed_x = s.x;
+			ev.mouse_motion.speed_y = s.y;
 
 		} break;
 		case InputEvent::SCREEN_TOUCH: {
 
-
-			Vector2 t = p_xform.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y));
-			ev.screen_touch.x=t.x;
-			ev.screen_touch.y=t.y;
+			Vector2 t = p_xform.xform(Vector2(ev.screen_touch.x, ev.screen_touch.y));
+			ev.screen_touch.x = t.x;
+			ev.screen_touch.y = t.y;
 
 		} break;
 		case InputEvent::SCREEN_DRAG: {
 
-
-			Vector2 t = p_xform.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
-			Vector2 r = p_xform.basis_xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
-			Vector2 s = p_xform.basis_xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
-			ev.screen_drag.x=t.x;
-			ev.screen_drag.y=t.y;
-			ev.screen_drag.relative_x=r.x;
-			ev.screen_drag.relative_y=r.y;
-			ev.screen_drag.speed_x=s.x;
-			ev.screen_drag.speed_y=s.y;
+			Vector2 t = p_xform.xform(Vector2(ev.screen_drag.x, ev.screen_drag.y));
+			Vector2 r = p_xform.basis_xform(Vector2(ev.screen_drag.relative_x, ev.screen_drag.relative_y));
+			Vector2 s = p_xform.basis_xform(Vector2(ev.screen_drag.speed_x, ev.screen_drag.speed_y));
+			ev.screen_drag.x = t.x;
+			ev.screen_drag.y = t.y;
+			ev.screen_drag.relative_x = r.x;
+			ev.screen_drag.relative_y = r.y;
+			ev.screen_drag.speed_x = s.x;
+			ev.screen_drag.speed_y = s.y;
 		} break;
 	}
 

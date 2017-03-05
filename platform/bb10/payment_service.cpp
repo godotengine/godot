@@ -31,18 +31,18 @@
 #include "payment_service.h"
 
 #include "bbutil.h"
-#include <string.h>
 #include <errno.h>
+#include <string.h>
 #include <unistd.h>
-extern char* launch_dir_ptr;
+extern char *launch_dir_ptr;
 
 void PaymentService::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("request_product_info"),&PaymentService::request_product_info);
-	ClassDB::bind_method(D_METHOD("purchase"),&PaymentService::purchase);
+	ClassDB::bind_method(D_METHOD("request_product_info"), &PaymentService::request_product_info);
+	ClassDB::bind_method(D_METHOD("purchase"), &PaymentService::purchase);
 
-	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&PaymentService::get_pending_event_count);
-	ClassDB::bind_method(D_METHOD("pop_pending_event"),&PaymentService::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &PaymentService::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"), &PaymentService::pop_pending_event);
 };
 
 Error PaymentService::request_product_info(Variant p_params) {
@@ -55,16 +55,16 @@ Error PaymentService::purchase(Variant p_params) {
 	Dictionary params = p_params;
 	ERR_FAIL_COND_V((!params.has("product_id")) && (!params.has("product_sku")), ERR_INVALID_PARAMETER);
 
-	char* id = NULL;
-	char* sku = NULL;
+	char *id = NULL;
+	char *sku = NULL;
 
-	CharString p_id = params.has("product_id")?String(params["product_id"]).ascii():CharString();
-	CharString p_sku = params.has("product_sku")?String(params["product_sku"]).ascii():CharString();
+	CharString p_id = params.has("product_id") ? String(params["product_id"]).ascii() : CharString();
+	CharString p_sku = params.has("product_sku") ? String(params["product_sku"]).ascii() : CharString();
 	unsigned int request_id;
 	chdir(launch_dir_ptr);
 	int ret = paymentservice_purchase_request(params.has("product_sku") ? NULL : p_id.get_data(),
-											  params.has("product_sku") ? p_sku.get_data() : NULL,
-											  NULL, NULL, NULL, NULL, get_window_group_id(), &request_id);
+			params.has("product_sku") ? p_sku.get_data() : NULL,
+			NULL, NULL, NULL, NULL, get_window_group_id(), &request_id);
 	chdir("app/native");
 
 	if (ret != BPS_SUCCESS) {
@@ -76,8 +76,7 @@ Error PaymentService::purchase(Variant p_params) {
 	return OK;
 };
 
-
-bool PaymentService::handle_event(bps_event_t* p_event) {
+bool PaymentService::handle_event(bps_event_t *p_event) {
 
 	if (bps_event_get_domain(p_event) != paymentservice_get_domain()) {
 		return false;
@@ -91,12 +90,12 @@ bool PaymentService::handle_event(bps_event_t* p_event) {
 		res = bps_event_get_code(p_event);
 		if (res == PURCHASE_RESPONSE) {
 			dict["type"] = "purchase";
-			const char* pid = paymentservice_event_get_digital_good_id(p_event, 0);
-			dict["product_id"] = String(pid?pid:"");
+			const char *pid = paymentservice_event_get_digital_good_id(p_event, 0);
+			dict["product_id"] = String(pid ? pid : "");
 		};
 
 	} else {
-		const char* desc = paymentservice_event_get_error_text(p_event);
+		const char *desc = paymentservice_event_get_error_text(p_event);
 		if (strcmp(desc, "alreadyPurchased") == 0) {
 			dict["result"] = "ok";
 		} else {
@@ -142,9 +141,8 @@ PaymentService::PaymentService() {
 #endif
 };
 
-PaymentService::~PaymentService() {
+PaymentService::~PaymentService(){
 
 };
-
 
 #endif

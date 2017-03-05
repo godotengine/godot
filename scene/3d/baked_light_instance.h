@@ -29,16 +29,15 @@
 #ifndef BAKED_LIGHT_INSTANCE_H
 #define BAKED_LIGHT_INSTANCE_H
 
+#include "scene/3d/multimesh_instance.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/baked_light.h"
-#include "scene/3d/multimesh_instance.h"
-
 
 class BakedLightBaker;
 class Light;
 
 class BakedLight : public VisualInstance {
-	GDCLASS(BakedLight,VisualInstance);
+	GDCLASS(BakedLight, VisualInstance);
 
 public:
 	enum DebugMode {
@@ -53,9 +52,8 @@ private:
 	int cells_per_axis;
 
 	enum {
-		CHILD_EMPTY=0xFFFFFFFF,
+		CHILD_EMPTY = 0xFFFFFFFF,
 	};
-
 
 	/* BAKE DATA */
 
@@ -70,21 +68,20 @@ private:
 		uint32_t light_pass; //used for baking light
 
 		BakeCell() {
-			for(int i=0;i<8;i++) {
-				childs[i]=0xFFFFFFFF;
+			for (int i = 0; i < 8; i++) {
+				childs[i] = 0xFFFFFFFF;
 			}
 
-			for(int i=0;i<3;i++) {
-				light[i]=0;
-				albedo[i]=0;
-				radiance[i]=0;
+			for (int i = 0; i < 3; i++) {
+				light[i] = 0;
+				albedo[i] = 0;
+				radiance[i] = 0;
 			}
-			alpha=0;
-			light_pass=0;
-			used_sides=0;
+			alpha = 0;
+			light_pass = 0;
+			used_sides = 0;
 		}
 	};
-
 
 	int bake_texture_size;
 	int color_scan_cell_width;
@@ -95,12 +92,9 @@ private:
 		Vector<Color> emission;
 	};
 
-
 	Vector<Color> _get_bake_texture(Image &p_image, const Color &p_color);
 
-
-
-	Map<Ref<Material>,MaterialCache> material_cache;
+	Map<Ref<Material>, MaterialCache> material_cache;
 	MaterialCache _get_material_cache(Ref<Material> p_material);
 
 	int bake_cells_alloc;
@@ -110,49 +104,44 @@ private:
 	PoolVector<BakeCell> bake_cells;
 	PoolVector<BakeCell>::Write bake_cells_write;
 
-
-
-	void _plot_face(int p_idx,int p_level,const Vector3 *p_vtx,const Vector2* p_uv, const MaterialCache& p_material,const Rect3& p_aabb);
+	void _plot_face(int p_idx, int p_level, const Vector3 *p_vtx, const Vector2 *p_uv, const MaterialCache &p_material, const Rect3 &p_aabb);
 	void _fixup_plot(int p_idx, int p_level, int p_x, int p_y, int p_z);
-	void _bake_add_mesh(const Transform& p_xform,Ref<Mesh>& p_mesh);
-	void _bake_add_to_aabb(const Transform& p_xform,Ref<Mesh>& p_mesh,bool &first);
+	void _bake_add_mesh(const Transform &p_xform, Ref<Mesh> &p_mesh);
+	void _bake_add_to_aabb(const Transform &p_xform, Ref<Mesh> &p_mesh, bool &first);
 
-	void _debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb,DebugMode p_mode,Ref<MultiMesh> &p_multimesh,int &idx);
+	void _debug_mesh(int p_idx, int p_level, const Rect3 &p_aabb, DebugMode p_mode, Ref<MultiMesh> &p_multimesh, int &idx);
 	void _debug_mesh_albedo();
 	void _debug_mesh_light();
 
-
-	_FORCE_INLINE_ int _find_cell(int x,int y, int z);
-	int _plot_ray(const Vector3& p_from, const Vector3& p_to);
+	_FORCE_INLINE_ int _find_cell(int x, int y, int z);
+	int _plot_ray(const Vector3 &p_from, const Vector3 &p_to);
 
 	uint32_t light_pass;
 
+	void _bake_directional(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 &p_dir, const Color &p_color, int p_sign);
+	void _upscale_light(int p_idx, int p_level);
+	void _bake_light(Light *p_light);
 
-	void _bake_directional(int p_idx, int p_level, int p_x,int p_y,int p_z,const Vector3& p_dir,const Color& p_color,int p_sign);
-	void _upscale_light(int p_idx,int p_level);
-	void _bake_light(Light* p_light);
+	Color _cone_trace(const Vector3 &p_from, const Vector3 &p_dir, float p_half_angle);
+	void _bake_radiance(int p_idx, int p_level, int p_x, int p_y, int p_z);
 
-	Color _cone_trace(const Vector3& p_from, const Vector3& p_dir, float p_half_angle);
-	void _bake_radiance(int p_idx, int p_level, int p_x,int p_y,int p_z);
+	friend class GeometryInstance;
 
-friend class GeometryInstance;
+	Set<GeometryInstance *> geometries;
+	friend class Light;
 
-	Set<GeometryInstance*> geometries;
-friend class Light;
+	Set<Light *> lights;
 
-	Set<Light*> lights;
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	void set_cell_subdiv(int p_subdiv);
 	int get_cell_subdiv() const;
 
 	void bake();
 	void bake_lights();
 	void bake_radiance();
-
 
 	void create_debug_mesh(DebugMode p_mode);
 
@@ -164,7 +153,6 @@ public:
 	BakedLight();
 	~BakedLight();
 };
-
 
 #if 0
 class BakedLightSampler : public VisualInstance {

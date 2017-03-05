@@ -33,20 +33,21 @@
 
 extern void (*_print_func)(String);
 
-
-typedef void (*PrintHandlerFunc)(void*,const String& p_string);
+typedef void (*PrintHandlerFunc)(void *, const String &p_string);
 
 struct PrintHandlerList {
 
 	PrintHandlerFunc printfunc;
 	void *userdata;
 
-	PrintHandlerList*next;
+	PrintHandlerList *next;
 
-	PrintHandlerList() { printfunc=0; next=0; userdata=0; }
+	PrintHandlerList() {
+		printfunc = 0;
+		next = 0;
+		userdata = 0;
+	}
 };
-
-
 
 void add_print_handler(PrintHandlerList *p_handler);
 void remove_print_handler(PrintHandlerList *p_handler);

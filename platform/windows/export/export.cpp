@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "export.h"
-#include "platform/windows/logo.h"
 #include "editor/editor_export.h"
+#include "platform/windows/logo.h"
 
 void register_windows_exporter() {
 
@@ -51,4 +51,3 @@ void register_windows_exporter() {
 
 #endif
 }
-

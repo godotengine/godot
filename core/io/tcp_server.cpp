@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "tcp_server.h"
 
-TCP_Server* (*TCP_Server::_create)()=NULL;
+TCP_Server *(*TCP_Server::_create)() = NULL;
 
 Ref<TCP_Server> TCP_Server::create_ref() {
 
@@ -37,7 +37,7 @@ Ref<TCP_Server> TCP_Server::create_ref() {
 	return Ref<TCP_Server>(_create());
 }
 
-TCP_Server* TCP_Server::create() {
+TCP_Server *TCP_Server::create() {
 
 	if (!_create)
 		return NULL;
@@ -46,15 +46,11 @@ TCP_Server* TCP_Server::create() {
 
 void TCP_Server::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("listen","port","bind_address"),&TCP_Server::listen,DEFVAL("*"));
-	ClassDB::bind_method(D_METHOD("is_connection_available"),&TCP_Server::is_connection_available);
-	ClassDB::bind_method(D_METHOD("take_connection"),&TCP_Server::take_connection);
-	ClassDB::bind_method(D_METHOD("stop"),&TCP_Server::stop);
-
+	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));
+	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCP_Server::is_connection_available);
+	ClassDB::bind_method(D_METHOD("take_connection"), &TCP_Server::take_connection);
+	ClassDB::bind_method(D_METHOD("stop"), &TCP_Server::stop);
 }
 
-
-TCP_Server::TCP_Server()
-{
-
+TCP_Server::TCP_Server() {
 }

@@ -33,7 +33,6 @@
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 
-
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 
 	String local_path;
@@ -42,7 +41,6 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 	Ref<Resource> resource;
 
 	FileAccess *f;
-
 
 	bool endian_swap;
 	bool use_real64;
@@ -73,57 +71,45 @@ class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 	String get_unicode_string();
 	void _advance_padding(uint32_t p_len);
 
-	Map<String,String> remaps;
+	Map<String, String> remaps;
 	Error error;
 
 	int stage;
 
-friend class ResourceFormatLoaderBinary;
+	friend class ResourceFormatLoaderBinary;
 
-
-	Error parse_variant(Variant& r_v);
+	Error parse_variant(Variant &r_v);
 
 public:
-
-	virtual void set_local_path(const String& p_local_path);
+	virtual void set_local_path(const String &p_local_path);
 	virtual Ref<Resource> get_resource();
 	virtual Error poll();
 	virtual int get_stage() const;
 	virtual int get_stage_count() const;
 
-	void set_remaps(const Map<String,String>& p_remaps) { remaps=p_remaps; }
+	void set_remaps(const Map<String, String> &p_remaps) { remaps = p_remaps; }
 	void open(FileAccess *p_f);
 	String recognize(FileAccess *p_f);
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
 
-
 	ResourceInteractiveLoaderBinary();
 	~ResourceInteractiveLoaderBinary();
-
 };
 
 class ResourceFormatLoaderBinary : public ResourceFormatLoader {
 public:
-
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path,Error *r_error=NULL);
-	virtual void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const;
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, Error *r_error = NULL);
+	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
-	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
-	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
-
-
-
+	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
+	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
 };
 
-
-
-
-class ResourceFormatSaverBinaryInstance  {
+class ResourceFormatSaverBinaryInstance {
 
 	String local_path;
-
 
 	bool relative_paths;
 	bool bundle_resources;
@@ -134,19 +120,16 @@ class ResourceFormatSaverBinaryInstance  {
 	FileAccess *f;
 	String magic;
 	Set<RES> resource_set;
-	Map<StringName,int> string_map;
+	Map<StringName, int> string_map;
 	Vector<StringName> strings;
 
-
-	Map<RES,int> external_resources;
+	Map<RES, int> external_resources;
 	List<RES> saved_resources;
-
 
 	struct Property {
 		int name_idx;
 		Variant value;
 		PropertyInfo pi;
-
 	};
 
 	struct ResourceData {
@@ -155,36 +138,25 @@ class ResourceFormatSaverBinaryInstance  {
 		List<Property> properties;
 	};
 
-
-
-
 	void _pad_buffer(int p_bytes);
-	void write_variant(const Variant& p_property,const PropertyInfo& p_hint=PropertyInfo());
-	void _find_resources(const Variant& p_variant,bool p_main=false);
-	void save_unicode_string(const String& p_string);
-	int get_string_index(const String& p_string);
+	void write_variant(const Variant &p_property, const PropertyInfo &p_hint = PropertyInfo());
+	void _find_resources(const Variant &p_variant, bool p_main = false);
+	void save_unicode_string(const String &p_string);
+	int get_string_index(const String &p_string);
+
 public:
-
-
-	Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0);
+	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 };
 
-
-
-class ResourceFormatSaverBinary : public ResourceFormatSaver  {
-
-
-
+class ResourceFormatSaverBinary : public ResourceFormatSaver {
 
 public:
-
-	static ResourceFormatSaverBinary* singleton;
-	virtual Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0);
-	virtual bool recognize(const RES& p_resource) const;
-	virtual void get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const;
+	static ResourceFormatSaverBinary *singleton;
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	virtual bool recognize(const RES &p_resource) const;
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 
 	ResourceFormatSaverBinary();
 };
-
 
 #endif // RESOURCE_FORMAT_BINARY_H

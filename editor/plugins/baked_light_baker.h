@@ -29,10 +29,10 @@
 #ifndef BAKED_LIGHT_BAKER_H
 #define BAKED_LIGHT_BAKER_H
 
+#include "os/thread.h"
 #include "scene/3d/baked_light_instance.h"
 #include "scene/3d/light.h"
 #include "scene/3d/mesh_instance.h"
-#include "os/thread.h"
 
 #if 0
 

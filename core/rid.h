@@ -29,169 +29,151 @@
 #ifndef RID_H
 #define RID_H
 
-
-#include "safe_refcount.h"
-#include "typedefs.h"
-#include "os/memory.h"
-#include "set.h"
 #include "list.h"
+#include "os/memory.h"
+#include "safe_refcount.h"
+#include "set.h"
+#include "typedefs.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 class RID_OwnerBase;
 
 class RID_Data {
 
-friend class RID_OwnerBase;
+	friend class RID_OwnerBase;
 
 #ifndef DEBUG_ENABLED
 	RID_OwnerBase *_owner;
 #endif
 	uint32_t _id;
+
 public:
 	_FORCE_INLINE_ uint32_t get_id() const { return _id; }
 
 	virtual ~RID_Data();
 };
 
-
 class RID {
-friend class RID_OwnerBase;
+	friend class RID_OwnerBase;
 
 	mutable RID_Data *_data;
 
 public:
-
 	_FORCE_INLINE_ RID_Data *get_data() const { return _data; }
 
-	_FORCE_INLINE_ bool operator==(const RID& p_rid) const {
+	_FORCE_INLINE_ bool operator==(const RID &p_rid) const {
 
-		return _data==p_rid._data;
+		return _data == p_rid._data;
 	}
-	_FORCE_INLINE_ bool operator<(const RID& p_rid) const {
+	_FORCE_INLINE_ bool operator<(const RID &p_rid) const {
 
 		return _data < p_rid._data;
 	}
-	_FORCE_INLINE_ bool operator<=(const RID& p_rid) const {
+	_FORCE_INLINE_ bool operator<=(const RID &p_rid) const {
 
 		return _data <= p_rid._data;
 	}
-	_FORCE_INLINE_ bool operator>(const RID& p_rid) const {
+	_FORCE_INLINE_ bool operator>(const RID &p_rid) const {
 
 		return _data > p_rid._data;
 	}
-	_FORCE_INLINE_ bool operator!=(const RID& p_rid) const {
+	_FORCE_INLINE_ bool operator!=(const RID &p_rid) const {
 
-		return _data!=p_rid._data;
+		return _data != p_rid._data;
 	}
-	_FORCE_INLINE_ bool is_valid() const { return _data!=NULL; }
+	_FORCE_INLINE_ bool is_valid() const { return _data != NULL; }
 
-	_FORCE_INLINE_ uint32_t get_id() const { return _data?_data->get_id():0; }
+	_FORCE_INLINE_ uint32_t get_id() const { return _data ? _data->get_id() : 0; }
 
 	_FORCE_INLINE_ RID() {
-		_data=NULL;
+		_data = NULL;
 	}
-
 };
-
 
 class RID_OwnerBase {
 protected:
-
 	static SafeRefCount refcount;
-	_FORCE_INLINE_ void _set_data(RID& p_rid, RID_Data* p_data) {
-		p_rid._data=p_data;
+	_FORCE_INLINE_ void _set_data(RID &p_rid, RID_Data *p_data) {
+		p_rid._data = p_data;
 		refcount.ref();
-		p_data->_id=refcount.get();
+		p_data->_id = refcount.get();
 #ifndef DEBUG_ENABLED
-		p_data->_owner=this;
+		p_data->_owner = this;
 #endif
 	}
 
 #ifndef DEBUG_ENABLED
 
-	_FORCE_INLINE_ bool _is_owner(const RID& p_rid) const {
+	_FORCE_INLINE_ bool _is_owner(const RID &p_rid) const {
 
-		return this==p_rid._data->_owner;
-
+		return this == p_rid._data->_owner;
 	}
 
-	_FORCE_INLINE_ void _remove_owner(RID& p_rid) {
+	_FORCE_INLINE_ void _remove_owner(RID &p_rid) {
 
-		p_rid._data->_owner=NULL;
-
+		p_rid._data->_owner = NULL;
 	}
 #
 #endif
 
-
 public:
-
-
-	virtual void get_owned_list(List<RID> *p_owned)=0;
+	virtual void get_owned_list(List<RID> *p_owned) = 0;
 
 	static void init_rid();
 	virtual ~RID_OwnerBase() {}
 };
 
-template<class T>
+template <class T>
 class RID_Owner : public RID_OwnerBase {
 public:
 #ifdef DEBUG_ENABLED
-	mutable Set<RID_Data*> id_map;
+	mutable Set<RID_Data *> id_map;
 #endif
 public:
-
-	_FORCE_INLINE_ RID make_rid(T * p_data) {
-
+	_FORCE_INLINE_ RID make_rid(T *p_data) {
 
 		RID rid;
-		_set_data(rid,p_data);
+		_set_data(rid, p_data);
 
 #ifdef DEBUG_ENABLED
-		id_map.insert(p_data)	;
+		id_map.insert(p_data);
 #endif
 
 		return rid;
 	}
 
-	_FORCE_INLINE_ T * get(const RID& p_rid) {
+	_FORCE_INLINE_ T *get(const RID &p_rid) {
 
 #ifdef DEBUG_ENABLED
 
-		ERR_FAIL_COND_V(!p_rid.is_valid(),NULL);
-		ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()),NULL);
+		ERR_FAIL_COND_V(!p_rid.is_valid(), NULL);
+		ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), NULL);
 #endif
-		return static_cast<T*>(p_rid.get_data());
-
+		return static_cast<T *>(p_rid.get_data());
 	}
 
-	_FORCE_INLINE_ T * getornull(const RID& p_rid) {
+	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
 
 #ifdef DEBUG_ENABLED
 
 		if (p_rid.get_data()) {
-			ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()),NULL);
+			ERR_FAIL_COND_V(!id_map.has(p_rid.get_data()), NULL);
 		}
 #endif
-		return static_cast<T*>(p_rid.get_data());
-
+		return static_cast<T *>(p_rid.get_data());
 	}
 
+	_FORCE_INLINE_ T *getptr(const RID &p_rid) {
 
-	_FORCE_INLINE_ T * getptr(const RID& p_rid) {
-
-		return static_cast<T*>(p_rid.get_data());
-
+		return static_cast<T *>(p_rid.get_data());
 	}
 
+	_FORCE_INLINE_ bool owns(const RID &p_rid) const {
 
-	_FORCE_INLINE_ bool owns(const RID& p_rid) const {
-
-		if (p_rid.get_data()==NULL)
+		if (p_rid.get_data() == NULL)
 			return false;
 #ifdef DEBUG_ENABLED
 		return id_map.has(p_rid.get_data());
@@ -211,20 +193,15 @@ public:
 
 	void get_owned_list(List<RID> *p_owned) {
 
-
-
 #ifdef DEBUG_ENABLED
 
-		for (typename Set<RID_Data*>::Element *E=id_map.front();E;E=E->next()) {
+		for (typename Set<RID_Data *>::Element *E = id_map.front(); E; E = E->next()) {
 			RID r;
-			_set_data(r,static_cast<T*>(E->get()));
+			_set_data(r, static_cast<T *>(E->get()));
 			p_owned->push_back(r);
 		}
 #endif
-
 	}
-
 };
-
 
 #endif

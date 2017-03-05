@@ -767,7 +767,7 @@ void AudioServerJavascript::driver_process_chunk(int p_frames) {
 
 		int32_t stream_vol_scale=(stream_volume*stream_volume_scale*E->get()->volume_scale)*(1<<STREAM_SCALE_BITS);
 
-#define STRSCALE(m_val)	((((m_val>>STREAM_SCALE_BITS)*stream_vol_scale)>>8)/8388608.0)
+#define STRSCALE(m_val) ((((m_val >> STREAM_SCALE_BITS) * stream_vol_scale) >> 8) / 8388608.0)
 		switch(channels) {
 			case 1: {
 

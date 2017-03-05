@@ -29,41 +29,38 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "servers/visual_server.h"
-#include "scene/resources/texture.h"
-#include "scene/resources/shader.h"
 #include "resource.h"
-#include "servers/visual/shader_language.h"
+#include "scene/resources/shader.h"
+#include "scene/resources/texture.h"
 #include "self_list.h"
+#include "servers/visual/shader_language.h"
+#include "servers/visual_server.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
 class Material : public Resource {
 
-	GDCLASS(Material,Resource);
+	GDCLASS(Material, Resource);
 	RES_BASE_EXTENSION("mtl");
-	OBJ_SAVE_TYPE( Material );
+	OBJ_SAVE_TYPE(Material);
 
 	RID material;
+
 protected:
+	_FORCE_INLINE_ RID _get_material() const { return material; }
 
-	_FORCE_INLINE_  RID _get_material() const { return material; }
 public:
-
 	virtual RID get_rid() const;
 	Material();
 	virtual ~Material();
 };
 
-
 class FixedSpatialMaterial : public Material {
 
-	GDCLASS(FixedSpatialMaterial,Material)
-
+	GDCLASS(FixedSpatialMaterial, Material)
 
 public:
-
 	enum TextureParam {
 		TEXTURE_ALBEDO,
 		TEXTURE_SPECULAR,
@@ -82,9 +79,7 @@ public:
 		TEXTURE_DETAIL_NORMAL,
 		TEXTURE_MAX
 
-
 	};
-
 
 	enum DetailUV {
 		DETAIL_UV_1,
@@ -105,7 +100,6 @@ public:
 		FEATURE_DETAIL,
 		FEATURE_MAX
 	};
-
 
 	enum BlendMode {
 		BLEND_MODE_MIX,
@@ -167,10 +161,9 @@ private:
 
 		uint32_t key;
 
-		bool operator<(const MaterialKey& p_key) const {
+		bool operator<(const MaterialKey &p_key) const {
 			return key < p_key.key;
 		}
-
 	};
 
 	struct ShaderData {
@@ -178,31 +171,31 @@ private:
 		int users;
 	};
 
-	static Map<MaterialKey,ShaderData> shader_map;
+	static Map<MaterialKey, ShaderData> shader_map;
 
 	MaterialKey current_key;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 
 		MaterialKey mk;
-		mk.key=0;
-		for(int i=0;i<FEATURE_MAX;i++) {
+		mk.key = 0;
+		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
-				mk.feature_mask|=(1<<i);
+				mk.feature_mask |= (1 << i);
 			}
 		}
-		mk.detail_uv=detail_uv;
-		mk.blend_mode=blend_mode;
-		mk.depth_draw_mode=depth_draw_mode;
-		mk.cull_mode=cull_mode;
-		for(int i=0;i<FLAG_MAX;i++) {
+		mk.detail_uv = detail_uv;
+		mk.blend_mode = blend_mode;
+		mk.depth_draw_mode = depth_draw_mode;
+		mk.cull_mode = cull_mode;
+		for (int i = 0; i < FLAG_MAX; i++) {
 			if (flags[i]) {
-				mk.flags|=(1<<i);
+				mk.flags |= (1 << i);
 			}
 		}
-		mk.detail_blend_mode=detail_blend_mode;
-		mk.diffuse_mode=diffuse_mode;
-		mk.specular_mode=specular_mode;
+		mk.detail_blend_mode = detail_blend_mode;
+		mk.diffuse_mode = diffuse_mode;
+		mk.specular_mode = specular_mode;
 
 		return mk;
 	}
@@ -230,12 +223,11 @@ private:
 		StringName uv2_scale;
 		StringName uv2_offset;
 		StringName texture_names[TEXTURE_MAX];
-
 	};
 
 	static Mutex *material_mutex;
 	static SelfList<FixedSpatialMaterial>::List dirty_materials;
-	static ShaderNames* shader_names;
+	static ShaderNames *shader_names;
 
 	SelfList<FixedSpatialMaterial> element;
 
@@ -282,23 +274,20 @@ private:
 
 	Ref<Texture> textures[TEXTURE_MAX];
 
-	_FORCE_INLINE_ void _validate_feature(const String& text, Feature feature,PropertyInfo& property) const;
+	_FORCE_INLINE_ void _validate_feature(const String &text, Feature feature, PropertyInfo &property) const;
 
 protected:
-
 	static void _bind_methods();
-	void _validate_property(PropertyInfo& property) const;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
-
-
-	void set_albedo(const Color& p_albedo);
+	void set_albedo(const Color &p_albedo);
 	Color get_albedo() const;
 
 	void set_specular_mode(SpecularMode p_mode);
 	SpecularMode get_specular_mode() const;
 
-	void set_specular(const Color& p_specular);
+	void set_specular(const Color &p_specular);
 	Color get_specular() const;
 
 	void set_metalness(float p_metalness);
@@ -307,7 +296,7 @@ public:
 	void set_roughness(float p_roughness);
 	float get_roughness() const;
 
-	void set_emission(const Color& p_emission);
+	void set_emission(const Color &p_emission);
 	Color get_emission() const;
 
 	void set_emission_energy(float p_emission_energy);
@@ -367,25 +356,25 @@ public:
 	void set_diffuse_mode(DiffuseMode p_mode);
 	DiffuseMode get_diffuse_mode() const;
 
-	void set_flag(Flags p_flag,bool p_enabled);
+	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
 
-	void set_texture(TextureParam p_param,const Ref<Texture>& p_texture);
+	void set_texture(TextureParam p_param, const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture(TextureParam p_param) const;
 
-	void set_feature(Feature p_feature,bool p_enabled);
+	void set_feature(Feature p_feature, bool p_enabled);
 	bool get_feature(Feature p_feature) const;
 
-	void set_uv1_scale(const Vector2& p_scale);
+	void set_uv1_scale(const Vector2 &p_scale);
 	Vector2 get_uv1_scale() const;
 
-	void set_uv1_offset(const Vector2& p_offset);
+	void set_uv1_offset(const Vector2 &p_offset);
 	Vector2 get_uv1_offset() const;
 
-	void set_uv2_scale(const Vector2& p_scale);
+	void set_uv2_scale(const Vector2 &p_scale);
 	Vector2 get_uv2_scale() const;
 
-	void set_uv2_offset(const Vector2& p_offset);
+	void set_uv2_offset(const Vector2 &p_offset);
 	Vector2 get_uv2_offset() const;
 
 	static void init_shaders();
@@ -396,21 +385,16 @@ public:
 	virtual ~FixedSpatialMaterial();
 };
 
-VARIANT_ENUM_CAST( FixedSpatialMaterial::TextureParam )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::DetailUV )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::Feature )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::BlendMode )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::DepthDrawMode )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::CullMode )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::Flags )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::DiffuseMode )
-VARIANT_ENUM_CAST( FixedSpatialMaterial::SpecularMode )
+VARIANT_ENUM_CAST(FixedSpatialMaterial::TextureParam)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::DetailUV)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::Feature)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::BlendMode)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::DepthDrawMode)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::CullMode)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::Flags)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::DiffuseMode)
+VARIANT_ENUM_CAST(FixedSpatialMaterial::SpecularMode)
 
 //////////////////////
-
-
-
-
-
 
 #endif

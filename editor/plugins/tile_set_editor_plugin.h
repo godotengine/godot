@@ -29,16 +29,13 @@
 #ifndef TILE_SET_EDITOR_PLUGIN_H
 #define TILE_SET_EDITOR_PLUGIN_H
 
-
-
-#include "scene/resources/tile_set.h"
-#include "editor/editor_node.h"
 #include "editor/editor_name_dialog.h"
-
+#include "editor/editor_node.h"
+#include "scene/resources/tile_set.h"
 
 class TileSetEditor : public Control {
 
-	GDCLASS( TileSetEditor, Control );
+	GDCLASS(TileSetEditor, Control);
 
 	Ref<TileSet> tileset;
 
@@ -59,43 +56,35 @@ class TileSetEditor : public Control {
 	int option;
 	void _menu_cbk(int p_option);
 	void _menu_confirm();
-	void _name_dialog_confirm(const String& name);
+	void _name_dialog_confirm(const String &name);
 
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 
-
 protected:
 	static void _bind_methods();
-public:
 
-	void edit(const Ref<TileSet>& p_tileset);
-	static Error update_library_file(Node *p_base_scene, Ref<TileSet> ml,bool p_merge=true);
+public:
+	void edit(const Ref<TileSet> &p_tileset);
+	static Error update_library_file(Node *p_base_scene, Ref<TileSet> ml, bool p_merge = true);
 
 	TileSetEditor(EditorNode *p_editor);
 };
 
-
-
 class TileSetEditorPlugin : public EditorPlugin {
 
-	GDCLASS( TileSetEditorPlugin, EditorPlugin );
+	GDCLASS(TileSetEditorPlugin, EditorPlugin);
 
 	TileSetEditor *tileset_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "TileSet"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-
-
 	TileSetEditorPlugin(EditorNode *p_node);
-
 };
-
 
 #endif // TILE_SET_EDITOR_PLUGIN_H

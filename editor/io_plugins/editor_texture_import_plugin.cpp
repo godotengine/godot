@@ -28,16 +28,16 @@
 /*************************************************************************/
 #include "editor_texture_import_plugin.h"
 #if 0
-#include "io/image_loader.h"
 #include "editor/editor_node.h"
-#include "io/resource_saver.h"
-#include "editor_atlas.h"
 #include "editor/editor_settings.h"
-#include "io/md5.h"
-#include "io/marshalls.h"
+#include "editor_atlas.h"
 #include "global_config.h"
-#include "scene/gui/check_button.h"
+#include "io/image_loader.h"
+#include "io/marshalls.h"
+#include "io/md5.h"
+#include "io/resource_saver.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/margin_container.h"
 #include "scene/io/resource_format_image.h"
 

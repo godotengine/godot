@@ -29,19 +29,18 @@
 #include "test_containers.h"
 
 #include "dvector.h"
-#include "set.h"
-#include "print_string.h"
 #include "math_funcs.h"
+#include "print_string.h"
 #include "servers/visual/default_mouse_cursor.xpm"
+#include "set.h"
 
-#include "variant.h"
-#include "list.h"
 #include "image.h"
+#include "list.h"
+#include "variant.h"
 
 namespace TestContainers {
 
-MainLoop * test() {
-
+MainLoop *test() {
 
 	/*
 	HashMap<int,int> int_map;
@@ -53,14 +52,13 @@ MainLoop * test() {
 	}
 	*/
 
-
 	{
 
 		Image img;
 		img.create(default_mouse_cursor_xpm);
 
 		{
-			for (int i=0; i<8; i++) {
+			for (int i = 0; i < 8; i++) {
 
 				Image mipmap;
 				//img.make_mipmap(mipmap);
@@ -68,7 +66,6 @@ MainLoop * test() {
 				if (img.get_width() <= 4) break;
 			};
 		};
-
 	};
 
 #if 0
@@ -103,5 +100,4 @@ MainLoop * test() {
 
 	return NULL;
 }
-
 }

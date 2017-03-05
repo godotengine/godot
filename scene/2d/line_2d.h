@@ -29,9 +29,8 @@
 #ifndef LINE2D_H
 #define LINE2D_H
 
-#include "node_2d.h"
 #include "line_builder.h"
-
+#include "node_2d.h"
 
 class Line2D : public Node2D {
 
@@ -40,7 +39,7 @@ class Line2D : public Node2D {
 public:
 	Line2D();
 
-	void set_points(const PoolVector<Vector2> & p_points);
+	void set_points(const PoolVector<Vector2> &p_points);
 	PoolVector<Vector2> get_points() const;
 
 	void set_point_pos(int i, Vector2 pos);
@@ -57,10 +56,10 @@ public:
 	void set_default_color(Color color);
 	Color get_default_color() const;
 
-	void set_gradient(const Ref<ColorRamp>& gradient);
+	void set_gradient(const Ref<ColorRamp> &gradient);
 	Ref<ColorRamp> get_gradient() const;
 
-	void set_texture(const Ref<Texture>& texture);
+	void set_texture(const Ref<Texture> &texture);
 	Ref<Texture> get_texture() const;
 
 	void set_texture_mode(const LineTextureMode mode);
@@ -102,7 +101,6 @@ private:
 	LineTextureMode _texture_mode;
 	float _sharp_limit;
 	int _round_precision;
-
 };
 
 #endif // LINE2D_H

@@ -35,16 +35,15 @@
 */
 class Range : public Control {
 
-	GDCLASS( Range, Control );
-
+	GDCLASS(Range, Control);
 
 	struct Shared {
-		double val,min,max;
-		double step,page;
+		double val, min, max;
+		double step, page;
 		bool exp_ratio;
-		Set<Range*> owners;
+		Set<Range *> owners;
 		void emit_value_changed();
-		void emit_changed(const char *p_what="");
+		void emit_changed(const char *p_what = "");
 	};
 
 	Shared *shared;
@@ -55,17 +54,16 @@ class Range : public Control {
 	void _share(Node *p_range);
 
 	void _value_changed_notify();
-	void _changed_notify(const char *p_what="");
+	void _changed_notify(const char *p_what = "");
 
 protected:
-
 	virtual void _value_changed(double) {}
 
 	static void _bind_methods();
 
 	bool _rounded_values;
-public:
 
+public:
 	void set_value(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
@@ -91,7 +89,6 @@ public:
 
 	Range();
 	~Range();
-
 };
 
 #endif

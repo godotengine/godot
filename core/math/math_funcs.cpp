@@ -29,7 +29,7 @@
 #include "math_funcs.h"
 #include "core/os/os.h"
 
-pcg32_random_t Math::default_pcg = {1, PCG_DEFAULT_INC_64};
+pcg32_random_t Math::default_pcg = { 1, PCG_DEFAULT_INC_64 };
 
 #define PHI 0x9e3779b9
 
@@ -39,30 +39,29 @@ static uint32_t Q[4096];
 
 // TODO: we should eventually expose pcg.inc too
 uint32_t Math::rand_from_seed(uint64_t *seed) {
-	pcg32_random_t pcg = {*seed, PCG_DEFAULT_INC_64};
+	pcg32_random_t pcg = { *seed, PCG_DEFAULT_INC_64 };
 	uint32_t r = pcg32_random_r(&pcg);
 	*seed = pcg.state;
 	return r;
 }
 
 void Math::seed(uint64_t x) {
-	default_pcg.state=x;
+	default_pcg.state = x;
 }
 
 void Math::randomize() {
 
 	OS::Time time = OS::get_singleton()->get_time();
-	seed(OS::get_singleton()->get_ticks_usec()*(time.hour+1)*(time.min+1)*(time.sec+1)*rand()); // TODO: can be simplified.
+	seed(OS::get_singleton()->get_ticks_usec() * (time.hour + 1) * (time.min + 1) * (time.sec + 1) * rand()); // TODO: can be simplified.
 }
 
 uint32_t Math::rand() {
 	return pcg32_random_r(&default_pcg);
 }
 
-
 int Math::step_decimals(double p_step) {
-	static const int maxn=9;
-	static const double sd[maxn]={
+	static const int maxn = 9;
+	static const double sd[maxn] = {
 		0.9999, // somehow compensate for floating point error
 		0.09999,
 		0.009999,
@@ -74,9 +73,9 @@ int Math::step_decimals(double p_step) {
 		0.000000009999
 	};
 
-	double as=Math::abs(p_step);
-	for(int i=0;i<maxn;i++) {
-		if (as>=sd[i]) {
+	double as = Math::abs(p_step);
+	for (int i = 0; i < maxn; i++) {
+		if (as >= sd[i]) {
 			return i;
 		}
 	}
@@ -84,45 +83,44 @@ int Math::step_decimals(double p_step) {
 	return maxn;
 }
 
-double Math::dectime(double p_value,double p_amount, double p_step) {
+double Math::dectime(double p_value, double p_amount, double p_step) {
 	double sgn = p_value < 0 ? -1.0 : 1.0;
 	double val = Math::abs(p_value);
-	val-=p_amount*p_step;
-	if (val<0.0)
-		val=0.0;
-	return val*sgn;
+	val -= p_amount * p_step;
+	if (val < 0.0)
+		val = 0.0;
+	return val * sgn;
 }
 
 double Math::ease(double p_x, double p_c) {
-	if (p_x<0)
-		p_x=0;
-	else if (p_x>1.0)
-		p_x=1.0;
-	if (p_c>0) {
-		if (p_c<1.0) {
-			return 1.0-Math::pow(1.0-p_x,1.0/p_c);
+	if (p_x < 0)
+		p_x = 0;
+	else if (p_x > 1.0)
+		p_x = 1.0;
+	if (p_c > 0) {
+		if (p_c < 1.0) {
+			return 1.0 - Math::pow(1.0 - p_x, 1.0 / p_c);
 		} else {
-			return Math::pow(p_x,p_c);
+			return Math::pow(p_x, p_c);
 		}
-	} else  if (p_c<0) {
+	} else if (p_c < 0) {
 		//inout ease
 
-		if (p_x<0.5) {
-			return Math::pow(p_x*2.0,-p_c)*0.5;
+		if (p_x < 0.5) {
+			return Math::pow(p_x * 2.0, -p_c) * 0.5;
 		} else {
-			return (1.0-Math::pow(1.0-(p_x-0.5)*2.0,-p_c))*0.5+0.5;
+			return (1.0 - Math::pow(1.0 - (p_x - 0.5) * 2.0, -p_c)) * 0.5 + 0.5;
 		}
 	} else
 		return 0; // no ease (raw)
 }
 
-double Math::stepify(double p_value,double p_step) {
-	if (p_step!=0) {
-		p_value=Math::floor( p_value / p_step + 0.5 ) * p_step;
+double Math::stepify(double p_value, double p_step) {
+	if (p_step != 0) {
+		p_value = Math::floor(p_value / p_step + 0.5) * p_step;
 	}
 	return p_value;
 }
-
 
 uint32_t Math::larger_prime(uint32_t p_val) {
 
@@ -159,11 +157,11 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 		0,
 	};
 
-	int idx=0;
+	int idx = 0;
 	while (true) {
 
-		ERR_FAIL_COND_V(primes[idx]==0,0);
-		if (primes[idx]>p_val)
+		ERR_FAIL_COND_V(primes[idx] == 0, 0);
+		if (primes[idx] > p_val)
 			return primes[idx];
 		idx++;
 	}
@@ -173,14 +171,12 @@ uint32_t Math::larger_prime(uint32_t p_val) {
 
 double Math::random(double from, double to) {
 	unsigned int r = Math::rand();
-	double ret = (double)r/(double)RANDOM_MAX;
-	return (ret)*(to-from) + from;
+	double ret = (double)r / (double)RANDOM_MAX;
+	return (ret) * (to - from) + from;
 }
 
 float Math::random(float from, float to) {
 	unsigned int r = Math::rand();
-	float ret = (float)r/(float)RANDOM_MAX;
-	return (ret)*(to-from) + from;
+	float ret = (float)r / (float)RANDOM_MAX;
+	return (ret) * (to - from) + from;
 }
-
-

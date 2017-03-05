@@ -27,22 +27,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rasterizer.h"
-#include "print_string.h"
 #include "os/os.h"
+#include "print_string.h"
 
-
-Rasterizer* (*Rasterizer::_create_func)()=NULL;
+Rasterizer *(*Rasterizer::_create_func)() = NULL;
 
 Rasterizer *Rasterizer::create() {
 
 	return _create_func();
 }
 
-RasterizerStorage*RasterizerStorage::base_signleton=NULL;
+RasterizerStorage *RasterizerStorage::base_signleton = NULL;
 
 RasterizerStorage::RasterizerStorage() {
 
-	base_signleton=this;
+	base_signleton = this;
 }
 
 #if 0
@@ -78,7 +77,7 @@ RID Rasterizer::_create_shader(const FixedSpatialMaterialShaderKey& p_key) {
 	String code;
 
 	static const char* _uv_str[4]={"UV","uv_xform","UV2","uv_sphere"};
-#define _TEXUVSTR(m_idx) String( _uv_str[(p_key.texcoord_mask>>(m_idx*2))&0x3] )
+#define _TEXUVSTR(m_idx) String(_uv_str[(p_key.texcoord_mask >> (m_idx * 2)) & 0x3])
 
 
 	if (p_key.use_pointsize) {

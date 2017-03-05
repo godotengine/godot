@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "particles.h"
-#include "servers/visual_server.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/visual_server.h"
 
 #if 0
 /*

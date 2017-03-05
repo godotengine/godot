@@ -29,20 +29,19 @@
 #include "power_osx.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
+#include <IOKit/ps/IOPowerSources.h>
 
 //  CODE CHUNK IMPORTED FROM SDL 2.0
 
 /* CoreFoundation is so verbose... */
-#define STRMATCH(a,b) (CFStringCompare(a, b, 0) == kCFCompareEqualTo)
-#define GETVAL(k,v) \
-		CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **) v)
+#define STRMATCH(a, b) (CFStringCompare(a, b, 0) == kCFCompareEqualTo)
+#define GETVAL(k, v) \
+	CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **)v)
 
 /* Note that AC power sources also include a laptop battery it is charging. */
-void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_battery, bool * charging)
-{
-	CFStringRef strval;         /* don't CFRelease() this. */
+void power_osx::checkps(CFDictionaryRef dict, bool *have_ac, bool *have_battery, bool *charging) {
+	CFStringRef strval; /* don't CFRelease() this. */
 	CFBooleanRef bval;
 	CFNumberRef numval;
 	bool charge = false;
@@ -53,7 +52,7 @@ void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_batter
 	int pct = -1;
 
 	if ((GETVAL(kIOPSIsPresentKey, &bval)) && (bval == kCFBooleanFalse)) {
-		return;                 /* nothing to see here. */
+		return; /* nothing to see here. */
 	}
 
 	if (!GETVAL(kIOPSPowerSourceStateKey, &strval)) {
@@ -63,7 +62,7 @@ void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_batter
 	if (STRMATCH(strval, CFSTR(kIOPSACPowerValue))) {
 		is_ac = *have_ac = true;
 	} else if (!STRMATCH(strval, CFSTR(kIOPSBatteryPowerValue))) {
-		return;                 /* not a battery? */
+		return; /* not a battery? */
 	}
 
 	if ((GETVAL(kIOPSIsChargingKey, &bval)) && (bval == kCFBooleanTrue)) {
@@ -75,7 +74,7 @@ void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_batter
 		CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
 		if (val > 0) {
 			*have_battery = true;
-			maxpct = (int) val;
+			maxpct = (int)val;
 		}
 	}
 
@@ -84,7 +83,7 @@ void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_batter
 		CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
 		if (val > 0) {
 			*have_battery = true;
-			maxpct = (int) val;
+			maxpct = (int)val;
 		}
 	}
 
@@ -93,24 +92,24 @@ void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_batter
 		CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
 
 		/* Mac OS X reports 0 minutes until empty if you're plugged in. :( */
-				if ((val == 0) && (is_ac)) {
-					val = -1;           /* !!! FIXME: calc from timeToFull and capacity? */
-				}
+		if ((val == 0) && (is_ac)) {
+			val = -1; /* !!! FIXME: calc from timeToFull and capacity? */
+		}
 
-				secs = (int) val;
-				if (secs > 0) {
-					secs *= 60;         /* value is in minutes, so convert to seconds. */
-				}
+		secs = (int)val;
+		if (secs > 0) {
+			secs *= 60; /* value is in minutes, so convert to seconds. */
+		}
 	}
 
 	if (GETVAL(kIOPSCurrentCapacityKey, &numval)) {
 		SInt32 val = -1;
 		CFNumberGetValue(numval, kCFNumberSInt32Type, &val);
-		pct = (int) val;
+		pct = (int)val;
 	}
 
 	if ((pct > 0) && (maxpct > 0)) {
-		pct = (int) ((((double) pct) / ((double) maxpct)) * 100.0);
+		pct = (int)((((double)pct) / ((double)maxpct)) * 100.0);
 	}
 
 	if (pct > 100) {
@@ -123,7 +122,7 @@ void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_batter
 	 */
 	if ((secs < 0) && (nsecs_left < 0)) {
 		if ((pct < 0) && (percent_left < 0)) {
-			choose = true;  /* at least we know there's a battery. */
+			choose = true; /* at least we know there's a battery. */
 		}
 		if (pct > percent_left) {
 			choose = true;
@@ -143,8 +142,7 @@ void power_osx::checkps(CFDictionaryRef dict, bool * have_ac, bool * have_batter
 #undef STRMATCH
 
 //  CODE CHUNK IMPORTED FROM SDL 2.0
-bool power_osx::GetPowerInfo_MacOSX()
-{
+bool power_osx::GetPowerInfo_MacOSX() {
 	CFTypeRef blob = IOPSCopyPowerSourcesInfo();
 
 	nsecs_left = -1;
@@ -161,7 +159,7 @@ bool power_osx::GetPowerInfo_MacOSX()
 			const CFIndex total = CFArrayGetCount(list);
 			CFIndex i;
 			for (i = 0; i < total; i++) {
-				CFTypeRef ps = (CFTypeRef) CFArrayGetValueAtIndex(list, i);
+				CFTypeRef ps = (CFTypeRef)CFArrayGetValueAtIndex(list, i);
 				CFDictionaryRef dict = IOPSGetPowerSourceDescription(blob, ps);
 				if (dict != NULL) {
 					checkps(dict, &have_ac, &have_battery, &charging);
@@ -183,10 +181,8 @@ bool power_osx::GetPowerInfo_MacOSX()
 		CFRelease(blob);
 	}
 
-	return true;            /* always the definitive answer on Mac OS X. */
+	return true; /* always the definitive answer on Mac OS X. */
 }
-
-
 
 bool power_osx::UpdatePowerInfo() {
 	if (GetPowerInfo_MacOSX()) {
@@ -195,12 +191,10 @@ bool power_osx::UpdatePowerInfo() {
 	return false;
 }
 
-
 PowerState power_osx::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
-	}
-	else {
+	} else {
 		return POWERSTATE_UNKNOWN;
 	}
 }
@@ -208,8 +202,7 @@ PowerState power_osx::get_power_state() {
 int power_osx::get_power_seconds_left() {
 	if (UpdatePowerInfo()) {
 		return nsecs_left;
-	}
-	else {
+	} else {
 		return -1;
 	}
 }
@@ -217,17 +210,14 @@ int power_osx::get_power_seconds_left() {
 int power_osx::get_power_percent_left() {
 	if (UpdatePowerInfo()) {
 		return percent_left;
-	}
-	else {
+	} else {
 		return -1;
 	}
 }
 
-
-power_osx::power_osx() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN)  {
-
+power_osx::power_osx()
+	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
 }
 
 power_osx::~power_osx() {
-
 }

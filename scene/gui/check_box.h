@@ -29,27 +29,22 @@
 #ifndef CHECK_BOX_H
 #define CHECK_BOX_H
 
-
 #include "scene/gui/button.h"
 /**
 @author Mariano Suligoy <marianognu.esyrpg@gmail.com>
 */
 class CheckBox : public Button {
 
-    GDCLASS( CheckBox, Button );
-
+	GDCLASS(CheckBox, Button);
 
 protected:
-    void _notification(int p_what);
+	void _notification(int p_what);
 
-    bool is_radio();
-
+	bool is_radio();
 
 public:
-
-    CheckBox(const String& p_text=String());
-    ~CheckBox();
-
+	CheckBox(const String &p_text = String());
+	~CheckBox();
 };
 
 #endif

@@ -27,48 +27,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "visual_server_raster.h"
-#include "os/os.h"
-#include "global_config.h"
 #include "default_mouse_cursor.xpm"
-#include "sort.h"
+#include "global_config.h"
 #include "io/marshalls.h"
+#include "os/os.h"
+#include "sort.h"
 #include "visual_server_canvas.h"
 #include "visual_server_global.h"
 #include "visual_server_scene.h"
 
 // careful, these may run in different threads than the visual server
 
-
-
-
 /* CURSOR */
-void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor ){
-
+void VisualServerRaster::cursor_set_rotation(float p_rotation, int p_cursor) {
 }
-void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor, const Rect2 &p_region){
-
+void VisualServerRaster::cursor_set_texture(RID p_texture, const Point2 &p_center_offset, int p_cursor, const Rect2 &p_region) {
 }
-void VisualServerRaster::cursor_set_visible(bool p_visible, int p_cursor ){
-
+void VisualServerRaster::cursor_set_visible(bool p_visible, int p_cursor) {
 }
-void VisualServerRaster::cursor_set_pos(const Point2& p_pos, int p_cursor ){
-
+void VisualServerRaster::cursor_set_pos(const Point2 &p_pos, int p_cursor) {
 }
 
 /* BLACK BARS */
 
-
-void VisualServerRaster::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom){
-
+void VisualServerRaster::black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom) {
 }
-void VisualServerRaster::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom){
-
+void VisualServerRaster::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
 }
-
 
 /* FREE */
 
-void VisualServerRaster::free( RID p_rid ){
+void VisualServerRaster::free(RID p_rid) {
 
 	if (VSG::storage->free(p_rid))
 		return;
@@ -78,19 +67,18 @@ void VisualServerRaster::free( RID p_rid ){
 		return;
 	if (VSG::scene->free(p_rid))
 		return;
-
 }
 
 /* EVENT QUEUING */
 
-void VisualServerRaster::draw(){
+void VisualServerRaster::draw() {
 
 	/*
 	if (changes)
 		print_line("changes: "+itos(changes));
 	*/
 
-	changes=0;
+	changes = 0;
 
 	VSG::rasterizer->begin_frame();
 
@@ -102,19 +90,17 @@ void VisualServerRaster::draw(){
 	VSG::rasterizer->end_frame();
 	//draw_extra_frame=VS:rasterizer->needs_to_draw_next_frame();
 }
-void VisualServerRaster::sync(){
-
+void VisualServerRaster::sync() {
 }
-bool VisualServerRaster::has_changed() const{
+bool VisualServerRaster::has_changed() const {
 
-	return changes>0;
+	return changes > 0;
 }
-void VisualServerRaster::init(){
+void VisualServerRaster::init() {
 
 	VSG::rasterizer->initialize();
-
 }
-void VisualServerRaster::finish(){
+void VisualServerRaster::finish() {
 
 	if (test_cube.is_valid()) {
 		free(test_cube);
@@ -123,26 +109,18 @@ void VisualServerRaster::finish(){
 	VSG::rasterizer->finalize();
 }
 
-
 /* STATUS INFORMATION */
 
-
-int VisualServerRaster::get_render_info(RenderInfo p_info){
+int VisualServerRaster::get_render_info(RenderInfo p_info) {
 
 	return 0;
 }
 
-
-
 /* TESTING */
 
-
-
-void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale){
-
+void VisualServerRaster::set_boot_image(const Image &p_image, const Color &p_color, bool p_scale) {
 }
-void VisualServerRaster::set_default_clear_color(const Color& p_color){
-
+void VisualServerRaster::set_default_clear_color(const Color &p_color) {
 }
 
 bool VisualServerRaster::has_feature(Features p_feature) const {
@@ -152,27 +130,25 @@ bool VisualServerRaster::has_feature(Features p_feature) const {
 
 RID VisualServerRaster::get_test_cube() {
 	if (!test_cube.is_valid()) {
-		test_cube=_make_test_cube();
+		test_cube = _make_test_cube();
 	}
 	return test_cube;
 }
 
-
-bool VisualServerRaster::has_os_feature(const String& p_feature) const {
+bool VisualServerRaster::has_os_feature(const String &p_feature) const {
 
 	return VSG::storage->has_os_feature(p_feature);
 }
 
 VisualServerRaster::VisualServerRaster() {
 
-	VSG::canvas = memnew( VisualServerCanvas);
-	VSG::viewport = memnew( VisualServerViewport);
-	VSG::scene = memnew( VisualServerScene );
+	VSG::canvas = memnew(VisualServerCanvas);
+	VSG::viewport = memnew(VisualServerViewport);
+	VSG::scene = memnew(VisualServerScene);
 	VSG::rasterizer = Rasterizer::create();
-	VSG::storage=VSG::rasterizer->get_storage();
-	VSG::canvas_render=VSG::rasterizer->get_canvas();
-	VSG::scene_render=VSG::rasterizer->get_scene();
-
+	VSG::storage = VSG::rasterizer->get_storage();
+	VSG::canvas_render = VSG::rasterizer->get_canvas();
+	VSG::scene_render = VSG::rasterizer->get_scene();
 }
 
 VisualServerRaster::~VisualServerRaster() {
@@ -182,12 +158,11 @@ VisualServerRaster::~VisualServerRaster() {
 	memdelete(VSG::rasterizer);
 }
 
-
 #if 0
 
 BalloonAllocator<> *VisualServerRaster::OctreeAllocator::allocator=NULL;
 
-#define VS_CHANGED\
+#define VS_CHANGED \
 	changes++;\
 
 	//print_line(__FUNCTION__);
@@ -5370,8 +5345,6 @@ CameraMatrix _lispm_look( const Vector3 pos, const Vector3 dir, const Vector3 up
 
 	return cmout;
 }
-
-
 
 #if 1
 

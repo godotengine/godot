@@ -28,27 +28,27 @@
 /*************************************************************************/
 #include "editor_scene_import_plugin.h"
 #if 0
-#include "global_config.h"
+#include "editor/create_dialog.h"
 #include "editor/editor_node.h"
-#include "scene/resources/packed_scene.h"
-#include "scene/resources/box_shape.h"
-#include "os/file_access.h"
-#include "scene/3d/path.h"
-#include "scene/animation/animation_player.h"
+#include "global_config.h"
 #include "io/resource_saver.h"
+#include "os/file_access.h"
+#include "os/os.h"
+#include "scene/3d/body_shape.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation.h"
-#include "scene/3d/room_instance.h"
-#include "scene/3d/body_shape.h"
+#include "scene/3d/path.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
+#include "scene/3d/room_instance.h"
 #include "scene/3d/vehicle_body.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/box_shape.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/sphere_shape.h"
 #include <scene/resources/box_shape.h>
-#include <scene/resources/ray_shape.h>
 #include <scene/resources/plane_shape.h>
-#include "editor/create_dialog.h"
-#include "os/os.h"
+#include <scene/resources/ray_shape.h>
 
 
 
@@ -2085,9 +2085,6 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 	return p_node;
 }
-
-
-
 
 #if 0
 

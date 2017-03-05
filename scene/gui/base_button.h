@@ -34,21 +34,19 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 class ButtonGroup;
 
 class BaseButton : public Control {
 
-	GDCLASS( BaseButton, Control );
-public:
+	GDCLASS(BaseButton, Control);
 
+public:
 	enum ActionMode {
 		ACTION_MODE_BUTTON_PRESS,
 		ACTION_MODE_BUTTON_RELEASE,
 	};
 
 private:
-
 	bool toggle_mode;
 	FocusMode enabled_focus_mode;
 	Ref<ShortCut> shortcut;
@@ -66,17 +64,11 @@ private:
 
 	} status;
 
-
 	Ref<ButtonGroup> button_group;
-
 
 	void _unpress_group();
 
 protected:
-
-
-
-
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
@@ -85,7 +77,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-
 	enum DrawMode {
 		DRAW_NORMAL,
 		DRAW_PRESSED,
@@ -114,35 +105,33 @@ public:
 	void set_enabled_focus_mode(FocusMode p_mode);
 	FocusMode get_enabled_focus_mode() const;
 
-	void set_shortcut(const Ref<ShortCut>& p_shortcut);
+	void set_shortcut(const Ref<ShortCut> &p_shortcut);
 	Ref<ShortCut> get_shortcut() const;
 
-	virtual String get_tooltip(const Point2& p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const;
 
-	void set_button_group(const Ref<ButtonGroup>& p_group);
+	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
 
 	BaseButton();
 	~BaseButton();
-
 };
 
-VARIANT_ENUM_CAST( BaseButton::DrawMode )
-VARIANT_ENUM_CAST( BaseButton::ActionMode )
-
-
+VARIANT_ENUM_CAST(BaseButton::DrawMode)
+VARIANT_ENUM_CAST(BaseButton::ActionMode)
 
 class ButtonGroup : public Resource {
 
-	GDCLASS(ButtonGroup,Resource)
-friend class BaseButton;
-	Set<BaseButton*> buttons;
+	GDCLASS(ButtonGroup, Resource)
+	friend class BaseButton;
+	Set<BaseButton *> buttons;
+
 protected:
 	static void _bind_methods();
-public:
 
-	BaseButton* get_pressed_button();
-	void get_buttons(List<BaseButton*> *r_buttons);
+public:
+	BaseButton *get_pressed_button();
+	void get_buttons(List<BaseButton *> *r_buttons);
 	ButtonGroup();
 };
 

@@ -28,15 +28,15 @@
 /*************************************************************************/
 #include "editor_bitmask_import_plugin.h"
 #if 0
-#include "io/image_loader.h"
-#include "editor/editor_file_dialog.h"
 #include "editor/editor_dir_dialog.h"
+#include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/property_editor.h"
+#include "io/image_loader.h"
+#include "io/marshalls.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
-#include "io/marshalls.h"
-#include "editor/editor_settings.h"
 
 class _EditorBitMaskImportOptions : public Object {
 

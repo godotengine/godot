@@ -32,23 +32,20 @@
 #ifdef ANDROID_NATIVE_ACTIVITY
 
 #include "os/dir_access.h"
-#include <stdio.h>
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <android_native_app_glue.h>
+#include <stdio.h>
 
+class DirAccessAndroid : public DirAccess {
 
-
-class DirAccessAndroid  : public DirAccess {
-
-	AAssetDir* aad;
+	AAssetDir *aad;
 	String current_dir;
 	String current;
 
 	static DirAccess *create_fs();
 
 public:
-
 	virtual Error list_dir_begin(); ///< This starts dir listing
 	virtual String get_next();
 	virtual bool current_is_dir() const;
@@ -61,9 +58,7 @@ public:
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
 	virtual String get_current_dir(); ///< return current dir location
 
-
 	virtual bool file_exists(String p_file);
-
 
 	virtual Error make_dir(String p_dir);
 

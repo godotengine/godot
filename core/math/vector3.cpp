@@ -29,27 +29,25 @@
 #include "vector3.h"
 #include "matrix3.h"
 
+void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
 
-void Vector3::rotate(const Vector3& p_axis,real_t p_phi) {
-
-	*this=Basis(p_axis,p_phi).xform(*this);
+	*this = Basis(p_axis, p_phi).xform(*this);
 }
 
-Vector3 Vector3::rotated(const Vector3& p_axis,real_t p_phi) const {
+Vector3 Vector3::rotated(const Vector3 &p_axis, real_t p_phi) const {
 
 	Vector3 r = *this;
-	r.rotate(p_axis,p_phi);
+	r.rotate(p_axis, p_phi);
 	return r;
 }
 
-void Vector3::set_axis(int p_axis,real_t p_value) {
-	ERR_FAIL_INDEX(p_axis,3);
-	coord[p_axis]=p_value;
-
+void Vector3::set_axis(int p_axis, real_t p_value) {
+	ERR_FAIL_INDEX(p_axis, 3);
+	coord[p_axis] = p_value;
 }
 real_t Vector3::get_axis(int p_axis) const {
 
-	ERR_FAIL_INDEX_V(p_axis,3,0);
+	ERR_FAIL_INDEX_V(p_axis, 3, 0);
 	return operator[](p_axis);
 }
 
@@ -62,27 +60,25 @@ int Vector3::max_axis() const {
 	return x < y ? (y < z ? 2 : 1) : (x < z ? 2 : 0);
 }
 
-
 void Vector3::snap(real_t p_val) {
 
-	x=Math::stepify(x,p_val);
-	y=Math::stepify(y,p_val);
-	z=Math::stepify(z,p_val);
+	x = Math::stepify(x, p_val);
+	y = Math::stepify(y, p_val);
+	z = Math::stepify(z, p_val);
 }
 Vector3 Vector3::snapped(real_t p_val) const {
 
-	Vector3 v=*this;
+	Vector3 v = *this;
 	v.snap(p_val);
 	return v;
 }
 
+Vector3 Vector3::cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const {
 
-Vector3 Vector3::cubic_interpolaten(const Vector3& p_b,const Vector3& p_pre_a, const Vector3& p_post_b,real_t p_t) const {
-
-	Vector3 p0=p_pre_a;
-	Vector3 p1=*this;
-	Vector3 p2=p_b;
-	Vector3 p3=p_post_b;
+	Vector3 p0 = p_pre_a;
+	Vector3 p1 = *this;
+	Vector3 p2 = p_b;
+	Vector3 p3 = p_post_b;
 
 	{
 		//normalize
@@ -91,44 +87,41 @@ Vector3 Vector3::cubic_interpolaten(const Vector3& p_b,const Vector3& p_pre_a, c
 		real_t bc = p1.distance_to(p2);
 		real_t cd = p2.distance_to(p3);
 
-		if (ab>0)
-			p0 = p1+(p0-p1)*(bc/ab);
-		if (cd>0)
-			p3 = p2+(p3-p2)*(bc/cd);
+		if (ab > 0)
+			p0 = p1 + (p0 - p1) * (bc / ab);
+		if (cd > 0)
+			p3 = p2 + (p3 - p2) * (bc / cd);
 	}
 
-
 	real_t t = p_t;
 	real_t t2 = t * t;
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 * ( ( p1 * 2.0) +
-	( -p0 + p2 ) * t +
-	( 2.0 * p0 - 5.0 * p1 + 4 * p2 - p3 ) * t2 +
-	( -p0 + 3.0 * p1 - 3.0 * p2 + p3 ) * t3 );
+	out = 0.5 * ((p1 * 2.0) +
+						(-p0 + p2) * t +
+						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
+						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
-
 }
 
-Vector3 Vector3::cubic_interpolate(const Vector3& p_b,const Vector3& p_pre_a, const Vector3& p_post_b,real_t p_t) const {
+Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const {
 
-	Vector3 p0=p_pre_a;
-	Vector3 p1=*this;
-	Vector3 p2=p_b;
-	Vector3 p3=p_post_b;
+	Vector3 p0 = p_pre_a;
+	Vector3 p1 = *this;
+	Vector3 p2 = p_b;
+	Vector3 p3 = p_post_b;
 
 	real_t t = p_t;
 	real_t t2 = t * t;
 	real_t t3 = t2 * t;
 
 	Vector3 out;
-	out = 0.5 * ( ( p1 * 2.0) +
-	( -p0 + p2 ) * t +
-	( 2.0 * p0 - 5.0 * p1 + 4 * p2 - p3 ) * t2 +
-	( -p0 + 3.0 * p1 - 3.0 * p2 + p3 ) * t3 );
+	out = 0.5 * ((p1 * 2.0) +
+						(-p0 + p2) * t +
+						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
+						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
-
 }
 
 #if 0
@@ -175,8 +168,8 @@ Vector3 Vector3::cubic_interpolate(const Vector3& p_b,const Vector3& p_pre_a, co
 	( -p0.z + 3.0 * p1.z - 3.0 * p2.z + p3.z ) * t3 );
 	return out;
 }
-# endif
+#endif
 Vector3::operator String() const {
 
-	return (rtos(x)+", "+rtos(y)+", "+rtos(z));
+	return (rtos(x) + ", " + rtos(y) + ", " + rtos(z));
 }

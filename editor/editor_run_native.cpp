@@ -100,7 +100,7 @@ void EditorRunNative::_notification(int p_what) {
 #endif
 }
 
-void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
+void EditorRunNative::_run_native(int p_idx, const String &p_platform) {
 
 #if 0
 	Ref<EditorExportPlatform> eep = EditorImportExport::get_singleton()->get_export_platform(p_platform);
@@ -132,58 +132,56 @@ void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 
 void EditorRunNative::_bind_methods() {
 
-	ClassDB::bind_method("_run_native",&EditorRunNative::_run_native);
+	ClassDB::bind_method("_run_native", &EditorRunNative::_run_native);
 
 	ADD_SIGNAL(MethodInfo("native_run"));
 }
 
 void EditorRunNative::set_deploy_dumb(bool p_enabled) {
 
-	deploy_dumb=p_enabled;
+	deploy_dumb = p_enabled;
 }
 
-bool EditorRunNative::is_deploy_dumb_enabled() const{
+bool EditorRunNative::is_deploy_dumb_enabled() const {
 
 	return deploy_dumb;
 }
 
 void EditorRunNative::set_deploy_debug_remote(bool p_enabled) {
 
-	deploy_debug_remote=p_enabled;
+	deploy_debug_remote = p_enabled;
 }
 
-bool EditorRunNative::is_deploy_debug_remote_enabled() const{
+bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 
 	return deploy_debug_remote;
 }
 
 void EditorRunNative::set_debug_collisions(bool p_debug) {
 
-	debug_collisions=p_debug;
+	debug_collisions = p_debug;
 }
 
-bool EditorRunNative::get_debug_collisions() const{
+bool EditorRunNative::get_debug_collisions() const {
 
 	return debug_collisions;
 }
 
 void EditorRunNative::set_debug_navigation(bool p_debug) {
 
-	debug_navigation=p_debug;
+	debug_navigation = p_debug;
 }
 
-bool EditorRunNative::get_debug_navigation() const{
+bool EditorRunNative::get_debug_navigation() const {
 
 	return debug_navigation;
 }
 
-EditorRunNative::EditorRunNative()
-{
+EditorRunNative::EditorRunNative() {
 	set_process(true);
-	first=true;
-	deploy_dumb=false;
-	deploy_debug_remote=false;
-	debug_collisions=false;
-	debug_navigation=false;
-
+	first = true;
+	deploy_dumb = false;
+	deploy_debug_remote = false;
+	debug_collisions = false;
+	debug_navigation = false;
 }

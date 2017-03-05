@@ -34,7 +34,7 @@
 
 class CollisionShape2D : public Node2D {
 
-	GDCLASS(CollisionShape2D,Node2D);
+	GDCLASS(CollisionShape2D, Node2D);
 	Ref<Shape2D> shape;
 	Rect2 rect;
 	bool trigger;
@@ -47,15 +47,14 @@ class CollisionShape2D : public Node2D {
 	int _get_update_shape_index() const;
 
 protected:
-
 	void _update_parent();
 	void _notification(int p_what);
 	static void _bind_methods();
 
 	void _add_to_collision_object(Object *p_obj);
-public:
 
-	void set_shape(const Ref<Shape2D>& p_shape);
+public:
+	void set_shape(const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> get_shape() const;
 	virtual Rect2 get_item_rect() const;
 	void set_trigger(bool p_trigger);

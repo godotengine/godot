@@ -34,30 +34,28 @@
 #include <dinput.h>
 #include <xinput.h> // on unix the file is called "xinput.h", on windows I'm sure it won't mind
 
-#ifndef SAFE_RELEASE            // when Windows Media Device M? is not present
+#ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
-if(x != NULL)           \
-{                       \
-	x->Release();       \
-	x = NULL;           \
-}
+	if (x != NULL) {    \
+		x->Release();   \
+		x = NULL;       \
+	}
 #endif
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
 #endif
 
-class JoypadWindows
-{
+class JoypadWindows {
 public:
 	JoypadWindows();
-	JoypadWindows(InputDefault* _input, HWND* hwnd);
+	JoypadWindows(InputDefault *_input, HWND *hwnd);
 	~JoypadWindows();
 
 	void probe_joypads();
 	unsigned int process_joypads(unsigned int p_last_id);
-private:
 
+private:
 	enum {
 		JOYPADS_MAX = 16,
 		JOY_AXIS_COUNT = 6,
@@ -110,13 +108,13 @@ private:
 		}
 	};
 
-	typedef DWORD (WINAPI *XInputGetState_t) (DWORD dwUserIndex, XINPUT_STATE* pState);
-	typedef DWORD (WINAPI *XInputSetState_t) (DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);
+	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
 
-	HWND* hWnd;
+	HWND *hWnd;
 	HANDLE xinput_dll;
 	LPDIRECTINPUT8 dinput;
-	InputDefault* input;
+	InputDefault *input;
 
 	int id_to_change;
 	int joypad_count;
@@ -124,10 +122,10 @@ private:
 	dinput_gamepad d_joypads[JOYPADS_MAX];
 	xinput_gamepad x_joypads[XUSER_MAX_COUNT];
 
-	static BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE* p_instance, void* p_context);
-	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE* instance, void* context);
+	static BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE *p_instance, void *p_context);
+	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context);
 
-	void setup_joypad_object(const DIDEVICEOBJECTINSTANCE* ob, int p_joy_id);
+	void setup_joypad_object(const DIDEVICEOBJECTINSTANCE *ob, int p_joy_id);
 	void close_joypad(int id = -1);
 	void load_xinput();
 	void unload_xinput();
@@ -135,8 +133,8 @@ private:
 	unsigned int post_hat(unsigned int p_last_id, int p_device, DWORD p_dpad);
 
 	bool have_device(const GUID &p_guid);
-	bool is_xinput_device(const GUID* p_guid);
-	bool setup_dinput_joypad(const DIDEVICEINSTANCE* instance);
+	bool is_xinput_device(const GUID *p_guid);
+	bool setup_dinput_joypad(const DIDEVICEINSTANCE *instance);
 	void joypad_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joypad_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
 
@@ -146,5 +144,3 @@ private:
 };
 
 #endif
-
-

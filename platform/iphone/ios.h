@@ -38,11 +38,9 @@ class iOS : public Object {
 	static void _bind_methods();
 
 public:
-
 	String get_rate_url(int p_app_id) const;
 
 	iOS();
-
 };
 
 #endif

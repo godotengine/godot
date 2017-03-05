@@ -34,15 +34,15 @@
 
 class VisualScriptExpression : public VisualScriptNode {
 
-	GDCLASS(VisualScriptExpression,VisualScriptNode)
-friend class VisualScriptNodeInstanceExpression;
+	GDCLASS(VisualScriptExpression, VisualScriptNode)
+	friend class VisualScriptNodeInstanceExpression;
 
 	struct Input {
 
 		Variant::Type type;
 		String name;
 
-		Input() { type=Variant::NIL; }
+		Input() { type = Variant::NIL; }
 	};
 
 	Vector<Input> inputs;
@@ -97,27 +97,24 @@ friend class VisualScriptNodeInstanceExpression;
 		TK_MAX
 	};
 
-	static const char* token_name[TK_MAX];
+	static const char *token_name[TK_MAX];
 	struct Token {
 
 		TokenType type;
 		Variant value;
 	};
 
-
-	void _set_error(const String& p_err) {
+	void _set_error(const String &p_err) {
 		if (error_set)
 			return;
-		error_str=p_err;
-		error_set=true;
+		error_str = p_err;
+		error_set = true;
 	}
 
-	Error _get_token(Token& r_token);
+	Error _get_token(Token &r_token);
 
 	String error_str;
 	bool error_set;
-
-
 
 	struct ENode {
 
@@ -139,8 +136,12 @@ friend class VisualScriptNodeInstanceExpression;
 
 		Type type;
 
-		ENode() { next=NULL; }
-		virtual ~ENode() { if (next) { memdelete(next); } }
+		ENode() { next = NULL; }
+		virtual ~ENode() {
+			if (next) {
+				memdelete(next);
+			}
+		}
 	};
 
 	struct Expression {
@@ -152,22 +153,21 @@ friend class VisualScriptNodeInstanceExpression;
 		};
 	};
 
-	ENode* _parse_expression();
+	ENode *_parse_expression();
 
 	struct InputNode : public ENode {
 
 		int index;
 		InputNode() {
-			type=TYPE_INPUT;
+			type = TYPE_INPUT;
 		}
 	};
-
 
 	struct ConstantNode : public ENode {
 
 		Variant value;
 		ConstantNode() {
-			type=TYPE_CONSTANT;
+			type = TYPE_CONSTANT;
 		}
 	};
 
@@ -175,118 +175,103 @@ friend class VisualScriptNodeInstanceExpression;
 
 		Variant::Operator op;
 
-		ENode* nodes[2];
+		ENode *nodes[2];
 
 		OperatorNode() {
-			type=TYPE_OPERATOR;
+			type = TYPE_OPERATOR;
 		}
 	};
 
 	struct SelfNode : public ENode {
 
-
 		SelfNode() {
-			type=TYPE_SELF;
+			type = TYPE_SELF;
 		}
 	};
 
 	struct IndexNode : public ENode {
-		ENode*base;
-		ENode*index;
+		ENode *base;
+		ENode *index;
 
 		IndexNode() {
-			type=TYPE_INDEX;
+			type = TYPE_INDEX;
 		}
 	};
 
 	struct NamedIndexNode : public ENode {
-		ENode*base;
+		ENode *base;
 		StringName name;
 
 		NamedIndexNode() {
-			type=TYPE_NAMED_INDEX;
+			type = TYPE_NAMED_INDEX;
 		}
-
 	};
 
 	struct ConstructorNode : public ENode {
 		Variant::Type data_type;
-		Vector<ENode*> arguments;
+		Vector<ENode *> arguments;
 
 		ConstructorNode() {
-			type=TYPE_CONSTRUCTOR;
+			type = TYPE_CONSTRUCTOR;
 		}
 	};
 
 	struct CallNode : public ENode {
-		ENode*base;
+		ENode *base;
 		StringName method;
-		Vector<ENode*> arguments;
+		Vector<ENode *> arguments;
 
 		CallNode() {
-			type=TYPE_CALL;
+			type = TYPE_CALL;
 		}
-
 	};
 
 	struct ArrayNode : public ENode {
-		Vector<ENode*> array;
+		Vector<ENode *> array;
 		ArrayNode() {
-			type=TYPE_ARRAY;
+			type = TYPE_ARRAY;
 		}
-
 	};
 
 	struct DictionaryNode : public ENode {
-		Vector<ENode*> dict;
+		Vector<ENode *> dict;
 		DictionaryNode() {
-			type=TYPE_DICTIONARY;
+			type = TYPE_DICTIONARY;
 		}
-
 	};
 
 	struct BuiltinFuncNode : public ENode {
 		VisualScriptBuiltinFunc::BuiltinFunc func;
-		Vector<ENode*> arguments;
+		Vector<ENode *> arguments;
 		BuiltinFuncNode() {
-			type=TYPE_BUILTIN_FUNC;
+			type = TYPE_BUILTIN_FUNC;
 		}
 	};
 
-	template<class T>
-	T* alloc_node() {
-		T* node = memnew(T);
-		node->next=nodes;
-		nodes=node;
+	template <class T>
+	T *alloc_node() {
+		T *node = memnew(T);
+		node->next = nodes;
+		nodes = node;
 		return node;
 	}
 
 	ENode *root;
 	ENode *nodes;
 
-
-
-
-
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-
-
 	virtual int get_output_sequence_port_count() const;
 	virtual bool has_input_sequence_port() const;
 
-
 	virtual String get_output_sequence_port_text(int p_port) const;
-
 
 	virtual int get_input_value_port_count() const;
 	virtual int get_output_value_port_count() const;
-
 
 	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
@@ -295,14 +280,12 @@ public:
 	virtual String get_text() const;
 	virtual String get_category() const { return "operators"; }
 
-	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 
 	VisualScriptExpression();
 	~VisualScriptExpression();
 };
 
-
 void register_visual_script_expression_node();
-
 
 #endif // VISUALSCRIPTEXPRESSION_H

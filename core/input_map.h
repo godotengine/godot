@@ -29,51 +29,50 @@
 #ifndef INPUT_MAP_H
 #define INPUT_MAP_H
 
-
 #include "object.h"
 
 class InputMap : public Object {
 
-	GDCLASS( InputMap, Object );
+	GDCLASS(InputMap, Object);
+
 public:
 	struct Action {
 		int id;
 		List<InputEvent> inputs;
 	};
+
 private:
 	static InputMap *singleton;
 
 	mutable Map<StringName, Action> input_map;
-	mutable Map<int,StringName> input_id_map;
+	mutable Map<int, StringName> input_id_map;
 
-	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event, bool p_action_test=false) const;
+	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list, const InputEvent &p_event, bool p_action_test = false) const;
 
-	Array _get_action_list(const StringName& p_action);
+	Array _get_action_list(const StringName &p_action);
 	Array _get_actions();
 
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }
 
-
-	bool has_action(const StringName& p_action) const;
-	int get_action_id(const StringName& p_action) const;
+	bool has_action(const StringName &p_action) const;
+	int get_action_id(const StringName &p_action) const;
 	StringName get_action_from_id(int p_id) const;
 	List<StringName> get_actions() const;
-	void add_action(const StringName& p_action);
-	void erase_action(const StringName& p_action);
+	void add_action(const StringName &p_action);
+	void erase_action(const StringName &p_action);
 
-	void action_add_event(const StringName& p_action,const InputEvent& p_event);
-	bool action_has_event(const StringName& p_action,const InputEvent& p_event);
-	void action_erase_event(const StringName& p_action,const InputEvent& p_event);
+	void action_add_event(const StringName &p_action, const InputEvent &p_event);
+	bool action_has_event(const StringName &p_action, const InputEvent &p_event);
+	void action_erase_event(const StringName &p_action, const InputEvent &p_event);
 
-	const List<InputEvent> *get_action_list(const StringName& p_action);
-	bool event_is_action(const InputEvent& p_event, const StringName& p_action) const;
+	const List<InputEvent> *get_action_list(const StringName &p_action);
+	bool event_is_action(const InputEvent &p_event, const StringName &p_action) const;
 
-	const Map<StringName, Action>& get_action_map() const;
+	const Map<StringName, Action> &get_action_map() const;
 	void load_from_globals();
 	void load_default();
 

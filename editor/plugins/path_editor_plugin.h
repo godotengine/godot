@@ -29,10 +29,9 @@
 #ifndef PATH_EDITOR_PLUGIN_H
 #define PATH_EDITOR_PLUGIN_H
 
-
 #include "editor/spatial_editor_gizmos.h"
 #include "scene/3d/path.h"
-# if 0
+#if 0
 class PathSpatialGizmo  : public EditorSpatialGizmo {
 
 	GDCLASS(PathSpatialGizmo,EditorSpatialGizmo);

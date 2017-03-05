@@ -29,11 +29,11 @@
 #ifndef POLYGON_2D_EDITOR_PLUGIN_H
 #define POLYGON_2D_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/2d/polygon_2d.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -42,7 +42,7 @@ class CanvasItemEditor;
 
 class Polygon2DEditor : public HBoxContainer {
 
-	GDCLASS(Polygon2DEditor, HBoxContainer );
+	GDCLASS(Polygon2DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -88,8 +88,6 @@ class Polygon2DEditor : public HBoxContainer {
 	Vector2 uv_drag_from;
 	bool updating_uv_scroll;
 
-
-
 	AcceptDialog *error;
 
 	ToolButton *button_create;
@@ -114,7 +112,7 @@ class Polygon2DEditor : public HBoxContainer {
 	Vector2 snap_step;
 
 	void _uv_scroll_changed(float);
-	void _uv_input(const InputEvent& p_input);
+	void _uv_input(const InputEvent &p_input);
 	void _uv_draw();
 	void _uv_mode(int p_mode);
 	void _wip_close();
@@ -136,22 +134,20 @@ protected:
 	Vector2 snap_point(Vector2 p_target) const;
 
 public:
-
-	bool forward_gui_input(const InputEvent& p_event);
+	bool forward_gui_input(const InputEvent &p_event);
 	void edit(Node *p_collision_polygon);
 	Polygon2DEditor(EditorNode *p_editor);
 };
 
 class Polygon2DEditorPlugin : public EditorPlugin {
 
-	GDCLASS( Polygon2DEditorPlugin, EditorPlugin );
+	GDCLASS(Polygon2DEditorPlugin, EditorPlugin);
 
 	Polygon2DEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
-
-	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "Polygon2D"; }
 	bool has_main_screen() const { return false; }
@@ -161,7 +157,6 @@ public:
 
 	Polygon2DEditorPlugin(EditorNode *p_node);
 	~Polygon2DEditorPlugin();
-
 };
 
 #endif // POLYGON_2D_EDITOR_PLUGIN_H

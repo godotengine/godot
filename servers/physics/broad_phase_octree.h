@@ -34,12 +34,10 @@
 
 class BroadPhaseOctree : public BroadPhaseSW {
 
+	Octree<CollisionObjectSW, true> octree;
 
-	Octree<CollisionObjectSW,true> octree;
-
-	static void* _pair_callback(void*,OctreeElementID, CollisionObjectSW*,int,OctreeElementID, CollisionObjectSW*,int);
-	static void _unpair_callback(void*,OctreeElementID, CollisionObjectSW*,int,OctreeElementID, CollisionObjectSW*,int,void*);
-
+	static void *_pair_callback(void *, OctreeElementID, CollisionObjectSW *, int, OctreeElementID, CollisionObjectSW *, int);
+	static void _unpair_callback(void *, OctreeElementID, CollisionObjectSW *, int, OctreeElementID, CollisionObjectSW *, int, void *);
 
 	PairCallback pair_callback;
 	void *pair_userdata;
@@ -47,10 +45,9 @@ class BroadPhaseOctree : public BroadPhaseSW {
 	void *unpair_userdata;
 
 public:
-
 	// 0 is an invalid ID
-	virtual ID create(CollisionObjectSW *p_object_, int p_subindex=0);
-	virtual void move(ID p_id, const Rect3& p_aabb);
+	virtual ID create(CollisionObjectSW *p_object_, int p_subindex = 0);
+	virtual void move(ID p_id, const Rect3 &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 
@@ -58,11 +55,11 @@ public:
 	virtual bool is_static(ID p_id) const;
 	virtual int get_subindex(ID p_id) const;
 
-	virtual int cull_segment(const Vector3& p_from, const Vector3& p_to,CollisionObjectSW** p_results,int p_max_results,int *p_result_indices=NULL);
-	virtual int cull_aabb(const Rect3& p_aabb,CollisionObjectSW** p_results,int p_max_results,int *p_result_indices=NULL);
+	virtual int cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL);
+	virtual int cull_aabb(const Rect3 &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices = NULL);
 
-	virtual void set_pair_callback(PairCallback p_pair_callback,void *p_userdata);
-	virtual void set_unpair_callback(UnpairCallback p_unpair_callback,void *p_userdata);
+	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
+	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);
 
 	virtual void update();
 

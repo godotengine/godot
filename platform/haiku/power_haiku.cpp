@@ -39,8 +39,7 @@ bool PowerHaiku::UpdatePowerInfo() {
 PowerState PowerHaiku::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to POWERSTATE_UNKNOWN");
 		return POWERSTATE_UNKNOWN;
 	}
@@ -49,8 +48,7 @@ PowerState PowerHaiku::get_power_state() {
 int PowerX11::get_power_seconds_left() {
 	if (UpdatePowerInfo()) {
 		return nsecs_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
@@ -59,15 +57,14 @@ int PowerX11::get_power_seconds_left() {
 int PowerX11::get_power_percent_left() {
 	if (UpdatePowerInfo()) {
 		return percent_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
 }
 
-PowerHaiku::PowerHaiku() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN)  {
-
+PowerHaiku::PowerHaiku()
+	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
 }
 
 PowerHaiku::~PowerHaiku() {

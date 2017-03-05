@@ -35,21 +35,19 @@
 
 class EditorNameDialog : public ConfirmationDialog {
 
-	GDCLASS( EditorNameDialog, ConfirmationDialog );
+	GDCLASS(EditorNameDialog, ConfirmationDialog);
 
 	LineEdit *name;
 
-	void _line_gui_input(const InputEvent& p_event);
+	void _line_gui_input(const InputEvent &p_event);
 
 protected:
-
 	static void _bind_methods();
 	virtual void ok_pressed();
 	virtual void _post_popup();
 
 public:
-
-	LineEdit* get_line_edit() { return name; }
+	LineEdit *get_line_edit() { return name; }
 
 	EditorNameDialog();
 };

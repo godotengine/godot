@@ -47,7 +47,7 @@ enum Error {
 	ERR_FILE_NOT_FOUND,
 	ERR_FILE_BAD_DRIVE,
 	ERR_FILE_BAD_PATH,
-	ERR_FILE_NO_PERMISSION,	// (10)
+	ERR_FILE_NO_PERMISSION, // (10)
 	ERR_FILE_ALREADY_IN_USE,
 	ERR_FILE_CANT_OPEN,
 	ERR_FILE_CANT_WRITE,
@@ -57,15 +57,15 @@ enum Error {
 	ERR_FILE_MISSING_DEPENDENCIES,
 	ERR_FILE_EOF,
 	ERR_CANT_OPEN, ///< Can't open a resource/socket/file
-	ERR_CANT_CREATE,		// (20)
+	ERR_CANT_CREATE, // (20)
 	ERR_QUERY_FAILED,
 	ERR_ALREADY_IN_USE,
- 	ERR_LOCKED, ///< resource is locked
- 	ERR_TIMEOUT,
-	ERR_CANT_CONNECT,		// (25)
+	ERR_LOCKED, ///< resource is locked
+	ERR_TIMEOUT,
+	ERR_CANT_CONNECT, // (25)
 	ERR_CANT_RESOLVE,
 	ERR_CONNECTION_ERROR,
- 	ERR_CANT_AQUIRE_RESOURCE,
+	ERR_CANT_AQUIRE_RESOURCE,
 	ERR_CANT_FORK,
 	ERR_INVALID_DATA, ///< Data passed is invalid	(30)
 	ERR_INVALID_PARAMETER, ///< Parameter passed is invalid
@@ -74,15 +74,15 @@ enum Error {
 	ERR_DATABASE_CANT_READ, ///< database is full
 	ERR_DATABASE_CANT_WRITE, ///< database is full	(35)
 	ERR_COMPILATION_FAILED,
- 	ERR_METHOD_NOT_FOUND,
-  	ERR_LINK_FAILED,
+	ERR_METHOD_NOT_FOUND,
+	ERR_LINK_FAILED,
 	ERR_SCRIPT_FAILED,
-	ERR_CYCLIC_LINK,		// (40)
+	ERR_CYCLIC_LINK, // (40)
 	ERR_INVALID_DECLARATION,
 	ERR_DUPLICATE_SYMBOL,
 	ERR_PARSE_ERROR,
 	ERR_BUSY,
-	ERR_SKIP,			// (45)
+	ERR_SKIP, // (45)
 	ERR_HELP, ///< user requested help!!
 	ERR_BUG, ///< a bug in the software certainly happened, due to a double check failing or unexpected behavior.
 	ERR_PRINTER_ON_FIRE, /// the parallel port printer is engulfed in flames
@@ -90,7 +90,4 @@ enum Error {
 	ERR_WTF = ERR_OMFG_THIS_IS_VERY_VERY_BAD ///< short version of the above
 };
 
-
-
 #endif
-

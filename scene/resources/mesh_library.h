@@ -29,15 +29,15 @@
 #ifndef GRID_THEME_H
 #define GRID_THEME_H
 
-#include "resource.h"
-#include "mesh.h"
-#include "shape.h"
 #include "map.h"
+#include "mesh.h"
+#include "resource.h"
 #include "scene/3d/navigation_mesh.h"
+#include "shape.h"
 
 class MeshLibrary : public Resource {
 
-	GDCLASS(MeshLibrary,Resource);
+	GDCLASS(MeshLibrary, Resource);
 	RES_BASE_EXTENSION("gt");
 
 	struct Item {
@@ -48,24 +48,22 @@ class MeshLibrary : public Resource {
 		Ref<NavigationMesh> navmesh;
 	};
 
-	Map<int,Item> item_map;
+	Map<int, Item> item_map;
 
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
+
 public:
-
-
 	void create_item(int p_item);
-	void set_item_name(int p_item,const String& p_name);
-	void set_item_mesh(int p_item,const Ref<Mesh>& p_mesh);
-	void set_item_navmesh(int p_item, const Ref<NavigationMesh>& p_navmesh);
-	void set_item_shape(int p_item,const Ref<Shape>& p_shape);
-	void set_item_preview(int p_item,const Ref<Texture>& p_preview);
+	void set_item_name(int p_item, const String &p_name);
+	void set_item_mesh(int p_item, const Ref<Mesh> &p_mesh);
+	void set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh);
+	void set_item_shape(int p_item, const Ref<Shape> &p_shape);
+	void set_item_preview(int p_item, const Ref<Texture> &p_preview);
 	String get_item_name(int p_item) const;
 	Ref<Mesh> get_item_mesh(int p_item) const;
 	Ref<NavigationMesh> get_item_navmesh(int p_item) const;
@@ -77,7 +75,7 @@ public:
 
 	void clear();
 
-	int find_item_name(const String& p_name) const;
+	int find_item_name(const String &p_name) const;
 
 	Vector<int> get_item_list() const;
 	int get_last_unused_item_id() const;

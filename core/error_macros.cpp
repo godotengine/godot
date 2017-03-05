@@ -30,12 +30,11 @@
 
 #include "os/os.h"
 
+bool _err_error_exists = false;
 
-bool _err_error_exists=false;
+static ErrorHandlerList *error_handler_list = NULL;
 
-static ErrorHandlerList *error_handler_list=NULL;
-
-void _err_set_last_error(const char* p_err) {
+void _err_set_last_error(const char *p_err) {
 
 	OS::get_singleton()->set_last_error(p_err);
 }
@@ -48,8 +47,8 @@ void _err_clear_last_error() {
 void add_error_handler(ErrorHandlerList *p_handler) {
 
 	_global_lock();
-	p_handler->next=error_handler_list;
-	error_handler_list=p_handler;
+	p_handler->next = error_handler_list;
+	error_handler_list = p_handler;
 	_global_unlock();
 }
 
@@ -60,44 +59,39 @@ void remove_error_handler(ErrorHandlerList *p_handler) {
 	ErrorHandlerList *prev = NULL;
 	ErrorHandlerList *l = error_handler_list;
 
-	while(l) {
+	while (l) {
 
-		if (l==p_handler) {
+		if (l == p_handler) {
 
 			if (prev)
-				prev->next=l->next;
+				prev->next = l->next;
 			else
-				error_handler_list=l->next;
+				error_handler_list = l->next;
 			break;
 		}
-		prev=l;
-		l=l->next;
-
+		prev = l;
+		l = l->next;
 	}
 
 	_global_unlock();
-
 }
 
-void _err_print_error(const char* p_function, const char* p_file,int p_line,const char *p_error,ErrorHandlerType p_type) {
+void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, ErrorHandlerType p_type) {
 
-
-
-	OS::get_singleton()->print_error(p_function,p_file,p_line,p_error,_err_error_exists?OS::get_singleton()->get_last_error():"",(OS::ErrorType)p_type);
+	OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", (OS::ErrorType)p_type);
 
 	_global_lock();
 	ErrorHandlerList *l = error_handler_list;
-	while(l) {
+	while (l) {
 
-		l->errfunc(l->userdata,p_function,p_file,p_line,p_error,_err_error_exists?OS::get_singleton()->get_last_error():"",p_type);
-		l=l->next;
+		l->errfunc(l->userdata, p_function, p_file, p_line, p_error, _err_error_exists ? OS::get_singleton()->get_last_error() : "", p_type);
+		l = l->next;
 	}
 
 	_global_unlock();
 
 	if (_err_error_exists) {
 		OS::get_singleton()->clear_last_error();
-		_err_error_exists=false;
+		_err_error_exists = false;
 	}
-
 }

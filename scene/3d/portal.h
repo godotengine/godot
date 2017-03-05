@@ -34,13 +34,10 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 /* Portal Logic:
    If a portal is placed next (very close to) a similar, opposing portal, they automatically connect,
    otherwise, a portal connects to the parent room
 */
-
-
 
 class Portal : public VisualInstance {
 
@@ -56,17 +53,14 @@ class Portal : public VisualInstance {
 
 	Rect3 aabb;
 
-
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
 
 public:
-
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
@@ -76,10 +70,10 @@ public:
 	void set_disable_distance(float p_distance);
 	float get_disable_distance() const;
 
-	void set_disabled_color(const Color& p_disabled_color);
+	void set_disabled_color(const Color &p_disabled_color);
 	Color get_disabled_color() const;
 
-	void set_shape(const Vector<Point2>& p_shape);
+	void set_shape(const Vector<Point2> &p_shape);
 	Vector<Point2> get_shape() const;
 
 	void set_connect_range(float p_range);
@@ -87,7 +81,6 @@ public:
 
 	Portal();
 	~Portal();
-
 };
 
 #endif

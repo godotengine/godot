@@ -34,27 +34,26 @@
 class Viewport;
 class VisibilityNotifier2D : public Node2D {
 
-	GDCLASS(VisibilityNotifier2D,Node2D);
+	GDCLASS(VisibilityNotifier2D, Node2D);
 
-	Set<Viewport*> viewports;
+	Set<Viewport *> viewports;
 
 	Rect2 rect;
 
 protected:
-friend class SpatialIndexer2D;
+	friend class SpatialIndexer2D;
 
-	void _enter_viewport(Viewport* p_viewport);
-	void _exit_viewport(Viewport* p_viewport);
-
+	void _enter_viewport(Viewport *p_viewport);
+	void _exit_viewport(Viewport *p_viewport);
 
 	virtual void _screen_enter() {}
 	virtual void _screen_exit() {}
 
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_rect(const Rect2& p_rect);
+public:
+	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
 
 	bool is_on_screen() const;
@@ -64,12 +63,11 @@ public:
 	VisibilityNotifier2D();
 };
 
-
 class VisibilityEnabler2D : public VisibilityNotifier2D {
 
-	GDCLASS(VisibilityEnabler2D,VisibilityNotifier2D);
-public:
+	GDCLASS(VisibilityEnabler2D, VisibilityNotifier2D);
 
+public:
 	enum Enabler {
 		ENABLER_PAUSE_ANIMATIONS,
 		ENABLER_FREEZE_BODIES,
@@ -81,35 +79,31 @@ public:
 	};
 
 protected:
-
 	virtual void _screen_enter();
 	virtual void _screen_exit();
 
 	bool visible;
 
-	void _find_nodes(Node* p_node);
+	void _find_nodes(Node *p_node);
 
-	Map<Node*,Variant> nodes;
-	void _node_removed(Node* p_node);
+	Map<Node *, Variant> nodes;
+	void _node_removed(Node *p_node);
 	bool enabler[ENABLER_MAX];
 
-	void _change_node_state(Node* p_node,bool p_enabled);
+	void _change_node_state(Node *p_node, bool p_enabled);
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-	void set_enabler(Enabler p_enabler,bool p_enable);
+	void set_enabler(Enabler p_enabler, bool p_enable);
 	bool is_enabler_enabled(Enabler p_enabler) const;
 
 	String get_configuration_warning() const;
 
 	VisibilityEnabler2D();
-
 };
 
 VARIANT_ENUM_CAST(VisibilityEnabler2D::Enabler);
-
 
 #endif // VISIBILITY_NOTIFIER_2D_H

@@ -29,22 +29,20 @@
 #include "register_types.h"
 
 #include "gd_script.h"
+#include "io/file_access_encrypted.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
-#include "io/file_access_encrypted.h"
 
-
-
-GDScriptLanguage *script_language_gd=NULL;
-ResourceFormatLoaderGDScript *resource_loader_gd=NULL;
-ResourceFormatSaverGDScript *resource_saver_gd=NULL;
+GDScriptLanguage *script_language_gd = NULL;
+ResourceFormatLoaderGDScript *resource_loader_gd = NULL;
+ResourceFormatSaverGDScript *resource_saver_gd = NULL;
 #if 0
 #ifdef TOOLS_ENABLED
 
 #include "editor/editor_import_export.h"
-#include "gd_tokenizer.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "gd_tokenizer.h"
 
 class EditorExportGDScript : public EditorExportPlugin {
 
@@ -133,7 +131,6 @@ static void register_editor_plugin() {
 	EditorImportExport::get_singleton()->add_export_plugin(egd);
 }
 
-
 #endif
 #endif
 void register_gdscript_types() {
@@ -141,12 +138,12 @@ void register_gdscript_types() {
 	ClassDB::register_class<GDScript>();
 	ClassDB::register_virtual_class<GDFunctionState>();
 
-	script_language_gd=memnew( GDScriptLanguage );
+	script_language_gd = memnew(GDScriptLanguage);
 	//script_language_gd->init();
 	ScriptServer::register_language(script_language_gd);
-	resource_loader_gd=memnew( ResourceFormatLoaderGDScript );
+	resource_loader_gd = memnew(ResourceFormatLoaderGDScript);
 	ResourceLoader::add_resource_format_loader(resource_loader_gd);
-	resource_saver_gd=memnew( ResourceFormatSaverGDScript );
+	resource_saver_gd = memnew(ResourceFormatSaverGDScript);
 	ResourceSaver::add_resource_format_saver(resource_saver_gd);
 #if 0
 #ifdef TOOLS_ENABLED
@@ -154,18 +151,15 @@ void register_gdscript_types() {
 	EditorNode::add_init_callback(register_editor_plugin);
 #endif
 #endif
-
 }
 void unregister_gdscript_types() {
-
 
 	ScriptServer::unregister_language(script_language_gd);
 
 	if (script_language_gd)
-		memdelete( script_language_gd );
+		memdelete(script_language_gd);
 	if (resource_loader_gd)
-		memdelete( resource_loader_gd );
+		memdelete(resource_loader_gd);
 	if (resource_saver_gd)
-		memdelete( resource_saver_gd );
-
+		memdelete(resource_saver_gd);
 }

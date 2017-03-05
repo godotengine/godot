@@ -34,8 +34,7 @@
 
 class ImmediateGeometry : public GeometryInstance {
 
-	GDCLASS(ImmediateGeometry,GeometryInstance);
-
+	GDCLASS(ImmediateGeometry, GeometryInstance);
 
 	RID im;
 	//a list of texures drawn need to be kept, to avoid references
@@ -43,28 +42,24 @@ class ImmediateGeometry : public GeometryInstance {
 	List<Ref<Texture> > cached_textures;
 	bool empty;
 	Rect3 aabb;
+
 protected:
-
 	static void _bind_methods();
+
 public:
+	void begin(Mesh::PrimitiveType p_primitive, const Ref<Texture> &p_texture = Ref<Texture>());
+	void set_normal(const Vector3 &p_normal);
+	void set_tangent(const Plane &p_tangent);
+	void set_color(const Color &p_color);
+	void set_uv(const Vector2 &tex_uv);
+	void set_uv2(const Vector2 &tex_uv);
 
-
-	void begin(Mesh::PrimitiveType p_primitive,const Ref<Texture>& p_texture=Ref<Texture>());
-	void set_normal(const Vector3& p_normal);
-	void set_tangent(const Plane& p_tangent);
-	void set_color(const Color& p_color);
-	void set_uv(const Vector2& tex_uv);
-	void set_uv2(const Vector2& tex_uv);
-
-	void add_vertex(const Vector3& p_vertex);
+	void add_vertex(const Vector3 &p_vertex);
 
 	void end();
 	void clear();
 
-
-	void add_sphere(int p_lats,int p_lons,float p_radius,bool p_add_uv=true);
-
-
+	void add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv = true);
 
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;

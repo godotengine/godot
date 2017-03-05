@@ -43,9 +43,5 @@ void register_gridmap_types() {
 #endif
 }
 
-
-
 void unregister_gridmap_types() {
-
-
 }

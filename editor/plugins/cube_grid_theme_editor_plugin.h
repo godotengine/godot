@@ -29,8 +29,8 @@
 #ifndef CUBE_GRID_THEME_EDITOR_PLUGIN_H
 #define CUBE_GRID_THEME_EDITOR_PLUGIN_H
 
-#include "scene/resources/mesh_library.h"
 #include "editor/editor_node.h"
+#include "scene/resources/mesh_library.h"
 
 #if 0
 class MeshLibraryEditor : public Control {
@@ -90,7 +90,6 @@ public:
 	MeshLibraryEditorPlugin(EditorNode *p_node);
 
 };
-
 
 #endif // CUBE_GRID_THEME_EDITOR_PLUGIN_H
 #endif

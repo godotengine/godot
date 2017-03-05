@@ -27,11 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "export.h"
-#include "platform/x11/logo.h"
 #include "editor/editor_export.h"
+#include "platform/x11/logo.h"
 #include "scene/resources/texture.h"
-
-
 
 void register_x11_exporter() {
 
@@ -48,7 +46,7 @@ void register_x11_exporter() {
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 
-	#if 0
+#if 0
 	Image img(_x11_logo);
 	Ref<ImageTexture> logo = memnew( ImageTexture );
 	logo->create_from_image(img);
@@ -65,6 +63,5 @@ void register_x11_exporter() {
 		EditorImportExport::get_singleton()->add_export_platform(exporter);
 	}
 
-	#endif
+#endif
 }
-

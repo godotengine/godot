@@ -48,22 +48,22 @@ void CommandQueueMT::wait_for_flush() {
 	OS::get_singleton()->delay_usec(1000);
 }
 
-CommandQueueMT::SyncSemaphore* CommandQueueMT::_alloc_sync_sem() {
+CommandQueueMT::SyncSemaphore *CommandQueueMT::_alloc_sync_sem() {
 
-	int idx=-1;
+	int idx = -1;
 
-	while(true) {
+	while (true) {
 
-		for(int i=0;i<SYNC_SEMAPHORES;i++) {
+		for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
 			if (!sync_sems[i].in_use) {
-				sync_sems[i].in_use=true;
-				idx=i;
+				sync_sems[i].in_use = true;
+				idx = i;
 				break;
 			}
 		}
 
-		if (idx==-1) {
+		if (idx == -1) {
 			wait_for_flush();
 		} else {
 			break;
@@ -73,36 +73,30 @@ CommandQueueMT::SyncSemaphore* CommandQueueMT::_alloc_sync_sem() {
 	return &sync_sems[idx];
 }
 
+CommandQueueMT::CommandQueueMT(bool p_sync) {
 
-CommandQueueMT::CommandQueueMT(bool p_sync){
-
-	read_ptr=0;
-	write_ptr=0;
+	read_ptr = 0;
+	write_ptr = 0;
 	mutex = Mutex::create();
 
-	for(int i=0;i<SYNC_SEMAPHORES;i++) {
+	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
-		sync_sems[i].sem=Semaphore::create();
-		sync_sems[i].in_use=false;
-
-
+		sync_sems[i].sem = Semaphore::create();
+		sync_sems[i].in_use = false;
 	}
 	if (p_sync)
 		sync = Semaphore::create();
 	else
-		sync=NULL;
+		sync = NULL;
 }
-
 
 CommandQueueMT::~CommandQueueMT() {
 
 	if (sync)
 		memdelete(sync);
 	memdelete(mutex);
-	for(int i=0;i<SYNC_SEMAPHORES;i++) {
+	for (int i = 0; i < SYNC_SEMAPHORES; i++) {
 
 		memdelete(sync_sems[i].sem);
 	}
 }
-
-

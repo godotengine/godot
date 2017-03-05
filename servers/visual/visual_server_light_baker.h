@@ -33,7 +33,6 @@
 
 class VisualServerLightBaker {
 public:
-
 	struct BakeCell {
 
 		uint32_t cells[8];
@@ -43,13 +42,7 @@ public:
 		uint32_t light[4]; //accumulated light in 16:16 fixed point (needs to be integer for moving lights fast)
 		float alpha; //used for upsampling
 		uint32_t directional_pass; //used for baking directional
-
 	};
-
-
-
-
-
 
 	VisualServerLightBaker();
 };

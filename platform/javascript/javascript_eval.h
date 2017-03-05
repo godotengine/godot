@@ -35,16 +35,15 @@
 
 class JavaScript : public Object {
 private:
-	GDCLASS( JavaScript, Object );
+	GDCLASS(JavaScript, Object);
 
 	static JavaScript *singleton;
-
 
 protected:
 	static void _bind_methods();
 
 public:
-	Variant eval(const String& p_code, bool p_use_global_exec_context = false);
+	Variant eval(const String &p_code, bool p_use_global_exec_context = false);
 
 	static JavaScript *get_singleton();
 	JavaScript();

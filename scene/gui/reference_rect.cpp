@@ -30,15 +30,14 @@
 
 void ReferenceRect::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_DRAW) {
+	if (p_what == NOTIFICATION_DRAW) {
 
 		if (!is_inside_tree())
 			return;
 		if (get_tree()->is_editor_hint())
-			draw_style_box(get_stylebox("border"),Rect2(Point2(),get_size())) ;
+			draw_style_box(get_stylebox("border"), Rect2(Point2(), get_size()));
 	}
 }
 
-ReferenceRect::ReferenceRect()
-{
+ReferenceRect::ReferenceRect() {
 }

@@ -34,23 +34,20 @@ void LineShape2D::_update_shape() {
 	Array arr;
 	arr.push_back(normal);
 	arr.push_back(d);
-	Physics2DServer::get_singleton()->shape_set_data(get_rid(),arr);
+	Physics2DServer::get_singleton()->shape_set_data(get_rid(), arr);
 	emit_changed();
-
 }
 
-void LineShape2D::set_normal(const Vector2& p_normal) {
+void LineShape2D::set_normal(const Vector2 &p_normal) {
 
-	normal=p_normal;
+	normal = p_normal;
 	_update_shape();
-
 }
 
 void LineShape2D::set_d(real_t p_d) {
 
-	d=p_d;
+	d = p_d;
 	_update_shape();
-
 }
 
 Vector2 LineShape2D::get_normal() const {
@@ -62,48 +59,45 @@ real_t LineShape2D::get_d() const {
 	return d;
 }
 
-
-void LineShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+void LineShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	Vector2 point = get_d() * get_normal();
 
-	Vector2 l1[2]={point-get_normal().tangent()*100,point+get_normal().tangent()*100};
-	VS::get_singleton()->canvas_item_add_line(p_to_rid,l1[0],l1[1],p_color,3);
-	Vector2 l2[2]={point,point+get_normal()*30};
-	VS::get_singleton()->canvas_item_add_line(p_to_rid,l2[0],l2[1],p_color,3);
-
+	Vector2 l1[2] = { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 };
+	VS::get_singleton()->canvas_item_add_line(p_to_rid, l1[0], l1[1], p_color, 3);
+	Vector2 l2[2] = { point, point + get_normal() * 30 };
+	VS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, 3);
 }
-Rect2 LineShape2D::get_rect() const{
+Rect2 LineShape2D::get_rect() const {
 
 	Vector2 point = get_d() * get_normal();
 
-	Vector2 l1[2]={point-get_normal().tangent()*100,point+get_normal().tangent()*100};
-	Vector2 l2[2]={point,point+get_normal()*30};
+	Vector2 l1[2] = { point - get_normal().tangent() * 100, point + get_normal().tangent() * 100 };
+	Vector2 l2[2] = { point, point + get_normal() * 30 };
 	Rect2 rect;
-	rect.pos=l1[0];
+	rect.pos = l1[0];
 	rect.expand_to(l1[1]);
 	rect.expand_to(l2[0]);
 	rect.expand_to(l2[1]);
 	return rect;
-
 }
 
 void LineShape2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_normal","normal"),&LineShape2D::set_normal);
-	ClassDB::bind_method(D_METHOD("get_normal"),&LineShape2D::get_normal);
+	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &LineShape2D::set_normal);
+	ClassDB::bind_method(D_METHOD("get_normal"), &LineShape2D::get_normal);
 
-	ClassDB::bind_method(D_METHOD("set_d","d"),&LineShape2D::set_d);
-	ClassDB::bind_method(D_METHOD("get_d"),&LineShape2D::get_d);
+	ClassDB::bind_method(D_METHOD("set_d", "d"), &LineShape2D::set_d);
+	ClassDB::bind_method(D_METHOD("get_d"), &LineShape2D::get_d);
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"normal"),"set_normal","get_normal") ;
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"d"),"set_d","get_d") ;
-
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "normal"), "set_normal", "get_normal");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "d"), "set_d", "get_d");
 }
 
-LineShape2D::LineShape2D() : Shape2D( Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_LINE)) {
+LineShape2D::LineShape2D()
+	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_LINE)) {
 
-	normal=Vector2(0,-1);
-	d=0;
+	normal = Vector2(0, -1);
+	d = 0;
 	_update_shape();
 }

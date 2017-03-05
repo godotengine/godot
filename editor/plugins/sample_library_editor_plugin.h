@@ -29,15 +29,14 @@
 #ifndef SAMPLE_LIBRARY_EDITOR_PLUGIN_H
 #define SAMPLE_LIBRARY_EDITOR_PLUGIN_H
 
-
 #if 0
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/audio/sample_player.h"
-#include "scene/resources/sample.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/file_dialog.h"
+#include "scene/gui/tree.h"
+#include "scene/resources/sample.h"
 
 
 class SampleLibraryEditor : public Panel {

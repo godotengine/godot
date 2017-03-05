@@ -31,41 +31,36 @@
 
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/menu_button.h"
 #include "scene/main/timer.h"
 #include "scene/resources/shader.h"
 #include "servers/visual/shader_language.h"
 
 class ShaderTextEditor : public CodeTextEditor {
 
-	GDCLASS( ShaderTextEditor, CodeTextEditor );
+	GDCLASS(ShaderTextEditor, CodeTextEditor);
 
 	Ref<Shader> shader;
 
 protected:
-
 	static void _bind_methods();
 	virtual void _load_theme_settings();
 
-	virtual void _code_complete_script(const String& p_code, List<String>* r_options);
+	virtual void _code_complete_script(const String &p_code, List<String> *r_options);
 
 public:
-
 	virtual void _validate_script();
 
-
 	Ref<Shader> get_edited_shader() const;
-	void set_edited_shader(const Ref<Shader>& p_shader);
+	void set_edited_shader(const Ref<Shader> &p_shader);
 	ShaderTextEditor();
-
 };
-
 
 class ShaderEditor : public VBoxContainer {
 
-	GDCLASS(ShaderEditor, VBoxContainer );
+	GDCLASS(ShaderEditor, VBoxContainer);
 
 	enum {
 
@@ -92,32 +87,29 @@ class ShaderEditor : public VBoxContainer {
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 
-
 	ShaderTextEditor *shader_editor;
-
 
 	void _menu_option(int p_optin);
 	void _params_changed();
 	mutable Ref<Shader> shader;
-
 
 	void _editor_settings_changed();
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void apply_shaders();
 
 	void ensure_select_current();
-	void edit(const Ref<Shader>& p_shader);
+	void edit(const Ref<Shader> &p_shader);
 
 	Dictionary get_state() const;
-	void set_state(const Dictionary& p_state);
+	void set_state(const Dictionary &p_state);
 	void clear();
 
-	virtual Size2 get_minimum_size() const { return Size2(0,200); }
+	virtual Size2 get_minimum_size() const { return Size2(0, 200); }
 	void save_external_data();
 
 	ShaderEditor();
@@ -125,7 +117,7 @@ public:
 
 class ShaderEditorPlugin : public EditorPlugin {
 
-	GDCLASS( ShaderEditorPlugin, EditorPlugin );
+	GDCLASS(ShaderEditorPlugin, EditorPlugin);
 
 	bool _2d;
 	ShaderEditor *shader_editor;
@@ -133,7 +125,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 	Button *button;
 
 public:
-
 	virtual String get_name() const { return "Shader"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -142,7 +133,7 @@ public:
 	virtual void selected_notify();
 
 	Dictionary get_state() const;
-	virtual void set_state(const Dictionary& p_state);
+	virtual void set_state(const Dictionary &p_state);
 	virtual void clear();
 
 	virtual void save_external_data();
@@ -150,7 +141,6 @@ public:
 
 	ShaderEditorPlugin(EditorNode *p_node);
 	~ShaderEditorPlugin();
-
 };
 
 #endif

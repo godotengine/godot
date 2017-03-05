@@ -29,15 +29,14 @@
 #ifndef GD_PARSER_H
 #define GD_PARSER_H
 
-#include "gd_tokenizer.h"
 #include "gd_functions.h"
+#include "gd_tokenizer.h"
 #include "map.h"
 #include "object.h"
 #include "script_language.h"
 
 class GDParser {
 public:
-
 	struct Node {
 
 		enum Type {
@@ -59,7 +58,7 @@ public:
 			TYPE_NEWLINE,
 		};
 
-		Node * next;
+		Node *next;
 		int line;
 		int column;
 		Type type;
@@ -77,7 +76,6 @@ public:
 		bool extends_used;
 		StringName extends_file;
 		Vector<StringName> extends_class;
-
 
 		struct Member {
 			PropertyInfo _export;
@@ -101,11 +99,11 @@ public:
 			Vector<StringName> arguments;
 		};
 
-		Vector<ClassNode*> subclasses;
+		Vector<ClassNode *> subclasses;
 		Vector<Member> variables;
 		Vector<Constant> constant_expressions;
-		Vector<FunctionNode*> functions;
-		Vector<FunctionNode*> static_functions;
+		Vector<FunctionNode *> functions;
+		Vector<FunctionNode *> static_functions;
 		Vector<Signal> _signals;
 		BlockNode *initializer;
 		BlockNode *ready;
@@ -113,10 +111,14 @@ public:
 		//Vector<Node*> initializers;
 		int end_line;
 
-		ClassNode() { tool=false; type=TYPE_CLASS; extends_used=false; end_line=-1; owner=NULL;}
+		ClassNode() {
+			tool = false;
+			type = TYPE_CLASS;
+			extends_used = false;
+			end_line = -1;
+			owner = NULL;
+		}
 	};
-
-
 
 	struct FunctionNode : public Node {
 
@@ -124,62 +126,72 @@ public:
 		ScriptInstance::RPCMode rpc_mode;
 		StringName name;
 		Vector<StringName> arguments;
-		Vector<Node*> default_values;
+		Vector<Node *> default_values;
 		BlockNode *body;
 
-		FunctionNode() { type=TYPE_FUNCTION; _static=false; rpc_mode=ScriptInstance::RPC_MODE_DISABLED; }
-
+		FunctionNode() {
+			type = TYPE_FUNCTION;
+			_static = false;
+			rpc_mode = ScriptInstance::RPC_MODE_DISABLED;
+		}
 	};
 
 	struct BlockNode : public Node {
 
 		ClassNode *parent_class;
 		BlockNode *parent_block;
-		Map<StringName,int> locals;
-		List<Node*> statements;
+		Map<StringName, int> locals;
+		List<Node *> statements;
 		Vector<StringName> variables;
 		Vector<int> variable_lines;
 
 		//the following is useful for code completion
-		List<BlockNode*> sub_blocks;
+		List<BlockNode *> sub_blocks;
 		int end_line;
-		BlockNode() { type=TYPE_BLOCK; end_line=-1; parent_block=NULL; parent_class=NULL; }
+		BlockNode() {
+			type = TYPE_BLOCK;
+			end_line = -1;
+			parent_block = NULL;
+			parent_class = NULL;
+		}
 	};
 
 	struct TypeNode : public Node {
 
 		Variant::Type vtype;
-		TypeNode() { type=TYPE_TYPE;  }
+		TypeNode() { type = TYPE_TYPE; }
 	};
 	struct BuiltInFunctionNode : public Node {
 		GDFunctions::Function function;
-		BuiltInFunctionNode() { type=TYPE_BUILT_IN_FUNCTION;  }
+		BuiltInFunctionNode() { type = TYPE_BUILT_IN_FUNCTION; }
 	};
 
 	struct IdentifierNode : public Node {
 
 		StringName name;
-		IdentifierNode() { type=TYPE_IDENTIFIER;  }
+		IdentifierNode() { type = TYPE_IDENTIFIER; }
 	};
 
 	struct LocalVarNode : public Node {
 
 		StringName name;
 		Node *assign;
-		LocalVarNode() { type=TYPE_LOCAL_VAR;  assign=NULL;}
+		LocalVarNode() {
+			type = TYPE_LOCAL_VAR;
+			assign = NULL;
+		}
 	};
 
 	struct ConstantNode : public Node {
 		Variant value;
-		ConstantNode() { type=TYPE_CONSTANT; }
+		ConstantNode() { type = TYPE_CONSTANT; }
 	};
 
 	struct ArrayNode : public Node {
 
-		Vector<Node*> elements;
-		ArrayNode() { type=TYPE_ARRAY; }
+		Vector<Node *> elements;
+		ArrayNode() { type = TYPE_ARRAY; }
 	};
-
 
 	struct DictionaryNode : public Node {
 
@@ -190,11 +202,11 @@ public:
 		};
 
 		Vector<Pair> elements;
-		DictionaryNode() { type=TYPE_DICTIONARY; }
+		DictionaryNode() { type = TYPE_DICTIONARY; }
 	};
 
 	struct SelfNode : public Node {
-		SelfNode() { type=TYPE_SELF; }
+		SelfNode() { type = TYPE_SELF; }
 	};
 
 	struct OperatorNode : public Node {
@@ -255,13 +267,12 @@ public:
 
 		Operator op;
 
-		Vector<Node*> arguments;
-		OperatorNode() { type=TYPE_OPERATOR; }
+		Vector<Node *> arguments;
+		OperatorNode() { type = TYPE_OPERATOR; }
 	};
-	
-	
+
 	struct PatternNode : public Node {
-		
+
 		enum PatternType {
 			PT_CONSTANT,
 			PT_BIND,
@@ -270,30 +281,29 @@ public:
 			PT_IGNORE_REST,
 			PT_WILDCARD
 		};
-		
+
 		PatternType pt_type;
-		
+
 		Node *constant;
 		StringName bind;
-		Map<ConstantNode*, PatternNode*> dictionary;
-		Vector<PatternNode*> array;
-		
+		Map<ConstantNode *, PatternNode *> dictionary;
+		Vector<PatternNode *> array;
 	};
-	
+
 	struct PatternBranchNode : public Node {
-		Vector<PatternNode*> patterns;
+		Vector<PatternNode *> patterns;
 		BlockNode *body;
 	};
-	
+
 	struct MatchNode : public Node {
 		Node *val_to_match;
-		Vector<PatternBranchNode*> branches;
-		
+		Vector<PatternBranchNode *> branches;
+
 		struct CompiledPatternBranch {
 			Node *compiled_pattern;
 			BlockNode *body;
 		};
-		
+
 		Vector<CompiledPatternBranch> compiled_pattern_branches;
 	};
 
@@ -310,29 +320,33 @@ public:
 		};
 
 		CFType cf_type;
-		Vector<Node*> arguments;
+		Vector<Node *> arguments;
 		BlockNode *body;
 		BlockNode *body_else;
-		
+
 		MatchNode *match;
 
 		ControlFlowNode *_else; //used for if
-		ControlFlowNode() { type=TYPE_CONTROL_FLOW; cf_type=CF_IF; body=NULL; body_else=NULL;}
+		ControlFlowNode() {
+			type = TYPE_CONTROL_FLOW;
+			cf_type = CF_IF;
+			body = NULL;
+			body_else = NULL;
+		}
 	};
 
 	struct AssertNode : public Node {
-		Node* condition;
-		AssertNode() { type=TYPE_ASSERT; }
+		Node *condition;
+		AssertNode() { type = TYPE_ASSERT; }
 	};
 
 	struct BreakpointNode : public Node {
-		BreakpointNode() { type=TYPE_BREAKPOINT; }
+		BreakpointNode() { type = TYPE_BREAKPOINT; }
 	};
 
 	struct NewLineNode : public Node {
-		NewLineNode() { type=TYPE_NEWLINE; }
+		NewLineNode() { type = TYPE_NEWLINE; }
 	};
-
 
 	struct Expression {
 
@@ -343,8 +357,7 @@ public:
 		};
 	};
 
-
-/*
+	/*
 	struct OperatorNode : public Node {
 
 		DataType return_cache;
@@ -428,18 +441,13 @@ public:
 		COMPLETION_YIELD,
 	};
 
-
-
 private:
-
-
 	GDTokenizer *tokenizer;
-
 
 	Node *head;
 	Node *list;
-	template<class T>
-	T* alloc_node();
+	template <class T>
+	T *alloc_node();
 
 	bool validating;
 	bool for_completion;
@@ -456,12 +464,11 @@ private:
 	String base_path;
 	String self_path;
 
-
 	ClassNode *current_class;
 	FunctionNode *current_function;
 	BlockNode *current_block;
 
-	bool _get_completable_identifier(CompletionType p_type,StringName& identifier);
+	bool _get_completable_identifier(CompletionType p_type, StringName &identifier);
 	void _make_completable_call(int p_arg);
 
 	CompletionType completion_type;
@@ -481,41 +488,34 @@ private:
 
 	ScriptInstance::RPCMode rpc_mode;
 
-
-	void _set_error(const String& p_error, int p_line=-1, int p_column=-1);
+	void _set_error(const String &p_error, int p_line = -1, int p_column = -1);
 	bool _recover_from_completion();
 
-
-	bool _parse_arguments(Node* p_parent, Vector<Node*>& p_args, bool p_static, bool p_can_codecomplete=false);
-	bool _enter_indent_block(BlockNode *p_block=NULL);
+	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false);
+	bool _enter_indent_block(BlockNode *p_block = NULL);
 	bool _parse_newline();
-	Node* _parse_expression(Node *p_parent, bool p_static, bool p_allow_assign=false, bool p_parsing_constant=false);
-	Node* _reduce_expression(Node *p_node,bool p_to_const=false);
-	Node* _parse_and_reduce_expression(Node *p_parent,bool p_static,bool p_reduce_const=false,bool p_allow_assign=false);
+	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
+	Node *_reduce_expression(Node *p_node, bool p_to_const = false);
+	Node *_parse_and_reduce_expression(Node *p_parent, bool p_static, bool p_reduce_const = false, bool p_allow_assign = false);
 
-	
-	
-	
 	PatternNode *_parse_pattern(bool p_static);
-	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode*> &p_branches, bool p_static);
+	void _parse_pattern_block(BlockNode *p_block, Vector<PatternBranchNode *> &p_branches, bool p_static);
 	void _transform_match_statment(BlockNode *p_block, MatchNode *p_match_statement);
-	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node*> &p_bindings);
-	
-	
-	void _parse_block(BlockNode *p_block,bool p_static);
+	void _generate_pattern(PatternNode *p_pattern, Node *p_node_to_match, Node *&p_resulting_node, Map<StringName, Node *> &p_bindings);
+
+	void _parse_block(BlockNode *p_block, bool p_static);
 	void _parse_extends(ClassNode *p_class);
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
-	Error _parse(const String& p_base_path);
+	Error _parse(const String &p_base_path);
 
 public:
-
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
-	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="",const String& p_self_path="");
+	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false);
+	Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path = "", const String &p_self_path = "");
 
 	bool is_tool_script() const;
 	const Node *get_parse_tree() const;

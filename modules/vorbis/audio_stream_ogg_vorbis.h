@@ -38,18 +38,18 @@
 
 class AudioStreamPlaybackOGGVorbis : public AudioStreamPlayback {
 
-	GDCLASS(AudioStreamPlaybackOGGVorbis,AudioStreamPlayback);
+	GDCLASS(AudioStreamPlaybackOGGVorbis, AudioStreamPlayback);
 
 	enum {
-		MIN_MIX=1024
+		MIN_MIX = 1024
 	};
 
 	FileAccess *f;
 
 	ov_callbacks _ov_callbacks;
 	float length;
-	static size_t _ov_read_func(void *p_dst,size_t p_data, size_t p_count, void *_f);
-	static int _ov_seek_func(void *_f,ogg_int64_t offs, int whence);
+	static size_t _ov_read_func(void *p_dst, size_t p_data, size_t p_count, void *_f);
+	static int _ov_seek_func(void *_f, ogg_int64_t offs, int whence);
 	static int _ov_close_func(void *_f);
 	static long _ov_tell_func(void *_f);
 
@@ -63,7 +63,6 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlayback {
 	int stream_srate;
 	int current_section;
 
-
 	bool paused;
 	bool loops;
 	int repeats;
@@ -75,17 +74,14 @@ class AudioStreamPlaybackOGGVorbis : public AudioStreamPlayback {
 	bool stream_valid;
 	float loop_restart_time;
 
-
 public:
+	Error set_file(const String &p_file);
 
-
-	Error set_file(const String& p_file);
-
-	virtual void play(float p_from=0);
+	virtual void play(float p_from = 0);
 	virtual void stop();
 	virtual bool is_playing() const;
 
-	virtual void set_loop_restart_time(float p_time) { loop_restart_time=p_time; }
+	virtual void set_loop_restart_time(float p_time) { loop_restart_time = p_time; }
 
 	virtual void set_paused(bool p_paused);
 	virtual bool is_paused(bool p_paused) const;
@@ -106,37 +102,34 @@ public:
 	virtual int get_mix_rate() const { return stream_srate; }
 
 	virtual int get_minimum_buffer_size() const { return 0; }
-	virtual int mix(int16_t* p_bufer,int p_frames);
+	virtual int mix(int16_t *p_bufer, int p_frames);
 
 	AudioStreamPlaybackOGGVorbis();
 	~AudioStreamPlaybackOGGVorbis();
 };
 
-
 class AudioStreamOGGVorbis : public AudioStream {
 
-	GDCLASS(AudioStreamOGGVorbis,AudioStream);
+	GDCLASS(AudioStreamOGGVorbis, AudioStream);
 
 	String file;
-public:
 
+public:
 	Ref<AudioStreamPlayback> instance_playback() {
-		Ref<AudioStreamPlaybackOGGVorbis> pb = memnew( AudioStreamPlaybackOGGVorbis );
+		Ref<AudioStreamPlaybackOGGVorbis> pb = memnew(AudioStreamPlaybackOGGVorbis);
 		pb->set_file(file);
 		return pb;
 	}
 
-	void set_file(const String& p_file) { file=p_file; }
-
+	void set_file(const String &p_file) { file = p_file; }
 };
 
 class ResourceFormatLoaderAudioStreamOGGVorbis : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
-
 
 #endif // AUDIO_STREAM_OGG_H

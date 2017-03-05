@@ -33,12 +33,8 @@
 
 struct _DictionaryVariantHash {
 
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant)  { return p_variant.hash(); }
+	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
 };
-
-
-
-
 
 struct DictionaryPrivate {
 
@@ -48,146 +44,134 @@ struct DictionaryPrivate {
 	};
 
 	SafeRefCount refcount;
-	HashMap<Variant,Data,_DictionaryVariantHash> variant_map;
+	HashMap<Variant, Data, _DictionaryVariantHash> variant_map;
 	int counter;
-
 };
 
 struct DictionaryPrivateSort {
 
-	bool operator()(const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair *A,const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair *B) const {
+	bool operator()(const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *A, const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *B) const {
 
 		return A->data.order < B->data.order;
 	}
 };
 
-void Dictionary::get_key_list( List<Variant> *p_keys) const {
+void Dictionary::get_key_list(List<Variant> *p_keys) const {
 
 	if (_p->variant_map.empty())
 		return;
 
 	int count = _p->variant_map.size();
-	const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair **pairs = (const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair**)alloca( count * sizeof(HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair *) );
+	const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **pairs = (const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **)alloca(count * sizeof(HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *));
 	_p->variant_map.get_key_value_ptr_array(pairs);
 
-	SortArray<const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair*,DictionaryPrivateSort>  sort;
-	sort.sort(pairs,count);
+	SortArray<const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *, DictionaryPrivateSort> sort;
+	sort.sort(pairs, count);
 
-	for(int i=0;i<count;i++) {
+	for (int i = 0; i < count; i++) {
 		p_keys->push_back(pairs[i]->key);
 	}
-
 }
 
-Variant& Dictionary::operator[](const Variant& p_key) {
+Variant &Dictionary::operator[](const Variant &p_key) {
 
-
-	DictionaryPrivate::Data *v =_p->variant_map.getptr(p_key);
+	DictionaryPrivate::Data *v = _p->variant_map.getptr(p_key);
 
 	if (!v) {
 
 		DictionaryPrivate::Data d;
-		d.order=_p->counter++;
-		_p->variant_map[p_key]=d;
-		v =_p->variant_map.getptr(p_key);
-
+		d.order = _p->counter++;
+		_p->variant_map[p_key] = d;
+		v = _p->variant_map.getptr(p_key);
 	}
 	return v->variant;
 }
 
-const Variant& Dictionary::operator[](const Variant& p_key) const {
+const Variant &Dictionary::operator[](const Variant &p_key) const {
 
 	return _p->variant_map[p_key].variant;
-
 }
-const Variant* Dictionary::getptr(const Variant& p_key) const {
+const Variant *Dictionary::getptr(const Variant &p_key) const {
 
-	const DictionaryPrivate::Data *v =_p->variant_map.getptr(p_key);
+	const DictionaryPrivate::Data *v = _p->variant_map.getptr(p_key);
 	if (!v)
 		return NULL;
 	else
 		return &v->variant;
 }
 
-Variant* Dictionary::getptr(const Variant& p_key) {
+Variant *Dictionary::getptr(const Variant &p_key) {
 
-	DictionaryPrivate::Data *v =_p->variant_map.getptr(p_key);
+	DictionaryPrivate::Data *v = _p->variant_map.getptr(p_key);
 	if (!v)
 		return NULL;
 	else
 		return &v->variant;
-
-
 }
 
-Variant Dictionary::get_valid(const Variant& p_key) const {
+Variant Dictionary::get_valid(const Variant &p_key) const {
 
-	DictionaryPrivate::Data *v =_p->variant_map.getptr(p_key);
+	DictionaryPrivate::Data *v = _p->variant_map.getptr(p_key);
 	if (!v)
 		return Variant();
 	else
 		return v->variant;
 }
 
-
 int Dictionary::size() const {
 
 	return _p->variant_map.size();
-
 }
 bool Dictionary::empty() const {
 
 	return !_p->variant_map.size();
 }
 
-bool Dictionary::has(const Variant& p_key) const {
+bool Dictionary::has(const Variant &p_key) const {
 
 	return _p->variant_map.has(p_key);
 }
 
-bool Dictionary::has_all(const Array& p_keys) const {
-	for (int i=0;i<p_keys.size();i++) {
-		if( !has(p_keys[i]) ) {
+bool Dictionary::has_all(const Array &p_keys) const {
+	for (int i = 0; i < p_keys.size(); i++) {
+		if (!has(p_keys[i])) {
 			return false;
 		}
 	}
 	return true;
 }
 
-void Dictionary::erase(const Variant& p_key) {
-
+void Dictionary::erase(const Variant &p_key) {
 
 	_p->variant_map.erase(p_key);
 }
 
-bool Dictionary::operator==(const Dictionary& p_dictionary) const {
+bool Dictionary::operator==(const Dictionary &p_dictionary) const {
 
-	return _p==p_dictionary._p;
+	return _p == p_dictionary._p;
 }
 
-void Dictionary::_ref(const Dictionary& p_from) const {
+void Dictionary::_ref(const Dictionary &p_from) const {
 
 	//make a copy first (thread safe)
 	if (!p_from._p->refcount.ref())
 		return; // couldn't copy
 
 	//if this is the same, unreference the other one
-	if (p_from._p==_p) {
+	if (p_from._p == _p) {
 		_p->refcount.unref();
 		return;
 	}
 	if (_p)
 		_unref();
-	_p=p_from._p;
-
+	_p = p_from._p;
 }
 
 void Dictionary::clear() {
 
 	_p->variant_map.clear();
-	_p->counter=0;
+	_p->counter = 0;
 }
-
 
 void Dictionary::_unref() const {
 
@@ -195,23 +179,20 @@ void Dictionary::_unref() const {
 	if (_p->refcount.unref()) {
 		memdelete(_p);
 	}
-	_p=NULL;
-
+	_p = NULL;
 }
 uint32_t Dictionary::hash() const {
 
-	uint32_t h=hash_djb2_one_32(Variant::DICTIONARY);
+	uint32_t h = hash_djb2_one_32(Variant::DICTIONARY);
 
 	List<Variant> keys;
 	get_key_list(&keys);
 
-	for (List<Variant>::Element *E=keys.front();E;E=E->next()) {
+	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
 
-		h = hash_djb2_one_32( E->get().hash(), h);
-		h = hash_djb2_one_32( operator[](E->get()).hash(), h);
-
+		h = hash_djb2_one_32(E->get().hash(), h);
+		h = hash_djb2_one_32(operator[](E->get()).hash(), h);
 	}
-
 
 	return h;
 }
@@ -220,13 +201,12 @@ Array Dictionary::keys() const {
 
 	Array karr;
 	karr.resize(size());
-	const Variant *K=NULL;
-	int idx=0;
-	while((K=next(K))) {
-		karr[idx++]=(*K);
+	const Variant *K = NULL;
+	int idx = 0;
+	while ((K = next(K))) {
+		karr[idx++] = (*K);
 	}
 	return karr;
-
 }
 
 Array Dictionary::values() const {
@@ -237,20 +217,20 @@ Array Dictionary::values() const {
 		return varr;
 
 	int count = _p->variant_map.size();
-	const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair **pairs = (const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair**)alloca( count * sizeof(HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair *) );
+	const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **pairs = (const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair **)alloca(count * sizeof(HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *));
 	_p->variant_map.get_key_value_ptr_array(pairs);
 
-	SortArray<const HashMap<Variant,DictionaryPrivate::Data,_DictionaryVariantHash>::Pair*,DictionaryPrivateSort>  sort;
-	sort.sort(pairs,count);
+	SortArray<const HashMap<Variant, DictionaryPrivate::Data, _DictionaryVariantHash>::Pair *, DictionaryPrivateSort> sort;
+	sort.sort(pairs, count);
 
-	for(int i=0;i<count;i++) {
-		varr[i]=pairs[i]->data.variant;
+	for (int i = 0; i < count; i++) {
+		varr[i] = pairs[i]->data.variant;
 	}
 
 	return varr;
 }
 
-const Variant* Dictionary::next(const Variant* p_key) const {
+const Variant *Dictionary::next(const Variant *p_key) const {
 
 	return _p->variant_map.next(p_key);
 }
@@ -262,34 +242,28 @@ Dictionary Dictionary::copy() const {
 	List<Variant> keys;
 	get_key_list(&keys);
 
-	for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
-		n[E->get()]=operator[](E->get());
+	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+		n[E->get()] = operator[](E->get());
 	}
 
 	return n;
 }
 
-
-void Dictionary::operator=(const Dictionary& p_dictionary) {
+void Dictionary::operator=(const Dictionary &p_dictionary) {
 
 	_ref(p_dictionary);
 }
 
-
-
-Dictionary::Dictionary(const Dictionary& p_from) {
-	_p=NULL;
+Dictionary::Dictionary(const Dictionary &p_from) {
+	_p = NULL;
 	_ref(p_from);
 }
 
-
 Dictionary::Dictionary() {
 
-	_p=memnew( DictionaryPrivate );
+	_p = memnew(DictionaryPrivate);
 	_p->refcount.init();
-	_p->counter=0;
-
-
+	_p->counter = 0;
 }
 Dictionary::~Dictionary() {
 

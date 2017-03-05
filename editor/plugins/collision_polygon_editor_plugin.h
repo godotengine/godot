@@ -29,13 +29,13 @@
 #ifndef COLLISION_POLYGON_EDITOR_PLUGIN_H
 #define COLLISION_POLYGON_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>

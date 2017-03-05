@@ -31,32 +31,31 @@
 #include "global_config.h"
 #include "os/file_access.h"
 
-FileTypeCache* FileTypeCache::singleton=NULL;
+FileTypeCache *FileTypeCache::singleton = NULL;
 
-bool FileTypeCache::has_file(const String& p_path) const {
+bool FileTypeCache::has_file(const String &p_path) const {
 
 	GLOBAL_LOCK_FUNCTION
 	return file_type_map.has(p_path);
 }
 
-String FileTypeCache::get_file_type(const String& p_path) const{
+String FileTypeCache::get_file_type(const String &p_path) const {
 
 	GLOBAL_LOCK_FUNCTION
-	ERR_FAIL_COND_V(!file_type_map.has(p_path),"");
+	ERR_FAIL_COND_V(!file_type_map.has(p_path), "");
 	return file_type_map[p_path];
-
 }
-void FileTypeCache::set_file_type(const String& p_path,const String& p_type){
+void FileTypeCache::set_file_type(const String &p_path, const String &p_type) {
 
 	GLOBAL_LOCK_FUNCTION
-	file_type_map[p_path]=p_type;
+	file_type_map[p_path] = p_type;
 }
 
 void FileTypeCache::load() {
 
 	GLOBAL_LOCK_FUNCTION
-	String project=GlobalConfig::get_singleton()->get_resource_path();
-	FileAccess *f =FileAccess::open(project+"/file_type_cache.cch",FileAccess::READ);
+	String project = GlobalConfig::get_singleton()->get_resource_path();
+	FileAccess *f = FileAccess::open(project + "/file_type_cache.cch", FileAccess::READ);
 
 	if (!f) {
 
@@ -65,44 +64,42 @@ void FileTypeCache::load() {
 	}
 
 	file_type_map.clear();
-	while(!f->eof_reached()) {
+	while (!f->eof_reached()) {
 
-		String path=f->get_line();
+		String path = f->get_line();
 		if (f->eof_reached())
 			break;
-		String type=f->get_line();
-		set_file_type(path,type);
+		String type = f->get_line();
+		set_file_type(path, type);
 	}
 
 	memdelete(f);
-
 }
 
 void FileTypeCache::save() {
 
 	GLOBAL_LOCK_FUNCTION
-	String project=GlobalConfig::get_singleton()->get_resource_path();
-	FileAccess *f =FileAccess::open(project+"/file_type_cache.cch",FileAccess::WRITE);
+	String project = GlobalConfig::get_singleton()->get_resource_path();
+	FileAccess *f = FileAccess::open(project + "/file_type_cache.cch", FileAccess::WRITE);
 	if (!f) {
 
 		ERR_EXPLAIN(TTR("Can't open file_type_cache.cch for writing, not saving file type cache!"));
 		ERR_FAIL();
 	}
 
-	const String *K=NULL;
+	const String *K = NULL;
 
-	while((K=file_type_map.next(K))) {
+	while ((K = file_type_map.next(K))) {
 
 		f->store_line(*K);
 		f->store_line(file_type_map[*K]);
 	}
 
 	memdelete(f);
-
 }
 
 FileTypeCache::FileTypeCache() {
 
 	ERR_FAIL_COND(singleton);
-	singleton=this;
+	singleton = this;
 }

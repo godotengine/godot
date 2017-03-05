@@ -32,14 +32,13 @@
 #include "servers/visual_server.h"
 void CircleShape2D::_update_shape() {
 
-	Physics2DServer::get_singleton()->shape_set_data(get_rid(),radius);
+	Physics2DServer::get_singleton()->shape_set_data(get_rid(), radius);
 	emit_changed();
 }
 
-
 void CircleShape2D::set_radius(real_t p_radius) {
 
-	radius=p_radius;
+	radius = p_radius;
 	_update_shape();
 }
 
@@ -48,39 +47,37 @@ real_t CircleShape2D::get_radius() const {
 	return radius;
 }
 
-
 void CircleShape2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_radius","radius"),&CircleShape2D::set_radius);
-	ClassDB::bind_method(D_METHOD("get_radius"),&CircleShape2D::get_radius);
+	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &CircleShape2D::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"), &CircleShape2D::get_radius);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.01,16384,0.5"),"set_radius","get_radius") ;
-
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0.01,16384,0.5"), "set_radius", "get_radius");
 }
 
 Rect2 CircleShape2D::get_rect() const {
 	Rect2 rect;
-	rect.pos=-Point2(get_radius(),get_radius());
-	rect.size=Point2(get_radius(),get_radius())*2.0;
+	rect.pos = -Point2(get_radius(), get_radius());
+	rect.size = Point2(get_radius(), get_radius()) * 2.0;
 	return rect;
 }
 
-void CircleShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	Vector<Vector2> points;
-	for(int i=0;i<24;i++) {
+	for (int i = 0; i < 24; i++) {
 
-		points.push_back(Vector2(Math::cos(i*Math_PI*2/24.0),Math::sin(i*Math_PI*2/24.0))*get_radius());
+		points.push_back(Vector2(Math::cos(i * Math_PI * 2 / 24.0), Math::sin(i * Math_PI * 2 / 24.0)) * get_radius());
 	}
 
 	Vector<Color> col;
 	col.push_back(p_color);
-	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid,points,col);
-
+	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
 }
 
-CircleShape2D::CircleShape2D() : Shape2D( Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CIRCLE)) {
+CircleShape2D::CircleShape2D()
+	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CIRCLE)) {
 
-	radius=10;
+	radius = 10;
 	_update_shape();
 }

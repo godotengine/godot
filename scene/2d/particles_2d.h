@@ -30,16 +30,15 @@
 #define PARTICLES_FRAME_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/texture.h"
 #include "scene/resources/color_ramp.h"
+#include "scene/resources/texture.h"
 
 class Particles2D;
 class ParticleAttractor2D : public Node2D {
 
-	GDCLASS(ParticleAttractor2D,Node2D);
+	GDCLASS(ParticleAttractor2D, Node2D);
 
-
-friend class Particles2D;
+	friend class Particles2D;
 	bool enabled;
 	float radius;
 	float disable_radius;
@@ -51,12 +50,12 @@ friend class Particles2D;
 
 	void _update_owner();
 	void _owner_exited();
-	void _set_owner(Particles2D* p_owner);
+	void _set_owner(Particles2D *p_owner);
 
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
@@ -80,13 +79,11 @@ public:
 	ParticleAttractor2D();
 };
 
-
-
 class Particles2D : public Node2D {
 
 	GDCLASS(Particles2D, Node2D);
-public:
 
+public:
 	enum Parameter {
 		PARAM_DIRECTION,
 		PARAM_SPREAD,
@@ -108,7 +105,7 @@ public:
 	};
 
 	enum {
-		MAX_COLOR_PHASES=4
+		MAX_COLOR_PHASES = 4
 	};
 
 	enum ProcessMode {
@@ -117,7 +114,6 @@ public:
 	};
 
 private:
-
 	float param[PARAM_MAX];
 	float randomness[PARAM_MAX];
 
@@ -128,7 +124,12 @@ private:
 		float rot;
 		float frame;
 		uint64_t seed;
-		Particle() { active=false; seed=123465789; rot=0; frame=0;}
+		Particle() {
+			active = false;
+			seed = 123465789;
+			rot = 0;
+			frame = 0;
+		}
 	};
 
 	Vector<Particle> particles;
@@ -170,17 +171,15 @@ private:
 	Ref<ColorRamp> color_ramp;
 
 	void _process_particles(float p_delta);
-friend class ParticleAttractor2D;
+	friend class ParticleAttractor2D;
 
-	Set<ParticleAttractor2D*> attractors;
+	Set<ParticleAttractor2D *> attractors;
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
 	void set_emitting(bool p_emitting);
 	bool is_emitting() const;
 
@@ -202,7 +201,7 @@ public:
 	void set_emit_timeout(float p_timeout);
 	float get_emit_timeout() const;
 
-	void set_emission_half_extents(const Vector2& p_extents);
+	void set_emission_half_extents(const Vector2 &p_extents);
 	Vector2 get_emission_half_extents() const;
 
 	void set_param(Parameter p_param, float p_value);
@@ -220,7 +219,6 @@ public:
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
 
-
 	void set_h_frames(int p_frames);
 	int get_h_frames() const;
 
@@ -230,31 +228,31 @@ public:
 	void set_color_phases(int p_phases);
 	int get_color_phases() const;
 
-	void set_color_phase_color(int p_phase,const Color& p_color);
+	void set_color_phase_color(int p_phase, const Color &p_color);
 	Color get_color_phase_color(int p_phase) const;
 
-	void set_color_phase_pos(int p_phase,float p_pos);
+	void set_color_phase_pos(int p_phase, float p_pos);
 	float get_color_phase_pos(int p_phase) const;
 
-	void set_texture(const Ref<Texture>& p_texture);
+	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
 
-	void set_color(const Color& p_color);
+	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_color_ramp(const Ref<ColorRamp>& p_texture);
+	void set_color_ramp(const Ref<ColorRamp> &p_texture);
 	Ref<ColorRamp> get_color_ramp() const;
 
-	void set_emissor_offset(const Point2& p_offset);
+	void set_emissor_offset(const Point2 &p_offset);
 	Point2 get_emissor_offset() const;
 
 	void set_use_local_space(bool p_use);
 	bool is_using_local_space() const;
 
-	void set_initial_velocity(const Vector2& p_velocity);
+	void set_initial_velocity(const Vector2 &p_velocity);
 	Vector2 get_initial_velocity() const;
 
-	void set_emission_points(const PoolVector<Vector2>& p_points);
+	void set_emission_points(const PoolVector<Vector2> &p_points);
 	PoolVector<Vector2> get_emission_points() const;
 
 	void pre_process(float p_delta);
@@ -263,7 +261,7 @@ public:
 	Particles2D();
 };
 
-VARIANT_ENUM_CAST( Particles2D::ProcessMode );
-VARIANT_ENUM_CAST( Particles2D::Parameter );
+VARIANT_ENUM_CAST(Particles2D::ProcessMode);
+VARIANT_ENUM_CAST(Particles2D::Parameter);
 
 #endif // PARTICLES_FRAME_H

@@ -42,14 +42,13 @@
 #ifndef CONTEXT_GL_WIN_H
 #define CONTEXT_GL_WIN_H
 
-
-#include "os/os.h"
 #include "drivers/gl_context/context_gl.h"
 #include "error_list.h"
+#include "os/os.h"
 
 #include <windows.h>
 
-typedef bool (APIENTRY *PFNWGLSWAPINTERVALEXTPROC) (int interval);
+typedef bool(APIENTRY *PFNWGLSWAPINTERVALEXTPROC)(int interval);
 
 class ContextGL_Win : public ContextGL {
 
@@ -60,11 +59,9 @@ class ContextGL_Win : public ContextGL {
 	bool opengl_3_context;
 	bool use_vsync;
 
-
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+
 public:
-
-
 	virtual void release_current();
 
 	virtual void make_current();
@@ -78,9 +75,8 @@ public:
 	virtual void set_use_vsync(bool p_use);
 	virtual bool is_using_vsync() const;
 
-	ContextGL_Win(HWND hwnd,bool p_opengl_3_context);
+	ContextGL_Win(HWND hwnd, bool p_opengl_3_context);
 	~ContextGL_Win();
-
 };
 
 #endif

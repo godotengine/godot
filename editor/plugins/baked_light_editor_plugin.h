@@ -29,12 +29,10 @@
 #ifndef BAKED_LIGHT_EDITOR_PLUGIN_H
 #define BAKED_LIGHT_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "editor/plugins/baked_light_baker.h"
 #include "scene/gui/spin_box.h"
-
-
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -117,4 +115,3 @@ public:
 
 #endif // MULTIMESH_EDITOR_PLUGIN_H
 #endif
-

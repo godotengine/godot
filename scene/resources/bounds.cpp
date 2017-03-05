@@ -28,19 +28,17 @@
 /*************************************************************************/
 #include "bounds.h"
 
-
 void Bounds::_bind_methods() {
 
-	ClassDB::bind_method( D_METHOD("set_bsp_tree","bsp_tree"),&Bounds::set_bsp_tree);
-	ClassDB::bind_method( D_METHOD("get_bsp_tree"),&Bounds::get_bsp_tree );
+	ClassDB::bind_method(D_METHOD("set_bsp_tree", "bsp_tree"), &Bounds::set_bsp_tree);
+	ClassDB::bind_method(D_METHOD("get_bsp_tree"), &Bounds::get_bsp_tree);
 
-	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "bsp_tree" ), "set_bsp_tree", "get_bsp_tree");
-
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bsp_tree"), "set_bsp_tree", "get_bsp_tree");
 }
 
-void Bounds::set_bsp_tree(const BSP_Tree& p_bsp_tree) {
+void Bounds::set_bsp_tree(const BSP_Tree &p_bsp_tree) {
 
-	bsp_tree=p_bsp_tree;
+	bsp_tree = p_bsp_tree;
 }
 
 BSP_Tree Bounds::get_bsp_tree() const {
@@ -48,7 +46,5 @@ BSP_Tree Bounds::get_bsp_tree() const {
 	return bsp_tree;
 }
 
-
-Bounds::Bounds()
-{
+Bounds::Bounds() {
 }

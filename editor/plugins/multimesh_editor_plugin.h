@@ -29,8 +29,8 @@
 #ifndef MULTIMESH_EDITOR_PLUGIN_H
 #define MULTIMESH_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/multimesh_instance.h"
 #include "scene/gui/spin_box.h"
 
@@ -40,12 +40,12 @@
 
 class MultiMeshEditor : public Control {
 
-	GDCLASS(MultiMeshEditor, Control );
+	GDCLASS(MultiMeshEditor, Control);
 
-friend class MultiMeshEditorPlugin;
+	friend class MultiMeshEditorPlugin;
 
 	AcceptDialog *err_dialog;
-	MenuButton * options;
+	MenuButton *options;
 	MultiMeshInstance *_last_pp_node;
 	bool browsing_source;
 
@@ -70,7 +70,7 @@ friend class MultiMeshEditorPlugin;
 		MENU_OPTION_POPULATE
 	};
 
-	void _browsed(const NodePath& p_path);
+	void _browsed(const NodePath &p_path);
 	void _menu_option(int);
 	void _populate();
 	void _browse(bool p_source);
@@ -78,21 +78,20 @@ friend class MultiMeshEditorPlugin;
 protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
+public:
 	void edit(MultiMeshInstance *p_multimesh);
 	MultiMeshEditor();
 };
 
 class MultiMeshEditorPlugin : public EditorPlugin {
 
-	GDCLASS( MultiMeshEditorPlugin, EditorPlugin );
+	GDCLASS(MultiMeshEditorPlugin, EditorPlugin);
 
 	MultiMeshEditor *multimesh_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "MultiMesh"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -101,7 +100,6 @@ public:
 
 	MultiMeshEditorPlugin(EditorNode *p_node);
 	~MultiMeshEditorPlugin();
-
 };
 
 #endif // MULTIMESH_EDITOR_PLUGIN_H

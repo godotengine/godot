@@ -29,10 +29,10 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "scene/gui/dialogs.h"
 #include "scene/gui/button.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/tree.h"
 #include "undo_redo.h"
 
 /**
@@ -41,7 +41,7 @@
 
 class GroupsEditor : public VBoxContainer {
 
-	GDCLASS(GroupsEditor,VBoxContainer);
+	GDCLASS(GroupsEditor, VBoxContainer);
 
 	Node *node;
 
@@ -52,16 +52,16 @@ class GroupsEditor : public VBoxContainer {
 	UndoRedo *undo_redo;
 
 	void update_tree();
-	void _add_group(const String& p_group="");
+	void _add_group(const String &p_group = "");
 	void _remove_group(Object *p_item, int p_column, int p_id);
 	void _close();
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo=p_undoredo; }
-	void set_current(Node* p_node);
+public:
+	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
+	void set_current(Node *p_node);
 
 	GroupsEditor();
 	~GroupsEditor();

@@ -34,7 +34,7 @@
 
 class CollisionObject2D : public Node2D {
 
-	GDCLASS( CollisionObject2D, Node2D );
+	GDCLASS(CollisionObject2D, Node2D);
 
 	bool area;
 	RID rid;
@@ -46,42 +46,38 @@ class CollisionObject2D : public Node2D {
 		bool trigger;
 
 		ShapeData() {
-			trigger=false;
+			trigger = false;
 		}
 	};
-
 
 	Vector<ShapeData> shapes;
 
 	void _update_shapes();
 
-friend class CollisionShape2D;
-friend class CollisionPolygon2D;
+	friend class CollisionShape2D;
+	friend class CollisionPolygon2D;
 	void _update_shapes_from_children();
-protected:
 
+protected:
 	CollisionObject2D(RID p_rid, bool p_area);
 
 	void _notification(int p_what);
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 	void _update_pickable();
-friend class Viewport;
-	void _input_event(Node *p_viewport, const InputEvent& p_input_event, int p_shape);
+	friend class Viewport;
+	void _input_event(Node *p_viewport, const InputEvent &p_input_event, int p_shape);
 	void _mouse_enter();
 	void _mouse_exit();
 
 public:
-
-
-
-	void add_shape(const Ref<Shape2D>& p_shape, const Transform2D& p_transform=Transform2D());
+	void add_shape(const Ref<Shape2D> &p_shape, const Transform2D &p_transform = Transform2D());
 	int get_shape_count() const;
-	void set_shape(int p_shape_idx, const Ref<Shape2D>& p_shape);
-	void set_shape_transform(int p_shape_idx, const Transform2D& p_transform);
+	void set_shape(int p_shape_idx, const Ref<Shape2D> &p_shape);
+	void set_shape_transform(int p_shape_idx, const Transform2D &p_transform);
 	Ref<Shape2D> get_shape(int p_shape_idx) const;
 	Transform2D get_shape_transform(int p_shape_idx) const;
 	void set_shape_as_trigger(int p_shape_idx, bool p_trigger);

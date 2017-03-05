@@ -29,12 +29,12 @@
 #ifndef CALL_DIALOG_H
 #define CALL_DIALOG_H
 
-#include "scene/gui/popup.h"
+#include "editor/property_editor.h"
 #include "scene/gui/button.h"
-#include "scene/gui/tree.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "editor/property_editor.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/tree.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */

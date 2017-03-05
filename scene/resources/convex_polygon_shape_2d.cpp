@@ -28,28 +28,26 @@
 /*************************************************************************/
 #include "convex_polygon_shape_2d.h"
 
+#include "geometry.h"
 #include "servers/physics_2d_server.h"
 #include "servers/visual_server.h"
-#include "geometry.h"
 
 void ConvexPolygonShape2D::_update_shape() {
 
-	Physics2DServer::get_singleton()->shape_set_data(get_rid(),points);
+	Physics2DServer::get_singleton()->shape_set_data(get_rid(), points);
 	emit_changed();
-
 }
 
-void ConvexPolygonShape2D::set_point_cloud(const Vector<Vector2>& p_points) {
+void ConvexPolygonShape2D::set_point_cloud(const Vector<Vector2> &p_points) {
 
-
-	Vector<Point2> hull=Geometry::convex_hull_2d(p_points);
-	ERR_FAIL_COND(hull.size()<3);
+	Vector<Point2> hull = Geometry::convex_hull_2d(p_points);
+	ERR_FAIL_COND(hull.size() < 3);
 	set_points(hull);
 }
 
-void ConvexPolygonShape2D::set_points(const Vector<Vector2>& p_points) {
+void ConvexPolygonShape2D::set_points(const Vector<Vector2> &p_points) {
 
-	points=p_points;
+	points = p_points;
 	_update_shape();
 }
 
@@ -58,48 +56,41 @@ Vector<Vector2> ConvexPolygonShape2D::get_points() const {
 	return points;
 }
 
-
 void ConvexPolygonShape2D::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_point_cloud","point_cloud"),&ConvexPolygonShape2D::set_point_cloud);
-	ClassDB::bind_method(D_METHOD("set_points","points"),&ConvexPolygonShape2D::set_points);
-	ClassDB::bind_method(D_METHOD("get_points"),&ConvexPolygonShape2D::get_points);
+	ClassDB::bind_method(D_METHOD("set_point_cloud", "point_cloud"), &ConvexPolygonShape2D::set_point_cloud);
+	ClassDB::bind_method(D_METHOD("set_points", "points"), &ConvexPolygonShape2D::set_points);
+	ClassDB::bind_method(D_METHOD("get_points"), &ConvexPolygonShape2D::get_points);
 
-
-
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"points"),"set_points","get_points") ;
-
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
 }
 
-void ConvexPolygonShape2D::draw(const RID& p_to_rid,const Color& p_color) {
-
+void ConvexPolygonShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	Vector<Color> col;
 	col.push_back(p_color);
-	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid,points,col);
+	VisualServer::get_singleton()->canvas_item_add_polygon(p_to_rid, points, col);
 }
 
-Rect2 ConvexPolygonShape2D::get_rect() const  {
-
+Rect2 ConvexPolygonShape2D::get_rect() const {
 
 	Rect2 rect;
-	for(int i=0;i<points.size();i++) {
-		if (i==0)
-			rect.pos=points[i];
+	for (int i = 0; i < points.size(); i++) {
+		if (i == 0)
+			rect.pos = points[i];
 		else
 			rect.expand_to(points[i]);
 	}
 
 	return rect;
-
 }
 
-ConvexPolygonShape2D::ConvexPolygonShape2D() : Shape2D( Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CONVEX_POLYGON)) {
+ConvexPolygonShape2D::ConvexPolygonShape2D()
+	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_CONVEX_POLYGON)) {
 
-
-	int pcount =3;
-	for(int i=0;i<pcount;i++)
-		points.push_back(Vector2(Math::sin(i*Math_PI*2/pcount),-Math::cos(i*Math_PI*2/pcount))*10);
+	int pcount = 3;
+	for (int i = 0; i < pcount; i++)
+		points.push_back(Vector2(Math::sin(i * Math_PI * 2 / pcount), -Math::cos(i * Math_PI * 2 / pcount)) * 10);
 
 	_update_shape();
 }

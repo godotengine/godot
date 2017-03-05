@@ -28,12 +28,12 @@
 /*************************************************************************/
 #include "file_access_memory.h"
 
-#include "os/dir_access.h"
-#include "os/copymem.h"
 #include "global_config.h"
 #include "map.h"
+#include "os/copymem.h"
+#include "os/dir_access.h"
 
-static Map<String, Vector<uint8_t> >* files = NULL;
+static Map<String, Vector<uint8_t> > *files = NULL;
 
 void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 
@@ -59,13 +59,12 @@ void FileAccessMemory::cleanup() {
 	memdelete(files);
 }
 
-
-FileAccess* FileAccessMemory::create() {
+FileAccess *FileAccessMemory::create() {
 
 	return memnew(FileAccessMemory);
 }
 
-bool FileAccessMemory::file_exists(const String& p_name) {
+bool FileAccessMemory::file_exists(const String &p_name) {
 
 	String name = fix_path(p_name);
 	//name = DirAccess::normalize_path(name);
@@ -73,23 +72,22 @@ bool FileAccessMemory::file_exists(const String& p_name) {
 	return files && (files->find(name) != NULL);
 }
 
+Error FileAccessMemory::open_custom(const uint8_t *p_data, int p_len) {
 
-Error FileAccessMemory::open_custom(const uint8_t* p_data, int p_len) {
-
-	data=(uint8_t*)p_data;
-	length=p_len;
-	pos=0;
+	data = (uint8_t *)p_data;
+	length = p_len;
+	pos = 0;
 	return OK;
 }
 
-Error FileAccessMemory::_open(const String& p_path, int p_mode_flags) {
+Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 
 	ERR_FAIL_COND_V(!files, ERR_FILE_NOT_FOUND);
 
 	String name = fix_path(p_path);
 	//name = DirAccess::normalize_path(name);
 
-	Map<String, Vector<uint8_t> >::Element* E = files->find(name);
+	Map<String, Vector<uint8_t> >::Element *E = files->find(name);
 	ERR_FAIL_COND_V(!E, ERR_FILE_NOT_FOUND);
 
 	data = &(E->get()[0]);
@@ -149,7 +147,7 @@ uint8_t FileAccessMemory::get_8() const {
 	return ret;
 }
 
-int FileAccessMemory::get_buffer(uint8_t *p_dst,int p_length) const {
+int FileAccessMemory::get_buffer(uint8_t *p_dst, int p_length) const {
 
 	ERR_FAIL_COND_V(!data, -1);
 
@@ -178,7 +176,7 @@ void FileAccessMemory::store_8(uint8_t p_byte) {
 	data[pos++] = p_byte;
 }
 
-void FileAccessMemory::store_buffer(const uint8_t *p_src,int p_length) {
+void FileAccessMemory::store_buffer(const uint8_t *p_src, int p_length) {
 
 	int left = length - pos;
 	int write = MIN(p_length, left);

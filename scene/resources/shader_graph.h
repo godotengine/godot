@@ -29,7 +29,6 @@
 #ifndef SHADER_GRAPH_H
 #define SHADER_GRAPH_H
 
-
 #if 0
 #include "map.h"
 #include "scene/resources/shader.h"

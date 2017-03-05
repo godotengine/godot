@@ -29,85 +29,77 @@
 #ifndef VISUAL_INSTANCE_H
 #define VISUAL_INSTANCE_H
 
-#include "scene/3d/spatial.h"
 #include "face3.h"
 #include "rid.h"
+#include "scene/3d/spatial.h"
 #include "scene/resources/material.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class VisualInstance : public Spatial {
 
-	GDCLASS( VisualInstance, Spatial );
+	GDCLASS(VisualInstance, Spatial);
 	OBJ_CATEGORY("3D Visual Nodes");
 
 	RID instance;
 	uint32_t layers;
 
-
 	RID _get_visual_instance_rid() const;
 
-
-
 protected:
-
 	void _update_visibility();
 
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	enum GetFacesFlags {
-		FACES_SOLID=1, // solid geometry
-		FACES_ENCLOSING=2,
-		FACES_DYNAMIC=4 // dynamic object geometry
+		FACES_SOLID = 1, // solid geometry
+		FACES_ENCLOSING = 2,
+		FACES_DYNAMIC = 4 // dynamic object geometry
 
 	};
 
 	RID get_instance() const;
-	virtual Rect3 get_aabb() const=0;
-	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const=0;
+	virtual Rect3 get_aabb() const = 0;
+	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const = 0;
 
 	virtual Rect3 get_transformed_aabb() const; // helper
 
-	void set_base(const RID& p_base);
+	void set_base(const RID &p_base);
 
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
-
 	VisualInstance();
 	~VisualInstance();
-
 };
 
 class BakedLight;
 
 class GeometryInstance : public VisualInstance {
 
-	GDCLASS( GeometryInstance, VisualInstance );
-public:
+	GDCLASS(GeometryInstance, VisualInstance);
 
+public:
 	enum Flags {
-		FLAG_CAST_SHADOW=VS::INSTANCE_FLAG_CAST_SHADOW,
-		FLAG_BILLBOARD=VS::INSTANCE_FLAG_BILLBOARD,
-		FLAG_BILLBOARD_FIX_Y=VS::INSTANCE_FLAG_BILLBOARD_FIX_Y,
-		FLAG_DEPH_SCALE=VS::INSTANCE_FLAG_DEPH_SCALE,
-		FLAG_VISIBLE_IN_ALL_ROOMS=VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS,
-		FLAG_USE_BAKED_LIGHT=VS::INSTANCE_FLAG_USE_BAKED_LIGHT,
-		FLAG_MAX=VS::INSTANCE_FLAG_MAX,
+		FLAG_CAST_SHADOW = VS::INSTANCE_FLAG_CAST_SHADOW,
+		FLAG_BILLBOARD = VS::INSTANCE_FLAG_BILLBOARD,
+		FLAG_BILLBOARD_FIX_Y = VS::INSTANCE_FLAG_BILLBOARD_FIX_Y,
+		FLAG_DEPH_SCALE = VS::INSTANCE_FLAG_DEPH_SCALE,
+		FLAG_VISIBLE_IN_ALL_ROOMS = VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS,
+		FLAG_USE_BAKED_LIGHT = VS::INSTANCE_FLAG_USE_BAKED_LIGHT,
+		FLAG_MAX = VS::INSTANCE_FLAG_MAX,
 	};
 
-
 	enum ShadowCastingSetting {
-		SHADOW_CASTING_SETTING_OFF=VS::SHADOW_CASTING_SETTING_OFF,
+		SHADOW_CASTING_SETTING_OFF = VS::SHADOW_CASTING_SETTING_OFF,
 		SHADOW_CASTING_SETTING_ON = VS::SHADOW_CASTING_SETTING_ON,
-		SHADOW_CASTING_SETTING_DOUBLE_SIDED=VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
-		SHADOW_CASTING_SETTING_SHADOWS_ONLY=VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
+		SHADOW_CASTING_SETTING_DOUBLE_SIDED = VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED,
+		SHADOW_CASTING_SETTING_SHADOWS_ONLY = VS::SHADOW_CASTING_SETTING_SHADOWS_ONLY
 	};
 
 private:
-
 	bool flags[FLAG_MAX];
 	ShadowCastingSetting shadow_casting_setting;
 	Ref<Material> material_override;
@@ -119,12 +111,11 @@ private:
 	float extra_cull_margin;
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_flag(Flags p_flag,bool p_value);
+public:
+	void set_flag(Flags p_flag, bool p_value);
 	bool get_flag(Flags p_flag) const;
 
 	void set_cast_shadows_setting(ShadowCastingSetting p_shadow_casting_setting);
@@ -142,7 +133,7 @@ public:
 	void set_lod_max_hysteresis(float p_dist);
 	float get_lod_max_hysteresis() const;
 
-	void set_material_override(const Ref<Material>& p_material);
+	void set_material_override(const Ref<Material> &p_material);
 	Ref<Material> get_material_override() const;
 
 	void set_extra_cull_margin(float p_margin);
@@ -151,8 +142,7 @@ public:
 	GeometryInstance();
 };
 
-VARIANT_ENUM_CAST( GeometryInstance::Flags );
-VARIANT_ENUM_CAST( GeometryInstance::ShadowCastingSetting );
-
+VARIANT_ENUM_CAST(GeometryInstance::Flags);
+VARIANT_ENUM_CAST(GeometryInstance::ShadowCastingSetting);
 
 #endif

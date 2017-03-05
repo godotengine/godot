@@ -30,16 +30,16 @@
 #define EDITOR_DATA_H
 
 #include "editor/editor_plugin.h"
-#include "scene/resources/texture.h"
 #include "list.h"
-#include "undo_redo.h"
 #include "pair.h"
+#include "scene/resources/texture.h"
+#include "undo_redo.h"
 
 class EditorHistory {
 
 	enum {
 
-		HISTORY_MAX=64
+		HISTORY_MAX = 64
 	};
 
 	struct Obj {
@@ -54,7 +54,7 @@ class EditorHistory {
 		Vector<Obj> path;
 		int level;
 	};
-friend class EditorData;
+	friend class EditorData;
 
 	Vector<History> history;
 	int current;
@@ -67,19 +67,17 @@ friend class EditorData;
 		Variant value;
 	};
 
-
 	void _cleanup_history();
 
-	void _add_object(ObjectID p_object,const String& p_property,int p_level_change);
+	void _add_object(ObjectID p_object, const String &p_property, int p_level_change);
 
 public:
-
 	bool is_at_begining() const;
 	bool is_at_end() const;
 
 	void add_object(ObjectID p_object);
-	void add_object(ObjectID p_object,const String& p_subprop);
-	void add_object(ObjectID p_object,int p_relevel);
+	void add_object(ObjectID p_object, const String &p_subprop);
+	void add_object(ObjectID p_object, int p_relevel);
 
 	int get_history_len();
 	int get_history_pos();
@@ -109,54 +107,50 @@ public:
 		Ref<Script> script;
 		Ref<Texture> icon;
 	};
-private:
 
-	Vector<EditorPlugin*> editor_plugins;
+private:
+	Vector<EditorPlugin *> editor_plugins;
 
 	struct PropertyData {
 
 		String name;
 		Variant value;
 	};
-	Map<String,Vector<CustomType> > custom_types;
+	Map<String, Vector<CustomType> > custom_types;
 
 	List<PropertyData> clipboard;
 	UndoRedo undo_redo;
 
-
 	void _cleanup_history();
 
 	struct EditedScene {
-		Node* root;
+		Node *root;
 		Dictionary editor_states;
-		List<Node*> selection;
+		List<Node *> selection;
 		Vector<EditorHistory::History> history_stored;
 		int history_current;
 		Dictionary custom_state;
 		uint64_t version;
 		NodePath live_edit_root;
-
-
 	};
 
 	Vector<EditedScene> edited_scene;
 	int current_edited_scene;
 
-	bool _find_updated_instances(Node* p_root,Node *p_node,Set<String> &checked_paths);
+	bool _find_updated_instances(Node *p_root, Node *p_node, Set<String> &checked_paths);
 
 public:
-
-	EditorPlugin* get_editor(Object *p_object);
-	EditorPlugin* get_subeditor(Object *p_object);
-	Vector<EditorPlugin*> get_subeditors(Object *p_object);
-	EditorPlugin* get_editor(String p_name);
+	EditorPlugin *get_editor(Object *p_object);
+	EditorPlugin *get_subeditor(Object *p_object);
+	Vector<EditorPlugin *> get_subeditors(Object *p_object);
+	EditorPlugin *get_editor(String p_name);
 
 	void copy_object_params(Object *p_object);
 	void paste_object_params(Object *p_object);
 
 	Dictionary get_editor_states() const;
 	Dictionary get_scene_editor_states(int p_idx) const;
-	void set_editor_states(const Dictionary& p_states);
+	void set_editor_states(const Dictionary &p_states);
 	void get_editor_breakpoints(List<String> *p_breakpoints);
 	void clear_editor_states();
 	void save_editor_external_data();
@@ -173,18 +167,17 @@ public:
 	void save_editor_global_states();
 	void restore_editor_global_states();
 
-	void add_custom_type(const String& p_type, const String& p_inherits,const Ref<Script>& p_script,const Ref<Texture>& p_icon );
-	void remove_custom_type(const String& p_type);
-	const Map<String,Vector<CustomType> >& get_custom_types() const { return custom_types; }
-
+	void add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
+	void remove_custom_type(const String &p_type);
+	const Map<String, Vector<CustomType> > &get_custom_types() const { return custom_types; }
 
 	int add_edited_scene(int p_at_pos);
-	void move_edited_scene_index(int p_idx,int p_to_idx);
+	void move_edited_scene_index(int p_idx, int p_to_idx);
 	void remove_scene(int p_idx);
 	void set_edited_scene(int p_idx);
-	void set_edited_scene_root(Node* p_root);
+	void set_edited_scene_root(Node *p_root);
 	int get_edited_scene() const;
-	Node* get_edited_scene_root(int p_idx = -1);
+	Node *get_edited_scene_root(int p_idx = -1);
 	int get_edited_scene_count() const;
 	String get_scene_title(int p_idx) const;
 	String get_scene_path(int p_idx) const;
@@ -194,55 +187,50 @@ public:
 	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
 	void clear_edited_scenes();
-	void set_edited_scene_live_edit_root(const NodePath& p_root);
+	void set_edited_scene_live_edit_root(const NodePath &p_root);
 	NodePath get_edited_scene_live_edit_root();
 	bool check_and_update_scene(int p_idx);
 	void move_edited_scene_to_index(int p_idx);
 
-
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);
 	void get_plugin_window_layout(Ref<ConfigFile> p_layout);
 
-	void save_edited_scene_state(EditorSelection *p_selection,EditorHistory *p_history,const Dictionary& p_custom);
+	void save_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history, const Dictionary &p_custom);
 	Dictionary restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history);
 	void notify_edited_scene_changed();
-
 
 	EditorData();
 };
 
-
-
 class EditorSelection : public Object {
 
-	GDCLASS(EditorSelection,Object);
-public:
+	GDCLASS(EditorSelection, Object);
 
-	Map<Node*,Object*> selection;
+public:
+	Map<Node *, Object *> selection;
 
 	bool changed;
 	bool nl_changed;
 
 	void _node_removed(Node *p_node);
 
-	List<Object*> editor_plugins;
-	List<Node*> selected_node_list;
+	List<Object *> editor_plugins;
+	List<Node *> selected_node_list;
 
 	void _update_nl();
 	Array _get_selected_nodes();
 	Array _get_transformable_selected_nodes();
 
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	void add_node(Node *p_node);
 	void remove_node(Node *p_node);
 	bool is_selected(Node *) const;
 
-	template<class T>
-	T* get_node_editor_data(Node *p_node) {
+	template <class T>
+	T *get_node_editor_data(Node *p_node) {
 		if (!selection.has(p_node))
 			return NULL;
 		Object *obj = selection[p_node];
@@ -256,14 +244,11 @@ public:
 	void update();
 	void clear();
 
-
-	List<Node*>& get_selected_node_list();
-	Map<Node*,Object*>& get_selection() { return selection; }
-
+	List<Node *> &get_selected_node_list();
+	Map<Node *, Object *> &get_selection() { return selection; }
 
 	EditorSelection();
 	~EditorSelection();
 };
-
 
 #endif // EDITOR_DATA_H

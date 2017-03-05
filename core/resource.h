@@ -29,34 +29,33 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
 
+#include "class_db.h"
 #include "object.h"
-#include "safe_refcount.h"
 #include "ref_ptr.h"
 #include "reference.h"
-#include "class_db.h"
+#include "safe_refcount.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-#define RES_BASE_EXTENSION(m_ext)\
-public:\
-static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext,get_class_static()); }\
-virtual String get_base_extension() const { return m_ext; }\
+#define RES_BASE_EXTENSION(m_ext)                                                                                   \
+public:                                                                                                             \
+	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
+	virtual String get_base_extension() const { return m_ext; }                                                     \
+                                                                                                                    \
 private:
-
-
 
 class Resource : public Reference {
 
-	GDCLASS( Resource, Reference );
+	GDCLASS(Resource, Reference);
 	OBJ_CATEGORY("Resources");
 	RES_BASE_EXTENSION("res");
 
 	Set<ObjectID> owners;
 
-friend class ResBase;
-friend class ResourceCache;
+	friend class ResBase;
+	friend class ResourceCache;
 
 	String name;
 	String path_cache;
@@ -71,11 +70,10 @@ friend class ResourceCache;
 #endif
 
 	bool local_to_scene;
-friend class SceneState;
-	Node* local_scene;
+	friend class SceneState;
+	Node *local_scene;
 
 protected:
-
 	void emit_changed();
 
 	void notify_change_to_owners();
@@ -83,11 +81,11 @@ protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
 
-	void _set_path(const String& p_path);
-	void _take_over_path(const String& p_path);
-public:
+	void _set_path(const String &p_path);
+	void _take_over_path(const String &p_path);
 
-	static Node* (*_get_local_scene_func)(); //used by editor
+public:
+	static Node *(*_get_local_scene_func)(); //used by editor
 
 	virtual bool editor_can_reload_from_file();
 	virtual void reload_from_file();
@@ -95,35 +93,35 @@ public:
 	void register_owner(Object *p_owner);
 	void unregister_owner(Object *p_owner);
 
-	void set_name(const String& p_name);
+	void set_name(const String &p_name);
 	String get_name() const;
 
-	virtual void set_path(const String& p_path,bool p_take_over=false);
+	virtual void set_path(const String &p_path, bool p_take_over = false);
 	String get_path() const;
 
 	void set_subindex(int p_sub_index);
 	int get_subindex() const;
 
-	Ref<Resource> duplicate(bool p_subresources=false);
-	Ref<Resource> duplicate_for_local_scene(Node *p_scene,Map<Ref<Resource>,Ref<Resource> >& remap_cache);
+	Ref<Resource> duplicate(bool p_subresources = false);
+	Ref<Resource> duplicate_for_local_scene(Node *p_scene, Map<Ref<Resource>, Ref<Resource> > &remap_cache);
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
 	virtual void setup_local_to_scene();
 
-	Node* get_local_scene() const;
+	Node *get_local_scene() const;
 
 #ifdef TOOLS_ENABLED
 
 	uint32_t hash_edited_version() const;
 
-	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time=p_time; }
+	virtual void set_last_modified_time(uint64_t p_time) { last_modified_time = p_time; }
 	uint64_t get_last_modified_time() const { return last_modified_time; }
 
-	virtual void set_import_last_modified_time(uint64_t p_time) { import_last_modified_time=p_time; }
+	virtual void set_import_last_modified_time(uint64_t p_time) { import_last_modified_time = p_time; }
 	uint64_t get_import_last_modified_time() const { return import_last_modified_time; }
 
-	void set_import_path(const String& p_path) { import_path=p_path; }
+	void set_import_path(const String &p_path) { import_path = p_path; }
 	String get_import_path() const { return import_path; }
 
 #endif
@@ -132,29 +130,26 @@ public:
 
 	Resource();
 	~Resource();
-
 };
-
 
 typedef Ref<Resource> RES;
 
 class ResourceCache {
-friend class Resource;
+	friend class Resource;
 	static RWLock *lock;
-	static HashMap<String,Resource*> resources;
-friend void unregister_core_types();
+	static HashMap<String, Resource *> resources;
+	friend void unregister_core_types();
 	static void clear();
-friend void register_core_types();
+	friend void register_core_types();
 	static void setup();
-public:
 
+public:
 	static void reload_externals();
-	static bool has(const String& p_path);
-	static Resource* get(const String& p_path);
-	static void dump(const char* p_file=NULL,bool p_short=false);
+	static bool has(const String &p_path);
+	static Resource *get(const String &p_path);
+	static void dump(const char *p_file = NULL, bool p_short = false);
 	static void get_cached_resources(List<Ref<Resource> > *p_resources);
 	static int get_cached_resource_count();
-
 };
 
 #endif

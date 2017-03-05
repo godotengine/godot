@@ -31,7 +31,6 @@
 
 #include "core/error_macros.h"
 
-
 bool PowerBB10::UpdatePowerInfo() {
 
 	return false;
@@ -40,8 +39,7 @@ bool PowerBB10::UpdatePowerInfo() {
 PowerState PowerBB10::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to POWERSTATE_UNKNOWN");
 		return POWERSTATE_UNKNOWN;
 	}
@@ -50,8 +48,7 @@ PowerState PowerBB10::get_power_state() {
 int PowerBB10::get_power_seconds_left() {
 	if (UpdatePowerInfo()) {
 		return nsecs_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
@@ -60,17 +57,15 @@ int PowerBB10::get_power_seconds_left() {
 int PowerBB10::get_power_percent_left() {
 	if (UpdatePowerInfo()) {
 		return percent_left;
-	}
-	else {
+	} else {
 		WARN_PRINT("Power management is not implemented on this platform, defaulting to -1");
 		return -1;
 	}
 }
 
-PowerBB10::PowerBB10() : nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN)  {
-
+PowerBB10::PowerBB10()
+	: nsecs_left(-1), percent_left(-1), power_state(POWERSTATE_UNKNOWN) {
 }
 
 PowerBB10::~PowerBB10() {
 }
-

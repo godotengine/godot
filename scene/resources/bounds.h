@@ -29,21 +29,19 @@
 #ifndef BOUNDS_H
 #define BOUNDS_H
 
-#include "resource.h"
 #include "bsp_tree.h"
+#include "resource.h"
 
 class Bounds : public Resource {
 
-	GDCLASS(Bounds,Resource);
+	GDCLASS(Bounds, Resource);
 	BSP_Tree bsp_tree;
 
 protected:
-
 	static void _bind_methods();
 
 public:
-
-	void set_bsp_tree(const BSP_Tree& p_bsp_tree);
+	void set_bsp_tree(const BSP_Tree &p_bsp_tree);
 	BSP_Tree get_bsp_tree() const;
 
 	Bounds();

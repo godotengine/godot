@@ -32,7 +32,7 @@
 
 #include "global_config.h"
 
-int32_t* AudioDriverMediaKit::samples_in = NULL;
+int32_t *AudioDriverMediaKit::samples_in = NULL;
 
 Error AudioDriverMediaKit::init() {
 	active = false;
@@ -54,12 +54,11 @@ Error AudioDriverMediaKit::init() {
 	format.buffer_size = buffer_size * sizeof(int32_t) * channels;
 
 	player = new BSoundPlayer(
-		&format,
-		"godot_sound_server",
-		AudioDriverMediaKit::PlayBuffer,
-		NULL,
-		this
-	);
+			&format,
+			"godot_sound_server",
+			AudioDriverMediaKit::PlayBuffer,
+			NULL,
+			this);
 
 	if (player->InitCheck() != B_OK) {
 		fprintf(stderr, "MediaKit ERR: can not create a BSoundPlayer instance\n");
@@ -72,9 +71,9 @@ Error AudioDriverMediaKit::init() {
 	return OK;
 }
 
-void AudioDriverMediaKit::PlayBuffer(void* cookie, void* buffer, size_t size, const media_raw_audio_format& format) {
-	AudioDriverMediaKit* ad = (AudioDriverMediaKit*) cookie;
-	int32_t* buf = (int32_t*) buffer;
+void AudioDriverMediaKit::PlayBuffer(void *cookie, void *buffer, size_t size, const media_raw_audio_format &format) {
+	AudioDriverMediaKit *ad = (AudioDriverMediaKit *)cookie;
+	int32_t *buf = (int32_t *)buffer;
 
 	if (!ad->active) {
 		for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
@@ -136,7 +135,6 @@ AudioDriverMediaKit::AudioDriverMediaKit() {
 }
 
 AudioDriverMediaKit::~AudioDriverMediaKit() {
-
 }
 
 #endif

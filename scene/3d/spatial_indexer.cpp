@@ -30,8 +30,8 @@
 
 #if 0
 
-#include "proximity_area.h"
 #include "camera.h"
+#include "proximity_area.h"
 #include "scene/scene_string_names.h"
 
 void SpatialIndexer::add_camera(Camera* p_camera) {

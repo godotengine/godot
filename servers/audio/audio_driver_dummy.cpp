@@ -31,41 +31,36 @@
 #include "global_config.h"
 #include "os/os.h"
 
-
-
 Error AudioDriverDummy::init() {
 
-	active=false;
-	thread_exited=false;
-	exit_thread=false;
+	active = false;
+	thread_exited = false;
+	exit_thread = false;
 	pcm_open = false;
 	samples_in = NULL;
-
 
 	mix_rate = 44100;
 	speaker_mode = SPEAKER_MODE_STEREO;
 	channels = 2;
 
-	int latency = GLOBAL_DEF("audio/output_latency",25);
-	buffer_size = nearest_power_of_2( latency * mix_rate / 1000 );
+	int latency = GLOBAL_DEF("audio/output_latency", 25);
+	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
 
-	samples_in = memnew_arr(int32_t, buffer_size*channels);
+	samples_in = memnew_arr(int32_t, buffer_size * channels);
 
-	mutex=Mutex::create();
+	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverDummy::thread_func, this);
 
 	return OK;
 };
 
-void AudioDriverDummy::thread_func(void* p_udata) {
+void AudioDriverDummy::thread_func(void *p_udata) {
 
-	AudioDriverDummy* ad = (AudioDriverDummy*)p_udata;
+	AudioDriverDummy *ad = (AudioDriverDummy *)p_udata;
 
-	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate))*1000000;
-
+	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
 
 	while (!ad->exit_thread) {
-
 
 		if (!ad->active) {
 
@@ -76,15 +71,12 @@ void AudioDriverDummy::thread_func(void* p_udata) {
 			ad->audio_server_process(ad->buffer_size, ad->samples_in);
 
 			ad->unlock();
-
 		};
 
 		OS::get_singleton()->delay_usec(usdelay);
-
 	};
 
-	ad->thread_exited=true;
-
+	ad->thread_exited = true;
 };
 
 void AudioDriverDummy::start() {
@@ -137,12 +129,9 @@ void AudioDriverDummy::finish() {
 AudioDriverDummy::AudioDriverDummy() {
 
 	mutex = NULL;
-	thread=NULL;
-
+	thread = NULL;
 };
 
-AudioDriverDummy::~AudioDriverDummy() {
+AudioDriverDummy::~AudioDriverDummy(){
 
 };
-
-

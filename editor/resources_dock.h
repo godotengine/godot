@@ -29,23 +29,22 @@
 #ifndef RESOURCES_DOCK_H
 #define RESOURCES_DOCK_H
 
-#include "scene/gui/control.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/label.h"
-#include "scene/gui/button.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/file_dialog.h"
 #include "create_dialog.h"
 #include "editor_file_dialog.h"
-
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/file_dialog.h"
+#include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/tool_button.h"
+#include "scene/gui/tree.h"
 
 class EditorNode;
 
 class ResourcesDock : public VBoxContainer {
 
-	GDCLASS( ResourcesDock, VBoxContainer );
+	GDCLASS(ResourcesDock, VBoxContainer);
 
 	enum {
 		TOOL_NEW,
@@ -57,7 +56,6 @@ class ResourcesDock : public VBoxContainer {
 		TOOL_PASTE,
 		TOOL_MAX
 	};
-
 
 	EditorNode *editor;
 
@@ -74,32 +72,23 @@ class ResourcesDock : public VBoxContainer {
 	bool block_add;
 	int current_action;
 
+	void _file_action(const String &p_action);
 
-
-
-
-	void _file_action(const String& p_action);
-
-
-
-	void _delete(Object* p_item, int p_column, int p_id);
+	void _delete(Object *p_item, int p_column, int p_id);
 	void _resource_selected();
 	void _update_name(TreeItem *item);
 	void _tool_selected(int p_tool);
 	void _create();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-	void add_resource(const Ref<Resource>& p_resource);
-	void remove_resource(const Ref<Resource>& p_resource);
-	void save_resource(const String& p_path,const Ref<Resource>& p_resource);
-	void save_resource_as(const Ref<Resource>& p_resource);
-
+	void add_resource(const Ref<Resource> &p_resource);
+	void remove_resource(const Ref<Resource> &p_resource);
+	void save_resource(const String &p_path, const Ref<Resource> &p_resource);
+	void save_resource_as(const Ref<Resource> &p_resource);
 
 	void cleanup();
 

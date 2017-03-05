@@ -33,7 +33,6 @@
 
 class GDFunctions {
 public:
-
 	enum Function {
 		MATH_SIN,
 		MATH_COS,
@@ -110,10 +109,9 @@ public:
 	};
 
 	static const char *get_func_name(Function p_func);
-	static void call(Function p_func,const Variant **p_args,int p_arg_count,Variant &r_ret,Variant::CallError &r_error);
+	static void call(Function p_func, const Variant **p_args, int p_arg_count, Variant &r_ret, Variant::CallError &r_error);
 	static bool is_deterministic(Function p_func);
 	static MethodInfo get_info(Function p_func);
-
 };
 
 #endif // GD_FUNCTIONS_H

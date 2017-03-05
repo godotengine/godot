@@ -28,4 +28,3 @@
 /*************************************************************************/
 #include "baked_light.h"
 #include "servers/visual_server.h"
-

@@ -35,9 +35,9 @@ using namespace Windows::Foundation;
 void JoypadUWP::register_events() {
 
 	Gamepad::GamepadAdded +=
-		ref new EventHandler<Gamepad^>(this, &JoypadUWP::OnGamepadAdded);
+			ref new EventHandler<Gamepad ^>(this, &JoypadUWP::OnGamepadAdded);
 	Gamepad::GamepadRemoved +=
-		ref new EventHandler<Gamepad^>(this, &JoypadUWP::OnGamepadRemoved);
+			ref new EventHandler<Gamepad ^>(this, &JoypadUWP::OnGamepadRemoved);
 }
 
 uint32_t JoypadUWP::process_controllers(uint32_t p_last_id) {
@@ -48,26 +48,26 @@ uint32_t JoypadUWP::process_controllers(uint32_t p_last_id) {
 
 		switch (controllers[i].type) {
 
-		case ControllerType::GAMEPAD_CONTROLLER: {
+			case ControllerType::GAMEPAD_CONTROLLER: {
 
-			GamepadReading reading = ((Gamepad^)controllers[i].controller_reference)->GetCurrentReading();
+				GamepadReading reading = ((Gamepad ^)controllers[i].controller_reference)->GetCurrentReading();
 
-			int button_mask = (int)GamepadButtons::Menu;
-			for (int j = 0; j < 14; j++) {
+				int button_mask = (int)GamepadButtons::Menu;
+				for (int j = 0; j < 14; j++) {
 
-				p_last_id = input->joy_button(p_last_id, controllers[i].id, j,(int)reading.Buttons & button_mask);
-				button_mask *= 2;
+					p_last_id = input->joy_button(p_last_id, controllers[i].id, j, (int)reading.Buttons & button_mask);
+					button_mask *= 2;
+				}
+
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
+				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
+
+				break;
 			}
-
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
-			p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
-
-			break;
-		}
 		}
 	}
 
@@ -80,7 +80,7 @@ JoypadUWP::JoypadUWP() {
 		controllers[i].id = i;
 }
 
-JoypadUWP::JoypadUWP(InputDefault * p_input) {
+JoypadUWP::JoypadUWP(InputDefault *p_input) {
 
 	input = p_input;
 

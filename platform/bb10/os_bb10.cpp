@@ -28,37 +28,37 @@
 /*************************************************************************/
 #include "os_bb10.h"
 
-#include "drivers/gles2/rasterizer_gles2.h"
-#include "servers/visual/visual_server_raster.h"
-#include "core/os/dir_access.h"
-#include "core/global_config.h"
-#include "main/main.h"
 #include "bbutil.h"
+#include "core/global_config.h"
+#include "core/os/dir_access.h"
 #include "core/os/keyboard.h"
+#include "drivers/gles2/rasterizer_gles2.h"
+#include "main/main.h"
+#include "servers/visual/visual_server_raster.h"
 
-#include <stdlib.h>
-#include <stdbool.h>
 #include <assert.h>
-#include <bps/bps.h>
-#include <bps/screen.h>
-#include <bps/navigator.h>
 #include <bps/accelerometer.h>
-#include <bps/orientation.h>
-#include <bps/virtualkeyboard.h>
 #include <bps/audiodevice.h>
+#include <bps/bps.h>
+#include <bps/navigator.h>
+#include <bps/orientation.h>
+#include <bps/screen.h>
+#include <bps/virtualkeyboard.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #ifdef BB10_SCORELOOP_ENABLED
 #include "modules/scoreloop/scoreloop_bb10.h"
 #endif
 
 static char launch_dir[512];
-char* launch_dir_ptr;
+char *launch_dir_ptr;
 
 int OSBB10::get_video_driver_count() const {
 
 	return 1;
 }
-const char * OSBB10::get_video_driver_name(int p_driver) const {
+const char *OSBB10::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
 }
@@ -72,26 +72,26 @@ int OSBB10::get_audio_driver_count() const {
 
 	return 1;
 }
-const char * OSBB10::get_audio_driver_name(int p_driver) const {
+const char *OSBB10::get_audio_driver_name(int p_driver) const {
 
 	return "BB10";
 }
 
-void OSBB10::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
+void OSBB10::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	data_dir = getenv("HOME");
 
 	//Create a screen context that will be used to create an EGL surface to to receive libscreen events
-	screen_create_context(&screen_cxt,0);
+	screen_create_context(&screen_cxt, 0);
 
 	//Initialize BPS library
 	bps_initialize();
 
 	//Use utility code to initialize EGL for 2D rendering with GL ES 1.1
 	enum RENDERING_API api = GL_ES_2;
-	#ifdef BB10_LGLES_OVERRIDE
+#ifdef BB10_LGLES_OVERRIDE
 	api = GL_ES_1;
-	#endif
+#endif
 	if (EXIT_SUCCESS != bbutil_init(screen_cxt, api)) {
 		bbutil_terminate();
 		screen_destroy_context(screen_cxt);
@@ -116,9 +116,9 @@ void OSBB10::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	virtualkeyboard_request_events(0);
 	audiodevice_request_events(0);
 
-	#ifdef DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 	bps_set_verbosity(3);
-	#endif
+#endif
 
 	accel_supported = accelerometer_is_supported();
 	if (accel_supported)
@@ -126,13 +126,13 @@ void OSBB10::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	pitch = 0;
 	roll = 0;
 
-	#ifdef BB10_LGLES_OVERRIDE
-	rasterizer = memnew( RasterizerGLES1(false) );
-	#else
-	rasterizer = memnew( RasterizerGLES2(false, false) );
-	#endif
+#ifdef BB10_LGLES_OVERRIDE
+	rasterizer = memnew(RasterizerGLES1(false));
+#else
+	rasterizer = memnew(RasterizerGLES2(false, false));
+#endif
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
+	visual_server = memnew(VisualServerRaster(rasterizer));
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
@@ -140,39 +140,38 @@ void OSBB10::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	audio_driver->set_singleton();
 	audio_driver->init(NULL);
 
-	physics_server = memnew( PhysicsServerSW );
+	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
-	physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = memnew(Physics2DServerSW);
 	physics_2d_server->init();
 
-	input = memnew( InputDefault );
-	
-	power_manager = memnew( PowerBB10 );
+	input = memnew(InputDefault);
 
-	#ifdef PAYMENT_SERVICE_ENABLED
+	power_manager = memnew(PowerBB10);
+
+#ifdef PAYMENT_SERVICE_ENABLED
 	payment_service = memnew(PaymentService);
 	Globals::get_singleton()->add_singleton(Globals::Singleton("InAppStore", payment_service));
-	#endif
-
+#endif
 }
 
-void OSBB10::set_main_loop( MainLoop * p_main_loop ) {
+void OSBB10::set_main_loop(MainLoop *p_main_loop) {
 
 	input->set_main_loop(p_main_loop);
-	main_loop=p_main_loop;
+	main_loop = p_main_loop;
 }
 
 void OSBB10::delete_main_loop() {
 
-	memdelete( main_loop );
+	memdelete(main_loop);
 	main_loop = NULL;
 }
 
 void OSBB10::finalize() {
 
-	if(main_loop)
+	if (main_loop)
 		memdelete(main_loop);
-	main_loop=NULL;
+	main_loop = NULL;
 
 	/*
 	if (debugger_connection_console) {
@@ -190,9 +189,9 @@ void OSBB10::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
-	#ifdef PAYMENT_SERVICE_ENABLED
+#ifdef PAYMENT_SERVICE_ENABLED
 	memdelete(payment_service);
-	#endif
+#endif
 
 	memdelete(input);
 
@@ -225,16 +224,14 @@ int OSBB10::get_mouse_button_state() const {
 
 	return 0;
 }
-void OSBB10::set_window_title(const String& p_title) {
-
-
+void OSBB10::set_window_title(const String &p_title) {
 }
 
 //interesting byt not yet
 //void set_clipboard(const String& p_text);
 //String get_clipboard() const;
 
-void OSBB10::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
+void OSBB10::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	default_videomode = p_video_mode;
 }
@@ -243,7 +240,7 @@ OS::VideoMode OSBB10::get_video_mode(int p_screen) const {
 
 	return default_videomode;
 }
-void OSBB10::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
+void OSBB10::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 
 	p_list->push_back(default_videomode);
 }
@@ -278,128 +275,125 @@ void OSBB10::handle_screen_event(bps_event_t *event) {
 	int pos[2];
 
 	switch (screen_val) {
-	case SCREEN_EVENT_MTOUCH_TOUCH:
-	case SCREEN_EVENT_MTOUCH_RELEASE: {
+		case SCREEN_EVENT_MTOUCH_TOUCH:
+		case SCREEN_EVENT_MTOUCH_RELEASE: {
 
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_POSITION, pos);
-
-		InputEvent ievent;
-		ievent.type = InputEvent::SCREEN_TOUCH;
-		ievent.ID = ++last_id;
-		ievent.device = 0;
-		ievent.screen_touch.pressed = (screen_val == SCREEN_EVENT_MTOUCH_TOUCH);
-		ievent.screen_touch.x = pos[0];
-		ievent.screen_touch.y = pos[1];
-		Point2 mpos(ievent.screen_touch.x, ievent.screen_touch.y);
-
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_TOUCH_ID, &pos[0]);
-		ievent.screen_touch.index = pos[0];
-
-		last_touch_x[pos[0]] = ievent.screen_touch.x;
-		last_touch_y[pos[0]] = ievent.screen_touch.y;
-
-		input->parse_input_event( ievent );
-
-		if (ievent.screen_touch.index == 0) {
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_POSITION, pos);
 
 			InputEvent ievent;
-			ievent.type = InputEvent::MOUSE_BUTTON;
+			ievent.type = InputEvent::SCREEN_TOUCH;
 			ievent.ID = ++last_id;
 			ievent.device = 0;
-			ievent.mouse_button.pressed = (screen_val == SCREEN_EVENT_MTOUCH_TOUCH);
-			ievent.mouse_button.button_index = BUTTON_LEFT;
-			ievent.mouse_button.doubleclick = 0;
-			ievent.mouse_button.x = ievent.mouse_button.global_x = mpos.x;
-			ievent.mouse_button.y = ievent.mouse_button.global_y = mpos.y;
-			input->parse_input_event( ievent );
-		};
+			ievent.screen_touch.pressed = (screen_val == SCREEN_EVENT_MTOUCH_TOUCH);
+			ievent.screen_touch.x = pos[0];
+			ievent.screen_touch.y = pos[1];
+			Point2 mpos(ievent.screen_touch.x, ievent.screen_touch.y);
 
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_TOUCH_ID, &pos[0]);
+			ievent.screen_touch.index = pos[0];
 
-	} break;
-	case SCREEN_EVENT_MTOUCH_MOVE: {
+			last_touch_x[pos[0]] = ievent.screen_touch.x;
+			last_touch_y[pos[0]] = ievent.screen_touch.y;
 
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_POSITION, pos);
+			input->parse_input_event(ievent);
 
-		InputEvent ievent;
-		ievent.type = InputEvent::SCREEN_DRAG;
-		ievent.ID = ++last_id;
-		ievent.device = 0;
-		ievent.screen_drag.x = pos[0];
-		ievent.screen_drag.y = pos[1];
+			if (ievent.screen_touch.index == 0) {
 
-		/*
+				InputEvent ievent;
+				ievent.type = InputEvent::MOUSE_BUTTON;
+				ievent.ID = ++last_id;
+				ievent.device = 0;
+				ievent.mouse_button.pressed = (screen_val == SCREEN_EVENT_MTOUCH_TOUCH);
+				ievent.mouse_button.button_index = BUTTON_LEFT;
+				ievent.mouse_button.doubleclick = 0;
+				ievent.mouse_button.x = ievent.mouse_button.global_x = mpos.x;
+				ievent.mouse_button.y = ievent.mouse_button.global_y = mpos.y;
+				input->parse_input_event(ievent);
+			};
+
+		} break;
+		case SCREEN_EVENT_MTOUCH_MOVE: {
+
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_POSITION, pos);
+
+			InputEvent ievent;
+			ievent.type = InputEvent::SCREEN_DRAG;
+			ievent.ID = ++last_id;
+			ievent.device = 0;
+			ievent.screen_drag.x = pos[0];
+			ievent.screen_drag.y = pos[1];
+
+			/*
 		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_SOURCE_POSITION, pos);
 		ievent.screen_drag.relative_x = ievent.screen_drag.x - pos[0];
 		ievent.screen_drag.relative_y = ievent.screen_drag.y - pos[1];
 		*/
 
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_TOUCH_ID, &pos[0]);
-		ievent.screen_drag.index = pos[0];
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_TOUCH_ID, &pos[0]);
+			ievent.screen_drag.index = pos[0];
 
+			ievent.screen_drag.relative_x = ievent.screen_drag.x - last_touch_x[ievent.screen_drag.index];
+			ievent.screen_drag.relative_y = ievent.screen_drag.y - last_touch_y[ievent.screen_drag.index];
 
-		ievent.screen_drag.relative_x = ievent.screen_drag.x - last_touch_x[ievent.screen_drag.index];
-		ievent.screen_drag.relative_y = ievent.screen_drag.y - last_touch_y[ievent.screen_drag.index];
+			last_touch_x[ievent.screen_drag.index] = ievent.screen_drag.x;
+			last_touch_y[ievent.screen_drag.index] = ievent.screen_drag.y;
 
-		last_touch_x[ievent.screen_drag.index] = ievent.screen_drag.x;
-		last_touch_y[ievent.screen_drag.index] = ievent.screen_drag.y;
+			Point2 mpos(ievent.screen_drag.x, ievent.screen_drag.y);
+			Point2 mrel(ievent.screen_drag.relative_x, ievent.screen_drag.relative_y);
 
-		Point2 mpos(ievent.screen_drag.x, ievent.screen_drag.y);
-		Point2 mrel(ievent.screen_drag.relative_x, ievent.screen_drag.relative_y);
+			input->parse_input_event(ievent);
 
-		input->parse_input_event( ievent );
+			if (ievent.screen_touch.index == 0) {
 
-		if (ievent.screen_touch.index == 0) {
+				InputEvent ievent;
+				ievent.type = InputEvent::MOUSE_MOTION;
+				ievent.ID = ++last_id;
+				ievent.device = 0;
+				ievent.mouse_motion.x = ievent.mouse_motion.global_x = mpos.x;
+				ievent.mouse_motion.y = ievent.mouse_motion.global_y = mpos.y;
+				input->set_mouse_pos(Point2(ievent.mouse_motion.x, ievent.mouse_motion.y));
+				ievent.mouse_motion.speed_x = input->get_last_mouse_speed().x;
+				ievent.mouse_motion.speed_y = input->get_last_mouse_speed().y;
+				ievent.mouse_motion.relative_x = mrel.x;
+				ievent.mouse_motion.relative_y = mrel.y;
+				ievent.mouse_motion.button_mask = 1; // pressed
+
+				input->parse_input_event(ievent);
+			};
+		} break;
+
+		case SCREEN_EVENT_KEYBOARD: {
 
 			InputEvent ievent;
-			ievent.type = InputEvent::MOUSE_MOTION;
+			ievent.type = InputEvent::KEY;
 			ievent.ID = ++last_id;
 			ievent.device = 0;
-			ievent.mouse_motion.x = ievent.mouse_motion.global_x = mpos.x;
-			ievent.mouse_motion.y = ievent.mouse_motion.global_y = mpos.y;
-			input->set_mouse_pos(Point2(ievent.mouse_motion.x,ievent.mouse_motion.y));
-			ievent.mouse_motion.speed_x=input->get_last_mouse_speed().x;
-			ievent.mouse_motion.speed_y=input->get_last_mouse_speed().y;
-			ievent.mouse_motion.relative_x = mrel.x;
-			ievent.mouse_motion.relative_y = mrel.y;
-			ievent.mouse_motion.button_mask = 1; // pressed
+			int val = 0;
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_SCAN, &val);
+			ievent.key.scancode = val;
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_SYM, &val);
+			ievent.key.unicode = val;
+			if (val == 61448) {
+				ievent.key.scancode = KEY_BACKSPACE;
+				ievent.key.unicode = KEY_BACKSPACE;
+			};
+			if (val == 61453) {
+				ievent.key.scancode = KEY_ENTER;
+				ievent.key.unicode = KEY_ENTER;
+			};
 
-			input->parse_input_event( ievent );
-		};
-	} break;
+			int flags;
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_FLAGS, &flags);
+			ievent.key.pressed = flags & 1; // bit 1 is pressed apparently
 
-	case SCREEN_EVENT_KEYBOARD: {
+			int mod;
+			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_MODIFIERS, &mod);
 
-		InputEvent ievent;
-		ievent.type = InputEvent::KEY;
-		ievent.ID = ++last_id;
-		ievent.device = 0;
-		int val = 0;
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_SCAN, &val);
-		ievent.key.scancode = val;
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_SYM, &val);
-		ievent.key.unicode = val;
-		if (val == 61448) {
-			ievent.key.scancode = KEY_BACKSPACE;
-			ievent.key.unicode = KEY_BACKSPACE;
-		};
-		if (val == 61453) {
-			ievent.key.scancode = KEY_ENTER;
-			ievent.key.unicode = KEY_ENTER;
-		};
+			input->parse_input_event(ievent);
+		} break;
 
-		int flags;
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_FLAGS, &flags);
-		ievent.key.pressed = flags & 1; // bit 1 is pressed apparently
-
-		int mod;
-		screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_MODIFIERS, &mod);
-
-		input->parse_input_event( ievent );
-	} break;
-
-	default:
-		break;
-
+		default:
+			break;
 	}
 };
 
@@ -419,8 +413,7 @@ void OSBB10::handle_accelerometer() {
 	//input->set_accelerometer(Vector3(force_y, flip_accelerometer?force_x:(-force_x), force_z));
 };
 
-
-void OSBB10::_resize(bps_event_t* event) {
+void OSBB10::_resize(bps_event_t *event) {
 
 	int angle = navigator_event_get_orientation_angle(event);
 	bbutil_rotate_screen_surface(angle);
@@ -449,16 +442,16 @@ void OSBB10::process_events() {
 
 		if (!event) break;
 
-		#ifdef BB10_SCORELOOP_ENABLED
-		ScoreloopBB10* sc = Globals::get_singleton()->get_singleton_object("Scoreloop")->cast_to<ScoreloopBB10>();
+#ifdef BB10_SCORELOOP_ENABLED
+		ScoreloopBB10 *sc = Globals::get_singleton()->get_singleton_object("Scoreloop")->cast_to<ScoreloopBB10>();
 		if (sc->handle_event(event))
 			continue;
-		#endif
+#endif
 
-		#ifdef PAYMENT_SERVICE_ENABLED
+#ifdef PAYMENT_SERVICE_ENABLED
 		if (payment_service->handle_event(event))
 			continue;
-		#endif
+#endif
 
 		int domain = bps_event_get_domain(event);
 		if (domain == screen_get_domain()) {
@@ -473,7 +466,7 @@ void OSBB10::process_events() {
 				bps_event_destroy(event);
 				exit(0);
 				return;
-			/*
+				/*
 			} else if (bps_event_get_code(event) == NAVIGATOR_ORIENTATION_CHECK) {
 
 				int angle = navigator_event_get_orientation_angle(event);
@@ -504,7 +497,7 @@ void OSBB10::process_events() {
 			};
 		} else if (domain == audiodevice_get_domain()) {
 
-			const char * audiodevice_path = audiodevice_event_get_path(event);
+			const char *audiodevice_path = audiodevice_event_get_path(event);
 			printf("************* got audiodevice event, path %s\n", audiodevice_path);
 			audio_driver->finish();
 			audio_driver->init(audiodevice_path);
@@ -520,7 +513,7 @@ bool OSBB10::has_virtual_keyboard() const {
 	return true;
 };
 
-void OSBB10::show_virtual_keyboard(const String& p_existing_text,const Rect2& p_screen_rect) {
+void OSBB10::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 
 	virtualkeyboard_show();
 };
@@ -551,11 +544,10 @@ void OSBB10::run() {
 	};
 	*/
 
-
 	while (true) {
 
 		process_events(); // get rid of pending events
-		if (Main::iteration()==true)
+		if (Main::iteration() == true)
 			break;
 		bbutil_swap();
 		//#ifdef DEBUG_ENABLED
@@ -564,7 +556,6 @@ void OSBB10::run() {
 	};
 
 	main_loop->finish();
-
 };
 
 bool OSBB10::has_touchscreen_ui_hint() const {
@@ -574,7 +565,7 @@ bool OSBB10::has_touchscreen_ui_hint() const {
 
 Error OSBB10::shell_open(String p_uri) {
 
-	char* msg = NULL;
+	char *msg = NULL;
 	int ret = navigator_invoke(p_uri.utf8().get_data(), &msg);
 
 	return ret == BPS_SUCCESS ? OK : FAILED;
@@ -603,14 +594,13 @@ int OSBB10::get_power_percent_left() {
 
 OSBB10::OSBB10() {
 
-	main_loop=NULL;
-	last_id=1;
+	main_loop = NULL;
+	last_id = 1;
 	minimized = false;
 	fullscreen = true;
 	flip_accelerometer = true;
 	fullscreen_mixer_volume = 1;
 	fullscreen_stream_volume = 1;
-
 
 	printf("godot bb10!\n");
 	getcwd(launch_dir, sizeof(launch_dir));
@@ -620,7 +610,4 @@ OSBB10::OSBB10() {
 }
 
 OSBB10::~OSBB10() {
-
-
 }
-

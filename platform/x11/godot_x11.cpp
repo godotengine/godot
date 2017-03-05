@@ -26,22 +26,22 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include <unistd.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "main/main.h"
 #include "os_x11.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
 	OS_X11 os;
 
-	char *cwd = (char*)malloc(PATH_MAX);
+	char *cwd = (char *)malloc(PATH_MAX);
 	getcwd(cwd, PATH_MAX);
 
-	Error err  = Main::setup(argv[0],argc-1,&argv[1]);
-	if (err!=OK)
+	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+	if (err != OK)
 		return 255;
 
 	if (Main::start())

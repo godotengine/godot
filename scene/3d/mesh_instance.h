@@ -37,7 +37,7 @@
 */
 class MeshInstance : public GeometryInstance {
 
-	GDCLASS( MeshInstance, GeometryInstance );
+	GDCLASS(MeshInstance, GeometryInstance);
 
 	Ref<Mesh> mesh;
 	NodePath skeleton_path;
@@ -46,38 +46,40 @@ class MeshInstance : public GeometryInstance {
 
 		int idx;
 		float value;
-		BlendShapeTrack() { idx=0; value=0; }
+		BlendShapeTrack() {
+			idx = 0;
+			value = 0;
+		}
 	};
 
-	Map<StringName,BlendShapeTrack> blend_shape_tracks;
+	Map<StringName, BlendShapeTrack> blend_shape_tracks;
 	Vector<Ref<Material> > materials;
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();
 
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_mesh(const Ref<Mesh>& p_mesh);
+public:
+	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
-	void set_skeleton_path(const NodePath& p_skeleton);
+	void set_skeleton_path(const NodePath &p_skeleton);
 	NodePath get_skeleton_path();
 
-	void set_surface_material(int p_surface,const Ref<Material>& p_material);
+	void set_surface_material(int p_surface, const Ref<Material> &p_material);
 	Ref<Material> get_surface_material(int p_surface) const;
 
-	Node* create_trimesh_collision_node();
+	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
-	Node* create_convex_collision_node();
+	Node *create_convex_collision_node();
 	void create_convex_collision();
 
 	virtual Rect3 get_aabb() const;

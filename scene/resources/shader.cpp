@@ -27,50 +27,45 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader.h"
-#include "servers/visual_server.h"
-#include "texture.h"
 #include "os/file_access.h"
 #include "scene/scene_string_names.h"
-
-
+#include "servers/visual_server.h"
+#include "texture.h"
 
 Shader::Mode Shader::get_mode() const {
 
 	return mode;
 }
 
-void Shader::set_code(const String& p_code) {
+void Shader::set_code(const String &p_code) {
 
-	VisualServer::get_singleton()->shader_set_code(shader,p_code);
-	params_cache_dirty=true;
+	VisualServer::get_singleton()->shader_set_code(shader, p_code);
+	params_cache_dirty = true;
 	emit_signal(SceneStringNames::get_singleton()->changed);
 }
-
 
 String Shader::get_code() const {
 
 	return VisualServer::get_singleton()->shader_get_code(shader);
 }
 
-
 void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 
-
 	List<PropertyInfo> local;
-	VisualServer::get_singleton()->shader_get_param_list(shader,&local);
+	VisualServer::get_singleton()->shader_get_param_list(shader, &local);
 	params_cache.clear();
-	params_cache_dirty=false;
+	params_cache_dirty = false;
 
-	for(List<PropertyInfo>::Element *E=local.front();E;E=E->next()) {
+	for (List<PropertyInfo>::Element *E = local.front(); E; E = E->next()) {
 
-		PropertyInfo pi=E->get();
-		pi.name="shader_param/"+pi.name;
-		params_cache[pi.name]=E->get().name;
+		PropertyInfo pi = E->get();
+		pi.name = "shader_param/" + pi.name;
+		params_cache[pi.name] = E->get().name;
 		if (p_params) {
 
 			//small little hack
-			if (pi.type==Variant::_RID)
-				pi.type=Variant::OBJECT;
+			if (pi.type == Variant::_RID)
+				pi.type = Variant::OBJECT;
 			p_params->push_back(pi);
 		}
 	}
@@ -81,19 +76,18 @@ RID Shader::get_rid() const {
 	return shader;
 }
 
-
-void Shader::set_default_texture_param(const StringName& p_param,const Ref<Texture>& p_texture) {
+void Shader::set_default_texture_param(const StringName &p_param, const Ref<Texture> &p_texture) {
 
 	if (p_texture.is_valid()) {
-		default_textures[p_param]=p_texture;
-		VS::get_singleton()->shader_set_default_texture_param(shader,p_param,p_texture->get_rid());
+		default_textures[p_param] = p_texture;
+		VS::get_singleton()->shader_set_default_texture_param(shader, p_param, p_texture->get_rid());
 	} else {
 		default_textures.erase(p_param);
-		VS::get_singleton()->shader_set_default_texture_param(shader,p_param,RID());
+		VS::get_singleton()->shader_set_default_texture_param(shader, p_param, RID());
 	}
 }
 
-Ref<Texture> Shader::get_default_texture_param(const StringName& p_param) const{
+Ref<Texture> Shader::get_default_texture_param(const StringName &p_param) const {
 
 	if (default_textures.has(p_param))
 		return default_textures[p_param];
@@ -101,52 +95,47 @@ Ref<Texture> Shader::get_default_texture_param(const StringName& p_param) const{
 		return Ref<Texture>();
 }
 
-void Shader::get_default_texture_param_list(List<StringName>* r_textures) const{
+void Shader::get_default_texture_param_list(List<StringName> *r_textures) const {
 
-	for(const Map<StringName,Ref<Texture> >::Element *E=default_textures.front();E;E=E->next()) {
+	for (const Map<StringName, Ref<Texture> >::Element *E = default_textures.front(); E; E = E->next()) {
 
 		r_textures->push_back(E->key());
 	}
-
 }
-bool Shader::has_param(const StringName& p_param) const {
+bool Shader::has_param(const StringName &p_param) const {
 
 	return params_cache.has(p_param);
 }
 
 void Shader::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_mode"),&Shader::get_mode);
+	ClassDB::bind_method(D_METHOD("get_mode"), &Shader::get_mode);
 
-	ClassDB::bind_method(D_METHOD("set_code","code"),&Shader::set_code);
-	ClassDB::bind_method(D_METHOD("get_code"),&Shader::get_code);
+	ClassDB::bind_method(D_METHOD("set_code", "code"), &Shader::set_code);
+	ClassDB::bind_method(D_METHOD("get_code"), &Shader::get_code);
 
-	ClassDB::bind_method(D_METHOD("set_default_texture_param","param","texture:Texture"),&Shader::set_default_texture_param);
-	ClassDB::bind_method(D_METHOD("get_default_texture_param:Texture","param"),&Shader::get_default_texture_param);
+	ClassDB::bind_method(D_METHOD("set_default_texture_param", "param", "texture:Texture"), &Shader::set_default_texture_param);
+	ClassDB::bind_method(D_METHOD("get_default_texture_param:Texture", "param"), &Shader::get_default_texture_param);
 
-	ClassDB::bind_method(D_METHOD("has_param","name"),&Shader::has_param);
+	ClassDB::bind_method(D_METHOD("has_param", "name"), &Shader::has_param);
 
 	//ClassDB::bind_method(D_METHOD("get_param_list"),&Shader::get_fragment_code);
 
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_code", "get_code");
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING, "code",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), "set_code", "get_code") ;
-
-	BIND_CONSTANT( MODE_SPATIAL);
-	BIND_CONSTANT( MODE_CANVAS_ITEM );
-	BIND_CONSTANT( MODE_PARTICLES );
-
+	BIND_CONSTANT(MODE_SPATIAL);
+	BIND_CONSTANT(MODE_CANVAS_ITEM);
+	BIND_CONSTANT(MODE_PARTICLES);
 }
 
 Shader::Shader(Mode p_mode) {
 
-	mode=p_mode;
+	mode = p_mode;
 	shader = VisualServer::get_singleton()->shader_create(VS::ShaderMode(p_mode));
-	params_cache_dirty=true;
+	params_cache_dirty = true;
 }
 
 Shader::~Shader() {
 
 	VisualServer::get_singleton()->free(shader);
 }
-
-

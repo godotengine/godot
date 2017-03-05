@@ -40,44 +40,43 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 	CollisionObject *co = p_obj->cast_to<CollisionObject>();
 	ERR_FAIL_COND(!co);
 
-	if (polygon.size()==0)
+	if (polygon.size() == 0)
 		return;
 
-	bool solids=build_mode==BUILD_SOLIDS;
+	bool solids = build_mode == BUILD_SOLIDS;
 
-	Vector< Vector<Vector2> > decomp = Geometry::decompose_polygon(polygon);
-	if (decomp.size()==0)
+	Vector<Vector<Vector2> > decomp = Geometry::decompose_polygon(polygon);
+	if (decomp.size() == 0)
 		return;
 
 	if (true || solids) {
 
 		//here comes the sun, lalalala
 		//decompose concave into multiple convex polygons and add them
-		shape_from=co->get_shape_count();
-		for(int i=0;i<decomp.size();i++) {
-			Ref<ConvexPolygonShape> convex = memnew( ConvexPolygonShape );
+		shape_from = co->get_shape_count();
+		for (int i = 0; i < decomp.size(); i++) {
+			Ref<ConvexPolygonShape> convex = memnew(ConvexPolygonShape);
 			PoolVector<Vector3> cp;
 			int cs = decomp[i].size();
-			cp.resize(cs*2);
+			cp.resize(cs * 2);
 			{
 				PoolVector<Vector3>::Write w = cp.write();
-				int idx=0;
-				for(int j=0;j<cs;j++) {
+				int idx = 0;
+				for (int j = 0; j < cs; j++) {
 
 					Vector2 d = decomp[i][j];
-					w[idx++]=Vector3(d.x,d.y,depth*0.5);
-					w[idx++]=Vector3(d.x,d.y,-depth*0.5);
+					w[idx++] = Vector3(d.x, d.y, depth * 0.5);
+					w[idx++] = Vector3(d.x, d.y, -depth * 0.5);
 				}
 			}
 
 			convex->set_points(cp);
-			co->add_shape(convex,get_transform());
-
+			co->add_shape(convex, get_transform());
 		}
-		shape_to=co->get_shape_count()-1;
-		if (shape_to<shape_from) {
-			shape_from=-1;
-			shape_to=-1;
+		shape_to = co->get_shape_count() - 1;
+		if (shape_to < shape_from) {
+			shape_from = -1;
+			shape_to = -1;
 		}
 
 	} else {
@@ -100,9 +99,7 @@ void CollisionPolygon::_add_to_collision_object(Object *p_obj) {
 #endif
 	}
 
-
 	//co->add_shape(shape,get_transform());
-
 }
 
 void CollisionPolygon::_update_parent() {
@@ -119,29 +116,28 @@ void CollisionPolygon::_update_parent() {
 	co->_update_shapes_from_children();
 }
 
-void CollisionPolygon::_set_shape_range(const Vector2& p_range) {
+void CollisionPolygon::_set_shape_range(const Vector2 &p_range) {
 
-	shape_from=p_range.x;
-	shape_to=p_range.y;
+	shape_from = p_range.x;
+	shape_to = p_range.y;
 }
 
 Vector2 CollisionPolygon::_get_shape_range() const {
 
-	return Vector2(shape_from,shape_to);
+	return Vector2(shape_from, shape_to);
 }
 
 void CollisionPolygon::_notification(int p_what) {
 
-
-	switch(p_what) {
+	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			can_update_body=get_tree()->is_editor_hint();
+			can_update_body = get_tree()->is_editor_hint();
 			set_notify_local_transform(!can_update_body);
 
 			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			can_update_body=false;
+			can_update_body = false;
 			set_notify_local_transform(false);
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -154,12 +150,12 @@ void CollisionPolygon::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
-            if (!can_update_body && shape_from>=0 && shape_to>=0) {
+			if (!can_update_body && shape_from >= 0 && shape_to >= 0) {
 
 				CollisionObject *co = get_parent()->cast_to<CollisionObject>();
 				if (co) {
-					for(int i=shape_from;i<=shape_to;i++) {
-						co->set_shape_transform(i,get_transform());
+					for (int i = shape_from; i <= shape_to; i++) {
+						co->set_shape_transform(i, get_transform());
 					}
 				}
 			}
@@ -190,31 +186,29 @@ void CollisionPolygon::_notification(int p_what) {
 	}
 }
 
-void CollisionPolygon::set_polygon(const Vector<Point2>& p_polygon) {
+void CollisionPolygon::set_polygon(const Vector<Point2> &p_polygon) {
 
-	polygon=p_polygon;
+	polygon = p_polygon;
 	if (can_update_body) {
 
-		for(int i=0;i<polygon.size();i++) {
+		for (int i = 0; i < polygon.size(); i++) {
 
-			Vector3 p1(polygon[i].x,polygon[i].y,depth*0.5);
+			Vector3 p1(polygon[i].x, polygon[i].y, depth * 0.5);
 
-			if (i==0)
-				aabb=Rect3(p1,Vector3());
+			if (i == 0)
+				aabb = Rect3(p1, Vector3());
 			else
 				aabb.expand_to(p1);
 
-			Vector3 p2(polygon[i].x,polygon[i].y,-depth*0.5);
+			Vector3 p2(polygon[i].x, polygon[i].y, -depth * 0.5);
 			aabb.expand_to(p2);
-
-
 		}
-		if (aabb==Rect3()) {
+		if (aabb == Rect3()) {
 
-			aabb=Rect3(Vector3(-1,-1,-1),Vector3(2,2,2));
+			aabb = Rect3(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 		} else {
-			aabb.pos-=aabb.size*0.3;
-			aabb.size+=aabb.size*0.6;
+			aabb.pos -= aabb.size * 0.3;
+			aabb.size += aabb.size * 0.6;
 		}
 		_update_parent();
 	}
@@ -228,14 +222,14 @@ Vector<Point2> CollisionPolygon::get_polygon() const {
 
 void CollisionPolygon::set_build_mode(BuildMode p_mode) {
 
-	ERR_FAIL_INDEX(p_mode,2);
-	build_mode=p_mode;
+	ERR_FAIL_INDEX(p_mode, 2);
+	build_mode = p_mode;
 	if (!can_update_body)
 		return;
 	_update_parent();
 }
 
-CollisionPolygon::BuildMode CollisionPolygon::get_build_mode() const{
+CollisionPolygon::BuildMode CollisionPolygon::get_build_mode() const {
 
 	return build_mode;
 }
@@ -247,7 +241,7 @@ Rect3 CollisionPolygon::get_item_rect() const {
 
 void CollisionPolygon::set_depth(float p_depth) {
 
-	depth=p_depth;
+	depth = p_depth;
 	if (!can_update_body)
 		return;
 	_update_parent();
@@ -267,7 +261,6 @@ String CollisionPolygon::get_configuration_warning() const {
 
 	if (polygon.empty()) {
 		return TTR("An empty CollisionPolygon has no effect on collision.");
-
 	}
 
 	return String();
@@ -275,37 +268,36 @@ String CollisionPolygon::get_configuration_warning() const {
 
 void CollisionPolygon::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_add_to_collision_object"),&CollisionPolygon::_add_to_collision_object);
+	ClassDB::bind_method(D_METHOD("_add_to_collision_object"), &CollisionPolygon::_add_to_collision_object);
 
-	ClassDB::bind_method(D_METHOD("set_build_mode","build_mode"),&CollisionPolygon::set_build_mode);
-	ClassDB::bind_method(D_METHOD("get_build_mode"),&CollisionPolygon::get_build_mode);
+	ClassDB::bind_method(D_METHOD("set_build_mode", "build_mode"), &CollisionPolygon::set_build_mode);
+	ClassDB::bind_method(D_METHOD("get_build_mode"), &CollisionPolygon::get_build_mode);
 
-	ClassDB::bind_method(D_METHOD("set_depth","depth"),&CollisionPolygon::set_depth);
-	ClassDB::bind_method(D_METHOD("get_depth"),&CollisionPolygon::get_depth);
+	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &CollisionPolygon::set_depth);
+	ClassDB::bind_method(D_METHOD("get_depth"), &CollisionPolygon::get_depth);
 
-	ClassDB::bind_method(D_METHOD("set_polygon","polygon"),&CollisionPolygon::set_polygon);
-	ClassDB::bind_method(D_METHOD("get_polygon"),&CollisionPolygon::get_polygon);
+	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon"), &CollisionPolygon::get_polygon);
 
-	ClassDB::bind_method(D_METHOD("_set_shape_range","shape_range"),&CollisionPolygon::_set_shape_range);
-	ClassDB::bind_method(D_METHOD("_get_shape_range"),&CollisionPolygon::_get_shape_range);
+	ClassDB::bind_method(D_METHOD("_set_shape_range", "shape_range"), &CollisionPolygon::_set_shape_range);
+	ClassDB::bind_method(D_METHOD("_get_shape_range"), &CollisionPolygon::_get_shape_range);
 
-	ClassDB::bind_method(D_METHOD("get_collision_object_first_shape"),&CollisionPolygon::get_collision_object_first_shape);
-	ClassDB::bind_method(D_METHOD("get_collision_object_last_shape"),&CollisionPolygon::get_collision_object_last_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_object_first_shape"), &CollisionPolygon::get_collision_object_first_shape);
+	ClassDB::bind_method(D_METHOD("get_collision_object_last_shape"), &CollisionPolygon::get_collision_object_last_shape);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Triangles"),"set_build_mode","get_build_mode");
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"depth"),"set_depth","get_depth");
-	ADD_PROPERTY( PropertyInfo(Variant::POOL_VECTOR2_ARRAY,"polygon"),"set_polygon","get_polygon");
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"shape_range",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),"_set_shape_range","_get_shape_range");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "build_mode", PROPERTY_HINT_ENUM, "Solids,Triangles"), "set_build_mode", "get_build_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "depth"), "set_depth", "get_depth");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "shape_range", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_shape_range", "_get_shape_range");
 }
 
 CollisionPolygon::CollisionPolygon() {
 
-	shape_from=-1;
-	shape_to=-1;
-	can_update_body=false;
+	shape_from = -1;
+	shape_to = -1;
+	can_update_body = false;
 
-	aabb=Rect3(Vector3(-1,-1,-1),Vector3(2,2,2));
-	build_mode=BUILD_SOLIDS;
-	depth=1.0;
-
+	aabb = Rect3(Vector3(-1, -1, -1), Vector3(2, 2, 2));
+	build_mode = BUILD_SOLIDS;
+	depth = 1.0;
 }

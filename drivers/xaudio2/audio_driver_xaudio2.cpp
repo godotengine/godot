@@ -31,8 +31,7 @@
 #include "global_config.h"
 #include "os/os.h"
 
-const char * AudioDriverXAudio2::get_name() const
-{
+const char *AudioDriverXAudio2::get_name() const {
 	return "XAudio2";
 }
 
@@ -44,7 +43,6 @@ Error AudioDriverXAudio2::init() {
 	pcm_open = false;
 	samples_in = NULL;
 
-
 	mix_rate = 48000;
 	// FIXME: speaker_mode seems unused in the Xaudio2 driver so far
 	speaker_mode = SPEAKER_MODE_STEREO;
@@ -53,11 +51,11 @@ Error AudioDriverXAudio2::init() {
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
 	buffer_size = nearest_power_of_2(latency * mix_rate / 1000);
 
-	samples_in = memnew_arr(int32_t, buffer_size*channels);
+	samples_in = memnew_arr(int32_t, buffer_size * channels);
 	for (int i = 0; i < AUDIO_BUFFERS; i++) {
-		samples_out[i] = memnew_arr(int16_t, buffer_size*channels);
+		samples_out[i] = memnew_arr(int16_t, buffer_size * channels);
 		xaudio_buffer[i].AudioBytes = buffer_size * channels * sizeof(int16_t);
-		xaudio_buffer[i].pAudioData = (const BYTE*)(samples_out[i]);
+		xaudio_buffer[i].pAudioData = (const BYTE *)(samples_out[i]);
 		xaudio_buffer[i].Flags = 0;
 	}
 
@@ -93,14 +91,13 @@ Error AudioDriverXAudio2::init() {
 	return OK;
 };
 
-void AudioDriverXAudio2::thread_func(void* p_udata) {
+void AudioDriverXAudio2::thread_func(void *p_udata) {
 
-	AudioDriverXAudio2* ad = (AudioDriverXAudio2*)p_udata;
+	AudioDriverXAudio2 *ad = (AudioDriverXAudio2 *)p_udata;
 
 	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
 
 	while (!ad->exit_thread) {
-
 
 		if (!ad->active) {
 
@@ -116,30 +113,27 @@ void AudioDriverXAudio2::thread_func(void* p_udata) {
 
 			ad->unlock();
 
-			for (unsigned int i = 0;i < ad->buffer_size*ad->channels;i++) {
+			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
 
 				ad->samples_out[ad->current_buffer][i] = ad->samples_in[i] >> 16;
 			}
 
 			ad->xaudio_buffer[ad->current_buffer].Flags = 0;
 			ad->xaudio_buffer[ad->current_buffer].AudioBytes = ad->buffer_size * ad->channels * sizeof(int16_t);
-			ad->xaudio_buffer[ad->current_buffer].pAudioData = (const BYTE*)(ad->samples_out[ad->current_buffer]);
+			ad->xaudio_buffer[ad->current_buffer].pAudioData = (const BYTE *)(ad->samples_out[ad->current_buffer]);
 			ad->xaudio_buffer[ad->current_buffer].PlayBegin = 0;
 			ad->source_voice->SubmitSourceBuffer(&(ad->xaudio_buffer[ad->current_buffer]));
 
 			ad->current_buffer = (ad->current_buffer + 1) % AUDIO_BUFFERS;
 
 			XAUDIO2_VOICE_STATE state;
-			while (ad->source_voice->GetState(&state), state.BuffersQueued > AUDIO_BUFFERS - 1)
-			{
+			while (ad->source_voice->GetState(&state), state.BuffersQueued > AUDIO_BUFFERS - 1) {
 				WaitForSingleObject(ad->voice_callback.buffer_end_event, INFINITE);
 			}
 		}
-
 	};
 
 	ad->thread_exited = true;
-
 };
 
 void AudioDriverXAudio2::start() {
@@ -228,9 +222,6 @@ AudioDriverXAudio2::AudioDriverXAudio2() {
 	current_buffer = 0;
 };
 
-AudioDriverXAudio2::~AudioDriverXAudio2() {
-
+AudioDriverXAudio2::~AudioDriverXAudio2(){
 
 };
-
-

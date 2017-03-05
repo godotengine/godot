@@ -33,32 +33,32 @@
 
 #include <poll.h>
 
+#include <errno.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <string.h>
-#include <netdb.h>
 #include <sys/types.h>
+#include <unistd.h>
 #ifndef NO_FCNTL
-	#ifdef __HAIKU__
-		#include <fcntl.h>
-	#else
-		#include <sys/fcntl.h>
-	#endif
+#ifdef __HAIKU__
+#include <fcntl.h>
+#else
+#include <sys/fcntl.h>
+#endif
 #else
 #include <sys/ioctl.h>
 #endif
 #ifdef JAVASCRIPT_ENABLED
 #include <arpa/inet.h>
 #endif
+#include <assert.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <assert.h>
 
 #include "drivers/unix/socket_helpers.h"
 
-TCP_Server* TCPServerPosix::_create() {
+TCP_Server *TCPServerPosix::_create() {
 
 	return memnew(TCPServerPosix);
 };
@@ -68,9 +68,9 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port,const IP_Address p_bind_address) {
+Error TCPServerPosix::listen(uint16_t p_port, const IP_Address p_bind_address) {
 
-	ERR_FAIL_COND_V(listen_sockfd!=-1,ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(listen_sockfd != -1, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	int sockfd;
@@ -95,8 +95,8 @@ Error TCPServerPosix::listen(uint16_t p_port,const IP_Address p_bind_address) {
 	ioctl(sockfd, FIONBIO, &bval);
 #endif
 
-	int reuse=1;
-	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
+	int reuse = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 		WARN_PRINT("REUSEADDR failed!")
 	}
 
@@ -110,8 +110,7 @@ Error TCPServerPosix::listen(uint16_t p_port,const IP_Address p_bind_address) {
 			close(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
-	}
-	else {
+	} else {
 		return ERR_ALREADY_IN_USE;
 	};
 
@@ -177,13 +176,12 @@ void TCPServerPosix::stop() {
 
 	if (listen_sockfd != -1) {
 		int ret = close(listen_sockfd);
-		ERR_FAIL_COND(ret!=0);
+		ERR_FAIL_COND(ret != 0);
 	};
 
 	listen_sockfd = -1;
 	sock_type = IP::TYPE_NONE;
 };
-
 
 TCPServerPosix::TCPServerPosix() {
 

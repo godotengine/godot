@@ -29,21 +29,19 @@
 #ifndef GD_FUNCTION_H
 #define GD_FUNCTION_H
 
-#include "self_list.h"
 #include "os/thread.h"
 #include "pair.h"
-#include "variant.h"
-#include "string_db.h"
 #include "reference.h"
 #include "script_language.h"
+#include "self_list.h"
+#include "string_db.h"
+#include "variant.h"
 
 class GDInstance;
 class GDScript;
 
-
 class GDFunction {
 public:
-
 	enum Opcode {
 		OPCODE_OPERATOR,
 		OPCODE_EXTENDS_TEST,
@@ -81,18 +79,18 @@ public:
 	};
 
 	enum Address {
-		ADDR_BITS=24,
-		ADDR_MASK=((1<<ADDR_BITS)-1),
-		ADDR_TYPE_MASK=~ADDR_MASK,
-		ADDR_TYPE_SELF=0,
-		ADDR_TYPE_CLASS=1,
-		ADDR_TYPE_MEMBER=2,
-		ADDR_TYPE_CLASS_CONSTANT=3,
-		ADDR_TYPE_LOCAL_CONSTANT=4,
-		ADDR_TYPE_STACK=5,
-		ADDR_TYPE_STACK_VARIABLE=6,
-		ADDR_TYPE_GLOBAL=7,
-		ADDR_TYPE_NIL=8
+		ADDR_BITS = 24,
+		ADDR_MASK = ((1 << ADDR_BITS) - 1),
+		ADDR_TYPE_MASK = ~ADDR_MASK,
+		ADDR_TYPE_SELF = 0,
+		ADDR_TYPE_CLASS = 1,
+		ADDR_TYPE_MEMBER = 2,
+		ADDR_TYPE_CLASS_CONSTANT = 3,
+		ADDR_TYPE_LOCAL_CONSTANT = 4,
+		ADDR_TYPE_STACK = 5,
+		ADDR_TYPE_STACK_VARIABLE = 6,
+		ADDR_TYPE_GLOBAL = 7,
+		ADDR_TYPE_NIL = 8
 	};
 
 	enum RPCMode {
@@ -103,16 +101,16 @@ public:
 		RPC_SYNC_SLAVE
 	};
 
-    struct StackDebug {
+	struct StackDebug {
 
-	int line;
-	int pos;
-	bool added;
-	StringName identifier;
-    };
+		int line;
+		int pos;
+		bool added;
+		StringName identifier;
+	};
 
 private:
-friend class GDCompiler;
+	friend class GDCompiler;
 
 	StringName source;
 
@@ -146,15 +144,15 @@ friend class GDCompiler;
 
 	List<StackDebug> stack_debug;
 
-	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
-	_FORCE_INLINE_ String _get_call_error(const Variant::CallError& p_err, const String& p_where,const Variant**argptrs) const;
+	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const;
+	_FORCE_INLINE_ String _get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
-friend class GDScriptLanguage;
+	friend class GDScriptLanguage;
 
 	SelfList<GDFunction> function_list;
 #ifdef DEBUG_ENABLED
 	CharString func_cname;
-	const char*_func_cname;
+	const char *_func_cname;
 
 	struct Profile {
 		StringName signature;
@@ -172,9 +170,6 @@ friend class GDScriptLanguage;
 #endif
 
 public:
-
-
-
 	struct CallState {
 
 		ObjectID instance_id; //by debug only
@@ -190,12 +185,11 @@ public:
 		int line;
 		int defarg;
 		Variant result;
-
 	};
 
 	_FORCE_INLINE_ bool is_static() const { return _static; }
 
-	const int* get_code() const; //used for debug
+	const int *get_code() const; //used for debug
 	int get_code_size() const;
 	Variant get_constant(int p_idx) const;
 	StringName get_global_name(int p_idx) const;
@@ -206,48 +200,46 @@ public:
 	GDScript *get_script() const { return _script; }
 	StringName get_source() const { return source; }
 
-	void debug_get_stack_member_state(int p_line,List<Pair<StringName,int> > *r_stackvars) const;
+	void debug_get_stack_member_state(int p_line, List<Pair<StringName, int> > *r_stackvars) const;
 
-	_FORCE_INLINE_ bool is_empty() const { return _code_size==0; }
+	_FORCE_INLINE_ bool is_empty() const { return _code_size == 0; }
 
 	int get_argument_count() const { return _argument_count; }
 	StringName get_argument_name(int p_idx) const {
 #ifdef TOOLS_ENABLED
-		ERR_FAIL_INDEX_V(p_idx,arg_names.size(),StringName());
+		ERR_FAIL_INDEX_V(p_idx, arg_names.size(), StringName());
 		return arg_names[p_idx];
 #endif
 		return StringName();
-
 	}
 	Variant get_default_argument(int p_idx) const {
-		ERR_FAIL_INDEX_V(p_idx,default_arguments.size(),Variant());
+		ERR_FAIL_INDEX_V(p_idx, default_arguments.size(), Variant());
 		return default_arguments[p_idx];
 	}
 
-	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
+	Variant call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state = NULL);
 
 	_FORCE_INLINE_ ScriptInstance::RPCMode get_rpc_mode() const { return rpc_mode; }
 	GDFunction();
 	~GDFunction();
 };
 
-
 class GDFunctionState : public Reference {
 
-	GDCLASS(GDFunctionState,Reference);
-friend class GDFunction;
+	GDCLASS(GDFunctionState, Reference);
+	friend class GDFunction;
 	GDFunction *function;
 	GDFunction::CallState state;
-	Variant _signal_callback(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
 protected:
 	static void _bind_methods();
-public:
 
+public:
 	bool is_valid() const;
-	Variant resume(const Variant& p_arg=Variant());
+	Variant resume(const Variant &p_arg = Variant());
 	GDFunctionState();
 	~GDFunctionState();
 };
-
 
 #endif // GD_FUNCTION_H

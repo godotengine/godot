@@ -29,16 +29,16 @@
 #include "editor_translation_import_plugin.h"
 
 #if 0
-#include "scene/gui/file_dialog.h"
 #include "editor/editor_dir_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/property_editor.h"
+#include "scene/gui/file_dialog.h"
 //#include "scene/resources/sample.h"
+#include "compressed_translation.h"
+#include "editor/project_settings.h"
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 #include "translation.h"
-#include "compressed_translation.h"
-#include "editor/project_settings.h"
 
 
 class EditorTranslationImportDialog : public ConfirmationDialog {

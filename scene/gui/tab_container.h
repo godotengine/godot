@@ -29,22 +29,21 @@
 #ifndef TAB_CONTAINER_H
 #define TAB_CONTAINER_H
 
-
 #include "scene/gui/control.h"
 #include "scene/gui/popup.h"
 class TabContainer : public Control {
 
-	GDCLASS( TabContainer, Control );
-public:
+	GDCLASS(TabContainer, Control);
 
+public:
 	enum TabAlign {
 
 		ALIGN_LEFT,
 		ALIGN_CENTER,
 		ALIGN_RIGHT
 	};
-private:
 
+private:
 	int mouse_x_cache;
 	int first_tab_cache;
 	int tabs_ofs_cache;
@@ -58,13 +57,12 @@ private:
 	int _get_top_margin() const;
 	Popup *popup;
 
-	Vector<Control*> _get_tabs() const;
+	Vector<Control *> _get_tabs() const;
 	int _get_tab_width(int p_index) const;
 
 protected:
-
 	void _child_renamed_callback();
-	void _gui_input(const InputEvent& p_event);
+	void _gui_input(const InputEvent &p_event);
 	void _notification(int p_what);
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
@@ -72,18 +70,16 @@ protected:
 	static void _bind_methods();
 
 public:
-
-
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
 
 	void set_tabs_visible(bool p_visibe);
 	bool are_tabs_visible() const;
 
-	void set_tab_title(int p_tab,const String& p_title);
+	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
+	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
 
 	void set_tab_disabled(int p_tab, bool p_disabled);
@@ -94,21 +90,19 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 
-	Control* get_tab_control(int p_idx) const;
-	Control* get_current_tab_control() const;
+	Control *get_tab_control(int p_idx) const;
+	Control *get_current_tab_control() const;
 
 	virtual Size2 get_minimum_size() const;
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
 	void set_popup(Node *p_popup);
-	Popup* get_popup() const;
-
+	Popup *get_popup() const;
 
 	TabContainer();
 };
 
-
-VARIANT_ENUM_CAST( TabContainer::TabAlign );
+VARIANT_ENUM_CAST(TabContainer::TabAlign);
 
 #endif // TAB_CONTAINER_H

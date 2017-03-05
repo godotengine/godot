@@ -32,6 +32,4 @@
 #include "resource.h"
 #include "scene/resources/texture.h"
 
-
-
 #endif // BAKED_LIGHT_H

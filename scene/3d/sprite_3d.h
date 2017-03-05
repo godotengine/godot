@@ -29,15 +29,14 @@
 #ifndef SPRITE_3D_H
 #define SPRITE_3D_H
 
-#include "scene/3d/visual_instance.h"
 #include "scene/2d/animated_sprite.h"
-
+#include "scene/3d/visual_instance.h"
 
 class SpriteBase3D : public GeometryInstance {
 
-	GDCLASS(SpriteBase3D,GeometryInstance);
-public:
+	GDCLASS(SpriteBase3D, GeometryInstance);
 
+public:
 	enum DrawFlags {
 		FLAG_TRANSPARENT,
 		FLAG_SHADED,
@@ -52,21 +51,18 @@ public:
 	};
 
 private:
-
-
 	bool color_dirty;
 	Color color_accum;
 
 	SpriteBase3D *parent_sprite;
-	List<SpriteBase3D*> children;
-	List<SpriteBase3D*>::Element *pI;
+	List<SpriteBase3D *> children;
+	List<SpriteBase3D *>::Element *pI;
 
 	bool centered;
 	Point2 offset;
 
 	bool hflip;
 	bool vflip;
-
 
 	Color modulate;
 	float opacity;
@@ -82,24 +78,22 @@ private:
 	bool pending_update;
 	void _im_update();
 
-
 	void _propagate_color_changed();
 
 protected:
-
 	Color _get_color_accum();
 	void _notification(int p_what);
 	static void _bind_methods();
-	virtual void _draw()=0;
-	_FORCE_INLINE_ void set_aabb(const Rect3& p_aabb) { aabb=p_aabb; }
-	_FORCE_INLINE_ RID& get_immediate() { return immediate; }
+	virtual void _draw() = 0;
+	_FORCE_INLINE_ void set_aabb(const Rect3 &p_aabb) { aabb = p_aabb; }
+	_FORCE_INLINE_ RID &get_immediate() { return immediate; }
 	void _queue_update();
-public:
 
+public:
 	void set_centered(bool p_center);
 	bool is_centered() const;
 
-	void set_offset(const Point2& p_offset);
+	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
 
 	void set_flip_h(bool p_flip);
@@ -111,10 +105,10 @@ public:
 	void set_region(bool p_region);
 	bool is_region() const;
 
-	void set_region_rect(const Rect2& p_region_rect);
+	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
-	void set_modulate(const Color& p_color);
+	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 
 	void set_opacity(float p_amount);
@@ -126,13 +120,13 @@ public:
 	void set_axis(Vector3::Axis p_amount);
 	Vector3::Axis get_axis() const;
 
-	void set_draw_flag(DrawFlags p_flag,bool p_enable);
+	void set_draw_flag(DrawFlags p_flag, bool p_enable);
 	bool get_draw_flag(DrawFlags p_flag) const;
 
 	void set_alpha_cut_mode(AlphaCutMode p_mode);
 	AlphaCutMode get_alpha_cut_mode() const;
 
-	virtual Rect2 get_item_rect() const=0;
+	virtual Rect2 get_item_rect() const = 0;
 
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
@@ -141,12 +135,10 @@ public:
 	~SpriteBase3D();
 };
 
-
 class Sprite3D : public SpriteBase3D {
 
-	GDCLASS(Sprite3D,SpriteBase3D);
+	GDCLASS(Sprite3D, SpriteBase3D);
 	Ref<Texture> texture;
-
 
 	bool region;
 	Rect2 region_rect;
@@ -155,22 +147,21 @@ class Sprite3D : public SpriteBase3D {
 
 	int vframes;
 	int hframes;
+
 protected:
 	virtual void _draw();
 	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo& property) const;
+	virtual void _validate_property(PropertyInfo &property) const;
+
 public:
-
-
-
-	void set_texture(const Ref<Texture>& p_texture);
+	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
 
 	void set_region(bool p_region);
 	bool is_region() const;
 
-	void set_region_rect(const Rect2& p_region_rect);
+	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
 	void set_frame(int p_frame);
@@ -219,12 +210,9 @@ public:
 };
 #endif
 
-
-
-
 class AnimatedSprite3D : public SpriteBase3D {
 
-	GDCLASS(AnimatedSprite3D,SpriteBase3D);
+	GDCLASS(AnimatedSprite3D, SpriteBase3D);
 
 	Ref<SpriteFrames> frames;
 	bool playing;
@@ -247,38 +235,31 @@ class AnimatedSprite3D : public SpriteBase3D {
 	void _set_playing(bool p_playing);
 	bool _is_playing() const;
 
-
 protected:
-
 	virtual void _draw();
 	static void _bind_methods();
 	void _notification(int p_what);
-	virtual void _validate_property(PropertyInfo& property) const;
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-
-
-
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName& p_animation=StringName());
+	void play(const StringName &p_animation = StringName());
 	void stop();
 	bool is_playing() const;
 
-	void set_animation(const StringName& p_animation);
+	void set_animation(const StringName &p_animation);
 	StringName get_animation() const;
 
 	void set_frame(int p_frame);
 	int get_frame() const;
-
 
 	virtual Rect2 get_item_rect() const;
 
 	virtual String get_configuration_warning() const;
 	AnimatedSprite3D();
 };
-
 
 VARIANT_ENUM_CAST(SpriteBase3D::DrawFlags);
 VARIANT_ENUM_CAST(SpriteBase3D::AlphaCutMode);

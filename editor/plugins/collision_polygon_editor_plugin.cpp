@@ -28,11 +28,11 @@
 /*************************************************************************/
 #include "collision_polygon_editor_plugin.h"
 
-#include "spatial_editor_plugin.h"
-#include "os/file_access.h"
-#include "editor/editor_settings.h"
-#include "scene/3d/camera.h"
 #include "canvas_item_editor_plugin.h"
+#include "editor/editor_settings.h"
+#include "os/file_access.h"
+#include "scene/3d/camera.h"
+#include "spatial_editor_plugin.h"
 
 #if 0
 

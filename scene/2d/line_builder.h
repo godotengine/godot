@@ -29,8 +29,8 @@
 #ifndef LINE_BUILDER_H
 #define LINE_BUILDER_H
 
-#include "math_2d.h"
 #include "color.h"
+#include "math_2d.h"
 #include "scene/resources/color_ramp.h"
 
 enum LineJointMode {
@@ -61,7 +61,7 @@ public:
 	LineCapMode end_cap_mode;
 	float width;
 	Color default_color;
-	ColorRamp* gradient;
+	ColorRamp *gradient;
 	LineTextureMode texture_mode;
 	float sharp_limit;
 	int round_precision;
@@ -97,8 +97,6 @@ private:
 private:
 	bool _interpolate_color;
 	int _last_index[2]; // Index of last up and down vertices of the strip
-
 };
-
 
 #endif // LINE_BUILDER_H

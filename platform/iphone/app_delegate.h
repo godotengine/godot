@@ -26,19 +26,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#import <UIKit/UIKit.h>
 #import "gl_view.h"
 #import "view_controller.h"
+#import <UIKit/UIKit.h>
 
 #import <CoreMotion/CoreMotion.h>
 
 @interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;
-	ViewController* view_controller;
+	ViewController *view_controller;
 };
 
-@property (strong, nonatomic) UIWindow *window;
+@property(strong, nonatomic) UIWindow *window;
 
-+ (ViewController*)getViewController;
++ (ViewController *)getViewController;
 
 @end

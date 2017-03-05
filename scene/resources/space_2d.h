@@ -29,21 +29,19 @@
 #ifndef SPACE_2D_H
 #define SPACE_2D_H
 
-#include "servers/physics_2d_server.h"
 #include "resource.h"
-
+#include "servers/physics_2d_server.h"
 
 class Space2D : public Resource {
 
-	GDCLASS(Space2D,Resource);
+	GDCLASS(Space2D, Resource);
 	bool active;
 	RID space;
+
 protected:
-
 	static void _bind_methods();
+
 public:
-
-
 	void set_active(bool p_active);
 	bool is_active() const;
 

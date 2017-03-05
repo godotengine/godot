@@ -33,7 +33,7 @@
 
 class Timer : public Node {
 
-	GDCLASS( Timer, Node );
+	GDCLASS(Timer, Node);
 
 	float wait_time;
 	bool one_shot;
@@ -42,12 +42,12 @@ class Timer : public Node {
 	bool active;
 
 	double time_left;
-protected:
 
+protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	enum TimerProcessMode {
 		TIMER_PROCESS_FIXED,
 		TIMER_PROCESS_IDLE,
@@ -76,7 +76,6 @@ public:
 private:
 	TimerProcessMode timer_process_mode;
 	void _set_process(bool p_process, bool p_force = false);
-
 };
 
 VARIANT_ENUM_CAST(Timer::TimerProcessMode);

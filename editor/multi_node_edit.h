@@ -33,7 +33,7 @@
 
 class MultiNodeEdit : public Reference {
 
-	GDCLASS(MultiNodeEdit,Reference);
+	GDCLASS(MultiNodeEdit, Reference);
 
 	List<NodePath> nodes;
 	struct PLData {
@@ -41,23 +41,18 @@ class MultiNodeEdit : public Reference {
 		PropertyInfo info;
 	};
 
-	bool _set_impl(const StringName& p_name, const Variant& p_value, const String& p_field);
-
+	bool _set_impl(const StringName &p_name, const Variant &p_value, const String &p_field);
 
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-
-
-
 	void clear_nodes();
-	void add_node(const NodePath& p_node);
+	void add_node(const NodePath &p_node);
 
-	void set_property_field(const StringName& p_property, const Variant& p_value, const String& p_field);
+	void set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field);
 
 	MultiNodeEdit();
 };

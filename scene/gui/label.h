@@ -35,9 +35,9 @@
 */
 class Label : public Control {
 
-	GDCLASS( Label, Control );
-public:
+	GDCLASS(Label, Control);
 
+public:
 	enum Align {
 
 		ALIGN_LEFT,
@@ -70,15 +70,21 @@ private:
 	struct WordCache {
 
 		enum {
-			CHAR_NEWLINE=-1,
-			CHAR_WRAPLINE=-2
+			CHAR_NEWLINE = -1,
+			CHAR_WRAPLINE = -2
 		};
 		int char_pos; // if -1, then newline
 		int word_len;
 		int pixel_width;
 		int space_count;
 		WordCache *next;
-		WordCache() { char_pos=0; word_len=0; pixel_width=0; next=0; space_count=0;}
+		WordCache() {
+			char_pos = 0;
+			word_len = 0;
+			pixel_width = 0;
+			next = 0;
+			space_count = 0;
+		}
 	};
 
 	bool word_cache_dirty;
@@ -91,13 +97,13 @@ private:
 	int visible_chars;
 	int lines_skipped;
 	int max_lines_visible;
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 	// bind helpers
 public:
-
 	virtual Size2 get_minimum_size() const;
 
 	void set_align(Align p_align);
@@ -106,7 +112,7 @@ public:
 	void set_valign(VAlign p_align);
 	VAlign get_valign() const;
 
-	void set_text(const String& p_string);
+	void set_text(const String &p_string);
 	String get_text() const;
 
 	void set_autowrap(bool p_autowrap);
@@ -135,13 +141,11 @@ public:
 	int get_line_count() const;
 	int get_visible_line_count() const;
 
-	Label(const String& p_text=String());
+	Label(const String &p_text = String());
 	~Label();
-
 };
 
-
-VARIANT_ENUM_CAST( Label::Align );
-VARIANT_ENUM_CAST( Label::VAlign );
+VARIANT_ENUM_CAST(Label::Align);
+VARIANT_ENUM_CAST(Label::VAlign);
 
 #endif

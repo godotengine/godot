@@ -29,13 +29,11 @@
 #ifndef NAVIGATIONPOLYGONEDITORPLUGIN_H
 #define NAVIGATIONPOLYGONEDITORPLUGIN_H
 
-
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/2d/navigation_polygon.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -44,7 +42,7 @@ class CanvasItemEditor;
 
 class NavigationPolygonEditor : public HBoxContainer {
 
-	GDCLASS(NavigationPolygonEditor, HBoxContainer );
+	GDCLASS(NavigationPolygonEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -74,7 +72,6 @@ class NavigationPolygonEditor : public HBoxContainer {
 	Vector<Vector2> wip;
 	bool wip_active;
 
-
 	void _wip_close();
 	void _canvas_draw();
 	void _create_nav();
@@ -85,23 +82,22 @@ protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
-	bool forward_gui_input(const InputEvent& p_event);
+public:
+	bool forward_gui_input(const InputEvent &p_event);
 	void edit(Node *p_collision_polygon);
 	NavigationPolygonEditor(EditorNode *p_editor);
 };
 
 class NavigationPolygonEditorPlugin : public EditorPlugin {
 
-	GDCLASS( NavigationPolygonEditorPlugin, EditorPlugin );
+	GDCLASS(NavigationPolygonEditorPlugin, EditorPlugin);
 
 	NavigationPolygonEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
-
-	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "NavigationPolygonInstance"; }
 	bool has_main_screen() const { return false; }
@@ -111,8 +107,6 @@ public:
 
 	NavigationPolygonEditorPlugin(EditorNode *p_node);
 	~NavigationPolygonEditorPlugin();
-
 };
-
 
 #endif // NAVIGATIONPOLYGONEDITORPLUGIN_H

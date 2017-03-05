@@ -34,9 +34,9 @@
 #else
 #include <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
 #endif
-#include <IOKit/hid/IOHIDLib.h>
 #include <ForceFeedback/ForceFeedback.h>
 #include <ForceFeedback/ForceFeedbackConstants.h>
+#include <IOKit/hid/IOHIDLib.h>
 
 #include "main/input_default.h"
 
@@ -63,7 +63,7 @@ struct joypad {
 
 	int id;
 
-	io_service_t ffservice;     /* Interface for force feedback, 0 = no ff */
+	io_service_t ffservice; /* Interface for force feedback, 0 = no ff */
 	FFCONSTANTFORCE ff_constant_force;
 	FFDeviceObjectReference ff_device;
 	FFEffectObjectReference ff_object;

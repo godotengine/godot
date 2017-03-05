@@ -30,45 +30,41 @@
 
 #include "spatial_editor_plugin.h"
 
-
 void CameraEditor::_notification(int p_what) {
 
-	switch(p_what) {
+	switch (p_what) {
 
-/*		case NOTIFICATION_PROCESS: {
+		/*		case NOTIFICATION_PROCESS: {
 
 			if (preview->is_pressed() && node)
 				node->call("make_current");
 
 		} break;*/
 	}
-
 }
 void CameraEditor::_node_removed(Node *p_node) {
 
-	if(p_node==node) {
-		node=NULL;
+	if (p_node == node) {
+		node = NULL;
 		SpatialEditor::get_singleton()->set_custom_camera(NULL);
 		hide();
 	}
-
 }
 
 void CameraEditor::_pressed() {
 
-	Node *sn = (node && preview->is_pressed())?node:NULL;
+	Node *sn = (node && preview->is_pressed()) ? node : NULL;
 	SpatialEditor::get_singleton()->set_custom_camera(sn);
 }
 
 void CameraEditor::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_pressed"),&CameraEditor::_pressed);
-
+	ClassDB::bind_method(D_METHOD("_pressed"), &CameraEditor::_pressed);
 }
 
 void CameraEditor::edit(Node *p_camera) {
 
-	node=p_camera;
+	node = p_camera;
 
 	if (!node) {
 		preview->set_pressed(false);
@@ -82,24 +78,21 @@ void CameraEditor::edit(Node *p_camera) {
 	}
 }
 
-
 CameraEditor::CameraEditor() {
 
-	preview = memnew( Button );
+	preview = memnew(Button);
 	add_child(preview);
 
 	preview->set_text(TTR("Preview"));
 	preview->set_toggle_mode(true);
-	preview->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	preview->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	preview->set_margin(MARGIN_LEFT,60);
-	preview->set_margin(MARGIN_RIGHT,0);
-	preview->set_margin(MARGIN_TOP,0);
-	preview->set_margin(MARGIN_BOTTOM,10);
-	preview->connect("pressed",this,"_pressed");
-
+	preview->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
+	preview->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
+	preview->set_margin(MARGIN_LEFT, 60);
+	preview->set_margin(MARGIN_RIGHT, 0);
+	preview->set_margin(MARGIN_TOP, 0);
+	preview->set_margin(MARGIN_BOTTOM, 10);
+	preview->connect("pressed", this, "_pressed");
 }
-
 
 void CameraEditorPlugin::edit(Object *p_object) {
 
@@ -119,13 +112,12 @@ void CameraEditorPlugin::make_visible(bool p_visible) {
 	} else {
 		SpatialEditor::get_singleton()->set_can_preview(NULL);
 	}
-
 }
 
 CameraEditorPlugin::CameraEditorPlugin(EditorNode *p_node) {
 
-	editor=p_node;
-/*	camera_editor = memnew( CameraEditor );
+	editor = p_node;
+	/*	camera_editor = memnew( CameraEditor );
 	editor->get_viewport()->add_child(camera_editor);
 
 	camera_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
@@ -138,13 +130,7 @@ CameraEditorPlugin::CameraEditorPlugin(EditorNode *p_node) {
 
 	camera_editor->hide();
 */
-
-
 }
 
-
-CameraEditorPlugin::~CameraEditorPlugin()
-{
+CameraEditorPlugin::~CameraEditorPlugin() {
 }
-
-

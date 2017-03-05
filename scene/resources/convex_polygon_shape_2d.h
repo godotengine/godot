@@ -32,21 +32,21 @@
 #include "scene/resources/shape_2d.h"
 
 class ConvexPolygonShape2D : public Shape2D {
-	GDCLASS( ConvexPolygonShape2D, Shape2D );
+	GDCLASS(ConvexPolygonShape2D, Shape2D);
 
 	Vector<Vector2> points;
 	void _update_shape();
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_point_cloud(const Vector<Vector2>& p_points);
-	void set_points(const Vector<Vector2>& p_points);
+public:
+	void set_point_cloud(const Vector<Vector2> &p_points);
+	void set_points(const Vector<Vector2> &p_points);
 	Vector<Vector2> get_points() const;
 
-	virtual void draw(const RID& p_to_rid,const Color& p_color);
-	virtual Rect2 get_rect() const ;
+	virtual void draw(const RID &p_to_rid, const Color &p_color);
+	virtual Rect2 get_rect() const;
 
 	ConvexPolygonShape2D();
 };

@@ -41,7 +41,7 @@ private:
 	int nsecs_left;
 	int percent_left;
 	PowerState power_state;
-	void checkps(CFDictionaryRef dict, bool * have_ac, bool * have_battery, bool * charging);
+	void checkps(CFDictionaryRef dict, bool *have_ac, bool *have_battery, bool *charging);
 	bool GetPowerInfo_MacOSX(/*PowerState * state, int *seconds, int *percent*/);
 	bool UpdatePowerInfo();
 

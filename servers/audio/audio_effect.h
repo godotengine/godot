@@ -32,22 +32,17 @@
 #include "audio_frame.h"
 #include "resource.h"
 
-
 class AudioEffectInstance : public Reference {
-	GDCLASS(AudioEffectInstance,Reference)
+	GDCLASS(AudioEffectInstance, Reference)
 
 public:
-
-	virtual void process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count)=0;
-
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) = 0;
 };
 
-
 class AudioEffect : public Resource {
-	GDCLASS(AudioEffect,Resource)
+	GDCLASS(AudioEffect, Resource)
 public:
-
-	virtual Ref<AudioEffectInstance> instance()=0;
+	virtual Ref<AudioEffectInstance> instance() = 0;
 	AudioEffect();
 };
 

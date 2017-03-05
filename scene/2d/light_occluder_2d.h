@@ -33,28 +33,26 @@
 
 class OccluderPolygon2D : public Resource {
 
-	GDCLASS(OccluderPolygon2D,Resource);
-public:
+	GDCLASS(OccluderPolygon2D, Resource);
 
+public:
 	enum CullMode {
 		CULL_DISABLED,
 		CULL_CLOCKWISE,
 		CULL_COUNTER_CLOCKWISE
 	};
+
 private:
-
-
 	RID occ_polygon;
 	PoolVector<Vector2> polygon;
 	bool closed;
 	CullMode cull;
 
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_polygon(const PoolVector<Vector2>& p_polygon);
+public:
+	void set_polygon(const PoolVector<Vector2> &p_polygon);
 	PoolVector<Vector2> get_polygon() const;
 
 	void set_closed(bool p_closed);
@@ -66,13 +64,12 @@ public:
 	virtual RID get_rid() const;
 	OccluderPolygon2D();
 	~OccluderPolygon2D();
-
 };
 
 VARIANT_ENUM_CAST(OccluderPolygon2D::CullMode);
 
 class LightOccluder2D : public Node2D {
-	GDCLASS(LightOccluder2D,Node2D);
+	GDCLASS(LightOccluder2D, Node2D);
 
 	RID occluder;
 	bool enabled;
@@ -86,9 +83,9 @@ class LightOccluder2D : public Node2D {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_occluder_polygon(const Ref<OccluderPolygon2D>& p_polygon);
+public:
+	void set_occluder_polygon(const Ref<OccluderPolygon2D> &p_polygon);
 	Ref<OccluderPolygon2D> get_occluder_polygon() const;
 
 	void set_occluder_light_mask(int p_mask);

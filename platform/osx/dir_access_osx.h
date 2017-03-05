@@ -31,26 +31,21 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "os/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
-
+#include "os/dir_access.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class DirAccessOSX : public DirAccessUnix {
 protected:
-
-	virtual String fix_unicode_name(const char* p_name) const;
-
+	virtual String fix_unicode_name(const char *p_name) const;
 };
-
-
 
 #endif //UNIX ENABLED
 #endif

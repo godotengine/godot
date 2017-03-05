@@ -29,7 +29,6 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
@@ -38,16 +37,14 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 class BakedLight;
 
 class Light : public VisualInstance {
 
-	GDCLASS( Light, VisualInstance );
+	GDCLASS(Light, VisualInstance);
 	OBJ_CATEGORY("3D Light Nodes");
 
 public:
-
 	enum Param {
 		PARAM_ENERGY = VS::LIGHT_PARAM_ENERGY,
 		PARAM_SPECULAR = VS::LIGHT_PARAM_SPECULAR,
@@ -55,7 +52,7 @@ public:
 		PARAM_ATTENUATION = VS::LIGHT_PARAM_ATTENUATION,
 		PARAM_SPOT_ANGLE = VS::LIGHT_PARAM_SPOT_ANGLE,
 		PARAM_SPOT_ATTENUATION = VS::LIGHT_PARAM_SPOT_ATTENUATION,
-		PARAM_CONTACT_SHADOW_SIZE= VS::LIGHT_PARAM_CONTACT_SHADOW_SIZE,
+		PARAM_CONTACT_SHADOW_SIZE = VS::LIGHT_PARAM_CONTACT_SHADOW_SIZE,
 		PARAM_SHADOW_MAX_DISTANCE = VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE,
 		PARAM_SHADOW_SPLIT_1_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET,
 		PARAM_SHADOW_SPLIT_2_OFFSET = VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET,
@@ -67,7 +64,6 @@ public:
 	};
 
 private:
-
 	Color color;
 	float param[PARAM_MAX];
 	Color shadow_color;
@@ -79,21 +75,19 @@ private:
 	void _update_visibility();
 
 	BakedLight *baked_light;
-// bind helpers
+	// bind helpers
 
 protected:
-
 	RID light;
 
 	virtual bool _can_gizmo_scale() const;
-	
+
 	static void _bind_methods();
 	void _notification(int p_what);
 
-
 	Light(VisualServer::LightType p_type);
-public:
 
+public:
 	VS::LightType get_light_type() const { return type; }
 
 	void set_editor_only(bool p_editor_only);
@@ -111,30 +105,26 @@ public:
 	void set_cull_mask(uint32_t p_cull_mask);
 	uint32_t get_cull_mask() const;
 
-	void set_color(const Color& p_color);
+	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_shadow_color(const Color& p_shadow_color);
+	void set_shadow_color(const Color &p_shadow_color);
 	Color get_shadow_color() const;
-
 
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	Light();
 	~Light();
-
 };
 
 VARIANT_ENUM_CAST(Light::Param);
 
-
 class DirectionalLight : public Light {
 
-	GDCLASS( DirectionalLight, Light );
+	GDCLASS(DirectionalLight, Light);
 
 public:
-
 	enum ShadowMode {
 		SHADOW_ORTHOGONAL,
 		SHADOW_PARALLEL_2_SPLITS,
@@ -142,14 +132,13 @@ public:
 	};
 
 private:
-
 	bool blend_splits;
 	ShadowMode shadow_mode;
 
 protected:
 	static void _bind_methods();
-public:
 
+public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
@@ -163,7 +152,8 @@ VARIANT_ENUM_CAST(DirectionalLight::ShadowMode)
 
 class OmniLight : public Light {
 
-	GDCLASS( OmniLight, Light );
+	GDCLASS(OmniLight, Light);
+
 public:
 	// omni light
 	enum ShadowMode {
@@ -178,14 +168,13 @@ public:
 	};
 
 private:
-
 	ShadowMode shadow_mode;
 	ShadowDetail shadow_detail;
+
 protected:
 	static void _bind_methods();
 
 public:
-
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
@@ -200,14 +189,14 @@ VARIANT_ENUM_CAST(OmniLight::ShadowDetail)
 
 class SpotLight : public Light {
 
-	GDCLASS( SpotLight, Light );
+	GDCLASS(SpotLight, Light);
+
 protected:
 	static void _bind_methods();
+
 public:
-
-
-	SpotLight() : Light( VisualServer::LIGHT_SPOT ) {}
+	SpotLight()
+		: Light(VisualServer::LIGHT_SPOT) {}
 };
-
 
 #endif

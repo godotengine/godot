@@ -29,58 +29,57 @@
 #include "register_server_types.h"
 #include "global_config.h"
 
-#include "visual_server.h"
+#include "audio/audio_effect.h"
+#include "audio/audio_stream.h"
+#include "audio/effects/audio_effect_amplify.h"
+#include "audio/effects/audio_effect_chorus.h"
+#include "audio/effects/audio_effect_compressor.h"
+#include "audio/effects/audio_effect_delay.h"
+#include "audio/effects/audio_effect_distortion.h"
+#include "audio/effects/audio_effect_eq.h"
+#include "audio/effects/audio_effect_filter.h"
+#include "audio/effects/audio_effect_limiter.h"
+#include "audio/effects/audio_effect_panner.h"
+#include "audio/effects/audio_effect_phaser.h"
+#include "audio/effects/audio_effect_pitch_shift.h"
+#include "audio/effects/audio_effect_reverb.h"
+#include "audio/effects/audio_effect_stereo_enhance.h"
 #include "audio_server.h"
-#include "physics_server.h"
 #include "physics_2d_server.h"
+#include "physics_server.h"
 #include "script_debugger_remote.h"
 #include "visual/shader_types.h"
-#include "audio/audio_stream.h"
-#include "audio/audio_effect.h"
-#include "audio/effects/audio_effect_amplify.h"
-#include "audio/effects/audio_effect_reverb.h"
-#include "audio/effects/audio_effect_filter.h"
-#include "audio/effects/audio_effect_eq.h"
-#include "audio/effects/audio_effect_distortion.h"
-#include "audio/effects/audio_effect_stereo_enhance.h"
-#include "audio/effects/audio_effect_panner.h"
-#include "audio/effects/audio_effect_chorus.h"
-#include "audio/effects/audio_effect_delay.h"
-#include "audio/effects/audio_effect_compressor.h"
-#include "audio/effects/audio_effect_limiter.h"
-#include "audio/effects/audio_effect_pitch_shift.h"
-#include "audio/effects/audio_effect_phaser.h"
+#include "visual_server.h"
 
-static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage>* r_usage) {
+static void _debugger_get_resource_usage(List<ScriptDebuggerRemote::ResourceUsage> *r_usage) {
 
 	List<VS::TextureInfo> tinfo;
 	VS::get_singleton()->texture_debug_usage(&tinfo);
 
-	for (List<VS::TextureInfo>::Element *E=tinfo.front();E;E=E->next()) {
+	for (List<VS::TextureInfo>::Element *E = tinfo.front(); E; E = E->next()) {
 
 		ScriptDebuggerRemote::ResourceUsage usage;
-		usage.path=E->get().path;
-		usage.vram=E->get().bytes;
-		usage.id=E->get().texture;
-		usage.type="Texture";
-		usage.format=itos(E->get().size.width)+"x"+itos(E->get().size.height)+" "+Image::get_format_name(E->get().format);
+		usage.path = E->get().path;
+		usage.vram = E->get().bytes;
+		usage.id = E->get().texture;
+		usage.type = "Texture";
+		usage.format = itos(E->get().size.width) + "x" + itos(E->get().size.height) + " " + Image::get_format_name(E->get().format);
 		r_usage->push_back(usage);
 	}
-
 }
 
-ShaderTypes *shader_types=NULL;
+ShaderTypes *shader_types = NULL;
 
 void register_server_types() {
 
-	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc",20);
+	GLOBAL_DEF("memory/multithread/thread_rid_pool_prealloc", 20);
 
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("VisualServer",VisualServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("AudioServer",AudioServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("PhysicsServer",PhysicsServer::get_singleton()) );
-	GlobalConfig::get_singleton()->add_singleton( GlobalConfig::Singleton("Physics2DServer",Physics2DServer::get_singleton()) );
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("VisualServer", VisualServer::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("AudioServer", AudioServer::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("PhysicsServer", PhysicsServer::get_singleton()));
+	GlobalConfig::get_singleton()->add_singleton(GlobalConfig::Singleton("Physics2DServer", Physics2DServer::get_singleton()));
 
-	shader_types = memnew( ShaderTypes );
+	shader_types = memnew(ShaderTypes);
 
 	ClassDB::register_virtual_class<AudioStream>();
 	ClassDB::register_virtual_class<AudioStreamPlayback>();
@@ -118,7 +117,6 @@ void register_server_types() {
 		ClassDB::register_class<AudioEffectPhaser>();
 	}
 
-
 	ClassDB::register_virtual_class<Physics2DDirectBodyState>();
 	ClassDB::register_virtual_class<Physics2DDirectSpaceState>();
 	ClassDB::register_virtual_class<Physics2DShapeQueryResult>();
@@ -130,10 +128,10 @@ void register_server_types() {
 	ClassDB::register_virtual_class<PhysicsDirectSpaceState>();
 	ClassDB::register_virtual_class<PhysicsShapeQueryResult>();
 
-	ScriptDebuggerRemote::resource_usage_func=_debugger_get_resource_usage;
+	ScriptDebuggerRemote::resource_usage_func = _debugger_get_resource_usage;
 }
 
-void unregister_server_types(){
+void unregister_server_types() {
 
-	memdelete( shader_types );
+	memdelete(shader_types);
 }

@@ -29,17 +29,16 @@
 #ifndef IP_H
 #define IP_H
 
-
-#include "os/os.h"
 #include "io/ip_address.h"
+#include "os/os.h"
 
 struct _IP_ResolverPrivate;
 
 class IP : public Object {
-	GDCLASS( IP, Object );
+	GDCLASS(IP, Object);
 	OBJ_CATEGORY("Networking");
-public:
 
+public:
 	enum ResolverStatus {
 
 		RESOLVER_STATUS_NONE,
@@ -58,47 +57,40 @@ public:
 
 	enum {
 		RESOLVER_MAX_QUERIES = 32,
-		RESOLVER_INVALID_ID=-1
+		RESOLVER_INVALID_ID = -1
 	};
-
 
 	typedef int ResolverID;
 
-
 private:
-
 	_IP_ResolverPrivate *resolver;
-protected:
 
-	static IP*singleton;
+protected:
+	static IP *singleton;
 	static void _bind_methods();
 
-	virtual IP_Address _resolve_hostname(const String& p_hostname, Type p_type = TYPE_ANY)=0;
+	virtual IP_Address _resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY) = 0;
 	Array _get_local_addresses() const;
 
-	static IP* (*_create)();
+	static IP *(*_create)();
+
 public:
-
-
-
-	IP_Address resolve_hostname(const String& p_hostname, Type p_type = TYPE_ANY);
+	IP_Address resolve_hostname(const String &p_hostname, Type p_type = TYPE_ANY);
 	// async resolver hostname
-	ResolverID resolve_hostname_queue_item(const String& p_hostname, Type p_type = TYPE_ANY);
+	ResolverID resolve_hostname_queue_item(const String &p_hostname, Type p_type = TYPE_ANY);
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;
 	IP_Address get_resolve_item_address(ResolverID p_id) const;
-	virtual void get_local_addresses(List<IP_Address> *r_addresses) const=0;
+	virtual void get_local_addresses(List<IP_Address> *r_addresses) const = 0;
 	void erase_resolve_item(ResolverID p_id);
 
-	void clear_cache(const String& p_hostname = "");
+	void clear_cache(const String &p_hostname = "");
 
-	static IP* get_singleton();
+	static IP *get_singleton();
 
-	static IP* create();
+	static IP *create();
 
 	IP();
 	~IP();
-
-
 };
 
 VARIANT_ENUM_CAST(IP::Type);

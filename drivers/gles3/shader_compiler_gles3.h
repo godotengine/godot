@@ -29,20 +29,20 @@
 #ifndef SHADERCOMPILERGLES3_H
 #define SHADERCOMPILERGLES3_H
 
+#include "pair.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual/shader_types.h"
 #include "servers/visual_server.h"
-#include "pair.h"
 
 class ShaderCompilerGLES3 {
 public:
 	struct IdentifierActions {
 
-		Map<StringName,Pair<int*,int> > render_mode_values;
-		Map<StringName,bool*> render_mode_flags;
-		Map<StringName,bool*> usage_flag_pointers;
+		Map<StringName, Pair<int *, int> > render_mode_values;
+		Map<StringName, bool *> render_mode_flags;
+		Map<StringName, bool *> usage_flag_pointers;
 
-		Map<StringName,ShaderLanguage::ShaderNode::Uniform> *uniforms;
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> *uniforms;
 	};
 
 	struct GeneratedCode {
@@ -62,23 +62,20 @@ public:
 
 		bool uses_fragment_time;
 		bool uses_vertex_time;
-
 	};
 
 private:
-
 	ShaderLanguage parser;
 
 	struct DefaultIdentifierActions {
 
-		Map<StringName,String> renames;
-		Map<StringName,String> render_mode_defines;
-		Map<StringName,String> usage_defines;
+		Map<StringName, String> renames;
+		Map<StringName, String> render_mode_defines;
+		Map<StringName, String> usage_defines;
 	};
 
-	void _dump_function_deps(ShaderLanguage::ShaderNode *p_node, const StringName& p_for_func, const Map<StringName, String> &p_func_code, String& r_to_add,Set<StringName> &added);
-	String _dump_node_code(ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions& p_actions, const DefaultIdentifierActions& p_default_actions);
-
+	void _dump_function_deps(ShaderLanguage::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added);
+	String _dump_node_code(ShaderLanguage::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions);
 
 	StringName current_func_name;
 	StringName vertex_name;
@@ -90,14 +87,10 @@ private:
 	Set<StringName> used_rmode_defines;
 	Set<StringName> internal_functions;
 
-
 	DefaultIdentifierActions actions[VS::SHADER_MAX];
 
 public:
-
-
-	Error compile(VS::ShaderMode p_mode, const String& p_code, IdentifierActions* p_actions, const String& p_path, GeneratedCode& r_gen_code);
-
+	Error compile(VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code);
 
 	ShaderCompilerGLES3();
 };

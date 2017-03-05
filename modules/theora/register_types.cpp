@@ -30,16 +30,16 @@
 
 #include "video_stream_theora.h"
 
-static ResourceFormatLoaderVideoStreamTheora* theora_stream_loader = NULL;
+static ResourceFormatLoaderVideoStreamTheora *theora_stream_loader = NULL;
 
 void register_theora_types() {
 
-	theora_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheora );
+	theora_stream_loader = memnew(ResourceFormatLoaderVideoStreamTheora);
 	ResourceLoader::add_resource_format_loader(theora_stream_loader);
 	ClassDB::register_class<VideoStreamTheora>();
 }
 
 void unregister_theora_types() {
 
-	memdelete( theora_stream_loader );
+	memdelete(theora_stream_loader);
 }

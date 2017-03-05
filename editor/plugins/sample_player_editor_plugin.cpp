@@ -30,7 +30,6 @@
 #if 0
 #include "sample_player_editor_plugin.h"
 
-
 #include "scene/resources/sample_library.h"
 
 
@@ -198,6 +197,5 @@ SamplePlayerEditorPlugin::SamplePlayerEditorPlugin(EditorNode *p_node) {
 SamplePlayerEditorPlugin::~SamplePlayerEditorPlugin()
 {
 }
-
 
 #endif

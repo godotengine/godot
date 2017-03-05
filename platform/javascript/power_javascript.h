@@ -27,7 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-
 #ifndef PLATFORM_JAVASCRIPT_POWER_JAVASCRIPT_H_
 #define PLATFORM_JAVASCRIPT_POWER_JAVASCRIPT_H_
 

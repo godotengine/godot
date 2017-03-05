@@ -28,16 +28,15 @@
 /*************************************************************************/
 #include "image_loader_jpegd.h"
 
-#include "print_string.h"
 #include "os/os.h"
+#include "print_string.h"
 
 #include <jpgd.h>
 #include <string.h>
 
+Error jpeg_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p_buffer_len) {
 
-Error jpeg_load_image_from_buffer(Image *p_image,const uint8_t* p_buffer, int p_buffer_len) {
-
-	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer,p_buffer_len);
+	jpgd::jpeg_decoder_mem_stream mem_stream(p_buffer, p_buffer_len);
 
 	jpgd::jpeg_decoder decoder(&mem_stream);
 
@@ -48,8 +47,8 @@ Error jpeg_load_image_from_buffer(Image *p_image,const uint8_t* p_buffer, int p_
 	const int image_width = decoder.get_width();
 	const int image_height = decoder.get_height();
 	int comps = decoder.get_num_components();
-	if (comps==3)
-		comps=4; //weird
+	if (comps == 3)
+		comps = 4; //weird
 
 	if (decoder.begin_decoding() != jpgd::JPGD_SUCCESS)
 		return ERR_FILE_CORRUPT;
@@ -62,42 +61,34 @@ Error jpeg_load_image_from_buffer(Image *p_image,const uint8_t* p_buffer, int p_
 
 	PoolVector<uint8_t>::Write dw = data.write();
 
-	jpgd::uint8 *pImage_data = (jpgd::uint8*)dw.ptr();
+	jpgd::uint8 *pImage_data = (jpgd::uint8 *)dw.ptr();
 
-	for (int y = 0; y < image_height; y++)
-	{
-		const jpgd::uint8* pScan_line;
+	for (int y = 0; y < image_height; y++) {
+		const jpgd::uint8 *pScan_line;
 		jpgd::uint scan_line_len;
-		if (decoder.decode((const void**)&pScan_line, &scan_line_len) != jpgd::JPGD_SUCCESS)
-		{
+		if (decoder.decode((const void **)&pScan_line, &scan_line_len) != jpgd::JPGD_SUCCESS) {
 			return ERR_FILE_CORRUPT;
 		}
 
 		jpgd::uint8 *pDst = pImage_data + y * dst_bpl;
 		memcpy(pDst, pScan_line, dst_bpl);
-
-
 	}
-
 
 	//all good
 
 	Image::Format fmt;
-	if (comps==1)
-		fmt=Image::FORMAT_L8;
+	if (comps == 1)
+		fmt = Image::FORMAT_L8;
 	else
-		fmt=Image::FORMAT_RGBA8;
+		fmt = Image::FORMAT_RGBA8;
 
 	dw = PoolVector<uint8_t>::Write();
-	p_image->create(image_width,image_height,0,fmt,data);
+	p_image->create(image_width, image_height, 0, fmt, data);
 
 	return OK;
-
 }
 
-
-Error ImageLoaderJPG::load_image(Image *p_image,FileAccess *f) {
-
+Error ImageLoaderJPG::load_image(Image *p_image, FileAccess *f) {
 
 	PoolVector<uint8_t> src_image;
 	int src_image_len = f->get_len();
@@ -106,30 +97,27 @@ Error ImageLoaderJPG::load_image(Image *p_image,FileAccess *f) {
 
 	PoolVector<uint8_t>::Write w = src_image.write();
 
-	f->get_buffer(&w[0],src_image_len);
+	f->get_buffer(&w[0], src_image_len);
 
 	f->close();
 
-
-	Error err = jpeg_load_image_from_buffer(p_image,w.ptr(),src_image_len);
+	Error err = jpeg_load_image_from_buffer(p_image, w.ptr(), src_image_len);
 
 	w = PoolVector<uint8_t>::Write();
 
 	return err;
-
 }
 
 void ImageLoaderJPG::get_recognized_extensions(List<String> *p_extensions) const {
-	
+
 	p_extensions->push_back("jpg");
 	p_extensions->push_back("jpeg");
 }
 
-
-static Image _jpegd_mem_loader_func(const uint8_t* p_png,int p_size) {
+static Image _jpegd_mem_loader_func(const uint8_t *p_png, int p_size) {
 
 	Image img;
-	Error err = jpeg_load_image_from_buffer(&img,p_png,p_size);
+	Error err = jpeg_load_image_from_buffer(&img, p_png, p_size);
 	if (err)
 		ERR_PRINT("Couldn't initialize ImageLoaderJPG with the given resource.");
 
@@ -138,7 +126,5 @@ static Image _jpegd_mem_loader_func(const uint8_t* p_png,int p_size) {
 
 ImageLoaderJPG::ImageLoaderJPG() {
 
-	Image::_jpg_mem_loader_func=_jpegd_mem_loader_func;
+	Image::_jpg_mem_loader_func = _jpegd_mem_loader_func;
 }
-
-

@@ -29,31 +29,27 @@
 #ifndef EDITORPLUGINSETTINGS_H
 #define EDITORPLUGINSETTINGS_H
 
-
-#include "scene/gui/dialogs.h"
-#include "property_editor.h"
-#include "undo_redo.h"
 #include "editor_data.h"
+#include "property_editor.h"
+#include "scene/gui/dialogs.h"
+#include "undo_redo.h"
 
 class EditorPluginSettings : public VBoxContainer {
 
-	GDCLASS(EditorPluginSettings,VBoxContainer);
+	GDCLASS(EditorPluginSettings, VBoxContainer);
 
-	Button* update_list;
+	Button *update_list;
 	Tree *plugin_list;
 	bool updating;
 
-
 	void _plugin_activity_changed();
-protected:
 
+protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
-
 public:
-
 	void update_plugins();
 
 	EditorPluginSettings();

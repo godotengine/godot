@@ -29,21 +29,21 @@
 #ifndef EDITOR_SCENE_IMPORT_PLUGIN_H
 #define EDITOR_SCENE_IMPORT_PLUGIN_H
 #if 0
+#include "editor/editor_dir_dialog.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_import_export.h"
+#include "editor/io_plugins/editor_texture_import_plugin.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "scene/resources/mesh.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_dir_dialog.h"
-#include "editor/editor_import_export.h"
-#include "editor/io_plugins/editor_texture_import_plugin.h"
+#include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
+#include "scene/resources/mesh.h"
 
 
 class EditorNode;

@@ -40,32 +40,30 @@
 #include "platform/windows/export/export.h"
 #endif
 
-static ImageLoaderPNG *image_loader_png=NULL;
-static ResourceSaverPNG *resource_saver_png=NULL;
-
+static ImageLoaderPNG *image_loader_png = NULL;
+static ResourceSaverPNG *resource_saver_png = NULL;
 
 void register_core_driver_types() {
 
-	image_loader_png = memnew( ImageLoaderPNG );
-	ImageLoader::add_image_format_loader( image_loader_png );
+	image_loader_png = memnew(ImageLoaderPNG);
+	ImageLoader::add_image_format_loader(image_loader_png);
 
-	resource_saver_png = memnew( ResourceSaverPNG );
+	resource_saver_png = memnew(ResourceSaverPNG);
 	ResourceSaver::add_resource_format_saver(resource_saver_png);
 }
 
 void unregister_core_driver_types() {
 
 	if (image_loader_png)
-		memdelete( image_loader_png );
+		memdelete(image_loader_png);
 	if (resource_saver_png)
-		memdelete( resource_saver_png );
+		memdelete(resource_saver_png);
 }
-
 
 void register_driver_types() {
 
 #ifdef TOOLS_ENABLED
-	Geometry::_decompose_func=b2d_decompose;
+	Geometry::_decompose_func = b2d_decompose;
 #endif
 }
 

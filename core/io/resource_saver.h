@@ -35,27 +35,21 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
-
-
-
-
 class ResourceFormatSaver {
 public:
-
-	virtual Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0)=0;
-	virtual bool recognize(const RES& p_resource) const=0;
-	virtual void get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const=0;
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0) = 0;
+	virtual bool recognize(const RES &p_resource) const = 0;
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const = 0;
 
 	virtual ~ResourceFormatSaver() {}
 };
 
-typedef void (*ResourceSavedCallback)(const String& p_path);
+typedef void (*ResourceSavedCallback)(const String &p_path);
 
 class ResourceSaver {
 
 	enum {
-		MAX_SAVERS=64
+		MAX_SAVERS = 64
 	};
 
 	static ResourceFormatSaver *saver[MAX_SAVERS];
@@ -63,31 +57,24 @@ class ResourceSaver {
 	static bool timestamp_on_save;
 	static ResourceSavedCallback save_callback;
 
-
 public:
-
 	enum SaverFlags {
 
-		FLAG_RELATIVE_PATHS=1,
-		FLAG_BUNDLE_RESOURCES=2,
-		FLAG_CHANGE_PATH=4,
-		FLAG_OMIT_EDITOR_PROPERTIES=8,
-		FLAG_SAVE_BIG_ENDIAN=16,
-		FLAG_COMPRESS=32,
-		FLAG_REPLACE_SUBRESOURCE_PATHS=64,
+		FLAG_RELATIVE_PATHS = 1,
+		FLAG_BUNDLE_RESOURCES = 2,
+		FLAG_CHANGE_PATH = 4,
+		FLAG_OMIT_EDITOR_PROPERTIES = 8,
+		FLAG_SAVE_BIG_ENDIAN = 16,
+		FLAG_COMPRESS = 32,
+		FLAG_REPLACE_SUBRESOURCE_PATHS = 64,
 	};
 
+	static Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	static void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions);
+	static void add_resource_format_saver(ResourceFormatSaver *p_format_saver, bool p_at_front = false);
 
-	static Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0);
-	static void get_recognized_extensions(const RES& p_resource,List<String> *p_extensions);
-	static void add_resource_format_saver(ResourceFormatSaver *p_format_saver,bool p_at_front=false);
-
-	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save=p_timestamp; }
+	static void set_timestamp_on_save(bool p_timestamp) { timestamp_on_save = p_timestamp; }
 	static void set_save_callback(ResourceSavedCallback p_callback);
-
-
-
 };
-
 
 #endif

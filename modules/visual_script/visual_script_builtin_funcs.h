@@ -31,12 +31,10 @@
 
 #include "visual_script.h"
 
-
 class VisualScriptBuiltinFunc : public VisualScriptNode {
 
-	GDCLASS(VisualScriptBuiltinFunc,VisualScriptNode)
+	GDCLASS(VisualScriptBuiltinFunc, VisualScriptNode)
 public:
-
 	enum BuiltinFunc {
 		MATH_SIN,
 		MATH_COS,
@@ -100,26 +98,24 @@ public:
 
 	static int get_func_argument_count(BuiltinFunc p_func);
 	static String get_func_name(BuiltinFunc p_func);
-	static void exec_func(BuiltinFunc p_func, const Variant** p_inputs, Variant* r_return, Variant::CallError& r_error, String& r_error_str);
-	static BuiltinFunc find_function(const String& p_string);
+	static void exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str);
+	static BuiltinFunc find_function(const String &p_string);
 
 private:
-	static const char* func_name[FUNC_MAX];
+	static const char *func_name[FUNC_MAX];
 	BuiltinFunc func;
+
 protected:
 	static void _bind_methods();
-public:
 
+public:
 	virtual int get_output_sequence_port_count() const;
 	virtual bool has_input_sequence_port() const;
 
-
 	virtual String get_output_sequence_port_text(int p_port) const;
-
 
 	virtual int get_input_value_port_count() const;
 	virtual int get_output_value_port_count() const;
-
 
 	virtual PropertyInfo get_input_value_port_info(int p_idx) const;
 	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
@@ -131,15 +127,13 @@ public:
 	void set_func(BuiltinFunc p_which);
 	BuiltinFunc get_func();
 
-	virtual VisualScriptNodeInstance* instance(VisualScriptInstance* p_instance);
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
 
 	VisualScriptBuiltinFunc();
 };
 
 VARIANT_ENUM_CAST(VisualScriptBuiltinFunc::BuiltinFunc)
 
-
 void register_visual_script_builtin_func_node();
-
 
 #endif // VISUAL_SCRIPT_BUILTIN_FUNCS_H

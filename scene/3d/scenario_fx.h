@@ -31,30 +31,27 @@
 
 #include "scene/3d/spatial.h"
 
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 class WorldEnvironment : public Spatial {
 
-	GDCLASS(WorldEnvironment,Spatial );
+	GDCLASS(WorldEnvironment, Spatial);
 
 	Ref<Environment> environment;
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
-	void set_environment(const Ref<Environment>& p_environment);
+	void set_environment(const Ref<Environment> &p_environment);
 	Ref<Environment> get_environment() const;
 
 	String get_configuration_warning() const;
 
 	WorldEnvironment();
-
 };
 
 #endif

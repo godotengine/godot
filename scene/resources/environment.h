@@ -30,15 +30,15 @@
 #define ENVIRONMENT_H
 
 #include "resource.h"
-#include "servers/visual_server.h"
-#include "scene/resources/texture.h"
 #include "scene/resources/sky_box.h"
+#include "scene/resources/texture.h"
+#include "servers/visual_server.h"
 
 class Environment : public Resource {
 
-	GDCLASS(Environment,Resource);
-public:
+	GDCLASS(Environment, Resource);
 
+public:
 	enum BGMode {
 
 		BG_CLEAR_COLOR,
@@ -48,8 +48,6 @@ public:
 		BG_KEEP,
 		BG_MAX
 	};
-
-
 
 	enum ToneMapper {
 		TONE_MAPPER_LINEAR,
@@ -140,20 +138,17 @@ private:
 	DOFBlurQuality dof_blur_near_quality;
 
 protected:
-
 	static void _bind_methods();
-	virtual void _validate_property(PropertyInfo& property) const;
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-
-
 	void set_background(BGMode p_bg);
-	void set_skybox(const Ref<SkyBox>& p_skybox);
+	void set_skybox(const Ref<SkyBox> &p_skybox);
 	void set_skybox_scale(float p_scale);
-	void set_bg_color(const Color& p_color);
+	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
-	void set_ambient_light_color(const Color& p_color);
+	void set_ambient_light_color(const Color &p_color);
 	void set_ambient_light_energy(float p_energy);
 	void set_ambient_light_skybox_contribution(float p_energy);
 
@@ -166,7 +161,6 @@ public:
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
 	float get_ambient_light_skybox_contribution() const;
-
 
 	void set_tonemapper(ToneMapper p_tone_mapper);
 	ToneMapper get_tonemapper() const;
@@ -204,7 +198,7 @@ public:
 	void set_adjustment_saturation(float p_saturation);
 	float get_adjustment_saturation() const;
 
-	void set_adjustment_color_correction(const Ref<Texture>& p_ramp);
+	void set_adjustment_color_correction(const Ref<Texture> &p_ramp);
 	Ref<Texture> get_adjustment_color_correction() const;
 
 	void set_ssr_enabled(bool p_enable);
@@ -249,17 +243,16 @@ public:
 	void set_ssao_direct_light_affect(float p_direct_light_affect);
 	float get_ssao_direct_light_affect() const;
 
-	void set_ssao_color(const Color& p_color);
+	void set_ssao_color(const Color &p_color);
 	Color get_ssao_color() const;
 
 	void set_ssao_blur(bool p_enable);
 	bool is_ssao_blur_enabled() const;
 
-
 	void set_glow_enabled(bool p_enabled);
 	bool is_glow_enabled() const;
 
-	void set_glow_level(int p_level,bool p_enabled);
+	void set_glow_level(int p_level, bool p_enabled);
 	bool is_glow_level_enabled(int p_level) const;
 
 	void set_glow_intensity(float p_intensity);
@@ -313,15 +306,11 @@ public:
 	void set_dof_blur_near_quality(DOFBlurQuality p_quality);
 	DOFBlurQuality get_dof_blur_near_quality() const;
 
-
 	virtual RID get_rid() const;
 
 	Environment();
 	~Environment();
 };
-
-
-
 
 VARIANT_ENUM_CAST(Environment::BGMode)
 VARIANT_ENUM_CAST(Environment::ToneMapper)

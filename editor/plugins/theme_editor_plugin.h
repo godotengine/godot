@@ -29,23 +29,19 @@
 #ifndef THEME_EDITOR_PLUGIN_H
 #define THEME_EDITOR_PLUGIN_H
 
-#include "scene/resources/theme.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/check_box.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/file_dialog.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/resources/theme.h"
 
 #include "editor/editor_node.h"
 
-
-
-
 class ThemeEditor : public Control {
 
-	GDCLASS( ThemeEditor, Control );
-
+	GDCLASS(ThemeEditor, Control);
 
 	ScrollContainer *scroll;
 	VBoxContainer *main_vb;
@@ -62,9 +58,9 @@ class ThemeEditor : public Control {
 	MenuButton *name_menu;
 	LineEdit *name_edit;
 	OptionButton *type_select;
-	Label * type_select_label;
-	Label * name_select_label;
-	Label * dtype_select_label;
+	Label *type_select_label;
+	Label *name_select_label;
+	Label *dtype_select_label;
 
 	enum PopupMode {
 		POPUP_ADD,
@@ -88,29 +84,25 @@ class ThemeEditor : public Control {
 	void _propagate_redraw(Control *p_at);
 	void _refresh_interval();
 
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void edit(const Ref<Theme>& p_theme);
+public:
+	void edit(const Ref<Theme> &p_theme);
 
 	ThemeEditor();
 };
 
-
-
 class ThemeEditorPlugin : public EditorPlugin {
 
-	GDCLASS( ThemeEditorPlugin, EditorPlugin );
+	GDCLASS(ThemeEditorPlugin, EditorPlugin);
 
 	ThemeEditor *theme_editor;
 	EditorNode *editor;
 	Button *button;
 
 public:
-
 	virtual String get_name() const { return "Theme"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -118,8 +110,6 @@ public:
 	virtual void make_visible(bool p_visible);
 
 	ThemeEditorPlugin(EditorNode *p_node);
-
 };
-
 
 #endif // THEME_EDITOR_PLUGIN_H

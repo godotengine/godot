@@ -34,68 +34,57 @@
 
 class AudioStreamPlayback : public Reference {
 
-	GDCLASS( AudioStreamPlayback, Reference )
+	GDCLASS(AudioStreamPlayback, Reference)
 
 public:
+	virtual void start(float p_from_pos = 0.0) = 0;
+	virtual void stop() = 0;
+	virtual bool is_playing() const = 0;
 
-	virtual void start(float p_from_pos=0.0)=0;
-	virtual void stop()=0;
-	virtual bool is_playing() const=0;
+	virtual int get_loop_count() const = 0; //times it looped
 
-	virtual int get_loop_count() const=0; //times it looped
+	virtual float get_pos() const = 0;
+	virtual void seek_pos(float p_time) = 0;
 
-	virtual float get_pos() const=0;
-	virtual void seek_pos(float p_time)=0;
+	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames) = 0;
 
-	virtual void mix(AudioFrame* p_bufer,float p_rate_scale,int p_frames)=0;
-
-	virtual float get_length() const=0; //if supported, otherwise return 0
-
-
+	virtual float get_length() const = 0; //if supported, otherwise return 0
 };
 
 class AudioStreamPlaybackResampled : public AudioStreamPlayback {
 
-	GDCLASS( AudioStreamPlaybackResampled, AudioStreamPlayback )
-
-
+	GDCLASS(AudioStreamPlaybackResampled, AudioStreamPlayback)
 
 	enum {
-		FP_BITS=16, //fixed point used for resampling
-		FP_LEN=(1<<FP_BITS),
-		FP_MASK=FP_LEN-1,
-		INTERNAL_BUFFER_LEN=256,
-		CUBIC_INTERP_HISTORY=4
+		FP_BITS = 16, //fixed point used for resampling
+		FP_LEN = (1 << FP_BITS),
+		FP_MASK = FP_LEN - 1,
+		INTERNAL_BUFFER_LEN = 256,
+		CUBIC_INTERP_HISTORY = 4
 	};
 
-	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN+CUBIC_INTERP_HISTORY];
+	AudioFrame internal_buffer[INTERNAL_BUFFER_LEN + CUBIC_INTERP_HISTORY];
 	uint64_t mix_offset;
 
 protected:
 	void _begin_resample();
-	virtual void _mix_internal(AudioFrame* p_bufer,int p_frames)=0;
-	virtual float get_stream_sampling_rate()=0;
+	virtual void _mix_internal(AudioFrame *p_bufer, int p_frames) = 0;
+	virtual float get_stream_sampling_rate() = 0;
 
 public:
+	virtual void mix(AudioFrame *p_bufer, float p_rate_scale, int p_frames);
 
-	virtual void mix(AudioFrame* p_bufer,float p_rate_scale,int p_frames);
-
-	AudioStreamPlaybackResampled() { mix_offset=0;  }
+	AudioStreamPlaybackResampled() { mix_offset = 0; }
 };
 
 class AudioStream : public Resource {
 
-	GDCLASS( AudioStream, Resource )
-	OBJ_SAVE_TYPE( AudioStream ) //children are all saved as AudioStream, so they can be exchanged
-
+	GDCLASS(AudioStream, Resource)
+	OBJ_SAVE_TYPE(AudioStream) //children are all saved as AudioStream, so they can be exchanged
 
 public:
-
-	virtual Ref<AudioStreamPlayback> instance_playback()=0;
-	virtual String get_stream_name() const=0;
-
-
+	virtual Ref<AudioStreamPlayback> instance_playback() = 0;
+	virtual String get_stream_name() const = 0;
 };
-
 
 #endif // AUDIO_STREAM_H

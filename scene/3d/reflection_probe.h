@@ -30,23 +30,20 @@
 #define REFLECTIONPROBE_H
 
 #include "scene/3d/visual_instance.h"
-#include "scene/resources/texture.h"
 #include "scene/resources/sky_box.h"
+#include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 
 class ReflectionProbe : public VisualInstance {
-	GDCLASS(ReflectionProbe,VisualInstance);
+	GDCLASS(ReflectionProbe, VisualInstance);
 
 public:
-
 	enum UpdateMode {
 		UPDATE_ONCE,
 		UPDATE_ALWAYS,
 	};
 
-
 private:
-
 	RID probe;
 	float intensity;
 	float max_distance;
@@ -63,12 +60,10 @@ private:
 	UpdateMode update_mode;
 
 protected:
-
 	static void _bind_methods();
-	void _validate_property(PropertyInfo& property) const;
+	void _validate_property(PropertyInfo &property) const;
 
 public:
-
 	void set_intensity(float p_intensity);
 	float get_intensity() const;
 
@@ -84,10 +79,10 @@ public:
 	void set_max_distance(float p_distance);
 	float get_max_distance() const;
 
-	void set_extents(const Vector3& p_extents);
+	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
 
-	void set_origin_offset(const Vector3& p_extents);
+	void set_origin_offset(const Vector3 &p_extents);
 	Vector3 get_origin_offset() const;
 
 	void set_as_interior(bool p_enable);
@@ -108,13 +103,10 @@ public:
 	virtual Rect3 get_aabb() const;
 	virtual PoolVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-
-
 	ReflectionProbe();
 	~ReflectionProbe();
 };
 
-
-VARIANT_ENUM_CAST( ReflectionProbe::UpdateMode );
+VARIANT_ENUM_CAST(ReflectionProbe::UpdateMode);
 
 #endif // REFLECTIONPROBE_H

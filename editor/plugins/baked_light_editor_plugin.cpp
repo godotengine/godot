@@ -28,11 +28,10 @@
 /*************************************************************************/
 #include "baked_light_editor_plugin.h"
 
-#include "scene/gui/box_container.h"
-#include "scene/3d/mesh_instance.h"
 #include "io/marshalls.h"
 #include "io/resource_saver.h"
-
+#include "scene/3d/mesh_instance.h"
+#include "scene/gui/box_container.h"
 
 #if 0
 
@@ -152,7 +151,6 @@ void BakedLightEditor::_notification(int p_option) {
 				Ref<ImageTexture> it = memnew( ImageTexture );
 				it->create_from_image(img);
 				ResourceSaver::save("baked_octree.png",it);
-
 
 #endif
 
@@ -374,6 +372,5 @@ BakedLightEditorPlugin::BakedLightEditorPlugin(EditorNode *p_node) {
 BakedLightEditorPlugin::~BakedLightEditorPlugin()
 {
 }
-
 
 #endif

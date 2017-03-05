@@ -30,14 +30,14 @@
 #define JAVA_CLASS_WRAPPER_H
 
 #include "reference.h"
-#include <jni.h>
 #include <android/log.h>
+#include <jni.h>
 
 class JavaObject;
 
 class JavaClass : public Reference {
 
-	GDCLASS(JavaClass,Reference);
+	GDCLASS(JavaClass, Reference);
 
 	enum ArgumentType {
 
@@ -52,13 +52,12 @@ class JavaClass : public Reference {
 		ARG_TYPE_DOUBLE,
 		ARG_TYPE_STRING, //special case
 		ARG_TYPE_CLASS,
-		ARG_ARRAY_BIT=1<<16,
-		ARG_NUMBER_CLASS_BIT=1<<17,
-		ARG_TYPE_MASK=(1<<16)-1
+		ARG_ARRAY_BIT = 1 << 16,
+		ARG_NUMBER_CLASS_BIT = 1 << 17,
+		ARG_TYPE_MASK = (1 << 16) - 1
 	};
 
-
-	Map<StringName,Variant> constant_map;
+	Map<StringName, Variant> constant_map;
 
 	struct MethodInfo {
 
@@ -67,94 +66,126 @@ class JavaClass : public Reference {
 		Vector<StringName> param_sigs;
 		uint32_t return_type;
 		jmethodID method;
-
 	};
 
-	_FORCE_INLINE_ static void _convert_to_variant_type(int p_sig, Variant::Type& r_type, float& likelyhood)  {
+	_FORCE_INLINE_ static void _convert_to_variant_type(int p_sig, Variant::Type &r_type, float &likelyhood) {
 
-		likelyhood=1.0;
-		r_type=Variant::NIL;
+		likelyhood = 1.0;
+		r_type = Variant::NIL;
 
-		switch(p_sig) {
+		switch (p_sig) {
 
-			case ARG_TYPE_VOID: r_type=Variant::NIL; break;
-			case ARG_TYPE_BOOLEAN|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_BOOLEAN: r_type=Variant::BOOL; break;
-			case ARG_TYPE_BYTE|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_BYTE: r_type=Variant::INT; likelyhood=0.1; break;
-			case ARG_TYPE_CHAR|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_CHAR: r_type=Variant::INT; likelyhood=0.2; break;
-			case ARG_TYPE_SHORT|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_SHORT: r_type=Variant::INT; likelyhood=0.3; break;
-			case ARG_TYPE_INT|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_INT: r_type=Variant::INT; likelyhood=1.0; break;
-			case ARG_TYPE_LONG|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_LONG: r_type=Variant::INT; likelyhood=0.5; break;
-			case ARG_TYPE_FLOAT|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_FLOAT: r_type=Variant::REAL; likelyhood=1.0; break;
-			case ARG_TYPE_DOUBLE|ARG_NUMBER_CLASS_BIT:
-			case ARG_TYPE_DOUBLE: r_type=Variant::REAL; likelyhood=0.5; break;
-			case ARG_TYPE_STRING: r_type=Variant::STRING;  break;
-			case ARG_TYPE_CLASS: r_type=Variant::OBJECT;  break;
-			case ARG_ARRAY_BIT|ARG_TYPE_VOID: r_type=Variant::NIL; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_BOOLEAN: r_type=Variant::ARRAY; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_BYTE: r_type=Variant::POOL_BYTE_ARRAY; likelyhood=1.0; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_CHAR: r_type=Variant::POOL_BYTE_ARRAY; likelyhood=0.5; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_SHORT: r_type=Variant::POOL_INT_ARRAY; likelyhood=0.3; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_INT: r_type=Variant::POOL_INT_ARRAY; likelyhood=1.0; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_LONG: r_type=Variant::POOL_INT_ARRAY; likelyhood=0.5; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_FLOAT: r_type=Variant::POOL_REAL_ARRAY; likelyhood=1.0; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_DOUBLE: r_type=Variant::POOL_REAL_ARRAY; likelyhood=0.5; break;
-			case ARG_ARRAY_BIT|ARG_TYPE_STRING: r_type=Variant::POOL_STRING_ARRAY;  break;
-			case ARG_ARRAY_BIT|ARG_TYPE_CLASS: r_type=Variant::ARRAY;  break;
+			case ARG_TYPE_VOID: r_type = Variant::NIL; break;
+			case ARG_TYPE_BOOLEAN | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_BOOLEAN: r_type = Variant::BOOL; break;
+			case ARG_TYPE_BYTE | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_BYTE:
+				r_type = Variant::INT;
+				likelyhood = 0.1;
+				break;
+			case ARG_TYPE_CHAR | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_CHAR:
+				r_type = Variant::INT;
+				likelyhood = 0.2;
+				break;
+			case ARG_TYPE_SHORT | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_SHORT:
+				r_type = Variant::INT;
+				likelyhood = 0.3;
+				break;
+			case ARG_TYPE_INT | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_INT:
+				r_type = Variant::INT;
+				likelyhood = 1.0;
+				break;
+			case ARG_TYPE_LONG | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_LONG:
+				r_type = Variant::INT;
+				likelyhood = 0.5;
+				break;
+			case ARG_TYPE_FLOAT | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_FLOAT:
+				r_type = Variant::REAL;
+				likelyhood = 1.0;
+				break;
+			case ARG_TYPE_DOUBLE | ARG_NUMBER_CLASS_BIT:
+			case ARG_TYPE_DOUBLE:
+				r_type = Variant::REAL;
+				likelyhood = 0.5;
+				break;
+			case ARG_TYPE_STRING: r_type = Variant::STRING; break;
+			case ARG_TYPE_CLASS: r_type = Variant::OBJECT; break;
+			case ARG_ARRAY_BIT | ARG_TYPE_VOID: r_type = Variant::NIL; break;
+			case ARG_ARRAY_BIT | ARG_TYPE_BOOLEAN: r_type = Variant::ARRAY; break;
+			case ARG_ARRAY_BIT | ARG_TYPE_BYTE:
+				r_type = Variant::POOL_BYTE_ARRAY;
+				likelyhood = 1.0;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_CHAR:
+				r_type = Variant::POOL_BYTE_ARRAY;
+				likelyhood = 0.5;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_SHORT:
+				r_type = Variant::POOL_INT_ARRAY;
+				likelyhood = 0.3;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_INT:
+				r_type = Variant::POOL_INT_ARRAY;
+				likelyhood = 1.0;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_LONG:
+				r_type = Variant::POOL_INT_ARRAY;
+				likelyhood = 0.5;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_FLOAT:
+				r_type = Variant::POOL_REAL_ARRAY;
+				likelyhood = 1.0;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_DOUBLE:
+				r_type = Variant::POOL_REAL_ARRAY;
+				likelyhood = 0.5;
+				break;
+			case ARG_ARRAY_BIT | ARG_TYPE_STRING: r_type = Variant::POOL_STRING_ARRAY; break;
+			case ARG_ARRAY_BIT | ARG_TYPE_CLASS: r_type = Variant::ARRAY; break;
 		}
 	}
 
-	_FORCE_INLINE_ static bool _convert_object_to_variant(JNIEnv * env, jobject obj, Variant& var,uint32_t p_sig);
+	_FORCE_INLINE_ static bool _convert_object_to_variant(JNIEnv *env, jobject obj, Variant &var, uint32_t p_sig);
 
+	bool _call_method(JavaObject *p_instance, const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error, Variant &ret);
 
-
-	bool _call_method(JavaObject* p_instance,const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error,Variant& ret);
-
-friend class JavaClassWrapper;
-	Map<StringName,List<MethodInfo> > methods;
+	friend class JavaClassWrapper;
+	Map<StringName, List<MethodInfo> > methods;
 	jclass _class;
 
 public:
-
-	virtual Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 	JavaClass();
-
 };
-
 
 class JavaObject : public Reference {
 
-	GDCLASS(JavaObject,Reference);
+	GDCLASS(JavaObject, Reference);
 
 	Ref<JavaClass> base_class;
-friend class JavaClass;
+	friend class JavaClass;
 
 	jobject instance;
 
 public:
+	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
-	virtual Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
-
-	JavaObject(const Ref<JavaClass>& p_base,jobject *p_instance);
+	JavaObject(const Ref<JavaClass> &p_base, jobject *p_instance);
 	~JavaObject();
-
 };
-
 
 class JavaClassWrapper : public Object {
 
-	GDCLASS(JavaClassWrapper,Object);
+	GDCLASS(JavaClassWrapper, Object);
 
-
-	Map<String,Ref<JavaClass> > class_cache;
-friend class JavaClass;
+	Map<String, Ref<JavaClass> > class_cache;
+	friend class JavaClass;
 	jclass activityClass;
 	jmethodID findClass;
 	jmethodID getDeclaredMethods;
@@ -177,20 +208,19 @@ friend class JavaClass;
 	jmethodID Double_doubleValue;
 	jobject classLoader;
 
-	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t& sig, String&strsig);
+	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
 
 	static JavaClassWrapper *singleton;
 
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	static JavaClassWrapper *get_singleton() { return singleton; }
 
-	Ref<JavaClass> wrap(const String& p_class);
+	Ref<JavaClass> wrap(const String &p_class);
 
-	JavaClassWrapper(jobject p_activity=NULL);
+	JavaClassWrapper(jobject p_activity = NULL);
 };
 
 #endif // JAVA_CLASS_WRAPPER_H

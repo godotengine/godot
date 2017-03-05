@@ -34,7 +34,7 @@
 
 class CollisionShape : public Spatial {
 
-	GDCLASS( CollisionShape, Spatial );
+	GDCLASS(CollisionShape, Spatial);
 	OBJ_CATEGORY("3D Physics Nodes");
 
 	Ref<Shape> shape;
@@ -50,7 +50,7 @@ class CollisionShape : public Spatial {
 	RID indicator_instance;
 	*/
 
-	Node* debug_shape;
+	Node *debug_shape;
 
 	void resource_changed(RES res);
 
@@ -63,7 +63,7 @@ class CollisionShape : public Spatial {
 	int update_shape_index;
 
 	void _update_body();
-	void _add_to_collision_object(Object* p_cshape);
+	void _add_to_collision_object(Object *p_cshape);
 
 	void _set_update_shape_index(int p_index);
 	int _get_update_shape_index() const;
@@ -71,12 +71,10 @@ class CollisionShape : public Spatial {
 	void _create_debug_shape();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
 	void make_convex_from_brothers();
 
 	void set_shape(const Ref<Shape> &p_shape);
@@ -90,7 +88,6 @@ public:
 
 	int get_collision_object_shape_index() const { return _get_update_shape_index(); }
 
-
 	String get_configuration_warning() const;
 
 	CollisionShape();
@@ -98,4 +95,3 @@ public:
 };
 
 #endif // BODY_VOLUME_H
-

@@ -30,22 +30,21 @@
 
 #ifdef UNIX_ENABLED
 
-
 #include <errno.h>
-#include <unistd.h>
 #include <netdb.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <netinet/in.h>
 #include <stdio.h>
 
 #ifndef NO_FCNTL
-	#ifdef __HAIKU__
-		#include <fcntl.h>
-	#else
-		#include <sys/fcntl.h>
-	#endif
+#ifdef __HAIKU__
+#include <fcntl.h>
+#else
+#include <sys/fcntl.h>
+#endif
 #else
 #include <sys/ioctl.h>
 #endif
@@ -58,19 +57,19 @@
 
 int PacketPeerUDPPosix::get_available_packet_count() const {
 
-	Error err = const_cast<PacketPeerUDPPosix*>(this)->_poll(false);
-	if (err!=OK)
+	Error err = const_cast<PacketPeerUDPPosix *>(this)->_poll(false);
+	if (err != OK)
 		return 0;
 
 	return queue_count;
 }
 
-Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size) const{
+Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer, int &r_buffer_size) const {
 
-	Error err = const_cast<PacketPeerUDPPosix*>(this)->_poll(false);
-	if (err!=OK)
+	Error err = const_cast<PacketPeerUDPPosix *>(this)->_poll(false);
+	if (err != OK)
 		return err;
-	if (queue_count==0)
+	if (queue_count == 0)
 		return ERR_UNAVAILABLE;
 
 	uint32_t size;
@@ -78,38 +77,37 @@ Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size
 	rb.read(&type, 1, true);
 	if (type == IP::TYPE_IPV4) {
 		uint8_t ip[4];
-		rb.read(ip,4,true);
+		rb.read(ip, 4, true);
 		packet_ip.set_ipv4(ip);
 	} else {
 		uint8_t ipv6[16];
-		rb.read(ipv6,16,true);
+		rb.read(ipv6, 16, true);
 		packet_ip.set_ipv6(ipv6);
 	};
-	rb.read((uint8_t*)&packet_port,4,true);
-	rb.read((uint8_t*)&size,4,true);
-	rb.read(packet_buffer,size,true);
+	rb.read((uint8_t *)&packet_port, 4, true);
+	rb.read((uint8_t *)&size, 4, true);
+	rb.read(packet_buffer, size, true);
 	--queue_count;
-	*r_buffer=packet_buffer;
-	r_buffer_size=size;
+	*r_buffer = packet_buffer;
+	r_buffer_size = size;
 	return OK;
-
 }
-Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
+Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 	ERR_FAIL_COND_V(!peer_addr.is_valid(), ERR_UNCONFIGURED);
 
-	if (sock_type==IP::TYPE_NONE)
+	if (sock_type == IP::TYPE_NONE)
 		sock_type = peer_addr.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 
 	int sock = _get_socket();
-	ERR_FAIL_COND_V( sock == -1, FAILED );
+	ERR_FAIL_COND_V(sock == -1, FAILED);
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port, sock_type);
 
 	errno = 0;
 	int err;
 
-	while ( (err = sendto(sock, p_buffer, p_buffer_size, 0, (struct sockaddr*)&addr, addr_size)) != p_buffer_size) {
+	while ((err = sendto(sock, p_buffer, p_buffer_size, 0, (struct sockaddr *)&addr, addr_size)) != p_buffer_size) {
 
 		if (errno != EAGAIN) {
 			return FAILED;
@@ -119,15 +117,15 @@ Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 	return OK;
 }
 
-int PacketPeerUDPPosix::get_max_packet_size() const{
+int PacketPeerUDPPosix::get_max_packet_size() const {
 
 	return 512; // uhm maybe not
 }
 
 Error PacketPeerUDPPosix::listen(int p_port, IP_Address p_bind_address, int p_recv_buffer_size) {
 
-	ERR_FAIL_COND_V(sockfd!=-1,ERR_ALREADY_IN_USE);
-	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(),ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(sockfd != -1, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 #ifdef __OpenBSD__
 	sock_type = IP::TYPE_IPV4; // OpenBSD does not support dual stacking, fallback to IPv4 only.
@@ -135,18 +133,18 @@ Error PacketPeerUDPPosix::listen(int p_port, IP_Address p_bind_address, int p_re
 	sock_type = IP::TYPE_ANY;
 #endif
 
-	if(p_bind_address.is_valid())
+	if (p_bind_address.is_valid())
 		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 
 	int sock = _get_socket();
 
-	if (sock == -1 )
+	if (sock == -1)
 		return ERR_CANT_CREATE;
 
-	sockaddr_storage addr = {0};
+	sockaddr_storage addr = { 0 };
 	size_t addr_size = _set_listen_sockaddr(&addr, p_port, sock_type, IP_Address());
 
-	if (bind(sock, (struct sockaddr*)&addr, addr_size) == -1 ) {
+	if (bind(sock, (struct sockaddr *)&addr, addr_size) == -1) {
 		close();
 		return ERR_UNAVAILABLE;
 	}
@@ -154,16 +152,15 @@ Error PacketPeerUDPPosix::listen(int p_port, IP_Address p_bind_address, int p_re
 	return OK;
 }
 
-void PacketPeerUDPPosix::close(){
+void PacketPeerUDPPosix::close() {
 
 	if (sockfd != -1)
 		::close(sockfd);
-	sockfd=-1;
+	sockfd = -1;
 	sock_type = IP::TYPE_NONE;
 	rb.resize(16);
-	queue_count=0;
+	queue_count = 0;
 }
-
 
 Error PacketPeerUDPPosix::wait() {
 
@@ -172,22 +169,22 @@ Error PacketPeerUDPPosix::wait() {
 
 Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
-	if (sockfd==-1) {
+	if (sockfd == -1) {
 		return FAILED;
 	}
 
-	struct sockaddr_storage from = {0};
+	struct sockaddr_storage from = { 0 };
 	socklen_t len = sizeof(struct sockaddr_storage);
 	int ret;
-	while ( (ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer),MAX(rb.space_left()-24, 0)), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
+	while ((ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer), MAX(rb.space_left() - 24, 0)), p_wait ? 0 : MSG_DONTWAIT, (struct sockaddr *)&from, &len)) > 0) {
 
 		uint32_t port = 0;
 
 		if (from.ss_family == AF_INET) {
 			uint8_t type = (uint8_t)IP::TYPE_IPV4;
 			rb.write(&type, 1);
-			struct sockaddr_in* sin_from = (struct sockaddr_in*)&from;
-			rb.write((uint8_t*)&sin_from->sin_addr, 4);
+			struct sockaddr_in *sin_from = (struct sockaddr_in *)&from;
+			rb.write((uint8_t *)&sin_from->sin_addr, 4);
 			port = ntohs(sin_from->sin_port);
 
 		} else if (from.ss_family == AF_INET6) {
@@ -195,8 +192,8 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 			uint8_t type = (uint8_t)IP::TYPE_IPV6;
 			rb.write(&type, 1);
 
-			struct sockaddr_in6* s6_from = (struct sockaddr_in6*)&from;
-			rb.write((uint8_t*)&s6_from->sin6_addr, 16);
+			struct sockaddr_in6 *s6_from = (struct sockaddr_in6 *)&from;
+			rb.write((uint8_t *)&s6_from->sin6_addr, 16);
 
 			port = ntohs(s6_from->sin6_port);
 
@@ -206,26 +203,25 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 			rb.write(&type, 1);
 		};
 
-		rb.write((uint8_t*)&port, 4);
-		rb.write((uint8_t*)&ret, 4);
+		rb.write((uint8_t *)&port, 4);
+		rb.write((uint8_t *)&ret, 4);
 		rb.write(recv_buffer, ret);
 
 		len = sizeof(struct sockaddr_storage);
 		++queue_count;
 	};
 
-
 	// TODO: Should ECONNRESET be handled here?
-	if (ret == 0 || (ret == -1 && errno != EAGAIN) ) {
+	if (ret == 0 || (ret == -1 && errno != EAGAIN)) {
 		close();
 		return FAILED;
 	};
 
 	return OK;
 }
-bool PacketPeerUDPPosix::is_listening() const{
+bool PacketPeerUDPPosix::is_listening() const {
 
-	return sockfd!=-1;
+	return sockfd != -1;
 }
 
 IP_Address PacketPeerUDPPosix::get_packet_address() const {
@@ -233,14 +229,14 @@ IP_Address PacketPeerUDPPosix::get_packet_address() const {
 	return packet_ip;
 }
 
-int PacketPeerUDPPosix::get_packet_port() const{
+int PacketPeerUDPPosix::get_packet_port() const {
 
 	return packet_port;
 }
 
 int PacketPeerUDPPosix::_get_socket() {
 
-	ERR_FAIL_COND_V(sock_type==IP::TYPE_NONE, -1);
+	ERR_FAIL_COND_V(sock_type == IP::TYPE_NONE, -1);
 
 	if (sockfd != -1)
 		return sockfd;
@@ -250,14 +246,13 @@ int PacketPeerUDPPosix::_get_socket() {
 	return sockfd;
 }
 
+void PacketPeerUDPPosix::set_dest_address(const IP_Address &p_address, int p_port) {
 
-void PacketPeerUDPPosix::set_dest_address(const IP_Address& p_address,int p_port) {
-
-	peer_addr=p_address;
-	peer_port=p_port;
+	peer_addr = p_address;
+	peer_port = p_port;
 }
 
-PacketPeerUDP* PacketPeerUDPPosix::_create() {
+PacketPeerUDP *PacketPeerUDPPosix::_create() {
 
 	return memnew(PacketPeerUDPPosix);
 };
@@ -267,13 +262,12 @@ void PacketPeerUDPPosix::make_default() {
 	PacketPeerUDP::_create = PacketPeerUDPPosix::_create;
 };
 
-
 PacketPeerUDPPosix::PacketPeerUDPPosix() {
 
-	sockfd=-1;
-	packet_port=0;
-	queue_count=0;
-	peer_port=0;
+	sockfd = -1;
+	packet_port = 0;
+	queue_count = 0;
+	peer_port = 0;
 	sock_type = IP::TYPE_NONE;
 	rb.resize(16);
 }

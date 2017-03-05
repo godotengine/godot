@@ -34,8 +34,7 @@
 #include "scene/gui/tree.h"
 
 class EditorDirDialog : public ConfirmationDialog {
-	GDCLASS(EditorDirDialog,ConfirmationDialog);
-
+	GDCLASS(EditorDirDialog, ConfirmationDialog);
 
 	ConfirmationDialog *makedialog;
 	LineEdit *makedirname;
@@ -46,8 +45,8 @@ class EditorDirDialog : public ConfirmationDialog {
 	Tree *tree;
 	bool updating;
 
-	void _item_collapsed(Object* p_item);
-	void _update_dir(TreeItem* p_item);
+	void _item_collapsed(Object *p_item);
+	void _update_dir(TreeItem *p_item);
 
 	void _make_dir();
 	void _make_dir_confirm();
@@ -56,14 +55,12 @@ class EditorDirDialog : public ConfirmationDialog {
 
 	bool must_reload;
 
-
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_current_path(const String& p_path);
+public:
+	void set_current_path(const String &p_path);
 	void reload();
 	EditorDirDialog();
 };

@@ -29,7 +29,6 @@
 #include "audio_stream_resampled.h"
 #include "global_config.h"
 
-
 #if 0
 int AudioStreamResampled::get_channel_count() const {
 

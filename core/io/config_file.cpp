@@ -27,8 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "config_file.h"
-#include "os/keyboard.h"
 #include "os/file_access.h"
+#include "os/keyboard.h"
 #include "variant_parser.h"
 
 PoolStringArray ConfigFile::_get_sections() const {
@@ -37,35 +37,33 @@ PoolStringArray ConfigFile::_get_sections() const {
 	get_sections(&s);
 	PoolStringArray arr;
 	arr.resize(s.size());
-	int idx=0;
-	for(const List<String>::Element *E=s.front();E;E=E->next()) {
+	int idx = 0;
+	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
 
-		arr.set(idx++,E->get());
+		arr.set(idx++, E->get());
 	}
 
 	return arr;
 }
 
-PoolStringArray ConfigFile::_get_section_keys(const String& p_section) const{
+PoolStringArray ConfigFile::_get_section_keys(const String &p_section) const {
 
 	List<String> s;
-	get_section_keys(p_section,&s);
+	get_section_keys(p_section, &s);
 	PoolStringArray arr;
 	arr.resize(s.size());
-	int idx=0;
-	for(const List<String>::Element *E=s.front();E;E=E->next()) {
+	int idx = 0;
+	for (const List<String>::Element *E = s.front(); E; E = E->next()) {
 
-		arr.set(idx++,E->get());
+		arr.set(idx++, E->get());
 	}
 
 	return arr;
-
 }
 
+void ConfigFile::set_value(const String &p_section, const String &p_key, const Variant &p_value) {
 
-void ConfigFile::set_value(const String& p_section, const String& p_key, const Variant& p_value){
-
-	if (p_value.get_type()==Variant::NIL) {
+	if (p_value.get_type() == Variant::NIL) {
 		//erase
 		if (!values.has(p_section))
 			return; // ?
@@ -76,58 +74,54 @@ void ConfigFile::set_value(const String& p_section, const String& p_key, const V
 
 	} else {
 		if (!values.has(p_section)) {
-			values[p_section]=Map<String, Variant>();
+			values[p_section] = Map<String, Variant>();
 		}
 
-		values[p_section][p_key]=p_value;
-
+		values[p_section][p_key] = p_value;
 	}
-
 }
-Variant ConfigFile::get_value(const String& p_section, const String& p_key, Variant p_default) const {
+Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 
-	ERR_FAIL_COND_V(!values.has(p_section),p_default);
-	ERR_FAIL_COND_V(!values[p_section].has(p_key),p_default);
+	ERR_FAIL_COND_V(!values.has(p_section), p_default);
+	ERR_FAIL_COND_V(!values[p_section].has(p_key), p_default);
 	return values[p_section][p_key];
-
 }
 
-bool ConfigFile::has_section(const String& p_section) const {
+bool ConfigFile::has_section(const String &p_section) const {
 
 	return values.has(p_section);
 }
-bool ConfigFile::has_section_key(const String& p_section,const String& p_key) const {
+bool ConfigFile::has_section_key(const String &p_section, const String &p_key) const {
 
 	if (!values.has(p_section))
 		return false;
 	return values[p_section].has(p_key);
 }
 
-void ConfigFile::get_sections(List<String> *r_sections) const{
+void ConfigFile::get_sections(List<String> *r_sections) const {
 
-	for(const Map< String, Map<String, Variant> >::Element *E=values.front();E;E=E->next()) {
+	for (const Map<String, Map<String, Variant> >::Element *E = values.front(); E; E = E->next()) {
 		r_sections->push_back(E->key());
 	}
 }
-void ConfigFile::get_section_keys(const String& p_section,List<String> *r_keys) const{
+void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
 
 	ERR_FAIL_COND(!values.has(p_section));
 
-	for(const Map<String, Variant> ::Element *E=values[p_section].front();E;E=E->next()) {
+	for (const Map<String, Variant>::Element *E = values[p_section].front(); E; E = E->next()) {
 		r_keys->push_back(E->key());
 	}
-
 }
 
-void ConfigFile::erase_section(const String& p_section) {
+void ConfigFile::erase_section(const String &p_section) {
 
 	values.erase(p_section);
 }
 
-Error ConfigFile::save(const String& p_path){
+Error ConfigFile::save(const String &p_path) {
 
 	Error err;
-	FileAccess *file = FileAccess::open(p_path,FileAccess::WRITE,&err);
+	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
 	if (err) {
 		if (file)
@@ -135,18 +129,17 @@ Error ConfigFile::save(const String& p_path){
 		return err;
 	}
 
+	for (Map<String, Map<String, Variant> >::Element *E = values.front(); E; E = E->next()) {
 
-	for(Map< String, Map<String, Variant> >::Element *E=values.front();E;E=E->next()) {
-
-		if (E!=values.front())
+		if (E != values.front())
 			file->store_string("\n");
-		file->store_string("["+E->key()+"]\n\n");
+		file->store_string("[" + E->key() + "]\n\n");
 
-		for(Map<String, Variant>::Element *F=E->get().front();F;F=F->next()) {
+		for (Map<String, Variant>::Element *F = E->get().front(); F; F = F->next()) {
 
 			String vstr;
-			VariantWriter::write_to_string(F->get(),vstr);
-			file->store_string(F->key()+"="+vstr+"\n");
+			VariantWriter::write_to_string(F->get(), vstr);
+			file->store_string(F->key() + "=" + vstr + "\n");
 		}
 	}
 
@@ -155,48 +148,46 @@ Error ConfigFile::save(const String& p_path){
 	return OK;
 }
 
-
-Error ConfigFile::load(const String& p_path) {
+Error ConfigFile::load(const String &p_path) {
 
 	Error err;
-	FileAccess *f= FileAccess::open(p_path,FileAccess::READ,&err);
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (!f)
 		return ERR_CANT_OPEN;
 
 	VariantParser::StreamFile stream;
-	stream.f=f;
+	stream.f = f;
 
 	String assign;
 	Variant value;
 	VariantParser::Tag next_tag;
 
-	int lines=0;
+	int lines = 0;
 	String error_text;
 
 	String section;
 
-	while(true) {
+	while (true) {
 
-		assign=Variant();
+		assign = Variant();
 		next_tag.fields.clear();
-		next_tag.name=String();
+		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream,lines,error_text,next_tag,assign,value,NULL,true);
-		if (err==ERR_FILE_EOF) {
+		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		if (err == ERR_FILE_EOF) {
 			memdelete(f);
 			return OK;
-		}
-		else if (err!=OK) {
-			ERR_PRINTS("ConfgFile::load - "+p_path+":"+itos(lines)+" error: "+error_text);
+		} else if (err != OK) {
+			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
 			memdelete(f);
 			return err;
 		}
 
-		if (assign!=String()) {
-			set_value(section,assign,value);
-		} else if (next_tag.name!=String()) {
-			section=next_tag.name;
+		if (assign != String()) {
+			set_value(section, assign, value);
+		} else if (next_tag.name != String()) {
+			section = next_tag.name;
 		}
 	}
 
@@ -205,27 +196,22 @@ Error ConfigFile::load(const String& p_path) {
 	return OK;
 }
 
+void ConfigFile::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("set_value", "section", "key", "value"), &ConfigFile::set_value);
+	ClassDB::bind_method(D_METHOD("get_value:Variant", "section", "key", "default"), &ConfigFile::get_value, DEFVAL(Variant()));
 
-void ConfigFile::_bind_methods(){
+	ClassDB::bind_method(D_METHOD("has_section", "section"), &ConfigFile::has_section);
+	ClassDB::bind_method(D_METHOD("has_section_key", "section", "key"), &ConfigFile::has_section_key);
 
-	ClassDB::bind_method(D_METHOD("set_value","section","key","value"),&ConfigFile::set_value);
-	ClassDB::bind_method(D_METHOD("get_value:Variant","section","key","default"),&ConfigFile::get_value,DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("get_sections"), &ConfigFile::_get_sections);
+	ClassDB::bind_method(D_METHOD("get_section_keys", "section"), &ConfigFile::_get_section_keys);
 
-	ClassDB::bind_method(D_METHOD("has_section","section"),&ConfigFile::has_section);
-	ClassDB::bind_method(D_METHOD("has_section_key","section","key"),&ConfigFile::has_section_key);
+	ClassDB::bind_method(D_METHOD("erase_section", "section"), &ConfigFile::erase_section);
 
-	ClassDB::bind_method(D_METHOD("get_sections"),&ConfigFile::_get_sections);
-	ClassDB::bind_method(D_METHOD("get_section_keys","section"),&ConfigFile::_get_section_keys);
-
-	ClassDB::bind_method(D_METHOD("erase_section","section"),&ConfigFile::erase_section);
-
-	ClassDB::bind_method(D_METHOD("load:Error","path"),&ConfigFile::load);
-	ClassDB::bind_method(D_METHOD("save:Error","path"),&ConfigFile::save);
-
+	ClassDB::bind_method(D_METHOD("load:Error", "path"), &ConfigFile::load);
+	ClassDB::bind_method(D_METHOD("save:Error", "path"), &ConfigFile::save);
 }
 
-
-ConfigFile::ConfigFile()
-{
+ConfigFile::ConfigFile() {
 }

@@ -33,8 +33,8 @@
 #define TEXTURE_REGION_EDITOR_PLUGIN_H
 
 #include "canvas_item_editor_plugin.h"
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/2d/sprite.h"
 #include "scene/gui/patch_9_rect.h"
 #include "scene/resources/style_box.h"
@@ -42,7 +42,7 @@
 
 class TextureRegionEditor : public Control {
 
-	GDCLASS(TextureRegionEditor, Control );
+	GDCLASS(TextureRegionEditor, Control);
 
 	enum SnapMode {
 		SNAP_NONE,
@@ -57,7 +57,7 @@ class TextureRegionEditor : public Control {
 	ToolButton *zoom_in;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_out;
-	HBoxContainer * hb_grid; //For showing/hiding the grid controls when changing the SnapMode
+	HBoxContainer *hb_grid; //For showing/hiding the grid controls when changing the SnapMode
 	SpinBox *sb_step_y;
 	SpinBox *sb_step_x;
 	SpinBox *sb_off_y;
@@ -70,7 +70,7 @@ class TextureRegionEditor : public Control {
 	HScrollBar *hscroll;
 
 	EditorNode *editor;
-	UndoRedo* undo_redo;
+	UndoRedo *undo_redo;
 
 	Vector2 draw_ofs;
 	float draw_zoom;
@@ -107,9 +107,9 @@ class TextureRegionEditor : public Control {
 	void _zoom_in();
 	void _zoom_reset();
 	void _zoom_out();
-	void apply_rect(const Rect2& rect);
-protected:
+	void apply_rect(const Rect2 &rect);
 
+protected:
 	void _notification(int p_what);
 	void _node_removed(Object *p_obj);
 	static void _bind_methods();
@@ -119,26 +119,23 @@ protected:
 	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
-
 	void _edit_region();
 	void _region_draw();
 	void _region_input(const InputEvent &p_input);
 	void _scroll_changed(float);
 
 	void edit(Object *p_obj);
-	TextureRegionEditor(EditorNode* p_editor);
-
+	TextureRegionEditor(EditorNode *p_editor);
 };
 
-class TextureRegionEditorPlugin : public EditorPlugin
-{
-	GDCLASS( TextureRegionEditorPlugin, EditorPlugin );
+class TextureRegionEditorPlugin : public EditorPlugin {
+	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
 	Button *region_button;
 	TextureRegionEditor *region_editor;
 	EditorNode *editor;
-public:
 
+public:
 	virtual String get_name() const { return "TextureRegion"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);

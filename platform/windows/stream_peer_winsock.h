@@ -39,7 +39,6 @@
 class StreamPeerWinsock : public StreamPeerTCP {
 
 protected:
-
 	mutable Status status;
 	IP::Type sock_type;
 
@@ -52,20 +51,19 @@ protected:
 	IP_Address peer_host;
 	int peer_port;
 
-	Error write(const uint8_t* p_data,int p_bytes, int &r_sent, bool p_block);
-	Error read(uint8_t* p_buffer, int p_bytes,int &r_received, bool p_block);
+	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
+	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
 
-	static StreamPeerTCP* _create();
+	static StreamPeerTCP *_create();
 
 public:
+	virtual Error connect_to_host(const IP_Address &p_host, uint16_t p_port);
 
-	virtual Error connect_to_host(const IP_Address& p_host, uint16_t p_port);
+	virtual Error put_data(const uint8_t *p_data, int p_bytes);
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
 
-	virtual Error put_data(const uint8_t* p_data,int p_bytes);
-	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent);
-
-	virtual Error get_data(uint8_t* p_buffer, int p_bytes);
-	virtual Error get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_received);
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
 	virtual int get_available_bytes() const;
 
@@ -82,7 +80,6 @@ public:
 	static void cleanup();
 
 	virtual void set_nodelay(bool p_enabled);
-
 
 	StreamPeerWinsock();
 	~StreamPeerWinsock();

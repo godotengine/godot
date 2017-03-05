@@ -29,13 +29,12 @@
 #ifndef QUAD_H
 #define QUAD_H
 
-
-#include "scene/3d/visual_instance.h"
 #include "rid.h"
+#include "scene/3d/visual_instance.h"
 
 class Quad : public GeometryInstance {
 
-	GDCLASS(Quad,GeometryInstance);
+	GDCLASS(Quad, GeometryInstance);
 
 	Vector3::Axis axis;
 	bool centered;
@@ -50,18 +49,17 @@ class Quad : public GeometryInstance {
 	void _update();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void set_axis(Vector3::Axis p_axis);
 	Vector3::Axis get_axis() const;
 
-	void set_size(const Vector2& p_sizze);
+	void set_size(const Vector2 &p_sizze);
 	Vector2 get_size() const;
 
-	void set_offset(const Vector2& p_offset);
+	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
 	void set_centered(bool p_enabled);
@@ -73,6 +71,5 @@ public:
 	Quad();
 	~Quad();
 };
-
 
 #endif // QUAD_H

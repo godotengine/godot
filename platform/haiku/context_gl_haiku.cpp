@@ -30,12 +30,12 @@
 
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 
-ContextGL_Haiku::ContextGL_Haiku(HaikuDirectWindow* p_window) {
+ContextGL_Haiku::ContextGL_Haiku(HaikuDirectWindow *p_window) {
 	window = p_window;
 
 	uint32 type = BGL_RGB | BGL_DOUBLE | BGL_DEPTH;
 	view = new HaikuGLView(window->Bounds(), type);
-	
+
 	use_vsync = false;
 }
 

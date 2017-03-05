@@ -31,18 +31,16 @@
 
 #if defined(WINDOWS_ENABLED)
 
-#include <windows.h>
 #include "os/rw_lock.h"
+#include <windows.h>
 
 class RWLockWindows : public RWLock {
-
 
 	SRWLOCK lock;
 
 	static RWLock *create_func_windows();
 
 public:
-
 	virtual void read_lock();
 	virtual void read_unlock();
 	virtual Error read_try_lock();
@@ -56,10 +54,8 @@ public:
 	RWLockWindows();
 
 	~RWLockWindows();
-
 };
 
 #endif
-
 
 #endif // RWLOCKWINDOWS_H

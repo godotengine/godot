@@ -40,10 +40,10 @@
 
 class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 
-	GDCLASS(AudioStreamPlaybackOpus,AudioStreamPlayback)
+	GDCLASS(AudioStreamPlaybackOpus, AudioStreamPlayback)
 
 	enum {
-		MIN_MIX=1024
+		MIN_MIX = 1024
 	};
 
 	FileAccess *f;
@@ -78,19 +78,19 @@ class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 	float loop_restart_time;
 
 public:
-	Error set_file(const String& p_file);
+	Error set_file(const String &p_file);
 
-	virtual void play(float p_from=0);
+	virtual void play(float p_from = 0);
 	virtual void stop();
 	virtual bool is_playing() const { return playing; }
 
-	virtual void set_loop_restart_time(float p_time) { loop_restart_time=p_time; }
+	virtual void set_loop_restart_time(float p_time) { loop_restart_time = p_time; }
 
-	virtual void set_paused(bool p_paused) { paused=p_paused; }
+	virtual void set_paused(bool p_paused) { paused = p_paused; }
 	virtual bool is_paused() const { return paused; }
 
-	virtual void set_loop(bool p_enable) { loops=p_enable; }
-	virtual bool has_loop() const {return loops; }
+	virtual void set_loop(bool p_enable) { loops = p_enable; }
+	virtual bool has_loop() const { return loops; }
 
 	virtual float get_length() const;
 
@@ -106,35 +106,33 @@ public:
 
 	virtual int get_minimum_buffer_size() const;
 
-	virtual int mix(int16_t* p_bufer,int p_frames);
+	virtual int mix(int16_t *p_bufer, int p_frames);
 
 	AudioStreamPlaybackOpus();
 	~AudioStreamPlaybackOpus();
 };
 
+class AudioStreamOpus : public AudioStream {
 
-class AudioStreamOpus: public AudioStream {
-
-	GDCLASS(AudioStreamOpus,AudioStream)
+	GDCLASS(AudioStreamOpus, AudioStream)
 
 	String file;
-public:
 
+public:
 	Ref<AudioStreamPlayback> instance_playback() {
-		Ref<AudioStreamPlaybackOpus> pb = memnew( AudioStreamPlaybackOpus );
+		Ref<AudioStreamPlaybackOpus> pb = memnew(AudioStreamPlaybackOpus);
 		pb->set_file(file);
 		return pb;
 	}
 
-	void set_file(const String& p_file) { file=p_file; }
-
+	void set_file(const String &p_file) { file = p_file; }
 };
 
-class ResourceFormatLoaderAudioStreamOpus: public ResourceFormatLoader {
+class ResourceFormatLoaderAudioStreamOpus : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 };
 

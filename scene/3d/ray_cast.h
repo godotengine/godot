@@ -33,8 +33,7 @@
 
 class RayCast : public Spatial {
 
-	GDCLASS(RayCast,Spatial);
-
+	GDCLASS(RayCast, Spatial);
 
 	bool enabled;
 	bool collided;
@@ -51,16 +50,15 @@ class RayCast : public Spatial {
 	uint32_t type_mask;
 
 protected:
-
 	void _notification(int p_what);
 	void _update_raycast_state();
 	static void _bind_methods();
-public:
 
+public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_cast_to(const Vector3& p_point);
+	void set_cast_to(const Vector3 &p_point);
 	Vector3 get_cast_to() const;
 
 	void set_layer_mask(uint32_t p_mask);
@@ -76,10 +74,10 @@ public:
 	Vector3 get_collision_point() const;
 	Vector3 get_collision_normal() const;
 
-	void add_exception_rid(const RID& p_rid);
-	void add_exception(const Object* p_object);
-	void remove_exception_rid(const RID& p_rid);
-	void remove_exception(const Object* p_object);
+	void add_exception_rid(const RID &p_rid);
+	void add_exception(const Object *p_object);
+	void remove_exception_rid(const RID &p_rid);
+	void remove_exception(const Object *p_object);
 	void clear_exceptions();
 
 	RayCast();

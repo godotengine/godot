@@ -29,28 +29,26 @@
 #ifndef RASTERIZERSCENEGLES3_H
 #define RASTERIZERSCENEGLES3_H
 
-#include "rasterizer_storage_gles3.h"
-#include "drivers/gles3/shaders/scene.glsl.h"
 #include "drivers/gles3/shaders/cube_to_dp.glsl.h"
-#include "drivers/gles3/shaders/resolve.glsl.h"
-#include "drivers/gles3/shaders/screen_space_reflection.glsl.h"
 #include "drivers/gles3/shaders/effect_blur.glsl.h"
-#include "drivers/gles3/shaders/subsurf_scattering.glsl.h"
-#include "drivers/gles3/shaders/ssao_minify.glsl.h"
+#include "drivers/gles3/shaders/exposure.glsl.h"
+#include "drivers/gles3/shaders/resolve.glsl.h"
+#include "drivers/gles3/shaders/scene.glsl.h"
+#include "drivers/gles3/shaders/screen_space_reflection.glsl.h"
 #include "drivers/gles3/shaders/ssao.glsl.h"
 #include "drivers/gles3/shaders/ssao_blur.glsl.h"
-#include "drivers/gles3/shaders/exposure.glsl.h"
+#include "drivers/gles3/shaders/ssao_minify.glsl.h"
+#include "drivers/gles3/shaders/subsurf_scattering.glsl.h"
 #include "drivers/gles3/shaders/tonemap.glsl.h"
+#include "rasterizer_storage_gles3.h"
 
 class RasterizerSceneGLES3 : public RasterizerScene {
 public:
-
 	enum ShadowFilterMode {
 		SHADOW_FILTER_NEAREST,
 		SHADOW_FILTER_PCF5,
 		SHADOW_FILTER_PCF13,
 	};
-
 
 	ShadowFilterMode shadow_filter_mode;
 
@@ -83,8 +81,6 @@ public:
 
 	struct State {
 
-
-
 		bool texscreen_copied;
 		int current_blend_mode;
 		float current_line_width;
@@ -103,7 +99,6 @@ public:
 		SsaoBlurShaderGLES3 ssao_blur_shader;
 		ExposureShaderGLES3 exposure_shader;
 		TonemapShaderGLES3 tonemap_shader;
-
 
 		struct SceneDataUBO {
 
@@ -167,7 +162,6 @@ public:
 
 		bool used_contact_shadows;
 
-
 		int spot_light_count;
 		int omni_light_count;
 		int directional_light_count;
@@ -178,15 +172,14 @@ public:
 
 	} state;
 
-
 	/* SHADOW ATLAS API */
 
 	struct ShadowAtlas : public RID_Data {
 
 		enum {
-			QUADRANT_SHIFT=27,
-			SHADOW_INDEX_MASK=(1<<QUADRANT_SHIFT)-1,
-			SHADOW_INVALID=0xFFFFFFFF
+			QUADRANT_SHIFT = 27,
+			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
+			SHADOW_INVALID = 0xFFFFFFFF
 		};
 
 		struct Quadrant {
@@ -199,15 +192,15 @@ public:
 				uint64_t alloc_tick;
 
 				Shadow() {
-					version=0;
-					alloc_tick=0;
+					version = 0;
+					alloc_tick = 0;
 				}
 			};
 
 			Vector<Shadow> shadows;
 
 			Quadrant() {
-				subdivision=0; //not in use
+				subdivision = 0; //not in use
 			}
 
 		} quadrants[4];
@@ -220,7 +213,7 @@ public:
 		GLuint fbo;
 		GLuint depth;
 
-		Map<RID,uint32_t> shadow_owners;
+		Map<RID, uint32_t> shadow_owners;
 	};
 
 	struct ShadowCubeMap {
@@ -235,10 +228,10 @@ public:
 	RID_Owner<ShadowAtlas> shadow_atlas_owner;
 
 	RID shadow_atlas_create();
-	void shadow_atlas_set_size(RID p_atlas,int p_size);
-	void shadow_atlas_set_quadrant_subdivision(RID p_atlas,int p_quadrant,int p_subdivision);
+	void shadow_atlas_set_size(RID p_atlas, int p_size);
+	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision);
 	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
-	bool shadow_atlas_update_light(RID p_atlas,RID p_light_intance,float p_coverage,uint64_t p_light_version);
+	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version);
 
 	struct DirectionalShadow {
 		GLuint fbo;
@@ -272,8 +265,8 @@ public:
 	mutable RID_Owner<ReflectionAtlas> reflection_atlas_owner;
 
 	virtual RID reflection_atlas_create();
-	virtual void reflection_atlas_set_size(RID p_ref_atlas,int p_size);
-	virtual void reflection_atlas_set_subdivision(RID p_ref_atlas,int p_subdiv);
+	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_size);
+	virtual void reflection_atlas_set_subdivision(RID p_ref_atlas, int p_subdiv);
 
 	/* REFLECTION CUBEMAPS */
 
@@ -300,8 +293,6 @@ public:
 
 		int render_step;
 
-
-
 		uint64_t last_pass;
 		int reflection_index;
 
@@ -319,19 +310,15 @@ public:
 		//notes: for ambientblend, use distance to edge to blend between already existing global environment
 	};
 
-
 	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
 	virtual RID reflection_probe_instance_create(RID p_probe);
-	virtual void reflection_probe_instance_set_transform(RID p_instance,const Transform& p_transform);
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
 	virtual void reflection_probe_release_atlas_index(RID p_instance);
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance);
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance);
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas);
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance);
-
-
-
 
 	/* ENVIRONMENT API */
 
@@ -359,7 +346,6 @@ public:
 		float ssr_depth_tolerance;
 		bool ssr_smooth;
 		bool ssr_roughness;
-
 
 		bool ssao_enabled;
 		float ssao_intensity;
@@ -403,62 +389,61 @@ public:
 		VS::EnvironmentDOFBlurQuality dof_blur_near_quality;
 
 		Environment() {
-			bg_mode=VS::ENV_BG_CLEAR_COLOR;
-			skybox_scale=1.0;
-			bg_energy=1.0;
-			skybox_ambient=0;
-			ambient_energy=1.0;
-			ambient_skybox_contribution=0.0;
-			canvas_max_layer=0;
+			bg_mode = VS::ENV_BG_CLEAR_COLOR;
+			skybox_scale = 1.0;
+			bg_energy = 1.0;
+			skybox_ambient = 0;
+			ambient_energy = 1.0;
+			ambient_skybox_contribution = 0.0;
+			canvas_max_layer = 0;
 
-			ssr_enabled=false;
-			ssr_max_steps=64;
-			ssr_accel=0.04;
-			ssr_fade=2.0;
-			ssr_depth_tolerance=0.2;
-			ssr_smooth=true;
-			ssr_roughness=true;
+			ssr_enabled = false;
+			ssr_max_steps = 64;
+			ssr_accel = 0.04;
+			ssr_fade = 2.0;
+			ssr_depth_tolerance = 0.2;
+			ssr_smooth = true;
+			ssr_roughness = true;
 
-			ssao_enabled=false;
-			ssao_intensity=1.0;
-			ssao_radius=1.0;
-			ssao_intensity2=1.0;
-			ssao_radius2=0.0;
-			ssao_bias=0.01;
-			ssao_light_affect=0;
-			ssao_filter=true;
+			ssao_enabled = false;
+			ssao_intensity = 1.0;
+			ssao_radius = 1.0;
+			ssao_intensity2 = 1.0;
+			ssao_radius2 = 0.0;
+			ssao_bias = 0.01;
+			ssao_light_affect = 0;
+			ssao_filter = true;
 
-			tone_mapper=VS::ENV_TONE_MAPPER_LINEAR;
-			tone_mapper_exposure=1.0;
-			tone_mapper_exposure_white=1.0;
-			auto_exposure=false;
-			auto_exposure_speed=0.5;
-			auto_exposure_min=0.05;
-			auto_exposure_max=8;
-			auto_exposure_grey=0.4;
+			tone_mapper = VS::ENV_TONE_MAPPER_LINEAR;
+			tone_mapper_exposure = 1.0;
+			tone_mapper_exposure_white = 1.0;
+			auto_exposure = false;
+			auto_exposure_speed = 0.5;
+			auto_exposure_min = 0.05;
+			auto_exposure_max = 8;
+			auto_exposure_grey = 0.4;
 
-			glow_enabled=false;
-			glow_levels=(1<<2)|(1<<4);
-			glow_intensity=0.8;
-			glow_strength=1.0;
-			glow_bloom=0.0;
-			glow_blend_mode=VS::GLOW_BLEND_MODE_SOFTLIGHT;
-			glow_hdr_bleed_treshold=1.0;
-			glow_hdr_bleed_scale=2.0;
-			glow_bicubic_upscale=false;
+			glow_enabled = false;
+			glow_levels = (1 << 2) | (1 << 4);
+			glow_intensity = 0.8;
+			glow_strength = 1.0;
+			glow_bloom = 0.0;
+			glow_blend_mode = VS::GLOW_BLEND_MODE_SOFTLIGHT;
+			glow_hdr_bleed_treshold = 1.0;
+			glow_hdr_bleed_scale = 2.0;
+			glow_bicubic_upscale = false;
 
-			dof_blur_far_enabled=false;
-			dof_blur_far_distance=10;
-			dof_blur_far_transition=5;
-			dof_blur_far_amount=0.1;
-			dof_blur_far_quality=VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
+			dof_blur_far_enabled = false;
+			dof_blur_far_distance = 10;
+			dof_blur_far_transition = 5;
+			dof_blur_far_amount = 0.1;
+			dof_blur_far_quality = VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
 
-			dof_blur_near_enabled=false;
-			dof_blur_near_distance=2;
-			dof_blur_near_transition=1;
-			dof_blur_near_amount=0.1;
-			dof_blur_near_quality=VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
-
+			dof_blur_near_enabled = false;
+			dof_blur_near_distance = 2;
+			dof_blur_near_transition = 1;
+			dof_blur_near_amount = 0.1;
+			dof_blur_near_quality = VS::ENV_DOF_BLUR_QUALITY_MEDIUM;
 		}
 	};
 
@@ -466,27 +451,25 @@ public:
 
 	virtual RID environment_create();
 
-	virtual void environment_set_background(RID p_env,VS::EnvironmentBG p_bg);
-	virtual void environment_set_skybox(RID p_env,RID p_skybox);
-	virtual void environment_set_skybox_scale(RID p_env,float p_scale);
-	virtual void environment_set_bg_color(RID p_env,const Color& p_color);
-	virtual void environment_set_bg_energy(RID p_env,float p_energy);
-	virtual void environment_set_canvas_max_layer(RID p_env,int p_max_layer);
-	virtual void environment_set_ambient_light(RID p_env,const Color& p_color,float p_energy=1.0,float p_skybox_contribution=0.0);
+	virtual void environment_set_background(RID p_env, VS::EnvironmentBG p_bg);
+	virtual void environment_set_skybox(RID p_env, RID p_skybox);
+	virtual void environment_set_skybox_scale(RID p_env, float p_scale);
+	virtual void environment_set_bg_color(RID p_env, const Color &p_color);
+	virtual void environment_set_bg_energy(RID p_env, float p_energy);
+	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_skybox_contribution = 0.0);
 
-	virtual void environment_set_dof_blur_near(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_dof_blur_far(RID p_env,bool p_enable,float p_distance,float p_transition,float p_far_amount,VS::EnvironmentDOFBlurQuality p_quality);
-	virtual void environment_set_glow(RID p_env,bool p_enable,int p_level_flags,float p_intensity,float p_strength,float p_bloom_treshold,VS::EnvironmentGlowBlendMode p_blend_mode,float p_hdr_bleed_treshold,float p_hdr_bleed_scale,bool p_bicubic_upscale);
-	virtual void environment_set_fog(RID p_env,bool p_enable,float p_begin,float p_end,RID p_gradient_texture);
+	virtual void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality);
+	virtual void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_treshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_treshold, float p_hdr_bleed_scale, bool p_bicubic_upscale);
+	virtual void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture);
 
-	virtual void environment_set_ssr(RID p_env,bool p_enable, int p_max_steps,float p_accel,float p_fade,float p_depth_tolerance,bool p_smooth,bool p_roughness);
-	virtual void environment_set_ssao(RID p_env,bool p_enable, float p_radius, float p_radius2, float p_intensity2, float p_intensity, float p_bias, float p_light_affect,const Color &p_color,bool p_blur);
+	virtual void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_accel, float p_fade, float p_depth_tolerance, bool p_smooth, bool p_roughness);
+	virtual void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_radius2, float p_intensity2, float p_intensity, float p_bias, float p_light_affect, const Color &p_color, bool p_blur);
 
+	virtual void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
 
-	virtual void environment_set_tonemap(RID p_env,VS::EnvironmentToneMapper p_tone_mapper,float p_exposure,float p_white,bool p_auto_exposure,float p_min_luminance,float p_max_luminance,float p_auto_exp_speed,float p_auto_exp_scale);
-
-	virtual void environment_set_adjustment(RID p_env,bool p_enable,float p_brightness,float p_contrast,float p_saturation,RID p_ramp);
-
+	virtual void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp);
 
 	/* LIGHT INSTANCE */
 
@@ -503,7 +486,6 @@ public:
 		float shadow_matrix3[16];
 		float shadow_matrix4[16];
 		float shadow_split_offsets[4];
-
 	};
 
 	struct LightInstance : public RID_Data {
@@ -515,8 +497,6 @@ public:
 			float farplane;
 			float split;
 		};
-
-
 
 		ShadowTransform shadow_transform[4];
 
@@ -542,18 +522,16 @@ public:
 
 		Rect2 directional_rect;
 
-
 		Set<RID> shadow_atlases; //shadow atlases where this light is registered
 
-		LightInstance() { }
-
+		LightInstance() {}
 	};
 
 	mutable RID_Owner<LightInstance> light_instance_owner;
 
 	virtual RID light_instance_create(RID p_light);
-	virtual void light_instance_set_transform(RID p_light_instance,const Transform& p_transform);
-	virtual void light_instance_set_shadow_transform(RID p_light_instance,const CameraMatrix& p_projection,const Transform& p_transform,float p_far,float p_split,int p_pass);
+	virtual void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
+	virtual void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass);
 	virtual void light_instance_mark_visible(RID p_light_instance);
 
 	/* REFLECTION INSTANCE */
@@ -566,42 +544,42 @@ public:
 		Vector3 bounds;
 		Transform transform_to_data;
 
-		GIProbeInstance() { probe=NULL; tex_cache=0; }
+		GIProbeInstance() {
+			probe = NULL;
+			tex_cache = 0;
+		}
 	};
-
-
 
 	mutable RID_Owner<GIProbeInstance> gi_probe_instance_owner;
 
 	virtual RID gi_probe_instance_create();
-	virtual void gi_probe_instance_set_light_data(RID p_probe,RID p_base,RID p_data);
-	virtual void gi_probe_instance_set_transform_to_data(RID p_probe,const Transform& p_xform);
-	virtual void gi_probe_instance_set_bounds(RID p_probe,const Vector3& p_bounds);
+	virtual void gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data);
+	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
+	virtual void gi_probe_instance_set_bounds(RID p_probe, const Vector3 &p_bounds);
 
 	/* RENDER LIST */
 
 	struct RenderList {
 
 		enum {
-			DEFAULT_MAX_ELEMENTS=65536,
-			SORT_FLAG_SKELETON=1,
-			SORT_FLAG_INSTANCING=2,
-			MAX_DIRECTIONAL_LIGHTS=16,
-			MAX_LIGHTS=4096,
-			MAX_REFLECTIONS=1024,
+			DEFAULT_MAX_ELEMENTS = 65536,
+			SORT_FLAG_SKELETON = 1,
+			SORT_FLAG_INSTANCING = 2,
+			MAX_DIRECTIONAL_LIGHTS = 16,
+			MAX_LIGHTS = 4096,
+			MAX_REFLECTIONS = 1024,
 
-
-			SORT_KEY_DEPTH_LAYER_SHIFT=60,
-			SORT_KEY_UNSHADED_FLAG=uint64_t(1)<<59,
-			SORT_KEY_NO_DIRECTIONAL_FLAG=uint64_t(1)<<58,
-			SORT_KEY_GI_PROBES_FLAG=uint64_t(1)<<57,
-			SORT_KEY_SHADING_SHIFT=57,
-			SORT_KEY_SHADING_MASK=7,
-			SORT_KEY_MATERIAL_INDEX_SHIFT=40,
-			SORT_KEY_GEOMETRY_INDEX_SHIFT=20,
-			SORT_KEY_GEOMETRY_TYPE_SHIFT=15,
-			SORT_KEY_SKELETON_FLAG=2,
-			SORT_KEY_MIRROR_FLAG=1
+			SORT_KEY_DEPTH_LAYER_SHIFT = 60,
+			SORT_KEY_UNSHADED_FLAG = uint64_t(1) << 59,
+			SORT_KEY_NO_DIRECTIONAL_FLAG = uint64_t(1) << 58,
+			SORT_KEY_GI_PROBES_FLAG = uint64_t(1) << 57,
+			SORT_KEY_SHADING_SHIFT = 57,
+			SORT_KEY_SHADING_MASK = 7,
+			SORT_KEY_MATERIAL_INDEX_SHIFT = 40,
+			SORT_KEY_GEOMETRY_INDEX_SHIFT = 20,
+			SORT_KEY_GEOMETRY_TYPE_SHIFT = 15,
+			SORT_KEY_SKELETON_FLAG = 2,
+			SORT_KEY_MIRROR_FLAG = 1
 
 		};
 
@@ -614,9 +592,7 @@ public:
 			RasterizerStorageGLES3::Material *material;
 			RasterizerStorageGLES3::GeometryOwner *owner;
 			uint64_t sort_key;
-
 		};
-
 
 		Element *_elements;
 		Element **elements;
@@ -624,64 +600,62 @@ public:
 		int element_count;
 		int alpha_element_count;
 
-
 		void clear() {
 
-			element_count=0;
-			alpha_element_count=0;
+			element_count = 0;
+			alpha_element_count = 0;
 		}
 
 		//should eventually be replaced by radix
 
 		struct SortByKey {
 
-			_FORCE_INLINE_ bool operator()(const Element* A,  const Element* B ) const {
+			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->sort_key < B->sort_key;
 			}
 		};
 
 		void sort_by_key(bool p_alpha) {
 
-			SortArray<Element*,SortByKey> sorter;
+			SortArray<Element *, SortByKey> sorter;
 			if (p_alpha) {
-				sorter.sort(&elements[max_elements-alpha_element_count],alpha_element_count);
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
 			} else {
-				sorter.sort(elements,element_count);
+				sorter.sort(elements, element_count);
 			}
 		}
 
 		struct SortByDepth {
 
-			_FORCE_INLINE_ bool operator()(const Element* A,  const Element* B ) const {
+			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
 				return A->instance->depth > B->instance->depth;
 			}
 		};
 
 		void sort_by_depth(bool p_alpha) {
 
-			SortArray<Element*,SortByDepth> sorter;
+			SortArray<Element *, SortByDepth> sorter;
 			if (p_alpha) {
-				sorter.sort(&elements[max_elements-alpha_element_count],alpha_element_count);
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
 			} else {
-				sorter.sort(elements,element_count);
+				sorter.sort(elements, element_count);
 			}
 		}
 
+		_FORCE_INLINE_ Element *add_element() {
 
-		_FORCE_INLINE_ Element* add_element() {
-
-			if (element_count+alpha_element_count>=max_elements)
+			if (element_count + alpha_element_count >= max_elements)
 				return NULL;
-			elements[element_count]=&_elements[element_count];
+			elements[element_count] = &_elements[element_count];
 			return elements[element_count++];
 		}
 
-		_FORCE_INLINE_ Element* add_alpha_element() {
+		_FORCE_INLINE_ Element *add_alpha_element() {
 
-			if (element_count+alpha_element_count>=max_elements)
+			if (element_count + alpha_element_count >= max_elements)
 				return NULL;
-			int idx = max_elements-alpha_element_count-1;
-			elements[idx]=&_elements[idx];
+			int idx = max_elements - alpha_element_count - 1;
+			elements[idx] = &_elements[idx];
 			alpha_element_count++;
 			return elements[idx];
 		}
@@ -689,18 +663,16 @@ public:
 		void init() {
 
 			element_count = 0;
-			alpha_element_count =0;
-			elements=memnew_arr(Element*,max_elements);
-			_elements=memnew_arr(Element,max_elements);
-			for (int i=0;i<max_elements;i++)
-				elements[i]=&_elements[i]; // assign elements
-
+			alpha_element_count = 0;
+			elements = memnew_arr(Element *, max_elements);
+			_elements = memnew_arr(Element, max_elements);
+			for (int i = 0; i < max_elements; i++)
+				elements[i] = &_elements[i]; // assign elements
 		}
-
 
 		RenderList() {
 
-			max_elements=DEFAULT_MAX_ELEMENTS;
+			max_elements = DEFAULT_MAX_ELEMENTS;
 		}
 
 		~RenderList() {
@@ -709,45 +681,41 @@ public:
 		}
 	};
 
-
 	LightInstance *directional_light;
 	LightInstance *directional_lights[RenderList::MAX_DIRECTIONAL_LIGHTS];
 
-
-
 	RenderList render_list;
 
-	_FORCE_INLINE_ void _set_cull(bool p_front,bool p_reverse_cull);
+	_FORCE_INLINE_ void _set_cull(bool p_front, bool p_reverse_cull);
 
-	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material* p_material,bool p_alpha_pass);
-	_FORCE_INLINE_ void _setup_transform(InstanceBase *p_instance,const Transform& p_view_transform,const CameraMatrix& p_projection);
+	_FORCE_INLINE_ bool _setup_material(RasterizerStorageGLES3::Material *p_material, bool p_alpha_pass);
+	_FORCE_INLINE_ void _setup_transform(InstanceBase *p_instance, const Transform &p_view_transform, const CameraMatrix &p_projection);
 	_FORCE_INLINE_ void _setup_geometry(RenderList::Element *e);
 	_FORCE_INLINE_ void _render_geometry(RenderList::Element *e);
-	_FORCE_INLINE_ void _setup_light(RenderList::Element *e,const Transform& p_view_transform);
+	_FORCE_INLINE_ void _setup_light(RenderList::Element *e, const Transform &p_view_transform);
 
-	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform& p_view_transform, const CameraMatrix& p_projection, GLuint p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows);
+	void _render_list(RenderList::Element **p_elements, int p_element_count, const Transform &p_view_transform, const CameraMatrix &p_projection, GLuint p_base_env, bool p_reverse_cull, bool p_alpha_pass, bool p_shadow, bool p_directional_add, bool p_directional_shadows);
 
+	_FORCE_INLINE_ void _add_geometry(RasterizerStorageGLES3::Geometry *p_geometry, InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner, int p_material, bool p_shadow);
 
-	_FORCE_INLINE_ void _add_geometry(  RasterizerStorageGLES3::Geometry* p_geometry,  InstanceBase *p_instance, RasterizerStorageGLES3::GeometryOwner *p_owner,int p_material,bool p_shadow);
+	void _draw_skybox(RasterizerStorageGLES3::SkyBox *p_skybox, const CameraMatrix &p_projection, const Transform &p_transform, bool p_vflip, float p_scale);
 
-	void _draw_skybox(RasterizerStorageGLES3::SkyBox *p_skybox, const CameraMatrix& p_projection, const Transform& p_transform, bool p_vflip, float p_scale);
-
-	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform& p_cam_transform);
+	void _setup_environment(Environment *env, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform);
 	void _setup_directional_light(int p_index, const Transform &p_camera_inverse_transformm, bool p_use_shadows);
-	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix& p_camera_projection, RID p_shadow_atlas);
-	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform& p_camera_inverse_transform, const CameraMatrix& p_camera_projection, RID p_reflection_atlas, Environment *p_env);
+	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_shadow_atlas);
+	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, const CameraMatrix &p_camera_projection, RID p_reflection_atlas, Environment *p_env);
 
 	void _copy_screen();
 	void _copy_to_front_buffer(Environment *env);
 	void _copy_texture_to_front_buffer(GLuint p_texture); //used for debug
 
-	void _fill_render_list(InstanceBase** p_cull_result,int p_cull_count,bool p_shadow);
+	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, bool p_shadow);
 
 	void _render_mrts(Environment *env, const CameraMatrix &p_cam_projection);
 	void _post_process(Environment *env, const CameraMatrix &p_cam_projection);
 
-	virtual void render_scene(const Transform& p_cam_transform,const CameraMatrix& p_cam_projection,bool p_cam_ortogonal,InstanceBase** p_cull_result,int p_cull_count,RID* p_light_cull_result,int p_light_cull_count,RID* p_reflection_probe_cull_result,int p_reflection_probe_cull_count,RID p_environment,RID p_shadow_atlas,RID p_reflection_atlas,RID p_reflection_probe,int p_reflection_probe_pass);
-	virtual void render_shadow(RID p_light,RID p_shadow_atlas,int p_pass,InstanceBase** p_cull_result,int p_cull_count);
+	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 	virtual bool free(RID p_rid);
 
 	void _generate_brdf();

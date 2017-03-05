@@ -28,22 +28,22 @@
 /*************************************************************************/
 #include "os_android.h"
 
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "core/global_config.h"
 #include "core/io/file_access_buffered_fa.h"
-#include "drivers/unix/file_access_unix.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/unix/dir_access_unix.h"
+#include "drivers/unix/file_access_unix.h"
+#include "file_access_android.h"
+#include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
-#include "main/main.h"
-#include "file_access_android.h"
-#include "core/global_config.h"
 
 #ifdef ANDROID_NATIVE_ACTIVITY
-#include "file_access_android.h"
 #include "dir_access_android.h"
+#include "file_access_android.h"
 #else
-#include "file_access_jandroid.h"
 #include "dir_access_jandroid.h"
+#include "file_access_jandroid.h"
 #endif
 
 int OS_Android::get_video_driver_count() const {
@@ -51,7 +51,7 @@ int OS_Android::get_video_driver_count() const {
 	return 1;
 }
 
-const char * OS_Android::get_video_driver_name(int p_driver) const {
+const char *OS_Android::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
 }
@@ -66,7 +66,7 @@ int OS_Android::get_audio_driver_count() const {
 	return 1;
 }
 
-const char * OS_Android::get_audio_driver_name(int p_driver) const {
+const char *OS_Android::get_audio_driver_name(int p_driver) const {
 
 	return "Android";
 }
@@ -108,35 +108,31 @@ void OS_Android::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
 #endif
-
 }
 
-void OS_Android::set_opengl_extensions(const char* p_gl_extensions) {
+void OS_Android::set_opengl_extensions(const char *p_gl_extensions) {
 
 	ERR_FAIL_COND(!p_gl_extensions);
-	gl_extensions=p_gl_extensions;
+	gl_extensions = p_gl_extensions;
 }
 
-void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
+void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-
-	use_gl2=p_video_driver!=1;
-
+	use_gl2 = p_video_driver != 1;
 
 	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2);
+		gfx_init_func(gfx_init_ud, use_gl2);
 
 	AudioDriverManager::add_driver(&audio_driver_android);
 
-
-	RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
+	RasterizerGLES2 *rasterizer_gles22 = memnew(RasterizerGLES2(false, use_reload_hooks, false, use_reload_hooks));
 	if (gl_extensions)
 		rasterizer_gles22->set_extensions(gl_extensions);
 	rasterizer = rasterizer_gles22;
 
 	rasterizer->set_force_16_bits_fbo(use_16bits_fbo);
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
+	visual_server = memnew(VisualServerRaster(rasterizer));
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
@@ -146,26 +142,26 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 	AudioDriverManager::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManager::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManager::get_driver(p_audio_driver)->init() != OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	physics_server = memnew( PhysicsServerSW );
+	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
 	//physics_2d_server = memnew( Physics2DServerSW );
 	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
-	input = memnew( InputDefault );
+	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
-	
-	power_manager = memnew( power_android );
+
+	power_manager = memnew(power_android);
 }
 
-void OS_Android::set_main_loop( MainLoop * p_main_loop ) {
+void OS_Android::set_main_loop(MainLoop *p_main_loop) {
 
-	main_loop=p_main_loop;
+	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
 #if 0
 
@@ -204,12 +200,11 @@ void OS_Android::set_main_loop( MainLoop * p_main_loop ) {
 	}
 
 #endif
-
 }
 
 void OS_Android::delete_main_loop() {
 
-	memdelete( main_loop );
+	memdelete(main_loop);
 }
 
 void OS_Android::finalize() {
@@ -217,28 +212,25 @@ void OS_Android::finalize() {
 	memdelete(input);
 }
 
+void OS_Android::vprint(const char *p_format, va_list p_list, bool p_stderr) {
 
-void OS_Android::vprint(const char* p_format, va_list p_list, bool p_stderr) {
-
-	__android_log_vprint(p_stderr?ANDROID_LOG_ERROR:ANDROID_LOG_INFO,"godot",p_format,p_list);
+	__android_log_vprint(p_stderr ? ANDROID_LOG_ERROR : ANDROID_LOG_INFO, "godot", p_format, p_list);
 }
 
-void OS_Android::print(const char *p_format, ... ) {
+void OS_Android::print(const char *p_format, ...) {
 
 	va_list argp;
 	va_start(argp, p_format);
-	__android_log_vprint(ANDROID_LOG_INFO,"godot",p_format,argp);
+	__android_log_vprint(ANDROID_LOG_INFO, "godot", p_format, argp);
 	va_end(argp);
-
 }
 
-void OS_Android::alert(const String& p_alert,const String& p_title) {
+void OS_Android::alert(const String &p_alert, const String &p_title) {
 
-	print("ALERT: %s\n",p_alert.utf8().get_data());
+	print("ALERT: %s\n", p_alert.utf8().get_data());
 	if (alert_func)
 		alert_func(p_alert, p_title);
 }
-
 
 void OS_Android::set_mouse_show(bool p_show) {
 
@@ -265,16 +257,14 @@ int OS_Android::get_mouse_button_state() const {
 
 	return 0;
 }
-void OS_Android::set_window_title(const String& p_title) {
-
+void OS_Android::set_window_title(const String &p_title) {
 }
 
 //interesting byt not yet
 //void set_clipboard(const String& p_text);
 //String get_clipboard() const;
 
-void OS_Android::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
-
+void OS_Android::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
 OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
@@ -282,7 +272,7 @@ OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
 	return default_videomode;
 }
 
-void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
+void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 
 	p_list->push_back(default_videomode);
 }
@@ -297,7 +287,7 @@ void OS_Android::set_keep_screen_on(bool p_enabled) {
 
 Size2 OS_Android::get_window_size() const {
 
-	return Vector2(default_videomode.width,default_videomode.height);
+	return Vector2(default_videomode.width, default_videomode.height);
 }
 
 String OS_Android::get_name() {
@@ -337,7 +327,6 @@ void OS_Android::main_loop_end() {
 
 	if (main_loop)
 		main_loop->finish();
-
 }
 
 void OS_Android::main_loop_focusout() {
@@ -345,34 +334,32 @@ void OS_Android::main_loop_focusout() {
 	if (main_loop)
 		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	audio_driver_android.set_pause(true);
-
 }
 
-void OS_Android::main_loop_focusin(){
+void OS_Android::main_loop_focusin() {
 
 	if (main_loop)
 		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	audio_driver_android.set_pause(false);
-
 }
 
 void OS_Android::process_joy_event(OS_Android::JoypadEvent p_event) {
 
 	switch (p_event.type) {
-	case JOY_EVENT_BUTTON:
-		last_id = input->joy_button(last_id, p_event.device, p_event.index, p_event.pressed);
-		break;
-	case JOY_EVENT_AXIS:
-		InputDefault::JoyAxis value;
-		value.min = -1;
-		value.value = p_event.value;
-		last_id = input->joy_axis(last_id, p_event.device, p_event.index, value);
-		break;
-	case JOY_EVENT_HAT:
-		last_id = input->joy_hat(last_id, p_event.device, p_event.hat);
-		break;
-	default:
-		return;
+		case JOY_EVENT_BUTTON:
+			last_id = input->joy_button(last_id, p_event.device, p_event.index, p_event.pressed);
+			break;
+		case JOY_EVENT_AXIS:
+			InputDefault::JoyAxis value;
+			value.min = -1;
+			value.value = p_event.value;
+			last_id = input->joy_axis(last_id, p_event.device, p_event.index, value);
+			break;
+		case JOY_EVENT_HAT:
+			last_id = input->joy_hat(last_id, p_event.device, p_event.hat);
+			break;
+		default:
+			return;
 	}
 }
 
@@ -382,163 +369,152 @@ void OS_Android::process_event(InputEvent p_event) {
 	input->parse_input_event(p_event);
 }
 
-
-void OS_Android::process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points) {
+void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points) {
 
 	//print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
 
-	switch(p_what) {
+	switch (p_what) {
 		case 0: { //gesture begin
 
 			if (touch.size()) {
 				//end all if exist
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_BUTTON;
-				ev.ID=last_id++;
-				ev.mouse_button.button_index=BUTTON_LEFT;
-				ev.mouse_button.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed=false;
-				ev.mouse_button.x=touch[0].pos.x;
-				ev.mouse_button.y=touch[0].pos.y;
-				ev.mouse_button.global_x=touch[0].pos.x;
-				ev.mouse_button.global_y=touch[0].pos.y;
+				ev.type = InputEvent::MOUSE_BUTTON;
+				ev.ID = last_id++;
+				ev.mouse_button.button_index = BUTTON_LEFT;
+				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_button.pressed = false;
+				ev.mouse_button.x = touch[0].pos.x;
+				ev.mouse_button.y = touch[0].pos.y;
+				ev.mouse_button.global_x = touch[0].pos.x;
+				ev.mouse_button.global_y = touch[0].pos.y;
 				input->parse_input_event(ev);
 
-
-				for(int i=0;i<touch.size();i++) {
+				for (int i = 0; i < touch.size(); i++) {
 
 					InputEvent ev;
-					ev.type=InputEvent::SCREEN_TOUCH;
-					ev.ID=last_id++;
-					ev.screen_touch.index=touch[i].id;
-					ev.screen_touch.pressed=false;
-					ev.screen_touch.x=touch[i].pos.x;
-					ev.screen_touch.y=touch[i].pos.y;
+					ev.type = InputEvent::SCREEN_TOUCH;
+					ev.ID = last_id++;
+					ev.screen_touch.index = touch[i].id;
+					ev.screen_touch.pressed = false;
+					ev.screen_touch.x = touch[i].pos.x;
+					ev.screen_touch.y = touch[i].pos.y;
 					input->parse_input_event(ev);
-
 				}
 			}
 
 			touch.resize(p_points.size());
-			for(int i=0;i<p_points.size();i++) {
-				touch[i].id=p_points[i].id;
-				touch[i].pos=p_points[i].pos;
+			for (int i = 0; i < p_points.size(); i++) {
+				touch[i].id = p_points[i].id;
+				touch[i].pos = p_points[i].pos;
 			}
 
 			{
 				//send mouse
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_BUTTON;
-				ev.ID=last_id++;
-				ev.mouse_button.button_index=BUTTON_LEFT;
-				ev.mouse_button.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed=true;
-				ev.mouse_button.x=touch[0].pos.x;
-				ev.mouse_button.y=touch[0].pos.y;
-				ev.mouse_button.global_x=touch[0].pos.x;
-				ev.mouse_button.global_y=touch[0].pos.y;
-				last_mouse=touch[0].pos;
+				ev.type = InputEvent::MOUSE_BUTTON;
+				ev.ID = last_id++;
+				ev.mouse_button.button_index = BUTTON_LEFT;
+				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_button.pressed = true;
+				ev.mouse_button.x = touch[0].pos.x;
+				ev.mouse_button.y = touch[0].pos.y;
+				ev.mouse_button.global_x = touch[0].pos.x;
+				ev.mouse_button.global_y = touch[0].pos.y;
+				last_mouse = touch[0].pos;
 				input->parse_input_event(ev);
 			}
 
-
 			//send touch
-			for(int i=0;i<touch.size();i++) {
+			for (int i = 0; i < touch.size(); i++) {
 
 				InputEvent ev;
-				ev.type=InputEvent::SCREEN_TOUCH;
-				ev.ID=last_id++;
-				ev.screen_touch.index=touch[i].id;
-				ev.screen_touch.pressed=true;
-				ev.screen_touch.x=touch[i].pos.x;
-				ev.screen_touch.y=touch[i].pos.y;
+				ev.type = InputEvent::SCREEN_TOUCH;
+				ev.ID = last_id++;
+				ev.screen_touch.index = touch[i].id;
+				ev.screen_touch.pressed = true;
+				ev.screen_touch.x = touch[i].pos.x;
+				ev.screen_touch.y = touch[i].pos.y;
 				input->parse_input_event(ev);
 			}
 
 		} break;
 		case 1: { //motion
 
-
 			if (p_points.size()) {
 				//send mouse, should look for point 0?
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_MOTION;
-				ev.ID=last_id++;
-				ev.mouse_motion.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_motion.x=p_points[0].pos.x;
-				ev.mouse_motion.y=p_points[0].pos.y;
-				input->set_mouse_pos(Point2(ev.mouse_motion.x,ev.mouse_motion.y));
-				ev.mouse_motion.speed_x=input->get_last_mouse_speed().x;
-				ev.mouse_motion.speed_y=input->get_last_mouse_speed().y;
-				ev.mouse_motion.relative_x=p_points[0].pos.x-last_mouse.x;
-				ev.mouse_motion.relative_y=p_points[0].pos.y-last_mouse.y;
-				last_mouse=p_points[0].pos;
+				ev.type = InputEvent::MOUSE_MOTION;
+				ev.ID = last_id++;
+				ev.mouse_motion.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_motion.x = p_points[0].pos.x;
+				ev.mouse_motion.y = p_points[0].pos.y;
+				input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+				ev.mouse_motion.speed_x = input->get_last_mouse_speed().x;
+				ev.mouse_motion.speed_y = input->get_last_mouse_speed().y;
+				ev.mouse_motion.relative_x = p_points[0].pos.x - last_mouse.x;
+				ev.mouse_motion.relative_y = p_points[0].pos.y - last_mouse.y;
+				last_mouse = p_points[0].pos;
 				input->parse_input_event(ev);
 			}
 
-			ERR_FAIL_COND(touch.size()!=p_points.size());
+			ERR_FAIL_COND(touch.size() != p_points.size());
 
-			for(int i=0;i<touch.size();i++) {
+			for (int i = 0; i < touch.size(); i++) {
 
-				int idx=-1;
-				for(int j=0;j<p_points.size();j++) {
+				int idx = -1;
+				for (int j = 0; j < p_points.size(); j++) {
 
-					if (touch[i].id==p_points[j].id) {
-						idx=j;
+					if (touch[i].id == p_points[j].id) {
+						idx = j;
 						break;
 					}
-
 				}
 
-				ERR_CONTINUE(idx==-1);
+				ERR_CONTINUE(idx == -1);
 
-				if (touch[i].pos==p_points[idx].pos)
+				if (touch[i].pos == p_points[idx].pos)
 					continue; //no move unncesearily
 
 				InputEvent ev;
-				ev.type=InputEvent::SCREEN_DRAG;
-				ev.ID=last_id++;
-				ev.screen_drag.index=touch[i].id;
-				ev.screen_drag.x=p_points[idx].pos.x;
-				ev.screen_drag.y=p_points[idx].pos.y;
-				ev.screen_drag.relative_x=p_points[idx].pos.x - touch[i].pos.x;
-				ev.screen_drag.relative_y=p_points[idx].pos.y - touch[i].pos.y;
+				ev.type = InputEvent::SCREEN_DRAG;
+				ev.ID = last_id++;
+				ev.screen_drag.index = touch[i].id;
+				ev.screen_drag.x = p_points[idx].pos.x;
+				ev.screen_drag.y = p_points[idx].pos.y;
+				ev.screen_drag.relative_x = p_points[idx].pos.x - touch[i].pos.x;
+				ev.screen_drag.relative_y = p_points[idx].pos.y - touch[i].pos.y;
 				input->parse_input_event(ev);
-				touch[i].pos=p_points[idx].pos;
+				touch[i].pos = p_points[idx].pos;
 			}
-
 
 		} break;
 		case 2: { //release
 
-
-
 			if (touch.size()) {
 				//end all if exist
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_BUTTON;
-				ev.ID=last_id++;
-				ev.mouse_button.button_index=BUTTON_LEFT;
-				ev.mouse_button.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed=false;
-				ev.mouse_button.x=touch[0].pos.x;
-				ev.mouse_button.y=touch[0].pos.y;
-				ev.mouse_button.global_x=touch[0].pos.x;
-				ev.mouse_button.global_y=touch[0].pos.y;
+				ev.type = InputEvent::MOUSE_BUTTON;
+				ev.ID = last_id++;
+				ev.mouse_button.button_index = BUTTON_LEFT;
+				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_button.pressed = false;
+				ev.mouse_button.x = touch[0].pos.x;
+				ev.mouse_button.y = touch[0].pos.y;
+				ev.mouse_button.global_x = touch[0].pos.x;
+				ev.mouse_button.global_y = touch[0].pos.y;
 				input->parse_input_event(ev);
 
-
-				for(int i=0;i<touch.size();i++) {
+				for (int i = 0; i < touch.size(); i++) {
 
 					InputEvent ev;
-					ev.type=InputEvent::SCREEN_TOUCH;
-					ev.ID=last_id++;
-					ev.screen_touch.index=touch[i].id;
-					ev.screen_touch.pressed=false;
-					ev.screen_touch.x=touch[i].pos.x;
-					ev.screen_touch.y=touch[i].pos.y;
+					ev.type = InputEvent::SCREEN_TOUCH;
+					ev.ID = last_id++;
+					ev.screen_touch.index = touch[i].id;
+					ev.screen_touch.pressed = false;
+					ev.screen_touch.x = touch[i].pos.x;
+					ev.screen_touch.y = touch[i].pos.y;
 					input->parse_input_event(ev);
-
 				}
 				touch.clear();
 			}
@@ -546,38 +522,33 @@ void OS_Android::process_touch(int p_what,int p_pointer, const Vector<TouchPos>&
 		} break;
 		case 3: { // add tuchi
 
+			ERR_FAIL_INDEX(p_pointer, p_points.size());
 
-
-
-
-			ERR_FAIL_INDEX(p_pointer,p_points.size());
-
-			TouchPos tp=p_points[p_pointer];
+			TouchPos tp = p_points[p_pointer];
 			touch.push_back(tp);
 
 			InputEvent ev;
-			ev.type=InputEvent::SCREEN_TOUCH;
-			ev.ID=last_id++;
-			ev.screen_touch.index=tp.id;
-			ev.screen_touch.pressed=true;
-			ev.screen_touch.x=tp.pos.x;
-			ev.screen_touch.y=tp.pos.y;
+			ev.type = InputEvent::SCREEN_TOUCH;
+			ev.ID = last_id++;
+			ev.screen_touch.index = tp.id;
+			ev.screen_touch.pressed = true;
+			ev.screen_touch.x = tp.pos.x;
+			ev.screen_touch.y = tp.pos.y;
 			input->parse_input_event(ev);
 
 		} break;
 		case 4: {
 
-
-			for(int i=0;i<touch.size();i++) {
-				if (touch[i].id==p_pointer) {
+			for (int i = 0; i < touch.size(); i++) {
+				if (touch[i].id == p_pointer) {
 
 					InputEvent ev;
-					ev.type=InputEvent::SCREEN_TOUCH;
-					ev.ID=last_id++;
-					ev.screen_touch.index=touch[i].id;
-					ev.screen_touch.pressed=false;
-					ev.screen_touch.x=touch[i].pos.x;
-					ev.screen_touch.y=touch[i].pos.y;
+					ev.type = InputEvent::SCREEN_TOUCH;
+					ev.ID = last_id++;
+					ev.screen_touch.index = touch[i].id;
+					ev.screen_touch.pressed = false;
+					ev.screen_touch.x = touch[i].pos.x;
+					ev.screen_touch.y = touch[i].pos.y;
 					input->parse_input_event(ev);
 					touch.remove(i);
 					i--;
@@ -585,22 +556,20 @@ void OS_Android::process_touch(int p_what,int p_pointer, const Vector<TouchPos>&
 			}
 
 		} break;
-
 	}
-
 }
 
-void OS_Android::process_accelerometer(const Vector3& p_accelerometer) {
+void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
 
 	input->set_accelerometer(p_accelerometer);
 }
 
-void OS_Android::process_magnetometer(const Vector3& p_magnetometer) {
+void OS_Android::process_magnetometer(const Vector3 &p_magnetometer) {
 
 	input->set_magnetometer(p_magnetometer);
 }
 
-void OS_Android::process_gyroscope(const Vector3& p_gyroscope) {
+void OS_Android::process_gyroscope(const Vector3 &p_gyroscope) {
 
 	input->set_gyroscope(p_gyroscope);
 }
@@ -615,7 +584,7 @@ bool OS_Android::has_virtual_keyboard() const {
 	return true;
 }
 
-void OS_Android::show_virtual_keyboard(const String& p_existing_text,const Rect2& p_screen_rect) {
+void OS_Android::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 
 	if (show_virtual_keyboard_func) {
 		show_virtual_keyboard_func(p_existing_text);
@@ -636,13 +605,12 @@ void OS_Android::hide_virtual_keyboard() {
 	};
 }
 
+void OS_Android::init_video_mode(int p_video_width, int p_video_height) {
 
-void OS_Android::init_video_mode(int p_video_width,int p_video_height) {
-
-	default_videomode.width=p_video_width;
-	default_videomode.height=p_video_height;
-	default_videomode.fullscreen=true;
-	default_videomode.resizable=false;
+	default_videomode.width = p_video_width;
+	default_videomode.height = p_video_height;
+	default_videomode.fullscreen = true;
+	default_videomode.resizable = false;
 }
 
 void OS_Android::main_loop_request_go_back() {
@@ -653,14 +621,14 @@ void OS_Android::main_loop_request_go_back() {
 
 void OS_Android::set_display_size(Size2 p_size) {
 
-	default_videomode.width=p_size.x;
-	default_videomode.height=p_size.y;
+	default_videomode.width = p_size.x;
+	default_videomode.height = p_size.y;
 }
 
 void OS_Android::reload_gfx() {
 
 	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2);
+		gfx_init_func(gfx_init_ud, use_gl2);
 	if (rasterizer)
 		rasterizer->reload_vram();
 }
@@ -668,7 +636,7 @@ void OS_Android::reload_gfx() {
 Error OS_Android::shell_open(String p_uri) {
 
 	if (open_uri_func)
-		return open_uri_func(p_uri)?ERR_CANT_OPEN:OK;
+		return open_uri_func(p_uri) ? ERR_CANT_OPEN : OK;
 	return ERR_UNAVAILABLE;
 }
 
@@ -686,9 +654,9 @@ String OS_Android::get_locale() const {
 
 String OS_Android::get_model_name() const {
 
-    if (get_model_func)
-        return get_model_func();
-    return OS_Unix::get_model_name();
+	if (get_model_func)
+		return get_model_func();
+	return OS_Unix::get_model_name();
 }
 
 int OS_Android::get_screen_dpi(int p_screen) const {
@@ -701,27 +669,27 @@ int OS_Android::get_screen_dpi(int p_screen) const {
 
 void OS_Android::set_need_reload_hooks(bool p_needs_them) {
 
-	use_reload_hooks=p_needs_them;
+	use_reload_hooks = p_needs_them;
 }
 
 String OS_Android::get_data_dir() const {
 
-	if (data_dir_cache!=String())
+	if (data_dir_cache != String())
 		return data_dir_cache;
 
 	if (get_data_dir_func) {
-		String data_dir=get_data_dir_func();
+		String data_dir = get_data_dir_func();
 
 		//store current dir
 		char real_current_dir_name[2048];
-		getcwd(real_current_dir_name,2048);
+		getcwd(real_current_dir_name, 2048);
 
 		//go to data dir
 		chdir(data_dir.utf8().get_data());
 
 		//get actual data dir, so we resolve potential symlink (Android 6.0+ seems to use symlink)
 		char data_current_dir_name[2048];
-		getcwd(data_current_dir_name,2048);
+		getcwd(data_current_dir_name, 2048);
 
 		//cache by parsing utf8
 		data_dir_cache.parse_utf8(data_current_dir_name);
@@ -732,18 +700,15 @@ String OS_Android::get_data_dir() const {
 		return data_dir_cache;
 	}
 
-
 	return ".";
 	//return GlobalConfig::get_singleton()->get_singleton_object("GodotOS")->call("get_data_dir");
 }
-
 
 void OS_Android::set_screen_orientation(ScreenOrientation p_orientation) {
 
 	if (set_screen_orientation_func)
 		set_screen_orientation_func(p_orientation);
 }
-
 
 String OS_Android::get_unique_ID() const {
 
@@ -755,13 +720,13 @@ String OS_Android::get_unique_ID() const {
 Error OS_Android::native_video_play(String p_path, float p_volume) {
 	if (video_play_func)
 		video_play_func(p_path);
-    return OK;
+	return OK;
 }
 
 bool OS_Android::native_video_is_playing() {
 	if (video_is_playing_func)
 		return video_is_playing_func();
-    return false;
+	return false;
 }
 
 void OS_Android::native_video_pause() {
@@ -783,7 +748,7 @@ void OS_Android::native_video_stop() {
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
 
-	use_16bits_fbo=p_is_16;
+	use_16bits_fbo = p_is_16;
 	if (rasterizer)
 		rasterizer->set_force_16_bits_fbo(p_is_16);
 }
@@ -800,29 +765,29 @@ String OS_Android::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id,GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, bool p_use_apk_expansion) {
 
-	use_apk_expansion=p_use_apk_expansion;
-	default_videomode.width=800;
-	default_videomode.height=600;
-	default_videomode.fullscreen=true;
-	default_videomode.resizable=false;
+	use_apk_expansion = p_use_apk_expansion;
+	default_videomode.width = 800;
+	default_videomode.height = 600;
+	default_videomode.fullscreen = true;
+	default_videomode.resizable = false;
 
-	gfx_init_func=p_gfx_init_func;
-	gfx_init_ud=p_gfx_init_ud;
-	main_loop=NULL;
-	last_id=1;
-	gl_extensions=NULL;
-	rasterizer=NULL;
-	use_gl2=false;
+	gfx_init_func = p_gfx_init_func;
+	gfx_init_ud = p_gfx_init_ud;
+	main_loop = NULL;
+	last_id = 1;
+	gl_extensions = NULL;
+	rasterizer = NULL;
+	use_gl2 = false;
 
-	open_uri_func=p_open_uri_func;
-	get_data_dir_func=p_get_data_dir_func;
-	get_locale_func=p_get_locale_func;
-	get_model_func=p_get_model_func;
+	open_uri_func = p_open_uri_func;
+	get_data_dir_func = p_get_data_dir_func;
+	get_locale_func = p_get_locale_func;
+	get_model_func = p_get_model_func;
 	get_screen_dpi_func = p_get_screen_dpi_func;
-	get_unique_id_func=p_get_unique_id;
-	get_system_dir_func=p_get_sdir_func;
+	get_unique_id_func = p_get_unique_id;
+	get_system_dir_func = p_get_sdir_func;
 
 	video_play_func = p_video_play_func;
 	video_is_playing_func = p_video_is_playing_func;
@@ -832,13 +797,11 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 	show_virtual_keyboard_func = p_show_vk;
 	hide_virtual_keyboard_func = p_hide_vk;
 
-	set_screen_orientation_func=p_screen_orient;
+	set_screen_orientation_func = p_screen_orient;
 	set_keep_screen_on_func = p_set_keep_screen_on_func;
 	alert_func = p_alert_func;
-	use_reload_hooks=false;
-
+	use_reload_hooks = false;
 }
 
 OS_Android::~OS_Android() {
-
 }

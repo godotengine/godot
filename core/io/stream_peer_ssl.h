@@ -32,24 +32,22 @@
 #include "io/stream_peer.h"
 
 class StreamPeerSSL : public StreamPeer {
-	GDCLASS(StreamPeerSSL,StreamPeer);
-public:
+	GDCLASS(StreamPeerSSL, StreamPeer);
 
-	typedef void (*LoadCertsFromMemory)(const PoolByteArray& p_certs);
+public:
+	typedef void (*LoadCertsFromMemory)(const PoolByteArray &p_certs);
+
 protected:
-	static StreamPeerSSL* (*_create)();
+	static StreamPeerSSL *(*_create)();
 	static void _bind_methods();
 
 	static LoadCertsFromMemory load_certs_func;
 	static bool available;
 
-
-friend class Main;
+	friend class Main;
 	static bool initialize_certs;
 
 public:
-
-
 	enum Status {
 		STATUS_DISCONNECTED,
 		STATUS_CONNECTED,
@@ -57,20 +55,20 @@ public:
 		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
 
-	virtual Error accept_stream(Ref<StreamPeer> p_base)=0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String())=0;
-	virtual Status get_status() const=0;
+	virtual Error accept_stream(Ref<StreamPeer> p_base) = 0;
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String()) = 0;
+	virtual Status get_status() const = 0;
 
-	virtual void disconnect_from_stream()=0;
+	virtual void disconnect_from_stream() = 0;
 
-	static StreamPeerSSL* create();
+	static StreamPeerSSL *create();
 
-	static void load_certs_from_memory(const PoolByteArray& p_memory);
+	static void load_certs_from_memory(const PoolByteArray &p_memory);
 	static bool is_available();
 
 	StreamPeerSSL();
 };
 
-VARIANT_ENUM_CAST( StreamPeerSSL::Status );
+VARIANT_ENUM_CAST(StreamPeerSSL::Status);
 
 #endif // STREAM_PEER_SSL_H

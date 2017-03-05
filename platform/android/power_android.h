@@ -35,15 +35,14 @@
 
 class power_android {
 
-struct LocalReferenceHolder
-{
-    JNIEnv *m_env;
-    const char *m_func;
-};
+	struct LocalReferenceHolder {
+		JNIEnv *m_env;
+		const char *m_func;
+	};
 
 private:
 	static struct LocalReferenceHolder refs;
-	static JNIEnv* env;
+	static JNIEnv *env;
 	static jmethodID mid;
 	static jobject context;
 	static jstring action;
@@ -55,7 +54,6 @@ private:
 	static jstring bname;
 	static jmethodID bmid;
 
-
 	int nsecs_left;
 	int percent_left;
 	PowerState power_state;
@@ -64,9 +62,7 @@ private:
 	bool UpdatePowerInfo();
 
 public:
-	
 	static int s_active;
-	
 
 	power_android();
 	virtual ~power_android();

@@ -30,15 +30,15 @@
 #define SCREEN_BUTTON_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/texture.h"
 #include "scene/resources/bit_mask.h"
 #include "scene/resources/rectangle_shape_2d.h"
+#include "scene/resources/texture.h"
 
 class TouchScreenButton : public Node2D {
 
-	GDCLASS(TouchScreenButton,Node2D);
-public:
+	GDCLASS(TouchScreenButton, Node2D);
 
+public:
 	enum VisibilityMode {
 		VISIBILITY_ALWAYS,
 		VISIBILITY_TOUCHSCREEN_ONLY
@@ -61,34 +61,32 @@ private:
 
 	VisibilityMode visibility;
 
-	void _input(const InputEvent& p_Event);
+	void _input(const InputEvent &p_Event);
 
 	void _press(int p_finger_pressed);
-	void _release(bool p_exiting_tree=false);
+	void _release(bool p_exiting_tree = false);
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
-
-
-	void set_texture(const Ref<Texture>& p_texture);
+	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
 
-	void set_texture_pressed(const Ref<Texture>& p_texture_pressed);
+	void set_texture_pressed(const Ref<Texture> &p_texture_pressed);
 	Ref<Texture> get_texture_pressed() const;
 
-	void set_bitmask(const Ref<BitMap>& p_bitmask);
+	void set_bitmask(const Ref<BitMap> &p_bitmask);
 	Ref<BitMap> get_bitmask() const;
 
-	void set_shape(const Ref<Shape2D>& p_shape);
+	void set_shape(const Ref<Shape2D> &p_shape);
 	Ref<Shape2D> get_shape() const;
 
 	void set_shape_centered(bool p_shape_centered);
 	bool is_shape_centered() const;
 
-	void set_action(const String& p_action);
+	void set_action(const String &p_action);
 	String get_action() const;
 
 	void set_passby_press(bool p_enable);
@@ -100,7 +98,6 @@ public:
 	bool is_pressed() const;
 
 	Rect2 get_item_rect() const;
-
 
 	TouchScreenButton();
 };

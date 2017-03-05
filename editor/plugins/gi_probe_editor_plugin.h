@@ -29,16 +29,14 @@
 #ifndef GIPROBEEDITORPLUGIN_H
 #define GIPROBEEDITORPLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
-#include "scene/resources/material.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/gi_probe.h"
-
-
+#include "scene/resources/material.h"
 
 class GIProbeEditorPlugin : public EditorPlugin {
 
-	GDCLASS( GIProbeEditorPlugin, EditorPlugin );
+	GDCLASS(GIProbeEditorPlugin, EditorPlugin);
 
 	GIProbe *gi_probe;
 
@@ -46,11 +44,11 @@ class GIProbeEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 
 	void _bake();
+
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	virtual String get_name() const { return "GIProbe"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -59,7 +57,6 @@ public:
 
 	GIProbeEditorPlugin(EditorNode *p_node);
 	~GIProbeEditorPlugin();
-
 };
 
 #endif // GIPROBEEDITORPLUGIN_H

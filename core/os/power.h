@@ -30,15 +30,12 @@
 #ifndef CORE_OS_POWER_H_
 #define CORE_OS_POWER_H_
 
-
-typedef enum
-{
-	POWERSTATE_UNKNOWN,      /**< cannot determine power status */
-	POWERSTATE_ON_BATTERY,   /**< Not plugged in, running on the battery */
-	POWERSTATE_NO_BATTERY,   /**< Plugged in, no battery available */
-	POWERSTATE_CHARGING,     /**< Plugged in, charging battery */
-	POWERSTATE_CHARGED       /**< Plugged in, battery charged */
+typedef enum {
+	POWERSTATE_UNKNOWN, /**< cannot determine power status */
+	POWERSTATE_ON_BATTERY, /**< Not plugged in, running on the battery */
+	POWERSTATE_NO_BATTERY, /**< Plugged in, no battery available */
+	POWERSTATE_CHARGING, /**< Plugged in, charging battery */
+	POWERSTATE_CHARGED /**< Plugged in, battery charged */
 } PowerState;
-
 
 #endif /* CORE_OS_POWER_H_ */

@@ -28,18 +28,18 @@
 /*************************************************************************/
 #include "groups_editor.h"
 
+#include "editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
-#include "editor_node.h"
 #include "scene/resources/packed_scene.h"
 
-void GroupsEditor::_add_group(const String& p_group) {
+void GroupsEditor::_add_group(const String &p_group) {
 
 	if (!node)
 		return;
 
 	String name = group_name->get_text();
-	if (name.strip_edges()=="")
+	if (name.strip_edges() == "")
 		return;
 
 	if (node->is_in_group(name))
@@ -47,12 +47,12 @@ void GroupsEditor::_add_group(const String& p_group) {
 
 	undo_redo->create_action(TTR("Add to Group"));
 
-	undo_redo->add_do_method(node,"add_to_group",name,true);
-	undo_redo->add_do_method(this,"update_tree");
-	undo_redo->add_undo_method(node,"remove_from_group",name);
-	undo_redo->add_undo_method(this,"update_tree");
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+	undo_redo->add_do_method(node, "add_to_group", name, true);
+	undo_redo->add_do_method(this, "update_tree");
+	undo_redo->add_undo_method(node, "remove_from_group", name);
+	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
+	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
 
 	undo_redo->commit_action();
 
@@ -72,19 +72,19 @@ void GroupsEditor::_remove_group(Object *p_item, int p_column, int p_id) {
 
 	undo_redo->create_action(TTR("Remove from Group"));
 
-	undo_redo->add_do_method(node,"remove_from_group",name);
-	undo_redo->add_do_method(this,"update_tree");
-	undo_redo->add_undo_method(node,"add_to_group",name,true);
-	undo_redo->add_undo_method(this,"update_tree");
-	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
-	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(),"update_tree"); //to force redraw of scene tree
+	undo_redo->add_do_method(node, "remove_from_group", name);
+	undo_redo->add_do_method(this, "update_tree");
+	undo_redo->add_undo_method(node, "add_to_group", name, true);
+	undo_redo->add_undo_method(this, "update_tree");
+	undo_redo->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
+	undo_redo->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock()->get_tree_editor(), "update_tree"); //to force redraw of scene tree
 
 	undo_redo->commit_action();
 }
 
 struct _GroupInfoComparator {
 
-	bool operator()(const Node::GroupInfo& p_a, const Node::GroupInfo& p_b) const {
+	bool operator()(const Node::GroupInfo &p_a, const Node::GroupInfo &p_b) const {
 		return p_a.name.operator String() < p_b.name.operator String();
 	}
 };
@@ -100,89 +100,83 @@ void GroupsEditor::update_tree() {
 	node->get_groups(&groups);
 	groups.sort_custom<_GroupInfoComparator>();
 
-	TreeItem *root=tree->create_item();
+	TreeItem *root = tree->create_item();
 
-	for(List<GroupInfo>::Element *E=groups.front();E;E=E->next()) {
+	for (List<GroupInfo>::Element *E = groups.front(); E; E = E->next()) {
 
 		Node::GroupInfo gi = E->get();
 		if (!gi.persistent)
 			continue;
 
 		Node *n = node;
-		bool can_be_deleted=true;
+		bool can_be_deleted = true;
 
-		while(n) {
+		while (n) {
 
-			Ref<SceneState> ss = (n==EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
+			Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
 
 			if (ss.is_valid()) {
 
 				int path = ss->find_node_by_path(n->get_path_to(node));
-				if (path!=-1) {
-					if (ss->is_node_in_group(path,gi.name)) {
-						can_be_deleted=false;
+				if (path != -1) {
+					if (ss->is_node_in_group(path, gi.name)) {
+						can_be_deleted = false;
 					}
 				}
 			}
 
-			n=n->get_owner();
+			n = n->get_owner();
 		}
 
-
-		TreeItem *item=tree->create_item(root);
+		TreeItem *item = tree->create_item(root);
 		item->set_text(0, gi.name);
 		if (can_be_deleted) {
 			item->add_button(0, get_icon("Remove", "EditorIcons"), 0);
 		} else {
-			item->set_selectable(0,false);
+			item->set_selectable(0, false);
 		}
-
 	}
 }
 
-void GroupsEditor::set_current(Node* p_node) {
+void GroupsEditor::set_current(Node *p_node) {
 
-	node=p_node;
+	node = p_node;
 	update_tree();
 }
 
 void GroupsEditor::_bind_methods() {
 
-	ClassDB::bind_method("_add_group",&GroupsEditor::_add_group);
-	ClassDB::bind_method("_remove_group",&GroupsEditor::_remove_group);
-	ClassDB::bind_method("update_tree",&GroupsEditor::update_tree);
+	ClassDB::bind_method("_add_group", &GroupsEditor::_add_group);
+	ClassDB::bind_method("_remove_group", &GroupsEditor::_remove_group);
+	ClassDB::bind_method("update_tree", &GroupsEditor::update_tree);
 }
 
 GroupsEditor::GroupsEditor() {
 
-	node=NULL;
+	node = NULL;
 
 	VBoxContainer *vbc = this;
 
-	HBoxContainer *hbc = memnew( HBoxContainer );
+	HBoxContainer *hbc = memnew(HBoxContainer);
 	vbc->add_child(hbc);
 
-	group_name = memnew( LineEdit );
+	group_name = memnew(LineEdit);
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc->add_child(group_name);
-	group_name->connect("text_entered",this,"_add_group");
+	group_name->connect("text_entered", this, "_add_group");
 
-	add = memnew( Button );
+	add = memnew(Button);
 	add->set_text(TTR("Add"));
 	hbc->add_child(add);
-	add->connect("pressed", this,"_add_group", varray(String()));
+	add->connect("pressed", this, "_add_group", varray(String()));
 
-	tree = memnew( Tree );
+	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->add_child(tree);
-	tree->connect("button_pressed",this,"_remove_group");
-	add_constant_override("separation",3*EDSCALE);
+	tree->connect("button_pressed", this, "_remove_group");
+	add_constant_override("separation", 3 * EDSCALE);
 }
 
-GroupsEditor::~GroupsEditor()
-{
+GroupsEditor::~GroupsEditor() {
 }
-
-
-

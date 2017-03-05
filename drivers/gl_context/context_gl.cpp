@@ -28,31 +28,26 @@
 /*************************************************************************/
 #include "context_gl.h"
 
+#if defined(OPENGL_ENABLED) || defined(GLES2_ENABLED)
 
-#if defined(OPENGL_ENABLED)  || defined(GLES2_ENABLED)
-
-
-
-ContextGL *ContextGL::singleton=NULL;
+ContextGL *ContextGL::singleton = NULL;
 
 ContextGL *ContextGL::get_singleton() {
 
 	return singleton;
 }
 
-
 ContextGL::ContextGL() {
-	
-	ERR_FAIL_COND(singleton);
-	
-	singleton=this;
-}
 
+	ERR_FAIL_COND(singleton);
+
+	singleton = this;
+}
 
 ContextGL::~ContextGL() {
 
-	if (singleton==this)
-		singleton=NULL;
+	if (singleton == this)
+		singleton = NULL;
 }
 
 #endif

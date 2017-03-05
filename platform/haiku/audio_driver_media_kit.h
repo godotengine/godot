@@ -30,19 +30,19 @@
 
 #ifdef MEDIA_KIT_ENABLED
 
-#include "core/os/thread.h"
 #include "core/os/mutex.h"
+#include "core/os/thread.h"
 
-#include <kernel/image.h> // needed for image_id
 #include <SoundPlayer.h>
+#include <kernel/image.h> // needed for image_id
 
 class AudioDriverMediaKit : public AudioDriver {
-	Mutex* mutex;
+	Mutex *mutex;
 
-	BSoundPlayer* player;
-	static int32_t* samples_in;
+	BSoundPlayer *player;
+	static int32_t *samples_in;
 
-	static void PlayBuffer(void* cookie, void* buffer, size_t size, const media_raw_audio_format& format);
+	static void PlayBuffer(void *cookie, void *buffer, size_t size, const media_raw_audio_format &format);
 
 	unsigned int mix_rate;
 	SpeakerMode speaker_mode;
@@ -52,8 +52,7 @@ class AudioDriverMediaKit : public AudioDriver {
 	bool active;
 
 public:
-
-	const char* get_name() const {
+	const char *get_name() const {
 		return "MediaKit";
 	};
 

@@ -31,16 +31,16 @@
 
 #include <wrl.h>
 
-#include "os/os.h"
 #include "EGL/egl.h"
-#include "error_list.h"
 #include "drivers/gl_context/context_gl.h"
+#include "error_list.h"
+#include "os/os.h"
 
 using namespace Windows::UI::Core;
 
 class ContextEGL : public ContextGL {
 
-	CoreWindow^ window;
+	CoreWindow ^ window;
 
 	EGLDisplay mEglDisplay;
 	EGLContext mEglContext;
@@ -52,7 +52,6 @@ class ContextEGL : public ContextGL {
 	bool vsync;
 
 public:
-
 	virtual void release_current();
 
 	virtual void make_current();
@@ -69,10 +68,8 @@ public:
 
 	void cleanup();
 
-	ContextEGL(CoreWindow^ p_window);
+	ContextEGL(CoreWindow ^ p_window);
 	~ContextEGL();
-
 };
 
 #endif
-

@@ -29,57 +29,53 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-
-#include "list.h"
 #include "array.h"
+#include "list.h"
 #include "ustring.h"
 class Variant;
 
-
 struct DictionaryPrivate;
-
 
 class Dictionary {
 
 	mutable DictionaryPrivate *_p;
 
-
-	void _ref(const Dictionary& p_from) const;
+	void _ref(const Dictionary &p_from) const;
 	void _unref() const;
+
 public:
+	void get_key_list(List<Variant> *p_keys) const;
 
-	void get_key_list( List<Variant> *p_keys) const;
+	Variant &operator[](const Variant &p_key);
+	const Variant &operator[](const Variant &p_key) const;
 
-	Variant& operator[](const Variant& p_key);
-	const Variant& operator[](const Variant& p_key) const;
+	const Variant *getptr(const Variant &p_key) const;
+	Variant *getptr(const Variant &p_key);
 
-	const Variant* getptr(const Variant& p_key) const;
-	Variant* getptr(const Variant& p_key);
-
-	Variant get_valid(const Variant& p_key) const;
+	Variant get_valid(const Variant &p_key) const;
 
 	int size() const;
 	bool empty() const;
 	void clear();
 
-	bool has(const Variant& p_key) const;
-	bool has_all(const Array& p_keys) const;
+	bool has(const Variant &p_key) const;
+	bool has_all(const Array &p_keys) const;
 
-	void erase(const Variant& p_key);
+	void erase(const Variant &p_key);
 
-	bool operator==(const Dictionary& p_dictionary) const;
+	bool operator==(const Dictionary &p_dictionary) const;
 
 	uint32_t hash() const;
-	void operator=(const Dictionary& p_dictionary);
+	void operator=(const Dictionary &p_dictionary);
 
-	const Variant* next(const Variant* p_key=NULL) const;
+	const Variant *next(const Variant *p_key = NULL) const;
 
 	Array keys() const;
 	Array values() const;
 
 	Dictionary copy() const;
 
-	Dictionary(const Dictionary& p_from);
+	Dictionary(const Dictionary &p_from);
 	Dictionary();
 	~Dictionary();
 };

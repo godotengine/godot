@@ -33,7 +33,7 @@
 
 class ProximityGroup : public Spatial {
 
-	GDCLASS( ProximityGroup, Spatial );
+	GDCLASS(ProximityGroup, Spatial);
 	OBJ_CATEGORY("3D");
 
 public:
@@ -57,7 +57,7 @@ public:
 	Vector3 grid_radius;
 	uint32_t group_version;
 
-	void add_groups(int* p_cell, String p_base, int p_depth);
+	void add_groups(int *p_cell, String p_base, int p_depth);
 	void _new_group(StringName p_name);
 
 	void _proximity_group_broadcast(String p_name, Variant p_params);
@@ -65,12 +65,11 @@ public:
 	static void _bind_methods();
 
 public:
-
 	void set_group_name(String p_group_name);
 	void broadcast(String p_name, Variant p_params);
 	void set_dispatch_mode(int p_mode);
 
-	void set_grid_radius(const Vector3& p_radius);
+	void set_grid_radius(const Vector3 &p_radius);
 	Vector3 get_grid_radius() const;
 
 	ProximityGroup();
@@ -78,4 +77,3 @@ public:
 };
 
 #endif
-

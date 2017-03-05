@@ -29,62 +29,61 @@
 #include "resource_saver.h"
 #include "global_config.h"
 #include "os/file_access.h"
-#include "script_language.h"
 #include "resource_loader.h"
+#include "script_language.h"
 
 ResourceFormatSaver *ResourceSaver::saver[MAX_SAVERS];
 
-int ResourceSaver::saver_count=0;
-bool ResourceSaver::timestamp_on_save=false;
-ResourceSavedCallback ResourceSaver::save_callback=0;
+int ResourceSaver::saver_count = 0;
+bool ResourceSaver::timestamp_on_save = false;
+ResourceSavedCallback ResourceSaver::save_callback = 0;
 
-Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_flags) {
+Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 
-	String extension=p_path.get_extension();
-	Error err=ERR_FILE_UNRECOGNIZED;
+	String extension = p_path.get_extension();
+	Error err = ERR_FILE_UNRECOGNIZED;
 
-	for (int i=0;i<saver_count;i++) {
+	for (int i = 0; i < saver_count; i++) {
 
 		if (!saver[i]->recognize(p_resource))
 			continue;
 
 		List<String> extensions;
-		bool recognized=false;
-		saver[i]->get_recognized_extensions(p_resource,&extensions);
+		bool recognized = false;
+		saver[i]->get_recognized_extensions(p_resource, &extensions);
 
-		for (List<String>::Element *E=extensions.front();E;E=E->next()) {
+		for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
 
-			if (E->get().nocasecmp_to(extension.get_extension())==0)
-				recognized=true;
+			if (E->get().nocasecmp_to(extension.get_extension()) == 0)
+				recognized = true;
 		}
 
 		if (!recognized)
 			continue;
 
-		String old_path=p_resource->get_path();
+		String old_path = p_resource->get_path();
 
-
-		String local_path=GlobalConfig::get_singleton()->localize_path(p_path);
+		String local_path = GlobalConfig::get_singleton()->localize_path(p_path);
 
 		RES rwcopy = p_resource;
-		if (p_flags&FLAG_CHANGE_PATH)
+		if (p_flags & FLAG_CHANGE_PATH)
 			rwcopy->set_path(local_path);
 
-		err = saver[i]->save(p_path,p_resource,p_flags);
+		err = saver[i]->save(p_path, p_resource, p_flags);
 
-		if (err == OK ) {
+		if (err == OK) {
 
 #ifdef TOOLS_ENABLED
 
-			((Resource*)p_resource.ptr())->set_edited(false);
+			((Resource *)p_resource.ptr())->set_edited(false);
 			if (timestamp_on_save) {
 				uint64_t mt = FileAccess::get_modified_time(p_path);
 
-				((Resource*)p_resource.ptr())->set_last_modified_time(mt);
+				((Resource *)p_resource.ptr())->set_last_modified_time(mt);
 			}
 #endif
 
-			if (p_flags&FLAG_CHANGE_PATH)
+			if (p_flags & FLAG_CHANGE_PATH)
 				rwcopy->set_path(old_path);
 
 			if (save_callback && p_path.begins_with("res://"))
@@ -92,46 +91,36 @@ Error ResourceSaver::save(const String &p_path,const RES& p_resource,uint32_t p_
 
 			return OK;
 		} else {
-
 		}
 	}
 
 	return err;
 }
 
-
 void ResourceSaver::set_save_callback(ResourceSavedCallback p_callback) {
 
-	save_callback=p_callback;
+	save_callback = p_callback;
 }
 
+void ResourceSaver::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) {
 
-void ResourceSaver::get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) {
+	for (int i = 0; i < saver_count; i++) {
 
-
-	for (int i=0;i<saver_count;i++) {
-
-		saver[i]->get_recognized_extensions(p_resource,p_extensions);
+		saver[i]->get_recognized_extensions(p_resource, p_extensions);
 	}
-
 }
 
 void ResourceSaver::add_resource_format_saver(ResourceFormatSaver *p_format_saver, bool p_at_front) {
 
-	ERR_FAIL_COND( saver_count >= MAX_SAVERS );
+	ERR_FAIL_COND(saver_count >= MAX_SAVERS);
 
 	if (p_at_front) {
-		for(int i=saver_count;i>0;i--) {
-			saver[i]=saver[i-1];
+		for (int i = saver_count; i > 0; i--) {
+			saver[i] = saver[i - 1];
 		}
-		saver[0]=p_format_saver;
+		saver[0] = p_format_saver;
 		saver_count++;
 	} else {
-		saver[saver_count++]=p_format_saver;
+		saver[saver_count++] = p_format_saver;
 	}
-
 }
-
-
-
-

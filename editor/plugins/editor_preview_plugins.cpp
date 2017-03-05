@@ -28,15 +28,15 @@
 /*************************************************************************/
 #include "editor_preview_plugins.h"
 
-#include "io/resource_loader.h"
 #include "editor/editor_settings.h"
 #include "io/file_access_memory.h"
+#include "io/resource_loader.h"
 #include "os/os.h"
 #include "scene/resources/material.h"
 //#include "scene/resources/sample.h"
-#include "scene/resources/mesh.h"
-#include "scene/resources/bit_mask.h"
 #include "editor/editor_scale.h"
+#include "scene/resources/bit_mask.h"
+#include "scene/resources/mesh.h"
 
 #if 0
 bool EditorTexturePreviewPlugin::handles(const String& p_type) const {
@@ -345,21 +345,23 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 				Vector3(x0 * zr0, z0, y0 *zr0)
 			};
 
-#define ADD_POINT(m_idx) \
-	normals.push_back(v[m_idx]);\
-	vertices.push_back(v[m_idx]*radius);\
-	{ Vector2 uv(Math::atan2(v[m_idx].x,v[m_idx].z),Math::atan2(-v[m_idx].y,v[m_idx].z));\
-	  uv/=Math_PI;\
-	  uv*=4.0;\
-	  uv=uv*0.5+Vector2(0.5,0.5);\
-	  uvs.push_back(uv);\
-	 }\
-	 { Vector3 t = tt.xform(v[m_idx]);\
-	   tangents.push_back(t.x);\
-	   tangents.push_back(t.y);\
-	   tangents.push_back(t.z);\
-	   tangents.push_back(1.0);\
-	  }
+#define ADD_POINT(m_idx)                                                                       \
+	normals.push_back(v[m_idx]);                                                               \
+	vertices.push_back(v[m_idx] * radius);                                                     \
+	{                                                                                          \
+		Vector2 uv(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z)); \
+		uv /= Math_PI;                                                                         \
+		uv *= 4.0;                                                                             \
+		uv = uv * 0.5 + Vector2(0.5, 0.5);                                                     \
+		uvs.push_back(uv);                                                                     \
+	}                                                                                          \
+	{                                                                                          \
+		Vector3 t = tt.xform(v[m_idx]);                                                        \
+		tangents.push_back(t.x);                                                               \
+		tangents.push_back(t.y);                                                               \
+		tangents.push_back(t.z);                                                               \
+		tangents.push_back(1.0);                                                               \
+	}
 
 
 

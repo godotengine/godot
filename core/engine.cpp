@@ -32,7 +32,7 @@
 
 void Engine::set_iterations_per_second(int p_ips) {
 
-	ips=p_ips;
+	ips = p_ips;
 }
 int Engine::get_iterations_per_second() const {
 
@@ -40,7 +40,7 @@ int Engine::get_iterations_per_second() const {
 }
 
 void Engine::set_target_fps(int p_fps) {
-	_target_fps=p_fps>0? p_fps : 0;
+	_target_fps = p_fps > 0 ? p_fps : 0;
 }
 
 float Engine::get_target_fps() const {
@@ -54,7 +54,7 @@ uint64_t Engine::get_frames_drawn() {
 
 void Engine::set_frame_delay(uint32_t p_msec) {
 
-	_frame_delay=p_msec;
+	_frame_delay = p_msec;
 }
 
 uint32_t Engine::get_frame_delay() const {
@@ -64,7 +64,7 @@ uint32_t Engine::get_frame_delay() const {
 
 void Engine::set_time_scale(float p_scale) {
 
-	_time_scale=p_scale;
+	_time_scale = p_scale;
 }
 
 float Engine::get_time_scale() const {
@@ -77,11 +77,11 @@ Dictionary Engine::get_version_info() const {
 	Dictionary dict;
 	dict["major"] = VERSION_MAJOR;
 	dict["minor"] = VERSION_MINOR;
-	#ifdef VERSION_PATCH
+#ifdef VERSION_PATCH
 	dict["patch"] = VERSION_PATCH;
-	#else
+#else
 	dict["patch"] = 0;
-	#endif
+#endif
 	dict["status"] = _MKSTR(VERSION_STATUS);
 	dict["revision"] = _MKSTR(VERSION_REVISION);
 	dict["year"] = VERSION_YEAR;
@@ -95,25 +95,23 @@ Dictionary Engine::get_version_info() const {
 	return dict;
 }
 
-
-Engine *Engine::singleton=NULL;
+Engine *Engine::singleton = NULL;
 
 Engine *Engine::get_singleton() {
 	return singleton;
 }
 
-Engine::Engine()
-{
+Engine::Engine() {
 
-	singleton=this;
-	frames_drawn=0;
-	ips=60;
-	_frame_delay=0;
-	_fps=1;
-	_target_fps=0;
-	_time_scale=1.0;
-	_pixel_snap=false;
-	_fixed_frames=0;
-	_idle_frames=0;
-	_in_fixed=false;
+	singleton = this;
+	frames_drawn = 0;
+	ips = 60;
+	_frame_delay = 0;
+	_fps = 1;
+	_target_fps = 0;
+	_time_scale = 1.0;
+	_pixel_snap = false;
+	_fixed_frames = 0;
+	_idle_frames = 0;
+	_in_fixed = false;
 }

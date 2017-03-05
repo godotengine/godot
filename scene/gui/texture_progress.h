@@ -33,20 +33,19 @@
 
 class TextureProgress : public Range {
 
-	GDCLASS( TextureProgress, Range  );
+	GDCLASS(TextureProgress, Range);
 
 	Ref<Texture> under;
 	Ref<Texture> progress;
 	Ref<Texture> over;
 
 protected:
-
 	static void _bind_methods();
 	void _notification(int p_what);
-public:
 
+public:
 	enum FillMode {
-		FILL_LEFT_TO_RIGHT=0,
+		FILL_LEFT_TO_RIGHT = 0,
 		FILL_RIGHT_TO_LEFT,
 		FILL_TOP_TO_BOTTOM,
 		FILL_BOTTOM_TO_TOP,
@@ -66,13 +65,13 @@ public:
 	void set_radial_center_offset(const Point2 &p_off);
 	Point2 get_radial_center_offset();
 
-	void set_under_texture(const Ref<Texture>& p_texture);
+	void set_under_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_under_texture() const;
 
-	void set_progress_texture(const Ref<Texture>& p_texture);
+	void set_progress_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_progress_texture() const;
 
-	void set_over_texture(const Ref<Texture>& p_texture);
+	void set_over_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_over_texture() const;
 
 	Size2 get_minimum_size() const;
@@ -80,7 +79,6 @@ public:
 	TextureProgress();
 
 private:
-
 	FillMode mode;
 	float rad_init_angle;
 	float rad_max_degrees;

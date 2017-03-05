@@ -31,13 +31,11 @@
 
 #include "scene/3d/spatial.h"
 
-class Position3D : public Spatial  {
+class Position3D : public Spatial {
 
-	GDCLASS(Position3D,Spatial);
-
+	GDCLASS(Position3D, Spatial);
 
 public:
-
 	Position3D();
 };
 

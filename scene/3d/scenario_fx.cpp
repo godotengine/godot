@@ -28,49 +28,42 @@
 /*************************************************************************/
 #include "scenario_fx.h"
 
-
-
 void WorldEnvironment::_notification(int p_what) {
 
-
-	if (p_what==NOTIFICATION_ENTER_WORLD) {
+	if (p_what == NOTIFICATION_ENTER_WORLD) {
 
 		if (environment.is_valid()) {
 			if (get_world()->get_environment().is_valid()) {
 				WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
 			}
 			get_world()->set_environment(environment);
-			add_to_group("_world_environment_"+itos(get_world()->get_scenario().get_id()));
-
+			add_to_group("_world_environment_" + itos(get_world()->get_scenario().get_id()));
 		}
 
-	} else if (p_what==NOTIFICATION_EXIT_WORLD) {
+	} else if (p_what == NOTIFICATION_EXIT_WORLD) {
 
-		if (environment.is_valid() && get_world()->get_environment()==environment) {
+		if (environment.is_valid() && get_world()->get_environment() == environment) {
 			get_world()->set_environment(Ref<Environment>());
-			remove_from_group("_world_environment_"+itos(get_world()->get_scenario().get_id()));
-
+			remove_from_group("_world_environment_" + itos(get_world()->get_scenario().get_id()));
 		}
 	}
 }
 
-void WorldEnvironment::set_environment(const Ref<Environment>& p_environment) {
+void WorldEnvironment::set_environment(const Ref<Environment> &p_environment) {
 
-	if (is_inside_world() && environment.is_valid() && get_world()->get_environment()==environment) {
+	if (is_inside_world() && environment.is_valid() && get_world()->get_environment() == environment) {
 		get_world()->set_environment(Ref<Environment>());
-		remove_from_group("_world_environment_"+itos(get_world()->get_scenario().get_id()));
+		remove_from_group("_world_environment_" + itos(get_world()->get_scenario().get_id()));
 		//clean up
 	}
 
-
-	environment=p_environment;
+	environment = p_environment;
 	if (is_inside_world() && environment.is_valid()) {
 		if (get_world()->get_environment().is_valid()) {
 			WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
 		}
 		get_world()->set_environment(environment);
-		add_to_group("_world_environment_"+itos(get_world()->get_scenario().get_id()));
-
+		add_to_group("_world_environment_" + itos(get_world()->get_scenario().get_id()));
 	}
 
 	update_configuration_warning();
@@ -86,29 +79,22 @@ String WorldEnvironment::get_configuration_warning() const {
 	if (!is_visible_in_tree() || !is_inside_tree() || !environment.is_valid())
 		return String();
 
-	List<Node*> nodes;
-	get_tree()->get_nodes_in_group("_world_environment_"+itos(get_world()->get_scenario().get_id()),&nodes);
+	List<Node *> nodes;
+	get_tree()->get_nodes_in_group("_world_environment_" + itos(get_world()->get_scenario().get_id()), &nodes);
 
-	if (nodes.size()>1) {
+	if (nodes.size() > 1) {
 		return TTR("Only one WorldEnvironment is allowed per scene (or set of instanced scenes).");
 	}
 
 	return String();
 }
 
-
 void WorldEnvironment::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_environment","env:Environment"),&WorldEnvironment::set_environment);
-	ClassDB::bind_method(D_METHOD("get_environment:Environment"),&WorldEnvironment::get_environment);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),"set_environment","get_environment");
-
+	ClassDB::bind_method(D_METHOD("set_environment", "env:Environment"), &WorldEnvironment::set_environment);
+	ClassDB::bind_method(D_METHOD("get_environment:Environment"), &WorldEnvironment::get_environment);
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 }
-
 
 WorldEnvironment::WorldEnvironment() {
-
-
 }
-
-

@@ -34,7 +34,6 @@
 void MutexPosix::lock() {
 
 	pthread_mutex_lock(&mutex);
-	
 }
 void MutexPosix::unlock() {
 
@@ -42,32 +41,30 @@ void MutexPosix::unlock() {
 }
 Error MutexPosix::try_lock() {
 
-	return (pthread_mutex_trylock(&mutex)==0)?OK:ERR_BUSY;
+	return (pthread_mutex_trylock(&mutex) == 0) ? OK : ERR_BUSY;
 }
 
 Mutex *MutexPosix::create_func_posix(bool p_recursive) {
 
-	return memnew( MutexPosix(p_recursive) );
+	return memnew(MutexPosix(p_recursive));
 }
 
 void MutexPosix::make_default() {
 
-	create_func=create_func_posix;
+	create_func = create_func_posix;
 }
 
 MutexPosix::MutexPosix(bool p_recursive) {
-	
+
 	pthread_mutexattr_init(&attr);
 	if (p_recursive)
-		pthread_mutexattr_settype(&attr,PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutex_init(&mutex,&attr);
+		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+	pthread_mutex_init(&mutex, &attr);
 }
-
 
 MutexPosix::~MutexPosix() {
 
 	pthread_mutex_destroy(&mutex);
 }
-
 
 #endif

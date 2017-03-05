@@ -29,7 +29,6 @@
 #include "global_defaults.h"
 #include "global_config.h"
 
-
 void register_iphone_global_defaults() {
 
 	/*GLOBAL_DEF("rasterizer.iOS/use_fragment_lighting",false);

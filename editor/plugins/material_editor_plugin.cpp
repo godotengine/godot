@@ -205,21 +205,23 @@ MaterialEditor::MaterialEditor() {
 					Vector3(x0 * zr0, z0, y0 *zr0)
 				};
 
-	#define ADD_POINT(m_idx) \
-		normals.push_back(v[m_idx]);\
-		vertices.push_back(v[m_idx]*radius);\
-		{ Vector2 uv(Math::atan2(v[m_idx].x,v[m_idx].z),Math::atan2(-v[m_idx].y,v[m_idx].z));\
-		  uv/=Math_PI;\
-		  uv*=4.0;\
-		  uv=uv*0.5+Vector2(0.5,0.5);\
-		  uvs.push_back(uv);\
-		 }\
-		 { Vector3 t = tt.xform(v[m_idx]);\
-		   tangents.push_back(t.x);\
-		   tangents.push_back(t.y);\
-		   tangents.push_back(t.z);\
-		   tangents.push_back(1.0);\
-		  }
+#define ADD_POINT(m_idx)                                                                       \
+	normals.push_back(v[m_idx]);                                                               \
+	vertices.push_back(v[m_idx] * radius);                                                     \
+	{                                                                                          \
+		Vector2 uv(Math::atan2(v[m_idx].x, v[m_idx].z), Math::atan2(-v[m_idx].y, v[m_idx].z)); \
+		uv /= Math_PI;                                                                         \
+		uv *= 4.0;                                                                             \
+		uv = uv * 0.5 + Vector2(0.5, 0.5);                                                     \
+		uvs.push_back(uv);                                                                     \
+	}                                                                                          \
+	{                                                                                          \
+		Vector3 t = tt.xform(v[m_idx]);                                                        \
+		tangents.push_back(t.x);                                                               \
+		tangents.push_back(t.y);                                                               \
+		tangents.push_back(t.z);                                                               \
+		tangents.push_back(1.0);                                                               \
+	}
 
 
 
@@ -256,15 +258,16 @@ MaterialEditor::MaterialEditor() {
 		PoolVector<Vector3> uvs;
 
 		int vtx_idx=0;
-	#define ADD_VTX(m_idx);\
-		vertices.push_back( face_points[m_idx] );\
-		normals.push_back( normal_points[m_idx] );\
-		tangents.push_back( normal_points[m_idx][1] );\
-		tangents.push_back( normal_points[m_idx][2] );\
-		tangents.push_back( normal_points[m_idx][0] );\
-		tangents.push_back( 1.0 );\
-		uvs.push_back( Vector3(uv_points[m_idx*2+0],uv_points[m_idx*2+1],0) );\
-		vtx_idx++;\
+#define ADD_VTX(m_idx)                                                             \
+	;                                                                              \
+	vertices.push_back(face_points[m_idx]);                                        \
+	normals.push_back(normal_points[m_idx]);                                       \
+	tangents.push_back(normal_points[m_idx][1]);                                   \
+	tangents.push_back(normal_points[m_idx][2]);                                   \
+	tangents.push_back(normal_points[m_idx][0]);                                   \
+	tangents.push_back(1.0);                                                       \
+	uvs.push_back(Vector3(uv_points[m_idx * 2 + 0], uv_points[m_idx * 2 + 1], 0)); \
+	vtx_idx++;\
 
 		for (int i=0;i<6;i++) {
 
@@ -408,6 +411,5 @@ MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
 MaterialEditorPlugin::~MaterialEditorPlugin()
 {
 }
-
 
 #endif

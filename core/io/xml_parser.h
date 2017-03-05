@@ -29,10 +29,10 @@
 #ifndef XML_PARSER_H
 #define XML_PARSER_H
 
-#include "ustring.h"
-#include "vector.h"
 #include "os/file_access.h"
 #include "reference.h"
+#include "ustring.h"
+#include "vector.h"
 
 /*
   Based on irrXML (see their zlib license). Added mainly for compatibility with their Collada loader.
@@ -40,7 +40,8 @@
 
 class XMLParser : public Reference {
 
-	GDCLASS( XMLParser, Reference );
+	GDCLASS(XMLParser, Reference);
+
 public:
 	//! Enumeration of all supported source text file formats
 	enum SourceFormat {
@@ -63,11 +64,10 @@ public:
 	};
 
 private:
-
 	char *data;
 	char *P;
 	int length;
-	void unescape(String& p_str);
+	void unescape(String &p_str);
 	Vector<String> special_characters;
 	String node_name;
 	bool node_empty;
@@ -81,8 +81,8 @@ private:
 
 	Vector<Attribute> attributes;
 
-	String _replace_special_characters(const String& origstr);
-	bool _set_text(char* start, char* end);
+	String _replace_special_characters(const String &origstr);
+	bool _set_text(char *start, char *end);
 	void _parse_closing_xml_element();
 	void _ignore_definition();
 	bool _parse_cdata();
@@ -93,8 +93,6 @@ private:
 	static void _bind_methods();
 
 public:
-
-
 	Error read();
 	NodeType get_node_type();
 	String get_node_name() const;
@@ -103,17 +101,17 @@ public:
 	int get_attribute_count() const;
 	String get_attribute_name(int p_idx) const;
 	String get_attribute_value(int p_idx) const;
-	bool has_attribute(const String& p_name) const;
-	String get_attribute_value(const String& p_name) const;
-	String get_attribute_value_safe(const String& p_name) const; // do not print error if doesn't exist
+	bool has_attribute(const String &p_name) const;
+	String get_attribute_value(const String &p_name) const;
+	String get_attribute_value_safe(const String &p_name) const; // do not print error if doesn't exist
 	bool is_empty() const;
 	int get_current_line() const;
 
 	void skip_section();
 	Error seek(uint64_t p_pos);
 
-	Error open(const String& p_path);
-	Error open_buffer(const Vector<uint8_t>& p_buffer);
+	Error open(const String &p_path);
+	Error open_buffer(const Vector<uint8_t> &p_buffer);
 
 	void close();
 
@@ -122,4 +120,3 @@ public:
 };
 
 #endif
-

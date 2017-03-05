@@ -34,8 +34,8 @@
 class AudioEffectDelay;
 
 class AudioEffectDelayInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectDelayInstance,AudioEffectInstance)
-friend class AudioEffectDelay;
+	GDCLASS(AudioEffectDelayInstance, AudioEffectInstance)
+	friend class AudioEffectDelay;
 	Ref<AudioEffectDelay> base;
 
 	Vector<AudioFrame> ring_buffer;
@@ -49,23 +49,20 @@ friend class AudioEffectDelay;
 	unsigned int feedback_buffer_pos;
 
 	AudioFrame h;
-	void _process_chunk(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count);
+	void _process_chunk(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 
 public:
-
-	virtual void process(const AudioFrame *p_src_frames,AudioFrame *p_dst_frames,int p_frame_count);
-
+	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
 };
 
-
 class AudioEffectDelay : public AudioEffect {
-	GDCLASS(AudioEffectDelay,AudioEffect)
+	GDCLASS(AudioEffectDelay, AudioEffect)
 
-friend class AudioEffectDelayInstance;
+	friend class AudioEffectDelayInstance;
 	enum {
 
-		MAX_DELAY_MS=3000,
-		MAX_TAPS=2
+		MAX_DELAY_MS = 3000,
+		MAX_TAPS = 2
 	};
 
 	float dry;
@@ -85,13 +82,10 @@ friend class AudioEffectDelayInstance;
 	float feedback_level;
 	float feedback_lowpass;
 
-
-
 protected:
-
 	static void _bind_methods();
-public:
 
+public:
 	void set_dry(float p_dry);
 	float get_dry();
 
@@ -135,6 +129,5 @@ public:
 
 	AudioEffectDelay();
 };
-
 
 #endif // AUDIOEFFECTDELAY_H

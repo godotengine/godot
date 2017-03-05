@@ -29,20 +29,16 @@
 #ifndef SHADER_LANGUAGE_H
 #define SHADER_LANGUAGE_H
 
+#include "list.h"
+#include "map.h"
+#include "string_db.h"
 #include "typedefs.h"
 #include "ustring.h"
-#include "list.h"
-#include "string_db.h"
-#include "map.h"
 #include "variant.h"
 
-
-class ShaderLanguage  {
-
-
+class ShaderLanguage {
 
 public:
-
 	enum TokenType {
 
 		TK_EMPTY,
@@ -149,12 +145,12 @@ public:
 		TK_MAX
 	};
 
-	/* COMPILER */
+/* COMPILER */
 
-	// lame work around to Apple defining this as a macro in 10.12 SDK
-	#ifdef TYPE_BOOL
-	#undef TYPE_BOOL
-	#endif
+// lame work around to Apple defining this as a macro in 10.12 SDK
+#ifdef TYPE_BOOL
+#undef TYPE_BOOL
+#endif
 
 	enum DataType {
 		TYPE_VOID,
@@ -268,26 +264,29 @@ public:
 		virtual ~Node() {}
 	};
 
-	template<class T>
-	T* alloc_node() {
-		T* node = memnew(T);
-		node->next=nodes;
-		nodes=node;
+	template <class T>
+	T *alloc_node() {
+		T *node = memnew(T);
+		node->next = nodes;
+		nodes = node;
 		return node;
 	}
 
 	Node *nodes;
-
 
 	struct OperatorNode : public Node {
 
 		DataType return_cache;
 		DataPrecision return_precision_cache;
 		Operator op;
-		Vector<Node*> arguments;
+		Vector<Node *> arguments;
 		virtual DataType get_datatype() const { return return_cache; }
 
-		OperatorNode() { type=TYPE_OPERATOR; return_cache=TYPE_VOID; return_precision_cache=PRECISION_DEFAULT; }
+		OperatorNode() {
+			type = TYPE_OPERATOR;
+			return_cache = TYPE_VOID;
+			return_precision_cache = PRECISION_DEFAULT;
+		}
 	};
 
 	struct VariableNode : public Node {
@@ -295,7 +294,10 @@ public:
 		StringName name;
 		virtual DataType get_datatype() const { return datatype_cache; }
 
-		VariableNode() { type=TYPE_VARIABLE; datatype_cache=TYPE_VOID;  }
+		VariableNode() {
+			type = TYPE_VARIABLE;
+			datatype_cache = TYPE_VOID;
+		}
 	};
 
 	struct ConstantNode : public Node {
@@ -312,7 +314,7 @@ public:
 		Vector<Value> values;
 		virtual DataType get_datatype() const { return datatype; }
 
-		ConstantNode() { type=TYPE_CONSTANT; }
+		ConstantNode() { type = TYPE_CONSTANT; }
 	};
 
 	struct FunctionNode;
@@ -327,17 +329,24 @@ public:
 			int line; //for completion
 		};
 
-		Map<StringName,Variable> variables;
-		List<Node*> statements;
-		BlockNode() { type=TYPE_BLOCK; parent_block=NULL; parent_function=NULL; }
+		Map<StringName, Variable> variables;
+		List<Node *> statements;
+		BlockNode() {
+			type = TYPE_BLOCK;
+			parent_block = NULL;
+			parent_function = NULL;
+		}
 	};
 
 	struct ControlFlowNode : public Node {
 
 		FlowOperation flow_op;
-		Vector<Node*> expressions;
-		Vector<BlockNode*> blocks;
-		ControlFlowNode() { type=TYPE_CONTROL_FLOW; flow_op=FLOW_OP_IF;}
+		Vector<Node *> expressions;
+		Vector<BlockNode *> blocks;
+		ControlFlowNode() {
+			type = TYPE_CONTROL_FLOW;
+			flow_op = FLOW_OP_IF;
+		}
 	};
 
 	struct MemberNode : public Node {
@@ -345,14 +354,12 @@ public:
 		DataType basetype;
 		DataType datatype;
 		StringName name;
-		Node* owner;
+		Node *owner;
 		virtual DataType get_datatype() const { return datatype; }
-		MemberNode() { type=TYPE_MEMBER; }
+		MemberNode() { type = TYPE_MEMBER; }
 	};
 
-
 	struct FunctionNode : public Node {
-
 
 		struct Argument {
 
@@ -367,16 +374,17 @@ public:
 		Vector<Argument> arguments;
 		BlockNode *body;
 
-		FunctionNode() { type=TYPE_FUNCTION;  return_precision=PRECISION_DEFAULT; }
-
+		FunctionNode() {
+			type = TYPE_FUNCTION;
+			return_precision = PRECISION_DEFAULT;
+		}
 	};
-
 
 	struct ShaderNode : public Node {
 
 		struct Function {
 			StringName name;
-			FunctionNode*function;
+			FunctionNode *function;
 			Set<StringName> uses_function;
 			bool callable;
 		};
@@ -408,19 +416,22 @@ public:
 			Hint hint;
 			float hint_range[3];
 
-			Uniform() { hint=HINT_NONE; hint_range[0]=0; hint_range[1]=1; hint_range[2]=0.001;}
+			Uniform() {
+				hint = HINT_NONE;
+				hint_range[0] = 0;
+				hint_range[1] = 1;
+				hint_range[2] = 0.001;
+			}
 		};
 
-
-		Map<StringName,Varying> varyings;
-		Map<StringName,Uniform> uniforms;
+		Map<StringName, Varying> varyings;
+		Map<StringName, Uniform> uniforms;
 		Vector<StringName> render_modes;
 
 		Vector<Function> functions;
 
-		ShaderNode() { type=TYPE_SHADER; }
+		ShaderNode() { type = TYPE_SHADER; }
 	};
-
 
 	struct Expression {
 
@@ -430,8 +441,6 @@ public:
 			Node *node;
 		};
 	};
-
-
 
 	struct VarInfo {
 
@@ -457,7 +466,6 @@ public:
 		uint16_t line;
 	};
 
-
 	static String get_operator_text(Operator p_op);
 	static String get_token_text(Token p_token);
 
@@ -469,16 +477,19 @@ public:
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);
 
-	static bool convert_constant(ConstantNode* p_constant, DataType p_to_type,ConstantNode::Value *p_value=NULL);
+	static bool convert_constant(ConstantNode *p_constant, DataType p_to_type, ConstantNode::Value *p_value = NULL);
 	static DataType get_scalar_type(DataType p_type);
 	static bool is_scalar_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 
 	static void get_keyword_list(List<String> *r_keywords);
 	static void get_builtin_funcs(List<String> *r_keywords);
-private:
 
-	struct KeyWord { TokenType token; const char *text;};
+private:
+	struct KeyWord {
+		TokenType token;
+		const char *text;
+	};
 	static const KeyWord keyword_list[];
 
 	bool error_set;
@@ -498,33 +509,28 @@ private:
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
-		tkp.char_idx=char_idx;
-		tkp.tk_line=tk_line;
+		tkp.char_idx = char_idx;
+		tkp.tk_line = tk_line;
 		return tkp;
 	}
 
-
 	void _set_tkpos(TkPos p_pos) {
-		char_idx=p_pos.char_idx;
-		tk_line=p_pos.tk_line;
+		char_idx = p_pos.char_idx;
+		tk_line = p_pos.tk_line;
 	}
 
-	void _set_error(const String& p_str) {
+	void _set_error(const String &p_str) {
 		if (error_set)
 			return;
 
-		error_line=tk_line;
-		error_set=true;
-		error_str=p_str;
+		error_line = tk_line;
+		error_set = true;
+		error_str = p_str;
 	}
 
+	static const char *token_names[TK_MAX];
 
-	static const char * token_names[TK_MAX];
-
-
-
-
-	Token _make_token(TokenType p_type, const StringName& p_text=StringName());
+	Token _make_token(TokenType p_type, const StringName &p_text = StringName());
 	Token _get_token();
 
 	ShaderNode *shader;
@@ -538,18 +544,16 @@ private:
 		IDENTIFIER_BUILTIN_VAR,
 	};
 
-	bool _find_identifier(const BlockNode* p_block,const Map<StringName, DataType> &p_builtin_types,const StringName& p_identifier, DataType *r_data_type=NULL, IdentifierType *r_type=NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL);
 
-	bool _validate_operator(OperatorNode *p_op,DataType *r_ret_type=NULL);
-
+	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
 
 	struct BuiltinFuncDef {
 
-		enum { MAX_ARGS=5 };
-		const char* name;
+		enum { MAX_ARGS = 5 };
+		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
-
 	};
 
 	CompletionType completion_type;
@@ -559,44 +563,38 @@ private:
 	StringName completion_function;
 	int completion_argument;
 
-
-	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName& identifier);
+	bool _get_completable_identifier(BlockNode *p_block, CompletionType p_type, StringName &identifier);
 
 	static const BuiltinFuncDef builtin_func_defs[];
-	bool _validate_function_call(BlockNode* p_block, OperatorNode *p_func,DataType *r_ret_type);
+	bool _validate_function_call(BlockNode *p_block, OperatorNode *p_func, DataType *r_ret_type);
 
-	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName,DataType>  &p_builtin_types, OperatorNode* p_func, int *r_complete_arg=NULL);
+	bool _parse_function_arguments(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, OperatorNode *p_func, int *r_complete_arg = NULL);
 
-	Node* _parse_expression(BlockNode *p_block, const Map<StringName,DataType>  &p_builtin_types);
+	Node *_parse_expression(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types);
 
-	ShaderLanguage::Node* _reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
-	Node* _parse_and_reduce_expression(BlockNode *p_block,const Map<StringName,DataType>  &p_builtin_types);
+	ShaderLanguage::Node *_reduce_expression(BlockNode *p_block, ShaderLanguage::Node *p_node);
+	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types);
 
-	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, bool p_just_one=false, bool p_can_break=false, bool p_can_continue=false);
+	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 
-	Error _parse_shader(const Map< StringName, Map<StringName,DataType> > &p_functions, const Set<String> &p_render_modes);
-
+	Error _parse_shader(const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes);
 
 public:
-
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
 
 	void clear();
-	Error compile(const String& p_code,const Map< StringName, Map<StringName,DataType> > &p_functions,const Set<String>& p_render_modes);
-	Error complete(const String& p_code,const Map< StringName, Map<StringName,DataType> > &p_functions,const Set<String>& p_render_modes,List<String>* r_options,String& r_call_hint);
-
-
+	Error compile(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes);
+	Error complete(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, List<String> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();
 
 	ShaderNode *get_shader();
 
-	String token_debug(const String& p_code);
+	String token_debug(const String &p_code);
 
 	ShaderLanguage();
 	~ShaderLanguage();
 };
-
 
 #endif // SHADER_LANGUAGE_H

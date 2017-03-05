@@ -34,9 +34,9 @@ struct _KeyCodeText {
 	const char *text;
 };
 
-static const _KeyCodeText _keycodes[]={
+static const _KeyCodeText _keycodes[] = {
 
-		/* clang-format off */
+	/* clang-format off */
 		{KEY_ESCAPE                        ,"Escape"},
 		{KEY_TAB                           ,"Tab"},
 		{KEY_BACKTAB                       ,"BackTab"},
@@ -283,25 +283,105 @@ static const _KeyCodeText _keycodes[]={
 		{KEY_DIVISION                      ,"Division"},
 		{KEY_YDIAERESIS                    ,"Ydiaeresis"},
 		{0                                 ,0}
-		/* clang-format on */
+	/* clang-format on */
 };
 
 bool keycode_has_unicode(uint32_t p_keycode) {
 
+	switch (p_keycode) {
 
-	switch(p_keycode) {
-
-		case KEY_ESCAPE: case KEY_TAB: case KEY_BACKTAB: case KEY_BACKSPACE: case KEY_RETURN: case KEY_ENTER: case KEY_INSERT: case KEY_DELETE: case KEY_PAUSE:
-		case KEY_PRINT: case KEY_SYSREQ:  case KEY_CLEAR: case KEY_HOME: case KEY_END: case KEY_LEFT: case KEY_UP: case KEY_RIGHT: case KEY_DOWN: case KEY_PAGEUP:
-		case KEY_PAGEDOWN: case KEY_SHIFT: case KEY_CONTROL: case KEY_META: case KEY_ALT: case KEY_CAPSLOCK: case KEY_NUMLOCK: case KEY_SCROLLLOCK: case KEY_F1:
-		case KEY_F2: case KEY_F3: case KEY_F4: case KEY_F5: case KEY_F6: case KEY_F7: case KEY_F8: case KEY_F9: case KEY_F10: case KEY_F11: case KEY_F12: case KEY_F13: case KEY_F14:
-		case KEY_F15: case KEY_F16: case KEY_KP_ENTER: case KEY_SUPER_L: case KEY_SUPER_R: case KEY_MENU: case KEY_HYPER_L: case KEY_HYPER_R: case KEY_HELP:
-		case KEY_DIRECTION_L: case KEY_DIRECTION_R: case KEY_BACK: case KEY_FORWARD: case KEY_STOP: case KEY_REFRESH: case KEY_VOLUMEDOWN: case KEY_VOLUMEMUTE:
-		case KEY_VOLUMEUP: case KEY_BASSBOOST: case KEY_BASSUP: case KEY_BASSDOWN: case KEY_TREBLEUP: case KEY_TREBLEDOWN: case KEY_MEDIAPLAY: case KEY_MEDIASTOP:
-		case KEY_MEDIAPREVIOUS:  case KEY_MEDIANEXT: case KEY_MEDIARECORD: case KEY_HOMEPAGE: case KEY_FAVORITES: case KEY_SEARCH: case KEY_STANDBY:
-		case KEY_OPENURL: case KEY_LAUNCHMAIL:  case KEY_LAUNCHMEDIA:  case KEY_LAUNCH0:  case KEY_LAUNCH1:  case KEY_LAUNCH2:  case KEY_LAUNCH3:  case KEY_LAUNCH4:
-		case KEY_LAUNCH5:  case KEY_LAUNCH6:  case KEY_LAUNCH7: case KEY_LAUNCH8: case KEY_LAUNCH9: case KEY_LAUNCHA: case KEY_LAUNCHB: case KEY_LAUNCHC: case KEY_LAUNCHD:
-		case KEY_LAUNCHE: case KEY_LAUNCHF:
+		case KEY_ESCAPE:
+		case KEY_TAB:
+		case KEY_BACKTAB:
+		case KEY_BACKSPACE:
+		case KEY_RETURN:
+		case KEY_ENTER:
+		case KEY_INSERT:
+		case KEY_DELETE:
+		case KEY_PAUSE:
+		case KEY_PRINT:
+		case KEY_SYSREQ:
+		case KEY_CLEAR:
+		case KEY_HOME:
+		case KEY_END:
+		case KEY_LEFT:
+		case KEY_UP:
+		case KEY_RIGHT:
+		case KEY_DOWN:
+		case KEY_PAGEUP:
+		case KEY_PAGEDOWN:
+		case KEY_SHIFT:
+		case KEY_CONTROL:
+		case KEY_META:
+		case KEY_ALT:
+		case KEY_CAPSLOCK:
+		case KEY_NUMLOCK:
+		case KEY_SCROLLLOCK:
+		case KEY_F1:
+		case KEY_F2:
+		case KEY_F3:
+		case KEY_F4:
+		case KEY_F5:
+		case KEY_F6:
+		case KEY_F7:
+		case KEY_F8:
+		case KEY_F9:
+		case KEY_F10:
+		case KEY_F11:
+		case KEY_F12:
+		case KEY_F13:
+		case KEY_F14:
+		case KEY_F15:
+		case KEY_F16:
+		case KEY_KP_ENTER:
+		case KEY_SUPER_L:
+		case KEY_SUPER_R:
+		case KEY_MENU:
+		case KEY_HYPER_L:
+		case KEY_HYPER_R:
+		case KEY_HELP:
+		case KEY_DIRECTION_L:
+		case KEY_DIRECTION_R:
+		case KEY_BACK:
+		case KEY_FORWARD:
+		case KEY_STOP:
+		case KEY_REFRESH:
+		case KEY_VOLUMEDOWN:
+		case KEY_VOLUMEMUTE:
+		case KEY_VOLUMEUP:
+		case KEY_BASSBOOST:
+		case KEY_BASSUP:
+		case KEY_BASSDOWN:
+		case KEY_TREBLEUP:
+		case KEY_TREBLEDOWN:
+		case KEY_MEDIAPLAY:
+		case KEY_MEDIASTOP:
+		case KEY_MEDIAPREVIOUS:
+		case KEY_MEDIANEXT:
+		case KEY_MEDIARECORD:
+		case KEY_HOMEPAGE:
+		case KEY_FAVORITES:
+		case KEY_SEARCH:
+		case KEY_STANDBY:
+		case KEY_OPENURL:
+		case KEY_LAUNCHMAIL:
+		case KEY_LAUNCHMEDIA:
+		case KEY_LAUNCH0:
+		case KEY_LAUNCH1:
+		case KEY_LAUNCH2:
+		case KEY_LAUNCH3:
+		case KEY_LAUNCH4:
+		case KEY_LAUNCH5:
+		case KEY_LAUNCH6:
+		case KEY_LAUNCH7:
+		case KEY_LAUNCH8:
+		case KEY_LAUNCH9:
+		case KEY_LAUNCHA:
+		case KEY_LAUNCHB:
+		case KEY_LAUNCHC:
+		case KEY_LAUNCHD:
+		case KEY_LAUNCHE:
+		case KEY_LAUNCHF:
 			return false;
 	}
 
@@ -311,133 +391,127 @@ bool keycode_has_unicode(uint32_t p_keycode) {
 String keycode_get_string(uint32_t p_code) {
 
 	String codestr;
-	if (p_code&KEY_MASK_SHIFT)
-		codestr+="Shift+";
-	if (p_code&KEY_MASK_ALT)
-		codestr+="Alt+";
-	if (p_code&KEY_MASK_CTRL)
-		codestr+="Ctrl+";
-	if (p_code&KEY_MASK_META)
-		codestr+="Meta+";
+	if (p_code & KEY_MASK_SHIFT)
+		codestr += "Shift+";
+	if (p_code & KEY_MASK_ALT)
+		codestr += "Alt+";
+	if (p_code & KEY_MASK_CTRL)
+		codestr += "Ctrl+";
+	if (p_code & KEY_MASK_META)
+		codestr += "Meta+";
 
-	p_code&=KEY_CODE_MASK;
+	p_code &= KEY_CODE_MASK;
 
-	const _KeyCodeText *kct =&_keycodes[0];
+	const _KeyCodeText *kct = &_keycodes[0];
 
-	while(kct->text) {
+	while (kct->text) {
 
-		if (kct->code==(int)p_code) {
+		if (kct->code == (int)p_code) {
 
-			codestr+=kct->text;
+			codestr += kct->text;
 			return codestr;
 		}
 		kct++;
 	}
 
-	codestr+=String::chr(p_code);
+	codestr += String::chr(p_code);
 
 	return codestr;
-
 }
 
-int find_keycode(const String& p_code) {
+int find_keycode(const String &p_code) {
 
-	const _KeyCodeText *kct =&_keycodes[0];
+	const _KeyCodeText *kct = &_keycodes[0];
 
-	while(kct->text) {
+	while (kct->text) {
 
-		if (p_code.nocasecmp_to(kct->text)==0) {
+		if (p_code.nocasecmp_to(kct->text) == 0) {
 			return kct->code;
-
 		}
 		kct++;
 	}
 
 	return 0;
-
 }
-
-
-
 
 struct _KeyCodeReplace {
 	int from;
 	int to;
 };
 
-static const _KeyCodeReplace _keycode_replace_qwertz[]={
-{KEY_Y,KEY_Z},
-{KEY_Z,KEY_Y},
-{0,0}
+static const _KeyCodeReplace _keycode_replace_qwertz[] = {
+	{ KEY_Y, KEY_Z },
+	{ KEY_Z, KEY_Y },
+	{ 0, 0 }
 };
 
-static const _KeyCodeReplace _keycode_replace_azerty[]={
-{KEY_W,KEY_Z},
-{KEY_Z,KEY_W},
-{KEY_A,KEY_Q},
-{KEY_Q,KEY_A},
-{KEY_SEMICOLON,KEY_M},
-{KEY_M,KEY_SEMICOLON},
-{0,0}
+static const _KeyCodeReplace _keycode_replace_azerty[] = {
+	{ KEY_W, KEY_Z },
+	{ KEY_Z, KEY_W },
+	{ KEY_A, KEY_Q },
+	{ KEY_Q, KEY_A },
+	{ KEY_SEMICOLON, KEY_M },
+	{ KEY_M, KEY_SEMICOLON },
+	{ 0, 0 }
 };
 
-static const _KeyCodeReplace _keycode_replace_qzerty[]={
-{KEY_W,KEY_Z},
-{KEY_Z,KEY_W},
-{KEY_SEMICOLON,KEY_M},
-{KEY_M,KEY_SEMICOLON},
-{0,0}
+static const _KeyCodeReplace _keycode_replace_qzerty[] = {
+	{ KEY_W, KEY_Z },
+	{ KEY_Z, KEY_W },
+	{ KEY_SEMICOLON, KEY_M },
+	{ KEY_M, KEY_SEMICOLON },
+	{ 0, 0 }
 };
 
-static const _KeyCodeReplace _keycode_replace_dvorak[]={
-{KEY_UNDERSCORE,KEY_BRACELEFT},
-{KEY_EQUAL,KEY_BRACERIGHT},
-{KEY_Q,KEY_APOSTROPHE},
-{KEY_W,KEY_COMMA},
-{KEY_E,KEY_PERIOD},
-{KEY_R,KEY_P},
-{KEY_T,KEY_Y},
-{KEY_Y,KEY_F},
-{KEY_U,KEY_G},
-{KEY_I,KEY_C},
-{KEY_O,KEY_R},
-{KEY_P,KEY_L},
-{KEY_BRACELEFT,KEY_SLASH},
-{KEY_BRACERIGHT,KEY_EQUAL},
-{KEY_A,KEY_A},
-{KEY_S,KEY_O},
-{KEY_D,KEY_E},
-{KEY_F,KEY_U},
-{KEY_G,KEY_I},
-{KEY_H,KEY_D},
-{KEY_J,KEY_H},
-{KEY_K,KEY_T},
-{KEY_L,KEY_N},
-{KEY_SEMICOLON,KEY_S},
-{KEY_APOSTROPHE,KEY_UNDERSCORE},
-{KEY_Z,KEY_SEMICOLON},
-{KEY_X,KEY_Q},
-{KEY_C,KEY_J},
-{KEY_V,KEY_K},
-{KEY_B,KEY_X},
-{KEY_N,KEY_B},
-{KEY_M,KEY_M},
-{KEY_COMMA,KEY_W},
-{KEY_PERIOD,KEY_V},
-{KEY_SLASH,KEY_Z},
-{0,0}
+static const _KeyCodeReplace _keycode_replace_dvorak[] = {
+	{ KEY_UNDERSCORE, KEY_BRACELEFT },
+	{ KEY_EQUAL, KEY_BRACERIGHT },
+	{ KEY_Q, KEY_APOSTROPHE },
+	{ KEY_W, KEY_COMMA },
+	{ KEY_E, KEY_PERIOD },
+	{ KEY_R, KEY_P },
+	{ KEY_T, KEY_Y },
+	{ KEY_Y, KEY_F },
+	{ KEY_U, KEY_G },
+	{ KEY_I, KEY_C },
+	{ KEY_O, KEY_R },
+	{ KEY_P, KEY_L },
+	{ KEY_BRACELEFT, KEY_SLASH },
+	{ KEY_BRACERIGHT, KEY_EQUAL },
+	{ KEY_A, KEY_A },
+	{ KEY_S, KEY_O },
+	{ KEY_D, KEY_E },
+	{ KEY_F, KEY_U },
+	{ KEY_G, KEY_I },
+	{ KEY_H, KEY_D },
+	{ KEY_J, KEY_H },
+	{ KEY_K, KEY_T },
+	{ KEY_L, KEY_N },
+	{ KEY_SEMICOLON, KEY_S },
+	{ KEY_APOSTROPHE, KEY_UNDERSCORE },
+	{ KEY_Z, KEY_SEMICOLON },
+	{ KEY_X, KEY_Q },
+	{ KEY_C, KEY_J },
+	{ KEY_V, KEY_K },
+	{ KEY_B, KEY_X },
+	{ KEY_N, KEY_B },
+	{ KEY_M, KEY_M },
+	{ KEY_COMMA, KEY_W },
+	{ KEY_PERIOD, KEY_V },
+	{ KEY_SLASH, KEY_Z },
+	{ 0, 0 }
 };
 
-static const _KeyCodeReplace _keycode_replace_neo[]={
-{0,0}
+static const _KeyCodeReplace _keycode_replace_neo[] = {
+	{ 0, 0 }
 };
 
 int keycode_get_count() {
 
-	const _KeyCodeText *kct =&_keycodes[0];
+	const _KeyCodeText *kct = &_keycodes[0];
 
-	int count=0;
-	while(kct->text) {
+	int count = 0;
+	while (kct->text) {
 
 		count++;
 		kct++;
@@ -449,22 +523,21 @@ int keycode_get_value_by_index(int p_index) {
 	return _keycodes[p_index].code;
 }
 
-const char* keycode_get_name_by_index(int p_index) {
+const char *keycode_get_name_by_index(int p_index) {
 	return _keycodes[p_index].text;
 }
 
-
 int latin_keyboard_keycode_convert(int p_keycode) {
 
-	const _KeyCodeReplace *kcr=NULL;
-	switch(OS::get_singleton()->get_latin_keyboard_variant()) {
+	const _KeyCodeReplace *kcr = NULL;
+	switch (OS::get_singleton()->get_latin_keyboard_variant()) {
 
 		case OS::LATIN_KEYBOARD_QWERTY: return p_keycode; break;
-		case OS::LATIN_KEYBOARD_QWERTZ: kcr=_keycode_replace_qwertz; break;
-		case OS::LATIN_KEYBOARD_AZERTY: kcr=_keycode_replace_azerty; break;
-		case OS::LATIN_KEYBOARD_QZERTY: kcr=_keycode_replace_qzerty; break;
-		case OS::LATIN_KEYBOARD_DVORAK: kcr=_keycode_replace_dvorak; break;
-		case OS::LATIN_KEYBOARD_NEO: kcr=_keycode_replace_neo; break;
+		case OS::LATIN_KEYBOARD_QWERTZ: kcr = _keycode_replace_qwertz; break;
+		case OS::LATIN_KEYBOARD_AZERTY: kcr = _keycode_replace_azerty; break;
+		case OS::LATIN_KEYBOARD_QZERTY: kcr = _keycode_replace_qzerty; break;
+		case OS::LATIN_KEYBOARD_DVORAK: kcr = _keycode_replace_dvorak; break;
+		case OS::LATIN_KEYBOARD_NEO: kcr = _keycode_replace_neo; break;
 		default: return p_keycode;
 	}
 
@@ -472,8 +545,8 @@ int latin_keyboard_keycode_convert(int p_keycode) {
 		return p_keycode;
 	}
 
-	while(kcr->from) {
-		if (kcr->from==p_keycode)
+	while (kcr->from) {
+		if (kcr->from == p_keycode)
 			return kcr->to;
 		kcr++;
 	}

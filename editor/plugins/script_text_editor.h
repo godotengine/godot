@@ -29,18 +29,16 @@
 #ifndef SCRIPT_TEXT_EDITOR_H
 #define SCRIPT_TEXT_EDITOR_H
 
-#include "script_editor_plugin.h"
 #include "scene/gui/color_picker.h"
-
+#include "script_editor_plugin.h"
 
 class ScriptTextEditor : public ScriptEditorBase {
 
-	GDCLASS( ScriptTextEditor, ScriptEditorBase );
+	GDCLASS(ScriptTextEditor, ScriptEditorBase);
 
 	CodeTextEditor *code_editor;
 
 	Ref<Script> script;
-
 
 	Vector<String> functions;
 
@@ -48,7 +46,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
-	PopupMenu  *context_menu;
+	PopupMenu *context_menu;
 
 	GotoLineDialog *goto_line_dialog;
 	ScriptEditorQuickOpen *quick_open;
@@ -88,16 +86,13 @@ class ScriptTextEditor : public ScriptEditorBase {
 		HELP_CONTEXTUAL,
 	};
 
-
 protected:
-
-
-	static void _code_complete_scripts(void* p_ud,const String& p_code, List<String>* r_options);
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options);
 	void _breakpoint_toggled(int p_row);
 
 	//no longer virtual
 	void _validate_script();
-	void _code_complete_script(const String& p_code, List<String>* r_options);
+	void _code_complete_script(const String &p_code, List<String> *r_options);
 	void _load_theme_settings();
 
 	void _notification(int p_what);
@@ -105,43 +100,42 @@ protected:
 
 	void _edit_option(int p_op);
 	void _make_context_menu(bool p_selection, bool p_color);
-	void _text_edit_gui_input(const InputEvent& ev);
-	void _color_changed(const Color& p_color);
+	void _text_edit_gui_input(const InputEvent &ev);
+	void _color_changed(const Color &p_color);
 
 	void _goto_line(int p_line) { goto_line(p_line); }
-	void _lookup_symbol(const String& p_symbol,int p_row, int p_column);
+	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 
-	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
-	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
-	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 public:
-
 	virtual void apply_code();
 	virtual Ref<Script> get_edited_script() const;
-	virtual Vector<String> get_functions() ;
-	virtual void set_edited_script(const Ref<Script>& p_script);
+	virtual Vector<String> get_functions();
+	virtual void set_edited_script(const Ref<Script> &p_script);
 	virtual void reload_text();
-	virtual String get_name() ;
-	virtual Ref<Texture> get_icon() ;
+	virtual String get_name();
+	virtual Ref<Texture> get_icon();
 	virtual bool is_unsaved();
 
 	virtual Variant get_edit_state();
-	virtual void set_edit_state(const Variant& p_state);
+	virtual void set_edit_state(const Variant &p_state);
 	virtual void ensure_focus();
 	virtual void trim_trailing_whitespace();
 	virtual void tag_saved_version();
 
-	virtual void goto_line(int p_line,bool p_with_error=false);
+	virtual void goto_line(int p_line, bool p_with_error = false);
 
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
 
-	virtual void add_callback(const String& p_function,PoolStringArray p_args);
+	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
-	virtual bool goto_method(const String& p_method);
+	virtual bool goto_method(const String &p_method);
 
-	virtual void set_tooltip_request_func(String p_method,Object* p_obj);
+	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
 
 	virtual void set_debugger_active(bool p_active);
 
@@ -150,10 +144,6 @@ public:
 	static void register_editor();
 
 	ScriptTextEditor();
-
 };
-
-
-
 
 #endif // SCRIPT_TEXT_EDITOR_H

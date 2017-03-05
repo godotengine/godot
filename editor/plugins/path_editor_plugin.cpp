@@ -28,9 +28,9 @@
 /*************************************************************************/
 #include "path_editor_plugin.h"
 
-#include "spatial_editor_plugin.h"
-#include "scene/resources/curve.h"
 #include "os/keyboard.h"
+#include "scene/resources/curve.h"
+#include "spatial_editor_plugin.h"
 
 #if 0
 String PathSpatialGizmo::get_handle_name(int p_idx) const {

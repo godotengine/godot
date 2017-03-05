@@ -29,12 +29,11 @@
 #ifndef JOINTS_2D_H
 #define JOINTS_2D_H
 
-
 #include "node_2d.h"
 
 class Joint2D : public Node2D {
 
-	GDCLASS(Joint2D,Node2D);
+	GDCLASS(Joint2D, Node2D);
 
 	RID joint;
 
@@ -44,21 +43,19 @@ class Joint2D : public Node2D {
 
 	bool exclude_from_collision;
 
-
 protected:
-
 	void _update_joint();
 
 	void _notification(int p_what);
-	virtual RID _configure_joint()=0;
+	virtual RID _configure_joint() = 0;
 
 	static void _bind_methods();
-public:
 
-	void set_node_a(const NodePath& p_node_a);
+public:
+	void set_node_a(const NodePath &p_node_a);
 	NodePath get_node_a() const;
 
-	void set_node_b(const NodePath& p_node_b);
+	void set_node_b(const NodePath &p_node_b);
 	NodePath get_node_b() const;
 
 	void set_bias(real_t p_bias);
@@ -69,23 +66,20 @@ public:
 
 	RID get_joint() const { return joint; }
 	Joint2D();
-
 };
-
 
 class PinJoint2D : public Joint2D {
 
-	GDCLASS(PinJoint2D,Joint2D);
+	GDCLASS(PinJoint2D, Joint2D);
 
 	real_t softness;
 
 protected:
-
 	void _notification(int p_what);
 	virtual RID _configure_joint();
 	static void _bind_methods();
-public:
 
+public:
 	void set_softness(real_t p_stiffness);
 	real_t get_softness() const;
 
@@ -94,18 +88,17 @@ public:
 
 class GrooveJoint2D : public Joint2D {
 
-	GDCLASS(GrooveJoint2D,Joint2D);
+	GDCLASS(GrooveJoint2D, Joint2D);
 
 	real_t length;
 	real_t initial_offset;
 
 protected:
-
 	void _notification(int p_what);
 	virtual RID _configure_joint();
 	static void _bind_methods();
-public:
 
+public:
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
@@ -117,7 +110,7 @@ public:
 
 class DampedSpringJoint2D : public Joint2D {
 
-	GDCLASS(DampedSpringJoint2D,Joint2D);
+	GDCLASS(DampedSpringJoint2D, Joint2D);
 
 	real_t stiffness;
 	real_t damping;
@@ -125,12 +118,11 @@ class DampedSpringJoint2D : public Joint2D {
 	real_t length;
 
 protected:
-
 	void _notification(int p_what);
 	virtual RID _configure_joint();
 	static void _bind_methods();
-public:
 
+public:
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
@@ -145,6 +137,5 @@ public:
 
 	DampedSpringJoint2D();
 };
-
 
 #endif // JOINTS_2D_H

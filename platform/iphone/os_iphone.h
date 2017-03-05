@@ -31,20 +31,19 @@
 #ifndef OS_IPHONE_H
 #define OS_IPHONE_H
 
-#include "os/input.h"
 #include "drivers/unix/os_unix.h"
+#include "os/input.h"
 
-#include "servers/visual_server.h"
-#include "servers/visual/rasterizer.h"
+#include "game_center.h"
+#include "icloud.h"
+#include "in_app_store.h"
+#include "main/input_default.h"
+#include "servers/audio_server.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
-#include "servers/audio_server.h"
-#include "main/input_default.h"
-#include "game_center.h"
-#include "in_app_store.h"
-#include "icloud.h"
-
+#include "servers/visual/rasterizer.h"
+#include "servers/visual_server.h"
 
 class AudioDriverIphone;
 // class RasterizerGLES2;
@@ -52,55 +51,53 @@ class AudioDriverIphone;
 class OSIPhone : public OS_Unix {
 
 public:
-
 	enum Orientations {
 		PortraitDown,
 		PortraitUp,
 		LandscapeLeft,
 		LandscapeRight,
 	};
-private:
 
+private:
 	enum {
-			MAX_MOUSE_COUNT = 8,
-			MAX_EVENTS = 64,
+		MAX_MOUSE_COUNT = 8,
+		MAX_EVENTS = 64,
 	};
 
 	uint8_t supported_orientations;
 
-//	Rasterizer *rasterizer;
-//	RasterizerGLES2* rasterizer_gles22;
+	//	Rasterizer *rasterizer;
+	//	RasterizerGLES2* rasterizer_gles22;
 
 	VisualServer *visual_server;
-	PhysicsServer* physics_server;
+	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 
-	AudioDriverIphone* audio_driver;
+	AudioDriverIphone *audio_driver;
 
 #ifdef GAME_CENTER_ENABLED
-	GameCenter* game_center;
+	GameCenter *game_center;
 #endif
 #ifdef STOREKIT_ENABLED
-	InAppStore* store_kit;
+	InAppStore *store_kit;
 #endif
 #ifdef ICLOUD_ENABLED
-	ICloud* icloud;
+	ICloud *icloud;
 #endif
 
 	MainLoop *main_loop;
 
 	VideoMode video_mode;
 
-
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;
+	virtual const char *get_video_driver_name(int p_driver) const;
 
 	virtual VideoMode get_default_video_mode() const;
 
 	virtual void initialize_core();
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
+	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 
-	virtual void set_main_loop( MainLoop * p_main_loop );
+	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual MainLoop *get_main_loop() const;
 
 	virtual void delete_main_loop();
@@ -111,7 +108,7 @@ private:
 
 		bool pressed[MAX_MOUSE_COUNT];
 		MouseList() {
-			for (int i=0; i<MAX_MOUSE_COUNT; i++)
+			for (int i = 0; i < MAX_MOUSE_COUNT; i++)
 				pressed[i] = false;
 		};
 	};
@@ -123,7 +120,7 @@ private:
 	InputEvent event_queue[MAX_EVENTS];
 	int event_count;
 	int last_event_id;
-	void queue_event(const InputEvent& p_event);
+	void queue_event(const InputEvent &p_event);
 
 	String data_dir;
 	String unique_ID;
@@ -132,7 +129,6 @@ private:
 	InputDefault *input;
 
 public:
-
 	bool iterate();
 
 	uint8_t get_orientations() const;
@@ -149,25 +145,25 @@ public:
 	void update_magnetometer(float p_x, float p_y, float p_z);
 	void update_gyroscope(float p_x, float p_y, float p_z);
 
-	static OSIPhone* get_singleton();
+	static OSIPhone *get_singleton();
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String& p_title);
+	virtual void set_window_title(const String &p_title);
 
-	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
-	virtual VideoMode get_video_mode(int p_screen=0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
+	virtual VideoMode get_video_mode(int p_screen = 0) const;
+	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual void set_keep_screen_on(bool p_enabled);
 
 	virtual bool can_draw() const;
 
 	virtual bool has_virtual_keyboard() const;
-	virtual void show_virtual_keyboard(const String& p_existing_text,const Rect2& p_screen_rect=Rect2());
+	virtual void show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect = Rect2());
 	virtual void hide_virtual_keyboard();
 
 	virtual void set_cursor_shape(CursorShape p_shape);

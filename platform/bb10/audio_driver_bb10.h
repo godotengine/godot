@@ -28,23 +28,23 @@
 /*************************************************************************/
 #include "servers/audio_server.h"
 
-#include "core/os/thread.h"
 #include "core/os/mutex.h"
+#include "core/os/thread.h"
 
 #include <sys/asoundlib.h>
 
 class AudioDriverBB10 : public AudioDriver {
 
-	Thread* thread;
-	Mutex* mutex;
+	Thread *thread;
+	Mutex *mutex;
 
-	snd_pcm_t* pcm_handle;
+	snd_pcm_t *pcm_handle;
 
-	int32_t* samples_in;
-	int16_t* samples_out;
+	int32_t *samples_in;
+	int16_t *samples_out;
 	int sample_buf_count;
 
-	static void thread_func(void* p_udata);
+	static void thread_func(void *p_udata);
 
 	int mix_rate;
 	SpeakerMode speaker_mode;
@@ -58,13 +58,12 @@ class AudioDriverBB10 : public AudioDriver {
 	bool pcm_open;
 
 public:
-
-	const char* get_name() const {
+	const char *get_name() const {
 		return "BB10";
 	};
 
 	virtual Error init();
-	virtual Error init(const char* p_name);
+	virtual Error init(const char *p_name);
 	virtual void start();
 	virtual int get_mix_rate() const;
 	virtual SpeakerMode get_speaker_mode() const;
@@ -75,4 +74,3 @@ public:
 	AudioDriverBB10();
 	~AudioDriverBB10();
 };
-

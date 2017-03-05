@@ -29,15 +29,15 @@
 #ifndef EDITOR_FILE_SERVER_H
 #define EDITOR_FILE_SERVER_H
 
+#include "io/file_access_network.h"
+#include "io/packet_peer.h"
+#include "io/tcp_server.h"
 #include "object.h"
 #include "os/thread.h"
-#include "io/tcp_server.h"
-#include "io/packet_peer.h"
-#include "io/file_access_network.h"
 
 class EditorFileServer : public Object {
 
-	GDCLASS(EditorFileServer,Object);
+	GDCLASS(EditorFileServer, Object);
 
 	enum Command {
 		CMD_NONE,
@@ -45,26 +45,24 @@ class EditorFileServer : public Object {
 		CMD_STOP,
 	};
 
-
 	struct ClientData {
 
 		Thread *thread;
 		Ref<StreamPeerTCP> connection;
-		Map<int,FileAccess*> files;
+		Map<int, FileAccess *> files;
 		EditorFileServer *efs;
 		bool quit;
-
 	};
 
 	Ref<TCP_Server> server;
-	Set<Thread*> to_wait;
+	Set<Thread *> to_wait;
 
 	static void _close_client(ClientData *cd);
-	static void _subthread_start(void*s);
+	static void _subthread_start(void *s);
 
 	Mutex *wait_mutex;
 	Thread *thread;
-	static void _thread_start(void*);
+	static void _thread_start(void *);
 	bool quit;
 	Command cmd;
 
@@ -72,9 +70,7 @@ class EditorFileServer : public Object {
 	int port;
 	bool active;
 
-
 public:
-
 	void start();
 	void stop();
 

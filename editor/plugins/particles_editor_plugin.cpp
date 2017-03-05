@@ -29,9 +29,9 @@
 
 #if 0
 #include "particles_editor_plugin.h"
+#include "editor/plugins/spatial_editor_plugin.h"
 #include "io/resource_loader.h"
 #include "servers/visual/particle_system_sw.h"
-#include "editor/plugins/spatial_editor_plugin.h"
 
 
 void ParticlesEditor::_node_removed(Node *p_node) {
@@ -456,6 +456,5 @@ ParticlesEditorPlugin::ParticlesEditorPlugin(EditorNode *p_node) {
 ParticlesEditorPlugin::~ParticlesEditorPlugin()
 {
 }
-
 
 #endif

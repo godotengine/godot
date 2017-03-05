@@ -34,23 +34,22 @@
 
 class EditorRunNative : public HBoxContainer {
 
-	GDCLASS(EditorRunNative,BoxContainer);
+	GDCLASS(EditorRunNative, BoxContainer);
 
-	Map<StringName,MenuButton*> menus;
+	Map<StringName, MenuButton *> menus;
 	bool first;
 	bool deploy_dumb;
 	bool deploy_debug_remote;
 	bool debug_collisions;
 	bool debug_navigation;
 
-	void _run_native(int p_idx,const String& p_platform);
+	void _run_native(int p_idx, const String &p_platform);
 
 protected:
-
 	static void _bind_methods();
 	void _notification(int p_what);
-public:
 
+public:
 	void set_deploy_dumb(bool p_enabled);
 	bool is_deploy_dumb_enabled() const;
 

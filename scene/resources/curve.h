@@ -81,10 +81,9 @@ public:
 
 #endif
 
-
 class Curve2D : public Resource {
 
-	GDCLASS(Curve2D,Resource);
+	GDCLASS(Curve2D, Resource);
 
 	struct Point {
 
@@ -92,7 +91,6 @@ class Curve2D : public Resource {
 		Vector2 out;
 		Vector2 pos;
 	};
-
 
 	Vector<Point> points;
 
@@ -106,31 +104,25 @@ class Curve2D : public Resource {
 	mutable PoolVector2Array baked_point_cache;
 	mutable float baked_max_ofs;
 
-
 	void _bake() const;
 
 	float bake_interval;
 
-	void _bake_segment2d(Map<float,Vector2>& r_bake, float p_begin, float p_end,const Vector2& p_a,const Vector2& p_out,const Vector2& p_b, const Vector2& p_in,int p_depth,int p_max_depth,float p_tol) const;
+	void _bake_segment2d(Map<float, Vector2> &r_bake, float p_begin, float p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, float p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
 protected:
-
 	static void _bind_methods();
 
-
-
 public:
-
-
 	int get_point_count() const;
-	void add_point(const Vector2& p_pos, const Vector2& p_in=Vector2(), const Vector2& p_out=Vector2(),int p_atpos=-1);
-	void set_point_pos(int p_index, const Vector2& p_pos);
+	void add_point(const Vector2 &p_pos, const Vector2 &p_in = Vector2(), const Vector2 &p_out = Vector2(), int p_atpos = -1);
+	void set_point_pos(int p_index, const Vector2 &p_pos);
 	Vector2 get_point_pos(int p_index) const;
-	void set_point_in(int p_index, const Vector2& p_in);
+	void set_point_in(int p_index, const Vector2 &p_in);
 	Vector2 get_point_in(int p_index) const;
-	void set_point_out(int p_index, const Vector2& p_out);
+	void set_point_out(int p_index, const Vector2 &p_out);
 	Vector2 get_point_out(int p_index) const;
 	void remove_point(int p_index);
 	void clear_points();
@@ -138,26 +130,21 @@ public:
 	Vector2 interpolate(int p_index, float p_offset) const;
 	Vector2 interpolatef(real_t p_findex) const;
 
-
 	void set_bake_interval(float p_distance);
 	float get_bake_interval() const;
 
-
 	float get_baked_length() const;
-	Vector2 interpolate_baked(float p_offset,bool p_cubic=false) const;
+	Vector2 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	PoolVector2Array get_baked_points() const; //useful for going thru
 
-	PoolVector2Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
-
+	PoolVector2Array tesselate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
 	Curve2D();
 };
 
-
-
 class Curve3D : public Resource {
 
-	GDCLASS(Curve3D,Resource);
+	GDCLASS(Curve3D, Resource);
 
 	struct Point {
 
@@ -166,9 +153,8 @@ class Curve3D : public Resource {
 		Vector3 pos;
 		float tilt;
 
-		Point() { tilt=0; }
+		Point() { tilt = 0; }
 	};
-
 
 	Vector<Point> points;
 
@@ -183,33 +169,27 @@ class Curve3D : public Resource {
 	mutable PoolRealArray baked_tilt_cache;
 	mutable float baked_max_ofs;
 
-
 	void _bake() const;
 
 	float bake_interval;
 
-	void _bake_segment3d(Map<float,Vector3>& r_bake, float p_begin, float p_end,const Vector3& p_a,const Vector3& p_out,const Vector3& p_b, const Vector3& p_in,int p_depth,int p_max_depth,float p_tol) const;
+	void _bake_segment3d(Map<float, Vector3> &r_bake, float p_begin, float p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, float p_tol) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
 protected:
-
 	static void _bind_methods();
 
-
-
 public:
-
-
 	int get_point_count() const;
-	void add_point(const Vector3& p_pos, const Vector3& p_in=Vector3(), const Vector3& p_out=Vector3(),int p_atpos=-1);
-	void set_point_pos(int p_index, const Vector3& p_pos);
+	void add_point(const Vector3 &p_pos, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
+	void set_point_pos(int p_index, const Vector3 &p_pos);
 	Vector3 get_point_pos(int p_index) const;
 	void set_point_tilt(int p_index, float p_tilt);
 	float get_point_tilt(int p_index) const;
-	void set_point_in(int p_index, const Vector3& p_in);
+	void set_point_in(int p_index, const Vector3 &p_in);
 	Vector3 get_point_in(int p_index) const;
-	void set_point_out(int p_index, const Vector3& p_out);
+	void set_point_out(int p_index, const Vector3 &p_out);
 	Vector3 get_point_out(int p_index) const;
 	void remove_point(int p_index);
 	void clear_points();
@@ -217,19 +197,16 @@ public:
 	Vector3 interpolate(int p_index, float p_offset) const;
 	Vector3 interpolatef(real_t p_findex) const;
 
-
 	void set_bake_interval(float p_distance);
 	float get_bake_interval() const;
 
-
 	float get_baked_length() const;
-	Vector3 interpolate_baked(float p_offset,bool p_cubic=false) const;
+	Vector3 interpolate_baked(float p_offset, bool p_cubic = false) const;
 	float interpolate_baked_tilt(float p_offset) const;
 	PoolVector3Array get_baked_points() const; //useful for going thru
 	PoolRealArray get_baked_tilts() const; //useful for going thru
 
-	PoolVector3Array tesselate(int p_max_stages=5,float p_tolerance=4) const; //useful for display
-
+	PoolVector3Array tesselate(int p_max_stages = 5, float p_tolerance = 4) const; //useful for display
 
 	Curve3D();
 };

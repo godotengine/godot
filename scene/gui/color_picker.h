@@ -29,23 +29,22 @@
 #ifndef COLOR_PICKER_H
 #define COLOR_PICKER_H
 
-#include "scene/gui/slider.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/label.h"
-#include "scene/gui/button.h"
-#include "scene/gui/popup.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
-#include "scene/gui/check_button.h"
 
 class ColorPicker : public BoxContainer {
 
-	GDCLASS(ColorPicker,BoxContainer);
+	GDCLASS(ColorPicker, BoxContainer);
 
 private:
-
 	Control *screen;
 	Image last_capture;
 	Control *uv_edit;
@@ -69,10 +68,10 @@ private:
 	bool raw_mode_enabled;
 	bool updating;
 	bool changing_color;
-	float h,s,v;
+	float h, s, v;
 	Color last_hsv;
 
-	void _html_entered(const String& p_html);
+	void _html_entered(const String &p_html);
 	void _value_changed(double);
 	void _update_controls();
 	void _update_color();
@@ -80,28 +79,27 @@ private:
 	void _update_text_value();
 	void _text_type_toggled();
 	void _sample_draw();
-	void _hsv_draw(int p_wich,Control *c);
+	void _hsv_draw(int p_wich, Control *c);
 
-	void _uv_input(const InputEvent& p_input);
-	void _w_input(const InputEvent& p_input);
-	void _preset_input(const InputEvent& p_input);
-	void _screen_input(const InputEvent& p_input);
+	void _uv_input(const InputEvent &p_input);
+	void _w_input(const InputEvent &p_input);
+	void _preset_input(const InputEvent &p_input);
+	void _screen_input(const InputEvent &p_input);
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
 
 protected:
-
 	void _notification(int);
 	static void _bind_methods();
-public:
 
+public:
 	void set_edit_alpha(bool p_show);
 	bool is_editing_alpha() const;
 
-	void set_pick_color(const Color& p_color);
+	void set_pick_color(const Color &p_color);
 	Color get_pick_color() const;
 
-	void add_preset(const Color& p_color);
+	void add_preset(const Color &p_color);
 	void set_raw_mode(bool p_enabled);
 	bool is_raw_mode() const;
 
@@ -112,21 +110,20 @@ public:
 
 class ColorPickerButton : public Button {
 
-	GDCLASS(ColorPickerButton,Button);
+	GDCLASS(ColorPickerButton, Button);
 
 	PopupPanel *popup;
 	ColorPicker *picker;
 
-	void _color_changed(const Color& p_color);
+	void _color_changed(const Color &p_color);
 	virtual void pressed();
 
 protected:
-
 	void _notification(int);
 	static void _bind_methods();
-public:
 
-	void set_pick_color(const Color& p_color);
+public:
+	void set_pick_color(const Color &p_color);
 	Color get_pick_color() const;
 
 	void set_edit_alpha(bool p_show);

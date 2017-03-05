@@ -32,28 +32,27 @@
 #include "resource.h"
 
 class Shape2D : public Resource {
-	GDCLASS( Shape2D, Resource );
-	OBJ_SAVE_TYPE( Shape2D );
+	GDCLASS(Shape2D, Resource);
+	OBJ_SAVE_TYPE(Shape2D);
 
 	RID shape;
 	real_t custom_bias;
+
 protected:
-
-
 	static void _bind_methods();
-	Shape2D(const RID& p_rid);
-public:
+	Shape2D(const RID &p_rid);
 
+public:
 	void set_custom_solver_bias(real_t p_bias);
 	real_t get_custom_solver_bias() const;
 
-	bool collide_with_motion(const Transform2D& p_local_xform, const Vector2& p_local_motion, const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform, const Vector2 &p_p_shape_motion);
-	bool collide(const Transform2D& p_local_xform,  const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform);
+	bool collide_with_motion(const Transform2D &p_local_xform, const Vector2 &p_local_motion, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_p_shape_motion);
+	bool collide(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform);
 
-	Variant collide_with_motion_and_get_contacts(const Transform2D& p_local_xform, const Vector2& p_local_motion, const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform, const Vector2 &p_p_shape_motion);
-	Variant collide_and_get_contacts(const Transform2D& p_local_xform,  const Ref<Shape2D>& p_shape, const Transform2D& p_shape_xform);
+	Variant collide_with_motion_and_get_contacts(const Transform2D &p_local_xform, const Vector2 &p_local_motion, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform, const Vector2 &p_p_shape_motion);
+	Variant collide_and_get_contacts(const Transform2D &p_local_xform, const Ref<Shape2D> &p_shape, const Transform2D &p_shape_xform);
 
-	virtual void draw(const RID& p_to_rid,const Color& p_color) {}
+	virtual void draw(const RID &p_to_rid, const Color &p_color) {}
 	virtual Rect2 get_rect() const { return Rect2(); }
 	virtual RID get_rid() const;
 	Shape2D();

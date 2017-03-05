@@ -46,24 +46,18 @@ class PaymentService : public Object {
 	List<Variant> pending_events;
 
 public:
-
 	Error request_product_info(Variant p_params);
 	Error purchase(Variant p_params);
 
 	int get_pending_event_count();
 	Variant pop_pending_event();
 
-	bool handle_event(bps_event_t* p_event);
+	bool handle_event(bps_event_t *p_event);
 
 	PaymentService();
 	~PaymentService();
 };
 
-
-
 #endif
 
-
 #endif
-
-

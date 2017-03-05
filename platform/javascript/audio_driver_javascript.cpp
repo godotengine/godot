@@ -37,21 +37,17 @@
 
 //AudioDriverJavaScript* AudioDriverJavaScript::s_ad=NULL;
 
-const char* AudioDriverJavaScript::get_name() const {
+const char *AudioDriverJavaScript::get_name() const {
 
 	return "JavaScript";
 }
 
-Error AudioDriverJavaScript::init(){
+Error AudioDriverJavaScript::init() {
 
 	return OK;
-
 }
 
-void AudioDriverJavaScript::start(){
-
-
-
+void AudioDriverJavaScript::start() {
 }
 
 int AudioDriverJavaScript::get_mix_rate() const {
@@ -59,18 +55,17 @@ int AudioDriverJavaScript::get_mix_rate() const {
 	return 44100;
 }
 
-AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const{
+AudioDriver::SpeakerMode AudioDriverJavaScript::get_speaker_mode() const {
 
 	return SPEAKER_MODE_STEREO;
 }
 
-void AudioDriverJavaScript::lock(){
+void AudioDriverJavaScript::lock() {
 
 	/*
 	if (active && mutex)
 		mutex->lock();
 	*/
-
 }
 
 void AudioDriverJavaScript::unlock() {
@@ -79,16 +74,10 @@ void AudioDriverJavaScript::unlock() {
 	if (active && mutex)
 		mutex->unlock();
 	*/
-
 }
 
-void AudioDriverJavaScript::finish(){
-
+void AudioDriverJavaScript::finish() {
 }
 
-AudioDriverJavaScript::AudioDriverJavaScript()
-{
+AudioDriverJavaScript::AudioDriverJavaScript() {
 }
-
-
-

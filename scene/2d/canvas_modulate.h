@@ -33,15 +33,16 @@
 
 class CanvasModulate : public Node2D {
 
-	GDCLASS(CanvasModulate,Node2D);
+	GDCLASS(CanvasModulate, Node2D);
 
 	Color color;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_color(const Color& p_color);
+public:
+	void set_color(const Color &p_color);
 	Color get_color() const;
 
 	String get_configuration_warning() const;

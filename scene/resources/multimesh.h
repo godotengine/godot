@@ -34,10 +34,10 @@
 
 class MultiMesh : public Resource {
 
-	GDCLASS( MultiMesh, Resource );
+	GDCLASS(MultiMesh, Resource);
 	RES_BASE_EXTENSION("mmsh");
-public:
 
+public:
 	enum TransformFormat {
 		TRANSFORM_2D = VS::MULTIMESH_TRANSFORM_2D,
 		TRANSFORM_3D = VS::MULTIMESH_TRANSFORM_3D
@@ -48,26 +48,24 @@ public:
 		COLOR_8BIT = VS::MULTIMESH_COLOR_8BIT,
 		COLOR_FLOAT = VS::MULTIMESH_COLOR_FLOAT,
 	};
+
 private:
 	Ref<Mesh> mesh;
 	RID multimesh;
 	TransformFormat transform_format;
 	ColorFormat color_format;
 
-
 protected:
-
 	static void _bind_methods();
 
-	void _set_transform_array(const PoolVector<Vector3>& p_array);
+	void _set_transform_array(const PoolVector<Vector3> &p_array);
 	PoolVector<Vector3> _get_transform_array() const;
 
-	void _set_color_array(const PoolVector<Color>& p_array);
+	void _set_color_array(const PoolVector<Color> &p_array);
 	PoolVector<Color> _get_color_array() const;
 
 public:
-
-	void set_mesh(const Ref<Mesh>& p_mesh);
+	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
 	void set_color_format(ColorFormat p_color_format);
@@ -79,10 +77,10 @@ public:
 	void set_instance_count(int p_count);
 	int get_instance_count() const;
 
-	void set_instance_transform(int p_instance, const Transform& p_transform);
+	void set_instance_transform(int p_instance, const Transform &p_transform);
 	Transform get_instance_transform(int p_instance) const;
 
-	void set_instance_color(int p_instance, const Color& p_color);
+	void set_instance_color(int p_instance, const Color &p_color);
 	Color get_instance_color(int p_instance) const;
 
 	virtual Rect3 get_aabb() const;
@@ -91,11 +89,9 @@ public:
 
 	MultiMesh();
 	~MultiMesh();
-
 };
 
-
-VARIANT_ENUM_CAST( MultiMesh::TransformFormat );
-VARIANT_ENUM_CAST( MultiMesh::ColorFormat);
+VARIANT_ENUM_CAST(MultiMesh::TransformFormat);
+VARIANT_ENUM_CAST(MultiMesh::ColorFormat);
 
 #endif // MULTI_MESH_H

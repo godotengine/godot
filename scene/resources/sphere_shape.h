@@ -29,22 +29,20 @@
 #ifndef SPHERE_SHAPE_H
 #define SPHERE_SHAPE_H
 
-
 #include "scene/resources/shape.h"
 
 class SphereShape : public Shape {
 
-	GDCLASS(SphereShape,Shape);
+	GDCLASS(SphereShape, Shape);
 	float radius;
 
 protected:
-
 	static void _bind_methods();
 
 	virtual void _update_shape();
 	virtual Vector<Vector3> _gen_debug_mesh_lines();
-public:
 
+public:
 	void set_radius(float p_radius);
 	float get_radius() const;
 

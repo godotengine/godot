@@ -35,7 +35,7 @@ class PackedScene;
 
 class InstancePlaceholder : public Node {
 
-	GDCLASS(InstancePlaceholder,Node);
+	GDCLASS(InstancePlaceholder, Node);
 
 	String path;
 	struct PropSet {
@@ -46,20 +46,19 @@ class InstancePlaceholder : public Node {
 	List<PropSet> stored_values;
 
 protected:
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
 
 public:
-
-	void set_instance_path(const String& p_name);
+	void set_instance_path(const String &p_name);
 	String get_instance_path() const;
 
 	Dictionary get_stored_values(bool p_with_order = false);
 
-	void replace_by_instance(const Ref<PackedScene>& p_custom_scene=Ref<PackedScene>());
+	void replace_by_instance(const Ref<PackedScene> &p_custom_scene = Ref<PackedScene>());
 
 	InstancePlaceholder();
 };

@@ -30,17 +30,15 @@
 
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
-#include "thread_jandroid.h"
 #include "print_string.h"
+#include "thread_jandroid.h"
 
-
-jobject DirAccessJAndroid::io=NULL;
-jclass DirAccessJAndroid::cls=NULL;
-jmethodID DirAccessJAndroid::_dir_open=NULL;
-jmethodID DirAccessJAndroid::_dir_next=NULL;
-jmethodID DirAccessJAndroid::_dir_close=NULL;
-jmethodID DirAccessJAndroid::_dir_is_dir=NULL;
-
+jobject DirAccessJAndroid::io = NULL;
+jclass DirAccessJAndroid::cls = NULL;
+jmethodID DirAccessJAndroid::_dir_open = NULL;
+jmethodID DirAccessJAndroid::_dir_next = NULL;
+jmethodID DirAccessJAndroid::_dir_close = NULL;
+jmethodID DirAccessJAndroid::_dir_is_dir = NULL;
 
 DirAccess *DirAccessJAndroid::create_fs() {
 
@@ -53,118 +51,113 @@ Error DirAccessJAndroid::list_dir_begin() {
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	jstring js = env->NewStringUTF(current_dir.utf8().get_data());
-	int res = env->CallIntMethod(io,_dir_open,js);
-	if (res<=0)
+	int res = env->CallIntMethod(io, _dir_open, js);
+	if (res <= 0)
 		return ERR_CANT_OPEN;
 
-	id=res;
+	id = res;
 
 	return OK;
 }
 
-String DirAccessJAndroid::get_next(){
+String DirAccessJAndroid::get_next() {
 
-	ERR_FAIL_COND_V(id==0,"");
+	ERR_FAIL_COND_V(id == 0, "");
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	jstring str= (jstring)env->CallObjectMethod(io,_dir_next,id);
+	jstring str = (jstring)env->CallObjectMethod(io, _dir_next, id);
 	if (!str)
 		return "";
 
-	String ret = String::utf8(env->GetStringUTFChars( (jstring)str, NULL ));
+	String ret = String::utf8(env->GetStringUTFChars((jstring)str, NULL));
 	env->DeleteLocalRef((jobject)str);
 	return ret;
-
 }
 
-bool DirAccessJAndroid::current_is_dir() const{
-
+bool DirAccessJAndroid::current_is_dir() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	return env->CallBooleanMethod(io,_dir_is_dir,id);
-
+	return env->CallBooleanMethod(io, _dir_is_dir, id);
 }
 
 bool DirAccessJAndroid::current_is_hidden() const {
 
-	return current!="." && current!=".." && current.begins_with(".");
+	return current != "." && current != ".." && current.begins_with(".");
 }
 
-void DirAccessJAndroid::list_dir_end(){
+void DirAccessJAndroid::list_dir_end() {
 
-	if (id==0)
+	if (id == 0)
 		return;
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	env->CallVoidMethod(io,_dir_close,id);
-	id=0;
-
-
+	env->CallVoidMethod(io, _dir_close, id);
+	id = 0;
 }
 
-int DirAccessJAndroid::get_drive_count(){
+int DirAccessJAndroid::get_drive_count() {
 
 	return 0;
 }
 
-String DirAccessJAndroid::get_drive(int p_drive){
+String DirAccessJAndroid::get_drive(int p_drive) {
 
 	return "";
 }
 
-Error DirAccessJAndroid::change_dir(String p_dir){
+Error DirAccessJAndroid::change_dir(String p_dir) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	p_dir=p_dir.simplify_path();
+	p_dir = p_dir.simplify_path();
 
-	if (p_dir=="" || p_dir=="." || (p_dir==".." && current_dir==""))
+	if (p_dir == "" || p_dir == "." || (p_dir == ".." && current_dir == ""))
 		return OK;
 
 	String new_dir;
 
-	if (p_dir!="res://" && p_dir.length()>1 && p_dir.ends_with("/"))
-		p_dir=p_dir.substr(0,p_dir.length()-1);
+	if (p_dir != "res://" && p_dir.length() > 1 && p_dir.ends_with("/"))
+		p_dir = p_dir.substr(0, p_dir.length() - 1);
 
 	if (p_dir.begins_with("/"))
-		new_dir=p_dir.substr(1,p_dir.length());
+		new_dir = p_dir.substr(1, p_dir.length());
 	else if (p_dir.begins_with("res://"))
-		new_dir=p_dir.substr(6,p_dir.length());
-	else if (current_dir=="")
-		new_dir=p_dir;
+		new_dir = p_dir.substr(6, p_dir.length());
+	else if (current_dir == "")
+		new_dir = p_dir;
 	else
-		new_dir=current_dir.plus_file(p_dir);
+		new_dir = current_dir.plus_file(p_dir);
 
 	//print_line("new dir is: "+new_dir);
-//test if newdir exists
-	new_dir=new_dir.simplify_path();
+	//test if newdir exists
+	new_dir = new_dir.simplify_path();
 
 	jstring js = env->NewStringUTF(new_dir.utf8().get_data());
-	int res = env->CallIntMethod(io,_dir_open,js);
+	int res = env->CallIntMethod(io, _dir_open, js);
 	env->DeleteLocalRef(js);
-	if (res<=0)
+	if (res <= 0)
 		return ERR_INVALID_PARAMETER;
 
-	env->CallVoidMethod(io,_dir_close,res);
+	env->CallVoidMethod(io, _dir_close, res);
 
-	current_dir=new_dir;
+	current_dir = new_dir;
 
 	return OK;
 }
 
-String DirAccessJAndroid::get_current_dir(){
+String DirAccessJAndroid::get_current_dir() {
 
-	return "res://"+current_dir;
+	return "res://" + current_dir;
 }
 
-bool DirAccessJAndroid::file_exists(String p_file){
+bool DirAccessJAndroid::file_exists(String p_file) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 	String sd;
-	if (current_dir=="")
-		sd=p_file;
+	if (current_dir == "")
+		sd = p_file;
 	else
-		sd=current_dir.plus_file(p_file);
+		sd = current_dir.plus_file(p_file);
 
 	FileAccessJAndroid *f = memnew(FileAccessJAndroid);
 	bool exists = f->file_exists(sd);
@@ -179,45 +172,44 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 
 	String sd;
 
-
-	if (current_dir=="")
-		sd=p_dir;
+	if (current_dir == "")
+		sd = p_dir;
 	else {
 		if (p_dir.is_rel_path())
-			sd=current_dir.plus_file(p_dir);
+			sd = current_dir.plus_file(p_dir);
 		else
-			sd=fix_path(p_dir);
+			sd = fix_path(p_dir);
 	}
 
-	String path=sd.simplify_path();
+	String path = sd.simplify_path();
 
 	if (path.begins_with("/"))
-		path=path.substr(1,path.length());
+		path = path.substr(1, path.length());
 	else if (path.begins_with("res://"))
-		path=path.substr(6,path.length());
+		path = path.substr(6, path.length());
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
-	int res = env->CallIntMethod(io,_dir_open,js);
+	int res = env->CallIntMethod(io, _dir_open, js);
 	env->DeleteLocalRef(js);
-	if (res<=0)
+	if (res <= 0)
 		return false;
 
-	env->CallVoidMethod(io,_dir_close,res);
+	env->CallVoidMethod(io, _dir_close, res);
 
 	return true;
 }
 
-Error DirAccessJAndroid::make_dir(String p_dir){
+Error DirAccessJAndroid::make_dir(String p_dir) {
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
 
-Error DirAccessJAndroid::rename(String p_from, String p_to){
+Error DirAccessJAndroid::rename(String p_from, String p_to) {
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
 
-Error DirAccessJAndroid::remove(String p_name){
+Error DirAccessJAndroid::remove(String p_name) {
 
 	ERR_FAIL_V(ERR_UNAVAILABLE);
 }
@@ -228,42 +220,39 @@ size_t DirAccessJAndroid::get_space_left() {
 	return 0;
 }
 
-
-void DirAccessJAndroid::setup( jobject p_io) {
-
+void DirAccessJAndroid::setup(jobject p_io) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	io=p_io;
-	__android_log_print(ANDROID_LOG_INFO,"godot","STEP7");
+	io = p_io;
+	__android_log_print(ANDROID_LOG_INFO, "godot", "STEP7");
 
 	jclass c = env->GetObjectClass(io);
 	cls = (jclass)env->NewGlobalRef(c);
-	__android_log_print(ANDROID_LOG_INFO,"godot","STEP8");
+	__android_log_print(ANDROID_LOG_INFO, "godot", "STEP8");
 
 	_dir_open = env->GetMethodID(cls, "dir_open", "(Ljava/lang/String;)I");
-	if(_dir_open != 0) {
-		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _dir_open ok!!");
+	if (_dir_open != 0) {
+		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _dir_open ok!!");
 	}
 	_dir_next = env->GetMethodID(cls, "dir_next", "(I)Ljava/lang/String;");
-	if(_dir_next != 0) {
-		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _dir_next ok!!");
+	if (_dir_next != 0) {
+		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _dir_next ok!!");
 	}
 	_dir_close = env->GetMethodID(cls, "dir_close", "(I)V");
-	if(_dir_close != 0) {
-		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _dir_close ok!!");
+	if (_dir_close != 0) {
+		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _dir_close ok!!");
 	}
 	_dir_is_dir = env->GetMethodID(cls, "dir_is_dir", "(I)Z");
-	if(_dir_is_dir != 0) {
-		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _dir_is_dir ok!!");
+	if (_dir_is_dir != 0) {
+		__android_log_print(ANDROID_LOG_INFO, "godot", "*******GOT METHOD _dir_is_dir ok!!");
 	}
 
 	//(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
 }
 
-
 DirAccessJAndroid::DirAccessJAndroid() {
 
-	id=0;
+	id = 0;
 }
 
 DirAccessJAndroid::~DirAccessJAndroid() {

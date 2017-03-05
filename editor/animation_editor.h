@@ -30,30 +30,30 @@
 #define ANIMATION_EDITOR_H
 
 #include "scene/gui/control.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/gui/scroll_bar.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/scroll_bar.h"
+#include "scene/gui/slider.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/tab_container.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/gui/tool_button.h"
 
-#include "scene/resources/animation.h"
-#include "scene/animation/animation_cache.h"
-#include "scene_tree_editor.h"
 #include "editor_data.h"
 #include "property_editor.h"
+#include "scene/animation/animation_cache.h"
+#include "scene/resources/animation.h"
+#include "scene_tree_editor.h"
 #include "scene_tree_editor.h"
 
 class AnimationKeyEdit;
 class AnimationCurveEdit;
 
-class AnimationKeyEditor : public VBoxContainer  {
+class AnimationKeyEditor : public VBoxContainer {
 
-	GDCLASS( AnimationKeyEditor, VBoxContainer );
+	GDCLASS(AnimationKeyEditor, VBoxContainer);
 
-/*
+	/*
 	enum {
 
 		MENU_NEW_ANIMATION,
@@ -130,7 +130,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 
 		int track;
 		int key;
-		bool operator<(const SelectedKey& p_key) const { return track==p_key.track ? key < p_key.key : track < p_key.track; };
+		bool operator<(const SelectedKey &p_key) const { return track == p_key.track ? key < p_key.key : track < p_key.track; };
 	};
 
 	struct KeyInfo {
@@ -138,7 +138,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 		float pos;
 	};
 
-	Map<SelectedKey,KeyInfo> selection;
+	Map<SelectedKey, KeyInfo> selection;
 
 	struct ClickOver {
 
@@ -158,7 +158,6 @@ class AnimationKeyEditor : public VBoxContainer  {
 		Point2 at;
 		Point2 to;
 	} click;
-
 
 	float timeline_pos;
 
@@ -194,7 +193,6 @@ class AnimationKeyEditor : public VBoxContainer  {
 	ToolButton *curve_inout;
 	ToolButton *curve_outin;
 	ToolButton *curve_constant;
-
 
 	ConfirmationDialog *optimize_dialog;
 	SpinBox *optimize_linear_error;
@@ -233,9 +231,8 @@ class AnimationKeyEditor : public VBoxContainer  {
 	Node *root;
 
 	UndoRedo *undo_redo;
-	EditorHistory* history;
+	EditorHistory *history;
 	ConfirmationDialog *insert_confirm;
-
 
 	AnimationKeyEdit *key_edit;
 	AnimationCurveEdit *curve_edit;
@@ -257,7 +254,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 		Variant value;
 		String query;
 		bool advance;
-	};/* insert_data;*/
+	}; /* insert_data;*/
 
 	bool insert_query;
 	List<InsertData> insert_data;
@@ -266,36 +263,31 @@ class AnimationKeyEditor : public VBoxContainer  {
 	int cvi_track;
 	float cvi_pos;
 
-
 	int right_data_size_cache;
 
 	EditorSelection *editor_selection;
 
 	Label *select_anim_warning;
 
-
 	float _get_zoom_scale() const;
 
 	void _track_editor_draw();
-	void _track_editor_gui_input(const InputEvent& p_input);
+	void _track_editor_gui_input(const InputEvent &p_input);
 	void _track_pos_draw();
 
-
-	void _track_name_changed(const String& p_name);
+	void _track_name_changed(const String &p_name);
 	void _track_menu_selected(int p_idx);
 	void _confirm_insert_list();
-	int _confirm_insert(InsertData p_id,int p_at_track=-1);
-	void _query_insert(const InsertData& p_id);
+	int _confirm_insert(InsertData p_id, int p_at_track = -1);
+	void _query_insert(const InsertData &p_id);
 	void _update_menu();
 	bool insert_queue;
 	void _insert_delay();
 	void _scale();
 
-
 	void _clear_selection();
 
 	//void _browse_path();
-
 
 	StringName alc;
 
@@ -308,32 +300,32 @@ class AnimationKeyEditor : public VBoxContainer  {
 	void _menu_add_track(int p_type);
 	void _menu_track(int p_type);
 
-	void _clear_selection_for_anim(const Ref<Animation>& p_anim);
-	void _select_at_anim(const Ref<Animation>& p_anim,int p_track,float p_pos);
+	void _clear_selection_for_anim(const Ref<Animation> &p_anim);
+	void _select_at_anim(const Ref<Animation> &p_anim, int p_track, float p_pos);
 	void _curve_transition_changed(float p_what);
 
 	PropertyInfo _find_hint_for_track(int p_idx, NodePath &r_base_path);
 
 	void _create_value_item(int p_type);
-	void _pane_drag(const Point2& p_delta);
+	void _pane_drag(const Point2 &p_delta);
 	bool _edit_if_single_selection();
 
 	void _toggle_edit_curves();
 	void _animation_len_update();
 
-	void _add_call_track(const NodePath& p_base);
+	void _add_call_track(const NodePath &p_base);
 
 	void _anim_duplicate_keys(bool transpose = false);
 	void _anim_delete_keys();
 
 	void _root_removed();
-protected:
 
+protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_animation(const Ref<Animation>& p_anim);
+public:
+	void set_animation(const Ref<Animation> &p_anim);
 	Ref<Animation> get_current_animation() const;
 	void set_root(Node *p_root);
 	Node *get_root() const;
@@ -343,9 +335,9 @@ public:
 	void cleanup();
 
 	void set_anim_pos(float p_pos);
-	void insert_node_value_key(Node* p_node, const String& p_property,const Variant& p_value,bool p_only_if_exists=false);
-	void insert_value_key(const String& p_property, const Variant& p_value, bool p_advance);
-	void insert_transform_key(Spatial *p_node,const String& p_sub,const Transform& p_xform);
+	void insert_node_value_key(Node *p_node, const String &p_property, const Variant &p_value, bool p_only_if_exists = false);
+	void insert_value_key(const String &p_property, const Variant &p_value, bool p_advance);
+	void insert_transform_key(Spatial *p_node, const String &p_sub, const Transform &p_xform);
 
 	void show_select_node_warning(bool p_show) { select_anim_warning->set_visible(p_show); }
 	AnimationKeyEditor();

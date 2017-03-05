@@ -28,26 +28,24 @@
 /*************************************************************************/
 #include "test_image.h"
 
-#include "os/main_loop.h"
-#include "math_funcs.h"
-#include "print_string.h"
 #include "io/image_loader.h"
+#include "math_funcs.h"
+#include "os/main_loop.h"
+#include "print_string.h"
 
 namespace TestImage {
-
 
 class TestMainLoop : public MainLoop {
 
 	bool quit;
+
 public:
-	virtual void input_event(const InputEvent& p_event) {
-
-
+	virtual void input_event(const InputEvent &p_event) {
 	}
 
 	virtual void init() {
 
-		quit=false;
+		quit = false;
 	}
 	virtual bool iteration(float p_time) {
 
@@ -59,21 +57,16 @@ public:
 	}
 
 	virtual void finish() {
-
 	}
-
 };
 
-
-MainLoop* test() {
+MainLoop *test() {
 
 	Image img;
-	ImageLoader::load_image("as1.png",&img);
+	ImageLoader::load_image("as1.png", &img);
 
-	img.resize(512,512);
+	img.resize(512, 512);
 
-	return memnew( TestMainLoop );
-
+	return memnew(TestMainLoop);
 }
-
 }

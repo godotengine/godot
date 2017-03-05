@@ -31,16 +31,16 @@
 
 #include "core/io/file_access_buffered.h"
 
-template<class T>
+template <class T>
 class FileAccessBufferedFA : public FileAccessBuffered {
 
 	T f;
 
 	int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const {
 
-		ERR_FAIL_COND_V( !f.is_open(), -1 );
+		ERR_FAIL_COND_V(!f.is_open(), -1);
 
-		((T*)&f)->seek(p_offset);
+		((T *)&f)->seek(p_offset);
 
 		if (p_dest) {
 
@@ -63,9 +63,9 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 		};
 	};
 
-	static FileAccess* create() {
+	static FileAccess *create() {
 
-		return memnew( FileAccessBufferedFA<T>() );
+		return memnew(FileAccessBufferedFA<T>());
 	};
 
 protected:
@@ -75,29 +75,27 @@ protected:
 	};
 
 public:
-
-
 	void store_8(uint8_t p_dest) {
 
 		f.store_8(p_dest);
 	};
 
-	void store_buffer(const uint8_t *p_src,int p_length) {
+	void store_buffer(const uint8_t *p_src, int p_length) {
 
 		f.store_buffer(p_src, p_length);
 	};
 
-	bool file_exists(const String& p_name) {
+	bool file_exists(const String &p_name) {
 
 		return f.file_exists(p_name);
 	};
 
-	Error _open(const String& p_path, int p_mode_flags) {
+	Error _open(const String &p_path, int p_mode_flags) {
 
 		close();
 
 		Error ret = f._open(p_path, p_mode_flags);
-		if (ret !=OK)
+		if (ret != OK)
 			return ret;
 		//ERR_FAIL_COND_V( ret != OK, ret );
 
@@ -133,16 +131,14 @@ public:
 	};
 	*/
 
-	virtual uint64_t _get_modified_time(const String& p_file) {
+	virtual uint64_t _get_modified_time(const String &p_file) {
 
 		return f._get_modified_time(p_file);
 	}
 
-	FileAccessBufferedFA() {
-
+	FileAccessBufferedFA(){
 
 	};
 };
-
 
 #endif // FILE_ACCESS_BUFFERED_FA_H

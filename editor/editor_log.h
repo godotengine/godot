@@ -34,15 +34,15 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
 //#include "scene/gui/empty_control.h"
+#include "os/thread.h"
+#include "pane_drag.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
-#include "pane_drag.h"
-#include "os/thread.h"
 class EditorLog : public VBoxContainer {
 
-	GDCLASS( EditorLog, VBoxContainer );
+	GDCLASS(EditorLog, VBoxContainer);
 
 	Button *clearbutton;
 	Label *title;
@@ -52,7 +52,7 @@ class EditorLog : public VBoxContainer {
 	Control *ec;
 	PanelContainer *pc;
 
-	static void _error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type);
+	static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type);
 
 	ErrorHandlerList eh;
 
@@ -60,17 +60,16 @@ class EditorLog : public VBoxContainer {
 
 	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
-	static void _undo_redo_cbk(void *p_self,const String& p_name);
-protected:
+	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
+protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _override_logger_styles();
+
 public:
-
-	void add_message(const String& p_msg, bool p_error=false);
+	void add_message(const String &p_msg, bool p_error = false);
 	void deinit();
-
 
 	void clear();
 	EditorLog();

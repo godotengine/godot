@@ -29,11 +29,11 @@
 #ifndef SPATIAL_EDITOR_PLUGIN_H
 #define SPATIAL_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
-#include "scene/3d/visual_instance.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/light.h"
+#include "scene/3d/visual_instance.h"
 #include "scene/gui/panel_container.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -45,29 +45,28 @@ class SpatialEditorGizmos;
 
 class SpatialEditorGizmo : public SpatialGizmo {
 
-	GDCLASS(SpatialEditorGizmo,SpatialGizmo);
+	GDCLASS(SpatialEditorGizmo, SpatialGizmo);
 
 	bool selected;
-public:
 
-	void set_selected(bool p_selected) { selected=p_selected; }
+public:
+	void set_selected(bool p_selected) { selected = p_selected; }
 	bool is_selected() const { return selected; }
 
 	virtual String get_handle_name(int p_idx) const;
 	virtual Variant get_handle_value(int p_idx) const;
-	virtual void set_handle(int p_idx,Camera *p_camera, const Point2& p_point);
-	virtual void commit_handle(int p_idx,const Variant& p_restore,bool p_cancel=false);
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
-	virtual bool intersect_frustum(const Camera *p_camera,const Vector<Plane> &p_frustum);
-	virtual bool intersect_ray(const Camera *p_camera,const Point2& p_point,  Vector3& r_pos, Vector3& r_normal,int *r_gizmo_handle=NULL,bool p_sec_first=false);
+	virtual bool intersect_frustum(const Camera *p_camera, const Vector<Plane> &p_frustum);
+	virtual bool intersect_ray(const Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
 	SpatialEditorGizmo();
 };
 
-
 class SpatialEditorViewport : public Control {
 
-	GDCLASS( SpatialEditorViewport, Control );
-friend class SpatialEditor;
+	GDCLASS(SpatialEditorViewport, Control);
+	friend class SpatialEditor;
 	enum {
 
 		VIEW_TOP,
@@ -85,12 +84,14 @@ friend class SpatialEditor;
 		VIEW_AUDIO_LISTENER,
 		VIEW_GIZMOS,
 	};
+
 public:
 	enum {
-		GIZMO_BASE_LAYER=27,
-		GIZMO_EDIT_LAYER=26,
-		GIZMO_GRID_LAYER=25
+		GIZMO_BASE_LAYER = 27,
+		GIZMO_EDIT_LAYER = 26,
+		GIZMO_GRID_LAYER = 25
 	};
+
 private:
 	int index;
 	String name;
@@ -114,31 +115,31 @@ private:
 
 	struct _RayResult {
 
-		Spatial* item;
+		Spatial *item;
 		float depth;
 		int handle;
-		_FORCE_INLINE_ bool operator<(const _RayResult& p_rr) const { return depth<p_rr.depth; }
+		_FORCE_INLINE_ bool operator<(const _RayResult &p_rr) const { return depth < p_rr.depth; }
 	};
 
 	void _update_name();
-	void _compute_edit(const Point2& p_point);
+	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
-	void _select_clicked(bool p_append,bool p_single);
-	void _select(Spatial *p_node, bool p_append,bool p_single);
-	ObjectID _select_ray(const Point2& p_pos, bool p_append,bool &r_includes_current,int *r_gizmo_handle=NULL,bool p_alt_select=false);
-	void _find_items_at_pos(const Point2& p_pos,bool &r_includes_current,Vector<_RayResult> &results,bool p_alt_select=false);
-	Vector3 _get_ray_pos(const Vector2& p_pos) const;
-	Vector3 _get_ray(const Vector2& p_pos);
-	Point2 _point_to_screen(const Vector3& p_point);
+	void _select_clicked(bool p_append, bool p_single);
+	void _select(Spatial *p_node, bool p_append, bool p_single);
+	ObjectID _select_ray(const Point2 &p_pos, bool p_append, bool &r_includes_current, int *r_gizmo_handle = NULL, bool p_alt_select = false);
+	void _find_items_at_pos(const Point2 &p_pos, bool &r_includes_current, Vector<_RayResult> &results, bool p_alt_select = false);
+	Vector3 _get_ray_pos(const Vector2 &p_pos) const;
+	Vector3 _get_ray(const Vector2 &p_pos);
+	Point2 _point_to_screen(const Vector3 &p_point);
 	Transform _get_camera_transform() const;
 	int get_selected_count() const;
 
 	Vector3 _get_camera_pos() const;
 	Vector3 _get_camera_normal() const;
-	Vector3 _get_screen_to_space(const Vector3& p_vector3);
+	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 
 	void _select_region();
-	bool _gizmo_select(const Vector2& p_screenpos,bool p_hilite_only=false);
+	bool _gizmo_select(const Vector2 &p_screenpos, bool p_hilite_only = false);
 
 	float get_znear() const;
 	float get_zfar() const;
@@ -204,32 +205,35 @@ private:
 		Vector3 cursor_pos;
 
 		Vector3 pos;
-		float x_rot,y_rot,distance;
+		float x_rot, y_rot, distance;
 		bool region_select;
-		Point2 region_begin,region_end;
+		Point2 region_begin, region_end;
 
-		Cursor() { x_rot=y_rot=0.5; distance=4; region_select=false; }
+		Cursor() {
+			x_rot = y_rot = 0.5;
+			distance = 4;
+			region_select = false;
+		}
 	} cursor;
 
 	RID move_gizmo_instance[3], rotate_gizmo_instance[3];
-
 
 	String last_message;
 	String message;
 	float message_time;
 
-	void set_message(String p_message,float p_time=5);
+	void set_message(String p_message, float p_time = 5);
 
 	//
 	void _update_camera();
 	void _draw();
 
 	void _smouseenter();
-	void _sinput(const InputEvent& p_ie);
+	void _sinput(const InputEvent &p_ie);
 	SpatialEditor *spatial_editor;
 
-	Camera* previewing;
-	Camera* preview;
+	Camera *previewing;
+	Camera *preview;
 
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
@@ -239,17 +243,15 @@ private:
 	void _selection_menu_hide();
 	void _list_select(InputEventMouseButton b);
 
-
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void update_transform_gizmo_view();
 
-	void set_can_preview(Camera* p_preview);
-	void set_state(const Dictionary& p_state);
+	void set_can_preview(Camera *p_preview);
+	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 	void reset();
 
@@ -257,33 +259,29 @@ public:
 
 	Viewport *get_viewport_node() { return viewport; }
 
-
-	SpatialEditorViewport(SpatialEditor *p_spatial_editor,EditorNode *p_editor,int p_index);
+	SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index);
 };
-
-
 
 class SpatialEditorSelectedItem : public Object {
 
-	GDCLASS(SpatialEditorSelectedItem,Object);
+	GDCLASS(SpatialEditorSelectedItem, Object);
 
 public:
-
 	Rect3 aabb;
 	Transform original; // original location when moving
 	Transform last_xform; // last transform
 	Spatial *sp;
 	RID sbox_instance;
 
-	SpatialEditorSelectedItem() { sp=NULL; }
+	SpatialEditorSelectedItem() { sp = NULL; }
 	~SpatialEditorSelectedItem();
 };
 
 class SpatialEditor : public VBoxContainer {
 
-	GDCLASS(SpatialEditor, VBoxContainer );
-public:
+	GDCLASS(SpatialEditor, VBoxContainer);
 
+public:
 	enum ToolMode {
 
 		TOOL_MODE_SELECT,
@@ -295,12 +293,9 @@ public:
 
 	};
 
-
 private:
 	EditorNode *editor;
 	EditorSelection *editor_selection;
-
-
 
 	Control *viewport_base;
 	SpatialEditorViewport *viewports[4];
@@ -312,13 +307,11 @@ private:
 	ToolMode tool_mode;
 	bool orthogonal;
 
-
 	VisualServer::ScenarioDebugMode scenario_debug;
 
 	RID light;
 	RID light_instance;
 	Transform light_transform;
-
 
 	RID origin;
 	RID origin_instance;
@@ -333,10 +326,7 @@ private:
 	Ref<FixedSpatialMaterial> gizmo_color[3];
 	Ref<FixedSpatialMaterial> gizmo_hl;
 
-
 	int over_gizmo_handle;
-
-
 
 	Ref<Mesh> selection_box;
 	RID indicators;
@@ -346,7 +336,7 @@ private:
 	Ref<FixedSpatialMaterial> indicator_mat;
 	Ref<FixedSpatialMaterial> cursor_material;
 
-/*
+	/*
 	struct Selected {
 		AABB aabb;
 		Transform original; // original location when moving
@@ -363,9 +353,6 @@ private:
 		float scale;
 		Transform transform;
 	} gizmo;
-
-
-
 
 	enum MenuOption {
 
@@ -396,13 +383,11 @@ private:
 
 	};
 
-
 	Button *tool_button[TOOL_MAX];
 	Button *instance_button;
 
-
-	MenuButton* transform_menu;
-	MenuButton* view_menu;
+	MenuButton *transform_menu;
+	MenuButton *view_menu;
 
 	ConfirmationDialog *snap_dialog;
 	ConfirmationDialog *xform_dialog;
@@ -412,7 +397,7 @@ private:
 	LineEdit *snap_translate;
 	LineEdit *snap_rotate;
 	LineEdit *snap_scale;
-	PanelContainer* menu_panel;
+	PanelContainer *menu_panel;
 
 	LineEdit *xform_translate[3];
 	LineEdit *xform_rotate[3];
@@ -434,16 +419,13 @@ private:
 	ColorPickerButton *settings_ambient_color;
 	Image settings_light_dir_image;
 
-
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
 
 	HBoxContainer *hbc_menu;
 
-
-
-//
-//
+	//
+	//
 	void _generate_selection_box();
 	UndoRedo *undo_redo;
 
@@ -451,7 +433,7 @@ private:
 	void _init_indicators();
 	void _finish_indicators();
 
-	void _toggle_maximize_view(Object* p_viewport);
+	void _toggle_maximize_view(Object *p_viewport);
 
 	Node *custom_camera;
 
@@ -461,33 +443,28 @@ private:
 
 	Spatial *selected;
 
-	void _request_gizmo(Object* p_obj);
+	void _request_gizmo(Object *p_obj);
 
 	static SpatialEditor *singleton;
 
-	void _node_removed(Node* p_node);
+	void _node_removed(Node *p_node);
 	SpatialEditorGizmos *gizmos;
 	SpatialEditor();
 
-	void _update_ambient_light_color(const Color& p_color);
+	void _update_ambient_light_color(const Color &p_color);
 	void _update_default_light_angle();
-	void _default_light_angle_input(const InputEvent& p_event);
+	void _default_light_angle_input(const InputEvent &p_event);
 
 protected:
-
-
-
-
 	void _notification(int p_what);
 	//void _gui_input(InputEvent p_event);
 	void _unhandled_key_input(InputEvent p_event);
 
 	static void _bind_methods();
+
 public:
-
-
 	static SpatialEditor *get_singleton() { return singleton; }
-	void snap_cursor_to_plane(const Plane& p_plane);
+	void snap_cursor_to_plane(const Plane &p_plane);
 
 	float get_znear() const { return settings_znear->get_value(); }
 	float get_zfar() const { return settings_zfar->get_value(); }
@@ -508,11 +485,11 @@ public:
 	void update_transform_gizmo();
 
 	void select_gizmo_hilight_axis(int p_axis);
-	void set_custom_camera(Node *p_camera) { custom_camera=p_camera; }
+	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
 
-	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
+	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	Dictionary get_state() const;
-	void set_state(const Dictionary& p_state);
+	void set_state(const Dictionary &p_state);
 
 	Ref<Environment> get_viewport_environment() { return viewport_environment; }
 
@@ -526,12 +503,12 @@ public:
 	Spatial *get_selected() { return selected; }
 
 	int get_over_gizmo_handle() const { return over_gizmo_handle; }
-	void set_over_gizmo_handle(int idx) { over_gizmo_handle=idx; }
+	void set_over_gizmo_handle(int idx) { over_gizmo_handle = idx; }
 
-	void set_can_preview(Camera* p_preview);
+	void set_can_preview(Camera *p_preview);
 
 	SpatialEditorViewport *get_editor_viewport(int p_idx) {
-		ERR_FAIL_INDEX_V(p_idx,4,NULL);
+		ERR_FAIL_INDEX_V(p_idx, 4, NULL);
 		return viewports[p_idx];
 	}
 
@@ -544,15 +521,16 @@ public:
 
 class SpatialEditorPlugin : public EditorPlugin {
 
-	GDCLASS( SpatialEditorPlugin, EditorPlugin );
+	GDCLASS(SpatialEditorPlugin, EditorPlugin);
 
 	SpatialEditor *spatial_editor;
 	EditorNode *editor;
+
 protected:
 	static void _bind_methods();
-public:
 
-	void snap_cursor_to_plane(const Plane& p_plane);
+public:
+	void snap_cursor_to_plane(const Plane &p_plane);
 
 	SpatialEditor *get_spatial_editor() { return spatial_editor; }
 	virtual String get_name() const { return "3D"; }
@@ -562,13 +540,11 @@ public:
 	virtual bool handles(Object *p_object) const;
 
 	virtual Dictionary get_state() const;
-	virtual void set_state(const Dictionary& p_state);
+	virtual void set_state(const Dictionary &p_state);
 	virtual void clear() { spatial_editor->clear(); }
-
 
 	SpatialEditorPlugin(EditorNode *p_node);
 	~SpatialEditorPlugin();
-
 };
 
 #endif

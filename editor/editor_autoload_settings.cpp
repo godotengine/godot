@@ -28,9 +28,9 @@
 /*************************************************************************/
 #include "editor_autoload_settings.h"
 
+#include "editor_node.h"
 #include "global_config.h"
 #include "global_constants.h"
-#include "editor_node.h"
 
 #define PREVIEW_LIST_MAX_SIZE 10
 
@@ -51,11 +51,11 @@ void EditorAutoloadSettings::_notification(int p_what) {
 	}
 }
 
-bool EditorAutoloadSettings::_autoload_name_is_valid(const String& p_name, String* r_error) {
+bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
 
 	if (!p_name.is_valid_identifier()) {
 		if (r_error)
-			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:")+" a-z, A-Z, 0-9 or _";
+			*r_error = TTR("Invalid name.") + "\n" + TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
 
 		return false;
 	}
@@ -68,7 +68,7 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String& p_name, Strin
 	}
 
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (Variant::get_type_name( Variant::Type(i) ) == p_name) {
+		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
 			if (r_error)
 				*r_error = TTR("Invalid name. Must not collide with an existing buit-in type name.");
 
@@ -105,13 +105,13 @@ void EditorAutoloadSettings::_autoload_add() {
 	}
 
 	if (!path.begins_with("res://")) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n"+ TTR("Not in resource path."));
+		EditorNode::get_singleton()->show_warning(TTR("Invalid Path.") + "\n" + TTR("Not in resource path."));
 		return;
 	}
 
 	name = "autoload/" + name;
 
-	UndoRedo* undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	undo_redo->create_action(TTR("Add AutoLoad"));
 	undo_redo->add_do_property(GlobalConfig::get_singleton(), name, "*" + path);
@@ -220,8 +220,8 @@ void EditorAutoloadSettings::_autoload_edited() {
 		undo_redo->add_do_property(GlobalConfig::get_singleton(), base, path);
 		undo_redo->add_undo_property(GlobalConfig::get_singleton(), base, GlobalConfig::get_singleton()->get(base));
 
-		undo_redo->add_do_method(GlobalConfig::get_singleton(),"set_order", base, order);
-		undo_redo->add_undo_method(GlobalConfig::get_singleton(),"set_order", base, order);
+		undo_redo->add_do_method(GlobalConfig::get_singleton(), "set_order", base, order);
+		undo_redo->add_undo_method(GlobalConfig::get_singleton(), "set_order", base, order);
 
 		undo_redo->add_do_method(this, "update_autoload");
 		undo_redo->add_undo_method(this, "update_autoload");
@@ -245,7 +245,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 
 	switch (p_button) {
 
-		case BUTTON_MOVE_UP: 
+		case BUTTON_MOVE_UP:
 		case BUTTON_MOVE_DOWN: {
 
 			TreeItem *swap = NULL;
@@ -303,7 +303,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 	}
 }
 
-void EditorAutoloadSettings::_autoload_file_callback(const String& p_path) {
+void EditorAutoloadSettings::_autoload_file_callback(const String &p_path) {
 
 	autoload_add_name->set_text(p_path.get_file().get_basename());
 }
@@ -361,16 +361,16 @@ void EditorAutoloadSettings::update_autoload() {
 		item->set_text(2, TTR("Enable"));
 		item->set_checked(2, global);
 
-		item->add_button(3, get_icon("MoveUp","EditorIcons"), BUTTON_MOVE_UP);
-		item->add_button(3, get_icon("MoveDown","EditorIcons"), BUTTON_MOVE_DOWN);
-		item->add_button(3, get_icon("Del","EditorIcons"), BUTTON_DELETE);
+		item->add_button(3, get_icon("MoveUp", "EditorIcons"), BUTTON_MOVE_UP);
+		item->add_button(3, get_icon("MoveDown", "EditorIcons"), BUTTON_MOVE_DOWN);
+		item->add_button(3, get_icon("Del", "EditorIcons"), BUTTON_DELETE);
 		item->set_selectable(3, false);
 	}
 
 	updating_autoload = false;
 }
 
-Variant EditorAutoloadSettings::get_drag_data_fw(const Point2& p_point, Control *p_control) {
+Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control *p_control) {
 
 	if (autoload_cache.size() <= 1)
 		return false;
@@ -387,13 +387,13 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2& p_point, Control 
 	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size())
 		return Variant();
 
-	VBoxContainer *preview = memnew( VBoxContainer );
+	VBoxContainer *preview = memnew(VBoxContainer);
 
 	int max_size = MIN(PREVIEW_LIST_MAX_SIZE, autoloads.size());
 
 	for (int i = 0; i < max_size; i++) {
-		Label *label = memnew( Label(autoloads[i]) );
-		label->set_self_modulate(Color(1,1,1,Math::lerp(1, 0, float(i)/PREVIEW_LIST_MAX_SIZE)));
+		Label *label = memnew(Label(autoloads[i]));
+		label->set_self_modulate(Color(1, 1, 1, Math::lerp(1, 0, float(i) / PREVIEW_LIST_MAX_SIZE)));
 
 		preview->add_child(label);
 	}
@@ -408,7 +408,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2& p_point, Control 
 	return drop_data;
 }
 
-bool EditorAutoloadSettings::can_drop_data_fw(const Point2& p_point, const Variant& p_data, Control *p_control) const {
+bool EditorAutoloadSettings::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) const {
 	if (updating_autoload)
 		return false;
 
@@ -434,7 +434,7 @@ bool EditorAutoloadSettings::can_drop_data_fw(const Point2& p_point, const Varia
 	return false;
 }
 
-void EditorAutoloadSettings::drop_data_fw(const Point2& p_point, const Variant& p_data, Control *p_control) {
+void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_control) {
 
 	TreeItem *ti = tree->get_item_at_pos(p_point);
 
@@ -544,13 +544,13 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	updating_autoload = false;
 	selected_autoload = "";
 
-	HBoxContainer *hbc = memnew( HBoxContainer );
+	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 
-	VBoxContainer *vbc_path = memnew( VBoxContainer );
+	VBoxContainer *vbc_path = memnew(VBoxContainer);
 	vbc_path->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	autoload_add_path = memnew( EditorLineEditFileChooser );
+	autoload_add_path = memnew(EditorLineEditFileChooser);
 	autoload_add_path->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	autoload_add_path->get_file_dialog()->set_mode(EditorFileDialog::MODE_OPEN_FILE);
@@ -559,16 +559,16 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	vbc_path->add_margin_child(TTR("Path:"), autoload_add_path);
 	hbc->add_child(vbc_path);
 
-	VBoxContainer *vbc_name = memnew( VBoxContainer );
+	VBoxContainer *vbc_name = memnew(VBoxContainer);
 	vbc_name->set_h_size_flags(SIZE_EXPAND_FILL);
 
-	HBoxContainer *hbc_name = memnew( HBoxContainer );
+	HBoxContainer *hbc_name = memnew(HBoxContainer);
 
-	autoload_add_name = memnew( LineEdit );
+	autoload_add_name = memnew(LineEdit);
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	hbc_name->add_child(autoload_add_name);
 
-	Button *add_autoload = memnew( Button );
+	Button *add_autoload = memnew(Button);
 	add_autoload->set_text(TTR("Add"));
 	hbc_name->add_child(add_autoload);
 	add_autoload->connect("pressed", this, "_autoload_add");
@@ -576,7 +576,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	vbc_name->add_margin_child(TTR("Node Name:"), hbc_name);
 	hbc->add_child(vbc_name);
 
-	tree = memnew( Tree );
+	tree = memnew(Tree);
 	tree->set_hide_root(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_single_select_cell_editing_only_when_already_selected(true);
@@ -586,20 +586,20 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);
 
-	tree->set_column_title(0,TTR("Name"));
-	tree->set_column_expand(0,true);
-	tree->set_column_min_width(0,100);
+	tree->set_column_title(0, TTR("Name"));
+	tree->set_column_expand(0, true);
+	tree->set_column_min_width(0, 100);
 
-	tree->set_column_title(1,TTR("Path"));
-	tree->set_column_expand(1,true);
-	tree->set_column_min_width(1,100);
+	tree->set_column_title(1, TTR("Path"));
+	tree->set_column_expand(1, true);
+	tree->set_column_min_width(1, 100);
 
-	tree->set_column_title(2,TTR("Singleton"));
-	tree->set_column_expand(2,false);
-	tree->set_column_min_width(2,80);
+	tree->set_column_title(2, TTR("Singleton"));
+	tree->set_column_expand(2, false);
+	tree->set_column_min_width(2, 80);
 
-	tree->set_column_expand(3,false);
-	tree->set_column_min_width(3,80);
+	tree->set_column_expand(3, false);
+	tree->set_column_min_width(3, 80);
 
 	tree->connect("cell_selected", this, "_autoload_selected");
 	tree->connect("item_edited", this, "_autoload_edited");
@@ -607,4 +607,3 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	add_margin_child(TTR("List:"), tree, true);
 }
-

@@ -29,16 +29,15 @@
 #ifndef OUTPUT_STRINGS_H
 #define OUTPUT_STRINGS_H
 
-
+#include "map.h"
 #include "scene/gui/control.h"
 #include "scene/gui/scroll_bar.h"
-#include "map.h"
 
 class OutputStrings : public Control {
 
-	GDCLASS( OutputStrings, Control );
-public:
+	GDCLASS(OutputStrings, Control);
 
+public:
 	enum LineType {
 
 		LINE_NORMAL,
@@ -46,23 +45,21 @@ public:
 		LINE_ERROR,
 		LINE_LINK
 	};
+
 private:
-
 	struct Line {
-
 
 		LineType type;
 		Variant meta;
 		String text;
 	};
 
-
 	int font_height;
 	int size_height;
 
 	Size2 margin;
-	typedef Map<int,Line> LineMap;
-	Map<int,Line> line_map;
+	typedef Map<int, Line> LineMap;
+	Map<int, Line> line_map;
 
 	VScrollBar *v_scroll;
 	HScrollBar *h_scroll;
@@ -74,14 +71,13 @@ private:
 	void _vscroll_changed(float p_value);
 	void _hscroll_changed(float p_value);
 	void update_scrollbars();
-protected:
 
+protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-
-	void add_line(const String& p_text, const Variant& p_meta=Variant(), const LineType p_type=LINE_NORMAL);
+	void add_line(const String &p_text, const Variant &p_meta = Variant(), const LineType p_type = LINE_NORMAL);
 
 	OutputStrings();
 };

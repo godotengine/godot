@@ -31,117 +31,111 @@
 #include "print_string.h"
 BroadPhaseSW::ID BroadPhaseBasic::create(CollisionObjectSW *p_object_, int p_subindex) {
 
-	if (p_object_==NULL) {
+	if (p_object_ == NULL) {
 
-		ERR_FAIL_COND_V(p_object_==NULL,0);
+		ERR_FAIL_COND_V(p_object_ == NULL, 0);
 	}
 
 	current++;
 
 	Element e;
-	e.owner=p_object_;
-	e._static=false;
-	e.subindex=p_subindex;
+	e.owner = p_object_;
+	e._static = false;
+	e.subindex = p_subindex;
 
-	element_map[current]=e;
+	element_map[current] = e;
 	return current;
 }
 
-void BroadPhaseBasic::move(ID p_id, const Rect3& p_aabb) {
+void BroadPhaseBasic::move(ID p_id, const Rect3 &p_aabb) {
 
-	Map<ID,Element>::Element *E=element_map.find(p_id);
+	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	E->get().aabb=p_aabb;
-
+	E->get().aabb = p_aabb;
 }
 void BroadPhaseBasic::set_static(ID p_id, bool p_static) {
 
-	Map<ID,Element>::Element *E=element_map.find(p_id);
+	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	E->get()._static=p_static;
-
+	E->get()._static = p_static;
 }
 void BroadPhaseBasic::remove(ID p_id) {
 
-	Map<ID,Element>::Element *E=element_map.find(p_id);
+	Map<ID, Element>::Element *E = element_map.find(p_id);
 	ERR_FAIL_COND(!E);
 	List<PairKey> to_erase;
 	//unpair must be done immediately on removal to avoid potential invalid pointers
-	for (Map<PairKey,void*>::Element *F=pair_map.front();F;F=F->next()) {
+	for (Map<PairKey, void *>::Element *F = pair_map.front(); F; F = F->next()) {
 
-		if (F->key().a==p_id || F->key().b==p_id) {
+		if (F->key().a == p_id || F->key().b == p_id) {
 
 			if (unpair_callback) {
-				Element *elem_A=&element_map[F->key().a];
-				Element *elem_B=&element_map[F->key().b];
-				unpair_callback(elem_A->owner,elem_A->subindex,elem_B->owner,elem_B->subindex,F->get(),unpair_userdata);
+				Element *elem_A = &element_map[F->key().a];
+				Element *elem_B = &element_map[F->key().b];
+				unpair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, F->get(), unpair_userdata);
 			}
 			to_erase.push_back(F->key());
 		}
 	}
-	while(to_erase.size()) {
+	while (to_erase.size()) {
 
 		pair_map.erase(to_erase.front()->get());
 		to_erase.pop_front();
 	}
 	element_map.erase(E);
-
 }
 
 CollisionObjectSW *BroadPhaseBasic::get_object(ID p_id) const {
 
-	const Map<ID,Element>::Element *E=element_map.find(p_id);
-	ERR_FAIL_COND_V(!E,NULL);
+	const Map<ID, Element>::Element *E = element_map.find(p_id);
+	ERR_FAIL_COND_V(!E, NULL);
 	return E->get().owner;
-
 }
 bool BroadPhaseBasic::is_static(ID p_id) const {
 
-	const Map<ID,Element>::Element *E=element_map.find(p_id);
-	ERR_FAIL_COND_V(!E,false);
+	const Map<ID, Element>::Element *E = element_map.find(p_id);
+	ERR_FAIL_COND_V(!E, false);
 	return E->get()._static;
-
 }
 int BroadPhaseBasic::get_subindex(ID p_id) const {
 
-	const Map<ID,Element>::Element *E=element_map.find(p_id);
-	ERR_FAIL_COND_V(!E,-1);
+	const Map<ID, Element>::Element *E = element_map.find(p_id);
+	ERR_FAIL_COND_V(!E, -1);
 	return E->get().subindex;
 }
 
-int BroadPhaseBasic::cull_segment(const Vector3& p_from, const Vector3& p_to,CollisionObjectSW** p_results,int p_max_results,int *p_result_indices) {
+int BroadPhaseBasic::cull_segment(const Vector3 &p_from, const Vector3 &p_to, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
 
-	int rc=0;
+	int rc = 0;
 
-	for (Map<ID,Element>::Element *E=element_map.front();E;E=E->next()) {
+	for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
 
-		const Rect3 aabb=E->get().aabb;
-		if (aabb.intersects_segment(p_from,p_to)) {
+		const Rect3 aabb = E->get().aabb;
+		if (aabb.intersects_segment(p_from, p_to)) {
 
-			p_results[rc]=E->get().owner;
-			p_result_indices[rc]=E->get().subindex;
+			p_results[rc] = E->get().owner;
+			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc>=p_max_results)
+			if (rc >= p_max_results)
 				break;
 		}
 	}
 
 	return rc;
-
 }
-int BroadPhaseBasic::cull_aabb(const Rect3& p_aabb,CollisionObjectSW** p_results,int p_max_results,int *p_result_indices) {
+int BroadPhaseBasic::cull_aabb(const Rect3 &p_aabb, CollisionObjectSW **p_results, int p_max_results, int *p_result_indices) {
 
-	int rc=0;
+	int rc = 0;
 
-	for (Map<ID,Element>::Element *E=element_map.front();E;E=E->next()) {
+	for (Map<ID, Element>::Element *E = element_map.front(); E; E = E->next()) {
 
-		const Rect3 aabb=E->get().aabb;
+		const Rect3 aabb = E->get().aabb;
 		if (aabb.intersects(p_aabb)) {
 
-			p_results[rc]=E->get().owner;
-			p_result_indices[rc]=E->get().subindex;
+			p_results[rc] = E->get().owner;
+			p_result_indices[rc] = E->get().subindex;
 			rc++;
-			if (rc>=p_max_results)
+			if (rc >= p_max_results)
 				break;
 		}
 	}
@@ -149,68 +143,63 @@ int BroadPhaseBasic::cull_aabb(const Rect3& p_aabb,CollisionObjectSW** p_results
 	return rc;
 }
 
-void BroadPhaseBasic::set_pair_callback(PairCallback p_pair_callback,void *p_userdata) {
+void BroadPhaseBasic::set_pair_callback(PairCallback p_pair_callback, void *p_userdata) {
 
-	pair_userdata=p_userdata;
-	pair_callback=p_pair_callback;
-
+	pair_userdata = p_userdata;
+	pair_callback = p_pair_callback;
 }
-void BroadPhaseBasic::set_unpair_callback(UnpairCallback p_pair_callback,void *p_userdata) {
+void BroadPhaseBasic::set_unpair_callback(UnpairCallback p_pair_callback, void *p_userdata) {
 
-	unpair_userdata=p_userdata;
-	unpair_callback=p_pair_callback;
-
+	unpair_userdata = p_userdata;
+	unpair_callback = p_pair_callback;
 }
 
 void BroadPhaseBasic::update() {
 
 	// recompute pairs
-	for(Map<ID,Element>::Element *I=element_map.front();I;I=I->next()) {
+	for (Map<ID, Element>::Element *I = element_map.front(); I; I = I->next()) {
 
-		for(Map<ID,Element>::Element *J=I->next();J;J=J->next()) {
+		for (Map<ID, Element>::Element *J = I->next(); J; J = J->next()) {
 
-			Element *elem_A=&I->get();
-			Element *elem_B=&J->get();
+			Element *elem_A = &I->get();
+			Element *elem_B = &J->get();
 
 			if (elem_A->owner == elem_B->owner)
 				continue;
 
+			bool pair_ok = elem_A->aabb.intersects(elem_B->aabb) && (!elem_A->_static || !elem_B->_static);
 
-			bool pair_ok=elem_A->aabb.intersects( elem_B->aabb ) && (!elem_A->_static || !elem_B->_static );
+			PairKey key(I->key(), J->key());
 
-			PairKey key(I->key(),J->key());
-
-			Map<PairKey,void*>::Element *E=pair_map.find(key);
+			Map<PairKey, void *>::Element *E = pair_map.find(key);
 
 			if (!pair_ok && E) {
 				if (unpair_callback)
-					unpair_callback(elem_A->owner,elem_A->subindex,elem_B->owner,elem_B->subindex,E->get(),unpair_userdata);
+					unpair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, E->get(), unpair_userdata);
 				pair_map.erase(key);
 			}
 
 			if (pair_ok && !E) {
 
-				void *data=NULL;
+				void *data = NULL;
 				if (pair_callback)
-					data=pair_callback(elem_A->owner,elem_A->subindex,elem_B->owner,elem_B->subindex,unpair_userdata);
-				pair_map.insert(key,data);
+					data = pair_callback(elem_A->owner, elem_A->subindex, elem_B->owner, elem_B->subindex, unpair_userdata);
+				pair_map.insert(key, data);
 			}
 		}
 	}
-
 }
 
 BroadPhaseSW *BroadPhaseBasic::_create() {
 
-	return memnew( BroadPhaseBasic );
+	return memnew(BroadPhaseBasic);
 }
 
 BroadPhaseBasic::BroadPhaseBasic() {
 
-	current=1;
-	unpair_callback=NULL;
-	unpair_userdata=NULL;
-	pair_callback=NULL;
-	pair_userdata=NULL;
-
+	current = 1;
+	unpair_callback = NULL;
+	unpair_userdata = NULL;
+	pair_callback = NULL;
+	pair_userdata = NULL;
 }

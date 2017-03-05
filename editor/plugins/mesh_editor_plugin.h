@@ -31,12 +31,12 @@
 
 #if 0
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
-#include "scene/resources/material.h"
+#include "editor/editor_plugin.h"
+#include "scene/3d/camera.h"
 #include "scene/3d/light.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/camera.h"
+#include "scene/resources/material.h"
 
 class MeshEditor : public Control {
 

@@ -29,33 +29,30 @@
 #ifndef PACKET_PEER_H
 #define PACKET_PEER_H
 
-#include "object.h"
 #include "io/stream_peer.h"
+#include "object.h"
 #include "ring_buffer.h"
 class PacketPeer : public Reference {
 
-	GDCLASS( PacketPeer, Reference );
+	GDCLASS(PacketPeer, Reference);
 
 	Variant _bnd_get_var() const;
-	void _bnd_put_var(const Variant& p_var);
+	void _bnd_put_var(const Variant &p_var);
 
 	static void _bind_methods();
-
 
 	Error _put_packet(const PoolVector<uint8_t> &p_buffer);
 	PoolVector<uint8_t> _get_packet() const;
 	Error _get_packet_error() const;
 
-
 	mutable Error last_get_error;
 
 public:
+	virtual int get_available_packet_count() const = 0;
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) const = 0; ///< buffer is GONE after next get_packet
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) = 0;
 
-	virtual int get_available_packet_count() const=0;
-	virtual Error get_packet(const uint8_t **r_buffer,int &r_buffer_size) const=0; ///< buffer is GONE after next get_packet
-	virtual Error put_packet(const uint8_t *p_buffer,int p_buffer_size)=0;
-
-	virtual int get_max_packet_size() const=0;
+	virtual int get_max_packet_size() const = 0;
 
 	/* helpers / binders */
 
@@ -63,15 +60,15 @@ public:
 	virtual Error put_packet_buffer(const PoolVector<uint8_t> &p_buffer);
 
 	virtual Error get_var(Variant &r_variant) const;
-	virtual Error put_var(const Variant& p_packet);
+	virtual Error put_var(const Variant &p_packet);
 
 	PacketPeer();
-	~PacketPeer(){}
+	~PacketPeer() {}
 };
 
 class PacketPeerStream : public PacketPeer {
 
-	GDCLASS(PacketPeerStream,PacketPeer);
+	GDCLASS(PacketPeerStream, PacketPeer);
 
 	//the way the buffers work sucks, will change later
 
@@ -80,25 +77,21 @@ class PacketPeerStream : public PacketPeer {
 	mutable Vector<uint8_t> temp_buffer;
 
 	Error _poll_buffer() const;
-protected:
 
+protected:
 	void _set_stream_peer(REF p_peer);
 	static void _bind_methods();
-public:
 
+public:
 	virtual int get_available_packet_count() const;
-	virtual Error get_packet(const uint8_t **r_buffer,int &r_buffer_size) const;
-	virtual Error put_packet(const uint8_t *p_buffer,int p_buffer_size);
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) const;
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
 	virtual int get_max_packet_size() const;
 
-
-
-	void set_stream_peer(const Ref<StreamPeer>&  p_peer);
+	void set_stream_peer(const Ref<StreamPeer> &p_peer);
 	void set_input_buffer_max_size(int p_max_size);
 	PacketPeerStream();
-
 };
-
 
 #endif // PACKET_STREAM_H

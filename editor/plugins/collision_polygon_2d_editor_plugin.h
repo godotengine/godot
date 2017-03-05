@@ -29,12 +29,11 @@
 #ifndef COLLISION_POLYGON_2D_EDITOR_PLUGIN_H
 #define COLLISION_POLYGON_2D_EDITOR_PLUGIN_H
 
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/2d/collision_polygon_2d.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -43,7 +42,7 @@ class CanvasItemEditor;
 
 class CollisionPolygon2DEditor : public HBoxContainer {
 
-	GDCLASS(CollisionPolygon2DEditor, HBoxContainer );
+	GDCLASS(CollisionPolygon2DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -70,7 +69,6 @@ class CollisionPolygon2DEditor : public HBoxContainer {
 	Vector<Vector2> wip;
 	bool wip_active;
 
-
 	void _wip_close();
 	void _canvas_draw();
 	void _menu_option(int p_option);
@@ -79,23 +77,22 @@ protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
-	bool forward_gui_input(const InputEvent& p_event);
+public:
+	bool forward_gui_input(const InputEvent &p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygon2DEditor(EditorNode *p_editor);
 };
 
 class CollisionPolygon2DEditorPlugin : public EditorPlugin {
 
-	GDCLASS( CollisionPolygon2DEditorPlugin, EditorPlugin );
+	GDCLASS(CollisionPolygon2DEditorPlugin, EditorPlugin);
 
 	CollisionPolygon2DEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
-
-	virtual bool forward_canvas_gui_input(const Transform2D& p_canvas_xform,const InputEvent& p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
+	virtual bool forward_canvas_gui_input(const Transform2D &p_canvas_xform, const InputEvent &p_event) { return collision_polygon_editor->forward_gui_input(p_event); }
 
 	virtual String get_name() const { return "CollisionPolygon2D"; }
 	bool has_main_screen() const { return false; }
@@ -105,7 +102,6 @@ public:
 
 	CollisionPolygon2DEditorPlugin(EditorNode *p_node);
 	~CollisionPolygon2DEditorPlugin();
-
 };
 
 #endif // COLLISION_POLYGON_2D_EDITOR_PLUGIN_H

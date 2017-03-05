@@ -42,19 +42,17 @@ class AudioDriverOSX : public AudioDriver {
 	Mutex *mutex;
 
 	int channels;
-	int32_t* samples_in;
-	int	buffer_frames;
+	int32_t *samples_in;
+	int buffer_frames;
 
 	static OSStatus output_callback(void *inRefCon,
-				   AudioUnitRenderActionFlags * ioActionFlags,
-				   const AudioTimeStamp * inTimeStamp,
-				   UInt32 inBusNumber, UInt32 inNumberFrames,
-				   AudioBufferList * ioData);
-
+			AudioUnitRenderActionFlags *ioActionFlags,
+			const AudioTimeStamp *inTimeStamp,
+			UInt32 inBusNumber, UInt32 inNumberFrames,
+			AudioBufferList *ioData);
 
 public:
-
-	const char* get_name() const {
+	const char *get_name() const {
 		return "AudioUnit";
 	};
 

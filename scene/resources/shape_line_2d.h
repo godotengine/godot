@@ -32,24 +32,24 @@
 #include "scene/resources/shape_2d.h"
 
 class LineShape2D : public Shape2D {
-	GDCLASS( LineShape2D, Shape2D );
+	GDCLASS(LineShape2D, Shape2D);
 
 	Vector2 normal;
 	real_t d;
 
 	void _update_shape();
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_normal(const Vector2& p_normal);
+public:
+	void set_normal(const Vector2 &p_normal);
 	void set_d(real_t p_d);
 
 	Vector2 get_normal() const;
 	real_t get_d() const;
 
-	virtual void draw(const RID& p_to_rid,const Color& p_color);
+	virtual void draw(const RID &p_to_rid, const Color &p_color);
 	virtual Rect2 get_rect() const;
 
 	LineShape2D();

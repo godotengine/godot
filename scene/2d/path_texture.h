@@ -32,22 +32,22 @@
 #include "scene/2d/node_2d.h"
 
 class PathTexture : public Node2D {
-	GDCLASS( PathTexture, Node2D );
+	GDCLASS(PathTexture, Node2D);
 
 	Ref<Texture> begin;
 	Ref<Texture> repeat;
 	Ref<Texture> end;
 	int subdivs;
 	bool overlap;
-public:
 
-	void set_begin_texture(const Ref<Texture>& p_texture);
+public:
+	void set_begin_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_begin_texture() const;
 
-	void set_repeat_texture(const Ref<Texture>& p_texture);
+	void set_repeat_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_repeat_texture() const;
 
-	void set_end_texture(const Ref<Texture>& p_texture);
+	void set_end_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_end_texture() const;
 
 	void set_subdivisions(int p_amount);

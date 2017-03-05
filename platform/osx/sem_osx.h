@@ -44,7 +44,6 @@ class SemaphoreOSX : public Semaphore {
 	static Semaphore *create_semaphore_osx();
 
 public:
-
 	virtual Error wait();
 	virtual Error post();
 	virtual int get() const;
@@ -53,8 +52,6 @@ public:
 	SemaphoreOSX();
 
 	~SemaphoreOSX();
-
 };
-
 
 #endif

@@ -29,17 +29,14 @@
 #ifndef MESH_INSTANCE_EDITOR_PLUGIN_H
 #define MESH_INSTANCE_EDITOR_PLUGIN_H
 
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/spin_box.h"
 
-
 class MeshInstanceEditor : public Node {
 
-	GDCLASS(MeshInstanceEditor, Node );
-
+	GDCLASS(MeshInstanceEditor, Node);
 
 	enum Menu {
 
@@ -63,26 +60,25 @@ class MeshInstanceEditor : public Node {
 	void _menu_option(int p_option);
 	void _create_outline_mesh();
 
-friend class MeshInstanceEditorPlugin;
+	friend class MeshInstanceEditorPlugin;
 
 protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
+public:
 	void edit(MeshInstance *p_mesh);
 	MeshInstanceEditor();
 };
 
 class MeshInstanceEditorPlugin : public EditorPlugin {
 
-	GDCLASS( MeshInstanceEditorPlugin, EditorPlugin );
+	GDCLASS(MeshInstanceEditorPlugin, EditorPlugin);
 
 	MeshInstanceEditor *mesh_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "MeshInstance"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -91,7 +87,6 @@ public:
 
 	MeshInstanceEditorPlugin(EditorNode *p_node);
 	~MeshInstanceEditorPlugin();
-
 };
 
 #endif // MESH_EDITOR_PLUGIN_H

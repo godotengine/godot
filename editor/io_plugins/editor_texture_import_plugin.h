@@ -29,24 +29,19 @@
 #ifndef EDITOR_TEXTURE_IMPORT_PLUGIN_H
 #define EDITOR_TEXTURE_IMPORT_PLUGIN_H
 
-
-
-
-
-
 #if 0
+#include "editor/editor_dir_dialog.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_import_export.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/line_edit.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/label.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/gui/spin_box.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_dir_dialog.h"
+#include "scene/gui/tree.h"
 
 
 

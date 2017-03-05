@@ -37,6 +37,7 @@ private:
 	PowerState power_state;
 
 	bool UpdatePowerInfo();
+
 public:
 	PowerHaiku();
 	virtual ~PowerHaiku();

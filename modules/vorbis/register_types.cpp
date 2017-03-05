@@ -34,12 +34,12 @@ static ResourceFormatLoaderAudioStreamOGGVorbis *vorbis_stream_loader = NULL;
 
 void register_vorbis_types() {
 
-	vorbis_stream_loader = memnew( ResourceFormatLoaderAudioStreamOGGVorbis );
+	vorbis_stream_loader = memnew(ResourceFormatLoaderAudioStreamOGGVorbis);
 	ResourceLoader::add_resource_format_loader(vorbis_stream_loader);
 	ClassDB::register_class<AudioStreamOGGVorbis>();
 }
 
 void unregister_vorbis_types() {
 
-	memdelete( vorbis_stream_loader );
+	memdelete(vorbis_stream_loader);
 }
