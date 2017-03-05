@@ -120,6 +120,7 @@ MAKE_PTRARG(PoolVector2Array);
 MAKE_PTRARG(PoolVector3Array);
 MAKE_PTRARG(PoolColorArray);
 MAKE_PTRARG(Variant);
+MAKE_PTRARG(PowerState);
 
 
 //this is for Object

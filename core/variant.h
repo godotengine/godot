@@ -255,7 +255,6 @@ public:
 	operator Orientation() const;
 
 	operator IP_Address() const;
-	operator PowerState() const;
 
 
 	Variant(bool p_bool);
