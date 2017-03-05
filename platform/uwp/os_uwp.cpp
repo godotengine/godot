@@ -28,7 +28,6 @@
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "os_uwp.h"
-#include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "thread_uwp.h"
 #include "drivers/windows/semaphore_windows.h"

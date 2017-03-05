@@ -1,3 +1,6 @@
+/* Thirdparty code presumably from http://wss.co.uk/pinknoise/yuv2rgb/ */
+/* FIXME: Move to thirdparty dir */
+
 #ifndef YUV2RGB_H
 #define YUV2RGB_H
 
