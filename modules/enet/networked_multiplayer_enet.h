@@ -29,9 +29,10 @@
 #ifndef NETWORKED_MULTIPLAYER_ENET_H
 #define NETWORKED_MULTIPLAYER_ENET_H
 
-#include "enet/enet.h"
 #include "io/compression.h"
 #include "io/networked_multiplayer_peer.h"
+
+#include <enet/enet.h>
 
 class NetworkedMultiplayerENet : public NetworkedMultiplayerPeer {
 
