@@ -59,7 +59,11 @@ class CreateDialog : public ConfirmationDialog {
 
 	EditorHelpBit *help_bit;
 
+	void _search_options_input(const InputEvent& p_ie);
+
 	void _item_selected();
+	void _select_item(String name);
+	void _cell_multi_selected(Object *p_object, int p_index,bool p_selected);
 
 	void _update_search();
 	void _update_favorite_list();
@@ -76,6 +80,7 @@ class CreateDialog : public ConfirmationDialog {
 
 	void _confirmed();
 	void _text_changed(const String& p_newtext);
+	void _text_confirmed(const String& p_newtext);
 
 	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root,TreeItem **to_select);
 
@@ -89,13 +94,13 @@ protected:
 	static void _bind_methods();
 public:
 
-	Object *instance_selected();
+	void instance_selected(List<Object*> *p_list);
 	String get_selected_type();
 
 	void set_base_type(const String& p_base);
 	String get_base_type() const;
 
-	void popup(bool p_dontclear);
+	void popup(bool p_dontclear, bool p_allowmultiselect = false);
 
 
 	CreateDialog();

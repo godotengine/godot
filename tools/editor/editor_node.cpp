@@ -1751,16 +1751,20 @@ void EditorNode::_edit_current() {
 
 void EditorNode::_resource_created() {
 
-	Object *c = create_dialog->instance_selected();
+	List<Object*> l;
+	create_dialog->instance_selected(&l);
 
-	ERR_FAIL_COND(!c);
-	Resource *r = c->cast_to<Resource>();
-	ERR_FAIL_COND(!r);
+	for(List<Object*>::Element *E=l.front();E;E=E->next()) {
+		Object* c = E->get();
 
-	REF res( r );
+		ERR_FAIL_COND(!c);
+		Resource *r = c->cast_to<Resource>();
+		ERR_FAIL_COND(!r);
 
-	push_item(c);
+		REF res( r );
 
+		push_item(c);
+	}
 }
 
 void EditorNode::_resource_selected(const RES& p_res,const String& p_property) {
