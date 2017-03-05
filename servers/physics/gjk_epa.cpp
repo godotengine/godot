@@ -28,6 +28,9 @@
 /*************************************************************************/
 #include "gjk_epa.h"
 
+/* Disabling formatting for thirdparty code snippet */
+/* clang-format off */
+
 /*************** Bullet's GJK-EPA2 IMPLEMENTATION *******************/
 
 	// Config
@@ -879,8 +882,7 @@ bool Penetration(	const ShapeSW*	shape0,
 
 } // end of namespace
 
-
-
+/* clang-format on */
 
 
 bool gjk_epa_calculate_distance(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, Vector3& r_result_A, Vector3& r_result_B) {
@@ -915,4 +917,3 @@ bool gjk_epa_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_
 
 	return false;
 }
-

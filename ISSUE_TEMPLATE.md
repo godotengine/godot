@@ -14,4 +14,4 @@ are known and expected due to important refactoring work, so no need to report t
 
 
 **Link to minimal example project:**
-<!-- Optional but very welcome. You can drag and drop a zip archive to upload it. -->:
+<!-- Optional but very welcome. You can drag and drop a zip archive to upload it. -->
