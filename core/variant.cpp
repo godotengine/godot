@@ -2178,6 +2178,11 @@ Variant::operator IP_Address() const {
 	return IP_Address( operator String() );
 }
 
+Variant::operator PowerState() const
+{
+	return (PowerState) operator int();
+}
+
 Variant::Variant(bool p_bool) {
 
 	type=BOOL;

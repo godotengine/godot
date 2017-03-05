@@ -45,6 +45,7 @@
 #include "path_db.h"
 #include "simple_type.h"
 #include "os/input_event.h"
+#include "os/power.h"
 #include "color.h"
 #include "face3.h"
 #include "ref_ptr.h"
@@ -254,6 +255,7 @@ public:
 	operator Orientation() const;
 
 	operator IP_Address() const;
+	operator PowerState() const;
 
 
 	Variant(bool p_bool);
