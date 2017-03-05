@@ -84,9 +84,11 @@ class CustomPropertyEditor : public Popup {
 	String name;
 	Variant::Type type;
 	Variant v;
+	List<String> field_names;
 	int hint;
 	String hint_text;
 	LineEdit *value_editor[MAX_VALUE_EDITORS];
+	int focused_value_editor;
 	Label *value_label[MAX_VALUE_EDITORS];
 	HScrollBar *scroll[4];
 	Button *action_buttons[MAX_ACTION_BUTTONS];
@@ -130,6 +132,8 @@ class CustomPropertyEditor : public Popup {
 	void show_value_editors(int p_amount);
 	void config_value_editors(int p_amount, int p_columns,int p_label_w,const List<String>& p_strings);
 	void config_action_buttons(const List<String>& p_strings);
+
+	void _emit_changed_whole_or_field();
 
 
 protected:
@@ -193,6 +197,7 @@ class PropertyEditor : public Control {
 
 	void _resource_edit_request();
 	void _custom_editor_edited();
+	void _custom_editor_edited_field(const String& p_field_name);
 	void _custom_editor_request(bool p_arrow);
 
 	void _item_selected();
@@ -214,7 +219,7 @@ class PropertyEditor : public Control {
 	void _node_removed(Node *p_node);
 
 friend class ProjectExportDialog;
-	void _edit_set(const String& p_name, const Variant& p_value);
+	void _edit_set(const String& p_name, const Variant& p_value, const String& p_changed_field="");
 	void _draw_flags(Object *ti,const Rect2& p_rect);
 
 	bool _might_be_in_instance();
