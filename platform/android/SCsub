@@ -49,10 +49,11 @@ gradle_text = gradle_basein.read()
 gradle_maven_repos_text = ""
 
 if len(env.android_maven_repos) > 0:
-    gradle_maven_repos_text += "maven {\n"
+    gradle_maven_repos_text += ""
     for x in env.android_maven_repos:
+        gradle_maven_repos_text += "\tmaven {\n"
         gradle_maven_repos_text += "\t\t" + x + "\n"
-    gradle_maven_repos_text += "\t}\n"
+        gradle_maven_repos_text += "\t}\n"
 
 gradle_maven_dependencies_text = ""
 
