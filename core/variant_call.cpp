@@ -356,9 +356,17 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2,slide);
 	VCALL_LOCALMEM1R(Vector2,reflect);
 	VCALL_LOCALMEM0R(Vector2,angle);
-	//VCALL_LOCALMEM1R(Vector2,cross);
 	VCALL_LOCALMEM0R(Vector2,abs);
 	VCALL_LOCALMEM1R(Vector2,clamped);
+
+	// use proper argument of the function (to remove ambiguity)
+	static void _call_Vector2_cross(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+		r_ret=reinterpret_cast<Vector2*>(p_self._data._mem)->cross(Vector2(*p_args[0]));
+		/*f (p_args[0]->type == Variant::VECTOR2)
+			r_ret=reinterpret_cast<Vector2*>(p_self._data._mem)->cross(*reinterpret_cast<const Vector2*>(p_args[0]->_data._mem));
+		else
+			r_ret=reinterpret_cast<Vector2*>(p_self._data._mem)->cross(real_t(*p_args[0]));*/
+	}
 
 	VCALL_LOCALMEM0R(Rect2,get_area);
 	VCALL_LOCALMEM1R(Rect2,intersects);
@@ -1465,7 +1473,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_scs_create(#m_method),VCA
 	ADDFUNC1(VECTOR2,REAL,Vector2,dot,VECTOR2,"with",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,slide,VECTOR2,"vec",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,reflect,VECTOR2,"vec",varray());
-	//ADDFUNC1(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
+	ADDFUNC1(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,abs,varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,clamped,REAL,"length",varray());
 
