@@ -31,6 +31,8 @@
 
 #include "reference.h"
 #include "self_list.h"
+#include "func_ref.h"
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -39,8 +41,9 @@ class AStar: public Reference {
 
 	GDCLASS(AStar,Reference)
 
-
 	uint64_t pass;
+
+	Object *delegate;
 
 	struct Point {
 
@@ -50,6 +53,9 @@ class AStar: public Reference {
 		Vector3 pos;
 		real_t weight_scale;
 		uint64_t last_pass;
+
+		uint32_t flags;
+		Vector<Variant> binds;
 
 		Vector<Point*> neighbours;
 
@@ -89,21 +95,35 @@ class AStar: public Reference {
 
 	Set<Segment> segments;
 
-	bool _solve(Point *begin_point, Point *end_point);
+	bool _solve(Point *begin_point, Point *end_point, bool exhaustive);
+
+	real_t _compute_cost(Point *from, Point *to, const StringName& p_method);
 
 protected:
 
 	static void _bind_methods();
 public:
 
+	void set_delegate(Object *p_to_object);
+	Object* get_delegate() const;
+
 	int get_available_point_id() const;
 
-	void add_point(int p_id,const Vector3& p_pos,real_t p_weight_scale=1);
+	void add_point(int p_id,const Vector3& p_pos,real_t p_weight_scale=1,const Vector<Variant>& p_binds=Vector<Variant>(),uint32_t p_flags=0);
 	Vector3 get_point_pos(int p_id) const;
+	void set_point_pos(int p_id,const Vector3& p_pos);
 	real_t get_point_weight_scale(int p_id) const;
+	void set_point_weight_scale(int p_id,real_t p_weight_scale);
+
+	Vector<Variant> get_point_binds(int p_id) const;
+	void set_point_binds(int p_id, const Vector<Variant>& p_binds);
+
+	uint32_t get_point_flags(int p_id) const;
+	void set_point_flags(int p_id, uint32_t p_flags);
+
 	void remove_point(int p_id);
 
-	void connect_points(int p_id,int p_with_id);
+	void connect_points(int p_id,int p_with_id,bool bidirectional=true);
 	void disconnect_points(int p_id,int p_with_id);
 	bool are_points_connected(int p_id,int p_with_id) const;
 
@@ -113,8 +133,8 @@ public:
 	int get_closest_point(const Vector3& p_point) const;
 	Vector3 get_closest_pos_in_segment(const Vector3& p_point) const;
 
-	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id);
-	PoolVector<int> get_id_path(int p_from_id, int p_to_id);
+	PoolVector<Vector3> get_point_path(int p_from_id, int p_to_id, bool exhaustive=false);
+	PoolVector<int> get_id_path(int p_from_id, int p_to_id, bool exhaustive=false);
 
 	AStar();
 	~AStar();
