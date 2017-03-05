@@ -458,6 +458,9 @@ void TileMap::_update_dirty_quadrants() {
 
 
 			Color modulate = tile_set->tile_get_modulate(c.id);
+			Color self_modulate = get_self_modulate();
+			modulate = Color(modulate.r*self_modulate.r, modulate.g*self_modulate.g,
+					 modulate.b*self_modulate.b, modulate.a*self_modulate.a);
 			if (r==Rect2()) {
 				tex->draw_rect(canvas_item,rect,false,modulate,c.transpose);
 			} else {
