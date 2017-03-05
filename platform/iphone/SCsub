@@ -15,7 +15,6 @@ iphone_lib = [
     'game_center.mm',
     'in_app_store.mm',
     'icloud.mm',
-    #'Appirater.m',
     'ios.mm',
 ]
 
@@ -28,10 +27,6 @@ env_ios = env.Clone()
 
 if env['ios_gles22_override'] == "yes":
     env_ios.Append(CPPFLAGS=['-DGLES2_OVERRIDE'])
-
-
-# if env['ios_appirater'] == "yes":
-#	env_ios.Append(CPPFLAGS=['-DAPPIRATER_ENABLED'])
 
 
 obj = env_ios.Object('godot_iphone.cpp')
