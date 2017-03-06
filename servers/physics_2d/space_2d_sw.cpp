@@ -557,6 +557,8 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body, const Transform2D &p_from, co
 			body_aabb = body_aabb.merge(p_body->get_shape_aabb(i));
 	}
 
+	// Undo the currently transform the physics server is aware of and apply the provided one
+	body_aabb = p_from.xform(p_body->get_inv_transform().xform(body_aabb));
 	body_aabb = body_aabb.grow(p_margin);
 
 	Transform2D body_transform = p_from;
