@@ -34,8 +34,8 @@
 
 #ifdef WINDOWS_ENABLED
 #include <stdio.h>
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 #include <ws2tcpip.h>
 #ifndef UWP_ENABLED
 #if defined(__MINGW32__) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 4)
