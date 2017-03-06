@@ -1153,7 +1153,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
 const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
 
 	{ "SRC_COLOR", TYPE_VEC4},
-	{ "POSITION", TYPE_VEC4},
+	{ "POSITION", TYPE_VEC2},
 	{ "NORMAL", TYPE_VEC3},
 	{ "NORMALMAP", TYPE_VEC3},
 	{ "NORMALMAP_DEPTH", TYPE_FLOAT},
@@ -1175,7 +1175,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
 
 const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_light_builtins_defs[]={
 
-	{ "POSITION", TYPE_VEC4},
+	{ "POSITION", TYPE_VEC2},
 	{ "NORMAL", TYPE_VEC3},
 	{ "UV", TYPE_VEC2},
 	{ "COLOR", TYPE_VEC4},
