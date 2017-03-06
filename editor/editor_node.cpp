@@ -4716,6 +4716,44 @@ void EditorNode::_open_imported() {
 	load_scene(open_import_request, true, false, true, true);
 }
 
+void EditorNode::dim_editor(bool p_dimming) {
+	static int dim_count = 0;
+	bool dim_ui = EditorSettings::get_singleton()->get("interface/dim_editor_on_dialog_popup");
+	if (p_dimming) {
+		if (dim_ui && dim_count == 0)
+			_start_dimming(true);
+		dim_count++;
+	} else {
+		dim_count--;
+		if (dim_count < 1)
+			_start_dimming(false);
+	}
+}
+
+void EditorNode::_start_dimming(bool p_dimming) {
+	_dimming = p_dimming;
+	_dim_time = 0.0f;
+	_dim_timer->start();
+}
+
+void EditorNode::_dim_timeout() {
+
+	_dim_time += _dim_timer->get_wait_time();
+	float wait_time = EditorSettings::get_singleton()->get("interface/dim_transition_time");
+
+	float c = 1.0f - (float)EditorSettings::get_singleton()->get("interface/dim_amount");
+
+	Color base = _dimming ? Color(1, 1, 1) : Color(c, c, c);
+	Color final = _dimming ? Color(c, c, c) : Color(1, 1, 1);
+
+	if (_dim_time + _dim_timer->get_wait_time() >= wait_time) {
+		gui_base->set_modulate(final);
+		_dim_timer->stop();
+	} else {
+		gui_base->set_modulate(base.linear_interpolate(final, _dim_time / wait_time));
+	}
+}
+
 void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_menu_option", &EditorNode::_menu_option);
@@ -4792,6 +4830,7 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_open_imported"), &EditorNode::_open_imported);
 	ClassDB::bind_method(D_METHOD("_inherit_imported"), &EditorNode::_inherit_imported);
+	ClassDB::bind_method(D_METHOD("_dim_timeout"), &EditorNode::_dim_timeout);
 
 	ADD_SIGNAL(MethodInfo("play_pressed"));
 	ADD_SIGNAL(MethodInfo("pause_pressed"));
@@ -6102,6 +6141,13 @@ EditorNode::EditorNode() {
 	FileAccess::set_file_close_fail_notify_callback(_file_access_close_error_notify);
 
 	waiting_for_first_scan = true;
+
+	_dimming = false;
+	_dim_time = 0.0f;
+	_dim_timer = memnew(Timer);
+	_dim_timer->set_wait_time(0.01666f);
+	_dim_timer->connect("timeout", this, "_dim_timeout");
+	add_child(_dim_timer);
 }
 
 EditorNode::~EditorNode() {

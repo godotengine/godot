@@ -598,6 +598,13 @@ private:
 	void _tool_menu_insert_item(const ToolMenuItem &p_item);
 	void _rebuild_tool_menu() const;
 
+	bool _dimming;
+	float _dim_time;
+	Timer *_dim_timer;
+
+	void _start_dimming(bool p_dimming);
+	void _dim_timeout();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -752,6 +759,8 @@ public:
 	void add_tool_menu_item(const String &p_name, Object *p_handler, const String &p_callback, const Variant &p_ud = Variant());
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
+
+	void dim_editor(bool p_dimming);
 
 	EditorNode();
 	~EditorNode();
