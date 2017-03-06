@@ -592,7 +592,7 @@ int Space2DSW::_cull_aabb_for_body(Body2DSW *p_body,const Rect2& p_aabb) {
 	return amount;
 }
 
-bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p_margin,Physics2DServer::MotionResult *r_result) {
+bool Space2DSW::test_body_motion(Body2DSW *p_body, const Matrix32 &p_from, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result) {
 
 	//give me back regular physics engine logic
 	//this is madness
@@ -601,6 +601,11 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
 
+	if (r_result) {
+		r_result->collider_id=0;
+		r_result->collider_shape=0;
+
+	}
 	Rect2 body_aabb;
 
 	for(int i=0;i<p_body->get_shape_count();i++) {
@@ -611,10 +616,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 			body_aabb=body_aabb.merge(p_body->get_shape_aabb(i));
 	}
 
+	// Undo the currently transform the physics server is aware of and apply the provided one
+	body_aabb=p_from.xform(p_body->get_inv_transform().xform(body_aabb));
+
 	body_aabb=body_aabb.grow(p_margin);
 
-
-	Matrix32 body_transform = p_body->get_transform();
+	Matrix32 body_transform = p_from;
 
 	{
 		//STEP 1, FREE BODY IF STUCK
@@ -684,6 +691,17 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 				Vector2 a = sr[i*2+0];
 				Vector2 b = sr[i*2+1];
 
+#if 0
+				Vector2 rel = b-a;
+				float d = rel.length();
+				if (d==0)
+					continue;
+
+				Vector2 n = rel/d;
+				float traveled = n.dot(recover_motion);
+				a+=n*traveled;
+
+#endif
 			//	float d = a.distance_to(b);
 
 				//if (d<margin)
@@ -836,8 +854,9 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 		collided=false;
 		if (r_result) {
 
-			r_result->motion=p_motion+(body_transform.elements[2]-p_body->get_transform().elements[2]);
-			r_result->remainder=Vector2();
+			r_result->motion=p_motion;
+			r_result->remainder=Vector2();			
+			r_result->motion+=(body_transform.elements[2]-p_from.elements[2]);
 		}
 
 	} else {
@@ -898,16 +917,19 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 				Vector2 rel_vec = r_result->collision_point-body->get_transform().get_origin();
 				r_result->collider_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
 
-				r_result->motion=safe*p_motion+(body_transform.elements[2]-p_body->get_transform().elements[2]);
+				r_result->motion=safe*p_motion;
 				r_result->remainder=p_motion - safe * p_motion;
+				r_result->motion+=(body_transform.elements[2]-p_from.elements[2]);
+
 			}
 
 			collided=true;
 		} else {
 			if (r_result) {
 
-				r_result->motion=p_motion+(body_transform.elements[2]-p_body->get_transform().elements[2]);
+				r_result->motion=p_motion;
 				r_result->remainder=Vector2();
+				r_result->motion+=(body_transform.elements[2]-p_from.elements[2]);
 			}
 
 			collided=false;
