@@ -73,6 +73,8 @@ env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
 env_base.global_defaults = global_defaults
 env_base.android_maven_repos = []
 env_base.android_dependencies = []
+env_base.android_gradle_plugins = []
+env_base.android_gradle_classpath = []
 env_base.android_java_dirs = []
 env_base.android_res_dirs = []
 env_base.android_aidl_dirs = []
@@ -96,6 +98,8 @@ env_base.__class__.android_add_default_config = methods.android_add_default_conf
 env_base.__class__.android_add_to_manifest = methods.android_add_to_manifest
 env_base.__class__.android_add_to_permissions = methods.android_add_to_permissions
 env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
+env_base.__class__.android_add_gradle_plugin = methods.android_add_gradle_plugin
+env_base.__class__.android_add_gradle_classpath = methods.android_add_gradle_classpath
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_source_files = methods.add_source_files

@@ -1381,6 +1381,11 @@ def android_add_jni_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
     self.android_jni_dirs.append(base_path)
 
+def android_add_gradle_plugin(self, plugin):
+    self.android_gradle_plugins.append(plugin)
+
+def android_add_gradle_classpath(self, classpath):
+    self.android_gradle_classpath.append(classpath)
 
 def android_add_default_config(self, config):
     self.android_default_config.append(config)
