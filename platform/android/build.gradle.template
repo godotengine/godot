@@ -4,6 +4,7 @@ buildscript {
 	}
 	dependencies {
 		classpath 'com.android.tools.build:gradle:2.1.0'
+		$$GRADLE_CLASSPATH$$
 	}
 }
 
@@ -83,3 +84,5 @@ android {
 		variant.outputs.get(0).setOutputFile(new File("${projectDir}/../../../bin", "android_${variant.name}.apk"))
 	}
 }
+
+$$GRADLE_PLUGINS$$
