@@ -41,7 +41,7 @@ class KeyMappingWindows {
 	KeyMappingWindows(){};
 
 public:
-	static unsigned int get_keysym(unsigned int p_code);
+	static unsigned int get_keysym(unsigned int wparam, unsigned int lparam);
 };
 
 #endif
