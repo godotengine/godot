@@ -82,7 +82,7 @@ Error PacketPeerUDPWinsock::put_packet(const uint8_t *p_buffer, int p_buffer_siz
 	struct sockaddr_storage addr;
 	size_t addr_size = _set_sockaddr(&addr, peer_addr, peer_port, sock_type);
 
-	_set_blocking(true);
+	_set_sock_blocking(blocking);
 
 	errno = 0;
 	int err;
@@ -90,7 +90,9 @@ Error PacketPeerUDPWinsock::put_packet(const uint8_t *p_buffer, int p_buffer_siz
 
 		if (WSAGetLastError() != WSAEWOULDBLOCK) {
 			return FAILED;
-		};
+		} else if (!blocking) {
+			return ERR_UNAVAILABLE;
+		}
 	}
 
 	return OK;
@@ -101,15 +103,13 @@ int PacketPeerUDPWinsock::get_max_packet_size() const {
 	return 512; // uhm maybe not
 }
 
-void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
-	//am no windows expert
-	//hope this is the right thing
+void PacketPeerUDPWinsock::_set_sock_blocking(bool p_blocking) {
 
-	if (blocking == p_blocking)
+	if (sock_blocking == p_blocking)
 		return;
 
-	blocking = p_blocking;
-	unsigned long par = blocking ? 0 : 1;
+	sock_blocking = p_blocking;
+	unsigned long par = sock_blocking ? 0 : 1;
 	if (ioctlsocket(sockfd, FIONBIO, &par)) {
 		perror("setting non-block mode");
 		//close();
@@ -139,8 +139,6 @@ Error PacketPeerUDPWinsock::listen(int p_port, IP_Address p_bind_address, int p_
 		return ERR_UNAVAILABLE;
 	}
 
-	blocking = true;
-
 	printf("UDP Connection listening on port %i\n", p_port);
 	rb.resize(nearest_shift(p_recv_buffer_size));
 	return OK;
@@ -166,7 +164,7 @@ Error PacketPeerUDPWinsock::_poll(bool p_wait) {
 		return FAILED;
 	}
 
-	_set_blocking(p_wait);
+	_set_sock_blocking(p_wait);
 
 	struct sockaddr_storage from = { 0 };
 	int len = sizeof(struct sockaddr_storage);
@@ -252,6 +250,9 @@ int PacketPeerUDPWinsock::_get_socket() {
 
 	sockfd = _socket_create(sock_type, SOCK_DGRAM, IPPROTO_UDP);
 
+	if (sockfd != -1)
+		_set_sock_blocking(false);
+
 	return sockfd;
 }
 
@@ -273,6 +274,8 @@ PacketPeerUDP *PacketPeerUDPWinsock::_create() {
 
 PacketPeerUDPWinsock::PacketPeerUDPWinsock() {
 
+	blocking = true;
+	sock_blocking = true;
 	sockfd = -1;
 	packet_port = 0;
 	queue_count = 0;

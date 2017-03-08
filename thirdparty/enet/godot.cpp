@@ -79,7 +79,10 @@ int enet_socket_bind(ENetSocket socket, const ENetAddress *address) {
 
 ENetSocket enet_socket_create(ENetSocketType type) {
 
-	return PacketPeerUDP::create();
+	PacketPeerUDP *socket = PacketPeerUDP::create();
+	socket->set_blocking_mode(false);
+
+	return socket;
 }
 
 void enet_socket_destroy(ENetSocket socket) {
@@ -118,6 +121,11 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 
 	err = sock->put_packet((const uint8_t *)&w[0], size);
 	if (err != OK) {
+
+		if (err == ERR_UNAVAILABLE) { // blocking call
+			return 0;
+		}
+
 		WARN_PRINT("Sending failed!");
 		return -1;
 	}

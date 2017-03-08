@@ -45,6 +45,7 @@ class PacketPeerUDPWinsock : public PacketPeerUDP {
 	mutable int packet_port;
 	mutable int queue_count;
 	int sockfd;
+	bool sock_blocking;
 	IP::Type sock_type;
 
 	IP_Address peer_addr;
@@ -54,8 +55,7 @@ class PacketPeerUDPWinsock : public PacketPeerUDP {
 
 	static PacketPeerUDP *_create();
 
-	bool blocking;
-	void _set_blocking(bool p_blocking);
+	void _set_sock_blocking(bool p_blocking);
 
 	Error _poll(bool p_wait);
 

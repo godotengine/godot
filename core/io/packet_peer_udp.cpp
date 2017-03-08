@@ -31,6 +31,11 @@
 
 PacketPeerUDP *(*PacketPeerUDP::_create)() = NULL;
 
+void PacketPeerUDP::set_blocking_mode(bool p_enable) {
+
+	blocking = p_enable;
+}
+
 String PacketPeerUDP::_get_packet_ip() const {
 
 	return get_packet_address();
@@ -78,4 +83,6 @@ PacketPeerUDP *PacketPeerUDP::create() {
 }
 
 PacketPeerUDP::PacketPeerUDP() {
+
+	blocking = true;
 }
