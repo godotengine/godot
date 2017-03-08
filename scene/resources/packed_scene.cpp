@@ -995,12 +995,12 @@ int SceneState::find_node_by_path(const NodePath &p_node) const {
 		if (_get_base_scene_state().is_valid()) {
 			int idx = _get_base_scene_state()->find_node_by_path(p_node);
 			if (idx >= 0) {
-				if (!base_scene_node_remap.has(idx)) {
-					int ridx = nodes.size() + base_scene_node_remap.size();
-					base_scene_node_remap[ridx] = idx;
+				int rkey = _find_base_scene_node_remap_key(idx);
+				if (rkey == -1) {
+					rkey = nodes.size() + base_scene_node_remap.size();
+					base_scene_node_remap[rkey] = idx;
 				}
-
-				return base_scene_node_remap[idx];
+				return rkey;
 			}
 		}
 		return -1;
@@ -1013,11 +1013,24 @@ int SceneState::find_node_by_path(const NodePath &p_node) const {
 		//the node in the instanced scene, as a property may be missing
 		//from the local one
 		int idx = _get_base_scene_state()->find_node_by_path(p_node);
-		base_scene_node_remap[nid] = idx;
+		if (idx != -1) {
+			base_scene_node_remap[nid] = idx;
+		}
 	}
 
 	return nid;
 }
+
+int SceneState::_find_base_scene_node_remap_key(int p_idx) const {
+
+	for (Map<int, int>::Element *E = base_scene_node_remap.front(); E; E = E->next()) {
+		if (E->value() == p_idx) {
+			return E->key();
+		}
+	}
+	return -1;
+}
+
 Variant SceneState::get_property_value(int p_node, const StringName &p_property, bool &found) const {
 
 	found = false;
