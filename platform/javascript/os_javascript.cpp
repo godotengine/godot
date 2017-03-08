@@ -78,6 +78,26 @@ void OS_JavaScript::set_opengl_extensions(const char* p_gl_extensions) {
 	gl_extensions=p_gl_extensions;
 }
 
+static EM_BOOL _browser_resize_callback(int event_type, const EmscriptenUiEvent *ui_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_RESIZE, false);
+
+	OS_JavaScript* os = static_cast<OS_JavaScript*>(user_data);
+
+	// the order in which _browser_resize_callback and
+	// _fullscreen_change_callback are called is browser-dependent,
+	// so try adjusting for fullscreen in both
+	if (os->is_window_fullscreen() || os->is_window_maximized()) {
+
+		OS::VideoMode vm = os->get_video_mode();
+		vm.width = ui_event->windowInnerWidth;
+		vm.height = ui_event->windowInnerHeight;
+		os->set_video_mode(vm);
+		emscripten_set_canvas_size(ui_event->windowInnerWidth, ui_event->windowInnerHeight);
+	}
+	return false;
+}
+
 static Size2 _windowed_size;
 
 static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
@@ -98,13 +118,15 @@ static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFulls
 		if (event->isFullscreen) {
 			vm.width = event->screenWidth;
 			vm.height = event->screenHeight;
+			os->set_video_mode(vm);
+			emscripten_set_canvas_size(vm.width, vm.height);
 		}
 		else {
-			vm.width = _windowed_size.width;
-			vm.height = _windowed_size.height;
+			os->set_video_mode(vm);
+			if (!os->is_window_maximized()) {
+				os->set_window_size(_windowed_size);
+			}
 		}
-		os->set_video_mode(vm);
-		emscripten_set_canvas_size(vm.width, vm.height);
 	}
 	return false;
 }
@@ -276,6 +298,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	SET_EM_CALLBACK(keydown, _keydown_callback)
 	SET_EM_CALLBACK(keypress, _keypress_callback)
 	SET_EM_CALLBACK(keyup, _keyup_callback)
+	SET_EM_CALLBACK(resize, _browser_resize_callback)
 	SET_EM_CALLBACK(fullscreenchange, _fullscreen_change_callback)
 	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
 	SET_EM_CALLBACK_NODATA(gamepaddisconnected, joy_callback_func)
@@ -367,11 +390,43 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 	return Size2(ev.screenWidth, ev.screenHeight);
 }
 
+void OS_JavaScript::set_window_size(const Size2 p_size) {
+
+	window_maximized = false;
+	if (is_window_fullscreen()) {
+		set_window_fullscreen(false);
+	}
+	_windowed_size = p_size;
+	video_mode.width = p_size.x;
+	video_mode.height = p_size.y;
+	emscripten_set_canvas_size(p_size.x, p_size.y);
+}
+
 Size2 OS_JavaScript::get_window_size() const {
 
 	int canvas[3];
 	emscripten_get_canvas_size(canvas, canvas+1, canvas+2);
 	return Size2(canvas[0], canvas[1]);
+}
+
+void OS_JavaScript::set_window_maximized(bool p_enabled) {
+
+	window_maximized = p_enabled;
+	if (p_enabled) {
+
+		if (is_window_fullscreen()) {
+			// _browser_resize callback will set canvas size
+			set_window_fullscreen(false);
+		}
+		else {
+			video_mode.width = EM_ASM_INT_V(return window.innerWidth);
+			video_mode.height = EM_ASM_INT_V(return window.innerHeight);
+			emscripten_set_canvas_size(video_mode.width, video_mode.height);
+		}
+	}
+	else {
+		set_window_size(_windowed_size);
+	}
 }
 
 void OS_JavaScript::set_window_fullscreen(bool p_enable) {
@@ -829,6 +884,7 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, Get
 	last_id=1;
 	gl_extensions=NULL;
 	rasterizer=NULL;
+	window_maximized=false;
 
 	get_data_dir_func=p_get_data_dir_func;
 	FileAccessUnix::close_notification_func=_close_notification_funcs;

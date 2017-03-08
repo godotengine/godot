@@ -80,6 +80,7 @@ private:
 	const char* gl_extensions;
 
 	InputDefault *input;
+	bool window_maximized;
 	VideoMode video_mode;
 	MainLoop * main_loop;
 
@@ -137,7 +138,10 @@ public:
 
 	virtual Size2 get_screen_size(int p_screen=0) const;
 
+	virtual void set_window_size(const Size2);
 	virtual Size2 get_window_size() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const { return window_maximized; }
 	virtual void set_window_fullscreen(bool p_enable);
 	virtual bool is_window_fullscreen() const;
 
