@@ -31646,6 +31646,110 @@
 	<constants>
 	</constants>
 </class>
+<class name="Rand" inherits="Reference" category="Core">
+	<brief_description>
+		Base class for random number generators.
+	</brief_description>
+	<description>
+		This is the base class for random number generators. It cannot be instantiated: one of its subclasses instead.
+		If in doubt about which concrete generator to use, try [RandPCG32] or, as an alternative, [RandXoroshiro128Plus].
+	</description>
+	<methods>
+		<method name="random">
+			<return type="int">
+			</return>
+			</argument>
+			<description>
+				Returns the next "low-level" random number in the sequence. Usually, you'll want to call one of the higher-level methods provided. "Low-level" implies that the exact range of values returned will depend on the specific random number generation algorithm being used.
+			</description>
+		</method>
+		<method name="seed">
+			<argument index="0" name="seed" type="float">
+			</argument>
+			<description>
+				Initializes the random number generator with a given seed value.
+			</description>
+		</method>
+		<method name="randomize">
+			<description>
+				Initializes the random number generator with an unpredicatble seed.
+			</description>
+		</method>
+		<method name="uniform_float">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns a random floating point number from a uniform distribution, taken from the closed interval [a, b]. By default, the interval is [0, 1]. If only a is passed, the interval is [0, a].
+			</description>
+		</method>
+		<method name="uniform_int">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns a random integer number from a uniform distribution, taken from the closed interval [a, b].
+				Notice that the accepted range of values depends on the actual random number generation algorithm being used. Most algorithms generate 64-bit numbers, but if you want to be on the safe side, avoid passing values beyond 2^32.
+			</description>
+		</method>
+	</methods>
+</class>
+<class name="RandKnuthLCG" inherits="Rand" category="Core">
+	<brief_description>
+		A Linear Congruential Generator (LCG) with constants recommended by Don Knuth.
+	</brief_description>
+	<description>
+		This is a simple Linear Congruential Generator (LCG), a type of random number generator known to have many flaws.
+		The constants used in this implementation were recommended by Don Knuth himself, but this doesn't make this generator special in any way.
+		If in doubt, stay away from this generator and use any of the other [Rand] subclasses instead.
+	</description>
+</class>
+<class name="RandMT19937" inherits="Rand" category="Core">
+	<brief_description>
+		The MT19337 variation of the Mersenne Twister algorithm.
+	</brief_description>
+	<description>
+		When Mersenne Twister came out in the late 1990s, it was deemed by many as the best algorithm around. Later, some issues were detected.
+		This generator has a huge period, but also requires quite a lot of memory if compared with other generators.
+	</description>
+</class>
+<class name="RandMT19937_64" inherits="Rand" category="Core">
+	<brief_description>
+		The 64-bit variation of the MT19337 Mersenne Twister algorithm.
+	</brief_description>
+	<description>
+		This generates a different sequence than [RandMT19937], but otherwise has comparable characteristics.
+	</description>
+</class>
+<class name="RandPCG32" inherits="Rand" category="Core">
+	<brief_description>
+		The PCG32 algorithm.
+	</brief_description>
+	<description>
+		This is the simplest generator from the PCG (Permuted Congruential Generator) family.
+		The PCG is a new family of algorithms, but, as of 2017, they are considered top notch.
+	</description>
+</class>
+<class name="RandSplitMix64" inherits="Rand" category="Core">
+	<brief_description>
+		The SplitMix64 algorithm.
+	</brief_description>
+	<description>
+		While SplitMix64 isn't really bad, in most cases you'd be better of using either [RandPCG32] or [RandRandXoroshiro128Plus].
+	</description>
+</class>
+<class name="RandXoroshiro128Plus" inherits="Rand" category="Core">
+	<brief_description>
+		The Xoroshiro128+ algorithm.
+	</brief_description>
+	<description>
+		Xoroshiro128+ (XOR/rotate/shift/rotate) is relatively new algorithm. So far, it is considered a very good one in almost every respect.
+	</description>
+</class>
 <class name="RID" category="Built-In Types">
 	<brief_description>
 		Handle for a [Resource]'s unique ID.
