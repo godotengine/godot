@@ -16,13 +16,16 @@ TODO.
 
 Files extracted from upstream source:
 
-- all .c files in the main directory
-- the include/enet/ folder as enet/
+- all .c files in the main directory (except unix.c win32.c)
+- the include/enet/ folder as enet/ (except unix.h win32.h)
 - LICENSE file
 
-Important: Some files have been modified by Godot developers so that they work
-for all platforms (especially UWP). Check the diff with the 1.3.13 tarball
-before the next update.
+Important: enet.h, host.c, protocol.c have been slightly modified
+to be usable by godot socket implementation and allow IPv6.
+Two files (godot.cpp and enet/godot.h) has been added to provide
+enet socket implementation using Godot classes.
+Check the diff of enet.h, protocol.c, and host.c with the 1.3.13
+tarball before the next update.
 
 
 ## fonts
