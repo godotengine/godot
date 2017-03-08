@@ -436,30 +436,31 @@ String OS_Unix::get_locale() const {
 	return locale;
 }
 
-Error OS_Unix::open_dynamic_library(const String p_path, void* &p_library_handle) {
+Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
-	if(!p_library_handle) {
+	if (!p_library_handle) {
 		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
 		ERR_FAIL_V(ERR_CANT_OPEN);
 	}
 	return OK;
 }
 
-Error OS_Unix::close_dynamic_library(void* p_library_handle) {
-	if(dlclose(p_library_handle)) {
+Error OS_Unix::close_dynamic_library(void *p_library_handle) {
+	if (dlclose(p_library_handle)) {
 		return FAILED;
 	}
 	return OK;
 }
 
-Error OS_Unix::get_dynamic_library_symbol_handle(void* p_library_handle, const String p_name, void* &p_symbol_handle) {
-	char* error;
+Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
+	char *error;
 	dlerror(); // Clear existing errors
 
 	p_symbol_handle = dlsym(p_library_handle, p_name.utf8().get_data());
 
-	if ((error = dlerror()) != NULL)  {
-		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + dlerror());
+	error = dlerror();
+	if (error != NULL) {
+		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
 		ERR_FAIL_V(ERR_CANT_RESOLVE);
 	}
 	return OK;
