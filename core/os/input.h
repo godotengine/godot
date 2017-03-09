@@ -80,6 +80,7 @@ public:
 
 	virtual void warp_mouse_pos(const Vector2& p_to)=0;
 
+	virtual Vector3 get_gravity()=0;
 	virtual Vector3 get_accelerometer()=0;
 	virtual Vector3 get_magnetometer()=0;
 	virtual Vector3 get_gyroscope()=0;
