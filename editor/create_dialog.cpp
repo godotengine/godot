@@ -39,7 +39,7 @@
 #include "editor_settings.h"
 #include "os/keyboard.h"
 
-void CreateDialog::popup(bool p_dontclear) {
+void CreateDialog::popup(bool p_dontclear, bool p_allowmultiselect) {
 
 	recent->clear();
 
@@ -119,6 +119,11 @@ void CreateDialog::popup(bool p_dontclear) {
 		search_box->clear();
 	}
 	search_box->grab_focus();
+
+	if (p_allowmultiselect && EditorNode::get_editor_data().get_edited_scene_root())
+		search_options->set_select_mode(Tree::SELECT_MULTI);
+	else
+		search_options->set_select_mode(Tree::SELECT_SINGLE);
 
 	_update_search();
 }
@@ -294,7 +299,8 @@ void CreateDialog::_update_search() {
 		favorite->set_pressed(favorite_list.find(to_select->get_text(0)) != -1);
 	}
 
-	get_ok()->set_disabled(root->get_children() == NULL);
+	get_ok()->set_disabled(!search_options->get_next_selected(search_options->get_root()) ||
+						   (root->get_children() == NULL));
 }
 
 void CreateDialog::_confirmed() {
@@ -370,13 +376,11 @@ String CreateDialog::get_selected_type() {
 		return String();
 }
 
-Object *CreateDialog::instance_selected() {
-
-	TreeItem *selected = search_options->get_selected();
-
-	if (selected) {
-
-		Variant md = selected->get_metadata(0);
+void CreateDialog::instance_selected(List<Object*> *p_list)
+{
+	TreeItem* item = search_options->get_root();
+	while ( (item = search_options->get_next_selected(item)) ) {
+		Variant md = item->get_metadata(0);
 
 		String custom;
 		if (md.get_type() != Variant::NIL)
@@ -386,29 +390,27 @@ Object *CreateDialog::instance_selected() {
 			if (EditorNode::get_editor_data().get_custom_types().has(custom)) {
 
 				for (int i = 0; i < EditorNode::get_editor_data().get_custom_types()[custom].size(); i++) {
-					if (EditorNode::get_editor_data().get_custom_types()[custom][i].name == selected->get_text(0)) {
+					if (EditorNode::get_editor_data().get_custom_types()[custom][i].name == item->get_text(0)) {
 						Ref<Texture> icon = EditorNode::get_editor_data().get_custom_types()[custom][i].icon;
 						Ref<Script> script = EditorNode::get_editor_data().get_custom_types()[custom][i].script;
-						String name = selected->get_text(0);
+						String name = item->get_text(0);
 
 						Object *ob = ClassDB::instance(custom);
-						ERR_FAIL_COND_V(!ob, NULL);
+						ERR_FAIL_COND(!ob);
 						if (ob->is_class("Node")) {
 							ob->call("set_name", name);
 						}
 						ob->set_script(script.get_ref_ptr());
 						if (icon.is_valid())
 							ob->set_meta("_editor_icon", icon);
-						return ob;
+						p_list->push_back(ob);
 					}
 				}
 			}
 		} else {
-			return ClassDB::instance(selected->get_text(0));
+			p_list->push_back(ClassDB::instance(item->get_text(0)));
 		}
 	}
-
-	return NULL;
 }
 
 String CreateDialog::get_base_type() const {
@@ -419,10 +421,28 @@ String CreateDialog::get_base_type() const {
 void CreateDialog::_item_selected() {
 
 	TreeItem *item = search_options->get_selected();
-	if (!item)
+	if (!item){
+		get_ok()->set_disabled(true);
 		return;
+	}
 
-	String name = item->get_text(0);
+	_select_item(item->get_text(0));
+}
+
+void CreateDialog::_cell_multi_selected(Object *p_object, int p_index, bool p_selected) {
+
+	if(!p_selected){
+		get_ok()->set_disabled(!search_options->get_next_selected(search_options->get_root()));
+		help_bit->set_text("");
+	}
+	else{
+		TreeItem *pitem = p_object->cast_to<TreeItem>();
+		ERR_FAIL_COND(!pitem);
+		_select_item(pitem->get_text(0));
+	}
+}
+
+void CreateDialog::_select_item(String name){
 
 	favorite->set_disabled(false);
 	favorite->set_pressed(favorite_list.find(name) != -1);
@@ -431,6 +451,8 @@ void CreateDialog::_item_selected() {
 		return;
 
 	help_bit->set_text(EditorHelp::get_doc_data()->class_list[name].brief_description);
+
+	get_ok()->set_disabled(false);
 }
 
 void CreateDialog::_favorite_toggled() {
@@ -598,6 +620,7 @@ void CreateDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_favorite_selected"), &CreateDialog::_favorite_selected);
 	ClassDB::bind_method(D_METHOD("_history_activated"), &CreateDialog::_history_activated);
 	ClassDB::bind_method(D_METHOD("_favorite_activated"), &CreateDialog::_favorite_activated);
+	ClassDB::bind_method(D_METHOD("_multi_selected"), &CreateDialog::_cell_multi_selected);
 
 	ClassDB::bind_method("get_drag_data_fw", &CreateDialog::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &CreateDialog::can_drop_data_fw);
@@ -652,7 +675,8 @@ CreateDialog::CreateDialog() {
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", this, "_confirmed");
-	search_options->connect("cell_selected", this, "_item_selected");
+	search_options->connect("item_selected", this, "_item_selected");
+	search_options->connect("multi_selected", this, "_multi_selected");
 	//search_options->set_hide_root(true);
 	base_type = "Object";
 

@@ -58,6 +58,8 @@ class CreateDialog : public ConfirmationDialog {
 	EditorHelpBit *help_bit;
 
 	void _item_selected();
+	void _select_item(String name);
+	void _cell_multi_selected(Object *p_object, int p_index, bool p_selected);
 
 	void _update_search();
 	void _update_favorite_list();
@@ -86,13 +88,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	Object *instance_selected();
+	void instance_selected(List<Object*> *p_list);
 	String get_selected_type();
 
 	void set_base_type(const String &p_base);
 	String get_base_type() const;
 
-	void popup(bool p_dontclear);
+	void popup(bool p_dontclear, bool p_allowmultiselect = false);
 
 	CreateDialog();
 };
