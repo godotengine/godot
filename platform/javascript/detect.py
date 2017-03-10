@@ -35,7 +35,7 @@ def get_flags():
 
 def create(env):
     # remove Windows' .exe suffix
-    return env.Clone(PROGSUFFIX='')
+    return env.Clone(tools=['textfile', 'zip'], PROGSUFFIX='')
 
 
 def escape_sources_backslashes(target, source, env, for_signature):
@@ -97,7 +97,6 @@ def configure(env):
         env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
         env.extra_suffix = '.webassembly' + env.extra_suffix
     else:
-        env.Append(CPPFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['-s', 'ASM_JS=1'])
         env.Append(LINKFLAGS=['--separate-asm'])
 

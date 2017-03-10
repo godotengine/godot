@@ -2,15 +2,13 @@
 
 Import('env')
 
-env.Tool('textfile')
-env.Tool('zip')
-
 javascript_files = [
     "os_javascript.cpp",
     "audio_driver_javascript.cpp",
     "javascript_main.cpp",
     "audio_server_javascript.cpp",
-    "javascript_eval.cpp"
+    "power_javascript.cpp",
+    "javascript_eval.cpp",
 ]
 
 env_javascript = env.Clone()
