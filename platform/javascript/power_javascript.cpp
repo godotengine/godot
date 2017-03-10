@@ -28,7 +28,7 @@
 /*************************************************************************/
 
 #include "power_javascript.h"
-#include "core/error_macros.h"
+#include "error_macros.h"
 
 bool PowerJavascript::UpdatePowerInfo() {
 	// TODO Javascript implementation
