@@ -116,16 +116,20 @@ void Timer::stop() {
 	autostart = false;
 }
 
-void Timer::set_active(bool p_active) {
-	if (active == p_active)
+void Timer::set_paused(bool p_paused) {
+	if (paused == p_paused)
 		return;
 
-	active = p_active;
+	paused = p_paused;
 	_set_process(processing);
 }
 
-bool Timer::is_active() const {
-	return active;
+bool Timer::is_paused() const {
+	return paused;
+}
+
+bool Timer::is_stopped() const {
+	return get_time_left() <= 0;
 }
 
 float Timer::get_time_left() const {
@@ -162,8 +166,8 @@ Timer::TimerProcessMode Timer::get_timer_process_mode() const {
 
 void Timer::_set_process(bool p_process, bool p_force) {
 	switch (timer_process_mode) {
-		case TIMER_PROCESS_FIXED: set_fixed_process_internal(p_process && active); break;
-		case TIMER_PROCESS_IDLE: set_process_internal(p_process && active); break;
+		case TIMER_PROCESS_FIXED: set_fixed_process_internal(p_process && !paused); break;
+		case TIMER_PROCESS_IDLE: set_process_internal(p_process && !paused); break;
 	}
 	processing = p_process;
 }
@@ -182,8 +186,10 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("start"), &Timer::start);
 	ClassDB::bind_method(D_METHOD("stop"), &Timer::stop);
 
-	ClassDB::bind_method(D_METHOD("set_active", "active"), &Timer::set_active);
-	ClassDB::bind_method(D_METHOD("is_active"), &Timer::is_active);
+	ClassDB::bind_method(D_METHOD("set_paused", "paused"), &Timer::set_paused);
+	ClassDB::bind_method(D_METHOD("is_paused"), &Timer::is_paused);
+
+	ClassDB::bind_method(D_METHOD("is_stopped"), &Timer::is_stopped);
 
 	ClassDB::bind_method(D_METHOD("get_time_left"), &Timer::get_time_left);
 
@@ -208,5 +214,5 @@ Timer::Timer() {
 	one_shot = false;
 	time_left = -1;
 	processing = false;
-	active = true;
+	paused = false;
 }
