@@ -1112,6 +1112,36 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 		state.current_depth_test = !p_material->shader->spatial.no_depth_test;
 	}
 
+	if (state.current_depth_test_mode != (p_material->shader->spatial.depth_test_mode)) {
+		switch (p_material->shader->spatial.depth_test_mode) {
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_NEVER: {
+				glDepthFunc(GL_NEVER);
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_LESS: {
+				glDepthFunc(GL_LESS);
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_EQUAL: {
+				glDepthFunc(GL_EQUAL);
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_LEQUAL: {
+				glDepthFunc(GL_LEQUAL);
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_GREATER: {
+				glDepthFunc(GL_GREATER);
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_NOTEQUAL: {
+				glDepthFunc(GL_NOTEQUAL);
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_GEQUAL: {
+				glDepthFunc(GL_GEQUAL);
+			} break;
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_ALWAYS: {
+				glDepthFunc(GL_ALWAYS);
+			} break;
+		}
+		state.current_depth_test_mode = p_material->shader->spatial.depth_test_mode;
+	}
+
 	if (state.current_depth_draw != p_material->shader->spatial.depth_draw_mode) {
 		switch (p_material->shader->spatial.depth_draw_mode) {
 			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS:
@@ -1917,6 +1947,9 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 	state.current_depth_test = true;
 	glEnable(GL_DEPTH_TEST);
+
+	state.current_depth_test_mode = RasterizerStorageGLES3::Shader::Spatial::DEPTH_TEST_LEQUAL;
+	glDepthFunc(GL_LEQUAL);
 
 	state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, false);
 

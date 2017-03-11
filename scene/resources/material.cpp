@@ -364,6 +364,17 @@ void SpatialMaterial::_update_shader() {
 		case DEPTH_DRAW_ALPHA_OPAQUE_PREPASS: code += ",depth_draw_alpha_prepass"; break;
 	}
 
+	switch (depth_test_mode) {
+		case DEPTH_TEST_NEVER: code += ",depth_test_never"; break;
+		case DEPTH_TEST_LESS: code += ",depth_test_less"; break;
+		case DEPTH_TEST_EQUAL: code += ",depth_test_equal"; break;
+		case DEPTH_TEST_LEQUAL: code += ",depth_test_lequal"; break;
+		case DEPTH_TEST_GREATER: code += ",depth_test_greater"; break;
+		case DEPTH_TEST_NOTEQUAL: code += ",depth_test_notequal"; break;
+		case DEPTH_TEST_GEQUAL: code += ",depth_test_gequal"; break;
+		case DEPTH_TEST_ALWAYS: code += ",depth_test_always"; break;
+	}
+
 	switch (cull_mode) {
 		case CULL_BACK: code += ",cull_back"; break;
 		case CULL_FRONT: code += ",cull_front"; break;
@@ -1152,6 +1163,20 @@ SpatialMaterial::DepthDrawMode SpatialMaterial::get_depth_draw_mode() const {
 	return depth_draw_mode;
 }
 
+void SpatialMaterial::set_depth_test_mode(DepthTestMode p_mode) {
+
+	if (depth_test_mode == p_mode)
+		return;
+
+	depth_test_mode = p_mode;
+	_queue_shader_change();
+}
+
+SpatialMaterial::DepthTestMode SpatialMaterial::get_depth_test_mode() const {
+
+	return depth_test_mode;
+}
+
 void SpatialMaterial::set_cull_mode(CullMode p_mode) {
 
 	if (cull_mode == p_mode)
@@ -1697,6 +1722,9 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth_draw_mode", "depth_draw_mode"), &SpatialMaterial::set_depth_draw_mode);
 	ClassDB::bind_method(D_METHOD("get_depth_draw_mode"), &SpatialMaterial::get_depth_draw_mode);
 
+	ClassDB::bind_method(D_METHOD("set_depth_test_mode", "depth_test_mode"), &SpatialMaterial::set_depth_test_mode);
+	ClassDB::bind_method(D_METHOD("get_depth_test_mode"), &SpatialMaterial::get_depth_test_mode);
+
 	ClassDB::bind_method(D_METHOD("set_cull_mode", "cull_mode"), &SpatialMaterial::set_cull_mode);
 	ClassDB::bind_method(D_METHOD("get_cull_mode"), &SpatialMaterial::get_cull_mode);
 
@@ -1814,6 +1842,7 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_test_mode", PROPERTY_HINT_ENUM, "Never,Less,Equal,Lesser-or-Equal,Greater,Not Equal,Greater-or-Equal,Always"), "set_depth_test_mode", "get_depth_test_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_line_width", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_line_width", "get_line_width");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
@@ -1973,6 +2002,15 @@ void SpatialMaterial::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_DISABLED);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
 
+	BIND_ENUM_CONSTANT(DEPTH_TEST_NEVER);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_LESS);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_EQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_LEQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_GREATER);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_NOTEQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_GEQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_TEST_ALWAYS);
+
 	BIND_ENUM_CONSTANT(CULL_BACK);
 	BIND_ENUM_CONSTANT(CULL_FRONT);
 	BIND_ENUM_CONSTANT(CULL_DISABLED);
@@ -2073,6 +2111,7 @@ SpatialMaterial::SpatialMaterial()
 	blend_mode = BLEND_MODE_MIX;
 	detail_blend_mode = BLEND_MODE_MIX;
 	depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	depth_test_mode = DEPTH_TEST_LEQUAL;
 	cull_mode = CULL_BACK;
 	for (int i = 0; i < FLAG_MAX; i++) {
 		flags[i] = 0;

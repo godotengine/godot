@@ -434,6 +434,19 @@ public:
 
 			int depth_draw_mode;
 
+			enum DepthTestMode {
+				DEPTH_TEST_NEVER,
+				DEPTH_TEST_LESS,
+				DEPTH_TEST_EQUAL,
+				DEPTH_TEST_LEQUAL,
+				DEPTH_TEST_GREATER,
+				DEPTH_TEST_NOTEQUAL,
+				DEPTH_TEST_GEQUAL,
+				DEPTH_TEST_ALWAYS
+			};
+
+			int depth_test_mode;
+
 			enum CullMode {
 				CULL_MODE_FRONT,
 				CULL_MODE_BACK,

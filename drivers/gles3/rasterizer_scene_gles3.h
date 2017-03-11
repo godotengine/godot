@@ -93,6 +93,7 @@ public:
 		float current_line_width;
 		int current_depth_draw;
 		bool current_depth_test;
+		int current_depth_test_mode;
 		GLuint current_main_tex;
 
 		SceneShaderGLES3 scene_shader;
