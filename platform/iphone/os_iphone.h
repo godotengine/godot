@@ -135,6 +135,7 @@ private:
 	String locale_code;
 
 	InputDefault *input;
+	int tracker_id;
 
 public:
 	bool iterate();
@@ -152,6 +153,8 @@ public:
 	void update_accelerometer(float p_x, float p_y, float p_z);
 	void update_magnetometer(float p_x, float p_y, float p_z);
 	void update_gyroscope(float p_x, float p_y, float p_z);
+	void update_tracker(Transform & p_transform);
+	void update_tracker_from_9dof(float p_delta_time);
 
 	static OSIPhone *get_singleton();
 

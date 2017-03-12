@@ -30,10 +30,6 @@
 #import "view_controller.h"
 #import <UIKit/UIKit.h>
 
-// Old accelerometer approach deprecated since IOS 7.0
-// Include coremotion for accelerometer, gyroscope and magnetometer access, available since IOS 4.0 but some functionality won't work for anything before IOS 5.0
-#import <CoreMotion/CoreMotion.h>
-
 @interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;
 	ViewController *view_controller;

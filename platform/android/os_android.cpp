@@ -171,6 +171,8 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
+
+	tracker_id = -1;
 }
 
 void OS_Android::set_main_loop(MainLoop *p_main_loop) {
@@ -223,6 +225,9 @@ void OS_Android::delete_main_loop() {
 
 void OS_Android::finalize() {
 
+	if (tracker_id != -1) {
+		input->remove_tracker(tracker_id);
+	};
 	memdelete(input);
 }
 
@@ -594,6 +599,22 @@ void OS_Android::process_gyroscope(const Vector3 &p_gyroscope) {
 
 	input->set_gyroscope(p_gyroscope);
 }
+
+void OS_Android::process_tracker(Transform & p_transform) {
+	if (tracker_id == -1) {
+		tracker_id = input->add_tracker(Input::TRACKER_HMD, "Android Device", true, false);
+	}
+	input->set_tracker_transform(tracker_id, p_transform);
+};
+
+void OS_Android::process_tracker_from_9dof(float p_delta_time) {
+	if (tracker_id == -1) {
+		tracker_id = input->add_tracker(Input::TRACKER_HMD, "Android Device", true, false);
+	}
+
+	input->set_tracker_transform_from_9dof(tracker_id, p_delta_time);
+};
+
 
 bool OS_Android::has_touchscreen_ui_hint() const {
 
