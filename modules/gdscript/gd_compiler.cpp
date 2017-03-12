@@ -1310,6 +1310,7 @@ Error GDCompiler::_parse_block(CodeGen &codegen, const GDParser::BlockNode *p_bl
 				}
 			} break;
 			case GDParser::Node::TYPE_ASSERT: {
+#ifdef DEBUG_ENABLED
 				// try subblocks
 
 				const GDParser::AssertNode *as = static_cast<const GDParser::AssertNode *>(s);
@@ -1320,6 +1321,7 @@ Error GDCompiler::_parse_block(CodeGen &codegen, const GDParser::BlockNode *p_bl
 
 				codegen.opcodes.push_back(GDFunction::OPCODE_ASSERT);
 				codegen.opcodes.push_back(ret);
+#endif
 			} break;
 			case GDParser::Node::TYPE_BREAKPOINT: {
 #ifdef DEBUG_ENABLED
