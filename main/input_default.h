@@ -165,6 +165,53 @@ private:
 	uint32_t _axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value);
 	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
+	///@TODO thinking about moving tracker logic into its own class, suggestions welcome
+
+	struct Tracker {
+		TrackerType type;
+		StringName name;
+		Transform transform;
+		bool tracks_orientation;
+		bool tracks_position;
+
+		Tracker() {
+			type = TRACKER_UNKNOWN;
+		}
+	};
+
+	Vector3 last_accerometer_data;
+	Vector3 last_magnetometer_data;
+	Map<int, Tracker> trackers;
+
+	///@TODO a few support functions for trackers, most are math related and should likely be moved elsewhere
+	float floor_decimals(float p_value, float p_decimals){
+		float power_of_10 = pow(10.0, p_decimals);
+		return floor(p_value * power_of_10) / power_of_10;
+	};
+
+	Vector3 floor_decimals(const Vector3 &p_vector, float p_decimals) {
+		return Vector3(floor_decimals(p_vector.x, p_decimals), floor_decimals(p_vector.y, p_decimals), floor_decimals(p_vector.z, p_decimals));
+	};
+
+	Vector3 low_pass(const Vector3 &p_vector, const Vector3 &p_last_vector, float p_factor) {
+		return p_vector + (p_factor * (p_last_vector - p_vector));
+	};
+
+	Vector3 scrub(const Vector3 &p_vector, const Vector3 &p_last_vector, float p_decimals, float p_factor) {
+		return low_pass(floor_decimals(p_vector, p_decimals), p_last_vector, p_factor);
+	};
+
+	Vector3 mag_current_min;
+	Vector3 mag_current_max;
+	Vector3 mag_next_min;
+	Vector3 mag_next_max;
+	int mag_count;
+	bool sensor_first;
+	bool has_gyro;
+
+	Vector3 scale_magneto(const Vector3 p_magnetometer);
+	Matrix3 combine_acc_mag(const Vector3& p_grav,const Vector3& p_magneto);
+
 public:
 	virtual bool is_key_pressed(int p_scancode);
 	virtual bool is_mouse_button_pressed(int p_button);
@@ -237,6 +284,23 @@ public:
 	bool is_joy_mapped(int p_device);
 	String get_joy_guid_remapped(int p_device) const;
 	void set_fallback_mapping(String p_guid);
+
+	///@TODO thinking about moving tracker logic into its own class, suggestions welcome
+
+	Array get_connected_trackers(TrackerType p_types);
+	Input::TrackerType get_tracker_type(int p_idx) const;
+	String get_tracker_name(int p_idx) const;
+	Transform get_tracker_transform(int p_idx) const;
+	bool tracker_tracks_orientation(int p_idx) const;
+	bool tracker_tracks_position(int p_idx) const;
+
+	int add_tracker(TrackerType p_type, String p_name, bool p_tracks_orientation, bool p_tracks_position);
+	bool remove_tracker(int p_idx);
+	void set_tracker_transform(int p_idx, Transform & p_transform);
+	void set_tracker_transform_from_sensors(int p_idx, float p_delta_time);
+
+	////
+
 	InputDefault();
 };
 
