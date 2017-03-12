@@ -3038,7 +3038,7 @@ Rect3 RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 
 				int sbs = sk->size;
 				ERR_CONTINUE(bs > sbs);
-				float *skb = sk->bones.ptr();
+				const float *texture = sk->skel_texture.ptr();
 
 				bool first = true;
 				if (sk->use_2d) {
@@ -3047,16 +3047,18 @@ Rect3 RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 						if (!skused[j])
 							continue;
 
-						float *dataptr = &skb[8 * j];
+
+						int base_ofs = ((j / 256) * 256) * 2 * 4 + (j % 256) * 4;
 
 						Transform mtx;
 
-						mtx.basis.elements[0][0] = dataptr[0];
-						mtx.basis.elements[0][1] = dataptr[1];
-						mtx.origin[0] = dataptr[3];
-						mtx.basis.elements[1][0] = dataptr[4];
-						mtx.basis.elements[1][1] = dataptr[5];
-						mtx.origin[1] = dataptr[7];
+						mtx.basis[0].x=texture[base_ofs+0];
+						mtx.basis[0].y=texture[base_ofs+1];
+						mtx.origin.x=texture[base_ofs+3];
+						base_ofs+=256*4;
+						mtx.basis[1].x=texture[base_ofs+0];
+						mtx.basis[1].y=texture[base_ofs+1];
+						mtx.origin.y=texture[base_ofs+3];
 
 						Rect3 baabb = mtx.xform(skbones[j]);
 						if (first) {
@@ -3072,21 +3074,24 @@ Rect3 RasterizerStorageGLES3::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 						if (!skused[j])
 							continue;
 
-						float *dataptr = &skb[12 * j];
+						int base_ofs = ((j / 256) * 256) * 3 * 4 + (j % 256) * 4;
 
 						Transform mtx;
-						mtx.basis.elements[0][0] = dataptr[0];
-						mtx.basis.elements[0][1] = dataptr[1];
-						mtx.basis.elements[0][2] = dataptr[2];
-						mtx.origin.x = dataptr[3];
-						mtx.basis.elements[1][0] = dataptr[4];
-						mtx.basis.elements[1][1] = dataptr[5];
-						mtx.basis.elements[1][2] = dataptr[6];
-						mtx.origin.y = dataptr[7];
-						mtx.basis.elements[2][0] = dataptr[8];
-						mtx.basis.elements[2][1] = dataptr[9];
-						mtx.basis.elements[2][2] = dataptr[10];
-						mtx.origin.z = dataptr[11];
+
+						mtx.basis[0].x=texture[base_ofs+0];
+						mtx.basis[0].y=texture[base_ofs+1];
+						mtx.basis[0].z=texture[base_ofs+2];
+						mtx.origin.x=texture[base_ofs+3];
+						base_ofs+=256*4;
+						mtx.basis[1].x=texture[base_ofs+0];
+						mtx.basis[1].y=texture[base_ofs+1];
+						mtx.basis[1].z=texture[base_ofs+2];
+						mtx.origin.y=texture[base_ofs+3];
+						base_ofs+=256*4;
+						mtx.basis[2].x=texture[base_ofs+0];
+						mtx.basis[2].y=texture[base_ofs+1];
+						mtx.basis[2].z=texture[base_ofs+2];
+						mtx.origin.z=texture[base_ofs+3];
 
 						Rect3 baabb = mtx.xform(skbones[j]);
 						if (first) {
@@ -3921,6 +3926,9 @@ RID RasterizerStorageGLES3::immediate_get_material(RID p_immediate) const {
 RID RasterizerStorageGLES3::skeleton_create() {
 
 	Skeleton *skeleton = memnew(Skeleton);
+
+	glGenTextures(1,&skeleton->texture);
+
 	return skeleton_owner.make_rid(skeleton);
 }
 
@@ -3933,49 +3941,28 @@ void RasterizerStorageGLES3::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	if (skeleton->size == p_bones && skeleton->use_2d == p_2d_skeleton)
 		return;
 
-	if (skeleton->ubo) {
-		glDeleteBuffers(1, &skeleton->ubo);
-		skeleton->ubo = 0;
-	}
+	skeleton->size=p_bones;
+	skeleton->use_2d=p_2d_skeleton;
 
-	skeleton->size = p_bones;
-	if (p_2d_skeleton) {
-		skeleton->bones.resize(p_bones * 8);
-		for (int i = 0; i < skeleton->bones.size(); i += 8) {
-			skeleton->bones[i + 0] = 1;
-			skeleton->bones[i + 1] = 0;
-			skeleton->bones[i + 2] = 0;
-			skeleton->bones[i + 3] = 0;
-			skeleton->bones[i + 4] = 0;
-			skeleton->bones[i + 5] = 1;
-			skeleton->bones[i + 6] = 0;
-			skeleton->bones[i + 7] = 0;
-		}
+	int height = p_bones/256;
+	if (p_bones%256)
+		height++;
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D,skeleton->texture);
+
+	if (skeleton->use_2d) {
+		skeleton->skel_texture.resize(256*height*2*4);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 256, height*2, 0, GL_RGBA, GL_FLOAT, NULL);
 	} else {
-		skeleton->bones.resize(p_bones * 12);
-		for (int i = 0; i < skeleton->bones.size(); i += 12) {
-			skeleton->bones[i + 0] = 1;
-			skeleton->bones[i + 1] = 0;
-			skeleton->bones[i + 2] = 0;
-			skeleton->bones[i + 3] = 0;
-			skeleton->bones[i + 4] = 0;
-			skeleton->bones[i + 5] = 1;
-			skeleton->bones[i + 6] = 0;
-			skeleton->bones[i + 7] = 0;
-			skeleton->bones[i + 8] = 0;
-			skeleton->bones[i + 9] = 0;
-			skeleton->bones[i + 10] = 1;
-			skeleton->bones[i + 11] = 0;
-		}
+		skeleton->skel_texture.resize(256*height*3*4);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 256, height*3, 0, GL_RGBA, GL_FLOAT, NULL);
 	}
 
-	if (p_bones) {
-		glGenBuffers(1, &skeleton->ubo);
-		glBindBuffer(GL_UNIFORM_BUFFER, skeleton->ubo);
-		glBufferData(GL_UNIFORM_BUFFER, skeleton->bones.size() * sizeof(float), NULL, GL_DYNAMIC_DRAW);
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	if (!skeleton->update_list.in_list()) {
 		skeleton_update_list.add(&skeleton->update_list);
@@ -3997,19 +3984,25 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform(RID p_skeleton, int p_b
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(skeleton->use_2d);
 
-	float *bones = skeleton->bones.ptr();
-	bones[p_bone * 12 + 0] = p_transform.basis.elements[0][0];
-	bones[p_bone * 12 + 1] = p_transform.basis.elements[0][1];
-	bones[p_bone * 12 + 2] = p_transform.basis.elements[0][2];
-	bones[p_bone * 12 + 3] = p_transform.origin.x;
-	bones[p_bone * 12 + 4] = p_transform.basis.elements[1][0];
-	bones[p_bone * 12 + 5] = p_transform.basis.elements[1][1];
-	bones[p_bone * 12 + 6] = p_transform.basis.elements[1][2];
-	bones[p_bone * 12 + 7] = p_transform.origin.y;
-	bones[p_bone * 12 + 8] = p_transform.basis.elements[2][0];
-	bones[p_bone * 12 + 9] = p_transform.basis.elements[2][1];
-	bones[p_bone * 12 + 10] = p_transform.basis.elements[2][2];
-	bones[p_bone * 12 + 11] = p_transform.origin.z;
+	float *texture = skeleton->skel_texture.ptr();
+
+	int base_ofs = ((p_bone / 256) * 256) * 3 * 4 + (p_bone % 256) * 4;
+
+	texture[base_ofs+0]=p_transform.basis[0].x;
+	texture[base_ofs+1]=p_transform.basis[0].y;
+	texture[base_ofs+2]=p_transform.basis[0].z;
+	texture[base_ofs+3]=p_transform.origin.x;
+	base_ofs+=256*4;
+	texture[base_ofs+0]=p_transform.basis[1].x;
+	texture[base_ofs+1]=p_transform.basis[1].y;
+	texture[base_ofs+2]=p_transform.basis[1].z;
+	texture[base_ofs+3]=p_transform.origin.y;
+	base_ofs+=256*4;
+	texture[base_ofs+0]=p_transform.basis[2].x;
+	texture[base_ofs+1]=p_transform.basis[2].y;
+	texture[base_ofs+2]=p_transform.basis[2].z;
+	texture[base_ofs+3]=p_transform.origin.z;
+
 
 	if (!skeleton->update_list.in_list()) {
 		skeleton_update_list.add(&skeleton->update_list);
@@ -4024,22 +4017,30 @@ Transform RasterizerStorageGLES3::skeleton_bone_get_transform(RID p_skeleton, in
 	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform());
 	ERR_FAIL_COND_V(skeleton->use_2d, Transform());
 
-	float *bones = skeleton->bones.ptr();
-	Transform mtx;
-	mtx.basis.elements[0][0] = bones[p_bone * 12 + 0];
-	mtx.basis.elements[0][1] = bones[p_bone * 12 + 1];
-	mtx.basis.elements[0][2] = bones[p_bone * 12 + 2];
-	mtx.origin.x = bones[p_bone * 12 + 3];
-	mtx.basis.elements[1][0] = bones[p_bone * 12 + 4];
-	mtx.basis.elements[1][1] = bones[p_bone * 12 + 5];
-	mtx.basis.elements[1][2] = bones[p_bone * 12 + 6];
-	mtx.origin.y = bones[p_bone * 12 + 7];
-	mtx.basis.elements[2][0] = bones[p_bone * 12 + 8];
-	mtx.basis.elements[2][1] = bones[p_bone * 12 + 9];
-	mtx.basis.elements[2][2] = bones[p_bone * 12 + 10];
-	mtx.origin.z = bones[p_bone * 12 + 11];
+	const float *texture = skeleton->skel_texture.ptr();
 
-	return mtx;
+	Transform ret;
+
+	int base_ofs = ((p_bone / 256) * 256) * 3 * 4 + (p_bone % 256) * 4;
+
+	ret.basis[0].x=texture[base_ofs+0];
+	ret.basis[0].y=texture[base_ofs+1];
+	ret.basis[0].z=texture[base_ofs+2];
+	ret.origin.x=texture[base_ofs+3];
+	base_ofs+=256*4;
+	ret.basis[1].x=texture[base_ofs+0];
+	ret.basis[1].y=texture[base_ofs+1];
+	ret.basis[1].z=texture[base_ofs+2];
+	ret.origin.y=texture[base_ofs+3];
+	base_ofs+=256*4;
+	ret.basis[2].x=texture[base_ofs+0];
+	ret.basis[2].y=texture[base_ofs+1];
+	ret.basis[2].z=texture[base_ofs+2];
+	ret.origin.z=texture[base_ofs+3];
+
+
+	return ret;
+
 }
 void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {
 
@@ -4049,15 +4050,20 @@ void RasterizerStorageGLES3::skeleton_bone_set_transform_2d(RID p_skeleton, int 
 	ERR_FAIL_INDEX(p_bone, skeleton->size);
 	ERR_FAIL_COND(!skeleton->use_2d);
 
-	float *bones = skeleton->bones.ptr();
-	bones[p_bone * 12 + 0] = p_transform.elements[0][0];
-	bones[p_bone * 12 + 1] = p_transform.elements[1][0];
-	bones[p_bone * 12 + 2] = 0;
-	bones[p_bone * 12 + 3] = p_transform.elements[2][0];
-	bones[p_bone * 12 + 4] = p_transform.elements[0][1];
-	bones[p_bone * 12 + 5] = p_transform.elements[1][1];
-	bones[p_bone * 12 + 6] = 0;
-	bones[p_bone * 12 + 7] = p_transform.elements[2][1];
+	float *texture = skeleton->skel_texture.ptr();
+
+	int base_ofs = ((p_bone / 256) * 256) * 2 * 4 + (p_bone % 256) * 4;
+
+	texture[base_ofs+0]=p_transform[0][0];
+	texture[base_ofs+1]=p_transform[1][0];
+	texture[base_ofs+2]=0;
+	texture[base_ofs+3]=p_transform[2][0];
+	base_ofs+=256*4;
+	texture[base_ofs+0]=p_transform[0][1];
+	texture[base_ofs+1]=p_transform[1][1];
+	texture[base_ofs+2]=0;
+	texture[base_ofs+3]=p_transform[2][1];
+
 
 	if (!skeleton->update_list.in_list()) {
 		skeleton_update_list.add(&skeleton->update_list);
@@ -4071,28 +4077,41 @@ Transform2D RasterizerStorageGLES3::skeleton_bone_get_transform_2d(RID p_skeleto
 	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform2D());
 	ERR_FAIL_COND_V(!skeleton->use_2d, Transform2D());
 
-	Transform2D mtx;
+	const float *texture = skeleton->skel_texture.ptr();
 
-	float *bones = skeleton->bones.ptr();
-	mtx.elements[0][0] = bones[p_bone * 12 + 0];
-	mtx.elements[1][0] = bones[p_bone * 12 + 1];
-	mtx.elements[2][0] = bones[p_bone * 12 + 3];
-	mtx.elements[0][1] = bones[p_bone * 12 + 4];
-	mtx.elements[1][1] = bones[p_bone * 12 + 5];
-	mtx.elements[2][1] = bones[p_bone * 12 + 7];
+	Transform2D ret;
 
-	return mtx;
+	int base_ofs = ((p_bone / 256) * 256) * 2 * 4 + (p_bone % 256) * 4;
+
+	ret[0][0]=texture[base_ofs+0];
+	ret[1][0]=texture[base_ofs+1];
+	ret[2][0]=texture[base_ofs+3];
+	base_ofs+=256*4;
+	ret[0][1]=texture[base_ofs+0];
+	ret[1][1]=texture[base_ofs+1];
+	ret[2][1]=texture[base_ofs+3];
+
+	return ret;
 }
 
 void RasterizerStorageGLES3::update_dirty_skeletons() {
+
+	glActiveTexture(GL_TEXTURE0);
 
 	while (skeleton_update_list.first()) {
 
 		Skeleton *skeleton = skeleton_update_list.first()->self();
 		if (skeleton->size) {
-			glBindBuffer(GL_UNIFORM_BUFFER, skeleton->ubo);
-			glBufferSubData(GL_UNIFORM_BUFFER, 0, skeleton->bones.size() * sizeof(float), skeleton->bones.ptr());
-			glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
+
+			int height = skeleton->size/256;
+			if (skeleton->size%256)
+				height++;
+
+
+			glBindTexture(GL_TEXTURE_2D,skeleton->texture);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256,height*(skeleton->use_2d?2:3), GL_RGBA, GL_FLOAT, skeleton->skel_texture.ptr());
 		}
 
 		for (Set<RasterizerScene::InstanceBase *>::Element *E = skeleton->instances.front(); E; E = E->next()) {
@@ -5957,6 +5976,8 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		}
 
 		skeleton_allocate(p_rid, 0, false);
+
+		glDeleteTextures(1,&skeleton->texture);
 		skeleton_owner.free(p_rid);
 		memdelete(skeleton);
 

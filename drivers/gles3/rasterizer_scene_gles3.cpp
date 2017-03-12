@@ -1528,7 +1528,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 
 		GIProbeInstance *gipi = gi_probe_instance_owner.getptr(ridp[0]);
 
-		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 10);
 		glBindTexture(GL_TEXTURE_3D, gipi->tex_cache);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM1, gipi->transform_to_data * p_view_transform);
 		state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS1, gipi->bounds);
@@ -1540,7 +1540,7 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 
 			GIProbeInstance *gipi2 = gi_probe_instance_owner.getptr(ridp[1]);
 
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 7);
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 11);
 			glBindTexture(GL_TEXTURE_3D, gipi2->tex_cache);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_XFORM2, gipi2->transform_to_data * p_view_transform);
 			state.scene_shader.set_uniform(SceneShaderGLES3::GI_PROBE_BOUNDS2, gipi2->bounds);
@@ -1804,22 +1804,24 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			}
 		}
 
+
+
+		if ((prev_base_type == VS::INSTANCE_MULTIMESH) != (e->instance->base_type == VS::INSTANCE_MULTIMESH)) {
+			state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, e->instance->base_type == VS::INSTANCE_MULTIMESH);
+			rebind = true;
+		}
+
 		if (prev_skeleton != skeleton) {
 			if (prev_skeleton.is_valid() != skeleton.is_valid()) {
 				state.scene_shader.set_conditional(SceneShaderGLES3::USE_SKELETON, skeleton.is_valid());
 				rebind = true;
 			}
+
 			if (skeleton.is_valid()) {
 				RasterizerStorageGLES3::Skeleton *sk = storage->skeleton_owner.getornull(skeleton);
-				if (sk->size) {
-					glBindBufferBase(GL_UNIFORM_BUFFER, 7, sk->ubo);
-				}
+				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
+				glBindTexture(GL_TEXTURE_2D,sk->texture);
 			}
-		}
-
-		if ((prev_base_type == VS::INSTANCE_MULTIMESH) != (e->instance->base_type == VS::INSTANCE_MULTIMESH)) {
-			state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, e->instance->base_type == VS::INSTANCE_MULTIMESH);
-			rebind = true;
 		}
 
 		if (material != prev_material || rebind) {
@@ -1832,6 +1834,8 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 				storage->info.render_shader_rebind_count++;
 			}
 		}
+
+
 
 		if (!(e->sort_key & RenderList::SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
 			_setup_light(e, p_view_transform);
@@ -3567,7 +3571,7 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 			//bind depth for read
-			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 8);
+			glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 9);
 			glBindTexture(GL_TEXTURE_2D, storage->frame.current_rt->depth);
 		}
 

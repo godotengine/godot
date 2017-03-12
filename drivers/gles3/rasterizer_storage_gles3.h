@@ -769,18 +769,19 @@ public:
 	/* SKELETON API */
 
 	struct Skeleton : RID_Data {
-		int size;
 		bool use_2d;
-		Vector<float> bones; //4x3 or 4x2 depending on what is needed
-		GLuint ubo;
+		int size;
+		Vector<float> skel_texture;
+		GLuint texture;
 		SelfList<Skeleton> update_list;
 		Set<RasterizerScene::InstanceBase *> instances; //instances using skeleton
 
 		Skeleton()
 			: update_list(this) {
-			size = 0;
+			size=0;
+
 			use_2d = false;
-			ubo = 0;
+			texture = 0;
 		}
 	};
 

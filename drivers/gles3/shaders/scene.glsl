@@ -146,13 +146,10 @@ out highp float dp_clip;
 
 #endif
 
+#define SKELETON_TEXTURE_WIDTH 256
+
 #ifdef USE_SKELETON
-
-layout(std140) uniform SkeletonData { //ubo:7
-
-	mat3x4 skeleton[MAX_SKELETON_BONES];
-};
-
+uniform highp sampler2D skeleton_texture; //texunit:-6
 #endif
 
 out highp vec4 position_interp;
@@ -173,15 +170,41 @@ void main() {
 	color_interp = color_attrib;
 #endif
 
-
 #ifdef USE_SKELETON
-
 	{
 		//skeleton transform
-		highp mat3x4 m=skeleton[bone_indices.x]*bone_weights.x;
-		m+=skeleton[bone_indices.y]*bone_weights.y;
-		m+=skeleton[bone_indices.z]*bone_weights.z;
-		m+=skeleton[bone_indices.w]*bone_weights.w;
+		ivec2 tex_ofs = ivec2( bone_indices.x%256, (bone_indices.x/256)*3 );
+		highp mat3x4 m = mat3x4(
+			texelFetch(skeleton_texture,tex_ofs,0),
+			texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0),
+			texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
+		) * bone_weights.x;
+
+		tex_ofs = ivec2( bone_indices.y%256, (bone_indices.y/256)*3 );
+
+		m+= mat3x4(
+					texelFetch(skeleton_texture,tex_ofs,0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
+				) * bone_weights.y;
+
+		tex_ofs = ivec2( bone_indices.z%256, (bone_indices.z/256)*3 );
+
+		m+= mat3x4(
+					texelFetch(skeleton_texture,tex_ofs,0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
+				) * bone_weights.z;
+
+
+		tex_ofs = ivec2( bone_indices.w%256, (bone_indices.w/256)*3 );
+
+		m+= mat3x4(
+					texelFetch(skeleton_texture,tex_ofs,0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,1),0),
+					texelFetch(skeleton_texture,tex_ofs+ivec2(0,2),0)
+				) * bone_weights.w;
+
 
 		vertex.xyz = vertex * m;
 
@@ -190,8 +213,7 @@ void main() {
 		tangent.xyz = vec4(tangent.xyz,0.0) * mn;
 #endif
 	}
-#endif // USE_SKELETON1
-
+#endif
 
 #ifdef USE_INSTANCING
 
@@ -493,7 +515,7 @@ layout(location=0) out vec4 frag_color;
 #endif
 
 in highp vec4 position_interp;
-uniform highp sampler2D depth_buffer; //texunit:-8
+uniform highp sampler2D depth_buffer; //texunit:-9
 
 float contact_shadow_compute(vec3 pos, vec3 dir, float max_distance) {
 
@@ -926,7 +948,7 @@ void reflection_process(int idx, vec3 vertex, vec3 normal,vec3 binormal, vec3 ta
 
 #ifdef USE_GI_PROBES
 
-uniform mediump sampler3D gi_probe1; //texunit:-6
+uniform mediump sampler3D gi_probe1; //texunit:-11
 uniform highp mat4 gi_probe_xform1;
 uniform highp vec3 gi_probe_bounds1;
 uniform highp vec3 gi_probe_cell_size1;
@@ -934,7 +956,7 @@ uniform highp float gi_probe_multiplier1;
 uniform highp float gi_probe_bias1;
 uniform bool gi_probe_blend_ambient1;
 
-uniform mediump sampler3D gi_probe2; //texunit:-7
+uniform mediump sampler3D gi_probe2; //texunit:-10
 uniform highp mat4 gi_probe_xform2;
 uniform highp vec3 gi_probe_bounds2;
 uniform highp vec3 gi_probe_cell_size2;
