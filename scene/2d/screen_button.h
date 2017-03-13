@@ -56,7 +56,6 @@ private:
 	StringName action;
 	bool passby_press;
 	int finger_pressed;
-	bool allow_repress;
 	int action_id;
 
 	VisibilityMode visibility;
