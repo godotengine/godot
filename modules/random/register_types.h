@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  knuth_lcg.h                                                          */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,25 +27,5 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RAND_KNUTH_LCG_H
-#define RAND_KNUTH_LCG_H
-
-#include "rand.h"
-
-class RandKnuthLCG: public Rand {
-	GDCLASS(RandKnuthLCG, Rand);
-public:
-	RandKnuthLCG();
-	virtual ~RandKnuthLCG();
-	virtual uint64_t random();
-	virtual uint64_t max_random();
-	virtual void seed(uint64_t p_seed);
-
-protected:
-	static void _bind_methods();
-
-private:
-	uint64_t state;
-};
-
-#endif // RAND_KNUTH_LCG_H
+void register_random_types();
+void unregister_random_types();

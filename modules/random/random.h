@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  pcg32.h                                                              */
+/*  random.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,27 +27,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef RAND_PCG32_H
-#define RAND_PCG32_H
+#ifndef MODULE_RANDOM_RANDOM_H
+#define MODULE_RANDOM_RANDOM_H
 
-#include "rand.h"
+#include "base_random.h"
+#include "pcg64.h"
 
-class RandPCG32: public Rand {
-	GDCLASS(RandPCG32, Rand);
+
+class Random: public BaseRandom {
+	GDCLASS(Random, BaseRandom);
 public:
-	RandPCG32();
-	virtual ~RandPCG32();
-	virtual uint64_t random();
-	virtual uint64_t max_random();
-	virtual void seed(uint64_t seed);
-	void seed_2(uint64_t p_state, uint64_t p_seq);
+	Random();
+	virtual ~Random();
+	virtual int64_t random();
+	virtual int64_t max_random();
+	virtual void seed(int64_t seed);
+	void seed_2(int64_t p_state, int64_t p_seq);
 
 protected:
 	static void _bind_methods();
 
 private:
-	uint64_t state; // The state itself
-	uint64_t inc; // The selected RNG stream; must be and odd number
+	pcg64_random_t rng;
 };
 
-#endif // RAND_PCG32_H
+#endif // MODULE_RANDOM_RANDOM_H

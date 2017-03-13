@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  mt19937_64.h                                                         */
+/*  base_random.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,42 +26,63 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifndef MODULE_RANDOM_BASE_RANDOM_H
+#define MODULE_RANDOM_BASE_RANDOM_H
 
-#ifndef RAND_MT19937_64_H
-#define RAND_MT19937_64_H
+#include "core/reference.h"
 
-#include "rand.h"
 
-class RandMT19937_64: public Rand {
-	GDCLASS(RandMT19937_64, Rand);
-
+// This is the base class for all random number generators in the Rand module.
+// Its main purposes are to (1) define a common interface for all random number
+// generators, and (2) provide the common code to generate random numbers
+// according to different distributions.
+class BaseRandom: public Reference {
+	GDCLASS(BaseRandom, Reference);
 public:
-	RandMT19937_64();
-	virtual ~RandMT19937_64();
-	virtual uint64_t random();
-	virtual uint64_t max_random();
-	virtual void seed(uint64_t p_seed);
+	virtual ~BaseRandom();
+
+	// Returns the next random number in the sequence. It must be a number
+	// between zero and `max_random()`.
+	virtual int64_t random() = 0;
+
+	// Seeds the random number generator. For a hardware RNG, this would be a
+	// no-op.
+	virtual void seed(int64_t seed) = 0;
+
+	// Seeds the RNG with some "unpredictable" value. For a hardware RNG, this
+	// would be a no-op.
+	void randomize();
+
+	//
+	// Distributions
+	//
+
+	// Generates integer numbers between `p_a` and `p_b` (closed interval
+	// at both ends).
+	int64_t uniform_int(int64_t p_a, int64_t p_b);
+
+	// Generates floating point numbers between `p_a` and `p_b` (closed interval
+	// at both ends). Defaults to [0,1]. If only `p_a` is passed, the interval
+	// used is [0, p_a].
+	double uniform(double p_a = NAN, double p_b = NAN);
+
+	// Generates a Boolean with a probability `p_p` of being true (AKA Bernoulli
+	// distribution). Defaults to 0.5 (a fair coin toss).
+	bool boolean(double p_p = 0.5);
+
+	// Generates a floating point number from a normal (Gaussian) distribution
+	// with mean `p_mean` and standart deviation `p_std_dev`.
+	double normal(double p_mean = 0.0, double p_std_dev = 1.0);
+
+	// Generates a floating point number from an exponential distribution with
+	// mean `p_mean`.
+	double exponential(double p_mean);
 
 protected:
 	static void _bind_methods();
 
-private:
-	static const uint64_t w = 64;
-	static const uint64_t n = 312;
-	static const uint64_t m = 156;
-	static const uint64_t r = 31;
-	static const uint64_t a = 0xB5026F5AA96619E9;
-	static const uint64_t u = 29;
-	static const uint64_t d = 0x5555555555555555;
-	static const uint64_t s = 17;
-	static const uint64_t b = 0x71D67FFFEDA60000;
-	static const uint64_t t = 37;
-	static const uint64_t c = 0xFFF7EEE000000000;
-	static const uint64_t l = 43;
-	static const uint64_t f = 6364136223846793005;
-	void twist();
-	uint64_t x[n]; // the state itself
-	uint64_t i;    // index into `x`
+	// Returns the highest value `random()` will ever return.
+	virtual int64_t max_random() = 0;
 };
 
-#endif // RAND_MT19937_64_H
+#endif // MODULE_RANDOM_BASE_RANDOM_H

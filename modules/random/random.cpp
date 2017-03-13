@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  pcg32.cpp                                                            */
+/*  random.cpp                                                           */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,63 +27,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-//
-// The code in this file is derived from the C implementation originally found
-// at https://github.com/imneme/pcg-c-basic/
-//
-// That code is Copyright 2014 Melissa O'Neill <oneill@pcg-random.org> and was
-// originally licensed under the Apache License, Version 2.0
-// (http://www.apache.org/licenses/LICENSE-2.0).
-//
-// For additional information about the PCG random number generation scheme,
-// including its license and other licensing options, visit
-//
-//     http://www.pcg-random.org
-//
-
-#include "pcg32.h"
-#include <limits>
+#include "random.h"
 
 
-RandPCG32::RandPCG32()
-	: state(0x853c49e6748fea9bULL), inc(0xda3e39cb94b95bdbULL) {
+Random::Random() {
+	pcg64_srandom_r(&rng, PCG_128BIT_CONSTANT(0ULL, 42ULL),
+		PCG_128BIT_CONSTANT(0ULL, 54ULL));
+}
+
+
+Random::~Random() {
 	// Nothing here.
 }
 
 
-RandPCG32::~RandPCG32() {
-	// Nothing here.
+int64_t Random::random() {
+	return pcg64_random_r(&rng) >> 1;
 }
 
 
-uint64_t RandPCG32::random() {
-	const uint64_t oldstate = state;
-	state = oldstate * 6364136223846793005ULL + inc;
-	const uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
-	const uint32_t rot = oldstate >> 59u;
-	return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
+int64_t Random::max_random() {
+	return (1ULL << 63) - 1;
 }
 
 
-uint64_t RandPCG32::max_random() {
-	return std::numeric_limits<uint32_t>::max();
-}
-
-
-void RandPCG32::seed(uint64_t p_seed) {
+void Random::seed(int64_t p_seed) {
 	seed_2(p_seed, 0x6d1f1ce5ca5cadedULL);
 }
 
 
 // PCG-specific seeding, just in case someone wants to use it.
-void RandPCG32::seed_2(uint64_t p_state, uint64_t p_seq) {
-	state = 0U;
-    inc = (p_seq << 1u) | 1u;
-    random();
-    state += p_state;
-	random();
+void Random::seed_2(int64_t p_state, int64_t p_seq) {
+	pcg64_srandom_r(&rng, PCG_128BIT_CONSTANT(0ULL, p_state),
+		PCG_128BIT_CONSTANT(0ULL, p_seq));
 }
 
-void RandPCG32::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("seed_2", "state", "seq"), &RandPCG32::seed_2);
+void Random::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("seed_2", "state", "seq"), &Random::seed_2);
 }
