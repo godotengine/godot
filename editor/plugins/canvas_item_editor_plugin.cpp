@@ -3478,20 +3478,19 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
 		RES res = ResourceLoader::load(path);
-		String type = res->get_class();
-		if (type == "ImageTexture" || type == "PackedScene") {
-			if (type == "ImageTexture") {
-				Ref<ImageTexture> texture = Ref<ImageTexture>(ResourceCache::get(path)->cast_to<ImageTexture>());
+		Ref<Texture> texture = Ref<Texture>(res->cast_to<Texture>());
+		Ref<PackedScene> scene = Ref<PackedScene>(res->cast_to<PackedScene>());
+		if (texture != NULL || scene != NULL) {
+			if (texture != NULL) {
 				Sprite *sprite = memnew(Sprite);
 				sprite->set_texture(texture);
 				sprite->set_modulate(Color(1, 1, 1, 0.7f));
 				preview->add_child(sprite);
 				label->show();
 				label_desc->show();
-			} else if (type == "PackedScene") {
-				Ref<PackedScene> scn = ResourceLoader::load(path);
-				if (scn.is_valid()) {
-					Node *instance = scn->instance();
+			} else {
+				if (scene.is_valid()) {
+					Node *instance = scene->instance();
 					if (instance) {
 						preview->add_child(instance);
 					}
@@ -3531,7 +3530,7 @@ bool CanvasItemEditorViewport::_cyclical_dependency_exists(const String &p_targe
 
 void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &path, const Point2 &p_point) {
 	child->set_name(path.get_file().get_basename());
-	Ref<ImageTexture> texture = Ref<ImageTexture>(ResourceCache::get(path)->cast_to<ImageTexture>());
+	Ref<Texture> texture = Ref<Texture>(ResourceCache::get(path)->cast_to<Texture>());
 	Size2 texture_size = texture->get_size();
 
 	editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
@@ -3584,7 +3583,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	if (default_type == "Polygon2D" || default_type == "TouchScreenButton" || default_type == "TextureRect" || default_type == "Patch9Rect") {
 		target_pos -= texture_size / 2;
 	}
-	editor_data->get_undo_redo().add_do_method(child, "set_pos", target_pos);
+	editor_data->get_undo_redo().add_do_method(child, "set_position", target_pos);
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
@@ -3646,8 +3645,9 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 		if (res.is_null()) {
 			continue;
 		}
-		String type = res->get_class();
-		if (type == "ImageTexture") {
+		Ref<Texture> texture = Ref<Texture>(res->cast_to<Texture>());
+		Ref<PackedScene> scene = Ref<PackedScene>(res->cast_to<PackedScene>());
+		if (texture != NULL) {
 			Node *child;
 			if (default_type == "Light2D")
 				child = memnew(Light2D);
@@ -3665,7 +3665,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 				child = memnew(Sprite); // default
 
 			_create_nodes(target_node, child, path, drop_pos);
-		} else if (type == "PackedScene") {
+		} else if (scene != NULL) {
 			bool success = _create_instance(target_node, path, drop_pos);
 			if (!success) {
 				error_files.push_back(path);
@@ -3823,11 +3823,11 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	btn_group = memnew(VBoxContainer);
 	btn_group->set_h_size_flags(0);
-	btn_group->connect("button_selected", this, "_on_select_type");
 
 	for (int i = 0; i < types.size(); i++) {
 		CheckBox *check = memnew(CheckBox);
 		check->set_text(types[i]);
+		check->connect("button_selected", this, "_on_select_type", varray(check));
 		btn_group->add_child(check);
 		check->set_button_group(button_group);
 	}
@@ -3851,8 +3851,8 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 
 	label_desc = memnew(Label);
 	label_desc->set_text(TTR("Drag & drop + Shift : Add node as sibling\nDrag & drop + Alt : Change node type"));
-	label_desc->add_color_override("font_color", Color(0.6, 0.6, 0.6, 1));
-	label_desc->add_color_override("font_color_shadow", Color(0.2, 0.2, 0.2, 1));
+	label_desc->add_color_override("font_color", Color(0.6f, 0.6f, 0.6f, 1));
+	label_desc->add_color_override("font_color_shadow", Color(0.2f, 0.2f, 0.2f, 1));
 	label_desc->add_constant_override("shadow_as_outline", 1 * EDSCALE);
 	label_desc->add_constant_override("line_spacing", 0);
 	label_desc->hide();
