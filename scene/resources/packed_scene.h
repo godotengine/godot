@@ -104,6 +104,8 @@ class SceneState : public Reference {
 
 	DVector<String> _get_node_groups(int p_idx) const;
 
+	int _find_base_scene_node_remap_key(int p_idx) const;
+
 protected:
 
 	static void _bind_methods();

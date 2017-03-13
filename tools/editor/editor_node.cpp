@@ -1013,6 +1013,11 @@ void EditorNode::_save_scene(String p_file, int idx) {
 		return;
 	}
 
+	// force creation of node path cache
+	// (hacky but needed for the tree to update properly)
+	Node* dummy_scene=sdata->instance(true);
+	memdelete(dummy_scene);
+
 	sdata->set_import_metadata(editor_data.get_edited_scene_import_metadata(idx));
 	int flg=0;
 	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
@@ -1023,6 +1028,7 @@ void EditorNode::_save_scene(String p_file, int idx) {
 
 
 	err = ResourceSaver::save(p_file,sdata,flg);
+
 	Map<RES,bool> processed;
 	_save_edited_subresources(scene,processed,flg);
 	editor_data.save_editor_external_data();
