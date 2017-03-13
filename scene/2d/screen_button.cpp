@@ -135,7 +135,7 @@ void TouchScreenButton::_notification(int p_what) {
 			update();
 
 			if (!get_tree()->is_editor_hint())
-				set_process_input(true);
+				set_process_input(is_visible_in_tree());
 
 			if (action.operator String() != "" && InputMap::get_singleton()->has_action(action)) {
 				action_id = InputMap::get_singleton()->get_action_id(action);
@@ -147,10 +147,21 @@ void TouchScreenButton::_notification(int p_what) {
 			if (is_pressed())
 				_release(true);
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (get_tree()->is_editor_hint())
+				break;
+			if (is_visible_in_tree()) {
+				set_process_input(true);
+			} else {
+				set_process_input(false);
+				if (is_pressed())
+					_release();
+			}
+		} break;
 		case NOTIFICATION_PAUSED: {
-			// So the button can be pressed again even though the release gets unhandled because of coming during pause
-			allow_repress = true;
-		}
+			if (is_pressed())
+				_release();
+		} break;
 	}
 }
 
@@ -230,7 +241,7 @@ void TouchScreenButton::_input(const InputEvent &p_event) {
 				if (!is_visible_in_tree())
 					return;
 
-				const bool can_press = finger_pressed == -1 || allow_repress;
+				const bool can_press = finger_pressed == -1;
 				if (!can_press)
 					return; //already fingering
 
@@ -276,7 +287,6 @@ void TouchScreenButton::_input(const InputEvent &p_event) {
 void TouchScreenButton::_press(int p_finger_pressed) {
 
 	finger_pressed = p_finger_pressed;
-	allow_repress = false;
 
 	if (action_id != -1) {
 
@@ -394,7 +404,6 @@ void TouchScreenButton::_bind_methods() {
 TouchScreenButton::TouchScreenButton() {
 
 	finger_pressed = -1;
-	allow_repress = false;
 	action_id = -1;
 	passby_press = false;
 	visibility = VISIBILITY_ALWAYS;
