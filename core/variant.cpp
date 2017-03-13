@@ -166,7 +166,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 		} break;
 		case POOL_REAL_ARRAY: {
 
-			return "PoolFloatArray";
+			return "PoolRealArray";
 
 		} break;
 		case POOL_STRING_ARRAY: {

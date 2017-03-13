@@ -2078,7 +2078,7 @@ void _Marshalls::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("base64_to_variant:Variant", "base64_str"), &_Marshalls::base64_to_variant);
 
 	ClassDB::bind_method(D_METHOD("raw_to_base64:String", "array"), &_Marshalls::raw_to_base64);
-	ClassDB::bind_method(D_METHOD("base64_to_raw:RawArray", "base64_str"), &_Marshalls::base64_to_raw);
+	ClassDB::bind_method(D_METHOD("base64_to_raw:PoolByteArray", "base64_str"), &_Marshalls::base64_to_raw);
 
 	ClassDB::bind_method(D_METHOD("utf8_to_base64:String", "utf8_str"), &_Marshalls::utf8_to_base64);
 	ClassDB::bind_method(D_METHOD("base64_to_utf8:String", "base64_str"), &_Marshalls::base64_to_utf8);
