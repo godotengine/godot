@@ -9810,6 +9810,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="has_point" qualifiers="virtual">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="has_stylebox" qualifiers="const">
 			<return type="bool">
 			</return>
