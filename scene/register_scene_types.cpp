@@ -497,6 +497,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<StaticBody2D>();
 	ObjectTypeDB::register_type<RigidBody2D>();
 	ObjectTypeDB::register_type<KinematicBody2D>();
+	KinematicBody2D::motion_fix_enabled=bool(GLOBAL_DEF("physics_2d/motion_fix_enabled",false));
 	ObjectTypeDB::register_type<Area2D>();
 	ObjectTypeDB::register_type<CollisionShape2D>();
 	ObjectTypeDB::register_type<CollisionPolygon2D>();

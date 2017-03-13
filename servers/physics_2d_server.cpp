@@ -501,6 +501,14 @@ bool Physics2DServer::_body_test_motion(RID p_body,const Vector2& p_motion,float
 	return body_test_motion(p_body,p_motion,p_margin,r);
 }
 
+bool Physics2DServer::_body_test_motion_from(RID p_body,const Matrix32& p_from,const Vector2& p_motion,float p_margin,const Ref<Physics2DTestMotionResult>& p_result) {
+
+	MotionResult *r=NULL;
+	if (p_result.is_valid())
+		r=p_result->get_result_ptr();
+	return body_test_motion_from(p_body,p_from,p_motion,p_margin,r);
+}
+
 void Physics2DServer::_bind_methods() {
 
 
@@ -620,6 +628,7 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&Physics2DServer::body_set_force_integration_callback,DEFVAL(Variant()));
 
 	ObjectTypeDB::bind_method(_MD("body_test_motion","body","motion","margin","result:Physics2DTestMotionResult"),&Physics2DServer::_body_test_motion,DEFVAL(0.08),DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("body_test_motion_from","body","from","motion","margin","result:Physics2DTestMotionResult"),&Physics2DServer::_body_test_motion_from,DEFVAL(0.08),DEFVAL(Variant()));
 
 	/* JOINT API */
 

@@ -33,7 +33,6 @@
 #include "servers/physics_2d_server.h"
 #include "vset.h"
 
-
 class PhysicsBody2D : public CollisionObject2D {
 
 	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
@@ -48,6 +47,10 @@ class PhysicsBody2D : public CollisionObject2D {
 	uint32_t _get_layers() const;
 
 protected:
+
+	// So this flag can be set at startup and cached for every body
+	friend void register_scene_types();
+	static bool motion_fix_enabled;
 
 	void _notification(int p_what);
 	PhysicsBody2D(Physics2DServer::BodyMode p_mode);
@@ -314,6 +317,7 @@ public:
 	Vector2 move_to(const Vector2& p_position);
 
 	bool test_move(const Vector2& p_motion);
+	bool test_move_from(const Matrix32 &p_from, const Vector2& p_motion);
 	bool is_colliding() const;
 
 	Vector2 get_travel() const;

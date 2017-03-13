@@ -29,6 +29,8 @@
 #include "physics_body_2d.h"
 #include "scene/scene_string_names.h"
 
+bool PhysicsBody2D::motion_fix_enabled=false;
+
 void PhysicsBody2D::_notification(int p_what) {
 
 /*
@@ -436,7 +438,11 @@ bool RigidBody2D::_test_motion(const Vector2& p_motion,float p_margin,const Ref<
 	Physics2DServer::MotionResult *r=NULL;
 	if (p_result.is_valid())
 		r=p_result->get_result_ptr();
-	return Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,p_margin,r);
+	if (motion_fix_enabled) {
+		return Physics2DServer::get_singleton()->body_test_motion_from(get_rid(),get_global_transform(),p_motion,p_margin,r);
+	} else {
+		return Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,p_margin,r);
+	}
 
 }
 
@@ -1022,7 +1028,6 @@ RigidBody2D::~RigidBody2D() {
 
 //////////////////////////
 
-
 Variant KinematicBody2D::_get_collider() const {
 
 	ObjectID oid=get_collider();
@@ -1044,9 +1049,8 @@ void KinematicBody2D::revert_motion() {
 
 	Matrix32 gt = get_global_transform();
 	gt.elements[2]-=travel;
-	travel=Vector2();
 	set_global_transform(gt);
-
+	travel=Vector2();
 }
 
 Vector2 KinematicBody2D::get_travel() const {
@@ -1057,8 +1061,14 @@ Vector2 KinematicBody2D::get_travel() const {
 Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 #if 1
+
+	Matrix32 gt = get_global_transform();
 	Physics2DServer::MotionResult result;
-	colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,margin,&result);
+	if (motion_fix_enabled) {
+		colliding = Physics2DServer::get_singleton()->body_test_motion_from(get_rid(),gt,p_motion,margin,&result);
+	} else {
+		colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,margin,&result);
+	}
 
 	collider_metadata=result.collider_metadata;
 	collider_shape=result.collider_shape;
@@ -1067,10 +1077,12 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	normal=result.collision_normal;
 	collider=result.collider_id;
 
-	Matrix32 gt = get_global_transform();
+
 	gt.elements[2]+=result.motion;
 	set_global_transform(gt);
 	travel=result.motion;
+
+
 	return result.remainder;
 
 #else
@@ -1080,7 +1092,6 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	//what it does is simpler than using physics
 	//this took about a week to get right..
 	//but is it right? who knows at this point..
-
 
 	colliding=false;
 	ERR_FAIL_COND_V(!is_inside_tree(),Vector2());
@@ -1099,16 +1110,14 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 	bool collided=false;
 	uint32_t mask=0;
-	if (collide_static)
+	if (true)
 		mask|=Physics2DDirectSpaceState::TYPE_MASK_STATIC_BODY;
-	if (collide_kinematic)
+	if (true)
 		mask|=Physics2DDirectSpaceState::TYPE_MASK_KINEMATIC_BODY;
-	if (collide_rigid)
+	if (true)
 		mask|=Physics2DDirectSpaceState::TYPE_MASK_RIGID_BODY;
-	if (collide_character)
+	if (true)
 		mask|=Physics2DDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
-
-//	print_line("motion: "+p_motion+" margin: "+rtos(margin));
 
 	//print_line("margin: "+rtos(margin));
 	do {
@@ -1144,6 +1153,8 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 			collided=false;
 			break;
 		}
+
+
 
 		Matrix32 gt = get_global_transform();
 		gt.elements[2]+=recover_motion;
@@ -1191,6 +1202,8 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	if (safe>=1) {
 		//not collided
 		colliding=false;
+
+
 	} else {
 
 		//it collided, let's get the rest info in unsafe advance
@@ -1235,9 +1248,18 @@ bool KinematicBody2D::test_move(const Vector2& p_motion) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),false);
 
-	return Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,margin);
+	if (motion_fix_enabled) {
+		return Physics2DServer::get_singleton()->body_test_motion_from(get_rid(),get_global_transform(),p_motion,margin);
+	} else {
+		return Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,margin);
+	}
+}
 
+bool KinematicBody2D::test_move_from(const Matrix32& p_from,const Vector2& p_motion) {
 
+	ERR_FAIL_COND_V(!is_inside_tree(),false);
+
+	return Physics2DServer::get_singleton()->body_test_motion_from(get_rid(),p_from,p_motion,margin);
 }
 
 Vector2 KinematicBody2D::get_collision_pos() const {
@@ -1302,6 +1324,7 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody2D::move_to);
 
 	ObjectTypeDB::bind_method(_MD("test_move","rel_vec"),&KinematicBody2D::test_move);
+	ObjectTypeDB::bind_method(_MD("test_move_from","from","rel_vec"),&KinematicBody2D::test_move_from);
 	ObjectTypeDB::bind_method(_MD("get_travel"),&KinematicBody2D::get_travel);
 	ObjectTypeDB::bind_method(_MD("revert_motion"),&KinematicBody2D::revert_motion);
 

@@ -272,6 +272,12 @@ public:
 		return physics_2d_server->body_test_motion(p_body,p_motion,p_margin,r_result);
 	}
 
+	bool body_test_motion_from(RID p_body,const Matrix32& p_from,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
+
+		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
+		return physics_2d_server->body_test_motion_from(p_body,p_from,p_motion,p_margin,r_result);
+	}
+
 	/* JOINT API */
 
 
