@@ -818,7 +818,8 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["POSITION"]="IN_POSITION";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["NORMAL"]="normal";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["TANGENT"]="tangent";
-	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["POSITION"]="gl_Position";
+	//mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["POSITION"]="gl_Position";
+	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["POSITION"]="gl_FragCoord";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["BINORMAL"]="binormal";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["NORMALMAP"]="normalmap";
 	mode_replace_table[ShaderLanguage::SHADER_MATERIAL_FRAGMENT]["NORMALMAP_DEPTH"]="normaldepth";
@@ -875,7 +876,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["EXTRA_MATRIX"]="extra_matrix";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX]["TIME"]="time";
 
-	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["POSITION"]="gl_Position";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["POSITION"]="(gl_FragCoord.xy)";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["NORMAL"]="normal";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["NORMALMAP"]="normal_map";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["NORMALMAP_DEPTH"]="normal_depth";
@@ -890,7 +891,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT]["TIME"]="time";
 
-	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["POSITION"]="gl_Position";
+	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["POSITION"]="(gl_FragCoord.xy)";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["NORMAL"]="normal";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["UV"]="uv_interp";
 	mode_replace_table[ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT]["COLOR"]="color";
