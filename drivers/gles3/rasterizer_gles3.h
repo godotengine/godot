@@ -43,6 +43,8 @@ class RasterizerGLES3 : public Rasterizer {
 	RasterizerCanvasGLES3 *canvas;
 	RasterizerSceneGLES3 *scene;
 
+	float time_scale;
+
 public:
 	virtual RasterizerStorage *get_storage();
 	virtual RasterizerCanvas *get_canvas();
@@ -57,6 +59,7 @@ public:
 	virtual void clear_render_target(const Color &p_color);
 	virtual void blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen = 0);
 	virtual void end_frame();
+	virtual void set_time_scale(float p_scale);
 	virtual void finalize();
 
 	static void make_current();

@@ -6731,6 +6731,7 @@ void RasterizerStorageGLES3::initialize() {
 	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 #endif
 
+	frame.time[0] = 0;
 	frame.count = 0;
 	frame.prev_tick = 0;
 	frame.delta = 0;

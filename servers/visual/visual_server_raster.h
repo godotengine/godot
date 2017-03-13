@@ -1132,6 +1132,10 @@ public:
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale);
 	virtual void set_default_clear_color(const Color &p_color);
 
+#undef BINDBASE
+#define BINDBASE VSG::rasterizer
+	BIND1(set_time_scale, float)
+
 	virtual bool has_feature(Features p_feature) const;
 
 	virtual bool has_os_feature(const String &p_feature) const;

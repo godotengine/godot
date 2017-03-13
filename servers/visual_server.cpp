@@ -1482,6 +1482,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_get_height"), &VisualServer::texture_get_height);
 
 	ClassDB::bind_method(D_METHOD("texture_set_shrink_all_x2_on_set_data", "shrink"), &VisualServer::texture_set_shrink_all_x2_on_set_data);
+
+	ClassDB::bind_method(D_METHOD("set_time_scale"), &VisualServer::set_time_scale);
 }
 
 void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector<float> &p_margins, const Color &p_modulate) {
