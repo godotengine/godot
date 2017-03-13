@@ -42,6 +42,7 @@ class InputDefault : public Input {
 	Set<int> joy_buttons_pressed;
 	Map<int,float> _joy_axis;
 	Map<StringName,int> custom_action_press;
+	Vector3 gravity;
 	Vector3 accelerometer;
 	Vector3 magnetometer;
 	Vector3 gyroscope;
@@ -178,6 +179,7 @@ public:
 	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "");
 	void parse_joystick_mapping(String p_mapping, bool p_update_existing);
 
+	virtual Vector3 get_gravity();
 	virtual Vector3 get_accelerometer();
 	virtual Vector3 get_magnetometer();
 	virtual Vector3 get_gyroscope();
@@ -190,6 +192,7 @@ public:
 
 
 	void parse_input_event(const InputEvent& p_event);
+	void set_gravity(const Vector3& p_gravity);
 	void set_accelerometer(const Vector3& p_accel);
 	void set_magnetometer(const Vector3& p_magnetometer);
 	void set_gyroscope(const Vector3& p_gyroscope);

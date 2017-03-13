@@ -323,48 +323,24 @@ void OSIPhone::touches_cancelled() {
 
 static const float ACCEL_RANGE = 1;
 
-void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
-
-	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, -p_z / (float)ACCEL_RANGE));
-
-	/*
-	if (p_x != last_accel.x) {
-		//printf("updating accel x %f\n", p_x);
-		InputEvent ev;
-		ev.type = InputEvent::JOYSTICK_MOTION;
-		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_0_X;
-		ev.joy_motion.axis_value = (p_x / (float)ACCEL_RANGE);
-		ev.ID = ++last_event_id;
-		last_accel.x = p_x;
-		queue_event(ev);
-	};
-	if (p_y != last_accel.y) {
-		//printf("updating accel y %f\n", p_y);
-		InputEvent ev;
-		ev.type = InputEvent::JOYSTICK_MOTION;
-		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_0_Y;
-		ev.joy_motion.axis_value = (p_y / (float)ACCEL_RANGE);
-		ev.ID = ++last_event_id;
-		last_accel.y = p_y;
-		queue_event(ev);
-	};
-	if (p_z != last_accel.z) {
-		//printf("updating accel z %f\n", p_z);
-		InputEvent ev;
-		ev.type = InputEvent::JOYSTICK_MOTION;
-		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_1_X;
-		ev.joy_motion.axis_value = ( (1.0 - p_z) / (float)ACCEL_RANGE);
-		ev.ID = ++last_event_id;
-		last_accel.z = p_z;
-		queue_event(ev);
-	};
-	*/
+void OSIPhone::update_gravity(float p_x, float p_y, float p_z) {
+	input->set_gravity(Vector3(p_x, p_y, p_z));
 };
 
+void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 
+	// Found out the Z should not be negated! Pass as is!
+	input->set_accelerometer(Vector3(p_x / (float)ACCEL_RANGE, p_y / (float)ACCEL_RANGE, p_z / (float)ACCEL_RANGE));
+
+};
+
+void OSIPhone::update_magnetometer(float p_x, float p_y, float p_z) {
+	input->set_magnetometer(Vector3(p_x, p_y, p_z));
+};
+  		  
+void OSIPhone::update_gyroscope(float p_x, float p_y, float p_z) {
+	input->set_gyroscope(Vector3(p_x, p_y, p_z));
+};
 
 void OSIPhone::delete_main_loop() {
 
