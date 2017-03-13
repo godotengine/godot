@@ -31,6 +31,10 @@
 #include "print_string.h"
 #include "translation.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
+
 void WindowDialog::_post_popup() {
 
 	drag_type = DRAG_NONE; // just in case
@@ -199,6 +203,16 @@ void WindowDialog::_notification(int p_what) {
 					set_default_cursor_shape(CURSOR_ARROW);
 			}
 		} break;
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_POST_POPUP: {
+			if (get_tree() && get_tree()->is_editor_hint())
+				EditorNode::get_singleton()->dim_editor(true);
+		} break;
+		case NOTIFICATION_POPUP_HIDE: {
+			if (get_tree() && get_tree()->is_editor_hint())
+				EditorNode::get_singleton()->dim_editor(false);
+		} break;
+#endif
 	}
 }
 
