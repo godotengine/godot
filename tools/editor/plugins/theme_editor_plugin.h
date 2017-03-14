@@ -36,6 +36,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/button_group.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/grid_container.h"
 
 #include "tools/editor/editor_node.h"
 
@@ -57,6 +58,7 @@ class ThemeEditor : public Control {
 
 	MenuButton *theme_menu;
 	ConfirmationDialog *add_del_dialog;
+	GridContainer *grid;
 	MenuButton *type_menu;
 	LineEdit *type_edit;
 	MenuButton *name_menu;
