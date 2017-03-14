@@ -74,9 +74,10 @@ def configure(env):
     elif (env["target"] == "release_debug"):
         env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
     elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-O2', '-DDEBUG_ENABLED'])
-        #env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-g4', '-DDEBUG_ENABLED'])
+        #env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-O2', '-DDEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-g3', '-DDEBUG_ENABLED'])
         env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
+        env.Append(LINKFLAGS=['--profiling-funcs'])
 
     # TODO: Move that to opus module's config
     if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
