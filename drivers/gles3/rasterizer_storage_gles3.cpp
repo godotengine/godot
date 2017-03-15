@@ -6280,8 +6280,7 @@ void RasterizerStorageGLES3::initialize() {
 	shaders.cubemap_filter.init();
 	shaders.particles.init();
 
-#ifndef GLES_OVER_GL
-
+#ifdef GLES_OVER_GL
 	glEnable(_EXT_TEXTURE_CUBE_MAP_SEAMLESS);
 #endif
 

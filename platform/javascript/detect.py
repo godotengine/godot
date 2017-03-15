@@ -28,7 +28,6 @@ def get_flags():
     return [
         ('tools', 'no'),
         ('module_etc1_enabled', 'no'),
-        ('module_mpc_enabled', 'no'),
         ('module_theora_enabled', 'no'),
     ]
 
@@ -70,14 +69,16 @@ def configure(env):
     env['LIBSUFFIX'] = '.bc'
 
     if (env["target"] == "release"):
-        env.Append(CCFLAGS=['-O2'])
+        env.Append(CCFLAGS=['-O3'])
+        env.Append(LINKFLAGS=['-O3'])
     elif (env["target"] == "release_debug"):
         env.Append(CCFLAGS=['-O2', '-DDEBUG_ENABLED'])
-    elif (env["target"] == "debug"):
-        #env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-O2', '-DDEBUG_ENABLED'])
-        env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-g3', '-DDEBUG_ENABLED'])
-        env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
+        env.Append(LINKFLAGS=['-O2'])
+        # retain function names at the cost of file size, for backtraces and profiling
         env.Append(LINKFLAGS=['--profiling-funcs'])
+    elif (env["target"] == "debug"):
+        env.Append(CCFLAGS=['-O1', '-D_DEBUG', '-Wall', '-g', '-DDEBUG_ENABLED'])
+        env.Append(LINKFLAGS=['-O1', '-g'])
 
     # TODO: Move that to opus module's config
     if("module_opus_enabled" in env and env["module_opus_enabled"] != "no"):
@@ -85,16 +86,15 @@ def configure(env):
 
     # These flags help keep the file size down
     env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
-    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DNO_FCNTL', '-DMPC_FIXED_POINT', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
+    env.Append(CPPFLAGS=['-DJAVASCRIPT_ENABLED', '-DUNIX_ENABLED', '-DPTHREAD_NO_RENAME', '-DTYPED_METHOD_BIND', '-DNO_THREADS'])
     env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
+    env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
 
-    if env['wasm'] == 'yes':
+    if (env['wasm'] == 'yes'):
         env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-        # Maximum memory size is baked into the WebAssembly binary during
-        # compilation, so we need to enable memory growth to allow setting
-        # TOTAL_MEMORY at runtime. The value set at runtime must be higher than
-        # what is set during compilation, check TOTAL_MEMORY in Emscripten's
-        # src/settings.js for the default.
+        # In contrast to asm.js, enabling memory growth on WebAssembly has no
+        # major performance impact, and causes only a negligible increase in
+        # memory size.
         env.Append(LINKFLAGS=['-s', 'ALLOW_MEMORY_GROWTH=1'])
         env.extra_suffix = '.webassembly' + env.extra_suffix
     else:
@@ -104,8 +104,5 @@ def configure(env):
     if env['javascript_eval'] == 'yes':
         env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
 
-    env.Append(LINKFLAGS=['-O2'])
-    env.Append(LINKFLAGS=['-s', 'USE_WEBGL2=1'])
-    # env.Append(LINKFLAGS=['-g4'])
 
     import methods
