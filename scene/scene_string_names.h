@@ -167,7 +167,7 @@ public:
 	StringName area_entered;
 	StringName area_exited;
 
-	StringName get_minimum_size;
+	StringName _get_minimum_size;
 
 	StringName play_play;
 

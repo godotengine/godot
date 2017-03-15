@@ -864,39 +864,39 @@ void AudioServer::remove_callback(AudioCallback p_callback, void *p_userdata) {
 	unlock();
 }
 
-void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_state) {
+void AudioServer::set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout) {
 
-	ERR_FAIL_COND(p_state.is_null() || p_state->buses.size() == 0);
+	ERR_FAIL_COND(p_bus_layout.is_null() || p_bus_layout->buses.size() == 0);
 
 	lock();
 	for (int i = 0; i < buses.size(); i++) {
 		memdelete(buses[i]);
 	}
-	buses.resize(p_state->buses.size());
+	buses.resize(p_bus_layout->buses.size());
 	bus_map.clear();
-	for (int i = 0; i < p_state->buses.size(); i++) {
+	for (int i = 0; i < p_bus_layout->buses.size(); i++) {
 		Bus *bus = memnew(Bus);
 		if (i == 0) {
 			bus->name = "Master";
 		} else {
-			bus->name = p_state->buses[i].name;
-			bus->send = p_state->buses[i].send;
+			bus->name = p_bus_layout->buses[i].name;
+			bus->send = p_bus_layout->buses[i].send;
 		}
 
-		bus->solo = p_state->buses[i].solo;
-		bus->mute = p_state->buses[i].mute;
-		bus->bypass = p_state->buses[i].bypass;
-		bus->volume_db = p_state->buses[i].volume_db;
+		bus->solo = p_bus_layout->buses[i].solo;
+		bus->mute = p_bus_layout->buses[i].mute;
+		bus->bypass = p_bus_layout->buses[i].bypass;
+		bus->volume_db = p_bus_layout->buses[i].volume_db;
 
-		for (int j = 0; j < p_state->buses[i].effects.size(); j++) {
+		for (int j = 0; j < p_bus_layout->buses[i].effects.size(); j++) {
 
-			Ref<AudioEffect> fx = p_state->buses[i].effects[j].effect;
+			Ref<AudioEffect> fx = p_bus_layout->buses[i].effects[j].effect;
 
 			if (fx.is_valid()) {
 
 				Bus::Effect bfx;
 				bfx.effect = fx;
-				bfx.enabled = p_state->buses[i].effects[j].enabled;
+				bfx.enabled = p_bus_layout->buses[i].effects[j].enabled;
 				bus->effects.push_back(bfx);
 			}
 		}
@@ -988,8 +988,8 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_speaker_mode"), &AudioServer::get_speaker_mode);
 	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioServer::get_mix_rate);
 
-	ClassDB::bind_method(D_METHOD("set_state", "state:AudioServerState"), &AudioServer::set_bus_layout);
-	ClassDB::bind_method(D_METHOD("generate_state:AudioServerState"), &AudioServer::generate_bus_layout);
+	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout:AudioBusLayout"), &AudioServer::set_bus_layout);
+	ClassDB::bind_method(D_METHOD("generate_bus_layout:AudioBusLayout"), &AudioServer::generate_bus_layout);
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
 }
