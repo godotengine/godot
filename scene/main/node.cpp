@@ -1719,6 +1719,9 @@ void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
 
 void Node::_set_owner_nocheck(Node *p_owner) {
 
+	if (data.owner == p_owner)
+		return;
+
 	ERR_FAIL_COND(data.owner);
 	data.owner = p_owner;
 	data.owner->data.owned.push_back(this);
