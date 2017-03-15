@@ -163,7 +163,7 @@ public:
 	int get_connection_flags(int p_idx) const;
 	Array get_connection_binds(int p_idx) const;
 
-	bool has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method) const;
+	bool has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method);
 
 	Vector<NodePath> get_editable_instances() const;
 

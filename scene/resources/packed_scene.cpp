@@ -1516,34 +1516,41 @@ Array SceneState::get_connection_binds(int p_idx) const {
 	return binds;
 }
 
-bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method) const {
+bool SceneState::has_connection(const NodePath &p_node_from, const StringName &p_signal, const NodePath &p_node_to, const StringName &p_method) {
 
-	for (int i = 0; i < connections.size(); i++) {
-		const ConnectionData &c = connections[i];
+	// this method cannot be const because of this
+	Ref<SceneState> ss = this;
 
-		NodePath np_from;
+	do {
+		for (int i = 0; i < ss->connections.size(); i++) {
+			const ConnectionData &c = ss->connections[i];
 
-		if (c.from & FLAG_ID_IS_PATH) {
-			np_from = node_paths[c.from & FLAG_MASK];
-		} else {
-			np_from = get_node_path(c.from);
+			NodePath np_from;
+
+			if (c.from & FLAG_ID_IS_PATH) {
+				np_from = ss->node_paths[c.from & FLAG_MASK];
+			} else {
+				np_from = ss->get_node_path(c.from);
+			}
+
+			NodePath np_to;
+
+			if (c.to & FLAG_ID_IS_PATH) {
+				np_to = ss->node_paths[c.to & FLAG_MASK];
+			} else {
+				np_to = ss->get_node_path(c.to);
+			}
+
+			StringName sn_signal = ss->names[c.signal];
+			StringName sn_method = ss->names[c.method];
+
+			if (np_from == p_node_from && sn_signal == p_signal && np_to == p_node_to && sn_method == p_method) {
+				return true;
+			}
 		}
 
-		NodePath np_to;
-
-		if (c.to & FLAG_ID_IS_PATH) {
-			np_to = node_paths[c.to & FLAG_MASK];
-		} else {
-			np_to = get_node_path(c.to);
-		}
-
-		StringName sn_signal = names[c.signal];
-		StringName sn_method = names[c.method];
-
-		if (np_from == p_node_from && sn_signal == p_signal && np_to == p_node_to && sn_method == p_method) {
-			return true;
-		}
-	}
+		ss = ss->_get_base_scene_state();
+	} while (ss.is_valid());
 
 	return false;
 }
