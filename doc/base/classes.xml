@@ -19998,7 +19998,7 @@
 		Control that provides single line string editing.
 	</brief_description>
 	<description>
-		LineEdit provides a single line string editor, used for text fields.
+		LineEdit provides a single line string editor, used for text fields. An example use-case could be a username/login input box.
 	</description>
 	<methods>
 		<method name="append_at_cursor">
@@ -20065,6 +20065,8 @@
 			</return>
 			<description>
 				Return the maximum amount of characters the [LineEdit] can edit. If 0 is returned, no limit exists.
+        
+        Once this limit is reached, no more text will be added to the LineEdit.
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -20090,6 +20092,20 @@
 			</return>
 			<description>
 				Return the text in the [LineEdit].
+        
+        [code]
+        extends Node2D
+        
+        onready var __history = find_node("RichTextLabel")
+        onready var __input = find_node("LineEdit")
+        
+        func _ready():
+          pass
+        
+        func _on_Button_pressed():
+          var text = __input.get_text() # user typed "Hello" and clicked a "Send" button
+          __history.add_text(text) # add the text from LineEdit (Hello) to the RichTextLabel
+        [/code]
 			</description>
 		</method>
 		<method name="is_editable" qualifiers="const">
@@ -20097,6 +20113,20 @@
 			</return>
 			<description>
 				Return the [i]editable[/i] status of the [LineEdit] (see [method set_editable]).
+        
+        [code]
+        extends Node2D
+        
+        onready var __comment = find_node("LineEdit")
+        
+        func _ready():
+          set_process_input(true)
+        
+        func _input(event):
+          if event.is_action_pressed("ui_toggle_thing"):
+            # when the key for "ui_toggle_thing" is pressed, set editable flag to opposite of current
+            __comment.set_editable(!is_editable())
+        [/code]
 			</description>
 		</method>
 		<method name="is_secret" qualifiers="const">
@@ -20123,6 +20153,21 @@
 		<method name="select_all">
 			<description>
 				Select the whole string.
+        
+        [code]
+        extends Node2D
+        
+        onready var __clone = find_node("Button")
+        onready var __url = find_node("LineEdit")
+        
+        func _ready():
+          # Hide the url box on start
+          __url.hide()
+          
+        func _on_Button_pressed():
+          __url.show() # Show the url box
+          __url.select_all() # Select all text in the url box so user can copy (ctrl+c / cmd+c)
+        [/code]
 			</description>
 		</method>
 		<method name="set_align">
@@ -20143,6 +20188,21 @@
 			</argument>
 			<description>
 				Set the [i]editable[/i] status of the [LineEdit]. When disabled, existing text can't be modified and new text can't be added.
+        
+        [code]
+        extends Node2D
+        
+        onready var __timer = find_node("timer") # some node that has logic
+        onready var __input = find_node("LineEdit")
+        
+        func _ready():
+          __input.set_editable(true) # allow edits on start
+          set_process(true)
+        
+        func _process(delta):
+          if timer.is_past_time():
+            __input.set_editable(false) # once some kind of timer limit has elapsed, disable edits
+        [/code]
 			</description>
 		</method>
 		<method name="set_expand_to_text_length">
@@ -20156,12 +20216,32 @@
 			</argument>
 			<description>
 				Set the maximum amount of characters the [LineEdit] can edit, and cropping existing text in case it exceeds that limit. Setting 0 removes the limit.
+        
+        [code]
+        extends Node2D
+        
+        onready var __input = find_node("LineEdit")
+        
+        func _ready():
+          __input.set_max_length(140) # set input to max 140 characters for a tweet
+        [/code]
 			</description>
 		</method>
 		<method name="set_placeholder">
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
+        Set the line edit placeholder text, much line an HTML5 &lt;input type="text" placeholder="Enter username"&gt;.
+        
+        [code]
+        extends Node2D
+        
+        onready var __input = find_node("LineEdit")
+        
+        func _ready():
+          # On start, the LineEdit will have "Enter username" as the content until the user types something
+          __input.set_placeholder("Enter username")
+        [/code]
 			</description>
 		</method>
 		<method name="set_placeholder_alpha">
@@ -20175,6 +20255,15 @@
 			</argument>
 			<description>
 				Set the [i]secret[/i] status of the [LineEdit]. When enabled, every character is displayed as "*".
+        
+        [code]
+        extends Node2D
+        
+        onready var __password = find_node("LineEdit")
+        
+        func _ready():
+          __password.set_secret(true) # LineEdit will now display "*" for every character
+        [/code]
 			</description>
 		</method>
 		<method name="set_text">
@@ -20182,6 +20271,15 @@
 			</argument>
 			<description>
 				Set the text in the [LineEdit], clearing the existing one and the selection.
+        
+        [code]
+        extends Node2D
+        
+        onready var __name = find_node("LineEdit")
+        
+        func _ready():
+          __name.set_text("John Doe") # LineEdit now has "John Doe" as the input text
+        [/code]
 			</description>
 		</method>
 	</methods>
