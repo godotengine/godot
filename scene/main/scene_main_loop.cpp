@@ -327,6 +327,10 @@ void SceneTree::input_text(const String &p_text) {
 	root_lock--;
 }
 
+bool SceneTree::is_input_handled() {
+	return input_handled;
+}
+
 void SceneTree::input_event(const InputEvent &p_event) {
 
 	if (is_editor_hint() && (p_event.type == InputEvent::JOYSTICK_MOTION || p_event.type == InputEvent::JOYSTICK_BUTTON))
@@ -1556,6 +1560,7 @@ void SceneTree::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_pause", "enable"), &SceneTree::set_pause);
 	ObjectTypeDB::bind_method(_MD("is_paused"), &SceneTree::is_paused);
 	ObjectTypeDB::bind_method(_MD("set_input_as_handled"), &SceneTree::set_input_as_handled);
+	ObjectTypeDB::bind_method(_MD("is_input_handled"), &SceneTree::is_input_handled);
 
 	ObjectTypeDB::bind_method(_MD("get_node_count"), &SceneTree::get_node_count);
 	ObjectTypeDB::bind_method(_MD("get_frame"), &SceneTree::get_frame);
