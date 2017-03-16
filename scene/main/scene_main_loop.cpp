@@ -374,6 +374,10 @@ void SceneTree::input_text(const String &p_text) {
 	root_lock--;
 }
 
+bool SceneTree::is_input_handled() {
+	return input_handled;
+}
+
 void SceneTree::input_event(const InputEvent &p_event) {
 
 	if (is_editor_hint() && (p_event.type == InputEvent::JOYPAD_MOTION || p_event.type == InputEvent::JOYPAD_BUTTON))
@@ -2153,6 +2157,7 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pause", "enable"), &SceneTree::set_pause);
 	ClassDB::bind_method(D_METHOD("is_paused"), &SceneTree::is_paused);
 	ClassDB::bind_method(D_METHOD("set_input_as_handled"), &SceneTree::set_input_as_handled);
+	ClassDB::bind_method(D_METHOD("is_input_handled"), &SceneTree::is_input_handled);
 
 	ClassDB::bind_method(D_METHOD("create_timer:SceneTreeTimer", "time_sec", "pause_mode_process"), &SceneTree::create_timer, DEFVAL(true));
 
