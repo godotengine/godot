@@ -387,7 +387,7 @@ static Ref<Reference> _get_parent_class(GDCompletionContext &context) {
 			if (script.is_null()) {
 				return REF();
 			}
-			if (script->is_valid()) {
+			if (!script->is_valid()) {
 
 				return REF();
 			}
