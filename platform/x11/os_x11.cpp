@@ -332,12 +332,11 @@ void OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_au
 		WARN_PRINT("XCreateIC couldn't create xic");
 	}
 
-	XcursorSetTheme(x11_display, "default");
 	cursor_size = XcursorGetDefaultSize(x11_display);
 	cursor_theme = XcursorGetTheme(x11_display);
 
 	if (!cursor_theme) {
-		print_line("not found theme");
+		WARN_PRINT("Could not find cursor theme");
 		cursor_theme = "default";
 	}
 
