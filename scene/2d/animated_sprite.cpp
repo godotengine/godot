@@ -353,18 +353,31 @@ void AnimatedSprite::_notification(int p_what) {
 
 					timeout=1.0/speed;
 
-					int fc = frames->get_frame_count(animation);
-					if (frame>=fc-1) {
-						if (frames->get_animation_loop(animation)) {
-							frame=0;
-						} else {
-							frame=fc-1;
-						}
-					} else {
-						frame++;
-						if (frame==fc-1) {
-							emit_signal(SceneStringNames::get_singleton()->finished);
-						}
+					const int fc = frames->get_frame_count(animation);
+					
+					// nextframe
+					int nextFrame = frame + 1;
+					if (frames->get_animation_loop(animation)) {
+						if (nextFrame > fc - 1) 
+							nextFrame = 0;
+						else
+							nextFrame = fc - 1;
+					}
+					
+					// clamp upper bound
+					if (nextFrame > fc-1) {
+						nextFrame = fc-1;
+					}
+					
+					// emit signal if last frame is reached
+					if (nextFrame != frame && (nextFrame == fc - 1)) {
+						emit_signal(SceneStringNames::get_singleton()->finished);
+					}
+					
+					// only if frame changed set the next frame
+					if (nextFrame != frame) {
+						// lets set_frame do the rest including signaling
+						set_frame(nextFrame);
 					}
 
 					update();
