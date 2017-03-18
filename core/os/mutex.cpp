@@ -30,24 +30,19 @@
 #include "error_macros.h"
 #include <stddef.h>
 
-
-
-Mutex* (*Mutex::create_func)(bool)=0;
+Mutex *(*Mutex::create_func)(bool) = 0;
 
 Mutex *Mutex::create(bool p_recursive) {
 
-	ERR_FAIL_COND_V( !create_func, 0 );
+	ERR_FAIL_COND_V(!create_func, 0);
 
 	return create_func(p_recursive);
 }
 
-
 Mutex::~Mutex() {
-
-
 }
 
-Mutex *_global_mutex=NULL;
+Mutex *_global_mutex = NULL;
 
 void _global_lock() {
 
@@ -59,4 +54,3 @@ void _global_unlock() {
 	if (_global_mutex)
 		_global_mutex->unlock();
 }
-

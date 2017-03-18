@@ -33,8 +33,7 @@
 
 namespace TestShaderLang {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif // TEST_SHADER_LANG_H

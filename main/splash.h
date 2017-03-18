@@ -1419,5 +1419,5 @@ static const unsigned char app_icon_png[] = {
 	0x42, 0x60, 0x82
 };
 
-static const Color boot_splash_bg_color = Color(224/255.0,224/255.0,224/255.0);
+static const Color boot_splash_bg_color = Color(224 / 255.0, 224 / 255.0, 224 / 255.0);
 #endif // SPLASH_H

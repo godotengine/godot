@@ -29,63 +29,44 @@
 #include "audio_driver_javascript.h"
 #include <string.h>
 
-
-
-
-
-
 #define MAX_NUMBER_INTERFACES 3
 #define MAX_NUMBER_OUTPUT_DEVICES 6
 
 /* Structure for passing information to callback function */
 
-
-
 //AudioDriverJavaScript* AudioDriverJavaScript::s_ad=NULL;
 
-const char* AudioDriverJavaScript::get_name() const {
+const char *AudioDriverJavaScript::get_name() const {
 
 	return "JavaScript";
 }
 
-Error AudioDriverJavaScript::init(){
+Error AudioDriverJavaScript::init() {
 
 	return OK;
-
 }
-void AudioDriverJavaScript::start(){
-
-
-
+void AudioDriverJavaScript::start() {
 }
 int AudioDriverJavaScript::get_mix_rate() const {
 
 	return 44100;
 }
-AudioDriverSW::OutputFormat AudioDriverJavaScript::get_output_format() const{
+AudioDriverSW::OutputFormat AudioDriverJavaScript::get_output_format() const {
 
 	return OUTPUT_STEREO;
 }
-void AudioDriverJavaScript::lock(){
+void AudioDriverJavaScript::lock() {
 
 	//if (active && mutex)
 	//	mutex->lock();
-
 }
 void AudioDriverJavaScript::unlock() {
 
 	//if (active && mutex)
 	//	mutex->unlock();
-
 }
-void AudioDriverJavaScript::finish(){
-
+void AudioDriverJavaScript::finish() {
 }
 
-
-AudioDriverJavaScript::AudioDriverJavaScript()
-{
+AudioDriverJavaScript::AudioDriverJavaScript() {
 }
-
-
-

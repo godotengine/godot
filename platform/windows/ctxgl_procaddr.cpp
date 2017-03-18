@@ -31,7 +31,7 @@
 #include <GL/gl.h>
 #include <stdio.h>
 
-static PROC _gl_procs[]={
+static PROC _gl_procs[] = {
 	(PROC)glCullFace,
 	(PROC)glFrontFace,
 	(PROC)glHint,
@@ -99,7 +99,7 @@ static PROC _gl_procs[]={
 	0
 };
 
-static const char* _gl_proc_names[]={
+static const char *_gl_proc_names[] = {
 	"glCullFace",
 	"glFrontFace",
 	"glHint",
@@ -167,15 +167,15 @@ static const char* _gl_proc_names[]={
 	0
 };
 
-PROC get_gl_proc_address(const char* p_address) {
+PROC get_gl_proc_address(const char *p_address) {
 
-	PROC proc = wglGetProcAddress((const CHAR*)p_address);
+	PROC proc = wglGetProcAddress((const CHAR *)p_address);
 	if (!proc) {
 
-		int i=0;
-		while(_gl_procs[i]) {
+		int i = 0;
+		while (_gl_procs[i]) {
 
-			if (strcmp(p_address,_gl_proc_names[i])==0) {
+			if (strcmp(p_address, _gl_proc_names[i]) == 0) {
 				return _gl_procs[i];
 			}
 			i++;

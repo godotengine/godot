@@ -29,24 +29,21 @@
 #ifndef EDITOR_PATH_H
 #define EDITOR_PATH_H
 
-#include "scene/gui/control.h"
 #include "editor_data.h"
+#include "scene/gui/control.h"
 
 class EditorPath : public Control {
 
-	OBJ_TYPE(EditorPath,Control);
+	OBJ_TYPE(EditorPath, Control);
 
 	EditorHistory *history;
-
 
 	EditorPath();
 
 protected:
-
 	void _notification(int p_what);
 
 public:
-
 	void update_path();
 
 	EditorPath(EditorHistory *p_history);

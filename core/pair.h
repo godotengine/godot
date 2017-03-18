@@ -29,7 +29,7 @@
 #ifndef PAIR_H
 #define PAIR_H
 
-template<class F,class S>
+template <class F, class S>
 struct Pair {
 
 	F first;

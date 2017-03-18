@@ -42,5 +42,5 @@ ThreadSafe::ThreadSafe() {
 ThreadSafe::~ThreadSafe() {
 
 	if (mutex)
-		memdelete( mutex );
+		memdelete(mutex);
 }

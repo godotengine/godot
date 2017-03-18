@@ -29,27 +29,27 @@
 #ifndef PROJECT_EXPORT_SETTINGS_H
 #define PROJECT_EXPORT_SETTINGS_H
 
-#include "scene/main/timer.h"
-#include "scene/gui/control.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/label.h"
 #include "editor/editor_file_dialog.h"
-#include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
 #include "os/dir_access.h"
 #include "os/thread.h"
+#include "scene/gui/button.h"
+#include "scene/gui/control.h"
+#include "scene/gui/dialogs.h"
+#include "scene/gui/label.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/tab_container.h"
+#include "scene/gui/tree.h"
+#include "scene/main/timer.h"
 
-#include "scene/gui/slider.h"
 #include "editor/editor_file_system.h"
-#include "property_editor.h"
 #include "editor_import_export.h"
+#include "property_editor.h"
+#include "scene/gui/slider.h"
 
 class EditorNode;
 
 class ProjectExportDialog : public ConfirmationDialog {
-	OBJ_TYPE( ProjectExportDialog, ConfirmationDialog );
+	OBJ_TYPE(ProjectExportDialog, ConfirmationDialog);
 
 public:
 	enum ExportAction {
@@ -63,8 +63,6 @@ public:
 	static const char *da_string[ACTION_MAX];
 
 private:
-
-
 	EditorNode *editor;
 	String expopt;
 
@@ -83,7 +81,7 @@ private:
 	StringName ei;
 	StringName ot;
 
-	Tree * tree;
+	Tree *tree;
 
 	EditorFileDialog *pck_export;
 	EditorFileDialog *file_export;
@@ -97,15 +95,15 @@ private:
 	void _tree_changed();
 	void _update_tree();
 
-	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir);
+	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir);
 	void _rescan();
-//	void _confirmed();
+	//	void _confirmed();
 	void _scan_finished();
 
 	void _validate_platform();
 	///////////////////
 
-	Tree * platforms;
+	Tree *platforms;
 	PropertyEditor *platform_options;
 
 	OptionButton *export_mode;
@@ -117,7 +115,7 @@ private:
 	HSlider *image_quality;
 	SpinBox *image_shrink;
 	Tree *image_formats;
-	Vector<TreeItem*> formats;
+	Vector<TreeItem *> formats;
 
 	LineEdit *group_new_name;
 	HSlider *group_lossy_quality;
@@ -132,10 +130,8 @@ private:
 	LineEdit *group_images_filter;
 	Button *atlas_preview;
 
-
 	AcceptDialog *atlas_preview_dialog;
 	TextureFrame *atlas_preview_frame;
-
 
 	VBoxContainer *script_vbox;
 	OptionButton *script_mode;
@@ -146,9 +142,8 @@ private:
 	SpinBox *sample_max_hz;
 	CheckButton *sample_trim;
 
-	ConfirmationDialog* keystore_create_dialog;
-	EditorFileDialog* keystore_file_dialog;
-
+	ConfirmationDialog *keystore_create_dialog;
+	EditorFileDialog *keystore_file_dialog;
 
 	void _export_mode_changed(int p_idx);
 	void _prop_edited(String what);
@@ -162,11 +157,9 @@ private:
 	void _update_group_tree();
 
 	void _image_filter_changed(String);
-	bool _update_group_treef(TreeItem *p_parent,EditorFileSystemDirectory *p_dir,const Set<String>& p_extensions,const String& p_groups,const Map<StringName,int>& p_group_index);
+	bool _update_group_treef(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, const Set<String> &p_extensions, const String &p_groups, const Map<StringName, int> &p_group_index);
 	void _group_item_edited();
 	void _group_atlas_preview();
-
-
 
 	void _quality_edited(float what);
 	void _image_export_edited(int what);
@@ -175,8 +168,7 @@ private:
 	void _sample_convert_edited(int what);
 
 	void _update_group_list();
-	void _select_group(const String& p_by_name);
-
+	void _select_group(const String &p_by_name);
 
 	String _get_selected_group();
 	void _update_group();
@@ -185,35 +177,34 @@ private:
 	void _group_add();
 	void _group_select_all();
 	void _group_select_none();
-	void _group_del(Object *item,int p_column, int p_button);
+	void _group_del(Object *item, int p_column, int p_button);
 
 	bool updating_script;
 	void _update_script();
 	void _script_edited(Variant v);
-	void _export_action(const String& p_file);
-	void _export_action_pck(const String& p_file);
+	void _export_action(const String &p_file);
+	void _export_action_pck(const String &p_file);
 	void ok_pressed();
-	void custom_action(const String&);
-	LineEdit* _create_keystore_input(Control* container, const String& p_label, const String& name);
+	void custom_action(const String &);
+	LineEdit *_create_keystore_input(Control *container, const String &p_label, const String &name);
 	void _create_android_keystore_window();
 	void _create_android_keystore();
-	bool _check_android_setting(const Ref<EditorExportPlatform>& exporter);
-	void _check_keystore_path(const String& path);
-	void _keystore_dir_selected(const String& path);
+	bool _check_android_setting(const Ref<EditorExportPlatform> &exporter);
+	void _check_keystore_path(const String &path);
+	void _keystore_dir_selected(const String &path);
 	void _keystore_created();
 
 	void _save_export_cfg();
 	void _format_toggled();
 
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	String get_selected_path() const;
 
-	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
+	Error export_platform(const String &p_platform, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after = false);
 
 	void popup_export();
 	ProjectExportDialog(EditorNode *p_editor);
@@ -223,22 +214,19 @@ public:
 class EditorData;
 
 class ProjectExport : public ConfirmationDialog {
-	OBJ_TYPE( ProjectExport, ConfirmationDialog );
+	OBJ_TYPE(ProjectExport, ConfirmationDialog);
 
 	EditorData *editor_data;
 
 	AcceptDialog *error;
 	Label *label;
 	OptionButton *export_preset;
-public:
 
-	Error export_project(const String& p_preset);
+public:
+	Error export_project(const String &p_preset);
 	void popup_export();
 
-
-	ProjectExport(EditorData* p_data);
-
+	ProjectExport(EditorData *p_data);
 };
-
 
 #endif // PROJECT_EXPORT_SETTINGS_H

@@ -29,14 +29,14 @@
 #ifndef ROOM_BOUNDS_H
 #define ROOM_BOUNDS_H
 
-#include "resource.h"
 #include "bsp_tree.h"
+#include "resource.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class RoomBounds : public Resource {
 
-	OBJ_TYPE( RoomBounds, Resource );
+	OBJ_TYPE(RoomBounds, Resource);
 	RES_BASE_EXTENSION("room");
 
 	RID area;
@@ -44,23 +44,21 @@ class RoomBounds : public Resource {
 
 	void _regenerate_bsp();
 	void _regenerate_bsp_cubic();
-protected:
 
+protected:
 	static void _bind_methods();
 
 public:
-
 	virtual RID get_rid() const;
 
-	void set_bounds( const BSP_Tree& p_bounds );
+	void set_bounds(const BSP_Tree &p_bounds);
 	BSP_Tree get_bounds() const;
 
-	void set_geometry_hint(const DVector<Face3>& geometry_hint);
+	void set_geometry_hint(const DVector<Face3> &geometry_hint);
 	DVector<Face3> get_geometry_hint() const;
 
 	RoomBounds();
 	~RoomBounds();
-
 };
 
 #endif // ROOM_H

@@ -26,9 +26,9 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#import <UIKit/UIKit.h>
 #import "gl_view.h"
 #import "view_controller.h"
+#import <UIKit/UIKit.h>
 
 // Old accelerometer approach deprecated since IOS 7.0
 // Include coremotion for accelerometer, gyroscope and magnetometer access, available since IOS 4.0 but some functionality won't work for anything before IOS 5.0
@@ -36,11 +36,11 @@
 
 @interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;
-	ViewController* view_controller;
+	ViewController *view_controller;
 };
 
-@property (strong, nonatomic) UIWindow *window;
+@property(strong, nonatomic) UIWindow *window;
 
-+ (ViewController*)getViewController;
++ (ViewController *)getViewController;
 
 @end

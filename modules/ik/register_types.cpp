@@ -28,8 +28,8 @@
 /*************************************************************************/
 #include "register_types.h"
 #ifndef _3D_DISABLED
-#include "object_type_db.h"
 #include "ik.h"
+#include "object_type_db.h"
 #endif
 
 void register_ik_types() {
@@ -39,9 +39,5 @@ void register_ik_types() {
 #endif
 }
 
-
-
 void unregister_ik_types() {
-
-
 }

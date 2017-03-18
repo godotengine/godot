@@ -29,18 +29,15 @@
 #ifndef SAMPLE_EDITOR_PLUGIN_H
 #define SAMPLE_EDITOR_PLUGIN_H
 
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/audio/sample_player.h"
 #include "scene/resources/sample.h"
 #include "scene/resources/sample_library.h"
 
-
 class SampleEditor : public Panel {
 
-	OBJ_TYPE(SampleEditor, Panel );
-
+	OBJ_TYPE(SampleEditor, Panel);
 
 	SamplePlayer *player;
 	Label *info_label;
@@ -59,23 +56,21 @@ protected:
 	void _notification(int p_what);
 	void _input_event(InputEvent p_event);
 	static void _bind_methods();
-public:
 
-	static void generate_preview_texture(const Ref<Sample>& p_sample,Ref<ImageTexture> &p_texture);
+public:
+	static void generate_preview_texture(const Ref<Sample> &p_sample, Ref<ImageTexture> &p_texture);
 	void edit(Ref<Sample> p_sample);
 	SampleEditor();
 };
 
-
 class SampleEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SampleEditorPlugin, EditorPlugin );
+	OBJ_TYPE(SampleEditorPlugin, EditorPlugin);
 
 	SampleEditor *sample_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "Sample"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -84,7 +79,6 @@ public:
 
 	SampleEditorPlugin(EditorNode *p_node);
 	~SampleEditorPlugin();
-
 };
 
 #endif // SAMPLE_EDITOR_PLUGIN_H

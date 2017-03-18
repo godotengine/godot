@@ -29,17 +29,15 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
-
 #include "resource.h"
 
 class Canvas : public Resource {
 
-	OBJ_TYPE(Canvas,Resource);
+	OBJ_TYPE(Canvas, Resource);
 
 	RID canvas;
 
 public:
-
 	virtual RID get_rid() const;
 	Canvas();
 	~Canvas();

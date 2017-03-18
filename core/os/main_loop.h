@@ -37,15 +37,15 @@
 */
 class MainLoop : public Object {
 
-	OBJ_TYPE( MainLoop, Object );
+	OBJ_TYPE(MainLoop, Object);
 	OBJ_CATEGORY("Main Loop");
 
 	Ref<Script> init_script;
+
 protected:
 	static void _bind_methods();
 
 public:
-
 	enum {
 		NOTIFICATION_WM_MOUSE_ENTER = 3,
 		NOTIFICATION_WM_MOUSE_EXIT = 4,
@@ -56,22 +56,20 @@ public:
 		NOTIFICATION_OS_MEMORY_WARNING = 9,
 	};
 
-	virtual void input_event( const InputEvent& p_event );
-	virtual void input_text( const String& p_text );
+	virtual void input_event(const InputEvent &p_event);
+	virtual void input_text(const String &p_text);
 
 	virtual void init();
 	virtual bool iteration(float p_time);
 	virtual bool idle(float p_time);
 	virtual void finish();
 
-	virtual void drop_files(const Vector<String>& p_files,int p_from_screen=0);
+	virtual void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
 
-	void set_init_script(const Ref<Script>& p_init_script);
+	void set_init_script(const Ref<Script> &p_init_script);
 
 	MainLoop();
 	virtual ~MainLoop();
-
-
 };
 
 #endif

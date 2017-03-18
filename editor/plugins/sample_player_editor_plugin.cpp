@@ -29,41 +29,36 @@
 #include "sample_player_editor_plugin.h"
 #include "scene/resources/sample_library.h"
 
-
 void SamplePlayerEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_TREE) {
-		play->set_icon( get_icon("Play","EditorIcons") );
-		stop->set_icon( get_icon("Stop","EditorIcons") );
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		play->set_icon(get_icon("Play", "EditorIcons"));
+		stop->set_icon(get_icon("Stop", "EditorIcons"));
 	}
-
 }
 
 void SamplePlayerEditor::_node_removed(Node *p_node) {
 
-	if(p_node==node) {
-		node=NULL;
+	if (p_node == node) {
+		node = NULL;
 		hide();
 	}
-
 }
 
 void SamplePlayerEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_play"),&SamplePlayerEditor::_play);
-	ObjectTypeDB::bind_method(_MD("_stop"),&SamplePlayerEditor::_stop);
-
+	ObjectTypeDB::bind_method(_MD("_play"), &SamplePlayerEditor::_play);
+	ObjectTypeDB::bind_method(_MD("_stop"), &SamplePlayerEditor::_stop);
 }
-
 
 void SamplePlayerEditor::_play() {
 
 	if (!node)
 		return;
-	if (samples->get_item_count()<=0)
+	if (samples->get_item_count() <= 0)
 		return;
 
-	node->call("play",samples->get_item_text( samples->get_selected() ));
+	node->call("play", samples->get_item_text(samples->get_selected()));
 	stop->set_pressed(false);
 	play->set_pressed(true);
 }
@@ -72,16 +67,14 @@ void SamplePlayerEditor::_stop() {
 
 	if (!node)
 		return;
-	if (samples->get_item_count()<=0)
+	if (samples->get_item_count() <= 0)
 		return;
 
 	node->call("stop_all");
 	print_line("STOP ALL!!");
 	stop->set_pressed(true);
 	play->set_pressed(false);
-
 }
-
 
 void SamplePlayerEditor::_update_sample_library() {
 
@@ -95,56 +88,51 @@ void SamplePlayerEditor::_update_sample_library() {
 	List<StringName> samplenames;
 	sl->get_sample_list(&samplenames);
 	samplenames.sort_custom<StringName::AlphCompare>();
-	for(List<StringName>::Element *E=samplenames.front();E;E=E->next()) {
+	for (List<StringName>::Element *E = samplenames.front(); E; E = E->next()) {
 		samples->add_item(E->get());
 	}
-
 }
 
 void SamplePlayerEditor::edit(Node *p_sample_player) {
 
-	node=p_sample_player;
+	node = p_sample_player;
 	if (node) {
 		_update_sample_library();
 	}
-
 }
 SamplePlayerEditor::SamplePlayerEditor() {
 
+	play = memnew(Button);
 
-	play = memnew( Button );
-
-	play->set_pos(Point2( 5, 5 ));
+	play->set_pos(Point2(5, 5));
 	play->set_toggle_mode(true);
-	play->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,250);
-	play->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,230);
-	play->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
-	play->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
+	play->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_END, 250);
+	play->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 230);
+	play->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 0);
+	play->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 0);
 
 	add_child(play);
 
-	stop = memnew( Button );
+	stop = memnew(Button);
 
-	stop->set_pos(Point2( 35, 5 ));
+	stop->set_pos(Point2(35, 5));
 	stop->set_toggle_mode(true);
-	stop->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,220);
-	stop->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,200);
-	stop->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
-	stop->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
+	stop->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_END, 220);
+	stop->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 200);
+	stop->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 0);
+	stop->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 0);
 	add_child(stop);
 
-	samples = memnew( OptionButton );
-	samples->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,190);
-	samples->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,5);
-	samples->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
-	samples->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
+	samples = memnew(OptionButton);
+	samples->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_END, 190);
+	samples->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 5);
+	samples->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 0);
+	samples->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 0);
 	add_child(samples);
 
-	play->connect("pressed", this,"_play");
-	stop->connect("pressed", this,"_stop");
-
+	play->connect("pressed", this, "_play");
+	stop->connect("pressed", this, "_stop");
 }
-
 
 void SamplePlayerEditorPlugin::edit(Object *p_object) {
 
@@ -167,32 +155,23 @@ void SamplePlayerEditorPlugin::make_visible(bool p_visible) {
 		sample_player_editor->set_fixed_process(false);
 		sample_player_editor->edit(NULL);
 	}
-
 }
 
 SamplePlayerEditorPlugin::SamplePlayerEditorPlugin(EditorNode *p_node) {
 
-	editor=p_node;
-	sample_player_editor = memnew( SamplePlayerEditor );
+	editor = p_node;
+	sample_player_editor = memnew(SamplePlayerEditor);
 	editor->get_viewport()->add_child(sample_player_editor);
 
-	sample_player_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	sample_player_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	sample_player_editor->set_margin(MARGIN_LEFT,250);
-	sample_player_editor->set_margin(MARGIN_RIGHT,0);
-	sample_player_editor->set_margin(MARGIN_TOP,0);
-	sample_player_editor->set_margin(MARGIN_BOTTOM,10);
-
+	sample_player_editor->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
+	sample_player_editor->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
+	sample_player_editor->set_margin(MARGIN_LEFT, 250);
+	sample_player_editor->set_margin(MARGIN_RIGHT, 0);
+	sample_player_editor->set_margin(MARGIN_TOP, 0);
+	sample_player_editor->set_margin(MARGIN_BOTTOM, 10);
 
 	sample_player_editor->hide();
-
-
-
 }
 
-
-SamplePlayerEditorPlugin::~SamplePlayerEditorPlugin()
-{
+SamplePlayerEditorPlugin::~SamplePlayerEditorPlugin() {
 }
-
-

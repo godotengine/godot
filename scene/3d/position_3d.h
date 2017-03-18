@@ -31,14 +31,13 @@
 
 #include "scene/3d/spatial.h"
 
-class Position3D : public Spatial  {
+class Position3D : public Spatial {
 
-	OBJ_TYPE(Position3D,Spatial);
+	OBJ_TYPE(Position3D, Spatial);
 
 	virtual RES _get_gizmo_geometry() const;
 
 public:
-
 	Position3D();
 };
 

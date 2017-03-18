@@ -37,19 +37,18 @@ class EditorTranslationImportDialog;
 
 class EditorTranslationImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorTranslationImportPlugin,EditorImportPlugin);
+	OBJ_TYPE(EditorTranslationImportPlugin, EditorImportPlugin);
 
 	EditorTranslationImportDialog *dialog;
-public:
 
+public:
 	virtual String get_name() const;
 	virtual String get_visible_name() const;
-	virtual void import_dialog(const String& p_from="");
-	virtual Error import(const String& p_path, const Ref<ResourceImportMetadata>& p_from);
-	void import_from_drop(const Vector<String>& p_drop, const String &p_dest_path);
+	virtual void import_dialog(const String &p_from = "");
+	virtual Error import(const String &p_path, const Ref<ResourceImportMetadata> &p_from);
+	void import_from_drop(const Vector<String> &p_drop, const String &p_dest_path);
 
-
-	EditorTranslationImportPlugin(EditorNode* p_editor);
+	EditorTranslationImportPlugin(EditorNode *p_editor);
 };
 
 #endif // EDITOR_TRANSLATION_IMPORT_PLUGIN_H

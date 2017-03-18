@@ -28,10 +28,7 @@
 /*************************************************************************/
 #include "register_types.h"
 
-
 void register_cscript_types() {
-
 }
 void unregister_cscript_types() {
-
 }

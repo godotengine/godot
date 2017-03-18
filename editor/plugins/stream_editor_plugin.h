@@ -29,9 +29,8 @@
 #ifndef STREAM_EDITOR_PLUGIN_H
 #define STREAM_EDITOR_PLUGIN_H
 
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/audio/stream_player.h"
 
 /**
@@ -40,35 +39,35 @@
 
 class StreamEditor : public Control {
 
-	OBJ_TYPE(StreamEditor, Control );
+	OBJ_TYPE(StreamEditor, Control);
 
-	Button * play;
-	Button * stop;
+	Button *play;
+	Button *stop;
 
 	Panel *panel;
 	Node *node;
 
 	void _play();
 	void _stop();
+
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
+public:
 	void edit(Node *p_stream);
 	StreamEditor();
 };
 
 class StreamEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( StreamEditorPlugin, EditorPlugin );
+	OBJ_TYPE(StreamEditorPlugin, EditorPlugin);
 
 	StreamEditor *stream_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "Stream"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -77,7 +76,6 @@ public:
 
 	StreamEditorPlugin(EditorNode *p_node);
 	~StreamEditorPlugin();
-
 };
 
 #endif // STREAM_EDITOR_PLUGIN_H

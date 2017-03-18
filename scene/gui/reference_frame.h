@@ -33,11 +33,11 @@
 
 class ReferenceFrame : public Control {
 
-	OBJ_TYPE( ReferenceFrame, Control);
+	OBJ_TYPE(ReferenceFrame, Control);
 
 protected:
-
 	void _notification(int p_what);
+
 public:
 	ReferenceFrame();
 };

@@ -29,24 +29,23 @@
 #ifndef CP_CONFIG_H
 #define CP_CONFIG_H
 
-
-#include "typedefs.h"
 #include "error_macros.h"
 #include "math_funcs.h"
-#include "os/memory.h"
 #include "os/copymem.h"
+#include "os/memory.h"
+#include "typedefs.h"
 
 #define CP_PRINTERR(m_err) ERR_PRINT(m_err)
 #define CP_ERR_COND(m_cond) ERR_FAIL_COND(m_cond)
-#define CP_ERR_COND_V(m_cond,m_ret) ERR_FAIL_COND_V(m_cond,m_ret)
-#define CP_FAIL_INDEX(m_index,m_size) ERR_FAIL_INDEX(m_index,m_size)
-#define CP_FAIL_INDEX_V(m_index,m_size,m_ret) ERR_FAIL_INDEX_V(m_index,m_size,m_ret)
+#define CP_ERR_COND_V(m_cond, m_ret) ERR_FAIL_COND_V(m_cond, m_ret)
+#define CP_FAIL_INDEX(m_index, m_size) ERR_FAIL_INDEX(m_index, m_size)
+#define CP_FAIL_INDEX_V(m_index, m_size, m_ret) ERR_FAIL_INDEX_V(m_index, m_size, m_ret)
 #define cp_intabs(m_val) ABS(m_val)
 
 #define CP_ALLOC(m_mem) memalloc(m_mem)
-#define CP_REALLOC(m_mem,m_size) memrealloc(m_mem,m_size)
+#define CP_REALLOC(m_mem, m_size) memrealloc(m_mem, m_size)
 #define CP_FREE(m_mem) memfree(m_mem)
 
-#define cp_memzero(m_mem,m_size) zeromem(m_mem,m_size)
+#define cp_memzero(m_mem, m_size) zeromem(m_mem, m_size)
 
 #endif // CP_CONFIG_H

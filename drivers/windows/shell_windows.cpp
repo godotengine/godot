@@ -52,17 +52,12 @@
 void ShellWindows::execute(String p_path) {
 
 	ShellExecuteW(NULL, L"open", p_path.c_str(), NULL, NULL, SW_SHOWNORMAL);
-
 }
 
-
-ShellWindows::ShellWindows()
-{
+ShellWindows::ShellWindows() {
 }
 
-
-ShellWindows::~ShellWindows()
-{
+ShellWindows::~ShellWindows() {
 }
 
 #endif

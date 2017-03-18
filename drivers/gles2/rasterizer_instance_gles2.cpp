@@ -33,8 +33,7 @@
 
 Rasterizer *instance_RasterizerGLES2() {
 
-	return memnew( RasterizerGLES2 );
+	return memnew(RasterizerGLES2);
 }
-
 
 #endif

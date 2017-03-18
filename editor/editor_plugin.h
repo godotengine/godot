@@ -29,11 +29,11 @@
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
+#include "io/config_file.h"
 #include "scene/gui/tool_button.h"
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "undo_redo.h"
-#include "io/config_file.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -50,23 +50,20 @@ class EditorExportPlugin;
 
 class EditorPlugin : public Node {
 
-	OBJ_TYPE( EditorPlugin, Node );
-friend class EditorData;
+	OBJ_TYPE(EditorPlugin, Node);
+	friend class EditorData;
 	UndoRedo *undo_redo;
 
-	UndoRedo* _get_undo_redo() { return undo_redo; }
+	UndoRedo *_get_undo_redo() { return undo_redo; }
 
 protected:
-
 	static void _bind_methods();
-	UndoRedo& get_undo_redo() { return *undo_redo; }
+	UndoRedo &get_undo_redo() { return *undo_redo; }
 
-	void add_custom_type(const String& p_type, const String& p_base,const Ref<Script>& p_script, const Ref<Texture>& p_icon);
-	void remove_custom_type(const String& p_type);
-
+	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture> &p_icon);
+	void remove_custom_type(const String &p_type);
 
 public:
-
 	enum CustomControlContainer {
 		CONTAINER_TOOLBAR,
 		CONTAINER_SPATIAL_EDITOR_MENU,
@@ -94,28 +91,28 @@ public:
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	ToolButton *add_control_to_bottom_panel(Control *p_control, const String &p_title);
-	void add_control_to_dock(DockSlot p_slot,Control *p_control);
+	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_docks(Control *p_control);
 	void remove_control_from_bottom_panel(Control *p_control);
-	Control* get_editor_viewport();
-	void edit_resource(const Ref<Resource>& p_resource);
+	Control *get_editor_viewport();
+	void edit_resource(const Ref<Resource> &p_resource);
 
-	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
-	virtual bool forward_input_event(const InputEvent& p_event);
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
+	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
+	virtual bool forward_input_event(const InputEvent &p_event);
+	virtual bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event);
 	virtual String get_name() const;
 	virtual bool has_main_screen() const;
 	virtual void make_visible(bool p_visible);
-	virtual void selected_notify() {}//notify that it was raised by the user, not the editor
+	virtual void selected_notify() {} //notify that it was raised by the user, not the editor
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_node) const;
 	virtual Dictionary get_state() const; //save editor state so it can't be reloaded when reloading scene
-	virtual void set_state(const Dictionary& p_state)  ; //restore editor state (likely was saved with the scene)
-	virtual void clear() ; // clear any temporary data in te editor, reset it (likely new scene or load another scene)
-	virtual void save_external_data() ; // if editor references external resources/scenes, save them
-	virtual void apply_changes() ; // if changes are pending in editor, apply them
+	virtual void set_state(const Dictionary &p_state); //restore editor state (likely was saved with the scene)
+	virtual void clear(); // clear any temporary data in te editor, reset it (likely new scene or load another scene)
+	virtual void save_external_data(); // if editor references external resources/scenes, save them
+	virtual void apply_changes(); // if changes are pending in editor, apply them
 	virtual void get_breakpoints(List<String> *p_breakpoints);
-	virtual bool get_remove_list(List<Node*> *p_list);
+	virtual bool get_remove_list(List<Node *> *p_list);
 	virtual void set_window_layout(Ref<ConfigFile> p_layout);
 	virtual void get_window_layout(Ref<ConfigFile> p_layout);
 	virtual void edited_scene_changed(){}; // if changes are pending in editor, apply them
@@ -124,13 +121,13 @@ public:
 
 	Control *get_base_control();
 
-	void add_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
-	void remove_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
+	void add_import_plugin(const Ref<EditorImportPlugin> &p_editor_import);
+	void remove_import_plugin(const Ref<EditorImportPlugin> &p_editor_import);
 
-	void add_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
-	void remove_export_plugin(const Ref<EditorExportPlugin>& p_editor_export);
+	void add_export_plugin(const Ref<EditorExportPlugin> &p_editor_export);
+	void remove_export_plugin(const Ref<EditorExportPlugin> &p_editor_export);
 
-	EditorSelection* get_selection();
+	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
 	EditorSettings *get_editor_settings();
 
@@ -139,52 +136,44 @@ public:
 
 	EditorPlugin();
 	virtual ~EditorPlugin();
-
 };
 
-VARIANT_ENUM_CAST( EditorPlugin::CustomControlContainer );
-VARIANT_ENUM_CAST( EditorPlugin::DockSlot );
+VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);
+VARIANT_ENUM_CAST(EditorPlugin::DockSlot);
 
-
-typedef EditorPlugin* (*EditorPluginCreateFunc)(EditorNode *);
+typedef EditorPlugin *(*EditorPluginCreateFunc)(EditorNode *);
 
 class EditorPlugins {
 
 	enum {
-		MAX_CREATE_FUNCS=64
+		MAX_CREATE_FUNCS = 64
 	};
 
 	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];
 	static int creation_func_count;
 
-	template<class T>
+	template <class T>
 	static EditorPlugin *creator(EditorNode *p_node) {
-		return memnew( T(p_node) );
+		return memnew(T(p_node));
 	}
 
 public:
-
 	static int get_plugin_count() { return creation_func_count; }
-	static EditorPlugin* create(int p_idx,EditorNode* p_editor)	 { ERR_FAIL_INDEX_V(p_idx,creation_func_count,NULL); return creation_funcs[p_idx](p_editor); }
+	static EditorPlugin *create(int p_idx, EditorNode *p_editor) {
+		ERR_FAIL_INDEX_V(p_idx, creation_func_count, NULL);
+		return creation_funcs[p_idx](p_editor);
+	}
 
-	template<class T>
+	template <class T>
 	static void add_by_type() {
 		add_create_func(creator<T>);
 	}
 
 	static void add_create_func(EditorPluginCreateFunc p_func) {
 
-		ERR_FAIL_COND(creation_func_count>=MAX_CREATE_FUNCS);
-		creation_funcs[creation_func_count++]=p_func;
+		ERR_FAIL_COND(creation_func_count >= MAX_CREATE_FUNCS);
+		creation_funcs[creation_func_count++] = p_func;
 	}
-
 };
-
-
-
-
-
-
-
 
 #endif

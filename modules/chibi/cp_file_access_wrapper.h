@@ -33,14 +33,13 @@
 
 class CPFileAccessWrapper {
 public:
+	enum ModeFlags {
 
-	enum ModeFlags  {
-
-		READ=1,
-		WRITE=2,
-		READ_WRITE=3,
+		READ = 1,
+		WRITE = 2,
+		READ_WRITE = 3,
 	};
-	
+
 	enum Error {
 
 		OK,
@@ -55,42 +54,37 @@ public:
 		ERROR_WRITING_FILE
 	};
 
-	virtual Error open(const char *p_filename, int p_mode_flags)=0;
-	virtual void close()=0;
-	
-	virtual void seek(uint32_t p_position)=0;
-	virtual void seek_end()=0;
-	virtual uint32_t get_pos()=0;
+	virtual Error open(const char *p_filename, int p_mode_flags) = 0;
+	virtual void close() = 0;
 
-	virtual bool eof_reached()=0;
+	virtual void seek(uint32_t p_position) = 0;
+	virtual void seek_end() = 0;
+	virtual uint32_t get_pos() = 0;
 
-	virtual uint8_t get_byte()=0;
-	virtual void get_byte_array(uint8_t *p_dest,int p_elements)=0;
-	virtual void get_word_array(uint16_t *p_dest,int p_elements)=0;
+	virtual bool eof_reached() = 0;
 
-	virtual uint16_t get_word()=0;
-	virtual uint32_t get_dword()=0;
+	virtual uint8_t get_byte() = 0;
+	virtual void get_byte_array(uint8_t *p_dest, int p_elements) = 0;
+	virtual void get_word_array(uint16_t *p_dest, int p_elements) = 0;
+
+	virtual uint16_t get_word() = 0;
+	virtual uint32_t get_dword() = 0;
 
 	// use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	// It's not about the current CPU type but file formats.
 	// this flags get reset to false (little endian) on each open
-	virtual void set_endian_conversion(bool p_swap)=0;
-	virtual bool is_open()=0;
+	virtual void set_endian_conversion(bool p_swap) = 0;
+	virtual bool is_open() = 0;
 
-	virtual Error get_error()=0;
+	virtual Error get_error() = 0;
 
-	virtual void store_byte(uint8_t p_dest)=0;
-	virtual void store_byte_array(const uint8_t *p_dest,int p_elements)=0;
+	virtual void store_byte(uint8_t p_dest) = 0;
+	virtual void store_byte_array(const uint8_t *p_dest, int p_elements) = 0;
 
-	virtual void store_word(uint16_t p_dest)=0;
-	virtual void store_dword(uint32_t p_dest)=0;
+	virtual void store_word(uint16_t p_dest) = 0;
+	virtual void store_dword(uint32_t p_dest) = 0;
 
-
-
-	virtual ~CPFileAccessWrapper(){}
-
+	virtual ~CPFileAccessWrapper() {}
 };
-
-
 
 #endif

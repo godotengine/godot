@@ -29,22 +29,17 @@
 #ifndef SAMPLE_LIBRARY_EDITOR_PLUGIN_H
 #define SAMPLE_LIBRARY_EDITOR_PLUGIN_H
 
-
-
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/audio/sample_player.h"
-#include "scene/resources/sample.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/dialogs.h"
-
+#include "scene/gui/file_dialog.h"
+#include "scene/gui/tree.h"
+#include "scene/resources/sample.h"
 
 class SampleLibraryEditor : public Panel {
 
-	OBJ_TYPE(SampleLibraryEditor, Panel );
-
-
+	OBJ_TYPE(SampleLibraryEditor, Panel);
 
 	SamplePlayer *player;
 	Ref<SampleLibrary> sample_library;
@@ -57,42 +52,40 @@ class SampleLibraryEditor : public Panel {
 
 	ConfirmationDialog *dialog;
 
-
 	void _load_pressed();
-	void _file_load_request(const DVector<String>& p_path);
+	void _file_load_request(const DVector<String> &p_path);
 	void _delete_pressed();
 	void _update_library();
 	void _item_edited();
 
 	UndoRedo *undo_redo;
 
-	void _button_pressed(Object *p_item,int p_column, int p_id);
+	void _button_pressed(Object *p_item, int p_column, int p_id);
 
-	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
-	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
-	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 protected:
 	void _notification(int p_what);
 	void _input_event(InputEvent p_event);
 	static void _bind_methods();
-public:
 
-	void set_undo_redo(UndoRedo *p_undo_redo) {undo_redo=p_undo_redo; }
+public:
+	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(Ref<SampleLibrary> p_sample);
 	SampleLibraryEditor();
 };
 
 class SampleLibraryEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SampleLibraryEditorPlugin, EditorPlugin );
+	OBJ_TYPE(SampleLibraryEditorPlugin, EditorPlugin);
 
 	SampleLibraryEditor *sample_library_editor;
 	EditorNode *editor;
 	Button *button;
 
 public:
-
 	virtual String get_name() const { return "SampleLibrary"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -101,7 +94,6 @@ public:
 
 	SampleLibraryEditorPlugin(EditorNode *p_node);
 	~SampleLibraryEditorPlugin();
-
 };
 
 #endif // SAMPLE_LIBRARY_EDITOR_PLUGIN_H

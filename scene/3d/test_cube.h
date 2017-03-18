@@ -29,29 +29,24 @@
 #ifndef TEST_CUBE_H
 #define TEST_CUBE_H
 
-
-#include "scene/3d/visual_instance.h"
 #include "rid.h"
-
+#include "scene/3d/visual_instance.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class TestCube : public GeometryInstance {
 
-	OBJ_TYPE( TestCube, GeometryInstance );
+	OBJ_TYPE(TestCube, GeometryInstance);
 
 	RID instance;
 
-
 public:
-
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
 	TestCube();
 	~TestCube();
-
 };
 
 #endif

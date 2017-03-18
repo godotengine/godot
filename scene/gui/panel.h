@@ -33,16 +33,16 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-class Panel : public Control{
+class Panel : public Control {
 
-	OBJ_TYPE(Panel,Control);
+	OBJ_TYPE(Panel, Control);
+
 protected:
-
 	void _notification(int p_what);
+
 public:
 	Panel();
 	~Panel();
-
 };
 
 #endif

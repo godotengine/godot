@@ -28,5 +28,4 @@
 /*************************************************************************/
 #include "dvector.h"
 
-Mutex* dvector_lock=NULL;
-
+Mutex *dvector_lock = NULL;

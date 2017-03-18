@@ -35,13 +35,13 @@ class StepSW {
 
 	uint64_t _step;
 
-	void _populate_island(BodySW* p_body,BodySW** p_island,ConstraintSW **p_constraint_island);
-	void _setup_island(ConstraintSW *p_island,float p_delta);
-	void _solve_island(ConstraintSW *p_island,int p_iterations,float p_delta);
-	void _check_suspend(BodySW *p_island,float p_delta);
-public:
+	void _populate_island(BodySW *p_body, BodySW **p_island, ConstraintSW **p_constraint_island);
+	void _setup_island(ConstraintSW *p_island, float p_delta);
+	void _solve_island(ConstraintSW *p_island, int p_iterations, float p_delta);
+	void _check_suspend(BodySW *p_island, float p_delta);
 
-	void step(SpaceSW* p_space,float p_delta,int p_iterations);
+public:
+	void step(SpaceSW *p_space, float p_delta, int p_iterations);
 	StepSW();
 };
 

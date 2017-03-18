@@ -29,15 +29,15 @@
 #ifndef CONNECTIONS_DIALOG_H
 #define CONNECTIONS_DIALOG_H
 
-#include "scene/gui/popup.h"
+#include "editor/property_editor.h"
+#include "editor/scene_tree_editor.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/tree.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/line_edit.h"
-#include "editor/scene_tree_editor.h"
-#include "editor/property_editor.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/tree.h"
 #include "undo_redo.h"
 
 /**
@@ -48,8 +48,7 @@ class ConnectDialogBinds;
 
 class ConnectDialog : public ConfirmationDialog {
 
-	OBJ_TYPE( ConnectDialog, ConfirmationDialog );
-
+	OBJ_TYPE(ConnectDialog, ConfirmationDialog);
 
 	ConfirmationDialog *error;
 	LineEdit *dst_path;
@@ -71,33 +70,30 @@ class ConnectDialog : public ConfirmationDialog {
 	void _remove_bind();
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
-
-
 	bool get_make_callback() { return !make_callback->is_hidden() && make_callback->is_pressed(); }
 	NodePath get_dst_path() const;
 	StringName get_dst_method() const;
 	bool get_deferred() const;
 	bool get_oneshot() const;
 	Vector<Variant> get_binds() const;
-	void set_dst_method(const StringName& p_method);
-	void set_dst_node(Node* p_node);
+	void set_dst_method(const StringName &p_method);
+	void set_dst_node(Node *p_node);
 
-//	Button *get_ok() { return ok; }
-//	Button *get_cancel() { return cancel; }
+	//	Button *get_ok() { return ok; }
+	//	Button *get_cancel() { return cancel; }
 	void edit(Node *p_node);
 
 	ConnectDialog();
 	~ConnectDialog();
-
 };
 
 class ConnectionsDock : public VBoxContainer {
 
-	OBJ_TYPE( ConnectionsDock , VBoxContainer );
+	OBJ_TYPE(ConnectionsDock, VBoxContainer);
 
 	Button *connect_button;
 	EditorNode *editor;
@@ -115,20 +111,18 @@ class ConnectionsDock : public VBoxContainer {
 	UndoRedo *undo_redo;
 
 protected:
-
 	void _connect_pressed();
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
+	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 
-	void set_undoredo(UndoRedo *p_undo_redo) { undo_redo=p_undo_redo; }
-
-	void set_node(Node* p_node);
+	void set_node(Node *p_node);
 	String get_selected_type();
 
-	ConnectionsDock(EditorNode *p_editor=NULL);
+	ConnectionsDock(EditorNode *p_editor = NULL);
 	~ConnectionsDock();
-
 };
 
 #endif

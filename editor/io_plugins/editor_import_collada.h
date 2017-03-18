@@ -31,21 +31,17 @@
 
 #include "editor/io_plugins/editor_scene_import_plugin.h"
 
-
-
 class EditorSceneImporterCollada : public EditorSceneImporter {
 
-	OBJ_TYPE(EditorSceneImporterCollada,EditorSceneImporter );
-public:
+	OBJ_TYPE(EditorSceneImporterCollada, EditorSceneImporter);
 
+public:
 	virtual uint32_t get_import_flags() const;
 	virtual void get_extensions(List<String> *r_extensions) const;
-	virtual Node* import_scene(const String& p_path,uint32_t p_flags,int p_bake_fps,List<String> *r_missing_deps=NULL,Error* r_err=NULL);
-	virtual Ref<Animation> import_animation(const String& p_path,uint32_t p_flags);
+	virtual Node *import_scene(const String &p_path, uint32_t p_flags, int p_bake_fps, List<String> *r_missing_deps = NULL, Error *r_err = NULL);
+	virtual Ref<Animation> import_animation(const String &p_path, uint32_t p_flags);
 
 	EditorSceneImporterCollada();
 };
 
-
 #endif
-

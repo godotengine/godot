@@ -31,29 +31,26 @@
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
-#include <pthread.h>
 #include "os/mutex.h"
+#include <pthread.h>
 
 class MutexPosix : public Mutex {
 
-	pthread_mutexattr_t attr;	
+	pthread_mutexattr_t attr;
 	pthread_mutex_t mutex;
-	
+
 	static Mutex *create_func_posix(bool p_recursive);
-	
+
 public:
-
-	virtual void lock(); 
+	virtual void lock();
 	virtual void unlock();
-	virtual Error try_lock(); 
-
+	virtual Error try_lock();
 
 	static void make_default();
 
 	MutexPosix(bool p_recursive);
-	
-	~MutexPosix();
 
+	~MutexPosix();
 };
 
 #endif

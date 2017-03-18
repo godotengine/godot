@@ -29,7 +29,6 @@
 #ifndef CHARACTER_CAMERA_H
 #define CHARACTER_CAMERA_H
 
-
 #include "scene/3d/camera.h"
 #if 0
 class CharacterCamera : public Camera {

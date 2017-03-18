@@ -28,28 +28,26 @@
 /*************************************************************************/
 #include "safe_refcount.h"
 
-
 #ifdef _MSC_VER
 
 // don't pollute my namespace!
 #include <windows.h>
-long atomic_conditional_increment( register long * pw ) {
+long atomic_conditional_increment(register long *pw) {
 
 	/* try to increment until it actually works */
 	// taken from boost
 
 	while (true) {
-		long tmp = static_cast< long const volatile& >( *pw );
-		if( tmp == 0 )
-      return 0; // if zero, can't add to it anymore
-		if( InterlockedCompareExchange( pw, tmp + 1, tmp ) == tmp )
-			return tmp+1;
+		long tmp = static_cast<long const volatile &>(*pw);
+		if (tmp == 0)
+			return 0; // if zero, can't add to it anymore
+		if (InterlockedCompareExchange(pw, tmp + 1, tmp) == tmp)
+			return tmp + 1;
 	}
-
 }
 
-long atomic_decrement( register long * pw ) {
-	return InterlockedDecrement( pw );
+long atomic_decrement(register long *pw) {
+	return InterlockedDecrement(pw);
 }
 
 #endif

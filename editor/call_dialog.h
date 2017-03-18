@@ -29,25 +29,23 @@
 #ifndef CALL_DIALOG_H
 #define CALL_DIALOG_H
 
-#include "scene/gui/popup.h"
+#include "editor/property_editor.h"
 #include "scene/gui/button.h"
-#include "scene/gui/tree.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "editor/property_editor.h"
+#include "scene/gui/popup.h"
+#include "scene/gui/tree.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-
 
 class CallDialogParams;
 
 class CallDialog : public Popup {
 
-	OBJ_TYPE( CallDialog, Popup );
+	OBJ_TYPE(CallDialog, Popup);
 
-
-	Label* method_label;
+	Label *method_label;
 	Tree *tree;
 	Button *call;
 	Button *cancel;
@@ -62,7 +60,6 @@ class CallDialog : public Popup {
 
 	Vector<MethodInfo> methods;
 
-
 	void _item_selected();
 	void _update_method_list();
 	void _call();
@@ -71,13 +68,12 @@ class CallDialog : public Popup {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-public:
 
-	void set_object(Object *p_object,StringName p_selected="");
+public:
+	void set_object(Object *p_object, StringName p_selected = "");
 
 	CallDialog();
 	~CallDialog();
-
 };
 
 #endif

@@ -30,15 +30,15 @@
 
 #include "bitmap_loader_pbm.h"
 
-static ResourceFormatPBM * pbm_loader = NULL;
+static ResourceFormatPBM *pbm_loader = NULL;
 
 void register_pbm_types() {
 
-	pbm_loader = memnew( ResourceFormatPBM );
+	pbm_loader = memnew(ResourceFormatPBM);
 	ResourceLoader::add_resource_format_loader(pbm_loader);
 }
 
 void unregister_pbm_types() {
 
-	memdelete( pbm_loader );
+	memdelete(pbm_loader);
 }

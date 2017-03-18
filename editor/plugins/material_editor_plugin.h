@@ -1,18 +1,16 @@
 #ifndef MATERIAL_EDITOR_PLUGIN_H
 #define MATERIAL_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
-#include "scene/resources/material.h"
+#include "editor/editor_plugin.h"
+#include "scene/3d/camera.h"
 #include "scene/3d/light.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/camera.h"
-
+#include "scene/resources/material.h"
 
 class MaterialEditor : public Control {
 
 	OBJ_TYPE(MaterialEditor, Control);
-
 
 	Viewport *viewport;
 	MeshInstance *sphere_instance;
@@ -30,33 +28,29 @@ class MaterialEditor : public Control {
 	TextureButton *light_1_switch;
 	TextureButton *light_2_switch;
 
-
 	Ref<Material> material;
 
-
-	void _button_pressed(Node* p_button);
+	void _button_pressed(Node *p_button);
 	bool first_enter;
 
 protected:
 	void _notification(int p_what);
 	void _input_event(InputEvent p_event);
 	static void _bind_methods();
-public:
 
+public:
 	void edit(Ref<Material> p_material);
 	MaterialEditor();
 };
 
-
 class MaterialEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( MaterialEditorPlugin, EditorPlugin );
+	OBJ_TYPE(MaterialEditorPlugin, EditorPlugin);
 
 	MaterialEditor *material_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "Material"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -65,7 +59,6 @@ public:
 
 	MaterialEditorPlugin(EditorNode *p_node);
 	~MaterialEditorPlugin();
-
 };
 
 #endif // MATERIAL_EDITOR_PLUGIN_H

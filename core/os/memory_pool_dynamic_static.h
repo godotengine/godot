@@ -30,17 +30,16 @@
 #define MEMORY_POOL_DYNAMIC_STATIC_H
 
 #include "os/memory_pool_dynamic.h"
-#include "typedefs.h"
 #include "os/thread_safe.h"
+#include "typedefs.h"
 
 class MemoryPoolDynamicStatic : public MemoryPoolDynamic {
 
 	_THREAD_SAFE_CLASS_
 
 	enum {
-		MAX_CHUNKS=65536
+		MAX_CHUNKS = 65536
 	};
-
 
 	struct Chunk {
 
@@ -50,7 +49,11 @@ class MemoryPoolDynamicStatic : public MemoryPoolDynamic {
 		size_t size;
 		const char *descr;
 
-		Chunk() { mem=NULL; lock=0; check=0; }
+		Chunk() {
+			mem = NULL;
+			lock = 0;
+			check = 0;
+		}
 	};
 
 	Chunk chunk[MAX_CHUNKS];
@@ -61,18 +64,18 @@ class MemoryPoolDynamicStatic : public MemoryPoolDynamic {
 
 	Chunk *get_chunk(ID p_id);
 	const Chunk *get_chunk(ID p_id) const;
-public:
 
-	virtual ID alloc(size_t p_amount,const char* p_description);
+public:
+	virtual ID alloc(size_t p_amount, const char *p_description);
 	virtual void free(ID p_id);
 	virtual Error realloc(ID p_id, size_t p_amount);
 	virtual bool is_valid(ID p_id);
 	virtual size_t get_size(ID p_id) const;
-	virtual const char* get_description(ID p_id) const;
+	virtual const char *get_description(ID p_id) const;
 
 	virtual bool is_locked(ID p_id) const;
 	virtual Error lock(ID p_id);
-	virtual void * get(ID p_ID);
+	virtual void *get(ID p_ID);
 	virtual Error unlock(ID p_id);
 
 	virtual size_t get_available_mem() const;
@@ -80,7 +83,6 @@ public:
 
 	MemoryPoolDynamicStatic();
 	virtual ~MemoryPoolDynamicStatic();
-
 };
 
 #endif

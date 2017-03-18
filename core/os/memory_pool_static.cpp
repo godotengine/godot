@@ -28,22 +28,18 @@
 /*************************************************************************/
 #include "memory_pool_static.h"
 
-MemoryPoolStatic *MemoryPoolStatic::singleton=0;
+MemoryPoolStatic *MemoryPoolStatic::singleton = 0;
 
 MemoryPoolStatic *MemoryPoolStatic::get_singleton() {
 
 	return singleton;
 }
 
-
 MemoryPoolStatic::MemoryPoolStatic() {
 
-	singleton=this;
+	singleton = this;
 }
-
 
 MemoryPoolStatic::~MemoryPoolStatic() {
-	singleton=NULL;
+	singleton = NULL;
 }
-
-

@@ -47,10 +47,7 @@ void test() {
 	PyRun_SimpleString("b=Moch();\n");
 	PyRun_SimpleString("b.mooch();\n");
 	PyRun_SimpleString("b.meis();\n");
-
-
 }
-
 }
 
 #endif

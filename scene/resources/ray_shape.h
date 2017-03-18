@@ -32,16 +32,15 @@
 
 class RayShape : public Shape {
 
-	OBJ_TYPE(RayShape,Shape);
+	OBJ_TYPE(RayShape, Shape);
 	float length;
 
 protected:
-
 	static void _bind_methods();
 	virtual void _update_shape();
 	virtual Vector<Vector3> _gen_debug_mesh_lines();
-public:
 
+public:
 	void set_length(float p_length);
 	float get_length() const;
 

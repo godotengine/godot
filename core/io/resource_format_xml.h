@@ -33,8 +33,6 @@
 #include "io/resource_saver.h"
 #include "os/file_access.h"
 
-
-
 class ResourceInteractiveLoaderXML : public ResourceInteractiveLoader {
 
 	String local_path;
@@ -45,22 +43,19 @@ class ResourceInteractiveLoaderXML : public ResourceInteractiveLoader {
 	struct Tag {
 
 		String name;
-		HashMap<String,String> args;
-
+		HashMap<String, String> args;
 	};
 
-	_FORCE_INLINE_ Error _parse_array_element(Vector<char> &buff,bool p_number_only,FileAccess *f,bool *end);
-
+	_FORCE_INLINE_ Error _parse_array_element(Vector<char> &buff, bool p_number_only, FileAccess *f, bool *end);
 
 	struct ExtResource {
 		String path;
 		String type;
 	};
 
+	Map<String, String> remaps;
 
-	Map<String,String> remaps;
-
-	Map<int,ExtResource> ext_resources;
+	Map<int, ExtResource> ext_resources;
 
 	int resources_total;
 	int resource_current;
@@ -70,24 +65,23 @@ class ResourceInteractiveLoaderXML : public ResourceInteractiveLoader {
 	uint8_t get_char() const;
 	int get_current_line() const;
 
-friend class ResourceFormatLoaderXML;
+	friend class ResourceFormatLoaderXML;
 	List<Tag> tag_stack;
 
 	List<RES> resource_cache;
-	Tag* parse_tag(bool* r_exit=NULL,bool p_printerr=true,List<String> *r_order=NULL);
-	Error close_tag(const String& p_name);
-	_FORCE_INLINE_ void unquote(String& p_str);
+	Tag *parse_tag(bool *r_exit = NULL, bool p_printerr = true, List<String> *r_order = NULL);
+	Error close_tag(const String &p_name);
+	_FORCE_INLINE_ void unquote(String &p_str);
 	Error goto_end_of_tag();
 	Error parse_property_data(String &r_data);
-	Error parse_property(Variant& r_v, String &r_name,bool p_for_export_data=false);
+	Error parse_property(Variant &r_v, String &r_name, bool p_for_export_data = false);
 
 	Error error;
 
 	RES resource;
 
 public:
-
-	virtual void set_local_path(const String& p_local_path);
+	virtual void set_local_path(const String &p_local_path);
 	virtual Ref<Resource> get_resource();
 	virtual Error poll();
 	virtual int get_stage() const;
@@ -96,40 +90,33 @@ public:
 	void open(FileAccess *p_f);
 	String recognize(FileAccess *p_f);
 	void get_dependencies(FileAccess *p_f, List<String> *p_dependencies, bool p_add_types);
-	Error rename_dependencies(FileAccess *p_f, const String &p_path,const Map<String,String>& p_map);
+	Error rename_dependencies(FileAccess *p_f, const String &p_path, const Map<String, String> &p_map);
 
-	Error get_export_data(FileAccess *p_f,ExportData& r_export_data);
+	Error get_export_data(FileAccess *p_f, ExportData &r_export_data);
 
 	~ResourceInteractiveLoaderXML();
-
 };
 
 class ResourceFormatLoaderXML : public ResourceFormatLoader {
 public:
-
 	static ResourceFormatLoaderXML *singleton;
-	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path,Error *r_error=NULL);
-	virtual void get_recognized_extensions_for_type(const String& p_type,List<String> *p_extensions) const;
+	virtual Ref<ResourceInteractiveLoader> load_interactive(const String &p_path, Error *r_error = NULL);
+	virtual void get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
-	virtual void get_dependencies(const String& p_path, List<String> *p_dependencies, bool p_add_types=false);
-	virtual Error rename_dependencies(const String &p_path,const Map<String,String>& p_map);
-	virtual Error get_export_data(const String& p_path,ExportData& r_export_data);
+	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
+	virtual Error rename_dependencies(const String &p_path, const Map<String, String> &p_map);
+	virtual Error get_export_data(const String &p_path, ExportData &r_export_data);
 
-	ResourceFormatLoaderXML() { singleton=this; }
-
+	ResourceFormatLoaderXML() { singleton = this; }
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-
-class ResourceFormatSaverXMLInstance  {
+class ResourceFormatSaverXMLInstance {
 
 	String local_path;
-
-
 
 	bool takeover_paths;
 	bool relative_paths;
@@ -139,36 +126,30 @@ class ResourceFormatSaverXMLInstance  {
 	int depth;
 	Set<RES> resource_set;
 	List<RES> saved_resources;
-	Map<RES,int> external_resources;
+	Map<RES, int> external_resources;
 
-	void enter_tag(const char* p_tag,const String& p_args=String());
-	void exit_tag(const char* p_tag);
+	void enter_tag(const char *p_tag, const String &p_args = String());
+	void exit_tag(const char *p_tag);
 
-	void _find_resources(const Variant& p_variant,bool p_main=false);
-	void write_property(const String& p_name,const Variant& p_property,bool *r_ok=NULL);
+	void _find_resources(const Variant &p_variant, bool p_main = false);
+	void write_property(const String &p_name, const Variant &p_property, bool *r_ok = NULL);
 
-
-	void escape(String& p_str);
-	void write_tabs(int p_diff=0);
-	void write_string(String p_str,bool p_escape=true);
-
+	void escape(String &p_str);
+	void write_tabs(int p_diff = 0);
+	void write_string(String p_str, bool p_escape = true);
 
 public:
-
-	Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0);
-
-
+	Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
 };
 
 class ResourceFormatSaverXML : public ResourceFormatSaver {
 public:
-	static ResourceFormatSaverXML* singleton;
-	virtual Error save(const String &p_path,const RES& p_resource,uint32_t p_flags=0);
-	virtual bool recognize(const RES& p_resource) const;
-	virtual void get_recognized_extensions(const RES& p_resource,List<String> *p_extensions) const;
+	static ResourceFormatSaverXML *singleton;
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	virtual bool recognize(const RES &p_resource) const;
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
 
 	ResourceFormatSaverXML();
 };
-
 
 #endif // RESOURCE_FORMAT_XML_H

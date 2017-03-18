@@ -39,7 +39,7 @@
 
 #include <string.h>
 
-#define copymem(to,from,count) memcpy(to,from,count)
+#define copymem(to, from, count) memcpy(to, from, count)
 #define zeromem(to, count) memset(to, 0, count)
 #define movemem(to, from, count) memmove(to, from, count)
 

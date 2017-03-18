@@ -29,12 +29,11 @@
 #ifndef DOC_DATA_H
 #define DOC_DATA_H
 
-
-#include "variant.h"
-#include "map.h"
 #include "io/xml_parser.h"
+#include "map.h"
+#include "variant.h"
 
-class DocData  {
+class DocData {
 public:
 	struct ArgumentDoc {
 
@@ -50,8 +49,8 @@ public:
 		String qualifiers;
 		String description;
 		Vector<ArgumentDoc> arguments;
-		bool operator<(const MethodDoc& p_md) const {
-			return name<p_md.name;
+		bool operator<(const MethodDoc &p_md) const {
+			return name < p_md.name;
 		}
 	};
 
@@ -67,12 +66,12 @@ public:
 		String name;
 		String type;
 		String description;
-		bool operator<(const PropertyDoc& p_prop) const {
-			return name<p_prop.name;
+		bool operator<(const PropertyDoc &p_prop) const {
+			return name < p_prop.name;
 		}
 	};
 
-	struct ClassDoc  {
+	struct ClassDoc {
 
 		String name;
 		String inherits;
@@ -84,25 +83,20 @@ public:
 		Vector<ConstantDoc> constants;
 		Vector<PropertyDoc> properties;
 		Vector<PropertyDoc> theme_properties;
-
 	};
 
 	String version;
 
-	Map<String,ClassDoc> class_list;
+	Map<String, ClassDoc> class_list;
 	Error _load(Ref<XMLParser> parser);
 
-
 public:
-
-	void merge_from(const DocData& p_data);
-	void generate(bool p_basic_types=false);
-	Error load(const String& p_path);
-	Error save(const String& p_path);
+	void merge_from(const DocData &p_data);
+	void generate(bool p_basic_types = false);
+	Error load(const String &p_path);
+	Error save(const String &p_path);
 
 	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);
-
-
 };
 
 #endif // DOC_DATA_H

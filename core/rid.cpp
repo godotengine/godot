@@ -30,7 +30,6 @@
 
 static SafeRefCount current_id;
 
-
 void RID_OwnerBase::init_rid() {
 
 	current_id.init(1);
@@ -38,8 +37,6 @@ void RID_OwnerBase::init_rid() {
 
 ID RID_OwnerBase::new_ID() {
 
-
 	ID id = current_id.refval();
 	return id;
 }
-

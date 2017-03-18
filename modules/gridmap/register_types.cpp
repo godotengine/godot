@@ -28,9 +28,9 @@
 /*************************************************************************/
 #include "register_types.h"
 #ifndef _3D_DISABLED
-#include "object_type_db.h"
 #include "grid_map.h"
 #include "grid_map_editor_plugin.h"
+#include "object_type_db.h"
 #endif
 
 void register_gridmap_types() {
@@ -43,9 +43,5 @@ void register_gridmap_types() {
 #endif
 }
 
-
-
 void unregister_gridmap_types() {
-
-
 }

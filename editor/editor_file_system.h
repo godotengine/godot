@@ -29,24 +29,24 @@
 #ifndef EDITOR_FILE_SYSTEM_H
 #define EDITOR_FILE_SYSTEM_H
 
-#include "scene/main/node.h"
-#include "os/thread.h"
 #include "os/dir_access.h"
-#include "set.h"
+#include "os/thread.h"
 #include "os/thread_safe.h"
+#include "scene/main/node.h"
+#include "set.h"
 class FileAccess;
 
 struct EditorProgressBG;
 class EditorFileSystemDirectory : public Object {
 
-	OBJ_TYPE( EditorFileSystemDirectory,Object );
+	OBJ_TYPE(EditorFileSystemDirectory, Object);
 
 	String name;
 	uint64_t modified_time;
 	bool verified; //used for checking changes
 
 	EditorFileSystemDirectory *parent;
-	Vector<EditorFileSystemDirectory*> subdirs;
+	Vector<EditorFileSystemDirectory *> subdirs;
 
 	struct ImportMeta {
 
@@ -55,8 +55,7 @@ class EditorFileSystemDirectory : public Object {
 			String path;
 			String md5;
 			uint64_t modified_time;
-			bool missing;			
-
+			bool missing;
 		};
 
 		Vector<Source> sources;
@@ -64,7 +63,6 @@ class EditorFileSystemDirectory : public Object {
 		Vector<String> deps;
 		bool enabled;
 		bool sources_changed;
-
 	};
 
 	struct FileInfo {
@@ -73,25 +71,23 @@ class EditorFileSystemDirectory : public Object {
 		uint64_t modified_time;
 		ImportMeta meta;
 		bool verified; //used for checking changes
-
 	};
 
 	struct FileInfoSort {
-		bool operator()(const FileInfo *p_a,const FileInfo *p_b) const {
-			return p_a->file<p_b->file;
+		bool operator()(const FileInfo *p_a, const FileInfo *p_b) const {
+			return p_a->file < p_b->file;
 		}
 	};
 
 	void sort_files();
 
-	Vector<FileInfo*> files;
+	Vector<FileInfo *> files;
 
 	static void _bind_methods();
 
+	friend class EditorFileSystem;
 
-friend class EditorFileSystem;
 public:
-
 	String get_name();
 	String get_path() const;
 
@@ -107,14 +103,13 @@ public:
 	Vector<String> get_missing_sources(int p_idx) const;
 	Vector<String> get_file_deps(int p_idx) const;
 	int get_source_count(int p_idx) const;
-	String get_source_file(int p_idx,int p_source) const;
-	bool is_source_file_missing(int p_idx,int p_source) const;
+	String get_source_file(int p_idx, int p_source) const;
+	bool is_source_file_missing(int p_idx, int p_source) const;
 
 	EditorFileSystemDirectory *get_parent();
 
-	int find_file_index(const String& p_file) const;
-	int find_dir_index(const String& p_dir) const;
-
+	int find_file_index(const String &p_file) const;
+	int find_dir_index(const String &p_dir) const;
 
 	EditorFileSystemDirectory();
 	~EditorFileSystemDirectory();
@@ -122,11 +117,9 @@ public:
 
 class EditorFileSystem : public Node {
 
-	OBJ_TYPE( EditorFileSystem, Node );
+	OBJ_TYPE(EditorFileSystem, Node);
 
 	_THREAD_SAFE_CLASS_
-
-
 
 	struct ItemAction {
 
@@ -145,8 +138,12 @@ class EditorFileSystem : public Node {
 		EditorFileSystemDirectory *new_dir;
 		EditorFileSystemDirectory::FileInfo *new_file;
 
-		ItemAction() { action=ACTION_NONE; dir=NULL; new_dir=NULL; new_file=NULL; }
-
+		ItemAction() {
+			action = ACTION_NONE;
+			dir = NULL;
+			new_dir = NULL;
+			new_file = NULL;
+		}
 	};
 
 	bool use_threads;
@@ -158,7 +155,6 @@ class EditorFileSystem : public Node {
 	bool abort_scan;
 	bool scanning;
 	float scan_total;
-
 
 	void _scan_filesystem();
 
@@ -175,24 +171,24 @@ class EditorFileSystem : public Node {
 		Vector<String> deps;
 	};
 
-	HashMap<String,FileCache> file_cache;
+	HashMap<String, FileCache> file_cache;
 
 	struct ScanProgress {
 
 		float low;
 		float hi;
 		mutable EditorProgressBG *progress;
-		void update(int p_current,int p_total) const;
-		ScanProgress get_sub(int p_current,int p_total) const;
+		void update(int p_current, int p_total) const;
+		ScanProgress get_sub(int p_current, int p_total) const;
 	};
 
-	static EditorFileSystemDirectory::ImportMeta _get_meta(const String& p_path);
+	static EditorFileSystemDirectory::ImportMeta _get_meta(const String &p_path);
 
-	bool _check_meta_sources(EditorFileSystemDirectory::ImportMeta & p_meta);
+	bool _check_meta_sources(EditorFileSystemDirectory::ImportMeta &p_meta);
 
-	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir,FileAccess *p_file);
+	void _save_filesystem_cache(EditorFileSystemDirectory *p_dir, FileAccess *p_file);
 
-	bool _find_file(const String& p_file,EditorFileSystemDirectory ** r_d, int &r_file_pos) const;
+	bool _find_file(const String &p_file, EditorFileSystemDirectory **r_d, int &r_file_pos) const;
 
 	void _scan_fs_changes(EditorFileSystemDirectory *p_dir, const ScanProgress &p_progress);
 
@@ -200,7 +196,7 @@ class EditorFileSystem : public Node {
 
 	Set<String> valid_extensions;
 
-	void _scan_new_dir(EditorFileSystemDirectory *p_dir,DirAccess *da,const ScanProgress& p_progress);
+	void _scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress);
 
 	Thread *thread_sources;
 	bool scanning_sources;
@@ -213,17 +209,15 @@ class EditorFileSystem : public Node {
 
 	bool _update_scan_actions();
 
-	static void _resource_saved(const String& p_path);
-	String _find_first_from_source(EditorFileSystemDirectory* p_dir,const String &p_src) const;
+	static void _resource_saved(const String &p_path);
+	String _find_first_from_source(EditorFileSystemDirectory *p_dir, const String &p_src) const;
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
-
-
-	static EditorFileSystem* get_singleton() { return singleton; }
+	static EditorFileSystem *get_singleton() { return singleton; }
 
 	EditorFileSystemDirectory *get_filesystem();
 	bool is_scanning() const;
@@ -231,11 +225,11 @@ public:
 	void scan();
 	void scan_sources();
 	void get_changed_sources(List<String> *r_changed);
-	void update_file(const String& p_file);
-	String find_resource_from_source(const String& p_path) const;
-	EditorFileSystemDirectory *get_path(const String& p_path);
-	String get_file_type(const String& p_file) const;
-	EditorFileSystemDirectory* find_file(const String& p_file,int* r_index) const;
+	void update_file(const String &p_file);
+	String find_resource_from_source(const String &p_path) const;
+	EditorFileSystemDirectory *get_path(const String &p_path);
+	String get_file_type(const String &p_file) const;
+	EditorFileSystemDirectory *find_file(const String &p_file, int *r_index) const;
 
 	EditorFileSystem();
 	~EditorFileSystem();

@@ -29,36 +29,36 @@
 #ifndef FILESYSTEM_DOCK_H
 #define FILESYSTEM_DOCK_H
 
-#include "scene/main/timer.h"
-#include "scene/gui/control.h"
-#include "scene/gui/tree.h"
-#include "scene/gui/label.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/menu_button.h"
+#include "scene/gui/control.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/label.h"
+#include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/split_container.h"
+#include "scene/gui/tool_button.h"
+#include "scene/gui/tree.h"
+#include "scene/main/timer.h"
 
 #include "os/dir_access.h"
 #include "os/thread.h"
 
-#include "editor_file_system.h"
-#include "editor_dir_dialog.h"
 #include "dependency_editor.h"
+#include "editor_dir_dialog.h"
+#include "editor_file_system.h"
 
 class EditorNode;
 
-
 class FileSystemDock : public VBoxContainer {
-	OBJ_TYPE( FileSystemDock, VBoxContainer );
+	OBJ_TYPE(FileSystemDock, VBoxContainer);
 
 public:
 	enum DisplayMode {
 		DISPLAY_THUMBNAILS,
 		DISPLAY_LIST
 	};
+
 private:
 	enum FileMenu {
 		FILE_OPEN,
@@ -72,7 +72,6 @@ private:
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH
 	};
-
 
 	VBoxContainer *scanning_vb;
 	ProgressBar *scanning_progress;
@@ -108,7 +107,6 @@ private:
 	Vector<String> move_dirs;
 	Vector<String> move_files;
 
-
 	Vector<String> history;
 	int history_pos;
 
@@ -117,21 +115,20 @@ private:
 	bool initialized;
 
 	bool updating_tree;
-	Tree * tree; //directories
+	Tree *tree; //directories
 	ItemList *files;
 
 	void _go_to_tree();
-	void _go_to_dir(const String& p_dir);
+	void _go_to_dir(const String &p_dir);
 	void _select_file(int p_idx);
 
-	bool _create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir);
-	void _thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
-	void _find_inside_move_files(EditorFileSystemDirectory *efsd,Vector<String>& files);
-	void _find_remaps(EditorFileSystemDirectory *efsd,Map<String,String> &renames,List<String>& to_remaps);
+	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir);
+	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata);
+	void _find_inside_move_files(EditorFileSystemDirectory *efsd, Vector<String> &files);
+	void _find_remaps(EditorFileSystemDirectory *efsd, Map<String, String> &renames, List<String> &to_remaps);
 
-	void _rename_operation(const String& p_to_path);
-	void _move_operation(const String& p_to_path);
-
+	void _rename_operation(const String &p_to_path);
+	void _move_operation(const String &p_to_path);
 
 	void _file_option(int p_option);
 	void _update_files(bool p_keep_selection);
@@ -142,20 +139,16 @@ private:
 	void _bw_history();
 	void _push_to_history();
 
-
 	void _dir_selected();
 	void _update_tree();
 	void _rescan();
 	void _set_scanning_mode();
 
-
 	void _favorites_pressed();
 	void _open_pressed();
-	void _search_changed(const String& p_text);
+	void _search_changed(const String &p_text);
 
-
-	void _files_list_rmb_select(int p_item,const Vector2& p_pos);
-
+	void _files_list_rmb_select(int p_item, const Vector2 &p_pos);
 
 	struct FileInfo {
 		String name;
@@ -164,30 +157,30 @@ private:
 		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
 		Vector<String> sources;
 
-		bool operator<(const FileInfo& fi) const {
+		bool operator<(const FileInfo &fi) const {
 			return name < fi.name;
 		}
 	};
 
-	void _search(EditorFileSystemDirectory *p_path, List<FileInfo>* matches, int p_max_items);
+	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
-	Variant get_drag_data_fw(const Point2& p_point,Control* p_from);
-	bool can_drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from) const;
-	void drop_data_fw(const Point2& p_point,const Variant& p_data,Control* p_from);
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	void _preview_invalidated(const String& p_path);
+	void _preview_invalidated(const String &p_path);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	String get_selected_path() const;
 
 	String get_current_path() const;
 	void focus_on_filter();
 
-	void fix_dependencies(const String& p_for_file);
+	void fix_dependencies(const String &p_for_file);
 
 	void set_display_mode(int p_mode);
 
@@ -197,6 +190,5 @@ public:
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();
 };
-
 
 #endif // SCENES_DOCK_H

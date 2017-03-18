@@ -34,16 +34,16 @@
 
 class EditorReImportDialog : public ConfirmationDialog {
 
-	OBJ_TYPE(EditorReImportDialog,ConfirmationDialog);
+	OBJ_TYPE(EditorReImportDialog, ConfirmationDialog);
 
 	Tree *tree;
-	Vector<TreeItem*> items;
+	Vector<TreeItem *> items;
 	AcceptDialog *error;
 	bool scene_must_save;
 
 	void ok_pressed();
-public:
 
+public:
 	void popup_reimport();
 	EditorReImportDialog();
 };

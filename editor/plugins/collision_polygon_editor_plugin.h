@@ -29,13 +29,13 @@
 #ifndef COLLISION_POLYGON_EDITOR_PLUGIN_H
 #define COLLISION_POLYGON_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
+#include "scene/gui/tool_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -44,7 +44,7 @@ class CanvasItemEditor;
 
 class CollisionPolygonEditor : public HBoxContainer {
 
-	OBJ_TYPE(CollisionPolygonEditor, HBoxContainer );
+	OBJ_TYPE(CollisionPolygonEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 	enum Mode {
@@ -58,7 +58,6 @@ class CollisionPolygonEditor : public HBoxContainer {
 
 	ToolButton *button_create;
 	ToolButton *button_edit;
-
 
 	Ref<FixedMaterial> line_material;
 	Ref<FixedMaterial> handle_material;
@@ -88,9 +87,9 @@ protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
+public:
+	virtual bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygonEditor(EditorNode *p_editor);
 	~CollisionPolygonEditor();
@@ -98,14 +97,13 @@ public:
 
 class CollisionPolygonEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( CollisionPolygonEditorPlugin, EditorPlugin );
+	OBJ_TYPE(CollisionPolygonEditorPlugin, EditorPlugin);
 
 	CollisionPolygonEditor *collision_polygon_editor;
 	EditorNode *editor;
 
 public:
-
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) { return collision_polygon_editor->forward_spatial_input_event(p_camera,p_event); }
+	virtual bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event) { return collision_polygon_editor->forward_spatial_input_event(p_camera, p_event); }
 
 	virtual String get_name() const { return "CollisionPolygon"; }
 	bool has_main_screen() const { return false; }
@@ -115,7 +113,6 @@ public:
 
 	CollisionPolygonEditorPlugin(EditorNode *p_node);
 	~CollisionPolygonEditorPlugin();
-
 };
 
 #endif // COLLISION_POLYGON_EDITOR_PLUGIN_H

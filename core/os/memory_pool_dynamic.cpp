@@ -28,23 +28,20 @@
 /*************************************************************************/
 #include "memory_pool_dynamic.h"
 
+MemoryPoolDynamic *MemoryPoolDynamic::singleton = NULL;
 
-MemoryPoolDynamic* MemoryPoolDynamic::singleton=NULL;
-
-
-MemoryPoolDynamic* MemoryPoolDynamic::get_singleton() {
+MemoryPoolDynamic *MemoryPoolDynamic::get_singleton() {
 
 	return singleton;
 }
 
-
 MemoryPoolDynamic::MemoryPoolDynamic() {
 
-	ERR_FAIL_COND(singleton!=NULL);
-	singleton=this;
+	ERR_FAIL_COND(singleton != NULL);
+	singleton = this;
 }
 
 MemoryPoolDynamic::~MemoryPoolDynamic() {
 
-	singleton=NULL;
+	singleton = NULL;
 }

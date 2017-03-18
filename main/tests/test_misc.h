@@ -33,8 +33,7 @@
 
 namespace TestMisc {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif

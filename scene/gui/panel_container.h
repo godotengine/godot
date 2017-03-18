@@ -33,13 +33,12 @@
 
 class PanelContainer : public Container {
 
-	OBJ_TYPE( PanelContainer, Container );
+	OBJ_TYPE(PanelContainer, Container);
 
 protected:
-
 	void _notification(int p_what);
-public:
 
+public:
 	virtual Size2 get_minimum_size() const;
 
 	PanelContainer();

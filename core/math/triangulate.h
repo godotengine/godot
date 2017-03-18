@@ -31,35 +31,28 @@
 
 #include "math_2d.h"
 
-
 /*
 http://www.flipcode.com/archives/Efficient_Polygon_Triangulation.shtml
 */
 
-class Triangulate
-{
+class Triangulate {
 public:
-
 	// triangulate a contour/polygon, places results in STL vector
 	// as series of triangles.
-	static bool triangulate(const Vector< Vector2 > &contour, Vector<int> &result);
+	static bool triangulate(const Vector<Vector2> &contour, Vector<int> &result);
 
 	// compute area of a contour/polygon
-	static float get_area(const Vector< Vector2 > &contour);
+	static float get_area(const Vector<Vector2> &contour);
 
 	// decide if point Px/Py is inside triangle defined by
 	// (Ax,Ay) (Bx,By) (Cx,Cy)
 	static bool is_inside_triangle(float Ax, float Ay,
-		      float Bx, float By,
-		      float Cx, float Cy,
-		      float Px, float Py);
-
+			float Bx, float By,
+			float Cx, float Cy,
+			float Px, float Py);
 
 private:
-	static bool snip(const Vector<Vector2> &p_contour,int u,int v,int w,int n,const Vector<int>& V);
-
+	static bool snip(const Vector<Vector2> &p_contour, int u, int v, int w, int n, const Vector<int> &V);
 };
-
-
 
 #endif

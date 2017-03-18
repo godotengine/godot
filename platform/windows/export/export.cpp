@@ -27,17 +27,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "export.h"
-#include "platform/windows/logo.h"
 #include "editor/editor_import_export.h"
+#include "platform/windows/logo.h"
 
 void register_windows_exporter() {
 
 	Image img(_windows_logo);
-	Ref<ImageTexture> logo = memnew( ImageTexture );
+	Ref<ImageTexture> logo = memnew(ImageTexture);
 	logo->create_from_image(img);
 
 	{
-		Ref<EditorExportPlatformPC> exporter = Ref<EditorExportPlatformPC>( memnew(EditorExportPlatformPC) );
+		Ref<EditorExportPlatformPC> exporter = Ref<EditorExportPlatformPC>(memnew(EditorExportPlatformPC));
 		exporter->set_binary_extension("exe");
 		exporter->set_release_binary32("windows_32_release.exe");
 		exporter->set_debug_binary32("windows_32_debug.exe");
@@ -47,6 +47,4 @@ void register_windows_exporter() {
 		exporter->set_logo(logo);
 		EditorImportExport::get_singleton()->add_export_platform(exporter);
 	}
-
-
 }

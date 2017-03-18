@@ -28,23 +28,19 @@
 /*************************************************************************/
 #include "stream_editor_plugin.h"
 
-
-
 void StreamEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_TREE) {
-		play->set_icon( get_icon("Play","EditorIcons") );
-		stop->set_icon( get_icon("Stop","EditorIcons") );
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		play->set_icon(get_icon("Play", "EditorIcons"));
+		stop->set_icon(get_icon("Stop", "EditorIcons"));
 	}
-
 }
 void StreamEditor::_node_removed(Node *p_node) {
 
-	if(p_node==node) {
-		node=NULL;
+	if (p_node == node) {
+		node = NULL;
 		hide();
 	}
-
 }
 
 void StreamEditor::_play() {
@@ -59,43 +55,37 @@ void StreamEditor::_stop() {
 
 void StreamEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_play"),&StreamEditor::_play);
-	ObjectTypeDB::bind_method(_MD("_stop"),&StreamEditor::_stop);
-
+	ObjectTypeDB::bind_method(_MD("_play"), &StreamEditor::_play);
+	ObjectTypeDB::bind_method(_MD("_stop"), &StreamEditor::_stop);
 }
 
 void StreamEditor::edit(Node *p_stream) {
 
-	node=p_stream;
-
+	node = p_stream;
 }
 StreamEditor::StreamEditor() {
 
-	play = memnew( Button );
+	play = memnew(Button);
 
-
-	play->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,60);
-	play->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,40);
-	play->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
-	play->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
+	play->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_END, 60);
+	play->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 40);
+	play->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 0);
+	play->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 0);
 
 	add_child(play);
 
-	stop = memnew( Button );
+	stop = memnew(Button);
 
-	stop->set_pos(Point2( 35, 5 ));
-	stop->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,30);
-	stop->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,10);
-	stop->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);
-	stop->set_anchor_and_margin(MARGIN_BOTTOM,Control::ANCHOR_BEGIN,0);
+	stop->set_pos(Point2(35, 5));
+	stop->set_anchor_and_margin(MARGIN_LEFT, Control::ANCHOR_END, 30);
+	stop->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, 10);
+	stop->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, 0);
+	stop->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 0);
 	add_child(stop);
 
-
-	play->connect("pressed", this,"_play");
-	stop->connect("pressed", this,"_stop");
-
+	play->connect("pressed", this, "_play");
+	stop->connect("pressed", this, "_stop");
 }
-
 
 void StreamEditorPlugin::edit(Object *p_object) {
 
@@ -118,31 +108,23 @@ void StreamEditorPlugin::make_visible(bool p_visible) {
 		stream_editor->set_fixed_process(false);
 		stream_editor->edit(NULL);
 	}
-
 }
 
 StreamEditorPlugin::StreamEditorPlugin(EditorNode *p_node) {
 
-	editor=p_node;
-	stream_editor = memnew( StreamEditor );
+	editor = p_node;
+	stream_editor = memnew(StreamEditor);
 	editor->get_viewport()->add_child(stream_editor);
 
-	stream_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-	stream_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	stream_editor->set_margin(MARGIN_LEFT,60);
-	stream_editor->set_margin(MARGIN_RIGHT,0);
-	stream_editor->set_margin(MARGIN_TOP,0);
-	stream_editor->set_margin(MARGIN_BOTTOM,10);
-
+	stream_editor->set_anchor(MARGIN_LEFT, Control::ANCHOR_END);
+	stream_editor->set_anchor(MARGIN_RIGHT, Control::ANCHOR_END);
+	stream_editor->set_margin(MARGIN_LEFT, 60);
+	stream_editor->set_margin(MARGIN_RIGHT, 0);
+	stream_editor->set_margin(MARGIN_TOP, 0);
+	stream_editor->set_margin(MARGIN_BOTTOM, 10);
 
 	stream_editor->hide();
-
-
-
 }
 
-
-StreamEditorPlugin::~StreamEditorPlugin()
-{
+StreamEditorPlugin::~StreamEditorPlugin() {
 }
-

@@ -37,8 +37,7 @@
 
 namespace TestPhysics {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif

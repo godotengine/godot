@@ -29,8 +29,6 @@
 #ifndef SEMAPHORE_POSIX_H
 #define SEMAPHORE_POSIX_H
 
-
-
 #include "os/semaphore.h"
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
@@ -46,16 +44,14 @@ class SemaphorePosix : public Semaphore {
 	static Semaphore *create_semaphore_posix();
 
 public:
-
 	virtual Error wait();
-	virtual Error post(); 
+	virtual Error post();
 	virtual int get() const;
 
 	static void make_default();
 	SemaphorePosix();
-	
-	~SemaphorePosix();
 
+	~SemaphorePosix();
 };
 
 #endif

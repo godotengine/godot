@@ -34,7 +34,7 @@ static ResourceFormatDDS *resource_loader_dds = NULL;
 
 void register_dds_types() {
 
-	resource_loader_dds = memnew( ResourceFormatDDS );
+	resource_loader_dds = memnew(ResourceFormatDDS);
 	ResourceLoader::add_resource_format_loader(resource_loader_dds);
 }
 

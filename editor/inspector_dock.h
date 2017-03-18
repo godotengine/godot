@@ -29,9 +29,8 @@
 #ifndef INSPECTOR_DOCK_H
 #define INSPECTOR_DOCK_H
 
-#include "scene/gui/box_container.h"
 #include "property_editor.h"
-
+#include "scene/gui/box_container.h"
 
 //this is for now bundled in EditorNode, will be moved away here eventually
 

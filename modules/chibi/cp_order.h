@@ -29,15 +29,13 @@
 #ifndef CP_ORDER_H
 #define CP_ORDER_H
 
-
 #include "cp_config.h"
 
 enum CPOrderType {
-	CP_ORDER_NONE=255,
-	CP_ORDER_BREAK=254
+	CP_ORDER_NONE = 255,
+	CP_ORDER_BREAK = 254
 };
 
 typedef uint8_t CPOrder;
 
 #endif
-

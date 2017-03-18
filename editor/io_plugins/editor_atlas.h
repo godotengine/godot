@@ -34,10 +34,7 @@
 
 class EditorAtlas {
 public:
-
-	static void fit(const Vector<Size2i>& p_rects,Vector<Point2i>& r_result, Size2i& r_size);
-
-
+	static void fit(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 };
 
 #endif // EDITOR_ATLAS_H

@@ -30,21 +30,21 @@
 
 #include "stream_peer_tcp_posix.h"
 
+#include <errno.h>
+#include <netdb.h>
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <string.h>
-#include <netdb.h>
-#include <sys/types.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
+#include <unistd.h>
 #ifndef NO_FCNTL
-	#ifdef __HAIKU__
-		#include <fcntl.h>
-	#else
-		#include <sys/fcntl.h>
-	#endif
+#ifdef __HAIKU__
+#include <fcntl.h>
+#else
+#include <sys/fcntl.h>
+#endif
 #else
 #include <sys/ioctl.h>
 #endif
@@ -58,12 +58,12 @@
 #include <netinet/tcp.h>
 
 #if defined(OSX_ENABLED) || defined(IPHONE_ENABLED)
-	#define MSG_NOSIGNAL    SO_NOSIGPIPE
+#define MSG_NOSIGNAL SO_NOSIGPIPE
 #endif
 
 #include "drivers/unix/socket_helpers.h"
 
-StreamPeerTCP* StreamPeerTCPPosix::_create() {
+StreamPeerTCP *StreamPeerTCPPosix::_create() {
 
 	return memnew(StreamPeerTCPPosix);
 };
@@ -100,7 +100,7 @@ Error StreamPeerTCPPosix::_poll_connection(bool p_block) const {
 	struct sockaddr_storage their_addr;
 	size_t addr_size = _set_sockaddr(&their_addr, peer_host, peer_port, ip_type);
 
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr, addr_size) == -1) {
 
 		if (errno == EISCONN) {
 			status = STATUS_CONNECTED;
@@ -139,9 +139,9 @@ void StreamPeerTCPPosix::set_socket(int p_sockfd, IP_Address p_host, int p_port,
 	peer_port = p_port;
 };
 
-Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
+Error StreamPeerTCPPosix::connect(const IP_Address &p_host, uint16_t p_port) {
 
-	ERR_FAIL_COND_V( p_host == IP_Address(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_host == IP_Address(), ERR_INVALID_PARAMETER);
 
 	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd == -1) {
@@ -162,7 +162,7 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, ip_type);
 
 	errno = 0;
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1 && errno != EINPROGRESS) {
+	if (::connect(sockfd, (struct sockaddr *)&their_addr, addr_size) == -1 && errno != EINPROGRESS) {
 
 		ERR_PRINT("Connection to remote host failed!");
 		disconnect();
@@ -181,7 +181,7 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 	return OK;
 };
 
-Error StreamPeerTCPPosix::write(const uint8_t* p_data,int p_bytes, int &r_sent, bool p_block) {
+Error StreamPeerTCPPosix::write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block) {
 
 	if (status == STATUS_NONE || status == STATUS_ERROR) {
 
@@ -241,7 +241,7 @@ Error StreamPeerTCPPosix::write(const uint8_t* p_data,int p_bytes, int &r_sent, 
 	return OK;
 };
 
-Error StreamPeerTCPPosix::read(uint8_t* p_buffer, int p_bytes,int &r_received, bool p_block) {
+Error StreamPeerTCPPosix::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block) {
 
 	if (!is_connected()) {
 
@@ -286,9 +286,9 @@ Error StreamPeerTCPPosix::read(uint8_t* p_buffer, int p_bytes,int &r_received, b
 			};
 			_block(sockfd, true, false);
 
-		} else if (read==0) {
+		} else if (read == 0) {
 
-			sockfd=-1;
+			sockfd = -1;
 			status = STATUS_NONE;
 			peer_port = 0;
 			peer_host = IP_Address();
@@ -309,8 +309,8 @@ Error StreamPeerTCPPosix::read(uint8_t* p_buffer, int p_bytes,int &r_received, b
 void StreamPeerTCPPosix::set_nodelay(bool p_enabled) {
 
 	ERR_FAIL_COND(!is_connected());
-	int flag=p_enabled?1:0;
-	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
+	int flag = p_enabled ? 1 : 0;
+	setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
 }
 
 bool StreamPeerTCPPosix::is_connected() const {
@@ -323,7 +323,7 @@ bool StreamPeerTCPPosix::is_connected() const {
 		return true;
 	};
 
-	return (sockfd!=-1);
+	return (sockfd != -1);
 };
 
 StreamPeerTCP::Status StreamPeerTCPPosix::get_status() const {
@@ -335,37 +335,35 @@ StreamPeerTCP::Status StreamPeerTCPPosix::get_status() const {
 	return status;
 };
 
-
 void StreamPeerTCPPosix::disconnect() {
 
 	if (sockfd != -1)
 		close(sockfd);
-	sockfd=-1;
+	sockfd = -1;
 
 	status = STATUS_NONE;
 	peer_port = 0;
 	peer_host = IP_Address();
 };
 
-
-Error StreamPeerTCPPosix::put_data(const uint8_t* p_data,int p_bytes) {
+Error StreamPeerTCPPosix::put_data(const uint8_t *p_data, int p_bytes) {
 
 	int total;
 	return write(p_data, p_bytes, total, true);
 };
 
-Error StreamPeerTCPPosix::put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent) {
+Error StreamPeerTCPPosix::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
 
 	return write(p_data, p_bytes, r_sent, false);
 };
 
-Error StreamPeerTCPPosix::get_data(uint8_t* p_buffer, int p_bytes) {
+Error StreamPeerTCPPosix::get_data(uint8_t *p_buffer, int p_bytes) {
 
 	int total;
 	return read(p_buffer, p_bytes, total, true);
 };
 
-Error StreamPeerTCPPosix::get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_received) {
+Error StreamPeerTCPPosix::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 
 	return read(p_buffer, p_bytes, r_received, false);
 };
@@ -373,10 +371,9 @@ Error StreamPeerTCPPosix::get_partial_data(uint8_t* p_buffer, int p_bytes,int &r
 int StreamPeerTCPPosix::get_available_bytes() const {
 
 	unsigned long len;
-	int ret = ioctl(sockfd,FIONREAD,&len);
-	ERR_FAIL_COND_V(ret==-1,0)
+	int ret = ioctl(sockfd, FIONREAD, &len);
+	ERR_FAIL_COND_V(ret == -1, 0)
 	return len;
-
 }
 IP_Address StreamPeerTCPPosix::get_connected_host() const {
 

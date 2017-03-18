@@ -37,7 +37,7 @@ class EventQueue {
 
 	enum {
 
-		DEFAULT_EVENT_QUEUE_SIZE_KB=256
+		DEFAULT_EVENT_QUEUE_SIZE_KB = 256
 	};
 
 	struct Event {
@@ -47,20 +47,17 @@ class EventQueue {
 		int args;
 	};
 
-
 	uint8_t *event_buffer;
 	uint32_t buffer_end;
 	uint32_t buffer_max_used;
 	uint32_t buffer_size;
+
 public:
-
-
-	Error push_call(uint32_t p_instance_ID, const StringName& p_method, VARIANT_ARG_LIST);
+	Error push_call(uint32_t p_instance_ID, const StringName &p_method, VARIANT_ARG_LIST);
 	void flush_events();
 
-	EventQueue(uint32_t p_buffer_size=DEFAULT_EVENT_QUEUE_SIZE_KB*1024);
+	EventQueue(uint32_t p_buffer_size = DEFAULT_EVENT_QUEUE_SIZE_KB * 1024);
 	~EventQueue();
-
 };
 
 #endif

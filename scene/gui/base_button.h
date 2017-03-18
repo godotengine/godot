@@ -34,12 +34,11 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 class ButtonGroup;
 
 class BaseButton : public Control {
 
-	OBJ_TYPE( BaseButton, Control );
+	OBJ_TYPE(BaseButton, Control);
 
 	bool toggle_mode;
 	FocusMode enabled_focus_mode;
@@ -58,15 +57,9 @@ class BaseButton : public Control {
 
 	} status;
 
-
 	ButtonGroup *group;
 
-
 protected:
-
-
-
-
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
@@ -75,7 +68,6 @@ protected:
 	void _notification(int p_what);
 
 public:
-
 	enum DrawMode {
 		DRAW_NORMAL,
 		DRAW_PRESSED,
@@ -104,16 +96,15 @@ public:
 	void set_enabled_focus_mode(FocusMode p_mode);
 	FocusMode get_enabled_focus_mode() const;
 
-	void set_shortcut(const Ref<ShortCut>& p_shortcut);
+	void set_shortcut(const Ref<ShortCut> &p_shortcut);
 	Ref<ShortCut> get_shortcut() const;
 
-	virtual String get_tooltip(const Point2& p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const;
 
 	BaseButton();
 	~BaseButton();
-
 };
 
-VARIANT_ENUM_CAST( BaseButton::DrawMode );
+VARIANT_ENUM_CAST(BaseButton::DrawMode);
 
 #endif

@@ -33,17 +33,16 @@
 
 class PaneDrag : public Control {
 
-	OBJ_TYPE( PaneDrag, Control );
+	OBJ_TYPE(PaneDrag, Control);
 
 	bool mouse_over;
 
-
 protected:
-
-	void _input_event(const InputEvent& p_input);
+	void _input_event(const InputEvent &p_input);
 	void _notification(int p_what);
 	virtual Size2 get_minimum_size() const;
 	static void _bind_methods();
+
 public:
 	PaneDrag();
 };

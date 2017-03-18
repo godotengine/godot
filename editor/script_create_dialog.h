@@ -29,14 +29,14 @@
 #ifndef SCRIPT_CREATE_DIALOG_H
 #define SCRIPT_CREATE_DIALOG_H
 
+#include "editor/editor_file_dialog.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
-#include "editor/editor_file_dialog.h"
-#include "scene/gui/check_button.h"
 
 class ScriptCreateDialog : public ConfirmationDialog {
-	OBJ_TYPE(ScriptCreateDialog,ConfirmationDialog);
+	OBJ_TYPE(ScriptCreateDialog, ConfirmationDialog);
 
 	LineEdit *class_name;
 	Label *error_label;
@@ -51,21 +51,20 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool path_valid;
 	String initial_bp;
 
-
-	void _path_changed(const String& p_path=String());
-	void _lang_changed(int l=0);
+	void _path_changed(const String &p_path = String());
+	void _lang_changed(int l = 0);
 	void _built_in_pressed();
-	bool _validate(const String& p_strin);
-	void _class_name_changed(const String& p_name);
+	bool _validate(const String &p_strin);
+	void _class_name_changed(const String &p_name);
 	void _browse_path();
-	void _file_selected(const String& p_file);
+	void _file_selected(const String &p_file);
 	virtual void ok_pressed();
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void config(const String& p_base_name,const String&p_base_path);
+public:
+	void config(const String &p_base_name, const String &p_base_path);
 
 	ScriptCreateDialog();
 };

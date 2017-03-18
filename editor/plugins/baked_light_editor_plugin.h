@@ -29,25 +29,20 @@
 #ifndef BAKED_LIGHT_EDITOR_PLUGIN_H
 #define BAKED_LIGHT_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "editor/plugins/baked_light_baker.h"
 #include "scene/gui/spin_box.h"
-
-
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
-
 class MeshInstance;
 
 class BakedLightEditor : public Control {
 
-	OBJ_TYPE(BakedLightEditor, Control );
-
+	OBJ_TYPE(BakedLightEditor, Control);
 
 	float update_timeout;
 	DVector<uint8_t> octree_texture;
@@ -65,8 +60,6 @@ class BakedLightEditor : public Control {
 
 	uint64_t last_rays_time;
 
-
-
 	BakedLightInstance *node;
 
 	enum Menu {
@@ -83,13 +76,14 @@ class BakedLightEditor : public Control {
 	void _end_baking();
 	void _menu_option(int);
 
-friend class BakedLightEditorPlugin;
+	friend class BakedLightEditorPlugin;
+
 protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 	void _notification(int p_what);
-public:
 
+public:
 	void edit(BakedLightInstance *p_baked_light);
 	BakedLightEditor();
 	~BakedLightEditor();
@@ -97,13 +91,12 @@ public:
 
 class BakedLightEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( BakedLightEditorPlugin, EditorPlugin );
+	OBJ_TYPE(BakedLightEditorPlugin, EditorPlugin);
 
 	BakedLightEditor *baked_light_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "BakedLight"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -112,9 +105,6 @@ public:
 
 	BakedLightEditorPlugin(EditorNode *p_node);
 	~BakedLightEditorPlugin();
-
 };
 
 #endif // MULTIMESH_EDITOR_PLUGIN_H
-
-

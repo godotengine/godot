@@ -32,12 +32,12 @@
 #include "scene/gui/container.h"
 
 class MarginContainer : public Container {
-	OBJ_TYPE(MarginContainer,Container);
+	OBJ_TYPE(MarginContainer, Container);
 
 protected:
 	void _notification(int p_what);
-public:
 
+public:
 	virtual Size2 get_minimum_size() const;
 
 	MarginContainer();

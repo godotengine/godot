@@ -32,7 +32,6 @@
 #ifdef OPENGL_ENABLED
 #include <windows.h>
 
-
-PROC get_gl_proc_address(const char* p_address);
+PROC get_gl_proc_address(const char *p_address);
 #endif
 #endif // CTXGL_PROCADDR_H

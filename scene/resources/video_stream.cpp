@@ -28,12 +28,10 @@
 /*************************************************************************/
 #include "video_stream.h"
 
-void VideoStreamPlayback::_bind_methods() {
+void VideoStreamPlayback::_bind_methods(){
 
 };
 
-
-VideoStreamPlayback::VideoStreamPlayback() {
+VideoStreamPlayback::VideoStreamPlayback(){
 
 };
-

@@ -48,16 +48,17 @@ class InverseKinematics : public Spatial {
 	bool changed;
 
 protected:
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 	void update_parameters();
+
 public:
 	Skeleton *get_skeleton();
-	void set_bone_name(const String& p_name);
+	void set_bone_name(const String &p_name);
 	String get_bone_name() const;
 	void set_iterations(int itn);
 	int get_iterations() const;
@@ -71,4 +72,3 @@ public:
 };
 
 #endif
-

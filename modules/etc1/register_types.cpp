@@ -35,7 +35,7 @@ static ResourceFormatPKM *resource_loader_pkm = NULL;
 
 void register_etc1_types() {
 
-	resource_loader_pkm = memnew( ResourceFormatPKM );
+	resource_loader_pkm = memnew(ResourceFormatPKM);
 	ResourceLoader::add_resource_format_loader(resource_loader_pkm);
 
 	_register_etc1_compress_func();

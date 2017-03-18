@@ -29,32 +29,28 @@
 #ifndef PATH_EDITOR_PLUGIN_H
 #define PATH_EDITOR_PLUGIN_H
 
-
 #include "editor/spatial_editor_gizmos.h"
 #include "scene/3d/path.h"
-class PathSpatialGizmo  : public EditorSpatialGizmo {
+class PathSpatialGizmo : public EditorSpatialGizmo {
 
-	OBJ_TYPE(PathSpatialGizmo,EditorSpatialGizmo);
+	OBJ_TYPE(PathSpatialGizmo, EditorSpatialGizmo);
 
-	Path* path;
+	Path *path;
 	mutable Vector3 original;
 
 public:
-
 	virtual String get_handle_name(int p_idx) const;
 	virtual Variant get_handle_value(int p_idx) const;
-	virtual void set_handle(int p_idx,Camera *p_camera, const Point2& p_point);
-	virtual void commit_handle(int p_idx,const Variant& p_restore,bool p_cancel=false);
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
 
 	void redraw();
-	PathSpatialGizmo(Path* p_path=NULL);
-
+	PathSpatialGizmo(Path *p_path = NULL);
 };
 
 class PathEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( PathEditorPlugin, EditorPlugin );
-
+	OBJ_TYPE(PathEditorPlugin, EditorPlugin);
 
 	Separator *sep;
 	ToolButton *curve_create;
@@ -64,26 +60,25 @@ class PathEditorPlugin : public EditorPlugin {
 
 	EditorNode *editor;
 
-
 	Path *path;
 
 	void _mode_changed(int p_idx);
-    void _close_curve();
+	void _close_curve();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
 	Path *get_edited_path() { return path; }
 
-	static PathEditorPlugin* singleton;
+	static PathEditorPlugin *singleton;
 	Ref<FixedMaterial> path_material;
 	Ref<FixedMaterial> path_thin_material;
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
+	virtual bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event);
 
-//	virtual bool forward_input_event(const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
-	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial* p_spatial);
+	//	virtual bool forward_input_event(const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
+	virtual Ref<SpatialEditorGizmo> create_spatial_gizmo(Spatial *p_spatial);
 	virtual String get_name() const { return "Path"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -92,8 +87,6 @@ public:
 
 	PathEditorPlugin(EditorNode *p_node);
 	~PathEditorPlugin();
-
 };
-
 
 #endif // PATH_EDITOR_PLUGIN_H

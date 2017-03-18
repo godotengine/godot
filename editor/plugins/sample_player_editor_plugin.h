@@ -29,11 +29,11 @@
 #ifndef SAMPLE_PLAYER_EDITOR_PLUGIN_H
 #define SAMPLE_PLAYER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
 #include "scene/3d/spatial_sample_player.h"
-#include "scene/gui/option_button.h"
 #include "scene/audio/sample_player.h"
+#include "scene/gui/option_button.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -41,14 +41,13 @@
 
 class SamplePlayerEditor : public Control {
 
-	OBJ_TYPE(SamplePlayerEditor, Control );
+	OBJ_TYPE(SamplePlayerEditor, Control);
 
 	Panel *panel;
-	Button * play;
-	Button * stop;
+	Button *play;
+	Button *stop;
 	OptionButton *samples;
 	Node *node;
-
 
 	void _update_sample_library();
 	void _play();
@@ -58,21 +57,20 @@ protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
+public:
 	void edit(Node *p_sample_player);
 	SamplePlayerEditor();
 };
 
 class SamplePlayerEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( SamplePlayerEditorPlugin, EditorPlugin );
+	OBJ_TYPE(SamplePlayerEditorPlugin, EditorPlugin);
 
 	SamplePlayerEditor *sample_player_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "SamplePlayer"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -81,7 +79,6 @@ public:
 
 	SamplePlayerEditorPlugin(EditorNode *p_node);
 	~SamplePlayerEditorPlugin();
-
 };
 
 #endif // SAMPLE_PLAYER_EDITOR_PLUGIN_H

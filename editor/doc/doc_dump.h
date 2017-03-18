@@ -33,9 +33,7 @@
 
 class DocDump {
 public:
-
-	static void dump(const String& p_file);
-
+	static void dump(const String &p_file);
 };
 
 #endif // DOC_DUMP_H

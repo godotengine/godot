@@ -36,9 +36,7 @@
 
 namespace TestMultiMesh {
 
-MainLoop* test();
-
+MainLoop *test();
 }
-
 
 #endif

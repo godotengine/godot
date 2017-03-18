@@ -34,12 +34,12 @@ static ResourceFormatLoaderAudioStreamSpeex *speex_stream_loader = NULL;
 
 void register_speex_types() {
 
-	speex_stream_loader = memnew( ResourceFormatLoaderAudioStreamSpeex );
+	speex_stream_loader = memnew(ResourceFormatLoaderAudioStreamSpeex);
 	ResourceLoader::add_resource_format_loader(speex_stream_loader);
 	ObjectTypeDB::register_type<AudioStreamSpeex>();
 }
 
 void unregister_speex_types() {
 
-	memdelete( speex_stream_loader );
+	memdelete(speex_stream_loader);
 }

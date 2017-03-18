@@ -37,8 +37,7 @@
 
 namespace TestImage {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif

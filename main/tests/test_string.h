@@ -29,16 +29,12 @@
 #ifndef TEST_STRING_H
 #define TEST_STRING_H
 
-#include "ustring.h"
 #include "os/main_loop.h"
+#include "ustring.h"
 
 namespace TestString {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
-
 #endif
-
-

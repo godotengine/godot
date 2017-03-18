@@ -36,7 +36,6 @@
 namespace TestPython {
 
 void test();
-
 }
 
 #endif

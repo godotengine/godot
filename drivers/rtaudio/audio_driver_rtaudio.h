@@ -37,29 +37,26 @@
 
 class AudioDriverRtAudio : public AudioDriverSW {
 
-
-	static int callback( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
-	 double streamTime, RtAudioStreamStatus status, void *userData );
+	static int callback(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
+			double streamTime, RtAudioStreamStatus status, void *userData);
 	OutputFormat output_format;
 	Mutex *mutex;
 	RtAudio *dac;
 	int mix_rate;
 	bool active;
+
 public:
-
-
-	virtual const char* get_name() const;
+	virtual const char *get_name() const;
 
 	virtual Error init();
 	virtual void start();
-	virtual int get_mix_rate() const ;
+	virtual int get_mix_rate() const;
 	virtual OutputFormat get_output_format() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
 
 	AudioDriverRtAudio();
-
 };
 
 #endif // AUDIO_DRIVER_RTAUDIO_H

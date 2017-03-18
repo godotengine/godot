@@ -29,25 +29,19 @@
 #include "test_cube.h"
 #include "servers/visual_server.h"
 
-
-
 AABB TestCube::get_aabb() const {
 
-	return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
+	return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 }
 DVector<Face3> TestCube::get_faces(uint32_t p_usage_flags) const {
 
 	return DVector<Face3>();
 }
 
-
 TestCube::TestCube() {
 
 	set_base(VisualServer::get_singleton()->get_test_cube());
 }
 
-
 TestCube::~TestCube() {
 }
-
-

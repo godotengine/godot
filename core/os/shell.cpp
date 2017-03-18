@@ -28,24 +28,17 @@
 /*************************************************************************/
 #include "shell.h"
 
+Shell *Shell::singleton = NULL;
 
-Shell * Shell::singleton=NULL;
-
-
-Shell * Shell::get_singleton() {
+Shell *Shell::get_singleton() {
 
 	return singleton;
 }
 
-
 Shell::~Shell() {
-
 }
 
 Shell::Shell() {
 
-	singleton=this;
+	singleton = this;
 }
-
-
-

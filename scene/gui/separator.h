@@ -36,40 +36,33 @@
 #include "scene/gui/control.h"
 class Separator : public Control {
 
-	OBJ_TYPE( Separator, Control );
-
+	OBJ_TYPE(Separator, Control);
 
 protected:
-
 	Orientation orientation;
 	void _notification(int p_what);
-public:
 
+public:
 	virtual Size2 get_minimum_size() const;
 
 	Separator();
 	~Separator();
-
 };
 
 class VSeparator : public Separator {
 
-	OBJ_TYPE( VSeparator, Separator );
+	OBJ_TYPE(VSeparator, Separator);
 
 public:
-
 	VSeparator();
-
 };
 
 class HSeparator : public Separator {
 
-	OBJ_TYPE( HSeparator, Separator );
+	OBJ_TYPE(HSeparator, Separator);
 
 public:
-
 	HSeparator();
-
 };
 
 #endif

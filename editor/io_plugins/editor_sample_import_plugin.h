@@ -37,34 +37,31 @@ class EditorSampleImportDialog;
 
 class EditorSampleImportPlugin : public EditorImportPlugin {
 
-	OBJ_TYPE(EditorSampleImportPlugin,EditorImportPlugin);
+	OBJ_TYPE(EditorSampleImportPlugin, EditorImportPlugin);
 
 	EditorSampleImportDialog *dialog;
-	void _compress_ima_adpcm(const Vector<float>& p_data,DVector<uint8_t>& dst_data);
-public:
+	void _compress_ima_adpcm(const Vector<float> &p_data, DVector<uint8_t> &dst_data);
 
+public:
 	static EditorSampleImportPlugin *singleton;
 
 	virtual String get_name() const;
 	virtual String get_visible_name() const;
-	virtual void import_dialog(const String& p_from="");
-	virtual Error import(const String& p_path, const Ref<ResourceImportMetadata>& p_from);
-	void import_from_drop(const Vector<String>& p_drop, const String &p_dest_path);
-	virtual void reimport_multiple_files(const Vector<String>& p_list);
+	virtual void import_dialog(const String &p_from = "");
+	virtual Error import(const String &p_path, const Ref<ResourceImportMetadata> &p_from);
+	void import_from_drop(const Vector<String> &p_drop, const String &p_dest_path);
+	virtual void reimport_multiple_files(const Vector<String> &p_list);
 	virtual bool can_reimport_multiple_files() const;
 
-
-	EditorSampleImportPlugin(EditorNode* p_editor);
+	EditorSampleImportPlugin(EditorNode *p_editor);
 };
 
 class EditorSampleExportPlugin : public EditorExportPlugin {
 
-	OBJ_TYPE( EditorSampleExportPlugin, EditorExportPlugin);
-
+	OBJ_TYPE(EditorSampleExportPlugin, EditorExportPlugin);
 
 public:
-
-	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
+	virtual Vector<uint8_t> custom_export(String &p_path, const Ref<EditorExportPlatform> &p_platform);
 
 	EditorSampleExportPlugin();
 };

@@ -36,7 +36,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 /* RoomInstance Logic:
    a) Instances that belong to the room are drawn only if the room is visible (seen through portal, or player inside)
    b) Instances that don't belong to any room are considered to belong to the root room (RID empty)
@@ -44,15 +43,11 @@
 
 */
 
-
 class Room : public VisualInstance {
 
-	OBJ_TYPE( Room, VisualInstance );
+	OBJ_TYPE(Room, VisualInstance);
+
 public:
-
-
-
-
 private:
 	Ref<RoomBounds> room;
 
@@ -61,29 +56,26 @@ private:
 	bool sound_enabled;
 
 	int level;
-	void _parse_node_faces(DVector<Face3> &all_faces,const Node *p_node) const;
-
+	void _parse_node_faces(DVector<Face3> &all_faces, const Node *p_node) const;
 
 	void _bounds_changed();
 	virtual RES _get_gizmo_geometry() const;
 
 protected:
-
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 public:
-
 	enum {
 		// used to notify portals that the room in which they are has changed.
-		NOTIFICATION_AREA_CHANGED=60
+		NOTIFICATION_AREA_CHANGED = 60
 	};
 
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	void set_room( const Ref<RoomBounds>& p_room );
+	void set_room(const Ref<RoomBounds> &p_room);
 	Ref<RoomBounds> get_room() const;
 
 	void set_simulate_acoustics(bool p_enable);
@@ -95,8 +87,6 @@ public:
 
 	Room();
 	~Room();
-
 };
-
 
 #endif // ROOM_INSTANCE_H

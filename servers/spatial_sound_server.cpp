@@ -28,17 +28,15 @@
 /*************************************************************************/
 #include "spatial_sound_server.h"
 
-SpatialSoundServer *SpatialSoundServer::singleton=NULL;
-
+SpatialSoundServer *SpatialSoundServer::singleton = NULL;
 
 SpatialSoundServer *SpatialSoundServer::get_singleton() {
 
 	return singleton;
 }
 
-
 SpatialSoundServer::SpatialSoundServer() {
 
-	ERR_FAIL_COND(singleton!=NULL);
-	singleton=this;
+	ERR_FAIL_COND(singleton != NULL);
+	singleton = this;
 }

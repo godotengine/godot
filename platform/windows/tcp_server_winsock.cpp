@@ -37,7 +37,7 @@
 
 extern int winsock_refcount;
 
-TCP_Server* TCPServerWinsock::_create() {
+TCP_Server *TCPServerWinsock::_create() {
 
 	return memnew(TCPServerWinsock);
 };
@@ -48,7 +48,7 @@ void TCPServerWinsock::make_default() {
 
 	if (winsock_refcount == 0) {
 		WSADATA data;
-		WSAStartup(MAKEWORD(2,2), &data);
+		WSAStartup(MAKEWORD(2, 2), &data);
 	};
 	++winsock_refcount;
 };
@@ -62,8 +62,7 @@ void TCPServerWinsock::cleanup() {
 	};
 };
 
-
-Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+Error TCPServerWinsock::listen(uint16_t p_port, const List<String> *p_accepted_hosts) {
 
 	int sockfd;
 	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
@@ -79,12 +78,11 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 	struct sockaddr_storage my_addr;
 	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, ip_type, p_accepted_hosts);
 
-	int reuse=1;
-	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
+	int reuse = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 
 		printf("REUSEADDR failed!");
 	}
-
 
 	if (bind(sockfd, (struct sockaddr *)&my_addr, addr_size) != SOCKET_ERROR) {
 
@@ -93,8 +91,7 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 			closesocket(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
-	}
-	else {
+	} else {
 		return ERR_ALREADY_IN_USE;
 	};
 
@@ -133,7 +130,6 @@ bool TCPServerWinsock::is_connection_available() const {
 	return false;
 };
 
-
 Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 
 	if (!is_connection_available()) {
@@ -164,7 +160,6 @@ void TCPServerWinsock::stop() {
 	listen_sockfd = -1;
 };
 
-
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
@@ -175,4 +170,3 @@ TCPServerWinsock::~TCPServerWinsock() {
 
 	stop();
 };
-

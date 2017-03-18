@@ -36,11 +36,10 @@ class TCPServerPosix : public TCP_Server {
 
 	int listen_sockfd;
 
-	static TCP_Server* _create();
+	static TCP_Server *_create();
 
 public:
-
-	virtual Error listen(uint16_t p_port,const List<String> *p_accepted_hosts=NULL);
+	virtual Error listen(uint16_t p_port, const List<String> *p_accepted_hosts = NULL);
 	virtual bool is_connection_available() const;
 	virtual Ref<StreamPeerTCP> take_connection();
 
@@ -51,7 +50,6 @@ public:
 	TCPServerPosix();
 	~TCPServerPosix();
 };
-
 
 #endif // TCP_SERVER_POSIX_H
 #endif

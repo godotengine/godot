@@ -26,61 +26,58 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "version.h"
 #include "editor_log.h"
-#include "scene/gui/center_container.h"
 #include "editor_node.h"
+#include "scene/gui/center_container.h"
+#include "version.h"
 
-void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type ) {
+void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 
-	EditorLog *self=(EditorLog *)p_self;
-	if (self->current!=Thread::get_caller_ID())
+	EditorLog *self = (EditorLog *)p_self;
+	if (self->current != Thread::get_caller_ID())
 		return;
 
 	String err_str;
 	if (p_errorexp && p_errorexp[0]) {
-		err_str=p_errorexp;
+		err_str = p_errorexp;
 	} else {
-		err_str=String(p_file)+":"+itos(p_line)+" - "+String(p_error);
+		err_str = String(p_file) + ":" + itos(p_line) + " - " + String(p_error);
 	}
 
-//	if (!self->is_visible())
-//		self->emit_signal("show_request");
+	//	if (!self->is_visible())
+	//		self->emit_signal("show_request");
 
-	err_str=" "+err_str;
+	err_str = " " + err_str;
 	self->log->add_newline();
 
 	Ref<Texture> icon;
 
-	switch(p_type) {
+	switch (p_type) {
 		case ERR_HANDLER_ERROR: {
 
-			icon = self->get_icon("Error","EditorIcons");
+			icon = self->get_icon("Error", "EditorIcons");
 			return; // these are confusing
 		} break;
 		case ERR_HANDLER_WARNING: {
 
-			icon = self->get_icon("Error","EditorIcons");
+			icon = self->get_icon("Error", "EditorIcons");
 
 		} break;
 		case ERR_HANDLER_SCRIPT: {
 
-			icon = self->get_icon("ScriptError","EditorIcons");
+			icon = self->get_icon("ScriptError", "EditorIcons");
 		} break;
-
 	}
 
-	self->add_message(err_str,true);
-
+	self->add_message(err_str, true);
 }
 
 void EditorLog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_TREE) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		log->add_color_override("default_color",get_color("font_color","Tree"));
+		log->add_color_override("default_color", get_color("font_color", "Tree"));
 		//button->set_icon(get_icon("Console","EditorIcons"));
-
 	}
 
 	/*if (p_what==NOTIFICATION_DRAW) {
@@ -95,42 +92,32 @@ void EditorLog::_notification(int p_what) {
 	}*/
 }
 
-
-
-
 void EditorLog::_clear_request() {
 
 	log->clear();
-
 }
 
 void EditorLog::clear() {
 	_clear_request();
 }
 
-
-void EditorLog::add_message(const String& p_msg,bool p_error) {
-
+void EditorLog::add_message(const String &p_msg, bool p_error) {
 
 	if (p_error) {
-		Ref<Texture> icon = get_icon("Error","EditorIcons");
-		log->add_image( icon );
+		Ref<Texture> icon = get_icon("Error", "EditorIcons");
+		log->add_image(icon);
 		//button->set_icon(icon);
-		log->push_color(get_color("fg_error","Editor"));
+		log->push_color(get_color("fg_error", "Editor"));
 	} else {
 		//button->set_icon(Ref<Texture>());
-
 	}
-
 
 	log->add_newline();
 	log->add_text(p_msg);
-//	button->set_text(p_msg);
+	//	button->set_text(p_msg);
 
 	if (p_error)
 		log->pop();
-
-
 }
 
 /*
@@ -148,32 +135,28 @@ void EditorLog::_dragged(const Point2& p_ofs) {
 }
 */
 
+void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 
-
-
-void EditorLog::_undo_redo_cbk(void *p_self,const String& p_name) {
-
-	EditorLog *self=(EditorLog *)p_self;
+	EditorLog *self = (EditorLog *)p_self;
 	self->add_message(p_name);
-
 }
 
 void EditorLog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_clear_request"),&EditorLog::_clear_request );
+	ObjectTypeDB::bind_method(_MD("_clear_request"), &EditorLog::_clear_request);
 
 	//ObjectTypeDB::bind_method(_MD("_dragged"),&EditorLog::_dragged );
-	ADD_SIGNAL( MethodInfo("clear_request"));
+	ADD_SIGNAL(MethodInfo("clear_request"));
 }
 
 EditorLog::EditorLog() {
 
 	VBoxContainer *vb = this;
-	add_constant_override("separation",get_constant("separation","VBoxContainer"));
+	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 
-	HBoxContainer *hb = memnew( HBoxContainer );
+	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
-	title = memnew( Label );
+	title = memnew(Label);
 	title->set_text(TTR(" Output:"));
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
@@ -183,49 +166,42 @@ EditorLog::EditorLog() {
 	//pd->connect("dragged",this,"_dragged");
 	//pd->set_default_cursor_shape(Control::CURSOR_MOVE);
 
-	clearbutton = memnew( Button );
+	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
 	clearbutton->set_text(TTR("Clear"));
-	clearbutton->connect("pressed", this,"_clear_request");
+	clearbutton->connect("pressed", this, "_clear_request");
 
-	ec = memnew( Control);
+	ec = memnew(Control);
 	vb->add_child(ec);
-	ec->set_custom_minimum_size(Size2(0,180));
+	ec->set_custom_minimum_size(Size2(0, 180));
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 
-
-	PanelContainer *pc = memnew( PanelContainer );
-	pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
+	PanelContainer *pc = memnew(PanelContainer);
+	pc->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 	ec->add_child(pc);
 	pc->set_area_as_parent_rect();
 
-	log = memnew( RichTextLabel );
+	log = memnew(RichTextLabel);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
 	pc->add_child(log);
-	add_message(VERSION_FULL_NAME" (c) 2008-2017 Juan Linietsky, Ariel Manzur.");
+	add_message(VERSION_FULL_NAME " (c) 2008-2017 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.
 
-	eh.errfunc=_error_handler;
-	eh.userdata=this;
+	eh.errfunc = _error_handler;
+	eh.userdata = this;
 	add_error_handler(&eh);
 
-	current=Thread::get_caller_ID();
+	current = Thread::get_caller_ID();
 
-	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk,this);
-
-
+	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
 }
 
 void EditorLog::deinit() {
 
 	remove_error_handler(&eh);
-
 }
 
-
 EditorLog::~EditorLog() {
-
-
 }

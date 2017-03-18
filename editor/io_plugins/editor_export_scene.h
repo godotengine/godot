@@ -31,12 +31,11 @@
 
 #include "editor/editor_import_export.h"
 
-
 class EditorSceneExportPlugin : public EditorExportPlugin {
-	OBJ_TYPE( EditorSceneExportPlugin, EditorExportPlugin );
-public:
+	OBJ_TYPE(EditorSceneExportPlugin, EditorExportPlugin);
 
-	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
+public:
+	virtual Vector<uint8_t> custom_export(String &p_path, const Ref<EditorExportPlatform> &p_platform);
 
 	EditorSceneExportPlugin();
 };

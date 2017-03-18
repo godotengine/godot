@@ -31,6 +31,6 @@
 
 #include "math_2d.h"
 #include "vector.h"
-Vector< Vector<Vector2> > b2d_decompose(const Vector<Vector2>& p_polygon);
+Vector<Vector<Vector2> > b2d_decompose(const Vector<Vector2> &p_polygon);
 
 #endif // B2D_DECOMPOSE_H

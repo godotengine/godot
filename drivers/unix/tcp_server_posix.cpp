@@ -33,32 +33,32 @@
 
 #include <poll.h>
 
+#include <errno.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
 #include <string.h>
-#include <netdb.h>
 #include <sys/types.h>
+#include <unistd.h>
 #ifndef NO_FCNTL
-	#ifdef __HAIKU__
-		#include <fcntl.h>
-	#else
-		#include <sys/fcntl.h>
-	#endif
+#ifdef __HAIKU__
+#include <fcntl.h>
+#else
+#include <sys/fcntl.h>
+#endif
 #else
 #include <sys/ioctl.h>
 #endif
 #ifdef JAVASCRIPT_ENABLED
 #include <arpa/inet.h>
 #endif
+#include <assert.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <assert.h>
 
 #include "drivers/unix/socket_helpers.h"
 
-TCP_Server* TCPServerPosix::_create() {
+TCP_Server *TCPServerPosix::_create() {
 
 	return memnew(TCPServerPosix);
 };
@@ -68,7 +68,7 @@ void TCPServerPosix::make_default() {
 	TCP_Server::_create = TCPServerPosix::_create;
 };
 
-Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+Error TCPServerPosix::listen(uint16_t p_port, const List<String> *p_accepted_hosts) {
 
 	int sockfd;
 	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
@@ -82,8 +82,8 @@ Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_host
 	ioctl(sockfd, FIONBIO, &bval);
 #endif
 
-	int reuse=1;
-	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
+	int reuse = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 		WARN_PRINT("REUSEADDR failed!")
 	}
 
@@ -99,8 +99,7 @@ Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_host
 			close(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
-	}
-	else {
+	} else {
 		return ERR_ALREADY_IN_USE;
 	};
 
@@ -166,12 +165,11 @@ void TCPServerPosix::stop() {
 
 	if (listen_sockfd != -1) {
 		int ret = close(listen_sockfd);
-		ERR_FAIL_COND(ret!=0);
+		ERR_FAIL_COND(ret != 0);
 	};
 
 	listen_sockfd = -1;
 };
-
 
 TCPServerPosix::TCPServerPosix() {
 

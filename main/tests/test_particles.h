@@ -36,8 +36,7 @@
 
 namespace TestParticles {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif

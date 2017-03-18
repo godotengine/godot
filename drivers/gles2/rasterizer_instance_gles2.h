@@ -33,7 +33,6 @@
 
 #ifdef GLES2_ENABLED
 
-
 Rasterizer *instance_RasterizerGLES2();
 
 #endif

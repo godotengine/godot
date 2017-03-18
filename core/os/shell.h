@@ -37,11 +37,11 @@
 */
 class Shell {
 
-	static Shell * singleton;
-public:
+	static Shell *singleton;
 
-	static Shell * get_singleton();
-	virtual void execute(String p_path)=0;
+public:
+	static Shell *get_singleton();
+	virtual void execute(String p_path) = 0;
 
 	Shell();
 	virtual ~Shell();

@@ -29,16 +29,14 @@
 #ifndef CP_LOADER_H
 #define CP_LOADER_H
 
-
-#include "cp_song.h"
 #include "cp_file_access_wrapper.h"
+#include "cp_song.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class CPLoader {
 
 public:
-	
 	enum Error {
 		FILE_OK,
 		FILE_UNRECOGNIZED,
@@ -46,19 +44,16 @@ public:
 		FILE_CORRUPTED,
 		FILE_OUT_OF_MEMORY,
 	};
-	
-	
-	virtual bool can_load_song()=0;
-	virtual bool can_load_sample()=0;
-	virtual bool can_load_instrument()=0;
-	
-	virtual Error load_song(const char *p_file,CPSong *p_song,bool p_sampleset)=0;
-	virtual Error load_sample(const char *p_file,CPSample *p_sample)=0;
-	virtual Error load_instrument(const char *p_file,CPSong *p_song,int p_instr_idx)=0;
-	
-	
-	virtual ~CPLoader() {}
 
+	virtual bool can_load_song() = 0;
+	virtual bool can_load_sample() = 0;
+	virtual bool can_load_instrument() = 0;
+
+	virtual Error load_song(const char *p_file, CPSong *p_song, bool p_sampleset) = 0;
+	virtual Error load_sample(const char *p_file, CPSample *p_sample) = 0;
+	virtual Error load_instrument(const char *p_file, CPSong *p_song, int p_instr_idx) = 0;
+
+	virtual ~CPLoader() {}
 };
 
 #endif

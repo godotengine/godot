@@ -31,40 +31,35 @@
 
 #include "editor/code_editor.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
-#include "scene/gui/menu_button.h"
 #include "scene/main/timer.h"
 #include "scene/resources/shader.h"
 #include "servers/visual/shader_language.h"
 
-
 class ShaderTextEditor : public CodeTextEditor {
 
-	OBJ_TYPE( ShaderTextEditor, CodeTextEditor );
+	OBJ_TYPE(ShaderTextEditor, CodeTextEditor);
 
 	Ref<Shader> shader;
 	ShaderLanguage::ShaderType type;
 
 protected:
-
 	static void _bind_methods();
 	virtual void _load_theme_settings();
-public:
 
+public:
 	virtual void _validate_script();
 
-
 	Ref<Shader> get_edited_shader() const;
-	void set_edited_shader(const Ref<Shader>& p_shader,ShaderLanguage::ShaderType p_type);
+	void set_edited_shader(const Ref<Shader> &p_shader, ShaderLanguage::ShaderType p_type);
 	ShaderTextEditor();
-
 };
-
 
 class ShaderEditor : public Control {
 
-	OBJ_TYPE(ShaderEditor, Control );
+	OBJ_TYPE(ShaderEditor, Control);
 
 	enum {
 
@@ -110,18 +105,18 @@ class ShaderEditor : public Control {
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void apply_shaders();
 
 	void ensure_select_current();
-	void edit(const Ref<Shader>& p_shader);
+	void edit(const Ref<Shader> &p_shader);
 
 	Dictionary get_state() const;
-	void set_state(const Dictionary& p_state);
+	void set_state(const Dictionary &p_state);
 	void clear();
 
-	virtual Size2 get_minimum_size() const { return Size2(0,200); }
+	virtual Size2 get_minimum_size() const { return Size2(0, 200); }
 	void save_external_data();
 
 	ShaderEditor();
@@ -129,13 +124,13 @@ public:
 
 class ShaderEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( ShaderEditorPlugin, EditorPlugin );
+	OBJ_TYPE(ShaderEditorPlugin, EditorPlugin);
 
 	bool _2d;
 	ShaderEditor *shader_editor;
 	EditorNode *editor;
-public:
 
+public:
 	virtual String get_name() const { return "Shader"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -144,14 +139,13 @@ public:
 	virtual void selected_notify();
 
 	Dictionary get_state() const;
-	virtual void set_state(const Dictionary& p_state);
+	virtual void set_state(const Dictionary &p_state);
 	virtual void clear();
 
 	virtual void save_external_data();
 	virtual void apply_changes();
 
-	ShaderEditorPlugin(EditorNode *p_node,bool p_2d);
+	ShaderEditorPlugin(EditorNode *p_node, bool p_2d);
 	~ShaderEditorPlugin();
-
 };
 #endif
