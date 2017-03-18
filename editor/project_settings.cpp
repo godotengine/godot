@@ -39,7 +39,7 @@
 ProjectSettings *ProjectSettings::singleton = NULL;
 
 static const char *_button_names[JOY_BUTTON_MAX] = {
-	"PS X, XBox A, Nintendo B",
+	"PS Cross, XBox A, Nintendo B",
 	"PS Circle, XBox B, Nintendo A",
 	"PS Square, XBox X, Nintendo Y",
 	"PS Triangle, XBox Y, Nintendo X",
