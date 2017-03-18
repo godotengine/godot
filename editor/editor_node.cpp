@@ -5857,18 +5857,17 @@ EditorNode::EditorNode() {
 
 	about = memnew(AcceptDialog);
 	about->set_title(TTR("Thanks from the Godot community!"));
-	//about->get_cancel()->hide();
 	about->get_ok()->set_text(TTR("Thanks!"));
 	about->set_hide_on_ok(true);
+	gui_base->add_child(about);
+	HBoxContainer *hbc = memnew(HBoxContainer);
+	about->add_child(hbc);
 	Label *about_text = memnew(Label);
 	about_text->set_text(VERSION_FULL_NAME "\n(c) 2008-2017 Juan Linietsky, Ariel Manzur.\n");
-	about_text->set_pos(Point2(gui_base->get_icon("Logo", "EditorIcons")->get_size().width + 30, 20));
-	gui_base->add_child(about);
-	about->add_child(about_text);
 	TextureRect *logo = memnew(TextureRect);
-	about->add_child(logo);
-	logo->set_pos(Point2(20, 20));
 	logo->set_texture(gui_base->get_icon("Logo", "EditorIcons"));
+	hbc->add_child(logo);
+	hbc->add_child(about_text);
 
 	warning = memnew(AcceptDialog);
 	gui_base->add_child(warning);
