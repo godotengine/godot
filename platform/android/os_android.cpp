@@ -421,6 +421,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ev.mouse_button.y = touch[0].pos.y;
 				ev.mouse_button.global_x = touch[0].pos.x;
 				ev.mouse_button.global_y = touch[0].pos.y;
+				input->set_mouse_pos(Point2(touch[0].pos.x,touch[0].pos.y));
 				last_mouse = touch[0].pos;
 				input->parse_input_event(ev);
 			}
@@ -503,6 +504,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ev.mouse_button.y = touch[0].pos.y;
 				ev.mouse_button.global_x = touch[0].pos.x;
 				ev.mouse_button.global_y = touch[0].pos.y;
+				input->set_mouse_pos(Point2(touch[0].pos.x,touch[0].pos.y));
 				input->parse_input_event(ev);
 
 				for (int i = 0; i < touch.size(); i++) {
