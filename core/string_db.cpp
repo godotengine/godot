@@ -288,6 +288,9 @@ StringName::StringName(const String& p_name) {
 
 	ERR_FAIL_COND(!configured);
 
+	if (p_name.empty())
+		return;
+
 	_global_lock();
 
 	uint32_t hash = p_name.hash();
