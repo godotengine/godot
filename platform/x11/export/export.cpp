@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "export.h"
 #include "platform/x11/logo.h"
-#include "tools/editor/editor_import_export.h"
+#include "editor/editor_import_export.h"
 #include "scene/resources/texture.h"
 
 void register_x11_exporter() {

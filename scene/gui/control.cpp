@@ -40,7 +40,7 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/label.h"
 #ifdef TOOLS_ENABLED
-#include "tools/editor/editor_settings.h"
+#include "editor/editor_settings.h"
 #endif
 #include <stdio.h>
 

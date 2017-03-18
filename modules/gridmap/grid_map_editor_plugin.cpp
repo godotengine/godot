@@ -27,9 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "grid_map_editor_plugin.h"
-#include "tools/editor/plugins/spatial_editor_plugin.h"
+#include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/3d/camera.h"
-#include "tools/editor/editor_settings.h"
+#include "editor/editor_settings.h"
 
 #include "os/keyboard.h"
 #include "geometry.h"

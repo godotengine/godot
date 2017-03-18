@@ -33,7 +33,7 @@
 #include "label.h"
 #include "translation.h"
 #ifdef TOOLS_ENABLED
-#include "tools/editor/editor_settings.h"
+#include "editor/editor_settings.h"
 #endif
 
 static bool _is_text_char(CharType c) {
