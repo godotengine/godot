@@ -162,9 +162,9 @@ Error StreamPeerTCPPosix::connect(const IP_Address& p_host, uint16_t p_port) {
 	size_t addr_size = _set_sockaddr(&their_addr, p_host, p_port, ip_type);
 
 	errno = 0;
-	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1 && errno != EINPROGRESS) {
-
+	if (::connect(sockfd, (struct sockaddr *)&their_addr,addr_size) == -1 && errno != EINPROGRESS) { // linux sockets connect() call
 		ERR_PRINT("Connection to remote host failed!");
+		ERR_PRINT(strerror(errno)); // be a little more verbose on errors
 		disconnect();
 		return FAILED;
 	};
