@@ -33,10 +33,11 @@
 #include <string.h>
 
 #ifdef WINDOWS_ENABLED
-  #include <ws2tcpip.h>
-  #include <winsock2.h>
-  #include <windows.h>
   #include <stdio.h>
+  #include <winsock2.h>
+  // Needs to be included after winsock2.h
+  #include <windows.h>
+  #include <ws2tcpip.h>
   #ifndef WINRT_ENABLED
     #if defined(__MINGW32__ ) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 4)
       // MinGW-w64 on Ubuntu 12.04 (our Travis build env) has bugs in this code where
