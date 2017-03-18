@@ -541,7 +541,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					create_dialog->set_base_type("Object");
 				}
 
-				create_dialog->popup(false);
+				create_dialog->popup_create(false);
 				hide();
 				updating = false;
 				return false;

@@ -276,7 +276,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!_validate_no_foreign())
 				break;
 			*/
-			create_dialog->popup(true);
+			create_dialog->popup_create(true);
 		} break;
 		case TOOL_INSTANCE: {
 
@@ -316,7 +316,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_REPLACE: {
 
-			create_dialog->popup(false);
+			create_dialog->popup_create(false);
 		} break;
 		case TOOL_CONNECT: {
 
