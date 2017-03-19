@@ -102,7 +102,7 @@ typedef void *godot_variant;
 typedef void *godot_dictionary;
 
 godot_dictionary GDAPI godot_dictionary_create();
-void GDAPI godot_dictionary_has(godot_dictionary p_dictionary, godot_variant p_key);
+int GDAPI godot_dictionary_has(godot_dictionary p_dictionary, godot_variant p_key);
 godot_variant GDAPI godot_dictionary_get(godot_dictionary p_dictionary, godot_variant p_key);
 void GDAPI godot_dictionary_insert(godot_dictionary p_dictionary, godot_variant p_key, godot_variant p_value);
 void GDAPI godot_dictionary_remove(godot_dictionary p_dictionary, godot_variant p_key);
@@ -171,21 +171,21 @@ int GDAPI godot_input_event_key_get_unicode(godot_input_event p_event);
 godot_bool GDAPI godot_input_event_key_is_pressed(godot_input_event p_event);
 godot_bool GDAPI godot_input_event_key_is_echo(godot_input_event p_event);
 
-int GDAPI godot_input_event_mouse_get_x(godot_input_event p_event);
-int GDAPI godot_input_event_mouse_get_y(godot_input_event p_event);
-int GDAPI godot_input_event_mouse_get_global_x(godot_input_event p_event);
-int GDAPI godot_input_event_mouse_get_global_y(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_get_x(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_get_y(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_get_global_x(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_get_global_y(godot_input_event p_event);
 int GDAPI godot_input_event_mouse_get_button_mask(godot_input_event p_event);
 
 int GDAPI godot_input_event_mouse_button_get_button_index(godot_input_event p_event);
 godot_bool GDAPI godot_input_event_mouse_button_is_pressed(godot_input_event p_event);
 godot_bool GDAPI godot_input_event_mouse_button_is_doubleclick(godot_input_event p_event);
 
-int GDAPI godot_input_event_mouse_motion_get_relative_x(godot_input_event p_event);
-int GDAPI godot_input_event_mouse_motion_get_relative_y(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_motion_get_relative_x(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_motion_get_relative_y(godot_input_event p_event);
 
-int GDAPI godot_input_event_mouse_motion_get_speed_x(godot_input_event p_event);
-int GDAPI godot_input_event_mouse_motion_get_speed_y(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_motion_get_speed_x(godot_input_event p_event);
+float GDAPI godot_input_event_mouse_motion_get_speed_y(godot_input_event p_event);
 
 int GDAPI godot_input_event_joypad_motion_get_axis(godot_input_event p_event);
 float GDAPI godot_input_event_joypad_motion_get_axis_value(godot_input_event p_event);
@@ -195,20 +195,20 @@ godot_bool GDAPI godot_input_event_joypad_button_is_pressed(godot_input_event p_
 float GDAPI godot_input_event_joypad_button_get_pressure(godot_input_event p_event);
 
 int GDAPI godot_input_event_screen_touch_get_index(godot_input_event p_event);
-int GDAPI godot_input_event_screen_touch_get_x(godot_input_event p_event);
-int GDAPI godot_input_event_screen_touch_get_y(godot_input_event p_event);
-int GDAPI godot_input_event_screen_touch_is_pressed(godot_input_event p_event);
+float GDAPI godot_input_event_screen_touch_get_x(godot_input_event p_event);
+float GDAPI godot_input_event_screen_touch_get_y(godot_input_event p_event);
+godot_bool GDAPI godot_input_event_screen_touch_is_pressed(godot_input_event p_event);
 
 int GDAPI godot_input_event_screen_drag_get_index(godot_input_event p_event);
-int GDAPI godot_input_event_screen_drag_get_x(godot_input_event p_event);
-int GDAPI godot_input_event_screen_drag_get_y(godot_input_event p_event);
-int GDAPI godot_input_event_screen_drag_get_relative_x(godot_input_event p_event);
-int GDAPI godot_input_event_screen_drag_get_relative_y(godot_input_event p_event);
-int GDAPI godot_input_event_screen_drag_get_speed_x(godot_input_event p_event);
-int GDAPI godot_input_event_screen_drag_get_speed_y(godot_input_event p_event);
+float GDAPI godot_input_event_screen_drag_get_x(godot_input_event p_event);
+float GDAPI godot_input_event_screen_drag_get_y(godot_input_event p_event);
+float GDAPI godot_input_event_screen_drag_get_relative_x(godot_input_event p_event);
+float GDAPI godot_input_event_screen_drag_get_relative_y(godot_input_event p_event);
+float GDAPI godot_input_event_screen_drag_get_speed_x(godot_input_event p_event);
+float GDAPI godot_input_event_screen_drag_get_speed_y(godot_input_event p_event);
 
-int GDAPI godot_input_event_is_action(godot_input_event p_event, char *p_action);
-int GDAPI godot_input_event_is_action_pressed(godot_input_event p_event, char *p_action);
+godot_bool GDAPI godot_input_event_is_action(godot_input_event p_event, char *p_action);
+godot_bool GDAPI godot_input_event_is_action_pressed(godot_input_event p_event, char *p_action);
 
 ////// ByteArray
 
@@ -364,11 +364,11 @@ typedef void *godot_instance;
 #define GODOT_VARIANT_VECTOR2 5
 #define GODOT_VARIANT_RECT2 6
 #define GODOT_VARIANT_VECTOR3 7
-#define GODOT_VARIANT_MATRIX32 8
+#define GODOT_VARIANT_TRANSFORM2D 8
 #define GODOT_VARIANT_PLANE 9
 #define GODOT_VARIANT_QUAT 10
-#define GODOT_VARIANT_AABB 11
-#define GODOT_VARIANT_MATRIX3 12
+#define GODOT_VARIANT_RECT3 11
+#define GODOT_VARIANT_BASIS 12
 #define GODOT_VARIANT_TRANSFORM 13
 #define GODOT_VARIANT_COLOR 14
 #define GODOT_VARIANT_IMAGE 15
@@ -387,7 +387,7 @@ typedef void *godot_instance;
 #define GODOT_VARIANT_COLOR_ARRAY 28
 #define GODOT_VARIANT_MAX 29
 
-godot_variant *godot_variant_new();
+godot_variant godot_variant_new();
 
 int GDAPI godot_variant_get_type(godot_variant p_variant);
 
@@ -399,10 +399,10 @@ void GDAPI godot_variant_set_string(godot_variant p_variant, char *p_string);
 void GDAPI godot_variant_set_vector2(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_set_rect2(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_set_vector3(godot_variant p_variant, float *p_elems);
-void GDAPI godot_variant_set_matrix32(godot_variant p_variant, float *p_elems);
+void GDAPI godot_variant_set_transform2d(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_set_plane(godot_variant p_variant, float *p_elems);
-void GDAPI godot_variant_set_aabb(godot_variant p_variant, float *p_elems);
-void GDAPI godot_variant_set_matrix3(godot_variant p_variant, float *p_elems);
+void GDAPI godot_variant_set_rect3(godot_variant p_variant, float *p_elems);
+void GDAPI godot_variant_set_basis(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_set_transform(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_set_color(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_set_image(godot_variant p_variant, godot_image *p_image);
@@ -426,21 +426,22 @@ int GDAPI godot_variant_get_string(godot_variant p_variant, char *p_string, int 
 void GDAPI godot_variant_get_vector2(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_get_rect2(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_get_vector3(godot_variant p_variant, float *p_elems);
-void GDAPI godot_variant_get_matrix32(godot_variant p_variant, float *p_elems);
+void GDAPI godot_variant_get_transform2d(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_get_plane(godot_variant p_variant, float *p_elems);
-void GDAPI godot_variant_get_aabb(godot_variant p_variant, float *p_elems);
-void GDAPI godot_variant_get_matrix3(godot_variant p_variant, float *p_elems);
+void GDAPI godot_variant_get_rect3(godot_variant p_variant, float *p_elems);
+void GDAPI godot_variant_get_basis(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_get_transform(godot_variant p_variant, float *p_elems);
 void GDAPI godot_variant_get_color(godot_variant p_variant, float *p_elems);
-godot_image GDAPI *godot_variant_get_image(godot_variant p_variant);
+godot_image GDAPI godot_variant_get_image(godot_variant p_variant);
 int GDAPI godot_variant_get_node_path(godot_variant p_variant, char *p_path, int p_bufsize);
 godot_rid GDAPI godot_variant_get_rid(godot_variant p_variant);
 godot_instance GDAPI godot_variant_get_instance(godot_variant p_variant);
-void GDAPI godot_variant_get_input_event(godot_variant p_variant, godot_input_event);
-void GDAPI godot_variant_get_dictionary(godot_variant p_variant, godot_dictionary);
+godot_input_event GDAPI godot_variant_get_input_event(godot_variant p_variant);
+godot_dictionary GDAPI godot_variant_get_dictionary(godot_variant p_variant);
 godot_array GDAPI godot_variant_get_array(godot_variant p_variant);
 godot_byte_array GDAPI godot_variant_get_byte_array(godot_variant p_variant);
-godot_byte_array GDAPI godot_variant_get_int_array(godot_variant p_variant);
+godot_int_array GDAPI godot_variant_get_int_array(godot_variant p_variant);
+godot_real_array GDAPI godot_variant_get_real_array(godot_variant p_variant);
 godot_string_array GDAPI godot_variant_get_string_array(godot_variant p_variant);
 godot_vector2_array GDAPI godot_variant_get_vector2_array(godot_variant p_variant);
 godot_vector3_array GDAPI godot_variant_get_vector3_array(godot_variant p_variant);
@@ -449,7 +450,6 @@ godot_color_array GDAPI godot_variant_get_color_array(godot_variant p_variant);
 void GDAPI godot_variant_delete(godot_variant p_variant);
 
 ////// Class
-///
 
 char GDAPI **godot_class_get_list(); //get list of classes in array to array of strings, must be freed, use godot_list_free()
 
