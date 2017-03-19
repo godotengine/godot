@@ -81,6 +81,7 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("action_press", "action"), &Input::action_press);
 	ObjectTypeDB::bind_method(_MD("action_release", "action"), &Input::action_release);
 	ObjectTypeDB::bind_method(_MD("set_custom_mouse_cursor", "image:Texture", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
+	ObjectTypeDB::bind_method(_MD("parse_input_event", "event"), &Input::parse_input_event);
 
 	BIND_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_CONSTANT(MOUSE_MODE_HIDDEN);
