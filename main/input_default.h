@@ -201,7 +201,8 @@ public:
 
 	virtual void warp_mouse_pos(const Vector2 &p_to);
 
-	void parse_input_event(const InputEvent &p_event);
+	virtual void parse_input_event(const InputEvent &p_event);
+
 	void set_gravity(const Vector3 &p_gravity);
 	void set_accelerometer(const Vector3 &p_accel);
 	void set_magnetometer(const Vector3 &p_magnetometer);

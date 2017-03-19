@@ -102,6 +102,8 @@ public:
 	virtual int get_joy_button_index_from_string(String p_button) = 0;
 	virtual int get_joy_axis_index_from_string(String p_axis) = 0;
 
+	virtual void parse_input_event(const InputEvent &p_event) = 0;
+
 	Input();
 };
 
