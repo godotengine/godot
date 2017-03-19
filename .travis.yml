@@ -18,6 +18,8 @@ env:
   - GODOT_TARGET=windows
 
 matrix:
+  include:
+    - env: STATIC_CHECKS=yes
   exclude:
     - os: linux
       env: GODOT_TARGET=iphone
@@ -42,6 +44,9 @@ matrix:
 
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-trusty-3.9
     packages:
       - build-essential
       - scons
@@ -65,6 +70,9 @@ addons:
       - g++-mingw-w64-x86-64
       - mingw-w64
 
+      # For style checks.
+      - clang-format-3.9
+
 
 before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install scons; fi
@@ -75,4 +83,8 @@ before_script:
     fi
 
 script:
-  - scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin
+  - if [ "$STATIC_CHECKS" = "yes" ]; then
+      sh ./misc/travis/clang-format.sh;
+    else
+      scons platform=$GODOT_TARGET CXX=$CXX openssl=builtin;
+    fi
