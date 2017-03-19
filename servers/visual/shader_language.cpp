@@ -3077,7 +3077,44 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Dat
 				_set_tkpos(pos); //rollback
 			}
 
-		} else {
+		} else if (tk.type == TK_CF_RETURN) {
+            FunctionNode *function = NULL;
+
+            BlockNode *parent = p_block;
+
+            while (parent) {
+                if (parent->parent_function) {
+                    function = parent->parent_function;
+                    break;
+                }
+                parent=parent->parent_block;
+            }
+
+            if (!function) {
+                _set_error("'return' must be inside a function");
+                return ERR_PARSE_ERROR;
+            }
+
+            ControlFlowNode *cf = alloc_node<ControlFlowNode>();
+            cf->flow_op = FLOW_OP_RETURN;
+
+            if (function->return_type!=TYPE_VOID) {
+                Node *expr=_parse_and_reduce_expression(p_block, p_builtin_types);
+
+                if (expr->get_datatype()!=function->return_type) {
+                    _set_error("Invalid type for 'return' expression");
+                    return ERR_PARSE_ERROR;
+                }
+                cf->expressions.push_back(expr);
+            }
+            p_block->statements.push_back(cf);
+
+            tk = _get_token();
+            if (tk.type != TK_SEMICOLON) {
+                _set_error("Expected ';'");
+                return ERR_PARSE_ERROR;
+            }
+        } else {
 
 			//nothng else, so expression
 			_set_tkpos(pos); //rollback
