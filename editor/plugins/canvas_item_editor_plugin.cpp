@@ -3533,7 +3533,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	if (default_type == "Polygon2D" || default_type == "TouchScreenButton" || default_type == "TextureFrame" || default_type == "Patch9Frame") {
 		target_pos -= texture_size / 2;
 	}
-	editor_data->get_undo_redo().add_do_method(child, "set_position", target_pos);
+	editor_data->get_undo_redo().add_do_method(child, "set_pos", target_pos);
 }
 
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
