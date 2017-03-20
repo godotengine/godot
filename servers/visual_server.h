@@ -1137,6 +1137,8 @@ public:
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 	virtual Color get_default_clear_color() const = 0;
 
+	virtual void set_time_scale(float p_scale) = 0;
+
 	enum Features {
 		FEATURE_SHADERS,
 		FEATURE_MULTITHREADED,

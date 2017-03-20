@@ -7016,6 +7016,11 @@ Color VisualServerRaster::get_default_clear_color() const {
 	return clear_color;
 }
 
+void VisualServerRaster::set_time_scale(float p_scale) {
+
+	rasterizer->set_time_scale(p_scale);
+}
+
 void VisualServerRaster::set_boot_image(const Image &p_image, const Color &p_color, bool p_scale) {
 
 	if (p_image.empty())
