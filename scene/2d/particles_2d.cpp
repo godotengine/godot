@@ -453,6 +453,9 @@ void Particles2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
+			// For projects saved before "process_mode" was introduced
+			set_process_mode(process_mode);
+
 			float ppt = preprocess;
 			while (ppt > 0) {
 				_process_particles(0.1);
