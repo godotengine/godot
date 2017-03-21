@@ -50,6 +50,13 @@ class RayCast : public Spatial {
 	uint32_t layer_mask;
 	uint32_t type_mask;
 
+	Node *debug_shape;
+	Ref<Material> debug_material;
+
+	void _create_debug_shape();
+	void _update_debug_shape();
+	void _clear_debug_shape();
+
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();

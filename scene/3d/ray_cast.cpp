@@ -30,12 +30,15 @@
 #include "ray_cast.h"
 
 #include "collision_object.h"
+#include "mesh_instance.h"
 #include "servers/physics_server.h"
 void RayCast::set_cast_to(const Vector3 &p_point) {
 
 	cast_to = p_point;
 	if (is_inside_tree() && (get_tree()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()))
 		update_gizmo();
+	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint())
+		_update_debug_shape();
 }
 
 Vector3 RayCast::get_cast_to() const {
@@ -95,6 +98,13 @@ void RayCast::set_enabled(bool p_enabled) {
 		set_fixed_process(p_enabled);
 	if (!p_enabled)
 		collided = false;
+
+	if (is_inside_tree() && get_tree()->is_debugging_collisions_hint()) {
+		if (p_enabled)
+			_update_debug_shape();
+		else
+			_clear_debug_shape();
+	}
 }
 
 bool RayCast::is_enabled() const {
@@ -110,6 +120,9 @@ void RayCast::_notification(int p_what) {
 
 			if (enabled && !get_tree()->is_editor_hint()) {
 				set_fixed_process(true);
+
+				if (get_tree()->is_debugging_collisions_hint())
+					_update_debug_shape();
 			} else
 				set_fixed_process(false);
 
@@ -120,13 +133,23 @@ void RayCast::_notification(int p_what) {
 				set_fixed_process(false);
 			}
 
+			if (debug_shape)
+				_clear_debug_shape();
+
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
 
 			if (!enabled)
 				break;
 
+			bool prev_collision_state = collided;
 			_update_raycast_state();
+			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
+				if (debug_material.is_valid()) {
+					Ref<FixedSpatialMaterial> line_material = static_cast<Ref<FixedSpatialMaterial> >(debug_material);
+					line_material->set_albedo(collided ? Color(1.0, 0, 0) : Color(1.0, 0.8, 0.6));
+				}
+			}
 
 		} break;
 	}
@@ -232,6 +255,68 @@ void RayCast::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type_mask", PROPERTY_HINT_FLAGS, "Static,Kinematic,Rigid,Character,Area"), "set_type_mask", "get_type_mask");
 }
 
+void RayCast::_create_debug_shape() {
+
+	if (!debug_material.is_valid()) {
+		debug_material = Ref<FixedSpatialMaterial>(memnew(FixedSpatialMaterial));
+
+		Ref<FixedSpatialMaterial> line_material = static_cast<Ref<FixedSpatialMaterial> >(debug_material);
+		line_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		line_material->set_line_width(3.0);
+		line_material->set_albedo(Color(1.0, 0.8, 0.6));
+	}
+
+	Ref<Mesh> mesh = memnew(Mesh);
+
+	MeshInstance *mi = memnew(MeshInstance);
+	mi->set_mesh(mesh);
+
+	add_child(mi);
+	debug_shape = mi;
+}
+
+void RayCast::_update_debug_shape() {
+
+	if (!enabled)
+		return;
+
+	if (!debug_shape)
+		_create_debug_shape();
+
+	MeshInstance *mi = static_cast<MeshInstance *>(debug_shape);
+	if (!mi->get_mesh().is_valid())
+		return;
+
+	Ref<Mesh> mesh = mi->get_mesh();
+	if (mesh->get_surface_count() > 0)
+		mesh->surface_remove(0);
+
+	Array a;
+	a.resize(Mesh::ARRAY_MAX);
+
+	Vector<Vector3> verts;
+	verts.push_back(Vector3());
+	verts.push_back(cast_to);
+	a[Mesh::ARRAY_VERTEX] = verts;
+
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, a);
+	mesh->surface_set_material(0, debug_material);
+}
+
+void RayCast::_clear_debug_shape() {
+
+	if (!debug_shape)
+		return;
+
+	MeshInstance *mi = static_cast<MeshInstance *>(debug_shape);
+	if (mi->is_inside_tree())
+		mi->queue_delete();
+	else
+		memdelete(mi);
+
+	debug_shape = NULL;
+}
+
 RayCast::RayCast() {
 
 	enabled = false;
@@ -241,4 +326,5 @@ RayCast::RayCast() {
 	layer_mask = 1;
 	type_mask = PhysicsDirectSpaceState::TYPE_MASK_COLLISION;
 	cast_to = Vector3(0, -1, 0);
+	debug_shape = NULL;
 }
