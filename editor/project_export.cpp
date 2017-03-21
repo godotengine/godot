@@ -155,6 +155,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		delete_preset->set_disabled(true);
 		sections->hide();
 		patches->clear();
+		export_error->hide();
+		export_templates_error->hide();
 		return;
 	}
 
@@ -204,6 +206,33 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	patch_add->add_button(0, get_icon("folder", "FileDialog"), 1);
 
 	_fill_resource_tree();
+
+	bool needs_templates;
+	String error;
+	if (!current->get_platform()->can_export(current, error, needs_templates)) {
+
+		if (error != String()) {
+
+			Vector<String> items = error.split("\n");
+			error = "";
+			for (int i = 0; i < items.size(); i++) {
+				if (i > 0)
+					error += "\n";
+				error += " - " + items[i];
+			}
+
+			export_error->set_text(error);
+			export_error->show();
+		} else {
+			export_error->hide();
+		}
+		if (needs_templates)
+			export_templates_error->show();
+
+	} else {
+		export_error->show();
+		export_templates_error->hide();
+	}
 
 	updating = false;
 }
@@ -607,6 +636,12 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 	}
 }
 
+void ProjectExportDialog::_open_export_template_manager() {
+
+	EditorNode::get_singleton()->open_export_template_manager();
+	hide();
+}
+
 void ProjectExportDialog::_bind_methods() {
 
 	ClassDB::bind_method("_add_preset", &ProjectExportDialog::_add_preset);
@@ -627,14 +662,18 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_patch_edited", &ProjectExportDialog::_patch_edited);
 	ClassDB::bind_method("_export_pck_zip", &ProjectExportDialog::_export_pck_zip);
 	ClassDB::bind_method("_export_pck_zip_selected", &ProjectExportDialog::_export_pck_zip_selected);
+	ClassDB::bind_method("_open_export_template_manager", &ProjectExportDialog::_open_export_template_manager);
 }
 ProjectExportDialog::ProjectExportDialog() {
 
 	set_title(TTR("Export"));
 	set_resizable(true);
 
+	VBoxContainer *main_vb = memnew(VBoxContainer);
+	add_child(main_vb);
 	HBoxContainer *hbox = memnew(HBoxContainer);
-	add_child(hbox);
+	main_vb->add_child(hbox);
+	hbox->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	VBoxContainer *preset_vb = memnew(VBoxContainer);
 	preset_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -769,6 +808,25 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_pck_zip->set_mode(FileDialog::MODE_SAVE_FILE);
 	add_child(export_pck_zip);
 	export_pck_zip->connect("file_selected", this, "_export_pck_zip_selected");
+
+	export_error = memnew(Label);
+	main_vb->add_child(export_error);
+	export_error->hide();
+	export_error->add_color_override("font_color", Color(1, 0.5, 0.5));
+
+	export_templates_error = memnew(HBoxContainer);
+	main_vb->add_child(export_templates_error);
+	export_templates_error->hide();
+
+	Label *export_error2 = memnew(Label);
+	export_templates_error->add_child(export_error2);
+	export_error2->add_color_override("font_color", Color(1, 0.5, 0.5));
+	export_error2->set_text(" - " + TTR("Export templates for this platform are missing:") + " ");
+
+	LinkButton *download_templates = memnew(LinkButton);
+	download_templates->set_text(TTR("Manage Export Templates"));
+	export_templates_error->add_child(download_templates);
+	download_templates->connect("pressed", this, "_open_export_template_manager");
 
 	set_hide_on_ok(false);
 

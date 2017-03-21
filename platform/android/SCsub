@@ -19,8 +19,8 @@ android_files = [
     'android_native_app_glue.c',
     'java_glue.cpp',
     'cpu-features.c',
-    'java_class_wrapper.cpp'
-	'power_android.cpp'
+    'java_class_wrapper.cpp',
+#    'power_android.cpp'
 ]
 
 # env.Depends('#core/math/vector3.h', 'vector3_psp.h')

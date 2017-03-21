@@ -51,7 +51,7 @@ static int _get_pad(int p_alignment, int p_n) {
 	};
 
 	return pad;
-};
+}
 
 #define PCK_PADDING 16
 
@@ -870,6 +870,7 @@ bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset,
 	} else if (find_export_template(debug_file_64) == String()) {
 		r_missing_templates = true;
 	}
+
 	return !r_missing_templates;
 }
 

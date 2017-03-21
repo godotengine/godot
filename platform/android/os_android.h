@@ -35,7 +35,7 @@
 #include "main/input_default.h"
 #include "os/input.h"
 #include "os/main_loop.h"
-#include "power_android.h"
+//#include "power_android.h"
 #include "servers/audio_server.h"
 #include "servers/physics/physics_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
@@ -104,7 +104,6 @@ private:
 
 	bool use_16bits_fbo;
 
-	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
@@ -141,7 +140,7 @@ private:
 	SetKeepScreenOnFunc set_keep_screen_on_func;
 	AlertFunc alert_func;
 
-	power_android *power_manager;
+	//power_android *power_manager;
 
 public:
 	// functions used by main to initialize/deintialize the OS

@@ -30,13 +30,13 @@
 
 #include "core/global_config.h"
 #include "core/io/file_access_buffered_fa.h"
-#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "file_access_android.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 
 #ifdef ANDROID_NATIVE_ACTIVITY
 #include "dir_access_android.h"
@@ -125,18 +125,14 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	AudioDriverManager::add_driver(&audio_driver_android);
 
-	RasterizerGLES2 *rasterizer_gles22 = memnew(RasterizerGLES2(false, use_reload_hooks, false, use_reload_hooks));
-	if (gl_extensions)
-		rasterizer_gles22->set_extensions(gl_extensions);
-	rasterizer = rasterizer_gles22;
+	RasterizerGLES3::register_config();
+	RasterizerGLES3::make_current();
 
-	rasterizer->set_force_16_bits_fbo(use_16bits_fbo);
-
-	visual_server = memnew(VisualServerRaster(rasterizer));
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+	visual_server = memnew(VisualServerRaster);
+/*	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
-	};
+	};*/
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
@@ -156,7 +152,7 @@ void OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
 
-	power_manager = memnew(power_android);
+	//power_manager = memnew(power_android);
 }
 
 void OS_Android::set_main_loop(MainLoop *p_main_loop) {
@@ -227,7 +223,7 @@ void OS_Android::print(const char *p_format, ...) {
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
 
-	print("ALERT: %s\n", p_alert.utf8().get_data());
+	//print("ALERT: %s\n", p_alert.utf8().get_data());
 	if (alert_func)
 		alert_func(p_alert, p_title);
 }
@@ -631,8 +627,8 @@ void OS_Android::reload_gfx() {
 
 	if (gfx_init_func)
 		gfx_init_func(gfx_init_ud, use_gl2);
-	if (rasterizer)
-		rasterizer->reload_vram();
+//	if (rasterizer)
+//		rasterizer->reload_vram();
 }
 
 Error OS_Android::shell_open(String p_uri) {
@@ -750,9 +746,9 @@ void OS_Android::native_video_stop() {
 
 void OS_Android::set_context_is_16_bits(bool p_is_16) {
 
-	use_16bits_fbo = p_is_16;
-	if (rasterizer)
-		rasterizer->set_force_16_bits_fbo(p_is_16);
+//	use_16bits_fbo = p_is_16;
+//	if (rasterizer)
+//		rasterizer->set_force_16_bits_fbo(p_is_16);
 }
 
 void OS_Android::joy_connection_changed(int p_device, bool p_connected, String p_name) {
@@ -780,7 +776,7 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	main_loop = NULL;
 	last_id = 1;
 	gl_extensions = NULL;
-	rasterizer = NULL;
+//	rasterizer = NULL;
 	use_gl2 = false;
 
 	open_uri_func = p_open_uri_func;

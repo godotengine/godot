@@ -35,6 +35,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_path.h"
 #include "editor/editor_run.h"
+#include "editor/export_template_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/groups_editor.h"
 #include "editor/import_dock.h"
@@ -180,7 +181,7 @@ private:
 		SETTINGS_LAYOUT_SAVE,
 		SETTINGS_LAYOUT_DELETE,
 		SETTINGS_LAYOUT_DEFAULT,
-		SETTINGS_LOAD_EXPORT_TEMPLATES,
+		SETTINGS_MANAGE_EXPORT_TEMPLATES,
 		SETTINGS_PICK_MAIN_SCENE,
 		SETTINGS_TOGGLE_FULLSCREN,
 		SETTINGS_HELP,
@@ -300,6 +301,7 @@ private:
 	RunSettingsDialog *run_settings_dialog;
 	ProjectSettings *project_settings;
 	EditorFileDialog *file;
+	ExportTemplateManager *export_template_manager;
 	FileDialog *file_templates;
 	FileDialog *file_export;
 	FileDialog *file_export_lib;
@@ -738,6 +740,8 @@ public:
 	void save_layout();
 
 	void update_keying();
+
+	void open_export_template_manager();
 
 	void reload_scene(const String &p_path);
 
