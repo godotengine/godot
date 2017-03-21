@@ -82,8 +82,13 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 }
 Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 
-	ERR_FAIL_COND_V(!values.has(p_section), p_default);
-	ERR_FAIL_COND_V(!values[p_section].has(p_key), p_default);
+	if (!values.has(p_section) || !values[p_section].has(p_key)) {
+		if (p_default.get_type() == Variant::NIL) {
+			ERR_EXPLAIN("Couldn't find the given section/key and no default was given");
+			ERR_FAIL_V(p_default);
+		}
+		return p_default;
+	}
 	return values[p_section][p_key];
 }
 
