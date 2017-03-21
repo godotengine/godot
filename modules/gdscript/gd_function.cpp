@@ -189,7 +189,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 	if (p_state) {
 		//use existing (supplied) state (yielded)
 		stack = (Variant *)p_state->stack.ptr();
-		call_args = (Variant **)stack + sizeof(Variant) * p_state->stack_size;
+		call_args = (Variant **)&p_state->stack.ptr()[sizeof(Variant) * p_state->stack_size]; //ptr() to avoid bounds check
 		line = p_state->line;
 		ip = p_state->ip;
 		alloca_size = p_state->stack.size();
