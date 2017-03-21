@@ -299,7 +299,7 @@ static int frame_count = 0;
  		motionManager = [[CMMotionManager alloc] init];
  		if (motionManager.deviceMotionAvailable) {
  			motionManager.deviceMotionUpdateInterval = 1.0/70.0;
- 			[motionManager startDeviceMotionUpdates];			
+ 			[motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXMagneticNorthZVertical];			
 			motionInitialised = YES;
  		};
  	};
