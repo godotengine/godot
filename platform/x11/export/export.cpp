@@ -42,7 +42,11 @@ void register_x11_exporter() {
 	logo->create_from_image(img);
 	platform->set_logo(logo);
 	platform->set_name("Linux/X11");
-	platform->set_extension("");
+	platform->set_extension("bin");
+	platform->set_release_32("linux_x11_32_release");
+	platform->set_debug_32("linux_x11_32_debug");
+	platform->set_release_64("linux_x11_64_release");
+	platform->set_debug_64("linux_x11_64_debug");
 
 	EditorExport::get_singleton()->add_export_platform(platform);
 

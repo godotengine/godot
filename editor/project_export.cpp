@@ -229,9 +229,12 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		if (needs_templates)
 			export_templates_error->show();
 
+		get_ok()->set_disabled(true);
+
 	} else {
 		export_error->show();
 		export_templates_error->hide();
+		get_ok()->set_disabled(false);
 	}
 
 	updating = false;
@@ -642,6 +645,33 @@ void ProjectExportDialog::_open_export_template_manager() {
 	hide();
 }
 
+void ProjectExportDialog::_export_project() {
+
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	ERR_FAIL_COND(current.is_null());
+	Ref<EditorExportPlatform> platform = current->get_platform();
+	ERR_FAIL_COND(platform.is_null());
+
+	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
+	export_project->clear_filters();
+	String extension = platform->get_binary_extension();
+	if (extension != String()) {
+		export_project->add_filter("*." + extension + " ; " + platform->get_name() + " Export");
+	}
+
+	export_project->popup_centered_ratio();
+}
+
+void ProjectExportDialog::_export_project_to_path(const String &p_path) {
+
+	Ref<EditorExportPreset> current = EditorExport::get_singleton()->get_export_preset(presets->get_current());
+	ERR_FAIL_COND(current.is_null());
+	Ref<EditorExportPlatform> platform = current->get_platform();
+	ERR_FAIL_COND(platform.is_null());
+
+	Error err = platform->export_project(current, export_debug->is_pressed(), p_path, 0);
+}
+
 void ProjectExportDialog::_bind_methods() {
 
 	ClassDB::bind_method("_add_preset", &ProjectExportDialog::_add_preset);
@@ -663,6 +693,8 @@ void ProjectExportDialog::_bind_methods() {
 	ClassDB::bind_method("_export_pck_zip", &ProjectExportDialog::_export_pck_zip);
 	ClassDB::bind_method("_export_pck_zip_selected", &ProjectExportDialog::_export_pck_zip_selected);
 	ClassDB::bind_method("_open_export_template_manager", &ProjectExportDialog::_open_export_template_manager);
+	ClassDB::bind_method("_export_project", &ProjectExportDialog::_export_project);
+	ClassDB::bind_method("_export_project_to_path", &ProjectExportDialog::_export_project_to_path);
 }
 ProjectExportDialog::ProjectExportDialog() {
 
@@ -827,6 +859,17 @@ ProjectExportDialog::ProjectExportDialog() {
 	download_templates->set_text(TTR("Manage Export Templates"));
 	export_templates_error->add_child(download_templates);
 	download_templates->connect("pressed", this, "_open_export_template_manager");
+
+	export_project = memnew(FileDialog);
+	export_project->set_access(FileDialog::ACCESS_FILESYSTEM);
+	add_child(export_project);
+	export_project->connect("file_selected", this, "_export_project_to_path");
+	export_button->connect("pressed", this, "_export_project");
+
+	export_debug = memnew(CheckButton);
+	export_debug->set_text(TTR("Export With Debug"));
+	export_debug->set_pressed(true);
+	export_project->get_vbox()->add_child(export_debug);
 
 	set_hide_on_ok(false);
 

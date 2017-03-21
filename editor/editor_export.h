@@ -152,7 +152,7 @@ private:
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) = 0;
-	String find_export_template(String template_file_name, String *err = NULL) const;
+	String find_export_template(String template_file_name) const;
 
 public:
 	struct ExportOption {

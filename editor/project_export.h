@@ -64,8 +64,8 @@ private:
 	PropertyEditor *parameters;
 	CheckButton *runnable;
 
-	EditorFileDialog *pck_export;
-	EditorFileDialog *file_export;
+	//EditorFileDialog *pck_export;
+	//EditorFileDialog *file_export;
 
 	Button *button_export;
 	bool updating;
@@ -119,11 +119,16 @@ private:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	FileDialog *export_pck_zip;
+	FileDialog *export_project;
+	CheckButton *export_debug;
 
 	void _open_export_template_manager();
 
 	void _export_pck_zip();
 	void _export_pck_zip_selected(const String &p_path);
+
+	void _export_project();
+	void _export_project_to_path(const String &p_path);
 
 protected:
 	void _notification(int p_what);
