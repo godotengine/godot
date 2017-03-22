@@ -144,6 +144,7 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_ALL,
 		DRAG_ROTATE,
 		DRAG_PIVOT,
+		DRAG_NODE_2D,
 
 	};
 
@@ -323,6 +324,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _list_select(const InputEventMouseButton &b);
 
 	DragType _find_drag_type(const Transform2D &p_xform, const Rect2 &p_local_rect, const Point2 &p_click, Vector2 &r_point);
+	void _prepare_drag(const Point2 &p_click_pos);
 
 	void _popup_callback(int p_op);
 	bool updating_scroll;
