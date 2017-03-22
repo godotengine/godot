@@ -580,6 +580,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	hints["editors/3d/zoom_modifier"] = PropertyInfo(Variant::INT, "editors/3d/zoom_modifier", PROPERTY_HINT_ENUM, "None,Shift,Alt,Meta,Ctrl");
 	set("editors/3d/emulate_numpad", false);
 	set("editors/3d/emulate_3_button_mouse", false);
+	set("editors/3d/warped_mouse_panning", true);
 
 	set("editors/2d/bone_width", 5);
 	set("editors/2d/bone_color1", Color(1.0, 1.0, 1.0, 0.9));
@@ -588,6 +589,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("editors/2d/bone_ik_color", Color(0.9, 0.9, 0.45, 0.9));
 
 	set("editors/2d/keep_margins_when_changing_anchors", false);
+
+	set("editors/2d/warped_mouse_panning", true);
 
 	set("run/window_placement/rect", 0);
 	hints["run/window_placement/rect"] = PropertyInfo(Variant::INT, "run/window_placement/rect", PROPERTY_HINT_ENUM, "Default,Centered,Custom Position,Force Maximized,Force Full Screen");
