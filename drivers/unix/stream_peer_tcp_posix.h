@@ -35,18 +35,17 @@
 #include "core/io/stream_peer_tcp.h"
 #include "error_list.h"
 
-#include "core/io/ip_address.h"
-
 class StreamPeerTCPPosix : public StreamPeerTCP {
 
 protected:
 	mutable Status status;
 
+	IP::Type sock_type;
 	int sockfd;
 
 	Error _block(int p_sockfd, bool p_read, bool p_write) const;
 
-	Error _poll_connection(bool p_block) const;
+	Error _poll_connection() const;
 
 	IP_Address peer_host;
 	int peer_port;
@@ -67,7 +66,7 @@ public:
 
 	virtual int get_available_bytes() const;
 
-	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type);
+	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_sock_type);
 
 	virtual IP_Address get_connected_host() const;
 	virtual uint16_t get_connected_port() const;
