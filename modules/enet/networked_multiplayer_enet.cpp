@@ -163,13 +163,6 @@ void NetworkedMultiplayerENet::poll() {
 					break;
 				}
 
-				IP_Address ip;
-#ifdef GODOT_ENET
-				ip.set_ipv6((uint8_t *)&(event.peer->address.host));
-#else
-				ip.set_ipv4((uint8_t *)&(event.peer->address.host));
-#endif
-
 				int *new_id = memnew(int);
 				*new_id = event.data;
 
