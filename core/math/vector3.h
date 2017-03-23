@@ -75,6 +75,7 @@ struct Vector3 {
 
 	_FORCE_INLINE_ void normalize();
 	_FORCE_INLINE_ Vector3 normalized() const;
+	_FORCE_INLINE_ bool is_normalized() const;
 	_FORCE_INLINE_ Vector3 inverse() const;
 
 	_FORCE_INLINE_ void zero();
@@ -383,6 +384,10 @@ Vector3 Vector3::normalized() const {
 	Vector3 v = *this;
 	v.normalize();
 	return v;
+}
+
+bool Vector3::is_normalized() const {
+	return Math::isequal_approx(length(), (real_t)1.0);
 }
 
 Vector3 Vector3::inverse() const {
