@@ -721,7 +721,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	@Override public void onBackPressed() {
 
 		System.out.printf("** BACK REQUEST!\n");
-		GodotLib.back();
+		//GodotLib.back();
 	}
 
 	public void forceQuit() {

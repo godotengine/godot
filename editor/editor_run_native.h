@@ -36,14 +36,14 @@ class EditorRunNative : public HBoxContainer {
 
 	GDCLASS(EditorRunNative, BoxContainer);
 
-	Map<StringName, MenuButton *> menus;
+	Map<int, MenuButton *> menus;
 	bool first;
 	bool deploy_dumb;
 	bool deploy_debug_remote;
 	bool debug_collisions;
 	bool debug_navigation;
 
-	void _run_native(int p_idx, const String &p_platform);
+	void _run_native(int p_idx, int p_platform);
 
 protected:
 	static void _bind_methods();

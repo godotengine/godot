@@ -153,6 +153,7 @@ private:
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) = 0;
 	String find_export_template(String template_file_name) const;
+	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 
 public:
 	struct ExportOption {
@@ -190,7 +191,7 @@ public:
 		DEBUG_FLAG_VIEW_NAVIGATION = 16,
 	};
 
-	virtual Error run(int p_device, int p_debug_flags) { return OK; }
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) { return OK; }
 
 	virtual bool can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const = 0;
 
@@ -233,6 +234,8 @@ public:
 	void remove_export_preset(int p_idx);
 
 	void load_config();
+
+	bool poll_export_platforms();
 
 	EditorExport();
 	~EditorExport();

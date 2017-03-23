@@ -601,6 +601,58 @@ Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, co
 	return OK;
 }
 
+void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, int p_flags) {
+
+	String host = EditorSettings::get_singleton()->get("network/debug_host");
+
+	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST)
+		host = "localhost";
+
+	if (p_flags & DEBUG_FLAG_DUMB_CLIENT) {
+		int port = EditorSettings::get_singleton()->get("filesystem/file_server/port");
+		String passwd = EditorSettings::get_singleton()->get("filesystem/file_server/password");
+		r_flags.push_back("-rfs");
+		r_flags.push_back(host + ":" + itos(port));
+		if (passwd != "") {
+			r_flags.push_back("-rfs_pass");
+			r_flags.push_back(passwd);
+		}
+	}
+
+	if (p_flags & DEBUG_FLAG_REMOTE_DEBUG) {
+
+		r_flags.push_back("-rdebug");
+
+		r_flags.push_back(host + ":" + String::num(GLOBAL_DEF("network/debug/remote_port", 6007)));
+
+		List<String> breakpoints;
+		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+
+		if (breakpoints.size()) {
+
+			r_flags.push_back("-bp");
+			String bpoints;
+			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
+
+				bpoints += E->get().replace(" ", "%20");
+				if (E->next())
+					bpoints += ",";
+			}
+
+			r_flags.push_back(bpoints);
+		}
+	}
+
+	if (p_flags & DEBUG_FLAG_VIEW_COLLISONS) {
+
+		r_flags.push_back("-debugcol");
+	}
+
+	if (p_flags & DEBUG_FLAG_VIEW_NAVIGATION) {
+
+		r_flags.push_back("-debugnav");
+	}
+}
 EditorExportPlatform::EditorExportPlatform() {
 }
 
@@ -802,6 +854,18 @@ void EditorExport::load_config() {
 	}
 
 	block_save = false;
+}
+
+bool EditorExport::poll_export_platforms() {
+
+	bool changed = false;
+	for (int i = 0; i < export_platforms.size(); i++) {
+		if (export_platforms[i]->poll_devices()) {
+			changed = true;
+		}
+	}
+
+	return changed;
 }
 
 EditorExport::EditorExport() {

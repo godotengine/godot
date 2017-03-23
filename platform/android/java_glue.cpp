@@ -929,7 +929,16 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, job
 
 static void _initialize_java_modules() {
 
+	if (!GlobalConfig::get_singleton()->has("android/modules")) {
+		print_line("ANDROID MODULES: Nothing to load, aborting");
+		return;
+	}
+
 	String modules = GlobalConfig::get_singleton()->get("android/modules");
+	modules = modules.strip_edges();
+	if (modules == String()) {
+		return;
+	}
 	Vector<String> mods = modules.split(",", false);
 	print_line("ANDROID MODULES : " + modules);
 	__android_log_print(ANDROID_LOG_INFO, "godot", "mod count: %i", mods.size());

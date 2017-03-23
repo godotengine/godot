@@ -31,7 +31,7 @@
 $$ADD_APPLICATION_CHUNKS$$
 
     </application>
-    <uses-feature android:glEsVersion="0x00020000"/>
+    <uses-feature android:glEsVersion="0x00030000"/>
 
 $$ADD_PERMISSION_CHUNKS$$
 <uses-permission android:name="godot.ACCESS_CHECKIN_PROPERTIES"/>

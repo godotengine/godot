@@ -77,18 +77,18 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 
 	private static GodotIO io;
 	private static boolean firsttime=true;
-	private static boolean use_gl2=false;
+	private static boolean use_gl3=false;
 	private static boolean use_32=false;
 
 	private Godot activity;
 
 
 	private InputManagerCompat mInputManager;
-	public GodotView(Context context,GodotIO p_io,boolean p_use_gl2, boolean p_use_32_bits, Godot p_activity) {
+	public GodotView(Context context,GodotIO p_io,boolean p_use_gl3, boolean p_use_32_bits, Godot p_activity) {
 		super(context);
 		ctx=context;
 		io=p_io;
-		use_gl2=p_use_gl2;
+		use_gl3=p_use_gl3;
 		use_32=p_use_32_bits;
 
 		activity = p_activity;
@@ -362,14 +362,15 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 	private static class ContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		if (use_gl2)
-			Log.w(TAG, "creating OpenGL ES 2.0 context :");
+		if (use_gl3)
+			Log.w(TAG, "creating OpenGL ES 3.0 context :");
 		else
-			Log.w(TAG, "creating OpenGL ES 1.1 context :");
+			Log.w(TAG, "creating OpenGL ES 2.0 context :");
 
 		checkEglError("Before eglCreateContext", egl);
 		int[] attrib_list2 = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
-		EGLContext context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl2?attrib_list2:null);
+		int[] attrib_list3 = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
+		EGLContext context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, use_gl3?attrib_list3:attrib_list2);
 		checkEglError("After eglCreateContext", egl);
 		return context;
 	}
@@ -432,13 +433,14 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 			EGL10.EGL_NONE
 		};
-		private static int[] s_configAttribs =
+		private static int[] s_configAttribs3 =
 		{
 			EGL10.EGL_RED_SIZE, 4,
 			EGL10.EGL_GREEN_SIZE, 4,
 			EGL10.EGL_BLUE_SIZE, 4,
 		   // EGL10.EGL_DEPTH_SIZE,     16,
 		  //  EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
+			EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, //apparently there is no EGL_OPENGL_ES3_BIT
 			EGL10.EGL_NONE
 		};
 
@@ -447,7 +449,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			/* Get the number of minimally matching EGL configurations
 			 */
 			int[] num_config = new int[1];
-			egl.eglChooseConfig(display, use_gl2?s_configAttribs2:s_configAttribs, null, 0, num_config);
+			egl.eglChooseConfig(display, use_gl3?s_configAttribs3:s_configAttribs2, null, 0, num_config);
 
 			int numConfigs = num_config[0];
 
@@ -458,7 +460,7 @@ public class GodotView extends GLSurfaceView implements InputDeviceListener {
 			/* Allocate then read the array of minimally matching EGL configs
 			 */
 			EGLConfig[] configs = new EGLConfig[numConfigs];
-			egl.eglChooseConfig(display, use_gl2?s_configAttribs2:s_configAttribs, configs, numConfigs, num_config);
+			egl.eglChooseConfig(display, use_gl3?s_configAttribs3:s_configAttribs2, configs, numConfigs, num_config);
 
 			if (DEBUG) {
 			 printConfigs(egl, display, configs);
