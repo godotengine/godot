@@ -580,6 +580,11 @@ void OS_Android::process_accelerometer(const Vector3 &p_accelerometer) {
 	input->set_accelerometer(p_accelerometer);
 }
 
+void OS_Android::process_gravitymeter(const Vector3 &p_gravitymeter) {
+
+	input->set_gravity(p_gravitymeter);
+}
+
 void OS_Android::process_magnetometer(const Vector3 &p_magnetometer) {
 
 	input->set_magnetometer(p_magnetometer);

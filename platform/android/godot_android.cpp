@@ -295,6 +295,7 @@ struct engine {
 
 	ASensorManager *sensorManager;
 	const ASensor *accelerometerSensor;
+	const ASensor *gravitySensor;
 	const ASensor *magnetometerSensor;
 	const ASensor *gyroscopeSensor;
 	ASensorEventQueue *sensorEventQueue;
@@ -694,6 +695,14 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 				ASensorEventQueue_setEventRate(engine->sensorEventQueue,
 						engine->accelerometerSensor, (1000L / 60) * 1000);
 			}
+			// and start monitoring our gravity vector
+			if (engine->gravitySensor != NULL) {
+				ASensorEventQueue_enableSensor(engine->sensorEventQueue,
+						engine->gravitySensor);
+				// We'd like to get 60 events per second (in us).
+				ASensorEventQueue_setEventRate(engine->sensorEventQueue,
+						engine->gravitySensor, (1000L / 60) * 1000);
+			}
 			// Also start monitoring the magnetometer.
 			if (engine->magnetometerSensor != NULL) {
 				ASensorEventQueue_enableSensor(engine->sensorEventQueue,
@@ -718,6 +727,10 @@ static void engine_handle_cmd(struct android_app *app, int32_t cmd) {
 			if (engine->accelerometerSensor != NULL) {
 				ASensorEventQueue_disableSensor(engine->sensorEventQueue,
 						engine->accelerometerSensor);
+			}
+			if (engine->gravitySensor != NULL) {
+				ASensorEventQueue_disableSensor(engine->sensorEventQueue,
+						engine->gravitySensor);
 			}
 			if (engine->magnetometerSensor != NULL) {
 				ASensorEventQueue_disableSensor(engine->sensorEventQueue,
@@ -754,6 +767,8 @@ void android_main(struct android_app *state) {
 	engine.sensorManager = ASensorManager_getInstance();
 	engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
 			ASENSOR_TYPE_ACCELEROMETER);
+	engine.gravitySensor = ASensorManager_getDefaultSensor(engine.sensorManager,
+			ASENSOR_TYPE_GRAVITY);
 	engine.magnetometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
 			ASENSOR_TYPE_MAGNETIC_FIELD);
 	engine.gyroscopeSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
@@ -795,7 +810,7 @@ void android_main(struct android_app *state) {
 			// If a sensor has data, process it now.
 			// LOGI("events\n");
 			if (ident == LOOPER_ID_USER) {
-				if (engine.accelerometerSensor != NULL || engine.magnetometerSensor != NULL || engine.gyroscopeSensor != NULL) {
+				if (engine.accelerometerSensor != NULL || engine.gravitySensor != NULL || engine.magnetometerSensor != NULL || engine.gyroscopeSensor != NULL) {
 					ASensorEvent event;
 					while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
 								   &event, 1) > 0) {
@@ -804,6 +819,10 @@ void android_main(struct android_app *state) {
 							if (event.acceleration != NULL) {
 								engine.os->process_accelerometer(Vector3(event.acceleration.x, event.acceleration.y,
 										event.acceleration.z));
+							}
+							if (event.gravity != NULL) {
+								engine.os->process_gravitymeter(Vector3(event.gravity.x, event.gravity.y,
+										event.gravity.z));
 							}
 							if (event.magnetic != NULL) {
 								engine.os->process_magnetometer(Vector3(event.magnetic.x, event.magnetic.y,
