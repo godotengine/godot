@@ -6486,7 +6486,7 @@ msgstr "alliberat"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 "No s'ha pogut llegir el certificat. Comproveu que tant el camí com la "
 "contrasenya són correctes"

@@ -6514,7 +6514,7 @@ msgstr "appena rilasciato"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 "Impossibile leggere il file del certificatio. Il percorso e la pasword sono "
 "entrambi corretti?"

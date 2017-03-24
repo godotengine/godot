@@ -6510,7 +6510,7 @@ msgstr "просто отпущена"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr "Не могу прочитать файл сертификата. Уверены, что путь и пароль верны?"
 
 #: platform/uwp/export/export.cpp

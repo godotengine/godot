@@ -1032,7 +1032,7 @@ void AppxPackager::finish() {
 		Error err = read_cert_file(certificate_path, certificate_pass, &cert_file);
 
 		if (err != OK) {
-			EditorNode::add_io_error(TTR("Couldn't read the certficate file. Are the path and password both correct?"));
+			EditorNode::add_io_error(TTR("Couldn't read the certificate file. Are the path and password both correct?"));
 			package->close();
 			memdelete(package);
 			package = NULL;

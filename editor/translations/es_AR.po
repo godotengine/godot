@@ -6520,7 +6520,7 @@ msgstr "recién soltado"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 "No se pudo leer el archivo de certificado. Son tanto la ruta como el "
 "password correctos?"

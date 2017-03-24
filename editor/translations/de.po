@@ -6536,7 +6536,7 @@ msgstr "gerade losgelassen"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 "Zertifikat-Datei konnte nicht gelesen werden. Sind Pfad und Passwort beide "
 "korrekt?"

@@ -6467,7 +6467,7 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr "인증서 파일을 읽을 수 없습니다. 경로와 비밀번호가 정확합니까?"
 
 #: platform/uwp/export/export.cpp

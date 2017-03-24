@@ -6582,7 +6582,7 @@ msgstr "seulement relâché"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 "Le fichier certificat ne pourrait pas être lu. Les chemin et mot de passe "
 "sont t-ils tous deux corrects ?"

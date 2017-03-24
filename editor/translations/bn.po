@@ -6502,7 +6502,7 @@ msgstr "এইমাত্র অব্যাহিত/মুক্ত"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 "সার্টিফিকেট ফাইলটি পড়া সম্ভব হচ্ছে না। ফাইলের পথ এবং পাসওয়ার্ড দুটোই কি সঠিক দেয়া "
 "হয়েছে?"

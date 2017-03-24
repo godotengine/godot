@@ -6584,7 +6584,7 @@ msgstr "se levante"
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 "No se ha podido leer el archivo de certificación. ¿Seguro que la ruta y "
 "contraseña son correctas?"

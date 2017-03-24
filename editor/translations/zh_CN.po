@@ -6437,7 +6437,7 @@ msgstr "刚好释放"
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr "无法读取证书文件。路径和密码是否都正确？"
 
 #: platform/uwp/export/export.cpp

@@ -6361,7 +6361,7 @@ msgstr ""
 
 #: platform/uwp/export/export.cpp
 msgid ""
-"Couldn't read the certficate file. Are the path and password both correct?"
+"Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
