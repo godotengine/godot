@@ -17,7 +17,7 @@ for arg in sys.argv[1:]:
         os.sys.exit("Non supported argument '" + arg + "'. Aborting.")
 
 
-if (not os.path.exists("tools")):
+if (not os.path.exists("editor")):
     os.sys.exit("ERROR: This script should be started from the root of the git repo.")
 
 
@@ -51,7 +51,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\\n"
 """
 
-print("Updating the tools.pot template...")
+print("Updating the editor.pot template...")
 
 for fname in matches:
 
@@ -102,20 +102,20 @@ for fname in matches:
     f.close()
 
 
-f = open("tools.pot", "wb")
+f = open("editor.pot", "wb")
 f.write(main_po)
 f.close()
 
 if (os.name == "posix"):
     print("Wrapping template at 79 characters for compatibility with Weblate.")
-    os.system("msgmerge -w79 tools.pot tools.pot > tools.pot.wrap")
-    shutil.move("tools.pot.wrap", "tools.pot")
+    os.system("msgmerge -w79 editor.pot editor.pot > editor.pot.wrap")
+    shutil.move("editor.pot.wrap", "editor.pot")
 
-shutil.move("tools.pot", "tools/translations/tools.pot")
+shutil.move("editor.pot", "editor/translations/editor.pot")
 
 # TODO: Make that in a portable way, if we care; if not, kudos to Unix users
 if (os.name == "posix"):
-    added = subprocess.check_output("git diff tools/translations/tools.pot | grep \+msgid | wc -l", shell=True)
-    removed = subprocess.check_output("git diff tools/translations/tools.pot | grep \\\-msgid | wc -l", shell=True)
+    added = subprocess.check_output("git diff editor/translations/editor.pot | grep \+msgid | wc -l", shell=True)
+    removed = subprocess.check_output("git diff editor/translations/editor.pot | grep \\\-msgid | wc -l", shell=True)
     print("\n# Template changes compared to the staged status:")
     print("#   Additions: %s msgids.\n#   Deletions: %s msgids." % (int(added), int(removed)))

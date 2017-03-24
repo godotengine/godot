@@ -1,13 +1,13 @@
 # Makefile providing various facilities to manage translations
 
-TEMPLATE = tools.pot
+TEMPLATE = editor.pot
 POFILES = $(wildcard *.po)
 LANGS = $(POFILES:%.po=%)
 
 all: update merge
 
 update:
-	@cd ../..; python2 tools/translations/extract.py
+	@cd ../..; python2 editor/translations/extract.py
 
 merge:
 	@for po in $(POFILES); do \
