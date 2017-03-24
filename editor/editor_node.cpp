@@ -5088,7 +5088,7 @@ EditorNode::EditorNode() {
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		if (dpi_mode == 0) {
-			editor_set_hidpi(OS::get_singleton()->get_screen_dpi(0) > 150);
+			editor_set_hidpi(OS::get_singleton()->get_screen_dpi(0) >= 192 && OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x > 2000);
 		} else if (dpi_mode == 2) {
 			editor_set_hidpi(true);
 		} else {
@@ -5875,14 +5875,29 @@ EditorNode::EditorNode() {
 	prop_editor_base->add_child(property_editor);
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
+	bool use_single_dock_column = OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x < 1200;
+
 	node_dock = memnew(NodeDock);
 	//node_dock->set_undoredo(&editor_data.get_undo_redo());
-	dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
+	if (use_single_dock_column) {
+		dock_slot[DOCK_SLOT_RIGHT_UL]->add_child(node_dock);
+	} else {
+		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(node_dock);
+	}
 
 	filesystem_dock = memnew(FileSystemDock(this));
 	filesystem_dock->set_name(TTR("FileSystem"));
 	filesystem_dock->set_display_mode(int(EditorSettings::get_singleton()->get("filesystem_dock/display_mode")));
-	dock_slot[DOCK_SLOT_LEFT_UR]->add_child(filesystem_dock);
+
+	if (use_single_dock_column) {
+		dock_slot[DOCK_SLOT_RIGHT_BL]->add_child(filesystem_dock);
+		left_r_vsplit->hide();
+		dock_slot[DOCK_SLOT_LEFT_UR]->hide();
+		dock_slot[DOCK_SLOT_LEFT_BR]->hide();
+	} else {
+		dock_slot[DOCK_SLOT_LEFT_UR]->add_child(filesystem_dock);
+	}
+
 	//prop_pallete->add_child(filesystem_dock);
 	filesystem_dock->connect("open", this, "open_request");
 	filesystem_dock->connect("instance", this, "_instance_request");

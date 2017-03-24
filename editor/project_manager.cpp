@@ -1180,7 +1180,7 @@ ProjectManager::ProjectManager() {
 	{
 		int dpi_mode = EditorSettings::get_singleton()->get("global/hidpi_mode");
 		if (dpi_mode == 0) {
-			editor_set_hidpi(OS::get_singleton()->get_screen_dpi(0) > 150);
+			editor_set_hidpi(OS::get_singleton()->get_screen_dpi(0) >= 192 && OS::get_singleton()->get_screen_size(OS::get_singleton()->get_current_screen()).x > 2000);
 		} else if (dpi_mode == 2) {
 			editor_set_hidpi(true);
 		} else {
