@@ -1,8 +1,3 @@
-<!--
-README: Incompatibilities and broken features in the current master branch / 3.0-alpha
-are known and expected due to important refactoring work, so no need to report them for now. Thanks!
--->
-
 **Operating system or device - Godot version:**
 
 
