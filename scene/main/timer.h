@@ -39,7 +39,7 @@ class Timer : public Node {
 	bool one_shot;
 	bool autostart;
 	bool processing;
-	bool active;
+	bool paused;
 
 	double time_left;
 
@@ -64,8 +64,11 @@ public:
 
 	void start();
 	void stop();
-	void set_active(bool p_active);
-	bool is_active() const;
+
+	void set_paused(bool p_paused);
+	bool is_paused() const;
+
+	bool is_stopped() const;
 
 	float get_time_left() const;
 
