@@ -30,6 +30,7 @@
 #include "print_string.h"
 
 #include "camera_matrix.h"
+#include "core/os/input.h"
 #include "editor/animation_editor.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -1470,12 +1471,19 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (nav_scheme == NAVIGATION_MAYA && m.mod.shift)
 						pan_speed *= pan_speed_modifier;
 
+					Point2i relative;
+					if (bool(EditorSettings::get_singleton()->get("3d_editor/warped_mouse_panning"))) {
+						relative = Input::get_singleton()->warp_mouse_motion(m, surface->get_global_rect());
+					} else {
+						relative = Point2i(m.relative_x, m.relative_y);
+					}
+
 					Transform camera_transform;
 
 					camera_transform.translate(cursor.pos);
 					camera_transform.basis.rotate(Vector3(0, 1, 0), cursor.y_rot);
 					camera_transform.basis.rotate(Vector3(1, 0, 0), cursor.x_rot);
-					Vector3 translation(-m.relative_x * pan_speed, m.relative_y * pan_speed, 0);
+					Vector3 translation(-relative.x * pan_speed, relative.y * pan_speed, 0);
 					translation *= cursor.distance / DISTANCE_DEFAULT;
 					camera_transform.translate(translation);
 					cursor.pos = camera_transform.origin;
