@@ -325,7 +325,7 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		InputEvent ev;
 		ev.type = InputEvent::JOYPAD_MOTION;
 		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_0_X;
+		ev.joy_motion.axis = JOY_ANALOG_0;
 		ev.joy_motion.axis_value = (p_x / (float)ACCEL_RANGE);
 		ev.ID = ++last_event_id;
 		last_accel.x = p_x;
@@ -336,7 +336,7 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		InputEvent ev;
 		ev.type = InputEvent::JOYPAD_MOTION;
 		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_0_Y;
+		ev.joy_motion.axis = JOY_ANALOG_1;
 		ev.joy_motion.axis_value = (p_y / (float)ACCEL_RANGE);
 		ev.ID = ++last_event_id;
 		last_accel.y = p_y;
@@ -347,7 +347,7 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		InputEvent ev;
 		ev.type = InputEvent::JOYPAD_MOTION;
 		ev.device = 0;
-		ev.joy_motion.axis = JOY_ANALOG_1_X;
+		ev.joy_motion.axis = JOY_ANALOG_2;
 		ev.joy_motion.axis_value = ( (1.0 - p_z) / (float)ACCEL_RANGE);
 		ev.ID = ++last_event_id;
 		last_accel.z = p_z;
