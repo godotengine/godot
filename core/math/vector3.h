@@ -214,7 +214,7 @@ real_t Vector3::distance_squared_to(const Vector3 &p_b) const {
 
 real_t Vector3::angle_to(const Vector3 &p_b) const {
 
-	return Math::acos(this->dot(p_b) / Math::sqrt(this->length_squared() * p_b.length_squared()));
+	return Math::atan2(cross(p_b).length(), dot(p_b));
 }
 
 /* Operators */
