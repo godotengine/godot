@@ -641,6 +641,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("resources/save_compressed_resources", true);
 	set("resources/auto_reload_modified_images", true);
 
+	set("run/always_close_output_on_stop", false);
+
 	set("import/automatic_reimport_on_sources_changed", true);
 
 	if (p_extra_config.is_valid()) {
