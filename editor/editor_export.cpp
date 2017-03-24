@@ -1730,7 +1730,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			} break; //use default
 		}
 
-		String image_listD_METHOD5;
+		String image_list_md5;
 
 		{
 			MD5_CTX ctx;
@@ -1743,7 +1743,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			}
 
 			MD5Final(&ctx);
-			image_listD_METHOD5=String::md5(ctx.digest);
+			image_list_md5=String::md5(ctx.digest);
 		}
 		//ok see if cached
 		String md5;
@@ -1788,7 +1788,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 		if (atlas_valid) {
 			//check md5 of list of image /names/
-			if (f->get_line().strip_edges()!=image_listD_METHOD5) {
+			if (f->get_line().strip_edges()!=image_list_md5) {
 				atlas_valid=false;
 				print_line("IMAGE MD5 INVALID!");
 			}
@@ -1814,10 +1814,10 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				uint64_t file_mod_time = FileAccess::get_modified_time(F->get());
 				if (mod_time!=file_mod_time) {
 
-					String imageD_METHOD5 = slices[1];
-					String fileD_METHOD5 = FileAccess::getD_METHOD5(F->get());
+					String image_md5 = slices[1];
+					String file_md5 = FileAccess::get_md5(F->get());
 
-					if (imageD_METHOD5!=fileD_METHOD5) {
+					if (image_md5!=file_md5) {
 						atlas_valid=false;
 						print_line("IMAGE INVALID "+slices[0]);
 						break;
@@ -1852,7 +1852,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 			for (List<StringName>::Element *F=atlas_images.front();F;F=F->next()) {
 
-				imd->add_source(EditorImportPlugin::validate_source_path(F->get()),FileAccess::getD_METHOD5(F->get()));
+				imd->add_source(EditorImportPlugin::validate_source_path(F->get()),FileAccess::get_md5(F->get()));
 
 			}
 
@@ -1910,7 +1910,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			options["shrink"]=EditorImportExport::get_singleton()->image_export_group_get_shrink(E->get());
 			options["image_format"]=group_format;
 			//f->store_line(options.to_json());
-			f->store_line(image_listD_METHOD5);
+			f->store_line(image_list_md5);
 		}
 
 		//go through all ATEX files
@@ -1946,8 +1946,8 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				if (f) {
 					//recreating deps..
 					String depline;
-					//depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::getD_METHOD5(F->get()); name unnecessary by top md5
-					depline=itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::getD_METHOD5(F->get());
+					//depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::get_md5(F->get()); name unnecessary by top md5
+					depline=itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::get_md5(F->get());
 					depline+="::"+itos(region.pos.x)+"::"+itos(region.pos.y)+"::"+itos(region.size.x)+"::"+itos(region.size.y);
 					depline+="::"+itos(margin.pos.x)+"::"+itos(margin.pos.y)+"::"+itos(margin.size.x)+"::"+itos(margin.size.y);
 					f->store_line(depline);
