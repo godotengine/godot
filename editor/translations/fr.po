@@ -31,503 +31,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 2.10\n"
 
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argument invalide de type convertir(), utiliser le TYPE * constantes."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Pas assez d'octets pour les octets de décodage, ou format non valide."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "step argument is zero!"
-msgstr "L'argument du pas est zéro!"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not a script with an instance"
-msgstr "N'est pas un script avec une instance"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not based on a script"
-msgstr "N'est pas basé sur un script"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not based on a resource file"
-msgstr "N'est pas basé sur un fichier de ressource"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Instance invalide pour le format de dictionnaire (@path manquant)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
-"Instance invalide pour le format de dictionnaire (impossible de charger le "
-"script depuis @path)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr ""
-"Instance invalide pour le format de dictionnaire (script invalide dans @path)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr ""
-"Instance invalide pour le format de dictionnaire (sous-classes invalides)"
-
-#: scene/2d/animated_sprite.cpp
-msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
-"order for AnimatedSprite to display frames."
-msgstr ""
-"Une ressource SpriteFrames doit être créée ou assignée à la propriété « "
-"Frames » afin qu'AnimatedSprite affiche les images."
-
-#: scene/2d/canvas_modulate.cpp
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instanced "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"Seul un nœud de type CanvasModulate est autorisé par scène (ou ensemble de "
-"scènes instanciées). Le premier créé fonctionnera, les autres seront ignorés."
-
-#: scene/2d/collision_polygon_2d.cpp
-msgid ""
-"CollisionPolygon2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
-msgstr ""
-"Un CollisionPolygon2D n'est utile que lorsqu'il est enfant d'un nœud dérivé "
-"de CollisionObject2D, comme Area2D, StaticBody2D, RigidBody2D, "
-"KinematicBody2D, etc."
-
-#: scene/2d/collision_polygon_2d.cpp
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Un CollisionPolygon2D vide n'a pas d'effet sur les collisions."
-
-#: scene/2d/collision_shape_2d.cpp
-msgid ""
-"CollisionShape2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
-msgstr ""
-"Un CollisionShape2D n'est utile que lorsqu'il est enfant d'un nœud dérivé de "
-"CollisionObject2D, comme Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, "
-"etc."
-
-#: scene/2d/collision_shape_2d.cpp
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"Une forme doit être créée afin qu'une CollisionShape2D fonctionne. Veuillez "
-"créer une ressource de forme !"
-
-#: scene/2d/light_2d.cpp
-msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
-"property."
-msgstr ""
-"Une texture avec la forme de la lumière doit être fournie dans la propriété "
-"« texture »."
-
-#: scene/2d/light_occluder_2d.cpp
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Un polygone d'occultation doit être défini (ou dessiné) afin que cet "
-"occulteur ait un effet."
-
-#: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr ""
-"Le polygone d'occultation pour cet occulteur est vide. Veuillez dessiner un "
-"polygone !"
-
-#: scene/2d/navigation_polygon.cpp
-msgid ""
-"A NavigationPolygon resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"Vous devez créer ou sélectionner une ressource de type NavigationPolygon "
-"pour que ce nœud fonctionne. Sélectionnez une ressource ou dessinez un "
-"polygone."
-
-#: scene/2d/navigation_polygon.cpp
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"Un NavigationPolygonInstance doit être un enfant ou petit-enfant d'un nœud "
-"Navigation2D. Il fournit seulement des données de navigation."
-
-#: scene/2d/parallax_layer.cpp
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"Le nœud ParallaxLayer ne fonctionne que lorsqu'il s'agit d'un enfant d'un "
-"nœud de type ParallaxBackground."
-
-#: scene/2d/particles_2d.cpp
-msgid "Path property must point to a valid Particles2D node to work."
-msgstr ""
-"La propriété Path doit pointer à un nœud de type Particles2D valide pour "
-"fonctionner."
-
-#: scene/2d/path_2d.cpp
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
-"Un PathFollow2D fonctionne seulement quand défini comme un enfant d'un nœud "
-"Path2D."
-
-#: scene/2d/remote_transform_2d.cpp
-msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
-"La propriété Path doit pointer vers un nœud de type Node2D valide pour "
-"fonctionner."
-
-#: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
-msgid ""
-"A SampleLibrary resource must be created or set in the 'samples' property in "
-"order for SamplePlayer to play sound."
-msgstr ""
-"Une ressource SampleLibrary doit être créée ou définie dans la propriété "
-"\"échantillon\" pour que le SamplePlayer puisse jouer un son."
-
-#: scene/2d/sprite.cpp
-msgid ""
-"Path property must point to a valid Viewport node to work. Such Viewport "
-"must be set to 'render target' mode."
-msgstr ""
-"La propriété Path doit pointer vers un nœud de type Viewport valide pour "
-"fonctionner. Ce Viewport doit utiliser le mode « render target »."
-
-#: scene/2d/sprite.cpp
-msgid ""
-"The Viewport set in the path property must be set as 'render target' in "
-"order for this sprite to work."
-msgstr ""
-"Le Viewport défini dans la propriété Path doit utiliser le mode « render "
-"target » pour que cette sprite fonctionne."
-
-#: scene/2d/visibility_notifier_2d.cpp
-msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
-"as parent."
-msgstr ""
-"Un VisibilityEnable2D fonctionne mieux lorsqu'il est directement enfant du "
-"nœud racine de la scène."
-
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "La BakedLightInstance ne contient pas de ressource BakedLight."
-
-#: scene/3d/body_shape.cpp
-msgid ""
-"CollisionShape only serves to provide a collision shape to a CollisionObject "
-"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
-"KinematicBody, etc. to give them a shape."
-msgstr ""
-"Un CollisionShape n'est utile que lorsqu'il est enfant d'un nœud dérivé de "
-"CollisionObject, comme Area, StaticBody, RigidBody, KinematicBody, etc."
-
-#: scene/3d/body_shape.cpp
-msgid ""
-"A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"Afin qu'une CollisionShape fonctionne, il lui faut une forme. Créez une "
-"ressource de forme pour cette CollisionShape !"
-
-#: scene/3d/collision_polygon.cpp
-msgid ""
-"CollisionPolygon only serves to provide a collision shape to a "
-"CollisionObject derived node. Please only use it as a child of Area, "
-"StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
-msgstr ""
-"Un CollisionPolygon n'est utile que lorsqu'il est enfant d'un nœud dérivé de "
-"CollisionObject, comme Area, StaticBody, RigidBody, KinematicBody, etc."
-
-#: scene/3d/collision_polygon.cpp
-msgid "An empty CollisionPolygon has no effect on collision."
-msgstr "Un CollisionPolygon vide n'a pas d'effet sur les collisions."
-
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
-"Une ressource de type NavigationMesh doit être définie ou créée pour que ce "
-"nœud fonctionne."
-
-#: scene/3d/navigation_mesh.cpp
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"Un NavigationMeshInstance doit être enfant ou sous-enfant d'un nœud de type "
-"Navigation. Il fournit uniquement des données de navigation."
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
-"Seul un WorldEnvironnement ne peut être utilisé par scène (ou ensemble de "
-"scènes instanciées)."
-
-#: scene/3d/spatial_sample_player.cpp
-msgid ""
-"A SampleLibrary resource must be created or set in the 'samples' property in "
-"order for SpatialSamplePlayer to play sound."
-msgstr ""
-"Une ressource de type SampleLibrary doit être créée ou définie dans la "
-"propriété « samples » afin que le SpatialSamplePlayer joue des sons."
-
-#: scene/3d/sprite_3d.cpp
-msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"Une ressource de type SampleFrames doit être créée ou définie dans la "
-"propriété « Frames » afin qu'une AnimatedSprite3D fonctionne."
-
-#: scene/gui/dialogs.cpp editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Cancel"
-msgstr "Annuler"
-
-#: scene/gui/dialogs.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
-msgid "OK"
-msgstr "OK"
-
-#: scene/gui/dialogs.cpp
-msgid "Alert!"
-msgstr "Alerte !"
-
-#: scene/gui/dialogs.cpp
-msgid "Please Confirm..."
-msgstr "Veuillez confirmer…"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "File Exists, Overwrite?"
-msgstr "Le fichier existe, l'écraser ?"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "All Recognized"
-msgstr "Tous les types de fichiers reconnus"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "All Files (*)"
-msgstr "Tous les fichiers (*)"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_help.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
-msgid "Open"
-msgstr "Ouvrir"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File"
-msgstr "Ouvrir un fichier"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open File(s)"
-msgstr "Ouvrir un ou plusieurs fichiers"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a Directory"
-msgstr "Ouvrir un répertoire"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File or Directory"
-msgstr "Ouvrir un fichier ou un répertoire"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save"
-msgstr "Enregistrer"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Save a File"
-msgstr "Enregistrer un fichier"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp
-msgid "Create Folder"
-msgstr "Créer un dossier"
-
-#: scene/gui/file_dialog.cpp editor/editor_autoload_settings.cpp
-#: editor/editor_file_dialog.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/script_create_dialog.cpp
-msgid "Path:"
-msgstr "Chemin :"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Directories & Files:"
-msgstr "Répertoires et fichiers :"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/script_editor_debugger.cpp
-msgid "File:"
-msgstr "Fichier :"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Filter:"
-msgstr "Filtre :"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp editor/editor_plugin_settings.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Name:"
-msgstr "Nom :"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp
-msgid "Could not create folder."
-msgstr "Impossible de créer le dossier."
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Utilisez une extension valide."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr "Maj+"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr "Alt+"
-
-#: scene/gui/input_action.cpp
-msgid "Ctrl+"
-msgstr "Ctrl+"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Meta+"
-msgstr "Méta+"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Device"
-msgstr "Périphérique"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Button"
-msgstr "Bouton"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Left Button."
-msgstr "Bouton gauche."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Right Button."
-msgstr "Bouton droite."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Middle Button."
-msgstr "Bouton du milieu."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Wheel Up."
-msgstr "Molette vers le haut."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Wheel Down."
-msgstr "Molette vers le bas."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Axis"
-msgstr "Axe"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Cut"
-msgstr "Couper"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/property_editor.cpp editor/resources_dock.cpp
-msgid "Copy"
-msgstr "Copier"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/property_editor.cpp editor/resources_dock.cpp
-msgid "Paste"
-msgstr "Coller"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_export.cpp
-msgid "Select All"
-msgstr "Tout sélectionner"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp editor/editor_log.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/rich_text_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_editor_debugger.cpp
-msgid "Clear"
-msgstr "Effacer"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp editor/editor_node.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Undo"
-msgstr "Annuler"
-
-#: scene/gui/popup.cpp
-msgid ""
-"Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
-msgstr ""
-"Les pop-ups seront cachés par défaut jusqu'à ce que vous appelez une "
-"fonction popup() ou une des fonctions popup*(). Les rendre visibles pour "
-"l'édition ne pose pas de problème, mais elles seront cachées lors de "
-"l'exécution."
-
-#: scene/main/viewport.cpp
-msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"Ce Viewport n'est pas sélectionné comme cible du rendu. Si vous avez "
-"l'intention d'afficher son contenu directement à l'écran, rattachez-le à un "
-"nœud de type Control afin qu'il en obtienne une taille. Sinon, faites-en un "
-"RenderTarget et assignez sa texture à un nœud quelquonque pour son affichage."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Error initializing FreeType."
-msgstr "Erreur d'initialisation de Freetype."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Unknown font format."
-msgstr "Format de police inconnu."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Error loading font."
-msgstr "Erreur lors du chargement de la police."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Invalid font size."
-msgstr "Taille de police invalide."
-
 #: editor/animation_editor.cpp
 msgid "Disabled"
 msgstr "Désactivé"
@@ -604,8 +107,7 @@ msgstr "Modifier la courbe de sélection"
 msgid "Anim Delete Keys"
 msgstr "Animation Supprimer les clés"
 
-#: editor/animation_editor.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
+#: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
 msgstr "Dupliquer la sélection"
 
@@ -657,8 +159,7 @@ msgstr "Revenir à l'étape précédente"
 msgid "Linear"
 msgstr "Linéaire"
 
-#: editor/animation_editor.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Constante"
 
@@ -702,8 +203,8 @@ msgstr "Créer %d NOUVELLES pistes et insérer des clés ?"
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
-#: editor/project_manager.cpp editor/script_create_dialog.cpp
+#: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Create"
 msgstr "Créer"
 
@@ -880,8 +381,7 @@ msgstr "Trier :"
 msgid "Reverse"
 msgstr "Inverser"
 
-#: editor/asset_library_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "Catégorie :"
 
@@ -927,9 +427,9 @@ msgstr "Appel"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/project_settings.cpp editor/property_editor.cpp
-#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Close"
 msgstr "Fermer"
 
@@ -983,8 +483,7 @@ msgstr "Sélection uniquement"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
 msgid "Search"
 msgstr "Rechercher"
 
@@ -1024,13 +523,11 @@ msgstr "Avertir lors du remplacement"
 msgid "Skip"
 msgstr "Passer"
 
-#: editor/code_editor.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom In"
 msgstr "Zoomer"
 
-#: editor/code_editor.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Out"
 msgstr "Dézoomer"
 
@@ -1062,18 +559,15 @@ msgstr ""
 msgid "Connect To Node:"
 msgstr "Connecter au nœud :"
 
-#: editor/connections_dialog.cpp
-#: editor/editor_autoload_settings.cpp editor/groups_editor.cpp
-#: editor/plugins/item_list_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
+#: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
 msgid "Add"
 msgstr "Ajouter"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -1134,10 +628,24 @@ msgstr "Signaux"
 msgid "Create New"
 msgstr "Créer un nouveau"
 
+#: editor/create_dialog.cpp editor/editor_file_dialog.cpp
+#: editor/filesystem_dock.cpp
+msgid "Favorites:"
+msgstr "Favoris :"
+
+#: editor/create_dialog.cpp editor/editor_file_dialog.cpp
+msgid "Recent:"
+msgstr "Récents :"
+
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Correspondances :"
+
+#: editor/create_dialog.cpp editor/editor_help.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Description :"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -1258,8 +766,7 @@ msgid "Delete selected files?"
 msgstr "Supprimer les fichiers sélectionnés ?"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp
-#: editor/plugins/item_list_editor_plugin.cpp
+#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Supprimer"
@@ -1334,14 +841,19 @@ msgstr "Activer"
 msgid "Rearrange Autoloads"
 msgstr "Ré-organiser les AutoLoads"
 
+#: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Path:"
+msgstr "Chemin :"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
 msgstr "Nom de nœud :"
 
 #: editor/editor_autoload_settings.cpp
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Name"
 msgstr "Nom"
 
@@ -1369,9 +881,53 @@ msgstr "Mise à jour de la scène…"
 msgid "Choose a Directory"
 msgstr "Choisir un répertoire"
 
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Create Folder"
+msgstr "Créer un dossier"
+
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: editor/editor_plugin_settings.cpp editor/plugins/theme_editor_plugin.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Name:"
+msgstr "Nom :"
+
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Could not create folder."
+msgstr "Impossible de créer le dossier."
+
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr "Choisir"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "File Exists, Overwrite?"
+msgstr "Le fichier existe, l'écraser ?"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "All Recognized"
+msgstr "Tous les types de fichiers reconnus"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "All Files (*)"
+msgstr "Tous les fichiers (*)"
+
+#: editor/editor_file_dialog.cpp editor/editor_help.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/quick_open.cpp scene/gui/file_dialog.cpp
+msgid "Open"
+msgstr "Ouvrir"
+
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
+msgid "Save"
+msgstr "Enregistrer"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Save a File"
+msgstr "Enregistrer un fichier"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -1413,17 +969,26 @@ msgstr "Déplacer le favori vers le haut"
 msgid "Move Favorite Down"
 msgstr "Déplacer le favori vers le bas"
 
-#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "Favorites:"
-msgstr "Favoris :"
-
-#: editor/editor_file_dialog.cpp
-msgid "Recent:"
-msgstr "Récents :"
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Directories & Files:"
+msgstr "Répertoires et fichiers :"
 
 #: editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr "Aperçu :"
+
+#: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
+#: scene/gui/file_dialog.cpp
+msgid "File:"
+msgstr "Fichier :"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Filter:"
+msgstr "Filtre :"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Utilisez une extension valide."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1478,10 +1043,6 @@ msgstr "Signaux :"
 msgid "Constants:"
 msgstr "Constantes :"
 
-#: editor/editor_help.cpp editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Description :"
-
 #: editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "Description de la méthode :"
@@ -1527,6 +1088,13 @@ msgstr "Configuration…"
 msgid " Output:"
 msgstr " Sortie :"
 
+#: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/rich_text_editor_plugin.cpp editor/property_editor.cpp
+#: editor/script_editor_debugger.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Clear"
+msgstr "Effacer"
+
 #: editor/editor_node.cpp editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
 msgstr "Ré-importation"
@@ -1539,20 +1107,17 @@ msgstr "Importation :"
 msgid "Node From Scene"
 msgstr "Nœud à partir d'une scène"
 
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
 msgstr "Erreur d'enregistrement de la ressource !"
 
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Save Resource As.."
 msgstr "Enregistrer la ressource sous…"
 
-#: editor/editor_node.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Je vois…"
@@ -1640,8 +1205,7 @@ msgstr "Copier paramètres"
 msgid "Paste Params"
 msgstr "Coller les paramètres"
 
-#: editor/editor_node.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
 msgstr "Coller la ressource"
 
@@ -1795,8 +1359,7 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "Choisir une scène principale"
 
-#: editor/editor_node.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Oups"
@@ -1842,8 +1405,7 @@ msgstr "%d fichier(s) supplémentaire(s)"
 msgid "%d more file(s) or folder(s)"
 msgstr "%s fichier(s) ou dossier(s) supplémentaire(s)"
 
-#: editor/editor_node.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/editor_node.cpp editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr "Scène"
 
@@ -1867,6 +1429,11 @@ msgstr "Onglet suivant"
 #: editor/editor_node.cpp
 msgid "Previous tab"
 msgstr "Onglet precedent"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Filter Files.."
+msgstr "Filtre rapide d'un fichier…"
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1905,10 +1472,6 @@ msgid "Open Recent"
 msgstr "Fichiers récents"
 
 #: editor/editor_node.cpp
-msgid "Quick Filter Files.."
-msgstr "Filtre rapide d'un fichier…"
-
-#: editor/editor_node.cpp
 msgid "Convert To.."
 msgstr "Convertir vers…"
 
@@ -1923,6 +1486,12 @@ msgstr "MeshLibrary…"
 #: editor/editor_node.cpp
 msgid "TileSet.."
 msgstr "TileSet…"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Undo"
+msgstr "Annuler"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -1949,8 +1518,7 @@ msgstr "Quitter vers la liste des projets"
 msgid "Import assets to the project."
 msgstr "Importer des ressources dans le projet."
 
-#: editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: editor/io_plugins/editor_font_import_plugin.cpp
 #: editor/io_plugins/editor_mesh_import_plugin.cpp
 #: editor/io_plugins/editor_sample_import_plugin.cpp
@@ -1970,6 +1538,10 @@ msgid "Tools"
 msgstr "Outils"
 
 #: editor/editor_node.cpp
+msgid "Export to Godot 3.0"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Export the project to many platforms."
 msgstr "Exporter le projet vers diverses plate-formes."
 
@@ -1981,8 +1553,7 @@ msgstr "Exporter"
 msgid "Play the project."
 msgstr "Lancer le projet."
 
-#: editor/editor_node.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
 msgid "Play"
 msgstr "Jouer"
 
@@ -1998,8 +1569,7 @@ msgstr "Mettre en pause la scène"
 msgid "Stop the scene."
 msgstr "Arrêter la scène."
 
-#: editor/editor_node.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
 msgid "Stop"
 msgstr "Arrêter"
 
@@ -2514,6 +2084,7 @@ msgstr "Texture(s) source :"
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_export.cpp
 msgid "Target Path:"
 msgstr "Chemin de destination :"
 
@@ -2597,6 +2168,26 @@ msgstr ""
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Failed opening as BMFont file."
 msgstr "Impossible d'ouvrir le fichier en tant que fichier BMFont."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Error initializing FreeType."
+msgstr "Erreur d'initialisation de Freetype."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Unknown font format."
+msgstr "Format de police inconnu."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Error loading font."
+msgstr "Erreur lors du chargement de la police."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Invalid font size."
+msgstr "Taille de police invalide."
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font custom source."
@@ -2722,18 +2313,6 @@ msgid "Source Scene:"
 msgstr "Scène source :"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Same as Target Scene"
-msgstr "Le même que la scène de destination"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Shared"
-msgstr "Partagé"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Target Texture Folder:"
-msgstr "Dossier de destination des textures :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Post-Process Script:"
 msgstr "Script de post-traitement :"
 
@@ -2752,12 +2331,41 @@ msgid "Root Node Name:"
 msgstr "Nom de nœud :"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Import to Target Scene Folder"
+msgstr "Dossier de destination des textures :"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Import to Shared Textures Folder"
+msgstr "Importer une grande texture"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Import to Source Folder"
+msgstr "Importer depuis la scène"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Reuse Source Textures"
+msgstr "Texture source"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Texture Action"
+msgstr "Options de texture"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "Les fichiers suivants sont manquants :"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
 msgstr "Importer quand même"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "Annuler"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"
@@ -2799,12 +2407,12 @@ msgid "Import Image:"
 msgstr "Importer une image :"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Can't import a file over itself:"
-msgstr "Impossible d'importer un fichier par-dessus lui-même :"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Couldn't localize path: %s (already local)"
 msgstr "Impossible de rendre le chemin local : %s (déjà local)"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Can't import a file over itself:"
+msgstr "Impossible d'importer un fichier par-dessus lui-même :"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Saving.."
@@ -3078,6 +2686,11 @@ msgid "Change Animation Name:"
 msgstr "Modifier le nom de l'animation :"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Animation?"
+msgstr "Dupliquer l'animation"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
 msgstr "Supprimer l'animation"
@@ -3222,8 +2835,8 @@ msgstr "Nom de l'animation :"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_create_dialog.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr "Erreur !"
 
@@ -3566,8 +3179,7 @@ msgstr "Rendre la sélection des enfants de l'objet de nouveau possible."
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
 msgid "Edit"
 msgstr "Modifier"
 
@@ -3684,28 +3296,23 @@ msgstr "Tout ajouter"
 msgid "Adding %s..."
 msgstr ""
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
 msgstr "Créer un nœud"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "Erreur d'instanciation de la scène depuis %s"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "OK :("
 msgstr "OK :("
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
 msgstr "Pas de parent dans lequel instancier l'enfant."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
 msgstr ""
 "Cette opération ne peut être réalisée uniquement avec un seul nœud "
@@ -3715,6 +3322,11 @@ msgstr ""
 #, fuzzy
 msgid "Change default type"
 msgstr "Changer la valeur par défaut"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr "OK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4278,6 +3890,14 @@ msgstr "Le presse-papiers des ressources est vide !"
 msgid "Load Resource"
 msgstr "Charger une ressource"
 
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Paste"
+msgstr "Coller"
+
 #: editor/plugins/rich_text_editor_plugin.cpp
 msgid "Parse BBCode"
 msgstr "Analyser le BBCode"
@@ -4363,13 +3983,11 @@ msgstr "Script suivant"
 msgid "Previous script"
 msgstr "Script précédent"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/project_export.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_export.cpp
 msgid "File"
 msgstr "Fichier"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "New"
 msgstr "Nouveau"
 
@@ -4402,12 +4020,28 @@ msgid "Close Docs"
 msgstr "Fermer les documentations"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Cut"
+msgstr "Couper"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Copy"
+msgstr "Copier"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_export.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Tout sélectionner"
+
+#: editor/plugins/script_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Move Up"
 msgstr "Déplacer vers le haut"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Move Down"
 msgstr "Déplacer vers le bas"
 
@@ -4493,23 +4127,19 @@ msgstr "Aller au point d'arrêt suivant"
 msgid "Goto Previous Breakpoint"
 msgstr "Aller au point d'arrêt précédent"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
 msgstr "Sortir"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "Rentrer"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
 msgstr "Mettre en pause"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "Continuer"
 
@@ -4585,8 +4215,7 @@ msgstr "Recharger"
 msgid "Resave"
 msgstr "Ré-enregistrer"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Débogueur"
 
@@ -5235,9 +4864,8 @@ msgstr "Onglet 2"
 msgid "Tab 3"
 msgstr "Onglet 3"
 
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_settings.cpp editor/scene_tree_editor.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
 msgstr "Type :"
 
@@ -5261,8 +4889,7 @@ msgstr "Couleur"
 msgid "Paint TileMap"
 msgstr "Peindre sur la TileMap"
 
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "Dupliquer"
 
@@ -5342,8 +4969,7 @@ msgstr "Créer depuis la scène"
 msgid "Merge from Scene"
 msgstr "Fusionner depuis la scène"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Error"
 msgstr "Erreur"
 
@@ -5366,6 +4992,71 @@ msgstr "Erreur d'écriture du PCK du projet !"
 #: editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
 msgstr "Pas d'exportateur pour la plate-forme « %s » actuellement."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "Créer une nouvelle ressource"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "Nom valide"
+
+#: editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "Transition"
+
+#: editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "État :"
+
+#: editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "Mot de passe :"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "Caractères valides :"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "Nouveau nom :"
+
+#: editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Include"
@@ -5778,6 +5469,21 @@ msgid "Add Input Action Event"
 msgstr "Ajouter un événement d'action d'entrée"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Meta+"
+msgstr "Méta+"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Shift+"
+msgstr "Maj+"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Alt+"
+msgstr "Alt+"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "Control+"
 msgstr "Contrôle+"
 
@@ -5829,6 +5535,10 @@ msgstr "Bouton 9"
 msgid "Joystick Axis Index:"
 msgstr "Index de l'axe du joystick :"
 
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Axis"
+msgstr "Axe"
+
 #: editor/project_settings.cpp
 msgid "Joystick Button Index:"
 msgstr "Index du bouton du joystick :"
@@ -5840,6 +5550,34 @@ msgstr "Ajouter une action d'entrée"
 #: editor/project_settings.cpp
 msgid "Erase Input Action Event"
 msgstr "Effacer l'événement d'action d'entrée"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Device"
+msgstr "Périphérique"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Button"
+msgstr "Bouton"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Left Button."
+msgstr "Bouton gauche."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Right Button."
+msgstr "Bouton droite."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Middle Button."
+msgstr "Bouton du milieu."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Wheel Up."
+msgstr "Molette vers le haut."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Wheel Down."
+msgstr "Molette vers le bas."
 
 #: editor/project_settings.cpp
 msgid "Toggle Persisting"
@@ -6143,6 +5881,10 @@ msgid "This operation can't be done without a scene."
 msgstr "Cette opération ne peut être réalisée sans une scène."
 
 #: editor/scene_tree_dock.cpp
+msgid "Can not perform with the root node."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr "Cette opération ne peut être réalisée sur des scènes instanciées."
 
@@ -6220,6 +5962,11 @@ msgid "Save Branch as Scene"
 msgstr "Sauvegarder la branche comme scène"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Copy Node Path"
+msgstr "Copier le chemin"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
 msgstr "Effacer (pas de confirmation)"
 
@@ -6234,14 +5981,6 @@ msgid ""
 msgstr ""
 "Instancie un fichier de scène comme nœud. Crée une scène héritée si aucun "
 "nœud racine n'existe."
-
-#: editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"Cet objet ne peut être rendu visible car son parent est caché. Affichez le "
-"parent d'abord."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6535,6 +6274,328 @@ msgstr "Changer la longueur d'une forme en rayon"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Changer les extents d'un notificateur"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr "Argument invalide de type convertir(), utiliser le TYPE * constantes."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr "Pas assez d'octets pour les octets de décodage, ou format non valide."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "step argument is zero!"
+msgstr "L'argument du pas est zéro!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not a script with an instance"
+msgstr "N'est pas un script avec une instance"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a script"
+msgstr "N'est pas basé sur un script"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a resource file"
+msgstr "N'est pas basé sur un fichier de ressource"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (missing @path)"
+msgstr "Instance invalide pour le format de dictionnaire (@path manquant)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (can't load script at @path)"
+msgstr ""
+"Instance invalide pour le format de dictionnaire (impossible de charger le "
+"script depuis @path)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (invalid script at @path)"
+msgstr ""
+"Instance invalide pour le format de dictionnaire (script invalide dans @path)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary (invalid subclasses)"
+msgstr ""
+"Instance invalide pour le format de dictionnaire (sous-classes invalides)"
+
+#: scene/2d/animated_sprite.cpp
+msgid ""
+"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"order for AnimatedSprite to display frames."
+msgstr ""
+"Une ressource SpriteFrames doit être créée ou assignée à la propriété « "
+"Frames » afin qu'AnimatedSprite affiche les images."
+
+#: scene/2d/canvas_modulate.cpp
+msgid ""
+"Only one visible CanvasModulate is allowed per scene (or set of instanced "
+"scenes). The first created one will work, while the rest will be ignored."
+msgstr ""
+"Seul un nœud de type CanvasModulate est autorisé par scène (ou ensemble de "
+"scènes instanciées). Le premier créé fonctionnera, les autres seront ignorés."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid ""
+"CollisionPolygon2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"Un CollisionPolygon2D n'est utile que lorsqu'il est enfant d'un nœud dérivé "
+"de CollisionObject2D, comme Area2D, StaticBody2D, RigidBody2D, "
+"KinematicBody2D, etc."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "Un CollisionPolygon2D vide n'a pas d'effet sur les collisions."
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"CollisionShape2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"Un CollisionShape2D n'est utile que lorsqu'il est enfant d'un nœud dérivé de "
+"CollisionObject2D, comme Area2D, StaticBody2D, RigidBody2D, KinematicBody2D, "
+"etc."
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"Une forme doit être créée afin qu'une CollisionShape2D fonctionne. Veuillez "
+"créer une ressource de forme !"
+
+#: scene/2d/light_2d.cpp
+msgid ""
+"A texture with the shape of the light must be supplied to the 'texture' "
+"property."
+msgstr ""
+"Une texture avec la forme de la lumière doit être fournie dans la propriété "
+"« texture »."
+
+#: scene/2d/light_occluder_2d.cpp
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Un polygone d'occultation doit être défini (ou dessiné) afin que cet "
+"occulteur ait un effet."
+
+#: scene/2d/light_occluder_2d.cpp
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+msgstr ""
+"Le polygone d'occultation pour cet occulteur est vide. Veuillez dessiner un "
+"polygone !"
+
+#: scene/2d/navigation_polygon.cpp
+msgid ""
+"A NavigationPolygon resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"Vous devez créer ou sélectionner une ressource de type NavigationPolygon "
+"pour que ce nœud fonctionne. Sélectionnez une ressource ou dessinez un "
+"polygone."
+
+#: scene/2d/navigation_polygon.cpp
+msgid ""
+"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
+"node. It only provides navigation data."
+msgstr ""
+"Un NavigationPolygonInstance doit être un enfant ou petit-enfant d'un nœud "
+"Navigation2D. Il fournit seulement des données de navigation."
+
+#: scene/2d/parallax_layer.cpp
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"Le nœud ParallaxLayer ne fonctionne que lorsqu'il s'agit d'un enfant d'un "
+"nœud de type ParallaxBackground."
+
+#: scene/2d/particles_2d.cpp
+msgid "Path property must point to a valid Particles2D node to work."
+msgstr ""
+"La propriété Path doit pointer à un nœud de type Particles2D valide pour "
+"fonctionner."
+
+#: scene/2d/path_2d.cpp
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"Un PathFollow2D fonctionne seulement quand défini comme un enfant d'un nœud "
+"Path2D."
+
+#: scene/2d/remote_transform_2d.cpp
+msgid "Path property must point to a valid Node2D node to work."
+msgstr ""
+"La propriété Path doit pointer vers un nœud de type Node2D valide pour "
+"fonctionner."
+
+#: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
+msgid ""
+"A SampleLibrary resource must be created or set in the 'samples' property in "
+"order for SamplePlayer to play sound."
+msgstr ""
+"Une ressource SampleLibrary doit être créée ou définie dans la propriété "
+"\"échantillon\" pour que le SamplePlayer puisse jouer un son."
+
+#: scene/2d/sprite.cpp
+msgid ""
+"Path property must point to a valid Viewport node to work. Such Viewport "
+"must be set to 'render target' mode."
+msgstr ""
+"La propriété Path doit pointer vers un nœud de type Viewport valide pour "
+"fonctionner. Ce Viewport doit utiliser le mode « render target »."
+
+#: scene/2d/sprite.cpp
+msgid ""
+"The Viewport set in the path property must be set as 'render target' in "
+"order for this sprite to work."
+msgstr ""
+"Le Viewport défini dans la propriété Path doit utiliser le mode « render "
+"target » pour que cette sprite fonctionne."
+
+#: scene/2d/visibility_notifier_2d.cpp
+msgid ""
+"VisibilityEnable2D works best when used with the edited scene root directly "
+"as parent."
+msgstr ""
+"Un VisibilityEnable2D fonctionne mieux lorsqu'il est directement enfant du "
+"nœud racine de la scène."
+
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr "La BakedLightInstance ne contient pas de ressource BakedLight."
+
+#: scene/3d/body_shape.cpp
+msgid ""
+"CollisionShape only serves to provide a collision shape to a CollisionObject "
+"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
+"KinematicBody, etc. to give them a shape."
+msgstr ""
+"Un CollisionShape n'est utile que lorsqu'il est enfant d'un nœud dérivé de "
+"CollisionObject, comme Area, StaticBody, RigidBody, KinematicBody, etc."
+
+#: scene/3d/body_shape.cpp
+msgid ""
+"A shape must be provided for CollisionShape to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"Afin qu'une CollisionShape fonctionne, il lui faut une forme. Créez une "
+"ressource de forme pour cette CollisionShape !"
+
+#: scene/3d/collision_polygon.cpp
+msgid ""
+"CollisionPolygon only serves to provide a collision shape to a "
+"CollisionObject derived node. Please only use it as a child of Area, "
+"StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
+msgstr ""
+"Un CollisionPolygon n'est utile que lorsqu'il est enfant d'un nœud dérivé de "
+"CollisionObject, comme Area, StaticBody, RigidBody, KinematicBody, etc."
+
+#: scene/3d/collision_polygon.cpp
+msgid "An empty CollisionPolygon has no effect on collision."
+msgstr "Un CollisionPolygon vide n'a pas d'effet sur les collisions."
+
+#: scene/3d/navigation_mesh.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"Une ressource de type NavigationMesh doit être définie ou créée pour que ce "
+"nœud fonctionne."
+
+#: scene/3d/navigation_mesh.cpp
+msgid ""
+"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
+"It only provides navigation data."
+msgstr ""
+"Un NavigationMeshInstance doit être enfant ou sous-enfant d'un nœud de type "
+"Navigation. Il fournit uniquement des données de navigation."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+"Seul un WorldEnvironnement ne peut être utilisé par scène (ou ensemble de "
+"scènes instanciées)."
+
+#: scene/3d/spatial_sample_player.cpp
+msgid ""
+"A SampleLibrary resource must be created or set in the 'samples' property in "
+"order for SpatialSamplePlayer to play sound."
+msgstr ""
+"Une ressource de type SampleLibrary doit être créée ou définie dans la "
+"propriété « samples » afin que le SpatialSamplePlayer joue des sons."
+
+#: scene/3d/sprite_3d.cpp
+msgid ""
+"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"order for AnimatedSprite3D to display frames."
+msgstr ""
+"Une ressource de type SampleFrames doit être créée ou définie dans la "
+"propriété « Frames » afin qu'une AnimatedSprite3D fonctionne."
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr "Alerte !"
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr "Veuillez confirmer…"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File"
+msgstr "Ouvrir un fichier"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open File(s)"
+msgstr "Ouvrir un ou plusieurs fichiers"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a Directory"
+msgstr "Ouvrir un répertoire"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File or Directory"
+msgstr "Ouvrir un fichier ou un répertoire"
+
+#: scene/gui/input_action.cpp
+msgid "Ctrl+"
+msgstr "Ctrl+"
+
+#: scene/gui/popup.cpp
+msgid ""
+"Popups will hide by default unless you call popup() or any of the popup*() "
+"functions. Making them visible for editing is fine though, but they will "
+"hide upon running."
+msgstr ""
+"Les pop-ups seront cachés par défaut jusqu'à ce que vous appelez une "
+"fonction popup() ou une des fonctions popup*(). Les rendre visibles pour "
+"l'édition ne pose pas de problème, mais elles seront cachées lors de "
+"l'exécution."
+
+#: scene/main/viewport.cpp
+msgid ""
+"This viewport is not set as render target. If you intend for it to display "
+"its contents directly to the screen, make it a child of a Control so it can "
+"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
+"texture to some node for display."
+msgstr ""
+"Ce Viewport n'est pas sélectionné comme cible du rendu. Si vous avez "
+"l'intention d'afficher son contenu directement à l'écran, rattachez-le à un "
+"nœud de type Control afin qu'il en obtienne une taille. Sinon, faites-en un "
+"RenderTarget et assignez sa texture à un nœud quelquonque pour son affichage."
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Le même que la scène de destination"
+
+#~ msgid "Shared"
+#~ msgstr "Partagé"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Cet objet ne peut être rendu visible car son parent est caché. Affichez "
+#~ "le parent d'abord."
 
 #~ msgid ""
 #~ "Node yielded, but did not return a function state in the first working "

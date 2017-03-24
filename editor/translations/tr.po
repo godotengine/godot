@@ -21,499 +21,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 2.11-dev\n"
 
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"convert() için geçersiz türde değiştirgen, TYPE_* sabitlerini kullanın."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Geçersiz biçem ya da kod çözmek için yetersiz byte sayısı."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "step argument is zero!"
-msgstr "adım değiştirgeni sıfır!"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not a script with an instance"
-msgstr "Örneği bulunan bir betik değil"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not based on a script"
-msgstr "Bir betiğe bağlı değil"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not based on a resource file"
-msgstr "Bir kaynak dizecine bağlı değil"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Geçersiz örnek sözlük biçemi (@path eksik)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr "Geçersiz örnek sözlük biçemi (betik @path 'tan yüklenemiyor)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Geçersiz örnek sözlük biçemi (@path 'taki kod geçersiz)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "Geçersiz örnek sözlüğü (geçersiz altbölütler)"
-
-#: scene/2d/animated_sprite.cpp
-msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
-"order for AnimatedSprite to display frames."
-msgstr ""
-"Bir SpriteFrames kaynağı oluşturulmalı ya da 'Kareler' özelliğine atanmalı "
-"ki AnimatedSprite düğümü kareleri gösterebilsin."
-
-#: scene/2d/canvas_modulate.cpp
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instanced "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"Sahne başına (ya da bir öbek örneklenmiş sahneler için) yalnızca bir görünür "
-"CanvasModulate'e izin verilir. İlk oluşturulan çalışırken diğerleri ihmal "
-"edilecektir."
-
-#: scene/2d/collision_polygon_2d.cpp
-msgid ""
-"CollisionPolygon2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon2D yalnızca CollisionObject2D'den türeyen düğümlere bir "
-"şekil elde etmeye hizmet eder. Lütfen onu yalnızca şunların çocuğu olarak "
-"kullanın ve Area2D, StaticBody2D, RigidBody2D, KinematicBody2D vs.'ye bir "
-"şekil vermek için kullanın."
-
-#: scene/2d/collision_polygon_2d.cpp
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "Boş bir CollisionPolygon2D'nin çarpışmaya hiçbir etkisi yoktur."
-
-#: scene/2d/collision_shape_2d.cpp
-msgid ""
-"CollisionShape2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionShape2D yalnızca CollisionObject2D'den türeyen düğümlere bir şekil "
-"elde etmeye hizmet eder. Lütfen onu yalnızca şunların çocuğu olarak kullanın "
-"ve Area2D, StaticBody2D, RigidBody2D, KinematicBody2D vs.'ye bir şekil "
-"vermek için kullanın."
-
-#: scene/2d/collision_shape_2d.cpp
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"CollisionShape2D'nin işlevini yerine getirmesi için ona bir şekil sağlanması "
-"gerekmektedir. Lütfen onun için bir şekil kaynağı oluşturun!"
-
-#: scene/2d/light_2d.cpp
-msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
-"property."
-msgstr "Işık yüzeyli bir doku, \"doku\" niteliğine sağlanmalıdır."
-
-#: scene/2d/light_occluder_2d.cpp
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"Engelleyicinin etkili olabilmesi için bir engelleyici çokgeni ayarlanmalıdır "
-"(ya da çizilmelidir)."
-
-#: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr "Bu engelleyici için engelleyici çokgeni boş. Lütfen bir çokgen çizin!"
-
-#: scene/2d/navigation_polygon.cpp
-msgid ""
-"A NavigationPolygon resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"Bu düğüm(node) çalışmak için bir NavigationPolygon kaynağı ayarlanmasına ya "
-"da oluşturulmasına gereksinim duyar. Lütfen hazır bir tane seçin ya da bir "
-"çokgen çizin."
-
-#: scene/2d/navigation_polygon.cpp
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"NavigationPolygonInstance, bir Navigation2D çocuğu olmalı ya da Navigation2D "
-"düğümünün torunu olması gerekir. Bu nesne yalnızca yönlendirme verisi sağlar."
-
-#: scene/2d/parallax_layer.cpp
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"ParallaxLayer, yalnızca ParallaxBackground düğümünün çocuğu olduğu zaman "
-"çalışır."
-
-#: scene/2d/particles_2d.cpp
-msgid "Path property must point to a valid Particles2D node to work."
-msgstr ""
-"Yol niteliği çalışması için geçerli bir Particles2D düğümünü işaret "
-"etmelidir."
-
-#: scene/2d/path_2d.cpp
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
-"PathFollow2D yalnızca Path2D düğümünün çocuğu olarak ayarlanınca çalışır."
-
-#: scene/2d/remote_transform_2d.cpp
-msgid "Path property must point to a valid Node2D node to work."
-msgstr ""
-"Yol niteliği çalışması için geçerli bir Node2D düğümüne işaret etmelidir."
-
-#: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
-msgid ""
-"A SampleLibrary resource must be created or set in the 'samples' property in "
-"order for SamplePlayer to play sound."
-msgstr ""
-"SamplePlayer ın ses çalması için bir SampleLibrary kaynağı oluşturulmalı "
-"veya 'örnekler' niteliğinde ayarlanmalıdır."
-
-#: scene/2d/sprite.cpp
-msgid ""
-"Path property must point to a valid Viewport node to work. Such Viewport "
-"must be set to 'render target' mode."
-msgstr ""
-"Yol niteliği çalışması için geçerli bir Viewport düğümüne işaret etmelidir. "
-"Bu tür Viewport 'işleyici amacı' biçimine ayarlanmalıdır."
-
-#: scene/2d/sprite.cpp
-msgid ""
-"The Viewport set in the path property must be set as 'render target' in "
-"order for this sprite to work."
-msgstr ""
-"Bu sprite'ın çalışması için yol niteliğinde ayarlanan Viewport durumu "
-"'işleyici amacı' olarak ayarlanmalıdır."
-
-#: scene/2d/visibility_notifier_2d.cpp
-msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
-"as parent."
-msgstr ""
-"VisibilityEnable2D düğümü düzenlenmiş sahne kökü doğrudan ata olarak "
-"kullanıldığında çalışır."
-
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance, bir BakedLight kaynağı içermez."
-
-#: scene/3d/body_shape.cpp
-msgid ""
-"CollisionShape only serves to provide a collision shape to a CollisionObject "
-"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
-"KinematicBody, etc. to give them a shape."
-msgstr ""
-"CollisionShape sadece CollisionObject türetilmiş bir düğümde çarpışma yüzeyi "
-"sağlamaya yarar. Bunların yüzeyine şekil vermek için Area, StaticBody, "
-"RigidBody, KinematicBody, v.b. onu sadece bunların çocuğu olarak kullanın."
-
-#: scene/3d/body_shape.cpp
-msgid ""
-"A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"CollisionShape'in çalışması için bir şekil verilmelidir. Lütfen bunun için "
-"bir şekil kaynağı oluşturun!"
-
-#: scene/3d/collision_polygon.cpp
-msgid ""
-"CollisionPolygon only serves to provide a collision shape to a "
-"CollisionObject derived node. Please only use it as a child of Area, "
-"StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon sadece CollisionObject türetilmiş bir düğümde çarpışma "
-"yüzeyi sağlamaya yarar. Bunların yüzeyine şekil vermek için Area, "
-"StaticBody, RigidBody, KinematicBody, v.b. onu sadece bunların çocuğu olarak "
-"kullanın."
-
-#: scene/3d/collision_polygon.cpp
-msgid "An empty CollisionPolygon has no effect on collision."
-msgstr "Boş bir CollisionPolygon'un çarpışma üzerinde etkisi yoktur."
-
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr ""
-"Bu düğümün çalışması için bir NavigationMesh kaynağı ayarlanmış veya "
-"oluşturulmuş olmalıdır."
-
-#: scene/3d/navigation_mesh.cpp
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"NavigationMeshInstance, bir Navigation düğümünün çocuğu ya da torunu "
-"olmalıdır. O yalnızca yönlendirme verisi sağlar."
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
-"Her sahne başına (ya da örneklenmiş sahneler dizisine) sadece bir tane "
-"WorldEnvironment 'a izin verilir."
-
-#: scene/3d/spatial_sample_player.cpp
-msgid ""
-"A SampleLibrary resource must be created or set in the 'samples' property in "
-"order for SpatialSamplePlayer to play sound."
-msgstr ""
-"SpatialSamplePlayer 'ın ses çalması için bir SampleLibrary kaynağı "
-"oluşturulmalı veya 'örnekler' niteliğinde ayarlanmalıdır."
-
-#: scene/3d/sprite_3d.cpp
-msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"AnimatedSprite3D 'nin çerçeveleri görüntülemek için bir SpriteFrames kaynağı "
-"oluşturulmalı veya 'Çerçeveler' niteliğinde ayarlanmalıdır."
-
-#: scene/gui/dialogs.cpp editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Cancel"
-msgstr "Vazgeç"
-
-#: scene/gui/dialogs.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
-msgid "OK"
-msgstr "Tamam"
-
-#: scene/gui/dialogs.cpp
-msgid "Alert!"
-msgstr "Uyarı!"
-
-#: scene/gui/dialogs.cpp
-msgid "Please Confirm..."
-msgstr "Lütfen Doğrulayın..."
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "File Exists, Overwrite?"
-msgstr "Dizeç var. Üzerine Yazılsın mı?"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "All Recognized"
-msgstr "Tümü Onaylandı"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "All Files (*)"
-msgstr "Tüm Dizeçler (*)"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_help.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
-msgid "Open"
-msgstr "Aç"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File"
-msgstr "Bir Dizeç Aç"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open File(s)"
-msgstr "Dizeç(leri) Aç"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a Directory"
-msgstr "Bir dizin aç"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File or Directory"
-msgstr "Bir Dizeç ya da Dizin Aç"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save"
-msgstr "Kaydet"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Save a File"
-msgstr "Dizeci Kaydet"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp
-msgid "Create Folder"
-msgstr "Dizin Oluştur"
-
-#: scene/gui/file_dialog.cpp editor/editor_autoload_settings.cpp
-#: editor/editor_file_dialog.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/script_create_dialog.cpp
-msgid "Path:"
-msgstr "Dizeç yolu:"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Directories & Files:"
-msgstr "Dizinler & Dizeçler:"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/script_editor_debugger.cpp
-msgid "File:"
-msgstr "Dizeç:"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Filter:"
-msgstr "Süzgeç:"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp editor/editor_plugin_settings.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Name:"
-msgstr "Ad:"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp
-msgid "Could not create folder."
-msgstr "Dizin oluşturulamadı."
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "Gecerli bir uzantı kullanılmalı."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr "Shift+"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr "Alt+"
-
-#: scene/gui/input_action.cpp
-msgid "Ctrl+"
-msgstr "Ctrl+"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Meta+"
-msgstr "Meta+"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Device"
-msgstr "Aygıt"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Button"
-msgstr "Düğme"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Left Button."
-msgstr "Sol Düğme."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Right Button."
-msgstr "Sağ Düğme."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Middle Button."
-msgstr "Orta Düğme."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Wheel Up."
-msgstr "Tekerlek Yukarı."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Wheel Down."
-msgstr "Tekerlek Aşağı."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Axis"
-msgstr "Eksen"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Cut"
-msgstr "Kes"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/property_editor.cpp editor/resources_dock.cpp
-msgid "Copy"
-msgstr "Tıpkıla"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/property_editor.cpp editor/resources_dock.cpp
-msgid "Paste"
-msgstr "Yapıştır"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_export.cpp
-msgid "Select All"
-msgstr "Hepsini seç"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp editor/editor_log.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/rich_text_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_editor_debugger.cpp
-msgid "Clear"
-msgstr "Temizle"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp editor/editor_node.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Undo"
-msgstr "Geri"
-
-#: scene/gui/popup.cpp
-msgid ""
-"Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
-msgstr ""
-"Açılır pencereler popup() veya popup*() işlevlerini çağırmadıkça ön tanımlı "
-"olarak gizlenecektir. Onları düzenleme için görünür kılmak da iyidir, ancak "
-"çalışırken gizlenecekler."
-
-#: scene/main/viewport.cpp
-msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"Bu görüntü alanı, işleyici amacı olarak ayarlanmadı. İçeriğini doğrudan "
-"görüntlükte göstermek istiyorsanız, bir Denetimcinin çocuğu olun ve böylece "
-"bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
-"görüntülemesi için bir düğüme atayın."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Error initializing FreeType."
-msgstr "FreeType başlatılırken sorun oluştu."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Unknown font format."
-msgstr "Bilinmeyen yazı türü."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Error loading font."
-msgstr "Yazı türü yüklerken sorun oluştu."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Invalid font size."
-msgstr "Geçersiz yazı türü boyutu."
-
 #: editor/animation_editor.cpp
 msgid "Disabled"
 msgstr "Devre dışı"
@@ -590,8 +97,7 @@ msgstr "Seçim Eğrisini Düzenle"
 msgid "Anim Delete Keys"
 msgstr "Canln Açarları Sil"
 
-#: editor/animation_editor.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
+#: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
 msgstr "Seçimi İkile"
 
@@ -643,8 +149,7 @@ msgstr "Önceki Adıma Git"
 msgid "Linear"
 msgstr "Doğrusal"
 
-#: editor/animation_editor.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "Sabit"
 
@@ -688,8 +193,8 @@ msgstr "%d için yeni izler oluştur ve açar gir?"
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
-#: editor/project_manager.cpp editor/script_create_dialog.cpp
+#: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Create"
 msgstr "Oluştur"
 
@@ -866,8 +371,7 @@ msgstr "Sırala:"
 msgid "Reverse"
 msgstr "Tersi"
 
-#: editor/asset_library_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "Katman:"
 
@@ -913,9 +417,9 @@ msgstr "Çağır"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/project_settings.cpp editor/property_editor.cpp
-#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Close"
 msgstr "Kapat"
 
@@ -969,8 +473,7 @@ msgstr "Yalnızca Seçim"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
 msgid "Search"
 msgstr "Ara"
 
@@ -1010,13 +513,11 @@ msgstr "Değişimi Sor"
 msgid "Skip"
 msgstr "Geç"
 
-#: editor/code_editor.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom In"
 msgstr "Yaklaş"
 
-#: editor/code_editor.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Out"
 msgstr "Uzaklaştır"
 
@@ -1048,18 +549,15 @@ msgstr ""
 msgid "Connect To Node:"
 msgstr "Düğüme Bağlan:"
 
-#: editor/connections_dialog.cpp
-#: editor/editor_autoload_settings.cpp editor/groups_editor.cpp
-#: editor/plugins/item_list_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
+#: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
 msgid "Add"
 msgstr "Ekle"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Remove"
 msgstr "Kaldır"
 
@@ -1120,10 +618,24 @@ msgstr "İşaretler"
 msgid "Create New"
 msgstr "Yeni oluştur"
 
+#: editor/create_dialog.cpp editor/editor_file_dialog.cpp
+#: editor/filesystem_dock.cpp
+msgid "Favorites:"
+msgstr "Beğeniler:"
+
+#: editor/create_dialog.cpp editor/editor_file_dialog.cpp
+msgid "Recent:"
+msgstr "Yakın zamanda:"
+
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 msgid "Matches:"
 msgstr "Eşleşmeler:"
+
+#: editor/create_dialog.cpp editor/editor_help.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "Açıklama:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -1240,8 +752,7 @@ msgid "Delete selected files?"
 msgstr "Seçili dizeçleri sil?"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp
-#: editor/plugins/item_list_editor_plugin.cpp
+#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "Sil"
@@ -1310,14 +821,19 @@ msgstr "Etkin"
 msgid "Rearrange Autoloads"
 msgstr "KendindenYüklenme'leri Yeniden Sırala"
 
+#: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Path:"
+msgstr "Dizeç yolu:"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
 msgstr "Düğüm adı:"
 
 #: editor/editor_autoload_settings.cpp
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Name"
 msgstr "Ad"
 
@@ -1345,9 +861,53 @@ msgstr "Sahne güncelleniyor.."
 msgid "Choose a Directory"
 msgstr "Dizin Seç"
 
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Create Folder"
+msgstr "Dizin Oluştur"
+
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: editor/editor_plugin_settings.cpp editor/plugins/theme_editor_plugin.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Name:"
+msgstr "Ad:"
+
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Could not create folder."
+msgstr "Dizin oluşturulamadı."
+
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr "Seç"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "File Exists, Overwrite?"
+msgstr "Dizeç var. Üzerine Yazılsın mı?"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "All Recognized"
+msgstr "Tümü Onaylandı"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "All Files (*)"
+msgstr "Tüm Dizeçler (*)"
+
+#: editor/editor_file_dialog.cpp editor/editor_help.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/quick_open.cpp scene/gui/file_dialog.cpp
+msgid "Open"
+msgstr "Aç"
+
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
+msgid "Save"
+msgstr "Kaydet"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Save a File"
+msgstr "Dizeci Kaydet"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -1389,17 +949,26 @@ msgstr "Beğenileni Yukarı Taşı"
 msgid "Move Favorite Down"
 msgstr "Beğenileni Aşağı Taşı"
 
-#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "Favorites:"
-msgstr "Beğeniler:"
-
-#: editor/editor_file_dialog.cpp
-msgid "Recent:"
-msgstr "Yakın zamanda:"
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Directories & Files:"
+msgstr "Dizinler & Dizeçler:"
 
 #: editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr "Önizleme:"
+
+#: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
+#: scene/gui/file_dialog.cpp
+msgid "File:"
+msgstr "Dizeç:"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Filter:"
+msgstr "Süzgeç:"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "Gecerli bir uzantı kullanılmalı."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1454,10 +1023,6 @@ msgstr "İşaretler:"
 msgid "Constants:"
 msgstr "Sabitler:"
 
-#: editor/editor_help.cpp editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "Açıklama:"
-
 #: editor/editor_help.cpp
 msgid "Method Description:"
 msgstr "Yöntem Açıklaması:"
@@ -1502,6 +1067,13 @@ msgstr "Kurulum..."
 msgid " Output:"
 msgstr " Çıktı:"
 
+#: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/rich_text_editor_plugin.cpp editor/property_editor.cpp
+#: editor/script_editor_debugger.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Clear"
+msgstr "Temizle"
+
 #: editor/editor_node.cpp editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
 msgstr "Yeniden-İçe Aktarım"
@@ -1514,20 +1086,17 @@ msgstr "İçe Aktarım:"
 msgid "Node From Scene"
 msgstr "Sahneden Düğüm(node)"
 
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
 msgstr "Kaynak kaydedilirken sorun!"
 
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Save Resource As.."
 msgstr "Kaynağı Başkaca Kaydet.."
 
-#: editor/editor_node.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "Anlıyorum.."
@@ -1613,8 +1182,7 @@ msgstr "Değişkenleri Tıpkıla"
 msgid "Paste Params"
 msgstr "Parametreleri Yapıştır"
 
-#: editor/editor_node.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
 msgstr "Kaynağı Yapıştır"
 
@@ -1764,8 +1332,7 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr "Bir Ana Sahne Seç"
 
-#: editor/editor_node.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr "Öff"
@@ -1811,8 +1378,7 @@ msgstr "%d daha çok dizeç(ler)"
 msgid "%d more file(s) or folder(s)"
 msgstr "%d daha çok dizeç(ler) veya dizin(ler)"
 
-#: editor/editor_node.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/editor_node.cpp editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr "Sahne"
 
@@ -1836,6 +1402,11 @@ msgstr "Sonraki sekme"
 #: editor/editor_node.cpp
 msgid "Previous tab"
 msgstr "Önceki sekme"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Filter Files.."
+msgstr "Hızlı Süzgeç Dizeçleri.."
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1874,10 +1445,6 @@ msgid "Open Recent"
 msgstr "En Sonuncuyu Aç"
 
 #: editor/editor_node.cpp
-msgid "Quick Filter Files.."
-msgstr "Hızlı Süzgeç Dizeçleri.."
-
-#: editor/editor_node.cpp
 msgid "Convert To.."
 msgstr "Şuna Dönüştür.."
 
@@ -1892,6 +1459,12 @@ msgstr "MeshLibrary .."
 #: editor/editor_node.cpp
 msgid "TileSet.."
 msgstr "TileSet .."
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Undo"
+msgstr "Geri"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -1918,8 +1491,7 @@ msgstr "Tasarı Dizelgesine Git"
 msgid "Import assets to the project."
 msgstr "Varlıkları tasarının içine aktar."
 
-#: editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: editor/io_plugins/editor_font_import_plugin.cpp
 #: editor/io_plugins/editor_mesh_import_plugin.cpp
 #: editor/io_plugins/editor_sample_import_plugin.cpp
@@ -1939,6 +1511,10 @@ msgid "Tools"
 msgstr "Araçlar"
 
 #: editor/editor_node.cpp
+msgid "Export to Godot 3.0"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Export the project to many platforms."
 msgstr "Tasarıyı pek çok ortama aktarın."
 
@@ -1950,8 +1526,7 @@ msgstr "Dışa Aktar"
 msgid "Play the project."
 msgstr "Tasarıyı oynat."
 
-#: editor/editor_node.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
 msgid "Play"
 msgstr "Oynat"
 
@@ -1967,8 +1542,7 @@ msgstr "Sahneyi Duraklat"
 msgid "Stop the scene."
 msgstr "Sahneyi durdur."
 
-#: editor/editor_node.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
 msgid "Stop"
 msgstr "Durdur"
 
@@ -2471,6 +2045,7 @@ msgstr "Kaynak Doku(lar):"
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_export.cpp
 msgid "Target Path:"
 msgstr "Amaçlanan Dizeç Yolu :"
 
@@ -2553,6 +2128,26 @@ msgstr ""
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Failed opening as BMFont file."
 msgstr "BMFont dizeci olarak açma başarısız oldu."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Error initializing FreeType."
+msgstr "FreeType başlatılırken sorun oluştu."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Unknown font format."
+msgstr "Bilinmeyen yazı türü."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Error loading font."
+msgstr "Yazı türü yüklerken sorun oluştu."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Invalid font size."
+msgstr "Geçersiz yazı türü boyutu."
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font custom source."
@@ -2678,18 +2273,6 @@ msgid "Source Scene:"
 msgstr "Kaynak Sahne:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Same as Target Scene"
-msgstr "Hedef Sahne ile Aynı"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Shared"
-msgstr "Paylaşılan"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Target Texture Folder:"
-msgstr "Amaçlanan Doku Dizini:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Post-Process Script:"
 msgstr "İşlem Sonrası Betik Dizeci:"
 
@@ -2706,12 +2289,41 @@ msgid "Root Node Name:"
 msgstr "Kök Düğüm adı:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Import to Target Scene Folder"
+msgstr "Amaçlanan Doku Dizini:"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Import to Shared Textures Folder"
+msgstr "Büyük Dokuyu İçe Aktar"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Import to Source Folder"
+msgstr "Sahneden İçe Aktar"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Reuse Source Textures"
+msgstr "Kaynak Doku"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#, fuzzy
+msgid "Texture Action"
+msgstr "Doku Seçenekleri"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr "Aşağıdaki Dizeçler Eksik:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
 msgstr "Yine de İçe Aktar"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "Vazgeç"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"
@@ -2753,12 +2365,12 @@ msgid "Import Image:"
 msgstr "Bedizi İçe Aktar:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Can't import a file over itself:"
-msgstr "Bir dizeç kendisi üzerine içe aktaramıyor:"
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Couldn't localize path: %s (already local)"
 msgstr "Yol yerelleştirilemedi: %s (zaten yerel)"
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Can't import a file over itself:"
+msgstr "Bir dizeç kendisi üzerine içe aktaramıyor:"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Saving.."
@@ -3030,6 +2642,11 @@ msgid "Change Animation Name:"
 msgstr "Canlandırmanın Adını Değiştir:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Animation?"
+msgstr "Canlandırmayı İkile"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
 msgstr "Canlandırmayı Kaldır"
@@ -3167,8 +2784,8 @@ msgstr "Canlandırma Adı:"
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_create_dialog.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr "Sorun!"
 
@@ -3508,8 +3125,7 @@ msgstr "Nesnenin çocuğunun seçilebilme yeteneğini geri kazandırır."
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
 msgid "Edit"
 msgstr "Düzenle"
 
@@ -3625,34 +3241,34 @@ msgstr "Ekle %s"
 msgid "Adding %s..."
 msgstr "Ekliyor %s.."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
 msgstr "Düğüm Oluştur"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr "%s sahne örnekleme sorunu"
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "OK :("
 msgstr "Tamam :("
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
 msgstr "Çocuğun örnek alacağı bir ata yok."
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
 msgstr "Bu işlem, seçilmiş tek bir düğüm gerektirir."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Change default type"
 msgstr "Önyüklü tipi değiştir"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr "Tamam"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4212,6 +3828,14 @@ msgstr "Kaynak bellemi boş!"
 msgid "Load Resource"
 msgstr "Kaynak Yükle"
 
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Paste"
+msgstr "Yapıştır"
+
 #: editor/plugins/rich_text_editor_plugin.cpp
 msgid "Parse BBCode"
 msgstr "BBCode'u Ayrıştır"
@@ -4297,13 +3921,11 @@ msgstr "Sonraki betik"
 msgid "Previous script"
 msgstr "Önceki betik"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/project_export.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_export.cpp
 msgid "File"
 msgstr "Dizeç"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "New"
 msgstr "Yeni"
 
@@ -4336,12 +3958,28 @@ msgid "Close Docs"
 msgstr "Belgeleri Kapat"
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Cut"
+msgstr "Kes"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Copy"
+msgstr "Tıpkıla"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_export.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "Hepsini seç"
+
+#: editor/plugins/script_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Move Up"
 msgstr "Yukarı Taşı"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Move Down"
 msgstr "Aşağı Taşı"
 
@@ -4426,23 +4064,19 @@ msgstr "Sonraki Kesme Noktasına Git"
 msgid "Goto Previous Breakpoint"
 msgstr "Önceki Kesme Noktasına Git"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
 msgstr "Adımla"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "İçeri Adımla"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
 msgstr "Ara Ver"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr "Devam Et"
 
@@ -4518,8 +4152,7 @@ msgstr "Yeniden Yükle"
 msgid "Resave"
 msgstr "Yeniden Kaydet"
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr "Kusurayıklar"
 
@@ -5167,9 +4800,8 @@ msgstr "Sekme 2"
 msgid "Tab 3"
 msgstr "Sekme 3"
 
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_settings.cpp editor/scene_tree_editor.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
 msgstr "Tür:"
 
@@ -5193,8 +4825,7 @@ msgstr "Renk"
 msgid "Paint TileMap"
 msgstr "TileMap'i Boya"
 
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr "İkile"
 
@@ -5274,8 +4905,7 @@ msgstr "Sahneden Oluştur"
 msgid "Merge from Scene"
 msgstr "Sahneden Birleştir"
 
-#: editor/plugins/tile_set_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Error"
 msgstr "Sorun"
 
@@ -5298,6 +4928,71 @@ msgstr "Tasarının PCK'ini yazarken sorun oluştu!"
 #: editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
 msgstr "Şu anda '%s' ortamı için dışa aktarıcı yok."
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "Yeni Kaynak Oluştur"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Full name"
+msgstr "Uygun ad"
+
+#: editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "Geçiş"
+
+#: editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "Durum:"
+
+#: editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "Gizyazı:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "Geçerli damgalar:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "Yeni ad:"
+
+#: editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Include"
@@ -5702,6 +5397,21 @@ msgid "Add Input Action Event"
 msgstr "Giriş İşlem Olayı Ekle"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Meta+"
+msgstr "Meta+"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Shift+"
+msgstr "Shift+"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Alt+"
+msgstr "Alt+"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "Control+"
 msgstr "Denetim+"
 
@@ -5753,6 +5463,10 @@ msgstr "Düğme 9"
 msgid "Joystick Axis Index:"
 msgstr "Oyunçubuğu Ekseni Dizini:"
 
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Axis"
+msgstr "Eksen"
+
 #: editor/project_settings.cpp
 msgid "Joystick Button Index:"
 msgstr "Oyunçubuğu Düğme Dizini:"
@@ -5764,6 +5478,34 @@ msgstr "Giriş Eylemi Ekle"
 #: editor/project_settings.cpp
 msgid "Erase Input Action Event"
 msgstr "Giriş Eylemi Olayını Sil"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Device"
+msgstr "Aygıt"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Button"
+msgstr "Düğme"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Left Button."
+msgstr "Sol Düğme."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Right Button."
+msgstr "Sağ Düğme."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Middle Button."
+msgstr "Orta Düğme."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Wheel Up."
+msgstr "Tekerlek Yukarı."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Wheel Down."
+msgstr "Tekerlek Aşağı."
 
 #: editor/project_settings.cpp
 msgid "Toggle Persisting"
@@ -6066,6 +5808,10 @@ msgid "This operation can't be done without a scene."
 msgstr "Bu işlem bir sahne olmadan yapılamaz."
 
 #: editor/scene_tree_dock.cpp
+msgid "Can not perform with the root node."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr "Bu işlem örneklenmiş sahnelerde yapılamaz."
 
@@ -6142,6 +5888,11 @@ msgid "Save Branch as Scene"
 msgstr "Dalı Sahne olarak Kaydet"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Copy Node Path"
+msgstr "Dizeç Yolunu Tıpkıla"
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
 msgstr "Sil (Doğrulama Yok)"
 
@@ -6156,13 +5907,6 @@ msgid ""
 msgstr ""
 "Sahne dizecini Düğüm olarak örneklendirin. Kök düğüm yoksa kalıtsal bir "
 "sahne oluşturur."
-
-#: editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
-msgstr ""
-"Ata gizli olduğu için bu öğe görünür hale getirilemiyor. Önce atayı göster."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6456,6 +6200,324 @@ msgstr "Işın Şeklinin Uzunluğunu Değiştir"
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr "Bildirim Kapsamını Değiştir"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
+"convert() için geçersiz türde değiştirgen, TYPE_* sabitlerini kullanın."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr "Geçersiz biçem ya da kod çözmek için yetersiz byte sayısı."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "step argument is zero!"
+msgstr "adım değiştirgeni sıfır!"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not a script with an instance"
+msgstr "Örneği bulunan bir betik değil"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a script"
+msgstr "Bir betiğe bağlı değil"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a resource file"
+msgstr "Bir kaynak dizecine bağlı değil"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (missing @path)"
+msgstr "Geçersiz örnek sözlük biçemi (@path eksik)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (can't load script at @path)"
+msgstr "Geçersiz örnek sözlük biçemi (betik @path 'tan yüklenemiyor)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (invalid script at @path)"
+msgstr "Geçersiz örnek sözlük biçemi (@path 'taki kod geçersiz)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary (invalid subclasses)"
+msgstr "Geçersiz örnek sözlüğü (geçersiz altbölütler)"
+
+#: scene/2d/animated_sprite.cpp
+msgid ""
+"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"order for AnimatedSprite to display frames."
+msgstr ""
+"Bir SpriteFrames kaynağı oluşturulmalı ya da 'Kareler' özelliğine atanmalı "
+"ki AnimatedSprite düğümü kareleri gösterebilsin."
+
+#: scene/2d/canvas_modulate.cpp
+msgid ""
+"Only one visible CanvasModulate is allowed per scene (or set of instanced "
+"scenes). The first created one will work, while the rest will be ignored."
+msgstr ""
+"Sahne başına (ya da bir öbek örneklenmiş sahneler için) yalnızca bir görünür "
+"CanvasModulate'e izin verilir. İlk oluşturulan çalışırken diğerleri ihmal "
+"edilecektir."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid ""
+"CollisionPolygon2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2D yalnızca CollisionObject2D'den türeyen düğümlere bir "
+"şekil elde etmeye hizmet eder. Lütfen onu yalnızca şunların çocuğu olarak "
+"kullanın ve Area2D, StaticBody2D, RigidBody2D, KinematicBody2D vs.'ye bir "
+"şekil vermek için kullanın."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "Boş bir CollisionPolygon2D'nin çarpışmaya hiçbir etkisi yoktur."
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"CollisionShape2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D yalnızca CollisionObject2D'den türeyen düğümlere bir şekil "
+"elde etmeye hizmet eder. Lütfen onu yalnızca şunların çocuğu olarak kullanın "
+"ve Area2D, StaticBody2D, RigidBody2D, KinematicBody2D vs.'ye bir şekil "
+"vermek için kullanın."
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"CollisionShape2D'nin işlevini yerine getirmesi için ona bir şekil sağlanması "
+"gerekmektedir. Lütfen onun için bir şekil kaynağı oluşturun!"
+
+#: scene/2d/light_2d.cpp
+msgid ""
+"A texture with the shape of the light must be supplied to the 'texture' "
+"property."
+msgstr "Işık yüzeyli bir doku, \"doku\" niteliğine sağlanmalıdır."
+
+#: scene/2d/light_occluder_2d.cpp
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"Engelleyicinin etkili olabilmesi için bir engelleyici çokgeni ayarlanmalıdır "
+"(ya da çizilmelidir)."
+
+#: scene/2d/light_occluder_2d.cpp
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+msgstr "Bu engelleyici için engelleyici çokgeni boş. Lütfen bir çokgen çizin!"
+
+#: scene/2d/navigation_polygon.cpp
+msgid ""
+"A NavigationPolygon resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"Bu düğüm(node) çalışmak için bir NavigationPolygon kaynağı ayarlanmasına ya "
+"da oluşturulmasına gereksinim duyar. Lütfen hazır bir tane seçin ya da bir "
+"çokgen çizin."
+
+#: scene/2d/navigation_polygon.cpp
+msgid ""
+"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
+"node. It only provides navigation data."
+msgstr ""
+"NavigationPolygonInstance, bir Navigation2D çocuğu olmalı ya da Navigation2D "
+"düğümünün torunu olması gerekir. Bu nesne yalnızca yönlendirme verisi sağlar."
+
+#: scene/2d/parallax_layer.cpp
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"ParallaxLayer, yalnızca ParallaxBackground düğümünün çocuğu olduğu zaman "
+"çalışır."
+
+#: scene/2d/particles_2d.cpp
+msgid "Path property must point to a valid Particles2D node to work."
+msgstr ""
+"Yol niteliği çalışması için geçerli bir Particles2D düğümünü işaret "
+"etmelidir."
+
+#: scene/2d/path_2d.cpp
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"PathFollow2D yalnızca Path2D düğümünün çocuğu olarak ayarlanınca çalışır."
+
+#: scene/2d/remote_transform_2d.cpp
+msgid "Path property must point to a valid Node2D node to work."
+msgstr ""
+"Yol niteliği çalışması için geçerli bir Node2D düğümüne işaret etmelidir."
+
+#: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
+msgid ""
+"A SampleLibrary resource must be created or set in the 'samples' property in "
+"order for SamplePlayer to play sound."
+msgstr ""
+"SamplePlayer ın ses çalması için bir SampleLibrary kaynağı oluşturulmalı "
+"veya 'örnekler' niteliğinde ayarlanmalıdır."
+
+#: scene/2d/sprite.cpp
+msgid ""
+"Path property must point to a valid Viewport node to work. Such Viewport "
+"must be set to 'render target' mode."
+msgstr ""
+"Yol niteliği çalışması için geçerli bir Viewport düğümüne işaret etmelidir. "
+"Bu tür Viewport 'işleyici amacı' biçimine ayarlanmalıdır."
+
+#: scene/2d/sprite.cpp
+msgid ""
+"The Viewport set in the path property must be set as 'render target' in "
+"order for this sprite to work."
+msgstr ""
+"Bu sprite'ın çalışması için yol niteliğinde ayarlanan Viewport durumu "
+"'işleyici amacı' olarak ayarlanmalıdır."
+
+#: scene/2d/visibility_notifier_2d.cpp
+msgid ""
+"VisibilityEnable2D works best when used with the edited scene root directly "
+"as parent."
+msgstr ""
+"VisibilityEnable2D düğümü düzenlenmiş sahne kökü doğrudan ata olarak "
+"kullanıldığında çalışır."
+
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr "BakedLightInstance, bir BakedLight kaynağı içermez."
+
+#: scene/3d/body_shape.cpp
+msgid ""
+"CollisionShape only serves to provide a collision shape to a CollisionObject "
+"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
+"KinematicBody, etc. to give them a shape."
+msgstr ""
+"CollisionShape sadece CollisionObject türetilmiş bir düğümde çarpışma yüzeyi "
+"sağlamaya yarar. Bunların yüzeyine şekil vermek için Area, StaticBody, "
+"RigidBody, KinematicBody, v.b. onu sadece bunların çocuğu olarak kullanın."
+
+#: scene/3d/body_shape.cpp
+msgid ""
+"A shape must be provided for CollisionShape to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"CollisionShape'in çalışması için bir şekil verilmelidir. Lütfen bunun için "
+"bir şekil kaynağı oluşturun!"
+
+#: scene/3d/collision_polygon.cpp
+msgid ""
+"CollisionPolygon only serves to provide a collision shape to a "
+"CollisionObject derived node. Please only use it as a child of Area, "
+"StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon sadece CollisionObject türetilmiş bir düğümde çarpışma "
+"yüzeyi sağlamaya yarar. Bunların yüzeyine şekil vermek için Area, "
+"StaticBody, RigidBody, KinematicBody, v.b. onu sadece bunların çocuğu olarak "
+"kullanın."
+
+#: scene/3d/collision_polygon.cpp
+msgid "An empty CollisionPolygon has no effect on collision."
+msgstr "Boş bir CollisionPolygon'un çarpışma üzerinde etkisi yoktur."
+
+#: scene/3d/navigation_mesh.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr ""
+"Bu düğümün çalışması için bir NavigationMesh kaynağı ayarlanmış veya "
+"oluşturulmuş olmalıdır."
+
+#: scene/3d/navigation_mesh.cpp
+msgid ""
+"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
+"It only provides navigation data."
+msgstr ""
+"NavigationMeshInstance, bir Navigation düğümünün çocuğu ya da torunu "
+"olmalıdır. O yalnızca yönlendirme verisi sağlar."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+"Her sahne başına (ya da örneklenmiş sahneler dizisine) sadece bir tane "
+"WorldEnvironment 'a izin verilir."
+
+#: scene/3d/spatial_sample_player.cpp
+msgid ""
+"A SampleLibrary resource must be created or set in the 'samples' property in "
+"order for SpatialSamplePlayer to play sound."
+msgstr ""
+"SpatialSamplePlayer 'ın ses çalması için bir SampleLibrary kaynağı "
+"oluşturulmalı veya 'örnekler' niteliğinde ayarlanmalıdır."
+
+#: scene/3d/sprite_3d.cpp
+msgid ""
+"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"order for AnimatedSprite3D to display frames."
+msgstr ""
+"AnimatedSprite3D 'nin çerçeveleri görüntülemek için bir SpriteFrames kaynağı "
+"oluşturulmalı veya 'Çerçeveler' niteliğinde ayarlanmalıdır."
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr "Uyarı!"
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr "Lütfen Doğrulayın..."
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File"
+msgstr "Bir Dizeç Aç"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open File(s)"
+msgstr "Dizeç(leri) Aç"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a Directory"
+msgstr "Bir dizin aç"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File or Directory"
+msgstr "Bir Dizeç ya da Dizin Aç"
+
+#: scene/gui/input_action.cpp
+msgid "Ctrl+"
+msgstr "Ctrl+"
+
+#: scene/gui/popup.cpp
+msgid ""
+"Popups will hide by default unless you call popup() or any of the popup*() "
+"functions. Making them visible for editing is fine though, but they will "
+"hide upon running."
+msgstr ""
+"Açılır pencereler popup() veya popup*() işlevlerini çağırmadıkça ön tanımlı "
+"olarak gizlenecektir. Onları düzenleme için görünür kılmak da iyidir, ancak "
+"çalışırken gizlenecekler."
+
+#: scene/main/viewport.cpp
+msgid ""
+"This viewport is not set as render target. If you intend for it to display "
+"its contents directly to the screen, make it a child of a Control so it can "
+"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
+"texture to some node for display."
+msgstr ""
+"Bu görüntü alanı, işleyici amacı olarak ayarlanmadı. İçeriğini doğrudan "
+"görüntlükte göstermek istiyorsanız, bir Denetimcinin çocuğu olun ve böylece "
+"bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
+"görüntülemesi için bir düğüme atayın."
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Hedef Sahne ile Aynı"
+
+#~ msgid "Shared"
+#~ msgstr "Paylaşılan"
+
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Ata gizli olduğu için bu öğe görünür hale getirilemiyor. Önce atayı "
+#~ "göster."
 
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "

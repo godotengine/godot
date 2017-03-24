@@ -19,501 +19,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 2.8-dev\n"
 
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
-"نوع آرگومان برای متد ()convert ‌ نامعتبر است ،‌ از ثابت های  *_TYPE‌ استفاده "
-"کنید ."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
-"تعداد بایت های مورد نظر برای رمزگشایی بایت ها کافی نیست ،‌ و یا فرمت نامعتبر "
-"است ."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "step argument is zero!"
-msgstr "آرگومان step صفر است!"
-
-#: modules/gdscript/gd_functions.cpp
-#, fuzzy
-msgid "Not a script with an instance"
-msgstr "اسکریپتی با یک نمونه نیست ."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not based on a script"
-msgstr "بر اساس یک اسکریپت نیست."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Not based on a resource file"
-msgstr "بر اساس یک فایل منبع نیست."
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (missing @path)"
-msgstr "فرمت دیکشنری نمونه نامعتبر (pass@ مفقود)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr ""
-"فرمت نمونه ی دیکشنری نامعتبر است . ( نمی توان اسکریپت را از مسیر path@ "
-"بارگذاری کرد.)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "فرمت دیکشنری نمونه نامعتبر (اسکریپت نامعتبر در path@)"
-
-#: modules/gdscript/gd_functions.cpp
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "نمونه ی دیکشنری نامعتبر است . (زیرکلاس‌های نامعتبر)"
-
-#: scene/2d/animated_sprite.cpp
-msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
-"order for AnimatedSprite to display frames."
-msgstr ""
-"یک منبع SpriteFrames باید در دارایی Frames ایجاد یا تنظیم شود تا "
-"AnimatedSprite فریم‌ها را نمایش دهد."
-
-#: scene/2d/canvas_modulate.cpp
-msgid ""
-"Only one visible CanvasModulate is allowed per scene (or set of instanced "
-"scenes). The first created one will work, while the rest will be ignored."
-msgstr ""
-"تنها یک CanvasModulate نمایان به ازای هر صحنه (یا یک مجموعه از صحنه‌های "
-"نمونه‌گذاری شده) مجاز است. اولین مورد ایجاد شده کار خواهد کرد، در حالیکه از "
-"بقیه صرفنظر می‌شود."
-
-#: scene/2d/collision_polygon_2d.cpp
-msgid ""
-"CollisionPolygon2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon2D تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
-"CollisionObject2D بکار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area2D و "
-"StaticBody2D و RigidBody2D و KinematicBody2D و غیره استفاده کنید تا به آن‌ها "
-"یک شکل بدهید."
-
-#: scene/2d/collision_polygon_2d.cpp
-msgid "An empty CollisionPolygon2D has no effect on collision."
-msgstr "یک CollisionPolygon2D خالی اثری بر برخورد ندارد."
-
-#: scene/2d/collision_shape_2d.cpp
-msgid ""
-"CollisionShape2D only serves to provide a collision shape to a "
-"CollisionObject2D derived node. Please only use it as a child of Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
-msgstr ""
-"CollisionShape2D تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
-"CollisionObject2D بکار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area2D و "
-"StaticBody2D و RigidBody2D و KinematicBody2D و غیره استفاده کنید تا به آن‌ها "
-"یک شکل بدهید."
-
-#: scene/2d/collision_shape_2d.cpp
-msgid ""
-"A shape must be provided for CollisionShape2D to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"یک شکل باید برای CollisionShape2D فراهم شده باشد تا عمل کند. لطفا یک شکل "
-"منبع برای آن ایجاد کنید!"
-
-#: scene/2d/light_2d.cpp
-msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
-"property."
-msgstr "یک بافت با شکل نور باید برای دارایی texture فراهم شده باشد."
-
-#: scene/2d/light_occluder_2d.cpp
-msgid ""
-"An occluder polygon must be set (or drawn) for this occluder to take effect."
-msgstr ""
-"یک چندضلعی مسدود باید برای این مسدودکننده (occluder) تنظیم (یا ترسیم) شود تا "
-"تأثیرگذار باشد."
-
-#: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr "چندضلعی مسدود برای این مسدودکننده، خالی است. لطفا یک چندضلعی رسم کنید!"
-
-#: scene/2d/navigation_polygon.cpp
-msgid ""
-"A NavigationPolygon resource must be set or created for this node to work. "
-"Please set a property or draw a polygon."
-msgstr ""
-"یک منبع NavigationPolygon باید برای این گره تنظیم یا ایجاد شود تا کار کند. "
-"لطفا یک دارایی تعیین یا یک چندضلعی ترسیم کنید."
-
-#: scene/2d/navigation_polygon.cpp
-msgid ""
-"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
-"node. It only provides navigation data."
-msgstr ""
-"NavigationPolygonInstance باید یک فرزند یا نوه‌ی یک گره Navigation2D باشد. "
-"این تنها یک داده‌ی پیمایش را فراهم می‌کند."
-
-#: scene/2d/parallax_layer.cpp
-msgid ""
-"ParallaxLayer node only works when set as child of a ParallaxBackground node."
-msgstr ""
-"گره ParallaxLayer تنها در زمانی که به عنوان فرزند یک گره ParallaxBackground "
-"تنظیم شود کار می‌کند."
-
-#: scene/2d/particles_2d.cpp
-msgid "Path property must point to a valid Particles2D node to work."
-msgstr "دارایی Path باید به یک گره Particles2D معتبر اشاره کند تا کار کند."
-
-#: scene/2d/path_2d.cpp
-msgid "PathFollow2D only works when set as a child of a Path2D node."
-msgstr ""
-"PathFollow2D تنها در زمانی که به عنوان یک فرزند یک گره Path2D تنظیم شود کار "
-"می‌کند."
-
-#: scene/2d/remote_transform_2d.cpp
-msgid "Path property must point to a valid Node2D node to work."
-msgstr "دارایی Path باید به یک گره Node2D معتبر اشاره کند تا کار کند."
-
-#: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
-msgid ""
-"A SampleLibrary resource must be created or set in the 'samples' property in "
-"order for SamplePlayer to play sound."
-msgstr ""
-"یک منبع SampleLibrary باید در دارایی samples ایجاد یا تنظیم شود تا "
-"SamplePlayer آهنگ را پخش کند."
-
-#: scene/2d/sprite.cpp
-msgid ""
-"Path property must point to a valid Viewport node to work. Such Viewport "
-"must be set to 'render target' mode."
-msgstr ""
-"دارایی Path باید به یک گره Viewport معتبر اشاره کند تا کار کند. این Viewport "
-"باید روی حالت render target تنظیم شود."
-
-#: scene/2d/sprite.cpp
-msgid ""
-"The Viewport set in the path property must be set as 'render target' in "
-"order for this sprite to work."
-msgstr ""
-"Viewport تنظیم شده در داریی path باید به صورت render target برای این اسپرایت "
-"تنظیم شود تا کار کند."
-
-#: scene/2d/visibility_notifier_2d.cpp
-msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
-"as parent."
-msgstr ""
-"VisibilityEnable2D زمانی بهتر کار می‌کند که در یک ریشه‌ی صحنه‌ی ویرایش شده به "
-"صورت پدر (parent) استفاده شود."
-
-#: scene/3d/baked_light_instance.cpp
-msgid "BakedLightInstance does not contain a BakedLight resource."
-msgstr "BakedLightInstance محتوی یک منبع BakedLight نیست."
-
-#: scene/3d/body_shape.cpp
-msgid ""
-"CollisionShape only serves to provide a collision shape to a CollisionObject "
-"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
-"KinematicBody, etc. to give them a shape."
-msgstr ""
-"CollisionShape تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
-"CollisionObject به کار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area و "
-"StaticBody و RigidBody و KinematicBody و غیره استفاده کنید تا به آن‌ها یک شکل "
-"بدهید."
-
-#: scene/3d/body_shape.cpp
-msgid ""
-"A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
-msgstr ""
-"باید یک شکل برای CollisionShape فراهم شده باشد تا عمل کند. لطفا یک منبع شکل "
-"برای آن ایجاد کنید!"
-
-#: scene/3d/collision_polygon.cpp
-msgid ""
-"CollisionPolygon only serves to provide a collision shape to a "
-"CollisionObject derived node. Please only use it as a child of Area, "
-"StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
-msgstr ""
-"CollisionPolygon تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
-"CollisionObject به کار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area و "
-"StaticBody و RigidBody و KinematicBody و غیره استفاده کنید تا به آن‌ها یک شکل "
-"بدهید."
-
-#: scene/3d/collision_polygon.cpp
-msgid "An empty CollisionPolygon has no effect on collision."
-msgstr "یک CollisionPolygon خالی تأثیری بر برخورد ندارد."
-
-#: scene/3d/navigation_mesh.cpp
-msgid "A NavigationMesh resource must be set or created for this node to work."
-msgstr "یک منبع NavigationMesh باید برای یک گره تنظیم یا ایجاد شود تا کار کند."
-
-#: scene/3d/navigation_mesh.cpp
-msgid ""
-"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
-"It only provides navigation data."
-msgstr ""
-"NavigationMeshInstance باید یک فرزند یا نوه‌ی یک گره Navigation باشد. این "
-"تنها داده‌ی پیمایش را فراهم می‌کند."
-
-#: scene/3d/scenario_fx.cpp
-msgid ""
-"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
-msgstr ""
-"فقط یک WorldEnvironment در هر صحنه (یا مجموعه ای از صحنه های نمونه‌گذاری شده) "
-"مجاز است."
-
-#: scene/3d/spatial_sample_player.cpp
-msgid ""
-"A SampleLibrary resource must be created or set in the 'samples' property in "
-"order for SpatialSamplePlayer to play sound."
-msgstr ""
-"یک منبع SampleLibrary باید در دارایی samples ایجاد یا تنظیم شده باشد تا "
-"SpatialSamplePlayer آهنگ را پخش کند."
-
-#: scene/3d/sprite_3d.cpp
-msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"یک منبع SpriteFrames باید در دارایی Frames ایجاد شده باشد تا "
-"AnimatedSprite3D فریم‌ها را نمایش دهد."
-
-#: scene/gui/dialogs.cpp editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Cancel"
-msgstr "لغو"
-
-#: scene/gui/dialogs.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
-msgid "OK"
-msgstr "موافقت"
-
-#: scene/gui/dialogs.cpp
-msgid "Alert!"
-msgstr "هشدار!"
-
-#: scene/gui/dialogs.cpp
-msgid "Please Confirm..."
-msgstr "لطفا تأیید کنید..."
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "File Exists, Overwrite?"
-msgstr "فایل وجود دارد، آیا بازنویسی شود؟"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "All Recognized"
-msgstr "همه ی موارد شناخته شده اند."
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "All Files (*)"
-msgstr "تمام پرونده‌ها (*)"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_help.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
-msgid "Open"
-msgstr "باز کن"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File"
-msgstr "یک پرونده را باز کن"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open File(s)"
-msgstr "پرونده(ها) را باز کن"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a Directory"
-msgstr "یک دیکشنری را باز کن"
-
-#: scene/gui/file_dialog.cpp
-msgid "Open a File or Directory"
-msgstr "یک پرونده یا پوشه را باز کن"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Save"
-msgstr "ذخیره کن"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Save a File"
-msgstr "یک پرونده را ذخیره کن"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp
-msgid "Create Folder"
-msgstr "پوشه ایجاد کن"
-
-#: scene/gui/file_dialog.cpp editor/editor_autoload_settings.cpp
-#: editor/editor_file_dialog.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/script_create_dialog.cpp
-msgid "Path:"
-msgstr "مسیر:"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Directories & Files:"
-msgstr "پوشه‌ها و پرونده‌ها:"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/script_editor_debugger.cpp
-msgid "File:"
-msgstr "پرونده:"
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Filter:"
-msgstr "صافی:"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp editor/editor_plugin_settings.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Name:"
-msgstr "نام:"
-
-#: scene/gui/file_dialog.cpp editor/editor_dir_dialog.cpp
-#: editor/editor_file_dialog.cpp
-msgid "Could not create folder."
-msgstr "نمی‌تواند یک پوشه ایجاد شود."
-
-#: scene/gui/file_dialog.cpp editor/editor_file_dialog.cpp
-msgid "Must use a valid extension."
-msgstr "باید از یک پسوند معتبر استفاده شود."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Shift+"
-msgstr "+Shift"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Alt+"
-msgstr "+Alt"
-
-#: scene/gui/input_action.cpp
-msgid "Ctrl+"
-msgstr "+Ctrl"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-#: editor/settings_config_dialog.cpp
-msgid "Meta+"
-msgstr "+Meta"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Device"
-msgstr "دستگاه"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Button"
-msgstr "دکمه"
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Left Button."
-msgstr "دکمه‌ی چپ."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Right Button."
-msgstr "دکمه‌ی راست."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Middle Button."
-msgstr "دکمه‌ی وسط."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Wheel Up."
-msgstr "غلطاندن به بالا."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Wheel Down."
-msgstr "غلطاندن به پایین."
-
-#: scene/gui/input_action.cpp editor/project_settings.cpp
-msgid "Axis"
-msgstr "محور"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Cut"
-msgstr "بریدن"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/property_editor.cpp editor/resources_dock.cpp
-msgid "Copy"
-msgstr "کپی کردن"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/property_editor.cpp editor/resources_dock.cpp
-msgid "Paste"
-msgstr "چسباندن"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_export.cpp
-msgid "Select All"
-msgstr "انتخاب همه"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp editor/editor_log.cpp
-#: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/rich_text_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_editor_debugger.cpp
-msgid "Clear"
-msgstr "پاک کردن"
-
-#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp editor/editor_node.cpp
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-msgid "Undo"
-msgstr "خنثی کردن (Undo)"
-
-#: scene/gui/popup.cpp
-msgid ""
-"Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
-msgstr ""
-"Popup ها به صورت پیش‌فرض مخفی می‌شوند مگر اینکه ()popup یا یکی از توابع "
-"()*popup را فراخوانی کنید. در هر صورت نمایان کردن آن‌ها برای ویرایش خوب است، "
-"اما به محض اجرا مخفی می‌شوند."
-
-#: scene/main/viewport.cpp
-msgid ""
-"This viewport is not set as render target. If you intend for it to display "
-"its contents directly to the screen, make it a child of a Control so it can "
-"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
-"texture to some node for display."
-msgstr ""
-"این viewport به صورت render target تنظیم نیست. اگر قصد دارید که محتویاتش را "
-"به صورت مستقیم در صفحه‌نمایش نمایش دهد، آن را یک فرزند یک Control قرار دهید "
-"تا بتواند یک اندازه بگیرد. در غیر اینصورت، آن را یک RenderTarget قرار دهید و "
-"بافت داخلی آن را برای نمایش به تعدادی گره تخصیص دهید."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Error initializing FreeType."
-msgstr "خطا در ارزش‌دهی آغارین به FreeType."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Unknown font format."
-msgstr "فرمت قلم ناشناخته."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Error loading font."
-msgstr "خطای بارگذاری قلم."
-
-#: scene/resources/dynamic_font.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-msgid "Invalid font size."
-msgstr "اندازه‌ی قلم نامعتبر."
-
 #: editor/animation_editor.cpp
 msgid "Disabled"
 msgstr "غیرفعال شده"
@@ -590,8 +95,7 @@ msgstr ""
 msgid "Anim Delete Keys"
 msgstr "کلیدها را در انیمیشن حذف کن"
 
-#: editor/animation_editor.cpp
-#: editor/plugins/tile_map_editor_plugin.cpp
+#: editor/animation_editor.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Duplicate Selection"
 msgstr "انتخاب شده را به دو تا تکثیر کن"
 
@@ -643,8 +147,7 @@ msgstr "به گام قبلی برو"
 msgid "Linear"
 msgstr "خطی"
 
-#: editor/animation_editor.cpp
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/animation_editor.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constant"
 msgstr "ثابت"
 
@@ -689,8 +192,8 @@ msgstr "تعداد d% ترک جدید ایجاد، و کلیدها را درج �
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #: editor/plugins/navigation_polygon_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
-#: editor/project_manager.cpp editor/script_create_dialog.cpp
+#: editor/plugins/particles_editor_plugin.cpp editor/project_manager.cpp
+#: editor/script_create_dialog.cpp
 msgid "Create"
 msgstr "ایجاد کن"
 
@@ -866,8 +369,7 @@ msgstr "مرتب‌سازی:"
 msgid "Reverse"
 msgstr "معکوس"
 
-#: editor/asset_library_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/asset_library_editor_plugin.cpp editor/project_settings.cpp
 msgid "Category:"
 msgstr "طبقه‌بندی:"
 
@@ -913,9 +415,9 @@ msgstr "فراخوانی"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/project_settings.cpp editor/property_editor.cpp
-#: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_settings.cpp
+#: editor/property_editor.cpp editor/run_settings_dialog.cpp
+#: editor/settings_config_dialog.cpp
 msgid "Close"
 msgstr "بستن"
 
@@ -969,8 +471,7 @@ msgstr "تنها در قسمت انتخاب شده"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_settings.cpp
 msgid "Search"
 msgstr "جستجو"
 
@@ -1010,13 +511,11 @@ msgstr "موقع جایگزینی از کاربر بپرس"
 msgid "Skip"
 msgstr "رد کردن"
 
-#: editor/code_editor.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom In"
 msgstr "بزرگنمایی بیشتر"
 
-#: editor/code_editor.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom Out"
 msgstr "بزرگنمایی کمتر"
 
@@ -1046,18 +545,15 @@ msgstr ""
 msgid "Connect To Node:"
 msgstr "اتصال به گره:"
 
-#: editor/connections_dialog.cpp
-#: editor/editor_autoload_settings.cpp editor/groups_editor.cpp
-#: editor/plugins/item_list_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_settings.cpp
+#: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
+#: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
 msgid "Add"
 msgstr "افزودن"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Remove"
 msgstr "برداشتن"
 
@@ -1119,10 +615,24 @@ msgstr "سیگنال‌ها"
 msgid "Create New"
 msgstr "جدید ایجاد کن"
 
+#: editor/create_dialog.cpp editor/editor_file_dialog.cpp
+#: editor/filesystem_dock.cpp
+msgid "Favorites:"
+msgstr ""
+
+#: editor/create_dialog.cpp editor/editor_file_dialog.cpp
+msgid "Recent:"
+msgstr ""
+
 #: editor/create_dialog.cpp editor/editor_help.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/quick_open.cpp
 msgid "Matches:"
 msgstr "تطبیق‌ها:"
+
+#: editor/create_dialog.cpp editor/editor_help.cpp
+#: editor/script_editor_debugger.cpp
+msgid "Description:"
+msgstr "توضیح:"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1242,8 +752,7 @@ msgid "Delete selected files?"
 msgstr "آیا پرونده‌های انتخاب شده حذف شود؟"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
-#: editor/filesystem_dock.cpp
-#: editor/plugins/item_list_editor_plugin.cpp
+#: editor/filesystem_dock.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "حذف کن"
@@ -1312,14 +821,19 @@ msgstr ""
 msgid "Rearrange Autoloads"
 msgstr ""
 
+#: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/script_create_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Path:"
+msgstr "مسیر:"
+
 #: editor/editor_autoload_settings.cpp
 msgid "Node Name:"
 msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/sample_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Name"
 msgstr ""
 
@@ -1347,9 +861,53 @@ msgstr ""
 msgid "Choose a Directory"
 msgstr ""
 
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Create Folder"
+msgstr "پوشه ایجاد کن"
+
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: editor/editor_plugin_settings.cpp editor/plugins/theme_editor_plugin.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Name:"
+msgstr "نام:"
+
+#: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
+#: scene/gui/file_dialog.cpp
+msgid "Could not create folder."
+msgstr "نمی‌تواند یک پوشه ایجاد شود."
+
 #: editor/editor_dir_dialog.cpp
 msgid "Choose"
 msgstr ""
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "File Exists, Overwrite?"
+msgstr "فایل وجود دارد، آیا بازنویسی شود؟"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "All Recognized"
+msgstr "همه ی موارد شناخته شده اند."
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "All Files (*)"
+msgstr "تمام پرونده‌ها (*)"
+
+#: editor/editor_file_dialog.cpp editor/editor_help.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/quick_open.cpp scene/gui/file_dialog.cpp
+msgid "Open"
+msgstr "باز کن"
+
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp scene/gui/file_dialog.cpp
+msgid "Save"
+msgstr "ذخیره کن"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Save a File"
+msgstr "یک پرونده را ذخیره کن"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -1391,17 +949,26 @@ msgstr ""
 msgid "Move Favorite Down"
 msgstr ""
 
-#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-msgid "Favorites:"
-msgstr ""
-
-#: editor/editor_file_dialog.cpp
-msgid "Recent:"
-msgstr ""
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Directories & Files:"
+msgstr "پوشه‌ها و پرونده‌ها:"
 
 #: editor/editor_file_dialog.cpp
 msgid "Preview:"
 msgstr ""
+
+#: editor/editor_file_dialog.cpp editor/script_editor_debugger.cpp
+#: scene/gui/file_dialog.cpp
+msgid "File:"
+msgstr "پرونده:"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Filter:"
+msgstr "صافی:"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Must use a valid extension."
+msgstr "باید از یک پسوند معتبر استفاده شود."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1456,10 +1023,6 @@ msgstr "سیگنال ها:"
 msgid "Constants:"
 msgstr ""
 
-#: editor/editor_help.cpp editor/script_editor_debugger.cpp
-msgid "Description:"
-msgstr "توضیح:"
-
 #: editor/editor_help.cpp
 msgid "Method Description:"
 msgstr ""
@@ -1504,6 +1067,13 @@ msgstr ""
 msgid " Output:"
 msgstr " خروجی:"
 
+#: editor/editor_log.cpp editor/plugins/animation_tree_editor_plugin.cpp
+#: editor/plugins/rich_text_editor_plugin.cpp editor/property_editor.cpp
+#: editor/script_editor_debugger.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Clear"
+msgstr "پاک کردن"
+
 #: editor/editor_node.cpp editor/editor_reimport_dialog.cpp
 msgid "Re-Importing"
 msgstr "در حال وارد کردن دوباره..."
@@ -1516,20 +1086,17 @@ msgstr ""
 msgid "Node From Scene"
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Save Resource As.."
 msgstr "ذخیره منبع از ..."
 
-#: editor/editor_node.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "I see.."
 msgstr "من میبینم ..."
@@ -1615,8 +1182,7 @@ msgstr ""
 msgid "Paste Params"
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Paste Resource"
 msgstr ""
 
@@ -1755,8 +1321,7 @@ msgstr ""
 msgid "Pick a Main Scene"
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp
 msgid "Ugh"
 msgstr ""
@@ -1799,8 +1364,7 @@ msgstr ""
 msgid "%d more file(s) or folder(s)"
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/editor_node.cpp editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Scene"
 msgstr "صحنه"
 
@@ -1824,6 +1388,10 @@ msgstr "زبانه بعدی"
 #: editor/editor_node.cpp
 msgid "Previous tab"
 msgstr "زبانه قبلی"
+
+#: editor/editor_node.cpp
+msgid "Filter Files.."
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Operations with scene files."
@@ -1862,10 +1430,6 @@ msgid "Open Recent"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Quick Filter Files.."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Convert To.."
 msgstr ""
 
@@ -1880,6 +1444,12 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid "TileSet.."
 msgstr ""
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Undo"
+msgstr "خنثی کردن (Undo)"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -1906,8 +1476,7 @@ msgstr ""
 msgid "Import assets to the project."
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
 #: editor/io_plugins/editor_font_import_plugin.cpp
 #: editor/io_plugins/editor_mesh_import_plugin.cpp
 #: editor/io_plugins/editor_sample_import_plugin.cpp
@@ -1927,6 +1496,10 @@ msgid "Tools"
 msgstr "ابزارها"
 
 #: editor/editor_node.cpp
+msgid "Export to Godot 3.0"
+msgstr ""
+
+#: editor/editor_node.cpp
 msgid "Export the project to many platforms."
 msgstr ""
 
@@ -1938,8 +1511,7 @@ msgstr ""
 msgid "Play the project."
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
 msgid "Play"
 msgstr "پخش"
 
@@ -1955,8 +1527,7 @@ msgstr ""
 msgid "Stop the scene."
 msgstr ""
 
-#: editor/editor_node.cpp
-#: editor/plugins/sample_library_editor_plugin.cpp
+#: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
 msgid "Stop"
 msgstr ""
 
@@ -2438,6 +2009,7 @@ msgstr ""
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 #: editor/io_plugins/editor_texture_import_plugin.cpp
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_export.cpp
 msgid "Target Path:"
 msgstr ""
 
@@ -2518,6 +2090,26 @@ msgstr ""
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Failed opening as BMFont file."
 msgstr ""
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Error initializing FreeType."
+msgstr "خطا در ارزش‌دهی آغارین به FreeType."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Unknown font format."
+msgstr "فرمت قلم ناشناخته."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Error loading font."
+msgstr "خطای بارگذاری قلم."
+
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: scene/resources/dynamic_font.cpp
+msgid "Invalid font size."
+msgstr "اندازه‌ی قلم نامعتبر."
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font custom source."
@@ -2643,18 +2235,6 @@ msgid "Source Scene:"
 msgstr ""
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Same as Target Scene"
-msgstr ""
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Shared"
-msgstr ""
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Target Texture Folder:"
-msgstr ""
-
-#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Post-Process Script:"
 msgstr ""
 
@@ -2671,12 +2251,36 @@ msgid "Root Node Name:"
 msgstr ""
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Import to Target Scene Folder"
+msgstr ""
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Import to Shared Textures Folder"
+msgstr ""
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Import to Source Folder"
+msgstr ""
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Reuse Source Textures"
+msgstr ""
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+msgid "Texture Action"
+msgstr ""
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "The Following Files are Missing:"
 msgstr ""
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import Anyway"
 msgstr ""
+
+#: editor/io_plugins/editor_scene_import_plugin.cpp scene/gui/dialogs.cpp
+msgid "Cancel"
+msgstr "لغو"
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 msgid "Import & Open"
@@ -2716,11 +2320,11 @@ msgid "Import Image:"
 msgstr ""
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Can't import a file over itself:"
+msgid "Couldn't localize path: %s (already local)"
 msgstr ""
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
-msgid "Couldn't localize path: %s (already local)"
+msgid "Can't import a file over itself:"
 msgstr ""
 
 #: editor/io_plugins/editor_scene_import_plugin.cpp
@@ -2991,6 +2595,11 @@ msgid "Change Animation Name:"
 msgstr ""
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#, fuzzy
+msgid "Delete Animation?"
+msgstr "انیمیشن را بهینه‌سازی کن"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Remove Animation"
 msgstr ""
@@ -3128,8 +2737,8 @@ msgstr ""
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
-#: editor/property_editor.cpp editor/script_create_dialog.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: editor/script_create_dialog.cpp
 msgid "Error!"
 msgstr ""
 
@@ -3465,8 +3074,7 @@ msgstr ""
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/shader_editor_plugin.cpp
-#: editor/project_manager.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
 msgid "Edit"
 msgstr "ویرایش کردن"
 
@@ -3582,28 +3190,23 @@ msgstr ""
 msgid "Adding %s..."
 msgstr ""
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Create Node"
 msgstr ""
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Error instancing scene from %s"
 msgstr ""
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "OK :("
 msgstr ""
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
 msgstr ""
 
-#: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "This operation requires a single selected node."
 msgstr ""
 
@@ -3611,6 +3214,11 @@ msgstr ""
 #, fuzzy
 msgid "Change default type"
 msgstr "نوع مقدار آرایه را تغییر بده"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp editor/scene_tree_dock.cpp
+#: scene/gui/dialogs.cpp
+msgid "OK"
+msgstr "موافقت"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4168,6 +3776,14 @@ msgstr ""
 msgid "Load Resource"
 msgstr ""
 
+#: editor/plugins/resource_preloader_editor_plugin.cpp
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
+#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Paste"
+msgstr "چسباندن"
+
 #: editor/plugins/rich_text_editor_plugin.cpp
 msgid "Parse BBCode"
 msgstr ""
@@ -4253,13 +3869,11 @@ msgstr ""
 msgid "Previous script"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/project_export.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/project_export.cpp
 msgid "File"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/property_editor.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
 msgid "New"
 msgstr ""
 
@@ -4292,12 +3906,28 @@ msgid "Close Docs"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/shader_editor_plugin.cpp scene/gui/line_edit.cpp
+#: scene/gui/text_edit.cpp
+msgid "Cut"
+msgstr "بریدن"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/property_editor.cpp
+#: editor/resources_dock.cpp scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Copy"
+msgstr "کپی کردن"
+
+#: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/project_export.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "انتخاب همه"
+
+#: editor/plugins/script_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Move Up"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Move Down"
 msgstr ""
 
@@ -4382,23 +4012,19 @@ msgstr ""
 msgid "Goto Previous Breakpoint"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Continue"
 msgstr ""
 
@@ -4472,8 +4098,7 @@ msgstr ""
 msgid "Resave"
 msgstr ""
 
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Debugger"
 msgstr ""
 
@@ -5119,9 +4744,8 @@ msgstr ""
 msgid "Tab 3"
 msgstr ""
 
-#: editor/plugins/theme_editor_plugin.cpp
-#: editor/project_settings.cpp editor/scene_tree_editor.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_settings.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
 msgstr ""
 
@@ -5145,8 +4769,7 @@ msgstr ""
 msgid "Paint TileMap"
 msgstr ""
 
-#: editor/plugins/tile_map_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/plugins/tile_map_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "Duplicate"
 msgstr ""
 
@@ -5226,8 +4849,7 @@ msgstr ""
 msgid "Merge from Scene"
 msgstr ""
 
-#: editor/plugins/tile_set_editor_plugin.cpp
-#: editor/script_editor_debugger.cpp
+#: editor/plugins/tile_set_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Error"
 msgstr ""
 
@@ -5249,6 +4871,70 @@ msgstr ""
 
 #: editor/project_export.cpp
 msgid "No exporter for platform '%s' yet."
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Create Android keystore"
+msgstr "پوشه ایجاد کن"
+
+#: editor/project_export.cpp
+msgid "Full name"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Organizational unit"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Organization"
+msgstr "انتقال"
+
+#: editor/project_export.cpp
+msgid "City"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "State"
+msgstr "وضعیت:"
+
+#: editor/project_export.cpp
+msgid "2 letter country code"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "User alias"
+msgstr ""
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "Password"
+msgstr "گذرواژه:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "at least 6 characters"
+msgstr "کاراکترهای معتبر:"
+
+#: editor/project_export.cpp
+#, fuzzy
+msgid "File name"
+msgstr "پرونده موجود نیست."
+
+#: editor/project_export.cpp
+msgid "Path : (better to save outside of project)"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid ""
+"Release keystore is not set.\n"
+"Do you want to create one?"
+msgstr ""
+
+#: editor/project_export.cpp
+msgid "Fill Keystore/Release User and Release Password"
 msgstr ""
 
 #: editor/project_export.cpp
@@ -5649,6 +5335,21 @@ msgid "Add Input Action Event"
 msgstr ""
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Meta+"
+msgstr "+Meta"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Shift+"
+msgstr "+Shift"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
+#: scene/gui/input_action.cpp
+msgid "Alt+"
+msgstr "+Alt"
+
+#: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "Control+"
 msgstr ""
 
@@ -5700,6 +5401,10 @@ msgstr ""
 msgid "Joystick Axis Index:"
 msgstr ""
 
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Axis"
+msgstr "محور"
+
 #: editor/project_settings.cpp
 msgid "Joystick Button Index:"
 msgstr ""
@@ -5711,6 +5416,34 @@ msgstr ""
 #: editor/project_settings.cpp
 msgid "Erase Input Action Event"
 msgstr ""
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Device"
+msgstr "دستگاه"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Button"
+msgstr "دکمه"
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Left Button."
+msgstr "دکمه‌ی چپ."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Right Button."
+msgstr "دکمه‌ی راست."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Middle Button."
+msgstr "دکمه‌ی وسط."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Wheel Up."
+msgstr "غلطاندن به بالا."
+
+#: editor/project_settings.cpp scene/gui/input_action.cpp
+msgid "Wheel Down."
+msgstr "غلطاندن به پایین."
 
 #: editor/project_settings.cpp
 msgid "Toggle Persisting"
@@ -6011,6 +5744,10 @@ msgid "This operation can't be done without a scene."
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Can not perform with the root node."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "This operation can't be done on instanced scenes."
 msgstr ""
 
@@ -6086,6 +5823,10 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Copy Node Path"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
 msgstr "خذف(تایید نشده)"
 
@@ -6097,12 +5838,6 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
-msgstr ""
-
-#: editor/scene_tree_editor.cpp
-msgid ""
-"This item cannot be made visible because the parent is hidden. Unhide the "
-"parent first."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -6399,6 +6134,313 @@ msgstr ""
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
 msgstr ""
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid type argument to convert(), use TYPE_* constants."
+msgstr ""
+"نوع آرگومان برای متد ()convert ‌ نامعتبر است ،‌ از ثابت های  *_TYPE‌ استفاده "
+"کنید ."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not enough bytes for decoding bytes, or invalid format."
+msgstr ""
+"تعداد بایت های مورد نظر برای رمزگشایی بایت ها کافی نیست ،‌ و یا فرمت نامعتبر "
+"است ."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "step argument is zero!"
+msgstr "آرگومان step صفر است!"
+
+#: modules/gdscript/gd_functions.cpp
+#, fuzzy
+msgid "Not a script with an instance"
+msgstr "اسکریپتی با یک نمونه نیست ."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a script"
+msgstr "بر اساس یک اسکریپت نیست."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Not based on a resource file"
+msgstr "بر اساس یک فایل منبع نیست."
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (missing @path)"
+msgstr "فرمت دیکشنری نمونه نامعتبر (pass@ مفقود)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (can't load script at @path)"
+msgstr ""
+"فرمت نمونه ی دیکشنری نامعتبر است . ( نمی توان اسکریپت را از مسیر path@ "
+"بارگذاری کرد.)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary format (invalid script at @path)"
+msgstr "فرمت دیکشنری نمونه نامعتبر (اسکریپت نامعتبر در path@)"
+
+#: modules/gdscript/gd_functions.cpp
+msgid "Invalid instance dictionary (invalid subclasses)"
+msgstr "نمونه ی دیکشنری نامعتبر است . (زیرکلاس‌های نامعتبر)"
+
+#: scene/2d/animated_sprite.cpp
+msgid ""
+"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"order for AnimatedSprite to display frames."
+msgstr ""
+"یک منبع SpriteFrames باید در دارایی Frames ایجاد یا تنظیم شود تا "
+"AnimatedSprite فریم‌ها را نمایش دهد."
+
+#: scene/2d/canvas_modulate.cpp
+msgid ""
+"Only one visible CanvasModulate is allowed per scene (or set of instanced "
+"scenes). The first created one will work, while the rest will be ignored."
+msgstr ""
+"تنها یک CanvasModulate نمایان به ازای هر صحنه (یا یک مجموعه از صحنه‌های "
+"نمونه‌گذاری شده) مجاز است. اولین مورد ایجاد شده کار خواهد کرد، در حالیکه از "
+"بقیه صرفنظر می‌شود."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid ""
+"CollisionPolygon2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2D تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
+"CollisionObject2D بکار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area2D و "
+"StaticBody2D و RigidBody2D و KinematicBody2D و غیره استفاده کنید تا به آن‌ها "
+"یک شکل بدهید."
+
+#: scene/2d/collision_polygon_2d.cpp
+msgid "An empty CollisionPolygon2D has no effect on collision."
+msgstr "یک CollisionPolygon2D خالی اثری بر برخورد ندارد."
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"CollisionShape2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
+"CollisionObject2D بکار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area2D و "
+"StaticBody2D و RigidBody2D و KinematicBody2D و غیره استفاده کنید تا به آن‌ها "
+"یک شکل بدهید."
+
+#: scene/2d/collision_shape_2d.cpp
+msgid ""
+"A shape must be provided for CollisionShape2D to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"یک شکل باید برای CollisionShape2D فراهم شده باشد تا عمل کند. لطفا یک شکل "
+"منبع برای آن ایجاد کنید!"
+
+#: scene/2d/light_2d.cpp
+msgid ""
+"A texture with the shape of the light must be supplied to the 'texture' "
+"property."
+msgstr "یک بافت با شکل نور باید برای دارایی texture فراهم شده باشد."
+
+#: scene/2d/light_occluder_2d.cpp
+msgid ""
+"An occluder polygon must be set (or drawn) for this occluder to take effect."
+msgstr ""
+"یک چندضلعی مسدود باید برای این مسدودکننده (occluder) تنظیم (یا ترسیم) شود تا "
+"تأثیرگذار باشد."
+
+#: scene/2d/light_occluder_2d.cpp
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+msgstr "چندضلعی مسدود برای این مسدودکننده، خالی است. لطفا یک چندضلعی رسم کنید!"
+
+#: scene/2d/navigation_polygon.cpp
+msgid ""
+"A NavigationPolygon resource must be set or created for this node to work. "
+"Please set a property or draw a polygon."
+msgstr ""
+"یک منبع NavigationPolygon باید برای این گره تنظیم یا ایجاد شود تا کار کند. "
+"لطفا یک دارایی تعیین یا یک چندضلعی ترسیم کنید."
+
+#: scene/2d/navigation_polygon.cpp
+msgid ""
+"NavigationPolygonInstance must be a child or grandchild to a Navigation2D "
+"node. It only provides navigation data."
+msgstr ""
+"NavigationPolygonInstance باید یک فرزند یا نوه‌ی یک گره Navigation2D باشد. "
+"این تنها یک داده‌ی پیمایش را فراهم می‌کند."
+
+#: scene/2d/parallax_layer.cpp
+msgid ""
+"ParallaxLayer node only works when set as child of a ParallaxBackground node."
+msgstr ""
+"گره ParallaxLayer تنها در زمانی که به عنوان فرزند یک گره ParallaxBackground "
+"تنظیم شود کار می‌کند."
+
+#: scene/2d/particles_2d.cpp
+msgid "Path property must point to a valid Particles2D node to work."
+msgstr "دارایی Path باید به یک گره Particles2D معتبر اشاره کند تا کار کند."
+
+#: scene/2d/path_2d.cpp
+msgid "PathFollow2D only works when set as a child of a Path2D node."
+msgstr ""
+"PathFollow2D تنها در زمانی که به عنوان یک فرزند یک گره Path2D تنظیم شود کار "
+"می‌کند."
+
+#: scene/2d/remote_transform_2d.cpp
+msgid "Path property must point to a valid Node2D node to work."
+msgstr "دارایی Path باید به یک گره Node2D معتبر اشاره کند تا کار کند."
+
+#: scene/2d/sample_player_2d.cpp scene/audio/sample_player.cpp
+msgid ""
+"A SampleLibrary resource must be created or set in the 'samples' property in "
+"order for SamplePlayer to play sound."
+msgstr ""
+"یک منبع SampleLibrary باید در دارایی samples ایجاد یا تنظیم شود تا "
+"SamplePlayer آهنگ را پخش کند."
+
+#: scene/2d/sprite.cpp
+msgid ""
+"Path property must point to a valid Viewport node to work. Such Viewport "
+"must be set to 'render target' mode."
+msgstr ""
+"دارایی Path باید به یک گره Viewport معتبر اشاره کند تا کار کند. این Viewport "
+"باید روی حالت render target تنظیم شود."
+
+#: scene/2d/sprite.cpp
+msgid ""
+"The Viewport set in the path property must be set as 'render target' in "
+"order for this sprite to work."
+msgstr ""
+"Viewport تنظیم شده در داریی path باید به صورت render target برای این اسپرایت "
+"تنظیم شود تا کار کند."
+
+#: scene/2d/visibility_notifier_2d.cpp
+msgid ""
+"VisibilityEnable2D works best when used with the edited scene root directly "
+"as parent."
+msgstr ""
+"VisibilityEnable2D زمانی بهتر کار می‌کند که در یک ریشه‌ی صحنه‌ی ویرایش شده به "
+"صورت پدر (parent) استفاده شود."
+
+#: scene/3d/baked_light_instance.cpp
+msgid "BakedLightInstance does not contain a BakedLight resource."
+msgstr "BakedLightInstance محتوی یک منبع BakedLight نیست."
+
+#: scene/3d/body_shape.cpp
+msgid ""
+"CollisionShape only serves to provide a collision shape to a CollisionObject "
+"derived node. Please only use it as a child of Area, StaticBody, RigidBody, "
+"KinematicBody, etc. to give them a shape."
+msgstr ""
+"CollisionShape تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
+"CollisionObject به کار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area و "
+"StaticBody و RigidBody و KinematicBody و غیره استفاده کنید تا به آن‌ها یک شکل "
+"بدهید."
+
+#: scene/3d/body_shape.cpp
+msgid ""
+"A shape must be provided for CollisionShape to function. Please create a "
+"shape resource for it!"
+msgstr ""
+"باید یک شکل برای CollisionShape فراهم شده باشد تا عمل کند. لطفا یک منبع شکل "
+"برای آن ایجاد کنید!"
+
+#: scene/3d/collision_polygon.cpp
+msgid ""
+"CollisionPolygon only serves to provide a collision shape to a "
+"CollisionObject derived node. Please only use it as a child of Area, "
+"StaticBody, RigidBody, KinematicBody, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon تنها برای فراهم کردن یک شکل برخورد برای یک گره مشتق‌شده‌ی "
+"CollisionObject به کار می‌رود. لطفا از آن تنها به عنوان یک فرزند Area و "
+"StaticBody و RigidBody و KinematicBody و غیره استفاده کنید تا به آن‌ها یک شکل "
+"بدهید."
+
+#: scene/3d/collision_polygon.cpp
+msgid "An empty CollisionPolygon has no effect on collision."
+msgstr "یک CollisionPolygon خالی تأثیری بر برخورد ندارد."
+
+#: scene/3d/navigation_mesh.cpp
+msgid "A NavigationMesh resource must be set or created for this node to work."
+msgstr "یک منبع NavigationMesh باید برای یک گره تنظیم یا ایجاد شود تا کار کند."
+
+#: scene/3d/navigation_mesh.cpp
+msgid ""
+"NavigationMeshInstance must be a child or grandchild to a Navigation node. "
+"It only provides navigation data."
+msgstr ""
+"NavigationMeshInstance باید یک فرزند یا نوه‌ی یک گره Navigation باشد. این "
+"تنها داده‌ی پیمایش را فراهم می‌کند."
+
+#: scene/3d/scenario_fx.cpp
+msgid ""
+"Only one WorldEnvironment is allowed per scene (or set of instanced scenes)."
+msgstr ""
+"فقط یک WorldEnvironment در هر صحنه (یا مجموعه ای از صحنه های نمونه‌گذاری شده) "
+"مجاز است."
+
+#: scene/3d/spatial_sample_player.cpp
+msgid ""
+"A SampleLibrary resource must be created or set in the 'samples' property in "
+"order for SpatialSamplePlayer to play sound."
+msgstr ""
+"یک منبع SampleLibrary باید در دارایی samples ایجاد یا تنظیم شده باشد تا "
+"SpatialSamplePlayer آهنگ را پخش کند."
+
+#: scene/3d/sprite_3d.cpp
+msgid ""
+"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"order for AnimatedSprite3D to display frames."
+msgstr ""
+"یک منبع SpriteFrames باید در دارایی Frames ایجاد شده باشد تا "
+"AnimatedSprite3D فریم‌ها را نمایش دهد."
+
+#: scene/gui/dialogs.cpp
+msgid "Alert!"
+msgstr "هشدار!"
+
+#: scene/gui/dialogs.cpp
+msgid "Please Confirm..."
+msgstr "لطفا تأیید کنید..."
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File"
+msgstr "یک پرونده را باز کن"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open File(s)"
+msgstr "پرونده(ها) را باز کن"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a Directory"
+msgstr "یک دیکشنری را باز کن"
+
+#: scene/gui/file_dialog.cpp
+msgid "Open a File or Directory"
+msgstr "یک پرونده یا پوشه را باز کن"
+
+#: scene/gui/input_action.cpp
+msgid "Ctrl+"
+msgstr "+Ctrl"
+
+#: scene/gui/popup.cpp
+msgid ""
+"Popups will hide by default unless you call popup() or any of the popup*() "
+"functions. Making them visible for editing is fine though, but they will "
+"hide upon running."
+msgstr ""
+"Popup ها به صورت پیش‌فرض مخفی می‌شوند مگر اینکه ()popup یا یکی از توابع "
+"()*popup را فراخوانی کنید. در هر صورت نمایان کردن آن‌ها برای ویرایش خوب است، "
+"اما به محض اجرا مخفی می‌شوند."
+
+#: scene/main/viewport.cpp
+msgid ""
+"This viewport is not set as render target. If you intend for it to display "
+"its contents directly to the screen, make it a child of a Control so it can "
+"obtain a size. Otherwise, make it a RenderTarget and assign its internal "
+"texture to some node for display."
+msgstr ""
+"این viewport به صورت render target تنظیم نیست. اگر قصد دارید که محتویاتش را "
+"به صورت مستقیم در صفحه‌نمایش نمایش دهد، آن را یک فرزند یک Control قرار دهید "
+"تا بتواند یک اندازه بگیرد. در غیر اینصورت، آن را یک RenderTarget قرار دهید و "
+"بافت داخلی آن را برای نمایش به تعدادی گره تخصیص دهید."
 
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
