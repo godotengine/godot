@@ -575,6 +575,8 @@ Basis::Basis(const Quat &p_quat) {
 Basis::Basis(const Vector3 &p_axis, real_t p_phi) {
 	// Rotation matrix from axis and angle, see https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
 
+	ERR_FAIL_COND(p_axis.is_normalized() == false);
+
 	Vector3 axis_sq(p_axis.x * p_axis.x, p_axis.y * p_axis.y, p_axis.z * p_axis.z);
 
 	real_t cosine = Math::cos(p_phi);
