@@ -1471,8 +1471,16 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 		if (drag == DRAG_NONE) {
 
 			if ((m.button_mask & BUTTON_MASK_LEFT && tool == TOOL_PAN) || m.button_mask & BUTTON_MASK_MIDDLE || (m.button_mask & BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
-				h_scroll->set_value(h_scroll->get_value() - m.relative_x / zoom);
-				v_scroll->set_value(v_scroll->get_value() - m.relative_y / zoom);
+
+				Point2i relative;
+				if (bool(EditorSettings::get_singleton()->get("editors/2d/warped_mouse_panning"))) {
+					relative = Input::get_singleton()->warp_mouse_motion(m, viewport->get_global_rect());
+				} else {
+					relative = Point2i(m.relative_x, m.relative_y);
+				}
+
+				h_scroll->set_value(h_scroll->get_value() - relative.x / zoom);
+				v_scroll->set_value(v_scroll->get_value() - relative.y / zoom);
 			}
 
 			return;
