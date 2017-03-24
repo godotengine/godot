@@ -12,11 +12,7 @@ extern "C"
 
 #include <stdlib.h>
 
-#ifdef _WIN32
-#include "enet/win32.h"
-#else
-#include "enet/unix.h"
-#endif
+#include "enet/godot.h"
 
 #include "enet/types.h"
 #include "enet/protocol.h"
@@ -72,7 +68,6 @@ typedef enum _ENetSocketShutdown
     ENET_SOCKET_SHUTDOWN_READ_WRITE = 2
 } ENetSocketShutdown;
 
-#define ENET_HOST_ANY       0
 #define ENET_HOST_BROADCAST 0xFFFFFFFFU
 #define ENET_PORT_ANY       0
 
@@ -88,9 +83,11 @@ typedef enum _ENetSocketShutdown
  */
 typedef struct _ENetAddress
 {
-   enet_uint32 host;
+   uint8_t host[16];
    enet_uint16 port;
+   uint8_t wildcard;
 } ENetAddress;
+#define enet_host_equal(host_a, host_b) (memcmp(&host_a, &host_b,16) == 0)
 
 /**
  * Packet flag bit constants.
@@ -518,6 +515,16 @@ ENET_API int        enet_socketset_select (ENetSocket, ENetSocketSet *, ENetSock
     @returns the address of the given hostName in address on success
 */
 ENET_API int enet_address_set_host (ENetAddress * address, const char * hostName);
+
+/** Sets the host field in the address parameter from ip struct.
+    @param address destination to store resolved address
+    @param ip the ip struct to read from
+    @param size the size of the ip struct.
+    @retval 0 on success
+    @retval != 0 on failure
+    @returns the address of the given ip in address on success.
+*/
+ENET_API void enet_address_set_ip(ENetAddress * address, const uint8_t * ip, size_t size);
 
 /** Gives the printable form of the IP address specified in the address parameter.
     @param address    address printed

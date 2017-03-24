@@ -107,10 +107,14 @@ Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer, int p_buffer_size)
 	errno = 0;
 	int err;
 
+	_set_sock_blocking(blocking);
+
 	while ((err = sendto(sock, p_buffer, p_buffer_size, 0, (struct sockaddr *)&addr, addr_size)) != p_buffer_size) {
 
 		if (errno != EAGAIN) {
 			return FAILED;
+		} else if (!blocking) {
+			return ERR_UNAVAILABLE;
 		}
 	}
 
@@ -173,10 +177,12 @@ Error PacketPeerUDPPosix::_poll(bool p_wait) {
 		return FAILED;
 	}
 
+	_set_sock_blocking(p_wait);
+
 	struct sockaddr_storage from = { 0 };
 	socklen_t len = sizeof(struct sockaddr_storage);
 	int ret;
-	while ((ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer), MAX(rb.space_left() - 24, 0)), p_wait ? 0 : MSG_DONTWAIT, (struct sockaddr *)&from, &len)) > 0) {
+	while ((ret = recvfrom(sockfd, recv_buffer, MIN((int)sizeof(recv_buffer), MAX(rb.space_left() - 24, 0)), 0, (struct sockaddr *)&from, &len)) > 0) {
 
 		uint32_t port = 0;
 
@@ -243,7 +249,33 @@ int PacketPeerUDPPosix::_get_socket() {
 
 	sockfd = _socket_create(sock_type, SOCK_DGRAM, IPPROTO_UDP);
 
+	if (sockfd != -1)
+		_set_sock_blocking(false);
+
 	return sockfd;
+}
+
+void PacketPeerUDPPosix::_set_sock_blocking(bool p_blocking) {
+
+	if (sock_blocking == p_blocking)
+		return;
+
+	sock_blocking = p_blocking;
+
+#ifndef NO_FCNTL
+	int opts = fcntl(sockfd, F_GETFL);
+	int ret = 0;
+	if (sock_blocking)
+		ret = fcntl(sockfd, F_SETFL, opts & ~O_NONBLOCK);
+	else
+		ret = fcntl(sockfd, F_SETFL, opts | O_NONBLOCK);
+	if (ret == -1)
+		perror("setting non-block mode");
+#else
+	int bval = sock_blocking ? 0 : 1;
+	if (ioctl(sockfd, FIONBIO, &bval) == -1)
+		perror("setting non-block mode");
+#endif
 }
 
 void PacketPeerUDPPosix::set_dest_address(const IP_Address &p_address, int p_port) {
@@ -264,6 +296,8 @@ void PacketPeerUDPPosix::make_default() {
 
 PacketPeerUDPPosix::PacketPeerUDPPosix() {
 
+	blocking = true;
+	sock_blocking = true;
 	sockfd = -1;
 	packet_port = 0;
 	queue_count = 0;

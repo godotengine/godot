@@ -100,7 +100,7 @@ private:
 	static void enet_compressor_destroy(void *context);
 	void _setup_compressor();
 
-	enet_uint32 bind_ip;
+	IP_Address bind_ip;
 
 protected:
 	static void _bind_methods();

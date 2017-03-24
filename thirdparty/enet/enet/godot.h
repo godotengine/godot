@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  packet_peer_udp.cpp                                                  */
+/*  godot.h                                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,63 +26,46 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "packet_peer_udp.h"
-#include "io/ip.h"
+/**
+ @file  godot.h
+ @brief ENet Godot header
+*/
 
-PacketPeerUDP *(*PacketPeerUDP::_create)() = NULL;
+#ifndef __ENET_GODOT_H__
+#define __ENET_GODOT_H__
 
-void PacketPeerUDP::set_blocking_mode(bool p_enable) {
+#ifdef WINDOWS_ENABLED
+#include <stdint.h>
+#include <winsock2.h>
+#endif
+#ifdef UNIX_ENABLED
+#include <arpa/inet.h>
+#endif
 
-	blocking = p_enable;
-}
+#ifdef MSG_MAXIOVLEN
+#define ENET_BUFFER_MAXIMUM MSG_MAXIOVLEN
+#endif
 
-String PacketPeerUDP::_get_packet_ip() const {
+typedef void *ENetSocket;
 
-	return get_packet_address();
-}
+#define ENET_SOCKET_NULL NULL
 
-Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {
+#define ENET_HOST_TO_NET_16(value) (htons(value)) /**< macro that converts host to net byte-order of a 16-bit value */
+#define ENET_HOST_TO_NET_32(value) (htonl(value)) /**< macro that converts host to net byte-order of a 32-bit value */
 
-	IP_Address ip;
-	if (p_address.is_valid_ip_address()) {
-		ip = p_address;
-	} else {
-		ip = IP::get_singleton()->resolve_hostname(p_address);
-		if (!ip.is_valid())
-			return ERR_CANT_RESOLVE;
-	}
+#define ENET_NET_TO_HOST_16(value) (ntohs(value)) /**< macro that converts net to host byte-order of a 16-bit value */
+#define ENET_NET_TO_HOST_32(value) (ntohl(value)) /**< macro that converts net to host byte-order of a 32-bit value */
 
-	set_dest_address(ip, p_port);
-	return OK;
-}
+typedef struct
+{
+	void *data;
+	size_t dataLength;
+} ENetBuffer;
 
-void PacketPeerUDP::_bind_methods() {
+#define ENET_CALLBACK
 
-	ClassDB::bind_method(D_METHOD("listen:Error", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
-	ClassDB::bind_method(D_METHOD("close"), &PacketPeerUDP::close);
-	ClassDB::bind_method(D_METHOD("wait:Error"), &PacketPeerUDP::wait);
-	ClassDB::bind_method(D_METHOD("is_listening"), &PacketPeerUDP::is_listening);
-	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
-	//ClassDB::bind_method(D_METHOD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
-	ClassDB::bind_method(D_METHOD("get_packet_port"), &PacketPeerUDP::get_packet_port);
-	ClassDB::bind_method(D_METHOD("set_dest_address", "host", "port"), &PacketPeerUDP::_set_dest_address);
-}
+#define ENET_API extern
 
-Ref<PacketPeerUDP> PacketPeerUDP::create_ref() {
+typedef void ENetSocketSet;
 
-	if (!_create)
-		return Ref<PacketPeerUDP>();
-	return Ref<PacketPeerUDP>(_create());
-}
-
-PacketPeerUDP *PacketPeerUDP::create() {
-
-	if (!_create)
-		return NULL;
-	return _create();
-}
-
-PacketPeerUDP::PacketPeerUDP() {
-
-	blocking = true;
-}
+#endif /* __ENET_GODOT_H__ */
