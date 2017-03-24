@@ -53,7 +53,7 @@ enum PropertyHint {
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max,step,slider; //slider is optional"
 	PROPERTY_HINT_EXP_RANGE, ///< hint_text = "min,max,step", exponential edit
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
-	PROPERTY_HINT_EXP_EASING, /// exponential easing funciton (Math::ease)
+	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease)
 	PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_SPRITE_FRAME,
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)

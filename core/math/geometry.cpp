@@ -990,7 +990,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 
 	//super simple, almost brute force scanline stacking fitter
 	//it's pretty basic for now, but it tries to make sure that the aspect ratio of the
-	//resulting atlas is somehow square. This is necesary because video cards have limits
+	//resulting atlas is somehow square. This is necessary because video cards have limits
 	//on texture size (usually 2048 or 4096), so the more square a texture, the more chances
 	//it will work in every hardware.
 	// for example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
@@ -1057,7 +1057,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 			if (end_w > max_w)
 				max_w = end_w;
 
-			if (ofs == 0 || end_h > limit_h) //while h limit not reched, keep stacking
+			if (ofs == 0 || end_h > limit_h) //while h limit not reached, keep stacking
 				ofs += wrects[j].s.width;
 		}
 

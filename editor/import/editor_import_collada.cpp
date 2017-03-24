@@ -774,7 +774,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<Mesh> &p_mesh, c
 					weights.resize(4);
 				}
 
-				//make sure weights allways add up to 1
+				//make sure weights always add up to 1
 				float total = 0;
 				for (int i = 0; i < weights.size(); i++)
 					total += weights[i].weight;
@@ -818,7 +818,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<Mesh> &p_mesh, c
 		/* CREATE PRIMITIVE ARRAY */
 		/**************************/
 
-		// The way collada uses indices is more optimal, and friendlier with 3D modelling sofware,
+		// The way collada uses indices is more optimal, and friendlier with 3D modelling software,
 		// because it can index everything, not only vertices (similar to how the WII works).
 		// This is, however, more incompatible with standard video cards, so arrays must be converted.
 		// Must convert to GL/DX format.

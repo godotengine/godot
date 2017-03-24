@@ -176,7 +176,7 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 				break;
 			}
 
-			/* Dont need anything else, continue */
+			/* Don't need anything else, continue */
 			format_found = true;
 		}
 

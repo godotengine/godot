@@ -283,7 +283,7 @@ def configure(env):
                    + " will be executed and inform you.")
             sys.exit()
 
-        # Forcing bits argument because MSVC does not have a flag to set this through SCons... it's different compilers (cl.exe's) called from the propper command prompt
+        # Forcing bits argument because MSVC does not have a flag to set this through SCons... it's different compilers (cl.exe's) called from the proper command prompt
         # that decide the architecture that is build for. Scons can only detect the os.getenviron (because vsvarsall.bat sets a lot of stuff for cl.exe to work with)
         env["bits"] = "32"
         env["x86_libtheora_opt_vc"] = True

@@ -42,7 +42,7 @@ void WindowDialog::_post_popup() {
 
 void WindowDialog::_fix_size() {
 
-	// Perhaps this should be called when the viewport resizes aswell or windows go out of bounds...
+	// Perhaps this should be called when the viewport resizes as well or windows go out of bounds...
 
 	// Ensure the whole window is visible.
 	Point2i pos = get_global_pos();

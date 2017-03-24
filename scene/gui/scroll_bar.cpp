@@ -705,7 +705,7 @@ void ScrollBar::mouse_motion(const Point2& p_pos, const Point2& p_rel, int b.but
 	if (value_ofs>(get_max()-get_page()))
 		value_ofs=get_max()-get_page();
 	if (get_val()==value_ofs)
-		return; //dont bother if the value is the same
+		return; //don't bother if the value is the same
 
 	set_val( value_ofs );
 

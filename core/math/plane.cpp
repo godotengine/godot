@@ -116,7 +116,7 @@ bool Plane::intersects_ray(Vector3 p_from, Vector3 p_dir, Vector3 *p_intersectio
 	real_t dist = (normal.dot(p_from) - d) / den;
 	//printf("dist is %i\n",dist);
 
-	if (dist > CMP_EPSILON) { //this is a ray, before the emiting pos (p_from) doesnt exist
+	if (dist > CMP_EPSILON) { //this is a ray, before the emitting pos (p_from) doesn't exist
 
 		return false;
 	}

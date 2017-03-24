@@ -1807,7 +1807,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 				if (slices.size()!=10) {
 					atlas_valid=false;
-					print_line("CANT SLICE IN 10");
+					print_line("CAN'T SLICE IN 10");
 					break;
 				}
 				uint64_t mod_time = slices[0].to_int64();
@@ -1946,7 +1946,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				if (f) {
 					//recreating deps..
 					String depline;
-					//depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::getD_METHOD5(F->get()); name unneccesary by top md5
+					//depline=String(F->get())+"::"+itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::getD_METHOD5(F->get()); name unnecessary by top md5
 					depline=itos(FileAccess::get_modified_time(F->get()))+"::"+FileAccess::getD_METHOD5(F->get());
 					depline+="::"+itos(region.pos.x)+"::"+itos(region.pos.y)+"::"+itos(region.size.x)+"::"+itos(region.size.y);
 					depline+="::"+itos(margin.pos.x)+"::"+itos(margin.pos.y)+"::"+itos(margin.size.x)+"::"+itos(margin.size.y);

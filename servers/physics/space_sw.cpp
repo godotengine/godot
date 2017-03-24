@@ -146,7 +146,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID &p_shape, const Transfo
 		if (!_match_object_type_query(space->intersection_query_results[i], p_layer_mask, p_object_type_mask))
 			continue;
 
-		//area cant be picked by ray (default)
+		//area can't be picked by ray (default)
 
 		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
 			continue;
@@ -225,7 +225,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 //test initial overlap
 #if 0
 		if (CollisionSolverSW::solve_static(shape,p_xform,col_obj->get_shape(shape_idx),col_obj_xform,NULL,NULL,&sep_axis)) {
-			print_line("failed initial cast (collision at begining)");
+			print_line("failed initial cast (collision at beginning)");
 			return false;
 		}
 #else

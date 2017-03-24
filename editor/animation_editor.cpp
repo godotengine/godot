@@ -2503,7 +2503,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 								float newpos = E->get().pos - from_t + motion;
 								/*
 								if (newpos<0)
-									continue; //no add at the begining
+									continue; //no add at the beginning
 								*/
 								undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->key().track, newpos, animation->track_get_key_value(E->key().track, E->key().key), animation->track_get_key_transition(E->key().track, E->key().key));
 							}

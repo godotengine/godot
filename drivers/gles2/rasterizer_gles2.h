@@ -1661,7 +1661,7 @@ public:
 
 	void set_base_framebuffer(GLuint p_id, Vector2 p_size = Vector2(0, 0));
 
-	virtual void flush_frame(); //not necesary in most cases
+	virtual void flush_frame(); //not necessary in most cases
 	void set_extensions(const char *p_strings);
 
 	virtual bool needs_to_draw_next_frame() const;

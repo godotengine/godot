@@ -289,7 +289,7 @@ void AudioStreamPlaybackSample::mix(AudioFrame *p_buffer, float p_rate_scale, in
 					offset = loop_end_fp - (loop_begin_fp - offset);
 				}
 			} else {
-				/* check for sample not reaching begining */
+				/* check for sample not reaching beginning */
 				if (offset < 0) {
 
 					active = false;

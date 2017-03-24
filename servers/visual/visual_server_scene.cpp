@@ -2447,7 +2447,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 					for (int y = 0; y < 4; y++) {
 						for (int x = 0; x < 4; x++) {
 
-							//substract minimum
+							//subtract minimum
 							uint32_t a = uint32_t(alpha_block[x][y]) - min_alpha;
 							//convert range to 3 bits
 							a = int((a * 7.0 / (max_alpha - min_alpha)) + 0.5);
@@ -2923,7 +2923,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 					colors[j].z = (local_data[b.sources[j]].energy[2] / float(probe_data->dynamic.bake_dynamic_range)) / 1024.0;
 				}
 				//super quick and dirty compression
-				//find 2 most futher apart
+				//find 2 most further apart
 				float distance = 0;
 				Vector3 from, to;
 
@@ -3001,7 +3001,7 @@ void VisualServerScene::_bake_gi_probe(Instance *p_gi_probe) {
 					}
 				}
 
-				//by default, 1 is black, otherwise it will be overriden by source
+				//by default, 1 is black, otherwise it will be overridden by source
 
 				uint32_t index_block[16] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 

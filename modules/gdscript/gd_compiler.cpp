@@ -1539,7 +1539,7 @@ Error GDCompiler::_parse_function(GDScript *p_script, const GDParser::ClassNode 
 			signature += "::0";
 		}
 
-		//funciton and class
+		//function and class
 
 		if (p_class->name) {
 			signature += "::" + String(p_class->name) + "." + String(func_name);
@@ -1660,7 +1660,7 @@ Error GDCompiler::_parse_class(GDScript *p_script, GDScript *p_owner, const GDPa
 					String sub = p_class->extends_class[i];
 					if (script->subclasses.has(sub)) {
 
-						Ref<Script> subclass = script->subclasses[sub]; //avoid reference from dissapearing
+						Ref<Script> subclass = script->subclasses[sub]; //avoid reference from disappearing
 						script = subclass;
 					} else {
 

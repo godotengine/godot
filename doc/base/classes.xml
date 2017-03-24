@@ -661,7 +661,7 @@
 			</argument>
 			<description>
 				Stop the function execution and return the current state. Call [method GDFunctionState.resume] on the state to resume execution. This invalidates the state.
-				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emmited.
+				Returns anything that was passed to the resume function call. If passed an object and a signal, the execution is resumed when the object's signal is emitted.
 			</description>
 		</method>
 	</methods>
@@ -2521,7 +2521,7 @@
 		</signal>
 		<signal name="finished">
 			<description>
-				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted everytime the last frame is drawn, before looping.
+				Emitted when the animation is finished (when it plays the last frame). If the animation is looping, this signal is emitted every time the last frame is drawn, before looping.
 			</description>
 		</signal>
 	</signals>
@@ -7805,7 +7805,7 @@
 		Tint the entire canvas
 	</brief_description>
 	<description>
-		CanvasModulate tints the canvas elements using its asigned color
+		CanvasModulate tints the canvas elements using its assigned color
 	</description>
 	<methods>
 		<method name="get_color" qualifiers="const">
@@ -9088,7 +9088,7 @@
 			<argument index="0" name="colors" type="ColorArray">
 			</argument>
 			<description>
-				Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements.
+				Sets the colors for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accommodate the new elements.
 			</description>
 		</method>
 		<method name="set_offset">
@@ -9104,7 +9104,7 @@
 			<argument index="0" name="offsets" type="RealArray">
 			</argument>
 			<description>
-				Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accomodate the new elements, all new colors will be black by default.
+				Sets the offset for the specified amount of elements. Calling this function with a different number of elements than previously defined causes the ramp to resize its colors and offsets array to accommodate the new elements, all new colors will be black by default.
 			</description>
 		</method>
 	</methods>
@@ -13167,7 +13167,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				Set whether to swap the endianess of the file. Enable this if you're dealing with files written in big endian machines.
+				Set whether to swap the endianness of the file. Enable this if you're dealing with files written in big endian machines.
 				Note that this is about the file format, not CPU type. This is always reseted to [code]false[/code] whenever you open the file.
 			</description>
 		</method>
@@ -19951,7 +19951,7 @@
 			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behaviour of a light.
 		</constant>
 		<constant name="MODE_SUB" value="1">
-			Substract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
+			Subtract the value of pixels corresponding to the Light2D to the values of pixels under it, resulting in inversed light effect.
 		</constant>
 		<constant name="MODE_MIX" value="2">
 			Mix the value of pixels corresponding to the Light2D to the values of pixels under it by linear interpolation.
@@ -26286,7 +26286,7 @@
 			<argument index="1" name="value" type="float">
 			</argument>
 			<description>
-				Sets the randomness value of the specified emitter parameter (see the constants secction for the list of parameters), 0 means no randomness, so every particle will have the parameters specified, 1 means that the parameter will be choosen at random, the closer the randomness value gets to 0 the more conservative the variation of the parameter will be.
+				Sets the randomness value of the specified emitter parameter (see the constants secction for the list of parameters), 0 means no randomness, so every particle will have the parameters specified, 1 means that the parameter will be chosen at random, the closer the randomness value gets to 0 the more conservative the variation of the parameter will be.
 			</description>
 		</method>
 		<method name="set_texture">
@@ -27207,7 +27207,7 @@
 				collider_id: Id of the object the shape intersected.
 				collider: Object the shape intersected.
 				rid: [RID] of the object the shape intersected.
-				The number of intersections can be limited with the second paramater, to reduce the processing time.
+				The number of intersections can be limited with the second parameter, to reduce the processing time.
 			</description>
 		</method>
 	</methods>
@@ -32714,7 +32714,7 @@
 			<argument index="0" name="name" type="Variant" default="0">
 			</argument>
 			<description>
-				Returns the end position of the match in the string. An interger can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
+				Returns the end position of the match in the string. An integer can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
 			</description>
 		</method>
 		<method name="get_group_array" qualifiers="const">
@@ -32751,7 +32751,7 @@
 			<argument index="0" name="name" type="Variant" default="0">
 			</argument>
 			<description>
-				Returns the starting position of the match in the string. An interger can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
+				Returns the starting position of the match in the string. An integer can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
 			</description>
 		</method>
 		<method name="get_string" qualifiers="const">
@@ -32760,7 +32760,7 @@
 			<argument index="0" name="name" type="Variant" default="0">
 			</argument>
 			<description>
-				Returns the result of the match in the string. An interger can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
+				Returns the result of the match in the string. An integer can be specified for numeric groups or a string for named groups. Returns -1 if that group wasn't found or doesn't exist. Defaults to 0 (whole pattern).
 			</description>
 		</method>
 	</methods>
@@ -38140,7 +38140,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Return visibility of the split dragger(One of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
+				Return visibility of the split dragger (one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
 			</description>
 		</method>
 		<method name="get_split_offset" qualifiers="const">
@@ -38168,7 +38168,7 @@
 			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
-				Set visibility of the split dragger([i]mode[/i] must be one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
+				Set visibility of the split dragger ([i]mode[/i] must be one of [DRAGGER_VISIBLE], [DRAGGER_HIDDEN] or [DRAGGER_HIDDEN_COLLAPSED]).
 			</description>
 		</method>
 		<method name="set_split_offset">
@@ -38184,7 +38184,7 @@
 			<argument index="0" name="offset" type="int">
 			</argument>
 			<description>
-				Emmited when the dragger is gragged by user.
+				Emitted when the dragger is dragged by user.
 			</description>
 		</signal>
 	</signals>
@@ -44227,7 +44227,7 @@
 		tween.start()
 		[/codeblock]
 		Some of the methods of this class require a property name. You can get the property name by hovering over the property in the inspector of the editor.
-		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the begining, the end, or both). If you don't know which transision and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
+		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an TRANS_* constant, and refers to the way the timing of the animation is handled (you might want to see [code]http://easings.net/[/code] for some examples). The second accepts an EASE_* constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transision and easing to pick, you can try different TRANS_* constants with EASE_IN_OUT, and use the one that looks best.
 	</description>
 	<methods>
 		<method name="follow_method">
@@ -44253,7 +44253,7 @@
 			</argument>
 			<description>
 				Follow [code]method[/code] of [code]object[/code] and apply the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are animated by calling them with consequitive values.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="follow_property">
@@ -44279,7 +44279,7 @@
 			</argument>
 			<description>
 				Follow [code]property[/code] of [code]object[/code] and apply it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Note that [code]target:target_property[/code] would equal [code]object:property[/code] at the end of the tween.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="get_runtime" qualifiers="const">
@@ -44370,7 +44370,7 @@
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="interpolate_property">
@@ -44394,7 +44394,7 @@
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
@@ -44550,7 +44550,7 @@
 			</argument>
 			<description>
 				Animate [code]method[/code] of [code]object[/code] from the value returned by [code]initial.initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecuitive values.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="targeting_property">
@@ -44576,7 +44576,7 @@
 			</argument>
 			<description>
 				Animate [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
-				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the begining, the end, or both). You can read more about them in the class description.
+				[code]trans_type[/code] accepts TRANS_* constants, and is the way the animation is interpolated, while [code]ease_type[/code] accepts EASE_* constants, and controls the place of the interpolation (the beginning, the end, or both). You can read more about them in the class description.
 			</description>
 		</method>
 		<method name="tell" qualifiers="const">
@@ -44680,7 +44680,7 @@
 	</brief_description>
 	<description>
 		Helper to maange UndoRedo in the editor or custom tools. It works by storing calls to functions in both 'do' an 'undo' lists.
-		Common behavior is to create an action, then add do/undo calls to functions or property changes, then commiting the action.
+		Common behavior is to create an action, then add do/undo calls to functions or property changes, then committing the action.
 	</description>
 	<methods>
 		<method name="add_do_method" qualifiers="vararg">
@@ -44767,7 +44767,7 @@ do_property].
 			<return type="int">
 			</return>
 			<description>
-				Get the version, each time a new action is commited, the version number of the UndoRedo is increased automatically.
+				Get the version, each time a new action is committed, the version number of the UndoRedo is increased automatically.
 				This is useful mostly to check if something changed from a saved version.
 			</description>
 		</method>
@@ -46057,7 +46057,7 @@ do_property].
 			<return type="Image">
 			</return>
 			<description>
-				Return the captured screenshot after [method queue_screen_capture]. You might need to check more than one frame untill the right image is returned.
+				Return the captured screenshot after [method queue_screen_capture]. You might need to check more than one frame until the right image is returned.
 			</description>
 		</method>
 		<method name="get_size_override" qualifiers="const">

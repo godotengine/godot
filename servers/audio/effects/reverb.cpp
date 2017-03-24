@@ -235,7 +235,7 @@ void Reverb::set_extra_spread_base(float p_sec) {
 
 void Reverb::configure_buffers() {
 
-	clear_buffers(); //clear if necesary
+	clear_buffers(); //clear if necessary
 
 	for (int i = 0; i < MAX_COMBS; i++) {
 

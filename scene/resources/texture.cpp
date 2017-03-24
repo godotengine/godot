@@ -918,7 +918,7 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 }
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose) const {
 
-	//this might not necesarily work well if using a rect, needs to be fixed properly
+	//this might not necessarily work well if using a rect, needs to be fixed properly
 	Rect2 rc = region;
 
 	if (!atlas.is_valid())

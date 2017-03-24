@@ -2606,7 +2606,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					current_option=-1;
 					//accept->get_cancel()->hide();
 					accept->get_ok()->set_text("I see..");
-					accept->set_text("Can't import if edited scene was not saved."); //i dont think this code will ever run
+					accept->set_text("Can't import if edited scene was not saved."); //i don't think this code will ever run
 					accept->popup_centered(Size2(300,70));
 					break;
 
@@ -4846,7 +4846,7 @@ EditorNode::EditorNode() {
 	ResourceLoader::set_timestamp_on_load(true);
 	ResourceSaver::set_timestamp_on_save(true);
 
-	{ //register importers at the begining, so dialogs are created with the right extensions
+	{ //register importers at the beginning, so dialogs are created with the right extensions
 		Ref<ResourceImporterTexture> import_texture;
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);

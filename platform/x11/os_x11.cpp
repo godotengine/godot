@@ -1019,7 +1019,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	// XKeycodeToKeysym to obtain internationalized
 	// input.. WRONG!!
 	// you must use XLookupString (???) which not only wastes
-	// cycles generating an unnecesary string, but also
+	// cycles generating an unnecessary string, but also
 	// still works in half the cases. (won't handle deadkeys)
 	// For more complex input methods (deadkeys and more advanced)
 	// you have to use XmbLookupString (??).
@@ -1075,7 +1075,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	/* Phase 4, determine if event must be filtered */
 
 	// This seems to be a side-effect of using XIM.
-	// XEventFilter looks like a core X11 funciton,
+	// XEventFilter looks like a core X11 function,
 	// but it's actually just used to see if we must
 	// ignore a deadkey, or events XIM determines
 	// must not reach the actual gui.
@@ -1157,7 +1157,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	event.key.echo = p_echo;
 
 	if (event.key.scancode == KEY_BACKTAB) {
-		//make it consistent accross platforms.
+		//make it consistent across platforms.
 		event.key.scancode = KEY_TAB;
 		event.key.mod.shift = true;
 	}

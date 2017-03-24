@@ -121,7 +121,7 @@ void ConnectDialog::_tree_node_selected() {
 			continue; // hidden method, not show!
 
 		if (ClassDB::has_method(node->get_type(),"Node") || ClassDB::has_method(node->get_type(),"Control",true))
-			continue; //avoid too much unnecesary stuff
+			continue; //avoid too much unnecessary stuff
 
 		String method=E->get().name+"(";
 		for(int i=0;i<E->get().arguments.size();i++) {

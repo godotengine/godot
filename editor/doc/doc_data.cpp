@@ -210,7 +210,7 @@ void DocData::generate(bool p_basic_types) {
 		for (List<MethodInfo>::Element *E = method_list.front(); E; E = E->next()) {
 
 			if (E->get().name == "" || (E->get().name[0] == '_' && !(E->get().flags & METHOD_FLAG_VIRTUAL)))
-				continue; //hiden, dont count
+				continue; //hidden, don't count
 
 			MethodDoc method;
 

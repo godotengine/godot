@@ -610,7 +610,7 @@ void Rasterizer::_free_fixed_material(const RID& p_material) {
 
 void Rasterizer::flush_frame() {
 
-	//not really necesary to implement
+	//not really necessary to implement
 }
 
 Rasterizer::Rasterizer() {

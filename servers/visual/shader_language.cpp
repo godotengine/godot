@@ -2820,7 +2820,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				// this is not invalid and can really appear
 				// but it becomes invalid anyway because no binary op
 				// can be followed by an unary op in a valid combination,
-				// due to how precedence works, unaries will always dissapear first
+				// due to how precedence works, unaries will always disappear first
 
 				_set_error("Parser bug..");
 			}
@@ -3374,7 +3374,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, Map<StringName, DataTy
 				}
 
 				if (!is_token_datatype(tk.type)) {
-					_set_error("Expected funtion, uniform or varying ");
+					_set_error("Expected function, uniform or varying ");
 					return ERR_PARSE_ERROR;
 				}
 
@@ -3492,7 +3492,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, Map<StringName, DataTy
 					}
 				}
 
-				//all good let's parse inside the fucntion!
+				//all good let's parse inside the function!
 				tk = _get_token();
 				if (tk.type != TK_CURLY_BRACKET_OPEN) {
 					_set_error("Expected '{' to begin function");

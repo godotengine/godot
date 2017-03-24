@@ -169,7 +169,7 @@ Error ContextGL_Win::initialize() {
 
 		if (wglCreateContextAttribsARB == NULL) //OpenGL 3.0 is not supported
 		{
-			MessageBox(NULL, "Cannot get Proc Adress for CreateContextAttribs", "ERROR", MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(NULL, "Cannot get Proc Address for CreateContextAttribs", "ERROR", MB_OK | MB_ICONEXCLAMATION);
 			wglDeleteContext(hRC);
 			return ERR_CANT_CREATE;
 		}

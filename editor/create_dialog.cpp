@@ -29,12 +29,12 @@
 #include "create_dialog.h"
 
 #include "class_db.h"
-#include "editor_node.h"
-#include "print_string.h"
-#include "scene/gui/box_container.h"
 #include "editor_help.h"
+#include "editor_node.h"
 #include "editor_settings.h"
 #include "os/keyboard.h"
+#include "print_string.h"
+#include "scene/gui/box_container.h"
 
 void CreateDialog::popup_create(bool p_dontclear) {
 
@@ -86,14 +86,12 @@ void CreateDialog::popup_create(bool p_dontclear) {
 
 	_update_favorite_list();
 
-
 	// Restore valid window bounds or pop up at default size.
 	if (EditorSettings::get_singleton()->has("interface/dialogs/create_new_node_bounds")) {
-		popup(EditorSettings::get_singleton()->get("interface/dialogs/create_new_node_bounds"));	
+		popup(EditorSettings::get_singleton()->get("interface/dialogs/create_new_node_bounds"));
 	} else {
 		popup_centered_ratio();
 	}
-
 
 	if (p_dontclear)
 		search_box->select_all();
@@ -213,7 +211,7 @@ void CreateDialog::_update_search() {
 			continue; // do not show editor nodes
 
 		if (!ClassDB::can_instance(type))
-			continue; // cant create what can't be instanced
+			continue; // can't create what can't be instanced
 
 		if (search_box->get_text() == "") {
 			add_type(type, types, root, &to_select);
@@ -316,7 +314,7 @@ void CreateDialog::_confirmed() {
 
 void CreateDialog::_notification(int p_what) {
 
-	switch (p_what)	{
+	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", this, "_confirmed");
 			favorite->set_icon(get_icon("Favorites", "EditorIcons"));

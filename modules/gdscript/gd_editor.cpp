@@ -1070,7 +1070,7 @@ static bool _guess_identifier_type(GDCompletionContext &context, int p_line, con
 					//return _guess_expression_type(context,context._class->variables[i].expression,context._class->variables[i].line,r_type);
 				}
 
-				//try to guess from assignment in construtor or _ready
+				//try to guess from assignment in constructor or _ready
 				if (_guess_identifier_from_assignment_in_function(context, p_line + 1, p_identifier, "_ready", r_type))
 					return true;
 				if (_guess_identifier_from_assignment_in_function(context, p_line + 1, p_identifier, "_enter_tree", r_type))

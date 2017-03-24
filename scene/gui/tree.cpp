@@ -2912,7 +2912,7 @@ int Tree::get_column_width(int p_column) const {
 	if (expand_area < expanding_total)
 		return columns[p_column].min_width;
 
-	ERR_FAIL_COND_V(expanding_columns == 0, -1); // shouldnt happen
+	ERR_FAIL_COND_V(expanding_columns == 0, -1); // shouldn't happen
 
 	return expand_area * columns[p_column].min_width / expanding_total;
 }

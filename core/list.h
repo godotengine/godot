@@ -179,7 +179,7 @@ private:
 
 public:
 	/**
- 	* return an const iterator to the begining of the list.
+	* return an const iterator to the beginning of the list.
 	*/
 	_FORCE_INLINE_ const Element *front() const {
 
@@ -187,7 +187,7 @@ public:
 	};
 
 	/**
- 	* return an iterator to the begining of the list.
+	* return an iterator to the beginning of the list.
 	*/
 	_FORCE_INLINE_ Element *front() {
 		return _data ? _data->first : 0;
@@ -251,7 +251,7 @@ public:
 	}
 
 	/**
-	 * store a new element at the begining of the list
+	 * store a new element at the beginning of the list
 	 */
 	Element *push_front(const T &value) {
 

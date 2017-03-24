@@ -369,7 +369,7 @@ void ScriptDebuggerRemote::_get_output() {
 void ScriptDebuggerRemote::line_poll() {
 
 	//the purpose of this is just processing events every now and then when the script might get too busy
-	//otherwise bugs like infinite loops cant be catched
+	//otherwise bugs like infinite loops can't be caught
 	if (poll_every % 2048 == 0)
 		_poll_events();
 	poll_every++;

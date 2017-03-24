@@ -95,7 +95,7 @@ public:
 
 	Rect3 expand(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ void project_range_in_plane(const Plane &p_plane, real_t &r_min, real_t &r_max) const;
-	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necesary */
+	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	operator String() const;
 

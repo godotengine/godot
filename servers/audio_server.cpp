@@ -255,7 +255,7 @@ void AudioServer::_mix_step() {
 					bus->channels[k].last_mix_with_audio = mix_frames;
 				} else if (mix_frames - bus->channels[k].last_mix_with_audio > channel_disable_frames) {
 					bus->channels[k].active = false;
-					continue; //went inactive, dont mix.
+					continue; //went inactive, don't mix.
 				}
 			}
 

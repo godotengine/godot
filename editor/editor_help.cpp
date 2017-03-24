@@ -779,7 +779,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 		class_desc->set_table_column_expand(1, 1);
 
 		for (int i = 0; i < cd.properties.size(); i++) {
-			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overriden if description
+			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 
 			class_desc->push_cell();
 			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
@@ -874,7 +874,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 			class_desc->push_cell();
 
-			method_line[methods[i].name] = class_desc->get_line_count() - 2; //gets overriden if description
+			method_line[methods[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 			class_desc->push_align(RichTextLabel::ALIGN_RIGHT);
 			class_desc->push_font(doc_code_font);
 			_add_type(methods[i].return_type);
@@ -959,7 +959,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 		for (int i = 0; i < cd.theme_properties.size(); i++) {
 
-			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; //gets overriden if description
+			theme_property_line[cd.theme_properties[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.theme_properties[i].type);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/highlighting/text_color"));
@@ -1002,7 +1002,7 @@ Error EditorHelp::_goto_desc(const String &p_class, int p_vscr) {
 
 		for (int i = 0; i < cd.signals.size(); i++) {
 
-			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; //gets overriden if description
+			signal_line[cd.signals[i].name] = class_desc->get_line_count() - 2; //gets overridden if description
 			class_desc->push_font(doc_code_font); // monofont
 			//_add_type("void");
 			//class_desc->add_text(" ");

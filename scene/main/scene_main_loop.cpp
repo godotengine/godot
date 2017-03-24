@@ -573,7 +573,7 @@ bool SceneTree::idle(float p_time) {
 	}
 
 	_flush_ugc();
-	_flush_transform_notifications(); //transforms after world update, to avoid unnecesary enter/exit notifications
+	_flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 	call_group_flags(GROUP_CALL_REALTIME, "_viewports", "update_worlds");
 
 	root_lock--;

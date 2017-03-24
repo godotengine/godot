@@ -1579,7 +1579,7 @@ Variant RasterizerGLES2::shader_get_default_param(RID p_shader, const StringName
 	Shader *shader = shader_owner.get(p_shader);
 	ERR_FAIL_COND_V(!shader, Variant());
 
-	//update shader params if necesary
+	//update shader params if necessary
 	//make sure the shader is compiled and everything
 	//so the actual parameters can be properly retrieved!
 	if (shader->dirty_list.in_list()) {
@@ -1651,7 +1651,7 @@ Variant RasterizerGLES2::material_get_param(RID p_material, const StringName &p_
 	ERR_FAIL_COND_V(!material, Variant());
 
 	if (material->shader.is_valid()) {
-		//update shader params if necesary
+		//update shader params if necessary
 		//make sure the shader is compiled and everything
 		//so the actual parameters can be properly retrieved!
 		material->shader_cache = shader_owner.get(material->shader);
@@ -5684,7 +5684,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry, const Material *p_mate
 				};
 
 			} else if (use_attribute_instancing) {
-				//if not, using atributes instead of uniforms can be really fast in forward rendering architectures
+				//if not, using attributes instead of uniforms can be really fast in forward rendering architectures
 				if (s->index_array_len > 0) {
 
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);

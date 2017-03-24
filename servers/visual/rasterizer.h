@@ -1489,7 +1489,7 @@ public:
 	virtual void end_shadow_map()=0;
 
 	virtual void end_frame()=0;
-	virtual void flush_frame(); //not necesary in most cases
+	virtual void flush_frame(); //not necessary in most cases
 
 	/* CANVAS API */
 

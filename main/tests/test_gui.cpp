@@ -299,7 +299,7 @@ public:
 		richtext->push_color(Color(0, 1.0, 0.5));
 		richtext->add_text("faeries.\n");
 		richtext->pop();
-		richtext->add_text("In this new episode, we will attemp to ");
+		richtext->add_text("In this new episode, we will attempt to ");
 		richtext->push_font(richtext->get_font("mono_font", "Fonts"));
 		richtext->push_color(Color(0.7, 0.5, 1.0));
 		richtext->add_text("deliver something nice");

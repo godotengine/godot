@@ -503,7 +503,7 @@ void BodySW::integrate_forces(real_t p_step) {
 
 	} else {
 		if (!omit_force_integration && !first_integration) {
-			//overriden by direct state query
+			//overridden by direct state query
 
 			Vector3 force = gravity * mass;
 			force += applied_force;

@@ -745,8 +745,8 @@ struct _EditorFontData {
 
 	Vector<uint8_t> bitmap;
 	int width,height;
-	int ofs_x; //ofset to center, from ABOVE
-	int ofs_y; //ofset to begining, from LEFT
+	int ofs_x; //offset to center, from ABOVE
+	int ofs_y; //offset to beginning, from LEFT
 	int valign; //vertical alignment
 	int halign;
 	float advance;

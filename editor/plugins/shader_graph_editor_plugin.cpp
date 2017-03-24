@@ -2425,7 +2425,7 @@ void ShaderGraphView::_create_node(int p_id) {
 		colors.push_back("ShadowColor");
 		colors.push_back("Diffuse");
 		colors.push_back("Specular");
-		colors.push_back("Emmision");
+		colors.push_back("Emission");
 		Array reals;
 		reals.push_back("Alpha");
 		reals.push_back("DiffuseAlpha");

@@ -282,7 +282,7 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 	//Try to use the filesystem for files, according to OS. (only Android -when reading from pck- and iOS use this)
 	if (OS::get_singleton()->get_resource_dir() != "") {
-		//OS will call Globals->get_resource_path which will be empty if not overriden!
+		//OS will call Globals->get_resource_path which will be empty if not overridden!
 		//if the OS would rather use somewhere else, then it will not be empty.
 
 		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");

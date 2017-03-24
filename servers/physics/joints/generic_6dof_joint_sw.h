@@ -237,7 +237,7 @@ protected:
 	Vector3 m_calculatedAxisAngleDiff;
 	Vector3 m_calculatedAxis[3];
 
-	Vector3 m_AnchorPos; // point betwen pivots of bodies A and B to solve linear axes
+	Vector3 m_AnchorPos; // point between pivots of bodies A and B to solve linear axes
 
 	bool m_useLinearReferenceFrameA;
 

@@ -266,7 +266,7 @@ Physics2DDirectSpaceState *Physics2DServerSW::space_get_direct_state(RID p_space
 	ERR_FAIL_COND_V(!space, NULL);
 	if ((using_threads && !doing_sync) || space->is_locked()) {
 
-		ERR_EXPLAIN("Space state is inaccesible right now, wait for iteration or fixed process notification.");
+		ERR_EXPLAIN("Space state is inaccessible right now, wait for iteration or fixed process notification.");
 		ERR_FAIL_V(NULL);
 	}
 

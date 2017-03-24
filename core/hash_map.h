@@ -413,7 +413,7 @@ public:
 	}
 
 	/**
-	 * Erase an item, return true if erasing was succesful
+	 * Erase an item, return true if erasing was successful
 	 */
 
 	bool erase(const TKey &p_key) {

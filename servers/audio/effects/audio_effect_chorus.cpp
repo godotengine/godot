@@ -76,7 +76,7 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 		uint64_t local_cycles = cycles[vc];
 		uint64_t increment = llrint(cycles_to_mix / (double)p_frame_count * (double)(1 << AudioEffectChorus::CYCLES_FRAC));
 
-		//check the LFO doesnt read ahead of the write pos
+		//check the LFO doesn't read ahead of the write pos
 		if ((((int)max_depth_frames) + 10) > delay_frames) { //10 as some threshold to avoid precision stuff
 			delay_frames += (int)max_depth_frames - delay_frames;
 			delay_frames += 10; //threshold to avoid precision stuff

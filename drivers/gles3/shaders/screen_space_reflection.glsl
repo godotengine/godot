@@ -267,7 +267,7 @@ void main() {
 
 			for(int i=0;i<7;i++) {
 
-				float op_len = 2.0 * tan(cone_angle) * cone_len; //oposite side of iso triangle
+				float op_len = 2.0 * tan(cone_angle) * cone_len; //opposite side of iso triangle
 				float radius;
 				{
 					//fit to sphere inside cone (sphere ends at end of cone), something like this:

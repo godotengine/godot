@@ -12,7 +12,7 @@ Sections covered in this file:
 
 The golden rule is to **always open *one* issue for *one* bug**. If you notice several bugs and want to report them, make sure to create one new issue for each of them.
 
-Everything refered to hereafter as "bug" also applies for feature requests.
+Everything referred to hereafter as "bug" also applies for feature requests.
 
 If you are reporting a new issue, you will make our life much simpler (and the fix come much sooner) by following those guidelines:
 

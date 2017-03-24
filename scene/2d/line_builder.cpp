@@ -515,7 +515,7 @@ void LineBuilder::strip_add_arc(Vector2 center, float angle_delta, Orientation o
 void LineBuilder::new_arc(Vector2 center, Vector2 vbegin, float angle_delta, Color color, Rect2 uv_rect) {
 
 	// Make a standalone arc that doesn't use existing vertices,
-	// with undistorted UVs from withing a square section
+	// with undistorted UVs from within a square section
 
 	float radius = vbegin.length();
 	float angle_step = Math_PI / static_cast<float>(round_precision);

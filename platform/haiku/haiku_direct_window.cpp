@@ -289,7 +289,7 @@ void HaikuDirectWindow::HandleKeyboardEvent(BMessage *message) {
 		event.key.unicode = BUnicodeChar::FromUTF8(&bytes);
 	}
 
-	//make it consistent accross platforms.
+	//make it consistent across platforms.
 	if (event.key.scancode == KEY_BACKTAB) {
 		event.key.scancode = KEY_TAB;
 		event.key.mod.shift = true;

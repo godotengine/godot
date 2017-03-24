@@ -1570,7 +1570,7 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 		//drop at below selected node
 		if (to_node == EditorNode::get_singleton()->get_edited_scene()) {
 			//if at lower sibling of root node
-			to_pos = 0; //just insert at begining of root node
+			to_pos = 0; //just insert at beginning of root node
 			return;
 		}
 

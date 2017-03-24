@@ -39,7 +39,7 @@ static bool _equalsn(const CharType *str1, const CharType *str2, int len) {
 			return false;
 
 	// if one (or both) of the strings was smaller then they
-	// are only equal if they have the same lenght
+	// are only equal if they have the same length
 	return (i == len) || (str1[i] == 0 && str2[i] == 0);
 }
 

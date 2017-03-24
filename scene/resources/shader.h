@@ -54,7 +54,7 @@ private:
 
 	// hack the name of performance
 	// shaders keep a list of ShaderMaterial -> VisualServer name translations, to make
-	// convertion fast and save memory.
+	// conversion fast and save memory.
 	mutable bool params_cache_dirty;
 	mutable Map<StringName, StringName> params_cache; //map a shader param to a material param..
 	Map<StringName, Ref<Texture> > default_textures;

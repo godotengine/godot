@@ -253,13 +253,13 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		uint32_t size = pitch * height;
 		ERR_FAIL_COND_V(size != width * height * info.block_size, RES());
 
-		uint8_t pallete[256 * 4];
-		f->get_buffer(pallete, 256 * 4);
+		uint8_t palette[256 * 4];
+		f->get_buffer(palette, 256 * 4);
 
 		int colsize = 3;
 		for (int i = 0; i < 256; i++) {
 
-			if (pallete[i * 4 + 3] < 255)
+			if (palette[i * 4 + 3] < 255)
 				colsize = 4;
 		}
 
@@ -281,11 +281,11 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 			int dst_ofs = size + i * colsize;
 			int src_ofs = i * 4;
-			wb[dst_ofs + 0] = pallete[src_ofs + 2];
-			wb[dst_ofs + 1] = pallete[src_ofs + 1];
-			wb[dst_ofs + 2] = pallete[src_ofs + 0];
+			wb[dst_ofs + 0] = palette[src_ofs + 2];
+			wb[dst_ofs + 1] = palette[src_ofs + 1];
+			wb[dst_ofs + 2] = palette[src_ofs + 0];
 			if (colsize == 4)
-				wb[dst_ofs + 3] = pallete[src_ofs + 3];
+				wb[dst_ofs + 3] = palette[src_ofs + 3];
 		}
 
 		wb = PoolVector<uint8_t>::Write();

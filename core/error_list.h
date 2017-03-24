@@ -40,7 +40,7 @@ enum Error {
 	OK,
 	FAILED, ///< Generic fail error
 	ERR_UNAVAILABLE, ///< What is requested is unsupported/unavailable
-	ERR_UNCONFIGURED, ///< The object being used hasnt been properly set up yet
+	ERR_UNCONFIGURED, ///< The object being used hasn't been properly set up yet
 	ERR_UNAUTHORIZED, ///< Missing credentials for requested resource
 	ERR_PARAMETER_RANGE_ERROR, ///< Parameter given out of range (5)
 	ERR_OUT_OF_MEMORY, ///< Out of memory

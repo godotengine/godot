@@ -1489,7 +1489,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 		VSDEBUG("WORKING MEM: " + itos(node->working_mem_idx));
 
 		if (current_node_id == f->node) {
-			//if function node, set up function arguments from begining of stack
+			//if function node, set up function arguments from beginning of stack
 
 			for (int i = 0; i < f->argument_count; i++) {
 				input_args[i] = &variant_stack[i];

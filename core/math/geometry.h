@@ -108,7 +108,7 @@ public:
 		//do the function 'd' as defined by pb. I think is is dot product of some sort
 #define d_of(m, n, o, p) ((m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z))
 
-		//caluclate the parpametric position on the 2 curves, mua and mub
+		//calculate the parametric position on the 2 curves, mua and mub
 		real_t mua = ( d_of(p1,q1,q2,q1) * d_of(q2,q1,p2,p1)  - d_of(p1,q1,p2,p1) * d_of(q2,q1,q2,q1) ) / ( d_of(p2,p1,p2,p1) * d_of(q2,q1,q2,q1)  - d_of(q2,q1,p2,p1) * d_of(q2,q1,p2,p1) );
 		real_t mub = ( d_of(p1,q1,q2,q1) + mua * d_of(q2,q1,p2,p1)  ) / d_of(q2,q1,q2,q1);
 

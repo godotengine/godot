@@ -550,12 +550,12 @@ class CommandQueueMT {
 			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + 4) {
 				// no room at the end, wrap down;
 
-				if (read_ptr == 0) // dont want write_ptr to become read_ptr
+				if (read_ptr == 0) // don't want write_ptr to become read_ptr
 					return NULL;
 
 				// if this happens, it's a bug
 				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < sizeof(uint32_t), NULL);
-				// zero means, wrap to begining
+				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
 				*p = 0;

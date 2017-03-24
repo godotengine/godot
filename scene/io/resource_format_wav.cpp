@@ -136,7 +136,7 @@ RES ResourceFormatLoaderWAV::load(const String &p_path, const String& p_original
 				break;
 			}
 
-			/* Dont need anything else, continue */
+			/* Don't need anything else, continue */
 			format_found=true;
 		}
 

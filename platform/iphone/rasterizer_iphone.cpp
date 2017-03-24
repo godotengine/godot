@@ -1867,7 +1867,7 @@ void RasterizerIPhone::_setup_light(LightInstance *p_instance, int p_idx) {
 	switch (ld->type) {
 
 		case VS::LIGHT_DIRECTIONAL: {
-			/* This doesnt have attenuation */
+			/* This doesn't have attenuation */
 
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
@@ -2088,7 +2088,7 @@ void RasterizerIPhone::_render_list_forward(RenderList *p_render_list) {
 	uint64_t prev_light_hash = 0;
 	const Skeleton *prev_skeleton = NULL;
 	const Geometry *prev_geometry = NULL;
-	const ParamOverrideMap *prev_overrides = NULL; // make it diferent than NULL
+	const ParamOverrideMap *prev_overrides = NULL; // make it different than NULL
 
 	Geometry::Type prev_geometry_type = Geometry::GEOMETRY_INVALID;
 

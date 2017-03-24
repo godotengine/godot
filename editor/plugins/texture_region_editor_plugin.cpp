@@ -710,7 +710,7 @@ void TextureRegionEditor::_edit_region() {
 											autoslice_cache.erase(F->next());
 										} else {
 											queue_erase = true;
-											//Cant delete the first rect in the list.
+											//Can't delete the first rect in the list.
 										}
 										merged = true;
 									}

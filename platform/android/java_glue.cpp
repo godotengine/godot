@@ -881,7 +881,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 
 	__android_log_print(ANDROID_LOG_INFO, "godot", "*****SETUP OK");
 
-	//video driver is determined here, because once initialized, it cant be changed
+	//video driver is determined here, because once initialized, it can't be changed
 	String vd = GlobalConfig::get_singleton()->get("display/driver");
 
 	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean) true);

@@ -470,7 +470,7 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 	bool handles = true;
 	Shader *shader = p_object->cast_to<Shader>();
 	/*
-	if (!shader || shader->cast_to<ShaderGraph>()) // Dont handle ShaderGraph's
+	if (!shader || shader->cast_to<ShaderGraph>()) // Don't handle ShaderGraph's
 		handles = false;
 	*/
 

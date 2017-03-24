@@ -485,7 +485,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
 			// some parents need to know the order of the childrens to draw (like TabContainer)
-			// update if necesary
+			// update if necessary
 			if (data.parent)
 				data.parent->update();
 			update();

@@ -5886,7 +5886,7 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 	} else if (texture_owner.owns(p_rid)) {
 		// delete the texture
 		Texture *texture = texture_owner.get(p_rid);
-		ERR_FAIL_COND_V(texture->render_target, true); //cant free the render target texture, dude
+		ERR_FAIL_COND_V(texture->render_target, true); //can't free the render target texture, dude
 		info.texture_mem -= texture->total_data_size;
 		texture_owner.free(p_rid);
 		memdelete(texture);

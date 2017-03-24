@@ -491,7 +491,7 @@ godot_variant GDAPI godot_instance_get(godot_instance p_instance, char *p_prop);
 #define GODOT_PROPERTY_HINT_RANGE 1 ///< hint_text = "min,max,step,slider; //slider is optional"
 #define GODOT_PROPERTY_HINT_EXP_RANGE 2 ///< hint_text = "min,max,step", exponential edit
 #define GODOT_PROPERTY_HINT_ENUM 3 ///< hint_text= "val1,val2,val3,etc"
-#define GODOT_PROPERTY_HINT_EXP_EASING 4 /// exponential easing funciton (Math::ease)
+#define GODOT_PROPERTY_HINT_EXP_EASING 4 /// exponential easing function (Math::ease)
 #define GODOT_PROPERTY_HINT_LENGTH 5 ///< hint_text= "length" (as integer)
 #define GODOT_PROPERTY_HINT_SPRITE_FRAME 6
 #define GODOT_PROPERTY_HINT_KEY_ACCEL 7 ///< hint_text= "length" (as integer)

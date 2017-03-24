@@ -414,7 +414,7 @@ static _GlobalConstant _global_constants[] = {
 	BIND_GLOBAL_CONSTANT(OK),
 	BIND_GLOBAL_CONSTANT(FAILED), ///< Generic fail error
 	BIND_GLOBAL_CONSTANT(ERR_UNAVAILABLE), ///< What is requested is unsupported/unavailable
-	BIND_GLOBAL_CONSTANT(ERR_UNCONFIGURED), ///< The object being used hasnt been properly set up yet
+	BIND_GLOBAL_CONSTANT(ERR_UNCONFIGURED), ///< The object being used hasn't been properly set up yet
 	BIND_GLOBAL_CONSTANT(ERR_UNAUTHORIZED), ///< Missing credentials for requested resource
 	BIND_GLOBAL_CONSTANT(ERR_PARAMETER_RANGE_ERROR), ///< Parameter given out of range
 	BIND_GLOBAL_CONSTANT(ERR_OUT_OF_MEMORY), ///< Out of memory

@@ -231,7 +231,7 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 	Entry &entry = entry_array[entry_indices[new_entry_indices_pos]];
 
 	entry.len = p_size;
-	entry.pos = (new_entry_indices_pos == 0) ? 0 : entry_end(entry_array[entry_indices[new_entry_indices_pos - 1]]); //alloc either at begining or end of previous
+	entry.pos = (new_entry_indices_pos == 0) ? 0 : entry_end(entry_array[entry_indices[new_entry_indices_pos - 1]]); //alloc either at beginning or end of previous
 	entry.lock = 0;
 	entry.check = (check_count++) & CHECK_MASK;
 	free_mem -= size_to_alloc;

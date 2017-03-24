@@ -340,7 +340,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
                     r = is.read(len);
                     if (r<4) {
 
-			Log.d("GODOT", "**ERROR** Wrong cmdline param lenght.\n");
+			Log.d("GODOT", "**ERROR** Wrong cmdline param length.\n");
                         return new String[0];
                     }
 		    int strlen=((int)(len[3]&0xFF)<<24) | ((int)(len[2]&0xFF)<<16) | ((int)(len[1]&0xFF)<<8) | ((int)(len[0]&0xFF));
