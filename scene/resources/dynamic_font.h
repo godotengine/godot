@@ -141,6 +141,7 @@ class DynamicFontAtSize : public Reference {
 	Ref<DynamicFontData> font;
 	DynamicFontData::CacheID id;
 
+	static HashMap<String, Vector<uint8_t> > _fontdata;
 	Error _load();
 
 protected:
