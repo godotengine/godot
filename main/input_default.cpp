@@ -336,6 +336,11 @@ void InputDefault::parse_input_event(const InputEvent &p_event) {
 				ev.screen_touch = touch_event;
 				main_loop->input_event(ev);
 			}
+
+			Point2 pos = Point2(p_event.mouse_button.global_x, p_event.mouse_button.global_y);
+			if (mouse_pos != pos) {
+				set_mouse_pos(pos);
+			}
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
