@@ -49,6 +49,9 @@ class SceneStringNames {
 public:
 	_FORCE_INLINE_ static SceneStringNames *get_singleton() { return singleton; }
 
+	StringName _estimate_cost;
+	StringName _compute_cost;
+
 	StringName resized;
 	StringName dot;
 	StringName doubledot;

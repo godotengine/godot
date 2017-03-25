@@ -93,6 +93,9 @@ class AStar : public Reference {
 protected:
 	static void _bind_methods();
 
+	virtual float _estimate_cost(int p_from_id, int p_to_id);
+	virtual float _compute_cost(int p_from_id, int p_to_id);
+
 public:
 	int get_available_point_id() const;
 
