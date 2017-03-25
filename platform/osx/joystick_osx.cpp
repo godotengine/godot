@@ -271,7 +271,6 @@ void JoystickOSX::_device_removed(int p_id) {
 	input->joy_connection_changed(p_id, false, "");
 	device_list[device].free();
 	device_list.remove(device);
-	attached_devices[p_id] = false;
 }
 
 static String _hex_str(uint8_t p_byte) {
@@ -303,7 +302,7 @@ bool JoystickOSX::configure_joystick(IOHIDDeviceRef p_device_ref, joystick *p_jo
 	}
 	name = c_name;
 
-	int id = get_free_joy_id();
+	int id = input->get_unused_joy_id();
 	ERR_FAIL_COND_V(id == -1, false);
 	p_joy->id = id;
 	int vendor = 0;
@@ -512,16 +511,6 @@ void JoystickOSX::joystick_vibration_stop(int p_id, uint64_t p_timestamp) {
 	FFEffectStop(joy->ff_object);
 }
 
-int JoystickOSX::get_free_joy_id() {
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
-		if (!attached_devices[i]) {
-			attached_devices[i] = true;
-			return i;
-		}
-	}
-	return -1;
-}
-
 int JoystickOSX::get_joy_index(int p_id) const {
 	for (int i = 0; i < device_list.size(); i++) {
 		if (device_list[i].id == p_id) return i;
@@ -581,10 +570,6 @@ void JoystickOSX::config_hid_manager(CFArrayRef p_matching_array) const {
 JoystickOSX::JoystickOSX() {
 	self = this;
 	input = (InputDefault *)Input::get_singleton();
-
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
-		attached_devices[i] = false;
-	}
 
 	int okay = 1;
 	const void *vals[] = {

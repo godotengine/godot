@@ -89,16 +89,6 @@ bool joystick_windows::have_device(const GUID &p_guid) {
 	return false;
 }
 
-int joystick_windows::check_free_joy_slot() const {
-
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
-
-		if (!attached_joysticks[i])
-			return i;
-	}
-	return -1;
-}
-
 // adapted from SDL2, works a lot better than the MSDN version
 bool joystick_windows::is_xinput_device(const GUID *p_guid) {
 
@@ -147,7 +137,7 @@ bool joystick_windows::is_xinput_device(const GUID *p_guid) {
 bool joystick_windows::setup_dinput_joystick(const DIDEVICEINSTANCE *instance) {
 
 	HRESULT hr;
-	int num = check_free_joy_slot();
+	int num = input->get_unused_joy_id();
 
 	if (have_device(instance->guidInstance) || num == -1)
 		return false;
@@ -295,7 +285,7 @@ void joystick_windows::probe_joysticks() {
 		dwResult = xinput_get_state(i, &x_joysticks[i].state);
 		if (dwResult == ERROR_SUCCESS) {
 
-			int id = check_free_joy_slot();
+			int id = input->get_unused_joy_id();
 			if (id != -1 && !x_joysticks[i].attached) {
 
 				x_joysticks[i].attached = true;
