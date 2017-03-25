@@ -133,7 +133,7 @@ def configure(env):
 
     elif (env["target"] == "debug"):
 
-        env.Prepend(CCFLAGS=['-g2', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Prepend(CCFLAGS=['-g2', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     env.ParseConfig('pkg-config x11 --cflags --libs')
     env.ParseConfig('pkg-config xinerama --cflags --libs')
@@ -227,7 +227,7 @@ def configure(env):
         env.Append(LIBS=['dl'])
     # env.Append(CPPFLAGS=['-DMPC_FIXED_POINT'])
 
-# host compiler is default..
+    # host compiler is default..
 
     if (is64 and env["bits"] == "32"):
         env.Append(CPPFLAGS=['-m32'])

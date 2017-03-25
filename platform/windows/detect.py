@@ -361,7 +361,7 @@ def configure(env):
 
         elif (env["target"] == "debug"):
 
-            env.Append(CCFLAGS=['-g', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+            env.Append(CCFLAGS=['-g', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
         env["CC"] = mingw_prefix + "gcc"
         env['AS'] = mingw_prefix + "as"

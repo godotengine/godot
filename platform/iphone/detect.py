@@ -58,16 +58,16 @@ def configure(env):
     if (env["ios_sim"] == "yes" or env["arch"] == "x86"):  # i386, simulator
         env["arch"] = "x86"
         env["bits"] = "32"
-        env['CCFLAGS'] = string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks  -Wall -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"')
+        env['CCFLAGS'] = string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $IPHONESDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"')
     elif (env["arch"] == "arm64"):  # arm64
         env["bits"] = "64"
-        env['CCFLAGS'] = string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -fvisibility=hidden -Wno-sign-conversion -MMD -MT dependencies -miphoneos-version-min=7.0 -isysroot $IPHONESDK')
+        env['CCFLAGS'] = string.split('-fno-objc-arc -arch arm64 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -fvisibility=hidden -MMD -MT dependencies -miphoneos-version-min=7.0 -isysroot $IPHONESDK')
         env.Append(CPPFLAGS=['-DNEED_LONG_INT'])
         env.Append(CPPFLAGS=['-DLIBYUV_DISABLE_NEON'])
     else:  # armv7
         env["arch"] = "arm"
         env["bits"] = "32"
-        env['CCFLAGS'] = string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -Wno-trigraphs -fpascal-strings -Wmissing-prototypes -Wreturn-type -Wparentheses -Wswitch -Wno-unused-parameter -Wunused-variable -Wunused-value -Wno-shorten-64-to-32 -isysroot $IPHONESDK -fvisibility=hidden -Wno-sign-conversion -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=7.0 -MMD -MT dependencies -isysroot $IPHONESDK')
+        env['CCFLAGS'] = string.split('-fno-objc-arc -arch armv7 -fmessage-length=0 -fno-strict-aliasing -fdiagnostics-print-source-range-info -fdiagnostics-show-category=id -fdiagnostics-parseable-fixits -fpascal-strings -isysroot $IPHONESDK -fvisibility=hidden -mthumb "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=7.0 -MMD -MT dependencies -isysroot $IPHONESDK')
 
     if (env["arch"] == "x86"):
         env['IPHONEPLATFORM'] = 'iPhoneSimulator'
@@ -145,17 +145,17 @@ def configure(env):
 
     if (env["target"] == "release"):
 
-        env.Append(CCFLAGS=['-O3', '-DNS_BLOCK_ASSERTIONS=1', '-Wall', '-gdwarf-2'])  # removed -ffast-math
+        env.Append(CCFLAGS=['-O3', '-DNS_BLOCK_ASSERTIONS=1', '-gdwarf-2'])  # removed -ffast-math
         env.Append(LINKFLAGS=['-O3'])
 
     elif env["target"] == "release_debug":
-        env.Append(CCFLAGS=['-Os', '-DNS_BLOCK_ASSERTIONS=1', '-Wall', '-DDEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-Os', '-DNS_BLOCK_ASSERTIONS=1', '-DDEBUG_ENABLED'])
         env.Append(LINKFLAGS=['-Os'])
         env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
 
     elif (env["target"] == "debug"):
 
-        env.Append(CCFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-Wall', '-O0', '-DDEBUG_ENABLED'])
+        env.Append(CCFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-O0', '-DDEBUG_ENABLED'])
         env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
 
     elif (env["target"] == "profile"):
