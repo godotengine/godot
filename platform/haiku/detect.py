@@ -53,7 +53,7 @@ def configure(env):
     elif (env["target"] == "release_debug"):
         env.Append(CCFLAGS=['-O2', '-ffast-math', '-DDEBUG_ENABLED'])
     elif (env["target"] == "debug"):
-        env.Append(CCFLAGS=['-g2', '-Wall', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
+        env.Append(CCFLAGS=['-g2', '-DDEBUG_ENABLED', '-DDEBUG_MEMORY_ENABLED'])
 
     # env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
     env.Append(CPPFLAGS=['-DPTHREAD_NO_RENAME'])  # TODO: enable when we have pthread_setname_np
