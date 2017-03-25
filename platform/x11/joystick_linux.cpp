@@ -219,15 +219,6 @@ void joystick_linux::monitor_joysticks() {
 	}
 }
 
-int joystick_linux::get_free_joy_slot() const {
-
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
-
-		if (joysticks[i].fd == -1) return i;
-	}
-	return -1;
-}
-
 int joystick_linux::get_joy_from_path(String p_path) const {
 
 	for (int i = 0; i < JOYSTICKS_MAX; i++) {
@@ -329,7 +320,7 @@ void joystick_linux::setup_joystick_properties(int p_id) {
 
 void joystick_linux::open_joystick(const char *p_path) {
 
-	int joy_num = get_free_joy_slot();
+	int joy_num = input->get_unused_joy_id();
 	int fd = open(p_path, O_RDWR | O_NONBLOCK);
 	if (fd != -1 && joy_num != -1) {
 
