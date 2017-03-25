@@ -12,6 +12,7 @@ apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
+    	jcenter()
 	mavenCentral()
 	$$GRADLE_REPOSITORY_URLS$$
     }
