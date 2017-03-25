@@ -28,6 +28,8 @@
 /*************************************************************************/
 #include "a_star.h"
 #include "geometry.h"
+#include "scene/scene_string_names.h"
+#include "script_language.h"
 
 int AStar::get_available_point_id() const {
 
@@ -187,7 +189,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 		Point *n = begin_point->neighbours[i];
 		n->prev_point = begin_point;
-		n->distance = n->pos.distance_to(begin_point->pos);
+		n->distance = _compute_cost(n->id, begin_point->id);
 		n->distance *= n->weight_scale;
 		n->last_pass = pass;
 		open_list.add(&n->list);
@@ -215,7 +217,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 			Point *p = E->self();
 
 			real_t cost = p->distance;
-			cost += p->pos.distance_to(end_point->pos);
+			cost += _estimate_cost(p->id, end_point->id);
 			cost *= p->weight_scale;
 
 			if (cost < least_cost) {
@@ -233,7 +235,7 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 
 			Point *e = p->neighbours[i];
 
-			real_t distance = p->pos.distance_to(e->pos) + p->distance;
+			real_t distance = _compute_cost(p->id, e->id) + p->distance;
 			distance *= e->weight_scale;
 
 			if (e->last_pass == pass) {
@@ -272,6 +274,20 @@ bool AStar::_solve(Point *begin_point, Point *end_point) {
 	}
 
 	return found_route;
+}
+
+float AStar::_estimate_cost(int p_from_id, int p_to_id) {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_estimate_cost))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_estimate_cost, p_from_id, p_to_id);
+
+	return points[p_from_id]->pos.distance_to(points[p_to_id]->pos);
+}
+
+float AStar::_compute_cost(int p_from_id, int p_to_id) {
+	if (get_script_instance() && get_script_instance()->has_method(SceneStringNames::get_singleton()->_compute_cost))
+		return get_script_instance()->call(SceneStringNames::get_singleton()->_compute_cost, p_from_id, p_to_id);
+
+	return points[p_from_id]->pos.distance_to(points[p_to_id]->pos);
 }
 
 PoolVector<Vector3> AStar::get_point_path(int p_from_id, int p_to_id) {
@@ -395,6 +411,9 @@ void AStar::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStar::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStar::get_id_path);
+
+	BIND_VMETHOD(MethodInfo("_estimate_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
+	BIND_VMETHOD(MethodInfo("_compute_cost", PropertyInfo(Variant::INT, "from_id"), PropertyInfo(Variant::INT, "to_id")));
 }
 
 AStar::AStar() {

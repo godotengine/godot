@@ -32,6 +32,9 @@ SceneStringNames *SceneStringNames::singleton = NULL;
 
 SceneStringNames::SceneStringNames() {
 
+	_estimate_cost = StaticCString::create("_estimate_cost");
+	_compute_cost = StaticCString::create("_compute_cost");
+
 	resized = StaticCString::create("resized");
 	dot = StaticCString::create(".");
 	doubledot = StaticCString::create("..");
