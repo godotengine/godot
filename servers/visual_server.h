@@ -1120,7 +1120,7 @@ public:
 
 	/* Materials for 2D on 3D */
 
-	RID material_2d_get(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass);
+	RID material_2d_get(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_ontop, bool p_cut_alpha, bool p_opaque_prepass);
 
 	/* TESTING */
 

@@ -283,7 +283,7 @@ RID VisualServer::make_sphere_mesh(int p_lats, int p_lons, float p_radius) {
 	return mesh;
 }
 
-RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass) {
+RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_ontop, bool p_cut_alpha, bool p_opaque_prepass) {
 
 	int version = 0;
 	if (p_shaded)
@@ -296,6 +296,8 @@ RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_doub
 		version |= 8;
 	if (p_double_sided)
 		version |= 16;
+	if (p_ontop)
+		version |= 32;
 	if (material_2d[version].is_valid())
 		return material_2d[version];
 
@@ -307,6 +309,7 @@ RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_doub
 	fixed_material_set_flag(material_2d[version], FIXED_MATERIAL_FLAG_DISCARD_ALPHA, p_cut_alpha);
 	material_set_flag(material_2d[version], MATERIAL_FLAG_UNSHADED, !p_shaded);
 	material_set_flag(material_2d[version], MATERIAL_FLAG_DOUBLE_SIDED, p_double_sided);
+	material_set_flag(material_2d[version], MATERIAL_FLAG_ONTOP, p_ontop);
 	material_set_depth_draw_mode(material_2d[version], p_opaque_prepass ? MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA : MATERIAL_DEPTH_DRAW_OPAQUE_ONLY);
 	fixed_material_set_texture(material_2d[version], FIXED_MATERIAL_PARAM_DIFFUSE, get_white_texture());
 	//material cut alpha?
