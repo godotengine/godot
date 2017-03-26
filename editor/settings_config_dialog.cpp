@@ -297,6 +297,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 
 	set_title(TTR("Editor Settings"));
 	set_resizable(true);
+	set_exclusive(true);
 
 	tabs = memnew(TabContainer);
 	add_child(tabs);
