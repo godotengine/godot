@@ -49,10 +49,15 @@ void Texture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rec
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_rid(), p_src_rect, p_modulate, p_transpose);
 }
 
-bool Texture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
+bool Texture::get_rect_region_uv_rect(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_uv_rect) const {
+
+	Size2 size = get_size();
+
+	if (size.width == 0 || size.height == 0)
+		return false;
 
 	r_rect = p_rect;
-	r_src_rect = p_src_rect;
+	r_uv_rect = Rect2(p_src_rect.get_pos() / size, p_src_rect.get_size() / size);
 
 	return true;
 }
@@ -598,11 +603,16 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, dr, atlas->get_rid(), src_c, p_modulate, p_transpose);
 }
 
-bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
+bool AtlasTexture::get_rect_region_uv_rect(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_uv_rect) const {
 
 	Rect2 rc = region;
 
 	if (!atlas.is_valid())
+		return false;
+
+	Size2 atlas_size = atlas->get_size();
+
+	if (atlas_size.width == 0 || atlas_size.height == 0)
 		return false;
 
 	Rect2 src = p_src_rect;
@@ -626,7 +636,7 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 	Rect2 dr(p_rect.pos + ofs * scale, src_c.size * scale);
 
 	r_rect = dr;
-	r_src_rect = src_c;
+	r_uv_rect = Rect2(src_c.get_pos() / atlas_size, src_c.get_size() / atlas_size);
 	return true;
 }
 
