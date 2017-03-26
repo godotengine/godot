@@ -61,7 +61,6 @@ public:
 
 	List<String> args;
 	MainLoop *main_loop;
-	unsigned int event_id;
 
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
@@ -83,7 +82,6 @@ public:
 	//          pthread_key_t   current;
 	bool mouse_grab;
 	Point2 mouse_pos;
-	uint32_t last_id;
 
 	id delegate;
 	id window_delegate;

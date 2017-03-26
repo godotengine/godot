@@ -92,7 +92,6 @@ private:
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	unsigned int last_id;
 	VisualServer *visual_server;
 	Rasterizer *rasterizer;
 	PhysicsServer *physics_server;

@@ -43,7 +43,6 @@
 
 class HaikuDirectWindow : public BDirectWindow {
 private:
-	unsigned int event_id;
 	Point2i last_mouse_position;
 	bool last_mouse_pos_valid;
 	uint32 last_buttons_state;

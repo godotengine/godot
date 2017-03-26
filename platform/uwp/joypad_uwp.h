@@ -37,7 +37,7 @@ ref class JoypadUWP sealed {
 	/* clang-format off */
 internal:
 	void register_events();
-	uint32_t process_controllers(uint32_t p_last_id);
+	void process_controllers();
 	/* clang-format on */
 
 	JoypadUWP();

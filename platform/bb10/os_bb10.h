@@ -48,8 +48,6 @@
 
 class OSBB10 : public OS_Unix {
 
-	unsigned int last_id;
-
 	screen_context_t screen_cxt;
 	float fullscreen_mixer_volume;
 	float fullscreen_stream_volume;

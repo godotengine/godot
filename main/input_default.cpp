@@ -795,25 +795,25 @@ InputDefault::InputDefault() {
 	};
 }
 
-uint32_t InputDefault::joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed) {
+void InputDefault::joy_button(int p_device, int p_button, bool p_pressed) {
 
 	_THREAD_SAFE_METHOD_;
 	Joypad &joy = joy_names[p_device];
 	//printf("got button %i, mapping is %i\n", p_button, joy.mapping);
 	if (joy.last_buttons[p_button] == p_pressed) {
-		return p_last_id;
-		//printf("same button value\n");
+		return;
 	}
 	joy.last_buttons[p_button] = p_pressed;
 	if (joy.mapping == -1) {
-		return _button_event(p_last_id, p_device, p_button, p_pressed);
+		_button_event(p_device, p_button, p_pressed);
+		return;
 	};
 
 	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].buttons.find(p_button);
 	if (!el) {
 		//don't process un-mapped events for now, it could mess things up badly for devices with additional buttons/axis
 		//return _button_event(p_last_id, p_device, p_button, p_pressed);
-		return p_last_id;
+		return;
 	};
 
 	JoyEvent map = el->get();
@@ -822,37 +822,38 @@ uint32_t InputDefault::joy_button(uint32_t p_last_id, int p_device, int p_button
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_pressed ? 1.0f : 0.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
-			p_last_id = _axis_event(p_last_id, p_device, axis, value);
+			_axis_event(p_device, axis, value);
 		}
-		return _button_event(p_last_id, p_device, map.index, p_pressed);
+		_button_event(p_device, map.index, p_pressed);
+		return;
 	};
 
 	if (map.type == TYPE_AXIS) {
-		return _axis_event(p_last_id, p_device, map.index, p_pressed ? 1.0 : 0.0);
+		_axis_event(p_device, map.index, p_pressed ? 1.0 : 0.0);
 	};
 
-	return p_last_id; // no event?
+	return; // no event?
 };
 
-uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, const JoyAxis &p_value) {
+void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	_THREAD_SAFE_METHOD_;
 
 	Joypad &joy = joy_names[p_device];
 
 	if (joy.last_axis[p_axis] == p_value.value) {
-		return p_last_id;
+		return;
 	}
 
 	if (p_value.value > joy.last_axis[p_axis]) {
 
 		if (p_value.value < joy.last_axis[p_axis] + joy.filter) {
 
-			return p_last_id;
+			return;
 		}
 	} else if (p_value.value > joy.last_axis[p_axis] - joy.filter) {
 
-		return p_last_id;
+		return;
 	}
 
 	if (ABS(joy.last_axis[p_axis]) > 0.5 && joy.last_axis[p_axis] * p_value.value < 0) {
@@ -860,20 +861,20 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 		JoyAxis jx;
 		jx.min = p_value.min;
 		jx.value = p_value.value < 0 ? 0.1 : -0.1;
-		p_last_id = joy_axis(p_last_id, p_device, p_axis, jx);
+		joy_axis(p_device, p_axis, jx);
 	}
 
 	joy.last_axis[p_axis] = p_value.value;
 	float val = p_value.min == 0 ? -1.0f + 2.0f * p_value.value : p_value.value;
 
 	if (joy.mapping == -1) {
-		return _axis_event(p_last_id, p_device, p_axis, val);
+		_axis_event(p_device, p_axis, val);
 	};
 
 	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
 	if (!el) {
 		//return _axis_event(p_last_id, p_device, p_axis, p_value);
-		return p_last_id;
+		return;
 	};
 
 	JoyEvent map = el->get();
@@ -883,7 +884,7 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 		if (map.index == JOY_L2 || map.index == JOY_R2) {
 			float value = p_value.min == 0 ? p_value.value : 0.5f + p_value.value / 2.0f;
 			int axis = map.index == JOY_L2 ? JOY_ANALOG_L2 : JOY_ANALOG_R2;
-			p_last_id = _axis_event(p_last_id, p_device, axis, value);
+			_axis_event(p_device, axis, value);
 		}
 
 		if (map.index == JOY_DPAD_UP || map.index == JOY_DPAD_DOWN) {
@@ -892,16 +893,17 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 			if (!pressed) {
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_UP, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_UP, false);
+					_button_event(p_device, JOY_DPAD_UP, false);
 				}
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_DOWN, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_DOWN, false);
+					_button_event(p_device, JOY_DPAD_DOWN, false);
 				}
 			}
 			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
-				return p_last_id;
+				return;
 			}
-			return _button_event(p_last_id, p_device, button, true);
+			_button_event(p_device, button, true);
+			return;
 		}
 		if (map.index == JOY_DPAD_LEFT || map.index == JOY_DPAD_RIGHT) {
 			bool pressed = p_value.value != 0.0f;
@@ -909,35 +911,38 @@ uint32_t InputDefault::joy_axis(uint32_t p_last_id, int p_device, int p_axis, co
 
 			if (!pressed) {
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_LEFT, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_LEFT, false);
+					_button_event(p_device, JOY_DPAD_LEFT, false);
 				}
 				if (joy_buttons_pressed.has(_combine_device(JOY_DPAD_RIGHT, p_device))) {
-					p_last_id = _button_event(p_last_id, p_device, JOY_DPAD_RIGHT, false);
+					_button_event(p_device, JOY_DPAD_RIGHT, false);
 				}
 			}
 			if (pressed == joy_buttons_pressed.has(_combine_device(button, p_device))) {
-				return p_last_id;
+				return;
 			}
-			return _button_event(p_last_id, p_device, button, true);
+			_button_event(p_device, button, true);
+			return;
 		}
 		float deadzone = p_value.min == 0 ? 0.5f : 0.0f;
 		bool pressed = p_value.value > deadzone ? true : false;
 		if (pressed == joy_buttons_pressed.has(_combine_device(map.index, p_device))) {
 			// button already pressed or released, this is an axis bounce value
-			return p_last_id;
+			return;
 		};
-		return _button_event(p_last_id, p_device, map.index, pressed);
+		_button_event(p_device, map.index, pressed);
+		return;
 	};
 
 	if (map.type == TYPE_AXIS) {
 
-		return _axis_event(p_last_id, p_device, map.index, val);
+		_axis_event(p_device, map.index, val);
+		return;
 	};
 	//printf("invalid mapping\n");
-	return p_last_id;
+	return;
 };
 
-uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
+void InputDefault::joy_hat(int p_device, int p_val) {
 
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
@@ -953,50 +958,42 @@ uint32_t InputDefault::joy_hat(uint32_t p_last_id, int p_device, int p_val) {
 	int cur_val = joy_names[p_device].hat_current;
 
 	if ((p_val & HAT_MASK_UP) != (cur_val & HAT_MASK_UP)) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_UP].index, p_val & HAT_MASK_UP);
+		_button_event(p_device, map[HAT_UP].index, p_val & HAT_MASK_UP);
 	};
 
 	if ((p_val & HAT_MASK_RIGHT) != (cur_val & HAT_MASK_RIGHT)) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_RIGHT].index, p_val & HAT_MASK_RIGHT);
+		_button_event(p_device, map[HAT_RIGHT].index, p_val & HAT_MASK_RIGHT);
 	};
 	if ((p_val & HAT_MASK_DOWN) != (cur_val & HAT_MASK_DOWN)) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_DOWN].index, p_val & HAT_MASK_DOWN);
+		_button_event(p_device, map[HAT_DOWN].index, p_val & HAT_MASK_DOWN);
 	};
 	if ((p_val & HAT_MASK_LEFT) != (cur_val & HAT_MASK_LEFT)) {
-		p_last_id = _button_event(p_last_id, p_device, map[HAT_LEFT].index, p_val & HAT_MASK_LEFT);
+		_button_event(p_device, map[HAT_LEFT].index, p_val & HAT_MASK_LEFT);
 	};
 
 	joy_names[p_device].hat_current = p_val;
-
-	return p_last_id;
 };
 
-uint32_t InputDefault::_button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed) {
+void InputDefault::_button_event(int p_device, int p_index, bool p_pressed) {
 
 	InputEvent ievent;
 	ievent.type = InputEvent::JOYPAD_BUTTON;
 	ievent.device = p_device;
-	ievent.ID = ++p_last_id;
 	ievent.joy_button.button_index = p_index;
 	ievent.joy_button.pressed = p_pressed;
 
 	parse_input_event(ievent);
-
-	return p_last_id;
 };
 
-uint32_t InputDefault::_axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value) {
+void InputDefault::_axis_event(int p_device, int p_axis, float p_value) {
 
 	InputEvent ievent;
 	ievent.type = InputEvent::JOYPAD_MOTION;
 	ievent.device = p_device;
-	ievent.ID = ++p_last_id;
 	ievent.joy_motion.axis = p_axis;
 	ievent.joy_motion.axis_value = p_value;
 
 	parse_input_event(ievent);
-
-	return p_last_id;
 };
 
 InputDefault::JoyEvent InputDefault::_find_to_event(String p_to) {

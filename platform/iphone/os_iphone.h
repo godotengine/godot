@@ -119,7 +119,6 @@ private:
 
 	InputEvent event_queue[MAX_EVENTS];
 	int event_count;
-	int last_event_id;
 	void queue_event(const InputEvent &p_event);
 
 	String data_dir;

@@ -520,7 +520,6 @@ void OS_JavaScript::main_loop_focusin() {
 void OS_JavaScript::push_input(const InputEvent &p_ev) {
 
 	InputEvent ev = p_ev;
-	ev.ID = last_id++;
 	if (ev.type == InputEvent::MOUSE_MOTION) {
 		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 	} else if (ev.type == InputEvent::MOUSE_BUTTON) {
@@ -540,7 +539,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 				//end all if exist
 				InputEvent ev;
 				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.ID = last_id++;
 				ev.mouse_button.button_index = BUTTON_LEFT;
 				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
 				ev.mouse_button.pressed = false;
@@ -554,7 +552,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 
 					InputEvent ev;
 					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.ID = last_id++;
 					ev.screen_touch.index = touch[i].id;
 					ev.screen_touch.pressed = false;
 					ev.screen_touch.x = touch[i].pos.x;
@@ -573,7 +570,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 				//send mouse
 				InputEvent ev;
 				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.ID = last_id++;
 				ev.mouse_button.button_index = BUTTON_LEFT;
 				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
 				ev.mouse_button.pressed = true;
@@ -590,7 +586,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 
 				InputEvent ev;
 				ev.type = InputEvent::SCREEN_TOUCH;
-				ev.ID = last_id++;
 				ev.screen_touch.index = touch[i].id;
 				ev.screen_touch.pressed = true;
 				ev.screen_touch.x = touch[i].pos.x;
@@ -605,7 +600,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 				//send mouse, should look for point 0?
 				InputEvent ev;
 				ev.type = InputEvent::MOUSE_MOTION;
-				ev.ID = last_id++;
 				ev.mouse_motion.button_mask = BUTTON_MASK_LEFT;
 				ev.mouse_motion.x = p_points[0].pos.x;
 				ev.mouse_motion.y = p_points[0].pos.y;
@@ -638,7 +632,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 
 				InputEvent ev;
 				ev.type = InputEvent::SCREEN_DRAG;
-				ev.ID = last_id++;
 				ev.screen_drag.index = touch[i].id;
 				ev.screen_drag.x = p_points[idx].pos.x;
 				ev.screen_drag.y = p_points[idx].pos.y;
@@ -655,7 +648,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 				//end all if exist
 				InputEvent ev;
 				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.ID = last_id++;
 				ev.mouse_button.button_index = BUTTON_LEFT;
 				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
 				ev.mouse_button.pressed = false;
@@ -669,7 +661,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 
 					InputEvent ev;
 					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.ID = last_id++;
 					ev.screen_touch.index = touch[i].id;
 					ev.screen_touch.pressed = false;
 					ev.screen_touch.x = touch[i].pos.x;
@@ -689,7 +680,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 
 			InputEvent ev;
 			ev.type = InputEvent::SCREEN_TOUCH;
-			ev.ID = last_id++;
 			ev.screen_touch.index = tp.id;
 			ev.screen_touch.pressed = true;
 			ev.screen_touch.x = tp.pos.x;
@@ -704,7 +694,6 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 
 					InputEvent ev;
 					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.ID = last_id++;
 					ev.screen_touch.index = touch[i].id;
 					ev.screen_touch.pressed = false;
 					ev.screen_touch.x = touch[i].pos.x;
@@ -790,9 +779,9 @@ void OS_JavaScript::process_joypads() {
 					InputDefault::JoyAxis jx;
 					jx.min = 0;
 					jx.value = value;
-					last_id = input->joy_axis(last_id, i, j, jx);
+					input->joy_axis(i, j, jx);
 				} else {
-					last_id = input->joy_button(last_id, i, j, value);
+					input->joy_button(i, j, value);
 				}
 			}
 			for (int j = 0; j < num_axes; j++) {
@@ -800,7 +789,7 @@ void OS_JavaScript::process_joypads() {
 				InputDefault::JoyAxis jx;
 				jx.min = -1;
 				jx.value = state.axis[j];
-				last_id = input->joy_axis(last_id, i, j, jx);
+				input->joy_axis(i, j, jx);
 			}
 		}
 	}
@@ -844,7 +833,6 @@ OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, G
 	gfx_init_ud = p_gfx_init_ud;
 	last_button_mask = 0;
 	main_loop = NULL;
-	last_id = 1;
 	gl_extensions = NULL;
 	window_maximized = false;
 

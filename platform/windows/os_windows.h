@@ -83,7 +83,6 @@ class OS_Windows : public OS {
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
-	unsigned int last_id;
 #if defined(OPENGL_ENABLED)
 	ContextGL_Win *gl_context;
 #endif

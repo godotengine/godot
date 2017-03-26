@@ -151,7 +151,6 @@ void HaikuDirectWindow::HandleMouseButton(BMessage *message) {
 	*/
 
 	InputEvent mouse_event;
-	mouse_event.ID = ++event_id;
 	mouse_event.type = InputEvent::MOUSE_BUTTON;
 	mouse_event.device = 0;
 
@@ -208,7 +207,6 @@ void HaikuDirectWindow::HandleMouseMoved(BMessage *message) {
 	Point2i rel = pos - last_mouse_position;
 
 	InputEvent motion_event;
-	motion_event.ID = ++event_id;
 	motion_event.type = InputEvent::MOUSE_MOTION;
 	motion_event.device = 0;
 
@@ -237,7 +235,6 @@ void HaikuDirectWindow::HandleMouseWheelChanged(BMessage *message) {
 	}
 
 	InputEvent mouse_event;
-	mouse_event.ID = ++event_id;
 	mouse_event.type = InputEvent::MOUSE_BUTTON;
 	mouse_event.device = 0;
 
@@ -252,7 +249,6 @@ void HaikuDirectWindow::HandleMouseWheelChanged(BMessage *message) {
 	mouse_event.mouse_button.pressed = true;
 	input->parse_input_event(mouse_event);
 
-	mouse_event.ID = ++event_id;
 	mouse_event.mouse_button.pressed = false;
 	input->parse_input_event(mouse_event);
 }
@@ -275,7 +271,6 @@ void HaikuDirectWindow::HandleKeyboardEvent(BMessage *message) {
 	}
 
 	InputEvent event;
-	event.ID = ++event_id;
 	event.type = InputEvent::KEY;
 	event.device = 0;
 	event.key.mod = GetKeyModifierState(modifiers);
@@ -313,7 +308,6 @@ void HaikuDirectWindow::HandleKeyboardModifierEvent(BMessage *message) {
 	int32 key = old_modifiers ^ modifiers;
 
 	InputEvent event;
-	event.ID = ++event_id;
 	event.type = InputEvent::KEY;
 	event.device = 0;
 	event.key.mod = GetKeyModifierState(modifiers);

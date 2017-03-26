@@ -94,7 +94,6 @@ private:
 	Vector<TouchPos> touch;
 
 	Point2 last_mouse;
-	unsigned int last_id;
 	GFXInitFunc gfx_init_func;
 	void *gfx_init_ud;
 

@@ -110,7 +110,7 @@ private:
 	void joypad_vibration_stop(int p_id, uint64_t p_timestamp);
 
 public:
-	uint32_t process_joypads(uint32_t p_last_id);
+	void process_joypads();
 
 	void _device_added(IOReturn p_res, IOHIDDeviceRef p_device);
 	void _device_removed(int p_id);

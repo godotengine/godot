@@ -196,7 +196,6 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 
 	InputEvent ev;
 	ev.type = InputEvent::KEY;
-	ev.ID = ++last_event_id;
 	ev.key.echo = false;
 	ev.key.pressed = p_pressed;
 	ev.key.scancode = p_key;
@@ -209,7 +208,6 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 	if (!GLOBAL_DEF("debug/disable_touch", false)) {
 		InputEvent ev;
 		ev.type = InputEvent::SCREEN_TOUCH;
-		ev.ID = ++last_event_id;
 		ev.screen_touch.index = p_idx;
 		ev.screen_touch.pressed = p_pressed;
 		ev.screen_touch.x = p_x;
@@ -225,7 +223,6 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 		ev.type = InputEvent::MOUSE_BUTTON;
 		ev.device = 0;
 		ev.mouse_button.pointer_index = p_idx;
-		ev.ID = ++last_event_id;
 
 		// swaped it for tilted screen
 		//ev.mouse_button.x = ev.mouse_button.global_x = video_mode.height - p_y;
@@ -250,7 +247,6 @@ void OSIPhone::mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_
 
 		InputEvent ev;
 		ev.type = InputEvent::SCREEN_DRAG;
-		ev.ID = ++last_event_id;
 		ev.screen_drag.index = p_idx;
 		ev.screen_drag.x = p_x;
 		ev.screen_drag.y = p_y;
@@ -264,7 +260,6 @@ void OSIPhone::mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_
 		ev.type = InputEvent::MOUSE_MOTION;
 		ev.device = 0;
 		ev.mouse_motion.pointer_index = p_idx;
-		ev.ID = ++last_event_id;
 
 		if (true) { // vertical
 
@@ -327,7 +322,6 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		ev.device = 0;
 		ev.joy_motion.axis = JOY_ANALOG_0;
 		ev.joy_motion.axis_value = (p_x / (float)ACCEL_RANGE);
-		ev.ID = ++last_event_id;
 		last_accel.x = p_x;
 		queue_event(ev);
 	};
@@ -338,7 +332,6 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		ev.device = 0;
 		ev.joy_motion.axis = JOY_ANALOG_1;
 		ev.joy_motion.axis_value = (p_y / (float)ACCEL_RANGE);
-		ev.ID = ++last_event_id;
 		last_accel.y = p_y;
 		queue_event(ev);
 	};
@@ -349,7 +342,6 @@ void OSIPhone::update_accelerometer(float p_x, float p_y, float p_z) {
 		ev.device = 0;
 		ev.joy_motion.axis = JOY_ANALOG_2;
 		ev.joy_motion.axis_value = ( (1.0 - p_z) / (float)ACCEL_RANGE);
-		ev.ID = ++last_event_id;
 		last_accel.z = p_z;
 		queue_event(ev);
 	};
@@ -566,7 +558,6 @@ OSIPhone::OSIPhone(int width, int height) {
 	vm.resizable = false;
 	set_video_mode(vm);
 	event_count = 0;
-	last_event_id = 0;
 };
 
 OSIPhone::~OSIPhone() {
