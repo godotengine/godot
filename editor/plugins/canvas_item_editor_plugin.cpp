@@ -1534,7 +1534,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 
 			dto = dto - (drag == DRAG_ALL || drag == DRAG_NODE_2D ? drag_from - drag_point_from : Vector2(0, 0));
 
-			if (uniform && drag == DRAG_ALL) {
+			if (uniform && (drag == DRAG_ALL || drag == DRAG_NODE_2D)) {
 				if (ABS(dto.x - drag_point_from.x) > ABS(dto.y - drag_point_from.y)) {
 					dto.y = drag_point_from.y;
 				} else {
