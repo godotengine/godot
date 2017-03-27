@@ -42,7 +42,7 @@ class JoypadLinux {
 public:
 	JoypadLinux(InputDefault *in);
 	~JoypadLinux();
-	uint32_t process_joypads(uint32_t p_event_id);
+	void process_joypads();
 
 private:
 	enum {

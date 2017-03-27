@@ -344,15 +344,12 @@ String OSUWP::get_clipboard() const {
 
 void OSUWP::input_event(InputEvent &p_event) {
 
-	p_event.ID = ++last_id;
-
 	input->parse_input_event(p_event);
 
 	if (p_event.type == InputEvent::MOUSE_BUTTON && p_event.mouse_button.pressed && p_event.mouse_button.button_index > 3) {
 
 		//send release for mouse wheel
 		p_event.mouse_button.pressed = false;
-		p_event.ID = ++last_id;
 		input->parse_input_event(p_event);
 	}
 };
@@ -680,7 +677,7 @@ uint64_t OSUWP::get_ticks_usec() const {
 
 void OSUWP::process_events() {
 
-	last_id = joypad->process_controllers(last_id);
+	joypad->process_controllers();
 	process_key_events();
 }
 
@@ -907,7 +904,6 @@ OSUWP::OSUWP() {
 
 	pressrc = 0;
 	old_invalid = true;
-	last_id = 0;
 	mouse_mode = MOUSE_MODE_VISIBLE;
 #ifdef STDOUT_FILE
 	stdo = fopen("stdout.txt", "wb");

@@ -454,10 +454,10 @@ InputDefault::JoyAxis JoypadLinux::axis_correct(const input_absinfo *p_abs, int 
 	return jx;
 }
 
-uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
+void JoypadLinux::process_joypads() {
 
 	if (joy_mutex->try_lock() != OK) {
-		return p_event_id;
+		return;
 	}
 	for (int i = 0; i < JOYPADS_MAX; i++) {
 
@@ -477,11 +477,11 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 				// ev may be tainted and out of MAX_KEY range, which will cause
 				// joy->key_map[ev.code] to crash
 				if (ev.code < 0 || ev.code >= MAX_KEY)
-					return p_event_id;
+					return;
 
 				switch (ev.type) {
 					case EV_KEY:
-						p_event_id = input->joy_button(p_event_id, i, joy->key_map[ev.code], ev.value);
+						input->joy_button(i, joy->key_map[ev.code], ev.value);
 						break;
 
 					case EV_ABS:
@@ -496,7 +496,7 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 								} else
 									joy->dpad &= ~(InputDefault::HAT_MASK_LEFT | InputDefault::HAT_MASK_RIGHT);
 
-								p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
+								input->joy_hat(i, joy->dpad);
 								break;
 
 							case ABS_HAT0Y:
@@ -508,7 +508,7 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 								} else
 									joy->dpad &= ~(InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_DOWN);
 
-								p_event_id = input->joy_hat(p_event_id, i, joy->dpad);
+								input->joy_hat(i, joy->dpad);
 								break;
 
 							default:
@@ -525,7 +525,7 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 		for (int j = 0; j < MAX_ABS; j++) {
 			int index = joy->abs_map[j];
 			if (index != -1) {
-				p_event_id = input->joy_axis(p_event_id, i, index, joy->curr_axis[index]);
+				input->joy_axis(i, index, joy->curr_axis[index]);
 			}
 		}
 		if (len == 0 || (len < 0 && errno != EAGAIN)) {
@@ -546,6 +546,5 @@ uint32_t JoypadLinux::process_joypads(uint32_t p_event_id) {
 		}
 	}
 	joy_mutex->unlock();
-	return p_event_id;
 }
 #endif

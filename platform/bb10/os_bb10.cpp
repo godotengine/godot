@@ -282,7 +282,6 @@ void OSBB10::handle_screen_event(bps_event_t *event) {
 
 			InputEvent ievent;
 			ievent.type = InputEvent::SCREEN_TOUCH;
-			ievent.ID = ++last_id;
 			ievent.device = 0;
 			ievent.screen_touch.pressed = (screen_val == SCREEN_EVENT_MTOUCH_TOUCH);
 			ievent.screen_touch.x = pos[0];
@@ -301,7 +300,6 @@ void OSBB10::handle_screen_event(bps_event_t *event) {
 
 				InputEvent ievent;
 				ievent.type = InputEvent::MOUSE_BUTTON;
-				ievent.ID = ++last_id;
 				ievent.device = 0;
 				ievent.mouse_button.pressed = (screen_val == SCREEN_EVENT_MTOUCH_TOUCH);
 				ievent.mouse_button.button_index = BUTTON_LEFT;
@@ -318,7 +316,6 @@ void OSBB10::handle_screen_event(bps_event_t *event) {
 
 			InputEvent ievent;
 			ievent.type = InputEvent::SCREEN_DRAG;
-			ievent.ID = ++last_id;
 			ievent.device = 0;
 			ievent.screen_drag.x = pos[0];
 			ievent.screen_drag.y = pos[1];
@@ -347,7 +344,6 @@ void OSBB10::handle_screen_event(bps_event_t *event) {
 
 				InputEvent ievent;
 				ievent.type = InputEvent::MOUSE_MOTION;
-				ievent.ID = ++last_id;
 				ievent.device = 0;
 				ievent.mouse_motion.x = ievent.mouse_motion.global_x = mpos.x;
 				ievent.mouse_motion.y = ievent.mouse_motion.global_y = mpos.y;
@@ -366,7 +362,6 @@ void OSBB10::handle_screen_event(bps_event_t *event) {
 
 			InputEvent ievent;
 			ievent.type = InputEvent::KEY;
-			ievent.ID = ++last_id;
 			ievent.device = 0;
 			int val = 0;
 			screen_get_event_property_iv(screen_event, SCREEN_PROPERTY_KEY_SCAN, &val);
@@ -595,7 +590,6 @@ int OSBB10::get_power_percent_left() {
 OSBB10::OSBB10() {
 
 	main_loop = NULL;
-	last_id = 1;
 	minimized = false;
 	fullscreen = true;
 	flip_accelerometer = true;

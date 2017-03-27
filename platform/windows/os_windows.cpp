@@ -216,7 +216,6 @@ void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 
 	InputEvent event;
 	event.type = InputEvent::SCREEN_TOUCH;
-	event.ID = ++last_id;
 	event.screen_touch.index = idx;
 
 	event.screen_touch.pressed = p_pressed;
@@ -233,7 +232,6 @@ void OS_Windows::_drag_event(int p_x, int p_y, int idx) {
 
 	InputEvent event;
 	event.type = InputEvent::SCREEN_DRAG;
-	event.ID = ++last_id;
 	event.screen_drag.index = idx;
 
 	event.screen_drag.x = p_x;
@@ -370,7 +368,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 			InputEvent event;
 			event.type = InputEvent::MOUSE_MOTION;
-			event.ID = ++last_id;
 			InputEventMouseMotion &mm = event.mouse_motion;
 
 			mm.mod.control = (wParam & MK_CONTROL) != 0;
@@ -451,7 +448,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 				InputEvent event;
 				event.type = InputEvent::MOUSE_BUTTON;
-				event.ID = ++last_id;
 				InputEventMouseButton &mb = event.mouse_button;
 
 				switch (uMsg) {
@@ -582,7 +578,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					if (mb.pressed && mb.button_index > 3) {
 						//send release for mouse wheel
 						mb.pressed = false;
-						event.ID = ++last_id;
 						input->parse_input_event(event);
 					}
 				}
@@ -780,7 +775,6 @@ void OS_Windows::process_key_events() {
 				if ((i == 0 && ke.uMsg == WM_CHAR) || (i > 0 && key_event_buffer[i - 1].uMsg == WM_CHAR)) {
 					InputEvent event;
 					event.type = InputEvent::KEY;
-					event.ID = ++last_id;
 					InputEventKey &k = event.key;
 
 					k.mod = ke.mod_state;
@@ -805,7 +799,6 @@ void OS_Windows::process_key_events() {
 
 				InputEvent event;
 				event.type = InputEvent::KEY;
-				event.ID = ++last_id;
 				InputEventKey &k = event.key;
 
 				k.mod = ke.mod_state;
@@ -1819,7 +1812,7 @@ void OS_Windows::process_events() {
 
 	MSG msg;
 
-	last_id = joypad->process_joypads(last_id);
+	joypad->process_joypads();
 
 	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 
@@ -2303,7 +2296,6 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
 	pressrc = 0;
 	old_invalid = true;
-	last_id = 0;
 	mouse_mode = MOUSE_MODE_VISIBLE;
 #ifdef STDOUT_FILE
 	stdo = fopen("stdout.txt", "wb");

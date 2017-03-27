@@ -458,7 +458,7 @@ static const InputDefault::JoyAxis axis_correct(int p_value, int p_min, int p_ma
 	return jx;
 }
 
-uint32_t JoypadOSX::process_joypads(uint32_t p_last_id) {
+void JoypadOSX::process_joypads() {
 	poll_joypads();
 
 	for (int i = 0; i < device_list.size(); i++) {
@@ -467,17 +467,17 @@ uint32_t JoypadOSX::process_joypads(uint32_t p_last_id) {
 		for (int j = 0; j < joy.axis_elements.size(); j++) {
 			rec_element &elem = joy.axis_elements[j];
 			int value = joy.get_hid_element_state(&elem);
-			p_last_id = input->joy_axis(p_last_id, joy.id, j, axis_correct(value, elem.min, elem.max));
+			input->joy_axis(joy.id, j, axis_correct(value, elem.min, elem.max));
 		}
 		for (int j = 0; j < joy.button_elements.size(); j++) {
 			int value = joy.get_hid_element_state(&joy.button_elements[j]);
-			p_last_id = input->joy_button(p_last_id, joy.id, j, (value >= 1));
+			input->joy_button(joy.id, j, (value >= 1));
 		}
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements[j];
 			int value = joy.get_hid_element_state(&elem);
 			int hat_value = process_hat_value(elem.min, elem.max, value);
-			p_last_id = input->joy_hat(p_last_id, joy.id, hat_value);
+			input->joy_hat(joy.id, hat_value);
 		}
 
 		if (joy.ffservice) {
@@ -494,7 +494,6 @@ uint32_t JoypadOSX::process_joypads(uint32_t p_last_id) {
 			}
 		}
 	}
-	return p_last_id;
 }
 
 void JoypadOSX::joypad_vibration_start(int p_id, float p_magnitude, float p_duration, uint64_t p_timestamp) {

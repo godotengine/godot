@@ -40,7 +40,7 @@ void JoypadUWP::register_events() {
 			ref new EventHandler<Gamepad ^>(this, &JoypadUWP::OnGamepadRemoved);
 }
 
-uint32_t JoypadUWP::process_controllers(uint32_t p_last_id) {
+void JoypadUWP::process_controllers() {
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++) {
 
@@ -55,23 +55,21 @@ uint32_t JoypadUWP::process_controllers(uint32_t p_last_id) {
 				int button_mask = (int)GamepadButtons::Menu;
 				for (int j = 0; j < 14; j++) {
 
-					p_last_id = input->joy_button(p_last_id, controllers[i].id, j, (int)reading.Buttons & button_mask);
+					input->joy_button(controllers[i].id, j, (int)reading.Buttons & button_mask);
 					button_mask *= 2;
 				}
 
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
-				p_last_id = input->joy_axis(p_last_id, controllers[i].id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
+				input->joy_axis(controllers[i].id, JOY_AXIS_0, axis_correct(reading.LeftThumbstickX));
+				input->joy_axis(controllers[i].id, JOY_AXIS_1, axis_correct(reading.LeftThumbstickY, true));
+				input->joy_axis(controllers[i].id, JOY_AXIS_2, axis_correct(reading.RightThumbstickX));
+				input->joy_axis(controllers[i].id, JOY_AXIS_3, axis_correct(reading.RightThumbstickY, true));
+				input->joy_axis(controllers[i].id, JOY_AXIS_4, axis_correct(reading.LeftTrigger, false, true));
+				input->joy_axis(controllers[i].id, JOY_AXIS_5, axis_correct(reading.RightTrigger, false, true));
 
 				break;
 			}
 		}
 	}
-
-	return p_last_id;
 }
 
 JoypadUWP::JoypadUWP() {

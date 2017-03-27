@@ -116,7 +116,6 @@ class OS_X11 : public OS_Unix {
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
-	unsigned int event_id;
 	uint32_t last_button_state;
 
 	PhysicsServer *physics_server;

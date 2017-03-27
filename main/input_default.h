@@ -169,8 +169,8 @@ private:
 	Vector<JoyDeviceMapping> map_db;
 
 	JoyEvent _find_to_event(String p_to);
-	uint32_t _button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed);
-	uint32_t _axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value);
+	void _button_event(int p_device, int p_index, bool p_pressed);
+	void _axis_event(int p_device, int p_axis, float p_value);
 	float _handle_deadzone(int p_device, int p_axis, float p_value);
 
 public:
@@ -228,9 +228,9 @@ public:
 	virtual void set_mouse_in_window(bool p_in_window);
 
 	void parse_mapping(String p_mapping);
-	uint32_t joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed);
-	uint32_t joy_axis(uint32_t p_last_id, int p_device, int p_axis, const JoyAxis &p_value);
-	uint32_t joy_hat(uint32_t p_last_id, int p_device, int p_val);
+	void joy_button(int p_device, int p_button, bool p_pressed);
+	void joy_axis(int p_device, int p_axis, const JoyAxis &p_value);
+	void joy_hat(int p_device, int p_val);
 
 	virtual void add_joy_mapping(String p_mapping, bool p_update_existing = false);
 	virtual void remove_joy_mapping(String p_guid);

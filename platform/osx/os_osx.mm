@@ -1698,7 +1698,6 @@ void OS_OSX::process_events() {
 void OS_OSX::push_input(const InputEvent& p_event) {
 
 	InputEvent ev=p_event;
-	ev.ID=last_id++;
 	//print_line("EV: "+String(ev));
 	input->parse_input_event(ev);
 }
@@ -1725,7 +1724,7 @@ void OS_OSX::run() {
 	while (!force_quit) {
 
 		process_events(); // get rid of pending events
-		last_id = joypad_osx->process_joypads(last_id);
+		joypad_osx->process_joypads();
 		if (Main::iteration()==true)
 			break;
 	};
@@ -1822,7 +1821,6 @@ OS_OSX::OS_OSX() {
 	[NSApp setDelegate:delegate];
 
 
-	last_id=1;
 	cursor_shape=CURSOR_ARROW;
 
 	current_screen = 0;
