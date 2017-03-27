@@ -79,7 +79,6 @@ private:
 	static void joy_thread_func(void *p_user);
 
 	int get_joy_from_path(String path) const;
-	int get_free_joy_slot() const;
 
 	void setup_joystick_properties(int p_id);
 	void close_joystick(int p_id = -1);
