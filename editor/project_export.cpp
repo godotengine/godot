@@ -229,12 +229,12 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		if (needs_templates)
 			export_templates_error->show();
 
-		get_ok()->set_disabled(true);
+		export_button->set_disabled(true);
 
 	} else {
 		export_error->show();
 		export_templates_error->hide();
-		get_ok()->set_disabled(false);
+		export_button->set_disabled(false);
 	}
 
 	updating = false;
@@ -311,6 +311,12 @@ void ProjectExportDialog::_patch_deleted() {
 		current->remove_patch(patch_index);
 		_edit_preset(presets->get_current());
 	}
+}
+
+void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
+
+	_edit_preset(presets->get_current());
+	parameters->update_tree();
 }
 
 void ProjectExportDialog::_runnable_pressed() {
@@ -676,6 +682,7 @@ void ProjectExportDialog::_bind_methods() {
 
 	ClassDB::bind_method("_add_preset", &ProjectExportDialog::_add_preset);
 	ClassDB::bind_method("_edit_preset", &ProjectExportDialog::_edit_preset);
+	ClassDB::bind_method("_update_parameters", &ProjectExportDialog::_update_parameters);
 	ClassDB::bind_method("_runnable_pressed", &ProjectExportDialog::_runnable_pressed);
 	ClassDB::bind_method("_name_changed", &ProjectExportDialog::_name_changed);
 	ClassDB::bind_method("_delete_preset", &ProjectExportDialog::_delete_preset);
@@ -753,6 +760,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	parameters->hide_top_label();
 	parameters->set_v_size_flags(SIZE_EXPAND_FILL);
 	parameters->set_hide_script(true);
+	parameters->connect("property_edited", this, "_update_parameters");
 
 	VBoxContainer *resources_vb = memnew(VBoxContainer);
 	sections->add_child(resources_vb);

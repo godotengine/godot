@@ -75,11 +75,14 @@ bool EditorExportPreset::_get(const StringName &p_name, Variant &r_ret) const {
 
 	return false;
 }
+
 void EditorExportPreset::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 
-		p_list->push_back(E->get());
+		if (platform->get_option_visibility(E->get().name, values)) {
+			p_list->push_back(E->get());
+		}
 	}
 }
 

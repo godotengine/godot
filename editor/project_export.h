@@ -97,6 +97,7 @@ private:
 	void _patch_deleted();
 
 	void _runnable_pressed();
+	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);

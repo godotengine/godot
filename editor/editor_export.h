@@ -76,6 +76,7 @@ protected:
 
 public:
 	Ref<EditorExportPlatform> get_platform() const;
+
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
 	Vector<String> get_files_to_export() const;
@@ -170,6 +171,8 @@ public:
 	virtual Ref<EditorExportPreset> create_preset();
 
 	virtual void get_export_options(List<ExportOption> *r_options) = 0;
+	virtual bool get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const { return true; }
+
 	virtual String get_name() const = 0;
 	virtual Ref<Texture> get_logo() const = 0;
 
