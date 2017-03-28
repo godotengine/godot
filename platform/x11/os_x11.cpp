@@ -1282,8 +1282,12 @@ void OS_X11::process_xevents() {
 
 				if (main_loop && mouse_mode != MOUSE_MODE_CAPTURED)
 					main_loop->notification(MainLoop::NOTIFICATION_WM_MOUSE_ENTER);
-				if (input)
+				if (input) {
+					// Update mouse position. It is triggered before mouse motion.
+					Point2i pos(event.xmotion.x, event.xmotion.y);
+					input->set_mouse_pos(pos);
 					input->set_mouse_in_window(true);
+				}
 			} break;
 			case FocusIn:
 				minimized = false;
@@ -1892,6 +1896,9 @@ void OS_X11::run() {
 
 	if (!main_loop)
 		return;
+
+	// Process all events before the main initialization so the cursor will get initialized properly
+	process_xevents(); // get rid of pending events
 
 	main_loop->init();
 
