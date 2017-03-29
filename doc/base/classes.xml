@@ -6092,6 +6092,59 @@
 		</constant>
 	</constants>
 </class>
+<class name="BaseRandom" inherits="Reference" category="Core">
+	<brief_description>
+		Base class for random number generators.
+	</brief_description>
+	<description>
+		This is the base class for random number generators. It cannot be instantiated: use one of its subclasses instead.
+	</description>
+	<methods>
+		<method name="random">
+			<return type="int">
+			</return>
+			</argument>
+			<description>
+				Returns the next "low-level" random number in the sequence. Usually, you'll want to call one of the higher-level methods provided. "Low-level" implies that the exact range of values returned will depend on the specific random number generation algorithm being used.
+			</description>
+		</method>
+		<method name="seed">
+			<argument index="0" name="seed" type="float">
+			</argument>
+			<description>
+				Initializes the random number generator with a given seed value.
+				While this method is always available, it may be a no-op in certain concrete classes (like those implementing a hardware random number generator).
+			</description>
+		</method>
+		<method name="randomize">
+			<description>
+				Initializes the random number generator with an unpredicatble seed.
+				While this method is always available, it may be a no-op in certain concrete classes (like those implementing a hardware random number generator).
+			</description>
+		</method>
+		<method name="uniform">
+			<return type="float">
+			</return>
+			<argument index="0" name="a" type="float">
+			<argument index="1" name="b" type="float">
+			</argument>
+			<description>
+				Returns a random floating point number from a uniform distribution, taken from the closed interval [a, b]. By default, the interval is [0, 1]. If only a is passed, the interval is [0, a].
+			</description>
+		</method>
+		<method name="uniform_int">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns a random integer number from a uniform distribution, taken from the closed interval [a, b].
+				Notice that the accepted range of values depends on the actual random number generation algorithm being used. Most algorithms generate 64-bit numbers, but if you want to be on the safe side, avoid passing values beyond 2^32.
+			</description>
+		</method>
+	</methods>
+</class>
 <class name="BitMap" inherits="Resource" category="Core">
 	<brief_description>
 	</brief_description>
@@ -31653,6 +31706,14 @@
 	</members>
 	<constants>
 	</constants>
+</class>
+<class name="Random" inherits="BaseRandom" category="Core">
+	<brief_description>
+		The standard random number generator implementation.
+	</brief_description>
+	<description>
+		The standard random number generator implementation (currently, PCG64).
+	</description>
 </class>
 <class name="RID" category="Built-In Types">
 	<brief_description>
