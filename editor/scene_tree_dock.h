@@ -60,6 +60,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_GROUP,
 		TOOL_CREATE_SCRIPT,
 		TOOL_LOAD_SCRIPT,
+		TOOL_CLEAR_SCRIPT,
 		TOOL_MOVE_UP,
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
@@ -80,6 +81,7 @@ class SceneTreeDock : public VBoxContainer {
 	ToolButton *button_instance;
 	ToolButton *button_create_script;
 	ToolButton *button_load_script;
+	ToolButton *button_clear_script;
 
 	SceneTreeEditor *scene_tree;
 
