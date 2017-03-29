@@ -2,8 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 <head>
 	<meta charset="utf-8" />
-	<title>$GODOT_HEAD_TITLE</title>
-$GODOT_HEAD_INCLUDE
+	<title></title>
 	<style type="text/css">
 		body {
 			margin: 0;
@@ -11,7 +10,7 @@ $GODOT_HEAD_INCLUDE
 			padding: 0;
 			text-align: center;
 			background-color: #222226;
-			font-family: $GODOT_STYLE_FONT_FAMILY;
+			font-family: 'Droid Sans', Arial, sans-serif;
 		}
 
 
@@ -27,7 +26,7 @@ $GODOT_HEAD_INCLUDE
 		}
 
 		button.godot {
-			font-family: $GODOT_STYLE_FONT_FAMILY; /* override user agent style */
+			font-family: 'Droid Sans', Arial, sans-serif; /* override user agent style */
 			padding: 1px 5px;
 			background-color: #37353f;
 			background-image: linear-gradient(to bottom, #413e49, #3a3842);
@@ -109,53 +108,12 @@ $GODOT_HEAD_INCLUDE
 		}
 
 
-		/* On-hover controls
-		 * ================= */
-
-		#controls {
-			visibility: hidden;
-			opacity: 0.0;
-			transition: opacity 500ms ease-in-out 200ms;
-			position: absolute;
-			right: 16px;
-			top: 16px;
-			padding: 3px 5px;
-			font-size: small;
-			-moz-user-select: none;
-			-webkit-user-select: none;
-			-ms-user-select: none;
-		}
-
-		:hover > #controls {
-			opacity: 1.0;
-			transition: opacity 60ms ease-in-out;
-		}
-
-		#controls > button,
-		#controls > label {
-			vertical-align: middle;
-			margin-left: 2px;
-			margin-right: 2px;
-		}
-
-		#controls > label > input {
-			vertical-align: middle;
-		}
-
-		#controls > label > input[type="checkbox"] {
-			/* override user agent style */
-			margin-left: 0;
-		}
-
-		#output-toggle { display: none; }
-
-
 		/* Debug output
 		 * ============ */
 
 		#output-panel {
 			display: none;
-			max-width: $GODOT_CANVAS_WIDTHpx;
+			max-width: 700px;
 			font-size: small;
 			margin: 6px auto 0;
 			padding: 0 4px 4px;
@@ -184,31 +142,17 @@ $GODOT_HEAD_INCLUDE
 			font-size: small;
 			font-family: "Lucida Console", Monaco, monospace;
 		}
-
-
-/* Export style include
- * ==================== */
-
-$GODOT_STYLE_INCLUDE
-
 	</style>
+$GODOT_HEAD_INCLUDE
 </head>
 <body>
 	<div id="container">
-		<canvas id="canvas" width="$GODOT_CANVAS_WIDTH" height="$GODOT_CANVAS_HEIGHT" onclick="canvas.ownerDocument.defaultView.focus();" oncontextmenu="event.preventDefault();">
+		<canvas id="canvas" width="640" height="480" onclick="canvas.ownerDocument.defaultView.focus();" oncontextmenu="event.preventDefault();">
 			HTML5 canvas appears to be unsupported in the current browser.<br />
 			Please try updating or use a different browser.
 		</canvas>
 		<div id="status-container">
 			<span id="status" class="godot" onclick="this.style.visibility='hidden';">Downloading page...</span>
-		</div>
-		<div id="controls" class="godot">
-			<label id="output-toggle"><input type="checkbox" checked="checked" autocomplete="off" onchange="Presentation.setOutputVisible(this.checked);" />Display Output</label>
-			<!-- hidden until implemented
-			<label><input class="postRun-enable" type="checkbox" disabled="disabled" autocomplete="off" />lock cursor</label>
-			<label><input class="postRun-enable" type="checkbox" disabled="disabled" autocomplete="off"  onchange="Presentation.setCanvasMaximized(this.checked);" />maximize</label>
-			-->
-			<button id="fullscreen" class="godot postRun-enable" type="button" disabled="disabled" autocomplete="off" onclick="Presentation.requestFullscreen();">Fullscreen</button>
 		</div>
 	</div>
 	<div id="output-panel" class="godot">
@@ -226,33 +170,9 @@ $GODOT_STYLE_INCLUDE
 			var canvasElement = document.getElementById("canvas");
 
 			var presentation = {
-				postRun: [
-					function() {
-						var elements = document.getElementsByClassName("postRun-enable");
-						Array.prototype.slice.call(elements).forEach(function(element) {
-							element.disabled = false;
-						});
-					}
-				],
-				requestFullscreen: function requestFullscreen() {
-					if (typeof Module !== "undefined" && Module.requestFullscreen) {
-						Module.requestFullscreen(false, false);
-					}
-				},
-				/*
-				requestPointerlock: function requestPointerlock() {
-					if (typeof Module !== "undefined" && Module.requestPointerlock) {
-						Module.requestPointerlock(false, false);
-					}
-				},
-				setCanvasMaximized: function setCanvasMaximized(enabled) {
-					if (typeof Module !== "undefined" && Module.setCanvasMaximized) {
-						Module.setCanvasMaximized(enabled);
-					}
-				},
-				*/
+				postRun: [],
 				setStatusVisible: function setStatusVisible(visible) {
-					statusElement.style.visibility = (visible?"visible":"hidden");
+					statusElement.style.visibility = (visible ? "visible" : "hidden");
 				},
 				setStatus: function setStatus(text) {
 					if (text.length === 0) {
@@ -288,18 +208,13 @@ $GODOT_STYLE_INCLUDE
 
 			window.onerror = function(event) { presentation.setStatus("Failure during start-up\nSee JavaScript console") };
 
-			if ($GODOT_CONTROLS_ENABLED) { // controls enabled
-				document.getElementById("controls").style.visibility="visible";
-			}
-
 			if ($GODOT_DEBUG_ENABLED) { // debugging enabled
 				var outputRoot = document.getElementById("output-panel");
 				var outputElement = document.getElementById("output-scroll");
-				var outputToggle = document.getElementById("output-toggle");
 				const maxOutputMessages = 400;
 
 				presentation.setOutputVisible = function setOutputVisible(visible) {
-					outputRoot.style.display = (visible?"block":"none");
+					outputRoot.style.display = (visible ? "block" : "none");
 				};
 				presentation.clearOutput = function clearOutput() {
 					while (outputElement.firstChild) {
@@ -308,7 +223,6 @@ $GODOT_STYLE_INCLUDE
 				};
 
 				presentation.setOutputVisible(true);
-				outputToggle.style.display = "inline";
 
 				presentation.print = function print(text) {
 					if (arguments.length > 1) {
@@ -347,56 +261,59 @@ $GODOT_STYLE_INCLUDE
 		})();
 
 		// Emscripten interface
-		var Module = {
-			TOTAL_MEMORY: $GODOT_TMEM,
-			postRun: (function() {
-				if (typeof Presentation !== "undefined" && Presentation.postRun instanceof Array) {
-					return Presentation.postRun;
+		var Module = (function() {
+			const BASE_NAME = '$GODOT_BASE';
+			var module = {
+				thisProgram: BASE_NAME,
+				wasmBinaryFile: BASE_NAME + '.wasm',
+				TOTAL_MEMORY: $GODOT_TMEM,
+				print: function print(text) {
+					if (arguments.length > 1) {
+						text = Array.prototype.slice.call(arguments).join(" ");
+					}
+					console.log(text);
+					if (typeof Presentation !== "undefined" && typeof Presentation.print === "function") {
+						Presentation.print(text);
+					}
+				},
+				printErr: function printErr(text) {
+					if (arguments.length > 1) {
+						text = Array.prototype.slice.call(arguments).join(" ");
+					}
+					console.error(text);
+					if (typeof Presentation !== "undefined" && typeof Presentation.print === "function") {
+						Presentation.print("**ERROR**:", text)
+					}
+				},
+				canvas: document.getElementById("canvas"),
+				setStatus: function setStatus(text) {
+					var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+					var now = Date.now();
+					if (m) {
+						if (now - Date.now() < 30) // if this is a progress update, skip it if too soon
+							return;
+						text = m[1];
+					}
+					if (typeof Presentation !== "undefined" && typeof Presentation.setStatus == "function") {
+						Presentation.setStatus(text);
+					}
 				}
-			})(),
-			print: function print(text) {
-				if (arguments.length > 1) {
-					text = Array.prototype.slice.call(arguments).join(" ");
-				}
-				console.log(text);
-				if (typeof Presentation !== "undefined" && typeof Presentation.print === "function") {
-					Presentation.print(text);
-				}
-			},
-			printErr: function printErr(text) {
-				if (arguments.length > 1) {
-					text = Array.prototype.slice.call(arguments).join(" ");
-				}
-				console.error(text);
-				if (typeof Presentation !== "undefined" && typeof Presentation.print === "function") {
-					Presentation.print("**ERROR**:", text)
-				}
-			},
-			canvas: (function() {
-				var canvas = document.getElementById("canvas");
-				// As a default initial behavior, pop up an alert when WebGL context is lost. To make your
-				// application robust, you may want to override this behavior before shipping!
-				// See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
-				canvas.addEventListener("webglcontextlost", function(e) { alert("WebGL context lost. Plase reload the page."); e.preventDefault(); }, false);
-				return canvas;
+			};
 
-			})(),
-			setStatus: function setStatus(text) {
-				var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
-				var now = Date.now();
-				if (m) {
-					if (now - Date.now() < 30) // if this is a progress update, skip it if too soon
-						return;
-					text = m[1];
-				}
-				if (typeof Presentation !== "undefined" && typeof Presentation.setStatus == "function") {
-					Presentation.setStatus(text);
-				}
+			// As a default initial behavior, pop up an alert when WebGL context is lost. To make your
+			// application robust, you may want to override this behavior before shipping!
+			// See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+			module.canvas.addEventListener("webglcontextlost", function(e) { alert("WebGL context lost. Plase reload the page."); e.preventDefault(); }, false);
+
+			if (typeof Presentation !== "undefined" && Presentation.postRun instanceof Array) {
+				module.postRun = Presentation.postRun;
 			}
-		};
+
+			return module;
+		})();
 
 		if (!Presentation.isWebGL2Available()) {
-			Presentation.setStatus("WebGL2 appears to be unsupported in the current browser.\nPlease try updating or use a different browser.");
+			Presentation.setStatus("WebGL 2 appears to be unsupported.\nPlease update browser and drivers.");
 			Presentation.preventLoading = true;
 		} else {
 			Presentation.setStatus("Downloading...");

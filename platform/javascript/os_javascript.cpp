@@ -750,7 +750,7 @@ String OS_JavaScript::get_data_dir() const {
 
 String OS_JavaScript::get_executable_path() const {
 
-	return String();
+	return OS::get_executable_path();
 }
 
 void OS_JavaScript::_close_notification_funcs(const String &p_file, int p_flags) {
@@ -828,7 +828,8 @@ int OS_JavaScript::get_power_percent_left() {
 	return power_manager->get_power_percent_left();
 }
 
-OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
+OS_JavaScript::OS_JavaScript(const char *p_execpath, GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
+	set_cmdline(p_execpath, get_cmdline_args());
 	gfx_init_func = p_gfx_init_func;
 	gfx_init_ud = p_gfx_init_ud;
 	last_button_mask = 0;

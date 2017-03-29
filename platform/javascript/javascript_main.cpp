@@ -145,15 +145,10 @@ int main(int argc, char *argv[]) {
 	/* Initialize the window */
 	printf("let it go dude!\n");
 	glutInit(&argc, argv);
-	os = new OS_JavaScript(_gfx_init, NULL, NULL);
-#if 0
-	char *args[]={"-test","gui","-v",NULL};
-	Error err  = Main::setup("apk",3,args);
-#else
-	char *args[] = { "-main_pack", "data.pck", NULL }; //pass location of main pack manually, because it wont get an executable name
-	Error err = Main::setup("", 2, args);
+	os = new OS_JavaScript(argv[0], _gfx_init, NULL, NULL);
 
-#endif
+	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
+
 	ResourceLoader::set_abort_on_missing_resources(false); //ease up compatibility
 
 	glutMouseFunc(_glut_mouse_button);
