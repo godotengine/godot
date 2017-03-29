@@ -617,38 +617,24 @@ void TextureRegionEditor::_bind_methods() {
 }
 
 void TextureRegionEditor::edit(Object *p_obj) {
-	if (node_sprite && node_sprite->is_connected("texture_changed", this, "_edit_region"))
-		node_sprite->disconnect("texture_changed", this, "_edit_region");
-	if (node_patch9 && node_patch9->is_connected("texture_changed", this, "_edit_region"))
-		node_patch9->disconnect("texture_changed", this, "_edit_region");
-	if (obj_styleBox.is_valid() && obj_styleBox->is_connected("texture_changed", this, "_edit_region"))
-		obj_styleBox->disconnect("texture_changed", this, "_edit_region");
-	if (atlas_tex.is_valid() && atlas_tex->is_connected("atlas_changed", this, "_edit_region"))
-		atlas_tex->disconnect("atlas_changed", this, "_edit_region");
+	if (node_sprite)
+		node_sprite->remove_change_receptor(this);
+	if (node_patch9)
+		node_patch9->remove_change_receptor(this);
+	if (obj_styleBox.is_valid())
+		obj_styleBox->remove_change_receptor(this);
+	if (atlas_tex.is_valid())
+		atlas_tex->remove_change_receptor(this);
 	if (p_obj) {
 		node_sprite = p_obj->cast_to<Sprite>();
 		node_patch9 = p_obj->cast_to<NinePatchRect>();
 		if (p_obj->cast_to<StyleBoxTexture>())
 			obj_styleBox = Ref<StyleBoxTexture>(p_obj->cast_to<StyleBoxTexture>());
-		if (p_obj->cast_to<AtlasTexture>()) {
+		if (p_obj->cast_to<AtlasTexture>())
 			atlas_tex = Ref<AtlasTexture>(p_obj->cast_to<AtlasTexture>());
-			atlas_tex->connect("atlas_changed", this, "_edit_region");
-		} else {
-			p_obj->connect("texture_changed", this, "_edit_region");
-		}
 		p_obj->add_change_receptor(this);
-		p_obj->connect("tree_exited", this, "_node_removed", varray(p_obj), CONNECT_ONESHOT);
 		_edit_region();
 	} else {
-		if (node_sprite)
-			node_sprite->disconnect("tree_exited", this, "_node_removed");
-		else if (node_patch9)
-			node_patch9->disconnect("tree_exited", this, "_node_removed");
-		else if (obj_styleBox.is_valid())
-			obj_styleBox->disconnect("tree_exited", this, "_node_removed");
-		else if (atlas_tex.is_valid())
-			atlas_tex->disconnect("tree_exited", this, "_node_removed");
-
 		node_sprite = NULL;
 		node_patch9 = NULL;
 		obj_styleBox = Ref<StyleBoxTexture>(NULL);
@@ -658,9 +644,11 @@ void TextureRegionEditor::edit(Object *p_obj) {
 }
 
 void TextureRegionEditor::_changed_callback(Object *p_changed, const char *p_prop) {
-	if ((String)p_prop == "region_rect") {
+
+	if (!is_visible())
+		return;
+	if (p_prop == StringName("atlas") || p_prop == StringName("texture"))
 		_edit_region();
-	}
 }
 
 void TextureRegionEditor::_edit_region() {

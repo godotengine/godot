@@ -107,6 +107,7 @@ void StyleBoxTexture::set_texture(RES p_texture) {
 	region_rect = Rect2(Point2(), texture->get_size());
 	emit_signal("texture_changed");
 	emit_changed();
+	_change_notify("texture");
 }
 
 RES StyleBoxTexture::get_texture() const {
