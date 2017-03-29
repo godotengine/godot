@@ -178,7 +178,7 @@ void PopupMenu::_activate_submenu(int over) {
 	if (pos.x + size.width > get_viewport_rect().size.width)
 		pos.x = p.x - size.width;
 
-	pm->set_pos(pos);
+	pm->set_position(pos);
 	pm->popup();
 
 	PopupMenu *pum = pm->cast_to<PopupMenu>();
@@ -270,10 +270,10 @@ void PopupMenu::_gui_input(const InputEvent &p_event) {
 						int vseparation = get_constant("vseparation");
 						Ref<Font> font = get_font("font");
 
-						Point2 pos = get_pos();
+						Point2 pos = get_position();
 						int s = (vseparation + font->get_height()) * 3;
 						pos.y -= s;
-						set_pos(pos);
+						set_position(pos);
 
 						//update hover
 						InputEvent ie;
@@ -290,10 +290,10 @@ void PopupMenu::_gui_input(const InputEvent &p_event) {
 						int vseparation = get_constant("vseparation");
 						Ref<Font> font = get_font("font");
 
-						Point2 pos = get_pos();
+						Point2 pos = get_position();
 						int s = (vseparation + font->get_height()) * 3;
 						pos.y += s;
-						set_pos(pos);
+						set_position(pos);
 
 						//update hover
 						InputEvent ie;

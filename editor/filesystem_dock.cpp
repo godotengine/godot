@@ -1101,7 +1101,7 @@ void FileSystemDock::_dir_rmb_pressed(const Vector2 &p_pos) {
 	folder_options->add_item(TTR("Expand all"), FOLDER_EXPAND_ALL);
 	folder_options->add_item(TTR("Collapse all"), FOLDER_COLLAPSE_ALL);
 
-	folder_options->set_pos(files->get_global_pos() + p_pos);
+	folder_options->set_position(files->get_global_pos() + p_pos);
 	folder_options->popup();
 }
 
@@ -1525,7 +1525,7 @@ void FileSystemDock::_files_list_rmb_select(int p_item, const Vector2 &p_pos) {
 		*/
 	}
 
-	file_options->set_pos(files->get_global_pos() + p_pos);
+	file_options->set_position(files->get_global_pos() + p_pos);
 	file_options->popup();
 }
 

@@ -59,7 +59,7 @@ void GraphColorRampEdit::_gui_input(const InputEvent& p_event) {
 				return;
 			Size2 ms = Size2(350, picker->get_combined_minimum_size().height+10);
 			picker->set_color(points[grabbed].color);
-			popup->set_pos(get_global_pos()-Size2(0,ms.height));
+			popup->set_position(get_global_pos()-Size2(0,ms.height));
 			popup->set_size(ms);
 			popup->popup();
 			return;
@@ -839,7 +839,7 @@ void ShaderGraphView::_xform_input_changed(int p_id, Node *p_button){
 
 
 	ToolButton *tb = p_button->cast_to<ToolButton>();
-	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
+	ped_popup->set_position(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
 	edited_id=p_id;
 	edited_def=-1;
@@ -850,7 +850,7 @@ void ShaderGraphView::_xform_input_changed(int p_id, Node *p_button){
 void ShaderGraphView::_xform_const_changed(int p_id, Node *p_button){
 
 	ToolButton *tb = p_button->cast_to<ToolButton>();
-	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
+	ped_popup->set_position(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
 	edited_id=p_id;
 	edited_def=-1;
@@ -1074,7 +1074,7 @@ void ShaderGraphView::_input_name_changed(const String& p_name, int p_id, Node *
 void ShaderGraphView::_tex_edited(int p_id,Node* p_button) {
 
 	ToolButton *tb = p_button->cast_to<ToolButton>();
-	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
+	ped_popup->set_position(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
 	edited_id=p_id;
 	edited_def=-1;
@@ -1084,7 +1084,7 @@ void ShaderGraphView::_tex_edited(int p_id,Node* p_button) {
 void ShaderGraphView::_cube_edited(int p_id,Node* p_button) {
 
 	ToolButton *tb = p_button->cast_to<ToolButton>();
-	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
+	ped_popup->set_position(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
 	edited_id=p_id;
 	edited_def=-1;
@@ -1299,7 +1299,7 @@ void ShaderGraphView::_delete_nodes_request()
 void ShaderGraphView::_default_changed(int p_id, Node *p_button, int p_param, int v_type, String p_hint)
 {
 	ToolButton *tb = p_button->cast_to<ToolButton>();
-	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
+	ped_popup->set_position(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
 	edited_id=p_id;
 	edited_def=p_param;
@@ -2750,7 +2750,7 @@ ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
 	graph_edit->get_top_layer()->add_child(status);
 	graph_edit->connect("_begin_node_move", this, "_begin_node_move");
 	graph_edit->connect("_end_node_move", this, "_end_node_move");
-	status->set_pos(Vector2(5,5));
+	status->set_position(Vector2(5,5));
 	status->add_color_override("font_color_shadow",Color(0,0,0));
 	status->add_color_override("font_color",Color(1,0.4,0.3));
 	status->add_constant_override("shadow_as_outline",1);

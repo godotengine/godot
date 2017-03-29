@@ -1585,7 +1585,7 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 
 				if (mb.button_index == BUTTON_RIGHT && context_menu_enabled) {
 
-					menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+					menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
 					menu->set_size(Vector2(1, 1));
 					menu->popup();
 					grab_focus();

@@ -57,7 +57,7 @@ void Popup::_notification(int p_what) {
 void Popup::_fix_size() {
 
 #if 0
-	Point2 pos = get_pos();
+	Point2 pos = get_position();
 	Size2 size = get_size();
 	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
 #else
@@ -78,9 +78,9 @@ void Popup::_fix_size() {
 		pos.y = 0;
 #if 0
 	if (pos!=get_pos())
-		set_pos(pos);
+		set_position(pos);
 #else
-	if (pos != get_pos())
+	if (pos != get_position())
 		set_global_pos(pos);
 
 #endif
@@ -170,7 +170,7 @@ void Popup::popup_centered(const Size2 &p_size) {
 	rect.size = p_size == Size2() ? get_size() : p_size;
 
 	rect.pos = ((window_size - rect.size) / 2.0).floor();
-	set_pos(rect.pos);
+	set_position(rect.pos);
 	set_size(rect.size);
 
 	show_modal(exclusive);
@@ -193,7 +193,7 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 	Point2 window_size = get_viewport_rect().size;
 	rect.size = (window_size * p_screen_ratio).floor();
 	rect.pos = ((window_size - rect.size) / 2.0).floor();
-	set_pos(rect.pos);
+	set_position(rect.pos);
 	set_size(rect.size);
 
 	show_modal(exclusive);
@@ -215,7 +215,7 @@ void Popup::popup(const Rect2 &bounds) {
 
 	// Fit the popup into the optionally provided bounds.
 	if (!bounds.has_no_area()) {
-		set_pos(bounds.pos);
+		set_position(bounds.pos);
 		set_size(bounds.size);
 	}
 	_fix_size();

@@ -665,7 +665,7 @@ void CanvasItemEditor::_key_move(const Vector2 &p_dir, bool p_snap, KeyMoveMODE 
 
 			} else if (Control *control = canvas_item->cast_to<Control>()) {
 
-				control->set_pos(control->get_pos() + drag);
+				control->set_position(control->get_position() + drag);
 			}
 		}
 	}
@@ -1134,7 +1134,7 @@ void CanvasItemEditor::_viewport_gui_input(const InputEvent &p_event) {
 				Node* scene = get_scene()->get_root_node()->cast_to<EditorNode>()->get_edited_scene();
 				if ( scene ) ref_item =_select_canvas_item_at_pos( Point2( b.x, b.y ), scene, transform );
 #endif
-				//popup->set_pos(Point2(b.x,b.y));
+				//popup->set_position(Point2(b.x,b.y));
 				//popup->popup();
 			}
 			return;
@@ -2702,7 +2702,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Control *ctrl = canvas_item->cast_to<Control>();
 
 					if (key_pos)
-						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/pos", ctrl->get_pos(), existing);
+						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/pos", ctrl->get_position(), existing);
 					if (key_scale)
 						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl, "rect/size", ctrl->get_size(), existing);
 				}
@@ -2825,7 +2825,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					Control *ctrl = canvas_item->cast_to<Control>();
 
 					if (key_pos)
-						ctrl->set_pos(Point2());
+						ctrl->set_position(Point2());
 					/*
 					if (key_scale)
 						AnimationPlayerEditor::singleton->get_key_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size());
@@ -3353,7 +3353,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("Snap (Pixels):"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	value_dialog->add_child(l);
 	dialog_label = l;
 
@@ -3473,8 +3473,8 @@ void CanvasItemEditorViewport::_on_change_type() {
 }
 
 void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) const {
-	label->set_pos(get_global_pos() + Point2(14, 14));
-	label_desc->set_pos(label->get_pos() + Point2(0, label->get_size().height));
+	label->set_position(get_global_pos() + Point2(14, 14));
+	label_desc->set_position(label->get_position() + Point2(0, label->get_size().height));
 	for (int i = 0; i < files.size(); i++) {
 		String path = files[i];
 		RES res = ResourceLoader::load(path);
