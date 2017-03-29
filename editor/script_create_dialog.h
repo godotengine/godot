@@ -49,6 +49,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
 	bool path_valid;
+	bool create_new;
 	String initial_bp;
 
 	void _path_changed(const String &p_path = String());
@@ -59,6 +60,9 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _browse_path();
 	void _file_selected(const String &p_file);
 	virtual void ok_pressed();
+	void _create_new();
+	void _load_exist();
+	void _update_controls();
 
 protected:
 	static void _bind_methods();
