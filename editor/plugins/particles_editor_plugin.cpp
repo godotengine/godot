@@ -362,7 +362,7 @@ ParticlesEditor::ParticlesEditor() {
 	emission_dialog->set_title(TTR("Create Emitter"));
 	add_child(emission_dialog);
 	Label *l = memnew(Label);
-	l->set_pos(Point2(5,5));
+	l->set_position(Point2(5,5));
 	l->set_text(TTR("Emission Positions:"));
 	emission_dialog->add_child(l);
 
@@ -379,7 +379,7 @@ ParticlesEditor::ParticlesEditor() {
 	emission_dialog->connect("confirmed",this,"_generate_emission_points");
 
 	l = memnew(Label);
-	l->set_pos(Point2(5,50));
+	l->set_position(Point2(5,50));
 	l->set_text(TTR("Emission Fill:"));
 	emission_dialog->add_child(l);
 

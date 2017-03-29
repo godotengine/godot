@@ -7327,7 +7327,7 @@
 				Get the transform matrix of this item's canvas.
 			</description>
 		</method>
-		<method name="get_global_mouse_pos" qualifiers="const">
+		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -9577,7 +9577,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_global_pos" qualifiers="const">
+		<method name="get_global_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -9643,7 +9643,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -9943,7 +9943,7 @@
 				Force a neighbour for moving the input focus to. When pressing TAB or directional/joypad directions focus is moved to the next control in that direction. However, the neighbour to move to can be forced with this function.
 			</description>
 		</method>
-		<method name="set_global_pos">
+		<method name="set_global_position">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
@@ -9973,7 +9973,7 @@
 				Set a margin offset. Margin can be one of (MARGIN_LEFT, MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM). Offset value being set depends on the anchor mode.
 			</description>
 		</method>
-		<method name="set_pos">
+		<method name="set_position">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
@@ -23368,7 +23368,7 @@
 				Return the rotation angle in radians needed for the 2d node to point at 'point' position.
 			</description>
 		</method>
-		<method name="get_global_pos" qualifiers="const">
+		<method name="get_global_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -23396,7 +23396,7 @@
 				Return the global scale of the 2D node.
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -23492,7 +23492,7 @@
 				Apply the 'ratio' scale to the 2D node, according to its current scale value.
 			</description>
 		</method>
-		<method name="set_global_pos">
+		<method name="set_global_position">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
@@ -23527,7 +23527,7 @@
 				Set the global transform [Matrix32] of the 2D node.
 			</description>
 		</method>
-		<method name="set_pos">
+		<method name="set_position">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
@@ -45990,7 +45990,7 @@ do_property].
 				Get the global canvas transform of the viewport.
 			</description>
 		</method>
-		<method name="get_mouse_pos" qualifiers="const">
+		<method name="get_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>

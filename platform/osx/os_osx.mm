@@ -434,7 +434,7 @@ static int button_mask=0;
 	ev.mouse_motion.relative_y=[event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
 	ev.mouse_motion.mod = translateFlags([event modifierFlags]);
 
-	OS_OSX::singleton->input->set_mouse_pos(Point2(mouse_x,mouse_y));
+	OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x,mouse_y));
 	OS_OSX::singleton->push_input(ev);
 
 
@@ -1283,7 +1283,7 @@ void OS_OSX::warp_mouse_pos(const Point2& p_to) {
     }
 }
 
-Point2 OS_OSX::get_mouse_pos() const {
+Point2 OS_OSX::get_mouse_position() const {
 
 	return Vector2(mouse_x,mouse_y);
 }
