@@ -332,9 +332,9 @@ bool OS_JavaScript::is_mouse_grab_enabled() const {
 	return false;
 }
 
-Point2 OS_JavaScript::get_mouse_pos() const {
+Point2 OS_JavaScript::get_mouse_position() const {
 
-	return input->get_mouse_pos();
+	return input->get_mouse_position();
 }
 
 int OS_JavaScript::get_mouse_button_state() const {
@@ -522,7 +522,7 @@ void OS_JavaScript::push_input(const InputEvent &p_ev) {
 
 	InputEvent ev = p_ev;
 	if (ev.type == InputEvent::MOUSE_MOTION) {
-		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+		input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 	} else if (ev.type == InputEvent::MOUSE_BUTTON) {
 		last_button_mask = ev.mouse_button.button_mask;
 	}
@@ -604,7 +604,7 @@ void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchP
 				ev.mouse_motion.button_mask = BUTTON_MASK_LEFT;
 				ev.mouse_motion.x = p_points[0].pos.x;
 				ev.mouse_motion.y = p_points[0].pos.y;
-				input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+				input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 				ev.mouse_motion.speed_x = input->get_last_mouse_speed().x;
 				ev.mouse_motion.speed_y = input->get_last_mouse_speed().y;
 				ev.mouse_motion.relative_x = p_points[0].pos.x - last_mouse.x;

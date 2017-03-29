@@ -118,7 +118,7 @@ SamplePlayerEditor::SamplePlayerEditor() {
 
 	play = memnew( Button );
 
-	play->set_pos(Point2( 5, 5 ));
+	play->set_position(Point2( 5, 5 ));
 	play->set_toggle_mode(true);
 	play->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,250);
 	play->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,230);
@@ -129,7 +129,7 @@ SamplePlayerEditor::SamplePlayerEditor() {
 
 	stop = memnew( Button );
 
-	stop->set_pos(Point2( 35, 5 ));
+	stop->set_position(Point2( 35, 5 ));
 	stop->set_toggle_mode(true);
 	stop->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,220);
 	stop->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,200);

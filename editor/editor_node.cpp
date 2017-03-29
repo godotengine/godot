@@ -236,7 +236,7 @@ void EditorNode::_notification(int p_what) {
 			Rect2 grect = scene_root_base->get_global_rect();
 			Rect2 grectsrp = scene_root_parent->get_global_rect();
 			if (grect!=grectsrp) {
-				scene_root_parent->set_pos(grect.pos);
+				scene_root_parent->set_position(grect.pos);
 				scene_root_parent->set_size(grect.size);
 			}
 		}
@@ -4469,7 +4469,7 @@ Variant EditorNode::drag_resource(const Ref<Resource> &p_res, Control *p_from) {
 
 	p_from->set_drag_preview(drag_control); //wait until it enters scene
 
-	label->set_pos(Point2((preview->get_width() - label->get_minimum_size().width) / 2, preview->get_height()));
+	label->set_position(Point2((preview->get_width() - label->get_minimum_size().width) / 2, preview->get_height()));
 
 	Dictionary drag_data;
 	drag_data["type"] = "resource";
@@ -5152,7 +5152,7 @@ EditorNode::EditorNode() {
 	//left_menu_hb->add_child( prev_scene );
 	prev_scene->connect("pressed", this, "_menu_option", make_binds(FILE_OPEN_PREV));
 	gui_base->add_child(prev_scene);
-	prev_scene->set_pos(Point2(3, 24));
+	prev_scene->set_position(Point2(3, 24));
 	prev_scene->hide();
 
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
@@ -5232,7 +5232,7 @@ EditorNode::EditorNode() {
 #if 0
 	node_menu = memnew( MenuButton );
 	node_menu->set_text("Node");
-	node_menu->set_pos( Point2( 50,0) );
+	node_menu->set_position( Point2( 50,0) );
 	menu_panel->add_child( node_menu );
 
 	p=node_menu->get_popup();
@@ -5253,7 +5253,7 @@ EditorNode::EditorNode() {
 
 	resource_menu = memnew( MenuButton );
 	resource_menu->set_text("Resource");
-	resource_menu->set_pos( Point2( 90,0) );
+	resource_menu->set_position( Point2( 90,0) );
 	menu_panel->add_child( resource_menu );
 #endif
 
@@ -5288,7 +5288,7 @@ EditorNode::EditorNode() {
 
 	//Separator *s1 = memnew( VSeparator );
 	//menu_panel->add_child(s1);
-	//s1->set_pos(Point2(210,4));
+	//s1->set_position(Point2(210,4));
 	//s1->set_size(Point2(10,15));
 
 	play_cc = memnew(CenterContainer);
@@ -5403,7 +5403,7 @@ EditorNode::EditorNode() {
 	/*
 	run_settings_button = memnew( ToolButton );
 	menu_panel->add_child(run_settings_button);
-	run_settings_button->set_pos(Point2(305,0));
+	run_settings_button->set_position(Point2(305,0));
 	run_settings_button->set_focus_mode(Control::FOCUS_NONE);
 	run_settings_button->set_icon(gui_base->get_icon("Run","EditorIcons"));
 	run_settings_button->connect("pressed", this,"_menu_option",make_binds(RUN_SETTINGS));
@@ -5496,7 +5496,7 @@ EditorNode::EditorNode() {
 	/*
 	Separator *s2 = memnew( VSeparator );
 	menu_panel->add_child(s2);
-	s2->set_pos(Point2(338,4));
+	s2->set_position(Point2(338,4));
 	s2->set_size(Point2(10,15));
 */
 
@@ -5728,7 +5728,7 @@ EditorNode::EditorNode() {
 
 	/*
 	animation_menu = memnew( ToolButton );
-	animation_menu->set_pos(Point2(500,0));
+	animation_menu->set_position(Point2(500,0));
 	animation_menu->set_size(Size2(20,20));
 	animation_menu->set_toggle_mode(true);
 	animation_menu->set_focus_mode(Control::FOCUS_NONE);

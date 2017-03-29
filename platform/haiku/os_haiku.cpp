@@ -207,7 +207,7 @@ void OS_Haiku::swap_buffers() {
 	context_gl->swap_buffers();
 }
 
-Point2 OS_Haiku::get_mouse_pos() const {
+Point2 OS_Haiku::get_mouse_position() const {
 	return window->GetLastMousePosition();
 }
 

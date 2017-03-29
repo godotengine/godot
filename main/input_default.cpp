@@ -340,7 +340,7 @@ void InputDefault::parse_input_event(const InputEvent &p_event) {
 
 			Point2 pos = Point2(p_event.mouse_button.global_x, p_event.mouse_button.global_y);
 			if (mouse_pos != pos) {
-				set_mouse_pos(pos);
+				set_mouse_position(pos);
 			}
 		} break;
 		case InputEvent::MOUSE_MOTION: {
@@ -456,16 +456,16 @@ void InputDefault::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 }
 
-void InputDefault::set_mouse_pos(const Point2 &p_posf) {
+void InputDefault::set_mouse_position(const Point2 &p_posf) {
 
 	mouse_speed_track.update(p_posf - mouse_pos);
 	mouse_pos = p_posf;
 	if (custom_cursor.is_valid()) {
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
+		VisualServer::get_singleton()->cursor_set_pos(get_mouse_position());
 	}
 }
 
-Point2 InputDefault::get_mouse_pos() const {
+Point2 InputDefault::get_mouse_position() const {
 
 	return mouse_pos;
 }
@@ -560,7 +560,7 @@ void InputDefault::set_custom_mouse_cursor(const RES &p_cursor, const Vector2 &p
 		set_mouse_mode(MOUSE_MODE_HIDDEN);
 		VisualServer::get_singleton()->cursor_set_visible(true);
 		VisualServer::get_singleton()->cursor_set_texture(custom_cursor->get_rid(), p_hotspot, 0, region);
-		VisualServer::get_singleton()->cursor_set_pos(get_mouse_pos());
+		VisualServer::get_singleton()->cursor_set_pos(get_mouse_position());
 	}
 }
 

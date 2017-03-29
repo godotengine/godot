@@ -144,7 +144,7 @@ public:
 	virtual MouseMode get_mouse_mode() const;
 
 	virtual void warp_mouse_pos(const Point2 &p_to) {}
-	virtual Point2 get_mouse_pos() const = 0;
+	virtual Point2 get_mouse_position() const = 0;
 	virtual int get_mouse_button_state() const = 0;
 	virtual void set_window_title(const String &p_title) = 0;
 

@@ -196,7 +196,7 @@ public:
 	virtual Vector3 get_magnetometer() const;
 	virtual Vector3 get_gyroscope() const;
 
-	virtual Point2 get_mouse_pos() const;
+	virtual Point2 get_mouse_position() const;
 	virtual Point2 get_last_mouse_speed() const;
 	virtual int get_mouse_button_mask() const;
 
@@ -215,7 +215,7 @@ public:
 	virtual void stop_joy_vibration(int p_device);
 
 	void set_main_loop(MainLoop *main_loop);
-	void set_mouse_pos(const Point2 &p_posf);
+	void set_mouse_position(const Point2 &p_posf);
 
 	void action_press(const StringName &p_action);
 	void action_release(const StringName &p_action);

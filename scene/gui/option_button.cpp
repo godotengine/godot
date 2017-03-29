@@ -87,7 +87,7 @@ void OptionButton::_selected(int p_which) {
 void OptionButton::pressed() {
 
 	Size2 size = get_size();
-	popup->set_global_pos(get_global_pos() + Size2(0, size.height));
+	popup->set_global_position(get_global_position() + Size2(0, size.height));
 	popup->set_size(Size2(size.width, 0));
 
 	popup->popup();

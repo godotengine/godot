@@ -1112,7 +1112,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			if (node->cast_to<Spatial>())
 				editor_data->get_undo_redo().add_do_method(node, "set_global_transform", node->cast_to<Spatial>()->get_global_transform());
 			if (node->cast_to<Control>())
-				editor_data->get_undo_redo().add_do_method(node, "set_global_pos", node->cast_to<Control>()->get_global_pos());
+				editor_data->get_undo_redo().add_do_method(node, "set_global_position", node->cast_to<Control>()->get_global_position());
 		}
 
 		editor_data->get_undo_redo().add_do_method(this, "_set_owners", edited_scene, owners);
@@ -1154,7 +1154,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			if (node->cast_to<Spatial>())
 				editor_data->get_undo_redo().add_undo_method(node, "set_transform", node->cast_to<Spatial>()->get_transform());
 			if (node->cast_to<Control>())
-				editor_data->get_undo_redo().add_undo_method(node, "set_pos", node->cast_to<Control>()->get_pos());
+				editor_data->get_undo_redo().add_undo_method(node, "set_position", node->cast_to<Control>()->get_position());
 		}
 	}
 
@@ -1669,7 +1669,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("Instance", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/instance_scene"), TOOL_INSTANCE);
 
 		menu->set_size(Size2(1, 1));
-		menu->set_pos(p_menu_pos);
+		menu->set_position(p_menu_pos);
 		menu->popup();
 		return;
 	}
@@ -1710,7 +1710,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	menu->add_separator();
 	menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_SHORTCUT("scene_tree/delete", TTR("Delete Node(s)"), KEY_DELETE), TOOL_ERASE);
 	menu->set_size(Size2(1, 1));
-	menu->set_pos(p_menu_pos);
+	menu->set_position(p_menu_pos);
 	menu->popup();
 }
 

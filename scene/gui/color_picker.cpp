@@ -591,7 +591,7 @@ void ColorPickerButton::_color_changed(const Color &p_color) {
 void ColorPickerButton::pressed() {
 
 	Size2 ms = Size2(300, picker->get_combined_minimum_size().height + 10);
-	popup->set_pos(get_global_pos() - Size2(0, ms.height));
+	popup->set_position(get_global_position() - Size2(0, ms.height));
 	popup->set_size(ms);
 	popup->popup();
 	picker->set_focus_on_line_edit();

@@ -245,7 +245,7 @@ bool OS_Android::is_mouse_grab_enabled() const {
 	return false;
 }
 
-Point2 OS_Android::get_mouse_pos() const {
+Point2 OS_Android::get_mouse_position() const {
 
 	return Point2();
 }
@@ -414,7 +414,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ev.mouse_button.y = touch[0].pos.y;
 				ev.mouse_button.global_x = touch[0].pos.x;
 				ev.mouse_button.global_y = touch[0].pos.y;
-				input->set_mouse_pos(Point2(touch[0].pos.x, touch[0].pos.y));
+				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
 				last_mouse = touch[0].pos;
 				input->parse_input_event(ev);
 			}
@@ -441,7 +441,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ev.mouse_motion.button_mask = BUTTON_MASK_LEFT;
 				ev.mouse_motion.x = p_points[0].pos.x;
 				ev.mouse_motion.y = p_points[0].pos.y;
-				input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+				input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
 				ev.mouse_motion.speed_x = input->get_last_mouse_speed().x;
 				ev.mouse_motion.speed_y = input->get_last_mouse_speed().y;
 				ev.mouse_motion.relative_x = p_points[0].pos.x - last_mouse.x;
@@ -493,7 +493,7 @@ void OS_Android::process_touch(int p_what, int p_pointer, const Vector<TouchPos>
 				ev.mouse_button.y = touch[0].pos.y;
 				ev.mouse_button.global_x = touch[0].pos.x;
 				ev.mouse_button.global_y = touch[0].pos.y;
-				input->set_mouse_pos(Point2(touch[0].pos.x, touch[0].pos.y));
+				input->set_mouse_position(Point2(touch[0].pos.x, touch[0].pos.y));
 				input->parse_input_event(ev);
 
 				for (int i = 0; i < touch.size(); i++) {

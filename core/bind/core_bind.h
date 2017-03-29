@@ -120,7 +120,7 @@ public:
 		MONTH_DECEMBER
 	};
 
-	Point2 get_mouse_pos() const;
+	Point2 get_mouse_position() const;
 	void set_window_title(const String &p_title);
 	int get_mouse_button_state() const;
 

@@ -673,7 +673,7 @@ void SpatialEditorViewport::_list_select(InputEventMouseButton b) {
 														"\nType: " + spat->get_class() + "\nPath: " + node_path);
 		}
 
-		selection_menu->set_global_pos(Vector2(b.global_x, b.global_y));
+		selection_menu->set_global_position(Vector2(b.global_x, b.global_y));
 		selection_menu->popup();
 		selection_menu->call_deferred("grab_click_focus");
 		selection_menu->set_invalidate_click_until_motion();
@@ -2166,7 +2166,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 
 	view_menu = memnew(MenuButton);
 	surface->add_child(view_menu);
-	view_menu->set_pos(Point2(4, 4));
+	view_menu->set_position(Point2(4, 4));
 	view_menu->set_self_modulate(Color(1, 1, 1, 0.5));
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
@@ -3572,7 +3572,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	view_menu = memnew(MenuButton);
 	view_menu->set_text(TTR("View"));
-	view_menu->set_pos(Point2(212, 0));
+	view_menu->set_position(Point2(212, 0));
 	hbc_menu->add_child(view_menu);
 
 	p = view_menu->get_popup();
@@ -3717,44 +3717,44 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	add_child(xform_dialog);
 	Label *l = memnew(Label);
 	l->set_text(TTR("Translate:"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	xform_dialog->add_child(l);
 
 	for (int i = 0; i < 3; i++) {
 
 		xform_translate[i] = memnew(LineEdit);
-		xform_translate[i]->set_pos(Point2(15 + i * 60, 22));
+		xform_translate[i]->set_position(Point2(15 + i * 60, 22));
 		xform_translate[i]->set_size(Size2(50, 12));
 		xform_dialog->add_child(xform_translate[i]);
 	}
 
 	l = memnew(Label);
 	l->set_text(TTR("Rotate (deg.):"));
-	l->set_pos(Point2(5, 45));
+	l->set_position(Point2(5, 45));
 	xform_dialog->add_child(l);
 
 	for (int i = 0; i < 3; i++) {
 		xform_rotate[i] = memnew(LineEdit);
-		xform_rotate[i]->set_pos(Point2(15 + i * 60, 62));
+		xform_rotate[i]->set_position(Point2(15 + i * 60, 62));
 		xform_rotate[i]->set_size(Size2(50, 22));
 		xform_dialog->add_child(xform_rotate[i]);
 	}
 
 	l = memnew(Label);
 	l->set_text(TTR("Scale (ratio):"));
-	l->set_pos(Point2(5, 85));
+	l->set_position(Point2(5, 85));
 	xform_dialog->add_child(l);
 
 	for (int i = 0; i < 3; i++) {
 		xform_scale[i] = memnew(LineEdit);
-		xform_scale[i]->set_pos(Point2(15 + i * 60, 102));
+		xform_scale[i]->set_position(Point2(15 + i * 60, 102));
 		xform_scale[i]->set_size(Size2(50, 22));
 		xform_dialog->add_child(xform_scale[i]);
 	}
 
 	l = memnew(Label);
 	l->set_text(TTR("Transform Type"));
-	l->set_pos(Point2(5, 125));
+	l->set_position(Point2(5, 125));
 	xform_dialog->add_child(l);
 
 	xform_type = memnew(OptionButton);

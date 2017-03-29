@@ -61,12 +61,12 @@ StyleBoxEditor::StyleBoxEditor() {
 
 	Label *l = memnew(Label);
 	l->set_text(TTR("StyleBox Preview:"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	panel->add_child(l);
 
 	preview = memnew(Panel);
 	panel->add_child(preview);
-	preview->set_pos(Point2(50, 50));
+	preview->set_position(Point2(50, 50));
 	preview->set_size(Size2(200, 100));
 }
 

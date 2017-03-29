@@ -319,12 +319,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 			CheckBox *c = checks20[0];
 			c->set_text("True");
-			checks20gc->set_pos(Vector2(4, 4));
+			checks20gc->set_position(Vector2(4, 4));
 			c->set_pressed(v);
 			c->show();
 
 			checks20gc->set_size(checks20gc->get_minimum_size());
-			set_size(checks20gc->get_pos() + checks20gc->get_size() + Vector2(4, 4) * EDSCALE);
+			set_size(checks20gc->get_position() + checks20gc->get_size() + Vector2(4, 4) * EDSCALE);
 
 		} break;
 		case Variant::INT:
@@ -374,7 +374,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				for (int i = 0; i < options.size(); i++) {
 					menu->add_item(options[i], i);
 				}
-				menu->set_pos(get_pos());
+				menu->set_position(get_position());
 				menu->popup();
 				hide();
 				updating = false;
@@ -423,12 +423,12 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 				value_label[0]->set_text(title);
 				value_label[0]->show();
-				value_label[0]->set_pos(Vector2(4, 4) * EDSCALE);
+				value_label[0]->set_position(Vector2(4, 4) * EDSCALE);
 
-				checks20gc->set_pos(Vector2(4, 4) * EDSCALE + Vector2(0, value_label[0]->get_size().height + 4 * EDSCALE));
+				checks20gc->set_position(Vector2(4, 4) * EDSCALE + Vector2(0, value_label[0]->get_size().height + 4 * EDSCALE));
 				checks20gc->set_size(checks20gc->get_minimum_size());
 
-				set_size(Vector2(4, 4) * EDSCALE + checks20gc->get_pos() + checks20gc->get_size());
+				set_size(Vector2(4, 4) * EDSCALE + checks20gc->get_position() + checks20gc->get_size());
 
 			} else if (hint == PROPERTY_HINT_EXP_EASING) {
 
@@ -466,7 +466,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					if (f & (1 << i))
 						menu->set_item_checked(menu->get_item_index(i), true);
 				}
-				menu->set_pos(get_pos());
+				menu->set_position(get_position());
 				menu->popup();
 				hide();
 				updating = false;
@@ -502,7 +502,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				for (int i = 0; i < options.size(); i++) {
 					menu->add_item(options[i], i);
 				}
-				menu->set_pos(get_pos());
+				menu->set_position(get_position());
 				menu->popup();
 				hide();
 				updating = false;
@@ -838,15 +838,15 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 
 				value_editor[i]->show();
 				value_label[i]->show();
-				value_label[i]->set_pos(Point2(ofs,y));
+				value_label[i]->set_position(Point2(ofs,y));
 				scroll[i]->set_min(0);
 				scroll[i]->set_max(1.0);
 				scroll[i]->set_page(0);
-				scroll[i]->set_pos(Point2(ofs+15,y+Math::floor((h-scroll[i]->get_minimum_size().height)/2.0)));
+				scroll[i]->set_position(Point2(ofs+15,y+Math::floor((h-scroll[i]->get_minimum_size().height)/2.0)));
 				scroll[i]->set_val(values[i]);
 				scroll[i]->set_size(Size2(120,1));
 				scroll[i]->show();
-				value_editor[i]->set_pos(Point2(ofs+140,y));
+				value_editor[i]->set_position(Point2(ofs+140,y));
 				value_editor[i]->set_size(Size2(40,h));
 				value_editor[i]->set_text( String::num(values[i],2 ));
 
@@ -857,7 +857,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			value_label[2]->set_text("B");
 			value_label[3]->set_text("A");
 
-			Size2 new_size = value_editor[3]->get_pos() + value_editor[3]->get_size() + Point2(10,10);
+			Size2 new_size = value_editor[3]->get_position() + value_editor[3]->get_size() + Point2(10,10);
 			set_size( new_size );
 			*/
 
@@ -981,7 +981,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				}
 			}
 
-			menu->set_pos(get_pos());
+			menu->set_position(get_position());
 			menu->popup();
 			hide();
 			updating = false;
@@ -1868,7 +1868,7 @@ void CustomPropertyEditor::config_action_buttons(const List<String> &p_strings) 
 		if (i < p_strings.size()) {
 			action_buttons[i]->show();
 			action_buttons[i]->set_text(p_strings[i]);
-			action_buttons[i]->set_pos(Point2(m, m + i * (h + m)));
+			action_buttons[i]->set_position(Point2(m, m + i * (h + m)));
 			action_buttons[i]->set_size(Size2(w - m * 2, h));
 			action_buttons[i]->set_flat(true);
 		} else {
@@ -1896,9 +1896,9 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns, int
 			value_editor[i]->show();
 			value_label[i]->show();
 			value_label[i]->set_text(i < p_strings.size() ? p_strings[i] : String(""));
-			value_editor[i]->set_pos(Point2(m + p_label_w + c * (w + m + p_label_w), m + r * (h + m)));
+			value_editor[i]->set_position(Point2(m + p_label_w + c * (w + m + p_label_w), m + r * (h + m)));
 			value_editor[i]->set_size(Size2(w, h));
-			value_label[i]->set_pos(Point2(m + c * (w + m + p_label_w), m + r * (h + m)));
+			value_label[i]->set_position(Point2(m + c * (w + m + p_label_w), m + r * (h + m)));
 			value_editor[i]->set_editable(!read_only);
 		} else {
 			value_editor[i]->hide();
@@ -3989,7 +3989,7 @@ void PropertyEditor::_custom_editor_request(bool p_arrow) {
 	int hint = d.has("hint") ? d["hint"].operator int() : -1;
 	String hint_text = d.has("hint_text") ? d["hint_text"] : "";
 	Rect2 where = tree->get_custom_popup_rect();
-	custom_editor->set_pos(where.pos);
+	custom_editor->set_position(where.pos);
 
 	if (custom_editor->edit(obj, name, type, v, hint, hint_text)) {
 		custom_editor->popup();
@@ -4097,8 +4097,8 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			custom_editor->edit(obj, n, (Variant::Type)t, v, h, ht);
 			Rect2 where = tree->get_item_rect(ti, 1);
 			where.pos -= tree->get_scroll();
-			where.pos += tree->get_global_pos();
-			custom_editor->set_pos(where.pos);
+			where.pos += tree->get_global_position();
+			custom_editor->set_position(where.pos);
 			custom_editor->popup();
 
 		} else if (t == Variant::STRING) {
@@ -4110,8 +4110,8 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 				Rect2 where = tree->get_item_rect(ti, 1);
 				where.pos -= tree->get_scroll();
-				where.pos += tree->get_global_pos();
-				custom_editor->set_pos(where.pos);
+				where.pos += tree->get_global_position();
+				custom_editor->set_position(where.pos);
 				custom_editor->popup();
 			} else {
 				custom_editor->popup_centered_ratio();

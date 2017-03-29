@@ -95,7 +95,7 @@ ReparentDialog::ReparentDialog() {
 	tree->get_scene_tree()->connect("item_activated", this, "_reparent");
 
 	//Label *label = memnew( Label );
-	//label->set_pos( Point2( 15,8) );
+	//label->set_position( Point2( 15,8) );
 	//label->set_text("Reparent Location (Select new Parent):");
 
 	keep_transform = memnew(CheckBox);

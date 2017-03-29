@@ -400,7 +400,7 @@ public:
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
 
-	Vector2 get_mouse_pos() const;
+	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_pos);
 
 	void set_physics_object_picking(bool p_enable);

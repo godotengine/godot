@@ -445,7 +445,7 @@ ShaderEditor::ShaderEditor() {
 
 	edit_menu = memnew(MenuButton);
 	hbc->add_child(edit_menu);
-	edit_menu->set_pos(Point2(5, -1));
+	edit_menu->set_position(Point2(5, -1));
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/undo", TTR("Undo"), KEY_MASK_CMD | KEY_Z), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/redo", TTR("Redo"), KEY_MASK_CMD | KEY_Y), EDIT_REDO);
@@ -459,7 +459,7 @@ ShaderEditor::ShaderEditor() {
 
 	search_menu = memnew(MenuButton);
 	hbc->add_child(search_menu);
-	search_menu->set_pos(Point2(38, -1));
+	search_menu->set_position(Point2(38, -1));
 	search_menu->set_text(TTR("Search"));
 	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find.."), KEY_MASK_CMD | KEY_F), SEARCH_FIND);
 	search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), SEARCH_FIND_NEXT);

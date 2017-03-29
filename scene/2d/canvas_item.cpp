@@ -695,16 +695,16 @@ InputEvent CanvasItem::make_input_local(const InputEvent &p_event) const {
 	return p_event.xform_by((get_canvas_transform() * get_global_transform()).affine_inverse());
 }
 
-Vector2 CanvasItem::get_global_mouse_pos() const {
+Vector2 CanvasItem::get_global_mouse_position() const {
 
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
-	return get_canvas_transform().affine_inverse().xform(get_viewport()->get_mouse_pos());
+	return get_canvas_transform().affine_inverse().xform(get_viewport()->get_mouse_position());
 }
 Vector2 CanvasItem::get_local_mouse_pos() const {
 
 	ERR_FAIL_COND_V(!get_viewport(), Vector2());
 
-	return get_global_transform().affine_inverse().xform(get_global_mouse_pos());
+	return get_global_transform().affine_inverse().xform(get_global_mouse_position());
 }
 
 void CanvasItem::_bind_methods() {
@@ -771,7 +771,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_viewport_rect"), &CanvasItem::get_viewport_rect);
 	ClassDB::bind_method(D_METHOD("get_canvas_transform"), &CanvasItem::get_canvas_transform);
 	ClassDB::bind_method(D_METHOD("get_local_mouse_pos"), &CanvasItem::get_local_mouse_pos);
-	ClassDB::bind_method(D_METHOD("get_global_mouse_pos"), &CanvasItem::get_global_mouse_pos);
+	ClassDB::bind_method(D_METHOD("get_global_mouse_position"), &CanvasItem::get_global_mouse_position);
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasItem::get_canvas);
 	ClassDB::bind_method(D_METHOD("get_world_2d"), &CanvasItem::get_world_2d);
 	//ClassDB::bind_method(D_METHOD("get_viewport"),&CanvasItem::get_viewport);

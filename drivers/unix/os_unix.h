@@ -76,7 +76,7 @@ public:
 	//virtual void set_mouse_show(bool p_show);
 	//virtual void set_mouse_grab(bool p_grab);
 	//virtual bool is_mouse_grab_enabled() const = 0;
-	//virtual void get_mouse_pos(int &x, int &y) const;
+	//virtual void get_mouse_position(int &x, int &y) const;
 	//virtual void set_window_title(const String& p_title);
 
 	//virtual void set_video_mode(const VideoMode& p_video_mode);

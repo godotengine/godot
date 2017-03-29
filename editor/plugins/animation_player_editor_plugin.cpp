@@ -87,7 +87,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		}
 
 		last_active = player->is_playing();
-		//seek->set_val(player->get_pos());
+		//seek->set_val(player->get_position());
 		updating = false;
 	}
 
@@ -1386,13 +1386,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	add_child(name_dialog);
 	name = memnew(LineEdit);
 	name_dialog->add_child(name);
-	name->set_pos(Point2(18, 30));
+	name->set_position(Point2(18, 30));
 	name->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 10);
 	name_dialog->register_text_enter(name);
 
 	l = memnew(Label);
 	l->set_text(TTR("Animation Name:"));
-	l->set_pos(Point2(10, 10));
+	l->set_position(Point2(10, 10));
 
 	name_dialog->add_child(l);
 	name_title = l;

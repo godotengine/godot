@@ -64,7 +64,7 @@ GotoLineDialog::GotoLineDialog() {
 	set_title(TTR("Go to Line"));
 	Label *l = memnew(Label);
 	l->set_text(TTR("Line Number:"));
-	l->set_pos(Point2(5, 5));
+	l->set_position(Point2(5, 5));
 	add_child(l);
 
 	line = memnew(LineEdit);

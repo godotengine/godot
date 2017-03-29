@@ -215,7 +215,7 @@ void HaikuDirectWindow::HandleMouseMoved(BMessage *message) {
 	motion_event.mouse_motion.button_mask = GetMouseButtonState(buttons);
 	motion_event.mouse_motion.x = pos.x;
 	motion_event.mouse_motion.y = pos.y;
-	input->set_mouse_pos(pos);
+	input->set_mouse_position(pos);
 	motion_event.mouse_motion.global_x = pos.x;
 	motion_event.mouse_motion.global_y = pos.y;
 	motion_event.mouse_motion.speed_x = input->get_last_mouse_speed().x;

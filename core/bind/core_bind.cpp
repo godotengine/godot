@@ -163,9 +163,9 @@ _ResourceSaver::_ResourceSaver() {
 
 /////////////////OS
 
-Point2 _OS::get_mouse_pos() const {
+Point2 _OS::get_mouse_position() const {
 
-	return OS::get_singleton()->get_mouse_pos();
+	return OS::get_singleton()->get_mouse_position();
 }
 void _OS::set_window_title(const String &p_title) {
 
@@ -954,7 +954,7 @@ _OS *_OS::singleton = NULL;
 
 void _OS::_bind_methods() {
 
-	//ClassDB::bind_method(D_METHOD("get_mouse_pos"),&_OS::get_mouse_pos);
+	//ClassDB::bind_method(D_METHOD("get_mouse_position"),&_OS::get_mouse_position);
 	//ClassDB::bind_method(D_METHOD("is_mouse_grab_enabled"),&_OS::is_mouse_grab_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_clipboard", "clipboard"), &_OS::set_clipboard);

@@ -1724,7 +1724,7 @@ bool AnimationKeyEditor::_edit_if_single_selection() {
 		curve_edit->set_transition(animation->track_get_key_transition(idx, key));
 
 		/*key_edit_dialog->set_size( Size2( 200,200) );
-		key_edit_dialog->set_pos(  track_editor->get_global_pos() + ofs + mpos +Point2(-100,20));
+		key_edit_dialog->set_position(  track_editor->get_global_position() + ofs + mpos +Point2(-100,20));
 		key_edit_dialog->popup();*/
 	}
 
@@ -1983,7 +1983,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 					track_menu->add_item(TTR("Duplicate Transposed"), RIGHT_MENU_DUPLICATE_TRANSPOSE);
 					track_menu->add_item(TTR("Remove Selection"), RIGHT_MENU_REMOVE);
 
-					track_menu->set_pos(te->get_global_pos() + mpos);
+					track_menu->set_position(te->get_global_position() + mpos);
 
 					interp_editing = -1;
 					cont_editing = -1;
@@ -2064,7 +2064,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 
 						Rect2 area(ofs.x, ofs.y + ((int(mpos.y) / h) + 1) * h, name_limit, h);
 						track_name->set_text(animation->track_get_path(idx));
-						track_name->set_pos(te->get_global_pos() + area.pos);
+						track_name->set_position(te->get_global_position() + area.pos);
 						track_name->set_size(area.size);
 						track_name->show_modal();
 						track_name->grab_focus();
@@ -2214,7 +2214,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 							int popup_y = ofs.y + ((int(mpos.y) / h) + 2) * h;
 							int popup_x = size.width - track_ofs[1];
 
-							track_menu->set_pos(te->get_global_pos() + Point2(popup_x, popup_y));
+							track_menu->set_position(te->get_global_position() + Point2(popup_x, popup_y));
 
 							wrap_editing = idx;
 							interp_editing = -1;
@@ -2237,7 +2237,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 							int popup_y = ofs.y + ((int(mpos.y) / h) + 2) * h;
 							int popup_x = size.width - track_ofs[2];
 
-							track_menu->set_pos(te->get_global_pos() + Point2(popup_x, popup_y));
+							track_menu->set_position(te->get_global_position() + Point2(popup_x, popup_y));
 
 							interp_editing = idx;
 							cont_editing = -1;
@@ -2260,7 +2260,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 							int popup_y = ofs.y + ((int(mpos.y) / h) + 2) * h;
 							int popup_x = size.width - track_ofs[3];
 
-							track_menu->set_pos(te->get_global_pos() + Point2(popup_x, popup_y));
+							track_menu->set_position(te->get_global_position() + Point2(popup_x, popup_y));
 
 							interp_editing = -1;
 							wrap_editing = -1;
@@ -2309,7 +2309,7 @@ void AnimationKeyEditor::_track_editor_gui_input(const InputEvent &p_input) {
 									cvi_track = idx;
 									cvi_pos = pos;
 
-									type_menu->set_pos(get_global_pos() + mpos + ofs);
+									type_menu->set_position(get_global_position() + mpos + ofs);
 									type_menu->popup();
 									return;
 								}
@@ -3749,7 +3749,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	root = NULL;
 	//menu = memnew( MenuButton );
 	//menu->set_flat(true);
-	//menu->set_pos(Point2());
+	//menu->set_position(Point2());
 	//add_child(menu);
 
 	zoomicon = memnew(TextureRect);
@@ -3891,7 +3891,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 
 	/*	l = memnew( Label );
 	l->set_text("Base: ");
-	l->set_pos(Point2(0,3));
+	l->set_position(Point2(0,3));
 	//dr_panel->add_child(l);*/
 
 	//menu->get_popup()->connect("id_pressed",this,"_menu_callback");

@@ -58,7 +58,7 @@ void Control::edit_set_state(const Variant &p_state) {
 	Dictionary s = p_state;
 
 	Rect2 state = s["rect"];
-	set_pos(state.pos);
+	set_position(state.pos);
 	set_size(state.size);
 	set_rotation(s["rot"]);
 	set_scale(s["scale"]);
@@ -96,13 +96,13 @@ void Control::edit_set_rect(const Rect2 &p_edit_rect) {
 	postxf.set_rotation_and_scale(data.rotation, data.scale);
 	Vector2 new_pos = postxf.xform(p_edit_rect.pos);
 
-	Vector2 pos = get_pos() + new_pos;
+	Vector2 pos = get_position() + new_pos;
 
 	Rect2 new_rect = get_rect();
 	new_rect.pos = pos.snapped(Vector2(1, 1));
 	new_rect.size = p_edit_rect.size.snapped(Vector2(1, 1));
 
-	set_pos(new_rect.pos);
+	set_position(new_rect.pos);
 	set_size(new_rect.size);
 }
 
@@ -353,7 +353,7 @@ void Control::remove_child_notify(Node *p_child) {
 
 void Control::_update_canvas_item_transform() {
 
-	Transform2D xform = Transform2D(data.rotation, get_pos());
+	Transform2D xform = Transform2D(data.rotation, get_position());
 	xform.scale_basis(data.scale);
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), xform);
 }
@@ -1390,12 +1390,12 @@ Size2 Control::get_end() const {
 	return Size2(data.margin[2], data.margin[3]);
 }
 
-Point2 Control::get_global_pos() const {
+Point2 Control::get_global_position() const {
 
 	return get_global_transform().get_origin();
 }
 
-void Control::set_global_pos(const Point2 &p_point) {
+void Control::set_global_position(const Point2 &p_point) {
 
 	Transform2D inv;
 
@@ -1404,10 +1404,10 @@ void Control::set_global_pos(const Point2 &p_point) {
 		inv = data.parent_canvas_item->get_global_transform().affine_inverse();
 	}
 
-	set_pos(inv.xform(p_point));
+	set_position(inv.xform(p_point));
 }
 
-void Control::set_pos(const Size2 &p_point) {
+void Control::set_position(const Size2 &p_point) {
 
 	float pw = _get_parent_range(0);
 	float ph = _get_parent_range(1);
@@ -1459,7 +1459,7 @@ void Control::set_size(const Size2 &p_size) {
 	_size_changed();
 }
 
-Size2 Control::get_pos() const {
+Size2 Control::get_position() const {
 
 	return data.pos_cache;
 }
@@ -1471,7 +1471,7 @@ Size2 Control::get_size() const {
 
 Rect2 Control::get_global_rect() const {
 
-	return Rect2(get_global_pos(), get_size());
+	return Rect2(get_global_position(), get_size());
 }
 
 Rect2 Control::get_window_rect() const {
@@ -1483,7 +1483,7 @@ Rect2 Control::get_window_rect() const {
 
 Rect2 Control::get_rect() const {
 
-	return Rect2(get_pos(), get_size());
+	return Rect2(get_position(), get_size());
 }
 
 Rect2 Control::get_item_rect() const {
@@ -1886,7 +1886,7 @@ Control::CursorShape Control::get_cursor_shape(const Point2 &p_pos) const {
 
 Transform2D Control::get_transform() const {
 
-	Transform2D xform = Transform2D(data.rotation, get_pos());
+	Transform2D xform = Transform2D(data.rotation, get_position());
 	xform.scale_basis(data.scale);
 	return xform;
 }
@@ -2315,10 +2315,10 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_anchor_and_margin", "margin", "anchor_mode", "offset"), &Control::set_anchor_and_margin);
 	ClassDB::bind_method(D_METHOD("set_begin", "pos"), &Control::set_begin);
 	ClassDB::bind_method(D_METHOD("set_end", "pos"), &Control::set_end);
-	ClassDB::bind_method(D_METHOD("set_pos", "pos"), &Control::set_pos);
+	ClassDB::bind_method(D_METHOD("set_position", "pos"), &Control::set_position);
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Control::set_size);
 	ClassDB::bind_method(D_METHOD("set_custom_minimum_size", "size"), &Control::set_custom_minimum_size);
-	ClassDB::bind_method(D_METHOD("set_global_pos", "pos"), &Control::set_global_pos);
+	ClassDB::bind_method(D_METHOD("set_global_position", "pos"), &Control::set_global_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Control::set_rotation);
 	ClassDB::bind_method(D_METHOD("set_rotation_deg", "degrees"), &Control::set_rotation_deg);
 	// TODO: Obsolete this method (old name) properly (GH-4397)
@@ -2327,7 +2327,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_margin", "margin"), &Control::get_margin);
 	ClassDB::bind_method(D_METHOD("get_begin"), &Control::get_begin);
 	ClassDB::bind_method(D_METHOD("get_end"), &Control::get_end);
-	ClassDB::bind_method(D_METHOD("get_pos"), &Control::get_pos);
+	ClassDB::bind_method(D_METHOD("get_position"), &Control::get_position);
 	ClassDB::bind_method(D_METHOD("get_size"), &Control::get_size);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Control::get_rotation);
 	ClassDB::bind_method(D_METHOD("get_rotation_deg"), &Control::get_rotation_deg);
@@ -2336,7 +2336,7 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scale"), &Control::get_scale);
 	ClassDB::bind_method(D_METHOD("get_custom_minimum_size"), &Control::get_custom_minimum_size);
 	ClassDB::bind_method(D_METHOD("get_parent_area_size"), &Control::get_size);
-	ClassDB::bind_method(D_METHOD("get_global_pos"), &Control::get_global_pos);
+	ClassDB::bind_method(D_METHOD("get_global_position"), &Control::get_global_position);
 	ClassDB::bind_method(D_METHOD("get_rect"), &Control::get_rect);
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
 	ClassDB::bind_method(D_METHOD("set_area_as_parent_rect", "margin"), &Control::set_area_as_parent_rect, DEFVAL(0));
@@ -2438,7 +2438,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTYINZ(PropertyInfo(Variant::INT, "margin_bottom", PROPERTY_HINT_RANGE, "-4096,4096"), "set_margin", "get_margin", MARGIN_BOTTOM);
 
 	ADD_GROUP("Rect", "rect_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_pos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_pos", "get_pos");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_position", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_position", "get_position");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_size", "get_size");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "rect_min_size"), "set_custom_minimum_size", "get_custom_minimum_size");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "rect_rotation", PROPERTY_HINT_RANGE, "-1080,1080,0.01"), "set_rotation_deg", "get_rotation_deg");

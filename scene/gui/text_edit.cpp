@@ -360,7 +360,7 @@ void TextEdit::_click_selection_held() {
 
 	if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && selection.selecting_mode != Selection::MODE_NONE) {
 
-		Point2 mp = Input::get_singleton()->get_mouse_pos() - get_global_pos();
+		Point2 mp = Input::get_singleton()->get_mouse_position() - get_global_position();
 
 		int row, col;
 		_get_mouse_pos(Point2i(mp.x, mp.y), row, col);
@@ -1586,7 +1586,7 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 
 				if (mb.button_index == BUTTON_RIGHT && context_menu_enabled) {
 
-					menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+					menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
 					menu->set_size(Vector2(1, 1));
 					menu->popup();
 					grab_focus();

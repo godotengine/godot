@@ -1095,8 +1095,8 @@ void ScriptTextEditor::_text_edit_gui_input(const InputEvent &ev) {
 
 			int col, row;
 			TextEdit *tx = code_editor->get_text_edit();
-			tx->_get_mouse_pos(Point2i(mb.global_x, mb.global_y) - tx->get_global_pos(), row, col);
-			Vector2 mpos = Vector2(mb.global_x, mb.global_y) - tx->get_global_pos();
+			tx->_get_mouse_pos(Point2i(mb.global_x, mb.global_y) - tx->get_global_position(), row, col);
+			Vector2 mpos = Vector2(mb.global_x, mb.global_y) - tx->get_global_position();
 			bool have_selection = (tx->get_selection_text().length() > 0);
 			bool have_color = (tx->get_word_at_pos(mpos) == "Color");
 			if (have_color) {
@@ -1124,7 +1124,7 @@ void ScriptTextEditor::_text_edit_gui_input(const InputEvent &ev) {
 						float alpha = color.size() > 3 ? color[3] : 1.0f;
 						color_picker->set_pick_color(Color(color[0], color[1], color[2], alpha));
 					}
-					color_panel->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+					color_panel->set_position(get_global_transform().xform(get_local_mouse_pos()));
 					Size2 ms = Size2(300, color_picker->get_combined_minimum_size().height + 10);
 					color_panel->set_size(ms);
 				} else {
@@ -1174,7 +1174,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color) {
 		context_menu->add_separator();
 		context_menu->add_item(TTR("Pick Color"), EDIT_PICK_COLOR);
 	}
-	context_menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+	context_menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
 }

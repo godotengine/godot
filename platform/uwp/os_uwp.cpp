@@ -532,7 +532,7 @@ OSUWP::MouseMode OSUWP::get_mouse_mode() const {
 	return mouse_mode;
 }
 
-Point2 OSUWP::get_mouse_pos() const {
+Point2 OSUWP::get_mouse_position() const {
 
 	return Point2(old_x, old_y);
 }

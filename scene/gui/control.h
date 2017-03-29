@@ -277,12 +277,12 @@ public:
 	Point2 get_begin() const;
 	Point2 get_end() const;
 
-	void set_pos(const Point2 &p_point);
+	void set_position(const Point2 &p_point);
 	void set_size(const Size2 &p_size);
-	void set_global_pos(const Point2 &p_point);
+	void set_global_position(const Point2 &p_point);
 
-	Point2 get_pos() const;
-	Point2 get_global_pos() const;
+	Point2 get_position() const;
+	Point2 get_global_position() const;
 	Size2 get_size() const;
 	Rect2 get_rect() const;
 	Rect2 get_global_rect() const;

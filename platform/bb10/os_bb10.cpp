@@ -217,7 +217,7 @@ bool OSBB10::is_mouse_grab_enabled() const {
 	//*sigh* technology has evolved so much since i was a kid..
 	return false;
 }
-Point2 OSBB10::get_mouse_pos() const {
+Point2 OSBB10::get_mouse_position() const {
 
 	return Point2();
 }
@@ -348,7 +348,7 @@ void OSBB10::handle_screen_event(bps_event_t *event) {
 				ievent.device = 0;
 				ievent.mouse_motion.x = ievent.mouse_motion.global_x = mpos.x;
 				ievent.mouse_motion.y = ievent.mouse_motion.global_y = mpos.y;
-				input->set_mouse_pos(Point2(ievent.mouse_motion.x, ievent.mouse_motion.y));
+				input->set_mouse_position(Point2(ievent.mouse_motion.x, ievent.mouse_motion.y));
 				ievent.mouse_motion.speed_x = input->get_last_mouse_speed().x;
 				ievent.mouse_motion.speed_y = input->get_last_mouse_speed().y;
 				ievent.mouse_motion.relative_x = mrel.x;

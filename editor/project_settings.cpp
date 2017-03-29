@@ -397,12 +397,12 @@ void ProjectSettings::_action_button_pressed(Object *p_obj, int p_column, int p_
 	ERR_FAIL_COND(!ti);
 
 	if (p_id == 1) {
-		Point2 ofs = input_editor->get_global_pos();
+		Point2 ofs = input_editor->get_global_position();
 		Rect2 ir = input_editor->get_item_rect(ti);
 		ir.pos.y -= input_editor->get_scroll().y;
 		ofs += ir.pos + ir.size;
 		ofs.x -= 100;
-		popup_add->set_pos(ofs);
+		popup_add->set_position(ofs);
 		popup_add->popup();
 		add_at = "input/" + ti->get_text(0);
 
@@ -1326,7 +1326,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	l = memnew(Label);
 	vbc->add_child(l);
-	l->set_pos(Point2(6, 5));
+	l->set_position(Point2(6, 5));
 	l->set_text(TTR("Action:"));
 
 	hbc = memnew(HBoxContainer);

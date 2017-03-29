@@ -402,7 +402,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 				SetCursorPos(pos.x, pos.y);
 			}
 
-			input->set_mouse_pos(Point2(mm.x, mm.y));
+			input->set_mouse_position(Point2(mm.x, mm.y));
 			mm.speed_x = input->get_last_mouse_speed().x;
 			mm.speed_y = input->get_last_mouse_speed().y;
 
@@ -1318,7 +1318,7 @@ void OS_Windows::warp_mouse_pos(const Point2 &p_to) {
 	}
 }
 
-Point2 OS_Windows::get_mouse_pos() const {
+Point2 OS_Windows::get_mouse_position() const {
 
 	return Point2(old_x, old_y);
 }

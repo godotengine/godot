@@ -143,7 +143,7 @@ int OS_Server::get_mouse_button_state() const {
 	return 0;
 }
 
-Point2 OS_Server::get_mouse_pos() const {
+Point2 OS_Server::get_mouse_position() const {
 
 	return Point2();
 }

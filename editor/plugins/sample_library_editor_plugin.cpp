@@ -436,7 +436,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 
 
 	load = memnew( Button );
-	load->set_pos(Point2( 5, 5 ));
+	load->set_position(Point2( 5, 5 ));
 	load->set_size( Size2(1,1 ) );
 	add_child(load);
 

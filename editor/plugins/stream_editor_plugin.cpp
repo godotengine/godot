@@ -84,7 +84,7 @@ StreamEditor::StreamEditor() {
 
 	stop = memnew( Button );
 
-	stop->set_pos(Point2( 35, 5 ));
+	stop->set_position(Point2( 35, 5 ));
 	stop->set_anchor_and_margin(MARGIN_LEFT,Control::ANCHOR_END,30);
 	stop->set_anchor_and_margin(MARGIN_RIGHT,Control::ANCHOR_END,10);
 	stop->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,0);

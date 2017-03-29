@@ -162,16 +162,16 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		//open scene request
 		Rect2 item_rect = tree->get_item_rect(item, 0);
 		item_rect.pos.y -= tree->get_scroll().y;
-		item_rect.pos += tree->get_global_pos();
+		item_rect.pos += tree->get_global_position();
 
 		if (n == get_scene_node()) {
-			inheritance_menu->set_pos(item_rect.pos + Vector2(0, item_rect.size.y));
+			inheritance_menu->set_position(item_rect.pos + Vector2(0, item_rect.size.y));
 			inheritance_menu->set_size(Vector2(item_rect.size.x, 0));
 			inheritance_menu->popup();
 			instance_node = n->get_instance_ID();
 
 		} else {
-			instance_menu->set_pos(item_rect.pos + Vector2(0, item_rect.size.y));
+			instance_menu->set_position(item_rect.pos + Vector2(0, item_rect.size.y));
 			instance_menu->set_size(Vector2(item_rect.size.x, 0));
 			if (EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(n))
 				instance_menu->set_item_checked(0, true);
@@ -1103,7 +1103,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	if (p_label) {
 		Label *label = memnew(Label);
-		label->set_pos(Point2(10, 0));
+		label->set_position(Point2(10, 0));
 		label->set_text(TTR("Scene Tree (Nodes):"));
 
 		add_child(label);

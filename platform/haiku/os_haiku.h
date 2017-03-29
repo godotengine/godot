@@ -89,7 +89,7 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
-	virtual Point2 get_mouse_pos() const;
+	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_cursor_shape(CursorShape p_shape);
 

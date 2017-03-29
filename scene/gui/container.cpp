@@ -107,7 +107,7 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	for (int i = 0; i < 4; i++)
 		p_child->set_anchor(Margin(i), ANCHOR_BEGIN);
 
-	p_child->set_pos(r.pos);
+	p_child->set_position(r.pos);
 	p_child->set_size(r.size);
 	p_child->set_rotation(0);
 	p_child->set_scale(Vector2(1, 1));

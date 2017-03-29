@@ -212,7 +212,7 @@ public:
 	InputEvent make_input_local(const InputEvent &pevent) const;
 	Vector2 make_canvas_pos_local(const Vector2 &screen_point) const;
 
-	Vector2 get_global_mouse_pos() const;
+	Vector2 get_global_mouse_position() const;
 	Vector2 get_local_mouse_pos() const;
 
 	void set_notify_local_transform(bool p_enable);

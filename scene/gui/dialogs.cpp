@@ -46,7 +46,7 @@ void WindowDialog::_fix_size() {
 	// Perhaps this should be called when the viewport resizes as well or windows go out of bounds...
 
 	// Ensure the whole window is visible.
-	Point2i pos = get_global_pos();
+	Point2i pos = get_global_position();
 	Size2i size = get_size();
 	Size2i viewport_size = get_viewport_rect().size;
 
@@ -59,7 +59,7 @@ void WindowDialog::_fix_size() {
 
 	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
 	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
-	set_global_pos(pos);
+	set_global_position(pos);
 
 	// Also resize the window to fit if a resize should be possible at all.
 	if (resizable) {
@@ -98,8 +98,8 @@ void WindowDialog::_gui_input(const InputEvent &p_event) {
 			// Begin a possible dragging operation.
 			drag_type = _drag_hit_test(Point2(p_event.mouse_button.x, p_event.mouse_button.y));
 			if (drag_type != DRAG_NONE)
-				drag_offset = get_global_mouse_pos() - get_pos();
-			drag_offset_far = get_pos() + get_size() - get_global_mouse_pos();
+				drag_offset = get_global_mouse_position() - get_position();
+			drag_offset_far = get_position() + get_size() - get_global_mouse_position();
 		} else if (drag_type != DRAG_NONE && !p_event.mouse_button.pressed) {
 			// End a dragging operation.
 			drag_type = DRAG_NONE;
@@ -136,7 +136,7 @@ void WindowDialog::_gui_input(const InputEvent &p_event) {
 				set_default_cursor_shape(cursor);
 		} else {
 			// Update while in a dragging operation.
-			Point2 global_pos = get_global_mouse_pos();
+			Point2 global_pos = get_global_mouse_position();
 			global_pos.y = MAX(global_pos.y, 0); // Ensure title bar stays visible.
 
 			Rect2 rect = get_rect();
@@ -164,7 +164,7 @@ void WindowDialog::_gui_input(const InputEvent &p_event) {
 			}
 
 			set_size(rect.size);
-			set_pos(rect.pos);
+			set_position(rect.pos);
 		}
 	}
 }
@@ -416,14 +416,14 @@ void AcceptDialog::_update_child_rects() {
 		if (c == hbc || c == label || c == get_close_button() || c->is_set_as_toplevel())
 			continue;
 
-		c->set_pos(cpos);
+		c->set_position(cpos);
 		c->set_size(csize);
 	}
 
 	cpos.y += csize.y + margin;
 	csize.y = hminsize.y;
 
-	hbc->set_pos(cpos);
+	hbc->set_position(cpos);
 	hbc->set_size(csize);
 }
 

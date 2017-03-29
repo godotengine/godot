@@ -140,13 +140,13 @@ void GraphEdit::_update_scroll_offset() {
 
 		Point2 pos = gn->get_offset() * zoom;
 		pos -= Point2(h_scroll->get_value(), v_scroll->get_value());
-		gn->set_pos(pos);
+		gn->set_position(pos);
 		if (gn->get_scale() != Vector2(zoom, zoom)) {
 			gn->set_scale(Vector2(zoom, zoom));
 		}
 	}
 
-	connections_layer->set_pos(-Point2(h_scroll->get_value(), v_scroll->get_value()));
+	connections_layer->set_position(-Point2(h_scroll->get_value(), v_scroll->get_value()));
 	set_block_minimum_size_adjust(false);
 	awaiting_scroll_offset_update = false;
 }
@@ -350,14 +350,14 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 		for (int j = 0; j < gn->get_connection_output_count(); j++) {
 
-			Vector2 pos = gn->get_connection_output_pos(j) + gn->get_pos();
+			Vector2 pos = gn->get_connection_output_pos(j) + gn->get_position();
 			if (pos.distance_to(p_point) < grab_r)
 				return true;
 		}
 
 		for (int j = 0; j < gn->get_connection_input_count(); j++) {
 
-			Vector2 pos = gn->get_connection_input_pos(j) + gn->get_pos();
+			Vector2 pos = gn->get_connection_input_pos(j) + gn->get_position();
 			if (pos.distance_to(p_point) < grab_r) {
 				return true;
 			}
@@ -383,7 +383,7 @@ void GraphEdit::_top_layer_input(const InputEvent &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 
-				Vector2 pos = gn->get_connection_output_pos(j) + gn->get_pos();
+				Vector2 pos = gn->get_connection_output_pos(j) + gn->get_position();
 				if (pos.distance_to(mpos) < grab_r) {
 
 					if (valid_left_disconnect_types.has(gn->get_connection_output_type(j))) {
@@ -430,7 +430,7 @@ void GraphEdit::_top_layer_input(const InputEvent &p_ev) {
 
 			for (int j = 0; j < gn->get_connection_input_count(); j++) {
 
-				Vector2 pos = gn->get_connection_input_pos(j) + gn->get_pos();
+				Vector2 pos = gn->get_connection_input_pos(j) + gn->get_position();
 
 				if (pos.distance_to(mpos) < grab_r) {
 
@@ -497,7 +497,7 @@ void GraphEdit::_top_layer_input(const InputEvent &p_ev) {
 			if (!connecting_out) {
 				for (int j = 0; j < gn->get_connection_output_count(); j++) {
 
-					Vector2 pos = gn->get_connection_output_pos(j) + gn->get_pos();
+					Vector2 pos = gn->get_connection_output_pos(j) + gn->get_position();
 					int type = gn->get_connection_output_type(j);
 					if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && pos.distance_to(mpos) < grab_r) {
 
@@ -512,7 +512,7 @@ void GraphEdit::_top_layer_input(const InputEvent &p_ev) {
 
 				for (int j = 0; j < gn->get_connection_input_count(); j++) {
 
-					Vector2 pos = gn->get_connection_input_pos(j) + gn->get_pos();
+					Vector2 pos = gn->get_connection_input_pos(j) + gn->get_position();
 					int type = gn->get_connection_input_type(j);
 					if ((type == connecting_type || valid_connection_types.has(ConnType(type, connecting_type))) && pos.distance_to(mpos) < grab_r) {
 						connecting_target = true;
@@ -704,7 +704,7 @@ void GraphEdit::_top_layer_draw() {
 			pos = from->get_connection_output_pos(connecting_index);
 		else
 			pos = from->get_connection_input_pos(connecting_index);
-		pos += from->get_pos();
+		pos += from->get_position();
 
 		Vector2 topos;
 		topos = connecting_to;
@@ -1229,7 +1229,7 @@ GraphEdit::GraphEdit() {
 
 	HBoxContainer *zoom_hb = memnew(HBoxContainer);
 	top_layer->add_child(zoom_hb);
-	zoom_hb->set_pos(Vector2(10, 10));
+	zoom_hb->set_position(Vector2(10, 10));
 
 	zoom_minus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_minus);

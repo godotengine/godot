@@ -51,7 +51,7 @@ void LineEdit::_gui_input(InputEvent p_event) {
 			const InputEventMouseButton &b = p_event.mouse_button;
 
 			if (b.pressed && b.button_index == BUTTON_RIGHT) {
-				menu->set_pos(get_global_transform().xform(get_local_mouse_pos()));
+				menu->set_position(get_global_transform().xform(get_local_mouse_pos()));
 				menu->set_size(Vector2(1, 1));
 				menu->popup();
 				grab_focus();

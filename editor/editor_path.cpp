@@ -80,7 +80,7 @@ void EditorPath::_gui_input(const InputEvent &p_event) {
 		objects.clear();
 		popup->clear();
 		_add_children_to_popup(obj);
-		popup->set_pos(get_global_pos() + Vector2(0, get_size().height));
+		popup->set_position(get_global_position() + Vector2(0, get_size().height));
 		popup->set_size(Size2(get_size().width, 1));
 		popup->popup();
 	}

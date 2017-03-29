@@ -290,8 +290,8 @@ CallDialog::CallDialog() {
 	property_editor->hide_top_label();
 
 	add_child(property_editor);
-	method_label = memnew( Label );
-	method_label->set_pos( Point2( 15,25) );
+	method_label = memnew(Label);
+	method_label->set_position(Point2( 15,25));
 	method_label->set_text(TTR("Method List:"));
 
 	add_child(method_label);

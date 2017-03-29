@@ -2985,7 +2985,7 @@
 				Return the default blend time between animations.
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
@@ -6005,7 +6005,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pos">
+		<method name="get_position">
 			<return type="float">
 			</return>
 			<description>
@@ -8357,7 +8357,7 @@
 				Get the transform matrix of this item's canvas.
 			</description>
 		</method>
-		<method name="get_global_mouse_pos" qualifiers="const">
+		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -10847,7 +10847,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
@@ -11174,7 +11174,7 @@
 				Set when the control is ignoring mouse events (even touchpad events send mouse events). (see the MOUSE_FILTER_* constants)
 			</description>
 		</method>
-		<method name="set_pos">
+		<method name="set_position">
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
 			<description>
@@ -14872,7 +14872,7 @@
 				Get a [String] saved in Pascal format from the file.
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -41788,7 +41788,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const">
+		<method name="get_position" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
@@ -48846,7 +48846,7 @@ do_property].
 				Get whether the rendered texture has filters enabled.
 			</description>
 		</method>
-		<method name="get_mouse_pos" qualifiers="const">
+		<method name="get_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>

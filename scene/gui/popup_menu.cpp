@@ -169,7 +169,7 @@ void PopupMenu::_activate_submenu(int over) {
 	if (pm->is_visible_in_tree())
 		return; //already visible!
 
-	Point2 p = get_global_pos();
+	Point2 p = get_global_position();
 	Rect2 pr(p, get_size());
 	Ref<StyleBox> style = get_stylebox("panel");
 
@@ -179,13 +179,13 @@ void PopupMenu::_activate_submenu(int over) {
 	if (pos.x + size.width > get_viewport_rect().size.width)
 		pos.x = p.x - size.width;
 
-	pm->set_pos(pos);
+	pm->set_position(pos);
 	pm->popup();
 
 	PopupMenu *pum = pm->cast_to<PopupMenu>();
 	if (pum) {
 
-		pr.pos -= pum->get_global_pos();
+		pr.pos -= pum->get_global_position();
 		pum->clear_autohide_areas();
 		pum->add_autohide_area(Rect2(pr.pos.x, pr.pos.y, pr.size.x, items[over]._ofs_cache));
 		if (over < items.size() - 1) {
@@ -266,15 +266,15 @@ void PopupMenu::_gui_input(const InputEvent &p_event) {
 
 				case BUTTON_WHEEL_DOWN: {
 
-					if (get_global_pos().y + get_size().y > get_viewport_rect().size.y) {
+					if (get_global_position().y + get_size().y > get_viewport_rect().size.y) {
 
 						int vseparation = get_constant("vseparation");
 						Ref<Font> font = get_font("font");
 
-						Point2 pos = get_pos();
+						Point2 pos = get_position();
 						int s = (vseparation + font->get_height()) * 3;
 						pos.y -= s;
-						set_pos(pos);
+						set_position(pos);
 
 						//update hover
 						InputEvent ie;
@@ -286,15 +286,15 @@ void PopupMenu::_gui_input(const InputEvent &p_event) {
 				} break;
 				case BUTTON_WHEEL_UP: {
 
-					if (get_global_pos().y < 0) {
+					if (get_global_position().y < 0) {
 
 						int vseparation = get_constant("vseparation");
 						Ref<Font> font = get_font("font");
 
-						Point2 pos = get_pos();
+						Point2 pos = get_position();
 						int s = (vseparation + font->get_height()) * 3;
 						pos.y += s;
-						set_pos(pos);
+						set_position(pos);
 
 						//update hover
 						InputEvent ie;

@@ -548,7 +548,7 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 		XWarpPointer(x11_display, None, x11_window,
 				0, 0, 0, 0, (int)center.x, (int)center.y);
 
-		input->set_mouse_pos(center);
+		input->set_mouse_position(center);
 	} else {
 		do_mouse_warp = false;
 	}
@@ -580,7 +580,7 @@ int OS_X11::get_mouse_button_state() const {
 	return last_button_state;
 }
 
-Point2 OS_X11::get_mouse_pos() const {
+Point2 OS_X11::get_mouse_position() const {
 	return last_mouse_pos;
 }
 
@@ -1451,7 +1451,7 @@ void OS_X11::process_xevents() {
 				motion_event.mouse_motion.button_mask = get_mouse_button_state(event.xmotion.state);
 				motion_event.mouse_motion.x = pos.x;
 				motion_event.mouse_motion.y = pos.y;
-				input->set_mouse_pos(pos);
+				input->set_mouse_position(pos);
 				motion_event.mouse_motion.global_x = pos.x;
 				motion_event.mouse_motion.global_y = pos.y;
 				motion_event.mouse_motion.speed_x = input->get_last_mouse_speed().x;

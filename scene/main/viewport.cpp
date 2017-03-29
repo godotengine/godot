@@ -1444,9 +1444,9 @@ void Viewport::_vp_unhandled_input(const InputEvent &p_ev) {
 	unhandled_input(ev);
 }
 
-Vector2 Viewport::get_mouse_pos() const {
+Vector2 Viewport::get_mouse_position() const {
 
-	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_pos() - _get_window_offset());
+	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_position() - _get_window_offset());
 }
 
 void Viewport::warp_mouse(const Vector2 &p_pos) {
@@ -1538,7 +1538,7 @@ void Viewport::_gui_show_tooltip() {
 	else if (r.pos.y < 0)
 		r.pos.y = 0;
 
-	gui.tooltip_popup->set_global_pos(r.pos);
+	gui.tooltip_popup->set_global_position(r.pos);
 	gui.tooltip_popup->set_size(r.size);
 
 	gui.tooltip_popup->raise();
@@ -1640,7 +1640,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	Control *c = p_node->cast_to<Control>();
 
 	if (c) {
-		//print_line("at "+String(c->get_path())+" POS "+c->get_pos()+" bt "+p_xform);
+		//print_line("at "+String(c->get_path())+" POS "+c->get_position()+" bt "+p_xform);
 	}
 
 	//subwindows first!!
@@ -1993,7 +1993,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			gui.mouse_over = over;
 
 			if (gui.drag_preview) {
-				gui.drag_preview->set_pos(mpos);
+				gui.drag_preview->set_position(mpos);
 			}
 
 			if (!over) {
@@ -2237,7 +2237,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 		memdelete(gui.drag_preview);
 	}
 	p_control->set_as_toplevel(true);
-	p_control->set_pos(gui.last_mouse_pos);
+	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();
 	if (gui.drag_preview) {
@@ -2649,7 +2649,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_audio_listener_2d", "enable"), &Viewport::is_audio_listener_2d);
 	ClassDB::bind_method(D_METHOD("set_attach_to_screen_rect", "rect"), &Viewport::set_attach_to_screen_rect);
 
-	ClassDB::bind_method(D_METHOD("get_mouse_pos"), &Viewport::get_mouse_pos);
+	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_pos"), &Viewport::warp_mouse);
 
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);

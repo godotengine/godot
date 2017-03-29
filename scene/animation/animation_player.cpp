@@ -611,7 +611,7 @@ void AnimationPlayer::_animation_update_transforms() {
 
 
 			case SP_NONE: pa->object->set(pa->prop,pa->value_accum); break; //you are not speshul
-			case SP_NODE2D_POS: static_cast<Node2D*>(pa->object)->set_pos(pa->value_accum); break;
+			case SP_NODE2D_POS: static_cast<Node2D*>(pa->object)->set_position(pa->value_accum); break;
 			case SP_NODE2D_ROT: static_cast<Node2D*>(pa->object)->set_rot(Math::deg2rad(pa->value_accum)); break;
 			case SP_NODE2D_SCALE: static_cast<Node2D*>(pa->object)->set_scale(pa->value_accum); break;
 		}*/
