@@ -190,6 +190,19 @@ void TileMapEditor::_sbox_input(const InputEvent &p_ie) {
 	}
 }
 
+// Implementation detail of TileMapEditor::_update_palette();
+// in modern C++ this could have been inside its body
+namespace {
+struct _PaletteEntry {
+	int id;
+	String name;
+
+	bool operator<(const _PaletteEntry &p_rhs) const {
+		return name < p_rhs.name;
+	}
+};
+}
+
 void TileMapEditor::_update_palette() {
 
 	if (!node)
@@ -212,6 +225,8 @@ void TileMapEditor::_update_palette() {
 	min_size *= EDSCALE;
 	int hseparation = EDITOR_DEF("editors/tile_map/palette_item_hseparation", 8);
 	bool show_tile_names = bool(EDITOR_DEF("editors/tile_map/show_tile_names", true));
+	bool show_tile_ids = bool(EDITOR_DEF("editors/tile_map/show_tile_ids", false));
+	bool sort_by_name = bool(EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true));
 
 	palette->add_constant_override("hseparation", hseparation * EDSCALE);
 	palette->add_constant_override("vseparation", 8 * EDSCALE);
@@ -221,12 +236,20 @@ void TileMapEditor::_update_palette() {
 
 	String filter = search_box->get_text().strip_edges();
 
+	Vector<_PaletteEntry> entries;
+
 	for (List<int>::Element *E = tiles.front(); E; E = E->next()) {
 
-		String name;
+		String name = tileset->tile_get_name(E->get());
 
-		if (tileset->tile_get_name(E->get()) != "") {
-			name = itos(E->get()) + " - " + tileset->tile_get_name(E->get());
+		if (name != "") {
+			if (show_tile_ids) {
+				if (sort_by_name) {
+					name = name + " - " + itos(E->get());
+				} else {
+					name = itos(E->get()) + " - " + name;
+				}
+			}
 		} else {
 			name = "#" + itos(E->get());
 		}
@@ -234,16 +257,26 @@ void TileMapEditor::_update_palette() {
 		if (filter != "" && !filter.is_subsequence_ofi(name))
 			continue;
 
+		const _PaletteEntry entry = { E->get(), name };
+		entries.push_back(entry);
+	}
+
+	if (sort_by_name) {
+		entries.sort();
+	}
+
+	for (int i = 0; i < entries.size(); i++) {
+
 		if (show_tile_names) {
-			palette->add_item(name);
+			palette->add_item(entries[i].name);
 		} else {
 			palette->add_item(String());
 		}
 
-		Ref<Texture> tex = tileset->tile_get_texture(E->get());
+		Ref<Texture> tex = tileset->tile_get_texture(entries[i].id);
 
 		if (tex.is_valid()) {
-			Rect2 region = tileset->tile_get_region(E->get());
+			Rect2 region = tileset->tile_get_region(entries[i].id);
 
 			if (!region.has_no_area())
 				palette->set_item_icon_region(palette->get_item_count() - 1, region);
@@ -251,7 +284,7 @@ void TileMapEditor::_update_palette() {
 			palette->set_item_icon(palette->get_item_count() - 1, tex);
 		}
 
-		palette->set_item_metadata(palette->get_item_count() - 1, E->get());
+		palette->set_item_metadata(palette->get_item_count() - 1, entries[i].id);
 	}
 
 	palette->set_same_column_width(true);
@@ -1563,6 +1596,8 @@ TileMapEditorPlugin::TileMapEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("editors/tile_map/preview_size", 64);
 	EDITOR_DEF("editors/tile_map/palette_item_hseparation", 8);
 	EDITOR_DEF("editors/tile_map/show_tile_names", true);
+	EDITOR_DEF("editors/tile_map/show_tile_ids", false);
+	EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true);
 	EDITOR_DEF("editors/tile_map/bucket_fill_preview", true);
 
 	tile_map_editor = memnew(TileMapEditor(p_node));
