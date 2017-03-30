@@ -47,7 +47,13 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 
 	if (true) {
 		args.push_back("-rdebug");
-		args.push_back("localhost:" + String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+#ifdef WINDOWS_ENABLED
+		// Avoid failing DNS lookup on disconnected Windows machines.
+		const char *debug_host = "127.0.0.1:";
+#else
+		const char *debug_host = "localhost:";
+#endif
+		args.push_back(debug_host + String::num(GLOBAL_DEF("debug/debug_port", 6007)));
 	}
 
 	args.push_back("-epid");
