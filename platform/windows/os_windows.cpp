@@ -2167,6 +2167,9 @@ void OS_Windows::run() {
 	if (!main_loop)
 		return;
 
+	// Process all events before the main initialization so the cursor will get initialized properly
+	process_events(); // get rid of pending events
+
 	main_loop->init();
 
 	uint64_t last_ticks = get_ticks_usec();
