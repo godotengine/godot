@@ -449,7 +449,7 @@ real_t Transform2D::get_rotation() const {
 	real_t det = basis_determinant();
 	Transform2D m = orthonormalized();
 	if (det < 0) {
-		m.scale_basis(Size2(-1, -1));
+		m.scale_basis(Size2(1, -1)); // convention to separate rotation and reflection for 2D is to absorb a flip along y into scaling.
 	}
 	return Math::atan2(m[0].y, m[0].x);
 }
@@ -477,7 +477,7 @@ Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
 
 Size2 Transform2D::get_scale() const {
 	real_t det_sign = basis_determinant() > 0 ? 1 : -1;
-	return det_sign * Size2(elements[0].length(), elements[1].length());
+	return Size2(elements[0].length(), det_sign * elements[1].length());
 }
 
 void Transform2D::scale(const Size2 &p_scale) {
