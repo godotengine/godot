@@ -1040,7 +1040,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					cache.selected->draw(ci, r);
 				}
 				if (text_editor->is_visible_in_tree()) {
-					text_editor->set_pos(get_global_pos() + r.pos);
+					text_editor->set_position(get_global_pos() + r.pos);
 				}
 			}
 
@@ -1626,7 +1626,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 					}
 
 					popup_menu->set_size(Size2(col_width, 0));
-					popup_menu->set_pos(get_global_pos() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - cache.offset);
+					popup_menu->set_position(get_global_pos() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h) - cache.offset);
 					popup_menu->popup();
 					popup_edited_item = p_item;
 					popup_edited_item_col = col;
@@ -2393,7 +2393,7 @@ bool Tree::edit_selected() {
 		}
 
 		popup_menu->set_size(Size2(rect.size.width, 0));
-		popup_menu->set_pos(get_global_pos() + rect.pos + Point2i(0, rect.size.height));
+		popup_menu->set_position(get_global_pos() + rect.pos + Point2i(0, rect.size.height));
 		popup_menu->popup();
 		popup_edited_item = s;
 		popup_edited_item_col = col;
@@ -2402,7 +2402,7 @@ bool Tree::edit_selected() {
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
 
 		Point2i textedpos = get_global_pos() + rect.pos;
-		text_editor->set_pos(textedpos);
+		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
 		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::step_decimals(c.step)));
@@ -2410,7 +2410,7 @@ bool Tree::edit_selected() {
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE || c.mode == TreeItem::CELL_MODE_RANGE_EXPRESSION) {
 
-			value_editor->set_pos(textedpos + Point2i(0, text_editor->get_size().height));
+			value_editor->set_position(textedpos + Point2i(0, text_editor->get_size().height));
 			value_editor->set_size(Size2(rect.size.width, 1));
 			value_editor->show_modal();
 			updating_value_editor = true;

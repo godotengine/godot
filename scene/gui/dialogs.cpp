@@ -97,8 +97,8 @@ void WindowDialog::_gui_input(const InputEvent &p_event) {
 			// Begin a possible dragging operation.
 			drag_type = _drag_hit_test(Point2(p_event.mouse_button.x, p_event.mouse_button.y));
 			if (drag_type != DRAG_NONE)
-				drag_offset = get_global_mouse_pos() - get_pos();
-			drag_offset_far = get_pos() + get_size() - get_global_mouse_pos();
+				drag_offset = get_global_mouse_pos() - get_position();
+			drag_offset_far = get_position() + get_size() - get_global_mouse_pos();
 		} else if (drag_type != DRAG_NONE && !p_event.mouse_button.pressed) {
 			// End a dragging operation.
 			drag_type = DRAG_NONE;
@@ -163,7 +163,7 @@ void WindowDialog::_gui_input(const InputEvent &p_event) {
 			}
 
 			set_size(rect.size);
-			set_pos(rect.pos);
+			set_position(rect.pos);
 		}
 	}
 }
@@ -404,14 +404,14 @@ void AcceptDialog::_update_child_rects() {
 		if (c == hbc || c == label || c == get_close_button() || c->is_set_as_toplevel())
 			continue;
 
-		c->set_pos(cpos);
+		c->set_position(cpos);
 		c->set_size(csize);
 	}
 
 	cpos.y += csize.y + margin;
 	csize.y = hminsize.y;
 
-	hbc->set_pos(cpos);
+	hbc->set_position(cpos);
 	hbc->set_size(csize);
 }
 

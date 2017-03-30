@@ -1639,7 +1639,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 	Control *c = p_node->cast_to<Control>();
 
 	if (c) {
-		//print_line("at "+String(c->get_path())+" POS "+c->get_pos()+" bt "+p_xform);
+		//print_line("at "+String(c->get_path())+" POS "+c->get_position()+" bt "+p_xform);
 	}
 
 	//subwindows first!!
@@ -1992,7 +1992,7 @@ void Viewport::_gui_input_event(InputEvent p_event) {
 			gui.mouse_over = over;
 
 			if (gui.drag_preview) {
-				gui.drag_preview->set_pos(mpos);
+				gui.drag_preview->set_position(mpos);
 			}
 
 			if (!over) {
@@ -2236,7 +2236,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 		memdelete(gui.drag_preview);
 	}
 	p_control->set_as_toplevel(true);
-	p_control->set_pos(gui.last_mouse_pos);
+	p_control->set_position(gui.last_mouse_pos);
 	p_base->get_root_parent_control()->add_child(p_control); //add as child of viewport
 	p_control->raise();
 	if (gui.drag_preview) {

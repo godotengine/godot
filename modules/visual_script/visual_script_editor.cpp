@@ -1016,7 +1016,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 				}
 
 				Rect2 pos = members->get_item_rect(ti);
-				new_function_menu->set_pos(members->get_global_pos() + pos.pos + Vector2(0, pos.size.y));
+				new_function_menu->set_position(members->get_global_pos() + pos.pos + Vector2(0, pos.size.y));
 				new_function_menu->popup();
 				return;
 			} else if (p_button == 0) {
@@ -2516,7 +2516,7 @@ void VisualScriptEditor::_graph_connect_to_empty(const String &p_from, int p_fro
 
 	port_action_pos = p_release_pos;
 	port_action_popup->set_size(Size2(1, 1));
-	port_action_popup->set_pos(graph->get_global_pos() + p_release_pos);
+	port_action_popup->set_position(graph->get_global_pos() + p_release_pos);
 	port_action_popup->popup();
 }
 
@@ -2805,7 +2805,7 @@ void VisualScriptEditor::_default_value_edited(Node *p_button, int p_id, int p_i
 		existing = Variant::construct(pinfo.type, &existingp, 1, ce, false);
 	}
 
-	default_value_edit->set_pos(p_button->cast_to<Control>()->get_global_pos() + Vector2(0, p_button->cast_to<Control>()->get_size().y));
+	default_value_edit->set_position(p_button->cast_to<Control>()->get_global_pos() + Vector2(0, p_button->cast_to<Control>()->get_size().y));
 	default_value_edit->set_size(Size2(1, 1));
 	if (default_value_edit->edit(NULL, pinfo.name, pinfo.type, existing, pinfo.hint, pinfo.hint_string)) {
 		if (pinfo.hint == PROPERTY_HINT_MULTILINE_TEXT)

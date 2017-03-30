@@ -401,7 +401,7 @@ void ProjectSettings::_action_button_pressed(Object *p_obj, int p_column, int p_
 		ir.pos.y -= input_editor->get_scroll().y;
 		ofs += ir.pos + ir.size;
 		ofs.x -= 100;
-		popup_add->set_pos(ofs);
+		popup_add->set_position(ofs);
 		popup_add->popup();
 		add_at = "input/" + ti->get_text(0);
 
@@ -1325,7 +1325,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	l = memnew(Label);
 	vbc->add_child(l);
-	l->set_pos(Point2(6, 5));
+	l->set_position(Point2(6, 5));
 	l->set_text(TTR("Action:"));
 
 	hbc = memnew(HBoxContainer);
