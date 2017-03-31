@@ -117,6 +117,7 @@ const char *GDTokenizer::token_names[TK_MAX] = {
 	"'.'",
 	"'?'",
 	"':'",
+	"'$'",
 	"'\\n'",
 	"PI",
 	"_",
