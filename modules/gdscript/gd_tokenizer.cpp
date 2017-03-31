@@ -130,10 +130,220 @@ const char *GDTokenizer::token_names[TK_MAX] = {
 	"Cursor"
 };
 
+struct _bit {
+	Variant::Type type;
+	const char *text;
+};
+//built in types
+
+static const _bit _type_list[] = {
+	//types
+	{ Variant::BOOL, "bool" },
+	{ Variant::INT, "int" },
+	{ Variant::REAL, "float" },
+	{ Variant::STRING, "String" },
+	{ Variant::VECTOR2, "Vector2" },
+	{ Variant::RECT2, "Rect2" },
+	{ Variant::TRANSFORM2D, "Transform2D" },
+	{ Variant::VECTOR3, "Vector3" },
+	{ Variant::RECT3, "Rect3" },
+	{ Variant::PLANE, "Plane" },
+	{ Variant::QUAT, "Quat" },
+	{ Variant::BASIS, "Basis" },
+	{ Variant::TRANSFORM, "Transform" },
+	{ Variant::COLOR, "Color" },
+	{ Variant::_RID, "RID" },
+	{ Variant::OBJECT, "Object" },
+	{ Variant::NODE_PATH, "NodePath" },
+	{ Variant::DICTIONARY, "Dictionary" },
+	{ Variant::ARRAY, "Array" },
+	{ Variant::POOL_BYTE_ARRAY, "PoolByteArray" },
+	{ Variant::POOL_INT_ARRAY, "PoolIntArray" },
+	{ Variant::POOL_REAL_ARRAY, "PoolFloatArray" },
+	{ Variant::POOL_STRING_ARRAY, "PoolStringArray" },
+	{ Variant::POOL_VECTOR2_ARRAY, "PoolVector2Array" },
+	{ Variant::POOL_VECTOR3_ARRAY, "PoolVector3Array" },
+	{ Variant::POOL_COLOR_ARRAY, "PoolColorArray" },
+	{ Variant::VARIANT_MAX, NULL },
+};
+
+struct _kws {
+	GDTokenizer::Token token;
+	const char *text;
+};
+
+static const _kws _keyword_list[] = {
+	//ops
+	{ GDTokenizer::TK_OP_IN, "in" },
+	{ GDTokenizer::TK_OP_NOT, "not" },
+	{ GDTokenizer::TK_OP_OR, "or" },
+	{ GDTokenizer::TK_OP_AND, "and" },
+	//func
+	{ GDTokenizer::TK_PR_FUNCTION, "func" },
+	{ GDTokenizer::TK_PR_CLASS, "class" },
+	{ GDTokenizer::TK_PR_EXTENDS, "extends" },
+	{ GDTokenizer::TK_PR_IS, "is" },
+	{ GDTokenizer::TK_PR_ONREADY, "onready" },
+	{ GDTokenizer::TK_PR_TOOL, "tool" },
+	{ GDTokenizer::TK_PR_STATIC, "static" },
+	{ GDTokenizer::TK_PR_EXPORT, "export" },
+	{ GDTokenizer::TK_PR_SETGET, "setget" },
+	{ GDTokenizer::TK_PR_VAR, "var" },
+	{ GDTokenizer::TK_PR_PRELOAD, "preload" },
+	{ GDTokenizer::TK_PR_ASSERT, "assert" },
+	{ GDTokenizer::TK_PR_YIELD, "yield" },
+	{ GDTokenizer::TK_PR_SIGNAL, "signal" },
+	{ GDTokenizer::TK_PR_BREAKPOINT, "breakpoint" },
+	{ GDTokenizer::TK_PR_REMOTE, "remote" },
+	{ GDTokenizer::TK_PR_MASTER, "master" },
+	{ GDTokenizer::TK_PR_SLAVE, "slave" },
+	{ GDTokenizer::TK_PR_SYNC, "sync" },
+	{ GDTokenizer::TK_PR_CONST, "const" },
+	{ GDTokenizer::TK_PR_ENUM, "enum" },
+	//controlflow
+	{ GDTokenizer::TK_CF_IF, "if" },
+	{ GDTokenizer::TK_CF_ELIF, "elif" },
+	{ GDTokenizer::TK_CF_ELSE, "else" },
+	{ GDTokenizer::TK_CF_FOR, "for" },
+	{ GDTokenizer::TK_CF_WHILE, "while" },
+	{ GDTokenizer::TK_CF_DO, "do" },
+	{ GDTokenizer::TK_CF_SWITCH, "switch" },
+	{ GDTokenizer::TK_CF_CASE, "case" },
+	{ GDTokenizer::TK_CF_BREAK, "break" },
+	{ GDTokenizer::TK_CF_CONTINUE, "continue" },
+	{ GDTokenizer::TK_CF_RETURN, "return" },
+	{ GDTokenizer::TK_CF_MATCH, "match" },
+	{ GDTokenizer::TK_CF_PASS, "pass" },
+	{ GDTokenizer::TK_SELF, "self" },
+	{ GDTokenizer::TK_CONST_PI, "PI" },
+	{ GDTokenizer::TK_WILDCARD, "_" },
+	{ GDTokenizer::TK_CONST_INF, "INF" },
+	{ GDTokenizer::TK_CONST_NAN, "NAN" },
+	{ GDTokenizer::TK_ERROR, NULL }
+};
+
 const char *GDTokenizer::get_token_name(Token p_token) {
 
 	ERR_FAIL_INDEX_V(p_token, TK_MAX, "<error>");
 	return token_names[p_token];
+}
+
+bool GDTokenizer::is_token_literal(int p_offset, bool variable_safe) const {
+	switch (get_token(p_offset)) {
+		// Can always be literal:
+		case TK_IDENTIFIER:
+
+		case TK_PR_ONREADY:
+		case TK_PR_TOOL:
+		case TK_PR_STATIC:
+		case TK_PR_EXPORT:
+		case TK_PR_SETGET:
+		case TK_PR_SIGNAL:
+		case TK_PR_REMOTE:
+		case TK_PR_MASTER:
+		case TK_PR_SLAVE:
+		case TK_PR_SYNC:
+			return true;
+
+		// Literal for non-variables only:
+		case TK_BUILT_IN_TYPE:
+		case TK_BUILT_IN_FUNC:
+
+		case TK_OP_IN:
+		case TK_OP_NOT:
+		//case TK_OP_OR:
+		//case TK_OP_AND:
+
+		case TK_PR_CLASS:
+		case TK_PR_CONST:
+		case TK_PR_ENUM:
+		case TK_PR_PRELOAD:
+		case TK_PR_FUNCTION:
+		case TK_PR_EXTENDS:
+		case TK_PR_ASSERT:
+		case TK_PR_YIELD:
+		case TK_PR_VAR:
+
+		case TK_CF_IF:
+		case TK_CF_ELIF:
+		case TK_CF_ELSE:
+		case TK_CF_FOR:
+		case TK_CF_WHILE:
+		case TK_CF_DO:
+		case TK_CF_SWITCH:
+		case TK_CF_CASE:
+		case TK_CF_BREAK:
+		case TK_CF_CONTINUE:
+		case TK_CF_RETURN:
+		case TK_CF_MATCH:
+		case TK_CF_PASS:
+		case TK_SELF:
+		case TK_CONST_PI:
+		case TK_WILDCARD:
+		case TK_CONST_INF:
+		case TK_CONST_NAN:
+		case TK_ERROR:
+			return !variable_safe;
+
+		case TK_CONSTANT: {
+			switch (get_token_constant(p_offset).get_type()) {
+				case Variant::NIL:
+				case Variant::BOOL:
+					return true;
+				default:
+					return false;
+			}
+		}
+		default:
+			return false;
+	}
+}
+
+StringName GDTokenizer::get_token_literal(int p_offset) const {
+	Token token = get_token(p_offset);
+	switch (token) {
+		case TK_IDENTIFIER:
+			return get_token_identifier(p_offset);
+		case TK_BUILT_IN_TYPE: {
+			Variant::Type type = get_token_type(p_offset);
+			int idx = 0;
+
+			while (_type_list[idx].text) {
+				if (type == _type_list[idx].type) {
+					return _type_list[idx].text;
+				}
+				idx++;
+			}
+		} break; // Shouldn't get here, stuff happens
+		case TK_BUILT_IN_FUNC:
+			return GDFunctions::get_func_name(get_token_built_in_func(p_offset));
+		case TK_CONSTANT: {
+			const Variant value = get_token_constant(p_offset);
+
+			switch (value.get_type()) {
+				case Variant::NIL:
+					return "null";
+				case Variant::BOOL:
+					return value ? "true" : "false";
+				default: {}
+			}
+		}
+		case TK_OP_AND:
+		case TK_OP_OR:
+			break; // Don't get into default, since they can be non-literal
+		default: {
+			int idx = 0;
+
+			while (_keyword_list[idx].text) {
+				if (token == _keyword_list[idx].token) {
+					return _keyword_list[idx].text;
+				}
+				idx++;
+			}
+		}
+	}
+	ERR_EXPLAIN("Failed to get token literal");
+	ERR_FAIL_V("");
 }
 
 static bool _is_text_char(CharType c) {
@@ -779,51 +989,14 @@ void GDTokenizerText::_advance() {
 
 						bool found = false;
 
-						struct _bit {
-							Variant::Type type;
-							const char *text;
-						};
-						//built in types
-
-						static const _bit type_list[] = {
-							//types
-							{ Variant::BOOL, "bool" },
-							{ Variant::INT, "int" },
-							{ Variant::REAL, "float" },
-							{ Variant::STRING, "String" },
-							{ Variant::VECTOR2, "Vector2" },
-							{ Variant::RECT2, "Rect2" },
-							{ Variant::TRANSFORM2D, "Transform2D" },
-							{ Variant::VECTOR3, "Vector3" },
-							{ Variant::RECT3, "Rect3" },
-							{ Variant::PLANE, "Plane" },
-							{ Variant::QUAT, "Quat" },
-							{ Variant::BASIS, "Basis" },
-							{ Variant::TRANSFORM, "Transform" },
-							{ Variant::COLOR, "Color" },
-							{ Variant::_RID, "RID" },
-							{ Variant::OBJECT, "Object" },
-							{ Variant::NODE_PATH, "NodePath" },
-							{ Variant::DICTIONARY, "Dictionary" },
-							{ Variant::ARRAY, "Array" },
-							{ Variant::POOL_BYTE_ARRAY, "PoolByteArray" },
-							{ Variant::POOL_INT_ARRAY, "PoolIntArray" },
-							{ Variant::POOL_REAL_ARRAY, "PoolFloatArray" },
-							{ Variant::POOL_STRING_ARRAY, "PoolStringArray" },
-							{ Variant::POOL_VECTOR2_ARRAY, "PoolVector2Array" },
-							{ Variant::POOL_VECTOR3_ARRAY, "PoolVector3Array" },
-							{ Variant::POOL_COLOR_ARRAY, "PoolColorArray" },
-							{ Variant::VARIANT_MAX, NULL },
-						};
-
 						{
 
 							int idx = 0;
 
-							while (type_list[idx].text) {
+							while (_type_list[idx].text) {
 
-								if (str == type_list[idx].text) {
-									_make_type(type_list[idx].type);
+								if (str == _type_list[idx].text) {
+									_make_type(_type_list[idx].type);
 									found = true;
 									break;
 								}
@@ -844,74 +1017,18 @@ void GDTokenizerText::_advance() {
 									break;
 								}
 							}
-
-							//keywor
 						}
 
 						if (!found) {
-
-							struct _kws {
-								Token token;
-								const char *text;
-							};
-
-							static const _kws keyword_list[] = {
-								//ops
-								{ TK_OP_IN, "in" },
-								{ TK_OP_NOT, "not" },
-								{ TK_OP_OR, "or" },
-								{ TK_OP_AND, "and" },
-								//func
-								{ TK_PR_FUNCTION, "func" },
-								{ TK_PR_CLASS, "class" },
-								{ TK_PR_EXTENDS, "extends" },
-								{ TK_PR_IS, "is" },
-								{ TK_PR_ONREADY, "onready" },
-								{ TK_PR_TOOL, "tool" },
-								{ TK_PR_STATIC, "static" },
-								{ TK_PR_EXPORT, "export" },
-								{ TK_PR_SETGET, "setget" },
-								{ TK_PR_VAR, "var" },
-								{ TK_PR_PRELOAD, "preload" },
-								{ TK_PR_ASSERT, "assert" },
-								{ TK_PR_YIELD, "yield" },
-								{ TK_PR_SIGNAL, "signal" },
-								{ TK_PR_BREAKPOINT, "breakpoint" },
-								{ TK_PR_REMOTE, "remote" },
-								{ TK_PR_MASTER, "master" },
-								{ TK_PR_SLAVE, "slave" },
-								{ TK_PR_SYNC, "sync" },
-								{ TK_PR_CONST, "const" },
-								{ TK_PR_ENUM, "enum" },
-								//controlflow
-								{ TK_CF_IF, "if" },
-								{ TK_CF_ELIF, "elif" },
-								{ TK_CF_ELSE, "else" },
-								{ TK_CF_FOR, "for" },
-								{ TK_CF_WHILE, "while" },
-								{ TK_CF_DO, "do" },
-								{ TK_CF_SWITCH, "switch" },
-								{ TK_CF_CASE, "case" },
-								{ TK_CF_BREAK, "break" },
-								{ TK_CF_CONTINUE, "continue" },
-								{ TK_CF_RETURN, "return" },
-								{ TK_CF_MATCH, "match" },
-								{ TK_CF_PASS, "pass" },
-								{ TK_SELF, "self" },
-								{ TK_CONST_PI, "PI" },
-								{ TK_WILDCARD, "_" },
-								{ TK_CONST_INF, "INF" },
-								{ TK_CONST_NAN, "NAN" },
-								{ TK_ERROR, NULL }
-							};
+							//keyword
 
 							int idx = 0;
 							found = false;
 
-							while (keyword_list[idx].text) {
+							while (_keyword_list[idx].text) {
 
-								if (str == keyword_list[idx].text) {
-									_make_token(keyword_list[idx].token);
+								if (str == _keyword_list[idx].text) {
+									_make_token(_keyword_list[idx].token);
 									found = true;
 									break;
 								}
@@ -992,6 +1109,7 @@ const Variant &GDTokenizerText::get_token_constant(int p_offset) const {
 	ERR_FAIL_COND_V(tk_rb[ofs].type != TK_CONSTANT, tk_rb[0].constant);
 	return tk_rb[ofs].constant;
 }
+
 StringName GDTokenizerText::get_token_identifier(int p_offset) const {
 
 	ERR_FAIL_COND_V(p_offset <= -MAX_LOOKAHEAD, StringName());

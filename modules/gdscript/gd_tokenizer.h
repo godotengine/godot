@@ -149,6 +149,9 @@ protected:
 public:
 	static const char *get_token_name(Token p_token);
 
+	bool is_token_literal(int p_offset = 0, bool variable_safe = false) const;
+	StringName get_token_literal(int p_offset = 0) const;
+
 	virtual const Variant &get_token_constant(int p_offset = 0) const = 0;
 	virtual Token get_token(int p_offset = 0) const = 0;
 	virtual StringName get_token_identifier(int p_offset = 0) const = 0;
