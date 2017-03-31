@@ -347,6 +347,8 @@ public:
 	virtual Color light_get_color(RID p_light) = 0;
 	virtual uint64_t light_get_version(RID p_light) const = 0;
 
+	virtual uint32_t light_get_cull_mask(RID p_light) = 0;
+
 	/* PROBE API */
 
 	virtual RID reflection_probe_create() = 0;

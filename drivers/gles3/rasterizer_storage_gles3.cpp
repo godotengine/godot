@@ -4558,6 +4558,14 @@ void RasterizerStorageGLES3::light_set_reverse_cull_face_mode(RID p_light, bool 
 	light->reverse_cull = p_enabled;
 }
 
+uint32_t RasterizerStorageGLES3::light_get_cull_mask(RID p_light) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, 0);
+
+	return light->cull_mask;
+}
+
 void RasterizerStorageGLES3::light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) {
 
 	Light *light = light_owner.getornull(p_light);

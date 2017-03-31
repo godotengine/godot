@@ -149,7 +149,7 @@ public:
 		RID self;
 		// well wtf, balloon allocator is slower?
 
-		Octree<Instance, true> octree;
+		Octree<Instance, true> octree[32];
 
 		List<Instance *> directional_lights;
 		RID environment;
@@ -183,9 +183,24 @@ public:
 
 	struct Instance : RasterizerScene::InstanceBase {
 
+		struct OctreeLayer {
+			int layer_index;
+			OctreeElementID octree_id;
+
+			OctreeLayer() {
+				layer_index = -1;
+				octree_id = -1;
+			}
+
+			OctreeLayer(int p_layer_index, OctreeElementID p_octree_id) {
+				layer_index = p_layer_index;
+				octree_id = p_octree_id;
+			}
+		};
+
 		RID self;
 		//scenario stuff
-		OctreeElementID octree_id;
+		Vector<OctreeLayer> octree_layers;
 		Scenario *scenario;
 		SelfList<Instance> scenario_item;
 
@@ -231,7 +246,6 @@ public:
 		Instance()
 			: scenario_item(this), update_item(this) {
 
-			octree_id = 0;
 			scenario = NULL;
 
 			update_aabb = false;
@@ -262,6 +276,14 @@ public:
 
 	SelfList<Instance>::List _instance_update_list;
 	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_materials = false);
+
+	_FORCE_INLINE_ void _instance_clear_layers(Instance *p_instance) {
+		while (p_instance->octree_layers.size() > 0) {
+			Instance::OctreeLayer octree_layer = p_instance->octree_layers[0];
+			p_instance->scenario->octree[octree_layer.layer_index].erase(octree_layer.octree_id);
+			p_instance->octree_layers.remove(0);
+		}
+	}
 
 	struct InstanceGeometryData : public InstanceBaseData {
 
@@ -463,9 +485,9 @@ public:
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin);
 
 	// don't use these in a game!
-	virtual Vector<ObjectID> instances_cull_aabb(const Rect3 &p_aabb, RID p_scenario = RID()) const;
-	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, RID p_scenario = RID()) const;
-	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, RID p_scenario = RID()) const;
+	virtual Vector<ObjectID> instances_cull_aabb(const Rect3 &p_aabb, const uint32_t layer_mask, RID p_scenario = RID()) const;
+	virtual Vector<ObjectID> instances_cull_ray(const Vector3 &p_from, const Vector3 &p_to, const uint32_t layer_mask, RID p_scenario = RID()) const;
+	virtual Vector<ObjectID> instances_cull_convex(const Vector<Plane> &p_convex, const uint32_t layer_mask, RID p_scenario = RID()) const;
 
 	virtual void instance_geometry_set_flag(RID p_instance, VS::InstanceFlags p_flags, bool p_enabled);
 	virtual void instance_geometry_set_cast_shadows_setting(RID p_instance, VS::ShadowCastingSetting p_shadow_casting_setting);
@@ -478,7 +500,7 @@ public:
 	_FORCE_INLINE_ void _update_instance_aabb(Instance *p_instance);
 	_FORCE_INLINE_ void _update_dirty_instance(Instance *p_instance);
 
-	_FORCE_INLINE_ void _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario);
+	_FORCE_INLINE_ void _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, uint32_t p_cam_visible_layers, RID p_shadow_atlas, Scenario *p_scenario);
 
 	void _render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	void render_empty_scene(RID p_scenario, RID p_shadow_atlas);

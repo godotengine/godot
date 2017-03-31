@@ -234,11 +234,7 @@ Vector3 SpatialEditorViewport::_get_ray(const Vector2 &p_pos) {
 }
 /*
 void SpatialEditorViewport::_clear_id(Spatial *p_node) {
-
-
 	editor_selection->remove_node(p_node);
-
-
 }
 */
 void SpatialEditorViewport::_clear_selected() {
@@ -287,7 +283,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
 
-	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_ray(pos, ray, 0xffffffff, get_tree()->get_root()->get_world()->get_scenario());
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	Node *edited_scene = get_tree()->get_edited_scene_root();
@@ -362,7 +358,7 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_incl
 	Vector3 ray = _get_ray(p_pos);
 	Vector3 pos = _get_ray_pos(p_pos);
 
-	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_ray(pos, ray, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_ray(pos, ray, 0xffffffff, get_tree()->get_root()->get_world()->get_scenario());
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	r_includes_current = false;
@@ -475,7 +471,7 @@ void SpatialEditorViewport::_select_region() {
 
 	frustum.push_back(far);
 
-	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_convex(frustum, get_tree()->get_root()->get_world()->get_scenario());
+	Vector<ObjectID> instances = VisualServer::get_singleton()->instances_cull_convex(frustum, 0xffffffff, get_tree()->get_root()->get_world()->get_scenario());
 
 	for (int i = 0; i < instances.size(); i++) {
 
@@ -1397,7 +1393,6 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						surface->update();
 						/*
 						VisualServer::get_singleton()->poly_clear(indicators);
-
 						Vector<Vector3> points;
 						Vector<Vector3> empty;
 						Vector<Color> colors;
@@ -1768,8 +1763,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 		/*
 		current_camera=get_root_node()->get_current_camera();
 		if (current_camera!=camera) {
-
-
 		}
 		*/
 
@@ -3175,7 +3168,6 @@ void SpatialEditor::edit(Spatial *p_spatial) {
 		if (selected.has(p_spatial->get_instance_id()) && selected.size()==1)
 			return;
 		_select(p_spatial->get_instance_id(),false,true);
-
 		// should become the selection
 	}
 	*/
@@ -3668,7 +3660,6 @@ void SpatialEditor::_init_indicators() {
 	}
 
 	/*for(int i=0;i<4;i++) {
-
 		viewports[i]->init_gizmo_instance(i);
 	}*/
 
