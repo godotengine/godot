@@ -82,6 +82,7 @@ struct Vector2 {
 
 	void normalize();
 	Vector2 normalized() const;
+	bool is_normalized() const;
 
 	real_t length() const;
 	real_t length_squared() const;
@@ -106,6 +107,7 @@ struct Vector2 {
 	Vector2 cubic_interpolate_soft(const Vector2 &p_b, const Vector2 &p_pre_a, const Vector2 &p_post_b, real_t p_t) const;
 
 	Vector2 slide(const Vector2 &p_vec) const;
+	Vector2 bounce(const Vector2 &p_vec) const;
 	Vector2 reflect(const Vector2 &p_vec) const;
 
 	Vector2 operator+(const Vector2 &p_v) const;
