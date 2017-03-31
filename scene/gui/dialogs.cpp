@@ -177,7 +177,18 @@ void WindowDialog::_notification(int p_what) {
 			Size2 size = get_size();
 
 			Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
-			panel->draw(canvas, Rect2(Point2(), size));
+			int margin_left = static_cast<int>(panel->get_margin(MARGIN_LEFT));
+			int margin_top = static_cast<int>(panel->get_margin(MARGIN_TOP));
+			int margin_right = static_cast<int>(panel->get_margin(MARGIN_RIGHT));
+			int margin_bottom = static_cast<int>(panel->get_margin(MARGIN_BOTTOM));
+
+			Rect2 rect;
+			rect.pos.x = -margin_left;
+			rect.pos.y = -margin_top;
+			rect.size.width = size.width + margin_left + margin_right;
+			rect.size.height = size.height + margin_top + margin_bottom;
+
+			panel->draw(canvas, rect);
 
 			int title_height = get_constant("title_height", "WindowDialog");
 			Color title_color = get_color("title_color", "WindowDialog");
