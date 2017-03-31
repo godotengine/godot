@@ -535,49 +535,49 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				//top left
 				DSTRECT(np->rect.pos.x, np->rect.pos.y, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
-				SRCRECT(0, 0, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.pos.x, np->source.pos.y, np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//top right
-				DSTRECT(np->rect.pos.x + np->rect.size.x - np->margin[MARGIN_RIGHT], np->rect.pos.y, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
-				SRCRECT(texture->width - np->margin[MARGIN_RIGHT], 0, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				DSTRECT(np->rect.pos.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.pos.y, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.pos.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.pos.y, np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//bottom right
-				DSTRECT(np->rect.pos.x + np->rect.size.x - np->margin[MARGIN_RIGHT], np->rect.pos.y + np->rect.size.y - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
-				SRCRECT(texture->width - np->margin[MARGIN_RIGHT], texture->height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
+				DSTRECT(np->rect.pos.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.pos.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.pos.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.pos.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_RIGHT], np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//bottom left
-				DSTRECT(np->rect.pos.x, np->rect.pos.y + np->rect.size.y - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
-				SRCRECT(0, texture->height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
+				DSTRECT(np->rect.pos.x, np->rect.pos.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.pos.x, np->source.pos.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->margin[MARGIN_LEFT], np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//top
 				DSTRECT(np->rect.pos.x + np->margin[MARGIN_LEFT], np->rect.pos.y, np->rect.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
-				SRCRECT(np->margin[MARGIN_LEFT], 0, texture->width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.pos.x + np->margin[MARGIN_LEFT], np->source.pos.y, np->source.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//bottom
-				DSTRECT(np->rect.pos.x + np->margin[MARGIN_LEFT], np->rect.pos.y + np->rect.size.y - np->margin[MARGIN_BOTTOM], np->rect.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
-				SRCRECT(np->margin[MARGIN_LEFT], texture->height - np->margin[MARGIN_BOTTOM], texture->width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
+				DSTRECT(np->rect.pos.x + np->margin[MARGIN_LEFT], np->rect.pos.y + np->rect.size.height - np->margin[MARGIN_BOTTOM], np->rect.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP]);
+				SRCRECT(np->source.pos.x + np->margin[MARGIN_LEFT], np->source.pos.y + np->source.size.height - np->margin[MARGIN_BOTTOM], np->source.size.width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//left
 				DSTRECT(np->rect.pos.x, np->rect.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_LEFT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
-				SRCRECT(0, np->margin[MARGIN_TOP], np->margin[MARGIN_LEFT], texture->height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.pos.x, np->source.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_LEFT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				//right
 				DSTRECT(np->rect.pos.x + np->rect.size.width - np->margin[MARGIN_RIGHT], np->rect.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_RIGHT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
-				SRCRECT(texture->width - np->margin[MARGIN_RIGHT], np->margin[MARGIN_TOP], np->margin[MARGIN_RIGHT], texture->height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+				SRCRECT(np->source.pos.x + np->source.size.width - np->margin[MARGIN_RIGHT], np->source.pos.y + np->margin[MARGIN_TOP], np->margin[MARGIN_RIGHT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
 				glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 				if (np->draw_center) {
 
 					//center
 					DSTRECT(np->rect.pos.x + np->margin[MARGIN_LEFT], np->rect.pos.y + np->margin[MARGIN_TOP], np->rect.size.x - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->rect.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
-					SRCRECT(np->margin[MARGIN_LEFT], np->margin[MARGIN_TOP], texture->width - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], texture->height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
+					SRCRECT(np->source.pos.x + np->margin[MARGIN_LEFT], np->source.pos.y + np->margin[MARGIN_TOP], np->source.size.x - np->margin[MARGIN_LEFT] - np->margin[MARGIN_RIGHT], np->source.size.height - np->margin[MARGIN_TOP] - np->margin[MARGIN_BOTTOM]);
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 				}
 
