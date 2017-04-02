@@ -1347,12 +1347,12 @@ Control::AnchorType Control::get_anchor(Margin p_margin) const {
 void Control::_change_notify_margins() {
 
 	// this avoids sending the whole object data again on a change
-	_change_notify("margin/left");
-	_change_notify("margin/top");
-	_change_notify("margin/right");
-	_change_notify("margin/bottom");
-	_change_notify("rect/pos");
-	_change_notify("rect/size");
+	_change_notify("margin_left");
+	_change_notify("margin_top");
+	_change_notify("margin_right");
+	_change_notify("margin_bottom");
+	_change_notify("rect_pos");
+	_change_notify("rect_size");
 }
 
 void Control::set_margin(Margin p_margin, float p_value) {
