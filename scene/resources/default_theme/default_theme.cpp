@@ -217,7 +217,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	Color control_font_color_low = Color::html("b0b0b0");
 	Color control_font_color_hover = Color::html("f0f0f0");
 	Color control_font_color_disabled = Color(0.9, 0.9, 0.9, 0.2);
-	Color control_font_color_pressed = Color::html("ffffff");
+	Color control_font_color_pressed = Color::html("7cc9ff");
 	Color font_color_selection = Color::html("7d7d7d");
 
 	// Panel
@@ -649,7 +649,7 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_color("font_color_selected", "Tree", control_font_color_pressed);
 	t->set_color("selection_color", "Tree", Color(0.1, 0.1, 1, 0.8));
 	t->set_color("cursor_color", "Tree", Color(0, 0, 0));
-	t->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
+	t->set_color("guide_color", "Tree", Color(0, 0, 0, 0));
 	t->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
 	t->set_color("relationship_line_color", "Tree", Color::html("464646"));
 
@@ -683,13 +683,13 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// TabContainer
 
-	Ref<StyleBoxTexture> tc_sb = sb_expand(make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 4, 4, 4, 4), 3, 3, 3, 3);
+	Ref<StyleBoxTexture> tc_sb = sb_expand(make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 0, 4, 0, 0), 0, 0, 0, 0);
 
 	tc_sb->set_expand_margin_size(MARGIN_TOP, 2 * scale);
 	tc_sb->set_default_margin(MARGIN_TOP, 8 * scale);
 
-	t->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
-	t->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
+	t->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 2, 16, 5), 0, 3, 0, 3));
+	t->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 2, 16, 5), 0, 3, 0, 3));
 	t->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	t->set_stylebox("panel", "TabContainer", tc_sb);
 
@@ -706,7 +706,6 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	t->set_color("font_color_bg", "TabContainer", control_font_color_low);
 	t->set_color("font_color_disabled", "TabContainer", control_font_color_disabled);
 
-	t->set_constant("side_margin", "TabContainer", 8 * scale);
 	t->set_constant("top_margin", "TabContainer", 24 * scale);
 	t->set_constant("label_valign_fg", "TabContainer", 0 * scale);
 	t->set_constant("label_valign_bg", "TabContainer", 2 * scale);
@@ -714,8 +713,8 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// Tabs
 
-	t->set_stylebox("tab_fg", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
-	t->set_stylebox("tab_bg", "Tabs", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
+	t->set_stylebox("tab_fg", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 4, 16, 1, 16, 2), 0, 3, 0, 3));
+	t->set_stylebox("tab_bg", "Tabs", sb_expand(make_stylebox(tab_behind_png, 4, 4, 4, 4, 16, 1, 16, 2), 0, 3, 0, 3));
 	t->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
 	t->set_stylebox("panel", "Tabs", tc_sb);
 	t->set_stylebox("button_pressed", "Tabs", make_stylebox(button_pressed_png, 4, 4, 4, 4));
@@ -866,11 +865,11 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 	Ref<StyleBoxTexture> ttnc = make_stylebox(full_panel_bg_png, 8, 8, 8, 8);
 	ttnc->set_draw_center(false);
 
-	t->set_stylebox("border", "ReferenceRect", make_stylebox(reference_border_png, 4, 4, 4, 4));
+	t->set_stylebox("border", "ReferenceRect", make_stylebox(reference_border_png, 4, 4, 4, 0));
 	t->set_stylebox("panelnc", "Panel", ttnc);
 	t->set_stylebox("panelf", "Panel", tc_sb);
 
-	Ref<StyleBoxTexture> sb_pc = make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 7, 7, 7, 7);
+	Ref<StyleBoxTexture> sb_pc = make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 0, 0, 0, 0);
 	t->set_stylebox("panel", "PanelContainer", sb_pc);
 
 	t->set_icon("minus", "GraphEdit", make_icon(icon_zoom_less_png));

@@ -1090,7 +1090,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	Color color = get_color("font_color", "Tree");
 	Color sepcolor = get_color("guide_color", "Tree");
 	Color timecolor = get_color("prop_subsection", "Editor");
-	timecolor = Color::html("ff4a414f");
+	timecolor = Color::html("31363d");
 	Color hover_color = Color(1, 1, 1, 0.05);
 	Color select_color = Color(1, 1, 1, 0.1);
 	Color invalid_path_color = Color(1, 0.6, 0.4, 0.5);
