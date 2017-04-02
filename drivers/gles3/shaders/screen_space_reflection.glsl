@@ -117,10 +117,10 @@ void main() {
 
 	// clip the line to the viewport edges
 
-	float scale_max_x = min(1, 0.99 * (1.0 - vp_line_begin.x) / max(1e-5, vp_line_dir.x));
-	float scale_max_y = min(1, 0.99 * (1.0 - vp_line_begin.y) / max(1e-5, vp_line_dir.y));
-	float scale_min_x = min(1, 0.99 * vp_line_begin.x / max(1e-5, -vp_line_dir.x));
-	float scale_min_y = min(1, 0.99 * vp_line_begin.y / max(1e-5, -vp_line_dir.y));
+	float scale_max_x = min(1.0, 0.99 * (1.0 - vp_line_begin.x) / max(1e-5, vp_line_dir.x));
+	float scale_max_y = min(1.0, 0.99 * (1.0 - vp_line_begin.y) / max(1e-5, vp_line_dir.y));
+	float scale_min_x = min(1.0, 0.99 * vp_line_begin.x / max(1e-5, -vp_line_dir.x));
+	float scale_min_y = min(1.0, 0.99 * vp_line_begin.y / max(1e-5, -vp_line_dir.y));
 	float line_clip = min(scale_max_x, scale_max_y) * min(scale_min_x, scale_min_y);
 	line_dir *= line_clip;
 	z_dir *= line_clip;
@@ -150,9 +150,9 @@ void main() {
 
 	//if acceleration > 0, distance between pixels gets larger each step. This allows covering a larger area
 	float accel=1.0+acceleration;
-	float steps_taken=0;
+	float steps_taken=0.0;
 
-	for(float i=0;i<num_steps;i++) {
+	for(int i=0;i<num_steps;i++) {
 
 		pos+=line_advance;
 		z+=z_advance;
@@ -232,11 +232,11 @@ void main() {
 			}
 
 			final_pos = new_pos;
-			grad=(steps_taken+subgrad)/num_steps;
+			grad=(steps_taken+subgrad)/float(num_steps);
 
 		} else {
 #endif
-			grad=steps_taken/num_steps;
+			grad=steps_taken/float(num_steps);
 			final_pos=pos;
 #ifdef SMOOTH_ACCEL
 		}
@@ -259,7 +259,7 @@ void main() {
 			vec2 cone_dir = final_pos - line_begin;
 			float cone_len = length(cone_dir);
 			cone_dir = normalize(cone_dir); //will be used normalized from now on
-			float max_mipmap = filter_mipmap_levels -1;
+			float max_mipmap = filter_mipmap_levels - 1.0;
 			float gloss_mult=gloss;
 
 			float rem_alpha=1.0;
