@@ -350,6 +350,7 @@ public:
 	void quit();
 
 	void set_input_as_handled();
+	bool is_input_handled();
 	_FORCE_INLINE_ float get_fixed_process_time() const { return fixed_process_time; }
 	_FORCE_INLINE_ float get_idle_process_time() const { return idle_process_time; }
 
