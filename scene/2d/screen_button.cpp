@@ -65,12 +65,14 @@ Ref<BitMap> TouchScreenButton::get_bitmask() const {
 
 void TouchScreenButton::set_shape(const Ref<Shape2D> &p_shape) {
 
+	if (shape.is_valid())
+		shape->disconnect("changed", this, "update");
+
 	shape = p_shape;
 
-	if (!is_inside_tree())
-		return;
-	if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
-		return;
+	if (shape.is_valid())
+		shape->connect("changed", this, "update");
+
 	update();
 }
 
@@ -82,11 +84,17 @@ Ref<Shape2D> TouchScreenButton::get_shape() const {
 void TouchScreenButton::set_shape_centered(bool p_shape_centered) {
 
 	shape_centered = p_shape_centered;
+	update();
+}
 
-	if (!is_inside_tree())
-		return;
-	if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
-		return;
+bool TouchScreenButton::is_shape_visible() const {
+
+	return shape_visible;
+}
+
+void TouchScreenButton::set_shape_visible(bool p_shape_visible) {
+
+	shape_visible = p_shape_visible;
 	update();
 }
 
@@ -118,6 +126,8 @@ void TouchScreenButton::_notification(int p_what) {
 					draw_texture(texture, Point2());
 			}
 
+			if (!shape_visible)
+				return;
 			if (!get_tree()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint())
 				return;
 			if (shape.is_valid()) {
@@ -373,6 +383,9 @@ void TouchScreenButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_shape_centered", "bool"), &TouchScreenButton::set_shape_centered);
 	ObjectTypeDB::bind_method(_MD("is_shape_centered"), &TouchScreenButton::is_shape_centered);
 
+	ObjectTypeDB::bind_method(_MD("set_shape_visible", "bool"), &TouchScreenButton::set_shape_visible);
+	ObjectTypeDB::bind_method(_MD("is_shape_visible"), &TouchScreenButton::is_shape_visible);
+
 	ObjectTypeDB::bind_method(_MD("set_action", "action"), &TouchScreenButton::set_action);
 	ObjectTypeDB::bind_method(_MD("get_action"), &TouchScreenButton::get_action);
 
@@ -391,6 +404,7 @@ void TouchScreenButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "bitmask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), _SCS("set_bitmask"), _SCS("get_bitmask"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), _SCS("set_shape"), _SCS("get_shape"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_centered"), _SCS("set_shape_centered"), _SCS("is_shape_centered"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shape_visible"), _SCS("set_shape_visible"), _SCS("is_shape_visible"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "passby_press"), _SCS("set_passby_press"), _SCS("is_passby_press_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), _SCS("set_action"), _SCS("get_action"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_mode", PROPERTY_HINT_ENUM, "Always,TouchScreen Only"), _SCS("set_visibility_mode"), _SCS("get_visibility_mode"));
@@ -406,6 +420,7 @@ TouchScreenButton::TouchScreenButton() {
 	passby_press = false;
 	visibility = VISIBILITY_ALWAYS;
 	shape_centered = true;
+	shape_visible = true;
 	unit_rect = Ref<RectangleShape2D>(memnew(RectangleShape2D));
 	unit_rect->set_extents(Vector2(0.5, 0.5));
 }
