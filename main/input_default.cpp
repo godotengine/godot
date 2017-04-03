@@ -485,12 +485,27 @@ void InputDefault::warp_mouse_pos(const Vector2 &p_to) {
 
 Point2i InputDefault::warp_mouse_motion(const InputEventMouseMotion &p_motion, const Rect2 &p_rect) {
 
-	const Point2i rel_warped(Math::fmod(p_motion.relative_x, p_rect.size.x), Math::fmod(p_motion.relative_y, p_rect.size.y));
+	// The relative distance reported for the next event after a warp is in the boundaries of the
+	// size of the rect on that axis, but it may be greater, in which case there's not problem as fmod()
+	// will warp it, but if the pointer has moved in the opposite direction between the pointer relocation
+	// and the subsequent event, the reported relative distance will be less than the size of the rect
+	// and thus fmod() will be disabled for handling the situation.
+	// And due to this mouse warping mechanism being stateless, we need to apply some heuristics to
+	// detect the warp: if the relative distance is greater than the half of the size of the relevant rect
+	// (checked per each axis), it will be considered as the consequence of a former pointer warp.
+
+	const Point2i rel_sgn(p_motion.relative_x >= 0.0f ? 1 : -1, p_motion.relative_y >= 0.0 ? 1 : -1);
+	const Size2i warp_margin = p_rect.size * 0.5f;
+	const Point2i rel_warped(
+			Math::fmod(p_motion.relative_x + rel_sgn.x * warp_margin.x, p_rect.size.x) - rel_sgn.x * warp_margin.x,
+			Math::fmod(p_motion.relative_y + rel_sgn.y * warp_margin.y, p_rect.size.y) - rel_sgn.y * warp_margin.y);
+
 	const Point2i pos_local = Point2i(p_motion.global_x, p_motion.global_y) - p_rect.pos;
 	const Point2i pos_warped(Math::fposmod(pos_local.x, p_rect.size.x), Math::fposmod(pos_local.y, p_rect.size.y));
 	if (pos_warped != pos_local) {
 		OS::get_singleton()->warp_mouse_pos(pos_warped + p_rect.pos);
 	}
+
 	return rel_warped;
 }
 
