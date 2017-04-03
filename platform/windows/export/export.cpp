@@ -26,28 +26,25 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "export.h"
 #include "editor/editor_export.h"
 #include "platform/windows/logo.h"
 
 void register_windows_exporter() {
 
-#if 0
+	Ref<EditorExportPlatformPC> platform;
+	platform.instance();
+
 	Image img(_windows_logo);
-	Ref<ImageTexture> logo = memnew( ImageTexture );
+	Ref<ImageTexture> logo;
+	logo.instance();
 	logo->create_from_image(img);
+	platform->set_logo(logo);
+	platform->set_name("Windows Desktop");
+	platform->set_extension("exe");
+	platform->set_release_32("windows_32_release.exe");
+	platform->set_debug_32("windows_32_debug.exe");
+	platform->set_release_64("windows_64_release.exe");
+	platform->set_debug_64("windows_64_debug.exe");
 
-	{
-		Ref<EditorExportPlatformPC> exporter = Ref<EditorExportPlatformPC>( memnew(EditorExportPlatformPC) );
-		exporter->set_binary_extension("exe");
-		exporter->set_release_binary32("windows_32_release.exe");
-		exporter->set_debug_binary32("windows_32_debug.exe");
-		exporter->set_release_binary64("windows_64_release.exe");
-		exporter->set_debug_binary64("windows_64_debug.exe");
-		exporter->set_name("Windows Desktop");
-		exporter->set_logo(logo);
-		EditorImportExport::get_singleton()->add_export_platform(exporter);
-	}
-
-#endif
+	EditorExport::get_singleton()->add_export_platform(platform);
 }
