@@ -1582,6 +1582,32 @@ bool OS_Windows::get_borderless_window() {
 	return video_mode.borderless_window;
 }
 
+Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle) {
+	p_library_handle = (void *)LoadLibrary(p_path.utf8().get_data());
+	if (!p_library_handle) {
+		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + String::num(GetLastError()));
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+	return OK;
+}
+
+Error OS_Windows::close_dynamic_library(void *p_library_handle) {
+	if (!FreeLibrary((HMODULE)p_library_handle)) {
+		return FAILED;
+	}
+	return OK;
+}
+
+Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
+	char *error;
+	p_symbol_handle = (void *)GetProcAddress((HMODULE)p_library_handle, p_name.utf8().get_data());
+	if (!p_symbol_handle) {
+		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + String::num(GetLastError()));
+		ERR_FAIL_V(ERR_CANT_RESOLVE);
+	}
+	return OK;
+}
+
 void OS_Windows::request_attention() {
 
 	FLASHWINFO info;

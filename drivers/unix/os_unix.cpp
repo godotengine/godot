@@ -54,6 +54,7 @@
 #endif
 #include "global_config.h"
 #include <assert.h>
+#include <dlfcn.h>
 #include <errno.h>
 #include <poll.h>
 #include <signal.h>
@@ -433,6 +434,36 @@ String OS_Unix::get_locale() const {
 	if (tp != -1)
 		locale = locale.substr(0, tp);
 	return locale;
+}
+
+Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle) {
+	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
+	if (!p_library_handle) {
+		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
+		ERR_FAIL_V(ERR_CANT_OPEN);
+	}
+	return OK;
+}
+
+Error OS_Unix::close_dynamic_library(void *p_library_handle) {
+	if (dlclose(p_library_handle)) {
+		return FAILED;
+	}
+	return OK;
+}
+
+Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
+	char *error;
+	dlerror(); // Clear existing errors
+
+	p_symbol_handle = dlsym(p_library_handle, p_name.utf8().get_data());
+
+	error = dlerror();
+	if (error != NULL) {
+		ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
+		ERR_FAIL_V(ERR_CANT_RESOLVE);
+	}
+	return OK;
 }
 
 Error OS_Unix::set_cwd(const String &p_cwd) {

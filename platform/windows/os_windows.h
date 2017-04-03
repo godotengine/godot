@@ -222,6 +222,10 @@ public:
 	virtual void set_borderless_window(int p_borderless);
 	virtual bool get_borderless_window();
 
+	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle);
+	virtual Error close_dynamic_library(void *p_library_handle);
+	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle);
+
 	virtual MainLoop *get_main_loop() const;
 
 	virtual String get_name();
