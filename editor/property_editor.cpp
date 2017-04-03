@@ -3846,8 +3846,8 @@ void PropertyEditor::_item_edited() {
 		} break;
 		case Variant::BOOL: {
 
-			_edit_set(name, item->is_checked(1), refresh_all);
 			item->set_tooltip(1, item->is_checked(1) ? "True" : "False");
+			_edit_set(name, item->is_checked(1), refresh_all);
 		} break;
 		case Variant::INT:
 		case Variant::REAL: {
