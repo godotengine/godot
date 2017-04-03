@@ -103,9 +103,11 @@ void StyleBoxTexture::set_texture(RES p_texture) {
 	if (texture == p_texture)
 		return;
 	texture = p_texture;
+	region_rect = Rect2(Point2(), texture->get_size());
 	emit_signal("texture_changed");
 	emit_changed();
 }
+
 RES StyleBoxTexture::get_texture() const {
 
 	return texture;
@@ -130,12 +132,12 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	if (texture.is_null())
 		return;
 
-	Rect2 r = p_rect;
-	r.pos.x -= expand_margin[MARGIN_LEFT];
-	r.pos.y -= expand_margin[MARGIN_TOP];
-	r.size.x += expand_margin[MARGIN_LEFT] + expand_margin[MARGIN_RIGHT];
-	r.size.y += expand_margin[MARGIN_TOP] + expand_margin[MARGIN_BOTTOM];
-	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, r, region_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, draw_center, modulate);
+	Rect2 rect = p_rect;
+	Rect2 src_rect = region_rect;
+
+	texture->get_rect_region(rect, src_rect, rect, src_rect);
+
+	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, draw_center, modulate);
 }
 
 void StyleBoxTexture::set_draw_center(bool p_draw) {
