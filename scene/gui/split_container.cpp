@@ -185,7 +185,7 @@ void SplitContainer::_resort() {
 	}
 
 	update();
-	_change_notify("split/offset");
+	_change_notify("split_offset");
 }
 
 Size2 SplitContainer::get_minimum_size() const {

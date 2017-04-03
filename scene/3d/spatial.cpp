@@ -220,9 +220,10 @@ void Spatial::set_transform(const Transform &p_transform) {
 
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
-	_change_notify("transform/translation");
-	_change_notify("transform/rotation");
-	_change_notify("transform/scale");
+	_change_notify("translation");
+	_change_notify("rotation");
+	_change_notify("rotation_deg");
+	_change_notify("scale");
 	_propagate_transform_changed(this);
 	if (data.notify_local_transform) {
 		notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED);
@@ -525,7 +526,7 @@ void Spatial::_propagate_visibility_changed() {
 
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
-	_change_notify("visibility/visible");
+	_change_notify("visible");
 #ifdef TOOLS_ENABLED
 	if (data.gizmo.is_valid())
 		_update_gizmo();
