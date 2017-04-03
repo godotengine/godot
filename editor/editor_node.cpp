@@ -5681,7 +5681,7 @@ EditorNode::EditorNode() {
 	overridden_default_layout = -1;
 	default_layout.instance();
 	default_layout->set_value(docks_section, "dock_3", TTR("FileSystem"));
-	default_layout->set_value(docks_section, "dock_5", TTR("Scene"));
+	default_layout->set_value(docks_section, "dock_5", TTR("Scene") + "," + TTR("Import"));
 	default_layout->set_value(docks_section, "dock_6", TTR("Inspector") + "," + TTR("Node"));
 
 	for (int i = 0; i < DOCK_SLOT_MAX / 2; i++)
