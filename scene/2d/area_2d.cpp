@@ -380,6 +380,10 @@ void Area2D::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_READY: {
+
+			is_ready = true;
+		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
 			monitoring_stored = monitoring;
@@ -387,8 +391,8 @@ void Area2D::_notification(int p_what) {
 			_clear_monitoring();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-
-			set_enable_monitoring(monitoring_stored);
+			if (is_ready)
+				set_enable_monitoring(monitoring_stored);
 		} break;
 	}
 }
@@ -646,7 +650,8 @@ Area2D::Area2D()
 	monitorable = false;
 	collision_mask = 1;
 	layer_mask = 1;
-	monitoring_stored = true;
+	monitoring_stored = false;
+	is_ready = false;
 	set_enable_monitoring(true);
 	set_monitorable(true);
 }
