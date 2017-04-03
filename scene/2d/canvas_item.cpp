@@ -206,7 +206,7 @@ void CanvasItem::show() {
 		return;
 
 	_propagate_visibility_changed(true);
-	_change_notify("visibility/visible");
+	_change_notify("visible");
 }
 
 void CanvasItem::hide() {
@@ -221,7 +221,7 @@ void CanvasItem::hide() {
 		return;
 
 	_propagate_visibility_changed(false);
-	_change_notify("visibility/visible");
+	_change_notify("visible");
 }
 
 Variant CanvasItem::edit_get_state() const {

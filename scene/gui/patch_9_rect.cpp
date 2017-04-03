@@ -102,16 +102,16 @@ void NinePatchRect::set_patch_margin(Margin p_margin, int p_size) {
 	minimum_size_changed();
 	switch (p_margin) {
 		case MARGIN_LEFT:
-			_change_notify("patch_margin/left");
+			_change_notify("patch_margin_left");
 			break;
 		case MARGIN_TOP:
-			_change_notify("patch_margin/top");
+			_change_notify("patch_margin_top");
 			break;
 		case MARGIN_RIGHT:
-			_change_notify("patch_margin/right");
+			_change_notify("patch_margin_right");
 			break;
 		case MARGIN_BOTTOM:
-			_change_notify("patch_margin/bottom");
+			_change_notify("patch_margin_bottom");
 			break;
 	}
 }

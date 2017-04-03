@@ -33,7 +33,7 @@ void Range::_value_changed_notify() {
 	_value_changed(shared->val);
 	emit_signal("value_changed", shared->val);
 	update();
-	_change_notify("range/value");
+	_change_notify("value");
 }
 
 void Range::Shared::emit_value_changed() {
@@ -87,26 +87,26 @@ void Range::set_min(double p_min) {
 	shared->min = p_min;
 	set_value(shared->val);
 
-	shared->emit_changed("range/min");
+	shared->emit_changed("min");
 }
 void Range::set_max(double p_max) {
 
 	shared->max = p_max;
 	set_value(shared->val);
 
-	shared->emit_changed("range/max");
+	shared->emit_changed("max");
 }
 void Range::set_step(double p_step) {
 
 	shared->step = p_step;
-	shared->emit_changed("range/step");
+	shared->emit_changed("step");
 }
 void Range::set_page(double p_page) {
 
 	shared->page = p_page;
 	set_value(shared->val);
 
-	shared->emit_changed("range/page");
+	shared->emit_changed("page");
 }
 
 double Range::get_value() const {
