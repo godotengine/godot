@@ -50,6 +50,7 @@ private:
 	Ref<BitMap> bitmask;
 	Ref<Shape2D> shape;
 	bool shape_centered;
+	bool shape_visible;
 
 	Ref<RectangleShape2D> unit_rect;
 
@@ -84,6 +85,9 @@ public:
 
 	void set_shape_centered(bool p_shape_centered);
 	bool is_shape_centered() const;
+
+	void set_shape_visible(bool p_shape_visible);
+	bool is_shape_visible() const;
 
 	void set_action(const String &p_action);
 	String get_action() const;
