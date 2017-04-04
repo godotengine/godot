@@ -1205,8 +1205,9 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				}
 			}
 
-			motion = get_collision_normal().slide(motion);
-			lv = get_collision_normal().slide(lv);
+			Vector2 n = get_collision_normal();
+			motion = motion.slide(n);
+			lv = lv.slide(n);
 			Variant collider = _get_collider();
 			if (collider.get_type() != Variant::NIL) {
 				move_and_slide_colliders.push_back(collider);

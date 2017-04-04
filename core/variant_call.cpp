@@ -340,6 +340,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector2, aspect);
 	VCALL_LOCALMEM1R(Vector2, dot);
 	VCALL_LOCALMEM1R(Vector2, slide);
+	VCALL_LOCALMEM1R(Vector2, bounce);
 	VCALL_LOCALMEM1R(Vector2, reflect);
 	VCALL_LOCALMEM0R(Vector2, angle);
 	//VCALL_LOCALMEM1R(Vector2,cross);
@@ -377,6 +378,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM1R(Vector3, distance_squared_to);
 	VCALL_LOCALMEM1R(Vector3, angle_to);
 	VCALL_LOCALMEM1R(Vector3, slide);
+	VCALL_LOCALMEM1R(Vector3, bounce);
 	VCALL_LOCALMEM1R(Vector3, reflect);
 
 	VCALL_LOCALMEM0R(Plane, normalized);
@@ -1438,8 +1440,9 @@ void register_variant_methods() {
 	ADDFUNC1(VECTOR2, VECTOR2, Vector2, snapped, VECTOR2, "by", varray());
 	ADDFUNC0(VECTOR2, REAL, Vector2, aspect, varray());
 	ADDFUNC1(VECTOR2, REAL, Vector2, dot, VECTOR2, "with", varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, slide, VECTOR2, "vec", varray());
-	ADDFUNC1(VECTOR2, VECTOR2, Vector2, reflect, VECTOR2, "vec", varray());
+	ADDFUNC1(VECTOR2, VECTOR2, Vector2, slide, VECTOR2, "n", varray());
+	ADDFUNC1(VECTOR2, VECTOR2, Vector2, bounce, VECTOR2, "n", varray());
+	ADDFUNC1(VECTOR2, VECTOR2, Vector2, reflect, VECTOR2, "n", varray());
 	//ADDFUNC1(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
 	ADDFUNC0(VECTOR2, VECTOR2, Vector2, abs, varray());
 	ADDFUNC1(VECTOR2, VECTOR2, Vector2, clamped, REAL, "length", varray());
@@ -1475,8 +1478,9 @@ void register_variant_methods() {
 	ADDFUNC1(VECTOR3, REAL, Vector3, distance_to, VECTOR3, "b", varray());
 	ADDFUNC1(VECTOR3, REAL, Vector3, distance_squared_to, VECTOR3, "b", varray());
 	ADDFUNC1(VECTOR3, REAL, Vector3, angle_to, VECTOR3, "to", varray());
-	ADDFUNC1(VECTOR3, VECTOR3, Vector3, slide, VECTOR3, "by", varray());
-	ADDFUNC1(VECTOR3, VECTOR3, Vector3, reflect, VECTOR3, "by", varray());
+	ADDFUNC1(VECTOR3, VECTOR3, Vector3, slide, VECTOR3, "n", varray());
+	ADDFUNC1(VECTOR3, VECTOR3, Vector3, bounce, VECTOR3, "n", varray());
+	ADDFUNC1(VECTOR3, VECTOR3, Vector3, reflect, VECTOR3, "n", varray());
 
 	ADDFUNC0(PLANE, PLANE, Plane, normalized, varray());
 	ADDFUNC0(PLANE, VECTOR3, Plane, center, varray());

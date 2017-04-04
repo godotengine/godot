@@ -46992,6 +46992,15 @@ do_property].
 				Returns the ratio of X to Y.
 			</description>
 		</method>
+		<method name="bounce">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="n" type="Vector2">
+			</argument>
+			<description>
+				Bounce returns the vector "bounced off" from the given plane, specified by its normal vector.
+			</description>
+		</method>
 		<method name="clamped">
 			<return type="Vector2">
 			</return>
@@ -47084,10 +47093,10 @@ do_property].
 		<method name="reflect">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="vec" type="Vector2">
+			<argument index="0" name="n" type="Vector2">
 			</argument>
 			<description>
-				Like "slide", but reflects the Vector instead of continuing along the wall.
+				Reflects the vector along the given plane, specified by its normal vector.
 			</description>
 		</method>
 		<method name="rotated">
@@ -47102,10 +47111,10 @@ do_property].
 		<method name="slide">
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="vec" type="Vector2">
+			<argument index="0" name="n" type="Vector2">
 			</argument>
 			<description>
-				Slides the vector by the other vector.
+				Slide returns the component of the vector along the given plane, specified by its normal vector.
 			</description>
 		</method>
 		<method name="snapped">
@@ -47176,6 +47185,15 @@ do_property].
 			<argument index="0" name="to" type="Vector3">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="bounce">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="n" type="Vector3">
+			</argument>
+			<description>
+				Bounce returns the vector "bounced off" from the given plane, specified by its normal vector.
 			</description>
 		</method>
 		<method name="ceil">
@@ -47308,10 +47326,10 @@ do_property].
 		<method name="reflect">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="by" type="Vector3">
+			<argument index="0" name="n" type="Vector3">
 			</argument>
 			<description>
-				Like "slide", but reflects the Vector instead of continuing along the wall.
+				Reflects the vector along the given plane, specified by its normal vector.
 			</description>
 		</method>
 		<method name="rotated">
@@ -47328,10 +47346,10 @@ do_property].
 		<method name="slide">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="by" type="Vector3">
+			<argument index="0" name="n" type="Vector3">
 			</argument>
 			<description>
-				Slides the vector along a wall.
+				Slide returns the component of the vector along the given plane, specified by its normal vector.
 			</description>
 		</method>
 		<method name="snapped">
