@@ -175,6 +175,16 @@ void GDAPI godot_script_register_signal(const char *p_name, const godot_signal *
 	library->_register_script_signal(p_name, p_signal);
 }
 
+void GDAPI *godot_dlinstance_get_userdata(godot_object *p_instance) {
+	Object *instance = (Object *)p_instance;
+	if (!instance)
+		return NULL;
+	if (instance->get_script_instance() && instance->get_script_instance()->get_language() == DLScriptLanguage::get_singleton()) {
+		return ((DLInstance *)instance->get_script_instance())->get_userdata();
+	}
+	return NULL;
+}
+
 // System functions
 void GDAPI *godot_alloc(int p_bytes) {
 	return memalloc(p_bytes);

@@ -121,8 +121,6 @@ typedef int godot_int;
 
 typedef float godot_real;
 
-typedef double godot_real64; // for Variant in 3.0
-
 /////// Object (forward declared)
 typedef void godot_object;
 
@@ -374,6 +372,8 @@ typedef struct godot_signal {
 } godot_signal;
 
 void GDAPI godot_script_register_signal(const char *p_name, const godot_signal *p_signal);
+
+void GDAPI *godot_dlinstance_get_userdata(godot_object *p_instance);
 
 ////// System Functions
 

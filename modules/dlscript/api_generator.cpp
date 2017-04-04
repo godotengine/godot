@@ -1,5 +1,7 @@
 #include "api_generator.h"
 
+#ifdef TOOLS_ENABLED
+
 #include "class_db.h"
 #include "core/global_config.h"
 #include "os/file_access.h"
@@ -368,15 +370,22 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 
 //
 
+#endif
+
 /*
  * Saves the whole Godot API to a JSON file located at
  *  p_path
  */
 Error generate_c_api(const String &p_path) {
 
+#ifndef TOOLS_ENABLED
+	return ERR_BUG;
+#else
+
 	List<ClassAPI> api = generate_c_api_classes();
 
 	List<String> json_source = generate_c_api_json(api);
 
 	return save_file(p_path, json_source);
+#endif
 }
