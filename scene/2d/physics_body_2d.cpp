@@ -1168,7 +1168,7 @@ Vector2 KinematicBody2D::move(const Vector2 &p_motion) {
 #endif
 }
 
-Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_bounces) {
+Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction, float p_slope_stop_min_velocity, int p_max_bounces, float p_floor_max_angle) {
 
 	Vector2 motion = (move_and_slide_floor_velocity + p_linear_velocity) * get_fixed_process_delta_time();
 	Vector2 lv = p_linear_velocity;
@@ -1189,7 +1189,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 				//all is a wall
 				move_and_slide_on_wall = true;
 			} else {
-				if (get_collision_normal().dot(p_floor_direction) > Math::cos(Math::deg2rad((float)45))) { //floor
+				if (get_collision_normal().dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
 
 					move_and_slide_on_floor = true;
 					move_and_slide_floor_velocity = get_collider_velocity();
@@ -1198,7 +1198,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						revert_motion();
 						return Vector2();
 					}
-				} else if (get_collision_normal().dot(p_floor_direction) < Math::cos(Math::deg2rad((float)45))) { //ceiling
+				} else if (get_collision_normal().dot(-p_floor_direction) <= Math::cos(p_floor_max_angle)) { //ceiling
 					move_and_slide_on_ceiling = true;
 				} else {
 					move_and_slide_on_wall = true;
@@ -1307,7 +1307,7 @@ void KinematicBody2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move", "rel_vec"), &KinematicBody2D::move);
 	ClassDB::bind_method(D_METHOD("move_to", "position"), &KinematicBody2D::move_to);
-	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "slope_stop_min_velocity", "max_bounces"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(5), DEFVAL(4));
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "slope_stop_min_velocity", "max_bounces", "floor_max_angle"), &KinematicBody2D::move_and_slide, DEFVAL(Vector2(0, 0)), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
 
 	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec"), &KinematicBody2D::test_move);
 	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicBody2D::get_travel);
