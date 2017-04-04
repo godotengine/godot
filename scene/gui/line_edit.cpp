@@ -616,10 +616,10 @@ void LineEdit::_notification(int p_what) {
 
 			int font_ascent = font->get_ascent();
 
-			Color selection_color = get_color("selection_color");
-			Color font_color = get_color("font_color");
-			Color font_color_selected = get_color("font_color_selected");
-			Color cursor_color = get_color("cursor_color");
+			Color selection_color=get_color("selection_color");
+			Color font_color=is_editable()? get_color("font_color") : get_color("font_color_read_only");
+			Color font_color_selected=get_color("font_color_selected");
+			Color cursor_color=get_color("cursor_color");
 
 			const String &t = text.empty() ? placeholder : text;
 			// draw placeholder color

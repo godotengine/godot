@@ -14,7 +14,7 @@
    viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="vslider_bg.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/checked.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="6.3853547"
-     inkscape:cy="7.8082243"
+     inkscape:zoom="22.627417"
+     inkscape:cx="10.537518"
+     inkscape:cy="7.6498812"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -61,7 +61,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -70,10 +70,16 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3623)">
-    <path
-       style="opacity:1;fill:#44424f;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 10,1039.3623 a 2,2 0 0 0 -2,-2 2,2 0 0 0 -2,2 l 0,10 a 2,2 0 0 0 2,2 2,2 0 0 0 2,-2 l 0,-10 z"
-       id="path4166"
-       inkscape:connector-curvature="0" />
+    <g
+       id="layer1-5"
+       inkscape:label="Layer 1"
+       transform="rotate(90,8,1044.3623)">
+      <path
+         id="path814"
+         transform="translate(0,1036.3623)"
+         d="m 4,5 a 3,3 0 0 0 -3,3 3,3 0 0 0 3,3 h 8 A 3,3 0 0 0 15,8 3,3 0 0 0 12,5 Z"
+         style="fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:connector-curvature="0" />
+    </g>
   </g>
 </svg>

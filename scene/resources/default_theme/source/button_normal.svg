@@ -9,12 +9,12 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16"
-   height="16"
-   viewBox="0 0 16 15.999999"
+   width="28"
+   height="28"
+   viewBox="0 0 28 27.999998"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="button_normal.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/button_normal.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="8.7203425"
-     inkscape:cy="9.916812"
+     inkscape:zoom="22.627417"
+     inkscape:cx="14.656576"
+     inkscape:cy="16.224112"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -67,16 +67,12 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1036.3623)">
-    <path
-       style="opacity:1;fill:#6d799f;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 4 2 A 2 2 0 0 0 2 4 L 2 12 A 2 2 0 0 0 4 14 L 12 14 A 2 2 0 0 0 14 12 L 14 4 A 2 2 0 0 0 12 2 L 4 2 z "
-       id="circle4178"
-       transform="translate(0,1036.3623)" />
-    <path
-       style="opacity:1;fill:#647198;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 4 3 A 1 1 0 0 0 3 4 L 3 12 A 1 1 0 0 0 4 13 L 12 13 A 1 1 0 0 0 13 12 L 13 4 A 1 1 0 0 0 12 3 L 4 3 z "
-       transform="translate(0,1036.3623)"
-       id="rect4188" />
+     transform="translate(0,-1024.3623)">
+    <circle
+       style="fill:#000000;fill-opacity:0.17647059;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4484"
+       cx="14"
+       cy="1038.3623"
+       r="11.999995" />
   </g>
 </svg>

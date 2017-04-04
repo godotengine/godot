@@ -37,6 +37,8 @@ class ToolButton : public Button {
 
 public:
 	ToolButton();
+protected:
+	void _notification(int p_what);
 };
 
 #endif // TOOL_BUTTON_H

@@ -14,7 +14,7 @@
    viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="progress_fill.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/popup_bg.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="5.169358"
-     inkscape:cy="7.8030206"
+     inkscape:zoom="32"
+     inkscape:cx="5.2752007"
+     inkscape:cy="7.6135176"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -72,13 +72,11 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3623)">
-    <rect
-       style="opacity:1;fill:#2cffac;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4158"
-       width="9.9999895"
-       height="9.9999895"
-       x="3.0000052"
-       y="1039.3623"
-       ry="0.99999481" />
+    <circle
+       style="fill:#7eff8a;fill-opacity:1;stroke:none;stroke-width:1.0285722;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path816"
+       cx="8"
+       cy="1044.3623"
+       r="6.0000048" />
   </g>
 </svg>

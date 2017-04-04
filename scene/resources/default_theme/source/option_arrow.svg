@@ -14,7 +14,7 @@
    viewBox="0 0 12 12"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    inkscape:export-filename="/home/djrm/Projects/godot/tools/editor/icons/icon_collapse.png"
    inkscape:export-xdpi="45"
    inkscape:export-ydpi="45"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254836"
-     inkscape:cx="6.0969578"
-     inkscape:cy="7.5632913"
+     inkscape:zoom="32.000001"
+     inkscape:cx="1.9397268"
+     inkscape:cy="6.8925614"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -42,8 +42,8 @@
      inkscape:snap-bbox-midpoints="false"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -61,7 +61,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -70,17 +70,18 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1040.3622)">
-    <path
-       style="fill:#e0e0e0;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 3,1045.3622 6,0 -3,-4 z"
-       id="path4158"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccc" />
-    <path
-       inkscape:connector-curvature="0"
-       id="path4160"
-       d="m 3,1047.3622 6,0 -3,4 z"
-       style="fill:#e0e0e0;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       sodipodi:nodetypes="cccc" />
+    <g
+       transform="translate(-2,-2)"
+       id="layer1-5"
+       inkscape:label="Layer 1"
+       style="fill:#ffffff;fill-opacity:1">
+      <path
+         id="path4158-6"
+         transform="translate(0,1036.3622)"
+         d="m 4,10 4,5 4,-5 z"
+         style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccc" />
+    </g>
   </g>
 </svg>

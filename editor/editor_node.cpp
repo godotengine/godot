@@ -2696,8 +2696,8 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 
 		ToolButton *tb = memnew(ToolButton);
 		tb->set_toggle_mode(true);
-		tb->connect("pressed", singleton, "_editor_select", varray(singleton->main_editor_buttons.size()));
-		tb->set_text(p_editor->get_name());
+		tb->connect("pressed",singleton,"_editor_select",varray(singleton->main_editor_buttons.size()));
+		tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(),"EditorIcons"));
 		singleton->main_editor_buttons.push_back(tb);
 		singleton->main_editor_button_vb->add_child(tb);
 		singleton->editor_table.push_back(p_editor);
@@ -5080,19 +5080,21 @@ EditorNode::EditorNode() {
 */
 	scene_tabs = memnew(Tabs);
 	scene_tabs->add_tab("unsaved");
-	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
-	scene_tabs->set_tab_close_display_policy((bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-	scene_tabs->connect("tab_changed", this, "_scene_tab_changed");
-	scene_tabs->connect("right_button_pressed", this, "_scene_tab_script_edited");
+	scene_tabs->set_tab_align(Tabs::ALIGN_LEFT);
+	scene_tabs->set_tab_close_display_policy( (bool(EDITOR_DEF("interface/always_show_close_button_in_scene_tabs", false)) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY) );
+	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
+	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
+	scene_tabs->set_margin(MARGIN_LEFT,20);
+	scene_tabs->set_margin(MARGIN_TOP,20);
 
 	srt->add_child(scene_tabs);
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 
-	//Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel","TabContainer");
-	//scene_root_parent->add_style_override("panel",sp);
+	Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel_full","PanelContainer");
+	scene_root_parent->add_style_override("panel",sp);
 
 	/*scene_root_parent->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	scene_root_parent->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
@@ -5271,6 +5273,8 @@ EditorNode::EditorNode() {
 	//s1->set_size(Point2(10,15));
 
 	play_cc = memnew(CenterContainer);
+	// play_cc->add_style_override("bg",gui_base->get_stylebox("panel","PanelContainer"));
+
 	play_cc->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	gui_base->add_child(play_cc);
 	play_cc->set_area_as_parent_rect();
@@ -5399,6 +5403,8 @@ EditorNode::EditorNode() {
 
 	PanelContainer *vu_cont = memnew(PanelContainer);
 	vu_cont->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+
+	// CenterContainer *vu_cont = memnew( CenterContainer );
 	menu_hb->add_child(vu_cont);
 
 	audio_vu = memnew(TextureProgress);

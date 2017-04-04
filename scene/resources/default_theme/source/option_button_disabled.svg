@@ -14,7 +14,7 @@
    viewBox="0 0 32 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="option_button_disabled.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/tab_behind.png"
    inkscape:export-xdpi="90"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="16"
-     inkscape:cx="-1.111875"
-     inkscape:cy="14.352671"
+     inkscape:cx="16.473971"
+     inkscape:cy="6.9844771"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -63,7 +63,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -72,13 +72,10 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3623)">
-    <rect
-       style="opacity:1;fill:#413f48;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4180"
-       width="28"
-       height="12"
-       x="2"
-       y="1038.3623"
-       ry="2.9999948" />
+    <path
+       style="fill:#576c83;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 5 1 C 2.7840026 1 1 2.7840026 1 5 L 1 11 C 1 13.215997 2.7840026 15 5 15 L 27 15 C 29.215997 15 31 13.215997 31 11 L 31 5 C 31 2.7840026 29.215997 1 27 1 L 5 1 z M 5 2 L 27 2 C 28.661997 2 30 3.3380026 30 5 L 30 11 C 30 12.661997 28.661997 14 27 14 L 5 14 C 3.3380026 14 2 12.661997 2 11 L 2 5 C 2 3.3380026 3.3380026 2 5 2 z "
+       transform="translate(0,1036.3623)"
+       id="rect4484" />
   </g>
 </svg>

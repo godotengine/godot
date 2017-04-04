@@ -14,7 +14,7 @@
    viewBox="0 0 12 11.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="scroll_bg.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/panel_bg.png"
    inkscape:export-xdpi="90"
@@ -29,7 +29,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="45.254836"
-     inkscape:cx="8.9321357"
+     inkscape:cx="4.4464273"
      inkscape:cy="6.9717582"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -67,18 +67,5 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1040.3623)">
-    <path
-       id="path4135"
-       transform="translate(0,1040.3623)"
-       d="M 6,0 C 2.6862915,0 0,2.6862915 0,6 0,9.3137085 2.6862915,12 6,12 9.3137085,12 12,9.3137085 12,6 12,2.6862915 9.3137085,0 6,0 Z"
-       style="opacity:1;fill:#525a74;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="sssss" />
-    <path
-       style="opacity:1;fill:#5c6582;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 6 0 A 6 6 0 0 0 0 6 A 6 6 0 0 0 6 12 A 6 6 0 0 0 12 6 A 6 6 0 0 0 6 0 z M 6 1 A 5 5 0 0 1 11 6 A 5 5 0 0 1 6 11 A 5 5 0 0 1 1 6 A 5 5 0 0 1 6 1 z "
-       transform="translate(0,1040.3623)"
-       id="path4165" />
-  </g>
+     transform="translate(0,-1040.3623)" />
 </svg>

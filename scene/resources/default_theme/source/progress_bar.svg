@@ -14,7 +14,7 @@
    viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="progress_bar.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/popup_bg.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="8.9830012"
-     inkscape:cy="8.1106556"
+     inkscape:zoom="32"
+     inkscape:cx="6.2769476"
+     inkscape:cy="8.8116358"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -68,22 +68,5 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1036.3623)">
-    <rect
-       style="opacity:1;fill:#6c687c;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4136"
-       width="14.00001"
-       height="14.00001"
-       x="0.99999481"
-       y="1037.3623"
-       ry="1.9999949" />
-    <rect
-       style="opacity:1;fill:#565464;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4138"
-       width="12.250009"
-       height="12.250005"
-       x="1.8749955"
-       y="1038.2373"
-       ry="1.1249949" />
-  </g>
+     transform="translate(0,-1036.3623)" />
 </svg>

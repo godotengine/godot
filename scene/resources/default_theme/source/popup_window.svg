@@ -14,7 +14,7 @@
    viewBox="0 0 42 69.999996"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="popup_window.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/full_panel_bg.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="15.999999"
-     inkscape:cx="2.6903873"
-     inkscape:cy="43.08718"
+     inkscape:zoom="11.313708"
+     inkscape:cx="20.162833"
+     inkscape:cy="30.616931"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -85,12 +85,12 @@
        y="984.3623"
        ry="2.9999914" />
     <path
-       style="opacity:1;fill:#555e79;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#455463;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 9 3 A 2 2 0 0 0 7 5 L 7 65 A 2 2 0 0 0 9 67 L 33 67 A 2 2 0 0 0 35 65 L 35 5 A 2 2 0 0 0 33 3 L 9 3 z M 11 5 L 31 5 A 2 2 0 0 0 33 7 L 33 63 A 2 2 0 0 0 31 65 L 11 65 A 2 2 0 0 0 9 63 A 2 2 0 0 0 8 63.271484 L 8 6.7304688 A 2 2 0 0 0 9 7 A 2 2 0 0 0 11 5 z "
-       transform="translate(0,982.3623)"
-       id="rect4162" />
+       id="rect4162"
+       transform="translate(0,982.3623)" />
     <path
-       style="opacity:1;fill:#454c62;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#394653;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 9 4 A 1 1 0 0 0 8 5 L 8 65 A 1 1 0 0 0 9 66 L 33 66 A 1 1 0 0 0 34 65 L 34 5 A 1 1 0 0 0 33 4 L 9 4 z "
        transform="translate(0,982.3623)"
        id="path4142" />

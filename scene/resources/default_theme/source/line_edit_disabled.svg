@@ -14,7 +14,7 @@
    viewBox="0 0 10 9.9999994"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="line_edit_disabled.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/tab_container_bg.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="7.5928038"
-     inkscape:cy="5.7525868"
+     inkscape:zoom="32"
+     inkscape:cx="1.5842731"
+     inkscape:cy="4.5824922"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -69,12 +69,12 @@
      id="layer1"
      transform="translate(0,-1042.3623)">
     <rect
-       style="opacity:1;fill:#302f38;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4145"
+       style="fill:#576c83;fill-opacity:1;stroke:none;stroke-width:0.84515429;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4484"
        width="10"
-       height="10"
+       height="1"
        x="0"
-       y="1042.3623"
-       ry="1.9999949" />
+       y="1051.3623"
+       ry="0" />
   </g>
 </svg>

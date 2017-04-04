@@ -14,7 +14,7 @@
    viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="popup_bg.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/popup_bg.png"
    inkscape:export-xdpi="90"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="22.627417"
-     inkscape:cx="11.447335"
-     inkscape:cy="4.9242511"
+     inkscape:cx="-3.2334838"
+     inkscape:cy="11.1872"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -86,12 +86,12 @@
        y="1037.3623"
        ry="2.9999948" />
     <path
-       style="opacity:1;fill:#677191;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#455463;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 4 2 A 2 2 0 0 0 2 4 L 2 12 A 2 2 0 0 0 4 14 L 12 14 A 2 2 0 0 0 14 12 L 14 4 A 2 2 0 0 0 12 2 L 4 2 z "
        transform="translate(0,1036.3623)"
        id="circle4178" />
     <path
-       style="opacity:1;fill:#5d6683;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#394653;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="M 4 3 A 1 1 0 0 0 3 4 L 3 12 A 1 1 0 0 0 4 13 L 12 13 A 1 1 0 0 0 13 12 L 13 4 A 1 1 0 0 0 12 3 L 4 3 z "
        transform="translate(0,1036.3623)"
        id="rect4188" />

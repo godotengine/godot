@@ -14,7 +14,7 @@
    viewBox="0 0 32 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="option_button_hover.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/tab_behind.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="16"
-     inkscape:cx="-1.111875"
-     inkscape:cy="14.352671"
+     inkscape:zoom="22.627417"
+     inkscape:cx="21.709456"
+     inkscape:cy="12.128092"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -63,7 +63,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -72,13 +72,16 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3623)">
-    <rect
-       style="opacity:1;fill:#6a677b;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4180"
-       width="28"
-       height="12"
-       x="2"
-       y="1038.3623"
-       ry="2.9999948" />
+    <g
+       id="layer1-5"
+       inkscape:label="Layer 1"
+       style="fill:#bddbff;fill-opacity:1">
+      <path
+         id="rect4484"
+         transform="translate(0,1036.3623)"
+         d="M 5,1 C 2.7840026,1 1,2.7840026 1,5 v 6 c 0,2.215997 1.7840026,4 4,4 h 22 c 2.215997,0 4,-1.784003 4,-4 V 5 C 31,2.7840026 29.215997,1 27,1 Z m 0,1 h 22 c 1.661997,0 3,1.3380026 3,3 v 6 c 0,1.661997 -1.338003,3 -3,3 H 5 C 3.3380026,14 2,12.661997 2,11 V 5 C 2,3.3380026 3.3380026,2 5,2 Z"
+         style="fill:#bddbff;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+         inkscape:connector-curvature="0" />
+    </g>
   </g>
 </svg>

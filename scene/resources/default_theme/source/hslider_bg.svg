@@ -14,7 +14,7 @@
    viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="hslider_bg.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/checked.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="3.3359567"
-     inkscape:cy="7.7861272"
+     inkscape:zoom="32"
+     inkscape:cx="9.463221"
+     inkscape:cy="6.5721301"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -71,9 +71,9 @@
      id="layer1"
      transform="translate(0,-1036.3623)">
     <path
-       style="opacity:1;fill:#44424f;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 3 6 A 2 2 0 0 0 1 8 A 2 2 0 0 0 3 10 L 13 10 A 2 2 0 0 0 15 8 A 2 2 0 0 0 13 6 L 3 6 z "
+       style="fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 4 5 A 3 3 0 0 0 1 8 A 3 3 0 0 0 4 11 L 12 11 A 3 3 0 0 0 15 8 A 3 3 0 0 0 12 5 L 4 5 z "
        transform="translate(0,1036.3623)"
-       id="path4166" />
+       id="path814" />
   </g>
 </svg>

@@ -3122,8 +3122,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor_selection->add_editor_plugin(this);
 	editor_selection->connect("selection_changed", this, "update");
 
-	hb = memnew(HBoxContainer);
-	add_child(hb);
+	hb = memnew( HBoxContainer );
+	hb->add_style_override("bg", editor->get_gui_base()->get_stylebox("panel","PanelContainer"));
+	add_child( hb );
 	hb->set_area_as_parent_rect();
 
 	bottom_split = memnew(VSplitContainer);

@@ -14,7 +14,7 @@
    viewBox="0 0 64 31.999998"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="toggle_off.svg"
    inkscape:export-filename="/home/djrm/Projects/gd_theme/assets/check_btn_off.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="32.871879"
-     inkscape:cy="18.518103"
+     inkscape:zoom="11.313709"
+     inkscape:cx="35.30642"
+     inkscape:cy="10.306683"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -71,21 +71,16 @@
      id="layer1"
      transform="translate(0,-1020.3623)">
     <path
-       style="fill:#6a677b;fill-opacity:1;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       style="fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 24 6 A 10.000006 10.000006 0 0 0 14 16 A 10.000006 10.000006 0 0 0 24 26 L 40 26 A 9.9999943 9.9999943 0 0 0 50 16 A 9.9999943 9.9999943 0 0 0 40 6 L 24 6 z "
        transform="translate(0,1020.3623)"
        id="circle4160" />
     <circle
-       r="8.0000057"
+       r="7.9999924"
        cy="1036.3623"
-       cx="23.999994"
-       id="circle4262"
-       style="fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    <circle
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path4184"
-       cx="23.999994"
-       cy="1036.3623"
-       r="6.9999943" />
+       cx="-24.000006"
+       id="circle4138"
+       style="fill:#d3d3d3;fill-opacity:1;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       transform="scale(-1,1)" />
   </g>
 </svg>

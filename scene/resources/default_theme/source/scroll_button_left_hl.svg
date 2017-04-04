@@ -9,14 +9,14 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="16"
-   height="16"
-   viewBox="0 0 16 15.999999"
+   width="12"
+   height="12"
+   viewBox="0 0 12 11.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="tab_container.svg"
-   inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/tab_container_bg.png"
+   inkscape:version="0.92.1 r"
+   sodipodi:docname="scroll_button_left_hl.svg"
+   inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/panel_bg.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="1.195927"
-     inkscape:cy="8.010776"
+     inkscape:zoom="45.254834"
+     inkscape:cx="4.238333"
+     inkscape:cy="6.998836"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,12 +41,11 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1"
-     inkscape:snap-nodes="false">
+     inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
        id="grid4136"
@@ -60,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -68,16 +67,11 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1036.3623)">
+     transform="translate(0,-1040.3623)">
     <path
-       inkscape:connector-curvature="0"
-       style="opacity:1;fill:#5b6480;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 4,1038.3623 a 2,2 0 0 0 -2,2 l 0,8 a 2,2 0 0 0 2,2 l 8,0 a 2,2 0 0 0 2,-2 l 0,-8 a 2,2 0 0 0 -2,-2 l -8,0 z"
-       id="circle4178" />
-    <path
-       style="opacity:1;fill:#525a74;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 4,1039.3623 a 1,1 0 0 0 -1,1 l 0,8 a 1,1 0 0 0 1,1 l 8,0 a 1,1 0 0 0 1,-1 l 0,-8 a 1,1 0 0 0 -1,-1 l -8,0 z"
-       id="rect4188"
+       style="fill:none;stroke:#7eff8a;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 6.999975,1042.3623 -3,4 3,4"
+       id="path4511"
        inkscape:connector-curvature="0" />
   </g>
 </svg>

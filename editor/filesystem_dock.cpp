@@ -1659,9 +1659,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	button_reload->set_tooltip(TTR("Re-Scan Filesystem"));
 	button_reload->hide();
 
-	//toolbar_hbc->add_spacer();
-
-	button_favorite = memnew(Button);
+	button_favorite = memnew( Button );
 	button_favorite->set_flat(true);
 	button_favorite->set_toggle_mode(true);
 	button_favorite->connect("pressed", this, "_favorites_pressed");

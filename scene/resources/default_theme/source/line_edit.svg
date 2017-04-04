@@ -14,7 +14,7 @@
    viewBox="0 0 10 9.9999994"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="line_edit.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/tab_container_bg.png"
    inkscape:export-xdpi="90"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="45.254834"
-     inkscape:cx="7.8072305"
-     inkscape:cy="4.8914218"
+     inkscape:cx="5.9850658"
+     inkscape:cy="3.4476875"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -68,34 +68,13 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1042.3623)">
-    <path
-       style="opacity:1;fill:#454e68;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 13,1042.3623 c -1.107997,0 -2,0.892 -2,2 l 0,6 c 0,1.108 0.892003,2 2,2 l 6,0 c 1.107997,0 2,-0.892 2,-2 l 0,-6 c 0,-1.108 -0.892003,-2 -2,-2 l -6,0 z"
-       id="rect4147"
-       inkscape:connector-curvature="0" />
-    <path
-       style="opacity:1;fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 13,1042.3623 c -0.741068,0 -1.379048,0.4042 -1.724609,1 l 9.449218,0 c -0.345561,-0.5958 -0.983541,-1 -1.724609,-1 l -6,0 z"
-       id="rect4148"
-       inkscape:connector-curvature="0" />
-    <path
-       style="opacity:1;fill:#000000;fill-opacity:0.15686275;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 11.275391,1043.3623 c -0.1711,0.295 -0.275391,0.6331 -0.275391,1 l 10,0 c 0,-0.3669 -0.104291,-0.705 -0.275391,-1 l -9.449218,0 z"
-       id="rect4150"
-       inkscape:connector-curvature="0" />
     <rect
-       style="opacity:1;fill:#000000;fill-opacity:0.11764706;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4152"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.19523001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4484"
        width="10"
-       height="1"
-       x="11"
-       y="1044.3623"
-       ry="0" />
-    <circle
-       style="opacity:1;fill:#454e68;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="path4139"
-       cx="5"
-       cy="1047.3623"
-       r="5" />
+       height="2.0000048"
+       x="0"
+       y="1050.3623"
+       ry="1.0000024" />
   </g>
 </svg>

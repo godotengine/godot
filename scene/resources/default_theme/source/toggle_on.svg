@@ -14,7 +14,7 @@
    viewBox="0 0 64 31.999998"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="toggle_on.svg"
    inkscape:export-filename="/home/djrm/Projects/gd_theme/assets/check_btn_on.png"
    inkscape:export-xdpi="90"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="16.000001"
-     inkscape:cx="24.211975"
-     inkscape:cy="18.380612"
+     inkscape:cx="31.866725"
+     inkscape:cy="13.213395"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -71,21 +71,15 @@
      id="layer1"
      transform="translate(0,-1020.3623)">
     <path
-       style="fill:#6a677b;fill-opacity:1;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 24 6 A 10.000006 10.000006 0 0 0 14 16 A 10.000006 10.000006 0 0 0 24 26 L 40 26 A 9.9999943 9.9999943 0 0 0 50 16 A 9.9999943 9.9999943 0 0 0 40 6 L 24 6 z "
-       transform="translate(0,1020.3623)"
+       inkscape:connector-curvature="0"
+       style="fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 40.000015,1026.3623 a 10.000006,10.000006 0 0 1 10,10 10.000006,10.000006 0 0 1 -10,10 h -16 a 9.9999943,9.9999943 0 0 1 -10,-10 9.9999943,9.9999943 0 0 1 10,-10 z"
        id="circle4160" />
     <circle
        r="7.9999924"
        cy="1036.3623"
        cx="40.000008"
        id="circle4138"
-       style="fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-    <circle
-       style="fill:#2cffac;fill-opacity:1;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path4184"
-       cx="40.000008"
-       cy="1036.3623"
-       r="6.9999943" />
+       style="fill:#7eff8a;fill-opacity:1;stroke:none;stroke-width:20;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>

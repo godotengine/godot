@@ -14,7 +14,7 @@
    viewBox="0 0 32 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="option_button_pressed.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/tab_behind.png"
    inkscape:export-xdpi="90"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="18.638713"
-     inkscape:cy="10.241811"
+     inkscape:cx="18.794963"
+     inkscape:cy="8.491811"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1"
@@ -72,21 +72,26 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3623)">
-    <rect
-       style="opacity:1;fill:#6a677b;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4180"
-       width="28"
-       height="12"
-       x="2"
-       y="1038.3623"
-       ry="2.9999948" />
-    <rect
-       ry="1.9999949"
-       y="1039.3623"
-       x="3"
-       height="10.000005"
-       width="26"
-       id="rect4144"
-       style="opacity:1;fill:#565464;fill-opacity:1;stroke:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <g
+       id="layer1-56"
+       inkscape:label="Layer 1"
+       style="fill:#7eff8a;fill-opacity:1">
+      <g
+         style="fill:#7eff8a;fill-opacity:1"
+         inkscape:label="Layer 1"
+         id="layer1-0">
+        <g
+           id="layer1-5"
+           inkscape:label="Layer 1"
+           style="fill:#7eff8a;fill-opacity:1">
+          <path
+             id="rect4484"
+             transform="translate(0,1036.3623)"
+             d="M 5,1 C 2.7840026,1 1,2.7840026 1,5 v 6 c 0,2.215997 1.7840026,4 4,4 h 22 c 2.215997,0 4,-1.784003 4,-4 V 5 C 31,2.7840026 29.215997,1 27,1 Z m 0,1 h 22 c 1.661997,0 3,1.3380026 3,3 v 6 c 0,1.661997 -1.338003,3 -3,3 H 5 C 3.3380026,14 2,12.661997 2,11 V 5 C 2,3.3380026 3.3380026,2 5,2 Z"
+             style="fill:#7eff8a;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+             inkscape:connector-curvature="0" />
+        </g>
+      </g>
+    </g>
   </g>
 </svg>
