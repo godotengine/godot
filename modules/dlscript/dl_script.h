@@ -241,6 +241,8 @@ class DLInstance : public ScriptInstance {
 public:
 	_FORCE_INLINE_ Object *get_owner() { return owner; }
 
+	_FORCE_INLINE_ void *get_userdata() { return userdata; }
+
 	virtual bool set(const StringName &p_name, const Variant &p_value);
 	virtual bool get(const StringName &p_name, Variant &r_ret) const;
 	virtual void get_property_list(List<PropertyInfo> *p_properties) const;

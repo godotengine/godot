@@ -71,7 +71,8 @@ void GDAPI godot_variant_copy(godot_variant *p_dest, const godot_variant *p_src)
 void GDAPI godot_variant_new_nil(godot_variant *p_v);
 
 void GDAPI godot_variant_new_bool(godot_variant *p_v, const godot_bool p_b);
-void GDAPI godot_variant_new_int(godot_variant *p_v, const uint64_t p_i);
+void GDAPI godot_variant_new_uint(godot_variant *p_v, const uint64_t p_i);
+void GDAPI godot_variant_new_int(godot_variant *p_v, const int64_t p_i);
 void GDAPI godot_variant_new_real(godot_variant *p_v, const double p_r);
 void GDAPI godot_variant_new_string(godot_variant *p_v, const godot_string *p_s);
 void GDAPI godot_variant_new_vector2(godot_variant *p_v, const godot_vector2 *p_v2);
@@ -100,8 +101,9 @@ void GDAPI godot_variant_new_pool_vector3_array(godot_variant *p_v, const godot_
 void GDAPI godot_variant_new_pool_color_array(godot_variant *p_v, const godot_pool_color_array *p_pca);
 
 godot_bool GDAPI godot_variant_as_bool(const godot_variant *p_v);
-uint64_t GDAPI godot_variant_as_int(const godot_variant *p_v);
-godot_real GDAPI godot_variant_as_real(const godot_variant *p_v);
+uint64_t GDAPI godot_variant_as_uint(const godot_variant *p_v);
+int64_t GDAPI godot_variant_as_int(const godot_variant *p_v);
+double GDAPI godot_variant_as_real(const godot_variant *p_v);
 godot_string GDAPI godot_variant_as_string(const godot_variant *p_v);
 godot_vector2 GDAPI godot_variant_as_vector2(const godot_variant *p_v);
 godot_rect2 GDAPI godot_variant_as_rect2(const godot_variant *p_v);
