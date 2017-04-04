@@ -114,6 +114,8 @@ public:
 		POOL_VECTOR3_ARRAY,
 		POOL_COLOR_ARRAY,
 
+		GENERIC_POINTER,
+
 		VARIANT_MAX
 
 	};
@@ -305,6 +307,8 @@ public:
 	Variant(const Vector<Vector2> &p_array); // helper
 	Variant(const PoolVector<Vector2> &p_array); // helper
 
+	Variant(const void *p_pointer);
+
 	Variant(const IP_Address &p_address);
 
 	enum Operator {
@@ -408,6 +412,8 @@ public:
 
 	bool hash_compare(const Variant &p_variant) const;
 	bool booleanize(bool &valid) const;
+
+	void *get_generic_pointer() const;
 
 	void static_assign(const Variant &p_variant);
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
