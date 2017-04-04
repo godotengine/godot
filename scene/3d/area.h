@@ -57,8 +57,10 @@ private:
 	uint32_t layer_mask;
 	int priority;
 	bool monitoring;
+	bool monitoring_stored;
 	bool monitorable;
 	bool locked;
+	bool is_ready;
 
 	void _body_inout(int p_status, const RID &p_body, int p_instance, int p_body_shape, int p_area_shape);
 
