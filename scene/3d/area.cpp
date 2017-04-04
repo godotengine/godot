@@ -227,6 +227,10 @@ void Area::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
 			ERR_CONTINUE(!node);
+
+			node->disconnect(SceneStringNames::get_singleton()->enter_tree, this, SceneStringNames::get_singleton()->_body_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->exit_tree, this, SceneStringNames::get_singleton()->_body_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -236,9 +240,6 @@ void Area::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->body_exit, obj);
-
-			node->disconnect(SceneStringNames::get_singleton()->enter_tree, this, SceneStringNames::get_singleton()->_body_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->exit_tree, this, SceneStringNames::get_singleton()->_body_exit_tree);
 		}
 	}
 
@@ -253,6 +254,10 @@ void Area::_clear_monitoring() {
 			Object *obj = ObjectDB::get_instance(E->key());
 			Node *node = obj ? obj->cast_to<Node>() : NULL;
 			ERR_CONTINUE(!node);
+
+			node->disconnect(SceneStringNames::get_singleton()->enter_tree, this, SceneStringNames::get_singleton()->_area_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->exit_tree, this, SceneStringNames::get_singleton()->_area_exit_tree);
+
 			if (!E->get().in_tree)
 				continue;
 
@@ -262,16 +267,27 @@ void Area::_clear_monitoring() {
 			}
 
 			emit_signal(SceneStringNames::get_singleton()->area_exit, obj);
-
-			node->disconnect(SceneStringNames::get_singleton()->enter_tree, this, SceneStringNames::get_singleton()->_area_enter_tree);
-			node->disconnect(SceneStringNames::get_singleton()->exit_tree, this, SceneStringNames::get_singleton()->_area_exit_tree);
 		}
 	}
 }
 void Area::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-		_clear_monitoring();
+	switch (p_what) {
+
+		case NOTIFICATION_READY: {
+
+			is_ready = true;
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+
+			monitoring_stored = monitoring;
+			set_enable_monitoring(false);
+			_clear_monitoring();
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			if (is_ready)
+				set_enable_monitoring(monitoring_stored);
+		} break;
 	}
 }
 
@@ -627,6 +643,8 @@ Area::Area()
 	monitoring = false;
 	collision_mask = 1;
 	layer_mask = 1;
+	monitoring_stored = false;
+	is_ready = false;
 	set_ray_pickable(false);
 	set_enable_monitoring(true);
 	set_monitorable(true);
