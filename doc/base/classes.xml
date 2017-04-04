@@ -21836,6 +21836,8 @@
 			</argument>
 			<argument index="3" name="max_bounces" type="int" default="4">
 			</argument>
+			<argument index="4" name="floor_max_angle" type="float" default="0.785398">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -21846,6 +21848,7 @@
 			</argument>
 			<description>
 				Move the body to the given position. This is not a teleport, and the body will stop if there is an obstacle. The returned vector is how much movement was remaining before being stopped.
+				[code]floor_max_angle[/code] is in radians (default is pi/4), and filters which obstacles should be considered as floors/cellings instead of walls.
 			</description>
 		</method>
 		<method name="revert_motion">

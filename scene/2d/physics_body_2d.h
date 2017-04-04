@@ -314,7 +314,7 @@ public:
 	void set_collision_margin(float p_margin);
 	float get_collision_margin() const;
 
-	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction = Vector2(0, 0), float p_slope_stop_min_velocity = 5, int p_max_bounces = 4);
+	Vector2 move_and_slide(const Vector2 &p_linear_velocity, const Vector2 &p_floor_direction = Vector2(0, 0), float p_slope_stop_min_velocity = 5, int p_max_bounces = 4, float p_floor_max_angle = Math::deg2rad((float)45));
 	bool is_move_and_slide_on_floor() const;
 	bool is_move_and_slide_on_wall() const;
 	bool is_move_and_slide_on_ceiling() const;
