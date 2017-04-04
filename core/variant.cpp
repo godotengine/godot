@@ -188,6 +188,10 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "PoolColorArray";
 
 		} break;
+		case GENERIC_POINTER: {
+
+			return "void*";
+		}
 		default: {}
 	}
 
@@ -1996,6 +2000,12 @@ Variant::operator PoolVector<Plane>() const {
 	return planes;
 }
 
+void *Variant::get_generic_pointer() const {
+	if (type != GENERIC_POINTER)
+		return NULL;
+	return _data._ptr;
+}
+
 Variant::operator PoolVector<Face3>() const {
 
 	PoolVector<Vector3> va = operator PoolVector<Vector3>();
@@ -2565,6 +2575,11 @@ Variant::Variant(const Vector<Color> &p_array) {
 void Variant::operator=(const Variant &p_variant) {
 
 	reference(p_variant);
+}
+
+Variant::Variant(const void *p_pointer) {
+	type = GENERIC_POINTER;
+	_data._ptr = (void *)p_pointer;
 }
 
 Variant::Variant(const IP_Address &p_address) {

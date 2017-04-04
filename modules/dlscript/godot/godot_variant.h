@@ -62,6 +62,8 @@ typedef enum godot_variant_type {
 	GODOT_VARIANT_TYPE_POOL_VECTOR2_ARRAY,
 	GODOT_VARIANT_TYPE_POOL_VECTOR3_ARRAY,
 	GODOT_VARIANT_TYPE_POOL_COLOR_ARRAY,
+
+	GODOT_VARIANT_TYPE_GENERIC_POINTER,
 } godot_variant_type;
 
 godot_variant_type GDAPI godot_variant_get_type(const godot_variant *p_v);
@@ -98,6 +100,7 @@ void GDAPI godot_variant_new_pool_string_array(godot_variant *p_v, const godot_p
 void GDAPI godot_variant_new_pool_vector2_array(godot_variant *p_v, const godot_pool_vector2_array *p_pv2a);
 void GDAPI godot_variant_new_pool_vector3_array(godot_variant *p_v, const godot_pool_vector3_array *p_pv3a);
 void GDAPI godot_variant_new_pool_color_array(godot_variant *p_v, const godot_pool_color_array *p_pca);
+void GDAPI godot_variant_new_generic_pointer(godot_variant *p_v, const void *p_ptr);
 
 godot_bool GDAPI godot_variant_as_bool(const godot_variant *p_v);
 uint64_t GDAPI godot_variant_as_int(const godot_variant *p_v);
@@ -127,6 +130,7 @@ godot_pool_string_array GDAPI godot_variant_as_pool_string_array(const godot_var
 godot_pool_vector2_array GDAPI godot_variant_as_pool_vector2_array(const godot_variant *p_v);
 godot_pool_vector3_array GDAPI godot_variant_as_pool_vector3_array(const godot_variant *p_v);
 godot_pool_color_array GDAPI godot_variant_as_pool_color_array(const godot_variant *p_v);
+void GDAPI *godot_variant_as_generic_pointer(const godot_variant *p_v);
 
 godot_variant GDAPI godot_variant_call(godot_variant *p_v, const godot_string *p_method, const godot_variant **p_args, const godot_int p_argcount /*, godot_variant_call_error *r_error */);
 
