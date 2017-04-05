@@ -602,7 +602,7 @@ MainLoop *test() {
 		print_line(q3);
 
 		print_line("before v: " + v + " a: " + rtos(a));
-		q.get_axis_and_angle(v, a);
+		q.get_axis_angle(v, a);
 		print_line("after v: " + v + " a: " + rtos(a));
 	}
 

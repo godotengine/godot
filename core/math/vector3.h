@@ -389,7 +389,8 @@ Vector3 Vector3::normalized() const {
 }
 
 bool Vector3::is_normalized() const {
-	return Math::isequal_approx(length(), (real_t)1.0);
+	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
+	return Math::is_equal_approx(length_squared(), 1.0);
 }
 
 Vector3 Vector3::inverse() const {
@@ -404,7 +405,7 @@ void Vector3::zero() {
 
 // slide returns the component of the vector along the given plane, specified by its normal vector.
 Vector3 Vector3::slide(const Vector3 &p_n) const {
-#ifdef DEBUG_ENABLED
+#ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(p_n.is_normalized() == false, Vector3());
 #endif
 	return *this - p_n * this->dot(p_n);
@@ -415,7 +416,7 @@ Vector3 Vector3::bounce(const Vector3 &p_n) const {
 }
 
 Vector3 Vector3::reflect(const Vector3 &p_n) const {
-#ifdef DEBUG_ENABLED
+#ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(p_n.is_normalized() == false, Vector3());
 #endif
 	return 2.0 * p_n * this->dot(p_n) - *this;

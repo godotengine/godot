@@ -35,6 +35,10 @@
 #define CMP_NORMALIZE_TOLERANCE 0.000001
 #define CMP_POINT_IN_PLANE_EPSILON 0.00001
 
+#ifdef DEBUG_ENABLED
+#define MATH_CHECKS
+#endif
+
 #define USEC_TO_SEC(m_usec) ((m_usec) / 1000000.0)
 /**
   * "Real" is a type that will be translated to either floats or fixed depending

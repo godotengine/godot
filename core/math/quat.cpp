@@ -92,6 +92,10 @@ Quat Quat::normalized() const {
 	return *this / length();
 }
 
+bool Quat::is_normalized() const {
+	return Math::is_equal_approx(length(), 1.0);
+}
+
 Quat Quat::inverse() const {
 	return Quat(-x, -y, -z, w);
 }
