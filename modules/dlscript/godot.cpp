@@ -28,7 +28,6 @@
 /*************************************************************************/
 #include "godot.h"
 
-#include <cassert>
 #include <cstdlib>
 
 #include "class_db.h"
