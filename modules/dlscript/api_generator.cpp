@@ -231,12 +231,12 @@ List<ClassAPI> generate_c_api_classes() {
 
 				// Method flags
 				if (method_bind && method_bind->get_hint_flags()) {
-					const uint32_t flags = method_bind->get_hint_flags();
+					const uint32_t flags = method_info.flags;
 					method_api.is_editor = flags & METHOD_FLAG_EDITOR;
 					method_api.is_noscript = flags & METHOD_FLAG_NOSCRIPT;
 					method_api.is_const = flags & METHOD_FLAG_CONST;
 					method_api.is_reverse = flags & METHOD_FLAG_REVERSE;
-					method_api.is_virtual = flags & METHOD_FLAG_VIRTUAL;
+					method_api.is_virtual = flags & METHOD_FLAG_VIRTUAL || method_info.name[0] == '_';
 					method_api.is_from_script = flags & METHOD_FLAG_FROM_SCRIPT;
 				}
 
