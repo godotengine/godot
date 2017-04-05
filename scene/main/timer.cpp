@@ -50,8 +50,7 @@ void Timer::_notification(int p_what) {
 
 			if (time_left < 0) {
 				if (!one_shot)
-					//time_left=wait_time+time_left;
-					time_left = wait_time;
+					time_left += wait_time;
 				else
 					stop();
 
@@ -66,7 +65,7 @@ void Timer::_notification(int p_what) {
 
 			if (time_left < 0) {
 				if (!one_shot)
-					time_left = wait_time + time_left;
+					time_left += wait_time;
 				else
 					stop();
 				emit_signal("timeout");
