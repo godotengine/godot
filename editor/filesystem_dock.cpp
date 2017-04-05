@@ -402,7 +402,7 @@ void FileSystemDock::_update_files(bool p_keep_selection) {
 	Ref<Texture> file_thumbnail;
 
 	bool use_thumbnails = (display_mode == DISPLAY_THUMBNAILS);
-	bool use_folders = search_box->get_text().length() == 0 && split_mode;
+	bool use_folders = search_box->get_text().length() == 0;
 
 	if (use_thumbnails) { //thumbnails
 
