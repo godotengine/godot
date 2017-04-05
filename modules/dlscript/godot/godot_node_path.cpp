@@ -20,6 +20,12 @@ void GDAPI godot_node_path_new(godot_node_path *p_np, const godot_string *p_from
 	memnew_placement_custom(np, NodePath, NodePath(*from));
 }
 
+void GDAPI godot_node_path_copy(godot_node_path *p_np, const godot_node_path *p_from) {
+	NodePath *np = (NodePath *)p_np;
+	NodePath *from = (NodePath *)p_from;
+	*np = *from;
+}
+
 godot_string GDAPI godot_node_path_get_name(const godot_node_path *p_np, const godot_int p_idx) {
 	const NodePath *np = (const NodePath *)p_np;
 	godot_string str;

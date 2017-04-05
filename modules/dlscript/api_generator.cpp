@@ -230,15 +230,17 @@ List<ClassAPI> generate_c_api_classes() {
 				method_api.has_varargs = method_bind && method_bind->is_vararg();
 
 				// Method flags
-				if (method_bind && method_bind->get_hint_flags()) {
+				if (method_info.flags) {
 					const uint32_t flags = method_info.flags;
 					method_api.is_editor = flags & METHOD_FLAG_EDITOR;
 					method_api.is_noscript = flags & METHOD_FLAG_NOSCRIPT;
 					method_api.is_const = flags & METHOD_FLAG_CONST;
 					method_api.is_reverse = flags & METHOD_FLAG_REVERSE;
-					method_api.is_virtual = flags & METHOD_FLAG_VIRTUAL || method_info.name[0] == '_';
+					method_api.is_virtual = flags & METHOD_FLAG_VIRTUAL;
 					method_api.is_from_script = flags & METHOD_FLAG_FROM_SCRIPT;
 				}
+
+				method_api.is_virtual = method_api.is_virtual || method_api.method_name[0] == '_';
 
 				// method argument name and type
 
@@ -346,6 +348,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 			source.push_back(String("\t\t\t\t\"is_const\": ") + (e->get().is_const ? "true" : "false") + ",\n");
 			source.push_back(String("\t\t\t\t\"is_reverse\": ") + (e->get().is_reverse ? "true" : "false") + ",\n");
 			source.push_back(String("\t\t\t\t\"is_virtual\": ") + (e->get().is_virtual ? "true" : "false") + ",\n");
+			source.push_back(String("\t\t\t\t\"has_varargs\": ") + (e->get().has_varargs ? "true" : "false") + ",\n");
 			source.push_back(String("\t\t\t\t\"is_from_script\": ") + (e->get().is_from_script ? "true" : "false") + ",\n");
 			source.push_back("\t\t\t\t\"arguments\": [\n");
 			for (int i = 0; i < e->get().argument_names.size(); i++) {
