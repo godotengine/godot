@@ -2,8 +2,6 @@
 
 #include "path_db.h"
 
-#include <memory.h> // why is there no <cmemory> btw?
-
 #ifdef __cplusplus
 extern "C" {
 #endif

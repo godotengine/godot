@@ -28,14 +28,10 @@
 /*************************************************************************/
 #include "godot.h"
 
-#include <cstdlib>
-
 #include "class_db.h"
 #include "dl_script.h"
 #include "global_config.h"
 #include "variant.h"
-
-#include <memory.h>
 
 #ifdef __cplusplus
 extern "C" {
