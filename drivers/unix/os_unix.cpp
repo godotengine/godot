@@ -453,7 +453,7 @@ Error OS_Unix::close_dynamic_library(void *p_library_handle) {
 }
 
 Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle) {
-	char *error;
+	const char *error;
 	dlerror(); // Clear existing errors
 
 	p_symbol_handle = dlsym(p_library_handle, p_name.utf8().get_data());
