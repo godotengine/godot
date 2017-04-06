@@ -395,9 +395,18 @@ SpatialSound2DServer::SourceVoiceID SpatialSound2DServerSW::source_play_sample(R
 	int to_play = 0;
 
 	if (p_voice == SOURCE_NEXT_VOICE) {
-		to_play = source->last_voice + 1;
-		if (to_play >= source->voices.size())
-			to_play = 0;
+		const int num_voices = source->voices.size();
+		bool free_found = false;
+		for (int i = 0; i < num_voices; i++) {
+			const int candidate = (source->last_voice + 1 + i) % num_voices;
+			if (!source->voices[candidate].active && !source->voices[candidate].restart) {
+				free_found = true;
+				to_play = candidate;
+				break;
+			}
+		}
+		if (!free_found)
+			to_play = (source->last_voice + 1) % num_voices;
 
 	} else
 		to_play = p_voice;
