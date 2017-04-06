@@ -1088,7 +1088,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			GlobalConfig::get_singleton()->set("application/main_scene", p_file);
 			GlobalConfig::get_singleton()->save();
-			//would be nice to show the project manager opened with the hilighted field..
+			//would be nice to show the project manager opened with the highlighted field..
 		} break;
 		case FILE_SAVE_OPTIMIZED: {
 

@@ -252,7 +252,7 @@ class TextEdit : public Control {
 
 	bool raised_from_completion;
 
-	String hilighted_word;
+	String highlighted_word;
 
 	uint64_t last_dblclk;
 
