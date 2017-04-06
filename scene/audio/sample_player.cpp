@@ -187,6 +187,7 @@ void SamplePlayer::Voice::clear() {
 	reverb_room = REVERB_HALL;
 	reverb_send = 0;
 	active = false;
+	priority = 0;
 }
 SamplePlayer::Voice::~Voice() {
 
@@ -214,13 +215,28 @@ SamplePlayer::VoiceID SamplePlayer::play(const String &p_name, bool unique) {
 	Ref<Sample> sample = library->get_sample(p_name);
 	float vol_change = library->sample_get_volume_db(p_name);
 	float pitch_change = library->sample_get_pitch_scale(p_name);
+	int priority = library->sample_get_priority(p_name);
 
 	last_check++;
-	last_id = (last_id + 1) % voices.size();
+
+	const int num_voices = voices.size();
+	bool found = false;
+	for (int i = 0; i < num_voices; i++) {
+		const int candidate = (last_id + 1 + i) % num_voices;
+		if (voices[candidate].priority <= priority) {
+			found = true;
+			last_id = candidate;
+			break;
+		}
+	}
+
+	if (!found)
+		return INVALID_VOICE_ID;
 
 	Voice &v = voices[last_id];
 	v.clear();
 
+	v.priority = priority;
 	v.mix_rate = sample->get_mix_rate() * (_default.pitch_scale * pitch_change);
 	v.sample_mix_rate = sample->get_mix_rate();
 	v.check = last_check;

@@ -49,6 +49,7 @@ bool SampleLibrary::_set(const StringName &p_name, const Variant &p_value) {
 				sd.sample = d["sample"];
 				sd.pitch_scale = d["pitch"];
 				sd.db = d["db"];
+				sd.priority = d.has("priority") ? d["priority"] : Variant(0); // For libraries before priority was introduced
 			}
 
 			sample_map[name] = sd;
@@ -70,6 +71,7 @@ bool SampleLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 			d["sample"] = sample_map[name].sample;
 			d["pitch"] = sample_map[name].pitch_scale;
 			d["db"] = sample_map[name].db;
+			d["priority"] = sample_map[name].priority;
 			r_ret = d;
 		} else {
 			return false;
@@ -170,6 +172,19 @@ float SampleLibrary::sample_get_pitch_scale(const StringName &p_name) const {
 	return sample_map[p_name].pitch_scale;
 }
 
+void SampleLibrary::sample_set_priority(const StringName &p_name, int p_priority) {
+
+	ERR_FAIL_COND(!sample_map.has(p_name));
+	sample_map[p_name].priority = p_priority;
+}
+
+int SampleLibrary::sample_get_priority(const StringName &p_name) const {
+
+	ERR_FAIL_COND_V(!sample_map.has(p_name), 0);
+
+	return sample_map[p_name].priority;
+}
+
 Array SampleLibrary::_get_sample_list() const {
 
 	List<StringName> snames;
@@ -199,6 +214,9 @@ void SampleLibrary::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("sample_set_pitch_scale", "name", "pitch"), &SampleLibrary::sample_set_pitch_scale);
 	ObjectTypeDB::bind_method(_MD("sample_get_pitch_scale", "name"), &SampleLibrary::sample_get_pitch_scale);
+
+	ObjectTypeDB::bind_method(_MD("sample_set_priority", "name", "priority"), &SampleLibrary::sample_set_priority);
+	ObjectTypeDB::bind_method(_MD("sample_get_priority", "name"), &SampleLibrary::sample_get_priority);
 }
 
 SampleLibrary::SampleLibrary() {

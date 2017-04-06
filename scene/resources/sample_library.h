@@ -42,10 +42,12 @@ class SampleLibrary : public Resource {
 		Ref<Sample> sample;
 		float db;
 		float pitch_scale;
+		int priority;
 
 		SampleData() {
 			db = 0;
 			pitch_scale = 1;
+			priority = 0;
 		}
 	};
 
@@ -67,6 +69,8 @@ public:
 	float sample_get_volume_db(const StringName &p_name) const;
 	void sample_set_pitch_scale(const StringName &p_name, float p_pitch);
 	float sample_get_pitch_scale(const StringName &p_name) const;
+	void sample_set_priority(const StringName &p_name, int p_priority);
+	int sample_get_priority(const StringName &p_name) const;
 	Ref<Sample> get_sample(const StringName &p_name) const;
 	void get_sample_list(List<StringName> *p_samples) const;
 	void remove_sample(const StringName &p_name);

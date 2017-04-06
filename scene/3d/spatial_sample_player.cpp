@@ -130,6 +130,7 @@ SpatialSamplePlayer::VoiceID SpatialSamplePlayer::play(const String &p_sample, i
 	Ref<Sample> sample = library->get_sample(p_sample);
 	float vol_change = library->sample_get_volume_db(p_sample);
 	float pitch_change = library->sample_get_pitch_scale(p_sample);
+	int priority = library->sample_get_priority(p_sample);
 
 	VoiceID vid = SpatialSoundServer::get_singleton()->source_play_sample(get_source_rid(), sample->get_rid(), sample->get_mix_rate() * pitch_change, p_voice);
 	if (vol_change)
