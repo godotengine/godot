@@ -595,7 +595,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 		return false;
 	if (get_selected_count() == 0) {
 		if (p_hilite_only)
-			spatial_editor->select_gizmo_hilight_axis(-1);
+			spatial_editor->select_gizmo_highlight_axis(-1);
 		return false;
 	}
 
@@ -629,7 +629,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 
 			if (p_hilite_only) {
 
-				spatial_editor->select_gizmo_hilight_axis(col_axis);
+				spatial_editor->select_gizmo_highlight_axis(col_axis);
 
 			} else {
 				//handle rotate
@@ -669,7 +669,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 
 			if (p_hilite_only) {
 
-				spatial_editor->select_gizmo_hilight_axis(col_axis + 3);
+				spatial_editor->select_gizmo_highlight_axis(col_axis + 3);
 			} else {
 				//handle rotate
 				_edit.mode = TRANSFORM_ROTATE;
@@ -681,7 +681,7 @@ bool SpatialEditorViewport::_gizmo_select(const Vector2 &p_screenpos, bool p_hil
 	}
 
 	if (p_hilite_only)
-		spatial_editor->select_gizmo_hilight_axis(-1);
+		spatial_editor->select_gizmo_highlight_axis(-1);
 
 	return false;
 }
@@ -1140,7 +1140,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						spatial_editor->set_over_gizmo_handle(selected_handle);
 						spatial_editor->get_selected()->update_gizmo();
 						if (selected_handle != -1)
-							spatial_editor->select_gizmo_hilight_axis(-1);
+							spatial_editor->select_gizmo_highlight_axis(-1);
 					}
 				}
 			}
@@ -2271,7 +2271,7 @@ SpatialEditorSelectedItem::~SpatialEditorSelectedItem() {
 		VisualServer::get_singleton()->free(sbox_instance);
 }
 
-void SpatialEditor::select_gizmo_hilight_axis(int p_axis) {
+void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 
 	for (int i = 0; i < 3; i++) {
 
