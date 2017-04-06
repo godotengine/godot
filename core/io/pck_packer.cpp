@@ -172,6 +172,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		printf("\n");
 
 	file->close();
+	memdelete(buf);
 
 	return OK;
 };
