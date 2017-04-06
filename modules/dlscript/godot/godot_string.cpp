@@ -3,7 +3,7 @@
 #include "string_db.h"
 #include "ustring.h"
 
-#include <memory.h> // why is there no <cmemory> btw?
+#include <memory.h>
 
 #ifdef __cplusplus
 extern "C" {

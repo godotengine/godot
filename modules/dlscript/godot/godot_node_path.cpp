@@ -2,8 +2,6 @@
 
 #include "path_db.h"
 
-#include <memory.h> // why is there no <cmemory> btw?
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,6 +18,12 @@ void GDAPI godot_node_path_new(godot_node_path *p_np, const godot_string *p_from
 	NodePath *np = (NodePath *)p_np;
 	String *from = (String *)p_from;
 	memnew_placement_custom(np, NodePath, NodePath(*from));
+}
+
+void GDAPI godot_node_path_copy(godot_node_path *p_np, const godot_node_path *p_from) {
+	NodePath *np = (NodePath *)p_np;
+	NodePath *from = (NodePath *)p_from;
+	*np = *from;
 }
 
 godot_string GDAPI godot_node_path_get_name(const godot_node_path *p_np, const godot_int p_idx) {
