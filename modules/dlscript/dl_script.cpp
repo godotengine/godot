@@ -176,36 +176,84 @@ Error DLScript::reload(bool p_keep_state) {
 bool DLScript::has_method(const StringName &p_method) const {
 	if (!script_data)
 		return false;
-	return script_data->methods.has(p_method);
+	DLScriptData *data = script_data;
+
+	while (data) {
+		if (data->methods.has(p_method))
+			return true;
+
+		data = data->base_data;
+	}
+
+	return false;
 }
 
 MethodInfo DLScript::get_method_info(const StringName &p_method) const {
 	if (!script_data)
 		return MethodInfo();
+	DLScriptData *data = script_data;
+
+	while (data) {
+		if (data->methods.has(p_method))
+			return data->methods[p_method].info;
+
+		data = data->base_data;
+	}
+
 	ERR_FAIL_COND_V(!script_data->methods.has(p_method), MethodInfo());
-	return script_data->methods[p_method].info;
+	return MethodInfo();
 }
 
 void DLScript::get_script_method_list(List<MethodInfo> *p_list) const {
 	if (!script_data) return;
-	for (Map<StringName, DLScriptData::Method>::Element *E = script_data->methods.front(); E; E = E->next()) {
-		p_list->push_back(E->get().info);
+
+	Set<MethodInfo> methods;
+	DLScriptData *data = script_data;
+
+	while (data) {
+		for (Map<StringName, DLScriptData::Method>::Element *E = data->methods.front(); E; E = E->next()) {
+			methods.insert(E->get().info);
+		}
+		data = data->base_data;
+	}
+
+	for (Set<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
+		p_list->push_back(E->get());
 	}
 }
 
 void DLScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	if (!script_data) return;
-	for (Map<StringName, DLScriptData::Property>::Element *E = script_data->properties.front(); E; E = E->next()) {
-		p_list->push_back(E->get().info);
+
+	Set<PropertyInfo> properties;
+	DLScriptData *data = script_data;
+
+	while (data) {
+		for (Map<StringName, DLScriptData::Property>::Element *E = data->properties.front(); E; E = E->next()) {
+			properties.insert(E->get().info);
+		}
+		data = data->base_data;
+	}
+
+	for (Set<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+		p_list->push_back(E->get());
 	}
 }
 
 bool DLScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
 	if (!script_data) return false;
-	if (script_data->properties.has(p_property)) {
-		r_value = script_data->properties[p_property].default_value;
-		return true;
+
+	DLScriptData *data = script_data;
+
+	while (data) {
+		if (data->properties.has(p_property)) {
+			r_value = data->properties[p_property].default_value;
+			return true;
+		}
+
+		data = data->base_data;
 	}
+
 	return false;
 }
 
@@ -225,14 +273,38 @@ ScriptLanguage *DLScript::get_language() const {
 bool DLScript::has_script_signal(const StringName &p_signal) const {
 	if (!script_data)
 		return false;
-	return script_data->signals_.has(p_signal);
+
+	DLScriptData *data = script_data;
+
+	while (data) {
+		if (data->signals_.has(p_signal)) {
+			return true;
+		}
+
+		data = data->base_data;
+	}
+
+	return false;
 }
 
 void DLScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	if (!script_data)
 		return;
-	for (Map<StringName, DLScriptData::Signal>::Element *S = script_data->signals_.front(); S; S = S->next()) {
-		r_signals->push_back(S->get().signal);
+
+	Set<MethodInfo> signals_;
+	DLScriptData *data = script_data;
+
+	while (data) {
+
+		for (Map<StringName, DLScriptData::Signal>::Element *S = data->signals_.front(); S; S = S->next()) {
+			signals_.insert(S->get().signal);
+		}
+
+		data = data->base_data;
+	}
+
+	for (Set<MethodInfo>::Element *E = signals_.front(); E; E = E->next()) {
+		r_signals->push_back(E->get());
 	}
 }
 
