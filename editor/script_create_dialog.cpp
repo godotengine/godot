@@ -359,20 +359,28 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	language_menu = memnew(OptionButton);
 	vb->add_margin_child(TTR("Language"), language_menu);
 
+	int default_lang = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 
-		language_menu->add_item(ScriptServer::get_language(i)->get_name());
+		String lang = ScriptServer::get_language(i)->get_name();
+		language_menu->add_item(lang);
+		if (lang == "GDScript") {
+			default_lang = i;
+		}
 	}
 
 	editor_settings = EditorSettings::get_singleton();
 	String last_selected_language = editor_settings->get_project_metadata("script_setup", "last_selected_language", "");
-	if (last_selected_language != "")
-		for (int i = 0; i < language_menu->get_item_count(); i++)
+	if (last_selected_language != "") {
+		for (int i = 0; i < language_menu->get_item_count(); i++) {
 			if (language_menu->get_item_text(i) == last_selected_language) {
 				language_menu->select(i);
 				break;
-			} else
-				language_menu->select(0);
+			}
+		}
+	} else {
+		language_menu->select(default_lang);
+	}
 
 	language_menu->connect("item_selected", this, "_lang_changed");
 
