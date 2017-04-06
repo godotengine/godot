@@ -812,8 +812,8 @@ void TextEdit::_notification(int p_what) {
 								keyword_color = *col;
 							}
 
-							if (select_identifiers_enabled && hilighted_word != String()) {
-								if (hilighted_word == range) {
+							if (select_identifiers_enabled && highlighted_word != String()) {
+								if (highlighted_word == range) {
 									underlined = true;
 								}
 							}
@@ -1463,9 +1463,9 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 					int row, col;
 					_get_mouse_pos(Point2i(mb.x, mb.y), row, col);
 
-					if (mb.mod.command && hilighted_word != String()) {
+					if (mb.mod.command && highlighted_word != String()) {
 
-						emit_signal("symbol_lookup", hilighted_word, row, col);
+						emit_signal("symbol_lookup", highlighted_word, row, col);
 						return;
 					}
 
@@ -1608,13 +1608,13 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 				if (mm.mod.command && mm.button_mask == 0) {
 
 					String new_word = get_word_at_pos(Vector2(mm.x, mm.y));
-					if (new_word != hilighted_word) {
-						hilighted_word = new_word;
+					if (new_word != highlighted_word) {
+						highlighted_word = new_word;
 						update();
 					}
 				} else {
-					if (hilighted_word != String()) {
-						hilighted_word = String();
+					if (highlighted_word != String()) {
+						highlighted_word = String();
 						update();
 					}
 				}
@@ -1655,11 +1655,11 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 
 					if (k.pressed) {
 
-						hilighted_word = get_word_at_pos(get_local_mouse_pos());
+						highlighted_word = get_word_at_pos(get_local_mouse_pos());
 						update();
 
 					} else {
-						hilighted_word = String();
+						highlighted_word = String();
 						update();
 					}
 				}
@@ -3174,7 +3174,7 @@ void TextEdit::insert_text_at_cursor(const String &p_text) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
-	if (hilighted_word != String())
+	if (highlighted_word != String())
 		return CURSOR_POINTING_HAND;
 
 	int gutter = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width;
