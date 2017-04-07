@@ -682,9 +682,7 @@ Vector2 CanvasItem::make_canvas_pos_local(const Vector2 &screen_point) const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), screen_point);
 
-	Transform2D local_matrix = (get_canvas_transform() *
-									   get_global_transform())
-									   .affine_inverse();
+	Transform2D local_matrix = (get_canvas_transform() * get_global_transform()).affine_inverse();
 
 	return local_matrix.xform(screen_point);
 }

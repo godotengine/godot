@@ -1015,7 +1015,7 @@ public:
 
 		uint32_t cycle_number;
 
-		int fixed_fps = 0;
+		int fixed_fps;
 		bool fractional_delta;
 		float frame_remainder;
 
