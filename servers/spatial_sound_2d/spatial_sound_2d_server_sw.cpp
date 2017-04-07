@@ -94,6 +94,7 @@ SpatialSound2DServerSW::Source::Voice::Voice() {
 
 	active = false;
 	restart = false;
+	priority = 0;
 	pitch_scale = 1.0;
 	volume_scale = 0.0;
 	voice_rid = AudioServer::get_singleton()->voice_create();
@@ -387,7 +388,7 @@ void SpatialSound2DServerSW::source_set_audio_stream(RID p_source, AudioServer::
 
 } //null to unset
 
-SpatialSound2DServer::SourceVoiceID SpatialSound2DServerSW::source_play_sample(RID p_source, RID p_sample, int p_mix_rate, int p_voice) {
+SpatialSound2DServer::SourceVoiceID SpatialSound2DServerSW::source_play_sample(RID p_source, RID p_sample, int p_mix_rate, int p_voice, int p_priority) {
 
 	Source *source = source_owner.get(p_source);
 	ERR_FAIL_COND_V(!source, SOURCE_INVALID_VOICE);
@@ -397,23 +398,33 @@ SpatialSound2DServer::SourceVoiceID SpatialSound2DServerSW::source_play_sample(R
 	if (p_voice == SOURCE_NEXT_VOICE) {
 		const int num_voices = source->voices.size();
 		bool free_found = false;
+		int lowest_priority_voice = 0;
+		int lowest_priority = 0x7FFFFFFF;
 		for (int i = 0; i < num_voices; i++) {
 			const int candidate = (source->last_voice + 1 + i) % num_voices;
-			if (!source->voices[candidate].active && !source->voices[candidate].restart) {
+			const Source::Voice &v = source->voices[candidate];
+			if (!v.active && !v.restart) {
 				free_found = true;
 				to_play = candidate;
 				break;
 			}
+			if (v.priority < lowest_priority) {
+				lowest_priority = v.priority;
+				lowest_priority_voice = candidate;
+			}
 		}
 		if (!free_found)
 			to_play = (source->last_voice + 1) % num_voices;
-
 	} else
 		to_play = p_voice;
 
 	ERR_FAIL_INDEX_V(to_play, source->voices.size(), SOURCE_INVALID_VOICE);
 
+	if ((source->voices[to_play].active || source->voices[to_play].restart) && source->voices[to_play].priority > p_priority)
+		return SOURCE_INVALID_VOICE;
+
 	source->voices[to_play].restart = true;
+	source->voices[to_play].priority = p_priority;
 	source->voices[to_play].sample_rid = p_sample;
 	source->voices[to_play].sample_mix_rate = p_mix_rate;
 	source->voices[to_play].pitch_scale = 1;

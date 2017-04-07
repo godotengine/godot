@@ -101,6 +101,7 @@ class SpatialSoundServerSW : public SpatialSoundServer {
 			RID sample_rid;
 			bool active;
 			bool restart;
+			int priority;
 			float pitch_scale;
 			float volume_scale;
 			int sample_mix_rate;
@@ -226,7 +227,7 @@ public:
 	virtual float source_get_param(RID p_source, SourceParam p_param) const;
 
 	virtual void source_set_audio_stream(RID p_source, AudioServer::AudioStream *p_stream); //null to unset
-	virtual SourceVoiceID source_play_sample(RID p_source, RID p_sample, int p_mix_rate, int p_voice = SOURCE_NEXT_VOICE);
+	virtual SourceVoiceID source_play_sample(RID p_source, RID p_sample, int p_mix_rate, int p_voice = SOURCE_NEXT_VOICE, int p_priority = 0);
 	/* VOICES */
 	virtual void source_voice_set_pitch_scale(RID p_source, SourceVoiceID p_voice, float p_pitch_scale);
 	virtual void source_voice_set_volume_scale_db(RID p_source, SourceVoiceID p_voice, float p_volume);

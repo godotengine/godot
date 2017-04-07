@@ -74,6 +74,7 @@ private:
 		uint32_t check;
 		bool active;
 
+		int priority;
 		int sample_mix_rate;
 		int mix_rate;
 		float volume;

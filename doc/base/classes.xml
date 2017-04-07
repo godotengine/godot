@@ -33677,6 +33677,7 @@
 	</brief_description>
 	<description>
 		Library that contains a collection of [Sample], each identified by a text ID. This is used as a data container for the majority of the SamplePlayer classes and derivatives.
+		Sample players will never yield an active (currently playing) voice for a new playback request when there are no inactive voices available if the priority of the sample requested to be played is lower than that of every currently played samples.
 	</description>
 	<methods>
 		<method name="add_sample">
@@ -33737,6 +33738,15 @@
 				Return the volume (in dB) for the given sample.
 			</description>
 		</method>
+		<method name="sample_get_priority" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return the priority for the given sample.
+			</description>
+		</method>
 		<method name="sample_set_pitch_scale">
 			<argument index="0" name="name" type="String">
 			</argument>
@@ -33753,6 +33763,15 @@
 			</argument>
 			<description>
 				Set the volume (in dB) for the given sample.
+			</description>
+		</method>
+		<method name="sample_set_priority">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="priority" type="int">
+			</argument>
+			<description>
+				Set the priority for the given sample.
 			</description>
 		</method>
 	</methods>

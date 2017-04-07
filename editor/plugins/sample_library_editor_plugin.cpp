@@ -175,6 +175,11 @@ void SampleLibraryEditor::_item_edited() {
 
 		StringName n = s->get_text(0);
 		sample_library->sample_set_pitch_scale(n, s->get_range(4));
+
+	} else if (tree->get_selected_column() == 5) { // Priority
+
+		StringName n = s->get_text(0);
+		sample_library->sample_set_priority(n, s->get_range(5));
 	}
 }
 
@@ -248,9 +253,16 @@ void SampleLibraryEditor::_update_library() {
 		ti->set_editable(4, true);
 		ti->set_range(4, sample_library->sample_get_pitch_scale(E->get()));
 
+		// Priority
+		ti->set_cell_mode(5, TreeItem::CELL_MODE_RANGE);
+		ti->set_range_config(5, 0, 100, 1);
+		ti->set_selectable(5, true);
+		ti->set_editable(5, true);
+		ti->set_range(5, sample_library->sample_get_priority(E->get()));
+
 		// Delete
-		ti->set_cell_mode(5, TreeItem::CELL_MODE_STRING);
-		ti->add_button(5, get_icon("Remove", "EditorIcons"));
+		ti->set_cell_mode(6, TreeItem::CELL_MODE_STRING);
+		ti->add_button(6, get_icon("Remove", "EditorIcons"));
 	}
 
 	//player->add_sample("default",sample);
@@ -411,7 +423,7 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 
 	tree = memnew(Tree);
-	tree->set_columns(6);
+	tree->set_columns(7);
 	add_child(tree);
 	tree->set_anchor_and_margin(MARGIN_LEFT, ANCHOR_BEGIN, 5);
 	tree->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 5);
@@ -423,18 +435,21 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_column_title(2, TTR("Format"));
 	tree->set_column_title(3, "dB");
 	tree->set_column_title(4, TTR("Pitch"));
-	tree->set_column_title(5, "");
+	tree->set_column_title(5, TTR("Priority"));
+	tree->set_column_title(6, "");
 
 	tree->set_column_min_width(1, 150);
 	tree->set_column_min_width(2, 100);
 	tree->set_column_min_width(3, 50);
 	tree->set_column_min_width(4, 50);
-	tree->set_column_min_width(5, 32);
+	tree->set_column_min_width(5, 60);
+	tree->set_column_min_width(6, 32);
 	tree->set_column_expand(1, false);
 	tree->set_column_expand(2, false);
 	tree->set_column_expand(3, false);
 	tree->set_column_expand(4, false);
 	tree->set_column_expand(5, false);
+	tree->set_column_expand(6, false);
 
 	tree->set_drag_forwarding(this);
 

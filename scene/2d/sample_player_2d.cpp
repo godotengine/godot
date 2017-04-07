@@ -130,8 +130,9 @@ SamplePlayer2D::VoiceID SamplePlayer2D::play(const String &p_sample, int p_voice
 	Ref<Sample> sample = library->get_sample(p_sample);
 	float vol_change = library->sample_get_volume_db(p_sample);
 	float pitch_change = library->sample_get_pitch_scale(p_sample);
+	int priority = library->sample_get_priority(p_sample);
 
-	VoiceID vid = SpatialSound2DServer::get_singleton()->source_play_sample(get_source_rid(), sample->get_rid(), sample->get_mix_rate() * pitch_change, p_voice);
+	VoiceID vid = SpatialSound2DServer::get_singleton()->source_play_sample(get_source_rid(), sample->get_rid(), sample->get_mix_rate() * pitch_change, p_voice, priority);
 	if (vol_change)
 		SpatialSound2DServer::get_singleton()->source_voice_set_volume_scale_db(get_source_rid(), vid, vol_change);
 
