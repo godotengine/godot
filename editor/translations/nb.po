@@ -2,20 +2,21 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# Anonymous <GentleSaucepan@protonmail.com>, 2017.
 # Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-29 19:46+0000\n"
-"Last-Translator: Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>\n"
+"PO-Revision-Date: 2017-04-06 17:20+0000\n"
+"Last-Translator: Anonymous <GentleSaucepan@protonmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb/>\n"
 "Language: nb\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.13-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -408,7 +409,7 @@ msgstr ""
 
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
-msgstr ""
+msgstr "Ring"
 
 #: editor/call_dialog.cpp editor/connections_dialog.cpp
 #: editor/export_template_manager.cpp
@@ -422,7 +423,7 @@ msgstr ""
 #: editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Lukk"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -910,7 +911,7 @@ msgstr ""
 msgid "Packing"
 msgstr ""
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1066,7 +1067,7 @@ msgstr ""
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
-msgstr ""
+msgstr "Medlemmer:"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
@@ -1078,7 +1079,7 @@ msgstr ""
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Signals:"
-msgstr ""
+msgstr "Signaler:"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
@@ -3189,7 +3190,7 @@ msgstr ""
 #: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Rediger"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3382,10 +3383,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3418,6 +3421,10 @@ msgstr ""
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Modify Curve"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3721,6 +3728,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3733,11 +3744,11 @@ msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3749,19 +3760,23 @@ msgid "Create Emitter"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
+msgid "Surface Points"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
+msgid "Surface Points+Normal (Directed)"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -5490,8 +5505,9 @@ msgid "Couldn't load image"
 msgstr ""
 
 #: editor/property_editor.cpp
+#, fuzzy
 msgid "Pick a Node"
-msgstr ""
+msgstr "Lim inn Noder"
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
@@ -5503,7 +5519,7 @@ msgstr ""
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
-msgstr ""
+msgstr "Sett"
 
 #: editor/property_editor.cpp
 msgid "Properties:"
@@ -5714,8 +5730,9 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Copy Node Path"
-msgstr ""
+msgstr "Kopier Noder"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -6059,11 +6076,11 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr ""
+msgstr "Ikke basert på et skript"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "Ikke basert på en ressursfil"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -6098,6 +6115,8 @@ msgid ""
 "Return value must be assigned to first element of node working memory! Fix "
 "your node please."
 msgstr ""
+"Returverdi må bli tidelt til det første elementet av node fungerende minne! "
+"Fiks noden din vær så snill."
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
@@ -6113,19 +6132,19 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funksjoner:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
-msgstr ""
+msgstr "Variabler:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr ""
+msgstr "Navn er ikke en gyldig identifikator:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr ""
+msgstr "Navn er allerede brykt av en annen funksjon/var/signal:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -6153,7 +6172,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Function"
-msgstr ""
+msgstr "Fjern Funksjon"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Remove Variable"
@@ -6182,6 +6201,8 @@ msgstr ""
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Hold Meta for å slippe en Getter. Hold Skift for å slippe en generisk "
+"signatur."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
@@ -6189,11 +6210,11 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
-msgstr ""
+msgstr "Hold Meta for å slippe en enkel referanse til noden."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "Hold Ctrl for å slippe en simpel referanse til noden."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Variable Setter."
@@ -6209,7 +6230,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr ""
+msgstr "Legg til node(r) fra tre"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -6221,15 +6242,15 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
-msgstr ""
+msgstr "Betingelse"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Sekvens"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr ""
+msgstr "Bryter"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
@@ -6237,15 +6258,15 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "Mens"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Return"
-msgstr ""
+msgstr "Returner"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
-msgstr ""
+msgstr "Få"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
@@ -6253,55 +6274,56 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
-msgstr ""
+msgstr "Tilgjengelige Noder:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr ""
+msgstr "Velg eller lag en funksjon for å redigere graf"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
-msgstr ""
+msgstr "Forandre Signal Argumenter:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
-msgstr ""
+msgstr "Rediger Variabel:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Forandre"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
-msgstr ""
+msgstr "Slett Valgte"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
-msgstr ""
+msgstr "Finn Node Type"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr ""
+msgstr "Kopier Noder"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Cut Nodes"
-msgstr ""
+msgstr "Kutt Noder"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste Nodes"
-msgstr ""
+msgstr "Lim inn Noder"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "Tilførseltype ikke itererbar: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "Iterator ble ugyldig"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr ""
+msgstr "Iterator ble ugyldig: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
@@ -6309,23 +6331,23 @@ msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr ""
+msgstr "Baseobjekt er ikke en Node!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr ""
+msgstr "Sti leder ikke Node!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr ""
+msgstr "Ugyldig indeks egenskap navn '%s' i node %s."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
-msgstr ""
+msgstr ": Ugyldig argument av type: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ""
+msgstr ": Ugyldige argumenter: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -6351,6 +6373,26 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run in Browser"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not write file:\n"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not read file:\n"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not open template for export:\n"
 msgstr ""
 
 #: platform/uwp/export/export.cpp

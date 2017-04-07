@@ -2,13 +2,13 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# 박한얼 (volzhs) <volzhs@gmail.com>, 2016.
+# 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-11-23 14:38+0000\n"
+"PO-Revision-Date: 2017-02-08 16:38+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.12-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -925,7 +925,7 @@ msgstr "파일 저장 중:"
 msgid "Packing"
 msgstr "패킹중"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1101,9 +1101,8 @@ msgid "Constants:"
 msgstr "상수:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Description:"
-msgstr "간단한 설명:"
+msgstr "속성 설명:"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -2746,8 +2745,9 @@ msgid "Compress"
 msgstr "압축"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (godot.cfg)"
-msgstr "프로젝트에 추가 (godot.cfg)"
+msgstr "프로젝트에 추가 (engine.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3461,10 +3461,12 @@ msgid "Set Handle"
 msgstr "핸들 설정"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr "칼라 램프 포인트 추가/삭제"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr "칼라 램프 수정"
@@ -3498,6 +3500,11 @@ msgstr "씬으로부터 가져오기"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "씬으로부터 갱신하기"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve"
+msgstr "커브맵 수정"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3804,6 +3811,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr "노드가 지오미트리를 포함하고 있지 않습니다 (페이스)."
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "페이스가 영역을 가지고 있지 않습니다!"
 
@@ -3816,11 +3827,13 @@ msgid "Generate AABB"
 msgstr "AABB 생성"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+#, fuzzy
+msgid "Create Emission Points From Mesh"
 msgstr "메쉬로부터 에미터 만들기"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+#, fuzzy
+msgid "Create Emission Points From Node"
 msgstr "노드로부터 에미터 만들기"
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3832,20 +3845,27 @@ msgid "Create Emitter"
 msgstr "에미터 만들기"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+#, fuzzy
+msgid "Emission Points:"
 msgstr "에미션 위치:"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr "에미션 채움:"
+#, fuzzy
+msgid "Surface Points"
+msgstr "서페이스 %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
-msgstr "출사면"
+msgid "Surface Points+Normal (Directed)"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "배출량"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Source: "
+msgstr "에미션 채움:"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -5168,12 +5188,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "프로젝트 경로가 유효하지 않습니다. 경로가 반드시 존재해야 합니다!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr "프로젝트 경로가 유효하지 않습니다. godot.cfg가 있으면 안됩니다."
+msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 있으면 안됩니다."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr "프로젝트 경로가 유효하지 않습니다. godot.cfg가 존재해야합니다."
+msgstr "프로젝트 경로가 유효하지 않습니다. engine.cfg가 존재해야합니다."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5184,8 +5206,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "유효하지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create godot.cfg in project path."
-msgstr "프로젝트 경로에 godot.cfg를 생성할 수 없습니다."
+msgstr "프로젝트 경로에 engine.cfg를 생성할 수 없습니다."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5468,8 +5491,9 @@ msgid "Remove Resource Remap Option"
 msgstr "리소스 리맵핑 옵션 제거"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "프로젝트 설정 (godot.cfg)"
+msgstr "프로젝트 설정 (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6144,9 +6168,8 @@ msgid "Change Notifier Extents"
 msgstr "Notifier 범위 변경"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Probe Extents"
-msgstr "Notifier 범위 변경"
+msgstr "프로브 범위 변경"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -6465,7 +6488,32 @@ msgstr ""
 msgid "just released"
 msgstr ""
 
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Run in Browser"
+msgstr "찾아보기"
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "타일을 찾을 수 없음:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "타일을 찾을 수 없음:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "폴더를 만들 수 없습니다."
+
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr "인증서 파일을 읽을 수 없습니다. 경로와 비밀번호가 정확합니까?"
@@ -6780,6 +6828,9 @@ msgstr ""
 "합니다. 그렇지 않을 경우, 화면에 표시하기 위해서는 Render target으로 설정하"
 "고 내부적인 텍스쳐를 다른 노드에 할당해야 합니다."
 
+#~ msgid "Surface"
+#~ msgstr "출사면"
+
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "
 #~ "in order for SamplePlayer to play sound."
@@ -6824,33 +6875,26 @@ msgstr ""
 #~ msgid "No exporter for platform '%s' yet."
 #~ msgstr "'%s' 플랫폼으로 내보내기 위한 템플릿 파일이 없습니다."
 
-#, fuzzy
 #~ msgid "Create Android keystore"
-#~ msgstr "새 리소스 만들기"
+#~ msgstr "안드로이드 키스토어 만들기"
 
-#, fuzzy
 #~ msgid "Full name"
-#~ msgstr "유요한 이름"
+#~ msgstr "성명"
 
-#, fuzzy
 #~ msgid "Organization"
-#~ msgstr "전환"
+#~ msgstr "조직"
 
-#, fuzzy
 #~ msgid "State"
-#~ msgstr "상태:"
+#~ msgstr "주(State)"
 
-#, fuzzy
 #~ msgid "Password"
-#~ msgstr "암호:"
+#~ msgstr "암호"
 
-#, fuzzy
 #~ msgid "at least 6 characters"
-#~ msgstr "유효한 문자:"
+#~ msgstr "최소 6 글자"
 
-#, fuzzy
 #~ msgid "File name"
-#~ msgstr "새 이름:"
+#~ msgstr "파일명"
 
 #~ msgid "Include"
 #~ msgstr "포함"

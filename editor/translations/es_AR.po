@@ -2,7 +2,7 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
 # Roger BR <drai_kin@hotmail.com>, 2016.
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 #
@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-12-04 06:03+0000\n"
+"PO-Revision-Date: 2017-01-09 23:10+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -932,7 +932,7 @@ msgstr "Almacenando Archivo:"
 msgid "Packing"
 msgstr "Empaquetando"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1108,9 +1108,8 @@ msgid "Constants:"
 msgstr "Constantes:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Description:"
-msgstr "Descripción Breve:"
+msgstr "Descripción de Propiedad:"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -2762,8 +2761,9 @@ msgid "Compress"
 msgstr "Comprimir"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (godot.cfg)"
-msgstr "Agregar al Proyecto (godot.cfg)"
+msgstr "Agregar al Proyecto (engine.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3482,10 +3482,12 @@ msgid "Set Handle"
 msgstr "Setear Handle"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr "Agregar/Quitar Punto de Rampa de Color"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr "Modificar Rampa de Color"
@@ -3519,6 +3521,11 @@ msgstr "Importar desde Escena"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "Acutalizar desde Escena"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve"
+msgstr "Modificar Mapa de Curvas"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3826,6 +3833,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr "El nodo no contiene geometría (caras)."
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Las caras no contienen area!"
 
@@ -3838,11 +3849,13 @@ msgid "Generate AABB"
 msgstr "Generar AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+#, fuzzy
+msgid "Create Emission Points From Mesh"
 msgstr "Crear Emisor desde Mesh"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+#, fuzzy
+msgid "Create Emission Points From Node"
 msgstr "Crear Emisor desde Nodo"
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3854,20 +3867,27 @@ msgid "Create Emitter"
 msgstr "Crear Emisor"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+#, fuzzy
+msgid "Emission Points:"
 msgstr "Posiciones de Emisión:"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr "Relleno de Emisión:"
+#, fuzzy
+msgid "Surface Points"
+msgstr "Superficie %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
-msgstr "Superficie"
+msgid "Surface Points+Normal (Directed)"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "Volumen"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Source: "
+msgstr "Relleno de Emisión:"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -5196,12 +5216,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Ruta de proyecto inválida, la ruta debe existir!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr "Ruta de proyecto inválida, godot.cfg no debe existir."
+msgstr "Ruta de proyecto inválida, engine.cfg no debe existir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr "Ruta de proyecto inválida, godot.cfg debe existir."
+msgstr "Ruta de proyecto inválida, engine.cfg debe existir."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5212,8 +5234,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ruta de proyecto inválida (cambiaste algo?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create godot.cfg in project path."
-msgstr "No se pudo crear godot.cfg en la ruta de proyecto."
+msgstr "No se pudo crear engine.cfg en la ruta de proyecto."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5499,8 +5522,9 @@ msgid "Remove Resource Remap Option"
 msgstr "Remover Opción de Remapeo de Recursos"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "Ajustes de Proyecto (godot.cfg)"
+msgstr "Ajustes de Proyecto (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6181,9 +6205,8 @@ msgid "Change Notifier Extents"
 msgstr "Cambiar Alcances de Notificadores"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Probe Extents"
-msgstr "Cambiar Alcances de Notificadores"
+msgstr "Cambiar Extensión de Sonda"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -6518,7 +6541,32 @@ msgstr "recién presionado"
 msgid "just released"
 msgstr "recién soltado"
 
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Run in Browser"
+msgstr "Examinar"
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "No se pudo cargar el tile:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "No se pudo cargar el tile:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "No se pudo crear la carpeta."
+
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
@@ -6854,6 +6902,9 @@ msgstr ""
 "que pueda obtener un tamaño. Alternativamente, hacelo un RenderTarget y "
 "asigná su textura interna a algún otro nodo para mostrar."
 
+#~ msgid "Surface"
+#~ msgstr "Superficie"
+
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "
 #~ "in order for SamplePlayer to play sound."
@@ -6898,33 +6949,51 @@ msgstr ""
 #~ msgid "No exporter for platform '%s' yet."
 #~ msgstr "No hay exportador para la plataforma '%s' aun."
 
-#, fuzzy
 #~ msgid "Create Android keystore"
-#~ msgstr "Crear Nuevo Recurso"
+#~ msgstr "Crear keystore de Android"
 
-#, fuzzy
 #~ msgid "Full name"
-#~ msgstr "Nombre válido"
+#~ msgstr "Nombre completo"
 
-#, fuzzy
+#~ msgid "Organizational unit"
+#~ msgstr "Unidad organizativa"
+
 #~ msgid "Organization"
-#~ msgstr "Transición"
+#~ msgstr "Organización"
 
-#, fuzzy
+#~ msgid "City"
+#~ msgstr "Ciudad"
+
 #~ msgid "State"
-#~ msgstr "Estado:"
+#~ msgstr "Estado"
 
-#, fuzzy
+#~ msgid "2 letter country code"
+#~ msgstr "Código de país de dos letras"
+
+#~ msgid "User alias"
+#~ msgstr "Alias de usuario"
+
 #~ msgid "Password"
-#~ msgstr "Contraseña:"
+#~ msgstr "Contraseña"
 
-#, fuzzy
 #~ msgid "at least 6 characters"
-#~ msgstr "Caracteres válidos:"
+#~ msgstr "al menos 6 caracteres"
 
-#, fuzzy
 #~ msgid "File name"
-#~ msgstr "Nuevo nombre:"
+#~ msgstr "Nombre de archivo"
+
+#~ msgid "Path : (better to save outside of project)"
+#~ msgstr "Ruta : (es mejor guardar fuera del proyecto)"
+
+#~ msgid ""
+#~ "Release keystore is not set.\n"
+#~ "Do you want to create one?"
+#~ msgstr ""
+#~ "No esta seteado el release keystore.\n"
+#~ "¿Querés crear uno?"
+
+#~ msgid "Fill Keystore/Release User and Release Password"
+#~ msgstr "Completa con Keystore/Usuario Release y Cntraseña Release"
 
 #~ msgid "Include"
 #~ msgstr "Incluir"

@@ -2,17 +2,19 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# Allyson Souza <allyson_as@outlook.com>, 2017.
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # George Marques <george@gmarqu.es>, 2016.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
+# jonathan railarem <railarem@gmail.com>, 2017.
 # Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2016-09-02 21:07+0000\n"
-"Last-Translator: Mailson Silva Marins <mailsons335@gmail.com>\n"
+"PO-Revision-Date: 2017-03-27 19:34+0000\n"
+"Last-Translator: jonathan railarem <railarem@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -20,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8\n"
+"X-Generator: Weblate 2.13-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -928,7 +930,7 @@ msgstr "Armazenando Arquivo:"
 msgid "Packing"
 msgstr "Empacotando"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -2757,8 +2759,9 @@ msgid "Compress"
 msgstr "Comprimir"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (godot.cfg)"
-msgstr "Adicionar ao Projeto (godot.cfg)"
+msgstr "Adicionar ao Projeto (engine.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3481,10 +3484,12 @@ msgid "Set Handle"
 msgstr "Definir Manipulador"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr "Adicionar/Remover Ponto na Curva de Cor"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr "Modificar Curva de Cores"
@@ -3518,6 +3523,11 @@ msgstr "Importar da Cena"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "Atualizar a partir de Cena"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve"
+msgstr "Modificar Curve Map"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3825,6 +3835,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr "O nó não contém geometria (faces)."
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "As faces não têm área!"
 
@@ -3837,11 +3851,13 @@ msgid "Generate AABB"
 msgstr "Gerar AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+#, fuzzy
+msgid "Create Emission Points From Mesh"
 msgstr "Criar Emissor a partir de Mesh"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+#, fuzzy
+msgid "Create Emission Points From Node"
 msgstr "Criar Emissor a partir de Nó"
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3853,20 +3869,27 @@ msgid "Create Emitter"
 msgstr "Criar Emissor"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+#, fuzzy
+msgid "Emission Points:"
 msgstr "Posições de Emissão:"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr "Preenchimento de Emissão:"
+#, fuzzy
+msgid "Surface Points"
+msgstr "Superfície %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
-msgstr "Superfície"
+msgid "Surface Points+Normal (Directed)"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "Volume"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Source: "
+msgstr "Preenchimento de Emissão:"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -5199,12 +5222,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Caminho de projeto inválido, o caminho deve existir!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr "Caminho de projeto inválido, godot.cfg não deve existir."
+msgstr "Caminho de projeto inválido, engine.cfg não deve existir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr "Caminho de projeto inválido, godot.cfg deve existir."
+msgstr "Caminho de projeto inválido, engine.cfg deve existir."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5215,8 +5240,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Caminho de projeto inválido (mudou alguma coisa?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create godot.cfg in project path."
-msgstr "Não se pôde criar godot.cfg no caminho do projeto."
+msgstr "Não se pôde criar engine.cfg no caminho do projeto."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5501,8 +5527,9 @@ msgid "Remove Resource Remap Option"
 msgstr "Remover Opção de Remapeamento de Recurso"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "Configurações do Projeto (godot.cfg)"
+msgstr "Configurações do Projeto (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6200,7 +6227,7 @@ msgstr "Alterar a Extensão do Notificador"
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para converter(), use constantes TYPE_*."
+msgstr "Argumento de tipo inválido para convert(), use constantes TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -6217,11 +6244,11 @@ msgstr "Não é um script com uma instância"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr "Não é baseado num script"
+msgstr "Não é baseado em um script"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Não é baseado num arquivo de recurso"
+msgstr "Não é baseado em um arquivo de recurso"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -6230,8 +6257,8 @@ msgstr "Formato de dicionário de instância inválido (faltando @path)"
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Formato de dicionário de instância inválido (não se pôde carregar o script "
-"em @path)"
+"Formato de dicionário de instância inválido (não foi possível carregar o "
+"script em @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
@@ -6261,7 +6288,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr ""
+msgstr "O nó retornou uma saída de sequência inválida: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
@@ -6281,11 +6308,11 @@ msgstr "Variáveis:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr ""
+msgstr "O nome não é um identificador valido:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
-msgstr ""
+msgstr "Nome já utilizado por outra func/var/sinal:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Function"
@@ -6293,7 +6320,7 @@ msgstr "Renomear Função"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Variable"
-msgstr "renomeie variável"
+msgstr "Renomear Variável"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Rename Signal"
@@ -6334,7 +6361,7 @@ msgstr "Editando Sinal:"
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Change Expression"
-msgstr "Alterar Tipo"
+msgstr "Alterar Expressão"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
@@ -6343,76 +6370,76 @@ msgstr "Adicionar Nó"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Segure Meta para aplicar um Getter. Segure Shift para aplicar uma assinatura "
+"genérica."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Segure Ctrl para aplicar um Getter. Segure Shift para aplicar uma assinatura "
+"genérica."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
-msgstr ""
+msgstr "Segure Meta para aplicar uma referência simples ao nó."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "Segure Ctrl para aplicar uma referência ao nó."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Variable Setter."
-msgstr ""
+msgstr "Segure Meta para aplicar um Setter de Variável."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
-msgstr ""
+msgstr "Segure Ctrl para aplicar um Setter de Variável."
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Preload Node"
-msgstr "Adicionar Nó Filho"
+msgstr "Adicionar Nó de Pré-carregamento"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Node(s) From Tree"
-msgstr "Nó a Partir de Cena"
+msgstr "Adicionar Nó(s) a partir de árvore"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
-msgstr ""
+msgstr "Adicionar Getter de Propriedade"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr ""
+msgstr "Adicionar Setter de Propriedade"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Condition"
-msgstr "Copiar Animação"
+msgstr "Condição"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Sequência"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Switch"
-msgstr "Pitch"
+msgstr "Mudar"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterador"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "Enquanto"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Return"
-msgstr "Retornar:"
+msgstr "Retornar"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
 msgid "Get"
-msgstr "Definir"
+msgstr "Obter"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
@@ -6424,7 +6451,7 @@ msgstr "Nós Disponíveis:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr ""
+msgstr "Selecione ou crie uma função para editar o grafo"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
@@ -6443,41 +6470,36 @@ msgid "Delete Selected"
 msgstr "Excluir Selecionados"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Find Node Type"
 msgstr "Localizar Tipo de Nó"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Copy Nodes"
-msgstr "Copiar Pose"
+msgstr "Copiar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Cut Nodes"
-msgstr "Criar Nó"
+msgstr "Recortar Nós"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste Nodes"
-msgstr "Colar Pose"
+msgstr "Colar Nós"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "Tipo de entrada não iterável: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "Iterador tornou-se inválido"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr ""
+msgstr "Iterador tornou-se inválido: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Invalid index property name."
-msgstr "Nome de classe pai inválido"
+msgstr "Nome da propriedade de índice inválido."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
@@ -6526,6 +6548,30 @@ msgstr ""
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
 msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Run in Browser"
+msgstr "Navegar"
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "Não se pôde achar tile:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "Não se pôde achar tile:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "Não foi possível criar a pasta."
 
 #: platform/uwp/export/export.cpp
 msgid ""
@@ -6855,6 +6901,9 @@ msgstr ""
 "ele mostre seu conteúdo diretamente na tela, faça-o filho de um nó Control "
 "para que ele possa ter um tamanho. Caso contrário, defina-o como destino de "
 "render e atribua sua textura interna a algum nó para exibir."
+
+#~ msgid "Surface"
+#~ msgstr "Superfície"
 
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "

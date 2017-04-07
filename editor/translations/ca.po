@@ -924,7 +924,7 @@ msgstr "Emmagatzemant Fitxer:"
 msgid "Packing"
 msgstr "Compressió"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -3465,10 +3465,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3501,6 +3503,10 @@ msgstr ""
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Modify Curve"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3805,6 +3811,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3817,11 +3827,11 @@ msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3833,19 +3843,24 @@ msgid "Create Emitter"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr ""
+#, fuzzy
+msgid "Surface Points"
+msgstr "Superfície %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
+msgid "Surface Points+Normal (Directed)"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -5163,12 +5178,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr ""
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr ""
+msgstr "El camí de Destinació ha d'existir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr ""
+msgstr "El camí de Destinació ha d'existir."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5460,8 +5477,9 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "Configuració del Projecte (godot.cfg)"
+msgstr "Configuració del Projecte (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6484,7 +6502,31 @@ msgstr "premut"
 msgid "just released"
 msgstr "alliberat"
 
+#: platform/javascript/export/export.cpp
+msgid "Run in Browser"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "No s'ha pogut crear la carpeta."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "No s'ha pogut crear la carpeta."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "No s'ha pogut crear la carpeta."
+
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""

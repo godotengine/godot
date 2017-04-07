@@ -2,7 +2,7 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Aprın Çor Tigin <kabusturk38@gmail.com>, 2016.
+# Aprın Çor Tigin <kabusturk38@gmail.com>, 2016-2017.
 # Ceyhun Can Ulker <ceyhuncanu@gmail.com>, 2016.
 # Enes Kaya Öcal <ekayaocal@hotmail.com>, 2016.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
@@ -11,8 +11,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-01-02 19:10+0000\n"
-"Last-Translator: Orkun Turan <holygatestudio@yandex.com>\n"
+"PO-Revision-Date: 2017-01-22 12:30+0000\n"
+"Last-Translator: Aprın Çor Tigin <kabusturk38@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -927,7 +927,7 @@ msgstr "Dizeci Depoluyor:"
 msgid "Packing"
 msgstr "Çıkınla"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1103,9 +1103,8 @@ msgid "Constants:"
 msgstr "Sabitler:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Description:"
-msgstr "Kısa Açıklama:"
+msgstr "Özellik Açıklaması:"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -2753,8 +2752,9 @@ msgid "Compress"
 msgstr "Sıkıştır"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (godot.cfg)"
-msgstr "Tasarıya Ekle (godot.cfg)"
+msgstr "Tasarıya Ekle (engine.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3470,10 +3470,12 @@ msgid "Set Handle"
 msgstr "Tutamacı Ayarla"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr "Renk Yokuşu Noktası Ekle / Kaldır"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr "Renk Yokuşunu Değiştir"
@@ -3507,6 +3509,11 @@ msgstr "Sahneden İçe Aktar"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "Sahneden Güncelle"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve"
+msgstr "Eğri Haritasını Değiştir"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3813,6 +3820,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr "Düğüm uzambilgisi (yüzler) içermiyor."
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Yüzler alan içermez!"
 
@@ -3825,11 +3836,13 @@ msgid "Generate AABB"
 msgstr "AABB Üret"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+#, fuzzy
+msgid "Create Emission Points From Mesh"
 msgstr "Örüntüden Yayıcı Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+#, fuzzy
+msgid "Create Emission Points From Node"
 msgstr "Düğümden Yayıcı Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3841,20 +3854,27 @@ msgid "Create Emitter"
 msgstr "Yayıcı Oluştur"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+#, fuzzy
+msgid "Emission Points:"
 msgstr "Yayma Konumları:"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr "Yayma Dolumu:"
+#, fuzzy
+msgid "Surface Points"
+msgstr "Yüzey %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
-msgstr "Yüzey"
+msgid "Surface Points+Normal (Directed)"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "Oylum"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Source: "
+msgstr "Yayma Dolumu:"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -5183,12 +5203,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Geçersiz tasarı yolu, yolun var olması gerekir!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr "Geçersiz tasarı yolu, godot.cfg var olmaması gerekir."
+msgstr "Geçersiz tasarı yolu, engine.cfg var olmaması gerekir."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr "Geçersiz tasarı yolu, godot.cfg var olması gerekir."
+msgstr "Geçersiz tasarı yolu, engine.cfg var olması gerekir."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5199,8 +5221,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Geçersiz tasarı yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create godot.cfg in project path."
-msgstr "godot.cfg tasarı yolunda oluşturulamadı."
+msgstr "engine.cfg tasarı yolunda oluşturulamadı."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5485,8 +5508,9 @@ msgid "Remove Resource Remap Option"
 msgstr "Kaynak Yeniden Eşle Seçeneğini Kaldır"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "Tasarı Ayarları (godot.cfg)"
+msgstr "Tasarı Ayarları (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6164,9 +6188,8 @@ msgid "Change Notifier Extents"
 msgstr "Bildirim Kapsamını Değiştir"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Probe Extents"
-msgstr "Bildirim Kapsamını Değiştir"
+msgstr "Deşme Genişlemesini Değiştir"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -6495,7 +6518,32 @@ msgstr "yeni basıldı"
 msgid "just released"
 msgstr "yeni bırakıldı"
 
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Run in Browser"
+msgstr "Gözat"
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "Karo Bulunamadı:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "Karo Bulunamadı:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "Dizin oluşturulamadı."
+
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
@@ -6825,6 +6873,9 @@ msgstr ""
 "bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
 "görüntülemesi için bir düğüme atayın."
 
+#~ msgid "Surface"
+#~ msgstr "Yüzey"
+
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "
 #~ "in order for SamplePlayer to play sound."
@@ -6869,33 +6920,51 @@ msgstr ""
 #~ msgid "No exporter for platform '%s' yet."
 #~ msgstr "Şu anda '%s' ortamı için dışa aktarıcı yok."
 
-#, fuzzy
 #~ msgid "Create Android keystore"
-#~ msgstr "Yeni Kaynak Oluştur"
+#~ msgstr "Android Dokunaç Yığımı Oluştur"
 
-#, fuzzy
 #~ msgid "Full name"
-#~ msgstr "Uygun ad"
+#~ msgstr "Tam adı"
 
-#, fuzzy
+#~ msgid "Organizational unit"
+#~ msgstr "Kuruluşsal birim"
+
 #~ msgid "Organization"
-#~ msgstr "Geçiş"
+#~ msgstr "Kuruluş"
 
-#, fuzzy
+#~ msgid "City"
+#~ msgstr "Şehir"
+
 #~ msgid "State"
-#~ msgstr "Durum:"
+#~ msgstr "Ülke"
 
-#, fuzzy
+#~ msgid "2 letter country code"
+#~ msgstr "2 damgalı ülke imi"
+
+#~ msgid "User alias"
+#~ msgstr "Kullanıcı takma adı"
+
 #~ msgid "Password"
-#~ msgstr "Gizyazı:"
+#~ msgstr "Gizyazı"
 
-#, fuzzy
 #~ msgid "at least 6 characters"
-#~ msgstr "Geçerli damgalar:"
+#~ msgstr "en az 6 geçerli damga"
 
-#, fuzzy
 #~ msgid "File name"
-#~ msgstr "Yeni ad:"
+#~ msgstr "Dizeç adı"
+
+#~ msgid "Path : (better to save outside of project)"
+#~ msgstr "Yol: (tasarının dışında kaydetmek daha iyi)"
+
+#~ msgid ""
+#~ "Release keystore is not set.\n"
+#~ "Do you want to create one?"
+#~ msgstr ""
+#~ "Serbest bırakma dokunaç yığımı ayarlanmadı.Bir tane oluşturmak mı ister "
+#~ "misin?"
+
+#~ msgid "Fill Keystore/Release User and Release Password"
+#~ msgstr "Dokunaç Yığımını Doldur/Kullanıcıyı Bırak ve Gizyazıyı Bırak"
 
 #~ msgid "Include"
 #~ msgstr "Katıştır"

@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-01-07 04:19+0000\n"
+"PO-Revision-Date: 2017-01-08 13:05+0000\n"
 "Last-Translator: ABU MD. MARUF SARKER <maruf.webdev@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -930,7 +930,7 @@ msgstr "সংরক্ষিত ফাইল:"
 msgid "Packing"
 msgstr "প্যাক/গুচ্ছিত করা"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1106,9 +1106,8 @@ msgid "Constants:"
 msgstr "ধ্রুবকসমূহ:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Description:"
-msgstr "সংক্ষিপ্ত বর্ণনা:"
+msgstr "মান/প্রোপার্টির বর্ণনা:"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
@@ -2760,8 +2759,9 @@ msgid "Compress"
 msgstr "সঙ্কোচন করুন"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (godot.cfg)"
-msgstr "প্রকল্পে সংযুক্ত করুন (godot.cfg)"
+msgstr "প্রকল্পে সংযুক্ত করুন (engine.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3476,10 +3476,12 @@ msgid "Set Handle"
 msgstr "হ্যান্ডেল স্থাপন করুন"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr "রঙ্গের র‍্যাম্প বিন্দু সংযোজন/বিয়োজন করুন"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr "রঙ্গের র‍্যাম্প পরিবর্তন করুন"
@@ -3513,6 +3515,11 @@ msgstr "দৃশ্য হতে ইম্পোর্ট করুন"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "দৃশ্য হতে হালনাগাদ করুন"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve"
+msgstr "Curve Map পরিবর্তন করুন"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3819,6 +3826,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr "নোডে কোনো জ্যামিতিক আকার নেই (পৃষ্ঠ)।"
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "পৃষ্ঠসমূহ কোনো আকার নেই!"
 
@@ -3831,11 +3842,13 @@ msgid "Generate AABB"
 msgstr "AABB উৎপন্ন করুন"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+#, fuzzy
+msgid "Create Emission Points From Mesh"
 msgstr "Mesh হতে Emitter তৈরি করুন"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+#, fuzzy
+msgid "Create Emission Points From Node"
 msgstr "Node হতে Emitter তৈরি করুন"
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3847,20 +3860,27 @@ msgid "Create Emitter"
 msgstr "Emitter তৈরি করুন"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+#, fuzzy
+msgid "Emission Points:"
 msgstr "Emission-এর স্থানসমূহ:"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr "Emission পূরণ:"
+#, fuzzy
+msgid "Surface Points"
+msgstr "পৃষ্ঠতল %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
-msgstr "পৃষ্ঠতল"
+msgid "Surface Points+Normal (Directed)"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "আয়তন"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Source: "
+msgstr "Emission পূরণ:"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -5186,12 +5206,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "অকার্যকর প্রকল্পের পথ, পথটি অবশ্যই বিদ্যমান হতে হবে!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr "অকার্যকর প্রকল্পের পথ, godot.cfg অবশ্যই অনুপস্থিত হতে হবে।"
+msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই অনুপস্থিত হতে হবে।"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr "অকার্যকর প্রকল্পের পথ, godot.cfg অবশ্যই উপস্থিত হতে হবে।"
+msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই উপস্থিত হতে হবে।"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5202,8 +5224,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "অকার্যকর প্রকল্পের পথ (কোনোকিছু পরিবর্তন করেছেন?)।"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create godot.cfg in project path."
-msgstr "প্রকল্পের পথে godot.cfg তৈরি করা সম্ভব হয়নি।"
+msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5487,8 +5510,9 @@ msgid "Remove Resource Remap Option"
 msgstr "রিসোর্সের পুনঃ-নকশার সিদ্ধান্ত অপসারণ করুন"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "প্রকল্পের সেটিংস (godot.cfg)"
+msgstr "প্রকল্পের সেটিংস (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6167,9 +6191,8 @@ msgid "Change Notifier Extents"
 msgstr "Notifier এর সীমা পরিবর্তন করুন"
 
 #: editor/spatial_editor_gizmos.cpp
-#, fuzzy
 msgid "Change Probe Extents"
-msgstr "Notifier এর সীমা পরিবর্তন করুন"
+msgstr "প্রোবের (Probe) পরিব্যাপ্তি পরিবর্তন করুন"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -6500,7 +6523,32 @@ msgstr "এইমাত্র চাপিত"
 msgid "just released"
 msgstr "এইমাত্র অব্যাহিত/মুক্ত"
 
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Run in Browser"
+msgstr "ব্রাউস"
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
+
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
@@ -6820,6 +6868,9 @@ msgstr ""
 "আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
+#~ msgid "Surface"
+#~ msgstr "পৃষ্ঠতল"
+
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "
 #~ "in order for SamplePlayer to play sound."
@@ -6864,33 +6915,52 @@ msgstr ""
 #~ msgid "No exporter for platform '%s' yet."
 #~ msgstr "'%s' প্ল্যাটফর্মের জন্য এখনো কোনো এক্সপোর্টার নেই।"
 
-#, fuzzy
 #~ msgid "Create Android keystore"
-#~ msgstr "নতুন রিসোর্স তৈরি করুন"
+#~ msgstr "অ্যান্ড্রয়েড কীস্টোর (keystore) তৈরি করুন"
 
-#, fuzzy
 #~ msgid "Full name"
-#~ msgstr "গ্রহণযোগ্য নাম"
+#~ msgstr "পূর্ণ নাম"
 
-#, fuzzy
+#~ msgid "Organizational unit"
+#~ msgstr "সাংগঠনিক একক (Organizational unit)"
+
 #~ msgid "Organization"
-#~ msgstr "ট্র্যানজিশন/স্থানান্তরণ"
+#~ msgstr "সংগঠন"
 
-#, fuzzy
+#~ msgid "City"
+#~ msgstr "শহর"
+
 #~ msgid "State"
-#~ msgstr "অবস্থা:"
+#~ msgstr "প্রদেশ/রাজ্য"
 
-#, fuzzy
+#~ msgid "2 letter country code"
+#~ msgstr "২ অক্ষরে দেশের কোড"
+
+#~ msgid "User alias"
+#~ msgstr "ব্যবহারকারীর উপনাম (User alias)"
+
 #~ msgid "Password"
-#~ msgstr "পাসওয়ার্ড:"
+#~ msgstr "পাসওয়ার্ড"
 
-#, fuzzy
 #~ msgid "at least 6 characters"
-#~ msgstr "গ্রহনযোগ্য অক্ষরসমূহ:"
+#~ msgstr "কমপক্ষে ৬ টি অক্ষর"
 
-#, fuzzy
 #~ msgid "File name"
-#~ msgstr "নতুন নাম:"
+#~ msgstr "ফাইলের নাম"
+
+#~ msgid "Path : (better to save outside of project)"
+#~ msgstr "পথ : (প্রকল্পের বাইরে সংরক্ষণ করা ভালো হবে)"
+
+#~ msgid ""
+#~ "Release keystore is not set.\n"
+#~ "Do you want to create one?"
+#~ msgstr ""
+#~ "রিলিসের কীস্টোর (keystore) স্থাপন করা নেই।\n"
+#~ "আপনি কি একটি তৈরি করতে চান?"
+
+#~ msgid "Fill Keystore/Release User and Release Password"
+#~ msgstr ""
+#~ "কীস্টোর(keystore)/রিলিসের ব্যবহারকারী (User) এবং রিলিসের পাসওয়ার্ড পূরণ করুন"
 
 #~ msgid "Include"
 #~ msgstr "অন্তর্ভুক্ত করুন"

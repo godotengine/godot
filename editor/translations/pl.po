@@ -712,7 +712,7 @@ msgstr ""
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (no undo)"
-msgstr "Usunąć wybrane pliki z projektu? (Nie można tego cofnąć)"
+msgstr "Usunąć wybrane pliki z projektu? (Nie można tego cofnąć)"
 
 #: editor/dependency_editor.cpp
 msgid "Error loading:"
@@ -928,7 +928,7 @@ msgstr "Zapisywanie Pliku:"
 msgid "Packing"
 msgstr "Pakowanie"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -2756,8 +2756,9 @@ msgid "Compress"
 msgstr "Skompresuj"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (godot.cfg)"
-msgstr "Dodaj do projektu (godot.cfg)"
+msgstr "Dodaj do projektu (engine.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3473,10 +3474,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3510,6 +3513,11 @@ msgstr "Import ze sceny"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "Aktualizuj ze sceny"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve"
+msgstr "Zamknij krzywą"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3816,6 +3824,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3828,11 +3840,11 @@ msgid "Generate AABB"
 msgstr "Generuj AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3844,20 +3856,25 @@ msgid "Create Emitter"
 msgstr "Utwórz Emiter"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr ""
+#, fuzzy
+msgid "Surface Points"
+msgstr "Powierzchnia %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
-msgstr "Powierzchnia"
+msgid "Surface Points+Normal (Directed)"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "Głośność"
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
+msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -5177,12 +5194,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Niepoprawna ścieżka projektu, ścieżka musi istnieć!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr "Niepoprawna ścieżka projektu, godot.cfg nie może istnieć."
+msgstr "Niepoprawna ścieżka projektu, engine.cfg nie może istnieć."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr "Niepoprawna ścieżka projektu, godot.cfg musi istnieć."
+msgstr "Niepoprawna ścieżka projektu, engine.cfg musi istnieć."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5193,8 +5212,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Niepoprawna ścieżka projektu (zmienić cokolwiek?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create godot.cfg in project path."
-msgstr "Nie można było utworzyć godot.cfg w ścieżce projektu."
+msgstr "Nie można było utworzyć engine.cfg w ścieżce projektu."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5476,8 +5496,9 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "Ustawienia projektu (godot.cfg)"
+msgstr "Ustawienia projektu (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6130,7 +6151,7 @@ msgstr "Skróty"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Light Radius"
-msgstr "Zmień promień światła"
+msgstr "Zmień promień światła"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Camera FOV"
@@ -6158,7 +6179,7 @@ msgstr "Zmień wysokośc Capsule Shape"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Ray Shape Length"
-msgstr "Zmień długość Ray Shape"
+msgstr "Zmień długość Ray Shape"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier Extents"
@@ -6498,6 +6519,30 @@ msgstr ""
 msgid "just released"
 msgstr ""
 
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Run in Browser"
+msgstr "Szukaj"
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "Nie można utworzyć katalogu."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "Nie można utworzyć katalogu."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "Nie można utworzyć katalogu."
+
 #: platform/uwp/export/export.cpp
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
@@ -6826,6 +6871,9 @@ msgstr ""
 "jego zawartość na ekranie dodaj go jako dziecko węzła typu Control, aby "
 "otrzymał jakiś rozmiar. W przeciwnym wypadku ustawi opcję RenderTarget i "
 "przyporządkuj jego teksturę dla któregoś węzła."
+
+#~ msgid "Surface"
+#~ msgstr "Powierzchnia"
 
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "

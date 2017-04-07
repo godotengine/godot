@@ -2,13 +2,15 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# athomield <athomield@hotmail.com>, 2017.
 # Mohammmad Khashashneh <mohammad.rasmi@gmail.com>, 2016.
+# OWs Tetra <owstetra@gmail.com>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-08 10:20+0000\n"
-"Last-Translator: Mohammmad Khashashneh <mohammad.rasmi@gmail.com>\n"
+"PO-Revision-Date: 2017-03-29 16:30+0000\n"
+"Last-Translator: OWs Tetra <owstetra@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -16,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.13-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -911,7 +913,7 @@ msgstr ""
 msgid "Packing"
 msgstr ""
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -3385,10 +3387,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3421,6 +3425,10 @@ msgstr ""
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Modify Curve"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3724,6 +3732,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3736,11 +3748,11 @@ msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3752,19 +3764,23 @@ msgid "Create Emitter"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
+msgid "Surface Points"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
+msgid "Surface Points+Normal (Directed)"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -6046,21 +6062,28 @@ msgstr ""
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
+#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
+"صنف إحدى المتغيرات المدخلة (arguments)  غير صحيح في ()convert . إستعمل ثابتة "
+"_*TYPE"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
+#, fuzzy
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
+"لا يوجد ما يكفي من البيتات (bytes) لفك تشيفرة البيتات أو بنيتها (format) غير "
+"صحيحة."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "الخطوة (المتغيرة المدخلة/argument) تساوي صفر !"
 
 #: modules/gdscript/gd_functions.cpp
+#, fuzzy
 msgid "Not a script with an instance"
-msgstr ""
+msgstr "الشفرة (script) لا تملك نسخة."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
@@ -6068,23 +6091,30 @@ msgstr "لا تستند الى شفرة مصدرية"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr ""
+msgstr "لا تستند على ملف مورد"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
 msgstr ""
+"instance dictionary format نموذج الشكل القاموسي غير صالح - المسار مفقود"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
+"instance dictionary format نموذج الشكل القاموسي غير صالح - لا يمكن تحميل "
+"السكريبت من المسار"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
 msgstr ""
+"instance dictionary format نموذج الشكل القاموسي غير صالح - السكريبت في "
+"المسار غير صالح"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
 msgstr ""
+"instance dictionary نموذج القاموس غير صالح - subclasses الفئة الفرعية غير "
+"صالحة"
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -6357,6 +6387,26 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run in Browser"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not write file:\n"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not read file:\n"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not open template for export:\n"
 msgstr ""
 
 #: platform/uwp/export/export.cpp

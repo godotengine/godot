@@ -4,19 +4,20 @@
 #
 # Jan 'spl!te' Kondelík <j.kondelik@centrum.cz>, 2016.
 # Luděk Novotný <gladosicek@gmail.com>, 2016.
+# Martin Novák <maidx@seznam.cz>, 2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-08-11 15:01+0000\n"
-"Last-Translator: Luděk Novotný <gladosicek@gmail.com>\n"
+"PO-Revision-Date: 2017-01-12 15:39+0000\n"
+"Last-Translator: Martin Novák <maidx@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 2.8-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -410,7 +411,7 @@ msgstr "Seznam metod '%s':"
 
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
-msgstr "Volat"
+msgstr "Zavolat"
 
 #: editor/call_dialog.cpp editor/connections_dialog.cpp
 #: editor/export_template_manager.cpp
@@ -847,7 +848,7 @@ msgstr ""
 
 #: editor/editor_autoload_settings.cpp
 msgid "Enable"
-msgstr ""
+msgstr "Povolit"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Rearrange Autoloads"
@@ -867,11 +868,11 @@ msgstr ""
 #: editor/io_plugins/editor_scene_import_plugin.cpp
 #: editor/plugins/sample_library_editor_plugin.cpp editor/project_manager.cpp
 msgid "Name"
-msgstr ""
+msgstr "Název"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
-msgstr ""
+msgstr "Singleton"
 
 #: editor/editor_autoload_settings.cpp
 msgid "List:"
@@ -921,7 +922,7 @@ msgstr ""
 msgid "Packing"
 msgstr ""
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1464,15 +1465,15 @@ msgstr "Zpět"
 #: editor/editor_node.cpp editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Redo"
-msgstr ""
+msgstr "Znovu"
 
 #: editor/editor_node.cpp
 msgid "Run Script"
-msgstr ""
+msgstr "Spustit skript"
 
 #: editor/editor_node.cpp
 msgid "Project Settings"
-msgstr ""
+msgstr "Nastavení projektu"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
@@ -1551,11 +1552,12 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Play custom scene"
-msgstr ""
+msgstr "Přehrát vlastní scénu"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Play Custom Scene"
-msgstr ""
+msgstr "Přehrát vlastní scénu"
 
 #: editor/editor_node.cpp
 msgid "Debug options"
@@ -1932,8 +1934,9 @@ msgid "No version.txt found inside templates."
 msgstr ""
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Error creating path for templates:\n"
-msgstr ""
+msgstr "Chyba při vytváření podpisového objektu."
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -2286,7 +2289,7 @@ msgstr "Neplatná velikost fontu."
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 msgid "Invalid font custom source."
-msgstr ""
+msgstr "Nevalidní písmo z vlastního zdroje."
 
 #: editor/io_plugins/editor_font_import_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp
@@ -3400,10 +3403,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3436,6 +3441,10 @@ msgstr ""
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Modify Curve"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3740,6 +3749,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3752,11 +3765,11 @@ msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3768,19 +3781,23 @@ msgid "Create Emitter"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
+msgid "Surface Points"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
+msgid "Surface Points+Normal (Directed)"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -5016,8 +5033,9 @@ msgid "Error"
 msgstr ""
 
 #: editor/project_export.cpp
+#, fuzzy
 msgid "Runnable"
-msgstr ""
+msgstr "Povolit"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -5390,8 +5408,9 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr ""
+msgstr "Nastavení projektu"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -5516,7 +5535,7 @@ msgstr ""
 #: editor/property_editor.cpp
 #, fuzzy
 msgid "Pick a Node"
-msgstr "Cesta k uzlu:"
+msgstr "Vložit uzly"
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
@@ -5742,8 +5761,9 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Copy Node Path"
-msgstr ""
+msgstr "Zkopírovat uzly"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -6074,15 +6094,16 @@ msgstr ""
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
+"Neplatný typ argumentu funkce convert(), použijte některou z konstant TYPE_*"
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr ""
+msgstr "Nedostatek bajtů pro dekódování bajtů, nebo špatný formát."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr ""
+msgstr "Argument kroku je nula!"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not a script with an instance"
@@ -6219,20 +6240,27 @@ msgid "Add Node"
 msgstr "Přidat uzel"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Podržte Meta k uvolnění getteru. Podržte Shift k uvolnění generického "
+"podpisu."
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Podržte Ctrl k uvolnění getteru. Podržte Shift k uvolnění generického "
+"podpisu."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
-msgstr ""
+msgstr "Podržte Meta k uvolnění jednoduché reference na uzel."
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "Podržte Ctrl k uvolnění jednoduché reference na uzel."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Variable Setter."
@@ -6243,13 +6271,12 @@ msgid "Hold Ctrl to drop a Variable Setter."
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Add Preload Node"
-msgstr "Přidat uzel"
+msgstr "Přidat předem načtený uzel"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr "Přidat uzel (uzly) ze stromu"
+msgstr "Přidat uzel(y) ze stromu"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
@@ -6266,7 +6293,7 @@ msgstr "Přechod"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Sekvence"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
@@ -6274,16 +6301,15 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterátor"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Return"
-msgstr "Vrátit:"
+msgstr "Vrátit"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
@@ -6324,28 +6350,27 @@ msgstr "Vyhledat typ uzlu"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr ""
+msgstr "Zkopírovat uzly"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr ""
+msgstr "Vyjmout uzly"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Paste Nodes"
-msgstr "Cesta k uzlu:"
+msgstr "Vložit uzly"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "Vstupním typem nelze iterovat: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "Iterátor se stal neplatným"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr ""
+msgstr "Iterátor se stal neplatným: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
@@ -6388,99 +6413,133 @@ msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
+"Neplatná návratová hodnota z funkce _step(). Musí být celé číslo (výstupní "
+"posloupnost), nebo řetězec (chyba)."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
-msgstr ""
+msgstr "právě stisknuto"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
+msgstr "právě uvolněno"
+
+#: platform/javascript/export/export.cpp
+msgid "Run in Browser"
 msgstr ""
 
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "Nelze vytvořit složku."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "Nelze vytvořit složku."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "Nelze vytvořit složku."
+
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
+"Nepodařilo se přečíst soubor certifikátu. Jsou cesta a heslo obě korektní?"
 
 #: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
-msgstr ""
+msgstr "Chyba při vytváření podpisového objektu."
 
 #: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "Chyba při vytváření podpisu balíčku."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"Nebyly nalezeny žádné exportní šablony.\n"
+"Stáhněte a nainstalujte exportní šablony."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "Vlastní ladící balíček nebyl nalezen."
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid "Custom release package not found."
-msgstr ""
+msgstr "Vlastní balíček k uveřejnění nebyl nalezen."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid unique name."
-msgstr "Neplatný název."
+msgstr "Neplatný unikátní název."
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Invalid product GUID."
-msgstr "Neplatná velikost fontu."
+msgstr "Neplatné GUID produktu."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
-msgstr ""
+msgstr "Neplatné GUID vydavatele."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid background color."
-msgstr ""
+msgstr "Neplatná barva pozadí."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Neplatné rozměry Store Logo obrázku (měly by být 50x50)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Neplatné rozměry Square 44x44 Logo obrázku (měly by být 44x44)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Neplatné rozměry Square 71x71 Logo obrázku (měly by být 71x71)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Neplatné rozměry Square 150x150 Logo obrázku (měly by být 150x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Neplatné rozměry Square 310x310 Logo obrázku (měly by být 310x310)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Neplatné rozměry Square 310x150 Logo obrázku (měly by být 310x150)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Neplatné rozměry obrázku uvítací obrazovky (měly by být 620x300)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
 "A SpriteFrames resource must be created or set in the 'Frames' property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
+"Aby AnimatedSprite mohl zobrazovat snímky, zdroj SpriteFrames musí být "
+"vytvořen nebo nastaven v vlastnosti 'Frames'."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
 "Only one visible CanvasModulate is allowed per scene (or set of instanced "
 "scenes). The first created one will work, while the rest will be ignored."
 msgstr ""
+"Je povolená jen jedna viditelná CanvasModulate na scénu (nebo množinu "
+"instancovaných scén). První vytvořená bude fungovat, ostatní budou "
+"ignorovány."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid ""
@@ -6509,10 +6568,11 @@ msgstr ""
 "jejich tvaru."
 
 #: scene/2d/collision_shape_2d.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
-msgstr ""
+msgstr "CollisionShape2D musí obsahovat tvar. Prosím vytvořte zdrojový tvar."
 
 #: scene/2d/light_2d.cpp
 msgid ""

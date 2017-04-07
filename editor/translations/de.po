@@ -6,15 +6,17 @@
 # Andreas Esau <andreasesau@gmail.com>, 2016.
 # Andreas Haas <liu.gam3@gmail.com>, 2016.
 # Andreas Hirschauer <andreas@hirschauer-it.de>, 2016.
-# Christian Fisch <christian.fiesel@gmail.com>, 2016.
+# Christian Fisch <christian.fiesel@gmail.com>, 2016-2017.
 # danjo <atze@libra.uberspace.de>, 2016.
+# Eurocloud KnowHow <tobias.kloy@werde-volunteer.info>, 2017.
 # hyperglow <greensoma@web.de>, 2016.
 # Jan Groß <jan@grossit.de>, 2016.
-# Oliver Ruehl <oliver@ruehldesign.co>, 2016.
+# Kim <github@aggsol.de>, 2017.
+# Oliver Ruehl <oliver@ruehldesign.co>, 2016-2017.
 # Paul-Vincent Roll <paviro@me.com>, 2016.
 # Peter Friedland <peter_friedland@gmx.de>, 2016.
 # No need for a name <endoplasmatik@gmx.net>, 2016.
-# So Wieso <sowieso@dukun.de>, 2016.
+# So Wieso <sowieso@dukun.de>, 2016-2017.
 # Timo Schwarzer <account@timoschwarzer.com>, 2016.
 # viernullvier <hannes.breul+github@gmail.com>, 2016.
 #
@@ -22,8 +24,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-12-10 04:27+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2017-03-25 22:20+0000\n"
+"Last-Translator: Eurocloud KnowHow <tobias.kloy@werde-volunteer.info>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -31,7 +33,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.12\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -945,7 +947,7 @@ msgstr "Speichere Datei:"
 msgid "Packing"
 msgstr "Packe"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1121,13 +1123,12 @@ msgid "Constants:"
 msgstr "Konstanten:"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Property Description:"
-msgstr "Kurze Beschreibung:"
+msgstr "Eigenschaft-Beschreibung:"
 
 #: editor/editor_help.cpp
 msgid "Method Description:"
-msgstr "Methoden Beschreibung:"
+msgstr "Methoden-Beschreibung:"
 
 #: editor/editor_help.cpp
 msgid "Search Text"
@@ -1568,7 +1569,7 @@ msgstr "Projekt abspielen."
 
 #: editor/editor_node.cpp editor/plugins/sample_library_editor_plugin.cpp
 msgid "Play"
-msgstr "Abspielen"
+msgstr "Starten"
 
 #: editor/editor_node.cpp
 msgid "Pause the scene"
@@ -2776,8 +2777,9 @@ msgid "Compress"
 msgstr "Komprimieren"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
+#, fuzzy
 msgid "Add to Project (godot.cfg)"
-msgstr "Zu Projekt hinzufügen (godot.cfg)"
+msgstr "Zu Projekt hinzufügen (engine.cfg)"
 
 #: editor/io_plugins/editor_translation_import_plugin.cpp
 msgid "Import Languages:"
@@ -3448,12 +3450,11 @@ msgid "OK"
 msgstr "OK"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Drag & drop + Shift : Add node as sibling\n"
 "Drag & drop + Alt : Change node type"
 msgstr ""
-"Ziehen + Umschalt: Node in gleicher Hierarchie einfügen\n"
+"Ziehen + Umschalt: Node auf gleicher Ebene einfügen\n"
 "Ziehen + Alt: Nodetyp ändern"
 
 #: editor/plugins/collision_polygon_2d_editor_plugin.cpp
@@ -3496,10 +3497,12 @@ msgid "Set Handle"
 msgstr "Wähle Griff"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr "Farbverlaufspunkt hinzufügen/entfernen"
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr "Farbverlauf anpassen"
@@ -3533,6 +3536,11 @@ msgstr "Aus Szene importieren"
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
 msgstr "Aus Szene aktualisieren"
+
+#: editor/plugins/curve_editor_plugin.cpp
+#, fuzzy
+msgid "Modify Curve"
+msgstr "Verändere Curve-Map"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -3840,6 +3848,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr "Knoten enthält keine Geometrie (Flächen)."
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Flächen enthalten keinen Bereich!"
 
@@ -3852,11 +3864,13 @@ msgid "Generate AABB"
 msgstr "Erzeuge AABB"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+#, fuzzy
+msgid "Create Emission Points From Mesh"
 msgstr "Erzeuge Emittent aus Mesh"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+#, fuzzy
+msgid "Create Emission Points From Node"
 msgstr "Erzeuge Emittent aus Node"
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3868,20 +3882,27 @@ msgid "Create Emitter"
 msgstr "Erzeuge Emittent"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+#, fuzzy
+msgid "Emission Points:"
 msgstr "Emissionsorte:"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
-msgstr "Emissionsfüllung:"
+#, fuzzy
+msgid "Surface Points"
+msgstr "Oberfläche %d"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
-msgstr "Oberfläche"
+msgid "Surface Points+Normal (Directed)"
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
 msgstr "Volumen"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Emission Source: "
+msgstr "Emissionsfüllung:"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -5210,12 +5231,14 @@ msgid "Invalid project path, the path must exist!"
 msgstr "Ungültiger Projektpfad, der Pfad muss existieren!"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must not exist."
-msgstr "Ungültiger Projektpfad, godot.cfg darf nicht existieren."
+msgstr "Ungültiger Projektpfad, engine.cfg darf nicht existieren."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Invalid project path, godot.cfg must exist."
-msgstr "Ungültiger Projektpfad, godot.cfg muss existieren."
+msgstr "Ungültiger Projektpfad, engine.cfg muss existieren."
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -5226,8 +5249,9 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ungültiger Projektpfad (etwas geändert?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Couldn't create godot.cfg in project path."
-msgstr "Konnte godot.cfg in Projektpfad nicht erzeugen."
+msgstr "Konnte engine.cfg in Projektpfad nicht erzeugen."
 
 #: editor/project_manager.cpp
 msgid "The following files failed extraction from package:"
@@ -5511,8 +5535,9 @@ msgid "Remove Resource Remap Option"
 msgstr "Ressourcen-Remap-Option entfernen"
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Project Settings (godot.cfg)"
-msgstr "Projekteinstellungen (godot.cfg)"
+msgstr "Projekteinstellungen (engine.cfg)"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6203,7 +6228,7 @@ msgstr "Ändere Ausmaße des Benachrichtigers"
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"Ungültiger Parametertyp in convert()-Aufruf, TYPE_*-Konstanten benötigt."
+"Ungültiger Argument-Typ in convert()-Aufruf, TYPE_*-Konstanten benötigt."
 
 #: modules/gdscript/gd_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -6534,7 +6559,32 @@ msgstr "gerade gedrückt"
 msgid "just released"
 msgstr "gerade losgelassen"
 
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Run in Browser"
+msgstr "Durchstöbern"
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "Konnte Kachel nicht finden:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "Konnte Kachel nicht finden:"
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "Ordner konnte nicht erstellt werden."
+
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
@@ -6870,6 +6920,9 @@ msgstr ""
 "Eigenschaft ‚Render Target‘ des Viewports aktiviert und seine Textur "
 "irgendeinem Node zum Anzeigen zugewiesen werden."
 
+#~ msgid "Surface"
+#~ msgstr "Oberfläche"
+
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "
 #~ "in order for SamplePlayer to play sound."
@@ -6914,33 +6967,51 @@ msgstr ""
 #~ msgid "No exporter for platform '%s' yet."
 #~ msgstr "Kein Exporter für Plattform ‚%s‘ verfügbar."
 
-#, fuzzy
 #~ msgid "Create Android keystore"
-#~ msgstr "Erstelle neue Ressource"
+#~ msgstr "Erzeuge Android-Schlüssel"
 
-#, fuzzy
 #~ msgid "Full name"
-#~ msgstr "Gültiger Name"
+#~ msgstr "Vollständiger Name"
 
-#, fuzzy
+#~ msgid "Organizational unit"
+#~ msgstr "Organisatorische Einheit"
+
 #~ msgid "Organization"
-#~ msgstr "Übergang"
+#~ msgstr "Organisation"
 
-#, fuzzy
+#~ msgid "City"
+#~ msgstr "Stadt"
+
 #~ msgid "State"
-#~ msgstr "Status:"
+#~ msgstr "Status"
 
-#, fuzzy
+#~ msgid "2 letter country code"
+#~ msgstr "2-Buchstaben-Ländercode"
+
+#~ msgid "User alias"
+#~ msgstr "Nutzer-Alias"
+
 #~ msgid "Password"
-#~ msgstr "Passwort:"
+#~ msgstr "Passwort"
 
-#, fuzzy
 #~ msgid "at least 6 characters"
-#~ msgstr "Gültige Zeichen:"
+#~ msgstr "Mindestens 6 Zeichen"
 
-#, fuzzy
 #~ msgid "File name"
-#~ msgstr "Neuer Name:"
+#~ msgstr "Dateiname"
+
+#~ msgid "Path : (better to save outside of project)"
+#~ msgstr "Pfad: (besser außerhalb des Projektordners speichern)"
+
+#~ msgid ""
+#~ "Release keystore is not set.\n"
+#~ "Do you want to create one?"
+#~ msgstr ""
+#~ "Release-Schlüsselspeicher wurde nicht gewählt.\n"
+#~ "Soll einer erstellt werden?"
+
+#~ msgid "Fill Keystore/Release User and Release Password"
+#~ msgstr "Schlüsselspeicher, Nutzer und Passwort für Release eingeben"
 
 #~ msgid "Include"
 #~ msgstr "Einbeziehen"

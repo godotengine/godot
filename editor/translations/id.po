@@ -5,21 +5,22 @@
 # Abdul Aziz Muslim Alqudsy <abdul.aziz.muslim.alqudsy@gmail.com>, 2016.
 # Andevid Dynmyn <doyan4forum@gmail.com>, 2016.
 # Andinawan Asa <asaandinawan@gmail.com>, 2016.
+# Damar S. M <the.last.walla@gmail.com>, 2017.
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-10-15 04:17+0000\n"
-"Last-Translator: Andevid Dynmyn <doyan4forum@gmail.com>\n"
+"PO-Revision-Date: 2017-01-18 13:18+0000\n"
+"Last-Translator: Damar S. M. <the.last.walla@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -955,7 +956,7 @@ msgstr "Menyimpan File:"
 msgid "Packing"
 msgstr "Mengemas"
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -3464,10 +3465,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3500,6 +3503,10 @@ msgstr ""
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Modify Curve"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3804,6 +3811,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3816,11 +3827,11 @@ msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3832,19 +3843,23 @@ msgid "Create Emitter"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
+msgid "Surface Points"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
+msgid "Surface Points+Normal (Directed)"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -6157,20 +6172,19 @@ msgstr "Tidak cukup bytes untuk menerjemahkan, atau format tidak sah."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr "Langkah argumen adalah nol!"
+msgstr "Argumen langkah adalah nol!"
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not a script with an instance"
-msgstr "Skrip tidak mempunyai turunannya"
+msgstr "Bukan skrip dengan contoh"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr "Tidak berbasis skrip"
+msgstr "Tidak berbasis pada skrip"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Tidak berbasis resource file"
+msgstr "Tidak berbasis pada resource file"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -6201,8 +6215,8 @@ msgid ""
 "Node yielded, but did not return a function state in the first working "
 "memory."
 msgstr ""
-"Node dihasilkan, tetapi keadaan sebuah fungsi tidak kembali saat kerja "
-"memori pertama."
+"Node dihasilkan, tetapi keadaan sebuah fungsi tidak kembali saat memori "
+"pertama bekerja."
 
 #: modules/visual_script/visual_script.cpp
 msgid ""
@@ -6287,9 +6301,8 @@ msgid "Editing Signal:"
 msgstr "Mengedit Sinyal:"
 
 #: modules/visual_script/visual_script_editor.cpp
-#, fuzzy
 msgid "Change Expression"
-msgstr "Ubah Transisi Anim"
+msgstr "Ubah Pernyataan"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node"
@@ -6298,6 +6311,8 @@ msgstr "Tambahkan Node"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
+"Tahan Meta untuk meletakkan sebuah Getter. Tahan Shift untuk meletakkan "
+"generic signature."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
@@ -6477,6 +6492,29 @@ msgstr ""
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
 msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run in Browser"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not write file:\n"
+msgstr "Tidak dapat membuat folder."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not read file:\n"
+msgstr "Tidak dapat membuat folder."
+
+#: platform/javascript/export/export.cpp
+#, fuzzy
+msgid "Could not open template for export:\n"
+msgstr "Tidak dapat membuat folder."
 
 #: platform/uwp/export/export.cpp
 msgid ""

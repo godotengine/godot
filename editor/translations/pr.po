@@ -2,12 +2,12 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Zion Nimchuk <zionnimchuk@gmail.com>, 2016.
+# Zion Nimchuk <zionnimchuk@gmail.com>, 2016-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-11-14 19:48+0000\n"
+"PO-Revision-Date: 2017-03-24 19:48+0000\n"
 "Last-Translator: Zion Nimchuk <zionnimchuk@gmail.com>\n"
 "Language-Team: Pirate <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pr/>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.12\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -408,7 +408,7 @@ msgstr ""
 
 #: editor/call_dialog.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Call"
-msgstr ""
+msgstr "Call"
 
 #: editor/call_dialog.cpp editor/connections_dialog.cpp
 #: editor/export_template_manager.cpp
@@ -422,7 +422,7 @@ msgstr ""
 #: editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Close"
 
 #: editor/call_dialog.cpp
 msgid "Method List:"
@@ -910,7 +910,7 @@ msgstr ""
 msgid "Packing"
 msgstr ""
 
-#: editor/editor_export.cpp
+#: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:\n"
 msgstr ""
 
@@ -1066,7 +1066,7 @@ msgstr ""
 
 #: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Members:"
-msgstr ""
+msgstr "th' Members:"
 
 #: editor/editor_help.cpp
 msgid "Public Methods:"
@@ -1920,8 +1920,9 @@ msgid "No version.txt found inside templates."
 msgstr ""
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Error creating path for templates:\n"
-msgstr ""
+msgstr "Blimey! I can't make th' signature object!"
 
 #: editor/export_template_manager.cpp
 msgid "Extracting Export Templates"
@@ -3190,7 +3191,7 @@ msgstr ""
 #: editor/plugins/shader_editor_plugin.cpp editor/project_manager.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit"
-msgstr ""
+msgstr "Edit"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -3383,10 +3384,12 @@ msgid "Set Handle"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 msgid "Add/Remove Color Ramp Point"
 msgstr ""
 
 #: editor/plugins/color_ramp_editor_plugin.cpp
+#: editor/plugins/gradient_texture_editor_plugin.cpp
 #: editor/plugins/shader_graph_editor_plugin.cpp
 msgid "Modify Color Ramp"
 msgstr ""
@@ -3419,6 +3422,10 @@ msgstr ""
 
 #: editor/plugins/cube_grid_theme_editor_plugin.cpp
 msgid "Update from Scene"
+msgstr ""
+
+#: editor/plugins/curve_editor_plugin.cpp
+msgid "Modify Curve"
 msgstr ""
 
 #: editor/plugins/item_list_editor_plugin.cpp
@@ -3722,6 +3729,10 @@ msgid "Node does not contain geometry (faces)."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "A processor material of type 'ParticlesMaterial' is required."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3734,11 +3745,11 @@ msgid "Generate AABB"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Mesh"
+msgid "Create Emission Points From Mesh"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Create Emitter From Node"
+msgid "Create Emission Points From Node"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -3750,19 +3761,23 @@ msgid "Create Emitter"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Positions:"
+msgid "Emission Points:"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Emission Fill:"
+msgid "Surface Points"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Surface"
+msgid "Surface Points+Normal (Directed)"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Volume"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Emission Source: "
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -4220,7 +4235,7 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Toggle Breakpoint"
-msgstr ""
+msgstr "Toggle ye Breakpoint"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Remove All Breakpoints"
@@ -5491,8 +5506,9 @@ msgid "Couldn't load image"
 msgstr ""
 
 #: editor/property_editor.cpp
+#, fuzzy
 msgid "Pick a Node"
-msgstr ""
+msgstr "Paste yer Node"
 
 #: editor/property_editor.cpp
 msgid "Bit %d, val %d."
@@ -5504,7 +5520,7 @@ msgstr ""
 
 #: editor/property_editor.cpp modules/visual_script/visual_script_editor.cpp
 msgid "Set"
-msgstr ""
+msgstr "Set"
 
 #: editor/property_editor.cpp
 msgid "Properties:"
@@ -5715,8 +5731,9 @@ msgid "Save Branch as Scene"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Copy Node Path"
-msgstr ""
+msgstr "Forge yer Node!"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete (No Confirm)"
@@ -6197,251 +6214,277 @@ msgstr "Add Node"
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
-"Smash yer Meta t' sink yer Getter. Smash yer Shift t' sink a generic "
+"Smash yer Meta key t' sink yer Getter. Smash yer Shift t' sink a generic "
 "signature."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
 msgstr ""
-"Smash yer Ctrl t' sink yer Getter. Smash yer Shift t' sink a generic "
+"Smash yer Ctrl key t' sink yer Getter. Smash yer Shift t' sink a generic "
 "signature."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a simple reference to the node."
-msgstr ""
+msgstr "Smash yer Meta key t' sink a naked reference t' th' node."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a simple reference to the node."
-msgstr ""
+msgstr "Smash yer Ctrl key t' sink a naked reference t' th' node."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Meta to drop a Variable Setter."
-msgstr ""
+msgstr "Smash yer Meta key t' sink a Variable Setter."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Hold Ctrl to drop a Variable Setter."
-msgstr ""
+msgstr "Smash yer Ctrl key t' sink a Variable Setter."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Preload Node"
-msgstr ""
+msgstr "Add yer Preload Node"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Node(s) From Tree"
-msgstr ""
+msgstr "Add Node(s) From yer Tree"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Getter Property"
-msgstr ""
+msgstr "Add yer Getter Property"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Add Setter Property"
-msgstr ""
+msgstr "Add yer Setter Property"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Condition"
-msgstr ""
+msgstr "Condition"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Sequence"
-msgstr ""
+msgstr "Sequence"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Switch"
-msgstr ""
+msgstr "Switch"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Iterator"
-msgstr ""
+msgstr "Iterator"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "While"
-msgstr ""
+msgstr "While"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Return"
-msgstr ""
+msgstr "Return"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Get"
-msgstr ""
+msgstr "Get"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
-msgstr ""
+msgstr "th' Base Type:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Available Nodes:"
-msgstr ""
+msgstr "yer Nodes doing nothin':"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Select or create a function to edit graph"
-msgstr ""
+msgstr "Grab or make yer function t' edit ye graph"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Signal Arguments:"
-msgstr ""
+msgstr "Edit ye Signal Arguments:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Edit Variable:"
-msgstr ""
+msgstr "Edit yer Variable:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Change"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
-msgstr ""
+msgstr "Yar, Blow th' Selected Down!"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Find Node Type"
-msgstr ""
+msgstr "Find ye Node Type"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Copy Nodes"
-msgstr ""
+msgstr "Forge yer Node!"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr ""
+msgstr "Slit th' Node"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Paste Nodes"
-msgstr ""
+msgstr "Paste yer Node"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable: "
-msgstr ""
+msgstr "Yar! Yer input aint iterable: "
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid"
-msgstr ""
+msgstr "Yer Iterator be no good"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Iterator became invalid: "
-msgstr ""
+msgstr "Yer Iterator be no good: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
-msgstr ""
+msgstr "Yer index property name be thrown overboard!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
-msgstr ""
+msgstr "Yer Base object aint' a Node!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Path does not lead Node!"
-msgstr ""
+msgstr "There be no Node at ye path's end!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr ""
+msgstr "Yer index property name '%s' in node %s be walkin' th' plank!"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
-msgstr ""
+msgstr ": Evil argument of th' type: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ""
+msgstr ": Evil arguments: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
-msgstr ""
+msgstr "VariableGet be in davy jones locker! Not in th' script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableSet not found in script: "
-msgstr ""
+msgstr "VariableSet be in davy jones locker! Not in th' script: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
-msgstr ""
+msgstr "Yer fancy node got no _step() method, we can't get th' graph."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
+"Yer return value from _step() be no good! She must be th' integer (seq out) "
+"or th' string (error)."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just pressed"
-msgstr ""
+msgstr "just smashed"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "just released"
+msgstr "just released"
+
+#: platform/javascript/export/export.cpp
+msgid "Run in Browser"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Run exported HTML in the system's default browser."
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not write file:\n"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not read file:\n"
+msgstr ""
+
+#: platform/javascript/export/export.cpp
+msgid "Could not open template for export:\n"
 msgstr ""
 
 #: platform/uwp/export/export.cpp
+#, fuzzy
 msgid ""
 "Couldn't read the certificate file. Are the path and password both correct?"
 msgstr ""
+"Blimey! I can't read th' certificate file! Are yer path n' password trusty?"
 
 #: platform/uwp/export/export.cpp
 msgid "Error creating the signature object."
-msgstr ""
+msgstr "Blimey! I can't make th' signature object!"
 
 #: platform/uwp/export/export.cpp
 msgid "Error creating the package signature."
-msgstr ""
+msgstr "Blimey! I can't create th' package signature."
 
 #: platform/uwp/export/export.cpp
 msgid ""
 "No export templates found.\n"
 "Download and install export templates."
 msgstr ""
+"Ye got no export templates!\n"
+"Download and install yer export templates."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom debug package not found."
-msgstr ""
+msgstr "Yer fancy debug package be nowhere."
 
 #: platform/uwp/export/export.cpp
 msgid "Custom release package not found."
-msgstr ""
+msgstr "Yer fancy release package be nowhere."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid unique name."
-msgstr ""
+msgstr "Yer unique name be evil."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
-msgstr ""
+msgstr "Yer product GUID be evil."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid publisher GUID."
-msgstr ""
+msgstr "Yer publisher GUID be evil! Walk th' plank!"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid background color."
-msgstr ""
+msgstr "Yer background color be evil!"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr ""
+msgstr "Yer Store Logo got th' wrong dimensions! She should be 50x50 I reckon."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr ""
+msgstr "Yer square 44x44 logo image dimensions aint' 44x44!"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr ""
+msgstr "Yer square 71x71 logo image dimensions aint' 71x71!"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr ""
+msgstr "Yer square 150x150 logo image dimensions aint' 150x150!"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr ""
+msgstr "Yer square 310x310 logo image dimensions aint' 310x310!"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr ""
+msgstr "Yer wide 310x150 logo image dimensions aint' 310x150!"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
-msgstr ""
+msgstr "Yer splash screen image dimensions aint' 620x300!"
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
