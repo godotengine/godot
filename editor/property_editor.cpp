@@ -655,10 +655,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			menu->clear();
 			menu->set_size(Size2(1, 1));
 
-			if (p_name=="script/script" && hint_text=="Script" && owner->cast_to<Node>()) {
-				menu->add_icon_item(get_icon("Script","EditorIcons"),TTR("New Script"),OBJ_MENU_NEW_SCRIPT);
+			if (p_name == "script/script" && hint_text == "Script" && owner->cast_to<Node>()) {
+				menu->add_icon_item(get_icon("Script", "EditorIcons"), TTR("New Script"), OBJ_MENU_NEW_SCRIPT);
 				menu->add_separator();
-			} else if (hint_text!="") {
+			} else if (hint_text != "") {
 				int idx = 0;
 
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {

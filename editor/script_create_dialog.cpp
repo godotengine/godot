@@ -95,7 +95,7 @@ void ScriptCreateDialog::_class_name_changed(const String &p_name) {
 
 void ScriptCreateDialog::ok_pressed() {
 
-	if (create_new){
+	if (create_new) {
 		_create_new();
 	} else {
 		_load_exist();
@@ -103,7 +103,6 @@ void ScriptCreateDialog::ok_pressed() {
 
 	create_new = true;
 	_update_controls();
-
 }
 
 void ScriptCreateDialog::_create_new() {
@@ -179,7 +178,7 @@ void ScriptCreateDialog::_lang_changed(int l) {
 		class_name->set_editable(false);
 	}
 
-	String selected_ext = "."+ScriptServer::get_language(l)->get_extension();
+	String selected_ext = "." + ScriptServer::get_language(l)->get_extension();
 	String path = file_path->get_text();
 	String extension = "";
 	if (path.find(".") >= 0) {
@@ -194,13 +193,13 @@ void ScriptCreateDialog::_lang_changed(int l) {
 		// change extension by selected language
 		List<String> extensions;
 		// get all possible extensions for script
-		for (int l = 0; l<language_menu->get_item_count(); l++) {
-			ScriptServer::get_language( l )->get_recognized_extensions(&extensions);
+		for (int l = 0; l < language_menu->get_item_count(); l++) {
+			ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
 		}
 
-		for(List<String>::Element *E = extensions.front(); E; E = E->next()) {
+		for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
 			if (E->get().nocasecmp_to(extension) == 0) {
-				path = path.basename()+selected_ext;
+				path = path.basename() + selected_ext;
 				_path_changed(path);
 				break;
 			}
@@ -289,7 +288,7 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 
 	// get all possible extensions for script
 	for (int l = 0; l < language_menu->get_item_count(); l++) {
-		ScriptServer::get_language( l )->get_recognized_extensions(&extensions);
+		ScriptServer::get_language(l)->get_recognized_extensions(&extensions);
 	}
 
 	bool found = false;

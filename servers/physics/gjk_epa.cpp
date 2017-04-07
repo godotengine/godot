@@ -207,21 +207,24 @@ struct GJK {
 			real_t weights[4];
 			U mask = 0;
 			switch (cs.rank) {
-				case 2: sqdist = projectorigin(cs.c[0]->w,
-								cs.c[1]->w,
-								weights, mask);
-						break;
-				case 3: sqdist = projectorigin(cs.c[0]->w,
-								cs.c[1]->w,
-								cs.c[2]->w,
-								weights, mask);
-						break;
-				case 4: sqdist = projectorigin(cs.c[0]->w,
-								cs.c[1]->w,
-								cs.c[2]->w,
-								cs.c[3]->w,
-								weights, mask);
-						break;
+				case 2:
+					sqdist = projectorigin(cs.c[0]->w,
+							cs.c[1]->w,
+							weights, mask);
+					break;
+				case 3:
+					sqdist = projectorigin(cs.c[0]->w,
+							cs.c[1]->w,
+							cs.c[2]->w,
+							weights, mask);
+					break;
+				case 4:
+					sqdist = projectorigin(cs.c[0]->w,
+							cs.c[1]->w,
+							cs.c[2]->w,
+							cs.c[3]->w,
+							weights, mask);
+					break;
 			}
 			if (sqdist >= 0) { /* Valid	*/
 				ns.rank = 0;
