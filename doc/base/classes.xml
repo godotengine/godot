@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <doc version="3.0.alpha.custom_build" name="Engine Types">
+<class name="@DLScript" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -1959,6 +1969,22 @@
 	<description>
 	</description>
 	<methods>
+		<method name="_compute_cost" qualifiers="virtual">
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_estimate_cost" qualifiers="virtual">
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_point">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -8381,7 +8407,7 @@
 			</description>
 		</method>
 		<method name="get_material" qualifiers="const">
-			<return type="CanvasItemMaterial">
+			<return type="ShaderMaterial">
 			</return>
 			<description>
 				Get the material of this item.
@@ -8519,7 +8545,7 @@
 			</description>
 		</method>
 		<method name="set_material">
-			<argument index="0" name="material" type="CanvasItemMaterial">
+			<argument index="0" name="material" type="ShaderMaterial">
 			</argument>
 			<description>
 				Set the material of this item.
@@ -8580,7 +8606,7 @@
 	<members>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" brief="">
 		</member>
-		<member name="material" type="CanvasItemMaterial" setter="set_material" getter="get_material" brief="">
+		<member name="material" type="ShaderMaterial" setter="set_material" getter="get_material" brief="">
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" brief="">
 		</member>
@@ -8648,52 +8674,6 @@
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Canvas item transform has changed. Only received if requested.
 		</constant>
-	</constants>
-</class>
-<class name="CanvasItemMaterial" inherits="Material" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="get_shader" qualifiers="const">
-			<return type="Shader">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_shader_param" qualifiers="const">
-			<argument index="0" name="param" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shader">
-			<argument index="0" name="shader" type="Shader">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_shader_param">
-			<argument index="0" name="param" type="String">
-			</argument>
-			<argument index="1" name="value" type="Variant">
-			</argument>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<constants>
-	</constants>
-</class>
-<class name="CanvasItemShader" inherits="Shader" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-	</methods>
-	<constants>
 	</constants>
 </class>
 <class name="CanvasLayer" inherits="Node" category="Core">
@@ -11191,7 +11171,7 @@
 			<argument index="0" name="filter" type="int">
 			</argument>
 			<description>
-					Set when the control is ignoring mouse events (even touchpad events send mouse events). (see the MOUSE_FILTER_* constants)
+				Set when the control is ignoring mouse events (even touchpad events send mouse events). (see the MOUSE_FILTER_* constants)
 			</description>
 		</method>
 		<method name="set_pos">
@@ -12002,6 +11982,134 @@
 		<member name="_data" type="int" setter="_set_data" getter="_get_data" brief="">
 		</member>
 		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
+<class name="CurveTexture" inherits="Texture" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_max" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_min" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_points" qualifiers="const">
+			<return type="PoolVector2Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_max">
+			<argument index="0" name="max" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_min">
+			<argument index="0" name="min" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_points">
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_width">
+			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="max" type="float" setter="set_max" getter="get_max" brief="">
+		</member>
+		<member name="min" type="float" setter="set_min" getter="get_min" brief="">
+		</member>
+		<member name="points" type="PoolVector2Array" setter="set_points" getter="get_points" brief="">
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
+<class name="DLLibrary" inherits="Resource" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_platform_file" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="platform" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_platform_file">
+			<argument index="0" name="platform" type="String">
+			</argument>
+			<argument index="1" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="DLScript" inherits="Script" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_library" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_library">
+			<argument index="0" name="library" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_script_name">
+			<argument index="0" name="script_name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="library" type="DLLibrary" setter="set_library" getter="get_library" brief="">
+		</member>
+		<member name="script_name" type="String" setter="set_script_name" getter="get_script_name" brief="">
 		</member>
 	</members>
 	<constants>
@@ -15155,640 +15263,6 @@
 		</theme_item>
 	</theme_items>
 </class>
-<class name="FixedSpatialMaterial" inherits="Material" category="Core">
-	<brief_description>
-		Simple Material with a fixed parameter set.
-	</brief_description>
-	<description>
-		FixedSpatialMaterial is a simple type of material [Resource], which contains a fixed amount of parameters. It is the only type of material supported in fixed-pipeline devices and APIs. It is also an often a better alternative to [ShaderMaterial] for most simple use cases.
-	</description>
-	<methods>
-		<method name="get_albedo" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_anisotropy" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_blend_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_clearcoat" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_clearcoat_gloss" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_cull_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_depth_draw_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_detail_blend_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_detail_uv" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_diffuse_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_emission_energy" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_feature" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="feature" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_flag" qualifiers="const">
-			<return type="bool">
-			</return>
-			<argument index="0" name="arg0" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_height_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_line_width" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_metalness" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_normal_scale" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_point_size" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_refraction" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_refraction_roughness" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_rim" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_rim_tint" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_roughness" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_specular" qualifiers="const">
-			<return type="Color">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_specular_mode" qualifiers="const">
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_subsurface_scattering_strength" qualifiers="const">
-			<return type="float">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_texture" qualifiers="const">
-			<return type="Texture">
-			</return>
-			<argument index="0" name="param" type="Texture">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv1_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv1_scale" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv2_offset" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="get_uv2_scale" qualifiers="const">
-			<return type="Vector2">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_albedo">
-			<argument index="0" name="albedo" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_anisotropy">
-			<argument index="0" name="anisotropy" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_blend_mode">
-			<argument index="0" name="blend_mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_clearcoat">
-			<argument index="0" name="clearcoat" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_clearcoat_gloss">
-			<argument index="0" name="clearcoat_gloss" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_cull_mode">
-			<argument index="0" name="cull_mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_depth_draw_mode">
-			<argument index="0" name="depth_draw_mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_detail_blend_mode">
-			<argument index="0" name="detail_blend_mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_detail_uv">
-			<argument index="0" name="detail_uv" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_diffuse_mode">
-			<argument index="0" name="diffuse_mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission">
-			<argument index="0" name="emission" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_emission_energy">
-			<argument index="0" name="emission_energy" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_feature">
-			<argument index="0" name="feature" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_flag">
-			<argument index="0" name="flag" type="int">
-			</argument>
-			<argument index="1" name="enable" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_height_scale">
-			<argument index="0" name="height_scale" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_line_width">
-			<argument index="0" name="line_width" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_metalness">
-			<argument index="0" name="metalness" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_normal_scale">
-			<argument index="0" name="normal_scale" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_point_size">
-			<argument index="0" name="point_size" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_refraction">
-			<argument index="0" name="refraction" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_refraction_roughness">
-			<argument index="0" name="refraction_roughness" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_rim">
-			<argument index="0" name="rim" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_rim_tint">
-			<argument index="0" name="rim_tint" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_roughness">
-			<argument index="0" name="roughness" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_specular">
-			<argument index="0" name="specular" type="Color">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_specular_mode">
-			<argument index="0" name="specular_mode" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_subsurface_scattering_strength">
-			<argument index="0" name="strength" type="float">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_texture">
-			<argument index="0" name="param" type="Texture">
-			</argument>
-			<argument index="1" name="texture" type="Object">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv1_offset">
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv1_scale">
-			<argument index="0" name="scale" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv2_offset">
-			<argument index="0" name="offset" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_uv2_scale">
-			<argument index="0" name="scale" type="Vector2">
-			</argument>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<members>
-		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" brief="">
-		</member>
-		<member name="albedo_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="anisotropy_anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" brief="">
-		</member>
-		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="anisotropy_flowmap" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="ao_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="clearcoat_amount" type="float" setter="set_clearcoat" getter="get_clearcoat" brief="">
-		</member>
-		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss" brief="">
-		</member>
-		<member name="clearcoat_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="detail_albedo" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" brief="">
-		</member>
-		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="detail_mask" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="detail_normal" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" brief="">
-		</member>
-		<member name="emission_color" type="Color" setter="set_emission" getter="get_emission" brief="">
-		</member>
-		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" brief="">
-		</member>
-		<member name="emission_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="flags_on_top" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
-		<member name="flags_transparent" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="flags_unshaded" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
-		<member name="flags_use_point_size" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
-		<member name="height_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="height_scale" type="float" setter="set_height_scale" getter="get_height_scale" brief="">
-		</member>
-		<member name="height_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale" brief="">
-		</member>
-		<member name="normal_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="params_blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" brief="">
-		</member>
-		<member name="params_cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" brief="">
-		</member>
-		<member name="params_depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" brief="">
-		</member>
-		<member name="params_diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" brief="">
-		</member>
-		<member name="params_line_width" type="float" setter="set_line_width" getter="get_line_width" brief="">
-		</member>
-		<member name="params_point_size" type="float" setter="set_point_size" getter="get_point_size" brief="">
-		</member>
-		<member name="refraction_displacement" type="float" setter="set_refraction" getter="get_refraction" brief="">
-		</member>
-		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="refraction_roughness" type="float" setter="set_refraction_roughness" getter="get_refraction_roughness" brief="">
-		</member>
-		<member name="refraction_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="rim_amount" type="float" setter="set_rim" getter="get_rim" brief="">
-		</member>
-		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="rim_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="rim_tint" type="float" setter="set_rim_tint" getter="get_rim_tint" brief="">
-		</member>
-		<member name="specular_color" type="Color" setter="set_specular" getter="get_specular" brief="">
-		</member>
-		<member name="specular_metalness" type="float" setter="set_metalness" getter="get_metalness" brief="">
-		</member>
-		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" brief="">
-		</member>
-		<member name="specular_roughness" type="float" setter="set_roughness" getter="get_roughness" brief="">
-		</member>
-		<member name="specular_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
-		</member>
-		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength" brief="">
-		</member>
-		<member name="subsurf_scatter_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
-		</member>
-		<member name="uv1_offset" type="Vector2" setter="set_uv1_offset" getter="get_uv1_offset" brief="">
-		</member>
-		<member name="uv1_scale" type="Vector2" setter="set_uv1_scale" getter="get_uv1_scale" brief="">
-		</member>
-		<member name="uv2_offset" type="Vector2" setter="set_uv2_offset" getter="get_uv2_offset" brief="">
-		</member>
-		<member name="uv2_scale" type="Vector2" setter="set_uv2_scale" getter="get_uv2_scale" brief="">
-		</member>
-		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
-		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
-	</members>
-	<constants>
-		<constant name="TEXTURE_ALBEDO" value="0">
-		</constant>
-		<constant name="TEXTURE_SPECULAR" value="1">
-		</constant>
-		<constant name="TEXTURE_EMISSION" value="2">
-		</constant>
-		<constant name="TEXTURE_NORMAL" value="3">
-		</constant>
-		<constant name="TEXTURE_RIM" value="4">
-		</constant>
-		<constant name="TEXTURE_CLEARCOAT" value="5">
-		</constant>
-		<constant name="TEXTURE_FLOWMAP" value="6">
-		</constant>
-		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="7">
-		</constant>
-		<constant name="TEXTURE_HEIGHT" value="8">
-		</constant>
-		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="9">
-		</constant>
-		<constant name="TEXTURE_REFRACTION" value="10">
-		</constant>
-		<constant name="TEXTURE_REFRACTION_ROUGHNESS" value="11">
-		</constant>
-		<constant name="TEXTURE_DETAIL_MASK" value="12">
-		</constant>
-		<constant name="TEXTURE_DETAIL_ALBEDO" value="13">
-		</constant>
-		<constant name="TEXTURE_DETAIL_NORMAL" value="14">
-		</constant>
-		<constant name="TEXTURE_MAX" value="15">
-		</constant>
-		<constant name="DETAIL_UV_1" value="0">
-		</constant>
-		<constant name="DETAIL_UV_2" value="1">
-		</constant>
-		<constant name="FEATURE_TRANSPARENT" value="0">
-		</constant>
-		<constant name="FEATURE_EMISSION" value="1">
-		</constant>
-		<constant name="FEATURE_NORMAL_MAPPING" value="2">
-		</constant>
-		<constant name="FEATURE_RIM" value="3">
-		</constant>
-		<constant name="FEATURE_CLEARCOAT" value="4">
-		</constant>
-		<constant name="FEATURE_ANISOTROPY" value="5">
-		</constant>
-		<constant name="FEATURE_AMBIENT_OCCLUSION" value="6">
-		</constant>
-		<constant name="FEATURE_HEIGHT_MAPPING" value="7">
-		</constant>
-		<constant name="FEATURE_SUBSURACE_SCATTERING" value="8">
-		</constant>
-		<constant name="FEATURE_REFRACTION" value="9">
-		</constant>
-		<constant name="FEATURE_DETAIL" value="10">
-		</constant>
-		<constant name="FEATURE_MAX" value="11">
-		</constant>
-		<constant name="BLEND_MODE_MIX" value="0">
-		</constant>
-		<constant name="BLEND_MODE_ADD" value="1">
-		</constant>
-		<constant name="BLEND_MODE_SUB" value="2">
-		</constant>
-		<constant name="BLEND_MODE_MUL" value="3">
-		</constant>
-		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0">
-		</constant>
-		<constant name="DEPTH_DRAW_ALWAYS" value="1">
-		</constant>
-		<constant name="DEPTH_DRAW_DISABLED" value="2">
-		</constant>
-		<constant name="DEPTH_DRAW_ALPHA_OPAQUE_PREPASS" value="3">
-		</constant>
-		<constant name="CULL_BACK" value="0">
-		</constant>
-		<constant name="CULL_FRONT" value="1">
-		</constant>
-		<constant name="CULL_DISABLED" value="2">
-		</constant>
-		<constant name="FLAG_UNSHADED" value="0">
-		</constant>
-		<constant name="FLAG_ONTOP" value="1">
-		</constant>
-		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="2">
-		</constant>
-		<constant name="FLAG_SRGB_VERTEX_COLOR" value="3">
-		</constant>
-		<constant name="FLAG_USE_POINT_SIZE" value="4">
-		</constant>
-		<constant name="FLAG_MAX" value="5">
-		</constant>
-		<constant name="DIFFUSE_LAMBERT" value="0">
-		</constant>
-		<constant name="DIFFUSE_LAMBERT_WRAP" value="1">
-		</constant>
-		<constant name="DIFFUSE_OREN_NAYAR" value="2">
-		</constant>
-		<constant name="DIFFUSE_BURLEY" value="3">
-		</constant>
-		<constant name="SPECULAR_MODE_METALLIC" value="0">
-		</constant>
-		<constant name="SPECULAR_MODE_SPECULAR" value="1">
-		</constant>
-	</constants>
-</class>
 <class name="Font" inherits="Resource" category="Core">
 	<brief_description>
 		Internationalized font and text drawing support.
@@ -16913,29 +16387,17 @@
 		</member>
 		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override" brief="">
 		</member>
-		<member name="use_as_billboard" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
-		<member name="use_as_y_billboard" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
-		<member name="use_depth_scale" type="bool" setter="set_flag" getter="get_flag" brief="">
-		</member>
 		<member name="use_in_baked_light" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
 		<member name="visible_in_all_rooms" type="bool" setter="set_flag" getter="get_flag" brief="">
 		</member>
 	</members>
 	<constants>
-		<constant name="FLAG_CAST_SHADOW" value="2">
+		<constant name="FLAG_CAST_SHADOW" value="0">
 		</constant>
-		<constant name="FLAG_BILLBOARD" value="0">
+		<constant name="FLAG_VISIBLE_IN_ALL_ROOMS" value="1">
 		</constant>
-		<constant name="FLAG_BILLBOARD_FIX_Y" value="1">
-		</constant>
-		<constant name="FLAG_DEPH_SCALE" value="3">
-		</constant>
-		<constant name="FLAG_VISIBLE_IN_ALL_ROOMS" value="4">
-		</constant>
-		<constant name="FLAG_MAX" value="6">
+		<constant name="FLAG_MAX" value="3">
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0">
 		</constant>
@@ -17088,6 +16550,114 @@
 			</description>
 		</method>
 	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="GradientTexture" inherits="Texture" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="add_point">
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_colors" qualifiers="const">
+			<return type="PoolColorArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_offset" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="point" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_offsets" qualifiers="const">
+			<return type="PoolRealArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="interpolate">
+			<return type="Color">
+			</return>
+			<argument index="0" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_point">
+			<argument index="0" name="offset" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_colors">
+			<argument index="0" name="colors" type="PoolColorArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_offset">
+			<argument index="0" name="point" type="int">
+			</argument>
+			<argument index="1" name="offset" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_offsets">
+			<argument index="0" name="offsets" type="PoolRealArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_width">
+			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="colors" type="float" setter="set_colors" getter="get_colors" brief="">
+		</member>
+		<member name="offsets" type="float" setter="set_offsets" getter="get_offsets" brief="">
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width" brief="">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
@@ -26099,6 +25669,8 @@
 		</constant>
 		<constant name="DUPLICATE_SCRIPTS" value="4">
 		</constant>
+		<constant name="DUPLICATE_USE_INSTANCING" value="8">
+		</constant>
 	</constants>
 </class>
 <class name="Node2D" inherits="CanvasItem" category="Core">
@@ -28486,6 +28058,246 @@
 	<constants>
 	</constants>
 </class>
+<class name="Particles" inherits="GeometryInstance" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_amount" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_custom_aabb" qualifiers="const">
+			<return type="Rect3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_order" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_pass_mesh" qualifiers="const">
+			<return type="Mesh">
+			</return>
+			<argument index="0" name="pass" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_draw_passes" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_explosiveness_ratio" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_fixed_fps" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_fractional_delta" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_gravity" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_lifetime" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_pre_process_time" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_process_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_randomness_ratio" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_use_local_coordinates" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_emitting" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_amount">
+			<argument index="0" name="amount" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_custom_aabb">
+			<argument index="0" name="aabb" type="Rect3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_order">
+			<argument index="0" name="order" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_pass_mesh">
+			<argument index="0" name="pass" type="int">
+			</argument>
+			<argument index="1" name="mesh" type="Mesh">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_draw_passes">
+			<argument index="0" name="passes" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emitting">
+			<argument index="0" name="emitting" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_explosiveness_ratio">
+			<argument index="0" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fixed_fps">
+			<argument index="0" name="fps" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_fractional_delta">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_gravity">
+			<argument index="0" name="accel_vec" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_lifetime">
+			<argument index="0" name="secs" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_pre_process_time">
+			<argument index="0" name="secs" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_process_material">
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_randomness_ratio">
+			<argument index="0" name="ratio" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_use_local_coordinates">
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="amount" type="int" setter="set_amount" getter="get_amount" brief="">
+		</member>
+		<member name="custom_aabb" type="Rect3" setter="set_custom_aabb" getter="get_custom_aabb" brief="">
+		</member>
+		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" brief="">
+		</member>
+		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_pass_2" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_pass_3" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_pass_4" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" brief="">
+		</member>
+		<member name="draw_passes" type="int" setter="set_draw_passes" getter="get_draw_passes" brief="">
+		</member>
+		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting" brief="">
+		</member>
+		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" brief="">
+		</member>
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" brief="">
+		</member>
+		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" brief="">
+		</member>
+		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" brief="">
+		</member>
+		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" brief="">
+		</member>
+		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" brief="">
+		</member>
+		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" brief="">
+		</member>
+		<member name="process_material" type="ParticlesMaterial,ShaderMaterial" setter="set_process_material" getter="get_process_material" brief="">
+		</member>
+		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" brief="">
+		</member>
+	</members>
+	<constants>
+		<constant name="DRAW_ORDER_INDEX" value="0">
+		</constant>
+		<constant name="DRAW_ORDER_LIFETIME" value="1">
+		</constant>
+		<constant name="DRAW_ORDER_VIEW_DEPTH" value="2">
+		</constant>
+		<constant name="MAX_DRAW_PASSES" value="4">
+		</constant>
+	</constants>
+</class>
 <class name="Particles2D" inherits="Node2D" category="Core">
 	<brief_description>
 		2D Particle emitter
@@ -29026,14 +28838,378 @@
 		</constant>
 	</constants>
 </class>
-<class name="ParticlesShader" inherits="Shader" category="Core">
+<class name="ParticlesMaterial" inherits="Material" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<methods>
+		<method name="get_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_color_ramp" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_box_extents" qualifiers="const">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_normal_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_point_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_shape" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_sphere_radius" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_flatness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_param_randomness" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_param_texture" qualifiers="const">
+			<return type="Object">
+			</return>
+			<argument index="0" name="param" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_spread" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_trail_color_modifier" qualifiers="const">
+			<return type="GradientTexture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_trail_divisor" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_trail_size_modifier" qualifiers="const">
+			<return type="CurveTexture">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_color">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_color_ramp">
+			<argument index="0" name="ramp" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_box_extents">
+			<argument index="0" name="extents" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_normal_texture">
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_point_count">
+			<argument index="0" name="point_count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_point_texture">
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_shape">
+			<argument index="0" name="shape" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_sphere_radius">
+			<argument index="0" name="radius" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flag">
+			<argument index="0" name="flag" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flatness">
+			<argument index="0" name="amount" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param">
+			<argument index="0" name="param" type="int">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param_randomness">
+			<argument index="0" name="param" type="int">
+			</argument>
+			<argument index="1" name="randomness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param_texture">
+			<argument index="0" name="param" type="int">
+			</argument>
+			<argument index="1" name="texture" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_spread">
+			<argument index="0" name="degrees" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_trail_color_modifier">
+			<argument index="0" name="texture" type="GradientTexture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_trail_divisor">
+			<argument index="0" name="divisor" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_trail_size_modifier">
+			<argument index="0" name="texture" type="CurveTexture">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
+	<members>
+		<member name="angle" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angle_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="angle_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="angular_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="angular_velocity_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="angular_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="anim_offset" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="anim_offset_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="anim_offset_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="anim_speed" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="anim_speed_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="color" type="Color" setter="set_color" getter="get_color" brief="">
+		</member>
+		<member name="color_ramp" type="GradientTexture" setter="set_color_ramp" getter="get_color_ramp" brief="">
+		</member>
+		<member name="damping" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="damping_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents" brief="">
+		</member>
+		<member name="emission_normal_texture" type="Texture" setter="set_emission_normal_texture" getter="get_emission_normal_texture" brief="">
+		</member>
+		<member name="emission_point_count" type="int" setter="set_emission_point_count" getter="get_emission_point_count" brief="">
+		</member>
+		<member name="emission_point_texture" type="Texture" setter="set_emission_point_texture" getter="get_emission_point_texture" brief="">
+		</member>
+		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" brief="">
+		</member>
+		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius" brief="">
+		</member>
+		<member name="flag_align_y" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flag_rotate_y" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" brief="">
+		</member>
+		<member name="hue_variation" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="hue_variation_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="hue_variation_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="initial_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="initial_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="linear_accel" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="linear_accel_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="linear_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="orbit_velocity" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="orbit_velocity_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="orbit_velocity_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="radial_accel" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="radial_accel_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="radial_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="scale" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="scale_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="scale_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="spread" type="float" setter="set_spread" getter="get_spread" brief="">
+		</member>
+		<member name="tangential_accel" type="float" setter="set_param" getter="get_param" brief="">
+		</member>
+		<member name="tangential_accel_curve" type="CurveTexture" setter="set_param_texture" getter="get_param_texture" brief="">
+		</member>
+		<member name="tangential_accel_random" type="float" setter="set_param_randomness" getter="get_param_randomness" brief="">
+		</member>
+		<member name="trail_color_modifier" type="GradientTexture" setter="set_trail_color_modifier" getter="get_trail_color_modifier" brief="">
+		</member>
+		<member name="trail_divisor" type="int" setter="set_trail_divisor" getter="get_trail_divisor" brief="">
+		</member>
+		<member name="trail_size_modifier" type="CurveTexture" setter="set_trail_size_modifier" getter="get_trail_size_modifier" brief="">
+		</member>
+	</members>
 	<constants>
+		<constant name="PARAM_INITIAL_LINEAR_VELOCITY" value="0">
+		</constant>
+		<constant name="PARAM_ANGULAR_VELOCITY" value="1">
+		</constant>
+		<constant name="PARAM_ORBIT_VELOCITY" value="2">
+		</constant>
+		<constant name="PARAM_LINEAR_ACCEL" value="3">
+		</constant>
+		<constant name="PARAM_RADIAL_ACCEL" value="4">
+		</constant>
+		<constant name="PARAM_TANGENTIAL_ACCEL" value="5">
+		</constant>
+		<constant name="PARAM_DAMPING" value="6">
+		</constant>
+		<constant name="PARAM_ANGLE" value="7">
+		</constant>
+		<constant name="PARAM_SCALE" value="8">
+		</constant>
+		<constant name="PARAM_HUE_VARIATION" value="9">
+		</constant>
+		<constant name="PARAM_ANIM_SPEED" value="10">
+		</constant>
+		<constant name="PARAM_ANIM_OFFSET" value="11">
+		</constant>
+		<constant name="PARAM_MAX" value="12">
+		</constant>
+		<constant name="FLAG_ALIGN_Y_TO_VELOCITY" value="0">
+		</constant>
+		<constant name="FLAG_ROTATE_Y" value="1">
+		</constant>
+		<constant name="FLAG_MAX" value="2">
+		</constant>
+		<constant name="EMISSION_SHAPE_POINT" value="0">
+		</constant>
+		<constant name="EMISSION_SHAPE_SPHERE" value="1">
+		</constant>
+		<constant name="EMISSION_SHAPE_BOX" value="2">
+		</constant>
+		<constant name="EMISSION_SHAPE_POINTS" value="3">
+		</constant>
+		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4">
+		</constant>
 	</constants>
 </class>
 <class name="Path" inherits="Spatial" category="Core">
@@ -34849,6 +35025,32 @@
 	<constants>
 	</constants>
 </class>
+<class name="QuadMesh" inherits="Mesh" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_material" qualifiers="const">
+			<return type="Material">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_material">
+			<argument index="0" name="material" type="Material">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="material" type="Material" setter="set_material" getter="get_material" brief="">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
 <class name="Quat" category="Built-In Types">
 	<brief_description>
 		Quaternion.
@@ -38207,6 +38409,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_input_handled">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_network_server" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -38772,6 +38980,42 @@
 		</constant>
 		<constant name="MODE_PARTICLES" value="2">
 		</constant>
+	</constants>
+</class>
+<class name="ShaderMaterial" inherits="Material" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_shader" qualifiers="const">
+			<return type="Shader">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_shader_param" qualifiers="const">
+			<argument index="0" name="param" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shader">
+			<argument index="0" name="shader" type="Shader">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shader_param">
+			<argument index="0" name="param" type="String">
+			</argument>
+			<argument index="1" name="value" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="Shape" inherits="Resource" category="Core">
@@ -39576,8 +39820,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_import_transform" type="Transform" setter="_set_import_transform" getter="_get_import_transform" brief="">
-		</member>
 		<member name="global_transform" type="Transform" setter="set_global_transform" getter="get_global_transform" brief="">
 		</member>
 		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation" brief="">
@@ -39621,14 +39863,704 @@
 	<constants>
 	</constants>
 </class>
-<class name="SpatialShader" inherits="Shader" category="Core">
+<class name="SpatialMaterial" inherits="Material" category="Core">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<methods>
+		<method name="get_albedo" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_anisotropy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_billboard_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_blend_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_clearcoat" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_clearcoat_gloss" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_cull_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_depth_draw_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_detail_blend_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_detail_uv" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_diffuse_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_emission_energy" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_feature" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="feature" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_height_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_line_width" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_metalness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_normal_scale" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_particles_anim_h_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_particles_anim_loop" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_particles_anim_v_frames" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_point_size" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_refraction" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_refraction_roughness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rim" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_rim_tint" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_roughness" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_specular" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_specular_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_subsurface_scattering_strength" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_texture" qualifiers="const">
+			<return type="Texture">
+			</return>
+			<argument index="0" name="param" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_uv1_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_uv1_scale" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_uv2_offset" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_uv2_scale" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_albedo">
+			<argument index="0" name="albedo" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_anisotropy">
+			<argument index="0" name="anisotropy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_billboard_mode">
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_blend_mode">
+			<argument index="0" name="blend_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_clearcoat">
+			<argument index="0" name="clearcoat" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_clearcoat_gloss">
+			<argument index="0" name="clearcoat_gloss" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_cull_mode">
+			<argument index="0" name="cull_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_depth_draw_mode">
+			<argument index="0" name="depth_draw_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_detail_blend_mode">
+			<argument index="0" name="detail_blend_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_detail_uv">
+			<argument index="0" name="detail_uv" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_diffuse_mode">
+			<argument index="0" name="diffuse_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission">
+			<argument index="0" name="emission" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_emission_energy">
+			<argument index="0" name="emission_energy" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_feature">
+			<argument index="0" name="feature" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flag">
+			<argument index="0" name="flag" type="int">
+			</argument>
+			<argument index="1" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_height_scale">
+			<argument index="0" name="height_scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_line_width">
+			<argument index="0" name="line_width" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_metalness">
+			<argument index="0" name="metalness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_normal_scale">
+			<argument index="0" name="normal_scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_particles_anim_h_frames">
+			<argument index="0" name="frames" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_particles_anim_loop">
+			<argument index="0" name="frames" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_particles_anim_v_frames">
+			<argument index="0" name="frames" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_point_size">
+			<argument index="0" name="point_size" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_refraction">
+			<argument index="0" name="refraction" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_refraction_roughness">
+			<argument index="0" name="refraction_roughness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rim">
+			<argument index="0" name="rim" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_rim_tint">
+			<argument index="0" name="rim_tint" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_roughness">
+			<argument index="0" name="roughness" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_specular">
+			<argument index="0" name="specular" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_specular_mode">
+			<argument index="0" name="specular_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_subsurface_scattering_strength">
+			<argument index="0" name="strength" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_texture">
+			<argument index="0" name="param" type="Texture">
+			</argument>
+			<argument index="1" name="texture" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_uv1_offset">
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_uv1_scale">
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_uv2_offset">
+			<argument index="0" name="offset" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_uv2_scale">
+			<argument index="0" name="scale" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
+	<members>
+		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" brief="">
+		</member>
+		<member name="albedo_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="anisotropy_anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy" brief="">
+		</member>
+		<member name="anisotropy_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="anisotropy_flowmap" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="ao_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="ao_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="clearcoat_amount" type="float" setter="set_clearcoat" getter="get_clearcoat" brief="">
+		</member>
+		<member name="clearcoat_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="clearcoat_gloss" type="float" setter="set_clearcoat_gloss" getter="get_clearcoat_gloss" brief="">
+		</member>
+		<member name="clearcoat_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="detail_albedo" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="detail_blend_mode" type="int" setter="set_detail_blend_mode" getter="get_detail_blend_mode" brief="">
+		</member>
+		<member name="detail_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="detail_mask" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="detail_normal" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="detail_uv_layer" type="int" setter="set_detail_uv" getter="get_detail_uv" brief="">
+		</member>
+		<member name="emission_color" type="Color" setter="set_emission" getter="get_emission" brief="">
+		</member>
+		<member name="emission_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" brief="">
+		</member>
+		<member name="emission_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="flags_fixed_size" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flags_on_top" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flags_transparent" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="flags_unshaded" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="flags_use_point_size" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="height_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="height_scale" type="float" setter="set_height_scale" getter="get_height_scale" brief="">
+		</member>
+		<member name="height_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="normal_scale" type="float" setter="set_normal_scale" getter="get_normal_scale" brief="">
+		</member>
+		<member name="normal_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="params_billboard_mode" type="int" setter="set_billboard_mode" getter="get_billboard_mode" brief="">
+		</member>
+		<member name="params_blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" brief="">
+		</member>
+		<member name="params_cull_mode" type="int" setter="set_cull_mode" getter="get_cull_mode" brief="">
+		</member>
+		<member name="params_depth_draw_mode" type="int" setter="set_depth_draw_mode" getter="get_depth_draw_mode" brief="">
+		</member>
+		<member name="params_diffuse_mode" type="int" setter="set_diffuse_mode" getter="get_diffuse_mode" brief="">
+		</member>
+		<member name="params_line_width" type="float" setter="set_line_width" getter="get_line_width" brief="">
+		</member>
+		<member name="params_point_size" type="float" setter="set_point_size" getter="get_point_size" brief="">
+		</member>
+		<member name="particles_anim_h_frames" type="int" setter="set_particles_anim_h_frames" getter="get_particles_anim_h_frames" brief="">
+		</member>
+		<member name="particles_anim_loop" type="bool" setter="set_particles_anim_loop" getter="get_particles_anim_loop" brief="">
+		</member>
+		<member name="particles_anim_v_frames" type="int" setter="set_particles_anim_v_frames" getter="get_particles_anim_v_frames" brief="">
+		</member>
+		<member name="refraction_displacement" type="float" setter="set_refraction" getter="get_refraction" brief="">
+		</member>
+		<member name="refraction_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="refraction_roughness" type="float" setter="set_refraction_roughness" getter="get_refraction_roughness" brief="">
+		</member>
+		<member name="refraction_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="rim_amount" type="float" setter="set_rim" getter="get_rim" brief="">
+		</member>
+		<member name="rim_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="rim_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="rim_tint" type="float" setter="set_rim_tint" getter="get_rim_tint" brief="">
+		</member>
+		<member name="specular_color" type="Color" setter="set_specular" getter="get_specular" brief="">
+		</member>
+		<member name="specular_metalness" type="float" setter="set_metalness" getter="get_metalness" brief="">
+		</member>
+		<member name="specular_mode" type="int" setter="set_specular_mode" getter="get_specular_mode" brief="">
+		</member>
+		<member name="specular_roughness" type="float" setter="set_roughness" getter="get_roughness" brief="">
+		</member>
+		<member name="specular_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" brief="">
+		</member>
+		<member name="subsurf_scatter_strength" type="float" setter="set_subsurface_scattering_strength" getter="get_subsurface_scattering_strength" brief="">
+		</member>
+		<member name="subsurf_scatter_texture" type="Texture" setter="set_texture" getter="get_texture" brief="">
+		</member>
+		<member name="uv1_offset" type="Vector2" setter="set_uv1_offset" getter="get_uv1_offset" brief="">
+		</member>
+		<member name="uv1_scale" type="Vector2" setter="set_uv1_scale" getter="get_uv1_scale" brief="">
+		</member>
+		<member name="uv2_offset" type="Vector2" setter="set_uv2_offset" getter="get_uv2_offset" brief="">
+		</member>
+		<member name="uv2_scale" type="Vector2" setter="set_uv2_scale" getter="get_uv2_scale" brief="">
+		</member>
+		<member name="vertex_color_is_srgb" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+		<member name="vertex_color_use_as_albedo" type="bool" setter="set_flag" getter="get_flag" brief="">
+		</member>
+	</members>
 	<constants>
+		<constant name="TEXTURE_ALBEDO" value="0">
+		</constant>
+		<constant name="TEXTURE_SPECULAR" value="1">
+		</constant>
+		<constant name="TEXTURE_EMISSION" value="2">
+		</constant>
+		<constant name="TEXTURE_NORMAL" value="3">
+		</constant>
+		<constant name="TEXTURE_RIM" value="4">
+		</constant>
+		<constant name="TEXTURE_CLEARCOAT" value="5">
+		</constant>
+		<constant name="TEXTURE_FLOWMAP" value="6">
+		</constant>
+		<constant name="TEXTURE_AMBIENT_OCCLUSION" value="7">
+		</constant>
+		<constant name="TEXTURE_HEIGHT" value="8">
+		</constant>
+		<constant name="TEXTURE_SUBSURFACE_SCATTERING" value="9">
+		</constant>
+		<constant name="TEXTURE_REFRACTION" value="10">
+		</constant>
+		<constant name="TEXTURE_REFRACTION_ROUGHNESS" value="11">
+		</constant>
+		<constant name="TEXTURE_DETAIL_MASK" value="12">
+		</constant>
+		<constant name="TEXTURE_DETAIL_ALBEDO" value="13">
+		</constant>
+		<constant name="TEXTURE_DETAIL_NORMAL" value="14">
+		</constant>
+		<constant name="TEXTURE_MAX" value="15">
+		</constant>
+		<constant name="DETAIL_UV_1" value="0">
+		</constant>
+		<constant name="DETAIL_UV_2" value="1">
+		</constant>
+		<constant name="FEATURE_TRANSPARENT" value="0">
+		</constant>
+		<constant name="FEATURE_EMISSION" value="1">
+		</constant>
+		<constant name="FEATURE_NORMAL_MAPPING" value="2">
+		</constant>
+		<constant name="FEATURE_RIM" value="3">
+		</constant>
+		<constant name="FEATURE_CLEARCOAT" value="4">
+		</constant>
+		<constant name="FEATURE_ANISOTROPY" value="5">
+		</constant>
+		<constant name="FEATURE_AMBIENT_OCCLUSION" value="6">
+		</constant>
+		<constant name="FEATURE_HEIGHT_MAPPING" value="7">
+		</constant>
+		<constant name="FEATURE_SUBSURACE_SCATTERING" value="8">
+		</constant>
+		<constant name="FEATURE_REFRACTION" value="9">
+		</constant>
+		<constant name="FEATURE_DETAIL" value="10">
+		</constant>
+		<constant name="FEATURE_MAX" value="11">
+		</constant>
+		<constant name="BLEND_MODE_MIX" value="0">
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1">
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2">
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3">
+		</constant>
+		<constant name="DEPTH_DRAW_OPAQUE_ONLY" value="0">
+		</constant>
+		<constant name="DEPTH_DRAW_ALWAYS" value="1">
+		</constant>
+		<constant name="DEPTH_DRAW_DISABLED" value="2">
+		</constant>
+		<constant name="DEPTH_DRAW_ALPHA_OPAQUE_PREPASS" value="3">
+		</constant>
+		<constant name="CULL_BACK" value="0">
+		</constant>
+		<constant name="CULL_FRONT" value="1">
+		</constant>
+		<constant name="CULL_DISABLED" value="2">
+		</constant>
+		<constant name="FLAG_UNSHADED" value="0">
+		</constant>
+		<constant name="FLAG_ONTOP" value="1">
+		</constant>
+		<constant name="FLAG_ALBEDO_FROM_VERTEX_COLOR" value="2">
+		</constant>
+		<constant name="FLAG_SRGB_VERTEX_COLOR" value="3">
+		</constant>
+		<constant name="FLAG_USE_POINT_SIZE" value="4">
+		</constant>
+		<constant name="FLAG_FIXED_SIZE" value="5">
+		</constant>
+		<constant name="FLAG_MAX" value="6">
+		</constant>
+		<constant name="DIFFUSE_LAMBERT" value="0">
+		</constant>
+		<constant name="DIFFUSE_LAMBERT_WRAP" value="1">
+		</constant>
+		<constant name="DIFFUSE_OREN_NAYAR" value="2">
+		</constant>
+		<constant name="DIFFUSE_BURLEY" value="3">
+		</constant>
+		<constant name="SPECULAR_MODE_METALLIC" value="0">
+		</constant>
+		<constant name="SPECULAR_MODE_SPECULAR" value="1">
+		</constant>
+		<constant name="BILLBOARD_DISABLED" value="0">
+		</constant>
+		<constant name="BILLBOARD_ENABLED" value="1">
+		</constant>
+		<constant name="BILLBOARD_FIXED_Y" value="2">
+		</constant>
+		<constant name="BILLBOARD_PARTICLES" value="3">
+		</constant>
 	</constants>
 </class>
 <class name="SphereShape" inherits="Shape" category="Core">
@@ -44425,7 +45357,7 @@
 			</description>
 		</method>
 		<method name="tile_get_material" qualifiers="const">
-			<return type="CanvasItemMaterial">
+			<return type="ShaderMaterial">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -44535,7 +45467,7 @@
 		<method name="tile_set_material">
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="material" type="CanvasItemMaterial">
+			<argument index="1" name="material" type="ShaderMaterial">
 			</argument>
 			<description>
 				Set the material of the tile.
@@ -44857,6 +45789,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_shape_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_action">
 			<argument index="0" name="action" type="String">
 			</argument>
@@ -44882,6 +45820,12 @@
 			</description>
 		</method>
 		<method name="set_shape_centered">
+			<argument index="0" name="bool" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape_visible">
 			<argument index="0" name="bool" type="bool">
 			</argument>
 			<description>
@@ -44920,6 +45864,8 @@
 		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" brief="">
 		</member>
 		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered" brief="">
+		</member>
+		<member name="shape_visible" type="bool" setter="set_shape_visible" getter="is_shape_visible" brief="">
 		</member>
 		<member name="visibility_mode" type="int" setter="set_visibility_mode" getter="get_visibility_mode" brief="">
 		</member>
