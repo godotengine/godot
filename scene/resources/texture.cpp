@@ -1367,3 +1367,471 @@ CubeMap::~CubeMap() {
 	BIND_CONSTANT( CUBEMAP_FRONT );
 	BIND_CONSTANT( CUBEMAP_BACK );
 */
+///////////////////////////
+
+void CurveTexture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_max", "max"), &CurveTexture::set_max);
+	ClassDB::bind_method(D_METHOD("get_max"), &CurveTexture::get_max);
+
+	ClassDB::bind_method(D_METHOD("set_min", "min"), &CurveTexture::set_min);
+	ClassDB::bind_method(D_METHOD("get_min"), &CurveTexture::get_min);
+
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveTexture::set_width);
+
+	ClassDB::bind_method(D_METHOD("set_points", "points"), &CurveTexture::set_points);
+	ClassDB::bind_method(D_METHOD("get_points"), &CurveTexture::get_points);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "min", PROPERTY_HINT_RANGE, "-1024,1024"), "set_min", "get_min");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max", PROPERTY_HINT_RANGE, "-1024,1024"), "set_max", "get_max");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "32,4096"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "points"), "set_points", "get_points");
+}
+void CurveTexture::set_max(float p_max) {
+
+	max = p_max;
+	emit_changed();
+}
+float CurveTexture::get_max() const {
+
+	return max;
+}
+
+void CurveTexture::set_min(float p_min) {
+
+	min = p_min;
+	emit_changed();
+}
+float CurveTexture::get_min() const {
+
+	return min;
+}
+void CurveTexture::set_width(int p_width) {
+
+	ERR_FAIL_COND(p_width < 32 || p_width > 4096);
+	width = p_width;
+	if (points.size())
+		set_points(points);
+}
+int CurveTexture::get_width() const {
+
+	return width;
+}
+
+static void _plot_curve(const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c, const Vector2 &p_d, float *p_heights, bool *p_useds, int p_width, float p_min, float p_max) {
+
+	float geometry[4][4];
+	float tmp1[4][4];
+	float tmp2[4][4];
+	float deltas[4][4];
+	double x, dx, dx2, dx3;
+	double y, dy, dy2, dy3;
+	double d, d2, d3;
+	int lastx;
+	int newx;
+	float lasty;
+	float newy;
+	int ntimes;
+	int i, j;
+
+	int xmax = p_width;
+
+	/* construct the geometry matrix from the segment */
+	for (i = 0; i < 4; i++) {
+		geometry[i][2] = 0;
+		geometry[i][3] = 0;
+	}
+
+	geometry[0][0] = (p_a[0] * xmax);
+	geometry[1][0] = (p_b[0] * xmax);
+	geometry[2][0] = (p_c[0] * xmax);
+	geometry[3][0] = (p_d[0] * xmax);
+
+	geometry[0][1] = (p_a[1]);
+	geometry[1][1] = (p_b[1]);
+	geometry[2][1] = (p_c[1]);
+	geometry[3][1] = (p_d[1]);
+
+	/* subdivide the curve ntimes (1000) times */
+	ntimes = 4 * xmax;
+	/* ntimes can be adjusted to give a finer or coarser curve */
+	d = 1.0 / ntimes;
+	d2 = d * d;
+	d3 = d * d * d;
+
+	/* construct a temporary matrix for determining the forward differencing deltas */
+	tmp2[0][0] = 0;
+	tmp2[0][1] = 0;
+	tmp2[0][2] = 0;
+	tmp2[0][3] = 1;
+	tmp2[1][0] = d3;
+	tmp2[1][1] = d2;
+	tmp2[1][2] = d;
+	tmp2[1][3] = 0;
+	tmp2[2][0] = 6 * d3;
+	tmp2[2][1] = 2 * d2;
+	tmp2[2][2] = 0;
+	tmp2[2][3] = 0;
+	tmp2[3][0] = 6 * d3;
+	tmp2[3][1] = 0;
+	tmp2[3][2] = 0;
+	tmp2[3][3] = 0;
+
+	/* compose the basis and geometry matrices */
+
+	static const float CR_basis[4][4] = {
+		{ -0.5, 1.5, -1.5, 0.5 },
+		{ 1.0, -2.5, 2.0, -0.5 },
+		{ -0.5, 0.0, 0.5, 0.0 },
+		{ 0.0, 1.0, 0.0, 0.0 },
+	};
+
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			tmp1[i][j] = (CR_basis[i][0] * geometry[0][j] +
+						  CR_basis[i][1] * geometry[1][j] +
+						  CR_basis[i][2] * geometry[2][j] +
+						  CR_basis[i][3] * geometry[3][j]);
+		}
+	}
+	/* compose the above results to get the deltas matrix */
+
+	for (i = 0; i < 4; i++) {
+		for (j = 0; j < 4; j++) {
+			deltas[i][j] = (tmp2[i][0] * tmp1[0][j] +
+							tmp2[i][1] * tmp1[1][j] +
+							tmp2[i][2] * tmp1[2][j] +
+							tmp2[i][3] * tmp1[3][j]);
+		}
+	}
+
+	/* extract the x deltas */
+	x = deltas[0][0];
+	dx = deltas[1][0];
+	dx2 = deltas[2][0];
+	dx3 = deltas[3][0];
+
+	/* extract the y deltas */
+	y = deltas[0][1];
+	dy = deltas[1][1];
+	dy2 = deltas[2][1];
+	dy3 = deltas[3][1];
+
+	lastx = CLAMP(x, 0, xmax);
+	lasty = y;
+
+	p_heights[lastx] = lasty;
+	p_useds[lastx] = true;
+
+	/* loop over the curve */
+	for (i = 0; i < ntimes; i++) {
+		/* increment the x values */
+		x += dx;
+		dx += dx2;
+		dx2 += dx3;
+
+		/* increment the y values */
+		y += dy;
+		dy += dy2;
+		dy2 += dy3;
+
+		newx = CLAMP((Math::round(x)), 0, xmax);
+		newy = CLAMP(y, p_min, p_max);
+
+		/* if this point is different than the last one...then draw it */
+		if ((lastx != newx) || (lasty != newy)) {
+			p_useds[newx] = true;
+			p_heights[newx] = newy;
+		}
+
+		lastx = newx;
+		lasty = newy;
+	}
+}
+
+void CurveTexture::set_points(const PoolVector<Vector2> &p_points) {
+
+	points = p_points;
+
+	PoolVector<uint8_t> data;
+	PoolVector<bool> used;
+	data.resize(width * sizeof(float));
+	used.resize(width);
+	{
+		PoolVector<uint8_t>::Write wd8 = data.write();
+		float *wd = (float *)wd8.ptr();
+		PoolVector<bool>::Write wu = used.write();
+		int pc = p_points.size();
+		PoolVector<Vector2>::Read pr = p_points.read();
+
+		for (int i = 0; i < width; i++) {
+			wd[i] = 0.0;
+			wu[i] = false;
+		}
+
+		Vector2 prev = Vector2(0, 0);
+		Vector2 prev2 = Vector2(0, 0);
+
+		for (int i = -1; i < pc; i++) {
+
+			Vector2 next;
+			Vector2 next2;
+			if (i + 1 >= pc) {
+				next = Vector2(1, 0);
+			} else {
+				next = Vector2(pr[i + 1].x, pr[i + 1].y);
+			}
+
+			if (i + 2 >= pc) {
+				next2 = Vector2(1, 0);
+			} else {
+				next2 = Vector2(pr[i + 2].x, pr[i + 2].y);
+			}
+
+			/*if (i==-1 && prev.offset==next.offset) {
+				prev=next;
+				continue;
+			}*/
+
+			_plot_curve(prev2, prev, next, next2, wd, wu.ptr(), width, min, max);
+
+			prev2 = prev;
+			prev = next;
+		}
+	}
+
+	Image image(width, 1, false, Image::FORMAT_RF, data);
+
+	VS::get_singleton()->texture_allocate(texture, width, 1, Image::FORMAT_RF, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_set_data(texture, image);
+
+	emit_changed();
+}
+
+PoolVector<Vector2> CurveTexture::get_points() const {
+
+	return points;
+}
+
+RID CurveTexture::get_rid() const {
+
+	return texture;
+}
+
+CurveTexture::CurveTexture() {
+
+	max = 1;
+	min = 0;
+	width = 2048;
+	texture = VS::get_singleton()->texture_create();
+}
+CurveTexture::~CurveTexture() {
+	VS::get_singleton()->free(texture);
+}
+//////////////////
+
+//setter and getter names for property serialization
+#define COLOR_RAMP_GET_OFFSETS "get_offsets"
+#define COLOR_RAMP_GET_COLORS "get_colors"
+#define COLOR_RAMP_SET_OFFSETS "set_offsets"
+#define COLOR_RAMP_SET_COLORS "set_colors"
+
+GradientTexture::GradientTexture() {
+	//Set initial color ramp transition from black to white
+	points.resize(2);
+	points[0].color = Color(0, 0, 0, 1);
+	points[0].offset = 0;
+	points[1].color = Color(1, 1, 1, 1);
+	points[1].offset = 1;
+	is_sorted = true;
+	update_pending = false;
+	width = 2048;
+
+	texture = VS::get_singleton()->texture_create();
+	_queue_update();
+}
+
+GradientTexture::~GradientTexture() {
+	VS::get_singleton()->free(texture);
+}
+
+void GradientTexture::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("add_point", "offset", "color"), &GradientTexture::add_point);
+	ClassDB::bind_method(D_METHOD("remove_point", "offset", "color"), &GradientTexture::remove_point);
+
+	ClassDB::bind_method(D_METHOD("set_offset", "point", "offset"), &GradientTexture::set_offset);
+	ClassDB::bind_method(D_METHOD("get_offset", "point"), &GradientTexture::get_offset);
+
+	ClassDB::bind_method(D_METHOD("set_color", "point", "color"), &GradientTexture::set_color);
+	ClassDB::bind_method(D_METHOD("get_color", "point"), &GradientTexture::get_color);
+
+	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture::set_width);
+
+	ClassDB::bind_method(D_METHOD("interpolate", "offset"), &GradientTexture::get_color_at_offset);
+
+	ClassDB::bind_method(D_METHOD("get_point_count"), &GradientTexture::get_points_count);
+
+	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
+
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_SET_OFFSETS, "offsets"), &GradientTexture::set_offsets);
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_GET_OFFSETS), &GradientTexture::get_offsets);
+
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_SET_COLORS, "colors"), &GradientTexture::set_colors);
+	ClassDB::bind_method(D_METHOD(COLOR_RAMP_GET_COLORS), &GradientTexture::get_colors);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "width"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offsets"), COLOR_RAMP_SET_OFFSETS, COLOR_RAMP_GET_OFFSETS);
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "colors"), COLOR_RAMP_SET_COLORS, COLOR_RAMP_GET_COLORS);
+}
+
+void GradientTexture::_queue_update() {
+
+	if (update_pending)
+		return;
+
+	call_deferred("_update");
+}
+
+void GradientTexture::_update() {
+
+	update_pending = false;
+
+	PoolVector<uint8_t> data;
+	data.resize(width * 4);
+	{
+		PoolVector<uint8_t>::Write wd8 = data.write();
+		for (int i = 0; i < width; i++) {
+			float ofs = float(i) / (width - 1);
+
+			Color color = get_color_at_offset(ofs);
+			wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
+			wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
+			wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
+			wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+		}
+	}
+
+	Image image(width, 1, false, Image::FORMAT_RGBA8, data);
+
+	VS::get_singleton()->texture_allocate(texture, width, 1, Image::FORMAT_RGBA8, VS::TEXTURE_FLAG_FILTER);
+	VS::get_singleton()->texture_set_data(texture, image);
+
+	emit_changed();
+}
+
+void GradientTexture::set_width(int p_width) {
+
+	width = p_width;
+	_queue_update();
+}
+int GradientTexture::get_width() const {
+
+	return width;
+}
+
+Vector<float> GradientTexture::get_offsets() const {
+	Vector<float> offsets;
+	offsets.resize(points.size());
+	for (int i = 0; i < points.size(); i++) {
+		offsets[i] = points[i].offset;
+	}
+	return offsets;
+}
+
+Vector<Color> GradientTexture::get_colors() const {
+	Vector<Color> colors;
+	colors.resize(points.size());
+	for (int i = 0; i < points.size(); i++) {
+		colors[i] = points[i].color;
+	}
+	return colors;
+}
+
+void GradientTexture::set_offsets(const Vector<float> &p_offsets) {
+	points.resize(p_offsets.size());
+	for (int i = 0; i < points.size(); i++) {
+		points[i].offset = p_offsets[i];
+	}
+	is_sorted = false;
+	emit_changed();
+	_queue_update();
+}
+
+void GradientTexture::set_colors(const Vector<Color> &p_colors) {
+	if (points.size() < p_colors.size())
+		is_sorted = false;
+	points.resize(p_colors.size());
+	for (int i = 0; i < points.size(); i++) {
+		points[i].color = p_colors[i];
+	}
+	emit_changed();
+	_queue_update();
+}
+
+Vector<GradientTexture::Point> &GradientTexture::get_points() {
+	return points;
+}
+
+void GradientTexture::add_point(float p_offset, const Color &p_color) {
+
+	Point p;
+	p.offset = p_offset;
+	p.color = p_color;
+	is_sorted = false;
+	points.push_back(p);
+
+	emit_changed();
+	_queue_update();
+}
+
+void GradientTexture::remove_point(int p_index) {
+
+	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_COND(points.size() <= 2);
+	points.remove(p_index);
+	emit_changed();
+	_queue_update();
+}
+
+void GradientTexture::set_points(Vector<GradientTexture::Point> &p_points) {
+	points = p_points;
+	is_sorted = false;
+	emit_changed();
+	_queue_update();
+}
+
+void GradientTexture::set_offset(int pos, const float offset) {
+	if (points.size() <= pos)
+		points.resize(pos + 1);
+	points[pos].offset = offset;
+	is_sorted = false;
+	emit_changed();
+	_queue_update();
+}
+
+float GradientTexture::get_offset(int pos) const {
+	if (points.size() > pos)
+		return points[pos].offset;
+	return 0; //TODO: Maybe throw some error instead?
+}
+
+void GradientTexture::set_color(int pos, const Color &color) {
+	if (points.size() <= pos) {
+		points.resize(pos + 1);
+		is_sorted = false;
+	}
+	points[pos].color = color;
+	emit_changed();
+	_queue_update();
+}
+
+Color GradientTexture::get_color(int pos) const {
+	if (points.size() > pos)
+		return points[pos].color;
+	return Color(0, 0, 0, 1); //TODO: Maybe throw some error instead?
+}
+
+int GradientTexture::get_points_count() const {
+	return points.size();
+}

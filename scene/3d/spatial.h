@@ -94,7 +94,6 @@ class Spatial : public Node {
 		Ref<SpatialGizmo> gizmo;
 		bool gizmo_disabled;
 		bool gizmo_dirty;
-		Transform import_transform;
 #endif
 
 	} data;
@@ -187,11 +186,6 @@ public:
 	void show();
 	void hide();
 	bool is_visible_in_tree() const;
-
-#ifdef TOOLS_ENABLED
-	void set_import_transform(const Transform &p_transform);
-	Transform get_import_transform() const;
-#endif
 
 	Spatial();
 	~Spatial();

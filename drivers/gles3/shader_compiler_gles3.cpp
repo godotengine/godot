@@ -91,6 +91,16 @@ static String _prestr(SL::DataPrecision p_pres) {
 	return "";
 }
 
+static String _qualstr(SL::ArgumentQualifier p_qual) {
+
+	switch (p_qual) {
+		case SL::ARGUMENT_QUALIFIER_IN: return "";
+		case SL::ARGUMENT_QUALIFIER_OUT: return "out ";
+		case SL::ARGUMENT_QUALIFIER_INOUT: return "inout ";
+	}
+	return "";
+}
+
 static String _opstr(SL::Operator p_op) {
 
 	return SL::get_operator_text(p_op);
@@ -175,6 +185,21 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 			return text;
 
 		} break;
+		case SL::TYPE_MAT2:
+		case SL::TYPE_MAT3:
+		case SL::TYPE_MAT4: {
+
+			String text = "mat" + itos(p_type - SL::TYPE_MAT2 + 2) + "(";
+			for (int i = 0; i < p_values.size(); i++) {
+				if (i > 0)
+					text += ",";
+
+				text += f2sp0(p_values[i].real);
+			}
+			text += ")";
+			return text;
+
+		} break;
 		default: ERR_FAIL_V(String());
 	}
 }
@@ -194,6 +219,7 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 
 	for (Set<StringName>::Element *E = p_node->functions[fidx].uses_function.front(); E; E = E->next()) {
 
+		print_line(String(p_node->functions[fidx].name) + " uses function: " + String(E->get()));
 		if (added.has(E->get())) {
 			continue; //was added already
 		}
@@ -219,7 +245,7 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 
 			if (i > 0)
 				header += ", ";
-			header += _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
+			header += _qualstr(fnode->arguments[i].qualifier) + _prestr(fnode->arguments[i].precision) + _typestr(fnode->arguments[i].type) + " " + _mkid(fnode->arguments[i].name);
 		}
 
 		header += ")\n";
@@ -383,6 +409,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				if (fnode->name == "vertex") {
 
+					print_line("vertex uses functions: " + itos(pnode->functions[i].uses_function.size()));
 					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.vertex_global, added_vtx);
 					r_gen_code.vertex = function_code["vertex"];
 				}
@@ -482,6 +509,12 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				case SL::OP_ASSIGN_BIT_AND:
 				case SL::OP_ASSIGN_BIT_OR:
 				case SL::OP_ASSIGN_BIT_XOR:
+					if (onode->arguments[0]->type == SL::Node::TYPE_VARIABLE) {
+						SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
+						if (p_actions.write_flag_pointers.has(vnode->name)) {
+							*p_actions.write_flag_pointers[vnode->name] = true;
+						}
+					}
 					code = _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions) + _opstr(onode->op) + _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions);
 					break;
 				case SL::OP_BIT_INVERT:
@@ -524,6 +557,23 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					}
 					code += ")";
 				} break;
+				case SL::OP_INDEX: {
+
+					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions);
+					code += "[";
+					code += _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions);
+					code += "]";
+
+				} break;
+				case SL::OP_SELECT_IF: {
+
+					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions);
+					code += "?";
+					code += _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions);
+					code += ":";
+					code += _dump_node_code(onode->arguments[2], p_level, r_gen_code, p_actions, p_default_actions);
+
+				} break;
 				default: {
 
 					code = "(" + _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions) + _opstr(onode->op) + _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions) + ")";
@@ -546,10 +596,10 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			} else if (cfnode->flow_op == SL::FLOW_OP_RETURN) {
 
-				if (cfnode->blocks.size()) {
-					code = "return " + _dump_node_code(cfnode->blocks[0], p_level, r_gen_code, p_actions, p_default_actions);
+				if (cfnode->expressions.size()) {
+					code = "return " + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions) + ";";
 				} else {
-					code = "return";
+					code = "return;";
 				}
 			}
 
@@ -566,7 +616,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 
-	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode));
+	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderTypes::get_singleton()->get_types());
 
 	if (err != OK) {
 #if 1
@@ -648,7 +698,9 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 
 	actions[VS::SHADER_SPATIAL].renames["WORLD_MATRIX"] = "world_transform";
 	actions[VS::SHADER_SPATIAL].renames["INV_CAMERA_MATRIX"] = "camera_inverse_matrix";
+	actions[VS::SHADER_SPATIAL].renames["CAMERA_MATRIX"] = "camera_matrix";
 	actions[VS::SHADER_SPATIAL].renames["PROJECTION_MATRIX"] = "projection_matrix";
+	actions[VS::SHADER_SPATIAL].renames["MODELVIEW_MATRIX"] = "modelview";
 
 	actions[VS::SHADER_SPATIAL].renames["VERTEX"] = "vertex.xyz";
 	actions[VS::SHADER_SPATIAL].renames["NORMAL"] = "normal";
@@ -686,6 +738,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["DISCARD"] = "_discard";
 	//actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"]=ShaderLanguage::TYPE_VEC2;
 	actions[VS::SHADER_SPATIAL].renames["POINT_COORD"] = "gl_PointCoord";
+	actions[VS::SHADER_SPATIAL].renames["INSTANCE_CUSTOM"] = "instance_custom";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["TANGENT"] = "#define ENABLE_TANGENT_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["BINORMAL"] = "@TANGENT";
@@ -701,16 +754,17 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP"] = "#define ENABLE_NORMALMAP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["NORMALMAP_DEPTH"] = "@NORMALMAP";
 	actions[VS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS_MOTION\n";
 
 	actions[VS::SHADER_SPATIAL].renames["SSS_STRENGTH"] = "sss_strength";
 
-	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_transform"] = "#define SKIP_TRANSFORM_USED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_default_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
 	/* PARTICLES SHADER */
 
-	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "color";
+	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "out_color";
 	actions[VS::SHADER_PARTICLES].renames["VELOCITY"] = "out_velocity_active.xyz";
 	actions[VS::SHADER_PARTICLES].renames["MASS"] = "mass";
 	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "active";
@@ -719,13 +773,15 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";
 	actions[VS::SHADER_PARTICLES].renames["TIME"] = "time";
 	actions[VS::SHADER_PARTICLES].renames["LIFETIME"] = "lifetime";
-	actions[VS::SHADER_PARTICLES].renames["DELTA"] = "delta";
-	actions[VS::SHADER_PARTICLES].renames["SEED"] = "seed";
-	actions[VS::SHADER_PARTICLES].renames["ORIGIN"] = "origin";
+	actions[VS::SHADER_PARTICLES].renames["DELTA"] = "local_delta";
+	actions[VS::SHADER_PARTICLES].renames["NUMBER"] = "particle_number";
 	actions[VS::SHADER_PARTICLES].renames["INDEX"] = "index";
+	actions[VS::SHADER_PARTICLES].renames["GRAVITY"] = "current_gravity";
+	actions[VS::SHADER_PARTICLES].renames["EMISSION_TRANSFORM"] = "emission_transform";
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
 
 	vertex_name = "vertex";
 	fragment_name = "fragment";

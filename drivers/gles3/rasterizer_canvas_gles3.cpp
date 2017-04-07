@@ -687,7 +687,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 }
 
 #if 0
-void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *material,Shader* shader) {
+void RasterizerGLES2::_canvas_item_setup_shader_params(ShaderMaterial *material,Shader* shader) {
 
 	if (canvas_shader.bind())
 		rebind_texpixel_size=true;

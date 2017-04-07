@@ -58,7 +58,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 		Sprite *mi = child->cast_to<Sprite>();
 		Ref<Texture> texture = mi->get_texture();
-		Ref<CanvasItemMaterial> material = mi->get_material();
+		Ref<ShaderMaterial> material = mi->get_material();
 
 		if (texture.is_null())
 			continue;

@@ -8699,7 +8699,7 @@ void RasterizerGLES2::_canvas_item_render_commands(CanvasItem *p_item, CanvasIte
 	}
 }
 
-void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *material, Shader *shader) {
+void RasterizerGLES2::_canvas_item_setup_shader_params(ShaderMaterial *material, Shader *shader) {
 
 	if (canvas_shader.bind())
 		rebind_texpixel_size = true;
@@ -8748,7 +8748,7 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 	uses_texpixel_size = shader->uses_texpixel_size;
 }
 
-void RasterizerGLES2::_canvas_item_setup_shader_uniforms(CanvasItemMaterial *material, Shader *shader) {
+void RasterizerGLES2::_canvas_item_setup_shader_uniforms(ShaderMaterial *material, Shader *shader) {
 
 	//this can be optimized..
 	int tex_id = 1;
@@ -8925,7 +8925,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list, int p_z, cons
 
 		//begin rect
 		CanvasItem *material_owner = ci->material_owner ? ci->material_owner : ci;
-		CanvasItemMaterial *material = material_owner->material;
+		ShaderMaterial *material = material_owner->material;
 
 		if (material != canvas_last_material || rebind_shader) {
 

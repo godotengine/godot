@@ -1283,6 +1283,35 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
 			}
 
 		} break;
+		case VS::INSTANCE_PARTICLES: {
+
+			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
+			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
+
+			glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+			glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffers[0]); //modify the buffer
+
+			int stride = sizeof(float) * 4 * 6;
+
+			//transform
+
+			glEnableVertexAttribArray(8); //xform x
+			glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 3);
+			glVertexAttribDivisor(8, 1);
+			glEnableVertexAttribArray(9); //xform y
+			glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 4);
+			glVertexAttribDivisor(9, 1);
+			glEnableVertexAttribArray(10); //xform z
+			glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 5);
+			glVertexAttribDivisor(10, 1);
+			glEnableVertexAttribArray(11); //color
+			glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + 0);
+			glVertexAttribDivisor(11, 1);
+			glEnableVertexAttribArray(12); //custom
+			glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 2);
+			glVertexAttribDivisor(12, 1);
+
+		} break;
 	}
 }
 
@@ -1451,6 +1480,30 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 				restore_tex = false;
 			}
 		} break;
+		case VS::INSTANCE_PARTICLES: {
+
+			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
+			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
+
+			if (!particles->use_local_coords) //not using local coordinates? then clear transform..
+				state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, Transform());
+
+			int amount = particles->amount;
+
+			if (s->index_array_len > 0) {
+
+				glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
+
+				storage->info.render_vertices_count += s->index_array_len * amount;
+
+			} else {
+
+				glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount);
+
+				storage->info.render_vertices_count += s->array_len * amount;
+			}
+
+		} break;
 	}
 }
 
@@ -1556,61 +1609,6 @@ void RasterizerSceneGLES3::_setup_light(RenderList::Element *e, const Transform 
 	}
 }
 
-void RasterizerSceneGLES3::_setup_transform(InstanceBase *p_instance, const Transform &p_view_transform, const CameraMatrix &p_projection) {
-
-	if (p_instance->billboard || p_instance->billboard_y || p_instance->depth_scale) {
-
-		Transform xf = p_instance->transform;
-		if (p_instance->depth_scale) {
-
-			if (p_projection.matrix[3][3]) {
-				//orthogonal matrix, try to do about the same
-				//with viewport size
-				//real_t w = Math::abs( 1.0/(2.0*(p_projection.matrix[0][0])) );
-				real_t h = Math::abs(1.0 / (2.0 * p_projection.matrix[1][1]));
-				float sc = (h * 2.0); //consistent with Y-fov
-				xf.basis.scale(Vector3(sc, sc, sc));
-			} else {
-				//just scale by depth
-				real_t sc = Plane(p_view_transform.origin, -p_view_transform.get_basis().get_axis(2)).distance_to(xf.origin);
-				xf.basis.scale(Vector3(sc, sc, sc));
-			}
-		}
-
-		if (p_instance->billboard && storage->frame.current_rt) {
-
-			Vector3 scale = xf.basis.get_scale();
-
-			if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
-				xf.set_look_at(xf.origin, xf.origin + p_view_transform.get_basis().get_axis(2), -p_view_transform.get_basis().get_axis(1));
-			} else {
-				xf.set_look_at(xf.origin, xf.origin + p_view_transform.get_basis().get_axis(2), p_view_transform.get_basis().get_axis(1));
-			}
-
-			xf.basis.scale(scale);
-		}
-
-		if (p_instance->billboard_y && storage->frame.current_rt) {
-
-			Vector3 scale = xf.basis.get_scale();
-			Vector3 look_at = p_view_transform.get_origin();
-			look_at.y = 0.0;
-			Vector3 look_at_norm = look_at.normalized();
-
-			if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_VFLIP]) {
-				xf.set_look_at(xf.origin, xf.origin + look_at_norm, Vector3(0.0, -1.0, 0.0));
-			} else {
-				xf.set_look_at(xf.origin, xf.origin + look_at_norm, Vector3(0.0, 1.0, 0.0));
-			}
-			xf.basis.scale(scale);
-		}
-		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, xf);
-
-	} else {
-		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, p_instance->transform);
-	}
-}
-
 void RasterizerSceneGLES3::_set_cull(bool p_front, bool p_reverse_cull) {
 
 	bool front = p_front;
@@ -1677,6 +1675,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 	state.scene_shader.set_conditional(SceneShaderGLES3::SHADELESS, true); //by default unshaded (easier to set)
 
 	bool first = true;
+	bool prev_use_instancing = false;
 
 	storage->info.render_object_count += p_element_count;
 
@@ -1804,10 +1803,10 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			}
 		}
 
+		bool use_instancing = e->instance->base_type == VS::INSTANCE_MULTIMESH || e->instance->base_type == VS::INSTANCE_PARTICLES;
 
-
-		if ((prev_base_type == VS::INSTANCE_MULTIMESH) != (e->instance->base_type == VS::INSTANCE_MULTIMESH)) {
-			state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, e->instance->base_type == VS::INSTANCE_MULTIMESH);
+		if (use_instancing != prev_use_instancing) {
+			state.scene_shader.set_conditional(SceneShaderGLES3::USE_INSTANCING, use_instancing);
 			rebind = true;
 		}
 
@@ -1820,7 +1819,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			if (skeleton.is_valid()) {
 				RasterizerStorageGLES3::Skeleton *sk = storage->skeleton_owner.getornull(skeleton);
 				glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 6);
-				glBindTexture(GL_TEXTURE_2D,sk->texture);
+				glBindTexture(GL_TEXTURE_2D, sk->texture);
 			}
 		}
 
@@ -1835,8 +1834,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 			}
 		}
 
-
-
 		if (!(e->sort_key & RenderList::SORT_KEY_UNSHADED_FLAG) && !p_directional_add && !p_shadow) {
 			_setup_light(e, p_view_transform);
 		}
@@ -1850,8 +1847,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, p_reverse_cull);
 
 		state.scene_shader.set_uniform(SceneShaderGLES3::NORMAL_MULT, e->instance->mirror ? -1.0 : 1.0);
-
-		_setup_transform(e->instance, p_view_transform, p_projection);
+		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 
 		_render_geometry(e);
 
@@ -1861,6 +1857,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 		prev_owner = e->owner;
 		prev_shading = shading;
 		prev_skeleton = skeleton;
+		prev_use_instancing = use_instancing;
 		first = false;
 	}
 
@@ -1930,7 +1927,7 @@ void RasterizerSceneGLES3::_add_geometry(RasterizerStorageGLES3::Geometry *p_geo
 		if (has_blend_alpha || (has_base_alpha && m->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS))
 			return; //bye
 
-		if (!m->shader->spatial.uses_vertex && !m->shader->spatial.uses_discard && m->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+		if (!m->shader->spatial.writes_modelview_or_projection && !m->shader->spatial.uses_vertex && !m->shader->spatial.uses_discard && m->shader->spatial.depth_draw_mode != RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
 			//shader does not use discard and does not write a vertex position, use generic material
 			if (p_instance->cast_shadows == VS::SHADOW_CASTING_SETTING_DOUBLE_SIDED)
 				m = storage->material_owner.getptr(default_material_twosided);
@@ -2728,6 +2725,30 @@ void RasterizerSceneGLES3::_fill_render_list(InstanceBase **p_cull_result, int p
 
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
+
+			} break;
+			case VS::INSTANCE_PARTICLES: {
+
+				RasterizerStorageGLES3::Particles *particles = storage->particles_owner.getptr(inst->base);
+				ERR_CONTINUE(!particles);
+
+				for (int i = 0; i < particles->draw_passes.size(); i++) {
+
+					RID pmesh = particles->draw_passes[i];
+					if (!pmesh.is_valid())
+						continue;
+					RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.get(pmesh);
+					if (!mesh)
+						continue; //mesh not assigned
+
+					int ssize = mesh->surfaces.size();
+
+					for (int j = 0; j < ssize; j++) {
+
+						RasterizerStorageGLES3::Surface *s = mesh->surfaces[j];
+						_add_geometry(s, inst, particles, -1, p_shadow);
+					}
+				}
 
 			} break;
 		}
@@ -4419,13 +4440,14 @@ void RasterizerSceneGLES3::initialize() {
 
 	state.scene_shader.init();
 
-	default_shader = storage->shader_create(VS::SHADER_SPATIAL);
+	default_shader = storage->shader_create();
+	storage->shader_set_code(default_shader, "shader_type spatial;\n");
 	default_material = storage->material_create();
 	storage->material_set_shader(default_material, default_shader);
 
-	default_shader_twosided = storage->shader_create(VS::SHADER_SPATIAL);
+	default_shader_twosided = storage->shader_create();
 	default_material_twosided = storage->material_create();
-	storage->shader_set_code(default_shader_twosided, "render_mode cull_disabled;\n");
+	storage->shader_set_code(default_shader_twosided, "shader_type spatial; render_mode cull_disabled;\n");
 	storage->material_set_shader(default_material_twosided, default_shader_twosided);
 
 	glGenBuffers(1, &state.scene_ubo);

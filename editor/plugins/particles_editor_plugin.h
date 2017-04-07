@@ -37,16 +37,15 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-#if 0
+
 class ParticlesEditor : public Control {
 
-	GDCLASS(ParticlesEditor, Control );
+	GDCLASS(ParticlesEditor, Control);
 
 	Panel *panel;
 	MenuButton *options;
 	HBoxContainer *particles_editor_hb;
 	Particles *node;
-
 
 	EditorFileDialog *emission_file_dialog;
 	SceneTreeDialog *emission_tree_dialog;
@@ -56,9 +55,6 @@ class ParticlesEditor : public Control {
 	ConfirmationDialog *emission_dialog;
 	SpinBox *emission_amount;
 	OptionButton *emission_fill;
-
-
-
 
 	enum Menu {
 
@@ -72,35 +68,33 @@ class ParticlesEditor : public Control {
 	PoolVector<Face3> geometry;
 
 	void _generate_emission_points();
-	void _resource_seleted(const String& p_res);
-	void _node_selected(const NodePath& p_path);
+	void _resource_seleted(const String &p_res);
+	void _node_selected(const NodePath &p_path);
 
 	void _menu_option(int);
 
 	void _populate();
 
-friend class ParticlesEditorPlugin;
+	friend class ParticlesEditorPlugin;
 
 protected:
-
 	void _notification(int p_notification);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
-public:
 
+public:
 	void edit(Particles *p_particles);
 	ParticlesEditor();
 };
 
 class ParticlesEditorPlugin : public EditorPlugin {
 
-	GDCLASS( ParticlesEditorPlugin, EditorPlugin );
+	GDCLASS(ParticlesEditorPlugin, EditorPlugin);
 
 	ParticlesEditor *particles_editor;
 	EditorNode *editor;
 
 public:
-
 	virtual String get_name() const { return "Particles"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -109,8 +103,6 @@ public:
 
 	ParticlesEditorPlugin(EditorNode *p_node);
 	~ParticlesEditorPlugin();
-
 };
 
 #endif // PARTICLES_EDITOR_PLUGIN_H
-#endif

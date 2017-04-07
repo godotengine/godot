@@ -44,6 +44,8 @@ class ShaderTextEditor : public CodeTextEditor {
 
 	Ref<Shader> shader;
 
+	void _check_shader_mode();
+
 protected:
 	static void _bind_methods();
 	virtual void _load_theme_settings();

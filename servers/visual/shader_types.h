@@ -43,11 +43,14 @@ class ShaderTypes {
 
 	static ShaderTypes *singleton;
 
+	Set<String> shader_types;
+
 public:
 	static ShaderTypes *get_singleton() { return singleton; }
 
 	const Map<StringName, Map<StringName, ShaderLanguage::DataType> > &get_functions(VS::ShaderMode p_mode);
 	const Set<String> &get_modes(VS::ShaderMode p_mode);
+	const Set<String> &get_types();
 
 	ShaderTypes();
 };

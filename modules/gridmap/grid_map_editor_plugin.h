@@ -112,9 +112,9 @@ class GridMapEditor : public VBoxContainer {
 	RID duplicate_mesh;
 	RID duplicate_instance;
 
-	Ref<FixedSpatialMaterial> indicator_mat;
-	Ref<FixedSpatialMaterial> inner_mat;
-	Ref<FixedSpatialMaterial> outer_mat;
+	Ref<SpatialMaterial> indicator_mat;
+	Ref<SpatialMaterial> inner_mat;
+	Ref<SpatialMaterial> outer_mat;
 
 	bool updating;
 

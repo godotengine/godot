@@ -128,6 +128,8 @@ private:
 	void _recompute_aabb();
 
 protected:
+	virtual bool _is_generated() const { return false; }
+
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -187,6 +189,20 @@ public:
 	Mesh();
 
 	~Mesh();
+};
+
+class QuadMesh : public Mesh {
+
+	GDCLASS(QuadMesh, Mesh)
+
+protected:
+	virtual bool _is_generated() const { return true; }
+	static void _bind_methods();
+
+public:
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
+	QuadMesh();
 };
 
 VARIANT_ENUM_CAST(Mesh::ArrayType);

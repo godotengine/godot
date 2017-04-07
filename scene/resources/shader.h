@@ -88,37 +88,10 @@ public:
 
 	virtual RID get_rid() const;
 
-	Shader(Mode p_mode);
+	Shader();
 	~Shader();
 };
 
 VARIANT_ENUM_CAST(Shader::Mode);
-
-class SpatialShader : public Shader {
-
-	GDCLASS(SpatialShader, Shader);
-
-public:
-	SpatialShader()
-		: Shader(MODE_SPATIAL){};
-};
-
-class CanvasItemShader : public Shader {
-
-	GDCLASS(CanvasItemShader, Shader);
-
-public:
-	CanvasItemShader()
-		: Shader(MODE_CANVAS_ITEM){};
-};
-
-class ParticlesShader : public Shader {
-
-	GDCLASS(ParticlesShader, Shader);
-
-public:
-	ParticlesShader()
-		: Shader(MODE_PARTICLES){};
-};
 
 #endif // SHADER_H

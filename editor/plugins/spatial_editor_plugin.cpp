@@ -2329,12 +2329,12 @@ void SpatialEditor::_generate_selection_box() {
 		st->add_vertex(b);
 	}
 
-	Ref<FixedSpatialMaterial> mat = memnew(FixedSpatialMaterial);
-	mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
+	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 	mat->set_albedo(Color(1, 1, 1));
-	mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
-	mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 	st->set_material(mat);
 	selection_box = st->commit();
 }
@@ -2888,12 +2888,12 @@ void SpatialEditor::_init_indicators() {
 	{
 
 		indicator_mat.instance();
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-		//indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP,true);
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		indicator_mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		//indicator_mat->set_flag(SpatialMaterial::FLAG_ONTOP,true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		indicator_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 
-		indicator_mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		indicator_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
 		PoolVector<Color> grid_colors[3];
 		PoolVector<Vector3> grid_points[3];
@@ -2980,7 +2980,7 @@ void SpatialEditor::_init_indicators() {
 		cursor_points.push_back(Vector3(0, 0, -cs));
 		cursor_material.instance();
 		cursor_material->set_albedo(Color(0, 1, 1));
-		cursor_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		cursor_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 
 		Array d;
 		d.resize(VS::ARRAY_MAX);
@@ -3000,10 +3000,10 @@ void SpatialEditor::_init_indicators() {
 
 		float gizmo_alph = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_opacity");
 
-		gizmo_hl = Ref<FixedSpatialMaterial>(memnew(FixedSpatialMaterial));
-		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-		gizmo_hl->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
-		gizmo_hl->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+		gizmo_hl = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+		gizmo_hl->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		gizmo_hl->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+		gizmo_hl->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 		gizmo_hl->set_albedo(Color(1, 1, 1, gizmo_alph + 0.2f));
 
 		for (int i = 0; i < 3; i++) {
@@ -3011,10 +3011,10 @@ void SpatialEditor::_init_indicators() {
 			move_gizmo[i] = Ref<Mesh>(memnew(Mesh));
 			rotate_gizmo[i] = Ref<Mesh>(memnew(Mesh));
 
-			Ref<FixedSpatialMaterial> mat = memnew(FixedSpatialMaterial);
-			mat->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
-			mat->set_flag(FixedSpatialMaterial::FLAG_ONTOP, true);
-			mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+			Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
+			mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+			mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
+			mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 			Color col;
 			col[i] = 1.0;
 			col.a = gizmo_alph;

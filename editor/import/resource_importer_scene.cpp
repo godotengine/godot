@@ -157,7 +157,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 		memdelete(p_node);
 		return NULL;
 	}
-
+#if 0
 	if (p_node->cast_to<MeshInstance>()) {
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
@@ -177,18 +177,18 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 				Ref<Mesh> m = mi->get_mesh();
 				for (int i = 0; i < m->get_surface_count(); i++) {
 
-					Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
+					Ref<SpatialMaterial> fm = m->surface_get_material(i);
 					if (fm.is_valid()) {
 						//fm->set_flag(Material::FLAG_UNSHADED,true);
 						//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 						//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-						//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+						//fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
 					}
 				}
 			}
 		}
 	}
-
+#endif
 	if (p_node->cast_to<MeshInstance>()) {
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
@@ -199,19 +199,19 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 			for (int i = 0; i < m->get_surface_count(); i++) {
 
-				Ref<FixedSpatialMaterial> mat = m->surface_get_material(i);
+				Ref<SpatialMaterial> mat = m->surface_get_material(i);
 				if (!mat.is_valid())
 					continue;
 
 				if (_teststr(mat->get_name(), "alpha")) {
 
-					mat->set_feature(FixedSpatialMaterial::FEATURE_TRANSPARENT, true);
+					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 					mat->set_name(_fixstr(mat->get_name(), "alpha"));
 				}
 				if (_teststr(mat->get_name(), "vcol")) {
 
-					mat->set_flag(FixedSpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-					mat->set_flag(FixedSpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+					mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+					mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 					mat->set_name(_fixstr(mat->get_name(), "vcol"));
 				}
 			}
@@ -242,7 +242,7 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 		}
 	}
-
+#if 0
 	if (p_node->cast_to<MeshInstance>()) {
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
@@ -277,12 +277,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 						Ref<Mesh> m = mi->get_mesh();
 						for (int i = 0; i < m->get_surface_count(); i++) {
 
-							Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
+							Ref<SpatialMaterial> fm = m->surface_get_material(i);
 							if (fm.is_valid()) {
 								//fm->set_flag(Material::FLAG_UNSHADED,true);
 								//fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 								//fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
-								//fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+								//fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
 							}
 						}
 					}
@@ -290,6 +290,8 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			}
 		}
 	}
+
+#endif
 #if 0
     if (p_flags&SCENE_FLAG_CREATE_LODS && p_node->cast_to<MeshInstance>()) {
 
@@ -325,12 +327,12 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 			Ref<Mesh> m = mi->get_mesh();
 			for(int i=0;i<m->get_surface_count();i++) {
 
-			    Ref<FixedSpatialMaterial> fm = m->surface_get_material(i);
+			    Ref<SpatialMaterial> fm = m->surface_get_material(i);
 			    if (fm.is_valid()) {
 				fm->set_flag(Material::FLAG_UNSHADED,true);
 				fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 				fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
-				fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+				fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
 			    }
 			}
 		    }*/
@@ -687,16 +689,16 @@ Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>
 
 			for (int i = 0; i < mesh->get_surface_count(); i++) {
 
-				Ref<FixedSpatialMaterial> fm = mesh->surface_get_material(i);
+				Ref<SpatialMaterial> fm = mesh->surface_get_material(i);
 				if (fm.is_valid()) {
 					String name = fm->get_name();
 					/*	if (_teststr(name,"alpha")) {
-						fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_ALPHA,true);
+						fm->set_fixed_flag(SpatialMaterial::FLAG_USE_ALPHA,true);
 						name=_fixstr(name,"alpha");
 					}
 
 					if (_teststr(name,"vcol")) {
-						fm->set_fixed_flag(FixedSpatialMaterial::FLAG_USE_COLOR_ARRAY,true);
+						fm->set_fixed_flag(SpatialMaterial::FLAG_USE_COLOR_ARRAY,true);
 						name=_fixstr(name,"vcol");
 					}*/
 					fm->set_name(name);

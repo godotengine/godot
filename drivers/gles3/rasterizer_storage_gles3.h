@@ -408,6 +408,7 @@ public:
 			bool uses_vertex;
 			bool uses_discard;
 			bool uses_sss;
+			bool writes_modelview_or_projection;
 
 		} spatial;
 
@@ -433,10 +434,7 @@ public:
 
 	mutable RID_Owner<Shader> shader_owner;
 
-	virtual RID shader_create(VS::ShaderMode p_mode = VS::SHADER_SPATIAL);
-
-	virtual void shader_set_mode(RID p_shader, VS::ShaderMode p_mode);
-	virtual VS::ShaderMode shader_get_mode(RID p_shader) const;
+	virtual RID shader_create();
 
 	virtual void shader_set_code(RID p_shader, const String &p_code);
 	virtual String shader_get_code(RID p_shader) const;
@@ -778,7 +776,7 @@ public:
 
 		Skeleton()
 			: update_list(this) {
-			size=0;
+			size = 0;
 
 			use_2d = false;
 			texture = 0;
@@ -987,7 +985,7 @@ public:
 
 	/* PARTICLES */
 
-	struct Particles : public Instantiable {
+	struct Particles : public GeometryOwner {
 
 		bool emitting;
 		int amount;
@@ -1000,23 +998,14 @@ public:
 		bool use_local_coords;
 		RID process_material;
 
-		VS::ParticlesEmissionShape emission_shape;
-		float emission_sphere_radius;
-		Vector3 emission_box_extents;
-		PoolVector<Vector3> emission_points;
-		GLuint emission_point_texture;
-
 		VS::ParticlesDrawOrder draw_order;
-		struct DrawPass {
-			RID mesh;
-			RID material;
-		};
 
-		Vector<DrawPass> draw_passes;
+		Vector<RID> draw_passes;
 
 		Rect3 computed_aabb;
 
 		GLuint particle_buffers[2];
+		GLuint particle_vaos[2];
 
 		SelfList<Particles> particle_element;
 
@@ -1024,10 +1013,19 @@ public:
 		float prev_phase;
 		uint64_t prev_ticks;
 
-		Transform origin;
+		uint32_t cycle_number;
+
+		int fixed_fps = 0;
+		bool fractional_delta;
+		float frame_remainder;
+
+		bool clear;
+
+		Transform emission_transform;
 
 		Particles()
 			: particle_element(this) {
+			cycle_number = 0;
 			emitting = false;
 			amount = 0;
 			lifetime = 1.0;
@@ -1035,23 +1033,26 @@ public:
 			explosiveness = 0.0;
 			randomness = 0.0;
 			use_local_coords = true;
+			fixed_fps = 0;
+			fractional_delta = false;
+			frame_remainder = 0;
 
 			draw_order = VS::PARTICLES_DRAW_ORDER_INDEX;
-			emission_shape = VS::PARTICLES_EMSSION_POINT;
-			emission_sphere_radius = 1.0;
-			emission_box_extents = Vector3(1, 1, 1);
-			emission_point_texture = 0;
 			particle_buffers[0] = 0;
 			particle_buffers[1] = 0;
 
 			prev_ticks = 0;
 
+			clear = true;
+
 			glGenBuffers(2, particle_buffers);
+			glGenVertexArrays(2, particle_vaos);
 		}
 
 		~Particles() {
 
 			glDeleteBuffers(2, particle_buffers);
+			glDeleteVertexArrays(2, particle_vaos);
 		}
 	};
 
@@ -1073,19 +1074,20 @@ public:
 	virtual void particles_set_gravity(RID p_particles, const Vector3 &p_gravity);
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable);
 	virtual void particles_set_process_material(RID p_particles, RID p_material);
-
-	virtual void particles_set_emission_shape(RID p_particles, VS::ParticlesEmissionShape p_shape);
-	virtual void particles_set_emission_sphere_radius(RID p_particles, float p_radius);
-	virtual void particles_set_emission_box_extents(RID p_particles, const Vector3 &p_extents);
-	virtual void particles_set_emission_points(RID p_particles, const PoolVector<Vector3> &p_points);
+	virtual void particles_set_fixed_fps(RID p_particles, int p_fps);
+	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable);
 
 	virtual void particles_set_draw_order(RID p_particles, VS::ParticlesDrawOrder p_order);
 
 	virtual void particles_set_draw_passes(RID p_particles, int p_count);
-	virtual void particles_set_draw_pass_material(RID p_particles, int p_pass, RID p_material);
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh);
 
+	virtual void particles_request_process(RID p_particles);
 	virtual Rect3 particles_get_current_aabb(RID p_particles);
+	virtual Rect3 particles_get_aabb(RID p_particles) const;
+
+	virtual void particles_set_emission_transform(RID p_particles, const Transform &p_transform);
+	void _particles_process(Particles *p_particles, float p_delta);
 
 	/* INSTANCE */
 

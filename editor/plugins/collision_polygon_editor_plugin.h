@@ -62,8 +62,8 @@ class CollisionPolygonEditor : public HBoxContainer {
 	ToolButton *button_edit;
 
 
-	Ref<FixedSpatialMaterial> line_material;
-	Ref<FixedSpatialMaterial> handle_material;
+	Ref<SpatialMaterial> line_material;
+	Ref<SpatialMaterial> handle_material;
 
 	EditorNode *editor;
 	Panel *panel;

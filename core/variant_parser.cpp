@@ -755,7 +755,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			Image::Format format = Image::FORMAT_MAX;
 
 			for (int i = 0; i < Image::FORMAT_MAX; i++) {
-				if (Image::get_format_name(format) == sformat) {
+				if (Image::get_format_name(Image::Format(i)) == sformat) {
 					format = Image::Format(i);
 				}
 			}

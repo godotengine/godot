@@ -98,9 +98,6 @@ public:
 		//int baked_lightmap_id;
 
 		bool mirror : 8;
-		bool depth_scale : 8;
-		bool billboard : 8;
-		bool billboard_y : 8;
 		bool receive_shadows : 8;
 		bool visible : 8;
 
@@ -120,9 +117,6 @@ public:
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
-			depth_scale = false;
-			billboard = false;
-			billboard_y = false;
 			visible = true;
 			depth_layer = 0;
 			layer_mask = 1;
@@ -198,10 +192,7 @@ public:
 
 	/* SHADER API */
 
-	virtual RID shader_create(VS::ShaderMode p_mode = VS::SHADER_SPATIAL) = 0;
-
-	virtual void shader_set_mode(RID p_shader, VS::ShaderMode p_mode) = 0;
-	virtual VS::ShaderMode shader_get_mode(RID p_shader) const = 0;
+	virtual RID shader_create() = 0;
 
 	virtual void shader_set_code(RID p_shader, const String &p_code) = 0;
 	virtual String shader_get_code(RID p_shader) const = 0;
@@ -452,19 +443,19 @@ public:
 	virtual void particles_set_gravity(RID p_particles, const Vector3 &p_gravity) = 0;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
-
-	virtual void particles_set_emission_shape(RID p_particles, VS::ParticlesEmissionShape p_shape) = 0;
-	virtual void particles_set_emission_sphere_radius(RID p_particles, float p_radius) = 0;
-	virtual void particles_set_emission_box_extents(RID p_particles, const Vector3 &p_extents) = 0;
-	virtual void particles_set_emission_points(RID p_particles, const PoolVector<Vector3> &p_points) = 0;
+	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;
+	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) = 0;
 
 	virtual void particles_set_draw_order(RID p_particles, VS::ParticlesDrawOrder p_order) = 0;
 
 	virtual void particles_set_draw_passes(RID p_particles, int p_count) = 0;
-	virtual void particles_set_draw_pass_material(RID p_particles, int p_pass, RID p_material) = 0;
 	virtual void particles_set_draw_pass_mesh(RID p_particles, int p_pass, RID p_mesh) = 0;
 
+	virtual void particles_request_process(RID p_particles) = 0;
 	virtual Rect3 particles_get_current_aabb(RID p_particles) = 0;
+	virtual Rect3 particles_get_aabb(RID p_particles) const = 0;
+
+	virtual void particles_set_emission_transform(RID p_particles, const Transform &p_transform) = 0;
 
 	/* RENDER TARGET */
 
@@ -971,7 +962,7 @@ protected:
 
 	/* Fixed Material Shader API */
 
-	union FixedSpatialMaterialShaderKey {
+	union SpatialMaterialShaderKey {
 
 		struct {
 			uint16_t texcoord_mask;
@@ -987,21 +978,21 @@ protected:
 
 		uint32_t key;
 
-		_FORCE_INLINE_ bool operator<(const FixedSpatialMaterialShaderKey& p_key) const { return key<p_key.key; }
+		_FORCE_INLINE_ bool operator<(const SpatialMaterialShaderKey& p_key) const { return key<p_key.key; }
 	};
 
-	struct FixedSpatialMaterialShader {
+	struct SpatialMaterialShader {
 
 		int refcount;
 		RID shader;
 	};
 
-	Map<FixedSpatialMaterialShaderKey,FixedSpatialMaterialShader> fixed_material_shaders;
+	Map<SpatialMaterialShaderKey,SpatialMaterialShader> fixed_material_shaders;
 
-	RID _create_shader(const FixedSpatialMaterialShaderKey& p_key);
-	void _free_shader(const FixedSpatialMaterialShaderKey& p_key);
+	RID _create_shader(const SpatialMaterialShaderKey& p_key);
+	void _free_shader(const SpatialMaterialShaderKey& p_key);
 
-	struct FixedSpatialMaterial {
+	struct SpatialMaterial {
 
 
 		RID self;
@@ -1012,19 +1003,19 @@ protected:
 		bool use_xy_normalmap;
 		float point_size;
 		Transform uv_xform;
-		VS::FixedSpatialMaterialLightShader light_shader;
+		VS::SpatialMaterialLightShader light_shader;
 		RID texture[VS::FIXED_MATERIAL_PARAM_MAX];
 		Variant param[VS::FIXED_MATERIAL_PARAM_MAX];
-		VS::FixedSpatialMaterialTexCoordMode texture_tc[VS::FIXED_MATERIAL_PARAM_MAX];
+		VS::SpatialMaterialTexCoordMode texture_tc[VS::FIXED_MATERIAL_PARAM_MAX];
 
-		SelfList<FixedSpatialMaterial> dirty_list;
+		SelfList<SpatialMaterial> dirty_list;
 
-		FixedSpatialMaterialShaderKey current_key;
+		SpatialMaterialShaderKey current_key;
 
-		_FORCE_INLINE_ FixedSpatialMaterialShaderKey get_key() const {
+		_FORCE_INLINE_ SpatialMaterialShaderKey get_key() const {
 
 
-			FixedSpatialMaterialShaderKey k;
+			SpatialMaterialShaderKey k;
 			k.key=0;
 			k.use_alpha=use_alpha;
 			k.use_color_array=use_color_array;
@@ -1045,7 +1036,7 @@ protected:
 		}
 
 
-		FixedSpatialMaterial() : dirty_list(this) {
+		SpatialMaterial() : dirty_list(this) {
 
 			use_alpha=false;
 			use_color_array=false;
@@ -1077,9 +1068,9 @@ protected:
 	StringName _fixed_material_uv_xform_name;
 	StringName _fixed_material_point_size_name;
 
-	Map<RID,FixedSpatialMaterial*> fixed_materials;
+	Map<RID,SpatialMaterial*> fixed_materials;
 
-	SelfList<FixedSpatialMaterial>::List fixed_material_dirty_list;
+	SelfList<SpatialMaterial>::List fixed_material_dirty_list;
 
 protected:
 	void _update_fixed_materials();
@@ -1166,23 +1157,23 @@ public:
 
 	virtual RID fixed_material_create();
 
-	virtual void fixed_material_set_flag(RID p_material, VS::FixedSpatialMaterialFlags p_flag, bool p_enabled);
-	virtual bool fixed_material_get_flag(RID p_material, VS::FixedSpatialMaterialFlags p_flag) const;
+	virtual void fixed_material_set_flag(RID p_material, VS::SpatialMaterialFlags p_flag, bool p_enabled);
+	virtual bool fixed_material_get_flag(RID p_material, VS::SpatialMaterialFlags p_flag) const;
 
-	virtual void fixed_material_set_parameter(RID p_material, VS::FixedSpatialMaterialParam p_parameter, const Variant& p_value);
-	virtual Variant fixed_material_get_parameter(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const;
+	virtual void fixed_material_set_parameter(RID p_material, VS::SpatialMaterialParam p_parameter, const Variant& p_value);
+	virtual Variant fixed_material_get_parameter(RID p_material,VS::SpatialMaterialParam p_parameter) const;
 
-	virtual void fixed_material_set_texture(RID p_material,VS::FixedSpatialMaterialParam p_parameter, RID p_texture);
-	virtual RID fixed_material_get_texture(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const;
+	virtual void fixed_material_set_texture(RID p_material,VS::SpatialMaterialParam p_parameter, RID p_texture);
+	virtual RID fixed_material_get_texture(RID p_material,VS::SpatialMaterialParam p_parameter) const;
 
-	virtual void fixed_material_set_texcoord_mode(RID p_material,VS::FixedSpatialMaterialParam p_parameter, VS::FixedSpatialMaterialTexCoordMode p_mode);
-	virtual VS::FixedSpatialMaterialTexCoordMode fixed_material_get_texcoord_mode(RID p_material,VS::FixedSpatialMaterialParam p_parameter) const;
+	virtual void fixed_material_set_texcoord_mode(RID p_material,VS::SpatialMaterialParam p_parameter, VS::SpatialMaterialTexCoordMode p_mode);
+	virtual VS::SpatialMaterialTexCoordMode fixed_material_get_texcoord_mode(RID p_material,VS::SpatialMaterialParam p_parameter) const;
 
 	virtual void fixed_material_set_uv_transform(RID p_material,const Transform& p_transform);
 	virtual Transform fixed_material_get_uv_transform(RID p_material) const;
 
-	virtual void fixed_material_set_light_shader(RID p_material,VS::FixedSpatialMaterialLightShader p_shader);
-	virtual VS::FixedSpatialMaterialLightShader fixed_material_get_light_shader(RID p_material) const;
+	virtual void fixed_material_set_light_shader(RID p_material,VS::SpatialMaterialLightShader p_shader);
+	virtual VS::SpatialMaterialLightShader fixed_material_get_light_shader(RID p_material) const;
 
 	virtual void fixed_material_set_point_size(RID p_material,float p_size);
 	virtual float fixed_material_get_point_size(RID p_material) const;

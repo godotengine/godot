@@ -130,6 +130,9 @@ public:
 		TK_PERIOD,
 		TK_UNIFORM,
 		TK_VARYING,
+		TK_ARG_IN,
+		TK_ARG_OUT,
+		TK_ARG_INOUT,
 		TK_RENDER_MODE,
 		TK_HINT_WHITE_TEXTURE,
 		TK_HINT_BLACK_TEXTURE,
@@ -139,6 +142,7 @@ public:
 		TK_HINT_BLACK_ALBEDO_TEXTURE,
 		TK_HINT_COLOR,
 		TK_HINT_RANGE,
+		TK_SHADER_TYPE,
 		TK_CURSOR,
 		TK_ERROR,
 		TK_EOF,
@@ -227,6 +231,7 @@ public:
 		OP_POST_DECREMENT,
 		OP_CALL,
 		OP_CONSTRUCT,
+		OP_INDEX,
 		OP_MAX
 	};
 
@@ -239,6 +244,13 @@ public:
 		FLOW_OP_BREAK,
 		FLOW_OP_SWITCH,
 		FLOW_OP_CONTINUE
+
+	};
+
+	enum ArgumentQualifier {
+		ARGUMENT_QUALIFIER_IN,
+		ARGUMENT_QUALIFIER_OUT,
+		ARGUMENT_QUALIFIER_INOUT,
 
 	};
 
@@ -363,6 +375,7 @@ public:
 
 		struct Argument {
 
+			ArgumentQualifier qualifier;
 			StringName name;
 			DataType type;
 			DataPrecision precision;
@@ -577,14 +590,16 @@ private:
 
 	Error _parse_block(BlockNode *p_block, const Map<StringName, DataType> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 
-	Error _parse_shader(const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes);
+	Error _parse_shader(const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
 
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
 
 	void clear();
-	Error compile(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes);
-	Error complete(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, List<String> *r_options, String &r_call_hint);
+
+	static String get_shader_type(const String &p_code);
+	Error compile(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types);
+	Error complete(const String &p_code, const Map<StringName, Map<StringName, DataType> > &p_functions, const Set<String> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();

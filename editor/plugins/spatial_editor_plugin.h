@@ -323,8 +323,8 @@ private:
 	bool grid_enabled;
 
 	Ref<Mesh> move_gizmo[3], rotate_gizmo[3];
-	Ref<FixedSpatialMaterial> gizmo_color[3];
-	Ref<FixedSpatialMaterial> gizmo_hl;
+	Ref<SpatialMaterial> gizmo_color[3];
+	Ref<SpatialMaterial> gizmo_hl;
 
 	int over_gizmo_handle;
 
@@ -333,8 +333,8 @@ private:
 	RID indicators_instance;
 	RID cursor_mesh;
 	RID cursor_instance;
-	Ref<FixedSpatialMaterial> indicator_mat;
-	Ref<FixedSpatialMaterial> cursor_material;
+	Ref<SpatialMaterial> indicator_mat;
+	Ref<SpatialMaterial> cursor_material;
 
 	/*
 	struct Selected {

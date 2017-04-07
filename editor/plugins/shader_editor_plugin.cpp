@@ -137,14 +137,35 @@ void ShaderTextEditor::_load_theme_settings() {
 	}*/
 }
 
+void ShaderTextEditor::_check_shader_mode() {
+
+	String type = ShaderLanguage::get_shader_type(get_text_edit()->get_text());
+
+	print_line("type is: " + type);
+	Shader::Mode mode;
+
+	if (type == "canvas_item") {
+		mode = Shader::MODE_CANVAS_ITEM;
+	} else if (type == "particles") {
+		mode = Shader::MODE_PARTICLES;
+	} else {
+		mode = Shader::MODE_SPATIAL;
+	}
+
+	if (shader->get_mode() != mode) {
+		shader->set_code(get_text_edit()->get_text());
+		_load_theme_settings();
+	}
+}
+
 void ShaderTextEditor::_code_complete_script(const String &p_code, List<String> *r_options) {
 
-	print_line("code complete");
+	_check_shader_mode();
 
 	ShaderLanguage sl;
 	String calltip;
 
-	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), r_options, calltip);
+	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
 
 	if (calltip != "") {
 		get_text_edit()->set_code_hint(calltip);
@@ -153,13 +174,15 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<String> 
 
 void ShaderTextEditor::_validate_script() {
 
+	_check_shader_mode();
+
 	String code = get_text_edit()->get_text();
 	//List<StringName> params;
 	//shader->get_param_list(&params);
 
 	ShaderLanguage sl;
 
-	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())));
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types());
 
 	if (err != OK) {
 		String error_text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();

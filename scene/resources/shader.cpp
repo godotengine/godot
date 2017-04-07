@@ -29,6 +29,7 @@
 #include "shader.h"
 #include "os/file_access.h"
 #include "scene/scene_string_names.h"
+#include "servers/visual/shader_language.h"
 #include "servers/visual_server.h"
 #include "texture.h"
 
@@ -38,6 +39,18 @@ Shader::Mode Shader::get_mode() const {
 }
 
 void Shader::set_code(const String &p_code) {
+
+	String type = ShaderLanguage::get_shader_type(p_code);
+
+	print_line("mode: " + type);
+
+	if (type == "canvas_item") {
+		mode = MODE_CANVAS_ITEM;
+	} else if (type == "particles") {
+		mode = MODE_PARTICLES;
+	} else {
+		mode = MODE_SPATIAL;
+	}
 
 	VisualServer::get_singleton()->shader_set_code(shader, p_code);
 	params_cache_dirty = true;
@@ -128,10 +141,10 @@ void Shader::_bind_methods() {
 	BIND_CONSTANT(MODE_PARTICLES);
 }
 
-Shader::Shader(Mode p_mode) {
+Shader::Shader() {
 
-	mode = p_mode;
-	shader = VisualServer::get_singleton()->shader_create(VS::ShaderMode(p_mode));
+	mode = MODE_SPATIAL;
+	shader = VisualServer::get_singleton()->shader_create();
 	params_cache_dirty = true;
 }
 

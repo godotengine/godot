@@ -304,7 +304,7 @@ void TileMap::_update_dirty_quadrants() {
 			VS::get_singleton()->free(E->get().id);
 		}
 		q.occluder_instances.clear();
-		Ref<CanvasItemMaterial> prev_material;
+		Ref<ShaderMaterial> prev_material;
 		RID prev_canvas_item;
 		RID prev_debug_canvas_item;
 
@@ -324,7 +324,7 @@ void TileMap::_update_dirty_quadrants() {
 			if (!tex.is_valid())
 				continue;
 
-			Ref<CanvasItemMaterial> mat = tile_set->tile_get_material(c.id);
+			Ref<ShaderMaterial> mat = tile_set->tile_get_material(c.id);
 
 			RID canvas_item;
 			RID debug_canvas_item;
