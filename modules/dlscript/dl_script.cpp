@@ -34,15 +34,85 @@
 #include "os/file_access.h"
 #include "os/os.h"
 
+#include "scene/main/scene_main_loop.h"
 #include "scene/resources/scene_format_text.h"
-
-#ifdef TOOLS_ENABLED
-// #include "editor/editor_import_export.h"
-#endif
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
 #include "api_generator.h"
 #endif
+
+Error NativeLibrary::initialize(NativeLibrary *&p_native_lib, const StringName p_path) {
+
+	if (DLScriptLanguage::get_singleton()->initialized_libraries.has(p_path)) {
+		p_native_lib = DLScriptLanguage::get_singleton()->initialized_libraries[p_path];
+		return OK;
+	}
+
+	NativeLibrary *lib = memnew(NativeLibrary);
+	lib->path = p_path;
+
+	p_native_lib = lib;
+
+	// Open the file
+
+	Error error;
+	error = OS::get_singleton()->open_dynamic_library(p_path, lib->handle);
+	if (error) return error;
+	ERR_FAIL_COND_V(!lib->handle, ERR_BUG);
+
+	// Get the method
+
+	void *library_init;
+	error = OS::get_singleton()->get_dynamic_library_symbol_handle(lib->handle, DLScriptLanguage::get_init_symbol_name(), library_init);
+	if (error) return error;
+	ERR_FAIL_COND_V(!library_init, ERR_BUG);
+
+	void (*library_init_fpointer)(godot_dlscript_init_options *) = (void (*)(godot_dlscript_init_options *))library_init;
+
+	godot_dlscript_init_options options;
+
+	options.in_editor = SceneTree::get_singleton()->is_editor_hint();
+	/*
+	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
+	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
+	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
+	*/
+
+	library_init_fpointer(&options); // Catch errors?
+
+	DLScriptLanguage::get_singleton()->initialized_libraries[p_path] = lib;
+
+	return OK;
+}
+
+Error NativeLibrary::terminate(NativeLibrary *&p_native_lib) {
+
+	if (!DLScriptLanguage::get_singleton()->initialized_libraries.has(p_native_lib->path)) {
+		OS::get_singleton()->close_dynamic_library(p_native_lib->handle);
+		p_native_lib->handle = 0;
+		return OK;
+	}
+
+	Error error = OK;
+	void *library_terminate;
+	error = OS::get_singleton()->get_dynamic_library_symbol_handle(p_native_lib->handle, DLScriptLanguage::get_terminate_symbol_name(), library_terminate);
+	if (error)
+		return OK; // no terminate? okay, not that important lol
+
+	void (*library_terminate_pointer)(godot_dlscript_terminate_options *) = (void (*)(godot_dlscript_terminate_options *))library_terminate;
+
+	godot_dlscript_terminate_options options;
+	options.in_editor = SceneTree::get_singleton()->is_editor_hint();
+
+	library_terminate_pointer(&options);
+
+	DLScriptLanguage::get_singleton()->initialized_libraries.erase(p_native_lib->path);
+
+	OS::get_singleton()->close_dynamic_library(p_native_lib->handle);
+	p_native_lib->handle = 0;
+
+	return OK;
+}
 
 // Script
 
@@ -97,8 +167,8 @@ ScriptInstance *DLScript::instance_create(Object *p_this) {
 		if (!library.is_valid())
 			return sins;
 
-		if (!library->library_handle) {
-			Error err = library->_initialize_handle(true);
+		if (!library->library) {
+			Error err = library->_initialize();
 			if (err != OK) {
 				return sins;
 			}
@@ -320,10 +390,10 @@ void DLScript::set_library(Ref<DLLibrary> p_library) {
 		return;
 #endif
 	if (library.is_valid()) {
-		Error initalize_status = library->_initialize_handle(!ScriptServer::is_scripting_enabled());
+		Error initalize_status = library->_initialize();
 		ERR_FAIL_COND(initalize_status != OK);
 		if (script_name) {
-			script_data = library->get_script_data(script_name);
+			script_data = library->library->scripts[script_name];
 			ERR_FAIL_COND(!script_data);
 		}
 	}
@@ -337,8 +407,15 @@ void DLScript::set_script_name(StringName p_script_name) {
 	script_name = p_script_name;
 
 	if (library.is_valid()) {
-		script_data = library->get_script_data(script_name);
-		ERR_FAIL_COND(!script_data);
+#ifdef DLSCRIPT_EDITOR_FEATURES
+		if (!library->library) {
+			library->_initialize();
+		}
+#endif
+		if (library->library) {
+			script_data = library->get_script_data(script_name);
+			ERR_FAIL_COND(!script_data);
+		}
 	}
 }
 
@@ -400,10 +477,8 @@ String DLLibrary::get_platform_file(StringName p_platform) const {
 	}
 }
 
-Error DLLibrary::_initialize_handle(bool p_in_editor) {
+Error DLLibrary::_initialize() {
 	_THREAD_SAFE_METHOD_
-
-	void *_library_handle;
 
 	// Get the file
 
@@ -434,90 +509,33 @@ Error DLLibrary::_initialize_handle(bool p_in_editor) {
 	}
 	ERR_FAIL_COND_V(platform_file == "", ERR_DOES_NOT_EXIST);
 
-	library_path = GlobalConfig::get_singleton()->globalize_path(platform_file);
-
-	if (DLScriptLanguage::get_singleton()->is_library_initialized(library_path)) {
-		*this = *DLScriptLanguage::get_singleton()->get_library_dllibrary(library_path);
-		return OK;
-	}
-
-	// Open the file
-
-	Error error;
-	error = OS::get_singleton()->open_dynamic_library(library_path, _library_handle);
-	if (error) return error;
-	ERR_FAIL_COND_V(!_library_handle, ERR_BUG);
-
-	// Get the method
-
-	void *library_init;
-	error = OS::get_singleton()->get_dynamic_library_symbol_handle(_library_handle, DLScriptLanguage::get_init_symbol_name(), library_init);
-	if (error) return error;
-	ERR_FAIL_COND_V(!library_init, ERR_BUG);
+	StringName path = GlobalConfig::get_singleton()->globalize_path(platform_file);
 
 	DLLibrary::currently_initialized_library = this;
 
-	void (*library_init_fpointer)(godot_dlscript_init_options *) = (void (*)(godot_dlscript_init_options *))library_init;
-
-	godot_dlscript_init_options options;
-
-	options.in_editor = p_in_editor;
-	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
-	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
-	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
-
-	library_init_fpointer(&options); // Catch errors?
-	/*{
-		ERR_EXPLAIN("Couldn't initialize library");
-		ERR_FAIL_V(ERR_SCRIPT_FAILED);
-	}*/
+	Error ret = NativeLibrary::initialize(library, path);
 
 	DLLibrary::currently_initialized_library = NULL;
-	library_handle = _library_handle;
 
-	DLScriptLanguage::get_singleton()->set_library_initialized(library_path, this);
-
-	return OK;
+	return ret;
 }
 
-Error DLLibrary::_free_handle(bool p_in_editor) {
-	ERR_FAIL_COND_V(!library_handle, ERR_BUG);
+Error DLLibrary::_terminate() {
+	ERR_FAIL_COND_V(!library, ERR_BUG);
+	ERR_FAIL_COND_V(!library->handle, ERR_BUG);
 
-	if (!DLScriptLanguage::get_singleton()->is_library_initialized(library_path)) {
-		OS::get_singleton()->close_dynamic_library(library_handle);
-		library_handle = 0;
-		return OK;
-	}
-
-	Error error = OK;
-	void *library_terminate;
-	error = OS::get_singleton()->get_dynamic_library_symbol_handle(library_handle, DLScriptLanguage::get_terminate_symbol_name(), library_terminate);
-	if (error)
-		return OK; // no terminate? okay, not that important lol
-
-	void (*library_terminate_pointer)(godot_dlscript_terminate_options *) = (void (*)(godot_dlscript_terminate_options *))library_terminate;
-
-	godot_dlscript_terminate_options options;
-	options.in_editor = p_in_editor;
-
-	library_terminate_pointer(&options);
-
-	DLScriptLanguage::get_singleton()->set_library_uninitialized(library_path);
-
-	OS::get_singleton()->close_dynamic_library(library_handle);
-	library_handle = 0;
-
-	return OK;
+	return NativeLibrary::terminate(library);
 }
 
 void DLLibrary::_register_script(const StringName p_name, const StringName p_base, godot_instance_create_func p_instance_func, godot_instance_destroy_func p_destroy_func) {
-	ERR_FAIL_COND(scripts.has(p_name));
+	ERR_FAIL_COND(!library);
+	ERR_FAIL_COND(library->scripts.has(p_name));
 
 	DLScriptData *s = memnew(DLScriptData);
 	s->base = p_base;
 	s->create_func = p_instance_func;
 	s->destroy_func = p_destroy_func;
-	Map<StringName, DLScriptData *>::Element *E = scripts.find(p_base);
+	Map<StringName, DLScriptData *>::Element *E = library->scripts.find(p_base);
 	if (E) {
 		s->base_data = E->get();
 		s->base_native_type = s->base_data->base_native_type;
@@ -530,18 +548,19 @@ void DLLibrary::_register_script(const StringName p_name, const StringName p_bas
 		s->base_native_type = p_base;
 	}
 
-	scripts.insert(p_name, s);
+	library->scripts.insert(p_name, s);
 }
 
 void DLLibrary::_register_tool_script(const StringName p_name, const StringName p_base, godot_instance_create_func p_instance_func, godot_instance_destroy_func p_destroy_func) {
-	ERR_FAIL_COND(scripts.has(p_name));
+	ERR_FAIL_COND(!library);
+	ERR_FAIL_COND(library->scripts.has(p_name));
 
 	DLScriptData *s = memnew(DLScriptData);
 	s->base = p_base;
 	s->create_func = p_instance_func;
 	s->destroy_func = p_destroy_func;
 	s->is_tool = true;
-	Map<StringName, DLScriptData *>::Element *E = scripts.find(p_base);
+	Map<StringName, DLScriptData *>::Element *E = library->scripts.find(p_base);
 	if (E) {
 		s->base_data = E->get();
 		s->base_native_type = s->base_data->base_native_type;
@@ -554,22 +573,24 @@ void DLLibrary::_register_tool_script(const StringName p_name, const StringName 
 		s->base_native_type = p_base;
 	}
 
-	scripts.insert(p_name, s);
+	library->scripts.insert(p_name, s);
 }
 
 void DLLibrary::_register_script_method(const StringName p_name, const StringName p_method, godot_method_attributes p_attr, godot_instance_method p_func, MethodInfo p_info) {
-	ERR_FAIL_COND(!scripts.has(p_name));
+	ERR_FAIL_COND(!library);
+	ERR_FAIL_COND(!library->scripts.has(p_name));
 
 	p_info.name = p_method;
 	DLScriptData::Method method;
 
 	method = DLScriptData::Method(p_func, p_info, p_attr.rpc_type);
 
-	scripts[p_name]->methods.insert(p_method, method);
+	library->scripts[p_name]->methods.insert(p_method, method);
 }
 
 void DLLibrary::_register_script_property(const StringName p_name, const String p_path, godot_property_attributes *p_attr, godot_property_set_func p_setter, godot_property_get_func p_getter) {
-	ERR_FAIL_COND(!scripts.has(p_name));
+	ERR_FAIL_COND(!library);
+	ERR_FAIL_COND(!library->scripts.has(p_name));
 
 	DLScriptData::Property p;
 
@@ -582,11 +603,12 @@ void DLLibrary::_register_script_property(const StringName p_name, const String 
 		p = DLScriptData::Property(p_setter, p_getter, pi, *(Variant *)&p_attr->default_value, p_attr->rset_type);
 	}
 
-	scripts[p_name]->properties.insert(p_path, p);
+	library->scripts[p_name]->properties.insert(p_path, p);
 }
 
 void DLLibrary::_register_script_signal(const StringName p_name, const godot_signal *p_signal) {
-	ERR_FAIL_COND(!scripts.has(p_name));
+	ERR_FAIL_COND(!library);
+	ERR_FAIL_COND(!library->scripts.has(p_name));
 	ERR_FAIL_COND(!p_signal);
 
 	DLScriptData::Signal signal;
@@ -626,19 +648,15 @@ void DLLibrary::_register_script_signal(const StringName p_name, const godot_sig
 		signal.signal.default_arguments = default_arguments;
 	}
 
-	scripts[p_name]->signals_.insert(*(String *)&p_signal->name, signal);
+	library->scripts[p_name]->signals_.insert(*(String *)&p_signal->name, signal);
 }
 
 DLScriptData *DLLibrary::get_script_data(const StringName p_name) {
+	ERR_FAIL_COND_V(!library, NULL);
 
-	if (!scripts.has(p_name)) {
-		if (DLScriptLanguage::get_singleton()->is_library_initialized(library_path)) {
-			_update_library(*DLScriptLanguage::get_singleton()->get_library_dllibrary(library_path));
-		}
-		ERR_FAIL_COND_V(!scripts.has(p_name), NULL);
-	}
+	ERR_FAIL_COND_V(!library->scripts.has(p_name), NULL);
 
-	return scripts[p_name];
+	return library->scripts[p_name];
 }
 
 bool DLLibrary::_set(const StringName &p_name, const Variant &p_value) {
@@ -667,6 +685,9 @@ void DLLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		List<StringName> ep;
 		// ep.push_back("X11");
 		// EditorImportExport::get_singleton()->get_export_platforms(&ep);
+
+		// @Todo
+		// get export platforms with the new export system somehow.
 		for (List<StringName>::Element *E = ep.front(); E; E = E->next()) {
 			registered_platform_names.insert(String(E->get()).to_lower());
 		}
@@ -711,12 +732,16 @@ void DLLibrary::_bind_methods() {
 }
 
 DLLibrary::DLLibrary() {
-	library_handle = NULL;
+	library = NULL;
 }
 
 DLLibrary::~DLLibrary() {
 
-	for (Map<StringName, DLScriptData *>::Element *E = scripts.front(); E; E = E->next()) {
+	if (!library) {
+		return;
+	}
+
+	for (Map<StringName, DLScriptData *>::Element *E = library->scripts.front(); E; E = E->next()) {
 		for (Map<StringName, DLScriptData::Method>::Element *M = E->get()->methods.front(); M; M = M->next()) {
 			if (M->get().method.free_func) {
 				M->get().method.free_func(M->get().method.method_data);
@@ -725,12 +750,8 @@ DLLibrary::~DLLibrary() {
 		memdelete(E->get());
 	}
 
-	if (library_handle) {
-		bool in_editor = false;
-#ifdef TOOLS_ENABLED
-		in_editor = !ScriptServer::is_scripting_enabled();
-#endif
-		_free_handle(in_editor);
+	if (library->handle) {
+		_terminate();
 	}
 }
 
@@ -906,26 +927,6 @@ String DLScriptLanguage::get_name() const {
 	return "DLScript";
 }
 
-bool DLScriptLanguage::is_library_initialized(const String &p_path) {
-
-	return initialized_libraries.has(p_path);
-}
-
-void DLScriptLanguage::set_library_initialized(const String &p_path, DLLibrary *p_dllibrary) {
-
-	initialized_libraries[p_path] = p_dllibrary;
-}
-
-DLLibrary *DLScriptLanguage::get_library_dllibrary(const String &p_path) {
-
-	return initialized_libraries[p_path];
-}
-
-void DLScriptLanguage::set_library_uninitialized(const String &p_path) {
-
-	initialized_libraries.erase(p_path);
-}
-
 void DLScriptLanguage::init() {
 	// TODO: Expose globals
 	GLOBAL_DEF("dlscript/default_dllibrary", "");
@@ -1079,7 +1080,7 @@ DLScriptLanguage::DLScriptLanguage() {
 	ERR_FAIL_COND(singleton);
 	strings._notification = StringName("_notification");
 	singleton = this;
-	initialized_libraries = Map<String, DLLibrary *>();
+	initialized_libraries = Map<StringName, NativeLibrary *>();
 }
 
 DLScriptLanguage::~DLScriptLanguage() {

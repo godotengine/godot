@@ -39,8 +39,20 @@
 #include "godot.h"
 
 #ifdef TOOLS_ENABLED
-// #define DLSCRIPT_EDITOR_FEATURES
+#define DLSCRIPT_EDITOR_FEATURES
 #endif
+
+class DLScriptData;
+
+struct NativeLibrary {
+	StringName path;
+	void *handle;
+
+	Map<StringName, DLScriptData *> scripts;
+
+	static Error initialize(NativeLibrary *&p_native_lib, const StringName p_path);
+	static Error terminate(NativeLibrary *&p_native_lib);
+};
 
 struct DLScriptData {
 	/* typedef void* (InstanceFunc)(godot_object* instance);
@@ -187,25 +199,17 @@ class DLLibrary : public Resource {
 	OBJ_SAVE_TYPE(DLLibrary);
 
 	Map<StringName, String> platform_files;
-	void *library_handle;
-	String library_path;
+	NativeLibrary *library;
 	static DLLibrary *currently_initialized_library;
-	Map<StringName, DLScriptData *> scripts;
 
 protected:
 	friend class DLScript;
-	_FORCE_INLINE_ void _update_library(const DLLibrary &p_other) {
-		platform_files = p_other.platform_files;
-		library_handle = p_other.library_handle;
-		library_path = p_other.library_path;
-		scripts = p_other.scripts;
-	}
-
-	Error _initialize_handle(bool p_in_editor = false);
-
-	Error _free_handle(bool p_in_editor = false);
+	friend class NativeLibrary;
 
 	DLScriptData *get_script_data(const StringName p_name);
+
+	Error _initialize();
+	Error _terminate();
 
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
@@ -290,8 +294,6 @@ class DLScriptLanguage : public ScriptLanguage {
 
 	SelfList<DLScript>::List script_list;
 
-	Map<String, DLLibrary *> initialized_libraries;
-
 	bool profiling;
 	uint64_t script_frame_time;
 
@@ -302,14 +304,11 @@ class DLScriptLanguage : public ScriptLanguage {
 	} strings;
 
 public:
+	Map<StringName, NativeLibrary *> initialized_libraries;
+
 	_FORCE_INLINE_ static DLScriptLanguage *get_singleton() { return singleton; }
 
 	virtual String get_name() const;
-
-	bool is_library_initialized(const String &p_path);
-	void set_library_initialized(const String &p_path, DLLibrary *p_dllibrary);
-	DLLibrary *get_library_dllibrary(const String &p_path);
-	void set_library_uninitialized(const String &p_path);
 
 	/* LANGUAGE FUNCTIONS */
 	virtual void init();
