@@ -41,6 +41,10 @@
 #include "api_generator.h"
 #endif
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_node.h"
+#endif
+
 Error NativeLibrary::initialize(NativeLibrary *&p_native_lib, const StringName p_path) {
 
 	if (DLScriptLanguage::get_singleton()->initialized_libraries.has(p_path)) {
@@ -115,6 +119,29 @@ Error NativeLibrary::terminate(NativeLibrary *&p_native_lib) {
 }
 
 // Script
+#ifdef TOOLS_ENABLED
+
+void DLScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
+
+	List<PropertyInfo> pinfo;
+	Map<StringName, Variant> values;
+
+	for (Map<StringName, DLScriptData::Property>::Element *E = script_data->properties.front(); E; E = E->next()) {
+		PropertyInfo p = E->get().info;
+		p.name = String(E->key());
+		pinfo.push_back(p);
+		values[p.name] = E->get().default_value;
+	}
+
+	p_placeholder->update(pinfo, values);
+}
+
+void DLScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
+
+	placeholders.erase(p_placeholder);
+}
+
+#endif
 
 bool DLScript::can_instance() const {
 #ifdef DLSCRIPT_EDITOR_FEATURES
@@ -161,13 +188,10 @@ ScriptInstance *DLScript::instance_create(Object *p_this) {
 		PlaceHolderScriptInstance *sins = memnew(PlaceHolderScriptInstance(DLScriptLanguage::singleton, Ref<Script>((Script *)this), p_this));
 		placeholders.insert(sins);
 
-		List<PropertyInfo> pinfo;
-		Map<StringName, Variant> values;
-
 		if (!library.is_valid())
 			return sins;
 
-		if (!library->library) {
+		if (!library->native_library) {
 			Error err = library->_initialize();
 			if (err != OK) {
 				return sins;
@@ -177,20 +201,11 @@ ScriptInstance *DLScript::instance_create(Object *p_this) {
 		if (!script_data) {
 			script_data = library->get_script_data(script_name);
 		}
-		if (script_data)
+		if (script_data && script_data->create_func.create_func) {
 			script_data->create_func.create_func((godot_object *)p_this, script_data->create_func.method_data);
-
-		if (script_data) {
-			for (Map<StringName, DLScriptData::Property>::Element *E = script_data->properties.front(); E; E = E->next()) {
-
-				PropertyInfo p = E->get().info;
-				p.name = String(E->key());
-				pinfo.push_back(p);
-				values[p.name] = E->get().default_value;
-			}
 		}
 
-		sins->update(pinfo, values);
+		_update_placeholder(sins);
 
 		return sins;
 	}
@@ -393,7 +408,7 @@ void DLScript::set_library(Ref<DLLibrary> p_library) {
 		Error initalize_status = library->_initialize();
 		ERR_FAIL_COND(initalize_status != OK);
 		if (script_name) {
-			script_data = library->library->scripts[script_name];
+			script_data = library->native_library->scripts[script_name];
 			ERR_FAIL_COND(!script_data);
 		}
 	}
@@ -408,11 +423,11 @@ void DLScript::set_script_name(StringName p_script_name) {
 
 	if (library.is_valid()) {
 #ifdef DLSCRIPT_EDITOR_FEATURES
-		if (!library->library) {
+		if (!library->native_library) {
 			library->_initialize();
 		}
 #endif
-		if (library->library) {
+		if (library->native_library) {
 			script_data = library->get_script_data(script_name);
 			ERR_FAIL_COND(!script_data);
 		}
@@ -431,10 +446,12 @@ void DLScript::_bind_methods() {
 
 DLScript::DLScript() {
 	script_data = NULL;
+	DLScriptLanguage::get_singleton()->script_list.insert(this);
 }
 
 DLScript::~DLScript() {
 	//hmm
+	DLScriptLanguage::get_singleton()->script_list.erase(this);
 }
 
 // Library
@@ -513,7 +530,8 @@ Error DLLibrary::_initialize() {
 
 	DLLibrary::currently_initialized_library = this;
 
-	Error ret = NativeLibrary::initialize(library, path);
+	Error ret = NativeLibrary::initialize(native_library, path);
+	native_library->dllib = this;
 
 	DLLibrary::currently_initialized_library = NULL;
 
@@ -521,21 +539,49 @@ Error DLLibrary::_initialize() {
 }
 
 Error DLLibrary::_terminate() {
-	ERR_FAIL_COND_V(!library, ERR_BUG);
-	ERR_FAIL_COND_V(!library->handle, ERR_BUG);
+	ERR_FAIL_COND_V(!native_library, ERR_BUG);
+	ERR_FAIL_COND_V(!native_library->handle, ERR_BUG);
 
-	return NativeLibrary::terminate(library);
+	// de-init stuff
+
+	for (Map<StringName, DLScriptData *>::Element *E = native_library->scripts.front(); E; E = E->next()) {
+		for (Map<StringName, DLScriptData::Method>::Element *M = E->get()->methods.front(); M; M = M->next()) {
+			if (M->get().method.free_func) {
+				M->get().method.free_func(M->get().method.method_data);
+			}
+		}
+		if (E->get()->create_func.free_func) {
+			E->get()->create_func.free_func(E->get()->create_func.method_data);
+		}
+		if (E->get()->destroy_func.free_func) {
+			E->get()->destroy_func.free_func(E->get()->destroy_func.method_data);
+		}
+
+		for (Set<DLScript *>::Element *S = DLScriptLanguage::get_singleton()->script_list.front(); S; S = S->next()) {
+			if (S->get()->script_data == E->get()) {
+				S->get()->script_data = NULL;
+			}
+		}
+
+		memdelete(E->get());
+	}
+
+	Error ret = NativeLibrary::terminate(native_library);
+
+	native_library->scripts.clear();
+
+	return ret;
 }
 
 void DLLibrary::_register_script(const StringName p_name, const StringName p_base, godot_instance_create_func p_instance_func, godot_instance_destroy_func p_destroy_func) {
-	ERR_FAIL_COND(!library);
-	ERR_FAIL_COND(library->scripts.has(p_name));
+	ERR_FAIL_COND(!native_library);
+	ERR_FAIL_COND(native_library->scripts.has(p_name));
 
 	DLScriptData *s = memnew(DLScriptData);
 	s->base = p_base;
 	s->create_func = p_instance_func;
 	s->destroy_func = p_destroy_func;
-	Map<StringName, DLScriptData *>::Element *E = library->scripts.find(p_base);
+	Map<StringName, DLScriptData *>::Element *E = native_library->scripts.find(p_base);
 	if (E) {
 		s->base_data = E->get();
 		s->base_native_type = s->base_data->base_native_type;
@@ -548,19 +594,19 @@ void DLLibrary::_register_script(const StringName p_name, const StringName p_bas
 		s->base_native_type = p_base;
 	}
 
-	library->scripts.insert(p_name, s);
+	native_library->scripts.insert(p_name, s);
 }
 
 void DLLibrary::_register_tool_script(const StringName p_name, const StringName p_base, godot_instance_create_func p_instance_func, godot_instance_destroy_func p_destroy_func) {
-	ERR_FAIL_COND(!library);
-	ERR_FAIL_COND(library->scripts.has(p_name));
+	ERR_FAIL_COND(!native_library);
+	ERR_FAIL_COND(native_library->scripts.has(p_name));
 
 	DLScriptData *s = memnew(DLScriptData);
 	s->base = p_base;
 	s->create_func = p_instance_func;
 	s->destroy_func = p_destroy_func;
 	s->is_tool = true;
-	Map<StringName, DLScriptData *>::Element *E = library->scripts.find(p_base);
+	Map<StringName, DLScriptData *>::Element *E = native_library->scripts.find(p_base);
 	if (E) {
 		s->base_data = E->get();
 		s->base_native_type = s->base_data->base_native_type;
@@ -573,24 +619,24 @@ void DLLibrary::_register_tool_script(const StringName p_name, const StringName 
 		s->base_native_type = p_base;
 	}
 
-	library->scripts.insert(p_name, s);
+	native_library->scripts.insert(p_name, s);
 }
 
 void DLLibrary::_register_script_method(const StringName p_name, const StringName p_method, godot_method_attributes p_attr, godot_instance_method p_func, MethodInfo p_info) {
-	ERR_FAIL_COND(!library);
-	ERR_FAIL_COND(!library->scripts.has(p_name));
+	ERR_FAIL_COND(!native_library);
+	ERR_FAIL_COND(!native_library->scripts.has(p_name));
 
 	p_info.name = p_method;
 	DLScriptData::Method method;
 
 	method = DLScriptData::Method(p_func, p_info, p_attr.rpc_type);
 
-	library->scripts[p_name]->methods.insert(p_method, method);
+	native_library->scripts[p_name]->methods.insert(p_method, method);
 }
 
 void DLLibrary::_register_script_property(const StringName p_name, const String p_path, godot_property_attributes *p_attr, godot_property_set_func p_setter, godot_property_get_func p_getter) {
-	ERR_FAIL_COND(!library);
-	ERR_FAIL_COND(!library->scripts.has(p_name));
+	ERR_FAIL_COND(!native_library);
+	ERR_FAIL_COND(!native_library->scripts.has(p_name));
 
 	DLScriptData::Property p;
 
@@ -603,12 +649,12 @@ void DLLibrary::_register_script_property(const StringName p_name, const String 
 		p = DLScriptData::Property(p_setter, p_getter, pi, *(Variant *)&p_attr->default_value, p_attr->rset_type);
 	}
 
-	library->scripts[p_name]->properties.insert(p_path, p);
+	native_library->scripts[p_name]->properties.insert(p_path, p);
 }
 
 void DLLibrary::_register_script_signal(const StringName p_name, const godot_signal *p_signal) {
-	ERR_FAIL_COND(!library);
-	ERR_FAIL_COND(!library->scripts.has(p_name));
+	ERR_FAIL_COND(!native_library);
+	ERR_FAIL_COND(!native_library->scripts.has(p_name));
 	ERR_FAIL_COND(!p_signal);
 
 	DLScriptData::Signal signal;
@@ -648,15 +694,15 @@ void DLLibrary::_register_script_signal(const StringName p_name, const godot_sig
 		signal.signal.default_arguments = default_arguments;
 	}
 
-	library->scripts[p_name]->signals_.insert(*(String *)&p_signal->name, signal);
+	native_library->scripts[p_name]->signals_.insert(*(String *)&p_signal->name, signal);
 }
 
 DLScriptData *DLLibrary::get_script_data(const StringName p_name) {
-	ERR_FAIL_COND_V(!library, NULL);
+	ERR_FAIL_COND_V(!native_library, NULL);
 
-	ERR_FAIL_COND_V(!library->scripts.has(p_name), NULL);
+	ERR_FAIL_COND_V(!native_library->scripts.has(p_name), NULL);
 
-	return library->scripts[p_name];
+	return native_library->scripts[p_name];
 }
 
 bool DLLibrary::_set(const StringName &p_name, const Variant &p_value) {
@@ -732,25 +778,16 @@ void DLLibrary::_bind_methods() {
 }
 
 DLLibrary::DLLibrary() {
-	library = NULL;
+	native_library = NULL;
 }
 
 DLLibrary::~DLLibrary() {
 
-	if (!library) {
+	if (!native_library) {
 		return;
 	}
 
-	for (Map<StringName, DLScriptData *>::Element *E = library->scripts.front(); E; E = E->next()) {
-		for (Map<StringName, DLScriptData::Method>::Element *M = E->get()->methods.front(); M; M = M->next()) {
-			if (M->get().method.free_func) {
-				M->get().method.free_func(M->get().method.method_data);
-			}
-		}
-		memdelete(E->get());
-	}
-
-	if (library->handle) {
+	if (native_library->handle) {
 		_terminate();
 	}
 }
@@ -927,6 +964,13 @@ String DLScriptLanguage::get_name() const {
 	return "DLScript";
 }
 
+void _add_reload_node() {
+#ifdef TOOLS_ENABLED
+	DLReloadNode *rn = memnew(DLReloadNode);
+	EditorNode::get_singleton()->add_child(rn);
+#endif
+}
+
 void DLScriptLanguage::init() {
 	// TODO: Expose globals
 	GLOBAL_DEF("dlscript/default_dllibrary", "");
@@ -945,6 +989,12 @@ void DLScriptLanguage::init() {
 			ERR_PRINT("Failed to generate C API\n");
 		}
 	}
+#endif
+
+#ifdef TOOLS_ENABLED
+	// if (SceneTree::get_singleton()->is_editor_hint()) {
+	EditorNode::add_init_callback(&_add_reload_node);
+// }
 #endif
 }
 
@@ -1086,6 +1136,71 @@ DLScriptLanguage::DLScriptLanguage() {
 DLScriptLanguage::~DLScriptLanguage() {
 	singleton = NULL;
 }
+
+// DLReloadNode
+
+void DLReloadNode::_bind_methods() {
+	ClassDB::bind_method("_notification", &DLReloadNode::_notification);
+}
+
+void DLReloadNode::_notification(int p_what) {
+#ifdef TOOLS_ENABLED
+
+	switch (p_what) {
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+
+			// break; // For now.
+
+			Set<NativeLibrary *> libs_to_reload;
+
+			for (Map<StringName, NativeLibrary *>::Element *L = DLScriptLanguage::get_singleton()->initialized_libraries.front(); L; L = L->next()) {
+				// check if file got modified at all
+				// @Todo
+
+				libs_to_reload.insert(L->get());
+			}
+
+			for (Set<NativeLibrary *>::Element *L = libs_to_reload.front(); L; L = L->next()) {
+
+				DLLibrary *lib = L->get()->dllib;
+
+				lib->_terminate();
+				lib->_initialize();
+
+				// update placeholders (if any)
+
+				DLScript *script = NULL;
+
+				for (Set<DLScript *>::Element *S = DLScriptLanguage::get_singleton()->script_list.front(); S; S = S->next()) {
+					if (lib->native_library->scripts.has(S->get()->get_script_name())) {
+						script = S->get();
+						script->script_data = lib->get_script_data(script->get_script_name());
+						break;
+					}
+				}
+
+				if (script == NULL) {
+					// new class, cool. Nothing to do here
+					continue;
+				}
+
+				if (script->placeholders.size() == 0)
+					continue;
+
+				for (Set<PlaceHolderScriptInstance *>::Element *P = script->placeholders.front(); P; P = P->next()) {
+					PlaceHolderScriptInstance *p = P->get();
+					script->_update_placeholder(p);
+				}
+			}
+
+		} break;
+		default: {
+		};
+	}
+#endif
+}
+
+// Resource loader/saver
 
 RES ResourceFormatLoaderDLScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
 	ResourceFormatLoaderText rsflt;
