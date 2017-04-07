@@ -526,6 +526,7 @@ void register_scene_types() {
 	ClassDB::register_class<QuadMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
+	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
 	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
 	SpatialMaterial::init_shaders();
 
