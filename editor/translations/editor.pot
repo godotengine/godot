@@ -1302,7 +1302,7 @@ msgid "Pick a Main Scene"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr ""
 
@@ -3812,6 +3812,10 @@ msgstr ""
 msgid "Pitch"
 msgstr ""
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr ""
@@ -5560,12 +5564,16 @@ msgstr ""
 msgid "Dir.."
 msgstr ""
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
 #: editor/property_editor.cpp
 msgid "Assign"
+msgstr ""
+
+#: editor/property_editor.cpp
+msgid "New Script"
 msgstr ""
 
 #: editor/property_editor.cpp
@@ -5777,7 +5785,11 @@ msgid "Change Type"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
-msgid "Add Script"
+msgid "Attach Script"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
@@ -5804,6 +5816,14 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -5899,6 +5919,10 @@ msgid "Could not create script in filesystem."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+msgid "Error loading script from %s"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr ""
 
@@ -5911,15 +5935,15 @@ msgid "Invalid base path"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr ""
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
+msgid "Create new script"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
@@ -5931,7 +5955,7 @@ msgid "Built-In Script"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-msgid "Create Node Script"
+msgid "Attach Node Script"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
