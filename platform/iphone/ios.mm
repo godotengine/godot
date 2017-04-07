@@ -43,14 +43,11 @@ String iOS::get_rate_url(int p_app_id) const {
 	//ios7 before
 	String ret = templ;
 
-	// iOS 7 needs a different templateReviewURL @see https://github.com/arashpayan/appirater/issues/131
-	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion] floatValue] < 7.1)
-	{
+	if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0 && [[[UIDevice currentDevice] systemVersion] floatValue] < 7.1) {
+		// iOS 7 needs a different templateReviewURL @see https://github.com/arashpayan/appirater/issues/131
 		ret = templ_iOS7;
-	}
+	} else if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
 	// iOS 8 needs a different templateReviewURL also @see https://github.com/arashpayan/appirater/issues/182
-	else if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
-	{
 		ret = templ_iOS8;
 	}
 

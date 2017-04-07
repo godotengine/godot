@@ -51,15 +51,15 @@ void GameCenter::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("connect"),&GameCenter::connect);
 	ObjectTypeDB::bind_method(_MD("is_connected"),&GameCenter::is_connected);
 
-	ObjectTypeDB::bind_method(_MD("post_score"),&GameCenter::post_score);
-	ObjectTypeDB::bind_method(_MD("award_achievement"),&GameCenter::award_achievement);
-	ObjectTypeDB::bind_method(_MD("reset_achievements"),&GameCenter::reset_achievements);
-	ObjectTypeDB::bind_method(_MD("request_achievements"),&GameCenter::request_achievements);
-	ObjectTypeDB::bind_method(_MD("request_achievement_descriptions"),&GameCenter::request_achievement_descriptions);
-	ObjectTypeDB::bind_method(_MD("show_game_center"),&GameCenter::show_game_center);
+	ObjectTypeDB::bind_method(_MD("post_score"), &GameCenter::post_score);
+	ObjectTypeDB::bind_method(_MD("award_achievement"), &GameCenter::award_achievement);
+	ObjectTypeDB::bind_method(_MD("reset_achievements"), &GameCenter::reset_achievements);
+	ObjectTypeDB::bind_method(_MD("request_achievements"), &GameCenter::request_achievements);
+	ObjectTypeDB::bind_method(_MD("request_achievement_descriptions"), &GameCenter::request_achievement_descriptions);
+	ObjectTypeDB::bind_method(_MD("show_game_center"), &GameCenter::show_game_center);
 
-	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&GameCenter::get_pending_event_count);
-	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&GameCenter::pop_pending_event);
+	ObjectTypeDB::bind_method(_MD("get_pending_event_count"), &GameCenter::get_pending_event_count);
+	ObjectTypeDB::bind_method(_MD("pop_pending_event"), &GameCenter::pop_pending_event);
 };
 
 
@@ -77,27 +77,25 @@ Error GameCenter::connect() {
 	ViewController *root_controller=(ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
 	ERR_FAIL_COND_V(!root_controller, FAILED);
 
-    //this handler is called serveral times.  first when the view needs to be shown, then again after the view is cancelled or the user logs in.  or if the user's already logged in, it's called just once to confirm they're authenticated.  This is why no result needs to be specified in the presentViewController phase. in this case, more calls to this function will follow.
+	//this handler is called serveral times.  first when the view needs to be shown, then again after the view is cancelled or the user logs in.  or if the user's already logged in, it's called just once to confirm they're authenticated.  This is why no result needs to be specified in the presentViewController phase. in this case, more calls to this function will follow.
 	player.authenticateHandler = (^(UIViewController *controller, NSError *error) {
-        if (controller) {
-            [root_controller presentViewController:controller animated:YES completion:nil];
-        }
-        else {
-            Dictionary ret;
-            ret["type"] = "authentication";
-            if (player.isAuthenticated) {
-                ret["result"] = "ok";
-                GameCenter::get_singleton()->connected = true;
-            } else {
-                ret["result"] = "error";
-                ret["error_code"] = error.code;
-                ret["error_description"] = [error.localizedDescription UTF8String];
-                GameCenter::get_singleton()->connected = false;
-            };
+		if (controller) {
+			[root_controller presentViewController:controller animated:YES completion:nil];
+		} else {
+			Dictionary ret;
+			ret["type"] = "authentication";
+			if (player.isAuthenticated) {
+				ret["result"] = "ok";
+				GameCenter::get_singleton()->connected = true;
+			} else {
+				ret["result"] = "error";
+				ret["error_code"] = error.code;
+				ret["error_description"] = [error.localizedDescription UTF8String];
+				GameCenter::get_singleton()->connected = false;
+			};
 
-            pending_events.push_back(ret);
-        };
-
+			pending_events.push_back(ret);
+		};
 	});
 
 	return OK;
@@ -121,7 +119,6 @@ Error GameCenter::post_score(Variant p_score) {
 	ERR_FAIL_COND_V([GKScore respondsToSelector:@selector(reportScores)], ERR_UNAVAILABLE);
 
 	[GKScore reportScores:@[reporter] withCompletionHandler:^(NSError* error) {
-
 		Dictionary ret;
 		ret["type"] = "post_score";
 		if (error == nil) {
@@ -331,7 +328,8 @@ Error GameCenter::show_game_center(Variant p_params) {
 void GameCenter::game_center_closed() {
 
 	Dictionary ret;
-        ret["type"] = "show_game_center";
+
+	ret["type"] = "show_game_center";
 	ret["result"] = "ok";
 	pending_events.push_back(ret);
 }
