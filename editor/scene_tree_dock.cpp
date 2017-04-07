@@ -57,8 +57,10 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 		_tool_selected(TOOL_REPLACE);
 	} else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
 		_tool_selected(TOOL_DUPLICATE);
-	} else if (ED_IS_SHORTCUT("scene_tree/add_script", p_event)) {
-		_tool_selected(TOOL_SCRIPT);
+	} else if (ED_IS_SHORTCUT("scene_tree/attach_script", p_event)) {
+		_tool_selected(TOOL_ATTACH_SCRIPT);
+	} else if(ED_IS_SHORTCUT("scene_tree/clear_script", p_event)) {
+		_tool_selected(TOOL_CLEAR_SCRIPT);
 	} else if (ED_IS_SHORTCUT("scene_tree/move_up", p_event)) {
 		_tool_selected(TOOL_MOVE_UP);
 	} else if (ED_IS_SHORTCUT("scene_tree/move_down", p_event)) {
@@ -328,7 +330,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			//groups_editor->set_current(current);
 			//groups_editor->popup_centered_ratio();
 		} break;
-		case TOOL_SCRIPT: {
+		case TOOL_ATTACH_SCRIPT: {
 
 			Node *selected = scene_tree->get_selected();
 			if (!selected)
@@ -345,6 +347,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				script_create_dialog->config(selected->get_type(), path);
 				script_create_dialog->popup_centered(Size2(300, 290));
 				//script_create_dialog->popup_centered_minsize();
+			}
+
+		} break;
+		case TOOL_CLEAR_SCRIPT: {
+			Node *selected = scene_tree->get_selected();
+			if(!selected)
+				break;
+
+			Ref<Script> existing = selected->get_script();
+			if(existing.is_valid()) {
+				const RefPtr empty;
+				selected->set_script(empty);
 			}
 
 		} break;
@@ -675,6 +689,8 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 			button_add->set_icon(get_icon("Add", "EditorIcons"));
 			button_instance->set_icon(get_icon("Instance", "EditorIcons"));
+			button_create_script->set_icon(get_icon("ScriptCreate","EditorIcons"));
+			button_clear_script->set_icon(get_icon("Remove", "EditorIcons"));
 
 			filter_icon->set_texture(get_icon("Zoom", "EditorIcons"));
 
@@ -1239,9 +1255,24 @@ void SceneTreeDock::_delete_confirm() {
 
 void SceneTreeDock::_selection_changed() {
 
-	if (EditorNode::get_singleton()->get_editor_selection()->get_selection().size() > 1) {
+	int selection_size = EditorNode::get_singleton()->get_editor_selection()->get_selection().size();
+	if (selection_size > 1) {
 		//automatically turn on multi-edit
 		_tool_selected(TOOL_MULTI_EDIT);
+	}
+
+	if (selection_size==1) {
+		if(EditorNode::get_singleton()->get_editor_selection()->get_selection().front()->key()->get_script().is_null()) {
+			button_create_script->show();
+			button_clear_script->hide();
+		}
+		else {
+			button_create_script->hide();
+			button_clear_script->show();
+		}
+	} else {
+		button_create_script->hide();
+		button_clear_script->hide();
 	}
 
 	//tool_buttons[TOOL_MULTI_EDIT]->set_disabled(EditorNode::get_singleton()->get_editor_selection()->get_selection().size()<2);
@@ -1663,7 +1694,8 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		//menu->add_icon_item(get_icon("Groups","EditorIcons"),TTR("Edit Groups"),TOOL_GROUP);
 		//menu->add_icon_item(get_icon("Connect","EditorIcons"),TTR("Edit Connections"),TOOL_CONNECT);
 		menu->add_separator();
-		menu->add_icon_shortcut(get_icon("Script", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/add_script"), TOOL_SCRIPT);
+		menu->add_icon_shortcut(get_icon("ScriptCreate", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
+		menu->add_icon_shortcut(get_icon("Remove", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/clear_script"), TOOL_CLEAR_SCRIPT);
 		menu->add_separator();
 	}
 
@@ -1700,6 +1732,12 @@ void SceneTreeDock::set_filter(const String &p_filter) {
 
 	filter->set_text(p_filter);
 	scene_tree->set_filter(p_filter);
+}
+
+void SceneTreeDock::open_script_dialog(Node* p_for_node) {
+
+	scene_tree->set_selected(p_for_node,false);
+	_tool_selected(TOOL_ATTACH_SCRIPT);
 }
 
 void SceneTreeDock::_bind_methods() {
@@ -1745,7 +1783,8 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instance Child Scene"));
 	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
-	ED_SHORTCUT("scene_tree/add_script", TTR("Add Script"));
+	ED_SHORTCUT("scene_tree/attach_script", TTR("Attach Script"));
+	ED_SHORTCUT("scene_tree/clear_script", TTR("Clear Script"));
 	ED_SHORTCUT("scene_tree/move_up", TTR("Move Up"), KEY_MASK_CMD | KEY_UP);
 	ED_SHORTCUT("scene_tree/move_down", TTR("Move Down"), KEY_MASK_CMD | KEY_DOWN);
 	ED_SHORTCUT("scene_tree/duplicate", TTR("Duplicate"), KEY_MASK_CMD | KEY_D);
@@ -1778,6 +1817,20 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	filter_hbc->add_child(filter_icon);
 	filter_icon->set_stretch_mode(TextureFrame::STRETCH_KEEP_CENTERED);
 	filter->connect("text_changed", this, "_filter_changed");
+
+	tb = memnew(ToolButton);
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_ATTACH_SCRIPT, false));
+	tb->set_tooltip(TTR("Attach a new or existing script for the selected node."));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
+	filter_hbc->add_child(tb);
+	button_create_script=tb;
+
+	tb = memnew(ToolButton);
+	tb->connect("pressed", this, "_tool_selected", make_binds(TOOL_CLEAR_SCRIPT, false));
+	tb->set_tooltip(TTR("Clear a script for the selected node."));
+	tb->set_shortcut(ED_GET_SHORTCUT("scene_tree/clear_script"));
+	filter_hbc->add_child(tb);
+	button_clear_script = tb;
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
 	vbc->add_child(scene_tree);

@@ -194,6 +194,12 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 						}
 					}
 				} break;
+				case OBJ_MENU_NEW_SCRIPT: {
+
+					if (owner->cast_to<Node>())
+						EditorNode::get_singleton()->get_scene_tree_dock()->open_script_dialog(owner->cast_to<Node>());
+
+				} break;
 				default: {
 
 					ERR_FAIL_COND(inheritors_array.empty());
@@ -212,6 +218,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			}
 
 		} break;
+
 		default: {}
 	}
 }
@@ -647,7 +654,10 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 			menu->clear();
 			menu->set_size(Size2(1, 1));
 
-			if (hint_text != "") {
+			if (p_name=="script/script" && hint_text=="Script" && owner->cast_to<Node>()) {
+				menu->add_icon_item(get_icon("Script","EditorIcons"),TTR("New Script"),OBJ_MENU_NEW_SCRIPT);
+				menu->add_separator();
+			} else if (hint_text!="") {
 				int idx = 0;
 
 				for (int i = 0; i < hint_text.get_slice_count(","); i++) {
