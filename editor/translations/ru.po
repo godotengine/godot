@@ -2,7 +2,7 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# DimOkGamer <dimokgamer@gmail.com>, 2016.
+# DimOkGamer <dimokgamer@gmail.com>, 2016-2017.
 # Maxim Kim <habamax@gmail.com>, 2016.
 # Maxim toby3d Lebedev <mail@toby3d.ru>, 2016.
 #
@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-12-14 17:04+0000\n"
+"PO-Revision-Date: 2017-01-09 02:56+0000\n"
 "Last-Translator: DimOkGamer <dimokgamer@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1340,7 +1340,7 @@ msgid "Pick a Main Scene"
 msgstr "Выберите главную сцену"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Ясно"
 
@@ -3901,6 +3901,10 @@ msgstr "Формат"
 msgid "Pitch"
 msgstr "Высота"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "Ошибка во время сохранения темы"
@@ -4942,69 +4946,64 @@ msgid "No exporter for platform '%s' yet."
 msgstr "Платформа '%s' пока не поддерживается."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Create Android keystore"
-msgstr "Создать новый ресурс"
+msgstr "Создать keystore для Android"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Full name"
-msgstr "Допустимое имя"
+msgstr "Полное имя"
 
 #: editor/project_export.cpp
 msgid "Organizational unit"
-msgstr ""
+msgstr "Подразделение"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Organization"
-msgstr "Переход"
+msgstr "Организация"
 
 #: editor/project_export.cpp
 msgid "City"
-msgstr ""
+msgstr "Город"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "State"
-msgstr "Статус:"
+msgstr "Государство"
 
 #: editor/project_export.cpp
 msgid "2 letter country code"
-msgstr ""
+msgstr "Двух буквенный код страны"
 
 #: editor/project_export.cpp
 msgid "User alias"
-msgstr ""
+msgstr "Псевдоним пользователя"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Password"
-msgstr "Пароль:"
+msgstr "Пароль"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "at least 6 characters"
-msgstr "Допустимые символы:"
+msgstr "минимум 6 символов"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "Новое имя:"
+msgstr "Имя файла"
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
-msgstr ""
+msgstr "Путь: (лучше сохранить за пределами проекта)"
 
 #: editor/project_export.cpp
 msgid ""
 "Release keystore is not set.\n"
 "Do you want to create one?"
 msgstr ""
+"Релизный keystore не задан.\n"
+"Хотите создать новый?"
 
 #: editor/project_export.cpp
 msgid "Fill Keystore/Release User and Release Password"
-msgstr ""
+msgstr "Заполните раздел Keystore"
 
 #: editor/project_export.cpp
 msgid "Include"
@@ -5664,13 +5663,17 @@ msgstr "Файл.."
 msgid "Dir.."
 msgstr "Папка.."
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Загрузить"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr "Назначить"
+
+#: editor/property_editor.cpp
+msgid "New Script"
+msgstr "Новый скрипт"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5887,9 +5890,12 @@ msgid "Change Type"
 msgstr "Изменить тип"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Add Script"
-msgstr "Скрипт"
+msgid "Attach Script"
+msgstr "Прикрепить скрипт"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
+msgstr "Убрать скрипт"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5919,6 +5925,14 @@ msgid ""
 msgstr ""
 "Добавить файл сцены как узел. Создаёт наследуемую сцену, если корневой узел "
 "не существует."
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr "Прикрепить новый или существующий скрипт к выбранному узлу."
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
+msgstr "Убрать скрипт у выбранного узла."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6013,6 +6027,10 @@ msgid "Could not create script in filesystem."
 msgstr "Не удалось создать скрипт в файловой системе."
 
 #: editor/script_create_dialog.cpp
+msgid "Error loading script from %s"
+msgstr "Ошибка при загрузке скрипта из %s"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Не указан путь"
 
@@ -6025,16 +6043,16 @@ msgid "Invalid base path"
 msgstr "Недопустимый базовый путь"
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "Файл существует"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Недопустимое расширение"
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Допустимый путь"
+msgid "Create new script"
+msgstr "Создать новый скрипт"
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr "Загрузить существующий скрипт"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6045,9 +6063,8 @@ msgid "Built-In Script"
 msgstr "Встроенный Скрипт"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Create Node Script"
-msgstr "Создать скрипт"
+msgid "Attach Node Script"
+msgstr "Добавление скрипта"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6519,19 +6536,6 @@ msgstr ""
 "сделайте его  целью рендеринга и передайте его внутренние текстуры какому-то "
 "другому узлу для отображения."
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "Та же, что и у сцены"
-
-#~ msgid "Shared"
-#~ msgstr "Раздельно"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "Этот объект не может быть отображён, потому что его родитель скрыт. "
-#~ "Отобразите сначала родительский узел."
-
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6814,6 +6818,15 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr "Свойство Path должно указывать на действительный Spatial узел."
 
+#~ msgid "Property Description:"
+#~ msgstr "Описание свойства:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Та же, что и у сцены"
+
+#~ msgid "Shared"
+#~ msgstr "Раздельно"
+
 #~ msgid "Show Bones"
 #~ msgstr "Показать кости"
 
@@ -6826,38 +6839,21 @@ msgstr ""
 #~ msgid "Theme"
 #~ msgstr "Тема"
 
-#~ msgid "New Script"
-#~ msgstr "Новый скрипт"
-
 #~ msgid "Select Property"
 #~ msgstr "Выбрать свойство"
 
 #~ msgid "Select Method"
 #~ msgstr "Выбрать метод"
 
-#~ msgid "Attach Script"
-#~ msgstr "Прикрепить скрипт"
+#~ msgid "Change Probe Extents"
+#~ msgstr "Изменены Probe Extents"
 
-#~ msgid "Clear Script"
-#~ msgstr "Убрать скрипт"
-
-#~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Прикрепить новый или существующий скрипт к выбранному узлу."
-
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "Убрать скрипт у выбранного узла."
-
-#~ msgid "Error loading script from %s"
-#~ msgstr "Ошибка при загрузке скрипта из %s"
-
-#~ msgid "Create new script"
-#~ msgstr "Создать новый скрипт"
-
-#~ msgid "Load existing script"
-#~ msgstr "Загрузить существующий скрипт"
-
-#~ msgid "Attach Node Script"
-#~ msgstr "Добавление скрипта"
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Этот объект не может быть отображён, потому что его родитель скрыт. "
+#~ "Отобразите сначала родительский узел."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "
@@ -6865,6 +6861,12 @@ msgstr ""
 #~ msgstr ""
 #~ "Путь не может начинаться с '/', абсолютные пути должны начинаться с "
 #~ "'res://', 'user://' или 'local://'"
+
+#~ msgid "File exists"
+#~ msgstr "Файл существует"
+
+#~ msgid "Valid path"
+#~ msgstr "Допустимый путь"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

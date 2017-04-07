@@ -2,19 +2,19 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# Alejandro Alvarez <eliluminado00@gmail.com>, 2017.
 # Carlos López <genetita@gmail.com>, 2016.
-# Ismael Ferreras Morezuelas <swyterzone+mame@gmail.com>, 2016.
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
 # Roger BR <drai_kin@hotmail.com>, 2016.
 # Sebastian Silva <sebastian@fuentelibre.org>, 2016.
-# Swyter <swyterzone@gmail.com>, 2016.
+# Swyter <swyterzone@gmail.com>, 2016-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-11-22 16:41+0000\n"
-"Last-Translator: Swyter <swyterzone@gmail.com>\n"
+"PO-Revision-Date: 2017-01-16 16:20+0000\n"
+"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -22,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -389,7 +389,7 @@ msgstr "Sitio:"
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Support.."
-msgstr "Ayuda…"
+msgstr "Soporte.."
 
 #: editor/asset_library_editor_plugin.cpp
 msgid "Official"
@@ -609,7 +609,7 @@ msgstr "Crear suscripción"
 
 #: editor/connections_dialog.cpp
 msgid "Connect.."
-msgstr "Conectar…"
+msgstr "Conectar.."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp
@@ -866,11 +866,11 @@ msgstr "Actualizando escena"
 
 #: editor/editor_data.cpp
 msgid "Storing local changes.."
-msgstr "Guardando cambios locales…"
+msgstr "Guardando cambios locales.."
 
 #: editor/editor_data.cpp
 msgid "Updating scene.."
-msgstr "Actualizando escena…"
+msgstr "Actualizando escena.."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1353,7 +1353,7 @@ msgid "Pick a Main Scene"
 msgstr "Elige una escena principal"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Vaya"
 
@@ -3931,6 +3931,10 @@ msgstr "Formato"
 msgid "Pitch"
 msgstr "Altura"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "Error al guardar el tema"
@@ -4986,7 +4990,7 @@ msgstr "Nombre válido"
 
 #: editor/project_export.cpp
 msgid "Organizational unit"
-msgstr ""
+msgstr "Unidad organizativa"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -4995,7 +4999,7 @@ msgstr "Transición"
 
 #: editor/project_export.cpp
 msgid "City"
-msgstr ""
+msgstr "Ciudad"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -5004,11 +5008,11 @@ msgstr "Estado:"
 
 #: editor/project_export.cpp
 msgid "2 letter country code"
-msgstr ""
+msgstr "Código de país de dos letras"
 
 #: editor/project_export.cpp
 msgid "User alias"
-msgstr ""
+msgstr "Mote"
 
 #: editor/project_export.cpp
 #, fuzzy
@@ -5027,17 +5031,19 @@ msgstr "Nuevo nombre:"
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
-msgstr ""
+msgstr "Ruta (es mejor guardar fuera del proyecto)"
 
 #: editor/project_export.cpp
 msgid ""
 "Release keystore is not set.\n"
 "Do you want to create one?"
 msgstr ""
+"No hay ningún almacén de claves con el que publicar.\n"
+"¿Quieres crear uno?"
 
 #: editor/project_export.cpp
 msgid "Fill Keystore/Release User and Release Password"
-msgstr ""
+msgstr "Escribe la contraseña del usuario del almacén de claves"
 
 #: editor/project_export.cpp
 msgid "Include"
@@ -5701,13 +5707,18 @@ msgstr "Archivo…"
 msgid "Dir.."
 msgstr "Dir…"
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Cargar"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr "Asignar"
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "Script siguiente"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5924,8 +5935,13 @@ msgstr "Cambiar tipo"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Add Script"
-msgstr "Script"
+msgid "Attach Script"
+msgstr "Añadir script"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Crear script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5955,6 +5971,16 @@ msgid ""
 msgstr ""
 "Instanciar un archivo de escena como Nodo. Crear una escena heredada si no "
 "existe ningún nodo raíz."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Attach a new or existing script for the selected node."
+msgstr "Crear un nuevo script para el nodo seleccionado."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear a script for the selected node."
+msgstr "Crear un nuevo script para el nodo seleccionado."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6050,6 +6076,11 @@ msgid "Could not create script in filesystem."
 msgstr "No se puede crear el script en el sistema de archivos."
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Error al cargar escena desde %s"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "La ruta está vacia"
 
@@ -6062,16 +6093,18 @@ msgid "Invalid base path"
 msgstr "Ruta base incorrecta"
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "El archivo ya existe"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "La extensión no es correcta"
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Ruta válida"
+#, fuzzy
+msgid "Create new script"
+msgstr "Crear script"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "Script siguiente"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6083,8 +6116,8 @@ msgstr "Script integrado"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Create Node Script"
-msgstr "Crear script"
+msgid "Attach Node Script"
+msgstr "Crear script de nodo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6509,7 +6542,7 @@ msgstr ""
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
-msgstr "Notificación"
+msgstr "Alerta!"
 
 #: scene/gui/dialogs.cpp
 msgid "Please Confirm..."
@@ -6556,19 +6589,6 @@ msgstr ""
 "muestre contenidos directo a la pantalla, hacelo un hijo de un Control para "
 "que pueda obtener un tamaño. Alternativamente, hacelo un RenderTarget y "
 "asigná su textura interna a algún otro nodo para mostrar."
-
-#~ msgid "Same as Target Scene"
-#~ msgstr "Igual que escena de destino"
-
-#~ msgid "Shared"
-#~ msgstr "Compartido"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "Este item no puede hacerse visible porque el padre esta oculto. Desocultá "
-#~ "el padre primero."
 
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
@@ -6706,13 +6726,11 @@ msgstr ""
 #~ msgid "While"
 #~ msgstr "Mientras"
 
-#, fuzzy
 #~ msgid "Return"
-#~ msgstr "Devuelve:"
+#~ msgstr "Devuelve"
 
-#, fuzzy
 #~ msgid "Get"
-#~ msgstr "Establecer"
+#~ msgstr "Obtener"
 
 #~ msgid "Base Type:"
 #~ msgstr "Tipo base:"
@@ -6891,6 +6909,16 @@ msgstr ""
 #~ "funcionar."
 
 #, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Descripción breve:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Igual que escena de destino"
+
+#~ msgid "Shared"
+#~ msgstr "Compartido"
+
+#, fuzzy
 #~ msgid "Show Bones"
 #~ msgstr "Crear huesos"
 
@@ -6907,10 +6935,6 @@ msgstr ""
 #~ msgstr "Guardar tema"
 
 #, fuzzy
-#~ msgid "New Script"
-#~ msgstr "Script siguiente"
-
-#, fuzzy
 #~ msgid "Select Property"
 #~ msgstr "Seleccionar puntos"
 
@@ -6919,36 +6943,21 @@ msgstr ""
 #~ msgstr "Modo de selección"
 
 #, fuzzy
-#~ msgid "Attach Script"
-#~ msgstr "Añadir script"
+#~ msgid "Change Probe Extents"
+#~ msgstr "Cambiar Alcances de Notificadores"
 
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "Crear script"
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Este item no puede hacerse visible porque el padre esta oculto. Desocultá "
+#~ "el padre primero."
 
-#, fuzzy
-#~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Crear un nuevo script para el nodo seleccionado."
+#~ msgid "File exists"
+#~ msgstr "El archivo ya existe"
 
-#, fuzzy
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "Crear un nuevo script para el nodo seleccionado."
-
-#, fuzzy
-#~ msgid "Error loading script from %s"
-#~ msgstr "Error al cargar escena desde %s"
-
-#, fuzzy
-#~ msgid "Create new script"
-#~ msgstr "Crear script"
-
-#, fuzzy
-#~ msgid "Load existing script"
-#~ msgstr "Script siguiente"
-
-#, fuzzy
-#~ msgid "Attach Node Script"
-#~ msgstr "Crear script de nodo"
+#~ msgid "Valid path"
+#~ msgstr "Ruta válida"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

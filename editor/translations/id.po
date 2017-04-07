@@ -5,21 +5,22 @@
 # Abdul Aziz Muslim Alqudsy <abdul.aziz.muslim.alqudsy@gmail.com>, 2016.
 # Andevid Dynmyn <doyan4forum@gmail.com>, 2016.
 # Andinawan Asa <asaandinawan@gmail.com>, 2016.
+# Damar S. M <the.last.walla@gmail.com>, 2017.
 # Khairul Hidayat <khairulcyber4rt@gmail.com>, 2016.
 # yursan9 <rizal.sagi@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2016-10-15 04:17+0000\n"
-"Last-Translator: Andevid Dynmyn <doyan4forum@gmail.com>\n"
+"PO-Revision-Date: 2017-01-18 13:18+0000\n"
+"Last-Translator: Damar S. M. <the.last.walla@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.9-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1372,7 +1373,7 @@ msgid "Pick a Main Scene"
 msgstr "Pilih sebuah Scene Utama"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Ugh"
 msgstr "Wadoo"
@@ -3889,6 +3890,10 @@ msgstr ""
 msgid "Pitch"
 msgstr ""
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr ""
@@ -4164,8 +4169,9 @@ msgid "Vertex"
 msgstr ""
 
 #: editor/plugins/shader_editor_plugin.cpp
+#, fuzzy
 msgid "Fragment"
-msgstr ""
+msgstr "Argumen:"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Lighting"
@@ -4969,9 +4975,8 @@ msgid "at least 6 characters"
 msgstr "Karakter sah:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "File tidak ada."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
@@ -5496,8 +5501,9 @@ msgid "Wheel Down."
 msgstr "Scroll kebawah."
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Toggle Persisting"
-msgstr ""
+msgstr "Beralih Favorit"
 
 #: editor/project_settings.cpp
 msgid "Error saving settings."
@@ -5643,13 +5649,18 @@ msgstr ""
 msgid "Dir.."
 msgstr ""
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr ""
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "Scene Baru"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5861,7 +5872,12 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Add Script"
+msgid "Attach Script"
+msgstr "Scene Baru"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
 msgstr "Scene Baru"
 
 #: editor/scene_tree_dock.cpp
@@ -5889,6 +5905,14 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -5984,6 +6008,11 @@ msgid "Could not create script in filesystem."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Error memuat font."
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr ""
 
@@ -5996,18 +6025,17 @@ msgid "Invalid base path"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "File exists"
-msgstr "File tidak ada."
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Valid path"
-msgstr "Path Tidak Sah."
+msgid "Create new script"
+msgstr "Buat Subskribsi"
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6019,8 +6047,8 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Create Node Script"
-msgstr "Buat Subskribsi"
+msgid "Attach Node Script"
+msgstr "Scene Baru"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6200,20 +6228,19 @@ msgstr "Tidak cukup bytes untuk menerjemahkan, atau format tidak sah."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "step argument is zero!"
-msgstr "Langkah argumen adalah nol!"
+msgstr "Argumen langkah adalah nol!"
 
 #: modules/gdscript/gd_functions.cpp
-#, fuzzy
 msgid "Not a script with an instance"
-msgstr "Skrip tidak mempunyai turunannya"
+msgstr "Bukan skrip dengan contoh"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr "Tidak berbasis skrip"
+msgstr "Tidak berbasis pada skrip"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Tidak berbasis resource file"
+msgstr "Tidak berbasis pada resource file"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -6512,8 +6539,8 @@ msgstr ""
 #~ "Node yielded, but did not return a function state in the first working "
 #~ "memory."
 #~ msgstr ""
-#~ "Node dihasilkan, tetapi keadaan sebuah fungsi tidak kembali saat kerja "
-#~ "memori pertama."
+#~ "Node dihasilkan, tetapi keadaan sebuah fungsi tidak kembali saat memori "
+#~ "pertama bekerja."
 
 #~ msgid ""
 #~ "Return value must be assigned to first element of node working memory! "
@@ -6578,12 +6605,16 @@ msgstr ""
 #~ msgid "Editing Signal:"
 #~ msgstr "Mengedit Sinyal:"
 
-#, fuzzy
 #~ msgid "Change Expression"
-#~ msgstr "Ubah Transisi Anim"
+#~ msgstr "Ubah Pernyataan"
 
 #~ msgid "Add Node"
 #~ msgstr "Tambahkan Node"
+
+#~ msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+#~ msgstr ""
+#~ "Tahan Meta untuk meletakkan sebuah Getter. Tahan Shift untuk meletakkan "
+#~ "generic signature."
 
 #, fuzzy
 #~ msgid "Add Preload Node"
@@ -6695,6 +6726,10 @@ msgstr ""
 #~ "bekerja."
 
 #, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Deskripsi Singkat:"
+
+#, fuzzy
 #~ msgid "Close All"
 #~ msgstr "Tutup"
 
@@ -6705,22 +6740,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Select Method"
 #~ msgstr "Metode Publik:"
-
-#, fuzzy
-#~ msgid "Attach Script"
-#~ msgstr "Scene Baru"
-
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "Scene Baru"
-
-#, fuzzy
-#~ msgid "Error loading script from %s"
-#~ msgstr "Error memuat font."
-
-#, fuzzy
-#~ msgid "Attach Node Script"
-#~ msgstr "Scene Baru"
 
 #, fuzzy
 #~ msgid ""

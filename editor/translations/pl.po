@@ -1336,7 +1336,7 @@ msgid "Pick a Main Scene"
 msgstr "Wybierz główną scenę"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Ugh"
 msgstr "Błąd"
@@ -3892,6 +3892,10 @@ msgstr "Format"
 msgid "Pitch"
 msgstr "Wysokość"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "Błąd podczas zapisywania motywu"
@@ -4167,8 +4171,9 @@ msgid "Vertex"
 msgstr "Wierzchołek"
 
 #: editor/plugins/shader_editor_plugin.cpp
+#, fuzzy
 msgid "Fragment"
-msgstr ""
+msgstr "Argumenty:"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Lighting"
@@ -5500,8 +5505,9 @@ msgid "Wheel Down."
 msgstr "Kółko myszy w dół."
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Toggle Persisting"
-msgstr ""
+msgstr "Ustaw jako ulubione"
 
 #: editor/project_settings.cpp
 msgid "Error saving settings."
@@ -5647,13 +5653,18 @@ msgstr "Plik.."
 msgid "Dir.."
 msgstr "Katalog.."
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Wczytaj"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr ""
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "Następny skrypt"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5869,8 +5880,13 @@ msgstr "Zmień typ"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Add Script"
-msgstr "Skrypt"
+msgid "Attach Script"
+msgstr "Dodaj skrypt"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Utwórz Skrypt"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5898,6 +5914,16 @@ msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Attach a new or existing script for the selected node."
+msgstr "Utwórz nowy skrypt dla zaznaczonego węzła."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear a script for the selected node."
+msgstr "Utwórz nowy skrypt dla zaznaczonego węzła."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -5993,6 +6019,11 @@ msgid "Could not create script in filesystem."
 msgstr "Nie można było utworzyć skryptu w systemie plików."
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Błąd przy ładowaniu sceny z %s"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Ścieżka jest pusta"
 
@@ -6005,16 +6036,18 @@ msgid "Invalid base path"
 msgstr "Niepoprawna ścieżka bazowa"
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "Plik Istnieje"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Niepoprawne rozszerzenie"
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Poprawna ścieżka"
+#, fuzzy
+msgid "Create new script"
+msgstr "Utwórz Skrypt"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "Następny skrypt"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6026,8 +6059,8 @@ msgstr "Wbudowany skrypt"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Create Node Script"
-msgstr "Utwórz Skrypt"
+msgid "Attach Node Script"
+msgstr "Utwórz skrypt dla węzła"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6495,19 +6528,6 @@ msgstr ""
 "otrzymał jakiś rozmiar. W przeciwnym wypadku ustawi opcję RenderTarget i "
 "przyporządkuj jego teksturę dla któregoś węzła."
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "Taki sam jak scena docelowa"
-
-#~ msgid "Shared"
-#~ msgstr "Współdzielone"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "Ten obiekt nie może być widoczny ponieważ jego rodzic jest ukryty. Odkryj "
-#~ "najpierw rodzica."
-
 #~ msgid ""
 #~ "Return value must be assigned to first element of node working memory! "
 #~ "Fix your node please."
@@ -6684,6 +6704,16 @@ msgstr ""
 #~ "Żeby zadziałało, pole Path musi wskazywać na istniejący węzeł Particles2D."
 
 #, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Krótki opis:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Taki sam jak scena docelowa"
+
+#~ msgid "Shared"
+#~ msgstr "Współdzielone"
+
+#, fuzzy
 #~ msgid "Show Bones"
 #~ msgstr "Utwórz Kości"
 
@@ -6700,10 +6730,6 @@ msgstr ""
 #~ msgstr "Zapisz motyw"
 
 #, fuzzy
-#~ msgid "New Script"
-#~ msgstr "Następny skrypt"
-
-#, fuzzy
 #~ msgid "Select Property"
 #~ msgstr "Zaznacz Punkty"
 
@@ -6712,36 +6738,15 @@ msgstr ""
 #~ msgstr "Tryb zaznaczenia"
 
 #, fuzzy
-#~ msgid "Attach Script"
-#~ msgstr "Dodaj skrypt"
+#~ msgid "Change Probe Extents"
+#~ msgstr "Zmień rozmiar Box Shape"
 
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "Utwórz Skrypt"
-
-#, fuzzy
-#~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Utwórz nowy skrypt dla zaznaczonego węzła."
-
-#, fuzzy
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "Utwórz nowy skrypt dla zaznaczonego węzła."
-
-#, fuzzy
-#~ msgid "Error loading script from %s"
-#~ msgstr "Błąd przy ładowaniu sceny z %s"
-
-#, fuzzy
-#~ msgid "Create new script"
-#~ msgstr "Utwórz Skrypt"
-
-#, fuzzy
-#~ msgid "Load existing script"
-#~ msgstr "Następny skrypt"
-
-#, fuzzy
-#~ msgid "Attach Node Script"
-#~ msgstr "Utwórz skrypt dla węzła"
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Ten obiekt nie może być widoczny ponieważ jego rodzic jest ukryty. Odkryj "
+#~ "najpierw rodzica."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "
@@ -6749,6 +6754,12 @@ msgstr ""
 #~ msgstr ""
 #~ "Ścieżki nie mogą zaczynać się od '/', ścieżki absolutne muszą zaczynać "
 #~ "się od 'res://', 'user://', lub 'local://'"
+
+#~ msgid "File exists"
+#~ msgstr "Plik Istnieje"
+
+#~ msgid "Valid path"
+#~ msgstr "Poprawna ścieżka"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Nie można iść do podkatalogu:"

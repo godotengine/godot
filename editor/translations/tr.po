@@ -2,7 +2,7 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Aprın Çor Tigin <kabusturk38@gmail.com>, 2016.
+# Aprın Çor Tigin <kabusturk38@gmail.com>, 2016-2017.
 # Ceyhun Can Ulker <ceyhuncanu@gmail.com>, 2016.
 # Enes Kaya Öcal <ekayaocal@hotmail.com>, 2016.
 # M. Yavuz Uzun <myavuzuzun@yandex.com>, 2016.
@@ -11,8 +11,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-01-02 19:10+0000\n"
-"Last-Translator: Orkun Turan <holygatestudio@yandex.com>\n"
+"PO-Revision-Date: 2017-01-22 12:30+0000\n"
+"Last-Translator: Aprın Çor Tigin <kabusturk38@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -1333,7 +1333,7 @@ msgid "Pick a Main Scene"
 msgstr "Bir Ana Sahne Seç"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Öff"
 
@@ -3889,6 +3889,10 @@ msgstr "Biçem"
 msgid "Pitch"
 msgstr "Perde"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "Kalıp kaydedilirken sorun oluştu"
@@ -4930,69 +4934,64 @@ msgid "No exporter for platform '%s' yet."
 msgstr "Şu anda '%s' ortamı için dışa aktarıcı yok."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Create Android keystore"
-msgstr "Yeni Kaynak Oluştur"
+msgstr "Android Dokunaç Yığımı Oluştur"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Full name"
-msgstr "Uygun ad"
+msgstr "Tam adı"
 
 #: editor/project_export.cpp
 msgid "Organizational unit"
-msgstr ""
+msgstr "Kuruluşsal birim"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Organization"
-msgstr "Geçiş"
+msgstr "Kuruluş"
 
 #: editor/project_export.cpp
 msgid "City"
-msgstr ""
+msgstr "Şehir"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "State"
-msgstr "Durum:"
+msgstr "Ülke"
 
 #: editor/project_export.cpp
 msgid "2 letter country code"
-msgstr ""
+msgstr "2 damgalı ülke imi"
 
 #: editor/project_export.cpp
 msgid "User alias"
-msgstr ""
+msgstr "Kullanıcı takma adı"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Password"
-msgstr "Gizyazı:"
+msgstr "Gizyazı"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "at least 6 characters"
-msgstr "Geçerli damgalar:"
+msgstr "en az 6 geçerli damga"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "Yeni ad:"
+msgstr "Dizeç adı"
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
-msgstr ""
+msgstr "Yol: (tasarının dışında kaydetmek daha iyi)"
 
 #: editor/project_export.cpp
 msgid ""
 "Release keystore is not set.\n"
 "Do you want to create one?"
 msgstr ""
+"Serbest bırakma dokunaç yığımı ayarlanmadı.Bir tane oluşturmak mı ister "
+"misin?"
 
 #: editor/project_export.cpp
 msgid "Fill Keystore/Release User and Release Password"
-msgstr ""
+msgstr "Dokunaç Yığımını Doldur/Kullanıcıyı Bırak ve Gizyazıyı Bırak"
 
 #: editor/project_export.cpp
 msgid "Include"
@@ -5655,13 +5654,17 @@ msgstr "Dizeç.."
 msgid "Dir.."
 msgstr "Diz.."
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Yükle"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr "Ata"
+
+#: editor/property_editor.cpp
+msgid "New Script"
+msgstr "Yeni Betik"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5875,9 +5878,12 @@ msgid "Change Type"
 msgstr "Türü Değiştir"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Add Script"
-msgstr "Betik"
+msgid "Attach Script"
+msgstr "Betik İliştir"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
+msgstr "Betiği Temizle"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5907,6 +5913,14 @@ msgid ""
 msgstr ""
 "Sahne dizecini Düğüm olarak örneklendirin. Kök düğüm yoksa kalıtsal bir "
 "sahne oluşturur."
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr "Seçili düğüm için yeni veya mevcut bir betik iliştir."
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
+msgstr "Seçilen düğüm için betik temizle."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6001,6 +6015,10 @@ msgid "Could not create script in filesystem."
 msgstr "Dizeç düzeninde betik oluşturulamadı."
 
 #: editor/script_create_dialog.cpp
+msgid "Error loading script from %s"
+msgstr "Yazı tipi %s yüklerken sorun oluştu"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "Yol boş"
 
@@ -6013,16 +6031,16 @@ msgid "Invalid base path"
 msgstr "Geçersiz üst yol"
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "Dosya mevcut"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Geçersiz uzantı"
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Geçerli yol"
+msgid "Create new script"
+msgstr "Yeni Betik Oluştur"
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr "Var olan betiği yükle"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6033,9 +6051,8 @@ msgid "Built-In Script"
 msgstr "Gömme Betik"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Create Node Script"
-msgstr "Betik Oluştur"
+msgid "Attach Node Script"
+msgstr "Düğüm Betiği İliştir"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6506,19 +6523,6 @@ msgstr ""
 "bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
 "görüntülemesi için bir düğüme atayın."
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "Hedef Sahne ile Aynı"
-
-#~ msgid "Shared"
-#~ msgstr "Paylaşılan"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "Ata gizli olduğu için bu öğe görünür hale getirilemiyor. Önce atayı "
-#~ "göster."
-
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6798,6 +6802,15 @@ msgstr ""
 #~ msgstr ""
 #~ "Yol niteliği, çalışmak için geçerli bir Spatial düğümü işaret etmelidir."
 
+#~ msgid "Property Description:"
+#~ msgstr "Özellik Açıklaması:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Hedef Sahne ile Aynı"
+
+#~ msgid "Shared"
+#~ msgstr "Paylaşılan"
+
 #~ msgid "Show Bones"
 #~ msgstr "Kemikleri Göster"
 
@@ -6810,38 +6823,21 @@ msgstr ""
 #~ msgid "Theme"
 #~ msgstr "Kalıp"
 
-#~ msgid "New Script"
-#~ msgstr "Yeni Betik"
-
 #~ msgid "Select Property"
 #~ msgstr "Nitelik Seç"
 
 #~ msgid "Select Method"
 #~ msgstr "Yöntem Seç"
 
-#~ msgid "Attach Script"
-#~ msgstr "Betik İliştir"
+#~ msgid "Change Probe Extents"
+#~ msgstr "Deşme Genişlemesini Değiştir"
 
-#~ msgid "Clear Script"
-#~ msgstr "Betiği Temizle"
-
-#~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Seçili düğüm için yeni veya mevcut bir betik iliştir."
-
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "Seçilen düğüm için betik temizle."
-
-#~ msgid "Error loading script from %s"
-#~ msgstr "Yazı tipi %s yüklerken sorun oluştu"
-
-#~ msgid "Create new script"
-#~ msgstr "Yeni Betik Oluştur"
-
-#~ msgid "Load existing script"
-#~ msgstr "Var olan betiği yükle"
-
-#~ msgid "Attach Node Script"
-#~ msgstr "Düğüm Betiği İliştir"
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Ata gizli olduğu için bu öğe görünür hale getirilemiyor. Önce atayı "
+#~ "göster."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "
@@ -6849,3 +6845,9 @@ msgstr ""
 #~ msgstr ""
 #~ "Yollar '/' ile başlayamaz, mutlak yollar 'res://', 'user://' veya "
 #~ "'local://' ile başlamalıdır"
+
+#~ msgid "File exists"
+#~ msgstr "Dosya mevcut"
+
+#~ msgid "Valid path"
+#~ msgstr "Geçerli yol"

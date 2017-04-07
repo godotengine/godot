@@ -1336,7 +1336,7 @@ msgid "Pick a Main Scene"
 msgstr "Tria una Escena Principal"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Uf..."
 
@@ -3890,6 +3890,10 @@ msgstr ""
 msgid "Pitch"
 msgstr ""
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr ""
@@ -4165,8 +4169,9 @@ msgid "Vertex"
 msgstr ""
 
 #: editor/plugins/shader_editor_plugin.cpp
+#, fuzzy
 msgid "Fragment"
-msgstr ""
+msgstr "Arguments:"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Lighting"
@@ -4972,9 +4977,8 @@ msgid "at least 6 characters"
 msgstr "Caràcters vàlids:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "El Fitxer no existeix."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
@@ -5497,8 +5501,9 @@ msgid "Wheel Down."
 msgstr "Roda Avall."
 
 #: editor/project_settings.cpp
+#, fuzzy
 msgid "Toggle Persisting"
-msgstr ""
+msgstr "Commuta Favorit"
 
 #: editor/project_settings.cpp
 msgid "Error saving settings."
@@ -5644,13 +5649,18 @@ msgstr ""
 msgid "Dir.."
 msgstr ""
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr ""
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "Executa Script"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5862,7 +5872,12 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Add Script"
+msgid "Attach Script"
+msgstr "Executa Script"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
 msgstr "Executa Script"
 
 #: editor/scene_tree_dock.cpp
@@ -5890,6 +5905,14 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -5985,6 +6008,11 @@ msgid "Could not create script in filesystem."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Error carregant lletra."
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr ""
 
@@ -5997,18 +6025,18 @@ msgid "Invalid base path"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "File exists"
-msgstr "El Fitxer no existeix."
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Valid path"
-msgstr "Camí no vàlid."
+msgid "Create new script"
+msgstr "Crea Subscripció"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "No s'ha pogut instanciar l'script:"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6020,8 +6048,8 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Create Node Script"
-msgstr "Crea Subscripció"
+msgid "Attach Node Script"
+msgstr "Executa Script"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6494,12 +6522,6 @@ msgstr ""
 "forma per tal d'obtenir-ne la mida. Altrament, establiu-la com a Destinació "
 "de Renderització i assigneu-ne la textura interna a algun node."
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "Igual que l'Escena de Destinació"
-
-#~ msgid "Shared"
-#~ msgstr "Compartit"
-
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6800,12 +6822,18 @@ msgstr ""
 #~ "vàlid."
 
 #, fuzzy
-#~ msgid "Close All"
-#~ msgstr "Tanca"
+#~ msgid "Property Description:"
+#~ msgstr "Descripció breu:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Igual que l'Escena de Destinació"
+
+#~ msgid "Shared"
+#~ msgstr "Compartit"
 
 #, fuzzy
-#~ msgid "New Script"
-#~ msgstr "Executa Script"
+#~ msgid "Close All"
+#~ msgstr "Tanca"
 
 #, fuzzy
 #~ msgid "Select Property"
@@ -6814,26 +6842,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Select Method"
 #~ msgstr "Mètodes públics:"
-
-#, fuzzy
-#~ msgid "Attach Script"
-#~ msgstr "Executa Script"
-
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "Executa Script"
-
-#, fuzzy
-#~ msgid "Error loading script from %s"
-#~ msgstr "Error carregant lletra."
-
-#, fuzzy
-#~ msgid "Load existing script"
-#~ msgstr "No s'ha pogut instanciar l'script:"
-
-#, fuzzy
-#~ msgid "Attach Node Script"
-#~ msgstr "Executa Script"
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "

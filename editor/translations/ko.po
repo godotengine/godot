@@ -2,13 +2,13 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# 박한얼 (volzhs) <volzhs@gmail.com>, 2016.
+# 박한얼 (volzhs) <volzhs@gmail.com>, 2016-2017.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-11-23 14:38+0000\n"
+"PO-Revision-Date: 2017-02-08 16:38+0000\n"
 "Last-Translator: 박한얼 <volzhs@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.12-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1329,7 +1329,7 @@ msgid "Pick a Main Scene"
 msgstr "메인 씬 선택"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "오우"
 
@@ -3880,6 +3880,10 @@ msgstr "포멧"
 msgid "Pitch"
 msgstr "피치"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "테마 저장 중 에러"
@@ -4919,32 +4923,28 @@ msgid "No exporter for platform '%s' yet."
 msgstr "'%s' 플랫폼으로 내보내기 위한 템플릿 파일이 없습니다."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Create Android keystore"
-msgstr "새 리소스 만들기"
+msgstr "안드로이드 키스토어 만들기"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Full name"
-msgstr "유요한 이름"
+msgstr "성명"
 
 #: editor/project_export.cpp
 msgid "Organizational unit"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Organization"
-msgstr "전환"
+msgstr "조직"
 
 #: editor/project_export.cpp
 msgid "City"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "State"
-msgstr "상태:"
+msgstr "주(State)"
 
 #: editor/project_export.cpp
 msgid "2 letter country code"
@@ -4955,19 +4955,16 @@ msgid "User alias"
 msgstr ""
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Password"
-msgstr "암호:"
+msgstr "암호"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "at least 6 characters"
-msgstr "유효한 문자:"
+msgstr "최소 6 글자"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "새 이름:"
+msgstr "파일명"
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
@@ -5638,13 +5635,17 @@ msgstr "파일.."
 msgid "Dir.."
 msgstr "디렉토리.."
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "로드"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr "할당"
+
+#: editor/property_editor.cpp
+msgid "New Script"
+msgstr "새 스크립트"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5856,9 +5857,12 @@ msgid "Change Type"
 msgstr "타입 변경"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Add Script"
-msgstr "스크립트"
+msgid "Attach Script"
+msgstr "스크립트 붙이기"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
+msgstr "스크립트 제거"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5887,6 +5891,14 @@ msgid ""
 "exists."
 msgstr ""
 "씬 파일을 노드로 추가합니다. 루트 노드가 없을 경우, 상속씬으로 만들어집니다."
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr "선택된 노드에 새로운 스크립트를 생성하거나 기존 스크립트를 로드합니다."
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
+msgstr "선택된 노드의 스크립트를 제거합니다."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -5981,6 +5993,10 @@ msgid "Could not create script in filesystem."
 msgstr "파일 시스템에 스크립트를 생성할 수 없습니다."
 
 #: editor/script_create_dialog.cpp
+msgid "Error loading script from %s"
+msgstr "'%s' 스크립트 로딩 중 에러"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "경로가 비어 있음"
 
@@ -5993,16 +6009,16 @@ msgid "Invalid base path"
 msgstr "기본 경로가 유요하지 않음"
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "파일이 존재함"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "확장자가 유요하지 않음"
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "유요한 경로"
+msgid "Create new script"
+msgstr "새 스크립트 만들기"
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr "기존 스크립트 로드하기"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6013,9 +6029,8 @@ msgid "Built-In Script"
 msgstr "내장 스크립트"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Create Node Script"
-msgstr "스크립트 만들기"
+msgid "Attach Node Script"
+msgstr "노드 스크립트 붙이기"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6474,19 +6489,6 @@ msgstr ""
 "합니다. 그렇지 않을 경우, 화면에 표시하기 위해서는 Render target으로 설정하"
 "고 내부적인 텍스쳐를 다른 노드에 할당해야 합니다."
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "대상 씬과 같음"
-
-#~ msgid "Shared"
-#~ msgstr "공유됨"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "부모 노드가 숨겨져 있기 때문에 이 항목을 보이도록 만들 수 없습니다. 부모 "
-#~ "노드를 먼저 보이도록 하세요."
-
 #~ msgid "Functions:"
 #~ msgstr "함수:"
 
@@ -6652,6 +6654,15 @@ msgstr ""
 #~ msgid "Path property must point to a valid Spatial node to work."
 #~ msgstr "Path 속성은 유효한 Spatial 노드를 가리켜야 합니다."
 
+#~ msgid "Property Description:"
+#~ msgstr "속성 설명:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "대상 씬과 같음"
+
+#~ msgid "Shared"
+#~ msgstr "공유됨"
+
 #~ msgid "Show Bones"
 #~ msgstr "뼈대 보기"
 
@@ -6664,39 +6675,21 @@ msgstr ""
 #~ msgid "Theme"
 #~ msgstr "테마"
 
-#~ msgid "New Script"
-#~ msgstr "새 스크립트"
-
 #~ msgid "Select Property"
 #~ msgstr "속성 선택"
 
 #~ msgid "Select Method"
 #~ msgstr "메소드 선택"
 
-#~ msgid "Attach Script"
-#~ msgstr "스크립트 붙이기"
+#~ msgid "Change Probe Extents"
+#~ msgstr "프로브 범위 변경"
 
-#~ msgid "Clear Script"
-#~ msgstr "스크립트 제거"
-
-#~ msgid "Attach a new or existing script for the selected node."
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
 #~ msgstr ""
-#~ "선택된 노드에 새로운 스크립트를 생성하거나 기존 스크립트를 로드합니다."
-
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "선택된 노드의 스크립트를 제거합니다."
-
-#~ msgid "Error loading script from %s"
-#~ msgstr "'%s' 스크립트 로딩 중 에러"
-
-#~ msgid "Create new script"
-#~ msgstr "새 스크립트 만들기"
-
-#~ msgid "Load existing script"
-#~ msgstr "기존 스크립트 로드하기"
-
-#~ msgid "Attach Node Script"
-#~ msgstr "노드 스크립트 붙이기"
+#~ "부모 노드가 숨겨져 있기 때문에 이 항목을 보이도록 만들 수 없습니다. 부모 "
+#~ "노드를 먼저 보이도록 하세요."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "
@@ -6704,6 +6697,12 @@ msgstr ""
 #~ msgstr ""
 #~ "경로는 '/'로 시작할 수 없습니다. 'res://', 'user://', 또는 'local://'로 시"
 #~ "작하는 절대 경로를 사용해야 합니다"
+
+#~ msgid "File exists"
+#~ msgstr "파일이 존재함"
+
+#~ msgid "Valid path"
+#~ msgstr "유요한 경로"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "하위 디렉토리로 이동할 수 없습니다:"

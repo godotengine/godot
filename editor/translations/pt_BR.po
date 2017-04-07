@@ -2,17 +2,19 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
+# Allyson Souza <allyson_as@outlook.com>, 2017.
 # António Sarmento <antonio.luis.sarmento@gmail.com>, 2016.
 # George Marques <george@gmarqu.es>, 2016.
 # Joaquim Ferreira <joaquimferreira1996@bol.com.br>, 2016.
+# jonathan railarem <railarem@gmail.com>, 2017.
 # Mailson Silva Marins <mailsons335@gmail.com>, 2016.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2016-09-02 21:07+0000\n"
-"Last-Translator: Mailson Silva Marins <mailsons335@gmail.com>\n"
+"PO-Revision-Date: 2017-03-27 19:34+0000\n"
+"Last-Translator: jonathan railarem <railarem@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -20,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2.8\n"
+"X-Generator: Weblate 2.13-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1336,7 +1338,7 @@ msgid "Pick a Main Scene"
 msgstr "Escolha uma Cena Principal"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Ugh"
 
@@ -3899,6 +3901,10 @@ msgstr "Formato"
 msgid "Pitch"
 msgstr "Pitch"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "Erro ao salvar tema"
@@ -5666,13 +5672,18 @@ msgstr "Arquivo..."
 msgid "Dir.."
 msgstr "Dir..."
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Carregar"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr "Atribuir"
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "Próximo Script"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5889,8 +5900,13 @@ msgstr "Alterar Tipo"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Add Script"
-msgstr "Script"
+msgid "Attach Script"
+msgstr "Adicionar Script"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
+msgstr "Criar Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5920,6 +5936,16 @@ msgid ""
 msgstr ""
 "Instanciar um arquivo de cena como um Nó. Criar uma cena herdada se não "
 "existe um nó raiz."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Attach a new or existing script for the selected node."
+msgstr "Criar um script novo para o nó selecionado."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear a script for the selected node."
+msgstr "Criar um script novo para o nó selecionado."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6014,6 +6040,11 @@ msgid "Could not create script in filesystem."
 msgstr "Não foi possível criar o script no sistema de arquivos."
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "Erro ao carregar cena de %s"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "O caminho está vazio"
 
@@ -6026,16 +6057,18 @@ msgid "Invalid base path"
 msgstr "Caminho base inválido"
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "O arquivo existe"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Extensão inválida"
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Caminho válido"
+#, fuzzy
+msgid "Create new script"
+msgstr "Criar Script"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Load existing script"
+msgstr "Próximo Script"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6047,8 +6080,8 @@ msgstr "Script Embutido"
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Create Node Script"
-msgstr "Criar Script"
+msgid "Attach Node Script"
+msgstr "Criar Script para Nó"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6216,7 +6249,7 @@ msgstr "Alterar a Extensão do Notificador"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Argumento de tipo inválido para converter(), use constantes TYPE_*."
+msgstr "Argumento de tipo inválido para convert(), use constantes TYPE_*."
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
@@ -6232,11 +6265,11 @@ msgstr "Não é um script com uma instância"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a script"
-msgstr "Não é baseado num script"
+msgstr "Não é baseado em um script"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Not based on a resource file"
-msgstr "Não é baseado num arquivo de recurso"
+msgstr "Não é baseado em um arquivo de recurso"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
@@ -6245,8 +6278,8 @@ msgstr "Formato de dicionário de instância inválido (faltando @path)"
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"Formato de dicionário de instância inválido (não se pôde carregar o script "
-"em @path)"
+"Formato de dicionário de instância inválido (não foi possível carregar o "
+"script em @path)"
 
 #: modules/gdscript/gd_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
@@ -6517,18 +6550,8 @@ msgstr ""
 "para que ele possa ter um tamanho. Caso contrário, defina-o como destino de "
 "render e atribua sua textura interna a algum nó para exibir."
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "Mesma da Cena Destino"
-
-#~ msgid "Shared"
-#~ msgstr "Compartilhado"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "Este item não pode se tornar visível porque o pai está escondido. Reexiba "
-#~ "o pai primeiro."
+#~ msgid "Node returned an invalid sequence output: "
+#~ msgstr "O nó retornou uma saída de sequência inválida: "
 
 #~ msgid "Functions:"
 #~ msgstr "Funções:"
@@ -6536,11 +6559,17 @@ msgstr ""
 #~ msgid "Variables:"
 #~ msgstr "Variáveis:"
 
+#~ msgid "Name is not a valid identifier:"
+#~ msgstr "O nome não é um identificador valido:"
+
+#~ msgid "Name already in use by another func/var/signal:"
+#~ msgstr "Nome já utilizado por outra func/var/sinal:"
+
 #~ msgid "Rename Function"
 #~ msgstr "Renomear Função"
 
 #~ msgid "Rename Variable"
-#~ msgstr "renomeie variável"
+#~ msgstr "Renomear Variável"
 
 #~ msgid "Rename Signal"
 #~ msgstr "Renomear Sinal"
@@ -6571,40 +6600,76 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "Change Expression"
-#~ msgstr "Alterar Tipo"
+#~ msgstr "Alterar Expressão"
 
 #~ msgid "Add Node"
 #~ msgstr "Adicionar Nó"
 
-#, fuzzy
+#~ msgid "Hold Meta to drop a Getter. Hold Shift to drop a generic signature."
+#~ msgstr ""
+#~ "Segure Meta para aplicar um Getter. Segure Shift para aplicar uma "
+#~ "assinatura genérica."
+
+#~ msgid "Hold Ctrl to drop a Getter. Hold Shift to drop a generic signature."
+#~ msgstr ""
+#~ "Segure Ctrl para aplicar um Getter. Segure Shift para aplicar uma "
+#~ "assinatura genérica."
+
+#~ msgid "Hold Meta to drop a simple reference to the node."
+#~ msgstr "Segure Meta para aplicar uma referência simples ao nó."
+
+#~ msgid "Hold Ctrl to drop a simple reference to the node."
+#~ msgstr "Segure Ctrl para aplicar uma referência ao nó."
+
+#~ msgid "Hold Meta to drop a Variable Setter."
+#~ msgstr "Segure Meta para aplicar um Setter de Variável."
+
+#~ msgid "Hold Ctrl to drop a Variable Setter."
+#~ msgstr "Segure Ctrl para aplicar um Setter de Variável."
+
 #~ msgid "Add Preload Node"
-#~ msgstr "Adicionar Nó Filho"
+#~ msgstr "Adicionar Nó de Pré-carregamento"
 
-#, fuzzy
 #~ msgid "Add Node(s) From Tree"
-#~ msgstr "Nó a Partir de Cena"
+#~ msgstr "Adicionar Nó(s) a partir de árvore"
 
-#, fuzzy
+#~ msgid "Add Getter Property"
+#~ msgstr "Adicionar Getter de Propriedade"
+
+#~ msgid "Add Setter Property"
+#~ msgstr "Adicionar Setter de Propriedade"
+
 #~ msgid "Condition"
-#~ msgstr "Copiar Animação"
+#~ msgstr "Condição"
+
+#~ msgid "Sequence"
+#~ msgstr "Sequência"
 
 #, fuzzy
 #~ msgid "Switch"
-#~ msgstr "Pitch"
+#~ msgstr "Mudar"
 
-#, fuzzy
+#~ msgid "Iterator"
+#~ msgstr "Iterador"
+
+#~ msgid "While"
+#~ msgstr "Enquanto"
+
 #~ msgid "Return"
-#~ msgstr "Retornar:"
+#~ msgstr "Retornar"
 
 #, fuzzy
 #~ msgid "Get"
-#~ msgstr "Definir"
+#~ msgstr "Obter"
 
 #~ msgid "Base Type:"
 #~ msgstr "Tipo de Base:"
 
 #~ msgid "Available Nodes:"
 #~ msgstr "Nós Disponíveis:"
+
+#~ msgid "Select or create a function to edit graph"
+#~ msgstr "Selecione ou crie uma função para editar o grafo"
 
 #~ msgid "Edit Signal Arguments:"
 #~ msgstr "Editar Argumentos do Sinal:"
@@ -6618,25 +6683,29 @@ msgstr ""
 #~ msgid "Delete Selected"
 #~ msgstr "Excluir Selecionados"
 
-#, fuzzy
 #~ msgid "Find Node Type"
 #~ msgstr "Localizar Tipo de Nó"
 
-#, fuzzy
 #~ msgid "Copy Nodes"
-#~ msgstr "Copiar Pose"
+#~ msgstr "Copiar Nós"
 
-#, fuzzy
 #~ msgid "Cut Nodes"
-#~ msgstr "Criar Nó"
+#~ msgstr "Recortar Nós"
 
-#, fuzzy
 #~ msgid "Paste Nodes"
-#~ msgstr "Colar Pose"
+#~ msgstr "Colar Nós"
 
-#, fuzzy
+#~ msgid "Input type not iterable: "
+#~ msgstr "Tipo de entrada não iterável: "
+
+#~ msgid "Iterator became invalid"
+#~ msgstr "Iterador tornou-se inválido"
+
+#~ msgid "Iterator became invalid: "
+#~ msgstr "Iterador tornou-se inválido: "
+
 #~ msgid "Invalid index property name."
-#~ msgstr "Nome de classe pai inválido"
+#~ msgstr "Nome da propriedade de índice inválido."
 
 #, fuzzy
 #~ msgid "Path does not lead Node!"
@@ -6675,6 +6744,16 @@ msgstr ""
 #~ "A propriedade Caminho deve apontar a um nó Particles2D para funcionar."
 
 #, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "Descrição breve:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Mesma da Cena Destino"
+
+#~ msgid "Shared"
+#~ msgstr "Compartilhado"
+
+#, fuzzy
 #~ msgid "Show Bones"
 #~ msgstr "Fazer Ossos"
 
@@ -6691,10 +6770,6 @@ msgstr ""
 #~ msgstr "Salvar Tema"
 
 #, fuzzy
-#~ msgid "New Script"
-#~ msgstr "Próximo Script"
-
-#, fuzzy
 #~ msgid "Select Property"
 #~ msgstr "Selecionar Pontos"
 
@@ -6703,36 +6778,21 @@ msgstr ""
 #~ msgstr "Modo de Seleção (Q)"
 
 #, fuzzy
-#~ msgid "Attach Script"
-#~ msgstr "Adicionar Script"
+#~ msgid "Change Probe Extents"
+#~ msgstr "Alterar a Extensão do Notificador"
 
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "Criar Script"
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Este item não pode se tornar visível porque o pai está escondido. Reexiba "
+#~ "o pai primeiro."
 
-#, fuzzy
-#~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Criar um script novo para o nó selecionado."
+#~ msgid "File exists"
+#~ msgstr "O arquivo existe"
 
-#, fuzzy
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "Criar um script novo para o nó selecionado."
-
-#, fuzzy
-#~ msgid "Error loading script from %s"
-#~ msgstr "Erro ao carregar cena de %s"
-
-#, fuzzy
-#~ msgid "Create new script"
-#~ msgstr "Criar Script"
-
-#, fuzzy
-#~ msgid "Load existing script"
-#~ msgstr "Próximo Script"
-
-#, fuzzy
-#~ msgid "Attach Node Script"
-#~ msgstr "Criar Script para Nó"
+#~ msgid "Valid path"
+#~ msgstr "Caminho válido"
 
 #~ msgid "Cannot go into subdir:"
 #~ msgstr "Não é possível ir ao subdiretório:"

@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2017-01-07 04:19+0000\n"
+"PO-Revision-Date: 2017-01-08 13:05+0000\n"
 "Last-Translator: ABU MD. MARUF SARKER <maruf.webdev@gmail.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
@@ -1340,7 +1340,7 @@ msgid "Pick a Main Scene"
 msgstr "একটি মুখ্য দৃশ্য মনোনীত করুন"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "আহ্‌"
 
@@ -3895,6 +3895,10 @@ msgstr "ফরম্যাট"
 msgid "Pitch"
 msgstr "পিচ্‌"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "থিম সংরক্ষণে সমস্যা হয়েছে"
@@ -4934,69 +4938,65 @@ msgid "No exporter for platform '%s' yet."
 msgstr "'%s' প্ল্যাটফর্মের জন্য এখনো কোনো এক্সপোর্টার নেই।"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Create Android keystore"
-msgstr "নতুন রিসোর্স তৈরি করুন"
+msgstr "অ্যান্ড্রয়েড কীস্টোর (keystore) তৈরি করুন"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Full name"
-msgstr "গ্রহণযোগ্য নাম"
+msgstr "পূর্ণ নাম"
 
 #: editor/project_export.cpp
 msgid "Organizational unit"
-msgstr ""
+msgstr "সাংগঠনিক একক (Organizational unit)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Organization"
-msgstr "ট্র্যানজিশন/স্থানান্তরণ"
+msgstr "সংগঠন"
 
 #: editor/project_export.cpp
 msgid "City"
-msgstr ""
+msgstr "শহর"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "State"
-msgstr "অবস্থা:"
+msgstr "প্রদেশ/রাজ্য"
 
 #: editor/project_export.cpp
 msgid "2 letter country code"
-msgstr ""
+msgstr "২ অক্ষরে দেশের কোড"
 
 #: editor/project_export.cpp
 msgid "User alias"
-msgstr ""
+msgstr "ব্যবহারকারীর উপনাম (User alias)"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Password"
-msgstr "পাসওয়ার্ড:"
+msgstr "পাসওয়ার্ড"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "at least 6 characters"
-msgstr "গ্রহনযোগ্য অক্ষরসমূহ:"
+msgstr "কমপক্ষে ৬ টি অক্ষর"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "নতুন নাম:"
+msgstr "ফাইলের নাম"
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
-msgstr ""
+msgstr "পথ : (প্রকল্পের বাইরে সংরক্ষণ করা ভালো হবে)"
 
 #: editor/project_export.cpp
 msgid ""
 "Release keystore is not set.\n"
 "Do you want to create one?"
 msgstr ""
+"রিলিসের কীস্টোর (keystore) স্থাপন করা নেই।\n"
+"আপনি কি একটি তৈরি করতে চান?"
 
 #: editor/project_export.cpp
 msgid "Fill Keystore/Release User and Release Password"
 msgstr ""
+"কীস্টোর(keystore)/রিলিসের ব্যবহারকারী (User) এবং রিলিসের পাসওয়ার্ড পূরণ করুন"
 
 #: editor/project_export.cpp
 msgid "Include"
@@ -5657,13 +5657,17 @@ msgstr "ফাইল.."
 msgid "Dir.."
 msgstr "পথ.."
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "লোড"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr "নিযুক্ত"
+
+#: editor/property_editor.cpp
+msgid "New Script"
+msgstr "নতুন স্ক্রিপ্ট"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5878,9 +5882,12 @@ msgid "Change Type"
 msgstr "ধরণ পরিবর্তন করুন"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Add Script"
-msgstr "স্ক্রিপ্ট"
+msgid "Attach Script"
+msgstr "স্ক্রিপ্ট সংযুক্ত করুন"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
+msgstr "স্ক্রিপ্ট পরিস্কার করুন"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5910,6 +5917,14 @@ msgid ""
 msgstr ""
 "একটি দৃশ্য ফাইলকে নোড হিসেবে ইন্সট্যান্স করুন। যদি কোনো মূল নোড না থাকে একটি "
 "উত্তরাধিকারী দৃশ্য তৈরি করে।"
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr "একটি নতুন বা বিদ্যমান স্ক্রিপ্ট নির্বাচিত নোডে সংযুক্ত করুন।"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
+msgstr "নির্বাচিত নোড হতে একটি স্ক্রিপ্ট পরিস্কার করুন।"
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6004,6 +6019,10 @@ msgid "Could not create script in filesystem."
 msgstr "ফাইলসিস্টেমে স্ক্রিপ্ট তৈরি করা সম্ভব হয়নি।"
 
 #: editor/script_create_dialog.cpp
+msgid "Error loading script from %s"
+msgstr "%s হতে স্ক্রিপ্ট তুলতে/লোডে সমস্যা হয়েছে"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "পথটি খালি"
 
@@ -6016,18 +6035,16 @@ msgid "Invalid base path"
 msgstr "বেস পথ অগ্রহণযোগ্য"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "File exists"
-msgstr "ফাইলটি বিদ্যমান নয়।"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "অগ্রহণযোগ্য এক্সটেনশন"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Valid path"
-msgstr "অগ্রহণযোগ্য পথ!"
+msgid "Create new script"
+msgstr "নতুন স্ক্রিপ্ট তৈরি করুন"
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr "বিদ্যমান স্ক্রিপ্ট লোড করুন"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6038,9 +6055,8 @@ msgid "Built-In Script"
 msgstr "পূর্বনির্মিত স্ক্রিপ্ট"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Create Node Script"
-msgstr "স্ক্রিপ্ট তৈরি করুন"
+msgid "Attach Node Script"
+msgstr "নোড স্ক্রিপ্ট সংযুক্ত করুন"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6500,19 +6516,6 @@ msgstr ""
 "আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "উদ্দেশ্যিত দৃশ্যের ন্যায়"
-
-#~ msgid "Shared"
-#~ msgstr "শেয়ারকৃত"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "এর ধারক/বাহক অদৃশ্য হওয়ায় এই বস্তুটি দৃশ্যমান করা সম্ভব নয়। প্রথমে ধারক/বাহককে "
-#~ "দৃশ্যমান করুন।"
-
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6801,6 +6804,15 @@ msgstr ""
 #~ msgstr ""
 #~ "Path এর দিক অবশ্যই একটি কার্যকর Spatial নোডের এর দিকে নির্দেশ করাতে হবে।"
 
+#~ msgid "Property Description:"
+#~ msgstr "মান/প্রোপার্টির বর্ণনা:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "উদ্দেশ্যিত দৃশ্যের ন্যায়"
+
+#~ msgid "Shared"
+#~ msgstr "শেয়ারকৃত"
+
 #~ msgid "Show Bones"
 #~ msgstr "বোন্‌/হাড় দেখান"
 
@@ -6813,35 +6825,18 @@ msgstr ""
 #~ msgid "Theme"
 #~ msgstr "থিম"
 
-#~ msgid "New Script"
-#~ msgstr "নতুন স্ক্রিপ্ট"
-
 #~ msgid "Select Property"
 #~ msgstr "গুণাগুণ/বৈশিষ্ট্য বাছাই করুন"
 
 #~ msgid "Select Method"
 #~ msgstr "মেথড/পদ্ধতি বাছাই করুন"
 
-#~ msgid "Attach Script"
-#~ msgstr "স্ক্রিপ্ট সংযুক্ত করুন"
+#~ msgid "Change Probe Extents"
+#~ msgstr "প্রোবের (Probe) পরিব্যাপ্তি পরিবর্তন করুন"
 
-#~ msgid "Clear Script"
-#~ msgstr "স্ক্রিপ্ট পরিস্কার করুন"
-
-#~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "একটি নতুন বা বিদ্যমান স্ক্রিপ্ট নির্বাচিত নোডে সংযুক্ত করুন।"
-
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "নির্বাচিত নোড হতে একটি স্ক্রিপ্ট পরিস্কার করুন।"
-
-#~ msgid "Error loading script from %s"
-#~ msgstr "%s হতে স্ক্রিপ্ট তুলতে/লোডে সমস্যা হয়েছে"
-
-#~ msgid "Create new script"
-#~ msgstr "নতুন স্ক্রিপ্ট তৈরি করুন"
-
-#~ msgid "Load existing script"
-#~ msgstr "বিদ্যমান স্ক্রিপ্ট লোড করুন"
-
-#~ msgid "Attach Node Script"
-#~ msgstr "নোড স্ক্রিপ্ট সংযুক্ত করুন"
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "এর ধারক/বাহক অদৃশ্য হওয়ায় এই বস্তুটি দৃশ্যমান করা সম্ভব নয়। প্রথমে ধারক/বাহককে "
+#~ "দৃশ্যমান করুন।"

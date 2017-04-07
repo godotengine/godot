@@ -2,7 +2,7 @@
 # Copyright (C) 2016-2017 Juan Linietsky, Ariel Manzur and the Godot community
 # This file is distributed under the same license as the Godot source code.
 #
-# Lisandro Lorea <lisandrolorea@gmail.com>, 2016.
+# Lisandro Lorea <lisandrolorea@gmail.com>, 2016-2017.
 # Roger BR <drai_kin@hotmail.com>, 2016.
 # Sebastian Silva <sebastian@sugarlabs.org>, 2016.
 #
@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2016-12-04 06:03+0000\n"
+"PO-Revision-Date: 2017-01-09 23:10+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.10-dev\n"
+"X-Generator: Weblate 2.11-dev\n"
 
 #: editor/animation_editor.cpp
 msgid "Disabled"
@@ -1340,7 +1340,7 @@ msgid "Pick a Main Scene"
 msgstr "Elegí una Escena Principal"
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr "Ugh"
 
@@ -3902,6 +3902,10 @@ msgstr "Formato"
 msgid "Pitch"
 msgstr "Altura"
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr "Error al guardar el tema"
@@ -4943,69 +4947,64 @@ msgid "No exporter for platform '%s' yet."
 msgstr "No hay exportador para la plataforma '%s' aun."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Create Android keystore"
-msgstr "Crear Nuevo Recurso"
+msgstr "Crear keystore de Android"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Full name"
-msgstr "Nombre válido"
+msgstr "Nombre completo"
 
 #: editor/project_export.cpp
 msgid "Organizational unit"
-msgstr ""
+msgstr "Unidad organizativa"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Organization"
-msgstr "Transición"
+msgstr "Organización"
 
 #: editor/project_export.cpp
 msgid "City"
-msgstr ""
+msgstr "Ciudad"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "State"
-msgstr "Estado:"
+msgstr "Estado"
 
 #: editor/project_export.cpp
 msgid "2 letter country code"
-msgstr ""
+msgstr "Código de país de dos letras"
 
 #: editor/project_export.cpp
 msgid "User alias"
-msgstr ""
+msgstr "Alias de usuario"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Password"
-msgstr "Contraseña:"
+msgstr "Contraseña"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "at least 6 characters"
-msgstr "Caracteres válidos:"
+msgstr "al menos 6 caracteres"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "Nuevo nombre:"
+msgstr "Nombre de archivo"
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
-msgstr ""
+msgstr "Ruta : (es mejor guardar fuera del proyecto)"
 
 #: editor/project_export.cpp
 msgid ""
 "Release keystore is not set.\n"
 "Do you want to create one?"
 msgstr ""
+"No esta seteado el release keystore.\n"
+"¿Querés crear uno?"
 
 #: editor/project_export.cpp
 msgid "Fill Keystore/Release User and Release Password"
-msgstr ""
+msgstr "Completa con Keystore/Usuario Release y Cntraseña Release"
 
 #: editor/project_export.cpp
 msgid "Include"
@@ -5669,13 +5668,17 @@ msgstr "Archivo.."
 msgid "Dir.."
 msgstr "Dir.."
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr "Cargar"
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr "Asignar"
+
+#: editor/property_editor.cpp
+msgid "New Script"
+msgstr "Nuevo Script"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5892,9 +5895,12 @@ msgid "Change Type"
 msgstr "Cambiar Tipo"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
-msgid "Add Script"
-msgstr "Script"
+msgid "Attach Script"
+msgstr "Adjuntar Script"
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear Script"
+msgstr "Reestablecer Script"
 
 #: editor/scene_tree_dock.cpp
 msgid "Merge From Scene"
@@ -5924,6 +5930,14 @@ msgid ""
 msgstr ""
 "Instanciar un archivo de escena como Nodo. Crear una escena heredada si no "
 "existe ningún nodo raíz."
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr "Adjuntar un script nuevo o existente para el nodo seleccionado."
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
+msgstr "Reestablecer un script para el nodo seleccionado."
 
 #: editor/scene_tree_editor.cpp
 msgid "Toggle Spatial Visible"
@@ -6018,6 +6032,10 @@ msgid "Could not create script in filesystem."
 msgstr "No se puede crear el script en el sistema de archivos."
 
 #: editor/script_create_dialog.cpp
+msgid "Error loading script from %s"
+msgstr "Error al cargar el script desde %s"
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr "La ruta está vacia"
 
@@ -6030,16 +6048,16 @@ msgid "Invalid base path"
 msgstr "Ruta base inválida"
 
 #: editor/script_create_dialog.cpp
-msgid "File exists"
-msgstr "El archivo existe"
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr "Extensión invalida"
 
 #: editor/script_create_dialog.cpp
-msgid "Valid path"
-msgstr "Ruta inválida"
+msgid "Create new script"
+msgstr "Crear script nuevo"
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr "Cargar script existente"
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -6050,9 +6068,8 @@ msgid "Built-In Script"
 msgstr "Script Integrado (Built-In)"
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "Create Node Script"
-msgstr "Crear Script"
+msgid "Attach Node Script"
+msgstr "Adjuntar Script de Nodo"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6520,19 +6537,6 @@ msgstr ""
 "que pueda obtener un tamaño. Alternativamente, hacelo un RenderTarget y "
 "asigná su textura interna a algún otro nodo para mostrar."
 
-#~ msgid "Same as Target Scene"
-#~ msgstr "Igual que Escena de Destino"
-
-#~ msgid "Shared"
-#~ msgstr "Compartido"
-
-#~ msgid ""
-#~ "This item cannot be made visible because the parent is hidden. Unhide the "
-#~ "parent first."
-#~ msgstr ""
-#~ "Este item no puede hacerse visible porque el padre esta oculto. Desocultá "
-#~ "el padre primero."
-
 #~ msgid ""
 #~ "A node yielded without working memory, please read the docs on how to "
 #~ "yield properly!"
@@ -6829,6 +6833,15 @@ msgstr ""
 #~ msgstr ""
 #~ "La propiedad Path debe apuntar a un nodo Spatial valido para funcionar."
 
+#~ msgid "Property Description:"
+#~ msgstr "Descripción de Propiedad:"
+
+#~ msgid "Same as Target Scene"
+#~ msgstr "Igual que Escena de Destino"
+
+#~ msgid "Shared"
+#~ msgstr "Compartido"
+
 #~ msgid "Show Bones"
 #~ msgstr "Mostrar Huesos"
 
@@ -6841,38 +6854,21 @@ msgstr ""
 #~ msgid "Theme"
 #~ msgstr "Tema"
 
-#~ msgid "New Script"
-#~ msgstr "Nuevo Script"
-
 #~ msgid "Select Property"
 #~ msgstr "Seleccionar Propiedad"
 
 #~ msgid "Select Method"
 #~ msgstr "Seleccionar Método"
 
-#~ msgid "Attach Script"
-#~ msgstr "Adjuntar Script"
+#~ msgid "Change Probe Extents"
+#~ msgstr "Cambiar Extensión de Sonda"
 
-#~ msgid "Clear Script"
-#~ msgstr "Reestablecer Script"
-
-#~ msgid "Attach a new or existing script for the selected node."
-#~ msgstr "Adjuntar un script nuevo o existente para el nodo seleccionado."
-
-#~ msgid "Clear a script for the selected node."
-#~ msgstr "Reestablecer un script para el nodo seleccionado."
-
-#~ msgid "Error loading script from %s"
-#~ msgstr "Error al cargar el script desde %s"
-
-#~ msgid "Create new script"
-#~ msgstr "Crear script nuevo"
-
-#~ msgid "Load existing script"
-#~ msgstr "Cargar script existente"
-
-#~ msgid "Attach Node Script"
-#~ msgstr "Adjuntar Script de Nodo"
+#~ msgid ""
+#~ "This item cannot be made visible because the parent is hidden. Unhide the "
+#~ "parent first."
+#~ msgstr ""
+#~ "Este item no puede hacerse visible porque el padre esta oculto. Desocultá "
+#~ "el padre primero."
 
 #~ msgid ""
 #~ "Paths cannot start with '/', absolute paths must start with 'res://', "
@@ -6880,6 +6876,12 @@ msgstr ""
 #~ msgstr ""
 #~ "Las rutas no pueden comenzar con '/', las rutas absolutas deben comenzar "
 #~ "con 'res://', 'user://'. o 'local://'"
+
+#~ msgid "File exists"
+#~ msgstr "El archivo existe"
+
+#~ msgid "Valid path"
+#~ msgstr "Ruta inválida"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "

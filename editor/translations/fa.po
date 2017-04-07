@@ -1322,7 +1322,7 @@ msgid "Pick a Main Scene"
 msgstr ""
 
 #: editor/editor_node.cpp editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_create_dialog.cpp
 msgid "Ugh"
 msgstr ""
 
@@ -3837,6 +3837,10 @@ msgstr ""
 msgid "Pitch"
 msgstr ""
 
+#: editor/plugins/sample_library_editor_plugin.cpp
+msgid "Priority"
+msgstr ""
+
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error while saving theme"
 msgstr ""
@@ -4112,8 +4116,9 @@ msgid "Vertex"
 msgstr ""
 
 #: editor/plugins/shader_editor_plugin.cpp
+#, fuzzy
 msgid "Fragment"
-msgstr ""
+msgstr "نشانوندها:"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Lighting"
@@ -4919,9 +4924,8 @@ msgid "at least 6 characters"
 msgstr "کاراکترهای معتبر:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "File name"
-msgstr "پرونده موجود نیست."
+msgstr ""
 
 #: editor/project_export.cpp
 msgid "Path : (better to save outside of project)"
@@ -5593,13 +5597,18 @@ msgstr ""
 msgid "Dir.."
 msgstr ""
 
-#: editor/property_editor.cpp
+#: editor/property_editor.cpp editor/script_create_dialog.cpp
 msgid "Load"
 msgstr ""
 
 #: editor/property_editor.cpp
 msgid "Assign"
 msgstr ""
+
+#: editor/property_editor.cpp
+#, fuzzy
+msgid "New Script"
+msgstr "صحنه جدید"
 
 #: editor/property_editor.cpp
 msgid "Error loading file: Not a resource!"
@@ -5811,7 +5820,12 @@ msgstr ""
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
-msgid "Add Script"
+msgid "Attach Script"
+msgstr "صحنه جدید"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Clear Script"
 msgstr "صحنه جدید"
 
 #: editor/scene_tree_dock.cpp
@@ -5838,6 +5852,14 @@ msgstr ""
 msgid ""
 "Instance a scene file as a Node. Creates an inherited scene if no root node "
 "exists."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Attach a new or existing script for the selected node."
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Clear a script for the selected node."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
@@ -5933,6 +5955,11 @@ msgid "Could not create script in filesystem."
 msgstr ""
 
 #: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Error loading script from %s"
+msgstr "خطای بارگذاری قلم."
+
+#: editor/script_create_dialog.cpp
 msgid "Path is empty"
 msgstr ""
 
@@ -5945,18 +5972,17 @@ msgid "Invalid base path"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
-msgid "File exists"
-msgstr "پرونده موجود نیست."
-
-#: editor/script_create_dialog.cpp
 msgid "Invalid extension"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Valid path"
-msgstr "مسیر نامعتبر."
+msgid "Create new script"
+msgstr "جدید ایجاد کن"
+
+#: editor/script_create_dialog.cpp
+msgid "Load existing script"
+msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Class Name:"
@@ -5968,8 +5994,8 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 #, fuzzy
-msgid "Create Node Script"
-msgstr "جدید ایجاد کن"
+msgid "Attach Node Script"
+msgstr "صحنه جدید"
 
 #: editor/script_editor_debugger.cpp
 msgid "Bytes:"
@@ -6635,6 +6661,10 @@ msgstr ""
 #~ msgstr "دارایی Path باید به یک گره Particles2D معتبر اشاره کند تا کار کند."
 
 #, fuzzy
+#~ msgid "Property Description:"
+#~ msgstr "خلاصه توضیحات:"
+
+#, fuzzy
 #~ msgid "Close All"
 #~ msgstr "بستن"
 
@@ -6645,22 +6675,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Select Method"
 #~ msgstr "انتخاب حالت"
-
-#, fuzzy
-#~ msgid "Attach Script"
-#~ msgstr "صحنه جدید"
-
-#, fuzzy
-#~ msgid "Clear Script"
-#~ msgstr "صحنه جدید"
-
-#, fuzzy
-#~ msgid "Error loading script from %s"
-#~ msgstr "خطای بارگذاری قلم."
-
-#, fuzzy
-#~ msgid "Attach Node Script"
-#~ msgstr "صحنه جدید"
 
 #~ msgid ""
 #~ "Custom node has no _get_output_port_unsequenced(idx,wmem), but "
