@@ -1045,7 +1045,7 @@ void Particles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "config/amount", PROPERTY_HINT_EXP_RANGE, "1,1024"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "config/lifetime", PROPERTY_HINT_EXP_RANGE, "0.1,3600,0.1"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTYNO(PropertyInfo(Variant::REAL, "config/time_scale", PROPERTY_HINT_EXP_RANGE, "0.01,128,0.01"), "set_time_scale", "get_time_scale");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "config/preprocess", PROPERTY_HINT_EXP_RANGE, "0.1,3600,0.1"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "config/preprocess", PROPERTY_HINT_EXP_RANGE, "0,3600,0.1"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "config/emit_timeout", PROPERTY_HINT_RANGE, "0,3600,0.1"), "set_emit_timeout", "get_emit_timeout");
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "config/emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "config/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), "set_process_mode", "get_process_mode");
