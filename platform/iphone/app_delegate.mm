@@ -53,6 +53,11 @@
 #define kRenderingFrequency						60
 #define kAccelerometerFrequency         100.0 // Hz
 
+// Old accelerometer approach deprecated since IOS 7.0
+// Include coremotion for accelerometer, gyroscope and magnetometer access, available since IOS 4.0 but some functionality won't work for anything before IOS 5.0
+#import <CoreMotion/CoreMotion.h>
+#import <QuartzCore/QuartzCore.h>
+
 Error _shell_open(String);
 void _set_keep_screen_on(bool p_enabled);
 
@@ -82,7 +87,8 @@ extern int iphone_main(int, int, int, char**);
 extern void iphone_finish();
 
 CMMotionManager *motionManager;
-bool motionInitialised; 
+bool motionInitialised;
+CFTimeInterval motionLastTime;
 
 static ViewController* mainViewController = nil;
 + (ViewController*) getViewController
@@ -188,12 +194,18 @@ static int frame_count = 0;
 	}; break; // no fallthrough
 
 	default: {
-
 		if (OSIPhone::get_singleton()) {
 			if (motionInitialised) {
 				// Just using polling approach for now, we can set this up so it sends data to us in intervals, might be better.
 				// See Apple reference pages for more details:
 				// https://developer.apple.com/reference/coremotion/cmmotionmanager?language=objc
+
+				// Note that for iPhone when it is lying down face up:
+				// X - long side of the phone
+				// Y - short side of the phone
+				// Z - up out of the screen 
+				// For us that means X and Y are reversed to what we want for VR
+				// Here's some pictures: https://rpappalax.wordpress.com/category/orientation-rotation/
 
 				// Apple splits our accelerometer date into a gravity and user movement component. We add them back together
 				CMAcceleration gravity = motionManager.deviceMotion.gravity;
@@ -205,7 +217,7 @@ static int frame_count = 0;
 				///@TODO we can access rotationRate as a CMRotationRate variable (processed date) or CMGyroData (raw data), have to see what works best
 				CMRotationRate rotation = motionManager.deviceMotion.rotationRate;
 
-				// Adjust for screen orientation.
+				// Adjust for screen orientation, iOS adjust it based on screen rotation, we need to adjust it back.. 
 				// [[UIDevice currentDevice] orientation] changes even if we've fixed our orientation which is not
 				// a good thing when you're trying to get your user to move the screen in all directions and want consistent output
 
@@ -238,6 +250,10 @@ static int frame_count = 0;
 						OSIPhone::get_singleton()->update_gyroscope(rotation.x, rotation.y, rotation.z);
 					}; break;
 				};
+
+				CFTimeInterval new_time = CACurrentMediaTime();
+				OSIPhone::get_singleton()->update_tracker_from_9dof(new_time - motionLastTime);
+				motionLastTime = new_time;
 			}
 
 			bool quit_request = OSIPhone::get_singleton()->iterate();
@@ -299,9 +315,10 @@ static int frame_count = 0;
 	if (!motionInitialised) {
  		motionManager = [[CMMotionManager alloc] init];
  		if (motionManager.deviceMotionAvailable) {
- 			motionManager.deviceMotionUpdateInterval = 1.0/70.0;
+ 			motionManager.deviceMotionUpdateInterval = 1.0/90.0;
  			[motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXMagneticNorthZVertical];			
 			motionInitialised = YES;
+			motionLastTime = CACurrentMediaTime();
  		};
  	};
 

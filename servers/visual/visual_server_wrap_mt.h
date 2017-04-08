@@ -90,6 +90,7 @@ public:
 	FUNC2(texture_set_flags, RID, uint32_t);
 	FUNC1RC(Image::Format, texture_get_format, RID);
 	FUNC1RC(uint32_t, texture_get_flags, RID);
+	FUNC1RC(uint32_t, texture_get_texid, RID);
 	FUNC1RC(uint32_t, texture_get_width, RID);
 	FUNC1RC(uint32_t, texture_get_height, RID);
 	FUNC3(texture_set_size_override, RID, int, int);
@@ -398,6 +399,7 @@ public:
 	FUNC0R(RID, camera_create);
 	FUNC4(camera_set_perspective, RID, float, float, float);
 	FUNC4(camera_set_orthogonal, RID, float, float, float);
+	FUNC4(camera_set_frustum,RID, const Frustum&, float, float);
 	FUNC2(camera_set_transform, RID, const Transform &);
 
 	FUNC2(camera_set_visible_layers, RID, uint32_t);

@@ -107,6 +107,20 @@ class InputDefault : public Input {
 	int fallback_mapping;
 	RES custom_cursor;
 
+	struct Tracker {
+		TrackerType type;
+		StringName name;
+		Transform transform;
+		bool tracks_orientation;
+		bool tracks_position;
+
+		Tracker() {
+			type = TRACKER_UNKNOWN;
+		}
+	};
+
+	Map<int, Tracker> trackers;
+
 public:
 	enum HatMask {
 		HAT_MASK_CENTER = 0,
@@ -237,6 +251,19 @@ public:
 	bool is_joy_mapped(int p_device);
 	String get_joy_guid_remapped(int p_device) const;
 	void set_fallback_mapping(String p_guid);
+
+	Array get_connected_trackers(TrackerType p_types);
+	Input::TrackerType get_tracker_type(int p_idx) const;
+	String get_tracker_name(int p_idx) const;
+	Transform get_tracker_transform(int p_idx) const;
+	bool tracker_tracks_orientation(int p_idx) const;
+	bool tracker_tracks_position(int p_idx) const;
+
+	int add_tracker(TrackerType p_type, String p_name, bool p_tracks_orientation, bool p_tracks_position);
+	bool remove_tracker(int p_idx);
+	void set_tracker_transform(int p_idx, Transform & p_transform);
+	void set_tracker_transform_from_9dof(int p_idx, float p_delta_time);
+
 	InputDefault();
 };
 

@@ -103,9 +103,33 @@ public:
 
 	virtual void parse_input_event(const InputEvent &p_event) = 0;
 
+	enum TrackerType {
+		TRACKER_HMD = 0x01, /* HMD in the broad sense, mobile device position is typed like this too */
+		TRACKER_CONTROLLER = 0x02, /* tracks a controller */
+		TRACKER_BASESTATION = 0x04, /* tracks location of a base station */
+		TRACKER_UNKNOWN = 0x80, /* unknown tracker */
+
+		TRACKER_HMD_AND_CONTROLLER = 0x03, /* common to select both of these */
+		TRACKER_ANY_KNOWN = 0x7f, /* all except unknown */
+		TRACKER_ANY = 0xff /* used by get_connected_trackers to return all types */
+	};
+
+	virtual Array get_connected_trackers(TrackerType p_types) = 0;
+	virtual TrackerType get_tracker_type(int p_idx) const = 0;
+	virtual String get_tracker_name(int p_idx) const = 0;
+	virtual Transform get_tracker_transform(int p_idx) const = 0;
+	virtual bool tracker_tracks_orientation(int p_idx) const = 0;
+	virtual bool tracker_tracks_position(int p_idx) const = 0;
+
+	virtual int add_tracker(TrackerType p_type, String p_name, bool p_tracks_orientation, bool p_tracks_position) = 0;
+	virtual bool remove_tracker(int p_idx) = 0;
+	virtual void set_tracker_transform(int p_idx, Transform & p_transform) = 0;
+	virtual void set_tracker_transform_from_9dof(int p_idx, float p_delta_time) = 0;
+
 	Input();
 };
 
 VARIANT_ENUM_CAST(Input::MouseMode);
+VARIANT_ENUM_CAST(Input::TrackerType);
 
 #endif // INPUT_H

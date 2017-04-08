@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  frustum.h                                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,17 +26,31 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#import "gl_view.h"
-#import "view_controller.h"
-#import <UIKit/UIKit.h>
+#ifndef FRUSTUM_H
+#define FRUSTUM_H
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
-	//@property (strong, nonatomic) UIWindow *window;
-	ViewController *view_controller;
+#include "camera_matrix.h"
+/**
+	@author Bastiaan Olij <mux213@gmail.com>
+*/
+
+struct Frustum {
+	enum Eyes {
+		EYE_LEFT,
+		EYE_RIGHT
+	};
+
+	float left, right, top, bottom;
+
+	void set_frustum(float p_left, float p_right ,float p_top, float p_bottom);
+	void set_frustum(float p_fov_degrees);
+	void set_frustum(float p_fov_degrees, int p_eye, float p_intraocular_dist, float p_convergency_dist);
+
+	CameraMatrix make_camera_matrix(float p_aspect, bool p_vaspect, float p_znear, float p_zfar) const;
+
+	Frustum();
+	Frustum(float p_left, float p_right ,float p_top, float p_bottom);
+	~Frustum();
 };
 
-@property(strong, nonatomic) UIWindow *window;
-
-+ (ViewController *)getViewController;
-
-@end
+#endif

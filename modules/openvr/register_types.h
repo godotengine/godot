@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,17 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#import "gl_view.h"
-#import "view_controller.h"
-#import <UIKit/UIKit.h>
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
-	//@property (strong, nonatomic) UIWindow *window;
-	ViewController *view_controller;
-};
-
-@property(strong, nonatomic) UIWindow *window;
-
-+ (ViewController *)getViewController;
-
-@end
+void register_openvr_types();
+void unregister_openvr_types();
+/* yes, the word in the middle must be the same as the module folder name */

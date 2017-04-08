@@ -1,12 +1,11 @@
 /*************************************************************************/
-/*  app_delegate.h                                                       */
+/*  register_types.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2016 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,17 +26,21 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#import "gl_view.h"
-#import "view_controller.h"
-#import <UIKit/UIKit.h>
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
-	//@property (strong, nonatomic) UIWindow *window;
-	ViewController *view_controller;
+#include "register_types.h"
+#include "object_type_db.h"
+#include "openvr.h"
+
+static OpenVR * openvr = NULL;
+
+void register_openvr_types() {
+	ObjectTypeDB::register_type<OpenVR>();
+
+	// create our singleton, this will not initialize VR right away!
+	openvr = memnew(OpenVR);
+	Globals::get_singleton()->add_singleton(Globals::Singleton("OpenVR", OpenVR::get_singleton()));
 };
 
-@property(strong, nonatomic) UIWindow *window;
-
-+ (ViewController *)getViewController;
-
-@end
+void unregister_openvr_types() {
+	memdelete(openvr);
+};

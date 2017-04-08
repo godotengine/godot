@@ -311,6 +311,8 @@ struct engine {
 	int32_t height;
 };
 
+float gyro_timestamp = 0.0;
+
 /**
  * Initialize an EGL context for the current display.
  */
@@ -776,6 +778,7 @@ void android_main(struct android_app *state) {
 			ASENSOR_TYPE_GYROSCOPE);
 	engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
 			state->looper, LOOPER_ID_USER, NULL, NULL);
+	float new_gyro_timestamp = 0;
 
 	ANativeActivity_setWindowFlags(state->activity, AWINDOW_FLAG_FULLSCREEN | AWINDOW_FLAG_KEEP_SCREEN_ON, 0);
 
@@ -832,6 +835,7 @@ void android_main(struct android_app *state) {
 							if (event.vector != NULL) {
 								engine.os->process_gyroscope(Vector3(event.vector.x, event.vector.y,
 										event.vector.z));
+								new_gyro_timestamp = event.timestamp; // we will update our 9dof but give it a chance to load the other variables
 							}
 						}
 					}
@@ -856,6 +860,15 @@ void android_main(struct android_app *state) {
 		}
 
 		//	 LOGI("engine animating? %i\n",engine.animating);
+		if (new_gyro_timestamp != 0.0) {
+			if (engine.gyro_timestamp != 0.0) {
+				float ns2s = 1.0f / 1000000000.0f;
+
+				process_tracker_from_9dof((new_gyro_timestamp - engine.gyro_timestamp) * ns2s);
+			}
+
+			engine.gyro_timestamp = new_gyro_timestamp;
+		}
 
 		if (engine.animating) {
 			//do os render
