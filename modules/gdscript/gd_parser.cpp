@@ -77,7 +77,7 @@ bool GDParser::_enter_indent_block(BlockNode *p_block) {
 
 		// be more python-like
 		int current = tab_level.back()->get();
-		tab_level.push_back(current);
+		tab_level.push_back(current + 1);
 		return true;
 		//_set_error("newline expected after ':'.");
 		//return false;
@@ -1610,15 +1610,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 	p_block->statements.push_back(nl);
 #endif
 
-	bool is_first_line = true;
-
 	while (true) {
-		if (!is_first_line && tab_level.back()->prev() && tab_level.back()->prev()->get() == indent_level) {
-			// pythonic single-line expression, don't parse future lines
-			tab_level.pop_back();
-			return;
-		}
-		is_first_line = false;
 
 		GDTokenizer::Token token = tokenizer->get_token();
 		if (error_set)
