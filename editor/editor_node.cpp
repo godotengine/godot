@@ -3566,7 +3566,7 @@ bool EditorNode::is_scene_in_use(const String &p_path) {
 void EditorNode::register_editor_types() {
 
 	ClassDB::register_class<EditorPlugin>();
-	//	ClassDB::register_class<EditorImportPlugin>();
+	ClassDB::register_class<EditorImportPlugin>();
 	//	ClassDB::register_class<EditorExportPlugin>();
 	//	ClassDB::register_class<EditorScenePostImport>();
 	ClassDB::register_class<EditorScript>();
