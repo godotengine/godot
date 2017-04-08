@@ -34,14 +34,30 @@
 #include "io/resource_saver.h"
 #include "os/thread_safe.h"
 #include "resource.h"
+#include "scene/main/node.h"
 #include "script_language.h"
 #include "self_list.h"
 
 #include "godot.h"
 
 #ifdef TOOLS_ENABLED
-// #define DLSCRIPT_EDITOR_FEATURES
+#define DLSCRIPT_EDITOR_FEATURES
 #endif
+
+class DLScriptData;
+class DLLibrary;
+
+struct NativeLibrary {
+	StringName path;
+	void *handle;
+
+	DLLibrary *dllib;
+
+	Map<StringName, DLScriptData *> scripts;
+
+	static Error initialize(NativeLibrary *&p_native_lib, const StringName p_path);
+	static Error terminate(NativeLibrary *&p_native_lib);
+};
 
 struct DLScriptData {
 	/* typedef void* (InstanceFunc)(godot_object* instance);
@@ -118,7 +134,6 @@ struct DLScriptData {
 class DLLibrary;
 
 class DLScript : public Script {
-
 	GDCLASS(DLScript, Script);
 
 	Ref<DLLibrary> library;
@@ -129,12 +144,14 @@ class DLScript : public Script {
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
-// void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
-// virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
+	void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
 	friend class DLInstance;
 	friend class DLScriptLanguage;
+	friend class DLReloadNode;
+	friend class DLLibrary;
 
 protected:
 	static void _bind_methods();
@@ -188,23 +205,13 @@ class DLLibrary : public Resource {
 	OBJ_SAVE_TYPE(DLLibrary);
 
 	Map<StringName, String> platform_files;
-	void *library_handle;
-	String library_path;
+	NativeLibrary *native_library;
 	static DLLibrary *currently_initialized_library;
-	Map<StringName, DLScriptData *> scripts;
 
 protected:
 	friend class DLScript;
-	_FORCE_INLINE_ void _update_library(const DLLibrary &p_other) {
-		platform_files = p_other.platform_files;
-		library_handle = p_other.library_handle;
-		library_path = p_other.library_path;
-		scripts = p_other.scripts;
-	}
-
-	Error _initialize_handle(bool p_in_editor = false);
-
-	Error _free_handle(bool p_in_editor = false);
+	friend class NativeLibrary;
+	friend class DLReloadNode;
 
 	DLScriptData *get_script_data(const StringName p_name);
 
@@ -215,6 +222,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	Error _initialize();
+	Error _terminate();
+
 	static DLLibrary *get_currently_initialized_library();
 
 	void _register_script(const StringName p_name, const StringName p_base, godot_instance_create_func p_instance_func, godot_instance_destroy_func p_destroy_func);
@@ -274,9 +284,13 @@ public:
 	~DLInstance();
 };
 
+class DLReloadNode;
+
 class DLScriptLanguage : public ScriptLanguage {
 	friend class DLScript;
 	friend class DLInstance;
+	friend class DLReloadNode;
+	friend class DLLibrary;
 
 	static DLScriptLanguage *singleton;
 
@@ -289,9 +303,7 @@ class DLScriptLanguage : public ScriptLanguage {
 
 	Mutex *lock;
 
-	SelfList<DLScript>::List script_list;
-
-	Map<String, DLLibrary *> initialized_libraries;
+	Set<DLScript *> script_list;
 
 	bool profiling;
 	uint64_t script_frame_time;
@@ -303,14 +315,11 @@ class DLScriptLanguage : public ScriptLanguage {
 	} strings;
 
 public:
+	Map<StringName, NativeLibrary *> initialized_libraries;
+
 	_FORCE_INLINE_ static DLScriptLanguage *get_singleton() { return singleton; }
 
 	virtual String get_name() const;
-
-	bool is_library_initialized(const String &p_path);
-	void set_library_initialized(const String &p_path, DLLibrary *p_dllibrary);
-	DLLibrary *get_library_dllibrary(const String &p_path);
-	void set_library_uninitialized(const String &p_path);
 
 	/* LANGUAGE FUNCTIONS */
 	virtual void init();
@@ -384,6 +393,13 @@ public:
 
 	DLScriptLanguage();
 	~DLScriptLanguage();
+};
+
+class DLReloadNode : public Node {
+	GDCLASS(DLReloadNode, Node)
+public:
+	static void _bind_methods();
+	void _notification(int p_what);
 };
 
 class ResourceFormatLoaderDLScript : public ResourceFormatLoader {
