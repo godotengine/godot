@@ -375,6 +375,8 @@ void GDAPI godot_script_register_signal(const char *p_name, const godot_signal *
 
 void GDAPI *godot_dlinstance_get_userdata(godot_object *p_instance);
 
+void GDAPI godot_get_global_constants(godot_dictionary *constants);
+
 ////// System Functions
 
 //using these will help Godot track how much memory is in use in debug mode
