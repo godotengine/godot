@@ -275,10 +275,6 @@ void Area::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_READY: {
-
-			is_ready = true;
-		} break;
 		case NOTIFICATION_EXIT_TREE: {
 
 			monitoring_stored = monitoring;
@@ -286,8 +282,11 @@ void Area::_notification(int p_what) {
 			_clear_monitoring();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
-			if (is_ready)
-				set_enable_monitoring(monitoring_stored);
+
+			if (monitoring_stored) {
+				set_enable_monitoring(true);
+				monitoring_stored = false;
+			}
 		} break;
 	}
 }
@@ -298,6 +297,11 @@ void Area::set_enable_monitoring(bool p_enable) {
 		ERR_EXPLAIN("This function can't be used during the in/out signal.");
 	}
 	ERR_FAIL_COND(locked);
+
+	if (!is_inside_tree()) {
+		monitoring_stored = p_enable;
+		return;
+	}
 
 	if (p_enable == monitoring)
 		return;
@@ -419,7 +423,7 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 
 bool Area::is_monitoring_enabled() const {
 
-	return monitoring;
+	return monitoring || monitoring_stored;
 }
 
 Array Area::get_overlapping_bodies() const {
@@ -645,7 +649,6 @@ Area::Area()
 	collision_mask = 1;
 	layer_mask = 1;
 	monitoring_stored = false;
-	is_ready = false;
 	set_ray_pickable(false);
 	set_enable_monitoring(true);
 	set_monitorable(true);
