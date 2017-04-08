@@ -91,9 +91,9 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 
 	[_instance.avPlayer addObserver:_instance forKeyPath:@"status" options:0 context:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:_instance
-                                        selector:@selector(playerItemDidReachEnd:)
-                                               name:AVPlayerItemDidPlayToEndTimeNotification
-                                             object:[_instance.avPlayer currentItem]];
+		selector:@selector(playerItemDidReachEnd:)
+		name:AVPlayerItemDidPlayToEndTimeNotification
+		object:[_instance.avPlayer currentItem]];
 
 	[_instance.avPlayer addObserver:_instance forKeyPath:@"rate" options:NSKeyValueObservingOptionNew context:0];
 
@@ -104,13 +104,11 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 	AVMediaSelectionGroup *audioGroup = [_instance.avAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
 
 	NSMutableArray *allAudioParams = [NSMutableArray array];
-	for (id track in audioGroup.options)
-	{
+	for (id track in audioGroup.options) {
 		NSString* language = [[track locale] localeIdentifier];
 		NSLog(@"subtitle lang: %@", language);
 
-        if ([language isEqualToString:[NSString stringWithUTF8String:p_audio_track.utf8()]])
-        {
+		if ([language isEqualToString:[NSString stringWithUTF8String:p_audio_track.utf8()]]) {
 			AVMutableAudioMixInputParameters *audioInputParams = [AVMutableAudioMixInputParameters audioMixInputParameters];
 			[audioInputParams setVolume:p_volume atTime:kCMTimeZero];
 			[audioInputParams setTrackID:[track trackID]];
@@ -122,23 +120,21 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 			[_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: audioGroup];
 			[_instance.avPlayer.currentItem setAudioMix:audioMix];
 
-            break;
-        }
+			break;
+		}
 	}
 
 	AVMediaSelectionGroup *subtitlesGroup = [_instance.avAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicLegible];
 	NSArray *useableTracks = [AVMediaSelectionGroup mediaSelectionOptionsFromArray:subtitlesGroup.options withoutMediaCharacteristics:[NSArray arrayWithObject:AVMediaCharacteristicContainsOnlyForcedSubtitles]];
 
-	for (id track in useableTracks)
-	{
+	for (id track in useableTracks) {
 		NSString* language = [[track locale] localeIdentifier];
 		NSLog(@"subtitle lang: %@", language);
 
-        if ([language isEqualToString:[NSString stringWithUTF8String:p_subtitle_track.utf8()]])
-        {
-            [_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: subtitlesGroup];
-            break;
-        }
+		if ([language isEqualToString:[NSString stringWithUTF8String:p_subtitle_track.utf8()]]) {
+			[_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: subtitlesGroup];
+			break;
+		}
 	}
 
 	video_playing = true;
@@ -238,7 +234,7 @@ static int get_first_id(UITouch* p_touch) {
 
 static void clear_touches() {
 
-	for (int i=0; i<max_touches; i++) {
+	for (int i = 0; i < max_touches; i++) {
 
 		touches[i] = NULL;
 	};
@@ -246,39 +242,34 @@ static void clear_touches() {
 
 // Implement this to override the default layer class (which is [CALayer class]).
 // We do this so that our view will be backed by a layer that is capable of OpenGL ES rendering.
-+ (Class) layerClass
-{
++ (Class) layerClass {
 	return [CAEAGLLayer class];
 }
 
 //The GL view is stored in the nib file. When it's unarchived it's sent -initWithCoder:
-- (id)initWithCoder:(NSCoder*)coder
-{
+- (id)initWithCoder:(NSCoder*)coder {
 	active = FALSE;
-	if((self = [super initWithCoder:coder]))
-	{
+	if((self = [super initWithCoder:coder])) {
 		self = [self initGLES];
 	}
 	return self;
 }
 
--(id)initGLES
-{
+-(id)initGLES {
 	// Get our backing layer
 	CAEAGLLayer *eaglLayer = (CAEAGLLayer*) self.layer;
 
 	// Configure it so that it is opaque, does not retain the contents of the backbuffer when displayed, and uses RGBA8888 color.
 	eaglLayer.opaque = YES;
 	eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-										[NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
-										kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
-										nil];
+		[NSNumber numberWithBool:FALSE], kEAGLDrawablePropertyRetainedBacking,
+		kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat,
+		nil];
 
 	// Create our EAGLContext, and if successful make it current and create our framebuffer.
 	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
 
-	if(!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer])
-	{
+	if(!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer]) {
 		[self release];
 		return nil;
 	}
@@ -288,14 +279,12 @@ static void clear_touches() {
 	return self;
 }
 
--(id<GLViewDelegate>)delegate
-{
+-(id<GLViewDelegate>)delegate {
 	return delegate;
 }
 
 // Update the delegate, and if it needs a -setupView: call, set our internal flag so that it will be called.
--(void)setDelegate:(id<GLViewDelegate>)d
-{
+-(void)setDelegate:(id<GLViewDelegate>)d {
 	delegate = d;
 	delegateSetup = ![delegate respondsToSelector:@selector(setupView:)];
 }
@@ -306,8 +295,7 @@ static void clear_touches() {
 // This is the perfect opportunity to also update the framebuffer so that it is
 // the same size as our display area.
 
--(void)layoutSubviews
-{
+-(void)layoutSubviews {
 	//printf("HERE\n");
 	[EAGLContext setCurrentContext:context];
 	[self destroyFramebuffer];
@@ -317,8 +305,7 @@ static void clear_touches() {
 
 }
 
-- (BOOL)createFramebuffer
-{
+- (BOOL)createFramebuffer {
 	// Generate IDs for a framebuffer object and a color renderbuffer
 	UIScreen* mainscr = [UIScreen mainScreen];
 	printf("******** screen size %i, %i\n", (int)mainscr.currentMode.size.width, (int)mainscr.currentMode.size.height);
@@ -345,8 +332,7 @@ static void clear_touches() {
 	glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
 	glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
 
-	if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES)
-	{
+	if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
 		NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
 		return NO;
 	}
@@ -366,24 +352,22 @@ static void clear_touches() {
 }
 
 // Clean up any buffers we have allocated.
-- (void)destroyFramebuffer
-{
+- (void)destroyFramebuffer {
 	glDeleteFramebuffersOES(1, &viewFramebuffer);
 	viewFramebuffer = 0;
 	glDeleteRenderbuffersOES(1, &viewRenderbuffer);
 	viewRenderbuffer = 0;
 
-	if(depthRenderbuffer)
-	{
+	if(depthRenderbuffer) {
 		glDeleteRenderbuffersOES(1, &depthRenderbuffer);
 		depthRenderbuffer = 0;
 	}
 }
 
-- (void)startAnimation
-{
+- (void)startAnimation {
 	if (active)
 		return;
+
 	active = TRUE;
 	printf("start animation!\n");
 	if (useCADisplayLink) {
@@ -397,59 +381,53 @@ static void clear_touches() {
 
 		// Setup DisplayLink in main thread
 		[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-	}
-	else {
+	} else {
 		animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
 	}
 
-	if (video_playing)
-	{
+	if (video_playing) {
 		_unpause_video();
 	}
 }
 
-- (void)stopAnimation
-{
+- (void)stopAnimation {
 	if (!active)
 		return;
+
 	active = FALSE;
 	printf("******** stop animation!\n");
 
 	if (useCADisplayLink) {
 		[displayLink invalidate];
 		displayLink = nil;
-	}
-	else {
+	} else {
 		[animationTimer invalidate];
 		animationTimer = nil;
 	}
 
 	clear_touches();
 
-	if (video_playing)
-	{
+	if (video_playing) {
 		// save position
 	}
 }
 
-- (void)setAnimationInterval:(NSTimeInterval)interval
-{
+- (void)setAnimationInterval:(NSTimeInterval)interval {
 	animationInterval = interval;
-	if ( (useCADisplayLink && displayLink) || ( !useCADisplayLink && animationTimer ) ) {
+	if ((useCADisplayLink && displayLink) || (!useCADisplayLink && animationTimer)) {
 		[self stopAnimation];
 		[self startAnimation];
 	}
 }
 
 // Updates the OpenGL view when the timer fires
-- (void)drawView
-{
+- (void)drawView {
 	if (useCADisplayLink) {
 		// Pause the CADisplayLink to avoid recursion
 		[displayLink setPaused: YES];
 
 		// Process all input events
-		while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
+		while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
 
 		// We are good to go, resume the CADisplayLink
 		[displayLink setPaused: NO];
@@ -464,8 +442,7 @@ static void clear_touches() {
 	[EAGLContext setCurrentContext:context];
 
 	// If our drawing delegate needs to have the view setup, then call -setupView: and flag that it won't need to be called again.
-	if(!delegateSetup)
-	{
+	if(!delegateSetup) {
 		[delegate setupView:self];
 		delegateSetup = YES;
 	}
@@ -484,8 +461,7 @@ static void clear_touches() {
 #endif
 }
 
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray* tlist = [[event allTouches] allObjects];
 	for (unsigned int i=0; i< [tlist count]; i++) {
 
@@ -502,8 +478,7 @@ static void clear_touches() {
 	};
 }
 
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 
 	NSArray* tlist = [[event allTouches] allObjects];
 	for (unsigned int i=0; i< [tlist count]; i++) {
@@ -513,6 +488,7 @@ static void clear_touches() {
 			UITouch* touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseMoved)
 				continue;
+
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			int first = get_first_id(touch);
@@ -524,8 +500,7 @@ static void clear_touches() {
 
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
-{
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
 	NSArray* tlist = [[event allTouches] allObjects];
 	for (unsigned int i=0; i< [tlist count]; i++) {
 
@@ -534,6 +509,7 @@ static void clear_touches() {
 			UITouch* touch = [tlist objectAtIndex:i];
 			if (touch.phase != UITouchPhaseEnded)
 				continue;
+
 			int tid = get_touch_id(touch);
 			ERR_FAIL_COND(tid == -1);
 			int rem = remove_touch(touch);
@@ -567,6 +543,7 @@ static void clear_touches() {
 - (void)deleteBackward {
 	if (keyboard_text.length())
 		keyboard_text.erase(keyboard_text.length() - 1, 1);
+
 	OSIPhone::get_singleton()->key(KEY_BACKSPACE, true);
 };
 
@@ -591,12 +568,12 @@ static void clear_touches() {
 
 	switch (routeChangeReason) {
 
-		case AVAudioSessionRouteChangeReasonNewDeviceAvailable:
+		case AVAudioSessionRouteChangeReasonNewDeviceAvailable: {
 			NSLog(@"AVAudioSessionRouteChangeReasonNewDeviceAvailable");
 			NSLog(@"Headphone/Line plugged in");
-			break;
+		}; break;
 
-		case AVAudioSessionRouteChangeReasonOldDeviceUnavailable:
+		case AVAudioSessionRouteChangeReasonOldDeviceUnavailable: {
 			NSLog(@"AVAudioSessionRouteChangeReasonOldDeviceUnavailable");
 			NSLog(@"Headphone/Line was pulled. Resuming video play....");
 			if (_is_video_playing()) {
@@ -606,24 +583,22 @@ static void clear_touches() {
 							NSLog(@"resumed play");
 				});
 			};
-			break;
+		}; break;
 
-		case AVAudioSessionRouteChangeReasonCategoryChange:
+		case AVAudioSessionRouteChangeReasonCategoryChange: {
 			// called at start - also when other audio wants to play
 			NSLog(@"AVAudioSessionRouteChangeReasonCategoryChange");
-			break;
+		}; break;
 	}
 }
 
 
 // When created via code however, we get initWithFrame
--(id)initWithFrame:(CGRect)frame
-{
+-(id)initWithFrame:(CGRect)frame {
 	self = [super initWithFrame:frame];
 	_instance = self;
 	printf("after init super %p\n", self);
-	if(self != nil)
-	{
+	if(self != nil) {
 		self = [self initGLES];
 		printf("after init gles %p\n", self);
 	}
@@ -632,8 +607,8 @@ static void clear_touches() {
 
 	printf("******** adding observer for sound routing changes\n");
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:)
-												 name:AVAudioSessionRouteChangeNotification
-											   object:nil];
+		name:AVAudioSessionRouteChangeNotification
+		object:nil];
 
 	//self.autoresizesSubviews = YES;
 	//[self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleWidth];
@@ -650,12 +625,10 @@ static void clear_touches() {
 // }
 
 // Stop animating and release resources when they are no longer needed.
-- (void)dealloc
-{
+- (void)dealloc {
 	[self stopAnimation];
 
-	if([EAGLContext currentContext] == context)
-	{
+	if([EAGLContext currentContext] == context) {
 		[EAGLContext setCurrentContext:nil];
 	}
 
@@ -666,24 +639,24 @@ static void clear_touches() {
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
-                        change:(NSDictionary *)change context:(void *)context {
+												change:(NSDictionary *)change context:(void *)context {
 
 	if (object == _instance.avPlayerItem && [keyPath isEqualToString:@"status"]) {
-        if (_instance.avPlayerItem.status == AVPlayerStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
-        	_stop_video();
-            video_found_error = true;
-        }
-
-        if(_instance.avPlayer.status == AVPlayerStatusReadyToPlay &&
-        	_instance.avPlayerItem.status == AVPlayerItemStatusReadyToPlay &&
-        	CMTIME_COMPARE_INLINE(video_current_time, ==, kCMTimeZero)) {
-
-        	//NSLog(@"time: %@", video_current_time);
-
-    		[_instance.avPlayer seekToTime:video_current_time];
-    		video_current_time = kCMTimeZero;
+		if (_instance.avPlayerItem.status == AVPlayerStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
+			_stop_video();
+			video_found_error = true;
 		}
-    }
+
+		if(_instance.avPlayer.status == AVPlayerStatusReadyToPlay &&
+			_instance.avPlayerItem.status == AVPlayerItemStatusReadyToPlay &&
+			CMTIME_COMPARE_INLINE(video_current_time, ==, kCMTimeZero)) {
+
+			//NSLog(@"time: %@", video_current_time);
+
+			[_instance.avPlayer seekToTime:video_current_time];
+			video_current_time = kCMTimeZero;
+		}
+	}
 
 	if (object == _instance.avPlayer && [keyPath isEqualToString:@"rate"]) {
 		NSLog(@"Player playback rate changed: %.5f", _instance.avPlayer.rate);
@@ -699,40 +672,40 @@ static void clear_touches() {
 }
 
 - (void)playerItemDidReachEnd:(NSNotification *)notification {
-    _stop_video();
+		_stop_video();
 }
 
 /*
 - (void)moviePlayBackDidFinish:(NSNotification*)notification {
 
 
-    NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
-    switch ([reason intValue]) {
-        case MPMovieFinishReasonPlaybackEnded:
-            //NSLog(@"Playback Ended");
-            break;
-        case MPMovieFinishReasonPlaybackError:
-            //NSLog(@"Playback Error");
-            video_found_error = true;
-            break;
-        case MPMovieFinishReasonUserExited:
-            //NSLog(@"User Exited");
-            video_found_error = true;
-            break;
-        default:
-        	//NSLog(@"Unsupported reason!");
-        	break;
-    }
+		NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
+		switch ([reason intValue]) {
+				case MPMovieFinishReasonPlaybackEnded:
+						//NSLog(@"Playback Ended");
+						break;
+				case MPMovieFinishReasonPlaybackError:
+						//NSLog(@"Playback Error");
+						video_found_error = true;
+						break;
+				case MPMovieFinishReasonUserExited:
+						//NSLog(@"User Exited");
+						video_found_error = true;
+						break;
+				default:
+					//NSLog(@"Unsupported reason!");
+					break;
+		}
 
-    MPMoviePlayerController *player = [notification object];
+		MPMoviePlayerController *player = [notification object];
 
-    [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-      name:MPMoviePlayerPlaybackDidFinishNotification
-      object:player];
+		[[NSNotificationCenter defaultCenter]
+			removeObserver:self
+			name:MPMoviePlayerPlaybackDidFinishNotification
+			object:player];
 
-    [_instance.moviePlayerController stop];
-    [_instance.moviePlayerController.view removeFromSuperview];
+		[_instance.moviePlayerController stop];
+		[_instance.moviePlayerController.view removeFromSuperview];
 
 	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
 	video_playing = false;

@@ -40,30 +40,30 @@ int main(int argc, char** argv) {
 	int first_arg = 1;
 	const char* dbg_arg = "-NSDocumentRevisionsDebugMode";
 	printf("arguments\n");
-	for (int i=0; i<argc; i++) {
+	for (int i = 0; i < argc; i++) {
 		if (strcmp(dbg_arg, argv[i]) == 0)
 			first_arg = i+2;
 		printf("%i: %s\n", i, argv[i]);
 	};
 
 
-	if (argc>=1 && argv[0][0]=='/') {
+	if (argc >= 1 && argv[0][0] == '/') {
 		//potentially launched from finder
 		int len = strlen(argv[0]);
 		while (len--) {
 			if (argv[0][len] == '/') break;
 		}
-		if (len>=0) {
+		if (len >= 0) {
 			char *path = (char *)malloc(len+1);
 			memcpy(path, argv[0], len);
-			path[len]=0;
+			path[len] = 0;
 
-			char *pathinfo = (char*)malloc(strlen(path)+strlen("/../Info.plist")+1);
+			char *pathinfo = (char*)malloc(strlen(path) + strlen("/../Info.plist")+1);
 			 //in real code you would check for errors in malloc here
 			strcpy(pathinfo, path);
 			strcat(pathinfo, "/../Info.plist");
 
-			FILE*f=fopen(pathinfo,"rb");
+			FILE*f=fopen(pathinfo, "rb");
 			if (f) {
 				//running from app bundle, as Info.plist was found
 				fclose(f);
@@ -75,15 +75,12 @@ int main(int argc, char** argv) {
 			free(path);
 			free(pathinfo);
 		}
-
-
-
 	}
 
 	OS_OSX os;
 
 
-	Error err  = Main::setup(argv[0],argc-first_arg,&argv[first_arg]);
+	Error err  = Main::setup(argv[0], argc-first_arg, &argv[first_arg]);
 	if (err!=OK)
 		return 255;
 
