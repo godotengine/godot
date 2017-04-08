@@ -44,6 +44,7 @@
 #include "io/marshalls.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "platform/windows/packet_peer_udp_winsock.h"
+#include "platform/windows/process_windows.h"
 #include "platform/windows/stream_peer_winsock.h"
 #include "platform/windows/tcp_server_winsock.h"
 
@@ -176,6 +177,7 @@ void OSUWP::initialize_core() {
 	TCPServerWinsock::make_default();
 	StreamPeerWinsock::make_default();
 	PacketPeerUDPWinsock::make_default();
+	ProcessWindows::make_default();
 
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1

@@ -50,6 +50,26 @@ Files extracted from upstream source:
 - `docs/{FTL.TXT,LICENSE.TXT}`
 
 
+## forkfd
+
+- Upstream: https://code.qt.io/qt/qtbase.git
+- Version: 4fc79714 (git)
+- License: MIT
+
+Files extracted from upstream source:
+
+- all the files in the src/3rdparty/forkfd/ folder
+
+Important: The following files have Godot-made changes:
+
+- `forkfd_gcc.h`: Fixed build errors with older versions of gcc.
+- `forkfd.c` and `forkfd.h`:
+ - Use `ioctl` instead of `fcntl` when `NO_FCNTL` is defined.
+ - Added `forkfd_nofd()` function (check the description for more info).
+
+The diff can be found at `forkfd_godot.patch`.
+
+
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad

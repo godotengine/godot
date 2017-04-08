@@ -46,6 +46,7 @@
 #include "lang_table.h"
 #include "main/main.h"
 #include "packet_peer_udp_winsock.h"
+#include "process_windows.h"
 #include "stream_peer_winsock.h"
 #include "tcp_server_winsock.h"
 
@@ -188,6 +189,7 @@ void OS_Windows::initialize_core() {
 	TCPServerWinsock::make_default();
 	StreamPeerWinsock::make_default();
 	PacketPeerUDPWinsock::make_default();
+	ProcessWindows::make_default();
 
 	// We need to know how often the clock is updated
 	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
