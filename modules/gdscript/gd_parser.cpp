@@ -2265,6 +2265,7 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 		if (!is_first_line && tab_level.back()->prev() && tab_level.back()->prev()->get() == indent_level) {
 			// pythonic single-line expression, don't parse future lines
 			tab_level.pop_back();
+			p_block->end_line = tokenizer->get_token_line();
 			return;
 		}
 		is_first_line = false;
@@ -2436,9 +2437,8 @@ void GDParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				while (true) {
 
-					while (tokenizer->get_token() == GDTokenizer::TK_NEWLINE) {
-						tokenizer->advance();
-					}
+					while (tokenizer->get_token() == GDTokenizer::TK_NEWLINE && _parse_newline())
+						;
 
 					if (tab_level.back()->get() < indent_level) { //not at current indent level
 						p_block->end_line = tokenizer->get_token_line();
