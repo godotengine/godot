@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 	};
 
 
-	if (argc>=1 && argv[0][0]=='/') {
+	if (argc >= 1 && argv[0][0] == '/') {
 		//potentially launched from finder
 		int len = strlen(argv[0]);
 		while (len--) {
@@ -76,19 +76,18 @@ int main(int argc, char** argv) {
 			free(pathinfo);
 		}
 
-
-
 	}
 
 	OS_OSX os;
 
 
-	Error err  = Main::setup(argv[0],argc-first_arg,&argv[first_arg]);
+	Error err  = Main::setup(argv[0], argc-first_arg,&argv[first_arg]);
 	if (err!=OK)
 		return 255;
 
 	if (Main::start())
 		os.run(); // it is actually the OS that decides how to run
+	
 	Main::cleanup();
 
 	return 0;

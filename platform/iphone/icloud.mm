@@ -45,14 +45,14 @@ extern "C" {
 ICloud* ICloud::instance = NULL;
 
 void ICloud::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("remove_key"),&ICloud::remove_key);
-	ClassDB::bind_method(D_METHOD("set_key_values"),&ICloud::set_key_values);
-	ClassDB::bind_method(D_METHOD("get_key_value"),&ICloud::get_key_value);
-	ClassDB::bind_method(D_METHOD("synchronize_key_values"),&ICloud::synchronize_key_values);
-	ClassDB::bind_method(D_METHOD("get_all_key_values"),&ICloud::get_all_key_values);
+	ClassDB::bind_method(D_METHOD("remove_key"), &ICloud::remove_key);
+	ClassDB::bind_method(D_METHOD("set_key_values"), &ICloud::set_key_values);
+	ClassDB::bind_method(D_METHOD("get_key_value"), &ICloud::get_key_value);
+	ClassDB::bind_method(D_METHOD("synchronize_key_values"), &ICloud::synchronize_key_values);
+	ClassDB::bind_method(D_METHOD("get_all_key_values"), &ICloud::get_all_key_values);
 
-	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&ICloud::get_pending_event_count);
-	ClassDB::bind_method(D_METHOD("pop_pending_event"),&ICloud::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &ICloud::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"), &ICloud::pop_pending_event);
 };
 
 int ICloud::get_pending_event_count() {
@@ -77,8 +77,7 @@ Variant nsobject_to_variant(NSObject* object) {
 	if ([object isKindOfClass:[NSString class]]) {
 		const char* str = [(NSString*)object UTF8String];
 		return String::utf8(str != NULL ? str : "");
-	}
-	else if ([object isKindOfClass:[NSData class]]) {
+	} else if ([object isKindOfClass:[NSData class]]) {
 		PoolByteArray ret;
 		NSData* data = (NSData*)object;
 		if ([data length] > 0) {
@@ -89,8 +88,7 @@ Variant nsobject_to_variant(NSObject* object) {
 			}
 		}
 		return ret;
-	}
-	else if ([object isKindOfClass:[NSArray class]]) {
+	} else if ([object isKindOfClass:[NSArray class]]) {
 		Array result;
 		NSArray* array = (NSArray*)object;
 		for (unsigned int i = 0; i < [array count]; ++i) {
@@ -98,8 +96,7 @@ Variant nsobject_to_variant(NSObject* object) {
 			result.push_back(nsobject_to_variant(value));
 		}
 		return result;
-	}
-	else if ([object isKindOfClass:[NSDictionary class]]) {
+	} else if ([object isKindOfClass:[NSDictionary class]]) {
 		Dictionary result;
 		NSDictionary* dic = (NSDictionary*)object;
 
@@ -113,8 +110,7 @@ Variant nsobject_to_variant(NSObject* object) {
 			result[nsobject_to_variant(k)] = nsobject_to_variant(v);
 		}
 		return result;
-	}
-	else if ([object isKindOfClass:[NSNumber class]]) {
+	} else if ([object isKindOfClass:[NSNumber class]]) {
 		//Every type except numbers can reliably identify its type.  The following is comparing to the *internal* representation, which isn't guaranteed to match the type that was used to create it, and is not advised, particularly when dealing with potential platform differences (ie, 32/64 bit)
 		//To avoid errors, we'll cast as broadly as possible, and only return int or float.
 		//bool, char, int, uint, longlong -> int
@@ -122,37 +118,28 @@ Variant nsobject_to_variant(NSObject* object) {
 		NSNumber* num = (NSNumber*)object;
 		if(strcmp([num objCType], @encode(BOOL)) == 0) {
 			return Variant((int)[num boolValue]);
-		}
-		else if(strcmp([num objCType], @encode(char)) == 0) {
+		} else if(strcmp([num objCType], @encode(char)) == 0) {
 			return Variant((int)[num charValue]);
-		}
-		else if(strcmp([num objCType], @encode(int)) == 0) {
+		} else if(strcmp([num objCType], @encode(int)) == 0) {
 			return Variant([num intValue]);
-		}
-		else if(strcmp([num objCType], @encode(unsigned int)) == 0) {
+		} else if(strcmp([num objCType], @encode(unsigned int)) == 0) {
 			return Variant((int)[num unsignedIntValue]);
-		}
-		else if(strcmp([num objCType], @encode(long long)) == 0) {
+		} else if(strcmp([num objCType], @encode(long long)) == 0) {
 			return Variant((int)[num longValue]);
-		}
-		else if(strcmp([num objCType], @encode(float)) == 0) {
+		} else if(strcmp([num objCType], @encode(float)) == 0) {
 			return Variant([num floatValue]);
-		}
-		else if(strcmp([num objCType], @encode(double)) == 0) {
+		} else if(strcmp([num objCType], @encode(double)) == 0) {
 			return Variant((float)[num doubleValue]);
 		}
-	}
-	else if ([object isKindOfClass:[NSDate class]]) {
+	} else if ([object isKindOfClass:[NSDate class]]) {
 		//this is a type that icloud supports...but how did you submit it in the first place?
 		//I guess this is a type that *might* show up, if you were, say, trying to make your game
 		//compatible with existing cloud data written by another engine's version of your game
 		WARN_PRINT("NSDate unsupported, returning null Variant")
 		return Variant();
-	}
-	else if ([object isKindOfClass:[NSNull class]] or object == nil) {
+	} else if ([object isKindOfClass:[NSNull class]] or object == nil) {
 		return Variant();
-	}
-	else {
+	} else {
 		WARN_PRINT("Trying to convert unknown NSObject type to Variant");
 		return Variant();
 	}
@@ -161,17 +148,13 @@ Variant nsobject_to_variant(NSObject* object) {
 NSObject* variant_to_nsobject(Variant v) {
 	if (v.get_type() == Variant::STRING) {
 		return [[[NSString alloc] initWithUTF8String:((String)v).utf8().get_data()] autorelease];
-	}
-	else if (v.get_type() == Variant::REAL) {
+	} else if (v.get_type() == Variant::REAL) {
 		return [NSNumber numberWithDouble:(double)v];
-	}
-	else if (v.get_type() == Variant::INT) {
+	} else if (v.get_type() == Variant::INT) {
 		return [NSNumber numberWithLongLong:(long)(int)v];
-	}
-	else if (v.get_type() == Variant::BOOL) {
+	} else if (v.get_type() == Variant::BOOL) {
 		return [NSNumber numberWithBool:BOOL((bool)v)];
-	}
-	else if (v.get_type() == Variant::DICTIONARY) {
+	} else if (v.get_type() == Variant::DICTIONARY) {
 		NSMutableDictionary* result = [[[NSMutableDictionary alloc] init] autorelease];
 		Dictionary dic = v;
 		Array keys = dic.keys();
@@ -186,8 +169,7 @@ NSObject* variant_to_nsobject(Variant v) {
 			[result setObject:value forKey:key];
 		}
 		return result;
-	}
-	else if (v.get_type() == Variant::ARRAY) {
+	} else if (v.get_type() == Variant::ARRAY) {
 		NSMutableArray* result = [[[NSMutableArray alloc] init] autorelease];
 		Array arr = v;
 		for (unsigned int i = 0; i < arr.size(); ++i) {
@@ -199,8 +181,7 @@ NSObject* variant_to_nsobject(Variant v) {
 			[result addObject:value];
 		}
 		return result;
-	}
-	else if (v.get_type() == Variant::POOL_BYTE_ARRAY) {
+	} else if (v.get_type() == Variant::POOL_BYTE_ARRAY) {
 		PoolByteArray arr = v;
 		PoolByteArray::Read r = arr.read();
 		NSData* result = [NSData dataWithBytes:r.ptr() length:arr.size()];
@@ -297,8 +278,7 @@ Error ICloud::synchronize_key_values() {
 	BOOL result = [store synchronize];
 	if (result == YES) {
 		return OK;
-	}
-	else {
+	} else {
 		return FAILED;
 	}
 }
@@ -307,14 +287,14 @@ Error ICloud::initial_sync() {
 	//you sometimes have to write something to the store to get it to download new data.  go apple!
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 	if ([store boolForKey:@"isb"])
-    {
-        [store setBool:NO forKey:@"isb"];
-    }
-    else
-    {
-        [store setBool:YES forKey:@"isb"];
-    }
-    return synchronize();
+		{
+				[store setBool:NO forKey:@"isb"];
+		}
+		else
+		{
+				[store setBool:YES forKey:@"isb"];
+		}
+		return synchronize();
 }
 */
 ICloud::ICloud() {
@@ -341,14 +321,11 @@ ICloud::ICloud() {
 
 			if (change == NSUbiquitousKeyValueStoreServerChange) {
 				reason = "server";
-			}
-			else if (change == NSUbiquitousKeyValueStoreInitialSyncChange) {
+			} else if (change == NSUbiquitousKeyValueStoreInitialSyncChange) {
 				reason = "initial_sync";
-			}
-			else if (change == NSUbiquitousKeyValueStoreQuotaViolationChange) {
+			} else if (change == NSUbiquitousKeyValueStoreQuotaViolationChange) {
 				reason = "quota_violation";
-			}
-			else if (change == NSUbiquitousKeyValueStoreAccountChange) {
+			} else if (change == NSUbiquitousKeyValueStoreAccountChange) {
 				reason = "account";
 			}
 

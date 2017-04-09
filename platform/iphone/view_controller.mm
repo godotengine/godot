@@ -33,42 +33,42 @@
 
 extern "C" {
 
-int add_path(int, char**);
-int add_cmdline(int, char**);
+	int add_path(int, char**);
+	int add_cmdline(int, char**);
 
-int add_path(int p_argc, char** p_args) {
+	int add_path(int p_argc, char** p_args) {
 
-	NSString* str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
-	if (!str)
-		return p_argc;
-
-	p_args[p_argc++] = "-path";
-	[str retain]; // memory leak lol (maybe make it static here and delete it in ViewController destructor? @todo
-	p_args[p_argc++] = (char*)[str cString];
-	p_args[p_argc] = NULL;
-
-	return p_argc;
-};
-
-int add_cmdline(int p_argc, char** p_args) {
-
-	NSArray* arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
-	if (!arr)
-		return p_argc;
-
-	for (int i=0; i < [arr count]; i++) {
-
-		NSString* str = [arr objectAtIndex:i];
+		NSString* str = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_path"];
 		if (!str)
-			continue;
-		[str retain]; // @todo delete these at some point
+			return p_argc;
+
+		p_args[p_argc++] = "-path";
+		[str retain]; // memory leak lol (maybe make it static here and delete it in ViewController destructor? @todo
 		p_args[p_argc++] = (char*)[str cString];
+		p_args[p_argc] = NULL;
+
+		return p_argc;
 	};
 
-	p_args[p_argc] = NULL;
+	int add_cmdline(int p_argc, char** p_args) {
 
-	return p_argc;
-};
+		NSArray* arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
+		if (!arr)
+			return p_argc;
+
+		for (int i=0; i < [arr count]; i++) {
+
+			NSString* str = [arr objectAtIndex:i];
+			if (!str)
+				continue;
+			[str retain]; // @todo delete these at some point
+			p_args[p_argc++] = (char*)[str cString];
+		};
+
+		p_args[p_argc] = NULL;
+
+		return p_argc;
+	};
 
 };
 
@@ -91,20 +91,20 @@ int add_cmdline(int p_argc, char** p_args) {
 		NSArray* arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"UISupportedInterfaceOrientations"];
 		switch(p_orientation) {
 
-		case UIInterfaceOrientationLandscapeLeft:
-			return [arr indexOfObject:@"UIInterfaceOrientationLandscapeLeft"] != NSNotFound ? YES : NO;
+			case UIInterfaceOrientationLandscapeLeft:
+				return [arr indexOfObject:@"UIInterfaceOrientationLandscapeLeft"] != NSNotFound ? YES : NO;
 
-		case UIInterfaceOrientationLandscapeRight:
-			return [arr indexOfObject:@"UIInterfaceOrientationLandscapeRight"] != NSNotFound ? YES : NO;
+			case UIInterfaceOrientationLandscapeRight:
+				return [arr indexOfObject:@"UIInterfaceOrientationLandscapeRight"] != NSNotFound ? YES : NO;
 
-		case UIInterfaceOrientationPortrait:
-			return [arr indexOfObject:@"UIInterfaceOrientationPortrait"] != NSNotFound ? YES : NO;
+			case UIInterfaceOrientationPortrait:
+				return [arr indexOfObject:@"UIInterfaceOrientationPortrait"] != NSNotFound ? YES : NO;
 
-		case UIInterfaceOrientationPortraitUpsideDown:
-			return [arr indexOfObject:@"UIInterfaceOrientationPortraitUpsideDown"] != NSNotFound ? YES : NO;
+			case UIInterfaceOrientationPortraitUpsideDown:
+				return [arr indexOfObject:@"UIInterfaceOrientationPortraitUpsideDown"] != NSNotFound ? YES : NO;
 
-		default:
-			return NO;
+			default:
+				return NO;
 		}
 	};
 
@@ -128,16 +128,15 @@ int add_cmdline(int p_argc, char** p_args) {
 	}
 };
 
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
 	return YES;
 }
 
 #ifdef GAME_CENTER_ENABLED
 - (void) gameCenterViewControllerDidFinish:(GKGameCenterViewController*) gameCenterViewController {
-    //[gameCenterViewController dismissViewControllerAnimated:YES completion:^{GameCenter::get_singleton()->game_center_closed();}];//version for signaling when overlay is completely gone
-    GameCenter::get_singleton()->game_center_closed();
-    [gameCenterViewController dismissViewControllerAnimated:YES completion:nil];
+	//[gameCenterViewController dismissViewControllerAnimated:YES completion:^{GameCenter::get_singleton()->game_center_closed();}];//version for signaling when overlay is completely gone
+	GameCenter::get_singleton()->game_center_closed();
+	[gameCenterViewController dismissViewControllerAnimated:YES completion:nil];
 }
 #endif
 
