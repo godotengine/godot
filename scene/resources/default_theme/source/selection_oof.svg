@@ -14,7 +14,7 @@
    viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="selection_oof.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/button_pressed.png"
    inkscape:export-xdpi="90"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="32"
-     inkscape:cx="5.7087362"
-     inkscape:cy="6.3079353"
+     inkscape:zoom="16"
+     inkscape:cx="-2.3310576"
+     inkscape:cy="4.9359914"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -69,12 +69,20 @@
      id="layer1"
      transform="translate(0,-1036.3623)">
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:0.19607843;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="rect4135"
-       width="16"
-       height="16.000006"
-       x="0"
-       y="1036.3623"
-       ry="1.99999" />
+       style="fill:none;fill-opacity:0.19607843;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.35294119"
+       id="rect823"
+       width="14"
+       height="14"
+       x="1"
+       y="1037.3623"
+       ry="3.9999952" />
+    <rect
+       ry="2.9999952"
+       y="1038.3623"
+       x="1.9999954"
+       height="12.00001"
+       width="12.00001"
+       id="rect825"
+       style="fill:#ffffff;fill-opacity:0.19607843;stroke:none;stroke-width:1.71428704;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
   </g>
 </svg>

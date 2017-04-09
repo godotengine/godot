@@ -14,7 +14,7 @@
    viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.1 r"
    sodipodi:docname="tooltip_bg.svg"
    inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/button_pressed.png"
    inkscape:export-xdpi="90"
@@ -29,8 +29,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="32"
-     inkscape:cx="3.7087362"
-     inkscape:cy="6.0579353"
+     inkscape:cx="1.4290295"
+     inkscape:cy="8.0937882"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -41,8 +41,8 @@
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-bbox-edge-midpoints="true"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1600"
+     inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1">
@@ -69,12 +69,12 @@
      id="layer1"
      transform="translate(0,-1036.3623)">
     <path
-       style="opacity:1;fill:#ffffff;fill-opacity:0.78431374;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="M 3 0 C 1.3380029 0 0 1.3380029 0 3 L 0 13 C 0 14.661997 1.3380029 16 3 16 L 13 16 C 14.661997 16 16 14.661997 16 13 L 16 3 C 16 1.3380029 14.661997 0 13 0 L 3 0 z M 3 2 L 13 2 C 13.553997 2 14 2.4460029 14 3 L 14 13 C 14 13.553997 13.553997 14 13 14 L 3 14 C 2.4460029 14 2 13.553997 2 13 L 2 3 C 2 2.4460029 2.4460029 2 3 2 z "
-       transform="translate(0,1036.3623)"
-       id="rect4166" />
+       style="opacity:1;fill:#ffffff;fill-opacity:0.78431373;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 3,1036.3623 c -1.661997,0 -3,1.338 -3,3 v 10 c 0,1.662 1.338003,3 3,3 h 10 c 1.661997,0 3,-1.338 3,-3 v -10 c 0,-1.662 -1.338003,-3 -3,-3 z m 0,2 h 10 c 0.553997,0 1,0.446 1,1 v 10 c 0,0.554 -0.446003,1 -1,1 H 3 c -0.553997,0 -1,-0.446 -1,-1 v -10 c 0,-0.554 0.446003,-1 1,-1 z"
+       id="rect4166"
+       inkscape:connector-curvature="0" />
     <rect
-       style="opacity:1;fill:#ffffff;fill-opacity:0.68627453;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#ffffff;fill-opacity:0.68627451;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4137"
        width="12"
        height="12"

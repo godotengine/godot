@@ -206,6 +206,9 @@ void TabContainer::_notification(int p_what) {
 					break;
 			}
 
+			// Draw the tab area.
+			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+
 			// Draw all visible tabs.
 			int x = 0;
 			for (int i = 0; i < tab_widths.size(); i++) {
@@ -279,8 +282,6 @@ void TabContainer::_notification(int p_what) {
 						Color(1, 1, 1, first_tab_cache > 0 ? 1.0 : 0.5));
 			}
 
-			// Draw the tab area.
-			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			if (get_tab_count() > 0) {

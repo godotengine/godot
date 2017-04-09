@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="10"
-   height="10"
-   viewBox="0 0 10 9.9999994"
+   width="16"
+   height="16"
+   viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
    inkscape:version="0.92.1 r"
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="45.254834"
-     inkscape:cx="5.9850658"
-     inkscape:cy="3.4476875"
+     inkscape:zoom="32"
+     inkscape:cx="4.3024062"
+     inkscape:cy="7.0227632"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -45,7 +45,9 @@
      inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     inkscape:snap-nodes="false"
+     inkscape:snap-bbox-midpoints="true">
     <inkscape:grid
        type="xygrid"
        id="grid4136"
@@ -59,7 +61,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -67,14 +69,21 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1042.3623)">
+     transform="translate(0,-1036.3623)">
     <rect
-       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.19523001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect4484"
-       width="10"
-       height="2.0000048"
-       x="0"
-       y="1050.3623"
-       ry="1.0000024" />
+       style="fill:#303b46;fill-opacity:1;stroke:#303b46;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4484-6"
+       width="12"
+       height="12"
+       x="2"
+       y="1038.3623"
+       ry="2.9999952" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#56a2ff;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 2,11 c 0,1.661997 1.3380026,3 3,3 h 6 c 1.661997,0 3,-1.338003 3,-3"
+       id="rect4503"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cssc"
+       transform="translate(0,1036.3623)" />
   </g>
 </svg>

@@ -5085,16 +5085,16 @@ EditorNode::EditorNode() {
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
 	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
 	scene_tabs->connect("tab_close", this, "_scene_tab_closed");
-	scene_tabs->set_margin(MARGIN_LEFT,20);
-	scene_tabs->set_margin(MARGIN_TOP,20);
 
+	// MarginContainer *st_mc = memnew( MarginContainer );
+	// st_mc->add_child(scene_tabs);
 	srt->add_child(scene_tabs);
 
 	scene_root_parent = memnew(PanelContainer);
 	scene_root_parent->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 
-	Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel_full","PanelContainer");
-	scene_root_parent->add_style_override("panel",sp);
+	// Ref<StyleBox> sp = scene_root_parent->get_stylebox("panel_full","PanelContainer");
+	// scene_root_parent->add_style_override("panel",sp);
 
 	/*scene_root_parent->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	scene_root_parent->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
@@ -5122,9 +5122,10 @@ EditorNode::EditorNode() {
 	}*/
 	scene_root_parent->add_child(viewport);
 
-	PanelContainer *top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
-	HBoxContainer *left_menu_hb = memnew(HBoxContainer);
+
+	PanelContainer *top_region = memnew( PanelContainer );
+	top_region->add_style_override("panel", memnew( StyleBoxEmpty ));
+	HBoxContainer *left_menu_hb = memnew( HBoxContainer );
 	top_region->add_child(left_menu_hb);
 	menu_hb->add_child(top_region);
 
@@ -5281,8 +5282,8 @@ EditorNode::EditorNode() {
 	play_cc->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_BEGIN, 10);
 	play_cc->set_margin(MARGIN_TOP, 5);
 
-	top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	top_region = memnew( PanelContainer );
+	top_region->add_style_override("panel", gui_base->get_stylebox("panel", "ButtonGroup"));
 	play_cc->add_child(top_region);
 
 	HBoxContainer *play_hb = memnew(HBoxContainer);
@@ -5424,9 +5425,9 @@ EditorNode::EditorNode() {
 		menu_hb->add_child(sp);
 	}
 
-	top_region = memnew(PanelContainer);
-	top_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
-	HBoxContainer *right_menu_hb = memnew(HBoxContainer);
+	top_region = memnew( PanelContainer );
+	top_region->add_style_override("panel", memnew( StyleBoxEmpty ));
+	HBoxContainer *right_menu_hb = memnew( HBoxContainer );
 	top_region->add_child(right_menu_hb);
 	menu_hb->add_child(top_region);
 
@@ -5591,7 +5592,7 @@ EditorNode::EditorNode() {
 	search_button = memnew(ToolButton);
 	search_button->set_toggle_mode(true);
 	search_button->set_pressed(false);
-	search_button->set_icon(gui_base->get_icon("Zoom", "EditorIcons"));
+	search_button->set_icon(gui_base->get_icon("Search","EditorIcons"));
 	prop_editor_hb->add_child(search_button);
 	search_button->connect("toggled", this, "_toggle_search_bar");
 

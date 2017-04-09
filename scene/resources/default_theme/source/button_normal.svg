@@ -9,14 +9,14 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="28"
-   height="28"
-   viewBox="0 0 28 27.999998"
+   width="16"
+   height="16"
+   viewBox="0 0 16 15.999999"
    id="svg2"
    version="1.1"
    inkscape:version="0.92.1 r"
    sodipodi:docname="button_normal.svg"
-   inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/button_normal.png"
+   inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/button_hover.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="14.656576"
-     inkscape:cy="16.224112"
+     inkscape:zoom="32"
+     inkscape:cx="6.2263167"
+     inkscape:cy="7.1617067"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -59,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -67,12 +67,14 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1024.3623)">
-    <circle
-       style="fill:#000000;fill-opacity:0.17647059;stroke:none;stroke-width:2;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="path4484"
-       cx="14"
-       cy="1038.3623"
-       r="11.999995" />
+     transform="translate(0,-1036.3623)">
+    <rect
+       style="fill:none;fill-opacity:0.19607843;stroke:#56a2ff;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect4484"
+       width="12"
+       height="12"
+       x="2"
+       y="1038.3623"
+       ry="2.9999952" />
   </g>
 </svg>

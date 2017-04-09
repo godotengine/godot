@@ -10,13 +10,13 @@
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="32"
-   height="16"
-   viewBox="0 0 32 15.999999"
+   height="32"
+   viewBox="0 0 32 31.999998"
    id="svg2"
    version="1.1"
    inkscape:version="0.92.1 r"
-   sodipodi:docname="option_button_hover.svg"
-   inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/tab_behind.png"
+   sodipodi:docname="button_group.svg"
+   inkscape:export-filename="/home/djrm/Projects/godot/scene/resources/default_theme/button_disabled.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
   <defs
@@ -28,9 +28,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="22.627417"
-     inkscape:cx="21.709456"
-     inkscape:cy="12.128092"
+     inkscape:zoom="16"
+     inkscape:cx="15.144473"
+     inkscape:cy="14.499068"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -45,11 +45,7 @@
      inkscape:window-height="836"
      inkscape:window-x="0"
      inkscape:window-y="27"
-     inkscape:window-maximized="1"
-     inkscape:snap-nodes="true"
-     inkscape:snap-midpoints="true"
-     inkscape:snap-smooth-nodes="true"
-     inkscape:object-nodes="true">
+     inkscape:window-maximized="1">
     <inkscape:grid
        type="xygrid"
        id="grid4136"
@@ -63,7 +59,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -71,17 +67,12 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1036.3623)">
-    <g
-       id="layer1-5"
-       inkscape:label="Layer 1"
-       style="fill:#bddbff;fill-opacity:1">
-      <path
-         id="rect4484"
-         transform="translate(0,1036.3623)"
-         d="M 5,1 C 2.7840026,1 1,2.7840026 1,5 v 6 c 0,2.215997 1.7840026,4 4,4 h 22 c 2.215997,0 4,-1.784003 4,-4 V 5 C 31,2.7840026 29.215997,1 27,1 Z m 0,1 h 22 c 1.661997,0 3,1.3380026 3,3 v 6 c 0,1.661997 -1.338003,3 -3,3 H 5 C 3.3380026,14 2,12.661997 2,11 V 5 C 2,3.3380026 3.3380026,2 5,2 Z"
-         style="fill:#bddbff;fill-opacity:1;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-         inkscape:connector-curvature="0" />
-    </g>
+     transform="translate(0,-1020.3623)">
+    <circle
+       style="fill:#000000;fill-opacity:0.19607843;stroke:none;stroke-width:2.54545379;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="path4503"
+       cx="16"
+       cy="1036.3623"
+       r="13.999995" />
   </g>
 </svg>
