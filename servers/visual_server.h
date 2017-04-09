@@ -480,7 +480,7 @@ public:
 	virtual void particles_set_explosiveness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, float p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const Rect3 &p_aabb) = 0;
-	virtual void particles_set_gravity(RID p_particles, const Vector3 &p_gravity) = 0;
+	virtual void particles_set_speed_scale(RID p_particles, float p_scale) = 0;
 	virtual void particles_set_use_local_coordinates(RID p_particles, bool p_enable) = 0;
 	virtual void particles_set_process_material(RID p_particles, RID p_material) = 0;
 	virtual void particles_set_fixed_fps(RID p_particles, int p_fps) = 0;

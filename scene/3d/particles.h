@@ -63,8 +63,8 @@ private:
 	float pre_process_time;
 	float explosiveness_ratio;
 	float randomness_ratio;
-	Rect3 custom_aabb;
-	Vector3 gravity;
+	float speed_scale;
+	Rect3 visibility_aabb;
 	bool local_coords;
 	int fixed_fps;
 	bool fractional_delta;
@@ -89,10 +89,10 @@ public:
 	void set_pre_process_time(float p_time);
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);
-	void set_custom_aabb(const Rect3 &p_aabb);
-	void set_gravity(const Vector3 &p_gravity);
+	void set_visibility_aabb(const Rect3 &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_process_material(const Ref<Material> &p_material);
+	void set_speed_scale(float p_scale);
 
 	bool is_emitting() const;
 	int get_amount() const;
@@ -100,10 +100,10 @@ public:
 	float get_pre_process_time() const;
 	float get_explosiveness_ratio() const;
 	float get_randomness_ratio() const;
-	Rect3 get_custom_aabb() const;
-	Vector3 get_gravity() const;
+	Rect3 get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	Ref<Material> get_process_material() const;
+	float get_speed_scale() const;
 
 	void set_fixed_fps(int p_count);
 	int get_fixed_fps() const;
@@ -120,6 +120,9 @@ public:
 	void set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_draw_pass_mesh(int p_pass) const;
 
+	virtual String get_configuration_warning() const;
+
+	Rect3 capture_aabb() const;
 	Particles();
 	~Particles();
 };
@@ -270,6 +273,8 @@ private:
 		StringName trail_divisor;
 		StringName trail_size_modifier;
 		StringName trail_color_modifier;
+
+		StringName gravity;
 	};
 
 	static ShaderNames *shader_names;
@@ -303,6 +308,8 @@ private:
 
 	Ref<CurveTexture> trail_size_modifier;
 	Ref<GradientTexture> trail_color_modifier;
+
+	Vector3 gravity;
 
 	//do not save emission points here
 
@@ -357,6 +364,9 @@ public:
 
 	void set_trail_color_modifier(const Ref<GradientTexture> &p_trail_color_modifier);
 	Ref<GradientTexture> get_trail_color_modifier() const;
+
+	void set_gravity(const Vector3 &p_gravity);
+	Vector3 get_gravity() const;
 
 	static void init_shaders();
 	static void finish_shaders();

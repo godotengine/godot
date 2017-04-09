@@ -113,48 +113,7 @@ void ParticlesEditor::_menu_option(int p_option) {
 	switch (p_option) {
 
 		case MENU_OPTION_GENERATE_AABB: {
-#if 0
-			Transform globalizer = node->get_global_transform();
-			ParticleSystemSW pssw;
-			for (int i = 0; i < VS::PARTICLE_VAR_MAX; i++) {
-
-				pssw.particle_vars[i] = node->get_variable((Particles::Variable)i);
-				pssw.particle_randomness[i] = node->get_randomness((Particles::Variable)i);
-			}
-
-			pssw.emission_half_extents = node->get_emission_half_extents();
-			pssw.emission_points = node->get_emission_points();
-			pssw.emission_base_velocity = node->get_emission_base_velocity();
-			pssw.amount = node->get_amount();
-			pssw.gravity_normal = node->get_gravity_normal();
-			pssw.emitting = true;
-			pssw.height_from_velocity = node->has_height_from_velocity();
-			pssw.color_phase_count = 1;
-
-			ParticleSystemProcessSW pp;
-			float delta = 0.01;
-			float lifetime = pssw.particle_vars[VS::PARTICLE_LIFETIME];
-
-			Transform localizer = globalizer.affine_inverse();
-			AABB aabb;
-			for (float t = 0; t < lifetime; t += delta) {
-
-				pp.process(&pssw, globalizer, delta);
-				for (int i = 0; i < pp.particle_data.size(); i++) {
-
-					Vector3 p = localizer.xform(pp.particle_data[i].pos);
-
-					if (t == 0 && i == 0)
-						aabb.pos = p;
-					else
-						aabb.expand_to(p);
-				}
-			}
-
-			aabb.grow_by(aabb.get_longest_axis_size() * 0.2);
-
-			node->set_visibility_aabb(aabb);
-#endif
+			generate_aabb->popup_centered_minsize();
 		} break;
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {
 
@@ -184,6 +143,33 @@ void ParticlesEditor::_menu_option(int p_option) {
 
 		} break;
 	}
+}
+
+void ParticlesEditor::_generate_aabb() {
+
+	float time = generate_seconds->get_value();
+
+	float running = 0.0;
+
+	EditorProgress ep("gen_aabb", TTR("Generating AABB"), int(time));
+
+	Rect3 rect;
+	while (running < time) {
+
+		uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+		ep.step("Generating..", int(running), true);
+		OS::get_singleton()->delay_usec(1000);
+
+		Rect3 capture = node->capture_aabb();
+		if (rect == Rect3())
+			rect = capture;
+		else
+			rect.merge_with(capture);
+
+		running += (OS::get_singleton()->get_ticks_usec() - ticks) / 1000000.0;
+	}
+
+	node->set_visibility_aabb(rect);
 }
 
 void ParticlesEditor::edit(Particles *p_particles) {
@@ -392,6 +378,7 @@ void ParticlesEditor::_bind_methods() {
 	ClassDB::bind_method("_resource_seleted", &ParticlesEditor::_resource_seleted);
 	ClassDB::bind_method("_node_selected", &ParticlesEditor::_node_selected);
 	ClassDB::bind_method("_generate_emission_points", &ParticlesEditor::_generate_emission_points);
+	ClassDB::bind_method("_generate_aabb", &ParticlesEditor::_generate_aabb);
 
 	//ClassDB::bind_method("_populate",&ParticlesEditor::_populate);
 }
@@ -455,6 +442,20 @@ ParticlesEditor::ParticlesEditor() {
 	}
 
 	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
+
+	generate_aabb = memnew(ConfirmationDialog);
+	generate_aabb->set_title(TTR("Generate Visibility AABB"));
+	VBoxContainer *genvb = memnew(VBoxContainer);
+	generate_aabb->add_child(genvb);
+	generate_seconds = memnew(SpinBox);
+	genvb->add_margin_child(TTR("Generation Time (sec):"), generate_seconds);
+	generate_seconds->set_min(0.1);
+	generate_seconds->set_max(25);
+	generate_seconds->set_value(2);
+
+	add_child(generate_aabb);
+
+	generate_aabb->connect("confirmed", this, "_generate_aabb");
 
 	//options->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	//options->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);

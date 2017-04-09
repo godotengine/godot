@@ -33,22 +33,22 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/3d/body_shape.h"
 #include "scene/3d/camera.h"
+#include "scene/3d/collision_polygon.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/navigation_mesh.h"
+#include "scene/3d/particles.h"
+#include "scene/3d/physics_joint.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/reflection_probe.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/test_cube.h"
-#include "scene/3d/visibility_notifier.h"
-
-#include "scene/3d/collision_polygon.h"
-#include "scene/3d/physics_joint.h"
 #include "scene/3d/vehicle_body.h"
+#include "scene/3d/visibility_notifier.h"
 
 class Camera;
 
@@ -244,6 +244,22 @@ public:
 	VisibilityNotifierGizmo(VisibilityNotifier *p_notifier = NULL);
 };
 
+class ParticlesGizmo : public EditorSpatialGizmo {
+
+	GDCLASS(ParticlesGizmo, EditorSpatialGizmo);
+
+	Particles *particles;
+
+public:
+	virtual String get_handle_name(int p_idx) const;
+	virtual Variant get_handle_value(int p_idx) const;
+	virtual void set_handle(int p_idx, Camera *p_camera, const Point2 &p_point);
+	virtual void commit_handle(int p_idx, const Variant &p_restore, bool p_cancel = false);
+
+	void redraw();
+	ParticlesGizmo(Particles *p_particles = NULL);
+};
+
 class ReflectionProbeGizmo : public EditorSpatialGizmo {
 
 	GDCLASS(ReflectionProbeGizmo, EditorSpatialGizmo);
@@ -420,6 +436,7 @@ public:
 	Ref<SpatialMaterial> portal_material;
 	Ref<SpatialMaterial> raycast_material;
 	Ref<SpatialMaterial> visibility_notifier_material;
+	Ref<SpatialMaterial> particles_material;
 	Ref<SpatialMaterial> car_wheel_material;
 	Ref<SpatialMaterial> joint_material;
 

@@ -3005,6 +3005,7 @@ void RasterizerStorageGLES3::mesh_set_custom_aabb(RID p_mesh, const Rect3 &p_aab
 
 	mesh->custom_aabb = p_aabb;
 }
+
 Rect3 RasterizerStorageGLES3::mesh_get_custom_aabb(RID p_mesh) const {
 
 	const Mesh *mesh = mesh_owner.getornull(p_mesh);
@@ -4883,6 +4884,22 @@ void RasterizerStorageGLES3::particles_set_amount(RID p_particles, int p_amount)
 		}
 	}
 
+	if (particles->histories_enabled) {
+
+		for (int i = 0; i < 2; i++) {
+			glBindVertexArray(particles->particle_vao_histories[i]);
+
+			glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[i]);
+			glBufferData(GL_ARRAY_BUFFER, floats * sizeof(float), data, GL_DYNAMIC_COPY);
+
+			for (int j = 0; j < 6; j++) {
+				glEnableVertexAttribArray(j);
+				glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, ((uint8_t *)0) + (j * 16));
+			}
+			particles->particle_valid_histories[i] = false;
+		}
+	}
+
 	glBindVertexArray(0);
 
 	particles->prev_ticks = 0;
@@ -4917,18 +4934,61 @@ void RasterizerStorageGLES3::particles_set_randomness_ratio(RID p_particles, flo
 	ERR_FAIL_COND(!particles);
 	particles->randomness = p_ratio;
 }
+
+void RasterizerStorageGLES3::_particles_update_histories(Particles *particles) {
+
+	bool needs_histories = particles->draw_order == VS::PARTICLES_DRAW_ORDER_VIEW_DEPTH;
+
+	if (needs_histories == particles->histories_enabled)
+		return;
+
+	particles->histories_enabled = needs_histories;
+
+	int floats = particles->amount * 24;
+
+	if (!needs_histories) {
+
+		glDeleteBuffers(2, particles->particle_buffer_histories);
+		glDeleteVertexArrays(2, particles->particle_vao_histories);
+
+	} else {
+
+		glGenBuffers(2, particles->particle_buffer_histories);
+		glGenVertexArrays(2, particles->particle_vao_histories);
+
+		for (int i = 0; i < 2; i++) {
+			glBindVertexArray(particles->particle_vao_histories[i]);
+
+			glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[i]);
+			glBufferData(GL_ARRAY_BUFFER, floats * sizeof(float), NULL, GL_DYNAMIC_COPY);
+
+			for (int j = 0; j < 6; j++) {
+				glEnableVertexAttribArray(j);
+				glVertexAttribPointer(j, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 4 * 6, ((uint8_t *)0) + (j * 16));
+			}
+
+			particles->particle_valid_histories[i] = false;
+		}
+	}
+
+	particles->clear = true;
+}
+
 void RasterizerStorageGLES3::particles_set_custom_aabb(RID p_particles, const Rect3 &p_aabb) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 	particles->custom_aabb = p_aabb;
+	_particles_update_histories(particles);
+	particles->instance_change_notify();
 }
-void RasterizerStorageGLES3::particles_set_gravity(RID p_particles, const Vector3 &p_gravity) {
+
+void RasterizerStorageGLES3::particles_set_speed_scale(RID p_particles, float p_scale) {
 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
 
-	particles->gravity = p_gravity;
+	particles->speed_scale = p_scale;
 }
 void RasterizerStorageGLES3::particles_set_use_local_coordinates(RID p_particles, bool p_enable) {
 
@@ -4968,6 +5028,7 @@ void RasterizerStorageGLES3::particles_set_draw_order(RID p_particles, VS::Parti
 	ERR_FAIL_COND(!particles);
 
 	particles->draw_order = p_order;
+	_particles_update_histories(particles);
 }
 
 void RasterizerStorageGLES3::particles_set_draw_passes(RID p_particles, int p_passes) {
@@ -5001,7 +5062,39 @@ Rect3 RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, Rect3());
 
-	return particles->computed_aabb;
+	glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffers[0]);
+
+	float *data = (float *)glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 16 * 6, GL_MAP_READ_BIT);
+	Rect3 aabb;
+
+	Transform inv = particles->emission_transform.affine_inverse();
+
+	for (int i = 0; i < particles->amount; i++) {
+		int ofs = i * 24;
+		Vector3 pos = Vector3(data[ofs + 15], data[ofs + 19], data[ofs + 23]);
+		if (!particles->use_local_coords) {
+			pos = inv.xform(pos);
+		}
+		if (i == 0)
+			aabb.pos = pos;
+		else
+			aabb.expand_to(pos);
+	}
+
+	glUnmapBuffer(GL_ARRAY_BUFFER);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	float longest_axis = 0;
+	for (int i = 0; i < particles->draw_passes.size(); i++) {
+		if (particles->draw_passes[i].is_valid()) {
+			Rect3 maabb = mesh_get_aabb(particles->draw_passes[i], RID());
+			longest_axis = MAX(maabb.get_longest_axis_size(), longest_axis);
+		}
+	}
+
+	aabb.grow_by(longest_axis);
+
+	return aabb;
 }
 
 Rect3 RasterizerStorageGLES3::particles_get_aabb(RID p_particles) const {
@@ -5009,7 +5102,7 @@ Rect3 RasterizerStorageGLES3::particles_get_aabb(RID p_particles) const {
 	const Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND_V(!particles, Rect3());
 
-	return Rect3(Vector3(-1, -1, -1), Vector3(2, 2, 2));
+	return particles->custom_aabb;
 }
 
 void RasterizerStorageGLES3::particles_set_emission_transform(RID p_particles, const Transform &p_transform) {
@@ -5022,7 +5115,7 @@ void RasterizerStorageGLES3::particles_set_emission_transform(RID p_particles, c
 
 void RasterizerStorageGLES3::_particles_process(Particles *particles, float p_delta) {
 
-	float new_phase = Math::fmod((float)particles->phase + (p_delta / particles->lifetime), (float)1.0);
+	float new_phase = Math::fmod((float)particles->phase + (p_delta / particles->lifetime) * particles->speed_scale, (float)1.0);
 
 	if (particles->clear) {
 		particles->cycle_number = 0;
@@ -5034,7 +5127,7 @@ void RasterizerStorageGLES3::_particles_process(Particles *particles, float p_de
 	shaders.particles.set_uniform(ParticlesShaderGLES3::PREV_SYSTEM_PHASE, particles->phase);
 	particles->phase = new_phase;
 
-	shaders.particles.set_uniform(ParticlesShaderGLES3::DELTA, p_delta);
+	shaders.particles.set_uniform(ParticlesShaderGLES3::DELTA, p_delta * particles->speed_scale);
 	shaders.particles.set_uniform(ParticlesShaderGLES3::CLEAR, particles->clear);
 	if (particles->use_local_coords)
 		shaders.particles.set_uniform(ParticlesShaderGLES3::EMISSION_TRANSFORM, Transform());
@@ -5154,7 +5247,6 @@ void RasterizerStorageGLES3::update_particles() {
 		shaders.particles.set_uniform(ParticlesShaderGLES3::TIME, Color(frame.time[0], frame.time[1], frame.time[2], frame.time[3]));
 		shaders.particles.set_uniform(ParticlesShaderGLES3::EXPLOSIVENESS, particles->explosiveness);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::LIFETIME, particles->lifetime);
-		shaders.particles.set_uniform(ParticlesShaderGLES3::GRAVITY, particles->gravity);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::ATTRACTOR_COUNT, 0);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::EMITTING, particles->emitting);
 		shaders.particles.set_uniform(ParticlesShaderGLES3::RANDOMNESS, particles->randomness);
@@ -5201,6 +5293,20 @@ void RasterizerStorageGLES3::update_particles() {
 		}
 
 		particle_update_list.remove(particle_update_list.first());
+
+		if (particles->histories_enabled) {
+
+			SWAP(particles->particle_buffer_histories[0], particles->particle_buffer_histories[1]);
+			SWAP(particles->particle_vao_histories[0], particles->particle_vao_histories[1]);
+			SWAP(particles->particle_valid_histories[0], particles->particle_valid_histories[1]);
+
+			//copy
+			glBindBuffer(GL_COPY_READ_BUFFER, particles->particle_buffers[0]);
+			glBindBuffer(GL_COPY_WRITE_BUFFER, particles->particle_buffer_histories[0]);
+			glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, particles->amount * 24 * sizeof(float));
+
+			particles->particle_valid_histories[0] = true;
+		}
 	}
 
 	glDisable(GL_RASTERIZER_DISCARD);

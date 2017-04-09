@@ -2021,6 +2021,131 @@ VisibilityNotifierGizmo::VisibilityNotifierGizmo(VisibilityNotifier *p_notifier)
 
 ///
 
+String ParticlesGizmo::get_handle_name(int p_idx) const {
+
+	switch (p_idx) {
+		case 0: return "Size X";
+		case 1: return "Size Y";
+		case 2: return "Size Z";
+		case 3: return "Pos X";
+		case 4: return "Pos Y";
+		case 5: return "Pos Z";
+	}
+
+	return "";
+}
+Variant ParticlesGizmo::get_handle_value(int p_idx) const {
+
+	return particles->get_visibility_aabb();
+}
+void ParticlesGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_point) {
+
+	Transform gt = particles->get_global_transform();
+	//gt.orthonormalize();
+	Transform gi = gt.affine_inverse();
+
+	bool move = p_idx >= 3;
+	p_idx = p_idx % 3;
+
+	Rect3 aabb = particles->get_visibility_aabb();
+	Vector3 ray_from = p_camera->project_ray_origin(p_point);
+	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
+
+	Vector3 sg[2] = { gi.xform(ray_from), gi.xform(ray_from + ray_dir * 4096) };
+
+	Vector3 ofs = aabb.pos + aabb.size * 0.5;
+
+	Vector3 axis;
+	axis[p_idx] = 1.0;
+
+	if (move) {
+
+		Vector3 ra, rb;
+		Geometry::get_closest_points_between_segments(ofs - axis * 4096, ofs + axis * 4096, sg[0], sg[1], ra, rb);
+
+		float d = ra[p_idx];
+
+		aabb.pos[p_idx] = d - 1.0 - aabb.size[p_idx] * 0.5;
+		particles->set_visibility_aabb(aabb);
+
+	} else {
+		Vector3 ra, rb;
+		Geometry::get_closest_points_between_segments(ofs, ofs + axis * 4096, sg[0], sg[1], ra, rb);
+
+		float d = ra[p_idx] - ofs[p_idx];
+		if (d < 0.001)
+			d = 0.001;
+		//resize
+		aabb.pos[p_idx] = (aabb.pos[p_idx] + aabb.size[p_idx] * 0.5) - d;
+		aabb.size[p_idx] = d * 2;
+		particles->set_visibility_aabb(aabb);
+	}
+}
+
+void ParticlesGizmo::commit_handle(int p_idx, const Variant &p_restore, bool p_cancel) {
+
+	if (p_cancel) {
+		particles->set_visibility_aabb(p_restore);
+		return;
+	}
+
+	UndoRedo *ur = SpatialEditor::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Change Particles AABB"));
+	ur->add_do_method(particles, "set_custom_aabb", particles->get_visibility_aabb());
+	ur->add_undo_method(particles, "set_custom_aabb", p_restore);
+	ur->commit_action();
+}
+
+void ParticlesGizmo::redraw() {
+
+	clear();
+
+	Vector<Vector3> lines;
+	Rect3 aabb = particles->get_visibility_aabb();
+
+	for (int i = 0; i < 12; i++) {
+		Vector3 a, b;
+		aabb.get_edge(i, a, b);
+		lines.push_back(a);
+		lines.push_back(b);
+	}
+
+	Vector<Vector3> handles;
+
+	for (int i = 0; i < 3; i++) {
+
+		Vector3 ax;
+		ax[i] = aabb.pos[i] + aabb.size[i];
+		ax[(i + 1) % 3] = aabb.pos[(i + 1) % 3] + aabb.size[(i + 1) % 3] * 0.5;
+		ax[(i + 2) % 3] = aabb.pos[(i + 2) % 3] + aabb.size[(i + 2) % 3] * 0.5;
+		handles.push_back(ax);
+	}
+
+	Vector3 center = aabb.pos + aabb.size * 0.5;
+	for (int i = 0; i < 3; i++) {
+
+		Vector3 ax;
+		ax[i] = 1.0;
+		handles.push_back(center + ax);
+		lines.push_back(center);
+		lines.push_back(center + ax);
+	}
+
+	add_lines(lines, SpatialEditorGizmos::singleton->particles_material);
+	add_collision_segments(lines);
+	//add_unscaled_billboard(SpatialEditorGizmos::singleton->visi,0.05);
+	add_handles(handles);
+}
+ParticlesGizmo::ParticlesGizmo(Particles *p_particles) {
+
+	particles = p_particles;
+	set_spatial_node(p_particles);
+}
+
+////////
+
+///
+
 String ReflectionProbeGizmo::get_handle_name(int p_idx) const {
 
 	switch (p_idx) {
@@ -2938,6 +3063,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		return misg;
 	}
 
+	if (p_spatial->cast_to<Particles>()) {
+
+		Ref<ParticlesGizmo> misg = memnew(ParticlesGizmo(p_spatial->cast_to<Particles>()));
+		return misg;
+	}
+
 	if (p_spatial->cast_to<ReflectionProbe>()) {
 
 		Ref<ReflectionProbeGizmo> misg = memnew(ReflectionProbeGizmo(p_spatial->cast_to<ReflectionProbe>()));
@@ -3152,6 +3283,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	raycast_material = create_line_material(Color(1.0, 0.8, 0.6));
 	car_wheel_material = create_line_material(Color(0.6, 0.8, 1.0));
 	visibility_notifier_material = create_line_material(Color(1.0, 0.5, 1.0));
+	particles_material = create_line_material(Color(1.0, 1.0, 0.5));
 	reflection_probe_material = create_line_material(Color(0.5, 1.0, 0.7));
 	reflection_probe_material_internal = create_line_material(Color(0.3, 0.8, 0.5, 0.15));
 	gi_probe_material = create_line_material(Color(0.7, 1.0, 0.5));
