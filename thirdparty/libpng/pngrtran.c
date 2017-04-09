@@ -1,8 +1,8 @@
 
 /* pngrtran.c - transforms the data in a row for PNG readers
  *
- * Last changed in libpng 1.6.24 [August 4, 2016]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.29 [March 16, 2017]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -4302,7 +4302,7 @@ png_do_expand_palette(png_row_infop row_info, png_bytep row,
             if (num_trans > 0)
             {
                sp = row + (png_size_t)row_width - 1;
-               dp = row + (png_size_t)(row_width << 2) - 1;
+               dp = row + ((png_size_t)row_width << 2) - 1;
 
                for (i = 0; i < row_width; i++)
                {
@@ -4463,7 +4463,7 @@ png_do_expand(png_row_infop row_info, png_bytep row,
             {
                gray = gray & 0xff;
                sp = row + (png_size_t)row_width - 1;
-               dp = row + (png_size_t)(row_width << 1) - 1;
+               dp = row + ((png_size_t)row_width << 1) - 1;
 
                for (i = 0; i < row_width; i++)
                {
@@ -4519,7 +4519,7 @@ png_do_expand(png_row_infop row_info, png_bytep row,
             png_byte green = (png_byte)(trans_color->green & 0xff);
             png_byte blue = (png_byte)(trans_color->blue & 0xff);
             sp = row + (png_size_t)row_info->rowbytes - 1;
-            dp = row + (png_size_t)(row_width << 2) - 1;
+            dp = row + ((png_size_t)row_width << 2) - 1;
             for (i = 0; i < row_width; i++)
             {
                if (*(sp - 2) == red && *(sp - 1) == green && *(sp) == blue)
@@ -4542,7 +4542,7 @@ png_do_expand(png_row_infop row_info, png_bytep row,
             png_byte green_low = (png_byte)(trans_color->green & 0xff);
             png_byte blue_low = (png_byte)(trans_color->blue & 0xff);
             sp = row + row_info->rowbytes - 1;
-            dp = row + (png_size_t)(row_width << 3) - 1;
+            dp = row + ((png_size_t)row_width << 3) - 1;
             for (i = 0; i < row_width; i++)
             {
                if (*(sp - 5) == red_high &&
