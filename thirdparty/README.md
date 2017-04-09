@@ -156,7 +156,7 @@ TODO.
 ## opus
 
 - Upstream: https://opus-codec.org
-- Version: 1.1.3 (opus) and 0.8 (opusfile)
+- Version: 1.1.4 (opus) and 0.8 (opusfile)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -164,6 +164,7 @@ Files extracted from upstream source:
 - all .c and .h files in src/ (both opus and opusfile),
   except `opus_demo.c`
 - all .h files in include/ (both opus and opusfile) as opus/
+- celt/ and silk/ subfolders
 - COPYING
 
 
