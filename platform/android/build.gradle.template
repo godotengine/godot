@@ -39,8 +39,6 @@ android {
 		exclude 'META-INF/NOTICE'
 	}
 	defaultConfig {
-		minSdkVersion 14
-		targetSdkVersion 23
 		$$GRADLE_DEFAULT_CONFIG$$
 	}
 	// Both signing and zip-aligning will be done at export time
