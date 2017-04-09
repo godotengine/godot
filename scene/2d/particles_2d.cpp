@@ -571,13 +571,13 @@ void Particles2D::_notification(int p_what) {
 						src_rect.pos.x = size.x * (frame % h_frames);
 						src_rect.pos.y = size.y * (frame / h_frames);
 					}
-
+					Rect2 dst_rect(Point2(), size);
 					if (flip_h)
-						src_rect.size.x = -src_rect.size.x;
+						dst_rect.size.x = -dst_rect.size.x;
 					if (flip_v)
-						src_rect.size.y = -src_rect.size.y;
+						dst_rect.size.y = -dst_rect.size.y;
 
-					texture->draw_rect_region(ci, Rect2(Point2(), size), src_rect, color);
+					texture->draw_rect_region(ci, dst_rect, src_rect, color);
 					//VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
 				} else {
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(), size), color);
