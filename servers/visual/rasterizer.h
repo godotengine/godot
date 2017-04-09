@@ -886,6 +886,7 @@ public:
 	};
 
 	virtual void canvas_begin() = 0;
+	virtual void canvas_end() = 0;
 
 	virtual void canvas_render_items(Item *p_item_list, int p_z, const Color &p_modulate, Light *p_light) = 0;
 	virtual void canvas_debug_viewport_shadows(Light *p_lights_with_shadow) = 0;
