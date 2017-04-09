@@ -177,13 +177,17 @@ void CompressImage( u8 const* rgba, int width, int height, int pitch, void* bloc
     // fix any bad flags
     flags = FixFlags( flags );
 
-    // initialise the block output
-    u8* targetBlock = reinterpret_cast< u8* >( blocks );
-    int bytesPerBlock = ( ( flags & ( kDxt1 | kBc4 ) ) != 0 ) ? 8 : 16;
-
     // loop over blocks
+#ifdef SQUISH_USE_OPENMP
+#   pragma omp parallel for
+#endif
     for( int y = 0; y < height; y += 4 )
     {
+        // initialise the block output
+        u8* targetBlock = reinterpret_cast< u8* >( blocks );
+        int bytesPerBlock = ( ( flags & ( kDxt1 | kBc4 ) ) != 0 ) ? 8 : 16;
+        targetBlock += ( (y / 4) * ( (width + 3) / 4) ) * bytesPerBlock;
+
         for( int x = 0; x < width; x += 4 )
         {
             // build the 4x4 block of pixels
@@ -232,13 +236,17 @@ void DecompressImage( u8* rgba, int width, int height, int pitch, void const* bl
     // fix any bad flags
     flags = FixFlags( flags );
 
-    // initialise the block input
-    u8 const* sourceBlock = reinterpret_cast< u8 const* >( blocks );
-    int bytesPerBlock = ( ( flags & ( kDxt1 | kBc4 ) ) != 0 ) ? 8 : 16;
-
     // loop over blocks
+#ifdef SQUISH_USE_OPENMP
+#   pragma omp parallel for
+#endif
     for( int y = 0; y < height; y += 4 )
     {
+        // initialise the block input
+        u8 const* sourceBlock = reinterpret_cast< u8 const* >( blocks );
+        int bytesPerBlock = ( ( flags & ( kDxt1 | kBc4 ) ) != 0 ) ? 8 : 16;
+        sourceBlock += ( (y / 4) * ( (width + 3) / 4) ) * bytesPerBlock;
+
         for( int x = 0; x < width; x += 4 )
         {
             // decompress the block
