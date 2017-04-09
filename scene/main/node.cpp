@@ -1526,6 +1526,17 @@ Node *Node::_get_child_by_name(const StringName &p_name) const {
 	return NULL;
 }
 
+
+void Node::remove_all_children() {
+	
+	int cc = data.children.size();
+	Node *const *cd = data.children.ptr();
+
+	for (int i = 0; i < cc; i++) {
+		cd[i]->queue_delete();
+	}	
+}
+
 Node *Node::_get_node(const NodePath &p_path) const {
 
 	if (!data.inside_tree && p_path.is_absolute()) {
@@ -2775,6 +2786,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
 	ClassDB::bind_method(D_METHOD("get_child:Node", "idx"), &Node::get_child);
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
+	ClassDB::bind_method(D_METHOD("remove_all_children"), &Node::remove_all_children);
 	ClassDB::bind_method(D_METHOD("get_node:Node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_parent:Node"), &Node::get_parent);
 	ClassDB::bind_method(D_METHOD("find_node:Node", "mask", "recursive", "owned"), &Node::find_node, DEFVAL(true), DEFVAL(true));
