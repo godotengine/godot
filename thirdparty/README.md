@@ -204,7 +204,7 @@ Files extracted from upstream source:
 ## squish
 
 - Upstream: https://sourceforge.net/projects/libsquish
-- Version: 1.14
+- Version: 1.15
 - License: MIT
 
 Files extracted from upstream source:
