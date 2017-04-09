@@ -4,6 +4,7 @@
 
 #include "class_db.h"
 #include "core/global_config.h"
+#include "core/global_constants.h"
 #include "os/file_access.h"
 
 // helper stuff
@@ -91,6 +92,23 @@ List<ClassAPI> generate_c_api_classes() {
 
 	List<StringName> classes;
 	ClassDB::get_class_list(&classes);
+
+	// Register global constants as a fake GlobalConstants singleton class
+	{
+		ClassAPI global_constants_api;
+		global_constants_api.class_name = L"GlobalConstants";
+		global_constants_api.api_type = ClassDB::API_CORE;
+		global_constants_api.is_singleton = true;
+		global_constants_api.is_instanciable = false;
+		const int constants_count = GlobalConstants::get_global_constant_count();
+		for (int i = 0; i < constants_count; ++i) {
+			ConstantAPI constant_api;
+			constant_api.constant_name = GlobalConstants::get_global_constant_name(i);
+			constant_api.constant_value = GlobalConstants::get_global_constant_value(i);
+			global_constants_api.constants.push_back(constant_api);
+		}
+		api.push_back(global_constants_api);
+	}
 
 	for (List<StringName>::Element *e = classes.front(); e != NULL; e = e->next()) {
 		StringName class_name = e->get();
