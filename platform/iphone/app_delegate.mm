@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #import "app_delegate.h"
-#import "gl_view.h"
 
-#include "os_iphone.h"
 #include "core/global_config.h"
+#import "gl_view.h"
 #include "main/main.h"
+#include "os_iphone.h"
 
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 #include "modules/FacebookScorer_ios/FacebookScorer.h"
@@ -45,19 +45,19 @@
 #endif
 
 #ifdef MODULE_PARSE_ENABLED
-#import <Parse/Parse.h>
 #import "FBSDKCoreKit/FBSDKCoreKit.h"
+#import <Parse/Parse.h>
 #endif
 
-#define kFilteringFactor                        0.1
-#define kRenderingFrequency						60
-#define kAccelerometerFrequency         100.0 // Hz
+#define kFilteringFactor 0.1
+#define kRenderingFrequency 60
+#define kAccelerometerFrequency 100.0 // Hz
 
 Error _shell_open(String);
 void _set_keep_screen_on(bool p_enabled);
 
 Error _shell_open(String p_uri) {
-	NSString* url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
+	NSString *url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
 
 	if (![[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]])
 		return ERR_CANT_OPEN;
@@ -77,20 +77,21 @@ void _set_keep_screen_on(bool p_enabled) {
 @synthesize window;
 
 extern int gargc;
-extern char** gargv;
-extern int iphone_main(int, int, int, char**);
+extern char **gargv;
+extern int iphone_main(int, int, int, char **);
 extern void iphone_finish();
 
 CMMotionManager *motionManager;
-bool motionInitialised; 
+bool motionInitialised;
 
-static ViewController* mainViewController = nil;
-+ (ViewController*) getViewController {
+static ViewController *mainViewController = nil;
++ (ViewController *)getViewController {
 	return mainViewController;
 }
 
 static int frame_count = 0;
-- (void)drawView:(GLView*)view; {
+- (void)drawView:(GLView *)view;
+{
 
 	switch (frame_count) {
 		case 0: {
@@ -111,7 +112,7 @@ static int frame_count = 0;
 			};
 			++frame_count;
 
-			NSArray* paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+			NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 			NSString *documentsDirectory = [paths objectAtIndex:0];
 			//NSString *documentsDirectory = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 			OSIPhone::get_singleton()->set_data_dir(String::utf8([documentsDirectory UTF8String]));
@@ -119,15 +120,15 @@ static int frame_count = 0;
 			NSString *locale_code = [[[NSLocale preferredLanguages] objectAtIndex:0] substringToIndex:2];
 			OSIPhone::get_singleton()->set_locale(String::utf8([locale_code UTF8String]));
 
-			NSString* uuid;
-			if ([[UIDevice currentDevice]respondsToSelector:@selector(identifierForVendor)]) {
+			NSString *uuid;
+			if ([[UIDevice currentDevice] respondsToSelector:@selector(identifierForVendor)]) {
 				uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 			} else {
 				// before iOS 6, so just generate an identifier and store it
 				uuid = [[NSUserDefaults standardUserDefaults] objectForKey:@"identiferForVendor"];
-				if( !uuid ) {
+				if (!uuid) {
 					CFUUIDRef cfuuid = CFUUIDCreate(NULL);
-					uuid = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, cfuuid);
+					uuid = (__bridge_transfer NSString *)CFUUIDCreateString(NULL, cfuuid);
 					CFRelease(cfuuid);
 					[[NSUserDefaults standardUserDefaults] setObject:uuid forKey:@"identifierForVendor"];
 				}
@@ -136,7 +137,7 @@ static int frame_count = 0;
 			OSIPhone::get_singleton()->set_unique_ID(String::utf8([uuid UTF8String]));
 
 		}; break;
-/*
+		/*
 		case 1: {
 			++frame_count;
 		}; break;
@@ -147,31 +148,31 @@ static int frame_count = 0;
 			++frame_count;
 
 			// this might be necessary before here
-			NSDictionary* dict = [[NSBundle mainBundle] infoDictionary];
-			for (NSString* key in dict) {
-				NSObject* value = [dict objectForKey:key];
+			NSDictionary *dict = [[NSBundle mainBundle] infoDictionary];
+			for (NSString *key in dict) {
+				NSObject *value = [dict objectForKey:key];
 				String ukey = String::utf8([key UTF8String]);
 
 				// we need a NSObject to Variant conversor
 
 				if ([value isKindOfClass:[NSString class]]) {
-					NSString* str = (NSString*)value;
+					NSString *str = (NSString *)value;
 					String uval = String::utf8([str UTF8String]);
 
-					GlobalConfig::get_singleton()->set("Info.plist/"+ukey, uval);
+					GlobalConfig::get_singleton()->set("Info.plist/" + ukey, uval);
 
 				} else if ([value isKindOfClass:[NSNumber class]]) {
 
-					NSNumber* n = (NSNumber*)value;
+					NSNumber *n = (NSNumber *)value;
 					double dval = [n doubleValue];
 
-					GlobalConfig::get_singleton()->set("Info.plist/"+ukey, dval);
+					GlobalConfig::get_singleton()->set("Info.plist/" + ukey, dval);
 				};
 				// do stuff
 			}
 
 		}; break;
-/*
+		/*
 		case 3: {
 			++frame_count;
 		}; break;
@@ -185,7 +186,7 @@ static int frame_count = 0;
 
 		default: {
 			if (OSIPhone::get_singleton()) {
-//			OSIPhone::get_singleton()->update_accelerometer(accel[0], accel[1], accel[2]);
+				//OSIPhone::get_singleton()->update_accelerometer(accel[0], accel[1], accel[2]);
 				if (motionInitialised) {
 					// Just using polling approach for now, we can set this up so it sends data to us in intervals, might be better.
 					// See Apple reference pages for more details:
@@ -205,7 +206,7 @@ static int frame_count = 0;
 					// [[UIDevice currentDevice] orientation] changes even if we've fixed our orientation which is not
 					// a good thing when you're trying to get your user to move the screen in all directions and want consistent output
 
-					///@TODO Using [[UIApplication sharedApplication] statusBarOrientation] is a bit of a hack. Godot obviously knows the orientation so maybe we 
+					///@TODO Using [[UIApplication sharedApplication] statusBarOrientation] is a bit of a hack. Godot obviously knows the orientation so maybe we
 					// can use that instead? (note that left and right seem swapped)
 
 					switch ([[UIApplication sharedApplication] statusBarOrientation]) {
@@ -240,7 +241,6 @@ static int frame_count = 0;
 			};
 
 		}; break;
-
 	};
 };
 
@@ -250,7 +250,7 @@ static int frame_count = 0;
 	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
 };
 
-- (void)applicationDidFinishLaunching:(UIApplication*)application {
+- (void)applicationDidFinishLaunching:(UIApplication *)application {
 
 	printf("**************** app delegate init\n");
 	CGRect rect = [[UIScreen mainScreen] bounds];
@@ -283,8 +283,8 @@ static int frame_count = 0;
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
 
-	_set_keep_screen_on(bool(GLOBAL_DEF("display/keep_screen_on",true)) ? YES : NO);
-	glView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink",true)) ? YES : NO;
+	_set_keep_screen_on(bool(GLOBAL_DEF("display/keep_screen_on", true)) ? YES : NO);
+	glView.useCADisplayLink = bool(GLOBAL_DEF("display.iOS/use_cadisplaylink", true)) ? YES : NO;
 	printf("cadisaplylink: %d", glView.useCADisplayLink);
 	glView.animationInterval = 1.0 / kRenderingFrequency;
 	[glView startAnimation];
@@ -296,7 +296,7 @@ static int frame_count = 0;
 	if (!motionInitialised) {
 		motionManager = [[CMMotionManager alloc] init];
 		if (motionManager.deviceMotionAvailable) {
-			motionManager.deviceMotionUpdateInterval = 1.0/70.0;
+			motionManager.deviceMotionUpdateInterval = 1.0 / 70.0;
 			[motionManager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXMagneticNorthZVertical];
 			motionInitialised = YES;
 		};
@@ -316,11 +316,11 @@ static int frame_count = 0;
 		return;
 	}
 
-	String adid = GLOBAL_DEF("mobileapptracker/advertiser_id","");
-	String convkey = GLOBAL_DEF("mobileapptracker/conversion_key","");
+	String adid = GLOBAL_DEF("mobileapptracker/advertiser_id", "");
+	String convkey = GLOBAL_DEF("mobileapptracker/conversion_key", "");
 
-	NSString * advertiser_id = [NSString stringWithUTF8String:adid.utf8().get_data()];
-	NSString * conversion_key = [NSString stringWithUTF8String:convkey.utf8().get_data()];
+	NSString *advertiser_id = [NSString stringWithUTF8String:adid.utf8().get_data()];
+	NSString *conversion_key = [NSString stringWithUTF8String:convkey.utf8().get_data()];
 
 	// Account Configuration info - must be set
 	[MobileAppTracker initializeWithMATAdvertiserId:advertiser_id MATConversionKey:conversion_key];
@@ -328,13 +328,12 @@ static int frame_count = 0;
 	// Used to pass us the IFA, enables highly accurate 1-to-1 attribution.
 	// Required for many advertising networks.
 	[MobileAppTracker setAppleAdvertisingIdentifier:[[ASIdentifierManager sharedManager] advertisingIdentifier]
-		advertisingTrackingEnabled:[[ASIdentifierManager sharedManager] isAdvertisingTrackingEnabled]];
+						 advertisingTrackingEnabled:[[ASIdentifierManager sharedManager] isAdvertisingTrackingEnabled]];
 
 #endif
-
 };
 
-- (void)applicationWillTerminate:(UIApplication*)application {
+- (void)applicationWillTerminate:(UIApplication *)application {
 
 	printf("********************* will terminate\n");
 
@@ -343,7 +342,7 @@ static int frame_count = 0;
 		[motionManager stopDeviceMotionUpdates];
 		[motionManager release];
 		motionManager = nil;
-		motionInitialised = NO;	
+		motionInitialised = NO;
 	};
 
 	iphone_finish();
@@ -368,13 +367,13 @@ static int frame_count = 0;
 	[view_controller.view startAnimation];
 }
 
-- (void) applicationWillResignActive:(UIApplication *)application {
+- (void)applicationWillResignActive:(UIApplication *)application {
 	printf("********************* will resign active\n");
 	//OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	[view_controller.view stopAnimation]; // FIXME: pause seems to be recommended elsewhere
 }
 
-- (void) applicationDidBecomeActive:(UIApplication *)application {
+- (void)applicationDidBecomeActive:(UIApplication *)application {
 	printf("********************* did become active\n");
 #ifdef MODULE_GAME_ANALYTICS_ENABLED
 	printf("********************* mobile app tracker found\n");
@@ -401,12 +400,12 @@ static int frame_count = 0;
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
 #ifdef MODULE_PARSE_ENABLED
 	NSLog(@"Handling application openURL");
-	return [[FBSDKApplicationDelegate sharedInstance] application:application
-		openURL:url
-		sourceApplication:sourceApplication
-		annotation:annotation];
+	return [[FBSDKApplicationDelegate sharedInstance]
+				  application:application
+					  openURL:url
+			sourceApplication:sourceApplication
+				   annotation:annotation];
 #endif
-
 
 #ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 	return [[[FacebookScorer sharedInstance] facebook] handleOpenURL:url];

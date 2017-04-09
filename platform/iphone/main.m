@@ -27,12 +27,13 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#import <UIKit/UIKit.h>
 #import "app_delegate.h"
+
+#import <UIKit/UIKit.h>
 #include <stdio.h>
 
 int gargc;
-char** gargv;
+char **gargv;
 
 int main(int argc, char *argv[]) {
 	printf("*********** main.m\n");
@@ -40,11 +41,10 @@ int main(int argc, char *argv[]) {
 	gargv = argv;
 
 	NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	AppDelegate* app = [AppDelegate alloc];
+	AppDelegate *app = [AppDelegate alloc];
 	printf("running app main\n");
 	UIApplicationMain(argc, argv, nil, @"AppDelegate");
 	printf("main done, pool release\n");
 	[pool release];
 	return 0;
 }
-
