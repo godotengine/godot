@@ -181,14 +181,17 @@ void GDAPI *godot_dlinstance_get_userdata(godot_object *p_instance) {
 	return NULL;
 }
 
-void GDAPI godot_get_global_constants(godot_dictionary *p_constants) {
-	Dictionary *constants = (Dictionary *)p_constants;
+godot_dictionary GDAPI godot_get_global_constants() {
+	godot_dictionary constants;
+	godot_dictionary_new(&constants);
+	Dictionary *p_constants = (Dictionary*)&constants;
 	const int constants_count = GlobalConstants::get_global_constant_count();
 	for (int i = 0; i < constants_count; ++i) {
 		const char *name = GlobalConstants::get_global_constant_name(i);
 		int value = GlobalConstants::get_global_constant_value(i);
-		(*constants)[name] = value;
+		(*p_constants)[name] = value;
 	}
+	return constants;
 }
 
 // System functions
