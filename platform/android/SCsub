@@ -99,7 +99,7 @@ for x in env.android_default_config:
     if x.startswith("minSdkVersion") and int(x.split(" ")[-1]) < minSdk: 
         x = "minSdkVersion " + str(minSdk)
     if x.startswith("targetSdkVersion") and int(x.split()[-1]) > targetSdk: 
-        x = "targetSdkVersion " + targetSdk
+        x = "targetSdkVersion " + str(targetSdk)
 
     gradle_default_config_text += x + "\n\t\t"
 
