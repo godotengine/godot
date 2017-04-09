@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+Import('env')
+
+common_sailfish = [
+	"os_sailfish.cpp",
+	"key_mapping_sailfish.cpp"
+]
+
+env.Program('#platform/sailfish/project/godot', ['godot_sailfish.cpp'] + common_sailfish)
