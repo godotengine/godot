@@ -2367,6 +2367,23 @@ Array _ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) con
 	return ret;
 }
 
+Variant _ClassDB::get_property(Object *p_object, const StringName &p_property) const {
+	Variant ret;
+	ClassDB::get_property(p_object, p_property, ret);
+	return ret;
+}
+
+Error _ClassDB::set_property(Object *p_object, const StringName &p_property, const Variant &p_value) const {
+	Variant ret;
+	bool valid;
+	if (!ClassDB::set_property(p_object, p_property, p_value, &valid)) {
+		return ERR_UNAVAILABLE;
+	} else if (!valid) {
+		return ERR_INVALID_DATA;
+	}
+	return OK;
+}
+
 bool _ClassDB::has_method(StringName p_class, StringName p_method, bool p_no_inheritance) const {
 
 	return ClassDB::has_method(p_class, p_method, p_no_inheritance);
@@ -2439,6 +2456,8 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &_ClassDB::get_signal_list, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &_ClassDB::get_property_list, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("class_get_property:Variant", "object", "property"), &_ClassDB::get_property);
+	ClassDB::bind_method(D_METHOD("class_set_property:Error", "object", "property", "value"), &_ClassDB::set_property);
 
 	ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &_ClassDB::has_method, DEFVAL(false));
 
