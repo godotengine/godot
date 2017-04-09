@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "main.h"
+#include "app_icon.h"
 #include "core/register_core_types.h"
 #include "drivers/register_driver_types.h"
 #include "global_config.h"
@@ -885,6 +886,9 @@ Error Main::setup2() {
 	} else if (init_fullscreen) {
 		OS::get_singleton()->set_window_fullscreen(true);
 	}
+
+	register_server_types();
+
 	MAIN_PRINT("Main: Load Remaps");
 
 	Color clear = GLOBAL_DEF("rendering/viewport/default_clear_color", Color(0.3, 0.3, 0.3));
@@ -953,7 +957,6 @@ Error Main::setup2() {
 	MAIN_PRINT("Main: Load Scene Types");
 
 	register_scene_types();
-	register_server_types();
 
 	GLOBAL_DEF("display/mouse_cursor/custom_image", String());
 	GLOBAL_DEF("display/mouse_cursor/custom_image_hotspot", Vector2());

@@ -2,10 +2,56 @@
 
 Import('env')
 
+
+def make_splash(target, source, env):
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open(src, "rb")
+    g = open(dst, "wb")
+
+    buf = f.read()
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef BOOT_SPLASH_H\n")
+    g.write("#define BOOT_SPLASH_H\n")
+    g.write("static const Color boot_splash_bg_color = Color(1,1,1,1);\n");
+    g.write("static const unsigned char boot_splash_png[] = {\n")
+    for i in range(len(buf)):
+	g.write(str(ord(buf[i])) + ",\n")
+    g.write("};\n")
+    g.write("#endif")
+
+
+def make_app_icon(target, source, env):
+
+    src = source[0].srcnode().abspath
+    dst = target[0].srcnode().abspath
+    f = open(src, "rb")
+    g = open(dst, "wb")
+
+    buf = f.read()
+
+    g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+    g.write("#ifndef APP_ICON_H\n")
+    g.write("#define APP_ICON_H\n")
+    g.write("static const unsigned char app_icon_png[] = {\n")
+    for i in range(len(buf)):
+	g.write(str(ord(buf[i])) + ",\n")
+    g.write("};\n")
+    g.write("#endif")
+
+
 env.main_sources = []
 env.add_source_files(env.main_sources, "*.cpp")
 
 Export('env')
+
+env.Depends("#main/splash.h", "#main/splash.png")
+env.Command("#main/splash.h", "#main/splash.png", make_splash)
+
+env.Depends("#main/app_icon.h", "#main/app_icon.png")
+env.Command("#main/app_icon.h", "#main/app_icon.png", make_app_icon)
 
 SConscript('tests/SCsub')
 
