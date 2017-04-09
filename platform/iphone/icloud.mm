@@ -28,21 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #ifdef ICLOUD_ENABLED
-
 #include "icloud.h"
 
 #ifndef __IPHONE_9_0
 extern "C" {
 #endif
 
-#import <Foundation/Foundation.h>
 #import "app_delegate.h"
+
+#import <Foundation/Foundation.h>
 
 #ifndef __IPHONE_9_0
 };
 #endif
 
-ICloud* ICloud::instance = NULL;
+ICloud *ICloud::instance = NULL;
 
 void ICloud::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("remove_key"), &ICloud::remove_key);
@@ -68,18 +68,18 @@ Variant ICloud::pop_pending_event() {
 	return front;
 };
 
-ICloud* ICloud::get_singleton() {
+ICloud *ICloud::get_singleton() {
 	return instance;
 };
 
 //convert from apple's abstract type to godot's abstract type....
-Variant nsobject_to_variant(NSObject* object) {
+Variant nsobject_to_variant(NSObject *object) {
 	if ([object isKindOfClass:[NSString class]]) {
-		const char* str = [(NSString*)object UTF8String];
+		const char *str = [(NSString *)object UTF8String];
 		return String::utf8(str != NULL ? str : "");
 	} else if ([object isKindOfClass:[NSData class]]) {
 		ByteArray ret;
-		NSData* data = (NSData*)object;
+		NSData *data = (NSData *)object;
 		if ([data length] > 0) {
 			ret.resize([data length]);
 			{
@@ -90,22 +90,21 @@ Variant nsobject_to_variant(NSObject* object) {
 		return ret;
 	} else if ([object isKindOfClass:[NSArray class]]) {
 		Array result;
-		NSArray* array = (NSArray*)object;
+		NSArray *array = (NSArray *)object;
 		for (unsigned int i = 0; i < [array count]; ++i) {
-			NSObject* value = [array objectAtIndex:i];
+			NSObject *value = [array objectAtIndex:i];
 			result.push_back(nsobject_to_variant(value));
 		}
 		return result;
 	} else if ([object isKindOfClass:[NSDictionary class]]) {
 		Dictionary result;
-		NSDictionary* dic = (NSDictionary*)object;
+		NSDictionary *dic = (NSDictionary *)object;
 
-
-		NSArray* keys =  [dic allKeys];
+		NSArray *keys = [dic allKeys];
 		int count = [keys count];
-		for (int i=0; i < count; ++i) {
-			NSObject* k = [ keys objectAtIndex:i];
-			NSObject* v = [dic objectForKey:k];
+		for (int i = 0; i < count; ++i) {
+			NSObject *k = [keys objectAtIndex:i];
+			NSObject *v = [dic objectForKey:k];
 
 			result[nsobject_to_variant(k)] = nsobject_to_variant(v);
 		}
@@ -115,20 +114,20 @@ Variant nsobject_to_variant(NSObject* object) {
 		//To avoid errors, we'll cast as broadly as possible, and only return int or float.
 		//bool, char, int, uint, longlong -> int
 		//float, double -> float
-		NSNumber* num = (NSNumber*)object;
-		if(strcmp([num objCType], @encode(BOOL)) == 0) {
+		NSNumber *num = (NSNumber *)object;
+		if (strcmp([num objCType], @encode(BOOL)) == 0) {
 			return Variant((int)[num boolValue]);
-		} else if(strcmp([num objCType], @encode(char)) == 0) {
+		} else if (strcmp([num objCType], @encode(char)) == 0) {
 			return Variant((int)[num charValue]);
-		} else if(strcmp([num objCType], @encode(int)) == 0) {
+		} else if (strcmp([num objCType], @encode(int)) == 0) {
 			return Variant([num intValue]);
-		} else if(strcmp([num objCType], @encode(unsigned int)) == 0) {
+		} else if (strcmp([num objCType], @encode(unsigned int)) == 0) {
 			return Variant((int)[num unsignedIntValue]);
-		} else if(strcmp([num objCType], @encode(long long)) == 0) {
+		} else if (strcmp([num objCType], @encode(long long)) == 0) {
 			return Variant((int)[num longValue]);
-		} else if(strcmp([num objCType], @encode(float)) == 0) {
+		} else if (strcmp([num objCType], @encode(float)) == 0) {
 			return Variant([num floatValue]);
-		} else if(strcmp([num objCType], @encode(double)) == 0) {
+		} else if (strcmp([num objCType], @encode(double)) == 0) {
 			return Variant((float)[num doubleValue]);
 		}
 	} else if ([object isKindOfClass:[NSDate class]]) {
@@ -145,7 +144,7 @@ Variant nsobject_to_variant(NSObject* object) {
 	}
 }
 
-NSObject* variant_to_nsobject(Variant v) {
+NSObject *variant_to_nsobject(Variant v) {
 	if (v.get_type() == Variant::STRING) {
 		return [[[NSString alloc] initWithUTF8String:((String)v).utf8().get_data()] autorelease];
 	} else if (v.get_type() == Variant::REAL) {
@@ -155,12 +154,12 @@ NSObject* variant_to_nsobject(Variant v) {
 	} else if (v.get_type() == Variant::BOOL) {
 		return [NSNumber numberWithBool:BOOL((bool)v)];
 	} else if (v.get_type() == Variant::DICTIONARY) {
-		NSMutableDictionary* result = [[[NSMutableDictionary alloc] init] autorelease];
+		NSMutableDictionary *result = [[[NSMutableDictionary alloc] init] autorelease];
 		Dictionary dic = v;
 		Array keys = dic.keys();
 		for (unsigned int i = 0; i < keys.size(); ++i) {
-			NSString* key = [[[NSString alloc] initWithUTF8String:((String)(keys[i])).utf8().get_data()] autorelease];
-			NSObject* value = variant_to_nsobject(dic[keys[i]]);
+			NSString *key = [[[NSString alloc] initWithUTF8String:((String)(keys[i])).utf8().get_data()] autorelease];
+			NSObject *value = variant_to_nsobject(dic[keys[i]]);
 
 			if (key == NULL || value == NULL) {
 				return NULL;
@@ -170,10 +169,10 @@ NSObject* variant_to_nsobject(Variant v) {
 		}
 		return result;
 	} else if (v.get_type() == Variant::ARRAY) {
-		NSMutableArray* result = [[[NSMutableArray alloc] init] autorelease];
+		NSMutableArray *result = [[[NSMutableArray alloc] init] autorelease];
 		Array arr = v;
 		for (unsigned int i = 0; i < arr.size(); ++i) {
-			NSObject* value = variant_to_nsobject(arr[i]);
+			NSObject *value = variant_to_nsobject(arr[i]);
 			if (value == NULL) {
 				//trying to add something unsupported to the array. cancel the whole array
 				return NULL;
@@ -184,17 +183,16 @@ NSObject* variant_to_nsobject(Variant v) {
 	} else if (v.get_type() == Variant::RAW_ARRAY) {
 		ByteArray arr = v;
 		ByteArray::Read r = arr.read();
-		NSData* result = [NSData dataWithBytes:r.ptr() length:arr.size()];
+		NSData *result = [NSData dataWithBytes:r.ptr() length:arr.size()];
 		return result;
 	}
-	WARN_PRINT(String("Could not add unsupported type to iCloud: '" + Variant::get_type_name(v.get_type())+"'").utf8().get_data());
+	WARN_PRINT(String("Could not add unsupported type to iCloud: '" + Variant::get_type_name(v.get_type()) + "'").utf8().get_data());
 	return NULL;
 }
 
-
 Error ICloud::remove_key(Variant p_param) {
 	String param = p_param;
-	NSString* key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
+	NSString *key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
 
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 
@@ -217,13 +215,13 @@ Variant ICloud::set_key_values(Variant p_params) {
 		String variant_key = keys[i];
 		Variant variant_value = params[variant_key];
 
-		NSString* key = [[[NSString alloc] initWithUTF8String:variant_key.utf8().get_data()] autorelease];
+		NSString *key = [[[NSString alloc] initWithUTF8String:variant_key.utf8().get_data()] autorelease];
 		if (key == NULL) {
 			error_keys.push_back(variant_key);
 			continue;
 		}
 
-		NSObject* value = variant_to_nsobject(variant_value);
+		NSObject *value = variant_to_nsobject(variant_value);
 
 		if (value == NULL) {
 			error_keys.push_back(variant_key);
@@ -240,7 +238,7 @@ Variant ICloud::set_key_values(Variant p_params) {
 Variant ICloud::get_key_value(Variant p_param) {
 	String param = p_param;
 
-	NSString* key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
+	NSString *key = [[[NSString alloc] initWithUTF8String:param.utf8().get_data()] autorelease];
 	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 
 	if (![[store dictionaryRepresentation] objectForKey:key]) {
@@ -255,16 +253,16 @@ Variant ICloud::get_key_value(Variant p_param) {
 Variant ICloud::get_all_key_values() {
 	Dictionary result;
 
-	NSUbiquitousKeyValueStore* store = [NSUbiquitousKeyValueStore defaultStore];
-	NSDictionary* store_dictionary = [store dictionaryRepresentation];
+	NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
+	NSDictionary *store_dictionary = [store dictionaryRepresentation];
 
-	NSArray* keys =  [store_dictionary allKeys];
+	NSArray *keys = [store_dictionary allKeys];
 	int count = [keys count];
-	for (int i=0; i < count; ++i) {
-		NSString* k = [ keys objectAtIndex:i];
-		NSObject* v = [store_dictionary objectForKey:k];
+	for (int i = 0; i < count; ++i) {
+		NSString *k = [keys objectAtIndex:i];
+		NSObject *v = [store_dictionary objectForKey:k];
 
-		const char* str = [k UTF8String];
+		const char *str = [k UTF8String];
 		if (str != NULL) {
 			result[String::utf8(str)] = nsobject_to_variant(v);
 		}
@@ -303,61 +301,57 @@ ICloud::ICloud() {
 	//connected = false;
 
 	[
-		//[NSNotificationCenter defaultCenter] addObserverForName: @"notify"
-		[NSNotificationCenter defaultCenter] addObserverForName: NSUbiquitousKeyValueStoreDidChangeExternallyNotification
-		object: [NSUbiquitousKeyValueStore defaultStore]
-		queue: nil
-		usingBlock: ^ (NSNotification * notification) {
-			NSDictionary* userInfo = [notification userInfo];
-			NSInteger change = [[userInfo objectForKey:NSUbiquitousKeyValueStoreChangeReasonKey] integerValue];
+			//[NSNotificationCenter defaultCenter] addObserverForName: @"notify"
+			[NSNotificationCenter defaultCenter]
+			addObserverForName:NSUbiquitousKeyValueStoreDidChangeExternallyNotification
+						object:[NSUbiquitousKeyValueStore defaultStore]
+						 queue:nil
+					usingBlock:^(NSNotification *notification) {
+						NSDictionary *userInfo = [notification userInfo];
+						NSInteger change = [[userInfo objectForKey:NSUbiquitousKeyValueStoreChangeReasonKey] integerValue];
 
-			Dictionary ret;
-			ret["type"] = "key_value_changed";
+						Dictionary ret;
+						ret["type"] = "key_value_changed";
 
-			//StringArray result_keys;
-			//Array result_values;
-			Dictionary keyValues;
-			String reason = "";
+						//StringArray result_keys;
+						//Array result_values;
+						Dictionary keyValues;
+						String reason = "";
 
-			if (change == NSUbiquitousKeyValueStoreServerChange) {
-				reason = "server";
-			} else if (change == NSUbiquitousKeyValueStoreInitialSyncChange) {
-				reason = "initial_sync";
-			} else if (change == NSUbiquitousKeyValueStoreQuotaViolationChange) {
-				reason = "quota_violation";
-			} else if (change == NSUbiquitousKeyValueStoreAccountChange) {
-				reason = "account";
-			}
+						if (change == NSUbiquitousKeyValueStoreServerChange) {
+							reason = "server";
+						} else if (change == NSUbiquitousKeyValueStoreInitialSyncChange) {
+							reason = "initial_sync";
+						} else if (change == NSUbiquitousKeyValueStoreQuotaViolationChange) {
+							reason = "quota_violation";
+						} else if (change == NSUbiquitousKeyValueStoreAccountChange) {
+							reason = "account";
+						}
 
-			ret["reason"] = reason;
+						ret["reason"] = reason;
 
+						NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
 
-			NSUbiquitousKeyValueStore *store = [NSUbiquitousKeyValueStore defaultStore];
+						NSArray *keys = [userInfo objectForKey:NSUbiquitousKeyValueStoreChangedKeysKey];
+						for (NSString *key in keys) {
+							const char *str = [key UTF8String];
+							if (str == NULL) {
+								continue;
+							}
 
-			NSArray * keys = [userInfo objectForKey:NSUbiquitousKeyValueStoreChangedKeysKey];
-			for (NSString* key in keys) {
-				const char* str = [key UTF8String];
-				if (str == NULL) {
-					continue;
-				}
+							NSObject *object = [store objectForKey:key];
 
-				NSObject* object = [store objectForKey:key];
+							//figure out what kind of object it is
+							Variant value = nsobject_to_variant(object);
 
-				//figure out what kind of object it is
-				Variant value = nsobject_to_variant(object);
+							keyValues[String::utf8(str)] = value;
+						}
 
-				keyValues[String::utf8(str)] = value;
-			}
-
-			ret["changed_values"] = keyValues;
-			pending_events.push_back(ret);
-		}
-	];
+						ret["changed_values"] = keyValues;
+						pending_events.push_back(ret);
+					}];
 }
 
-
-ICloud::~ICloud() {
-
-};
+ICloud::~ICloud(){};
 
 #endif

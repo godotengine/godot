@@ -27,25 +27,23 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "os_osx.h"
 #include "main/main.h"
+
+#include "os_osx.h"
 
 #include <string.h>
 #include <unistd.h>
 
-//#define main godot_main
-
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
 
 	int first_arg = 1;
-	const char* dbg_arg = "-NSDocumentRevisionsDebugMode";
+	const char *dbg_arg = "-NSDocumentRevisionsDebugMode";
 	printf("arguments\n");
 	for (int i = 0; i < argc; i++) {
 		if (strcmp(dbg_arg, argv[i]) == 0)
-			first_arg = i+2;
+			first_arg = i + 2;
 		printf("%i: %s\n", i, argv[i]);
 	};
-
 
 	if (argc >= 1 && argv[0][0] == '/') {
 		//potentially launched from finder
@@ -54,22 +52,21 @@ int main(int argc, char** argv) {
 			if (argv[0][len] == '/') break;
 		}
 		if (len >= 0) {
-			char *path = (char *)malloc(len+1);
+			char *path = (char *)malloc(len + 1);
 			memcpy(path, argv[0], len);
 			path[len] = 0;
 
-			char *pathinfo = (char*)malloc(strlen(path) + strlen("/../Info.plist")+1);
-			 //in real code you would check for errors in malloc here
+			char *pathinfo = (char *)malloc(strlen(path) + strlen("/../Info.plist") + 1);
+			//in real code you would check for errors in malloc here
 			strcpy(pathinfo, path);
 			strcat(pathinfo, "/../Info.plist");
 
-			FILE*f=fopen(pathinfo, "rb");
+			FILE *f = fopen(pathinfo, "rb");
 			if (f) {
 				//running from app bundle, as Info.plist was found
 				fclose(f);
 				chdir(path);
 				chdir("../Resources"); //data.pck, or just the files are here
-
 			}
 
 			free(path);
@@ -79,9 +76,8 @@ int main(int argc, char** argv) {
 
 	OS_OSX os;
 
-
-	Error err  = Main::setup(argv[0], argc-first_arg, &argv[first_arg]);
-	if (err!=OK)
+	Error err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
+	if (err != OK)
 		return 255;
 
 	if (Main::start())

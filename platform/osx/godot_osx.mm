@@ -27,30 +27,30 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "godot_osx.h"
+
 #include <sys/param.h> /* for MAXPATHLEN */
 #include <unistd.h>
-#include "godot_osx.h"
 
 /* For some reaon, Apple removed setAppleMenu from the headers in 10.4,
  but the method still is there and works. To avoid warnings, we declare
  it ourselves here. */
-@interface NSApplication()
+@interface NSApplication ()
 - (void)setAppleMenu:(NSMenu *)menu;
 @end
 
-static int    global_argc;
-static char  **global_argv;
-static BOOL   gCalledAppMainline = FALSE;
+static int global_argc;
+static char **global_argv;
+static BOOL gCalledAppMainline = FALSE;
 
-static NSString *getApplicationName(void)
-{
+static NSString *getApplicationName(void) {
 	const NSDictionary *dict;
 	NSString *appName = 0;
 
 	/* Determine the application name */
 	dict = (const NSDictionary *)CFBundleGetInfoDictionary(CFBundleGetMainBundle());
 	if (dict)
-		appName = [dict objectForKey: @"CFBundleName"];
+		appName = [dict objectForKey:@"CFBundleName"];
 
 	if (![appName length])
 		appName = [[NSProcessInfo processInfo] processName];
@@ -61,8 +61,7 @@ static NSString *getApplicationName(void)
 /* The main class of the application, the application's delegate */
 @implementation GodotMain
 
-static void setApplicationMenu(void)
-{
+static void setApplicationMenu(void) {
 	/* warning: this code is very odd */
 	NSMenu *appleMenu;
 	NSMenuItem *menuItem;
@@ -82,7 +81,7 @@ static void setApplicationMenu(void)
 	[appleMenu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
 
 	menuItem = (NSMenuItem *)[appleMenu addItemWithTitle:@"Hide Others" action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
-	[menuItem setKeyEquivalentModifierMask:(NSAlternateKeyMask|NSCommandKeyMask)];
+	[menuItem setKeyEquivalentModifierMask:(NSAlternateKeyMask | NSCommandKeyMask)];
 
 	[appleMenu addItemWithTitle:@"Show All" action:@selector(unhideAllApplications:) keyEquivalent:@""];
 
@@ -90,7 +89,6 @@ static void setApplicationMenu(void)
 
 	title = [@"Quit " stringByAppendingString:appName];
 	[appleMenu addItemWithTitle:title action:@selector(terminate:) keyEquivalent:@"q"];
-
 
 	/* Put menu into the menubar */
 	menuItem = [[NSMenuItem alloc] initWithTitle:@"" action:nil keyEquivalent:@""];
@@ -106,11 +104,10 @@ static void setApplicationMenu(void)
 }
 
 /* Create a window menu */
-static void setupWindowMenu(void)
-{
-	NSMenu      *windowMenu;
-	NSMenuItem  *windowMenuItem;
-	NSMenuItem  *menuItem;
+static void setupWindowMenu(void) {
+	NSMenu *windowMenu;
+	NSMenuItem *windowMenuItem;
+	NSMenuItem *menuItem;
 
 	windowMenu = [[NSMenu alloc] initWithTitle:@"Window"];
 
@@ -133,10 +130,9 @@ static void setupWindowMenu(void)
 }
 
 /* Replacement for NSApplicationMain */
-static void CustomApplicationMain (int argc, char **argv)
-{
-	NSAutoreleasePool	*pool = [[NSAutoreleasePool alloc] init];
-	GodotMain				*main;
+static void CustomApplicationMain(int argc, char **argv) {
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	GodotMain *main;
 
 	/* Ensure the application object is initialised */
 	[NSApplication sharedApplication];
@@ -156,11 +152,10 @@ static void CustomApplicationMain (int argc, char **argv)
 	[pool release];
 }
 
-extern int godot_main(int argc, char** argv);
+extern int godot_main(int argc, char **argv);
 
 /* Called when the internal event loop has just started running */
-- (void) applicationDidFinishLaunching: (NSNotification *) note
-{
+- (void)applicationDidFinishLaunching:(NSNotification *)note {
 	int status;
 
 	/* Hand off to main application code */
@@ -176,40 +171,38 @@ extern int godot_main(int argc, char** argv);
 #undef main
 #endif
 
-int main (int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	/* Copy the arguments into a global variable */
 	/* This is passed if we are launched by double-clicking */
-	if ( argc >= 2 && strncmp (argv[1], "-psn", 4) == 0 ) {
-	global_argv = (char **) malloc(sizeof (char *) * 2);
-	global_argv[0] = argv[0];
-	global_argv[1] = NULL;
-	global_argc = 1;
+	if (argc >= 2 && strncmp(argv[1], "-psn", 4) == 0) {
+		global_argv = (char **)malloc(sizeof(char *) * 2);
+		global_argv[0] = argv[0];
+		global_argv[1] = NULL;
+		global_argc = 1;
 
-	// chdir to binary's dir when launched from finder
-	int len = strlen(global_argv[0]);
+		// chdir to binary's dir when launched from finder
+		int len = strlen(global_argv[0]);
 
-	while (len--){
-		if (global_argv[0][len] == '/') break;
-	}
+		while (len--) {
+			if (global_argv[0][len] == '/') break;
+		}
 
-	if (len>=0) {
-		char *path = (char *)malloc(len+1);
-		memcpy(path, global_argv[0], len);
-		path[len]=0;
-		printf("Path: %s\n", path);
-		chdir(path);
-	}
+		if (len >= 0) {
+			char *path = (char *)malloc(len + 1);
+			memcpy(path, global_argv[0], len);
+			path[len] = 0;
+			printf("Path: %s\n", path);
+			chdir(path);
+		}
 
 	} else {
-			int i;
-	global_argc = argc;
-	global_argv = (char **) malloc(sizeof (char *) * (argc+1));
-			for (i = 0; i <= argc; i++)
-		global_argv[i] = argv[i];
+		int i;
+		global_argc = argc;
+		global_argv = (char **)malloc(sizeof(char *) * (argc + 1));
+		for (i = 0; i <= argc; i++)
+			global_argv[i] = argv[i];
 	}
 
-	CustomApplicationMain (argc, argv);
+	CustomApplicationMain(argc, argv);
 	return 0;
 }
-
