@@ -32,6 +32,7 @@
 #include "class_db.h"
 #include "dl_script.h"
 #include "global_config.h"
+#include "global_constants.h"
 #include "variant.h"
 
 #ifdef __cplusplus
@@ -179,6 +180,19 @@ void GDAPI *godot_dlinstance_get_userdata(godot_object *p_instance) {
 		return ((DLInstance *)instance->get_script_instance())->get_userdata();
 	}
 	return NULL;
+}
+
+godot_dictionary GDAPI godot_get_global_constants() {
+	godot_dictionary constants;
+	godot_dictionary_new(&constants);
+	Dictionary *p_constants = (Dictionary*)&constants;
+	const int constants_count = GlobalConstants::get_global_constant_count();
+	for (int i = 0; i < constants_count; ++i) {
+		const char *name = GlobalConstants::get_global_constant_name(i);
+		int value = GlobalConstants::get_global_constant_value(i);
+		(*p_constants)[name] = value;
+	}
+	return constants;
 }
 
 // System functions
