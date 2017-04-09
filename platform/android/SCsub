@@ -92,8 +92,22 @@ gradle_asset_dirs_text = ""
 
 gradle_default_config_text = ""
 
+minSdk = 14
+targetSdk = 23
+
 for x in env.android_default_config:
+    if x.startswith("minSdkVersion") and int(x.split(" ")[-1]) < minSdk: 
+        x = "minSdkVersion " + str(minSdk)
+    if x.startswith("targetSdkVersion") and int(x.split()[-1]) > targetSdk: 
+        x = "targetSdkVersion " + str(targetSdk)
+
     gradle_default_config_text += x + "\n\t\t"
+
+if "minSdkVersion" not in gradle_default_config_text:
+    gradle_default_config_text += ("minSdkVersion " + str(minSdk) + "\n\t\t")
+
+if "targetSdkVersion" not in gradle_default_config_text:
+    gradle_default_config_text += ("targetSdkVersion " + str(targetSdk) + "\n\t\t")
 
 gradle_text = gradle_text.replace("$$GRADLE_REPOSITORY_URLS$$", gradle_maven_repos_text)
 gradle_text = gradle_text.replace("$$GRADLE_DEPENDENCIES$$", gradle_maven_dependencies_text)
