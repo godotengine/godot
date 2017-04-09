@@ -2985,7 +2985,7 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled)
 	}
 
 	if (!script->is_tool()) {
-		show_warning("Unable to load addon script from path: '" + path + "' Script is does not support tool mode.");
+		show_warning("Unable to load addon script from path: '" + path + "' Script is not in tool mode.");
 		return;
 	}
 
