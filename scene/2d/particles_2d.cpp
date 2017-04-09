@@ -1065,7 +1065,7 @@ void Particles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "config/amount", PROPERTY_HINT_EXP_RANGE, "1,1024"), _SCS("set_amount"), _SCS("get_amount"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "config/lifetime", PROPERTY_HINT_EXP_RANGE, "0.1,3600,0.1"), _SCS("set_lifetime"), _SCS("get_lifetime"));
 	ADD_PROPERTYNO(PropertyInfo(Variant::REAL, "config/time_scale", PROPERTY_HINT_EXP_RANGE, "0.01,128,0.01"), _SCS("set_time_scale"), _SCS("get_time_scale"));
-	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "config/preprocess", PROPERTY_HINT_EXP_RANGE, "0.1,3600,0.1"), _SCS("set_pre_process_time"), _SCS("get_pre_process_time"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "config/preprocess", PROPERTY_HINT_EXP_RANGE, "0,3600,0.1"), _SCS("set_pre_process_time"), _SCS("get_pre_process_time"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL, "config/emit_timeout", PROPERTY_HINT_RANGE, "0,3600,0.1"), _SCS("set_emit_timeout"), _SCS("get_emit_timeout"));
 	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "config/emitting"), _SCS("set_emitting"), _SCS("is_emitting"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "config/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_process_mode"), _SCS("get_process_mode"));
