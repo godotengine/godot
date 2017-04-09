@@ -2455,8 +2455,8 @@ void _ClassDB::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("class_get_signal_list", "class", "no_inheritance"), &_ClassDB::get_signal_list, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("class_get_property_list", "class", "no_inheritance"), &_ClassDB::get_property_list, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("class_get_property", "object", "property"), &_ClassDB::get_property);
-	ClassDB::bind_method(D_METHOD("class_set_property", "object", "property", "value"), &_ClassDB::set_property);
+	ClassDB::bind_method(D_METHOD("class_get_property:Variant", "object", "property"), &_ClassDB::get_property);
+	ClassDB::bind_method(D_METHOD("class_set_property:Error", "object", "property", "value"), &_ClassDB::set_property);
 
 	ClassDB::bind_method(D_METHOD("class_has_method", "class", "method", "no_inheritance"), &_ClassDB::has_method, DEFVAL(false));
 
