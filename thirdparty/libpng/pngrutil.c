@@ -1,8 +1,8 @@
 
 /* pngrutil.c - utilities to read a PNG file
  *
- * Last changed in libpng 1.6.27 [January 5, 2017]
- * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
+ * Last changed in libpng 1.6.29 [March 16, 2017]
+ * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
  * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
  *
@@ -418,7 +418,7 @@ png_inflate_claim(png_structrp png_ptr, png_uint_32 owner)
             png_ptr->flags |= PNG_FLAG_ZSTREAM_INITIALIZED;
       }
 
-#if ZLIB_VERNUM >= 0x1281 && \
+#if ZLIB_VERNUM >= 0x1290 && \
    defined(PNG_SET_OPTION_SUPPORTED) && defined(PNG_IGNORE_ADLER32)
       if (((png_ptr->options >> PNG_IGNORE_ADLER32) & 3) == PNG_OPTION_ON)
          /* Turn off validation of the ADLER32 checksum in IDAT chunks */
