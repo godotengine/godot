@@ -49,18 +49,18 @@ extern "C" {
 GameCenter* GameCenter::instance = NULL;
 
 void GameCenter::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("connect"),&GameCenter::connect);
-	ClassDB::bind_method(D_METHOD("is_connected"),&GameCenter::is_connected);
+	ClassDB::bind_method(D_METHOD("connect"), &GameCenter::connect);
+	ClassDB::bind_method(D_METHOD("is_connected"), &GameCenter::is_connected);
 
-	ClassDB::bind_method(D_METHOD("post_score"),&GameCenter::post_score);
-	ClassDB::bind_method(D_METHOD("award_achievement"),&GameCenter::award_achievement);
-	ClassDB::bind_method(D_METHOD("reset_achievements"),&GameCenter::reset_achievements);
-	ClassDB::bind_method(D_METHOD("request_achievements"),&GameCenter::request_achievements);
-	ClassDB::bind_method(D_METHOD("request_achievement_descriptions"),&GameCenter::request_achievement_descriptions);
-	ClassDB::bind_method(D_METHOD("show_game_center"),&GameCenter::show_game_center);
+	ClassDB::bind_method(D_METHOD("post_score"), &GameCenter::post_score);
+	ClassDB::bind_method(D_METHOD("award_achievement"), &GameCenter::award_achievement);
+	ClassDB::bind_method(D_METHOD("reset_achievements"), &GameCenter::reset_achievements);
+	ClassDB::bind_method(D_METHOD("request_achievements"), &GameCenter::request_achievements);
+	ClassDB::bind_method(D_METHOD("request_achievement_descriptions"), &GameCenter::request_achievement_descriptions);
+	ClassDB::bind_method(D_METHOD("show_game_center"), &GameCenter::show_game_center);
 
-	ClassDB::bind_method(D_METHOD("get_pending_event_count"),&GameCenter::get_pending_event_count);
-	ClassDB::bind_method(D_METHOD("pop_pending_event"),&GameCenter::pop_pending_event);
+	ClassDB::bind_method(D_METHOD("get_pending_event_count"), &GameCenter::get_pending_event_count);
+	ClassDB::bind_method(D_METHOD("pop_pending_event"), &GameCenter::pop_pending_event);
 };
 
 
@@ -78,27 +78,25 @@ Error GameCenter::connect() {
 	ViewController *root_controller=(ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
 	ERR_FAIL_COND_V(!root_controller, FAILED);
 
-    //this handler is called serveral times.  first when the view needs to be shown, then again after the view is cancelled or the user logs in.  or if the user's already logged in, it's called just once to confirm they're authenticated.  This is why no result needs to be specified in the presentViewController phase. in this case, more calls to this function will follow.
+		//this handler is called serveral times.  first when the view needs to be shown, then again after the view is cancelled or the user logs in.  or if the user's already logged in, it's called just once to confirm they're authenticated.  This is why no result needs to be specified in the presentViewController phase. in this case, more calls to this function will follow.
 	player.authenticateHandler = (^(UIViewController *controller, NSError *error) {
-        if (controller) {
-            [root_controller presentViewController:controller animated:YES completion:nil];
-        }
-        else {
-            Dictionary ret;
-            ret["type"] = "authentication";
-            if (player.isAuthenticated) {
-                ret["result"] = "ok";
-                GameCenter::get_singleton()->connected = true;
-            } else {
-                ret["result"] = "error";
-                ret["error_code"] = error.code;
-                ret["error_description"] = [error.localizedDescription UTF8String];
-                GameCenter::get_singleton()->connected = false;
-            };
+		if (controller) {
+			[root_controller presentViewController:controller animated:YES completion:nil];
+		} else {
+			Dictionary ret;
+			ret["type"] = "authentication";
+			if (player.isAuthenticated) {
+				ret["result"] = "ok";
+				GameCenter::get_singleton()->connected = true;
+			} else {
+				ret["result"] = "error";
+				ret["error_code"] = error.code;
+				ret["error_description"] = [error.localizedDescription UTF8String];
+				GameCenter::get_singleton()->connected = false;
+			};
 
-            pending_events.push_back(ret);
-        };
-
+			pending_events.push_back(ret);
+		};
 	});
 
 	return OK;
@@ -191,7 +189,7 @@ void GameCenter::request_achievement_descriptions() {
 			Array hidden;
 			Array replayable;
 
-			for (int i=0; i<[descriptions count]; i++) {
+			for (int i = 0; i < [descriptions count]; i++) {
 
 				GKAchievementDescription* description = [descriptions objectAtIndex:i];
 
@@ -266,8 +264,7 @@ void GameCenter::request_achievements() {
 
 void GameCenter::reset_achievements() {
 
-	[GKAchievement resetAchievementsWithCompletionHandler:^(NSError *error)
-	{
+	[GKAchievement resetAchievementsWithCompletionHandler:^(NSError *error) {
 		Dictionary ret;
 		ret["type"] = "reset_achievements";
 		if (error == nil) {
@@ -292,17 +289,13 @@ Error GameCenter::show_game_center(Variant p_params) {
 		String view_name = params["view"];
 		if (view_name == "default") {
 			view_state = GKGameCenterViewControllerStateDefault;
-		}
-		else if (view_name == "leaderboards") {
+		} else if (view_name == "leaderboards") {
 			view_state = GKGameCenterViewControllerStateLeaderboards;
-		}
-		else if (view_name == "achievements") {
+		} else if (view_name == "achievements") {
 			view_state = GKGameCenterViewControllerStateAchievements;
-		}
-		else if (view_name == "challenges") {
+		} else if (view_name == "challenges") {
 			view_state = GKGameCenterViewControllerStateChallenges;
-		}
-		else {
+		} else {
 			return ERR_INVALID_PARAMETER;
 		}
 	}
@@ -332,7 +325,7 @@ Error GameCenter::show_game_center(Variant p_params) {
 void GameCenter::game_center_closed() {
 
 	Dictionary ret;
-        ret["type"] = "show_game_center";
+				ret["type"] = "show_game_center";
 	ret["result"] = "ok";
 	pending_events.push_back(ret);
 }
