@@ -1167,27 +1167,25 @@ void GDNativeReloadNode::_notification(int p_what) {
 
 				// update placeholders (if any)
 
-				GDNativeScript *script = NULL;
+				Set<GDNativeScript *> scripts;
 
 				for (Set<GDNativeScript *>::Element *S = GDNativeScriptLanguage::get_singleton()->script_list.front(); S; S = S->next()) {
 					if (lib->native_library->scripts.has(S->get()->get_script_name())) {
-						script = S->get();
+						GDNativeScript *script = S->get();
 						script->script_data = lib->get_script_data(script->get_script_name());
-						break;
+						scripts.insert(script);
 					}
 				}
 
-				if (script == NULL) {
-					// new class, cool. Nothing to do here
-					continue;
-				}
+				for (Set<GDNativeScript *>::Element *S = scripts.front(); S; S = S->next()) {
+					GDNativeScript *script = S->get();
+					if (script->placeholders.size() == 0)
+						continue;
 
-				if (script->placeholders.size() == 0)
-					continue;
-
-				for (Set<PlaceHolderScriptInstance *>::Element *P = script->placeholders.front(); P; P = P->next()) {
-					PlaceHolderScriptInstance *p = P->get();
-					script->_update_placeholder(p);
+					for (Set<PlaceHolderScriptInstance *>::Element *P = script->placeholders.front(); P; P = P->next()) {
+						PlaceHolderScriptInstance *p = P->get();
+						script->_update_placeholder(p);
+					}
 				}
 			}
 
