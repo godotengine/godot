@@ -317,7 +317,7 @@ typedef struct godot_instance_create_func {
 	void *(*create_func)(godot_object *, void *);
 	void *method_data;
 	void (*free_func)(void *);
-} godot_script_instance_func;
+} godot_instance_create_func;
 
 typedef struct godot_instance_destroy_func {
 	// instance pointer, method data, user data
