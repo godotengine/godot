@@ -48,6 +48,8 @@ public:
 	virtual RasterizerCanvas *get_canvas();
 	virtual RasterizerScene *get_scene();
 
+	virtual void set_boot_image(const Image &p_image, const Color &p_color, bool p_scale);
+
 	virtual void initialize();
 	virtual void begin_frame();
 	virtual void set_current_render_target(RID p_render_target);

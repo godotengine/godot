@@ -231,6 +231,9 @@ void VisualServerCanvas::render_canvas(Canvas *p_canvas, const Transform2D &p_tr
 			}
 		}
 	}
+
+	VSG::canvas_render->canvas_end();
+
 }
 
 RID VisualServerCanvas::canvas_create() {

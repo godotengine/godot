@@ -30,7 +30,7 @@ uniform float explosiveness;
 uniform float randomness;
 uniform vec4 time;
 uniform float delta;
-uniform vec3 gravity;
+
 uniform int attractor_count;
 uniform Attractor attractors[MAX_ATTRACTORS];
 uniform bool clear;
@@ -69,9 +69,19 @@ uint hash(uint x) {
 
 void main() {
 
+#ifdef PARTICLES_COPY
+
+	out_color=color;
+	out_velocity_active=velocity_active;
+	out_custom = custom;
+	out_xform_1 = xform_1;
+	out_xform_2 = xform_2;
+	out_xform_3 = xform_3;
+
+#else
+
 	bool apply_forces=true;
 	bool apply_velocity=true;
-	vec3 current_gravity = gravity;
 	float local_delta=delta;
 
 	float mass = 1.0;
@@ -164,7 +174,7 @@ VERTEX_SHADER_CODE
 
 		if (true) {
 
-			vec3 force = current_gravity;
+			vec3 force = vec3(0.0);
 			for(int i=0;i<attractor_count;i++) {
 
 				vec3 rel_vec = xform[3].xyz - attractors[i].pos;
@@ -211,6 +221,7 @@ VERTEX_SHADER_CODE
 	out_xform_2 = xform[1];
 	out_xform_3 = xform[2];
 
+#endif //PARTICLES_COPY
 
 }
 

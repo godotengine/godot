@@ -275,7 +275,7 @@ if selected_platform in platform_list:
     # TODO: Add support to specify different levels of warning, e.g. only critical/significant, instead of on/off
     if (env["warnings"] == "yes"):
         if (os.name == "nt" and os.getenv("VSINSTALLDIR")): # MSVC, needs to stand out of course
-            env.Append(CCFLAGS=['/W4'])
+	   pass# env.Append(CCFLAGS=['/W2'])
         else: # Rest of the world
             env.Append(CCFLAGS=['-Wall'])
     else:

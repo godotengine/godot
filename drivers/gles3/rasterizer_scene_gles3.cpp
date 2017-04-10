@@ -1216,7 +1216,26 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 	return rebind;
 }
 
-void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
+struct RasterizerGLES3Particle {
+
+	float color[4];
+	float velocity_active[4];
+	float custom[4];
+	float xform_1[4];
+	float xform_2[4];
+	float xform_3[4];
+};
+
+struct RasterizerGLES3ParticleSort {
+
+	Vector3 z_dir;
+	bool operator()(const RasterizerGLES3Particle &p_a, const RasterizerGLES3Particle &p_b) const {
+
+		return z_dir.dot(Vector3(p_a.xform_1[3], p_a.xform_2[3], p_a.xform_3[3])) < z_dir.dot(Vector3(p_b.xform_1[3], p_b.xform_2[3], p_b.xform_3[3]));
+	}
+};
+
+void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transform &p_view_transform) {
 
 	switch (e->instance->base_type) {
 
@@ -1289,28 +1308,54 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e) {
 			RasterizerStorageGLES3::Particles *particles = static_cast<RasterizerStorageGLES3::Particles *>(e->owner);
 			RasterizerStorageGLES3::Surface *s = static_cast<RasterizerStorageGLES3::Surface *>(e->geometry);
 
-			glBindVertexArray(s->instancing_array_id); // use the instancing array ID
-			glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffers[0]); //modify the buffer
+			if (particles->draw_order == VS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->particle_valid_histories[1]) {
+
+				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[1]); //modify the buffer, this was used 2 frames ago so it should be good enough for flushing
+				RasterizerGLES3Particle *particle_array = (RasterizerGLES3Particle *)glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 24 * sizeof(float), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+
+				SortArray<RasterizerGLES3Particle, RasterizerGLES3ParticleSort> sorter;
+
+				if (particles->use_local_coords) {
+					sorter.compare.z_dir = e->instance->transform.affine_inverse().xform(p_view_transform.basis.get_axis(2)).normalized();
+				} else {
+					sorter.compare.z_dir = p_view_transform.basis.get_axis(2).normalized();
+				}
+
+				sorter.sort(particle_array, particles->amount);
+
+				glUnmapBuffer(GL_ARRAY_BUFFER);
+
+				glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[1]); //modify the buffer
+
+			} else {
+
+				glBindVertexArray(s->instancing_array_id); // use the instancing array ID
+				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffers[0]); //modify the buffer
+			}
 
 			int stride = sizeof(float) * 4 * 6;
 
 			//transform
 
-			glEnableVertexAttribArray(8); //xform x
-			glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 3);
-			glVertexAttribDivisor(8, 1);
-			glEnableVertexAttribArray(9); //xform y
-			glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 4);
-			glVertexAttribDivisor(9, 1);
-			glEnableVertexAttribArray(10); //xform z
-			glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 5);
-			glVertexAttribDivisor(10, 1);
-			glEnableVertexAttribArray(11); //color
-			glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + 0);
-			glVertexAttribDivisor(11, 1);
-			glEnableVertexAttribArray(12); //custom
-			glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 2);
-			glVertexAttribDivisor(12, 1);
+			if (particles->draw_order != VS::PARTICLES_DRAW_ORDER_LIFETIME) {
+
+				glEnableVertexAttribArray(8); //xform x
+				glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 3);
+				glVertexAttribDivisor(8, 1);
+				glEnableVertexAttribArray(9); //xform y
+				glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 4);
+				glVertexAttribDivisor(9, 1);
+				glEnableVertexAttribArray(10); //xform z
+				glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 5);
+				glVertexAttribDivisor(10, 1);
+				glEnableVertexAttribArray(11); //color
+				glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + 0);
+				glVertexAttribDivisor(11, 1);
+				glEnableVertexAttribArray(12); //custom
+				glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 2);
+				glVertexAttribDivisor(12, 1);
+			}
 
 		} break;
 	}
@@ -1491,17 +1536,88 @@ void RasterizerSceneGLES3::_render_geometry(RenderList::Element *e) {
 
 			int amount = particles->amount;
 
-			if (s->index_array_len > 0) {
+			if (particles->draw_order == VS::PARTICLES_DRAW_ORDER_LIFETIME) {
+				//split
 
-				glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
+				int stride = sizeof(float) * 4 * 6;
+				int split = int(Math::ceil(particles->phase * particles->amount));
 
-				storage->info.render_vertices_count += s->index_array_len * amount;
+				if (amount - split > 0) {
+					glEnableVertexAttribArray(8); //xform x
+					glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 3);
+					glVertexAttribDivisor(8, 1);
+					glEnableVertexAttribArray(9); //xform y
+					glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 4);
+					glVertexAttribDivisor(9, 1);
+					glEnableVertexAttribArray(10); //xform z
+					glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 5);
+					glVertexAttribDivisor(10, 1);
+					glEnableVertexAttribArray(11); //color
+					glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + 0);
+					glVertexAttribDivisor(11, 1);
+					glEnableVertexAttribArray(12); //custom
+					glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + stride * split + sizeof(float) * 4 * 2);
+					glVertexAttribDivisor(12, 1);
+
+					if (s->index_array_len > 0) {
+
+						glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount - split);
+
+						storage->info.render_vertices_count += s->index_array_len * (amount - split);
+
+					} else {
+
+						glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount - split);
+
+						storage->info.render_vertices_count += s->array_len * (amount - split);
+					}
+				}
+
+				if (split > 0) {
+					glEnableVertexAttribArray(8); //xform x
+					glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 3);
+					glVertexAttribDivisor(8, 1);
+					glEnableVertexAttribArray(9); //xform y
+					glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 4);
+					glVertexAttribDivisor(9, 1);
+					glEnableVertexAttribArray(10); //xform z
+					glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 5);
+					glVertexAttribDivisor(10, 1);
+					glEnableVertexAttribArray(11); //color
+					glVertexAttribPointer(11, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + 0);
+					glVertexAttribDivisor(11, 1);
+					glEnableVertexAttribArray(12); //custom
+					glVertexAttribPointer(12, 4, GL_FLOAT, GL_FALSE, stride, ((uint8_t *)NULL) + sizeof(float) * 4 * 2);
+					glVertexAttribDivisor(12, 1);
+
+					if (s->index_array_len > 0) {
+
+						glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, split);
+
+						storage->info.render_vertices_count += s->index_array_len * split;
+
+					} else {
+
+						glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, split);
+
+						storage->info.render_vertices_count += s->array_len * split;
+					}
+				}
 
 			} else {
 
-				glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount);
+				if (s->index_array_len > 0) {
 
-				storage->info.render_vertices_count += s->array_len * amount;
+					glDrawElementsInstanced(gl_primitive[s->primitive], s->index_array_len, (s->array_len >= (1 << 16)) ? GL_UNSIGNED_INT : GL_UNSIGNED_SHORT, 0, amount);
+
+					storage->info.render_vertices_count += s->index_array_len * amount;
+
+				} else {
+
+					glDrawArraysInstanced(gl_primitive[s->primitive], 0, s->array_len, amount);
+
+					storage->info.render_vertices_count += s->array_len * amount;
+				}
 			}
 
 		} break;
@@ -1841,7 +1957,7 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		if (e->owner != prev_owner || prev_base_type != e->instance->base_type || prev_geometry != e->geometry) {
 
-			_setup_geometry(e);
+			_setup_geometry(e, p_view_transform);
 			storage->info.render_surface_switch_count++;
 		}
 

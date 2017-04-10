@@ -203,8 +203,6 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["DELTA"] = ShaderLanguage::TYPE_FLOAT;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["NUMBER"] = ShaderLanguage::TYPE_UINT;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["INDEX"] = ShaderLanguage::TYPE_INT;
-	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["SEED"] = ShaderLanguage::TYPE_UINT;
-	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["GRAVITY"] = ShaderLanguage::TYPE_VEC3;
 	shader_modes[VS::SHADER_PARTICLES].functions["vertex"]["EMISSION_TRANSFORM"] = ShaderLanguage::TYPE_MAT4;
 
 	shader_modes[VS::SHADER_PARTICLES].modes.insert("billboard");

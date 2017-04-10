@@ -242,7 +242,7 @@ def configure(env):
             env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
             env.Append(LINKFLAGS=['/DEBUG'])
 
-        env.Append(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
+	env.Append(CCFLAGS=['/MT', '/Gd', '/GR', '/nologo'])
         env.Append(CXXFLAGS=['/TP'])
         env.Append(CPPFLAGS=['/DMSVC', '/GR', ])
         env.Append(CCFLAGS=['/I' + os.getenv("WindowsSdkDir") + "/Include"])

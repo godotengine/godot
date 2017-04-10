@@ -71,15 +71,12 @@ void Particles::set_randomness_ratio(float p_ratio) {
 	randomness_ratio = p_ratio;
 	VS::get_singleton()->particles_set_randomness_ratio(particles, randomness_ratio);
 }
-void Particles::set_custom_aabb(const Rect3 &p_aabb) {
+void Particles::set_visibility_aabb(const Rect3 &p_aabb) {
 
-	custom_aabb = p_aabb;
-	VS::get_singleton()->particles_set_custom_aabb(particles, custom_aabb);
-}
-void Particles::set_gravity(const Vector3 &p_gravity) {
-
-	gravity = p_gravity;
-	VS::get_singleton()->particles_set_gravity(particles, gravity);
+	visibility_aabb = p_aabb;
+	VS::get_singleton()->particles_set_custom_aabb(particles, visibility_aabb);
+	update_gizmo();
+	_change_notify("visibility_aabb");
 }
 void Particles::set_use_local_coordinates(bool p_enable) {
 
@@ -93,6 +90,14 @@ void Particles::set_process_material(const Ref<Material> &p_material) {
 	if (process_material.is_valid())
 		material_rid = process_material->get_rid();
 	VS::get_singleton()->particles_set_process_material(particles, material_rid);
+
+	update_configuration_warning();
+}
+
+void Particles::set_speed_scale(float p_scale) {
+
+	speed_scale = p_scale;
+	VS::get_singleton()->particles_set_speed_scale(particles, p_scale);
 }
 
 bool Particles::is_emitting() const {
@@ -119,13 +124,9 @@ float Particles::get_randomness_ratio() const {
 
 	return randomness_ratio;
 }
-Rect3 Particles::get_custom_aabb() const {
+Rect3 Particles::get_visibility_aabb() const {
 
-	return custom_aabb;
-}
-Vector3 Particles::get_gravity() const {
-
-	return gravity;
+	return visibility_aabb;
 }
 bool Particles::get_use_local_coordinates() const {
 
@@ -134,6 +135,11 @@ bool Particles::get_use_local_coordinates() const {
 Ref<Material> Particles::get_process_material() const {
 
 	return process_material;
+}
+
+float Particles::get_speed_scale() const {
+
+	return speed_scale;
 }
 
 void Particles::set_draw_order(DrawOrder p_order) {
@@ -170,6 +176,8 @@ void Particles::set_draw_pass_mesh(int p_pass, const Ref<Mesh> &p_mesh) {
 		mesh_rid = p_mesh->get_rid();
 
 	VS::get_singleton()->particles_set_draw_pass_mesh(particles, p_pass, mesh_rid);
+
+	update_configuration_warning();
 }
 
 Ref<Mesh> Particles::get_draw_pass_mesh(int p_pass) const {
@@ -197,6 +205,37 @@ bool Particles::get_fractional_delta() const {
 	return fractional_delta;
 }
 
+String Particles::get_configuration_warning() const {
+
+	String warnings;
+
+	bool meshes_found = false;
+
+	for (int i = 0; i < draw_passes.size(); i++) {
+		if (draw_passes[i].is_valid()) {
+			meshes_found = true;
+			break;
+		}
+	}
+
+	if (!meshes_found) {
+		warnings += "- " + TTR("Nothing is visible because meshes have not been assigned to draw passes.");
+	}
+
+	if (process_material.is_null()) {
+		if (warnings != String())
+			warnings += "\n";
+		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
+	}
+
+	return warnings;
+}
+
+Rect3 Particles::capture_aabb() const {
+
+	return VS::get_singleton()->particles_get_current_aabb(particles);
+}
+
 void Particles::_validate_property(PropertyInfo &property) const {
 
 	if (property.name.begins_with("draw_pass_")) {
@@ -216,12 +255,12 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pre_process_time", "secs"), &Particles::set_pre_process_time);
 	ClassDB::bind_method(D_METHOD("set_explosiveness_ratio", "ratio"), &Particles::set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("set_randomness_ratio", "ratio"), &Particles::set_randomness_ratio);
-	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &Particles::set_custom_aabb);
-	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &Particles::set_gravity);
+	ClassDB::bind_method(D_METHOD("set_visibility_aabb", "aabb"), &Particles::set_visibility_aabb);
 	ClassDB::bind_method(D_METHOD("set_use_local_coordinates", "enable"), &Particles::set_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &Particles::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &Particles::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_process_material", "material:Material"), &Particles::set_process_material);
+	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &Particles::set_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &Particles::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &Particles::get_amount);
@@ -229,12 +268,12 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pre_process_time"), &Particles::get_pre_process_time);
 	ClassDB::bind_method(D_METHOD("get_explosiveness_ratio"), &Particles::get_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("get_randomness_ratio"), &Particles::get_randomness_ratio);
-	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &Particles::get_custom_aabb);
-	ClassDB::bind_method(D_METHOD("get_gravity"), &Particles::get_gravity);
+	ClassDB::bind_method(D_METHOD("get_visibility_aabb"), &Particles::get_visibility_aabb);
 	ClassDB::bind_method(D_METHOD("get_use_local_coordinates"), &Particles::get_use_local_coordinates);
 	ClassDB::bind_method(D_METHOD("get_fixed_fps"), &Particles::get_fixed_fps);
 	ClassDB::bind_method(D_METHOD("get_fractional_delta"), &Particles::get_fractional_delta);
 	ClassDB::bind_method(D_METHOD("get_process_material:Material"), &Particles::get_process_material);
+	ClassDB::bind_method(D_METHOD("get_speed_scale"), &Particles::get_speed_scale);
 
 	ClassDB::bind_method(D_METHOD("set_draw_order", "order"), &Particles::set_draw_order);
 
@@ -246,20 +285,23 @@ void Particles::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_draw_passes"), &Particles::get_draw_passes);
 	ClassDB::bind_method(D_METHOD("get_draw_pass_mesh:Mesh", "pass"), &Particles::get_draw_pass_mesh);
 
+	ClassDB::bind_method(D_METHOD("capture_aabb"), &Particles::capture_aabb);
+
 	ADD_GROUP("Parameters", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_RANGE, "1,100000,1"), "set_amount", "get_amount");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_RANGE, "0.01,600.0,0.01"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "preprocess", PROPERTY_HINT_RANGE, "0.00,600.0,0.01"), "set_pre_process_time", "get_pre_process_time");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "explosiveness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_explosiveness_ratio", "get_explosiveness_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_randomness_ratio", "get_randomness_ratio");
-	ADD_PROPERTY(PropertyInfo(Variant::RECT3, "custom_aabb"), "set_custom_aabb", "get_custom_aabb");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity"), "set_gravity", "get_gravity");
+	ADD_PROPERTY(PropertyInfo(Variant::RECT3, "visibility_aabb"), "set_visibility_aabb", "get_visibility_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_coords"), "set_use_local_coordinates", "get_use_local_coordinates");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_fps", PROPERTY_HINT_RANGE, "0,1000,1"), "set_fixed_fps", "get_fixed_fps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fract_delta"), "set_fractional_delta", "get_fractional_delta");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticlesMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_order", PROPERTY_HINT_ENUM, "Index,Lifetime,View Depth"), "set_draw_order", "get_draw_order");
+	ADD_GROUP("Process Material", "");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "process_material", PROPERTY_HINT_RESOURCE_TYPE, "ParticlesMaterial,ShaderMaterial"), "set_process_material", "get_process_material");
 	ADD_GROUP("Draw Passes", "draw_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "draw_passes", PROPERTY_HINT_RANGE, "0," + itos(MAX_DRAW_PASSES) + ",1"), "set_draw_passes", "get_draw_passes");
 	for (int i = 0; i < MAX_DRAW_PASSES; i++) {
@@ -278,16 +320,18 @@ Particles::Particles() {
 	particles = VS::get_singleton()->particles_create();
 	set_base(particles);
 	set_emitting(true);
-	set_amount(100);
+	set_amount(8);
 	set_lifetime(1);
 	set_fixed_fps(0);
 	set_fractional_delta(true);
 	set_pre_process_time(0);
 	set_explosiveness_ratio(0);
 	set_randomness_ratio(0);
-	set_gravity(Vector3(0, -9.8, 0));
+	set_visibility_aabb(Rect3(Vector3(-4, -4, -4), Vector3(8, 8, 8)));
 	set_use_local_coordinates(true);
 	set_draw_passes(1);
+	set_draw_order(DRAW_ORDER_INDEX);
+	set_speed_scale(1);
 }
 
 Particles::~Particles() {
@@ -362,6 +406,8 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->trail_divisor = "trail_divisor";
 	shader_names->trail_size_modifier = "trail_size_modifier";
 	shader_names->trail_color_modifier = "trail_color_modifier";
+
+	shader_names->gravity = "gravity";
 }
 
 void ParticlesMaterial::finish_shaders() {
@@ -436,6 +482,8 @@ void ParticlesMaterial::_update_shader() {
 	code += "uniform vec4 color_value : hint_color;\n";
 
 	code += "uniform int trail_divisor;\n";
+
+	code += "uniform vec3 gravity;\n";
 
 	if (color_ramp.is_valid())
 		code += "uniform sampler2D color_ramp;\n";
@@ -633,7 +681,7 @@ void ParticlesMaterial::_update_shader() {
 	else
 		code += "    float tex_anim_offset = 0.0;\n";
 
-	code += "    vec3 force = vec3(0.0); \n";
+	code += "    vec3 force = gravity; \n";
 	code += "    vec3 pos = TRANSFORM[3].xyz; \n";
 	code += "    //apply linear acceleration\n";
 	code += "    force+=normalize(VELOCITY) * (linear_accel+tex_linear_accel)*mix(1.0,rand_from_seed(alt_seed),linear_accel_random);\n";
@@ -643,7 +691,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "	//org=p_transform.origin;\n";
 	code += "    force+=normalize(pos-org) * (radial_accel+tex_radial_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random);\n";
 	code += "    //apply tangential acceleration;\n";
-	code += "    force+=normalize(cross(normalize(pos-org),normalize(GRAVITY))) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random));\n";
+	code += "    force+=normalize(cross(normalize(pos-org),normalize(gravity))) * ((tangent_accel+tex_tangent_accel)*mix(1.0,rand_from_seed(alt_seed),radial_accel_random));\n";
 	code += "    //apply attractor forces\n";
 	code += "    VELOCITY+=force * DELTA;\n";
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
@@ -1168,6 +1216,21 @@ Ref<GradientTexture> ParticlesMaterial::get_trail_color_modifier() const {
 	return trail_color_modifier;
 }
 
+void ParticlesMaterial::set_gravity(const Vector3 &p_gravity) {
+
+	gravity = p_gravity;
+	Vector3 gset = gravity;
+	if (gset == Vector3()) {
+		gset = Vector3(0, -0.000001, 0); //as gravity is used as upvector in some calculations
+	}
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->gravity, gset);
+}
+
+Vector3 ParticlesMaterial::get_gravity() const {
+
+	return gravity;
+}
+
 void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "color" && color_ramp.is_valid()) {
@@ -1248,6 +1311,9 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_trail_color_modifier", "texture:GradientTexture"), &ParticlesMaterial::set_trail_color_modifier);
 	ClassDB::bind_method(D_METHOD("get_trail_color_modifier:GradientTexture"), &ParticlesMaterial::get_trail_color_modifier);
 
+	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
+	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);
+
 	ADD_GROUP("Trail", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_divisor", PROPERTY_HINT_RANGE, "1,1000000,1"), "set_trail_divisor", "get_trail_divisor");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trail_size_modifier", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_trail_size_modifier", "get_trail_size_modifier");
@@ -1265,6 +1331,8 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_GROUP("Spread", "");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
+	ADD_GROUP("Gravity", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "gravity"), "set_gravity", "get_gravity");
 	ADD_GROUP("Initial Velocity", "initial_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "initial_velocity", PROPERTY_HINT_RANGE, "0,1000,0.01"), "set_param", "get_param", PARAM_INITIAL_LINEAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "initial_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_INITIAL_LINEAR_VELOCITY);
@@ -1361,6 +1429,7 @@ ParticlesMaterial::ParticlesMaterial()
 	set_emission_sphere_radius(1);
 	set_emission_box_extents(Vector3(1, 1, 1));
 	set_trail_divisor(1);
+	set_gravity(Vector3(0, -9.8, 0));
 	emission_point_count = 1;
 
 	for (int i = 0; i < PARAM_MAX; i++) {

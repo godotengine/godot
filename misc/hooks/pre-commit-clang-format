@@ -31,7 +31,7 @@ PARSE_EXTS=true
 
 # File types to parse. Only effective when PARSE_EXTS is true.
 # FILE_EXTS=".c .h .cpp .hpp"
-FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .m"
+FILE_EXTS=".c .h .cpp .hpp .cc .hh .cxx .m .mm .inc"
 
 # Use pygmentize instead of cat to parse diff with highlighting.
 # Install it with `pip install pygments` (Linux) or `easy_install Pygments` (Mac)
@@ -82,6 +82,11 @@ $DELETE_OLD_PATCHES && rm -f /tmp/$prefix*.patch
 # create one patch containing all changes to the files
 git diff-index --cached --diff-filter=ACMR --name-only $against -- | while read file;
 do
+    # ignore thirdparty files
+    if grep -q "thirdparty" <<< $file; then
+        continue;
+    fi
+
     # ignore file if we do check for file extensions and the file
     # does not match any of the extensions specified in $FILE_EXTS
     if $PARSE_EXTS && ! matches_extension "$file"; then
