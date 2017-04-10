@@ -5513,7 +5513,7 @@ EditorNode::EditorNode() {
 	p = tool_menu->get_popup();
 	p->connect("item_pressed", this, "_menu_option");
 	p->add_item(TTR("Orphan Resource Explorer"), TOOLS_ORPHAN_RESOURCES);
-	p->add_item(TTR("Export to Godot 3.0"), TOOLS_EXPORT_GODOT3);
+	p->add_item(TTR("Export to Godot 3.0 (WIP)"), TOOLS_EXPORT_GODOT3);
 
 	export_button = memnew(ToolButton);
 	export_button->set_tooltip(TTR("Export the project to many platforms."));
