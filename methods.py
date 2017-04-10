@@ -1353,65 +1353,63 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 	return exit_code
 """
 
-
 def android_add_maven_repository(self, url):
-    self.android_maven_repos.append(url)
-
+    if (url not in self.android_maven_repos):
+        self.android_maven_repos.append(url)
 
 def android_add_dependency(self, depline):
-    self.android_dependencies.append(depline)
-
+    if (depline not in self.android_dependencies):
+        self.android_dependencies.append(depline)
 
 def android_add_java_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    self.android_java_dirs.append(base_path)
-
+    if (base_path not in self.android_java_dirs):
+        self.android_java_dirs.append(base_path)
 
 def android_add_res_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    self.android_res_dirs.append(base_path)
-
+    if (base_path not in self.android_res_dirs):
+        self.android_res_dirs.append(base_path)
 
 def android_add_aidl_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    self.android_aidl_dirs.append(base_path)
-
+    if (base_path not in self.android_aidl_dirs):
+        self.android_aidl_dirs.append(base_path)
 
 def android_add_jni_dir(self, subpath):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + subpath
-    self.android_jni_dirs.append(base_path)
+    if (base_path not in self.android_jni_dirs):
+        self.android_jni_dirs.append(base_path)
 
 def android_add_gradle_plugin(self, plugin):
-    self.android_gradle_plugins.append(plugin)
+    if (plugin not in self.android_gradle_plugins):
+        self.android_gradle_plugins.append(plugin)
 
 def android_add_gradle_classpath(self, classpath):
-    self.android_gradle_classpath.append(classpath)
+    if (classpath not in self.android_gradle_classpath):
+        self.android_gradle_classpath.append(classpath)
 
 def android_add_default_config(self, config):
-    self.android_default_config.append(config)
-
+    if (config not in self.android_default_config):
+        self.android_default_config.append(config)
 
 def android_add_to_manifest(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     f = open(base_path, "rb")
     self.android_manifest_chunk += f.read()
 
-
 def android_add_to_permissions(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     f = open(base_path, "rb")
     self.android_permission_chunk += f.read()
-
 
 def android_add_to_attributes(self, file):
     base_path = self.Dir(".").abspath + "/modules/" + self.current_module + "/" + file
     f = open(base_path, "rb")
     self.android_appattributes_chunk += f.read()
 
-
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
-
 
 def use_windows_spawn_fix(self, platform=None):
 

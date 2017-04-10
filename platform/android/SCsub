@@ -52,13 +52,13 @@ if len(env.android_maven_repos) > 0:
     gradle_maven_repos_text += ""
     for x in env.android_maven_repos:
         gradle_maven_repos_text += "\tmaven {\n"
-        gradle_maven_repos_text += "\t\t" + x + "\n"
+        gradle_maven_repos_text += "\t" + x + "\n"
         gradle_maven_repos_text += "\t}\n"
 
 gradle_maven_dependencies_text = ""
 
 for x in env.android_dependencies:
-    gradle_maven_dependencies_text += x + "\n"
+    gradle_maven_dependencies_text += x + "\n\t"
 
 gradle_java_dirs_text = ""
 
@@ -98,7 +98,7 @@ targetSdk = 23
 for x in env.android_default_config:
     if x.startswith("minSdkVersion") and int(x.split(" ")[-1]) < minSdk: 
         x = "minSdkVersion " + str(minSdk)
-    if x.startswith("targetSdkVersion") and int(x.split()[-1]) > targetSdk: 
+    if x.startswith("targetSdkVersion") and int(x.split(" ")[-1]) > targetSdk: 
         x = "targetSdkVersion " + str(targetSdk)
 
     gradle_default_config_text += x + "\n\t\t"
