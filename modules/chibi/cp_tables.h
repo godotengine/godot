@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,19 +47,18 @@ conversion utilities
 
 class CPTables {
 public:
+	enum { OCTAVE = 12 };
 
-	enum { OCTAVE=12 };
-	
-        static uint16_t old_period_table[OCTAVE*2];
+	static uint16_t old_period_table[OCTAVE * 2];
 	static uint16_t log_table[104];
 	static int32_t linear_period_to_freq_tab[768];
 
-        static int32_t get_old_period(uint16_t note,int32_t speed);
-        static int32_t get_amiga_period(uint16_t note,int32_t fine);
-        static int32_t get_linear_period(uint16_t note,int32_t fine);
-        static int32_t get_linear_frequency(int32_t period);
+	static int32_t get_old_period(uint16_t note, int32_t speed);
+	static int32_t get_amiga_period(uint16_t note, int32_t fine);
+	static int32_t get_linear_period(uint16_t note, int32_t fine);
+	static int32_t get_linear_frequency(int32_t period);
 	static int32_t get_old_frequency(int32_t period);
-	static int32_t get_log_period(uint16_t note,int32_t p_c5freq);
+	static int32_t get_log_period(uint16_t note, int32_t p_c5freq);
 
 	CPTables();
 	~CPTables();

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +33,11 @@
 #include "scene/2d/node_2d.h"
 
 class YSort : public Node2D {
-	OBJ_TYPE(YSort,Node2D);
+	OBJ_TYPE(YSort, Node2D);
 	bool sort_enabled;
 	static void _bind_methods();
-public:
 
+public:
 	void set_sort_enabled(bool p_enabled);
 	bool is_sort_enabled() const;
 	YSort();

@@ -26,25 +26,24 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "drivers/gles2/rasterizer_gles2.h"
 #include "os_winrt.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
 #include "thread_winrt.h"
 //#include "drivers/windows/semaphore_windows.h"
+#include "drivers/windows/dir_access_windows.h"
+#include "drivers/windows/file_access_windows.h"
 #include "drivers/windows/mutex_windows.h"
 #include "main/main.h"
-#include "drivers/windows/file_access_windows.h"
-#include "drivers/windows/dir_access_windows.h"
 
-
-#include "servers/visual/visual_server_raster.h"
 #include "servers/audio/audio_server_sw.h"
+#include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
-#include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
+#include "os/memory_pool_dynamic_prealloc.h"
 
 #include <wrl.h>
 
@@ -56,12 +55,11 @@ using namespace Windows::Foundation;
 using namespace Windows::Graphics::Display;
 using namespace Microsoft::WRL;
 
-
 int OSWinrt::get_video_driver_count() const {
 
 	return 1;
 }
-const char * OSWinrt::get_video_driver_name(int p_driver) const {
+const char *OSWinrt::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
 }
@@ -75,20 +73,19 @@ int OSWinrt::get_audio_driver_count() const {
 
 	return AudioDriverManagerSW::get_driver_count();
 }
-const char * OSWinrt::get_audio_driver_name(int p_driver) const {
+const char *OSWinrt::get_audio_driver_name(int p_driver) const {
 
-	AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
-	ERR_FAIL_COND_V( !driver, "" );
+	AudioDriverSW *driver = AudioDriverManagerSW::get_driver(p_driver);
+	ERR_FAIL_COND_V(!driver, "");
 	return AudioDriverManagerSW::get_driver(p_driver)->get_name();
 }
 
-static MemoryPoolStatic *mempool_static=NULL;
-static MemoryPoolDynamic *mempool_dynamic=NULL;
+static MemoryPoolStatic *mempool_static = NULL;
+static MemoryPoolDynamic *mempool_dynamic = NULL;
 
 void OSWinrt::initialize_core() {
 
-
-	last_button_state=0;
+	last_button_state = 0;
 
 	//RedirectIOToConsole();
 
@@ -109,23 +106,23 @@ void OSWinrt::initialize_core() {
 
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
-	mempool_dynamic = memnew( MemoryPoolDynamicStatic );
+	mempool_dynamic = memnew(MemoryPoolDynamicStatic);
 #else
-#define DYNPOOL_SIZE 4*1024*1024
-	void * buffer = malloc( DYNPOOL_SIZE );
-	mempool_dynamic = memnew( MemoryPoolDynamicPrealloc(buffer,DYNPOOL_SIZE) );
+#define DYNPOOL_SIZE 4 * 1024 * 1024
+	void *buffer = malloc(DYNPOOL_SIZE);
+	mempool_dynamic = memnew(MemoryPoolDynamicPrealloc(buffer, DYNPOOL_SIZE));
 
 #endif
 
-	   // We need to know how often the clock is updated
-	if( !QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second) )
+	// We need to know how often the clock is updated
+	if (!QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second))
 		ticks_per_second = 1000;
 	// If timeAtGameStart is 0 then we get the time since
 	// the start of the computer when we call GetGameTime()
 	ticks_start = 0;
 	ticks_start = get_ticks_usec();
 
-	cursor_shape=CURSOR_ARROW;
+	cursor_shape = CURSOR_ARROW;
 }
 
 bool OSWinrt::can_draw() const {
@@ -133,8 +130,7 @@ bool OSWinrt::can_draw() const {
 	return !minimized;
 };
 
-
-void OSWinrt::set_gl_context(ContextEGL* p_context) {
+void OSWinrt::set_gl_context(ContextEGL *p_context) {
 
 	gl_context = p_context;
 };
@@ -144,10 +140,10 @@ void OSWinrt::screen_size_changed() {
 	gl_context->reset();
 };
 
-void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
+void OSWinrt::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-    main_loop=NULL;
-    outside=true;
+	main_loop = NULL;
+	outside = true;
 
 	gl_context->initialize();
 	VideoMode vm;
@@ -159,47 +155,46 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 	set_video_mode(vm);
 
 	gl_context->make_current();
-	rasterizer = memnew( RasterizerGLES2 );
+	rasterizer = memnew(RasterizerGLES2);
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
-	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
+	visual_server = memnew(VisualServerRaster(rasterizer));
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 
-		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
 	//
-	physics_server = memnew( PhysicsServerSW );
+	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
 
-	physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = memnew(Physics2DServerSW);
 	physics_2d_server->init();
 
 	visual_server->init();
 
-	input = memnew( InputDefault );
+	input = memnew(InputDefault);
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
-	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
+	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init() != OK) {
 
 		ERR_PRINT("Initializing audio failed.");
 	}
 
-	sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerSW(sample_manager) );
+	sample_manager = memnew(SampleManagerMallocSW);
+	audio_server = memnew(AudioServerSW(sample_manager));
 
 	audio_server->init();
 
-	spatial_sound_server = memnew( SpatialSoundServerSW );
+	spatial_sound_server = memnew(SpatialSoundServerSW);
 	spatial_sound_server->init();
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
+	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
 	spatial_sound_2d_server->init();
-
 
 	_ensure_data_dir();
 }
 
-void OSWinrt::set_clipboard(const String& p_text) {
+void OSWinrt::set_clipboard(const String &p_text){
 
 	/*
 	if (!OpenClipboard(hWnd)) {
@@ -281,7 +276,6 @@ String OSWinrt::get_clipboard() const {
 	return "";
 };
 
-
 void OSWinrt::input_event(InputEvent &p_event) {
 	p_event.ID = ++last_id;
 	input->parse_input_event(p_event);
@@ -291,21 +285,21 @@ void OSWinrt::delete_main_loop() {
 
 	if (main_loop)
 		memdelete(main_loop);
-	main_loop=NULL;
+	main_loop = NULL;
 }
 
-void OSWinrt::set_main_loop( MainLoop * p_main_loop ) {
+void OSWinrt::set_main_loop(MainLoop *p_main_loop) {
 
 	input->set_main_loop(p_main_loop);
-	main_loop=p_main_loop;
+	main_loop = p_main_loop;
 }
 
 void OSWinrt::finalize() {
 
-	if(main_loop)
+	if (main_loop)
 		memdelete(main_loop);
 
-	main_loop=NULL;
+	main_loop = NULL;
 
 	visual_server->finish();
 	memdelete(visual_server);
@@ -322,8 +316,8 @@ void OSWinrt::finalize() {
 	memdelete(spatial_sound_2d_server);
 
 	//if (debugger_connection_console) {
-//		memdelete(debugger_connection_console);
-//}
+	//		memdelete(debugger_connection_console);
+	//}
 
 	memdelete(sample_manager);
 
@@ -337,61 +331,55 @@ void OSWinrt::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
-
 }
 void OSWinrt::finalize_core() {
 
 	if (mempool_dynamic)
-		memdelete( mempool_dynamic );
+		memdelete(mempool_dynamic);
 	delete mempool_static;
-
 }
 
-void OSWinrt::vprint(const char* p_format, va_list p_list, bool p_stderr) {
+void OSWinrt::vprint(const char *p_format, va_list p_list, bool p_stderr) {
 
-	char buf[16384+1];
-	int len = vsnprintf(buf,16384,p_format,p_list);
-	if (len<=0)
+	char buf[16384 + 1];
+	int len = vsnprintf(buf, 16384, p_format, p_list);
+	if (len <= 0)
 		return;
-	buf[len]=0;
+	buf[len] = 0;
 
-
-	int wlen = MultiByteToWideChar(CP_UTF8,0,buf,len,NULL,0);
-	if (wlen<0)
+	int wlen = MultiByteToWideChar(CP_UTF8, 0, buf, len, NULL, 0);
+	if (wlen < 0)
 		return;
 
-	wchar_t *wbuf = (wchar_t*)malloc((len+1)*sizeof(wchar_t));
-	MultiByteToWideChar(CP_UTF8,0,buf,len,wbuf,wlen);
-	wbuf[wlen]=0;
+	wchar_t *wbuf = (wchar_t *)malloc((len + 1) * sizeof(wchar_t));
+	MultiByteToWideChar(CP_UTF8, 0, buf, len, wbuf, wlen);
+	wbuf[wlen] = 0;
 
 	if (p_stderr)
-		fwprintf(stderr,L"%s",wbuf);
+		fwprintf(stderr, L"%s", wbuf);
 	else
-		wprintf(L"%s",wbuf);
+		wprintf(L"%s", wbuf);
 
 #ifdef STDOUT_FILE
-	//vwfprintf(stdo,p_format,p_list);
+//vwfprintf(stdo,p_format,p_list);
 #endif
 	free(wbuf);
 
 	fflush(stdout);
 };
 
-void OSWinrt::alert(const String& p_alert,const String& p_title) {
+void OSWinrt::alert(const String &p_alert, const String &p_title) {
 
-	print_line("ALERT: "+p_alert);
+	print_line("ALERT: " + p_alert);
 }
 
 void OSWinrt::set_mouse_mode(MouseMode p_mode) {
-
 }
 
-OSWinrt::MouseMode OSWinrt::get_mouse_mode() const{
+OSWinrt::MouseMode OSWinrt::get_mouse_mode() const {
 
 	return mouse_mode;
 }
-
-
 
 Point2 OSWinrt::get_mouse_pos() const {
 
@@ -403,11 +391,10 @@ int OSWinrt::get_mouse_button_state() const {
 	return last_button_state;
 }
 
-void OSWinrt::set_window_title(const String& p_title) {
-
+void OSWinrt::set_window_title(const String &p_title) {
 }
 
-void OSWinrt::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
+void OSWinrt::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	video_mode = p_video_mode;
 }
@@ -415,20 +402,18 @@ OS::VideoMode OSWinrt::get_video_mode(int p_screen) const {
 
 	return video_mode;
 }
-void OSWinrt::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
-
-
+void OSWinrt::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 }
 
-void OSWinrt::print_error(const char* p_function, const char* p_file, int p_line, const char* p_code, const char* p_rationale, ErrorType p_type) {
+void OSWinrt::print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type) {
 
-	const char* err_details;
+	const char *err_details;
 	if (p_rationale && p_rationale[0])
 		err_details = p_rationale;
 	else
 		err_details = p_code;
 
-	switch(p_type) {
+	switch (p_type) {
 		case ERR_ERROR:
 			print("ERROR: %s: %s\n", p_function, err_details);
 			print("   At: %s:%i\n", p_file, p_line);
@@ -444,7 +429,6 @@ void OSWinrt::print_error(const char* p_function, const char* p_file, int p_line
 	}
 }
 
-
 String OSWinrt::get_name() {
 
 	return "WinRT";
@@ -459,11 +443,11 @@ OS::Date OSWinrt::get_date(bool utc) const {
 		GetLocalTime(&systemtime);
 
 	Date date;
-	date.day=systemtime.wDay;
-	date.month=Month(systemtime.wMonth);
-	date.weekday=Weekday(systemtime.wDayOfWeek);
-	date.year=systemtime.wYear;
-	date.dst=false;
+	date.day = systemtime.wDay;
+	date.month = Month(systemtime.wMonth);
+	date.weekday = Weekday(systemtime.wDayOfWeek);
+	date.year = systemtime.wYear;
+	date.dst = false;
 	return date;
 }
 OS::Time OSWinrt::get_time(bool utc) const {
@@ -475,9 +459,9 @@ OS::Time OSWinrt::get_time(bool utc) const {
 		GetLocalTime(&systemtime);
 
 	Time time;
-	time.hour=systemtime.wHour;
-	time.min=systemtime.wMinute;
-	time.sec=systemtime.wSecond;
+	time.hour = systemtime.wHour;
+	time.min = systemtime.wMinute;
+	time.sec = systemtime.wSecond;
 	return time;
 }
 
@@ -517,7 +501,7 @@ uint64_t OSWinrt::get_unix_time() const {
 	FILETIME fep;
 	SystemTimeToFileTime(&ep, &fep);
 
-	return (*(uint64_t*)&ft - *(uint64_t*)&fep) / 10000000;
+	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
 };
 
 void OSWinrt::delay_usec(uint32_t p_usec) const {
@@ -526,7 +510,6 @@ void OSWinrt::delay_usec(uint32_t p_usec) const {
 
 	// no Sleep()
 	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
-
 }
 uint64_t OSWinrt::get_ticks_usec() const {
 
@@ -542,26 +525,23 @@ uint64_t OSWinrt::get_ticks_usec() const {
 	return time;
 }
 
-
 void OSWinrt::process_events() {
-
 }
 
 void OSWinrt::set_cursor_shape(CursorShape p_shape) {
-
 }
 
-Error OSWinrt::execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id,String* r_pipe,int *r_exitcode) {
+Error OSWinrt::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode) {
 
 	return FAILED;
 };
 
-Error OSWinrt::kill(const ProcessID& p_pid) {
+Error OSWinrt::kill(const ProcessID &p_pid) {
 
 	return FAILED;
 };
 
-Error OSWinrt::set_cwd(const String& p_cwd) {
+Error OSWinrt::set_cwd(const String &p_cwd) {
 
 	return FAILED;
 }
@@ -571,17 +551,15 @@ String OSWinrt::get_executable_path() const {
 	return "";
 }
 
-void OSWinrt::set_icon(const Image& p_icon) {
-
+void OSWinrt::set_icon(const Image &p_icon) {
 }
 
-
-bool OSWinrt::has_environment(const String& p_var) const {
+bool OSWinrt::has_environment(const String &p_var) const {
 
 	return false;
 };
 
-String OSWinrt::get_environment(const String& p_var) const {
+String OSWinrt::get_environment(const String &p_var) const {
 
 	return "";
 };
@@ -591,9 +569,7 @@ String OSWinrt::get_stdin_string(bool p_block) {
 	return String();
 }
 
-
 void OSWinrt::move_window_to_foreground() {
-
 }
 
 Error OSWinrt::shell_open(String p_uri) {
@@ -601,13 +577,12 @@ Error OSWinrt::shell_open(String p_uri) {
 	return FAILED;
 }
 
-
 String OSWinrt::get_locale() const {
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
 	return "en";
 #else
-	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
+	Platform::String ^ language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
 	return language->Data();
 #endif
 }
@@ -627,7 +602,6 @@ void OSWinrt::swap_buffers() {
 	gl_context->swap_buffers();
 }
 
-
 void OSWinrt::run() {
 
 	if (!main_loop)
@@ -635,56 +609,51 @@ void OSWinrt::run() {
 
 	main_loop->init();
 
-	uint64_t last_ticks=get_ticks_usec();
+	uint64_t last_ticks = get_ticks_usec();
 
-	int frames=0;
-	uint64_t frame=0;
+	int frames = 0;
+	uint64_t frame = 0;
 
 	while (!force_quit) {
 
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		process_events(); // get rid of pending events
-		if (Main::iteration()==true)
+		if (Main::iteration() == true)
 			break;
 	};
 
 	main_loop->finish();
-
 }
-
-
 
 MainLoop *OSWinrt::get_main_loop() const {
 
 	return main_loop;
 }
 
-
 String OSWinrt::get_data_dir() const {
 
-	Windows::Storage::StorageFolder ^data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
+	Windows::Storage::StorageFolder ^ data_folder = Windows::Storage::ApplicationData::Current->LocalFolder;
 
 	return data_folder->Path->Data();
 }
 
-
 OSWinrt::OSWinrt() {
 
-	key_event_pos=0;
-	force_quit=false;
-	alt_mem=false;
-	gr_mem=false;
-	shift_mem=false;
-	control_mem=false;
-	meta_mem=false;
+	key_event_pos = 0;
+	force_quit = false;
+	alt_mem = false;
+	gr_mem = false;
+	shift_mem = false;
+	control_mem = false;
+	meta_mem = false;
 	minimized = false;
 
-	pressrc=0;
-	old_invalid=true;
-	last_id=0;
-	mouse_mode=MOUSE_MODE_VISIBLE;
+	pressrc = 0;
+	old_invalid = true;
+	last_id = 0;
+	mouse_mode = MOUSE_MODE_VISIBLE;
 #ifdef STDOUT_FILE
-	stdo=fopen("stdout.txt","wb");
+	stdo = fopen("stdout.txt", "wb");
 #endif
 
 	gl_context = NULL;
@@ -692,12 +661,8 @@ OSWinrt::OSWinrt() {
 	AudioDriverManagerSW::add_driver(&audio_driver);
 }
 
-
-OSWinrt::~OSWinrt()
-{
+OSWinrt::~OSWinrt() {
 #ifdef STDOUT_FILE
 	fclose(stdo);
 #endif
 }
-
-

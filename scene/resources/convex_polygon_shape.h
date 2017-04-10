@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,19 +34,18 @@
 
 class ConvexPolygonShape : public Shape {
 
-	OBJ_TYPE(ConvexPolygonShape,Shape);
+	OBJ_TYPE(ConvexPolygonShape, Shape);
 	DVector<Vector3> points;
 
 protected:
-
 	static void _bind_methods();
 
 	virtual void _update_shape();
 
 	virtual Vector<Vector3> _gen_debug_mesh_lines();
-public:
 
-	void set_points(const DVector<Vector3>& p_points);
+public:
+	void set_points(const DVector<Vector3> &p_points);
 	DVector<Vector3> get_points() const;
 
 	ConvexPolygonShape();

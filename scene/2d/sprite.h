@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +33,9 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
 
-
 class Sprite : public Node2D {
 
-	OBJ_TYPE( Sprite, Node2D );
+	OBJ_TYPE(Sprite, Node2D);
 
 	Ref<Texture> texture;
 
@@ -54,28 +54,25 @@ class Sprite : public Node2D {
 
 	Color modulate;
 
-
 protected:
-
 	void _notification(int p_what);
 
-	static void _bind_methods();;
+	static void _bind_methods();
 
-	virtual void _validate_property(PropertyInfo& property) const;
+	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
-
-	virtual void edit_set_pivot(const Point2& p_pivot);
+	virtual void edit_set_pivot(const Point2 &p_pivot);
 	virtual Point2 edit_get_pivot() const;
 	virtual bool edit_has_pivot() const;
 
-	void set_texture(const Ref<Texture>& p_texture);
+	void set_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_texture() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;
 
-	void set_offset(const Point2& p_offset);
+	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
 
 	void set_flip_h(bool p_flip);
@@ -87,7 +84,7 @@ public:
 	void set_region(bool p_region);
 	bool is_region() const;
 
-	void set_region_rect(const Rect2& p_region_rect);
+	void set_region_rect(const Rect2 &p_region_rect);
 	Rect2 get_region_rect() const;
 
 	void set_frame(int p_frame);
@@ -99,7 +96,7 @@ public:
 	void set_hframes(int p_amount);
 	int get_hframes() const;
 
-	void set_modulate(const Color& p_color);
+	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 
 	virtual Rect2 get_item_rect() const;
@@ -109,7 +106,7 @@ public:
 
 class ViewportSprite : public Node2D {
 
-	OBJ_TYPE( ViewportSprite, Node2D );
+	OBJ_TYPE(ViewportSprite, Node2D);
 
 	Ref<Texture> texture;
 	NodePath viewport_path;
@@ -119,27 +116,25 @@ class ViewportSprite : public Node2D {
 	Color modulate;
 
 protected:
-
 	void _notification(int p_what);
 
-	static void _bind_methods();;
+	static void _bind_methods();
 
 public:
-
-	virtual void edit_set_pivot(const Point2& p_pivot);
+	virtual void edit_set_pivot(const Point2 &p_pivot);
 	virtual Point2 edit_get_pivot() const;
 	virtual bool edit_has_pivot() const;
 
-	void set_viewport_path(const NodePath& p_viewport);
+	void set_viewport_path(const NodePath &p_viewport);
 	NodePath get_viewport_path() const;
 
 	void set_centered(bool p_center);
 	bool is_centered() const;
 
-	void set_offset(const Point2& p_offset);
+	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
 
-	void set_modulate(const Color& p_color);
+	void set_modulate(const Color &p_color);
 	Color get_modulate() const;
 
 	virtual Rect2 get_item_rect() const;

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,23 +29,20 @@
 /*************************************************************************/
 #include "memory_pool_dynamic.h"
 
+MemoryPoolDynamic *MemoryPoolDynamic::singleton = NULL;
 
-MemoryPoolDynamic* MemoryPoolDynamic::singleton=NULL;
-
-
-MemoryPoolDynamic* MemoryPoolDynamic::get_singleton() {
+MemoryPoolDynamic *MemoryPoolDynamic::get_singleton() {
 
 	return singleton;
 }
 
-
 MemoryPoolDynamic::MemoryPoolDynamic() {
 
-	ERR_FAIL_COND(singleton!=NULL);
-	singleton=this;
+	ERR_FAIL_COND(singleton != NULL);
+	singleton = this;
 }
 
 MemoryPoolDynamic::~MemoryPoolDynamic() {
 
-	singleton=NULL;
+	singleton = NULL;
 }

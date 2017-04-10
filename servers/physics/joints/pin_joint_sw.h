@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +35,8 @@ Adapted to Godot from the Bullet library.
 #ifndef PIN_JOINT_SW_H
 #define PIN_JOINT_SW_H
 
-#include "servers/physics/joints_sw.h"
 #include "servers/physics/joints/jacobian_entry_sw.h"
+#include "servers/physics/joints_sw.h"
 
 /*
 Bullet Continuous Collision Detection and Physics Library
@@ -52,7 +53,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 class PinJointSW : public JointSW {
 
 	union {
@@ -64,37 +64,33 @@ class PinJointSW : public JointSW {
 		BodySW *_arr[2];
 	};
 
+	real_t m_tau; //bias
+	real_t m_damping;
+	real_t m_impulseClamp;
+	real_t m_appliedImpulse;
 
-	real_t	m_tau; //bias
-	real_t	m_damping;
-	real_t	m_impulseClamp;
-	real_t  m_appliedImpulse;
+	JacobianEntrySW m_jac[3]; //3 orthogonal linear constraints
 
-	JacobianEntrySW	m_jac[3]; //3 orthogonal linear constraints
-
-	Vector3	m_pivotInA;
-	Vector3	m_pivotInB;
+	Vector3 m_pivotInA;
+	Vector3 m_pivotInB;
 
 public:
-
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_PIN; }
 
 	virtual bool setup(float p_step);
 	virtual void solve(float p_step);
 
-	void set_param(PhysicsServer::PinJointParam p_param,float p_value);
+	void set_param(PhysicsServer::PinJointParam p_param, float p_value);
 	float get_param(PhysicsServer::PinJointParam p_param) const;
 
-	void set_pos_A(const Vector3& p_pos) { m_pivotInA=p_pos; }
-	void set_pos_B(const Vector3& p_pos) { m_pivotInB=p_pos; }
+	void set_pos_A(const Vector3 &p_pos) { m_pivotInA = p_pos; }
+	void set_pos_B(const Vector3 &p_pos) { m_pivotInB = p_pos; }
 
 	Vector3 get_pos_A() { return m_pivotInB; }
 	Vector3 get_pos_B() { return m_pivotInA; }
 
-	PinJointSW(BodySW* p_body_a,const Vector3& p_pos_a,BodySW* p_body_b,const Vector3& p_pos_b);
+	PinJointSW(BodySW *p_body_a, const Vector3 &p_pos_a, BodySW *p_body_b, const Vector3 &p_pos_b);
 	~PinJointSW();
 };
-
-
 
 #endif // PIN_JOINT_SW_H

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,60 +30,55 @@
 
 #include "cp_player_data.h"
 
-
-void CPPlayer::Voice_Control::start_envelope(CPEnvelope *p_envelope,Envelope_Control *p_envelope_ctrl,Envelope_Control *p_from_env) {
-
+void CPPlayer::Voice_Control::start_envelope(CPEnvelope *p_envelope, Envelope_Control *p_envelope_ctrl, Envelope_Control *p_from_env) {
 
 	if (p_from_env && p_envelope->is_carry_enabled() && !p_from_env->terminated) {
 
-		
-		*p_envelope_ctrl=*p_from_env;
+		*p_envelope_ctrl = *p_from_env;
 	} else {
-		p_envelope_ctrl->pos_index=0;
-		p_envelope_ctrl->status=1;
-		p_envelope_ctrl->sustain_looping=p_envelope->is_sustain_loop_enabled();
-		p_envelope_ctrl->looping=p_envelope->is_loop_enabled();
-		p_envelope_ctrl->terminated=false;
-		p_envelope_ctrl->kill=false;
-		p_envelope_ctrl->value=p_envelope->get_height_at_pos(p_envelope_ctrl->pos_index);
+		p_envelope_ctrl->pos_index = 0;
+		p_envelope_ctrl->status = 1;
+		p_envelope_ctrl->sustain_looping = p_envelope->is_sustain_loop_enabled();
+		p_envelope_ctrl->looping = p_envelope->is_loop_enabled();
+		p_envelope_ctrl->terminated = false;
+		p_envelope_ctrl->kill = false;
+		p_envelope_ctrl->value = p_envelope->get_height_at_pos(p_envelope_ctrl->pos_index);
 	}
 }
 
-bool CPPlayer::Voice_Control::process_envelope(CPEnvelope *p_envelope,Envelope_Control *p_envelope_ctrl) {
+bool CPPlayer::Voice_Control::process_envelope(CPEnvelope *p_envelope, Envelope_Control *p_envelope_ctrl) {
 
-	if (!p_envelope_ctrl->active) 
+	if (!p_envelope_ctrl->active)
 		return false;
 
-	if (note_end_flags&END_NOTE_OFF) p_envelope_ctrl->sustain_looping=false;
+	if (note_end_flags & END_NOTE_OFF) p_envelope_ctrl->sustain_looping = false;
 
-	p_envelope_ctrl->value=p_envelope->get_height_at_pos(p_envelope_ctrl->pos_index);
-	if (p_envelope_ctrl->value==CPEnvelope::NO_POINT)
+	p_envelope_ctrl->value = p_envelope->get_height_at_pos(p_envelope_ctrl->pos_index);
+	if (p_envelope_ctrl->value == CPEnvelope::NO_POINT)
 		return false;
-	
 
 	p_envelope_ctrl->pos_index++;
 
 	if (p_envelope_ctrl->sustain_looping) {
 
-		if (p_envelope_ctrl->pos_index>p_envelope->get_node(p_envelope->get_sustain_loop_end()).tick_offset) {
+		if (p_envelope_ctrl->pos_index > p_envelope->get_node(p_envelope->get_sustain_loop_end()).tick_offset) {
 
-			p_envelope_ctrl->pos_index=p_envelope->get_node(p_envelope->get_sustain_loop_begin()).tick_offset;
+			p_envelope_ctrl->pos_index = p_envelope->get_node(p_envelope->get_sustain_loop_begin()).tick_offset;
 		}
 
 	} else if (p_envelope_ctrl->looping) {
 
-		if (p_envelope_ctrl->pos_index>p_envelope->get_node(p_envelope->get_loop_end()).tick_offset) {
+		if (p_envelope_ctrl->pos_index > p_envelope->get_node(p_envelope->get_loop_end()).tick_offset) {
 
-			p_envelope_ctrl->pos_index=p_envelope->get_node(p_envelope->get_loop_begin()).tick_offset;
+			p_envelope_ctrl->pos_index = p_envelope->get_node(p_envelope->get_loop_begin()).tick_offset;
 		}
-
 	}
 
-	if (p_envelope_ctrl->pos_index>p_envelope->get_node(p_envelope->get_node_count()-1).tick_offset) {
+	if (p_envelope_ctrl->pos_index > p_envelope->get_node(p_envelope->get_node_count() - 1).tick_offset) {
 
-		p_envelope_ctrl->terminated=true;
-		p_envelope_ctrl->pos_index=p_envelope->get_node(p_envelope->get_node_count()-1).tick_offset;
-		if (p_envelope->get_node(p_envelope->get_node_count()-1).value==0) p_envelope_ctrl->kill=true;
+		p_envelope_ctrl->terminated = true;
+		p_envelope_ctrl->pos_index = p_envelope->get_node(p_envelope->get_node_count() - 1).tick_offset;
+		if (p_envelope->get_node(p_envelope->get_node_count() - 1).value == 0) p_envelope_ctrl->kill = true;
 	}
 
 	return true;

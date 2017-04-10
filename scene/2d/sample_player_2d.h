@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,29 +35,26 @@
 
 class SamplePlayer2D : public SoundPlayer2D {
 
-	OBJ_TYPE(SamplePlayer2D,SoundPlayer2D);
-public:
+	OBJ_TYPE(SamplePlayer2D, SoundPlayer2D);
 
+public:
 	enum {
 
-		INVALID_VOICE=SpatialSoundServer::SOURCE_INVALID_VOICE,
-		NEXT_VOICE=SpatialSoundServer::SOURCE_NEXT_VOICE
+		INVALID_VOICE = SpatialSoundServer::SOURCE_INVALID_VOICE,
+		NEXT_VOICE = SpatialSoundServer::SOURCE_NEXT_VOICE
 	};
 
 	typedef int VoiceID;
 
-
 private:
-
 	Ref<SampleLibrary> library;
 	int polyphony;
 	String played_back;
 	float random_pitch_scale;
 
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_what);
@@ -64,14 +62,13 @@ protected:
 	static void _bind_methods();
 
 public:
-
-	void set_sample_library(const Ref<SampleLibrary>& p_library);
+	void set_sample_library(const Ref<SampleLibrary> &p_library);
 	Ref<SampleLibrary> get_sample_library() const;
 
 	void set_polyphony(int p_voice_count);
 	int get_polyphony() const;
 
-	VoiceID play(const String& p_sample,int p_voice=NEXT_VOICE);
+	VoiceID play(const String &p_sample, int p_voice = NEXT_VOICE);
 	//voices
 	void voice_set_pitch_scale(VoiceID p_voice, float p_pitch_scale);
 	void voice_set_volume_scale_db(VoiceID p_voice, float p_volume_db);
@@ -87,8 +84,6 @@ public:
 
 	SamplePlayer2D();
 	~SamplePlayer2D();
-
-
 };
 
 #endif // SAMPLE_PLAYER_2D_H

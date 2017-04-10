@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +30,10 @@
 #ifndef VISUALINSTANCEPARTICLES_H
 #define VISUALINSTANCEPARTICLES_H
 
-#include "scene/3d/visual_instance.h"
-#include "scene/resources/material.h"
-#include "scene/main/timer.h"
 #include "rid.h"
+#include "scene/3d/visual_instance.h"
+#include "scene/main/timer.h"
+#include "scene/resources/material.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -40,27 +41,26 @@
 
 class Particles : public GeometryInstance {
 public:
-
 	enum Variable {
-		VAR_LIFETIME=VS::PARTICLE_LIFETIME,
-		VAR_SPREAD=VS::PARTICLE_SPREAD,
-		VAR_GRAVITY=VS::PARTICLE_GRAVITY,
-		VAR_LINEAR_VELOCITY=VS::PARTICLE_LINEAR_VELOCITY,
-		VAR_ANGULAR_VELOCITY=VS::PARTICLE_ANGULAR_VELOCITY,
-		VAR_LINEAR_ACCELERATION=VS::PARTICLE_LINEAR_ACCELERATION,
-		VAR_DRAG=VS::PARTICLE_RADIAL_ACCELERATION,
-		VAR_TANGENTIAL_ACCELERATION=VS::PARTICLE_TANGENTIAL_ACCELERATION,
-		VAR_DAMPING=VS::PARTICLE_DAMPING,
-		VAR_INITIAL_SIZE=VS::PARTICLE_INITIAL_SIZE,
-		VAR_FINAL_SIZE=VS::PARTICLE_FINAL_SIZE,
-		VAR_INITIAL_ANGLE=VS::PARTICLE_INITIAL_ANGLE,
-		VAR_HEIGHT=VS::PARTICLE_HEIGHT,
-		VAR_HEIGHT_SPEED_SCALE=VS::PARTICLE_HEIGHT_SPEED_SCALE,
-		VAR_MAX=VS::PARTICLE_VAR_MAX
+		VAR_LIFETIME = VS::PARTICLE_LIFETIME,
+		VAR_SPREAD = VS::PARTICLE_SPREAD,
+		VAR_GRAVITY = VS::PARTICLE_GRAVITY,
+		VAR_LINEAR_VELOCITY = VS::PARTICLE_LINEAR_VELOCITY,
+		VAR_ANGULAR_VELOCITY = VS::PARTICLE_ANGULAR_VELOCITY,
+		VAR_LINEAR_ACCELERATION = VS::PARTICLE_LINEAR_ACCELERATION,
+		VAR_DRAG = VS::PARTICLE_RADIAL_ACCELERATION,
+		VAR_TANGENTIAL_ACCELERATION = VS::PARTICLE_TANGENTIAL_ACCELERATION,
+		VAR_DAMPING = VS::PARTICLE_DAMPING,
+		VAR_INITIAL_SIZE = VS::PARTICLE_INITIAL_SIZE,
+		VAR_FINAL_SIZE = VS::PARTICLE_FINAL_SIZE,
+		VAR_INITIAL_ANGLE = VS::PARTICLE_INITIAL_ANGLE,
+		VAR_HEIGHT = VS::PARTICLE_HEIGHT,
+		VAR_HEIGHT_SPEED_SCALE = VS::PARTICLE_HEIGHT_SPEED_SCALE,
+		VAR_MAX = VS::PARTICLE_VAR_MAX
 	};
 
 private:
-	OBJ_TYPE( Particles, GeometryInstance );
+	OBJ_TYPE(Particles, GeometryInstance);
 
 	RID particles;
 
@@ -92,16 +92,13 @@ private:
 
 	Ref<Material> material;
 
-	Timer* timer;
+	Timer *timer;
 	void setup_timer();
 
 protected:
-
 	static void _bind_methods();
 
 public:
-
-
 	AABB get_aabb() const;
 	DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
@@ -111,25 +108,25 @@ public:
 	void set_emitting(bool p_emitting);
 	bool is_emitting() const;
 
-	void set_visibility_aabb(const AABB& p_aabb);
+	void set_visibility_aabb(const AABB &p_aabb);
 	AABB get_visibility_aabb() const;
 
-	void set_emission_half_extents(const Vector3& p_half_extents);
+	void set_emission_half_extents(const Vector3 &p_half_extents);
 	Vector3 get_emission_half_extents() const;
 
-	void set_emission_base_velocity(const Vector3& p_base_velocity);
+	void set_emission_base_velocity(const Vector3 &p_base_velocity);
 	Vector3 get_emission_base_velocity() const;
 
-	void set_emission_points(const DVector<Vector3>& p_points);
+	void set_emission_points(const DVector<Vector3> &p_points);
 	DVector<Vector3> get_emission_points() const;
 
-	void set_gravity_normal(const Vector3& p_normal);
+	void set_gravity_normal(const Vector3 &p_normal);
 	Vector3 get_gravity_normal() const;
 
-	void set_variable(Variable p_variable,float p_value);
+	void set_variable(Variable p_variable, float p_value);
 	float get_variable(Variable p_variable) const;
 
-	void set_randomness(Variable p_variable,float p_randomness);
+	void set_randomness(Variable p_variable, float p_randomness);
 	float get_randomness(Variable p_variable) const;
 
 	void set_color_phases(int p_phases);
@@ -138,13 +135,13 @@ public:
 	void set_color_phase_pos(int p_phase, float p_pos);
 	float get_color_phase_pos(int p_phase) const;
 
-	void set_color_phase_color(int p_phase, const Color& p_color);
+	void set_color_phase_color(int p_phase, const Color &p_color);
 	Color get_color_phase_color(int p_phase) const;
 
 	void set_height_from_velocity(bool p_enable);
 	bool has_height_from_velocity() const;
 
-	void set_material(const Ref<Material>& p_material);
+	void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
 
 	void set_emit_timeout(float p_timeout);
@@ -155,11 +152,9 @@ public:
 
 	void start_emitting(float p_time);
 
-
 	Particles();
 	~Particles();
-
 };
 
-VARIANT_ENUM_CAST( Particles::Variable );
+VARIANT_ENUM_CAST(Particles::Variable);
 #endif

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,28 +29,26 @@
 /*************************************************************************/
 #include "safe_refcount.h"
 
-
 #ifdef _MSC_VER
 
 // don't pollute my namespace!
 #include <windows.h>
-long atomic_conditional_increment( register long * pw ) {
+long atomic_conditional_increment(register long *pw) {
 
 	/* try to increment until it actually works */
 	// taken from boost
 
 	while (true) {
-		long tmp = static_cast< long const volatile& >( *pw );
-		if( tmp == 0 )
-      return 0; // if zero, can't add to it anymore
-		if( InterlockedCompareExchange( pw, tmp + 1, tmp ) == tmp )
-			return tmp+1;
+		long tmp = static_cast<long const volatile &>(*pw);
+		if (tmp == 0)
+			return 0; // if zero, can't add to it anymore
+		if (InterlockedCompareExchange(pw, tmp + 1, tmp) == tmp)
+			return tmp + 1;
 	}
-
 }
 
-long atomic_decrement( register long * pw ) {
-	return InterlockedDecrement( pw );
+long atomic_decrement(register long *pw) {
+	return InterlockedDecrement(pw);
 }
 
 #endif

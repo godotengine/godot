@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +35,9 @@
 
 class Mesh;
 
-class NavigationMesh : public Resource  {
+class NavigationMesh : public Resource {
 
-	OBJ_TYPE( NavigationMesh, Resource );
+	OBJ_TYPE(NavigationMesh, Resource);
 
 	DVector<Vector3> vertices;
 	struct Polygon {
@@ -50,25 +51,22 @@ class NavigationMesh : public Resource  {
 		Vector3 from;
 		Vector3 to;
 
-		bool operator<(const _EdgeKey& p_with) const { return from==p_with.from ? to < p_with.to : from < p_with.from; }
+		bool operator<(const _EdgeKey &p_with) const { return from == p_with.from ? to < p_with.to : from < p_with.from; }
 	};
 
-
 protected:
-
 	static void _bind_methods();
 
-	void _set_polygons(const Array& p_array);
+	void _set_polygons(const Array &p_array);
 	Array _get_polygons() const;
 
 public:
+	void create_from_mesh(const Ref<Mesh> &p_mesh);
 
-	void create_from_mesh(const Ref<Mesh>& p_mesh);
-
-	void set_vertices(const DVector<Vector3>& p_vertices);
+	void set_vertices(const DVector<Vector3> &p_vertices);
 	DVector<Vector3> get_vertices() const;
 
-	void add_polygon(const Vector<int>& p_polygon);
+	void add_polygon(const Vector<int> &p_polygon);
 	int get_polygon_count() const;
 	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
@@ -78,12 +76,11 @@ public:
 	NavigationMesh();
 };
 
-
 class Navigation;
 
 class NavigationMeshInstance : public Spatial {
 
-	OBJ_TYPE(NavigationMeshInstance,Spatial);
+	OBJ_TYPE(NavigationMeshInstance, Spatial);
 
 	bool enabled;
 	int nav_id;
@@ -93,23 +90,19 @@ class NavigationMeshInstance : public Spatial {
 	Node *debug_view;
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
-
-
-
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	void set_navigation_mesh(const Ref<NavigationMesh>& p_navmesh);
+	void set_navigation_mesh(const Ref<NavigationMesh> &p_navmesh);
 	Ref<NavigationMesh> get_navigation_mesh() const;
 
 	String get_configuration_warning() const;
 
 	NavigationMeshInstance();
 };
-
 
 #endif // NAVIGATION_MESH_H

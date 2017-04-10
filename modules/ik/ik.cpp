@@ -30,22 +30,20 @@
 
 #include "ik.h"
 
-bool InverseKinematics::_get(const StringName& p_name,Variant &r_ret) const
-{
+bool InverseKinematics::_get(const StringName &p_name, Variant &r_ret) const {
 
-	if (String(p_name)=="ik_bone") {
+	if (String(p_name) == "ik_bone") {
 
-		r_ret=get_bone_name();
+		r_ret = get_bone_name();
 		return true;
 	}
 
 	return false;
 }
 
-bool InverseKinematics::_set(const StringName& p_name, const Variant& p_value)
-{
+bool InverseKinematics::_set(const StringName &p_name, const Variant &p_value) {
 
-	if (String(p_name)=="ik_bone") {
+	if (String(p_name) == "ik_bone") {
 
 		set_bone_name(p_value);
 		changed = true;
@@ -55,109 +53,97 @@ bool InverseKinematics::_set(const StringName& p_name, const Variant& p_value)
 	return false;
 }
 
-void InverseKinematics::_get_property_list( List<PropertyInfo>* p_list ) const
-{
+void InverseKinematics::_get_property_list(List<PropertyInfo> *p_list) const {
 
-	Skeleton *parent=NULL;
-	if(get_parent())
-		parent=get_parent()->cast_to<Skeleton>();
+	Skeleton *parent = NULL;
+	if (get_parent())
+		parent = get_parent()->cast_to<Skeleton>();
 
 	if (parent) {
 
 		String names;
-		for(int i=0;i<parent->get_bone_count();i++) {
-			if(i>0)
-				names+=",";
-			names+=parent->get_bone_name(i);
+		for (int i = 0; i < parent->get_bone_count(); i++) {
+			if (i > 0)
+				names += ",";
+			names += parent->get_bone_name(i);
 		}
 
-		p_list->push_back(PropertyInfo(Variant::STRING,"ik_bone",PROPERTY_HINT_ENUM,names));
+		p_list->push_back(PropertyInfo(Variant::STRING, "ik_bone", PROPERTY_HINT_ENUM, names));
 	} else {
 
-		p_list->push_back(PropertyInfo(Variant::STRING,"ik_bone"));
-
+		p_list->push_back(PropertyInfo(Variant::STRING, "ik_bone"));
 	}
-
 }
 
-void InverseKinematics::_check_bind()
-{
+void InverseKinematics::_check_bind() {
 
 	if (get_parent() && get_parent()->cast_to<Skeleton>()) {
 		Skeleton *sk = get_parent()->cast_to<Skeleton>();
 		int idx = sk->find_bone(ik_bone);
-		if (idx!=-1) {
+		if (idx != -1) {
 			ik_bone_no = idx;
-			bound=true;
+			bound = true;
 		}
 		skel = sk;
 	}
 }
 
-void InverseKinematics::_check_unbind()
-{
+void InverseKinematics::_check_unbind() {
 
 	if (bound) {
 
 		if (get_parent() && get_parent()->cast_to<Skeleton>()) {
 			Skeleton *sk = get_parent()->cast_to<Skeleton>();
 			int idx = sk->find_bone(ik_bone);
-			if (idx!=-1)
+			if (idx != -1)
 				ik_bone_no = idx;
 			else
 				ik_bone_no = 0;
 			skel = sk;
-
 		}
-		bound=false;
+		bound = false;
 	}
 }
 
-
-void InverseKinematics::set_bone_name(const String& p_name)
-{
+void InverseKinematics::set_bone_name(const String &p_name) {
 
 	if (is_inside_tree())
 		_check_unbind();
 
-	ik_bone=p_name;
+	ik_bone = p_name;
 
 	if (is_inside_tree())
 		_check_bind();
 	changed = true;
 }
 
-String InverseKinematics::get_bone_name() const
-{
+String InverseKinematics::get_bone_name() const {
 
 	return ik_bone;
 }
 
-void InverseKinematics::set_iterations(int itn)
-{
+void InverseKinematics::set_iterations(int itn) {
 
 	if (is_inside_tree())
 		_check_unbind();
 
-	iterations=itn;
+	iterations = itn;
 
 	if (is_inside_tree())
 		_check_bind();
 	changed = true;
 }
 
-int InverseKinematics::get_iterations() const
-{
+int InverseKinematics::get_iterations() const {
 
 	return iterations;
 }
 
-void InverseKinematics::set_chain_size(int cs)
-{
+void InverseKinematics::set_chain_size(int cs) {
 	if (is_inside_tree())
 		_check_unbind();
 
-	chain_size=cs;
+	chain_size = cs;
 	chain.clear();
 	if (bound)
 		update_parameters();
@@ -167,52 +153,46 @@ void InverseKinematics::set_chain_size(int cs)
 	changed = true;
 }
 
-int InverseKinematics::get_chain_size() const
-{
+int InverseKinematics::get_chain_size() const {
 
 	return chain_size;
 }
 
-void InverseKinematics::set_precision(float p)
-{
+void InverseKinematics::set_precision(float p) {
 
 	if (is_inside_tree())
 		_check_unbind();
 
-	precision=p;
+	precision = p;
 
 	if (is_inside_tree())
 		_check_bind();
 	changed = true;
 }
 
-float InverseKinematics::get_precision() const
-{
+float InverseKinematics::get_precision() const {
 
 	return precision;
 }
 
-void InverseKinematics::set_speed(float p)
-{
+void InverseKinematics::set_speed(float p) {
 
 	if (is_inside_tree())
 		_check_unbind();
 
-	speed=p;
+	speed = p;
 
 	if (is_inside_tree())
 		_check_bind();
 	changed = true;
 }
 
-float InverseKinematics::get_speed() const
-{
+float InverseKinematics::get_speed() const {
 
 	return speed;
 }
 
-void InverseKinematics::update_parameters()
-{
+void InverseKinematics::update_parameters() {
 	tail_bone = -1;
 	for (int i = 0; i < skel->get_bone_count(); i++)
 		if (skel->get_bone_parent(i) == ik_bone_no)
@@ -226,10 +206,9 @@ void InverseKinematics::update_parameters()
 	}
 }
 
-void InverseKinematics::_notification(int p_what)
-{
+void InverseKinematics::_notification(int p_what) {
 
-	switch(p_what) {
+	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 
@@ -267,9 +246,8 @@ void InverseKinematics::_notification(int p_what)
 						if (!reached && err < precision)
 							reached = true;
 						break;
-					} else
-						if (reached)
-							reached = false;
+					} else if (reached)
+						reached = false;
 					if (err > olderr)
 						psign = -psign;
 					Transform mod = skel->get_bone_global_pose(cur_bone);
@@ -286,10 +264,9 @@ void InverseKinematics::_notification(int p_what)
 				}
 				if (reached)
 					break;
-
 			}
 
-	   	} break;
+		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			set_process(false);
 
@@ -298,29 +275,26 @@ void InverseKinematics::_notification(int p_what)
 	}
 }
 void InverseKinematics::_bind_methods() {
-	ObjectTypeDB::bind_method(_MD("set_bone_name","ik_bone"),&InverseKinematics::set_bone_name);
-	ObjectTypeDB::bind_method(_MD("get_bone_name"),&InverseKinematics::get_bone_name);
-	ObjectTypeDB::bind_method(_MD("set_iterations","iterations"),&InverseKinematics::set_iterations);
-	ObjectTypeDB::bind_method(_MD("get_iterations"),&InverseKinematics::get_iterations);
-	ObjectTypeDB::bind_method(_MD("set_chain_size","chain_size"),&InverseKinematics::set_chain_size);
-	ObjectTypeDB::bind_method(_MD("get_chain_size"),&InverseKinematics::get_chain_size);
-	ObjectTypeDB::bind_method(_MD("set_precision","precision"),&InverseKinematics::set_precision);
-	ObjectTypeDB::bind_method(_MD("get_precision"),&InverseKinematics::get_precision);
-	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&InverseKinematics::set_speed);
-	ObjectTypeDB::bind_method(_MD("get_speed"),&InverseKinematics::get_speed);
+	ObjectTypeDB::bind_method(_MD("set_bone_name", "ik_bone"), &InverseKinematics::set_bone_name);
+	ObjectTypeDB::bind_method(_MD("get_bone_name"), &InverseKinematics::get_bone_name);
+	ObjectTypeDB::bind_method(_MD("set_iterations", "iterations"), &InverseKinematics::set_iterations);
+	ObjectTypeDB::bind_method(_MD("get_iterations"), &InverseKinematics::get_iterations);
+	ObjectTypeDB::bind_method(_MD("set_chain_size", "chain_size"), &InverseKinematics::set_chain_size);
+	ObjectTypeDB::bind_method(_MD("get_chain_size"), &InverseKinematics::get_chain_size);
+	ObjectTypeDB::bind_method(_MD("set_precision", "precision"), &InverseKinematics::set_precision);
+	ObjectTypeDB::bind_method(_MD("get_precision"), &InverseKinematics::get_precision);
+	ObjectTypeDB::bind_method(_MD("set_speed", "speed"), &InverseKinematics::set_speed);
+	ObjectTypeDB::bind_method(_MD("get_speed"), &InverseKinematics::get_speed);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "iterations"), _SCS("set_iterations"), _SCS("get_iterations"));
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "chain_size"), _SCS("set_chain_size"), _SCS("get_chain_size"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "precision"), _SCS("set_precision"), _SCS("get_precision"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed"), _SCS("set_speed"), _SCS("get_speed"));
 }
 
-InverseKinematics::InverseKinematics()
-{
-	bound=false;
+InverseKinematics::InverseKinematics() {
+	bound = false;
 	chain_size = 2;
 	iterations = 100;
 	precision = 0.001;
 	speed = 0.2;
-
 }
-

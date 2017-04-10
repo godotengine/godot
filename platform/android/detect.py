@@ -168,15 +168,15 @@ def configure(env):
 
     env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include"])
     env.Append(CPPFLAGS=string.split(
-        '-Wno-invalid-command-line-argument -Wno-unused-command-line-argument'))
-    env.Append(CPPFLAGS=string.split(
-        '-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing -Wa,--noexecstack'))
+        '-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'))
     env.Append(CPPFLAGS=string.split('-DANDROID -DNO_STATVFS -DGLES2_ENABLED'))
 
     env['neon_enabled'] = False
     if env['android_arch'] == 'x86':
         can_vectorize = True
         target_opts = ['-target', 'i686-none-linux-android']
+        # The NDK adds this if targeting API < 21, so we can drop it when Godot targets it at least
+        env.Append(CPPFLAGS=['-mstackrealign'])
     elif env["android_arch"] == "armv6":
         can_vectorize = False
         target_opts = ['-target', 'armv6-none-linux-androideabi']

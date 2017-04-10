@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +30,13 @@
 #ifndef THREAD_DUMMY_H
 #define THREAD_DUMMY_H
 
-#include "thread.h"
 #include "mutex.h"
 #include "semaphore.h"
+#include "thread.h"
 
 class ThreadDummy : public Thread {
 
-	static Thread* create(ThreadCreateCallback p_callback,void * p_user,const Settings& p_settings=Settings());
+	static Thread *create(ThreadCreateCallback p_callback, void *p_user, const Settings &p_settings = Settings());
 
 public:
 	virtual ID get_ID() const { return 0; };
@@ -45,12 +46,11 @@ public:
 
 class MutexDummy : public Mutex {
 
-	static Mutex* create(bool p_recursive);
+	static Mutex *create(bool p_recursive);
 
 public:
-
-	virtual void lock() {};
-	virtual void unlock() {};
+	virtual void lock(){};
+	virtual void unlock(){};
 	virtual Error try_lock() { return OK; };
 
 	static void make_default();
@@ -58,7 +58,7 @@ public:
 
 class SemaphoreDummy : public Semaphore {
 
-	static Semaphore* create();
+	static Semaphore *create();
 
 public:
 	virtual Error wait() { return OK; };
@@ -66,7 +66,6 @@ public:
 	virtual int get() const { return 0; }; ///< get semaphore value
 
 	static void make_default();
-
 };
 
 #endif

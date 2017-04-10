@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,13 +36,13 @@ class Step2DSW {
 
 	uint64_t _step;
 
-	void _populate_island(Body2DSW* p_body,Body2DSW** p_island,Constraint2DSW **p_constraint_island);
-	bool _setup_island(Constraint2DSW *p_island,float p_delta);
-	void _solve_island(Constraint2DSW *p_island,int p_iterations,float p_delta);
-	void _check_suspend(Body2DSW *p_island,float p_delta);
-public:
+	void _populate_island(Body2DSW *p_body, Body2DSW **p_island, Constraint2DSW **p_constraint_island);
+	bool _setup_island(Constraint2DSW *p_island, float p_delta);
+	void _solve_island(Constraint2DSW *p_island, int p_iterations, float p_delta);
+	void _check_suspend(Body2DSW *p_island, float p_delta);
 
-	void step(Space2DSW* p_space,float p_delta,int p_iterations);
+public:
+	void step(Space2DSW *p_space, float p_delta, int p_iterations);
 	Step2DSW();
 };
 

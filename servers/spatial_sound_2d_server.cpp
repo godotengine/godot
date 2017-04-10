@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,17 +29,15 @@
 /*************************************************************************/
 #include "spatial_sound_2d_server.h"
 
-SpatialSound2DServer *SpatialSound2DServer::singleton=NULL;
-
+SpatialSound2DServer *SpatialSound2DServer::singleton = NULL;
 
 SpatialSound2DServer *SpatialSound2DServer::get_singleton() {
 
 	return singleton;
 }
 
-
 SpatialSound2DServer::SpatialSound2DServer() {
 
-	ERR_FAIL_COND(singleton!=NULL);
-	singleton=this;
+	ERR_FAIL_COND(singleton != NULL);
+	singleton = this;
 }

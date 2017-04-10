@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +36,9 @@
 
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
-#include <sys/types.h>
-#include <pthread.h>
 #include "os/thread.h"
+#include <pthread.h>
+#include <sys/types.h>
 
 class ThreadPosix : public Thread {
 
@@ -47,30 +48,25 @@ class ThreadPosix : public Thread {
 	void *user;
 	ID id;
 
-	static Thread* create_thread_posix();
-	
-	
+	static Thread *create_thread_posix();
+
 	static void *thread_callback(void *userdata);
-	
-	static Thread* create_func_posix(ThreadCreateCallback p_callback,void *,const Settings&);
+
+	static Thread *create_func_posix(ThreadCreateCallback p_callback, void *, const Settings &);
 	static ID get_thread_ID_func_posix();
-	static void wait_to_finish_func_posix(Thread* p_thread);	
+	static void wait_to_finish_func_posix(Thread *p_thread);
 
-	static Error set_name_func_posix(const String& p_name);
+	static Error set_name_func_posix(const String &p_name);
 
-	ThreadPosix();	
+	ThreadPosix();
+
 public:
-	
-	
 	virtual ID get_ID() const;
-	
+
 	static void make_default();
-	
-	
+
 	~ThreadPosix();
-
 };
-
 
 #endif
 

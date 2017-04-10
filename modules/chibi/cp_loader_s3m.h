@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,40 +45,36 @@ individual sample loading
 and reorganizing the columns.
 ********************************/
 
-
-
-
-class CPLoader_S3M : public CPLoader  {
+class CPLoader_S3M : public CPLoader {
 
 	struct S3M_Header {
-	        char  songname[28];
-	        uint8_t t1a;
-	        uint8_t type;
-	        uint8_t unused1[2];
-	        uint16_t ordnum;
-	        uint16_t insnum;
-	        uint16_t patnum;
-	        uint16_t flags;
-	        uint16_t tracker;
-	        uint16_t fileformat;
-	        char  scrm[5];
-	        uint8_t mastervol;
-	        uint8_t initspeed;
-	        uint8_t inittempo;
-	        uint8_t mastermult;
-	        uint8_t ultraclick;
-	        uint8_t pantable;
-	        uint8_t unused2[8];
-	        uint16_t special;
-	        uint8_t channels[32];
+		char songname[28];
+		uint8_t t1a;
+		uint8_t type;
+		uint8_t unused1[2];
+		uint16_t ordnum;
+		uint16_t insnum;
+		uint16_t patnum;
+		uint16_t flags;
+		uint16_t tracker;
+		uint16_t fileformat;
+		char scrm[5];
+		uint8_t mastervol;
+		uint8_t initspeed;
+		uint8_t inittempo;
+		uint8_t mastermult;
+		uint8_t ultraclick;
+		uint8_t pantable;
+		uint8_t unused2[8];
+		uint16_t special;
+		uint8_t channels[32];
 		uint8_t pannings[32];
 		uint8_t orderlist[300];
 	};
 
-	
 	int sample_parapointers[CPSong::MAX_SAMPLES];
 	int pattern_parapointers[CPSong::MAX_PATTERNS];
-	
+
 	Error load_header();
 	void set_header();
 	Error load_sample(CPSample *p_sample);
@@ -85,27 +82,25 @@ class CPLoader_S3M : public CPLoader  {
 	Error load_patterns();
 
 	Error load_samples();
-	
+
 	S3M_Header header;
-        int sample_count;
+	int sample_count;
 	int pattern_count;
-	
+
 	CPFileAccessWrapper *file;
 	CPSong *song;
-public:
 
+public:
 	bool can_load_song() { return true; }
 	bool can_load_sample() { return false; }
 	bool can_load_instrument() { return false; }
-	
-	Error load_song(const char *p_file,CPSong *p_song,bool p_sampleset);
-	Error load_sample(const char *p_file,CPSample *p_sample);
-	Error load_instrument(const char *p_file,CPSong *p_song,int p_instr_idx);
-	
+
+	Error load_song(const char *p_file, CPSong *p_song, bool p_sampleset);
+	Error load_sample(const char *p_file, CPSample *p_sample);
+	Error load_instrument(const char *p_file, CPSong *p_song, int p_instr_idx);
+
 	CPLoader_S3M(CPFileAccessWrapper *p_file);
 	~CPLoader_S3M();
 };
-
-
 
 #endif

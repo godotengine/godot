@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +30,13 @@
 #ifndef PARALLAX_BACKGROUND_H
 #define PARALLAX_BACKGROUND_H
 
-#include "scene/main/canvas_layer.h"
-#include "scene/2d/node_2d.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/2d/node_2d.h"
+#include "scene/main/canvas_layer.h"
 
 class ParallaxBackground : public CanvasLayer {
 
-	OBJ_TYPE( ParallaxBackground, CanvasLayer  );
+	OBJ_TYPE(ParallaxBackground, CanvasLayer);
 
 	Point2 offset;
 	float scale;
@@ -48,30 +49,30 @@ class ParallaxBackground : public CanvasLayer {
 	bool ignore_camera_zoom;
 
 	void _update_scroll();
-protected:
 
-	void _camera_moved(const Matrix32& p_transform);
+protected:
+	void _camera_moved(const Matrix32 &p_transform);
 
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_scroll_offset(const Point2& p_ofs);
+public:
+	void set_scroll_offset(const Point2 &p_ofs);
 	Point2 get_scroll_offset() const;
 
 	void set_scroll_scale(float p_ofs);
 	float get_scroll_scale() const;
 
-	void set_scroll_base_offset(const Point2& p_ofs);
+	void set_scroll_base_offset(const Point2 &p_ofs);
 	Point2 get_scroll_base_offset() const;
 
-	void set_scroll_base_scale(const Point2& p_ofs);
+	void set_scroll_base_scale(const Point2 &p_ofs);
 	Point2 get_scroll_base_scale() const;
 
-	void set_limit_begin(const Point2& p_ofs);
+	void set_limit_begin(const Point2 &p_ofs);
 	Point2 get_limit_begin() const;
 
-	void set_limit_end(const Point2& p_ofs);
+	void set_limit_end(const Point2 &p_ofs);
 	Point2 get_limit_end() const;
 
 	void set_ignore_camera_zoom(bool ignore);

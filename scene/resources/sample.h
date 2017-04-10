@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,15 +30,15 @@
 #ifndef SAMPLE_H
 #define SAMPLE_H
 
-#include "servers/audio_server.h"
 #include "resource.h"
+#include "servers/audio_server.h"
 
 class Sample : public Resource {
 
-	OBJ_TYPE(Sample, Resource );
+	OBJ_TYPE(Sample, Resource);
 	RES_BASE_EXTENSION("smp");
-public:
 
+public:
 	enum Format {
 
 		FORMAT_PCM8,
@@ -53,7 +54,6 @@ public:
 	};
 
 private:
-
 	Format format;
 	int length;
 	bool stereo;
@@ -65,24 +65,20 @@ private:
 
 	RID sample;
 
-
-	void _set_data(const Dictionary& p_data);
+	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
 
 protected:
-
 	static void _bind_methods();
 
 public:
-
-
 	void create(Format p_format, bool p_stereo, int p_length);
 
 	Format get_format() const;
 	bool is_stereo() const;
 	int get_length() const;
 
-	void set_data(const DVector<uint8_t>& p_buffer);
+	void set_data(const DVector<uint8_t> &p_buffer);
 	DVector<uint8_t> get_data() const;
 
 	void set_mix_rate(int p_rate);
@@ -102,7 +98,7 @@ public:
 	~Sample();
 };
 
-VARIANT_ENUM_CAST( Sample::Format );
-VARIANT_ENUM_CAST( Sample::LoopFormat );
+VARIANT_ENUM_CAST(Sample::Format);
+VARIANT_ENUM_CAST(Sample::LoopFormat);
 
 #endif // SAMPLE_H

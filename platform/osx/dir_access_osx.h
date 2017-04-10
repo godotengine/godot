@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,26 +32,21 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#include "os/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
-
+#include "os/dir_access.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class DirAccessOSX : public DirAccessUnix {
 protected:
-
-	virtual String fix_unicode_name(const char* p_name) const;
-
+	virtual String fix_unicode_name(const char *p_name) const;
 };
-
-
 
 #endif //UNIX ENABLED
 #endif

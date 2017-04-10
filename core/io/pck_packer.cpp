@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,9 +43,9 @@ static uint64_t _align(uint64_t p_n, int p_alignment) {
 		return p_n + (p_alignment - rest);
 };
 
-static void _pad(FileAccess* p_file, int p_bytes) {
+static void _pad(FileAccess *p_file, int p_bytes) {
 
-	for (int i=0; i<p_bytes; i++) {
+	for (int i = 0; i < p_bytes; i++) {
 
 		p_file->store_8(0);
 	};
@@ -52,13 +53,12 @@ static void _pad(FileAccess* p_file, int p_bytes) {
 
 void PCKPacker::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("pck_start","pck_name","alignment"),&PCKPacker::pck_start);
-	ObjectTypeDB::bind_method(_MD("add_file","pck_path","source_path"),&PCKPacker::add_file);
-	ObjectTypeDB::bind_method(_MD("flush","verbose"),&PCKPacker::flush);
+	ObjectTypeDB::bind_method(_MD("pck_start", "pck_name", "alignment"), &PCKPacker::pck_start);
+	ObjectTypeDB::bind_method(_MD("add_file", "pck_path", "source_path"), &PCKPacker::add_file);
+	ObjectTypeDB::bind_method(_MD("flush", "verbose"), &PCKPacker::flush);
 };
 
-
-Error PCKPacker::pck_start(const String& p_file, int p_alignment) {
+Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
 	file = FileAccess::open(p_file, FileAccess::WRITE);
 	if (file == NULL) {
@@ -74,7 +74,7 @@ Error PCKPacker::pck_start(const String& p_file, int p_alignment) {
 	file->store_32(0); // # minor
 	file->store_32(0); // # revision
 
-	for (int i=0; i<16; i++) {
+	for (int i = 0; i < 16; i++) {
 
 		file->store_32(0); // reserved
 	};
@@ -84,9 +84,9 @@ Error PCKPacker::pck_start(const String& p_file, int p_alignment) {
 	return OK;
 };
 
-Error PCKPacker::add_file(const String& p_file, const String& p_src) {
+Error PCKPacker::add_file(const String &p_file, const String &p_src) {
 
-	FileAccess* f = FileAccess::open(p_src, FileAccess::READ);
+	FileAccess *f = FileAccess::open(p_src, FileAccess::READ);
 	if (!f) {
 		return ERR_FILE_CANT_OPEN;
 	};
@@ -116,7 +116,7 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	file->store_32(files.size());
 
-	for (int i=0; i<files.size(); i++) {
+	for (int i = 0; i < files.size(); i++) {
 
 		file->store_pascal_string(files[i].path);
 		files[i].offset_offset = file->get_pos();
@@ -130,7 +130,6 @@ Error PCKPacker::flush(bool p_verbose) {
 		file->store_32(0);
 	};
 
-
 	uint64_t ofs = file->get_pos();
 	ofs = _align(ofs, alignment);
 
@@ -140,9 +139,9 @@ Error PCKPacker::flush(bool p_verbose) {
 	uint8_t *buf = memnew_arr(uint8_t, buf_max);
 
 	int count = 0;
-	for (int i=0; i<files.size(); i++) {
+	for (int i = 0; i < files.size(); i++) {
 
-		FileAccess* src = FileAccess::open(files[i].src_path, FileAccess::READ);
+		FileAccess *src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 		while (to_write > 0) {
 

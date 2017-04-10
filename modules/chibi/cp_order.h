@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,15 +30,13 @@
 #ifndef CP_ORDER_H
 #define CP_ORDER_H
 
-
 #include "cp_config.h"
 
 enum CPOrderType {
-	CP_ORDER_NONE=255,
-	CP_ORDER_BREAK=254
+	CP_ORDER_NONE = 255,
+	CP_ORDER_BREAK = 254
 };
 
 typedef uint8_t CPOrder;
 
 #endif
-

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,45 +29,34 @@
 /*************************************************************************/
 #include "check_button.h"
 
-#include "servers/visual_server.h"
 #include "print_string.h"
-
+#include "servers/visual_server.h"
 
 void CheckButton::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_DRAW) {
+	if (p_what == NOTIFICATION_DRAW) {
 
 		RID ci = get_canvas_item();
 
-		Ref<Texture> on=Control::get_icon("on");
-		Ref<Texture> off=Control::get_icon("off");
+		Ref<Texture> on = Control::get_icon("on");
+		Ref<Texture> off = Control::get_icon("off");
 
 		Vector2 ofs;
 		ofs.x = get_size().width - on->get_width();
-		ofs.y = int((get_size().height - on->get_height())/2);
+		ofs.y = int((get_size().height - on->get_height()) / 2);
 
 		if (is_pressed())
-			on->draw(ci,ofs);
+			on->draw(ci, ofs);
 		else
-			off->draw(ci,ofs);
-
-
+			off->draw(ci, ofs);
 	}
 }
-
 
 CheckButton::CheckButton() {
 
 	set_toggle_mode(true);
 	set_text_align(ALIGN_LEFT);
-
-
 }
 
-
-CheckButton::~CheckButton()
-{
+CheckButton::~CheckButton() {
 }
-
-
-

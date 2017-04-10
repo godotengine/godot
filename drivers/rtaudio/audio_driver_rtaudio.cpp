@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +34,7 @@
 
 #ifdef RTAUDIO_ENABLED
 
-const char* AudioDriverRtAudio::get_name() const {
+const char *AudioDriverRtAudio::get_name() const {
 
 #ifdef OSX_ENABLED
 	return "RtAudio-OSX";
@@ -44,10 +45,9 @@ const char* AudioDriverRtAudio::get_name() const {
 #else
 	return "RtAudio-None";
 #endif
-
 }
 
-int AudioDriverRtAudio::callback( void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *userData ) {
+int AudioDriverRtAudio::callback(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames, double streamTime, RtAudioStreamStatus status, void *userData) {
 
 	if (status) {
 		if (status & RTAUDIO_INPUT_OVERFLOW) {
@@ -57,44 +57,44 @@ int AudioDriverRtAudio::callback( void *outputBuffer, void *inputBuffer, unsigne
 			WARN_PRINT("RtAudio output underflow!");
 		}
 	}
-	int32_t *buffer = (int32_t *) outputBuffer;
+	int32_t *buffer = (int32_t *)outputBuffer;
 
-	AudioDriverRtAudio *self = (AudioDriverRtAudio*)userData;
+	AudioDriverRtAudio *self = (AudioDriverRtAudio *)userData;
 
-	if (self->mutex->try_lock()!=OK) {
+	if (self->mutex->try_lock() != OK) {
 		// what should i do..
-		for(unsigned int i=0;i<nBufferFrames;i++)
-			buffer[i]=0;
+		for (unsigned int i = 0; i < nBufferFrames; i++)
+			buffer[i] = 0;
 
 		return 0;
 	}
 
-	self->audio_server_process(nBufferFrames,buffer);
+	self->audio_server_process(nBufferFrames, buffer);
 
-	self->mutex->unlock();;
+	self->mutex->unlock();
 
 	return 0;
 }
 
 Error AudioDriverRtAudio::init() {
 
-	active=false;
-	mutex=NULL;
-	dac = memnew( RtAudio );
+	active = false;
+	mutex = NULL;
+	dac = memnew(RtAudio);
 
 	ERR_EXPLAIN("Cannot initialize RtAudio audio driver: No devices present.")
-	ERR_FAIL_COND_V( dac->getDeviceCount() < 1, ERR_UNAVAILABLE );
+	ERR_FAIL_COND_V(dac->getDeviceCount() < 1, ERR_UNAVAILABLE);
 
-	String channels = GLOBAL_DEF("audio/output","stereo");
+	String channels = GLOBAL_DEF("audio/output", "stereo");
 
-	if (channels=="5.1")
-		output_format=OUTPUT_5_1;
-	else if (channels=="quad")
-		output_format=OUTPUT_QUAD;
-	else if (channels=="mono")
-		output_format=OUTPUT_MONO;
+	if (channels == "5.1")
+		output_format = OUTPUT_5_1;
+	else if (channels == "quad")
+		output_format = OUTPUT_QUAD;
+	else if (channels == "mono")
+		output_format = OUTPUT_MONO;
 	else
-		output_format=OUTPUT_STEREO;
+		output_format = OUTPUT_STEREO;
 
 	RtAudio::StreamParameters parameters;
 	parameters.deviceId = dac->getDefaultOutputDevice();
@@ -104,28 +104,28 @@ Error AudioDriverRtAudio::init() {
 	unsigned int target_number_of_buffers = 4;
 	options.numberOfBuffers = target_number_of_buffers;
 
-//	options.
-//	RtAudioStreamFlags flags;      /*!< A bit-mask of stream flags (RTAUDIO_NONINTERLEAVED, RTAUDIO_MINIMIZE_LATENCY, RTAUDIO_HOG_DEVICE). *///
-//	unsigned int numberOfBuffers;  /*!< Number of stream buffers. */
-//	std::string streamName;        /*!< A stream name (currently used only in Jack). */
-//	int priority;                  /*!< Scheduling priority of callback thread (only used with flag RTAUDIO_SCHEDULE_REALTIME). */
+	//	options.
+	//	RtAudioStreamFlags flags;      /*!< A bit-mask of stream flags (RTAUDIO_NONINTERLEAVED, RTAUDIO_MINIMIZE_LATENCY, RTAUDIO_HOG_DEVICE). *///
+	//	unsigned int numberOfBuffers;  /*!< Number of stream buffers. */
+	//	std::string streamName;        /*!< A stream name (currently used only in Jack). */
+	//	int priority;                  /*!< Scheduling priority of callback thread (only used with flag RTAUDIO_SCHEDULE_REALTIME). */
 
 	parameters.firstChannel = 0;
-	mix_rate = GLOBAL_DEF("audio/mix_rate",44100);
+	mix_rate = GLOBAL_DEF("audio/mix_rate", 44100);
 
-	int latency = GLOBAL_DEF("audio/output_latency",25);
+	int latency = GLOBAL_DEF("audio/output_latency", 25);
 	// calculate desired buffer_size, taking the desired numberOfBuffers into account (latency depends on numberOfBuffers*buffer_size)
-	unsigned int buffer_size = nearest_power_of_2( latency * mix_rate / 1000 / target_number_of_buffers);
+	unsigned int buffer_size = nearest_power_of_2(latency * mix_rate / 1000 / target_number_of_buffers);
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer size: "+itos(buffer_size));
+		print_line("audio buffer size: " + itos(buffer_size));
 	}
 
 	short int tries = 2;
 
-	while(true) {
-		while( true) {
-			switch(output_format) {
+	while (true) {
+		while (true) {
+			switch (output_format) {
 				case OUTPUT_MONO: parameters.nChannels = 1; break;
 				case OUTPUT_STEREO: parameters.nChannels = 2; break;
 				case OUTPUT_QUAD: parameters.nChannels = 4; break;
@@ -133,40 +133,43 @@ Error AudioDriverRtAudio::init() {
 			};
 
 			try {
-				dac->openStream( &parameters, NULL, RTAUDIO_SINT32, mix_rate, &buffer_size, &callback, this,&options );
+				dac->openStream(&parameters, NULL, RTAUDIO_SINT32, mix_rate, &buffer_size, &callback, this, &options);
 				mutex = Mutex::create(true);
-				active=true;
+				active = true;
 
 				break;
-			} catch ( RtAudioError& e ) {
+			} catch (RtAudioError &e) {
 				// try with less channels
 				ERR_PRINT("Unable to open audio, retrying with fewer channels..");
 
-				switch(output_format) {
-					case OUTPUT_MONO: ERR_EXPLAIN("Unable to open audio."); ERR_FAIL_V( ERR_UNAVAILABLE ); break;
-					case OUTPUT_STEREO: output_format=OUTPUT_MONO; break;
-					case OUTPUT_QUAD: output_format=OUTPUT_STEREO; break;
-					case OUTPUT_5_1: output_format=OUTPUT_QUAD; break;
+				switch (output_format) {
+					case OUTPUT_MONO:
+						ERR_EXPLAIN("Unable to open audio.");
+						ERR_FAIL_V(ERR_UNAVAILABLE);
+						break;
+					case OUTPUT_STEREO: output_format = OUTPUT_MONO; break;
+					case OUTPUT_QUAD: output_format = OUTPUT_STEREO; break;
+					case OUTPUT_5_1: output_format = OUTPUT_QUAD; break;
 				};
 			}
 		}
 
 		// compare actual numberOfBuffers with the desired one. If not equal, close and reopen the stream with adjusted buffer size, so the desired output_latency is still correct
-		if(target_number_of_buffers != options.numberOfBuffers) {
-			if(tries <= 0) {
+		if (target_number_of_buffers != options.numberOfBuffers) {
+			if (tries <= 0) {
 				ERR_EXPLAIN("RtAudio: Unable to set correct number of buffers.");
-				ERR_FAIL_V( ERR_UNAVAILABLE ); 
+				ERR_FAIL_V(ERR_UNAVAILABLE);
 				break;
 			}
-			
+
 			try {
 				dac->closeStream();
-			} catch ( RtAudioError& e ) {
+			} catch (RtAudioError &e) {
 				ERR_PRINT(e.what());
-				ERR_FAIL_V( ERR_UNAVAILABLE );
+				ERR_FAIL_V(ERR_UNAVAILABLE);
 				break;
 			}
-			if (OS::get_singleton()->is_stdout_verbose()) 
+			if (OS::get_singleton()->is_stdout_verbose())
 				print_line("RtAudio: Desired number of buffers (" + itos(target_number_of_buffers) + ") not available. Using " + itos(options.numberOfBuffers) + " instead. Reopening stream with adjusted buffer_size.");
 
 			// new buffer size dependent on the ratio between set and actual numberOfBuffers
@@ -176,13 +179,10 @@ Error AudioDriverRtAudio::init() {
 		} else {
 			break;
 		}
-			
-
 	}
 
 	return OK;
 }
-
 
 int AudioDriverRtAudio::get_mix_rate() const {
 
@@ -214,24 +214,19 @@ void AudioDriverRtAudio::unlock() {
 
 void AudioDriverRtAudio::finish() {
 
-	 if ( active && dac->isStreamOpen() )
-		 dac->closeStream();
-	 if (mutex)
-		 memdelete(mutex);
-	 if (dac)
-		 memdelete(dac);
+	if (active && dac->isStreamOpen())
+		dac->closeStream();
+	if (mutex)
+		memdelete(mutex);
+	if (dac)
+		memdelete(dac);
 }
 
+AudioDriverRtAudio::AudioDriverRtAudio() {
 
-
-AudioDriverRtAudio::AudioDriverRtAudio()
-{
-
-	mutex=NULL;
-	mix_rate=44100;
-	output_format=OUTPUT_STEREO;
+	mutex = NULL;
+	mix_rate = 44100;
+	output_format = OUTPUT_STEREO;
 }
-
-
 
 #endif

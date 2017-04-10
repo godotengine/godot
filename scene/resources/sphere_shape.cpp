@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,24 +32,23 @@
 
 Vector<Vector3> SphereShape::_gen_debug_mesh_lines() {
 
-	float r=get_radius();
+	float r = get_radius();
 
 	Vector<Vector3> points;
 
-	for(int i=0;i<=360;i++) {
+	for (int i = 0; i <= 360; i++) {
 
-		float ra=Math::deg2rad(i);
-		float rb=Math::deg2rad(i+1);
-		Point2 a = Vector2(Math::sin(ra),Math::cos(ra))*r;
-		Point2 b = Vector2(Math::sin(rb),Math::cos(rb))*r;
+		float ra = Math::deg2rad(i);
+		float rb = Math::deg2rad(i + 1);
+		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+		Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
-		points.push_back(Vector3(a.x,0,a.y));
-		points.push_back(Vector3(b.x,0,b.y));
-		points.push_back(Vector3(0,a.x,a.y));
-		points.push_back(Vector3(0,b.x,b.y));
-		points.push_back(Vector3(a.x,a.y,0));
-		points.push_back(Vector3(b.x,b.y,0));
-
+		points.push_back(Vector3(a.x, 0, a.y));
+		points.push_back(Vector3(b.x, 0, b.y));
+		points.push_back(Vector3(0, a.x, a.y));
+		points.push_back(Vector3(0, b.x, b.y));
+		points.push_back(Vector3(a.x, a.y, 0));
+		points.push_back(Vector3(b.x, b.y, 0));
 	}
 
 	return points;
@@ -56,12 +56,12 @@ Vector<Vector3> SphereShape::_gen_debug_mesh_lines() {
 
 void SphereShape::_update_shape() {
 
-	PhysicsServer::get_singleton()->shape_set_data(get_shape(),radius);
+	PhysicsServer::get_singleton()->shape_set_data(get_shape(), radius);
 }
 
 void SphereShape::set_radius(float p_radius) {
 
-	radius=p_radius;
+	radius = p_radius;
 	_update_shape();
 	notify_change_to_owners();
 	_change_notify("radius");
@@ -72,17 +72,16 @@ float SphereShape::get_radius() const {
 	return radius;
 }
 
-
 void SphereShape::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&SphereShape::set_radius);
-	ObjectTypeDB::bind_method(_MD("get_radius"),&SphereShape::get_radius);
+	ObjectTypeDB::bind_method(_MD("set_radius", "radius"), &SphereShape::set_radius);
+	ObjectTypeDB::bind_method(_MD("get_radius"), &SphereShape::get_radius);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0,4096,0.01"), _SCS("set_radius"), _SCS("get_radius"));
-
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_RANGE, "0,4096,0.01"), _SCS("set_radius"), _SCS("get_radius"));
 }
 
-SphereShape::SphereShape() : Shape( PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_SPHERE)) {
+SphereShape::SphereShape()
+	: Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_SPHERE)) {
 
 	set_radius(1.0);
 }

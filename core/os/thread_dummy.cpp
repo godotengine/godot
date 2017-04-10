@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +31,7 @@
 
 #include "memory.h"
 
-Thread* ThreadDummy::create(ThreadCreateCallback p_callback,void * p_user,const Thread::Settings& p_settings) {
+Thread *ThreadDummy::create(ThreadCreateCallback p_callback, void *p_user, const Thread::Settings &p_settings) {
 	return memnew(ThreadDummy);
 };
 
@@ -38,7 +39,7 @@ void ThreadDummy::make_default() {
 	Thread::create_func = &ThreadDummy::create;
 };
 
-Mutex* MutexDummy::create(bool p_recursive) {
+Mutex *MutexDummy::create(bool p_recursive) {
 	return memnew(MutexDummy);
 };
 
@@ -46,14 +47,10 @@ void MutexDummy::make_default() {
 	Mutex::create_func = &MutexDummy::create;
 };
 
-
-Semaphore* SemaphoreDummy::create() {
+Semaphore *SemaphoreDummy::create() {
 	return memnew(SemaphoreDummy);
 };
 
 void SemaphoreDummy::make_default() {
 	Semaphore::create_func = &SemaphoreDummy::create;
 };
-
-
-

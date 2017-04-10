@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,19 +35,19 @@
 
 Error SemaphoreWindows::wait() {
 
-	WaitForSingleObjectEx(semaphore,INFINITE, false);
+	WaitForSingleObjectEx(semaphore, INFINITE, false);
 	return OK;
 }
 Error SemaphoreWindows::post() {
 
-	ReleaseSemaphore(semaphore,1,NULL);
+	ReleaseSemaphore(semaphore, 1, NULL);
 	return OK;
 }
 int SemaphoreWindows::get() const {
 	long previous;
 	switch (WaitForSingleObjectEx(semaphore, 0, false)) {
 		case WAIT_OBJECT_0: {
-			ERR_FAIL_COND_V(!ReleaseSemaphore(semaphore, 1, &previous),-1);
+			ERR_FAIL_COND_V(!ReleaseSemaphore(semaphore, 1, &previous), -1);
 			return previous + 1;
 		} break;
 		case WAIT_TIMEOUT: {
@@ -58,41 +59,38 @@ int SemaphoreWindows::get() const {
 	ERR_FAIL_V(-1);
 }
 
-
 Semaphore *SemaphoreWindows::create_semaphore_windows() {
 
-	return memnew( SemaphoreWindows );
+	return memnew(SemaphoreWindows);
 }
 
 void SemaphoreWindows::make_default() {
 
-	create_func=create_semaphore_windows;
+	create_func = create_semaphore_windows;
 }
 
 SemaphoreWindows::SemaphoreWindows() {
 
 #ifdef WINRT_ENABLED
-	semaphore=CreateSemaphoreEx(
-		NULL,
-		0,
-		0xFFFFFFF, //wathever
-		NULL,
-		0,
-		SEMAPHORE_ALL_ACCESS);
+	semaphore = CreateSemaphoreEx(
+			NULL,
+			0,
+			0xFFFFFFF, //wathever
+			NULL,
+			0,
+			SEMAPHORE_ALL_ACCESS);
 #else
-	semaphore=CreateSemaphore(
-		NULL,
-		0,
-		0xFFFFFFF, //wathever
-		NULL);
+	semaphore = CreateSemaphore(
+			NULL,
+			0,
+			0xFFFFFFF, //wathever
+			NULL);
 #endif
 }
-
 
 SemaphoreWindows::~SemaphoreWindows() {
 
 	CloseHandle(semaphore);
 }
-
 
 #endif

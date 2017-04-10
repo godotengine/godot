@@ -31,27 +31,26 @@
 
 #ifdef DEBUG_ENABLED
 
-#include "test_string.h"
 #include "test_containers.h"
-#include "test_math.h"
+#include "test_detailer.h"
+#include "test_gdscript.h"
 #include "test_gui.h"
-#include "test_render.h"
-#include "test_sound.h"
+#include "test_image.h"
+#include "test_io.h"
+#include "test_math.h"
 #include "test_misc.h"
+#include "test_particles.h"
 #include "test_physics.h"
 #include "test_physics_2d.h"
 #include "test_python.h"
-#include "test_io.h"
-#include "test_particles.h"
-#include "test_detailer.h"
+#include "test_render.h"
 #include "test_shader_lang.h"
-#include "test_gdscript.h"
-#include "test_image.h"
+#include "test_sound.h"
+#include "test_string.h"
 
+const char **tests_get_names() {
 
-const char ** tests_get_names()  {
-
-	static const char* test_names[]={
+	static const char *test_names[] = {
 		"string",
 		"containers",
 		"math",
@@ -68,109 +67,108 @@ const char ** tests_get_names()  {
 	return test_names;
 }
 
-MainLoop* test_main(String p_test,const List<String>& p_args) {
+MainLoop *test_main(String p_test, const List<String> &p_args) {
 
-
-	if (p_test=="string") {
+	if (p_test == "string") {
 
 		return TestString::test();
 	}
 
-	if (p_test=="containers") {
+	if (p_test == "containers") {
 
 		return TestContainers::test();
 	}
 
-	if (p_test=="math") {
+	if (p_test == "math") {
 
 		return TestMath::test();
 	}
 
-	if (p_test=="physics") {
+	if (p_test == "physics") {
 
 		return TestPhysics::test();
 	}
 
-	if (p_test=="physics_2d") {
+	if (p_test == "physics_2d") {
 
 		return TestPhysics2D::test();
 	}
 
-  	if (p_test=="misc") {
+	if (p_test == "misc") {
 
 		return TestMisc::test();
 	}
 
-	if (p_test=="render") {
+	if (p_test == "render") {
 
 		return TestRender::test();
 	}
 
-	#ifndef _3D_DISABLED
-	if (p_test=="gui") {
+#ifndef _3D_DISABLED
+	if (p_test == "gui") {
 
 		return TestGUI::test();
 	}
-	#endif
+#endif
 
-	if (p_test=="sound") {
+	if (p_test == "sound") {
 
 		return TestSound::test();
 	}
 
-	if (p_test=="io") {
+	if (p_test == "io") {
 
 		return TestIO::test();
 	}
 
-	if (p_test=="particles") {
+	if (p_test == "particles") {
 
 		return TestParticles::test();
 	}
 
-	if (p_test=="multimesh") {
+	if (p_test == "multimesh") {
 
 		return TestMultiMesh::test();
 	}
 
-	if (p_test=="shaderlang") {
+	if (p_test == "shaderlang") {
 
 		return TestShaderLang::test();
 	}
 
-	if (p_test=="gd_tokenizer") {
+	if (p_test == "gd_tokenizer") {
 
 		return TestGDScript::test(TestGDScript::TEST_TOKENIZER);
 	}
 
-	if (p_test=="gd_parser") {
+	if (p_test == "gd_parser") {
 
 		return TestGDScript::test(TestGDScript::TEST_PARSER);
 	}
 
-	if (p_test=="gd_compiler") {
+	if (p_test == "gd_compiler") {
 
 		return TestGDScript::test(TestGDScript::TEST_COMPILER);
 	}
 
-	if (p_test=="gd_bytecode") {
+	if (p_test == "gd_bytecode") {
 
 		return TestGDScript::test(TestGDScript::TEST_BYTECODE);
 	}
 
-	if (p_test=="image") {
+	if (p_test == "image") {
 
 		return TestImage::test();
 	}
 
-	if (p_test=="detailer") {
+	if (p_test == "detailer") {
 
 		return TestMultiMesh::test();
 	}
 
 #ifdef PYTHON_ENABLED
 
-	if (p_test=="python") {
+	if (p_test == "python") {
 
 		return TestPython::test();
 	}
@@ -181,16 +179,16 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 
 #else
 
-const char ** tests_get_names()  {
+const char **tests_get_names() {
 
-	static const char* test_names[]={
+	static const char *test_names[] = {
 		NULL
 	};
 
 	return test_names;
 }
 
-MainLoop* test_main(String p_test,const List<String>& p_args) {
+MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 	return NULL;
 }

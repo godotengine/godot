@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +29,6 @@
 /*************************************************************************/
 #include "event_stream.h"
 
-
 Error EventStreamPlayback::play() {
 	if (stream.is_valid())
 		stop();
@@ -37,49 +37,37 @@ Error EventStreamPlayback::play() {
 	if (err)
 		return err;
 
-
-	playing=true;
-	AudioServer::get_singleton()->stream_set_active(stream,true);
+	playing = true;
+	AudioServer::get_singleton()->stream_set_active(stream, true);
 
 	return OK;
 }
 
-void EventStreamPlayback::stop(){
+void EventStreamPlayback::stop() {
 
 	if (!playing)
 		return;
 
-	AudioServer::get_singleton()->stream_set_active(stream,false);
+	AudioServer::get_singleton()->stream_set_active(stream, false);
 	_stop();
-	playing=false;
-
-
+	playing = false;
 }
-bool EventStreamPlayback::is_playing() const{
+bool EventStreamPlayback::is_playing() const {
 
 	return playing;
 }
 
-
 EventStreamPlayback::EventStreamPlayback() {
 
-	playing=false;
-	estream.playback=this;
-	stream=AudioServer::get_singleton()->event_stream_create(&estream);
-
+	playing = false;
+	estream.playback = this;
+	stream = AudioServer::get_singleton()->event_stream_create(&estream);
 }
 
 EventStreamPlayback::~EventStreamPlayback() {
 
 	AudioServer::get_singleton()->free(stream);
-
 }
 
-
-
-EventStream::EventStream()
-{
-
-
+EventStream::EventStream() {
 }
-

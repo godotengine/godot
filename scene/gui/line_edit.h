@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +38,7 @@
 */
 class LineEdit : public Control {
 
-	OBJ_TYPE( LineEdit, Control );
+	OBJ_TYPE(LineEdit, Control);
 
 public:
 	enum Align {
@@ -117,16 +118,16 @@ private:
 	void _input_event(InputEvent p_event);
 	void _notification(int p_what);
 
-
 protected:
 	static void _bind_methods();
+
 public:
 	void set_align(Align p_align);
 	Align get_align() const;
 
-	virtual Variant get_drag_data(const Point2& p_point);
-	virtual bool can_drop_data(const Point2& p_point,const Variant& p_data) const;
-	virtual void drop_data(const Point2& p_point,const Variant& p_data);
+	virtual Variant get_drag_data(const Point2 &p_point);
+	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
+	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
 
 	void menu_option(int p_option);
 	PopupMenu *get_menu() const;
@@ -165,16 +166,14 @@ public:
 	void set_secret(bool p_secret);
 	bool is_secret() const;
 
-	void select(int p_from=0, int p_to=-1);
+	void select(int p_from = 0, int p_to = -1);
 
 	virtual Size2 get_minimum_size() const;
 
 	virtual bool is_text_field() const;
 	LineEdit();
 	~LineEdit();
-
 };
-
 
 VARIANT_ENUM_CAST(LineEdit::Align);
 

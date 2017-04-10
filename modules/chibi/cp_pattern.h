@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,20 +34,18 @@
 
 class CPPattern {
 public:
-	
-	
-	enum { 
-		WIDTH=64,
-		DEFAULT_LEN=64,
-		RESIZE_EVERY_BITS=4,
-		MIN_ROWS=1, //otherwise clipboard wont work
-		MAX_LEN=256
-				
-	};	
-	
-private:	
+	enum {
+		WIDTH = 64,
+		DEFAULT_LEN = 64,
+		RESIZE_EVERY_BITS = 4,
+		MIN_ROWS = 1, //otherwise clipboard wont work
+		MAX_LEN = 256
+
+	};
+
+private:
 	struct Event {
-		
+
 		uint16_t pos; //column*WIDTH+row
 		uint8_t note;
 		uint8_t instrument;
@@ -59,36 +58,33 @@ private:
 
 	uint16_t length;
 	uint32_t event_count;
-	Event* events;
-	
+	Event *events;
+
 	int32_t get_event_pos(uint16_t p_target_pos);
 	bool erase_event_at_pos(uint16_t p_pos);
-	
+
 	bool resize_event_list_to(uint32_t p_events);
-	
-	void operator=(const CPPattern& p_pattern); //no operator=
+
+	void operator=(const CPPattern &p_pattern); //no operator=
 public:
-	
 	bool is_empty();
 	void clear();
 
-	bool set_note(uint8_t p_column, uint16_t p_row,const CPNote& p_note); //true if no more memory
-	CPNote get_note(uint8_t p_column,uint16_t p_row);
-	
+	bool set_note(uint8_t p_column, uint16_t p_row, const CPNote &p_note); //true if no more memory
+	CPNote get_note(uint8_t p_column, uint16_t p_row);
+
 	CPNote get_transformed_script_note(uint8_t p_column, uint16_t p_row);
 	int get_scripted_note_target_channel(uint8_t p_column, uint16_t p_row);
 	void scripted_clone(uint8_t p_column, uint16_t p_row);
 	void scripted_clone_remove(uint8_t p_column, uint16_t p_row);
-	void script_transform_note(CPNote& n, const CPNote& p_note);
+	void script_transform_note(CPNote &n, const CPNote &p_note);
 	bool update_scripted_clones_sourcing_channel(int channel);
-	
+
 	//void copy_to(CPPattern *p_pattern) const;
 	void set_length(uint16_t p_rows);
 	uint16_t get_length();
 	CPPattern();
 	~CPPattern();
-	
-
 };
 
 #endif

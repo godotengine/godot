@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,13 +36,12 @@ struct CPNote {
 
 	enum {
 
-		NOTES=120,
-		OFF=254,
-		CUT=253,
-		EMPTY=255,
-		SCRIPT=252,
+		NOTES = 120,
+		OFF = 254,
+		CUT = 253,
+		EMPTY = 255,
+		SCRIPT = 252,
 	};
-
 
 	uint8_t note;
 	uint8_t instrument;
@@ -53,50 +53,46 @@ struct CPNote {
 
 	void clear() {
 
-		note=EMPTY;
-		instrument=EMPTY;
-		volume=EMPTY;
-		command=EMPTY;
-		parameter=0;
-		script_source_sign='\0';
-		cloned=false;
+		note = EMPTY;
+		instrument = EMPTY;
+		volume = EMPTY;
+		command = EMPTY;
+		parameter = 0;
+		script_source_sign = '\0';
+		cloned = false;
 	}
-	
+
 	void raise() {
 
-		if (note<(NOTES-1))
-		    note++;
-		else if (note==SCRIPT && parameter<0xFF)
-		    parameter++;
+		if (note < (NOTES - 1))
+			note++;
+		else if (note == SCRIPT && parameter < 0xFF)
+			parameter++;
 	}
 
 	void lower() {
 
-		if ((note>0) && (note<NOTES))
-		    note--;
-		else if (note==SCRIPT && parameter>0)
-		    parameter--;
-
+		if ((note > 0) && (note < NOTES))
+			note--;
+		else if (note == SCRIPT && parameter > 0)
+			parameter--;
 	}
 
-	bool operator== (const CPNote &rvalue) {
+	bool operator==(const CPNote &rvalue) {
 
 		return (
-			 (note==rvalue.note) &&
-			 (instrument==rvalue.instrument) &&
-			 (volume==rvalue.volume) &&
-			 (command==rvalue.command) &&
-			 (parameter==rvalue.parameter)
-			);
+				(note == rvalue.note) &&
+				(instrument == rvalue.instrument) &&
+				(volume == rvalue.volume) &&
+				(command == rvalue.command) &&
+				(parameter == rvalue.parameter));
 	}
 
-	bool is_empty() const { return (note==EMPTY && instrument==EMPTY && volume==EMPTY && command==EMPTY && parameter==0 && !cloned); }
+	bool is_empty() const { return (note == EMPTY && instrument == EMPTY && volume == EMPTY && command == EMPTY && parameter == 0 && !cloned); }
 	CPNote() {
 
 		clear();
 	}
 };
 
-
 #endif
-

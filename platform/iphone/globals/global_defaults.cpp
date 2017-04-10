@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,12 +30,11 @@
 #include "global_defaults.h"
 #include "globals.h"
 
-
 void register_iphone_global_defaults() {
 
-	GLOBAL_DEF("rasterizer.iOS/use_fragment_lighting",false);
-	GLOBAL_DEF("rasterizer.iOS/fp16_framebuffer",false);
-	GLOBAL_DEF("display.iOS/driver","GLES2");
-	Globals::get_singleton()->set_custom_property_info("display.iOS/driver",PropertyInfo(Variant::STRING,"display.iOS/driver",PROPERTY_HINT_ENUM,"GLES1,GLES2"));
-	GLOBAL_DEF("display.iOS/use_cadisplaylink",true);
+	GLOBAL_DEF("rasterizer.iOS/use_fragment_lighting", false);
+	GLOBAL_DEF("rasterizer.iOS/fp16_framebuffer", false);
+	GLOBAL_DEF("display.iOS/driver", "GLES2");
+	Globals::get_singleton()->set_custom_property_info("display.iOS/driver", PropertyInfo(Variant::STRING, "display.iOS/driver", PROPERTY_HINT_ENUM, "GLES1,GLES2"));
+	GLOBAL_DEF("display.iOS/use_cadisplaylink", true);
 }

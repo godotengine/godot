@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,19 +32,18 @@
 
 void RemoteTransform2D::_update_cache() {
 
-	cache=0;
+	cache = 0;
 	if (has_node(remote_node)) {
 		Node *node = get_node(remote_node);
-		if (!node || this==node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
+		if (!node || this == node || node->is_a_parent_of(this) || this->is_a_parent_of(node)) {
 			return;
 		}
 
-		cache=node->get_instance_ID();
+		cache = node->get_instance_ID();
 	}
 }
 
 void RemoteTransform2D::_update_remote() {
-
 
 	if (!is_inside_tree())
 		return;
@@ -62,14 +62,13 @@ void RemoteTransform2D::_update_remote() {
 	if (!n->is_inside_tree())
 		return;
 
-					//todo make faster
+	//todo make faster
 	n->set_global_transform(get_global_transform());
-
 }
 
 void RemoteTransform2D::_notification(int p_what) {
 
-	switch(p_what) {
+	switch (p_what) {
 
 		case NOTIFICATION_READY: {
 
@@ -83,29 +82,25 @@ void RemoteTransform2D::_notification(int p_what) {
 			if (cache) {
 
 				_update_remote();
-
 			}
 
 		} break;
-
 	}
 }
 
+void RemoteTransform2D::set_remote_node(const NodePath &p_remote_node) {
 
-void RemoteTransform2D::set_remote_node(const NodePath& p_remote_node) {
-
-	remote_node=p_remote_node;
+	remote_node = p_remote_node;
 	if (is_inside_tree())
 		_update_cache();
 
 	update_configuration_warning();
 }
 
-NodePath RemoteTransform2D::get_remote_node() const{
+NodePath RemoteTransform2D::get_remote_node() const {
 
 	return remote_node;
 }
-
 
 String RemoteTransform2D::get_configuration_warning() const {
 
@@ -118,16 +113,13 @@ String RemoteTransform2D::get_configuration_warning() const {
 
 void RemoteTransform2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_remote_node","path"),&RemoteTransform2D::set_remote_node);
-	ObjectTypeDB::bind_method(_MD("get_remote_node"),&RemoteTransform2D::get_remote_node);
+	ObjectTypeDB::bind_method(_MD("set_remote_node", "path"), &RemoteTransform2D::set_remote_node);
+	ObjectTypeDB::bind_method(_MD("get_remote_node"), &RemoteTransform2D::get_remote_node);
 
-	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"remote_path"),_SCS("set_remote_node"),_SCS("get_remote_node"));
+	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "remote_path"), _SCS("set_remote_node"), _SCS("get_remote_node"));
 }
 
 RemoteTransform2D::RemoteTransform2D() {
 
-	cache=0;
-
+	cache = 0;
 }
-
-

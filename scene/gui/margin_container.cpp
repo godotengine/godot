@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +29,6 @@
 /*************************************************************************/
 #include "margin_container.h"
 
-
 Size2 MarginContainer::get_minimum_size() const {
 
 	int margin_left = get_constant("margin_left");
@@ -38,7 +38,7 @@ Size2 MarginContainer::get_minimum_size() const {
 
 	Size2 max;
 
-	for(int i=0;i<get_child_count();i++) {
+	for (int i = 0; i < get_child_count(); i++) {
 
 		Control *c = get_child(i)->cast_to<Control>();
 		if (!c)
@@ -59,12 +59,11 @@ Size2 MarginContainer::get_minimum_size() const {
 	max.height += (margin_top + margin_bottom);
 
 	return max;
-
 }
 
 void MarginContainer::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_SORT_CHILDREN) {
+	if (p_what == NOTIFICATION_SORT_CHILDREN) {
 
 		int margin_left = get_constant("margin_left");
 		int margin_top = get_constant("margin_top");
@@ -73,7 +72,7 @@ void MarginContainer::_notification(int p_what) {
 
 		Size2 s = get_size();
 
-		for(int i=0;i<get_child_count();i++) {
+		for (int i = 0; i < get_child_count(); i++) {
 
 			Control *c = get_child(i)->cast_to<Control>();
 			if (!c)
@@ -81,14 +80,12 @@ void MarginContainer::_notification(int p_what) {
 			if (c->is_set_as_toplevel())
 				continue;
 
-			int w=s.width-margin_left-margin_right;
-			int h=s.height-margin_top-margin_bottom;
-			fit_child_in_rect(c,Rect2(margin_left,margin_top,w,h));
+			int w = s.width - margin_left - margin_right;
+			int h = s.height - margin_top - margin_bottom;
+			fit_child_in_rect(c, Rect2(margin_left, margin_top, w, h));
 		}
-
 	}
 }
 
-MarginContainer::MarginContainer()
-{
+MarginContainer::MarginContainer() {
 }

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,16 +32,16 @@
 
 #include <wrl.h>
 
-#include "os/os.h"
 #include "EGL/egl.h"
-#include "error_list.h"
 #include "drivers/gl_context/context_gl.h"
+#include "error_list.h"
+#include "os/os.h"
 
 using namespace Windows::UI::Core;
 
 class ContextEGL : public ContextGL {
 
-	CoreWindow^ window;
+	CoreWindow ^ window;
 
 	EGLDisplay mEglDisplay;
 	EGLContext mEglContext;
@@ -50,7 +51,6 @@ class ContextEGL : public ContextGL {
 	EGLint height;
 
 public:
-
 	virtual void release_current();
 
 	virtual void make_current();
@@ -64,10 +64,8 @@ public:
 
 	void cleanup();
 
-	ContextEGL(CoreWindow^ p_window);
+	ContextEGL(CoreWindow ^ p_window);
 	~ContextEGL();
-
 };
 
 #endif
-

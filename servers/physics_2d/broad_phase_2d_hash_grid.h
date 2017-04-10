@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,13 +35,16 @@
 
 class BroadPhase2DHashGrid : public BroadPhase2DSW {
 
-
 	struct PairData {
 
 		bool colliding;
 		int rc;
 		void *ud;
-		PairData() { colliding=false; rc=1; ud=NULL; }
+		PairData() {
+			colliding = false;
+			rc = 1;
+			ud = NULL;
+		}
 	};
 
 	struct Element {
@@ -51,8 +55,7 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 		Rect2 aabb;
 		int subindex;
 		uint64_t pass;
-		Map<Element*,PairData*> paired;
-
+		Map<Element *, PairData *> paired;
 	};
 
 	struct RC {
@@ -69,17 +72,16 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 		}
 
 		_FORCE_INLINE_ RC() {
-			ref=0;
+			ref = 0;
 		}
 	};
 
-	Map<ID,Element> element_map;
-	Map<Element*,RC> large_elements;
+	Map<ID, Element> element_map;
+	Map<Element *, RC> large_elements;
 
 	ID current;
 
 	uint64_t pass;
-
 
 	struct PairKey {
 
@@ -91,17 +93,23 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 			uint64_t key;
 		};
 
-		_FORCE_INLINE_ bool operator<(const PairKey& p_key) const {
+		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
 			return key < p_key.key;
 		}
 
-		PairKey() { key=0; }
-		PairKey(ID p_a, ID p_b) { if (p_a>p_b) { a=p_b; b=p_a; } else { a=p_a; b=p_b; }}
-
+		PairKey() { key = 0; }
+		PairKey(ID p_a, ID p_b) {
+			if (p_a > p_b) {
+				a = p_b;
+				b = p_a;
+			} else {
+				a = p_a;
+				b = p_b;
+			}
+		}
 	};
 
-
-	Map<PairKey,PairData> pair_map;
+	Map<PairKey, PairData> pair_map;
 
 	int cell_size;
 	int large_object_min_surface;
@@ -111,11 +119,10 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 	UnpairCallback unpair_callback;
 	void *unpair_userdata;
 
-	void _enter_grid(Element* p_elem, const Rect2& p_rect,bool p_static);
-	void _exit_grid(Element* p_elem, const Rect2& p_rect,bool p_static);
-	template<bool use_aabb,bool use_segment>
-	_FORCE_INLINE_ void _cull(const Point2i p_cell,const Rect2& p_aabb,const Point2& p_from, const Point2& p_to,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices,int &index);
-
+	void _enter_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
+	void _exit_grid(Element *p_elem, const Rect2 &p_rect, bool p_static);
+	template <bool use_aabb, bool use_segment>
+	_FORCE_INLINE_ void _cull(const Point2i p_cell, const Rect2 &p_aabb, const Point2 &p_from, const Point2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices, int &index);
 
 	struct PosKey {
 
@@ -127,9 +134,8 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 			uint64_t key;
 		};
 
-
 		_FORCE_INLINE_ uint32_t hash() const {
-			uint64_t k=key;
+			uint64_t k = key;
 			k = (~k) + (k << 18); // k = (k << 18) - k - 1;
 			k = k ^ (k >> 31);
 			k = k * 21; // k = (k + (k << 2)) + (k << 4);
@@ -139,36 +145,30 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 			return k;
 		}
 
-		bool operator==(const PosKey& p_key) const { return key==p_key.key; }
-		_FORCE_INLINE_ bool operator<(const PosKey& p_key) const {
+		bool operator==(const PosKey &p_key) const { return key == p_key.key; }
+		_FORCE_INLINE_ bool operator<(const PosKey &p_key) const {
 			return key < p_key.key;
 		}
-
 	};
-
-
 
 	struct PosBin {
 
 		PosKey key;
-		Map<Element*,RC> object_set;
-		Map<Element*,RC> static_object_set;
+		Map<Element *, RC> object_set;
+		Map<Element *, RC> static_object_set;
 		PosBin *next;
 	};
-
 
 	uint32_t hash_table_size;
 	PosBin **hash_table;
 
-	void _pair_attempt(Element *p_elem, Element* p_with);
-	void _unpair_attempt(Element *p_elem, Element* p_with);
+	void _pair_attempt(Element *p_elem, Element *p_with);
+	void _unpair_attempt(Element *p_elem, Element *p_with);
 	void _check_motion(Element *p_elem);
 
-
 public:
-
-	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex=0);
-	virtual void move(ID p_id, const Rect2& p_aabb);
+	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0);
+	virtual void move(ID p_id, const Rect2 &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 
@@ -176,21 +176,18 @@ public:
 	virtual bool is_static(ID p_id) const;
 	virtual int get_subindex(ID p_id) const;
 
-	virtual int cull_segment(const Vector2& p_from, const Vector2& p_to,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices=NULL);
-	virtual int cull_aabb(const Rect2& p_aabb,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices=NULL);
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
+	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
 
-	virtual void set_pair_callback(PairCallback p_pair_callback,void *p_userdata);
-	virtual void set_unpair_callback(UnpairCallback p_unpair_callback,void *p_userdata);
+	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
+	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);
 
 	virtual void update();
-
 
 	static BroadPhase2DSW *_create();
 
 	BroadPhase2DHashGrid();
 	~BroadPhase2DHashGrid();
-
-
 };
 
 #endif // BROAD_PHASE_2D_HASH_GRID_H

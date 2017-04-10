@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +33,10 @@
 #include "scene/main/node.h"
 #include "scene/resources/world_2d.h"
 
-
 class Viewport;
 class CanvasLayer : public Node {
 
-	OBJ_TYPE( CanvasLayer, Node );
+	OBJ_TYPE(CanvasLayer, Node);
 
 	bool locrotscale_dirty;
 	Vector2 ofs;
@@ -59,20 +59,18 @@ class CanvasLayer : public Node {
 	void _update_xform();
 	void _update_locrotscale();
 
-
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
+public:
 	void set_layer(int p_xform);
 	int get_layer() const;
 
-	void set_transform(const Matrix32& p_xform);
+	void set_transform(const Matrix32 &p_xform);
 	Matrix32 get_transform() const;
 
-	void set_offset(const Vector2& p_offset);
+	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
 
 	void set_rotation(real_t p_radians);
@@ -81,7 +79,7 @@ public:
 	void set_rotationd(real_t p_degrees);
 	real_t get_rotationd() const;
 
-	void set_scale(const Size2& p_scale);
+	void set_scale(const Size2 &p_scale);
 	Size2 get_scale() const;
 
 	Ref<World2D> get_world_2d() const;
@@ -91,7 +89,7 @@ public:
 	RID get_viewport() const;
 
 	void set_custom_viewport(Node *p_viewport);
-	Node* get_custom_viewport() const;
+	Node *get_custom_viewport() const;
 
 	CanvasLayer();
 };

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +30,10 @@
 #ifndef GRID_MAP_EDITOR_PLUGIN_H
 #define GRID_MAP_EDITOR_PLUGIN_H
 
-#include "tools/editor/editor_plugin.h"
-#include "tools/editor/editor_node.h"
+#include "editor/editor_node.h"
+#include "editor/editor_plugin.h"
+#include "editor/pane_drag.h"
 #include "grid_map.h"
-#include "tools/editor/pane_drag.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -40,11 +41,11 @@
 class SpatialEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {
-	OBJ_TYPE(GridMapEditor, VBoxContainer );
+	OBJ_TYPE(GridMapEditor, VBoxContainer);
 
 	enum {
 
-		GRID_CURSOR_SIZE=50
+		GRID_CURSOR_SIZE = 50
 	};
 
 	enum InputAction {
@@ -65,14 +66,14 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	enum DisplayMode {
-	    DISPLAY_THUMBNAIL,
-	    DISPLAY_LIST
+		DISPLAY_THUMBNAIL,
+		DISPLAY_LIST
 	};
 
 	UndoRedo *undo_redo;
 	InputAction input_action;
 	Panel *panel;
-	MenuButton * options;
+	MenuButton *options;
 	SpinBox *floor;
 	OptionButton *edit_mode;
 	ToolButton *mode_thumbnail;
@@ -94,7 +95,7 @@ class GridMapEditor : public VBoxContainer {
 	List<SetItem> set_items;
 
 	GridMap *node;
-	MeshLibrary* last_theme;
+	MeshLibrary *last_theme;
 	ClipMode clip_mode;
 
 	bool lock_view;
@@ -121,9 +122,7 @@ class GridMapEditor : public VBoxContainer {
 
 	bool updating;
 
-
 	struct Selection {
-
 
 		Vector3 click;
 		Vector3 current;
@@ -143,7 +142,6 @@ class GridMapEditor : public VBoxContainer {
 	int selected_pallete;
 	int selected_area;
 	int cursor_rot;
-
 
 	enum Menu {
 
@@ -175,7 +173,6 @@ class GridMapEditor : public VBoxContainer {
 	};
 
 	SpatialEditorPlugin *spatial_editor;
-
 
 	struct AreaDisplay {
 
@@ -215,20 +212,18 @@ class GridMapEditor : public VBoxContainer {
 	void update_areas();
 
 	EditorNode *editor;
-	bool do_input_action(Camera* p_camera,const Point2& p_point,bool p_click);
+	bool do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click);
 
-friend class GridMapEditorPlugin;
+	friend class GridMapEditorPlugin;
 	Panel *theme_panel;
 
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
+
 public:
-
-	bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
-
-
+	bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event);
 
 	void edit(GridMap *p_gridmap);
 	GridMapEditor() {}
@@ -238,14 +233,13 @@ public:
 
 class GridMapEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( GridMapEditorPlugin, EditorPlugin );
+	OBJ_TYPE(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *gridmap_editor;
 	EditorNode *editor;
 
 public:
-
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) { return gridmap_editor->forward_spatial_input_event(p_camera,p_event); }
+	virtual bool forward_spatial_input_event(Camera *p_camera, const InputEvent &p_event) { return gridmap_editor->forward_spatial_input_event(p_camera, p_event); }
 	virtual String get_name() const { return "GridMap"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -254,7 +248,6 @@ public:
 
 	GridMapEditorPlugin(EditorNode *p_node);
 	~GridMapEditorPlugin();
-
 };
 
 #endif // CUBE_GRID_MAP_EDITOR_PLUGIN_H

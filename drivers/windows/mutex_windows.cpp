@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,76 +32,68 @@
 
 #ifdef WINDOWS_ENABLED
 
-
-
 void MutexWindows::lock() {
 
 #ifdef WINDOWS_USE_MUTEX
-	WaitForSingleObject(mutex,INFINITE);
+	WaitForSingleObject(mutex, INFINITE);
 #else
-    EnterCriticalSection( &mutex );
+	EnterCriticalSection(&mutex);
 #endif
 }
-
 
 void MutexWindows::unlock() {
 
 #ifdef WINDOWS_USE_MUTEX
 	ReleaseMutex(mutex);
 #else
-    LeaveCriticalSection( &mutex );
+	LeaveCriticalSection(&mutex);
 #endif
 }
 
 Error MutexWindows::try_lock() {
 
 #ifdef WINDOWS_USE_MUTEX
-	return (WaitForSingleObject(mutex,0)==WAIT_TIMEOUT)?ERR_BUSY:OK;
+	return (WaitForSingleObject(mutex, 0) == WAIT_TIMEOUT) ? ERR_BUSY : OK;
 #else
 
-    if (TryEnterCriticalSection( &mutex ))
-        return OK;
-    else
-        return ERR_BUSY;
+	if (TryEnterCriticalSection(&mutex))
+		return OK;
+	else
+		return ERR_BUSY;
 #endif
-
 }
 
 Mutex *MutexWindows::create_func_windows(bool p_recursive) {
 
-	return memnew( MutexWindows );
+	return memnew(MutexWindows);
 }
 
 void MutexWindows::make_default() {
 
-	create_func=create_func_windows;
+	create_func = create_func_windows;
 }
 
 MutexWindows::MutexWindows() {
-	
+
 #ifdef WINDOWS_USE_MUTEX
-	mutex = CreateMutex( NULL, FALSE, NULL );
+	mutex = CreateMutex(NULL, FALSE, NULL);
 #else
-	#ifdef WINRT_ENABLED
-    InitializeCriticalSectionEx( &mutex, 0, 0 );
-	#else
-	InitializeCriticalSection( &mutex );
-	#endif
+#ifdef WINRT_ENABLED
+	InitializeCriticalSectionEx(&mutex, 0, 0);
+#else
+	InitializeCriticalSection(&mutex);
 #endif
-
+#endif
 }
-
 
 MutexWindows::~MutexWindows() {
 
 #ifdef WINDOWS_USE_MUTEX
-    CloseHandle(mutex);
+	CloseHandle(mutex);
 #else
 
-    DeleteCriticalSection(&mutex);
+	DeleteCriticalSection(&mutex);
 #endif
-
 }
-
 
 #endif

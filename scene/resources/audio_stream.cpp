@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,32 +31,25 @@
 
 //////////////////////////////
 
-
 void AudioStreamPlayback::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("play","from_pos_sec"),&AudioStreamPlayback::play,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("stop"),&AudioStreamPlayback::stop);
-	ObjectTypeDB::bind_method(_MD("is_playing"),&AudioStreamPlayback::is_playing);
+	ObjectTypeDB::bind_method(_MD("play", "from_pos_sec"), &AudioStreamPlayback::play, DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("stop"), &AudioStreamPlayback::stop);
+	ObjectTypeDB::bind_method(_MD("is_playing"), &AudioStreamPlayback::is_playing);
 
-	ObjectTypeDB::bind_method(_MD("set_loop","enabled"),&AudioStreamPlayback::set_loop);
-	ObjectTypeDB::bind_method(_MD("has_loop"),&AudioStreamPlayback::has_loop);
+	ObjectTypeDB::bind_method(_MD("set_loop", "enabled"), &AudioStreamPlayback::set_loop);
+	ObjectTypeDB::bind_method(_MD("has_loop"), &AudioStreamPlayback::has_loop);
 
-	ObjectTypeDB::bind_method(_MD("get_loop_count"),&AudioStreamPlayback::get_loop_count);
+	ObjectTypeDB::bind_method(_MD("get_loop_count"), &AudioStreamPlayback::get_loop_count);
 
-	ObjectTypeDB::bind_method(_MD("seek_pos","pos"),&AudioStreamPlayback::seek_pos);
-	ObjectTypeDB::bind_method(_MD("get_pos"),&AudioStreamPlayback::get_pos);
+	ObjectTypeDB::bind_method(_MD("seek_pos", "pos"), &AudioStreamPlayback::seek_pos);
+	ObjectTypeDB::bind_method(_MD("get_pos"), &AudioStreamPlayback::get_pos);
 
-	ObjectTypeDB::bind_method(_MD("get_length"),&AudioStreamPlayback::get_length);
-	ObjectTypeDB::bind_method(_MD("get_channels"),&AudioStreamPlayback::get_channels);
-	ObjectTypeDB::bind_method(_MD("get_mix_rate"),&AudioStreamPlayback::get_mix_rate);
-	ObjectTypeDB::bind_method(_MD("get_minimum_buffer_size"),&AudioStreamPlayback::get_minimum_buffer_size);
-
-
+	ObjectTypeDB::bind_method(_MD("get_length"), &AudioStreamPlayback::get_length);
+	ObjectTypeDB::bind_method(_MD("get_channels"), &AudioStreamPlayback::get_channels);
+	ObjectTypeDB::bind_method(_MD("get_mix_rate"), &AudioStreamPlayback::get_mix_rate);
+	ObjectTypeDB::bind_method(_MD("get_minimum_buffer_size"), &AudioStreamPlayback::get_minimum_buffer_size);
 }
-
 
 void AudioStream::_bind_methods() {
-
-
 }
-

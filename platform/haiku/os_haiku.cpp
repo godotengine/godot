@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,15 +29,14 @@
 /*************************************************************************/
 #include <Screen.h>
 
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "servers/physics/physics_server_sw.h"
+#include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 //#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/main.h"
 
 #include "os_haiku.h"
-
 
 OS_Haiku::OS_Haiku() {
 #ifdef MEDIA_KIT_ENABLED
@@ -53,8 +53,8 @@ void OS_Haiku::run() {
 	context_gl->release_current();
 
 	// TODO: clean up
-	BMessenger* bms = new BMessenger(window);
-	BMessage* msg = new BMessage();
+	BMessenger *bms = new BMessenger(window);
+	BMessage *msg = new BMessage();
 	bms->SendMessage(LOCKGL_MSG, msg);
 
 	window->StartMessageRunner();
@@ -76,7 +76,7 @@ int OS_Haiku::get_video_driver_count() const {
 	return 1;
 }
 
-const char* OS_Haiku::get_video_driver_name(int p_driver) const {
+const char *OS_Haiku::get_video_driver_name(int p_driver) const {
 	return "GLES2";
 }
 
@@ -84,7 +84,7 @@ OS::VideoMode OS_Haiku::get_default_video_mode() const {
 	return OS::VideoMode(800, 600, false);
 }
 
-void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_audio_driver) {
+void OS_Haiku::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 	main_loop = NULL;
 	current_video_mode = p_desired;
 
@@ -187,13 +187,13 @@ void OS_Haiku::finalize() {
 #endif
 }
 
-void OS_Haiku::set_main_loop(MainLoop* p_main_loop) {
+void OS_Haiku::set_main_loop(MainLoop *p_main_loop) {
 	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
 	window->SetMainLoop(p_main_loop);
 }
 
-MainLoop* OS_Haiku::get_main_loop() const {
+MainLoop *OS_Haiku::get_main_loop() const {
 	return main_loop;
 }
 
@@ -251,7 +251,7 @@ void OS_Haiku::set_current_screen(int p_screen) {
 
 Point2 OS_Haiku::get_screen_position(int p_screen) const {
 	// TODO: make this work with the p_screen parameter
-	BScreen* screen = new BScreen(window);
+	BScreen *screen = new BScreen(window);
 	BRect frame = screen->Frame();
 	delete screen;
 	return Point2i(frame.left, frame.top);
@@ -259,13 +259,13 @@ Point2 OS_Haiku::get_screen_position(int p_screen) const {
 
 Size2 OS_Haiku::get_screen_size(int p_screen) const {
 	// TODO: make this work with the p_screen parameter
-	BScreen* screen = new BScreen(window);
+	BScreen *screen = new BScreen(window);
 	BRect frame = screen->Frame();
 	delete screen;
 	return Size2i(frame.IntegerWidth() + 1, frame.IntegerHeight() + 1);
 }
 
-void OS_Haiku::set_window_title(const String& p_title) {
+void OS_Haiku::set_window_title(const String &p_title) {
 	window->SetTitle(p_title.utf8().get_data());
 }
 
@@ -285,7 +285,7 @@ Point2 OS_Haiku::get_window_position() const {
 	return Point2i(point.x, point.y);
 }
 
-void OS_Haiku::set_window_position(const Point2& p_position) {
+void OS_Haiku::set_window_position(const Point2 &p_position) {
 	window->MoveTo(p_position.x, p_position.y);
 }
 
@@ -332,7 +332,7 @@ bool OS_Haiku::is_window_maximized() const {
 	return !window->IsMinimized();
 }
 
-void OS_Haiku::set_video_mode(const VideoMode& p_video_mode, int p_screen) {
+void OS_Haiku::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 	ERR_PRINT("set_video_mode() NOT IMPLEMENTED");
 }
 

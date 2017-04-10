@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +35,7 @@
 class ButtonArray : public Control {
 
 	OBJ_TYPE(ButtonArray, Control);
+
 public:
 	enum Align {
 		ALIGN_BEGIN,
@@ -42,8 +44,8 @@ public:
 		ALIGN_FILL,
 		ALIGN_EXPAND_FILL
 	};
-private:
 
+private:
 	Orientation orientation;
 	Align align;
 
@@ -64,19 +66,17 @@ private:
 	double min_button_size;
 
 	Vector<Button> buttons;
-protected:
 
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-	void _input_event(const InputEvent& p_event);
-
+	void _input_event(const InputEvent &p_event);
 
 	void set_align(Align p_align);
 	Align get_align() const;
@@ -84,13 +84,12 @@ public:
 	void set_flat(bool p_flat);
 	bool is_flat() const;
 
-	void add_button(const String& p_button,const String& p_tooltip="");
-	void add_icon_button(const Ref<Texture>& p_icon,const String& p_button="",const String& p_tooltip="");
+	void add_button(const String &p_button, const String &p_tooltip = "");
+	void add_icon_button(const Ref<Texture> &p_icon, const String &p_button = "", const String &p_tooltip = "");
 
-	void set_button_text(int p_button, const String& p_text);
-	void set_button_tooltip(int p_button, const String& p_text);
-	void set_button_icon(int p_button, const Ref<Texture>& p_icon);
-
+	void set_button_text(int p_button, const String &p_text);
+	void set_button_tooltip(int p_button, const String &p_text);
+	void set_button_icon(int p_button, const Ref<Texture> &p_icon);
 
 	String get_button_text(int p_button) const;
 	String get_button_tooltip(int p_button) const;
@@ -108,25 +107,25 @@ public:
 	virtual Size2 get_minimum_size() const;
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
-	virtual String get_tooltip(const Point2& p_pos) const;
+	virtual String get_tooltip(const Point2 &p_pos) const;
 
-
-	ButtonArray(Orientation p_orientation=HORIZONTAL);
+	ButtonArray(Orientation p_orientation = HORIZONTAL);
 };
 
 class HButtonArray : public ButtonArray {
-	OBJ_TYPE(HButtonArray,ButtonArray);
-public:
+	OBJ_TYPE(HButtonArray, ButtonArray);
 
-	HButtonArray() : ButtonArray(HORIZONTAL) {};
+public:
+	HButtonArray()
+		: ButtonArray(HORIZONTAL){};
 };
 
 class VButtonArray : public ButtonArray {
-	OBJ_TYPE(VButtonArray,ButtonArray);
+	OBJ_TYPE(VButtonArray, ButtonArray);
+
 public:
-
-	VButtonArray() : ButtonArray(VERTICAL) {};
+	VButtonArray()
+		: ButtonArray(VERTICAL){};
 };
-
 
 #endif // BUTTON_ARRAY_H

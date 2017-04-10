@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,33 +40,29 @@ class GraphEdit;
 
 class GraphEditFilter : public Control {
 
-	OBJ_TYPE(GraphEditFilter,Control);
+	OBJ_TYPE(GraphEditFilter, Control);
 
 	friend class GraphEdit;
 	GraphEdit *ge;
-	virtual bool has_point(const Point2& p_point) const;
+	virtual bool has_point(const Point2 &p_point) const;
 
 public:
-
-
 	GraphEditFilter(GraphEdit *p_edit);
 };
 
 class GraphEdit : public Control {
 
-	OBJ_TYPE(GraphEdit,Control);
-public:
+	OBJ_TYPE(GraphEdit, Control);
 
+public:
 	struct Connection {
 		StringName from;
 		StringName to;
 		int from_port;
 		int to_port;
-
 	};
+
 private:
-
-
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_plus;
@@ -74,9 +71,8 @@ private:
 	void _zoom_reset();
 	void _zoom_plus();
 
-	HScrollBar* h_scroll;
-	VScrollBar* v_scroll;
-
+	HScrollBar *h_scroll;
+	VScrollBar *v_scroll;
 
 	bool connecting;
 	String connecting_from;
@@ -101,42 +97,42 @@ private:
 	Point2 box_selecting_from;
 	Point2 box_selecting_to;
 	Rect2 box_selecting_rect;
-	List<GraphNode*> previus_selected;
+	List<GraphNode *> previus_selected;
 
 	bool right_disconnects;
 	bool updating;
 	List<Connection> connections;
 
-	void _draw_cos_line(const Vector2& p_from, const Vector2& p_to,const Color& p_color);
+	void _draw_cos_line(const Vector2 &p_from, const Vector2 &p_to, const Color &p_color);
 
-	void _graph_node_raised(Node* p_gn);
+	void _graph_node_raised(Node *p_gn);
 	void _graph_node_moved(Node *p_gn);
 
 	void _update_scroll();
 	void _scroll_moved(double);
-	void _input_event(const InputEvent& p_ev);
+	void _input_event(const InputEvent &p_ev);
 
 	GraphEditFilter *top_layer;
-	void _top_layer_input(const InputEvent& p_ev);
+	void _top_layer_input(const InputEvent &p_ev);
 	void _top_layer_draw();
 	void _update_scroll_offset();
 
 	Array _get_connection_list() const;
 
 	friend class GraphEditFilter;
-	bool _filter_input(const Point2& p_point);
-protected:
+	bool _filter_input(const Point2 &p_point);
 
+protected:
 	static void _bind_methods();
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	void _notification(int p_what);
 	virtual bool clips_input() const;
-public:
 
-	Error connect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
-	bool is_node_connected(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
-	void disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
+public:
+	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
+	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
+	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	void clear_connections();
 
 	void set_zoom(float p_zoom);
@@ -149,7 +145,6 @@ public:
 	bool is_right_disconnects_enabled() const;
 
 	Vector2 get_scroll_ofs() const;
-
 
 	GraphEdit();
 };

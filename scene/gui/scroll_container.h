@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,8 +38,8 @@ class ScrollContainer : public Container {
 
 	OBJ_TYPE(ScrollContainer, Container);
 
-	HScrollBar* h_scroll;
-	VScrollBar* v_scroll;
+	HScrollBar *h_scroll;
+	VScrollBar *v_scroll;
 
 	Size2 child_max_size;
 	Size2 scroll;
@@ -63,16 +64,15 @@ class ScrollContainer : public Container {
 protected:
 	Size2 get_minimum_size() const;
 
-
-	void _input_event(const InputEvent& p_input_event);
+	void _input_event(const InputEvent &p_input_event);
 	void _notification(int p_what);
 
 	void _scroll_moved(float);
 	static void _bind_methods();
 
 	void _update_scrollbar_pos();
-public:
 
+public:
 	int get_v_scroll() const;
 	void set_v_scroll(int p_pos);
 

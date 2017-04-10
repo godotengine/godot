@@ -4,6 +4,7 @@ buildscript {
 	}
 	dependencies {
 		classpath 'com.android.tools.build:gradle:2.1.0'
+		$$GRADLE_CLASSPATH$$
 	}
 }
 
@@ -11,6 +12,7 @@ apply plugin: 'com.android.application'
 
 allprojects {
     repositories {
+    	jcenter()
 	mavenCentral()
 	$$GRADLE_REPOSITORY_URLS$$
     }
@@ -83,3 +85,5 @@ android {
 		variant.outputs.get(0).setOutputFile(new File("${projectDir}/../../../bin", "android_${variant.name}.apk"))
 	}
 }
+
+$$GRADLE_PLUGINS$$

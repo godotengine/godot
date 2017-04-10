@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,20 +30,16 @@
 #ifndef SHADER_LANGUAGE_H
 #define SHADER_LANGUAGE_H
 
+#include "list.h"
+#include "map.h"
+#include "string_db.h"
 #include "typedefs.h"
 #include "ustring.h"
-#include "list.h"
-#include "string_db.h"
-#include "map.h"
 #include "variant.h"
 
-
-class ShaderLanguage  {
-
-
+class ShaderLanguage {
 
 public:
-
 	enum TokenType {
 
 		TK_EMPTY,
@@ -97,8 +94,6 @@ public:
 		TK_ERROR,
 		TK_MAX
 	};
-
-
 
 	/* COMPILER */
 
@@ -175,7 +170,7 @@ public:
 			TYPE_MEMBER
 		};
 
-		Node * parent;
+		Node *parent;
 		Type type;
 
 		virtual DataType get_datatype() const { return TYPE_VOID; }
@@ -183,15 +178,17 @@ public:
 		virtual ~Node() {}
 	};
 
-
 	struct OperatorNode : public Node {
 
 		DataType return_cache;
 		Operator op;
-		Vector<Node*> arguments;
+		Vector<Node *> arguments;
 		virtual DataType get_datatype() const { return return_cache; }
 
-		OperatorNode() { type=TYPE_OPERATOR; return_cache=TYPE_VOID; }
+		OperatorNode() {
+			type = TYPE_OPERATOR;
+			return_cache = TYPE_VOID;
+		}
 	};
 
 	struct VariableNode : public Node {
@@ -200,7 +197,11 @@ public:
 		StringName name;
 		virtual DataType get_datatype() const { return datatype_cache; }
 
-		VariableNode() { type=TYPE_VARIABLE; datatype_cache=TYPE_VOID; uniform=false; }
+		VariableNode() {
+			type = TYPE_VARIABLE;
+			datatype_cache = TYPE_VOID;
+			uniform = false;
+		}
 	};
 
 	struct ConstantNode : public Node {
@@ -209,21 +210,24 @@ public:
 		Variant value;
 		virtual DataType get_datatype() const { return datatype; }
 
-		ConstantNode() { type=TYPE_CONSTANT; }
+		ConstantNode() { type = TYPE_CONSTANT; }
 	};
 
 	struct BlockNode : public Node {
 
-		Map<StringName,DataType> variables;
-		List<Node*> statements;
-		BlockNode() { type=TYPE_BLOCK; }
+		Map<StringName, DataType> variables;
+		List<Node *> statements;
+		BlockNode() { type = TYPE_BLOCK; }
 	};
 
 	struct ControlFlowNode : public Node {
 
 		FlowOperation flow_op;
-		Vector<Node*> statements;
-		ControlFlowNode() { type=TYPE_CONTROL_FLOW; flow_op=FLOW_OP_IF;}
+		Vector<Node *> statements;
+		ControlFlowNode() {
+			type = TYPE_CONTROL_FLOW;
+			flow_op = FLOW_OP_IF;
+		}
 	};
 
 	struct MemberNode : public Node {
@@ -231,14 +235,12 @@ public:
 		DataType basetype;
 		DataType datatype;
 		StringName name;
-		Node* owner;
+		Node *owner;
 		virtual DataType get_datatype() const { return datatype; }
-		MemberNode() { type=TYPE_MEMBER; }
+		MemberNode() { type = TYPE_MEMBER; }
 	};
 
-
 	struct FunctionNode : public Node {
-
 
 		struct Argument {
 
@@ -251,8 +253,7 @@ public:
 		Vector<Argument> arguments;
 		BlockNode *body;
 
-		FunctionNode() { type=TYPE_FUNCTION;  }
-
+		FunctionNode() { type = TYPE_FUNCTION; }
 	};
 
 	struct Uniform {
@@ -266,19 +267,17 @@ public:
 
 		struct Function {
 			StringName name;
-			FunctionNode*function;
+			FunctionNode *function;
 		};
 
-
-		Map<StringName,DataType> builtin_variables;
-		Map<StringName,Uniform> uniforms;
+		Map<StringName, DataType> builtin_variables;
+		Map<StringName, Uniform> uniforms;
 
 		Vector<Function> functions;
 		BlockNode *body;
 
-		ProgramNode() { type=TYPE_PROGRAM; }
+		ProgramNode() { type = TYPE_PROGRAM; }
 	};
-
 
 	struct Expression {
 
@@ -289,7 +288,7 @@ public:
 		};
 	};
 
-	typedef Error (*CompileFunc)(void*,ProgramNode*);
+	typedef Error (*CompileFunc)(void *, ProgramNode *);
 
 	struct VarInfo {
 
@@ -298,73 +297,82 @@ public:
 	};
 
 private:
-
-
-
-	static const char * token_names[TK_MAX];
+	static const char *token_names[TK_MAX];
 
 	struct Token {
 
 		TokenType type;
 		StringName text;
-		uint16_t line,col;
+		uint16_t line, col;
 
-		Token(TokenType p_type=TK_EMPTY,const String& p_text=String()) { type=p_type; text=p_text; line=0; col=0; }
+		Token(TokenType p_type = TK_EMPTY, const String &p_text = String()) {
+			type = p_type;
+			text = p_text;
+			line = 0;
+			col = 0;
+		}
 	};
 
-
-
-	static Token read_token(const CharType* p_text,int p_len,int &r_line,int &r_chars);
-	static Error tokenize(const String& p_text,Vector<Token> *p_tokens,String *r_error,int *r_err_line,int *r_err_column);
-
-
-
+	static Token read_token(const CharType *p_text, int p_len, int &r_line, int &r_chars);
+	static Error tokenize(const String &p_text, Vector<Token> *p_tokens, String *r_error, int *r_err_line, int *r_err_column);
 
 	class Parser {
 
 		Vector<Token> tokens;
 		int pos;
 		String error;
+
 	public:
-
-
-		void set_error(const String& p_error) { error=p_error; }
+		void set_error(const String &p_error) { error = p_error; }
 		void get_error(String *r_error, int *r_line, int *r_column) {
 
-			*r_error=error;
-			*r_line=get_next_token(0).line;
-			*r_column=get_next_token(0).col;
+			*r_error = error;
+			*r_line = get_next_token(0).line;
+			*r_column = get_next_token(0).col;
 		}
 
-
-
-		Token get_next_token(int ofs=0) const { int idx=pos+ofs; if (idx<0 || idx>=tokens.size()) return Token(TK_ERROR); return tokens[idx]; }
-		TokenType get_next_token_type(int ofs=0) const { int idx=pos+ofs;  if (idx<0 || idx>=tokens.size()) return TK_ERROR; return tokens[idx].type; }
-		void advance(int p_amount=1) { pos+=p_amount; }
-		bool is_at_end() const { return pos>=tokens.size(); }
+		Token get_next_token(int ofs = 0) const {
+			int idx = pos + ofs;
+			if (idx < 0 || idx >= tokens.size()) return Token(TK_ERROR);
+			return tokens[idx];
+		}
+		TokenType get_next_token_type(int ofs = 0) const {
+			int idx = pos + ofs;
+			if (idx < 0 || idx >= tokens.size()) return TK_ERROR;
+			return tokens[idx].type;
+		}
+		void advance(int p_amount = 1) { pos += p_amount; }
+		bool is_at_end() const { return pos >= tokens.size(); }
 
 		ProgramNode *program;
-		template<class T>
-		T* create_node(Node *p_parent) { T*n=memnew( T ); nodegc.push_back(n); n->parent=p_parent; return n; }
-		List<Node*> nodegc;
+		template <class T>
+		T *create_node(Node *p_parent) {
+			T *n = memnew(T);
+			nodegc.push_back(n);
+			n->parent = p_parent;
+			return n;
+		}
+		List<Node *> nodegc;
 
-		Parser(const Vector<Token>& p_tokens) { tokens=p_tokens; pos=0;}
+		Parser(const Vector<Token> &p_tokens) {
+			tokens = p_tokens;
+			pos = 0;
+		}
 	};
 
 	struct IntrinsicFuncDef {
 
-		enum { MAX_ARGS=5 };
-		const char* name;
+		enum { MAX_ARGS = 5 };
+		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
-
 	};
 
 	static const IntrinsicFuncDef intrinsic_func_defs[];
 
 	struct OperatorDef {
 
-		enum { MAX_ARGS=2 };
+		enum { MAX_ARGS = 2 };
 		Operator op;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
@@ -374,7 +382,7 @@ private:
 
 	struct BuiltinsDef {
 
-		const char* name;
+		const char *name;
 		DataType type;
 	};
 
@@ -386,7 +394,6 @@ private:
 	static const BuiltinsDef ci_fragment_builtins_defs[];
 	static const BuiltinsDef ci_light_builtins_defs[];
 
-
 	static const BuiltinsDef postprocess_fragment_builtins_defs[];
 
 	static DataType get_token_datatype(TokenType p_type);
@@ -394,37 +401,34 @@ private:
 	static bool is_token_datatype(TokenType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 
-	static bool test_existing_identifier(Node *p_node,const StringName p_identifier,bool p_func=true,bool p_var=true,bool p_builtin=true);
+	static bool test_existing_identifier(Node *p_node, const StringName p_identifier, bool p_func = true, bool p_var = true, bool p_builtin = true);
 
-	static bool parser_is_at_function(Parser& parser);
+	static bool parser_is_at_function(Parser &parser);
 	static DataType compute_node_type(Node *p_node);
 
-	static Node* validate_function_call(Parser&parser, OperatorNode *p_func);
-	static Node* validate_operator(Parser& parser,OperatorNode *p_func);
+	static Node *validate_function_call(Parser &parser, OperatorNode *p_func);
+	static Node *validate_operator(Parser &parser, OperatorNode *p_func);
 	static bool is_token_operator(TokenType p_type);
 	static Operator get_token_operator(TokenType p_type);
 
-	static Error parse_expression(Parser& parser,Node *p_parent,Node **r_expr);
+	static Error parse_expression(Parser &parser, Node *p_parent, Node **r_expr);
 
-	static Error parse_variable_declaration(Parser& parser,BlockNode *p_block);
-	static Error parse_function(Parser& parser,BlockNode *p_block);
-	static Error parse_flow_if(Parser& parser,Node *p_parent,Node **r_statement);
-	static Error parse_flow_return(Parser& parser,Node *p_parent,Node **r_statement);
-	static Error parse_statement(Parser& parser,Node *p_parent,Node **r_statement);
-	static Error parse_block(Parser& parser,BlockNode *p_block);
+	static Error parse_variable_declaration(Parser &parser, BlockNode *p_block);
+	static Error parse_function(Parser &parser, BlockNode *p_block);
+	static Error parse_flow_if(Parser &parser, Node *p_parent, Node **r_statement);
+	static Error parse_flow_return(Parser &parser, Node *p_parent, Node **r_statement);
+	static Error parse_statement(Parser &parser, Node *p_parent, Node **r_statement);
+	static Error parse_block(Parser &parser, BlockNode *p_block);
 
+	static Error parse(const Vector<Token> &p_tokens, ShaderType p_type, CompileFunc p_compile_func, void *p_userdata, String *r_error, int *r_err_line, int *r_err_column);
 
-	static Error parse(const Vector<Token> &p_tokens,ShaderType p_type,CompileFunc p_compile_func,void *p_userdata,String *r_error,int *r_err_line,int *r_err_column);
+	;
 
-;
 public:
+	static void get_keyword_list(ShaderType p_type, List<String> *p_keywords);
 
-	static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);
-
-	static Error compile(const String& p_code,ShaderType p_type, CompileFunc p_compile_func,void *p_userdata,String *r_error,int *r_err_line,int *r_err_column);
-	static String lex_debug(const String& p_code);
-
+	static Error compile(const String &p_code, ShaderType p_type, CompileFunc p_compile_func, void *p_userdata, String *r_error, int *r_err_line, int *r_err_column);
+	static String lex_debug(const String &p_code);
 };
-
 
 #endif // SHADER_LANGUAGE_H

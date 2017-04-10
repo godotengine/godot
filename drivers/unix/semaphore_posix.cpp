@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,10 +37,9 @@
 
 Error SemaphorePosix::wait() {
 
-
-	while(sem_wait(&sem)) {
-		if (errno==EINTR) {
-			errno=0;
+	while (sem_wait(&sem)) {
+		if (errno == EINTR) {
+			errno = 0;
 			continue;
 		} else {
 			perror("sem waiting");
@@ -51,39 +51,36 @@ Error SemaphorePosix::wait() {
 
 Error SemaphorePosix::post() {
 
-	return (sem_post(&sem)==0)?OK:ERR_BUSY; 
+	return (sem_post(&sem) == 0) ? OK : ERR_BUSY;
 }
 int SemaphorePosix::get() const {
 
 	int val;
 	sem_getvalue(&sem, &val);
-	
-	return val;	
-}
 
+	return val;
+}
 
 Semaphore *SemaphorePosix::create_semaphore_posix() {
 
-	return memnew( SemaphorePosix );
+	return memnew(SemaphorePosix);
 }
 
 void SemaphorePosix::make_default() {
 
-	create_func=create_semaphore_posix;
+	create_func = create_semaphore_posix;
 }
 
 SemaphorePosix::SemaphorePosix() {
 
-	int r = sem_init(&sem,0,0);
+	int r = sem_init(&sem, 0, 0);
 	if (r != 0)
 		perror("sem creating");
 }
-
 
 SemaphorePosix::~SemaphorePosix() {
 
 	sem_destroy(&sem);
 }
-
 
 #endif

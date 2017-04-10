@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,16 +31,16 @@
 
 #include "audio_stream_mpc.h"
 
-static ResourceFormatLoaderAudioStreamMPC* mpc_stream_loader = NULL;
+static ResourceFormatLoaderAudioStreamMPC *mpc_stream_loader = NULL;
 
 void register_mpc_types() {
 
-	mpc_stream_loader=memnew( ResourceFormatLoaderAudioStreamMPC );
+	mpc_stream_loader = memnew(ResourceFormatLoaderAudioStreamMPC);
 	ResourceLoader::add_resource_format_loader(mpc_stream_loader);
 	ObjectTypeDB::register_type<AudioStreamMPC>();
 }
 
 void unregister_mpc_types() {
 
-	memdelete( mpc_stream_loader );
+	memdelete(mpc_stream_loader);
 }

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,8 +63,7 @@ void ContextEGL::reset() {
 
 void ContextEGL::swap_buffers() {
 
-	if (eglSwapBuffers(mEglDisplay, mEglSurface) != EGL_TRUE)
-	{
+	if (eglSwapBuffers(mEglDisplay, mEglSurface) != EGL_TRUE) {
 		cleanup();
 
 		window = CoreWindow::GetForCurrentThread();
@@ -102,56 +102,48 @@ Error ContextEGL::initialize() {
 	try {
 
 		const EGLint displayAttributes[] =
-		{
-			EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
-			EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9,
-			EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE, 3,
-			EGL_NONE,
-		};
+				{
+				  EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+				  EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9,
+				  EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE, 3,
+				  EGL_NONE,
+				};
 
 		PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
 
-		if (!eglGetPlatformDisplayEXT)
-		{
+		if (!eglGetPlatformDisplayEXT) {
 			throw Exception::CreateException(E_FAIL, L"Failed to get function eglGetPlatformDisplayEXT");
 		}
 
 		display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, displayAttributes);
 
-		if (display == EGL_NO_DISPLAY)
-		{
+		if (display == EGL_NO_DISPLAY) {
 			throw Exception::CreateException(E_FAIL, L"Failed to get default EGL display");
 		}
 
-		if (eglInitialize(display, &majorVersion, &minorVersion) == EGL_FALSE)
-		{
+		if (eglInitialize(display, &majorVersion, &minorVersion) == EGL_FALSE) {
 			throw Exception::CreateException(E_FAIL, L"Failed to initialize EGL");
 		}
 
-		if (eglGetConfigs(display, NULL, 0, &numConfigs) == EGL_FALSE)
-		{
+		if (eglGetConfigs(display, NULL, 0, &numConfigs) == EGL_FALSE) {
 			throw Exception::CreateException(E_FAIL, L"Failed to get EGLConfig count");
 		}
 
-		if (eglChooseConfig(display, configAttribList, &config, 1, &numConfigs) == EGL_FALSE)
-		{
+		if (eglChooseConfig(display, configAttribList, &config, 1, &numConfigs) == EGL_FALSE) {
 			throw Exception::CreateException(E_FAIL, L"Failed to choose first EGLConfig count");
 		}
 
-		surface = eglCreateWindowSurface(display, config, reinterpret_cast<IInspectable*>(window), surfaceAttribList);
-		if (surface == EGL_NO_SURFACE)
-		{
+		surface = eglCreateWindowSurface(display, config, reinterpret_cast<IInspectable *>(window), surfaceAttribList);
+		if (surface == EGL_NO_SURFACE) {
 			throw Exception::CreateException(E_FAIL, L"Failed to create EGL fullscreen surface");
 		}
 
 		context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
-		if (context == EGL_NO_CONTEXT)
-		{
+		if (context == EGL_NO_CONTEXT) {
 			throw Exception::CreateException(E_FAIL, L"Failed to create EGL context");
 		}
 
-		if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE)
-		{
+		if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
 			throw Exception::CreateException(E_FAIL, L"Failed to make fullscreen EGLSurface current");
 		}
 	} catch (...) {
@@ -162,38 +154,34 @@ Error ContextEGL::initialize() {
 	mEglSurface = surface;
 	mEglContext = context;
 
-	eglQuerySurface(display,surface,EGL_WIDTH,&width);
-	eglQuerySurface(display,surface,EGL_HEIGHT,&height);
+	eglQuerySurface(display, surface, EGL_WIDTH, &width);
+	eglQuerySurface(display, surface, EGL_HEIGHT, &height);
 
 	return OK;
 };
 
 void ContextEGL::cleanup() {
 
-	if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE)
-	{
+	if (mEglDisplay != EGL_NO_DISPLAY && mEglSurface != EGL_NO_SURFACE) {
 		eglDestroySurface(mEglDisplay, mEglSurface);
 		mEglSurface = EGL_NO_SURFACE;
 	}
 
-	if (mEglDisplay != EGL_NO_DISPLAY && mEglContext != EGL_NO_CONTEXT)
-	{
+	if (mEglDisplay != EGL_NO_DISPLAY && mEglContext != EGL_NO_CONTEXT) {
 		eglDestroyContext(mEglDisplay, mEglContext);
 		mEglContext = EGL_NO_CONTEXT;
 	}
 
-	if (mEglDisplay != EGL_NO_DISPLAY)
-	{
+	if (mEglDisplay != EGL_NO_DISPLAY) {
 		eglTerminate(mEglDisplay);
 		mEglDisplay = EGL_NO_DISPLAY;
 	}
 };
 
-ContextEGL::ContextEGL(CoreWindow^ p_window) :
-	mEglDisplay(EGL_NO_DISPLAY),
-	mEglContext(EGL_NO_CONTEXT),
-	mEglSurface(EGL_NO_SURFACE)
- {
+ContextEGL::ContextEGL(CoreWindow ^ p_window)
+	: mEglDisplay(EGL_NO_DISPLAY),
+	  mEglContext(EGL_NO_CONTEXT),
+	  mEglSurface(EGL_NO_SURFACE) {
 
 	window = p_window;
 };
@@ -202,4 +190,3 @@ ContextEGL::~ContextEGL() {
 
 	cleanup();
 };
-

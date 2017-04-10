@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +30,6 @@
 #ifndef LIGHT_H
 #define LIGHT_H
 
-
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
@@ -39,30 +39,28 @@
 */
 class Light : public VisualInstance {
 
-	OBJ_TYPE( Light, VisualInstance );
+	OBJ_TYPE(Light, VisualInstance);
 	OBJ_CATEGORY("3D Light Nodes");
 
 public:
-
 	enum Parameter {
-		PARAM_RADIUS=VisualServer::LIGHT_PARAM_RADIUS,
-		PARAM_ENERGY=VisualServer::LIGHT_PARAM_ENERGY,
-		PARAM_ATTENUATION=VisualServer::LIGHT_PARAM_ATTENUATION,
-		PARAM_SPOT_ANGLE=VisualServer::LIGHT_PARAM_SPOT_ANGLE,
-		PARAM_SPOT_ATTENUATION=VisualServer::LIGHT_PARAM_SPOT_ATTENUATION,
-		PARAM_SHADOW_DARKENING=VisualServer::LIGHT_PARAM_SHADOW_DARKENING,
-		PARAM_SHADOW_Z_OFFSET=VisualServer::LIGHT_PARAM_SHADOW_Z_OFFSET,
-		PARAM_SHADOW_Z_SLOPE_SCALE=VisualServer::LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE,
-		PARAM_SHADOW_ESM_MULTIPLIER=VisualServer::LIGHT_PARAM_SHADOW_ESM_MULTIPLIER,
-		PARAM_SHADOW_BLUR_PASSES=VisualServer::LIGHT_PARAM_SHADOW_BLUR_PASSES,
-		PARAM_MAX=VisualServer::LIGHT_PARAM_MAX
+		PARAM_RADIUS = VisualServer::LIGHT_PARAM_RADIUS,
+		PARAM_ENERGY = VisualServer::LIGHT_PARAM_ENERGY,
+		PARAM_ATTENUATION = VisualServer::LIGHT_PARAM_ATTENUATION,
+		PARAM_SPOT_ANGLE = VisualServer::LIGHT_PARAM_SPOT_ANGLE,
+		PARAM_SPOT_ATTENUATION = VisualServer::LIGHT_PARAM_SPOT_ATTENUATION,
+		PARAM_SHADOW_DARKENING = VisualServer::LIGHT_PARAM_SHADOW_DARKENING,
+		PARAM_SHADOW_Z_OFFSET = VisualServer::LIGHT_PARAM_SHADOW_Z_OFFSET,
+		PARAM_SHADOW_Z_SLOPE_SCALE = VisualServer::LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE,
+		PARAM_SHADOW_ESM_MULTIPLIER = VisualServer::LIGHT_PARAM_SHADOW_ESM_MULTIPLIER,
+		PARAM_SHADOW_BLUR_PASSES = VisualServer::LIGHT_PARAM_SHADOW_BLUR_PASSES,
+		PARAM_MAX = VisualServer::LIGHT_PARAM_MAX
 	};
-
 
 	enum LightColor {
 
-		COLOR_DIFFUSE=VisualServer::LIGHT_COLOR_DIFFUSE,
-		COLOR_SPECULAR=VisualServer::LIGHT_COLOR_SPECULAR
+		COLOR_DIFFUSE = VisualServer::LIGHT_COLOR_DIFFUSE,
+		COLOR_SPECULAR = VisualServer::LIGHT_COLOR_SPECULAR
 	};
 
 	enum BakeMode {
@@ -74,19 +72,16 @@ public:
 
 	};
 
-
 	enum Operator {
 
 		OPERATOR_ADD,
 		OPERATOR_SUB
 	};
+
 private:
-
-
 	Ref<Texture> projector;
 	float vars[PARAM_MAX];
 	Color colors[3];
-
 
 	BakeMode bake_mode;
 	VisualServer::LightType type;
@@ -96,10 +91,9 @@ private:
 	Operator op;
 
 	void _update_visibility();
-// bind helpers
+	// bind helpers
 
 protected:
-
 	RID light;
 
 	virtual bool _can_gizmo_scale() const;
@@ -108,22 +102,21 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
-
 	Light(VisualServer::LightType p_type);
-public:
 
+public:
 	VS::LightType get_light_type() const { return type; }
 
 	void set_parameter(Parameter p_var, float p_value);
 	float get_parameter(Parameter p_var) const;
 
-	void set_color(LightColor p_color,const Color& p_value);
+	void set_color(LightColor p_color, const Color &p_value);
 	Color get_color(LightColor p_color) const;
 
 	void set_project_shadows(bool p_enabled);
 	bool has_project_shadows() const;
 
-	void set_projector(const Ref<Texture>& p_projector);
+	void set_projector(const Ref<Texture> &p_projector);
 	Ref<Texture> get_projector() const;
 
 	void set_operator(Operator p_op);
@@ -141,25 +134,22 @@ public:
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
-	void approximate_opengl_attenuation(float p_constant, float p_linear, float p_quadratic, float p_radius_treshold=0.5);
+	void approximate_opengl_attenuation(float p_constant, float p_linear, float p_quadratic, float p_radius_treshold = 0.5);
 
 	Light();
 	~Light();
-
 };
 
-VARIANT_ENUM_CAST( Light::Parameter );
-VARIANT_ENUM_CAST( Light::LightColor );
-VARIANT_ENUM_CAST( Light::Operator );
-VARIANT_ENUM_CAST( Light::BakeMode);
-
+VARIANT_ENUM_CAST(Light::Parameter);
+VARIANT_ENUM_CAST(Light::LightColor);
+VARIANT_ENUM_CAST(Light::Operator);
+VARIANT_ENUM_CAST(Light::BakeMode);
 
 class DirectionalLight : public Light {
 
-	OBJ_TYPE( DirectionalLight, Light );
+	OBJ_TYPE(DirectionalLight, Light);
 
 public:
-
 	enum ShadowMode {
 		SHADOW_ORTHOGONAL,
 		SHADOW_PERSPECTIVE,
@@ -175,10 +165,11 @@ public:
 private:
 	ShadowMode shadow_mode;
 	float shadow_param[3];
+
 protected:
 	static void _bind_methods();
-public:
 
+public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
@@ -190,32 +181,31 @@ public:
 	DirectionalLight();
 };
 
-VARIANT_ENUM_CAST( DirectionalLight::ShadowMode );
-VARIANT_ENUM_CAST( DirectionalLight::ShadowParam );
-
+VARIANT_ENUM_CAST(DirectionalLight::ShadowMode);
+VARIANT_ENUM_CAST(DirectionalLight::ShadowParam);
 
 class OmniLight : public Light {
 
-	OBJ_TYPE( OmniLight, Light );
+	OBJ_TYPE(OmniLight, Light);
+
 protected:
 	static void _bind_methods();
 
 public:
-
-
-	OmniLight() : Light( VisualServer::LIGHT_OMNI ) { set_parameter(PARAM_SHADOW_Z_OFFSET,0.001);}
+	OmniLight()
+		: Light(VisualServer::LIGHT_OMNI) { set_parameter(PARAM_SHADOW_Z_OFFSET, 0.001); }
 };
 
 class SpotLight : public Light {
 
-	OBJ_TYPE( SpotLight, Light );
+	OBJ_TYPE(SpotLight, Light);
+
 protected:
 	static void _bind_methods();
+
 public:
-
-
-	SpotLight() : Light( VisualServer::LIGHT_SPOT ) {}
+	SpotLight()
+		: Light(VisualServer::LIGHT_SPOT) {}
 };
-
 
 #endif

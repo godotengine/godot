@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="2.1.1.stable.custom_build" name="Engine Types">
+<doc version="2.1.stable.custom_build" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 		Built-in GDScript functions.
@@ -677,7 +677,7 @@
 	</methods>
 	<constants>
 		<constant name="PI" value="3.141593">
-			Constant that represents how many times the diameter of a circumference fits around it's perimeter.
+			Constant that represents how many times the diameter of a circumference fits around its perimeter.
 		</constant>
 	</constants>
 </class>
@@ -2159,6 +2159,22 @@
 	<description>
 	</description>
 	<methods>
+		<method name="_compute_cost" qualifiers="virtual">
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="_estimate_cost" qualifiers="virtual">
+			<argument index="0" name="from_id" type="int">
+			</argument>
+			<argument index="1" name="to_id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="add_point">
 			<argument index="0" name="id" type="int">
 			</argument>
@@ -8089,7 +8105,7 @@
 		Circular Shape for 2D Physics.
 	</brief_description>
 	<description>
-		Circular Shape for 2D Physics. This shape is useful for modeling balls or small characters and it's collision detection with everything else is very fast.
+		Circular Shape for 2D Physics. This shape is useful for modeling balls or small characters and its collision detection with everything else is very fast.
 	</description>
 	<methods>
 		<method name="get_radius" qualifiers="const">
@@ -8874,6 +8890,28 @@
 			</return>
 			<description>
 				Return the array size.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="ColorFrame" inherits="Control" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="get_frame_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_frame_color">
+			<argument index="0" name="color" type="Color">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -9848,6 +9886,12 @@
 			<return type="bool">
 			</return>
 			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_point" qualifiers="virtual">
+			<argument index="0" name="point" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -11308,7 +11352,7 @@
 				This function is called for each file exported and depending from the return value one of many things might happen.
 				1) If returned value is null, the file is exported as is.
 				2) If the returned value is a RawAray (array of bytes), the content of that array becomes the new file being exported.
-				3) If the file must also change it's name when exported, then a [Dictionary] must be returned with two fields: 'name' with the new filename and 'data' with a [RawArray] containing the raw contents of the file. Even if the name is changed, the run-time will redirect the old file to the new file automatically when accessed.
+				3) If the file must also change its name when exported, then a [Dictionary] must be returned with two fields: 'name' with the new filename and 'data' with a [RawArray] containing the raw contents of the file. Even if the name is changed, the run-time will redirect the old file to the new file automatically when accessed.
 			</description>
 		</method>
 	</methods>
@@ -11578,7 +11622,7 @@
 </class>
 <class name="EditorPlugin" inherits="Node" category="Core">
 	<brief_description>
-		Used by the editor to extend it's functionality.
+		Used by the editor to extend its functionality.
 	</brief_description>
 	<description>
 		Plugins are used by the editor to extend functionality. The most common types of plugins are those which edit a given node or resource type, import plugins and export plugins.
@@ -11834,7 +11878,7 @@
 		</method>
 		<method name="save_external_data" qualifiers="virtual">
 			<description>
-				This method is called after the editor save the project or when the it's closed. It asks the plugin to save edited external scenes/resources.
+				This method is called after the editor saves the project or when it's closed. It asks the plugin to save edited external scenes/resources.
 			</description>
 		</method>
 		<method name="set_state" qualifiers="virtual">
@@ -12766,6 +12810,14 @@
 			</argument>
 			<description>
 				Return a md5 String representing the file at the given path or an empty [String] on failure.
+			</description>
+		</method>
+		<method name="get_modified_time" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_pascal_string">
@@ -13724,6 +13776,42 @@
 			<argument index="1" name="s1" type="Vector3">
 			</argument>
 			<argument index="2" name="s2" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment_2d">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="s1" type="Vector2">
+			</argument>
+			<argument index="2" name="s2" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment_uncapped">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="s1" type="Vector3">
+			</argument>
+			<argument index="2" name="s2" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment_uncapped_2d">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="s1" type="Vector2">
+			</argument>
+			<argument index="2" name="s2" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -15260,12 +15348,6 @@
 				Set connection to use, for this client.
 			</description>
 		</method>
-		<method name="set_ip_type">
-			<argument index="0" name="ip_type" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_read_chunk_size">
 			<argument index="0" name="bytes" type="int">
 			</argument>
@@ -15509,12 +15591,6 @@
 				Set the file to download into. Outputs the response body into the file.
 			</description>
 		</method>
-		<method name="set_ip_type">
-			<argument index="0" name="ip_type" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 		<method name="set_max_redirects">
 			<argument index="0" name="amount" type="int">
 			</argument>
@@ -15567,7 +15643,7 @@
 			Request does not have a response(yet).
 		</constant>
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7">
-			Request exceded it's maximum size limit, see [method set_body_size_limit].
+			Request exceded its maximum size limit, see [method set_body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8">
 			Request failed. (unused)
@@ -15579,7 +15655,7 @@
 			HTTPRequest couldn't write to the download file.
 		</constant>
 		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11">
-			Request reached it's maximum redirect limit, see [method set_max_redirects].
+			Request reached its maximum redirect limit, see [method set_max_redirects].
 		</constant>
 	</constants>
 </class>
@@ -15691,7 +15767,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Return the status of hostname queued for resolving, given it's queue ID. Returned status can be any of the RESOLVER_STATUS_* enumeration.
+				Return the status of hostname queued for resolving, given its queue ID. Returned status can be any of the RESOLVER_STATUS_* enumeration.
 			</description>
 		</method>
 		<method name="resolve_hostname">
@@ -16263,6 +16339,12 @@
 				Returns an [Array] containing the device IDs of all currently connected joysticks.
 			</description>
 		</method>
+		<method name="get_gravity">
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_gyroscope">
 			<return type="Vector3">
 			</return>
@@ -16422,6 +16504,12 @@
 			</argument>
 			<description>
 				Returns true or false depending on whether mouse button is pressed or not. You can pass BUTTON_*, which are pre-defined constants listed in [@Global Scope].
+			</description>
+		</method>
+		<method name="parse_input_event">
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
@@ -18794,6 +18882,16 @@
 			</argument>
 			<description>
 				Return true if there would be a collision if the body moved in the given direction.
+			</description>
+		</method>
+		<method name="test_move_from">
+			<return type="bool">
+			</return>
+			<argument index="0" name="from" type="Matrix32">
+			</argument>
+			<argument index="1" name="rel_vec" type="Vector2">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -22143,8 +22241,11 @@
 			</return>
 			<argument index="0" name="use_instancing" type="bool" default="false">
 			</argument>
+			<argument index="1" name="flags" type="int" default="7">
+			</argument>
 			<description>
-				Duplicate the node, returning a new [Node]. If [code]use_instancing[/code] is true, the duplicated node will be a new instance of the original [PackedScene], if not it will be an independent node. The duplicated node has the same group assignments and signals as the original one.
+				Duplicate the node, returning a new [Node]. If [code]use_instancing[/code] is true, the duplicated node will be a new instance of the original [PackedScene], if not it will be an independent node.
+				The flags are used to define what attributes (groups, signals, scripts) should be duplicated, as specified by the DUPLICATE_* constants. The default value is all of them.
 			</description>
 		</method>
 		<method name="find_node" qualifiers="const">
@@ -22595,6 +22696,12 @@
 		<constant name="PAUSE_MODE_STOP" value="1">
 		</constant>
 		<constant name="PAUSE_MODE_PROCESS" value="2">
+		</constant>
+		<constant name="DUPLICATE_SIGNALS" value="1">
+		</constant>
+		<constant name="DUPLICATE_GROUPS" value="2">
+		</constant>
+		<constant name="DUPLICATE_SCRIPTS" value="4">
 		</constant>
 	</constants>
 </class>
@@ -24702,16 +24809,15 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="recv_buf_size" type="int" default="65536">
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
+			</argument>
+			<argument index="2" name="recv_buf_size" type="int" default="65536">
 			</argument>
 			<description>
-				Make this [PacketPeerUDP] listen on the "port" with a buffer size "recv_buf_size". Listens on all available addresses.
-			</description>
-		</method>
-		<method name="set_ip_type">
-			<argument index="0" name="ip_type" type="int">
-			</argument>
-			<description>
+				Make this [PacketPeerUDP] listen on the "port" binding to "bind_address" with a buffer size "recv_buf_size".
+				If "bind_address" is set as "*" (default), the peer will listen on all available addresses (both IPv4 and IPv6).
+				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the peer will listen on all available addresses matching that IP type.
+				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the peer will only listen on the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="set_send_address">
@@ -25386,6 +25492,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_process_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_randomness" qualifiers="const">
 			<return type="float">
 			</return>
@@ -25577,6 +25689,12 @@
 		</method>
 		<method name="set_pre_process_time">
 			<argument index="0" name="time" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_process_mode">
+			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
 			</description>
@@ -27185,6 +27303,22 @@
 			</argument>
 			<description>
 				Return whether a body can move in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
+			</description>
+		</method>
+		<method name="body_test_motion_from">
+			<return type="bool">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="from" type="Matrix32">
+			</argument>
+			<argument index="2" name="motion" type="Vector2">
+			</argument>
+			<argument index="3" name="margin" type="float" default="0.08">
+			</argument>
+			<argument index="4" name="result" type="Physics2DTestMotionResult" default="NULL">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="damped_spring_joint_create">
@@ -32556,6 +32690,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="remove_line">
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="scroll_to_line">
 			<argument index="0" name="line" type="int">
 			</argument>
@@ -33019,7 +33161,7 @@
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
-				Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
+				Emitted when the body changes its sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
@@ -33414,7 +33556,7 @@
 		</signal>
 		<signal name="sleeping_state_changed">
 			<description>
-				Emitted when the body changes it's sleeping state. Either by sleeping or waking up.
+				Emitted when the body changes its sleeping state. Either by sleeping or waking up.
 			</description>
 		</signal>
 	</signals>
@@ -33664,6 +33806,7 @@
 	</brief_description>
 	<description>
 		Library that contains a collection of [Sample], each identified by a text ID. This is used as a data container for the majority of the SamplePlayer classes and derivatives.
+		Sample players will never yield an active (currently playing) voice for a new playback request when there are no inactive voices available if the priority of the sample requested to be played is lower than that of every currently played samples.
 	</description>
 	<methods>
 		<method name="add_sample">
@@ -33715,6 +33858,15 @@
 				Return the pitch scale for the given sample.
 			</description>
 		</method>
+		<method name="sample_get_priority" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+				Return the priority for the given sample.
+			</description>
+		</method>
 		<method name="sample_get_volume_db" qualifiers="const">
 			<return type="float">
 			</return>
@@ -33731,6 +33883,15 @@
 			</argument>
 			<description>
 				Set the pitch scale for the given sample.
+			</description>
+		</method>
+		<method name="sample_set_priority">
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="1" name="priority" type="int">
+			</argument>
+			<description>
+				Set the priority for the given sample.
 			</description>
 		</method>
 		<method name="sample_set_volume_db">
@@ -34622,6 +34783,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_input_handled">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_paused" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -34994,7 +35161,7 @@
 			<return type="Error">
 			</return>
 			<description>
-				Tries to wait for the [Semaphore], if it's value is zero, blocks until non-zero.
+				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero.
 			</description>
 		</method>
 	</methods>
@@ -38338,12 +38505,6 @@
 				Return whether this peer is connected. Returns true while connecting and connected.
 			</description>
 		</method>
-		<method name="set_ip_type">
-			<argument index="0" name="ip_type" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0">
@@ -39819,16 +39980,13 @@
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
-			<argument index="1" name="accepted_hosts" type="StringArray" default="StringArray([])">
+			<argument index="1" name="bind_address" type="String" default="&quot;*&quot;">
 			</argument>
 			<description>
-				Listen on a port using protocol, alternatively give a white-list of accepted hosts.
-			</description>
-		</method>
-		<method name="set_ip_type">
-			<argument index="0" name="ip_type" type="int">
-			</argument>
-			<description>
+				Listen on the "port" binding to "bind_address".
+				If "bind_address" is set as "*" (default), the server will listen on all available addresses (both IPv4 and IPv6).
+				If "bind_address" is set as "0.0.0.0" (for IPv4) or "::" (for IPv6), the server will listen on all available addresses matching that IP type.
+				If "bind_address" is set to any valid address (e.g. "192.168.1.101", "::1", etc), the server will only listen on the interface with that addresses (or fail if no interface with the given address exists).
 			</description>
 		</method>
 		<method name="stop">
@@ -39867,19 +40025,27 @@
 			<return type="int">
 			</return>
 			<description>
-				Return the current tab that is being showed.
+				Return the current tab index that is being shown.
 			</description>
 		</method>
 		<method name="get_current_tab_control" qualifiers="const">
 			<return type="Control">
 			</return>
 			<description>
+				Return the current tab control that is being shown.
 			</description>
 		</method>
 		<method name="get_popup" qualifiers="const">
 			<return type="Popup">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="get_previous_tab" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the previous tab index that was being shown.
 			</description>
 		</method>
 		<method name="get_tab_align" qualifiers="const">
@@ -39976,7 +40142,14 @@
 			<argument index="0" name="tab" type="int">
 			</argument>
 			<description>
-				Emitted when the current tab changes.
+				Emitted when a tab gets selected. Same behavior as [tab_selected] signal for backward compatibility. Note: In Godot v3.0+ this will change to be only emitted when tab gets changed.
+			</description>
+		</signal>
+		<signal name="tab_selected">
+			<argument index="0" name="tab" type="int">
+			</argument>
+			<description>
+				Emitted when a tab is being selected, even if it is the same tab.
 			</description>
 		</signal>
 	</signals>
@@ -40819,6 +40992,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_resize_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_stretch_mode" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_texture_scale" qualifiers="const">
 			<return type="Vector2">
 			</return>
@@ -40867,6 +41052,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_resize_mode">
+			<argument index="0" name="p_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_stretch_mode">
+			<argument index="0" name="p_mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_texture_scale">
 			<argument index="0" name="scale" type="Vector2">
 			</argument>
@@ -40875,6 +41072,22 @@
 		</method>
 	</methods>
 	<constants>
+		<constant name="STRETCH_SCALE_ON_EXPAND" value="0">
+		</constant>
+		<constant name="STRETCH_SCALE" value="1">
+		</constant>
+		<constant name="STRETCH_TILE" value="2">
+		</constant>
+		<constant name="STRETCH_KEEP" value="3">
+		</constant>
+		<constant name="STRETCH_KEEP_CENTERED" value="4">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT" value="5">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="6">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="7">
+		</constant>
 	</constants>
 </class>
 <class name="TextureFrame" inherits="Control" category="Core">
@@ -40948,6 +41161,8 @@
 		<constant name="STRETCH_KEEP_ASPECT" value="5">
 		</constant>
 		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="6">
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="7">
 		</constant>
 	</constants>
 </class>
@@ -41530,6 +41745,12 @@
 			</return>
 			<description>
 				Return an array of all cells containing a tile from the tileset (i.e. a tile index different from -1).
+			</description>
+		</method>
+		<method name="get_used_rect">
+			<return type="Rect2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="is_cell_transposed" qualifiers="const">
@@ -42220,6 +42441,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_shape" qualifiers="const">
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="Object">
 			</return>
@@ -42250,6 +42477,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_shape_centered" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_shape_visible" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_action">
 			<argument index="0" name="action" type="String">
 			</argument>
@@ -42264,6 +42503,24 @@
 		</method>
 		<method name="set_passby_press">
 			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape">
+			<argument index="0" name="shape" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape_centered">
+			<argument index="0" name="bool" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_shape_visible">
+			<argument index="0" name="bool" type="bool">
 			</argument>
 			<description>
 			</description>

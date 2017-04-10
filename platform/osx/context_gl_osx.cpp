@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,58 +32,58 @@
 #ifdef OSX_ENABLED
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-#define GLX_CONTEXT_MAJOR_VERSION_ARB		0x2091
-#define GLX_CONTEXT_MINOR_VERSION_ARB		0x2092
+#define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
+#define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
 
 void ContextGL_OSX::release_current() {
 
-	aglSetCurrentContext( context );
+	aglSetCurrentContext(context);
 }
 
 void ContextGL_OSX::make_current() {
 
-	aglSetCurrentContext( NULL );
+	aglSetCurrentContext(NULL);
 }
 void ContextGL_OSX::swap_buffers() {
 
-	aglSwapBuffers( context );
+	aglSwapBuffers(context);
 }
 
 Error ContextGL_OSX::initialize() {
 
-	if ( (Ptr) kUnresolvedCFragSymbolAddress == (Ptr) aglChoosePixelFormat )
+	if ((Ptr)kUnresolvedCFragSymbolAddress == (Ptr)aglChoosePixelFormat)
 		return FAILED;
 
 	GLint attributes[] = { AGL_RGBA,
-						   AGL_DOUBLEBUFFER,
-						   AGL_DEPTH_SIZE, 32,
-						   AGL_NO_RECOVERY,
-						   AGL_NONE,
-						   AGL_NONE };
+		AGL_DOUBLEBUFFER,
+		AGL_DEPTH_SIZE, 32,
+		AGL_NO_RECOVERY,
+		AGL_NONE,
+		AGL_NONE };
 
 	AGLPixelFormat format = NULL;
 
-	format = aglChoosePixelFormat( NULL, 0, attributes );
+	format = aglChoosePixelFormat(NULL, 0, attributes);
 
-	if ( !format )
+	if (!format)
 		return FAILED;
 
-	context = aglCreateContext( format, 0 );
+	context = aglCreateContext(format, 0);
 
-	if ( !context )
+	if (!context)
 		return FAILED;
 
-	aglDestroyPixelFormat( format );
+	aglDestroyPixelFormat(format);
 
-	aglSetWindowRef( context, window );
+	aglSetWindowRef(context, window);
 
 	GLint swapInterval = 1;
-	aglSetInteger( context, AGL_SWAP_INTERVAL, &swapInterval );
+	aglSetInteger(context, AGL_SWAP_INTERVAL, &swapInterval);
 
-	aglSetCurrentContext( context );
+	aglSetCurrentContext(context);
 
 	return OK;
 }
@@ -92,13 +93,11 @@ ContextGL_OSX::ContextGL_OSX(WindowRef p_window) {
 	window = p_window;
 }
 
-
 ContextGL_OSX::~ContextGL_OSX() {
 
 	if (context)
 		aglDestroyContext(context);
 }
-
 
 #endif
 #endif

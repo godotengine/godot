@@ -27,16 +27,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "test_sound.h"
-#include "servers/visual_server.h"
-#include "os/main_loop.h"
-#include "math_funcs.h"
-#include "scene/resources/sample.h"
 #include "io/resource_loader.h"
-#include "print_string.h"
-#include "servers/audio_server.h"
+#include "math_funcs.h"
+#include "os/main_loop.h"
 #include "os/os.h"
+#include "print_string.h"
+#include "scene/resources/sample.h"
+#include "servers/audio_server.h"
+#include "servers/visual_server.h"
 namespace TestSound {
-
 
 class TestMainLoop : public MainLoop {
 
@@ -44,52 +43,42 @@ class TestMainLoop : public MainLoop {
 	Ref<Sample> sample;
 
 public:
-	virtual void input_event(const InputEvent& p_event) {
-
-
+	virtual void input_event(const InputEvent &p_event) {
 	}
 	virtual void request_quit() {
 
-		quit=true;
+		quit = true;
 	}
 
 	virtual void init() {
 
 		List<String> cmdline = OS::get_singleton()->get_cmdline_args();
-		quit=false;
+		quit = false;
 		if (cmdline.size()) {
 
-			sample=ResourceLoader::load(cmdline.back()->get());
+			sample = ResourceLoader::load(cmdline.back()->get());
 			ERR_FAIL_COND(sample.is_null());
 			print_line("Sample loaded OK");
 		}
 
 		RID voice = AudioServer::get_singleton()->voice_create();
-		AudioServer::get_singleton()->voice_play( voice, sample->get_rid() );
-
-
+		AudioServer::get_singleton()->voice_play(voice, sample->get_rid());
 	}
 
 	virtual bool idle(float p_time) {
 		return false;
 	}
 
-
 	virtual bool iteration(float p_time) {
 
 		return quit;
 	}
 	virtual void finish() {
-
 	}
-
 };
 
+MainLoop *test() {
 
-MainLoop* test() {
-
-	return memnew( TestMainLoop );
-
+	return memnew(TestMainLoop);
 }
-
 }

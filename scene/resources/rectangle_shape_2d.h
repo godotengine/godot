@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,20 +33,20 @@
 #include "scene/resources/shape_2d.h"
 
 class RectangleShape2D : public Shape2D {
-	OBJ_TYPE( RectangleShape2D, Shape2D );
+	OBJ_TYPE(RectangleShape2D, Shape2D);
 
 	Vector2 extents;
 	void _update_shape();
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_extents(const Vector2& p_extents);
+public:
+	void set_extents(const Vector2 &p_extents);
 	Vector2 get_extents() const;
 
-	virtual void draw(const RID& p_to_rid,const Color& p_color);
-	virtual Rect2 get_rect() const ;
+	virtual void draw(const RID &p_to_rid, const Color &p_color);
+	virtual Rect2 get_rect() const;
 
 	RectangleShape2D();
 };

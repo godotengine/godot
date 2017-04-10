@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +32,12 @@
 
 #include "scene/gui/range.h"
 
-
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class ScrollBar : public Range {
 
-	OBJ_TYPE( ScrollBar, Range );
+	OBJ_TYPE(ScrollBar, Range);
 
 	enum HiliteStatus {
 		HILITE_NONE,
@@ -61,17 +61,16 @@ class ScrollBar : public Range {
 		float value_at_click;
 	} drag;
 
-
 	double get_grabber_size() const;
 	double get_grabber_min_size() const;
 	double get_area_size() const;
 	double get_area_offset() const;
-	double get_click_pos(const Point2& p_pos) const;
+	double get_click_pos(const Point2 &p_pos) const;
 	double get_grabber_offset() const;
 
 	static void set_can_focus_by_default(bool p_can_focus);
 
-	Node* drag_slave;
+	Node *drag_slave;
 	NodePath drag_slave_path;
 
 	Vector2 drag_slave_speed;
@@ -85,43 +84,43 @@ class ScrollBar : public Range {
 	bool click_handled;
 
 	void _drag_slave_exit();
-	void _drag_slave_input(const InputEvent& p_input);
+	void _drag_slave_input(const InputEvent &p_input);
 
 	void _input_event(InputEvent p_event);
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 public:
-
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;
 
-	void set_drag_slave(const NodePath& p_path);
+	void set_drag_slave(const NodePath &p_path);
 	NodePath get_drag_slave() const;
 
 	virtual Size2 get_minimum_size() const;
-	ScrollBar(Orientation p_orientation=VERTICAL);
+	ScrollBar(Orientation p_orientation = VERTICAL);
 	~ScrollBar();
-
 };
 
 class HScrollBar : public ScrollBar {
 
-	OBJ_TYPE( HScrollBar, ScrollBar );
-public:
+	OBJ_TYPE(HScrollBar, ScrollBar);
 
-	HScrollBar() : ScrollBar(HORIZONTAL) { 	set_v_size_flags(0); }
+public:
+	HScrollBar()
+		: ScrollBar(HORIZONTAL) { set_v_size_flags(0); }
 };
 
 class VScrollBar : public ScrollBar {
 
-	OBJ_TYPE( VScrollBar, ScrollBar );
+	OBJ_TYPE(VScrollBar, ScrollBar);
+
 public:
-
-	VScrollBar() : ScrollBar(VERTICAL) { set_h_size_flags(0); }
+	VScrollBar()
+		: ScrollBar(VERTICAL) { set_h_size_flags(0); }
 };
-
 
 #endif

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,15 +34,15 @@
 class ShaderCompilerGLES2 {
 
 	class Uniform;
+
 public:
 	struct Flags;
+
 private:
-
 	ShaderLanguage::ProgramNode *program_node;
-	String dump_node_code(ShaderLanguage::Node *p_node,int p_level,bool p_assign_left=false);
+	String dump_node_code(ShaderLanguage::Node *p_node, int p_level, bool p_assign_left = false);
 	Error compile_node(ShaderLanguage::ProgramNode *p_program);
-	static Error create_glsl_120_code(void *p_str,ShaderLanguage::ProgramNode *p_program);
-
+	static Error create_glsl_120_code(void *p_str, ShaderLanguage::ProgramNode *p_program);
 
 	bool uses_light;
 	bool uses_texscreen;
@@ -87,7 +88,7 @@ private:
 	StringName vname_world_vec;
 	StringName vname_shadow;
 
-	Map<StringName,ShaderLanguage::Uniform> *uniforms;
+	Map<StringName, ShaderLanguage::Uniform> *uniforms;
 
 	StringName out_vertex_name;
 
@@ -95,13 +96,12 @@ private:
 	String code;
 	ShaderLanguage::ShaderType type;
 
-	String replace_string(const StringName& p_string);
+	String replace_string(const StringName &p_string);
 
-	Map<StringName,StringName> mode_replace_table[9];
-	Map<StringName,StringName> replace_table;
+	Map<StringName, StringName> mode_replace_table[9];
+	Map<StringName, StringName> replace_table;
 
 public:
-
 	struct Flags {
 
 		bool uses_alpha;
@@ -126,10 +126,9 @@ public:
 		bool uses_shadow_color;
 	};
 
-	Error compile(const String& p_code, ShaderLanguage::ShaderType p_type, String& r_code_line, String& r_globals_line, Flags& r_flags, Map<StringName,ShaderLanguage::Uniform> *r_uniforms=NULL);
+	Error compile(const String &p_code, ShaderLanguage::ShaderType p_type, String &r_code_line, String &r_globals_line, Flags &r_flags, Map<StringName, ShaderLanguage::Uniform> *r_uniforms = NULL);
 
 	ShaderCompilerGLES2();
-
 };
 
 #endif // SHADER_COMPILERL_GL_H

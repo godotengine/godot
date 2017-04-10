@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,21 +46,20 @@ for it that can be used for both player
 and interface
 ********************************/
 
-
 class CPEnvelope {
 	enum {
 
-		MAX_POINTS=25
+		MAX_POINTS = 25
 	};
 
 	struct Point {
-	
+
 		uint16_t tick_offset;
 		int16_t value;
 	};
 
 	Point node[MAX_POINTS];
-	
+
 	int8_t node_count;
 
 	bool on;
@@ -74,27 +74,25 @@ class CPEnvelope {
 	uint8_t sustain_loop_begin_node;
 	uint8_t sustain_loop_end_node;
 
-	
 	int8_t max_value;
 	int8_t min_value;
-	
 
 public:
 	enum {
-		
-		NO_POINT=-5000,
+
+		NO_POINT = -5000,
 	};
-	
-	void set_max(int8_t p_max) { max_value=p_max; }
+
+	void set_max(int8_t p_max) { max_value = p_max; }
 	int8_t get_max() { return max_value; }
-	void set_min(int8_t p_min) { min_value=p_min; }
+	void set_min(int8_t p_min) { min_value = p_min; }
 	int8_t get_min() { return min_value; }
 
 	uint8_t get_node_count();
-	const Point& get_node(int p_idx);
+	const Point &get_node(int p_idx);
 
-	void set_position(int p_node,int p_x,int p_y);
-	int add_position(int p_x,int p_y,bool p_move_loops=true);
+	void set_position(int p_node, int p_x, int p_y);
+	int add_position(int p_x, int p_y, bool p_move_loops = true);
 	void del_position(int p_node);
 
 	void set_loop_enabled(bool p_enabled);
@@ -110,20 +108,18 @@ public:
 	void set_sustain_loop_end(int pos);
 	uint8_t get_sustain_loop_begin();
 	uint8_t get_sustain_loop_end();
-	
+
 	void set_enabled(bool p_enabled);
 	bool is_enabled();
-	
+
 	void set_carry_enabled(bool p_enabled);
 	bool is_carry_enabled();
-	
+
 	void reset();
 	int get_height_at_pos(int pos);
 	float get_interp_height_at_pos(float pos);
-	
-	
+
 	CPEnvelope();
-		
 };
 
 #endif

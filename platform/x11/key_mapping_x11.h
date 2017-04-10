@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +33,8 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
-#include <X11/Xlib.h>
 #include <X11/XF86keysym.h>
+#include <X11/Xlib.h>
 #define XK_MISCELLANY
 #define XK_LATIN1
 #define XK_XKB_KEYS
@@ -42,14 +43,13 @@
 #include "os/keyboard.h"
 
 class KeyMappingX11 {
-	KeyMappingX11() {};
+	KeyMappingX11(){};
+
 public:
 	static unsigned int get_keycode(KeySym p_keysym);
 	static KeySym get_keysym(unsigned int p_code);
 	static unsigned int get_unicode_from_keysym(KeySym p_keysym);
 	static KeySym get_keysym_from_unicode(unsigned int p_unicode);
-
 };
-
 
 #endif

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +36,9 @@
 */
 class Button : public BaseButton {
 
-	OBJ_TYPE( Button, BaseButton );
+	OBJ_TYPE(Button, BaseButton);
+
 public:
-
-
 	enum TextAlign {
 		ALIGN_LEFT,
 		ALIGN_CENTER,
@@ -46,27 +46,24 @@ public:
 	};
 
 private:
-
 	bool flat;
 	String text;
 	Ref<Texture> icon;
 	bool clip_text;
 	TextAlign align;
 
-
 protected:
-
 	virtual Size2 get_minimum_size() const;
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
-//
+	//
 
-
-	void set_text(const String& p_text);
+	void set_text(const String &p_text);
 	String get_text() const;
 
-	void set_icon(const Ref<Texture>& p_icon);
+	void set_icon(const Ref<Texture> &p_icon);
 	Ref<Texture> get_icon() const;
 
 	void set_flat(bool p_flat);
@@ -78,12 +75,9 @@ public:
 	void set_text_align(TextAlign p_align);
 	TextAlign get_text_align() const;
 
-
-	Button(const String& p_text=String());
+	Button(const String &p_text = String());
 	~Button();
-
 };
-
 
 VARIANT_ENUM_CAST(Button::TextAlign);
 

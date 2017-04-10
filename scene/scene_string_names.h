@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,22 +30,28 @@
 #ifndef SCENE_STRING_NAMES_H
 #define SCENE_STRING_NAMES_H
 
-#include "string_db.h"
 #include "path_db.h"
+#include "string_db.h"
 class SceneStringNames {
 
-friend void register_scene_types();
-friend void unregister_scene_types();
+	friend void register_scene_types();
+	friend void unregister_scene_types();
 
-	static SceneStringNames* singleton;
+	static SceneStringNames *singleton;
 
 	static void create() { singleton = memnew(SceneStringNames); }
-	static void free() { memdelete( singleton); singleton=NULL; }
+	static void free() {
+		memdelete(singleton);
+		singleton = NULL;
+	}
 
 	SceneStringNames();
-public:
-	_FORCE_INLINE_ static SceneStringNames* get_singleton() { return singleton; }
 
+public:
+	_FORCE_INLINE_ static SceneStringNames *get_singleton() { return singleton; }
+
+	StringName _estimate_cost;
+	StringName _compute_cost;
 
 	StringName resized;
 	StringName dot;
@@ -91,7 +98,6 @@ public:
 
 	StringName _body_inout;
 	StringName _area_inout;
-
 
 	StringName _get_gizmo_geometry;
 	StringName _can_gizmo_scale;
@@ -187,12 +193,10 @@ public:
 	StringName node_configuration_warning_changed;
 
 	enum {
-		MAX_MATERIALS=32
+		MAX_MATERIALS = 32
 	};
 	StringName mesh_materials[MAX_MATERIALS];
 	StringName _mesh_changed;
-
 };
-
 
 #endif // SCENE_STRING_NAMES_H

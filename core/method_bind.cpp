@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,34 +27,34 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+// object.h needs to be the first include *before* method_bind.h
+// FIXME: Find out why and fix potential cyclical dependencies.
 #include "object.h"
-#include "method_bind.h"
 
+#include "method_bind.h"
 
 #ifdef DEBUG_METHODS_ENABLED
 PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 
+	if (p_argument >= 0) {
 
-	if (p_argument>=0) {
-
-		String name = (p_argument<arg_names.size())?String(arg_names[p_argument]):String("arg"+itos(p_argument));
-		PropertyInfo pi( get_argument_type(p_argument), name );
-		if ((pi.type==Variant::OBJECT) && name.find(":")!=-1) {
-			pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string=name.get_slicec(':',1);
-			pi.name=name.get_slicec(':',0);
+		String name = (p_argument < arg_names.size()) ? String(arg_names[p_argument]) : String("arg" + itos(p_argument));
+		PropertyInfo pi(get_argument_type(p_argument), name);
+		if ((pi.type == Variant::OBJECT) && name.find(":") != -1) {
+			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+			pi.hint_string = name.get_slicec(':', 1);
+			pi.name = name.get_slicec(':', 0);
 		}
 		return pi;
 
 	} else {
 
 		Variant::Type at = get_argument_type(-1);
-		if (at==Variant::OBJECT && ret_type)
-			return PropertyInfo( at, "ret", PROPERTY_HINT_RESOURCE_TYPE, ret_type );
+		if (at == Variant::OBJECT && ret_type)
+			return PropertyInfo(at, "ret", PROPERTY_HINT_RESOURCE_TYPE, ret_type);
 		else
-			return PropertyInfo( at, "ret" );
+			return PropertyInfo(at, "ret");
 	}
-
 
 	return PropertyInfo();
 }
@@ -61,21 +62,20 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 #endif
 void MethodBind::_set_const(bool p_const) {
 
-	_const=p_const;
+	_const = p_const;
 }
 
 StringName MethodBind::get_name() const {
 	return name;
 }
-void MethodBind::set_name(const StringName& p_name) {
-	name=p_name;
+void MethodBind::set_name(const StringName &p_name) {
+	name = p_name;
 }
 
 #ifdef DEBUG_METHODS_ENABLED
-void MethodBind::set_argument_names(const Vector<StringName>& p_names) {
+void MethodBind::set_argument_names(const Vector<StringName> &p_names) {
 
-	arg_names=p_names;
-
+	arg_names = p_names;
 }
 Vector<StringName> MethodBind::get_argument_names() const {
 
@@ -84,40 +84,35 @@ Vector<StringName> MethodBind::get_argument_names() const {
 
 #endif
 
-
-
-void MethodBind::set_default_arguments(const Vector<Variant>& p_defargs) {
-	default_arguments=p_defargs;
-	default_argument_count=default_arguments.size();
-
+void MethodBind::set_default_arguments(const Vector<Variant> &p_defargs) {
+	default_arguments = p_defargs;
+	default_argument_count = default_arguments.size();
 }
 
 #ifdef DEBUG_METHODS_ENABLED
 void MethodBind::_generate_argument_types(int p_count) {
 
-
 	set_argument_count(p_count);
-	Variant::Type *argt = memnew_arr(Variant::Type,p_count+1);
-	argt[0]=_gen_argument_type(-1);
-	for(int i=0;i<p_count;i++) {
-		argt[i+1]=_gen_argument_type(i);
+	Variant::Type *argt = memnew_arr(Variant::Type, p_count + 1);
+	argt[0] = _gen_argument_type(-1);
+	for (int i = 0; i < p_count; i++) {
+		argt[i + 1] = _gen_argument_type(i);
 	}
 	set_argument_types(argt);
-
 }
 
 #endif
 
 MethodBind::MethodBind() {
-	static int last_id=0;
-	method_id=last_id++;
-	hint_flags=METHOD_FLAGS_DEFAULT;
-	argument_count=0;
-	default_argument_count=0;
+	static int last_id = 0;
+	method_id = last_id++;
+	hint_flags = METHOD_FLAGS_DEFAULT;
+	argument_count = 0;
+	default_argument_count = 0;
 #ifdef DEBUG_METHODS_ENABLED
-	argument_types=NULL;
+	argument_types = NULL;
 #endif
-	_const=false;
+	_const = false;
 }
 
 MethodBind::~MethodBind() {
@@ -126,4 +121,3 @@ MethodBind::~MethodBind() {
 		memdelete_arr(argument_types);
 #endif
 }
-

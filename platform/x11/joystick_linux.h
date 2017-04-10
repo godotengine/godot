@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,23 +33,22 @@
 #define JOYSTICK_LINUX_H
 #ifdef JOYDEV_ENABLED
 #include "main/input_default.h"
-#include "os/thread.h"
 #include "os/mutex.h"
+#include "os/thread.h"
 
 struct input_absinfo;
 
-class joystick_linux
-{
+class joystick_linux {
 public:
 	joystick_linux(InputDefault *in);
 	~joystick_linux();
 	uint32_t process_joysticks(uint32_t p_event_id);
-private:
 
+private:
 	enum {
 		JOYSTICKS_MAX = 16,
 		MAX_ABS = 63,
-		MAX_KEY = 767,   // Hack because <linux/input.h> can't be included here
+		MAX_KEY = 767, // Hack because <linux/input.h> can't be included here
 	};
 
 	struct Joystick {
@@ -80,7 +80,6 @@ private:
 	static void joy_thread_func(void *p_user);
 
 	int get_joy_from_path(String path) const;
-	int get_free_joy_slot() const;
 
 	void setup_joystick_properties(int p_id);
 	void close_joystick(int p_id = -1);
@@ -90,7 +89,7 @@ private:
 #endif
 	void monitor_joysticks();
 	void run_joystick_thread();
-	void open_joystick(const char* path);
+	void open_joystick(const char *path);
 
 	void joystick_vibration_start(int p_id, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joystick_vibration_stop(int p_id, uint64_t p_timestamp);

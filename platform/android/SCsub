@@ -48,10 +48,11 @@ gradle_text = gradle_basein.read()
 gradle_maven_repos_text = ""
 
 if len(env.android_maven_repos) > 0:
-    gradle_maven_repos_text += "maven {\n"
+    gradle_maven_repos_text += ""
     for x in env.android_maven_repos:
+        gradle_maven_repos_text += "\tmaven {\n"
         gradle_maven_repos_text += "\t\t" + x + "\n"
-    gradle_maven_repos_text += "\t}\n"
+        gradle_maven_repos_text += "\t}\n"
 
 gradle_maven_dependencies_text = ""
 
@@ -63,7 +64,14 @@ gradle_java_dirs_text = ""
 for x in env.android_java_dirs:
     gradle_java_dirs_text += ",'" + x.replace("\\", "/") + "'"
 
+gradle_plugins = ""
+for x in env.android_gradle_plugins:
+	gradle_plugins += "apply plugin: \"" + x + "\"\n"
 
+gradle_classpath = ""
+for x in env.android_gradle_classpath:
+	gradle_classpath += "\t\tclasspath \"" + x + "\"\n"
+	
 gradle_res_dirs_text = ""
 
 for x in env.android_res_dirs:
@@ -94,7 +102,8 @@ gradle_text = gradle_text.replace("$$GRADLE_ASSET_DIRS$$", gradle_asset_dirs_tex
 gradle_text = gradle_text.replace("$$GRADLE_AIDL_DIRS$$", gradle_aidl_dirs_text)
 gradle_text = gradle_text.replace("$$GRADLE_JNI_DIRS$$", gradle_jni_dirs_text)
 gradle_text = gradle_text.replace("$$GRADLE_DEFAULT_CONFIG$$", gradle_default_config_text)
-
+gradle_text = gradle_text.replace("$$GRADLE_PLUGINS$$", gradle_plugins)
+gradle_text = gradle_text.replace("$$GRADLE_CLASSPATH$$", gradle_classpath)
 
 gradle_baseout.write(gradle_text)
 gradle_baseout.close()

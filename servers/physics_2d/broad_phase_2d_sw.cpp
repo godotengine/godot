@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +29,7 @@
 /*************************************************************************/
 #include "broad_phase_2d_sw.h"
 
-BroadPhase2DSW::CreateFunction BroadPhase2DSW::create_func=NULL;
+BroadPhase2DSW::CreateFunction BroadPhase2DSW::create_func = NULL;
 
-BroadPhase2DSW::~BroadPhase2DSW()
-{
+BroadPhase2DSW::~BroadPhase2DSW() {
 }

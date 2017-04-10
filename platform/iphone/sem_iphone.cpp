@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,16 +29,15 @@
 /*************************************************************************/
 #include "sem_iphone.h"
 
-#include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
 
-void cgsem_init(cgsem_t*);
-void cgsem_post(cgsem_t*);
-void cgsem_wait(cgsem_t*);
-void cgsem_destroy(cgsem_t*);
+void cgsem_init(cgsem_t *);
+void cgsem_post(cgsem_t *);
+void cgsem_wait(cgsem_t *);
+void cgsem_destroy(cgsem_t *);
 
-void cgsem_init(cgsem_t *cgsem)
-{
+void cgsem_init(cgsem_t *cgsem) {
 	int flags, fd, i;
 
 	pipe(cgsem->pipefd);
@@ -52,30 +52,25 @@ void cgsem_init(cgsem_t *cgsem)
 	}
 }
 
-void cgsem_post(cgsem_t *cgsem)
-{
+void cgsem_post(cgsem_t *cgsem) {
 	const char buf = 1;
 
 	write(cgsem->pipefd[1], &buf, 1);
 }
 
-void cgsem_wait(cgsem_t *cgsem)
-{
+void cgsem_wait(cgsem_t *cgsem) {
 	char buf;
 
 	read(cgsem->pipefd[0], &buf, 1);
 }
 
-void cgsem_destroy(cgsem_t *cgsem)
-{
+void cgsem_destroy(cgsem_t *cgsem) {
 	close(cgsem->pipefd[1]);
 	close(cgsem->pipefd[0]);
 }
 
-
 #include "os/memory.h"
 #include <errno.h>
-
 
 Error SemaphoreIphone::wait() {
 
@@ -94,15 +89,14 @@ int SemaphoreIphone::get() const {
 	return 0;
 }
 
-
 Semaphore *SemaphoreIphone::create_semaphore_iphone() {
 
-	return memnew( SemaphoreIphone );
+	return memnew(SemaphoreIphone);
 }
 
 void SemaphoreIphone::make_default() {
 
-	create_func=create_semaphore_iphone;
+	create_func = create_semaphore_iphone;
 }
 
 SemaphoreIphone::SemaphoreIphone() {
@@ -110,11 +104,7 @@ SemaphoreIphone::SemaphoreIphone() {
 	cgsem_init(&sem);
 }
 
-
 SemaphoreIphone::~SemaphoreIphone() {
 
 	cgsem_destroy(&sem);
 }
-
-
-

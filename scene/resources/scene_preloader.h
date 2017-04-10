@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +35,7 @@
 
 class ScenePreloader : public Resource {
 
-	OBJ_TYPE( ScenePreloader, Resource );
+	OBJ_TYPE(ScenePreloader, Resource);
 
 	Vector<StringName> names;
 	Vector<Variant> variants;
@@ -59,7 +60,6 @@ class ScenePreloader : public Resource {
 		Vector<Property> properties;
 	};
 
-
 	Vector<NodeData> nodes;
 
 	struct ConnectionData {
@@ -73,22 +73,19 @@ class ScenePreloader : public Resource {
 
 	Vector<ConnectionData> connections;
 
-	void _parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<StringName,int> &name_map,HashMap<Variant,int,VariantHasher> &variant_map,Map<Node*,int> &node_map);
-	void _parse_connections(Node *p_node, Map<StringName,int> &name_map,HashMap<Variant,int,VariantHasher> &variant_map,Map<Node*,int> &node_map,bool p_instance);
+	void _parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher> &variant_map, Map<Node *, int> &node_map);
+	void _parse_connections(Node *p_node, Map<StringName, int> &name_map, HashMap<Variant, int, VariantHasher> &variant_map, Map<Node *, int> &node_map, bool p_instance);
 
 	String path;
 
-	void _set_bundled_scene(const Dictionary& p_scene);
+	void _set_bundled_scene(const Dictionary &p_scene);
 	Dictionary _get_bundled_scene() const;
 
 protected:
-
-
 	static void _bind_methods();
+
 public:
-
-
-	Error load_scene(const String& p_path);
+	Error load_scene(const String &p_path);
 	String get_scene_path() const;
 	void clear();
 

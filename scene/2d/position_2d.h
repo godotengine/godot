@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,19 +30,18 @@
 #ifndef POSITION_2D_H
 #define POSITION_2D_H
 
-
 #include "scene/2d/node_2d.h"
 
 class Position2D : public Node2D {
 
-	OBJ_TYPE(Position2D,Node2D)
+	OBJ_TYPE(Position2D, Node2D)
 
 	void _draw_cross();
+
 protected:
-
 	void _notification(int p_what);
-public:
 
+public:
 	virtual Rect2 get_item_rect() const;
 	Position2D();
 };

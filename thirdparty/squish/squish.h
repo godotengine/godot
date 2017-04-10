@@ -239,6 +239,15 @@ int GetStorageRequirements( int width, int height, int flags );
     allows for pixels outside the image to take arbitrary values. The function
     squish::GetStorageRequirements can be called to compute the amount of memory
     to allocate for the compressed output.
+
+    Note on compression quality: When compressing textures with
+    libsquish it is recommended to apply a gamma-correction
+    beforehand. This will reduce the blockiness in dark areas. The
+    level of necessary gamma-correction is platform dependent. For
+    example, a gamma correction with gamma = 0.5 before compression
+    and gamma = 2.0 after decompression yields good results on the
+    Windows platform but for other platforms like MacOS X a different
+    gamma value may be more suitable.
 */
 void CompressImage( u8 const* rgba, int width, int height, int pitch, void* blocks, int flags, float* metric = 0 );
 void CompressImage( u8 const* rgba, int width, int height, void* blocks, int flags, float* metric = 0 );

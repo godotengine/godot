@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "input.h"
+#include "globals.h"
 #include "input_map.h"
 #include "os/os.h"
-#include "globals.h"
-Input *Input::singleton=NULL;
+Input *Input::singleton = NULL;
 
 Input *Input::get_singleton() {
 
@@ -38,7 +39,7 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX(p_mode,3);
+	ERR_FAIL_INDEX(p_mode, 3);
 	OS::get_singleton()->set_mouse_mode((OS::MouseMode)p_mode);
 }
 
@@ -49,17 +50,17 @@ Input::MouseMode Input::get_mouse_mode() const {
 
 void Input::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("is_key_pressed","scancode"),&Input::is_key_pressed);
-	ObjectTypeDB::bind_method(_MD("is_mouse_button_pressed","button"),&Input::is_mouse_button_pressed);
-	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
-	ObjectTypeDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
-	ObjectTypeDB::bind_method(_MD("add_joy_mapping","mapping", "update_existing"),&Input::add_joy_mapping, DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("remove_joy_mapping","guid"),&Input::remove_joy_mapping);
-	ObjectTypeDB::bind_method(_MD("is_joy_known","device"),&Input::is_joy_known);
-	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
-	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
-	ObjectTypeDB::bind_method(_MD("get_joy_guid","device"),&Input::get_joy_guid);
-	ObjectTypeDB::bind_method(_MD("get_connected_joysticks"),&Input::get_connected_joysticks);
+	ObjectTypeDB::bind_method(_MD("is_key_pressed", "scancode"), &Input::is_key_pressed);
+	ObjectTypeDB::bind_method(_MD("is_mouse_button_pressed", "button"), &Input::is_mouse_button_pressed);
+	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed", "device", "button"), &Input::is_joy_button_pressed);
+	ObjectTypeDB::bind_method(_MD("is_action_pressed", "action"), &Input::is_action_pressed);
+	ObjectTypeDB::bind_method(_MD("add_joy_mapping", "mapping", "update_existing"), &Input::add_joy_mapping, DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("remove_joy_mapping", "guid"), &Input::remove_joy_mapping);
+	ObjectTypeDB::bind_method(_MD("is_joy_known", "device"), &Input::is_joy_known);
+	ObjectTypeDB::bind_method(_MD("get_joy_axis", "device", "axis"), &Input::get_joy_axis);
+	ObjectTypeDB::bind_method(_MD("get_joy_name", "device"), &Input::get_joy_name);
+	ObjectTypeDB::bind_method(_MD("get_joy_guid", "device"), &Input::get_joy_guid);
+	ObjectTypeDB::bind_method(_MD("get_connected_joysticks"), &Input::get_connected_joysticks);
 	ObjectTypeDB::bind_method(_MD("get_joy_vibration_strength", "device"), &Input::get_joy_vibration_strength);
 	ObjectTypeDB::bind_method(_MD("get_joy_vibration_duration", "device"), &Input::get_joy_vibration_duration);
 	ObjectTypeDB::bind_method(_MD("get_joy_button_string", "button_index"), &Input::get_joy_button_string);
@@ -68,55 +69,53 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_joy_axis_index_from_string", "axis"), &Input::get_joy_axis_index_from_string);
 	ObjectTypeDB::bind_method(_MD("start_joy_vibration", "device", "weak_magnitude", "strong_magnitude", "duration"), &Input::start_joy_vibration, DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("stop_joy_vibration", "device"), &Input::stop_joy_vibration);
-	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
-	ObjectTypeDB::bind_method(_MD("get_magnetometer"),&Input::get_magnetometer);
-	ObjectTypeDB::bind_method(_MD("get_gyroscope"),&Input::get_gyroscope);
+	ObjectTypeDB::bind_method(_MD("get_gravity"), &Input::get_gravity);
+	ObjectTypeDB::bind_method(_MD("get_accelerometer"), &Input::get_accelerometer);
+	ObjectTypeDB::bind_method(_MD("get_magnetometer"), &Input::get_magnetometer);
+	ObjectTypeDB::bind_method(_MD("get_gyroscope"), &Input::get_gyroscope);
 	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
-	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
-	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
-	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
-	ObjectTypeDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
-	ObjectTypeDB::bind_method(_MD("warp_mouse_pos","to"),&Input::warp_mouse_pos);
-	ObjectTypeDB::bind_method(_MD("action_press","action"),&Input::action_press);
-	ObjectTypeDB::bind_method(_MD("action_release","action"),&Input::action_release);
-	ObjectTypeDB::bind_method(_MD("set_custom_mouse_cursor","image:Texture","hotspot"),&Input::set_custom_mouse_cursor,DEFVAL(Vector2()));
+	ObjectTypeDB::bind_method(_MD("get_mouse_speed"), &Input::get_mouse_speed);
+	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"), &Input::get_mouse_button_mask);
+	ObjectTypeDB::bind_method(_MD("set_mouse_mode", "mode"), &Input::set_mouse_mode);
+	ObjectTypeDB::bind_method(_MD("get_mouse_mode"), &Input::get_mouse_mode);
+	ObjectTypeDB::bind_method(_MD("warp_mouse_pos", "to"), &Input::warp_mouse_pos);
+	ObjectTypeDB::bind_method(_MD("action_press", "action"), &Input::action_press);
+	ObjectTypeDB::bind_method(_MD("action_release", "action"), &Input::action_release);
+	ObjectTypeDB::bind_method(_MD("set_custom_mouse_cursor", "image:Texture", "hotspot"), &Input::set_custom_mouse_cursor, DEFVAL(Vector2()));
+	ObjectTypeDB::bind_method(_MD("parse_input_event", "event"), &Input::parse_input_event);
 
-	BIND_CONSTANT( MOUSE_MODE_VISIBLE );
-	BIND_CONSTANT( MOUSE_MODE_HIDDEN );
-	BIND_CONSTANT( MOUSE_MODE_CAPTURED );
+	BIND_CONSTANT(MOUSE_MODE_VISIBLE);
+	BIND_CONSTANT(MOUSE_MODE_HIDDEN);
+	BIND_CONSTANT(MOUSE_MODE_CAPTURED);
 
-	ADD_SIGNAL( MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")) );
+	ADD_SIGNAL(MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")));
 }
 
-void Input::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+void Input::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 #ifdef TOOLS_ENABLED
 
-	String pf=p_function;
-	if (p_idx==0 && (pf=="is_action_pressed" || pf=="action_press" || pf=="action_release")) {
+	String pf = p_function;
+	if (p_idx == 0 && (pf == "is_action_pressed" || pf == "action_press" || pf == "action_release")) {
 
 		List<PropertyInfo> pinfo;
 		Globals::get_singleton()->get_property_list(&pinfo);
 
-		for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
-			const PropertyInfo &pi=E->get();
+		for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
+			const PropertyInfo &pi = E->get();
 
 			if (!pi.name.begins_with("input/"))
 				continue;
 
-			String name = pi.name.substr(pi.name.find("/")+1,pi.name.length());
-			r_options->push_back("\""+name+"\"");
-
+			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			r_options->push_back("\"" + name + "\"");
 		}
 	}
 #endif
-
 }
 
 Input::Input() {
 
-	singleton=this;
+	singleton = this;
 }
 
-
 //////////////////////////////////////////////////////////
-

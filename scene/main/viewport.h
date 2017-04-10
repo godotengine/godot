@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +30,11 @@
 #ifndef VIEWPORT_H
 #define VIEWPORT_H
 
-#include "scene/main/node.h"
-#include "servers/visual_server.h"
-#include "scene/resources/world_2d.h"
 #include "math_2d.h"
+#include "scene/main/node.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/world_2d.h"
+#include "servers/visual_server.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -50,16 +51,13 @@ class Viewport;
 
 class RenderTargetTexture : public Texture {
 
-	OBJ_TYPE( RenderTargetTexture, Texture );
+	OBJ_TYPE(RenderTargetTexture, Texture);
 
 	int flags;
-friend class Viewport;
+	friend class Viewport;
 	Viewport *vp;
 
-
 public:
-
-
 	virtual int get_width() const;
 	virtual int get_height() const;
 	virtual Size2 get_size() const;
@@ -70,15 +68,14 @@ public:
 	virtual void set_flags(uint32_t p_flags);
 	virtual uint32_t get_flags() const;
 
-	RenderTargetTexture(Viewport *p_vp=NULL);
-
+	RenderTargetTexture(Viewport *p_vp = NULL);
 };
 
 class Viewport : public Node {
 
-	OBJ_TYPE( Viewport, Node );
-public:
+	OBJ_TYPE(Viewport, Node);
 
+public:
 	enum RenderTargetUpdateMode {
 		RENDER_TARGET_UPDATE_DISABLED,
 		RENDER_TARGET_UPDATE_ONCE, //then goes to disabled
@@ -87,18 +84,16 @@ public:
 	};
 
 private:
-
-friend class RenderTargetTexture;
-
+	friend class RenderTargetTexture;
 
 	Control *parent_control;
 	Viewport *parent;
 
 	Listener *listener;
-	Set<Listener*> listeners;
+	Set<Listener *> listeners;
 
 	Camera *camera;
-	Set<Camera*> cameras;
+	Set<Camera *> cameras;
 
 	RID viewport;
 	RID canvas_item;
@@ -121,8 +116,6 @@ friend class RenderTargetTexture;
 	RID contact_3d_debug_multimesh;
 	RID contact_3d_debug_instance;
 
-
-
 	bool size_override;
 	bool size_override_stretch;
 	Size2 size_override_size;
@@ -142,7 +135,7 @@ friend class RenderTargetTexture;
 	ObjectID physics_object_over;
 	Vector2 physics_last_mousepos;
 	void _test_new_mouseover(ObjectID new_collider);
-	Map<ObjectID,uint64_t> physics_2d_mouseover;
+	Map<ObjectID, uint64_t> physics_2d_mouseover;
 
 	void _update_rect();
 
@@ -166,7 +159,6 @@ friend class RenderTargetTexture;
 	void _propagate_exit_world(Node *p_node);
 	void _propagate_viewport_notification(Node *p_node, int p_what);
 
-
 	void _update_stretch_transform();
 	void _update_global_transform();
 
@@ -174,7 +166,6 @@ friend class RenderTargetTexture;
 	RenderTargetUpdateMode render_target_update_mode;
 	RID render_target_texture_rid;
 	Ref<RenderTargetTexture> render_target_texture;
-
 
 	struct GUI {
 		// info used when this is a window
@@ -195,29 +186,27 @@ friend class RenderTargetTexture;
 		Control *drag_preview;
 		float tooltip_timer;
 		float tooltip_delay;
-		List<Control*> modal_stack;
+		List<Control *> modal_stack;
 		unsigned int cancelled_input_ID;
 		Matrix32 focus_inv_xform;
 		bool subwindow_order_dirty;
-		List<Control*> subwindows;
+		List<Control *> subwindows;
 		bool roots_order_dirty;
-		List<Control*> roots;
-
+		List<Control *> roots;
 
 		GUI();
 	} gui;
 
 	bool disable_input;
 
-	void _gui_call_input(Control *p_control,const InputEvent& p_input);
+	void _gui_call_input(Control *p_control, const InputEvent &p_input);
 	void _gui_sort_subwindows();
 	void _gui_sort_roots();
 	void _gui_sort_modal_stack();
-	Control* _gui_find_control(const Point2& p_global);
-	Control* _gui_find_control_at_pos(CanvasItem* p_node,const Point2& p_global,const Matrix32& p_xform,Matrix32& r_inv_xform);
+	Control *_gui_find_control(const Point2 &p_global);
+	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Matrix32 &p_xform, Matrix32 &r_inv_xform);
 
 	void _gui_input_event(InputEvent p_event);
-
 
 	void update_worlds();
 
@@ -226,43 +215,40 @@ friend class RenderTargetTexture;
 	void _vp_enter_tree();
 	void _vp_exit_tree();
 
-	void _vp_input(const InputEvent& p_ev);
-	void _vp_input_text(const String& p_text);
-	void _vp_unhandled_input(const InputEvent& p_ev);
-	void _make_input_local(InputEvent& ev);
+	void _vp_input(const InputEvent &p_ev);
+	void _vp_input_text(const String &p_text);
+	void _vp_unhandled_input(const InputEvent &p_ev);
+	void _make_input_local(InputEvent &ev);
 
+	friend class Control;
 
-friend class Control;
-
-	List<Control*>::Element* _gui_add_root_control(Control* p_control);
-	List<Control*>::Element* _gui_add_subwindow_control(Control* p_control);
+	List<Control *>::Element *_gui_add_root_control(Control *p_control);
+	List<Control *>::Element *_gui_add_subwindow_control(Control *p_control);
 
 	void _gui_set_subwindow_order_dirty();
 	void _gui_set_root_order_dirty();
 
-
-	void _gui_remove_modal_control(List<Control*>::Element *MI);
-	void _gui_remove_from_modal_stack(List<Control*>::Element *MI,ObjectID p_prev_focus_owner);
-	void _gui_remove_root_control(List<Control*>::Element *RI);
-	void _gui_remove_subwindow_control(List<Control*>::Element* SI);
+	void _gui_remove_modal_control(List<Control *>::Element *MI);
+	void _gui_remove_from_modal_stack(List<Control *>::Element *MI, ObjectID p_prev_focus_owner);
+	void _gui_remove_root_control(List<Control *>::Element *RI);
+	void _gui_remove_subwindow_control(List<Control *>::Element *SI);
 
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
 
-
 	void _gui_remove_control(Control *p_control);
 	void _gui_hid_control(Control *p_control);
 
-	void _gui_force_drag(Control *p_base,const Variant& p_data,Control *p_control);
-	void _gui_set_drag_preview(Control *p_base,Control *p_control);
+	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
+	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 
-	bool _gui_is_modal_on_top(const Control* p_control);
-	List<Control*>::Element* _gui_show_modal(Control* p_control);
+	bool _gui_is_modal_on_top(const Control *p_control);
+	List<Control *>::Element *_gui_show_modal(Control *p_control);
 
 	void _gui_remove_focus();
 	void _gui_unfocus_control(Control *p_control);
-	bool _gui_control_has_focus(const Control* p_control);
-	void _gui_control_grab_focus(Control* p_control);
+	bool _gui_control_has_focus(const Control *p_control);
+	void _gui_control_grab_focus(Control *p_control);
 	void _gui_grab_click_focus(Control *p_control);
 	void _gui_accept_event();
 
@@ -270,28 +256,27 @@ friend class Control;
 
 	Vector2 _get_window_offset() const;
 
-friend class Listener;
+	friend class Listener;
 	void _listener_transform_changed_notify();
-	void _listener_set(Listener* p_listener);
-	bool _listener_add(Listener* p_listener); //true if first
-	void _listener_remove(Listener* p_listener);
-	void _listener_make_next_current(Listener* p_exclude);
+	void _listener_set(Listener *p_listener);
+	bool _listener_add(Listener *p_listener); //true if first
+	void _listener_remove(Listener *p_listener);
+	void _listener_make_next_current(Listener *p_exclude);
 
-friend class Camera;
+	friend class Camera;
 	void _camera_transform_changed_notify();
-	void _camera_set(Camera* p_camera);
-	bool _camera_add(Camera* p_camera); //true if first
-	void _camera_remove(Camera* p_camera);
-	void _camera_make_next_current(Camera* p_exclude);
-
+	void _camera_set(Camera *p_camera);
+	bool _camera_add(Camera *p_camera); //true if first
+	void _camera_remove(Camera *p_camera);
+	void _camera_make_next_current(Camera *p_exclude);
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	Listener* get_listener() const;
-	Camera* get_camera() const;
+public:
+	Listener *get_listener() const;
+	Camera *get_camera() const;
 
 	void set_as_audio_listener(bool p_enable);
 	bool is_audio_listener() const;
@@ -299,24 +284,23 @@ public:
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;
 
-	void set_rect(const Rect2& p_rect);
+	void set_rect(const Rect2 &p_rect);
 	Rect2 get_rect() const;
 	Rect2 get_visible_rect() const;
 	RID get_viewport() const;
 
-	void set_world(const Ref<World>& p_world);
-	void set_world_2d(const Ref<World2D>& p_world_2d);
+	void set_world(const Ref<World> &p_world);
+	void set_world_2d(const Ref<World2D> &p_world_2d);
 	Ref<World> get_world() const;
 	Ref<World> find_world() const;
 
 	Ref<World2D> get_world_2d() const;
 	Ref<World2D> find_world_2d() const;
 
-
-	void set_canvas_transform(const Matrix32& p_transform);
+	void set_canvas_transform(const Matrix32 &p_transform);
 	Matrix32 get_canvas_transform() const;
 
-	void set_global_canvas_transform(const Matrix32& p_transform);
+	void set_global_canvas_transform(const Matrix32 &p_transform);
 	Matrix32 get_global_canvas_transform() const;
 
 	Matrix32 get_final_transform() const;
@@ -324,8 +308,7 @@ public:
 	void set_transparent_background(bool p_enable);
 	bool has_transparent_background() const;
 
-
-	void set_size_override(bool p_enable,const Size2& p_size=Size2(-1,-1),const Vector2& p_margin=Vector2());
+	void set_size_override(bool p_enable, const Size2 &p_size = Size2(-1, -1), const Vector2 &p_margin = Vector2());
 	Size2 get_size_override() const;
 	bool is_size_override_enabled() const;
 	void set_size_override_stretch(bool p_enable);
@@ -351,8 +334,7 @@ public:
 	RenderTargetUpdateMode get_render_target_update_mode() const;
 	Ref<RenderTargetTexture> get_render_target_texture() const;
 
-
-	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
+	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
 	void queue_screen_capture();
@@ -361,17 +343,17 @@ public:
 	void set_use_own_world(bool p_world);
 	bool is_using_own_world() const;
 
-	void input(const InputEvent& p_event);
-	void unhandled_input(const InputEvent& p_event);
+	void input(const InputEvent &p_event);
+	void unhandled_input(const InputEvent &p_event);
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
 
-	void set_render_target_to_screen_rect(const Rect2& p_rect);
+	void set_render_target_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
 
 	Vector2 get_mouse_pos() const;
-	void warp_mouse(const Vector2& p_pos);
+	void warp_mouse(const Vector2 &p_pos);
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
@@ -385,7 +367,6 @@ public:
 
 	Viewport();
 	~Viewport();
-
 };
 
 VARIANT_ENUM_CAST(Viewport::RenderTargetUpdateMode);

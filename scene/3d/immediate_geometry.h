@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +35,7 @@
 
 class ImmediateGeometry : public GeometryInstance {
 
-	OBJ_TYPE(ImmediateGeometry,GeometryInstance);
-
+	OBJ_TYPE(ImmediateGeometry, GeometryInstance);
 
 	RID im;
 	//a list of texures drawn need to be kept, to avoid references
@@ -43,28 +43,24 @@ class ImmediateGeometry : public GeometryInstance {
 	List<Ref<Texture> > cached_textures;
 	bool empty;
 	AABB aabb;
+
 protected:
-
 	static void _bind_methods();
+
 public:
+	void begin(Mesh::PrimitiveType p_primitive, const Ref<Texture> &p_texture = Ref<Texture>());
+	void set_normal(const Vector3 &p_normal);
+	void set_tangent(const Plane &p_tangent);
+	void set_color(const Color &p_color);
+	void set_uv(const Vector2 &tex_uv);
+	void set_uv2(const Vector2 &tex_uv);
 
-
-	void begin(Mesh::PrimitiveType p_primitive,const Ref<Texture>& p_texture=Ref<Texture>());
-	void set_normal(const Vector3& p_normal);
-	void set_tangent(const Plane& p_tangent);
-	void set_color(const Color& p_color);
-	void set_uv(const Vector2& tex_uv);
-	void set_uv2(const Vector2& tex_uv);
-
-	void add_vertex(const Vector3& p_vertex);
+	void add_vertex(const Vector3 &p_vertex);
 
 	void end();
 	void clear();
 
-
-	void add_sphere(int p_lats,int p_lons,float p_radius,bool p_add_uv=true);
-
-
+	void add_sphere(int p_lats, int p_lons, float p_radius, bool p_add_uv = true);
 
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;

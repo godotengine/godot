@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,25 +35,25 @@
 */
 
 #include "aabb.h"
-#include "ustring.h"
-#include "vector3.h"
+#include "array.h"
+#include "color.h"
+#include "dictionary.h"
+#include "dvector.h"
+#include "face3.h"
+#include "image.h"
+#include "io/ip_address.h"
+#include "math_2d.h"
+#include "matrix3.h"
+#include "os/input_event.h"
+#include "path_db.h"
 #include "plane.h"
 #include "quat.h"
-#include "matrix3.h"
-#include "transform.h"
-#include "image.h"
-#include "dvector.h"
-#include "path_db.h"
-#include "simple_type.h"
-#include "os/input_event.h"
-#include "color.h"
-#include "face3.h"
 #include "ref_ptr.h"
-#include "math_2d.h"
 #include "rid.h"
-#include "io/ip_address.h"
-#include "dictionary.h"
-#include "array.h"
+#include "simple_type.h"
+#include "transform.h"
+#include "ustring.h"
+#include "vector3.h"
 
 class RefPtr;
 class Object;
@@ -61,7 +62,6 @@ class Control; // helper
 
 struct PropertyInfo;
 struct MethodInfo;
-
 
 typedef DVector<uint8_t> ByteArray;
 typedef DVector<int> IntArray;
@@ -73,7 +73,6 @@ typedef DVector<Color> ColorArray;
 
 class Variant {
 public:
-
 	enum Type {
 
 		NIL,
@@ -86,31 +85,31 @@ public:
 
 		// math types
 
-		VECTOR2,		// 5
+		VECTOR2, // 5
 		RECT2,
 		VECTOR3,
 		MATRIX32,
 		PLANE,
-		QUAT,			// 10
+		QUAT, // 10
 		_AABB, //sorry naming convention fail :( not like it's used often
 		MATRIX3,
 		TRANSFORM,
 
 		// misc types
 		COLOR,
-		IMAGE,			// 15
+		IMAGE, // 15
 		NODE_PATH,
 		_RID,
 		OBJECT,
 		INPUT_EVENT,
-		DICTIONARY,		// 20
+		DICTIONARY, // 20
 		ARRAY,
 
 		// arrays
 		RAW_ARRAY,
 		INT_ARRAY,
 		REAL_ARRAY,
-		STRING_ARRAY,	// 25
+		STRING_ARRAY, // 25
 		VECTOR2_ARRAY,
 		VECTOR3_ARRAY,
 		COLOR_ARRAY,
@@ -120,8 +119,6 @@ public:
 	};
 
 private:
-
-
 	friend class _VariantCall;
 	// Variant takes 20 bytes when real_t is float, and 36 if double
 	// it only allocates extra memory for aabb/matrix.
@@ -134,9 +131,8 @@ private:
 		RefPtr ref;
 	};
 
-
-	_FORCE_INLINE_ ObjData& _get_obj();
-	_FORCE_INLINE_ const ObjData& _get_obj() const;
+	_FORCE_INLINE_ ObjData &_get_obj();
+	_FORCE_INLINE_ const ObjData &_get_obj() const;
 
 	union {
 
@@ -144,29 +140,26 @@ private:
 		int _int;
 		double _real;
 		Matrix32 *_matrix32;
-		AABB* _aabb;
+		AABB *_aabb;
 		Matrix3 *_matrix3;
 		Transform *_transform;
 		RefPtr *_resource;
 		InputEvent *_input_event;
 		Image *_image;
 		void *_ptr; //generic pointer
-		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t)*4) ? sizeof(ObjData) : (sizeof(real_t)*4)];
+		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
 	} _data;
 
-
-	void reference(const Variant& p_variant);
+	void reference(const Variant &p_variant);
 	void clear();
-public:
 
+public:
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from, Type p_type_to);
 	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
-
-
-	template<class T>
+	template <class T>
 	static Type get_type_for() {
 
 		GetSimpleType<T> t;
@@ -175,10 +168,9 @@ public:
 		return r;
 	}
 
-
 	bool is_ref() const;
-	_FORCE_INLINE_ bool is_num() const { return type==INT || type==REAL; };
-	_FORCE_INLINE_ bool is_array() const { return type>=ARRAY; };
+	_FORCE_INLINE_ bool is_num() const { return type == INT || type == REAL; };
+	_FORCE_INLINE_ bool is_array() const { return type >= ARRAY; };
 	bool is_shared() const;
 	bool is_zero() const;
 	bool is_one() const;
@@ -197,7 +189,6 @@ public:
 	operator signed long() const;
 	operator unsigned long() const;
 #endif
-
 
 	operator CharType() const;
 	operator float() const;
@@ -220,9 +211,9 @@ public:
 	operator RefPtr() const;
 	operator RID() const;
 	operator InputEvent() const;
-	operator Object*() const;
-	operator Node*() const;
-	operator Control*() const;
+	operator Object *() const;
+	operator Node *() const;
+	operator Control *() const;
 
 	operator Dictionary() const;
 	operator Array() const;
@@ -235,7 +226,6 @@ public:
 	operator DVector<Color>() const;
 	operator DVector<Plane>() const;
 	operator DVector<Face3>() const;
-
 
 	operator Vector<Variant>() const;
 	operator Vector<uint8_t>() const;
@@ -255,14 +245,13 @@ public:
 
 	operator IP_Address() const;
 
-
 	Variant(bool p_bool);
 	Variant(signed int p_int); // real one
 	Variant(unsigned int p_int);
 #ifdef NEED_LONG_INT
 	Variant(signed long p_long); // real one
 	Variant(unsigned long p_long);
-	//Variant(long unsigned int p_long);
+//Variant(long unsigned int p_long);
 #endif
 	Variant(signed short p_short); // real one
 	Variant(unsigned short p_short);
@@ -272,54 +261,51 @@ public:
 	Variant(uint64_t p_char);
 	Variant(float p_float);
 	Variant(double p_double);
-	Variant(const String& p_string);
-	Variant(const StringName& p_string);
-	Variant(const char * const p_cstring);
-	Variant(const CharType * p_wstring);
-	Variant(const Vector2& p_vector2);
-	Variant(const Rect2& p_rect2);
-	Variant(const Vector3& p_vector3);
-	Variant(const Plane& p_plane);
-	Variant(const AABB& p_aabb);
-	Variant(const Quat& p_quat);
-	Variant(const Matrix3& p_transform);
-	Variant(const Matrix32& p_transform);
-	Variant(const Transform& p_transform);
-	Variant(const Color& p_color);
-	Variant(const Image& p_image);
-	Variant(const NodePath& p_path);
-	Variant(const RefPtr& p_resource);
-	Variant(const RID& p_rid);
-	Variant(const Object* p_object);
-	Variant(const InputEvent& p_input_event);
-	Variant(const Dictionary& p_dictionary);
+	Variant(const String &p_string);
+	Variant(const StringName &p_string);
+	Variant(const char *const p_cstring);
+	Variant(const CharType *p_wstring);
+	Variant(const Vector2 &p_vector2);
+	Variant(const Rect2 &p_rect2);
+	Variant(const Vector3 &p_vector3);
+	Variant(const Plane &p_plane);
+	Variant(const AABB &p_aabb);
+	Variant(const Quat &p_quat);
+	Variant(const Matrix3 &p_transform);
+	Variant(const Matrix32 &p_transform);
+	Variant(const Transform &p_transform);
+	Variant(const Color &p_color);
+	Variant(const Image &p_image);
+	Variant(const NodePath &p_path);
+	Variant(const RefPtr &p_resource);
+	Variant(const RID &p_rid);
+	Variant(const Object *p_object);
+	Variant(const InputEvent &p_input_event);
+	Variant(const Dictionary &p_dictionary);
 
-	Variant(const Array& p_array);
-	Variant(const DVector<Plane>& p_array); // helper
-	Variant(const DVector<uint8_t>& p_raw_array);
-	Variant(const DVector<int>& p_int_array);
-	Variant(const DVector<real_t>& p_real_array);
-	Variant(const DVector<String>& p_string_array);
-	Variant(const DVector<Vector3>& p_vector3_array);
-	Variant(const DVector<Color>& p_color_array);
-	Variant(const DVector<Face3>& p_face_array);
+	Variant(const Array &p_array);
+	Variant(const DVector<Plane> &p_array); // helper
+	Variant(const DVector<uint8_t> &p_raw_array);
+	Variant(const DVector<int> &p_int_array);
+	Variant(const DVector<real_t> &p_real_array);
+	Variant(const DVector<String> &p_string_array);
+	Variant(const DVector<Vector3> &p_vector3_array);
+	Variant(const DVector<Color> &p_color_array);
+	Variant(const DVector<Face3> &p_face_array);
 
+	Variant(const Vector<Variant> &p_array);
+	Variant(const Vector<uint8_t> &p_raw_array);
+	Variant(const Vector<int> &p_int_array);
+	Variant(const Vector<real_t> &p_real_array);
+	Variant(const Vector<String> &p_string_array);
+	Variant(const Vector<Vector3> &p_vector3_array);
+	Variant(const Vector<Color> &p_color_array);
+	Variant(const Vector<Plane> &p_array); // helper
+	Variant(const Vector<RID> &p_array); // helper
+	Variant(const Vector<Vector2> &p_array); // helper
+	Variant(const DVector<Vector2> &p_array); // helper
 
-	Variant(const Vector<Variant>& p_array);
-	Variant(const Vector<uint8_t>& p_raw_array);
-	Variant(const Vector<int>& p_int_array);
-	Variant(const Vector<real_t>& p_real_array);
-	Variant(const Vector<String>& p_string_array);
-	Variant(const Vector<Vector3>& p_vector3_array);
-	Variant(const Vector<Color>& p_color_array);
-	Variant(const Vector<Plane>& p_array); // helper
-	Variant(const Vector<RID>& p_array); // helper
-	Variant(const Vector<Vector2>& p_array); // helper
-	Variant(const DVector<Vector2>& p_array); // helper
-
-	Variant(const IP_Address& p_address);
-
-
+	Variant(const IP_Address &p_address);
 
 	enum Operator {
 
@@ -356,20 +342,19 @@ public:
 
 	};
 
-
 	static String get_operator_name(Operator p_op);
-	static void evaluate(const Operator& p_op,const Variant& p_a, const Variant& p_b,Variant &r_ret,bool &r_valid);
-	static _FORCE_INLINE_ Variant evaluate(const Operator& p_op,const Variant& p_a, const Variant& p_b) {
+	static void evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b, Variant &r_ret, bool &r_valid);
+	static _FORCE_INLINE_ Variant evaluate(const Operator &p_op, const Variant &p_a, const Variant &p_b) {
 
-		bool valid=true;
+		bool valid = true;
 		Variant res;
-		evaluate(p_op,p_a,p_b,res,valid);
+		evaluate(p_op, p_a, p_b, res, valid);
 		return res;
 	}
 
 	void zero();
-	static void blend(const Variant& a, const Variant& b, float c,Variant &r_dst);
-	static void interpolate(const Variant& a, const Variant& b, float c,Variant &r_dst);
+	static void blend(const Variant &a, const Variant &b, float c, Variant &r_dst);
+	static void interpolate(const Variant &a, const Variant &b, float c, Variant &r_dst);
 
 	struct CallError {
 		enum Error {
@@ -385,86 +370,83 @@ public:
 		Type expected;
 	};
 
-	void call_ptr(const StringName& p_method,const Variant** p_args,int p_argcount,Variant* r_ret,CallError &r_error);
-	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,CallError &r_error);
-	Variant call(const StringName& p_method,const Variant& p_arg1=Variant(),const Variant& p_arg2=Variant(),const Variant& p_arg3=Variant(),const Variant& p_arg4=Variant(),const Variant& p_arg5=Variant());
+	void call_ptr(const StringName &p_method, const Variant **p_args, int p_argcount, Variant *r_ret, CallError &r_error);
+	Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, CallError &r_error);
+	Variant call(const StringName &p_method, const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant());
 
-	static String get_call_error_text(Object* p_base, const StringName& p_method,const Variant** p_argptrs,int p_argcount,const Variant::CallError &ce);
+	static String get_call_error_text(Object *p_base, const StringName &p_method, const Variant **p_argptrs, int p_argcount, const Variant::CallError &ce);
 
-	static Variant construct(const Variant::Type,const Variant** p_args,int p_argcount,CallError &r_error,bool p_strict=true);
+	static Variant construct(const Variant::Type, const Variant **p_args, int p_argcount, CallError &r_error, bool p_strict = true);
 
 	void get_method_list(List<MethodInfo> *p_list) const;
-	bool has_method(const StringName& p_method) const;
+	bool has_method(const StringName &p_method) const;
 
-	void set_named(const StringName& p_index, const Variant& p_value, bool *r_valid=NULL);
-	Variant get_named(const StringName& p_index, bool *r_valid=NULL) const;
+	void set_named(const StringName &p_index, const Variant &p_value, bool *r_valid = NULL);
+	Variant get_named(const StringName &p_index, bool *r_valid = NULL) const;
 
-	void set(const Variant& p_index, const Variant& p_value, bool *r_valid=NULL);
-	Variant get(const Variant& p_index, bool *r_valid=NULL) const;
-	bool in(const Variant& p_index, bool *r_valid=NULL) const;
+	void set(const Variant &p_index, const Variant &p_value, bool *r_valid = NULL);
+	Variant get(const Variant &p_index, bool *r_valid = NULL) const;
+	bool in(const Variant &p_index, bool *r_valid = NULL) const;
 
-	bool iter_init(Variant& r_iter,bool &r_valid) const;
-	bool iter_next(Variant& r_iter,bool &r_valid) const;
-	Variant iter_get(const Variant& r_iter,bool &r_valid) const;
+	bool iter_init(Variant &r_iter, bool &r_valid) const;
+	bool iter_next(Variant &r_iter, bool &r_valid) const;
+	Variant iter_get(const Variant &r_iter, bool &r_valid) const;
 
 	void get_property_list(List<PropertyInfo> *p_list) const;
 
 	//argsVariant call()
 
-	bool operator==(const Variant& p_variant) const;
-	bool operator!=(const Variant& p_variant) const;
-	bool operator<(const Variant& p_variant) const;
+	bool operator==(const Variant &p_variant) const;
+	bool operator!=(const Variant &p_variant) const;
+	bool operator<(const Variant &p_variant) const;
 	uint32_t hash() const;
 
 	bool booleanize(bool &valid) const;
 
-	void static_assign(const Variant& p_variant);
+	void static_assign(const Variant &p_variant);
 	static void get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_list);
 	static void get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
-	static bool has_numeric_constant(Variant::Type p_type, const StringName& p_value);
-	static int get_numeric_constant_value(Variant::Type p_type, const StringName& p_value);
+	static bool has_numeric_constant(Variant::Type p_type, const StringName &p_value);
+	static int get_numeric_constant_value(Variant::Type p_type, const StringName &p_value);
 
-	typedef String (*ObjectDeConstruct)(const Variant& p_object,void *ud);
-	typedef void (*ObjectConstruct)(const String& p_text,void *ud,Variant& r_value);
+	typedef String (*ObjectDeConstruct)(const Variant &p_object, void *ud);
+	typedef void (*ObjectConstruct)(const String &p_text, void *ud, Variant &r_value);
 
 	String get_construct_string() const;
-	static void construct_from_string(const String& p_string,Variant& r_value,ObjectConstruct p_obj_construct=NULL,void *p_construct_ud=NULL);
+	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = NULL, void *p_construct_ud = NULL);
 
-	void operator=(const Variant& p_variant); // only this is enough for all the other types
-	Variant(const Variant& p_variant);
-	_FORCE_INLINE_ Variant() { type=NIL; }
-	_FORCE_INLINE_ ~Variant() { if (type!=Variant::NIL) clear(); }
-
+	void operator=(const Variant &p_variant); // only this is enough for all the other types
+	Variant(const Variant &p_variant);
+	_FORCE_INLINE_ Variant() { type = NIL; }
+	_FORCE_INLINE_ ~Variant() {
+		if (type != Variant::NIL) clear();
+	}
 };
 
 //typedef Dictionary Dictionary; no
 //typedef Array Array;
 
-
-
 Vector<Variant> varray();
-Vector<Variant> varray(const Variant& p_arg1);
-Vector<Variant> varray(const Variant& p_arg1,const Variant& p_arg2);
-Vector<Variant> varray(const Variant& p_arg1,const Variant& p_arg2,const Variant& p_arg3);
-Vector<Variant> varray(const Variant& p_arg1,const Variant& p_arg2,const Variant& p_arg3,const Variant& p_arg4);
-Vector<Variant> varray(const Variant& p_arg1,const Variant& p_arg2,const Variant& p_arg3,const Variant& p_arg4,const Variant& p_arg5);
+Vector<Variant> varray(const Variant &p_arg1);
+Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2);
+Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3);
+Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4);
+Vector<Variant> varray(const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5);
 
 struct VariantHasher {
 
-	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant)  { return p_variant.hash(); }
+	static _FORCE_INLINE_ uint32_t hash(const Variant &p_variant) { return p_variant.hash(); }
 };
 
+Variant::ObjData &Variant::_get_obj() {
 
-Variant::ObjData& Variant::_get_obj() {
-
-	return *reinterpret_cast<ObjData*>(&_data._mem[0]);
+	return *reinterpret_cast<ObjData *>(&_data._mem[0]);
 }
 
-const Variant::ObjData& Variant::_get_obj() const {
+const Variant::ObjData &Variant::_get_obj() const {
 
-	return *reinterpret_cast<const ObjData*>(&_data._mem[0]);
+	return *reinterpret_cast<const ObjData *>(&_data._mem[0]);
 }
 
-
-String vformat(const String& p_text, const Variant& p1=Variant(),const Variant& p2=Variant(),const Variant& p3=Variant(),const Variant& p4=Variant(),const Variant& p5=Variant());
+String vformat(const String &p_text, const Variant &p1 = Variant(), const Variant &p2 = Variant(), const Variant &p3 = Variant(), const Variant &p4 = Variant(), const Variant &p5 = Variant());
 #endif

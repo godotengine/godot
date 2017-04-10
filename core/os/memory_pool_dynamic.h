@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,49 +32,42 @@
 
 #include "typedefs.h"
 
-
 class MemoryPoolDynamic {
 
-	static MemoryPoolDynamic* singleton;
+	static MemoryPoolDynamic *singleton;
+
 protected:
-friend class Memory;
-friend class MID;
+	friend class Memory;
+	friend class MID;
 
 	enum {
 
-		INVALID_ID=0xFFFFFFFF
+		INVALID_ID = 0xFFFFFFFF
 	};
 
-	static MemoryPoolDynamic* get_singleton();
+	static MemoryPoolDynamic *get_singleton();
 
 	typedef uint64_t ID;
 
+	virtual ID alloc(size_t p_amount, const char *p_description) = 0;
+	virtual void free(ID p_id) = 0;
+	virtual Error realloc(ID p_id, size_t p_amount) = 0;
+	virtual bool is_valid(ID p_id) = 0;
+	virtual size_t get_size(ID p_id) const = 0;
+	virtual const char *get_description(ID p_id) const = 0;
 
-	virtual ID alloc(size_t p_amount,const char* p_description)=0;
-	virtual void free(ID p_id)=0;
-	virtual Error realloc(ID p_id, size_t p_amount)=0;
-	virtual bool is_valid(ID p_id)=0;
-	virtual size_t get_size(ID p_id) const=0;
-	virtual const char* get_description(ID p_id) const=0;
+	virtual Error lock(ID p_id) = 0;
+	virtual void *get(ID p_ID) = 0;
+	virtual Error unlock(ID p_id) = 0;
+	virtual bool is_locked(ID p_id) const = 0;
 
-	virtual Error lock(ID p_id)=0;
-	virtual void * get(ID p_ID)=0;
-	virtual Error unlock(ID p_id)=0;
-	virtual bool is_locked(ID p_id) const=0;
-
-	virtual size_t get_available_mem() const=0;
-	virtual size_t get_total_usage() const=0;
+	virtual size_t get_available_mem() const = 0;
+	virtual size_t get_total_usage() const = 0;
 
 	MemoryPoolDynamic();
+
 public:
 	virtual ~MemoryPoolDynamic();
-
 };
 
-
 #endif
-
-
-
-
-

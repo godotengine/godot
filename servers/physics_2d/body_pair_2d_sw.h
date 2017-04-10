@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +36,7 @@
 class BodyPair2DSW : public Constraint2DSW {
 
 	enum {
-		MAX_CONTACTS=2
+		MAX_CONTACTS = 2
 	};
 	union {
 		struct {
@@ -56,18 +57,17 @@ class BodyPair2DSW : public Constraint2DSW {
 		Vector2 position;
 		Vector2 normal;
 		Vector2 local_A, local_B;
-		real_t acc_normal_impulse;	// accumulated normal impulse (Pn)
-		real_t acc_tangent_impulse;	// accumulated tangent impulse (Pt)
-		real_t acc_bias_impulse;	// accumulated normal impulse for position bias (Pnb)
+		real_t acc_normal_impulse; // accumulated normal impulse (Pn)
+		real_t acc_tangent_impulse; // accumulated tangent impulse (Pt)
+		real_t acc_bias_impulse; // accumulated normal impulse for position bias (Pnb)
 		real_t mass_normal, mass_tangent;
 		real_t bias;
 
 		real_t depth;
 		bool active;
-		Vector2 rA,rB;
+		Vector2 rA, rB;
 		bool reused;
 		float bounce;
-
 	};
 
 	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection
@@ -79,20 +79,17 @@ class BodyPair2DSW : public Constraint2DSW {
 	bool oneway_disabled;
 	int cc;
 
-
-	bool _test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Matrix32& p_xform_A,Body2DSW *p_B, int p_shape_B,const Matrix32& p_xform_B,bool p_swap_result=false);
+	bool _test_ccd(float p_step, Body2DSW *p_A, int p_shape_A, const Matrix32 &p_xform_A, Body2DSW *p_B, int p_shape_B, const Matrix32 &p_xform_B, bool p_swap_result = false);
 	void _validate_contacts();
-	static void _add_contact(const Vector2& p_point_A,const Vector2& p_point_B,void *p_self);
-	_FORCE_INLINE_ void _contact_added_callback(const Vector2& p_point_A,const Vector2& p_point_B);
+	static void _add_contact(const Vector2 &p_point_A, const Vector2 &p_point_B, void *p_self);
+	_FORCE_INLINE_ void _contact_added_callback(const Vector2 &p_point_A, const Vector2 &p_point_B);
 
 public:
-
 	bool setup(float p_step);
 	void solve(float p_step);
 
-	BodyPair2DSW(Body2DSW *p_A, int p_shape_A,Body2DSW *p_B, int p_shape_B);
+	BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_shape_B);
 	~BodyPair2DSW();
-
 };
 
 #endif // BODY_PAIR_2D_SW_H

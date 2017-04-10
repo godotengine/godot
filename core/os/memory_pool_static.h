@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,32 +39,29 @@
 */
 class MemoryPoolStatic {
 private:
-
 	static MemoryPoolStatic *singleton;
 
 public:
-
 	static MemoryPoolStatic *get_singleton();
 
-	virtual void* alloc(size_t p_bytes,const char *p_description)=0; ///< Pointer in p_description shold be to a const char const like "hello"
-	virtual void* realloc(void * p_memory,size_t p_bytes)=0; ///< Pointer in p_description shold be to a const char const like "hello"
-	virtual void free(void *p_ptr)=0; ///< Pointer in p_description shold be to a const char const
+	virtual void *alloc(size_t p_bytes, const char *p_description) = 0; ///< Pointer in p_description shold be to a const char const like "hello"
+	virtual void *realloc(void *p_memory, size_t p_bytes) = 0; ///< Pointer in p_description shold be to a const char const like "hello"
+	virtual void free(void *p_ptr) = 0; ///< Pointer in p_description shold be to a const char const
 
-	virtual size_t get_available_mem() const=0;
-	virtual size_t get_total_usage()=0;
-	virtual size_t get_max_usage()=0;
+	virtual size_t get_available_mem() const = 0;
+	virtual size_t get_total_usage() = 0;
+	virtual size_t get_max_usage() = 0;
 
 	/* Most likely available only if memory debugger was compiled in */
-	virtual int get_alloc_count()=0;
-	virtual void * get_alloc_ptr(int p_alloc_idx)=0;
-	virtual const char* get_alloc_description(int p_alloc_idx)=0;
-	virtual size_t get_alloc_size(int p_alloc_idx)=0;
+	virtual int get_alloc_count() = 0;
+	virtual void *get_alloc_ptr(int p_alloc_idx) = 0;
+	virtual const char *get_alloc_description(int p_alloc_idx) = 0;
+	virtual size_t get_alloc_size(int p_alloc_idx) = 0;
 
-	virtual void dump_mem_to_file(const char* p_file)=0;
+	virtual void dump_mem_to_file(const char *p_file) = 0;
 
 	MemoryPoolStatic();
 	virtual ~MemoryPoolStatic();
-
 };
 
 #endif

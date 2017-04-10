@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,16 +36,15 @@
 */
 class Range : public Control {
 
-	OBJ_TYPE( Range, Control );
-
+	OBJ_TYPE(Range, Control);
 
 	struct Shared {
-		double val,min,max;
-		double step,page;
+		double val, min, max;
+		double step, page;
 		bool exp_unit_value;
-		Set<Range*> owners;
+		Set<Range *> owners;
 		void emit_value_changed();
-		void emit_changed(const char *p_what="");
+		void emit_changed(const char *p_what = "");
 	};
 
 	Shared *shared;
@@ -55,17 +55,16 @@ class Range : public Control {
 	void _share(Node *p_range);
 
 	void _value_changed_notify();
-	void _changed_notify(const char *p_what="");
+	void _changed_notify(const char *p_what = "");
 
 protected:
-
 	virtual void _value_changed(double) {}
 
 	static void _bind_methods();
 
 	bool _rounded_values;
-public:
 
+public:
 	void set_val(double p_val);
 	void set_min(double p_min);
 	void set_max(double p_max);
@@ -91,7 +90,6 @@ public:
 
 	Range();
 	~Range();
-
 };
 
 #endif

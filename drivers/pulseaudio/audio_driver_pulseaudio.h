@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,27 +31,27 @@
 
 #ifdef PULSEAUDIO_ENABLED
 
-#include "core/os/thread.h"
 #include "core/os/mutex.h"
+#include "core/os/thread.h"
 
 #include <pulse/simple.h>
 
 class AudioDriverPulseAudio : public AudioDriverSW {
 
-	Thread* thread;
-	Mutex* mutex;
+	Thread *thread;
+	Mutex *mutex;
 
-    pa_simple* pulse;
+	pa_simple *pulse;
 
-	int32_t* samples_in;
-	int16_t* samples_out;
+	int32_t *samples_in;
+	int16_t *samples_out;
 
-	static void thread_func(void* p_udata);
+	static void thread_func(void *p_udata);
 
 	unsigned int mix_rate;
 	OutputFormat output_format;
 
-    unsigned int buffer_size;
+	unsigned int buffer_size;
 	int channels;
 
 	bool active;
@@ -61,9 +62,8 @@ class AudioDriverPulseAudio : public AudioDriverSW {
 	float latency;
 
 public:
-
-	const char* get_name() const {
-        return "PulseAudio";
+	const char *get_name() const {
+		return "PulseAudio";
 	};
 
 	virtual Error init();
@@ -76,9 +76,8 @@ public:
 
 	virtual float get_latency();
 
-
-    AudioDriverPulseAudio();
-    ~AudioDriverPulseAudio();
+	AudioDriverPulseAudio();
+	~AudioDriverPulseAudio();
 };
 
 #endif

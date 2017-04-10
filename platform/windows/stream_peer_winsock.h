@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,36 +40,35 @@
 class StreamPeerWinsock : public StreamPeerTCP {
 
 protected:
-
 	mutable Status status;
+	IP::Type sock_type;
 
 	int sockfd;
 
 	Error _block(int p_sockfd, bool p_read, bool p_write) const;
 
-	Error _poll_connection(bool p_block) const;
+	Error _poll_connection() const;
 
 	IP_Address peer_host;
 	int peer_port;
 
-	Error write(const uint8_t* p_data,int p_bytes, int &r_sent, bool p_block);
-	Error read(uint8_t* p_buffer, int p_bytes,int &r_received, bool p_block);
+	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
+	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
 
-	static StreamPeerTCP* _create();
+	static StreamPeerTCP *_create();
 
 public:
+	virtual Error connect(const IP_Address &p_host, uint16_t p_port);
 
-	virtual Error connect(const IP_Address& p_host, uint16_t p_port);
+	virtual Error put_data(const uint8_t *p_data, int p_bytes);
+	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
 
-	virtual Error put_data(const uint8_t* p_data,int p_bytes);
-	virtual Error put_partial_data(const uint8_t* p_data,int p_bytes, int &r_sent);
-
-	virtual Error get_data(uint8_t* p_buffer, int p_bytes);
-	virtual Error get_partial_data(uint8_t* p_buffer, int p_bytes,int &r_received);
+	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
+	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
 
 	virtual int get_available_bytes() const;
 
-	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_ip_type);
+	void set_socket(int p_sockfd, IP_Address p_host, int p_port, IP::Type p_sock_type);
 
 	virtual IP_Address get_connected_host() const;
 	virtual uint16_t get_connected_port() const;
@@ -81,7 +81,6 @@ public:
 	static void cleanup();
 
 	virtual void set_nodelay(bool p_enabled);
-
 
 	StreamPeerWinsock();
 	~StreamPeerWinsock();

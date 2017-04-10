@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,54 +31,55 @@
 #define DYNAMIC_FONT_H
 
 #ifdef FREETYPE_ENABLED
-#include "scene/resources/font.h"
-#include "os/thread_safe.h"
 #include "io/resource_loader.h"
+#include "os/thread_safe.h"
+#include "scene/resources/font.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
 
 class DynamicFontAtSize;
 class DynamicFont;
 
 class DynamicFontData : public Resource {
 
-	OBJ_TYPE(DynamicFontData,Resource);
+	OBJ_TYPE(DynamicFontData, Resource);
 
 public:
-
-	struct CacheID{
+	struct CacheID {
 
 		int size;
 		bool mipmaps;
 		bool filter;
 
-		bool operator< (CacheID right) const;
-		CacheID() { size=16; mipmaps=false; filter=false; }
+		bool operator<(CacheID right) const;
+		CacheID() {
+			size = 16;
+			mipmaps = false;
+			filter = false;
+		}
 	};
 
 private:
-
 	const uint8_t *font_mem;
 	int font_mem_size;
 	bool force_autohinter;
 
 	String font_path;
-	Map<CacheID,DynamicFontAtSize*> size_cache;
+	Map<CacheID, DynamicFontAtSize *> size_cache;
 
 	friend class DynamicFontAtSize;
 
-friend class DynamicFont;
+	friend class DynamicFont;
 
 	Ref<DynamicFontAtSize> _get_dynamic_font_at_size(CacheID p_cache);
+
 protected:
-
 	static void _bind_methods();
-public:
 
-	void set_font_ptr(const uint8_t* p_font_mem,int p_font_mem_size);
-	void set_font_path(const String& p_path);
+public:
+	void set_font_ptr(const uint8_t *p_font_mem, int p_font_mem_size);
+	void set_font_path(const String &p_path);
 	String get_font_path() const;
 	void set_force_autohinter(bool p_force);
 
@@ -85,15 +87,14 @@ public:
 	~DynamicFontData();
 };
 
-
 class DynamicFontAtSize : public Reference {
 
-	OBJ_TYPE(DynamicFontAtSize,Reference)
+	OBJ_TYPE(DynamicFontAtSize, Reference)
 
 	_THREAD_SAFE_CLASS_
 
-	FT_Library   library;   /* handle to library     */
-	FT_Face      face;      /* handle to face object */
+	FT_Library library; /* handle to library     */
+	FT_Face face; /* handle to face object */
 	FT_StreamRec stream;
 
 	int ascent;
@@ -124,39 +125,36 @@ class DynamicFontAtSize : public Reference {
 		float h_align;
 		float advance;
 
-		Character() { texture_idx=0; v_align=0; }
+		Character() {
+			texture_idx = 0;
+			v_align = 0;
+		}
 	};
 
+	static unsigned long _ft_stream_io(FT_Stream stream, unsigned long offset, unsigned char *buffer, unsigned long count);
+	static void _ft_stream_close(FT_Stream stream);
 
-	static unsigned long _ft_stream_io(FT_Stream      stream,  unsigned long   offset,  unsigned char*  buffer,  unsigned long   count );
-	static void _ft_stream_close(FT_Stream       stream);
-
-	HashMap< CharType, Character > char_map;
+	HashMap<CharType, Character> char_map;
 
 	_FORCE_INLINE_ void _update_char(CharType p_char);
 
-friend class DynamicFontData;
+	friend class DynamicFontData;
 	Ref<DynamicFontData> font;
 	DynamicFontData::CacheID id;
 
-
-	static HashMap< String, Vector<uint8_t> > _fontdata;
+	static HashMap<String, Vector<uint8_t> > _fontdata;
 	Error _load();
+
 protected:
-
-
-
 public:
-
-
 	float get_height() const;
 
 	float get_ascent() const;
 	float get_descent() const;
 
-	Size2 get_char_size(CharType p_char,CharType p_next,const Vector<Ref<DynamicFontAtSize> >& p_fallbacks) const;
+	Size2 get_char_size(CharType p_char, CharType p_next, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
 
-	float draw_char(RID p_canvas_item, const Point2& p_pos, CharType p_char,CharType p_next,const Color& p_modulate,const Vector<Ref<DynamicFontAtSize> >& p_fallbacks) const;
+	float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next, const Color &p_modulate, const Vector<Ref<DynamicFontAtSize> > &p_fallbacks) const;
 
 	void set_texture_flags(uint32_t p_flags);
 
@@ -168,11 +166,10 @@ public:
 
 class DynamicFont : public Font {
 
-	OBJ_TYPE( DynamicFont, Font );
+	OBJ_TYPE(DynamicFont, Font);
 
 public:
-
-	enum SpacingType{
+	enum SpacingType {
 		SPACING_TOP,
 		SPACING_BOTTOM,
 		SPACING_CHAR,
@@ -180,13 +177,11 @@ public:
 	};
 
 private:
-
 	Ref<DynamicFontData> data;
 	Ref<DynamicFontAtSize> data_at_size;
 
-	Vector< Ref<DynamicFontData> > fallbacks;
-	Vector< Ref<DynamicFontAtSize> > fallback_data_at_size;
-
+	Vector<Ref<DynamicFontData> > fallbacks;
+	Vector<Ref<DynamicFontAtSize> > fallback_data_at_size;
 
 	DynamicFontData::CacheID cache_id;
 	bool valid;
@@ -196,18 +191,16 @@ private:
 	int spacing_space;
 
 protected:
-
 	void _reload_cache();
 
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
 
 public:
-
-	void set_font_data(const Ref<DynamicFontData>& p_data);
+	void set_font_data(const Ref<DynamicFontData> &p_data);
 	Ref<DynamicFontData> get_font_data() const;
 
 	void set_size(int p_size);
@@ -222,8 +215,8 @@ public:
 	int get_spacing(int p_type) const;
 	void set_spacing(int p_type, int p_value);
 
-	void add_fallback(const Ref<DynamicFontData>& p_data);
-	void set_fallback(int p_idx,const Ref<DynamicFontData>& p_data);
+	void add_fallback(const Ref<DynamicFontData> &p_data);
+	void set_fallback(int p_idx, const Ref<DynamicFontData> &p_data);
 	int get_fallback_count() const;
 	Ref<DynamicFontData> get_fallback(int p_idx) const;
 	void remove_fallback(int p_idx);
@@ -233,31 +226,25 @@ public:
 	virtual float get_ascent() const;
 	virtual float get_descent() const;
 
-	virtual Size2 get_char_size(CharType p_char,CharType p_next=0) const;
+	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const;
 
 	virtual bool is_distance_field_hint() const;
 
-	virtual float draw_char(RID p_canvas_item, const Point2& p_pos, CharType p_char,CharType p_next=0,const Color& p_modulate=Color(1,1,1)) const;
+	virtual float draw_char(RID p_canvas_item, const Point2 &p_pos, CharType p_char, CharType p_next = 0, const Color &p_modulate = Color(1, 1, 1)) const;
 
 	DynamicFont();
 	~DynamicFont();
-
 };
-
-
 
 /////////////
 
 class ResourceFormatLoaderDynamicFont : public ResourceFormatLoader {
 public:
-
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
-
 };
-
 
 #endif
 

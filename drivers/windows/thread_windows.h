@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,35 +42,28 @@
 
 class ThreadWindows : public Thread {
 
-	
 	ThreadCreateCallback callback;
 	void *user;
 	ID id;
 	HANDLE handle;
 
-	static Thread* create_thread_windows();
-	
-	
-	
-	static DWORD WINAPI thread_callback( LPVOID userdata );
-	
-	static Thread* create_func_windows(ThreadCreateCallback p_callback,void *,const Settings&);
+	static Thread *create_thread_windows();
+
+	static DWORD WINAPI thread_callback(LPVOID userdata);
+
+	static Thread *create_func_windows(ThreadCreateCallback p_callback, void *, const Settings &);
 	static ID get_thread_ID_func_windows();
-	static void wait_to_finish_func_windows(Thread* p_thread);	
-	
-	ThreadWindows();	
+	static void wait_to_finish_func_windows(Thread *p_thread);
+
+	ThreadWindows();
+
 public:
-	
-	
 	virtual ID get_ID() const;
-	
+
 	static void make_default();
-	
-	
+
 	~ThreadWindows();
-
 };
-
 
 #endif
 

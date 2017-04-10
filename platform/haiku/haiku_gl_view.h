@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +30,10 @@
 #ifndef HAIKU_GL_VIEW_H
 #define HAIKU_GL_VIEW_H
 
-#include <kernel/image.h> // needed for image_id
 #include <GLView.h>
+#include <kernel/image.h> // needed for image_id
 
-class HaikuGLView : public BGLView
-{
+class HaikuGLView : public BGLView {
 public:
 	HaikuGLView(BRect frame, uint32 type);
 	virtual void AttachedToWindow(void);

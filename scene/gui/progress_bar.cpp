@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,67 +29,63 @@
 /*************************************************************************/
 #include "progress_bar.h"
 
-
 Size2 ProgressBar::get_minimum_size() const {
 
 	Ref<StyleBox> bg = get_stylebox("bg");
 	Ref<Font> font = get_font("font");
 
-	Size2 ms=bg->get_minimum_size()+bg->get_center_size();
+	Size2 ms = bg->get_minimum_size() + bg->get_center_size();
 	if (percent_visible) {
-		ms.height=MAX(ms.height,bg->get_minimum_size().height+font->get_height());
+		ms.height = MAX(ms.height, bg->get_minimum_size().height + font->get_height());
 	}
 	return ms;
 }
 
-
 void ProgressBar::_notification(int p_what) {
 
-
-	if (p_what==NOTIFICATION_DRAW) {
+	if (p_what == NOTIFICATION_DRAW) {
 
 		Ref<StyleBox> bg = get_stylebox("bg");
 		Ref<StyleBox> fg = get_stylebox("fg");
 		Ref<Font> font = get_font("font");
-		Color font_color=get_color("font_color");
+		Color font_color = get_color("font_color");
 
-		draw_style_box(bg,Rect2(Point2(),get_size()));
+		draw_style_box(bg, Rect2(Point2(), get_size()));
 		float r = get_unit_value();
 		int mp = fg->get_minimum_size().width;
-		int p = r*get_size().width-mp;
-		if (p>0) {
+		int p = r * get_size().width - mp;
+		if (p > 0) {
 
-			draw_style_box(fg,Rect2(Point2(),Size2(p+fg->get_minimum_size().width,get_size().height)));
+			draw_style_box(fg, Rect2(Point2(), Size2(p + fg->get_minimum_size().width, get_size().height)));
 		}
 
 		if (percent_visible) {
-			String txt=itos(int(get_unit_value()*100))+"%";
-			font->draw_halign(get_canvas_item(),Point2(0,font->get_ascent()+(get_size().height-font->get_height())/2),HALIGN_CENTER,get_size().width,txt,font_color);
+			String txt = itos(int(get_unit_value() * 100)) + "%";
+			font->draw_halign(get_canvas_item(), Point2(0, font->get_ascent() + (get_size().height - font->get_height()) / 2), HALIGN_CENTER, get_size().width, txt, font_color);
 		}
 	}
 }
 
-
 void ProgressBar::set_percent_visible(bool p_visible) {
 
-	percent_visible=p_visible;
+	percent_visible = p_visible;
 	update();
 }
 
-bool ProgressBar::is_percent_visible() const{
+bool ProgressBar::is_percent_visible() const {
 
 	return percent_visible;
 }
 
 void ProgressBar::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_percent_visible","visible"),&ProgressBar::set_percent_visible);
-	ObjectTypeDB::bind_method(_MD("is_percent_visible"),&ProgressBar::is_percent_visible);
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"percent/visible"),_SCS("set_percent_visible"),_SCS("is_percent_visible"));
+	ObjectTypeDB::bind_method(_MD("set_percent_visible", "visible"), &ProgressBar::set_percent_visible);
+	ObjectTypeDB::bind_method(_MD("is_percent_visible"), &ProgressBar::is_percent_visible);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "percent/visible"), _SCS("set_percent_visible"), _SCS("is_percent_visible"));
 }
 
 ProgressBar::ProgressBar() {
 
 	set_v_size_flags(0);
-	percent_visible=true;
+	percent_visible = true;
 }

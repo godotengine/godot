@@ -33,8 +33,7 @@
 
 namespace TestMath {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif

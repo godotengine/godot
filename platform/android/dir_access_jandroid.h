@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +32,11 @@
 
 #ifndef ANDROID_NATIVE_ACTIVITY
 
-
 #include "java_glue.h"
 #include "os/dir_access.h"
 #include <stdio.h>
 
-
-class DirAccessJAndroid  : public DirAccess {
+class DirAccessJAndroid : public DirAccess {
 
 	//AAssetDir* aad;
 
@@ -57,7 +56,6 @@ class DirAccessJAndroid  : public DirAccess {
 	static DirAccess *create_fs();
 
 public:
-
 	virtual bool list_dir_begin(); ///< This starts dir listing
 	virtual String get_next();
 	virtual bool current_is_dir() const;
@@ -70,7 +68,6 @@ public:
 	virtual Error change_dir(String p_dir); ///< can be relative or absolute, return false on success
 	virtual String get_current_dir(); ///< return current dir location
 
-
 	virtual bool file_exists(String p_file);
 	virtual bool dir_exists(String p_dir);
 
@@ -82,8 +79,7 @@ public:
 	//virtual FileType get_file_type() const;
 	size_t get_space_left();
 
-
-	static void setup( jobject io);
+	static void setup(jobject io);
 
 	DirAccessJAndroid();
 	~DirAccessJAndroid();

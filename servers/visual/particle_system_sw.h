@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +39,7 @@
 struct ParticleSystemSW {
 	enum {
 
-		MAX_PARTICLES=1024
+		MAX_PARTICLES = 1024
 	};
 
 	float particle_vars[VS::PARTICLE_VAR_MAX];
@@ -59,12 +60,14 @@ struct ParticleSystemSW {
 
 		float pos;
 		Color color;
-		ColorPhase() { pos=1.0; color=Color(0.0,0.0,1.0,1.0); }
+		ColorPhase() {
+			pos = 1.0;
+			color = Color(0.0, 0.0, 1.0, 1.0);
+		}
 	};
 
 	int color_phase_count;
 	ColorPhase color_phases[VS::MAX_PARTICLE_COLOR_PHASES];
-
 
 	struct Attractor {
 
@@ -75,12 +78,9 @@ struct ParticleSystemSW {
 	int attractor_count;
 	Attractor attractors[VS::MAX_PARTICLE_ATTRACTORS];
 
-
 	ParticleSystemSW();
 	~ParticleSystemSW();
-
 };
-
 
 struct ParticleSystemProcessSW {
 
@@ -96,16 +96,18 @@ struct ParticleSystemProcessSW {
 		bool active;
 		float random[PARTICLE_RANDOM_NUMBERS];
 
-		ParticleData() { active=0; rot=0; }
+		ParticleData() {
+			active = 0;
+			rot = 0;
+		}
 	};
-
 
 	bool valid;
 	float particle_system_time;
 	uint32_t rand_seed;
 	Vector<ParticleData> particle_data;
 
-	void process(const ParticleSystemSW *p_system,const Transform& p_transform,float p_time);
+	void process(const ParticleSystemSW *p_system, const Transform &p_transform, float p_time);
 
 	ParticleSystemProcessSW();
 };
@@ -118,14 +120,12 @@ struct ParticleSystemDrawInfoSW {
 		float d;
 		Transform transform;
 		Color color;
-
 	};
 
 	ParticleDrawInfo draw_info[ParticleSystemSW::MAX_PARTICLES];
 	ParticleDrawInfo *draw_info_order[ParticleSystemSW::MAX_PARTICLES];
 
-	void prepare(const ParticleSystemSW *p_system,const ParticleSystemProcessSW *p_process,const Transform& p_system_transform,const Transform& p_camera_transform);
-
+	void prepare(const ParticleSystemSW *p_system, const ParticleSystemProcessSW *p_process, const Transform &p_system_transform, const Transform &p_camera_transform);
 };
 
 #endif

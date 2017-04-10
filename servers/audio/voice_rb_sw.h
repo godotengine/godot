@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +30,12 @@
 #ifndef VOICE_RB_SW_H
 #define VOICE_RB_SW_H
 
-#include "servers/audio_server.h"
 #include "os/os.h"
+#include "servers/audio_server.h"
 class VoiceRBSW {
 public:
-
 	enum {
-		VOICE_RB_SIZE=1024
+		VOICE_RB_SIZE = 1024
 	};
 
 	struct Command {
@@ -72,7 +72,7 @@ public:
 
 			struct {
 
-				float pan,depth,height;
+				float pan, depth, height;
 			} pan;
 
 			struct {
@@ -100,47 +100,42 @@ public:
 
 				bool positional;
 			} positional;
-
 		};
 
-		Command() { type=CMD_NONE; }
-
+		Command() { type = CMD_NONE; }
 	};
-private:
 
+private:
 	Command voice_cmd_rb[VOICE_RB_SIZE];
 	volatile int read_pos;
 	volatile int write_pos;
 
 public:
-
-	_FORCE_INLINE_ bool commands_left() const { return read_pos!=write_pos; }
+	_FORCE_INLINE_ bool commands_left() const { return read_pos != write_pos; }
 	_FORCE_INLINE_ Command pop_command() {
-		ERR_FAIL_COND_V( read_pos==write_pos, Command() );
-		Command cmd=voice_cmd_rb[read_pos];
-		read_pos=(read_pos+1)%VOICE_RB_SIZE;
+		ERR_FAIL_COND_V(read_pos == write_pos, Command());
+		Command cmd = voice_cmd_rb[read_pos];
+		read_pos = (read_pos + 1) % VOICE_RB_SIZE;
 		return cmd;
 	}
-	_FORCE_INLINE_ void push_command(const Command& p_command) {
+	_FORCE_INLINE_ void push_command(const Command &p_command) {
 
-		bool full = ((write_pos+1)%VOICE_RB_SIZE)==read_pos;
+		bool full = ((write_pos + 1) % VOICE_RB_SIZE) == read_pos;
 		if (full) {
 #ifdef DEBUG_ENABLED
 			if (OS::get_singleton()->is_stdout_verbose()) {
 				ERR_EXPLAIN("Audio Ring Buffer Full (too many commands");
-				ERR_FAIL_COND( ((write_pos+1)%VOICE_RB_SIZE)==read_pos);
+				ERR_FAIL_COND(((write_pos + 1) % VOICE_RB_SIZE) == read_pos);
 			}
 #endif
 			return;
 		}
 
-		voice_cmd_rb[write_pos]=p_command;
-		write_pos=(write_pos+1)%VOICE_RB_SIZE;
-
+		voice_cmd_rb[write_pos] = p_command;
+		write_pos = (write_pos + 1) % VOICE_RB_SIZE;
 	}
 
-	VoiceRBSW() { read_pos=write_pos=0; }
-
+	VoiceRBSW() { read_pos = write_pos = 0; }
 };
 
 #endif // VOICE_RB_SW_H

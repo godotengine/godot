@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,25 +30,19 @@
 #include "test_cube.h"
 #include "servers/visual_server.h"
 
-
-
 AABB TestCube::get_aabb() const {
 
-	return AABB( Vector3(-1,-1,-1), Vector3(2, 2, 2 ) );
+	return AABB(Vector3(-1, -1, -1), Vector3(2, 2, 2));
 }
 DVector<Face3> TestCube::get_faces(uint32_t p_usage_flags) const {
 
 	return DVector<Face3>();
 }
 
-
 TestCube::TestCube() {
 
 	set_base(VisualServer::get_singleton()->get_test_cube());
 }
 
-
 TestCube::~TestCube() {
 }
-
-

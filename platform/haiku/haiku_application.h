@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +30,12 @@
 #ifndef HAIKU_APPLICATION_H
 #define HAIKU_APPLICATION_H
 
-#include <kernel/image.h> // needed for image_id
 #include <Application.h>
+#include <kernel/image.h> // needed for image_id
 
-class HaikuApplication : public BApplication
-{
+class HaikuApplication : public BApplication {
 public:
-   HaikuApplication();
+	HaikuApplication();
 };
 
 #endif

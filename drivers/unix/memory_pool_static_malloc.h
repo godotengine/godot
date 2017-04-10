@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,46 +38,44 @@
 class MemoryPoolStaticMalloc : public MemoryPoolStatic {
 
 	struct RingPtr {
-		
+
 		size_t size;
 		const char *descr; /* description of memory */
 		RingPtr *next;
 		RingPtr *prev;
 	};
-	
+
 	RingPtr *ringlist;
 	size_t total_mem;
 	int total_pointers;
-	
+
 	size_t max_mem;
 	int max_pointers;
-			
+
 	Mutex *mutex;
 
-	void* _alloc(size_t p_bytes,const char *p_description=""); ///< Pointer in p_description shold be to a const char const like "hello"
-	void* _realloc(void *p_memory,size_t p_bytes); ///< Pointer in
+	void *_alloc(size_t p_bytes, const char *p_description = ""); ///< Pointer in p_description shold be to a const char const like "hello"
+	void *_realloc(void *p_memory, size_t p_bytes); ///< Pointer in
 	void _free(void *p_ptr); ///< Pointer in p_description shold be to a const char const
 
 public:
-
-	virtual void* alloc(size_t p_bytes,const char *p_description=""); ///< Pointer in p_description shold be to a const char const like "hello"
+	virtual void *alloc(size_t p_bytes, const char *p_description = ""); ///< Pointer in p_description shold be to a const char const like "hello"
 	virtual void free(void *p_ptr); ///< Pointer in p_description shold be to a const char const
-	virtual void* realloc(void *p_memory,size_t p_bytes); ///< Pointer in
+	virtual void *realloc(void *p_memory, size_t p_bytes); ///< Pointer in
 	virtual size_t get_available_mem() const;
 	virtual size_t get_total_usage();
 	virtual size_t get_max_usage();
 
 	/* Most likely available only if memory debugger was compiled in */
 	virtual int get_alloc_count();
-	virtual void * get_alloc_ptr(int p_alloc_idx);
-	virtual const char* get_alloc_description(int p_alloc_idx);
+	virtual void *get_alloc_ptr(int p_alloc_idx);
+	virtual const char *get_alloc_description(int p_alloc_idx);
 	virtual size_t get_alloc_size(int p_alloc_idx);
-	
-	void dump_mem_to_file(const char* p_file);
-	
+
+	void dump_mem_to_file(const char *p_file);
+
 	MemoryPoolStaticMalloc();
 	~MemoryPoolStaticMalloc();
-
 };
 
 #endif

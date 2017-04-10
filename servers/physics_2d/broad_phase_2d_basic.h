@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +30,8 @@
 #ifndef BROAD_PHASE_2D_BASIC_H
 #define BROAD_PHASE_2D_BASIC_H
 
-#include "space_2d_sw.h"
 #include "map.h"
+#include "space_2d_sw.h"
 class BroadPhase2DBasic : public BroadPhase2DSW {
 
 	struct Element {
@@ -41,8 +42,7 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 		int subindex;
 	};
 
-
-	Map<ID,Element> element_map;
+	Map<ID, Element> element_map;
 
 	ID current;
 
@@ -56,17 +56,23 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 			uint64_t key;
 		};
 
-		_FORCE_INLINE_ bool operator<(const PairKey& p_key) const {
+		_FORCE_INLINE_ bool operator<(const PairKey &p_key) const {
 			return key < p_key.key;
 		}
 
-		PairKey() { key=0; }
-		PairKey(ID p_a, ID p_b) { if (p_a>p_b) { a=p_b; b=p_a; } else { a=p_a; b=p_b; }}
-
+		PairKey() { key = 0; }
+		PairKey(ID p_a, ID p_b) {
+			if (p_a > p_b) {
+				a = p_b;
+				b = p_a;
+			} else {
+				a = p_a;
+				b = p_b;
+			}
+		}
 	};
 
-	Map<PairKey,void*> pair_map;
-
+	Map<PairKey, void *> pair_map;
 
 	PairCallback pair_callback;
 	void *pair_userdata;
@@ -74,10 +80,9 @@ class BroadPhase2DBasic : public BroadPhase2DSW {
 	void *unpair_userdata;
 
 public:
-
 	// 0 is an invalid ID
-	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex=0);
-	virtual void move(ID p_id, const Rect2& p_aabb);
+	virtual ID create(CollisionObject2DSW *p_object_, int p_subindex = 0);
+	virtual void move(ID p_id, const Rect2 &p_aabb);
 	virtual void set_static(ID p_id, bool p_static);
 	virtual void remove(ID p_id);
 
@@ -85,11 +90,11 @@ public:
 	virtual bool is_static(ID p_id) const;
 	virtual int get_subindex(ID p_id) const;
 
-	virtual int cull_segment(const Vector2& p_from, const Vector2& p_to,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices=NULL);
-	virtual int cull_aabb(const Rect2& p_aabb,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices=NULL);
+	virtual int cull_segment(const Vector2 &p_from, const Vector2 &p_to, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
+	virtual int cull_aabb(const Rect2 &p_aabb, CollisionObject2DSW **p_results, int p_max_results, int *p_result_indices = NULL);
 
-	virtual void set_pair_callback(PairCallback p_pair_callback,void *p_userdata);
-	virtual void set_unpair_callback(UnpairCallback p_unpair_callback,void *p_userdata);
+	virtual void set_pair_callback(PairCallback p_pair_callback, void *p_userdata);
+	virtual void set_unpair_callback(UnpairCallback p_unpair_callback, void *p_userdata);
 
 	virtual void update();
 

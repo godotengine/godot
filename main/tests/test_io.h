@@ -37,8 +37,7 @@
 
 namespace TestIO {
 
-MainLoop* test();
-
+MainLoop *test();
 }
 
 #endif

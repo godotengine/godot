@@ -1,9 +1,9 @@
 #ifndef EXPORT_DATA_H
 #define EXPORT_DATA_H
 
+#include "map.h"
 #include "variant.h"
 #include "vector.h"
-#include "map.h"
 struct ExportData {
 
 	struct Dependency {
@@ -11,7 +11,7 @@ struct ExportData {
 		String type;
 	};
 
-	Map<int,Dependency> dependencies;
+	Map<int, Dependency> dependencies;
 
 	struct PropertyData {
 		String name;
@@ -23,11 +23,9 @@ struct ExportData {
 		String type;
 		int index;
 		List<PropertyData> properties;
-
 	};
 
 	Vector<ResourceData> resources;
-
 
 	struct NodeData {
 
@@ -41,19 +39,20 @@ struct ExportData {
 		int parent_int;
 		bool instance_is_placeholder;
 
-
 		//text info
 		NodePath parent;
 		NodePath owner;
 		String instance_placeholder;
 
-
-
 		Vector<String> groups;
 		List<PropertyData> properties;
 
-		
-		NodeData() { parent_int=0; owner_int=0; text_data=true; instanced=false;}
+		NodeData() {
+			parent_int = 0;
+			owner_int = 0;
+			text_data = true;
+			instanced = false;
+		}
 	};
 
 	Vector<NodeData> nodes;
@@ -72,7 +71,7 @@ struct ExportData {
 		Array binds;
 		int flags;
 
-		Connection() { text_data=true; }
+		Connection() { text_data = true; }
 	};
 
 	Vector<Connection> connections;
@@ -80,8 +79,6 @@ struct ExportData {
 
 	Array node_paths; //for integer packed data
 	Variant base_scene;
-
-
 };
 
 #endif // EXPORT_DATA_H

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +30,10 @@
 #ifndef REGEX_H
 #define REGEX_H
 
-#include "ustring.h"
-#include "vector.h"
 #include "core/reference.h"
 #include "nrex.hpp"
+#include "ustring.h"
+#include "vector.h"
 
 class RegEx : public Reference {
 
@@ -43,22 +44,20 @@ class RegEx : public Reference {
 	nrex exp;
 
 protected:
-
 	static void _bind_methods();
 	StringArray _bind_get_captures() const;
 
 public:
-
 	void clear();
 	bool is_valid() const;
 	int get_capture_count() const;
 	int get_capture_start(int capture) const;
 	String get_capture(int capture) const;
-	Error compile(const String& p_pattern, int capture = 9);
-	int find(const String& p_text, int p_start = 0, int p_end = -1) const;
+	Error compile(const String &p_pattern, int capture = 9);
+	int find(const String &p_text, int p_start = 0, int p_end = -1) const;
 
 	RegEx();
-	RegEx(const String& p_pattern);
+	RegEx(const String &p_pattern);
 	~RegEx();
 };
 

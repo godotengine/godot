@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,16 +30,16 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
-#include "node.h"
 #include "io/http_client.h"
+#include "node.h"
 #include "os/file_access.h"
 #include "os/thread.h"
 
 class HTTPRequest : public Node {
 
-	OBJ_TYPE(HTTPRequest,Node);
-public:
+	OBJ_TYPE(HTTPRequest, Node);
 
+public:
 	enum Result {
 		RESULT_SUCCESS,
 		//RESULT_NO_BODY,
@@ -57,7 +58,6 @@ public:
 	};
 
 private:
-
 	bool requesting;
 
 	String request_string;
@@ -94,12 +94,11 @@ private:
 
 	int max_redirects;
 
-	void _redirect_request(const String& p_new_url);
-
+	void _redirect_request(const String &p_new_url);
 
 	bool _handle_response(bool *ret_value);
 
-	Error _parse_url(const String& p_url);
+	Error _parse_url(const String &p_url);
 	Error _request();
 
 	volatile bool thread_done;
@@ -107,24 +106,22 @@ private:
 
 	Thread *thread;
 
-	void _request_done(int p_status, int p_code, const StringArray& headers, const ByteArray& p_data);
+	void _request_done(int p_status, int p_code, const StringArray &headers, const ByteArray &p_data);
 	static void _thread_func(void *p_userdata);
 
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
-public:
 
-	void set_ip_type(IP::Type p_type);
-	Error request(const String& p_url, const Vector<String>& p_custom_headers=Vector<String>(), bool p_ssl_validate_domain=true, HTTPClient::Method p_method=HTTPClient::METHOD_GET, const String& p_request_data=""); //connects to a full url and perform request
+public:
+	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 
 	void set_use_threads(bool p_use);
 	bool is_using_threads() const;
 
-	void set_download_file(const String& p_file);
+	void set_download_file(const String &p_file);
 	String get_download_file() const;
 
 	void set_body_size_limit(int p_bytes);

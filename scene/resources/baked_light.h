@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,7 +35,8 @@
 
 class BakedLight : public Resource {
 
-	OBJ_TYPE( BakedLight, Resource);
+	OBJ_TYPE(BakedLight, Resource);
+
 public:
 	enum Mode {
 
@@ -59,7 +61,6 @@ public:
 	};
 
 private:
-
 	RID baked_light;
 	Mode mode;
 	struct LightMap {
@@ -67,8 +68,7 @@ private:
 		Ref<Texture> texture;
 	};
 
-
-	Vector< LightMap> lightmaps;
+	Vector<LightMap> lightmaps;
 
 	//bake vars
 	int cell_subdiv;
@@ -88,23 +88,19 @@ private:
 	Format format;
 	bool flags[BAKE_MAX];
 
-
-
 	void _update_lightmaps();
 
 	Array _get_lightmap_data() const;
 	void _set_lightmap_data(Array p_array);
 
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
 
 public:
-
 	void set_cell_subdivision(int p_subdiv);
 	int get_cell_subdivision() const;
 
@@ -147,13 +143,13 @@ public:
 	void set_realtime_color_enabled(const bool p_enabled);
 	bool get_realtime_color_enabled() const;
 
-	void set_realtime_color(const Color& p_realtime_color);
+	void set_realtime_color(const Color &p_realtime_color);
 	Color get_realtime_color() const;
 
 	void set_realtime_energy(const float p_realtime_energy);
 	float get_realtime_energy() const;
 
-	void set_bake_flag(BakeFlags p_flags,bool p_enable);
+	void set_bake_flag(BakeFlags p_flags, bool p_enable);
 	bool get_bake_flag(BakeFlags p_flags) const;
 
 	void set_format(Format p_margin);
@@ -165,24 +161,22 @@ public:
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
-	void set_octree(const DVector<uint8_t>& p_octree);
+	void set_octree(const DVector<uint8_t> &p_octree);
 	DVector<uint8_t> get_octree() const;
 
-	void set_light(const DVector<uint8_t>& p_light);
+	void set_light(const DVector<uint8_t> &p_light);
 	DVector<uint8_t> get_light() const;
 
-	void set_sampler_octree(const DVector<int>& p_sampler_octree);
+	void set_sampler_octree(const DVector<int> &p_sampler_octree);
 	DVector<int> get_sampler_octree() const;
 
-
-
-	void add_lightmap(const Ref<Texture> &p_texture,Size2 p_gen_size=Size2(256,256));
-	void set_lightmap_gen_size(int p_idx,const Size2& p_size);
+	void add_lightmap(const Ref<Texture> &p_texture, Size2 p_gen_size = Size2(256, 256));
+	void set_lightmap_gen_size(int p_idx, const Size2 &p_size);
 	Size2 get_lightmap_gen_size(int p_idx) const;
-	void set_lightmap_texture(int p_idx,const Ref<Texture> &p_texture);
+	void set_lightmap_texture(int p_idx, const Ref<Texture> &p_texture);
 	Ref<Texture> get_lightmap_texture(int p_idx) const;
 	void erase_lightmap(int p_idx);
-	int  get_lightmaps_count() const;
+	int get_lightmaps_count() const;
 	void clear_lightmaps();
 
 	virtual RID get_rid() const;
@@ -190,7 +184,6 @@ public:
 	BakedLight();
 	~BakedLight();
 };
-
 
 VARIANT_ENUM_CAST(BakedLight::Format);
 VARIANT_ENUM_CAST(BakedLight::Mode);

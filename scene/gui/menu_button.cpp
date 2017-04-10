@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +31,9 @@
 #include "os/keyboard.h"
 #include "scene/main/viewport.h"
 
-
 void MenuButton::_unhandled_key_input(InputEvent p_event) {
 
-
-	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type==InputEvent::KEY || p_event.type==InputEvent::ACTION || p_event.type==InputEvent::JOYSTICK_BUTTON)) {
+	if (p_event.is_pressed() && !p_event.is_echo() && (p_event.type == InputEvent::KEY || p_event.type == InputEvent::ACTION || p_event.type == InputEvent::JOYSTICK_BUTTON)) {
 
 		if (!get_parent() || !is_visible() || is_disabled())
 			return;
@@ -42,26 +41,23 @@ void MenuButton::_unhandled_key_input(InputEvent p_event) {
 		if (get_viewport()->get_modal_stack_top() && !get_viewport()->get_modal_stack_top()->is_a_parent_of(this))
 			return; //ignore because of modal window
 
-
 		if (popup->activate_item_by_event(p_event))
 			accept_event();
 	}
 }
 
-
 void MenuButton::pressed() {
 
 	emit_signal("about_to_show");
-	Size2 size=get_size();
+	Size2 size = get_size();
 
 	Point2 gp = get_global_pos();
-	popup->set_global_pos( gp + Size2( 0, size.height ) );
-	popup->set_size( Size2( size.width, 0) );
-	popup->set_parent_rect( Rect2(Point2(gp-popup->get_global_pos()),get_size()));
+	popup->set_global_pos(gp + Size2(0, size.height));
+	popup->set_size(Size2(size.width, 0));
+	popup->set_parent_rect(Rect2(Point2(gp - popup->get_global_pos()), get_size()));
 	popup->popup();
 	popup->call_deferred("grab_click_focus");
 	popup->set_invalidate_click_until_motion();
-
 }
 
 void MenuButton::_input_event(InputEvent p_event) {
@@ -93,28 +89,27 @@ Array MenuButton::_get_items() const {
 
 	return popup->get("items");
 }
-void MenuButton::_set_items(const Array& p_items) {
+void MenuButton::_set_items(const Array &p_items) {
 
-	popup->set("items",p_items);
+	popup->set("items", p_items);
 }
 
 void MenuButton::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_popup:PopupMenu"),&MenuButton::get_popup);
-	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"),&MenuButton::_unhandled_key_input);
-	ObjectTypeDB::bind_method(_MD("_set_items"),&MenuButton::_set_items);
-	ObjectTypeDB::bind_method(_MD("_get_items"),&MenuButton::_get_items);
+	ObjectTypeDB::bind_method(_MD("get_popup:PopupMenu"), &MenuButton::get_popup);
+	ObjectTypeDB::bind_method(_MD("_unhandled_key_input"), &MenuButton::_unhandled_key_input);
+	ObjectTypeDB::bind_method(_MD("_set_items"), &MenuButton::_set_items);
+	ObjectTypeDB::bind_method(_MD("_get_items"), &MenuButton::_get_items);
 
-	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"items",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"),_SCS("_get_items") );
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "items", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), _SCS("_set_items"), _SCS("_get_items"));
 
-	ADD_SIGNAL( MethodInfo("about_to_show") );
+	ADD_SIGNAL(MethodInfo("about_to_show"));
 }
 MenuButton::MenuButton() {
 
-
 	set_flat(true);
 	set_enabled_focus_mode(FOCUS_NONE);
-	popup = memnew( PopupMenu );
+	popup = memnew(PopupMenu);
 	popup->hide();
 	add_child(popup);
 	popup->set_as_toplevel(true);
@@ -122,9 +117,5 @@ MenuButton::MenuButton() {
 	set_click_on_press(true);
 }
 
-
 MenuButton::~MenuButton() {
-
 }
-
-

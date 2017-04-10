@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,46 +30,38 @@
 #include "packet_peer_udp.h"
 #include "io/ip.h"
 
-PacketPeerUDP* (*PacketPeerUDP::_create)()=NULL;
+PacketPeerUDP *(*PacketPeerUDP::_create)() = NULL;
 
 String PacketPeerUDP::_get_packet_ip() const {
 
 	return get_packet_address();
 }
 
-Error PacketPeerUDP::_set_send_address(const String& p_address, int p_port) {
+Error PacketPeerUDP::_set_send_address(const String &p_address, int p_port) {
 
 	IP_Address ip;
 	if (p_address.is_valid_ip_address()) {
-		ip=p_address;
+		ip = p_address;
 	} else {
-		ip=IP::get_singleton()->resolve_hostname(p_address, ip_type);
-		if (ip==IP_Address())
+		ip = IP::get_singleton()->resolve_hostname(p_address);
+		if (!ip.is_valid())
 			return ERR_CANT_RESOLVE;
 	}
 
-	set_send_address(ip,p_port);
+	set_send_address(ip, p_port);
 	return OK;
-}
-
-void PacketPeerUDP::set_ip_type(IP::Type p_type) {
-	close();
-	ip_type = p_type;
 }
 
 void PacketPeerUDP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_ip_type","ip_type"),&PacketPeerUDP::set_ip_type);
-	ObjectTypeDB::bind_method(_MD("listen:Error","port", "recv_buf_size"),&PacketPeerUDP::listen,DEFVAL(65536));
-	ObjectTypeDB::bind_method(_MD("close"),&PacketPeerUDP::close);
-	ObjectTypeDB::bind_method(_MD("wait:Error"),&PacketPeerUDP::wait);
-	ObjectTypeDB::bind_method(_MD("is_listening"),&PacketPeerUDP::is_listening);
-	ObjectTypeDB::bind_method(_MD("get_packet_ip"),&PacketPeerUDP::_get_packet_ip);
+	ObjectTypeDB::bind_method(_MD("listen:Error", "port", "bind_address", "recv_buf_size"), &PacketPeerUDP::listen, DEFVAL("*"), DEFVAL(65536));
+	ObjectTypeDB::bind_method(_MD("close"), &PacketPeerUDP::close);
+	ObjectTypeDB::bind_method(_MD("wait:Error"), &PacketPeerUDP::wait);
+	ObjectTypeDB::bind_method(_MD("is_listening"), &PacketPeerUDP::is_listening);
+	ObjectTypeDB::bind_method(_MD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
 	//ObjectTypeDB::bind_method(_MD("get_packet_address"),&PacketPeerUDP::_get_packet_address);
-	ObjectTypeDB::bind_method(_MD("get_packet_port"),&PacketPeerUDP::get_packet_port);
-	ObjectTypeDB::bind_method(_MD("set_send_address","host","port"),&PacketPeerUDP::_set_send_address);
-
-
+	ObjectTypeDB::bind_method(_MD("get_packet_port"), &PacketPeerUDP::get_packet_port);
+	ObjectTypeDB::bind_method(_MD("set_send_address", "host", "port"), &PacketPeerUDP::_set_send_address);
 }
 
 Ref<PacketPeerUDP> PacketPeerUDP::create_ref() {
@@ -78,14 +71,12 @@ Ref<PacketPeerUDP> PacketPeerUDP::create_ref() {
 	return Ref<PacketPeerUDP>(_create());
 }
 
-PacketPeerUDP* PacketPeerUDP::create() {
+PacketPeerUDP *PacketPeerUDP::create() {
 
 	if (!_create)
 		return NULL;
 	return _create();
 }
 
-PacketPeerUDP::PacketPeerUDP()
-{
-	ip_type = IP::TYPE_ANY;
+PacketPeerUDP::PacketPeerUDP() {
 }

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +44,7 @@ Error AudioDriverPulseAudio::init() {
 	samples_in = NULL;
 	samples_out = NULL;
 
-	mix_rate = GLOBAL_DEF("audio/mix_rate",44100);
+	mix_rate = GLOBAL_DEF("audio/mix_rate", 44100);
 	output_format = OUTPUT_STEREO;
 	channels = 2;
 
@@ -64,22 +65,20 @@ Error AudioDriverPulseAudio::init() {
 	attr.minreq = (uint32_t)-1;
 
 	int error_code;
-	pulse = pa_simple_new(	NULL,         // default server
-                          	"Godot",      // application name
-                          	PA_STREAM_PLAYBACK,
-                          	NULL,         // default device
-                          	"Sound",      // stream description
-                          	&spec,
-                          	NULL,         // use default channel map
-                          	&attr,         // use buffering attributes from above
-                          	&error_code
-                          	);
+	pulse = pa_simple_new(NULL, // default server
+			"Godot", // application name
+			PA_STREAM_PLAYBACK,
+			NULL, // default device
+			"Sound", // stream description
+			&spec,
+			NULL, // use default channel map
+			&attr, // use buffering attributes from above
+			&error_code);
 
 	if (pulse == NULL) {
-		fprintf(stderr, "PulseAudio ERR: %s\n", pa_strerror(error_code));\
+		fprintf(stderr, "PulseAudio ERR: %s\n", pa_strerror(error_code));
 		ERR_FAIL_COND_V(pulse == NULL, ERR_CANT_OPEN);
 	}
-
 
 	samples_in = memnew_arr(int32_t, buffer_size * channels);
 	samples_out = memnew_arr(int16_t, buffer_size * channels);
@@ -92,22 +91,22 @@ Error AudioDriverPulseAudio::init() {
 
 float AudioDriverPulseAudio::get_latency() {
 
-	if (latency==0)	{ //only do this once since it's approximate anyway
+	if (latency == 0) { //only do this once since it's approximate anyway
 		int error_code;
-		pa_usec_t palat = pa_simple_get_latency( pulse,&error_code);
-		latency=double(palat)/1000000.0;
+		pa_usec_t palat = pa_simple_get_latency(pulse, &error_code);
+		latency = double(palat) / 1000000.0;
 	}
 
 	return latency;
 }
 
-void AudioDriverPulseAudio::thread_func(void* p_udata) {
+void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
-	AudioDriverPulseAudio* ad = (AudioDriverPulseAudio*)p_udata;
+	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 
 	while (!ad->exit_thread) {
 		if (!ad->active) {
-			for (unsigned int i=0; i < ad->buffer_size * ad->channels; i++) {
+			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
 				ad->samples_out[i] = 0;
 			}
 
@@ -118,12 +117,12 @@ void AudioDriverPulseAudio::thread_func(void* p_udata) {
 
 			ad->unlock();
 
-			for (unsigned int i=0; i < ad->buffer_size * ad->channels;i ++) {
+			for (unsigned int i = 0; i < ad->buffer_size * ad->channels; i++) {
 				ad->samples_out[i] = ad->samples_in[i] >> 16;
 			}
-        	}
+		}
 
-        	// pa_simple_write always consumes the entire buffer
+		// pa_simple_write always consumes the entire buffer
 
 		int error_code;
 		int byte_size = ad->buffer_size * sizeof(int16_t) * ad->channels;
@@ -134,7 +133,7 @@ void AudioDriverPulseAudio::thread_func(void* p_udata) {
 			ad->exit_thread = true;
 			break;
 		}
-    	}
+	}
 
 	ad->thread_exited = true;
 }
@@ -176,8 +175,8 @@ void AudioDriverPulseAudio::finish() {
 	exit_thread = true;
 	Thread::wait_to_finish(thread);
 
-    if (pulse)
-        pa_simple_free(pulse);
+	if (pulse)
+		pa_simple_free(pulse);
 
 	if (samples_in) {
 		memdelete_arr(samples_in);
@@ -198,11 +197,10 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() {
 	mutex = NULL;
 	thread = NULL;
 	pulse = NULL;
-	latency=0;
+	latency = 0;
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {
-
 }
 
 #endif

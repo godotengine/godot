@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,38 +30,36 @@
 #ifndef SPATIAL_SOUND_2D_SERVER_H
 #define SPATIAL_SOUND_2D_SERVER_H
 
-#include "object.h"
 #include "bsp_tree.h"
+#include "object.h"
 #include "servers/audio_server.h"
 
 class SpatialSound2DServer : public Object {
 
-	OBJ_TYPE(SpatialSound2DServer,Object);
+	OBJ_TYPE(SpatialSound2DServer, Object);
 	static SpatialSound2DServer *singleton;
+
 public:
-
-
 	enum {
-		SOURCE_INVALID_VOICE=-1,
-		SOURCE_NEXT_VOICE=-2,
+		SOURCE_INVALID_VOICE = -1,
+		SOURCE_NEXT_VOICE = -2,
 	};
 
 	typedef int SourceVoiceID;
 
 	/* SPACE */
-	virtual RID space_create()=0;
+	virtual RID space_create() = 0;
 
 	/* ROOM */
 
-	virtual RID room_create()=0;
-	virtual void room_set_space(RID p_room,RID p_space)=0;
-	virtual RID room_get_space(RID p_room) const=0;
+	virtual RID room_create() = 0;
+	virtual void room_set_space(RID p_room, RID p_space) = 0;
+	virtual RID room_get_space(RID p_room) const = 0;
 
-
-	virtual void room_set_bounds(RID p_room, const DVector<Point2>& p_bounds)=0;
-	virtual DVector<Point2> room_get_bounds(RID p_room) const=0;
-	virtual void room_set_transform(RID p_room, const Matrix32& p_transform)=0;
-	virtual Matrix32 room_get_transform(RID p_room) const=0;
+	virtual void room_set_bounds(RID p_room, const DVector<Point2> &p_bounds) = 0;
+	virtual DVector<Point2> room_get_bounds(RID p_room) const = 0;
+	virtual void room_set_transform(RID p_room, const Matrix32 &p_transform) = 0;
+	virtual Matrix32 room_get_transform(RID p_room) const = 0;
 
 	enum RoomParam {
 		ROOM_PARAM_PITCH_SCALE,
@@ -75,8 +74,8 @@ public:
 		ROOM_PARAM_MAX
 	};
 
-	virtual void room_set_param(RID p_room, RoomParam p_param, float p_value)=0;
-	virtual float room_get_param(RID p_room, RoomParam p_param) const=0;
+	virtual void room_set_param(RID p_room, RoomParam p_param, float p_value) = 0;
+	virtual float room_get_param(RID p_room, RoomParam p_param) const = 0;
 
 	enum RoomReverb {
 		ROOM_REVERB_SMALL,
@@ -85,25 +84,25 @@ public:
 		ROOM_REVERB_HALL
 	};
 
-	virtual void room_set_reverb(RID p_room, RoomReverb p_reverb)=0;
-	virtual RoomReverb room_get_reverb(RID p_room) const=0;
+	virtual void room_set_reverb(RID p_room, RoomReverb p_reverb) = 0;
+	virtual RoomReverb room_get_reverb(RID p_room) const = 0;
 
-	virtual void room_set_level(RID p_room, int p_level)=0;
-	virtual int room_get_level(RID p_room) const=0;
+	virtual void room_set_level(RID p_room, int p_level) = 0;
+	virtual int room_get_level(RID p_room) const = 0;
 
 	//useful for underwater or rooms with very strange conditions
-	virtual void room_set_force_params_to_all_sources(RID p_room, bool p_force)=0;
-	virtual bool room_is_forcing_params_to_all_sources(RID p_room) const=0;
+	virtual void room_set_force_params_to_all_sources(RID p_room, bool p_force) = 0;
+	virtual bool room_is_forcing_params_to_all_sources(RID p_room) const = 0;
 
 	/* SOURCE */
 
-	virtual RID source_create(RID p_space)=0;
+	virtual RID source_create(RID p_space) = 0;
 
-	virtual void source_set_transform(RID p_source, const Matrix32& p_transform)=0;
-	virtual Matrix32 source_get_transform(RID p_source) const=0;
+	virtual void source_set_transform(RID p_source, const Matrix32 &p_transform) = 0;
+	virtual Matrix32 source_get_transform(RID p_source) const = 0;
 
-	virtual void source_set_polyphony(RID p_source,int p_voice_count)=0;
-	virtual int source_get_polyphony(RID p_source) const=0;
+	virtual void source_set_polyphony(RID p_source, int p_voice_count) = 0;
+	virtual int source_get_polyphony(RID p_source) const = 0;
 
 	enum SourceParam {
 
@@ -115,17 +114,17 @@ public:
 		SOURCE_PARAM_MAX
 	};
 
-	virtual void source_set_param(RID p_source, SourceParam p_param, float p_value)=0;
-	virtual float source_get_param(RID p_source, SourceParam p_param) const=0;
+	virtual void source_set_param(RID p_source, SourceParam p_param, float p_value) = 0;
+	virtual float source_get_param(RID p_source, SourceParam p_param) const = 0;
 
-	virtual void source_set_audio_stream(RID p_source, AudioServer::AudioStream *p_stream)=0; //null to unset
-	virtual SourceVoiceID source_play_sample(RID p_source, RID p_sample, int p_mix_rate, int p_voice=SOURCE_NEXT_VOICE)=0;
+	virtual void source_set_audio_stream(RID p_source, AudioServer::AudioStream *p_stream) = 0; //null to unset
+	virtual SourceVoiceID source_play_sample(RID p_source, RID p_sample, int p_mix_rate, int p_voice = SOURCE_NEXT_VOICE, int p_priority = 0) = 0;
 	//voices
-	virtual void source_voice_set_pitch_scale(RID p_source,SourceVoiceID p_voice, float p_pitch_scale)=0;
-	virtual void source_voice_set_volume_scale_db(RID p_source,SourceVoiceID p_voice, float p_volume_db)=0;
+	virtual void source_voice_set_pitch_scale(RID p_source, SourceVoiceID p_voice, float p_pitch_scale) = 0;
+	virtual void source_voice_set_volume_scale_db(RID p_source, SourceVoiceID p_voice, float p_volume_db) = 0;
 
-	virtual bool source_is_voice_active(RID p_source,SourceVoiceID p_voice) const=0;
-	virtual void source_stop_voice(RID p_source,SourceVoiceID p_voice)=0;
+	virtual bool source_is_voice_active(RID p_source, SourceVoiceID p_voice) const = 0;
+	virtual void source_stop_voice(RID p_source, SourceVoiceID p_voice) = 0;
 
 	/* LISTENER */
 
@@ -138,27 +137,26 @@ public:
 		LISTENER_PARAM_MAX
 	};
 
-	virtual RID listener_create()=0;
-	virtual void listener_set_space(RID p_listener, RID p_space)=0;
+	virtual RID listener_create() = 0;
+	virtual void listener_set_space(RID p_listener, RID p_space) = 0;
 
-	virtual void listener_set_transform(RID p_listener, const Matrix32& p_transform)=0;
-	virtual Matrix32 listener_get_transform(RID p_listener) const=0;
+	virtual void listener_set_transform(RID p_listener, const Matrix32 &p_transform) = 0;
+	virtual Matrix32 listener_get_transform(RID p_listener) const = 0;
 
-	virtual void listener_set_param(RID p_listener, ListenerParam p_param, float p_value)=0;
-	virtual float listener_get_param(RID p_listener, ListenerParam p_param) const=0;
+	virtual void listener_set_param(RID p_listener, ListenerParam p_param, float p_value) = 0;
+	virtual float listener_get_param(RID p_listener, ListenerParam p_param) const = 0;
 
 	/* MISC */
 
-	virtual void free(RID p_id)=0;
+	virtual void free(RID p_id) = 0;
 
-	virtual void init()=0;
-	virtual void update(float p_delta)=0;
-	virtual void finish()=0;
+	virtual void init() = 0;
+	virtual void update(float p_delta) = 0;
+	virtual void finish() = 0;
 
 	static SpatialSound2DServer *get_singleton();
 
 	SpatialSound2DServer();
-
 };
 
 #endif // SPATIAL_SOUND_2D_SERVER_H

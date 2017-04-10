@@ -29,15 +29,15 @@
 #ifndef AUDIO_STREAM_SPEEX_H
 #define AUDIO_STREAM_SPEEX_H
 
-#include "scene/resources/audio_stream.h"
-#include "os/file_access.h"
 #include "io/resource_loader.h"
+#include "os/file_access.h"
 #include "os/thread_safe.h"
+#include "scene/resources/audio_stream.h"
 
 #include <speex/speex.h>
+#include <speex/speex_callbacks.h>
 #include <speex/speex_header.h>
 #include <speex/speex_stereo.h>
-#include <speex/speex_callbacks.h>
 // (akien) Prevents unbundling properly, but it's only for 2.1.x as speex
 // is dropped in 3.0+, so don't want to lose too much time on this.
 // Needed for speex_free (internal).
@@ -48,7 +48,6 @@
 class AudioStreamPlaybackSpeex : public AudioStreamPlayback {
 
 	OBJ_TYPE(AudioStreamPlaybackSpeex, AudioStreamPlayback);
-
 
 	void *st;
 	SpeexBits bits;
@@ -66,8 +65,8 @@ class AudioStreamPlaybackSpeex : public AudioStreamPlayback {
 	void reload();
 
 	ogg_sync_state oy;
-	ogg_page       og;
-	ogg_packet     op;
+	ogg_page og;
+	ogg_packet op;
 	ogg_stream_state os;
 	int nframes;
 	int frame_size;
@@ -79,23 +78,20 @@ class AudioStreamPlaybackSpeex : public AudioStreamPlayback {
 	int stream_srate;
 	int stream_minbuff_size;
 
-	void* process_header(ogg_packet *op, int *frame_size, int *rate, int *nframes, int *channels, int *extra_headers);
+	void *process_header(ogg_packet *op, int *frame_size, int *rate, int *nframes, int *channels, int *extra_headers);
 
 	static void _bind_methods();
 
 protected:
-
 	//virtual bool _can_mix() const;
 
 	Dictionary _get_bundled() const;
-	void _set_bundled(const Dictionary& dict);
+	void _set_bundled(const Dictionary &dict);
 
 public:
+	void set_data(const Vector<uint8_t> &p_data);
 
-
-	void set_data(const Vector<uint8_t>& p_data);
-
-	virtual void play(float p_from_pos=0);
+	virtual void play(float p_from_pos = 0);
 	virtual void stop();
 	virtual bool is_playing() const;
 
@@ -115,42 +111,37 @@ public:
 	virtual int get_mix_rate() const { return stream_srate; }
 
 	virtual int get_minimum_buffer_size() const { return stream_minbuff_size; }
-	virtual int mix(int16_t* p_bufer,int p_frames);
+	virtual int mix(int16_t *p_bufer, int p_frames);
 
-	virtual void set_loop_restart_time(float p_time) {  } //no loop restart, ignore
+	virtual void set_loop_restart_time(float p_time) {} //no loop restart, ignore
 
 	AudioStreamPlaybackSpeex();
 	~AudioStreamPlaybackSpeex();
 };
 
-
-
 class AudioStreamSpeex : public AudioStream {
 
-	OBJ_TYPE(AudioStreamSpeex,AudioStream);
+	OBJ_TYPE(AudioStreamSpeex, AudioStream);
 
 	Vector<uint8_t> data;
 	String file;
-public:
 
+public:
 	Ref<AudioStreamPlayback> instance_playback() {
-		Ref<AudioStreamPlaybackSpeex> pb = memnew( AudioStreamPlaybackSpeex );
+		Ref<AudioStreamPlaybackSpeex> pb = memnew(AudioStreamPlaybackSpeex);
 		pb->set_data(data);
 		return pb;
 	}
 
-	void set_file(const String& p_file);
-
+	void set_file(const String &p_file);
 };
-
 
 class ResourceFormatLoaderAudioStreamSpeex : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
-
 };
 
 #endif // AUDIO_STREAM_SPEEX_H

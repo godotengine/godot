@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -136,7 +137,7 @@ static _HaikuTranslatePair _hb_to_keycode[] = {
 	{ KEY_Y, (0x79) },
 	{ KEY_Z, (0x7A) },
 
-/*
+	/*
 { KEY_PLAY, VK_PLAY},// (0xFA)
 { KEY_STANDBY,VK_SLEEP },//(0x5F)
 { KEY_BACK,VK_BROWSER_BACK},// (0xA6)
@@ -177,22 +178,48 @@ static _HaikuTranslatePair _hb_to_keycode[] = {
 };
 
 unsigned int KeyMappingHaiku::get_keysym(int32 raw_char, int32 key) {
-	if (raw_char == B_INSERT && key == 0x64) { return KEY_KP_0; }
-	if (raw_char == B_END && key == 0x58) { return KEY_KP_1; }
-	if (raw_char == B_DOWN_ARROW && key == 0x59) { return KEY_KP_2; }
-	if (raw_char == B_PAGE_DOWN && key == 0x5A) { return KEY_KP_3; }
-	if (raw_char == B_LEFT_ARROW && key == 0x48) { return KEY_KP_4; }
-	if (raw_char == 0x35 && key == 0x49) { return KEY_KP_5; }
-	if (raw_char == B_RIGHT_ARROW && key == 0x4A) { return KEY_KP_6; }
-	if (raw_char == B_HOME && key == 0x37) { return KEY_KP_7; }
-	if (raw_char == B_UP_ARROW && key == 0x38) { return KEY_KP_8; }
-	if (raw_char == B_PAGE_UP && key == 0x39) { return KEY_KP_9; }
-	if (raw_char == 0x2F && key == 0x23) { return KEY_KP_DIVIDE; }
-	if (raw_char == 0x2D && key == 0x25) { return KEY_KP_SUBTRACT; }
-	if (raw_char == B_DELETE && key == 0x65) { return KEY_KP_PERIOD; }
+	if (raw_char == B_INSERT && key == 0x64) {
+		return KEY_KP_0;
+	}
+	if (raw_char == B_END && key == 0x58) {
+		return KEY_KP_1;
+	}
+	if (raw_char == B_DOWN_ARROW && key == 0x59) {
+		return KEY_KP_2;
+	}
+	if (raw_char == B_PAGE_DOWN && key == 0x5A) {
+		return KEY_KP_3;
+	}
+	if (raw_char == B_LEFT_ARROW && key == 0x48) {
+		return KEY_KP_4;
+	}
+	if (raw_char == 0x35 && key == 0x49) {
+		return KEY_KP_5;
+	}
+	if (raw_char == B_RIGHT_ARROW && key == 0x4A) {
+		return KEY_KP_6;
+	}
+	if (raw_char == B_HOME && key == 0x37) {
+		return KEY_KP_7;
+	}
+	if (raw_char == B_UP_ARROW && key == 0x38) {
+		return KEY_KP_8;
+	}
+	if (raw_char == B_PAGE_UP && key == 0x39) {
+		return KEY_KP_9;
+	}
+	if (raw_char == 0x2F && key == 0x23) {
+		return KEY_KP_DIVIDE;
+	}
+	if (raw_char == 0x2D && key == 0x25) {
+		return KEY_KP_SUBTRACT;
+	}
+	if (raw_char == B_DELETE && key == 0x65) {
+		return KEY_KP_PERIOD;
+	}
 
 	if (raw_char == 0x10) {
-		for(int i = 0; _fn_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+		for (int i = 0; _fn_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 			if (_fn_to_keycode[i].keycode == key) {
 				return _fn_to_keycode[i].keysym;
 			}
@@ -201,7 +228,7 @@ unsigned int KeyMappingHaiku::get_keysym(int32 raw_char, int32 key) {
 		return KEY_UNKNOWN;
 	}
 
-	for(int i = 0; _hb_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+	for (int i = 0; _hb_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 		if (_hb_to_keycode[i].keycode == raw_char) {
 			return _hb_to_keycode[i].keysym;
 		}
@@ -211,7 +238,7 @@ unsigned int KeyMappingHaiku::get_keysym(int32 raw_char, int32 key) {
 }
 
 unsigned int KeyMappingHaiku::get_modifier_keysym(int32 key) {
-	for(int i = 0; _mod_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
+	for (int i = 0; _mod_to_keycode[i].keysym != KEY_UNKNOWN; i++) {
 		if ((_mod_to_keycode[i].keycode & key) != 0) {
 			return _mod_to_keycode[i].keysym;
 		}

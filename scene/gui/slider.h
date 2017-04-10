@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +34,7 @@
 
 class Slider : public Range {
 
-	OBJ_TYPE( Slider, Range );
+	OBJ_TYPE(Slider, Range);
 
 	struct Grab {
 		int pos;
@@ -46,16 +47,13 @@ class Slider : public Range {
 	Orientation orientation;
 	float custom_step;
 
-
 protected:
-
 	void _input_event(InputEvent p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 	bool ticks_on_borders;
 
 public:
-
 	virtual Size2 get_minimum_size() const;
 
 	void set_custom_step(float p_custom_step);
@@ -67,25 +65,25 @@ public:
 	void set_ticks_on_borders(bool);
 	bool get_ticks_on_borders() const;
 
-	Slider(Orientation p_orientation=VERTICAL);
+	Slider(Orientation p_orientation = VERTICAL);
 };
-
-
 
 class HSlider : public Slider {
 
-	OBJ_TYPE( HSlider, Slider );
-public:
+	OBJ_TYPE(HSlider, Slider);
 
-	HSlider() : Slider(HORIZONTAL) { set_v_size_flags(0);}
+public:
+	HSlider()
+		: Slider(HORIZONTAL) { set_v_size_flags(0); }
 };
 
 class VSlider : public Slider {
 
-	OBJ_TYPE( VSlider, Slider );
-public:
+	OBJ_TYPE(VSlider, Slider);
 
-	VSlider() : Slider(VERTICAL) { set_h_size_flags(0);}
+public:
+	VSlider()
+		: Slider(VERTICAL) { set_h_size_flags(0); }
 };
 
 #endif // SLIDER_H

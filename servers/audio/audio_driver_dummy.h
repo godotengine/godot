@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,18 +32,17 @@
 
 #include "servers/audio/audio_server_sw.h"
 
-#include "core/os/thread.h"
 #include "core/os/mutex.h"
-
+#include "core/os/thread.h"
 
 class AudioDriverDummy : public AudioDriverSW {
 
-	Thread* thread;
-	Mutex* mutex;
+	Thread *thread;
+	Mutex *mutex;
 
-	int32_t* samples_in;
+	int32_t *samples_in;
 
-	static void thread_func(void* p_udata);
+	static void thread_func(void *p_udata);
 	int buffer_size;
 
 	unsigned int mix_rate;
@@ -56,8 +56,7 @@ class AudioDriverDummy : public AudioDriverSW {
 	bool pcm_open;
 
 public:
-
-	const char* get_name() const {
+	const char *get_name() const {
 		return "Dummy";
 	};
 

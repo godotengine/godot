@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,24 +30,23 @@
 #ifndef OS_OSX_H
 #define OS_OSX_H
 
-
-#include "os/input.h"
-#include "joystick_osx.h"
+#include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
+#include "joystick_osx.h"
 #include "main/input_default.h"
-#include "servers/visual_server.h"
-#include "servers/visual/visual_server_wrap_mt.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/physics_server.h"
+#include "os/input.h"
+#include "platform/osx/audio_driver_osx.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/audio/sample_manager_sw.h"
-#include "servers/spatial_sound/spatial_sound_server_sw.h"
-#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
-#include "drivers/alsa/audio_driver_alsa.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_wrap_mt.h"
-#include "platform/osx/audio_driver_osx.h"
+#include "servers/physics_server.h"
+#include "servers/spatial_sound/spatial_sound_server_sw.h"
+#include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
+#include "servers/visual/rasterizer.h"
+#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/visual_server.h"
 #include <ApplicationServices/ApplicationServices.h>
 
 //bitch
@@ -85,8 +85,8 @@ public:
 
 	void process_events();
 
-	void* framework;
-//          pthread_key_t   current;
+	void *framework;
+	//          pthread_key_t   current;
 	bool mouse_grab;
 	Point2 mouse_pos;
 	uint32_t last_id;
@@ -115,56 +115,54 @@ public:
 	Rect2 restore_rect;
 
 	float _mouse_scale(float p_scale) {
-		if (display_scale>1.0)
+		if (display_scale > 1.0)
 			return p_scale;
 		else
 			return 1.0;
 	}
 
 	float display_scale;
-protected:
 
+protected:
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;
+	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
 
 	virtual void initialize_core();
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
+	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );
+	virtual void set_main_loop(MainLoop *p_main_loop);
 	virtual void delete_main_loop();
 
 public:
-
-
-	static OS_OSX* singleton;
+	static OS_OSX *singleton;
 
 	void wm_minimized(bool p_minimized);
 
 	virtual String get_name();
 
-	virtual void alert(const String& p_alert, const String& p_title="ALERT!");
+	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	virtual void set_cursor_shape(CursorShape p_shape);
 
 	virtual void set_mouse_show(bool p_show);
 	virtual void set_mouse_grab(bool p_grab);
 	virtual bool is_mouse_grab_enabled() const;
-	virtual void warp_mouse_pos(const Point2& p_to);
+	virtual void warp_mouse_pos(const Point2 &p_to);
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String& p_title);
+	virtual void set_window_title(const String &p_title);
 
 	virtual Size2 get_window_size() const;
 
-	virtual void set_icon(const Image& p_icon);
+	virtual void set_icon(const Image &p_icon);
 
 	virtual MainLoop *get_main_loop() const;
 
 	virtual bool can_draw() const;
 
-	virtual void set_clipboard(const String& p_text);
+	virtual void set_clipboard(const String &p_text);
 	virtual String get_clipboard() const;
 
 	virtual void release_rendering_thread();
@@ -172,13 +170,13 @@ public:
 	virtual void swap_buffers();
 
 	Error shell_open(String p_uri);
-	void push_input(const InputEvent& p_event);
+	void push_input(const InputEvent &p_event);
 
 	String get_locale() const;
 
-	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
-	virtual VideoMode get_video_mode(int p_screen=0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
+	virtual VideoMode get_video_mode(int p_screen = 0) const;
+	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual String get_executable_path() const;
 
@@ -189,12 +187,12 @@ public:
 	virtual int get_screen_count() const;
 	virtual int get_current_screen() const;
 	virtual void set_current_screen(int p_screen);
-	virtual Point2 get_screen_position(int p_screen=0) const;
-	virtual Size2 get_screen_size(int p_screen=0) const;
-	virtual int get_screen_dpi(int p_screen=0) const;
+	virtual Point2 get_screen_position(int p_screen = 0) const;
+	virtual Size2 get_screen_size(int p_screen = 0) const;
+	virtual int get_screen_dpi(int p_screen = 0) const;
 
 	virtual Point2 get_window_position() const;
-	virtual void set_window_position(const Point2& p_position);
+	virtual void set_window_position(const Point2 &p_position);
 	virtual void set_window_size(const Size2 p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -209,8 +207,8 @@ public:
 
 	void run();
 
-    void set_mouse_mode(MouseMode p_mode);
-    MouseMode get_mouse_mode() const;
+	void set_mouse_mode(MouseMode p_mode);
+	MouseMode get_mouse_mode() const;
 
 	OS_OSX();
 };

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,9 +34,9 @@
 
 class Tabs : public Control {
 
-	OBJ_TYPE( Tabs, Control );
-public:
+	OBJ_TYPE(Tabs, Control);
 
+public:
 	enum TabAlign {
 
 		ALIGN_LEFT,
@@ -49,9 +50,8 @@ public:
 		CLOSE_BUTTON_SHOW_ACTIVE_ONLY,
 		CLOSE_BUTTON_SHOW_ALWAYS,
 	};
+
 private:
-
-
 	struct Tab {
 
 		String text;
@@ -64,9 +64,7 @@ private:
 		Ref<Texture> right_button;
 		Rect2 rb_rect;
 		Rect2 cb_rect;
-
 	};
-
 
 	int offset;
 	int max_drawn_tab;
@@ -85,28 +83,26 @@ private:
 	bool cb_pressing;
 	CloseButtonDisplayPolicy cb_displaypolicy;
 
-	int hover;	// hovered tab
+	int hover; // hovered tab
 
 	int get_tab_width(int p_idx) const;
 	void _ensure_no_over_offset();
 
 protected:
-
-	void _input_event(const InputEvent& p_event);
+	void _input_event(const InputEvent &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
+	void add_tab(const String &p_str = "", const Ref<Texture> &p_icon = Ref<Texture>());
 
-	void add_tab(const String& p_str="",const Ref<Texture>& p_icon=Ref<Texture>());
-
-	void set_tab_title(int p_tab,const String& p_title);
+	void set_tab_title(int p_tab, const String &p_title);
 	String get_tab_title(int p_tab) const;
 
-	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
+	void set_tab_icon(int p_tab, const Ref<Texture> &p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
 
-	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
+	void set_tab_right_button(int p_tab, const Ref<Texture> &p_right_button);
 	Ref<Texture> get_tab_right_button(int p_tab) const;
 
 	void set_tab_align(TabAlign p_align);

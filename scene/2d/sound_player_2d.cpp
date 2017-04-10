@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,30 +31,27 @@
 
 #include "servers/audio_server.h"
 
-#include "servers/spatial_sound_2d_server.h"
 #include "scene/resources/surface_tool.h"
-
+#include "servers/spatial_sound_2d_server.h"
 
 void SoundPlayer2D::_notification(int p_what) {
 
-
-	switch(p_what) {
+	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			//find the sound space
 
 			source_rid = SpatialSound2DServer::get_singleton()->source_create(get_world_2d()->get_sound_space());
 
-			for(int i=0;i<PARAM_MAX;i++)
-				set_param(Param(i),params[i]);
+			for (int i = 0; i < PARAM_MAX; i++)
+				set_param(Param(i), params[i]);
 
-			SpatialSound2DServer::get_singleton()->source_set_transform(source_rid,get_global_transform());
-
+			SpatialSound2DServer::get_singleton()->source_set_transform(source_rid, get_global_transform());
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			SpatialSound2DServer::get_singleton()->source_set_transform(source_rid,get_global_transform());
+			SpatialSound2DServer::get_singleton()->source_set_transform(source_rid, get_global_transform());
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -63,61 +61,49 @@ void SoundPlayer2D::_notification(int p_what) {
 
 		} break;
 	}
-
 }
 
+void SoundPlayer2D::set_param(Param p_param, float p_value) {
 
-void SoundPlayer2D::set_param( Param p_param, float p_value) {
-
-	ERR_FAIL_INDEX(p_param,PARAM_MAX);
-	params[p_param]=p_value;
+	ERR_FAIL_INDEX(p_param, PARAM_MAX);
+	params[p_param] = p_value;
 	if (source_rid.is_valid())
-		SpatialSound2DServer::get_singleton()->source_set_param(source_rid,(SpatialSound2DServer::SourceParam)p_param,p_value);
-
+		SpatialSound2DServer::get_singleton()->source_set_param(source_rid, (SpatialSound2DServer::SourceParam)p_param, p_value);
 }
 
-float SoundPlayer2D::get_param( Param p_param) const {
+float SoundPlayer2D::get_param(Param p_param) const {
 
-	ERR_FAIL_INDEX_V(p_param,PARAM_MAX,0);
+	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
-
 }
-
 
 void SoundPlayer2D::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("set_param", "param", "value"), &SoundPlayer2D::set_param);
+	ObjectTypeDB::bind_method(_MD("get_param", "param"), &SoundPlayer2D::get_param);
 
-	ObjectTypeDB::bind_method(_MD("set_param","param","value"),&SoundPlayer2D::set_param);
-	ObjectTypeDB::bind_method(_MD("get_param","param"),&SoundPlayer2D::get_param);
+	BIND_CONSTANT(PARAM_VOLUME_DB);
+	BIND_CONSTANT(PARAM_PITCH_SCALE);
+	BIND_CONSTANT(PARAM_ATTENUATION_MIN_DISTANCE);
+	BIND_CONSTANT(PARAM_ATTENUATION_MAX_DISTANCE);
+	BIND_CONSTANT(PARAM_ATTENUATION_DISTANCE_EXP);
+	BIND_CONSTANT(PARAM_MAX);
 
-	BIND_CONSTANT( PARAM_VOLUME_DB );
-	BIND_CONSTANT( PARAM_PITCH_SCALE );
-	BIND_CONSTANT( PARAM_ATTENUATION_MIN_DISTANCE );
-	BIND_CONSTANT( PARAM_ATTENUATION_MAX_DISTANCE );
-	BIND_CONSTANT( PARAM_ATTENUATION_DISTANCE_EXP );
-	BIND_CONSTANT( PARAM_MAX );
-
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/volume_db",PROPERTY_HINT_RANGE, "-80,24,0.01"),_SCS("set_param"),_SCS("get_param"),PARAM_VOLUME_DB);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/pitch_scale",PROPERTY_HINT_RANGE, "0.001,32,0.001"),_SCS("set_param"),_SCS("get_param"),PARAM_PITCH_SCALE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/min_distance",PROPERTY_HINT_EXP_RANGE, "16,16384,1"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MIN_DISTANCE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/max_distance",PROPERTY_HINT_EXP_RANGE, "16,16384,1"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_MAX_DISTANCE);
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation/distance_exp",PROPERTY_HINT_EXP_EASING, "attenuation"),_SCS("set_param"),_SCS("get_param"),PARAM_ATTENUATION_DISTANCE_EXP);
-
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/volume_db", PROPERTY_HINT_RANGE, "-80,24,0.01"), _SCS("set_param"), _SCS("get_param"), PARAM_VOLUME_DB);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/pitch_scale", PROPERTY_HINT_RANGE, "0.001,32,0.001"), _SCS("set_param"), _SCS("get_param"), PARAM_PITCH_SCALE);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/attenuation/min_distance", PROPERTY_HINT_EXP_RANGE, "16,16384,1"), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION_MIN_DISTANCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/attenuation/max_distance", PROPERTY_HINT_EXP_RANGE, "16,16384,1"), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION_MAX_DISTANCE);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "params/attenuation/distance_exp", PROPERTY_HINT_EXP_EASING, "attenuation"), _SCS("set_param"), _SCS("get_param"), PARAM_ATTENUATION_DISTANCE_EXP);
 }
-
 
 SoundPlayer2D::SoundPlayer2D() {
 
-	params[PARAM_VOLUME_DB]=0.0;
-	params[PARAM_PITCH_SCALE]=1.0;
-	params[PARAM_ATTENUATION_MIN_DISTANCE]=1;
-	params[PARAM_ATTENUATION_MAX_DISTANCE]=2048;
-	params[PARAM_ATTENUATION_DISTANCE_EXP]=1.0; //linear (and not really good)
-
-
+	params[PARAM_VOLUME_DB] = 0.0;
+	params[PARAM_PITCH_SCALE] = 1.0;
+	params[PARAM_ATTENUATION_MIN_DISTANCE] = 1;
+	params[PARAM_ATTENUATION_MAX_DISTANCE] = 2048;
+	params[PARAM_ATTENUATION_DISTANCE_EXP] = 1.0; //linear (and not really good)
 }
 
 SoundPlayer2D::~SoundPlayer2D() {
-
-
 }

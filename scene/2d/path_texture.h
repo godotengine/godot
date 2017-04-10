@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,22 +33,22 @@
 #include "scene/2d/node_2d.h"
 
 class PathTexture : public Node2D {
-	OBJ_TYPE( PathTexture, Node2D );
+	OBJ_TYPE(PathTexture, Node2D);
 
 	Ref<Texture> begin;
 	Ref<Texture> repeat;
 	Ref<Texture> end;
 	int subdivs;
 	bool overlap;
-public:
 
-	void set_begin_texture(const Ref<Texture>& p_texture);
+public:
+	void set_begin_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_begin_texture() const;
 
-	void set_repeat_texture(const Ref<Texture>& p_texture);
+	void set_repeat_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_repeat_texture() const;
 
-	void set_end_texture(const Ref<Texture>& p_texture);
+	void set_end_texture(const Ref<Texture> &p_texture);
 	Ref<Texture> get_end_texture() const;
 
 	void set_subdivisions(int p_amount);

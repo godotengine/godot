@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,19 +43,17 @@ class AudioDriverOSX : public AudioDriverSW {
 	Mutex *mutex;
 
 	int channels;
-	int32_t* samples_in;
-	int	buffer_frames;
+	int32_t *samples_in;
+	int buffer_frames;
 
 	static OSStatus output_callback(void *inRefCon,
-				   AudioUnitRenderActionFlags * ioActionFlags,
-				   const AudioTimeStamp * inTimeStamp,
-				   UInt32 inBusNumber, UInt32 inNumberFrames,
-				   AudioBufferList * ioData);
-
+			AudioUnitRenderActionFlags *ioActionFlags,
+			const AudioTimeStamp *inTimeStamp,
+			UInt32 inBusNumber, UInt32 inNumberFrames,
+			AudioBufferList *ioData);
 
 public:
-
-	const char* get_name() const {
+	const char *get_name() const {
 		return "AudioUnit";
 	};
 

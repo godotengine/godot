@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,25 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "os_javascript.h"
-#include "drivers/gles2/rasterizer_gles2.h"
 #include "core/io/file_access_buffered_fa.h"
-#include "drivers/unix/file_access_unix.h"
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/unix/dir_access_unix.h"
+#include "drivers/unix/file_access_unix.h"
 
 #include "servers/visual/visual_server_raster.h"
 
 #include "main/main.h"
 
 #include "core/globals.h"
-#include "stdlib.h"
-#include "emscripten.h"
 #include "dom_keys.h"
+#include "emscripten.h"
+#include "stdlib.h"
 
 int OS_JavaScript::get_video_driver_count() const {
 
 	return 1;
 }
-const char * OS_JavaScript::get_video_driver_name(int p_driver) const {
+const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
 
 	return "GLES2";
 }
@@ -60,7 +61,7 @@ int OS_JavaScript::get_audio_driver_count() const {
 	return 1;
 }
 
-const char * OS_JavaScript::get_audio_driver_name(int p_driver) const {
+const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 
 	return "JavaScript";
 }
@@ -69,26 +70,45 @@ void OS_JavaScript::initialize_core() {
 
 	OS_Unix::initialize_core();
 	FileAccess::make_default<FileAccessBufferedFA<FileAccessUnix> >(FileAccess::ACCESS_RESOURCES);
-
 }
 
-void OS_JavaScript::set_opengl_extensions(const char* p_gl_extensions) {
+void OS_JavaScript::set_opengl_extensions(const char *p_gl_extensions) {
 
 	ERR_FAIL_COND(!p_gl_extensions);
-	gl_extensions=p_gl_extensions;
+	gl_extensions = p_gl_extensions;
+}
+
+static EM_BOOL _browser_resize_callback(int event_type, const EmscriptenUiEvent *ui_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_RESIZE, false);
+
+	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
+
+	// the order in which _browser_resize_callback and
+	// _fullscreen_change_callback are called is browser-dependent,
+	// so try adjusting for fullscreen in both
+	if (os->is_window_fullscreen() || os->is_window_maximized()) {
+
+		OS::VideoMode vm = os->get_video_mode();
+		vm.width = ui_event->windowInnerWidth;
+		vm.height = ui_event->windowInnerHeight;
+		os->set_video_mode(vm);
+		emscripten_set_canvas_size(ui_event->windowInnerWidth, ui_event->windowInnerHeight);
+	}
+	return false;
 }
 
 static Size2 _windowed_size;
 
 static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFullscreenChangeEvent *event, void *user_data) {
 
-	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_FULLSCREENCHANGE, false);
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_FULLSCREENCHANGE, false);
 
-	OS_JavaScript* os = static_cast<OS_JavaScript*>(user_data);
+	OS_JavaScript *os = static_cast<OS_JavaScript *>(user_data);
 	String id = String::utf8(event->id);
 
 	// empty id is canvas
-	if (id.empty() || id=="canvas") {
+	if (id.empty() || id == "canvas") {
 
 		OS::VideoMode vm = os->get_video_mode();
 		// this event property is the only reliable information on
@@ -98,13 +118,14 @@ static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFulls
 		if (event->isFullscreen) {
 			vm.width = event->screenWidth;
 			vm.height = event->screenHeight;
+			os->set_video_mode(vm);
+			emscripten_set_canvas_size(vm.width, vm.height);
+		} else {
+			os->set_video_mode(vm);
+			if (!os->is_window_maximized()) {
+				os->set_window_size(_windowed_size);
+			}
 		}
-		else {
-			vm.width = _windowed_size.width;
-			vm.height = _windowed_size.height;
-		}
-		os->set_video_mode(vm);
-		emscripten_set_canvas_size(vm.width, vm.height);
 	}
 	return false;
 }
@@ -122,12 +143,12 @@ static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_eve
 
 	String unicode = String::utf8(emscripten_event->key);
 	// check if empty or multi-character (e.g. `CapsLock`)
-	if (unicode.length()!=1) {
+	if (unicode.length() != 1) {
 		// might be empty as well, but better than nonsense
 		unicode = String::utf8(emscripten_event->charValue);
 	}
-	if (unicode.length()==1) {
-		ev.key.unicode=unicode[0];
+	if (unicode.length() == 1) {
+		ev.key.unicode = unicode[0];
 	}
 
 	return ev;
@@ -137,62 +158,62 @@ static InputEvent deferred_key_event;
 
 static EM_BOOL _keydown_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
 
-	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_KEYDOWN, false);
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_KEYDOWN, false);
 
 	InputEvent ev = _setup_key_event(key_event);
 	ev.key.pressed = true;
-	if (ev.key.unicode==0 && keycode_has_unicode(ev.key.scancode)) {
+	if (ev.key.unicode == 0 && keycode_has_unicode(ev.key.scancode)) {
 		// defer to keypress event for legacy unicode retrieval
 		deferred_key_event = ev;
 		return false; // do not suppress keypress event
 	}
-	static_cast<OS_JavaScript*>(user_data)->push_input(ev);
+	static_cast<OS_JavaScript *>(user_data)->push_input(ev);
 	return true;
 }
 
 static EM_BOOL _keypress_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
 
-	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_KEYPRESS, false);
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_KEYPRESS, false);
 
 	deferred_key_event.key.unicode = key_event->charCode;
-	static_cast<OS_JavaScript*>(user_data)->push_input(deferred_key_event);
+	static_cast<OS_JavaScript *>(user_data)->push_input(deferred_key_event);
 	return true;
 }
 
 static EM_BOOL _keyup_callback(int event_type, const EmscriptenKeyboardEvent *key_event, void *user_data) {
 
-	ERR_FAIL_COND_V(event_type!=EMSCRIPTEN_EVENT_KEYUP, false);
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_KEYUP, false);
 
 	InputEvent ev = _setup_key_event(key_event);
 	ev.key.pressed = false;
-	static_cast<OS_JavaScript*>(user_data)->push_input(ev);
-	return ev.key.scancode!=KEY_UNKNOWN && ev.key.scancode!=0;
-
+	static_cast<OS_JavaScript *>(user_data)->push_input(ev);
+	return ev.key.scancode != KEY_UNKNOWN && ev.key.scancode != 0;
 }
 
 static EM_BOOL joy_callback_func(int p_type, const EmscriptenGamepadEvent *p_event, void *p_user) {
-	OS_JavaScript *os = (OS_JavaScript*) OS::get_singleton();
+	OS_JavaScript *os = (OS_JavaScript *)OS::get_singleton();
 	if (os) {
 		return os->joy_connection_changed(p_type, p_event);
 	}
 	return false;
 }
 
-void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
+void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	print_line("Init OS");
 
 	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2,p_desired.width,p_desired.height,p_desired.fullscreen);
+		gfx_init_func(gfx_init_ud, use_gl2, p_desired.width, p_desired.height, p_desired.fullscreen);
 
 	// nothing to do here, can't fulfil fullscreen request due to
 	// browser security, window size is already set from HTML
-	video_mode=p_desired;
-	video_mode.fullscreen=false;
-	_windowed_size=get_window_size();
+	video_mode = p_desired;
+	video_mode.fullscreen = false;
+	_windowed_size = get_window_size();
 
 	// find locale, emscripten only sets "C"
 	char locale_ptr[16];
+	/* clang-format off */
 	EM_ASM_({
 		var locale = "";
 		if (Module.locale) {
@@ -208,6 +229,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 		locale = locale.split('.')[0];
 		stringToUTF8(locale, $0, 16);
 	}, locale_ptr);
+	/* clang-format on */
 	setenv("LANG", locale_ptr, true);
 
 	print_line("Init Audio");
@@ -215,18 +237,18 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	AudioDriverManagerSW::add_driver(&audio_driver_javascript);
 
 	if (true) {
-		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,false,false,false) );;
+		RasterizerGLES2 *rasterizer_gles22 = memnew(RasterizerGLES2(false, false, false, false));
 		rasterizer_gles22->set_use_framebuffers(false); //not supported by emscripten
 		if (gl_extensions)
 			rasterizer_gles22->set_extensions(gl_extensions);
 		rasterizer = rasterizer_gles22;
 	} else {
-//		rasterizer = memnew( RasterizerGLES1(true, false) );
+		//		rasterizer = memnew( RasterizerGLES1(true, false) );
 	}
 
 	print_line("Init VS");
 
-	visual_server = memnew( VisualServerRaster(rasterizer) );
+	visual_server = memnew(VisualServerRaster(rasterizer));
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
@@ -240,7 +262,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	print_line("Init SM");
 
 	//sample_manager = memnew( SampleManagerMallocSW );
-	audio_server = memnew( AudioServerJavascript );
+	audio_server = memnew(AudioServerJavascript);
 
 	print_line("Init Mixer");
 
@@ -249,33 +271,39 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 
 	print_line("Init SoundServer");
 
-	spatial_sound_server = memnew( SpatialSoundServerSW );
+	spatial_sound_server = memnew(SpatialSoundServerSW);
 	spatial_sound_server->init();
 
 	print_line("Init SpatialSoundServer");
 
-	spatial_sound_2d_server = memnew( SpatialSound2DServerSW );
+	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
 	spatial_sound_2d_server->init();
 
 	//
 	print_line("Init Physicsserver");
 
-	physics_server = memnew( PhysicsServerSW );
+	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
-	physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = memnew(Physics2DServerSW);
 	physics_2d_server->init();
 
-	input = memnew( InputDefault );
+	input = memnew(InputDefault);
 
-#define EM_CHECK(ev) if (result!=EMSCRIPTEN_RESULT_SUCCESS)\
+#define EM_CHECK(ev)                         \
+	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
 	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
-#define SET_EM_CALLBACK(ev, cb) result = emscripten_set_##ev##_callback(NULL, this, true, &cb); EM_CHECK(ev)
-#define SET_EM_CALLBACK_NODATA(ev, cb) result = emscripten_set_##ev##_callback(NULL, true, &cb); EM_CHECK(ev)
+#define SET_EM_CALLBACK(ev, cb)                                     \
+	result = emscripten_set_##ev##_callback(NULL, this, true, &cb); \
+	EM_CHECK(ev)
+#define SET_EM_CALLBACK_NODATA(ev, cb)                        \
+	result = emscripten_set_##ev##_callback(NULL, true, &cb); \
+	EM_CHECK(ev)
 
 	EMSCRIPTEN_RESULT result;
 	SET_EM_CALLBACK(keydown, _keydown_callback)
 	SET_EM_CALLBACK(keypress, _keypress_callback)
 	SET_EM_CALLBACK(keyup, _keyup_callback)
+	SET_EM_CALLBACK(resize, _browser_resize_callback)
 	SET_EM_CALLBACK(fullscreenchange, _fullscreen_change_callback)
 	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
 	SET_EM_CALLBACK_NODATA(gamepaddisconnected, joy_callback_func)
@@ -285,16 +313,15 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 #undef EM_CHECK
 }
 
-void OS_JavaScript::set_main_loop( MainLoop * p_main_loop ) {
+void OS_JavaScript::set_main_loop(MainLoop *p_main_loop) {
 
-	main_loop=p_main_loop;
+	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
-
 }
 
 void OS_JavaScript::delete_main_loop() {
 
-	memdelete( main_loop );
+	memdelete(main_loop);
 }
 
 void OS_JavaScript::finalize() {
@@ -302,13 +329,14 @@ void OS_JavaScript::finalize() {
 	memdelete(input);
 }
 
-void OS_JavaScript::alert(const String& p_alert,const String& p_title) {
+void OS_JavaScript::alert(const String &p_alert, const String &p_title) {
 
+	/* clang-format off */
 	EM_ASM_({
 		window.alert(UTF8ToString($0));
 	}, p_alert.utf8().get_data());
+	/* clang-format on */
 }
-
 
 void OS_JavaScript::set_mouse_show(bool p_show) {
 
@@ -336,18 +364,20 @@ int OS_JavaScript::get_mouse_button_state() const {
 	return last_button_mask;
 }
 
-void OS_JavaScript::set_window_title(const String& p_title) {
+void OS_JavaScript::set_window_title(const String &p_title) {
 
+	/* clang-format off */
 	EM_ASM_({
 		document.title = UTF8ToString($0);
 	}, p_title.utf8().get_data());
+	/* clang-format on */
 }
 
 //interesting byt not yet
 //void set_clipboard(const String& p_text);
 //String get_clipboard() const;
 
-void OS_JavaScript::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
+void OS_JavaScript::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 
 	video_mode = p_video_mode;
 }
@@ -359,24 +389,56 @@ OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 
 Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 
-	ERR_FAIL_COND_V(p_screen!=0, Size2());
+	ERR_FAIL_COND_V(p_screen != 0, Size2());
 
 	EmscriptenFullscreenChangeEvent ev;
 	EMSCRIPTEN_RESULT result = emscripten_get_fullscreen_status(&ev);
-	ERR_FAIL_COND_V(result!=EMSCRIPTEN_RESULT_SUCCESS, Size2());
+	ERR_FAIL_COND_V(result != EMSCRIPTEN_RESULT_SUCCESS, Size2());
 	return Size2(ev.screenWidth, ev.screenHeight);
+}
+
+void OS_JavaScript::set_window_size(const Size2 p_size) {
+
+	window_maximized = false;
+	if (is_window_fullscreen()) {
+		set_window_fullscreen(false);
+	}
+	_windowed_size = p_size;
+	video_mode.width = p_size.x;
+	video_mode.height = p_size.y;
+	emscripten_set_canvas_size(p_size.x, p_size.y);
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
 	int canvas[3];
-	emscripten_get_canvas_size(canvas, canvas+1, canvas+2);
+	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
 	return Size2(canvas[0], canvas[1]);
+}
+
+void OS_JavaScript::set_window_maximized(bool p_enabled) {
+
+	window_maximized = p_enabled;
+	if (p_enabled) {
+
+		if (is_window_fullscreen()) {
+			// _browser_resize callback will set canvas size
+			set_window_fullscreen(false);
+		} else {
+			/* clang-format off */
+			video_mode.width = EM_ASM_INT_V(return window.innerWidth);
+			video_mode.height = EM_ASM_INT_V(return window.innerHeight);
+			/* clang-format on */
+			emscripten_set_canvas_size(video_mode.width, video_mode.height);
+		}
+	} else {
+		set_window_size(_windowed_size);
+	}
 }
 
 void OS_JavaScript::set_window_fullscreen(bool p_enable) {
 
-	if (p_enable==is_window_fullscreen()) {
+	if (p_enable == is_window_fullscreen()) {
 		return;
 	}
 
@@ -384,11 +446,12 @@ void OS_JavaScript::set_window_fullscreen(bool p_enable) {
 	// _browser_resize_callback or _fullscreen_change_callback
 	EMSCRIPTEN_RESULT result;
 	if (p_enable) {
+		/* clang-format off */
 		EM_ASM(Module.requestFullscreen(false, false););
-	}
-	else {
+		/* clang-format on */
+	} else {
 		result = emscripten_exit_fullscreen();
-		if (result!=EMSCRIPTEN_RESULT_SUCCESS) {
+		if (result != EMSCRIPTEN_RESULT_SUCCESS) {
 			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
 		}
 	}
@@ -399,7 +462,7 @@ bool OS_JavaScript::is_window_fullscreen() const {
 	return video_mode.fullscreen;
 }
 
-void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
+void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 
 	Size2 screen = get_screen_size();
 	p_list->push_back(OS::VideoMode(screen.width, screen.height, true));
@@ -435,19 +498,18 @@ bool OS_JavaScript::main_loop_iterate() {
 	if (!main_loop)
 		return false;
 
-	if (time_to_save_sync>=0) {
+	if (time_to_save_sync >= 0) {
 		int64_t newtime = get_ticks_msec();
 		int64_t elapsed = newtime - last_sync_time;
-		last_sync_time=newtime;
+		last_sync_time = newtime;
 
-		time_to_save_sync-=elapsed;
+		time_to_save_sync -= elapsed;
 
-		print_line("elapsed "+itos(elapsed)+" tts "+itos(time_to_save_sync));
+		print_line("elapsed " + itos(elapsed) + " tts " + itos(time_to_save_sync));
 
-		if (time_to_save_sync<0) {
+		if (time_to_save_sync < 0) {
 			//time to sync, for real
-			// run 'success'
-			print_line("DOING SYNCH!");
+			/* clang-format off */
 			EM_ASM(
 			  FS.syncfs(function (err) {
 			    assert(!err);
@@ -455,9 +517,8 @@ bool OS_JavaScript::main_loop_iterate() {
 			    //ccall('success', 'v');
 			  });
 			);
+			/* clang-format on */
 		}
-
-
 	}
 	process_joysticks();
 	return Main::iteration();
@@ -467,7 +528,6 @@ void OS_JavaScript::main_loop_end() {
 
 	if (main_loop)
 		main_loop->finish();
-
 }
 
 void OS_JavaScript::main_loop_focusout() {
@@ -475,186 +535,173 @@ void OS_JavaScript::main_loop_focusout() {
 	if (main_loop)
 		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	//audio_driver_javascript.set_pause(true);
-
 }
 
-void OS_JavaScript::main_loop_focusin(){
+void OS_JavaScript::main_loop_focusin() {
 
 	if (main_loop)
 		main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	//audio_driver_javascript.set_pause(false);
-
 }
 
-void OS_JavaScript::push_input(const InputEvent& p_ev) {
+void OS_JavaScript::push_input(const InputEvent &p_ev) {
 
 	InputEvent ev = p_ev;
-	ev.ID=last_id++;
-	if (ev.type==InputEvent::MOUSE_MOTION) {
+	ev.ID = last_id++;
+	if (ev.type == InputEvent::MOUSE_MOTION) {
 		input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
-	}
-	else if (ev.type==InputEvent::MOUSE_BUTTON) {
+	} else if (ev.type == InputEvent::MOUSE_BUTTON) {
 		last_button_mask = ev.mouse_button.button_mask;
 	}
 	input->parse_input_event(p_ev);
 }
 
-void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPos>& p_points) {
+void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points) {
 
-//	print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
+	//	print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
 
-	switch(p_what) {
+	switch (p_what) {
 		case 0: { //gesture begin
 
 			if (touch.size()) {
 				//end all if exist
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_BUTTON;
-				ev.ID=last_id++;
-				ev.mouse_button.button_index=BUTTON_LEFT;
-				ev.mouse_button.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed=false;
-				ev.mouse_button.x=touch[0].pos.x;
-				ev.mouse_button.y=touch[0].pos.y;
-				ev.mouse_button.global_x=touch[0].pos.x;
-				ev.mouse_button.global_y=touch[0].pos.y;
+				ev.type = InputEvent::MOUSE_BUTTON;
+				ev.ID = last_id++;
+				ev.mouse_button.button_index = BUTTON_LEFT;
+				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_button.pressed = false;
+				ev.mouse_button.x = touch[0].pos.x;
+				ev.mouse_button.y = touch[0].pos.y;
+				ev.mouse_button.global_x = touch[0].pos.x;
+				ev.mouse_button.global_y = touch[0].pos.y;
 				input->parse_input_event(ev);
 
-
-				for(int i=0;i<touch.size();i++) {
+				for (int i = 0; i < touch.size(); i++) {
 
 					InputEvent ev;
-					ev.type=InputEvent::SCREEN_TOUCH;
-					ev.ID=last_id++;
-					ev.screen_touch.index=touch[i].id;
-					ev.screen_touch.pressed=false;
-					ev.screen_touch.x=touch[i].pos.x;
-					ev.screen_touch.y=touch[i].pos.y;
+					ev.type = InputEvent::SCREEN_TOUCH;
+					ev.ID = last_id++;
+					ev.screen_touch.index = touch[i].id;
+					ev.screen_touch.pressed = false;
+					ev.screen_touch.x = touch[i].pos.x;
+					ev.screen_touch.y = touch[i].pos.y;
 					input->parse_input_event(ev);
-
 				}
 			}
 
 			touch.resize(p_points.size());
-			for(int i=0;i<p_points.size();i++) {
-				touch[i].id=p_points[i].id;
-				touch[i].pos=p_points[i].pos;
+			for (int i = 0; i < p_points.size(); i++) {
+				touch[i].id = p_points[i].id;
+				touch[i].pos = p_points[i].pos;
 			}
 
 			{
 				//send mouse
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_BUTTON;
-				ev.ID=last_id++;
-				ev.mouse_button.button_index=BUTTON_LEFT;
-				ev.mouse_button.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed=true;
-				ev.mouse_button.x=touch[0].pos.x;
-				ev.mouse_button.y=touch[0].pos.y;
-				ev.mouse_button.global_x=touch[0].pos.x;
-				ev.mouse_button.global_y=touch[0].pos.y;
-				last_mouse=touch[0].pos;
+				ev.type = InputEvent::MOUSE_BUTTON;
+				ev.ID = last_id++;
+				ev.mouse_button.button_index = BUTTON_LEFT;
+				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_button.pressed = true;
+				ev.mouse_button.x = touch[0].pos.x;
+				ev.mouse_button.y = touch[0].pos.y;
+				ev.mouse_button.global_x = touch[0].pos.x;
+				ev.mouse_button.global_y = touch[0].pos.y;
+				last_mouse = touch[0].pos;
 				input->parse_input_event(ev);
 			}
 
-
 			//send touch
-			for(int i=0;i<touch.size();i++) {
+			for (int i = 0; i < touch.size(); i++) {
 
 				InputEvent ev;
-				ev.type=InputEvent::SCREEN_TOUCH;
-				ev.ID=last_id++;
-				ev.screen_touch.index=touch[i].id;
-				ev.screen_touch.pressed=true;
-				ev.screen_touch.x=touch[i].pos.x;
-				ev.screen_touch.y=touch[i].pos.y;
+				ev.type = InputEvent::SCREEN_TOUCH;
+				ev.ID = last_id++;
+				ev.screen_touch.index = touch[i].id;
+				ev.screen_touch.pressed = true;
+				ev.screen_touch.x = touch[i].pos.x;
+				ev.screen_touch.y = touch[i].pos.y;
 				input->parse_input_event(ev);
 			}
 
 		} break;
 		case 1: { //motion
 
-
 			if (p_points.size()) {
 				//send mouse, should look for point 0?
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_MOTION;
-				ev.ID=last_id++;
-				ev.mouse_motion.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_motion.x=p_points[0].pos.x;
-				ev.mouse_motion.y=p_points[0].pos.y;
-				input->set_mouse_pos(Point2(ev.mouse_motion.x,ev.mouse_motion.y));
-				ev.mouse_motion.speed_x=input->get_mouse_speed().x;
-				ev.mouse_motion.speed_y=input->get_mouse_speed().y;
-				ev.mouse_motion.relative_x=p_points[0].pos.x-last_mouse.x;
-				ev.mouse_motion.relative_y=p_points[0].pos.y-last_mouse.y;
-				last_mouse=p_points[0].pos;
+				ev.type = InputEvent::MOUSE_MOTION;
+				ev.ID = last_id++;
+				ev.mouse_motion.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_motion.x = p_points[0].pos.x;
+				ev.mouse_motion.y = p_points[0].pos.y;
+				input->set_mouse_pos(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+				ev.mouse_motion.speed_x = input->get_mouse_speed().x;
+				ev.mouse_motion.speed_y = input->get_mouse_speed().y;
+				ev.mouse_motion.relative_x = p_points[0].pos.x - last_mouse.x;
+				ev.mouse_motion.relative_y = p_points[0].pos.y - last_mouse.y;
+				last_mouse = p_points[0].pos;
 				input->parse_input_event(ev);
 			}
 
-			ERR_FAIL_COND(touch.size()!=p_points.size());
+			ERR_FAIL_COND(touch.size() != p_points.size());
 
-			for(int i=0;i<touch.size();i++) {
+			for (int i = 0; i < touch.size(); i++) {
 
-				int idx=-1;
-				for(int j=0;j<p_points.size();j++) {
+				int idx = -1;
+				for (int j = 0; j < p_points.size(); j++) {
 
-					if (touch[i].id==p_points[j].id) {
-						idx=j;
+					if (touch[i].id == p_points[j].id) {
+						idx = j;
 						break;
 					}
-
 				}
 
-				ERR_CONTINUE(idx==-1);
+				ERR_CONTINUE(idx == -1);
 
-				if (touch[i].pos==p_points[idx].pos)
+				if (touch[i].pos == p_points[idx].pos)
 					continue; //no move unncesearily
 
 				InputEvent ev;
-				ev.type=InputEvent::SCREEN_DRAG;
-				ev.ID=last_id++;
-				ev.screen_drag.index=touch[i].id;
-				ev.screen_drag.x=p_points[idx].pos.x;
-				ev.screen_drag.y=p_points[idx].pos.y;
-				ev.screen_drag.relative_x=p_points[idx].pos.x - touch[i].pos.x;
-				ev.screen_drag.relative_y=p_points[idx].pos.y - touch[i].pos.y;
+				ev.type = InputEvent::SCREEN_DRAG;
+				ev.ID = last_id++;
+				ev.screen_drag.index = touch[i].id;
+				ev.screen_drag.x = p_points[idx].pos.x;
+				ev.screen_drag.y = p_points[idx].pos.y;
+				ev.screen_drag.relative_x = p_points[idx].pos.x - touch[i].pos.x;
+				ev.screen_drag.relative_y = p_points[idx].pos.y - touch[i].pos.y;
 				input->parse_input_event(ev);
-				touch[i].pos=p_points[idx].pos;
+				touch[i].pos = p_points[idx].pos;
 			}
-
 
 		} break;
 		case 2: { //release
 
-
-
 			if (touch.size()) {
 				//end all if exist
 				InputEvent ev;
-				ev.type=InputEvent::MOUSE_BUTTON;
-				ev.ID=last_id++;
-				ev.mouse_button.button_index=BUTTON_LEFT;
-				ev.mouse_button.button_mask=BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed=false;
-				ev.mouse_button.x=touch[0].pos.x;
-				ev.mouse_button.y=touch[0].pos.y;
-				ev.mouse_button.global_x=touch[0].pos.x;
-				ev.mouse_button.global_y=touch[0].pos.y;
+				ev.type = InputEvent::MOUSE_BUTTON;
+				ev.ID = last_id++;
+				ev.mouse_button.button_index = BUTTON_LEFT;
+				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
+				ev.mouse_button.pressed = false;
+				ev.mouse_button.x = touch[0].pos.x;
+				ev.mouse_button.y = touch[0].pos.y;
+				ev.mouse_button.global_x = touch[0].pos.x;
+				ev.mouse_button.global_y = touch[0].pos.y;
 				input->parse_input_event(ev);
 
-
-				for(int i=0;i<touch.size();i++) {
+				for (int i = 0; i < touch.size(); i++) {
 
 					InputEvent ev;
-					ev.type=InputEvent::SCREEN_TOUCH;
-					ev.ID=last_id++;
-					ev.screen_touch.index=touch[i].id;
-					ev.screen_touch.pressed=false;
-					ev.screen_touch.x=touch[i].pos.x;
-					ev.screen_touch.y=touch[i].pos.y;
+					ev.type = InputEvent::SCREEN_TOUCH;
+					ev.ID = last_id++;
+					ev.screen_touch.index = touch[i].id;
+					ev.screen_touch.pressed = false;
+					ev.screen_touch.x = touch[i].pos.x;
+					ev.screen_touch.y = touch[i].pos.y;
 					input->parse_input_event(ev);
-
 				}
 				touch.clear();
 			}
@@ -662,38 +709,33 @@ void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPo
 		} break;
 		case 3: { // add tuchi
 
+			ERR_FAIL_INDEX(p_pointer, p_points.size());
 
-
-
-
-			ERR_FAIL_INDEX(p_pointer,p_points.size());
-
-			TouchPos tp=p_points[p_pointer];
+			TouchPos tp = p_points[p_pointer];
 			touch.push_back(tp);
 
 			InputEvent ev;
-			ev.type=InputEvent::SCREEN_TOUCH;
-			ev.ID=last_id++;
-			ev.screen_touch.index=tp.id;
-			ev.screen_touch.pressed=true;
-			ev.screen_touch.x=tp.pos.x;
-			ev.screen_touch.y=tp.pos.y;
+			ev.type = InputEvent::SCREEN_TOUCH;
+			ev.ID = last_id++;
+			ev.screen_touch.index = tp.id;
+			ev.screen_touch.pressed = true;
+			ev.screen_touch.x = tp.pos.x;
+			ev.screen_touch.y = tp.pos.y;
 			input->parse_input_event(ev);
 
 		} break;
 		case 4: {
 
-
-			for(int i=0;i<touch.size();i++) {
-				if (touch[i].id==p_pointer) {
+			for (int i = 0; i < touch.size(); i++) {
+				if (touch[i].id == p_pointer) {
 
 					InputEvent ev;
-					ev.type=InputEvent::SCREEN_TOUCH;
-					ev.ID=last_id++;
-					ev.screen_touch.index=touch[i].id;
-					ev.screen_touch.pressed=false;
-					ev.screen_touch.x=touch[i].pos.x;
-					ev.screen_touch.y=touch[i].pos.y;
+					ev.type = InputEvent::SCREEN_TOUCH;
+					ev.ID = last_id++;
+					ev.screen_touch.index = touch[i].id;
+					ev.screen_touch.pressed = false;
+					ev.screen_touch.x = touch[i].pos.x;
+					ev.screen_touch.y = touch[i].pos.y;
 					input->parse_input_event(ev);
 					touch.remove(i);
 					i--;
@@ -701,12 +743,10 @@ void OS_JavaScript::process_touch(int p_what,int p_pointer, const Vector<TouchPo
 			}
 
 		} break;
-
 	}
-
 }
 
-void OS_JavaScript::process_accelerometer(const Vector3& p_accelerometer) {
+void OS_JavaScript::process_accelerometer(const Vector3 &p_accelerometer) {
 
 	input->set_accelerometer(p_accelerometer);
 }
@@ -725,15 +765,17 @@ void OS_JavaScript::main_loop_request_quit() {
 void OS_JavaScript::reload_gfx() {
 
 	if (gfx_init_func)
-		gfx_init_func(gfx_init_ud,use_gl2,video_mode.width,video_mode.height,video_mode.fullscreen);
+		gfx_init_func(gfx_init_ud, use_gl2, video_mode.width, video_mode.height, video_mode.fullscreen);
 	if (rasterizer)
 		rasterizer->reload_vram();
 }
 
 Error OS_JavaScript::shell_open(String p_uri) {
+	/* clang-format off */
 	EM_ASM_({
 		window.open(UTF8ToString($0), '_blank');
 	}, p_uri.utf8().get_data());
+	/* clang-format on */
 	return OK;
 }
 
@@ -755,12 +797,12 @@ String OS_JavaScript::get_executable_path() const {
 	return String();
 }
 
-void OS_JavaScript::_close_notification_funcs(const String& p_file,int p_flags) {
+void OS_JavaScript::_close_notification_funcs(const String &p_file, int p_flags) {
 
-	print_line("close "+p_file+" flags "+itos(p_flags));
-	if (p_file.begins_with("/userfs") && p_flags&FileAccess::WRITE) {
-		static_cast<OS_JavaScript*>(get_singleton())->last_sync_time=OS::get_singleton()->get_ticks_msec();
-		static_cast<OS_JavaScript*>(get_singleton())->time_to_save_sync=5000; //five seconds since last save
+	print_line("close " + p_file + " flags " + itos(p_flags));
+	if (p_file.begins_with("/userfs") && p_flags & FileAccess::WRITE) {
+		static_cast<OS_JavaScript *>(get_singleton())->last_sync_time = OS::get_singleton()->get_ticks_msec();
+		static_cast<OS_JavaScript *>(get_singleton())->time_to_save_sync = 5000; //five seconds since last save
 	}
 }
 
@@ -782,8 +824,7 @@ void OS_JavaScript::process_joysticks() {
 					jx.min = 0;
 					jx.value = value;
 					last_id = input->joy_axis(last_id, i, j, jx);
-				}
-				else {
+				} else {
 					last_id = input->joy_button(last_id, i, j, value);
 				}
 			}
@@ -805,8 +846,7 @@ bool OS_JavaScript::joy_connection_changed(int p_type, const EmscriptenGamepadEv
 		if (String(p_event->mapping) == "standard")
 			guid = "Default HTML5 Gamepad";
 		input->joy_connection_changed(p_event->index, true, String(p_event->id), guid);
-	}
-	else {
+	} else {
 		input->joy_connection_changed(p_event->index, false, "");
 	}
 	return true;
@@ -820,23 +860,22 @@ String OS_JavaScript::get_joy_guid(int p_device) const {
 	return input->get_joy_guid_remapped(p_device);
 }
 
-OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
+OS_JavaScript::OS_JavaScript(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, GetDataDirFunc p_get_data_dir_func) {
 
-	gfx_init_func=p_gfx_init_func;
-	gfx_init_ud=p_gfx_init_ud;
-	last_button_mask=0;
-	main_loop=NULL;
-	last_id=1;
-	gl_extensions=NULL;
-	rasterizer=NULL;
+	gfx_init_func = p_gfx_init_func;
+	gfx_init_ud = p_gfx_init_ud;
+	last_button_mask = 0;
+	main_loop = NULL;
+	last_id = 1;
+	gl_extensions = NULL;
+	rasterizer = NULL;
+	window_maximized = false;
 
-	get_data_dir_func=p_get_data_dir_func;
-	FileAccessUnix::close_notification_func=_close_notification_funcs;
+	get_data_dir_func = p_get_data_dir_func;
+	FileAccessUnix::close_notification_func = _close_notification_funcs;
 
-	time_to_save_sync=-1;
+	time_to_save_sync = -1;
 }
 
 OS_JavaScript::~OS_JavaScript() {
-
-
 }

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,16 +36,16 @@
 class CPLoader_MOD : public CPLoader {
 
 	CPFileAccessWrapper *file;
-public:
 
+public:
 	bool can_load_song() { return true; }
 	bool can_load_sample() { return false; }
 	bool can_load_instrument() { return false; }
-	
-	Error load_song(const char *p_file,CPSong *p_song,bool p_sampleset);
-	Error load_sample(const char *p_file,CPSample *p_sample) { return FILE_UNRECOGNIZED; }
-	Error load_instrument(const char *p_file,CPSong *p_song,int p_instr_idx) { return FILE_UNRECOGNIZED; }
-	
+
+	Error load_song(const char *p_file, CPSong *p_song, bool p_sampleset);
+	Error load_sample(const char *p_file, CPSample *p_sample) { return FILE_UNRECOGNIZED; }
+	Error load_instrument(const char *p_file, CPSong *p_song, int p_instr_idx) { return FILE_UNRECOGNIZED; }
+
 	CPLoader_MOD(CPFileAccessWrapper *p_file);
 	~CPLoader_MOD();
 };

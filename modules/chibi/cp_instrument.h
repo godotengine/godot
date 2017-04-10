@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,15 +30,12 @@
 #ifndef CP_INSTRUMENT_H
 #define CP_INSTRUMENT_H
 
-
 #include "cp_config.h"
-#include "cp_note.h"
 #include "cp_envelope.h"
+#include "cp_note.h"
 
 class CPInstrument {
 public:
-
-
 	enum NNA_Type {
 
 		NNA_NOTE_CUT,
@@ -54,8 +52,7 @@ public:
 		DCT_INSTRUMENT
 	};
 
-	enum DC_Action
-	{
+	enum DC_Action {
 
 		DCA_NOTE_CUT,
 		DCA_NOTE_OFF,
@@ -63,30 +60,27 @@ public:
 	};
 
 	enum EnvelopeType {
-          	VOLUME_ENVELOPE,
+		VOLUME_ENVELOPE,
 		PAN_ENVELOPE,
 		PITCH_ENVELOPE
 	};
 
-	
 	enum {
-		MAX_NAME_LEN=26,
-		MAX_ENVELOPE_NODES=25,
-		ENVELOPE_FRAC_BITS=8,
-		MAX_VOLUME=128,
-		MAX_FADEOUT=256,
-		MAX_PAN=128,
-		MAX_VOLUME_RANDOM=100,			
-		MAX_PAN_RANDOM=64, //what did this guy have inside his head?
-		
-		MAX_FILTER_CUTOFF=127,
-		MAX_FILTER_RESONANCE=127
-				
+		MAX_NAME_LEN = 26,
+		MAX_ENVELOPE_NODES = 25,
+		ENVELOPE_FRAC_BITS = 8,
+		MAX_VOLUME = 128,
+		MAX_FADEOUT = 256,
+		MAX_PAN = 128,
+		MAX_VOLUME_RANDOM = 100,
+		MAX_PAN_RANDOM = 64, //what did this guy have inside his head?
+
+		MAX_FILTER_CUTOFF = 127,
+		MAX_FILTER_RESONANCE = 127
+
 	};
 
-
 	struct Data {
-
 
 		uint8_t sample_number[CPNote::NOTES];
 		uint8_t note_number[CPNote::NOTES];
@@ -124,27 +118,22 @@ public:
 			bool use_default_resonance;
 			uint8_t default_resonance;
 		} pitch;
-
 	};
-	
+
 private:
-
-
-
 	Data data;
 	char name[MAX_NAME_LEN];
-	
-public:
 
+public:
 	/* CPInstrument General */
-	
+
 	const char *get_name();
 	void set_name(const char *p_name);
-	
-	void set_sample_number(uint8_t p_note,uint8_t p_sample_id);
+
+	void set_sample_number(uint8_t p_note, uint8_t p_sample_id);
 	uint8_t get_sample_number(uint8_t p_note);
-	
-	void set_note_number(uint8_t p_note,uint8_t p_note_id);
+
+	void set_note_number(uint8_t p_note, uint8_t p_note_id);
 	uint8_t get_note_number(uint8_t p_note);
 
 	void set_NNA_type(NNA_Type p_NNA_type);
@@ -152,11 +141,11 @@ public:
 
 	void set_DC_type(DC_Type p_DC_type);
 	DC_Type get_DC_type();
-		
+
 	void set_DC_action(DC_Action p_DC_action);
 	DC_Action get_DC_action();
 
-	/* Volume */	
+	/* Volume */
 
 	void set_volume_global_amount(uint8_t p_amount);
 	uint8_t get_volume_global_amount();
@@ -166,7 +155,7 @@ public:
 
 	void set_volume_random_variation(uint8_t p_amount);
 	uint8_t get_volume_random_variation();
-		
+
 	/* Panning */
 
 	void set_pan_default_amount(uint8_t p_amount);
@@ -174,10 +163,10 @@ public:
 
 	void set_pan_default_enabled(bool p_enabled);
 	bool is_pan_default_enabled();
-	
+
 	void set_pan_pitch_separation(int8_t p_amount);
 	int8_t get_pan_pitch_separation();
-	
+
 	void set_pan_pitch_center(uint8_t p_amount);
 	uint8_t get_pan_pitch_center();
 
@@ -188,32 +177,27 @@ public:
 
 	void set_pitch_use_as_filter(bool p_enabled);
 	bool is_pitch_use_as_filter();
-	
+
 	void set_filter_use_default_cutoff(bool p_enabled);
 	bool filter_use_default_cutoff();
 
 	void set_filter_default_cutoff(uint8_t p_amount);
 	uint8_t get_filter_default_cutoff();
-	
+
 	void set_filter_use_default_resonance(bool p_enabled);
 	bool filter_use_default_resonance();
 
 	void set_filter_default_resonance(uint8_t p_amount);
 	uint8_t get_filter_default_resonance();
 
-	CPEnvelope* get_volume_envelope();
-	CPEnvelope* get_pan_envelope();
-	CPEnvelope* get_pitch_filter_envelope();
-		
+	CPEnvelope *get_volume_envelope();
+	CPEnvelope *get_pan_envelope();
+	CPEnvelope *get_pitch_filter_envelope();
+
 	bool is_empty();
-	
+
 	void reset();
 	CPInstrument();
-
 };
 
-
-
 #endif
-
-

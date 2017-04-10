@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +38,7 @@
 
 extern int winsock_refcount;
 
-TCP_Server* TCPServerWinsock::_create() {
+TCP_Server *TCPServerWinsock::_create() {
 
 	return memnew(TCPServerWinsock);
 };
@@ -48,7 +49,7 @@ void TCPServerWinsock::make_default() {
 
 	if (winsock_refcount == 0) {
 		WSADATA data;
-		WSAStartup(MAKEWORD(2,2), &data);
+		WSAStartup(MAKEWORD(2, 2), &data);
 	};
 	++winsock_refcount;
 };
@@ -62,11 +63,19 @@ void TCPServerWinsock::cleanup() {
 	};
 };
 
+Error TCPServerWinsock::listen(uint16_t p_port, const IP_Address p_bind_address) {
 
-Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_hosts) {
+	ERR_FAIL_COND_V(listen_sockfd != -1, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 
 	int sockfd;
-	sockfd = _socket_create(ip_type, SOCK_STREAM, IPPROTO_TCP);
+	sock_type = IP::TYPE_ANY;
+
+	// If the bind address is valid use its type as the socket type
+	if (p_bind_address.is_valid())
+		sock_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+
+	sockfd = _socket_create(sock_type, SOCK_STREAM, IPPROTO_TCP);
 	ERR_FAIL_COND_V(sockfd == INVALID_SOCKET, FAILED);
 
 	unsigned long par = 1;
@@ -77,14 +86,13 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 	};
 
 	struct sockaddr_storage my_addr;
-	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, ip_type, p_accepted_hosts);
+	size_t addr_size = _set_listen_sockaddr(&my_addr, p_port, sock_type, p_bind_address);
 
-	int reuse=1;
-	if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
+	int reuse = 1;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) < 0) {
 
 		printf("REUSEADDR failed!");
 	}
-
 
 	if (bind(sockfd, (struct sockaddr *)&my_addr, addr_size) != SOCKET_ERROR) {
 
@@ -93,8 +101,7 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 			closesocket(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
-	}
-	else {
+	} else {
 		return ERR_ALREADY_IN_USE;
 	};
 
@@ -133,7 +140,6 @@ bool TCPServerWinsock::is_connection_available() const {
 	return false;
 };
 
-
 Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 
 	if (!is_connection_available()) {
@@ -150,7 +156,7 @@ Ref<StreamPeerTCP> TCPServerWinsock::take_connection() {
 	int port;
 	_set_ip_addr_port(ip, port, &their_addr);
 
-	conn->set_socket(fd, ip, port, ip_type);
+	conn->set_socket(fd, ip, port, sock_type);
 
 	return conn;
 };
@@ -162,17 +168,16 @@ void TCPServerWinsock::stop() {
 	};
 
 	listen_sockfd = -1;
+	sock_type = IP::TYPE_NONE;
 };
-
 
 TCPServerWinsock::TCPServerWinsock() {
 
 	listen_sockfd = INVALID_SOCKET;
-	ip_type = IP::TYPE_ANY;
+	sock_type = IP::TYPE_NONE;
 };
 
 TCPServerWinsock::~TCPServerWinsock() {
 
 	stop();
 };
-

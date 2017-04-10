@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +33,7 @@
 #include "cp_config.h"
 
 enum CPSample_Loop_Type {
-	
+
 	CP_LOOP_NONE,
 	CP_LOOP_FORWARD,
 	CP_LOOP_BIDI
@@ -46,41 +47,39 @@ enum CPSample_Loop_Type {
 #define CP_MIXING_FRAC_BITS_MASK_TEXT "8191"
 
 enum CPMixConstants {
-	CP_MIXING_FRAC_BITS=CP_MIXING_FRAC_BITS_MACRO,
-	CP_MIXING_FRAC_LENGTH=(1<<CP_MIXING_FRAC_BITS),
-	CP_MIXING_FRAC_MASK=CP_MIXING_FRAC_LENGTH-1,
-	CP_MIXING_VOL_FRAC_BITS=8,
-	CP_MIXING_FREQ_FRAC_BITS=8
+	CP_MIXING_FRAC_BITS = CP_MIXING_FRAC_BITS_MACRO,
+	CP_MIXING_FRAC_LENGTH = (1 << CP_MIXING_FRAC_BITS),
+	CP_MIXING_FRAC_MASK = CP_MIXING_FRAC_LENGTH - 1,
+	CP_MIXING_VOL_FRAC_BITS = 8,
+	CP_MIXING_FREQ_FRAC_BITS = 8
 };
 
 enum CPFilterConstants {
-	CP_FILTER_SHIFT=16,
-	CP_FILTER_LENGTH=(1<<CP_FILTER_SHIFT)
+	CP_FILTER_SHIFT = 16,
+	CP_FILTER_LENGTH = (1 << CP_FILTER_SHIFT)
 };
-
 
 enum CPInterpolationType {
 	CP_INTERPOLATION_RAW,
 	CP_INTERPOLATION_LINEAR,
 	CP_INTERPOLATION_CUBIC
 };
-	
+
 enum CPPanConstants {
-	
-	CP_PAN_BITS=8, // 0 .. 256
-	CP_PAN_LEFT=0,
-	CP_PAN_RIGHT=((1<<CP_PAN_BITS)-1), // 255
-	CP_PAN_CENTER=CP_PAN_RIGHT/2, // 128
-	CP_PAN_SURROUND=512
+
+	CP_PAN_BITS = 8, // 0 .. 256
+	CP_PAN_LEFT = 0,
+	CP_PAN_RIGHT = ((1 << CP_PAN_BITS) - 1), // 255
+	CP_PAN_CENTER = CP_PAN_RIGHT / 2, // 128
+	CP_PAN_SURROUND = 512
 };
 
 enum CPMixerVolConstants {
-	CP_VOL_MAX=512,
-	CP_VOL_RAMP_BITS=9,
-	CP_VOL_SHIFT=2
-			
-	
-};	
+	CP_VOL_MAX = 512,
+	CP_VOL_RAMP_BITS = 9,
+	CP_VOL_SHIFT = 2
+
+};
 
 enum CPStereoCannels {
 	CP_CHAN_LEFT,
@@ -92,6 +91,5 @@ enum CPStereoCannels {
 
 typedef signed char CPFrame8;
 typedef signed short CPFrame16;
-
 
 #endif

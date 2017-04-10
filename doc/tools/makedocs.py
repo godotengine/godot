@@ -4,6 +4,7 @@
 #
 # makedocs.py: Generate documentation for Open Project Wiki
 # Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.
+# Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)
 # Contributor: Jorge Araya Navarro <elcorreo@deshackra.com>
 #
 

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,92 +27,88 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include <GL/glut.h>
-#include "os_javascript.h"
-#include "main/main.h"
-#include "io/resource_loader.h"
 #include "emscripten.h"
+#include "io/resource_loader.h"
+#include "main/main.h"
+#include "os_javascript.h"
+#include <GL/glut.h>
 #include <string.h>
 
-OS_JavaScript *os=NULL;
+OS_JavaScript *os = NULL;
 
-static void _gfx_init(void *ud,bool gl2,int w, int h,bool fs) {
+static void _gfx_init(void *ud, bool gl2, int w, int h, bool fs) {
 
 	glutInitWindowSize(w, h);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 	glutCreateWindow("godot");
-
 }
 
-static uint32_t _mouse_button_mask=0;
+static uint32_t _mouse_button_mask = 0;
 
 static void _glut_mouse_button(int button, int state, int x, int y) {
 
 	InputEvent ev;
-	ev.type=InputEvent::MOUSE_BUTTON;
-	switch(button) {
-		case GLUT_LEFT_BUTTON: ev.mouse_button.button_index=BUTTON_LEFT; break;
-		case GLUT_MIDDLE_BUTTON: ev.mouse_button.button_index=BUTTON_MIDDLE; break;
-		case GLUT_RIGHT_BUTTON: ev.mouse_button.button_index=BUTTON_RIGHT; break;
-		case 3: ev.mouse_button.button_index=BUTTON_WHEEL_UP; break;
-		case 4: ev.mouse_button.button_index=BUTTON_WHEEL_DOWN; break;
+	ev.type = InputEvent::MOUSE_BUTTON;
+	switch (button) {
+		case GLUT_LEFT_BUTTON: ev.mouse_button.button_index = BUTTON_LEFT; break;
+		case GLUT_MIDDLE_BUTTON: ev.mouse_button.button_index = BUTTON_MIDDLE; break;
+		case GLUT_RIGHT_BUTTON: ev.mouse_button.button_index = BUTTON_RIGHT; break;
+		case 3: ev.mouse_button.button_index = BUTTON_WHEEL_UP; break;
+		case 4: ev.mouse_button.button_index = BUTTON_WHEEL_DOWN; break;
 	}
 
+	ev.mouse_button.pressed = state == GLUT_DOWN;
+	ev.mouse_button.x = x;
+	ev.mouse_button.y = y;
+	ev.mouse_button.global_x = x;
+	ev.mouse_button.global_y = y;
 
-	ev.mouse_button.pressed=state==GLUT_DOWN;
-	ev.mouse_button.x=x;
-	ev.mouse_button.y=y;
-	ev.mouse_button.global_x=x;
-	ev.mouse_button.global_y=y;
-
-	if (ev.mouse_button.button_index<4) {
+	if (ev.mouse_button.button_index < 4) {
 		if (ev.mouse_button.pressed) {
-			_mouse_button_mask |= 1 << (ev.mouse_button.button_index-1);
+			_mouse_button_mask |= 1 << (ev.mouse_button.button_index - 1);
 		} else {
-			_mouse_button_mask &= ~(1 << (ev.mouse_button.button_index-1));
+			_mouse_button_mask &= ~(1 << (ev.mouse_button.button_index - 1));
 		}
 	}
-	ev.mouse_button.button_mask=_mouse_button_mask;
+	ev.mouse_button.button_mask = _mouse_button_mask;
 
 	uint32_t m = glutGetModifiers();
-	ev.mouse_button.mod.alt=(m&GLUT_ACTIVE_ALT)!=0;
-	ev.mouse_button.mod.shift=(m&GLUT_ACTIVE_SHIFT)!=0;
-	ev.mouse_button.mod.control=(m&GLUT_ACTIVE_CTRL)!=0;
+	ev.mouse_button.mod.alt = (m & GLUT_ACTIVE_ALT) != 0;
+	ev.mouse_button.mod.shift = (m & GLUT_ACTIVE_SHIFT) != 0;
+	ev.mouse_button.mod.control = (m & GLUT_ACTIVE_CTRL) != 0;
 
 	os->push_input(ev);
 
-	if (ev.mouse_button.button_index==BUTTON_WHEEL_UP || ev.mouse_button.button_index==BUTTON_WHEEL_DOWN) {
+	if (ev.mouse_button.button_index == BUTTON_WHEEL_UP || ev.mouse_button.button_index == BUTTON_WHEEL_DOWN) {
 		// GLUT doesn't send release events for mouse wheel, so send manually
-		ev.mouse_button.pressed=false;
+		ev.mouse_button.pressed = false;
 		os->push_input(ev);
 	}
 }
 
-
-static int _glut_prev_x=0;
-static int _glut_prev_y=0;
+static int _glut_prev_x = 0;
+static int _glut_prev_y = 0;
 
 static void _glut_mouse_motion(int x, int y) {
 
 	InputEvent ev;
-	ev.type=InputEvent::MOUSE_MOTION;
-	ev.mouse_motion.button_mask=_mouse_button_mask;
-	ev.mouse_motion.x=x;
-	ev.mouse_motion.y=y;
-	ev.mouse_motion.global_x=x;
-	ev.mouse_motion.global_y=y;
-	ev.mouse_motion.relative_x=x-_glut_prev_x;
-	ev.mouse_motion.relative_y=y-_glut_prev_y;
-	_glut_prev_x=x;
-	_glut_prev_y=y;
+	ev.type = InputEvent::MOUSE_MOTION;
+	ev.mouse_motion.button_mask = _mouse_button_mask;
+	ev.mouse_motion.x = x;
+	ev.mouse_motion.y = y;
+	ev.mouse_motion.global_x = x;
+	ev.mouse_motion.global_y = y;
+	ev.mouse_motion.relative_x = x - _glut_prev_x;
+	ev.mouse_motion.relative_y = y - _glut_prev_y;
+	_glut_prev_x = x;
+	_glut_prev_y = y;
 
 	uint32_t m = glutGetModifiers();
-	ev.mouse_motion.mod.alt=(m&GLUT_ACTIVE_ALT)!=0;
-	ev.mouse_motion.mod.shift=(m&GLUT_ACTIVE_SHIFT)!=0;
-	ev.mouse_motion.mod.control=(m&GLUT_ACTIVE_CTRL)!=0;
+	ev.mouse_motion.mod.alt = (m & GLUT_ACTIVE_ALT) != 0;
+	ev.mouse_motion.mod.shift = (m & GLUT_ACTIVE_SHIFT) != 0;
+	ev.mouse_motion.mod.control = (m & GLUT_ACTIVE_CTRL) != 0;
 
 	os->push_input(ev);
-
 }
 
 static void _gfx_idle() {
@@ -119,49 +116,45 @@ static void _gfx_idle() {
 	glutPostRedisplay();
 }
 
-int start_step=0;
+int start_step = 0;
 
 static void _godot_draw(void) {
 
-	if (start_step==1) {
-		start_step=2;
+	if (start_step == 1) {
+		start_step = 2;
 		Main::start();
-		 os->main_loop_begin();
+		os->main_loop_begin();
 	}
 
-	if (start_step==2) {
+	if (start_step == 2) {
 		os->main_loop_iterate();
 	}
 
 	glutSwapBuffers();
 }
 
-
-
 extern "C" {
 
 void main_after_fs_sync(int value) {
 
-	start_step=1;
+	start_step = 1;
 	printf("FS SYNCHED!\n");
 }
-
 }
 
 int main(int argc, char *argv[]) {
 
-
 	/* Initialize the window */
 	printf("let it go!\n");
 	glutInit(&argc, argv);
-	os = new OS_JavaScript(_gfx_init,NULL,NULL);
+	os = new OS_JavaScript(_gfx_init, NULL, NULL);
 #if 0
 	char *args[]={"-test","gui","-v",NULL};
 	Error err  = Main::setup("apk",3,args);
 #else
-//	char *args[]={"-v",NULL};//
-//	Error err  = Main::setup("",1,args);
-	Error err  = Main::setup("",0,NULL);
+	//	char *args[]={"-v",NULL};//
+	//	Error err  = Main::setup("",1,args);
+	Error err = Main::setup("", 0, NULL);
 
 #endif
 	ResourceLoader::set_abort_on_missing_resources(false); //ease up compatibility
@@ -170,17 +163,14 @@ int main(int argc, char *argv[]) {
 	glutMotionFunc(_glut_mouse_motion);
 	glutPassiveMotionFunc(_glut_mouse_motion);
 
-
-
-   /* Set up glut callback functions */
-	glutIdleFunc (_gfx_idle);
-//   glutReshapeFunc(gears_reshape);
+	/* Set up glut callback functions */
+	glutIdleFunc(_gfx_idle);
+	//   glutReshapeFunc(gears_reshape);
 	glutDisplayFunc(_godot_draw);
-   //glutSpecialFunc(gears_special);
+	//glutSpecialFunc(gears_special);
 
-
-
-	 //mount persistent filesystem
+	//mount persistent filesystem
+	/* clang-format off */
 	 EM_ASM(
 		 FS.mkdir('/userfs');
 		 FS.mount(IDBFS, {}, '/userfs');
@@ -198,14 +188,12 @@ int main(int argc, char *argv[]) {
 		 });
 
 	  );
+	/* clang-format on */
 
 	glutMainLoop();
 
-
-
 	return 0;
 }
-
 
 /*
  *

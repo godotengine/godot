@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +30,13 @@
 #ifndef AUDIO_MIXER_SW_H
 #define AUDIO_MIXER_SW_H
 
-#include "servers/audio_server.h"
-#include "servers/audio/sample_manager_sw.h"
 #include "servers/audio/audio_filter_sw.h"
 #include "servers/audio/reverb_sw.h"
+#include "servers/audio/sample_manager_sw.h"
+#include "servers/audio_server.h"
 
 class AudioMixerSW : public AudioMixer {
 public:
-
 	enum InterpolationType {
 
 		INTERPOLATION_RAW,
@@ -46,32 +46,31 @@ public:
 
 	enum MixChannels {
 
-		MIX_STEREO=2,
-		MIX_QUAD=4
+		MIX_STEREO = 2,
+		MIX_QUAD = 4
 	};
 
-	typedef void (*MixStepCallback)(void*);
+	typedef void (*MixStepCallback)(void *);
 
 private:
 	SampleManagerSW *sample_manager;
 
 	enum {
 
-		MAX_CHANNELS=64,
+		MAX_CHANNELS = 64,
 		// fixed point defs
 
-		MIX_FRAC_BITS=13,
-		MIX_FRAC_LEN=(1<<MIX_FRAC_BITS),
-		MIX_FRAC_MASK=MIX_FRAC_LEN-1,
-		MIX_VOL_FRAC_BITS=12,
-		MIX_VOLRAMP_FRAC_BITS=16,
-		MIX_VOLRAMP_FRAC_LEN=(1<<MIX_VOLRAMP_FRAC_BITS),
-		MIX_VOLRAMP_FRAC_MASK=MIX_VOLRAMP_FRAC_LEN-1,
-		MIX_FILTER_FRAC_BITS=16,
-		MIX_FILTER_RAMP_FRAC_BITS=8,
-		MIX_VOL_MOVE_TO_24=4
+		MIX_FRAC_BITS = 13,
+		MIX_FRAC_LEN = (1 << MIX_FRAC_BITS),
+		MIX_FRAC_MASK = MIX_FRAC_LEN - 1,
+		MIX_VOL_FRAC_BITS = 12,
+		MIX_VOLRAMP_FRAC_BITS = 16,
+		MIX_VOLRAMP_FRAC_LEN = (1 << MIX_VOLRAMP_FRAC_BITS),
+		MIX_VOLRAMP_FRAC_MASK = MIX_VOLRAMP_FRAC_LEN - 1,
+		MIX_FILTER_FRAC_BITS = 16,
+		MIX_FILTER_RAMP_FRAC_BITS = 8,
+		MIX_VOL_MOVE_TO_24 = 4
 	};
-
 
 	struct Channel {
 
@@ -88,10 +87,9 @@ private:
 			int32_t old_reverb_vol[4];
 			int32_t old_chorus_vol[4];
 
-
 			struct Filter { //history (stereo)
-				float ha[2],hb[2];
-			} filter_l,filter_r;
+				float ha[2], hb[2];
+			} filter_l, filter_r;
 
 			struct IMA_ADPCM_State {
 
@@ -135,14 +133,23 @@ private:
 
 			struct Coefs {
 
-				float a1,a2,b0,b1,b2; // fixed point coefficients
-			} coefs,old_coefs;
+				float a1, a2, b0, b1, b2; // fixed point coefficients
+			} coefs, old_coefs;
 
 		} filter;
 
 		bool first_mix;
 		bool active;
-		Channel() { active=false; check=-1; first_mix=false; filter.dirty=true; filter.type=FILTER_NONE; filter.cutoff=8000; filter.resonance=0; filter.gain=0; }
+		Channel() {
+			active = false;
+			check = -1;
+			first_mix = false;
+			filter.dirty = true;
+			filter.type = FILTER_NONE;
+			filter.cutoff = 8000;
+			filter.resonance = 0;
+			filter.gain = 0;
+		}
 	};
 
 	Channel channels[MAX_CHANNELS];
@@ -163,9 +170,7 @@ private:
 		uint32_t amount;
 		int32_t increment;
 
-
 		int32_t pos;
-
 
 		int32_t vol[4];
 		int32_t reverb_vol[4];
@@ -174,8 +179,6 @@ private:
 		int32_t vol_inc[4];
 		int32_t reverb_vol_inc[4];
 		int32_t chorus_vol_inc[4];
-
-
 
 		Channel::Mix::Filter *filter_l;
 		Channel::Mix::Filter *filter_r;
@@ -187,14 +190,12 @@ private:
 		int32_t *reverb_buffer;
 	};
 
-
-
-	template<class Depth,bool is_stereo,bool use_filter,bool is_ima_adpcm,bool use_fx,InterpolationType type,MixChannels>
-	_FORCE_INLINE_ void do_resample(const Depth* p_src, int32_t *p_dst, ResamplerState *p_state);
+	template <class Depth, bool is_stereo, bool use_filter, bool is_ima_adpcm, bool use_fx, InterpolationType type, MixChannels>
+	_FORCE_INLINE_ void do_resample(const Depth *p_src, int32_t *p_dst, ResamplerState *p_state);
 
 	MixChannels mix_channels;
 
-	void mix_channel(Channel& p_channel);
+	void mix_channel(Channel &p_channel);
 	int mix_chunk_left;
 	void mix_chunk();
 
@@ -213,21 +214,22 @@ private:
 		ReverbSW *reverb;
 		int frames_idle;
 		int32_t *buffer; //reverb is sent here
-		ReverbState() { enabled=false; frames_idle=0; used_in_chunk=false; }
+		ReverbState() {
+			enabled = false;
+			frames_idle = 0;
+			used_in_chunk = false;
+		}
 	};
 
 	ReverbState *reverb_state;
 
-
 public:
-
-
 	virtual ChannelID channel_alloc(RID p_sample);
 
 	virtual void channel_set_volume(ChannelID p_channel, float p_gain);
-	virtual void channel_set_pan(ChannelID p_channel, float p_pan, float p_depth=0,float height=0); //pan and depth go from -1 to 1
-	virtual void channel_set_filter(ChannelID p_channel, FilterType p_type, float p_cutoff, float p_resonance, float p_gain=1.0);
-	virtual void channel_set_chorus(ChannelID p_channel, float p_chorus );
+	virtual void channel_set_pan(ChannelID p_channel, float p_pan, float p_depth = 0, float height = 0); //pan and depth go from -1 to 1
+	virtual void channel_set_filter(ChannelID p_channel, FilterType p_type, float p_cutoff, float p_resonance, float p_gain = 1.0);
+	virtual void channel_set_chorus(ChannelID p_channel, float p_chorus);
 	virtual void channel_set_reverb(ChannelID p_channel, ReverbRoomType p_room_type, float p_reverb);
 	virtual void channel_set_mix_rate(ChannelID p_channel, int p_mix_rate);
 	virtual void channel_set_positional(ChannelID p_channel, bool p_positional);
@@ -252,12 +254,12 @@ public:
 
 	virtual void channel_free(ChannelID p_channel);
 
-	int mix(int32_t *p_buffer,int p_frames); //return amount of mixsteps
+	int mix(int32_t *p_buffer, int p_frames); //return amount of mixsteps
 	uint64_t get_step_usecs() const;
 
 	virtual void set_mixer_volume(float p_volume);
 
-	AudioMixerSW(SampleManagerSW *p_sample_manager,int p_desired_latency_ms,int p_mix_rate,MixChannels p_mix_channels,bool p_use_fx=true,InterpolationType p_interp=INTERPOLATION_LINEAR,MixStepCallback p_step_callback=NULL,void *p_callback_udata=NULL);
+	AudioMixerSW(SampleManagerSW *p_sample_manager, int p_desired_latency_ms, int p_mix_rate, MixChannels p_mix_channels, bool p_use_fx = true, InterpolationType p_interp = INTERPOLATION_LINEAR, MixStepCallback p_step_callback = NULL, void *p_callback_udata = NULL);
 	~AudioMixerSW();
 };
 

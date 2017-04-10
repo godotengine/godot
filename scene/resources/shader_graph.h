@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,18 +30,15 @@
 #ifndef SHADER_GRAPH_H
 #define SHADER_GRAPH_H
 
-
-
 #include "map.h"
 #include "scene/resources/shader.h"
 
 class ShaderGraph : public Shader {
 
-	OBJ_TYPE( ShaderGraph, Shader );
+	OBJ_TYPE(ShaderGraph, Shader);
 	RES_BASE_EXTENSION("sgp");
 
 public:
-
 	enum NodeType {
 		NODE_INPUT, // all inputs (shader type dependent)
 		NODE_SCALAR_CONST, //scalar constant
@@ -80,7 +78,6 @@ public:
 		NODE_TYPE_MAX
 	};
 
-
 	struct Connection {
 
 		int src_id;
@@ -117,16 +114,15 @@ public:
 	};
 
 private:
+	String _find_unique_name(const String &p_base);
 
-	String _find_unique_name(const String& p_base);
-
-	enum {SLOT_DEFAULT_VALUE = 0x7FFFFFFF};
+	enum { SLOT_DEFAULT_VALUE = 0x7FFFFFFF };
 	struct SourceSlot {
 
 		int id;
 		int slot;
-		bool operator==(const SourceSlot& p_slot) const {
-			return id==p_slot.id && slot==p_slot.slot;
+		bool operator==(const SourceSlot &p_slot) const {
+			return id == p_slot.id && slot == p_slot.slot;
 		}
 	};
 
@@ -140,16 +136,13 @@ private:
 		int id;
 		mutable int order; // used for sorting
 		int sort_order;
-		Map<int,SourceSlot> connections;
-
+		Map<int, SourceSlot> connections;
 	};
 
 	struct ShaderData {
-		Map<int,Node> node_map;
+		Map<int, Node> node_map;
 		GraphError error;
 	} shader[3];
-
-
 
 	struct InOutParamInfo {
 		Mode shader_mode;
@@ -165,7 +158,8 @@ private:
 
 	struct NodeSlotInfo {
 
-		enum { MAX_INS=3, MAX_OUTS=3 };
+		enum { MAX_INS = 3,
+			MAX_OUTS = 3 };
 		NodeType type;
 		const SlotType ins[MAX_INS];
 		const SlotType outs[MAX_OUTS];
@@ -177,46 +171,44 @@ private:
 	void _update_shader();
 	void _request_update();
 
-	void _plot_curve(const Vector2& p_a,const Vector2& p_b,const Vector2& p_c,const Vector2& p_d,uint8_t* p_heights,bool *p_useds);
-	void _add_node_code(ShaderType p_type,Node *p_node,const Vector<String>& p_inputs,String& code);
+	void _plot_curve(const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_c, const Vector2 &p_d, uint8_t *p_heights, bool *p_useds);
+	void _add_node_code(ShaderType p_type, Node *p_node, const Vector<String> &p_inputs, String &code);
 
 	Array _get_node_list(ShaderType p_type) const;
 	Array _get_connections(ShaderType p_type) const;
 
-	void _set_data(const Dictionary& p_data);
+	void _set_data(const Dictionary &p_data);
 	Dictionary _get_data() const;
-protected:
 
+protected:
 	static void _bind_methods();
 
 public:
-
-
 	void node_add(ShaderType p_type, NodeType p_node_type, int p_id);
-	void node_remove(ShaderType p_which,int p_id);
-	void node_set_pos(ShaderType p_which,int p_id,const Point2& p_pos);
-	Point2 node_get_pos(ShaderType p_which,int p_id) const;
+	void node_remove(ShaderType p_which, int p_id);
+	void node_set_pos(ShaderType p_which, int p_id, const Point2 &p_pos);
+	Point2 node_get_pos(ShaderType p_which, int p_id) const;
 
-	void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
-	NodeType node_get_type(ShaderType p_which,int p_id) const;
+	void get_node_list(ShaderType p_which, List<int> *p_node_list) const;
+	NodeType node_get_type(ShaderType p_which, int p_id) const;
 
-	void scalar_const_node_set_value(ShaderType p_which,int p_id,float p_value);
-	float scalar_const_node_get_value(ShaderType p_which,int p_id) const;
+	void scalar_const_node_set_value(ShaderType p_which, int p_id, float p_value);
+	float scalar_const_node_get_value(ShaderType p_which, int p_id) const;
 
-	void vec_const_node_set_value(ShaderType p_which,int p_id,const Vector3& p_value);
-	Vector3 vec_const_node_get_value(ShaderType p_which,int p_id) const;
+	void vec_const_node_set_value(ShaderType p_which, int p_id, const Vector3 &p_value);
+	Vector3 vec_const_node_get_value(ShaderType p_which, int p_id) const;
 
-	void rgb_const_node_set_value(ShaderType p_which,int p_id,const Color& p_value);
-	Color rgb_const_node_get_value(ShaderType p_which,int p_id) const;
+	void rgb_const_node_set_value(ShaderType p_which, int p_id, const Color &p_value);
+	Color rgb_const_node_get_value(ShaderType p_which, int p_id) const;
 
-	void xform_const_node_set_value(ShaderType p_which,int p_id,const Transform& p_value);
-	Transform xform_const_node_get_value(ShaderType p_which,int p_id) const;
+	void xform_const_node_set_value(ShaderType p_which, int p_id, const Transform &p_value);
+	Transform xform_const_node_get_value(ShaderType p_which, int p_id) const;
 
-	void texture_node_set_filter_size(ShaderType p_which,int p_id,int p_size);
-	int texture_node_get_filter_size(ShaderType p_which,int p_id) const;
+	void texture_node_set_filter_size(ShaderType p_which, int p_id, int p_size);
+	int texture_node_get_filter_size(ShaderType p_which, int p_id) const;
 
-	void texture_node_set_filter_strength(ShaderType p_which,float p_id,float p_strength);
-	float texture_node_get_filter_strength(ShaderType p_which,float p_id) const;
+	void texture_node_set_filter_strength(ShaderType p_which, float p_id, float p_strength);
+	float texture_node_get_filter_strength(ShaderType p_which, float p_id) const;
 
 	void duplicate_nodes(ShaderType p_which, List<int> &p_nodes);
 
@@ -235,10 +227,10 @@ public:
 		SCALAR_MAX_OP
 	};
 
-	void scalar_op_node_set_op(ShaderType p_which,float p_id,ScalarOp p_op);
-	ScalarOp scalar_op_node_get_op(ShaderType p_which,float p_id) const;
+	void scalar_op_node_set_op(ShaderType p_which, float p_id, ScalarOp p_op);
+	ScalarOp scalar_op_node_get_op(ShaderType p_which, float p_id) const;
 
-	enum  VecOp {
+	enum VecOp {
 		VEC_OP_ADD,
 		VEC_OP_SUB,
 		VEC_OP_MUL,
@@ -251,8 +243,8 @@ public:
 		VEC_MAX_OP
 	};
 
-	void vec_op_node_set_op(ShaderType p_which,float p_id,VecOp p_op);
-	VecOp vec_op_node_get_op(ShaderType p_which,float p_id) const;
+	void vec_op_node_set_op(ShaderType p_which, float p_id, VecOp p_op);
+	VecOp vec_op_node_get_op(ShaderType p_which, float p_id) const;
 
 	enum VecScalarOp {
 		VEC_SCALAR_OP_MUL,
@@ -261,8 +253,8 @@ public:
 		VEC_SCALAR_MAX_OP
 	};
 
-	void vec_scalar_op_node_set_op(ShaderType p_which,float p_id,VecScalarOp p_op);
-	VecScalarOp vec_scalar_op_node_get_op(ShaderType p_which,float p_id) const;
+	void vec_scalar_op_node_set_op(ShaderType p_which, float p_id, VecScalarOp p_op);
+	VecScalarOp vec_scalar_op_node_get_op(ShaderType p_which, float p_id) const;
 
 	enum RGBOp {
 		RGB_OP_SCREEN,
@@ -277,11 +269,11 @@ public:
 		RGB_MAX_OP
 	};
 
-	void rgb_op_node_set_op(ShaderType p_which,float p_id,RGBOp p_op);
-	RGBOp rgb_op_node_get_op(ShaderType p_which,float p_id) const;
+	void rgb_op_node_set_op(ShaderType p_which, float p_id, RGBOp p_op);
+	RGBOp rgb_op_node_get_op(ShaderType p_which, float p_id) const;
 
-	void xform_vec_mult_node_set_no_translation(ShaderType p_which,int p_id,bool p_no_translation);
-	bool xform_vec_mult_node_get_no_translation(ShaderType p_which,int p_id) const;
+	void xform_vec_mult_node_set_no_translation(ShaderType p_which, int p_id, bool p_no_translation);
+	bool xform_vec_mult_node_get_no_translation(ShaderType p_which, int p_id) const;
 
 	enum ScalarFunc {
 		SCALAR_FUNC_SIN,
@@ -307,8 +299,8 @@ public:
 		SCALAR_MAX_FUNC
 	};
 
-	void scalar_func_node_set_function(ShaderType p_which,int p_id,ScalarFunc p_func);
-	ScalarFunc scalar_func_node_get_function(ShaderType p_which,int p_id) const;
+	void scalar_func_node_set_function(ShaderType p_which, int p_id, ScalarFunc p_func);
+	ScalarFunc scalar_func_node_get_function(ShaderType p_which, int p_id) const;
 
 	enum VecFunc {
 		VEC_FUNC_NORMALIZE,
@@ -320,55 +312,55 @@ public:
 		VEC_MAX_FUNC
 	};
 
-	void default_set_value(ShaderType p_which,int p_id,int p_param, const Variant& p_value);
-	Variant default_get_value(ShaderType p_which,int p_id,int p_param);
+	void default_set_value(ShaderType p_which, int p_id, int p_param, const Variant &p_value);
+	Variant default_get_value(ShaderType p_which, int p_id, int p_param);
 
-	void vec_func_node_set_function(ShaderType p_which,int p_id,VecFunc p_func);
-	VecFunc vec_func_node_get_function(ShaderType p_which,int p_id) const;
+	void vec_func_node_set_function(ShaderType p_which, int p_id, VecFunc p_func);
+	VecFunc vec_func_node_get_function(ShaderType p_which, int p_id) const;
 
-	void color_ramp_node_set_ramp(ShaderType p_which,int p_id,const DVector<Color>& p_colors, const DVector<real_t>& p_offsets);
-	DVector<Color> color_ramp_node_get_colors(ShaderType p_which,int p_id) const;
-	DVector<real_t> color_ramp_node_get_offsets(ShaderType p_which,int p_id) const;
+	void color_ramp_node_set_ramp(ShaderType p_which, int p_id, const DVector<Color> &p_colors, const DVector<real_t> &p_offsets);
+	DVector<Color> color_ramp_node_get_colors(ShaderType p_which, int p_id) const;
+	DVector<real_t> color_ramp_node_get_offsets(ShaderType p_which, int p_id) const;
 
-	void curve_map_node_set_points(ShaderType p_which, int p_id, const DVector<Vector2>& p_points);
-	DVector<Vector2> curve_map_node_get_points(ShaderType p_which,int p_id) const;
+	void curve_map_node_set_points(ShaderType p_which, int p_id, const DVector<Vector2> &p_points);
+	DVector<Vector2> curve_map_node_get_points(ShaderType p_which, int p_id) const;
 
-	void input_node_set_name(ShaderType p_which,int p_id,const String& p_name);
-	String input_node_get_name(ShaderType p_which,int p_id);
+	void input_node_set_name(ShaderType p_which, int p_id, const String &p_name);
+	String input_node_get_name(ShaderType p_which, int p_id);
 
-	void scalar_input_node_set_value(ShaderType p_which,int p_id,float p_value);
-	float scalar_input_node_get_value(ShaderType p_which,int p_id) const;
+	void scalar_input_node_set_value(ShaderType p_which, int p_id, float p_value);
+	float scalar_input_node_get_value(ShaderType p_which, int p_id) const;
 
-	void vec_input_node_set_value(ShaderType p_which,int p_id,const Vector3& p_value);
-	Vector3 vec_input_node_get_value(ShaderType p_which,int p_id) const;
+	void vec_input_node_set_value(ShaderType p_which, int p_id, const Vector3 &p_value);
+	Vector3 vec_input_node_get_value(ShaderType p_which, int p_id) const;
 
-	void rgb_input_node_set_value(ShaderType p_which,int p_id,const Color& p_value);
-	Color rgb_input_node_get_value(ShaderType p_which,int p_id) const;
+	void rgb_input_node_set_value(ShaderType p_which, int p_id, const Color &p_value);
+	Color rgb_input_node_get_value(ShaderType p_which, int p_id) const;
 
-	void xform_input_node_set_value(ShaderType p_which,int p_id,const Transform& p_value);
-	Transform xform_input_node_get_value(ShaderType p_which,int p_id) const;
+	void xform_input_node_set_value(ShaderType p_which, int p_id, const Transform &p_value);
+	Transform xform_input_node_get_value(ShaderType p_which, int p_id) const;
 
-	void texture_input_node_set_value(ShaderType p_which,int p_id,const Ref<Texture>& p_texture);
-	Ref<Texture> texture_input_node_get_value(ShaderType p_which,int p_id) const;
+	void texture_input_node_set_value(ShaderType p_which, int p_id, const Ref<Texture> &p_texture);
+	Ref<Texture> texture_input_node_get_value(ShaderType p_which, int p_id) const;
 
-	void cubemap_input_node_set_value(ShaderType p_which,int p_id,const Ref<CubeMap>& p_cubemap);
-	Ref<CubeMap> cubemap_input_node_get_value(ShaderType p_which,int p_id) const;
+	void cubemap_input_node_set_value(ShaderType p_which, int p_id, const Ref<CubeMap> &p_cubemap);
+	Ref<CubeMap> cubemap_input_node_get_value(ShaderType p_which, int p_id) const;
 
-	void comment_node_set_text(ShaderType p_which,int p_id,const String& p_comment);
-	String comment_node_get_text(ShaderType p_which,int p_id) const;
+	void comment_node_set_text(ShaderType p_which, int p_id, const String &p_comment);
+	String comment_node_get_text(ShaderType p_which, int p_id) const;
 
-	Error connect_node(ShaderType p_which,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot);
-	bool is_node_connected(ShaderType p_which,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) const;
-	void disconnect_node(ShaderType p_which,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot);
+	Error connect_node(ShaderType p_which, int p_src_id, int p_src_slot, int p_dst_id, int p_dst_slot);
+	bool is_node_connected(ShaderType p_which, int p_src_id, int p_src_slot, int p_dst_id, int p_dst_slot) const;
+	void disconnect_node(ShaderType p_which, int p_src_id, int p_src_slot, int p_dst_id, int p_dst_slot);
 
-	void get_node_connections(ShaderType p_which,List<Connection> *p_connections) const;
+	void get_node_connections(ShaderType p_which, List<Connection> *p_connections) const;
 
-	bool is_slot_connected(ShaderType p_which,int p_dst_id,int slot_id);
+	bool is_slot_connected(ShaderType p_which, int p_dst_id, int slot_id);
 
 	void clear(ShaderType p_which);
 
 	Variant node_get_state(ShaderType p_type, int p_node) const;
-	void node_set_state(ShaderType p_type, int p_id, const Variant& p_state);
+	void node_set_state(ShaderType p_type, int p_id, const Variant &p_state);
 
 	GraphError get_graph_error(ShaderType p_type) const;
 
@@ -376,10 +368,9 @@ public:
 
 	static int get_type_input_count(NodeType p_type);
 	static int get_type_output_count(NodeType p_type);
-	static SlotType get_type_input_type(NodeType p_type,int p_idx);
-	static SlotType get_type_output_type(NodeType p_type,int p_idx);
-	static bool is_type_valid(Mode p_mode,ShaderType p_type);
-
+	static SlotType get_type_input_type(NodeType p_type, int p_idx);
+	static SlotType get_type_output_type(NodeType p_type, int p_idx);
+	static bool is_type_valid(Mode p_mode, ShaderType p_type);
 
 	struct SlotInfo {
 		String name;
@@ -387,13 +378,12 @@ public:
 		SlotDir dir;
 	};
 
-	static void get_input_output_node_slot_info(Mode p_mode, ShaderType  p_type, List<SlotInfo> *r_slots);
+	static void get_input_output_node_slot_info(Mode p_mode, ShaderType p_type, List<SlotInfo> *r_slots);
 
-	static int get_node_input_slot_count(Mode p_mode, ShaderType  p_shader_type,NodeType p_type);
-	static int get_node_output_slot_count(Mode p_mode, ShaderType  p_shader_type,NodeType p_type);
-	static SlotType get_node_input_slot_type(Mode p_mode, ShaderType  p_shader_type,NodeType p_type,int p_idx);
-	static SlotType get_node_output_slot_type(Mode p_mode, ShaderType  p_shader_type,NodeType p_type,int p_idx);
-
+	static int get_node_input_slot_count(Mode p_mode, ShaderType p_shader_type, NodeType p_type);
+	static int get_node_output_slot_count(Mode p_mode, ShaderType p_shader_type, NodeType p_type);
+	static SlotType get_node_input_slot_type(Mode p_mode, ShaderType p_shader_type, NodeType p_type, int p_idx);
+	static SlotType get_node_output_slot_type(Mode p_mode, ShaderType p_shader_type, NodeType p_type, int p_idx);
 
 	ShaderGraph(Mode p_mode);
 	~ShaderGraph();
@@ -401,44 +391,35 @@ public:
 
 //helper functions
 
-
-
-
-VARIANT_ENUM_CAST( ShaderGraph::NodeType );
-VARIANT_ENUM_CAST( ShaderGraph::ShaderType );
-VARIANT_ENUM_CAST( ShaderGraph::SlotType );
-VARIANT_ENUM_CAST( ShaderGraph::ScalarOp );
-VARIANT_ENUM_CAST( ShaderGraph::VecOp );
-VARIANT_ENUM_CAST( ShaderGraph::VecScalarOp );
-VARIANT_ENUM_CAST( ShaderGraph::RGBOp );
-VARIANT_ENUM_CAST( ShaderGraph::ScalarFunc );
-VARIANT_ENUM_CAST( ShaderGraph::VecFunc );
-VARIANT_ENUM_CAST( ShaderGraph::GraphError );
-
+VARIANT_ENUM_CAST(ShaderGraph::NodeType);
+VARIANT_ENUM_CAST(ShaderGraph::ShaderType);
+VARIANT_ENUM_CAST(ShaderGraph::SlotType);
+VARIANT_ENUM_CAST(ShaderGraph::ScalarOp);
+VARIANT_ENUM_CAST(ShaderGraph::VecOp);
+VARIANT_ENUM_CAST(ShaderGraph::VecScalarOp);
+VARIANT_ENUM_CAST(ShaderGraph::RGBOp);
+VARIANT_ENUM_CAST(ShaderGraph::ScalarFunc);
+VARIANT_ENUM_CAST(ShaderGraph::VecFunc);
+VARIANT_ENUM_CAST(ShaderGraph::GraphError);
 
 class MaterialShaderGraph : public ShaderGraph {
 
-	OBJ_TYPE( MaterialShaderGraph, ShaderGraph );
+	OBJ_TYPE(MaterialShaderGraph, ShaderGraph);
 
 public:
-
-
-	MaterialShaderGraph() : ShaderGraph(MODE_MATERIAL) {
-
+	MaterialShaderGraph()
+		: ShaderGraph(MODE_MATERIAL) {
 	}
 };
 
 class CanvasItemShaderGraph : public ShaderGraph {
 
-	OBJ_TYPE( CanvasItemShaderGraph, ShaderGraph );
+	OBJ_TYPE(CanvasItemShaderGraph, ShaderGraph);
 
 public:
-
-
-	CanvasItemShaderGraph() : ShaderGraph(MODE_CANVAS_ITEM) {
-
+	CanvasItemShaderGraph()
+		: ShaderGraph(MODE_CANVAS_ITEM) {
 	}
 };
-
 
 #endif // SHADER_GRAPH_H

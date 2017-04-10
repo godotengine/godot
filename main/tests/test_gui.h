@@ -36,9 +36,7 @@
 */
 namespace TestGUI {
 
-MainLoop* test();
-
+MainLoop *test();
 }
-
 
 #endif

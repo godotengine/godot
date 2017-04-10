@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,14 +33,13 @@
 #include "servers/visual_server.h"
 void RectangleShape2D::_update_shape() {
 
-	Physics2DServer::get_singleton()->shape_set_data(get_rid(),extents);
+	Physics2DServer::get_singleton()->shape_set_data(get_rid(), extents);
 	emit_changed();
 }
 
+void RectangleShape2D::set_extents(const Vector2 &p_extents) {
 
-void RectangleShape2D::set_extents(const Vector2& p_extents) {
-
-	extents=p_extents;
+	extents = p_extents;
 	_update_shape();
 }
 
@@ -48,33 +48,27 @@ Vector2 RectangleShape2D::get_extents() const {
 	return extents;
 }
 
-void RectangleShape2D::draw(const RID& p_to_rid,const Color& p_color) {
+void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
-
-	VisualServer::get_singleton()->canvas_item_add_rect(p_to_rid,Rect2(-extents,extents*2.0),p_color);
-
+	VisualServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-extents, extents * 2.0), p_color);
 }
 
 Rect2 RectangleShape2D::get_rect() const {
 
-	return Rect2(-extents,extents*2.0);
-
+	return Rect2(-extents, extents * 2.0);
 }
-
 
 void RectangleShape2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_extents","extents"),&RectangleShape2D::set_extents);
-	ObjectTypeDB::bind_method(_MD("get_extents"),&RectangleShape2D::get_extents);
+	ObjectTypeDB::bind_method(_MD("set_extents", "extents"), &RectangleShape2D::set_extents);
+	ObjectTypeDB::bind_method(_MD("get_extents"), &RectangleShape2D::get_extents);
 
-
-
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"extents"),_SCS("set_extents"),_SCS("get_extents") );
-
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "extents"), _SCS("set_extents"), _SCS("get_extents"));
 }
 
-RectangleShape2D::RectangleShape2D() : Shape2D( Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_RECTANGLE)) {
+RectangleShape2D::RectangleShape2D()
+	: Shape2D(Physics2DServer::get_singleton()->shape_create(Physics2DServer::SHAPE_RECTANGLE)) {
 
-	extents=Vector2(10,10);
+	extents = Vector2(10, 10);
 	_update_shape();
 }

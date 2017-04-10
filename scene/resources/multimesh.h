@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,40 +32,38 @@
 
 #include "scene/resources/mesh.h"
 
-
 class MultiMesh : public Resource {
 
-	OBJ_TYPE( MultiMesh, Resource );
+	OBJ_TYPE(MultiMesh, Resource);
 	RES_BASE_EXTENSION("mmsh");
 
 	AABB aabb;
 	Ref<Mesh> mesh;
 	RID multimesh;
-protected:
 
+protected:
 	static void _bind_methods();
 
-	void _set_transform_array(const DVector<Vector3>& p_array);
+	void _set_transform_array(const DVector<Vector3> &p_array);
 	DVector<Vector3> _get_transform_array() const;
 
-	void _set_color_array(const DVector<Color>& p_array);
+	void _set_color_array(const DVector<Color> &p_array);
 	DVector<Color> _get_color_array() const;
 
 public:
-
-	void set_mesh(const Ref<Mesh>& p_mesh);
+	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
 	void set_instance_count(int p_count);
 	int get_instance_count() const;
 
-	void set_instance_transform(int p_instance, const Transform& p_transform);
+	void set_instance_transform(int p_instance, const Transform &p_transform);
 	Transform get_instance_transform(int p_instance) const;
 
-	void set_instance_color(int p_instance, const Color& p_color);
+	void set_instance_color(int p_instance, const Color &p_color);
 	Color get_instance_color(int p_instance) const;
 
-	void set_aabb(const AABB& p_aabb);
+	void set_aabb(const AABB &p_aabb);
 	virtual AABB get_aabb() const;
 
 	void generate_aabb();
@@ -73,7 +72,6 @@ public:
 
 	MultiMesh();
 	~MultiMesh();
-
 };
 
 #endif // MULTI_MESH_H

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,11 +35,10 @@
 
 class SamplePlayer : public Node {
 
-	OBJ_TYPE( SamplePlayer, Node );
+	OBJ_TYPE(SamplePlayer, Node);
 	OBJ_CATEGORY("Audio Nodes");
+
 public:
-
-
 	enum FilterType {
 		FILTER_NONE,
 		FILTER_LOWPASS,
@@ -61,13 +61,12 @@ public:
 
 	enum {
 
-		INVALID_VOICE_ID=0xFFFFFFFF
+		INVALID_VOICE_ID = 0xFFFFFFFF
 	};
 
 	typedef uint32_t VoiceID;
 
 private:
-
 	Ref<SampleLibrary> library;
 
 	struct Voice {
@@ -76,6 +75,7 @@ private:
 		uint32_t check;
 		bool active;
 
+		int priority;
 		int sample_mix_rate;
 		int mix_rate;
 		float volume;
@@ -117,23 +117,22 @@ private:
 	uint32_t last_id;
 	uint16_t last_check;
 	String played_back;
-protected:
 
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
 
 public:
-
-	void set_sample_library(const Ref<SampleLibrary>& p_library);
+	void set_sample_library(const Ref<SampleLibrary> &p_library);
 	Ref<SampleLibrary> get_sample_library() const;
 
 	void set_polyphony(int p_voice_count);
 	int get_polyphony() const;
 
-	VoiceID play(const String& p_name,bool unique=false);
+	VoiceID play(const String &p_name, bool unique = false);
 	void stop(VoiceID p_voice);
 	void stop_all();
 	bool is_voice_active(VoiceID) const;
@@ -143,10 +142,10 @@ public:
 	void set_pitch_scale(VoiceID p_voice, float p_pitch_scale);
 	void set_volume(VoiceID p_voice, float p_volume);
 	void set_volume_db(VoiceID p_voice, float p_db);
-	void set_pan(VoiceID p_voice, float p_pan,float p_pan_depth=0,float p_pan_height=0);
-	void set_filter(VoiceID p_voice,FilterType p_filter,float p_cutoff,float p_resonance,float p_gain);
-	void set_chorus(VoiceID p_voice,float p_send);
-	void set_reverb(VoiceID p_voice,ReverbRoomType p_room,float p_send);
+	void set_pan(VoiceID p_voice, float p_pan, float p_pan_depth = 0, float p_pan_height = 0);
+	void set_filter(VoiceID p_voice, FilterType p_filter, float p_cutoff, float p_resonance, float p_gain);
+	void set_chorus(VoiceID p_voice, float p_send);
+	void set_reverb(VoiceID p_voice, ReverbRoomType p_room, float p_send);
 
 	int get_mix_rate(VoiceID p_voice) const;
 	float get_pitch_scale(VoiceID p_voice) const;
@@ -164,15 +163,13 @@ public:
 	ReverbRoomType get_reverb_room(VoiceID p_voice) const;
 	float get_reverb(VoiceID p_voice) const;
 
-
-
 	void set_default_pitch_scale(float p_pitch_scale);
 	void set_default_volume(float p_volume);
 	void set_default_volume_db(float p_db);
-	void set_default_pan(float p_pan,float p_pan_depth=0,float p_pan_height=0);
-	void set_default_filter(FilterType p_filter,float p_cutoff,float p_resonance,float p_gain);
+	void set_default_pan(float p_pan, float p_pan_depth = 0, float p_pan_height = 0);
+	void set_default_filter(FilterType p_filter, float p_cutoff, float p_resonance, float p_gain);
 	void set_default_chorus(float p_send);
-	void set_default_reverb(ReverbRoomType p_room,float p_send);
+	void set_default_reverb(ReverbRoomType p_room, float p_send);
 
 	float get_default_volume() const;
 	float get_default_volume_db() const;
@@ -194,7 +191,7 @@ public:
 	~SamplePlayer();
 };
 
-VARIANT_ENUM_CAST( SamplePlayer::FilterType );
-VARIANT_ENUM_CAST( SamplePlayer::ReverbRoomType );
+VARIANT_ENUM_CAST(SamplePlayer::FilterType);
+VARIANT_ENUM_CAST(SamplePlayer::ReverbRoomType);
 
 #endif // SAMPLE_PLAYER_H

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,15 +35,13 @@ void ButtonGroup::_add_button(BaseButton *p_button) {
 	buttons.insert(p_button);
 	p_button->set_toggle_mode(true);
 	p_button->set_click_on_press(true);
-	p_button->connect("pressed",this,"_pressed",make_binds(p_button));
-
+	p_button->connect("pressed", this, "_pressed", make_binds(p_button));
 }
 
-void ButtonGroup::_remove_button(BaseButton *p_button){
+void ButtonGroup::_remove_button(BaseButton *p_button) {
 
 	buttons.erase(p_button);
-	p_button->disconnect("pressed",this,"_pressed");
-
+	p_button->disconnect("pressed", this, "_pressed");
 }
 
 void ButtonGroup::set_pressed_button(BaseButton *p_button) {
@@ -53,14 +52,14 @@ void ButtonGroup::set_pressed_button(BaseButton *p_button) {
 void ButtonGroup::_pressed(Object *p_button) {
 
 	ERR_FAIL_NULL(p_button);
-	BaseButton *b=p_button->cast_to<BaseButton>();
+	BaseButton *b = p_button->cast_to<BaseButton>();
 	ERR_FAIL_COND(!b);
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 
-		BaseButton *bb=E->get();
-		bb->set_pressed( b==bb );
-		if (b==bb){
+		BaseButton *bb = E->get();
+		bb->set_pressed(b == bb);
+		if (b == bb) {
 			emit_signal("button_selected", b);
 		}
 	}
@@ -68,7 +67,7 @@ void ButtonGroup::_pressed(Object *p_button) {
 
 Array ButtonGroup::_get_button_list() const {
 
-	List<BaseButton*> b;
+	List<BaseButton *> b;
 	get_button_list(&b);
 
 	b.sort_custom<Node::Comparator>();
@@ -76,19 +75,19 @@ Array ButtonGroup::_get_button_list() const {
 	Array arr;
 	arr.resize(b.size());
 
-	int idx=0;
+	int idx = 0;
 
-	for(List<BaseButton*>::Element *E=b.front();E;E=E->next(),idx++) {
+	for (List<BaseButton *>::Element *E = b.front(); E; E = E->next(), idx++) {
 
-		arr[idx]=E->get();
+		arr[idx] = E->get();
 	}
 
 	return arr;
 }
 
-void ButtonGroup::get_button_list(List<BaseButton*> *p_buttons) const {
+void ButtonGroup::get_button_list(List<BaseButton *> *p_buttons) const {
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 
 		p_buttons->push_back(E->get());
 	}
@@ -96,7 +95,7 @@ void ButtonGroup::get_button_list(List<BaseButton*> *p_buttons) const {
 
 BaseButton *ButtonGroup::get_pressed_button() const {
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 
 		if (E->get()->is_pressed())
 			return E->get();
@@ -105,40 +104,38 @@ BaseButton *ButtonGroup::get_pressed_button() const {
 	return NULL;
 }
 
-BaseButton *ButtonGroup::get_focused_button() const{
+BaseButton *ButtonGroup::get_focused_button() const {
 
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 
 		if (E->get()->has_focus())
 			return E->get();
 	}
 
 	return NULL;
-
 }
 
 int ButtonGroup::get_pressed_button_index() const {
 	//in tree order, this is bizarre
 
-	ERR_FAIL_COND_V(!is_inside_tree(),0);
+	ERR_FAIL_COND_V(!is_inside_tree(), 0);
 
 	BaseButton *pressed = get_pressed_button();
 	if (!pressed)
 		return -1;
 
-	List<BaseButton*> blist;
-	for(Set<BaseButton*>::Element *E=buttons.front();E;E=E->next()) {
+	List<BaseButton *> blist;
+	for (Set<BaseButton *>::Element *E = buttons.front(); E; E = E->next()) {
 
 		blist.push_back(E->get());
-
 	}
 
 	blist.sort_custom<Node::Comparator>();
 
-	int idx=0;
-	for(List<BaseButton*>::Element *E=blist.front();E;E=E->next()) {
+	int idx = 0;
+	for (List<BaseButton *>::Element *E = blist.front(); E; E = E->next()) {
 
-		if (E->get()==pressed)
+		if (E->get() == pressed)
 			return idx;
 
 		idx++;
@@ -149,16 +146,16 @@ int ButtonGroup::get_pressed_button_index() const {
 
 void ButtonGroup::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_pressed_button:BaseButton"),&ButtonGroup::get_pressed_button);
-	ObjectTypeDB::bind_method(_MD("get_pressed_button_index"),&ButtonGroup::get_pressed_button_index);
-	ObjectTypeDB::bind_method(_MD("get_focused_button:BaseButton"),&ButtonGroup::get_focused_button);
-	ObjectTypeDB::bind_method(_MD("get_button_list"),&ButtonGroup::_get_button_list);
-	ObjectTypeDB::bind_method(_MD("_pressed"),&ButtonGroup::_pressed);
-	ObjectTypeDB::bind_method(_MD("set_pressed_button","button:BaseButton"),&ButtonGroup::_pressed);
+	ObjectTypeDB::bind_method(_MD("get_pressed_button:BaseButton"), &ButtonGroup::get_pressed_button);
+	ObjectTypeDB::bind_method(_MD("get_pressed_button_index"), &ButtonGroup::get_pressed_button_index);
+	ObjectTypeDB::bind_method(_MD("get_focused_button:BaseButton"), &ButtonGroup::get_focused_button);
+	ObjectTypeDB::bind_method(_MD("get_button_list"), &ButtonGroup::_get_button_list);
+	ObjectTypeDB::bind_method(_MD("_pressed"), &ButtonGroup::_pressed);
+	ObjectTypeDB::bind_method(_MD("set_pressed_button", "button:BaseButton"), &ButtonGroup::_pressed);
 
-	ADD_SIGNAL( MethodInfo("button_selected",PropertyInfo(Variant::OBJECT,"button",PROPERTY_HINT_RESOURCE_TYPE,"BaseButton")));
+	ADD_SIGNAL(MethodInfo("button_selected", PropertyInfo(Variant::OBJECT, "button", PROPERTY_HINT_RESOURCE_TYPE, "BaseButton")));
 }
 
-ButtonGroup::ButtonGroup() : BoxContainer(true)
-{
+ButtonGroup::ButtonGroup()
+	: BoxContainer(true) {
 }

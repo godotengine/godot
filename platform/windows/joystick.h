@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,30 +36,28 @@
 #include <dinput.h>
 #include <xinput.h> // on unix the file is called "xinput.h", on windows I'm sure it won't mind
 
-#ifndef SAFE_RELEASE            // when Windows Media Device M? is not present
+#ifndef SAFE_RELEASE // when Windows Media Device M? is not present
 #define SAFE_RELEASE(x) \
-if(x != NULL)           \
-{                       \
-	x->Release();       \
-	x = NULL;           \
-}
+	if (x != NULL) {    \
+		x->Release();   \
+		x = NULL;       \
+	}
 #endif
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
 #endif
 
-class joystick_windows
-{
+class joystick_windows {
 public:
 	joystick_windows();
-	joystick_windows(InputDefault* _input, HWND* hwnd);
+	joystick_windows(InputDefault *_input, HWND *hwnd);
 	~joystick_windows();
 
 	void probe_joysticks();
 	unsigned int process_joysticks(unsigned int p_last_id);
-private:
 
+private:
 	enum {
 		JOYSTICKS_MAX = 16,
 		JOY_AXIS_COUNT = 6,
@@ -111,13 +110,13 @@ private:
 		}
 	};
 
-	typedef DWORD (WINAPI *XInputGetState_t) (DWORD dwUserIndex, XINPUT_STATE* pState);
-	typedef DWORD (WINAPI *XInputSetState_t) (DWORD dwUserIndex, XINPUT_VIBRATION* pVibration);
+	typedef DWORD(WINAPI *XInputGetState_t)(DWORD dwUserIndex, XINPUT_STATE *pState);
+	typedef DWORD(WINAPI *XInputSetState_t)(DWORD dwUserIndex, XINPUT_VIBRATION *pVibration);
 
-	HWND* hWnd;
+	HWND *hWnd;
 	HANDLE xinput_dll;
 	LPDIRECTINPUT8 dinput;
-	InputDefault* input;
+	InputDefault *input;
 
 	int id_to_change;
 	int joystick_count;
@@ -125,20 +124,19 @@ private:
 	dinput_gamepad d_joysticks[JOYSTICKS_MAX];
 	xinput_gamepad x_joysticks[XUSER_MAX_COUNT];
 
-	static BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE* p_instance, void* p_context);
-	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE* instance, void* context);
+	static BOOL CALLBACK enumCallback(const DIDEVICEINSTANCE *p_instance, void *p_context);
+	static BOOL CALLBACK objectsCallback(const DIDEVICEOBJECTINSTANCE *instance, void *context);
 
-	void setup_joystick_object(const DIDEVICEOBJECTINSTANCE* ob, int p_joy_id);
+	void setup_joystick_object(const DIDEVICEOBJECTINSTANCE *ob, int p_joy_id);
 	void close_joystick(int id = -1);
 	void load_xinput();
 	void unload_xinput();
 
-	int check_free_joy_slot() const;
 	unsigned int post_hat(unsigned int p_last_id, int p_device, DWORD p_dpad);
 
 	bool have_device(const GUID &p_guid);
-	bool is_xinput_device(const GUID* p_guid);
-	bool setup_dinput_joystick(const DIDEVICEINSTANCE* instance);
+	bool is_xinput_device(const GUID *p_guid);
+	bool setup_dinput_joystick(const DIDEVICEINSTANCE *instance);
 	void joystick_vibration_start_xinput(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration, uint64_t p_timestamp);
 	void joystick_vibration_stop_xinput(int p_device, uint64_t p_timestamp);
 
@@ -148,5 +146,3 @@ private:
 };
 
 #endif
-
-

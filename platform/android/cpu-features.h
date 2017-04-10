@@ -28,26 +28,26 @@
 #ifndef CPU_FEATURES_H
 #define CPU_FEATURES_H
 
-#include <sys/cdefs.h>
 #include <stdint.h>
+#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 
 typedef enum {
-    ANDROID_CPU_FAMILY_UNKNOWN = 0,
-    ANDROID_CPU_FAMILY_ARM,
-    ANDROID_CPU_FAMILY_X86,
-    ANDROID_CPU_FAMILY_MIPS,
-    ANDROID_CPU_FAMILY_ARM64,
-    ANDROID_CPU_FAMILY_X86_64,
-    ANDROID_CPU_FAMILY_MIPS64,
+	ANDROID_CPU_FAMILY_UNKNOWN = 0,
+	ANDROID_CPU_FAMILY_ARM,
+	ANDROID_CPU_FAMILY_X86,
+	ANDROID_CPU_FAMILY_MIPS,
+	ANDROID_CPU_FAMILY_ARM64,
+	ANDROID_CPU_FAMILY_X86_64,
+	ANDROID_CPU_FAMILY_MIPS64,
 
-    ANDROID_CPU_FAMILY_MAX  /* do not remove */
+	ANDROID_CPU_FAMILY_MAX /* do not remove */
 
 } AndroidCpuFamily;
 
 /* Return family of the device's CPU */
-extern AndroidCpuFamily   android_getCpuFamily(void);
+extern AndroidCpuFamily android_getCpuFamily(void);
 
 /* The list of feature flags for ARM CPUs that can be recognized by the
  * library. Value details are:
@@ -155,31 +155,31 @@ extern AndroidCpuFamily   android_getCpuFamily(void);
  *     Allows the use of iWMMXt instrinsics with GCC.
  */
 enum {
-    ANDROID_CPU_ARM_FEATURE_ARMv7       = (1 << 0),
-    ANDROID_CPU_ARM_FEATURE_VFPv3       = (1 << 1),
-    ANDROID_CPU_ARM_FEATURE_NEON        = (1 << 2),
-    ANDROID_CPU_ARM_FEATURE_LDREX_STREX = (1 << 3),
-    ANDROID_CPU_ARM_FEATURE_VFPv2       = (1 << 4),
-    ANDROID_CPU_ARM_FEATURE_VFP_D32     = (1 << 5),
-    ANDROID_CPU_ARM_FEATURE_VFP_FP16    = (1 << 6),
-    ANDROID_CPU_ARM_FEATURE_VFP_FMA     = (1 << 7),
-    ANDROID_CPU_ARM_FEATURE_NEON_FMA    = (1 << 8),
-    ANDROID_CPU_ARM_FEATURE_IDIV_ARM    = (1 << 9),
-    ANDROID_CPU_ARM_FEATURE_IDIV_THUMB2 = (1 << 10),
-    ANDROID_CPU_ARM_FEATURE_iWMMXt      = (1 << 11),
+	ANDROID_CPU_ARM_FEATURE_ARMv7 = (1 << 0),
+	ANDROID_CPU_ARM_FEATURE_VFPv3 = (1 << 1),
+	ANDROID_CPU_ARM_FEATURE_NEON = (1 << 2),
+	ANDROID_CPU_ARM_FEATURE_LDREX_STREX = (1 << 3),
+	ANDROID_CPU_ARM_FEATURE_VFPv2 = (1 << 4),
+	ANDROID_CPU_ARM_FEATURE_VFP_D32 = (1 << 5),
+	ANDROID_CPU_ARM_FEATURE_VFP_FP16 = (1 << 6),
+	ANDROID_CPU_ARM_FEATURE_VFP_FMA = (1 << 7),
+	ANDROID_CPU_ARM_FEATURE_NEON_FMA = (1 << 8),
+	ANDROID_CPU_ARM_FEATURE_IDIV_ARM = (1 << 9),
+	ANDROID_CPU_ARM_FEATURE_IDIV_THUMB2 = (1 << 10),
+	ANDROID_CPU_ARM_FEATURE_iWMMXt = (1 << 11),
 };
 
 enum {
-    ANDROID_CPU_X86_FEATURE_SSSE3  = (1 << 0),
-    ANDROID_CPU_X86_FEATURE_POPCNT = (1 << 1),
-    ANDROID_CPU_X86_FEATURE_MOVBE  = (1 << 2),
+	ANDROID_CPU_X86_FEATURE_SSSE3 = (1 << 0),
+	ANDROID_CPU_X86_FEATURE_POPCNT = (1 << 1),
+	ANDROID_CPU_X86_FEATURE_MOVBE = (1 << 2),
 };
 
-extern uint64_t    android_getCpuFeatures(void);
+extern uint64_t android_getCpuFeatures(void);
 #define android_getCpuFeaturesExt android_getCpuFeatures
 
 /* Return the number of CPU cores detected on this device. */
-extern int         android_getCpuCount(void);
+extern int android_getCpuCount(void);
 
 /* The following is used to force the CPU count and features
  * mask in sandboxed processes. Under 4.1 and higher, these processes
@@ -191,8 +191,8 @@ extern int         android_getCpuCount(void);
  *
  * This function return 1 on success, and 0 on failure.
  */
-extern int android_setCpu(int      cpu_count,
-                          uint64_t cpu_features);
+extern int android_setCpu(int cpu_count,
+		uint64_t cpu_features);
 
 #ifdef __arm__
 /* Retrieve the ARM 32-bit CPUID value from the kernel.
@@ -204,9 +204,9 @@ extern uint32_t android_getCpuIdArm(void);
 /* An ARM-specific variant of android_setCpu() that also allows you
  * to set the ARM CPUID field.
  */
-extern int android_setCpuArm(int      cpu_count,
-                             uint64_t cpu_features,
-                             uint32_t cpu_id);
+extern int android_setCpuArm(int cpu_count,
+		uint64_t cpu_features,
+		uint32_t cpu_id);
 #endif
 
 __END_DECLS

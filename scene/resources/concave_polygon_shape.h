@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,43 +34,40 @@
 
 class ConcavePolygonShape : public Shape {
 
-	OBJ_TYPE(ConcavePolygonShape,Shape);
+	OBJ_TYPE(ConcavePolygonShape, Shape);
 
 	struct DrawEdge {
 
 		Vector3 a;
 		Vector3 b;
-		bool operator<(const DrawEdge& p_edge) const {
-			if (a==p_edge.a)
-				return b<p_edge.b;
+		bool operator<(const DrawEdge &p_edge) const {
+			if (a == p_edge.a)
+				return b < p_edge.b;
 			else
-				return a<p_edge.a;
+				return a < p_edge.a;
 		}
 
-		DrawEdge(const Vector3& p_a=Vector3(),const Vector3& p_b=Vector3()) {
-			a=p_a;
-			b=p_b;
-			if (a<b) {
-				SWAP(a,b);
+		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {
+			a = p_a;
+			b = p_b;
+			if (a < b) {
+				SWAP(a, b);
 			}
 		}
 	};
 
 protected:
-
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 
 	virtual void _update_shape();
 	virtual Vector<Vector3> _gen_debug_mesh_lines();
+
 public:
-
-	void set_faces(const DVector<Vector3>& p_faces);
+	void set_faces(const DVector<Vector3> &p_faces);
 	DVector<Vector3> get_faces() const;
-
 
 	ConcavePolygonShape();
 };

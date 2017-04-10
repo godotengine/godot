@@ -27,13 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "test_particles.h"
-#include "servers/visual_server.h"
-#include "os/main_loop.h"
 #include "math_funcs.h"
+#include "os/main_loop.h"
 #include "print_string.h"
+#include "servers/visual_server.h"
 
 namespace TestParticles {
-
 
 class TestMainLoop : public MainLoop {
 
@@ -55,30 +54,28 @@ class TestMainLoop : public MainLoop {
 
 	float ofs;
 	bool quit;
+
 public:
-	virtual void input_event(const InputEvent& p_event) {
-
-
+	virtual void input_event(const InputEvent &p_event) {
 	}
 	virtual void request_quit() {
 
-		quit=true;
+		quit = true;
 	}
 	virtual void init() {
 
-		VisualServer *vs=VisualServer::get_singleton();
+		VisualServer *vs = VisualServer::get_singleton();
 		particles = vs->particles_create();
-		vs->particles_set_amount(particles,1000);
+		vs->particles_set_amount(particles, 1000);
 
-		instance = vs->instance_create2(particles,scenario);
-
+		instance = vs->instance_create2(particles, scenario);
 
 		camera = vs->camera_create();
 
-// 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
+		// 		vs->camera_set_perspective( camera, 60.0,0.1, 100.0 );
 		viewport = vs->viewport_create();
-		vs->viewport_attach_camera( viewport, camera );
-		vs->camera_set_transform(camera, Transform( Matrix3(), Vector3(0,0,20 ) ) );
+		vs->viewport_attach_camera(viewport, camera);
+		vs->camera_set_transform(camera, Transform(Matrix3(), Vector3(0, 0, 20)));
 		/*
 		RID lightaux = vs->light_create( VisualServer::LIGHT_OMNI );
 		vs->light_set_var( lightaux, VisualServer::LIGHT_VAR_RADIUS, 80 );
@@ -86,36 +83,30 @@ public:
 		vs->light_set_var( lightaux, VisualServer::LIGHT_VAR_ENERGY, 1.5 );
 		light = vs->instance_create2( lightaux );
 		*/
-		RID lightaux = vs->light_create( VisualServer::LIGHT_DIRECTIONAL );
-	//	vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
-		light = vs->instance_create2( lightaux, scenario );
+		RID lightaux = vs->light_create(VisualServer::LIGHT_DIRECTIONAL);
+		//	vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
+		light = vs->instance_create2(lightaux, scenario);
 
-		ofs=0;
-		quit=false;
+		ofs = 0;
+		quit = false;
 	}
 	virtual bool idle(float p_time) {
 		return false;
 	}
 
-
 	virtual bool iteration(float p_time) {
 
-//		VisualServer *vs=VisualServer::get_singleton();
+		//		VisualServer *vs=VisualServer::get_singleton();
 
-		ofs+=p_time;
+		ofs += p_time;
 		return quit;
 	}
 	virtual void finish() {
-
 	}
-
 };
 
+MainLoop *test() {
 
-MainLoop* test() {
-
-	return memnew( TestMainLoop );
-
+	return memnew(TestMainLoop);
 }
-
 }

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +39,7 @@
 
 class AudioStreamPlaybackMPC : public AudioStreamPlayback {
 
-	OBJ_TYPE( AudioStreamPlaybackMPC, AudioStreamPlayback );
+	OBJ_TYPE(AudioStreamPlaybackMPC, AudioStreamPlayback);
 
 	bool preload;
 	FileAccess *f;
@@ -47,7 +48,6 @@ class AudioStreamPlaybackMPC : public AudioStreamPlayback {
 	int data_ofs;
 	int streamlen;
 
-
 	bool active;
 	bool paused;
 	bool loop;
@@ -55,12 +55,12 @@ class AudioStreamPlaybackMPC : public AudioStreamPlayback {
 
 	// mpc
 	mpc_reader reader;
-	mpc_demux* demux;
+	mpc_demux *demux;
 	mpc_streaminfo si;
 	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 
-	static mpc_int32_t _mpc_read(mpc_reader *p_reader,void *p_dst, mpc_int32_t p_bytes);
-	static mpc_bool_t _mpc_seek(mpc_reader *p_reader,mpc_int32_t p_offset);
+	static mpc_int32_t _mpc_read(mpc_reader *p_reader, void *p_dst, mpc_int32_t p_bytes);
+	static mpc_bool_t _mpc_seek(mpc_reader *p_reader, mpc_int32_t p_offset);
 	static mpc_int32_t _mpc_tell(mpc_reader *p_reader);
 	static mpc_int32_t _mpc_get_size(mpc_reader *p_reader);
 	static mpc_bool_t _mpc_canseek(mpc_reader *p_reader);
@@ -72,25 +72,22 @@ class AudioStreamPlaybackMPC : public AudioStreamPlayback {
 protected:
 	Error _open_file();
 	void _close_file();
-	int _read_file(void *p_dst,int p_bytes);
+	int _read_file(void *p_dst, int p_bytes);
 	bool _seek_file(int p_pos);
-	int _tell_file()  const;
+	int _tell_file() const;
 	int _sizeof_file() const;
 	bool _canseek_file() const;
-
 
 	Error _reload();
 	static void _bind_methods();
 
 public:
-
-	void set_file(const String& p_file);
+	void set_file(const String &p_file);
 	String get_file() const;
 
-	virtual void play(float p_offset=0);
+	virtual void play(float p_offset = 0);
 	virtual void stop();
 	virtual bool is_playing() const;
-
 
 	virtual void set_loop(bool p_enable);
 	virtual bool has_loop() const;
@@ -108,9 +105,9 @@ public:
 	virtual int get_mix_rate() const { return stream_rate; }
 
 	virtual int get_minimum_buffer_size() const { return stream_min_size; }
-	virtual int mix(int16_t* p_bufer,int p_frames);
+	virtual int mix(int16_t *p_bufer, int p_frames);
 
-	virtual void set_loop_restart_time(float p_time) {  }
+	virtual void set_loop_restart_time(float p_time) {}
 
 	AudioStreamPlaybackMPC();
 	~AudioStreamPlaybackMPC();
@@ -118,29 +115,26 @@ public:
 
 class AudioStreamMPC : public AudioStream {
 
-	OBJ_TYPE( AudioStreamMPC, AudioStream );
+	OBJ_TYPE(AudioStreamMPC, AudioStream);
 
 	String file;
-public:
 
+public:
 	Ref<AudioStreamPlayback> instance_playback() {
-		Ref<AudioStreamPlaybackMPC> pb = memnew( AudioStreamPlaybackMPC );
+		Ref<AudioStreamPlaybackMPC> pb = memnew(AudioStreamPlaybackMPC);
 		pb->set_file(file);
 		return pb;
 	}
 
-	void set_file(const String& p_file) { file=p_file; }
-
-
+	void set_file(const String &p_file) { file = p_file; }
 };
 
 class ResourceFormatLoaderAudioStreamMPC : public ResourceFormatLoader {
 public:
-	virtual RES load(const String &p_path,const String& p_original_path="",Error *r_error=NULL);
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String& p_type) const;
+	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
-
 };
 
 #endif // AUDIO_STREAM_MPC_H

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,18 +34,21 @@
 
 class CoreStringNames {
 
-friend void register_core_types();
-friend void unregister_core_types();
+	friend void register_core_types();
+	friend void unregister_core_types();
 
-	static CoreStringNames* singleton;
+	static CoreStringNames *singleton;
 
 	static void create() { singleton = memnew(CoreStringNames); }
-	static void free() { memdelete( singleton); singleton=NULL; }
+	static void free() {
+		memdelete(singleton);
+		singleton = NULL;
+	}
 
 	CoreStringNames();
-public:
-	_FORCE_INLINE_ static CoreStringNames* get_singleton() { return singleton; }
 
+public:
+	_FORCE_INLINE_ static CoreStringNames *get_singleton() { return singleton; }
 
 	StringName _free;
 	StringName changed;
@@ -57,7 +61,6 @@ public:
 	StringName _iter_next;
 	StringName _iter_get;
 	StringName get_rid;
-
 };
 
 #endif // SCENE_STRING_NAMES_H

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,18 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
-#import <MediaPlayer/MediaPlayer.h>
-#import <AVFoundation/AVFoundation.h>
+#import <UIKit/UIKit.h>
 
 @protocol GLViewDelegate;
 
-@interface GLView : UIView<UIKeyInput>
-{
-	@private
+@interface GLView : UIView <UIKeyInput> {
+@private
 	// The pixel dimensions of the backbuffer
 	GLint backingWidth;
 	GLint backingHeight;
@@ -83,9 +83,9 @@
 @property(strong, nonatomic) MPMoviePlayerController *moviePlayerController;
 @property(strong, nonatomic) UIWindow *backgroundWindow;
 
--(void)startAnimation;
--(void)stopAnimation;
--(void)drawView;
+- (void)startAnimation;
+- (void)stopAnimation;
+- (void)drawView;
 
 - (BOOL)canBecomeFirstResponder;
 
@@ -99,23 +99,23 @@
 - (BOOL)createFramebuffer;
 - (void)destroyFramebuffer;
 
-- (void)audioRouteChangeListenerCallback:(NSNotification*)notification;
+- (void)audioRouteChangeListenerCallback:(NSNotification *)notification;
 
 @property NSTimeInterval animationInterval;
 @property(nonatomic, assign) BOOL useCADisplayLink;
 
 @end
 
-@protocol GLViewDelegate<NSObject>
+@protocol GLViewDelegate <NSObject>
 
 @required
 
 // Draw with OpenGL ES
--(void)drawView:(GLView*)view;
+- (void)drawView:(GLView *)view;
 
 @optional
 
 // Called whenever you need to do some initialization before rendering.
--(void)setupView:(GLView*)view;
+- (void)setupView:(GLView *)view;
 
 @end

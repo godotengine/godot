@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,21 +30,21 @@
 #ifndef AUDIO_SERVER_SW_H
 #define AUDIO_SERVER_SW_H
 
-#include "servers/audio_server.h"
+#include "os/thread.h"
+#include "os/thread_safe.h"
+#include "self_list.h"
 #include "servers/audio/audio_mixer_sw.h"
 #include "servers/audio/voice_rb_sw.h"
-#include "self_list.h"
-#include "os/thread_safe.h"
-#include "os/thread.h"
+#include "servers/audio_server.h"
 class AudioServerSW : public AudioServer {
 
-	OBJ_TYPE( AudioServerSW, AudioServer );
+	OBJ_TYPE(AudioServerSW, AudioServer);
 
 	_THREAD_SAFE_CLASS_
 
 	enum {
-		INTERNAL_BUFFER_SIZE=4096,
-		STREAM_SCALE_BITS=12
+		INTERNAL_BUFFER_SIZE = 4096,
+		STREAM_SCALE_BITS = 12
 
 	};
 
@@ -60,8 +61,11 @@ class AudioServerSW : public AudioServer {
 		SelfList<Voice> active_item;
 		AudioMixer::ChannelID channel;
 
-
-		Voice () : active_item(this) { channel=AudioMixer::INVALID_CHANNEL; active=false;}
+		Voice()
+			: active_item(this) {
+			channel = AudioMixer::INVALID_CHANNEL;
+			active = false;
+		}
 	};
 
 	mutable RID_Owner<Voice> voice_owner;
@@ -69,19 +73,19 @@ class AudioServerSW : public AudioServer {
 
 	struct Stream {
 		bool active;
-		List<Stream*>::Element *E;
+		List<Stream *>::Element *E;
 		AudioStream *audio_stream;
 		EventStream *event_stream;
 		float volume_scale;
 	};
 
-	List<Stream*> active_audio_streams;
+	List<Stream *> active_audio_streams;
 
 	//List<Stream*> event_streams;
 
-	int32_t * internal_buffer;
+	int32_t *internal_buffer;
 	int internal_buffer_channels;
-	int32_t * stream_buffer;
+	int32_t *stream_buffer;
 
 	mutable RID_Owner<Stream> stream_owner;
 
@@ -89,7 +93,7 @@ class AudioServerSW : public AudioServer {
 	float stream_volume_scale;
 	float fx_volume_scale;
 	float event_voice_volume_scale;
-	float peak_left,peak_right;
+	float peak_left, peak_right;
 	uint32_t max_peak;
 
 	double _output_delay;
@@ -101,43 +105,42 @@ class AudioServerSW : public AudioServer {
 	static void _thread_func(void *self);
 
 	void _update_streams(bool p_thread);
-	void driver_process_chunk(int p_frames,int32_t *p_buffer);
+	void driver_process_chunk(int p_frames, int32_t *p_buffer);
 
 	AudioMixerSW::InterpolationType mixer_interp;
 	bool mixer_use_fx;
 	uint64_t mixer_step_usecs;
 
 	static void _mixer_callback(void *p_udata);
-friend class AudioDriverSW;
-	void driver_process(int p_frames,int32_t *p_buffer);
+	friend class AudioDriverSW;
+	void driver_process(int p_frames, int32_t *p_buffer);
+
 public:
-
-
 	/* SAMPLE API */
 
 	virtual RID sample_create(SampleFormat p_format, bool p_stereo, int p_length);
 
-	virtual void sample_set_description(RID p_sample, const String& p_description);
+	virtual void sample_set_description(RID p_sample, const String &p_description);
 	virtual String sample_get_description(RID p_sample) const;
 
 	virtual SampleFormat sample_get_format(RID p_sample) const;
 	virtual bool sample_is_stereo(RID p_sample) const;
 	virtual int sample_get_length(RID p_sample) const;
-	const void* sample_get_data_ptr(RID p_sample) const;
+	const void *sample_get_data_ptr(RID p_sample) const;
 
-	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer);
+	virtual void sample_set_data(RID p_sample, const DVector<uint8_t> &p_buffer);
 	virtual DVector<uint8_t> sample_get_data(RID p_sample) const;
 
-	virtual void sample_set_mix_rate(RID p_sample,int p_rate);
+	virtual void sample_set_mix_rate(RID p_sample, int p_rate);
 	virtual int sample_get_mix_rate(RID p_sample) const;
 
-	virtual void sample_set_loop_format(RID p_sample,SampleLoopFormat p_format);
+	virtual void sample_set_loop_format(RID p_sample, SampleLoopFormat p_format);
 	virtual SampleLoopFormat sample_get_loop_format(RID p_sample) const;
 
-	virtual void sample_set_loop_begin(RID p_sample,int p_pos);
+	virtual void sample_set_loop_begin(RID p_sample, int p_pos);
 	virtual int sample_get_loop_begin(RID p_sample) const;
 
-	virtual void sample_set_loop_end(RID p_sample,int p_pos);
+	virtual void sample_set_loop_end(RID p_sample, int p_pos);
 	virtual int sample_get_loop_end(RID p_sample) const;
 
 	/* VOICE API */
@@ -147,9 +150,9 @@ public:
 	virtual void voice_play(RID p_voice, RID p_sample);
 
 	virtual void voice_set_volume(RID p_voice, float p_volume);
-	virtual void voice_set_pan(RID p_voice, float p_pan, float p_depth=0,float height=0); //pan and depth go from -1 to 1
-	virtual void voice_set_filter(RID p_voice, FilterType p_type, float p_cutoff, float p_resonance,float p_gain=0);
-	virtual void voice_set_chorus(RID p_voice, float p_chorus );
+	virtual void voice_set_pan(RID p_voice, float p_pan, float p_depth = 0, float height = 0); //pan and depth go from -1 to 1
+	virtual void voice_set_filter(RID p_voice, FilterType p_type, float p_cutoff, float p_resonance, float p_gain = 0);
+	virtual void voice_set_chorus(RID p_voice, float p_chorus);
 	virtual void voice_set_reverb(RID p_voice, ReverbRoomType p_room_type, float p_reverb);
 	virtual void voice_set_mix_rate(RID p_voice, int p_mix_rate);
 	virtual void voice_set_positional(RID p_voice, bool p_positional);
@@ -199,7 +202,6 @@ public:
 	virtual void set_fx_global_volume_scale(float p_volume);
 	virtual void set_event_voice_global_volume_scale(float p_volume);
 
-
 	virtual float get_stream_global_volume_scale() const;
 	virtual float get_fx_global_volume_scale() const;
 	virtual float get_event_voice_global_volume_scale() const;
@@ -210,29 +212,21 @@ public:
 
 	virtual double get_output_delay() const;
 
-
 	AudioServerSW(SampleManagerSW *p_sample_manager);
 	~AudioServerSW();
-
 };
 
-
 class AudioDriverSW {
-
 
 	static AudioDriverSW *singleton;
 	uint64_t _last_mix_time;
 	uint64_t _mix_amount;
 
-
 protected:
-
-	void audio_server_process(int p_frames,int32_t *p_buffer,bool p_update_mix_time=true);
+	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
 
 public:
-
-
 	double get_mix_time() const; //useful for video -> audio sync
 
 	enum OutputFormat {
@@ -246,38 +240,33 @@ public:
 	static AudioDriverSW *get_singleton();
 	void set_singleton();
 
-	virtual const char* get_name() const=0;
+	virtual const char *get_name() const = 0;
 
-	virtual Error init()=0;
-	virtual void start()=0;
-	virtual int get_mix_rate() const =0;
-	virtual OutputFormat get_output_format() const=0;
-	virtual void lock()=0;
-	virtual void unlock()=0;
-	virtual void finish()=0;
+	virtual Error init() = 0;
+	virtual void start() = 0;
+	virtual int get_mix_rate() const = 0;
+	virtual OutputFormat get_output_format() const = 0;
+	virtual void lock() = 0;
+	virtual void unlock() = 0;
+	virtual void finish() = 0;
 
 	virtual float get_latency() { return 0; }
 
-
-
-
 	AudioDriverSW();
-	virtual ~AudioDriverSW() {};
+	virtual ~AudioDriverSW(){};
 };
-
-
 
 class AudioDriverManagerSW {
 
 	enum {
 
-		MAX_DRIVERS=10
+		MAX_DRIVERS = 10
 	};
 
 	static AudioDriverSW *drivers[MAX_DRIVERS];
 	static int driver_count;
-public:
 
+public:
 	static void add_driver(AudioDriverSW *p_driver);
 	static int get_driver_count();
 	static AudioDriverSW *get_driver(int p_driver);

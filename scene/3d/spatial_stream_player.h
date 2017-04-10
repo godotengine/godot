@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +30,13 @@
 #ifndef SPATIAL_STREAM_PLAYER_H
 #define SPATIAL_STREAM_PLAYER_H
 
-#include "scene/resources/audio_stream.h"
 #include "scene/3d/spatial_player.h"
+#include "scene/resources/audio_stream.h"
 #include "servers/audio/audio_rb_resampler.h"
 
 class SpatialStreamPlayer : public SpatialPlayer {
 
-	OBJ_TYPE(SpatialStreamPlayer,SpatialPlayer);
+	OBJ_TYPE(SpatialStreamPlayer, SpatialPlayer);
 
 	_THREAD_SAFE_CLASS_
 
@@ -43,10 +44,9 @@ class SpatialStreamPlayer : public SpatialPlayer {
 		SpatialStreamPlayer *player;
 		virtual int get_channel_count() const;
 		virtual void set_mix_rate(int p_rate); //notify the stream of the mix rate
-		virtual bool mix(int32_t *p_buffer,int p_frames);
+		virtual bool mix(int32_t *p_buffer, int p_frames);
 		virtual void update();
 	};
-
 
 	InternalStream internal_stream;
 	Ref<AudioStreamPlayback> playback;
@@ -54,7 +54,7 @@ class SpatialStreamPlayer : public SpatialPlayer {
 
 	int sp_get_channel_count() const;
 	void sp_set_mix_rate(int p_rate); //notify the stream of the mix rate
-	bool sp_mix(int32_t *p_buffer,int p_frames);
+	bool sp_mix(int32_t *p_buffer, int p_frames);
 	void sp_update();
 
 	int server_mix_rate;
@@ -72,16 +72,17 @@ class SpatialStreamPlayer : public SpatialPlayer {
 	bool _play;
 	void _set_play(bool p_play);
 	bool _get_play() const;
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-public:
 
+public:
 	void set_stream(const Ref<AudioStream> &p_stream);
 	Ref<AudioStream> get_stream() const;
 
-	void play(float p_from_offset=0);
+	void play(float p_from_offset = 0);
 	void stop();
 	bool is_playing() const;
 

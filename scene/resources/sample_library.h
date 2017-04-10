@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,47 +30,51 @@
 #ifndef SAMPLE_LIBRARY_H
 #define SAMPLE_LIBRARY_H
 
+#include "map.h"
 #include "resource.h"
 #include "scene/resources/sample.h"
-#include "map.h"
 
 class SampleLibrary : public Resource {
 
-	OBJ_TYPE(SampleLibrary,Resource);
+	OBJ_TYPE(SampleLibrary, Resource);
 
 	struct SampleData {
 
 		Ref<Sample> sample;
 		float db;
 		float pitch_scale;
+		int priority;
 
-		SampleData() { db=0; pitch_scale=1; }
+		SampleData() {
+			db = 0;
+			pitch_scale = 1;
+			priority = 0;
+		}
 	};
 
-	Map<StringName,SampleData > sample_map;
+	Map<StringName, SampleData> sample_map;
 
 	Array _get_sample_list() const;
-protected:
 
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	static void _bind_methods();
 
 public:
-
-
-
-	void add_sample(const StringName& p_name, const Ref<Sample>& p_sample);
-	bool has_sample(const StringName& p_name) const;
-	void sample_set_volume_db(const StringName& p_name, float p_db);
-	float sample_get_volume_db(const StringName& p_name) const;
-	void sample_set_pitch_scale(const StringName& p_name, float p_pitch);
-	float sample_get_pitch_scale(const StringName& p_name) const;
-	Ref<Sample> get_sample(const StringName& p_name) const;
+	void add_sample(const StringName &p_name, const Ref<Sample> &p_sample);
+	bool has_sample(const StringName &p_name) const;
+	void sample_set_volume_db(const StringName &p_name, float p_db);
+	float sample_get_volume_db(const StringName &p_name) const;
+	void sample_set_pitch_scale(const StringName &p_name, float p_pitch);
+	float sample_get_pitch_scale(const StringName &p_name) const;
+	void sample_set_priority(const StringName &p_name, int p_priority);
+	int sample_get_priority(const StringName &p_name) const;
+	Ref<Sample> get_sample(const StringName &p_name) const;
 	void get_sample_list(List<StringName> *p_samples) const;
-	void remove_sample(const StringName& p_name);
+	void remove_sample(const StringName &p_name);
 	StringName get_sample_idx(int p_idx) const;
 
 	SampleLibrary();

@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,19 +30,18 @@
 #ifndef OS_SERVER_H
 #define OS_SERVER_H
 
-
-#include "main/input_default.h"
+#include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "servers/visual_server.h"
-#include "servers/visual/rasterizer.h"
+#include "main/input_default.h"
 #include "servers/audio/audio_driver_dummy.h"
-#include "servers/physics_server.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/audio/sample_manager_sw.h"
+#include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_server.h"
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
-#include "drivers/rtaudio/audio_driver_rtaudio.h"
-#include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/visual/rasterizer.h"
+#include "servers/visual_server.h"
 
 //bitch
 #undef CursorShape
@@ -75,21 +75,17 @@ class OS_Server : public OS_Unix {
 
 	InputDefault *input;
 
-
-
 protected:
-
 	virtual int get_video_driver_count() const;
-	virtual const char * get_video_driver_name(int p_driver) const;
+	virtual const char *get_video_driver_name(int p_driver) const;
 	virtual VideoMode get_default_video_mode() const;
 
-	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);
+	virtual void initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
 	virtual void finalize();
 
-	virtual void set_main_loop( MainLoop * p_main_loop );
+	virtual void set_main_loop(MainLoop *p_main_loop);
 
 public:
-
 	virtual String get_name();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
@@ -99,15 +95,15 @@ public:
 	virtual bool is_mouse_grab_enabled() const;
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
-	virtual void set_window_title(const String& p_title);
+	virtual void set_window_title(const String &p_title);
 
 	virtual MainLoop *get_main_loop() const;
 
 	virtual bool can_draw() const;
 
-	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
-	virtual VideoMode get_video_mode(int p_screen=0) const;
-	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+	virtual void set_video_mode(const VideoMode &p_video_mode, int p_screen = 0);
+	virtual VideoMode get_video_mode(int p_screen = 0) const;
+	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen = 0) const;
 
 	virtual Size2 get_window_size() const;
 

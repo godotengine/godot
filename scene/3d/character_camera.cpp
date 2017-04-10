@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -168,7 +169,7 @@ void CharacterCamera::_compute_camera() {
 
 	Vector3 vec1 = accepted.origin;
 	Vector3 vec2 = proposed.origin;
-	final.origin = vec2.linear_interpolate(vec1, pos_ratio * time);;
+	final.origin = vec2.linear_interpolate(vec1, pos_ratio * time);
 
 	Quat q1 = accepted.basis;
 	Quat q2 = proposed.basis;
@@ -236,7 +237,6 @@ void CharacterCamera::_compute_camera() {
 			l=min_distance;
 
 		new_pos = character_pos + rel_n * l;
-
 
 #endif
 		follow_pos=new_pos;

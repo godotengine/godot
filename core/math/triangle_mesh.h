@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,11 +30,11 @@
 #ifndef TRIANGLE_MESH_H
 #define TRIANGLE_MESH_H
 
-#include "reference.h"
 #include "face3.h"
+#include "reference.h"
 class TriangleMesh : public Reference {
 
-	OBJ_TYPE( TriangleMesh, Reference);
+	OBJ_TYPE(TriangleMesh, Reference);
 
 	struct Triangle {
 
@@ -56,7 +57,7 @@ class TriangleMesh : public Reference {
 
 	struct BVHCmpX {
 
-		bool operator()(const BVH* p_left, const BVH* p_right) const {
+		bool operator()(const BVH *p_left, const BVH *p_right) const {
 
 			return p_left->center.x < p_right->center.x;
 		}
@@ -64,35 +65,33 @@ class TriangleMesh : public Reference {
 
 	struct BVHCmpY {
 
-		bool operator()(const BVH* p_left, const BVH* p_right) const {
+		bool operator()(const BVH *p_left, const BVH *p_right) const {
 
 			return p_left->center.y < p_right->center.y;
 		}
 	};
 	struct BVHCmpZ {
 
-		bool operator()(const BVH* p_left, const BVH* p_right) const {
+		bool operator()(const BVH *p_left, const BVH *p_right) const {
 
 			return p_left->center.z < p_right->center.z;
 		}
 	};
 
-	int _create_bvh(BVH*p_bvh,BVH** p_bb,int p_from,int p_size,int p_depth,int&max_depth,int&max_alloc);
+	int _create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc);
 
 	DVector<BVH> bvh;
 	int max_depth;
 	bool valid;
 
 public:
-
 	bool is_valid() const;
-	bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_point, Vector3 &r_normal) const;
-	bool intersect_ray(const Vector3& p_begin,const Vector3& p_dir,Vector3 &r_point, Vector3 &r_normal) const;
-	Vector3 get_area_normal(const AABB& p_aabb) const;
+	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal) const;
+	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal) const;
+	Vector3 get_area_normal(const AABB &p_aabb) const;
 	DVector<Face3> get_faces() const;
 
-
-	void create(const DVector<Vector3>& p_faces);
+	void create(const DVector<Vector3> &p_faces);
 	TriangleMesh();
 };
 

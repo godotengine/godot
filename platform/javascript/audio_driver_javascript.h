@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,28 +30,24 @@
 #ifndef AUDIO_DRIVER_JAVASCRIPT_H
 #define AUDIO_DRIVER_JAVASCRIPT_H
 
-
-#include "servers/audio/audio_server_sw.h"
 #include "os/mutex.h"
+#include "servers/audio/audio_server_sw.h"
 
 class AudioDriverJavaScript : public AudioDriverSW {
 public:
-
 	void set_singleton();
 
-	virtual const char* get_name() const;
+	virtual const char *get_name() const;
 
 	virtual Error init();
 	virtual void start();
-	virtual int get_mix_rate() const ;
+	virtual int get_mix_rate() const;
 	virtual OutputFormat get_output_format() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
 
-
 	AudioDriverJavaScript();
 };
-
 
 #endif

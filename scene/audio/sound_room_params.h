@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,28 +33,27 @@
 #include "scene/main/node.h"
 #include "servers/spatial_sound_server.h"
 
-
 #ifndef _3D_DISABLED
 
 #include "scene/3d/room_instance.h"
 class SoundRoomParams : public Node {
 
-	OBJ_TYPE( SoundRoomParams, Node );
-public:
+	OBJ_TYPE(SoundRoomParams, Node);
 
+public:
 	enum Params {
-		PARAM_SPEED_OF_SOUND_SCALE=SpatialSoundServer::ROOM_PARAM_SPEED_OF_SOUND_SCALE,
-		PARAM_DOPPLER_FACTOR=SpatialSoundServer::ROOM_PARAM_DOPPLER_FACTOR,
-		PARAM_PITCH_SCALE=SpatialSoundServer::ROOM_PARAM_PITCH_SCALE,
-		PARAM_VOLUME_SCALE_DB=SpatialSoundServer::ROOM_PARAM_VOLUME_SCALE_DB,
-		PARAM_REVERB_SEND=SpatialSoundServer::ROOM_PARAM_REVERB_SEND,
-		PARAM_CHORUS_SEND=SpatialSoundServer::ROOM_PARAM_CHORUS_SEND,
-		PARAM_ATTENUATION_SCALE=SpatialSoundServer::ROOM_PARAM_ATTENUATION_SCALE,
-		PARAM_ATTENUATION_HF_CUTOFF=SpatialSoundServer::ROOM_PARAM_ATTENUATION_HF_CUTOFF,
-		PARAM_ATTENUATION_HF_FLOOR_DB=SpatialSoundServer::ROOM_PARAM_ATTENUATION_HF_FLOOR_DB,
-		PARAM_ATTENUATION_HF_RATIO_EXP=SpatialSoundServer::ROOM_PARAM_ATTENUATION_HF_RATIO_EXP,
-		PARAM_ATTENUATION_REVERB_SCALE=SpatialSoundServer::ROOM_PARAM_ATTENUATION_REVERB_SCALE,
-		PARAM_MAX=SpatialSoundServer::ROOM_PARAM_MAX
+		PARAM_SPEED_OF_SOUND_SCALE = SpatialSoundServer::ROOM_PARAM_SPEED_OF_SOUND_SCALE,
+		PARAM_DOPPLER_FACTOR = SpatialSoundServer::ROOM_PARAM_DOPPLER_FACTOR,
+		PARAM_PITCH_SCALE = SpatialSoundServer::ROOM_PARAM_PITCH_SCALE,
+		PARAM_VOLUME_SCALE_DB = SpatialSoundServer::ROOM_PARAM_VOLUME_SCALE_DB,
+		PARAM_REVERB_SEND = SpatialSoundServer::ROOM_PARAM_REVERB_SEND,
+		PARAM_CHORUS_SEND = SpatialSoundServer::ROOM_PARAM_CHORUS_SEND,
+		PARAM_ATTENUATION_SCALE = SpatialSoundServer::ROOM_PARAM_ATTENUATION_SCALE,
+		PARAM_ATTENUATION_HF_CUTOFF = SpatialSoundServer::ROOM_PARAM_ATTENUATION_HF_CUTOFF,
+		PARAM_ATTENUATION_HF_FLOOR_DB = SpatialSoundServer::ROOM_PARAM_ATTENUATION_HF_FLOOR_DB,
+		PARAM_ATTENUATION_HF_RATIO_EXP = SpatialSoundServer::ROOM_PARAM_ATTENUATION_HF_RATIO_EXP,
+		PARAM_ATTENUATION_REVERB_SCALE = SpatialSoundServer::ROOM_PARAM_ATTENUATION_REVERB_SCALE,
+		PARAM_MAX = SpatialSoundServer::ROOM_PARAM_MAX
 	};
 
 	enum Reverb {
@@ -62,8 +62,8 @@ public:
 		REVERB_LARGE,
 		REVERB_HALL
 	};
-private:
 
+private:
 	RID room;
 
 	float params[PARAM_MAX];
@@ -71,15 +71,11 @@ private:
 	bool force_params_for_all_sources;
 	void _update_sound_room();
 
-
 protected:
-
 	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
-
-
 	void set_param(Params p_param, float p_value);
 	float get_param(Params p_param) const;
 

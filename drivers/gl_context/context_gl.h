@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,33 +38,27 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-
 class ContextGL {
 
 	static ContextGL *singleton;
+
 public:
-
 	static ContextGL *get_singleton();
-	
-	virtual void release_current()=0;
 
-	virtual void make_current()=0;
+	virtual void release_current() = 0;
 
-	virtual void swap_buffers()=0;
-	
-	virtual Error initialize()=0;
+	virtual void make_current() = 0;
 
-	virtual void set_use_vsync(bool p_use)=0;
-	virtual bool is_using_vsync() const=0;
+	virtual void swap_buffers() = 0;
 
+	virtual Error initialize() = 0;
 
-	
-	
-	ContextGL();	
+	virtual void set_use_vsync(bool p_use) = 0;
+	virtual bool is_using_vsync() const = 0;
+
+	ContextGL();
 	~ContextGL();
-
 };
-
 
 #endif
 

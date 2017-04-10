@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,25 +30,25 @@
 
 #ifdef _MSC_VER
 
-typedef signed __int8		int8_t;
-typedef unsigned __int8		uint8_t;
-typedef signed __int16		int16_t;
-typedef unsigned __int16	uint16_t;
-typedef signed __int32		int32_t;
-typedef unsigned __int32	uint32_t;
-typedef signed __int64		int64_t;
-typedef unsigned __int64	uint64_t;
+typedef signed __int8 int8_t;
+typedef unsigned __int8 uint8_t;
+typedef signed __int16 int16_t;
+typedef unsigned __int16 uint16_t;
+typedef signed __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef signed __int64 int64_t;
+typedef unsigned __int64 uint64_t;
 
 #else
 
 #ifdef NO_STDINT_H
-typedef unsigned char   uint8_t;
-typedef signed char     int8_t;
-typedef unsigned short  uint16_t;
-typedef signed short    int16_t;
-typedef unsigned int    uint32_t;
-typedef signed int      int32_t;
-typedef long long	int64_t;
+typedef unsigned char uint8_t;
+typedef signed char int8_t;
+typedef unsigned short uint16_t;
+typedef signed short int16_t;
+typedef unsigned int uint32_t;
+typedef signed int int32_t;
+typedef long long int64_t;
 typedef unsigned long long uint64_t;
 #else
 #include <stdint.h>

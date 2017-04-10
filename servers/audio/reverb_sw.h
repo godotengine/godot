@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +30,8 @@
 #ifndef REVERB_SW_H
 #define REVERB_SW_H
 
-#include "typedefs.h"
 #include "os/memory.h"
+#include "typedefs.h"
 
 class ReverbParamsSW;
 
@@ -55,12 +56,17 @@ private:
 		int rwl;
 		int rwr;
 		unsigned int Offset;
-		void reset() { lwl=0; lwr=0; rwl=0; rwr=0; Offset=0; }
+		void reset() {
+			lwl = 0;
+			lwr = 0;
+			rwl = 0;
+			rwr = 0;
+			Offset = 0;
+		}
 		State() { reset(); }
 	} state;
 
 	ReverbParamsSW *current_params;
-
 
 	int *reverb_buffer;
 	unsigned int reverb_buffer_size;
@@ -70,15 +76,12 @@ private:
 	void adjust_current_params();
 
 public:
-
-
 	void set_mode(ReverbMode p_mode);
-	bool process(int *p_input,int *p_output,int p_frames,int p_stereo_stride=1); // return tru if audio was created
+	bool process(int *p_input, int *p_output, int p_frames, int p_stereo_stride = 1); // return tru if audio was created
 	void set_mix_rate(int p_mix_rate);
 
 	ReverbSW();
 	~ReverbSW();
-
 };
 
 #endif

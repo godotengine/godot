@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,46 +34,41 @@
 
 class SampleManagerSW {
 public:
-
 	/* SAMPLE API */
 
-	virtual RID sample_create(AS::SampleFormat p_format, bool p_stereo, int p_length)=0;
+	virtual RID sample_create(AS::SampleFormat p_format, bool p_stereo, int p_length) = 0;
 
-	virtual void sample_set_description(RID p_sample, const String& p_description)=0;
-	virtual String sample_get_description(RID p_sample) const=0;
+	virtual void sample_set_description(RID p_sample, const String &p_description) = 0;
+	virtual String sample_get_description(RID p_sample) const = 0;
 
-	virtual AS::SampleFormat sample_get_format(RID p_sample) const=0;
-	virtual bool sample_is_stereo(RID p_sample) const=0;
-	virtual int sample_get_length(RID p_sample) const=0;
+	virtual AS::SampleFormat sample_get_format(RID p_sample) const = 0;
+	virtual bool sample_is_stereo(RID p_sample) const = 0;
+	virtual int sample_get_length(RID p_sample) const = 0;
 
-	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer)=0;
-	virtual const DVector<uint8_t> sample_get_data(RID p_sample) const=0;
+	virtual void sample_set_data(RID p_sample, const DVector<uint8_t> &p_buffer) = 0;
+	virtual const DVector<uint8_t> sample_get_data(RID p_sample) const = 0;
 
-	virtual void *sample_get_data_ptr(RID p_sample) const=0;
+	virtual void *sample_get_data_ptr(RID p_sample) const = 0;
 
-	virtual void sample_set_mix_rate(RID p_sample,int p_rate)=0;
-	virtual int sample_get_mix_rate(RID p_sample) const=0;
+	virtual void sample_set_mix_rate(RID p_sample, int p_rate) = 0;
+	virtual int sample_get_mix_rate(RID p_sample) const = 0;
 
-	virtual void sample_set_loop_format(RID p_sample,AS::SampleLoopFormat p_format)=0;
-	virtual AS::SampleLoopFormat sample_get_loop_format(RID p_sample) const=0;
+	virtual void sample_set_loop_format(RID p_sample, AS::SampleLoopFormat p_format) = 0;
+	virtual AS::SampleLoopFormat sample_get_loop_format(RID p_sample) const = 0;
 
-	virtual void sample_set_loop_begin(RID p_sample,int p_pos)=0;
-	virtual int sample_get_loop_begin(RID p_sample) const=0;
+	virtual void sample_set_loop_begin(RID p_sample, int p_pos) = 0;
+	virtual int sample_get_loop_begin(RID p_sample) const = 0;
 
-	virtual void sample_set_loop_end(RID p_sample,int p_pos)=0;
-	virtual int sample_get_loop_end(RID p_sample) const=0;
+	virtual void sample_set_loop_end(RID p_sample, int p_pos) = 0;
+	virtual int sample_get_loop_end(RID p_sample) const = 0;
 
-	virtual bool is_sample(RID) const=0;
-	virtual void free(RID p_sample)=0;
-
-
+	virtual bool is_sample(RID) const = 0;
+	virtual void free(RID p_sample) = 0;
 
 	virtual ~SampleManagerSW();
 };
 
-
 class SampleManagerMallocSW : public SampleManagerSW {
-
 
 	struct Sample {
 
@@ -89,34 +85,34 @@ class SampleManagerMallocSW : public SampleManagerSW {
 	};
 
 	mutable RID_Owner<Sample> sample_owner;
-public:
 
+public:
 	/* SAMPLE API */
 
 	virtual RID sample_create(AS::SampleFormat p_format, bool p_stereo, int p_length);
 
-	virtual void sample_set_description(RID p_sample, const String& p_description);
+	virtual void sample_set_description(RID p_sample, const String &p_description);
 	virtual String sample_get_description(RID p_sample) const;
 
 	virtual AS::SampleFormat sample_get_format(RID p_sample) const;
 	virtual bool sample_is_stereo(RID p_sample) const;
 	virtual int sample_get_length(RID p_sample) const;
 
-	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer);
+	virtual void sample_set_data(RID p_sample, const DVector<uint8_t> &p_buffer);
 	virtual const DVector<uint8_t> sample_get_data(RID p_sample) const;
 
 	virtual void *sample_get_data_ptr(RID p_sample) const;
 
-	virtual void sample_set_mix_rate(RID p_sample,int p_rate);
+	virtual void sample_set_mix_rate(RID p_sample, int p_rate);
 	virtual int sample_get_mix_rate(RID p_sample) const;
 
-	virtual void sample_set_loop_format(RID p_sample,AS::SampleLoopFormat p_format);
+	virtual void sample_set_loop_format(RID p_sample, AS::SampleLoopFormat p_format);
 	virtual AS::SampleLoopFormat sample_get_loop_format(RID p_sample) const;
 
-	virtual void sample_set_loop_begin(RID p_sample,int p_pos);
+	virtual void sample_set_loop_begin(RID p_sample, int p_pos);
 	virtual int sample_get_loop_begin(RID p_sample) const;
 
-	virtual void sample_set_loop_end(RID p_sample,int p_pos);
+	virtual void sample_set_loop_end(RID p_sample, int p_pos);
 	virtual int sample_get_loop_end(RID p_sample) const;
 
 	virtual bool is_sample(RID) const;

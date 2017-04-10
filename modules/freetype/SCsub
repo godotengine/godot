@@ -2,7 +2,7 @@
 
 Import('env')
 
-# Not building in a separate env as core needs it
+# Not building in a separate env as scene needs it
 
 # Thirdparty source files
 if (env['builtin_freetype'] != 'no'):
@@ -64,24 +64,19 @@ if (env['builtin_freetype'] != 'no'):
     if (env['builtin_libpng'] != 'no'):
         env.Append(CPPPATH=["#thirdparty/libpng"])
 
-    """ FIXME: Remove this commented code if Windows can handle the monolithic lib
-	# fix for Windows' shell miserably failing on long lines, split in two libraries
-	half1 = []
-	half2 = []
-	for x in thirdparty_sources:
-		if (x.find("src/base") != -1 and x.find("src/sfnt") != -1):
-			half1.append(x)
-		else:
-			half2.append(x)
-
-	lib = env.Library("freetype_builtin1", half2)
-	env.Append(LIBS = [lib])
-	lib = env.Library("freetype_builtin2", half1)
-	env.Append(LIBS = [lib])
-	"""
-
     lib = env.Library("freetype_builtin", thirdparty_sources)
-    env.Append(LIBS=[lib])
+    # Needs to be appended to arrive after libscene in the linker call,
+    # but we don't want it to arrive *after* system libs, so manual hack
+    # LIBS contains first SCons Library objects ("SCons.Node.FS.File object")
+    # and then plain strings for system library. We insert between the two.
+    inserted = False
+    for idx, linklib in enumerate(env["LIBS"]):
+        if isinstance(linklib, basestring): # first system lib such as "X11", otherwise SCons lib object
+            env["LIBS"].insert(idx, lib)
+            inserted = True
+            break
+    if not inserted:
+        env.Append(LIBS=[lib])
 
 # Godot source files
 env.add_source_files(env.modules_sources, "*.cpp")

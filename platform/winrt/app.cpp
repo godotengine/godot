@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +33,9 @@
 
 #include "app.h"
 
-#include "main/main.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
+#include "main/main.h"
 
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::ApplicationModel::Activation;
@@ -48,113 +49,101 @@ using namespace Platform;
 using namespace $ext_safeprojectname$;
 
 // Helper to convert a length in device-independent pixels (DIPs) to a length in physical pixels.
-inline float ConvertDipsToPixels(float dips, float dpi)
-{
-    static const float dipsPerInch = 96.0f;
-    return floor(dips * dpi / dipsPerInch + 0.5f); // Round to nearest integer.
+inline float ConvertDipsToPixels(float dips, float dpi) {
+	static const float dipsPerInch = 96.0f;
+	return floor(dips * dpi / dipsPerInch + 0.5f); // Round to nearest integer.
 }
 
 // Implementation of the IFrameworkViewSource interface, necessary to run our app.
-ref class HelloTriangleApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
-{
+ref class HelloTriangleApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource {
 public:
-    virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView()
-    {
-        return ref new App();
-    }
+	virtual Windows::ApplicationModel::Core::IFrameworkView ^ CreateView() {
+		return ref new App();
+	}
 };
 
 // The main function creates an IFrameworkViewSource for our app, and runs the app.
-[Platform::MTAThread]
-int main(Platform::Array<Platform::String^>^)
-{
-    auto helloTriangleApplicationSource = ref new HelloTriangleApplicationSource();
-    CoreApplication::Run(helloTriangleApplicationSource);
-    return 0;
+[Platform::MTAThread] int main(Platform::Array<Platform::String ^> ^) {
+	auto helloTriangleApplicationSource = ref new HelloTriangleApplicationSource();
+	CoreApplication::Run(helloTriangleApplicationSource);
+	return 0;
 }
 
-App::App() :
-    mWindowClosed(false),
-    mWindowVisible(true),
-    mWindowWidth(0),
-    mWindowHeight(0),
-    mEglDisplay(EGL_NO_DISPLAY),
-    mEglContext(EGL_NO_CONTEXT),
-    mEglSurface(EGL_NO_SURFACE)
-{
+App::App()
+	: mWindowClosed(false),
+	  mWindowVisible(true),
+	  mWindowWidth(0),
+	  mWindowHeight(0),
+	  mEglDisplay(EGL_NO_DISPLAY),
+	  mEglContext(EGL_NO_CONTEXT),
+	  mEglSurface(EGL_NO_SURFACE) {
 }
 
 // The first method called when the IFrameworkView is being created.
-void App::Initialize(CoreApplicationView^ applicationView)
-{
-    // Register event handlers for app lifecycle. This example includes Activated, so that we
-    // can make the CoreWindow active and start rendering on the window.
-    applicationView->Activated +=
-        ref new TypedEventHandler<CoreApplicationView^, IActivatedEventArgs^>(this, &App::OnActivated);
+void App::Initialize(CoreApplicationView ^ applicationView) {
+	// Register event handlers for app lifecycle. This example includes Activated, so that we
+	// can make the CoreWindow active and start rendering on the window.
+	applicationView->Activated +=
+			ref new TypedEventHandler<CoreApplicationView ^, IActivatedEventArgs ^>(this, &App::OnActivated);
 
-    // Logic for other event handlers could go here.
-    // Information about the Suspending and Resuming event handlers can be found here:
-    // http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh994930.aspx
+	// Logic for other event handlers could go here.
+	// Information about the Suspending and Resuming event handlers can be found here:
+	// http://msdn.microsoft.com/en-us/library/windows/apps/xaml/hh994930.aspx
 
 	os = new OSWinrt;
 }
 
 // Called when the CoreWindow object is created (or re-created).
-void App::SetWindow(CoreWindow^ p_window)
-{
+void App::SetWindow(CoreWindow ^ p_window) {
 	window = p_window;
-    window->VisibilityChanged +=
-        ref new TypedEventHandler<CoreWindow^, VisibilityChangedEventArgs^>(this, &App::OnVisibilityChanged);
+	window->VisibilityChanged +=
+			ref new TypedEventHandler<CoreWindow ^, VisibilityChangedEventArgs ^>(this, &App::OnVisibilityChanged);
 
-    window->Closed +=
-        ref new TypedEventHandler<CoreWindow^, CoreWindowEventArgs^>(this, &App::OnWindowClosed);
+	window->Closed +=
+			ref new TypedEventHandler<CoreWindow ^, CoreWindowEventArgs ^>(this, &App::OnWindowClosed);
 
-    window->SizeChanged +=
-        ref new TypedEventHandler<CoreWindow^, WindowSizeChangedEventArgs^>(this, &App::OnWindowSizeChanged);
+	window->SizeChanged +=
+			ref new TypedEventHandler<CoreWindow ^, WindowSizeChangedEventArgs ^>(this, &App::OnWindowSizeChanged);
 
 #if !(WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-    // Disable all pointer visual feedback for better performance when touching.
-    // This is not supported on Windows Phone applications.
-    auto pointerVisualizationSettings = PointerVisualizationSettings::GetForCurrentView();
-    pointerVisualizationSettings->IsContactFeedbackEnabled = false;
-    pointerVisualizationSettings->IsBarrelButtonFeedbackEnabled = false;
+	// Disable all pointer visual feedback for better performance when touching.
+	// This is not supported on Windows Phone applications.
+	auto pointerVisualizationSettings = PointerVisualizationSettings::GetForCurrentView();
+	pointerVisualizationSettings->IsContactFeedbackEnabled = false;
+	pointerVisualizationSettings->IsBarrelButtonFeedbackEnabled = false;
 #endif
 
-
 	window->PointerPressed +=
-		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerPressed);
+			ref new TypedEventHandler<CoreWindow ^, PointerEventArgs ^>(this, &App::OnPointerPressed);
 
 	window->PointerMoved +=
-		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerMoved);
+			ref new TypedEventHandler<CoreWindow ^, PointerEventArgs ^>(this, &App::OnPointerMoved);
 
 	window->PointerReleased +=
-		ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerReleased);
+			ref new TypedEventHandler<CoreWindow ^, PointerEventArgs ^>(this, &App::OnPointerReleased);
 
 	//window->PointerWheelChanged +=
 	//	ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &App::OnPointerWheelChanged);
 
-
-
-	char* args[] = {"-path", "game", NULL};
+	char *args[] = { "-path", "game", NULL };
 	Main::setup("winrt", 2, args, false);
 
 	// The CoreWindow has been created, so EGL can be initialized.
-	ContextEGL* context = memnew(ContextEGL(window));
+	ContextEGL *context = memnew(ContextEGL(window));
 	os->set_gl_context(context);
 	UpdateWindowSize(Size(window->Bounds.Width, window->Bounds.Height));
 
 	Main::setup2();
 }
 
-static int _get_button(Windows::UI::Input::PointerPoint ^pt) {
+static int _get_button(Windows::UI::Input::PointerPoint ^ pt) {
 
 	using namespace Windows::UI::Input;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 	return BUTTON_LEFT;
 #else
-	switch (pt->Properties->PointerUpdateKind)
-	{
+	switch (pt->Properties->PointerUpdateKind) {
 		case PointerUpdateKind::LeftButtonPressed:
 		case PointerUpdateKind::LeftButtonReleased:
 			return BUTTON_LEFT;
@@ -183,7 +172,7 @@ static int _get_button(Windows::UI::Input::PointerPoint ^pt) {
 	return 0;
 };
 
-static bool _is_touch(Windows::UI::Input::PointerPoint ^pointerPoint) {
+static bool _is_touch(Windows::UI::Input::PointerPoint ^ pointerPoint) {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 	return true;
 #else
@@ -198,20 +187,18 @@ static bool _is_touch(Windows::UI::Input::PointerPoint ^pointerPoint) {
 #endif
 }
 
-
-static Windows::Foundation::Point _get_pixel_position(CoreWindow^ window, Windows::Foundation::Point rawPosition, OS* os) {
+static Windows::Foundation::Point _get_pixel_position(CoreWindow ^ window, Windows::Foundation::Point rawPosition, OS *os) {
 
 	Windows::Foundation::Point outputPosition;
 
-	// Compute coordinates normalized from 0..1.
-	// If the coordinates need to be sized to the SDL window,
-	// we'll do that after.
-	#if 1 || WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+// Compute coordinates normalized from 0..1.
+// If the coordinates need to be sized to the SDL window,
+// we'll do that after.
+#if 1 || WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
 	outputPosition.X = rawPosition.X / window->Bounds.Width;
 	outputPosition.Y = rawPosition.Y / window->Bounds.Height;
-	#else
-	switch (DisplayProperties::CurrentOrientation)
-	{
+#else
+	switch (DisplayProperties::CurrentOrientation) {
 		case DisplayOrientations::Portrait:
 			outputPosition.X = rawPosition.X / window->Bounds.Width;
 			outputPosition.Y = rawPosition.Y / window->Bounds.Height;
@@ -231,7 +218,7 @@ static Windows::Foundation::Point _get_pixel_position(CoreWindow^ window, Window
 		default:
 			break;
 	}
-	#endif
+#endif
 
 	OS::VideoMode vm = os->get_video_mode();
 	outputPosition.X *= vm.width;
@@ -245,9 +232,9 @@ static int _get_finger(uint32_t p_touch_id) {
 	return p_touch_id % 31; // for now
 };
 
-void App::pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args, bool p_pressed) {
+void App::pointer_event(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args, bool p_pressed) {
 
-	Windows::UI::Input::PointerPoint ^point = args->CurrentPoint;
+	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
 	int but = _get_button(point);
 	if (_is_touch(point)) {
@@ -285,21 +272,19 @@ void App::pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core
 	os->input_event(event);
 };
 
-
-void App::OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
+void App::OnPointerPressed(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 
 	pointer_event(sender, args, true);
 };
 
-
-void App::OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
+void App::OnPointerReleased(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 
 	pointer_event(sender, args, false);
 };
 
-void App::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args) {
+void App::OnPointerMoved(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::Core::PointerEventArgs ^ args) {
 
-	Windows::UI::Input::PointerPoint ^point = args->CurrentPoint;
+	Windows::UI::Input::PointerPoint ^ point = args->CurrentPoint;
 	Windows::Foundation::Point pos = _get_pixel_position(window, point->Position, os);
 
 	if (_is_touch(point)) {
@@ -330,79 +315,69 @@ void App::OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Cor
 	event.mouse_motion.relative_y = pos.Y - last_touch_y[31];
 
 	os->input_event(event);
-
 };
 
-
 // Initializes scene resources
-void App::Load(Platform::String^ entryPoint)
-{
+void App::Load(Platform::String ^ entryPoint) {
 	//char* args[] = {"-test", "render", NULL};
 	//Main::setup("winrt", 2, args);
 }
 
 // This method is called after the window becomes active.
-void App::Run()
-{
+void App::Run() {
 	if (Main::start())
 		os->run();
 }
 
 // Terminate events do not cause Uninitialize to be called. It will be called if your IFrameworkView
 // class is torn down while the app is in the foreground.
-void App::Uninitialize()
-{
+void App::Uninitialize() {
 	Main::cleanup();
 	delete os;
 }
 
 // Application lifecycle event handler.
-void App::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
-{
-    // Run() won't start until the CoreWindow is activated.
-    CoreWindow::GetForCurrentThread()->Activate();
+void App::OnActivated(CoreApplicationView ^ applicationView, IActivatedEventArgs ^ args) {
+	// Run() won't start until the CoreWindow is activated.
+	CoreWindow::GetForCurrentThread()->Activate();
 }
 
 // Window event handlers.
-void App::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
-{
-    mWindowVisible = args->Visible;
+void App::OnVisibilityChanged(CoreWindow ^ sender, VisibilityChangedEventArgs ^ args) {
+	mWindowVisible = args->Visible;
 }
 
-void App::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
-{
-    mWindowClosed = true;
+void App::OnWindowClosed(CoreWindow ^ sender, CoreWindowEventArgs ^ args) {
+	mWindowClosed = true;
 }
 
-void App::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
-{
+void App::OnWindowSizeChanged(CoreWindow ^ sender, WindowSizeChangedEventArgs ^ args) {
 #if (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP)
-    // On Windows 8.1, apps are resized when they are snapped alongside other apps, or when the device is rotated.
-    // The default framebuffer will be automatically resized when either of these occur.
-    // In particular, on a 90 degree rotation, the default framebuffer's width and height will switch.
-    UpdateWindowSize(args->Size);
+	// On Windows 8.1, apps are resized when they are snapped alongside other apps, or when the device is rotated.
+	// The default framebuffer will be automatically resized when either of these occur.
+	// In particular, on a 90 degree rotation, the default framebuffer's width and height will switch.
+	UpdateWindowSize(args->Size);
 #else if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
-    // On Windows Phone 8.1, the window size changes when the device is rotated.
-    // The default framebuffer will not be automatically resized when this occurs.
-    // It is therefore up to the app to handle rotation-specific logic in its rendering code.
+	// On Windows Phone 8.1, the window size changes when the device is rotated.
+	// The default framebuffer will not be automatically resized when this occurs.
+	// It is therefore up to the app to handle rotation-specific logic in its rendering code.
 	//os->screen_size_changed();
 	UpdateWindowSize(args->Size);
 #endif
 }
 
-void App::UpdateWindowSize(Size size)
-{
+void App::UpdateWindowSize(Size size) {
 	float dpi;
 #if (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP)
-	DisplayInformation^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
+	DisplayInformation ^ currentDisplayInformation = DisplayInformation::GetForCurrentView();
 	dpi = currentDisplayInformation->LogicalDpi;
 #else if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
 	dpi = DisplayProperties::LogicalDpi;
 #endif
 	Size pixelSize(ConvertDipsToPixels(size.Width, dpi), ConvertDipsToPixels(size.Height, dpi));
 
-    mWindowWidth = static_cast<GLsizei>(pixelSize.Width);
-    mWindowHeight = static_cast<GLsizei>(pixelSize.Height);
+	mWindowWidth = static_cast<GLsizei>(pixelSize.Width);
+	mWindowHeight = static_cast<GLsizei>(pixelSize.Height);
 
 	OS::VideoMode vm;
 	vm.width = mWindowWidth;

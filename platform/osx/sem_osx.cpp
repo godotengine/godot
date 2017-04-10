@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,11 +29,10 @@
 /*************************************************************************/
 #include "sem_osx.h"
 
-#include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
 
-void cgsem_init(cgsem_t *cgsem)
-{
+void cgsem_init(cgsem_t *cgsem) {
 	int flags, fd, i;
 
 	pipe(cgsem->pipefd);
@@ -47,30 +47,25 @@ void cgsem_init(cgsem_t *cgsem)
 	}
 }
 
-void cgsem_post(cgsem_t *cgsem)
-{
+void cgsem_post(cgsem_t *cgsem) {
 	const char buf = 1;
 
 	write(cgsem->pipefd[1], &buf, 1);
 }
 
-void cgsem_wait(cgsem_t *cgsem)
-{
+void cgsem_wait(cgsem_t *cgsem) {
 	char buf;
 
 	read(cgsem->pipefd[0], &buf, 1);
 }
 
-void cgsem_destroy(cgsem_t *cgsem)
-{
+void cgsem_destroy(cgsem_t *cgsem) {
 	close(cgsem->pipefd[1]);
 	close(cgsem->pipefd[0]);
 }
 
-
 #include "os/memory.h"
 #include <errno.h>
-
 
 Error SemaphoreOSX::wait() {
 
@@ -89,15 +84,14 @@ int SemaphoreOSX::get() const {
 	return 0;
 }
 
-
 Semaphore *SemaphoreOSX::create_semaphore_osx() {
 
-	return memnew( SemaphoreOSX );
+	return memnew(SemaphoreOSX);
 }
 
 void SemaphoreOSX::make_default() {
 
-	create_func=create_semaphore_osx;
+	create_func = create_semaphore_osx;
 }
 
 SemaphoreOSX::SemaphoreOSX() {
@@ -105,11 +99,7 @@ SemaphoreOSX::SemaphoreOSX() {
 	cgsem_init(&sem);
 }
 
-
 SemaphoreOSX::~SemaphoreOSX() {
 
 	cgsem_destroy(&sem);
 }
-
-
-

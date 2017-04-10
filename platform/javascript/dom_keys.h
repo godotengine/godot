@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -236,7 +237,7 @@ int dom2godot_scancode(int dom_keycode) {
 		return KEY_F1 + (dom_keycode - DOM_VK_F1);
 	}
 
-	switch(dom_keycode) {
+	switch (dom_keycode) {
 		//case DOM_VK_CANCEL: return KEY_UNKNOWN;
 		case DOM_VK_HELP: return KEY_HELP;
 		case DOM_VK_BACK_SPACE: return KEY_BACKSPACE;
@@ -258,7 +259,8 @@ int dom2godot_scancode(int dom_keycode) {
 			return KEY_ALT;
 
 		case DOM_VK_PAUSE: return KEY_PAUSE;
-		case DOM_VK_CAPS_LOCK: return KEY_CAPSLOCK;
+		case DOM_VK_CAPS_LOCK:
+			return KEY_CAPSLOCK;
 
 		/*
 		case DOM_VK_KANA: return KEY_UNKNOWN;
@@ -270,7 +272,8 @@ int dom2godot_scancode(int dom_keycode) {
 		case DOM_VK_KANJI: return KEY_UNKNOWN;
 		*/
 
-		case DOM_VK_ESCAPE: return KEY_ESCAPE;
+		case DOM_VK_ESCAPE:
+			return KEY_ESCAPE;
 		/*
 		case DOM_VK_CONVERT: return KEY_UNKNOWN;
 		case DOM_VK_NONCONVERT: return KEY_UNKNOWN;
@@ -286,7 +289,8 @@ int dom2godot_scancode(int dom_keycode) {
 		case DOM_VK_LEFT: return KEY_LEFT;
 		case DOM_VK_UP: return KEY_UP;
 		case DOM_VK_RIGHT: return KEY_RIGHT;
-		case DOM_VK_DOWN: return KEY_DOWN;
+		case DOM_VK_DOWN:
+			return KEY_DOWN;
 
 		//case DOM_VK_SELECT: return KEY_UNKNOWN;
 
@@ -303,15 +307,18 @@ int dom2godot_scancode(int dom_keycode) {
 			return KEY_META;
 
 		case DOM_VK_CONTEXT_MENU: return KEY_MENU;
-		case DOM_VK_SLEEP: return KEY_STANDBY;
+		case DOM_VK_SLEEP:
+			return KEY_STANDBY;
 
 		// these are numpad keys according to MDN
 		case DOM_VK_MULTIPLY: return KEY_KP_MULTIPLY;
 		case DOM_VK_ADD: return KEY_KP_ADD;
-		case DOM_VK_SEPARATOR: return KEY_KP_PERIOD; // good enough?
+		case DOM_VK_SEPARATOR:
+			return KEY_KP_PERIOD; // good enough?
 		case DOM_VK_SUBTRACT: return KEY_KP_SUBTRACT;
 		case DOM_VK_DECIMAL: return KEY_KP_PERIOD;
-		case DOM_VK_DIVIDE: return KEY_KP_DIVIDE;
+		case DOM_VK_DIVIDE:
+			return KEY_KP_DIVIDE;
 
 		/*
 		case DOM_VK_F17: return KEY_UNKNOWN;
@@ -325,7 +332,8 @@ int dom2godot_scancode(int dom_keycode) {
 		*/
 
 		case DOM_VK_NUM_LOCK: return KEY_NUMLOCK;
-		case DOM_VK_SCROLL_LOCK: return KEY_SCROLLLOCK;
+		case DOM_VK_SCROLL_LOCK:
+			return KEY_SCROLLLOCK;
 
 		/*
 		case DOM_VK_WIN_OEM_FJ_JISHO: return KEY_UNKNOWN;
@@ -364,7 +372,8 @@ int dom2godot_scancode(int dom_keycode) {
 		case DOM_VK_OPEN_BRACKET: return KEY_BRACKETLEFT;
 		case DOM_VK_BACK_SLASH: return KEY_BACKSLASH;
 		case DOM_VK_CLOSE_BRACKET: return KEY_BRACKETRIGHT;
-		case DOM_VK_QUOTE: return KEY_APOSTROPHE;
+		case DOM_VK_QUOTE:
+			return KEY_APOSTROPHE;
 
 		// rest is OEM/unusual
 

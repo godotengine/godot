@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,32 +37,31 @@
 */
 class Popup : public Control {
 
-	OBJ_TYPE( Popup, Control );
+	OBJ_TYPE(Popup, Control);
 
 	bool exclusive;
 	bool popped_up;
 
 protected:
-
 	virtual void _post_popup() {}
 
 	void _input_event(InputEvent p_event);
 	void _notification(int p_what);
 	void _fix_size();
 	static void _bind_methods();
-public:
 
+public:
 	enum {
-		NOTIFICATION_POST_POPUP=80,
-		NOTIFICATION_POPUP_HIDE=81
+		NOTIFICATION_POST_POPUP = 80,
+		NOTIFICATION_POPUP_HIDE = 81
 	};
 
 	void set_exclusive(bool p_exclusive);
 	bool is_exclusive() const;
 
-	void popup_centered_ratio(float p_screen_ratio=0.75);
-	void popup_centered(const Size2& p_size=Size2());
-	void popup_centered_minsize(const Size2& p_minsize=Size2());
+	void popup_centered_ratio(float p_screen_ratio = 0.75);
+	void popup_centered(const Size2 &p_size = Size2());
+	void popup_centered_minsize(const Size2 &p_minsize = Size2());
 	void set_as_minsize();
 	virtual void popup();
 
@@ -69,23 +69,18 @@ public:
 
 	Popup();
 	~Popup();
-
 };
 
 class PopupPanel : public Popup {
 
-	OBJ_TYPE(PopupPanel,Popup);
-
+	OBJ_TYPE(PopupPanel, Popup);
 
 protected:
-
 	void _notification(int p_what);
-public:
 
+public:
 	void set_child_rect(Control *p_child);
 	PopupPanel();
-
 };
-
 
 #endif

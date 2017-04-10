@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +32,7 @@
 
 #define GODOT_JOY_LOOP_RUN_MODE CFSTR("GodotJoystick")
 
-static JoystickOSX* self = NULL;
+static JoystickOSX *self = NULL;
 
 joystick::joystick() {
 	device_ref = NULL;
@@ -82,7 +83,7 @@ int joystick::get_hid_element_state(rec_element *p_element) const {
 	if (p_element && p_element->ref) {
 		IOHIDValueRef valueRef;
 		if (IOHIDDeviceGetValue(device_ref, p_element->ref, &valueRef) == kIOReturnSuccess) {
-			value = (SInt32) IOHIDValueGetIntegerValue(valueRef);
+			value = (SInt32)IOHIDValueGetIntegerValue(valueRef);
 
 			/* record min and max for auto calibration */
 			if (value < p_element->min) {
@@ -105,91 +106,89 @@ void joystick::add_hid_element(IOHIDElementRef p_element) {
 		Vector<rec_element> *list = NULL;
 
 		switch (IOHIDElementGetType(p_element)) {
-		case kIOHIDElementTypeInput_Misc:
-		case kIOHIDElementTypeInput_Button:
-		case kIOHIDElementTypeInput_Axis: {
-			switch (usagePage) {
-			case kHIDPage_GenericDesktop:
-				switch (usage) {
-				case kHIDUsage_GD_X:
-				case kHIDUsage_GD_Y:
-				case kHIDUsage_GD_Z:
-				case kHIDUsage_GD_Rx:
-				case kHIDUsage_GD_Ry:
-				case kHIDUsage_GD_Rz:
-				case kHIDUsage_GD_Slider:
-				case kHIDUsage_GD_Dial:
-				case kHIDUsage_GD_Wheel:
-					if (!has_element(cookie, &axis_elements)) {
-						list = &axis_elements;
-					}
-					break;
+			case kIOHIDElementTypeInput_Misc:
+			case kIOHIDElementTypeInput_Button:
+			case kIOHIDElementTypeInput_Axis: {
+				switch (usagePage) {
+					case kHIDPage_GenericDesktop:
+						switch (usage) {
+							case kHIDUsage_GD_X:
+							case kHIDUsage_GD_Y:
+							case kHIDUsage_GD_Z:
+							case kHIDUsage_GD_Rx:
+							case kHIDUsage_GD_Ry:
+							case kHIDUsage_GD_Rz:
+							case kHIDUsage_GD_Slider:
+							case kHIDUsage_GD_Dial:
+							case kHIDUsage_GD_Wheel:
+								if (!has_element(cookie, &axis_elements)) {
+									list = &axis_elements;
+								}
+								break;
 
-				case kHIDUsage_GD_Hatswitch:
-					if (!has_element(cookie, &hat_elements)) {
-						list = &hat_elements;
-					}
-					break;
-				case kHIDUsage_GD_DPadUp:
-				case kHIDUsage_GD_DPadDown:
-				case kHIDUsage_GD_DPadRight:
-				case kHIDUsage_GD_DPadLeft:
-				case kHIDUsage_GD_Start:
-				case kHIDUsage_GD_Select:
-					if (!has_element(cookie, &button_elements)) {
-						list = &button_elements;
-					}
-					break;
+							case kHIDUsage_GD_Hatswitch:
+								if (!has_element(cookie, &hat_elements)) {
+									list = &hat_elements;
+								}
+								break;
+							case kHIDUsage_GD_DPadUp:
+							case kHIDUsage_GD_DPadDown:
+							case kHIDUsage_GD_DPadRight:
+							case kHIDUsage_GD_DPadLeft:
+							case kHIDUsage_GD_Start:
+							case kHIDUsage_GD_Select:
+								if (!has_element(cookie, &button_elements)) {
+									list = &button_elements;
+								}
+								break;
+						}
+						break;
+
+					case kHIDPage_Simulation:
+						switch (usage) {
+							case kHIDUsage_Sim_Rudder:
+							case kHIDUsage_Sim_Throttle:
+								if (!has_element(cookie, &axis_elements)) {
+									list = &axis_elements;
+								}
+								break;
+
+							default:
+								break;
+						}
+						break;
+
+					case kHIDPage_Button:
+					case kHIDPage_Consumer:
+						if (!has_element(cookie, &button_elements)) {
+							list = &button_elements;
+						}
+						break;
+
+					default:
+						break;
 				}
-				break;
+			} break;
 
-			case kHIDPage_Simulation:
-				switch (usage) {
-				case kHIDUsage_Sim_Rudder:
-				case kHIDUsage_Sim_Throttle:
-					if (!has_element(cookie, &axis_elements)) {
-						list = &axis_elements;
-					}
-					break;
-
-				default:
-					break;
+			case kIOHIDElementTypeCollection: {
+				CFArrayRef array = IOHIDElementGetChildren(p_element);
+				if (array) {
+					add_hid_elements(array);
 				}
-				break;
-
-			case kHIDPage_Button:
-			case kHIDPage_Consumer:
-				if (!has_element(cookie, &button_elements)) {
-					list = &button_elements;
-				}
-				break;
+			} break;
 
 			default:
 				break;
-			}
-		}
-			break;
-
-		case kIOHIDElementTypeCollection: {
-			CFArrayRef array = IOHIDElementGetChildren(p_element);
-			if (array) {
-				add_hid_elements(array);
-			}
-		}
-			break;
-
-		default:
-			break;
 		}
 
-		if (list) {       /* add to list */
+		if (list) { /* add to list */
 			rec_element element;
 
 			element.ref = p_element;
 			element.usage = usage;
 
-			element.min = (SInt32) IOHIDElementGetLogicalMin(p_element);
-			element.max = (SInt32) IOHIDElementGetLogicalMax(p_element);
+			element.min = (SInt32)IOHIDElementGetLogicalMin(p_element);
+			element.max = (SInt32)IOHIDElementGetLogicalMax(p_element);
 			element.cookie = IOHIDElementGetCookie(p_element);
 			list->push_back(element);
 			list->sort_custom<rec_element::Comparator>();
@@ -198,20 +197,19 @@ void joystick::add_hid_element(IOHIDElementRef p_element) {
 }
 
 static void hid_element_added(const void *p_value, void *p_parameter) {
-	joystick *joy = (joystick*) p_parameter;
-	joy->add_hid_element((IOHIDElementRef) p_value);
+	joystick *joy = (joystick *)p_parameter;
+	joy->add_hid_element((IOHIDElementRef)p_value);
 }
 
 void joystick::add_hid_elements(CFArrayRef p_array) {
 	CFRange range = { 0, CFArrayGetCount(p_array) };
-	CFArrayApplyFunction(p_array, range,hid_element_added,this);
+	CFArrayApplyFunction(p_array, range, hid_element_added, this);
 }
 
 static void joystick_removed_callback(void *ctx, IOReturn result, void *sender) {
-	int id = (intptr_t) ctx;
+	int id = (intptr_t)ctx;
 	self->_device_removed(id);
 }
-
 
 static void joystick_added_callback(void *ctx, IOReturn res, void *sender, IOHIDDeviceRef ioHIDDeviceObject) {
 	self->_device_added(res, ioHIDDeviceObject);
@@ -223,7 +221,7 @@ static bool is_joystick(IOHIDDeviceRef p_device_ref) {
 	int usage = 0;
 	refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDPrimaryUsagePageKey));
 	if (refCF) {
-		CFNumberGetValue((CFNumberRef) refCF, kCFNumberSInt32Type, &usage_page);
+		CFNumberGetValue((CFNumberRef)refCF, kCFNumberSInt32Type, &usage_page);
 	}
 	if (usage_page != kHIDPage_GenericDesktop) {
 		return false;
@@ -231,11 +229,11 @@ static bool is_joystick(IOHIDDeviceRef p_device_ref) {
 
 	refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDPrimaryUsageKey));
 	if (refCF) {
-		CFNumberGetValue((CFNumberRef) refCF, kCFNumberSInt32Type, &usage);
+		CFNumberGetValue((CFNumberRef)refCF, kCFNumberSInt32Type, &usage);
 	}
 	if ((usage != kHIDUsage_GD_Joystick &&
-		 usage != kHIDUsage_GD_GamePad &&
-		 usage != kHIDUsage_GD_MultiAxisController)) {
+				usage != kHIDUsage_GD_GamePad &&
+				usage != kHIDUsage_GD_MultiAxisController)) {
 		return false;
 	}
 	return true;
@@ -254,7 +252,7 @@ void JoystickOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 		if (IOHIDDeviceGetService != NULL) {
 #endif
 			const io_service_t ioservice = IOHIDDeviceGetService(p_device);
-			if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK) && new_joystick.config_force_feedback(ioservice))  {
+			if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK) && new_joystick.config_force_feedback(ioservice)) {
 				new_joystick.ffservice = ioservice;
 			}
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
@@ -262,7 +260,7 @@ void JoystickOSX::_device_added(IOReturn p_res, IOHIDDeviceRef p_device) {
 #endif
 		device_list.push_back(new_joystick);
 	}
-	IOHIDDeviceRegisterRemovalCallback(p_device, joystick_removed_callback, (void*) (intptr_t) new_joystick.id);
+	IOHIDDeviceRegisterRemovalCallback(p_device, joystick_removed_callback, (void *)(intptr_t)new_joystick.id);
 	IOHIDDeviceScheduleWithRunLoop(p_device, CFRunLoopGetCurrent(), GODOT_JOY_LOOP_RUN_MODE);
 }
 
@@ -274,22 +272,21 @@ void JoystickOSX::_device_removed(int p_id) {
 	input->joy_connection_changed(p_id, false, "");
 	device_list[device].free();
 	device_list.remove(device);
-	attached_devices[p_id] = false;
 }
 
 static String _hex_str(uint8_t p_byte) {
 
-	static const char* dict = "0123456789abcdef";
+	static const char *dict = "0123456789abcdef";
 	char ret[3];
 	ret[2] = 0;
 
-	ret[0] = dict[p_byte>>4];
+	ret[0] = dict[p_byte >> 4];
 	ret[1] = dict[p_byte & 0xF];
 
 	return ret;
 }
 
-bool JoystickOSX::configure_joystick(IOHIDDeviceRef p_device_ref, joystick* p_joy) {
+bool JoystickOSX::configure_joystick(IOHIDDeviceRef p_device_ref, joystick *p_joy) {
 
 	CFTypeRef refCF = NULL;
 
@@ -301,12 +298,12 @@ bool JoystickOSX::configure_joystick(IOHIDDeviceRef p_device_ref, joystick* p_jo
 	if (!refCF) {
 		refCF = IOHIDDeviceGetProperty(p_device_ref, CFSTR(kIOHIDManufacturerKey));
 	}
-	if ((!refCF) || (!CFStringGetCString((CFStringRef) refCF, c_name, sizeof (c_name), kCFStringEncodingUTF8))) {
+	if ((!refCF) || (!CFStringGetCString((CFStringRef)refCF, c_name, sizeof(c_name), kCFStringEncodingUTF8))) {
 		name = "Unidentified Joystick";
 	}
 	name = c_name;
 
-	int id = get_free_joy_id();
+	int id = input->get_unused_joy_id();
 	ERR_FAIL_COND_V(id == -1, false);
 	p_joy->id = id;
 	int vendor = 0;
@@ -322,15 +319,16 @@ bool JoystickOSX::configure_joystick(IOHIDDeviceRef p_device_ref, joystick* p_jo
 	}
 	if (vendor && product_id) {
 		char uid[128];
-		sprintf(uid, "%04x%08x%04x%08x", OSSwapHostToBigInt32(vendor),0, OSSwapHostToBigInt32(product_id), 0);
+		sprintf(uid, "%04x%08x%04x%08x", OSSwapHostToBigInt32(vendor), 0, OSSwapHostToBigInt32(product_id), 0);
 		input->joy_connection_changed(id, true, name, uid);
-	}
-	else {
+	} else {
 		//bluetooth device
 		String guid = "05000000";
 		for (int i = 0; i < 12; i++) {
-			if (i < name.size()) guid += _hex_str(name[i]);
-			else guid += "00";
+			if (i < name.size())
+				guid += _hex_str(name[i]);
+			else
+				guid += "00";
 		}
 		input->joy_connection_changed(id, true, name, guid);
 	}
@@ -344,7 +342,13 @@ bool JoystickOSX::configure_joystick(IOHIDDeviceRef p_device_ref, joystick* p_jo
 	return true;
 }
 
-#define FF_ERR() { if (ret != FF_OK) { FFReleaseDevice(ff_device); return false; } }
+#define FF_ERR()                        \
+	{                                   \
+		if (ret != FF_OK) {             \
+			FFReleaseDevice(ff_device); \
+			return false;               \
+		}                               \
+	}
 bool joystick::config_force_feedback(io_service_t p_service) {
 
 	HRESULT ret = FFCreateDevice(p_service, &ff_device);
@@ -376,8 +380,8 @@ bool joystick::check_ff_features() {
 		ret = FFDeviceGetForceFeedbackProperty(ff_device, FFPROP_FFGAIN, &val, sizeof(val));
 		if (ret != FF_OK) return false;
 		int num_axes = features.numFfAxes;
-		ff_axes = (DWORD*) memalloc(sizeof(DWORD) * num_axes);
-		ff_directions = (LONG*) memalloc(sizeof(LONG) * num_axes);
+		ff_axes = (DWORD *)memalloc(sizeof(DWORD) * num_axes);
+		ff_directions = (LONG *)memalloc(sizeof(LONG) * num_axes);
 
 		for (int i = 0; i < num_axes; i++) {
 			ff_axes[i] = features.ffAxes[i];
@@ -401,39 +405,39 @@ static int process_hat_value(int p_min, int p_max, int p_value) {
 	}
 
 	switch (value) {
-	case 0:
-		hat_value = InputDefault::HAT_MASK_UP;
-		break;
-	case 1:
-		hat_value = InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_RIGHT;
-		break;
-	case 2:
-		hat_value = InputDefault::HAT_MASK_RIGHT;
-		break;
-	case 3:
-		hat_value = InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_RIGHT;
-		break;
-	case 4:
-		hat_value = InputDefault::HAT_MASK_DOWN;
-		break;
-	case 5:
-		hat_value = InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_LEFT;
-		break;
-	case 6:
-		hat_value = InputDefault::HAT_MASK_LEFT;
-		break;
-	case 7:
-		hat_value = InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_LEFT;
-		break;
-	default:
-		hat_value = InputDefault::HAT_MASK_CENTER;
-		break;
+		case 0:
+			hat_value = InputDefault::HAT_MASK_UP;
+			break;
+		case 1:
+			hat_value = InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_RIGHT;
+			break;
+		case 2:
+			hat_value = InputDefault::HAT_MASK_RIGHT;
+			break;
+		case 3:
+			hat_value = InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_RIGHT;
+			break;
+		case 4:
+			hat_value = InputDefault::HAT_MASK_DOWN;
+			break;
+		case 5:
+			hat_value = InputDefault::HAT_MASK_DOWN | InputDefault::HAT_MASK_LEFT;
+			break;
+		case 6:
+			hat_value = InputDefault::HAT_MASK_LEFT;
+			break;
+		case 7:
+			hat_value = InputDefault::HAT_MASK_UP | InputDefault::HAT_MASK_LEFT;
+			break;
+		default:
+			hat_value = InputDefault::HAT_MASK_CENTER;
+			break;
 	}
 	return hat_value;
 }
 
 void JoystickOSX::poll_joysticks() const {
-	while (CFRunLoopRunInMode(GODOT_JOY_LOOP_RUN_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
+	while (CFRunLoopRunInMode(GODOT_JOY_LOOP_RUN_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
 		/* no-op. Pending callbacks will fire. */
 	}
 }
@@ -443,18 +447,18 @@ static const InputDefault::JoyAxis axis_correct(int p_value, int p_min, int p_ma
 	if (p_min < 0) {
 		jx.min = -1;
 		if (p_value < 0) {
-			jx.value = (float) -p_value / p_min;
-		}
-		else jx.value = (float) p_value / p_max;
+			jx.value = (float)-p_value / p_min;
+		} else
+			jx.value = (float)p_value / p_max;
 	}
 	if (p_min == 0) {
 		jx.min = 0;
-		jx.value = 0.0f + (float) p_value / p_max;
+		jx.value = 0.0f + (float)p_value / p_max;
 	}
 	return jx;
 }
 
-uint32_t JoystickOSX::process_joysticks(uint32_t p_last_id){
+uint32_t JoystickOSX::process_joysticks(uint32_t p_last_id) {
 	poll_joysticks();
 
 	for (int i = 0; i < device_list.size(); i++) {
@@ -467,7 +471,7 @@ uint32_t JoystickOSX::process_joysticks(uint32_t p_last_id){
 		}
 		for (int j = 0; j < joy.button_elements.size(); j++) {
 			int value = joy.get_hid_element_state(&joy.button_elements[j]);
-			p_last_id = input->joy_button(p_last_id, joy.id, j, (value>=1));
+			p_last_id = input->joy_button(p_last_id, joy.id, j, (value >= 1));
 		}
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements[j];
@@ -483,8 +487,7 @@ uint32_t JoystickOSX::process_joysticks(uint32_t p_last_id){
 				float duration = input->get_joy_vibration_duration(joy.id);
 				if (strength.x == 0 && strength.y == 0) {
 					joystick_vibration_stop(joy.id, timestamp);
-				}
-				else {
+				} else {
 					float gain = MAX(strength.x, strength.y);
 					joystick_vibration_start(joy.id, gain, duration, timestamp);
 				}
@@ -504,19 +507,9 @@ void JoystickOSX::joystick_vibration_start(int p_id, float p_magnitude, float p_
 }
 
 void JoystickOSX::joystick_vibration_stop(int p_id, uint64_t p_timestamp) {
-	joystick* joy = &device_list[get_joy_index(p_id)];
+	joystick *joy = &device_list[get_joy_index(p_id)];
 	joy->ff_timestamp = p_timestamp;
 	FFEffectStop(joy->ff_object);
-}
-
-int JoystickOSX::get_free_joy_id() {
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
-		if (!attached_devices[i]) {
-			attached_devices[i] = true;
-			return i;
-		}
-	}
-	return -1;
 }
 
 int JoystickOSX::get_joy_index(int p_id) const {
@@ -535,13 +528,12 @@ bool JoystickOSX::have_device(IOHIDDeviceRef p_device) const {
 	return false;
 }
 
-static CFDictionaryRef create_match_dictionary(const UInt32 page, const UInt32 usage, int *okay)
-{
+static CFDictionaryRef create_match_dictionary(const UInt32 page, const UInt32 usage, int *okay) {
 	CFDictionaryRef retval = NULL;
 	CFNumberRef pageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &page);
 	CFNumberRef usageNumRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &usage);
-	const void *keys[2] = { (void *) CFSTR(kIOHIDDeviceUsagePageKey), (void *) CFSTR(kIOHIDDeviceUsageKey) };
-	const void *vals[2] = { (void *) pageNumRef, (void *) usageNumRef };
+	const void *keys[2] = { (void *)CFSTR(kIOHIDDeviceUsagePageKey), (void *)CFSTR(kIOHIDDeviceUsageKey) };
+	const void *vals[2] = { (void *)pageNumRef, (void *)usageNumRef };
 
 	if (pageNumRef && usageNumRef) {
 		retval = CFDictionaryCreate(kCFAllocatorDefault, keys, vals, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
@@ -571,32 +563,27 @@ void JoystickOSX::config_hid_manager(CFArrayRef p_matching_array) const {
 	IOHIDManagerRegisterDeviceMatchingCallback(hid_manager, joystick_added_callback, NULL);
 	IOHIDManagerScheduleWithRunLoop(hid_manager, runloop, GODOT_JOY_LOOP_RUN_MODE);
 
-	while (CFRunLoopRunInMode(GODOT_JOY_LOOP_RUN_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
+	while (CFRunLoopRunInMode(GODOT_JOY_LOOP_RUN_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
 		/* no-op. Callback fires once per existing device. */
 	}
 }
 
-JoystickOSX::JoystickOSX()
-{
+JoystickOSX::JoystickOSX() {
 	self = this;
-	input = (InputDefault*)Input::get_singleton();
-
-	for (int i = 0; i < JOYSTICKS_MAX; i++) {
-		attached_devices[i] = false;
-	}
+	input = (InputDefault *)Input::get_singleton();
 
 	int okay = 1;
 	const void *vals[] = {
-		(void *) create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, &okay),
-		(void *) create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad, &okay),
-		(void *) create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController, &okay),
+		(void *)create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_Joystick, &okay),
+		(void *)create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_GamePad, &okay),
+		(void *)create_match_dictionary(kHIDPage_GenericDesktop, kHIDUsage_GD_MultiAxisController, &okay),
 	};
-	const size_t n_elements = sizeof(vals)/sizeof(vals[0]);
+	const size_t n_elements = sizeof(vals) / sizeof(vals[0]);
 	CFArrayRef array = okay ? CFArrayCreate(kCFAllocatorDefault, vals, n_elements, &kCFTypeArrayCallBacks) : NULL;
 
 	for (int i = 0; i < n_elements; i++) {
 		if (vals[i]) {
-			CFRelease((CFTypeRef) vals[i]);
+			CFRelease((CFTypeRef)vals[i]);
 		}
 	}
 
@@ -620,4 +607,3 @@ JoystickOSX::~JoystickOSX() {
 	CFRelease(hid_manager);
 	hid_manager = NULL;
 }
-

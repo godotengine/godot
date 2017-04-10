@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,19 +34,17 @@
 
 class BoxShape : public Shape {
 
-	OBJ_TYPE(BoxShape,Shape);
+	OBJ_TYPE(BoxShape, Shape);
 	Vector3 extents;
 
 protected:
-
 	static void _bind_methods();
 
 	virtual void _update_shape();
 	virtual Vector<Vector3> _gen_debug_mesh_lines();
 
 public:
-
-	void set_extents(const Vector3& p_extents);
+	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
 
 	BoxShape();

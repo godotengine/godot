@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,16 +32,17 @@
 
 #include "scene/gui/container.h"
 
-
 class SplitContainer : public Container {
 
-	OBJ_TYPE(SplitContainer,Container);
+	OBJ_TYPE(SplitContainer, Container);
+
 public:
 	enum DraggerVisibility {
 		DRAGGER_VISIBLE,
 		DRAGGER_HIDDEN,
 		DRAGGER_HIDDEN_COLLAPSED
 	};
+
 private:
 	bool vertical;
 	int expand_ofs;
@@ -52,20 +54,16 @@ private:
 	DraggerVisibility dragger_visibility;
 	bool mouse_inside;
 
-
 	Control *_getch(int p_idx) const;
 
 	void _resort();
+
 protected:
-
-
-	void _input_event(const InputEvent& p_event);
+	void _input_event(const InputEvent &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
+
 public:
-
-
-
 	void set_split_offset(int p_offset);
 	int get_split_offset() const;
 
@@ -75,32 +73,31 @@ public:
 	void set_dragger_visibility(DraggerVisibility p_visibility);
 	DraggerVisibility get_dragger_visibility() const;
 
-	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i()) const;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const;
 
 	virtual Size2 get_minimum_size() const;
 
-	SplitContainer(bool p_vertical=false);
+	SplitContainer(bool p_vertical = false);
 };
 
 VARIANT_ENUM_CAST(SplitContainer::DraggerVisibility);
 
 class HSplitContainer : public SplitContainer {
 
-	OBJ_TYPE(HSplitContainer,SplitContainer);
+	OBJ_TYPE(HSplitContainer, SplitContainer);
 
 public:
-
-	HSplitContainer() : SplitContainer(false) {set_default_cursor_shape(CURSOR_HSPLIT);}
+	HSplitContainer()
+		: SplitContainer(false) { set_default_cursor_shape(CURSOR_HSPLIT); }
 };
-
 
 class VSplitContainer : public SplitContainer {
 
-	OBJ_TYPE(VSplitContainer,SplitContainer);
+	OBJ_TYPE(VSplitContainer, SplitContainer);
 
 public:
-
-	VSplitContainer() : SplitContainer(true) {set_default_cursor_shape(CURSOR_VSPLIT);}
+	VSplitContainer()
+		: SplitContainer(true) { set_default_cursor_shape(CURSOR_VSPLIT); }
 };
 
 #endif // SPLIT_CONTAINER_H
