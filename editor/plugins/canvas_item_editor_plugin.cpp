@@ -3834,7 +3834,7 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(EditorNode *p_node, CanvasIte
 	for (int i = 0; i < types.size(); i++) {
 		CheckBox *check = memnew(CheckBox);
 		check->set_text(types[i]);
-		check->connect("button_selected", this, "_on_select_type", varray(check));
+		check->connect("button_down", this, "_on_select_type", varray(check));
 		btn_group->add_child(check);
 		check->set_button_group(button_group);
 	}
