@@ -912,6 +912,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 
 	if (joy.mapping == -1) {
 		_axis_event(p_device, p_axis, val);
+		return;
 	};
 
 	Map<int, JoyEvent>::Element *el = map_db[joy.mapping].axis.find(p_axis);
