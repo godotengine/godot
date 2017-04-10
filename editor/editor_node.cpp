@@ -5207,7 +5207,7 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *editor_region = memnew(PanelContainer);
-	editor_region->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	editor_region->add_style_override("panel", memnew( StyleBoxEmpty ));
 	main_editor_button_vb = memnew(HBoxContainer);
 	editor_region->add_child(main_editor_button_vb);
 	menu_hb->add_child(editor_region);
@@ -5403,7 +5403,7 @@ EditorNode::EditorNode() {
 	}
 
 	PanelContainer *vu_cont = memnew(PanelContainer);
-	vu_cont->add_style_override("panel", gui_base->get_stylebox("hover", "Button"));
+	vu_cont->add_style_override("panel", memnew( StyleBoxEmpty ));
 
 	// CenterContainer *vu_cont = memnew( CenterContainer );
 	menu_hb->add_child(vu_cont);

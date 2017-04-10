@@ -2833,7 +2833,7 @@ void VisualScriptEditor::_node_filter_changed(const String &p_text) {
 void VisualScriptEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_READY) {
-		node_filter_icon->set_texture(Control::get_icon("Zoom", "EditorIcons"));
+		node_filter_icon->set_texture(Control::get_icon("Search", "EditorIcons"));
 	}
 }
 

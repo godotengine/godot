@@ -16,7 +16,7 @@ last_svg_data = None
 SCRIPT_FOLDER = dirname(realpath(__file__)) + '/'
 theme_dir_base = SCRIPT_FOLDER + '../../scene/resources/default_theme/'
 theme_dir_source = theme_dir_base + 'source/'
-icons_dir_base = SCRIPT_FOLDER + '../editor/icons/'
+icons_dir_base = SCRIPT_FOLDER + '../../editor/icons/'
 icons_dir_2x = icons_dir_base + '2x/'
 icons_dir_source = icons_dir_base + 'source/'
 

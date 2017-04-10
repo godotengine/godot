@@ -1035,7 +1035,7 @@ void AnimationKeyEditor::_track_pos_draw() {
 		//draw position
 		int pixel = (timeline_pos - h_scroll->get_value()) * zoom_scale;
 		pixel += name_limit;
-		track_pos->draw_line(ofs + Point2(pixel, 0), ofs + Point2(pixel, size.height), Color(1, 0.3, 0.3, 0.8));
+		track_pos->draw_line(ofs + Point2(pixel, 0), ofs + Point2(pixel, size.height), get_color("animation_editor_track_pos", "Editor"));
 	}
 }
 
@@ -1089,9 +1089,8 @@ void AnimationKeyEditor::_track_editor_draw() {
 	int sep = get_constant("vseparation", "Tree");
 	int hsep = get_constant("hseparation", "Tree");
 	Color color = get_color("font_color", "Tree");
-	Color sepcolor = get_color("guide_color", "Tree");
-	Color timecolor = get_color("prop_subsection", "Editor");
-	timecolor = Color::html("ff4a414f");
+	Color sepcolor = get_color("guide_color", "Editor");
+	Color timecolor = get_color("animation_editor_time", "Editor");
 	Color hover_color = Color(1, 1, 1, 0.05);
 	Color select_color = Color(1, 1, 1, 0.1);
 	Color invalid_path_color = Color(1, 0.6, 0.4, 0.5);
@@ -1155,8 +1154,9 @@ void AnimationKeyEditor::_track_editor_draw() {
 	int settings_limit = size.width - right_separator_ofs;
 	int name_limit = settings_limit * name_column_ratio;
 
-	te->draw_line(ofs + Point2(name_limit, 0), ofs + Point2(name_limit, size.height), color);
-	te->draw_line(ofs + Point2(settings_limit, 0), ofs + Point2(settings_limit, size.height), color);
+	Color line_color = get_color("animation_editor_line", "Editor");
+	te->draw_line(ofs + Point2(name_limit, 0), ofs + Point2(name_limit, size.height), line_color);
+	te->draw_line(ofs + Point2(settings_limit, 0), ofs + Point2(settings_limit, size.height), line_color);
 	te->draw_texture(hsize_icon, ofs + Point2(name_limit - hsize_icon->get_width() - hsep, (h - hsize_icon->get_height()) / 2));
 
 	te->draw_line(ofs + Point2(0, h), ofs + Point2(size.width, h), color);
@@ -1483,7 +1483,7 @@ void AnimationKeyEditor::_track_editor_draw() {
 	switch (click.click) {
 		case ClickOver::CLICK_SELECT_KEYS: {
 
-			te->draw_rect(Rect2(click.at, click.to - click.at), Color(0.7, 0.7, 1.0, 0.5));
+			te->draw_rect(Rect2(click.at, click.to - click.at), get_color("animation_editor_selection_rect", "Editor"));
 
 		} break;
 		case ClickOver::CLICK_MOVE_KEYS: {
@@ -3753,6 +3753,7 @@ AnimationKeyEditor::AnimationKeyEditor() {
 	//add_child(menu);
 
 	zoomicon = memnew(TextureRect);
+	zoomicon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 	hb->add_child(zoomicon);
 	zoomicon->set_tooltip(TTR("Animation zoom."));
 

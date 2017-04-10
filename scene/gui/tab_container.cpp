@@ -227,7 +227,7 @@ void TabContainer::_notification(int p_what) {
 
 				// Draw the tab background.
 				int tab_width = tab_widths[i];
-				Rect2 tab_rect(tabs_ofs_cache + x, 0, tab_width, header_height);
+				Rect2 tab_rect(tabs_ofs_cache + x, 2, tab_width, header_height);
 				tab_style->draw(canvas, tab_rect);
 
 				// Draw the tab contents.
@@ -660,7 +660,7 @@ TabContainer::TabContainer() {
 	current = 0;
 	previous = 0;
 	mouse_x_cache = 0;
-	align = ALIGN_CENTER;
+	align = ALIGN_LEFT;
 	tabs_visible = true;
 	popup = NULL;
 }
