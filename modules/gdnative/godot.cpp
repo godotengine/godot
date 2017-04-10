@@ -182,6 +182,13 @@ void GDAPI *godot_native_get_userdata(godot_object *p_instance) {
 	return NULL;
 }
 
+godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classname) {
+	ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(StringName(p_classname));
+	if (class_info)
+		return (godot_class_constructor)class_info->creation_func;
+	return NULL;
+}
+
 godot_dictionary GDAPI godot_get_global_constants() {
 	godot_dictionary constants;
 	godot_dictionary_new(&constants);
