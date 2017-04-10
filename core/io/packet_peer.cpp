@@ -91,7 +91,14 @@ Error PacketPeer::put_var(const Variant &p_packet) {
 	uint8_t *buf = (uint8_t *)alloca(len);
 	ERR_FAIL_COND_V(!buf, ERR_OUT_OF_MEMORY);
 	err = encode_variant(p_packet, buf, len);
-	ERR_FAIL_COND_V(err, err);
+
+	if (err != OK) {
+		// okay, don't aks me why or how, but if there's no non-inlinable function call here
+		// then a clang build crashes here (at least on arch). It's very weird and I'm sorry,
+		// but that's the best fix for now.
+		fprintf(stderr, "couldn't encode variant in %s:%s:%d\n", __FILE__, FUNCTION_STR, __LINE__);
+		return err;
+	}
 
 	return put_packet(buf, len);
 }
