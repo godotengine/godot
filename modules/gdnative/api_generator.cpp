@@ -103,8 +103,7 @@ struct ClassAPI {
 	bool is_instanciable;
 	// @Unclear
 	bool is_creatable;
-	// @Unclear
-	bool memory_own;
+	bool is_reference;
 
 	List<MethodAPI> methods;
 	List<PropertyAPI> properties;
@@ -161,7 +160,7 @@ List<ClassAPI> generate_c_api_classes() {
 			ClassDB::get_inheriters_from_class("Reference", &inheriters);
 			is_reference = !!inheriters.find(class_name);
 			// @Unclear
-			class_api.memory_own = !class_api.is_singleton && is_reference;
+			class_api.is_reference = !class_api.is_singleton && is_reference;
 		}
 
 		// constants
@@ -348,6 +347,7 @@ static List<String> generate_c_api_json(const List<ClassAPI> &p_api) {
 		source.push_back(String("\t\t\"api_type\": \"") + (api.api_type == ClassDB::API_CORE ? "core" : (api.api_type == ClassDB::API_EDITOR ? "tools" : "none")) + "\",\n");
 		source.push_back(String("\t\t\"singleton\": ") + (api.is_singleton ? "true" : "false") + ",\n");
 		source.push_back(String("\t\t\"instanciable\": ") + (api.is_instanciable ? "true" : "false") + ",\n");
+		source.push_back(String("\t\t\"is_reference\": ") + (api.is_reference ? "true" : "false") + ",\n");
 		// @Unclear
 		// source.push_back(String("\t\t\"createable\": ") + (api.is_creatable ? "true" : "false") + ",\n");
 
