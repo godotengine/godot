@@ -3532,6 +3532,13 @@ public:
 		devices_changed = true;
 		quit_request = false;
 	}
+
+	~EditorExportAndroid() {
+		quit_request = true;
+		Thread::wait_to_finish(device_thread);
+		memdelete(device_lock);
+		memdelete(device_thread);
+	}
 };
 
 void register_android_exporter() {

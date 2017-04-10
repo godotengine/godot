@@ -761,6 +761,10 @@ void AudioServer::finish() {
 	}
 
 	buses.clear();
+
+	if (AudioDriver::get_singleton()) {
+		AudioDriver::get_singleton()->finish();
+	}
 }
 void AudioServer::update() {
 }
