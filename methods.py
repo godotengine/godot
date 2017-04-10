@@ -1165,7 +1165,7 @@ def update_version():
         print("Using custom revision: " + rev)
     import version
 
-    f = open("core/version.h", "wb")
+    f = open("core/version_generated.h", "wb")
     f.write("#define VERSION_SHORT_NAME " + str(version.short_name) + "\n")
     f.write("#define VERSION_NAME " + str(version.name) + "\n")
     f.write("#define VERSION_MAJOR " + str(version.major) + "\n")

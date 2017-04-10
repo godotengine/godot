@@ -30,6 +30,7 @@
 #include "class_db.h"
 
 #include "os/mutex.h"
+#include "version.h"
 
 #ifdef NO_THREADS
 
