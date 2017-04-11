@@ -77,11 +77,9 @@ Error NativeLibrary::initialize(NativeLibrary *&p_native_lib, const StringName p
 	godot_native_init_options options;
 
 	options.in_editor = SceneTree::get_singleton()->is_editor_hint();
-	/*
 	options.core_api_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
 	options.editor_api_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
 	options.no_api_hash = ClassDB::get_api_hash(ClassDB::API_NONE);
-	*/
 
 	library_init_fpointer(&options); // Catch errors?
 
