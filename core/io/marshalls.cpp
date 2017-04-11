@@ -862,7 +862,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len) {
 			} else {
 
 				if (buf) {
-					encode_double(p_variant.operator float(), buf);
+					encode_float(p_variant.operator float(), buf);
 				}
 
 				r_len += 4;
