@@ -36,6 +36,8 @@
 #include "editor/editor_node.h"
 #endif
 
+// WindowDialog
+
 void WindowDialog::_post_popup() {
 
 	drag_type = DRAG_NONE; // just in case
@@ -51,11 +53,11 @@ void WindowDialog::_fix_size() {
 	Size2i viewport_size = get_viewport_rect().size;
 
 	// Windows require additional padding to keep the window chrome visible.
-	Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
-	float top = panel->get_margin(MARGIN_TOP);
-	float left = panel->get_margin(MARGIN_LEFT);
-	float bottom = panel->get_margin(MARGIN_BOTTOM);
-	float right = panel->get_margin(MARGIN_RIGHT);
+	Ref<StyleBoxTexture> panel = get_stylebox("panel", "WindowDialog");
+	float top = panel->get_expand_margin_size(MARGIN_TOP);
+	float left = panel->get_expand_margin_size(MARGIN_LEFT);
+	float bottom = panel->get_expand_margin_size(MARGIN_BOTTOM);
+	float right = panel->get_expand_margin_size(MARGIN_RIGHT);
 
 	pos.x = MAX(left, MIN(pos.x, viewport_size.x - size.x - right));
 	pos.y = MAX(top, MIN(pos.y, viewport_size.y - size.y - bottom));
@@ -74,9 +76,9 @@ bool WindowDialog::has_point(const Point2 &p_point) const {
 	Rect2 r(Point2(), get_size());
 
 	// Enlarge upwards for title bar.
-	int titlebar_height = get_constant("titlebar_height", "WindowDialog");
-	r.pos.y -= titlebar_height;
-	r.size.y += titlebar_height;
+	int title_height = get_constant("title_height", "WindowDialog");
+	r.pos.y -= title_height;
+	r.size.y += title_height;
 
 	// Inflate by the resizable border thickness.
 	if (resizable) {
@@ -173,30 +175,21 @@ void WindowDialog::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
-
 			RID canvas = get_canvas_item();
-			Size2 size = get_size();
 
+			// Draw the background.
 			Ref<StyleBox> panel = get_stylebox("panel", "WindowDialog");
-			int margin_left = static_cast<int>(panel->get_margin(MARGIN_LEFT));
-			int margin_top = static_cast<int>(panel->get_margin(MARGIN_TOP));
-			int margin_right = static_cast<int>(panel->get_margin(MARGIN_RIGHT));
-			int margin_bottom = static_cast<int>(panel->get_margin(MARGIN_BOTTOM));
+			Size2 size = get_size();
+			panel->draw(canvas, Rect2(0, 0, size.x, size.y));
 
-			Rect2 rect;
-			rect.pos.x = -margin_left;
-			rect.pos.y = -margin_top;
-			rect.size.width = size.width + margin_left + margin_right;
-			rect.size.height = size.height + margin_top + margin_bottom;
-
-			panel->draw(canvas, rect);
-
-			int title_height = get_constant("title_height", "WindowDialog");
+			// Draw the title bar text.
+			Ref<Font> title_font = get_font("title_font", "WindowDialog");
 			Color title_color = get_color("title_color", "WindowDialog");
-			Ref<Font> font = get_font("title_font", "WindowDialog");
-			int ofs = (size.width - font->get_string_size(title).width) / 2;
-			draw_string(font, Point2(ofs, -title_height + font->get_ascent()), title, title_color, size.width - panel->get_minimum_size().width);
-
+			int title_height = get_constant("title_height", "WindowDialog");
+			int font_height = title_font->get_height() - title_font->get_descent() * 2;
+			int x = (size.x - title_font->get_string_size(title).x) / 2;
+			int y = (-title_height + font_height) / 2;
+			title_font->draw(canvas, Point2(x, y), title, title_color, size.x - panel->get_minimum_size().x);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:
@@ -238,12 +231,12 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 	int drag_type = DRAG_NONE;
 
 	if (resizable) {
-		int titlebar_height = get_constant("titlebar_height", "WindowDialog");
+		int title_height = get_constant("title_height", "WindowDialog");
 		int scaleborder_size = get_constant("scaleborder_size", "WindowDialog");
 
 		Rect2 rect = get_rect();
 
-		if (pos.y < (-titlebar_height + scaleborder_size))
+		if (pos.y < (-title_height + scaleborder_size))
 			drag_type = DRAG_RESIZE_TOP;
 		else if (pos.y >= (rect.size.height - scaleborder_size))
 			drag_type = DRAG_RESIZE_BOTTOM;
@@ -316,6 +309,8 @@ WindowDialog::WindowDialog() {
 
 WindowDialog::~WindowDialog() {
 }
+
+// PopupDialog
 
 void PopupDialog::_notification(int p_what) {
 
@@ -553,6 +548,8 @@ AcceptDialog::AcceptDialog() {
 
 AcceptDialog::~AcceptDialog() {
 }
+
+// ConfirmationDialog
 
 void ConfirmationDialog::_bind_methods() {
 

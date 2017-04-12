@@ -538,10 +538,8 @@ void fill_default_theme(Ref<Theme> &t, const Ref<Font> &default_font, const Ref<
 
 	// WindowDialog
 
-	Ref<StyleBoxTexture> style_pp_win = sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6);
-	t->set_stylebox("panel", "WindowDialog", style_pp_win);
-	t->set_constant("titlebar_height", "WindowDialog", 20 * scale);
-	t->set_constant("scaleborder_size", "WindowDialog", 4);
+	t->set_stylebox("panel", "WindowDialog", sb_expand(make_stylebox(popup_window_png, 10, 26, 10, 8), 8, 24, 8, 6));
+	t->set_constant("scaleborder_size", "WindowDialog", 4 * scale);
 
 	t->set_font("title_font", "WindowDialog", large_font);
 	t->set_color("title_color", "WindowDialog", Color(0, 0, 0));

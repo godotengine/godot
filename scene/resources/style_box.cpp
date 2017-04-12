@@ -138,6 +138,11 @@ void StyleBoxTexture::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 
 	texture->get_rect_region(rect, src_rect, rect, src_rect);
 
+	rect.pos.x -= expand_margin[MARGIN_LEFT];
+	rect.pos.y -= expand_margin[MARGIN_TOP];
+	rect.size.x += expand_margin[MARGIN_LEFT] + expand_margin[MARGIN_RIGHT];
+	rect.size.y += expand_margin[MARGIN_TOP] + expand_margin[MARGIN_BOTTOM];
+
 	VisualServer::get_singleton()->canvas_item_add_nine_patch(p_canvas_item, rect, src_rect, texture->get_rid(), Vector2(margin[MARGIN_LEFT], margin[MARGIN_TOP]), Vector2(margin[MARGIN_RIGHT], margin[MARGIN_BOTTOM]), VS::NINE_PATCH_STRETCH, VS::NINE_PATCH_STRETCH, draw_center, modulate);
 }
 
