@@ -101,7 +101,7 @@ void main() {
 
 	restart_phase*= (1.0-explosiveness);
 	bool restart=false;
-	bool active = velocity_active.a > 0.5;
+	bool shader_active = velocity_active.a > 0.5;
 
 	if (system_phase > prev_system_phase) {
 		if (prev_system_phase < restart_phase && system_phase >= restart_phase) {
@@ -134,7 +134,7 @@ void main() {
 	uint particle_number = current_cycle * uint(total_particles) + uint(gl_VertexID);
 
 	if (restart) {
-		active=emitting;
+		shader_active=emitting;
 	}
 
 	mat4 xform;
@@ -148,7 +148,7 @@ void main() {
 		out_velocity_active=vec4(0.0);
 		out_custom=vec4(0.0);
 		if (!restart)
-			active=false;
+			shader_active=false;
 
 		xform = mat4(
 				vec4(1.0,0.0,0.0,0.0),
@@ -163,7 +163,7 @@ void main() {
 		xform = transpose(mat4(xform_1,xform_2,xform_3,vec4(vec3(0.0),1.0)));
 	}
 
-	if (active) {
+	if (shader_active) {
 		//execute shader
 
 		{
@@ -178,7 +178,7 @@ VERTEX_SHADER_CODE
 			for(int i=0;i<attractor_count;i++) {
 
 				vec3 rel_vec = xform[3].xyz - attractors[i].pos;
-				float dist = rel_vec.length();
+				float dist = length(rel_vec);
 				if (attractors[i].radius < dist)
 					continue;
 				if (attractors[i].eat_radius>0 &&  attractors[i].eat_radius > dist) {
@@ -215,7 +215,7 @@ VERTEX_SHADER_CODE
 
 	xform = transpose(xform);
 
-	out_velocity_active.a = mix(0.0,1.0,active);
+	out_velocity_active.a = mix(0.0,1.0,shader_active);
 
 	out_xform_1 = xform[0];
 	out_xform_2 = xform[1];
