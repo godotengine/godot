@@ -275,6 +275,13 @@ class KinematicBody : public PhysicsBody {
 	Vector3 collider_vel;
 	ObjectID collider;
 	int collider_shape;
+	Vector3 travel;
+
+	Vector3 move_and_slide_floor_velocity;
+	bool move_and_slide_on_floor;
+	bool move_and_slide_on_ceiling;
+	bool move_and_slide_on_wall;
+	Array move_and_slide_colliders;
 
 	Variant _get_collider() const;
 
@@ -295,6 +302,10 @@ public:
 
 	bool can_teleport_to(const Vector3 &p_position);
 	bool is_colliding() const;
+
+	Vector3 get_travel() const; // Set by move and others. Consider unreliable except immediately after a move call.
+	void revert_motion();
+
 	Vector3 get_collision_pos() const;
 	Vector3 get_collision_normal() const;
 	Vector3 get_collider_velocity() const;
@@ -315,6 +326,12 @@ public:
 
 	void set_collision_margin(float p_margin);
 	float get_collision_margin() const;
+
+	Vector3 move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction = Vector3(0, 0, 0), const Vector3 &p_ceil_direction = Vector3(0, 0, 0), float p_slope_stop_min_velocity = 5, int p_max_bounces = 4, float p_floor_max_angle = Math::deg2rad((float)45), float p_ceil_max_angle = Math::deg2rad((float)45));
+	bool is_move_and_slide_on_floor() const;
+	bool is_move_and_slide_on_wall() const;
+	bool is_move_and_slide_on_ceiling() const;
+	Array get_move_and_slide_colliders() const;
 
 	KinematicBody();
 	~KinematicBody();

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "physics_body.h"
+#include "method_bind_ext.inc"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody::_notification(int p_what) {
@@ -907,6 +908,19 @@ bool KinematicBody::_ignores_mode(PhysicsServer::BodyMode p_mode) const {
 	return true;
 }
 
+void KinematicBody::revert_motion() {
+
+	Transform gt = get_global_transform();
+	gt.origin -= travel; //I do hope this is correct.
+	travel = Vector3();
+	set_global_transform(gt);
+}
+
+Vector3 KinematicBody::get_travel() const {
+
+	return travel;
+}
+
 Vector3 KinematicBody::move(const Vector3 &p_motion) {
 
 	//give me back regular physics engine logic
@@ -1097,8 +1111,109 @@ Vector3 KinematicBody::move(const Vector3 &p_motion) {
 	Transform gt = get_global_transform();
 	gt.origin += motion;
 	set_global_transform(gt);
+	travel = motion;
 
 	return p_motion - motion;
+}
+
+Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, const Vector3 &p_ceil_direction, float p_slope_stop_min_velocity, int p_max_bounces, float p_floor_max_angle, float p_ceil_max_angle) {
+
+	/*
+	Things to note:
+	1. This function is basically the KinematicBody2D function ported over.
+	2. The 'travel' variable and stuff relating to it exists more or less for this function's sake.
+	3. Someone is going to have to document this, so here's an example for them:
+	vel = move_and_slide(vel, Vector3(0, 1, 0), Vector3(0, -1, 0), 0.1);
+	Very useful for FPS controllers so long as you control horizontal motion properly - even for Quake-style AABB colliders.
+	The slope stop system is... rather weird, and it's correct operation depends on what scale your game is built on,
+	 but as far as I can tell in theory it's suppposed to be a way of turning impassable slopes into invisible walls.
+	It can also be a pain, since there's a better-known way of defining such things: "let gravity do the work".
+	If you don't like it, set it to positive infinity.
+	4. Might be a bug somewhere else in physics: When there are two CollisionShape nodes with a shared Shape, only one is considered, I think.
+	   Test this further.
+	*/
+
+	Vector3 motion = (move_and_slide_floor_velocity + p_linear_velocity) * get_fixed_process_delta_time();
+	Vector3 lv = p_linear_velocity;
+
+	move_and_slide_on_floor = false;
+	move_and_slide_on_ceiling = false;
+	move_and_slide_on_wall = false;
+	move_and_slide_colliders.clear();
+	move_and_slide_floor_velocity = Vector3();
+
+	while (p_max_bounces) {
+
+		motion = move(motion);
+
+		if (is_colliding()) {
+
+			bool hit_horizontal = false; //hit floor or ceiling
+
+			if (p_floor_direction != Vector3()) {
+				if (get_collision_normal().dot(p_floor_direction) >= Math::cos(p_floor_max_angle)) { //floor
+
+					hit_horizontal = true;
+					move_and_slide_on_floor = true;
+					move_and_slide_floor_velocity = get_collider_velocity();
+
+					//Note: These two lines are the only lines that really changed between 3D/2D, see if it can't be reused somehow???
+					Vector2 hz_velocity = Vector2(lv.x - move_and_slide_floor_velocity.x, lv.z - move_and_slide_floor_velocity.z);
+					if (get_travel().length() < 1 && hz_velocity.length() < p_slope_stop_min_velocity) {
+						revert_motion();
+						return Vector3();
+					}
+				}
+			}
+
+			if (p_ceil_direction != Vector3()) {
+				if (get_collision_normal().dot(p_ceil_direction) >= Math::cos(p_ceil_max_angle)) { //ceiling
+					hit_horizontal = true;
+					move_and_slide_on_ceiling = true;
+				}
+			}
+
+			//if it hit something but didn't hit a floor or ceiling, it is by default a wall
+			//(this imitates the pre-specifiable-ceiling logic more or less, except ceiling is optional)
+			if (!hit_horizontal) {
+				move_and_slide_on_wall = true;
+			}
+
+			Vector3 n = get_collision_normal();
+			motion = motion.slide(n);
+			lv = lv.slide(n);
+			Variant collider = _get_collider();
+			if (collider.get_type() != Variant::NIL) {
+				move_and_slide_colliders.push_back(collider);
+			}
+
+		} else {
+			break;
+		}
+
+		p_max_bounces--;
+		if (motion == Vector3())
+			break;
+	}
+
+	return lv;
+}
+
+bool KinematicBody::is_move_and_slide_on_floor() const {
+
+	return move_and_slide_on_floor;
+}
+bool KinematicBody::is_move_and_slide_on_wall() const {
+
+	return move_and_slide_on_wall;
+}
+bool KinematicBody::is_move_and_slide_on_ceiling() const {
+
+	return move_and_slide_on_ceiling;
+}
+Array KinematicBody::get_move_and_slide_colliders() const {
+
+	return move_and_slide_colliders;
 }
 
 Vector3 KinematicBody::move_to(const Vector3 &p_position) {
@@ -1223,6 +1338,7 @@ void KinematicBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("move", "rel_vec"), &KinematicBody::move);
 	ClassDB::bind_method(D_METHOD("move_to", "position"), &KinematicBody::move_to);
+	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "ceil_normal", "slope_stop_min_velocity", "max_bounces", "floor_max_angle", "ceil_max_angle"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(Vector3(0, 0, 0)), DEFVAL(5), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(Math::deg2rad((float)45)));
 
 	ClassDB::bind_method(D_METHOD("can_teleport_to", "position"), &KinematicBody::can_teleport_to);
 
@@ -1248,6 +1364,14 @@ void KinematicBody::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collision_margin", "pixels"), &KinematicBody::set_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_collision_margin", "pixels"), &KinematicBody::get_collision_margin);
+
+	ClassDB::bind_method(D_METHOD("get_travel"), &KinematicBody::get_travel);
+	ClassDB::bind_method(D_METHOD("revert_motion"), &KinematicBody::revert_motion);
+
+	ClassDB::bind_method(D_METHOD("get_move_and_slide_colliders"), &KinematicBody::get_move_and_slide_colliders);
+	ClassDB::bind_method(D_METHOD("is_move_and_slide_on_floor"), &KinematicBody::is_move_and_slide_on_floor);
+	ClassDB::bind_method(D_METHOD("is_move_and_slide_on_ceiling"), &KinematicBody::is_move_and_slide_on_ceiling);
+	ClassDB::bind_method(D_METHOD("is_move_and_slide_on_wall"), &KinematicBody::is_move_and_slide_on_wall);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with/static"), "set_collide_with_static_bodies", "can_collide_with_static_bodies");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with/kinematic"), "set_collide_with_kinematic_bodies", "can_collide_with_kinematic_bodies");
