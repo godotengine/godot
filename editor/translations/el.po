@@ -1521,7 +1521,7 @@ msgid "Tools"
 msgstr "Εργαλεία"
 
 #: editor/editor_node.cpp
-msgid "Export to Godot 3.0"
+msgid "Export to Godot 3.0 (WIP)"
 msgstr ""
 
 #: editor/editor_node.cpp
