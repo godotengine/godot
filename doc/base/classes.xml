@@ -34517,6 +34517,13 @@
 				Returns a boolean that indicates whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
+                <method name="is_hide_on_checkable_item_selection">
+                        <return type="bool">
+                        </return>
+                        <description>
+                                Returns a boolean that indicates whether or not the PopupMenu will hide on checkable item selection.
+                        </description>
+                </method>
 		<method name="is_item_checkable" qualifiers="const">
 			<return type="bool">
 			</return>
@@ -34567,6 +34574,13 @@
 				Sets whether or not the PopupMenu will hide on item selection.
 			</description>
 		</method>
+                <method name="set_hide_on_checkable_item_selection">
+                        <argument index="0" name="enable" type="bool">
+                        </argument>
+                        <description>
+                                Sets whether or not the PopupMenu will hide on checkable item selection.
+                        </description>
+                </method>
 		<method name="set_item_ID">
 			<argument index="0" name="idx" type="int">
 			</argument>
