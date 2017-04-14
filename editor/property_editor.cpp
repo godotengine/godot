@@ -4397,6 +4397,7 @@ PropertyEditor::PropertyEditor() {
 	capitalize_paths = true;
 	autoclear = false;
 	tree->set_column_titles_visible(false);
+	tree->add_constant_override("button_margin", 0);
 
 	keying = false;
 	read_only = false;
