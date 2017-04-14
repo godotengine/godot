@@ -242,7 +242,6 @@ private:
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
-	MenuButton *import_menu;
 	MenuButton *tool_menu;
 	ToolButton *export_button;
 	ToolButton *prev_scene;
@@ -446,8 +445,6 @@ private:
 	void _close_messages();
 	void _show_messages();
 	void _vp_resized();
-
-	void _rebuild_import_menu();
 
 	void _save_scene(String p_file, int idx = -1);
 
