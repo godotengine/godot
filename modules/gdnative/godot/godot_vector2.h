@@ -61,34 +61,25 @@ godot_real GDAPI godot_vector2_length_squared(const godot_vector2 *p_v);
 godot_real GDAPI godot_vector2_distance_to(const godot_vector2 *p_a, const godot_vector2 *p_b);
 godot_real GDAPI godot_vector2_distance_squared_to(const godot_vector2 *p_a, const godot_vector2 *p_b);
 
-// @Incomplete
-/*
- * missing:
- *
- *	angle_to
- *	angle_to_point
- *	dot
- *	cross_vector
- *	cross_scalar
- *	project
- *	plane_project
- *	clamped
- *	linear_interpolate
- *	cubic_interpolate
- *	cubic_interpolate_soft
- *	slide
- *	reflect
- *	angle
- *	abs
- *	rotated
- *	tangent
- *	floor
- *	snapped
- *	aspect
- *
- *
- *	to_string
- */
+void GDAPI godot_vector2_abs(godot_vector2 *p_dest, const godot_vector2 *p_src);
+godot_real GDAPI godot_vector2_angle(const godot_vector2 *p_src);
+godot_real GDAPI godot_vector2_angle_to(const godot_vector2 *p_src, const godot_vector2 *p_to);
+godot_real GDAPI godot_vector2_angle_to_point(const godot_vector2 *p_src, const godot_vector2 *p_to);
+void GDAPI godot_vector2_clamped(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_real length);
+void GDAPI godot_vector2_cubic_interpolate(godot_vector2 *p_dest, const godot_vector2 *p_src,
+		const godot_vector2 *p_b, const godot_vector2 *p_pre_a,
+		const godot_vector2 *p_post_b, godot_real t);
+godot_real GDAPI godot_vector2_dot(const godot_vector2 *p_src, const godot_vector2 *p_with);
+void GDAPI godot_vector2_floor(godot_vector2 *p_dest, const godot_vector2 *p_src);
+godot_real GDAPI godot_vector2_aspect(const godot_vector2 *p_src);
+void GDAPI godot_vector2_linear_interpolate(godot_vector2 *p_dest, const godot_vector2 *p_src,
+		const godot_vector2 *p_b, godot_real t);
+void GDAPI godot_vector2_reflect(godot_vector2 *p_dest, const godot_vector2 *p_src, const godot_vector2 *p_vec);
+void GDAPI godot_vector2_rotated(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_real phi);
+void GDAPI godot_vector2_slide(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_vector2 *p_vec);
+void GDAPI godot_vector2_snapped(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_vector2 *p_by);
+void GDAPI godot_vector2_tangent(godot_vector2 *p_dest, const godot_vector2 *p_src);
+void GDAPI godot_vector2_to_string(godot_string *p_dest, const godot_vector2 *p_src);
 
 void GDAPI godot_vector2_operator_add(godot_vector2 *p_dest, const godot_vector2 *p_a, const godot_vector2 *p_b);
 void GDAPI godot_vector2_operator_subtract(godot_vector2 *p_dest, const godot_vector2 *p_a, const godot_vector2 *p_b);

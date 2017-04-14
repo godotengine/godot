@@ -43,6 +43,7 @@ typedef struct godot_basis {
 #endif
 
 #include "../godot.h"
+#include "godot_quat.h"
 
 void GDAPI godot_basis_new(godot_basis *p_basis);
 void GDAPI godot_basis_new_with_euler_quat(godot_basis *p_basis, const godot_quat *p_euler);
