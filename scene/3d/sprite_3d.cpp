@@ -843,7 +843,7 @@ void AnimatedSprite3D::_draw() {
 	if (is_centered())
 		ofs -= s / 2;
 
-	Rect2i dst_rect(ofs, s);
+	Rect2i dst_rect(0, 0, s.width, s.height);
 
 	Rect2 final_rect;
 	Rect2 final_uv_rect;
@@ -852,6 +852,14 @@ void AnimatedSprite3D::_draw() {
 
 	if (final_rect.size.x == 0 || final_rect.size.y == 0)
 		return;
+
+	if (is_flipped_h())
+		final_rect.pos.x = dst_rect.size.x - final_rect.pos.x - final_rect.size.x;
+
+	if (!is_flipped_v())
+		final_rect.pos.y = dst_rect.size.y - final_rect.pos.y - final_rect.size.y;
+
+	final_rect.pos += ofs;
 
 	Color color = _get_color_accum();
 	color.a *= get_opacity();
