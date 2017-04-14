@@ -90,7 +90,7 @@ The Godot Engine community has [many communication channels](https://godotengine
 
 To communicate with developers (e.g. to discuss a feature you want to implement or a bug you want to fix), the following channels can be used:
 - [GitHub issues](https://github.com/godotengine/godot/issues): If there is an existing issue about a topic you want to discuss, just add a comment to it - all developers watch the repository and will get an email notification. You can also create a new issue - please keep in mind to create issues only to discuss quite specific points about the development, and not general user feedback or support requests.
-- [#godotengine-devel IRC channel on Freenode](http://webchat.freenode.net/?channels=godotengine-devel): You will find most core developers there, so it's the go-to channel for direct chat about Godot Engine development. Feel free to start discussing something there to get some early feedback before writing up a detailed proposal in a GitHub issue.
+- [#godotengine-devel IRC channel on Freenode](https://webchat.freenode.net/?channels=godotengine-devel): You will find most core developers there, so it's the go-to channel for direct chat about Godot Engine development. Feel free to start discussing something there to get some early feedback before writing up a detailed proposal in a GitHub issue.
 - [devel@godotengine.org mailing list](https://listengine.tuxfamily.org/godotengine.org/devel/): Mailing list for Godot developers, used primarily to announce developer meetings on IRC and other important discussions that need to reach people directly in their mailbox. See the [index page](https://listengine.tuxfamily.org/godotengine.org/devel/) for subscription instructions.
 
 Thanks!
