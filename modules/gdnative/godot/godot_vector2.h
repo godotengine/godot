@@ -67,15 +67,14 @@ godot_real GDAPI godot_vector2_angle_to(const godot_vector2 *p_src, const godot_
 godot_real GDAPI godot_vector2_angle_to_point(const godot_vector2 *p_src, const godot_vector2 *p_to);
 void GDAPI godot_vector2_clamped(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_real length);
 void GDAPI godot_vector2_cubic_interpolate(godot_vector2 *p_dest, const godot_vector2 *p_src,
-										   const godot_vector2 *p_b, const godot_vector2 *p_pre_a,
-										   const godot_vector2 *p_post_b, godot_real t);
+		const godot_vector2 *p_b, const godot_vector2 *p_pre_a,
+		const godot_vector2 *p_post_b, godot_real t);
 godot_real GDAPI godot_vector2_dot(const godot_vector2 *p_src, const godot_vector2 *p_with);
 void GDAPI godot_vector2_floor(godot_vector2 *p_dest, const godot_vector2 *p_src);
 godot_real GDAPI godot_vector2_aspect(const godot_vector2 *p_src);
 void GDAPI godot_vector2_linear_interpolate(godot_vector2 *p_dest, const godot_vector2 *p_src,
-	                                        const godot_vector2 *p_b, godot_real t);
-void GDAPI godot_vector2_reflect(godot_vector2 *p_dest, const godot_vector2 *p_src,
-	                             const godot_vector2 *p_vec);
+		const godot_vector2 *p_b, godot_real t);
+void GDAPI godot_vector2_reflect(godot_vector2 *p_dest, const godot_vector2 *p_src, const godot_vector2 *p_vec);
 void GDAPI godot_vector2_rotated(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_real phi);
 void GDAPI godot_vector2_slide(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_vector2 *p_vec);
 void GDAPI godot_vector2_snapped(godot_vector2 *p_dest, const godot_vector2 *p_src, godot_vector2 *p_by);
