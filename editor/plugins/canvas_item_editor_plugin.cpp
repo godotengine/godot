@@ -3241,6 +3241,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	PopupMenu *p;
 	p = edit_menu->get_popup();
+	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_snap", TTR("Use Snap")), SNAP_USE);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_grid", TTR("Show Grid")), SNAP_SHOW_GRID);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/use_rotation_snap", TTR("Use Rotation Snap")), SNAP_USE_ROTATION);
@@ -3262,6 +3263,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	skeleton_menu->add_separator();
 	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_set_ik_chain", TTR("Make IK Chain")), SKELETON_SET_IK_CHAIN);
 	skeleton_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/skeleton_clear_ik_chain", TTR("Clear IK Chain")), SKELETON_CLEAR_IK_CHAIN);
+	skeleton_menu->set_hide_on_checkable_item_selection(false);
 	skeleton_menu->connect("id_pressed", this, "_popup_callback");
 
 	/*
