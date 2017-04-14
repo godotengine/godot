@@ -81,24 +81,6 @@ static inline uint32_t hash_one_uint64(const uint64_t p_int) {
 	return (int)v;
 }
 
-static inline uint32_t hash_djb2_one_float(float p_in, uint32_t p_prev = 5381) {
-	union {
-		float f;
-		uint32_t i;
-	} u;
-
-	// Normalize +/- 0.0 and NaN values so they hash the same.
-	if (p_in == 0.0f)
-		u.f = 0.0;
-	else if (Math::is_nan(p_in))
-		u.f = Math_NAN;
-	else
-		u.f = p_in;
-
-	return ((p_prev << 5) + p_prev) + u.i;
-}
-
-// Overload for real_t size changes
 static inline uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev = 5381) {
 	union {
 		double d;

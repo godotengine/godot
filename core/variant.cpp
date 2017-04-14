@@ -2839,7 +2839,7 @@ uint32_t Variant::hash() const {
 }
 
 #define hash_compare_scalar(p_lhs, p_rhs) \
-	((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) == Math::is_nan(p_rhs))
+	((p_lhs) == (p_rhs)) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs))
 
 #define hash_compare_vector2(p_lhs, p_rhs)         \
 	(hash_compare_scalar((p_lhs).x, (p_rhs).x)) && \
