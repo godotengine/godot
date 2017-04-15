@@ -69,26 +69,6 @@ Ref<Script> ScriptTextEditor::get_edited_script() const {
 	return script;
 }
 
-bool ScriptTextEditor::goto_method(const String &p_method) {
-
-	Vector<String> functions = get_functions();
-
-	String method_search = p_method + ":";
-
-	for (int i = 0; i < functions.size(); i++) {
-		String function = functions[i];
-
-		if (function.begins_with(method_search)) {
-
-			int line = function.get_slice(":", 1).to_int();
-			goto_line(line - 1);
-			return true;
-		}
-	}
-
-	return false;
-}
-
 void ScriptTextEditor::_load_theme_settings() {
 
 	TextEdit *text_edit = code_editor->get_text_edit();
@@ -296,7 +276,7 @@ void ScriptTextEditor::tag_saved_version() {
 }
 
 void ScriptTextEditor::goto_line(int p_line, bool p_with_error) {
-	code_editor->get_text_edit()->cursor_set_line(p_line);
+	code_editor->get_text_edit()->call_deferred("cursor_set_line", p_line);
 }
 
 void ScriptTextEditor::ensure_focus() {

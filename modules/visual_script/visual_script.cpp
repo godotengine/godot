@@ -1073,6 +1073,18 @@ void VisualScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
+int VisualScript::get_member_line(const StringName &p_member) const {
+#ifdef TOOLS_ENABLED
+	if (has_function(p_member)) {
+		for (Map<int, Function::NodeData>::Element *E = functions[p_member].nodes.front(); E; E = E->next()) {
+			if (E->get().node->cast_to<VisualScriptFunction>())
+				return E->key();
+		}
+	}
+#endif
+	return -1;
+}
+
 #ifdef TOOLS_ENABLED
 bool VisualScript::are_subnodes_edited() const {
 

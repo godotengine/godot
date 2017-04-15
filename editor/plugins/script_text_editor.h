@@ -134,7 +134,6 @@ public:
 
 	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
-	virtual bool goto_method(const String &p_method);
 
 	virtual void set_tooltip_request_func(String p_method, Object *p_obj);
 

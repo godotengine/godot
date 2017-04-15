@@ -1380,10 +1380,10 @@ void ScriptEditor::_update_script_names() {
 	_update_script_colors();
 }
 
-void ScriptEditor::edit(const Ref<Script> &p_script, bool p_grab_focus) {
+bool ScriptEditor::edit(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus) {
 
 	if (p_script.is_null())
-		return;
+		return false;
 
 	// refuse to open built-in if scene is not loaded
 
@@ -1391,22 +1391,46 @@ void ScriptEditor::edit(const Ref<Script> &p_script, bool p_grab_focus) {
 
 	bool open_dominant = EditorSettings::get_singleton()->get("text_editor/files/open_dominant_script_on_scene_change");
 
+	Error err = p_script->get_language()->open_in_external_editor(p_script, p_line >= 0 ? p_line : 0, p_col);
+	if (err == OK)
+		return false;
+	if (err != ERR_UNAVAILABLE)
+		WARN_PRINT("Couldn't open in custom external text editor");
+
 	if (p_script->get_path().is_resource_file() && bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
 
 		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
 		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
+
+		Dictionary keys;
+		keys["project"] = GlobalConfig::get_singleton()->get_resource_path();
+		keys["file"] = GlobalConfig::get_singleton()->globalize_path(p_script->get_path());
+		keys["line"] = p_line >= 0 ? p_line : 0;
+		keys["col"] = p_col;
+
+		flags = flags.format(keys).strip_edges().replace("\\\\", "\\");
+
 		List<String> args;
-		flags = flags.strip_edges();
-		if (flags != String()) {
-			Vector<String> flagss = flags.split(" ", false);
-			for (int i = 0; i < flagss.size(); i++)
-				args.push_back(flagss[i]);
+
+		if (flags.size()) {
+			int from = 0, to = 0;
+			bool inside_quotes = false;
+			for (int i = 0; i < flags.size(); i++) {
+				if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
+					inside_quotes = !inside_quotes;
+				} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
+					args.push_back(flags.substr(from, to));
+					from = i + 1;
+					to = 0;
+				} else {
+					to++;
+				}
+			}
 		}
 
-		args.push_back(GlobalConfig::get_singleton()->globalize_path(p_script->get_path()));
 		Error err = OS::get_singleton()->execute(path, args, false);
 		if (err == OK)
-			return;
+			return false;
 		WARN_PRINT("Couldn't open external text editor, using internal");
 	}
 
@@ -1425,8 +1449,11 @@ void ScriptEditor::edit(const Ref<Script> &p_script, bool p_grab_focus) {
 				}
 				if (is_visible_in_tree())
 					se->ensure_focus();
+
+				if (p_line >= 0)
+					se->goto_line(p_line - 1);
 			}
-			return;
+			return true;
 		}
 	}
 
@@ -1439,7 +1466,7 @@ void ScriptEditor::edit(const Ref<Script> &p_script, bool p_grab_focus) {
 		if (se)
 			break;
 	}
-	ERR_FAIL_COND(!se);
+	ERR_FAIL_COND_V(!se, false);
 	tab_container->add_child(se);
 
 	se->set_edited_script(p_script);
@@ -1466,6 +1493,11 @@ void ScriptEditor::edit(const Ref<Script> &p_script, bool p_grab_focus) {
 
 	_test_script_times_on_disk(p_script);
 	_update_modified_scripts_for_external_editor(p_script);
+
+	if (p_line >= 0)
+		se->goto_line(p_line - 1);
+
+	return true;
 }
 
 void ScriptEditor::save_all_scripts() {
@@ -1863,20 +1895,14 @@ void ScriptEditor::set_scene_root_script(Ref<Script> p_script) {
 	}
 }
 
-bool ScriptEditor::script_go_to_method(Ref<Script> p_script, const String &p_method) {
+bool ScriptEditor::script_goto_method(Ref<Script> p_script, const String &p_method) {
 
-	for (int i = 0; i < tab_container->get_child_count(); i++) {
-		ScriptEditorBase *current = tab_container->get_child(i)->cast_to<ScriptEditorBase>();
+	int line = p_script->get_member_line(p_method);
 
-		if (current && current->get_edited_script() == p_script) {
-			if (current->goto_method(p_method)) {
-				edit(p_script);
-				return true;
-			}
-			break;
-		}
-	}
-	return false;
+	if (line == -1)
+		return false;
+
+	return edit(p_script, line, 0);
 }
 
 void ScriptEditor::set_live_auto_reload_running_scripts(bool p_enabled) {

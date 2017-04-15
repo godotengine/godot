@@ -119,7 +119,7 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
 
-	virtual int get_member_line(const StringName &p_member) const { return 0; }
+	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
 	Script() {}
 };
@@ -201,6 +201,7 @@ public:
 	virtual bool has_named_classes() const = 0;
 	virtual int find_function(const String &p_function, const String &p_code) const = 0;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const = 0;
+	virtual Error open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) { return ERR_UNAVAILABLE; }
 
 	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
