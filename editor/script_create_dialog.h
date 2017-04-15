@@ -44,6 +44,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Label *error_label;
 	Label *path_error_label;
 	LineEdit *parent_name;
+	Button *parent_browse_button;
 	OptionButton *language_menu;
 	LineEdit *file_path;
 	EditorFileDialog *file_browse;
@@ -52,6 +53,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	AcceptDialog *alert;
 	bool path_valid;
 	bool create_new;
+	bool is_browsing_parent;
 	String initial_bp;
 	EditorSettings *editor_settings;
 
@@ -60,7 +62,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	void _built_in_pressed();
 	bool _validate(const String &p_strin);
 	void _class_name_changed(const String &p_name);
-	void _browse_path();
+	void _browse_path(bool browse_parent);
 	void _file_selected(const String &p_file);
 	virtual void ok_pressed();
 	void _create_new();
