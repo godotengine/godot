@@ -156,6 +156,8 @@ void ColorPicker::_update_color() {
 	_update_text_value();
 
 	sample->update();
+	uv_edit->update();
+	w_edit->update();
 	updating = false;
 }
 
@@ -279,7 +281,7 @@ void ColorPicker::_hsv_draw(int p_wich, Control *c) {
 		colors2.push_back(col);
 		col.a = 0;
 		colors2.push_back(col);
-		c->draw_polygon(points, colors);
+		c->draw_polygon(points, colors2);
 		int x = CLAMP(c->get_size().x * s, 0, c->get_size().x);
 		int y = CLAMP(c->get_size().y - c->get_size().y * v, 0, c->get_size().y);
 		col = color;
@@ -290,7 +292,7 @@ void ColorPicker::_hsv_draw(int p_wich, Control *c) {
 	} else if (p_wich == 1) {
 		Ref<Texture> hue = get_icon("color_hue", "ColorPicker");
 		c->draw_texture_rect(hue, Rect2(Point2(), c->get_size()));
-		int y = c->get_size().y - c->get_size().y * h;
+		int y = c->get_size().y * h;
 		Color col = Color();
 		col.set_hsv(h, 1, 1);
 		c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
@@ -335,7 +337,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		const InputEventMouseButton &bev = ev.mouse_button;
 		if (bev.pressed && bev.button_index == BUTTON_LEFT) {
 			changing_color = true;
-			h = 1 - ((float)bev.y) / 256.0;
+			h = ((float)bev.y) / 256.0;
 
 		} else {
 			changing_color = false;
@@ -350,7 +352,7 @@ void ColorPicker::_w_input(const InputEvent &ev) {
 		if (!changing_color)
 			return;
 		float y = CLAMP((float)bev.y, 0, 256);
-		h = 1.0 - y / 256.0;
+		h = y / 256.0;
 		color.set_hsv(h, s, v, color.a);
 		last_hsv = color;
 		set_pick_color(color);

@@ -249,6 +249,66 @@ void RasterizerCanvasGLES3::_set_texture_rect_mode(bool p_enable) {
 
 void RasterizerCanvasGLES3::_draw_polygon(int p_vertex_count, const int *p_indices, const Vector2 *p_vertices, const Vector2 *p_uvs, const Color *p_colors, const RID &p_texture, bool p_singlecolor) {
 
+	int version = 0;
+	int color_ofs = 0;
+	int uv_ofs = 0;
+	int stride = 2;
+
+	if (p_colors) { //color
+		version |= 1;
+		color_ofs = stride;
+		stride += 4;
+	}
+
+	if (p_uvs) { //uv
+		version |= 2;
+		uv_ofs = stride;
+		stride += 2;
+	}
+
+	float b[(2 + 2 + 4) * p_vertex_count];
+
+	for (int i = 0; i < p_vertex_count; i++) {
+		b[stride * i + 0] = p_vertices[p_indices[i]].x;
+		b[stride * i + 1] = p_vertices[p_indices[i]].y;
+	}
+
+	if (p_colors) {
+
+		for (int i = 0; i < p_vertex_count; i++) {
+			if (p_singlecolor) {
+				b[stride * i + color_ofs + 0] = p_colors[p_indices[0]].r;
+				b[stride * i + color_ofs + 1] = p_colors[p_indices[0]].g;
+				b[stride * i + color_ofs + 2] = p_colors[p_indices[0]].b;
+				b[stride * i + color_ofs + 3] = p_colors[p_indices[0]].a;
+			} else {
+				b[stride * i + color_ofs + 0] = p_colors[p_indices[i]].r;
+				b[stride * i + color_ofs + 1] = p_colors[p_indices[i]].g;
+				b[stride * i + color_ofs + 2] = p_colors[p_indices[i]].b;
+				b[stride * i + color_ofs + 3] = p_colors[p_indices[i]].a;
+			}
+		}
+	}
+
+	if (p_uvs) {
+
+		for (int i = 0; i < p_vertex_count; i++) {
+			b[stride * i + uv_ofs + 0] = p_uvs[p_indices[i]].x;
+			b[stride * i + uv_ofs + 1] = p_uvs[p_indices[i]].y;
+		}
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, data.primitive_quad_buffer);
+	glBufferData(GL_ARRAY_BUFFER,p_vertex_count * stride * 4,&b[0],GL_STATIC_DRAW);
+	//glBufferSubData(GL_ARRAY_BUFFER, 0, p_vertex_count * stride * 4, &b[0]);
+	glBindVertexArray(data.primitive_quad_buffer_arrays[version]);
+	glDrawArrays(GL_TRIANGLES, 0, p_vertex_count);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	storage->frame.canvas_draw_commands++;
+
+#if 0
 	bool do_colors = false;
 	Color m;
 	if (p_singlecolor) {
@@ -352,8 +412,8 @@ void RasterizerCanvasGLES3::_draw_polygon(int p_vertex_count, const int *p_indic
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 #endif
-
 	storage->frame.canvas_draw_commands++;
+#endif
 }
 
 void RasterizerCanvasGLES3::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color *p_colors, const Vector2 *p_uvs) {
@@ -624,7 +684,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 					Size2 texpixel_size(1.0 / texture->width, 1.0 / texture->height);
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::COLOR_TEXPIXEL_SIZE, texpixel_size);
 				}
-				//_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
+				_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
 
 			} break;
 			case Item::Command::TYPE_CIRCLE: {
