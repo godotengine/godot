@@ -1235,7 +1235,7 @@ bool Main::start() {
 
 			String stretch_mode = GLOBAL_DEF("display/stretch/mode", "disabled");
 			String stretch_aspect = GLOBAL_DEF("display/stretch/aspect", "ignore");
-			Size2i stretch_size = Size2(GLOBAL_DEF("display/screen/width", 0), GLOBAL_DEF("display/screen/height", 0));
+			Size2i stretch_size = Size2(GLOBAL_DEF("display/window/width", 0), GLOBAL_DEF("display/window/height", 0));
 
 			SceneTree::StretchMode sml_sm = SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode == "2d")
