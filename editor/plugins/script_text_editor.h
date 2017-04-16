@@ -67,6 +67,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
+		EDIT_CONVERT_INDENT_TO_SPACES,
+		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_TOGGLE_COMMENT,
 		EDIT_MOVE_LINE_UP,
 		EDIT_MOVE_LINE_DOWN,
@@ -125,6 +127,8 @@ public:
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void ensure_focus();
 	virtual void trim_trailing_whitespace();
+	virtual void convert_indent_to_spaces();
+	virtual void convert_indent_to_tabs();
 	virtual void tag_saved_version();
 
 	virtual void goto_line(int p_line, bool p_with_error = false);
