@@ -506,7 +506,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("interface/dim_editor_on_dialog_popup", true);
 	set("interface/dim_amount", 0.6f);
 	hints["interface/dim_amount"] = PropertyInfo(Variant::REAL, "interface/dim_amount", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
-	set("interface/dim_transition_time", 0.11f);
+	set("interface/dim_transition_time", 0.08f);
 	hints["interface/dim_transition_time"] = PropertyInfo(Variant::REAL, "interface/dim_transition_time", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT);
 
 	set("filesystem/directories/autoscan_project_path", "");
