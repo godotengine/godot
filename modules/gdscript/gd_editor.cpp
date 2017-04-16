@@ -32,6 +32,10 @@
 #include "gd_script.h"
 #include "global_config.h"
 #include "os/file_access.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_file_system.h"
+#include "editor/editor_settings.h"
+#endif
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 
@@ -1406,6 +1410,17 @@ static void _make_function_hint(const GDParser::FunctionNode *p_func, int p_argi
 	arghint += ")";
 }
 
+void get_directory_contents(EditorFileSystemDirectory *p_dir, Set<String> &r_list) {
+
+	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
+		get_directory_contents(p_dir->get_subdir(i), r_list);
+	}
+
+	for (int i = 0; i < p_dir->get_file_count(); i++) {
+		r_list.insert("\"" + p_dir->get_file_path(i) + "\"");
+	}
+}
+
 static void _find_type_arguments(GDCompletionContext &context, const GDParser::Node *p_node, int p_line, const StringName &p_method, const GDCompletionIdentifier &id, int p_argidx, Set<String> &result, String &arghint) {
 
 	//print_line("find type arguments?");
@@ -1753,6 +1768,10 @@ static void _find_call_arguments(GDCompletionContext &context, const GDParser::N
 		//complete built-in function
 		const GDParser::BuiltInFunctionNode *fn = static_cast<const GDParser::BuiltInFunctionNode *>(op->arguments[0]);
 		MethodInfo mi = GDFunctions::get_info(fn->function);
+
+		if (mi.name == "load" && bool(EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))) {
+			get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), result);
+		}
 
 		arghint = _get_visual_datatype(mi.return_val, false) + " " + GDFunctions::get_func_name(fn->function) + String("(");
 		for (int i = 0; i < mi.arguments.size(); i++) {
@@ -2374,6 +2393,11 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 				}
 			}
 
+		} break;
+		case GDParser::COMPLETION_PRELOAD: {
+
+			if (EditorSettings::get_singleton()->get("text_editor/completion/complete_file_paths"))
+				get_directory_contents(EditorFileSystem::get_singleton()->get_filesystem(), options);
 		} break;
 	}
 
