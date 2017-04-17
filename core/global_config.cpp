@@ -53,6 +53,11 @@ String GlobalConfig::get_resource_path() const {
 	return resource_path;
 };
 
+String GlobalConfig::get_project_file_name() const {
+
+	return project_file_name;
+}
+
 String GlobalConfig::localize_path(const String &p_path) const {
 
 	if (resource_path == "")
@@ -236,13 +241,43 @@ bool GlobalConfig::_load_resource_pack(const String &p_pack) {
 	return true;
 }
 
+static String _find_project_file(DirAccess *p_diraccess, bool p_res = false) {
+	p_diraccess->list_dir_begin();
+	String ret = "";
+	while (true) {
+		bool isdir;
+		String file = p_diraccess->get_next(&isdir);
+		if (file == "")
+			break;
+
+		if (!isdir) {
+			if (file.get_extension() == "godot") {
+
+				if (p_res) {
+					ret = "res://" + file;
+				} else {
+					ret = p_diraccess->get_current_dir() + "/" + file;
+				}
+			}
+		}
+	}
+	p_diraccess->list_dir_end();
+	return ret;
+}
+
+static String _find_project_file() {
+	DirAccess *dir = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	String ret = _find_project_file(dir, true);
+	memdelete(dir);
+	return ret;
+}
+
 Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 	//If looking for files in network, just use network!
-
 	if (FileAccessNetworkClient::get_singleton()) {
-
-		if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		String gdproj = _find_project_file();
+		if (_load_settings(gdproj) == OK || _load_settings_binary("res://godot.cfb") == OK) {
 
 			_load_settings("res://override.cfg");
 		}
@@ -258,8 +293,8 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V(!ok, ERR_CANT_OPEN);
-
-		if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		String gdproj = _find_project_file();
+		if (_load_settings(gdproj) == OK || _load_settings_binary("res://godot.cfb") == OK) {
 			//load override from location of the main pack
 			_load_settings(p_main_pack.get_base_dir().plus_file("override.cfg"));
 		}
@@ -272,7 +307,8 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 		if (_load_resource_pack(exec_path.get_basename() + ".pck")) {
 
-			if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+			String gdproj = _find_project_file();
+			if (_load_settings(gdproj) == OK || _load_settings_binary("res://godot.cfb") == OK) {
 				//load override from location of executable
 				_load_settings(exec_path.get_base_dir().plus_file("override.cfg"));
 			}
@@ -292,15 +328,15 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 		// data.pck and data.zip are deprecated and no longer supported, apologies.
 		// make sure this is loaded from the resource path
-
-		if (_load_settings("res://godot.cfg") == OK || _load_settings_binary("res://godot.cfb") == OK) {
+		String gdproj = _find_project_file();
+		if (_load_settings(gdproj) == OK || _load_settings_binary("res://godot.cfb") == OK) {
 			_load_settings("res://override.cfg");
 		}
 
 		return OK;
 	}
 
-	//Nothing was found, try to find a godot.cfg somewhere!
+	//Nothing was found, try to find a *.godot somewhere!
 
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!d, ERR_CANT_CREATE);
@@ -313,8 +349,8 @@ Error GlobalConfig::setup(const String &p_path, const String &p_main_pack) {
 
 	while (true) {
 		//try to load settings in ascending through dirs shape!
-
-		if (_load_settings(current_dir + "/godot.cfg") == OK || _load_settings_binary(current_dir + "/godot.cfb") == OK) {
+		String gdproj = _find_project_file(d);
+		if (_load_settings(gdproj) == OK || _load_settings_binary(current_dir + "/godot.cfb") == OK) {
 
 			_load_settings(current_dir + "/override.cfg");
 			candidate = current_dir;
@@ -428,6 +464,7 @@ Error GlobalConfig::_load_settings(const String p_path) {
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
 		if (err == ERR_FILE_EOF) {
 			memdelete(f);
+			project_file_name = p_path.get_file();
 			return OK;
 		} else if (err != OK) {
 			ERR_PRINTS("GlobalConfig::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
@@ -449,6 +486,7 @@ Error GlobalConfig::_load_settings(const String p_path) {
 		}
 	}
 
+	project_file_name = p_path.get_file();
 	memdelete(f);
 
 	return OK;
@@ -474,7 +512,12 @@ void GlobalConfig::clear(const String &p_name) {
 
 Error GlobalConfig::save() {
 
-	return save_custom(get_resource_path() + "/godot.cfg");
+	if (project_file_name.empty()) {
+		String name = ((String)get("application/name")).replace(" ", "_");
+		return save_custom(get_resource_path() + "/" + name + ".godot");
+	} else {
+		return save_custom(get_resource_path() + "/" + project_file_name);
+	}
 }
 
 Error GlobalConfig::_save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom) {
@@ -483,7 +526,7 @@ Error GlobalConfig::_save_settings_binary(const String &p_file, const Map<String
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 	if (err != OK) {
 
-		ERR_EXPLAIN("Coudln't save godot.cfb at " + p_file);
+		ERR_EXPLAIN("Couldn't save godot.cfb at " + p_file);
 		ERR_FAIL_COND_V(err, err)
 	}
 
@@ -548,7 +591,7 @@ Error GlobalConfig::_save_settings_text(const String &p_file, const Map<String, 
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
 	if (err) {
-		ERR_EXPLAIN("Coudln't save godot.cfg - " + p_file);
+		ERR_EXPLAIN("Couldn't save project file - " + p_file);
 		ERR_FAIL_COND_V(err, err)
 	}
 
@@ -828,6 +871,7 @@ void GlobalConfig::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear", "name"), &GlobalConfig::clear);
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &GlobalConfig::localize_path);
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &GlobalConfig::globalize_path);
+	ClassDB::bind_method(D_METHOD("get_project_file_name"), &GlobalConfig::get_project_file_name);
 	ClassDB::bind_method(D_METHOD("save"), &GlobalConfig::save);
 	ClassDB::bind_method(D_METHOD("has_singleton", "name"), &GlobalConfig::has_singleton);
 	ClassDB::bind_method(D_METHOD("get_singleton", "name"), &GlobalConfig::get_singleton_object);

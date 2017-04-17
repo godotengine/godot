@@ -487,6 +487,22 @@ bool EditorFileSystem::_check_missing_imported_files(const String &p_path) {
 	return true;
 }
 
+static bool _find_project(const String &p_path) {
+	DirAccess *dir_access = DirAccess::create_for_path(p_path);
+	bool ret = false;
+	while (true) {
+		bool is_dir;
+		String file = dir_access->get_next(&is_dir);
+		if (file == "")
+			break;
+		if (file.ends_with(".godot")) {
+			ret = true;
+		}
+	}
+	memdelete(dir_access);
+	return ret;
+}
+
 void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess *da, const ScanProgress &p_progress) {
 
 	List<String> dirs;
@@ -509,8 +525,9 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 			if (f.begins_with(".")) //ignore hidden and . / ..
 				continue;
 
-			if (FileAccess::exists(cd.plus_file(f).plus_file("godot.cfg"))) // skip if another project inside this
+			if (_find_project(cd.plus_file(f))) {
 				continue;
+			}
 
 			dirs.push_back(f);
 
@@ -676,34 +693,35 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		while (true) {
 
 			bool isdir;
-			String f = da->get_next(&isdir);
-			if (f == "")
+			String file = da->get_next(&isdir);
+			if (file == "")
 				break;
 
 			if (isdir) {
 
-				if (f.begins_with(".")) //ignore hidden and . / ..
+				if (file.begins_with(".")) //ignore hidden and . / ..
 					continue;
 
-				int idx = p_dir->find_dir_index(f);
+				int idx = p_dir->find_dir_index(file);
 				if (idx == -1) {
 
-					if (FileAccess::exists(cd.plus_file(f).plus_file("godot.cfg"))) // skip if another project inside this
+					if (_find_project(cd.plus_file(file))) {
 						continue;
+					}
 
 					EditorFileSystemDirectory *efd = memnew(EditorFileSystemDirectory);
 
 					efd->parent = p_dir;
-					efd->name = f;
+					efd->name = file;
 					DirAccess *d = DirAccess::create(DirAccess::ACCESS_RESOURCES);
-					d->change_dir(cd.plus_file(f));
+					d->change_dir(cd.plus_file(file));
 					_scan_new_dir(efd, d, p_progress.get_sub(1, 1));
 					memdelete(d);
 
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_DIR_ADD;
 					ia.dir = p_dir;
-					ia.file = f;
+					ia.file = file;
 					ia.new_dir = efd;
 					scan_actions.push_back(ia);
 				} else {
@@ -711,16 +729,16 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 				}
 
 			} else {
-				String ext = f.get_extension().to_lower();
+				String ext = file.get_extension().to_lower();
 				if (!valid_extensions.has(ext))
 					continue; //invalid
 
-				int idx = p_dir->find_file_index(f);
+				int idx = p_dir->find_file_index(file);
 
 				if (idx == -1) {
 					//never seen this file, add actition to add it
 					EditorFileSystemDirectory::FileInfo *fi = memnew(EditorFileSystemDirectory::FileInfo);
-					fi->file = f;
+					fi->file = file;
 
 					String path = cd.plus_file(fi->file);
 					fi->modified_time = FileAccess::get_modified_time(path);
@@ -731,7 +749,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 						ItemAction ia;
 						ia.action = ItemAction::ACTION_FILE_ADD;
 						ia.dir = p_dir;
-						ia.file = f;
+						ia.file = file;
 						ia.new_file = fi;
 						scan_actions.push_back(ia);
 					}
@@ -739,14 +757,14 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					if (import_extensions.has(ext)) {
 						//if it can be imported, and it was added, it needs to be reimported
 						print_line("REIMPORT: file was not found before, reimport");
-						print_line("at dir: " + p_dir->get_path() + " file: " + f);
+						print_line("at dir: " + p_dir->get_path() + " file: " + file);
 						for (int i = 0; i < p_dir->files.size(); i++) {
 							print_line(itos(i) + ": " + p_dir->files[i]->file);
 						}
 						ItemAction ia;
 						ia.action = ItemAction::ACTION_FILE_REIMPORT;
 						ia.dir = p_dir;
-						ia.file = f;
+						ia.file = file;
 						scan_actions.push_back(ia);
 					}
 
