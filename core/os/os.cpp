@@ -507,7 +507,6 @@ OS::OS() {
 	_render_thread_mode = RENDER_THREAD_SAFE;
 
 	_allow_hidpi = true;
-	Math::seed(1234567);
 }
 
 OS::~OS() {

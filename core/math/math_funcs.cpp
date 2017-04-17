@@ -30,7 +30,7 @@
 #include "math_funcs.h"
 #include "core/os/os.h"
 
-pcg32_random_t Math::default_pcg = { 1, PCG_DEFAULT_INC_64 };
+pcg32_random_t Math::default_pcg = { 12047754176567800795ULL, PCG_DEFAULT_INC_64 };
 
 #define PHI 0x9e3779b9
 
@@ -51,9 +51,7 @@ void Math::seed(uint64_t x) {
 }
 
 void Math::randomize() {
-
-	OS::Time time = OS::get_singleton()->get_time();
-	seed(OS::get_singleton()->get_ticks_usec() * (time.hour + 1) * (time.min + 1) * (time.sec + 1) * rand()); // TODO: can be simplified.
+	seed(OS::get_singleton()->get_ticks_usec() * default_pcg.state + PCG_DEFAULT_INC_64);
 }
 
 uint32_t Math::rand() {
