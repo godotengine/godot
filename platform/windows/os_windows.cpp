@@ -1990,7 +1990,6 @@ String OS_Windows::get_executable_path() const {
 	wchar_t bufname[4096];
 	GetModuleFileNameW(NULL, bufname, 4096);
 	String s = bufname;
-	print_line("EXEC PATHP??: " + s);
 	return s;
 }
 
