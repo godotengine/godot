@@ -49,7 +49,7 @@ typedef struct godot_vector3 {
 #include "../godot.h"
 #include "godot_basis.h"
 
-void GDAPI godot_vector3_new(godot_vector3 *p_v, const godot_real p_x, const godot_real p_y, const godot_real p_z);
+godot_vector3 GDAPI godot_vector3_new(const godot_real p_x, const godot_real p_y, const godot_real p_z);
 
 void GDAPI godot_vector3_set_axis(godot_vector3 *p_v, const godot_int p_axis, const godot_real p_val);
 godot_real GDAPI godot_vector3_get_axis(const godot_vector3 *p_v, const godot_int p_axis);
@@ -61,50 +61,50 @@ godot_real GDAPI godot_vector3_length(const godot_vector3 *p_v);
 godot_real GDAPI godot_vector3_length_squared(const godot_vector3 *p_v);
 
 void GDAPI godot_vector3_normalize(godot_vector3 *p_v);
-void GDAPI godot_vector3_normalized(godot_vector3 *p_dest, const godot_vector3 *p_src);
+godot_vector3 GDAPI godot_vector3_normalized(const godot_vector3 *p_v);
 
-void GDAPI godot_vector3_inverse(godot_vector3 *p_dest, const godot_vector3 *p_src);
-void GDAPI godot_vector3_zero(godot_vector3 *p_src);
-void GDAPI godot_vector3_snap(godot_vector3 *p_src, godot_real val);
-void GDAPI godot_vector3_snapped(godot_vector3 *p_dest, const godot_vector3 *p_src, godot_real val);
-void GDAPI godot_vector3_rotate(godot_vector3 *p_src, const godot_vector3 *p_axis, godot_real phi);
-void GDAPI godot_vector3_rotated(godot_vector3 *p_dest, const godot_vector3 *p_src,
-		const godot_vector3 *p_axis, godot_real phi);
-void GDAPI godot_vector3_linear_interpolate(godot_vector3 *p_dest, const godot_vector3 *p_src,
-		const godot_vector3 *p_b, godot_real t);
-void GDAPI godot_vector3_cubic_interpolate(godot_vector3 *p_dest, const godot_vector3 *p_src,
-		const godot_vector3 *p_b, const godot_vector3 *p_pre_a,
-		const godot_vector3 *p_post_b, godot_real t);
-void GDAPI godot_vector3_cubic_interpolaten(godot_vector3 *p_dest, const godot_vector3 *p_src,
-		const godot_vector3 *p_b, const godot_vector3 *p_pre_a,
-		const godot_vector3 *p_post_b, godot_real t);
-void GDAPI godot_vector3_cross(godot_vector3 *p_dest, const godot_vector3 *p_src, const godot_vector3 *p_b);
-godot_real GDAPI godot_vector3_dot(const godot_vector3 *p_src, const godot_vector3 *p_b);
-void GDAPI godot_vector3_outer(godot_basis *dest, const godot_vector3 *p_src, const godot_vector3 *p_b);
-void GDAPI godot_vector3_to_diagonal_matrix(godot_basis *dest, const godot_vector3 *p_src);
-void GDAPI godot_vector3_abs(godot_vector3 *p_dest, const godot_vector3 *p_src);
-void GDAPI godot_vector3_floor(godot_vector3 *p_dest, const godot_vector3 *p_src);
-void GDAPI godot_vector3_ceil(godot_vector3 *p_dest, const godot_vector3 *p_src);
+godot_vector3 GDAPI godot_vector3_inverse(const godot_vector3 *p_v);
+void GDAPI godot_vector3_zero(godot_vector3 *p_v);
+void GDAPI godot_vector3_snap(godot_vector3 *p_v, const godot_real val);
+godot_vector3 GDAPI godot_vector3_snapped(const godot_vector3 *p_v, const godot_real val);
+void GDAPI godot_vector3_rotate(godot_vector3 *p_v, const godot_vector3 p_axis, const godot_real phi);
+godot_vector3 GDAPI godot_vector3_rotated(const godot_vector3 *p_v,
+		const godot_vector3 p_axis, const godot_real phi);
+godot_vector3 GDAPI godot_vector3_linear_interpolate(const godot_vector3 *p_v,
+		const godot_vector3 p_b, const godot_real t);
+godot_vector3 GDAPI godot_vector3_cubic_interpolate(const godot_vector3 *p_v,
+		const godot_vector3 p_b, const godot_vector3 p_pre_a,
+		const godot_vector3 p_post_b, const godot_real t);
+godot_vector3 GDAPI godot_vector3_cubic_interpolaten(const godot_vector3 *p_v,
+		const godot_vector3 p_b, const godot_vector3 p_pre_a,
+		const godot_vector3 p_post_b, const godot_real t);
+godot_vector3 GDAPI godot_vector3_cross(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_real GDAPI godot_vector3_dot(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_basis GDAPI godot_vector3_outer(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_basis GDAPI godot_vector3_to_diagonal_matrix(const godot_vector3 *p_v);
+godot_vector3 GDAPI godot_vector3_abs(const godot_vector3 *p_v);
+godot_vector3 GDAPI godot_vector3_floor(const godot_vector3 *p_v);
+godot_vector3 GDAPI godot_vector3_ceil(const godot_vector3 *p_v);
 
-godot_real GDAPI godot_vector3_distance_to(const godot_vector3 *p_a, const godot_vector3 *p_b);
-godot_real GDAPI godot_vector3_distance_squared_to(const godot_vector3 *p_a, const godot_vector3 *p_b);
-godot_real GDAPI godot_vector3_angle_to(const godot_vector3 *p_a, const godot_vector3 *p_b);
+godot_real GDAPI godot_vector3_distance_to(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_real GDAPI godot_vector3_distance_squared_to(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_real GDAPI godot_vector3_angle_to(const godot_vector3 *p_v, const godot_vector3 p_b);
 
-void GDAPI godot_vector3_slide(godot_vector3 *p_dest, const godot_vector3 *p_src, const godot_vector3 *p_vec);
-void GDAPI godot_vector3_bounce(godot_vector3 *p_dest, const godot_vector3 *p_src, const godot_vector3 *p_vec);
-void GDAPI godot_vector3_reflect(godot_vector3 *p_dest, const godot_vector3 *p_src, const godot_vector3 *p_vec);
+godot_vector3 GDAPI godot_vector3_slide(const godot_vector3 *p_v, const godot_vector3 p_vec);
+godot_vector3 GDAPI godot_vector3_bounce(const godot_vector3 *p_v, const godot_vector3 p_vec);
+godot_vector3 GDAPI godot_vector3_reflect(const godot_vector3 *p_v, const godot_vector3 p_vec);
 
-void GDAPI godot_vector3_operator_add(godot_vector3 *p_dest, const godot_vector3 *p_a, const godot_vector3 *p_b);
-void GDAPI godot_vector3_operator_subtract(godot_vector3 *p_dest, const godot_vector3 *p_a, const godot_vector3 *p_b);
-void GDAPI godot_vector3_operator_multiply_vector(godot_vector3 *p_dest, const godot_vector3 *p_a, const godot_vector3 *p_b);
-void GDAPI godot_vector3_operator_multiply_scalar(godot_vector3 *p_dest, const godot_vector3 *p_a, const godot_real p_b);
-void GDAPI godot_vector3_operator_divide_vector(godot_vector3 *p_dest, const godot_vector3 *p_a, const godot_vector3 *p_b);
-void GDAPI godot_vector3_operator_divide_scalar(godot_vector3 *p_dest, const godot_vector3 *p_a, const godot_real p_b);
+godot_vector3 GDAPI godot_vector3_operator_add(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_vector3 GDAPI godot_vector3_operator_subtract(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_vector3 GDAPI godot_vector3_operator_multiply_vector(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_vector3 GDAPI godot_vector3_operator_multiply_scalar(const godot_vector3 *p_v, const godot_real p_b);
+godot_vector3 GDAPI godot_vector3_operator_divide_vector(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_vector3 GDAPI godot_vector3_operator_divide_scalar(const godot_vector3 *p_v, const godot_real p_b);
 
-godot_bool GDAPI godot_vector3_operator_equal(const godot_vector3 *p_a, const godot_vector3 *p_b);
-godot_bool GDAPI godot_vector3_operator_less(const godot_vector3 *p_a, const godot_vector3 *p_b);
+godot_bool GDAPI godot_vector3_operator_equal(const godot_vector3 *p_v, const godot_vector3 p_b);
+godot_bool GDAPI godot_vector3_operator_less(const godot_vector3 *p_v, const godot_vector3 p_b);
 
-void GDAPI godot_vector3_to_string(godot_string *p_dest, const godot_vector3 *p_src);
+godot_string GDAPI godot_vector3_to_string(const godot_vector3 *p_v);
 
 #ifdef __cplusplus
 }
