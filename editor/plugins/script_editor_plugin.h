@@ -91,6 +91,8 @@ public:
 	virtual void set_edit_state(const Variant &p_state) = 0;
 	virtual void goto_line(int p_line, bool p_with_error = false) = 0;
 	virtual void trim_trailing_whitespace() = 0;
+	virtual void convert_indent_to_spaces() = 0;
+	virtual void convert_indent_to_tabs() = 0;
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) = 0;
@@ -252,6 +254,8 @@ class ScriptEditor : public VBoxContainer {
 	void _res_saved_callback(const Ref<Resource> &p_res);
 
 	bool trim_trailing_whitespace_on_save;
+	bool use_space_indentation;
+	bool convert_indent_on_save;
 
 	void _trim_trailing_whitespace(TextEdit *tx);
 
