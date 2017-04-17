@@ -41,6 +41,7 @@ public:
 	enum DrawFlags {
 		FLAG_TRANSPARENT,
 		FLAG_SHADED,
+		FLAG_DOUBLE_SIDED,
 		FLAG_MAX
 
 	};

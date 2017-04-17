@@ -60,7 +60,7 @@ protected:
 	RID test_texture;
 	RID white_texture;
 	RID test_material;
-	RID material_2d[16];
+	RID material_2d[32];
 
 	static VisualServer *(*create_func)();
 	static void _bind_methods();
@@ -1120,7 +1120,7 @@ public:
 
 	/* Materials for 2D on 3D */
 
-	RID material_2d_get(bool p_shaded, bool p_transparent, bool p_cut_alpha, bool p_opaque_prepass);
+	RID material_2d_get(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass);
 
 	/* TESTING */
 
