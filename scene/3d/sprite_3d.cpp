@@ -273,10 +273,12 @@ void SpriteBase3D::_bind_methods() {
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_draw_flag", "get_draw_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shaded"), "set_draw_flag", "get_draw_flag", FLAG_SHADED);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "double_sided"), "set_draw_flag", "get_draw_flag", FLAG_DOUBLE_SIDED);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
 
 	BIND_CONSTANT(FLAG_TRANSPARENT);
 	BIND_CONSTANT(FLAG_SHADED);
+	BIND_CONSTANT(FLAG_DOUBLE_SIDED);
 	BIND_CONSTANT(FLAG_MAX);
 
 	BIND_CONSTANT(ALPHA_CUT_DISABLED);
@@ -294,7 +296,7 @@ SpriteBase3D::SpriteBase3D() {
 	pI = NULL;
 
 	for (int i = 0; i < FLAG_MAX; i++)
-		flags[i] = i == FLAG_TRANSPARENT;
+		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 
 	axis = Vector3::AXIS_Z;
 	pixel_size = 0.01;
@@ -387,7 +389,7 @@ void Sprite3D::_draw() {
 	int axis = get_axis();
 	normal[axis] = 1.0;
 
-	RID mat = VS::get_singleton()->material_2d_get(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = VS::get_singleton()->material_2d_get(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
 	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
@@ -888,7 +890,7 @@ void AnimatedSprite3D::_draw() {
 	int axis = get_axis();
 	normal[axis] = 1.0;
 
-	RID mat = VS::get_singleton()->material_2d_get(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = VS::get_singleton()->material_2d_get(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
 	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
