@@ -53,6 +53,7 @@ void GDAPI godot_string_copy_string(const godot_string *p_dest, const godot_stri
 
 wchar_t GDAPI *godot_string_operator_index(godot_string *p_str, const godot_int p_idx);
 const char GDAPI *godot_string_c_str(const godot_string *p_str);
+const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_str);
 
 godot_bool GDAPI godot_string_operator_equal(const godot_string *p_a, const godot_string *p_b);
 godot_bool GDAPI godot_string_operator_less(const godot_string *p_a, const godot_string *p_b);
