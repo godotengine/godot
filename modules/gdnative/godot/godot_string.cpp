@@ -53,6 +53,12 @@ void GDAPI godot_string_new_data(godot_string *p_str, const char *p_contents, co
 	*p = String::utf8(p_contents, p_size);
 }
 
+void GDAPI godot_string_new_unicode_data(godot_string *p_str, const wchar_t *p_contents, const int p_size) {
+	String *p = (String *)p_str;
+	memnew_placement(p, String);
+	*p = String(p_contents, p_size);
+}
+
 void GDAPI godot_string_get_data(const godot_string *p_str, char *p_dest, int *p_size) {
 	String *p = (String *)p_str;
 	if (p_size != NULL) {

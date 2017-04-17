@@ -139,6 +139,31 @@ typedef float godot_real;
 /////// Object (forward declared)
 typedef void godot_object;
 
+/////// Brute force forward declarations for the rest
+typedef struct godot_variant godot_variant;
+typedef struct godot_string godot_string;
+typedef struct godot_vector2 godot_vector2;
+typedef struct godot_rect2 godot_rect2;
+typedef struct godot_vector3 godot_vector3;
+typedef struct godot_transform2d godot_transform2d;
+typedef struct godot_plane godot_plane;
+typedef struct godot_quat godot_quat;
+typedef struct godot_rect3 godot_rect3;
+typedef struct godot_basis godot_basis;
+typedef struct godot_transform godot_transform;
+typedef struct godot_color godot_color;
+typedef struct godot_node_path godot_node_path;
+typedef struct godot_rid godot_rid;
+typedef struct godot_dictionary godot_dictionary;
+typedef struct godot_array godot_array;
+typedef struct godot_pool_byte_array godot_pool_byte_array;
+typedef struct godot_pool_int_array godot_pool_int_array;
+typedef struct godot_pool_real_array godot_pool_real_array;
+typedef struct godot_pool_string_array godot_pool_string_array;
+typedef struct godot_pool_vector2_array godot_pool_vector2_array;
+typedef struct godot_pool_vector3_array godot_pool_vector3_array;
+typedef struct godot_pool_color_array godot_pool_color_array;
+
 /////// String
 
 #include "godot/godot_string.h"
@@ -183,10 +208,6 @@ typedef void godot_object;
 
 #include "godot/godot_color.h"
 
-/////// Image
-
-#include "godot/godot_image.h"
-
 /////// NodePath
 
 #include "godot/godot_node_path.h"
@@ -194,10 +215,6 @@ typedef void godot_object;
 /////// RID
 
 #include "godot/godot_rid.h"
-
-/////// InputEvent
-
-#include "godot/godot_input_event.h"
 
 /////// Dictionary
 

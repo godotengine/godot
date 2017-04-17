@@ -37,19 +37,39 @@ extern "C" {
 #include <stdint.h>
 
 #ifndef GODOT_CORE_API_GODOT_COLOR_TYPE_DEFINED
+#define GODOT_CORE_API_GODOT_COLOR_TYPE_DEFINED
 typedef struct godot_color {
 	uint8_t _dont_touch_that[16];
 } godot_color;
 #endif
 
 #include "../godot.h"
+#include "godot_string.h"
 
-void GDAPI godot_color_new(godot_color *p_color);
-void GDAPI godot_color_new_rgba(godot_color *p_color, const godot_real r, const godot_real g, const godot_real b, const godot_real a);
+void GDAPI godot_color_new_rgba(godot_color *r_dest, const godot_real p_r, const godot_real p_g, const godot_real p_b, const godot_real p_a);
+void GDAPI godot_color_new_rgb(godot_color *r_dest, const godot_real p_r, const godot_real p_g, const godot_real p_b);
 
-uint32_t GDAPI godot_color_get_32(const godot_color *p_color);
+godot_string GDAPI godot_color_as_string(const godot_color *p_self);
 
-float GDAPI *godot_color_index(godot_color *p_color, const godot_int idx);
+godot_int GDAPI godot_color_to_32(const godot_color *p_self);
+
+godot_int GDAPI godot_color_to_ARGB32(const godot_color *p_self);
+
+godot_real GDAPI godot_color_gray(const godot_color *p_self);
+
+godot_color GDAPI godot_color_inverted(const godot_color *p_self);
+
+godot_color GDAPI godot_color_contrasted(const godot_color *p_self);
+
+godot_color GDAPI godot_color_linear_interpolate(const godot_color *p_self, const godot_color *p_b, const godot_real p_t);
+
+godot_color GDAPI godot_color_blend(const godot_color *p_self, const godot_color *p_over);
+
+godot_string GDAPI godot_color_to_html(const godot_color *p_self, const godot_bool p_with_alpha);
+
+godot_bool GDAPI godot_color_operator_equal(const godot_color *p_self, const godot_color *p_b);
+
+godot_bool GDAPI godot_color_operator_less(const godot_color *p_self, const godot_color *p_b);
 
 #ifdef __cplusplus
 }

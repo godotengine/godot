@@ -139,9 +139,13 @@ void GDAPI godot_array_set(godot_array *p_arr, const godot_int p_idx, const godo
 	a->operator[](p_idx) = *val;
 }
 
-godot_variant GDAPI *godot_array_get(godot_array *p_arr, const godot_int p_idx) {
-	Array *a = (Array *)p_arr;
-	return (godot_variant *)&a->operator[](p_idx);
+godot_variant GDAPI godot_array_get(const godot_array *p_arr, const godot_int p_idx) {
+	godot_variant raw_dest;
+	Variant *dest = (Variant *)&raw_dest;
+	memnew_placement(dest, Variant);
+	const Array *a = (const Array *)p_arr;
+	*dest = a->operator[](p_idx);
+	return raw_dest;
 }
 
 void GDAPI godot_array_append(godot_array *p_arr, const godot_variant *p_value) {
@@ -155,25 +159,25 @@ void GDAPI godot_array_clear(godot_array *p_arr) {
 	a->clear();
 }
 
-godot_int GDAPI godot_array_count(godot_array *p_arr, const godot_variant *p_value) {
-	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_value;
+godot_int GDAPI godot_array_count(const godot_array *p_arr, const godot_variant *p_value) {
+	const Array *a = (const Array *)p_arr;
+	const Variant *val = (const Variant *)p_value;
 	return a->count(*val);
 }
 
 godot_bool GDAPI godot_array_empty(const godot_array *p_arr) {
-	Array *a = (Array *)p_arr;
+	const Array *a = (const Array *)p_arr;
 	return a->empty();
 }
 
 void GDAPI godot_array_erase(godot_array *p_arr, const godot_variant *p_value) {
 	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_value;
+	const Variant *val = (const Variant *)p_value;
 	a->erase(*val);
 }
 
 godot_variant GDAPI godot_array_front(const godot_array *p_arr) {
-	Array *a = (Array *)p_arr;
+	const Array *a = (const Array *)p_arr;
 	godot_variant v;
 	Variant *val = (Variant *)&v;
 	memnew_placement(val, Variant);
@@ -182,7 +186,7 @@ godot_variant GDAPI godot_array_front(const godot_array *p_arr) {
 }
 
 godot_variant GDAPI godot_array_back(const godot_array *p_arr) {
-	Array *a = (Array *)p_arr;
+	const Array *a = (const Array *)p_arr;
 	godot_variant v;
 	Variant *val = (Variant *)&v;
 	memnew_placement(val, Variant);
@@ -191,42 +195,37 @@ godot_variant GDAPI godot_array_back(const godot_array *p_arr) {
 }
 
 godot_int GDAPI godot_array_find(const godot_array *p_arr, const godot_variant *p_what, const godot_int p_from) {
-	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_what;
+	const Array *a = (const Array *)p_arr;
+	const Variant *val = (const Variant *)p_what;
 	return a->find(*val, p_from);
 }
 
 godot_int GDAPI godot_array_find_last(const godot_array *p_arr, const godot_variant *p_what) {
-	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_what;
+	const Array *a = (const Array *)p_arr;
+	const Variant *val = (const Variant *)p_what;
 	return a->find_last(*val);
 }
 
 godot_bool GDAPI godot_array_has(const godot_array *p_arr, const godot_variant *p_value) {
-	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_value;
+	const Array *a = (const Array *)p_arr;
+	const Variant *val = (const Variant *)p_value;
 	return a->has(*val);
 }
 
 uint32_t GDAPI godot_array_hash(const godot_array *p_arr) {
-	Array *a = (Array *)p_arr;
+	const Array *a = (const Array *)p_arr;
 	return a->hash();
 }
 
 void GDAPI godot_array_insert(godot_array *p_arr, const godot_int p_pos, const godot_variant *p_value) {
 	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_value;
+	const Variant *val = (const Variant *)p_value;
 	a->insert(p_pos, *val);
 }
 
 void GDAPI godot_array_invert(godot_array *p_arr) {
 	Array *a = (Array *)p_arr;
 	a->invert();
-}
-
-godot_bool GDAPI godot_array_is_shared(const godot_array *p_arr) {
-	Array *a = (Array *)p_arr;
-	return false; // @Todo how do I do it?
 }
 
 godot_variant GDAPI godot_array_pop_back(godot_array *p_arr) {
@@ -249,13 +248,13 @@ godot_variant GDAPI godot_array_pop_front(godot_array *p_arr) {
 
 void GDAPI godot_array_push_back(godot_array *p_arr, const godot_variant *p_value) {
 	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_value;
+	const Variant *val = (const Variant *)p_value;
 	a->push_back(*val);
 }
 
 void GDAPI godot_array_push_front(godot_array *p_arr, const godot_variant *p_value) {
 	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_value;
+	const Variant *val = (const Variant *)p_value;
 	a->push_front(*val);
 }
 
@@ -270,13 +269,13 @@ void GDAPI godot_array_resize(godot_array *p_arr, const godot_int p_size) {
 }
 
 godot_int GDAPI godot_array_rfind(const godot_array *p_arr, const godot_variant *p_what, const godot_int p_from) {
-	Array *a = (Array *)p_arr;
-	Variant *val = (Variant *)p_what;
+	const Array *a = (const Array *)p_arr;
+	const Variant *val = (const Variant *)p_what;
 	return a->rfind(*val, p_from);
 }
 
 godot_int GDAPI godot_array_size(const godot_array *p_arr) {
-	Array *a = (Array *)p_arr;
+	const Array *a = (const Array *)p_arr;
 	return a->size();
 }
 
@@ -287,7 +286,7 @@ void GDAPI godot_array_sort(godot_array *p_arr) {
 
 void GDAPI godot_array_sort_custom(godot_array *p_arr, godot_object *p_obj, const godot_string *p_func) {
 	Array *a = (Array *)p_arr;
-	String *func = (String *)p_func;
+	const String *func = (const String *)p_func;
 	a->sort_custom((Object *)p_obj, *func);
 }
 

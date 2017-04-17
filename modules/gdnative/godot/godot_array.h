@@ -43,10 +43,10 @@ typedef struct godot_array {
 } godot_array;
 #endif
 
-#include "../godot.h"
-
 #include "godot_pool_arrays.h"
 #include "godot_variant.h"
+
+#include "../godot.h"
 
 void GDAPI godot_array_new(godot_array *p_arr);
 void GDAPI godot_array_new_pool_color_array(godot_array *p_arr, const godot_pool_color_array *p_pca);
@@ -59,13 +59,13 @@ void GDAPI godot_array_new_pool_byte_array(godot_array *p_arr, const godot_pool_
 
 void GDAPI godot_array_set(godot_array *p_arr, const godot_int p_idx, const godot_variant *p_value);
 
-godot_variant GDAPI *godot_array_get(godot_array *p_arr, const godot_int p_idx);
+godot_variant GDAPI godot_array_get(const godot_array *p_arr, const godot_int p_idx);
 
 void GDAPI godot_array_append(godot_array *p_arr, const godot_variant *p_value);
 
 void GDAPI godot_array_clear(godot_array *p_arr);
 
-godot_int GDAPI godot_array_count(godot_array *p_arr, const godot_variant *p_value);
+godot_int GDAPI godot_array_count(const godot_array *p_arr, const godot_variant *p_value);
 
 godot_bool GDAPI godot_array_empty(const godot_array *p_arr);
 
@@ -86,8 +86,6 @@ uint32_t GDAPI godot_array_hash(const godot_array *p_arr);
 void GDAPI godot_array_insert(godot_array *p_arr, const godot_int p_pos, const godot_variant *p_value);
 
 void GDAPI godot_array_invert(godot_array *p_arr);
-
-godot_bool GDAPI godot_array_is_shared(const godot_array *p_arr);
 
 godot_variant GDAPI godot_array_pop_back(godot_array *p_arr);
 

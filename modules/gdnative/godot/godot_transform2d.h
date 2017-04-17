@@ -44,31 +44,51 @@ typedef struct godot_transform2d {
 #endif
 
 #include "../godot.h"
-
+#include "godot_variant.h"
 #include "godot_vector2.h"
 
-void GDAPI godot_transform2d_new_identity(godot_transform2d *p_t);
-void GDAPI godot_transform2d_new_elements(godot_transform2d *p_t, const godot_vector2 *p_a, const godot_vector2 *p_b, const godot_vector2 *p_c);
-void GDAPI godot_transform2d_new(godot_transform2d *p_t, const godot_real p_rot, const godot_vector2 *p_pos);
+void GDAPI godot_transform2d_new(godot_transform2d *r_dest, const godot_real p_rot, const godot_vector2 *p_pos);
+void GDAPI godot_transform2d_new_axis_origin(godot_transform2d *r_dest, const godot_vector2 *p_x_axis, const godot_vector2 *p_y_axis, const godot_vector2 *p_origin);
 
-/*
-godot_real GDAPI godot_transform2d_tdotx(const godot_transform2d *p_t, const godot_vector2 *p_v);
-godot_real GDAPI godot_transform2d_tdoty(const godot_transform2d *p_t, const godot_vector2 *p_v);
-*/
+godot_string GDAPI godot_transform2d_as_string(const godot_transform2d *p_self);
 
-godot_vector2 const GDAPI *godot_transform2d_const_index(const godot_transform2d *p_t, const godot_int p_idx);
-godot_vector2 GDAPI *godot_transform2d_index(godot_transform2d *p_t, const godot_int p_idx);
+godot_transform2d GDAPI godot_transform2d_inverse(const godot_transform2d *p_self);
 
-godot_vector2 GDAPI godot_transform2d_get_axis(const godot_transform2d *p_t, const godot_int p_axis);
-void GDAPI godot_transform2d_set_axis(godot_transform2d *p_t, const godot_int p_axis, const godot_vector2 *p_vec);
+godot_transform2d GDAPI godot_transform2d_affine_inverse(const godot_transform2d *p_self);
 
-/*
-void GDAPI godot_transform2d_invert(godot_transform2d *p_t);
-godot_transform2d GDAPI godot_transform2d_inverse(const godot_transform2d *p_t);
-*/
+godot_real GDAPI godot_transform2d_get_rotation(const godot_transform2d *p_self);
 
-// @Incomplete
-// I feel like it should be enough to expose get and set, the whole logic can be done in the bindings.
+godot_vector2 GDAPI godot_transform2d_get_origin(const godot_transform2d *p_self);
+
+godot_vector2 GDAPI godot_transform2d_get_scale(const godot_transform2d *p_self);
+
+godot_transform2d GDAPI godot_transform2d_orthonormalized(const godot_transform2d *p_self);
+
+godot_transform2d GDAPI godot_transform2d_rotated(const godot_transform2d *p_self, const godot_real p_phi);
+
+godot_transform2d GDAPI godot_transform2d_scaled(const godot_transform2d *p_self, const godot_vector2 *p_scale);
+
+godot_transform2d GDAPI godot_transform2d_translated(const godot_transform2d *p_self, const godot_vector2 *p_offset);
+
+godot_vector2 GDAPI godot_transform2d_xform_vector2(const godot_transform2d *p_self, const godot_vector2 *p_v);
+
+godot_vector2 GDAPI godot_transform2d_xform_inv_vector2(const godot_transform2d *p_self, const godot_vector2 *p_v);
+
+godot_vector2 GDAPI godot_transform2d_basis_xform_vector2(const godot_transform2d *p_self, const godot_vector2 *p_v);
+
+godot_vector2 GDAPI godot_transform2d_basis_xform_inv_vector2(const godot_transform2d *p_self, const godot_vector2 *p_v);
+
+godot_transform2d GDAPI godot_transform2d_interpolate_with(const godot_transform2d *p_self, const godot_transform2d *p_m, const godot_real p_c);
+
+godot_bool GDAPI godot_transform2d_operator_equal(const godot_transform2d *p_self, const godot_transform2d *p_b);
+
+godot_transform2d GDAPI godot_transform2d_operator_multiply(const godot_transform2d *p_self, const godot_transform2d *p_b);
+
+void GDAPI godot_transform2d_new_identity(godot_transform2d *r_dest);
+
+godot_rect2 GDAPI godot_transform2d_xform_rect2(const godot_transform2d *p_self, const godot_rect2 *p_v);
+
+godot_rect2 GDAPI godot_transform2d_xform_inv_rect2(const godot_transform2d *p_self, const godot_rect2 *p_v);
 
 #ifdef __cplusplus
 }
