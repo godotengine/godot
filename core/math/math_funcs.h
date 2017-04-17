@@ -157,7 +157,7 @@ public:
 
 	static uint32_t larger_prime(uint32_t p_val);
 
-	static void seed(uint64_t x = 0);
+	static void seed(uint64_t x);
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
