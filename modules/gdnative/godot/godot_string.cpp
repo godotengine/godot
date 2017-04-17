@@ -80,6 +80,11 @@ const char GDAPI *godot_string_c_str(const godot_string *p_str) {
 	return s->utf8().get_data();
 }
 
+const wchar_t GDAPI *godot_string_unicode_str(const godot_string *p_str) {
+	const String *s = (const String *)p_str;
+	return s->c_str();
+}
+
 godot_bool GDAPI godot_string_operator_equal(const godot_string *p_a, const godot_string *p_b) {
 	String *a = (String *)p_a;
 	String *b = (String *)p_b;
