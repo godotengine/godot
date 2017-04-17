@@ -2163,6 +2163,12 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 void VisualScriptEditor::trim_trailing_whitespace() {
 }
 
+void VisualScriptEditor::convert_indent_to_spaces() {
+}
+
+void VisualScriptEditor::convert_indent_to_tabs() {
+}
+
 void VisualScriptEditor::ensure_focus() {
 
 	graph->grab_focus();

@@ -240,6 +240,8 @@ public:
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void goto_line(int p_line, bool p_with_error = false);
 	virtual void trim_trailing_whitespace();
+	virtual void convert_indent_to_spaces();
+	virtual void convert_indent_to_tabs();
 	virtual void ensure_focus();
 	virtual void tag_saved_version();
 	virtual void reload(bool p_soft);
