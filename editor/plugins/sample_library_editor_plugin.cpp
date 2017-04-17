@@ -130,7 +130,7 @@ void SampleLibraryEditor::_button_pressed(Object *p_item, int p_column, int p_id
 	} else if (p_column == 1) { // Edit
 
 		get_tree()->get_root()->get_child(0)->call("_resource_selected", sample_library->get_sample(name));
-	} else if (p_column == 5) { // Delete
+	} else if (p_column == 6) { // Delete
 
 		ti->select(0);
 		_delete_pressed();
