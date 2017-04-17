@@ -529,8 +529,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	set("text_editor/highlighting/highlight_all_occurrences", true);
 	set("text_editor/cursor/scroll_past_end_of_file", false);
 
-	set("text_editor/indent/tab_size", 4);
-	hints["text_editor/indent/tab_size"] = PropertyInfo(Variant::INT, "text_editor/indent/tab_size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
+	set("text_editor/indent/type", 0);
+	hints["text_editor/indent/type"] = PropertyInfo(Variant::STRING, "text_editor/indent/type", PROPERTY_HINT_ENUM, "Tabs,Spaces");
+	set("text_editor/indent/size", 4);
+	hints["text_editor/indent/size"] = PropertyInfo(Variant::INT, "text_editor/indent/size", PROPERTY_HINT_RANGE, "1, 64, 1"); // size of 0 crashes.
+	set("text_editor/indent/convert_indent_on_save", false);
 	set("text_editor/indent/draw_tabs", true);
 
 	set("text_editor/line_numbers/show_line_numbers", true);

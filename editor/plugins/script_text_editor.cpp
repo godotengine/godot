@@ -298,10 +298,10 @@ void ScriptTextEditor::convert_indent_to_spaces() {
 		return;
 	}
 
-	int tab_size = EditorSettings::get_singleton()->get("text_editor/indent/tab_size");
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
 	String indent = "";
 
-	for (int i = 0; i < tab_size; i++) {
+	for (int i = 0; i < indent_size; i++) {
 		indent += " ";
 	}
 
@@ -340,8 +340,8 @@ void ScriptTextEditor::convert_indent_to_tabs() {
 		return;
 	}
 
-	int tab_size = EditorSettings::get_singleton()->get("text_editor/indent/tab_size");
-	tab_size -= 1;
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	indent_size -= 1;
 
 	bool changed_indentation = false;
 	for (int i = 0; i < tx->get_line_count(); i++) {
@@ -357,13 +357,13 @@ void ScriptTextEditor::convert_indent_to_tabs() {
 			if (line[j] != '\t') {
 				space_count++;
 
-				if (space_count == tab_size) {
+				if (space_count == indent_size) {
 					if (!changed_indentation) {
 						tx->begin_complex_operation();
 						changed_indentation = true;
 					}
 
-					line = line.left(j - tab_size) + "\t" + line.right(j + 1);
+					line = line.left(j - indent_size) + "\t" + line.right(j + 1);
 					j = 0;
 					space_count = -1;
 				}
