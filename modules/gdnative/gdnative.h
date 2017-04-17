@@ -184,6 +184,8 @@ public:
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 
+	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
 	Ref<GDNativeLibrary> get_library() const;
 	void set_library(Ref<GDNativeLibrary> p_library);
 

@@ -35,6 +35,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include <wchar.h>
 
 #ifndef GODOT_CORE_API_GODOT_STRING_TYPE_DEFINED
 typedef struct godot_string {

@@ -391,6 +391,55 @@ void GDNativeScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	}
 }
 
+Variant GDNativeScript::_new(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
+
+	/* STEP 1, CREATE */
+
+	if (!library.is_valid() || ((String)script_name).empty() || !script_data) {
+		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
+		return Variant();
+	}
+
+	r_error.error = Variant::CallError::CALL_OK;
+	REF ref;
+	Object *owner = NULL;
+
+	GDNativeScriptData *_baseptr = script_data;
+	while (_baseptr->base_data) {
+		_baseptr = _baseptr->base_data;
+	}
+
+	if (!(_baseptr->base_native_type == "")) {
+		owner = ClassDB::instance(_baseptr->base_native_type);
+	} else {
+		owner = memnew(Reference); //by default, no base means use reference
+	}
+
+	Reference *r = owner->cast_to<Reference>();
+	if (r) {
+		ref = REF(r);
+	}
+
+	// GDScript does it like this: _create_instance(p_args, p_argcount, owner, r != NULL, r_error);
+	// @Todo support varargs for constructors.
+	GDNativeInstance *instance = (GDNativeInstance *)instance_create(owner);
+
+	owner->set_script(Ref<GDNativeScript>(this).get_ref_ptr());
+	owner->set_script_instance(instance);
+	if (!instance) {
+		if (ref.is_null()) {
+			memdelete(owner); //no owner, sorry
+		}
+		return Variant();
+	}
+
+	if (ref.is_valid()) {
+		return ref;
+	} else {
+		return owner;
+	}
+}
+
 Ref<GDNativeLibrary> GDNativeScript::get_library() const {
 	return library;
 }
@@ -437,6 +486,8 @@ void GDNativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library", "library"), &GDNativeScript::set_library);
 	ClassDB::bind_method(D_METHOD("get_script_name"), &GDNativeScript::get_script_name);
 	ClassDB::bind_method(D_METHOD("set_script_name", "script_name"), &GDNativeScript::set_script_name);
+
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDNativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
 
 	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
 	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "script_name"), "set_script_name", "get_script_name");
