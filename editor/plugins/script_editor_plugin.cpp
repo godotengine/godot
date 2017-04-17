@@ -878,28 +878,29 @@ void ScriptEditor::_menu_option(int p_option) {
 				}
 			}
 		}
-	}
+	} else {
 
-	EditorHelp *help = tab_container->get_current_tab_control()->cast_to<EditorHelp>();
-	if (help) {
+		EditorHelp *help = tab_container->get_current_tab_control()->cast_to<EditorHelp>();
+		if (help) {
 
-		switch (p_option) {
+			switch (p_option) {
 
-			case HELP_SEARCH_FIND: {
-				help->popup_search();
-			} break;
-			case HELP_SEARCH_FIND_NEXT: {
-				help->search_again();
-			} break;
-			case FILE_CLOSE: {
-				_close_current_tab();
-			} break;
-			case CLOSE_DOCS: {
-				_close_docs_tab();
-			} break;
-			case CLOSE_ALL: {
-				_close_all_tabs();
-			} break;
+				case HELP_SEARCH_FIND: {
+					help->popup_search();
+				} break;
+				case HELP_SEARCH_FIND_NEXT: {
+					help->search_again();
+				} break;
+				case FILE_CLOSE: {
+					_close_current_tab();
+				} break;
+				case CLOSE_DOCS: {
+					_close_docs_tab();
+				} break;
+				case CLOSE_ALL: {
+					_close_all_tabs();
+				} break;
+			}
 		}
 	}
 }
