@@ -141,12 +141,12 @@ class TextEdit : public Control {
 		const Vector<ColorRegion> *color_regions;
 		mutable Vector<Line> text;
 		Ref<Font> font;
-		int tab_size;
+		int indent_size;
 
 		void _update_line_cache(int p_line) const;
 
 	public:
-		void set_tab_size(int p_tab_size);
+		void set_indent_size(int p_indent_size);
 		void set_font(const Ref<Font> &p_font);
 		void set_color_regions(const Vector<ColorRegion> *p_regions) { color_regions = p_regions; }
 		int get_line_width(int p_line) const;
@@ -163,7 +163,7 @@ class TextEdit : public Control {
 		void clear();
 		void clear_caches();
 		_FORCE_INLINE_ const String &operator[](int p_line) const { return text[p_line].data; }
-		Text() { tab_size = 4; }
+		Text() { indent_size = 4; }
 	};
 
 	struct TextOperation {
@@ -221,7 +221,9 @@ class TextEdit : public Control {
 	int max_chars;
 	bool readonly;
 	bool syntax_coloring;
-	int tab_size;
+	bool indent_using_spaces;
+	int indent_size;
+	String space_indent;
 
 	Timer *caret_blink_timer;
 	bool caret_blink_enabled;
@@ -461,7 +463,9 @@ public:
 	void redo();
 	void clear_undo_history();
 
-	void set_tab_size(const int p_size);
+	void set_indent_using_spaces(const bool p_use_spaces);
+	bool is_indent_using_spaces() const;
+	void set_indent_size(const int p_size);
 	void set_draw_tabs(bool p_draw);
 	bool is_drawing_tabs() const;
 
