@@ -530,6 +530,15 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 		if (trim_trailing_whitespace_on_save) {
 			se->trim_trailing_whitespace();
 		}
+
+		if (convert_indent_on_save) {
+			if (use_space_indentation) {
+				se->convert_indent_to_spaces();
+			} else {
+				se->convert_indent_to_tabs();
+			}
+		}
+
 		editor->save_resource(script);
 		se->tag_saved_version();
 	}
@@ -795,12 +804,28 @@ void ScriptEditor::_menu_option(int p_option) {
 
 				if (trim_trailing_whitespace_on_save)
 					current->trim_trailing_whitespace();
+
+				if (convert_indent_on_save) {
+					if (use_space_indentation) {
+						current->convert_indent_to_spaces();
+					} else {
+						current->convert_indent_to_tabs();
+					}
+				}
 				editor->save_resource(current->get_edited_script());
 
 			} break;
 			case FILE_SAVE_AS: {
 
 				current->trim_trailing_whitespace();
+
+				if (convert_indent_on_save) {
+					if (use_space_indentation) {
+						current->convert_indent_to_spaces();
+					} else {
+						current->convert_indent_to_tabs();
+					}
+				}
 				editor->push_item(current->get_edited_script()->cast_to<Object>());
 				editor->save_resource_as(current->get_edited_script());
 
@@ -1484,6 +1509,14 @@ void ScriptEditor::save_all_scripts() {
 			se->trim_trailing_whitespace();
 		}
 
+		if (convert_indent_on_save) {
+			if (use_space_indentation) {
+				se->convert_indent_to_spaces();
+			} else {
+				se->convert_indent_to_tabs();
+			}
+		}
+
 		Ref<Script> script = se->get_edited_script();
 		if (script.is_valid())
 			se->apply_code();
@@ -1583,6 +1616,9 @@ void ScriptEditor::_save_layout() {
 void ScriptEditor::_editor_settings_changed() {
 
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/files/trim_trailing_whitespace_on_save");
+	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/indent/convert_indent_on_save");
+	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type") == "Tabs" ? 0 : 1;
+
 	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
 	if (autosave_time > 0) {
 		autosave_timer->set_wait_time(autosave_time);
@@ -2161,6 +2197,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	edit_pass = 0;
 	trim_trailing_whitespace_on_save = false;
+	convert_indent_on_save = false;
+	use_space_indentation = false;
 
 	ScriptServer::edit_request_func = _open_script_request;
 }

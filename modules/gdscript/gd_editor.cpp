@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "editor/editor_settings.h"
 #include "gd_compiler.h"
 #include "gd_script.h"
 #include "global_config.h"
@@ -2391,7 +2392,26 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 #endif
 
+String GDScriptLanguage::_get_indentation() const {
+#ifdef TOOLS_ENABLED
+	bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
+
+	if (use_space_indentation) {
+		int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
+
+		String space_indent = "";
+		for (int i = 0; i < indent_size; i++) {
+			space_indent += " ";
+		}
+		return space_indent;
+	}
+#endif
+	return "\t";
+}
+
 void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_to_line) const {
+
+	String indent = _get_indentation();
 
 	Vector<String> lines = p_code.split("\n");
 	List<int> indent_stack;
@@ -2432,8 +2452,9 @@ void GDScriptLanguage::auto_indent_code(String &p_code, int p_from_line, int p_t
 		if (i >= p_from_line) {
 
 			l = "";
-			for (int j = 0; j < indent_stack.size(); j++)
-				l += "\t";
+			for (int j = 0; j < indent_stack.size(); j++) {
+				l += indent;
+			}
 			l += st;
 
 		} else if (i > p_to_line) {

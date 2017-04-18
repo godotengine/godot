@@ -101,15 +101,15 @@ void TextEdit::Text::set_font(const Ref<Font> &p_font) {
 	font = p_font;
 }
 
-void TextEdit::Text::set_tab_size(int p_tab_size) {
+void TextEdit::Text::set_indent_size(int p_indent_size) {
 
-	tab_size = p_tab_size;
+	indent_size = p_indent_size;
 }
 
 void TextEdit::Text::_update_line_cache(int p_line) const {
 
 	int w = 0;
-	int tab_w = font->get_char_size(' ').width * tab_size;
+	int tab_w = font->get_char_size(' ').width * indent_size;
 
 	int len = text[p_line].data.length();
 	const CharType *str = text[p_line].data.c_str();
@@ -456,7 +456,7 @@ void TextEdit::_notification(int p_what) {
 
 			int visible_rows = get_visible_rows();
 
-			int tab_w = cache.font->get_char_size(' ').width * tab_size;
+			int tab_w = cache.font->get_char_size(' ').width * indent_size;
 
 			Color color = cache.font_color;
 			int in_region = -1;
@@ -1305,7 +1305,38 @@ void TextEdit::backspace_at_cursor() {
 			_is_pair_left_symbol(text[cursor.line][cursor.column - 1])) {
 		_consume_backspace_for_pair_symbol(prev_line, prev_column);
 	} else {
-		_remove_text(prev_line, prev_column, cursor.line, cursor.column);
+		// handle space indentation
+		if (cursor.column - indent_size >= 0 && indent_using_spaces) {
+
+			// if there is enough spaces to count as a tab
+			bool unindent = true;
+			for (int i = 1; i <= indent_size; i++) {
+				if (text[cursor.line][cursor.column - i] != ' ') {
+					unindent = false;
+					break;
+				}
+			}
+
+			// and it is before the first character
+			int i = 0;
+			while (i < cursor.column && i < text[cursor.line].length()) {
+				if (text[cursor.line][i] != ' ' && text[cursor.line][i] != '\t') {
+					unindent = false;
+					break;
+				}
+				i++;
+			}
+
+			// then we can remove it as a single character.
+			if (unindent) {
+				_remove_text(cursor.line, cursor.column - indent_size, cursor.line, cursor.column);
+				prev_column = cursor.column - indent_size;
+			} else {
+				_remove_text(prev_line, prev_column, cursor.line, cursor.column);
+			}
+		} else {
+			_remove_text(prev_line, prev_column, cursor.line, cursor.column);
+		}
 	}
 
 	cursor_set_line(prev_line);
@@ -1328,7 +1359,11 @@ void TextEdit::indent_selection_right() {
 
 	for (int i = start_line; i <= end_line; i++) {
 		String line_text = get_line(i);
-		line_text = '\t' + line_text;
+		if (indent_using_spaces) {
+			line_text = space_indent + line_text;
+		} else {
+			line_text = '\t' + line_text;
+		}
 		set_line(i, line_text);
 	}
 
@@ -1359,8 +1394,8 @@ void TextEdit::indent_selection_left() {
 		if (line_text.begins_with("\t")) {
 			line_text = line_text.substr(1, line_text.length());
 			set_line(i, line_text);
-		} else if (line_text.begins_with("    ")) {
-			line_text = line_text.substr(4, line_text.length());
+		} else if (line_text.begins_with(space_indent)) {
+			line_text = line_text.substr(indent_size, line_text.length());
 			set_line(i, line_text);
 		}
 	}
@@ -1931,17 +1966,39 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 					String ins = "\n";
 
 					//keep indentation
+					int space_count = 0;
 					for (int i = 0; i < text[cursor.line].length(); i++) {
-						if (text[cursor.line][i] == '\t')
-							ins += "\t";
-						else
+						if (text[cursor.line][i] == '\t') {
+							if (indent_using_spaces) {
+								ins += space_indent;
+							} else {
+								ins += "\t";
+							}
+							space_count = 0;
+						} else if (text[cursor.line][i] == ' ') {
+							space_count++;
+
+							if (space_count == indent_size) {
+								if (indent_using_spaces) {
+									ins += space_indent;
+								} else {
+									ins += "\t";
+								}
+								space_count = 0;
+							}
+						} else {
 							break;
+						}
 					}
 					if (auto_indent) {
 						// indent once again if previous line will end with ':'
 						// (i.e. colon precedes current cursor position)
 						if (cursor.column > 0 && text[cursor.line][cursor.column - 1] == ':') {
-							ins += "\t";
+							if (indent_using_spaces) {
+								ins += space_indent;
+							} else {
+								ins += "\t";
+							}
 						}
 					}
 
@@ -1987,15 +2044,36 @@ void TextEdit::_gui_input(const InputEvent &p_gui_input) {
 					} else {
 						if (k.mod.shift) {
 
+							//simple unindent
 							int cc = cursor.column;
-							if (cc > 0 && cc <= text[cursor.line].length() && text[cursor.line][cursor.column - 1] == '\t') {
-								//simple unindent
+							if (cc > 0 && cc <= text[cursor.line].length()) {
+								if (text[cursor.line][cursor.column - 1] == '\t') {
+									backspace_at_cursor();
+								} else {
+									if (cursor.column - indent_size >= 0) {
 
-								backspace_at_cursor();
+										bool unindent = true;
+										for (int i = 1; i <= indent_size; i++) {
+											if (text[cursor.line][cursor.column - i] != ' ') {
+												unindent = false;
+												break;
+											}
+										}
+
+										if (unindent) {
+											_remove_text(cursor.line, cursor.column - indent_size, cursor.line, cursor.column);
+											cursor_set_column(cursor.column - indent_size);
+										}
+									}
+								}
 							}
 						} else {
 							//simple indent
-							_insert_text_at_cursor("\t");
+							if (indent_using_spaces) {
+								_insert_text_at_cursor(space_indent);
+							} else {
+								_insert_text_at_cursor("\t");
+							}
 						}
 					}
 
@@ -3103,7 +3181,7 @@ int TextEdit::get_char_pos_for(int p_px, String p_str) const {
 	int px = 0;
 	int c = 0;
 
-	int tab_w = cache.font->get_char_size(' ').width * tab_size;
+	int tab_w = cache.font->get_char_size(' ').width * indent_size;
 
 	while (c < p_str.length()) {
 
@@ -3135,7 +3213,7 @@ int TextEdit::get_column_x_offset(int p_char, String p_str) {
 
 	int px = 0;
 
-	int tab_w = cache.font->get_char_size(' ').width * tab_size;
+	int tab_w = cache.font->get_char_size(' ').width * indent_size;
 
 	for (int i = 0; i < p_char; i++) {
 
@@ -3952,10 +4030,24 @@ void TextEdit::_push_current_op() {
 	current_op.chain_forward = false;
 }
 
-void TextEdit::set_tab_size(const int p_size) {
+void TextEdit::set_indent_using_spaces(const bool p_use_spaces) {
+	indent_using_spaces = p_use_spaces;
+}
+
+bool TextEdit::is_indent_using_spaces() const {
+	return indent_using_spaces;
+}
+
+void TextEdit::set_indent_size(const int p_size) {
 	ERR_FAIL_COND(p_size <= 0);
-	tab_size = p_size;
-	text.set_tab_size(p_size);
+	indent_size = p_size;
+	text.set_indent_size(p_size);
+
+	space_indent = "";
+	for (int i = 0; i < p_size; i++) {
+		space_indent += " ";
+	}
+
 	update();
 }
 
@@ -4542,8 +4634,8 @@ TextEdit::TextEdit() {
 	cache.breakpoint_gutter_width = 0;
 	breakpoint_gutter_width = 0;
 
-	tab_size = 4;
-	text.set_tab_size(tab_size);
+	indent_size = 4;
+	text.set_indent_size(indent_size);
 	text.clear();
 	//text.insert(1,"Mongolia..");
 	//text.insert(2,"PAIS GENEROSO!!");
@@ -4631,6 +4723,8 @@ TextEdit::TextEdit() {
 	auto_brace_completion_enabled = false;
 	brace_matching_enabled = false;
 	highlight_all_occurrences = false;
+	indent_using_spaces = false;
+	space_indent = "    ";
 	auto_indent = false;
 	insert_mode = false;
 	window_has_focus = true;

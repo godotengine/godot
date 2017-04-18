@@ -290,6 +290,96 @@ void ScriptTextEditor::trim_trailing_whitespace() {
 	}
 }
 
+void ScriptTextEditor::convert_indent_to_spaces() {
+	TextEdit *tx = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+
+	if (scr.is_null()) {
+		return;
+	}
+
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	String indent = "";
+
+	for (int i = 0; i < indent_size; i++) {
+		indent += " ";
+	}
+
+	bool changed_indentation = false;
+	for (int i = 0; i < tx->get_line_count(); i++) {
+		String line = tx->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] == '\t') {
+				if (!changed_indentation) {
+					tx->begin_complex_operation();
+					changed_indentation = true;
+				}
+				line = line.left(j) + indent + line.right(j + 1);
+			}
+			j++;
+		}
+		tx->set_line(i, line);
+	}
+	if (changed_indentation) {
+		tx->end_complex_operation();
+		tx->update();
+	}
+}
+
+void ScriptTextEditor::convert_indent_to_tabs() {
+	TextEdit *tx = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+
+	if (scr.is_null()) {
+		return;
+	}
+
+	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
+	indent_size -= 1;
+
+	bool changed_indentation = false;
+	for (int i = 0; i < tx->get_line_count(); i++) {
+		String line = tx->get_line(i);
+
+		if (line.length() <= 0) {
+			continue;
+		}
+
+		int j = 0;
+		int space_count = -1;
+		while (j < line.length() && (line[j] == ' ' || line[j] == '\t')) {
+			if (line[j] != '\t') {
+				space_count++;
+
+				if (space_count == indent_size) {
+					if (!changed_indentation) {
+						tx->begin_complex_operation();
+						changed_indentation = true;
+					}
+
+					line = line.left(j - indent_size) + "\t" + line.right(j + 1);
+					j = 0;
+					space_count = -1;
+				}
+			} else {
+				space_count = -1;
+			}
+			j++;
+		}
+		tx->set_line(i, line);
+	}
+	if (changed_indentation) {
+		tx->end_complex_operation();
+		tx->update();
+	}
+}
+
 void ScriptTextEditor::tag_saved_version() {
 
 	code_editor->get_text_edit()->tag_saved_version();
@@ -827,6 +917,12 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_TRIM_TRAILING_WHITESAPCE: {
 			trim_trailing_whitespace();
 		} break;
+		case EDIT_CONVERT_INDENT_TO_SPACES: {
+			convert_indent_to_spaces();
+		} break;
+		case EDIT_CONVERT_INDENT_TO_TABS: {
+			convert_indent_to_tabs();
+		} break;
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
 		} break;
@@ -1237,6 +1333,8 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
 #endif
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/auto_indent"), EDIT_AUTO_INDENT);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 	edit_menu->get_popup()->add_separator();
@@ -1305,6 +1403,8 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CMD | KEY_SPACE);
 #endif
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CTRL | KEY_MASK_ALT | KEY_T);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent To Spaces"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_Y);
+	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent To Tabs"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_X);
 	ED_SHORTCUT("script_text_editor/auto_indent", TTR("Auto Indent"), KEY_MASK_CMD | KEY_I);
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTR("Toggle Breakpoint"), KEY_F9);
