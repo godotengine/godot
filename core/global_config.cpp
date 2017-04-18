@@ -701,7 +701,7 @@ Error GlobalConfig::save_custom(const String &p_path, const CustomMap &p_custom,
 		props[category].push_back(name);
 	}
 
-	if (p_path.ends_with(".cfg"))
+	if (p_path.ends_with(".godot"))
 		return _save_settings_text(p_path, props, p_custom);
 	else if (p_path.ends_with(".cfb"))
 		return _save_settings_binary(p_path, props, p_custom);
