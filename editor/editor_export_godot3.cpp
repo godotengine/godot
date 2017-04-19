@@ -1920,7 +1920,7 @@ void EditorExportGodot3::_save_config(const String &p_path) {
 
 	// Write the collected ConfigFile manually - we need to use _get_property_as_text()
 	// above, so we can't rely on ConfigFile.save() to properly store the raw strings.
-	FileAccessRef f = FileAccess::open(p_path.plus_file("godot.cfg"), FileAccess::WRITE);
+	FileAccessRef f = FileAccess::open(p_path.plus_file("project.godot"), FileAccess::WRITE);
 
 	List<String> sections;
 	new_cfg.get_sections(&sections);
