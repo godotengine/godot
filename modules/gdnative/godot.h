@@ -38,12 +38,26 @@ extern "C" {
 #define GDAPI_EXPORT
 #endif
 
-#if !defined(_WIN32) && !defined(_MSC_VER)
-#define GDAPI
-#elif defined(GDAPI_EXPORT)
-#define GDAPI __declspec(dllexport)
+#ifdef _WIN32
+#if defined(GDAPI_EXPORT)
+#define GDCALLINGCONV __cdecl
+#define GDAPI __declspec(dllexport) GDCALLINGCONV
 #else
-#define GDAPI __declspec(dllimport)
+#define GDCALLINGCONV __cdecl
+#define GDAPI __declspec(dllimport) GDCALLINGCONV
+#endif
+#elif defined(__APPLE__)
+#include "TargetConditionals.h"
+#if TARGET_OS_IPHONE
+#define GDCALLINGCONV
+#define GDAPI
+#elif TARGET_OS_MAC
+#define GDCALLINGCONV __attribute__((sysv_abi))
+#define GDAPI GDCALLINGCONV
+#endif
+#else
+#define GDCALLINGCONV __attribute__((sysv_abi))
+#define GDAPI GDCALLINGCONV
 #endif
 
 #include <stdbool.h>
@@ -314,16 +328,16 @@ typedef struct godot_property_attributes {
 
 typedef struct godot_instance_create_func {
 	// instance pointer, method_data - return user data
-	void *(*create_func)(godot_object *, void *);
+	GDCALLINGCONV void *(*create_func)(godot_object *, void *);
 	void *method_data;
-	void (*free_func)(void *);
+	GDCALLINGCONV void (*free_func)(void *);
 } godot_instance_create_func;
 
 typedef struct godot_instance_destroy_func {
 	// instance pointer, method data, user data
-	void (*destroy_func)(godot_object *, void *, void *);
+	GDCALLINGCONV void (*destroy_func)(godot_object *, void *, void *);
 	void *method_data;
-	void (*free_func)(void *);
+	GDCALLINGCONV void (*free_func)(void *);
 } godot_instance_destroy_func;
 
 void GDAPI godot_script_register_class(const char *p_name, const char *p_base, godot_instance_create_func p_create_func, godot_instance_destroy_func p_destroy_func);
@@ -332,25 +346,25 @@ void GDAPI godot_script_register_tool_class(const char *p_name, const char *p_ba
 
 typedef struct godot_instance_method {
 	// instance pointer, method data, user data, num args, args - return result as varaint
-	godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **);
+	GDCALLINGCONV godot_variant (*method)(godot_object *, void *, void *, int, godot_variant **);
 	void *method_data;
-	void (*free_func)(void *);
+	GDCALLINGCONV void (*free_func)(void *);
 } godot_instance_method;
 
 void GDAPI godot_script_register_method(const char *p_name, const char *p_function_name, godot_method_attributes p_attr, godot_instance_method p_method);
 
 typedef struct godot_property_set_func {
 	// instance pointer, method data, user data, value
-	void (*set_func)(godot_object *, void *, void *, godot_variant);
+	GDCALLINGCONV void (*set_func)(godot_object *, void *, void *, godot_variant);
 	void *method_data;
-	void (*free_func)(void *);
+	GDCALLINGCONV void (*free_func)(void *);
 } godot_property_set_func;
 
 typedef struct godot_property_get_func {
 	// instance pointer, method data, user data, value
-	godot_variant (*get_func)(godot_object *, void *, void *);
+	GDCALLINGCONV godot_variant (*get_func)(godot_object *, void *, void *);
 	void *method_data;
-	void (*free_func)(void *);
+	GDCALLINGCONV void (*free_func)(void *);
 } godot_property_get_func;
 
 void GDAPI godot_script_register_property(const char *p_name, const char *p_path, godot_property_attributes *p_attr, godot_property_set_func p_set_func, godot_property_get_func p_get_func);
@@ -376,6 +390,7 @@ void GDAPI godot_script_register_signal(const char *p_name, const godot_signal *
 
 void GDAPI *godot_native_get_userdata(godot_object *p_instance);
 
+// Calling convention?
 typedef godot_object *(*godot_class_constructor)();
 
 godot_class_constructor GDAPI godot_get_class_constructor(const char *p_classname);
