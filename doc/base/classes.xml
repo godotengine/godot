@@ -6929,7 +6929,7 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-				Introduce an additional rotation around the given axis by phi. Only relevant when the matrix is being used as a part of [Transform]. The axis must be a normalized vector.
+				Introduce an additional rotation around the given axis by phi (radians). Only relevant when the matrix is being used as a part of [Transform]. The axis must be a normalized vector.
 			</description>
 		</method>
 		<method name="scaled">
@@ -8333,7 +8333,7 @@
 			<argument index="0" name="state" type="Variant">
 			</argument>
 			<description>
-				Set the transform state of this CanvasItem. For [Node2D], this is an [Array] with (in order) a [Vector2] for position, a float for rotation and another [Vector2] for scale. For [Control] this is a [Rect2] with the position and size.
+				Set the transform state of this CanvasItem. For [Node2D], this is an [Array] with (in order) a [Vector2] for position, a float for rotation (radians) and another [Vector2] for scale. For [Control] this is a [Rect2] with the position and size.
 			</description>
 		</method>
 		<method name="get_canvas" qualifiers="const">
@@ -8708,14 +8708,14 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the base rotation for this layer (helper).
+				Return the base rotation for this layer in radians (helper).
 			</description>
 		</method>
 		<method name="get_rotationd" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Get rotation of the layer in degree.
+				Return the base rotation for this layer in degrees.
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
@@ -8763,14 +8763,14 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Set the base rotation for this layer (helper).
+				Set the base rotation for this layer in radians (helper).
 			</description>
 		</method>
 		<method name="set_rotationd">
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
-				Set rotation of the layer in degree.
+				Set the base rotation for this layer in degrees (helper).
 			</description>
 		</method>
 		<method name="set_scale">
@@ -10865,12 +10865,14 @@
 			<return type="float">
 			</return>
 			<description>
+				Return the rotation (in radians)
 			</description>
 		</method>
 		<method name="get_rotation_deg" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
+				Return the rotation (in degrees)
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
@@ -11185,12 +11187,14 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
+				Set the rotation (in radians).
 			</description>
 		</method>
 		<method name="set_rotation_deg">
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
+				Set the rotation (in degrees).
 			</description>
 		</method>
 		<method name="set_scale">
@@ -25812,7 +25816,7 @@
 			<argument index="0" name="radians" type="float">
 			</argument>
 			<description>
-				Apply a 'radians' rotation to the 2D node, starting from its current rotation.
+				Apply a rotation (in radians) to the 2D node, starting from its current rotation.
 			</description>
 		</method>
 		<method name="scale">
@@ -39597,12 +39601,14 @@
 			<return type="Vector3">
 			</return>
 			<description>
+				Return the rotation (in radians).
 			</description>
 		</method>
 		<method name="get_rotation_deg" qualifiers="const">
 			<return type="Vector3">
 			</return>
 			<description>
+				Return the rotation (in degrees).
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
@@ -39771,12 +39777,14 @@
 			<argument index="0" name="rotation_rad" type="Vector3">
 			</argument>
 			<description>
+				Set the rotation (in radians).
 			</description>
 		</method>
 		<method name="set_rotation_deg">
 			<argument index="0" name="rotation_deg" type="Vector3">
 			</argument>
 			<description>
+				Set the rotation (in degrees).
 			</description>
 		</method>
 		<method name="set_scale">
@@ -46106,6 +46114,7 @@
 			<return type="float">
 			</return>
 			<description>
+				Return the rotation (in radians).
 			</description>
 		</method>
 		<method name="get_scale">
@@ -48386,6 +48395,7 @@ do_property].
 			<return type="float">
 			</return>
 			<description>
+				Return the steering angle (in radians).
 			</description>
 		</method>
 		<method name="set_brake">
@@ -48416,6 +48426,7 @@ do_property].
 			<argument index="0" name="steering" type="float">
 			</argument>
 			<description>
+				Set the steering angle (in radians).
 			</description>
 		</method>
 	</methods>
