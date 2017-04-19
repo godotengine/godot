@@ -424,7 +424,6 @@ Variant GDNativeScript::_new(const Variant **p_args, int p_argcount, Variant::Ca
 	// @Todo support varargs for constructors.
 	GDNativeInstance *instance = (GDNativeInstance *)instance_create(owner);
 
-	owner->set_script(Ref<GDNativeScript>(this).get_ref_ptr());
 	owner->set_script_instance(instance);
 	if (!instance) {
 		if (ref.is_null()) {
