@@ -10872,7 +10872,7 @@
 			<return type="float">
 			</return>
 			<description>
-                Return the rotation (in degrees)
+				Return the rotation (in degrees)
 			</description>
 		</method>
 		<method name="get_scale" qualifiers="const">
@@ -11194,7 +11194,7 @@
 			<argument index="0" name="degrees" type="float">
 			</argument>
 			<description>
-                Set the rotation (in degrees).
+				Set the rotation (in degrees).
 			</description>
 		</method>
 		<method name="set_scale">
