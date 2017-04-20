@@ -88,6 +88,7 @@ public:
 
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
+	void clear_current();
 	int get_current_tab() const;
 	int get_previous_tab() const;
 
