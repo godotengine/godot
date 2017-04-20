@@ -356,6 +356,8 @@ public:
 
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const;
 
+	virtual int get_member_line(const StringName &p_member) const;
+
 #ifdef TOOLS_ENABLED
 	virtual bool are_subnodes_edited() const;
 #endif

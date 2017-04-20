@@ -2153,7 +2153,7 @@ void VisualScriptEditor::goto_line(int p_line, bool p_with_error) {
 			_update_graph();
 			_update_members();
 
-			call_deferred("_center_on_node", p_line); //editor might be just created and size might not exist yet
+			call_deferred("call_deferred", "_center_on_node", p_line); //editor might be just created and size might not exist yet
 
 			return;
 		}
@@ -2196,18 +2196,6 @@ void VisualScriptEditor::get_breakpoints(List<int> *p_breakpoints) {
 			}
 		}
 	}
-}
-
-bool VisualScriptEditor::goto_method(const String &p_method) {
-
-	if (!script->has_function(p_method))
-		return false;
-
-	edited_func = p_method;
-	selected = edited_func;
-	_update_members();
-	_update_graph();
-	return true;
 }
 
 void VisualScriptEditor::add_callback(const String &p_function, PoolStringArray p_args) {

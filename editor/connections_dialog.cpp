@@ -767,7 +767,7 @@ void ConnectionsDock::_something_activated() {
 
 		Ref<Script> script = c.target->get_script();
 
-		if (script.is_valid() && ScriptEditor::get_singleton()->script_go_to_method(script, c.method)) {
+		if (script.is_valid() && ScriptEditor::get_singleton()->script_goto_method(script, c.method)) {
 			editor->call("_editor_select", EditorNode::EDITOR_SCRIPT);
 		}
 	}

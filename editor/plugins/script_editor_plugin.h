@@ -97,7 +97,6 @@ public:
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) = 0;
 	virtual void get_breakpoints(List<int> *p_breakpoints) = 0;
-	virtual bool goto_method(const String &p_method) = 0;
 	virtual void add_callback(const String &p_function, PoolStringArray p_args) = 0;
 	virtual void update_settings() = 0;
 	virtual void set_debugger_active(bool p_active) = 0;
@@ -316,7 +315,9 @@ public:
 	void apply_scripts() const;
 
 	void ensure_select_current();
-	void edit(const Ref<Script> &p_script, bool p_grab_focus = true);
+
+	_FORCE_INLINE_ bool edit(const Ref<Script> &p_script, bool p_grab_focus = true) { return edit(p_script, -1, 0, p_grab_focus); }
+	bool edit(const Ref<Script> &p_script, int p_line, int p_col, bool p_grab_focus = true);
 
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
@@ -333,7 +334,7 @@ public:
 
 	void set_scene_root_script(Ref<Script> p_script);
 
-	bool script_go_to_method(Ref<Script> p_script, const String &p_method);
+	bool script_goto_method(Ref<Script> p_script, const String &p_method);
 
 	virtual void edited_scene_changed();
 

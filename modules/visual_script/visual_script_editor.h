@@ -246,7 +246,6 @@ public:
 	virtual void tag_saved_version();
 	virtual void reload(bool p_soft);
 	virtual void get_breakpoints(List<int> *p_breakpoints);
-	virtual bool goto_method(const String &p_method);
 	virtual void add_callback(const String &p_function, PoolStringArray p_args);
 	virtual void update_settings();
 	virtual void set_debugger_active(bool p_active);
