@@ -1145,10 +1145,6 @@ msgstr " Ausgabe:"
 msgid "Clear"
 msgstr "Löschen"
 
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr "Node aus Szene"
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1533,21 +1529,6 @@ msgid "Distraction Free Mode"
 msgstr "Ablenkungsfreier Modus"
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr "Importiere Medieninhalte ins Projekt."
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "Import"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Sonstiges Projekt oder szenenübergreifende Werkzeuge."
 
@@ -1775,6 +1756,17 @@ msgstr "Verlauf der zuletzt bearbeiteten Objekte."
 #: editor/editor_node.cpp
 msgid "Object properties."
 msgstr "Objekteigenschaften."
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "Import"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -3852,6 +3844,11 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generating AABB"
+msgstr "Erzeuge AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Flächen enthalten keinen Bereich!"
 
@@ -3903,6 +3900,16 @@ msgstr "Volumen"
 #, fuzzy
 msgid "Emission Source: "
 msgstr "Emissionsfüllung:"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generate Visibility AABB"
+msgstr "Erzeuge AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generation Time (sec):"
+msgstr "Durchschnittszeit (Sek)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4356,6 +4363,14 @@ msgstr "Symbol vervollständigen"
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "kürze Leerraum am Zeilenende"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -5232,12 +5247,12 @@ msgstr "Ungültiger Projektpfad, der Pfad muss existieren!"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr "Ungültiger Projektpfad, engine.cfg darf nicht existieren."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr "Ungültiger Projektpfad, engine.cfg muss existieren."
 
 #: editor/project_manager.cpp
@@ -5250,7 +5265,7 @@ msgstr "Ungültiger Projektpfad (etwas geändert?)."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr "Konnte engine.cfg in Projektpfad nicht erzeugen."
 
 #: editor/project_manager.cpp
@@ -5536,8 +5551,8 @@ msgstr "Ressourcen-Remap-Option entfernen"
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings (godot.cfg)"
-msgstr "Projekteinstellungen (engine.cfg)"
+msgid "Project Settings "
+msgstr "Projekteinstellungen"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6220,6 +6235,10 @@ msgid "Change Notifier Extents"
 msgstr "Ändere Ausmaße des Benachrichtigers"
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 #, fuzzy
 msgid "Change Probe Extents"
 msgstr "Ändere Ausmaße des Benachrichtigers"
@@ -6842,6 +6861,17 @@ msgstr ""
 "Eine NavigationMesh-Instanz muss ein Unterobjekt erster oder höherer Ordnung "
 "eines Navigation-Nodes sein. Es liefert nur Navigationsdaten."
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
 msgstr "Die Pfad-Eigenschaft muss auf ein gültiges Spatial-Node verweisen."
@@ -6919,6 +6949,16 @@ msgstr ""
 "Controls eingehängt werden um dessen Größe zu erben. Andernfalls sollte die "
 "Eigenschaft ‚Render Target‘ des Viewports aktiviert und seine Textur "
 "irgendeinem Node zum Anzeigen zugewiesen werden."
+
+#~ msgid "Node From Scene"
+#~ msgstr "Node aus Szene"
+
+#~ msgid "Import assets to the project."
+#~ msgstr "Importiere Medieninhalte ins Projekt."
+
+#, fuzzy
+#~ msgid "Project Settings (godot.cfg)"
+#~ msgstr "Projekteinstellungen (engine.cfg)"
 
 #~ msgid "Surface"
 #~ msgstr "Oberfläche"

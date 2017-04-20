@@ -1125,10 +1125,6 @@ msgstr " Έξοδος:"
 msgid "Clear"
 msgstr "Εκκαθάριση"
 
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr "Κόμβος από σκηνή"
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1517,21 +1513,6 @@ msgid "Distraction Free Mode"
 msgstr "Λειτουργία χωρίς διάσπαση προσοχής"
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr "Εισαγωγή πόρων στο έργο."
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "Εισαγωγή"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Λοιπά έργα ή εργαλεία για όλη τη σκηνή."
 
@@ -1759,6 +1740,17 @@ msgstr "Ιστορικό προσφάτως επεξεργασμένων αντ�
 #: editor/editor_node.cpp
 msgid "Object properties."
 msgstr "Ιδιότητες αντικειμένου."
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "Εισαγωγή"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -3804,6 +3796,10 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "Generating AABB"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3849,6 +3845,14 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate Visibility AABB"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generation Time (sec):"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -4298,6 +4302,14 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -5163,11 +5175,11 @@ msgid "Invalid project path, the path must exist!"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5179,7 +5191,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5461,7 +5473,7 @@ msgstr ""
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings (godot.cfg)"
+msgid "Project Settings "
 msgstr "Ρυθμίσεις έργου"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
@@ -6134,6 +6146,10 @@ msgid "Change Notifier Extents"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr ""
 
@@ -6758,6 +6774,17 @@ msgstr ""
 "Ένας κόμβος NavigationMeshInstance πρέπει να κληρονομεί έναν κόμβο τύπου "
 "Navigation, διότι διαθέτει μόνο δεδομένα πλοήγησης."
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
@@ -6835,6 +6862,16 @@ msgstr ""
 "περιεχόμενα του, κάντε το να κληρονομεί ένα Control, ώστε να αποκτήσει "
 "μέγεθος. Αλλιώς, κάντε το ένα RenderTarget και ορίστε το internal texture σε "
 "έναν κόμβο για απεικόνιση."
+
+#~ msgid "Node From Scene"
+#~ msgstr "Κόμβος από σκηνή"
+
+#~ msgid "Import assets to the project."
+#~ msgstr "Εισαγωγή πόρων στο έργο."
+
+#, fuzzy
+#~ msgid "Project Settings (godot.cfg)"
+#~ msgstr "Ρυθμίσεις έργου"
 
 #~ msgid ""
 #~ "A SampleLibrary resource must be created or set in the 'samples' property "

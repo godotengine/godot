@@ -1128,10 +1128,6 @@ msgstr " আউটপুট/ফলাফল:"
 msgid "Clear"
 msgstr "পরিস্কার করুন/ক্লীয়ার"
 
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr "দৃশ্য হতে নোড"
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1514,21 +1510,6 @@ msgid "Distraction Free Mode"
 msgstr "বিক্ষেপ-হীন মোড"
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr "উপাদানসমূহ প্রকল্পে ইম্পোর্ট করুন।"
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "ইম্পোর্ট"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "প্রকল্প অথবা দৃশ্যে-ব্যাপী বিবিধ সরঞ্জাম-সমূহ।"
 
@@ -1756,6 +1737,17 @@ msgstr "সাম্প্রতিক সময়ে সম্পাদিত ব
 #: editor/editor_node.cpp
 msgid "Object properties."
 msgstr "বস্তুর বৈশিষ্ট্যসমূহ।"
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "ইম্পোর্ট"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -3830,6 +3822,11 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generating AABB"
+msgstr "AABB উৎপন্ন করুন"
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "পৃষ্ঠসমূহ কোনো আকার নেই!"
 
@@ -3881,6 +3878,16 @@ msgstr "আয়তন"
 #, fuzzy
 msgid "Emission Source: "
 msgstr "Emission পূরণ:"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generate Visibility AABB"
+msgstr "AABB উৎপন্ন করুন"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generation Time (sec):"
+msgstr "গড় সময় (সেঃ)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4332,6 +4339,14 @@ msgstr "সিম্বল সম্পূর্ণ করুন"
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "শেষের হোয়াইটস্পেস ছেঁটে ফেলুন"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -5207,12 +5222,12 @@ msgstr "অকার্যকর প্রকল্পের পথ, পথট�
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই অনুপস্থিত হতে হবে।"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr "অকার্যকর প্রকল্পের পথ, engine.cfg অবশ্যই উপস্থিত হতে হবে।"
 
 #: editor/project_manager.cpp
@@ -5225,7 +5240,7 @@ msgstr "অকার্যকর প্রকল্পের পথ (কোন�
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr "প্রকল্পের পথে engine.cfg তৈরি করা সম্ভব হয়নি।"
 
 #: editor/project_manager.cpp
@@ -5511,8 +5526,8 @@ msgstr "রিসোর্সের পুনঃ-নকশার সিদ্ধ
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings (godot.cfg)"
-msgstr "প্রকল্পের সেটিংস (engine.cfg)"
+msgid "Project Settings "
+msgstr "প্রকল্পের সেটিংস"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6191,6 +6206,10 @@ msgid "Change Notifier Extents"
 msgstr "Notifier এর সীমা পরিবর্তন করুন"
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr "প্রোবের (Probe) পরিব্যাপ্তি পরিবর্তন করুন"
 
@@ -6792,6 +6811,17 @@ msgstr ""
 "NavigationMeshInstance-কে অবশ্যই Navigation-এর অংশ অথবা অংশের অংশ হতে হবে। "
 "এটা শুধুমাত্র ন্যাভিগেশনের তথ্য প্রদান করে।"
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
 msgstr "Path এর দিক অবশ্যই একটি কার্যকর Spatial নোডের এর দিকে নির্দেশ করাতে হবে।"
@@ -6867,6 +6897,16 @@ msgstr ""
 "সরাসরি পর্দায় দেখাতে চান, এটিকে যেকোনো Control এর অংশভূত করুন যেনো এটি একটি "
 "আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
+
+#~ msgid "Node From Scene"
+#~ msgstr "দৃশ্য হতে নোড"
+
+#~ msgid "Import assets to the project."
+#~ msgstr "উপাদানসমূহ প্রকল্পে ইম্পোর্ট করুন।"
+
+#, fuzzy
+#~ msgid "Project Settings (godot.cfg)"
+#~ msgstr "প্রকল্পের সেটিংস (engine.cfg)"
 
 #~ msgid "Surface"
 #~ msgstr "পৃষ্ঠতল"

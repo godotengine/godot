@@ -1121,10 +1121,6 @@ msgstr " 输出："
 msgid "Clear"
 msgstr "清除"
 
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr "从场景导入节点"
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1499,21 +1495,6 @@ msgid "Distraction Free Mode"
 msgstr "无干扰模式"
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr "导入资源。"
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "导入"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "其他工程或全场景工具。"
 
@@ -1730,6 +1711,17 @@ msgstr "最近编辑历史对象。"
 #: editor/editor_node.cpp
 msgid "Object properties."
 msgstr "对象属性。"
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "导入"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -3796,6 +3788,11 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generating AABB"
+msgstr "生成AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "面不含有区域！"
 
@@ -3847,6 +3844,16 @@ msgstr "体积"
 #, fuzzy
 msgid "Emission Source: "
 msgstr "发射填充："
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generate Visibility AABB"
+msgstr "生成AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generation Time (sec):"
+msgstr "平均帧时间（秒）"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4298,6 +4305,14 @@ msgstr "代码补全"
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "修剪行后空白"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -5170,12 +5185,12 @@ msgstr "项目目录不存在！"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr "项目目录下必须包含engin.cfg文件。"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr "项目目录下必须包含engin.cfg文件。"
 
 #: editor/project_manager.cpp
@@ -5188,7 +5203,7 @@ msgstr "项目路径非法（被外部修改？）。"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr "无法在项目目录下创建engine.cfg文件。"
 
 #: editor/project_manager.cpp
@@ -5472,8 +5487,8 @@ msgstr "移除资源重定向选项"
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings (godot.cfg)"
-msgstr "项目设置（engine.cfg）"
+msgid "Project Settings "
+msgstr "项目设置"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6146,6 +6161,10 @@ msgid "Change Notifier Extents"
 msgstr "更改通知器级别"
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr "更改探针(Probe)范围"
 
@@ -6716,6 +6735,17 @@ msgid ""
 msgstr ""
 "NavigationMeshInstance类型节点必须作为Navigation节点的子孙才能提供导航数据。"
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
 msgstr "path属性必须指向一个合法的Spatial节点才能正常工作。"
@@ -6787,6 +6817,16 @@ msgstr ""
 "这个Viewport未设置为render target。如果你刻意打算让其直接在屏幕上显示其内容，"
 "使其成为子控件的所以它可以有一个尺寸大小值。否则请设置为Render target，并将其"
 "内部纹理分配给一些节点以显示。"
+
+#~ msgid "Node From Scene"
+#~ msgstr "从场景导入节点"
+
+#~ msgid "Import assets to the project."
+#~ msgstr "导入资源。"
+
+#, fuzzy
+#~ msgid "Project Settings (godot.cfg)"
+#~ msgstr "项目设置（engine.cfg）"
 
 #~ msgid "Surface"
 #~ msgstr "表面"

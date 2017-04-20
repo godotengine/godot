@@ -1125,10 +1125,6 @@ msgstr " Çıktı:"
 msgid "Clear"
 msgstr "Temizle"
 
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr "Sahneden Düğüm(node)"
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1508,21 +1504,6 @@ msgid "Distraction Free Mode"
 msgstr "Dikkat Dağıtmayan Biçim"
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr "Varlıkları tasarının içine aktar."
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "İçe Aktar"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Türlü tasarı ya da sahne genişliğinde araçlar."
 
@@ -1749,6 +1730,17 @@ msgstr "En son düzenlenen nesnelerin geçmişi."
 #: editor/editor_node.cpp
 msgid "Object properties."
 msgstr "Nesne özellikleri."
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
+msgstr "İçe Aktar"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -3824,6 +3816,11 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generating AABB"
+msgstr "AABB Üret"
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "Yüzler alan içermez!"
 
@@ -3875,6 +3872,16 @@ msgstr "Oylum"
 #, fuzzy
 msgid "Emission Source: "
 msgstr "Yayma Dolumu:"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generate Visibility AABB"
+msgstr "AABB Üret"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generation Time (sec):"
+msgstr "Ortalama Zaman (sn)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4328,6 +4335,14 @@ msgstr "Simgeyi Tamamla"
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "İzleyenin Boşluklarını Kırp"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -5204,12 +5219,12 @@ msgstr "Geçersiz tasarı yolu, yolun var olması gerekir!"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr "Geçersiz tasarı yolu, engine.cfg var olmaması gerekir."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr "Geçersiz tasarı yolu, engine.cfg var olması gerekir."
 
 #: editor/project_manager.cpp
@@ -5222,7 +5237,7 @@ msgstr "Geçersiz tasarı yolu (bir şey değişti mi?)."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr "engine.cfg tasarı yolunda oluşturulamadı."
 
 #: editor/project_manager.cpp
@@ -5509,8 +5524,8 @@ msgstr "Kaynak Yeniden Eşle Seçeneğini Kaldır"
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings (godot.cfg)"
-msgstr "Tasarı Ayarları (engine.cfg)"
+msgid "Project Settings "
+msgstr "Tasarı Ayarları"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6188,6 +6203,10 @@ msgid "Change Notifier Extents"
 msgstr "Bildirim Kapsamını Değiştir"
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr "Deşme Genişlemesini Değiştir"
 
@@ -6796,6 +6815,17 @@ msgstr ""
 "NavigationMeshInstance, bir Navigation düğümünün çocuğu ya da torunu "
 "olmalıdır. O yalnızca yönlendirme verisi sağlar."
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 msgid "Path property must point to a valid Spatial node to work."
 msgstr ""
@@ -6872,6 +6902,16 @@ msgstr ""
 "görüntlükte göstermek istiyorsanız, bir Denetimcinin çocuğu olun ve böylece "
 "bir boyut elde edin. Ya da, onu bir RenderTarget yapın ve iç dokusunu "
 "görüntülemesi için bir düğüme atayın."
+
+#~ msgid "Node From Scene"
+#~ msgstr "Sahneden Düğüm(node)"
+
+#~ msgid "Import assets to the project."
+#~ msgstr "Varlıkları tasarının içine aktar."
+
+#, fuzzy
+#~ msgid "Project Settings (godot.cfg)"
+#~ msgstr "Tasarı Ayarları (engine.cfg)"
 
 #~ msgid "Surface"
 #~ msgstr "Yüzey"

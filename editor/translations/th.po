@@ -1231,10 +1231,6 @@ msgstr " เอาท์พุต:"
 msgid "Clear"
 msgstr "ลบทั้งหมด"
 
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr "โหนดจากฉาก"
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1634,22 +1630,6 @@ msgid "Distraction Free Mode"
 msgstr "โหมดไร้สิ่งรบกวน"
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr "นำเข้าไฟล์มายังโปรเจกต์"
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-#, fuzzy
-msgid "Import"
-msgstr "นำเข้า"
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
@@ -1868,6 +1848,18 @@ msgstr "ประวัติการปรับแต่งวัตถุ"
 #: editor/editor_node.cpp
 msgid "Object properties."
 msgstr "คุณสมบัติวัตถุ"
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+#, fuzzy
+msgid "Import"
+msgstr "นำเข้า"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -3943,6 +3935,11 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generating AABB"
+msgstr "สร้าง AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr "หน้าไม่มีพื้นที่!"
 
@@ -3991,6 +3988,16 @@ msgstr "ปริมาตร"
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
 msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generate Visibility AABB"
+msgstr "สร้าง AABB"
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "Generation Time (sec):"
+msgstr "เวลาเฉลี่ย (วินาที)"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 msgid "Remove Point from Curve"
@@ -4444,6 +4451,14 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "ลบตัวอักษรที่มองไม่เห็น"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
+msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
@@ -5317,12 +5332,12 @@ msgstr "ที่อยู่โปรเจกต์ผิดพลาด ต�
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr "ที่อยู่โปรเจกต์ผิดพลาด ต้องไม่มี engine.cfg"
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr "ที่อยู่โปรเจกต์ผิดพลาด ต้องมี engine.cfg"
 
 #: editor/project_manager.cpp
@@ -5335,7 +5350,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr "สร้างไฟล์ engine.cfg ไม่ได้"
 
 #: editor/project_manager.cpp
@@ -5628,8 +5643,8 @@ msgstr "ลบการแทนที่"
 
 #: editor/project_settings.cpp
 #, fuzzy
-msgid "Project Settings (godot.cfg)"
-msgstr "ตัวเลือกโปรเจกต์ (engine.cfg)"
+msgid "Project Settings "
+msgstr "ตัวเลือกโปรเจกต์"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6304,6 +6319,10 @@ msgid "Change Notifier Extents"
 msgstr "ปรับขนาด Notifier"
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 #, fuzzy
 msgid "Change Probe Extents"
 msgstr "ปรับขนาด Probe"
@@ -6954,6 +6973,17 @@ msgstr ""
 "NavigationMeshInstance ต้องเป็นโหนดลูก/หลานของโหนด Navigation "
 "โหนดนี้ใช้เพื่อเป็นข้อมูลในการนำทางเท่านั้น"
 
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
+
 #: scene/3d/remote_transform.cpp
 #, fuzzy
 msgid "Path property must point to a valid Spatial node to work."
@@ -7033,6 +7063,16 @@ msgstr ""
 "Viewport นี้ไม่ได้เป็น render target ถ้าท่านต้องการแสดงผลบนหน้าจอโดยตรง "
 "ให้แก้ไขโหนดนี้ให้เป็นโหนดลูกของ Control แต่ถ้าไม่ ให้ปรับเป็น render target และนำไปใช้เป็น "
 "texture ของโหนดอื่น"
+
+#~ msgid "Node From Scene"
+#~ msgstr "โหนดจากฉาก"
+
+#~ msgid "Import assets to the project."
+#~ msgstr "นำเข้าไฟล์มายังโปรเจกต์"
+
+#, fuzzy
+#~ msgid "Project Settings (godot.cfg)"
+#~ msgstr "ตัวเลือกโปรเจกต์ (engine.cfg)"
 
 #~ msgid "Surface"
 #~ msgstr "พื้นผิว"

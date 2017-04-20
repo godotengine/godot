@@ -1125,10 +1125,6 @@ msgstr " خروجی:"
 msgid "Clear"
 msgstr "پاک کردن"
 
-#: editor/editor_node.cpp
-msgid "Node From Scene"
-msgstr ""
-
 #: editor/editor_node.cpp editor/plugins/animation_player_editor_plugin.cpp
 #: editor/resources_dock.cpp
 msgid "Error saving resource!"
@@ -1493,21 +1489,6 @@ msgid "Distraction Free Mode"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Import assets to the project."
-msgstr ""
-
-#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
-#: editor/io_plugins/editor_font_import_plugin.cpp
-#: editor/io_plugins/editor_mesh_import_plugin.cpp
-#: editor/io_plugins/editor_sample_import_plugin.cpp
-#: editor/io_plugins/editor_scene_import_plugin.cpp
-#: editor/io_plugins/editor_texture_import_plugin.cpp
-#: editor/io_plugins/editor_translation_import_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
@@ -1714,6 +1695,17 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Object properties."
+msgstr ""
+
+#: editor/editor_node.cpp editor/io_plugins/editor_bitmask_import_plugin.cpp
+#: editor/io_plugins/editor_font_import_plugin.cpp
+#: editor/io_plugins/editor_mesh_import_plugin.cpp
+#: editor/io_plugins/editor_sample_import_plugin.cpp
+#: editor/io_plugins/editor_scene_import_plugin.cpp
+#: editor/io_plugins/editor_texture_import_plugin.cpp
+#: editor/io_plugins/editor_translation_import_plugin.cpp
+#: editor/project_manager.cpp
+msgid "Import"
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3762,6 +3754,10 @@ msgid "A processor material of type 'ParticlesMaterial' is required."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
+msgid "Generating AABB"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
 msgid "Faces contain no area!"
 msgstr ""
 
@@ -3807,6 +3803,14 @@ msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Emission Source: "
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generate Visibility AABB"
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Generation Time (sec):"
 msgstr ""
 
 #: editor/plugins/path_2d_editor_plugin.cpp
@@ -4257,6 +4261,14 @@ msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Spaces"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Convert Indent To Tabs"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
@@ -5119,11 +5131,11 @@ msgid "Invalid project path, the path must exist!"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, godot.cfg must not exist."
+msgid "Invalid project path, *.godot must not exist."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Invalid project path, godot.cfg must exist."
+msgid "Invalid project path, *.godot must exist."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5135,7 +5147,7 @@ msgid "Invalid project path (changed anything?)."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't create godot.cfg in project path."
+msgid "Couldn't create *.godot project file in project path."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -5418,8 +5430,9 @@ msgid "Remove Resource Remap Option"
 msgstr ""
 
 #: editor/project_settings.cpp
-msgid "Project Settings (godot.cfg)"
-msgstr ""
+#, fuzzy
+msgid "Project Settings "
+msgstr "ترجیحات"
 
 #: editor/project_settings.cpp editor/settings_config_dialog.cpp
 msgid "General"
@@ -6097,6 +6110,10 @@ msgid "Change Notifier Extents"
 msgstr ""
 
 #: editor/spatial_editor_gizmos.cpp
+msgid "Change Particles AABB"
+msgstr ""
+
+#: editor/spatial_editor_gizmos.cpp
 msgid "Change Probe Extents"
 msgstr ""
 
@@ -6710,6 +6727,17 @@ msgid ""
 msgstr ""
 "NavigationMeshInstance باید یک فرزند یا نوه‌ی یک گره Navigation باشد. این "
 "تنها داده‌ی پیمایش را فراهم می‌کند."
+
+#: scene/3d/particles.cpp
+msgid ""
+"Nothing is visible because meshes have not been assigned to draw passes."
+msgstr ""
+
+#: scene/3d/particles.cpp
+msgid ""
+"A material to process the particles is not assigned, so no behavior is "
+"imprinted."
+msgstr ""
 
 #: scene/3d/remote_transform.cpp
 #, fuzzy
