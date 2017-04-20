@@ -40,10 +40,10 @@ extern "C" {
 
 #ifdef _WIN32
 #if defined(GDAPI_EXPORT)
-#define GDCALLINGCONV __cdecl
+#define GDCALLINGCONV
 #define GDAPI __declspec(dllexport) GDCALLINGCONV
 #else
-#define GDCALLINGCONV __cdecl
+#define GDCALLINGCONV
 #define GDAPI __declspec(dllimport) GDCALLINGCONV
 #endif
 #elif defined(__APPLE__)
