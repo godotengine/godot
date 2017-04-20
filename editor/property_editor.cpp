@@ -2105,7 +2105,9 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String &p
 					}
 				}
 
-				if (!res->is_type("Texture")) {
+				if (res->is_type("Script")) {
+					p_item->set_text(1, res->get_path().get_file());
+				} else if (!res->is_type("Texture")) {
 					//texture already previews via itself
 					EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", p_item->get_instance_ID());
 				}
@@ -3237,7 +3239,9 @@ void PropertyEditor::update_tree() {
 					} else if (res.is_valid()) {
 						item->set_tooltip(1, res->get_name() + " (" + res->get_type() + ")");
 					}
-					if (!res->is_type("Texture")) {
+					if (res->is_type("Script")) {
+						item->set_text(1, res->get_path().get_file());
+					} else if (!res->is_type("Texture")) {
 						//texture already previews via itself
 						EditorResourcePreview::get_singleton()->queue_edited_resource_preview(res, this, "_resource_preview_done", item->get_instance_ID());
 					}
