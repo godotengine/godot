@@ -834,7 +834,7 @@ void CanvasItemEditor::_prepare_drag(const Point2 &p_click_pos) {
 			se->undo_pivot = canvas_item->cast_to<Node2D>()->edit_get_pivot();
 	}
 
-	if (selection.size() == 1 && selection[0]->cast_to<Node2D>()) {
+	if (selection.size() == 1 && selection[0]->cast_to<Node2D>() && bone_ik_list.size() == 0) {
 		drag = DRAG_NODE_2D;
 		drag_point_from = selection[0]->cast_to<Node2D>()->get_global_pos();
 	} else {
@@ -1360,7 +1360,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent &p_event) {
 					}
 				}
 
-				if (drag != DRAG_NONE && (!Cbone || drag != DRAG_ALL)) {
+				if (drag != DRAG_NONE && (!Cbone || (drag != DRAG_ALL && drag != DRAG_NODE_2D))) {
 					drag_from = transform.affine_inverse().xform(click);
 					se->undo_state = canvas_item->edit_get_state();
 					if (canvas_item->cast_to<Node2D>())
