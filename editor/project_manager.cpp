@@ -1344,7 +1344,7 @@ ProjectManager::ProjectManager() {
 
 	if (StreamPeerSSL::is_available()) {
 		asset_library = memnew(EditorAssetLibrary(true));
-		asset_library->set_name("Templates");
+		asset_library->set_name(TTR("Templates"));
 		tabs->add_child(asset_library);
 		asset_library->connect("install_asset", this, "_install_project");
 	} else {
