@@ -154,7 +154,8 @@ private:
 
 protected:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) = 0;
-	String find_export_template(String template_file_name) const;
+	bool exists_export_template(String template_file_name, String *err) const;
+	String find_export_template(String template_file_name, String *err = NULL) const;
 	void gen_export_flags(Vector<String> &r_flags, int p_flags);
 
 public:
@@ -257,6 +258,8 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 	String release_file_64;
 	String debug_file_32;
 	String debug_file_64;
+
+	bool use64;
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);

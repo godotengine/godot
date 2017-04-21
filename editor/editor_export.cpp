@@ -321,7 +321,7 @@ Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_pat
 	return OK;
 }
 
-String EditorExportPlatform::find_export_template(String template_file_name) const {
+String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
 
 	String base_name = itos(VERSION_MAJOR) + "." + itos(VERSION_MINOR) + "-" + _MKSTR(VERSION_STATUS) + "/" + template_file_name;
 	String user_file = EditorSettings::get_singleton()->get_settings_path() + "/templates/" + base_name;
@@ -342,9 +342,20 @@ String EditorExportPlatform::find_export_template(String template_file_name) con
 			return system_file;
 		}
 	}
-	print_line("none,sorry");
 
-	return String(); //not found
+	// Not found
+	if (err) {
+		*err += "No export template found at \"" + user_file + "\"";
+		if (has_system_path)
+			*err += "\n or \"" + system_file + "\".";
+		else
+			*err += ".";
+	}
+	return String(); // not found
+}
+
+bool EditorExportPlatform::exists_export_template(String template_file_name, String *err) const {
+	return find_export_template(template_file_name, err) != "";
 }
 
 Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
@@ -925,19 +936,47 @@ Ref<Texture> EditorExportPlatformPC::get_logo() const {
 
 bool EditorExportPlatformPC::can_export(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 
-	r_missing_templates = false;
+	String err;
+	bool valid = true;
 
-	if (find_export_template(release_file_32) == String()) {
-		r_missing_templates = true;
-	} else if (find_export_template(debug_file_32) == String()) {
-		r_missing_templates = true;
-	} else if (find_export_template(release_file_64) == String()) {
-		r_missing_templates = true;
-	} else if (find_export_template(debug_file_64) == String()) {
-		r_missing_templates = true;
+	if (use64 && (!exists_export_template(debug_file_64, &err) || !exists_export_template(release_file_64, &err))) {
+		valid = false;
 	}
 
-	return !r_missing_templates;
+	if (!use64 && (!exists_export_template(debug_file_32, &err) || !exists_export_template(release_file_32, &err))) {
+		valid = false;
+	}
+
+	String custom_debug_binary = p_preset->get("custom_template/debug");
+	String custom_release_binary = p_preset->get("custom_template/release");
+
+	if (custom_debug_binary == "" && custom_release_binary == "") {
+		if (!err.empty())
+			r_error = err;
+		return valid;
+	}
+
+	bool dvalid = true;
+	bool rvalid = true;
+
+	if (!FileAccess::exists(custom_debug_binary)) {
+		dvalid = false;
+		err = "Custom debug binary not found.\n";
+	}
+
+	if (!FileAccess::exists(custom_release_binary)) {
+		rvalid = false;
+		err += "Custom release binary not found.\n";
+	}
+
+	if (dvalid || rvalid)
+		valid = true;
+	else
+		valid = false;
+
+	if (!err.empty())
+		r_error = err;
+	return valid;
 }
 
 String EditorExportPlatformPC::get_binary_extension() const {
@@ -1495,40 +1534,6 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 
 	return ret;
 
-}
-
-String EditorExportPlatform::find_export_template(String template_file_name, String *err) const {
-	String user_file = EditorSettings::get_singleton()->get_settings_path()
-		+"/templates/"+template_file_name;
-	String system_file=OS::get_singleton()->get_installed_templates_path();
-	bool has_system_path=(system_file!="");
-	system_file+=template_file_name;
-
-	// Prefer user file
-	if (FileAccess::exists(user_file)) {
-		return user_file;
-	}
-
-	// Now check system file
-	if (has_system_path) {
-		if (FileAccess::exists(system_file)) {
-			return system_file;
-		}
-	}
-
-	// Not found
-	if (err) {
-		*err+="No export template found at \""+user_file+"\"";
-		if (has_system_path)
-			*err+="\n or \""+system_file+"\".";
-		else
-			*err+=".";
-	}
-	return "";
-}
-
-bool EditorExportPlatform::exists_export_template(String template_file_name, String *err) const {
-	return find_export_template(template_file_name,err)!="";
 }
 
 ///////////////////////////////////////
@@ -2429,50 +2434,6 @@ void EditorExportPlatformPC::set_binary_extension(const String& p_extension) {
 
 	binary_extension=p_extension;
 }
-
-bool EditorExportPlatformPC::can_export(String *r_error) const {
-
-	String err;
-	bool valid=true;
-
-	if (use64 && (!exists_export_template(debug_binary64) || !exists_export_template(release_binary64))) {
-		valid=false;
-		err="No 64 bits export templates found.\nDownload and install export templates.\n";
-	}
-
-	if (!use64 && (!exists_export_template(debug_binary32) || !exists_export_template(release_binary32))) {
-		valid=false;
-		err="No 32 bits export templates found.\nDownload and install export templates.\n";
-	}
-
-	if(custom_debug_binary=="" && custom_release_binary=="") {
-		if (r_error) *r_error=err;
-		return valid;
-	}
-
-	bool dvalid = true;
-	bool rvalid = true;
-
-	if(!FileAccess::exists(custom_debug_binary)) {
-		dvalid = false;
-		err = "Custom debug binary not found.\n";
-	}
-
-	if(!FileAccess::exists(custom_release_binary)) {
-		rvalid = false;
-		err = "Custom release binary not found.\n";
-	}
-
-	if (dvalid || rvalid)
-		valid = true;
-	else
-		valid = false;
-
-	if (r_error)
-		*r_error=err;
-	return valid;
-}
-
 
 EditorExportPlatformPC::EditorExportPlatformPC() {
 
