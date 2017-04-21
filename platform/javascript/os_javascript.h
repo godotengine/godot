@@ -58,7 +58,6 @@ public:
 private:
 	Vector<TouchPos> touch;
 	Point2 last_mouse;
-	int last_button_mask;
 	GFXInitFunc gfx_init_func;
 	void *gfx_init_ud;
 

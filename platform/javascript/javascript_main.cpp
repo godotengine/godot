@@ -43,74 +43,6 @@ static void _gfx_init(void *ud, bool gl2, int w, int h, bool fs) {
 	glutCreateWindow("godot");
 }
 
-static uint32_t _mouse_button_mask = 0;
-
-static void _glut_mouse_button(int button, int state, int x, int y) {
-
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_BUTTON;
-	switch (button) {
-		case GLUT_LEFT_BUTTON: ev.mouse_button.button_index = BUTTON_LEFT; break;
-		case GLUT_MIDDLE_BUTTON: ev.mouse_button.button_index = BUTTON_MIDDLE; break;
-		case GLUT_RIGHT_BUTTON: ev.mouse_button.button_index = BUTTON_RIGHT; break;
-		case 3: ev.mouse_button.button_index = BUTTON_WHEEL_UP; break;
-		case 4: ev.mouse_button.button_index = BUTTON_WHEEL_DOWN; break;
-	}
-
-	ev.mouse_button.pressed = state == GLUT_DOWN;
-	ev.mouse_button.x = x;
-	ev.mouse_button.y = y;
-	ev.mouse_button.global_x = x;
-	ev.mouse_button.global_y = y;
-
-	if (ev.mouse_button.button_index < 4) {
-		if (ev.mouse_button.pressed) {
-			_mouse_button_mask |= 1 << (ev.mouse_button.button_index - 1);
-		} else {
-			_mouse_button_mask &= ~(1 << (ev.mouse_button.button_index - 1));
-		}
-	}
-	ev.mouse_button.button_mask = _mouse_button_mask;
-
-	uint32_t m = glutGetModifiers();
-	ev.mouse_button.mod.alt = (m & GLUT_ACTIVE_ALT) != 0;
-	ev.mouse_button.mod.shift = (m & GLUT_ACTIVE_SHIFT) != 0;
-	ev.mouse_button.mod.control = (m & GLUT_ACTIVE_CTRL) != 0;
-
-	os->push_input(ev);
-
-	if (ev.mouse_button.button_index == BUTTON_WHEEL_UP || ev.mouse_button.button_index == BUTTON_WHEEL_DOWN) {
-		// GLUT doesn't send release events for mouse wheel, so send manually
-		ev.mouse_button.pressed = false;
-		os->push_input(ev);
-	}
-}
-
-static int _glut_prev_x = 0;
-static int _glut_prev_y = 0;
-
-static void _glut_mouse_motion(int x, int y) {
-
-	InputEvent ev;
-	ev.type = InputEvent::MOUSE_MOTION;
-	ev.mouse_motion.button_mask = _mouse_button_mask;
-	ev.mouse_motion.x = x;
-	ev.mouse_motion.y = y;
-	ev.mouse_motion.global_x = x;
-	ev.mouse_motion.global_y = y;
-	ev.mouse_motion.relative_x = x - _glut_prev_x;
-	ev.mouse_motion.relative_y = y - _glut_prev_y;
-	_glut_prev_x = x;
-	_glut_prev_y = y;
-
-	uint32_t m = glutGetModifiers();
-	ev.mouse_motion.mod.alt = (m & GLUT_ACTIVE_ALT) != 0;
-	ev.mouse_motion.mod.shift = (m & GLUT_ACTIVE_SHIFT) != 0;
-	ev.mouse_motion.mod.control = (m & GLUT_ACTIVE_CTRL) != 0;
-
-	os->push_input(ev);
-}
-
 static void _gfx_idle() {
 
 	glutPostRedisplay();
@@ -151,10 +83,6 @@ int main(int argc, char *argv[]) {
 	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
 
 	ResourceLoader::set_abort_on_missing_resources(false); //ease up compatibility
-
-	glutMouseFunc(_glut_mouse_button);
-	glutMotionFunc(_glut_mouse_motion);
-	glutPassiveMotionFunc(_glut_mouse_motion);
 
 	/* Set up glut callback functions */
 	glutIdleFunc(_gfx_idle);
