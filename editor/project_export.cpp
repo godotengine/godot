@@ -229,6 +229,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		}
 		if (needs_templates)
 			export_templates_error->show();
+		else
+			export_templates_error->hide();
 
 		export_button->set_disabled(true);
 
