@@ -47,14 +47,14 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 	bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
 
 	String _template = String() +
-				    "extends %BASE%\n\n" +
-				    "# class member variables go here, for example:\n" +
-				    "# var a = 2\n" +
-				    "# var b = \"textvar\"\n\n" +
-				    "func _ready():\n" +
-				    "\t# Called every time the node is added to the scene.\n" +
-				    "\t# Initialization here\n" +
-				    "\tpass\n";
+					   "extends %BASE%\n\n" +
+					   "# class member variables go here, for example:\n" +
+					   "# var a = 2\n" +
+					   "# var b = \"textvar\"\n\n" +
+					   "func _ready():\n" +
+					   "\t# Called every time the node is added to the scene.\n" +
+					   "\t# Initialization here\n" +
+					   "\tpass\n";
 
 	_template = _template.replace("%BASE%", p_base_class_name);
 
