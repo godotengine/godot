@@ -44,7 +44,12 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("' '");
 }
 Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
-	bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
+
+	bool use_space_indentation = 0;
+
+#ifdef TOOLS_ENABLED
+	use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
+#endif
 
 	String _template = String() +
 					   "extends %BASE%\n\n" +
