@@ -32,6 +32,7 @@
 #include "gd_script.h"
 #include "global_config.h"
 #include "os/file_access.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
@@ -49,26 +50,18 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const String &p_base_class_name) const {
 
-	bool use_space_indentation = 0;
-
-#ifdef TOOLS_ENABLED
-	use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
-#endif
-
 	String _template = String() +
 					   "extends %BASE%\n\n" +
 					   "# class member variables go here, for example:\n" +
 					   "# var a = 2\n" +
 					   "# var b = \"textvar\"\n\n" +
 					   "func _ready():\n" +
-					   "\t# Called every time the node is added to the scene.\n" +
-					   "\t# Initialization here\n" +
-					   "\tpass\n";
+					   "%TS%# Called every time the node is added to the scene.\n" +
+					   "%TS%# Initialization here\n" +
+					   "%TS%pass\n";
 
 	_template = _template.replace("%BASE%", p_base_class_name);
-
-	if (use_space_indentation)
-		_template = _template.replace("\t", _get_indentation());
+	_template = _template.replace("%TS%", _get_indentation());
 
 	Ref<GDScript> script;
 	script.instance();
@@ -2427,16 +2420,18 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
-	bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
+	if (OS::get_singleton()->get_main_loop()->cast_to<SceneTree>()->is_editor_hint()) {
+		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
 
-	if (use_space_indentation) {
-		int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
+		if (use_space_indentation) {
+			int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
 
-		String space_indent = "";
-		for (int i = 0; i < indent_size; i++) {
-			space_indent += " ";
+			String space_indent = "";
+			for (int i = 0; i < indent_size; i++) {
+				space_indent += " ";
+			}
+			return space_indent;
 		}
-		return space_indent;
 	}
 #endif
 	return "\t";
