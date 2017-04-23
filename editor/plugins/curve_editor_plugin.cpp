@@ -31,8 +31,8 @@ void CurveTextureEdit::_gui_input(const InputEvent &p_event) {
 
 		for (int i = 0; i < points.size(); i++) {
 
-			Vector2 ps = p * get_size();
-			Vector2 pt = Vector2(points[i].offset, points[i].height) * get_size();
+			Vector2 ps = p;
+			Vector2 pt = Vector2(points[i].offset, points[i].height);
 			if (ps.distance_to(pt) < 4) {
 				grabbed = i;
 			}
