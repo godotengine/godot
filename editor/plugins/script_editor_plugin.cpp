@@ -1534,13 +1534,6 @@ void ScriptEditor::save_all_scripts() {
 		if (!se)
 			continue;
 
-		if (!se->is_unsaved())
-			continue;
-
-		if (trim_trailing_whitespace_on_save) {
-			se->trim_trailing_whitespace();
-		}
-
 		if (convert_indent_on_save) {
 			if (use_space_indentation) {
 				se->convert_indent_to_spaces();
@@ -1548,6 +1541,13 @@ void ScriptEditor::save_all_scripts() {
 				se->convert_indent_to_tabs();
 			}
 		}
+
+		if (trim_trailing_whitespace_on_save) {
+			se->trim_trailing_whitespace();
+		}
+
+		if (!se->is_unsaved())
+			continue;
 
 		Ref<Script> script = se->get_edited_script();
 		if (script.is_valid())
