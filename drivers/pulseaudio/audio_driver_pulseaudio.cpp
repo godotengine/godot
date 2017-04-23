@@ -102,7 +102,6 @@ float AudioDriverPulseAudio::get_latency() {
 
 void AudioDriverPulseAudio::thread_func(void *p_udata) {
 
-	print_line("thread");
 	AudioDriverPulseAudio *ad = (AudioDriverPulseAudio *)p_udata;
 
 	while (!ad->exit_thread) {

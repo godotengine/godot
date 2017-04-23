@@ -152,8 +152,6 @@ Error ContextGL_X11::initialize() {
 	XSync(x11_display, False);
 	XSetErrorHandler(oldHandler);
 
-	print_line("ALL IS GOOD");
-
 	glXMakeCurrent(x11_display, x11_window, p->glx_context);
 
 	/*

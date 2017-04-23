@@ -435,7 +435,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 
 		if (defer_load_scene != "") {
 
-			print_line("loading scene DEFERED");
+			print_line("loading scene DEFERRED");
 			load_scene(defer_load_scene);
 			defer_load_scene = "";
 		}
@@ -6051,7 +6051,10 @@ EditorNode::EditorNode() {
 	{
 
 		_initializing_addons = true;
-		Vector<String> addons = GlobalConfig::get_singleton()->get("editor_plugins/enabled");
+		Vector<String> addons;
+		if (GlobalConfig::get_singleton()->has("editor_plugins/enabled")) {
+			addons = GlobalConfig::get_singleton()->get("editor_plugins/enabled");
+		}
 
 		for (int i = 0; i < addons.size(); i++) {
 			set_addon_plugin_enabled(addons[i], true);

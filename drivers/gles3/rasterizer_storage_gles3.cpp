@@ -825,7 +825,6 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSide p_
 	if (!texture->images[p_cube_side].empty()) {
 		return texture->images[p_cube_side];
 	}
-	print_line("GETTING FROM GL ");
 
 #ifdef GLES_OVER_GL
 
@@ -842,7 +841,7 @@ Image RasterizerStorageGLES3::texture_get_data(RID p_texture, VS::CubeMapSide p_
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
-	print_line("GET FORMAT: " + Image::get_format_name(texture->format) + " mipmaps: " + itos(texture->mipmaps));
+	//print_line("GET FORMAT: " + Image::get_format_name(texture->format) + " mipmaps: " + itos(texture->mipmaps));
 
 	for (int i = 0; i < texture->mipmaps; i++) {
 
@@ -4777,7 +4776,6 @@ RID RasterizerStorageGLES3::gi_probe_dynamic_data_create(int p_width, int p_heig
 		min_size = 4;
 	}
 
-	print_line("dyndata create");
 	while (true) {
 
 		if (gipd->compression == GI_PROBE_S3TC) {
@@ -6270,7 +6268,6 @@ bool RasterizerStorageGLES3::free(RID p_rid) {
 		// delete the texture
 		GIProbeData *gi_probe_data = gi_probe_data_owner.get(p_rid);
 
-		print_line("dyndata delete");
 		glDeleteTextures(1, &gi_probe_data->tex_id);
 		gi_probe_owner.free(p_rid);
 		memdelete(gi_probe_data);
@@ -6333,9 +6330,8 @@ void RasterizerStorageGLES3::initialize() {
 	{
 
 		int max_extensions = 0;
-		print_line("getting extensions");
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_extensions);
-		print_line("total " + itos(max_extensions));
+		print_line("GLES3: max extensions: " + itos(max_extensions));
 		for (int i = 0; i < max_extensions; i++) {
 			const GLubyte *s = glGetStringi(GL_EXTENSIONS, i);
 			if (!s)
