@@ -285,6 +285,9 @@ void ScriptTextEditor::convert_indent_to_spaces() {
 		indent += " ";
 	}
 
+	int cursor_line = tx->cursor_get_line();
+	int cursor_column = tx->cursor_get_column();
+
 	bool changed_indentation = false;
 	for (int i = 0; i < tx->get_line_count(); i++) {
 		String line = tx->get_line(i);
@@ -300,6 +303,9 @@ void ScriptTextEditor::convert_indent_to_spaces() {
 					tx->begin_complex_operation();
 					changed_indentation = true;
 				}
+				if (cursor_line == i && cursor_column > j) {
+					cursor_column += indent_size - 1;
+				}
 				line = line.left(j) + indent + line.right(j + 1);
 			}
 			j++;
@@ -307,6 +313,7 @@ void ScriptTextEditor::convert_indent_to_spaces() {
 		tx->set_line(i, line);
 	}
 	if (changed_indentation) {
+		tx->cursor_set_column(cursor_column);
 		tx->end_complex_operation();
 		tx->update();
 	}
@@ -322,6 +329,9 @@ void ScriptTextEditor::convert_indent_to_tabs() {
 
 	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
 	indent_size -= 1;
+
+	int cursor_line = tx->cursor_get_line();
+	int cursor_column = tx->cursor_get_column();
 
 	bool changed_indentation = false;
 	for (int i = 0; i < tx->get_line_count(); i++) {
@@ -342,7 +352,9 @@ void ScriptTextEditor::convert_indent_to_tabs() {
 						tx->begin_complex_operation();
 						changed_indentation = true;
 					}
-
+					if (cursor_line == i && cursor_column > j) {
+						cursor_column -= indent_size;
+					}
 					line = line.left(j - indent_size) + "\t" + line.right(j + 1);
 					j = 0;
 					space_count = -1;
@@ -355,6 +367,7 @@ void ScriptTextEditor::convert_indent_to_tabs() {
 		tx->set_line(i, line);
 	}
 	if (changed_indentation) {
+		tx->cursor_set_column(cursor_column);
 		tx->end_complex_operation();
 		tx->update();
 	}
