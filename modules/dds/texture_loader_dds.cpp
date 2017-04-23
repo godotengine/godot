@@ -144,12 +144,14 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	f->get_32();
 	f->get_32();
 
-	/*print_line("DDS width: "+itos(width));
+	/*
+	print_line("DDS width: "+itos(width));
 	print_line("DDS height: "+itos(height));
-	print_line("DDS mipmaps: "+itos(mipmaps));*/
+	print_line("DDS mipmaps: "+itos(mipmaps));
 
-	//printf("fourcc: %x fflags: %x, rgbbits: %x, fsize: %x\n",format_fourcc,format_flags,format_rgb_bits,format_size);
-	//printf("rmask: %x gmask: %x, bmask: %x, amask: %x\n",format_red_mask,format_green_mask,format_blue_mask,format_alpha_mask);
+	printf("fourcc: %x fflags: %x, rgbbits: %x, fsize: %x\n",format_fourcc,format_flags,format_rgb_bits,format_size);
+	printf("rmask: %x gmask: %x, bmask: %x, amask: %x\n",format_red_mask,format_green_mask,format_blue_mask,format_alpha_mask);
+	*/
 
 	//must avoid this later
 	while (f->get_pos() < 128)

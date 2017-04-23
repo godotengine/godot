@@ -410,7 +410,6 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				if (fnode->name == "vertex") {
 
-					print_line("vertex uses functions: " + itos(pnode->functions[i].uses_function.size()));
 					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.vertex_global, added_vtx);
 					r_gen_code.vertex = function_code["vertex"];
 				}

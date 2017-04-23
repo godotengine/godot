@@ -1211,7 +1211,7 @@ ProjectManager::ProjectManager() {
 		}
 	}
 
-	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesytem/file_dialog/show_hidden_files"));
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
 	set_theme(create_editor_theme());
