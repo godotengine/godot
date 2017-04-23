@@ -1696,9 +1696,9 @@ void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_so
 //same thing for placeholders
 #ifdef TOOLS_ENABLED
 
-			while (E->get()->placeholders.size()) {
+			for (Set<PlaceHolderScriptInstance *>::Element *P = E->get()->placeholders.front(); P; P = P->next()) {
 
-				Object *obj = E->get()->placeholders.front()->get()->get_owner();
+				Object *obj = P->get()->get_owner();
 				//save instance info
 				List<Pair<StringName, Variant> > state;
 				if (obj->get_script_instance()) {
