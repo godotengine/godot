@@ -513,14 +513,16 @@ String String::camelcase_to_underscore(bool lowercase) const {
 
 	for (size_t i = 1; i < this->size(); i++) {
 		bool is_upper = cstr[i] >= A && cstr[i] <= Z;
+		bool is_number = cstr[i] >= '0' && cstr[i] <= '9';
 		bool are_next_2_lower = false;
 		bool was_precedent_upper = cstr[i - 1] >= A && cstr[i - 1] <= Z;
+		bool was_precedent_number = cstr[i - 1] >= '0' && cstr[i - 1] <= '9';
 
 		if (i + 2 < this->size()) {
 			are_next_2_lower = cstr[i + 1] >= a && cstr[i + 1] <= z && cstr[i + 2] >= a && cstr[i + 2] <= z;
 		}
 
-		bool should_split = ((is_upper && !was_precedent_upper) || (was_precedent_upper && is_upper && are_next_2_lower));
+		bool should_split = ((is_upper && !was_precedent_upper && !was_precedent_number) || (was_precedent_upper && is_upper && are_next_2_lower) || (is_number && !was_precedent_number));
 		if (should_split) {
 			new_string += this->substr(start_index, i - start_index) + "_";
 			start_index = i;
