@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_scene_types.h"
-#include "project_settings.h"
 #include "os/os.h"
+#include "project_settings.h"
 #include "scene/io/resource_format_image.h"
 #include "scene/io/resource_format_wav.h"
 
@@ -198,6 +198,8 @@
 #ifndef _3D_DISABLED
 #include "scene/3d/camera.h"
 #include "scene/3d/listener.h"
+
+#include "scene/3d/arvr_nodes.h"
 
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/interpolated_camera.h"
@@ -405,6 +407,9 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<VisualInstance>();
 	ClassDB::register_class<Camera>();
 	ClassDB::register_class<Listener>();
+	ClassDB::register_class<ARVRCamera>();
+	ClassDB::register_class<ARVRController>();
+	ClassDB::register_class<ARVROrigin>();
 	ClassDB::register_class<InterpolatedCamera>();
 	ClassDB::register_class<MeshInstance>();
 	ClassDB::register_class<ImmediateGeometry>();

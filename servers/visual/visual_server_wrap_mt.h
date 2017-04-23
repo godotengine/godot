@@ -344,6 +344,8 @@ public:
 
 	FUNC0R(RID, viewport_create)
 
+	FUNC2(viewport_set_use_arvr, RID, bool)
+
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)

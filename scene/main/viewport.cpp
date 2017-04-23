@@ -701,6 +701,16 @@ RID Viewport::get_viewport_rid() const {
 	return viewport;
 }
 
+void Viewport::set_use_arvr(bool p_use_arvr) {
+	arvr = p_use_arvr;
+
+	VS::get_singleton()->viewport_set_use_arvr(viewport, arvr);
+}
+
+bool Viewport::use_arvr() {
+	return arvr;
+}
+
 void Viewport::set_size(const Size2 &p_size) {
 
 	if (size == p_size.floor())
@@ -2543,6 +2553,9 @@ int Viewport::get_render_info(RenderInfo p_info) {
 
 void Viewport::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("set_use_arvr", "use"), &Viewport::set_use_arvr);
+	ClassDB::bind_method(D_METHOD("use_arvr"), &Viewport::use_arvr);
+
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &Viewport::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &Viewport::get_size);
 	ClassDB::bind_method(D_METHOD("set_world_2d", "world_2d:World2D"), &Viewport::set_world_2d);
@@ -2644,6 +2657,8 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shadow_atlas_quadrant_subdiv", "quadrant", "subdiv"), &Viewport::set_shadow_atlas_quadrant_subdiv);
 	ClassDB::bind_method(D_METHOD("get_shadow_atlas_quadrant_subdiv", "quadrant"), &Viewport::get_shadow_atlas_quadrant_subdiv);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
+
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "size"), "set_size", "get_size");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world"), "set_use_own_world", "is_using_own_world");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world", PROPERTY_HINT_RESOURCE_TYPE, "World"), "set_world", "get_world");
@@ -2729,6 +2744,7 @@ Viewport::Viewport() {
 	parent = NULL;
 	listener = NULL;
 	camera = NULL;
+	arvr = false;
 	size_override = false;
 	size_override_stretch = false;
 	size_override_size = Size2(1, 1);
