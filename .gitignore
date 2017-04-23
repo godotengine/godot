@@ -5,6 +5,7 @@ core/method_bind.inc
 core/script_encryption_key.cpp
 core/version_generated.h
 drivers/gles2/shaders/*.h
+drivers/gles3/shaders/*.h
 drivers/unix/os_unix_global_settings_path.cpp
 editor/builtin_fonts.h
 editor/certs_compressed.h
