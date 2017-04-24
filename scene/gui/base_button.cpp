@@ -38,6 +38,8 @@ void BaseButton::_unpress_group() {
 	if (!button_group.is_valid())
 		return;
 
+	status.pressed = true;
+
 	for (Set<BaseButton *>::Element *E = button_group->buttons.front(); E; E = E->next()) {
 		if (E->get() == this)
 			continue;
