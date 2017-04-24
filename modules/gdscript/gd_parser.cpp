@@ -387,6 +387,13 @@ GDParser::Node *GDParser::_parse_expression(Node *p_parent, bool p_static, bool 
 				_set_error("Expected '(' after 'preload'");
 				return NULL;
 			}
+			completion_cursor = StringName();
+			completion_type = COMPLETION_PRELOAD;
+			completion_class = current_class;
+			completion_function = current_function;
+			completion_line = tokenizer->get_token_line();
+			completion_block = current_block;
+			completion_found = true;
 			tokenizer->advance();
 
 			String path;
