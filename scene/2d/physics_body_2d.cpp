@@ -1199,7 +1199,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 						revert_motion();
 						return Vector2();
 					}
-				} else if (get_collision_normal().dot(-p_floor_direction) <= Math::cos(p_floor_max_angle)) { //ceiling
+				} else if (get_collision_normal().dot(-p_floor_direction) >= Math::cos(p_floor_max_angle)) { //ceiling
 					move_and_slide_on_ceiling = true;
 				} else {
 					move_and_slide_on_wall = true;
