@@ -459,25 +459,27 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 	flags = f->get_32(); //texture flags!
 	uint32_t df = f->get_32(); //data format
 
+	/*
 	print_line("width: " + itos(tw));
 	print_line("height: " + itos(th));
 	print_line("flags: " + itos(flags));
 	print_line("df: " + itos(df));
+	*/
 
 	if (request_3d_callback && df & FORMAT_BIT_DETECT_3D) {
-		print_line("request detect 3D at " + p_path);
+		//print_line("request detect 3D at " + p_path);
 		VS::get_singleton()->texture_set_detect_3d_callback(texture, _requested_3d, this);
 	} else {
-		print_line("not requesting detect 3D at " + p_path);
+		//print_line("not requesting detect 3D at " + p_path);
 		VS::get_singleton()->texture_set_detect_3d_callback(texture, NULL, NULL);
 	}
 
 	if (request_srgb_callback && df & FORMAT_BIT_DETECT_SRGB) {
-		print_line("request detect srgb at " + p_path);
+		//print_line("request detect srgb at " + p_path);
 		VS::get_singleton()->texture_set_detect_srgb_callback(texture, _requested_srgb, this);
 	} else {
+		//print_line("not requesting detect srgb at " + p_path);
 		VS::get_singleton()->texture_set_detect_srgb_callback(texture, NULL, NULL);
-		print_line("not requesting detect srgb at " + p_path);
 	}
 
 	if (!(df & FORMAT_BIT_STREAM)) {
@@ -493,7 +495,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 		uint32_t mipmaps = f->get_32();
 		uint32_t size = f->get_32();
 
-		print_line("mipmaps: " + itos(mipmaps));
+		//print_line("mipmaps: " + itos(mipmaps));
 
 		while (mipmaps > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
 
@@ -539,7 +541,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 			mipmap_images.push_back(img);
 		}
 
-		print_line("mipmap read total: " + itos(mipmap_images.size()));
+		//print_line("mipmap read total: " + itos(mipmap_images.size()));
 
 		memdelete(f); //no longer needed
 
@@ -626,7 +628,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &fla
 			{
 				PoolVector<uint8_t>::Write w = img_data.write();
 				int bytes = f->get_buffer(w.ptr(), total_size - ofs);
-				print_line("requested read: " + itos(total_size - ofs) + " but got: " + itos(bytes));
+				//print_line("requested read: " + itos(total_size - ofs) + " but got: " + itos(bytes));
 
 				memdelete(f);
 
