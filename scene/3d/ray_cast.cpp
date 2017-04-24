@@ -146,7 +146,7 @@ void RayCast::_notification(int p_what) {
 			_update_raycast_state();
 			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
 				if (debug_material.is_valid()) {
-					Ref<FixedSpatialMaterial> line_material = static_cast<Ref<FixedSpatialMaterial> >(debug_material);
+					Ref<SpatialMaterial> line_material = static_cast<Ref<SpatialMaterial> >(debug_material);
 					line_material->set_albedo(collided ? Color(1.0, 0, 0) : Color(1.0, 0.8, 0.6));
 				}
 			}
@@ -258,10 +258,10 @@ void RayCast::_bind_methods() {
 void RayCast::_create_debug_shape() {
 
 	if (!debug_material.is_valid()) {
-		debug_material = Ref<FixedSpatialMaterial>(memnew(FixedSpatialMaterial));
+		debug_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 
-		Ref<FixedSpatialMaterial> line_material = static_cast<Ref<FixedSpatialMaterial> >(debug_material);
-		line_material->set_flag(FixedSpatialMaterial::FLAG_UNSHADED, true);
+		Ref<SpatialMaterial> line_material = static_cast<Ref<SpatialMaterial> >(debug_material);
+		line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		line_material->set_line_width(3.0);
 		line_material->set_albedo(Color(1.0, 0.8, 0.6));
 	}
