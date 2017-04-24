@@ -32,6 +32,8 @@
 #include "gd_script.h"
 #include "global_config.h"
 #include "os/file_access.h"
+#include "os/os.h"
+#include "scene/main/node.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_file_system.h"
