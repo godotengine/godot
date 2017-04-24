@@ -29,13 +29,14 @@ void CurveTextureEdit::_gui_input(const InputEvent &p_event) {
 		grabbed = -1;
 		grabbing = true;
 
+		float dists;
 		for (int i = 0; i < points.size(); i++) {
 
 			Vector2 ps = p * get_size();
 			Vector2 pt = Vector2(points[i].offset, points[i].height) * get_size();
 
 			if (grabbed == -1) {
-				if (ps.distance_to(pt) < 50) {
+				if (ps.distance_to(pt) < 40) {
 					dists = ps.distance_to(pt);
 					grabbed = i;
 				}
