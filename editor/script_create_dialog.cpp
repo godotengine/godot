@@ -55,6 +55,8 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 	if (p_string.length() == 0)
 		return false;
 
+	String path_chars = "\"res://";
+	bool is_val_path = ScriptServer::get_language(language_menu->get_selected())->can_inherit_from_file();
 	for (int i = 0; i < p_string.length(); i++) {
 
 		if (i == 0) {
@@ -62,7 +64,17 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 				return false; // no start with number plz
 		}
 
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_';
+		if (i == p_string.length() - 1 && is_val_path)
+			return p_string[i] == '\"';
+
+		if (is_val_path && i < path_chars.length()) {
+			if (p_string[i] != path_chars[i])
+				is_val_path = false;
+			else
+				continue;
+		}
+
+		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || (is_val_path && (p_string[i] == '/' || p_string[i] == '.'));
 
 		if (!valid_char)
 			return false;
@@ -74,7 +86,7 @@ bool ScriptCreateDialog::_validate(const String &p_string) {
 void ScriptCreateDialog::_class_name_changed(const String &p_name) {
 
 	if (!_validate(parent_name->get_text())) {
-		error_label->set_text(TTR("Invalid parent class name"));
+		error_label->set_text(TTR("Invalid parent class name or path"));
 		error_label->add_color_override("font_color", Color(1, 0.4, 0.0, 0.8));
 	} else if (class_name->is_editable()) {
 		if (class_name->get_text() == "") {
@@ -175,6 +187,12 @@ void ScriptCreateDialog::_lang_changed(int l) {
 		class_name->set_editable(false);
 	}
 
+	if (ScriptServer::get_language(l)->can_inherit_from_file()) {
+		parent_browse_button->show();
+	} else {
+		parent_browse_button->hide();
+	}
+
 	String selected_ext = "." + ScriptServer::get_language(l)->get_extension();
 	String path = file_path->get_text();
 	String extension = "";
@@ -215,7 +233,9 @@ void ScriptCreateDialog::_built_in_pressed() {
 	}
 }
 
-void ScriptCreateDialog::_browse_path() {
+void ScriptCreateDialog::_browse_path(bool browse_parent) {
+
+	is_browsing_parent = browse_parent;
 
 	file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	file_browse->set_disable_overwrite_warning(true);
@@ -238,8 +258,13 @@ void ScriptCreateDialog::_browse_path() {
 void ScriptCreateDialog::_file_selected(const String &p_file) {
 
 	String p = GlobalConfig::get_singleton()->localize_path(p_file);
-	file_path->set_text(p);
-	_path_changed(p);
+	if (is_browsing_parent) {
+		parent_name->set_text("\"" + p + "\"");
+		_class_name_changed("\"" + p + "\"");
+	} else {
+		file_path->set_text(p);
+		_path_changed(p);
+	}
 }
 
 void ScriptCreateDialog::_path_changed(const String &p_path) {
@@ -353,9 +378,18 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb2->add_child(error_label);
 	vb->add_margin_child(TTR("Class Name:"), vb2);
 
+	HBoxContainer *hb1 = memnew(HBoxContainer);
 	parent_name = memnew(LineEdit);
-	vb->add_margin_child(TTR("Inherits:"), parent_name);
 	parent_name->connect("text_changed", this, "_class_name_changed");
+	parent_name->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb1->add_child(parent_name);
+	parent_browse_button = memnew(Button);
+	parent_browse_button->set_text(" .. ");
+	parent_browse_button->connect("pressed", this, "_browse_path", varray(true));
+	hb1->add_child(parent_browse_button);
+	parent_browse_button->hide();
+	vb->add_margin_child(TTR("Inherits:"), hb1);
+	is_browsing_parent = false;
 
 	language_menu = memnew(OptionButton);
 	vb->add_margin_child(TTR("Language"), language_menu);
@@ -398,7 +432,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	file_path->set_h_size_flags(SIZE_EXPAND_FILL);
 	Button *b = memnew(Button);
 	b->set_text(" .. ");
-	b->connect("pressed", this, "_browse_path");
+	b->connect("pressed", this, "_browse_path", varray(false));
 	hbc->add_child(b);
 	path_vb->add_child(hbc);
 	path_error_label = memnew(Label);

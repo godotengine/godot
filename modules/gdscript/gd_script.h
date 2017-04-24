@@ -384,6 +384,7 @@ public:
 	virtual bool validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path = "", List<String> *r_functions = NULL) const;
 	virtual Script *create_script() const;
 	virtual bool has_named_classes() const;
+	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
 	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, String &r_call_hint);
