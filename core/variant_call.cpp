@@ -328,6 +328,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector2, normalized);
 	VCALL_LOCALMEM0R(Vector2, length);
 	VCALL_LOCALMEM0R(Vector2, length_squared);
+	VCALL_LOCALMEM0R(Vector2, is_normalized);
 	VCALL_LOCALMEM1R(Vector2, distance_to);
 	VCALL_LOCALMEM1R(Vector2, distance_squared_to);
 	VCALL_LOCALMEM1R(Vector2, angle_to);
@@ -362,6 +363,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Vector3, max_axis);
 	VCALL_LOCALMEM0R(Vector3, length);
 	VCALL_LOCALMEM0R(Vector3, length_squared);
+	VCALL_LOCALMEM0R(Vector3, is_normalized);
 	VCALL_LOCALMEM0R(Vector3, normalized);
 	VCALL_LOCALMEM0R(Vector3, inverse);
 	VCALL_LOCALMEM1R(Vector3, snapped);
@@ -418,6 +420,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM0R(Quat, length);
 	VCALL_LOCALMEM0R(Quat, length_squared);
 	VCALL_LOCALMEM0R(Quat, normalized);
+	VCALL_LOCALMEM0R(Quat, is_normalized);
 	VCALL_LOCALMEM0R(Quat, inverse);
 	VCALL_LOCALMEM1R(Quat, dot);
 	VCALL_LOCALMEM1R(Quat, xform);
@@ -704,6 +707,9 @@ struct _VariantCall {
 	VCALL_PTR1R(Basis, scaled);
 	VCALL_PTR0R(Basis, get_scale);
 	VCALL_PTR0R(Basis, get_euler);
+	VCALL_PTR1(Basis, set_scale);
+	VCALL_PTR1(Basis, set_rotation_euler);
+	VCALL_PTR2(Basis, set_rotation_axis_angle);
 	VCALL_PTR1R(Basis, tdotx);
 	VCALL_PTR1R(Basis, tdoty);
 	VCALL_PTR1R(Basis, tdotz);
@@ -873,6 +879,11 @@ struct _VariantCall {
 	static void Basis_init2(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = Basis(p_args[0]->operator Vector3(), p_args[1]->operator real_t());
+	}
+
+	static void Basis_init3(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Basis(p_args[0]->operator Vector3());
 	}
 
 	static void Transform_init1(Variant &r_ret, const Variant **p_args) {
@@ -1429,6 +1440,7 @@ void register_variant_methods() {
 	ADDFUNC0(VECTOR2, REAL, Vector2, length, varray());
 	ADDFUNC0(VECTOR2, REAL, Vector2, angle, varray());
 	ADDFUNC0(VECTOR2, REAL, Vector2, length_squared, varray());
+	ADDFUNC0(VECTOR2, BOOL, Vector2, is_normalized, varray());
 	ADDFUNC1(VECTOR2, REAL, Vector2, distance_to, VECTOR2, "to", varray());
 	ADDFUNC1(VECTOR2, REAL, Vector2, distance_squared_to, VECTOR2, "to", varray());
 	ADDFUNC1(VECTOR2, REAL, Vector2, angle_to, VECTOR2, "to", varray());
@@ -1462,6 +1474,7 @@ void register_variant_methods() {
 	ADDFUNC0(VECTOR3, INT, Vector3, max_axis, varray());
 	ADDFUNC0(VECTOR3, REAL, Vector3, length, varray());
 	ADDFUNC0(VECTOR3, REAL, Vector3, length_squared, varray());
+	ADDFUNC0(VECTOR3, BOOL, Vector3, is_normalized, varray());
 	ADDFUNC0(VECTOR3, VECTOR3, Vector3, normalized, varray());
 	ADDFUNC0(VECTOR3, VECTOR3, Vector3, inverse, varray());
 	ADDFUNC1(VECTOR3, VECTOR3, Vector3, snapped, REAL, "by", varray());
@@ -1497,6 +1510,7 @@ void register_variant_methods() {
 	ADDFUNC0(QUAT, REAL, Quat, length, varray());
 	ADDFUNC0(QUAT, REAL, Quat, length_squared, varray());
 	ADDFUNC0(QUAT, QUAT, Quat, normalized, varray());
+	ADDFUNC0(QUAT, BOOL, Quat, is_normalized, varray());
 	ADDFUNC0(QUAT, QUAT, Quat, inverse, varray());
 	ADDFUNC1(QUAT, REAL, Quat, dot, QUAT, "b", varray());
 	ADDFUNC1(QUAT, VECTOR3, Quat, xform, VECTOR3, "v", varray());
@@ -1692,6 +1706,9 @@ void register_variant_methods() {
 	ADDFUNC0(BASIS, REAL, Basis, determinant, varray());
 	ADDFUNC2(BASIS, BASIS, Basis, rotated, VECTOR3, "axis", REAL, "phi", varray());
 	ADDFUNC1(BASIS, BASIS, Basis, scaled, VECTOR3, "scale", varray());
+	ADDFUNC1(BASIS, NIL, Basis, set_scale, VECTOR3, "scale", varray());
+	ADDFUNC1(BASIS, NIL, Basis, set_rotation_euler, VECTOR3, "euler", varray());
+	ADDFUNC2(BASIS, NIL, Basis, set_rotation_axis_angle, VECTOR3, "axis", REAL, "angle", varray());
 	ADDFUNC0(BASIS, VECTOR3, Basis, get_scale, varray());
 	ADDFUNC0(BASIS, VECTOR3, Basis, get_euler, varray());
 	ADDFUNC1(BASIS, REAL, Basis, tdotx, VECTOR3, "with", varray());
@@ -1749,6 +1766,7 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Basis_init1, Variant::BASIS, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Basis_init2, Variant::BASIS, "axis", Variant::VECTOR3, "phi", Variant::REAL);
+	_VariantCall::add_constructor(_VariantCall::Basis_init3, Variant::BASIS, "euler", Variant::VECTOR3);
 
 	_VariantCall::add_constructor(_VariantCall::Transform_init1, Variant::TRANSFORM, "x_axis", Variant::VECTOR3, "y_axis", Variant::VECTOR3, "z_axis", Variant::VECTOR3, "origin", Variant::VECTOR3);
 	_VariantCall::add_constructor(_VariantCall::Transform_init2, Variant::TRANSFORM, "basis", Variant::BASIS, "origin", Variant::VECTOR3);

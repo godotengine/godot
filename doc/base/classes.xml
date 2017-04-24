@@ -6868,6 +6868,15 @@
 		<method name="Basis">
 			<return type="Basis">
 			</return>
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Create a rotation matrix (in the XYZ convention: first Z, then Y, and X last) from the specified Euler angles, given in the vector format as (third,second,first).
+			</description>
+		</method>
+		<method name="Basis">
+			<return type="Basis">
+			</return>
 			<argument index="0" name="x_axis" type="Vector3">
 			</argument>
 			<argument index="1" name="y_axis" type="Vector3">
@@ -6889,8 +6898,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Return Euler angles (in the XYZ convention: first Z, then Y, and X last) from the matrix. Returned vector contains the rotation angles in the format (third,second,first).
-				This function only works if the matrix represents a proper rotation.
+				Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles (in the XYZ convention: first Z, then Y, and X last). Returned vector contains the rotation angles in the format (third,second,first).
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
@@ -6932,6 +6940,26 @@
 				Introduce an additional rotation around the given axis by phi (radians). Only relevant when the matrix is being used as a part of [Transform]. The axis must be a normalized vector.
 			</description>
 		</method>
+		<method name="set_rotation_euler">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="euler" type="Vector3">
+			</argument>
+			<description>
+				Changes only the rotation part of the [Basis] to a rotation corresponding to given Euler angles, while preserving the scaling part (as determined by get_scale).
+			</description>
+		</method>
+		<method name="set_rotation_axis_angle">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="axis" type="Vector3">
+			</argument>
+			<argument index="1" name="phi" type="float">
+			</argument>
+			<description>
+				Changes only the rotation part of the [Basis] to a rotation around given axis by phi, while preserving the scaling part (as determined by get_scale).
+			</description>
+		</method>
 		<method name="scaled">
 			<return type="Basis">
 			</return>
@@ -6939,6 +6967,15 @@
 			</argument>
 			<description>
 				Introduce an additional scaling specified by the given 3D scaling factor. Only relevant when the matrix is being used as a part of [Transform].
+			</description>
+		</method>
+		<method name="set_scale">
+			<return type="Basis">
+			</return>
+			<argument index="0" name="scale" type="Vector3">
+			</argument>
+			<description>
+				Changes only the scaling part of the Basis to the specified scaling, while preserving the rotation part (as determined by get_rotation).
 			</description>
 		</method>
 		<method name="tdotx">
@@ -35148,6 +35185,13 @@
 				Returns a copy of the quaternion, normalized to unit length.
 			</description>
 		</method>
+		<method name="is_normalized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the quaternion is normalized or not.
+			</description>
+		</method>
 		<method name="slerp">
 			<return type="Quat">
 			</return>
@@ -48048,6 +48092,13 @@ do_property].
 				Returns a normalized vector to unit length.
 			</description>
 		</method>
+		<method name="is_normalized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the vector is normalized or not.
+			</description>
+		</method>
 		<method name="reflect">
 			<return type="Vector2">
 			</return>
@@ -48270,6 +48321,13 @@ do_property].
 			</return>
 			<description>
 				Return a copy of the normalized vector to unit length. This is the same as v / v.length().
+			</description>
+		</method>
+		<method name="is_normalized">
+			<return type="bool">
+			</return>
+			<description>
+				Returns whether the vector is normalized or not.
 			</description>
 		</method>
 		<method name="outer">

@@ -495,7 +495,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		Vector3 axis;
 		real_t angle;
 
-		rot.get_axis_and_angle(axis, angle);
+		rot.get_axis_angle(axis, angle);
 		axis.normalize();
 		angular_velocity = axis.normalized() * (angle / p_step);
 
@@ -638,7 +638,7 @@ void BodySW::simulate_motion(const Transform& p_xform,real_t p_step) {
 	Vector3 axis;
 	real_t angle;
 
-	rot.get_axis_and_angle(axis,angle);
+	rot.get_axis_angle(axis,angle);
 	axis.normalize();
 	angular_velocity=axis.normalized() * (angle/p_step);
 	linear_velocity = (p_xform.origin - get_transform().origin)/p_step;

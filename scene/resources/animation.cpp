@@ -1761,8 +1761,8 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 			Vector3 v02, v01;
 			real_t a02, a01;
 
-			r02.get_axis_and_angle(v02, a02);
-			r01.get_axis_and_angle(v01, a01);
+			r02.get_axis_angle(v02, a02);
+			r01.get_axis_angle(v01, a01);
 
 			if (Math::abs(a02) > p_max_optimizable_angle)
 				return false;

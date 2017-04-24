@@ -48,6 +48,7 @@ public:
 	real_t length() const;
 	void normalize();
 	Quat normalized() const;
+	bool is_normalized() const;
 	Quat inverse() const;
 	_FORCE_INLINE_ real_t dot(const Quat &q) const;
 	void set_euler(const Vector3 &p_euler);
@@ -56,7 +57,7 @@ public:
 	Quat slerpni(const Quat &q, const real_t &t) const;
 	Quat cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const real_t &t) const;
 
-	_FORCE_INLINE_ void get_axis_and_angle(Vector3 &r_axis, real_t &r_angle) const {
+	_FORCE_INLINE_ void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const {
 		r_angle = 2 * Math::acos(w);
 		r_axis.x = x / Math::sqrt(1 - w * w);
 		r_axis.y = y / Math::sqrt(1 - w * w);

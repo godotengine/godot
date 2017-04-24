@@ -77,14 +77,24 @@ public:
 
 	void rotate(const Vector3 &p_euler);
 	Basis rotated(const Vector3 &p_euler) const;
-	Vector3 get_rotation() const;
 
-	void scale(const Vector3 &p_scale);
-	Basis scaled(const Vector3 &p_scale) const;
-	Vector3 get_scale() const;
+	Vector3 get_rotation() const;
+	void get_rotation_axis_angle(Vector3 &p_axis, real_t &p_angle) const;
+
+	void set_rotation_euler(const Vector3 &p_euler);
+	void set_rotation_axis_angle(const Vector3 &p_axis, real_t p_angle);
 
 	Vector3 get_euler() const;
 	void set_euler(const Vector3 &p_euler);
+
+	void get_axis_angle(Vector3 &r_axis, real_t &r_angle) const;
+	void set_axis_angle(const Vector3 &p_axis, real_t p_phi);
+
+	void scale(const Vector3 &p_scale);
+	Basis scaled(const Vector3 &p_scale) const;
+
+	Vector3 get_scale() const;
+	void set_scale(const Vector3 &p_scale);
 
 	// transposed dot products
 	_FORCE_INLINE_ real_t tdotx(const Vector3 &v) const {
@@ -97,7 +107,7 @@ public:
 		return elements[0][2] * v[0] + elements[1][2] * v[1] + elements[2][2] * v[2];
 	}
 
-	bool isequal_approx(const Basis &a, const Basis &b) const;
+	bool is_equal_approx(const Basis &a, const Basis &b) const;
 
 	bool operator==(const Basis &p_matrix) const;
 	bool operator!=(const Basis &p_matrix) const;
@@ -120,8 +130,6 @@ public:
 	bool is_rotation() const;
 
 	operator String() const;
-
-	void get_axis_and_angle(Vector3 &r_axis, real_t &r_angle) const;
 
 	/* create / set */
 

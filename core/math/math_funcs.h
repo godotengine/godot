@@ -168,7 +168,7 @@ public:
 	static float random(float from, float to);
 	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
 
-	static _ALWAYS_INLINE_ bool isequal_approx(real_t a, real_t b) {
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
 		// TODO: Comparing floats for approximate-equality is non-trivial.
 		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
 		// A proper implementation in terms of ULPs should eventually replace the contents of this function.
