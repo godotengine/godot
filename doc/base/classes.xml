@@ -51969,20 +51969,24 @@ do_property].
 </class>
 <class name="WorldEnvironment" inherits="Spatial" category="Core">
 	<brief_description>
+		Sets environment properties for the entire scene
 	</brief_description>
 	<description>
+		The [WorldEnvironment] node can be added to a scene in order to set default [Environment] variables for the scene. The [WorldEnvironment] can be overridden by an [Environment] node set on the current [Camera]. Additionally, only one [WorldEnvironment] may be instanced in a given scene at a time. The [WorldEnvironment] allows the user to specify default lighting parameters (e.g. ambient lighting), various post-processing effects (e.g. SSAO, DOF, Tonemapping), and how to draw the background (e.g. solid color, skybox). 
 	</description>
 	<methods>
 		<method name="get_environment" qualifiers="const">
 			<return type="Environment">
 			</return>
 			<description>
+				Return the [Environment] currently bound.
 			</description>
 		</method>
 		<method name="set_environment">
 			<argument index="0" name="env" type="Environment">
 			</argument>
 			<description>
+				Set the currently bound [Environment] to the one specified.
 			</description>
 		</method>
 	</methods>
@@ -52307,3 +52311,4 @@ do_property].
 	</constants>
 </class>
 </doc>
+
