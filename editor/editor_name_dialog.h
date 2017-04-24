@@ -38,6 +38,7 @@ class EditorNameDialog : public ConfirmationDialog {
 
 	GDCLASS(EditorNameDialog, ConfirmationDialog);
 
+	VBoxContainer *makevb;
 	LineEdit *name;
 
 	void _line_gui_input(const InputEvent &p_event);
