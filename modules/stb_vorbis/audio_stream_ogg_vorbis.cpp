@@ -66,8 +66,8 @@ float AudioStreamPlaybackOGGVorbis::get_stream_sampling_rate() {
 
 void AudioStreamPlaybackOGGVorbis::start(float p_from_pos) {
 
-	seek_pos(p_from_pos);
 	active = true;
+	seek_pos(p_from_pos);
 	loops = 0;
 	_begin_resample();
 }
