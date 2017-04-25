@@ -55,11 +55,12 @@ Ref<Script> GDScriptLanguage::get_template(const String &p_class_name, const Str
 					   "# var a = 2\n" +
 					   "# var b = \"textvar\"\n\n" +
 					   "func _ready():\n" +
-					   "\t# Called every time the node is added to the scene.\n" +
-					   "\t# Initialization here\n" +
-					   "\tpass\n";
+					   "%TS%# Called every time the node is added to the scene.\n" +
+					   "%TS%# Initialization here\n" +
+					   "%TS%pass\n";
 
 	_template = _template.replace("%BASE%", p_base_class_name);
+	_template = _template.replace("%TS%", _get_indentation());
 
 	Ref<GDScript> script;
 	script.instance();
@@ -2418,16 +2419,18 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 
 String GDScriptLanguage::_get_indentation() const {
 #ifdef TOOLS_ENABLED
-	bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
+	if (SceneTree::get_singleton()->is_editor_hint()) {
+		bool use_space_indentation = EDITOR_DEF("text_editor/indent/type", "Tabs") == "Tabs" ? 0 : 1;
 
-	if (use_space_indentation) {
-		int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
+		if (use_space_indentation) {
+			int indent_size = EDITOR_DEF("text_editor/indent/size", 4);
 
-		String space_indent = "";
-		for (int i = 0; i < indent_size; i++) {
-			space_indent += " ";
+			String space_indent = "";
+			for (int i = 0; i < indent_size; i++) {
+				space_indent += " ";
+			}
+			return space_indent;
 		}
-		return space_indent;
 	}
 #endif
 	return "\t";
