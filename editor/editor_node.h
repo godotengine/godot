@@ -357,6 +357,9 @@ private:
 	bool docks_visible;
 	ToolButton *distraction_free;
 
+	bool scene_distraction;
+	bool script_distraction;
+
 	String _tmp_import_path;
 
 	EditorExport *editor_export;
