@@ -460,7 +460,6 @@ void SceneTree::input_event(const InputEvent &p_event) {
 void SceneTree::init() {
 
 	//_quit=false;
-	accept_quit = true;
 	initialized = true;
 	input_handled = false;
 
@@ -1625,6 +1624,7 @@ SceneTree::SceneTree() {
 
 	singleton = this;
 	_quit = false;
+	accept_quit = true;
 	initialized = false;
 #ifdef TOOLS_ENABLED
 	editor_hint = false;
