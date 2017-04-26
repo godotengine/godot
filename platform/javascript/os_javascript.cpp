@@ -41,6 +41,21 @@
 #include <emscripten.h>
 #include <stdlib.h>
 
+#define DOM_BUTTON_LEFT 0
+#define DOM_BUTTON_MIDDLE 1
+#define DOM_BUTTON_RIGHT 2
+
+template <typename T>
+static InputModifierState dom2godot_mod(T emscripten_event_ptr) {
+
+	InputModifierState mod;
+	mod.shift = emscripten_event_ptr->shiftKey;
+	mod.alt = emscripten_event_ptr->altKey;
+	mod.control = emscripten_event_ptr->ctrlKey;
+	mod.meta = emscripten_event_ptr->metaKey;
+	return mod;
+}
+
 int OS_JavaScript::get_video_driver_count() const {
 
 	return 1;
@@ -130,15 +145,188 @@ static EM_BOOL _fullscreen_change_callback(int event_type, const EmscriptenFulls
 	return false;
 }
 
+static InputDefault *_input;
+
+static EM_BOOL _mousebutton_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEDOWN && event_type != EMSCRIPTEN_EVENT_MOUSEUP, false);
+
+	InputEvent ev;
+	ev.type = InputEvent::MOUSE_BUTTON;
+	ev.mouse_button.pressed = event_type == EMSCRIPTEN_EVENT_MOUSEDOWN;
+	ev.mouse_button.global_x = ev.mouse_button.x = mouse_event->canvasX;
+	ev.mouse_button.global_y = ev.mouse_button.y = mouse_event->canvasY;
+	ev.mouse_button.mod = dom2godot_mod(mouse_event);
+
+	switch (mouse_event->button) {
+		case DOM_BUTTON_LEFT: ev.mouse_button.button_index = BUTTON_LEFT; break;
+		case DOM_BUTTON_MIDDLE: ev.mouse_button.button_index = BUTTON_MIDDLE; break;
+		case DOM_BUTTON_RIGHT: ev.mouse_button.button_index = BUTTON_RIGHT; break;
+		default: return false;
+	}
+
+	ev.mouse_button.button_mask = _input->get_mouse_button_mask();
+	if (ev.mouse_button.pressed)
+		ev.mouse_button.button_mask |= 1 << ev.mouse_button.button_index;
+	else
+		ev.mouse_button.button_mask &= ~(1 << ev.mouse_button.button_index);
+	ev.mouse_button.button_mask >>= 1;
+
+	_input->parse_input_event(ev);
+	return true;
+}
+
+static EM_BOOL _mousemove_callback(int event_type, const EmscriptenMouseEvent *mouse_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_MOUSEMOVE, false);
+
+	InputEvent ev;
+	ev.type = InputEvent::MOUSE_MOTION;
+	ev.mouse_motion.mod = dom2godot_mod(mouse_event);
+	ev.mouse_motion.button_mask = _input->get_mouse_button_mask() >> 1;
+
+	ev.mouse_motion.global_x = ev.mouse_motion.x = mouse_event->canvasX;
+	ev.mouse_motion.global_y = ev.mouse_motion.y = mouse_event->canvasY;
+
+	ev.mouse_motion.relative_x = _input->get_mouse_position().x - ev.mouse_motion.x;
+	ev.mouse_motion.relative_y = _input->get_mouse_position().y - ev.mouse_motion.y;
+
+	_input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+	ev.mouse_motion.speed_x = _input->get_last_mouse_speed().x;
+	ev.mouse_motion.speed_y = _input->get_last_mouse_speed().y;
+
+	_input->parse_input_event(ev);
+	return true;
+}
+
+static EM_BOOL _wheel_callback(int event_type, const EmscriptenWheelEvent *wheel_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_WHEEL, false);
+
+	InputEvent ev;
+	ev.type = InputEvent::MOUSE_BUTTON;
+	ev.mouse_button.button_mask = _input->get_mouse_button_mask() >> 1;
+	ev.mouse_button.global_x = ev.mouse_button.x = _input->get_mouse_position().x;
+	ev.mouse_button.global_y = ev.mouse_button.y = _input->get_mouse_position().y;
+	ev.mouse_button.mod.shift = _input->is_key_pressed(KEY_SHIFT);
+	ev.mouse_button.mod.alt = _input->is_key_pressed(KEY_ALT);
+	ev.mouse_button.mod.control = _input->is_key_pressed(KEY_CONTROL);
+	ev.mouse_button.mod.meta = _input->is_key_pressed(KEY_META);
+
+	if (wheel_event->deltaY < 0)
+		ev.mouse_button.button_index = BUTTON_WHEEL_UP;
+	else if (wheel_event->deltaY > 0)
+		ev.mouse_button.button_index = BUTTON_WHEEL_DOWN;
+	else if (wheel_event->deltaX > 0)
+		ev.mouse_button.button_index = BUTTON_WHEEL_LEFT;
+	else if (wheel_event->deltaX < 0)
+		ev.mouse_button.button_index = BUTTON_WHEEL_RIGHT;
+	else
+		return false;
+
+	ev.mouse_button.pressed = true;
+	_input->parse_input_event(ev);
+
+	ev.mouse_button.pressed = false;
+	_input->parse_input_event(ev);
+
+	return true;
+}
+
+static Point2 _prev_touches[32];
+
+static EM_BOOL _touchpress_callback(int event_type, const EmscriptenTouchEvent *touch_event, void *user_data) {
+
+	ERR_FAIL_COND_V(
+			event_type != EMSCRIPTEN_EVENT_TOUCHSTART &&
+					event_type != EMSCRIPTEN_EVENT_TOUCHEND &&
+					event_type != EMSCRIPTEN_EVENT_TOUCHCANCEL,
+			false);
+
+	InputEvent ev;
+	ev.type = InputEvent::SCREEN_TOUCH;
+	int lowest_id_index = -1;
+	for (int i = 0; i < touch_event->numTouches; ++i) {
+
+		const EmscriptenTouchPoint &touch = touch_event->touches[i];
+		if (lowest_id_index == -1 || touch.identifier < touch_event->touches[lowest_id_index].identifier)
+			lowest_id_index = i;
+		if (!touch.isChanged)
+			continue;
+		ev.screen_touch.index = touch.identifier;
+		_prev_touches[i].x = ev.screen_touch.x = touch.canvasX;
+		_prev_touches[i].y = ev.screen_touch.y = touch.canvasY;
+		ev.screen_touch.pressed = event_type == EMSCRIPTEN_EVENT_TOUCHSTART;
+
+		_input->parse_input_event(ev);
+	}
+
+	if (touch_event->touches[lowest_id_index].isChanged) {
+
+		ev.type = InputEvent::MOUSE_BUTTON;
+		ev.mouse_button.mod = dom2godot_mod(touch_event);
+		ev.mouse_button.button_mask = _input->get_mouse_button_mask() >> 1;
+		ev.mouse_button.global_x = ev.mouse_button.x = touch_event->touches[lowest_id_index].canvasX;
+		ev.mouse_button.global_y = ev.mouse_button.y = touch_event->touches[lowest_id_index].canvasY;
+		ev.mouse_button.button_index = BUTTON_LEFT;
+		ev.mouse_button.pressed = event_type == EMSCRIPTEN_EVENT_TOUCHSTART;
+
+		_input->parse_input_event(ev);
+	}
+	return true;
+}
+
+static EM_BOOL _touchmove_callback(int event_type, const EmscriptenTouchEvent *touch_event, void *user_data) {
+
+	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_TOUCHMOVE, false);
+
+	InputEvent ev;
+	ev.type = InputEvent::SCREEN_DRAG;
+	int lowest_id_index = -1;
+	for (int i = 0; i < touch_event->numTouches; ++i) {
+
+		const EmscriptenTouchPoint &touch = touch_event->touches[i];
+		if (lowest_id_index == -1 || touch.identifier < touch_event->touches[lowest_id_index].identifier)
+			lowest_id_index = i;
+		if (!touch.isChanged)
+			continue;
+		ev.screen_drag.index = touch.identifier;
+		ev.screen_drag.x = touch.canvasX;
+		ev.screen_drag.y = touch.canvasY;
+		Point2 &prev = _prev_touches[i];
+		ev.screen_drag.relative_x = touch.canvasX - prev.x;
+		ev.screen_drag.relative_y = touch.canvasY - prev.y;
+		prev.x = ev.screen_drag.x;
+		prev.y = ev.screen_drag.y;
+
+		_input->parse_input_event(ev);
+	}
+
+	if (touch_event->touches[lowest_id_index].isChanged) {
+
+		ev.type = InputEvent::MOUSE_MOTION;
+		ev.mouse_motion.mod = dom2godot_mod(touch_event);
+		ev.mouse_motion.button_mask = _input->get_mouse_button_mask() >> 1;
+		ev.mouse_motion.global_x = ev.mouse_motion.x = touch_event->touches[lowest_id_index].canvasX;
+		ev.mouse_motion.global_y = ev.mouse_motion.y = touch_event->touches[lowest_id_index].canvasY;
+		ev.mouse_motion.relative_x = _input->get_mouse_position().x - ev.mouse_motion.x;
+		ev.mouse_motion.relative_y = _input->get_mouse_position().y - ev.mouse_motion.y;
+
+		_input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
+		ev.mouse_motion.speed_x = _input->get_last_mouse_speed().x;
+		ev.mouse_motion.speed_y = _input->get_last_mouse_speed().y;
+
+		_input->parse_input_event(ev);
+	}
+	return true;
+}
+
 static InputEvent _setup_key_event(const EmscriptenKeyboardEvent *emscripten_event) {
 
 	InputEvent ev;
 	ev.type = InputEvent::KEY;
 	ev.key.echo = emscripten_event->repeat;
-	ev.key.mod.alt = emscripten_event->altKey;
-	ev.key.mod.shift = emscripten_event->shiftKey;
-	ev.key.mod.control = emscripten_event->ctrlKey;
-	ev.key.mod.meta = emscripten_event->metaKey;
+	ev.key.mod = dom2godot_mod(emscripten_event);
 	ev.key.scancode = dom2godot_scancode(emscripten_event->keyCode);
 
 	String unicode = String::utf8(emscripten_event->key);
@@ -167,7 +355,7 @@ static EM_BOOL _keydown_callback(int event_type, const EmscriptenKeyboardEvent *
 		deferred_key_event = ev;
 		return false; // do not suppress keypress event
 	}
-	static_cast<OS_JavaScript *>(user_data)->push_input(ev);
+	_input->parse_input_event(ev);
 	return true;
 }
 
@@ -176,7 +364,7 @@ static EM_BOOL _keypress_callback(int event_type, const EmscriptenKeyboardEvent 
 	ERR_FAIL_COND_V(event_type != EMSCRIPTEN_EVENT_KEYPRESS, false);
 
 	deferred_key_event.key.unicode = key_event->charCode;
-	static_cast<OS_JavaScript *>(user_data)->push_input(deferred_key_event);
+	_input->parse_input_event(deferred_key_event);
 	return true;
 }
 
@@ -186,7 +374,7 @@ static EM_BOOL _keyup_callback(int event_type, const EmscriptenKeyboardEvent *ke
 
 	InputEvent ev = _setup_key_event(key_event);
 	ev.key.pressed = false;
-	static_cast<OS_JavaScript *>(user_data)->push_input(ev);
+	_input->parse_input_event(ev);
 	return ev.key.scancode != KEY_UNKNOWN && ev.key.scancode != 0;
 }
 
@@ -257,25 +445,34 @@ void OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, i
 	physics_2d_server->init();
 
 	input = memnew(InputDefault);
+	_input = input;
 
 	power_manager = memnew(PowerJavascript);
 
 #define EM_CHECK(ev)                         \
 	if (result != EMSCRIPTEN_RESULT_SUCCESS) \
 	ERR_PRINTS("Error while setting " #ev " callback: Code " + itos(result))
-#define SET_EM_CALLBACK(ev, cb)                                     \
-	result = emscripten_set_##ev##_callback(NULL, this, true, &cb); \
+#define SET_EM_CALLBACK(target, ev, cb)                               \
+	result = emscripten_set_##ev##_callback(target, this, true, &cb); \
 	EM_CHECK(ev)
 #define SET_EM_CALLBACK_NODATA(ev, cb)                        \
 	result = emscripten_set_##ev##_callback(NULL, true, &cb); \
 	EM_CHECK(ev)
 
 	EMSCRIPTEN_RESULT result;
-	SET_EM_CALLBACK(keydown, _keydown_callback)
-	SET_EM_CALLBACK(keypress, _keypress_callback)
-	SET_EM_CALLBACK(keyup, _keyup_callback)
-	SET_EM_CALLBACK(resize, _browser_resize_callback)
-	SET_EM_CALLBACK(fullscreenchange, _fullscreen_change_callback)
+	SET_EM_CALLBACK("#canvas", mousemove, _mousemove_callback)
+	SET_EM_CALLBACK("#canvas", mousedown, _mousebutton_callback)
+	SET_EM_CALLBACK("#canvas", mouseup, _mousebutton_callback)
+	SET_EM_CALLBACK("#canvas", wheel, _wheel_callback)
+	SET_EM_CALLBACK("#canvas", touchstart, _touchpress_callback)
+	SET_EM_CALLBACK("#canvas", touchmove, _touchmove_callback)
+	SET_EM_CALLBACK("#canvas", touchend, _touchpress_callback)
+	SET_EM_CALLBACK("#canvas", touchcancel, _touchpress_callback)
+	SET_EM_CALLBACK("#canvas", keydown, _keydown_callback)
+	SET_EM_CALLBACK("#canvas", keypress, _keypress_callback)
+	SET_EM_CALLBACK("#canvas", keyup, _keyup_callback)
+	SET_EM_CALLBACK(NULL, resize, _browser_resize_callback)
+	SET_EM_CALLBACK(NULL, fullscreenchange, _fullscreen_change_callback)
 	SET_EM_CALLBACK_NODATA(gamepadconnected, joy_callback_func)
 	SET_EM_CALLBACK_NODATA(gamepaddisconnected, joy_callback_func)
 
@@ -339,7 +536,7 @@ Point2 OS_JavaScript::get_mouse_position() const {
 
 int OS_JavaScript::get_mouse_button_state() const {
 
-	return last_button_mask;
+	return input->get_mouse_button_mask();
 }
 
 void OS_JavaScript::set_window_title(const String &p_title) {
@@ -518,197 +715,6 @@ void OS_JavaScript::main_loop_focusin() {
 	//audio_driver_javascript.set_pause(false);
 }
 
-void OS_JavaScript::push_input(const InputEvent &p_ev) {
-
-	InputEvent ev = p_ev;
-	if (ev.type == InputEvent::MOUSE_MOTION) {
-		input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
-	} else if (ev.type == InputEvent::MOUSE_BUTTON) {
-		last_button_mask = ev.mouse_button.button_mask;
-	}
-	input->parse_input_event(p_ev);
-}
-
-void OS_JavaScript::process_touch(int p_what, int p_pointer, const Vector<TouchPos> &p_points) {
-
-	//print_line("ev: "+itos(p_what)+" pnt: "+itos(p_pointer)+" pointc: "+itos(p_points.size()));
-
-	switch (p_what) {
-		case 0: { //gesture begin
-
-			if (touch.size()) {
-				//end all if exist
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.mouse_button.button_index = BUTTON_LEFT;
-				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed = false;
-				ev.mouse_button.x = touch[0].pos.x;
-				ev.mouse_button.y = touch[0].pos.y;
-				ev.mouse_button.global_x = touch[0].pos.x;
-				ev.mouse_button.global_y = touch[0].pos.y;
-				input->parse_input_event(ev);
-
-				for (int i = 0; i < touch.size(); i++) {
-
-					InputEvent ev;
-					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.screen_touch.index = touch[i].id;
-					ev.screen_touch.pressed = false;
-					ev.screen_touch.x = touch[i].pos.x;
-					ev.screen_touch.y = touch[i].pos.y;
-					input->parse_input_event(ev);
-				}
-			}
-
-			touch.resize(p_points.size());
-			for (int i = 0; i < p_points.size(); i++) {
-				touch[i].id = p_points[i].id;
-				touch[i].pos = p_points[i].pos;
-			}
-
-			{
-				//send mouse
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.mouse_button.button_index = BUTTON_LEFT;
-				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed = true;
-				ev.mouse_button.x = touch[0].pos.x;
-				ev.mouse_button.y = touch[0].pos.y;
-				ev.mouse_button.global_x = touch[0].pos.x;
-				ev.mouse_button.global_y = touch[0].pos.y;
-				last_mouse = touch[0].pos;
-				input->parse_input_event(ev);
-			}
-
-			//send touch
-			for (int i = 0; i < touch.size(); i++) {
-
-				InputEvent ev;
-				ev.type = InputEvent::SCREEN_TOUCH;
-				ev.screen_touch.index = touch[i].id;
-				ev.screen_touch.pressed = true;
-				ev.screen_touch.x = touch[i].pos.x;
-				ev.screen_touch.y = touch[i].pos.y;
-				input->parse_input_event(ev);
-			}
-
-		} break;
-		case 1: { //motion
-
-			if (p_points.size()) {
-				//send mouse, should look for point 0?
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_MOTION;
-				ev.mouse_motion.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_motion.x = p_points[0].pos.x;
-				ev.mouse_motion.y = p_points[0].pos.y;
-				input->set_mouse_position(Point2(ev.mouse_motion.x, ev.mouse_motion.y));
-				ev.mouse_motion.speed_x = input->get_last_mouse_speed().x;
-				ev.mouse_motion.speed_y = input->get_last_mouse_speed().y;
-				ev.mouse_motion.relative_x = p_points[0].pos.x - last_mouse.x;
-				ev.mouse_motion.relative_y = p_points[0].pos.y - last_mouse.y;
-				last_mouse = p_points[0].pos;
-				input->parse_input_event(ev);
-			}
-
-			ERR_FAIL_COND(touch.size() != p_points.size());
-
-			for (int i = 0; i < touch.size(); i++) {
-
-				int idx = -1;
-				for (int j = 0; j < p_points.size(); j++) {
-
-					if (touch[i].id == p_points[j].id) {
-						idx = j;
-						break;
-					}
-				}
-
-				ERR_CONTINUE(idx == -1);
-
-				if (touch[i].pos == p_points[idx].pos)
-					continue; //no move unncesearily
-
-				InputEvent ev;
-				ev.type = InputEvent::SCREEN_DRAG;
-				ev.screen_drag.index = touch[i].id;
-				ev.screen_drag.x = p_points[idx].pos.x;
-				ev.screen_drag.y = p_points[idx].pos.y;
-				ev.screen_drag.relative_x = p_points[idx].pos.x - touch[i].pos.x;
-				ev.screen_drag.relative_y = p_points[idx].pos.y - touch[i].pos.y;
-				input->parse_input_event(ev);
-				touch[i].pos = p_points[idx].pos;
-			}
-
-		} break;
-		case 2: { //release
-
-			if (touch.size()) {
-				//end all if exist
-				InputEvent ev;
-				ev.type = InputEvent::MOUSE_BUTTON;
-				ev.mouse_button.button_index = BUTTON_LEFT;
-				ev.mouse_button.button_mask = BUTTON_MASK_LEFT;
-				ev.mouse_button.pressed = false;
-				ev.mouse_button.x = touch[0].pos.x;
-				ev.mouse_button.y = touch[0].pos.y;
-				ev.mouse_button.global_x = touch[0].pos.x;
-				ev.mouse_button.global_y = touch[0].pos.y;
-				input->parse_input_event(ev);
-
-				for (int i = 0; i < touch.size(); i++) {
-
-					InputEvent ev;
-					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.screen_touch.index = touch[i].id;
-					ev.screen_touch.pressed = false;
-					ev.screen_touch.x = touch[i].pos.x;
-					ev.screen_touch.y = touch[i].pos.y;
-					input->parse_input_event(ev);
-				}
-				touch.clear();
-			}
-
-		} break;
-		case 3: { // add tuchi
-
-			ERR_FAIL_INDEX(p_pointer, p_points.size());
-
-			TouchPos tp = p_points[p_pointer];
-			touch.push_back(tp);
-
-			InputEvent ev;
-			ev.type = InputEvent::SCREEN_TOUCH;
-			ev.screen_touch.index = tp.id;
-			ev.screen_touch.pressed = true;
-			ev.screen_touch.x = tp.pos.x;
-			ev.screen_touch.y = tp.pos.y;
-			input->parse_input_event(ev);
-
-		} break;
-		case 4: {
-
-			for (int i = 0; i < touch.size(); i++) {
-				if (touch[i].id == p_pointer) {
-
-					InputEvent ev;
-					ev.type = InputEvent::SCREEN_TOUCH;
-					ev.screen_touch.index = touch[i].id;
-					ev.screen_touch.pressed = false;
-					ev.screen_touch.x = touch[i].pos.x;
-					ev.screen_touch.y = touch[i].pos.y;
-					input->parse_input_event(ev);
-					touch.remove(i);
-					i--;
-				}
-			}
-
-		} break;
-	}
-}
-
 void OS_JavaScript::process_accelerometer(const Vector3 &p_accelerometer) {
 
 	input->set_accelerometer(p_accelerometer);
@@ -833,7 +839,6 @@ OS_JavaScript::OS_JavaScript(const char *p_execpath, GFXInitFunc p_gfx_init_func
 	set_cmdline(p_execpath, get_cmdline_args());
 	gfx_init_func = p_gfx_init_func;
 	gfx_init_ud = p_gfx_init_ud;
-	last_button_mask = 0;
 	main_loop = NULL;
 	gl_extensions = NULL;
 	window_maximized = false;
