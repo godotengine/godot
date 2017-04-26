@@ -1085,7 +1085,7 @@ void TranslationServer::setup() {
 		int idx = 0;
 		while (locale_list[idx]) {
 			if (idx > 0)
-				options += ", ";
+				options += ",";
 			options += locale_list[idx];
 			idx++;
 		}
