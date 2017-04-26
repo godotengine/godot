@@ -1625,7 +1625,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 		inspector->hide_top_label();
 		inspector->get_scene_tree()->set_column_title(0, TTR("Variable"));
-		inspector->set_capitalize_paths(false);
+		inspector->set_enable_capitalize_paths(false);
 		inspector->set_read_only(true);
 		sc->add_child(inspector);
 

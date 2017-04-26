@@ -272,7 +272,8 @@ public:
 		custom_editor->set_read_only(p_read_only);
 	}
 
-	void set_capitalize_paths(bool p_capitalize);
+	bool is_capitalize_paths_enabled() const;
+	void set_enable_capitalize_paths(bool p_capitalize);
 	void set_autoclear(bool p_enable);
 
 	void set_show_categories(bool p_show);
