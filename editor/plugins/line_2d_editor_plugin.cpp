@@ -62,7 +62,7 @@ Vector2 Line2DEditor::mouse_to_local_pos(Vector2 gpoint, bool alt) {
 int Line2DEditor::get_point_index_at(Vector2 gpos) {
 	ERR_FAIL_COND_V(node == 0, -1);
 
-	real_t grab_treshold = EDITOR_DEF("poly_editor/point_grab_radius", 8);
+	real_t grab_treshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 	for (int i = 0; i < node->get_point_count(); ++i) {
