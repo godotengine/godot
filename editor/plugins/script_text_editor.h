@@ -76,6 +76,9 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_INDENT_LEFT,
 		EDIT_CLONE_DOWN,
 		EDIT_PICK_COLOR,
+		EDIT_TO_UPPERCASE,
+		EDIT_TO_LOWERCASE,
+		EDIT_CAPITALIZE,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
 		SEARCH_FIND_PREV,
@@ -108,6 +111,13 @@ protected:
 
 	void _goto_line(int p_line) { goto_line(p_line); }
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
+
+	enum CaseStyle {
+		UPPER,
+		LOWER,
+		CAPITALIZE,
+	};
+	void _convert_case(CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

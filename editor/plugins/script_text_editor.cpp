@@ -240,6 +240,48 @@ Variant ScriptTextEditor::get_edit_state() {
 	return state;
 }
 
+void ScriptTextEditor::_convert_case(CaseStyle p_case) {
+	TextEdit *te = code_editor->get_text_edit();
+	Ref<Script> scr = get_edited_script();
+	if (scr.is_null()) {
+		return;
+	}
+
+	if (te->is_selection_active()) {
+		te->begin_complex_operation();
+
+		int begin = te->get_selection_from_line();
+		int end = te->get_selection_to_line();
+		int begin_col = te->get_selection_from_column();
+		int end_col = te->get_selection_to_column();
+
+		for (int i = begin; i <= end; i++) {
+			String new_line = te->get_line(i);
+
+			switch (p_case) {
+				case UPPER: {
+					new_line = new_line.to_upper();
+				} break;
+				case LOWER: {
+					new_line = new_line.to_lower();
+				} break;
+				case CAPITALIZE: {
+					new_line = new_line.capitalize();
+				} break;
+			}
+
+			if (i == begin) {
+				new_line = te->get_line(i).left(begin_col) + new_line.right(begin_col);
+			}
+			if (i == end) {
+				new_line = new_line.left(end_col) + te->get_line(i).right(end_col);
+			}
+			te->set_line(i, new_line);
+		}
+		te->end_complex_operation();
+	}
+}
+
 void ScriptTextEditor::trim_trailing_whitespace() {
 
 	TextEdit *tx = code_editor->get_text_edit();
@@ -919,7 +961,15 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		case EDIT_PICK_COLOR: {
 			color_panel->popup();
 		} break;
-
+		case EDIT_TO_UPPERCASE: {
+			_convert_case(UPPER);
+		} break;
+		case EDIT_TO_LOWERCASE: {
+			_convert_case(LOWER);
+		} break;
+		case EDIT_CAPITALIZE: {
+			_convert_case(CAPITALIZE);
+		} break;
 		case SEARCH_FIND: {
 
 			code_editor->get_find_replace_bar()->popup_search();
@@ -1335,6 +1385,15 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
+	edit_menu->get_popup()->add_separator();
+	PopupMenu *convert_case = memnew(PopupMenu);
+	convert_case->set_name("convert_case");
+	edit_menu->get_popup()->add_child(convert_case);
+	edit_menu->get_popup()->add_submenu_item(TTR("Convert Case"), "convert_case");
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Uppercase")), EDIT_TO_UPPERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Lowercase")), EDIT_TO_LOWERCASE);
+	convert_case->add_shortcut(ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize")), EDIT_CAPITALIZE);
+	convert_case->connect("id_pressed", this, "_edit_option");
 
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
@@ -1404,6 +1463,10 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTR("Remove All Breakpoints"), KEY_MASK_CTRL | KEY_MASK_SHIFT | KEY_F9);
 	ED_SHORTCUT("script_text_editor/goto_next_breakpoint", TTR("Goto Next Breakpoint"), KEY_MASK_CTRL | KEY_PERIOD);
 	ED_SHORTCUT("script_text_editor/goto_previous_breakpoint", TTR("Goto Previous Breakpoint"), KEY_MASK_CTRL | KEY_COMMA);
+
+	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTR("Convert To Uppercase"), KEY_MASK_SHIFT | KEY_F4);
+	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTR("Convert To Lowercase"), KEY_MASK_SHIFT | KEY_F3);
+	ED_SHORTCUT("script_text_editor/capitalize", TTR("Capitalize"), KEY_MASK_SHIFT | KEY_F2);
 
 	ED_SHORTCUT("script_text_editor/find", TTR("Find.."), KEY_MASK_CMD | KEY_F);
 	ED_SHORTCUT("script_text_editor/find_next", TTR("Find Next"), KEY_F3);
